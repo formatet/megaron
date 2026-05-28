@@ -1,0 +1,20 @@
+X:22
+T:Hatti — Seal of the Sun-Disk
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=90
+%%MIDI program 67
+%%MIDI channel 1
+V:1 name="Oboe" clef=treble
+V:2 name="Lyra" clef=treble
+K:Amin
+% Ceremonial, processional — the Hittite king receives tribute
+V:1
+|: A4 ^G2 A2 | B4 c4 | d2 c2 B2 A2 | ^G6 z2 |
+   E2 F2 ^G2 A2 | B2 c2 d4 | c2 B2 A4 | E8 :|
+V:2
+%%MIDI program 24
+%%MIDI channel 2
+|: A,4 E4 | B,4 E4 | A,4 E4 | E,4 z4 |
+   A,,4 E,4 | A,4 E4 | A,4 B,4 | E,8 :|

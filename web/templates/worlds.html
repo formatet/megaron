@@ -1,0 +1,78 @@
+{{template "base" .}}
+{{define "title"}}Worlds — Thalassa{{end}}
+{{define "content"}}
+<div class="page-worlds">
+  <div class="worlds-header">
+    <h2>Active Worlds</h2>
+    <button class="btn-secondary" onclick="toggleCreate()">+ New World</button>
+  </div>
+
+  <div id="create-world-form" style="display:none" class="panel create-panel">
+    <h3>Create World</h3>
+    <form hx-post="/api/v1/worlds"
+          hx-target="#world-create-result"
+          hx-swap="innerHTML"
+          hx-on::after-request="if(event.detail.successful) window.location.reload()">
+      <div class="field">
+        <label>World Name</label>
+        <input type="text" name="name" required maxlength="40" placeholder="e.g. The First Age">
+      </div>
+      <div class="field inline-fields">
+        <label>Map Width <input type="number" name="map_width" value="40" min="20" max="100"></label>
+        <label>Map Height <input type="number" name="map_height" value="30" min="15" max="80"></label>
+      </div>
+      <button type="submit" class="btn-primary">Create</button>
+    </form>
+    <div id="world-create-result"></div>
+  </div>
+
+  {{if .Worlds}}
+  <div class="world-grid">
+    {{range .Worlds}}
+    <div class="world-card state-{{.State}}">
+      <div class="world-name">{{.Name}}</div>
+      <div class="world-meta">
+        <span class="pill state-{{.State}}">{{.State}}</span>
+        <span>Era {{.EraNumber}}</span>
+        <span>{{.Players}} players</span>
+        <span>Prestige {{.Prestige}}</span>
+      </div>
+      <div class="world-date">Since {{formatTime .CreatedAt}}</div>
+      <div class="world-actions">
+        <a href="/world/{{.ID}}" class="btn-small">Enter</a>
+        <button class="btn-small btn-join"
+                hx-post="/api/v1/worlds/{{.ID}}/join"
+                hx-target="#join-result-{{.ID}}"
+                hx-swap="innerHTML"
+                hx-on::after-request="handleJoin(event, '{{.ID}}')">
+          Join World
+        </button>
+      </div>
+      <div id="join-result-{{.ID}}" class="join-result"></div>
+    </div>
+    {{end}}
+  </div>
+  {{else}}
+  <p class="empty-state">No worlds yet. Create one above to begin.</p>
+  {{end}}
+</div>
+
+<script>
+function toggleCreate() {
+  const f = document.getElementById('create-world-form');
+  f.style.display = f.style.display === 'none' ? '' : 'none';
+}
+
+function handleJoin(e, worldID) {
+  if (e.detail.xhr.status === 201 || e.detail.xhr.status === 200) {
+    window.location.href = '/world/' + worldID;
+  }
+}
+
+// Inject auth on all HTMX requests (both Bearer for API + cookie is set by server).
+document.addEventListener('htmx:configRequest', function(e) {
+  const token = localStorage.getItem('thalassa_access');
+  if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
+});
+</script>
+{{end}}

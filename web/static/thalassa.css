@@ -1,0 +1,424 @@
+/* ── Reset & Base ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Bronze Age Aegean · Moomin warmth · NES discipline */
+  --bg:        #1C1C1C;       /* CHARCOAL — deep background */
+  --bg-panel:  #F2EAD3;       /* PLASTER — papyrus panel */
+  --bg-raised: #FAD7A0;       /* LINEN — raised element */
+  --border:    #E67E22;       /* TERRACOTTA — panel border */
+  --border-in: #6E2C00;       /* ASH_BROWN — inner shadow */
+  --text:      #1C1C1C;       /* CHARCOAL — text on light */
+  --text-light:#F2EAD3;       /* PLASTER — text on dark */
+  --text-dim:  #A04000;       /* LOAM — muted text */
+  --gold:      #F9E79F;       /* ORACLE_GOLD — headings, divine */
+  --danger:    #6C3483;       /* DOOM_VIOLET — danger states */
+  --blood:     #922B21;       /* BLOOD_RED — combat only */
+  --safe:      #D4AC0D;       /* DRY_GRASS — positive values */
+  --sea:       #2E86C1;       /* AEGEAN — sea accent */
+  --accent:    #C0392B;       /* FIRED_CLAY — primary action */
+
+  --font: 'Georgia', 'Times New Roman', serif;
+  --mono: 'Courier New', monospace;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Subtle hex-grid background texture via SVG data URI */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpolygon points='28,2 54,17 54,47 28,62 2,47 2,17' fill='none' stroke='%23d8a840' stroke-width='1'/%3E%3Cpolygon points='28,52 54,67 54,97 28,112 2,97 2,67' fill='none' stroke='%23d8a840' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 56px 100px;
+}
+
+main, .topbar, footer { position: relative; z-index: 1; }
+
+a { color: var(--gold); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3, h4 {
+  font-weight: normal;
+  letter-spacing: 0.05em;
+  color: var(--gold);
+}
+
+/* ── Topbar ─────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1.5rem;
+  border-bottom: 2px solid #E67E22;
+  background: #F2EAD3;           /* PLASTER — papyrus topbar */
+  box-shadow: 0 2px 0 #6E2C00;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.4rem;
+  letter-spacing: 0.25em;
+  color: #C0392B;                /* FIRED_CLAY */
+  text-decoration: none;
+  text-transform: uppercase;
+  font-family: var(--mono);
+}
+
+.nav-links { display: flex; gap: 1.4rem; }
+.nav-links a { color: #A04000; font-size: 0.85rem; font-family: var(--mono); letter-spacing: 0.1em; }
+.nav-links a:hover { color: #C0392B; text-decoration: none; border-bottom: 1px solid #C0392B; }
+
+/* ── Main layout ────────────────────────────────────────────── */
+main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+footer {
+  text-align: center;
+  padding: 1rem;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+}
+
+/* ── Auth page ──────────────────────────────────────────────── */
+.auth-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  gap: 2.5rem;
+  position: relative;
+}
+
+/* Animated background map behind login */
+.auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 60% 40% at 30% 60%, #2e5f8a22 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 70% 35%, #4a7c5918 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, #0f0e0dcc 0%, #0f0e0d 80%);
+  animation: seapulse 8s ease-in-out infinite alternate;
+}
+@keyframes seapulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1.0; }
+}
+
+.auth-hero { text-align: center; }
+.auth-hero h1 {
+  font-size: 4.5rem;
+  letter-spacing: 0.35em;
+  color: var(--gold);
+  text-shadow: 0 0 60px #c8962a55, 0 0 120px #c8962a22;
+  animation: glowhero 4s ease-in-out infinite alternate;
+}
+@keyframes glowhero {
+  from { text-shadow: 0 0 40px #c8962a44, 0 0 80px #c8962a11; }
+  to   { text-shadow: 0 0 80px #c8962a88, 0 0 160px #c8962a33; }
+}
+.tagline { color: var(--text-dim); font-style: italic; margin-top: 0.5rem; font-size: 1rem; letter-spacing: 0.05em; }
+
+.auth-forms {
+  width: 100%;
+  max-width: 380px;
+  background: #F2EAD3;           /* PLASTER */
+  border: 2px solid #E67E22;     /* TERRACOTTA */
+  box-shadow: inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+  padding: 1.5rem;
+}
+
+.tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid #E67E22; }
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #A04000;                /* LOAM */
+  padding: 0.5rem;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tab.active { color: #C0392B; border-bottom: 3px solid #C0392B; }
+
+/* ── Forms ──────────────────────────────────────────────────── */
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.1em; }
+.field input, .field select, .field textarea {
+  width: 100%;
+  background: #FDFEFE;           /* WARM_WHITE */
+  border: 2px solid #E67E22;     /* TERRACOTTA */
+  border-radius: 0;
+  color: #1C1C1C;                /* CHARCOAL */
+  padding: 0.5rem 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+}
+.field input:focus, .field select:focus {
+  outline: 2px solid #C0392B;   /* FIRED_CLAY */
+  border-color: #C0392B;
+}
+
+.inline-fields { display: flex; gap: 0.5rem; align-items: center; }
+.inline-fields label { white-space: nowrap; }
+
+.unit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.unit-row label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.unit-row input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.3rem 0.5rem;
+  font-family: var(--mono);
+}
+
+.btn-primary, .btn-secondary, .btn-danger, .btn-small {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border: 2px solid;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  width: 100%;
+  margin-top: 0.5rem;
+  /* NES-discipline: no rounded corners, no gradients, no drop shadows */
+  border-radius: 0;
+}
+/* Normal: SANDSTONE face, TERRACOTTA border */
+.btn-primary   { background: #F0B27A; border-color: #E67E22; color: #1C1C1C; }
+.btn-primary:hover  { background: #FAD7A0; border-color: #C0392B; color: #1C1C1C; }
+.btn-primary:active { background: #C0392B; border-color: #6E2C00; color: #FAD7A0; }
+/* Secondary */
+.btn-secondary { background: #F2EAD3; border-color: #A04000; color: #6E2C00; }
+.btn-secondary:hover { background: #FAD7A0; border-color: #E67E22; color: #1C1C1C; }
+/* Danger: DOOM_VIOLET */
+.btn-danger    { background: #F2EAD3; border-color: #6C3483; color: #6C3483; }
+.btn-danger:hover   { background: #6C3483; border-color: #1C1C1C; color: #F2EAD3; }
+.btn-small { padding: 0.25rem 0.8rem; font-size: 0.75rem; width: auto; margin-top: 0; }
+.btn-join  { background: #F2EAD3; border-color: #2E86C1; color: #1B4F72; }
+.btn-join:hover { background: #2E86C1; border-color: #1B4F72; color: #F2EAD3; }
+
+.form-error { color: #6C3483; font-size: 0.85rem; min-height: 1.2em; margin-bottom: 0.5rem; } /* DOOM_VIOLET */
+
+.worlds-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.worlds-header h2 { margin-bottom: 0; }
+
+.create-panel { max-width: 500px; margin-bottom: 1.5rem; }
+
+.world-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+.join-result { font-size: 0.85rem; margin-top: 0.4rem; color: var(--text-dim); }
+
+/* ── Pills / tags ───────────────────────────────────────────── */
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.75rem;
+  border: 1px solid;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.state-forming    { border-color: #A04000; color: #A04000; }       /* LOAM */
+.state-active     { border-color: #D4AC0D; color: #D4AC0D; }       /* DRY_GRASS */
+.state-collapsing { border-color: #6C3483; color: #6C3483; }       /* DOOM_VIOLET */
+.state-ended      { border-color: #6E2C00; color: #6E2C00; }       /* ASH_BROWN */
+
+.culture-tag, .kingdom-tag {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  margin-left: 0.5rem;
+}
+
+/* ── Panels — papyrus scroll on fired-clay tablet ─────────────── */
+.panel {
+  background: var(--bg-panel);   /* PLASTER */
+  border: 2px solid var(--border); /* TERRACOTTA */
+  box-shadow: inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+  padding: 1.2rem;
+  color: var(--text);            /* CHARCOAL */
+}
+.panel h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  color: #C0392B;                /* FIRED_CLAY — section labels */
+  border-bottom: 1px solid #E67E22;
+  padding-bottom: 0.4rem;
+}
+.empty-state { color: var(--text-dim); font-style: italic; font-size: 0.9rem; }
+
+/* ── Worlds page ────────────────────────────────────────────── */
+.page-worlds h2 { margin-bottom: 1.5rem; }
+.world-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+.world-card {
+  display: block;
+  background: #F2EAD3;
+  border: 2px solid #E67E22;
+  box-shadow: inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+  padding: 1.2rem;
+  color: #1C1C1C;
+  transition: border-color 0.15s;
+}
+.world-card:hover { border-color: #C0392B; text-decoration: none; }
+.world-name { font-size: 1.1rem; color: #C0392B; margin-bottom: 0.6rem; }
+.world-meta { display: flex; gap: 0.8rem; font-size: 0.8rem; color: #A04000; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.world-date { font-size: 0.75rem; color: #A04000; }
+
+/* ── Province page ──────────────────────────────────────────── */
+.province-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.province-stats { display: flex; gap: 1rem; font-size: 0.9rem; }
+
+.province-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+@media (max-width: 700px) { .province-grid { grid-template-columns: 1fr; } }
+
+/* Resource bar — Settlers 2 style */
+.resource-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #F2EAD3;
+  border-bottom: 2px solid #E67E22;
+  height: 34px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+.res {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 12px;
+  border-right: 1px solid #E67E22;
+  height: 100%;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.res-icon { width: 18px; height: 18px; image-rendering: pixelated; flex-shrink: 0; }
+.res-info  { display: flex; flex-direction: column; line-height: 1.1; }
+.res-name  { font-size: 8px; color: #A04000; text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
+.res-val   { font-size: 13px; font-weight: bold; color: #C0392B; font-family: var(--mono); }
+.res-rate  { font-size: 9px; color: #6E2C00; font-family: var(--mono); }
+
+/* Army table */
+.army-table { width: 100%; border-collapse: collapse; }
+.army-table td { padding: 0.25rem 0; font-size: 0.9rem; }
+.army-table td.num { text-align: right; font-family: var(--mono); color: var(--gold); }
+
+/* Build queue */
+.build-queue { list-style: none; }
+.build-queue li { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.building-type { text-transform: capitalize; }
+.complete-at { color: var(--text-dim); font-family: var(--mono); font-size: 0.8rem; }
+
+/* March list */
+.march-list { list-style: none; }
+.march-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.intent-tag {
+  display: inline-block;
+  padding: 0 0.4rem;
+  font-size: 0.7rem;
+  border: 1px solid;
+  text-transform: uppercase;
+  margin-right: 0.3rem;
+}
+.march-attack .intent-tag, .intent-tag.attack { border-color: var(--danger); color: var(--danger); }
+.march-support .intent-tag, .intent-tag.support { border-color: var(--safe); color: var(--safe); }
+.march-reinforce .intent-tag, .intent-tag.reinforce { border-color: var(--gold); color: var(--gold); }
+.arrives { color: var(--text-dim); font-size: 0.8rem; margin-left: 0.5rem; }
+
+/* ── Map page ───────────────────────────────────────────────── */
+.map-page { display: flex; flex-direction: column; gap: 0.8rem; }
+.map-toolbar { display: flex; align-items: center; gap: 1rem; }
+.map-container {
+  overflow: auto;
+  border: 1px solid var(--border);
+  background: #0a0e18;
+  max-height: 70vh;
+}
+#hex-map { display: block; }
+
+.map-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; }
+.legend-item { display: flex; align-items: center; gap: 0.3rem; }
+.legend-item::before {
+  content: '■';
+  font-size: 1rem;
+}
+.terrain-plains::before  { color: #c8b97a; }
+.terrain-forest::before  { color: #4a7c59; }
+.terrain-hills::before   { color: #a08050; }
+.terrain-mountain::before { color: #7a7a7a; }
+.terrain-coast::before   { color: #d4b483; }
+.terrain-sea::before     { color: #2e5f8a; }
+.terrain-fog::before     { color: #1a1a2e; }
+
+.tile-tooltip {
+  position: fixed;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: var(--mono);
+  pointer-events: none;
+  z-index: 200;
+}
+
+/* ── Kingdom page ───────────────────────────────────────────── */
+.kingdom-header { margin-bottom: 1.5rem; }
+.kingdom-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+.no-kingdom { max-width: 400px; }
+.no-kingdom h2 { margin-bottom: 0.5rem; }
+.no-kingdom p { color: var(--text-dim); margin-bottom: 1.5rem; }
+
+/* ── Dispossessed page ──────────────────────────────────────── */
+.dispossessed-page { text-align: center; padding: 4rem 2rem; }
+.dispossessed-page h2 { margin-bottom: 1rem; }
+.dispossessed-page p { color: var(--text-dim); margin-bottom: 2rem; }
+
+/* ── Loading state ──────────────────────────────────────────── */
+.loading { color: var(--text-dim); font-style: italic; font-size: 0.85rem; }
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline; }

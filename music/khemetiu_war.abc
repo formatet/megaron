@@ -1,0 +1,22 @@
+X:5
+T:Khemetiu — March of the Two Lands
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=128
+%%MIDI program 46
+%%MIDI channel 1
+V:1 name="Harp" clef=treble
+V:2 name="Sistrum" clef=perc
+K:C
+% Egyptian pentatonic: C D F G A — no half steps, stately power
+V:1
+|: C2 D2 F4 | G2 A2 G2 F2 | D2 C2 D2 F2 | G8 |
+   A2 G2 F2 D2 | C2 D2 F4 | G2 A2 G4 | C8 :|
+V:2
+%%MIDI channel 9
+%%MIDI drummap C 56
+%%MIDI drummap D 60
+%%MIDI drummap E 42
+|: C2D2 C2D2 | C2D2 C4 | C2D2 C2D2 | C2D2 C4 |
+   C2D2 C2D2 | C2D2 C4 | C2D2 C2D2 | C4 z4 :|

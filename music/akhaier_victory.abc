@@ -1,0 +1,20 @@
+X:2
+T:Akhaier — Victory Hymn
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=96
+%%MIDI program 67
+%%MIDI channel 1
+V:1 name="Aulos" clef=treble
+V:2 name="Kithara" clef=treble
+K:DDor
+% Ascending motif, bright B natural prominent
+V:1
+|: D2 E2 F2 G2 | A2 B2 c4 | d2 c2 B2 A2 | G6 z2 |
+   A2 G2 F2 E2 | D2 F2 A4 | G2 B2 d2 B2 | D8 :|
+V:2
+%%MIDI program 24
+%%MIDI channel 2
+|: [D,A,]4 [D,A,]4 | [C,G,]4 [C,G,]4 | [G,,D,]4 [G,,D,]4 | [G,,G,]4 z4 |
+   [A,,A,]4 [A,,A,]4 | [D,A,]4 [D,A,]4 | [G,,D,]4 [G,,D,]4 | [D,D]8 :|

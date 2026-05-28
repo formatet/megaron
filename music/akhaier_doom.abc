@@ -1,0 +1,20 @@
+X:3
+T:Akhaier — Twilight of the Wanax
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=52
+%%MIDI program 67
+%%MIDI channel 1
+V:1 name="Aulos" clef=treble
+V:2 name="Kithara" clef=treble
+K:DDor
+% Descending, sparse — the palace burns
+V:1
+|: d6 z2 | c4 B2 z2 | A4 G2 z2 | F6 z2 |
+   E4 D4 | C4 D4 | A,4 z4 | D8 :|
+V:2
+%%MIDI program 24
+%%MIDI channel 2
+|: [D,A,]8 | z8 | [G,,D,]8 | z8 |
+   [F,,C,]8 | [G,,D,]8 | [A,,A,]8 | [D,D]8 :|

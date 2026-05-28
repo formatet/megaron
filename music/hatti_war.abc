@@ -1,0 +1,29 @@
+X:21
+T:Hatti — The Great King's Chariot
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=136
+%%MIDI program 67
+%%MIDI channel 1
+V:1 name="Oboe" clef=treble
+V:2 name="Davul bass" clef=treble
+V:3 name="Drum" clef=perc
+K:Amin
+% Hijaz scale on E: E F ^G A B c d — same augmented 2nd as Phrygian dominant
+% But Hatti uses it with more weight, more ceremony — empire, not merchants
+V:1
+|: E2 F2 ^G4 | A2 B2 c4 | d2 c2 B2 ^G2 | A8 |
+   E2 ^G2 A2 B2 | c2 d2 e4 | d2 c2 B2 A2 | E8 :|
+V:2
+%%MIDI program 32
+%%MIDI channel 2
+|: E,4 A,4 | E,4 A,4 | A,4 E4 | A,8 |
+   E,4 A,4 | A,4 E4 | A,4 B,4 | E,8 :|
+V:3
+%%MIDI channel 9
+%%MIDI drummap C 36
+%%MIDI drummap D 38
+%%MIDI drummap E 49
+|: C4 D2 C2 | C4 D2 C2 | C4 D4 | C4 E4 |
+   C4 D2 C2 | C4 D2 C2 | C4 D4 | C4 z4 :|

@@ -1,0 +1,390 @@
+{{template "base" .}}
+{{define "title"}}{{if .HasKingdom}}{{.KingdomName}}{{else}}Kingdom{{end}} — Thalassa{{end}}
+{{define "nav"}}
+  <a href="/worlds">Worlds</a>
+  <a href="/world/{{.WorldID}}">Province</a>
+  <a href="/world/{{.WorldID}}/map">Map</a>
+{{end}}
+{{define "content"}}
+<div class="kingdom-page">
+
+{{if .HasKingdom}}
+
+<header class="kingdom-header">
+  <div class="kh-left">
+    <h2 class="kh-name">{{.KingdomName}}</h2>
+    <span class="role-badge role-{{.PlayerRole}}">{{.PlayerRole}}</span>
+  </div>
+  <div class="kh-right">
+    <button class="btn-small btn-secondary" onclick="reloadAll()">↻ Refresh</button>
+  </div>
+</header>
+
+<div class="kingdom-grid">
+
+  <!-- ── Council ──────────────────────────────────── -->
+  <section class="panel council-panel">
+    <h3>Council</h3>
+    <div id="council-list"><p class="loading">Loading…</p></div>
+  </section>
+
+  <!-- ── Election ─────────────────────────────────── -->
+  <section class="panel election-panel">
+    <h3>Election</h3>
+    <div id="election-status"><p class="loading">Loading…</p></div>
+    {{if eq .PlayerRole "king"}}
+    <div class="election-call-wrap" id="call-election-wrap" style="display:none">
+      <div class="lp-title" style="margin-top:.8rem">Call Election</div>
+      <div class="field">
+        <label>Candidate player ID</label>
+        <input type="text" id="election-candidate" placeholder="paste player uuid" style="width:100%">
+      </div>
+      <button class="btn-small btn-primary" onclick="callElection()">Call Election</button>
+      <div id="election-call-result" class="action-result"></div>
+    </div>
+    {{end}}
+    <div id="vote-wrap" style="display:none">
+      <div class="lp-title" style="margin-top:.8rem">Cast Your Vote</div>
+      <div id="vote-candidate-info" class="vote-info"></div>
+      <button class="btn-small btn-primary" onclick="castVote(true)">Vote For Candidate</button>
+      <div id="vote-result" class="action-result"></div>
+    </div>
+  </section>
+
+  <!-- ── Borrowed Armies ──────────────────────────── -->
+  <section class="panel armies-panel">
+    <h3>Borrowed Armies</h3>
+    <div id="borrowed-armies"><p class="loading">Loading…</p></div>
+    {{if eq .PlayerRole "king"}}
+    <div style="margin-top:.8rem;border-top:1px solid #E67E22;padding-top:.8rem">
+      <div class="lp-title">Borrow Army</div>
+      <div class="field"><label>Member player ID</label>
+        <input type="text" id="borrow-lender" placeholder="paste player uuid" style="width:100%"></div>
+      <div class="unit-row borrow-units">
+        <label>Infantry <input type="number" id="borrow-inf" value="0" min="0"></label>
+        <label>Cavalry  <input type="number" id="borrow-cav" value="0" min="0"></label>
+        <label>Catapults<input type="number" id="borrow-cat" value="0" min="0"></label>
+        <label>Priests  <input type="number" id="borrow-pri" value="0" min="0"></label>
+        <label>Ships    <input type="number" id="borrow-shp" value="0" min="0"></label>
+      </div>
+      <button class="btn-small btn-danger" onclick="borrowArmy()">Mobilise →</button>
+      <div id="borrow-result" class="action-result"></div>
+    </div>
+    {{end}}
+  </section>
+
+  <!-- ── Messengers ───────────────────────────────── -->
+  <section class="panel messengers-panel">
+    <h3>Inbox</h3>
+    <div id="inbox-list"><p class="loading">Loading…</p></div>
+  </section>
+
+</div><!-- /.kingdom-grid -->
+
+{{else}}
+<!-- ── No kingdom ─────────────────────────────────── -->
+<div class="no-kingdom">
+  <h2>No Kingdom</h2>
+  <p>You are not a member of any kingdom. Found one or wait for an invitation.</p>
+
+  <form id="found-form">
+    <div class="field">
+      <label>Kingdom Name</label>
+      <input type="text" id="found-name" required maxlength="40" placeholder="Name your kingdom">
+    </div>
+    <button type="button" class="btn-primary" onclick="foundKingdom()">Found Kingdom</button>
+  </form>
+  <div id="found-result" class="action-result"></div>
+</div>
+{{end}}
+
+</div><!-- /.kingdom-page -->
+
+<style>
+.kingdom-page { display:flex; flex-direction:column; gap:.8rem; }
+
+.kingdom-header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #C0392B; padding-bottom:.5rem; }
+.kh-left { display:flex; align-items:center; gap:.6rem; }
+.kh-name { color:#C0392B; margin:0; font-size:1.4rem; }
+.role-badge { font-family:var(--mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; padding:.15rem .4rem; }
+.role-king    { background:#D4AC0D; color:#1C1C1C; }
+.role-advisor { background:#2E86C1; color:#F2EAD3; }
+.role-member  { background:#F2EAD3; color:#6E2C00; border:1px solid #E67E22; }
+
+.kingdom-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.8rem;
+}
+@media(max-width:700px) { .kingdom-grid { grid-template-columns:1fr; } }
+
+/* Council */
+.council-row { display:flex; align-items:center; gap:.5rem; padding:.3rem 0; border-bottom:1px solid #FAD7A0; font-size:.85rem; }
+.council-row:last-child { border-bottom:none; }
+.c-name { flex:1; }
+.c-role { font-family:var(--mono); font-size:.72rem; padding:.1rem .3rem; }
+
+/* Election */
+.election-active { background:#F9E79F; border:1px solid #D4AC0D; padding:.6rem; margin-bottom:.5rem; }
+.election-inactive { color:#A04000; font-size:.82rem; font-family:var(--mono); }
+.vote-info { font-size:.82rem; color:#1C1C1C; margin-bottom:.5rem; }
+.election-call-wrap .field { margin:.4rem 0; }
+
+/* Armies */
+.army-row { display:flex; align-items:center; gap:.5rem; font-size:.82rem; padding:.3rem 0; border-bottom:1px solid #FAD7A0; }
+.army-row:last-child { border-bottom:none; }
+.arm-name { flex:1; font-weight:bold; }
+.arm-units { font-family:var(--mono); font-size:.75rem; color:#C0392B; }
+.arm-days  { font-size:.72rem; color:#A04000; }
+.borrow-units { display:flex; flex-wrap:wrap; gap:.3rem; margin:.4rem 0; }
+.borrow-units label { display:flex; align-items:center; gap:.3rem; font-size:.8rem; }
+.borrow-units input { width:48px; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem; font-size:.8rem; text-align:center; }
+
+/* Inbox */
+.inbox-item { padding:.4rem 0; border-bottom:1px solid #FAD7A0; font-size:.82rem; }
+.inbox-item:last-child { border-bottom:none; }
+.inbox-from { font-weight:bold; color:#C0392B; }
+.inbox-text { color:#1C1C1C; margin:.2rem 0; font-style:italic; }
+.inbox-meta { font-size:.72rem; color:#A04000; font-family:var(--mono); }
+.inbox-reply-wrap { margin-top:.3rem; display:flex; gap:.3rem; }
+.inbox-reply-wrap input { flex:1; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem .4rem; font-size:.8rem; }
+
+/* No kingdom */
+.no-kingdom { max-width:480px; }
+.no-kingdom .field { margin:.6rem 0; }
+.no-kingdom input { width:100%; background:#FDFEFE; border:2px solid #E67E22; padding:.4rem; font-family:var(--mono); font-size:.9rem; }
+
+.lp-title { font-size:.72rem; color:#A04000; text-transform:uppercase; letter-spacing:.15em; margin-bottom:.3rem; font-family:var(--mono); }
+.loading  { color:#A04000; font-size:.82rem; font-family:var(--mono); }
+.empty-state { color:#A04000; font-size:.82rem; font-family:var(--mono); }
+.action-result { margin-top:.4rem; font-size:.8rem; min-height:1em; color:#C0392B; font-family:var(--mono); }
+.unit-row { display:flex; flex-wrap:wrap; gap:.4rem; margin:.5rem 0; }
+.unit-row label { display:flex; align-items:center; gap:.3rem; font-size:.8rem; }
+.unit-row input  { width:50px; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem; font-size:.8rem; text-align:center; }
+.btn-secondary { background:#F2EAD3; border:1px solid #E67E22; color:#6E2C00; padding:.25rem .6rem; cursor:pointer; font-size:.78rem; font-family:var(--mono); }
+.btn-danger  { background:#922B21; color:#FAD7A0; border:none; padding:.3rem .7rem; cursor:pointer; font-size:.8rem; font-family:var(--mono); }
+</style>
+
+<script>
+const WORLD_ID   = "{{.WorldID}}";
+{{if .HasKingdom}}
+const KINGDOM_ID = "{{.KingdomID}}";
+{{end}}
+
+function apiReq(method, path, body) {
+  const token = localStorage.getItem('thalassa_access');
+  return fetch(path, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? {'Authorization': 'Bearer ' + token} : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+}
+
+function showResult(elId, text, ok) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = ok ? '#D4AC0D' : '#922B21';
+  setTimeout(() => { if(el) el.textContent = ''; }, 5000);
+}
+
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('sv') + ' ' + d.toLocaleTimeString('sv', {hour:'2-digit', minute:'2-digit'});
+}
+
+function daysSince(iso) {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
+
+{{if .HasKingdom}}
+// ── Load council ─────────────────────────────────────────────────────────────
+async function loadCouncil() {
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/council`);
+  const members = await res.json().catch(() => []);
+  const el = document.getElementById('council-list');
+  if (!members.length) { el.innerHTML = '<p class="empty-state">No members.</p>'; return; }
+  el.innerHTML = members.map(m => `
+    <div class="council-row">
+      <span class="c-name">${m.username}</span>
+      <span class="c-role role-badge role-${m.role}">${m.role}</span>
+      <span style="font-size:.72rem;color:#A04000;font-family:var(--mono)">since ${fmtTime(m.joined_at)}</span>
+    </div>`).join('');
+}
+
+// ── Load election status ──────────────────────────────────────────────────────
+let activeElectionID = null;
+let activeCandidateID = null;
+
+async function loadElection() {
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/election`);
+  const data = await res.json().catch(() => ({}));
+  const el = document.getElementById('election-status');
+  const voteWrap = document.getElementById('vote-wrap');
+  const callWrap = document.getElementById('call-election-wrap');
+
+  if (data.active) {
+    activeElectionID = data.election_id;
+    activeCandidateID = data.candidate_id;
+    el.innerHTML = `
+      <div class="election-active">
+        <strong>Candidate:</strong> ${data.candidate_name}<br>
+        <small>Votes: ${data.vote_count}/${data.member_count} · closes ${fmtTime(data.closes_at)}</small>
+      </div>`;
+    if (voteWrap) {
+      voteWrap.style.display = '';
+      document.getElementById('vote-candidate-info').textContent =
+        `Candidate: ${data.candidate_name}`;
+    }
+    if (callWrap) callWrap.style.display = 'none';
+  } else {
+    el.innerHTML = '<p class="election-inactive">No active election.</p>';
+    if (voteWrap) voteWrap.style.display = 'none';
+    if (callWrap) callWrap.style.display = '';
+  }
+}
+
+async function callElection() {
+  const candidateID = document.getElementById('election-candidate').value.trim();
+  const res = await apiReq('POST',
+    `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/election`,
+    {candidate_id: candidateID});
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('election-call-result', `Election called · closes ${fmtTime(data.closes_at)}`, true);
+    loadElection();
+  } else {
+    showResult('election-call-result', data.error || 'failed', false);
+  }
+}
+
+async function castVote(forCandidate) {
+  if (!activeElectionID || !activeCandidateID) return;
+  const res = await apiReq('POST',
+    `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/vote`,
+    {candidate_id: activeCandidateID});
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    const msg = data.resolved ? 'Election resolved!' : 'Vote cast.';
+    showResult('vote-result', msg, true);
+    loadCouncil();
+    loadElection();
+  } else {
+    showResult('vote-result', data.error || 'failed', false);
+  }
+}
+
+// ── Load borrowed armies ──────────────────────────────────────────────────────
+async function loadBorrowedArmies() {
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/borrowed-armies`);
+  const armies = await res.json().catch(() => []);
+  const el = document.getElementById('borrowed-armies');
+  if (!armies.length) { el.innerHTML = '<p class="empty-state">No armies currently borrowed.</p>'; return; }
+  el.innerHTML = armies.map(a => {
+    const days = daysSince(a.borrowed_at);
+    const units = [
+      a.infantry && `${a.infantry} inf`,
+      a.cavalry  && `${a.cavalry} cav`,
+      a.catapult && `${a.catapult} cat`,
+      a.priest   && `${a.priest} pri`,
+      a.ship     && `${a.ship} shp`,
+    ].filter(Boolean).join(' · ');
+    const warn = days >= 14 ? ' ⚠ loyalty penalty' : days >= 7 ? ' ⚠ kharis penalty' : '';
+    return `<div class="army-row">
+      <span class="arm-name">${a.lender_name}</span>
+      <span class="arm-units">${units}</span>
+      <span class="arm-days">day ${days}${warn}</span>
+    </div>`;
+  }).join('');
+}
+
+async function borrowArmy() {
+  const body = {
+    lender_player_id: document.getElementById('borrow-lender').value.trim(),
+    infantry: +document.getElementById('borrow-inf').value || 0,
+    cavalry:  +document.getElementById('borrow-cav').value || 0,
+    catapult: +document.getElementById('borrow-cat').value || 0,
+    priest:   +document.getElementById('borrow-pri').value || 0,
+    ship:     +document.getElementById('borrow-shp').value || 0,
+  };
+  const res = await apiReq('POST',
+    `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/borrow-army`, body);
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('borrow-result', 'Army mobilised.', true);
+    loadBorrowedArmies();
+  } else {
+    showResult('borrow-result', data.error || 'failed', false);
+  }
+}
+
+// ── Load inbox ────────────────────────────────────────────────────────────────
+async function loadInbox() {
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/messengers/inbox`);
+  const msgs = await res.json().catch(() => []);
+  const el = document.getElementById('inbox-list');
+  if (!msgs.length) { el.innerHTML = '<p class="empty-state">No messages.</p>'; return; }
+  el.innerHTML = msgs.map(m => `
+    <div class="inbox-item" id="msg-${m.id}">
+      <div class="inbox-from">From: ${m.from_name} → ${m.to_name}</div>
+      <div class="inbox-text">"${escHtml(m.message)}"</div>
+      <div class="inbox-meta">${fmtTime(m.arrived_at)}</div>
+      <div class="inbox-reply-wrap">
+        <input type="text" id="reply-${m.id}" placeholder="Reply…" maxlength="1000">
+        <button class="btn-small btn-primary" onclick="sendReply('${m.id}')">Reply</button>
+      </div>
+    </div>`).join('');
+}
+
+async function sendReply(msgID) {
+  const replyText = document.getElementById(`reply-${msgID}`).value;
+  const res = await apiReq('POST',
+    `/api/v1/worlds/${WORLD_ID}/messengers/${msgID}/reply`,
+    {reply: replyText});
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    const el = document.getElementById(`msg-${msgID}`);
+    if (el) el.innerHTML += `<div class="inbox-meta">✓ Messenger returning · arrives ${fmtTime(data.returns_at)}</div>`;
+    document.getElementById(`reply-${msgID}`).closest('.inbox-reply-wrap').remove();
+  } else {
+    showResult('', data.error || 'reply failed', false);
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function reloadAll() {
+  loadCouncil();
+  loadElection();
+  loadBorrowedArmies();
+  loadInbox();
+}
+
+document.addEventListener('DOMContentLoaded', reloadAll);
+{{else}}
+// ── Found kingdom ─────────────────────────────────────────────────────────────
+async function foundKingdom() {
+  const name = document.getElementById('found-name').value.trim();
+  if (!name) return;
+  const token = localStorage.getItem('thalassa_access');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/kingdoms`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{})},
+    body: JSON.stringify({name}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('found-result', `Kingdom "${name}" founded!`, true);
+    setTimeout(() => location.reload(), 1200);
+  } else {
+    showResult('found-result', data.error || 'failed', false);
+  }
+}
+{{end}}
+</script>
+{{end}}

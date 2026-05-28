@@ -1,0 +1,31 @@
+{{define "base"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{block "title" .}}Thalassa{{end}}</title>
+  <link rel="stylesheet" href="/static/thalassa.css">
+  <script src="https://unpkg.com/htmx.org@2.0.0/dist/htmx.min.js"></script>
+  <script>
+    // Inject JWT from localStorage on every HTMX request.
+    document.addEventListener('htmx:configRequest', function(e) {
+      const token = localStorage.getItem('thalassa_access');
+      if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
+    });
+  </script>
+</head>
+<body>
+  <nav class="topbar">
+    <a href="/" class="logo">ΘΑΛΑΣΣΑ</a>
+    <div class="nav-links">
+      {{block "nav" .}}<a href="/worlds">Worlds</a>{{end}}
+    </div>
+  </nav>
+  <main>
+    {{block "content" .}}{{end}}
+  </main>
+  <footer>
+    <span>Thalassa — Bronze Age strategy</span>
+  </footer>
+</body>
+</html>{{end}}

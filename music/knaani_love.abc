@@ -1,0 +1,22 @@
+X:12
+T:Kna'ani — Daughter of Tyre
+C:Thalassa OST
+M:3/4
+L:1/8
+Q:1/4=72
+%%MIDI program 73
+%%MIDI channel 1
+V:1 name="Flute" clef=treble
+V:2 name="Lute" clef=treble
+K:Amin
+% Flute instead of trumpet — intimate; the augmented 2nd becomes tender
+V:1
+|: E4 F2 | ^G3 A B2 | A4 ^G2 | E6 |
+   F4 E2 | D2 E2 F2 | ^G4 A2 | E6 :|
+   A4 B2 | c3 B A2 | ^G4 F2 | E6 :|
+V:2
+%%MIDI program 25
+%%MIDI channel 2
+|: [A,,E,]4 z2 | [A,,E,]4 z2 | [A,,E,]4 z2 | [A,,A,]4 z2 |
+   [D,A,]4 z2 | [A,,E,]4 z2 | [E,B,]4 z2 | [A,,A,]4 z2 :|
+   [E,B,]4 z2 | [A,,E,]4 z2 | [E,B,]4 z2 | [A,,A,]4 z2 :|

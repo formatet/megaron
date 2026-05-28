@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>THALASSA — Spelvy</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1B4F72;font-family:'Courier New',monospace;font-size:13px;overflow:hidden;height:100vh;display:flex;flex-direction:column;color:#1C1C1C}
+
+/* ── Topbar ─────────────────────────────────────────── */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;height:36px;background:#F2EAD3;
+  border-bottom:3px solid #C0392B;box-shadow:0 2px 0 #6E2C00;flex-shrink:0}
+.logo{color:#C0392B;font-size:16px;letter-spacing:5px;text-transform:uppercase;font-weight:bold}
+.nav-links{display:flex;gap:0}
+.nav-tab{padding:0 14px;height:36px;display:flex;align-items:center;
+  font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;
+  border-right:1px solid #E67E22;color:#A04000;background:none;border-top:none;border-bottom:none;border-left:none}
+.nav-tab:first-child{border-left:1px solid #E67E22}
+.nav-tab.active{background:#E67E22;color:#FDFEFE}
+.nav-tab:hover:not(.active){background:#FAD7A0}
+.world-info{font-size:10px;color:#A04000;letter-spacing:1px}
+
+/* ── Resource bar ────────────────────────────────────── */
+.resource-bar{display:flex;align-items:center;gap:0;background:#F2EAD3;
+  border-bottom:2px solid #E67E22;height:32px;flex-shrink:0}
+.res{display:flex;align-items:center;gap:5px;padding:0 14px;
+  border-right:1px solid #E67E22;height:100%}
+.res-icon{width:18px;height:18px;image-rendering:pixelated;flex-shrink:0}
+.res-info{display:flex;flex-direction:column;line-height:1.1}
+.res-name{font-size:8px;color:#A04000;text-transform:uppercase;letter-spacing:1px}
+.res-val{font-size:13px;font-weight:bold;color:#C0392B}
+.res-rate{font-size:9px;color:#6E2C00}
+
+/* ── Game layout ─────────────────────────────────────── */
+.game-layout{flex:1;display:flex;min-height:0}
+
+/* ── Left panel ──────────────────────────────────────── */
+.left-panel{width:210px;background:#F2EAD3;border-right:2px solid #E67E22;
+  display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.lp-header{background:#C0392B;color:#FDFEFE;padding:7px 10px}
+.lp-pname{font-size:14px;font-weight:bold;letter-spacing:1px}
+.lp-sub{font-size:9px;color:#FAD7A0;margin-top:1px;letter-spacing:1px}
+.walls-row{display:flex;gap:3px;margin-top:5px}
+.wall-block{width:14px;height:9px;border:1px solid rgba(0,0,0,.3)}
+.wall-on{background:#FAD7A0}.wall-off{background:rgba(255,255,255,.2)}
+
+.lp-section{border-bottom:1px solid #E67E22;padding:8px 10px}
+.lp-title{font-size:9px;color:#A04000;text-transform:uppercase;letter-spacing:2px;margin-bottom:5px}
+.army-row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;font-size:11px}
+.army-icon{width:12px;height:12px;image-rendering:pixelated;flex-shrink:0;margin-right:4px}
+.army-name{flex:1;color:#1C1C1C}
+.army-val{font-weight:bold;color:#C0392B;font-size:12px}
+
+/* Build queue with progress */
+.bq-item{margin-bottom:6px}
+.bq-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px}
+.bq-name{color:#C0392B;font-weight:bold;text-transform:uppercase;letter-spacing:1px}
+.bq-time{color:#6E2C00}
+.bq-bar-wrap{background:#FAD7A0;border:1px solid #E67E22;height:6px}
+.bq-bar{height:100%;background:#C0392B;transition:width 1s linear}
+
+/* Incoming attack warning */
+.attack-warn{background:#922B21;color:#FAD7A0;padding:8px 10px;border-bottom:1px solid #6E2C00}
+.aw-title{font-size:9px;text-transform:uppercase;letter-spacing:2px;margin-bottom:3px;color:#F9E79F}
+.aw-name{font-size:12px;font-weight:bold}
+.aw-detail{font-size:9px;color:#FAD7A0;margin-top:2px}
+.strength-bar{display:flex;gap:2px;margin-top:4px;align-items:center;font-size:9px;color:#FAD7A0}
+.sb-you{height:6px;background:#D4AC0D}
+.sb-them{height:6px;background:#922B21}
+
+.big-btn{display:block;width:100%;padding:8px;font-size:10px;
+  font-family:monospace;letter-spacing:2px;text-transform:uppercase;cursor:pointer;
+  border:none;margin:0}
+.btn-red{background:#C0392B;color:#FAD7A0;border-top:1px solid #6E2C00}
+.btn-red:hover{background:#E74C3C}
+.btn-build{background:#E67E22;color:#FDFEFE;border-top:1px solid #A04000}
+.btn-build:hover{background:#F0B27A;color:#1C1C1C}
+
+/* Buildings list */
+.buildings-wrap{display:flex;flex-wrap:wrap;gap:3px;padding:4px 0}
+.bldg-tag{background:#C0392B;color:#FAD7A0;padding:2px 5px;font-size:8px;letter-spacing:1px}
+.bldg-tag.l2{background:#A04000}
+.bldg-tag.l3{background:#6E2C00}
+
+/* ── Map ─────────────────────────────────────────────── */
+.map-container{flex:1;overflow:hidden;cursor:grab;position:relative;background:#1B4F72}
+.map-container:active{cursor:grabbing}
+#hex-canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+
+/* Zoom */
+.zoom-wrap{position:absolute;bottom:14px;left:14px;display:flex;flex-direction:column;gap:3px;z-index:10}
+.zc{width:28px;height:28px;background:#F2EAD3;border:2px solid #E67E22;
+  box-shadow:1px 1px 0 #6E2C00;color:#C0392B;font-size:15px;font-weight:bold;
+  cursor:pointer;display:flex;align-items:center;justify-content:center}
+.zc:hover{background:#FAD7A0;border-color:#C0392B}
+
+/* Inspect overlay */
+.inspect{position:absolute;top:14px;right:14px;width:190px;
+  background:#F2EAD3;border:2px solid #E67E22;box-shadow:2px 2px 0 #6E2C00;
+  display:none;flex-direction:column;z-index:10}
+.ip-hdr{background:#E67E22;padding:6px 10px;display:flex;justify-content:space-between;align-items:center}
+.ip-name{color:#FDFEFE;font-weight:bold;font-size:13px;letter-spacing:1px}
+.ip-x{background:none;border:none;color:#FDFEFE;cursor:pointer;font-size:16px;line-height:1}
+.ip-body{padding:8px 10px}
+.ip-row{display:flex;justify-content:space-between;padding:3px 0;
+  border-bottom:1px dotted #E67E22;font-size:11px}
+.ip-lbl{color:#A04000;font-size:9px;text-transform:uppercase;letter-spacing:1px}
+.ip-val{color:#1C1C1C;font-weight:bold}
+.ip-foot{padding:8px 10px;border-top:1px solid #E67E22}
+.ip-march{display:block;text-align:center;padding:7px;
+  background:#C0392B;color:#FAD7A0;font-size:10px;letter-spacing:2px;
+  text-transform:uppercase;cursor:pointer;border:none;width:100%}
+.ip-march:hover{background:#E74C3C}
+
+/* Tooltip */
+.tip{position:fixed;background:#1C1C1C;border:1px solid #E67E22;
+  color:#F2EAD3;padding:2px 8px;font-size:10px;pointer-events:none;z-index:200;display:none}
+
+/* ── Notification strip ──────────────────────────────── */
+.notif-strip{position:absolute;bottom:0;left:210px;right:0;
+  background:rgba(242,234,211,.93);border-top:1px solid #E67E22;
+  padding:3px 12px;display:flex;gap:16px;z-index:5;flex-wrap:nowrap;overflow:hidden}
+.notif{display:flex;align-items:center;gap:5px;font-size:10px;color:#6E2C00;white-space:nowrap}
+.nd{width:7px;height:7px;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <span class="logo">THALASSA</span>
+  <div class="nav-links">
+    <button class="nav-tab">Province</button>
+    <button class="nav-tab active">Map</button>
+    <button class="nav-tab">Kingdom</button>
+    <button class="nav-tab">Worlds</button>
+  </div>
+  <span class="world-info">Aigaion · Era I · Prestige 42</span>
+</div>
+
+<!-- Resource bar -->
+<div class="resource-bar">
+  <div class="res">
+    <canvas class="res-icon" id="ic-gold" width="18" height="18"></canvas>
+    <div class="res-info"><span class="res-name">Gold</span><span class="res-val" id="rv-gold">840</span><span class="res-rate" id="rr-gold">+0.5/m</span></div>
+  </div>
+  <div class="res">
+    <canvas class="res-icon" id="ic-food" width="18" height="18"></canvas>
+    <div class="res-info"><span class="res-name">Food</span><span class="res-val" id="rv-food">3240</span><span class="res-rate" id="rr-food">+4.0/m</span></div>
+  </div>
+  <div class="res">
+    <canvas class="res-icon" id="ic-lumber" width="18" height="18"></canvas>
+    <div class="res-info"><span class="res-name">Timber</span><span class="res-val" id="rv-lumber">1180</span><span class="res-rate" id="rr-lumber">+2.0/m</span></div>
+  </div>
+  <div class="res">
+    <canvas class="res-icon" id="ic-stone" width="18" height="18"></canvas>
+    <div class="res-info"><span class="res-name">Stone</span><span class="res-val" id="rv-stone">640</span><span class="res-rate" id="rr-stone">+2.0/m</span></div>
+  </div>
+  <div class="res">
+    <canvas class="res-icon" id="ic-iron" width="18" height="18"></canvas>
+    <div class="res-info"><span class="res-name">Iron</span><span class="res-val" id="rv-iron">320</span><span class="res-rate" id="rr-iron">+1.5/m</span></div>
+  </div>
+  <div class="res">
+    <canvas class="res-icon" id="ic-kharis" width="18" height="18"></canvas>
+    <div class="res-info"><span class="res-name">Kharis</span><span class="res-val" id="rv-kharis">90</span><span class="res-rate" id="rr-kharis">+0.3/m</span></div>
+  </div>
+</div>
+
+<!-- Game -->
+<div class="game-layout">
+
+  <!-- Left panel -->
+  <div class="left-panel">
+    <div class="lp-header">
+      <div class="lp-pname">Tiryns</div>
+      <div class="lp-sub">Akhaier · Mycenaean</div>
+      <div class="walls-row">
+        <div class="wall-block wall-on"></div><div class="wall-block wall-on"></div><div class="wall-block wall-off"></div>
+        <span style="color:#FAD7A0;font-size:9px;margin-left:4px">Walls 2/3</span>
+      </div>
+    </div>
+
+    <div class="attack-warn">
+      <div class="aw-title">⚠ Incoming attack</div>
+      <div class="aw-name">Mideia → Tiryns</div>
+      <div class="aw-detail">200 inf · arrives in <span id="att-timer">34:00</span></div>
+      <div class="strength-bar">
+        <span>You</span>
+        <div class="sb-you" style="width:60px" id="sb-you"></div>
+        <div class="sb-them" style="width:40px" id="sb-them"></div>
+        <span>Enemy</span>
+      </div>
+    </div>
+
+    <div class="lp-section">
+      <div class="lp-title">Army</div>
+      <div class="army-row"><canvas class="army-icon" id="ai-inf" width="12" height="12"></canvas><span class="army-name">Infantry</span><span class="army-val">240</span></div>
+      <div class="army-row"><canvas class="army-icon" id="ai-cav" width="12" height="12"></canvas><span class="army-name">Cavalry</span><span class="army-val">40</span></div>
+      <div class="army-row"><canvas class="army-icon" id="ai-cat" width="12" height="12"></canvas><span class="army-name">Catapults</span><span class="army-val">4</span></div>
+      <div class="army-row"><canvas class="army-icon" id="ai-wiz" width="12" height="12"></canvas><span class="army-name">Priests</span><span class="army-val">2</span></div>
+      <div class="army-row"><canvas class="army-icon" id="ai-shp" width="12" height="12"></canvas><span class="army-name">Ships</span><span class="army-val">8</span></div>
+    </div>
+
+    <div class="lp-section">
+      <div class="lp-title">Construction</div>
+      <div class="bq-item">
+        <div class="bq-row"><span class="bq-name">Barracks</span><span class="bq-time" id="bq1-t">22:00</span></div>
+        <div class="bq-bar-wrap"><div class="bq-bar" id="bq1-bar" style="width:35%"></div></div>
+      </div>
+      <div class="bq-item">
+        <div class="bq-row"><span class="bq-name">Farm</span><span class="bq-time" id="bq2-t">44:00</span></div>
+        <div class="bq-bar-wrap"><div class="bq-bar" id="bq2-bar" style="width:14%"></div></div>
+      </div>
+    </div>
+
+    <button class="big-btn btn-build" onclick="alert('Build UI — select building type')">+ Queue Build</button>
+
+    <div class="lp-section">
+      <div class="lp-title">Buildings</div>
+      <div class="buildings-wrap">
+        <span class="bldg-tag l2">Farm ×2</span>
+        <span class="bldg-tag">Lumbermill</span>
+        <span class="bldg-tag">Quarry</span>
+        <span class="bldg-tag l2">Wall ×2</span>
+        <span class="bldg-tag">Market</span>
+      </div>
+    </div>
+
+    <div style="flex:1"></div>
+    <button class="big-btn btn-red" onclick="alert('Select target on map first')">⚔ Send Army →</button>
+  </div>
+
+  <!-- Map -->
+  <div class="map-container" id="map-root">
+    <canvas id="hex-canvas"></canvas>
+
+    <!-- Inspect overlay -->
+    <div class="inspect" id="inspect">
+      <div class="ip-hdr">
+        <span class="ip-name" id="ip-name">Nauplia</span>
+        <button class="ip-x" onclick="closeInspect()">✕</button>
+      </div>
+      <div class="ip-body">
+        <div class="ip-row"><span class="ip-lbl">Culture</span><span class="ip-val" id="ip-culture">Akhaier</span></div>
+        <div class="ip-row"><span class="ip-lbl">Owner</span><span class="ip-val" id="ip-owner">Demetrios</span></div>
+        <div class="ip-row"><span class="ip-lbl">Kingdom</span><span class="ip-val" id="ip-kingdom">⚑ Argos</span></div>
+        <div class="ip-row"><span class="ip-lbl">Walls</span><span class="ip-val" id="ip-walls">▓▓░</span></div>
+        <div class="ip-row"><span class="ip-lbl">Army</span><span class="ip-val" id="ip-army">180 inf · 20 cav</span></div>
+        <div class="ip-row"><span class="ip-lbl">Threat</span><span class="ip-val" id="ip-threat" style="color:#922B21">⚔ hostile</span></div>
+      </div>
+      <div class="ip-foot">
+        <button class="ip-march">March Here →</button>
+      </div>
+    </div>
+
+    <!-- Zoom buttons -->
+    <div class="zoom-wrap">
+      <button class="zc" onclick="zoom(1.25)">+</button>
+      <button class="zc" onclick="zoom(0.8)">−</button>
+      <button class="zc" onclick="resetView()">⌂</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification strip (inside game-layout's map area, fixed at bottom) -->
+<div class="notif-strip" style="position:absolute;bottom:0;left:210px;right:0;">
+  <div class="notif"><div class="nd" style="background:#922B21"></div>Army from Mideia · attack · 34 min</div>
+  <div class="notif"><div class="nd" style="background:#E67E22"></div>Barracks: 22 min</div>
+  <div class="notif"><div class="nd" style="background:#2E86C1"></div>Aigaion · Era I · 18 players active</div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  THALASSA — Settlers 2 style game-view preview
+//  Die Siedler inspiration: warm inhabited landscape, round
+//  tree canopies, limestone cliffs, dirt roads, cozy early-90s
+// ═══════════════════════════════════════════════════════════════
+
+// ── Pixel-art resource icons ──────────────────────────────────
+function px(ctx, x, y, c){ ctx.fillStyle=c; ctx.fillRect(x,y,1,1); }
+function r(ctx,x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+
+const ICON_PAINTERS = {
+  gold(ctx){
+    r(ctx,5,6,8,8,'#CA8A04'); r(ctx,6,5,6,1,'#CA8A04'); r(ctx,7,4,4,1,'#F9E79F');
+    r(ctx,6,5,6,2,'#F9E79F'); r(ctx,5,7,8,2,'#D4AC0D');
+    r(ctx,7,8,4,4,'#CA8A04'); r(ctx,8,9,2,2,'#F9E79F');
+    r(ctx,5,6,1,2,'#6E2C00'); r(ctx,12,6,1,8,'#6E2C00'); r(ctx,5,14,8,1,'#6E2C00');
+  },
+  food(ctx){
+    // wheat sheaf
+    r(ctx,8,12,2,4,'#A04000');
+    r(ctx,6,8,2,5,'#D4AC0D'); r(ctx,10,8,2,5,'#D4AC0D');
+    r(ctx,7,5,4,4,'#D4AC0D'); r(ctx,8,3,2,3,'#F9E79F');
+    r(ctx,6,4,1,1,'#D4AC0D'); r(ctx,11,4,1,1,'#D4AC0D');
+    r(ctx,8,12,2,1,'#6E2C00');
+  },
+  lumber(ctx){
+    // logs
+    r(ctx,3,12,12,4,'#A04000'); r(ctx,3,8,12,4,'#C0392B');
+    r(ctx,2,11,1,6,'#6E2C00'); r(ctx,15,11,1,6,'#6E2C00');
+    r(ctx,3,12,12,1,'#6E2C00');
+    r(ctx,4,7,10,1,'#F0B27A'); r(ctx,4,11,10,1,'#F0B27A');
+    // axe
+    r(ctx,11,3,4,3,'#A04000'); r(ctx,13,2,2,6,'#6E2C00'); r(ctx,12,4,2,1,'#F0B27A');
+  },
+  stone(ctx){
+    r(ctx,4,10,10,6,'#F2EAD3'); r(ctx,3,11,11,4,'#F2EAD3');
+    r(ctx,5,8,8,3,'#FDFEFE');  r(ctx,7,6,4,3,'#FDFEFE');
+    r(ctx,4,10,1,6,'#6E2C00'); r(ctx,13,10,1,6,'#6E2C00'); r(ctx,4,16,10,1,'#6E2C00');
+    r(ctx,5,8,1,3,'#6E2C00'); r(ctx,12,8,1,3,'#6E2C00'); r(ctx,5,11,1,1,'#6E2C00');
+    r(ctx,5,10,8,1,'#F0B27A'); // sun highlight
+  },
+  iron(ctx){
+    // sword + shield
+    r(ctx,8,2,2,14,'#F2EAD3'); r(ctx,6,4,6,2,'#F2EAD3');
+    r(ctx,7,2,4,1,'#FDFEFE'); r(ctx,8,15,2,2,'#A04000');
+    r(ctx,7,1,4,1,'#6E2C00'); r(ctx,6,2,2,1,'#6E2C00'); r(ctx,10,2,2,1,'#6E2C00');
+    // shield mini
+    r(ctx,12,8,5,6,'#2E86C1'); r(ctx,13,7,3,1,'#2E86C1'); r(ctx,13,14,3,2,'#1B4F72');
+    r(ctx,12,8,1,6,'#6E2C00'); r(ctx,16,8,1,6,'#6E2C00'); r(ctx,13,7,3,1,'#6E2C00');
+  },
+  kharis(ctx){
+    // flame / magic orb
+    r(ctx,7,12,4,4,'#6C3483'); r(ctx,6,9,6,4,'#6C3483'); r(ctx,7,7,4,3,'#86198F');
+    r(ctx,8,5,2,3,'#AED6F1'); r(ctx,7,6,4,2,'#AED6F1');
+    r(ctx,8,3,2,3,'#FDFEFE'); r(ctx,9,2,1,2,'#F9E79F');
+    r(ctx,7,12,4,1,'#1C1C1C'); r(ctx,6,9,1,4,'#1C1C1C'); r(ctx,11,9,1,4,'#1C1C1C');
+  },
+};
+
+function drawIcons(){
+  const pairs=[['gold','#CA8A04'],['food','#D4AC0D'],['lumber','#A04000'],['stone','#F2EAD3'],['iron','#F2EAD3'],['kharis','#6C3483']];
+  pairs.forEach(([k])=>{
+    const c=document.getElementById('ic-'+k);
+    if(!c)return;
+    const x=c.getContext('2d');
+    x.imageSmoothingEnabled=false;
+    ICON_PAINTERS[k](x);
+  });
+  // Army icons (12×12)
+  const armyIcons=[
+    ['ai-inf',()=>{const x=document.getElementById('ai-inf').getContext('2d');r(x,4,2,4,3,'#F2EAD3');r(x,5,5,2,6,'#F0B27A');r(x,3,7,6,1,'#C0392B');r(x,4,8,4,3,'#F0B27A');}],
+    ['ai-cav',()=>{const x=document.getElementById('ai-cav').getContext('2d');r(x,6,1,4,4,'#F2EAD3');r(x,2,5,8,3,'#C0392B');r(x,3,8,2,3,'#A04000');r(x,8,8,2,3,'#A04000');}],
+    ['ai-cat',()=>{const x=document.getElementById('ai-cat').getContext('2d');r(x,1,7,10,3,'#A04000');r(x,8,3,3,5,'#6E2C00');r(x,1,9,2,2,'#6E2C00');r(x,9,9,2,2,'#6E2C00');}],
+    ['ai-wiz',()=>{const x=document.getElementById('ai-wiz').getContext('2d');r(x,4,0,4,3,'#86198F');r(x,5,3,2,8,'#6C3483');px(x,5,2,'#F9E79F');}],
+    ['ai-shp',()=>{const x=document.getElementById('ai-shp').getContext('2d');r(x,2,6,8,4,'#A04000');r(x,6,2,1,5,'#6E2C00');r(x,7,3,3,3,'#F2EAD3');}],
+  ];
+  armyIcons.forEach(([,fn])=>fn());
+}
+drawIcons();
+
+// ══════════════════════════════════════════════════════════════
+//  MAP RENDERER — Settlers 2 aesthetic
+//  Warm, inhabited, round-edged, detailed per tile
+// ══════════════════════════════════════════════════════════════
+
+const S=22;  // hex size
+const SCALE=2;
+
+const CULTURE_ACCENT={
+  akhaier:'#CA8A04',khemetiu:'#0E7490',knaani:'#86198F',
+  thrakes:'#1D4ED8',pelasger:'#92400E',hatti:'#374151'
+};
+
+function hexPx(q,r){return{x:Math.round(S*1.5*q),y:Math.round(S*Math.sqrt(3)*(r+q/2))};}
+function hexPts(cx,cy){const p=[];for(let i=0;i<6;i++){const a=Math.PI/3*i;p.push([Math.round(cx+S*Math.cos(a)),Math.round(cy+S*Math.sin(a))]);}return p;}
+function hexAt(sx,sy){
+  const wx=(sx-cam.x)/(cam.z*SCALE),wy=(sy-cam.y)/(cam.z*SCALE);
+  const q=(2/3*wx)/S,rr=(-1/3*wx+Math.sqrt(3)/3*wy)/S,s=-q-rr;
+  let rq=Math.round(q),rrr=Math.round(rr),rs=Math.round(s);
+  const dq=Math.abs(rq-q),dr=Math.abs(rrr-rr),ds=Math.abs(rs-s);
+  if(dq>dr&&dq>ds)rq=-rrr-rs;else if(dr>ds)rrr=-rq-rs;
+  return{q:rq,r:rrr};
+}
+
+// ── Palette — Settlers 2 / early 90s PC warmth ────────────────
+// Greens are warm Mediterranean (olive, dry grass)
+// Not cold northern European forest greens
+const TERRAIN_BASE = {
+  sea:       {c0:'#2E86C1',c1:'#1B4F72'},
+  coast:     {c0:'#E8C97A',c1:'#D4B060'},
+  plains:    {c0:'#8AAF3A',c1:'#74952C'},
+  forest:    {c0:'#5A8C30',c1:'#447020'},
+  hills:     {c0:'#C8A464',c1:'#B08C50'},
+  mountain:  {c0:'#E0D4B8',c1:'#C8BCA0'},
+  fog:       {c0:'#1C1C1C',c1:'#252018'},
+};
+
+// Fill hex with 2-colour dither for texture depth
+function fillHex(ctx,pts,c0,c1,seed){
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<6;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.closePath();ctx.clip();
+  for(let py=y0;py<=y1;py++)for(let px=x0;px<=x1;px++){
+    ctx.fillStyle=((px+py)&1)^((seed>>2)&1)?c1:c0;
+    ctx.fillRect(px,py,1,1);
+  }
+  ctx.restore();
+  ctx.strokeStyle='#1C1C1C';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<6;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.closePath();ctx.stroke();
+}
+
+// ── Rich terrain detail — Settlers 2 quality ─────────────────
+function drawDetail(ctx,cx,cy,terrain,seed,frame){
+  const rng=(n)=>(seed*n^(n*37))&255;
+  ctx.save();
+  switch(terrain){
+    case 'sea':{
+      // Animated wave crests — 2 frame shimmer
+      const phase=(frame>>5)&1;
+      ctx.fillStyle='#5DADE2';
+      if(phase===0){
+        ctx.fillRect(cx-8,cy-2,5,1); ctx.fillRect(cx+3,cy+3,5,1);
+        ctx.fillRect(cx-6,cy+6,4,1);
+      }else{
+        ctx.fillRect(cx-7,cy-1,5,1); ctx.fillRect(cx+4,cy+4,5,1);
+        ctx.fillRect(cx-5,cy+5,4,1);
+      }
+      // Depth pixel
+      ctx.fillStyle='#1B4F72';
+      ctx.fillRect(cx+2,cy-4,2,2);
+      break;}
+
+    case 'coast':{
+      // Sandy beach with water edge
+      ctx.fillStyle='#FAD7A0'; ctx.fillRect(cx-9,cy+4,19,9);   // sand
+      ctx.fillStyle='#E8C97A'; ctx.fillRect(cx-7,cy+6,5,2);   // sand darker
+      // Shallow water fringe
+      ctx.fillStyle='#5DADE2'; ctx.fillRect(cx-9,cy,19,5);
+      ctx.fillStyle='#AED6F1'; ctx.fillRect(cx-8,cy+2,4,1); ctx.fillRect(cx+3,cy+1,5,1);
+      // Pebble dots on sand
+      ctx.fillStyle='#C8A464';
+      ctx.fillRect(cx-5,cy+7,2,1); ctx.fillRect(cx+2,cy+9,2,1); ctx.fillRect(cx+5,cy+7,1,1);
+      break;}
+
+    case 'plains':{
+      // Dry Mediterranean grass — ochre-green tufts
+      // Ground dots
+      ctx.fillStyle='#5A8000';
+      const tufts=[[cx-7,cy-2],[cx-2,cy+3],[cx+4,cy-4],[cx-5,cy+6],[cx+7,cy+2],[cx,cy-6]];
+      for(const[tx,ty]of tufts.slice(0,3+(seed%3))){
+        ctx.fillRect(tx,ty,1,2); ctx.fillRect(tx-1,ty+1,3,1);
+      }
+      // Poppy-like dot (1 red pixel occasionally)
+      if((seed&15)<4){ctx.fillStyle='#C0392B';ctx.fillRect(cx+(rng(3)%13)-6,cy+(rng(5)%9)-4,1,1);}
+      break;}
+
+    case 'forest':{
+      // Olive trees! Mediterranean style
+      // Settle 2-style: 2-3 round canopy blobs per hex, warm silvery-green
+      const trees=[[cx-6,cy-1],[cx+4,cy-4],[cx-1,cy+5]].slice(0,2+(seed%2));
+      for(const[tx,ty]of trees){
+        // Shadow
+        ctx.fillStyle='#44601A'; ctx.fillRect(tx-4,ty+2,10,7);
+        // Main canopy — rounded blob
+        ctx.fillStyle='#6A9A30'; ctx.fillRect(tx-5,ty-1,11,8);
+        ctx.fillStyle='#7CAA3A'; ctx.fillRect(tx-4,ty-3,9,6);
+        ctx.fillStyle='#90BC50'; ctx.fillRect(tx-3,ty-4,7,5);
+        // Olive-grey highlight (Mediterranean olive tree)
+        ctx.fillStyle='#A8BC78'; ctx.fillRect(tx-3,ty-4,4,2); ctx.fillRect(tx-2,ty-5,3,1);
+        // Dark outline pixels
+        ctx.fillStyle='#2A4010'; ctx.fillRect(tx-5,ty-1,1,8); ctx.fillRect(tx+5,ty-1,1,8);
+        ctx.fillRect(tx-4,ty-2,1,1); ctx.fillRect(tx+3,ty-4,1,1);
+        // Trunk
+        ctx.fillStyle='#6E2C00'; ctx.fillRect(tx-1,ty+6,2,5);
+      }
+      // Ground between trees
+      ctx.fillStyle='#447020'; ctx.fillRect(cx-2,cy+8,5,3);
+      break;}
+
+    case 'hills':{
+      // Limestone hills — warm sandy grey with vegetation patches
+      // Two overlapping hill shapes
+      // Hill 1
+      ctx.fillStyle='#B08C50'; ctx.fillRect(cx-10,cy+3,12,9);
+      ctx.fillStyle='#C8A464'; ctx.fillRect(cx-9,cy+1,10,4);
+      ctx.fillStyle='#D8B878'; ctx.fillRect(cx-8,cy-1,8,3);
+      ctx.fillStyle='#E8D090'; ctx.fillRect(cx-7,cy-3,6,3);  // sunlit top
+      // Hill 2
+      ctx.fillStyle='#B08C50'; ctx.fillRect(cx+1,cy+5,10,7);
+      ctx.fillStyle='#C8A464'; ctx.fillRect(cx+2,cy+2,8,4);
+      ctx.fillStyle='#D8B878'; ctx.fillRect(cx+3,cy,6,3);
+      // Shadow edges
+      ctx.fillStyle='#6E2C00'; ctx.fillRect(cx-10,cy+3,1,9); ctx.fillRect(cx+10,cy+5,1,7);
+      ctx.fillRect(cx-9,cy+1,1,3); ctx.fillRect(cx+9,cy+2,1,4);
+      // Rock crack
+      ctx.fillStyle='#8C7050'; ctx.fillRect(cx-4,cy,1,4); ctx.fillRect(cx+4,cy+2,1,3);
+      // Scrub bush
+      ctx.fillStyle='#7A9030'; ctx.fillRect(cx-6,cy+4,3,2); ctx.fillRect(cx+5,cy+6,3,2);
+      break;}
+
+    case 'mountain':{
+      // Dramatic limestone cliff — Settlers 2 style
+      // Base slope
+      ctx.fillStyle='#C8BCA0'; ctx.fillRect(cx-10,cy+4,21,8);
+      // Mid level
+      ctx.fillStyle='#D8CEB4'; ctx.fillRect(cx-8,cy,17,5);
+      ctx.fillStyle='#E8DECC'; ctx.fillRect(cx-6,cy-4,13,5);
+      // Upper peak
+      ctx.fillStyle='#F0E8D4'; ctx.fillRect(cx-4,cy-7,9,4);
+      ctx.fillStyle='#F8F4EC'; ctx.fillRect(cx-3,cy-9,7,3);
+      // Snow cap
+      ctx.fillStyle='#FDFEFE'; ctx.fillRect(cx-2,cy-11,5,3);
+      ctx.fillStyle='#E8F0F8'; ctx.fillRect(cx-1,cy-12,3,2);
+      // Shadow face (right side)
+      ctx.fillStyle='#6E2C00'; ctx.fillRect(cx+8,cy,3,12); ctx.fillRect(cx+6,cy-4,3,5); ctx.fillRect(cx+4,cy-7,3,4);
+      // Rock ledge details
+      ctx.fillStyle='#9A907C'; ctx.fillRect(cx-8,cy,1,5); ctx.fillRect(cx-6,cy-4,1,5); ctx.fillRect(cx-4,cy-7,1,4);
+      // Snow highlight
+      ctx.fillStyle='#FDFEFE'; ctx.fillRect(cx-3,cy-9,4,1);
+      break;}
+  }
+  ctx.restore();
+}
+
+// ── Road/path renderer (Settlers-style dirt paths) ────────────
+function drawRoad(ctx, ax, ay, bx, by){
+  ctx.save();
+  ctx.strokeStyle='#A07040';
+  ctx.lineWidth=2;
+  ctx.setLineDash([3,2]);
+  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+  ctx.strokeStyle='#D4AC0D';
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+// ── Province marker — flag + building sprite ──────────────────
+function drawProvince(ctx, cx, cy, p){
+  // Building footprint (blends into terrain)
+  const bw=14, bh=10;
+  const bx=cx-7, by=cy-6;
+  // Walls
+  ctx.fillStyle= p.own ? '#FDFEFE' : '#F2EAD3';
+  ctx.fillRect(bx,by,bw,bh);
+  // Sun-facing side lighter
+  ctx.fillStyle='#FDFEFE'; ctx.fillRect(bx,by,7,bh);
+  // Shade side
+  ctx.fillStyle='#E0D0B0'; ctx.fillRect(bx+10,by,4,bh);
+  // Fired-clay roof
+  ctx.fillStyle=p.own?'#CA8A04':(p.allied?CULTURE_ACCENT[p.culture]||'#C0392B':'#C0392B');
+  ctx.fillRect(bx-1,by-4,bw+2,5);
+  ctx.fillStyle='#E67E22'; ctx.fillRect(bx-1,by-4,bw+2,2); // sun highlight on roof
+  // Door
+  ctx.fillStyle='#6E2C00'; ctx.fillRect(cx-2,by+4,4,bh-4);
+  // Window
+  ctx.fillStyle='#AED6F1'; ctx.fillRect(bx+3,by+2,3,3);
+  ctx.fillStyle='#6E2C00'; ctx.fillRect(bx+3,by+2,1,3); ctx.fillRect(bx+3,by+2,3,1);
+  // Outline
+  ctx.strokeStyle='#1C1C1C'; ctx.lineWidth=1;
+  ctx.strokeRect(bx,by,bw,bh);
+  // Flag pole
+  ctx.fillStyle='#F2EAD3'; ctx.fillRect(cx+6,cy-14,1,12);
+  // Banner
+  ctx.fillStyle=p.own?'#CA8A04':(p.allied?CULTURE_ACCENT[p.culture]||'#C0392B':'#C0392B');
+  ctx.fillRect(cx+7,cy-14,8,5);
+  ctx.fillStyle='#1C1C1C'; ctx.fillRect(cx+7,cy-9,8,1);
+  // Wall pip indicators
+  for(let i=0;i<p.walls;i++){ctx.fillStyle='#F2EAD3';ctx.fillRect(cx-4+i*5,cy+S-2,3,4);ctx.fillStyle='#6E2C00';ctx.fillRect(cx-4+i*5,cy+S-2,1,4);}
+}
+
+// ── Province name label ───────────────────────────────────────
+function drawLabel(ctx, cx, cy, text, own){
+  ctx.save();
+  ctx.font='7px monospace'; ctx.textAlign='center';
+  ctx.fillStyle='#1C1C1C'; ctx.fillText(text,cx+1,cy+S+13);
+  ctx.fillStyle=own?'#F9E79F':'#F2EAD3'; ctx.fillText(text,cx,cy+S+12);
+  ctx.restore();
+}
+
+// ── Walking settler figure ────────────────────────────────────
+function drawWalker(ctx, x, y, intent, walkPhase){
+  // 8×10 pixel figure — Settlers-style worker
+  ctx.save();
+  ctx.fillStyle=intent==='attack'?'#922B21':'#2E86C1';
+  // Body
+  ctx.fillRect(x-2,y-3,4,5);
+  // Head
+  ctx.fillStyle='#F0B27A'; ctx.fillRect(x-1,y-6,3,3);
+  // Legs (alternating walk cycle)
+  ctx.fillStyle='#6E2C00';
+  if(walkPhase<2){ctx.fillRect(x-2,y+2,2,3);ctx.fillRect(x,y+1,2,3);}
+  else{ctx.fillRect(x-2,y+1,2,3);ctx.fillRect(x,y+2,2,3);}
+  // Weapon/tool
+  if(intent==='attack'){ctx.fillStyle='#F2EAD3';ctx.fillRect(x+2,y-5,1,7);}
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  MAP DATA
+// ══════════════════════════════════════════════════════════════
+const TILES=[
+  [-6,0,'sea'],[-6,1,'sea'],[-6,2,'sea'],[-6,3,'sea'],
+  [-5,-1,'sea'],[-5,0,'sea'],[-5,1,'coast'],[-5,2,'coast'],[-5,3,'sea'],[-5,4,'sea'],
+  [-4,-1,'sea'],[-4,0,'coast'],[-4,1,'plains'],[-4,2,'plains'],[-4,3,'coast'],[-4,4,'sea'],
+  [-3,-2,'sea'],[-3,-1,'coast'],[-3,0,'plains'],[-3,1,'forest'],[-3,2,'hills'],[-3,3,'coast'],[-3,4,'sea'],
+  [-2,-2,'sea'],[-2,-1,'plains'],[-2,0,'plains'],[-2,1,'forest'],[-2,2,'hills'],[-2,3,'mountain'],[-2,4,'coast'],
+  [-1,-3,'sea'],[-1,-2,'coast'],[-1,-1,'plains'],[-1,0,'plains'],[-1,1,'plains'],[-1,2,'hills'],[-1,3,'mountain'],
+  [0,-3,'sea'],[0,-2,'coast'],[0,-1,'plains'],[0,0,'plains'],[0,1,'plains'],[0,2,'hills'],[0,3,'mountain'],
+  [1,-3,'sea'],[1,-2,'sea'],[1,-1,'coast'],[1,0,'plains'],[1,1,'forest'],[1,2,'hills'],[1,3,'coast'],
+  [2,-2,'sea'],[2,-1,'sea'],[2,0,'coast'],[2,1,'plains'],[2,2,'forest'],[2,3,'coast'],[2,4,'sea'],
+  [3,-1,'sea'],[3,0,'sea'],[3,1,'coast'],[3,2,'plains'],[3,3,'coast'],[3,4,'sea'],
+  [4,-1,'sea'],[4,0,'sea'],[4,1,'sea'],[4,2,'coast'],[4,3,'sea'],
+  [5,0,'sea'],[5,1,'sea'],[5,2,'sea'],
+];
+
+const PROVINCES=[
+  {q:-3,r:1,name:'Tiryns',  culture:'akhaier',  owner:'Alkibiades',kingdom:'Argos',walls:2,own:true, allied:false},
+  {q:-2,r:0,name:'Nauplia', culture:'akhaier',  owner:'Demetrios', kingdom:'Argos',walls:2,own:false,allied:true},
+  {q:-1,r:1,name:'Mideia',  culture:'akhaier',  owner:'Kleonikos', kingdom:null,   walls:1,own:false,allied:false},
+  {q:0, r:0,name:'Argos',   culture:'akhaier',  owner:'Eudoxia',   kingdom:'Argos',walls:3,own:false,allied:true},
+  {q:1, r:1,name:'Asine',   culture:'pelasger', owner:'Rhodanthe', kingdom:null,   walls:1,own:false,allied:false},
+  {q:-3,r:3,name:'Lerna',   culture:'akhaier',  owner:'Peristera', kingdom:'Argos',walls:1,own:false,allied:true},
+  {q:2, r:2,name:'Hermione',culture:'thrakes',  owner:'Brasidas',  kingdom:null,   walls:0,own:false,allied:false},
+];
+
+// Roads: pairs of province names to draw paths between
+const ROADS=[
+  ['Tiryns','Nauplia'],['Tiryns','Lerna'],['Nauplia','Argos'],
+  ['Argos','Mideia'],['Argos','Asine'],
+];
+
+// Walkers: animated figures on the map
+const WALKERS=[
+  {from:{q:-1,r:1},to:{q:-3,r:1},intent:'attack', t:0.45},
+  {from:{q:-3,r:1},to:{q:0, r:0},intent:'support',t:0.2},
+  {from:{q:-3,r:3},to:{q:-3,r:1},intent:'support',t:0.6},
+];
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER ENGINE
+// ══════════════════════════════════════════════════════════════
+const canvas=document.getElementById('hex-canvas');
+const container=document.getElementById('map-root');
+const tip=document.getElementById('tip');
+const ctx=canvas.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+
+let cam={x:0,y:0,z:1};
+let drag=false,lm=null,sel=null,frame=0;
+
+function resize(){
+  canvas.width=container.clientWidth;
+  canvas.height=container.clientHeight;
+  centre();
+}
+function centre(){
+  let sx=0,sy=0,n=0;
+  for(const[q,r]of TILES.filter(t=>t[2]!=='sea')){const{x,y}=hexPx(q,r);sx+=x;sy+=y;n++;}
+  cam.x=canvas.width/2-(sx/n)*SCALE;
+  cam.y=canvas.height/2-(sy/n)*SCALE-20;
+}
+resize();window.addEventListener('resize',resize);
+
+function provByName(n){return PROVINCES.find(p=>p.name===n);}
+
+function render(){
+  frame++;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.translate(cam.x,cam.y);
+  ctx.scale(cam.z*SCALE,cam.z*SCALE);
+
+  // 1. Terrain
+  for(const[q,r,t]of TILES){
+    const{x,y}=hexPx(q,r);
+    const pts=hexPts(x,y);
+    const seed=(q*137+r*31)&0xff;
+    const b=TERRAIN_BASE[t]||TERRAIN_BASE.fog;
+    fillHex(ctx,pts,b.c0,b.c1,seed);
+    if(t!=='fog')drawDetail(ctx,x,y,t,seed,frame);
+  }
+
+  // 2. Roads (dirt paths between allied/own provinces)
+  if(cam.z>=0.5){
+    for(const[a,b]of ROADS){
+      const pa=provByName(a),pb=provByName(b);
+      if(!pa||!pb)continue;
+      const fa=hexPx(pa.q,pa.r),fb=hexPx(pb.q,pb.r);
+      drawRoad(ctx,fa.x,fa.y,fb.x,fb.y);
+    }
+  }
+
+  // 3. Selected hex highlight
+  if(sel){
+    const{x,y}=hexPx(sel.q,sel.r);
+    const pts=hexPts(x,y);
+    ctx.save();
+    ctx.strokeStyle='#F9E79F';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<6;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.closePath();ctx.stroke();
+    ctx.restore();
+  }
+
+  // 4. Province buildings + flags
+  for(const p of PROVINCES){
+    const{x,y}=hexPx(p.q,p.r);
+    drawProvince(ctx,x,y,p);
+    if(cam.z>=0.55)drawLabel(ctx,x,y,p.name,p.own);
+  }
+
+  // 5. Animated walkers
+  const walkPhase=Math.floor(frame/8)%4;
+  for(const w of WALKERS){
+    const progress=(w.t+(frame*0.0005))%1;
+    const fp=hexPx(w.from.q,w.from.r),tp=hexPx(w.to.q,w.to.r);
+    const wx=Math.round(fp.x+(tp.x-fp.x)*progress);
+    const wy=Math.round(fp.y+(tp.y-fp.y)*progress);
+    drawWalker(ctx,wx,wy,w.intent,walkPhase);
+  }
+
+  ctx.restore();
+  requestAnimationFrame(render);
+}
+render();
+
+// ── Inspect panel ─────────────────────────────────────────────
+function openInspect(p){
+  sel={q:p.q,r:p.r};
+  document.getElementById('ip-name').textContent=p.name;
+  document.getElementById('ip-culture').textContent=p.culture.charAt(0).toUpperCase()+p.culture.slice(1);
+  document.getElementById('ip-owner').textContent=p.owner;
+  document.getElementById('ip-kingdom').textContent=p.kingdom?'⚑ '+p.kingdom:'—';
+  document.getElementById('ip-walls').textContent='▓'.repeat(p.walls)+'░'.repeat(3-p.walls);
+  document.getElementById('ip-army').textContent=p.own?'your province':'~180 inf · 20 cav';
+  document.getElementById('ip-threat').textContent=p.own?'—':(!p.allied?'⚔ hostile':'⚑ allied');
+  document.getElementById('ip-threat').style.color=p.allied?'#D4AC0D':'#922B21';
+  document.getElementById('inspect').style.display='flex';
+}
+function closeInspect(){sel=null;document.getElementById('inspect').style.display='none';}
+
+// ── Zoom ──────────────────────────────────────────────────────
+function zoom(f){
+  const cx=canvas.width/2,cy=canvas.height/2;
+  cam.x=cx+(cam.x-cx)*f;cam.y=cy+(cam.y-cy)*f;
+  cam.z=Math.min(6,Math.max(0.15,cam.z*f));
+}
+function resetView(){cam.z=1;centre();}
+
+// ── Input ─────────────────────────────────────────────────────
+canvas.addEventListener('mousedown',e=>{drag=true;lm={x:e.clientX,y:e.clientY};});
+canvas.addEventListener('mouseup',e=>{
+  const dx=e.clientX-lm.x,dy=e.clientY-lm.y;
+  drag=false;
+  if(Math.abs(dx)<5&&Math.abs(dy)<5){
+    const rect=canvas.getBoundingClientRect();
+    const h=hexAt(e.clientX-rect.left,e.clientY-rect.top);
+    const p=PROVINCES.find(p=>p.q===h.q&&p.r===h.r);
+    if(p)openInspect(p);else closeInspect();
+  }
+});
+canvas.addEventListener('mouseleave',()=>drag=false);
+canvas.addEventListener('mousemove',e=>{
+  if(drag&&lm){cam.x+=e.clientX-lm.x;cam.y+=e.clientY-lm.y;lm={x:e.clientX,y:e.clientY};}
+  const rect=canvas.getBoundingClientRect();
+  const h=hexAt(e.clientX-rect.left,e.clientY-rect.top);
+  const t=TILES.find(t=>t[0]===h.q&&t[1]===h.r);
+  const p=PROVINCES.find(p=>p.q===h.q&&p.r===h.r);
+  if(t&&t[2]!=='fog'){
+    tip.style.display='block';
+    tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-20)+'px';
+    tip.textContent=p?`${p.name} · ${t[2]}`:`(${h.q},${h.r}) ${t[2]}`;
+  }else{tip.style.display='none';}
+});
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  const f=e.deltaY<0?1.12:0.89;
+  cam.x=mx+(cam.x-mx)*f;cam.y=my+(cam.y-my)*f;
+  cam.z=Math.min(6,Math.max(0.15,cam.z*f));
+},{passive:false});
+
+// ── Resource ticker ───────────────────────────────────────────
+let res={gold:840,food:3240,lumber:1180,stone:640,iron:320,kharis:90};
+const rates={gold:.5,food:4,lumber:2,stone:2,iron:1.5,kharis:.3};
+let lastT=Date.now();
+setInterval(()=>{
+  const dt=(Date.now()-lastT)/60000;lastT=Date.now();
+  for(const k of Object.keys(rates))res[k]=Math.round((res[k]+rates[k]*dt)*10)/10;
+  document.getElementById('rv-gold').textContent=Math.round(res.gold);
+  document.getElementById('rv-food').textContent=Math.round(res.food);
+  document.getElementById('rv-lumber').textContent=Math.round(res.lumber);
+  document.getElementById('rv-stone').textContent=Math.round(res.stone);
+  document.getElementById('rv-iron').textContent=Math.round(res.iron);
+  document.getElementById('rv-kharis').textContent=Math.round(res.kharis);
+},1000);
+
+// ── Build queue progress bars ─────────────────────────────────
+let bq=[
+  {el:'bq1',totalSec:22*60,remSec:22*60},
+  {el:'bq2',totalSec:44*60,remSec:44*60},
+];
+setInterval(()=>{
+  bq.forEach(q=>{
+    if(q.remSec>0)q.remSec--;
+    const pct=Math.round((1-q.remSec/q.totalSec)*100);
+    const bar=document.getElementById(q.el+'-bar');
+    if(bar)bar.style.width=pct+'%';
+    const tm=document.getElementById(q.el+'-t');
+    if(tm){const m=Math.floor(q.remSec/60),s=q.remSec%60;tm.textContent=`${m}:${s.toString().padStart(2,'0')}`;}
+  });
+},1000);
+
+// ── Incoming attack timer ──────────────────────────────────────
+let attSec=34*60;
+setInterval(()=>{
+  if(attSec>0)attSec--;
+  const m=Math.floor(attSec/60),s=attSec%60;
+  const el=document.getElementById('att-timer');
+  if(el)el.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+  // Strength bars animate slightly
+  const myStr=240+40*3;const theirStr=200;
+  const tot=myStr+theirStr;
+  const sb=document.getElementById('sb-you');
+  if(sb)sb.style.width=Math.round(80*myStr/tot)+'px';
+  const st=document.getElementById('sb-them');
+  if(st)st.style.width=Math.round(80*theirStr/tot)+'px';
+},1000);
+
+// Add WebSocket listener when in real game
+if(location.hostname!=='localhost'&&location.hostname!==''){
+  // const ws=new WebSocket(`ws://${location.host}/ws/WORLD_ID`);
+  // ws.onmessage=e=>{ const m=JSON.parse(e.data); if(m.kind==='ArmyArrival'||m.kind==='BuildComplete') reload(); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+X:9
+T:Kna'ani — Raiders from the Purple Shore
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=138
+%%MIDI program 56
+%%MIDI channel 1
+V:1 name="Trumpet" clef=treble
+V:2 name="Frame drum" clef=perc
+K:Amin
+% Phrygian dominant: E F ^G A B c d — the augmented 2nd is the hook
+V:1
+|: E2 F2 ^G4 | A2 B2 c2 A2 | ^G2 F2 E2 F2 | E8 |
+   A2 ^G2 F2 E2 | F2 ^G2 A4 | B2 c2 B2 A2 | E8 :|
+V:2
+%%MIDI channel 9
+%%MIDI drummap C 64
+%%MIDI drummap D 63
+%%MIDI drummap E 42
+|: CD CD C2DC | CD CD C4 | CD CD C2DC | CD CD C4 |
+   C2DC C2DC | C2DC C4 | CDCD CDCD | C4 z4 :|

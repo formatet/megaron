@@ -1,0 +1,21 @@
+X:14
+T:Thrakes — The Feast After the Battle
+C:Thalassa OST
+M:6/8
+L:1/8
+Q:3/8=100
+%%MIDI program 108
+%%MIDI channel 1
+V:1 name="Gaida" clef=treble
+V:2 name="Drum" clef=perc
+K:FLyd
+% 6/8 — the dance around the fire, victory drunk
+V:1
+|: F2G A2B | c3 B2A | G2A B2c | d6 |
+   e2d c2B | A2G F2G | A3 B3 | F6 :|
+V:2
+%%MIDI channel 9
+%%MIDI drummap C 36
+%%MIDI drummap D 38
+|: C2C D2D | C3 D3 | C2C D2D | C3 z3 |
+   C2C D2D | C3 D3 | C2C D2C | C3 z3 :|

@@ -1,0 +1,568 @@
+{{template "base" .}}
+{{define "title"}}Map — {{.World.Name}}{{end}}
+{{define "nav"}}
+  <a href="/world/{{.WorldID}}">Province</a>
+  <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
+{{end}}
+{{define "content"}}
+<div class="map-page">
+  <div class="map-toolbar">
+    <span class="map-world-name">{{.World.Name}}</span>
+    <span class="pill state-{{.World.State}}">{{.World.State}}</span>
+    <span class="map-hint">Drag · Scroll to zoom · Click province</span>
+    <div class="map-zoom-btns">
+      <button onclick="zoom(1.25)" class="btn-small btn-secondary">+</button>
+      <button onclick="zoom(0.8)"  class="btn-small btn-secondary">−</button>
+      <button onclick="resetView()" class="btn-small btn-secondary">⌂</button>
+    </div>
+  </div>
+
+  <div class="map-layout">
+    <div class="map-container" id="map-root">
+      <canvas id="hex-canvas"></canvas>
+    </div>
+
+    <!-- Inspect panel — shown when a province hex is clicked -->
+    <aside class="inspect-panel" id="inspect-panel" style="display:none">
+      <div class="inspect-header">
+        <span id="ip-name" class="inspect-title">—</span>
+        <button class="inspect-close" onclick="closeInspect()">✕</button>
+      </div>
+      <div class="inspect-body" id="ip-body">
+        <div class="inspect-row"><span class="ir-label">Culture</span><span id="ip-culture">—</span></div>
+        <div class="inspect-row"><span class="ir-label">Owner</span><span id="ip-owner">—</span></div>
+        <div class="inspect-row"><span class="ir-label">Walls</span><span id="ip-walls">—</span></div>
+        <div class="inspect-row"><span class="ir-label">Kingdom</span><span id="ip-kingdom">—</span></div>
+      </div>
+      <div class="inspect-foot" id="ip-foot"></div>
+    </aside>
+  </div>
+
+  <div class="map-legend">
+    <span class="legend-item" style="--tc:#D4AC0D">Plains</span>
+    <span class="legend-item" style="--tc:#5D6D2E">Forest</span>
+    <span class="legend-item" style="--tc:#F0B27A">Hills</span>
+    <span class="legend-item" style="--tc:#F2EAD3">Mountain</span>
+    <span class="legend-item" style="--tc:#FAD7A0">Coast</span>
+    <span class="legend-item" style="--tc:#2E86C1">Sea</span>
+    <span class="legend-item" style="--tc:#1C1C1C">Fog</span>
+  </div>
+</div>
+
+<div id="tile-tooltip" class="tile-tooltip" style="display:none"></div>
+
+<style>
+.map-page { display:flex; flex-direction:column; gap:.6rem; height:calc(100vh - 6rem); }
+.map-toolbar {
+  display:flex; align-items:center; gap:.8rem; flex-wrap:wrap;
+  background:#F2EAD3; border:2px solid #E67E22; padding:.4rem .8rem;
+  box-shadow:inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+}
+.map-world-name { font-family:var(--mono); font-size:.9rem; color:#C0392B; font-weight:bold; letter-spacing:.1em; }
+.map-hint { font-size:.75rem; color:#A04000; font-style:italic; flex:1; }
+.map-zoom-btns { display:flex; gap:.3rem; }
+.map-layout { display:flex; flex:1; min-height:0; gap:.6rem; }
+.map-container {
+  flex:1;
+  border:2px solid #E67E22;
+  background:#1B4F72;
+  overflow:hidden;
+  cursor:grab;
+  position:relative;
+  box-shadow:inset -1px -1px 0 #6E2C00;
+}
+.map-container:active { cursor:grabbing; }
+#hex-canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; }
+
+/* Inspect panel */
+.inspect-panel {
+  width:220px; flex-shrink:0;
+  background:#F2EAD3; border:2px solid #E67E22;
+  box-shadow:inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+  display:flex; flex-direction:column;
+  font-size:.85rem;
+}
+.inspect-header {
+  background:#E67E22; padding:.4rem .7rem;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.inspect-title { color:#FDFEFE; font-family:var(--mono); font-weight:bold; letter-spacing:.08em; }
+.inspect-close { background:none; border:none; color:#FDFEFE; cursor:pointer; font-size:1rem; padding:0 .2rem; }
+.inspect-body { padding:.7rem; flex:1; }
+.inspect-row { display:flex; justify-content:space-between; margin-bottom:.4rem; }
+.ir-label { color:#A04000; text-transform:uppercase; font-size:.72rem; letter-spacing:.08em; }
+.inspect-foot { padding:.7rem; border-top:1px solid #E67E22; }
+.inspect-foot a { display:block; text-align:center; padding:.4rem;
+  background:#F0B27A; border:2px solid #E67E22; color:#1C1C1C;
+  font-family:var(--mono); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase;
+  text-decoration:none; }
+.inspect-foot a:hover { background:#FAD7A0; border-color:#C0392B; }
+
+.map-legend { display:flex; gap:.8rem; flex-wrap:wrap; font-size:.75rem; color:#A04000; }
+.legend-item { display:flex; align-items:center; gap:.3rem; }
+.legend-item::before { content:'■'; color:var(--tc); }
+.tile-tooltip {
+  position:fixed; background:#1C1C1C; border:1px solid #E67E22;
+  color:#F2EAD3; padding:.15rem .5rem; font-size:.75rem;
+  font-family:var(--mono); pointer-events:none; z-index:200;
+}
+</style>
+
+<script>
+const WORLD_ID = "{{.WorldID}}";
+
+// ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
+const TERRAIN_BASE = {
+  sea:      {c0:'#2E86C1', c1:'#1B4F72'},
+  coast:    {c0:'#E8C97A', c1:'#D4B060'},
+  plains:   {c0:'#8AAF3A', c1:'#74952C'},
+  forest:   {c0:'#5A8C30', c1:'#447020'},
+  hills:    {c0:'#C8A464', c1:'#B08C50'},
+  mountain: {c0:'#E0D4B8', c1:'#C8BCA0'},
+  fog:      {c0:'#1C1C1C', c1:'#252018'},
+};
+
+// Culture accent colours (banner / flag)
+const CULTURE_ACCENT = {
+  akhaier:  '#CA8A04',
+  khemetiu: '#0E7490',
+  knaani:   '#86198F',
+  thrakes:  '#1D4ED8',
+  pelasger: '#92400E',
+  hatti:    '#374151',
+};
+
+// ── Hex geometry ─────────────────────────────────────────────────────────
+const S = 22;    // hex size in logical pixels — Settlers 2 scale
+const SCALE = 2; // canvas scale factor
+
+function hexPx(q, r) {
+  return {
+    x: Math.round(S * 1.5 * q),
+    y: Math.round(S * Math.sqrt(3) * (r + q / 2)),
+  };
+}
+
+function hexPts(cx, cy) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI / 3 * i;
+    pts.push([Math.round(cx + S * Math.cos(a)), Math.round(cy + S * Math.sin(a))]);
+  }
+  return pts;
+}
+
+// Hit-test: nearest hex to canvas coords
+function hexAtScreen(sx, sy) {
+  const wx = (sx - camera.x) / (camera.zoom * SCALE);
+  const wy = (sy - camera.y) / (camera.zoom * SCALE);
+  const q = (2/3 * wx) / S;
+  const r = (-1/3 * wx + Math.sqrt(3)/3 * wy) / S;
+  const s = -q - r;
+  let rq = Math.round(q), rr = Math.round(r), rs = Math.round(s);
+  const dq = Math.abs(rq-q), dr = Math.abs(rr-r), ds = Math.abs(rs-s);
+  if (dq > dr && dq > ds) rq = -rr - rs;
+  else if (dr > ds) rr = -rq - rs;
+  return {q: rq, r: rr};
+}
+
+// ── Pixel art hex fill ────────────────────────────────────────────────────
+function fillHex(ctx, pts, c0, c1, seed) {
+  const xs = pts.map(p=>p[0]), ys = pts.map(p=>p[1]);
+  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i=1;i<6;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
+  ctx.clip();
+  for (let py=y0; py<=y1; py++) {
+    for (let px=x0; px<=x1; px++) {
+      ctx.fillStyle = ((px+py)&1)^((seed>>2)&1) ? c1 : c0;
+      ctx.fillRect(px, py, 1, 1);
+    }
+  }
+  ctx.restore();
+  ctx.strokeStyle = '#1C1C1C';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i=1;i<6;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+// ── Terrain detail — Settlers 2 quality ──────────────────────────────────
+function drawDetail(ctx, cx, cy, terrain, seed, frame) {
+  const rng = n => (seed*n ^ (n*37)) & 255;
+  ctx.save();
+  switch(terrain) {
+    case 'sea': {
+      const phase = (frame >> 5) & 1;
+      ctx.fillStyle = '#5DADE2';
+      if (phase === 0) {
+        ctx.fillRect(cx-8,cy-2,5,1); ctx.fillRect(cx+3,cy+3,5,1); ctx.fillRect(cx-6,cy+6,4,1);
+      } else {
+        ctx.fillRect(cx-7,cy-1,5,1); ctx.fillRect(cx+4,cy+4,5,1); ctx.fillRect(cx-5,cy+5,4,1);
+      }
+      ctx.fillStyle = '#1B4F72'; ctx.fillRect(cx+2,cy-4,2,2);
+      break;
+    }
+    case 'coast': {
+      ctx.fillStyle = '#FAD7A0'; ctx.fillRect(cx-9,cy+4,19,9);
+      ctx.fillStyle = '#E8C97A'; ctx.fillRect(cx-7,cy+6,5,2);
+      ctx.fillStyle = '#5DADE2'; ctx.fillRect(cx-9,cy,19,5);
+      ctx.fillStyle = '#AED6F1'; ctx.fillRect(cx-8,cy+2,4,1); ctx.fillRect(cx+3,cy+1,5,1);
+      ctx.fillStyle = '#C8A464';
+      ctx.fillRect(cx-5,cy+7,2,1); ctx.fillRect(cx+2,cy+9,2,1); ctx.fillRect(cx+5,cy+7,1,1);
+      break;
+    }
+    case 'plains': {
+      ctx.fillStyle = '#5A8000';
+      const tufts = [[cx-7,cy-2],[cx-2,cy+3],[cx+4,cy-4],[cx-5,cy+6],[cx+7,cy+2],[cx,cy-6]];
+      for (const [tx,ty] of tufts.slice(0, 3+(seed%3))) {
+        ctx.fillRect(tx,ty,1,2); ctx.fillRect(tx-1,ty+1,3,1);
+      }
+      if ((seed&15) < 4) { ctx.fillStyle='#C0392B'; ctx.fillRect(cx+(rng(3)%13)-6,cy+(rng(5)%9)-4,1,1); }
+      break;
+    }
+    case 'forest': {
+      const trees = [[cx-6,cy-1],[cx+4,cy-4],[cx-1,cy+5]].slice(0, 2+(seed%2));
+      for (const [tx,ty] of trees) {
+        ctx.fillStyle = '#44601A'; ctx.fillRect(tx-4,ty+2,10,7);
+        ctx.fillStyle = '#6A9A30'; ctx.fillRect(tx-5,ty-1,11,8);
+        ctx.fillStyle = '#7CAA3A'; ctx.fillRect(tx-4,ty-3,9,6);
+        ctx.fillStyle = '#90BC50'; ctx.fillRect(tx-3,ty-4,7,5);
+        ctx.fillStyle = '#A8BC78'; ctx.fillRect(tx-3,ty-4,4,2); ctx.fillRect(tx-2,ty-5,3,1);
+        ctx.fillStyle = '#2A4010'; ctx.fillRect(tx-5,ty-1,1,8); ctx.fillRect(tx+5,ty-1,1,8);
+        ctx.fillRect(tx-4,ty-2,1,1); ctx.fillRect(tx+3,ty-4,1,1);
+        ctx.fillStyle = '#6E2C00'; ctx.fillRect(tx-1,ty+6,2,5);
+      }
+      ctx.fillStyle = '#447020'; ctx.fillRect(cx-2,cy+8,5,3);
+      break;
+    }
+    case 'hills': {
+      ctx.fillStyle = '#B08C50'; ctx.fillRect(cx-10,cy+3,12,9);
+      ctx.fillStyle = '#C8A464'; ctx.fillRect(cx-9,cy+1,10,4);
+      ctx.fillStyle = '#D8B878'; ctx.fillRect(cx-8,cy-1,8,3);
+      ctx.fillStyle = '#E8D090'; ctx.fillRect(cx-7,cy-3,6,3);
+      ctx.fillStyle = '#B08C50'; ctx.fillRect(cx+1,cy+5,10,7);
+      ctx.fillStyle = '#C8A464'; ctx.fillRect(cx+2,cy+2,8,4);
+      ctx.fillStyle = '#D8B878'; ctx.fillRect(cx+3,cy,6,3);
+      ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx-10,cy+3,1,9); ctx.fillRect(cx+10,cy+5,1,7);
+      ctx.fillRect(cx-9,cy+1,1,3); ctx.fillRect(cx+9,cy+2,1,4);
+      ctx.fillStyle = '#8C7050'; ctx.fillRect(cx-4,cy,1,4); ctx.fillRect(cx+4,cy+2,1,3);
+      ctx.fillStyle = '#7A9030'; ctx.fillRect(cx-6,cy+4,3,2); ctx.fillRect(cx+5,cy+6,3,2);
+      break;
+    }
+    case 'mountain': {
+      ctx.fillStyle = '#C8BCA0'; ctx.fillRect(cx-10,cy+4,21,8);
+      ctx.fillStyle = '#D8CEB4'; ctx.fillRect(cx-8,cy,17,5);
+      ctx.fillStyle = '#E8DECC'; ctx.fillRect(cx-6,cy-4,13,5);
+      ctx.fillStyle = '#F0E8D4'; ctx.fillRect(cx-4,cy-7,9,4);
+      ctx.fillStyle = '#F8F4EC'; ctx.fillRect(cx-3,cy-9,7,3);
+      ctx.fillStyle = '#FDFEFE'; ctx.fillRect(cx-2,cy-11,5,3);
+      ctx.fillStyle = '#E8F0F8'; ctx.fillRect(cx-1,cy-12,3,2);
+      ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx+8,cy,3,12); ctx.fillRect(cx+6,cy-4,3,5); ctx.fillRect(cx+4,cy-7,3,4);
+      ctx.fillStyle = '#9A907C'; ctx.fillRect(cx-8,cy,1,5); ctx.fillRect(cx-6,cy-4,1,5); ctx.fillRect(cx-4,cy-7,1,4);
+      ctx.fillStyle = '#FDFEFE'; ctx.fillRect(cx-3,cy-9,4,1);
+      break;
+    }
+  }
+  ctx.restore();
+}
+
+// ── Province building sprite + flag ──────────────────────────────────────
+function drawProvince(ctx, cx, cy, p) {
+  const accent = CULTURE_ACCENT[p.culture] || '#C0392B';
+  const roofColor = p.own ? '#CA8A04' : (p.allied ? accent : '#C0392B');
+  const bw=14, bh=10, bx=cx-7, by=cy-6;
+  // Walls
+  ctx.fillStyle = p.own ? '#FDFEFE' : '#F2EAD3'; ctx.fillRect(bx,by,bw,bh);
+  ctx.fillStyle = '#FDFEFE'; ctx.fillRect(bx,by,7,bh);        // sun side
+  ctx.fillStyle = '#E0D0B0'; ctx.fillRect(bx+10,by,4,bh);     // shade side
+  // Fired-clay roof
+  ctx.fillStyle = roofColor; ctx.fillRect(bx-1,by-4,bw+2,5);
+  ctx.fillStyle = '#E67E22'; ctx.fillRect(bx-1,by-4,bw+2,2);  // sun highlight
+  // Door
+  ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx-2,by+4,4,bh-4);
+  // Window
+  ctx.fillStyle = '#AED6F1'; ctx.fillRect(bx+3,by+2,3,3);
+  ctx.fillStyle = '#6E2C00'; ctx.fillRect(bx+3,by+2,1,3); ctx.fillRect(bx+3,by+2,3,1);
+  // Outline
+  ctx.strokeStyle = '#1C1C1C'; ctx.lineWidth = 1; ctx.strokeRect(bx,by,bw,bh);
+  // Flag pole
+  ctx.fillStyle = '#F2EAD3'; ctx.fillRect(cx+6,cy-14,1,12);
+  // Banner
+  ctx.fillStyle = roofColor; ctx.fillRect(cx+7,cy-14,8,5);
+  ctx.fillStyle = '#1C1C1C'; ctx.fillRect(cx+7,cy-9,8,1);
+  // Wall pips
+  for (let i=0; i<p.walls; i++) {
+    ctx.fillStyle = '#F2EAD3'; ctx.fillRect(cx-4+i*5,cy+S-2,3,4);
+    ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx-4+i*5,cy+S-2,1,4);
+  }
+}
+
+// ── Province name label (two-pass for legibility) ────────────────────────
+function drawLabel(ctx, cx, cy, text, own) {
+  ctx.save();
+  ctx.font = '7px monospace'; ctx.textAlign = 'center';
+  ctx.fillStyle = '#1C1C1C'; ctx.fillText(text, cx+1, cy+S+13);
+  ctx.fillStyle = own ? '#F9E79F' : '#F2EAD3'; ctx.fillText(text, cx, cy+S+12);
+  ctx.restore();
+}
+
+// ── Dirt road between two province centres ────────────────────────────────
+function drawRoad(ctx, ax, ay, bx, by) {
+  ctx.save();
+  ctx.strokeStyle = '#A07040'; ctx.lineWidth = 2; ctx.setLineDash([3,2]);
+  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+  ctx.strokeStyle = '#D4AC0D'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+}
+
+// ── Walking settler figure (8×10 px, Settlers-style) ─────────────────────
+function drawWalker(ctx, x, y, intent, walkPhase) {
+  ctx.save();
+  ctx.fillStyle = intent === 'attack' ? '#922B21' : '#2E86C1';
+  ctx.fillRect(x-2,y-3,4,5);
+  ctx.fillStyle = '#F0B27A'; ctx.fillRect(x-1,y-6,3,3);
+  ctx.fillStyle = '#6E2C00';
+  if (walkPhase < 2) { ctx.fillRect(x-2,y+2,2,3); ctx.fillRect(x,y+1,2,3); }
+  else               { ctx.fillRect(x-2,y+1,2,3); ctx.fillRect(x,y+2,2,3); }
+  if (intent === 'attack') { ctx.fillStyle='#F2EAD3'; ctx.fillRect(x+2,y-5,1,7); }
+  ctx.restore();
+}
+
+// ── Main renderer ─────────────────────────────────────────────────────────
+let tileData = [];
+let provinceData = [];
+let marchData = [];
+let camera = { x: 0, y: 0, zoom: 1 };
+let dragging = false, lastMouse = null;
+let selectedProvince = null;
+let animFrame = 0;
+
+const canvas = document.getElementById('hex-canvas');
+const tooltip = document.getElementById('tile-tooltip');
+const container = document.getElementById('map-root');
+
+function resizeCanvas() {
+  canvas.width  = container.clientWidth;
+  canvas.height = container.clientHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+function render() {
+  animFrame++;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(camera.x, camera.y);
+  ctx.scale(camera.zoom * SCALE, camera.zoom * SCALE);
+
+  // 1. Terrain tiles with animated detail
+  for (const t of tileData) {
+    const {x,y} = hexPx(t.q, t.r);
+    const pts = hexPts(x, y);
+    const base = TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog;
+    const seed = (t.q*137 + t.r*31) & 0xff;
+    fillHex(ctx, pts, base.c0, base.c1, seed);
+    if (t.terrain !== 'fog') drawDetail(ctx, x, y, t.terrain, seed, animFrame);
+  }
+
+  // 2. Roads between adjacent own/allied provinces
+  if (camera.zoom >= 0.5) {
+    const owned = provinceData.filter(p => p.own || p.allied);
+    for (let i = 0; i < owned.length; i++) {
+      for (let j = i+1; j < owned.length; j++) {
+        const a = owned[i], b = owned[j];
+        const dq = a.q-b.q, dr = a.r-b.r;
+        if ((Math.abs(dq) + Math.abs(dq+dr) + Math.abs(dr)) / 2 <= 1) {
+          const fa = hexPx(a.q, a.r), fb = hexPx(b.q, b.r);
+          drawRoad(ctx, fa.x, fa.y, fb.x, fb.y);
+        }
+      }
+    }
+  }
+
+  // 3. Highlight selected hex
+  if (selectedProvince) {
+    const {x,y} = hexPx(selectedProvince.q, selectedProvince.r);
+    const pts = hexPts(x, y);
+    ctx.save();
+    ctx.strokeStyle = '#F9E79F'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i=1;i<6;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+  }
+
+  // 4. Province buildings + flags
+  for (const p of provinceData) {
+    const {x,y} = hexPx(p.q, p.r);
+    drawProvince(ctx, x, y, p);
+    if (camera.zoom >= 0.55) drawLabel(ctx, x, y, p.name, p.own);
+  }
+
+  // 5. Animated walkers for marching armies
+  const walkPhase = Math.floor(animFrame / 8) % 4;
+  for (const m of marchData) {
+    const now = Date.now();
+    const departs = new Date(m.departs_at).getTime();
+    const arrives  = new Date(m.arrives_at).getTime();
+    const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
+    const src = hexPx(m.origin_q, m.origin_r);
+    const dst = hexPx(m.target_q, m.target_r);
+    drawWalker(ctx, Math.round(src.x + (dst.x-src.x)*progress), Math.round(src.y + (dst.y-src.y)*progress), m.intent, walkPhase);
+  }
+
+  ctx.restore();
+  requestAnimationFrame(render);
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────
+async function fetchAuth(url) {
+  const token = localStorage.getItem('thalassa_access');
+  const headers = token ? {'Authorization': 'Bearer ' + token} : {};
+  return fetch(url, {headers});
+}
+
+async function loadMap() {
+  const [tilesRes, provRes] = await Promise.all([
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/map`),
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`),
+  ]);
+
+  if (tilesRes.ok) {
+    tileData = await tilesRes.json();
+    centreCamera();
+  }
+  if (provRes.ok) {
+    provinceData = await provRes.json();
+  }
+}
+
+function centreCamera() {
+  const visible = tileData.filter(t => t.terrain !== 'fog');
+  if (!visible.length) return;
+  const sumX = visible.reduce((s,t) => s + hexPx(t.q,t.r).x, 0);
+  const sumY = visible.reduce((s,t) => s + hexPx(t.q,t.r).y, 0);
+  camera.x = canvas.width/2  - (sumX/visible.length)*SCALE;
+  camera.y = canvas.height/2 - (sumY/visible.length)*SCALE;
+}
+
+// Reload provinces every 30s
+setInterval(() => fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => provinceData = d)), 30000);
+
+// ── Zoom helpers ──────────────────────────────────────────────────────────
+function zoom(factor) {
+  const cx = canvas.width/2, cy = canvas.height/2;
+  camera.x = cx + (camera.x - cx) * factor;
+  camera.y = cy + (camera.y - cy) * factor;
+  camera.zoom = Math.min(5, Math.max(0.2, camera.zoom * factor));
+}
+function resetView() {
+  camera.zoom = 1;
+  centreCamera();
+}
+
+// ── Inspect panel ─────────────────────────────────────────────────────────
+function openInspect(marker) {
+  selectedProvince = marker;
+  document.getElementById('ip-name').textContent    = marker.name;
+  document.getElementById('ip-culture').textContent = marker.culture;
+  document.getElementById('ip-owner').textContent   = marker.owner || '(unoccupied)';
+  document.getElementById('ip-walls').textContent   = '▓'.repeat(marker.walls) + '░'.repeat(Math.max(0,3-marker.walls));
+  document.getElementById('ip-kingdom').textContent = marker.kingdom_id ? '⚑ Kingdom' : '—';
+
+  const foot = document.getElementById('ip-foot');
+  foot.innerHTML = '';
+  if (marker.own) {
+    const a = document.createElement('a');
+    a.href = `/world/${WORLD_ID}`;
+    a.textContent = 'Manage Province →';
+    foot.appendChild(a);
+  }
+
+  const panel = document.getElementById('inspect-panel');
+  panel.style.display = 'flex';
+}
+
+function closeInspect() {
+  selectedProvince = null;
+  document.getElementById('inspect-panel').style.display = 'none';
+}
+
+// ── Input: drag + zoom + click ────────────────────────────────────────────
+canvas.addEventListener('mousedown', e => {
+  dragging = true;
+  lastMouse = {x: e.clientX, y: e.clientY};
+});
+canvas.addEventListener('mouseup', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastMouse.x, dy = e.clientY - lastMouse.y;
+  dragging = false;
+  // Click (no significant drag)
+  if (Math.abs(dx) < 4 && Math.abs(dy) < 4) {
+    const rect = canvas.getBoundingClientRect();
+    const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
+    const marker = provinceData.find(p => p.q === h.q && p.r === h.r);
+    if (marker) openInspect(marker);
+    else closeInspect();
+  }
+});
+canvas.addEventListener('mouseleave', () => { dragging = false; });
+canvas.addEventListener('mousemove', e => {
+  if (dragging && lastMouse) {
+    camera.x += e.clientX - lastMouse.x;
+    camera.y += e.clientY - lastMouse.y;
+    lastMouse = {x: e.clientX, y: e.clientY};
+  }
+  // Tooltip
+  const rect = canvas.getBoundingClientRect();
+  const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
+  const tile = tileData.find(t => t.q === h.q && t.r === h.r);
+  const prov = provinceData.find(p => p.q === h.q && p.r === h.r);
+  if (tile && tile.terrain !== 'fog') {
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top  = (e.clientY - 22) + 'px';
+    tooltip.textContent = prov ? `${prov.name} · ${tile.terrain}` : `(${h.q},${h.r}) ${tile.terrain}`;
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const factor = e.deltaY < 0 ? 1.1 : 0.91;
+  camera.x = mx + (camera.x - mx) * factor;
+  camera.y = my + (camera.y - my) * factor;
+  camera.zoom = Math.min(5, Math.max(0.2, camera.zoom * factor));
+}, {passive:false});
+
+loadMap().then(() => render());
+
+// ── WebSocket — real-time province updates ────────────────────────────────
+(function() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  let ws;
+  function connect() {
+    ws = new WebSocket(`${proto}//${location.host}/ws/${WORLD_ID}`);
+    ws.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => provinceData = d));
+      }
+    };
+    ws.onclose = () => setTimeout(connect, 5000);
+  }
+  connect();
+})();
+</script>
+{{end}}

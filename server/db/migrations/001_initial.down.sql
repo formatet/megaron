@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS refresh_tokens;
+DROP TABLE IF EXISTS player_world_records;
+DROP TABLE IF EXISTS divine_interventions;
+DROP TABLE IF EXISTS temples;
+DROP TABLE IF EXISTS kingdom_invitations;
+DROP TABLE IF EXISTS kingdom_members;
+DROP TABLE IF EXISTS kingdoms;
+DROP TABLE IF EXISTS build_queue;
+DROP TABLE IF EXISTS buildings;
+DROP TABLE IF EXISTS marching_armies;
+DROP TABLE IF EXISTS provinces;
+DROP TABLE IF EXISTS map_tiles;
+DROP TABLE IF EXISTS worlds;
+DROP TABLE IF EXISTS players;
+DROP TABLE IF EXISTS scheduled_events;
+DROP TABLE IF EXISTS events;

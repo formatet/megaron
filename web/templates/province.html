@@ -1,0 +1,391 @@
+{{template "base" .}}
+{{define "title"}}{{.Province.Name}} — Thalassa{{end}}
+{{define "nav"}}
+  <a href="/worlds">Worlds</a>
+  <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
+{{end}}
+{{define "content"}}
+<div class="province-page">
+
+  <header class="province-header">
+    <div class="ph-left">
+      <h2 class="ph-name">{{.Province.Name}}</h2>
+      <span class="culture-tag">{{.Province.CultureID}}</span>
+      {{if .Province.KingdomID}}<span class="kingdom-tag">⚑ Kingdom</span>{{end}}
+    </div>
+    <div class="ph-right">
+      <span class="stat-chip" title="Population">Pop: <strong>{{.Province.Population}}</strong></span>
+      <span class="stat-chip" title="Walls">Walls: <strong>{{.Province.Walls}}/3</strong></span>
+    </div>
+  </header>
+
+  <!-- Resource bar — HTMX partial refresh every 30s -->
+  <div id="resource-bar-wrap"
+       hx-get="/world/{{.WorldID}}/resource-bar"
+       hx-trigger="load, every 30s"
+       hx-swap="innerHTML">
+    {{template "resource_bar.html" .}}
+  </div>
+
+  {{if .Incoming}}
+  {{range .Incoming}}{{if eq .Intent "attack"}}
+  <div class="attack-warn">
+    <div class="aw-title">⚠ Incoming Attack</div>
+    <div class="aw-name">{{.Name}} → {{$.Province.Name}}</div>
+    <div class="aw-detail">{{.TotalUnits}} units · arrives <strong>{{formatTime .ArrivesAt}}</strong></div>
+  </div>
+  {{end}}{{end}}
+  {{end}}
+
+  <div class="province-grid">
+
+    <!-- ── Army ─────────────────────────────────────── -->
+    <section class="panel army-panel">
+      <h3>Army</h3>
+      <table class="army-table">
+        <tr><td><canvas class="unit-icon" data-unit="inf"  width="12" height="12"></canvas> Infantry</td> <td class="num">{{.Province.Army.Infantry}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="cav"  width="12" height="12"></canvas> Cavalry</td>  <td class="num">{{.Province.Army.Cavalry}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="cat"  width="12" height="12"></canvas> Catapults</td><td class="num">{{.Province.Army.Catapult}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="pri"  width="12" height="12"></canvas> Priests</td>  <td class="num">{{.Province.Army.Priest}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Ships</td>    <td class="num">{{.Province.Army.Ship}}</td></tr>
+      </table>
+    </section>
+
+    <!-- ── Recruit ────────────────────────────────── -->
+    <section class="panel recruit-panel">
+      <h3>Recruit</h3>
+      <form hx-post="/api/v1/worlds/{{.WorldID}}/provinces/{{.Province.ID}}/recruit"
+            hx-target="#recruit-result" hx-swap="innerHTML"
+            hx-on::after-request="this.reset()">
+        <div class="recruit-grid">
+          <label class="recruit-row">
+            <span class="recruit-label">Infantry</span>
+            <span class="recruit-cost">10 food · 5 iron</span>
+            <input type="hidden" name="unit_type" value="infantry">
+            <input class="recruit-count" type="number" name="count" min="1" max="100" value="10" id="rc-infantry">
+            <button type="submit" class="btn-small btn-primary"
+                    onclick="document.querySelector('[name=unit_type]').value='infantry'">Train</button>
+          </label>
+          <label class="recruit-row">
+            <span class="recruit-label">Cavalry</span>
+            <span class="recruit-cost">25 food · 15 iron</span>
+            <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-cavalry">
+            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('cavalry', document.getElementById('rc-cavalry').value)">Train</button>
+          </label>
+          <label class="recruit-row">
+            <span class="recruit-label">Catapult</span>
+            <span class="recruit-cost">60 lumber · 40 iron</span>
+            <input class="recruit-count" type="number" min="1" max="10" value="1" id="rc-catapult">
+            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('catapult', document.getElementById('rc-catapult').value)">Train</button>
+          </label>
+          <label class="recruit-row">
+            <span class="recruit-label">Priest</span>
+            <span class="recruit-cost">50 kharis</span>
+            <input class="recruit-count" type="number" min="1" max="10" value="1" id="rc-priest">
+            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('priest', document.getElementById('rc-priest').value)">Train</button>
+          </label>
+          <label class="recruit-row">
+            <span class="recruit-label">Ship</span>
+            <span class="recruit-cost">80 lumber · 30 iron</span>
+            <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-ship">
+            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('ship', document.getElementById('rc-ship').value)">Train</button>
+          </label>
+        </div>
+      </form>
+      <div id="recruit-result" class="action-result"></div>
+    </section>
+
+    <!-- ── Construction queue ─────────────────────── -->
+    <section class="panel queue-panel">
+      <h3>Construction</h3>
+      {{if .Queue}}
+      <div class="bq-list">
+        {{range .Queue}}
+        <div class="bq-item" data-complete="{{formatISO .CompleteAt}}">
+          <div class="bq-row">
+            <span class="bq-name">{{.Type}}</span>
+            <span class="bq-time">—</span>
+          </div>
+          <div class="bq-bar-wrap"><div class="bq-bar" style="width:0%"></div></div>
+        </div>
+        {{end}}
+      </div>
+      {{else}}
+      <p class="empty-state">No active construction.</p>
+      {{end}}
+
+      {{if .Buildings}}
+      <div class="bldg-section">
+        <div class="lp-title">Built</div>
+        <div class="bldg-wrap">
+          {{range .Buildings}}
+          <span class="bldg-tag{{if gt .Level 1}} l{{.Level}}{{end}}">{{.Type}}{{if gt .Level 1}} ×{{.Level}}{{end}}</span>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+
+      <!-- Build form -->
+      <div class="build-form-wrap">
+        <select id="build-select" class="build-select">
+          <option value="farm">Farm — 50L 20S · +2 food/m</option>
+          <option value="lumbermill">Lumbermill — 40L 20S 20I · +2 lumber/m</option>
+          <option value="stonequarry">Stone Quarry — 50L 20I · +2 stone/m</option>
+          <option value="mine">Mine — 60L 40S · +1.5 iron/m</option>
+          <option value="barracks">Barracks — 80L 50S 30I · recruits</option>
+          <option value="market">Market — 100L 60S · +0.5 gold/m</option>
+          <option value="wall">Wall — 40L 120S 60I · +1 wall</option>
+          <option value="harbour">Harbour — 120L 60S 40I · ships</option>
+        </select>
+        <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
+        <div id="build-result" class="action-result"></div>
+      </div>
+    </section>
+
+    <!-- ── Army movements ────────────────────────── -->
+    <section class="panel march-panel">
+      <h3>Movements</h3>
+      {{if .Marches}}
+      <ul class="march-list">
+        {{range .Marches}}
+        <li class="march-item march-{{.Intent}}">
+          <span class="intent-badge intent-{{.Intent}}">{{.Intent}}</span>
+          <span class="march-target">→ {{.TargetID}}</span>
+          <span class="march-time">{{formatTime .ArrivesAt}}</span>
+        </li>
+        {{end}}
+      </ul>
+      {{else}}
+      <p class="empty-state">No armies in the field.</p>
+      {{end}}
+
+      {{if .Incoming}}
+      <div class="incoming-header">Incoming</div>
+      <ul class="march-list incoming-list">
+        {{range .Incoming}}
+        <li class="march-item march-{{.Intent}}">
+          <span class="intent-badge intent-{{.Intent}}">{{.Intent}}</span>
+          <strong>{{.Name}}</strong>
+          <span class="march-units">{{.TotalUnits}} units</span>
+          <span class="march-time">{{formatTime .ArrivesAt}}</span>
+        </li>
+        {{end}}
+      </ul>
+      {{end}}
+    </section>
+
+    <!-- ── Send army ──────────────────────────────── -->
+    <section class="panel send-panel">
+      <h3>Send Army</h3>
+      <form id="march-form">
+        <div class="field">
+          <label>Target Province ID</label>
+          <input type="text" id="march-target" placeholder="paste province uuid" required>
+        </div>
+        <div class="field">
+          <label>Intent</label>
+          <select id="march-intent">
+            <option value="attack">Attack</option>
+            <option value="support">Support</option>
+            <option value="reinforce">Reinforce</option>
+          </select>
+        </div>
+        <div class="unit-row">
+          <label>Infantry <input type="number" id="march-infantry" value="0" min="0" max="{{.Province.Army.Infantry}}"></label>
+          <label>Cavalry  <input type="number" id="march-cavalry"  value="0" min="0" max="{{.Province.Army.Cavalry}}"></label>
+          <label>Catapults<input type="number" id="march-catapult" value="0" min="0" max="{{.Province.Army.Catapult}}"></label>
+          <label>Priests  <input type="number" id="march-priest"   value="0" min="0" max="{{.Province.Army.Priest}}"></label>
+        </div>
+        <button type="button" class="btn-danger btn-primary" onclick="sendArmy()">March →</button>
+      </form>
+      <div id="march-result" class="action-result"></div>
+    </section>
+
+  </div>
+</div>
+
+<style>
+.province-page { display:flex; flex-direction:column; gap:.8rem; }
+.province-header { display:flex; justify-content:space-between; align-items:center; }
+.ph-left { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.ph-name { color:#C0392B; margin:0; font-size:1.4rem; }
+.ph-right { display:flex; gap:.5rem; }
+.stat-chip { background:#F2EAD3; border:1px solid #E67E22; padding:.15rem .5rem; font-size:.8rem; color:#1C1C1C; font-family:var(--mono); }
+.stat-chip strong { color:#C0392B; }
+.culture-tag, .kingdom-tag { background:#F2EAD3; border:1px solid #A04000; color:#6E2C00; padding:.1rem .4rem; font-size:.75rem; font-family:var(--mono); letter-spacing:.05em; }
+
+/* Incoming attack banner */
+.attack-warn { background:#922B21; color:#FAD7A0; padding:.6rem .9rem; border:2px solid #6E2C00; }
+.aw-title { font-size:.75rem; text-transform:uppercase; letter-spacing:.15em; color:#F9E79F; font-family:var(--mono); margin-bottom:.2rem; }
+.aw-name  { font-size:1rem; font-weight:bold; }
+.aw-detail { font-size:.8rem; color:#FAD7A0; margin-top:.2rem; }
+.aw-detail strong { color:#FDFEFE; }
+
+.province-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:.8rem;
+}
+@media(max-width:900px) { .province-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .province-grid { grid-template-columns:1fr; } }
+
+/* Army */
+.army-table { width:100%; border-collapse:collapse; font-size:.9rem; }
+.army-table td { padding:.2rem 0; vertical-align:middle; }
+.army-table td.num { text-align:right; color:#C0392B; font-family:var(--mono); font-weight:bold; }
+.unit-icon { image-rendering:pixelated; vertical-align:middle; margin-right:4px; }
+
+/* Recruit */
+.recruit-grid { display:flex; flex-direction:column; gap:.4rem; }
+.recruit-row { display:flex; align-items:center; gap:.4rem; cursor:default; }
+.recruit-label { width:60px; font-size:.8rem; color:#1C1C1C; }
+.recruit-cost { flex:1; font-size:.72rem; color:#A04000; font-family:var(--mono); }
+.recruit-count { width:48px; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem; font-size:.8rem; text-align:center; }
+
+/* Build queue */
+.bq-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:.6rem; }
+.bq-item { }
+.bq-row  { display:flex; justify-content:space-between; font-size:.8rem; margin-bottom:2px; }
+.bq-name { font-family:var(--mono); color:#C0392B; text-transform:uppercase; letter-spacing:.08em; font-weight:bold; }
+.bq-time { color:#6E2C00; font-family:var(--mono); }
+.bq-bar-wrap { background:#FAD7A0; border:1px solid #E67E22; height:6px; }
+.bq-bar { height:100%; background:#C0392B; transition:width 1s linear; }
+
+/* Buildings */
+.bldg-section { margin:.6rem 0; }
+.lp-title { font-size:.72rem; color:#A04000; text-transform:uppercase; letter-spacing:.15em; margin-bottom:.3rem; font-family:var(--mono); }
+.bldg-wrap { display:flex; flex-wrap:wrap; gap:3px; }
+.bldg-tag { background:#C0392B; color:#FAD7A0; padding:2px 6px; font-size:.72rem; letter-spacing:.05em; font-family:var(--mono); }
+.bldg-tag.l2 { background:#A04000; }
+.bldg-tag.l3 { background:#6E2C00; }
+
+/* Build form */
+.build-form-wrap { margin-top:.8rem; border-top:1px solid #E67E22; padding-top:.8rem; }
+.build-select { width:100%; background:#FDFEFE; border:2px solid #E67E22; color:#1C1C1C; padding:.4rem; font-size:.8rem; margin-bottom:0; font-family:var(--mono); }
+
+/* March */
+.march-list { list-style:none; display:flex; flex-direction:column; gap:.3rem; }
+.march-item { display:flex; align-items:center; gap:.4rem; font-size:.82rem; }
+.intent-badge { font-family:var(--mono); font-size:.7rem; padding:.1rem .3rem; text-transform:uppercase; letter-spacing:.05em; }
+.intent-attack   { background:#922B21; color:#FAD7A0; }
+.intent-support  { background:#D4AC0D; color:#1C1C1C; }
+.intent-reinforce{ background:#2E86C1; color:#F2EAD3; }
+.march-target { color:#6E2C00; font-size:.75rem; font-family:var(--mono); flex:1; overflow:hidden; text-overflow:ellipsis; }
+.march-time   { color:#A04000; font-size:.72rem; white-space:nowrap; }
+.march-units  { color:#6E2C00; font-size:.75rem; }
+.incoming-header { color:#C0392B; font-size:.75rem; text-transform:uppercase; letter-spacing:.1em; margin:.6rem 0 .3rem; }
+.incoming-list { border-top:1px solid #E67E22; padding-top:.3rem; }
+
+.action-result { margin-top:.4rem; font-size:.8rem; min-height:1em; color:#C0392B; font-family:var(--mono); }
+</style>
+
+<script>
+const PROVINCE_ID = "{{.Province.ID}}";
+const WORLD_ID    = "{{.WorldID}}";
+
+function apiPost(path, body) {
+  const token = localStorage.getItem('thalassa_access');
+  return fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? {'Authorization': 'Bearer ' + token} : {}),
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+function showResult(elId, text, ok) {
+  const el = document.getElementById(elId);
+  el.textContent = text;
+  el.style.color = ok ? '#D4AC0D' : '#922B21';
+  setTimeout(() => el.textContent = '', 4000);
+}
+
+async function startBuild() {
+  const type = document.getElementById('build-select').value;
+  const res = await apiPost(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/build`, {building_type: type});
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('build-result', `${type} queued`, true);
+  } else {
+    showResult('build-result', data.error || 'failed', false);
+  }
+}
+
+async function recruitUnit(unitType, count) {
+  const res = await apiPost(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/recruit`, {
+    unit_type: unitType, count: parseInt(count, 10)
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('recruit-result', `${count}× ${unitType} training`, true);
+  } else {
+    showResult('recruit-result', data.error || 'failed', false);
+  }
+}
+
+async function sendArmy() {
+  const body = {
+    target_id: document.getElementById('march-target').value,
+    intent:    document.getElementById('march-intent').value,
+    infantry:  parseInt(document.getElementById('march-infantry').value, 10) || 0,
+    cavalry:   parseInt(document.getElementById('march-cavalry').value,  10) || 0,
+    catapult:  parseInt(document.getElementById('march-catapult').value, 10) || 0,
+    priest:    parseInt(document.getElementById('march-priest').value,   10) || 0,
+  };
+  const res = await apiPost(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/march`, body);
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    const mins = Math.round(data.distance * 60);
+    showResult('march-result', `Army marching · ${data.distance} hex · ${mins} min`, true);
+  } else {
+    showResult('march-result', data.error || 'failed', false);
+  }
+}
+
+// ── Pixel-art army unit icons ─────────────────────────────────────────────
+(function(){
+  function r(x,px,py,w,h,c){x.fillStyle=c;x.fillRect(px,py,w,h);}
+  const U={
+    inf(x){r(x,4,2,4,3,'#F2EAD3');r(x,5,5,2,6,'#F0B27A');r(x,3,7,6,1,'#C0392B');r(x,4,8,4,3,'#F0B27A');},
+    cav(x){r(x,6,1,4,4,'#F2EAD3');r(x,2,5,8,3,'#C0392B');r(x,3,8,2,3,'#A04000');r(x,8,8,2,3,'#A04000');},
+    cat(x){r(x,1,7,10,3,'#A04000');r(x,8,3,3,5,'#6E2C00');r(x,1,9,2,2,'#6E2C00');r(x,9,9,2,2,'#6E2C00');},
+    pri(x){r(x,4,1,4,3,'#F2EAD3');r(x,5,4,2,6,'#FDFEFE');r(x,4,6,4,1,'#D4AC0D');r(x,5,10,2,2,'#F2EAD3');r(x,4,9,1,3,'#FDFEFE');r(x,7,9,1,3,'#FDFEFE');},
+    shp(x){r(x,2,6,8,4,'#A04000');r(x,6,2,1,5,'#6E2C00');r(x,7,3,3,3,'#F2EAD3');},
+  };
+  document.querySelectorAll('.unit-icon[data-unit]').forEach(c=>{
+    const fn=U[c.dataset.unit]; if(!fn)return;
+    const x=c.getContext('2d'); x.imageSmoothingEnabled=false; fn(x);
+  });
+})();
+
+// ── Build queue progress bars + countdown timers ──────────────────────────
+(function(){
+  const DURATION_MIN = {
+    farm:30, lumbermill:30, stonequarry:30, mine:45,
+    barracks:60, market:90, wall:120, harbour:90,
+  };
+  function tick(){
+    document.querySelectorAll('.bq-item[data-complete]').forEach(el=>{
+      const complete = new Date(el.dataset.complete).getTime();
+      const now = Date.now();
+      const remSec = Math.max(0, Math.round((complete - now) / 1000));
+      const name = el.querySelector('.bq-name').textContent.trim().toLowerCase();
+      const totalSec = (DURATION_MIN[name] || 60) * 60;
+      const pct = Math.min(100, Math.round((1 - remSec / totalSec) * 100));
+      const bar = el.querySelector('.bq-bar');
+      if (bar) bar.style.width = pct + '%';
+      const tm = el.querySelector('.bq-time');
+      if (tm) {
+        const m = Math.floor(remSec / 60), s = remSec % 60;
+        tm.textContent = remSec > 0 ? `${m}:${s.toString().padStart(2,'0')}` : 'done';
+      }
+    });
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+{{end}}

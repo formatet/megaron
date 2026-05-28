@@ -1,0 +1,20 @@
+X:18
+T:Pelasger — Remnants Endure
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=88
+%%MIDI program 73
+%%MIDI channel 1
+V:1 name="Flute" clef=treble
+V:2 name="Pizzicato" clef=treble
+K:BLoc
+% Victory in Locrian is still shadowed — the diminished 5th never fully resolves
+V:1
+|: B4 c4 | d2 e2 d4 | c2 B2 A4 | G6 z2 |
+   F4 G4 | A2 B2 c4 | B4 A4 | B8 :|
+V:2
+%%MIDI program 44
+%%MIDI channel 2
+|: [B,,B,]4 [B,,B,]4 | [B,,F,]4 [B,,F,]4 | [A,,E,]4 [A,,E,]4 | [G,,D,]4 z4 |
+   [F,,C,]4 [F,,C,]4 | [G,,D,]4 [G,,D,]4 | [A,,E,]4 [F,,C,]4 | [B,,B,]8 :|

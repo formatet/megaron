@@ -1,0 +1,20 @@
+X:15
+T:Thrakes — The Long Winter
+C:Thalassa OST
+M:4/4
+L:1/8
+Q:1/4=54
+%%MIDI program 108
+%%MIDI channel 1
+V:1 name="Gaida" clef=treble
+V:2 name="Strings" clef=treble
+K:FLyd
+% The Lydian brightness inverted — the augmented 4th now sounds unresolved, lost
+V:1
+|: f6 z2 | e4 d4 | c4 B4 | A6 z2 |
+   G4 F4 | E4 D4 | C6 z2 | F8 :|
+V:2
+%%MIDI program 44
+%%MIDI channel 2
+|: F,8 | C8 | F,8 | F,8 |
+   G,8 | F,8 | C8 | F,8 :|
