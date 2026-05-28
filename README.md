@@ -1,8 +1,10 @@
 # Thalassa
 
-A persistent asynchronous multiplayer strategy game set in the mythic Bronze Age eastern Mediterranean. Inspired by Utopia (1998), Settlers, and EU5.
+A persistent asynchronous multiplayer strategy game set in the mythic Bronze Age eastern Mediterranean.
 
-Each player governs a province: build, train armies, form kingdoms, court capricious gods, and survive until the Sea Peoples come.
+Each player governs a network of settlements: build, recruit armies, form kingdoms, court capricious gods, and survive until the Sea Peoples come. The world runs whether you are online or not.
+
+**Inspirations:** Utopia (1998) · Settlers 2 · Europa Universalis 4 · Crusader Kings · Machiavelli: The Merchant Prince · Sid Meier's Colonization · Diplomacy (board game)
 
 ---
 

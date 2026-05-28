@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/thalassa/server/internal/clock"
 )
 
 // ScheduledEventType identifies what should happen when the event fires.
@@ -40,14 +41,21 @@ type ScheduledEvent struct {
 	Attempts     int
 }
 
-// Scheduler enqueues and dequeues timed game events.
+// Scheduler enqueues timed game events.
 type Scheduler struct {
-	pool *pgxpool.Pool
+	pool  *pgxpool.Pool
+	clock clock.Clock
 }
 
 // NewScheduler creates a Scheduler backed by the given connection pool.
-func NewScheduler(pool *pgxpool.Pool) *Scheduler {
-	return &Scheduler{pool: pool}
+// clk is used for all due_at calculations — pass a TestClock in tests.
+func NewScheduler(pool *pgxpool.Pool, clk clock.Clock) *Scheduler {
+	return &Scheduler{pool: pool, clock: clk}
+}
+
+// EnqueueAfter schedules an event to fire d duration from now (game time).
+func (s *Scheduler) EnqueueAfter(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, d time.Duration) error {
+	return s.Enqueue(ctx, worldID, eventType, payload, s.clock.Now().Add(d))
 }
 
 // Enqueue schedules a new event to be processed at or after processAfter.
@@ -64,26 +72,44 @@ func (s *Scheduler) Enqueue(ctx context.Context, worldID uuid.UUID, eventType Sc
 	return err
 }
 
-// Handler processes a single scheduled event payload.
+// Handler processes a single scheduled event. It must propagate ctx to all DB calls.
 type Handler func(ctx context.Context, e ScheduledEvent) error
 
+// DefaultHandlerTimeout is applied to every handler unless overridden via WithHandlerTimeout.
+const DefaultHandlerTimeout = 5 * time.Second
+
+// DeadLetterAttempts is the number of consecutive failures before an event is dead-lettered.
+const DeadLetterAttempts = 3
+
 // Worker polls for due events every 10 seconds and dispatches them to registered handlers.
+// Each handler is called with a per-handler timeout context (G2). Three consecutive
+// timeouts or errors mark the event as dead-lettered for manual inspection.
 type Worker struct {
 	pool     *pgxpool.Pool
+	clock    clock.Clock
 	handlers map[ScheduledEventType]Handler
+	timeouts map[ScheduledEventType]time.Duration
 }
 
-// NewWorker creates a Worker with the given connection pool.
-func NewWorker(pool *pgxpool.Pool) *Worker {
+// NewWorker creates a Worker. clk must be the same Clock used by Scheduler.
+func NewWorker(pool *pgxpool.Pool, clk clock.Clock) *Worker {
 	return &Worker{
 		pool:     pool,
+		clock:    clk,
 		handlers: make(map[ScheduledEventType]Handler),
+		timeouts: make(map[ScheduledEventType]time.Duration),
 	}
 }
 
-// Register binds a handler to a scheduled event type.
+// Register binds a handler to a scheduled event type using the default timeout.
 func (w *Worker) Register(t ScheduledEventType, h Handler) {
 	w.handlers[t] = h
+}
+
+// RegisterWithTimeout binds a handler and overrides the per-call context timeout.
+func (w *Worker) RegisterWithTimeout(t ScheduledEventType, h Handler, timeout time.Duration) {
+	w.handlers[t] = h
+	w.timeouts[t] = timeout
 }
 
 // Run polls for due events until ctx is cancelled.
@@ -106,7 +132,7 @@ func (w *Worker) Run(ctx context.Context) {
 }
 
 func (w *Worker) processBatch(ctx context.Context) error {
-	// Claim up to 20 due events atomically.
+	now := w.clock.Now()
 	rows, err := w.pool.Query(ctx,
 		`UPDATE scheduled_events
 		 SET attempts = attempts + 1
@@ -114,12 +140,13 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		     SELECT id FROM scheduled_events
 		     WHERE processed_at IS NULL
 		       AND failed_at IS NULL
-		       AND process_after <= now()
+		       AND process_after <= $1
 		     ORDER BY process_after
 		     LIMIT 20
 		     FOR UPDATE SKIP LOCKED
 		 )
 		 RETURNING id, world_id, event_type, payload, process_after, processed_at, failed_at, attempts`,
+		now,
 	)
 	if err != nil {
 		return fmt.Errorf("claim events: %w", err)
@@ -152,9 +179,20 @@ func (w *Worker) dispatch(ctx context.Context, e ScheduledEvent) {
 		return
 	}
 
-	if err := h(ctx, e); err != nil {
-		slog.Error("scheduled event handler failed", "type", e.EventType, "id", e.ID, "err", err)
-		if e.Attempts >= 3 {
+	timeout := DefaultHandlerTimeout
+	if t, ok := w.timeouts[e.EventType]; ok {
+		timeout = t
+	}
+
+	hCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	if err := h(hCtx, e); err != nil {
+		slog.Error("scheduled event handler failed",
+			"type", e.EventType, "id", e.ID, "attempt", e.Attempts, "err", err)
+		if e.Attempts >= DeadLetterAttempts {
+			slog.Error("dead-lettering event after repeated failures",
+				"type", e.EventType, "id", e.ID)
 			w.markFailed(ctx, e.ID)
 		}
 		return

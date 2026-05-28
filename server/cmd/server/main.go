@@ -21,6 +21,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/thalassa/server/api/handlers"
 	"github.com/thalassa/server/internal/auth"
+	"github.com/thalassa/server/internal/clock"
 	"github.com/thalassa/server/internal/combat"
 	"github.com/thalassa/server/internal/events"
 	"github.com/thalassa/server/internal/kharis"
@@ -65,10 +66,16 @@ func main() {
 
 	hub := notify.New()
 
+	// GameClock — single source of time for all game logic.
+	// On startup, check for downtime since last heartbeat and absorb it.
+	gameClock := clock.NewWallClock()
+	absorbStartupDowntime(ctx, pool, gameClock)
+	go runHeartbeat(ctx, pool)
+
 	// Event worker — processes timed game events.
 	eventStore := events.NewStore(pool)
-	scheduler := events.NewScheduler(pool)
-	worker := events.NewWorker(pool)
+	scheduler := events.NewScheduler(pool, gameClock)
+	worker := events.NewWorker(pool, gameClock)
 	arrivalH := combat.NewArrivalHandler(pool, eventStore, hub)
 	buildH := combat.NewBuildCompleteHandler(pool, eventStore, hub)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, hub)
@@ -252,7 +259,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 			if exists {
 				continue
 			}
-			if err := sched.Enqueue(ctx, wid, tt, struct{}{}, time.Now().Add(24*time.Hour)); err != nil {
+			if err := sched.EnqueueAfter(ctx, wid, tt, struct{}{}, 24*time.Hour); err != nil {
 				slog.Error("seed daily tick", "world", wid, "type", tt, "err", err)
 			}
 		}
@@ -286,4 +293,41 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// absorbStartupDowntime reads the most recent server heartbeat and, if the gap
+// since then exceeds clock.PauseThreshold, tells the WallClock to adjust.
+func absorbStartupDowntime(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) {
+	var lastBeat time.Time
+	err := pool.QueryRow(ctx,
+		`SELECT beat_at FROM server_heartbeats ORDER BY beat_at DESC LIMIT 1`,
+	).Scan(&lastBeat)
+	if err != nil {
+		// Table may not exist yet (first boot) — that's fine.
+		return
+	}
+	gap := time.Since(lastBeat)
+	if gap > clock.PauseThreshold {
+		clk.RecordDowntime(gap)
+		slog.Info("server downtime absorbed into game clock", "gap", gap.Round(time.Second))
+	}
+}
+
+// runHeartbeat writes a row to server_heartbeats every 10 seconds so that the
+// next startup can detect how long the server was down.
+func runHeartbeat(ctx context.Context, pool *pgxpool.Pool) {
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			if _, err := pool.Exec(ctx,
+				`INSERT INTO server_heartbeats (beat_at) VALUES (now())`,
+			); err != nil {
+				slog.Warn("heartbeat write failed", "err", err)
+			}
+		}
+	}
 }

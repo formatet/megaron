@@ -26,6 +26,7 @@ immediately — do not defer it.
 | [`thalassa_notifikationer.md`](~/Dokument/myltavault/thalassa_notifikationer.md) | Push notification taxonomy, BeReal mobile model |
 | [`thalassa_titlar_och_militär.md`](~/Dokument/myltavault/thalassa_titlar_och_militär.md) | Title schema, Lochagos/Strategos/Nauarchos hierarchy (v1) |
 | [`thalassa_prayers.md`](~/Dokument/myltavault/thalassa_prayers.md) | Prayer table, rites, divine actions (v1) |
+| [`thalassa_arkitekturrefaktor.md`](~/Dokument/myltavault/thalassa_arkitekturrefaktor.md) | 11-fas backend refactor plan — Clock, economy, religion, ruleset, notify |
 
 ---
 
@@ -104,6 +105,58 @@ Cannot be stopped — only survived. Sea Peoples escalate. Islands sink. `thalas
 **Column naming (do not deviate):**
 - Resources: `gold_amount`, `gold_rate`, `gold_cap`, `gold_calc_at` — NOT `*_last_calc_at`
 - Army: bare column names — `infantry`, `cavalry`, `catapult`, `priest`, `ship`
+
+---
+
+## Architecture rules (hard — do not deviate)
+
+### Time
+- **Never call `time.Now()` directly.** All time goes through `clock.Clock.Now()`.
+- Inject `clock.Clock` via constructor. Use `clock.TestClock` in tests.
+- Only `internal/events` and `main.go` may hold a `*clock.WallClock`.
+
+### Event handlers (Fas 2.2 — idempotency)
+Every handler registered with `events.Worker` must be safe to run twice.
+Accepted patterns:
+1. `SELECT … FOR UPDATE` → do work → `UPDATE processed=true` — all in one transaction.
+2. `INSERT … ON CONFLICT (event_id) DO NOTHING` for projection writes.
+If a handler is not idempotent, mark it with a `// TODO: idempotent` comment and file an issue.
+
+### Events store outcomes, not intentions (Fas 2.3)
+Probabilistic rolls happen **once** in the handler; the **result** is what goes in the event payload.
+A `DivinePunishment` event must say `{"type":"cavalry_loss","amount":3}`, not `{"roll_pending":true}`.
+No event may say "check if X happened" — it must say "X happened" or not exist.
+
+### Event versioning (Fas 2.4)
+Event schemas are **frozen in semantics forever**. Never change how an existing event type is interpreted.
+To evolve: create a new event type (`MessengerArrivedV2`). Old handlers keep reading old types.
+
+### Package dependency order (G1 — strict, no exceptions)
+```
+clock, events  ← zero internal deps
+  ↑
+economy, religion  ← may use clock, events
+  ↑
+settlement, province  ← may use economy, religion, clock, events
+  ↑
+combat, kingdom  ← may use settlement, province, economy, religion, clock, events
+  ↑
+messenger, notify  ← may use all above
+  ↑
+api/handlers  ← may use all
+```
+A package may import **downward only**. Upward communication goes via event emission.
+Consumer interfaces are defined in the **consuming** package, never in the implementing one.
+
+### Handler timeouts (G2)
+`events.Worker` wraps every handler in `context.WithTimeout` (default 5 s).
+Handlers **must** pass `ctx` to every DB call (`QueryContext`, `ExecContext`).
+Three consecutive failures → dead-lettered (logged as ERROR, `failed_at` set).
+
+### Auth (G3)
+Bearer token in `Authorization` header — not httpOnly cookie.
+HTMX wires it via `htmx:configRequest` listener in `web/static/js/auth.js`.
+iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 
 **Deployment:** `docker compose up` at project root. Migrations run on startup.
 `.env.example` → `.env` before first run.
