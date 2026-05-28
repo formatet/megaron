@@ -116,7 +116,7 @@ func (h *KingdomHandler) Found(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = h.pool.Exec(r.Context(),
-		`INSERT INTO kingdom_members (kingdom_id, player_id, role) VALUES ($1, $2, 'king')`,
+		`INSERT INTO kingdom_members (kingdom_id, player_id, role) VALUES ($1, $2, 'basileus')`,
 		kingdomID, playerID,
 	)
 	if err != nil {
@@ -155,8 +155,8 @@ func (h *KingdomHandler) Invite(w http.ResponseWriter, r *http.Request) {
 		`SELECT role FROM kingdom_members WHERE kingdom_id = $1 AND player_id = $2`,
 		kingdomID, playerID,
 	).Scan(&role)
-	if err != nil || role != "king" {
-		writeError(w, http.StatusForbidden, "only the king may invite")
+	if err != nil || role != "basileus" {
+		writeError(w, http.StatusForbidden, "only the basileus may invite")
 		return
 	}
 
@@ -287,8 +287,8 @@ func (h *KingdomHandler) Leave(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "not a member")
 		return
 	}
-	if role == "king" {
-		writeError(w, http.StatusConflict, "king must abdicate or disband kingdom before leaving")
+	if role == "basileus" {
+		writeError(w, http.StatusConflict, "basileus must abdicate or disband kingdom before leaving")
 		return
 	}
 
@@ -384,8 +384,8 @@ func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 		`SELECT role FROM kingdom_members WHERE kingdom_id = $1 AND player_id = $2`,
 		kingdomID, playerID,
 	).Scan(&role)
-	if err != nil || role != "king" {
-		writeError(w, http.StatusForbidden, "only the king may borrow armies")
+	if err != nil || role != "basileus" {
+		writeError(w, http.StatusForbidden, "only the basileus may borrow armies")
 		return
 	}
 
@@ -517,8 +517,8 @@ func (h *KingdomHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
 		`SELECT role FROM kingdom_members WHERE kingdom_id = $1 AND player_id = $2`,
 		kingdomID, playerID,
 	).Scan(&actorRole)
-	if err != nil || actorRole != "king" {
-		writeError(w, http.StatusForbidden, "only the king may assign roles")
+	if err != nil || actorRole != "basileus" {
+		writeError(w, http.StatusForbidden, "only the basileus may assign roles")
 		return
 	}
 
@@ -773,13 +773,13 @@ func (h *KingdomHandler) resolveElection(ctx context.Context, electionID, kingdo
 	defer tx.Rollback(ctx)
 
 	_, _ = tx.Exec(ctx,
-		`UPDATE kingdom_members SET role = 'king'
+		`UPDATE kingdom_members SET role = 'basileus'
 		 WHERE kingdom_id = $1 AND player_id = $2`,
 		kingdomID, winnerID,
 	)
 	_, _ = tx.Exec(ctx,
 		`UPDATE kingdom_members SET role = 'member'
-		 WHERE kingdom_id = $1 AND player_id != $2 AND role = 'king'`,
+		 WHERE kingdom_id = $1 AND player_id != $2 AND role = 'basileus'`,
 		kingdomID, winnerID,
 	)
 	_, _ = tx.Exec(ctx,
