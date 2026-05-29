@@ -1,4 +1,4 @@
-// Package kharis implements the daily temple maintenance tick for Thalassa.
+// Package kharis implements the daily temple maintenance tick for Poleia.
 // Kharis is a reciprocal relationship between a settlement and its gods.
 // Settlements that maintain their temples accumulate divine favour;
 // those that neglect maintenance lose it — and eventually suffer.
@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/events"
+	"github.com/poleia/server/internal/events"
 )
 
 const (

@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/events"
-	"github.com/thalassa/server/internal/notify"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/notify"
 )
 
 // TrainCompletePayload is the scheduled event payload for finished unit training.

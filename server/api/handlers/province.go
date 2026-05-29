@@ -9,10 +9,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/auth"
-	"github.com/thalassa/server/internal/combat"
-	"github.com/thalassa/server/internal/events"
-	"github.com/thalassa/server/internal/province"
+	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/combat"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/province"
 )
 
 // ProvinceHandler handles HTTP requests for province endpoints.

@@ -1,5 +1,5 @@
 {{template "base" .}}
-{{define "title"}}{{.Province.Name}} — Thalassa{{end}}
+{{define "title"}}{{.Province.Name}} — Poleia{{end}}
 {{define "nav"}}
   <a href="/worlds">Worlds</a>
   <a href="/world/{{.WorldID}}/map">Map</a>
@@ -285,7 +285,7 @@ const PROVINCE_ID = "{{.Province.ID}}";
 const WORLD_ID    = "{{.WorldID}}";
 
 function apiPost(path, body) {
-  const token = localStorage.getItem('thalassa_access');
+  const token = localStorage.getItem('poleia_access');
   return fetch(path, {
     method: 'POST',
     headers: {

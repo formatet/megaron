@@ -1,4 +1,4 @@
-// Package ai implements passive AI players and AI governors for Thalassa.
+// Package ai implements passive AI players and AI governors for Poleia.
 package ai
 
 import (
@@ -83,7 +83,7 @@ func VoteWeighting(candidateKharis int, localPantheonAlignment float64) float64 
 
 // DivinInterventionProbability returns the probability that the gods override an
 // election result for a candidate with the given kharis level.
-// Formula from thalassa_kingdoms.md: P = (400 - kharis) / 400 × 0.30
+// Formula from thalassa_kingdoms.md (vault): P = (400 - kharis) / 400 × 0.30
 func DivineInterventionProbability(kharis int) float64 {
 	if kharis >= 400 {
 		return 0

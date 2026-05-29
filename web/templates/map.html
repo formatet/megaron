@@ -44,7 +44,7 @@
     <span class="legend-item" style="--tc:#F0B27A">Hills</span>
     <span class="legend-item" style="--tc:#F2EAD3">Mountain</span>
     <span class="legend-item" style="--tc:#FAD7A0">Coast</span>
-    <span class="legend-item" style="--tc:#2E86C1">Sea</span>
+    <span class="legend-item" style="--tc:#2E86C1">The Thalassa</span>
     <span class="legend-item" style="--tc:#1C1C1C">Fog</span>
   </div>
 </div>
@@ -426,7 +426,7 @@ function render() {
 
 // ── Data loading ──────────────────────────────────────────────────────────
 async function fetchAuth(url) {
-  const token = localStorage.getItem('thalassa_access');
+  const token = localStorage.getItem('poleia_access');
   const headers = token ? {'Authorization': 'Bearer ' + token} : {};
   return fetch(url, {headers});
 }

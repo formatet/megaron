@@ -1,5 +1,5 @@
 {{template "base" .}}
-{{define "title"}}{{if .HasKingdom}}{{.KingdomName}}{{else}}Kingdom{{end}} — Thalassa{{end}}
+{{define "title"}}{{if .HasKingdom}}{{.KingdomName}}{{else}}Kingdom{{end}} — Poleia{{end}}
 {{define "nav"}}
   <a href="/worlds">Worlds</a>
   <a href="/world/{{.WorldID}}">Province</a>
@@ -106,7 +106,7 @@ const KINGDOM_ID = "{{.KingdomID}}";
 {{end}}
 
 function apiReq(method, path, body) {
-  const token = localStorage.getItem('thalassa_access');
+  const token = localStorage.getItem('poleia_access');
   return fetch(path, {
     method,
     headers: {
@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', reloadAll);
 async function foundKingdom() {
   const name = document.getElementById('found-name').value.trim();
   if (!name) return;
-  const token = localStorage.getItem('thalassa_access');
+  const token = localStorage.getItem('poleia_access');
   const res = await fetch(`/api/v1/worlds/${WORLD_ID}/kingdoms`, {
     method: 'POST',
     headers: {'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{})},

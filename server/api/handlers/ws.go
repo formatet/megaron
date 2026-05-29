@@ -6,7 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/thalassa/server/internal/notify"
+	"github.com/poleia/server/internal/notify"
 )
 
 var upgrader = websocket.Upgrader{

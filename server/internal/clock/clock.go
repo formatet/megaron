@@ -1,4 +1,4 @@
-// Package clock provides the GameClock abstraction for Thalassa.
+// Package clock provides the GameClock abstraction for Poleia.
 // All time-dependent logic must go through Clock.Now() — never time.Now() directly.
 // This enables deterministic tests and pause-aware wall time in production.
 package clock

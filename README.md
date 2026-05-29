@@ -1,4 +1,4 @@
-# Thalassa
+# Poleia
 
 A persistent asynchronous multiplayer strategy game set in the mythic Bronze Age eastern Mediterranean.
 
@@ -11,7 +11,7 @@ Each player governs a network of settlements: build, recruit armies, form kingdo
 ## Run locally (3 commands)
 
 ```bash
-git clone <this-repo> && cd thalassa
+git clone <this-repo> && cd poleia
 cp .env.example .env          # edit JWT_SECRET at minimum
 docker compose up
 ```

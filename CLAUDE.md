@@ -1,4 +1,4 @@
-# THALASSA — Claude Workspace Context
+# POLEIA — Claude Workspace Context
 
 Keep this file updated as decisions are locked. If code and this file conflict, trust
 the code — then fix this file.
@@ -41,6 +41,10 @@ Tone: serious, warm, human-scale. Moomin Valley in the Bronze Age Aegean.
 Inspirations: Utopia (1998), Settlers 2, EU4, Crusader Kings, Merchant Prince 2,
 Diplomacy (board game).
 
+**Name note:** The project is called **Poleia**. The sea in the game world is called
+**The Thalassa** — the great primordial sea connecting all civilisations. This is
+permanent flavour: `terrain = "sea"` in the DB, "The Thalassa" in all UI/map labels.
+
 ---
 
 ## Current implementation state
@@ -79,8 +83,8 @@ Gods punish neglect actively (horses die, ships sink). Full design: `thalassa_kh
 Reply arrives only when messenger returns home. Can board trade ships/caravans.
 Sacred — no player can intercept. Only gods can make one disappear. `thalassa_settlement.md`.
 
-**Kingdom:** King + max 2 Advisors. No Spymaster, no General, no Ambassador.
-Elections Sundays only, 7-day lock. Borrowed armies penalise king after day 7.
+**Kingdom:** Basileus + members. No Spymaster, no General, no Ambassador.
+Elections Sundays only, 7-day lock. Borrowed armies penalise basileus after day 7.
 Full design: `thalassa_kingdoms.md`.
 
 **Combat:** deterministic, no dice. Strength = Σ(units × value) + support.
@@ -204,13 +208,14 @@ No rounded corners. Background terrain desaturated, foreground objects saturated
 | March | Attack (verb) |
 | Sea Peoples | Boss / Enemy |
 | Collapse | Season end |
+| The Thalassa | The Sea (map label) |
 
 ---
 
 ## Project file layout
 
 ```
-Thalassa/
+Poleia/
 ├── CLAUDE.md
 ├── docker-compose.yml / Dockerfile / .env.example
 ├── preview.html                     — standalone map renderer

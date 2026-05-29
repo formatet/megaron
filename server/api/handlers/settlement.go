@@ -8,9 +8,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/auth"
-	"github.com/thalassa/server/internal/events"
-	"github.com/thalassa/server/internal/loyalty"
+	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/loyalty"
 )
 
 // SettlementHandler handles HTTP requests for settlement endpoints.

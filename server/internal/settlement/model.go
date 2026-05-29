@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/thalassa/server/internal/province"
+	"github.com/poleia/server/internal/province"
 )
 
 // ControlType describes how a settlement controls its province.

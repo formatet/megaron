@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/events"
+	"github.com/poleia/server/internal/events"
 )
 
 // DailyTickPayload is the payload for recurring daily world tick events.

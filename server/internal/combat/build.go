@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/events"
-	"github.com/thalassa/server/internal/notify"
-	"github.com/thalassa/server/internal/province"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/notify"
+	"github.com/poleia/server/internal/province"
 )
 
 // BuildCompletePayload is the scheduled event payload for a completed building.

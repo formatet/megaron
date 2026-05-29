@@ -1,4 +1,4 @@
-// Package events implements the event sourcing core for Thalassa.
+// Package events implements the event sourcing core for Poleia.
 // All game state changes are recorded as immutable events; projections are derived from the log.
 package events
 

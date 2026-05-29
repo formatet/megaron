@@ -11,8 +11,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/auth"
-	"github.com/thalassa/server/internal/world"
+	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/world"
 )
 
 // WebHandler renders HTMX-powered HTML pages.

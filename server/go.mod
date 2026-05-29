@@ -1,4 +1,4 @@
-module github.com/thalassa/server
+module github.com/poleia/server
 
 go 1.22
 

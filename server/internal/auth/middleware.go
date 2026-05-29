@@ -14,7 +14,7 @@ const contextKeyPlayerID contextKey = "playerID"
 const contextKeyUsername contextKey = "username"
 
 // Middleware returns an HTTP middleware that validates JWT access tokens.
-// Checks Authorization: Bearer header first, then the thalassa_token cookie.
+// Checks Authorization: Bearer header first, then the poleia_token cookie.
 // Returns 401 on failure — use WebMiddleware for browser routes that should redirect.
 func Middleware(svc *Service) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -79,7 +79,7 @@ func tokenFromRequest(r *http.Request) string {
 	if h := r.Header.Get("Authorization"); strings.HasPrefix(h, "Bearer ") {
 		return strings.TrimPrefix(h, "Bearer ")
 	}
-	if c, err := r.Cookie("thalassa_token"); err == nil {
+	if c, err := r.Cookie("poleia_token"); err == nil {
 		return c.Value
 	}
 	return ""

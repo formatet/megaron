@@ -10,9 +10,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/events"
-	"github.com/thalassa/server/internal/notify"
-	"github.com/thalassa/server/internal/province"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/notify"
+	"github.com/poleia/server/internal/province"
 )
 
 // ArmyArrivalPayload is the scheduled_events payload for ArmyArrival events.

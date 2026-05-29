@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/thalassa/server/internal/auth"
+	"github.com/poleia/server/internal/auth"
 )
 
 // AuthHandler handles HTTP requests for auth endpoints.
@@ -32,7 +32,7 @@ type tokenResponse struct {
 
 func setTokenCookie(w http.ResponseWriter, token string) {
 	http.SetCookie(w, &http.Cookie{
-		Name:     "thalassa_token",
+		Name:     "poleia_token",
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,

@@ -7,10 +7,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/auth"
-	"github.com/thalassa/server/internal/province"
-	"github.com/thalassa/server/internal/religion"
-	"github.com/thalassa/server/internal/world"
+	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/religion"
+	"github.com/poleia/server/internal/world"
 )
 
 // JoinHandler handles POST /worlds/:worldID/join.

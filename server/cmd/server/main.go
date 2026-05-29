@@ -19,15 +19,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
-	"github.com/thalassa/server/api/handlers"
-	"github.com/thalassa/server/internal/auth"
-	"github.com/thalassa/server/internal/clock"
-	"github.com/thalassa/server/internal/combat"
-	"github.com/thalassa/server/internal/events"
-	"github.com/thalassa/server/internal/kharis"
-	"github.com/thalassa/server/internal/loyalty"
-	"github.com/thalassa/server/internal/messenger"
-	"github.com/thalassa/server/internal/notify"
+	"github.com/poleia/server/api/handlers"
+	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/combat"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/kharis"
+	"github.com/poleia/server/internal/loyalty"
+	"github.com/poleia/server/internal/messenger"
+	"github.com/poleia/server/internal/notify"
 )
 
 func main() {
@@ -205,7 +205,7 @@ func main() {
 	}
 
 	go func() {
-		slog.Info("thalassa server starting", "addr", addr)
+		slog.Info("poleia server starting", "addr", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("server error", "err", err)
 			cancel()

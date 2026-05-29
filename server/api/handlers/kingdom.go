@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/thalassa/server/internal/ai"
-	"github.com/thalassa/server/internal/auth"
+	"github.com/poleia/server/internal/ai"
+	"github.com/poleia/server/internal/auth"
 )
 
 // KingdomHandler handles HTTP requests for kingdom endpoints.

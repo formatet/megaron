@@ -1,5 +1,5 @@
 {{template "base" .}}
-{{define "title"}}Thalassa — Enter the Sea{{end}}
+{{define "title"}}Poleia — Enter the Sea{{end}}
 {{define "content"}}
 <div class="auth-page">
   <div class="auth-hero">
@@ -71,10 +71,10 @@ async function doAuth(url, body, errorEl) {
       errorEl.textContent = data.error || 'Something went wrong.';
       return;
     }
-    // Server already set the thalassa_token cookie.
+    // Server already set the poleia_token cookie.
     // Also keep tokens in localStorage for HTMX API calls.
-    localStorage.setItem('thalassa_access', data.access_token);
-    localStorage.setItem('thalassa_refresh', data.refresh_token);
+    localStorage.setItem('poleia_access', data.access_token);
+    localStorage.setItem('poleia_refresh', data.refresh_token);
     window.location.href = '/worlds';
   } catch (e) {
     errorEl.textContent = 'Network error.';

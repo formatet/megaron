@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{block "title" .}}Thalassa{{end}}</title>
-  <link rel="stylesheet" href="/static/thalassa.css">
+  <title>{{block "title" .}}Poleia{{end}}</title>
+  <link rel="stylesheet" href="/static/poleia.css">
   <script src="https://unpkg.com/htmx.org@2.0.0/dist/htmx.min.js"></script>
   <script>
     // Inject JWT from localStorage on every HTMX request.
     document.addEventListener('htmx:configRequest', function(e) {
-      const token = localStorage.getItem('thalassa_access');
+      const token = localStorage.getItem('poleia_access');
       if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
     });
   </script>
@@ -25,7 +25,7 @@
     {{block "content" .}}{{end}}
   </main>
   <footer>
-    <span>Thalassa — Bronze Age strategy</span>
+    <span>Poleia — Bronze Age strategy</span>
   </footer>
 </body>
 </html>{{end}}

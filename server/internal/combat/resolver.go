@@ -1,8 +1,8 @@
-// Package combat implements deterministic combat resolution for Thalassa.
+// Package combat implements deterministic combat resolution for Poleia.
 // There is no randomness — outcome is a pure function of force strengths.
 package combat
 
-import "github.com/thalassa/server/internal/province"
+import "github.com/poleia/server/internal/province"
 
 // AttackForce describes the attacking side of a battle.
 type AttackForce struct {

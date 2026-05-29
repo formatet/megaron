@@ -1,5 +1,5 @@
 {{template "base" .}}
-{{define "title"}}Worlds — Thalassa{{end}}
+{{define "title"}}Worlds — Poleia{{end}}
 {{define "content"}}
 <div class="page-worlds">
   <div class="worlds-header">
@@ -71,7 +71,7 @@ function handleJoin(e, worldID) {
 
 // Inject auth on all HTMX requests (both Bearer for API + cookie is set by server).
 document.addEventListener('htmx:configRequest', function(e) {
-  const token = localStorage.getItem('thalassa_access');
+  const token = localStorage.getItem('poleia_access');
   if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
 });
 </script>
