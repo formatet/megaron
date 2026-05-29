@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 )
 
@@ -21,11 +22,12 @@ type BorrowedArmyPenaltyHandler struct {
 	pool       *pgxpool.Pool
 	scheduler  *events.Scheduler
 	eventStore *events.Store
+	clk        clock.Clock
 }
 
 // NewBorrowedArmyPenaltyHandler creates a BorrowedArmyPenaltyHandler.
-func NewBorrowedArmyPenaltyHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store) *BorrowedArmyPenaltyHandler {
-	return &BorrowedArmyPenaltyHandler{pool: pool, scheduler: sched, eventStore: store}
+func NewBorrowedArmyPenaltyHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, clk clock.Clock) *BorrowedArmyPenaltyHandler {
+	return &BorrowedArmyPenaltyHandler{pool: pool, scheduler: sched, eventStore: store, clk: clk}
 }
 
 // Handle processes a BorrowedArmyTick scheduled event.
@@ -60,7 +62,7 @@ func (h *BorrowedArmyPenaltyHandler) Handle(ctx context.Context, e events.Schedu
 		return err
 	}
 
-	now := time.Now()
+	now := h.clk.Now()
 	for _, b := range borrows {
 		daysHeld := int(now.Sub(b.borrowedAt).Hours() / 24)
 
@@ -76,8 +78,8 @@ func (h *BorrowedArmyPenaltyHandler) Handle(ctx context.Context, e events.Schedu
 		}
 	}
 
-	return h.scheduler.Enqueue(ctx, e.WorldID, events.ScheduledBorrowedArmyTick,
-		DailyTickPayload{}, now.Add(24*time.Hour))
+	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledBorrowedArmyTick,
+		DailyTickPayload{}, 24*time.Hour)
 }
 
 // penaliseKingKharis drains 5 kharis from the king's capital settlement.

@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/loyalty"
 )
@@ -17,11 +18,12 @@ import (
 type SettlementHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
+	clk        clock.Clock
 }
 
 // NewSettlementHandler creates a SettlementHandler.
-func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store) *SettlementHandler {
-	return &SettlementHandler{pool: pool, eventStore: store}
+func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store, clk clock.Clock) *SettlementHandler {
+	return &SettlementHandler{pool: pool, eventStore: store, clk: clk}
 }
 
 // List handles GET /worlds/:worldID/settlements — returns the caller's settlements.
@@ -104,7 +106,7 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
+	now := h.clk.Now()
 
 	// Load cult_level and compute divine_mood from live kharis.
 	var cultLevel string

@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/world"
 )
 
@@ -21,11 +22,12 @@ type WebHandler struct {
 	authSvc     *auth.Service
 	base        *template.Template // base.html only, cloned per request
 	templateDir string
+	clk         clock.Clock
 }
 
 // NewWebHandler creates a WebHandler. Only base.html is pre-parsed; page
 // templates are parsed fresh per request so each gets its own "content" block.
-func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string) (*WebHandler, error) {
+func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, clk clock.Clock) (*WebHandler, error) {
 	funcs := template.FuncMap{
 		"formatTime": func(t time.Time) string {
 			return t.Format("2006-01-02 15:04")
@@ -55,7 +57,7 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 	if err != nil {
 		return nil, err
 	}
-	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir}, nil
+	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir, clk: clk}, nil
 }
 
 // render renders a full-page template that extends base.html.
@@ -175,7 +177,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
+	now := h.clk.Now()
 	resources := s.Resources.Snapshot(now)
 	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
 	resources["food_rate"] = s.Resources.Food.RatePerMinute
@@ -321,7 +323,7 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no settlement", http.StatusNotFound)
 		return
 	}
-	resources := s.Resources.Snapshot(time.Now())
+	resources := s.Resources.Snapshot(h.clk.Now())
 	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
 	resources["food_rate"] = s.Resources.Food.RatePerMinute
 	resources["lumber_rate"] = s.Resources.Lumber.RatePerMinute

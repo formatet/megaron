@@ -77,12 +77,12 @@ func main() {
 	eventStore := events.NewStore(pool)
 	scheduler := events.NewScheduler(pool, gameClock)
 	worker := events.NewWorker(pool, gameClock)
-	arrivalH := combat.NewArrivalHandler(pool, eventStore, hub)
+	arrivalH := combat.NewArrivalHandler(pool, eventStore, hub, gameClock)
 	buildH := combat.NewBuildCompleteHandler(pool, eventStore, hub)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, hub)
 	decayH := loyalty.NewDecayHandler(pool, scheduler, eventStore)
 	colonyH := loyalty.NewColonyPenaltyHandler(pool, scheduler, eventStore)
-	borrowedH := loyalty.NewBorrowedArmyPenaltyHandler(pool, scheduler, eventStore)
+	borrowedH := loyalty.NewBorrowedArmyPenaltyHandler(pool, scheduler, eventStore, gameClock)
 	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore)
@@ -112,7 +112,7 @@ func main() {
 	templateDir := getEnv("TEMPLATE_DIR", "../../web/templates")
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
 
-	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir)
+	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir, gameClock)
 	if err != nil {
 		slog.Error("load templates", "err", err)
 		os.Exit(1)
@@ -142,11 +142,11 @@ func main() {
 	})
 
 	// Game routes (authenticated).
-	wh := handlers.NewWorldHandler(pool, authSvc)
-	kh := handlers.NewKingdomHandler(pool)
-	ph := handlers.NewProvinceHandler(pool, scheduler)
-	sh := handlers.NewSettlementHandler(pool, eventStore)
-	mh := handlers.NewMessengerHandler(pool, scheduler)
+	wh := handlers.NewWorldHandler(pool, authSvc, gameClock)
+	kh := handlers.NewKingdomHandler(pool, gameClock)
+	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock)
+	sh := handlers.NewSettlementHandler(pool, eventStore, gameClock)
+	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock)
 	jh := handlers.NewJoinHandler(pool)
 
 	r.Route("/api/v1", func(r chi.Router) {

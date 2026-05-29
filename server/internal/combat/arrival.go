@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/province"
@@ -25,11 +25,12 @@ type ArrivalHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	hub        *notify.Hub
+	clk        clock.Clock
 }
 
 // NewArrivalHandler creates an ArrivalHandler.
-func NewArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub *notify.Hub) *ArrivalHandler {
-	return &ArrivalHandler{pool: pool, eventStore: store, hub: hub}
+func NewArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub *notify.Hub, clk clock.Clock) *ArrivalHandler {
+	return &ArrivalHandler{pool: pool, eventStore: store, hub: hub, clk: clk}
 }
 
 // Handle processes a single ArmyArrival scheduled event.
@@ -246,7 +247,7 @@ func (h *ArrivalHandler) recordEvent(ctx context.Context, streamID, worldID uuid
 		"attacker_losses":  result.AttackerLosses,
 		"defender_losses":  result.DefenderLosses,
 		"march_id":         marchID,
-		"resolved_at":      time.Now(),
+		"resolved_at":      h.clk.Now(),
 	}, worldID, nil)
 	if err != nil {
 		slog.Error("record combat event", "err", err)

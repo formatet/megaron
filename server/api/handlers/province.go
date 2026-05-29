@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
@@ -20,11 +20,12 @@ import (
 type ProvinceHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
+	clk       clock.Clock
 }
 
 // NewProvinceHandler creates a ProvinceHandler.
-func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler) *ProvinceHandler {
-	return &ProvinceHandler{pool: pool, scheduler: scheduler}
+func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock) *ProvinceHandler {
+	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk}
 }
 
 // Get handles GET /worlds/:worldID/provinces/:provinceID.
@@ -56,7 +57,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
 	if err == nil {
-		now := time.Now()
+		now := h.clk.Now()
 		resp["settlement"] = map[string]any{
 			"id":         sett.ID,
 			"name":       sett.Name,
@@ -174,7 +175,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		EliteInfantry: req.EliteInfantry,
 	}
 
-	now := time.Now()
+	now := h.clk.Now()
 	arrivesAt := now.Add(time.Duration(dist) * time.Hour)
 
 	// Deduct units from source and insert march atomically — prevents sending
@@ -344,7 +345,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	completeAt := time.Now().Add(spec.Duration)
+	completeAt := h.clk.Now().Add(spec.Duration)
 	var queueID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at)
@@ -566,7 +567,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	completeAt := time.Now().Add(spec.Duration * time.Duration(req.Count))
+	completeAt := h.clk.Now().Add(spec.Duration * time.Duration(req.Count))
 
 	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTrainComplete,
 		combat.TrainCompletePayload{
@@ -606,7 +607,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
+	now := h.clk.Now()
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT sg.good_key, sg.amount, sg.rate, sg.cap, sg.calc_at,
 		        g.base_value, g.name, g.tier, g.category
@@ -778,7 +779,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arrivesAt := time.Now().Add(time.Duration(travelMins * float64(time.Minute)))
+	arrivesAt := h.clk.Now().Add(time.Duration(travelMins * float64(time.Minute)))
 	var routeID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO trade_routes (world_id, origin_id, destination_id, good_key, quantity, arrives_at)
@@ -790,22 +791,21 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
-		return
-	}
-
-	// Enqueue runs outside the transaction — log failures but don't 500 the client
-	// since the trade_route row is already committed and goods already deducted.
-	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTradeDelivery,
+	// Enqueue delivery within the same transaction — atomic with the deduction.
+	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 		map[string]any{
 			"trade_route_id": routeID,
 			"destination_id": req.DestinationID,
 			"good_key":       req.GoodKey,
 			"quantity":       req.Quantity,
 		}, arrivesAt); err != nil {
-		slog.Error("trade route committed but delivery enqueue failed — route stranded",
-			"route_id", routeID, "err", err)
+		writeError(w, http.StatusInternalServerError, "could not schedule delivery")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{

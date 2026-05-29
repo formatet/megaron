@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/clock"
 )
@@ -71,6 +72,26 @@ func (s *Scheduler) Enqueue(ctx context.Context, worldID uuid.UUID, eventType Sc
 		worldID, string(eventType), raw, processAfter,
 	)
 	return err
+}
+
+// EnqueueTx schedules a new event within an existing transaction. Use this when
+// you need the enqueue to be atomic with other DB work (e.g. trade deductions).
+func (s *Scheduler) EnqueueTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, eventType ScheduledEventType, payload any, processAfter time.Time) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal scheduled payload: %w", err)
+	}
+	_, err = tx.Exec(ctx,
+		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after)
+		 VALUES ($1, $2, $3, $4)`,
+		worldID, string(eventType), raw, processAfter,
+	)
+	return err
+}
+
+// EnqueueAfterTx schedules a relative event within an existing transaction.
+func (s *Scheduler) EnqueueAfterTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, eventType ScheduledEventType, payload any, d time.Duration) error {
+	return s.EnqueueTx(ctx, tx, worldID, eventType, payload, s.clock.Now().Add(d))
 }
 
 // Handler processes a single scheduled event. It must propagate ctx to all DB calls.

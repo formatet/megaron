@@ -11,16 +11,18 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/ai"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 )
 
 // KingdomHandler handles HTTP requests for kingdom endpoints.
 type KingdomHandler struct {
 	pool *pgxpool.Pool
+	clk  clock.Clock
 }
 
 // NewKingdomHandler creates a KingdomHandler.
-func NewKingdomHandler(pool *pgxpool.Pool) *KingdomHandler {
-	return &KingdomHandler{pool: pool}
+func NewKingdomHandler(pool *pgxpool.Pool, clk clock.Clock) *KingdomHandler {
+	return &KingdomHandler{pool: pool, clk: clk}
 }
 
 // List handles GET /worlds/:worldID/kingdoms.
@@ -577,7 +579,7 @@ func (h *KingdomHandler) CallElection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Elections only on Sundays.
-	if time.Now().UTC().Weekday() != time.Sunday {
+	if h.clk.Now().UTC().Weekday() != time.Sunday {
 		writeError(w, http.StatusUnprocessableEntity, "elections can only be called on a Sunday")
 		return
 	}
@@ -592,7 +594,7 @@ func (h *KingdomHandler) CallElection(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not load kingdom")
 		return
 	}
-	if kingLocked != nil && time.Now().Before(*kingLocked) {
+	if kingLocked != nil && h.clk.Now().Before(*kingLocked) {
 		writeError(w, http.StatusConflict, "kingdom is locked until "+kingLocked.Format(time.RFC3339))
 		return
 	}
@@ -621,7 +623,7 @@ func (h *KingdomHandler) CallElection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	closesAt := time.Now().UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)
+	closesAt := h.clk.Now().UTC().Truncate(24 * time.Hour).Add(24 * time.Hour)
 	var electionID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO kingdom_elections (kingdom_id, world_id, candidate_id, called_by, closes_at)
@@ -764,7 +766,7 @@ func (h *KingdomHandler) resolveElection(ctx context.Context, electionID, kingdo
 		}
 	}
 
-	lockedUntil := time.Now().UTC().Add(7 * 24 * time.Hour)
+	lockedUntil := h.clk.Now().UTC().Add(7 * 24 * time.Hour)
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/world"
 )
@@ -19,11 +20,12 @@ import (
 type WorldHandler struct {
 	pool    *pgxpool.Pool
 	authSvc *auth.Service
+	clk     clock.Clock
 }
 
 // NewWorldHandler creates a WorldHandler.
-func NewWorldHandler(pool *pgxpool.Pool, authSvc *auth.Service) *WorldHandler {
-	return &WorldHandler{pool: pool, authSvc: authSvc}
+func NewWorldHandler(pool *pgxpool.Pool, authSvc *auth.Service, clk clock.Clock) *WorldHandler {
+	return &WorldHandler{pool: pool, authSvc: authSvc, clk: clk}
 }
 
 // List handles GET /worlds.
@@ -87,7 +89,7 @@ func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if req.MapSeed != nil {
 		seed = *req.MapSeed
 	} else {
-		seed = time.Now().UnixNano()
+		seed = h.clk.Now().UnixNano()
 	}
 
 	var id uuid.UUID
@@ -142,7 +144,7 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		worldID,
 	).Scan(&activeWars)
 
-	collapse := world.ComputeCollapse(&wld, activeWars, time.Now())
+	collapse := world.ComputeCollapse(&wld, activeWars, h.clk.Now())
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":             wld.ID,
 		"name":           wld.Name,

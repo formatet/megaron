@@ -67,9 +67,8 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 		}
 	}
 
-	// Re-schedule for 24 hours from now.
-	return h.scheduler.Enqueue(ctx, e.WorldID, events.ScheduledLoyaltyDecayTick,
-		DailyTickPayload{}, time.Now().Add(24*time.Hour))
+	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledLoyaltyDecayTick,
+		DailyTickPayload{}, 24*time.Hour)
 }
 
 func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uuid.UUID) error {

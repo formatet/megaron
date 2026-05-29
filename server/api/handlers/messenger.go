@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
@@ -18,11 +19,12 @@ import (
 type MessengerHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
+	clk       clock.Clock
 }
 
 // NewMessengerHandler creates a MessengerHandler.
-func NewMessengerHandler(pool *pgxpool.Pool, sched *events.Scheduler) *MessengerHandler {
-	return &MessengerHandler{pool: pool, scheduler: sched}
+func NewMessengerHandler(pool *pgxpool.Pool, sched *events.Scheduler, clk clock.Clock) *MessengerHandler {
+	return &MessengerHandler{pool: pool, scheduler: sched, clk: clk}
 }
 
 // Send handles POST /worlds/:worldID/settlements/:settlementID/messengers.
@@ -105,7 +107,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
 		return
 	}
-	arrivesAt := time.Now().Add(time.Duration(dist) * time.Hour)
+	arrivesAt := h.clk.Now().Add(time.Duration(dist) * time.Hour)
 
 	var messengerID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
@@ -305,7 +307,7 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		originID,
 	).Scan(&oQ, &oR)
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
-	returnsAt := time.Now().Add(time.Duration(dist) * time.Hour)
+	returnsAt := h.clk.Now().Add(time.Duration(dist) * time.Hour)
 
 	_, err = h.pool.Exec(r.Context(),
 		`UPDATE messengers SET reply_text = $1, status = 'returning' WHERE id = $2`,

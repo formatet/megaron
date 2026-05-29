@@ -66,8 +66,8 @@ func (h *ColonyPenaltyHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 	}
 
-	return h.scheduler.Enqueue(ctx, e.WorldID, events.ScheduledColonyPenaltyTick,
-		DailyTickPayload{}, time.Now().Add(24*time.Hour))
+	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledColonyPenaltyTick,
+		DailyTickPayload{}, 24*time.Hour)
 }
 
 // applyColonyPenalty writes a loyalty_events row for each colony belonging to owner.

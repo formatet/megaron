@@ -70,9 +70,8 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	slog.Info("messenger delivered", "id", payload.MessengerID, "destination", destinationID)
 
 	// Auto-return after 48h if the recipient does not reply sooner.
-	return h.scheduler.Enqueue(ctx, e.WorldID, events.ScheduledMessengerReturn,
-		ReturnPayload{MessengerID: payload.MessengerID},
-		time.Now().Add(48*time.Hour))
+	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledMessengerReturn,
+		ReturnPayload{MessengerID: payload.MessengerID}, 48*time.Hour)
 }
 
 // ReturnHandler handles MessengerReturn events.

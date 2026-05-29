@@ -91,8 +91,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		}
 	}
 
-	return h.scheduler.Enqueue(ctx, e.WorldID, events.ScheduledKharisTick,
-		struct{}{}, time.Now().Add(24*time.Hour))
+	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledKharisTick,
+		struct{}{}, 24*time.Hour)
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, worldID uuid.UUID) error {
