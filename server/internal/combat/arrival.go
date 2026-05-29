@@ -179,17 +179,7 @@ func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 		return fmt.Errorf("update territory state: %w", err)
 	}
 
-	// Deduct sent army from attacker's settlement.
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlements SET
-		   infantry       = GREATEST(0, infantry       - $1),
-		   cavalry        = GREATEST(0, cavalry        - $2),
-		   elite_infantry = GREATEST(0, elite_infantry - $3)
-		 WHERE province_id = $4`,
-		attackArmy.Infantry, attackArmy.Cavalry, attackArmy.EliteInfantry, originID,
-	); err != nil {
-		return fmt.Errorf("deduct attack army: %w", err)
-	}
+	// Units were already deducted when the march was sent — nothing to deduct here.
 
 	// Mark old owner dispossessed.
 	if defOwnerID != nil {
@@ -207,17 +197,14 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 	survivingAttCav := int(float64(attackArmy.Cavalry) * (1 - result.AttackerLosses))
 	survivingAttElite := int(float64(attackArmy.EliteInfantry) * (1 - result.AttackerLosses))
 
-	// Surviving attackers return home.
+	// Units were already deducted at march time — surviving attackers return home.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
-		   infantry       = GREATEST(0, infantry       - $1) + $2,
-		   cavalry        = GREATEST(0, cavalry        - $3) + $4,
-		   elite_infantry = GREATEST(0, elite_infantry - $5) + $6
-		 WHERE province_id = $7`,
-		attackArmy.Infantry, survivingAttInf,
-		attackArmy.Cavalry, survivingAttCav,
-		attackArmy.EliteInfantry, survivingAttElite,
-		originID,
+		   infantry       = infantry       + $1,
+		   cavalry        = cavalry        + $2,
+		   elite_infantry = elite_infantry + $3
+		 WHERE province_id = $4`,
+		survivingAttInf, survivingAttCav, survivingAttElite, originID,
 	); err != nil {
 		return fmt.Errorf("return survivors: %w", err)
 	}

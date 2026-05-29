@@ -212,8 +212,15 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
 	// Deduct from source.
-	tag, err := h.pool.Exec(r.Context(),
+	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlements SET
 		   gold_amount = gold_amount
 		     + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate) - $1,
@@ -235,14 +242,22 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Add to target.
-	_, _ = h.pool.Exec(r.Context(),
+	// Credit target — both in the same transaction.
+	if _, err = tx.Exec(r.Context(),
 		`UPDATE settlements SET
 		   gold_amount = gold_amount + $1,
 		   food_amount = food_amount + $2
 		 WHERE id = $3`,
 		req.Gold, req.Food, targetID,
-	)
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not credit target")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
 
 	// Apply loyalty event — significant gift (50+ gold equivalent) gives +1 loyalty.
 	loyaltyDelta := 0

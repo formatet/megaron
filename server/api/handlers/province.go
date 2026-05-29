@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -164,9 +165,6 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
-	arrivesAt := now.Add(time.Duration(dist) * time.Hour)
-
 	army := province.ArmyComposition{
 		Infantry:      req.Infantry,
 		Cavalry:       req.Cavalry,
@@ -176,8 +174,47 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		EliteInfantry: req.EliteInfantry,
 	}
 
+	now := time.Now()
+	arrivesAt := now.Add(time.Duration(dist) * time.Hour)
+
+	// Deduct units from source and insert march atomically — prevents sending
+	// units you don't have or using the same units in multiple marches.
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	tag, err := tx.Exec(r.Context(),
+		`UPDATE settlements SET
+		   infantry       = GREATEST(0, infantry       - $1),
+		   cavalry        = GREATEST(0, cavalry        - $2),
+		   catapult       = GREATEST(0, catapult       - $3),
+		   priest         = GREATEST(0, priest         - $4),
+		   ship           = GREATEST(0, ship           - $5),
+		   elite_infantry = GREATEST(0, elite_infantry - $6)
+		 WHERE province_id = $7 AND world_id = $8
+		   AND infantry       >= $1
+		   AND cavalry        >= $2
+		   AND catapult       >= $3
+		   AND priest         >= $4
+		   AND ship           >= $5
+		   AND elite_infantry >= $6`,
+		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry,
+		sourceID, worldID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not deduct army")
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "insufficient units")
+		return
+	}
+
 	var marchID uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
+	err = tx.QueryRow(r.Context(),
 		`INSERT INTO marching_armies
 		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -188,6 +225,11 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	).Scan(&marchID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not send army")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
 
@@ -753,13 +795,18 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTradeDelivery,
+	// Enqueue runs outside the transaction — log failures but don't 500 the client
+	// since the trade_route row is already committed and goods already deducted.
+	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTradeDelivery,
 		map[string]any{
-			"trade_route_id":  routeID,
-			"destination_id":  req.DestinationID,
-			"good_key":        req.GoodKey,
-			"quantity":        req.Quantity,
-		}, arrivesAt)
+			"trade_route_id": routeID,
+			"destination_id": req.DestinationID,
+			"good_key":       req.GoodKey,
+			"quantity":       req.Quantity,
+		}, arrivesAt); err != nil {
+		slog.Error("trade route committed but delivery enqueue failed — route stranded",
+			"route_id", routeID, "err", err)
+	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"route_id":   routeID,
@@ -772,7 +819,11 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 // Craft handles POST /worlds/:worldID/provinces/:provinceID/craft.
 // Body: { "recipe_id": 1, "quantity": 1.0 }
 func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
-	worldID, _ := uuid.Parse(chi.URLParam(r, "worldID"))
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
 	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid province ID")
