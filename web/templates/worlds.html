@@ -9,21 +9,18 @@
 
   <div id="create-world-form" style="display:none" class="panel create-panel">
     <h3>Create World</h3>
-    <form hx-post="/api/v1/worlds"
-          hx-target="#world-create-result"
-          hx-swap="innerHTML"
-          hx-on::after-request="if(event.detail.successful) window.location.reload()">
+    <form id="world-form">
       <div class="field">
         <label>World Name</label>
-        <input type="text" name="name" required maxlength="40" placeholder="e.g. The First Age">
+        <input type="text" id="world-name" required maxlength="40" placeholder="e.g. The First Age">
       </div>
       <div class="field inline-fields">
-        <label>Map Width <input type="number" name="map_width" value="40" min="20" max="100"></label>
-        <label>Map Height <input type="number" name="map_height" value="30" min="15" max="80"></label>
+        <label>Map Width <input type="number" id="world-width" value="40" min="20" max="100"></label>
+        <label>Map Height <input type="number" id="world-height" value="30" min="15" max="80"></label>
       </div>
       <button type="submit" class="btn-primary">Create</button>
     </form>
-    <div id="world-create-result"></div>
+    <div id="world-create-result" class="form-error"></div>
   </div>
 
   {{if .Worlds}}
@@ -69,9 +66,27 @@ function handleJoin(e, worldID) {
   }
 }
 
+document.getElementById('world-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const res = document.getElementById('world-create-result');
+  res.textContent = '';
+  const token = localStorage.getItem('poleia_token');
+  const r = await fetch('/api/v1/worlds', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({
+      name: document.getElementById('world-name').value,
+      map_width: parseInt(document.getElementById('world-width').value),
+      map_height: parseInt(document.getElementById('world-height').value),
+    }),
+  });
+  if (r.ok) { window.location.reload(); }
+  else { const d = await r.json(); res.textContent = d.error || 'Error creating world.'; }
+});
+
 // Inject auth on all HTMX requests (both Bearer for API + cookie is set by server).
 document.addEventListener('htmx:configRequest', function(e) {
-  const token = localStorage.getItem('poleia_access');
+  const token = localStorage.getItem('poleia_token');
   if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
 });
 </script>

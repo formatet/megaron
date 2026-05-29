@@ -166,29 +166,23 @@ function hexAtScreen(sx, sy) {
   return {q: rq, r: rr};
 }
 
-// ── Pixel art hex fill ────────────────────────────────────────────────────
-function fillHex(ctx, pts, c0, c1, seed) {
-  const xs = pts.map(p=>p[0]), ys = pts.map(p=>p[1]);
-  const x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
-  ctx.save();
+// ── Hex fill — solid path fill + outline ─────────────────────────────────
+// The old per-pixel fillRect loop cost ~2000 draw calls per hex (×1200 hexes
+// = 2.4M calls/frame). Path fill + stroke = 2 calls per hex.
+function hexPath(ctx, pts) {
   ctx.beginPath();
   ctx.moveTo(pts[0][0], pts[0][1]);
   for (let i=1;i<6;i++) ctx.lineTo(pts[i][0], pts[i][1]);
   ctx.closePath();
-  ctx.clip();
-  for (let py=y0; py<=y1; py++) {
-    for (let px=x0; px<=x1; px++) {
-      ctx.fillStyle = ((px+py)&1)^((seed>>2)&1) ? c1 : c0;
-      ctx.fillRect(px, py, 1, 1);
-    }
-  }
-  ctx.restore();
+}
+function fillHex(ctx, pts, c0, c1, seed) {
+  hexPath(ctx, pts);
+  // Alternate between c0/c1 per tile via seed so adjacent tiles have visible contrast.
+  ctx.fillStyle = (seed >> 2) & 1 ? c1 : c0;
+  ctx.fill();
   ctx.strokeStyle = '#1C1C1C';
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let i=1;i<6;i++) ctx.lineTo(pts[i][0], pts[i][1]);
-  ctx.closePath();
+  hexPath(ctx, pts);
   ctx.stroke();
 }
 
@@ -343,6 +337,8 @@ let camera = { x: 0, y: 0, zoom: 1 };
 let dragging = false, lastMouse = null;
 let selectedProvince = null;
 let animFrame = 0;
+let dirty = true;
+let lastSeaTick = -1;
 
 const canvas = document.getElementById('hex-canvas');
 const tooltip = document.getElementById('tile-tooltip');
@@ -360,6 +356,16 @@ ctx.imageSmoothingEnabled = false;
 
 function render() {
   animFrame++;
+  const seaTick = animFrame >> 5;
+  const seaChanged = seaTick !== lastSeaTick;
+  if (seaChanged) lastSeaTick = seaTick;
+
+  if (!dirty && !seaChanged && marchData.length === 0) {
+    requestAnimationFrame(render);
+    return;
+  }
+  dirty = false;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.translate(camera.x, camera.y);
@@ -426,7 +432,7 @@ function render() {
 
 // ── Data loading ──────────────────────────────────────────────────────────
 async function fetchAuth(url) {
-  const token = localStorage.getItem('poleia_access');
+  const token = localStorage.getItem('poleia_token');
   const headers = token ? {'Authorization': 'Bearer ' + token} : {};
   return fetch(url, {headers});
 }
@@ -464,10 +470,12 @@ function zoom(factor) {
   camera.x = cx + (camera.x - cx) * factor;
   camera.y = cy + (camera.y - cy) * factor;
   camera.zoom = Math.min(5, Math.max(0.2, camera.zoom * factor));
+  dirty = true;
 }
 function resetView() {
   camera.zoom = 1;
   centreCamera();
+  dirty = true;
 }
 
 // ── Inspect panel ─────────────────────────────────────────────────────────
@@ -521,6 +529,7 @@ canvas.addEventListener('mousemove', e => {
     camera.x += e.clientX - lastMouse.x;
     camera.y += e.clientY - lastMouse.y;
     lastMouse = {x: e.clientX, y: e.clientY};
+    dirty = true;
   }
   // Tooltip
   const rect = canvas.getBoundingClientRect();
@@ -544,9 +553,13 @@ canvas.addEventListener('wheel', e => {
   camera.x = mx + (camera.x - mx) * factor;
   camera.y = my + (camera.y - my) * factor;
   camera.zoom = Math.min(5, Math.max(0.2, camera.zoom * factor));
+  dirty = true;
 }, {passive:false});
 
-loadMap().then(() => render());
+// Also set dirty when province or tile data loads.
+window.addEventListener('resize', () => { dirty = true; });
+
+loadMap().then(() => { dirty = true; render(); });
 
 // ── WebSocket — real-time province updates ────────────────────────────────
 (function() {

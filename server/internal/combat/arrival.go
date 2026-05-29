@@ -62,12 +62,12 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	}
 	err := tx.QueryRow(ctx,
 		`SELECT id, origin_id, target_id, intent,
-		        infantry, cavalry, catapult, priest, ship, resolved
+		        infantry, cavalry, catapult, priest, ship, elite_infantry, resolved
 		 FROM marching_armies WHERE id = $1 FOR UPDATE`,
 		marchID,
 	).Scan(&march.ID, &march.OriginID, &march.TargetID, &march.Intent,
 		&march.Army.Infantry, &march.Army.Cavalry, &march.Army.Catapult,
-		&march.Army.Priest, &march.Army.Ship, &march.Resolved)
+		&march.Army.Priest, &march.Army.Ship, &march.Army.EliteInfantry, &march.Resolved)
 	if err != nil {
 		return fmt.Errorf("load march: %w", err)
 	}
@@ -86,7 +86,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	// Load attacker support from allied marches at same target.
 	var supportStr float64
 	_ = tx.QueryRow(ctx,
-		`SELECT COALESCE(SUM(infantry + cavalry*3 + priest*2), 0)
+		`SELECT COALESCE(SUM(infantry + elite_infantry*2 + cavalry*3 + priest*2), 0)
 		 FROM marching_armies
 		 WHERE target_id = $1 AND intent = 'support' AND resolved = false`,
 		march.TargetID,
@@ -99,12 +99,12 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		Walls   int
 	}
 	err = tx.QueryRow(ctx,
-		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, wall_level
+		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, elite_infantry, wall_level
 		 FROM settlements WHERE province_id = $1`,
 		march.TargetID,
 	).Scan(&def.OwnerID,
 		&def.Army.Infantry, &def.Army.Cavalry, &def.Army.Catapult,
-		&def.Army.Priest, &def.Army.Ship, &def.Walls)
+		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry, &def.Walls)
 	if err != nil {
 		return fmt.Errorf("load defending settlement: %w", err)
 	}
@@ -147,6 +147,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, defOwnerID *uuid.UUID, attackArmy province.ArmyComposition, result CombatResult, worldID uuid.UUID) error {
 	survivingInf := int(float64(attackArmy.Infantry) * (1 - result.AttackerLosses))
 	survivingCav := int(float64(attackArmy.Cavalry) * (1 - result.AttackerLosses))
+	survivingElite := int(float64(attackArmy.EliteInfantry) * (1 - result.AttackerLosses))
 
 	// Get attacker's owner from their settlement.
 	var attackerOwnerID *uuid.UUID
@@ -155,17 +156,18 @@ func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 	// Settlement changes hands.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
-		   owner_id     = $2,
-		   infantry     = $3,
-		   cavalry      = $4,
-		   catapult     = 0,
-		   priest       = 0,
-		   state        = 'active',
-		   kingdom_id   = NULL,
-		   control_type = 'occupied',
-		   updated_at   = now()
+		   owner_id       = $2,
+		   infantry       = $3,
+		   cavalry        = $4,
+		   elite_infantry = $5,
+		   catapult       = 0,
+		   priest         = 0,
+		   state          = 'active',
+		   kingdom_id     = NULL,
+		   control_type   = 'occupied',
+		   updated_at     = now()
 		 WHERE province_id = $1`,
-		targetID, attackerOwnerID, survivingInf, survivingCav,
+		targetID, attackerOwnerID, survivingInf, survivingCav, survivingElite,
 	); err != nil {
 		return fmt.Errorf("transfer settlement: %w", err)
 	}
@@ -180,10 +182,11 @@ func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 	// Deduct sent army from attacker's settlement.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
-		   infantry = GREATEST(0, infantry - $1),
-		   cavalry  = GREATEST(0, cavalry  - $2)
-		 WHERE province_id = $3`,
-		attackArmy.Infantry, attackArmy.Cavalry, originID,
+		   infantry       = GREATEST(0, infantry       - $1),
+		   cavalry        = GREATEST(0, cavalry        - $2),
+		   elite_infantry = GREATEST(0, elite_infantry - $3)
+		 WHERE province_id = $4`,
+		attackArmy.Infantry, attackArmy.Cavalry, attackArmy.EliteInfantry, originID,
 	); err != nil {
 		return fmt.Errorf("deduct attack army: %w", err)
 	}
@@ -202,15 +205,18 @@ func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, attackArmy, defArmy province.ArmyComposition, result CombatResult) error {
 	survivingAttInf := int(float64(attackArmy.Infantry) * (1 - result.AttackerLosses))
 	survivingAttCav := int(float64(attackArmy.Cavalry) * (1 - result.AttackerLosses))
+	survivingAttElite := int(float64(attackArmy.EliteInfantry) * (1 - result.AttackerLosses))
 
 	// Surviving attackers return home.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
-		   infantry = GREATEST(0, infantry - $1) + $2,
-		   cavalry  = GREATEST(0, cavalry  - $3) + $4
-		 WHERE province_id = $5`,
+		   infantry       = GREATEST(0, infantry       - $1) + $2,
+		   cavalry        = GREATEST(0, cavalry        - $3) + $4,
+		   elite_infantry = GREATEST(0, elite_infantry - $5) + $6
+		 WHERE province_id = $7`,
 		attackArmy.Infantry, survivingAttInf,
 		attackArmy.Cavalry, survivingAttCav,
+		attackArmy.EliteInfantry, survivingAttElite,
 		originID,
 	); err != nil {
 		return fmt.Errorf("return survivors: %w", err)
@@ -219,8 +225,9 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 	// Defender takes losses.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
-		   infantry = GREATEST(0, FLOOR(infantry * $1)),
-		   cavalry  = GREATEST(0, FLOOR(cavalry  * $1))
+		   infantry       = GREATEST(0, FLOOR(infantry       * $1)),
+		   cavalry        = GREATEST(0, FLOOR(cavalry        * $1)),
+		   elite_infantry = GREATEST(0, FLOOR(elite_infantry * $1))
 		 WHERE province_id = $2`,
 		1.0-result.DefenderLosses, targetID,
 	); err != nil {
@@ -232,13 +239,14 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 func mergeArmy(ctx context.Context, tx pgx.Tx, targetID uuid.UUID, army province.ArmyComposition) error {
 	_, err := tx.Exec(ctx,
 		`UPDATE settlements SET
-		   infantry = infantry + $1,
-		   cavalry  = cavalry  + $2,
-		   catapult = catapult + $3,
-		   priest   = priest   + $4,
-		   ship     = ship     + $5
-		 WHERE province_id = $6`,
-		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, targetID,
+		   infantry       = infantry       + $1,
+		   cavalry        = cavalry        + $2,
+		   catapult       = catapult       + $3,
+		   priest         = priest         + $4,
+		   ship           = ship           + $5,
+		   elite_infantry = elite_infantry + $6
+		 WHERE province_id = $7`,
+		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry, targetID,
 	)
 	return err
 }

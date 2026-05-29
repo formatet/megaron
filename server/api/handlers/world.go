@@ -166,7 +166,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT q, r, terrain, fertility, mineral FROM map_tiles WHERE world_id = $1`,
+		`SELECT q, r, terrain, fertility, mineral, copper_deposit, tin_deposit FROM map_tiles WHERE world_id = $1`,
 		worldID,
 	)
 	if err != nil {
@@ -181,17 +181,19 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type tileView struct {
-		Q       int     `json:"q"`
-		R       int     `json:"r"`
-		Terrain string  `json:"terrain"`
-		Visible bool    `json:"visible"`
-		F       float64 `json:"fertility,omitempty"`
-		M       float64 `json:"mineral,omitempty"`
+		Q             int     `json:"q"`
+		R             int     `json:"r"`
+		Terrain       string  `json:"terrain"`
+		Visible       bool    `json:"visible"`
+		F             float64 `json:"fertility,omitempty"`
+		M             float64 `json:"mineral,omitempty"`
+		CopperDeposit bool    `json:"copper_deposit,omitempty"`
+		TinDeposit    bool    `json:"tin_deposit,omitempty"`
 	}
 	var tiles []tileView
 	for rows.Next() {
 		var t tileView
-		if err := rows.Scan(&t.Q, &t.R, &t.Terrain, &t.F, &t.M); err != nil {
+		if err := rows.Scan(&t.Q, &t.R, &t.Terrain, &t.F, &t.M, &t.CopperDeposit, &t.TinDeposit); err != nil {
 			continue
 		}
 		pos := province.MapPosition{Q: t.Q, R: t.R}
@@ -199,6 +201,8 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		if !t.Visible {
 			t.F = 0
 			t.M = 0
+			t.CopperDeposit = false
+			t.TinDeposit = false
 			t.Terrain = "fog"
 		}
 		tiles = append(tiles, t)
@@ -237,7 +241,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT p.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
+		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
 		        s.state, s.wall_level, pl.username
 		 FROM provinces p
 		 JOIN settlements s ON s.province_id = p.id
@@ -252,23 +256,24 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type provinceMarker struct {
-		ID        uuid.UUID  `json:"id"`
-		Name      string     `json:"name"`
-		Culture   string     `json:"culture"`
-		KingdomID *uuid.UUID `json:"kingdom_id,omitempty"`
-		Q         int        `json:"q"`
-		R         int        `json:"r"`
-		State     string     `json:"state"`
-		Walls     int        `json:"walls"`
-		Owner     string     `json:"owner,omitempty"`
-		Own       bool       `json:"own"`
-		Allied    bool       `json:"allied"`
-		Visible   bool       `json:"visible"`
+		ID           uuid.UUID  `json:"id"`
+		SettlementID uuid.UUID  `json:"settlement_id"`
+		Name         string     `json:"name"`
+		Culture      string     `json:"culture"`
+		KingdomID    *uuid.UUID `json:"kingdom_id,omitempty"`
+		Q            int        `json:"q"`
+		R            int        `json:"r"`
+		State        string     `json:"state"`
+		Walls        int        `json:"walls"`
+		Owner        string     `json:"owner,omitempty"`
+		Own          bool       `json:"own"`
+		Allied       bool       `json:"allied"`
+		Visible      bool       `json:"visible"`
 	}
 	var markers []provinceMarker
 	for rows.Next() {
 		var m provinceMarker
-		if err := rows.Scan(&m.ID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner); err != nil {
+		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner); err != nil {
 			continue
 		}
 		pos := province.MapPosition{Q: m.Q, R: m.R}
@@ -324,10 +329,10 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 	batch := &pgx.Batch{}
 	for _, t := range tiles {
 		batch.Queue(
-			`INSERT INTO map_tiles (world_id, q, r, terrain, fertility, mineral)
-			 VALUES ($1, $2, $3, $4, $5, $6)
+			`INSERT INTO map_tiles (world_id, q, r, terrain, fertility, mineral, copper_deposit, tin_deposit)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 			 ON CONFLICT (world_id, q, r) DO NOTHING`,
-			worldID, t.Q, t.R, string(t.Terrain), t.Fertility, t.Mineral,
+			worldID, t.Q, t.R, string(t.Terrain), t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit,
 		)
 	}
 	br := h.pool.SendBatch(ctx, batch)

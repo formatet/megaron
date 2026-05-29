@@ -105,6 +105,29 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
+
+	// Load cult_level and compute divine_mood from live kharis.
+	var cultLevel string
+	var kharisNow float64
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT cult_level,
+		    GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate))
+		 FROM settlements WHERE id = $1`,
+		sett.ID,
+	).Scan(&cultLevel, &kharisNow)
+
+	divineMood := "likgiltiga"
+	switch {
+	case kharisNow >= 800:
+		divineMood = "välvilliga"
+	case kharisNow >= 400:
+		divineMood = "likgiltiga"
+	case kharisNow >= 100:
+		divineMood = "misstänksamma"
+	default:
+		divineMood = "vredgade"
+	}
+
 	resp := map[string]any{
 		"id":            sett.ID,
 		"province_id":   sett.ProvinceID,
@@ -119,6 +142,8 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"population":    sett.Population,
 		"resources":     sett.Resources.Snapshot(now),
 		"army":          sett.Army,
+		"cult_level":    cultLevel,
+		"divine_mood":   divineMood,
 		"updated_at":    sett.UpdatedAt,
 	}
 
@@ -327,7 +352,7 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 	err = h.pool.QueryRow(r.Context(),
 		`SELECT km.kingdom_id
 		 FROM kingdom_members km
-		 WHERE km.player_id = $1 AND km.role = 'king'
+		 WHERE km.player_id = $1 AND km.role = 'basileus'
 		   AND km.kingdom_id IN (
 		       SELECT km2.kingdom_id FROM kingdom_members km2
 		       JOIN settlements s ON s.owner_id = km2.player_id
@@ -336,7 +361,7 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 		playerID, settlementID, worldID,
 	).Scan(&kingdomID)
 	if err != nil {
-		writeError(w, http.StatusForbidden, "not the king for this settlement's kingdom")
+		writeError(w, http.StatusForbidden, "not the basileus for this settlement's kingdom")
 		return
 	}
 
@@ -401,6 +426,59 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 			"priest": pri, "ship": ship,
 		},
 	})
+}
+
+// SetCultLevel handles PATCH /worlds/:worldID/settlements/:settlementID/cult-level.
+// The Wanax chooses how generously to maintain the temple.
+func (h *SettlementHandler) SetCultLevel(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	settlementID, err := uuid.Parse(chi.URLParam(r, "settlementID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid settlement ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var req struct {
+		CultLevel string `json:"cult_level"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+
+	valid := map[string]bool{
+		"forsummad": true, "enkel": true, "vardig": true,
+		"praktfull": true, "overdadig": true,
+	}
+	if !valid[req.CultLevel] {
+		writeError(w, http.StatusBadRequest, "cult_level must be forsummad, enkel, vardig, praktfull, or overdadig")
+		return
+	}
+
+	tag, err := h.pool.Exec(r.Context(),
+		`UPDATE settlements SET cult_level = $1
+		 WHERE id = $2 AND world_id = $3 AND owner_id = $4`,
+		req.CultLevel, settlementID, worldID, playerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update cult level")
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"cult_level": req.CultLevel})
 }
 
 // Gossip handles GET /worlds/:worldID/gossip — the player's gossip feed.

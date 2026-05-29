@@ -115,13 +115,14 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		TargetID string `json:"target_id"`
-		Intent   string `json:"intent"`
-		Infantry int    `json:"infantry"`
-		Cavalry  int    `json:"cavalry"`
-		Catapult int    `json:"catapult"`
-		Priest   int    `json:"priest"`
-		Ship     int    `json:"ship"`
+		TargetID      string `json:"target_id"`
+		Intent        string `json:"intent"`
+		Infantry      int    `json:"infantry"`
+		Cavalry       int    `json:"cavalry"`
+		Catapult      int    `json:"catapult"`
+		Priest        int    `json:"priest"`
+		Ship          int    `json:"ship"`
+		EliteInfantry int    `json:"elite_infantry"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -167,21 +168,22 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	arrivesAt := now.Add(time.Duration(dist) * time.Hour)
 
 	army := province.ArmyComposition{
-		Infantry: req.Infantry,
-		Cavalry:  req.Cavalry,
-		Catapult: req.Catapult,
-		Priest:   req.Priest,
-		Ship:     req.Ship,
+		Infantry:      req.Infantry,
+		Cavalry:       req.Cavalry,
+		Catapult:      req.Catapult,
+		Priest:        req.Priest,
+		Ship:          req.Ship,
+		EliteInfantry: req.EliteInfantry,
 	}
 
 	var marchID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO marching_armies
-		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, intent, departs_at, arrives_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 		 RETURNING id`,
 		worldID, sourceID, targetID,
-		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship,
+		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry,
 		req.Intent, now, arrivesAt,
 	).Scan(&marchID)
 	if err != nil {
@@ -278,6 +280,26 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	if tag.RowsAffected() == 0 {
 		writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
 		return
+	}
+
+	// Deduct bronze from settlement_goods when required (e.g. bronze_wall).
+	if spec.CostBronze > 0 {
+		tag2, err2 := h.pool.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+			     calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = 'bronze'
+			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+			spec.CostBronze, settlementID,
+		)
+		if err2 != nil {
+			writeError(w, http.StatusInternalServerError, "could not deduct bronze")
+			return
+		}
+		if tag2.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient bronze")
+			return
+		}
 	}
 
 	completeAt := time.Now().Add(spec.Duration)
@@ -433,11 +455,23 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if spec.RequiresFoundry {
+		var exists bool
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'foundry')`,
+			settlementID,
+		).Scan(&exists)
+		if !exists {
+			writeError(w, http.StatusUnprocessableEntity, "foundry required")
+			return
+		}
+	}
 
 	totalFood := spec.CostFood * float64(req.Count)
 	totalIron := spec.CostIron * float64(req.Count)
 	totalLumber := spec.CostLumber * float64(req.Count)
 	totalKharis := spec.CostKharis * float64(req.Count)
+	totalBronze := spec.CostBronze * float64(req.Count)
 
 	// Deduct resources atomically from settlement.
 	tag, err := h.pool.Exec(r.Context(),
@@ -470,6 +504,26 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Deduct bronze from settlement_goods when required (e.g. elite_infantry).
+	if totalBronze > 0 {
+		tag2, err2 := h.pool.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+			     calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = 'bronze'
+			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+			totalBronze, settlementID,
+		)
+		if err2 != nil {
+			writeError(w, http.StatusInternalServerError, "could not deduct bronze")
+			return
+		}
+		if tag2.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient bronze")
+			return
+		}
+	}
+
 	completeAt := time.Now().Add(spec.Duration * time.Duration(req.Count))
 
 	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTrainComplete,
@@ -488,4 +542,386 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		"count":       req.Count,
 		"complete_at": completeAt,
 	})
+}
+
+// Goods handles GET /worlds/:worldID/provinces/:provinceID/goods.
+// Returns the settlement's goods inventory with lazy-eval amounts and local prices.
+func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+
+	settlementID, err := resolveSettlementID(r.Context(), h.pool, provinceID, worldID)
+	if err != nil {
+		writeJSON(w, http.StatusOK, []any{})
+		return
+	}
+
+	now := time.Now()
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT sg.good_key, sg.amount, sg.rate, sg.cap, sg.calc_at,
+		        g.base_value, g.name, g.tier, g.category
+		 FROM settlement_goods sg
+		 JOIN goods g ON g.key = sg.good_key
+		 WHERE sg.settlement_id = $1
+		 ORDER BY g.category, sg.good_key`,
+		settlementID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load goods")
+		return
+	}
+	defer rows.Close()
+
+	type goodRow struct {
+		Key      string  `json:"key"`
+		Name     string  `json:"name"`
+		Tier     string  `json:"tier"`
+		Category string  `json:"category"`
+		Amount   float64 `json:"amount"`
+		Rate     float64 `json:"rate_per_min"`
+		Cap      float64 `json:"cap"`
+		Price    float64 `json:"price"`
+	}
+	var result []goodRow
+	for rows.Next() {
+		var key, name, tier, category string
+		var amount, rate, cap float64
+		var calcAt time.Time
+		var baseValue float64
+		if err := rows.Scan(&key, &amount, &rate, &cap, &calcAt, &baseValue, &name, &tier, &category); err != nil {
+			continue
+		}
+		elapsed := now.Sub(calcAt).Minutes()
+		current := amount + elapsed*rate
+		if current < 0 {
+			current = 0
+		}
+		if current > cap {
+			current = cap
+		}
+		result = append(result, goodRow{
+			Key:      key,
+			Name:     name,
+			Tier:     tier,
+			Category: category,
+			Amount:   current,
+			Rate:     rate,
+			Cap:      cap,
+			Price:    goodLocalPrice(baseValue, current, cap),
+		})
+	}
+	if result == nil {
+		result = []goodRow{}
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+// Trade handles POST /worlds/:worldID/provinces/:provinceID/trade.
+// Body: { "destination_id": "<settlement UUID>", "good_key": "grain", "quantity": 10.0 }
+func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var req struct {
+		DestinationID uuid.UUID `json:"destination_id"`
+		GoodKey       string    `json:"good_key"`
+		Quantity      float64   `json:"quantity"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	if req.Quantity <= 0 {
+		writeError(w, http.StatusBadRequest, "quantity must be positive")
+		return
+	}
+	if req.GoodKey == "" {
+		writeError(w, http.StatusBadRequest, "good_key required")
+		return
+	}
+
+	// Find origin settlement and verify ownership.
+	var originID uuid.UUID
+	var originQ, originR int
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT s.id, prov.map_q, prov.map_r
+		 FROM settlements s
+		 JOIN provinces prov ON prov.id = s.province_id
+		 WHERE s.province_id = $1 AND s.world_id = $2 AND s.owner_id = $3`,
+		provinceID, worldID, playerID,
+	).Scan(&originID, &originQ, &originR)
+	if err != nil {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	// Get destination province position.
+	var destQ, destR int
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT prov.map_q, prov.map_r
+		 FROM settlements s
+		 JOIN provinces prov ON prov.id = s.province_id
+		 WHERE s.id = $1 AND s.world_id = $2`,
+		req.DestinationID, worldID,
+	).Scan(&destQ, &destR)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "destination settlement not found")
+		return
+	}
+
+	// Get good weight for travel time calculation.
+	var weight float64
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT weight FROM goods WHERE key = $1`,
+		req.GoodKey,
+	).Scan(&weight); err != nil {
+		writeError(w, http.StatusBadRequest, "unknown good")
+		return
+	}
+
+	dist := province.HexDistance(
+		province.MapPosition{Q: originQ, R: originR},
+		province.MapPosition{Q: destQ, R: destR},
+	)
+	base := 30.0 + float64(dist)*2.0
+	weightPenalty := 0.0
+	if weight > 1.0 {
+		weightPenalty = (weight - 1.0) * 0.1
+	}
+	travelMins := base * (1.0 + weightPenalty)
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Deduct goods from origin atomically.
+	tag, err := tx.Exec(r.Context(),
+		`UPDATE settlement_goods SET
+		     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+		     calc_at = now()
+		 WHERE settlement_id = $2 AND good_key = $3
+		   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+		req.Quantity, originID, req.GoodKey,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not deduct goods")
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "insufficient goods")
+		return
+	}
+
+	arrivesAt := time.Now().Add(time.Duration(travelMins * float64(time.Minute)))
+	var routeID uuid.UUID
+	err = tx.QueryRow(r.Context(),
+		`INSERT INTO trade_routes (world_id, origin_id, destination_id, good_key, quantity, arrives_at)
+		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+		worldID, originID, req.DestinationID, req.GoodKey, req.Quantity, arrivesAt,
+	).Scan(&routeID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not create trade route")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTradeDelivery,
+		map[string]any{
+			"trade_route_id":  routeID,
+			"destination_id":  req.DestinationID,
+			"good_key":        req.GoodKey,
+			"quantity":        req.Quantity,
+		}, arrivesAt)
+
+	writeJSON(w, http.StatusCreated, map[string]any{
+		"route_id":   routeID,
+		"arrives_at": arrivesAt,
+		"distance":   dist,
+		"travel_min": travelMins,
+	})
+}
+
+// Craft handles POST /worlds/:worldID/provinces/:provinceID/craft.
+// Body: { "recipe_id": 1, "quantity": 1.0 }
+func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
+	worldID, _ := uuid.Parse(chi.URLParam(r, "worldID"))
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var req struct {
+		RecipeID int     `json:"recipe_id"`
+		Quantity float64 `json:"quantity"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Quantity <= 0 {
+		writeError(w, http.StatusBadRequest, "recipe_id and quantity > 0 required")
+		return
+	}
+
+	// Find settlement and verify ownership.
+	var settlementID uuid.UUID
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT s.id FROM settlements s
+		 WHERE s.province_id = $1 AND s.world_id = $2 AND s.owner_id = $3`,
+		provinceID, worldID, playerID,
+	).Scan(&settlementID)
+	if err != nil {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	// Load recipe.
+	var outputKey, buildingType string
+	var outputQty float64
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT output_key, output_qty, building_type FROM recipes WHERE id = $1`,
+		req.RecipeID,
+	).Scan(&outputKey, &outputQty, &buildingType)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "recipe not found")
+		return
+	}
+
+	// Check required building is present.
+	var hasBuilding bool
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT EXISTS (SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
+		settlementID, buildingType,
+	).Scan(&hasBuilding)
+	if !hasBuilding {
+		writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s required", buildingType))
+		return
+	}
+
+	// Load recipe ingredients.
+	ingRows, err := h.pool.Query(r.Context(),
+		`SELECT good_key, quantity FROM recipe_ingredients WHERE recipe_id = $1`,
+		req.RecipeID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load recipe")
+		return
+	}
+	defer ingRows.Close()
+
+	type ing struct {
+		key string
+		qty float64
+	}
+	var ingredients []ing
+	for ingRows.Next() {
+		var i ing
+		if err := ingRows.Scan(&i.key, &i.qty); err == nil {
+			ingredients = append(ingredients, i)
+		}
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Deduct each ingredient.
+	for _, i := range ingredients {
+		needed := i.qty * req.Quantity
+		tag, err := tx.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+			     calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = $3
+			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+			needed, settlementID, i.key,
+		)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not deduct ingredient")
+			return
+		}
+		if tag.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("insufficient %s", i.key))
+			return
+		}
+	}
+
+	// Credit output.
+	produced := outputQty * req.Quantity
+	_, err = tx.Exec(r.Context(),
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		 VALUES ($1, $2, $3, 0, 100, now())
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+		     amount = LEAST(
+		         settlement_goods.amount
+		             + EXTRACT(EPOCH FROM (now() - settlement_goods.calc_at))/60 * settlement_goods.rate
+		             + $3,
+		         settlement_goods.cap),
+		     calc_at = now()`,
+		settlementID, outputKey, produced,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not credit output")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"output_key": outputKey,
+		"produced":   produced,
+	})
+}
+
+// goodLocalPrice computes local price: baseValue × clamp(cap×0.3 / max(stock, ε), 0.5, 3.0).
+func goodLocalPrice(baseValue, stock, cap float64) float64 {
+	const eps = 0.001
+	s := stock
+	if s < eps {
+		s = eps
+	}
+	ratio := (cap * 0.3) / s
+	if ratio < 0.5 {
+		ratio = 0.5
+	}
+	if ratio > 3.0 {
+		ratio = 3.0
+	}
+	return baseValue * ratio
 }

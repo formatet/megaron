@@ -55,7 +55,7 @@ func NewService(pool *pgxpool.Pool, jwtSecret string) *Service {
 	return &Service{
 		pool:       pool,
 		jwtSecret:  []byte(jwtSecret),
-		accessTTL:  15 * time.Minute,
+		accessTTL:  24 * time.Hour,
 		refreshTTL: 7 * 24 * time.Hour,
 	}
 }

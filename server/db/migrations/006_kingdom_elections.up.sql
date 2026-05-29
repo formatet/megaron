@@ -25,5 +25,5 @@ CREATE TABLE kingdom_votes (
     PRIMARY KEY (election_id, voter_id)
 );
 
--- Add king_locked_until to kingdoms so we can enforce the 7-day lock.
-ALTER TABLE kingdoms ADD COLUMN king_locked_until TIMESTAMPTZ;
+-- king_locked_until may already exist from 005; safe to skip if so.
+ALTER TABLE kingdoms ADD COLUMN IF NOT EXISTS king_locked_until TIMESTAMPTZ;

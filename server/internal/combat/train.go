@@ -80,6 +80,8 @@ func unitColumn(unitType string) string {
 		return "priest"
 	case "ship":
 		return "ship"
+	case "elite_infantry":
+		return "elite_infantry"
 	}
 	return ""
 }

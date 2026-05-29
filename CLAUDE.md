@@ -14,6 +14,7 @@ immediately — do not defer it.
 
 | Document | Contains |
 |---|---|
+| [`poleia_index.md`](~/Dokument/myltavault/poleia_index.md) | **Start here** — categorised index of all vault documents |
 | [`thalassa_todo.md`](~/Dokument/myltavault/thalassa_todo.md) | Sprint backlog, implementation status, known bugs |
 | [`thalassa_designprinciper.md`](~/Dokument/myltavault/thalassa_designprinciper.md) | Philosophy, why each major decision was made |
 | [`thalassa_settlement.md`](~/Dokument/myltavault/thalassa_settlement.md) | Province/settlement split, loyalty 1–4, revolt, messengers, info channels |
@@ -171,26 +172,37 @@ iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 
 Full spec: `thalassa_designprinciper.md` and `thalassa_worldbuilding.md`.
 
-**Palette (needed for CSS/canvas):**
+**CSS variables — always use these, never hardcode hex in templates or CSS:**
 
-| Name | Hex | Use |
-|---|---|---|
-| AEGEAN | #2E86C1 | Sea |
-| DEEP_SEA | #1B4F72 | Deep water |
-| SHALLOW | #5DADE2 | Coastal shallows |
-| FIRED_CLAY | #C0392B | Roof tiles, signal colour |
-| TERRACOTTA | #E67E22 | Walls, paths, UI borders |
-| SANDSTONE | #F0B27A | Building faces in sun |
-| LINEN | #FAD7A0 | Light ground, beach |
-| PLASTER | #F2EAD3 | Shaded walls, UI panels |
-| ORACLE_GOLD | #F9E79F | Divine glows, temple highlights only |
-| DOOM_VIOLET | #6C3483 | Collapse signs, Sea Peoples |
-| CHARCOAL | #1C1C1C | Outlines, text |
+All colours live as custom properties in `web/static/poleia.css` `:root`. Use them everywhere.
 
-**Culture accents:** Akhaier #CA8A04 · Khemetiu #0E7490 · Kna'an #86198F · Thrakes #1D4ED8 · Pelasger #92400E · Hatti #374151
+| Variable | Hex | Name | Use |
+|---|---|---|---|
+| `--accent` | #C0392B | FIRED_CLAY | Primary action, section headings |
+| `--border` | #E67E22 | TERRACOTTA | Panel borders, dividers |
+| `--border-in` | #6E2C00 | ASH_BROWN | Inner shadow, recessed edge |
+| `--bg` | #1C1C1C | CHARCOAL | Page background |
+| `--bg-panel` | #F2EAD3 | PLASTER | Panel face |
+| `--bg-raised` | #FAD7A0 | LINEN | Raised / highlight face |
+| `--warm-white` | #FDFEFE | WARM_WHITE | Input field background |
+| `--sandstone` | #F0B27A | SANDSTONE | Button face |
+| `--text` | #1C1C1C | CHARCOAL | Body text on light |
+| `--text-light` | #F2EAD3 | PLASTER | Body text on dark |
+| `--text-dim` | #A04000 | LOAM | Muted / secondary text |
+| `--gold` | #F9E79F | ORACLE_GOLD | Divine glow, global h1/h2/h3 |
+| `--safe` | #D4AC0D | DRY_GRASS | Positive values, support intent |
+| `--danger` | #6C3483 | DOOM_VIOLET | Collapse, danger states |
+| `--blood` | #922B21 | BLOOD_RED | Combat banners only |
+| `--sea` | #2E86C1 | AEGEAN | Sea, join-button |
+| `--deep-sea` | #1B4F72 | DEEP_SEA | Sea text, deep water |
+
+**Culture accents (canvas only — not in CSS variables):**
+Akhaier #CA8A04 · Khemetiu #0E7490 · Kna'an #86198F · Thrakes #1D4ED8 · Pelasger #92400E · Hatti #374151
 
 **Rules:** 1px CHARCOAL outline on all solid objects. No anti-aliasing. No gradients.
 No rounded corners. Background terrain desaturated, foreground objects saturated.
+Canvas renderer is exempt from CSS variables — it has its own internal palette.
+Do not add inline `style="color:#..."` in templates — add a class to poleia.css instead.
 
 ---
 

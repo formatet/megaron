@@ -9,7 +9,7 @@
   <script>
     // Inject JWT from localStorage on every HTMX request.
     document.addEventListener('htmx:configRequest', function(e) {
-      const token = localStorage.getItem('poleia_access');
+      const token = localStorage.getItem('poleia_token');
       if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
     });
   </script>

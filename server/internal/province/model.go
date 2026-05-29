@@ -65,11 +65,12 @@ func (rl ResourceLedger) Snapshot(at time.Time) map[string]float64 {
 
 // ArmyComposition describes the military units in a settlement or marching army.
 type ArmyComposition struct {
-	Infantry int
-	Cavalry  int
-	Catapult int
-	Priest   int
-	Ship     int
+	Infantry      int
+	Cavalry       int
+	Catapult      int
+	Priest        int
+	Ship          int
+	EliteInfantry int
 }
 
 // Building represents a constructed improvement in a settlement.
@@ -94,6 +95,9 @@ const (
 	BuildingWall        BuildingType = "wall"
 	BuildingTower       BuildingType = "tower"
 	BuildingHarbour     BuildingType = "harbour"
+	BuildingFoundry     BuildingType = "foundry"
+	BuildingStable      BuildingType = "stable"
+	BuildingBronzeWall  BuildingType = "bronze_wall"
 )
 
 // Province is a hex tile — terrain and territory state only.
@@ -106,6 +110,8 @@ type Province struct {
 	TerrainType    string
 	TerritoryState string // 'free' | 'controlled'
 	ControllerID   *uuid.UUID
+	CopperDeposit  bool
+	TinDeposit     bool
 }
 
 // MarchIntent identifies why an army is moving.

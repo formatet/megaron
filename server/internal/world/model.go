@@ -107,10 +107,12 @@ const (
 
 // MapTile is a single hex in the world map.
 type MapTile struct {
-	WorldID  uuid.UUID
-	Q        int
-	R        int
-	Terrain  Terrain
-	Fertility float64
-	Mineral  float64
+	WorldID       uuid.UUID
+	Q             int
+	R             int
+	Terrain       Terrain
+	Fertility     float64
+	Mineral       float64
+	CopperDeposit bool
+	TinDeposit    bool
 }

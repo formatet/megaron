@@ -40,7 +40,7 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		        stone_amount, stone_rate, stone_cap, stone_calc_at,
 		        iron_amount, iron_rate, iron_cap, iron_calc_at,
 		        kharis_amount, kharis_rate, kharis_cap, kharis_calc_at,
-		        infantry, cavalry, catapult, priest, ship,
+		        infantry, cavalry, catapult, priest, ship, elite_infantry,
 		        updated_at
 		 FROM settlements WHERE id = $1 AND world_id = $2`,
 		id, worldID,
@@ -109,7 +109,7 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 		&s.Resources.Stone.Amount, &s.Resources.Stone.RatePerMinute, &s.Resources.Stone.Cap, &stoneCalcAt,
 		&s.Resources.Iron.Amount, &s.Resources.Iron.RatePerMinute, &s.Resources.Iron.Cap, &ironCalcAt,
 		&s.Resources.Kharis.Amount, &s.Resources.Kharis.RatePerMinute, &s.Resources.Kharis.Cap, &kharisCalcAt,
-		&s.Army.Infantry, &s.Army.Cavalry, &s.Army.Catapult, &s.Army.Priest, &s.Army.Ship,
+		&s.Army.Infantry, &s.Army.Cavalry, &s.Army.Catapult, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
 		&s.UpdatedAt,
 	)
 	if err != nil {

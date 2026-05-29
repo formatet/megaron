@@ -8,6 +8,7 @@ type BuildingSpec struct {
 	CostStone  float64
 	CostIron   float64
 	CostKharis float64
+	CostBronze float64
 	Duration   time.Duration
 	// Rate bonuses applied to the province when the building is complete (per level).
 	FoodRate   float64
@@ -31,4 +32,7 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingWall:        {CostLumber: 40, CostStone: 120, CostIron: 60, Duration: 120 * time.Minute, WallsBonus: 1},
 	BuildingTower:       {CostLumber: 60, CostStone: 80, CostIron: 40, Duration: 90 * time.Minute, WallsBonus: 1},
 	BuildingHarbour:     {CostLumber: 120, CostStone: 60, CostIron: 40, Duration: 90 * time.Minute, GoldRate: 0.3},
+	BuildingFoundry:    {CostLumber: 80, CostStone: 60, CostIron: 50, Duration: 90 * time.Minute},
+	BuildingStable:     {CostLumber: 60, CostStone: 40, Duration: 60 * time.Minute},
+	BuildingBronzeWall: {CostStone: 80, CostIron: 40, CostBronze: 10, Duration: 180 * time.Minute, WallsBonus: 1},
 }

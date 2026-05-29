@@ -1,0 +1,3 @@
+-- Migration 010 rollback
+DROP TABLE IF EXISTS recipe_ingredients;
+DROP TABLE IF EXISTS recipes;

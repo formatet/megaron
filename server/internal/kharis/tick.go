@@ -17,12 +17,25 @@ import (
 )
 
 const (
-	maintenanceGold  = 3.0  // gold per day
-	maintenanceFood  = 3.0  // food per day
-	decayOnMissed    = 0.10 // 10% kharis lost when maintenance missed
-	punishThreshold  = 100.0
+	decayOnMissed     = 0.10 // 10% kharis lost when maintenance missed
+	punishThreshold   = 100.0
 	punishProbability = 0.30 // 30% chance of divine punishment per missed day below threshold
 )
+
+// cultSpec defines the daily cost and kharis gain for each cult level.
+type cultSpec struct {
+	gold      float64
+	food      float64
+	kharisGain float64
+}
+
+var cultLevelSpecs = map[string]cultSpec{
+	"forsummad": {gold: 0, food: 0, kharisGain: 0},    // no payment, kharis decays
+	"enkel":     {gold: 3, food: 3, kharisGain: 2},
+	"vardig":    {gold: 6, food: 5, kharisGain: 5},
+	"praktfull": {gold: 12, food: 10, kharisGain: 10},
+	"overdadig": {gold: 20, food: 15, kharisGain: 18},
+}
 
 // TickHandler applies daily temple maintenance to all active settlements in a world.
 type TickHandler struct {
@@ -37,10 +50,11 @@ func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.S
 }
 
 type settlementSnap struct {
-	id     uuid.UUID
-	kharis float64
-	gold   float64
-	food   float64
+	id        uuid.UUID
+	kharis    float64
+	gold      float64
+	food      float64
+	cultLevel string
 }
 
 // Handle processes a KharisTick scheduled event.
@@ -49,7 +63,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		`SELECT id,
 		    GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)),
 		    GREATEST(0, gold_amount   + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60   * gold_rate)),
-		    GREATEST(0, food_amount   + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60   * food_rate))
+		    GREATEST(0, food_amount   + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60   * food_rate)),
+		    cult_level
 		 FROM settlements
 		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
 		e.WorldID,
@@ -62,7 +77,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	var snaps []settlementSnap
 	for rows.Next() {
 		var s settlementSnap
-		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.food); err == nil {
+		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.food, &s.cultLevel); err == nil {
 			snaps = append(snaps, s)
 		}
 	}
@@ -81,8 +96,35 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, worldID uuid.UUID) error {
-	if s.gold >= maintenanceGold && s.food >= maintenanceFood {
-		// Pay maintenance — small kharis reward (+2, capped).
+	spec, ok := cultLevelSpecs[s.cultLevel]
+	if !ok {
+		spec = cultLevelSpecs["enkel"] // safe fallback
+	}
+
+	// forsummad: player deliberately skips temple — kharis decays.
+	if s.cultLevel == "forsummad" {
+		_, err := h.pool.Exec(ctx,
+			`UPDATE settlements SET
+			   kharis_amount  = GREATEST(0,
+			       (kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)) * $1),
+			   kharis_calc_at = now()
+			 WHERE id = $2`,
+			1.0-decayOnMissed, s.id,
+		)
+		if err != nil {
+			return fmt.Errorf("kharis decay (forsummad): %w", err)
+		}
+		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMissedMaintenance",
+			map[string]any{"cult_level": s.cultLevel, "decay_fraction": decayOnMissed}, worldID, nil)
+		newKharis := s.kharis * (1.0 - decayOnMissed)
+		if newKharis < punishThreshold && rand.Float64() < punishProbability {
+			h.applyDivinePunishment(ctx, s.id, worldID)
+		}
+		return nil
+	}
+
+	// Can the settlement afford the tiered cost?
+	if s.gold >= spec.gold && s.food >= spec.food {
 		_, err := h.pool.Exec(ctx,
 			`UPDATE settlements SET
 			   gold_amount    = gold_amount   + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60   * gold_rate)   - $1,
@@ -90,21 +132,21 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 			   food_amount    = food_amount   + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60   * food_rate)   - $2,
 			   food_calc_at   = now(),
 			   kharis_amount  = LEAST(kharis_cap,
-			       kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) + 2),
+			       kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) + $3),
 			   kharis_calc_at = now()
-			 WHERE id = $3`,
-			maintenanceGold, maintenanceFood, s.id,
+			 WHERE id = $4`,
+			spec.gold, spec.food, spec.kharisGain, s.id,
 		)
 		if err != nil {
 			return fmt.Errorf("pay maintenance: %w", err)
 		}
 		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMaintained",
-			map[string]any{"gold": maintenanceGold, "food": maintenanceFood, "kharis_gain": 2},
+			map[string]any{"cult_level": s.cultLevel, "gold": spec.gold, "food": spec.food, "kharis_gain": spec.kharisGain},
 			worldID, nil)
 		return nil
 	}
 
-	// Maintenance missed: kharis decays by 10%.
+	// Cannot afford chosen tier — treat as missed maintenance.
 	_, err := h.pool.Exec(ctx,
 		`UPDATE settlements SET
 		   kharis_amount  = GREATEST(0,
@@ -116,16 +158,13 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 	if err != nil {
 		return fmt.Errorf("kharis decay: %w", err)
 	}
-
 	_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMissedMaintenance",
-		map[string]any{"decay_fraction": decayOnMissed}, worldID, nil)
-
-	// Divine punishment rolls when kharis is critically low.
+		map[string]any{"cult_level": s.cultLevel, "decay_fraction": decayOnMissed, "reason": "insufficient_resources"},
+		worldID, nil)
 	newKharis := s.kharis * (1.0 - decayOnMissed)
 	if newKharis < punishThreshold && rand.Float64() < punishProbability {
 		h.applyDivinePunishment(ctx, s.id, worldID)
 	}
-
 	return nil
 }
 
