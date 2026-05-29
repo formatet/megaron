@@ -2,21 +2,26 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Bronze Age Aegean · Moomin warmth · NES discipline */
-  --bg:        #1C1C1C;       /* CHARCOAL — deep background */
-  --bg-panel:  #F2EAD3;       /* PLASTER — papyrus panel */
-  --bg-raised: #FAD7A0;       /* LINEN — raised element */
-  --border:    #E67E22;       /* TERRACOTTA — panel border */
-  --border-in: #6E2C00;       /* ASH_BROWN — inner shadow */
-  --text:      #1C1C1C;       /* CHARCOAL — text on light */
-  --text-light:#F2EAD3;       /* PLASTER — text on dark */
-  --text-dim:  #A04000;       /* LOAM — muted text */
-  --gold:      #F9E79F;       /* ORACLE_GOLD — headings, divine */
-  --danger:    #6C3483;       /* DOOM_VIOLET — danger states */
-  --blood:     #922B21;       /* BLOOD_RED — combat only */
-  --safe:      #D4AC0D;       /* DRY_GRASS — positive values */
-  --sea:       #2E86C1;       /* AEGEAN — sea accent */
-  --accent:    #C0392B;       /* FIRED_CLAY — primary action */
+  /* Bronze Age Aegean · Moomin warmth · NES discipline
+     These are the ONLY colours used anywhere in the UI.
+     Canvas renderer is exempt — it has its own palette. */
+  --bg:        #1C1C1C;   /* CHARCOAL   — page background, deep shadow */
+  --bg-panel:  #F2EAD3;   /* PLASTER    — papyrus panel face */
+  --bg-raised: #FAD7A0;   /* LINEN      — raised / highlight face */
+  --warm-white:#FDFEFE;   /* WARM_WHITE — input field background */
+  --border:    #E67E22;   /* TERRACOTTA — panel border, dividers */
+  --border-in: #6E2C00;   /* ASH_BROWN  — inner shadow, recessed edge */
+  --text:      #1C1C1C;   /* CHARCOAL   — body text on light surfaces */
+  --text-light:#F2EAD3;   /* PLASTER    — body text on dark surfaces */
+  --text-dim:  #A04000;   /* LOAM       — muted / secondary text */
+  --accent:    #C0392B;   /* FIRED_CLAY — primary action, headings */
+  --sandstone: #F0B27A;   /* SANDSTONE  — button face (sun-lit clay) */
+  --gold:      #F9E79F;   /* ORACLE_GOLD— divine glow, global headings */
+  --safe:      #D4AC0D;   /* DRY_GRASS  — positive values, support */
+  --danger:    #6C3483;   /* DOOM_VIOLET— collapse, danger states */
+  --blood:     #922B21;   /* BLOOD_RED  — combat banners */
+  --sea:       #2E86C1;   /* AEGEAN     — sea, join-button */
+  --deep-sea:  #1B4F72;   /* DEEP_SEA   — sea text, deep water */
 
   --font: 'Georgia', 'Times New Roman', serif;
   --mono: 'Courier New', monospace;
@@ -60,9 +65,9 @@ h1, h2, h3, h4 {
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1.5rem;
-  border-bottom: 2px solid #E67E22;
-  background: #F2EAD3;           /* PLASTER — papyrus topbar */
-  box-shadow: 0 2px 0 #6E2C00;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg-panel);
+  box-shadow: 0 2px 0 var(--border-in);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -71,15 +76,15 @@ h1, h2, h3, h4 {
 .logo {
   font-size: 1.4rem;
   letter-spacing: 0.25em;
-  color: #C0392B;                /* FIRED_CLAY */
+  color: var(--accent);
   text-decoration: none;
   text-transform: uppercase;
   font-family: var(--mono);
 }
 
 .nav-links { display: flex; gap: 1.4rem; }
-.nav-links a { color: #A04000; font-size: 0.85rem; font-family: var(--mono); letter-spacing: 0.1em; }
-.nav-links a:hover { color: #C0392B; text-decoration: none; border-bottom: 1px solid #C0392B; }
+.nav-links a { color: var(--text-dim); font-size: 0.85rem; font-family: var(--mono); letter-spacing: 0.1em; }
+.nav-links a:hover { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent); }
 
 /* ── Main layout ────────────────────────────────────────────── */
 main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
@@ -137,18 +142,18 @@ footer {
 .auth-forms {
   width: 100%;
   max-width: 380px;
-  background: #F2EAD3;           /* PLASTER */
-  border: 2px solid #E67E22;     /* TERRACOTTA */
-  box-shadow: inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+  background: var(--bg-panel);
+  border: 2px solid var(--border);
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
   padding: 1.5rem;
 }
 
-.tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid #E67E22; }
+.tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
 .tab {
   flex: 1;
   background: none;
   border: none;
-  color: #A04000;                /* LOAM */
+  color: var(--text-dim);
   padding: 0.5rem;
   cursor: pointer;
   font-family: var(--mono);
@@ -156,24 +161,24 @@ footer {
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-.tab.active { color: #C0392B; border-bottom: 3px solid #C0392B; }
+.tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
 
 /* ── Forms ──────────────────────────────────────────────────── */
 .field { margin-bottom: 1rem; }
 .field label { display: block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.1em; }
 .field input, .field select, .field textarea {
   width: 100%;
-  background: #FDFEFE;           /* WARM_WHITE */
-  border: 2px solid #E67E22;     /* TERRACOTTA */
+  background: var(--warm-white);
+  border: 2px solid var(--border);
   border-radius: 0;
-  color: #1C1C1C;                /* CHARCOAL */
+  color: var(--text);
   padding: 0.5rem 0.7rem;
   font-family: var(--mono);
   font-size: 0.9rem;
 }
 .field input:focus, .field select:focus {
-  outline: 2px solid #C0392B;   /* FIRED_CLAY */
-  border-color: #C0392B;
+  outline: 2px solid var(--accent);
+  border-color: var(--accent);
 }
 
 .inline-fields { display: flex; gap: 0.5rem; align-items: center; }
@@ -195,11 +200,13 @@ footer {
   width: 100%;
   background: var(--bg);
   border: 1px solid var(--border);
-  color: var(--text);
+  color: var(--text-light);
   padding: 0.3rem 0.5rem;
   font-family: var(--mono);
 }
 
+/* ── Buttons ────────────────────────────────────────────────── */
+/* NES-discipline: no rounded corners, no gradients, no drop shadows */
 .btn-primary, .btn-secondary, .btn-danger, .btn-small {
   display: inline-block;
   padding: 0.5rem 1.5rem;
@@ -211,24 +218,20 @@ footer {
   text-transform: uppercase;
   width: 100%;
   margin-top: 0.5rem;
-  /* NES-discipline: no rounded corners, no gradients, no drop shadows */
   border-radius: 0;
 }
-/* Normal: SANDSTONE face, TERRACOTTA border */
-.btn-primary   { background: #F0B27A; border-color: #E67E22; color: #1C1C1C; }
-.btn-primary:hover  { background: #FAD7A0; border-color: #C0392B; color: #1C1C1C; }
-.btn-primary:active { background: #C0392B; border-color: #6E2C00; color: #FAD7A0; }
-/* Secondary */
-.btn-secondary { background: #F2EAD3; border-color: #A04000; color: #6E2C00; }
-.btn-secondary:hover { background: #FAD7A0; border-color: #E67E22; color: #1C1C1C; }
-/* Danger: DOOM_VIOLET */
-.btn-danger    { background: #F2EAD3; border-color: #6C3483; color: #6C3483; }
-.btn-danger:hover   { background: #6C3483; border-color: #1C1C1C; color: #F2EAD3; }
+.btn-primary         { background: var(--sandstone); border-color: var(--border);   color: var(--text); }
+.btn-primary:hover   { background: var(--bg-raised); border-color: var(--accent);   color: var(--text); }
+.btn-primary:active  { background: var(--accent);    border-color: var(--border-in); color: var(--bg-raised); }
+.btn-secondary       { background: var(--bg-panel);  border-color: var(--text-dim); color: var(--border-in); }
+.btn-secondary:hover { background: var(--bg-raised); border-color: var(--border);   color: var(--text); }
+.btn-danger          { background: var(--bg-panel);  border-color: var(--danger);   color: var(--danger); }
+.btn-danger:hover    { background: var(--danger);    border-color: var(--text);     color: var(--bg-panel); }
 .btn-small { padding: 0.25rem 0.8rem; font-size: 0.75rem; width: auto; margin-top: 0; }
-.btn-join  { background: #F2EAD3; border-color: #2E86C1; color: #1B4F72; }
-.btn-join:hover { background: #2E86C1; border-color: #1B4F72; color: #F2EAD3; }
+.btn-join        { background: var(--bg-panel); border-color: var(--sea);      color: var(--deep-sea); }
+.btn-join:hover  { background: var(--sea);      border-color: var(--deep-sea); color: var(--bg-panel); }
 
-.form-error { color: #6C3483; font-size: 0.85rem; min-height: 1.2em; margin-bottom: 0.5rem; } /* DOOM_VIOLET */
+.form-error { color: var(--danger); font-size: 0.85rem; min-height: 1.2em; margin-bottom: 0.5rem; }
 
 .worlds-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
 .worlds-header h2 { margin-bottom: 0; }
@@ -247,10 +250,10 @@ footer {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.state-forming    { border-color: #A04000; color: #A04000; }       /* LOAM */
-.state-active     { border-color: #D4AC0D; color: #D4AC0D; }       /* DRY_GRASS */
-.state-collapsing { border-color: #6C3483; color: #6C3483; }       /* DOOM_VIOLET */
-.state-ended      { border-color: #6E2C00; color: #6E2C00; }       /* ASH_BROWN */
+.state-forming    { border-color: var(--text-dim); color: var(--text-dim); }
+.state-active     { border-color: var(--safe);     color: var(--safe); }
+.state-collapsing { border-color: var(--danger);   color: var(--danger); }
+.state-ended      { border-color: var(--border-in);color: var(--border-in); }
 
 .culture-tag, .kingdom-tag {
   display: inline-block;
@@ -263,19 +266,19 @@ footer {
 
 /* ── Panels — papyrus scroll on fired-clay tablet ─────────────── */
 .panel {
-  background: var(--bg-panel);   /* PLASTER */
-  border: 2px solid var(--border); /* TERRACOTTA */
-  box-shadow: inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+  background: var(--bg-panel);
+  border: 2px solid var(--border);
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
   padding: 1.2rem;
-  color: var(--text);            /* CHARCOAL */
+  color: var(--text);
 }
 .panel h3 {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   margin-bottom: 1rem;
-  color: #C0392B;                /* FIRED_CLAY — section labels */
-  border-bottom: 1px solid #E67E22;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
   padding-bottom: 0.4rem;
 }
 .empty-state { color: var(--text-dim); font-style: italic; font-size: 0.9rem; }
@@ -285,17 +288,17 @@ footer {
 .world-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
 .world-card {
   display: block;
-  background: #F2EAD3;
-  border: 2px solid #E67E22;
-  box-shadow: inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
+  background: var(--bg-panel);
+  border: 2px solid var(--border);
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
   padding: 1.2rem;
-  color: #1C1C1C;
+  color: var(--text);
   transition: border-color 0.15s;
 }
-.world-card:hover { border-color: #C0392B; text-decoration: none; }
-.world-name { font-size: 1.1rem; color: #C0392B; margin-bottom: 0.6rem; }
-.world-meta { display: flex; gap: 0.8rem; font-size: 0.8rem; color: #A04000; flex-wrap: wrap; margin-bottom: 0.4rem; }
-.world-date { font-size: 0.75rem; color: #A04000; }
+.world-card:hover { border-color: var(--accent); text-decoration: none; }
+.world-name { font-size: 1.1rem; color: var(--accent); margin-bottom: 0.6rem; }
+.world-meta { display: flex; gap: 0.8rem; font-size: 0.8rem; color: var(--text-dim); flex-wrap: wrap; margin-bottom: 0.4rem; }
+.world-date { font-size: 0.75rem; color: var(--text-dim); }
 
 /* ── Province page ──────────────────────────────────────────── */
 .province-header {
@@ -319,8 +322,8 @@ footer {
   display: flex;
   align-items: center;
   gap: 0;
-  background: #F2EAD3;
-  border-bottom: 2px solid #E67E22;
+  background: var(--bg-panel);
+  border-bottom: 2px solid var(--border);
   height: 34px;
   flex-shrink: 0;
   flex-wrap: nowrap;
@@ -332,16 +335,16 @@ footer {
   align-items: center;
   gap: 5px;
   padding: 0 12px;
-  border-right: 1px solid #E67E22;
+  border-right: 1px solid var(--border);
   height: 100%;
   white-space: nowrap;
   flex-shrink: 0;
 }
 .res-icon { width: 18px; height: 18px; image-rendering: pixelated; flex-shrink: 0; }
 .res-info  { display: flex; flex-direction: column; line-height: 1.1; }
-.res-name  { font-size: 8px; color: #A04000; text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
-.res-val   { font-size: 13px; font-weight: bold; color: #C0392B; font-family: var(--mono); }
-.res-rate  { font-size: 9px; color: #6E2C00; font-family: var(--mono); }
+.res-name  { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
+.res-val   { font-size: 13px; font-weight: bold; color: var(--accent); font-family: var(--mono); }
+.res-rate  { font-size: 9px; color: var(--border-in); font-family: var(--mono); }
 
 /* Army table */
 .army-table { width: 100%; border-collapse: collapse; }
@@ -365,9 +368,9 @@ footer {
   text-transform: uppercase;
   margin-right: 0.3rem;
 }
-.march-attack .intent-tag, .intent-tag.attack { border-color: var(--danger); color: var(--danger); }
-.march-support .intent-tag, .intent-tag.support { border-color: var(--safe); color: var(--safe); }
-.march-reinforce .intent-tag, .intent-tag.reinforce { border-color: var(--gold); color: var(--gold); }
+.march-attack   .intent-tag, .intent-tag.attack    { border-color: var(--danger); color: var(--danger); }
+.march-support  .intent-tag, .intent-tag.support   { border-color: var(--safe);   color: var(--safe); }
+.march-reinforce .intent-tag, .intent-tag.reinforce { border-color: var(--gold);   color: var(--gold); }
 .arrives { color: var(--text-dim); font-size: 0.8rem; margin-left: 0.5rem; }
 
 /* ── Map page ───────────────────────────────────────────────── */
@@ -383,17 +386,14 @@ footer {
 
 .map-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; }
 .legend-item { display: flex; align-items: center; gap: 0.3rem; }
-.legend-item::before {
-  content: '■';
-  font-size: 1rem;
-}
-.terrain-plains::before  { color: #c8b97a; }
-.terrain-forest::before  { color: #4a7c59; }
-.terrain-hills::before   { color: #a08050; }
+.legend-item::before { content: '■'; font-size: 1rem; }
+.terrain-plains::before   { color: #c8b97a; }
+.terrain-forest::before   { color: #4a7c59; }
+.terrain-hills::before    { color: #a08050; }
 .terrain-mountain::before { color: #7a7a7a; }
-.terrain-coast::before   { color: #d4b483; }
-.terrain-sea::before     { color: #2e5f8a; }
-.terrain-fog::before     { color: #1a1a2e; }
+.terrain-coast::before    { color: #d4b483; }
+.terrain-sea::before      { color: #2e5f8a; }
+.terrain-fog::before      { color: #1a1a2e; }
 
 .tile-tooltip {
   position: fixed;
@@ -405,6 +405,96 @@ footer {
   pointer-events: none;
   z-index: 200;
 }
+
+/* ── Province page panels ───────────────────────────────────── */
+.province-page { display:flex; flex-direction:column; gap:.8rem; }
+.province-header { display:flex; justify-content:space-between; align-items:center; }
+.ph-left { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.ph-name { color:var(--accent); margin:0; font-size:1.4rem; }
+.ph-right { display:flex; gap:.5rem; }
+.stat-chip { background:var(--bg-panel); border:1px solid var(--border); padding:.15rem .5rem; font-size:.8rem; color:var(--text); font-family:var(--mono); }
+.stat-chip strong { color:var(--accent); }
+
+/* Incoming attack banner */
+.attack-warn { background:var(--blood); color:var(--bg-raised); padding:.6rem .9rem; border:2px solid var(--border-in); }
+.aw-title  { font-size:.75rem; text-transform:uppercase; letter-spacing:.15em; color:var(--gold); font-family:var(--mono); margin-bottom:.2rem; }
+.aw-name   { font-size:1rem; font-weight:bold; }
+.aw-detail { font-size:.8rem; color:var(--bg-raised); margin-top:.2rem; }
+.aw-detail strong { color:var(--warm-white); }
+
+.province-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:.8rem;
+}
+@media(max-width:900px) { .province-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .province-grid { grid-template-columns:1fr; } }
+
+/* Army */
+.army-table { width:100%; border-collapse:collapse; font-size:.9rem; }
+.army-table td { padding:.2rem 0; vertical-align:middle; }
+.army-table td.num { text-align:right; color:var(--accent); font-family:var(--mono); font-weight:bold; }
+.unit-icon { image-rendering:pixelated; vertical-align:middle; margin-right:4px; }
+
+/* Recruit */
+.recruit-grid { display:flex; flex-direction:column; gap:.4rem; }
+.recruit-row { display:flex; align-items:center; gap:.4rem; cursor:default; }
+.recruit-label { width:60px; font-size:.8rem; color:var(--text); }
+.recruit-cost  { flex:1; font-size:.72rem; color:var(--text-dim); font-family:var(--mono); }
+.recruit-count { width:48px; background:var(--warm-white); border:1px solid var(--border); padding:.2rem; font-size:.8rem; text-align:center; }
+.unit-unavailable { opacity:.35; pointer-events:none; }
+.unit-unavailable .recruit-cost { color:var(--text-dim); font-style:italic; }
+
+/* Build queue */
+.bq-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:.6rem; }
+.bq-row  { display:flex; justify-content:space-between; font-size:.8rem; margin-bottom:2px; }
+.bq-name { font-family:var(--mono); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; font-weight:bold; }
+.bq-time { color:var(--border-in); font-family:var(--mono); }
+.bq-bar-wrap { background:var(--bg-raised); border:1px solid var(--border); height:6px; }
+.bq-bar { height:100%; background:var(--accent); transition:width 1s linear; }
+
+/* Buildings */
+.bldg-section { margin:.6rem 0; }
+.lp-title { font-size:.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.15em; margin-bottom:.3rem; font-family:var(--mono); }
+.bldg-wrap { display:flex; flex-wrap:wrap; gap:3px; }
+.bldg-tag    { background:var(--accent);    color:var(--bg-raised); padding:2px 6px; font-size:.72rem; letter-spacing:.05em; font-family:var(--mono); }
+.bldg-tag.l2 { background:var(--text-dim); }
+.bldg-tag.l3 { background:var(--border-in); }
+
+/* Build form */
+.build-form-wrap { margin-top:.8rem; border-top:1px solid var(--border); padding-top:.8rem; }
+.build-select { width:100%; background:var(--warm-white); border:2px solid var(--border); color:var(--text); padding:.4rem; font-size:.8rem; margin-bottom:0; font-family:var(--mono); }
+
+/* March */
+.march-list { list-style:none; display:flex; flex-direction:column; gap:.3rem; }
+.march-item { display:flex; align-items:center; gap:.4rem; font-size:.82rem; }
+.intent-badge { font-family:var(--mono); font-size:.7rem; padding:.1rem .3rem; text-transform:uppercase; letter-spacing:.05em; }
+.intent-attack    { background:var(--blood);   color:var(--bg-raised); }
+.intent-support   { background:var(--safe);    color:var(--text); }
+.intent-reinforce { background:var(--sea);     color:var(--bg-panel); }
+.march-target { color:var(--border-in); font-size:.75rem; font-family:var(--mono); flex:1; overflow:hidden; text-overflow:ellipsis; }
+.march-time   { color:var(--text-dim); font-size:.72rem; white-space:nowrap; }
+.march-units  { color:var(--border-in); font-size:.75rem; }
+.incoming-header { color:var(--accent); font-size:.75rem; text-transform:uppercase; letter-spacing:.1em; margin:.6rem 0 .3rem; }
+.incoming-list { border-top:1px solid var(--border); padding-top:.3rem; }
+
+/* Goods */
+.goods-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.goods-table th { text-align:left; font-size:.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:.08em; font-family:var(--mono); border-bottom:1px solid var(--border); padding:.15rem 0; }
+.goods-table td { padding:.2rem 0; border-bottom:1px solid var(--bg-raised); vertical-align:middle; }
+.goods-table tr:last-child td { border-bottom:none; }
+.g-name { color:var(--text); }
+.g-num  { text-align:right; font-family:var(--mono); color:var(--accent); padding-left:.4rem; }
+.g-cat  { font-size:.7rem; color:var(--text-dim); font-family:var(--mono); }
+
+/* Temple / cult level */
+.cult-mood-chip { display:inline-block; padding:.2rem .7rem; font-family:var(--mono); font-size:.82rem; letter-spacing:.07em; background:var(--gold); color:var(--text); border:1px solid var(--safe); margin-bottom:.3rem; }
+
+/* Trade quantity input — small inline number field */
+.trade-qty-input { width:100%; background:var(--warm-white); border:1px solid var(--border); color:var(--text); padding:.3rem; font-size:.8rem; margin:.2rem 0; font-family:var(--mono); }
+
+/* Shared action result line */
+.action-result { margin-top:.4rem; font-size:.8rem; min-height:1em; color:var(--accent); font-family:var(--mono); }
 
 /* ── Kingdom page ───────────────────────────────────────────── */
 .kingdom-header { margin-bottom: 1.5rem; }

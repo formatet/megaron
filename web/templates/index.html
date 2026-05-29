@@ -73,9 +73,9 @@ async function doAuth(url, body, errorEl) {
     }
     // Server already set the poleia_token cookie.
     // Also keep tokens in localStorage for HTMX API calls.
-    localStorage.setItem('poleia_access', data.access_token);
+    localStorage.setItem('poleia_token', data.access_token);
     localStorage.setItem('poleia_refresh', data.refresh_token);
-    window.location.href = '/worlds';
+    window.location.href = '/play';
   } catch (e) {
     errorEl.textContent = 'Network error.';
   }

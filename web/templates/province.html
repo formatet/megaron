@@ -44,55 +44,63 @@
     <section class="panel army-panel">
       <h3>Army</h3>
       <table class="army-table">
-        <tr><td><canvas class="unit-icon" data-unit="inf"  width="12" height="12"></canvas> Infantry</td> <td class="num">{{.Province.Army.Infantry}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="cav"  width="12" height="12"></canvas> Cavalry</td>  <td class="num">{{.Province.Army.Cavalry}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="cat"  width="12" height="12"></canvas> Catapults</td><td class="num">{{.Province.Army.Catapult}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="pri"  width="12" height="12"></canvas> Priests</td>  <td class="num">{{.Province.Army.Priest}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Ships</td>    <td class="num">{{.Province.Army.Ship}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="inf"  width="12" height="12"></canvas> Hoplites</td>      <td class="num">{{.Province.Army.Infantry}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="cav"  width="12" height="12"></canvas> Hippeis</td>       <td class="num">{{.Province.Army.Cavalry}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="cat"  width="12" height="12"></canvas> Siege</td>         <td class="num">{{.Province.Army.Catapult}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="pri"  width="12" height="12"></canvas> Hiereus</td>       <td class="num">{{.Province.Army.Priest}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Trireme</td>       <td class="num">{{.Province.Army.Ship}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="eli"  width="12" height="12"></canvas> Agema</td>         <td class="num">{{.Province.Army.EliteInfantry}}</td></tr>
       </table>
     </section>
 
     <!-- ── Recruit ────────────────────────────────── -->
     <section class="panel recruit-panel">
       <h3>Recruit</h3>
-      <form hx-post="/api/v1/worlds/{{.WorldID}}/provinces/{{.Province.ID}}/recruit"
-            hx-target="#recruit-result" hx-swap="innerHTML"
-            hx-on::after-request="this.reset()">
-        <div class="recruit-grid">
-          <label class="recruit-row">
-            <span class="recruit-label">Infantry</span>
-            <span class="recruit-cost">10 food · 5 iron</span>
-            <input type="hidden" name="unit_type" value="infantry">
-            <input class="recruit-count" type="number" name="count" min="1" max="100" value="10" id="rc-infantry">
-            <button type="submit" class="btn-small btn-primary"
-                    onclick="document.querySelector('[name=unit_type]').value='infantry'">Train</button>
-          </label>
-          <label class="recruit-row">
-            <span class="recruit-label">Cavalry</span>
-            <span class="recruit-cost">25 food · 15 iron</span>
-            <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-cavalry">
-            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('cavalry', document.getElementById('rc-cavalry').value)">Train</button>
-          </label>
-          <label class="recruit-row">
-            <span class="recruit-label">Catapult</span>
-            <span class="recruit-cost">60 lumber · 40 iron</span>
-            <input class="recruit-count" type="number" min="1" max="10" value="1" id="rc-catapult">
-            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('catapult', document.getElementById('rc-catapult').value)">Train</button>
-          </label>
-          <label class="recruit-row">
-            <span class="recruit-label">Priest</span>
-            <span class="recruit-cost">50 kharis</span>
-            <input class="recruit-count" type="number" min="1" max="10" value="1" id="rc-priest">
-            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('priest', document.getElementById('rc-priest').value)">Train</button>
-          </label>
-          <label class="recruit-row">
-            <span class="recruit-label">Ship</span>
-            <span class="recruit-cost">80 lumber · 30 iron</span>
-            <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-ship">
-            <button type="button" class="btn-small btn-primary" onclick="recruitUnit('ship', document.getElementById('rc-ship').value)">Train</button>
-          </label>
-        </div>
-      </form>
+      {{$hasBarracks := index .Built "barracks"}}
+      {{$hasStable   := index .Built "stable"}}
+      {{$hasHarbour  := index .Built "harbour"}}
+      {{$hasFoundry  := index .Built "foundry"}}
+      <div class="recruit-grid">
+        <label class="recruit-row{{if not $hasBarracks}} unit-unavailable{{end}}">
+          <span class="recruit-label">Hoplites</span>
+          <span class="recruit-cost">{{if not $hasBarracks}}requires barracks{{else}}10 food · 5 iron{{end}}</span>
+          <input class="recruit-count" type="number" min="1" max="100" value="10" id="rc-hoplites"{{if not $hasBarracks}} disabled{{end}}>
+          <button type="button" class="btn-small btn-primary"
+                  onclick="recruitUnit('infantry', document.getElementById('rc-hoplites').value)"
+                  {{if not $hasBarracks}}disabled{{end}}>Train</button>
+        </label>
+        <label class="recruit-row{{if not $hasStable}} unit-unavailable{{end}}">
+          <span class="recruit-label">Hippeis</span>
+          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}25 food · 15 iron{{end}}</span>
+          <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-hippeis"{{if not $hasStable}} disabled{{end}}>
+          <button type="button" class="btn-small btn-primary"
+                  onclick="recruitUnit('cavalry', document.getElementById('rc-hippeis').value)"
+                  {{if not $hasStable}}disabled{{end}}>Train</button>
+        </label>
+        <label class="recruit-row">
+          <span class="recruit-label">Hiereus</span>
+          <span class="recruit-cost">50 kharis</span>
+          <input class="recruit-count" type="number" min="1" max="10" value="1" id="rc-hiereus">
+          <button type="button" class="btn-small btn-primary"
+                  onclick="recruitUnit('priest', document.getElementById('rc-hiereus').value)">Train</button>
+        </label>
+        <label class="recruit-row{{if not $hasHarbour}} unit-unavailable{{end}}">
+          <span class="recruit-label">Trireme</span>
+          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}80 lumber · 30 iron{{end}}</span>
+          <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-trireme"{{if not $hasHarbour}} disabled{{end}}>
+          <button type="button" class="btn-small btn-primary"
+                  onclick="recruitUnit('ship', document.getElementById('rc-trireme').value)"
+                  {{if not $hasHarbour}}disabled{{end}}>Train</button>
+        </label>
+        <label class="recruit-row{{if not $hasFoundry}} unit-unavailable{{end}}">
+          <span class="recruit-label">Agema</span>
+          <span class="recruit-cost">{{if not $hasFoundry}}requires foundry{{else}}20 food · 10 iron · 2 bronze{{end}}</span>
+          <input class="recruit-count" type="number" min="1" max="50" value="1" id="rc-agema"{{if not $hasFoundry}} disabled{{end}}>
+          <button type="button" class="btn-small btn-primary"
+                  onclick="recruitUnit('elite_infantry', document.getElementById('rc-agema').value)"
+                  {{if not $hasFoundry}}disabled{{end}}>Train</button>
+        </label>
+      </div>
       <div id="recruit-result" class="action-result"></div>
     </section>
 
@@ -137,6 +145,9 @@
           <option value="market">Market — 100L 60S · +0.5 gold/m</option>
           <option value="wall">Wall — 40L 120S 60I · +1 wall</option>
           <option value="harbour">Harbour — 120L 60S 40I · ships</option>
+          <option value="foundry">Foundry — 80L 60S 50I · craft bronze</option>
+          <option value="stable">Stable — 60L 40S · horses</option>
+          <option value="bronze_wall">Bronze Wall — 80S 40I 10 bronze · +1 wall</option>
         </select>
         <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
         <div id="build-result" class="action-result"></div>
@@ -175,117 +186,47 @@
       {{end}}
     </section>
 
-    <!-- ── Send army ──────────────────────────────── -->
-    <section class="panel send-panel">
-      <h3>Send Army</h3>
-      <form id="march-form">
-        <div class="field">
-          <label>Target Province ID</label>
-          <input type="text" id="march-target" placeholder="paste province uuid" required>
-        </div>
-        <div class="field">
-          <label>Intent</label>
-          <select id="march-intent">
-            <option value="attack">Attack</option>
-            <option value="support">Support</option>
-            <option value="reinforce">Reinforce</option>
-          </select>
-        </div>
-        <div class="unit-row">
-          <label>Infantry <input type="number" id="march-infantry" value="0" min="0" max="{{.Province.Army.Infantry}}"></label>
-          <label>Cavalry  <input type="number" id="march-cavalry"  value="0" min="0" max="{{.Province.Army.Cavalry}}"></label>
-          <label>Catapults<input type="number" id="march-catapult" value="0" min="0" max="{{.Province.Army.Catapult}}"></label>
-          <label>Priests  <input type="number" id="march-priest"   value="0" min="0" max="{{.Province.Army.Priest}}"></label>
-        </div>
-        <button type="button" class="btn-danger btn-primary" onclick="sendArmy()">March →</button>
-      </form>
-      <div id="march-result" class="action-result"></div>
+    <!-- ── Goods ─────────────────────────────────── -->
+    <section class="panel goods-panel">
+      <h3>Goods</h3>
+      <div id="goods-list"><p class="loading">Loading…</p></div>
+      <div class="goods-trade-wrap" id="goods-trade-wrap" style="display:none">
+        <div class="lp-title" style="margin-top:.6rem">Send Trade</div>
+        <select id="trade-good" class="build-select" style="margin:.3rem 0"></select>
+        <input type="number" id="trade-qty" placeholder="Quantity" min="0.1" step="0.1" class="trade-qty-input">
+        <select id="trade-dest" class="build-select" style="margin:.2rem 0">
+          <option value="">— choose destination —</option>
+        </select>
+        <button class="btn-primary btn-small" onclick="sendTrade()" style="width:100%;margin-top:.3rem">Send →</button>
+        <div id="trade-result" class="action-result"></div>
+      </div>
+    </section>
+
+    <!-- ── Temple & Cult level ──────────────────────── -->
+    <section class="panel cult-panel">
+      <h3>Temple</h3>
+      <div id="cult-mood" class="cult-mood-chip">loading…</div>
+      <div class="lp-title" style="margin-top:.6rem">Devotion</div>
+      <select id="cult-level-select" class="build-select" style="margin:.3rem 0">
+        <option value="forsummad">Neglected — kharis -10%/day</option>
+        <option value="enkel"    >Simple — 3 gold · 3 food → +2 kharis</option>
+        <option value="vardig"   >Worthy — 6 gold · 5 food → +5 kharis</option>
+        <option value="praktfull">Magnificent — 12 gold · 10 food → +10 kharis</option>
+        <option value="overdadig">Lavish — 20 gold · 15 food → +18 kharis</option>
+      </select>
+      <button class="btn-primary btn-small" onclick="setCultLevel()" style="width:100%;margin-top:.3rem">Save</button>
+      <div id="cult-result" class="action-result"></div>
     </section>
 
   </div>
 </div>
-
-<style>
-.province-page { display:flex; flex-direction:column; gap:.8rem; }
-.province-header { display:flex; justify-content:space-between; align-items:center; }
-.ph-left { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
-.ph-name { color:#C0392B; margin:0; font-size:1.4rem; }
-.ph-right { display:flex; gap:.5rem; }
-.stat-chip { background:#F2EAD3; border:1px solid #E67E22; padding:.15rem .5rem; font-size:.8rem; color:#1C1C1C; font-family:var(--mono); }
-.stat-chip strong { color:#C0392B; }
-.culture-tag, .kingdom-tag { background:#F2EAD3; border:1px solid #A04000; color:#6E2C00; padding:.1rem .4rem; font-size:.75rem; font-family:var(--mono); letter-spacing:.05em; }
-
-/* Incoming attack banner */
-.attack-warn { background:#922B21; color:#FAD7A0; padding:.6rem .9rem; border:2px solid #6E2C00; }
-.aw-title { font-size:.75rem; text-transform:uppercase; letter-spacing:.15em; color:#F9E79F; font-family:var(--mono); margin-bottom:.2rem; }
-.aw-name  { font-size:1rem; font-weight:bold; }
-.aw-detail { font-size:.8rem; color:#FAD7A0; margin-top:.2rem; }
-.aw-detail strong { color:#FDFEFE; }
-
-.province-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:.8rem;
-}
-@media(max-width:900px) { .province-grid { grid-template-columns:1fr 1fr; } }
-@media(max-width:600px) { .province-grid { grid-template-columns:1fr; } }
-
-/* Army */
-.army-table { width:100%; border-collapse:collapse; font-size:.9rem; }
-.army-table td { padding:.2rem 0; vertical-align:middle; }
-.army-table td.num { text-align:right; color:#C0392B; font-family:var(--mono); font-weight:bold; }
-.unit-icon { image-rendering:pixelated; vertical-align:middle; margin-right:4px; }
-
-/* Recruit */
-.recruit-grid { display:flex; flex-direction:column; gap:.4rem; }
-.recruit-row { display:flex; align-items:center; gap:.4rem; cursor:default; }
-.recruit-label { width:60px; font-size:.8rem; color:#1C1C1C; }
-.recruit-cost { flex:1; font-size:.72rem; color:#A04000; font-family:var(--mono); }
-.recruit-count { width:48px; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem; font-size:.8rem; text-align:center; }
-
-/* Build queue */
-.bq-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:.6rem; }
-.bq-item { }
-.bq-row  { display:flex; justify-content:space-between; font-size:.8rem; margin-bottom:2px; }
-.bq-name { font-family:var(--mono); color:#C0392B; text-transform:uppercase; letter-spacing:.08em; font-weight:bold; }
-.bq-time { color:#6E2C00; font-family:var(--mono); }
-.bq-bar-wrap { background:#FAD7A0; border:1px solid #E67E22; height:6px; }
-.bq-bar { height:100%; background:#C0392B; transition:width 1s linear; }
-
-/* Buildings */
-.bldg-section { margin:.6rem 0; }
-.lp-title { font-size:.72rem; color:#A04000; text-transform:uppercase; letter-spacing:.15em; margin-bottom:.3rem; font-family:var(--mono); }
-.bldg-wrap { display:flex; flex-wrap:wrap; gap:3px; }
-.bldg-tag { background:#C0392B; color:#FAD7A0; padding:2px 6px; font-size:.72rem; letter-spacing:.05em; font-family:var(--mono); }
-.bldg-tag.l2 { background:#A04000; }
-.bldg-tag.l3 { background:#6E2C00; }
-
-/* Build form */
-.build-form-wrap { margin-top:.8rem; border-top:1px solid #E67E22; padding-top:.8rem; }
-.build-select { width:100%; background:#FDFEFE; border:2px solid #E67E22; color:#1C1C1C; padding:.4rem; font-size:.8rem; margin-bottom:0; font-family:var(--mono); }
-
-/* March */
-.march-list { list-style:none; display:flex; flex-direction:column; gap:.3rem; }
-.march-item { display:flex; align-items:center; gap:.4rem; font-size:.82rem; }
-.intent-badge { font-family:var(--mono); font-size:.7rem; padding:.1rem .3rem; text-transform:uppercase; letter-spacing:.05em; }
-.intent-attack   { background:#922B21; color:#FAD7A0; }
-.intent-support  { background:#D4AC0D; color:#1C1C1C; }
-.intent-reinforce{ background:#2E86C1; color:#F2EAD3; }
-.march-target { color:#6E2C00; font-size:.75rem; font-family:var(--mono); flex:1; overflow:hidden; text-overflow:ellipsis; }
-.march-time   { color:#A04000; font-size:.72rem; white-space:nowrap; }
-.march-units  { color:#6E2C00; font-size:.75rem; }
-.incoming-header { color:#C0392B; font-size:.75rem; text-transform:uppercase; letter-spacing:.1em; margin:.6rem 0 .3rem; }
-.incoming-list { border-top:1px solid #E67E22; padding-top:.3rem; }
-
-.action-result { margin-top:.4rem; font-size:.8rem; min-height:1em; color:#C0392B; font-family:var(--mono); }
-</style>
 
 <script>
 const PROVINCE_ID = "{{.Province.ID}}";
 const WORLD_ID    = "{{.WorldID}}";
 
 function apiPost(path, body) {
-  const token = localStorage.getItem('poleia_access');
+  const token = localStorage.getItem('poleia_token');
   return fetch(path, {
     method: 'POST',
     headers: {
@@ -326,22 +267,134 @@ async function recruitUnit(unitType, count) {
   }
 }
 
-async function sendArmy() {
-  const body = {
-    target_id: document.getElementById('march-target').value,
-    intent:    document.getElementById('march-intent').value,
-    infantry:  parseInt(document.getElementById('march-infantry').value, 10) || 0,
-    cavalry:   parseInt(document.getElementById('march-cavalry').value,  10) || 0,
-    catapult:  parseInt(document.getElementById('march-catapult').value, 10) || 0,
-    priest:    parseInt(document.getElementById('march-priest').value,   10) || 0,
-  };
-  const res = await apiPost(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/march`, body);
+
+// ── Goods inventory ──────────────────────────────────────────────────────
+let _goodsData = [];
+async function loadGoods() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/goods`, {
+    headers: token ? {'Authorization': 'Bearer ' + token} : {}
+  });
+  _goodsData = await res.json().catch(() => []);
+  const el = document.getElementById('goods-list');
+  if (!_goodsData.length) {
+    el.innerHTML = '<p class="empty-state">No goods yet.</p>';
+    return;
+  }
+  el.innerHTML = `<table class="goods-table">
+    <thead><tr><th>Good</th><th style="text-align:right">Amt</th><th style="text-align:right">Rate</th><th style="text-align:right">Price</th></tr></thead>
+    <tbody>${_goodsData.map(g => `<tr>
+      <td class="g-name">${g.name}<br><span class="g-cat">${g.category}</span></td>
+      <td class="g-num">${g.amount.toFixed(1)}</td>
+      <td class="g-num">+${g.rate_per_min.toFixed(3)}</td>
+      <td class="g-num">${g.price.toFixed(1)}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+  // Populate trade good selector
+  const sel = document.getElementById('trade-good');
+  sel.innerHTML = _goodsData.map(g => `<option value="${g.key}">${g.name}</option>`).join('');
+  document.getElementById('goods-trade-wrap').style.display = '';
+}
+
+async function loadVisibleSettlements() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces`, {
+    headers: token ? {'Authorization': 'Bearer ' + token} : {}
+  });
+  if (!res.ok) return;
+  const markers = await res.json().catch(() => []);
+  const sel = document.getElementById('trade-dest');
+  // Keep the placeholder, replace rest.
+  sel.innerHTML = '<option value="">— choose destination —</option>';
+  markers.forEach(m => {
+    if (m.own) return; // skip own settlement
+    const label = m.name + (m.owner ? ` (${m.owner})` : '') + (m.allied ? ' ★' : '');
+    const opt = document.createElement('option');
+    opt.value = m.settlement_id;
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
+}
+
+async function sendTrade() {
+  const good = document.getElementById('trade-good').value;
+  const qty  = parseFloat(document.getElementById('trade-qty').value);
+  const dest = document.getElementById('trade-dest').value;
+  if (!dest || !qty || qty <= 0) { showResult('trade-result', 'choose destination and quantity', false); return; }
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/trade`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', ...(token ? {'Authorization':'Bearer '+token} : {})},
+    body: JSON.stringify({destination_id: dest, good_key: good, quantity: qty}),
+  });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    const mins = Math.round(data.distance * 60);
-    showResult('march-result', `Army marching · ${data.distance} hex · ${mins} min`, true);
+    showResult('trade-result', `${qty}× ${good} en route · ${Math.round(data.travel_min)} min`, true);
+    loadGoods();
   } else {
-    showResult('march-result', data.error || 'failed', false);
+    showResult('trade-result', data.error || 'failed', false);
+  }
+}
+
+// ── WebSocket — goods refresh on TradeDelivery ────────────────────────────
+(function() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  let ws;
+  function connect() {
+    ws = new WebSocket(`${proto}//${location.host}/ws/${WORLD_ID}`);
+    ws.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if (msg.kind === 'TradeDelivery' && msg.payload.destination_id === SETTLEMENT_ID) {
+        loadGoods();
+        showResult('trade-result', `${msg.payload.quantity.toFixed(1)}× ${msg.payload.good_key} arrived`, true);
+      }
+    };
+    ws.onclose = () => setTimeout(connect, 5000);
+  }
+  connect();
+})();
+
+document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadCultLevel(); loadVisibleSettlements(); });
+
+// ── Cult level ────────────────────────────────────────────────────────────
+const SETTLEMENT_ID = "{{.Province.SettlementID}}";
+
+async function loadCultLevel() {
+  if (!SETTLEMENT_ID) return;
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/settlements/${SETTLEMENT_ID}`, {
+    headers: token ? {'Authorization': 'Bearer ' + token} : {}
+  });
+  if (!res.ok) return;
+  const data = await res.json().catch(() => ({}));
+  const mood = data.divine_mood || '';
+  const chip = document.getElementById('cult-mood');
+  if (chip) {
+    const moodLabel = {välvilliga:'Favorable', likgiltiga:'Indifferent', misstänksamma:'Suspicious', vredgade:'Wrathful'};
+    chip.textContent = 'The gods are ' + (moodLabel[mood] || mood);
+    const moodColor = {välvilliga:'#D4AC0D', likgiltiga:'#A04000', misstänksamma:'#C0392B', vredgade:'#6C3483'};
+    if (moodColor[mood]) chip.style.background = moodColor[mood];
+    chip.style.color = mood === 'välvilliga' ? '#1C1C1C' : '#F2EAD3';
+  }
+  const sel = document.getElementById('cult-level-select');
+  if (sel && data.cult_level) sel.value = data.cult_level;
+}
+
+async function setCultLevel() {
+  if (!SETTLEMENT_ID) { showResult('cult-result', 'no settlement', false); return; }
+  const level = document.getElementById('cult-level-select').value;
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/settlements/${SETTLEMENT_ID}/cult-level`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json', ...(token ? {'Authorization':'Bearer '+token} : {})},
+    body: JSON.stringify({cult_level: level}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('cult-result', `Devotion set to ${level}`, true);
+    loadCultLevel();
+  } else {
+    showResult('cult-result', data.error || 'failed', false);
   }
 }
 
@@ -354,6 +407,8 @@ async function sendArmy() {
     cat(x){r(x,1,7,10,3,'#A04000');r(x,8,3,3,5,'#6E2C00');r(x,1,9,2,2,'#6E2C00');r(x,9,9,2,2,'#6E2C00');},
     pri(x){r(x,4,1,4,3,'#F2EAD3');r(x,5,4,2,6,'#FDFEFE');r(x,4,6,4,1,'#D4AC0D');r(x,5,10,2,2,'#F2EAD3');r(x,4,9,1,3,'#FDFEFE');r(x,7,9,1,3,'#FDFEFE');},
     shp(x){r(x,2,6,8,4,'#A04000');r(x,6,2,1,5,'#6E2C00');r(x,7,3,3,3,'#F2EAD3');},
+    // elite infantry: bronze breastplate + red plume
+    eli(x){r(x,4,2,4,3,'#F2EAD3');r(x,5,5,2,6,'#D4AC0D');r(x,3,7,6,1,'#C0392B');r(x,4,8,4,3,'#D4AC0D');r(x,5,1,2,2,'#C0392B');},
   };
   document.querySelectorAll('.unit-icon[data-unit]').forEach(c=>{
     const fn=U[c.dataset.unit]; if(!fn)return;
@@ -366,6 +421,7 @@ async function sendArmy() {
   const DURATION_MIN = {
     farm:30, lumbermill:30, stonequarry:30, mine:45,
     barracks:60, market:90, wall:120, harbour:90,
+    foundry:90, stable:60, bronze_wall:180,
   };
   function tick(){
     document.querySelectorAll('.bq-item[data-complete]').forEach(el=>{

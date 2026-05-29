@@ -17,15 +17,16 @@ import (
 
 // WebHandler renders HTMX-powered HTML pages.
 type WebHandler struct {
-	pool      *pgxpool.Pool
-	authSvc   *auth.Service
-	templates *template.Template
+	pool        *pgxpool.Pool
+	authSvc     *auth.Service
+	base        *template.Template // base.html only, cloned per request
+	templateDir string
 }
 
-// NewWebHandler creates a WebHandler and parses all templates from the given dir.
+// NewWebHandler creates a WebHandler. Only base.html is pre-parsed; page
+// templates are parsed fresh per request so each gets its own "content" block.
 func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string) (*WebHandler, error) {
-	pattern := filepath.Join(templateDir, "*.html")
-	tmpl, err := template.New("").Funcs(template.FuncMap{
+	funcs := template.FuncMap{
 		"formatTime": func(t time.Time) string {
 			return t.Format("2006-01-02 15:04")
 		},
@@ -44,24 +45,79 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 			}
 			return fmt.Sprintf("+%.1f/m", v)
 		},
-	}).ParseGlob(pattern)
+	}
+	// Parse base + all partials (named templates used across pages) into the base set.
+	// Page templates are parsed per-request via Clone so each gets its own "content" block.
+	base, err := template.New("").Funcs(funcs).ParseFiles(
+		filepath.Join(templateDir, "base.html"),
+		filepath.Join(templateDir, "resource_bar.html"),
+	)
 	if err != nil {
 		return nil, err
 	}
-	return &WebHandler{pool: pool, authSvc: authSvc, templates: tmpl}, nil
+	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir}, nil
 }
 
+// render renders a full-page template that extends base.html.
 func (h *WebHandler) render(w http.ResponseWriter, name string, data any) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := h.templates.ExecuteTemplate(w, name, data); err != nil {
-		slog.Error("template render error", "template", name, "err", err)
+	t, err := h.base.Clone()
+	if err != nil {
+		slog.Error("template clone", "err", err)
 		http.Error(w, "render error", http.StatusInternalServerError)
+		return
+	}
+	if _, err = t.ParseFiles(filepath.Join(h.templateDir, name)); err != nil {
+		slog.Error("template parse", "template", name, "err", err)
+		http.Error(w, "render error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := t.ExecuteTemplate(w, "base", data); err != nil {
+		slog.Error("template render error", "template", name, "err", err)
 	}
 }
 
-// Index serves the login/register page or redirects to the world list.
+// renderPartial renders a named partial (no base wrapper — used for HTMX fragments).
+func (h *WebHandler) renderPartial(w http.ResponseWriter, name string, data any) {
+	t, err := h.base.Clone()
+	if err != nil {
+		http.Error(w, "render error", http.StatusInternalServerError)
+		return
+	}
+	if _, err = t.ParseFiles(filepath.Join(h.templateDir, name)); err != nil {
+		slog.Error("template parse", "template", name, "err", err)
+		http.Error(w, "render error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := t.ExecuteTemplate(w, name, data); err != nil {
+		slog.Error("template render error", "template", name, "err", err)
+	}
+}
+
+// Index serves the login/register page.
 func (h *WebHandler) Index(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "index.html", nil)
+}
+
+// Play is the post-login landing: redirects to the player's map if they have a
+// settlement, or to the worlds list if they haven't joined one yet.
+func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	var worldID uuid.UUID
+	err := h.pool.QueryRow(r.Context(),
+		`SELECT world_id FROM settlements WHERE owner_id = $1 ORDER BY created_at DESC LIMIT 1`,
+		playerID,
+	).Scan(&worldID)
+	if err != nil {
+		http.Redirect(w, r, "/worlds", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/world/"+worldID.String()+"/map", http.StatusSeeOther)
 }
 
 // WorldList serves the list of active worlds.
@@ -121,24 +177,36 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 	resources := s.Resources.Snapshot(now)
+	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
+	resources["food_rate"] = s.Resources.Food.RatePerMinute
+	resources["lumber_rate"] = s.Resources.Lumber.RatePerMinute
+	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
+	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
+	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
 
 	// province.html uses .Province.ID in URLs — pass province_id as the ID.
 	// Province is the settlement struct, but with ID = province tile ID.
 	type provinceView struct {
-		ID         uuid.UUID // province_id for URL routing
-		WorldID    uuid.UUID
-		Name       string
-		Army       any
-		Population int
-		Walls      int
+		ID           uuid.UUID // province_id for URL routing
+		SettlementID uuid.UUID // settlement UUID for cult-level and settlement API calls
+		WorldID      uuid.UUID
+		Name         string
+		CultureID    string
+		Army         any
+		Population   int
+		Walls        int
+		KingdomID    *uuid.UUID
 	}
 	pv := provinceView{
-		ID:         s.ProvinceID,
-		WorldID:    worldID,
-		Name:       s.Name,
-		Army:       s.Army,
-		Population: s.Population,
-		Walls:      s.WallLevel,
+		ID:           s.ProvinceID,
+		SettlementID: s.ID,
+		WorldID:      worldID,
+		Name:         s.Name,
+		CultureID:    string(s.CultureID),
+		Army:         s.Army,
+		Population:   s.Population,
+		Walls:        s.WallLevel,
+		KingdomID:    s.KingdomID,
 	}
 
 	// Load build queue.
@@ -222,6 +290,11 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		buildings = append(buildings, bi)
 	}
 
+	built := make(map[string]bool)
+	for _, b := range buildings {
+		built[b.Type] = true
+	}
+
 	h.render(w, "province.html", map[string]any{
 		"Province":  pv,
 		"Resources": resources,
@@ -229,6 +302,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		"Marches":   marches,
 		"Incoming":  incoming,
 		"Buildings": buildings,
+		"Built":     built,
 		"WorldID":   worldID,
 		"Now":       now,
 	})
@@ -248,7 +322,13 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resources := s.Resources.Snapshot(time.Now())
-	h.render(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s})
+	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
+	resources["food_rate"] = s.Resources.Food.RatePerMinute
+	resources["lumber_rate"] = s.Resources.Lumber.RatePerMinute
+	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
+	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
+	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
+	h.renderPartial(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s})
 }
 
 // MapView serves the hex map page.

@@ -23,6 +23,7 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/combat"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/kharis"
 	"github.com/poleia/server/internal/loyalty"
@@ -85,6 +86,7 @@ func main() {
 	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore)
+	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub)
 	worker.Register(events.ScheduledArmyArrival, arrivalH.Handle)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
@@ -94,6 +96,7 @@ func main() {
 	worker.Register(events.ScheduledMessengerArrival, messengerArrivalH.Handle)
 	worker.Register(events.ScheduledMessengerReturn, messengerReturnH.Handle)
 	worker.Register(events.ScheduledKharisTick, kharisH.Handle)
+	worker.Register(events.ScheduledTradeDelivery, tradeH.Handle)
 	go worker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
 
@@ -121,6 +124,7 @@ func main() {
 	// Web (HTML) routes — browser reads cookie, HTMX injects Bearer from localStorage.
 	r.Get("/", webH.Index)
 	r.Get("/worlds", webH.WorldList)
+	r.With(auth.WebMiddleware(authSvc)).Get("/play", webH.Play)
 	r.With(auth.WebMiddleware(authSvc)).Route("/world/{worldID}", func(r chi.Router) {
 		r.Get("/", webH.Province)
 		r.Get("/map", webH.MapView)
@@ -161,9 +165,12 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/army", ph.GetArmy)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/buildings", ph.Buildings)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/march", ph.March)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
+			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
+			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 
@@ -183,6 +190,7 @@ func main() {
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}/loyalty-log", sh.LoyaltyLog)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/return-army", sh.ReturnArmy)
+			r.Patch("/worlds/{worldID}/settlements/{settlementID}/cult-level", sh.SetCultLevel)
 			r.Get("/worlds/{worldID}/gossip", sh.Gossip)
 
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/messengers", mh.Send)

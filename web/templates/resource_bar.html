@@ -9,7 +9,7 @@
     <div class="res-info">
       <span class="res-name">Gold</span>
       <span class="res-val">{{resource (index .Resources "gold")}}</span>
-      <span class="res-rate">{{rate $p.Resources.Gold.RatePerMinute}}</span>
+      <span class="res-rate">{{rate (index .Resources "gold_rate")}}</span>
     </div>
   </div>
   <div class="res">
@@ -17,7 +17,7 @@
     <div class="res-info">
       <span class="res-name">Food</span>
       <span class="res-val">{{resource (index .Resources "food")}}</span>
-      <span class="res-rate">{{rate $p.Resources.Food.RatePerMinute}}</span>
+      <span class="res-rate">{{rate (index .Resources "food_rate")}}</span>
     </div>
   </div>
   <div class="res">
@@ -25,7 +25,7 @@
     <div class="res-info">
       <span class="res-name">Timber</span>
       <span class="res-val">{{resource (index .Resources "lumber")}}</span>
-      <span class="res-rate">{{rate $p.Resources.Lumber.RatePerMinute}}</span>
+      <span class="res-rate">{{rate (index .Resources "lumber_rate")}}</span>
     </div>
   </div>
   <div class="res">
@@ -33,7 +33,7 @@
     <div class="res-info">
       <span class="res-name">Stone</span>
       <span class="res-val">{{resource (index .Resources "stone")}}</span>
-      <span class="res-rate">{{rate $p.Resources.Stone.RatePerMinute}}</span>
+      <span class="res-rate">{{rate (index .Resources "stone_rate")}}</span>
     </div>
   </div>
   <div class="res">
@@ -41,7 +41,7 @@
     <div class="res-info">
       <span class="res-name">Iron</span>
       <span class="res-val">{{resource (index .Resources "iron")}}</span>
-      <span class="res-rate">{{rate $p.Resources.Iron.RatePerMinute}}</span>
+      <span class="res-rate">{{rate (index .Resources "iron_rate")}}</span>
     </div>
   </div>
   <div class="res">
@@ -49,7 +49,7 @@
     <div class="res-info">
       <span class="res-name">Kharis</span>
       <span class="res-val">{{resource (index .Resources "kharis")}}</span>
-      <span class="res-rate">{{rate $p.Resources.Kharis.RatePerMinute}}</span>
+      <span class="res-rate">{{rate (index .Resources "kharis_rate")}}</span>
     </div>
   </div>
 </div>
