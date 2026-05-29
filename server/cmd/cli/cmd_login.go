@@ -6,11 +6,10 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 )
 
 func loginCmd() *cobra.Command {
-	var server, username, password string
+	var server, username string
 
 	cmd := &cobra.Command{
 		Use:   "login",
@@ -19,27 +18,15 @@ func loginCmd() *cobra.Command {
 			if server == "" {
 				server = "http://localhost:8080"
 			}
-
 			if username == "" {
-				fmt.Print("Username or email: ")
+				fmt.Print("Username: ")
 				fmt.Scan(&username)
-			}
-			if password == "" {
-				fmt.Print("Password: ")
-				b, err := term.ReadPassword(int(os.Stdin.Fd()))
-				fmt.Println()
-				if err != nil {
-					// fallback for piped input (MCP/scripts)
-					fmt.Scan(&password)
-				} else {
-					password = string(b)
-				}
 			}
 
 			c := &Client{server: server, http: newClient(&Config{Server: server}).http}
 			data, err := c.post("/api/v1/auth/login", map[string]string{
 				"username_or_email": username,
-				"password":          password,
+				"password":          "",
 			})
 			if err != nil {
 				return err
@@ -93,8 +80,7 @@ func loginCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&server, "server", "s", "", "server URL (default: http://localhost:8080)")
-	cmd.Flags().StringVarP(&username, "username", "u", "", "username or email")
-	cmd.Flags().StringVarP(&password, "password", "p", "", "password (use env var POLEIA_PASSWORD for scripts)")
+	cmd.Flags().StringVarP(&username, "username", "u", "", "username")
 	return cmd
 }
 

@@ -61,11 +61,10 @@ func NewService(pool *pgxpool.Pool, jwtSecret string) *Service {
 }
 
 // Register creates a new player and returns access + refresh tokens.
-func (s *Service) Register(ctx context.Context, username, email, password string) (accessToken, refreshToken string, err error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", "", fmt.Errorf("hash password: %w", err)
-	}
+// Password is not required in this stage — column kept for future use.
+func (s *Service) Register(ctx context.Context, username, email, _ string) (accessToken, refreshToken string, err error) {
+	// Store a placeholder hash so the column constraint is satisfied.
+	hash, _ := bcrypt.GenerateFromPassword([]byte(username), bcrypt.MinCost)
 
 	var id uuid.UUID
 	err = s.pool.QueryRow(ctx,
@@ -75,7 +74,6 @@ func (s *Service) Register(ctx context.Context, username, email, password string
 		username, email, string(hash),
 	).Scan(&id)
 	if err != nil {
-		// Unique violation — user or email exists.
 		return "", "", ErrUserExists
 	}
 
@@ -83,8 +81,8 @@ func (s *Service) Register(ctx context.Context, username, email, password string
 	return s.issueTokenPair(ctx, id, username)
 }
 
-// Login validates credentials and returns a new token pair.
-func (s *Service) Login(ctx context.Context, usernameOrEmail, password string) (accessToken, refreshToken string, err error) {
+// Login issues a token for any known username — no password check.
+func (s *Service) Login(ctx context.Context, usernameOrEmail, _ string) (accessToken, refreshToken string, err error) {
 	var p Player
 	err = s.pool.QueryRow(ctx,
 		`SELECT id, username, email, password_hash, era_count, created_at
@@ -96,10 +94,6 @@ func (s *Service) Login(ctx context.Context, usernameOrEmail, password string) (
 	}
 	if err != nil {
 		return "", "", fmt.Errorf("lookup player: %w", err)
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(p.PasswordHash), []byte(password)); err != nil {
-		return "", "", ErrInvalidPassword
 	}
 
 	slog.Info("player logged in", "id", p.ID, "username", p.Username)
