@@ -28,10 +28,23 @@
     <div id="council-list"><p class="loading">Loading…</p></div>
   </section>
 
-  <!-- ── Messengers ───────────────────────────────── -->
+  <!-- ── Inbox ────────────────────────────────────── -->
   <section class="panel messengers-panel">
     <h3>Inbox</h3>
     <div id="inbox-list"><p class="loading">Loading…</p></div>
+  </section>
+
+  <!-- ── Send Messenger ─────────────────────────── -->
+  <section class="panel send-panel">
+    <h3>Send Messenger</h3>
+    <div class="send-form">
+      <label class="send-label">To</label>
+      <select id="dest-select"><option value="">Loading settlements…</option></select>
+      <label class="send-label">Message</label>
+      <textarea id="send-msg" maxlength="1000" rows="3" placeholder="Your message…"></textarea>
+      <button class="btn-primary btn-send" onclick="sendMessenger()">Dispatch →</button>
+    </div>
+    <div id="send-result" class="action-result"></div>
   </section>
 
 </div><!-- /.kingdom-grid -->
@@ -67,10 +80,11 @@
 
 .kingdom-grid {
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1fr 1fr 1fr;
   gap:.8rem;
 }
-@media(max-width:700px) { .kingdom-grid { grid-template-columns:1fr; } }
+@media(max-width:900px) { .kingdom-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:600px) { .kingdom-grid { grid-template-columns:1fr; } }
 
 /* Council */
 .council-row { display:flex; align-items:center; gap:.5rem; padding:.3rem 0; border-bottom:1px solid #FAD7A0; font-size:.85rem; }
@@ -87,6 +101,16 @@
 .inbox-reply-wrap { margin-top:.3rem; display:flex; gap:.3rem; }
 .inbox-reply-wrap input { flex:1; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem .4rem; font-size:.8rem; }
 
+/* Send messenger */
+.send-form { display:flex; flex-direction:column; gap:.4rem; }
+.send-label { font-size:.72rem; color:#A04000; text-transform:uppercase; letter-spacing:.1em; font-family:var(--mono); }
+.send-form select, .send-form textarea {
+  background:#FDFEFE; border:1px solid #E67E22; padding:.3rem .4rem;
+  font-family:var(--mono); font-size:.82rem; color:#1C1C1C; width:100%; box-sizing:border-box;
+}
+.send-form textarea { resize:vertical; }
+.btn-send { margin-top:.2rem; align-self:flex-start; }
+
 /* No kingdom */
 .no-kingdom { max-width:480px; }
 .no-kingdom .field { margin:.6rem 0; }
@@ -100,7 +124,8 @@
 </style>
 
 <script>
-const WORLD_ID   = "{{.WorldID}}";
+const WORLD_ID        = "{{.WorldID}}";
+const MY_SETTLEMENT_ID = "{{.SettlementID}}";
 {{if .HasKingdom}}
 const KINGDOM_ID = "{{.KingdomID}}";
 {{end}}
@@ -182,9 +207,40 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── Load send destinations ────────────────────────────────────────────────────
+async function loadDestinations() {
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/provinces`);
+  const provinces = await res.json().catch(() => []);
+  const sel = document.getElementById('dest-select');
+  if (!sel) return;
+  const others = provinces.filter(p => p.settlement_id && p.settlement_id !== MY_SETTLEMENT_ID && p.state !== 'sunk');
+  if (!others.length) { sel.innerHTML = '<option value="">No other settlements</option>'; return; }
+  sel.innerHTML = '<option value="">— choose destination —</option>' +
+    others.map(p => `<option value="${p.settlement_id}">${escHtml(p.name)} (${p.owner || 'unowned'})</option>`).join('');
+}
+
+async function sendMessenger() {
+  const destID = document.getElementById('dest-select').value;
+  const msg    = document.getElementById('send-msg').value.trim();
+  if (!destID) { showResult('send-result', 'choose a destination', false); return; }
+  if (!msg)    { showResult('send-result', 'write a message first', false); return; }
+  const res = await apiReq('POST',
+    `/api/v1/worlds/${WORLD_ID}/settlements/${MY_SETTLEMENT_ID}/messengers`,
+    {destination_id: destID, message: msg});
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('send-result', `✓ Messenger dispatched · arrives ${fmtTime(data.arrives_at)}`, true);
+    document.getElementById('send-msg').value = '';
+    document.getElementById('dest-select').value = '';
+  } else {
+    showResult('send-result', data.error || 'send failed', false);
+  }
+}
+
 function reloadAll() {
   loadCouncil();
   loadInbox();
+  loadDestinations();
 }
 
 document.addEventListener('DOMContentLoaded', reloadAll);

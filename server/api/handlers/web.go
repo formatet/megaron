@@ -393,12 +393,21 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 		worldID, playerID,
 	).Scan(&kingdomID, &kingdomName, &playerRole)
 
+	var settlementID uuid.UUID
+	var settlementName string
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT id, name FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
+		worldID, playerID,
+	).Scan(&settlementID, &settlementName)
+
 	h.render(w, "kingdom.html", map[string]any{
-		"WorldID":     worldID,
-		"KingdomID":   kingdomID,
-		"KingdomName": kingdomName,
-		"PlayerRole":  playerRole,
-		"HasKingdom":  kingdomID != nil,
+		"WorldID":        worldID,
+		"KingdomID":      kingdomID,
+		"KingdomName":    kingdomName,
+		"PlayerRole":     playerRole,
+		"HasKingdom":     kingdomID != nil,
+		"SettlementID":   settlementID,
+		"SettlementName": settlementName,
 	})
 }
 
