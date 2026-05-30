@@ -29,6 +29,7 @@ import (
 	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/notify"
+	"github.com/poleia/server/internal/world"
 )
 
 func main() {
@@ -73,6 +74,13 @@ func main() {
 	absorbStartupDowntime(ctx, pool, gameClock)
 	go runHeartbeat(ctx, pool)
 
+	serverWorldID, err := ensureWorld(ctx, pool, gameClock)
+	if err != nil {
+		slog.Error("ensure world", "err", err)
+		os.Exit(1)
+	}
+	slog.Info("world ready", "id", serverWorldID)
+
 	// Event worker — processes timed game events.
 	eventStore := events.NewStore(pool)
 	scheduler := events.NewScheduler(pool, gameClock)
@@ -113,7 +121,7 @@ func main() {
 	templateDir := getEnv("TEMPLATE_DIR", "../../web/templates")
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
 
-	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir, gameClock)
+	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir, gameClock, serverWorldID)
 	if err != nil {
 		slog.Error("load templates", "err", err)
 		os.Exit(1)
@@ -122,11 +130,11 @@ func main() {
 	wsH := handlers.NewWSHandler(hub)
 	r.Get("/ws/{worldID}", wsH.Connect)
 
-	// Web (HTML) routes — browser reads cookie, HTMX injects Bearer from localStorage.
+	// Web (HTML) routes.
 	r.Get("/", webH.Index)
-	r.Get("/worlds", webH.WorldList)
 	r.With(auth.WebMiddleware(authSvc)).Get("/play", webH.Play)
 	r.With(auth.WebMiddleware(authSvc)).Route("/world/{worldID}", func(r chi.Router) {
+		r.Get("/join", webH.JoinView)
 		r.Get("/", webH.Province)
 		r.Get("/map", webH.MapView)
 		r.Get("/kingdom", webH.KingdomView)
@@ -345,6 +353,51 @@ func absorbStartupDowntime(ctx context.Context, pool *pgxpool.Pool, clk *clock.W
 		clk.RecordDowntime(gap)
 		slog.Info("server downtime absorbed into game clock", "gap", gap.Round(time.Second))
 	}
+}
+
+// ensureWorld returns the single world this server hosts. If no world exists it
+// creates one using WORLD_NAME / MAP_WIDTH / MAP_HEIGHT from the environment.
+// The world ID is stable across restarts — it lives in the database.
+func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) (uuid.UUID, error) {
+	var id uuid.UUID
+	err := pool.QueryRow(ctx, `SELECT id FROM worlds LIMIT 1`).Scan(&id)
+	if err == nil {
+		return id, nil
+	}
+
+	// No world yet — create one.
+	name := getEnv("WORLD_NAME", "The Thalassa")
+	width := 40
+	height := 30
+	seed := clk.Now().UnixNano()
+
+	err = pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, map_seed, map_width, map_height)
+		 VALUES ($1, $2, $3, $4) RETURNING id`,
+		name, seed, width, height,
+	).Scan(&id)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("create world: %w", err)
+	}
+
+	// Generate and store map tiles.
+	tiles := world.GenerateMap(id, seed, width, height)
+	rows := make([][]any, 0, len(tiles))
+	for _, t := range tiles {
+		rows = append(rows, []any{t.WorldID, t.Q, t.R, t.Terrain, t.Fertility, t.Mineral,
+			t.CopperDeposit, t.TinDeposit})
+	}
+	for _, row := range rows {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain, fertility, mineral, copper_deposit, tin_deposit)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (world_id, q, r) DO NOTHING`,
+			row...,
+		); err != nil {
+			return uuid.Nil, fmt.Errorf("store map tile: %w", err)
+		}
+	}
+	slog.Info("world created", "name", name, "id", id, "seed", seed)
+	return id, nil
 }
 
 // runHeartbeat writes a row to server_heartbeats every 10 seconds so that the

@@ -1,0 +1,48 @@
+{{template "base" .}}
+{{define "title"}}Join — {{.WorldName}} — Poleia{{end}}
+{{define "content"}}
+<div class="join-page">
+  <div class="join-panel panel">
+    <h2>{{.WorldName}}</h2>
+    <div class="join-meta">
+      <span class="pill state-{{.State}}">{{.State}}</span>
+      <span class="join-players">{{.Players}} Wanaxes</span>
+    </div>
+    <p class="join-intro">
+      The Thalassa awaits. Claim your first province and begin your reign as Wanax.
+      You will be placed on a coastal or plains hex. Your settlement starts with a granary,
+      a small garrison, and the favour of the gods.
+    </p>
+    <button class="btn-primary btn-join-world" onclick="joinWorld()">Enter the World</button>
+    <div id="join-result" class="action-result"></div>
+  </div>
+</div>
+<style>
+.join-page { display:flex; justify-content:center; align-items:center; min-height:60vh; }
+.join-panel { max-width:480px; width:100%; padding:1.6rem 2rem; }
+.join-meta { display:flex; align-items:center; gap:.7rem; margin:.6rem 0 1rem; }
+.join-players { font-family:var(--mono); font-size:.82rem; color:var(--text-dim); }
+.join-intro { font-size:.9rem; line-height:1.6; margin-bottom:1.2rem; }
+.btn-join-world { width:100%; font-size:1rem; padding:.6rem 1rem; }
+</style>
+<script>
+async function joinWorld() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch('/api/v1/worlds/{{.WorldID}}/join', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? {'Authorization': 'Bearer ' + token} : {}),
+    },
+  });
+  if (res.ok) {
+    window.location.href = '/world/{{.WorldID}}/map';
+  } else {
+    const d = await res.json().catch(() => ({}));
+    const el = document.getElementById('join-result');
+    el.textContent = d.error || 'Could not join world.';
+    el.style.color = 'var(--accent)';
+  }
+}
+</script>
+{{end}}
