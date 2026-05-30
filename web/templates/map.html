@@ -11,6 +11,7 @@
   <div class="map-toolbar">
     <span class="map-world-name">{{.World.Name}}</span>
     <span class="pill state-{{.World.State}}">{{.World.State}}</span>
+    <span class="map-prestige" title="World prestige — drives collapse risk">Era {{.World.EraNumber}} · ✦ {{.World.Prestige}}</span>
     <span class="map-hint">Drag · Scroll to zoom · Click province · Right-click to march · <span style="color:#922B21">■</span> armies <span style="color:#D4AC0D">■</span> messengers <span style="color:#7B4F28">■</span> caravans</span>
     <div class="map-zoom-btns">
       <button onclick="zoom(1.25)" class="btn-small btn-secondary">+</button>
@@ -78,6 +79,7 @@
   box-shadow:inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
 }
 .map-world-name { font-family:var(--mono); font-size:.9rem; color:#C0392B; font-weight:bold; letter-spacing:.1em; }
+.map-prestige { font-family:var(--mono); font-size:.75rem; color:#F9E79F; letter-spacing:.08em; opacity:.85; }
 .map-hint { font-size:.75rem; color:#A04000; font-style:italic; flex:1; }
 .map-zoom-btns { display:flex; gap:.3rem; }
 .map-layout { display:flex; flex:1; min-height:0; gap:.6rem; }
