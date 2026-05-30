@@ -26,6 +26,19 @@
   <section class="panel council-panel">
     <h3>Council</h3>
     <div id="council-list"><p class="loading">Loading…</p></div>
+    {{if eq .PlayerRole "basileus"}}
+    <div class="lp-title" style="margin-top:.6rem">Invite</div>
+    <div class="invite-form">
+      <select id="invite-target" class="build-select"><option value="">— choose settlement —</option></select>
+      <button class="btn-small btn-primary" onclick="sendInvite()">Invite →</button>
+    </div>
+    <div id="invite-result" class="action-result"></div>
+    {{else}}
+    <div style="margin-top:.6rem">
+      <button class="btn-small btn-secondary" onclick="leaveKingdom()">Leave Kingdom</button>
+      <div id="leave-result" class="action-result"></div>
+    </div>
+    {{end}}
   </section>
 
   <!-- ── Inbox ────────────────────────────────────── -->
@@ -59,9 +72,11 @@
 <!-- ── No kingdom ─────────────────────────────────── -->
 <div class="no-kingdom">
   <h2>No Kingdom</h2>
-  <p>You are not a member of any kingdom. Found one or wait for an invitation.</p>
 
-  <form id="found-form">
+  <div id="inv-list"><p class="loading">Checking for invitations…</p></div>
+
+  <div class="lp-title" style="margin-top:.8rem">Found a new kingdom</div>
+  <form id="found-form" style="margin-top:.3rem">
     <div class="field">
       <label>Kingdom Name</label>
       <input type="text" id="found-name" required maxlength="40" placeholder="Name your kingdom">
@@ -106,6 +121,16 @@
 .inbox-meta { font-size:.72rem; color:#A04000; font-family:var(--mono); }
 .inbox-reply-wrap { margin-top:.3rem; display:flex; gap:.3rem; }
 .inbox-reply-wrap input { flex:1; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem .4rem; font-size:.8rem; }
+
+/* Invite form */
+.invite-form { display:flex; gap:.4rem; align-items:center; margin:.3rem 0; }
+.invite-form select { flex:1; background:#FDFEFE; border:1px solid #E67E22; padding:.25rem .4rem; font-family:var(--mono); font-size:.8rem; }
+
+/* Invitations (no-kingdom state) */
+.inv-card { padding:.5rem; border:1px solid #E67E22; background:#FAD7A0; margin:.4rem 0; }
+.inv-kname { font-weight:bold; color:var(--accent); font-size:.95rem; }
+.inv-by { font-size:.75rem; color:var(--text-dim); font-family:var(--mono); }
+.inv-actions { display:flex; gap:.4rem; margin-top:.4rem; }
 
 /* Sent panel */
 .sent-panel { grid-column: 1 / -1; }
@@ -279,15 +304,89 @@ async function sendMessenger() {
   }
 }
 
+{{if eq .PlayerRole "basileus"}}
+// ── Load invite targets (non-kingdom settlements) ─────────────────────────────
+async function loadInviteTargets() {
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/provinces`);
+  const provinces = await res.json().catch(() => []);
+  const sel = document.getElementById('invite-target');
+  if (!sel) return;
+  const uninvited = provinces.filter(p => p.settlement_id && !p.allied && !p.own && p.state !== 'sunk');
+  if (!uninvited.length) { sel.innerHTML = '<option value="">No eligible settlements</option>'; return; }
+  sel.innerHTML = '<option value="">— choose settlement —</option>' +
+    uninvited.map(p => `<option value="${p.id}">${escHtml(p.name)} (${p.owner || '?'})</option>`).join('');
+}
+
+async function sendInvite() {
+  const provinceID = document.getElementById('invite-target').value;
+  if (!provinceID) { showResult('invite-result', 'choose a settlement', false); return; }
+  const res = await apiReq('POST',
+    `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/invite`,
+    {province_id: provinceID});
+  if (res.ok) {
+    showResult('invite-result', '✓ Invitation sent (48h)', true);
+    document.getElementById('invite-target').value = '';
+  } else {
+    const data = await res.json().catch(() => ({}));
+    showResult('invite-result', data.error || 'invite failed', false);
+  }
+}
+{{else}}
+// ── Leave kingdom ─────────────────────────────────────────────────────────────
+async function leaveKingdom() {
+  if (!confirm('Leave this kingdom?')) return;
+  const res = await apiReq('DELETE', `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/leave`);
+  if (res.ok) { location.reload(); }
+  else {
+    const data = await res.json().catch(() => ({}));
+    showResult('leave-result', data.error || 'could not leave', false);
+  }
+}
+{{end}}
+
 function reloadAll() {
   loadCouncil();
   loadInbox();
   loadSent();
   loadDestinations();
+  {{if eq .PlayerRole "basileus"}}loadInviteTargets();{{end}}
 }
 
 document.addEventListener('DOMContentLoaded', reloadAll);
 {{else}}
+// ── Check invitations ─────────────────────────────────────────────────────────
+async function loadInvitations() {
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/kingdoms/invitations`);
+  const invs = await res.json().catch(() => []);
+  const el = document.getElementById('inv-list');
+  if (!el) return;
+  if (!invs.length) {
+    el.innerHTML = '<p class="empty-state">No pending invitations.</p>';
+    return;
+  }
+  el.innerHTML = invs.map(i => `
+    <div class="inv-card">
+      <div class="inv-kname">${escHtml(i.kingdom_name)}</div>
+      <div class="inv-by">invited by ${escHtml(i.invited_by)}</div>
+      <div class="inv-actions">
+        <button class="btn-small btn-primary" onclick="acceptInvitation('${i.kingdom_id}')">Accept</button>
+      </div>
+    </div>`).join('');
+}
+
+async function acceptInvitation(kingdomID) {
+  const res = await apiReq('POST', `/api/v1/worlds/${WORLD_ID}/kingdoms/${kingdomID}/join`);
+  if (res.ok) { location.reload(); }
+  else {
+    const data = await res.json().catch(() => ({}));
+    alert(data.error || 'could not join');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadInvitations();
+});
+
 // ── Found kingdom ─────────────────────────────────────────────────────────────
 async function foundKingdom() {
   const name = document.getElementById('found-name').value.trim();

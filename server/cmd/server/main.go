@@ -181,6 +181,7 @@ func main() {
 
 			r.Get("/worlds/{worldID}/kingdoms", kh.List)
 			r.Post("/worlds/{worldID}/kingdoms", kh.Found)
+			r.Get("/worlds/{worldID}/kingdoms/invitations", kh.Invitations)
 			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/invite", kh.Invite)
 			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/join", kh.Join)
 			r.Delete("/worlds/{worldID}/kingdoms/{kingdomID}/leave", kh.Leave)

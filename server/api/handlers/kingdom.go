@@ -319,6 +319,57 @@ func (h *KingdomHandler) Leave(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// Invitations handles GET /worlds/:worldID/kingdoms/invitations.
+// Returns pending kingdom invitations for the current player's settlement.
+func (h *KingdomHandler) Invitations(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT ki.id, ki.kingdom_id, k.name, p.username, ki.expires_at
+		 FROM kingdom_invitations ki
+		 JOIN kingdoms k ON k.id = ki.kingdom_id
+		 JOIN players p ON p.id = ki.invited_by
+		 JOIN settlements s ON s.province_id = ki.province_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2
+		   AND ki.accepted_at IS NULL AND ki.expires_at > now()
+		 ORDER BY ki.expires_at`,
+		worldID, playerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load invitations")
+		return
+	}
+	defer rows.Close()
+
+	type inv struct {
+		ID         uuid.UUID `json:"id"`
+		KingdomID  uuid.UUID `json:"kingdom_id"`
+		KingdomName string   `json:"kingdom_name"`
+		InvitedBy  string   `json:"invited_by"`
+		ExpiresAt  time.Time `json:"expires_at"`
+	}
+	var result []inv
+	for rows.Next() {
+		var i inv
+		if err := rows.Scan(&i.ID, &i.KingdomID, &i.KingdomName, &i.InvitedBy, &i.ExpiresAt); err == nil {
+			result = append(result, i)
+		}
+	}
+	if result == nil {
+		result = []inv{}
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 // Council handles GET /worlds/:worldID/kingdoms/:kingdomID/council.
 func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 	kingdomID, err := uuid.Parse(chi.URLParam(r, "kingdomID"))
