@@ -17,9 +17,11 @@ import (
 )
 
 const (
-	decayOnMissed     = 0.10 // 10% kharis lost when maintenance missed
-	punishThreshold   = 100.0
-	punishProbability = 0.30 // 30% chance of divine punishment per missed day below threshold
+	decayOnMissed     = 0.10  // 10% kharis lost when maintenance missed
+	punishThreshold   = 100.0 // kharis below this risks divine punishment
+	punishProbability = 0.30  // 30% chance of divine punishment per missed day below threshold
+	blessThreshold    = 200.0 // kharis above this may attract divine favour
+	blessProbability  = 0.15  // 15% chance of divine blessing per maintained day above threshold
 )
 
 // cultSpec defines the daily cost and kharis gain for each cult level.
@@ -146,6 +148,10 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMaintained",
 			map[string]any{"cult_level": s.cultLevel, "gold": spec.gold, "food": spec.food, "kharis_gain": spec.kharisGain},
 			worldID, nil)
+		newKharis := s.kharis + spec.kharisGain
+		if newKharis > blessThreshold && rand.Float64() < blessProbability {
+			h.applyDivineBlessing(ctx, s.id, worldID)
+		}
 		return nil
 	}
 
@@ -258,4 +264,44 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
 		map[string]any{"type": p.name}, worldID, nil)
 	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name)
+}
+
+// applyDivineBlessing randomly selects and applies one divine blessing for settlements
+// that maintain high kharis. Mirror of applyDivinePunishment.
+func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, worldID uuid.UUID) {
+	type blessing struct {
+		name string
+		sql  string
+	}
+
+	blessings := []blessing{
+		{
+			"harvest_blessing",
+			`UPDATE settlements SET
+			   food_amount = LEAST(food_cap,
+			       (food_amount + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate)) * 1.25),
+			   food_calc_at = now()
+			 WHERE id = $1`,
+		},
+		{
+			"divine_recruits",
+			`UPDATE settlements SET
+			   infantry = infantry + GREATEST(2, infantry / 5)
+			 WHERE id = $1`,
+		},
+		{
+			"sea_blessing",
+			`UPDATE settlements SET ship = ship + 1 WHERE id = $1`,
+		},
+	}
+
+	b := blessings[rand.Intn(len(blessings))]
+	if _, err := h.pool.Exec(ctx, b.sql, settlementID); err != nil {
+		slog.Error("divine blessing failed", "settlement", settlementID, "type", b.name, "err", err)
+		return
+	}
+
+	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivineBlessing",
+		map[string]any{"type": b.name}, worldID, nil)
+	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name)
 }

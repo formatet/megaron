@@ -9,7 +9,7 @@
   <div class="map-toolbar">
     <span class="map-world-name">{{.World.Name}}</span>
     <span class="pill state-{{.World.State}}">{{.World.State}}</span>
-    <span class="map-hint">Drag · Scroll to zoom · Click province</span>
+    <span class="map-hint">Drag · Scroll to zoom · Click province · Right-click to march</span>
     <div class="map-zoom-btns">
       <button onclick="zoom(1.25)" class="btn-small btn-secondary">+</button>
       <button onclick="zoom(0.8)"  class="btn-small btn-secondary">−</button>
@@ -50,6 +50,22 @@
 </div>
 
 <div id="tile-tooltip" class="tile-tooltip" style="display:none"></div>
+<div id="march-ctx" class="march-ctx" style="display:none">
+  <div class="mctx-header">
+    <span id="mctx-name" class="mctx-title"></span>
+    <button class="mctx-close" onclick="closeMarchCtx()">✕</button>
+  </div>
+  <div class="mctx-intent" id="mctx-intent-row">
+    <button class="mctx-ibtn active" id="mctx-attack"    onclick="setMarchIntent('attack')">Attack</button>
+    <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')">Reinforce</button>
+    <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')">Support</button>
+  </div>
+  <div class="mctx-units" id="mctx-units"></div>
+  <div class="mctx-foot">
+    <button class="mctx-send" id="mctx-send" onclick="sendMarch()">March →</button>
+    <span class="mctx-error" id="mctx-err"></span>
+  </div>
+</div>
 
 <style>
 .map-page { display:flex; flex-direction:column; gap:.6rem; height:calc(100vh - 6rem); }
@@ -106,6 +122,48 @@
   color:#F2EAD3; padding:.15rem .5rem; font-size:.75rem;
   font-family:var(--mono); pointer-events:none; z-index:200;
 }
+
+/* March context menu */
+.march-ctx {
+  position:fixed; z-index:300; width:210px;
+  background:var(--bg-panel); border:2px solid var(--border);
+  box-shadow:inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in), 3px 3px 0 #1C1C1C;
+  font-size:.82rem; color:var(--text);
+}
+.mctx-header {
+  background:var(--border); padding:.35rem .6rem;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.mctx-title { color:var(--warm-white); font-family:var(--mono); font-weight:bold; font-size:.8rem; letter-spacing:.07em; }
+.mctx-close { background:none; border:none; color:var(--warm-white); cursor:pointer; font-size:.9rem; padding:0 .2rem; line-height:1; }
+.mctx-intent { display:flex; gap:0; border-bottom:1px solid var(--border); }
+.mctx-ibtn {
+  flex:1; padding:.3rem 0; border:none; border-right:1px solid var(--border);
+  background:var(--bg-panel); color:var(--text-dim); font-family:var(--mono);
+  font-size:.72rem; letter-spacing:.06em; cursor:pointer;
+}
+.mctx-ibtn:last-child { border-right:none; }
+.mctx-ibtn.active { background:var(--accent); color:var(--warm-white); }
+.mctx-ibtn:disabled { opacity:.35; cursor:default; }
+.mctx-units { padding:.5rem .6rem; display:flex; flex-direction:column; gap:.3rem; }
+.mctx-row { display:flex; align-items:center; gap:.4rem; }
+.mctx-label { flex:1; color:var(--text-dim); font-size:.75rem; }
+.mctx-input {
+  width:44px; padding:.15rem .3rem; border:1px solid var(--border);
+  background:var(--warm-white); font-family:var(--mono); font-size:.78rem;
+  text-align:right; color:var(--text);
+}
+.mctx-max { color:var(--text-dim); font-size:.72rem; min-width:22px; }
+.mctx-foot {
+  padding:.45rem .6rem; border-top:1px solid var(--border);
+  display:flex; align-items:center; gap:.5rem;
+}
+.mctx-send {
+  padding:.3rem .7rem; background:var(--sandstone); border:2px solid var(--border);
+  font-family:var(--mono); font-size:.75rem; letter-spacing:.07em; cursor:pointer;
+}
+.mctx-send:hover { background:var(--bg-raised); border-color:var(--accent); }
+.mctx-error { font-size:.72rem; color:var(--accent); flex:1; }
 </style>
 
 <script>
@@ -577,5 +635,142 @@ loadMap().then(() => { dirty = true; render(); });
   }
   connect();
 })();
+
+// ── March context menu ────────────────────────────────────────────────────
+const UNIT_DEFS = [
+  { key: 'infantry',       label: 'Hoplites',  apiKey: 'Infantry'      },
+  { key: 'elite_infantry', label: 'Agema',     apiKey: 'EliteInfantry' },
+  { key: 'cavalry',        label: 'Hippeis',   apiKey: 'Cavalry'       },
+  { key: 'priest',         label: 'Hiereus',   apiKey: 'Priest'        },
+  { key: 'ship',           label: 'Trireme',   apiKey: 'Ship'          },
+  { key: 'catapult',       label: 'Siege',     apiKey: 'Catapult'      },
+];
+
+let marchCtxTarget = null;
+let marchCtxIntent = 'attack';
+let marchCtxArmy   = null;
+
+const marchCtx = document.getElementById('march-ctx');
+
+function closeMarchCtx() {
+  marchCtx.style.display = 'none';
+  marchCtxTarget = null;
+  marchCtxArmy   = null;
+  document.getElementById('mctx-err').textContent = '';
+}
+
+function setMarchIntent(intent) {
+  marchCtxIntent = intent;
+  document.querySelectorAll('.mctx-ibtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mctx-' + intent).classList.add('active');
+}
+
+async function openMarchCtx(target, screenX, screenY) {
+  const own = provinceData.find(p => p.own);
+  if (!own) return;
+
+  marchCtxTarget = target;
+  marchCtxIntent = 'attack';
+  marchCtxArmy   = null;
+  document.getElementById('mctx-err').textContent = '';
+  document.getElementById('mctx-name').textContent = target.name;
+
+  // Intent buttons: reinforce/support only for allied provinces.
+  const allied = !!target.allied;
+  const ri = document.getElementById('mctx-reinforce');
+  const si = document.getElementById('mctx-support');
+  ri.disabled = !allied;
+  si.disabled = !allied;
+  ri.classList.toggle('active', false);
+  si.classList.toggle('active', false);
+  document.getElementById('mctx-attack').classList.add('active');
+
+  // Position: keep within viewport.
+  marchCtx.style.display = 'block';
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
+  marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
+  marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
+
+  // Fetch own army.
+  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/army`);
+  if (!res.ok) { closeMarchCtx(); return; }
+  marchCtxArmy = await res.json();
+
+  const unitsEl = document.getElementById('mctx-units');
+  unitsEl.innerHTML = '';
+  for (const u of UNIT_DEFS) {
+    const max = marchCtxArmy[u.apiKey] || 0;
+    const row = document.createElement('div');
+    row.className = 'mctx-row';
+    row.innerHTML = `
+      <span class="mctx-label">${u.label}</span>
+      <input class="mctx-input" type="number" id="mi-${u.key}" min="0" max="${max}" value="0" ${max === 0 ? 'disabled' : ''}>
+      <span class="mctx-max">/${max}</span>`;
+    unitsEl.appendChild(row);
+  }
+
+  // Re-position in case content changed height.
+  const newH = marchCtx.offsetHeight;
+  marchCtx.style.top = Math.min(screenY + 8, vh - newH - 8) + 'px';
+}
+
+async function sendMarch() {
+  const own = provinceData.find(p => p.own);
+  if (!own || !marchCtxTarget) return;
+
+  const body = { target_id: marchCtxTarget.id, intent: marchCtxIntent };
+  let anyUnit = false;
+  for (const u of UNIT_DEFS) {
+    const el = document.getElementById('mi-' + u.key);
+    const v = el ? parseInt(el.value, 10) || 0 : 0;
+    body[u.key] = v;
+    if (v > 0) anyUnit = true;
+  }
+  if (!anyUnit) {
+    document.getElementById('mctx-err').textContent = 'Send at least one unit.';
+    return;
+  }
+
+  document.getElementById('mctx-send').disabled = true;
+  document.getElementById('mctx-err').textContent = '';
+
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/march`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(body),
+  });
+
+  document.getElementById('mctx-send').disabled = false;
+  if (res.ok) {
+    closeMarchCtx();
+    // Refresh province data so army counts update.
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; }));
+  } else {
+    const err = await res.json().catch(() => ({error: 'Unknown error'}));
+    document.getElementById('mctx-err').textContent = err.error || 'Error';
+  }
+}
+
+// Right-click to open march menu; also close on outside click or Escape.
+canvas.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const own = provinceData.find(p => p.own);
+  if (!own) return;
+  const rect = canvas.getBoundingClientRect();
+  const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
+  const target = provinceData.find(p => p.q === h.q && p.r === h.r);
+  if (!target || target.own) { closeMarchCtx(); return; }
+  openMarchCtx(target, e.clientX, e.clientY);
+});
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMarchCtx(); });
+document.addEventListener('mousedown', e => {
+  if (marchCtx.style.display !== 'none' && !marchCtx.contains(e.target) && e.target !== canvas) {
+    closeMarchCtx();
+  }
+});
 </script>
 {{end}}
