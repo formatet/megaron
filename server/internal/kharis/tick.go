@@ -91,6 +91,9 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		}
 	}
 
+	h.applyDecay(ctx, e.WorldID)
+	h.applyStarvation(ctx, e.WorldID)
+
 	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledKharisTick,
 		struct{}{}, 24*time.Hour)
 }
@@ -166,6 +169,54 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 		h.applyDivinePunishment(ctx, s.id, worldID)
 	}
 	return nil
+}
+
+// applyDecay reduces food and lumber by 1% across all active settlements.
+// Rotten grain and rotting timber — keeps players trading rather than hoarding.
+func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
+	if _, err := h.pool.Exec(ctx,
+		`UPDATE settlements SET
+		   food_amount    = GREATEST(0,
+		       (food_amount   + EXTRACT(EPOCH FROM (now()-food_calc_at))/60   * food_rate)   * 0.99),
+		   food_calc_at   = now(),
+		   lumber_amount  = GREATEST(0,
+		       (lumber_amount + EXTRACT(EPOCH FROM (now()-lumber_calc_at))/60 * lumber_rate) * 0.99),
+		   lumber_calc_at = now()
+		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
+		worldID,
+	); err != nil {
+		slog.Error("daily decay failed", "world", worldID, "err", err)
+	}
+}
+
+// applyStarvation punishes settlements where food has hit zero: infantry and
+// cavalry each lose 5% (minimum 1 unit) per day.
+func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
+	rows, err := h.pool.Query(ctx,
+		`UPDATE settlements SET
+		   infantry = GREATEST(0, infantry - GREATEST(1, (infantry * 0.05)::int)),
+		   cavalry  = GREATEST(0, cavalry  - GREATEST(1, (cavalry  * 0.05)::int))
+		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'
+		   AND (infantry > 0 OR cavalry > 0)
+		   AND food_amount + EXTRACT(EPOCH FROM (now()-food_calc_at))/60 * food_rate <= 0
+		 RETURNING id`,
+		worldID,
+	)
+	if err != nil {
+		slog.Error("starvation tick failed", "world", worldID, "err", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			continue
+		}
+		_, _ = h.store.Append(ctx, id, events.StreamProvince, "StarvationDamage",
+			map[string]any{"reason": "no_food"}, worldID, nil)
+		slog.Info("starvation damage applied", "settlement", id)
+	}
 }
 
 // applyDivinePunishment randomly selects and applies one divine punishment.
