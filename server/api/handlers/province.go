@@ -217,7 +217,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// 40% garrison rule (attack only): cannot send more than 60% of garrison DP.
+	// 40% garrison + 75% attacker rules (attack only).
 	if req.Intent == "attack" {
 		var garrison province.ArmyComposition
 		if err := tx.QueryRow(r.Context(),
@@ -231,6 +231,23 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			sentDP := combat.Strength(army)
 			if garrisonDP > 0 && sentDP > 0 && sentDP > 0.6*garrisonDP {
 				writeError(w, http.StatusUnprocessableEntity, "cannot send more than 60% of garrison strength — you must defend your home")
+				return
+			}
+		}
+
+		// Must send at least 75% of the defender's DP.
+		var defGarrison province.ArmyComposition
+		if err := tx.QueryRow(r.Context(),
+			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
+			targetID, worldID,
+		).Scan(&defGarrison.Infantry, &defGarrison.Cavalry, &defGarrison.Catapult,
+			&defGarrison.Priest, &defGarrison.Ship, &defGarrison.EliteInfantry,
+		); err == nil {
+			defDP := combat.Strength(defGarrison)
+			sentDP := combat.Strength(army)
+			if defDP > 0 && sentDP < 0.75*defDP {
+				writeError(w, http.StatusUnprocessableEntity, "must send at least 75% of the defender's strength to mount a serious attack")
 				return
 			}
 		}
