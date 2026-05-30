@@ -396,10 +396,13 @@ async function loadBattleLog() {
   const marches = await res.json().catch(() => []);
   const resolved = marches.filter(m => m.resolved && m.combat_report);
   if (!resolved.length) { el.innerHTML = '<p class="empty-state">No battles recorded.</p>'; return; }
-  el.innerHTML = resolved.slice(0, 5).map(m => {
+  el.innerHTML = resolved.slice(0, 8).map(m => {
     const when = new Date(m.arrives_at).toLocaleDateString(undefined, {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const dir = m.outgoing ? '↑ Sent' : '↓ Received';
+    const dirClass = m.outgoing ? 'be-dir-out' : 'be-dir-in';
     return `<div class="battle-entry">
       <div class="battle-meta">
+        <span class="be-dir ${dirClass}">${dir}</span>
         <span class="be-intent be-intent-${m.intent}">${m.intent}</span>
         <span class="be-when">${when}</span>
       </div>

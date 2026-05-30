@@ -1059,9 +1059,11 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT id, target_id, intent, infantry, cavalry, catapult, priest, ship, elite_infantry,
-		        resolved, arrives_at, combat_report
+		        resolved, arrives_at, combat_report,
+		        origin_id = $1 AS outgoing
 		 FROM marching_armies
-		 WHERE origin_id = $1 AND world_id = $2
+		 WHERE (origin_id = $1 OR (target_id = $1 AND resolved = true))
+		   AND world_id = $2
 		 ORDER BY arrives_at DESC LIMIT 20`,
 		provinceID, worldID,
 	)
@@ -1084,13 +1086,14 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		Resolved      bool       `json:"resolved"`
 		ArrivesAt     time.Time  `json:"arrives_at"`
 		CombatReport  *string    `json:"combat_report,omitempty"`
+		Outgoing      bool       `json:"outgoing"`
 	}
 	var result []marchItem
 	for rows.Next() {
 		var m marchItem
 		if err := rows.Scan(&m.ID, &m.TargetID, &m.Intent,
 			&m.Infantry, &m.Cavalry, &m.Catapult, &m.Priest, &m.Ship, &m.EliteInfantry,
-			&m.Resolved, &m.ArrivesAt, &m.CombatReport); err == nil {
+			&m.Resolved, &m.ArrivesAt, &m.CombatReport, &m.Outgoing); err == nil {
 			result = append(result, m)
 		}
 	}

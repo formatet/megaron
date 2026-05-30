@@ -505,6 +505,9 @@ footer {
 .be-intent-reinforce { color:var(--sea); border-color:var(--sea); }
 .be-intent-support   { color:var(--safe); border-color:var(--safe); }
 .be-when { font-size:.72rem; color:var(--text-dim); font-family:var(--mono); }
+.be-dir     { font-family:var(--mono); font-size:.7rem; letter-spacing:.06em; padding:.1rem .3rem; }
+.be-dir-out { color:var(--safe); }
+.be-dir-in  { color:var(--danger); }
 .battle-report { font-family:var(--mono); font-size:.7rem; white-space:pre-wrap; line-height:1.5;
   background:var(--bg); color:var(--text-light); padding:.4rem .5rem; margin:0; border:1px solid var(--border-in); }
 
