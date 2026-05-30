@@ -496,9 +496,10 @@ async function fetchAuth(url) {
 }
 
 async function loadMap() {
-  const [tilesRes, provRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`),
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`),
   ]);
 
   if (tilesRes.ok) {
@@ -507,6 +508,9 @@ async function loadMap() {
   }
   if (provRes.ok) {
     provinceData = await provRes.json();
+  }
+  if (marchRes.ok) {
+    marchData = await marchRes.json();
   }
 }
 
@@ -519,8 +523,11 @@ function centreCamera() {
   camera.y = canvas.height/2 - (sumY/visible.length)*SCALE;
 }
 
-// Reload provinces every 30s
-setInterval(() => fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => provinceData = d)), 30000);
+// Reload provinces and marches every 30s
+setInterval(() => {
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => provinceData = d));
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; }));
+}, 30000);
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
 function zoom(factor) {

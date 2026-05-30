@@ -158,6 +158,7 @@ func main() {
 		// Map and province list use OptionalMiddleware: fog-of-war when authenticated.
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
+		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)
 
 		// Province and kingdom endpoints require authentication.
 		r.Group(func(r chi.Router) {
