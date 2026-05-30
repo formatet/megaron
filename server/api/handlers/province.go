@@ -1112,6 +1112,109 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+// RecallMarch handles DELETE /worlds/:worldID/provinces/:provinceID/marches/:marchID.
+// Returns the army to the origin settlement without combat.
+func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	marchID, err := uuid.Parse(chi.URLParam(r, "marchID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid march ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Load march and verify ownership via FOR UPDATE (prevents race with arrival handler).
+	var army struct {
+		Infantry      int
+		Cavalry       int
+		Catapult      int
+		Priest        int
+		Ship          int
+		EliteInfantry int
+		Resolved      bool
+		OriginID      uuid.UUID
+	}
+	err = tx.QueryRow(r.Context(),
+		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, resolved, origin_id
+		 FROM marching_armies
+		 WHERE id = $1 AND world_id = $2 AND origin_id = $3
+		 FOR UPDATE`,
+		marchID, worldID, provinceID,
+	).Scan(&army.Infantry, &army.Cavalry, &army.Catapult, &army.Priest,
+		&army.Ship, &army.EliteInfantry, &army.Resolved, &army.OriginID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "march not found or not yours")
+		return
+	}
+	if army.Resolved {
+		writeError(w, http.StatusConflict, "march already resolved")
+		return
+	}
+
+	// Verify player owns the origin province.
+	var ownerID *uuid.UUID
+	_ = tx.QueryRow(r.Context(),
+		`SELECT owner_id FROM settlements WHERE province_id = $1 AND world_id = $2`,
+		provinceID, worldID,
+	).Scan(&ownerID)
+	if ownerID == nil || *ownerID != playerID {
+		writeError(w, http.StatusForbidden, "not your province")
+		return
+	}
+
+	// Mark march resolved.
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE marching_armies SET resolved = true WHERE id = $1`, marchID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not recall march")
+		return
+	}
+
+	// Return units to origin settlement.
+	_, err = tx.Exec(r.Context(),
+		`UPDATE settlements SET
+		   infantry      = infantry      + $2,
+		   cavalry       = cavalry       + $3,
+		   catapult      = catapult      + $4,
+		   priest        = priest        + $5,
+		   ship          = ship          + $6,
+		   elite_infantry = elite_infantry + $7
+		 WHERE province_id = $1`,
+		provinceID,
+		army.Infantry, army.Cavalry, army.Catapult,
+		army.Priest, army.Ship, army.EliteInfantry,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not restore units")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"recalled": true})
+}
+
 // TradeRoutes handles GET /worlds/:worldID/provinces/:provinceID/trade.
 // Returns active (unresolved) trade routes sent from this province.
 func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {

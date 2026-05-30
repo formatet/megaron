@@ -484,6 +484,8 @@ footer {
 .intent-reinforce { background:var(--sea);     color:var(--bg-panel); }
 .march-target { color:var(--border-in); font-size:.75rem; font-family:var(--mono); flex:1; overflow:hidden; text-overflow:ellipsis; }
 .march-time   { color:var(--text-dim); font-size:.72rem; white-space:nowrap; }
+.march-recall { margin-left:auto; padding:.1rem .35rem; font-size:.7rem; opacity:.6; }
+.march-recall:hover { opacity:1; }
 .march-units  { color:var(--border-in); font-size:.75rem; }
 .incoming-header { color:var(--accent); font-size:.75rem; text-transform:uppercase; letter-spacing:.1em; margin:.6rem 0 .3rem; }
 .incoming-list { border-top:1px solid var(--border); padding-top:.3rem; }

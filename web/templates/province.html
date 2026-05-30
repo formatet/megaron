@@ -167,10 +167,13 @@
       {{if .Marches}}
       <ul class="march-list">
         {{range .Marches}}
-        <li class="march-item march-{{.Intent}}">
+        <li class="march-item march-{{.Intent}}" id="march-{{.ID}}">
           <span class="intent-badge intent-{{.Intent}}">{{.Intent}}</span>
           <span class="march-target">→ {{.TargetName}}</span>
           <span class="march-time">{{formatTime .ArrivesAt}}</span>
+          <button class="btn-small btn-secondary march-recall"
+                  onclick="recallMarch('{{.ID}}')"
+                  title="Recall army">↩</button>
         </li>
         {{end}}
       </ul>
@@ -392,6 +395,21 @@ async function sendTrade() {
     loadTradeRoutes();
   } else {
     showResult('trade-result', data.error || 'failed', false);
+  }
+}
+
+async function recallMarch(marchID) {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/marches/${marchID}`, {
+    method: 'DELETE',
+    headers: token ? {'Authorization':'Bearer '+token} : {},
+  });
+  if (res.ok) {
+    const el = document.getElementById('march-' + marchID);
+    if (el) el.remove();
+  } else {
+    const data = await res.json().catch(() => ({}));
+    alert(data.error || 'Recall failed');
   }
 }
 
