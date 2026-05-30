@@ -188,27 +188,37 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 
 	// province.html uses .Province.ID in URLs — pass province_id as the ID.
 	// Province is the settlement struct, but with ID = province tile ID.
+	var copperDeposit, tinDeposit bool
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT copper_deposit, tin_deposit FROM provinces WHERE id = $1`,
+		s.ProvinceID,
+	).Scan(&copperDeposit, &tinDeposit)
+
 	type provinceView struct {
-		ID           uuid.UUID // province_id for URL routing
-		SettlementID uuid.UUID // settlement UUID for cult-level and settlement API calls
-		WorldID      uuid.UUID
-		Name         string
-		CultureID    string
-		Army         any
-		Population   int
-		Walls        int
-		KingdomID    *uuid.UUID
+		ID            uuid.UUID // province_id for URL routing
+		SettlementID  uuid.UUID // settlement UUID for cult-level and settlement API calls
+		WorldID       uuid.UUID
+		Name          string
+		CultureID     string
+		Army          any
+		Population    int
+		Walls         int
+		KingdomID     *uuid.UUID
+		CopperDeposit bool
+		TinDeposit    bool
 	}
 	pv := provinceView{
-		ID:           s.ProvinceID,
-		SettlementID: s.ID,
-		WorldID:      worldID,
-		Name:         s.Name,
-		CultureID:    string(s.CultureID),
-		Army:         s.Army,
-		Population:   s.Population,
-		Walls:        s.WallLevel,
-		KingdomID:    s.KingdomID,
+		ID:            s.ProvinceID,
+		SettlementID:  s.ID,
+		WorldID:       worldID,
+		Name:          s.Name,
+		CultureID:     string(s.CultureID),
+		Army:          s.Army,
+		Population:    s.Population,
+		Walls:         s.WallLevel,
+		KingdomID:     s.KingdomID,
+		CopperDeposit: copperDeposit,
+		TinDeposit:    tinDeposit,
 	}
 
 	// Load build queue.

@@ -17,6 +17,8 @@
     <div class="ph-right">
       <span class="stat-chip" title="Population">Pop: <strong>{{.Province.Population}}</strong></span>
       <span class="stat-chip" title="Walls">Walls: <strong>{{.Province.Walls}}/3</strong></span>
+      {{if .Province.CopperDeposit}}<span class="stat-chip deposit-chip" title="Copper deposit">⛏ Copper</span>{{end}}
+      {{if .Province.TinDeposit}}<span class="stat-chip deposit-chip" title="Tin deposit">⛏ Tin</span>{{end}}
     </div>
   </header>
 

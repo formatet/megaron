@@ -53,6 +53,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"map_tile":        prov.MapTile,
 		"terrain_type":    prov.TerrainType,
 		"territory_state": prov.TerritoryState,
+		"copper_deposit":  prov.CopperDeposit,
+		"tin_deposit":     prov.TinDeposit,
 	}
 
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
