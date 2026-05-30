@@ -92,7 +92,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"population":  sett.Population,
 			"walls":       sett.WallLevel,
 			"loyalty":     sett.Loyalty,
-			"resources":   sett.Resources.Snapshot(now),
+			"resources":   sett.Resources.SnapshotFull(now),
 			"army":        sett.Army,
 			"build_queue": buildQueue,
 		}

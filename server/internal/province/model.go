@@ -63,6 +63,25 @@ func (rl ResourceLedger) Snapshot(at time.Time) map[string]float64 {
 	}
 }
 
+// ResourceDetail is a full resource snapshot including rate and cap.
+type ResourceDetail struct {
+	Amount float64 `json:"amount"`
+	Rate   float64 `json:"rate"`
+	Cap    float64 `json:"cap"`
+}
+
+// SnapshotFull returns current amounts, rates, and caps for all resources.
+func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
+	return map[string]ResourceDetail{
+		"gold":   {Amount: rl.Gold.Current(at), Rate: rl.Gold.RatePerMinute, Cap: rl.Gold.Cap},
+		"food":   {Amount: rl.Food.Current(at), Rate: rl.Food.RatePerMinute, Cap: rl.Food.Cap},
+		"lumber": {Amount: rl.Lumber.Current(at), Rate: rl.Lumber.RatePerMinute, Cap: rl.Lumber.Cap},
+		"stone":  {Amount: rl.Stone.Current(at), Rate: rl.Stone.RatePerMinute, Cap: rl.Stone.Cap},
+		"iron":   {Amount: rl.Iron.Current(at), Rate: rl.Iron.RatePerMinute, Cap: rl.Iron.Cap},
+		"kharis": {Amount: rl.Kharis.Current(at), Rate: rl.Kharis.RatePerMinute, Cap: rl.Kharis.Cap},
+	}
+}
+
 // ArmyComposition describes the military units in a settlement or marching army.
 type ArmyComposition struct {
 	Infantry      int
