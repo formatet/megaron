@@ -8,6 +8,7 @@
 //	poleia marches
 //	poleia recruit --unit hoplites --count 20
 //	poleia build --type farm
+//	poleia craft --qty 5
 //	poleia worlds
 //	poleia kingdoms
 //	poleia settlements
@@ -62,6 +63,7 @@ func main() {
 		marchesCmd(),
 		recruitCmd(),
 		buildCmd(),
+		craftCmd(),
 		worldsCmd(),
 		kingdomsCmd(),
 		settlementsCmd(),
