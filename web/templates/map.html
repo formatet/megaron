@@ -35,6 +35,7 @@
         <div class="inspect-row"><span class="ir-label">Owner</span><span id="ip-owner">—</span></div>
         <div class="inspect-row"><span class="ir-label">Walls</span><span id="ip-walls">—</span></div>
         <div class="inspect-row"><span class="ir-label">Kingdom</span><span id="ip-kingdom">—</span></div>
+        <div class="inspect-row"><span class="ir-label">Army</span><span id="ip-army">—</span></div>
       </div>
       <div class="inspect-foot" id="ip-foot"></div>
     </aside>
@@ -637,6 +638,15 @@ function openInspect(marker) {
   const kName = marker.kingdom_name || 'Kingdom';
   const kText = marker.kingdom_id ? (marker.allied ? `⚑ ${kName} (allied)` : `⚑ ${kName}`) : '—';
   document.getElementById('ip-kingdom').textContent = kText;
+  // Fetch army strength asynchronously.
+  document.getElementById('ip-army').textContent = '…';
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marker.id}/army`).then(r => {
+    if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
+    r.json().then(a => {
+      const dp = (a.Infantry||0)*1 + (a.EliteInfantry||0)*2 + (a.Cavalry||0)*3 + (a.Priest||0)*2;
+      document.getElementById('ip-army').textContent = dp > 0 ? `${dp} DP` : '—';
+    });
+  }).catch(() => { document.getElementById('ip-army').textContent = '—'; });
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML = '';
