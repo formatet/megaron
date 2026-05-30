@@ -327,6 +327,85 @@ func (h *WorldHandler) visibleOrigins(ctx context.Context, worldID, playerID uui
 	return origins
 }
 
+// Marches handles GET /worlds/:worldID/marches — all unresolved marching armies visible
+// to the player. Used by the map renderer to draw animated walkers.
+func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
+
+	// Fog of war: only show marches originating from or heading to visible provinces.
+	var visQ, visR []int
+	if authenticated {
+		origins := h.visibleOrigins(r.Context(), worldID, playerID)
+		for _, o := range origins {
+			visQ = append(visQ, o.Q)
+			visR = append(visR, o.R)
+		}
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT ma.id, ma.intent,
+		        op.map_q, op.map_r, tp.map_q, tp.map_r,
+		        ma.departs_at, ma.arrives_at
+		 FROM marching_armies ma
+		 JOIN provinces op ON op.id = ma.origin_id
+		 JOIN provinces tp ON tp.id = ma.target_id
+		 WHERE ma.world_id = $1 AND ma.resolved = false`,
+		worldID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load marches")
+		return
+	}
+	defer rows.Close()
+
+	type marchMarker struct {
+		ID        uuid.UUID `json:"id"`
+		Intent    string    `json:"intent"`
+		OriginQ   int       `json:"origin_q"`
+		OriginR   int       `json:"origin_r"`
+		TargetQ   int       `json:"target_q"`
+		TargetR   int       `json:"target_r"`
+		DepartsAt time.Time `json:"departs_at"`
+		ArrivesAt time.Time `json:"arrives_at"`
+	}
+
+	visible := func(q, r int) bool {
+		if !authenticated {
+			return false
+		}
+		return province.VisibleFrom(province.MapPosition{Q: q, R: r}, func() []province.MapPosition {
+			ps := make([]province.MapPosition, len(visQ))
+			for i := range visQ {
+				ps[i] = province.MapPosition{Q: visQ[i], R: visR[i]}
+			}
+			return ps
+		}(), 5)
+	}
+
+	var markers []marchMarker
+	for rows.Next() {
+		var m marchMarker
+		if err := rows.Scan(&m.ID, &m.Intent,
+			&m.OriginQ, &m.OriginR, &m.TargetQ, &m.TargetR,
+			&m.DepartsAt, &m.ArrivesAt); err != nil {
+			continue
+		}
+		if !visible(m.OriginQ, m.OriginR) && !visible(m.TargetQ, m.TargetR) {
+			continue
+		}
+		markers = append(markers, m)
+	}
+	if markers == nil {
+		markers = []marchMarker{}
+	}
+	writeJSON(w, http.StatusOK, markers)
+}
+
 func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles []world.MapTile) error {
 	batch := &pgx.Batch{}
 	for _, t := range tiles {

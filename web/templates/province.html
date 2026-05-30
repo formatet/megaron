@@ -411,6 +411,14 @@ async function loadTradeRoutes() {
         loadGoods();
         showResult('trade-result', `${msg.payload.quantity.toFixed(1)}× ${msg.payload.good_key} arrived`, true);
       }
+      if (msg.kind === 'BuildComplete' && msg.payload.settlement_id === SETTLEMENT_ID) {
+        // Reload so the new building appears in the server-rendered buildings list.
+        window.location.reload();
+      }
+      if (msg.kind === 'ArmyArrival' && msg.payload.target_id === PROVINCE_ID) {
+        loadBattleLog();
+        loadGossip();
+      }
     };
     ws.onclose = () => setTimeout(connect, 5000);
   }
