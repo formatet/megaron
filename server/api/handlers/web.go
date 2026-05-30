@@ -229,26 +229,30 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		queue = append(queue, bi)
 	}
 
-	// Load marching armies (origin_id is province_id — unchanged).
+	// Load marching armies — join settlements so we can show the target name.
 	mrows, _ := h.pool.Query(r.Context(),
-		`SELECT id, target_id, infantry, cavalry, catapult, priest, ship, intent, arrives_at
-		 FROM marching_armies WHERE origin_id = $1 AND resolved = false ORDER BY arrives_at`,
+		`SELECT ma.id, ma.target_id, COALESCE(s.name, ma.target_id::text),
+		        ma.infantry, ma.cavalry, ma.catapult, ma.priest, ma.ship, ma.intent, ma.arrives_at
+		 FROM marching_armies ma
+		 LEFT JOIN settlements s ON s.province_id = ma.target_id
+		 WHERE ma.origin_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,
 		s.ProvinceID,
 	)
 	defer mrows.Close()
 	type marchItem struct {
-		ID        uuid.UUID
-		TargetID  uuid.UUID
-		Infantry  int
-		Cavalry   int
-		Intent    string
-		ArrivesAt time.Time
+		ID         uuid.UUID
+		TargetID   uuid.UUID
+		TargetName string
+		Infantry   int
+		Cavalry    int
+		Intent     string
+		ArrivesAt  time.Time
 	}
 	var marches []marchItem
 	for mrows.Next() {
 		var mi marchItem
 		var cat, pri, ship int
-		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.Infantry, &mi.Cavalry, &cat, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
+		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Cavalry, &cat, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
 		marches = append(marches, mi)
 	}
 

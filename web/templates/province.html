@@ -162,7 +162,7 @@
         {{range .Marches}}
         <li class="march-item march-{{.Intent}}">
           <span class="intent-badge intent-{{.Intent}}">{{.Intent}}</span>
-          <span class="march-target">→ {{.TargetID}}</span>
+          <span class="march-target">→ {{.TargetName}}</span>
           <span class="march-time">{{formatTime .ArrivesAt}}</span>
         </li>
         {{end}}
