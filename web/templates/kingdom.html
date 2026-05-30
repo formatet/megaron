@@ -109,10 +109,15 @@
 @media(max-width:600px) { .kingdom-grid { grid-template-columns:1fr; } }
 
 /* Council */
-.council-row { display:flex; align-items:center; gap:.5rem; padding:.3rem 0; border-bottom:1px solid #FAD7A0; font-size:.85rem; }
+.council-row { display:flex; flex-direction:column; gap:.15rem; padding:.3rem 0; border-bottom:1px solid #FAD7A0; font-size:.85rem; }
 .council-row:last-child { border-bottom:none; }
-.c-name { flex:1; }
+.c-main { display:flex; align-items:center; gap:.4rem; }
+.c-name { flex:1; font-weight:bold; }
 .c-role { font-family:var(--mono); font-size:.72rem; padding:.1rem .3rem; }
+.c-detail { display:flex; gap:.5rem; font-size:.72rem; color:var(--text-dim); font-family:var(--mono); flex-wrap:wrap; }
+.c-dp { color:var(--safe); }
+.c-walls { color:var(--text-dim); }
+.c-culture { color:var(--text-dim); font-style:italic; }
 
 /* Inbox */
 .inbox-item { padding:.4rem 0; border-bottom:1px solid #FAD7A0; font-size:.82rem; }
@@ -209,9 +214,16 @@ async function loadCouncil() {
   if (!members.length) { el.innerHTML = '<p class="empty-state">No members.</p>'; return; }
   el.innerHTML = members.map(m => `
     <div class="council-row">
-      <span class="c-name">${m.username}</span>
-      <span class="c-role role-badge role-${m.role}">${m.role}</span>
-      <span style="font-size:.72rem;color:#A04000;font-family:var(--mono)">since ${fmtTime(m.joined_at)}</span>
+      <div class="c-main">
+        <span class="c-name">${m.settlement_name || m.username}</span>
+        <span class="c-role role-badge role-${m.role}">${m.role}</span>
+      </div>
+      <div class="c-detail">
+        <span class="c-user">${m.username}</span>
+        ${m.army_dp ? `<span class="c-dp">${m.army_dp} DP</span>` : ''}
+        ${m.walls ? `<span class="c-walls">Walls L${m.walls}</span>` : ''}
+        ${m.culture ? `<span class="c-culture">${m.culture}</span>` : ''}
+      </div>
     </div>`).join('');
 }
 

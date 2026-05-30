@@ -379,9 +379,16 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT km.player_id, p.username, km.role, km.joined_at
+		`SELECT km.player_id, p.username, km.role, km.joined_at,
+		        COALESCE(s.name,''), COALESCE(s.culture,''),
+		        COALESCE(s.infantry,0) + COALESCE(s.elite_infantry,0)*2
+		          + COALESCE(s.cavalry,0)*3 + COALESCE(s.priest,0)*2 AS dp,
+		        COALESCE(s.walls,0)
 		 FROM kingdom_members km
 		 JOIN players p ON p.id = km.player_id
+		 LEFT JOIN settlements s ON s.owner_id = km.player_id AND s.world_id = (
+		     SELECT world_id FROM kingdoms WHERE id = $1
+		 ) AND s.is_capital = true
 		 WHERE km.kingdom_id = $1 ORDER BY km.joined_at`,
 		kingdomID,
 	)
@@ -392,15 +399,20 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type member struct {
-		PlayerID  uuid.UUID `json:"player_id"`
-		Username  string    `json:"username"`
-		Role      string    `json:"role"`
-		JoinedAt  time.Time `json:"joined_at"`
+		PlayerID       uuid.UUID `json:"player_id"`
+		Username       string    `json:"username"`
+		Role           string    `json:"role"`
+		JoinedAt       time.Time `json:"joined_at"`
+		SettlementName string    `json:"settlement_name"`
+		Culture        string    `json:"culture"`
+		ArmyDP         int       `json:"army_dp"`
+		Walls          int       `json:"walls"`
 	}
 	var members []member
 	for rows.Next() {
 		var m member
-		if err := rows.Scan(&m.PlayerID, &m.Username, &m.Role, &m.JoinedAt); err != nil {
+		if err := rows.Scan(&m.PlayerID, &m.Username, &m.Role, &m.JoinedAt,
+			&m.SettlementName, &m.Culture, &m.ArmyDP, &m.Walls); err != nil {
 			continue
 		}
 		members = append(members, m)
