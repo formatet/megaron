@@ -16,6 +16,19 @@ import (
 	"github.com/poleia/server/internal/world"
 )
 
+func kharisToMood(k float64) string {
+	switch {
+	case k >= 800:
+		return "Favorable"
+	case k >= 400:
+		return "Indifferent"
+	case k >= 100:
+		return "Suspicious"
+	default:
+		return "Wrathful"
+	}
+}
+
 // WebHandler renders HTMX-powered HTML pages.
 type WebHandler struct {
 	pool        *pgxpool.Pool
@@ -186,6 +199,8 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
 	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
 
+	divineMood := kharisToMood(resources["kharis"])
+
 	// province.html uses .Province.ID in URLs — pass province_id as the ID.
 	// Province is the settlement struct, but with ID = province tile ID.
 	var copperDeposit, tinDeposit bool
@@ -312,15 +327,16 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "province.html", map[string]any{
-		"Province":  pv,
-		"Resources": resources,
-		"Queue":     queue,
-		"Marches":   marches,
-		"Incoming":  incoming,
-		"Buildings": buildings,
-		"Built":     built,
-		"WorldID":   worldID,
-		"Now":       now,
+		"Province":   pv,
+		"Resources":  resources,
+		"Queue":      queue,
+		"Marches":    marches,
+		"Incoming":   incoming,
+		"Buildings":  buildings,
+		"Built":      built,
+		"WorldID":    worldID,
+		"Now":        now,
+		"DivineMood": divineMood,
 	})
 }
 
@@ -344,7 +360,8 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
 	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
 	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
-	h.renderPartial(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s})
+
+	h.renderPartial(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s, "DivineMood": kharisToMood(resources["kharis"])})
 }
 
 // MapView serves the hex map page.

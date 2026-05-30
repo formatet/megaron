@@ -345,6 +345,7 @@ footer {
 .res-name  { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
 .res-val   { font-size: 13px; font-weight: bold; color: var(--accent); font-family: var(--mono); }
 .res-rate  { font-size: 9px; color: var(--border-in); font-family: var(--mono); }
+.res-mood  { font-size: 10px; color: var(--gold); }
 
 /* Army table */
 .army-table { width: 100%; border-collapse: collapse; }
