@@ -212,6 +212,20 @@
       <div id="trade-routes-list" class="trade-routes-list"><p class="loading">Loading…</p></div>
     </section>
 
+    <!-- ── Foundry — craft bronze ───────────────────── -->
+    {{if (index .Built "foundry")}}
+    <section class="panel foundry-panel">
+      <h3>Foundry</h3>
+      <div class="lp-title">Smelt Bronze</div>
+      <div class="recipe-line">2 copper · 1 tin → 1 bronze</div>
+      <div style="display:flex;gap:.4rem;margin-top:.4rem">
+        <input type="number" id="craft-qty" min="1" max="99" value="1" class="recruit-count" style="width:4rem">
+        <button class="btn-primary btn-small" onclick="craftBronze()" style="flex:1">Smelt →</button>
+      </div>
+      <div id="craft-result" class="action-result"></div>
+    </section>
+    {{end}}
+
     <!-- ── Rumours & Gossip ────────────────────────── -->
     <section class="panel gossip-panel">
       <h3>Rumours</h3>
@@ -330,6 +344,23 @@ async function loadVisibleSettlements() {
     opt.textContent = label;
     sel.appendChild(opt);
   });
+}
+
+async function craftBronze() {
+  const qty = parseFloat(document.getElementById('craft-qty')?.value) || 1;
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/craft`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', ...(token ? {'Authorization':'Bearer '+token} : {})},
+    body: JSON.stringify({recipe_id: 1, quantity: qty}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('craft-result', `${data.produced?.toFixed(1) || qty} bronze smelted`, true);
+    loadGoods();
+  } else {
+    showResult('craft-result', data.error || 'Crafting failed', false);
+  }
 }
 
 async function sendTrade() {

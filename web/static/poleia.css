@@ -517,6 +517,9 @@ footer {
 .tr-dest { color:var(--text); flex:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tr-eta  { color:var(--safe); font-size:.72rem; margin-left:auto; }
 
+/* Foundry / craft panel */
+.recipe-line { font-size:.78rem; font-family:var(--mono); color:var(--text-dim); margin:.2rem 0; }
+
 /* Gossip / rumours list */
 .gossip-list { margin-top:.3rem; display:flex; flex-direction:column; gap:.4rem; }
 .gossip-entry { font-size:.8rem; border-bottom:1px solid var(--bg-raised); padding-bottom:.4rem; }
