@@ -244,10 +244,11 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
-		        s.state, s.wall_level, pl.username
+		        s.state, s.wall_level, pl.username, COALESCE(k.name, '')
 		 FROM provinces p
 		 JOIN settlements s ON s.province_id = p.id
 		 LEFT JOIN players pl ON pl.id = s.owner_id
+		 LEFT JOIN kingdoms k ON k.id = s.kingdom_id
 		 WHERE p.world_id = $1`,
 		worldID,
 	)
@@ -263,6 +264,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		Name         string     `json:"name"`
 		Culture      string     `json:"culture"`
 		KingdomID    *uuid.UUID `json:"kingdom_id,omitempty"`
+		KingdomName  string     `json:"kingdom_name,omitempty"`
 		Q            int        `json:"q"`
 		R            int        `json:"r"`
 		State        string     `json:"state"`
@@ -275,7 +277,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	var markers []provinceMarker
 	for rows.Next() {
 		var m provinceMarker
-		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner); err != nil {
+		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner, &m.KingdomName); err != nil {
 			continue
 		}
 		pos := province.MapPosition{Q: m.Q, R: m.R}

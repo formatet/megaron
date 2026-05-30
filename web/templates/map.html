@@ -556,7 +556,8 @@ function openInspect(marker) {
   if (marker.allied && !marker.own) ownerText += ' (allied)';
   document.getElementById('ip-owner').textContent   = ownerText;
   document.getElementById('ip-walls').textContent   = '▓'.repeat(marker.walls) + '░'.repeat(Math.max(0,3-marker.walls));
-  const kText = marker.kingdom_id ? (marker.allied ? '⚑ Allied Kingdom' : '⚑ Kingdom') : '—';
+  const kName = marker.kingdom_name || 'Kingdom';
+  const kText = marker.kingdom_id ? (marker.allied ? `⚑ ${kName} (allied)` : `⚑ ${kName}`) : '—';
   document.getElementById('ip-kingdom').textContent = kText;
 
   const foot = document.getElementById('ip-foot');
