@@ -408,6 +408,66 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, markers)
 }
 
+// MapMessengers handles GET /worlds/:worldID/messengers — outbound messengers visible
+// to the player. Used by the map renderer to draw animated messenger walkers.
+func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
+
+	var origins []province.MapPosition
+	if authenticated {
+		origins = h.visibleOrigins(r.Context(), worldID, playerID)
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT m.id, op.map_q, op.map_r, dp.map_q, dp.map_r, m.sent_at, m.arrives_at
+		 FROM messengers m
+		 JOIN settlements os ON os.id = m.origin_id
+		 JOIN provinces op ON op.id = os.province_id
+		 JOIN settlements ds ON ds.id = m.destination_id
+		 JOIN provinces dp ON dp.id = ds.province_id
+		 WHERE m.world_id = $1 AND m.status = 'outbound'`,
+		worldID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load messengers")
+		return
+	}
+	defer rows.Close()
+
+	type messengerMarker struct {
+		ID       uuid.UUID `json:"id"`
+		OriginQ  int       `json:"origin_q"`
+		OriginR  int       `json:"origin_r"`
+		DestQ    int       `json:"dest_q"`
+		DestR    int       `json:"dest_r"`
+		SentAt   time.Time `json:"sent_at"`
+		ArrivesAt time.Time `json:"arrives_at"`
+	}
+
+	var markers []messengerMarker
+	for rows.Next() {
+		var m messengerMarker
+		if err := rows.Scan(&m.ID, &m.OriginQ, &m.OriginR, &m.DestQ, &m.DestR,
+			&m.SentAt, &m.ArrivesAt); err != nil {
+			continue
+		}
+		if authenticated && !province.VisibleFrom(province.MapPosition{Q: m.OriginQ, R: m.OriginR}, origins, 5) &&
+			!province.VisibleFrom(province.MapPosition{Q: m.DestQ, R: m.DestR}, origins, 5) {
+			continue
+		}
+		markers = append(markers, m)
+	}
+	if markers == nil {
+		markers = []messengerMarker{}
+	}
+	writeJSON(w, http.StatusOK, markers)
+}
+
 func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles []world.MapTile) error {
 	batch := &pgx.Batch{}
 	for _, t := range tiles {

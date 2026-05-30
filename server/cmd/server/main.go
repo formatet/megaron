@@ -160,6 +160,7 @@ func main() {
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)
+		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/messengers", wh.MapMessengers)
 
 		// Province and kingdom endpoints require authentication.
 		r.Group(func(r chi.Router) {
