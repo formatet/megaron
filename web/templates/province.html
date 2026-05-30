@@ -424,28 +424,51 @@ async function loadTradeRoutes() {
   const routes = await res.json().catch(() => []);
   if (!routes.length) { el.innerHTML = '<p class="empty-state">No shipments en route.</p>'; return; }
   const now = Date.now();
-  el.innerHTML = routes.map(r => {
+  const outgoing = routes.filter(r => r.direction === 'outgoing');
+  const incoming = routes.filter(r => r.direction === 'incoming');
+
+  function renderRoute(r, dir) {
     const arrives = new Date(r.arrives_at).getTime();
     const mins = Math.max(0, Math.round((arrives - now) / 60000));
     const eta = mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h${mins%60 ? ` ${mins%60}m` : ''}`;
     const qty = r.delivered_qty ? r.delivered_qty.toFixed(1) : (Math.round(r.quantity * 10)/10);
     const bonus = r.distance_bonus && r.distance_bonus > 1.01 ? ` <span class="tr-bonus">+${Math.round((r.distance_bonus - 1) * 100)}%</span>` : '';
+    const arrow = dir === 'incoming' ? '←' : '→';
     return `<div class="trade-route-row">
       <span class="tr-good">${r.good_key}</span>
       <span class="tr-qty">${qty}${bonus}</span>
-      <span class="tr-arrow">→</span>
-      <span class="tr-dest">${r.destination_name}</span>
+      <span class="tr-arrow">${arrow}</span>
+      <span class="tr-dest">${r.peer_name}</span>
       <span class="tr-eta">${eta}</span>
     </div>`;
-  }).join('');
+  }
+
+  let html = '';
+  if (outgoing.length) html += outgoing.map(r => renderRoute(r, 'outgoing')).join('');
+  if (incoming.length) {
+    html += `<div class="lp-title" style="margin-top:.4rem">Incoming</div>`;
+    html += incoming.map(r => renderRoute(r, 'incoming')).join('');
+  }
+  el.innerHTML = html || '<p class="empty-state">No shipments en route.</p>';
 }
 
 // ── WebSocket — goods refresh on TradeDelivery ────────────────────────────
 (function() {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   let ws;
+  let firstConnect = true;
   function connect() {
     ws = new WebSocket(`${proto}//${location.host}/ws/${WORLD_ID}`);
+    ws.onopen = () => {
+      if (!firstConnect) {
+        // Reconnect: refresh volatile state that may have changed while WS was down.
+        loadGoods();
+        loadTradeRoutes();
+        loadBattleLog();
+        loadGossip();
+      }
+      firstConnect = false;
+    };
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
       if (msg.kind === 'TradeDelivery' && msg.payload.destination_id === SETTLEMENT_ID) {
