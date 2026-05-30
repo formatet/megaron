@@ -726,8 +726,19 @@ loadMap().then(() => { dirty = true; render(); });
 (function() {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   let ws;
+  let firstConnect = true;
   function connect() {
     ws = new WebSocket(`${proto}//${location.host}/ws/${WORLD_ID}`);
+    ws.onopen = () => {
+      if (!firstConnect) {
+        // Reconnect: refresh all map data that may have changed while WS was down.
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; }));
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; }));
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { tradeData = d; dirty = true; }));
+      }
+      firstConnect = false;
+    };
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
       if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
