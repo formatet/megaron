@@ -411,9 +411,21 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var settlementID string
+	if playerID, ok := auth.PlayerIDFromContext(r.Context()); ok {
+		var sid uuid.UUID
+		if err := h.pool.QueryRow(r.Context(),
+			`SELECT id FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
+			worldID, playerID,
+		).Scan(&sid); err == nil {
+			settlementID = sid.String()
+		}
+	}
+
 	h.render(w, "map.html", map[string]any{
-		"World":   wld,
-		"WorldID": worldID,
+		"World":        wld,
+		"WorldID":      worldID,
+		"SettlementID": settlementID,
 	})
 }
 
