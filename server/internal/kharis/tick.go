@@ -236,20 +236,24 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, worldID uuid.UUID) {
 	type punishment struct {
 		name string
+		text string
 		sql  string
 	}
 
 	punishments := []punishment{
 		{
 			"cavalry_loss",
+			"The gods have scattered your horses in the night. Cavalry has perished.",
 			`UPDATE settlements SET cavalry = GREATEST(0, cavalry - GREATEST(1, cavalry/5)) WHERE id = $1`,
 		},
 		{
 			"ship_loss",
+			"A divine storm has claimed a vessel from your harbour.",
 			`UPDATE settlements SET ship = GREATEST(0, ship - 1) WHERE id = $1`,
 		},
 		{
 			"harvest_failure",
+			"The fields lie fallow by divine will. Half your food stores have rotted.",
 			`UPDATE settlements SET
 			   food_amount = GREATEST(0,
 			       (food_amount + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate)) * 0.5),
@@ -258,6 +262,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		},
 		{
 			"garrison_plague",
+			"A dark pestilence has moved through the barracks. Many hoplites have fallen.",
 			`UPDATE settlements SET infantry = GREATEST(0, infantry - GREATEST(1, infantry/5)) WHERE id = $1`,
 		},
 	}
@@ -270,6 +275,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
 		map[string]any{"type": p.name}, worldID, nil)
+	h.addDivineGossip(ctx, settlementID, worldID, "divine_wrath", p.text)
 	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name)
 }
 
@@ -278,12 +284,14 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, worldID uuid.UUID) {
 	type blessing struct {
 		name string
+		text string
 		sql  string
 	}
 
 	blessings := []blessing{
 		{
 			"harvest_blessing",
+			"The gods smile upon your fields. An abundant harvest fills your granaries.",
 			`UPDATE settlements SET
 			   food_amount = LEAST(food_cap,
 			       (food_amount + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate)) * 1.25),
@@ -292,12 +300,14 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 		},
 		{
 			"divine_recruits",
+			"Warriors answer a divine call and join your ranks. New hoplites have arrived.",
 			`UPDATE settlements SET
 			   infantry = infantry + GREATEST(2, infantry / 5)
 			 WHERE id = $1`,
 		},
 		{
 			"sea_blessing",
+			"Poseidon guides a vessel to your harbour. A trireme joins your fleet.",
 			`UPDATE settlements SET ship = ship + 1 WHERE id = $1`,
 		},
 	}
@@ -310,7 +320,26 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivineBlessing",
 		map[string]any{"type": b.name}, worldID, nil)
+	h.addDivineGossip(ctx, settlementID, worldID, "divine_favour", b.text)
 	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name)
+}
+
+// addDivineGossip inserts a gossip event for the owner of the given settlement.
+func (h *TickHandler) addDivineGossip(ctx context.Context, settlementID, worldID uuid.UUID, category, text string) {
+	var ownerID *uuid.UUID
+	var name string
+	_ = h.pool.QueryRow(ctx,
+		`SELECT owner_id, name FROM settlements WHERE id = $1`,
+		settlementID,
+	).Scan(&ownerID, &name)
+	if ownerID == nil {
+		return
+	}
+	_, _ = h.pool.Exec(ctx,
+		`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
+		 VALUES ($1, $2, $3, $4, $5)`,
+		worldID, *ownerID, name, category, text,
+	)
 }
 
 // accumulatePrestige adds daily prestige to the world based on active cult devotion.
