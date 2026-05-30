@@ -87,6 +87,17 @@ func (c *Client) patch(path string, body any) ([]byte, error) {
 	return data, nil
 }
 
+func (c *Client) delete(path string) ([]byte, error) {
+	data, status, err := c.do("DELETE", path, nil)
+	if err != nil {
+		return nil, err
+	}
+	if status >= 400 {
+		return nil, apiError(data, status)
+	}
+	return data, nil
+}
+
 func apiError(body []byte, status int) error {
 	var e struct {
 		Error string `json:"error"`

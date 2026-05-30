@@ -61,6 +61,7 @@ func main() {
 		statusCmd(),
 		marchCmd(),
 		marchesCmd(),
+		recallCmd(),
 		recruitCmd(),
 		buildCmd(),
 		craftCmd(),
