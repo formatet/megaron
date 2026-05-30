@@ -189,7 +189,12 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		   lumber_amount  = GREATEST(0,
 		       (lumber_amount + EXTRACT(EPOCH FROM (now()-lumber_calc_at))/60 * lumber_rate) * 0.99),
 		   lumber_calc_at = now(),
-		   invasions_today = 0
+		   invasions_today = 0,
+		   population = GREATEST(50, LEAST(10000,
+		       CASE WHEN food_amount + EXTRACT(EPOCH FROM (now()-food_calc_at))/60 * food_rate > 0
+		            THEN population + 5
+		            ELSE GREATEST(50, population - 5)
+		       END))
 		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
 		worldID,
 	); err != nil {
