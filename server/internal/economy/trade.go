@@ -27,13 +27,19 @@ func NewDeliveryHandler(pool *pgxpool.Pool, eventStore *events.Store, hub *notif
 // Handle delivers goods to the destination settlement.
 func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var p struct {
-		TradeRouteID  uuid.UUID `json:"trade_route_id"`
-		DestinationID uuid.UUID `json:"destination_id"`
-		GoodKey       string    `json:"good_key"`
-		Quantity      float64   `json:"quantity"`
+		TradeRouteID      uuid.UUID `json:"trade_route_id"`
+		DestinationID     uuid.UUID `json:"destination_id"`
+		GoodKey           string    `json:"good_key"`
+		Quantity          float64   `json:"quantity"`
+		DeliveredQuantity float64   `json:"delivered_quantity"` // includes distance bonus; falls back to Quantity if zero
 	}
 	if err := json.Unmarshal(e.Payload, &p); err != nil {
 		return fmt.Errorf("unmarshal trade delivery: %w", err)
+	}
+	// Backward-compat: old events without delivered_quantity use raw quantity.
+	delivered := p.DeliveredQuantity
+	if delivered <= 0 {
+		delivered = p.Quantity
 	}
 
 	tx, err := h.pool.Begin(ctx)
@@ -65,7 +71,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		             + $3,
 		         settlement_goods.cap),
 		     calc_at = now()`,
-		p.DestinationID, p.GoodKey, p.Quantity,
+		p.DestinationID, p.GoodKey, delivered,
 	); err != nil {
 		return fmt.Errorf("credit goods: %w", err)
 	}
@@ -82,7 +88,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 
 	if _, err := h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeDelivery",
-		map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "route_id": p.TradeRouteID},
+		map[string]any{"good_key": p.GoodKey, "quantity": delivered, "route_id": p.TradeRouteID},
 		e.WorldID, &e.ID,
 	); err != nil {
 		slog.Error("record TradeDelivery event", "err", err)
@@ -94,11 +100,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			Payload: map[string]any{
 				"destination_id": p.DestinationID,
 				"good_key":       p.GoodKey,
-				"quantity":       p.Quantity,
+				"quantity":       delivered,
 			},
 		})
 	}
 
-	slog.Info("trade delivery", "destination", p.DestinationID, "good", p.GoodKey, "qty", p.Quantity)
+	slog.Info("trade delivery", "destination", p.DestinationID, "good", p.GoodKey, "qty", delivered)
 	return nil
 }

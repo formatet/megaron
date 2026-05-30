@@ -74,7 +74,10 @@ func tradeCmd() *cobra.Command {
 				return err
 			}
 			mins, _ := resp["travel_min"].(float64)
-			fmt.Printf("Trade route created: %.1f× %s · arrives in %.0f min\n", qty, good, mins)
+			bonus, _ := resp["distance_bonus"].(float64)
+			delivered, _ := resp["delivered_qty"].(float64)
+			fmt.Printf("Trade route created: %.1f× %s → %.1f delivered · %.0f min · +%.0f%% distance bonus\n",
+				qty, good, delivered, mins, (bonus-1)*100)
 			return nil
 		},
 	}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"time"
 
@@ -859,13 +860,19 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Distance bonus: caravans that travel farther deliver more.
+	// bonus = 1 + sqrt(dist) × 0.1  (d=1→1.1×, d=4→1.2×, d=9→1.3×, d=16→1.4×)
+	distBonus := 1.0 + math.Sqrt(float64(dist))*0.1
+	deliveredQty := req.Quantity * distBonus
+
 	// Enqueue delivery within the same transaction — atomic with the deduction.
 	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 		map[string]any{
-			"trade_route_id": routeID,
-			"destination_id": req.DestinationID,
-			"good_key":       req.GoodKey,
-			"quantity":       req.Quantity,
+			"trade_route_id":     routeID,
+			"destination_id":     req.DestinationID,
+			"good_key":           req.GoodKey,
+			"quantity":           req.Quantity,
+			"delivered_quantity": deliveredQty,
 		}, arrivesAt); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule delivery")
 		return
@@ -877,10 +884,12 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"route_id":   routeID,
-		"arrives_at": arrivesAt,
-		"distance":   dist,
-		"travel_min": travelMins,
+		"route_id":       routeID,
+		"arrives_at":     arrivesAt,
+		"distance":       dist,
+		"travel_min":     travelMins,
+		"distance_bonus": distBonus,
+		"delivered_qty":  deliveredQty,
 	})
 }
 
