@@ -32,6 +32,9 @@
         <button class="inspect-close" onclick="closeInspect()">✕</button>
       </div>
       <div class="inspect-body" id="ip-body">
+        <div class="inspect-row"><span class="ir-label">Terrain</span><span id="ip-terrain">—</span></div>
+        <div class="inspect-row" id="ip-deposits-row" style="display:none"><span class="ir-label">Deposits</span><span id="ip-deposits">—</span></div>
+        <div class="inspect-row"><span class="ir-label">Produces</span><span id="ip-produces">—</span></div>
         <div class="inspect-row"><span class="ir-label">Culture</span><span id="ip-culture">—</span></div>
         <div class="inspect-row"><span class="ir-label">Owner</span><span id="ip-owner">—</span></div>
         <div class="inspect-row"><span class="ir-label">Walls</span><span id="ip-walls">—</span></div>
@@ -627,10 +630,40 @@ function resetView() {
 }
 
 // ── Inspect panel ─────────────────────────────────────────────────────────
+// Maps terrain type to the base goods it produces.
+const TERRAIN_GOODS = {
+  plains:   'grain, horses',
+  hills:    'copper (if deposit)',
+  mountain: 'stone, tin (if deposit)',
+  forest:   'cedar, lumber',
+  coast:    'fish',
+  sea:      '—',
+};
+
 function openInspect(marker) {
   selectedProvince = marker;
   document.getElementById('ip-name').textContent    = marker.name;
   document.getElementById('ip-culture').textContent = marker.culture;
+
+  // Terrain and deposits from tileData.
+  const tile = tileData.find(t => t.q === marker.q && t.r === marker.r);
+  if (tile) {
+    const tLabel = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
+    document.getElementById('ip-terrain').textContent = tLabel;
+    const deps = [tile.copper_deposit ? 'Copper' : null, tile.tin_deposit ? 'Tin' : null].filter(Boolean);
+    const depRow = document.getElementById('ip-deposits-row');
+    if (deps.length > 0) {
+      document.getElementById('ip-deposits').textContent = deps.join(' · ');
+      depRow.style.display = '';
+    } else {
+      depRow.style.display = 'none';
+    }
+    document.getElementById('ip-produces').textContent = TERRAIN_GOODS[tile.terrain] || '—';
+  } else {
+    document.getElementById('ip-terrain').textContent  = '—';
+    document.getElementById('ip-produces').textContent = '—';
+    document.getElementById('ip-deposits-row').style.display = 'none';
+  }
 
   let ownerText = marker.owner || '(unoccupied)';
   if (marker.own)    ownerText += ' ★';
