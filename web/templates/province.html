@@ -480,12 +480,14 @@ async function loadGossip() {
   if (!res.ok) { el.innerHTML = '<p class="loading">—</p>'; return; }
   const items = await res.json();
   if (!items.length) { el.innerHTML = '<p class="loading">No rumours yet.</p>'; return; }
-  el.innerHTML = items.slice(0, 10).map(g => `
-    <div class="gossip-entry">
+  el.innerHTML = items.slice(0, 10).map(g => {
+    const cat = g.category || 'battle';
+    return `<div class="gossip-entry ge-cat-${cat}">
       <span class="ge-region">${g.source_region}</span>
       <span class="ge-text">${g.text}</span>
       <span class="ge-time">${timeAgo(new Date(g.generated_at))}</span>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function timeAgo(d) {

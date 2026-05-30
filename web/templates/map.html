@@ -679,7 +679,8 @@ canvas.addEventListener('mousemove', e => {
     tooltip.style.left = (e.clientX + 14) + 'px';
     tooltip.style.top  = (e.clientY - 22) + 'px';
     const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null].filter(Boolean).join(' · ');
-    const base = prov ? `${prov.name} · ${tile.terrain}` : `(${h.q},${h.r}) ${tile.terrain}`;
+    const tl = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
+    const base = prov ? `${prov.name} · ${tl}` : `(${h.q},${h.r}) ${tl}`;
     tooltip.textContent = deposits ? `${base} · ${deposits}` : base;
   } else {
     tooltip.style.display = 'none';

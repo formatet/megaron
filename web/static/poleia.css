@@ -535,6 +535,10 @@ footer {
 .ge-region { display:block; font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); }
 .ge-text { display:block; color:var(--text); margin:.1rem 0; font-style:italic; }
 .ge-time { display:block; font-size:.7rem; color:var(--text-dim); }
+.ge-cat-divine_favour .ge-text { color:var(--gold); }
+.ge-cat-divine_favour .ge-region { color:var(--gold); }
+.ge-cat-divine_wrath .ge-text { color:var(--danger); }
+.ge-cat-divine_wrath .ge-region { color:var(--danger); }
 
 /* Shared action result line */
 .action-result { margin-top:.4rem; font-size:.8rem; min-height:1em; color:var(--accent); font-family:var(--mono); }
