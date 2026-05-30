@@ -177,8 +177,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 	return nil
 }
 
-// applyDecay reduces food and lumber by 1% across all active settlements.
-// Rotten grain and rotting timber — keeps players trading rather than hoarding.
+// applyDecay reduces food and lumber by 1% and resets invasions_today across all
+// active settlements. Called once per daily tick.
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements SET
@@ -187,7 +187,8 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		   food_calc_at   = now(),
 		   lumber_amount  = GREATEST(0,
 		       (lumber_amount + EXTRACT(EPOCH FROM (now()-lumber_calc_at))/60 * lumber_rate) * 0.99),
-		   lumber_calc_at = now()
+		   lumber_calc_at = now(),
+		   invasions_today = 0
 		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
 		worldID,
 	); err != nil {

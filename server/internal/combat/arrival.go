@@ -96,17 +96,18 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 
 	// Load defender settlement (looked up by province_id).
 	var def struct {
-		OwnerID *uuid.UUID
-		Army    province.ArmyComposition
-		Walls   int
+		OwnerID      *uuid.UUID
+		Army         province.ArmyComposition
+		Walls        int
+		InvasionsToday int
 	}
 	err = tx.QueryRow(ctx,
-		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, elite_infantry, wall_level
+		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, elite_infantry, wall_level, invasions_today
 		 FROM settlements WHERE province_id = $1`,
 		march.TargetID,
 	).Scan(&def.OwnerID,
 		&def.Army.Infantry, &def.Army.Cavalry, &def.Army.Catapult,
-		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry, &def.Walls)
+		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry, &def.Walls, &def.InvasionsToday)
 	if err != nil {
 		return fmt.Errorf("load defending settlement: %w", err)
 	}
@@ -114,6 +115,22 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	result := Resolve(
 		AttackForce{Army: march.Army, SupportStrength: supportStr},
 		DefenceForce{Army: def.Army, WallLevel: def.Walls},
+	)
+
+	// Scale defender losses down for repeated invasions on the same day.
+	// Each prior invasion today reduces defender casualties by 25% (floor 25%).
+	if def.InvasionsToday > 0 {
+		scale := 1.0 - float64(def.InvasionsToday)*0.25
+		if scale < 0.25 {
+			scale = 0.25
+		}
+		result.DefenderLosses *= scale
+	}
+
+	// Increment invasion counter on target settlement.
+	_, _ = tx.Exec(ctx,
+		`UPDATE settlements SET invasions_today = invasions_today + 1 WHERE province_id = $1`,
+		march.TargetID,
 	)
 
 	slog.Info("combat resolved",
