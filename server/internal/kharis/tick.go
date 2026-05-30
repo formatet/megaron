@@ -183,6 +183,9 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 		if newKharis > blessThreshold && rand.Float64() < blessProbability {
 			h.applyDivineBlessing(ctx, s.id, worldID)
 		}
+		if rand.Float64() < 0.20 {
+			h.generateOmen(ctx, s.id, worldID)
+		}
 		return nil
 	}
 
@@ -209,7 +212,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 }
 
 // applyDecay reduces food and lumber by 1% and resets invasions_today across all
-// active settlements. Called once per daily tick.
+// active settlements. Also regenerates priest_strength based on stationed priests.
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements SET
@@ -220,6 +223,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		       (lumber_amount + EXTRACT(EPOCH FROM (now()-lumber_calc_at))/60 * lumber_rate) * 0.99),
 		   lumber_calc_at = now(),
 		   invasions_today = 0,
+		   priest_strength = LEAST(100, priest_strength + 4 + (priest * 10)),
 		   population = GREATEST(50, LEAST(10000,
 		       CASE WHEN food_amount + EXTRACT(EPOCH FROM (now()-food_calc_at))/60 * food_rate > 0
 		            THEN population + 5
@@ -352,6 +356,30 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 		map[string]any{"type": b.name}, worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_favour", b.text)
 	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name)
+}
+
+// generateOmen produces an atmospheric temple omen (20% chance per maintained day).
+// Omens are written to the gossip stream and appear in the player's Rumours panel.
+func (h *TickHandler) generateOmen(ctx context.Context, settlementID, worldID uuid.UUID) {
+	omens := []string{
+		"The heart of the offering lay clean and red. The gods are pleased.",
+		"Smoke rose straight toward heaven — a season of calm and steady winds.",
+		"The sacred birds ate freely from the priest's hand. The harvest will be generous.",
+		"The flame consumed the offering without hesitation. Order holds for now.",
+		"A serpent crossed the temple threshold and departed unharmed. Old powers watch this place.",
+		"Birds flew westward in tight formation. Something stirs beyond your sight.",
+		"The offering was pale but the liver whole. The gods withhold judgement.",
+		"Clouds gathered during the rite, then passed without rain. The future is contested.",
+		"The sacred flame guttered three times before catching. Patience is called for.",
+		"A dark mark appeared near the gate of the liver — a shadow at the threshold.",
+		"The birds fell silent for a long time before resuming their cries. The gods listen.",
+		"Wind shifted against the smoke during the final prayer. Something turns.",
+		"Two ravens circled the altar three times. The gods debate.",
+		"The entrails were tangled — an augur's nightmare. Ambiguity rules this season.",
+		"A child laughed outside the temple during the rite. The gods find something amusing.",
+	}
+	text := omens[rand.Intn(len(omens))]
+	h.addDivineGossip(ctx, settlementID, worldID, "omen", text)
 }
 
 // addDivineGossip inserts a gossip event for the owner of the given settlement.
