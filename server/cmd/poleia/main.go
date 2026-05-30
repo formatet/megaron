@@ -5,10 +5,14 @@
 //	poleia login --server http://10.0.1.88:8080 --username alice
 //	poleia status
 //	poleia march --target Korinth --intent attack --hoplites 50
+//	poleia marches
 //	poleia recruit --unit hoplites --count 20
 //	poleia build --type farm
 //	poleia worlds
 //	poleia kingdoms
+//	poleia goods
+//	poleia trade --good grain --qty 10 --dest <settlement-id>
+//	poleia inbox
 //
 // Environment variables:
 //
@@ -54,12 +58,14 @@ func main() {
 		loginCmd(),
 		statusCmd(),
 		marchCmd(),
+		marchesCmd(),
 		recruitCmd(),
 		buildCmd(),
 		worldsCmd(),
 		kingdomsCmd(),
 		goodsCmd(),
 		tradeCmd(),
+		inboxCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
