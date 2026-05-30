@@ -130,18 +130,6 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			return fmt.Errorf("update stone rate: %w", err)
 		}
 	}
-	if spec.IronRate > 0 {
-		_, err = tx.Exec(ctx,
-			`UPDATE settlements SET
-			   iron_amount = iron_amount + (EXTRACT(EPOCH FROM (now() - iron_calc_at))/60 * iron_rate),
-			   iron_rate = iron_rate + $1,
-			   iron_calc_at = now()
-			 WHERE id = $2`,
-			spec.IronRate, p.SettlementID)
-		if err != nil {
-			return fmt.Errorf("update iron rate: %w", err)
-		}
-	}
 	if spec.GoldRate > 0 {
 		_, err = tx.Exec(ctx,
 			`UPDATE settlements SET

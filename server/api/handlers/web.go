@@ -36,11 +36,12 @@ type WebHandler struct {
 	base        *template.Template // base.html only, cloned per request
 	templateDir string
 	clk         clock.Clock
+	worldID     uuid.UUID // the single world this server hosts
 }
 
 // NewWebHandler creates a WebHandler. Only base.html is pre-parsed; page
 // templates are parsed fresh per request so each gets its own "content" block.
-func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, clk clock.Clock) (*WebHandler, error) {
+func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, clk clock.Clock, worldID uuid.UUID) (*WebHandler, error) {
 	buildingNames := map[string]string{
 		"farm":        "Farm",
 		"lumbermill":  "Lumbermill",
@@ -93,7 +94,7 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 	if err != nil {
 		return nil, err
 	}
-	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir, clk: clk}, nil
+	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir, clk: clk, worldID: worldID}, nil
 }
 
 // render renders a full-page template that extends base.html.
@@ -138,58 +139,43 @@ func (h *WebHandler) Index(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "index.html", nil)
 }
 
-// Play is the post-login landing: redirects to the player's map if they have a
-// settlement, or to the worlds list if they haven't joined one yet.
+// Play is the post-login landing. Redirects to the map if the player has a
+// settlement, or to the join page if they haven't entered the world yet.
 func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
 	if !ok {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	var worldID uuid.UUID
-	err := h.pool.QueryRow(r.Context(),
-		`SELECT world_id FROM settlements WHERE owner_id = $1 ORDER BY created_at DESC LIMIT 1`,
-		playerID,
-	).Scan(&worldID)
-	if err != nil {
-		http.Redirect(w, r, "/worlds", http.StatusSeeOther)
+	var exists bool
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT EXISTS (SELECT 1 FROM settlements WHERE owner_id = $1 AND world_id = $2)`,
+		playerID, h.worldID,
+	).Scan(&exists)
+	if !exists {
+		http.Redirect(w, r, "/world/"+h.worldID.String()+"/join", http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/world/"+worldID.String()+"/map", http.StatusSeeOther)
+	http.Redirect(w, r, "/world/"+h.worldID.String()+"/map", http.StatusSeeOther)
 }
 
-// WorldList serves the list of active worlds.
-func (h *WebHandler) WorldList(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, name, state, prestige, era_number,
-		        (SELECT COUNT(*) FROM settlements WHERE world_id = worlds.id AND owner_id IS NOT NULL) AS players,
-		        created_at
-		 FROM worlds ORDER BY created_at DESC`,
-	)
-	if err != nil {
-		http.Error(w, "DB error", http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
+// JoinView serves the world join page — shown to new players before they have a settlement.
+func (h *WebHandler) JoinView(w http.ResponseWriter, r *http.Request) {
+	var name, state string
+	var players int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT w.name, w.state,
+		        (SELECT COUNT(*) FROM settlements WHERE world_id = w.id AND owner_id IS NOT NULL)
+		 FROM worlds w WHERE w.id = $1`,
+		h.worldID,
+	).Scan(&name, &state, &players)
 
-	type row struct {
-		ID        uuid.UUID
-		Name      string
-		State     string
-		Prestige  int
-		EraNumber int
-		Players   int
-		CreatedAt time.Time
-	}
-	var worlds []row
-	for rows.Next() {
-		var wr row
-		if err := rows.Scan(&wr.ID, &wr.Name, &wr.State, &wr.Prestige, &wr.EraNumber, &wr.Players, &wr.CreatedAt); err != nil {
-			continue
-		}
-		worlds = append(worlds, wr)
-	}
-	h.render(w, "worlds.html", map[string]any{"Worlds": worlds})
+	h.render(w, "join.html", map[string]any{
+		"WorldID":   h.worldID,
+		"WorldName": name,
+		"State":     state,
+		"Players":   players,
+	})
 }
 
 // Province serves the main province view (resources, army, build queue).
@@ -219,13 +205,11 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	resources["food_rate"] = s.Resources.Food.RatePerMinute
 	resources["lumber_rate"] = s.Resources.Lumber.RatePerMinute
 	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
-	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
 	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
 	resources["gold_cap"] = s.Resources.Gold.Cap
 	resources["food_cap"] = s.Resources.Food.Cap
 	resources["lumber_cap"] = s.Resources.Lumber.Cap
 	resources["stone_cap"] = s.Resources.Stone.Cap
-	resources["iron_cap"] = s.Resources.Iron.Cap
 
 	divineMood := kharisToMood(resources["kharis"])
 
@@ -398,13 +382,11 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 	resources["food_rate"] = s.Resources.Food.RatePerMinute
 	resources["lumber_rate"] = s.Resources.Lumber.RatePerMinute
 	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
-	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
 	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
 	resources["gold_cap"] = s.Resources.Gold.Cap
 	resources["food_cap"] = s.Resources.Food.Cap
 	resources["lumber_cap"] = s.Resources.Lumber.Cap
 	resources["stone_cap"] = s.Resources.Stone.Cap
-	resources["iron_cap"] = s.Resources.Iron.Cap
 
 	h.renderPartial(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s, "DivineMood": kharisToMood(resources["kharis"])})
 }

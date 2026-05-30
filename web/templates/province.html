@@ -51,7 +51,7 @@
       <table class="army-table">
         <tr><td><canvas class="unit-icon" data-unit="inf"  width="12" height="12"></canvas> Hoplites</td>      <td class="num">{{.Province.Army.Infantry}}</td></tr>
         <tr><td><canvas class="unit-icon" data-unit="cav"  width="12" height="12"></canvas> Hippeis</td>       <td class="num">{{.Province.Army.Cavalry}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="cat"  width="12" height="12"></canvas> Siege</td>         <td class="num">{{.Province.Army.Catapult}}</td></tr>
+        {{if .Province.Army.Catapult}}<tr><td><canvas class="unit-icon" data-unit="cat"  width="12" height="12"></canvas> Siege</td>         <td class="num">{{.Province.Army.Catapult}}</td></tr>{{end}}
         <tr><td><canvas class="unit-icon" data-unit="pri"  width="12" height="12"></canvas> Hiereus</td>       <td class="num">{{.Province.Army.Priest}}</td></tr>
         <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Trireme</td>       <td class="num">{{.Province.Army.Ship}}</td></tr>
         <tr><td><canvas class="unit-icon" data-unit="eli"  width="12" height="12"></canvas> Agema</td>         <td class="num">{{.Province.Army.EliteInfantry}}</td></tr>
@@ -69,7 +69,7 @@
       <div class="recruit-grid">
         <label class="recruit-row{{if not $hasBarracks}} unit-unavailable{{end}}">
           <span class="recruit-label">Hoplites</span>
-          <span class="recruit-cost">{{if not $hasBarracks}}requires barracks{{else}}10 food · 5 iron{{end}}</span>
+          <span class="recruit-cost">{{if not $hasBarracks}}requires barracks{{else}}15 food{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="100" value="10" id="rc-hoplites"{{if not $hasBarracks}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('infantry', document.getElementById('rc-hoplites').value)"
@@ -77,7 +77,7 @@
         </label>
         <label class="recruit-row{{if not $hasStable}} unit-unavailable{{end}}">
           <span class="recruit-label">Hippeis</span>
-          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}25 food · 15 iron{{end}}</span>
+          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 food · 5 lumber{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-hippeis"{{if not $hasStable}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('cavalry', document.getElementById('rc-hippeis').value)"
@@ -92,7 +92,7 @@
         </label>
         <label class="recruit-row{{if not $hasHarbour}} unit-unavailable{{end}}">
           <span class="recruit-label">Trireme</span>
-          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}80 lumber · 30 iron{{end}}</span>
+          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}110 lumber{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-trireme"{{if not $hasHarbour}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('ship', document.getElementById('rc-trireme').value)"
@@ -100,7 +100,7 @@
         </label>
         <label class="recruit-row{{if not $hasFoundry}} unit-unavailable{{end}}">
           <span class="recruit-label">Agema</span>
-          <span class="recruit-cost">{{if not $hasFoundry}}requires foundry{{else}}20 food · 10 iron · 2 bronze{{end}}</span>
+          <span class="recruit-cost">{{if not $hasFoundry}}requires foundry{{else}}25 food · 2 bronze{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="50" value="1" id="rc-agema"{{if not $hasFoundry}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('elite_infantry', document.getElementById('rc-agema').value)"
@@ -144,17 +144,17 @@
       <div class="build-form-wrap">
         <select id="build-select" class="build-select">
           <option value="farm">Farm — 50L 20S · +2 food/m</option>
-          <option value="lumbermill">Lumbermill — 40L 20S 20I · +2 lumber/m</option>
-          <option value="stonequarry">Stone Quarry — 50L 20I · +2 stone/m</option>
-          <option value="mine">Mine — 60L 40S · +1.5 iron/m</option>
-          <option value="barracks">Barracks — 80L 50S 30I · recruits</option>
+          <option value="lumbermill">Lumbermill — 40L 40S · +2 lumber/m</option>
+          <option value="stonequarry">Stone Quarry — 50L 20S · +2 stone/m</option>
+          <option value="mine">Copper Mine — 60L 40S · +1 stone/m</option>
+          <option value="barracks">Barracks — 80L 80S · recruits</option>
           <option value="market">Market — 100L 60S · +0.5 gold/m</option>
-          <option value="wall">Wall — 40L 120S 60I · +1 wall</option>
-          <option value="tower">Tower — 60L 80S 40I · +1 wall</option>
-          <option value="harbour">Harbour — 120L 60S 40I · ships</option>
-          <option value="foundry">Foundry — 80L 60S 50I · craft bronze</option>
+          <option value="wall">Wall — 40L 160S · +1 wall</option>
+          <option value="tower">Tower — 60L 110S · +1 wall</option>
+          <option value="harbour">Harbour — 140L 60S · ships</option>
+          <option value="foundry">Foundry — 80L 100S · craft bronze</option>
           <option value="stable">Stable — 60L 40S · horses</option>
-          <option value="bronze_wall">Bronze Wall — 80S 40I 10 bronze · +1 wall</option>
+          <option value="bronze_wall">Bronze Wall — 100S 10 bronze · +1 wall</option>
         </select>
         <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
         <div id="build-result" class="action-result"></div>

@@ -375,15 +375,11 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		   lumber_calc_at = now(),
 		   stone_amount = stone_amount
 		     + (EXTRACT(EPOCH FROM (now() - stone_calc_at))/60 * stone_rate) - $2,
-		   stone_calc_at = now(),
-		   iron_amount = iron_amount
-		     + (EXTRACT(EPOCH FROM (now() - iron_calc_at))/60 * iron_rate) - $3,
-		   iron_calc_at = now()
-		 WHERE id = $4
+		   stone_calc_at = now()
+		 WHERE id = $3
 		   AND lumber_amount + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) >= $1
-		   AND stone_amount  + (EXTRACT(EPOCH FROM (now() - stone_calc_at))/60  * stone_rate)  >= $2
-		   AND iron_amount   + (EXTRACT(EPOCH FROM (now() - iron_calc_at))/60   * iron_rate)   >= $3`,
-		spec.CostLumber, spec.CostStone, spec.CostIron, settlementID,
+		   AND stone_amount  + (EXTRACT(EPOCH FROM (now() - stone_calc_at))/60  * stone_rate)  >= $2`,
+		spec.CostLumber, spec.CostStone, settlementID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct resources")
@@ -580,7 +576,6 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	totalFood := spec.CostFood * float64(req.Count)
-	totalIron := spec.CostIron * float64(req.Count)
 	totalLumber := spec.CostLumber * float64(req.Count)
 	totalKharis := spec.CostKharis * float64(req.Count)
 	totalBronze := spec.CostBronze * float64(req.Count)
@@ -591,21 +586,17 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		   food_amount = food_amount
 		     + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate) - $1,
 		   food_calc_at = now(),
-		   iron_amount = iron_amount
-		     + (EXTRACT(EPOCH FROM (now() - iron_calc_at))/60 * iron_rate) - $2,
-		   iron_calc_at = now(),
 		   lumber_amount = lumber_amount
-		     + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) - $3,
+		     + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) - $2,
 		   lumber_calc_at = now(),
 		   kharis_amount = kharis_amount
-		     + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) - $4,
+		     + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) - $3,
 		   kharis_calc_at = now()
-		 WHERE id = $5
+		 WHERE id = $4
 		   AND food_amount   + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60   * food_rate)   >= $1
-		   AND iron_amount   + (EXTRACT(EPOCH FROM (now() - iron_calc_at))/60   * iron_rate)   >= $2
-		   AND lumber_amount + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) >= $3
-		   AND kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) >= $4`,
-		totalFood, totalIron, totalLumber, totalKharis, settlementID,
+		   AND lumber_amount + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) >= $2
+		   AND kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) >= $3`,
+		totalFood, totalLumber, totalKharis, settlementID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Sprintf("could not deduct resources: %v", err))

@@ -127,7 +127,6 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	foodRate := 1.0 + fertility*2.0
 	lumberRate := fertility * 0.8
 	stoneRate := mineral * 0.5
-	ironRate := mineral * 0.3
 
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
@@ -156,13 +155,12 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		  food_rate, food_calc_at,
 		  lumber_rate, lumber_calc_at,
 		  stone_rate, stone_calc_at,
-		  iron_rate, iron_calc_at,
 		  kharis_rate, kharis_calc_at)
 		 VALUES ($1,$2,$3,$4,$5,'capital',true,
-		         $6,now(),$7,now(),$8,now(),$9,now(),$10,now())
+		         $6,now(),$7,now(),$8,now(),$9,now())
 		 RETURNING id`,
 		worldID, provinceID, req.ProvinceName, req.Culture, playerID,
-		foodRate, lumberRate, stoneRate, ironRate, kharisRate,
+		foodRate, lumberRate, stoneRate, kharisRate,
 	).Scan(&settlementID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create settlement")

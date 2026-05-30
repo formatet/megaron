@@ -42,9 +42,9 @@ func statusCmd() *cobra.Command {
 			res, _ := sett["resources"].(map[string]any)
 			if res != nil {
 				fmt.Println("Resources")
-				for _, k := range []string{"gold", "food", "lumber", "stone", "iron", "kharis"} {
+				for _, k := range []string{"gold", "food", "lumber", "stone", "kharis"} {
 					label := map[string]string{"gold": "Gold", "food": "Food", "lumber": "Lumber",
-						"stone": "Stone", "iron": "Iron", "kharis": "Kharis"}[k]
+						"stone": "Stone", "kharis": "Kharis"}[k]
 					v, _ := res[k].(float64)
 					r, _ := res[k+"_rate"].(float64)
 					fmt.Printf("  %-8s %6s  %s\n", label, resource(v), rate(r))

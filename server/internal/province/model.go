@@ -47,7 +47,6 @@ type ResourceLedger struct {
 	Food   ResourceState
 	Lumber ResourceState
 	Stone  ResourceState
-	Iron   ResourceState
 	Kharis ResourceState
 }
 
@@ -58,7 +57,6 @@ func (rl ResourceLedger) Snapshot(at time.Time) map[string]float64 {
 		"food":   rl.Food.Current(at),
 		"lumber": rl.Lumber.Current(at),
 		"stone":  rl.Stone.Current(at),
-		"iron":   rl.Iron.Current(at),
 		"kharis": rl.Kharis.Current(at),
 	}
 }
@@ -77,7 +75,6 @@ func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
 		"food":   {Amount: rl.Food.Current(at), Rate: rl.Food.RatePerMinute, Cap: rl.Food.Cap},
 		"lumber": {Amount: rl.Lumber.Current(at), Rate: rl.Lumber.RatePerMinute, Cap: rl.Lumber.Cap},
 		"stone":  {Amount: rl.Stone.Current(at), Rate: rl.Stone.RatePerMinute, Cap: rl.Stone.Cap},
-		"iron":   {Amount: rl.Iron.Current(at), Rate: rl.Iron.RatePerMinute, Cap: rl.Iron.Cap},
 		"kharis": {Amount: rl.Kharis.Current(at), Rate: rl.Kharis.RatePerMinute, Cap: rl.Kharis.Cap},
 	}
 }
