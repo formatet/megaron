@@ -415,13 +415,15 @@ func (h *WebHandler) WanaxesView(w http.ResponseWriter, r *http.Request) {
 	_ = h.pool.QueryRow(r.Context(), `SELECT name FROM worlds WHERE id = $1`, worldID).Scan(&worldName)
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT s.name, p.username, s.culture_id, k.name, s.wall_level, s.population,
+		`SELECT s.name, p.username, s.culture_id,
+		        (SELECT k.name FROM kingdoms k
+		         JOIN kingdom_members km ON km.kingdom_id = k.id
+		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
+		        s.wall_level, s.population,
 		        s.infantry + s.cavalry*3 + s.elite_infantry*2 + s.priest*2,
 		        s.owner_id
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
-		 LEFT JOIN kingdom_members km ON km.player_id = s.owner_id
-		 LEFT JOIN kingdoms k ON k.id = km.kingdom_id AND k.world_id = $1
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
 		 ORDER BY s.infantry + s.cavalry*3 + s.elite_infantry*2 + s.priest*2 DESC`,
 		worldID,
