@@ -95,6 +95,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 
 	h.applyDecay(ctx, e.WorldID)
 	h.applyStarvation(ctx, e.WorldID)
+	h.accumulatePrestige(ctx, e.WorldID)
 
 	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledKharisTick,
 		struct{}{}, 24*time.Hour)
@@ -305,4 +306,30 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivineBlessing",
 		map[string]any{"type": b.name}, worldID, nil)
 	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name)
+}
+
+// accumulatePrestige adds daily prestige to the world based on active cult devotion.
+// One point per active settlement, plus a tier bonus (vardig+1, praktfull+2, overdadig+3).
+// Prestige feeds into the collapse risk algorithm.
+func (h *TickHandler) accumulatePrestige(ctx context.Context, worldID uuid.UUID) {
+	_, err := h.pool.Exec(ctx,
+		`UPDATE worlds SET prestige = prestige + (
+		    SELECT COALESCE(SUM(
+		        1 + CASE cult_level
+		            WHEN 'vardig'    THEN 1
+		            WHEN 'praktfull' THEN 2
+		            WHEN 'overdadig' THEN 3
+		            ELSE 0
+		        END
+		    ), 0)
+		    FROM settlements
+		    WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'
+		      AND cult_level != 'forsummad'
+		)
+		WHERE id = $1`,
+		worldID,
+	)
+	if err != nil {
+		slog.Error("prestige accumulation failed", "world", worldID, "err", err)
+	}
 }

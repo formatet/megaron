@@ -548,9 +548,14 @@ function openInspect(marker) {
   selectedProvince = marker;
   document.getElementById('ip-name').textContent    = marker.name;
   document.getElementById('ip-culture').textContent = marker.culture;
-  document.getElementById('ip-owner').textContent   = marker.owner || '(unoccupied)';
+
+  let ownerText = marker.owner || '(unoccupied)';
+  if (marker.own)    ownerText += ' ★';
+  if (marker.allied && !marker.own) ownerText += ' (allied)';
+  document.getElementById('ip-owner').textContent   = ownerText;
   document.getElementById('ip-walls').textContent   = '▓'.repeat(marker.walls) + '░'.repeat(Math.max(0,3-marker.walls));
-  document.getElementById('ip-kingdom').textContent = marker.kingdom_id ? '⚑ Kingdom' : '—';
+  const kText = marker.kingdom_id ? (marker.allied ? '⚑ Allied Kingdom' : '⚑ Kingdom') : '—';
+  document.getElementById('ip-kingdom').textContent = kText;
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML = '';
