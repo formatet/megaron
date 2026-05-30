@@ -209,6 +209,11 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		s.ProvinceID,
 	).Scan(&copperDeposit, &tinDeposit)
 
+	var kingdomName string
+	if s.KingdomID != nil {
+		_ = h.pool.QueryRow(r.Context(), `SELECT name FROM kingdoms WHERE id = $1`, s.KingdomID).Scan(&kingdomName)
+	}
+
 	type provinceView struct {
 		ID            uuid.UUID // province_id for URL routing
 		SettlementID  uuid.UUID // settlement UUID for cult-level and settlement API calls
@@ -219,6 +224,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		Population    int
 		Walls         int
 		KingdomID     *uuid.UUID
+		KingdomName   string
 		CopperDeposit bool
 		TinDeposit    bool
 	}
@@ -232,6 +238,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		Population:    s.Population,
 		Walls:         s.WallLevel,
 		KingdomID:     s.KingdomID,
+		KingdomName:   kingdomName,
 		CopperDeposit: copperDeposit,
 		TinDeposit:    tinDeposit,
 	}

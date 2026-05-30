@@ -13,7 +13,7 @@
     <div class="ph-left">
       <h2 class="ph-name">{{.Province.Name}}</h2>
       <span class="culture-tag">{{.Province.CultureID}}</span>
-      {{if .Province.KingdomID}}<span class="kingdom-tag">⚑ Kingdom</span>{{end}}
+      {{if .Province.KingdomID}}<span class="kingdom-tag">⚑ {{if .Province.KingdomName}}{{.Province.KingdomName}}{{else}}Kingdom{{end}}</span>{{end}}
     </div>
     <div class="ph-right">
       <span class="stat-chip" title="Population">Pop: <strong>{{.Province.Population}}</strong></span>
