@@ -48,14 +48,21 @@ func goodsCmd() *cobra.Command {
 func tradeCmd() *cobra.Command {
 	var good string
 	var qty float64
-	var destID string
+	var destName string
 
 	cmd := &cobra.Command{
 		Use:   "trade",
 		Short: "Send a trade route to another settlement",
-		Example: `  poleia trade --good grain --qty 10 --dest <settlement-id>`,
+		Example: `  poleia trade --good grain --qty 10 --dest Korinth`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+
+			// Resolve destination name → settlement ID.
+			destID, err := resolveSettlement(c, cfg.WorldID, destName)
+			if err != nil {
+				return fmt.Errorf("resolve destination %q: %w", destName, err)
+			}
+
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, cfg.ProvinceID)
 			data, err := c.post(path, map[string]any{
 				"good_key":       good,
@@ -84,7 +91,7 @@ func tradeCmd() *cobra.Command {
 
 	cmd.Flags().StringVarP(&good, "good", "g", "", "good key (e.g. grain, copper)")
 	cmd.Flags().Float64VarP(&qty, "qty", "q", 0, "quantity to send")
-	cmd.Flags().StringVarP(&destID, "dest", "d", "", "destination settlement ID")
+	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name or UUID")
 	_ = cmd.MarkFlagRequired("good")
 	_ = cmd.MarkFlagRequired("qty")
 	_ = cmd.MarkFlagRequired("dest")

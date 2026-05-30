@@ -10,8 +10,9 @@
 //	poleia build --type farm
 //	poleia worlds
 //	poleia kingdoms
+//	poleia settlements
 //	poleia goods
-//	poleia trade --good grain --qty 10 --dest <settlement-id>
+//	poleia trade --good grain --qty 10 --dest Korinth
 //	poleia inbox
 //
 // Environment variables:
@@ -63,6 +64,7 @@ func main() {
 		buildCmd(),
 		worldsCmd(),
 		kingdomsCmd(),
+		settlementsCmd(),
 		goodsCmd(),
 		tradeCmd(),
 		inboxCmd(),
