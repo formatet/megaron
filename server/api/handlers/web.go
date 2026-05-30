@@ -41,6 +41,20 @@ type WebHandler struct {
 // NewWebHandler creates a WebHandler. Only base.html is pre-parsed; page
 // templates are parsed fresh per request so each gets its own "content" block.
 func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, clk clock.Clock) (*WebHandler, error) {
+	buildingNames := map[string]string{
+		"farm":        "Farm",
+		"lumbermill":  "Lumbermill",
+		"stonequarry": "Stone Quarry",
+		"mine":        "Mine",
+		"barracks":    "Barracks",
+		"market":      "Market",
+		"wall":        "Wall",
+		"tower":       "Tower",
+		"harbour":     "Harbour",
+		"foundry":     "Foundry",
+		"stable":      "Stable",
+		"bronze_wall": "Bronze Wall",
+	}
 	funcs := template.FuncMap{
 		"formatTime": func(t time.Time) string {
 			return t.Format("2006-01-02 15:04")
@@ -59,6 +73,12 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 				return "—"
 			}
 			return fmt.Sprintf("+%.1f/m", v)
+		},
+		"buildingName": func(key string) string {
+			if n, ok := buildingNames[key]; ok {
+				return n
+			}
+			return key
 		},
 	}
 	// Parse base + all partials (named templates used across pages) into the base set.

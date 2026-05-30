@@ -114,9 +114,9 @@
       {{if .Queue}}
       <div class="bq-list">
         {{range .Queue}}
-        <div class="bq-item" data-complete="{{formatISO .CompleteAt}}">
+        <div class="bq-item" data-complete="{{formatISO .CompleteAt}}" data-type="{{.Type}}">
           <div class="bq-row">
-            <span class="bq-name">{{.Type}}</span>
+            <span class="bq-name">{{buildingName .Type}}</span>
             <span class="bq-time">—</span>
           </div>
           <div class="bq-bar-wrap"><div class="bq-bar" style="width:0%"></div></div>
@@ -132,7 +132,7 @@
         <div class="lp-title">Built</div>
         <div class="bldg-wrap">
           {{range .Buildings}}
-          <span class="bldg-tag{{if gt .Level 1}} l{{.Level}}{{end}}">{{.Type}}{{if gt .Level 1}} ×{{.Level}}{{end}}</span>
+          <span class="bldg-tag{{if gt .Level 1}} l{{.Level}}{{end}}">{{buildingName .Type}}{{if gt .Level 1}} ×{{.Level}}{{end}}</span>
           {{end}}
         </div>
       </div>
@@ -567,7 +567,7 @@ async function setCultLevel() {
       const complete = new Date(el.dataset.complete).getTime();
       const now = Date.now();
       const remSec = Math.max(0, Math.round((complete - now) / 1000));
-      const name = el.querySelector('.bq-name').textContent.trim().toLowerCase();
+      const name = (el.dataset.type || el.querySelector('.bq-name').textContent.trim()).toLowerCase();
       const totalSec = (DURATION_MIN[name] || 60) * 60;
       const pct = Math.min(100, Math.round((1 - remSec / totalSec) * 100));
       const bar = el.querySelector('.bq-bar');
