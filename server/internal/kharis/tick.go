@@ -26,17 +26,19 @@ const (
 
 // cultSpec defines the daily cost and kharis gain for each cult level.
 type cultSpec struct {
-	gold      float64
-	food      float64
+	gold       float64
+	food       float64
+	wine       float64 // from settlement_goods; required for praktfull/overdadig
+	oil        float64 // from settlement_goods; required for praktfull/overdadig
 	kharisGain float64
 }
 
 var cultLevelSpecs = map[string]cultSpec{
-	"forsummad": {gold: 0, food: 0, kharisGain: 0},    // no payment, kharis decays
+	"forsummad": {kharisGain: 0},                               // no payment, kharis decays
 	"enkel":     {gold: 3, food: 3, kharisGain: 2},
 	"vardig":    {gold: 6, food: 5, kharisGain: 5},
-	"praktfull": {gold: 12, food: 10, kharisGain: 10},
-	"overdadig": {gold: 20, food: 15, kharisGain: 18},
+	"praktfull": {gold: 12, food: 10, wine: 2, oil: 2, kharisGain: 10},
+	"overdadig": {gold: 20, food: 15, wine: 5, oil: 5, kharisGain: 18},
 }
 
 // TickHandler applies daily temple maintenance to all active settlements in a world.
@@ -56,19 +58,25 @@ type settlementSnap struct {
 	kharis    float64
 	gold      float64
 	food      float64
+	wine      float64
+	oil       float64
 	cultLevel string
 }
 
 // Handle processes a KharisTick scheduled event.
 func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	rows, err := h.pool.Query(ctx,
-		`SELECT id,
-		    GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)),
-		    GREATEST(0, gold_amount   + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60   * gold_rate)),
-		    GREATEST(0, food_amount   + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60   * food_rate)),
-		    cult_level
-		 FROM settlements
-		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
+		`SELECT s.id,
+		    GREATEST(0, s.kharis_amount + (EXTRACT(EPOCH FROM (now() - s.kharis_calc_at))/60 * s.kharis_rate)),
+		    GREATEST(0, s.gold_amount   + (EXTRACT(EPOCH FROM (now() - s.gold_calc_at))/60   * s.gold_rate)),
+		    GREATEST(0, s.food_amount   + (EXTRACT(EPOCH FROM (now() - s.food_calc_at))/60   * s.food_rate)),
+		    s.cult_level,
+		    GREATEST(0, COALESCE(wine.amount + (EXTRACT(EPOCH FROM (now() - wine.calc_at))/60 * wine.rate_per_min), 0)),
+		    GREATEST(0, COALESCE(oil.amount  + (EXTRACT(EPOCH FROM (now() - oil.calc_at))/60  * oil.rate_per_min),  0))
+		 FROM settlements s
+		 LEFT JOIN settlement_goods wine ON wine.settlement_id = s.id AND wine.good_key = 'wine'
+		 LEFT JOIN settlement_goods oil  ON oil.settlement_id  = s.id AND oil.good_key  = 'oil'
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'`,
 		e.WorldID,
 	)
 	if err != nil {
@@ -79,7 +87,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	var snaps []settlementSnap
 	for rows.Next() {
 		var s settlementSnap
-		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.food, &s.cultLevel); err == nil {
+		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.food, &s.cultLevel, &s.wine, &s.oil); err == nil {
 			snaps = append(snaps, s)
 		}
 	}
@@ -129,8 +137,10 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 		return nil
 	}
 
-	// Can the settlement afford the tiered cost?
-	if s.gold >= spec.gold && s.food >= spec.food {
+	// Can the settlement afford the tiered cost (base resources + prestige goods)?
+	canAfford := s.gold >= spec.gold && s.food >= spec.food &&
+		s.wine >= spec.wine && s.oil >= spec.oil
+	if canAfford {
 		_, err := h.pool.Exec(ctx,
 			`UPDATE settlements SET
 			   gold_amount    = gold_amount   + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60   * gold_rate)   - $1,
@@ -146,8 +156,28 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 		if err != nil {
 			return fmt.Errorf("pay maintenance: %w", err)
 		}
+		// Deduct prestige goods if required.
+		if spec.wine > 0 {
+			_, _ = h.pool.Exec(ctx,
+				`UPDATE settlement_goods SET
+				   amount = GREATEST(0, amount + (EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate_per_min) - $1),
+				   calc_at = now()
+				 WHERE settlement_id = $2 AND good_key = 'wine'`,
+				spec.wine, s.id,
+			)
+		}
+		if spec.oil > 0 {
+			_, _ = h.pool.Exec(ctx,
+				`UPDATE settlement_goods SET
+				   amount = GREATEST(0, amount + (EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate_per_min) - $1),
+				   calc_at = now()
+				 WHERE settlement_id = $2 AND good_key = 'oil'`,
+				spec.oil, s.id,
+			)
+		}
 		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMaintained",
-			map[string]any{"cult_level": s.cultLevel, "gold": spec.gold, "food": spec.food, "kharis_gain": spec.kharisGain},
+			map[string]any{"cult_level": s.cultLevel, "gold": spec.gold, "food": spec.food,
+				"wine": spec.wine, "oil": spec.oil, "kharis_gain": spec.kharisGain},
 			worldID, nil)
 		newKharis := s.kharis + spec.kharisGain
 		if newKharis > blessThreshold && rand.Float64() < blessProbability {
