@@ -346,6 +346,26 @@ func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, orig
 	_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, originID).Scan(&attOwner)
 	_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, targetID).Scan(&defOwner)
 
+	// Direct notification for combatants (persists for offline players).
+	var attText, defText string
+	if outcome == OutcomeAttackerWins {
+		attText = fmt.Sprintf("Your forces seized %s. The province is now yours.", tgt.Name)
+		defText = fmt.Sprintf("Your settlement fell. Forces from %s broke through your defences.", orig.Name)
+	} else {
+		attText = fmt.Sprintf("Your assault on %s was repelled. Your forces withdrew.", tgt.Name)
+		defText = fmt.Sprintf("Your settlement held. The attack from %s was beaten back.", orig.Name)
+	}
+	_, _ = tx.Exec(ctx,
+		`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text) VALUES ($1,$2,$3,$4,$5)`,
+		worldID, attOwner, tgt.Name, "battle", attText,
+	)
+	if defOwner != attOwner {
+		_, _ = tx.Exec(ctx,
+			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text) VALUES ($1,$2,$3,$4,$5)`,
+			worldID, defOwner, tgt.Name, "battle", defText,
+		)
+	}
+
 	rows, err := tx.Query(ctx,
 		`SELECT DISTINCT s.owner_id
 		 FROM settlements s
