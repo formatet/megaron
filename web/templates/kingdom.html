@@ -47,6 +47,12 @@
     <div id="send-result" class="action-result"></div>
   </section>
 
+  <!-- ── Sent Messengers ────────────────────────── -->
+  <section class="panel sent-panel">
+    <h3>Sent</h3>
+    <div id="sent-list"><p class="loading">Loading…</p></div>
+  </section>
+
 </div><!-- /.kingdom-grid -->
 
 {{else}}
@@ -100,6 +106,19 @@
 .inbox-meta { font-size:.72rem; color:#A04000; font-family:var(--mono); }
 .inbox-reply-wrap { margin-top:.3rem; display:flex; gap:.3rem; }
 .inbox-reply-wrap input { flex:1; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem .4rem; font-size:.8rem; }
+
+/* Sent panel */
+.sent-panel { grid-column: 1 / -1; }
+.sent-item { padding:.35rem 0; border-bottom:1px solid #FAD7A0; font-size:.82rem; display:flex; gap:.5rem; align-items:baseline; flex-wrap:wrap; }
+.sent-item:last-child { border-bottom:none; }
+.sent-to   { font-weight:bold; color:var(--accent); flex:0 0 auto; }
+.sent-msg  { flex:1; color:var(--text); font-style:italic; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sent-status { font-family:var(--mono); font-size:.7rem; padding:.1rem .3rem; flex:0 0 auto; }
+.st-outbound  { background:#F0B27A; color:#6E2C00; }
+.st-delivered { background:#D4AC0D; color:#1C1C1C; }
+.st-returning { background:#2E86C1; color:#FDFEFE; }
+.st-arrived   { background:#1B4F72; color:#FDFEFE; }
+.sent-reply { font-size:.75rem; color:var(--text-dim); font-style:normal; margin-top:.15rem; width:100%; }
 
 /* Send messenger */
 .send-form { display:flex; flex-direction:column; gap:.4rem; }
@@ -207,6 +226,28 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── Load sent messengers ──────────────────────────────────────────────────────
+async function loadSent() {
+  if (!MY_SETTLEMENT_ID) return;
+  const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/settlements/${MY_SETTLEMENT_ID}/messengers`);
+  const msgs = await res.json().catch(() => []);
+  const el = document.getElementById('sent-list');
+  if (!el) return;
+  if (!msgs.length) { el.innerHTML = '<p class="empty-state">No outgoing messengers.</p>'; return; }
+  el.innerHTML = msgs.map(m => {
+    const eta = m.status === 'outbound'
+      ? `<span class="sent-msg dim">arrives ${fmtTime(m.arrives_at)}</span>` : '';
+    const reply = m.reply_text
+      ? `<div class="sent-reply">↩ "${escHtml(m.reply_text)}"</div>` : '';
+    return `<div class="sent-item">
+      <span class="sent-to">→ ${escHtml(m.destination_name)}</span>
+      ${eta}
+      <span class="sent-status st-${m.status}">${m.status}</span>
+      ${reply}
+    </div>`;
+  }).join('');
+}
+
 // ── Load send destinations ────────────────────────────────────────────────────
 async function loadDestinations() {
   const res = await apiReq('GET', `/api/v1/worlds/${WORLD_ID}/provinces`);
@@ -232,6 +273,7 @@ async function sendMessenger() {
     showResult('send-result', `✓ Messenger dispatched · arrives ${fmtTime(data.arrives_at)}`, true);
     document.getElementById('send-msg').value = '';
     document.getElementById('dest-select').value = '';
+    loadSent();
   } else {
     showResult('send-result', data.error || 'send failed', false);
   }
@@ -240,6 +282,7 @@ async function sendMessenger() {
 function reloadAll() {
   loadCouncil();
   loadInbox();
+  loadSent();
   loadDestinations();
 }
 
