@@ -452,9 +452,13 @@ async function loadTradeRoutes() {
         window.location.reload();
       }
       if (msg.kind === 'ArmyArrival') {
-        if (msg.payload.target_id === PROVINCE_ID || msg.payload.origin_id === PROVINCE_ID) {
+        if (msg.payload.target_id === PROVINCE_ID) {
           loadBattleLog();
           loadGossip();
+        }
+        if (msg.payload.origin_id === PROVINCE_ID) {
+          // Army returned — reload to show updated garrison counts.
+          window.location.reload();
         }
       }
     };
