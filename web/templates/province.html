@@ -451,9 +451,11 @@ async function loadTradeRoutes() {
         // Reload so the new building appears in the server-rendered buildings list.
         window.location.reload();
       }
-      if (msg.kind === 'ArmyArrival' && msg.payload.target_id === PROVINCE_ID) {
-        loadBattleLog();
-        loadGossip();
+      if (msg.kind === 'ArmyArrival') {
+        if (msg.payload.target_id === PROVINCE_ID || msg.payload.origin_id === PROVINCE_ID) {
+          loadBattleLog();
+          loadGossip();
+        }
       }
     };
     ws.onclose = () => setTimeout(connect, 5000);
