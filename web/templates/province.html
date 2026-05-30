@@ -509,11 +509,10 @@ async function loadCultLevel() {
   const mood = data.divine_mood || '';
   const chip = document.getElementById('cult-mood');
   if (chip) {
-    const moodLabel = {välvilliga:'Favorable', likgiltiga:'Indifferent', misstänksamma:'Suspicious', vredgade:'Wrathful'};
-    chip.textContent = 'The gods are ' + (moodLabel[mood] || mood);
-    const moodColor = {välvilliga:'#D4AC0D', likgiltiga:'#A04000', misstänksamma:'#C0392B', vredgade:'#6C3483'};
+    chip.textContent = 'The gods are ' + mood;
+    const moodColor = {Favorable:'#D4AC0D', Indifferent:'#A04000', Suspicious:'#C0392B', Wrathful:'#6C3483'};
     if (moodColor[mood]) chip.style.background = moodColor[mood];
-    chip.style.color = mood === 'välvilliga' ? '#1C1C1C' : '#F2EAD3';
+    chip.style.color = mood === 'Favorable' ? '#1C1C1C' : '#F2EAD3';
   }
   const sel = document.getElementById('cult-level-select');
   if (sel && data.cult_level) sel.value = data.cult_level;

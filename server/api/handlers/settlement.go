@@ -118,17 +118,7 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 		sett.ID,
 	).Scan(&cultLevel, &kharisNow)
 
-	divineMood := "likgiltiga"
-	switch {
-	case kharisNow >= 800:
-		divineMood = "välvilliga"
-	case kharisNow >= 400:
-		divineMood = "likgiltiga"
-	case kharisNow >= 100:
-		divineMood = "misstänksamma"
-	default:
-		divineMood = "vredgade"
-	}
+	divineMood := kharisToMood(kharisNow)
 
 	resp := map[string]any{
 		"id":            sett.ID,
