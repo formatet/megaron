@@ -210,6 +210,12 @@
       <div id="trade-routes-list" class="trade-routes-list"><p class="loading">Loading…</p></div>
     </section>
 
+    <!-- ── Rumours & Gossip ────────────────────────── -->
+    <section class="panel gossip-panel">
+      <h3>Rumours</h3>
+      <div id="gossip-list" class="gossip-list"><p class="loading">Loading…</p></div>
+    </section>
+
     <!-- ── Temple & Cult level ──────────────────────── -->
     <section class="panel cult-panel">
       <h3>Temple</h3>
@@ -409,7 +415,33 @@ async function loadTradeRoutes() {
   connect();
 })();
 
-document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadBattleLog(); loadCultLevel(); loadVisibleSettlements(); });
+document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadBattleLog(); loadGossip(); loadCultLevel(); loadVisibleSettlements(); });
+
+// ── Gossip ────────────────────────────────────────────────────────────────
+async function loadGossip() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/gossip`, {
+    headers: token ? {'Authorization': 'Bearer ' + token} : {},
+  });
+  const el = document.getElementById('gossip-list');
+  if (!res.ok) { el.innerHTML = '<p class="loading">—</p>'; return; }
+  const items = await res.json();
+  if (!items.length) { el.innerHTML = '<p class="loading">No rumours yet.</p>'; return; }
+  el.innerHTML = items.slice(0, 10).map(g => `
+    <div class="gossip-entry">
+      <span class="ge-region">${g.source_region}</span>
+      <span class="ge-text">${g.text}</span>
+      <span class="ge-time">${timeAgo(new Date(g.generated_at))}</span>
+    </div>`).join('');
+}
+
+function timeAgo(d) {
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 120) return 'moments ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
 
 // ── Cult level ────────────────────────────────────────────────────────────
 const SETTLEMENT_ID = "{{.Province.SettlementID}}";

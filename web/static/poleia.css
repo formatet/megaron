@@ -516,6 +516,14 @@ footer {
 .tr-dest { color:var(--text); flex:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tr-eta  { color:var(--safe); font-size:.72rem; margin-left:auto; }
 
+/* Gossip / rumours list */
+.gossip-list { margin-top:.3rem; display:flex; flex-direction:column; gap:.4rem; }
+.gossip-entry { font-size:.8rem; border-bottom:1px solid var(--bg-raised); padding-bottom:.4rem; }
+.gossip-entry:last-child { border-bottom:none; }
+.ge-region { display:block; font-size:.68rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-dim); }
+.ge-text { display:block; color:var(--text); margin:.1rem 0; font-style:italic; }
+.ge-time { display:block; font-size:.7rem; color:var(--text-dim); }
+
 /* Shared action result line */
 .action-result { margin-top:.4rem; font-size:.8rem; min-height:1em; color:var(--accent); font-family:var(--mono); }
 

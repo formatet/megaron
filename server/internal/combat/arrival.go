@@ -152,6 +152,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	report := buildCombatReport(march.Army, def.Army, def.Walls, result, supportStr)
 	_, _ = tx.Exec(ctx, `UPDATE marching_armies SET combat_report = $1 WHERE id = $2`, report, march.ID)
 
+	h.insertBattleGossip(ctx, tx, march.OriginID, march.TargetID, worldID, result.Outcome)
 	h.recordEvent(ctx, march.TargetID, worldID, result, march.ID)
 	if h.hub != nil {
 		h.hub.Broadcast(worldID, notify.Msg{
@@ -313,6 +314,70 @@ func buildCombatReport(att, def province.ArmyComposition, walls int, result Comb
 	}
 
 	return sb.String()
+}
+
+// insertBattleGossip writes rumour events to players within 5 hexes of the battle,
+// excluding the direct combatants who already receive WebSocket notifications.
+func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, originID, targetID, worldID uuid.UUID, outcome Outcome) {
+	type provInfo struct {
+		Name string
+		Q, R int
+	}
+	var orig, tgt provInfo
+	_ = tx.QueryRow(ctx,
+		`SELECT COALESCE(s.name, 'unknown'), p.map_q, p.map_r
+		 FROM provinces p LEFT JOIN settlements s ON s.province_id = p.id
+		 WHERE p.id = $1`, originID,
+	).Scan(&orig.Name, &orig.Q, &orig.R)
+	_ = tx.QueryRow(ctx,
+		`SELECT COALESCE(s.name, 'unknown'), p.map_q, p.map_r
+		 FROM provinces p LEFT JOIN settlements s ON s.province_id = p.id
+		 WHERE p.id = $1`, targetID,
+	).Scan(&tgt.Name, &tgt.Q, &tgt.R)
+
+	var text string
+	if outcome == OutcomeAttackerWins {
+		text = fmt.Sprintf("Rumour: A force from %s has seized %s. The province has changed hands.", orig.Name, tgt.Name)
+	} else {
+		text = fmt.Sprintf("Travellers speak of a failed assault on %s. The defenders held their ground.", tgt.Name)
+	}
+
+	var attOwner, defOwner uuid.UUID
+	_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, originID).Scan(&attOwner)
+	_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, targetID).Scan(&defOwner)
+
+	rows, err := tx.Query(ctx,
+		`SELECT DISTINCT s.owner_id
+		 FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE p.world_id = $1
+		   AND s.owner_id IS NOT NULL
+		   AND (
+		       (ABS(p.map_q - $2) + ABS(p.map_r - $3) + ABS((p.map_q + p.map_r) - ($2 + $3))) / 2 <= 5
+		       OR
+		       (ABS(p.map_q - $4) + ABS(p.map_r - $5) + ABS((p.map_q + p.map_r) - ($4 + $5))) / 2 <= 5
+		   )`,
+		worldID, orig.Q, orig.R, tgt.Q, tgt.R,
+	)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var recipID uuid.UUID
+		if err := rows.Scan(&recipID); err != nil {
+			continue
+		}
+		if recipID == attOwner || recipID == defOwner {
+			continue
+		}
+		_, _ = tx.Exec(ctx,
+			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
+			 VALUES ($1, $2, $3, $4, $5)`,
+			worldID, recipID, tgt.Name, "battle", text,
+		)
+	}
 }
 
 func (h *ArrivalHandler) recordEvent(ctx context.Context, streamID, worldID uuid.UUID, result CombatResult, marchID uuid.UUID) {
