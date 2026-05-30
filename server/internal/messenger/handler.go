@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 )
 
@@ -66,6 +67,16 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 	_, _ = h.store.Append(ctx, destinationID, events.StreamProvince, "MessengerArrived",
 		map[string]any{"messenger_id": payload.MessengerID}, e.WorldID, nil)
+
+	// Record market snapshot: the sender now knows the destination's prices.
+	var senderID uuid.UUID
+	if err := h.pool.QueryRow(ctx,
+		`SELECT sender_id FROM messengers WHERE id = $1`, payload.MessengerID,
+	).Scan(&senderID); err == nil {
+		if snapErr := economy.RecordMarketSnapshot(ctx, h.pool, senderID, destinationID); snapErr != nil {
+			slog.Error("market snapshot on messenger arrival", "err", snapErr)
+		}
+	}
 
 	slog.Info("messenger delivered", "id", payload.MessengerID, "destination", destinationID)
 

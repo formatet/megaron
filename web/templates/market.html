@@ -1,0 +1,82 @@
+{{template "base" .}}
+{{define "title"}}Market — {{.WorldName}} — Poleia{{end}}
+{{define "nav"}}
+  <a href="/worlds">Worlds</a>
+  <a href="/world/{{.WorldID}}">Province</a>
+  <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
+  <a href="/world/{{.WorldID}}/wanaxes">Wanaxes</a>
+{{end}}
+{{define "content"}}
+<div class="market-page">
+  <h2>Market — {{.WorldName}}</h2>
+  <p class="market-note">Your own settlement and allied settlements show live prices. Others show prices as of your last caravan delivery or messenger visit.</p>
+
+  {{if not .Markets}}
+  <p class="dim">No market intelligence available. Send caravans or messengers to gather prices.</p>
+  {{end}}
+
+  {{range .Markets}}
+  <section class="market-block{{if .Own}} own-block{{else if .Allied}} allied-block{{end}}">
+    <div class="mb-header">
+      <span class="mb-name">{{.Name}}</span>
+      <span class="mb-owner">{{if .Owner}}{{.Owner}}{{else}}(vacant){{end}}</span>
+      {{if .Live}}<span class="mb-fresh live">Live</span>{{end}}
+    </div>
+    {{if .Goods}}
+    <table class="market-table">
+      <thead>
+        <tr>
+          <th>Good</th>
+          <th class="num-col">Stock</th>
+          <th class="num-col">Price</th>
+          {{if not .Live}}<th>Observed</th>{{end}}
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Goods}}
+        <tr>
+          <td class="good-name">{{.Name}}</td>
+          <td class="num-col">{{printf "%.0f" .Stock}}</td>
+          <td class="num-col price-val">{{printf "%.1f" .Price}}</td>
+          {{if .HasObserved}}<td class="obs-age">{{formatTime .ObservedAt}}</td>{{end}}
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+    {{else}}
+    <p class="dim" style="padding:.4rem .6rem;font-size:.8rem">No goods data from last contact.</p>
+    {{end}}
+  </section>
+  {{end}}
+</div>
+
+<style>
+.market-page { max-width: 760px; }
+.market-note { font-size: .8rem; color: var(--text-dim); margin-bottom: 1.2rem; font-style: italic; }
+.market-block {
+  background: var(--bg-panel); border: 1px solid var(--border); margin-bottom: 1rem;
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
+}
+.own-block    { border-color: var(--safe); }
+.allied-block { border-color: var(--sea); }
+.mb-header {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .4rem .6rem; background: var(--bg-raised); border-bottom: 1px solid var(--border-in);
+}
+.mb-name   { font-family: var(--mono); font-weight: bold; font-size: .9rem; color: var(--accent); }
+.mb-owner  { font-size: .78rem; color: var(--text-dim); flex: 1; }
+.mb-fresh  { font-family: var(--mono); font-size: .7rem; padding: .1rem .4rem; border: 1px solid; letter-spacing: .08em; }
+.mb-fresh.live { color: var(--safe); border-color: var(--safe); }
+.market-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.market-table th { text-align: left; padding: .25rem .6rem; font-size: .7rem; color: var(--text-dim);
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: .1em;
+  border-bottom: 1px solid var(--border-in); }
+.market-table td { padding: .2rem .6rem; border-bottom: 1px solid #e8dfc560; }
+.market-table tr:last-child td { border-bottom: none; }
+.good-name  { color: var(--text); }
+.price-val  { color: var(--gold); font-family: var(--mono); }
+.obs-age    { font-size: .72rem; color: var(--text-dim); font-family: var(--mono); }
+.num-col    { text-align: right; font-family: var(--mono); }
+</style>
+{{end}}

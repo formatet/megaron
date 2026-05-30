@@ -105,6 +105,16 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		})
 	}
 
+	// Record market snapshot: the caravan owner now knows the destination's prices.
+	var ownerID uuid.UUID
+	if err := h.pool.QueryRow(ctx,
+		`SELECT owner_id FROM trade_routes WHERE id = $1`, p.TradeRouteID,
+	).Scan(&ownerID); err == nil {
+		if snapErr := RecordMarketSnapshot(ctx, h.pool, ownerID, p.DestinationID); snapErr != nil {
+			slog.Error("market snapshot on delivery", "err", snapErr)
+		}
+	}
+
 	slog.Info("trade delivery", "destination", p.DestinationID, "good", p.GoodKey, "qty", delivered)
 	return nil
 }

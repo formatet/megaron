@@ -485,6 +485,170 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// MarketView serves the goods market overview.
+// Own and allied settlements: live prices (you have current intel).
+// Others: prices from last caravan delivery or messenger arrival (snapshot).
+func (h *WebHandler) MarketView(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		http.Error(w, "invalid world ID", http.StatusBadRequest)
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	type goodRow struct {
+		Key         string
+		Name        string
+		Stock       float64
+		Price       float64
+		ObservedAt  time.Time
+		HasObserved bool
+	}
+	type settlRow struct {
+		ID      string
+		Name    string
+		Owner   string
+		Own     bool
+		Allied  bool
+		Live    bool // own or allied — prices are current
+		Goods   []goodRow
+	}
+
+	var worldName string
+	_ = h.pool.QueryRow(r.Context(), `SELECT name FROM worlds WHERE id = $1`, worldID).Scan(&worldName)
+
+	// ── Live data: own and allied settlements ─────────────────────────────────
+	liveRows, err := h.pool.Query(r.Context(),
+		`SELECT s.id, s.name, pl.username,
+		        s.owner_id = $2 AS own,
+		        sg.good_key, g.name,
+		        GREATEST(0, LEAST(sg.cap,
+		            sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate_per_min))),
+		        sg.cap, g.base_value
+		 FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 LEFT JOIN players pl ON pl.id = s.owner_id
+		 JOIN settlement_goods sg ON sg.settlement_id = s.id
+		 JOIN goods g ON g.key = sg.good_key
+		 WHERE p.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		   AND (
+		       s.owner_id = $2
+		       OR (s.kingdom_id IS NOT NULL AND s.kingdom_id IN (
+		           SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
+		       ))
+		   )
+		   AND (sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate_per_min) > 0
+		        OR sg.rate_per_min > 0)
+		 ORDER BY s.name, sg.good_key`,
+		worldID, playerID,
+	)
+	if err != nil {
+		http.Error(w, "DB error", http.StatusInternalServerError)
+		return
+	}
+	defer liveRows.Close()
+
+	byID := map[string]*settlRow{}
+	order := []string{}
+	for liveRows.Next() {
+		var sid, sName, ownerName, goodKey, goodName string
+		var own bool
+		var stock, cap, baseValue float64
+		if err := liveRows.Scan(&sid, &sName, &ownerName, &own, &goodKey, &goodName, &stock, &cap, &baseValue); err != nil {
+			continue
+		}
+		if _, exists := byID[sid]; !exists {
+			byID[sid] = &settlRow{ID: sid, Name: sName, Owner: ownerName, Own: own, Allied: !own, Live: true}
+			order = append(order, sid)
+		}
+		price := baseValue * clampF(cap*0.3/max(stock, 0.001), 0.5, 3.0)
+		byID[sid].Goods = append(byID[sid].Goods, goodRow{Key: goodKey, Name: goodName, Stock: stock, Price: price})
+	}
+
+	// ── Snapshot data: other settlements visited by caravan or messenger ──────
+	snapRows, _ := h.pool.Query(r.Context(),
+		`SELECT DISTINCT ON (ms.settlement_id)
+		        ms.settlement_id, s.name, pl.username, ms.observed_at
+		 FROM market_snapshots ms
+		 JOIN settlements s ON s.id = ms.settlement_id
+		 LEFT JOIN players pl ON pl.id = s.owner_id
+		 WHERE ms.player_id = $1 AND s.world_id = $2
+		   AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		 ORDER BY ms.settlement_id, ms.observed_at DESC`,
+		playerID, worldID,
+	)
+	if snapRows != nil {
+		for snapRows.Next() {
+			var sid, sName, ownerName string
+			var observedAt time.Time
+			if snapRows.Scan(&sid, &sName, &ownerName, &observedAt) != nil {
+				continue
+			}
+			if _, exists := byID[sid]; exists {
+				continue // already have live data
+			}
+			byID[sid] = &settlRow{ID: sid, Name: sName, Owner: ownerName, Live: false}
+			order = append(order, sid)
+
+			// Fetch all good rows for this snapshot.
+			gRows, _ := h.pool.Query(r.Context(),
+				`SELECT ms.good_key, g.name, ms.stock, ms.price, ms.observed_at
+				 FROM market_snapshots ms JOIN goods g ON g.key = ms.good_key
+				 WHERE ms.player_id = $1 AND ms.settlement_id = $2
+				 ORDER BY ms.good_key`,
+				playerID, sid,
+			)
+			if gRows != nil {
+				for gRows.Next() {
+					var gKey, gName string
+					var stock, price float64
+					var obs time.Time
+					if gRows.Scan(&gKey, &gName, &stock, &price, &obs) == nil {
+						byID[sid].Goods = append(byID[sid].Goods, goodRow{
+							Key: gKey, Name: gName, Stock: stock, Price: price,
+							ObservedAt: obs, HasObserved: true,
+						})
+					}
+				}
+				gRows.Close()
+			}
+		}
+		snapRows.Close()
+	}
+
+	result := make([]settlRow, 0, len(order))
+	for _, id := range order {
+		result = append(result, *byID[id])
+	}
+
+	h.render(w, "market.html", map[string]any{
+		"WorldID":   worldID,
+		"WorldName": worldName,
+		"Markets":   result,
+	})
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func clampF(v, lo, hi float64) float64 {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
+}
+
 // WanaxesView serves the world leaderboard — all settlements sorted by army strength.
 func (h *WebHandler) WanaxesView(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
