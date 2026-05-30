@@ -442,6 +442,9 @@ footer {
 .army-table td { padding:.2rem 0; vertical-align:middle; }
 .army-table td.num { text-align:right; color:var(--accent); font-family:var(--mono); font-weight:bold; }
 .unit-icon { image-rendering:pixelated; vertical-align:middle; margin-right:4px; }
+.army-dp-row { display:flex; justify-content:space-between; margin-top:.4rem; padding-top:.3rem; border-top:1px solid var(--bg-raised); font-size:.78rem; }
+.army-dp-label { color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; }
+.army-dp-val { color:var(--safe); font-family:var(--mono); font-weight:bold; }
 
 /* Recruit */
 .recruit-grid { display:flex; flex-direction:column; gap:.4rem; }

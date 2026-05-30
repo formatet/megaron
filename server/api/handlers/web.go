@@ -241,6 +241,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		Name          string
 		CultureID     string
 		Army          any
+		ArmyDP        int
 		Population    int
 		Walls         int
 		Loyalty       int
@@ -249,6 +250,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		CopperDeposit bool
 		TinDeposit    bool
 	}
+	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3 + s.Army.Priest*2
 	pv := provinceView{
 		ID:            s.ProvinceID,
 		SettlementID:  s.ID,
@@ -256,6 +258,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		Name:          s.Name,
 		CultureID:     string(s.CultureID),
 		Army:          s.Army,
+		ArmyDP:        armyDP,
 		Population:    s.Population,
 		Walls:         s.WallLevel,
 		Loyalty:       s.Loyalty,
