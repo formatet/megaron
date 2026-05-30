@@ -705,14 +705,33 @@ async function openMarchCtx(target, screenX, screenY) {
   marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
   marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
 
-  // Fetch own army.
+  // Fetch own army and target army in parallel.
   document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
-  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/army`);
+  const [res, defRes] = await Promise.all([
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/army`),
+    !target.allied ? fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${target.id}/army`) : Promise.resolve(null),
+  ]);
   if (!res.ok) { closeMarchCtx(); return; }
   marchCtxArmy = await res.json();
 
+  let defDP = 0;
+  if (defRes && defRes.ok) {
+    const defArmy = await defRes.json();
+    defDP = (defArmy.infantry || 0) + (defArmy.cavalry || 0) * 3
+          + (defArmy.priest || 0) * 2 + (defArmy.elite_infantry || 0) * 2;
+  }
+
   const unitsEl = document.getElementById('mctx-units');
   unitsEl.innerHTML = '';
+
+  if (defDP > 0 && !target.allied) {
+    const need = Math.ceil(defDP * 0.75);
+    const info = document.createElement('div');
+    info.style.cssText = 'font-size:.72rem;color:var(--text-dim);font-family:var(--mono);margin-bottom:.3rem;';
+    info.textContent = `Defender ~${defDP} DP · need ≥${need} to attack`;
+    unitsEl.appendChild(info);
+  }
+
   for (const u of UNIT_DEFS) {
     const max = marchCtxArmy[u.apiKey] || 0;
     const row = document.createElement('div');
