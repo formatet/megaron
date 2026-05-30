@@ -1,0 +1,38 @@
+{{template "base" .}}
+{{define "title"}}Wanaxes — {{.WorldName}} — Poleia{{end}}
+{{define "nav"}}
+  <a href="/worlds">Worlds</a>
+  <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
+{{end}}
+{{define "content"}}
+<div class="wanaxes-page">
+  <h2>Wanaxes of {{.WorldName}}</h2>
+  <table class="wanax-table">
+    <thead>
+      <tr>
+        <th>Settlement</th>
+        <th>Wanax</th>
+        <th>Culture</th>
+        <th>Kingdom</th>
+        <th class="num-col">Walls</th>
+        <th class="num-col">Pop</th>
+        <th class="num-col">Army</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Settlements}}
+      <tr{{if .Own}} class="own-row"{{end}}>
+        <td class="settle-name">{{.Name}}</td>
+        <td>{{if .Owner}}{{.Owner}}{{else}}<span class="dim">—</span>{{end}}</td>
+        <td><span class="culture-tag small">{{.Culture}}</span></td>
+        <td>{{if .Kingdom}}⚑ {{.Kingdom}}{{else}}<span class="dim">—</span>{{end}}</td>
+        <td class="num-col">{{.Walls}}/3</td>
+        <td class="num-col">{{.Population}}</td>
+        <td class="num-col">{{.ArmyTotal}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

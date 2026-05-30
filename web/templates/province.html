@@ -4,6 +4,7 @@
   <a href="/worlds">Worlds</a>
   <a href="/world/{{.WorldID}}/map">Map</a>
   <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
+  <a href="/world/{{.WorldID}}/wanaxes">Wanaxes</a>
 {{end}}
 {{define "content"}}
 <div class="province-page">
@@ -146,6 +147,7 @@
           <option value="barracks">Barracks — 80L 50S 30I · recruits</option>
           <option value="market">Market — 100L 60S · +0.5 gold/m</option>
           <option value="wall">Wall — 40L 120S 60I · +1 wall</option>
+          <option value="tower">Tower — 60L 80S 40I · +1 wall</option>
           <option value="harbour">Harbour — 120L 60S 40I · ships</option>
           <option value="foundry">Foundry — 80L 60S 50I · craft bronze</option>
           <option value="stable">Stable — 60L 40S · horses</option>
@@ -548,7 +550,7 @@ async function setCultLevel() {
 (function(){
   const DURATION_MIN = {
     farm:30, lumbermill:30, stonequarry:30, mine:45,
-    barracks:60, market:90, wall:120, harbour:90,
+    barracks:60, market:90, wall:120, tower:90, harbour:90,
     foundry:90, stable:60, bronze_wall:180,
   };
   function tick(){

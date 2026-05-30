@@ -401,3 +401,67 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 		"HasKingdom":  kingdomID != nil,
 	})
 }
+
+// WanaxesView serves the world leaderboard — all settlements sorted by army strength.
+func (h *WebHandler) WanaxesView(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		http.Error(w, "invalid world ID", http.StatusBadRequest)
+		return
+	}
+	playerID, _ := auth.PlayerIDFromContext(r.Context())
+
+	var worldName string
+	_ = h.pool.QueryRow(r.Context(), `SELECT name FROM worlds WHERE id = $1`, worldID).Scan(&worldName)
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT s.name, p.username, s.culture_id, k.name, s.wall_level, s.population,
+		        s.infantry + s.cavalry*3 + s.elite_infantry*2 + s.priest*2,
+		        s.owner_id
+		 FROM settlements s
+		 LEFT JOIN players p ON p.id = s.owner_id
+		 LEFT JOIN kingdom_members km ON km.player_id = s.owner_id
+		 LEFT JOIN kingdoms k ON k.id = km.kingdom_id AND k.world_id = $1
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		 ORDER BY s.infantry + s.cavalry*3 + s.elite_infantry*2 + s.priest*2 DESC`,
+		worldID,
+	)
+	if err != nil {
+		http.Error(w, "DB error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	type row struct {
+		Name       string
+		Owner      string
+		Culture    string
+		Kingdom    string
+		Walls      int
+		Population int
+		ArmyTotal  int
+		Own        bool
+	}
+	var settlements []row
+	for rows.Next() {
+		var r row
+		var ownerID *uuid.UUID
+		var kingdom *string
+		if err := rows.Scan(&r.Name, &r.Owner, &r.Culture, &kingdom, &r.Walls, &r.Population, &r.ArmyTotal, &ownerID); err != nil {
+			continue
+		}
+		if kingdom != nil {
+			r.Kingdom = *kingdom
+		}
+		if ownerID != nil && *ownerID == playerID {
+			r.Own = true
+		}
+		settlements = append(settlements, r)
+	}
+
+	h.render(w, "wanaxes.html", map[string]any{
+		"WorldID":     worldID,
+		"WorldName":   worldName,
+		"Settlements": settlements,
+	})
+}

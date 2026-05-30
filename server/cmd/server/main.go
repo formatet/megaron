@@ -130,6 +130,7 @@ func main() {
 		r.Get("/", webH.Province)
 		r.Get("/map", webH.MapView)
 		r.Get("/kingdom", webH.KingdomView)
+		r.Get("/wanaxes", webH.WanaxesView)
 		r.Get("/resource-bar", webH.ResourceBar)
 	})
 

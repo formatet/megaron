@@ -547,3 +547,16 @@ footer {
 .loading { color: var(--text-dim); font-style: italic; font-size: 0.85rem; }
 .htmx-indicator { display: none; }
 .htmx-request .htmx-indicator { display: inline; }
+
+/* ── Wanaxes (standings) page ──────────────────────────────────── */
+.wanaxes-page { padding: 1rem 0; }
+.wanaxes-page h2 { margin-bottom: 1rem; }
+.wanax-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+.wanax-table th { text-align: left; padding: .4rem .6rem; background: var(--bg-panel); border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; }
+.wanax-table td { padding: .35rem .6rem; border-bottom: 1px solid var(--bg-raised); color: var(--text); }
+.wanax-table .num-col { text-align: right; font-family: var(--mono); }
+.wanax-table .walls-col { font-family: var(--mono); }
+.wanax-table .settle-name { font-weight: bold; color: var(--accent); }
+.wanax-table .own-row td { background: color-mix(in srgb, var(--bg-raised) 30%, transparent); }
+.wanax-table .dim { color: var(--text-dim); }
+.culture-tag.small { font-size: .7rem; padding: .05rem .3rem; }
