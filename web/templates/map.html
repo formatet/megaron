@@ -715,6 +715,7 @@ canvas.addEventListener('mousemove', e => {
       if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
       if (prov.kingdom_name) parts.push(`⚑ ${prov.kingdom_name}`);
       if (prov.walls > 0) parts.push(`Walls L${prov.walls}`);
+      if (prov.culture) parts.push(prov.culture);
       if (prov.own) parts.push('(you)');
       else if (prov.allied) parts.push('(ally)');
       if (deposits) parts.push(deposits);
