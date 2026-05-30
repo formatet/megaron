@@ -21,6 +21,7 @@
       <span class="stat-chip loyalty-{{.Province.Loyalty}}" title="Settlement loyalty (1=Disgruntled · 2=Loyal · 3=Devoted · 4=Fervent)">{{if eq .Province.Loyalty 1}}Disgruntled{{else if eq .Province.Loyalty 2}}Loyal{{else if eq .Province.Loyalty 3}}Devoted{{else if eq .Province.Loyalty 4}}Fervent{{else}}Loyal{{end}}</span>
       {{if .Province.CopperDeposit}}<span class="stat-chip deposit-chip" title="Copper deposit">⛏ Copper</span>{{end}}
       {{if .Province.TinDeposit}}<span class="stat-chip deposit-chip" title="Tin deposit">⛏ Tin</span>{{end}}
+      <a id="msg-count-chip" href="/world/{{.WorldID}}/kingdom" style="display:none" class="stat-chip msg-chip" title="Unread messages"></a>
     </div>
   </header>
 
@@ -495,7 +496,21 @@ async function loadTradeRoutes() {
   connect();
 })();
 
-document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadBattleLog(); loadGossip(); loadCultLevel(); loadVisibleSettlements(); });
+async function loadInboxCount() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/messengers/inbox`, {
+    headers: token ? {'Authorization': 'Bearer ' + token} : {}
+  });
+  if (!res.ok) return;
+  const msgs = await res.json().catch(() => []);
+  const chip = document.getElementById('msg-count-chip');
+  if (chip && msgs.length > 0) {
+    chip.textContent = `✉ ${msgs.length}`;
+    chip.style.display = '';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadBattleLog(); loadGossip(); loadCultLevel(); loadVisibleSettlements(); loadInboxCount(); });
 
 // ── Gossip ────────────────────────────────────────────────────────────────
 async function loadGossip() {
