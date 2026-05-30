@@ -317,13 +317,17 @@ async function loadGoods() {
     return;
   }
   el.innerHTML = `<table class="goods-table">
-    <thead><tr><th>Good</th><th style="text-align:right">Amt</th><th style="text-align:right">Rate</th><th style="text-align:right">Price</th></tr></thead>
-    <tbody>${_goodsData.map(g => `<tr>
-      <td class="g-name">${g.name}<br><span class="g-cat">${g.category}</span></td>
-      <td class="g-num">${g.amount.toFixed(1)}</td>
-      <td class="g-num">+${g.rate_per_min.toFixed(3)}</td>
-      <td class="g-num">${g.price.toFixed(1)}</td>
-    </tr>`).join('')}</tbody>
+    <thead><tr><th>Good</th><th style="text-align:right">Amt</th><th style="text-align:right">+/h</th><th style="text-align:right">Price</th></tr></thead>
+    <tbody>${_goodsData.map(g => {
+      const rateH = g.rate_per_min * 60;
+      const rateStr = rateH === 0 ? '—' : (rateH >= 1 ? `+${rateH.toFixed(1)}` : `+${rateH.toFixed(2)}`);
+      return `<tr>
+        <td class="g-name">${g.name}<br><span class="g-cat">${g.category}</span></td>
+        <td class="g-num">${g.amount.toFixed(1)}</td>
+        <td class="g-num">${rateStr}</td>
+        <td class="g-num">${g.price.toFixed(1)}</td>
+      </tr>`;
+    }).join('')}</tbody>
   </table>`;
   // Populate trade good selector
   const sel = document.getElementById('trade-good');

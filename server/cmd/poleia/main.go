@@ -66,6 +66,8 @@ func main() {
 		goodsCmd(),
 		tradeCmd(),
 		inboxCmd(),
+		gossipCmd(),
+		messengerCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
