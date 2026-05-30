@@ -96,6 +96,8 @@
       const cap  = parseFloat(el.dataset.cap);
       const v = Math.min(cap > 0 ? cap : Infinity, Math.max(0, base + rate * elapsed));
       el.textContent = fmt(v);
+      // Warn visually when near cap (≥85%).
+      if (cap > 0) el.style.color = v / cap >= 0.85 ? 'var(--gold)' : '';
     });
   }
   tick();
