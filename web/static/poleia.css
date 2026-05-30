@@ -544,6 +544,8 @@ footer {
 .ge-cat-divine_favour .ge-region { color:var(--gold); }
 .ge-cat-divine_wrath .ge-text { color:var(--danger); }
 .ge-cat-divine_wrath .ge-region { color:var(--danger); }
+.ge-cat-battle .ge-text { color:var(--blood); }
+.ge-cat-battle .ge-region { color:var(--blood); }
 
 /* Shared action result line */
 .action-result { margin-top:.4rem; font-size:.8rem; min-height:1em; color:var(--accent); font-family:var(--mono); }
