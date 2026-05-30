@@ -186,6 +186,12 @@
       {{end}}
     </section>
 
+    <!-- ── Battle Log ───────────────────────────── -->
+    <section class="panel battle-panel">
+      <h3>Battle Log</h3>
+      <div id="battle-log-list"><p class="loading">Loading…</p></div>
+    </section>
+
     <!-- ── Goods ─────────────────────────────────── -->
     <section class="panel goods-panel">
       <h3>Goods</h3>
@@ -339,6 +345,28 @@ async function sendTrade() {
   }
 }
 
+async function loadBattleLog() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/marches`, {
+    headers: token ? {'Authorization':'Bearer '+token} : {},
+  });
+  const el = document.getElementById('battle-log-list');
+  if (!res.ok) { el.innerHTML = '<p class="empty-state">—</p>'; return; }
+  const marches = await res.json().catch(() => []);
+  const resolved = marches.filter(m => m.resolved && m.combat_report);
+  if (!resolved.length) { el.innerHTML = '<p class="empty-state">No battles recorded.</p>'; return; }
+  el.innerHTML = resolved.slice(0, 5).map(m => {
+    const when = new Date(m.arrives_at).toLocaleDateString(undefined, {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return `<div class="battle-entry">
+      <div class="battle-meta">
+        <span class="be-intent be-intent-${m.intent}">${m.intent}</span>
+        <span class="be-when">${when}</span>
+      </div>
+      <pre class="battle-report">${m.combat_report}</pre>
+    </div>`;
+  }).join('');
+}
+
 async function loadTradeRoutes() {
   const token = localStorage.getItem('poleia_token');
   const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/trade`, {
@@ -381,7 +409,7 @@ async function loadTradeRoutes() {
   connect();
 })();
 
-document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadCultLevel(); loadVisibleSettlements(); });
+document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadBattleLog(); loadCultLevel(); loadVisibleSettlements(); });
 
 // ── Cult level ────────────────────────────────────────────────────────────
 const SETTLEMENT_ID = "{{.Province.SettlementID}}";
