@@ -18,10 +18,7 @@ INSERT INTO production_rules (terrain_type, building_type, good_key, rate_per_mi
 INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
 SELECT s.id, 'livestock', 0, 0.025, 200, now()
 FROM settlements s
-JOIN provinces p       ON p.id      = s.province_id
-JOIN map_tiles mt      ON mt.q      = p.q
-                      AND mt.r      = p.r
-                      AND mt.world_id = p.world_id
-WHERE mt.terrain_type = 'plains'
+JOIN provinces p ON p.id = s.province_id
+WHERE p.terrain_type = 'plains'
   AND s.state != 'sunk'
 ON CONFLICT (settlement_id, good_key) DO NOTHING;
