@@ -48,8 +48,8 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
-	if req.Username == "" || req.Email == "" || req.Password == "" {
-		writeError(w, http.StatusBadRequest, "username, email, and password required")
+	if req.Username == "" || req.Email == "" {
+		writeError(w, http.StatusBadRequest, "username and email required")
 		return
 	}
 	access, refresh, err := h.svc.Register(r.Context(), req.Username, req.Email, req.Password)
