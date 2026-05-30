@@ -1,50 +1,66 @@
 {{define "resource_bar.html"}}
 {{$p := .Province}}
 <div class="resource-bar" id="resource-bar"
+     data-snapshot-at="{{now}}"
      hx-get="/world/{{$p.WorldID}}/resource-bar"
      hx-trigger="every 30s"
      hx-swap="outerHTML">
-  <div class="res">
+  <div class="res" data-key="gold">
     <canvas class="res-icon" data-icon="gold" width="18" height="18"></canvas>
     <div class="res-info">
       <span class="res-name">Gold</span>
-      <span class="res-val">{{resource (index .Resources "gold")}}</span>
+      <span class="res-val"
+            data-base="{{index .Resources "gold"}}"
+            data-rate="{{index .Resources "gold_rate"}}"
+            data-cap="{{index .Resources "gold_cap"}}">{{resource (index .Resources "gold")}}</span>
       <span class="res-rate">{{rate (index .Resources "gold_rate")}}</span>
     </div>
   </div>
-  <div class="res">
+  <div class="res" data-key="food">
     <canvas class="res-icon" data-icon="food" width="18" height="18"></canvas>
     <div class="res-info">
       <span class="res-name">Food</span>
-      <span class="res-val">{{resource (index .Resources "food")}}</span>
+      <span class="res-val"
+            data-base="{{index .Resources "food"}}"
+            data-rate="{{index .Resources "food_rate"}}"
+            data-cap="{{index .Resources "food_cap"}}">{{resource (index .Resources "food")}}</span>
       <span class="res-rate">{{rate (index .Resources "food_rate")}}</span>
     </div>
   </div>
-  <div class="res">
+  <div class="res" data-key="lumber">
     <canvas class="res-icon" data-icon="lumber" width="18" height="18"></canvas>
     <div class="res-info">
       <span class="res-name">Timber</span>
-      <span class="res-val">{{resource (index .Resources "lumber")}}</span>
+      <span class="res-val"
+            data-base="{{index .Resources "lumber"}}"
+            data-rate="{{index .Resources "lumber_rate"}}"
+            data-cap="{{index .Resources "lumber_cap"}}">{{resource (index .Resources "lumber")}}</span>
       <span class="res-rate">{{rate (index .Resources "lumber_rate")}}</span>
     </div>
   </div>
-  <div class="res">
+  <div class="res" data-key="stone">
     <canvas class="res-icon" data-icon="stone" width="18" height="18"></canvas>
     <div class="res-info">
       <span class="res-name">Stone</span>
-      <span class="res-val">{{resource (index .Resources "stone")}}</span>
+      <span class="res-val"
+            data-base="{{index .Resources "stone"}}"
+            data-rate="{{index .Resources "stone_rate"}}"
+            data-cap="{{index .Resources "stone_cap"}}">{{resource (index .Resources "stone")}}</span>
       <span class="res-rate">{{rate (index .Resources "stone_rate")}}</span>
     </div>
   </div>
-  <div class="res">
+  <div class="res" data-key="iron">
     <canvas class="res-icon" data-icon="iron" width="18" height="18"></canvas>
     <div class="res-info">
       <span class="res-name">Iron</span>
-      <span class="res-val">{{resource (index .Resources "iron")}}</span>
+      <span class="res-val"
+            data-base="{{index .Resources "iron"}}"
+            data-rate="{{index .Resources "iron_rate"}}"
+            data-cap="{{index .Resources "iron_cap"}}">{{resource (index .Resources "iron")}}</span>
       <span class="res-rate">{{rate (index .Resources "iron_rate")}}</span>
     </div>
   </div>
-  <div class="res">
+  <div class="res" data-key="kharis">
     <canvas class="res-icon" data-icon="kharis" width="18" height="18"></canvas>
     <div class="res-info">
       <span class="res-name">Kharis</span>
@@ -67,6 +83,23 @@
     const fn=P[c.dataset.icon]; if(!fn)return;
     const x=c.getContext('2d'); x.imageSmoothingEnabled=false; fn(x);
   });
+
+  // Client-side interpolation — tick resource values locally every second.
+  const bar = document.getElementById('resource-bar');
+  const snapshotAt = new Date(bar.dataset.snapshotAt).getTime();
+  function fmt(v){ return v >= 10000 ? Math.round(v/1000)+'k' : v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString(); }
+  function tick(){
+    const elapsed = (Date.now() - snapshotAt) / 60000; // minutes
+    document.querySelectorAll('#resource-bar .res-val[data-base]').forEach(el => {
+      const base = parseFloat(el.dataset.base);
+      const rate = parseFloat(el.dataset.rate);
+      const cap  = parseFloat(el.dataset.cap);
+      const v = Math.min(cap > 0 ? cap : Infinity, Math.max(0, base + rate * elapsed));
+      el.textContent = fmt(v);
+    });
+  }
+  tick();
+  const _resTimer = setInterval(tick, 1000);
 })();
 </script>
 {{end}}

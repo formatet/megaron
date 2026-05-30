@@ -80,6 +80,9 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 			}
 			return key
 		},
+		"now": func() string {
+			return time.Now().UTC().Format(time.RFC3339)
+		},
 	}
 	// Parse base + all partials (named templates used across pages) into the base set.
 	// Page templates are parsed per-request via Clone so each gets its own "content" block.
@@ -218,6 +221,11 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
 	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
 	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
+	resources["gold_cap"] = s.Resources.Gold.Cap
+	resources["food_cap"] = s.Resources.Food.Cap
+	resources["lumber_cap"] = s.Resources.Lumber.Cap
+	resources["stone_cap"] = s.Resources.Stone.Cap
+	resources["iron_cap"] = s.Resources.Iron.Cap
 
 	divineMood := kharisToMood(resources["kharis"])
 
@@ -392,6 +400,11 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
 	resources["iron_rate"] = s.Resources.Iron.RatePerMinute
 	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
+	resources["gold_cap"] = s.Resources.Gold.Cap
+	resources["food_cap"] = s.Resources.Food.Cap
+	resources["lumber_cap"] = s.Resources.Lumber.Cap
+	resources["stone_cap"] = s.Resources.Stone.Cap
+	resources["iron_cap"] = s.Resources.Iron.Cap
 
 	h.renderPartial(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s, "DivineMood": kharisToMood(resources["kharis"])})
 }
