@@ -37,9 +37,6 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		        control_type, founded_from, governor_id, governor_is_ai,
 		        loyalty, loyalty_trend, wall_level, is_capital, state, population,
 		        gold_amount, gold_rate, gold_cap, gold_calc_at,
-		        food_amount, food_rate, food_cap, food_calc_at,
-		        lumber_amount, lumber_rate, lumber_cap, lumber_calc_at,
-		        stone_amount, stone_rate, stone_cap, stone_calc_at,
 		        kharis_amount, kharis_rate, kharis_cap, kharis_calc_at,
 		        infantry, cavalry, catapult, priest, ship, elite_infantry,
 		        updated_at
@@ -97,7 +94,7 @@ func resolveSettlementID(ctx context.Context, pool *pgxpool.Pool, provinceID, wo
 // scanSettlement reads a settlement from a pgx.Row.
 func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 	var s settlement.Settlement
-	var goldCalcAt, foodCalcAt, lumberCalcAt, stoneCalcAt, kharisCalcAt time.Time
+	var goldCalcAt, kharisCalcAt time.Time
 
 	err := row.Scan(
 		&s.ID, &s.WorldID, &s.ProvinceID, &s.Name, &s.CultureID,
@@ -105,9 +102,6 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 		&s.GovernorID, &s.GovernorIsAI,
 		&s.Loyalty, &s.LoyaltyTrend, &s.WallLevel, &s.IsCapital, &s.State, &s.Population,
 		&s.Resources.Gold.Amount, &s.Resources.Gold.RatePerMinute, &s.Resources.Gold.Cap, &goldCalcAt,
-		&s.Resources.Food.Amount, &s.Resources.Food.RatePerMinute, &s.Resources.Food.Cap, &foodCalcAt,
-		&s.Resources.Lumber.Amount, &s.Resources.Lumber.RatePerMinute, &s.Resources.Lumber.Cap, &lumberCalcAt,
-		&s.Resources.Stone.Amount, &s.Resources.Stone.RatePerMinute, &s.Resources.Stone.Cap, &stoneCalcAt,
 		&s.Resources.Kharis.Amount, &s.Resources.Kharis.RatePerMinute, &s.Resources.Kharis.Cap, &kharisCalcAt,
 		&s.Army.Infantry, &s.Army.Cavalry, &s.Army.Catapult, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
 		&s.UpdatedAt,
@@ -117,9 +111,6 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 	}
 
 	s.Resources.Gold.LastCalcAt = goldCalcAt
-	s.Resources.Food.LastCalcAt = foodCalcAt
-	s.Resources.Lumber.LastCalcAt = lumberCalcAt
-	s.Resources.Stone.LastCalcAt = stoneCalcAt
 	s.Resources.Kharis.LastCalcAt = kharisCalcAt
 
 	return &s, nil

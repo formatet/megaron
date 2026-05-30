@@ -176,8 +176,15 @@ After pushing new code to master:
 ```
 ! ssh root@10.0.1.88 "cd /opt/poleia && git pull && systemctl restart poleia"
 ```
-Note: Gitea SSH deploy key for CT 126 not yet configured — the git pull may require manual setup.
-Until deploy key is set: push to Gitea from dev machine, then manually copy binary or pull on CT.
+Gitea SSH deploy key for CT 126: generate on CT 126, add as deploy key at http://10.0.1.67:3000 → formatet/thalassa → Settings → Deploy keys.
+
+**poleia binary:** `~/go/bin/poleia` — NOT in Claude Code's PATH. Always use full path.
+
+**LLM playtesting agents:** `~/Projects/isladan/playtest/agents.sh`
+- Talos: 8B model (port 11436), always available. Config: `~/.config/poleia/talos.json`
+- Daedalos: 35B model (port 11435), start with `~/llama-start.sh 256k`. Config: `~/.config/poleia/daedalos.json`
+- Start: `POLEIA_BIN=~/go/bin/poleia bash ~/Projects/isladan/playtest/agents.sh start talos`
+- JWT tokens expire 24h — re-run `poleia login` if agents return 401 errors.
 
 ---
 

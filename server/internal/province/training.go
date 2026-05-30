@@ -3,26 +3,23 @@ package province
 import "time"
 
 // UnitSpec defines the cost and time to train a unit.
+// All material costs are expressed as good_key → amount and deducted from
+// settlement_goods. CostKharis is deducted from the settlements.kharis column.
 type UnitSpec struct {
-	CostFood   float64
-	CostLumber float64
-	CostKharis float64
-	CostBronze float64
-	Duration   time.Duration // per unit trained
-	// RequiresBarracks: unit cannot be trained without a barracks building.
+	Costs            map[string]float64 // good_key → quantity deducted from settlement_goods
+	CostKharis       float64
+	Duration         time.Duration // per unit trained
 	RequiresBarracks bool
-	// RequiresHarbour: unit cannot be trained without a harbour.
-	RequiresHarbour bool
-	// RequiresFoundry: unit cannot be trained without a foundry.
-	RequiresFoundry bool
+	RequiresHarbour  bool
+	RequiresFoundry  bool
 }
 
 // UnitSpecs is the canonical catalogue of all trainable unit types.
 var UnitSpecs = map[string]UnitSpec{
-	"infantry":       {CostFood: 15, Duration: time.Minute, RequiresBarracks: true},
-	"cavalry":        {CostFood: 30, CostLumber: 5, Duration: 4 * time.Minute, RequiresBarracks: true},
-	"catapult":       {CostLumber: 100, Duration: 30 * time.Minute, RequiresBarracks: true},
-	"priest":         {CostFood: 15, Duration: 60 * time.Minute},
-	"ship":           {CostLumber: 110, Duration: 45 * time.Minute, RequiresHarbour: true},
-	"elite_infantry": {CostFood: 25, CostBronze: 2, Duration: 5 * time.Minute, RequiresBarracks: true, RequiresFoundry: true},
+	"infantry":       {Costs: map[string]float64{"grain": 15}, Duration: time.Minute, RequiresBarracks: true},
+	"cavalry":        {Costs: map[string]float64{"grain": 30, "cedar": 5}, Duration: 4 * time.Minute, RequiresBarracks: true},
+	"catapult":       {Costs: map[string]float64{"cedar": 100}, Duration: 30 * time.Minute, RequiresBarracks: true},
+	"priest":         {Costs: map[string]float64{"grain": 15}, Duration: 60 * time.Minute},
+	"ship":           {Costs: map[string]float64{"cedar": 110}, Duration: 45 * time.Minute, RequiresHarbour: true},
+	"elite_infantry": {Costs: map[string]float64{"grain": 25, "bronze": 2}, Duration: 5 * time.Minute, RequiresBarracks: true, RequiresFoundry: true},
 }

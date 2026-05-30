@@ -171,15 +171,15 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Gold float64 `json:"gold"`
-		Food float64 `json:"food"`
+		Gold  float64 `json:"gold"`
+		Grain float64 `json:"grain"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
-	if req.Gold < 0 || req.Food < 0 || (req.Gold == 0 && req.Food == 0) {
-		writeError(w, http.StatusBadRequest, "gift must include gold or food")
+	if req.Gold < 0 || req.Grain < 0 || (req.Gold == 0 && req.Grain == 0) {
+		writeError(w, http.StatusBadRequest, "gift must include gold or grain")
 		return
 	}
 
@@ -213,39 +213,66 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Deduct from source.
-	tag, err := tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		   gold_amount = gold_amount
-		     + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate) - $1,
-		   gold_calc_at = now(),
-		   food_amount = food_amount
-		     + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate) - $2,
-		   food_calc_at = now()
-		 WHERE id = $3
-		   AND gold_amount + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate) >= $1
-		   AND food_amount + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate) >= $2`,
-		req.Gold, req.Food, sourceID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct resources")
-		return
-	}
-	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
-		return
+	// Deduct gold from source settlement column.
+	if req.Gold > 0 {
+		tag, err2 := tx.Exec(r.Context(),
+			`UPDATE settlements SET
+			   gold_amount = gold_amount
+			     + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate - $1,
+			   gold_calc_at = now()
+			 WHERE id = $2
+			   AND gold_amount + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate >= $1`,
+			req.Gold, sourceID,
+		)
+		if err2 != nil || tag.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient gold")
+			return
+		}
 	}
 
-	// Credit target — both in the same transaction.
-	if _, err = tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		   gold_amount = gold_amount + $1,
-		   food_amount = food_amount + $2
-		 WHERE id = $3`,
-		req.Gold, req.Food, targetID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not credit target")
-		return
+	// Deduct grain from source settlement_goods.
+	if req.Grain > 0 {
+		tag, err2 := tx.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			   amount  = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+			   calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = 'grain'
+			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+			req.Grain, sourceID,
+		)
+		if err2 != nil || tag.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient grain")
+			return
+		}
+	}
+
+	// Credit gold to target settlement column.
+	if req.Gold > 0 {
+		if _, err2 := tx.Exec(r.Context(),
+			`UPDATE settlements SET gold_amount = gold_amount + $1 WHERE id = $2`,
+			req.Gold, targetID,
+		); err2 != nil {
+			writeError(w, http.StatusInternalServerError, "could not credit gold")
+			return
+		}
+	}
+
+	// Credit grain to target settlement_goods.
+	if req.Grain > 0 {
+		if _, err2 := tx.Exec(r.Context(),
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+			 VALUES ($1, 'grain', $2, 0, 1000, now())
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+			     amount  = LEAST(settlement_goods.cap,
+			                 settlement_goods.amount
+			                 + EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60 * settlement_goods.rate
+			                 + $2),
+			     calc_at = now()`,
+			targetID, req.Grain,
+		); err2 != nil {
+			writeError(w, http.StatusInternalServerError, "could not credit grain")
+			return
+		}
 	}
 
 	if err := tx.Commit(r.Context()); err != nil {
@@ -255,7 +282,7 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 
 	// Apply loyalty event — significant gift (50+ gold equivalent) gives +1 loyalty.
 	loyaltyDelta := 0
-	if req.Gold+req.Food*0.5 >= 50 {
+	if req.Gold+req.Grain*0.5 >= 50 {
 		loyaltyDelta = 1
 	}
 
@@ -270,7 +297,7 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"loyalty_delta": loyaltyDelta,
 		"gold_sent":     req.Gold,
-		"food_sent":     req.Food,
+		"grain_sent":    req.Grain,
 	})
 }
 

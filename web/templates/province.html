@@ -69,7 +69,7 @@
       <div class="recruit-grid">
         <label class="recruit-row{{if not $hasBarracks}} unit-unavailable{{end}}">
           <span class="recruit-label">Hoplites</span>
-          <span class="recruit-cost">{{if not $hasBarracks}}requires barracks{{else}}15 food{{end}}</span>
+          <span class="recruit-cost">{{if not $hasBarracks}}requires barracks{{else}}15 grain{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="100" value="10" id="rc-hoplites"{{if not $hasBarracks}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('infantry', document.getElementById('rc-hoplites').value)"
@@ -77,7 +77,7 @@
         </label>
         <label class="recruit-row{{if not $hasStable}} unit-unavailable{{end}}">
           <span class="recruit-label">Hippeis</span>
-          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 food · 5 lumber{{end}}</span>
+          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 grain · 5 cedar{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-hippeis"{{if not $hasStable}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('cavalry', document.getElementById('rc-hippeis').value)"
@@ -85,14 +85,14 @@
         </label>
         <label class="recruit-row">
           <span class="recruit-label">Hiereus</span>
-          <span class="recruit-cost">15 food · 60 min</span>
+          <span class="recruit-cost">15 grain · 60 min</span>
           <input class="recruit-count" type="number" min="1" max="10" value="1" id="rc-hiereus">
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('priest', document.getElementById('rc-hiereus').value)">Train</button>
         </label>
         <label class="recruit-row{{if not $hasHarbour}} unit-unavailable{{end}}">
           <span class="recruit-label">Trireme</span>
-          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}110 lumber{{end}}</span>
+          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}110 cedar{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-trireme"{{if not $hasHarbour}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('ship', document.getElementById('rc-trireme').value)"
@@ -100,7 +100,7 @@
         </label>
         <label class="recruit-row{{if not $hasFoundry}} unit-unavailable{{end}}">
           <span class="recruit-label">Agema</span>
-          <span class="recruit-cost">{{if not $hasFoundry}}requires foundry{{else}}25 food · 2 bronze{{end}}</span>
+          <span class="recruit-cost">{{if not $hasFoundry}}requires foundry{{else}}25 grain · 2 bronze{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="50" value="1" id="rc-agema"{{if not $hasFoundry}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('elite_infantry', document.getElementById('rc-agema').value)"
@@ -143,18 +143,20 @@
       <!-- Build form -->
       <div class="build-form-wrap">
         <select id="build-select" class="build-select">
-          <option value="farm">Farm — 50L 20S · +2 food/m</option>
-          <option value="lumbermill">Lumbermill — 40L 40S · +2 lumber/m</option>
-          <option value="stonequarry">Stone Quarry — 50L 20S · +2 stone/m</option>
-          <option value="mine">Copper Mine — 60L 40S · +1 stone/m</option>
-          <option value="barracks">Barracks — 80L 80S · recruits</option>
-          <option value="market">Market — 100L 60S · +0.5 gold/m</option>
-          <option value="wall">Wall — 40L 160S · +1 wall</option>
-          <option value="tower">Tower — 60L 110S · +1 wall</option>
-          <option value="harbour">Harbour — 140L 60S · ships</option>
-          <option value="foundry">Foundry — 80L 100S · craft bronze</option>
-          <option value="stable">Stable — 60L 40S · horses</option>
-          <option value="bronze_wall">Bronze Wall — 100S 10 bronze · +1 wall</option>
+          <option value="farm">Farm — 50 cedar 20 stone · +grain/m</option>
+          <option value="lumbermill">Lumbermill — 40 cedar 40 stone · +cedar/m</option>
+          <option value="stonequarry">Stone Quarry — 50 cedar 20 stone · +stone/m</option>
+          <option value="mine">Mine — 60 cedar 40 stone · +stone/m</option>
+          <option value="barracks">Barracks — 80 cedar 80 stone · recruits</option>
+          <option value="market">Market — 100 cedar 60 stone · +0.5 gold/m</option>
+          <option value="wall">Wall — 40 cedar 160 stone · +1 wall</option>
+          <option value="tower">Tower — 60 cedar 110 stone · +1 wall</option>
+          <option value="harbour">Harbour — 140 cedar 60 stone · ships</option>
+          <option value="foundry">Foundry — 80 cedar 100 stone · craft bronze</option>
+          <option value="stable">Stable — 60 cedar 40 stone · horses</option>
+          <option value="olive_press">Olive Press — 30 cedar 40 stone · +oil/m</option>
+          <option value="winery">Winery — 40 cedar 30 stone · +wine/m</option>
+          <option value="bronze_wall">Bronze Wall — 100 stone 10 bronze · +1 wall</option>
         </select>
         <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
         <div id="build-result" class="action-result"></div>
@@ -247,10 +249,10 @@
       <div class="lp-title" style="margin-top:.6rem">Devotion</div>
       <select id="cult-level-select" class="build-select" style="margin:.3rem 0">
         <option value="forsummad">Neglected — kharis -10%/day</option>
-        <option value="enkel"    >Simple — 3 gold · 3 food → +2 kharis</option>
-        <option value="vardig"   >Worthy — 6 gold · 5 food → +5 kharis</option>
-        <option value="praktfull">Magnificent — 12 gold · 10 food · 2 wine · 2 oil → +10 kharis</option>
-        <option value="overdadig">Lavish — 20 gold · 15 food · 5 wine · 5 oil → +18 kharis</option>
+        <option value="enkel"    >Simple — 3 gold · 3 grain → +2 kharis</option>
+        <option value="vardig"   >Worthy — 6 gold · 5 grain → +5 kharis</option>
+        <option value="praktfull">Magnificent — 12 gold · 10 grain · 2 wine · 2 oil → +10 kharis</option>
+        <option value="overdadig">Lavish — 20 gold · 15 grain · 5 wine · 5 oil → +18 kharis</option>
       </select>
       <button class="btn-primary btn-small" onclick="setCultLevel()" style="width:100%;margin-top:.3rem">Save</button>
       <div id="cult-result" class="action-result"></div>
@@ -660,6 +662,7 @@ async function performLibation() {
     farm:30, lumbermill:30, stonequarry:30, mine:45,
     barracks:60, market:90, wall:120, tower:90, harbour:90,
     foundry:90, stable:60, bronze_wall:180,
+    olive_press:45, winery:45,
   };
   function tick(){
     document.querySelectorAll('.bq-item[data-complete]').forEach(el=>{

@@ -41,22 +41,17 @@ func (rs ResourceState) Current(at time.Time) float64 {
 	return math.Min(math.Max(v, 0), rs.Cap)
 }
 
-// ResourceLedger holds all resource states for a settlement.
+// ResourceLedger holds the settlement column resources (gold and kharis).
+// All other producible goods live in settlement_goods.
 type ResourceLedger struct {
 	Gold   ResourceState
-	Food   ResourceState
-	Lumber ResourceState
-	Stone  ResourceState
 	Kharis ResourceState
 }
 
-// Snapshot returns current values for all resources at the given time.
+// Snapshot returns current values for gold and kharis at the given time.
 func (rl ResourceLedger) Snapshot(at time.Time) map[string]float64 {
 	return map[string]float64{
 		"gold":   rl.Gold.Current(at),
-		"food":   rl.Food.Current(at),
-		"lumber": rl.Lumber.Current(at),
-		"stone":  rl.Stone.Current(at),
 		"kharis": rl.Kharis.Current(at),
 	}
 }
@@ -68,13 +63,10 @@ type ResourceDetail struct {
 	Cap    float64 `json:"cap"`
 }
 
-// SnapshotFull returns current amounts, rates, and caps for all resources.
+// SnapshotFull returns current amounts, rates, and caps for gold and kharis.
 func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
 	return map[string]ResourceDetail{
 		"gold":   {Amount: rl.Gold.Current(at), Rate: rl.Gold.RatePerMinute, Cap: rl.Gold.Cap},
-		"food":   {Amount: rl.Food.Current(at), Rate: rl.Food.RatePerMinute, Cap: rl.Food.Cap},
-		"lumber": {Amount: rl.Lumber.Current(at), Rate: rl.Lumber.RatePerMinute, Cap: rl.Lumber.Cap},
-		"stone":  {Amount: rl.Stone.Current(at), Rate: rl.Stone.RatePerMinute, Cap: rl.Stone.Cap},
 		"kharis": {Amount: rl.Kharis.Current(at), Rate: rl.Kharis.RatePerMinute, Cap: rl.Kharis.Cap},
 	}
 }
@@ -114,6 +106,8 @@ const (
 	BuildingFoundry     BuildingType = "foundry"
 	BuildingStable      BuildingType = "stable"
 	BuildingBronzeWall  BuildingType = "bronze_wall"
+	BuildingOlivePress  BuildingType = "olive_press"
+	BuildingWinery      BuildingType = "winery"
 )
 
 // Province is a hex tile — terrain and territory state only.

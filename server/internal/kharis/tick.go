@@ -25,20 +25,22 @@ const (
 )
 
 // cultSpec defines the daily cost and kharis gain for each cult level.
+// grain, wine, oil, and livestock are deducted from settlement_goods.
 type cultSpec struct {
 	gold       float64
-	food       float64
-	wine       float64 // from settlement_goods; required for praktfull/overdadig
-	oil        float64 // from settlement_goods; required for praktfull/overdadig
+	grain      float64 // from settlement_goods
+	wine       float64 // from settlement_goods
+	oil        float64 // from settlement_goods
+	livestock  float64 // from settlement_goods — prestigious sacrifice
 	kharisGain float64
 }
 
 var cultLevelSpecs = map[string]cultSpec{
-	"forsummad": {kharisGain: 0},                               // no payment, kharis decays
-	"enkel":     {gold: 3, food: 3, kharisGain: 2},
-	"vardig":    {gold: 6, food: 5, kharisGain: 5},
-	"praktfull": {gold: 12, food: 10, wine: 2, oil: 2, kharisGain: 10},
-	"overdadig": {gold: 20, food: 15, wine: 5, oil: 5, kharisGain: 18},
+	"forsummad": {kharisGain: 0},                                              // no payment, kharis decays
+	"enkel":     {gold: 3, grain: 3, kharisGain: 2},
+	"vardig":    {gold: 6, grain: 5, kharisGain: 5},
+	"praktfull": {gold: 12, grain: 10, wine: 2, oil: 2, kharisGain: 10},
+	"overdadig": {gold: 20, grain: 15, wine: 5, oil: 5, livestock: 2, kharisGain: 18},
 }
 
 // TickHandler applies daily temple maintenance to all active settlements in a world.
@@ -57,9 +59,10 @@ type settlementSnap struct {
 	id        uuid.UUID
 	kharis    float64
 	gold      float64
-	food      float64
+	grain     float64
 	wine      float64
 	oil       float64
+	livestock float64
 	cultLevel string
 }
 
@@ -69,13 +72,16 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		`SELECT s.id,
 		    GREATEST(0, s.kharis_amount + (EXTRACT(EPOCH FROM (now() - s.kharis_calc_at))/60 * s.kharis_rate)),
 		    GREATEST(0, s.gold_amount   + (EXTRACT(EPOCH FROM (now() - s.gold_calc_at))/60   * s.gold_rate)),
-		    GREATEST(0, s.food_amount   + (EXTRACT(EPOCH FROM (now() - s.food_calc_at))/60   * s.food_rate)),
+		    GREATEST(0, COALESCE(grain.amount + (EXTRACT(EPOCH FROM (now() - grain.calc_at))/60 * grain.rate), 0)),
 		    s.cult_level,
-		    GREATEST(0, COALESCE(wine.amount + (EXTRACT(EPOCH FROM (now() - wine.calc_at))/60 * wine.rate_per_min), 0)),
-		    GREATEST(0, COALESCE(oil.amount  + (EXTRACT(EPOCH FROM (now() - oil.calc_at))/60  * oil.rate_per_min),  0))
+		    GREATEST(0, COALESCE(wine.amount  + (EXTRACT(EPOCH FROM (now() - wine.calc_at))/60  * wine.rate),  0)),
+		    GREATEST(0, COALESCE(oil.amount   + (EXTRACT(EPOCH FROM (now() - oil.calc_at))/60   * oil.rate),   0)),
+		    GREATEST(0, COALESCE(livestock.amount + (EXTRACT(EPOCH FROM (now() - livestock.calc_at))/60 * livestock.rate), 0))
 		 FROM settlements s
-		 LEFT JOIN settlement_goods wine ON wine.settlement_id = s.id AND wine.good_key = 'wine'
-		 LEFT JOIN settlement_goods oil  ON oil.settlement_id  = s.id AND oil.good_key  = 'oil'
+		 LEFT JOIN settlement_goods grain     ON grain.settlement_id     = s.id AND grain.good_key     = 'grain'
+		 LEFT JOIN settlement_goods wine      ON wine.settlement_id      = s.id AND wine.good_key      = 'wine'
+		 LEFT JOIN settlement_goods oil       ON oil.settlement_id       = s.id AND oil.good_key       = 'oil'
+		 LEFT JOIN settlement_goods livestock ON livestock.settlement_id = s.id AND livestock.good_key = 'livestock'
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'`,
 		e.WorldID,
 	)
@@ -87,7 +93,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	var snaps []settlementSnap
 	for rows.Next() {
 		var s settlementSnap
-		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.food, &s.cultLevel, &s.wine, &s.oil); err == nil {
+		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.grain, &s.cultLevel, &s.wine, &s.oil, &s.livestock); err == nil {
 			snaps = append(snaps, s)
 		}
 	}
@@ -137,47 +143,44 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 		return nil
 	}
 
-	// Can the settlement afford the tiered cost (base resources + prestige goods)?
-	canAfford := s.gold >= spec.gold && s.food >= spec.food &&
-		s.wine >= spec.wine && s.oil >= spec.oil
+	// Can the settlement afford the tiered cost (gold + goods)?
+	canAfford := s.gold >= spec.gold && s.grain >= spec.grain &&
+		s.wine >= spec.wine && s.oil >= spec.oil && s.livestock >= spec.livestock
 	if canAfford {
 		_, err := h.pool.Exec(ctx,
 			`UPDATE settlements SET
 			   gold_amount    = gold_amount   + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60   * gold_rate)   - $1,
 			   gold_calc_at   = now(),
-			   food_amount    = food_amount   + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60   * food_rate)   - $2,
-			   food_calc_at   = now(),
 			   kharis_amount  = LEAST(kharis_cap,
-			       kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) + $3),
+			       kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) + $2),
 			   kharis_calc_at = now()
-			 WHERE id = $4`,
-			spec.gold, spec.food, spec.kharisGain, s.id,
+			 WHERE id = $3`,
+			spec.gold, spec.kharisGain, s.id,
 		)
 		if err != nil {
 			return fmt.Errorf("pay maintenance: %w", err)
 		}
-		// Deduct prestige goods if required.
-		if spec.wine > 0 {
+		// Deduct goods (grain, wine, oil, livestock) from settlement_goods.
+		for goodKey, qty := range map[string]float64{
+			"grain":     spec.grain,
+			"wine":      spec.wine,
+			"oil":       spec.oil,
+			"livestock": spec.livestock,
+		} {
+			if qty <= 0 {
+				continue
+			}
 			_, _ = h.pool.Exec(ctx,
 				`UPDATE settlement_goods SET
-				   amount = GREATEST(0, amount + (EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate_per_min) - $1),
+				   amount  = GREATEST(0, amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1),
 				   calc_at = now()
-				 WHERE settlement_id = $2 AND good_key = 'wine'`,
-				spec.wine, s.id,
-			)
-		}
-		if spec.oil > 0 {
-			_, _ = h.pool.Exec(ctx,
-				`UPDATE settlement_goods SET
-				   amount = GREATEST(0, amount + (EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate_per_min) - $1),
-				   calc_at = now()
-				 WHERE settlement_id = $2 AND good_key = 'oil'`,
-				spec.oil, s.id,
+				 WHERE settlement_id = $2 AND good_key = $3`,
+				qty, s.id, goodKey,
 			)
 		}
 		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMaintained",
-			map[string]any{"cult_level": s.cultLevel, "gold": spec.gold, "food": spec.food,
-				"wine": spec.wine, "oil": spec.oil, "kharis_gain": spec.kharisGain},
+			map[string]any{"cult_level": s.cultLevel, "gold": spec.gold, "grain": spec.grain,
+				"wine": spec.wine, "oil": spec.oil, "livestock": spec.livestock, "kharis_gain": spec.kharisGain},
 			worldID, nil)
 		newKharis := s.kharis + spec.kharisGain
 		if newKharis > blessThreshold && rand.Float64() < blessProbability {
@@ -211,42 +214,58 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 	return nil
 }
 
-// applyDecay reduces food and lumber by 1% and resets invasions_today across all
-// active settlements. Also regenerates priest_strength based on stationed priests.
+// applyDecay applies 1% daily decay to grain and cedar stocks, resets
+// invasions_today, regenerates priest_strength, and adjusts population.
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
+	// Decay grain and cedar by 1% per day.
 	if _, err := h.pool.Exec(ctx,
-		`UPDATE settlements SET
-		   food_amount    = GREATEST(0,
-		       (food_amount   + EXTRACT(EPOCH FROM (now()-food_calc_at))/60   * food_rate)   * 0.99),
-		   food_calc_at   = now(),
-		   lumber_amount  = GREATEST(0,
-		       (lumber_amount + EXTRACT(EPOCH FROM (now()-lumber_calc_at))/60 * lumber_rate) * 0.99),
-		   lumber_calc_at = now(),
+		`UPDATE settlement_goods sg SET
+		   amount  = GREATEST(0, (sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) * 0.99),
+		   calc_at = now()
+		 FROM settlements s
+		 WHERE sg.settlement_id = s.id
+		   AND s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		   AND sg.good_key IN ('grain', 'cedar')`,
+		worldID,
+	); err != nil {
+		slog.Error("goods decay failed", "world", worldID, "err", err)
+	}
+
+	// Reset invasions_today, regen priest_strength, update population.
+	// Population grows when grain is available, shrinks when it isn't.
+	if _, err := h.pool.Exec(ctx,
+		`UPDATE settlements s SET
 		   invasions_today = 0,
 		   priest_strength = LEAST(100, priest_strength + 4 + (priest * 10)),
 		   population = GREATEST(50, LEAST(10000,
-		       CASE WHEN food_amount + EXTRACT(EPOCH FROM (now()-food_calc_at))/60 * food_rate > 0
+		       CASE WHEN COALESCE(
+		                (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		                 FROM settlement_goods sg
+		                 WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
 		            THEN population + 5
 		            ELSE GREATEST(50, population - 5)
 		       END))
-		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'`,
 		worldID,
 	); err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
 	}
 }
 
-// applyStarvation punishes settlements where food has hit zero: infantry and
+// applyStarvation punishes settlements where grain has hit zero: infantry and
 // cavalry each lose 5% (minimum 1 unit) per day.
 func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 	rows, err := h.pool.Query(ctx,
-		`UPDATE settlements SET
+		`UPDATE settlements s SET
 		   infantry = GREATEST(0, infantry - GREATEST(1, (infantry * 0.05)::int)),
 		   cavalry  = GREATEST(0, cavalry  - GREATEST(1, (cavalry  * 0.05)::int))
-		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'
-		   AND (infantry > 0 OR cavalry > 0)
-		   AND food_amount + EXTRACT(EPOCH FROM (now()-food_calc_at))/60 * food_rate <= 0
-		 RETURNING id`,
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		   AND (s.infantry > 0 OR s.cavalry > 0)
+		   AND COALESCE(
+		           (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		            FROM settlement_goods sg
+		            WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) <= 0
+		 RETURNING s.id`,
 		worldID,
 	)
 	if err != nil {
@@ -287,12 +306,11 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		},
 		{
 			"harvest_failure",
-			"The fields lie fallow by divine will. Half your food stores have rotted.",
-			`UPDATE settlements SET
-			   food_amount = GREATEST(0,
-			       (food_amount + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate)) * 0.5),
-			   food_calc_at = now()
-			 WHERE id = $1`,
+			"The fields lie fallow by divine will. Half your grain stores have rotted.",
+			`UPDATE settlement_goods SET
+			   amount  = GREATEST(0, (amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate) * 0.5),
+			   calc_at = now()
+			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		},
 		{
 			"garrison_plague",
@@ -326,11 +344,10 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 		{
 			"harvest_blessing",
 			"The gods smile upon your fields. An abundant harvest fills your granaries.",
-			`UPDATE settlements SET
-			   food_amount = LEAST(food_cap,
-			       (food_amount + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate)) * 1.25),
-			   food_calc_at = now()
-			 WHERE id = $1`,
+			`UPDATE settlement_goods SET
+			   amount  = LEAST(cap, (amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate) * 1.25),
+			   calc_at = now()
+			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		},
 		{
 			"divine_recruits",

@@ -16,7 +16,7 @@ func RecordMarketSnapshot(ctx context.Context, pool *pgxpool.Pool, playerID, set
 	rows, err := pool.Query(ctx,
 		`SELECT sg.good_key, g.base_value,
 		        GREATEST(0, LEAST(sg.cap,
-		            sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate_per_min))),
+		            sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate))),
 		        sg.cap
 		 FROM settlement_goods sg
 		 JOIN goods g ON g.key = sg.good_key

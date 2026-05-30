@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -202,14 +203,12 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	now := h.clk.Now()
 	resources := s.Resources.Snapshot(now)
 	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
-	resources["food_rate"] = s.Resources.Food.RatePerMinute
-	resources["lumber_rate"] = s.Resources.Lumber.RatePerMinute
-	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
-	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
 	resources["gold_cap"] = s.Resources.Gold.Cap
-	resources["food_cap"] = s.Resources.Food.Cap
-	resources["lumber_cap"] = s.Resources.Lumber.Cap
-	resources["stone_cap"] = s.Resources.Stone.Cap
+	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
+
+	// Load grain, cedar, stone from settlement_goods for the resource bar.
+	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources,
+		"grain", "cedar", "stone")
 
 	divineMood := kharisToMood(resources["kharis"])
 
@@ -377,16 +376,14 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no settlement", http.StatusNotFound)
 		return
 	}
-	resources := s.Resources.Snapshot(h.clk.Now())
+	now := h.clk.Now()
+	resources := s.Resources.Snapshot(now)
 	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
-	resources["food_rate"] = s.Resources.Food.RatePerMinute
-	resources["lumber_rate"] = s.Resources.Lumber.RatePerMinute
-	resources["stone_rate"] = s.Resources.Stone.RatePerMinute
-	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
 	resources["gold_cap"] = s.Resources.Gold.Cap
-	resources["food_cap"] = s.Resources.Food.Cap
-	resources["lumber_cap"] = s.Resources.Lumber.Cap
-	resources["stone_cap"] = s.Resources.Stone.Cap
+	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
+
+	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources,
+		"grain", "cedar", "stone")
 
 	h.renderPartial(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s, "DivineMood": kharisToMood(resources["kharis"])})
 }
@@ -509,7 +506,7 @@ func (h *WebHandler) MarketView(w http.ResponseWriter, r *http.Request) {
 		        s.owner_id = $2 AS own,
 		        sg.good_key, g.name,
 		        GREATEST(0, LEAST(sg.cap,
-		            sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate_per_min))),
+		            sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate))),
 		        sg.cap, g.base_value
 		 FROM settlements s
 		 JOIN provinces p ON p.id = s.province_id
@@ -523,8 +520,8 @@ func (h *WebHandler) MarketView(w http.ResponseWriter, r *http.Request) {
 		           SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
 		       ))
 		   )
-		   AND (sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate_per_min) > 0
-		        OR sg.rate_per_min > 0)
+		   AND (sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) > 0
+		        OR sg.rate > 0)
 		 ORDER BY s.name, sg.good_key`,
 		worldID, playerID,
 	)
@@ -612,6 +609,45 @@ func (h *WebHandler) MarketView(w http.ResponseWriter, r *http.Request) {
 		"WorldName": worldName,
 		"Markets":   result,
 	})
+}
+
+// loadSettlementGoodsIntoResources queries the named goods from settlement_goods
+// and adds amount/rate/cap entries to the resources map for template rendering.
+// Keys written: "grain", "grain_rate", "grain_cap", etc.
+func loadSettlementGoodsIntoResources(ctx context.Context, pool *pgxpool.Pool,
+	settlementID uuid.UUID, now time.Time, resources map[string]float64, keys ...string,
+) {
+	if len(keys) == 0 {
+		return
+	}
+	rows, err := pool.Query(ctx,
+		`SELECT good_key, amount, rate, cap, calc_at
+		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = ANY($2)`,
+		settlementID, keys,
+	)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var key string
+		var amount, rate, cap float64
+		var calcAt time.Time
+		if rows.Scan(&key, &amount, &rate, &cap, &calcAt) != nil {
+			continue
+		}
+		elapsed := now.Sub(calcAt).Minutes()
+		current := amount + elapsed*rate
+		if current < 0 {
+			current = 0
+		}
+		if current > cap {
+			current = cap
+		}
+		resources[key] = current
+		resources[key+"_rate"] = rate
+		resources[key+"_cap"] = cap
+	}
 }
 
 func abs(x int) int {

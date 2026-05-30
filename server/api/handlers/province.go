@@ -367,45 +367,29 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Deduct resources atomically from settlement.
-	tag, err := h.pool.Exec(r.Context(),
-		`UPDATE settlements SET
-		   lumber_amount = lumber_amount
-		     + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) - $1,
-		   lumber_calc_at = now(),
-		   stone_amount = stone_amount
-		     + (EXTRACT(EPOCH FROM (now() - stone_calc_at))/60 * stone_rate) - $2,
-		   stone_calc_at = now()
-		 WHERE id = $3
-		   AND lumber_amount + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) >= $1
-		   AND stone_amount  + (EXTRACT(EPOCH FROM (now() - stone_calc_at))/60  * stone_rate)  >= $2`,
-		spec.CostLumber, spec.CostStone, settlementID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct resources")
-		return
-	}
-	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
+	// Deduct all building costs from settlement_goods atomically.
+	if err := deductGoods(r.Context(), h.pool, settlementID, spec.Costs); err != nil {
+		if err == errInsufficientGoods {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
+		} else {
+			writeError(w, http.StatusInternalServerError, "could not deduct resources")
+		}
 		return
 	}
 
-	// Deduct bronze from settlement_goods when required (e.g. bronze_wall).
-	if spec.CostBronze > 0 {
-		tag2, err2 := h.pool.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
-			     calc_at = now()
-			 WHERE settlement_id = $2 AND good_key = 'bronze'
-			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
-			spec.CostBronze, settlementID,
+	// Deduct gold if required.
+	if spec.CostGold > 0 {
+		tag, err2 := h.pool.Exec(r.Context(),
+			`UPDATE settlements SET
+			   gold_amount = gold_amount
+			     + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate - $1,
+			   gold_calc_at = now()
+			 WHERE id = $2
+			   AND gold_amount + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate >= $1`,
+			spec.CostGold, settlementID,
 		)
-		if err2 != nil {
-			writeError(w, http.StatusInternalServerError, "could not deduct bronze")
-			return
-		}
-		if tag2.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient bronze")
+		if err2 != nil || tag.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient gold")
 			return
 		}
 	}
@@ -575,54 +559,36 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	totalFood := spec.CostFood * float64(req.Count)
-	totalLumber := spec.CostLumber * float64(req.Count)
+	// Scale per-unit costs to total for the batch.
+	totalCosts := make(map[string]float64, len(spec.Costs))
+	for k, v := range spec.Costs {
+		totalCosts[k] = v * float64(req.Count)
+	}
 	totalKharis := spec.CostKharis * float64(req.Count)
-	totalBronze := spec.CostBronze * float64(req.Count)
 
-	// Deduct resources atomically from settlement.
-	tag, err := h.pool.Exec(r.Context(),
-		`UPDATE settlements SET
-		   food_amount = food_amount
-		     + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate) - $1,
-		   food_calc_at = now(),
-		   lumber_amount = lumber_amount
-		     + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) - $2,
-		   lumber_calc_at = now(),
-		   kharis_amount = kharis_amount
-		     + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) - $3,
-		   kharis_calc_at = now()
-		 WHERE id = $4
-		   AND food_amount   + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60   * food_rate)   >= $1
-		   AND lumber_amount + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate) >= $2
-		   AND kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) >= $3`,
-		totalFood, totalLumber, totalKharis, settlementID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, fmt.Sprintf("could not deduct resources: %v", err))
-		return
-	}
-	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
-		return
-	}
-
-	// Deduct bronze from settlement_goods when required (e.g. elite_infantry).
-	if totalBronze > 0 {
-		tag2, err2 := h.pool.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
-			     calc_at = now()
-			 WHERE settlement_id = $2 AND good_key = 'bronze'
-			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
-			totalBronze, settlementID,
-		)
-		if err2 != nil {
-			writeError(w, http.StatusInternalServerError, "could not deduct bronze")
-			return
+	// Deduct all goods costs from settlement_goods atomically.
+	if err := deductGoods(r.Context(), h.pool, settlementID, totalCosts); err != nil {
+		if err == errInsufficientGoods {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
+		} else {
+			writeError(w, http.StatusInternalServerError, fmt.Sprintf("could not deduct resources: %v", err))
 		}
-		if tag2.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient bronze")
+		return
+	}
+
+	// Deduct kharis from settlement column.
+	if totalKharis > 0 {
+		tag, err2 := h.pool.Exec(r.Context(),
+			`UPDATE settlements SET
+			   kharis_amount = kharis_amount
+			     + EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate - $1,
+			   kharis_calc_at = now()
+			 WHERE id = $2
+			   AND kharis_amount + EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate >= $1`,
+			totalKharis, settlementID,
+		)
+		if err2 != nil || tag.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity, "insufficient kharis")
 			return
 		}
 	}

@@ -93,43 +93,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return fmt.Errorf("update goods rates: %w", err)
 	}
 
-	// Apply rate bonuses to settlement resources (additive per level).
-	if spec.FoodRate > 0 {
-		_, err = tx.Exec(ctx,
-			`UPDATE settlements SET
-			   food_amount = food_amount + (EXTRACT(EPOCH FROM (now() - food_calc_at))/60 * food_rate),
-			   food_rate = food_rate + $1,
-			   food_calc_at = now()
-			 WHERE id = $2`,
-			spec.FoodRate, p.SettlementID)
-		if err != nil {
-			return fmt.Errorf("update food rate: %w", err)
-		}
-	}
-	if spec.LumberRate > 0 {
-		_, err = tx.Exec(ctx,
-			`UPDATE settlements SET
-			   lumber_amount = lumber_amount + (EXTRACT(EPOCH FROM (now() - lumber_calc_at))/60 * lumber_rate),
-			   lumber_rate = lumber_rate + $1,
-			   lumber_calc_at = now()
-			 WHERE id = $2`,
-			spec.LumberRate, p.SettlementID)
-		if err != nil {
-			return fmt.Errorf("update lumber rate: %w", err)
-		}
-	}
-	if spec.StoneRate > 0 {
-		_, err = tx.Exec(ctx,
-			`UPDATE settlements SET
-			   stone_amount = stone_amount + (EXTRACT(EPOCH FROM (now() - stone_calc_at))/60 * stone_rate),
-			   stone_rate = stone_rate + $1,
-			   stone_calc_at = now()
-			 WHERE id = $2`,
-			spec.StoneRate, p.SettlementID)
-		if err != nil {
-			return fmt.Errorf("update stone rate: %w", err)
-		}
-	}
+	// Apply gold and kharis rate bonuses to settlement columns.
 	if spec.GoldRate > 0 {
 		_, err = tx.Exec(ctx,
 			`UPDATE settlements SET

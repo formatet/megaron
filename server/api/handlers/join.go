@@ -118,16 +118,6 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 	kharisRate := maxPower * 0.05
 
-	var fertility, mineral float64
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT fertility, mineral FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
-		worldID, q, r2,
-	).Scan(&fertility, &mineral)
-
-	foodRate := 1.0 + fertility*2.0
-	lumberRate := fertility * 0.8
-	stoneRate := mineral * 0.5
-
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -147,20 +137,17 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the settlement (capital).
+	// Create the settlement (capital). gold and kharis are settlement columns;
+	// all other goods (grain, cedar, stone, etc.) live in settlement_goods.
 	var settlementID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
-		  food_rate, food_calc_at,
-		  lumber_rate, lumber_calc_at,
-		  stone_rate, stone_calc_at,
 		  kharis_rate, kharis_calc_at)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,
-		         $6,now(),$7,now(),$8,now(),$9,now())
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,$6,now())
 		 RETURNING id`,
 		worldID, provinceID, req.ProvinceName, req.Culture, playerID,
-		foodRate, lumberRate, stoneRate, kharisRate,
+		kharisRate,
 	).Scan(&settlementID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create settlement")
@@ -178,9 +165,20 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Init settlement_goods from terrain-only production rules.
+	// Cap is chosen per good: staples (grain) get 1000, bulk (cedar, stone) get 500-1000,
+	// other goods default to 200.
 	_, err = tx.Exec(r.Context(),
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 SELECT $1, pr.good_key, 0, pr.rate_per_min, 100, now()
+		 SELECT $1, pr.good_key, 0, pr.rate_per_min,
+		        CASE pr.good_key
+		            WHEN 'grain'  THEN 1000
+		            WHEN 'cedar'  THEN 500
+		            WHEN 'stone'  THEN 1000
+		            WHEN 'copper' THEN 300
+		            WHEN 'tin'    THEN 300
+		            ELSE 200
+		        END,
+		        now()
 		 FROM production_rules pr
 		 WHERE pr.building_type IS NULL
 		   AND pr.terrain_type = $2
