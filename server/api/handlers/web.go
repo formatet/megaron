@@ -223,6 +223,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		Army          any
 		Population    int
 		Walls         int
+		Loyalty       int
 		KingdomID     *uuid.UUID
 		KingdomName   string
 		CopperDeposit bool
@@ -237,6 +238,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		Army:          s.Army,
 		Population:    s.Population,
 		Walls:         s.WallLevel,
+		Loyalty:       s.Loyalty,
 		KingdomID:     s.KingdomID,
 		KingdomName:   kingdomName,
 		CopperDeposit: copperDeposit,

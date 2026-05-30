@@ -18,6 +18,7 @@
     <div class="ph-right">
       <span class="stat-chip" title="Population">Pop: <strong>{{.Province.Population}}</strong></span>
       <span class="stat-chip" title="Walls">Walls: <strong>{{.Province.Walls}}/3</strong></span>
+      <span class="stat-chip loyalty-{{.Province.Loyalty}}" title="Settlement loyalty (1=Disgruntled · 2=Loyal · 3=Devoted · 4=Fervent)">{{if eq .Province.Loyalty 1}}Disgruntled{{else if eq .Province.Loyalty 2}}Loyal{{else if eq .Province.Loyalty 3}}Devoted{{else if eq .Province.Loyalty 4}}Fervent{{else}}Loyal{{end}}</span>
       {{if .Province.CopperDeposit}}<span class="stat-chip deposit-chip" title="Copper deposit">⛏ Copper</span>{{end}}
       {{if .Province.TinDeposit}}<span class="stat-chip deposit-chip" title="Tin deposit">⛏ Tin</span>{{end}}
     </div>

@@ -416,6 +416,10 @@ footer {
 .stat-chip { background:var(--bg-panel); border:1px solid var(--border); padding:.15rem .5rem; font-size:.8rem; color:var(--text); font-family:var(--mono); }
 .stat-chip strong { color:var(--accent); }
 .deposit-chip { color:var(--safe); border-color:var(--safe); }
+.loyalty-1 { color:var(--accent); border-color:var(--accent); }
+.loyalty-2 { color:var(--text-dim); }
+.loyalty-3 { color:var(--safe); border-color:var(--safe); }
+.loyalty-4 { color:var(--gold); border-color:var(--gold); }
 
 /* Incoming attack banner */
 .attack-warn { background:var(--blood); color:var(--bg-raised); padding:.6rem .9rem; border:2px solid var(--border-in); }
