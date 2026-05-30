@@ -106,6 +106,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(corsMiddleware)
 
 	// Static files and HTML templates.
 	staticDir := getEnv("STATIC_DIR", "../../web/static")
@@ -169,6 +170,7 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/march", ph.March)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade", ph.TradeRoutes)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)
 
@@ -285,6 +287,21 @@ func runMigrations(dbURL string) error {
 	}
 	slog.Info("migrations applied")
 	return nil
+}
+
+// corsMiddleware allows cross-origin requests for the Bearer-auth API.
+// Needed for WKWebView (iOS) and any future native client. Stateless — no credentials.
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func mustEnv(key string) string {

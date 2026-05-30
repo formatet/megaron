@@ -200,6 +200,8 @@
         <button class="btn-primary btn-small" onclick="sendTrade()" style="width:100%;margin-top:.3rem">Send →</button>
         <div id="trade-result" class="action-result"></div>
       </div>
+      <div class="lp-title" style="margin-top:.8rem">En Route</div>
+      <div id="trade-routes-list" class="trade-routes-list"><p class="loading">Loading…</p></div>
     </section>
 
     <!-- ── Temple & Cult level ──────────────────────── -->
@@ -331,9 +333,34 @@ async function sendTrade() {
   if (res.ok) {
     showResult('trade-result', `${qty}× ${good} en route · ${Math.round(data.travel_min)} min`, true);
     loadGoods();
+    loadTradeRoutes();
   } else {
     showResult('trade-result', data.error || 'failed', false);
   }
+}
+
+async function loadTradeRoutes() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/trade`, {
+    headers: token ? {'Authorization':'Bearer '+token} : {},
+  });
+  const el = document.getElementById('trade-routes-list');
+  if (!res.ok) { el.innerHTML = '<p class="empty-state">—</p>'; return; }
+  const routes = await res.json().catch(() => []);
+  if (!routes.length) { el.innerHTML = '<p class="empty-state">No shipments en route.</p>'; return; }
+  const now = Date.now();
+  el.innerHTML = routes.map(r => {
+    const arrives = new Date(r.arrives_at).getTime();
+    const mins = Math.max(0, Math.round((arrives - now) / 60000));
+    const eta = mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h${mins%60 ? ` ${mins%60}m` : ''}`;
+    return `<div class="trade-route-row">
+      <span class="tr-good">${r.good_key}</span>
+      <span class="tr-qty">${Math.round(r.quantity * 10)/10}</span>
+      <span class="tr-arrow">→</span>
+      <span class="tr-dest">${r.destination_name}</span>
+      <span class="tr-eta">${eta}</span>
+    </div>`;
+  }).join('');
 }
 
 // ── WebSocket — goods refresh on TradeDelivery ────────────────────────────
@@ -354,7 +381,7 @@ async function sendTrade() {
   connect();
 })();
 
-document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadCultLevel(); loadVisibleSettlements(); });
+document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadCultLevel(); loadVisibleSettlements(); });
 
 // ── Cult level ────────────────────────────────────────────────────────────
 const SETTLEMENT_ID = "{{.Province.SettlementID}}";

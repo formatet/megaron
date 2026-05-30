@@ -984,6 +984,71 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// TradeRoutes handles GET /worlds/:worldID/provinces/:provinceID/trade.
+// Returns active (unresolved) trade routes sent from this province.
+func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var ownerID *uuid.UUID
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT owner_id FROM settlements WHERE province_id = $1 AND world_id = $2`,
+		provinceID, worldID,
+	).Scan(&ownerID)
+	if ownerID == nil || *ownerID != playerID {
+		writeError(w, http.StatusForbidden, "not your province")
+		return
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT tr.id, ds.name, tr.good_key, tr.quantity, tr.departs_at, tr.arrives_at
+		 FROM trade_routes tr
+		 JOIN settlements ds ON ds.id = tr.destination_id
+		 JOIN settlements os ON os.id = tr.origin_id
+		 WHERE os.province_id = $1 AND tr.world_id = $2 AND tr.resolved = false
+		 ORDER BY tr.arrives_at ASC`,
+		provinceID, worldID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load trade routes")
+		return
+	}
+	defer rows.Close()
+
+	type routeItem struct {
+		ID          uuid.UUID `json:"id"`
+		DestName    string    `json:"destination_name"`
+		GoodKey     string    `json:"good_key"`
+		Quantity    float64   `json:"quantity"`
+		DepartsAt   time.Time `json:"departs_at"`
+		ArrivesAt   time.Time `json:"arrives_at"`
+	}
+	var result []routeItem
+	for rows.Next() {
+		var ri routeItem
+		if err := rows.Scan(&ri.ID, &ri.DestName, &ri.GoodKey, &ri.Quantity, &ri.DepartsAt, &ri.ArrivesAt); err == nil {
+			result = append(result, ri)
+		}
+	}
+	if result == nil {
+		result = []routeItem{}
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 // goodLocalPrice computes local price: baseValue × clamp(cap×0.3 / max(stock, ε), 0.5, 3.0).
 func goodLocalPrice(baseValue, stock, cap float64) float64 {
 	const eps = 0.001
