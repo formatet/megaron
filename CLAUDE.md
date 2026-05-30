@@ -163,8 +163,21 @@ Bearer token in `Authorization` header — not httpOnly cookie.
 HTMX wires it via `htmx:configRequest` listener in `web/static/js/auth.js`.
 iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 
-**Deployment:** `docker compose up` at project root. Migrations run on startup.
+**Local docker:** `docker compose up` at project root. Migrations run on startup.
 `.env.example` → `.env` before first run.
+
+**Dev server (CT 126, 10.0.1.88, port 8080):** runs with `air` (Go hot-reload).
+
+After pushing new code to master:
+```
+! ssh root@10.0.1.88 "cd /opt/poleia && git pull && echo done"
+```
+`air` picks up the change and rebuilds automatically. If `air` is not running or you need a force restart:
+```
+! ssh root@10.0.1.88 "cd /opt/poleia && git pull && systemctl restart poleia"
+```
+Note: Gitea SSH deploy key for CT 126 not yet configured — the git pull may require manual setup.
+Until deploy key is set: push to Gitea from dev machine, then manually copy binary or pull on CT.
 
 ---
 

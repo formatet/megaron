@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -131,6 +132,9 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		}
 	}
 
+	report := buildCombatReport(march.Army, def.Army, def.Walls, result, supportStr)
+	_, _ = tx.Exec(ctx, `UPDATE marching_armies SET combat_report = $1 WHERE id = $2`, report, march.ID)
+
 	h.recordEvent(ctx, march.TargetID, worldID, result, march.ID)
 	if h.hub != nil {
 		h.hub.Broadcast(worldID, notify.Msg{
@@ -237,6 +241,61 @@ func mergeArmy(ctx context.Context, tx pgx.Tx, targetID uuid.UUID, army province
 		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry, targetID,
 	)
 	return err
+}
+
+// buildCombatReport generates a human-readable battle summary stored once at resolution.
+func buildCombatReport(att, def province.ArmyComposition, walls int, result CombatResult, support float64) string {
+	var sb strings.Builder
+
+	armyStr := func(a province.ArmyComposition) string {
+		parts := []string{}
+		if a.Infantry > 0 {
+			parts = append(parts, fmt.Sprintf("%d Hoplites", a.Infantry))
+		}
+		if a.EliteInfantry > 0 {
+			parts = append(parts, fmt.Sprintf("%d Agema", a.EliteInfantry))
+		}
+		if a.Cavalry > 0 {
+			parts = append(parts, fmt.Sprintf("%d Hippeis", a.Cavalry))
+		}
+		if a.Priest > 0 {
+			parts = append(parts, fmt.Sprintf("%d Hiereus", a.Priest))
+		}
+		if a.Ship > 0 {
+			parts = append(parts, fmt.Sprintf("%d Trireme", a.Ship))
+		}
+		if a.Catapult > 0 {
+			parts = append(parts, fmt.Sprintf("%d Siege", a.Catapult))
+		}
+		if len(parts) == 0 {
+			return "none"
+		}
+		return strings.Join(parts, " · ")
+	}
+
+	sb.WriteString(fmt.Sprintf("ATTACKER  %s  [DP %.0f", armyStr(att), result.AttackStrength-support))
+	if support > 0 {
+		sb.WriteString(fmt.Sprintf(" + %.0f support", support))
+	}
+	sb.WriteString(fmt.Sprintf(" = %.0f]\n", result.AttackStrength))
+
+	wallMod := 1.0 + float64(walls)*0.25
+	rawDef := result.DefenceStrength / wallMod
+	sb.WriteString(fmt.Sprintf("DEFENDER  %s  [DP %.0f", armyStr(def), rawDef))
+	if walls > 0 {
+		sb.WriteString(fmt.Sprintf(" × walls L%d (×%.2f) = %.0f", walls, wallMod, result.DefenceStrength))
+	}
+	sb.WriteString("]\n")
+
+	if result.Outcome == OutcomeAttackerWins {
+		sb.WriteString(fmt.Sprintf("RESULT    Attacker victory  (%.0f vs %.0f)\n", result.AttackStrength, result.DefenceStrength))
+		sb.WriteString(fmt.Sprintf("          Attacker losses %.0f%%  ·  Settlement captured", result.AttackerLosses*100))
+	} else {
+		sb.WriteString(fmt.Sprintf("RESULT    Defender holds  (%.0f vs %.0f)\n", result.AttackStrength, result.DefenceStrength))
+		sb.WriteString(fmt.Sprintf("          Attacker losses %.0f%%  ·  Defender losses %.0f%%", result.AttackerLosses*100, result.DefenderLosses*100))
+	}
+
+	return sb.String()
 }
 
 func (h *ArrivalHandler) recordEvent(ctx context.Context, streamID, worldID uuid.UUID, result CombatResult, marchID uuid.UUID) {

@@ -170,6 +170,7 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/march", ph.March)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/marches", ph.Marches)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade", ph.TradeRoutes)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)

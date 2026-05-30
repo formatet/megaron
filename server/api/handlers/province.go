@@ -58,18 +58,43 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
 	if err == nil {
 		now := h.clk.Now()
+
+		// Build queue — include so API clients don't need a separate endpoint.
+		type buildItem struct {
+			Type       string    `json:"type"`
+			CompleteAt time.Time `json:"complete_at"`
+		}
+		var buildQueue []buildItem
+		qrows, _ := h.pool.Query(r.Context(),
+			`SELECT building_type, complete_at FROM build_queue
+			 WHERE settlement_id = $1 ORDER BY complete_at`,
+			sett.ID,
+		)
+		if qrows != nil {
+			for qrows.Next() {
+				var bi buildItem
+				_ = qrows.Scan(&bi.Type, &bi.CompleteAt)
+				buildQueue = append(buildQueue, bi)
+			}
+			qrows.Close()
+		}
+		if buildQueue == nil {
+			buildQueue = []buildItem{}
+		}
+
 		resp["settlement"] = map[string]any{
-			"id":         sett.ID,
-			"name":       sett.Name,
-			"owner_id":   sett.OwnerID,
-			"kingdom_id": sett.KingdomID,
-			"culture":    sett.CultureID,
-			"state":      sett.State,
-			"population": sett.Population,
-			"walls":      sett.WallLevel,
-			"loyalty":    sett.Loyalty,
-			"resources":  sett.Resources.Snapshot(now),
-			"army":       sett.Army,
+			"id":          sett.ID,
+			"name":        sett.Name,
+			"owner_id":    sett.OwnerID,
+			"kingdom_id":  sett.KingdomID,
+			"culture":     sett.CultureID,
+			"state":       sett.State,
+			"population":  sett.Population,
+			"walls":       sett.WallLevel,
+			"loyalty":     sett.Loyalty,
+			"resources":   sett.Resources.Snapshot(now),
+			"army":        sett.Army,
+			"build_queue": buildQueue,
 		}
 	}
 
@@ -982,6 +1007,78 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 		"output_key": outputKey,
 		"produced":   produced,
 	})
+}
+
+// Marches handles GET /worlds/:worldID/provinces/:provinceID/marches.
+// Returns the last 20 marches from this province (owner only) including combat reports.
+func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var ownerID *uuid.UUID
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT owner_id FROM settlements WHERE province_id = $1 AND world_id = $2`,
+		provinceID, worldID,
+	).Scan(&ownerID)
+	if ownerID == nil || *ownerID != playerID {
+		writeError(w, http.StatusForbidden, "not your province")
+		return
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT id, target_id, intent, infantry, cavalry, catapult, priest, ship, elite_infantry,
+		        resolved, arrives_at, combat_report
+		 FROM marching_armies
+		 WHERE origin_id = $1 AND world_id = $2
+		 ORDER BY arrives_at DESC LIMIT 20`,
+		provinceID, worldID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load marches")
+		return
+	}
+	defer rows.Close()
+
+	type marchItem struct {
+		ID            uuid.UUID  `json:"id"`
+		TargetID      uuid.UUID  `json:"target_id"`
+		Intent        string     `json:"intent"`
+		Infantry      int        `json:"infantry"`
+		Cavalry       int        `json:"cavalry"`
+		Catapult      int        `json:"catapult"`
+		Priest        int        `json:"priest"`
+		Ship          int        `json:"ship"`
+		EliteInfantry int        `json:"elite_infantry"`
+		Resolved      bool       `json:"resolved"`
+		ArrivesAt     time.Time  `json:"arrives_at"`
+		CombatReport  *string    `json:"combat_report,omitempty"`
+	}
+	var result []marchItem
+	for rows.Next() {
+		var m marchItem
+		if err := rows.Scan(&m.ID, &m.TargetID, &m.Intent,
+			&m.Infantry, &m.Cavalry, &m.Catapult, &m.Priest, &m.Ship, &m.EliteInfantry,
+			&m.Resolved, &m.ArrivesAt, &m.CombatReport); err == nil {
+			result = append(result, m)
+		}
+	}
+	if result == nil {
+		result = []marchItem{}
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 // TradeRoutes handles GET /worlds/:worldID/provinces/:provinceID/trade.
