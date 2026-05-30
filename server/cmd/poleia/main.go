@@ -58,6 +58,8 @@ func main() {
 		buildCmd(),
 		worldsCmd(),
 		kingdomsCmd(),
+		goodsCmd(),
+		tradeCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
