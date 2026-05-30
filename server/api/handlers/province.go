@@ -1142,10 +1142,13 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT tr.id, ds.name, tr.good_key, tr.quantity, tr.departs_at, tr.arrives_at
+		`SELECT tr.id, ds.name, tr.good_key, tr.quantity, tr.departs_at, tr.arrives_at,
+		        op.map_q, op.map_r, dp.map_q, dp.map_r
 		 FROM trade_routes tr
 		 JOIN settlements ds ON ds.id = tr.destination_id
 		 JOIN settlements os ON os.id = tr.origin_id
+		 JOIN provinces op ON op.id = os.province_id
+		 JOIN provinces dp ON dp.id = ds.province_id
 		 WHERE os.province_id = $1 AND tr.world_id = $2 AND tr.resolved = false
 		 ORDER BY tr.arrives_at ASC`,
 		provinceID, worldID,
@@ -1157,17 +1160,24 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type routeItem struct {
-		ID          uuid.UUID `json:"id"`
-		DestName    string    `json:"destination_name"`
-		GoodKey     string    `json:"good_key"`
-		Quantity    float64   `json:"quantity"`
-		DepartsAt   time.Time `json:"departs_at"`
-		ArrivesAt   time.Time `json:"arrives_at"`
+		ID            uuid.UUID `json:"id"`
+		DestName      string    `json:"destination_name"`
+		GoodKey       string    `json:"good_key"`
+		Quantity      float64   `json:"quantity"`
+		DeliveredQty  float64   `json:"delivered_qty"`
+		DistanceBonus float64   `json:"distance_bonus"`
+		DepartsAt     time.Time `json:"departs_at"`
+		ArrivesAt     time.Time `json:"arrives_at"`
 	}
 	var result []routeItem
 	for rows.Next() {
 		var ri routeItem
-		if err := rows.Scan(&ri.ID, &ri.DestName, &ri.GoodKey, &ri.Quantity, &ri.DepartsAt, &ri.ArrivesAt); err == nil {
+		var oq, or_, dq, dr int
+		if err := rows.Scan(&ri.ID, &ri.DestName, &ri.GoodKey, &ri.Quantity, &ri.DepartsAt, &ri.ArrivesAt,
+			&oq, &or_, &dq, &dr); err == nil {
+			dist := province.HexDistance(province.MapPosition{Q: oq, R: or_}, province.MapPosition{Q: dq, R: dr})
+			ri.DistanceBonus = 1.0 + math.Sqrt(float64(dist))*0.1
+			ri.DeliveredQty = ri.Quantity * ri.DistanceBonus
 			result = append(result, ri)
 		}
 	}

@@ -379,7 +379,9 @@ async function sendTrade() {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    showResult('trade-result', `${qty}× ${good} en route · ${Math.round(data.travel_min)} min`, true);
+    const bonus = data.distance_bonus ? ` · +${Math.round((data.distance_bonus - 1) * 100)}% distance` : '';
+    const delivered = data.delivered_qty ? ` → ${data.delivered_qty.toFixed(1)} delivered` : '';
+    showResult('trade-result', `${qty}× ${good}${delivered} · ${Math.round(data.travel_min)} min${bonus}`, true);
     loadGoods();
     loadTradeRoutes();
   } else {
@@ -426,9 +428,11 @@ async function loadTradeRoutes() {
     const arrives = new Date(r.arrives_at).getTime();
     const mins = Math.max(0, Math.round((arrives - now) / 60000));
     const eta = mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h${mins%60 ? ` ${mins%60}m` : ''}`;
+    const qty = r.delivered_qty ? r.delivered_qty.toFixed(1) : (Math.round(r.quantity * 10)/10);
+    const bonus = r.distance_bonus && r.distance_bonus > 1.01 ? ` <span class="tr-bonus">+${Math.round((r.distance_bonus - 1) * 100)}%</span>` : '';
     return `<div class="trade-route-row">
       <span class="tr-good">${r.good_key}</span>
-      <span class="tr-qty">${Math.round(r.quantity * 10)/10}</span>
+      <span class="tr-qty">${qty}${bonus}</span>
       <span class="tr-arrow">→</span>
       <span class="tr-dest">${r.destination_name}</span>
       <span class="tr-eta">${eta}</span>
