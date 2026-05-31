@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"math/rand"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -12,6 +13,65 @@ import (
 	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/world"
 )
+
+var cultureSettlementNames = map[string][]string{
+	"akhaier": {
+		"Mykene", "Tiryns", "Argos", "Pylos", "Sparta", "Iolkos",
+		"Orchomenos", "Asine", "Midea", "Nauplia", "Epidauros",
+		"Korinthos", "Megara", "Athenai", "Thebai", "Plataia",
+		"Eretria", "Chalkis", "Pharsalos", "Larissa", "Phaistos",
+		"Knossos", "Gortyn", "Kalydon", "Ithake", "Dodona",
+		"Amyklai", "Arne", "Oikhalia", "Pherai", "Eleusis",
+	},
+	"khemetiu": {
+		"Waset", "Memphis", "Iunu", "Avaris", "Khemenu", "Nekhen",
+		"Per-Neith", "Sapi-Res", "Tjaru", "Ineb-hedj", "Akhetaten",
+		"Edfu", "Abydos", "Esna", "Dendara", "Sais",
+		"Bubastis", "Tanis", "Koptos", "Hermopolis", "Per-Ramesses",
+		"Khmun", "Mennefer", "Thinis", "Akhmin", "Djanet",
+		"Khent-Abt", "Imet", "Per-Bastet", "Sekhemkhet",
+	},
+	"knaani": {
+		"Tyros", "Sidon", "Byblos", "Akko", "Megiddo", "Ashdod",
+		"Ashkelon", "Gaza", "Hazor", "Shechem", "Jericho", "Jaffa",
+		"Dor", "Ugarit", "Alalakh", "Qatna", "Gezer",
+		"Lachish", "Timna", "Arwad", "Berytus", "Acre",
+		"Beit-Shean", "Taanach", "Megiddu", "Arvad", "Ullaza",
+		"Sumur", "Irqata", "Tunip",
+	},
+	"thrakes": {
+		"Seuthopolis", "Kabyle", "Kypsela", "Maroneia", "Abdera",
+		"Ainos", "Samothrake", "Doriskos", "Perinthos", "Byzantion",
+		"Anchialos", "Odessus", "Apollonia", "Mesambria", "Istros",
+		"Tomis", "Kallatis", "Bizone", "Dionysopolis", "Tyras",
+		"Olbia", "Kardia", "Lysimacheia", "Amadokos", "Teres",
+		"Odrysai", "Philippoi", "Eion", "Amphipolis", "Abros",
+	},
+	"pelasger": {
+		"Larisa", "Antron", "Pteleon", "Halos", "Larymna",
+		"Aulis", "Gla", "Eleusis", "Brauron", "Tanagra",
+		"Thisbe", "Koroneia", "Arne", "Itonos", "Meliboia",
+		"Krannon", "Gomphoi", "Pelinnai", "Olosson", "Alos",
+		"Gynaikopolis", "Pelinnaion", "Achilleion", "Phthia", "Alope",
+		"Halai", "Mopsos", "Peiros", "Enipeus", "Titarisios",
+	},
+	"hatti": {
+		"Hattusa", "Kanesh", "Nesa", "Washukanni", "Kussara",
+		"Zalpa", "Ankuwa", "Zippalanda", "Katapa", "Arinna",
+		"Nerik", "Tarhuntassa", "Kumani", "Alisar", "Samuha",
+		"Apasas", "Puranda", "Millawanda", "Arzawa", "Karabel",
+		"Kizzuwatna", "Wilusa", "Lazpa", "Seha", "Hapalla",
+		"Pitassa", "Lukka", "Pahhuwa", "Tegarama", "Ishuwa",
+	},
+}
+
+func settlementNameForCulture(culture string) string {
+	names := cultureSettlementNames[culture]
+	if len(names) == 0 {
+		return "Unknown Settlement"
+	}
+	return names[rand.Intn(len(names))]
+}
 
 // JoinHandler handles POST /worlds/:worldID/join.
 type JoinHandler struct {
@@ -81,11 +141,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&req)
 
 	if req.ProvinceName == "" {
-		if uname, ok := auth.UsernameFromContext(r.Context()); ok {
-			req.ProvinceName = uname + "'s Domain"
-		} else {
-			req.ProvinceName = "Unknown Province"
-		}
+		req.ProvinceName = settlementNameForCulture(req.Culture)
 	}
 	if req.Culture == "" {
 		req.Culture = string(province.CultureAkhaier)

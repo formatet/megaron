@@ -63,9 +63,9 @@
     <button class="mctx-close" onclick="closeMarchCtx()">✕</button>
   </div>
   <div class="mctx-intent" id="mctx-intent-row">
-    <button class="mctx-ibtn active" id="mctx-attack"    onclick="setMarchIntent('attack')">Attack</button>
-    <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')">Reinforce</button>
-    <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')">Support</button>
+    <button class="mctx-ibtn active" id="mctx-attack"    onclick="setMarchIntent('attack')"    title="March to attack — units fight defenders on arrival">Attack</button>
+    <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')" title="March to reinforce — units join the garrison on arrival">Reinforce</button>
+    <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')"   title="March in support — bolsters any allied attack arriving while still in transit; joins garrison on arrival">Support</button>
   </div>
   <div class="mctx-units" id="mctx-units"></div>
   <div class="mctx-foot">

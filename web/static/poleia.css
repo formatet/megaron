@@ -422,6 +422,12 @@ footer {
 .loyalty-3 { color:var(--safe); border-color:var(--safe); }
 .loyalty-4 { color:var(--gold); border-color:var(--gold); }
 
+/* Settlement switcher (shown when player owns multiple settlements) */
+.sett-switcher { display:flex; gap:.3rem; flex-wrap:wrap; }
+.sett-switch-link { background:var(--bg-panel); border:1px solid var(--border); padding:.2rem .7rem; font-size:.75rem; font-family:var(--mono); color:var(--text-dim); text-decoration:none; }
+.sett-switch-link.active { background:var(--accent); color:var(--text-light); border-color:var(--border-in); }
+.sett-switch-link:hover:not(.active) { background:var(--bg-raised); color:var(--text); }
+
 /* Incoming attack banner */
 .attack-warn { background:var(--blood); color:var(--bg-raised); padding:.6rem .9rem; border:2px solid var(--border-in); }
 .aw-title  { font-size:.75rem; text-transform:uppercase; letter-spacing:.15em; color:var(--gold); font-family:var(--mono); margin-bottom:.2rem; }

@@ -113,6 +113,28 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			trainQueue = []trainItem{}
 		}
 
+		// Buildings — already completed (agents/clients use this to avoid re-queuing).
+		type buildingItem struct {
+			Type  string `json:"type"`
+			Level int    `json:"level"`
+		}
+		var buildings []buildingItem
+		brows, _ := h.pool.Query(r.Context(),
+			`SELECT building_type, level FROM buildings WHERE settlement_id = $1 ORDER BY building_type`,
+			sett.ID,
+		)
+		if brows != nil {
+			for brows.Next() {
+				var bi buildingItem
+				_ = brows.Scan(&bi.Type, &bi.Level)
+				buildings = append(buildings, bi)
+			}
+			brows.Close()
+		}
+		if buildings == nil {
+			buildings = []buildingItem{}
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":             sett.ID,
 			"name":           sett.Name,
@@ -127,6 +149,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"army":           sett.Army,
 			"build_queue":    buildQueue,
 			"training_queue": trainQueue,
+			"buildings":      buildings,
 		}
 	}
 

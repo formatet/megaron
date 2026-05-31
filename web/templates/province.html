@@ -33,6 +33,17 @@
     {{template "resource_bar.html" .}}
   </div>
 
+  {{if gt (len .OwnSettlements) 1}}
+  <div class="sett-switcher">
+    {{range .OwnSettlements}}
+    <a href="/world/{{$.WorldID}}/?sid={{.ID}}"
+       class="sett-switch-link{{if eq .ID $.ActiveSettlement}} active{{end}}">
+      {{.Name}}{{if .IsCapital}} ★{{end}}{{if eq .ControlType "occupied"}} (Occupied){{else if eq .ControlType "colony"}} (Colony){{end}}
+    </a>
+    {{end}}
+  </div>
+  {{end}}
+
   {{if .Incoming}}
   {{range .Incoming}}{{if eq .Intent "attack"}}
   <div class="attack-warn">

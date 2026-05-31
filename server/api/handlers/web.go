@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/settlement"
 	"github.com/poleia/server/internal/world"
 )
 
@@ -210,10 +211,45 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s, err := loadPlayerCapital(r.Context(), h.pool, playerID, worldID)
-	if err != nil {
-		h.render(w, "no_province.html", map[string]any{"WorldID": worldID})
-		return
+	// ?sid= lets the player view any settlement they own (conquered, colony, capital).
+	var s *settlement.Settlement
+	if sidStr := r.URL.Query().Get("sid"); sidStr != "" {
+		if sid, parseErr := uuid.Parse(sidStr); parseErr == nil {
+			if cand, loadErr := loadSettlement(r.Context(), h.pool, sid, worldID); loadErr == nil {
+				if cand.OwnerID != nil && *cand.OwnerID == playerID {
+					s = cand
+				}
+			}
+		}
+	}
+	if s == nil {
+		var err error
+		s, err = loadPlayerCapital(r.Context(), h.pool, playerID, worldID)
+		if err != nil {
+			h.render(w, "no_province.html", map[string]any{"WorldID": worldID})
+			return
+		}
+	}
+
+	// List all settlements the player owns (for the switcher bar).
+	type settSwitchItem struct {
+		ID          uuid.UUID
+		Name        string
+		IsCapital   bool
+		ControlType string
+	}
+	var ownSettlements []settSwitchItem
+	switchRows, _ := h.pool.Query(r.Context(),
+		`SELECT id, name, is_capital, control_type FROM settlements WHERE world_id = $1 AND owner_id = $2 ORDER BY is_capital DESC, name`,
+		worldID, playerID,
+	)
+	if switchRows != nil {
+		for switchRows.Next() {
+			var ss settSwitchItem
+			_ = switchRows.Scan(&ss.ID, &ss.Name, &ss.IsCapital, &ss.ControlType)
+			ownSettlements = append(ownSettlements, ss)
+		}
+		switchRows.Close()
 	}
 
 	now := h.clk.Now()
@@ -394,17 +430,19 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "province.html", map[string]any{
-		"Province":     pv,
-		"Resources":    resources,
-		"Queue":        queue,
-		"RecruitQueue": recruitQueue,
-		"Marches":      marches,
-		"Incoming":     incoming,
-		"Buildings":    buildings,
-		"Built":        built,
-		"WorldID":      worldID,
-		"Now":          now,
-		"DivineMood":   divineMood,
+		"Province":         pv,
+		"Resources":        resources,
+		"Queue":            queue,
+		"RecruitQueue":     recruitQueue,
+		"Marches":          marches,
+		"Incoming":         incoming,
+		"Buildings":        buildings,
+		"Built":            built,
+		"WorldID":          worldID,
+		"Now":              now,
+		"DivineMood":       divineMood,
+		"OwnSettlements":   ownSettlements,
+		"ActiveSettlement": s.ID,
 	})
 }
 
