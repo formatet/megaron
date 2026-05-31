@@ -14,54 +14,59 @@ import (
 	"github.com/poleia/server/internal/world"
 )
 
+// cultureSettlementNames maps culture keys to Bronze Age city name pools.
+// akhaier/khemetiu/knaani/hatti sourced from bronsaleders_cities_mytologi.csv;
+// thrakes/pelasger from archaeological and Linear B sources (not in CSV).
 var cultureSettlementNames = map[string][]string{
+	// Mykensk + Minoisk (Kreta) — GREKISK MYTOLOGI + KRIT i CSV
 	"akhaier": {
-		"Mykene", "Tiryns", "Argos", "Pylos", "Sparta", "Iolkos",
-		"Orchomenos", "Asine", "Midea", "Nauplia", "Epidauros",
-		"Korinthos", "Megara", "Athenai", "Thebai", "Plataia",
-		"Eretria", "Chalkis", "Pharsalos", "Larissa", "Phaistos",
-		"Knossos", "Gortyn", "Kalydon", "Ithake", "Dodona",
-		"Amyklai", "Arne", "Oikhalia", "Pherai", "Eleusis",
+		"Ilion", "Mykene", "Tiryns", "Argos", "Pylos", "Sparta",
+		"Thebe", "Korint", "Midea", "Dendra", "Orchomenos", "Gla",
+		"Asine", "Knossos", "Phaistos", "Mallia", "Zakros", "Kydonia",
+		"Gournia", "Palaikastro", "Vasiliki", "Aten", "Eleusis",
+		"Iolkos", "Amyklai", "Kalydon", "Dodona", "Nauplia",
+		"Epidauros", "Megara",
 	},
+	// Forntida Egypten — EGYPTEN i CSV
 	"khemetiu": {
-		"Waset", "Memphis", "Iunu", "Avaris", "Khemenu", "Nekhen",
-		"Per-Neith", "Sapi-Res", "Tjaru", "Ineb-hedj", "Akhetaten",
-		"Edfu", "Abydos", "Esna", "Dendara", "Sais",
-		"Bubastis", "Tanis", "Koptos", "Hermopolis", "Per-Ramesses",
-		"Khmun", "Mennefer", "Thinis", "Akhmin", "Djanet",
-		"Khent-Abt", "Imet", "Per-Bastet", "Sekhemkhet",
+		"Memfis", "Thebe", "Heliopolis", "Abydos", "Tanis",
+		"Dendera", "Edfu", "Kom Ombo", "Aswan", "Luxor",
+		"Karnak", "Amarna", "Herakleopolis", "Sais", "Bubastis",
+		"Buto", "Mendes", "Giza", "Saqqara", "Busiris",
+		"Hermopolis", "Coptos", "Elephantine", "Philae", "Abu Simbel",
 	},
+	// Kanaanitisk/Fenicisk — LEVANTEN i CSV
 	"knaani": {
-		"Tyros", "Sidon", "Byblos", "Akko", "Megiddo", "Ashdod",
-		"Ashkelon", "Gaza", "Hazor", "Shechem", "Jericho", "Jaffa",
-		"Dor", "Ugarit", "Alalakh", "Qatna", "Gezer",
-		"Lachish", "Timna", "Arwad", "Berytus", "Acre",
-		"Beit-Shean", "Taanach", "Megiddu", "Arvad", "Ullaza",
-		"Sumur", "Irqata", "Tunip",
+		"Ugarit", "Byblos", "Sidon", "Tyre", "Jeriko",
+		"Hazor", "Megiddo", "Gezer", "Lachish", "Beth Shan",
+		"Shechem", "Gibeon", "Hebron", "Beersheba", "Jerusalem",
+		"Joppe", "Acco", "Dor", "Ashkelon", "Ashdod",
+		"Ekron", "Gath", "Gaza", "Heshbon", "Rabbah",
+		"Sodom", "Gomorra", "Ai",
 	},
+	// Hettitisk — ANATOLIEN i CSV + Mesopotamiengränsen (Harran, Ebla, Mari, Urkesh, Assur)
+	"hatti": {
+		"Hattusa", "Wilusa", "Kanesh", "Sapinuwa", "Milawata",
+		"Miletos", "Sardis", "Ephesos", "Carchemish", "Zalpa",
+		"Kussara", "Purushanda", "Arzawa", "Ahhiyawa", "Zippalanda",
+		"Arinna", "Nerik", "Tarhuntassa", "Samuha", "Ankuwa",
+		"Harran", "Ebla", "Mari", "Urkesh", "Assur",
+	},
+	// Thrakisk — arkeologiska och antika källor (ej i CSV)
 	"thrakes": {
 		"Seuthopolis", "Kabyle", "Kypsela", "Maroneia", "Abdera",
 		"Ainos", "Samothrake", "Doriskos", "Perinthos", "Byzantion",
 		"Anchialos", "Odessus", "Apollonia", "Mesambria", "Istros",
-		"Tomis", "Kallatis", "Bizone", "Dionysopolis", "Tyras",
-		"Olbia", "Kardia", "Lysimacheia", "Amadokos", "Teres",
-		"Odrysai", "Philippoi", "Eion", "Amphipolis", "Abros",
+		"Tomis", "Kallatis", "Bizone", "Tyras", "Kardia",
+		"Lysimacheia", "Odrysai", "Eion", "Amphipolis", "Oisyme",
 	},
+	// Pelasgisk (förhellenistisk Egeiskum) — Linear B och arkeologiska källor (ej i CSV)
 	"pelasger": {
-		"Larisa", "Antron", "Pteleon", "Halos", "Larymna",
-		"Aulis", "Gla", "Eleusis", "Brauron", "Tanagra",
-		"Thisbe", "Koroneia", "Arne", "Itonos", "Meliboia",
-		"Krannon", "Gomphoi", "Pelinnai", "Olosson", "Alos",
-		"Gynaikopolis", "Pelinnaion", "Achilleion", "Phthia", "Alope",
-		"Halai", "Mopsos", "Peiros", "Enipeus", "Titarisios",
-	},
-	"hatti": {
-		"Hattusa", "Kanesh", "Nesa", "Washukanni", "Kussara",
-		"Zalpa", "Ankuwa", "Zippalanda", "Katapa", "Arinna",
-		"Nerik", "Tarhuntassa", "Kumani", "Alisar", "Samuha",
-		"Apasas", "Puranda", "Millawanda", "Arzawa", "Karabel",
-		"Kizzuwatna", "Wilusa", "Lazpa", "Seha", "Hapalla",
-		"Pitassa", "Lukka", "Pahhuwa", "Tegarama", "Ishuwa",
+		"Larisa", "Antron", "Pteleon", "Halos", "Aulis",
+		"Brauron", "Tanagra", "Thisbe", "Koroneia", "Itonos",
+		"Meliboia", "Krannon", "Gomphoi", "Olosson", "Phthia",
+		"Halai", "Arne", "Pelinnaion", "Achilleion", "Alope",
+		"Titarisios", "Enipeus", "Peiros", "Trikka", "Larymna",
 	},
 }
 
