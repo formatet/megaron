@@ -27,7 +27,7 @@
 
   <!-- Resource bar — HTMX partial refresh every 30s -->
   <div id="resource-bar-wrap"
-       hx-get="/world/{{.WorldID}}/resource-bar"
+       hx-get="/world/{{.WorldID}}/resource-bar?sid={{.ActiveSettlement}}"
        hx-trigger="load, every 30s"
        hx-swap="innerHTML">
     {{template "resource_bar.html" .}}

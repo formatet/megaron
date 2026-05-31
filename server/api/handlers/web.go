@@ -454,10 +454,23 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	s, err := loadPlayerCapital(r.Context(), h.pool, playerID, worldID)
-	if err != nil {
-		http.Error(w, "no settlement", http.StatusNotFound)
-		return
+	var s *settlement.Settlement
+	var err error
+	if sidStr := r.URL.Query().Get("sid"); sidStr != "" {
+		if sid, parseErr := uuid.Parse(sidStr); parseErr == nil {
+			if cand, loadErr := loadSettlement(r.Context(), h.pool, sid, worldID); loadErr == nil {
+				if cand.OwnerID != nil && *cand.OwnerID == playerID {
+					s = cand
+				}
+			}
+		}
+	}
+	if s == nil {
+		s, err = loadPlayerCapital(r.Context(), h.pool, playerID, worldID)
+		if err != nil {
+			http.Error(w, "no settlement", http.StatusNotFound)
+			return
+		}
 	}
 	now := h.clk.Now()
 	resources := s.Resources.Snapshot(now)
