@@ -5,12 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math/rand"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/notify"
 )
+
+const tradeRiskPct = 0.05 // 5% chance a caravan is lost to storm or pirates
+
+var tradeLostReasons = []string{"storm", "pirates", "pirates", "storm", "bandits"}
 
 // DeliveryHandler processes ScheduledTradeDelivery events.
 type DeliveryHandler struct {
@@ -57,6 +62,34 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		return nil // Route gone or already cleaned up.
 	}
 	if resolved {
+		return nil
+	}
+
+	// Trade risk: 5% chance caravan is lost to storm or pirates.
+	if rand.Float64() < tradeRiskPct {
+		reason := tradeLostReasons[rand.Intn(len(tradeLostReasons))]
+		if _, err = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID); err != nil {
+			return fmt.Errorf("mark lost route resolved: %w", err)
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return fmt.Errorf("commit loss: %w", err)
+		}
+		_, _ = h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeLost",
+			map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason, "route_id": p.TradeRouteID},
+			e.WorldID, &e.ID,
+		)
+		if h.hub != nil {
+			h.hub.Broadcast(e.WorldID, notify.Msg{
+				Kind: "TradeLost",
+				Payload: map[string]any{
+					"destination_id": p.DestinationID,
+					"good_key":       p.GoodKey,
+					"quantity":       p.Quantity,
+					"reason":         reason,
+				},
+			})
+		}
+		slog.Info("trade lost", "route", p.TradeRouteID, "good", p.GoodKey, "reason", reason)
 		return nil
 	}
 

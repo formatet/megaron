@@ -914,7 +914,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Amount:   current,
 			Rate:     rate,
 			Cap:      cap,
-			Price:    goodLocalPrice(baseValue, current, cap),
+			Price:    goodLocalPrice(baseValue, current, rate, cap),
 		})
 	}
 	if result == nil {
@@ -1561,19 +1561,28 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
-// goodLocalPrice computes local price: baseValue × clamp(cap×0.3 / max(stock, ε), 0.5, 3.0).
-func goodLocalPrice(baseValue, stock, cap float64) float64 {
-	const eps = 0.001
-	s := stock
-	if s < eps {
-		s = eps
+// goodLocalPrice mirrors economy.LocalPrice for use within this package.
+func goodLocalPrice(baseValue, stock, ratePerMin, cap float64) float64 {
+	const lookahead = 60.0 * 24.0
+	projected := stock + ratePerMin*lookahead
+	if projected < 0 {
+		projected = 0
 	}
-	ratio := (cap * 0.3) / s
-	if ratio < 0.5 {
-		ratio = 0.5
+	if projected > cap {
+		projected = cap
 	}
-	if ratio > 3.0 {
-		ratio = 3.0
+	reference := cap * 0.3
+	if reference <= 0 {
+		return baseValue
 	}
-	return baseValue * ratio
+	shortage := math.Max(0, (reference-projected)/reference)
+	surplus := 0.0
+	if cap-reference > 0 {
+		surplus = math.Max(0, (projected-reference)/(cap-reference))
+	}
+	price := baseValue * (1 + 2.0*shortage) * (1 - 0.5*surplus)
+	if price < 0 {
+		price = 0
+	}
+	return price
 }

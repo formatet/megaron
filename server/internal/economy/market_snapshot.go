@@ -3,7 +3,6 @@ package economy
 import (
 	"context"
 	"log/slog"
-	"math"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,6 +16,7 @@ func RecordMarketSnapshot(ctx context.Context, pool *pgxpool.Pool, playerID, set
 		`SELECT sg.good_key, g.base_value,
 		        GREATEST(0, LEAST(sg.cap,
 		            sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate))),
+		        sg.rate,
 		        sg.cap
 		 FROM settlement_goods sg
 		 JOIN goods g ON g.key = sg.good_key
@@ -36,14 +36,11 @@ func RecordMarketSnapshot(ctx context.Context, pool *pgxpool.Pool, playerID, set
 	var snaps []snap
 	for rows.Next() {
 		var goodKey string
-		var baseValue, stock, cap float64
-		if err := rows.Scan(&goodKey, &baseValue, &stock, &cap); err != nil {
+		var baseValue, stock, rate, cap float64
+		if err := rows.Scan(&goodKey, &baseValue, &stock, &rate, &cap); err != nil {
 			continue
 		}
-		ref := cap * 0.3
-		s := math.Max(stock, 0.001)
-		ratio := math.Min(math.Max(ref/s, 0.5), 3.0)
-		snaps = append(snaps, snap{goodKey: goodKey, stock: stock, price: baseValue * ratio})
+		snaps = append(snaps, snap{goodKey: goodKey, stock: stock, price: LocalPrice(baseValue, stock, rate, cap)})
 	}
 	if err := rows.Err(); err != nil {
 		return err
