@@ -169,7 +169,14 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// only adds rate for goods the terrain actually produces.
 	_, err = tx.Exec(r.Context(),
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 SELECT $1, g.key, 0, 0,
+		 SELECT $1, g.key,
+		        CASE g.key
+		            WHEN 'grain' THEN 150
+		            WHEN 'cedar' THEN 120
+		            WHEN 'stone' THEN 120
+		            ELSE 0
+		        END,
+		        0,
 		        CASE g.key
 		            WHEN 'grain'  THEN 1000
 		            WHEN 'cedar'  THEN 500
