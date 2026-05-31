@@ -164,6 +164,30 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Seed a zero row for every good first so the settlement always has full
+	// inventory schema regardless of terrain. The production-rule UPSERT below
+	// only adds rate for goods the terrain actually produces.
+	_, err = tx.Exec(r.Context(),
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		 SELECT $1, g.key, 0, 0,
+		        CASE g.key
+		            WHEN 'grain'  THEN 1000
+		            WHEN 'cedar'  THEN 500
+		            WHEN 'stone'  THEN 1000
+		            WHEN 'copper' THEN 300
+		            WHEN 'tin'    THEN 300
+		            ELSE 200
+		        END,
+		        now()
+		 FROM goods g
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		settlementID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not seed goods")
+		return
+	}
+
 	// Init settlement_goods from terrain-only production rules.
 	// Cap is chosen per good: staples (grain) get 1000, bulk (cedar, stone) get 500-1000,
 	// other goods default to 200.
