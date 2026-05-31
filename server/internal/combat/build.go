@@ -137,7 +137,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 
 	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "BuildComplete", map[string]any{
 		"building_type": p.BuildingType,
-	}, e.WorldID, &e.ID); err != nil {
+	}, e.WorldID, nil); err != nil {
 		slog.Error("record BuildComplete event", "err", err)
 	}
 

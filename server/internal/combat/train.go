@@ -54,7 +54,7 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "TrainComplete", map[string]any{
 		"unit_type": p.UnitType,
 		"count":     p.Count,
-	}, e.WorldID, &e.ID); err != nil {
+	}, e.WorldID, nil); err != nil {
 		slog.Error("record TrainComplete event", "err", err)
 	}
 

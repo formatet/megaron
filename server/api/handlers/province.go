@@ -200,6 +200,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		TargetID      string `json:"target_id"`
 		TargetQ       *int   `json:"target_q"` // for colonize: (q,r) of unclaimed tile
 		TargetR       *int   `json:"target_r"`
+		ColonyName    string `json:"colony_name"` // optional player-chosen name for colonize
 		Intent        string `json:"intent"`
 		Infantry      int    `json:"infantry"`
 		Cavalry       int    `json:"cavalry"`
@@ -390,15 +391,21 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var colonyName *string
+	if req.Intent == "colonize" && req.ColonyName != "" {
+		n := req.ColonyName
+		colonyName = &n
+	}
+
 	var marchID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO marching_armies
-		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at, colony_name)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 		 RETURNING id`,
 		worldID, sourceID, targetID,
 		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry,
-		req.Intent, now, arrivesAt,
+		req.Intent, now, arrivesAt, colonyName,
 	).Scan(&marchID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not send army")

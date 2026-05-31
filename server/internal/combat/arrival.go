@@ -64,21 +64,23 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldID uuid.UUID) error {
 	var march struct {
-		ID       uuid.UUID
-		OriginID uuid.UUID
-		TargetID uuid.UUID
-		Intent   string
-		Army     province.ArmyComposition
-		Resolved bool
+		ID         uuid.UUID
+		OriginID   uuid.UUID
+		TargetID   uuid.UUID
+		Intent     string
+		Army       province.ArmyComposition
+		Resolved   bool
+		ColonyName *string
 	}
 	err := tx.QueryRow(ctx,
 		`SELECT id, origin_id, target_id, intent,
-		        infantry, cavalry, catapult, priest, ship, elite_infantry, resolved
+		        infantry, cavalry, catapult, priest, ship, elite_infantry, resolved, colony_name
 		 FROM marching_armies WHERE id = $1 FOR UPDATE`,
 		marchID,
 	).Scan(&march.ID, &march.OriginID, &march.TargetID, &march.Intent,
 		&march.Army.Infantry, &march.Army.Cavalry, &march.Army.Catapult,
-		&march.Army.Priest, &march.Army.Ship, &march.Army.EliteInfantry, &march.Resolved)
+		&march.Army.Priest, &march.Army.Ship, &march.Army.EliteInfantry, &march.Resolved,
+		&march.ColonyName)
 	if err != nil {
 		return fmt.Errorf("load march: %w", err)
 	}
@@ -95,7 +97,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	}
 
 	if march.Intent == "colonize" {
-		return h.colonize(ctx, tx, march.OriginID, march.TargetID, march.Army, worldID)
+		return h.colonize(ctx, tx, march.OriginID, march.TargetID, march.Army, worldID, march.ColonyName)
 	}
 
 	// Load attacker support from allied marches at same target.
@@ -459,7 +461,7 @@ func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, orig
 
 // colonize creates a new colony settlement in an unclaimed province.
 // If a settlement already exists, the colonists return home without creating a new one.
-func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, army province.ArmyComposition, worldID uuid.UUID) error {
+func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, army province.ArmyComposition, worldID uuid.UUID, chosenName *string) error {
 	// Idempotency: if someone got here first, return army home.
 	var existingID uuid.UUID
 	if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE province_id = $1`, targetID).Scan(&existingID); err == nil {
@@ -487,6 +489,9 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	}
 
 	name := province.SettlementNameForCulture(culture)
+	if chosenName != nil && *chosenName != "" {
+		name = *chosenName
+	}
 
 	var settlementID uuid.UUID
 	if err := tx.QueryRow(ctx,

@@ -67,8 +67,10 @@
     <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')" title="March to reinforce — units join the garrison on arrival">Reinforce</button>
     <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')"   title="March in support — bolsters any allied attack arriving while still in transit; joins garrison on arrival">Support</button>
   </div>
-  <div id="mctx-colonize-row" style="display:none;padding:.3rem .5rem;font-size:.75rem;color:var(--text-dim)">
+  <div id="mctx-colonize-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
     Colonize: army founds a new settlement on arrival.
+    <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
+      style="display:block;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
   </div>
   <div class="mctx-units" id="mctx-units"></div>
   <div class="mctx-foot">
@@ -246,6 +248,37 @@ function hexAtScreen(sx, sy) {
   if (dq > dr && dq > ds) rq = -rr - rs;
   else if (dr > ds) rr = -rq - rs;
   return {q: rq, r: rr};
+}
+
+// ── Hex path helpers ─────────────────────────────────────────────────────
+// Cube-coordinate lerp, rounded to nearest hex.
+function hexRoundLerp(q1, r1, q2, r2, t) {
+  const s1 = -q1-r1, s2 = -q2-r2;
+  const qf = q1*(1-t) + q2*t, rf = r1*(1-t) + r2*t, sf = s1*(1-t) + s2*t;
+  let qi = Math.round(qf), ri = Math.round(rf), si = Math.round(sf);
+  const dq = Math.abs(qi-qf), dr = Math.abs(ri-rf), ds = Math.abs(si-sf);
+  if (dq > dr && dq > ds) qi = -ri-si;
+  else if (dr > ds) ri = -qi-si;
+  return {q: qi, r: ri};
+}
+
+// Return pixel position along hex path at fractional progress, plus current hex.
+function hexPathPx(q1, r1, q2, r2, progress) {
+  const N = (Math.abs(q1-q2) + Math.abs(q1+r1-q2-r2) + Math.abs(r1-r2)) / 2;
+  if (N === 0) { const p = hexPx(q1,r1); return {x:p.x, y:p.y, q:q1, r:r1}; }
+  const ft = Math.min(N-0.001, progress * N); // stay within range
+  const step = Math.floor(ft);
+  const frac = ft - step;
+  const cur = hexRoundLerp(q1,r1,q2,r2, step/N);
+  const nxt = hexRoundLerp(q1,r1,q2,r2, Math.min(1,(step+1)/N));
+  const cp = hexPx(cur.q, cur.r), np = hexPx(nxt.q, nxt.r);
+  return { x: cp.x+(np.x-cp.x)*frac, y: cp.y+(np.y-cp.y)*frac, q: cur.q, r: cur.r };
+}
+
+// A tile is visible if tileData has it with terrain !== 'fog'.
+function isTileVisible(q, r) {
+  const t = tileData.find(t => t.q===q && t.r===r);
+  return t != null && t.terrain !== 'fog';
 }
 
 // ── Hex fill — solid path fill + outline ─────────────────────────────────
@@ -536,9 +569,10 @@ function render() {
     const departs = new Date(m.departs_at).getTime();
     const arrives  = new Date(m.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
-    const src = hexPx(m.origin_q, m.origin_r);
-    const dst = hexPx(m.target_q, m.target_r);
-    drawWalker(ctx, Math.round(src.x + (dst.x-src.x)*progress), Math.round(src.y + (dst.y-src.y)*progress), m.intent, walkPhase);
+    const pos = hexPathPx(m.origin_q, m.origin_r, m.target_q, m.target_r, progress);
+    if (isTileVisible(pos.q, pos.r)) {
+      drawWalker(ctx, Math.round(pos.x), Math.round(pos.y), m.intent, walkPhase);
+    }
   }
 
   // 6. Animated messengers
@@ -547,9 +581,10 @@ function render() {
     const sent   = new Date(m.sent_at).getTime();
     const arrives = new Date(m.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - sent) / (arrives - sent)));
-    const src = hexPx(m.origin_q, m.origin_r);
-    const dst = hexPx(m.dest_q, m.dest_r);
-    drawMessenger(ctx, Math.round(src.x + (dst.x-src.x)*progress), Math.round(src.y + (dst.y-src.y)*progress), walkPhase);
+    const pos = hexPathPx(m.origin_q, m.origin_r, m.dest_q, m.dest_r, progress);
+    if (isTileVisible(pos.q, pos.r)) {
+      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase);
+    }
   }
 
   // 7. Animated trade caravans
@@ -558,9 +593,10 @@ function render() {
     const departs = new Date(t.departs_at).getTime();
     const arrives = new Date(t.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
-    const src = hexPx(t.origin_q, t.origin_r);
-    const dst = hexPx(t.dest_q, t.dest_r);
-    drawCaravan(ctx, Math.round(src.x + (dst.x-src.x)*progress), Math.round(src.y + (dst.y-src.y)*progress), walkPhase);
+    const pos = hexPathPx(t.origin_q, t.origin_r, t.dest_q, t.dest_r, progress);
+    if (isTileVisible(pos.q, pos.r)) {
+      drawCaravan(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase);
+    }
   }
 
   ctx.restore();
@@ -833,6 +869,8 @@ function closeMarchCtx() {
   marchCtxTile   = null;
   marchCtxArmy   = null;
   document.getElementById('mctx-err').textContent = '';
+  const nameEl = document.getElementById('mctx-colony-name');
+  if (nameEl) nameEl.value = '';
 }
 
 function setMarchIntent(intent) {
@@ -964,6 +1002,9 @@ async function sendMarch() {
   if (marchCtxTile) {
     body.target_q = marchCtxTile.q;
     body.target_r = marchCtxTile.r;
+    const nameEl = document.getElementById('mctx-colony-name');
+    const chosenName = nameEl ? nameEl.value.trim() : '';
+    if (chosenName) body.colony_name = chosenName;
   } else {
     body.target_id = marchCtxTarget.id;
   }
