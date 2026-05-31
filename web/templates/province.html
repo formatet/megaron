@@ -284,14 +284,12 @@
       </select>
       <button class="btn-primary btn-small" onclick="setCultLevel()" style="width:100%;margin-top:.3rem">Save</button>
       <div id="cult-result" class="action-result"></div>
-      <div class="lp-title" style="margin-top:.8rem">Libation</div>
-      <div class="priest-strength-row">
-        <span class="lp-label">Priest strength</span>
-        <span id="priest-strength-val" class="num">—</span><span class="lp-label">/100</span>
-      </div>
-      <div class="lp-label" style="font-size:.7rem;margin:.2rem 0 .4rem">Costs 20 · grants +25 kharis · requires a Hiereus</div>
-      <button id="libation-btn" class="btn-secondary btn-small" onclick="performLibation()" style="width:100%">Pour Libation</button>
-      <div id="libation-result" class="action-result"></div>
+      <div class="lp-title" style="margin-top:.8rem">Rite of Intercession</div>
+      <div id="frenzy-active" class="action-result" style="display:none;color:var(--gold)"></div>
+      <div class="lp-label" style="font-size:.7rem;margin:.2rem 0 .4rem">Costs 5 grain · requires a Hiereus · success depends on divine mood</div>
+      <div id="rite-chance" class="lp-label" style="font-family:var(--mono);font-size:.7rem;margin-bottom:.4rem"></div>
+      <button id="rite-btn" class="btn-secondary btn-small" onclick="performRite()" style="width:100%">Perform Rite →</button>
+      <div id="rite-result" class="action-result"></div>
     </section>
 
   </div>
@@ -622,10 +620,27 @@ async function loadCultLevel() {
   }
   const sel = document.getElementById('cult-level-select');
   if (sel && data.cult_level) sel.value = data.cult_level;
-  const ps = document.getElementById('priest-strength-val');
-  if (ps && data.priest_strength != null) ps.textContent = data.priest_strength;
-  const btn = document.getElementById('libation-btn');
-  if (btn) btn.disabled = (data.priest_strength ?? 100) < 20;
+
+  // Rite chance label — derived from divine mood.
+  const chanceMap = {Favorable: '80%', Indifferent: '50%', Suspicious: '20%', Wrathful: '5%'};
+  const riteChance = document.getElementById('rite-chance');
+  if (riteChance) riteChance.textContent = `Success chance: ${chanceMap[data.divine_mood] ?? '—'}`;
+
+  // Battle frenzy status.
+  const frenzyEl = document.getElementById('frenzy-active');
+  if (frenzyEl) {
+    if (data.battle_frenzy_until) {
+      const exp = new Date(data.battle_frenzy_until);
+      frenzyEl.style.display = '';
+      frenzyEl.textContent = `⚡ Battle Frenzy active until ${exp.toLocaleTimeString()}`;
+      const riteBtn = document.getElementById('rite-btn');
+      if (riteBtn) riteBtn.disabled = true;
+    } else {
+      frenzyEl.style.display = 'none';
+      const riteBtn = document.getElementById('rite-btn');
+      if (riteBtn) riteBtn.disabled = false;
+    }
+  }
 }
 
 async function setCultLevel() {
@@ -646,23 +661,20 @@ async function setCultLevel() {
   }
 }
 
-async function performLibation() {
-  if (!SETTLEMENT_ID) { showResult('libation-result', 'no settlement', false); return; }
+async function performRite() {
+  if (!SETTLEMENT_ID) { showResult('rite-result', 'no settlement', false); return; }
   const token = localStorage.getItem('poleia_token');
-  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/settlements/${SETTLEMENT_ID}/libation`, {
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/settlements/${SETTLEMENT_ID}/rite`, {
     method: 'POST',
     headers: {'Content-Type':'application/json', ...(token ? {'Authorization':'Bearer '+token} : {})},
     body: '{}',
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    showResult('libation-result', `+${data.kharis_gain} kharis granted`, true);
-    const ps = document.getElementById('priest-strength-val');
-    if (ps) ps.textContent = data.priest_strength;
-    const btn = document.getElementById('libation-btn');
-    if (btn) btn.disabled = data.priest_strength < 20;
+    showResult('rite-result', data.message || (data.success ? 'Rite succeeded!' : 'The gods are silent.'), data.success);
+    loadCultLevel();
   } else {
-    showResult('libation-result', data.error || 'failed', false);
+    showResult('rite-result', data.error || 'failed', false);
   }
 }
 

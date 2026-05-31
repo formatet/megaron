@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -108,37 +109,37 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	now := h.clk.Now()
 
-	// Load cult_level, priest_strength and compute divine_mood from live kharis.
+	// Load cult_level, battle_frenzy state, and compute divine_mood from live kharis.
 	var cultLevel string
 	var kharisNow float64
-	var priestStrength int
+	var frenzyUntil *time.Time
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT cult_level, priest_strength,
+		`SELECT cult_level, battle_frenzy_until,
 		    GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate))
 		 FROM settlements WHERE id = $1`,
 		sett.ID,
-	).Scan(&cultLevel, &priestStrength, &kharisNow)
+	).Scan(&cultLevel, &frenzyUntil, &kharisNow)
 
 	divineMood := kharisToMood(kharisNow)
 
 	resp := map[string]any{
-		"id":              sett.ID,
-		"province_id":     sett.ProvinceID,
-		"name":            sett.Name,
-		"culture":         sett.CultureID,
-		"control_type":    sett.ControlType,
-		"loyalty":         sett.Loyalty,
-		"loyalty_trend":   sett.LoyaltyTrend,
-		"wall_level":      sett.WallLevel,
-		"is_capital":      sett.IsCapital,
-		"state":           sett.State,
-		"population":      sett.Population,
-		"resources":       sett.Resources.Snapshot(now),
-		"army":            sett.Army,
-		"cult_level":      cultLevel,
-		"divine_mood":     divineMood,
-		"priest_strength": priestStrength,
-		"updated_at":      sett.UpdatedAt,
+		"id":                   sett.ID,
+		"province_id":          sett.ProvinceID,
+		"name":                 sett.Name,
+		"culture":              sett.CultureID,
+		"control_type":         sett.ControlType,
+		"loyalty":              sett.Loyalty,
+		"loyalty_trend":        sett.LoyaltyTrend,
+		"wall_level":           sett.WallLevel,
+		"is_capital":           sett.IsCapital,
+		"state":                sett.State,
+		"population":           sett.Population,
+		"resources":            sett.Resources.Snapshot(now),
+		"army":                 sett.Army,
+		"cult_level":           cultLevel,
+		"divine_mood":          divineMood,
+		"battle_frenzy_until":  frenzyUntil,
+		"updated_at":           sett.UpdatedAt,
 	}
 
 	// Only owner sees the full resources; others see limited info.
@@ -517,10 +518,12 @@ func (h *SettlementHandler) SetCultLevel(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, map[string]any{"cult_level": req.CultLevel})
 }
 
-// Libation handles POST /worlds/:worldID/settlements/:settlementID/libation.
-// Spends 20 priest_strength for an immediate +25 kharis boost.
-// Requires at least 1 stationed priest; priest_strength regenerates daily.
-func (h *SettlementHandler) Libation(w http.ResponseWriter, r *http.Request) {
+// Rite handles POST /worlds/:worldID/settlements/:settlementID/rite.
+// Performs a ritual intercession — requires ≥1 stationed Hiereus, costs 5 grain.
+// Success probability is determined by divine mood (kharis level):
+//   Favorable (≥800 kharis): 80% · Indifferent (≥400): 50% · Suspicious (≥100): 20% · Wrathful: 5%
+// On success: sets battle_frenzy for 6 hours — attacker infantry fights at ×1.5 strength.
+func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid world ID")
@@ -544,54 +547,90 @@ func (h *SettlementHandler) Libation(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	var strength int
 	var priestCount int
-	var kharisNow, kharisCap float64
+	var kharisNow float64
+	var alreadyFrenzied bool
 	err = tx.QueryRow(r.Context(),
-		`SELECT priest_strength, priest,
-		        kharis_amount + (EXTRACT(EPOCH FROM (now()-kharis_calc_at))/60 * kharis_rate),
-		        kharis_cap
+		`SELECT priest,
+		        GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now()-kharis_calc_at))/60 * kharis_rate)),
+		        (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
 		 FROM settlements
 		 WHERE id = $1 AND world_id = $2 AND owner_id = $3
 		 FOR UPDATE`,
 		settlementID, worldID, playerID,
-	).Scan(&strength, &priestCount, &kharisNow, &kharisCap)
+	).Scan(&priestCount, &kharisNow, &alreadyFrenzied)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
 	if priestCount < 1 {
-		writeError(w, http.StatusBadRequest, "you need at least one Hiereus stationed to perform a libation")
+		writeError(w, http.StatusBadRequest, "a Hiereus must be stationed to perform a rite")
 		return
 	}
-	if strength < 20 {
-		writeError(w, http.StatusBadRequest, "not enough priest strength (need 20)")
+	if alreadyFrenzied {
+		writeError(w, http.StatusConflict, "battle frenzy already active — wait for it to expire")
 		return
 	}
 
-	newKharis := min(kharisCap, kharisNow+25)
+	// Determine success probability from divine mood.
+	var chance int
+	var mood string
+	switch {
+	case kharisNow >= 800:
+		chance, mood = 80, "Favorable"
+	case kharisNow >= 400:
+		chance, mood = 50, "Indifferent"
+	case kharisNow >= 100:
+		chance, mood = 20, "Suspicious"
+	default:
+		chance, mood = 5, "Wrathful"
+	}
+
+	// Deduct 5 grain as an offering (regardless of outcome).
 	_, err = tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		   priest_strength = priest_strength - 20,
-		   kharis_amount   = $1,
-		   kharis_calc_at  = now()
-		 WHERE id = $2`,
-		newKharis, settlementID,
+		`UPDATE settlement_goods SET
+		    amount  = GREATEST(0, amount + (EXTRACT(EPOCH FROM (now()-calc_at))/60 * rate) - 5),
+		    calc_at = now()
+		 WHERE settlement_id = $1 AND good_key = 'grain'`,
+		settlementID,
 	)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not perform libation")
+		writeError(w, http.StatusInternalServerError, "could not deduct offering")
 		return
 	}
+
+	success := rand.Intn(100) < chance
+	var expiresAt *time.Time
+	if success {
+		t := h.clk.Now().Add(6 * time.Hour)
+		expiresAt = &t
+		if _, err = tx.Exec(r.Context(),
+			`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
+			*expiresAt, settlementID,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not set frenzy")
+			return
+		}
+	}
+
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"priest_strength": strength - 20,
-		"kharis":          newKharis,
-		"kharis_gain":     25,
-	})
+	resp := map[string]any{
+		"success": success,
+		"mood":    mood,
+		"chance":  chance,
+	}
+	if success {
+		resp["effect"]     = "battle_frenzy"
+		resp["expires_at"] = expiresAt
+		resp["message"]    = "The gods answer your plea — your warriors fight with divine fury!"
+	} else {
+		resp["message"] = "The gods are silent. Your offering was received, but they do not answer."
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // Gossip handles GET /worlds/:worldID/gossip — the player's gossip feed.

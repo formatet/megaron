@@ -219,7 +219,7 @@ func main() {
 			r.Get("/worlds/{worldID}/settlements/{settlementID}/loyalty-log", sh.LoyaltyLog)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/return-army", sh.ReturnArmy)
 			r.Patch("/worlds/{worldID}/settlements/{settlementID}/cult-level", sh.SetCultLevel)
-			r.Post("/worlds/{worldID}/settlements/{settlementID}/libation", sh.Libation)
+			r.Post("/worlds/{worldID}/settlements/{settlementID}/rite", sh.Rite)
 			r.Get("/worlds/{worldID}/gossip", sh.Gossip)
 
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/messengers", mh.Send)

@@ -678,7 +678,7 @@ function openInspect(marker) {
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marker.id}/army`).then(r => {
     if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
     r.json().then(a => {
-      const dp = (a.Infantry||0)*1 + (a.EliteInfantry||0)*2 + (a.Cavalry||0)*3 + (a.Priest||0)*2;
+      const dp = (a.Infantry||0)*1 + (a.EliteInfantry||0)*2 + (a.Cavalry||0)*3;
       document.getElementById('ip-army').textContent = dp > 0 ? `${dp} DP` : '—';
     });
   }).catch(() => { document.getElementById('ip-army').textContent = '—'; });
@@ -876,7 +876,7 @@ async function openMarchCtx(target, screenX, screenY) {
   if (defRes && defRes.ok) {
     const defArmy = await defRes.json();
     defDP = (defArmy.infantry || 0) + (defArmy.cavalry || 0) * 3
-          + (defArmy.priest || 0) * 2 + (defArmy.elite_infantry || 0) * 2;
+          + (defArmy.elite_infantry || 0) * 2;
   }
 
   const unitsEl = document.getElementById('mctx-units');

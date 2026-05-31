@@ -88,11 +88,33 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	// Load attacker support from allied marches at same target.
 	var supportStr float64
 	_ = tx.QueryRow(ctx,
-		`SELECT COALESCE(SUM(infantry + elite_infantry*2 + cavalry*3 + priest*2), 0)
+		`SELECT COALESCE(SUM(infantry + elite_infantry*2 + cavalry*3), 0)
 		 FROM marching_armies
 		 WHERE target_id = $1 AND intent = 'support' AND resolved = false`,
 		march.TargetID,
 	).Scan(&supportStr)
+
+	// Check for active battle frenzy on the attacker's home settlement.
+	// If active: infantry fights at ×1.5 strength this battle; frenzy is consumed.
+	var frenzySettlementID uuid.UUID
+	_ = tx.QueryRow(ctx,
+		`SELECT id FROM settlements
+		 WHERE province_id = $1 AND battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now()`,
+		march.OriginID,
+	).Scan(&frenzySettlementID)
+	frenzied := frenzySettlementID != uuid.Nil
+	if frenzied {
+		_, _ = tx.Exec(ctx,
+			`UPDATE settlements SET battle_frenzy_until = NULL WHERE id = $1`,
+			frenzySettlementID,
+		)
+	}
+
+	// Build effective attack army — frenzy inflates infantry strength for this battle only.
+	effectiveArmy := march.Army
+	if frenzied && effectiveArmy.Infantry > 0 {
+		effectiveArmy.Infantry = int(float64(effectiveArmy.Infantry) * 1.5)
+	}
 
 	// Load defender settlement (looked up by province_id).
 	var def struct {
@@ -113,7 +135,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	}
 
 	result := Resolve(
-		AttackForce{Army: march.Army, SupportStrength: supportStr},
+		AttackForce{Army: effectiveArmy, SupportStrength: supportStr},
 		DefenceForce{Army: def.Army, WallLevel: def.Walls},
 	)
 
@@ -149,7 +171,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		}
 	}
 
-	report := buildCombatReport(march.Army, def.Army, def.Walls, result, supportStr)
+	report := buildCombatReport(march.Army, def.Army, def.Walls, result, supportStr, frenzied)
 	_, _ = tx.Exec(ctx, `UPDATE marching_armies SET combat_report = $1 WHERE id = $2`, report, march.ID)
 
 	h.insertBattleGossip(ctx, tx, march.OriginID, march.TargetID, worldID, result.Outcome)
@@ -262,7 +284,7 @@ func mergeArmy(ctx context.Context, tx pgx.Tx, targetID uuid.UUID, army province
 }
 
 // buildCombatReport generates a human-readable battle summary stored once at resolution.
-func buildCombatReport(att, def province.ArmyComposition, walls int, result CombatResult, support float64) string {
+func buildCombatReport(att, def province.ArmyComposition, walls int, result CombatResult, support float64, frenzy bool) string {
 	var sb strings.Builder
 
 	armyStr := func(a province.ArmyComposition) string {
@@ -291,9 +313,15 @@ func buildCombatReport(att, def province.ArmyComposition, walls int, result Comb
 		return strings.Join(parts, " · ")
 	}
 
+	if frenzy {
+		sb.WriteString("⚡ BATTLE FRENZY — infantry fights at ×1.5 strength\n")
+	}
 	sb.WriteString(fmt.Sprintf("ATTACKER  %s  [DP %.0f", armyStr(att), result.AttackStrength-support))
 	if support > 0 {
 		sb.WriteString(fmt.Sprintf(" + %.0f support", support))
+	}
+	if frenzy {
+		sb.WriteString(" (frenzy)")
 	}
 	sb.WriteString(fmt.Sprintf(" = %.0f]\n", result.AttackStrength))
 

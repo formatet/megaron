@@ -231,12 +231,11 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		slog.Error("goods decay failed", "world", worldID, "err", err)
 	}
 
-	// Reset invasions_today, regen priest_strength, update population.
+	// Reset invasions_today, update population.
 	// Population grows when grain is available, shrinks when it isn't.
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements s SET
 		   invasions_today = 0,
-		   priest_strength = LEAST(100, priest_strength + 4 + (priest * 10)),
 		   population = GREATEST(50, LEAST(10000,
 		       CASE WHEN COALESCE(
 		                (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate

@@ -293,7 +293,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		CopperDeposit bool
 		TinDeposit    bool
 	}
-	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3 + s.Army.Priest*2
+	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
 	pv := provinceView{
 		ID:            s.ProvinceID,
 		SettlementID:  s.ID,
@@ -768,12 +768,12 @@ func (h *WebHandler) WanaxesView(w http.ResponseWriter, r *http.Request) {
 		         JOIN kingdom_members km ON km.kingdom_id = k.id
 		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
 		        s.wall_level, s.population,
-		        s.infantry + s.cavalry*3 + s.elite_infantry*2 + s.priest*2,
+		        s.infantry + s.cavalry*3 + s.elite_infantry*2,
 		        s.owner_id
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
-		 ORDER BY s.infantry + s.cavalry*3 + s.elite_infantry*2 + s.priest*2 DESC`,
+		 ORDER BY s.infantry + s.cavalry*3 + s.elite_infantry*2 DESC`,
 		worldID,
 	)
 	if err != nil {

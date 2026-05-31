@@ -255,7 +255,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		EliteInfantry: req.EliteInfantry,
 	}
 
-	if combat.Strength(army) == 0 && army.Ship == 0 && army.Catapult == 0 {
+	if combat.Strength(army) == 0 && army.Ship == 0 && army.Catapult == 0 && army.Priest == 0 {
 		writeError(w, http.StatusBadRequest, "must send at least one unit")
 		return
 	}

@@ -396,7 +396,7 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 		`SELECT km.player_id, p.username, km.role, km.joined_at,
 		        COALESCE(s.name,''), COALESCE(s.culture,''),
 		        COALESCE(s.infantry,0) + COALESCE(s.elite_infantry,0)*2
-		          + COALESCE(s.cavalry,0)*3 + COALESCE(s.priest,0)*2 AS dp,
+		          + COALESCE(s.cavalry,0)*3 AS dp,
 		        COALESCE(s.walls,0)
 		 FROM kingdom_members km
 		 JOIN players p ON p.id = km.player_id

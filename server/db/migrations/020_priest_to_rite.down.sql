@@ -1,0 +1,2 @@
+ALTER TABLE settlements ADD COLUMN IF NOT EXISTS priest_strength SMALLINT NOT NULL DEFAULT 100;
+ALTER TABLE settlements DROP COLUMN IF EXISTS battle_frenzy_until;
