@@ -21,6 +21,15 @@ import (
 	"github.com/poleia/server/internal/events"
 )
 
+// localTZ is the timezone all chronicle timestamps are rendered in.
+// Sweden — we never log in UTC. Falls back to time.Local if tzdata is missing.
+var localTZ = func() *time.Location {
+	if loc, err := time.LoadLocation("Europe/Stockholm"); err == nil {
+		return loc
+	}
+	return time.Local
+}()
+
 // Chronicler writes one JSONL line and one Markdown paragraph per event.
 type Chronicler struct {
 	mu sync.Mutex
@@ -131,7 +140,7 @@ func (c *Chronicler) Record(ctx context.Context, e events.SinkEvent) {
 		EventType  string          `json:"event_type"`
 		Detail     json.RawMessage `json:"detail"`
 	}{
-		Timestamp:  e.CreatedAt.UTC().Format(time.RFC3339Nano),
+		Timestamp:  e.CreatedAt.In(localTZ).Format(time.RFC3339Nano),
 		EventID:    e.ID,
 		World:      e.WorldID,
 		Category:   category,
@@ -157,7 +166,7 @@ func (c *Chronicler) Record(ctx context.Context, e events.SinkEvent) {
 		return
 	}
 	mdLine := fmt.Sprintf("- **%s** — %s\n",
-		e.CreatedAt.UTC().Format("15:04:05"), summary)
+		e.CreatedAt.In(localTZ).Format("15:04:05"), summary)
 	if _, err := c.mdFile.WriteString(mdLine); err != nil {
 		slog.Error("chronicle md write", "err", err, "event_id", e.ID)
 	}
@@ -233,11 +242,11 @@ func (c *Chronicler) kingdomName(ctx context.Context, id uuid.UUID) string {
 // ── md rotation ─────────────────────────────────────────────────────────────
 
 func (c *Chronicler) openTodayMD() error {
-	return c.ensureMDIsToday(time.Now().UTC())
+	return c.ensureMDIsToday(time.Now().In(localTZ))
 }
 
 func (c *Chronicler) ensureMDIsToday(t time.Time) error {
-	d := t.UTC().Format("2006-01-02")
+	d := t.In(localTZ).Format("2006-01-02")
 	if d == c.mdDate && c.mdFile != nil {
 		return nil
 	}
@@ -252,7 +261,7 @@ func (c *Chronicler) ensureMDIsToday(t time.Time) error {
 		return fmt.Errorf("open md: %w", err)
 	}
 	if stat == nil {
-		header := fmt.Sprintf("# %s — krönika %s\n\n*Genererad av Poleia chronicle. Tider i UTC.*\n\n", c.worldName, d)
+		header := fmt.Sprintf("# %s — krönika %s\n\n*Genererad av Poleia chronicle. Tider i lokal tid (Europa/Stockholm).*\n\n", c.worldName, d)
 		if _, err := f.WriteString(header); err != nil {
 			_ = f.Close()
 			return err
