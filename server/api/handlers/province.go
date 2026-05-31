@@ -624,6 +624,35 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Training queue cap: max 2 pending jobs per settlement (mirrors build queue).
+	var pendingTraining int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT COUNT(*) FROM scheduled_events
+		 WHERE world_id = $1 AND event_type = 'TrainComplete'
+		   AND processed_at IS NULL AND failed_at IS NULL
+		   AND (payload->>'settlement_id')::uuid = $2`,
+		worldID, settlementID,
+	).Scan(&pendingTraining)
+	if pendingTraining >= 2 {
+		writeError(w, http.StatusUnprocessableEntity, "training queue is full (max 2 concurrent jobs)")
+		return
+	}
+
+	// Population check — recruiting drains the settlement population.
+	totalPopCost := spec.PopCost * req.Count
+	if totalPopCost > 0 {
+		var population int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT population FROM settlements WHERE id = $1`,
+			settlementID,
+		).Scan(&population)
+		if population-totalPopCost < 50 {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("not enough population (need %d, have %d, floor 50)", totalPopCost, population-50))
+			return
+		}
+	}
+
 	// Check building requirements.
 	if spec.RequiresBarracks {
 		var exists bool
@@ -691,6 +720,14 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "insufficient kharis")
 			return
 		}
+	}
+
+	// Deduct population.
+	if totalPopCost > 0 {
+		_, _ = h.pool.Exec(r.Context(),
+			`UPDATE settlements SET population = GREATEST(50, population - $1) WHERE id = $2`,
+			totalPopCost, settlementID,
+		)
 	}
 
 	completeAt := h.clk.Now().Add(spec.Duration * time.Duration(req.Count))

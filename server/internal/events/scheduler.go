@@ -29,6 +29,7 @@ const (
 	ScheduledMessengerReturn    ScheduledEventType = "MessengerReturn"
 	ScheduledKharisTick         ScheduledEventType = "KharisTick"
 	ScheduledTradeDelivery      ScheduledEventType = "TradeDelivery"
+	ScheduledRespawn            ScheduledEventType = "Respawn"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

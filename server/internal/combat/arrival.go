@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -21,17 +22,25 @@ type ArmyArrivalPayload struct {
 	MarchingArmyID uuid.UUID `json:"marching_army_id"`
 }
 
+// RespawnPayload is the scheduled_events payload for Respawn events.
+type RespawnPayload struct {
+	PlayerID uuid.UUID `json:"player_id"`
+	WorldID  uuid.UUID `json:"world_id"`
+	Culture  string    `json:"culture"`
+}
+
 // ArrivalHandler resolves army arrivals. Register with events.Worker at startup.
 type ArrivalHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	hub        *notify.Hub
 	clk        clock.Clock
+	scheduler  *events.Scheduler
 }
 
 // NewArrivalHandler creates an ArrivalHandler.
-func NewArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub *notify.Hub, clk clock.Clock) *ArrivalHandler {
-	return &ArrivalHandler{pool: pool, eventStore: store, hub: hub, clk: clk}
+func NewArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub *notify.Hub, clk clock.Clock, scheduler *events.Scheduler) *ArrivalHandler {
+	return &ArrivalHandler{pool: pool, eventStore: store, hub: hub, clk: clk, scheduler: scheduler}
 }
 
 // Handle processes a single ArmyArrival scheduled event.
@@ -116,20 +125,22 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		effectiveArmy.Infantry = int(float64(effectiveArmy.Infantry) * 1.5)
 	}
 
-	// Load defender settlement (looked up by province_id).
+	// Load defender settlement (looked up by province_id). Culture is used for respawn.
 	var def struct {
-		OwnerID      *uuid.UUID
-		Army         province.ArmyComposition
-		Walls        int
+		OwnerID        *uuid.UUID
+		Army           province.ArmyComposition
+		Walls          int
 		InvasionsToday int
+		Culture        string
 	}
 	err = tx.QueryRow(ctx,
-		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, elite_infantry, wall_level, invasions_today
+		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, elite_infantry, wall_level, invasions_today, culture_id
 		 FROM settlements WHERE province_id = $1`,
 		march.TargetID,
 	).Scan(&def.OwnerID,
 		&def.Army.Infantry, &def.Army.Cavalry, &def.Army.Catapult,
-		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry, &def.Walls, &def.InvasionsToday)
+		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry, &def.Walls, &def.InvasionsToday,
+		&def.Culture)
 	if err != nil {
 		return fmt.Errorf("load defending settlement: %w", err)
 	}
@@ -164,6 +175,20 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	if result.Outcome == OutcomeAttackerWins {
 		if err := applyAttackerVictory(ctx, tx, march.OriginID, march.TargetID, def.OwnerID, march.Army, result, worldID); err != nil {
 			return err
+		}
+		// Queue respawn if the defeated player has no remaining settlements.
+		if def.OwnerID != nil && h.scheduler != nil {
+			var remaining int
+			_ = tx.QueryRow(ctx,
+				`SELECT COUNT(*) FROM settlements WHERE world_id = $1 AND owner_id = $2`,
+				worldID, *def.OwnerID,
+			).Scan(&remaining)
+			if remaining == 0 {
+				_ = h.scheduler.EnqueueAfterTx(ctx, tx, worldID, events.ScheduledRespawn,
+					RespawnPayload{PlayerID: *def.OwnerID, WorldID: worldID, Culture: def.Culture},
+					30*time.Second,
+				)
+			}
 		}
 	} else {
 		if err := applyDefenderVictory(ctx, tx, march.OriginID, march.TargetID, march.Army, def.Army, result); err != nil {

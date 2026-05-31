@@ -217,10 +217,17 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 // applyDecay applies 1% daily decay to grain and cedar stocks, resets
 // invasions_today, regenerates priest_strength, and adjusts population.
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
-	// Decay grain and cedar by 1% per day.
+	// Decay grain and cedar by 1% per day; grain also consumed by population (0.2/person/day).
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlement_goods sg SET
-		   amount  = GREATEST(0, (sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) * 0.99),
+		   amount = GREATEST(0,
+		       CASE sg.good_key
+		           WHEN 'grain' THEN
+		               (sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) * 0.99
+		               - s.population * 0.2
+		           ELSE
+		               (sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) * 0.99
+		       END),
 		   calc_at = now()
 		 FROM settlements s
 		 WHERE sg.settlement_id = s.id
