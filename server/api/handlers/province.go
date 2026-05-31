@@ -367,6 +367,54 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Queue guards — block before we deduct resources.
+	// 1. Walls/towers/bronze walls upgrade an existing wall_level; everything else
+	//    is a one-instance building (production_rules use UPSERT, duplicates waste resources).
+	// 2. No double-queueing the same building.
+	// 3. Cap concurrent queue at maxParallelBuilds.
+	const maxParallelBuilds = 2
+	upgradeable := map[string]bool{"wall": true, "tower": true, "bronze_wall": true}
+
+	if !upgradeable[req.BuildingType] {
+		var alreadyBuilt bool
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
+			settlementID, req.BuildingType,
+		).Scan(&alreadyBuilt)
+		if alreadyBuilt {
+			writeError(w, http.StatusUnprocessableEntity, "building already exists")
+			return
+		}
+	} else {
+		var wl int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT wall_level FROM settlements WHERE id = $1`, settlementID,
+		).Scan(&wl)
+		if wl >= 3 {
+			writeError(w, http.StatusUnprocessableEntity, "walls are already at maximum (level 3)")
+			return
+		}
+	}
+
+	var queueDepth int
+	var dupQueued bool
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT
+		   COUNT(*),
+		   COUNT(*) FILTER (WHERE building_type = $2) > 0
+		 FROM build_queue WHERE settlement_id = $1`,
+		settlementID, req.BuildingType,
+	).Scan(&queueDepth, &dupQueued)
+	if dupQueued {
+		writeError(w, http.StatusUnprocessableEntity, "this building is already in the queue")
+		return
+	}
+	if queueDepth >= maxParallelBuilds {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("build queue is full (max %d concurrent — finish or wait)", maxParallelBuilds))
+		return
+	}
+
 	// Deduct all building costs from settlement_goods atomically.
 	if err := deductGoods(r.Context(), h.pool, settlementID, spec.Costs); err != nil {
 		if err == errInsufficientGoods {

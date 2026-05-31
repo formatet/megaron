@@ -56,6 +56,16 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		"foundry":     "Foundry",
 		"stable":      "Stable",
 		"bronze_wall": "Bronze Wall",
+		"olive_press": "Olive Press",
+		"winery":      "Winery",
+	}
+	unitNames := map[string]string{
+		"infantry":       "Hoplites",
+		"cavalry":        "Hippeis",
+		"priest":         "Hiereus",
+		"ship":           "Trireme",
+		"elite_infantry": "Agema",
+		"catapult":       "Siege",
 	}
 	funcs := template.FuncMap{
 		"formatTime": func(t time.Time) string {
@@ -78,6 +88,12 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		},
 		"buildingName": func(key string) string {
 			if n, ok := buildingNames[key]; ok {
+				return n
+			}
+			return key
+		},
+		"unitName": func(key string) string {
+			if n, ok := unitNames[key]; ok {
 				return n
 			}
 			return key
@@ -327,6 +343,34 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		incoming = append(incoming, ii)
 	}
 
+	// Load pending recruit/training jobs from the scheduled-events queue.
+	// process_after is UTC in the DB — we render in template via the user's locale.
+	trrows, _ := h.pool.Query(r.Context(),
+		`SELECT
+		    (payload->>'unit_type')::text AS unit_type,
+		    (payload->>'count')::int      AS count,
+		    process_after
+		 FROM scheduled_events
+		 WHERE world_id = $1
+		   AND event_type = 'TrainComplete'
+		   AND processed_at IS NULL
+		   AND (payload->>'settlement_id')::uuid = $2
+		 ORDER BY process_after`,
+		s.WorldID, s.ID,
+	)
+	defer trrows.Close()
+	type recruitItem struct {
+		Unit       string
+		Count      int
+		CompleteAt time.Time
+	}
+	var recruitQueue []recruitItem
+	for trrows.Next() {
+		var ri recruitItem
+		_ = trrows.Scan(&ri.Unit, &ri.Count, &ri.CompleteAt)
+		recruitQueue = append(recruitQueue, ri)
+	}
+
 	// Load completed buildings.
 	bldRows, _ := h.pool.Query(r.Context(),
 		`SELECT building_type, level FROM buildings WHERE settlement_id = $1 ORDER BY building_type`,
@@ -350,16 +394,17 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "province.html", map[string]any{
-		"Province":   pv,
-		"Resources":  resources,
-		"Queue":      queue,
-		"Marches":    marches,
-		"Incoming":   incoming,
-		"Buildings":  buildings,
-		"Built":      built,
-		"WorldID":    worldID,
-		"Now":        now,
-		"DivineMood": divineMood,
+		"Province":     pv,
+		"Resources":    resources,
+		"Queue":        queue,
+		"RecruitQueue": recruitQueue,
+		"Marches":      marches,
+		"Incoming":     incoming,
+		"Buildings":    buildings,
+		"Built":        built,
+		"WorldID":      worldID,
+		"Now":          now,
+		"DivineMood":   divineMood,
 	})
 }
 

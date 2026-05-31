@@ -129,6 +129,23 @@
       <p class="empty-state">No active construction.</p>
       {{end}}
 
+      {{if .RecruitQueue}}
+      <div class="bldg-section">
+        <div class="lp-title">Training</div>
+        <div class="bq-list">
+          {{range .RecruitQueue}}
+          <div class="bq-item" data-complete="{{formatISO .CompleteAt}}" data-type="{{.Unit}}">
+            <div class="bq-row">
+              <span class="bq-name">{{.Count}}× {{unitName .Unit}}</span>
+              <span class="bq-time">—</span>
+            </div>
+            <div class="bq-bar-wrap"><div class="bq-bar" style="width:0%"></div></div>
+          </div>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+
       {{if .Buildings}}
       <div class="bldg-section">
         <div class="lp-title">Built</div>
