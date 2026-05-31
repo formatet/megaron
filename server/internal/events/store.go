@@ -36,14 +36,36 @@ type Event struct {
 	CreatedAt  time.Time
 }
 
-// Store is the append-only event log.
-type Store struct {
-	pool *pgxpool.Pool
+// Sink receives a copy of every event after successful Append. Sinks must not
+// panic or block — they run synchronously on the writer's goroutine. Use them
+// for logging, chronicling, or fan-out to side channels. A Sink that returns
+// an error is logged but never breaks the event write.
+type Sink interface {
+	Record(ctx context.Context, e SinkEvent)
 }
 
-// NewStore creates a Store backed by the given connection pool.
-func NewStore(pool *pgxpool.Pool) *Store {
-	return &Store{pool: pool}
+// SinkEvent is the shape passed to sinks. Mirrors Event but lives here so
+// downstream packages don't need to import events just to consume them.
+type SinkEvent struct {
+	ID         int64
+	StreamID   uuid.UUID
+	StreamType string
+	EventType  string
+	Payload    json.RawMessage
+	WorldID    uuid.UUID
+	CreatedAt  time.Time
+}
+
+// Store is the append-only event log.
+type Store struct {
+	pool  *pgxpool.Pool
+	sinks []Sink
+}
+
+// NewStore creates a Store backed by the given connection pool. Optional sinks
+// receive every event after a successful Append.
+func NewStore(pool *pgxpool.Pool, sinks ...Sink) *Store {
+	return &Store{pool: pool, sinks: sinks}
 }
 
 // Append writes a single event to the log and returns it with its assigned ID.
@@ -65,6 +87,29 @@ func (s *Store) Append(ctx context.Context, streamID uuid.UUID, streamType Strea
 	}
 
 	slog.Debug("event appended", "type", eventType, "stream", streamID, "world", worldID)
+
+	if len(s.sinks) > 0 {
+		se := SinkEvent{
+			ID:         e.ID,
+			StreamID:   e.StreamID,
+			StreamType: string(e.StreamType),
+			EventType:  e.EventType,
+			Payload:    e.Payload,
+			WorldID:    e.WorldID,
+			CreatedAt:  e.CreatedAt,
+		}
+		for _, sink := range s.sinks {
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						slog.Error("event sink panic", "err", r, "type", eventType, "event_id", e.ID)
+					}
+				}()
+				sink.Record(ctx, se)
+			}()
+		}
+	}
+
 	return &e, nil
 }
 

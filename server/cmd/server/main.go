@@ -21,6 +21,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/poleia/server/api/handlers"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/chronicle"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/economy"
@@ -81,8 +82,17 @@ func main() {
 	}
 	slog.Info("world ready", "id", serverWorldID)
 
+	// Chronicle: append-only world log + daily prose Markdown.
+	// Disabled when CHRONICLE_DIR is empty.
+	chronicler, err := chronicle.Open(ctx, getEnv("CHRONICLE_DIR", "/var/lib/poleia/chronicles"), pool, serverWorldID)
+	if err != nil {
+		slog.Error("open chronicle", "err", err)
+		os.Exit(1)
+	}
+	defer chronicler.Close()
+
 	// Event worker — processes timed game events.
-	eventStore := events.NewStore(pool)
+	eventStore := events.NewStore(pool, chronicler)
 	scheduler := events.NewScheduler(pool, gameClock)
 	worker := events.NewWorker(pool, gameClock)
 	arrivalH := combat.NewArrivalHandler(pool, eventStore, hub, gameClock)
