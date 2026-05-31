@@ -65,6 +65,36 @@ func statusCmd() *cobra.Command {
 					}
 				}
 			}
+
+			unitLabels := map[string]string{
+				"infantry": "Hoplites", "cavalry": "Hippeis", "priest": "Hiereus",
+				"ship": "Trireme", "elite_infantry": "Agema", "catapult": "Siege",
+			}
+
+			if bq, ok := sett["build_queue"].([]any); ok && len(bq) > 0 {
+				fmt.Println("\nConstruction")
+				for _, it := range bq {
+					m, _ := it.(map[string]any)
+					t, _ := m["type"].(string)
+					ca, _ := m["complete_at"].(string)
+					fmt.Printf("  %-12s done %s\n", t, ca)
+				}
+			}
+
+			if tq, ok := sett["training_queue"].([]any); ok && len(tq) > 0 {
+				fmt.Println("\nTraining")
+				for _, it := range tq {
+					m, _ := it.(map[string]any)
+					u, _ := m["unit"].(string)
+					c, _ := m["count"].(float64)
+					ca, _ := m["complete_at"].(string)
+					label := unitLabels[u]
+					if label == "" {
+						label = u
+					}
+					fmt.Printf("  %.0f× %-10s done %s\n", c, label, ca)
+				}
+			}
 			return nil
 		},
 	}

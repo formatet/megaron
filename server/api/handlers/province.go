@@ -85,19 +85,48 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			buildQueue = []buildItem{}
 		}
 
+		// Training queue — pending recruits from the scheduled-events queue.
+		type trainItem struct {
+			Unit       string    `json:"unit"`
+			Count      int       `json:"count"`
+			CompleteAt time.Time `json:"complete_at"`
+		}
+		var trainQueue []trainItem
+		trrows, _ := h.pool.Query(r.Context(),
+			`SELECT (payload->>'unit_type')::text, (payload->>'count')::int, process_after
+			 FROM scheduled_events
+			 WHERE world_id = $1 AND event_type = 'TrainComplete'
+			   AND processed_at IS NULL
+			   AND (payload->>'settlement_id')::uuid = $2
+			 ORDER BY process_after`,
+			worldID, sett.ID,
+		)
+		if trrows != nil {
+			for trrows.Next() {
+				var ti trainItem
+				_ = trrows.Scan(&ti.Unit, &ti.Count, &ti.CompleteAt)
+				trainQueue = append(trainQueue, ti)
+			}
+			trrows.Close()
+		}
+		if trainQueue == nil {
+			trainQueue = []trainItem{}
+		}
+
 		resp["settlement"] = map[string]any{
-			"id":          sett.ID,
-			"name":        sett.Name,
-			"owner_id":    sett.OwnerID,
-			"kingdom_id":  sett.KingdomID,
-			"culture":     sett.CultureID,
-			"state":       sett.State,
-			"population":  sett.Population,
-			"walls":       sett.WallLevel,
-			"loyalty":     sett.Loyalty,
-			"resources":   sett.Resources.SnapshotFull(now),
-			"army":        sett.Army,
-			"build_queue": buildQueue,
+			"id":             sett.ID,
+			"name":           sett.Name,
+			"owner_id":       sett.OwnerID,
+			"kingdom_id":     sett.KingdomID,
+			"culture":        sett.CultureID,
+			"state":          sett.State,
+			"population":     sett.Population,
+			"walls":          sett.WallLevel,
+			"loyalty":        sett.Loyalty,
+			"resources":      sett.Resources.SnapshotFull(now),
+			"army":           sett.Army,
+			"build_queue":    buildQueue,
+			"training_queue": trainQueue,
 		}
 	}
 
