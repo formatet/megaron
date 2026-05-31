@@ -232,8 +232,8 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusNotFound, "tile not found")
 			return
 		}
-		if terrain == "sea" {
-			writeError(w, http.StatusUnprocessableEntity, "cannot colonize a sea tile")
+		if terrain == "sea" || terrain == "mountain" {
+			writeError(w, http.StatusUnprocessableEntity, "cannot colonize sea or mountain terrain")
 			return
 		}
 		// Province may or may not exist; find or create it.
@@ -316,8 +316,27 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Mountains are impassable for all units.
+	if dst.TerrainType == "mountain" {
+		writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
+		return
+	}
+
+	// Naval gating: ships may only embark from and land on coast.
+	if army.Ship > 0 {
+		if src.TerrainType != "coast" {
+			writeError(w, http.StatusUnprocessableEntity, "ships can only embark from coastal settlements")
+			return
+		}
+		if dst.TerrainType != "coast" && dst.TerrainType != "sea" {
+			writeError(w, http.StatusUnprocessableEntity, "ships can only sail to coastal or sea provinces")
+			return
+		}
+	}
+
 	now := h.clk.Now()
-	arrivesAt := now.Add(time.Duration(dist) * time.Hour)
+	moveHours := province.TerrainMoveHours(dst.TerrainType) * float64(dist)
+	arrivesAt := now.Add(time.Duration(moveHours * float64(time.Hour)))
 
 	// Deduct units from source and insert march atomically — prevents sending
 	// units you don't have or using the same units in multiple marches.
@@ -479,6 +498,18 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeError(w, http.StatusNotFound, "no settlement in province")
 		return
+	}
+
+	// Harbour requires coastal terrain.
+	if req.BuildingType == "harbour" {
+		var terrain string
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT terrain_type FROM provinces WHERE id = $1`, provinceID,
+		).Scan(&terrain)
+		if terrain != "coast" {
+			writeError(w, http.StatusUnprocessableEntity, "harbour can only be built in coastal settlements")
+			return
+		}
 	}
 
 	// Queue guards — block before we deduct resources.
@@ -1300,7 +1331,7 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback(r.Context())
 
 	// Load march and verify ownership via FOR UPDATE (prevents race with arrival handler).
-	var army struct {
+	var march struct {
 		Infantry      int
 		Cavalry       int
 		Catapult      int
@@ -1309,20 +1340,25 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		EliteInfantry int
 		Resolved      bool
 		OriginID      uuid.UUID
+		TargetID      uuid.UUID
+		DepartsAt     time.Time
+		ArrivesAt     time.Time
 	}
 	err = tx.QueryRow(r.Context(),
-		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, resolved, origin_id
+		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, resolved,
+		        origin_id, target_id, departs_at, arrives_at
 		 FROM marching_armies
 		 WHERE id = $1 AND world_id = $2 AND origin_id = $3
 		 FOR UPDATE`,
 		marchID, worldID, provinceID,
-	).Scan(&army.Infantry, &army.Cavalry, &army.Catapult, &army.Priest,
-		&army.Ship, &army.EliteInfantry, &army.Resolved, &army.OriginID)
+	).Scan(&march.Infantry, &march.Cavalry, &march.Catapult, &march.Priest,
+		&march.Ship, &march.EliteInfantry, &march.Resolved,
+		&march.OriginID, &march.TargetID, &march.DepartsAt, &march.ArrivesAt)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "march not found or not yours")
 		return
 	}
-	if army.Resolved {
+	if march.Resolved {
 		writeError(w, http.StatusConflict, "march already resolved")
 		return
 	}
@@ -1338,29 +1374,62 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Mark march resolved.
+	// Cancel outbound march.
 	if _, err := tx.Exec(r.Context(),
 		`UPDATE marching_armies SET resolved = true WHERE id = $1`, marchID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not recall march")
 		return
 	}
 
-	// Return units to origin settlement.
-	_, err = tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		   infantry      = infantry      + $2,
-		   cavalry       = cavalry       + $3,
-		   catapult      = catapult      + $4,
-		   priest        = priest        + $5,
-		   ship          = ship          + $6,
-		   elite_infantry = elite_infantry + $7
-		 WHERE province_id = $1`,
-		provinceID,
-		army.Infantry, army.Cavalry, army.Catapult,
-		army.Priest, army.Ship, army.EliteInfantry,
-	)
+	// Schedule return march: army marches back from how far they've gotten.
+	// Return trip duration = progress × original_distance × terrain_cost.
+	now := h.clk.Now()
+	total := march.ArrivesAt.Sub(march.DepartsAt)
+	var elapsed time.Duration
+	if now.After(march.DepartsAt) {
+		elapsed = now.Sub(march.DepartsAt)
+		if elapsed > total {
+			elapsed = total
+		}
+	}
+	progress := 0.0
+	if total > 0 {
+		progress = float64(elapsed) / float64(total)
+	}
+
+	// Load origin terrain for return-trip cost.
+	var originTerrain string
+	_ = tx.QueryRow(r.Context(),
+		`SELECT terrain_type FROM provinces WHERE id = $1`, provinceID,
+	).Scan(&originTerrain)
+	if originTerrain == "" {
+		originTerrain = "plains"
+	}
+
+	// Compute hex distance.
+	var oQ, oR, tQ, tR int
+	_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id = $1`, march.OriginID).Scan(&oQ, &oR)
+	_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id = $1`, march.TargetID).Scan(&tQ, &tR)
+	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: tQ, R: tR})
+	hexesCovered := progress * float64(dist)
+	returnHours := hexesCovered * province.TerrainMoveHours(originTerrain)
+	if returnHours < 0.1 {
+		returnHours = 0.1 // minimum 6 minutes
+	}
+	returnsAt := now.Add(time.Duration(returnHours * float64(time.Hour)))
+
+	var returnMarchID uuid.UUID
+	err = tx.QueryRow(r.Context(),
+		`INSERT INTO marching_armies
+		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11)
+		 RETURNING id`,
+		worldID, march.TargetID, march.OriginID,
+		march.Infantry, march.Cavalry, march.Catapult, march.Priest, march.Ship, march.EliteInfantry,
+		now, returnsAt,
+	).Scan(&returnMarchID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not restore units")
+		writeError(w, http.StatusInternalServerError, "could not schedule return march")
 		return
 	}
 
@@ -1368,7 +1437,12 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"recalled": true})
+
+	// Schedule arrival of return march (outside tx — idempotent).
+	_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledArmyArrival,
+		combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, returnsAt)
+
+	writeJSON(w, http.StatusOK, map[string]any{"recalled": true, "returns_at": returnsAt})
 }
 
 // TradeRoutes handles GET /worlds/:worldID/provinces/:provinceID/trade.

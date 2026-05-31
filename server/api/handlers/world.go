@@ -231,15 +231,31 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	var ownProvinceID uuid.UUID
 	var ownKingdomID *uuid.UUID
 
+	// ownSettlements: set of province_ids owned by the player.
+	ownSettlements := map[uuid.UUID]bool{}
 	if authenticated {
 		origins = h.visibleOrigins(r.Context(), worldID, playerID)
-		// Get player's own province tile ID and kingdom for "own" marker.
+		// Capital for kingdom check.
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT s.province_id, s.kingdom_id
 			 FROM settlements s
 			 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.is_capital = true`,
 			worldID, playerID,
 		).Scan(&ownProvinceID, &ownKingdomID)
+		// All provinces owned by player.
+		sRows, _ := h.pool.Query(r.Context(),
+			`SELECT province_id FROM settlements WHERE world_id = $1 AND owner_id = $2`,
+			worldID, playerID,
+		)
+		if sRows != nil {
+			for sRows.Next() {
+				var pid uuid.UUID
+				if sRows.Scan(&pid) == nil {
+					ownSettlements[pid] = true
+				}
+			}
+			sRows.Close()
+		}
 	}
 
 	rows, err := h.pool.Query(r.Context(),
@@ -270,7 +286,8 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		State        string     `json:"state"`
 		Walls        int        `json:"walls"`
 		Owner        string     `json:"owner,omitempty"`
-		Own          bool       `json:"own"`
+		Own          bool       `json:"own"`       // any settlement owned by this player
+		IsCapital    bool       `json:"is_capital"` // the player's capital
 		Allied       bool       `json:"allied"`
 		Visible      bool       `json:"visible"`
 	}
@@ -283,8 +300,9 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		pos := province.MapPosition{Q: m.Q, R: m.R}
 		m.Visible = !authenticated || province.VisibleFrom(pos, origins, 5)
 		if authenticated {
-			m.Own = m.ID == ownProvinceID
-			m.Allied = ownKingdomID != nil && m.KingdomID != nil && *ownKingdomID == *m.KingdomID
+			m.Own = ownSettlements[m.ID]
+			m.IsCapital = m.ID == ownProvinceID
+			m.Allied = !m.Own && ownKingdomID != nil && m.KingdomID != nil && *ownKingdomID == *m.KingdomID
 		}
 		if !m.Visible {
 			continue // don't reveal fog tiles

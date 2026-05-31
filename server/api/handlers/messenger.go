@@ -107,7 +107,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
 		return
 	}
-	arrivesAt := h.clk.Now().Add(time.Duration(dist) * time.Hour)
+	arrivesAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
 
 	var messengerID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
@@ -307,7 +307,7 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		originID,
 	).Scan(&oQ, &oR)
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
-	returnsAt := h.clk.Now().Add(time.Duration(dist) * time.Hour)
+	returnsAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
 
 	_, err = h.pool.Exec(r.Context(),
 		`UPDATE messengers SET reply_text = $1, status = 'returning' WHERE id = $2`,

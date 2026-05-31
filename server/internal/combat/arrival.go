@@ -92,7 +92,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		return fmt.Errorf("mark resolved: %w", err)
 	}
 
-	if march.Intent == "reinforce" || march.Intent == "support" {
+	if march.Intent == "reinforce" || march.Intent == "support" || march.Intent == "return" {
 		return mergeArmy(ctx, tx, march.TargetID, march.Army)
 	}
 

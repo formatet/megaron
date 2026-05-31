@@ -726,8 +726,12 @@ function openInspect(marker) {
   foot.innerHTML = '';
   if (marker.own) {
     const a = document.createElement('a');
-    a.href = `/world/${WORLD_ID}`;
-    a.textContent = 'Manage Province →';
+    // Capital: plain province URL; others: ?sid= to switch to that settlement.
+    a.href = marker.is_capital
+      ? `/world/${WORLD_ID}/`
+      : `/world/${WORLD_ID}/?sid=${marker.settlement_id}`;
+    a.textContent = marker.is_capital ? 'Manage Province →' : 'Manage Settlement →';
+    a.style.cssText = 'display:block;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);text-decoration:none;color:var(--text);font-size:.8rem;';
     foot.appendChild(a);
   } else if (MY_SETTLEMENT_ID && marker.settlement_id) {
     foot.innerHTML = `
@@ -746,6 +750,9 @@ function closeInspect() {
   selectedProvince = null;
   document.getElementById('inspect-panel').style.display = 'none';
 }
+
+// Alias used when right-clicking own non-capital settlements.
+function showInspect(marker) { openInspect(marker); }
 
 // ── Input: drag + zoom + click ────────────────────────────────────────────
 canvas.addEventListener('mousedown', e => {
@@ -880,7 +887,7 @@ function setMarchIntent(intent) {
 }
 
 async function openColonizeCtx(tile, screenX, screenY) {
-  const own = provinceData.find(p => p.own);
+  const own = provinceData.find(p => p.is_capital);
   if (!own) return;
   marchCtxTarget = null;
   marchCtxTile   = tile;
@@ -921,7 +928,7 @@ async function openColonizeCtx(tile, screenX, screenY) {
 }
 
 async function openMarchCtx(target, screenX, screenY) {
-  const own = provinceData.find(p => p.own);
+  const own = provinceData.find(p => p.is_capital);
   if (!own) return;
 
   marchCtxTarget = target;
@@ -995,7 +1002,7 @@ async function openMarchCtx(target, screenX, screenY) {
 }
 
 async function sendMarch() {
-  const own = provinceData.find(p => p.own);
+  const own = provinceData.find(p => p.is_capital);
   if (!own || (!marchCtxTarget && !marchCtxTile)) return;
 
   const body = { intent: marchCtxIntent };
@@ -1068,18 +1075,23 @@ async function sendMessengerFromInspect(destSettlementID) {
 // Right-click to open march menu; also close on outside click or Escape.
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault();
-  const own = provinceData.find(p => p.own);
-  if (!own) return;
+  const capital = provinceData.find(p => p.is_capital);
+  if (!capital) return;
   const rect = canvas.getBoundingClientRect();
   const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
   const target = provinceData.find(p => p.q === h.q && p.r === h.r);
   if (target) {
-    if (target.own) { closeMarchCtx(); return; }
+    if (target.is_capital) { closeMarchCtx(); return; } // own capital — no menu
+    if (target.own) {
+      // Owned non-capital: show manage link via inspect panel
+      showInspect(target, e.clientX, e.clientY);
+      return;
+    }
     openMarchCtx(target, e.clientX, e.clientY);
   } else {
     // Empty tile — offer colonize if it's a habitable terrain.
     const tile = tileData.find(t => t.q === h.q && t.r === h.r);
-    if (!tile || tile.terrain === 'sea' || tile.terrain === 'fog') { closeMarchCtx(); return; }
+    if (!tile || tile.terrain === 'sea' || tile.terrain === 'mountain' || tile.terrain === 'fog') { closeMarchCtx(); return; }
     openColonizeCtx({ q: h.q, r: h.r }, e.clientX, e.clientY);
   }
 });
