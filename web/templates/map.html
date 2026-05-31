@@ -67,6 +67,9 @@
     <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')" title="March to reinforce — units join the garrison on arrival">Reinforce</button>
     <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')"   title="March in support — bolsters any allied attack arriving while still in transit; joins garrison on arrival">Support</button>
   </div>
+  <div id="mctx-colonize-row" style="display:none;padding:.3rem .5rem;font-size:.75rem;color:var(--text-dim)">
+    Colonize: army founds a new settlement on arrival.
+  </div>
   <div class="mctx-units" id="mctx-units"></div>
   <div class="mctx-foot">
     <button class="mctx-send" id="mctx-send" onclick="sendMarch()">March →</button>
@@ -817,7 +820,8 @@ const UNIT_DEFS = [
   { key: 'catapult',       label: 'Siege',     apiKey: 'Catapult'      },
 ];
 
-let marchCtxTarget = null;
+let marchCtxTarget = null;     // province marker (has .id) or null
+let marchCtxTile   = null;     // {q, r} for colonize intent (empty tile)
 let marchCtxIntent = 'attack';
 let marchCtxArmy   = null;
 
@@ -826,6 +830,7 @@ const marchCtx = document.getElementById('march-ctx');
 function closeMarchCtx() {
   marchCtx.style.display = 'none';
   marchCtxTarget = null;
+  marchCtxTile   = null;
   marchCtxArmy   = null;
   document.getElementById('mctx-err').textContent = '';
 }
@@ -836,14 +841,59 @@ function setMarchIntent(intent) {
   document.getElementById('mctx-' + intent).classList.add('active');
 }
 
+async function openColonizeCtx(tile, screenX, screenY) {
+  const own = provinceData.find(p => p.own);
+  if (!own) return;
+  marchCtxTarget = null;
+  marchCtxTile   = tile;
+  marchCtxIntent = 'colonize';
+  marchCtxArmy   = null;
+  document.getElementById('mctx-err').textContent = '';
+  document.getElementById('mctx-name').textContent = `Empty tile (${tile.q},${tile.r})`;
+  document.getElementById('mctx-intent-row').style.display = 'none';
+  document.getElementById('mctx-colonize-row').style.display = 'block';
+
+  marchCtx.style.display = 'block';
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
+  marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
+  marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
+
+  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/army`);
+  if (!res.ok) { closeMarchCtx(); return; }
+  marchCtxArmy = await res.json();
+
+  const unitsEl = document.getElementById('mctx-units');
+  unitsEl.innerHTML = '';
+  for (const u of UNIT_DEFS) {
+    const max = marchCtxArmy[u.apiKey] || 0;
+    const row = document.createElement('div');
+    row.className = 'mctx-row';
+    row.innerHTML = `
+      <span class="mctx-label">${u.label}</span>
+      <input class="mctx-input" type="number" id="mi-${u.key}" min="0" max="${max}" value="0" ${max === 0 ? 'disabled' : ''}>
+      <span class="mctx-max">/${max}</span>`;
+    unitsEl.appendChild(row);
+  }
+  document.getElementById('mctx-send').textContent = 'Colonize →';
+
+  const newH = marchCtx.offsetHeight;
+  marchCtx.style.top = Math.min(screenY + 8, vh - newH - 8) + 'px';
+}
+
 async function openMarchCtx(target, screenX, screenY) {
   const own = provinceData.find(p => p.own);
   if (!own) return;
 
   marchCtxTarget = target;
+  marchCtxTile   = null;
   marchCtxIntent = 'attack';
   marchCtxArmy   = null;
   document.getElementById('mctx-err').textContent = '';
+  document.getElementById('mctx-intent-row').style.display = '';
+  document.getElementById('mctx-colonize-row').style.display = 'none';
+  document.getElementById('mctx-send').textContent = 'March →';
   document.getElementById('mctx-name').textContent = target.name;
 
   // Intent buttons: reinforce/support only for allied provinces.
@@ -908,9 +958,15 @@ async function openMarchCtx(target, screenX, screenY) {
 
 async function sendMarch() {
   const own = provinceData.find(p => p.own);
-  if (!own || !marchCtxTarget) return;
+  if (!own || (!marchCtxTarget && !marchCtxTile)) return;
 
-  const body = { target_id: marchCtxTarget.id, intent: marchCtxIntent };
+  const body = { intent: marchCtxIntent };
+  if (marchCtxTile) {
+    body.target_q = marchCtxTile.q;
+    body.target_r = marchCtxTile.r;
+  } else {
+    body.target_id = marchCtxTarget.id;
+  }
   let anyUnit = false;
   for (const u of UNIT_DEFS) {
     const el = document.getElementById('mi-' + u.key);
@@ -976,8 +1032,15 @@ canvas.addEventListener('contextmenu', e => {
   const rect = canvas.getBoundingClientRect();
   const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
   const target = provinceData.find(p => p.q === h.q && p.r === h.r);
-  if (!target || target.own) { closeMarchCtx(); return; }
-  openMarchCtx(target, e.clientX, e.clientY);
+  if (target) {
+    if (target.own) { closeMarchCtx(); return; }
+    openMarchCtx(target, e.clientX, e.clientY);
+  } else {
+    // Empty tile — offer colonize if it's a habitable terrain.
+    const tile = tileData.find(t => t.q === h.q && t.r === h.r);
+    if (!tile || tile.terrain === 'sea' || tile.terrain === 'fog') { closeMarchCtx(); return; }
+    openColonizeCtx({ q: h.q, r: h.r }, e.clientX, e.clientY);
+  }
 });
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMarchCtx(); });

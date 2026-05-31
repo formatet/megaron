@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/ai"
 	"github.com/poleia/server/internal/events"
 )
 
@@ -56,14 +57,15 @@ func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.S
 }
 
 type settlementSnap struct {
-	id        uuid.UUID
-	kharis    float64
-	gold      float64
-	grain     float64
-	wine      float64
-	oil       float64
-	livestock float64
-	cultLevel string
+	id          uuid.UUID
+	kharis      float64
+	gold        float64
+	grain       float64
+	wine        float64
+	oil         float64
+	livestock   float64
+	cultLevel   string
+	governorAI  bool
 }
 
 // Handle processes a KharisTick scheduled event.
@@ -76,7 +78,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		    s.cult_level,
 		    GREATEST(0, COALESCE(wine.amount  + (EXTRACT(EPOCH FROM (now() - wine.calc_at))/60  * wine.rate),  0)),
 		    GREATEST(0, COALESCE(oil.amount   + (EXTRACT(EPOCH FROM (now() - oil.calc_at))/60   * oil.rate),   0)),
-		    GREATEST(0, COALESCE(livestock.amount + (EXTRACT(EPOCH FROM (now() - livestock.calc_at))/60 * livestock.rate), 0))
+		    GREATEST(0, COALESCE(livestock.amount + (EXTRACT(EPOCH FROM (now() - livestock.calc_at))/60 * livestock.rate), 0)),
+		    s.governor_is_ai
 		 FROM settlements s
 		 LEFT JOIN settlement_goods grain     ON grain.settlement_id     = s.id AND grain.good_key     = 'grain'
 		 LEFT JOIN settlement_goods wine      ON wine.settlement_id      = s.id AND wine.good_key      = 'wine'
@@ -93,7 +96,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	var snaps []settlementSnap
 	for rows.Next() {
 		var s settlementSnap
-		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.grain, &s.cultLevel, &s.wine, &s.oil, &s.livestock); err == nil {
+		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.grain, &s.cultLevel, &s.wine, &s.oil, &s.livestock, &s.governorAI); err == nil {
 			snaps = append(snaps, s)
 		}
 	}
@@ -104,6 +107,11 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	for _, s := range snaps {
 		if err := h.processMaintenance(ctx, s, e.WorldID); err != nil {
 			slog.Error("kharis maintenance failed", "settlement", s.id, "err", err)
+		}
+		if s.governorAI {
+			if err := ai.PassiveGovernorTick(ctx, h.pool, s.id, e.WorldID); err != nil {
+				slog.Warn("passive governor tick failed", "settlement", s.id, "err", err)
+			}
 		}
 	}
 

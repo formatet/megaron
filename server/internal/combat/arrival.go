@@ -94,6 +94,10 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		return mergeArmy(ctx, tx, march.TargetID, march.Army)
 	}
 
+	if march.Intent == "colonize" {
+		return h.colonize(ctx, tx, march.OriginID, march.TargetID, march.Army, worldID)
+	}
+
 	// Load attacker support from allied marches at same target.
 	var supportStr float64
 	_ = tx.QueryRow(ctx,
@@ -451,6 +455,130 @@ func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, orig
 			worldID, recipID, tgt.Name, "battle", text,
 		)
 	}
+}
+
+// colonize creates a new colony settlement in an unclaimed province.
+// If a settlement already exists, the colonists return home without creating a new one.
+func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, army province.ArmyComposition, worldID uuid.UUID) error {
+	// Idempotency: if someone got here first, return army home.
+	var existingID uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE province_id = $1`, targetID).Scan(&existingID); err == nil {
+		return mergeArmy(ctx, tx, originID, army)
+	}
+
+	// Load attacker's owner and culture from home settlement.
+	var attackerOwnerID uuid.UUID
+	var culture string
+	if err := tx.QueryRow(ctx,
+		`SELECT owner_id, culture_id FROM settlements WHERE province_id = $1`,
+		originID,
+	).Scan(&attackerOwnerID, &culture); err != nil {
+		return fmt.Errorf("load attacker settlement: %w", err)
+	}
+
+	// Load target province terrain and deposits.
+	var terrainType string
+	var copperDeposit, tinDeposit bool
+	if err := tx.QueryRow(ctx,
+		`SELECT terrain_type, copper_deposit, tin_deposit FROM provinces WHERE id = $1`,
+		targetID,
+	).Scan(&terrainType, &copperDeposit, &tinDeposit); err != nil {
+		return fmt.Errorf("load target province: %w", err)
+	}
+
+	name := province.SettlementNameForCulture(culture)
+
+	var settlementID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO settlements
+		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
+		  loyalty, governor_is_ai, kharis_rate, kharis_calc_at)
+		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,true,0.02,now())
+		 RETURNING id`,
+		worldID, targetID, name, culture, attackerOwnerID,
+	).Scan(&settlementID); err != nil {
+		return fmt.Errorf("create colony: %w", err)
+	}
+
+	// Mark province as controlled.
+	_, _ = tx.Exec(ctx,
+		`UPDATE provinces SET territory_state='controlled', controller_id=$1 WHERE id=$2`,
+		settlementID, targetID,
+	)
+
+	// Seed all goods rows (zero amounts), then apply terrain production rates.
+	_, _ = tx.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		 SELECT $1, g.key, 0, 0,
+		        CASE g.key WHEN 'grain' THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
+		                   WHEN 'copper' THEN 300  WHEN 'tin' THEN 300  ELSE 200 END,
+		        now()
+		 FROM goods g
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		settlementID,
+	)
+	_, _ = tx.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		 SELECT $1, pr.good_key, 0, pr.rate_per_min,
+		        CASE pr.good_key WHEN 'grain' THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
+		                        WHEN 'copper' THEN 300  WHEN 'tin' THEN 300  ELSE 200 END,
+		        now()
+		 FROM production_rules pr
+		 WHERE pr.building_type IS NULL AND pr.terrain_type = $2
+		   AND (pr.requires_deposit IS NULL
+		        OR (pr.requires_deposit = 'copper' AND $3)
+		        OR (pr.requires_deposit = 'tin' AND $4))
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE
+		     SET rate = settlement_goods.rate + EXCLUDED.rate`,
+		settlementID, terrainType, copperDeposit, tinDeposit,
+	)
+
+	// Colonists become the garrison.
+	if army.Infantry > 0 || army.Cavalry > 0 || army.EliteInfantry > 0 || army.Priest > 0 || army.Ship > 0 {
+		_, _ = tx.Exec(ctx,
+			`UPDATE settlements SET
+			   infantry       = infantry       + $1,
+			   cavalry        = cavalry        + $2,
+			   elite_infantry = elite_infantry + $3,
+			   priest         = priest         + $4,
+			   ship           = ship           + $5
+			 WHERE id = $6`,
+			army.Infantry, army.Cavalry, army.EliteInfantry, army.Priest, army.Ship,
+			settlementID,
+		)
+	}
+
+	slog.Info("colony founded", "settlement", settlementID, "name", name, "province", targetID, "owner", attackerOwnerID)
+
+	if h.hub != nil {
+		h.hub.Broadcast(worldID, notify.Msg{
+			Kind: "ColonyFounded",
+			Payload: map[string]any{
+				"settlement_id": settlementID,
+				"name":          name,
+				"province_id":   targetID,
+			},
+		})
+	}
+
+	// Gossip: inform nearby settlements.
+	var origName string
+	_ = tx.QueryRow(ctx, `SELECT name FROM settlements WHERE province_id = $1`, originID).Scan(&origName)
+	_, _ = tx.Exec(ctx,
+		`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
+		 SELECT $1, s.owner_id, $2, 'political',
+		        $3 || ' has been established near your domain.'
+		 FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE p.world_id = $1 AND s.owner_id IS NOT NULL AND s.owner_id != $4
+		   AND (ABS(p.map_q - (SELECT map_q FROM provinces WHERE id = $5))
+		        + ABS(p.map_r - (SELECT map_r FROM provinces WHERE id = $5))
+		        + ABS((p.map_q + p.map_r) -
+		              ((SELECT map_q FROM provinces WHERE id = $5)+(SELECT map_r FROM provinces WHERE id = $5)))) / 2 <= 5`,
+		worldID, name, name, attackerOwnerID, targetID,
+	)
+
+	return nil
 }
 
 func (h *ArrivalHandler) recordEvent(ctx context.Context, streamID, worldID uuid.UUID, result CombatResult, marchID uuid.UUID) {

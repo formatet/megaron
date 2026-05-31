@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
 )
 
@@ -93,7 +94,7 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uu
 		return fmt.Errorf("create province: %w", err)
 	}
 
-	name := settlementNameForCulture(culture)
+	name := province.SettlementNameForCulture(culture)
 
 	var settlementID uuid.UUID
 	if err = tx.QueryRow(ctx,

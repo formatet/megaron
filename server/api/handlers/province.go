@@ -198,6 +198,8 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		TargetID      string `json:"target_id"`
+		TargetQ       *int   `json:"target_q"` // for colonize: (q,r) of unclaimed tile
+		TargetR       *int   `json:"target_r"`
 		Intent        string `json:"intent"`
 		Infantry      int    `json:"infantry"`
 		Cavalry       int    `json:"cavalry"`
@@ -211,10 +213,63 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	targetID, err := uuid.Parse(req.TargetID)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid target ID")
+	validIntents := map[string]bool{"attack": true, "reinforce": true, "support": true, "colonize": true}
+	if !validIntents[req.Intent] {
+		writeError(w, http.StatusBadRequest, "invalid intent")
 		return
+	}
+
+	var targetID uuid.UUID
+	if req.Intent == "colonize" && req.TargetQ != nil && req.TargetR != nil {
+		// Colonize an unclaimed tile: find or create a province row.
+		q, r2 := *req.TargetQ, *req.TargetR
+		var terrain string
+		if err = h.pool.QueryRow(r.Context(),
+			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			worldID, q, r2,
+		).Scan(&terrain); err != nil {
+			writeError(w, http.StatusNotFound, "tile not found")
+			return
+		}
+		if terrain == "sea" {
+			writeError(w, http.StatusUnprocessableEntity, "cannot colonize a sea tile")
+			return
+		}
+		// Province may or may not exist; find or create it.
+		err = h.pool.QueryRow(r.Context(),
+			`SELECT id FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
+			worldID, q, r2,
+		).Scan(&targetID)
+		if err != nil {
+			// No province yet — create one so the march can reference it.
+			var copperDeposit, tinDeposit bool
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT copper_deposit, tin_deposit FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+				worldID, q, r2,
+			).Scan(&copperDeposit, &tinDeposit)
+			if err2 := h.pool.QueryRow(r.Context(),
+				`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state, copper_deposit, tin_deposit)
+				 VALUES ($1,$2,$3,$4,'free',$5,$6) RETURNING id`,
+				worldID, q, r2, terrain, copperDeposit, tinDeposit,
+			).Scan(&targetID); err2 != nil {
+				writeError(w, http.StatusInternalServerError, "could not create target province")
+				return
+			}
+		}
+		// Reject if the province already has a settlement.
+		var existingSett uuid.UUID
+		if scanErr := h.pool.QueryRow(r.Context(),
+			`SELECT id FROM settlements WHERE province_id = $1`, targetID,
+		).Scan(&existingSett); scanErr == nil {
+			writeError(w, http.StatusUnprocessableEntity, "province already settled")
+			return
+		}
+	} else {
+		targetID, err = uuid.Parse(req.TargetID)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "invalid target ID")
+			return
+		}
 	}
 
 	// Verify ownership via settlement.
@@ -272,7 +327,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// 40% garrison + 75% attacker rules (attack only).
+	// 40% garrison + 75% attacker rules (attack only — skip for colonize/reinforce/support).
 	if req.Intent == "attack" {
 		var garrison province.ArmyComposition
 		if err := tx.QueryRow(r.Context(),
