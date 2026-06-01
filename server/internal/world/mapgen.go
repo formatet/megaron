@@ -60,18 +60,38 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 				m = 0
 			}
 
-			// Deposit assignment (seeded from rng for determinism):
-			// copper on hills in left half (~40%), tin on mountains in right half (~50%),
-			// silver on mountains and hills anywhere (~15%) — rare across the whole map.
+			// Deposit assignment (seeded from rng for determinism).
+			// Geography: copper biased west, tin biased east, silver rare everywhere.
+			// Both metals occur in hills AND mountains — copper needs heat/magma uplift,
+			// tin needs granite intrusions; both environments.
 			var copperDeposit, tinDeposit, silverDeposit bool
-			if terrain == TerrainHills && q < width/2 && rng.Float64() < 0.4 {
-				copperDeposit = true
-			}
-			if terrain == TerrainMountain && q >= width/2 && rng.Float64() < 0.5 {
-				tinDeposit = true
-			}
-			if (terrain == TerrainMountain || terrain == TerrainHills) && rng.Float64() < 0.15 {
-				silverDeposit = true
+			isRock := terrain == TerrainHills || terrain == TerrainMountain
+			if isRock {
+				westBias := 1.0 - float64(q)/float64(width) // 1.0 at q=0, 0.0 at q=width
+				// Copper: ~35% in west, tapering to ~10% in east
+				if rng.Float64() < 0.10+0.25*westBias {
+					copperDeposit = true
+				}
+				// Tin: ~35% in east, tapering to ~10% in west
+				eastBias := float64(q) / float64(width)
+				if rng.Float64() < 0.10+0.25*eastBias {
+					tinDeposit = true
+				}
+				// Silver: rare everywhere (~12%)
+				if rng.Float64() < 0.12 {
+					silverDeposit = true
+				}
+				// A tile can have at most one deposit (silver wins if multi-roll)
+				if silverDeposit {
+					copperDeposit, tinDeposit = false, false
+				} else if copperDeposit && tinDeposit {
+					// Both rolled — keep whichever is more likely in this region
+					if westBias >= 0.5 {
+						tinDeposit = false
+					} else {
+						copperDeposit = false
+					}
+				}
 			}
 
 			tiles = append(tiles, MapTile{
@@ -104,8 +124,21 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			break
 		}
 		t := &tiles[i]
-		// Prefer mountains in right half; fall back to any non-sea tile in right half.
-		if !t.TinDeposit && t.Q >= width/2 && (t.Terrain == TerrainMountain || t.Terrain == TerrainHills) {
+		isRock := t.Terrain == TerrainMountain || t.Terrain == TerrainHills
+		// Prefer eastern rock tiles for tin; fall back to any rock
+		if !t.TinDeposit && !t.SilverDeposit && !t.CopperDeposit && isRock && t.Q >= width/2 {
+			t.TinDeposit = true
+			tinCount++
+		}
+	}
+	// Second pass: any rock tile if still short
+	for i := range tiles {
+		if tinCount >= minTin {
+			break
+		}
+		t := &tiles[i]
+		isRock := t.Terrain == TerrainMountain || t.Terrain == TerrainHills
+		if !t.TinDeposit && !t.SilverDeposit && !t.CopperDeposit && isRock {
 			t.TinDeposit = true
 			tinCount++
 		}
@@ -115,7 +148,20 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			break
 		}
 		t := &tiles[i]
-		if !t.CopperDeposit && t.Q < width/2 && (t.Terrain == TerrainHills || t.Terrain == TerrainMountain) {
+		isRock := t.Terrain == TerrainHills || t.Terrain == TerrainMountain
+		if !t.CopperDeposit && !t.SilverDeposit && !t.TinDeposit && isRock && t.Q < width/2 {
+			t.CopperDeposit = true
+			copperCount++
+		}
+	}
+	// Second pass: any rock tile if still short
+	for i := range tiles {
+		if copperCount >= minCopper {
+			break
+		}
+		t := &tiles[i]
+		isRock := t.Terrain == TerrainHills || t.Terrain == TerrainMountain
+		if !t.CopperDeposit && !t.SilverDeposit && !t.TinDeposit && isRock {
 			t.CopperDeposit = true
 			copperCount++
 		}
