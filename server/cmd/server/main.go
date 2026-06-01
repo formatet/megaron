@@ -121,6 +121,7 @@ func main() {
 	worker.Register(events.ScheduledRespawn, respawnH.Handle)
 	go worker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
+	go healDispossessed(ctx, pool, scheduler)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -311,6 +312,64 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		}
 	}
 	slog.Info("daily ticks seeded", "worlds", len(worldIDs))
+}
+
+// healDispossessed queues a Respawn event for every dispossessed player that has
+// no capital and no pending respawn already in the queue. Runs once at startup
+// to recover players that were defeated before the respawn scheduler existed.
+func healDispossessed(ctx context.Context, pool *pgxpool.Pool, sched *events.Scheduler) {
+	rows, err := pool.Query(ctx, `
+		SELECT pwr.player_id, pwr.world_id,
+		       COALESCE(
+		           (SELECT s.culture_id FROM settlements s
+		            WHERE s.world_id = pwr.world_id AND s.owner_id = pwr.player_id
+		            LIMIT 1),
+		           'akhaier'
+		       ) AS culture
+		FROM player_world_records pwr
+		WHERE pwr.status = 'dispossessed'
+		  AND NOT EXISTS (
+		      SELECT 1 FROM settlements
+		      WHERE world_id = pwr.world_id AND owner_id = pwr.player_id AND is_capital = true
+		  )
+		  AND NOT EXISTS (
+		      SELECT 1 FROM scheduled_events
+		      WHERE world_id = pwr.world_id AND event_type = 'Respawn'
+		        AND payload->>'player_id' = pwr.player_id::text
+		        AND processed_at IS NULL AND failed_at IS NULL
+		  )`)
+	if err != nil {
+		slog.Error("healDispossessed: query", "err", err)
+		return
+	}
+	defer rows.Close()
+
+	type victim struct {
+		playerID uuid.UUID
+		worldID  uuid.UUID
+		culture  string
+	}
+	var victims []victim
+	for rows.Next() {
+		var v victim
+		if err := rows.Scan(&v.playerID, &v.worldID, &v.culture); err == nil {
+			victims = append(victims, v)
+		}
+	}
+
+	for _, v := range victims {
+		if err := sched.EnqueueAfter(ctx, v.worldID, events.ScheduledRespawn,
+			map[string]any{"player_id": v.playerID, "world_id": v.worldID, "culture": v.culture},
+			5*time.Second,
+		); err != nil {
+			slog.Error("healDispossessed: enqueue", "player", v.playerID, "err", err)
+		} else {
+			slog.Info("healDispossessed: queued respawn", "player", v.playerID)
+		}
+	}
+	if len(victims) > 0 {
+		slog.Info("healDispossessed: scheduled respawns", "count", len(victims))
+	}
 }
 
 func runMigrations(dbURL string) error {

@@ -33,10 +33,10 @@ func (h *RespawnHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		return fmt.Errorf("unmarshal respawn payload: %w", err)
 	}
 
-	// Idempotency: skip if the player already has an active settlement.
+	// Idempotency: skip if the player already has a capital (don't respawn over colonies).
 	var existing int
 	_ = h.pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM settlements WHERE world_id = $1 AND owner_id = $2`,
+		`SELECT COUNT(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
 		payload.WorldID, payload.PlayerID,
 	).Scan(&existing)
 	if existing > 0 {
@@ -57,12 +57,13 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uu
 	var q, r int
 	var terrainType string
 	var copperDeposit, tinDeposit bool
+	// Prefer coast tiles; fall back to plains/hills if none available.
 	err := pool.QueryRow(ctx,
 		`SELECT mt.q, mt.r, mt.terrain, mt.copper_deposit, mt.tin_deposit
 		 FROM map_tiles mt
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1 AND p.id IS NULL AND mt.terrain IN ('plains','coast','hills')
-		 ORDER BY RANDOM() LIMIT 1`,
+		 ORDER BY (mt.terrain = 'coast') DESC, RANDOM() LIMIT 1`,
 		worldID,
 	).Scan(&q, &r, &terrainType, &copperDeposit, &tinDeposit)
 	if err != nil {

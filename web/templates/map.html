@@ -68,6 +68,10 @@
     <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')" title="March to reinforce — units join the garrison on arrival">Reinforce</button>
     <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')"   title="March in support — bolsters any allied attack arriving while still in transit; joins garrison on arrival">Support</button>
   </div>
+  <div id="mctx-source-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
+    From: <select id="mctx-source" onchange="onSourceChange()"
+      style="margin-left:.3rem;font-size:.75rem;padding:.15rem .3rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);"></select>
+  </div>
   <div id="mctx-colonize-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
     Colonize: army founds a new settlement on arrival.
     <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
@@ -868,6 +872,7 @@ let marchCtxTarget = null;     // province marker (has .id) or null
 let marchCtxTile   = null;     // {q, r} for colonize intent (empty tile)
 let marchCtxIntent = 'attack';
 let marchCtxArmy   = null;
+let marchCtxSourceID = null;   // province ID of the selected source settlement
 
 const marchCtx = document.getElementById('march-ctx');
 
@@ -876,7 +881,9 @@ function closeMarchCtx() {
   marchCtxTarget = null;
   marchCtxTile   = null;
   marchCtxArmy   = null;
+  marchCtxSourceID = null;
   document.getElementById('mctx-err').textContent = '';
+  document.getElementById('mctx-source-row').style.display = 'none';
   const nameEl = document.getElementById('mctx-colony-name');
   if (nameEl) nameEl.value = '';
 }
@@ -887,9 +894,62 @@ function setMarchIntent(intent) {
   document.getElementById('mctx-' + intent).classList.add('active');
 }
 
+function populateSourceSelect(defaultID) {
+  const sel = document.getElementById('mctx-source');
+  sel.innerHTML = '';
+  const owned = provinceData.filter(p => p.own);
+  if (owned.length <= 1) {
+    document.getElementById('mctx-source-row').style.display = 'none';
+    marchCtxSourceID = owned.length === 1 ? owned[0].id : defaultID;
+    return;
+  }
+  for (const p of owned) {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.name + (p.is_capital ? ' ★' : '');
+    if (p.id === defaultID) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  marchCtxSourceID = sel.value;
+  document.getElementById('mctx-source-row').style.display = 'block';
+}
+
+async function onSourceChange() {
+  const sel = document.getElementById('mctx-source');
+  marchCtxSourceID = sel.value;
+  marchCtxArmy = null;
+  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/army`);
+  if (!res.ok) { document.getElementById('mctx-units').innerHTML = ''; return; }
+  marchCtxArmy = await res.json();
+  renderArmyInputs(marchCtxArmy, null);
+}
+
+function renderArmyInputs(army, defDP) {
+  const unitsEl = document.getElementById('mctx-units');
+  unitsEl.innerHTML = '';
+  if (defDP != null && defDP > 0) {
+    const need = Math.ceil(defDP * 0.75);
+    const info = document.createElement('div');
+    info.style.cssText = 'font-size:.72rem;color:var(--text-dim);font-family:var(--mono);margin-bottom:.3rem;';
+    info.textContent = `Defender ~${defDP} DP · need ≥${need} to attack`;
+    unitsEl.appendChild(info);
+  }
+  for (const u of UNIT_DEFS) {
+    const max = army[u.apiKey] || 0;
+    const row = document.createElement('div');
+    row.className = 'mctx-row';
+    row.innerHTML = `
+      <span class="mctx-label">${u.label}</span>
+      <input class="mctx-input" type="number" id="mi-${u.key}" min="0" max="${max}" value="0" ${max === 0 ? 'disabled' : ''}>
+      <span class="mctx-max">/${max}</span>`;
+    unitsEl.appendChild(row);
+  }
+}
+
 async function openColonizeCtx(tile, screenX, screenY) {
-  const own = provinceData.find(p => p.is_capital);
-  if (!own) return;
+  const capital = provinceData.find(p => p.is_capital);
+  if (!capital) return;
   marchCtxTarget = null;
   marchCtxTile   = tile;
   marchCtxIntent = 'colonize';
@@ -905,23 +965,14 @@ async function openColonizeCtx(tile, screenX, screenY) {
   marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
   marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
 
+  populateSourceSelect(capital.id);
+
   document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
-  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/army`);
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/army`);
   if (!res.ok) { closeMarchCtx(); return; }
   marchCtxArmy = await res.json();
 
-  const unitsEl = document.getElementById('mctx-units');
-  unitsEl.innerHTML = '';
-  for (const u of UNIT_DEFS) {
-    const max = marchCtxArmy[u.apiKey] || 0;
-    const row = document.createElement('div');
-    row.className = 'mctx-row';
-    row.innerHTML = `
-      <span class="mctx-label">${u.label}</span>
-      <input class="mctx-input" type="number" id="mi-${u.key}" min="0" max="${max}" value="0" ${max === 0 ? 'disabled' : ''}>
-      <span class="mctx-max">/${max}</span>`;
-    unitsEl.appendChild(row);
-  }
+  renderArmyInputs(marchCtxArmy, null);
   document.getElementById('mctx-send').textContent = 'Colonize →';
 
   const newH = marchCtx.offsetHeight;
@@ -929,8 +980,8 @@ async function openColonizeCtx(tile, screenX, screenY) {
 }
 
 async function openMarchCtx(target, screenX, screenY) {
-  const own = provinceData.find(p => p.is_capital);
-  if (!own) return;
+  const capital = provinceData.find(p => p.is_capital);
+  if (!capital) return;
 
   marchCtxTarget = target;
   marchCtxTile   = null;
@@ -959,10 +1010,12 @@ async function openMarchCtx(target, screenX, screenY) {
   marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
   marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
 
-  // Fetch own army and target army in parallel.
+  populateSourceSelect(capital.id);
+
+  // Fetch source army and target army in parallel.
   document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
   const [res, defRes] = await Promise.all([
-    fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/army`),
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/army`),
     !target.allied ? fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${target.id}/army`) : Promise.resolve(null),
   ]);
   if (!res.ok) { closeMarchCtx(); return; }
@@ -975,27 +1028,7 @@ async function openMarchCtx(target, screenX, screenY) {
           + (defArmy.elite_infantry || 0) * 2;
   }
 
-  const unitsEl = document.getElementById('mctx-units');
-  unitsEl.innerHTML = '';
-
-  if (defDP > 0 && !target.allied) {
-    const need = Math.ceil(defDP * 0.75);
-    const info = document.createElement('div');
-    info.style.cssText = 'font-size:.72rem;color:var(--text-dim);font-family:var(--mono);margin-bottom:.3rem;';
-    info.textContent = `Defender ~${defDP} DP · need ≥${need} to attack`;
-    unitsEl.appendChild(info);
-  }
-
-  for (const u of UNIT_DEFS) {
-    const max = marchCtxArmy[u.apiKey] || 0;
-    const row = document.createElement('div');
-    row.className = 'mctx-row';
-    row.innerHTML = `
-      <span class="mctx-label">${u.label}</span>
-      <input class="mctx-input" type="number" id="mi-${u.key}" min="0" max="${max}" value="0" ${max === 0 ? 'disabled' : ''}>
-      <span class="mctx-max">/${max}</span>`;
-    unitsEl.appendChild(row);
-  }
+  renderArmyInputs(marchCtxArmy, !target.allied ? defDP : 0);
 
   // Re-position in case content changed height.
   const newH = marchCtx.offsetHeight;
@@ -1003,8 +1036,7 @@ async function openMarchCtx(target, screenX, screenY) {
 }
 
 async function sendMarch() {
-  const own = provinceData.find(p => p.is_capital);
-  if (!own || (!marchCtxTarget && !marchCtxTile)) return;
+  if (!marchCtxSourceID || (!marchCtxTarget && !marchCtxTile)) return;
 
   const body = { intent: marchCtxIntent };
   if (marchCtxTile) {
@@ -1032,7 +1064,7 @@ async function sendMarch() {
   document.getElementById('mctx-err').textContent = '';
 
   const token = localStorage.getItem('poleia_token');
-  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${own.id}/march`, {
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/march`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
     body: JSON.stringify(body),

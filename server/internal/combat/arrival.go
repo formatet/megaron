@@ -185,7 +185,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		if def.OwnerID != nil && h.scheduler != nil {
 			var remaining int
 			_ = tx.QueryRow(ctx,
-				`SELECT COUNT(*) FROM settlements WHERE world_id = $1 AND owner_id = $2`,
+				`SELECT COUNT(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
 				worldID, *def.OwnerID,
 			).Scan(&remaining)
 			if remaining == 0 {
