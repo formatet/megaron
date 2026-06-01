@@ -234,7 +234,7 @@ async function loadNotifications() {
     else if (g.category==='divine') cls='notif-divine';
     return `<div class="notif-item">
       <span class="${cls}">${esc(g.text)}</span>
-      <div class="notif-kind">${esc(g.category||'event')} · ${fmtTime(g.created_at)}</div>
+      <div class="notif-kind">${esc(g.category||'event')} · ${fmtTime(g.generated_at||g.created_at)}</div>
     </div>`;
   }).join('');
 }
