@@ -68,9 +68,13 @@ func main() {
 		worldsCmd(),
 		kingdomsCmd(),
 		settlementsCmd(),
+		wanaxesCmd(),
 		goodsCmd(),
 		tradeCmd(),
 		inboxCmd(),
+		replyCmd(),
+		tradeAcceptCmd(),
+		tradeDeclineCmd(),
 		gossipCmd(),
 		messengerCmd(),
 	)
