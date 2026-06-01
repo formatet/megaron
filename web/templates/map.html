@@ -256,28 +256,59 @@ function hexAtScreen(sx, sy) {
 }
 
 // ── Hex path helpers ─────────────────────────────────────────────────────
-// Cube-coordinate lerp, rounded to nearest hex.
-function hexRoundLerp(q1, r1, q2, r2, t) {
-  const s1 = -q1-r1, s2 = -q2-r2;
-  const qf = q1*(1-t) + q2*t, rf = r1*(1-t) + r2*t, sf = s1*(1-t) + s2*t;
-  let qi = Math.round(qf), ri = Math.round(rf), si = Math.round(sf);
-  const dq = Math.abs(qi-qf), dr = Math.abs(ri-rf), ds = Math.abs(si-sf);
-  if (dq > dr && dq > ds) qi = -ri-si;
-  else if (dr > ds) ri = -qi-si;
-  return {q: qi, r: ri};
+// Six axial directions in cube space.
+const HEX_DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
+
+// Hex distance in axial coords (cube formula).
+function hexDist(q1, r1, q2, r2) {
+  return (Math.abs(q1-q2) + Math.abs(q1+r1-q2-r2) + Math.abs(r1-r2)) / 2;
+}
+
+// Adjacent neighbor of (cq,cr) that is one step closer to (tq,tr).
+// Ties broken by array order — stable for a given origin/destination.
+function hexNeighborToward(cq, cr, tq, tr) {
+  let best = null, bestD = Infinity;
+  for (const [dq, dr] of HEX_DIRS) {
+    const d = hexDist(cq+dq, cr+dr, tq, tr);
+    if (d < bestD) { bestD = d; best = {q: cq+dq, r: cr+dr}; }
+  }
+  return best;
+}
+
+// Build an adjacency-guaranteed hex path from (q1,r1) to (q2,r2) via greedy steps.
+// Cube-lerp has a known rounding defect where consecutive sampled hexes can be
+// distance-2 apart on diagonal paths — this avoids that by always stepping to
+// the nearest neighbour.
+function buildHexPath(q1, r1, q2, r2) {
+  const N = hexDist(q1, r1, q2, r2);
+  const path = [{q: q1, r: r1}];
+  for (let i = 0; i < N; i++) {
+    const last = path[path.length - 1];
+    path.push(hexNeighborToward(last.q, last.r, q2, r2));
+  }
+  return path;
+}
+
+// Cache: key = "q1,r1,q2,r2"  → hex array. Paths are deterministic so never evicted.
+const _hexPathCache = new Map();
+function getHexPath(q1, r1, q2, r2) {
+  const k = `${q1},${r1},${q2},${r2}`;
+  if (!_hexPathCache.has(k)) _hexPathCache.set(k, buildHexPath(q1, r1, q2, r2));
+  return _hexPathCache.get(k);
 }
 
 // Return pixel position along hex path at fractional progress, plus current hex.
+// Uses a precomputed greedy path so every step is exactly one hex.
 function hexPathPx(q1, r1, q2, r2, progress) {
-  const N = (Math.abs(q1-q2) + Math.abs(q1+r1-q2-r2) + Math.abs(r1-r2)) / 2;
-  if (N === 0) { const p = hexPx(q1,r1); return {x:p.x, y:p.y, q:q1, r:r1}; }
-  const ft = Math.min(N-0.001, progress * N); // stay within range
+  const path = getHexPath(q1, r1, q2, r2);
+  const N = path.length - 1;
+  if (N === 0) { const p = hexPx(q1, r1); return {x: p.x, y: p.y, q: q1, r: r1}; }
+  const ft = Math.min(N - 0.001, progress * N);
   const step = Math.floor(ft);
   const frac = ft - step;
-  const cur = hexRoundLerp(q1,r1,q2,r2, step/N);
-  const nxt = hexRoundLerp(q1,r1,q2,r2, Math.min(1,(step+1)/N));
+  const cur = path[step], nxt = path[Math.min(step + 1, N)];
   const cp = hexPx(cur.q, cur.r), np = hexPx(nxt.q, nxt.r);
-  return { x: cp.x+(np.x-cp.x)*frac, y: cp.y+(np.y-cp.y)*frac, q: cur.q, r: cur.r };
+  return { x: cp.x + (np.x - cp.x) * frac, y: cp.y + (np.y - cp.y) * frac, q: cur.q, r: cur.r };
 }
 
 // A tile is visible if tileData has it with terrain !== 'fog'.
