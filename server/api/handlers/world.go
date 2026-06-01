@@ -560,3 +560,70 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 	br := h.pool.SendBatch(ctx, batch)
 	return br.Close()
 }
+
+// Wanaxes handles GET /worlds/{worldID}/wanaxes — public leaderboard for API clients.
+// Returns all settlements sorted by army strength; includes terrain and settlement_id for trade routing.
+func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, _ := auth.PlayerIDFromContext(r.Context())
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
+		        (SELECT k.name FROM kingdoms k
+		         JOIN kingdom_members km ON km.kingdom_id = k.id
+		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
+		        s.wall_level, s.population,
+		        s.infantry + s.cavalry*3 + s.elite_infantry*2,
+		        s.owner_id
+		 FROM settlements s
+		 LEFT JOIN players p ON p.id = s.owner_id
+		 LEFT JOIN provinces prov ON prov.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		 ORDER BY s.infantry + s.cavalry*3 + s.elite_infantry*2 DESC`,
+		worldID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "db error")
+		return
+	}
+	defer rows.Close()
+
+	type entry struct {
+		SettlementID string `json:"settlement_id"`
+		Name         string `json:"name"`
+		Owner        string `json:"owner"`
+		Culture      string `json:"culture"`
+		Terrain      string `json:"terrain"`
+		Kingdom      string `json:"kingdom,omitempty"`
+		Walls        int    `json:"walls"`
+		Population   int    `json:"population"`
+		ArmyDP       int    `json:"army_dp"`
+		Own          bool   `json:"own"`
+	}
+	var result []entry
+	for rows.Next() {
+		var e entry
+		var ownerID *uuid.UUID
+		var kingdom *string
+		var terrain *string
+		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
+			&e.Walls, &e.Population, &e.ArmyDP, &ownerID); err != nil {
+			continue
+		}
+		if kingdom != nil {
+			e.Kingdom = *kingdom
+		}
+		if terrain != nil {
+			e.Terrain = *terrain
+		}
+		if ownerID != nil && *ownerID == playerID {
+			e.Own = true
+		}
+		result = append(result, e)
+	}
+	writeJSON(w, http.StatusOK, result)
+}
