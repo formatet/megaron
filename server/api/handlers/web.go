@@ -828,3 +828,40 @@ func (h *WebHandler) WanaxesView(w http.ResponseWriter, r *http.Request) {
 		"Settlements": settlements,
 	})
 }
+
+// MessagesView serves the standalone messages/diplomacy page.
+func (h *WebHandler) MessagesView(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		http.Error(w, "invalid world ID", http.StatusBadRequest)
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	// Find player's capital settlement for sending messengers.
+	var mySettlementID, mySettlementName string
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT id, name FROM settlements WHERE world_id=$1 AND owner_id=$2 AND is_capital=true`,
+		worldID, playerID,
+	).Scan(&mySettlementID, &mySettlementName)
+
+	// Unread count for display.
+	var unread int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT count(*) FROM messengers m
+		 JOIN settlements s ON s.id = m.destination_id
+		 WHERE m.world_id=$1 AND s.owner_id=$2 AND m.status='delivered'`,
+		worldID, playerID,
+	).Scan(&unread)
+
+	h.render(w, "messages.html", map[string]any{
+		"WorldID":           worldID,
+		"MySettlementID":    mySettlementID,
+		"MySettlementName":  mySettlementName,
+		"UnreadCount":       unread,
+	})
+}

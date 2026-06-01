@@ -12,6 +12,21 @@
       const token = localStorage.getItem('poleia_token');
       if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
     });
+
+    // Silver weight display: shekel / mina / talang
+    // 1 mina = 60 shekel · 1 talang = 60 mina (= 3600 shekel)
+    function fmtSilver(v) {
+      v = Math.round(v);
+      if (v === 0) return '0 shekel';
+      if (v < 60)  return v + ' shekel';
+      if (v < 3600) {
+        const mina = Math.floor(v / 60), shekel = v % 60;
+        return shekel ? mina + ' mina ' + shekel + ' shekel' : mina + ' mina';
+      }
+      const talang = Math.floor(v / 3600), rest = v % 3600;
+      const mina   = Math.floor(rest / 60);
+      return mina ? talang + ' talang ' + mina + ' mina' : talang + ' talang';
+    }
   </script>
 </head>
 <body>

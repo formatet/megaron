@@ -1,0 +1,310 @@
+{{template "base" .}}
+{{define "title"}}Messages — Poleia{{end}}
+{{define "nav"}}
+  <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}/messages" class="nav-active">Messages</a>
+  <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
+  <a href="/world/{{.WorldID}}/wanaxes">Wanaxes</a>
+  <a href="/world/{{.WorldID}}/market">Market</a>
+{{end}}
+{{define "content"}}
+<div class="messages-page">
+
+<style>
+.messages-page { max-width:860px; margin:1.2rem auto; padding:0 1rem; font-family:var(--font); }
+.msg-columns   { display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; align-items:start; }
+@media(max-width:600px){ .msg-columns { grid-template-columns:1fr; } }
+
+.msg-panel { background:var(--bg-panel); border:1px solid var(--border); padding:.8rem 1rem; }
+.msg-panel h3 { margin:0 0 .7rem; color:var(--accent); font-size:.95rem; letter-spacing:.05em; text-transform:uppercase; border-bottom:1px solid var(--border); padding-bottom:.4rem; }
+
+/* Message item */
+.msg-item { padding:.55rem 0; border-bottom:1px solid var(--bg-raised); }
+.msg-item:last-child { border-bottom:none; }
+.msg-from   { font-weight:bold; color:var(--accent); font-size:.82rem; }
+.msg-text   { color:var(--text); margin:.25rem 0; font-style:italic; font-size:.85rem; }
+.msg-meta   { font-size:.72rem; color:var(--text-dim); font-family:var(--mono); }
+.msg-empty  { color:var(--text-dim); font-style:italic; font-size:.82rem; padding:.4rem 0; }
+
+/* Trade offer block */
+.trade-block { background:var(--warm-white); border:1px solid var(--border); padding:.35rem .6rem; margin:.35rem 0; font-size:.8rem; border-radius:1px; }
+.trade-want  { color:var(--text); }
+.trade-want b { color:var(--accent); }
+.trade-btns  { display:flex; gap:.4rem; margin-top:.4rem; }
+
+/* Reply / compose */
+.msg-reply-wrap { display:flex; gap:.3rem; margin-top:.4rem; }
+.msg-reply-wrap input { flex:1; background:var(--warm-white); border:1px solid var(--border); padding:.2rem .4rem; font-size:.8rem; font-family:var(--font); }
+
+/* Compose panel */
+.compose-form { display:flex; flex-direction:column; gap:.4rem; }
+.compose-form label { font-size:.78rem; color:var(--text-dim); margin-bottom:-.2rem; }
+.compose-form select, .compose-form textarea, .compose-form input[type=text],
+.compose-form input[type=number] {
+  background:var(--warm-white); border:1px solid var(--border);
+  padding:.3rem .5rem; font-size:.82rem; font-family:var(--font); color:var(--text);
+}
+.compose-form textarea { resize:vertical; min-height:3rem; }
+.compose-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.4rem; }
+.compose-grid label { font-size:.75rem; color:var(--text-dim); display:block; margin-bottom:.15rem; }
+
+/* Notifications */
+.notif-item { padding:.4rem 0; border-bottom:1px solid var(--bg-raised); font-size:.82rem; color:var(--text); }
+.notif-item:last-child { border-bottom:none; }
+.notif-kind { font-size:.72rem; color:var(--text-dim); font-family:var(--mono); }
+.notif-combat { color:var(--blood); font-weight:bold; }
+.notif-trade  { color:var(--safe); }
+.notif-divine { color:var(--gold); }
+
+/* Sent item */
+.sent-status { font-size:.72rem; font-family:var(--mono); color:var(--text-dim); }
+.sent-reply  { font-style:italic; color:var(--safe); }
+
+.action-result { font-size:.8rem; margin-top:.3rem; min-height:1rem; }
+.action-ok   { color:var(--safe); }
+.action-err  { color:var(--accent); }
+
+details > summary { cursor:pointer; color:var(--accent); font-size:.8rem; user-select:none; }
+</style>
+
+<h2 style="color:var(--accent);margin-bottom:.8rem;font-size:1.1rem;letter-spacing:.06em">MESSAGES &amp; DIPLOMACY</h2>
+
+<div class="msg-columns">
+
+  <!-- ── LEFT: Inbox + Notifications ──────────────────────── -->
+  <div>
+    <div class="msg-panel" style="margin-bottom:1rem">
+      <h3>Inbox</h3>
+      <div id="inbox-list"><p class="msg-empty">Loading…</p></div>
+    </div>
+
+    <div class="msg-panel">
+      <h3>Notifications</h3>
+      <div id="notif-list"><p class="msg-empty">Loading…</p></div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Compose + Sent ────────────────────────────── -->
+  <div>
+    <div class="msg-panel" style="margin-bottom:1rem">
+      <h3>Send Messenger</h3>
+      <div class="compose-form">
+        <label>To</label>
+        <select id="dest-sel"><option value="">Loading…</option></select>
+        <label>Message</label>
+        <textarea id="compose-text" maxlength="1000" placeholder="Your words travel with the messenger…"></textarea>
+        <details>
+          <summary>+ Attach trade offer (optional)</summary>
+          <div class="compose-grid" style="margin-top:.4rem">
+            <div><label>Want good</label><input type="text" id="offer-good" placeholder="e.g. grain"></div>
+            <div><label>Quantity</label><input type="number" id="offer-qty" min="0.1" step="0.1" placeholder="50"></div>
+            <div><label>Offer (silver)</label><input type="number" id="offer-silver" min="1" step="1" placeholder="60"></div>
+          </div>
+        </details>
+        <button class="btn-primary" onclick="sendMsg()" style="align-self:flex-start;padding:.3rem 1rem">Dispatch →</button>
+        <div id="compose-result" class="action-result"></div>
+      </div>
+    </div>
+
+    <div class="msg-panel">
+      <h3>Sent</h3>
+      <div id="sent-list"><p class="msg-empty">Loading…</p></div>
+    </div>
+  </div>
+
+</div><!-- /.msg-columns -->
+
+<script>
+const WORLD_ID       = {{printf "%q" .WorldID}};
+const MY_SETTLEMENT  = {{printf "%q" .MySettlementID}};
+
+// ── auth helper ──────────────────────────────────────────────────────────────
+function authHdr() {
+  const t = localStorage.getItem('poleia_token');
+  return t ? {'Authorization':'Bearer '+t,'Content-Type':'application/json'} : {'Content-Type':'application/json'};
+}
+async function api(method, path, body) {
+  return fetch('/api/v1'+path, {method, headers:authHdr(), body:body?JSON.stringify(body):undefined});
+}
+
+function fmtTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso), now = new Date();
+  const diffH = (now-d)/3600000;
+  if (diffH < 1)  return Math.round(diffH*60)+'m ago';
+  if (diffH < 24) return Math.round(diffH)+'h ago';
+  return Math.round(diffH/24)+'d ago';
+}
+function fmtEta(iso) {
+  if (!iso) return '';
+  const d = new Date(iso), now = new Date();
+  if (d <= now) return 'arrived';
+  const diffH = (d-now)/3600000;
+  if (diffH < 1)  return 'in '+Math.round(diffH*60)+'m';
+  if (diffH < 24) return 'in '+Math.round(diffH)+'h';
+  return 'in '+Math.round(diffH/24)+'d';
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showResult(id, msg, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'action-result '+(ok?'action-ok':'action-err');
+  el.textContent = msg;
+}
+
+// ── Inbox ────────────────────────────────────────────────────────────────────
+async function loadInbox() {
+  const res = await api('GET', `/worlds/${WORLD_ID}/messengers/inbox`);
+  const msgs = await res.json().catch(()=>[]);
+  const el = document.getElementById('inbox-list');
+  if (!msgs.length) { el.innerHTML = '<p class="msg-empty">No messages.</p>'; return; }
+  el.innerHTML = msgs.map(m => {
+    const offer = m.trade_offer;
+    let tradeHtml = '';
+    if (offer && offer.status === 'pending') {
+      tradeHtml = `
+        <div class="trade-block">
+          <div class="trade-want">Wants <b>${esc(offer.want_qty+' '+offer.want_good)}</b> · Offers <b>${offer.offer_gold} silver</b></div>
+          <div class="trade-btns">
+            <button class="btn-small btn-primary" onclick="tradeAccept('${m.id}',this)">Accept ✓</button>
+            <button class="btn-small btn-danger"  onclick="tradeDecline('${m.id}',this)">Decline ✗</button>
+          </div>
+        </div>`;
+    } else if (offer) {
+      tradeHtml = `<div class="trade-block"><span style="color:var(--text-dim);font-style:italic">Trade: ${offer.status}</span></div>`;
+    }
+    return `
+    <div class="msg-item" id="inbox-${m.id}">
+      <div class="msg-from">From ${esc(m.from_name)}<span style="color:var(--text-dim);font-weight:normal"> → ${esc(m.to_name)}</span></div>
+      <div class="msg-text">"${esc(m.message)}"</div>
+      ${tradeHtml}
+      <div class="msg-meta">${fmtTime(m.arrived_at)}</div>
+      ${!offer ? `<div class="msg-reply-wrap">
+        <input id="reply-${m.id}" type="text" placeholder="Reply…" maxlength="1000">
+        <button class="btn-small btn-primary" onclick="sendReply('${m.id}')">Reply</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function sendReply(id) {
+  const text = document.getElementById('reply-'+id)?.value?.trim();
+  if (!text) return;
+  const res = await api('POST', `/worlds/${WORLD_ID}/messengers/${id}/reply`, {reply:text});
+  const data = await res.json().catch(()=>({}));
+  const item = document.getElementById('inbox-'+id);
+  if (res.ok && item) {
+    item.querySelector('.msg-reply-wrap')?.remove();
+    item.insertAdjacentHTML('beforeend',
+      `<div class="msg-meta" style="color:var(--safe)">✓ Reply dispatched · returns ${fmtEta(data.returns_at)}</div>`);
+  }
+}
+
+async function tradeAccept(id, btn) {
+  btn.disabled = true;
+  const res = await api('POST', `/worlds/${WORLD_ID}/messengers/${id}/trade-accept`, {});
+  const data = await res.json().catch(()=>({}));
+  const block = btn.closest('.trade-block');
+  if (res.ok) {
+    block.innerHTML = `<span style="color:var(--safe)">✓ Accepted — ${data.quantity} ${data.good_key} returning ${fmtEta(data.returns_at)} · paid ${data.gold_paid} silver</span>`;
+  } else {
+    btn.disabled = false;
+    block.insertAdjacentHTML('beforeend', `<div style="color:var(--accent);font-size:.78rem">${data.error||'failed'}</div>`);
+  }
+}
+
+async function tradeDecline(id, btn) {
+  btn.disabled = true;
+  const res = await api('POST', `/worlds/${WORLD_ID}/messengers/${id}/trade-decline`, {});
+  const block = btn.closest('.trade-block');
+  if (res.ok) block.innerHTML = `<span style="color:var(--text-dim);font-style:italic">Declined.</span>`;
+  else btn.disabled = false;
+}
+
+// ── Notifications (gossip events) ────────────────────────────────────────────
+async function loadNotifications() {
+  const res = await api('GET', `/worlds/${WORLD_ID}/gossip`);
+  const items = await res.json().catch(()=>[]);
+  const el = document.getElementById('notif-list');
+  if (!items.length) { el.innerHTML = '<p class="msg-empty">Nothing to report.</p>'; return; }
+  el.innerHTML = items.slice(0,15).map(g => {
+    let cls = '';
+    if (g.category==='military') cls='notif-combat';
+    else if (g.category==='trade') cls='notif-trade';
+    else if (g.category==='divine') cls='notif-divine';
+    return `<div class="notif-item">
+      <span class="${cls}">${esc(g.text)}</span>
+      <div class="notif-kind">${esc(g.category||'event')} · ${fmtTime(g.created_at)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Sent ─────────────────────────────────────────────────────────────────────
+async function loadSent() {
+  if (!MY_SETTLEMENT) return;
+  const res = await api('GET', `/worlds/${WORLD_ID}/settlements/${MY_SETTLEMENT}/messengers`);
+  const msgs = await res.json().catch(()=>[]);
+  const el = document.getElementById('sent-list');
+  if (!msgs.length) { el.innerHTML = '<p class="msg-empty">No sent messages.</p>'; return; }
+  el.innerHTML = msgs.map(m => {
+    const status = m.status==='returned' ? `<span class="sent-reply">↩ returned ${fmtTime(m.arrives_at)}</span>` :
+                   m.status==='delivering' ? `<span>en route → ${fmtEta(m.arrives_at)}</span>` :
+                   `<span>${esc(m.status)}</span>`;
+    const replyText = m.reply_text ? `<div class="sent-reply">"${esc(m.reply_text)}"</div>` : '';
+    return `<div class="msg-item">
+      <div class="msg-from" style="color:var(--text-dim)">→ ${esc(m.to_name||'unknown')}</div>
+      <div class="msg-text">"${esc(m.message_text)}"</div>
+      ${replyText}
+      <div class="sent-status">${status}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Compose ──────────────────────────────────────────────────────────────────
+async function loadDestinations() {
+  const res = await api('GET', `/worlds/${WORLD_ID}/wanaxes`);
+  const all = await res.json().catch(()=>[]);
+  const sel = document.getElementById('dest-sel');
+  const others = all.filter(s => !s.own);
+  sel.innerHTML = '<option value="">— choose settlement —</option>' +
+    others.map(s => `<option value="${s.settlement_id}">${esc(s.name)} (${esc(s.terrain||'')}, DP ${s.army_dp||0})</option>`).join('');
+}
+
+async function sendMsg() {
+  const destID = document.getElementById('dest-sel').value;
+  const text   = document.getElementById('compose-text').value.trim();
+  if (!destID) { showResult('compose-result','choose a destination',false); return; }
+  if (!text)   { showResult('compose-result','write a message',false); return; }
+  if (!MY_SETTLEMENT) { showResult('compose-result','you have no settlement',false); return; }
+
+  const body = {destination_id:destID, message:text};
+  const good  = (document.getElementById('offer-good')?.value||'').trim();
+  const qty   = parseFloat(document.getElementById('offer-qty')?.value||'0');
+  const silver= parseFloat(document.getElementById('offer-silver')?.value||'0');
+  if (good && qty>0 && silver>0) {
+    body.trade_offer = {want_good:good, want_qty:qty, offer_gold:silver};
+  }
+
+  const res  = await api('POST', `/worlds/${WORLD_ID}/settlements/${MY_SETTLEMENT}/messengers`, body);
+  const data = await res.json().catch(()=>({}));
+  if (res.ok) {
+    showResult('compose-result', `✓ Messenger dispatched · arrives ${fmtEta(data.arrives_at)}`, true);
+    document.getElementById('compose-text').value='';
+    document.getElementById('dest-sel').value='';
+    document.getElementById('offer-good').value='';
+    document.getElementById('offer-qty').value='';
+    document.getElementById('offer-silver').value='';
+    loadSent();
+  } else {
+    showResult('compose-result', data.error||'send failed', false);
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadInbox();
+loadNotifications();
+loadSent();
+loadDestinations();
+</script>
+
+{{end}}

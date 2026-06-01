@@ -2,6 +2,7 @@
 {{define "title"}}{{.Province.Name}} — Poleia{{end}}
 {{define "nav"}}
   <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}/messages">Messages</a>
   <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
   <a href="/world/{{.WorldID}}/wanaxes">Wanaxes</a>
   <a href="/world/{{.WorldID}}/market">Market</a>
@@ -21,7 +22,7 @@
       <span class="stat-chip loyalty-{{.Province.Loyalty}}" title="Settlement loyalty (1=Disgruntled · 2=Loyal · 3=Devoted · 4=Fervent)">{{if eq .Province.Loyalty 1}}Disgruntled{{else if eq .Province.Loyalty 2}}Loyal{{else if eq .Province.Loyalty 3}}Devoted{{else if eq .Province.Loyalty 4}}Fervent{{else}}Loyal{{end}}</span>
       {{if .Province.CopperDeposit}}<span class="stat-chip deposit-chip" title="Copper deposit">⛏ Copper</span>{{end}}
       {{if .Province.TinDeposit}}<span class="stat-chip deposit-chip" title="Tin deposit">⛏ Tin</span>{{end}}
-      <a id="msg-count-chip" href="/world/{{.WorldID}}/kingdom" style="display:none" class="stat-chip msg-chip" title="Unread messages"></a>
+      <a id="msg-count-chip" href="/world/{{.WorldID}}/messages" style="display:none" class="stat-chip msg-chip" title="Unread messages"></a>
     </div>
   </header>
 
@@ -176,7 +177,7 @@
           <option value="stonequarry">Stone Quarry — 50 cedar 20 stone · +stone/m</option>
           <option value="mine">Mine — 60 cedar 40 stone · +stone/m</option>
           <option value="barracks">Barracks — 80 cedar 80 stone · recruits</option>
-          <option value="market">Market — 100 cedar 60 stone · +0.5 gold/m</option>
+          <option value="market">Market — 100 cedar 60 stone · +0.5 silver/m</option>
           <option value="wall">Wall — 40 cedar 160 stone · +1 wall</option>
           <option value="tower">Tower — 60 cedar 110 stone · +1 wall</option>
           <option value="harbour">Harbour — 140 cedar 60 stone · ships</option>
@@ -277,10 +278,10 @@
       <div class="lp-title" style="margin-top:.6rem">Devotion</div>
       <select id="cult-level-select" class="build-select" style="margin:.3rem 0">
         <option value="forsummad">Neglected — kharis -10%/day</option>
-        <option value="enkel"    >Simple — 3 gold · 3 grain → +2 kharis</option>
-        <option value="vardig"   >Worthy — 6 gold · 5 grain → +5 kharis</option>
-        <option value="praktfull">Magnificent — 12 gold · 10 grain · 2 wine · 2 oil → +10 kharis</option>
-        <option value="overdadig">Lavish — 20 gold · 15 grain · 5 wine · 5 oil → +18 kharis</option>
+        <option value="enkel"    >Simple — 3 silver · 3 grain → +2 kharis</option>
+        <option value="vardig"   >Worthy — 6 silver · 5 grain → +5 kharis</option>
+        <option value="praktfull">Magnificent — 12 silver · 10 grain · 2 wine · 2 oil → +10 kharis</option>
+        <option value="overdadig">Lavish — 20 silver · 15 grain · 5 wine · 5 oil → +18 kharis</option>
       </select>
       <button class="btn-primary btn-small" onclick="setCultLevel()" style="width:100%;margin-top:.3rem">Save</button>
       <div id="cult-result" class="action-result"></div>
