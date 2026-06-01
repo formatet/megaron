@@ -29,6 +29,7 @@ const (
 	ScheduledMessengerReturn    ScheduledEventType = "MessengerReturn"
 	ScheduledKharisTick         ScheduledEventType = "KharisTick"
 	ScheduledTradeDelivery      ScheduledEventType = "TradeDelivery"
+	ScheduledTradeReturn        ScheduledEventType = "TradeReturn"
 	ScheduledRespawn            ScheduledEventType = "Respawn"
 )
 

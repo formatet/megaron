@@ -56,6 +56,14 @@
       <select id="dest-select"><option value="">Loading settlements…</option></select>
       <label class="send-label">Message</label>
       <textarea id="send-msg" maxlength="1000" rows="3" placeholder="Your message…"></textarea>
+      <details style="margin:.4rem 0">
+        <summary style="cursor:pointer;font-size:.82rem;color:var(--accent)">+ Add trade offer (optional)</summary>
+        <div style="margin-top:.4rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem;font-size:.8rem">
+          <div><label>Want good</label><input id="offer-good" placeholder="e.g. grain" style="width:100%"></div>
+          <div><label>Quantity</label><input id="offer-qty" type="number" min="0.1" step="0.1" placeholder="50" style="width:100%"></div>
+          <div><label>Offer gold</label><input id="offer-gold" type="number" min="1" step="1" placeholder="60" style="width:100%"></div>
+        </div>
+      </details>
       <button class="btn-primary btn-send" onclick="sendMessenger()">Dispatch →</button>
     </div>
     <div id="send-result" class="action-result"></div>
@@ -126,6 +134,10 @@
 .inbox-text { color:#1C1C1C; margin:.2rem 0; font-style:italic; }
 .inbox-meta { font-size:.72rem; color:#A04000; font-family:var(--mono); }
 .inbox-reply-wrap { margin-top:.3rem; display:flex; gap:.3rem; }
+.trade-offer-block { background:var(--surface-raised,#FEF9E7); border:1px solid var(--accent,#E67E22); border-radius:2px; padding:.3rem .5rem; margin:.3rem 0; font-size:.82rem; }
+.trade-offer-label { font-weight:bold; color:var(--accent,#E67E22); margin-right:.4rem; }
+.trade-offer-detail { color:var(--text,#1C1C1C); }
+.trade-offer-resolved { color:var(--muted,#A04000); font-style:italic; }
 .inbox-reply-wrap input { flex:1; background:#FDFEFE; border:1px solid #E67E22; padding:.2rem .4rem; font-size:.8rem; }
 
 /* Invite form */
@@ -233,16 +245,51 @@ async function loadInbox() {
   const msgs = await res.json().catch(() => []);
   const el = document.getElementById('inbox-list');
   if (!msgs.length) { el.innerHTML = '<p class="empty-state">No messages.</p>'; return; }
-  el.innerHTML = msgs.map(m => `
+  el.innerHTML = msgs.map(m => {
+    const offer = m.trade_offer;
+    const tradeBlock = offer && offer.status === 'pending' ? `
+      <div class="trade-offer-block">
+        <span class="trade-offer-label">Trade offer:</span>
+        <span class="trade-offer-detail">Wants <b>${offer.want_qty} ${offer.want_good}</b> · Offers <b>${offer.offer_gold} gold</b></span>
+        <div class="inbox-reply-wrap" style="margin-top:.4rem">
+          <button class="btn-small btn-primary" onclick="tradeAccept('${m.id}')">Accept ✓</button>
+          <button class="btn-small btn-danger" onclick="tradeDecline('${m.id}')">Decline ✗</button>
+        </div>
+      </div>` : (offer ? `<div class="trade-offer-block trade-offer-resolved">Trade: ${offer.status}</div>` : '');
+    return `
     <div class="inbox-item" id="msg-${m.id}">
       <div class="inbox-from">From: ${m.from_name} → ${m.to_name}</div>
       <div class="inbox-text">"${escHtml(m.message)}"</div>
+      ${tradeBlock}
       <div class="inbox-meta">${fmtTime(m.arrived_at)}</div>
-      <div class="inbox-reply-wrap">
+      ${!offer ? `<div class="inbox-reply-wrap">
         <input type="text" id="reply-${m.id}" placeholder="Reply…" maxlength="1000">
         <button class="btn-small btn-primary" onclick="sendReply('${m.id}')">Reply</button>
-      </div>
-    </div>`).join('');
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+async function tradeAccept(msgID) {
+  const res = await apiReq('POST', `/api/v1/worlds/${WORLD_ID}/messengers/${msgID}/trade-accept`, {});
+  const data = await res.json().catch(() => ({}));
+  const el = document.getElementById(`msg-${msgID}`);
+  if (res.ok) {
+    if (el) el.querySelector('.trade-offer-block').innerHTML =
+      `<span class="trade-offer-resolved">✓ Accepted — caravan returns ${fmtTime(data.returns_at)} · ${data.quantity} ${data.good_key}</span>`;
+  } else {
+    if (el) el.querySelector('.trade-offer-block').insertAdjacentHTML('beforeend',
+      `<div style="color:var(--danger)">${data.error || 'failed'}</div>`);
+  }
+}
+
+async function tradeDecline(msgID) {
+  const res = await apiReq('POST', `/api/v1/worlds/${WORLD_ID}/messengers/${msgID}/trade-decline`, {});
+  const el = document.getElementById(`msg-${msgID}`);
+  if (res.ok) {
+    if (el) el.querySelector('.trade-offer-block').innerHTML =
+      `<span class="trade-offer-resolved">✗ Declined</span>`;
+  }
 }
 
 async function sendReply(msgID) {
@@ -303,9 +350,16 @@ async function sendMessenger() {
   const msg    = document.getElementById('send-msg').value.trim();
   if (!destID) { showResult('send-result', 'choose a destination', false); return; }
   if (!msg)    { showResult('send-result', 'write a message first', false); return; }
+  const body = {destination_id: destID, message: msg};
+  const offerGood = (document.getElementById('offer-good')?.value || '').trim();
+  const offerQty  = parseFloat(document.getElementById('offer-qty')?.value || '0');
+  const offerGold = parseFloat(document.getElementById('offer-gold')?.value || '0');
+  if (offerGood && offerQty > 0 && offerGold > 0) {
+    body.trade_offer = {want_good: offerGood, want_qty: offerQty, offer_gold: offerGold};
+  }
   const res = await apiReq('POST',
     `/api/v1/worlds/${WORLD_ID}/settlements/${MY_SETTLEMENT_ID}/messengers`,
-    {destination_id: destID, message: msg});
+    body);
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
     showResult('send-result', `✓ Messenger dispatched · arrives ${fmtTime(data.arrives_at)}`, true);

@@ -49,6 +49,11 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		DestinationID string `json:"destination_id"`
 		Message       string `json:"message"`
+		TradeOffer    *struct {
+			WantGood  string  `json:"want_good"`
+			WantQty   float64 `json:"want_qty"`
+			OfferGold float64 `json:"offer_gold"`
+		} `json:"trade_offer,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -66,6 +71,12 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	if len(req.Message) == 0 || len(req.Message) > 1000 {
 		writeError(w, http.StatusBadRequest, "message must be 1–1000 characters")
 		return
+	}
+	if req.TradeOffer != nil {
+		if req.TradeOffer.WantQty <= 0 || req.TradeOffer.OfferGold <= 0 || req.TradeOffer.WantGood == "" {
+			writeError(w, http.StatusBadRequest, "trade_offer requires want_good, want_qty > 0, offer_gold > 0")
+			return
+		}
 	}
 
 	// Verify caller owns the origin settlement.
@@ -109,11 +120,20 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	}
 	arrivesAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
 
+	var tradeOfferJSON []byte
+	if req.TradeOffer != nil {
+		tradeOfferJSON, _ = json.Marshal(map[string]any{
+			"want_good":  req.TradeOffer.WantGood,
+			"want_qty":   req.TradeOffer.WantQty,
+			"offer_gold": req.TradeOffer.OfferGold,
+			"status":     "pending",
+		})
+	}
 	var messengerID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
-		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, hex_q, hex_r, arrives_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
-		worldID, playerID, originID, destID, req.Message, dQ, dR, arrivesAt,
+		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at)
+		 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9) RETURNING id`,
+		worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt,
 	).Scan(&messengerID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create messenger")
@@ -211,7 +231,8 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.origin_id, os.name, m.destination_id, ds.name, m.message_text, m.status, m.sent_at, m.arrives_at
+		`SELECT m.id, m.origin_id, os.name, m.destination_id, ds.name,
+		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at
 		 FROM messengers m
 		 JOIN settlements os ON os.id = m.origin_id
 		 JOIN settlements ds ON ds.id = m.destination_id
@@ -228,21 +249,26 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		ID       uuid.UUID `json:"id"`
-		FromID   uuid.UUID `json:"from_id"`
-		FromName string    `json:"from_name"`
-		ToID     uuid.UUID `json:"to_id"`
-		ToName   string    `json:"to_name"`
-		Message  string    `json:"message"`
-		Status   string    `json:"status"`
-		SentAt   time.Time `json:"sent_at"`
-		ArrivedAt time.Time `json:"arrived_at"`
+		ID         uuid.UUID       `json:"id"`
+		FromID     uuid.UUID       `json:"from_id"`
+		FromName   string          `json:"from_name"`
+		ToID       uuid.UUID       `json:"to_id"`
+		ToName     string          `json:"to_name"`
+		Message    string          `json:"message"`
+		TradeOffer json.RawMessage `json:"trade_offer,omitempty"`
+		Status     string          `json:"status"`
+		SentAt     time.Time       `json:"sent_at"`
+		ArrivedAt  time.Time       `json:"arrived_at"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
+		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName,
-			&m.Message, &m.Status, &m.SentAt, &m.ArrivedAt); err == nil {
+			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt); err == nil {
+			if len(tradeOffer) > 0 {
+				m.TradeOffer = json.RawMessage(tradeOffer)
+			}
 			result = append(result, m)
 		}
 	}
@@ -326,4 +352,197 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		"returns_at": returnsAt,
 		"distance":   dist,
 	})
+}
+
+// TradeAccept handles POST /worlds/:worldID/messengers/:messengerID/trade-accept.
+// The recipient accepts a trade offer. Goods are deducted from the seller immediately;
+// a ScheduledTradeReturn event carries them back to the buyer (= messenger origin).
+func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	messengerID, err := uuid.Parse(chi.URLParam(r, "messengerID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid messenger ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	// Load messenger + trade_offer; verify it's delivered to this player's settlement.
+	var destID, buyerSettlementID uuid.UUID
+	var wantGood string
+	var wantQty, offerGold float64
+	var offerStatus string
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT m.destination_id, m.origin_id,
+		        m.trade_offer->>'want_good', (m.trade_offer->>'want_qty')::float,
+		        (m.trade_offer->>'offer_gold')::float, m.trade_offer->>'status'
+		 FROM messengers m
+		 JOIN settlements ds ON ds.id = m.destination_id
+		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3
+		   AND m.status = 'delivered' AND m.trade_offer IS NOT NULL`,
+		messengerID, worldID, playerID,
+	).Scan(&destID, &buyerSettlementID, &wantGood, &wantQty, &offerGold, &offerStatus)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "trade offer not found or not available to you")
+		return
+	}
+	if offerStatus != "pending" {
+		writeError(w, http.StatusConflict, "trade offer already "+offerStatus)
+		return
+	}
+
+	// Verify buyer (origin) has enough gold.
+	var buyerGold float64
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate FROM settlements WHERE id=$1`,
+		buyerSettlementID,
+	).Scan(&buyerGold)
+	if buyerGold < offerGold {
+		writeError(w, http.StatusUnprocessableEntity, "buyer has insufficient gold")
+		return
+	}
+
+	// Calculate distance for return travel time.
+	var bQ, bR, dQ, dR int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE s.id=$1`,
+		buyerSettlementID).Scan(&bQ, &bR)
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE s.id=$1`,
+		destID).Scan(&dQ, &dR)
+	dist := province.HexDistance(province.MapPosition{Q: bQ, R: bR}, province.MapPosition{Q: dQ, R: dR})
+	returnsAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Deduct want_qty goods from seller (destination).
+	tag, err := tx.Exec(r.Context(),
+		`UPDATE settlement_goods SET
+		     amount = amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate - $1,
+		     calc_at = now()
+		 WHERE settlement_id=$2 AND good_key=$3
+		   AND amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate >= $1`,
+		wantQty, destID, wantGood,
+	)
+	if err != nil || tag.RowsAffected() == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "seller has insufficient goods")
+		return
+	}
+
+	// Deduct offer_gold from buyer.
+	if _, err = tx.Exec(r.Context(),
+		`UPDATE settlements SET
+		     gold_amount = GREATEST(0, gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate - $1),
+		     gold_calc_at = now()
+		 WHERE id=$2`,
+		offerGold, buyerSettlementID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not deduct gold from buyer")
+		return
+	}
+
+	// Credit offer_gold to seller.
+	if _, err = tx.Exec(r.Context(),
+		`UPDATE settlements SET
+		     gold_amount = LEAST(gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate + $1, gold_cap),
+		     gold_calc_at = now()
+		 WHERE id=$2`,
+		offerGold, destID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not credit gold to seller")
+		return
+	}
+
+	// Mark trade_offer as accepted.
+	if _, err = tx.Exec(r.Context(),
+		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"accepted"}' WHERE id=$1`,
+		messengerID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update offer status")
+		return
+	}
+
+	// Schedule goods return to buyer.
+	if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeReturn,
+		map[string]any{
+			"destination_id": buyerSettlementID,
+			"good_key":       wantGood,
+			"quantity":       wantQty,
+			"messenger_id":   messengerID,
+		}, returnsAt); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule return")
+		return
+	}
+
+	if err = tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"good_key":   wantGood,
+		"quantity":   wantQty,
+		"gold_paid":  offerGold,
+		"returns_at": returnsAt,
+		"distance":   dist,
+	})
+}
+
+// TradeDecline handles POST /worlds/:worldID/messengers/:messengerID/trade-decline.
+func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	messengerID, err := uuid.Parse(chi.URLParam(r, "messengerID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid messenger ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var offerStatus string
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT m.trade_offer->>'status'
+		 FROM messengers m
+		 JOIN settlements ds ON ds.id = m.destination_id
+		 WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3
+		   AND m.status='delivered' AND m.trade_offer IS NOT NULL`,
+		messengerID, worldID, playerID,
+	).Scan(&offerStatus)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "trade offer not found")
+		return
+	}
+	if offerStatus != "pending" {
+		writeError(w, http.StatusConflict, "trade offer already "+offerStatus)
+		return
+	}
+
+	_, err = h.pool.Exec(r.Context(),
+		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"declined"}' WHERE id=$1`,
+		messengerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update offer")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"status": "declined"})
 }
