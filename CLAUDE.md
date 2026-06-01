@@ -101,14 +101,16 @@ Collapse not Season-end · The Thalassa not The Sea.
 
 - **Province ≠ settlement** — separate tables; outpost = province row, no settlement row. `thalassa_settlement.md`
 - **Loyalty 1–4 only**, never 0–100; event-sourced projection. `thalassa_settlement.md`
-- **Kharis** is a relationship, not mana; 5% floor always. `thalassa_kharis.md`
+- **Kharis** is a relationship, not mana; 5% floor always; mid-revision → rikes-pool per Wanax. `thalassa_kharis.md`
 - **Messengers** are physical, sacred (uninterceptable); reply arrives on return. `thalassa_settlement.md`
-- **Kingdom** = Basileus + members; elections Sundays, 7-day lock. `thalassa_kingdoms.md`
-- **Combat** deterministic, no dice; walls L0–3 = 1.0 / 1.25 / 1.5 / 1.75×. Unit values live in `internal/combat`.
+- **Kingdom** = Basileus + members; forming until 3 members; elections Sundays, 7-day lock. `thalassa_kingdoms.md`
+- **Combat** deterministic, no dice; walls L0–3 = 1.0 / 1.25 / 1.5 / 1.75×; priests give 0 field strength. `internal/combat`
+- **Priests** — rituella enheter, ingen stridsstyrka. Kharis avgör rit-framgång (80/50/20/5% per mood).
+- **Silver** — betalningsmedel (inte guld). DB-nyckel: `gold`. UI-visning: shekel/mina/talang. Fysiskt transporterbart.
 - **Collapse/Eras** — hidden prestige, risk from week 10, only survivable. `thalassa_worldbuilding.md`
+- **Trade** — bilateral samtycke via budbärare. Intern resursflöde via /trade (egna settlements). extern = messenger+handelsoffert.
 
-> Several invariants are mid-revision (präster ut ur strid · kharis → rikes-pool / en gud per Wanax ·
-> terräng-överhalning · catchment-produktion). Authoritative current intent: `thalassa_todo.md` → "Vägen framåt".
+> Authoritative current intent: `thalassa_todo.md` → "Vägen framåt".
 
 ---
 
