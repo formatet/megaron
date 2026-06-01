@@ -1,6 +1,14 @@
 -- Add silver as a tradeable good (weight-metal, the Bronze Age payment medium).
 -- Base value = 1 (silver is the numeraire — everything else priced in silver).
 -- Weight = 2 (heavy, like copper).
+-- Expand tier/category constraints to include precious metals.
+ALTER TABLE goods DROP CONSTRAINT IF EXISTS goods_tier_check;
+ALTER TABLE goods DROP CONSTRAINT IF EXISTS goods_category_check;
+ALTER TABLE goods ADD CONSTRAINT goods_tier_check
+    CHECK (tier IN ('commodity','manufactured','precious'));
+ALTER TABLE goods ADD CONSTRAINT goods_category_check
+    CHECK (category IN ('staple','strategic','prestige','bulk','precious'));
+
 INSERT INTO goods (key, name, base_value, weight, tier, category)
 VALUES ('silver', 'Silver', 1, 2, 'precious', 'precious')
 ON CONFLICT (key) DO NOTHING;
