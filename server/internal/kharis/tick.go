@@ -247,26 +247,49 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	}
 
 	// Reset invasions_today, update population.
-	// Base growth: +5 if grain > 0, else -5.
-	// Food variety bonus: +1 per additional food type available (grain, fish, oil, wine, livestock).
-	// Max variety bonus: +4 (all 5 foods = grain + 4 others = base +5 + variety +4 = +9/day).
+	//
+	// Growth model (daily tick):
+	//   pop < 100  → absolute: +2 (grain only) to +3 (full diet). Prevents recovery-lock at floor.
+	//   pop ≥ 100  → proportional: 0.5% base × food-variety multiplier × soft-cap factor.
+	//                food_variety = 1.0 (grain) + 0.1 per extra food type (fish/oil/wine/livestock) → max 1.4
+	//                soft_cap = max(0, 1 − pop/5000)  → growth → 0 near 5000
+	//   starvation → −0.5% (pop ≥ 100) or −2 (pop < 100), floor 50.
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements s SET
 		   invasions_today = 0,
-		   population = GREATEST(50, LEAST(10000,
-		       CASE WHEN COALESCE(
-		                (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
-		                 FROM settlement_goods sg
-		                 WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
-		            THEN population + 5 + (
-		                -- +1 per extra food type present (fish, oil, wine, livestock)
-		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0) > 0 THEN 1 ELSE 0 END) +
-		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0) > 0 THEN 1 ELSE 0 END) +
-		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0) > 0 THEN 1 ELSE 0 END) +
-		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)
-		            )
-		            ELSE GREATEST(50, population - 5)
-		       END))
+		   population = GREATEST(50, LEAST(5000,
+		     CASE WHEN COALESCE(
+		              (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		               FROM settlement_goods sg
+		               WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
+		          THEN
+		            CASE WHEN s.population < 100
+		                 -- absolute mode: +2 base, +1 if any luxury food present
+		                 THEN s.population + 2 + LEAST(1,
+		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
+		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
+		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
+		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END))
+		                 -- proportional mode: 0.5% × variety(1.0–1.4) × soft-cap
+		                 ELSE s.population + GREATEST(1, ROUND(
+		                     s.population
+		                     * 0.005
+		                     * (1.0
+		                         + 0.1 * (
+		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
+		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
+		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
+		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)))
+		                     * GREATEST(0, 1.0 - s.population::float / 5000.0)
+		                 ))
+		            END
+		          -- starvation
+		          ELSE
+		            CASE WHEN s.population < 100
+		                 THEN GREATEST(50, s.population - 2)
+		                 ELSE GREATEST(50, ROUND(s.population * 0.995))
+		            END
+		     END))
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'`,
 		worldID,
 	); err != nil {
