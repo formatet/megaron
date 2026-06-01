@@ -44,8 +44,9 @@ type Chronicler struct {
 	mdDate string // YYYY-MM-DD currently open
 	mdFile *os.File
 
-	settlementNames map[uuid.UUID]string
-	playerNames     map[uuid.UUID]string
+	settlementNames  map[uuid.UUID]string
+	settlementOwners map[uuid.UUID]string // settlement_id → player username
+	playerNames      map[uuid.UUID]string
 }
 
 // Open creates or opens chronicle files for the given world. The world name is
@@ -72,13 +73,14 @@ func Open(ctx context.Context, dir string, pool *pgxpool.Pool, worldID uuid.UUID
 	}
 
 	c := &Chronicler{
-		dir:             dir,
-		pool:            pool,
-		worldName:       worldName,
-		worldSlug:       slug,
-		jsonlFile:       jf,
-		settlementNames: map[uuid.UUID]string{},
-		playerNames:     map[uuid.UUID]string{},
+		dir:              dir,
+		pool:             pool,
+		worldName:        worldName,
+		worldSlug:        slug,
+		jsonlFile:        jf,
+		settlementNames:  map[uuid.UUID]string{},
+		settlementOwners: map[uuid.UUID]string{},
+		playerNames:      map[uuid.UUID]string{},
 	}
 	if err := c.openTodayMD(); err != nil {
 		_ = jf.Close()
@@ -177,7 +179,7 @@ func (c *Chronicler) Record(ctx context.Context, e events.SinkEvent) {
 func (c *Chronicler) resolveNames(ctx context.Context, e events.SinkEvent) (actor, subject string) {
 	// Subject: best-effort from stream — most streams are settlements.
 	switch e.StreamType {
-	case "province":
+	case "province", "combat":
 		subject = c.settlementName(ctx, e.StreamID)
 	case "kingdom":
 		subject = c.kingdomName(ctx, e.StreamID)
@@ -194,6 +196,11 @@ func (c *Chronicler) resolveNames(ctx context.Context, e events.SinkEvent) (acto
 				}
 			}
 		}
+	}
+
+	// Fall back to settlement owner when actor is still unknown.
+	if actor == "" && e.StreamType == "province" && e.StreamID != uuid.Nil {
+		actor = c.settlementOwnerName(ctx, e.StreamID)
 	}
 	return actor, subject
 }
@@ -227,6 +234,18 @@ func (c *Chronicler) playerName(ctx context.Context, id uuid.UUID) string {
 		name = "okänd Wanax"
 	}
 	c.playerNames[id] = name
+	return name
+}
+
+func (c *Chronicler) settlementOwnerName(ctx context.Context, settlementID uuid.UUID) string {
+	if n, ok := c.settlementOwners[settlementID]; ok {
+		return n
+	}
+	var name string
+	_ = c.pool.QueryRow(ctx,
+		`SELECT p.username FROM players p JOIN settlements s ON s.player_id = p.id WHERE s.id = $1`,
+		settlementID).Scan(&name)
+	c.settlementOwners[settlementID] = name
 	return name
 }
 
@@ -336,10 +355,20 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 	case "TrainComplete":
 		return fmt.Sprintf("%s rekryterade %v %s i %s", a, p["count"], str(p, "unit_type"), s)
 	case "CombatResolved":
-		winner := str(p, "winner")
-		return fmt.Sprintf("Strid avgjord i %s — segrare: %s", s, winner)
+		switch str(p, "outcome") {
+		case "attacker_victory":
+			return fmt.Sprintf("Strid avgjord i %s — anfallaren segrade", s)
+		case "defender_victory":
+			return fmt.Sprintf("Strid avgjord i %s — försvararen segrade", s)
+		default:
+			return fmt.Sprintf("Strid avgjord i %s — %s", s, str(p, "outcome"))
+		}
 	case "TradeDelivery":
 		return fmt.Sprintf("Handelsleverans till %s: %v %s", s, p["quantity"], str(p, "good_key"))
+	case "TradeLost":
+		return fmt.Sprintf("Handel förlorad på väg till %s: %v %s (%s)", s, p["quantity"], str(p, "good_key"), str(p, "reason"))
+	case "TradeReturn":
+		return fmt.Sprintf("Handelsretur till %s: %v %s levererat", s, p["quantity"], str(p, "good_key"))
 	case "KharisMissedMaintenance":
 		return fmt.Sprintf("Templet i %s försummades — gudarnas tålamod minskar", s)
 	case "KharisMaintained":
@@ -347,11 +376,11 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 	case "KharisLost":
 		return fmt.Sprintf("Kharis sjönk i %s (%v)", s, str(p, "reason"))
 	case "DivinePunishment":
-		return fmt.Sprintf("Gudomligt straff i %s: %s (%v)", s, str(p, "type"), p["amount"])
+		return fmt.Sprintf("Gudomligt straff i %s: %s", s, str(p, "type"))
 	case "DivineBlessing":
 		return fmt.Sprintf("Gudomlig välsignelse i %s: %s", s, str(p, "type"))
 	case "StarvationDamage":
-		return fmt.Sprintf("Hunger i %s — %v enheter förlorade", s, p["amount"])
+		return fmt.Sprintf("Hunger i %s — bosättningen svälter", s)
 	case "MessengerArrived":
 		return fmt.Sprintf("Budbärare anlände till %s", s)
 	case "MessengerReturned":
