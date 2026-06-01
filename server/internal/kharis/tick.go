@@ -279,7 +279,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 		           (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
 		            FROM settlement_goods sg
 		            WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) <= 0
-		 RETURNING s.id`,
+		 RETURNING s.id, s.owner_id, s.name`,
 		worldID,
 	)
 	if err != nil {
@@ -289,12 +289,20 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var id uuid.UUID
-		if err := rows.Scan(&id); err != nil {
+		var id, ownerID uuid.UUID
+		var name string
+		if err := rows.Scan(&id, &ownerID, &name); err != nil {
 			continue
 		}
 		_, _ = h.store.Append(ctx, id, events.StreamProvince, "StarvationDamage",
 			map[string]any{"reason": "no_food"}, worldID, nil)
+		// Gossip: notify the owner so it appears in their messages/notifications.
+		_, _ = h.pool.Exec(ctx,
+			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
+			 VALUES ($1, $2, $3, 'economy', $4)`,
+			worldID, ownerID, name,
+			"⚠ "+name+" is starving — grain stores empty. Send messengers to buy grain urgently.",
+		)
 		slog.Info("starvation damage applied", "settlement", id)
 	}
 }

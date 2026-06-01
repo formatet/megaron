@@ -262,12 +262,17 @@ async function loadSent() {
 
 // ── Compose ──────────────────────────────────────────────────────────────────
 async function loadDestinations() {
-  const res = await api('GET', `/worlds/${WORLD_ID}/wanaxes`);
+  // Use FOW-filtered provinces — only settlements you can actually see.
+  const res = await api('GET', `/worlds/${WORLD_ID}/provinces`);
   const all = await res.json().catch(()=>[]);
   const sel = document.getElementById('dest-sel');
-  const others = all.filter(s => !s.own);
+  const others = all.filter(p => p.settlement_id && !p.own && p.state !== 'sunk' && p.name);
+  if (!others.length) {
+    sel.innerHTML = '<option value="">No visible settlements yet — explore the map</option>';
+    return;
+  }
   sel.innerHTML = '<option value="">— choose settlement —</option>' +
-    others.map(s => `<option value="${s.settlement_id}">${esc(s.name)} (${esc(s.terrain||'')}, DP ${s.army_dp||0})</option>`).join('');
+    others.map(p => `<option value="${p.settlement_id}">${esc(p.name)} (${esc(p.terrain||'?')}, ${p.allied?'allied':'foreign'})</option>`).join('');
 }
 
 async function sendMsg() {
