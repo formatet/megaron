@@ -578,7 +578,10 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
 		        s.wall_level, s.population,
 		        s.infantry + s.cavalry*3 + s.elite_infantry*2,
-		        s.owner_id
+		        s.owner_id,
+		        COALESCE(prov.copper_deposit, false),
+		        COALESCE(prov.tin_deposit, false),
+		        COALESCE(prov.silver_deposit, false)
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
@@ -593,16 +596,19 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type entry struct {
-		SettlementID string `json:"settlement_id"`
-		Name         string `json:"name"`
-		Owner        string `json:"owner"`
-		Culture      string `json:"culture"`
-		Terrain      string `json:"terrain"`
-		Kingdom      string `json:"kingdom,omitempty"`
-		Walls        int    `json:"walls"`
-		Population   int    `json:"population"`
-		ArmyDP       int    `json:"army_dp"`
-		Own          bool   `json:"own"`
+		SettlementID  string `json:"settlement_id"`
+		Name          string `json:"name"`
+		Owner         string `json:"owner"`
+		Culture       string `json:"culture"`
+		Terrain       string `json:"terrain"`
+		Kingdom       string `json:"kingdom,omitempty"`
+		Walls         int    `json:"walls"`
+		Population    int    `json:"population"`
+		ArmyDP        int    `json:"army_dp"`
+		Own           bool   `json:"own"`
+		CopperDeposit bool   `json:"copper_deposit,omitempty"`
+		TinDeposit    bool   `json:"tin_deposit,omitempty"`
+		SilverDeposit bool   `json:"silver_deposit,omitempty"`
 	}
 	var result []entry
 	for rows.Next() {
@@ -611,7 +617,8 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		var kingdom *string
 		var terrain *string
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
-			&e.Walls, &e.Population, &e.ArmyDP, &ownerID); err != nil {
+			&e.Walls, &e.Population, &e.ArmyDP, &ownerID,
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit); err != nil {
 			continue
 		}
 		if kingdom != nil {

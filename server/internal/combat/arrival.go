@@ -476,11 +476,11 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 
 	// Load target province terrain and deposits.
 	var terrainType string
-	var copperDeposit, tinDeposit bool
+	var copperDeposit, tinDeposit, silverDeposit bool
 	if err := tx.QueryRow(ctx,
-		`SELECT terrain_type, copper_deposit, tin_deposit FROM provinces WHERE id = $1`,
+		`SELECT terrain_type, copper_deposit, tin_deposit, COALESCE(silver_deposit,false) FROM provinces WHERE id = $1`,
 		targetID,
-	).Scan(&terrainType, &copperDeposit, &tinDeposit); err != nil {
+	).Scan(&terrainType, &copperDeposit, &tinDeposit, &silverDeposit); err != nil {
 		return fmt.Errorf("load target province: %w", err)
 	}
 
@@ -528,10 +528,11 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 		 WHERE pr.building_type IS NULL AND pr.terrain_type = $2
 		   AND (pr.requires_deposit IS NULL
 		        OR (pr.requires_deposit = 'copper' AND $3)
-		        OR (pr.requires_deposit = 'tin' AND $4))
+		        OR (pr.requires_deposit = 'tin' AND $4)
+		        OR (pr.requires_deposit = 'silver' AND $5))
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE
 		     SET rate = settlement_goods.rate + EXCLUDED.rate`,
-		settlementID, terrainType, copperDeposit, tinDeposit,
+		settlementID, terrainType, copperDeposit, tinDeposit, silverDeposit,
 	)
 
 	// Colonists become the garrison.

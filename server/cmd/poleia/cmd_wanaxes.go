@@ -25,9 +25,9 @@ func wanaxesCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &entries); err != nil {
 				return err
 			}
-			fmt.Printf("%-22s %-8s %-10s %-12s  %-6s  %s\n",
-				"Name", "Terrain", "Culture", "Kingdom", "ArmyDP", "Settlement ID")
-			fmt.Println("─────────────────────────────────────────────────────────────────────────")
+			fmt.Printf("%-22s %-8s %-10s %-12s  %-6s  %-7s  %s\n",
+				"Name", "Terrain", "Culture", "Kingdom", "ArmyDP", "Deposit", "Settlement ID")
+			fmt.Println("──────────────────────────────────────────────────────────────────────────────────")
 			for _, e := range entries {
 				name, _ := e["name"].(string)
 				terrain, _ := e["terrain"].(string)
@@ -36,12 +36,23 @@ func wanaxesCmd() *cobra.Command {
 				dp, _ := e["army_dp"].(float64)
 				sid, _ := e["settlement_id"].(string)
 				own, _ := e["own"].(bool)
+				copper, _ := e["copper_deposit"].(bool)
+				tin, _ := e["tin_deposit"].(bool)
+				silver, _ := e["silver_deposit"].(bool)
 				marker := " "
 				if own {
 					marker = "★"
 				}
-				fmt.Printf("%s%-21s %-8s %-10s %-12s  %6.0f  %s\n",
-					marker, name, terrain, culture, kingdom, dp, sid)
+				deposit := "—"
+				if silver {
+					deposit = "⛏silver"
+				} else if copper {
+					deposit = "⛏copper"
+				} else if tin {
+					deposit = "⛏tin"
+				}
+				fmt.Printf("%s%-21s %-8s %-10s %-12s  %6.0f  %-7s  %s\n",
+					marker, name, terrain, culture, kingdom, dp, deposit, sid)
 			}
 			return nil
 		},
