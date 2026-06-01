@@ -266,11 +266,11 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 
 	// province.html uses .Province.ID in URLs — pass province_id as the ID.
 	// Province is the settlement struct, but with ID = province tile ID.
-	var copperDeposit, tinDeposit bool
+	var copperDeposit, tinDeposit, silverDeposit bool
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT copper_deposit, tin_deposit FROM provinces WHERE id = $1`,
+		`SELECT copper_deposit, tin_deposit, COALESCE(silver_deposit, false) FROM provinces WHERE id = $1`,
 		s.ProvinceID,
-	).Scan(&copperDeposit, &tinDeposit)
+	).Scan(&copperDeposit, &tinDeposit, &silverDeposit)
 
 	var kingdomName string
 	if s.KingdomID != nil {
@@ -292,6 +292,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		KingdomName   string
 		CopperDeposit bool
 		TinDeposit    bool
+		SilverDeposit bool
 	}
 	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
 	pv := provinceView{
@@ -309,6 +310,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		KingdomName:   kingdomName,
 		CopperDeposit: copperDeposit,
 		TinDeposit:    tinDeposit,
+		SilverDeposit: silverDeposit,
 	}
 
 	// Load build queue.
@@ -534,13 +536,13 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var kingdomID *uuid.UUID
-	var kingdomName, playerRole string
+	var kingdomName, playerRole, kingdomState string
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT k.id, k.name, km.role FROM kingdoms k
+		`SELECT k.id, k.name, km.role, COALESCE(k.state,'forming') FROM kingdoms k
 		 JOIN kingdom_members km ON km.kingdom_id = k.id
 		 WHERE k.world_id = $1 AND km.player_id = $2`,
 		worldID, playerID,
-	).Scan(&kingdomID, &kingdomName, &playerRole)
+	).Scan(&kingdomID, &kingdomName, &playerRole, &kingdomState)
 
 	var settlementID uuid.UUID
 	var settlementName string
@@ -549,10 +551,19 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 		worldID, playerID,
 	).Scan(&settlementID, &settlementName)
 
+	var memberCount int
+	if kingdomID != nil {
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT count(*) FROM kingdom_members WHERE kingdom_id = $1`, kingdomID,
+		).Scan(&memberCount)
+	}
 	h.render(w, "kingdom.html", map[string]any{
 		"WorldID":        worldID,
 		"KingdomID":      kingdomID,
 		"KingdomName":    kingdomName,
+		"KingdomState":   kingdomState,
+		"KingdomForming": kingdomState == "forming",
+		"MemberCount":    memberCount,
 		"PlayerRole":     playerRole,
 		"HasKingdom":     kingdomID != nil,
 		"SettlementID":   settlementID,

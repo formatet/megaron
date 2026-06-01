@@ -104,7 +104,7 @@ func main() {
 	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore)
-	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub)
+	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
 	respawnH := handlers.NewRespawnHandler(pool)
 	worker.Register(events.ScheduledArmyArrival, arrivalH.Handle)

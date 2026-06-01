@@ -975,24 +975,34 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get destination province position.
+	// Get destination — also verify it's owned by the same player (internal transfer only).
+	// External trade requires messenger-based negotiation.
 	var destQ, destR int
+	var destOwnerID *uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT prov.map_q, prov.map_r
+		`SELECT prov.map_q, prov.map_r, s.owner_id
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.id = $1 AND s.world_id = $2`,
 		req.DestinationID, worldID,
-	).Scan(&destQ, &destR)
+	).Scan(&destQ, &destR, &destOwnerID)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "destination settlement not found")
 		return
 	}
+	if destOwnerID == nil || *destOwnerID != playerID {
+		writeError(w, http.StatusForbidden,
+			"use messenger trade offers to trade with other players — /trade is for internal transfers only")
+		return
+	}
 
-	// Get good weight for travel time calculation.
+	// Get good weight. Special case: 'silver' draws from gold_amount column, not settlement_goods.
+	const silverKey = "silver"
+	isSilver := req.GoodKey == silverKey
+
 	var weight float64
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT weight FROM goods WHERE key = $1`,
+		`SELECT COALESCE(weight, 2) FROM goods WHERE key = $1`,
 		req.GoodKey,
 	).Scan(&weight); err != nil {
 		writeError(w, http.StatusBadRequest, "unknown good")
@@ -1017,20 +1027,32 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Deduct goods from origin atomically.
-	tag, err := tx.Exec(r.Context(),
-		`UPDATE settlement_goods SET
-		     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
-		     calc_at = now()
-		 WHERE settlement_id = $2 AND good_key = $3
-		   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
-		req.Quantity, originID, req.GoodKey,
-	)
+	// Deduct from origin — silver draws from gold_amount column, others from settlement_goods.
+	var deductTag interface{ RowsAffected() int64 }
+	if isSilver {
+		deductTag, err = tx.Exec(r.Context(),
+			`UPDATE settlements SET
+			     gold_amount = GREATEST(0, gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate - $1),
+			     gold_calc_at = now()
+			 WHERE id = $2
+			   AND gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate >= $1`,
+			req.Quantity, originID,
+		)
+	} else {
+		deductTag, err = tx.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			     amount = amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate - $1,
+			     calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = $3
+			   AND amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate >= $1`,
+			req.Quantity, originID, req.GoodKey,
+		)
+	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct goods")
 		return
 	}
-	if tag.RowsAffected() == 0 {
+	if deductTag.RowsAffected() == 0 {
 		writeError(w, http.StatusUnprocessableEntity, "insufficient goods")
 		return
 	}

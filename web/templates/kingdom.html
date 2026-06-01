@@ -16,6 +16,7 @@
   <div class="kh-left">
     <h2 class="kh-name">{{.KingdomName}}</h2>
     <span class="role-badge role-{{.PlayerRole}}">{{.PlayerRole}}</span>
+    {{if .KingdomForming}}<span class="forming-badge">Forming {{.MemberCount}}/3 — invite more Wanaxes to unlock benefits</span>{{end}}
   </div>
   <div class="kh-right">
     <button class="btn-small btn-secondary" onclick="reloadAll()">↻ Refresh</button>
@@ -129,6 +130,7 @@
 .c-culture { color:var(--text-dim); font-style:italic; }
 
 /* Inbox */
+.forming-badge { background:var(--gold); color:var(--text); font-size:.75rem; padding:.15rem .5rem; border:1px solid var(--border-in); margin-left:.5rem; }
 .inbox-item { padding:.4rem 0; border-bottom:1px solid #FAD7A0; font-size:.82rem; }
 .inbox-item:last-child { border-bottom:none; }
 .inbox-from { font-weight:bold; color:#C0392B; }

@@ -260,6 +260,13 @@ func (h *KingdomHandler) Join(w http.ResponseWriter, r *http.Request) {
 		`UPDATE kingdom_invitations SET accepted_at = now() WHERE id = $1`,
 		inviteID,
 	)
+	// Activate kingdom when it reaches 3 members.
+	_, _ = tx.Exec(r.Context(),
+		`UPDATE kingdoms SET state = 'active'
+		 WHERE id = $1 AND state = 'forming'
+		   AND (SELECT count(*) FROM kingdom_members WHERE kingdom_id = $1) >= 3`,
+		kingdomID,
+	)
 
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")

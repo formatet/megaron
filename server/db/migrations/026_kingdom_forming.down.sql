@@ -1,0 +1,1 @@
+ALTER TABLE kingdoms DROP COLUMN IF EXISTS state;

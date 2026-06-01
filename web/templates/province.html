@@ -22,6 +22,7 @@
       <span class="stat-chip loyalty-{{.Province.Loyalty}}" title="Settlement loyalty (1=Disgruntled · 2=Loyal · 3=Devoted · 4=Fervent)">{{if eq .Province.Loyalty 1}}Disgruntled{{else if eq .Province.Loyalty 2}}Loyal{{else if eq .Province.Loyalty 3}}Devoted{{else if eq .Province.Loyalty 4}}Fervent{{else}}Loyal{{end}}</span>
       {{if .Province.CopperDeposit}}<span class="stat-chip deposit-chip" title="Copper deposit">⛏ Copper</span>{{end}}
       {{if .Province.TinDeposit}}<span class="stat-chip deposit-chip" title="Tin deposit">⛏ Tin</span>{{end}}
+      {{if .Province.SilverDeposit}}<span class="stat-chip deposit-chip" style="color:var(--gold)" title="Silver deposit">⛏ Silver</span>{{end}}
       <a id="msg-count-chip" href="/world/{{.WorldID}}/messages" style="display:none" class="stat-chip msg-chip" title="Unread messages"></a>
     </div>
   </header>
@@ -120,6 +121,28 @@
         </label>
       </div>
       <div id="recruit-result" class="action-result"></div>
+    </section>
+
+    <!-- ── Disband ───────────────────────────────────── -->
+    <section class="panel disband-panel">
+      <h3>Disband</h3>
+      <p style="font-size:.78rem;color:var(--text-dim);margin:.2rem 0 .5rem">Release soldiers — they return to civilian life and increase population.</p>
+      <div class="recruit-grid">
+        <label class="recruit-row">
+          <span>Hoplites</span>
+          <input class="recruit-count" type="number" min="0" max="9999" value="0" id="db-hoplites">
+          <button class="btn-small btn-secondary" onclick="doDisband()">Disband</button>
+        </label>
+        <label class="recruit-row">
+          <span>Hippeis</span>
+          <input class="recruit-count" type="number" min="0" max="9999" value="0" id="db-hippeis">
+        </label>
+        <label class="recruit-row">
+          <span>Hiereus</span>
+          <input class="recruit-count" type="number" min="0" max="9999" value="0" id="db-hiereus">
+        </label>
+      </div>
+      <div id="disband-result" class="action-result"></div>
     </section>
 
     <!-- ── Construction queue ─────────────────────── -->
@@ -361,11 +384,12 @@ async function loadGoods() {
     <tbody>${_goodsData.map(g => {
       const rateH = g.rate_per_min * 60;
       const rateStr = rateH === 0 ? '—' : (rateH >= 1 ? `+${rateH.toFixed(1)}` : `+${rateH.toFixed(2)}`);
+      const priceStr = (typeof fmtSilver === 'function') ? fmtSilver(Math.round(g.price)) : g.price.toFixed(1);
       return `<tr>
         <td class="g-name">${g.name}<br><span class="g-cat">${g.category}</span></td>
         <td class="g-num">${g.amount.toFixed(1)}</td>
         <td class="g-num">${rateStr}</td>
-        <td class="g-num">${g.price.toFixed(1)}</td>
+        <td class="g-num" title="${g.price.toFixed(2)} silver">${priceStr}</td>
       </tr>`;
     }).join('')}</tbody>
   </table>`;
@@ -373,6 +397,28 @@ async function loadGoods() {
   const sel = document.getElementById('trade-good');
   sel.innerHTML = _goodsData.map(g => `<option value="${g.key}">${g.name}</option>`).join('');
   document.getElementById('goods-trade-wrap').style.display = '';
+}
+
+async function doDisband() {
+  const h = parseInt(document.getElementById('db-hoplites')?.value || '0');
+  const c = parseInt(document.getElementById('db-hippeis')?.value || '0');
+  const p = parseInt(document.getElementById('db-hiereus')?.value || '0');
+  if (h + c + p === 0) { showResult('disband-result', 'enter units to disband', false); return; }
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/disband`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{})},
+    body: JSON.stringify({infantry: h, cavalry: c, priest: p})
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('disband-result', `Disbanded · +${data.pop_restored} population`, true);
+    ['db-hoplites','db-hippeis','db-hiereus'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '0';
+    });
+  } else {
+    showResult('disband-result', data.error || 'failed', false);
+  }
 }
 
 async function loadVisibleSettlements() {

@@ -57,6 +57,9 @@ func NewScheduler(pool *pgxpool.Pool, clk clock.Clock) *Scheduler {
 	return &Scheduler{pool: pool, clock: clk}
 }
 
+// Clock returns the scheduler's clock (used by delivery handlers for chained events).
+func (s *Scheduler) Clock() clock.Clock { return s.clock }
+
 // EnqueueAfter schedules an event to fire d duration from now (game time).
 func (s *Scheduler) EnqueueAfter(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, d time.Duration) error {
 	return s.Enqueue(ctx, worldID, eventType, payload, s.clock.Now().Add(d))

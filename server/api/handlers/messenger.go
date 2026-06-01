@@ -418,7 +418,6 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE s.id=$1`,
 		destID).Scan(&dQ, &dR)
 	dist := province.HexDistance(province.MapPosition{Q: bQ, R: bR}, province.MapPosition{Q: dQ, R: dR})
-	returnsAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
 
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
@@ -441,7 +440,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Deduct offer_gold from buyer.
+	// Deduct offer_silver from buyer (leg 3 depart).
 	if _, err = tx.Exec(r.Context(),
 		`UPDATE settlements SET
 		     gold_amount = GREATEST(0, gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate - $1),
@@ -449,19 +448,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		 WHERE id=$2`,
 		offerGold, buyerSettlementID,
 	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct gold from buyer")
-		return
-	}
-
-	// Credit offer_gold to seller.
-	if _, err = tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		     gold_amount = LEAST(gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate + $1, gold_cap),
-		     gold_calc_at = now()
-		 WHERE id=$2`,
-		offerGold, destID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not credit gold to seller")
+		writeError(w, http.StatusInternalServerError, "could not deduct silver from buyer")
 		return
 	}
 
@@ -474,15 +461,25 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Schedule goods return to buyer.
-	if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeReturn,
+	// Leg 3: schedule silver delivery to seller (physical travel).
+	// When silver arrives the delivery handler will chain goods dispatch (leg 4).
+	silverArrivesAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
+	if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 		map[string]any{
-			"destination_id": buyerSettlementID,
-			"good_key":       wantGood,
-			"quantity":       wantQty,
-			"messenger_id":   messengerID,
-		}, returnsAt); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule return")
+			"destination_id":     destID,           // seller receives silver
+			"good_key":           "silver",
+			"quantity":           offerGold,
+			"delivered_quantity": offerGold,
+			// Chained leg 4: when silver arrives, dispatch goods to buyer
+			"then_return": map[string]any{
+				"destination_id": buyerSettlementID,
+				"good_key":       wantGood,
+				"quantity":       wantQty,
+				"messenger_id":   messengerID.String(),
+				"travel_mins":    float64(dist) * 30.0,
+			},
+		}, silverArrivesAt); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule silver delivery")
 		return
 	}
 
@@ -491,12 +488,14 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	goodsArrivesAt := silverArrivesAt.Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
 	writeJSON(w, http.StatusOK, map[string]any{
-		"good_key":   wantGood,
-		"quantity":   wantQty,
-		"gold_paid":  offerGold,
-		"returns_at": returnsAt,
-		"distance":   dist,
+		"good_key":          wantGood,
+		"quantity":          wantQty,
+		"silver_paid":       offerGold,
+		"silver_arrives_at": silverArrivesAt,
+		"goods_arrives_at":  goodsArrivesAt,
+		"distance":          dist,
 	})
 }
 

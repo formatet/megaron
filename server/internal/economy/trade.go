@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,21 +22,23 @@ type DeliveryHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	hub        Broadcaster
+	scheduler  *events.Scheduler
 }
 
 // NewDeliveryHandler creates a DeliveryHandler.
-func NewDeliveryHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster) *DeliveryHandler {
-	return &DeliveryHandler{pool: pool, eventStore: eventStore, hub: hub}
+func NewDeliveryHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster, sched *events.Scheduler) *DeliveryHandler {
+	return &DeliveryHandler{pool: pool, eventStore: eventStore, hub: hub, scheduler: sched}
 }
 
 // Handle delivers goods to the destination settlement.
 func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var p struct {
-		TradeRouteID      uuid.UUID `json:"trade_route_id"`
-		DestinationID     uuid.UUID `json:"destination_id"`
-		GoodKey           string    `json:"good_key"`
-		Quantity          float64   `json:"quantity"`
-		DeliveredQuantity float64   `json:"delivered_quantity"` // includes distance bonus; falls back to Quantity if zero
+		TradeRouteID      uuid.UUID       `json:"trade_route_id"`
+		DestinationID     uuid.UUID       `json:"destination_id"`
+		GoodKey           string          `json:"good_key"`
+		Quantity          float64         `json:"quantity"`
+		DeliveredQuantity float64         `json:"delivered_quantity"` // includes distance bonus
+		ThenReturn        json.RawMessage `json:"then_return,omitempty"`
 	}
 	if err := json.Unmarshal(e.Payload, &p); err != nil {
 		return fmt.Errorf("unmarshal trade delivery: %w", err)
@@ -52,16 +55,19 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 	defer tx.Rollback(ctx)
 
-	// Idempotency: check route not already resolved (FOR UPDATE prevents races).
-	var resolved bool
-	if err := tx.QueryRow(ctx,
-		`SELECT resolved FROM trade_routes WHERE id = $1 FOR UPDATE`,
-		p.TradeRouteID,
-	).Scan(&resolved); err != nil {
-		return nil // Route gone or already cleaned up.
-	}
-	if resolved {
-		return nil
+	// Idempotency: only check trade_routes for route-based deliveries (zero UUID = direct silver leg).
+	hasRoute := p.TradeRouteID != (uuid.UUID{})
+	if hasRoute {
+		var resolved bool
+		if err := tx.QueryRow(ctx,
+			`SELECT resolved FROM trade_routes WHERE id = $1 FOR UPDATE`,
+			p.TradeRouteID,
+		).Scan(&resolved); err != nil {
+			return nil // Route gone or already cleaned up.
+		}
+		if resolved {
+			return nil
+		}
 	}
 
 	// Trade risk: 5% chance caravan is lost to storm or pirates.
@@ -89,27 +95,65 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		return nil
 	}
 
-	// Credit goods to destination settlement (lazy-eval aware).
-	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 VALUES ($1, $2, $3, 0, 100, now())
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-		     amount = LEAST(
-		         settlement_goods.amount
-		             + EXTRACT(EPOCH FROM (now() - settlement_goods.calc_at))/60 * settlement_goods.rate
-		             + $3,
-		         settlement_goods.cap),
-		     calc_at = now()`,
-		p.DestinationID, p.GoodKey, delivered,
-	); err != nil {
-		return fmt.Errorf("credit goods: %w", err)
+	// Credit goods to destination. Silver goes to gold_amount column; everything else to settlement_goods.
+	if p.GoodKey == "silver" {
+		if _, err = tx.Exec(ctx,
+			`UPDATE settlements SET
+			     gold_amount = LEAST(
+			         gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate + $1,
+			         gold_cap),
+			     gold_calc_at = now()
+			 WHERE id = $2`,
+			delivered, p.DestinationID,
+		); err != nil {
+			return fmt.Errorf("credit silver: %w", err)
+		}
+	} else {
+		if _, err = tx.Exec(ctx,
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+			 VALUES ($1, $2, $3, 0, 100, now())
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+			     amount = LEAST(
+			         settlement_goods.amount
+			             + EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60*settlement_goods.rate
+			             + $3,
+			         settlement_goods.cap),
+			     calc_at = now()`,
+			p.DestinationID, p.GoodKey, delivered,
+		); err != nil {
+			return fmt.Errorf("credit goods: %w", err)
+		}
 	}
 
-	if _, err = tx.Exec(ctx,
-		`UPDATE trade_routes SET resolved = true WHERE id = $1`,
-		p.TradeRouteID,
-	); err != nil {
-		return fmt.Errorf("mark resolved: %w", err)
+	if hasRoute {
+		if _, err = tx.Exec(ctx,
+			`UPDATE trade_routes SET resolved = true WHERE id = $1`,
+			p.TradeRouteID,
+		); err != nil {
+			return fmt.Errorf("mark resolved: %w", err)
+		}
+	}
+
+	// Chain: if this was a silver leg, dispatch the goods return now.
+	if len(p.ThenReturn) > 0 && h.scheduler != nil {
+		var ret struct {
+			DestinationID string  `json:"destination_id"`
+			GoodKey       string  `json:"good_key"`
+			Quantity      float64 `json:"quantity"`
+			MessengerID   string  `json:"messenger_id"`
+			TravelMins    float64 `json:"travel_mins"`
+		}
+		if jsonErr := json.Unmarshal(p.ThenReturn, &ret); jsonErr == nil && ret.DestinationID != "" {
+			returnAt := h.scheduler.Clock().Now().Add(
+				time.Duration(ret.TravelMins * float64(time.Minute)))
+			_ = h.scheduler.EnqueueTx(ctx, tx, e.WorldID, events.ScheduledTradeReturn,
+				map[string]any{
+					"destination_id": ret.DestinationID,
+					"good_key":       ret.GoodKey,
+					"quantity":       ret.Quantity,
+					"messenger_id":   ret.MessengerID,
+				}, returnAt)
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
