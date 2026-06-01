@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"log/slog"
+	"math"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -101,6 +102,30 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		},
 		"now": func() string {
 			return time.Now().UTC().Format(time.RFC3339)
+		},
+		// fmtSilver formats a silver amount as shekel / mina / talang
+		// (1 mina = 60 shekel, 1 talang = 60 mina = 3600 shekel)
+		"fmtSilver": func(v float64) string {
+			n := int(math.Round(v))
+			if n <= 0 {
+				return "0 shekel"
+			}
+			if n < 60 {
+				return fmt.Sprintf("%d shekel", n)
+			}
+			if n < 3600 {
+				mina, shekel := n/60, n%60
+				if shekel == 0 {
+					return fmt.Sprintf("%d mina", mina)
+				}
+				return fmt.Sprintf("%d mina %d shekel", mina, shekel)
+			}
+			talang, rest := n/3600, n%3600
+			mina := rest / 60
+			if mina == 0 {
+				return fmt.Sprintf("%d talang", talang)
+			}
+			return fmt.Sprintf("%d talang %d mina", talang, mina)
 		},
 	}
 	// Parse base + all partials (named templates used across pages) into the base set.

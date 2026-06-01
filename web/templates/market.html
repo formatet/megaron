@@ -37,7 +37,7 @@
         <tr>
           <td class="good-name">{{.Name}}</td>
           <td class="num-col">{{printf "%.0f" .Stock}}</td>
-          <td class="num-col price-val">{{printf "%.1f" .Price}}</td>
+          <td class="num-col price-val" title="{{printf "%.2f" .Price}} silver">{{fmtSilver .Price}}</td>
           {{if .HasObserved}}<td class="obs-age">{{formatTime .ObservedAt}}</td>{{end}}
         </tr>
         {{end}}
