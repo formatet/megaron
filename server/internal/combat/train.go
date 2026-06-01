@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/notify"
 )
 
 // TrainCompletePayload is the scheduled event payload for finished unit training.
@@ -23,11 +22,11 @@ type TrainCompletePayload struct {
 type TrainCompleteHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
-	hub        *notify.Hub
+	hub        Broadcaster
 }
 
 // NewTrainCompleteHandler creates a TrainCompleteHandler.
-func NewTrainCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub *notify.Hub) *TrainCompleteHandler {
+func NewTrainCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster) *TrainCompleteHandler {
 	return &TrainCompleteHandler{pool: pool, eventStore: eventStore, hub: hub}
 }
 
@@ -59,9 +58,10 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	if h.hub != nil {
-		h.hub.Broadcast(e.WorldID, notify.Msg{
-			Kind:    "TrainComplete",
-			Payload: map[string]any{"settlement_id": p.SettlementID, "unit_type": p.UnitType, "count": p.Count},
+		h.hub.BroadcastEvent(e.WorldID, "TrainComplete", map[string]any{
+			"settlement_id": p.SettlementID,
+			"unit_type":     p.UnitType,
+			"count":         p.Count,
 		})
 	}
 	slog.Info("training complete", "settlement", p.SettlementID, "unit", p.UnitType, "count", p.Count)

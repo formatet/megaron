@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/notify"
 )
 
 const tradeRiskPct = 0.05 // 5% chance a caravan is lost to storm or pirates
@@ -21,11 +20,11 @@ var tradeLostReasons = []string{"storm", "pirates", "pirates", "storm", "bandits
 type DeliveryHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
-	hub        *notify.Hub
+	hub        Broadcaster
 }
 
 // NewDeliveryHandler creates a DeliveryHandler.
-func NewDeliveryHandler(pool *pgxpool.Pool, eventStore *events.Store, hub *notify.Hub) *DeliveryHandler {
+func NewDeliveryHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster) *DeliveryHandler {
 	return &DeliveryHandler{pool: pool, eventStore: eventStore, hub: hub}
 }
 
@@ -79,14 +78,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			e.WorldID, &e.ID,
 		)
 		if h.hub != nil {
-			h.hub.Broadcast(e.WorldID, notify.Msg{
-				Kind: "TradeLost",
-				Payload: map[string]any{
-					"destination_id": p.DestinationID,
-					"good_key":       p.GoodKey,
-					"quantity":       p.Quantity,
-					"reason":         reason,
-				},
+			h.hub.BroadcastEvent(e.WorldID, "TradeLost", map[string]any{
+				"destination_id": p.DestinationID,
+				"good_key":       p.GoodKey,
+				"quantity":       p.Quantity,
+				"reason":         reason,
 			})
 		}
 		slog.Info("trade lost", "route", p.TradeRouteID, "good", p.GoodKey, "reason", reason)
@@ -128,13 +124,10 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 
 	if h.hub != nil {
-		h.hub.Broadcast(e.WorldID, notify.Msg{
-			Kind: "TradeDelivery",
-			Payload: map[string]any{
-				"destination_id": p.DestinationID,
-				"good_key":       p.GoodKey,
-				"quantity":       delivered,
-			},
+		h.hub.BroadcastEvent(e.WorldID, "TradeDelivery", map[string]any{
+			"destination_id": p.DestinationID,
+			"good_key":       p.GoodKey,
+			"quantity":       delivered,
 		})
 	}
 

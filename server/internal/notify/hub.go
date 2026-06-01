@@ -37,6 +37,12 @@ func New() *Hub {
 	return &Hub{clients: make(map[*client]struct{})}
 }
 
+// BroadcastEvent is a convenience wrapper used by internal packages that must not
+// import notify directly. It satisfies economy.Broadcaster and combat.Broadcaster.
+func (h *Hub) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {
+	h.Broadcast(worldID, Msg{Kind: kind, Payload: payload})
+}
+
 // Broadcast sends msg to every client connected to worldID.
 // Safe to call from any goroutine. Non-blocking; slow clients are dropped.
 func (h *Hub) Broadcast(worldID uuid.UUID, msg Msg) {

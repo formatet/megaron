@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/province"
 )
 
@@ -24,11 +23,11 @@ type BuildCompletePayload struct {
 type BuildCompleteHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
-	hub        *notify.Hub
+	hub        Broadcaster
 }
 
 // NewBuildCompleteHandler creates a BuildCompleteHandler.
-func NewBuildCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub *notify.Hub) *BuildCompleteHandler {
+func NewBuildCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster) *BuildCompleteHandler {
 	return &BuildCompleteHandler{pool: pool, eventStore: eventStore, hub: hub}
 }
 
@@ -142,9 +141,9 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	if h.hub != nil {
-		h.hub.Broadcast(e.WorldID, notify.Msg{
-			Kind:    "BuildComplete",
-			Payload: map[string]any{"settlement_id": p.SettlementID, "building_type": p.BuildingType},
+		h.hub.BroadcastEvent(e.WorldID, "BuildComplete", map[string]any{
+			"settlement_id": p.SettlementID,
+			"building_type": p.BuildingType,
 		})
 	}
 	slog.Info("build complete", "settlement", p.SettlementID, "building", p.BuildingType)

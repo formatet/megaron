@@ -13,7 +13,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/province"
 )
 
@@ -33,13 +32,13 @@ type RespawnPayload struct {
 type ArrivalHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
-	hub        *notify.Hub
+	hub        Broadcaster
 	clk        clock.Clock
 	scheduler  *events.Scheduler
 }
 
 // NewArrivalHandler creates an ArrivalHandler.
-func NewArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub *notify.Hub, clk clock.Clock, scheduler *events.Scheduler) *ArrivalHandler {
+func NewArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster, clk clock.Clock, scheduler *events.Scheduler) *ArrivalHandler {
 	return &ArrivalHandler{pool: pool, eventStore: store, hub: hub, clk: clk, scheduler: scheduler}
 }
 
@@ -208,13 +207,10 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	h.insertBattleGossip(ctx, tx, march.OriginID, march.TargetID, worldID, result.Outcome)
 	h.recordEvent(ctx, march.TargetID, worldID, result, march.ID)
 	if h.hub != nil {
-		h.hub.Broadcast(worldID, notify.Msg{
-			Kind: "ArmyArrival",
-			Payload: map[string]any{
-				"outcome":   result.Outcome,
-				"target_id": march.TargetID,
-				"origin_id": march.OriginID,
-			},
+		h.hub.BroadcastEvent(worldID, "ArmyArrival", map[string]any{
+			"outcome":   result.Outcome,
+			"target_id": march.TargetID,
+			"origin_id": march.OriginID,
 		})
 	}
 	return nil
@@ -556,13 +552,10 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	slog.Info("colony founded", "settlement", settlementID, "name", name, "province", targetID, "owner", attackerOwnerID)
 
 	if h.hub != nil {
-		h.hub.Broadcast(worldID, notify.Msg{
-			Kind: "ColonyFounded",
-			Payload: map[string]any{
-				"settlement_id": settlementID,
-				"name":          name,
-				"province_id":   targetID,
-			},
+		h.hub.BroadcastEvent(worldID, "ColonyFounded", map[string]any{
+			"settlement_id": settlementID,
+			"name":          name,
+			"province_id":   targetID,
 		})
 	}
 

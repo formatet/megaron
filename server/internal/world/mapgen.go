@@ -81,6 +81,41 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			})
 		}
 	}
+
+	// Guarantee minimum deposits so bronze is always possible.
+	// If a map ends up with too few tin/copper tiles (unlucky RNG), force-assign extras.
+	const minTin, minCopper = 2, 2
+	var tinCount, copperCount int
+	for _, t := range tiles {
+		if t.TinDeposit {
+			tinCount++
+		}
+		if t.CopperDeposit {
+			copperCount++
+		}
+	}
+	for i := range tiles {
+		if tinCount >= minTin {
+			break
+		}
+		t := &tiles[i]
+		// Prefer mountains in right half; fall back to any non-sea tile in right half.
+		if !t.TinDeposit && t.Q >= width/2 && (t.Terrain == TerrainMountain || t.Terrain == TerrainHills) {
+			t.TinDeposit = true
+			tinCount++
+		}
+	}
+	for i := range tiles {
+		if copperCount >= minCopper {
+			break
+		}
+		t := &tiles[i]
+		if !t.CopperDeposit && t.Q < width/2 && (t.Terrain == TerrainHills || t.Terrain == TerrainMountain) {
+			t.CopperDeposit = true
+			copperCount++
+		}
+	}
+
 	return tiles
 }
 
