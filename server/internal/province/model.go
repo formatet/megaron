@@ -122,6 +122,7 @@ type Province struct {
 	ControllerID   *uuid.UUID
 	CopperDeposit  bool
 	TinDeposit     bool
+	SilverDeposit  bool
 }
 
 // MarchIntent identifies why an army is moving.

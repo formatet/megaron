@@ -56,6 +56,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"territory_state": prov.TerritoryState,
 		"copper_deposit":  prov.CopperDeposit,
 		"tin_deposit":     prov.TinDeposit,
+		"silver_deposit":  prov.SilverDeposit,
 	}
 
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)

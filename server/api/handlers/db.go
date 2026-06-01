@@ -18,12 +18,12 @@ func loadTerrainProvince(ctx context.Context, pool *pgxpool.Pool, id, worldID uu
 	var p province.Province
 	err := pool.QueryRow(ctx,
 		`SELECT id, world_id, map_q, map_r, terrain_type, territory_state, controller_id,
-		        copper_deposit, tin_deposit
+		        copper_deposit, tin_deposit, COALESCE(silver_deposit, false)
 		 FROM provinces WHERE id = $1 AND world_id = $2`,
 		id, worldID,
 	).Scan(&p.ID, &p.WorldID, &p.MapTile.Q, &p.MapTile.R,
 		&p.TerrainType, &p.TerritoryState, &p.ControllerID,
-		&p.CopperDeposit, &p.TinDeposit)
+		&p.CopperDeposit, &p.TinDeposit, &p.SilverDeposit)
 	if err != nil {
 		return nil, fmt.Errorf("scan province: %w", err)
 	}
