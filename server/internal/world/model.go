@@ -115,4 +115,5 @@ type MapTile struct {
 	Mineral       float64
 	CopperDeposit bool
 	TinDeposit    bool
+	SilverDeposit bool
 }

@@ -63,6 +63,7 @@ func main() {
 		marchesCmd(),
 		recallCmd(),
 		recruitCmd(),
+		disbandCmd(),
 		buildCmd(),
 		craftCmd(),
 		worldsCmd(),

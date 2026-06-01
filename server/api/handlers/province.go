@@ -1586,3 +1586,74 @@ func goodLocalPrice(baseValue, stock, ratePerMin, cap float64) float64 {
 	}
 	return price
 }
+
+// Disband handles POST /worlds/:worldID/provinces/:provinceID/disband.
+// Releases units back into the population. Soldiers return to civilian life:
+// each disbanded unit adds PopCost back to population.
+func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var req struct {
+		Infantry      int `json:"infantry"`
+		Cavalry       int `json:"cavalry"`
+		Priest        int `json:"priest"`
+		Ship          int `json:"ship"`
+		EliteInfantry int `json:"elite_infantry"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+
+	// Verify ownership.
+	var settlementID uuid.UUID
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT s.id FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
+		provinceID, worldID, playerID,
+	).Scan(&settlementID); err != nil {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	// Pop restored per unit type (mirror of UnitSpec.PopCost).
+	popRestored := req.Infantry*5 + req.Cavalry*8 + req.Priest*3 + req.Ship*10 + req.EliteInfantry*10
+
+	tag, err := h.pool.Exec(r.Context(),
+		`UPDATE settlements SET
+		     infantry       = GREATEST(0, infantry       - $1),
+		     cavalry        = GREATEST(0, cavalry        - $2),
+		     priest         = GREATEST(0, priest         - $3),
+		     ship           = GREATEST(0, ship           - $4),
+		     elite_infantry = GREATEST(0, elite_infantry - $5),
+		     population     = LEAST(10000, population    + $6)
+		 WHERE id = $7`,
+		req.Infantry, req.Cavalry, req.Priest, req.Ship, req.EliteInfantry,
+		popRestored, settlementID,
+	)
+	if err != nil || tag.RowsAffected() == 0 {
+		writeError(w, http.StatusInternalServerError, "disband failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"pop_restored": popRestored,
+		"disbanded": map[string]int{
+			"infantry": req.Infantry, "cavalry": req.Cavalry,
+			"priest": req.Priest, "ship": req.Ship, "elite_infantry": req.EliteInfantry,
+		},
+	})
+}

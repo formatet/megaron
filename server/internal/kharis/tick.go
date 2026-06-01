@@ -247,7 +247,9 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	}
 
 	// Reset invasions_today, update population.
-	// Population grows when grain is available, shrinks when it isn't.
+	// Base growth: +5 if grain > 0, else -5.
+	// Food variety bonus: +1 per additional food type available (grain, fish, oil, wine, livestock).
+	// Max variety bonus: +4 (all 5 foods = grain + 4 others = base +5 + variety +4 = +9/day).
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements s SET
 		   invasions_today = 0,
@@ -256,7 +258,13 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		                (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
 		                 FROM settlement_goods sg
 		                 WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
-		            THEN population + 5
+		            THEN population + 5 + (
+		                -- +1 per extra food type present (fish, oil, wine, livestock)
+		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0) > 0 THEN 1 ELSE 0 END) +
+		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0) > 0 THEN 1 ELSE 0 END) +
+		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0) > 0 THEN 1 ELSE 0 END) +
+		                (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)
+		            )
 		            ELSE GREATEST(50, population - 5)
 		       END))
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'`,

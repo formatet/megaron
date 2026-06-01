@@ -60,14 +60,18 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 				m = 0
 			}
 
-			// Deposit assignment: copper on hills in left half, tin on mountains in right half.
-			// ~40% of eligible tiles get a deposit (seeded from rng for determinism).
-			var copperDeposit, tinDeposit bool
+			// Deposit assignment (seeded from rng for determinism):
+			// copper on hills in left half (~40%), tin on mountains in right half (~50%),
+			// silver on mountains and hills anywhere (~15%) — rare across the whole map.
+			var copperDeposit, tinDeposit, silverDeposit bool
 			if terrain == TerrainHills && q < width/2 && rng.Float64() < 0.4 {
 				copperDeposit = true
 			}
 			if terrain == TerrainMountain && q >= width/2 && rng.Float64() < 0.5 {
 				tinDeposit = true
+			}
+			if (terrain == TerrainMountain || terrain == TerrainHills) && rng.Float64() < 0.15 {
+				silverDeposit = true
 			}
 
 			tiles = append(tiles, MapTile{
@@ -78,6 +82,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 				Mineral:       m,
 				CopperDeposit: copperDeposit,
 				TinDeposit:    tinDeposit,
+				SilverDeposit: silverDeposit,
 			})
 		}
 	}

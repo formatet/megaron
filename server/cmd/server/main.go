@@ -204,6 +204,7 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade", ph.TradeRoutes)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)
+			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 
