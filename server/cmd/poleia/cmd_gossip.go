@@ -89,8 +89,25 @@ func messengerCmd() *cobra.Command {
 			if ownSettlementID == "" {
 				return fmt.Errorf("could not find own settlement")
 			}
+			// If not found in FOW provinces, fall back to wanaxes (public list).
 			if destID == "" {
-				return fmt.Errorf("no visible settlement named %q — explore to discover more", destName)
+				wdata, werr := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID))
+				if werr == nil {
+					var wanaxes []map[string]any
+					if json.Unmarshal(wdata, &wanaxes) == nil {
+						for _, w := range wanaxes {
+							n, _ := w["name"].(string)
+							if strings.EqualFold(n, destName) {
+								destID, _ = w["settlement_id"].(string)
+								destSettleName = n
+								break
+							}
+						}
+					}
+				}
+			}
+			if destID == "" {
+				return fmt.Errorf("no settlement named %q found in visible provinces or world wanaxes", destName)
 			}
 
 			body := map[string]any{
