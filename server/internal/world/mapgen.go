@@ -61,11 +61,13 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 	}
 
 	// ── 5. Coastlines ─────────────────────────────────────────────────
-	// 5a. Land tiles adjacent to sea → coast_beach.
+	// 5a. Plains tiles with ≥2 deep-sea neighbours → coast_beach.
+	// Hills, forest and mountain touching the sea remain their terrain type
+	// (cliffs, forested shores) — only flat sandy beaches form here.
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
 			c := cell{q, r}
-			if grid[c] != TerrainDeepSea && hasDeepSeaNeighbour(grid, c, width, height) {
+			if grid[c] == TerrainPlains && countDeepSeaNeighbours(grid, c, width, height) >= 2 {
 				grid[c] = TerrainCoastBeach
 			}
 		}
@@ -334,15 +336,20 @@ func isSea(t Terrain) bool {
 	return t == TerrainDeepSea || t == TerrainCoastalSea
 }
 
-// hasDeepSeaNeighbour reports whether a land tile borders deep sea (used during coastline marking,
-// before coastal_sea tiles exist).
+// hasDeepSeaNeighbour reports whether a land tile borders deep sea.
 func hasDeepSeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
-	for _, n := range hexNeighbours(c, w, h) {
-		if grid[n] == TerrainDeepSea {
-			return true
+	return countDeepSeaNeighbours(grid, c, w, h) > 0
+}
+
+// countDeepSeaNeighbours returns how many of the 6 hex neighbours are deep sea.
+func countDeepSeaNeighbours(grid map[cell]Terrain, c cell, w, h int) int {
+	n := 0
+	for _, nb := range hexNeighbours(c, w, h) {
+		if grid[nb] == TerrainDeepSea {
+			n++
 		}
 	}
-	return false
+	return n
 }
 
 // hasLandNeighbour reports whether a sea tile borders any land tile.

@@ -117,7 +117,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1
 		   AND p.id IS NULL
-		   AND mt.terrain IN ('plains','coast_beach','hills','river_valley')
+		   AND mt.terrain IN ('plains','hills','river_valley')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM provinces p2
 		       WHERE p2.world_id = $1
