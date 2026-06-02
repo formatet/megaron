@@ -72,3 +72,32 @@ func TestWallModifier(t *testing.T) {
 		}
 	}
 }
+
+func TestStrength(t *testing.T) {
+	// Elite ×2, cavalry ×3, infantry ×1; priests, ships and catapults add no field strength.
+	a := province.ArmyComposition{Infantry: 10, EliteInfantry: 5, Cavalry: 4, Priest: 3, Ship: 2, Catapult: 7}
+	want := float64(10*1 + 5*2 + 4*3) // 32
+	if got := Strength(a); got != want {
+		t.Errorf("Strength = %.0f, want %.0f", got, want)
+	}
+	if got := Strength(province.ArmyComposition{Priest: 9, Ship: 9, Catapult: 9}); got != 0 {
+		t.Errorf("non-combat units should give 0 strength, got %.0f", got)
+	}
+}
+
+func TestCatapultEffect(t *testing.T) {
+	cases := []struct {
+		catapults, wall, want int
+	}{
+		{0, 3, 3},  // no catapults — walls intact
+		{1, 3, 3},  // one catapult — needs two per level
+		{2, 3, 2},  // two catapults reduce one level
+		{4, 3, 1},  // four catapults reduce two levels
+		{10, 1, 0}, // never below zero
+	}
+	for _, c := range cases {
+		if got := CatapultEffect(c.catapults, c.wall); got != c.want {
+			t.Errorf("CatapultEffect(%d, %d) = %d, want %d", c.catapults, c.wall, got, c.want)
+		}
+	}
+}
