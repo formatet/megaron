@@ -64,6 +64,7 @@ func main() {
 		loginCmd(),
 		statusCmd(),
 		marchCmd(),
+		mapCmd(),
 		scoutCmd(),
 		outpostCmd(),
 		outpostRecallCmd(),
