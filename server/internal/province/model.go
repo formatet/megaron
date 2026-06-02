@@ -41,18 +41,17 @@ func (rs ResourceState) Current(at time.Time) float64 {
 	return math.Min(math.Max(v, 0), rs.Cap)
 }
 
-// ResourceLedger holds the settlement column resources (gold and kharis).
+// ResourceLedger holds the settlement column resource: gold.
+// Kharis lives on player_world_records (one pool per Wanax per world).
 // All other producible goods live in settlement_goods.
 type ResourceLedger struct {
-	Gold   ResourceState
-	Kharis ResourceState
+	Gold ResourceState
 }
 
-// Snapshot returns current values for gold and kharis at the given time.
+// Snapshot returns the current gold value at the given time.
 func (rl ResourceLedger) Snapshot(at time.Time) map[string]float64 {
 	return map[string]float64{
-		"gold":   rl.Gold.Current(at),
-		"kharis": rl.Kharis.Current(at),
+		"gold": rl.Gold.Current(at),
 	}
 }
 
@@ -63,11 +62,10 @@ type ResourceDetail struct {
 	Cap    float64 `json:"cap"`
 }
 
-// SnapshotFull returns current amounts, rates, and caps for gold and kharis.
+// SnapshotFull returns amount, rate, and cap for gold.
 func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
 	return map[string]ResourceDetail{
-		"gold":   {Amount: rl.Gold.Current(at), Rate: rl.Gold.RatePerMinute, Cap: rl.Gold.Cap},
-		"kharis": {Amount: rl.Kharis.Current(at), Rate: rl.Kharis.RatePerMinute, Cap: rl.Kharis.Cap},
+		"gold": {Amount: rl.Gold.Current(at), Rate: rl.Gold.RatePerMinute, Cap: rl.Gold.Cap},
 	}
 }
 

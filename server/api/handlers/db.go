@@ -38,7 +38,6 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		        control_type, founded_from, governor_id, governor_is_ai,
 		        loyalty, loyalty_trend, wall_level, is_capital, state, population,
 		        gold_amount, gold_rate, gold_cap, gold_calc_at,
-		        kharis_amount, kharis_rate, kharis_cap, kharis_calc_at,
 		        infantry, cavalry, catapult, priest, ship, elite_infantry,
 		        updated_at
 		 FROM settlements WHERE id = $1 AND world_id = $2`,
@@ -95,7 +94,7 @@ func resolveSettlementID(ctx context.Context, pool *pgxpool.Pool, provinceID, wo
 // scanSettlement reads a settlement from a pgx.Row.
 func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 	var s settlement.Settlement
-	var goldCalcAt, kharisCalcAt time.Time
+	var goldCalcAt time.Time
 
 	err := row.Scan(
 		&s.ID, &s.WorldID, &s.ProvinceID, &s.Name, &s.CultureID,
@@ -103,7 +102,6 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 		&s.GovernorID, &s.GovernorIsAI,
 		&s.Loyalty, &s.LoyaltyTrend, &s.WallLevel, &s.IsCapital, &s.State, &s.Population,
 		&s.Resources.Gold.Amount, &s.Resources.Gold.RatePerMinute, &s.Resources.Gold.Cap, &goldCalcAt,
-		&s.Resources.Kharis.Amount, &s.Resources.Kharis.RatePerMinute, &s.Resources.Kharis.Cap, &kharisCalcAt,
 		&s.Army.Infantry, &s.Army.Cavalry, &s.Army.Catapult, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
 		&s.UpdatedAt,
 	)
@@ -112,7 +110,28 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 	}
 
 	s.Resources.Gold.LastCalcAt = goldCalcAt
-	s.Resources.Kharis.LastCalcAt = kharisCalcAt
 
 	return &s, nil
+}
+
+// KharisState holds the live kharis pool and cult choice for a Wanax in a world.
+type KharisState struct {
+	Amount    float64
+	Rate      float64
+	Cap       float64
+	CultLevel string
+}
+
+// loadPlayerKharis reads the current kharis pool for a player in a world.
+func loadPlayerKharis(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (KharisState, error) {
+	var k KharisState
+	err := pool.QueryRow(ctx,
+		`SELECT
+		    GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)),
+		    kharis_rate, kharis_cap, cult_level
+		 FROM player_world_records
+		 WHERE player_id = $1 AND world_id = $2`,
+		playerID, worldID,
+	).Scan(&k.Amount, &k.Rate, &k.Cap, &k.CultLevel)
+	return k, err
 }

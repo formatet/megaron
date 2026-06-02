@@ -234,7 +234,8 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusNotFound, "tile not found")
 			return
 		}
-		if terrain == "sea" || terrain == "mountain" {
+		if terrain == "deep_sea" || terrain == "coastal_sea" ||
+			terrain == "mountain_limestone" || terrain == "mountain_red" {
 			writeError(w, http.StatusUnprocessableEntity, "cannot colonize sea or mountain terrain")
 			return
 		}
@@ -322,18 +323,18 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Mountains are impassable for all units.
-	if dst.TerrainType == "mountain" {
+	if dst.TerrainType == "mountain_limestone" || dst.TerrainType == "mountain_red" {
 		writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
 		return
 	}
 
-	// Naval gating: ships may only embark from and land on coast.
+	// Naval gating: ships may only embark from coast_beach and land on coast_beach or sea.
 	if army.Ship > 0 {
-		if src.TerrainType != "coast" {
+		if src.TerrainType != "coast_beach" {
 			writeError(w, http.StatusUnprocessableEntity, "ships can only embark from coastal settlements")
 			return
 		}
-		if dst.TerrainType != "coast" && dst.TerrainType != "sea" {
+		if dst.TerrainType != "coast_beach" && dst.TerrainType != "coastal_sea" && dst.TerrainType != "deep_sea" {
 			writeError(w, http.StatusUnprocessableEntity, "ships can only sail to coastal or sea provinces")
 			return
 		}
@@ -511,7 +512,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT terrain_type FROM provinces WHERE id = $1`, provinceID,
 		).Scan(&terrain)
-		if terrain != "coast" {
+		if terrain != "coast_beach" {
 			writeError(w, http.StatusUnprocessableEntity, "harbour can only be built in coastal settlements")
 			return
 		}
@@ -803,16 +804,16 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Deduct kharis from settlement column.
+	// Deduct kharis from the player's world record pool.
 	if totalKharis > 0 {
 		tag, err2 := h.pool.Exec(r.Context(),
-			`UPDATE settlements SET
+			`UPDATE player_world_records SET
 			   kharis_amount = kharis_amount
-			     + EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate - $1,
+			     + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) - $1,
 			   kharis_calc_at = now()
-			 WHERE id = $2
-			   AND kharis_amount + EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate >= $1`,
-			totalKharis, settlementID,
+			 WHERE player_id = $2 AND world_id = $3
+			   AND kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) >= $1`,
+			totalKharis, playerID, worldID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
 			writeError(w, http.StatusUnprocessableEntity, "insufficient kharis")

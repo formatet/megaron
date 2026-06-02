@@ -493,8 +493,8 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
-		  loyalty, governor_is_ai, kharis_rate, kharis_calc_at)
-		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,true,0.02,now())
+		  loyalty, governor_is_ai)
+		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,true)
 		 RETURNING id`,
 		worldID, targetID, name, culture, attackerOwnerID,
 	).Scan(&settlementID); err != nil {

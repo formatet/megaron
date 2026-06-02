@@ -49,13 +49,14 @@
   </div>
 
   <div class="map-legend">
-    <span class="legend-item" style="--tc:#8AAF3A">Plains</span>
+    <span class="legend-item" style="--tc:#8AAF3A">Slätter</span>
     <span class="legend-item" style="--tc:#4CAF50">Floddal</span>
-    <span class="legend-item" style="--tc:#5A8C30">Skog</span>
+    <span class="legend-item" style="--tc:#5A8C30">Olivlund</span>
     <span class="legend-item" style="--tc:#C8A464">Kullar</span>
-    <span class="legend-item" style="--tc:#E0D4B8">Berg</span>
-    <span class="legend-item" style="--tc:#E8C97A">Kust</span>
-    <span class="legend-item" style="--tc:#2E86C1">The Thalassa</span>
+    <span class="legend-item" style="--tc:#E0D4B8">Kalkstensberg</span>
+    <span class="legend-item" style="--tc:#E8C97A">Strand</span>
+    <span class="legend-item" style="--tc:#3A9AD9">Kusthav</span>
+    <span class="legend-item" style="--tc:#1A5276">Djuphav</span>
     <span class="legend-item" style="--tc:#1C1C1C">Dimma</span>
   </div>
 </div>
@@ -205,14 +206,19 @@ const MY_SETTLEMENT_ID = "{{.SettlementID}}";
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
-  sea:          {c0:'#2E86C1', c1:'#1B4F72'},
-  coast:        {c0:'#E8C97A', c1:'#D4B060'},
-  plains:       {c0:'#8AAF3A', c1:'#74952C'},
-  river_valley: {c0:'#4CAF50', c1:'#388E3C'},  // lush green — very fertile
-  forest:       {c0:'#5A8C30', c1:'#447020'},
-  hills:        {c0:'#C8A464', c1:'#B08C50'},
-  mountain:     {c0:'#E0D4B8', c1:'#C8BCA0'},
-  fog:          {c0:'#1C1C1C', c1:'#252018'},
+  deep_sea:           {c0:'#1A5276', c1:'#154360'},
+  coastal_sea:        {c0:'#3A9AD9', c1:'#2E86C1'},
+  coast_beach:        {c0:'#E8C97A', c1:'#D4B060'},
+  plains:             {c0:'#8AAF3A', c1:'#74952C'},
+  river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
+  forest_olive_grove: {c0:'#5A8C30', c1:'#447020'},
+  forest_olive_cypress:{c0:'#4A7A20', c1:'#386010'},
+  hills:              {c0:'#C8A464', c1:'#B08C50'},
+  mountain_limestone: {c0:'#E0D4B8', c1:'#C8BCA0'},
+  mountain_red:       {c0:'#C8906A', c1:'#B07050'},
+  scrub_maquis:       {c0:'#A8B860', c1:'#909A48'},
+  semi_desert:        {c0:'#D4B878', c1:'#C0A060'},
+  fog:                {c0:'#1C1C1C', c1:'#252018'},
 };
 
 // Culture accent colours (banner / flag)

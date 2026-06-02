@@ -226,6 +226,11 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 	resources := s.Resources.Snapshot(now)
 	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources, "grain", "silver")
 
+	// Kharis is per-Wanax, not per-settlement.
+	if kh, err := loadPlayerKharis(r.Context(), h.pool, playerID, worldID); err == nil {
+		resources["kharis"] = kh.Amount
+	}
+
 	var wld world.World
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT id, name, state, map_width, map_height, prestige, era_number FROM worlds WHERE id = $1`,
@@ -361,11 +366,18 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	resources := s.Resources.Snapshot(now)
 	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
 	resources["gold_cap"] = s.Resources.Gold.Cap
-	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
 
 	// Load grain, cedar, stone from settlement_goods for the resource bar.
 	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources,
 		"grain", "cedar", "stone")
+
+	// Kharis belongs to the Wanax, not the settlement.
+	if s.OwnerID != nil {
+		if kh, err2 := loadPlayerKharis(r.Context(), h.pool, *s.OwnerID, worldID); err2 == nil {
+			resources["kharis"]      = kh.Amount
+			resources["kharis_rate"] = kh.Rate
+		}
+	}
 
 	divineMood := kharisToMood(resources["kharis"])
 
@@ -587,10 +599,15 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 	resources := s.Resources.Snapshot(now)
 	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
 	resources["gold_cap"] = s.Resources.Gold.Cap
-	resources["kharis_rate"] = s.Resources.Kharis.RatePerMinute
-
 	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources,
 		"grain", "cedar", "stone")
+
+	if s.OwnerID != nil {
+		if kh, err2 := loadPlayerKharis(r.Context(), h.pool, *s.OwnerID, worldID); err2 == nil {
+			resources["kharis"]      = kh.Amount
+			resources["kharis_rate"] = kh.Rate
+		}
+	}
 
 	h.renderPartial(w, "resource_bar.html", map[string]any{"Resources": resources, "Province": s, "DivineMood": kharisToMood(resources["kharis"])})
 }

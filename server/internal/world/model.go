@@ -97,13 +97,17 @@ func ComputeCollapse(w *World, activeWarCount int, at time.Time) CollapseState {
 type Terrain string
 
 const (
-	TerrainPlains      Terrain = "plains"
-	TerrainForest      Terrain = "forest"
-	TerrainHills       Terrain = "hills"
-	TerrainMountain    Terrain = "mountain"
-	TerrainCoast       Terrain = "coast"
-	TerrainSea         Terrain = "sea"
-	TerrainRiverValley Terrain = "river_valley"
+	TerrainPlains            Terrain = "plains"
+	TerrainForestOliveGrove  Terrain = "forest_olive_grove"
+	TerrainHills             Terrain = "hills"
+	TerrainMountainLimestone Terrain = "mountain_limestone"
+	TerrainMountainRed       Terrain = "mountain_red"
+	TerrainCoastBeach        Terrain = "coast_beach"
+	TerrainCoastalSea        Terrain = "coastal_sea"
+	TerrainDeepSea           Terrain = "deep_sea"
+	TerrainRiverValley       Terrain = "river_valley"
+	TerrainScrubMaquis       Terrain = "scrub_maquis"
+	TerrainSemiDesert        Terrain = "semi_desert"
 )
 
 // MapTile is a single hex in the world map.

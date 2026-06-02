@@ -27,10 +27,10 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 	grid    := make(map[cell]Terrain)
 	landmap := make(map[cell]int) // which landmass each cell belongs to
 
-	// ── 1. Fill with sea ───────────────────────────────────────────────
+	// ── 1. Fill with deep sea ─────────────────────────────────────────
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
-			grid[cell{q, r}]    = TerrainSea
+			grid[cell{q, r}]    = TerrainDeepSea
 			landmap[cell{q, r}] = lmSea
 		}
 	}
@@ -61,11 +61,21 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 	}
 
 	// ── 5. Coastlines ─────────────────────────────────────────────────
+	// 5a. Land tiles adjacent to sea → coast_beach.
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
 			c := cell{q, r}
-			if grid[c] != TerrainSea && hasSeaNeighbour(grid, c, width, height) {
-				grid[c] = TerrainCoast
+			if grid[c] != TerrainDeepSea && hasDeepSeaNeighbour(grid, c, width, height) {
+				grid[c] = TerrainCoastBeach
+			}
+		}
+	}
+	// 5b. Deep-sea tiles adjacent to land → coastal_sea (shallow, faster sailing).
+	for q := 0; q < width; q++ {
+		for r := 0; r < height; r++ {
+			c := cell{q, r}
+			if grid[c] == TerrainDeepSea && hasLandNeighbour(grid, c, width, height) {
+				grid[c] = TerrainCoastalSea
 			}
 		}
 	}
@@ -84,7 +94,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			c := cell{q, r}
 			terrain := grid[c]
 			lm      := landmap[c]
-			isRock  := terrain == TerrainHills || terrain == TerrainMountain
+			isRock  := terrain == TerrainHills || terrain == TerrainMountainLimestone || terrain == TerrainMountainRed
 
 			var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
 
@@ -125,7 +135,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			})
 
 			// Track forest tiles on the eastern landmass as cedar candidates
-			if terrain == TerrainForest && lm == lmEast {
+			if terrain == TerrainForestOliveGrove && lm == lmEast {
 				cedarCandidates = append(cedarCandidates, idx)
 			}
 		}
@@ -146,19 +156,19 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 	}
 
 	// ── 9. Guarantee minimums ─────────────────────────────────────────
+	isRockTile := func(t MapTile) bool {
+		return t.Terrain == TerrainHills || t.Terrain == TerrainMountainLimestone || t.Terrain == TerrainMountainRed
+	}
+
 	tiles = guaranteeDeposit(tiles, func(t MapTile) bool { return t.TinDeposit },
 		func(t *MapTile) { t.TinDeposit = true },
-		func(t MapTile) bool {
-			return (t.Terrain == TerrainHills || t.Terrain == TerrainMountain) &&
-				!t.CopperDeposit && !t.SilverDeposit
-		}, 2)
+		func(t MapTile) bool { return isRockTile(t) && !t.CopperDeposit && !t.SilverDeposit },
+		2)
 
 	tiles = guaranteeDeposit(tiles, func(t MapTile) bool { return t.CopperDeposit },
 		func(t *MapTile) { t.CopperDeposit = true },
-		func(t MapTile) bool {
-			return (t.Terrain == TerrainHills || t.Terrain == TerrainMountain) &&
-				!t.TinDeposit && !t.SilverDeposit
-		}, 2)
+		func(t MapTile) bool { return isRockTile(t) && !t.TinDeposit && !t.SilverDeposit },
+		2)
 
 	if assigned < 2 {
 		// Guarantee at least 2 cedar tiles on any forest
@@ -166,7 +176,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			if assigned >= 2 {
 				break
 			}
-			if tiles[i].Terrain == TerrainForest && !tiles[i].CedarDeposit {
+			if tiles[i].Terrain == TerrainForestOliveGrove && !tiles[i].CedarDeposit {
 				tiles[i].CedarDeposit = true
 				assigned++
 			}
@@ -228,15 +238,15 @@ func expandLandmass(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 		case dist <= radius*3/4:
 			switch {
 			case rng.Float64() < 0.35:
-				terrain = TerrainMountain
+				terrain = TerrainMountainLimestone
 			case rng.Float64() < 0.55:
 				terrain = TerrainHills
 			default:
-				terrain = TerrainForest
+				terrain = TerrainForestOliveGrove
 			}
 		default:
 			if rng.Float64() < 0.5 {
-				terrain = TerrainForest
+				terrain = TerrainForestOliveGrove
 			} else {
 				terrain = TerrainHills
 			}
@@ -267,7 +277,7 @@ func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 			c := cell{q, r}
 			if landmap[c] == targetLM &&
 				(grid[c] == TerrainPlains || grid[c] == TerrainHills) &&
-				!hasSeaNeighbour(grid, c, width, height) {
+				!hasDeepSeaNeighbour(grid, c, width, height) {
 				candidates = append(candidates, c)
 			}
 		}
@@ -295,7 +305,7 @@ func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 		if next.q < 0 || next.q >= width || next.r < 0 || next.r >= height {
 			break
 		}
-		if grid[next] == TerrainSea || grid[next] == TerrainCoast {
+		if isSea(grid[next]) || grid[next] == TerrainCoastBeach {
 			break
 		}
 		c = next
@@ -320,9 +330,25 @@ func hexNeighbours(c cell, w, h int) []cell {
 	return out
 }
 
-func hasSeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
+func isSea(t Terrain) bool {
+	return t == TerrainDeepSea || t == TerrainCoastalSea
+}
+
+// hasDeepSeaNeighbour reports whether a land tile borders deep sea (used during coastline marking,
+// before coastal_sea tiles exist).
+func hasDeepSeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	for _, n := range hexNeighbours(c, w, h) {
-		if grid[n] == TerrainSea {
+		if grid[n] == TerrainDeepSea {
+			return true
+		}
+	}
+	return false
+}
+
+// hasLandNeighbour reports whether a sea tile borders any land tile.
+func hasLandNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
+	for _, n := range hexNeighbours(c, w, h) {
+		if !isSea(grid[n]) {
 			return true
 		}
 	}

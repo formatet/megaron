@@ -116,7 +116,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1
 		   AND p.id IS NULL
-		   AND mt.terrain IN ('plains','coast','hills','river_valley')
+		   AND mt.terrain IN ('plains','coast_beach','hills','river_valley')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM provinces p2
 		       WHERE p2.world_id = $1
@@ -257,6 +257,41 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not init goods")
 		return
 	}
+
+	// Sprint 5 — Catchment: add 30% of terrain production from adjacent uncontrolled tiles.
+	// Sea and impassable tiles are excluded; tiles already settled by another player are skipped.
+	_, _ = tx.Exec(r.Context(),
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		 SELECT $1, pr.good_key, 0,
+		     pr.rate_per_min * 0.30,
+		     CASE pr.good_key
+		         WHEN 'grain'  THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
+		         WHEN 'copper' THEN 300  WHEN 'tin'   THEN 300 ELSE 200
+		     END,
+		     now()
+		 FROM map_tiles mt
+		 JOIN production_rules pr ON pr.terrain_type = mt.terrain AND pr.building_type IS NULL
+		     AND (pr.requires_deposit IS NULL
+		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
+		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
+		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+		 WHERE mt.world_id = $2
+		   AND (mt.q, mt.r) IN (
+		       ($3+1, $4), ($3-1, $4),
+		       ($3,   $4+1), ($3,   $4-1),
+		       ($3+1, $4-1), ($3-1, $4+1)
+		   )
+		   AND mt.terrain NOT IN ('deep_sea','coastal_sea','mountain_limestone','mountain_red','semi_desert')
+		   AND NOT EXISTS (
+		       SELECT 1 FROM provinces p
+		       WHERE p.world_id = $2 AND p.map_q = mt.q AND p.map_r = mt.r
+		         AND p.territory_state = 'controlled'
+		   )
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+		     rate = settlement_goods.rate + EXCLUDED.rate`,
+		settlementID, worldID, q, r2,
+	)
 
 	// Record in player_world_records.
 	_, err = tx.Exec(r.Context(),

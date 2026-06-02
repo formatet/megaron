@@ -109,16 +109,24 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	now := h.clk.Now()
 
-	// Load cult_level, battle_frenzy state, and compute divine_mood from live kharis.
-	var cultLevel string
-	var kharisNow float64
+	// Load cult_level and live kharis from the player's world record.
+	// battle_frenzy_until is still on the settlement (it's a per-settlement combat state).
 	var frenzyUntil *time.Time
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT cult_level, battle_frenzy_until,
-		    GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate))
-		 FROM settlements WHERE id = $1`,
+		`SELECT battle_frenzy_until FROM settlements WHERE id = $1`,
 		sett.ID,
-	).Scan(&cultLevel, &frenzyUntil, &kharisNow)
+	).Scan(&frenzyUntil)
+
+	var cultLevel string
+	var kharisNow float64
+	if sett.OwnerID != nil {
+		k, _ := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID)
+		cultLevel = k.CultLevel
+		kharisNow = k.Amount
+		if cultLevel == "" {
+			cultLevel = "enkel"
+		}
+	}
 
 	divineMood := kharisToMood(kharisNow)
 
@@ -501,17 +509,27 @@ func (h *SettlementHandler) SetCultLevel(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Verify the player owns a settlement in this world before updating cult level.
+	var ownerCheck int
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT 1 FROM settlements WHERE id = $1 AND world_id = $2 AND owner_id = $3`,
+		settlementID, worldID, playerID,
+	).Scan(&ownerCheck); err != nil {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
 	tag, err := h.pool.Exec(r.Context(),
-		`UPDATE settlements SET cult_level = $1
-		 WHERE id = $2 AND world_id = $3 AND owner_id = $4`,
-		req.CultLevel, settlementID, worldID, playerID,
+		`UPDATE player_world_records SET cult_level = $1
+		 WHERE player_id = $2 AND world_id = $3`,
+		req.CultLevel, playerID, worldID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not update cult level")
 		return
 	}
 	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusForbidden, "not your settlement")
+		writeError(w, http.StatusNotFound, "world record not found")
 		return
 	}
 
@@ -548,21 +566,28 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback(r.Context())
 
 	var priestCount int
-	var kharisNow float64
 	var alreadyFrenzied bool
 	err = tx.QueryRow(r.Context(),
 		`SELECT priest,
-		        GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now()-kharis_calc_at))/60 * kharis_rate)),
 		        (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
 		 FROM settlements
 		 WHERE id = $1 AND world_id = $2 AND owner_id = $3
 		 FOR UPDATE`,
 		settlementID, worldID, playerID,
-	).Scan(&priestCount, &kharisNow, &alreadyFrenzied)
+	).Scan(&priestCount, &alreadyFrenzied)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
+
+	var kharisNow float64
+	_ = tx.QueryRow(r.Context(),
+		`SELECT GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now()-kharis_calc_at))/60 * kharis_rate))
+		 FROM player_world_records WHERE player_id = $1 AND world_id = $2
+		 FOR UPDATE`,
+		playerID, worldID,
+	).Scan(&kharisNow)
+
 	if priestCount < 1 {
 		writeError(w, http.StatusBadRequest, "a Hiereus must be stationed to perform a rite")
 		return

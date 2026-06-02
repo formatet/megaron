@@ -56,8 +56,11 @@ func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.S
 	return &TickHandler{pool: pool, scheduler: sched, store: store}
 }
 
-type settlementSnap struct {
-	id          uuid.UUID
+// wanaxSnap holds the per-Wanax state needed for daily temple maintenance.
+// Kharis lives on player_world_records; resources come from the capital settlement.
+type wanaxSnap struct {
+	playerID    uuid.UUID
+	settlementID uuid.UUID // capital settlement (for resource deduction and event emission)
 	kharis      float64
 	gold        float64
 	grain       float64
@@ -65,52 +68,66 @@ type settlementSnap struct {
 	oil         float64
 	livestock   float64
 	cultLevel   string
-	governorAI  bool
 }
 
 // Handle processes a KharisTick scheduled event.
 func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
+	// ── 1. Kharis maintenance: one tick per player_world_record ────────────
 	rows, err := h.pool.Query(ctx,
-		`SELECT s.id,
-		    GREATEST(0, s.kharis_amount + (EXTRACT(EPOCH FROM (now() - s.kharis_calc_at))/60 * s.kharis_rate)),
-		    GREATEST(0, s.gold_amount   + (EXTRACT(EPOCH FROM (now() - s.gold_calc_at))/60   * s.gold_rate)),
+		`SELECT pwr.player_id, s.id,
+		    GREATEST(0, pwr.kharis_amount + (EXTRACT(EPOCH FROM (now() - pwr.kharis_calc_at))/60 * pwr.kharis_rate)),
+		    GREATEST(0, s.gold_amount + (EXTRACT(EPOCH FROM (now() - s.gold_calc_at))/60 * s.gold_rate)),
 		    GREATEST(0, COALESCE(grain.amount + (EXTRACT(EPOCH FROM (now() - grain.calc_at))/60 * grain.rate), 0)),
-		    s.cult_level,
+		    pwr.cult_level,
 		    GREATEST(0, COALESCE(wine.amount  + (EXTRACT(EPOCH FROM (now() - wine.calc_at))/60  * wine.rate),  0)),
 		    GREATEST(0, COALESCE(oil.amount   + (EXTRACT(EPOCH FROM (now() - oil.calc_at))/60   * oil.rate),   0)),
-		    GREATEST(0, COALESCE(livestock.amount + (EXTRACT(EPOCH FROM (now() - livestock.calc_at))/60 * livestock.rate), 0)),
-		    s.governor_is_ai
-		 FROM settlements s
+		    GREATEST(0, COALESCE(livestock.amount + (EXTRACT(EPOCH FROM (now() - livestock.calc_at))/60 * livestock.rate), 0))
+		 FROM player_world_records pwr
+		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 LEFT JOIN settlement_goods grain     ON grain.settlement_id     = s.id AND grain.good_key     = 'grain'
 		 LEFT JOIN settlement_goods wine      ON wine.settlement_id      = s.id AND wine.good_key      = 'wine'
 		 LEFT JOIN settlement_goods oil       ON oil.settlement_id       = s.id AND oil.good_key       = 'oil'
 		 LEFT JOIN settlement_goods livestock ON livestock.settlement_id = s.id AND livestock.good_key = 'livestock'
-		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'`,
+		 WHERE pwr.world_id = $1`,
 		e.WorldID,
 	)
 	if err != nil {
-		return fmt.Errorf("query settlements for kharis tick: %w", err)
+		return fmt.Errorf("query player_world_records for kharis tick: %w", err)
 	}
 	defer rows.Close()
 
-	var snaps []settlementSnap
+	var snaps []wanaxSnap
 	for rows.Next() {
-		var s settlementSnap
-		if err := rows.Scan(&s.id, &s.kharis, &s.gold, &s.grain, &s.cultLevel, &s.wine, &s.oil, &s.livestock, &s.governorAI); err == nil {
-			snaps = append(snaps, s)
+		var w wanaxSnap
+		if err := rows.Scan(&w.playerID, &w.settlementID,
+			&w.kharis, &w.gold, &w.grain, &w.cultLevel,
+			&w.wine, &w.oil, &w.livestock); err == nil {
+			snaps = append(snaps, w)
 		}
 	}
 	if err := rows.Err(); err != nil {
 		return err
 	}
 
-	for _, s := range snaps {
-		if err := h.processMaintenance(ctx, s, e.WorldID); err != nil {
-			slog.Error("kharis maintenance failed", "settlement", s.id, "err", err)
+	for _, w := range snaps {
+		if err := h.processMaintenance(ctx, w, e.WorldID); err != nil {
+			slog.Error("kharis maintenance failed", "player", w.playerID, "err", err)
 		}
-		if s.governorAI {
-			if err := ai.PassiveGovernorTick(ctx, h.pool, s.id, e.WorldID); err != nil {
-				slog.Warn("passive governor tick failed", "settlement", s.id, "err", err)
+	}
+
+	// ── 2. AI governor ticks (per settlement, unchanged) ──────────────────
+	aiRows, err := h.pool.Query(ctx,
+		`SELECT id FROM settlements WHERE world_id = $1 AND governor_is_ai = true AND state != 'sunk'`,
+		e.WorldID,
+	)
+	if err == nil {
+		defer aiRows.Close()
+		for aiRows.Next() {
+			var sid uuid.UUID
+			if aiRows.Scan(&sid) == nil {
+				if err := ai.PassiveGovernorTick(ctx, h.pool, sid, e.WorldID); err != nil {
+					slog.Warn("passive governor tick failed", "settlement", sid, "err", err)
+				}
 			}
 		}
 	}
@@ -123,57 +140,63 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		struct{}{}, 24*time.Hour)
 }
 
-func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, worldID uuid.UUID) error {
-	spec, ok := cultLevelSpecs[s.cultLevel]
+func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {
+	spec, ok := cultLevelSpecs[w.cultLevel]
 	if !ok {
-		spec = cultLevelSpecs["enkel"] // safe fallback
+		spec = cultLevelSpecs["enkel"]
 	}
 
-	// forsummad: player deliberately skips temple — kharis decays.
-	if s.cultLevel == "forsummad" {
+	// forsummad: player skips temple — kharis decays.
+	if w.cultLevel == "forsummad" {
 		_, err := h.pool.Exec(ctx,
-			`UPDATE settlements SET
+			`UPDATE player_world_records SET
 			   kharis_amount  = GREATEST(0,
 			       (kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)) * $1),
 			   kharis_calc_at = now()
-			 WHERE id = $2`,
-			1.0-decayOnMissed, s.id,
+			 WHERE player_id = $2 AND world_id = $3`,
+			1.0-decayOnMissed, w.playerID, worldID,
 		)
 		if err != nil {
 			return fmt.Errorf("kharis decay (forsummad): %w", err)
 		}
-		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMissedMaintenance",
-			map[string]any{"cult_level": s.cultLevel, "decay_fraction": decayOnMissed}, worldID, nil)
-		newKharis := s.kharis * (1.0 - decayOnMissed)
+		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
+			map[string]any{"cult_level": w.cultLevel, "decay_fraction": decayOnMissed}, worldID, nil)
+		newKharis := w.kharis * (1.0 - decayOnMissed)
 		if newKharis < punishThreshold && rand.Float64() < punishProbability {
-			h.applyDivinePunishment(ctx, s.id, worldID)
+			h.applyDivinePunishment(ctx, w.settlementID, worldID)
 		}
 		return nil
 	}
 
-	// Can the settlement afford the tiered cost (gold + goods)?
-	canAfford := s.gold >= spec.gold && s.grain >= spec.grain &&
-		s.wine >= spec.wine && s.oil >= spec.oil && s.livestock >= spec.livestock
+	canAfford := w.gold >= spec.gold && w.grain >= spec.grain &&
+		w.wine >= spec.wine && w.oil >= spec.oil && w.livestock >= spec.livestock
 	if canAfford {
+		// Deduct gold from capital settlement, gain kharis in player_world_records.
 		_, err := h.pool.Exec(ctx,
 			`UPDATE settlements SET
-			   gold_amount    = gold_amount   + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60   * gold_rate)   - $1,
-			   gold_calc_at   = now(),
-			   kharis_amount  = LEAST(kharis_cap,
-			       kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) + $2),
-			   kharis_calc_at = now()
-			 WHERE id = $3`,
-			spec.gold, spec.kharisGain, s.id,
+			   gold_amount  = gold_amount + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate) - $1,
+			   gold_calc_at = now()
+			 WHERE id = $2`,
+			spec.gold, w.settlementID,
 		)
 		if err != nil {
-			return fmt.Errorf("pay maintenance: %w", err)
+			return fmt.Errorf("pay gold maintenance: %w", err)
 		}
-		// Deduct goods (grain, wine, oil, livestock) from settlement_goods.
+		_, err = h.pool.Exec(ctx,
+			`UPDATE player_world_records SET
+			   kharis_amount  = LEAST(kharis_cap,
+			       kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) + $1),
+			   kharis_calc_at = now()
+			 WHERE player_id = $2 AND world_id = $3`,
+			spec.kharisGain, w.playerID, worldID,
+		)
+		if err != nil {
+			return fmt.Errorf("update kharis after maintenance: %w", err)
+		}
+		// Deduct goods from capital settlement.
 		for goodKey, qty := range map[string]float64{
-			"grain":     spec.grain,
-			"wine":      spec.wine,
-			"oil":       spec.oil,
-			"livestock": spec.livestock,
+			"grain": spec.grain, "wine": spec.wine,
+			"oil": spec.oil, "livestock": spec.livestock,
 		} {
 			if qty <= 0 {
 				continue
@@ -183,41 +206,41 @@ func (h *TickHandler) processMaintenance(ctx context.Context, s settlementSnap, 
 				   amount  = GREATEST(0, amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1),
 				   calc_at = now()
 				 WHERE settlement_id = $2 AND good_key = $3`,
-				qty, s.id, goodKey,
+				qty, w.settlementID, goodKey,
 			)
 		}
-		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMaintained",
-			map[string]any{"cult_level": s.cultLevel, "gold": spec.gold, "grain": spec.grain,
+		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
+			map[string]any{"cult_level": w.cultLevel, "gold": spec.gold, "grain": spec.grain,
 				"wine": spec.wine, "oil": spec.oil, "livestock": spec.livestock, "kharis_gain": spec.kharisGain},
 			worldID, nil)
-		newKharis := s.kharis + spec.kharisGain
+		newKharis := w.kharis + spec.kharisGain
 		if newKharis > blessThreshold && rand.Float64() < blessProbability {
-			h.applyDivineBlessing(ctx, s.id, worldID)
+			h.applyDivineBlessing(ctx, w.settlementID, worldID)
 		}
 		if rand.Float64() < 0.20 {
-			h.generateOmen(ctx, s.id, worldID)
+			h.generateOmen(ctx, w.settlementID, worldID)
 		}
 		return nil
 	}
 
-	// Cannot afford chosen tier — treat as missed maintenance.
+	// Cannot afford — kharis decays.
 	_, err := h.pool.Exec(ctx,
-		`UPDATE settlements SET
+		`UPDATE player_world_records SET
 		   kharis_amount  = GREATEST(0,
 		       (kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)) * $1),
 		   kharis_calc_at = now()
-		 WHERE id = $2`,
-		1.0-decayOnMissed, s.id,
+		 WHERE player_id = $2 AND world_id = $3`,
+		1.0-decayOnMissed, w.playerID, worldID,
 	)
 	if err != nil {
 		return fmt.Errorf("kharis decay: %w", err)
 	}
-	_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "KharisMissedMaintenance",
-		map[string]any{"cult_level": s.cultLevel, "decay_fraction": decayOnMissed, "reason": "insufficient_resources"},
+	_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
+		map[string]any{"cult_level": w.cultLevel, "decay_fraction": decayOnMissed, "reason": "insufficient_resources"},
 		worldID, nil)
-	newKharis := s.kharis * (1.0 - decayOnMissed)
+	newKharis := w.kharis * (1.0 - decayOnMissed)
 	if newKharis < punishThreshold && rand.Float64() < punishProbability {
-		h.applyDivinePunishment(ctx, s.id, worldID)
+		h.applyDivinePunishment(ctx, w.settlementID, worldID)
 	}
 	return nil
 }
@@ -474,19 +497,19 @@ func (h *TickHandler) addDivineGossip(ctx context.Context, settlementID, worldID
 // One point per active settlement, plus a tier bonus (vardig+1, praktfull+2, overdadig+3).
 // Prestige feeds into the collapse risk algorithm.
 func (h *TickHandler) accumulatePrestige(ctx context.Context, worldID uuid.UUID) {
+	// Prestige is driven by cult level — now lives on player_world_records.
 	_, err := h.pool.Exec(ctx,
 		`UPDATE worlds SET prestige = prestige + (
 		    SELECT COALESCE(SUM(
-		        1 + CASE cult_level
+		        1 + CASE pwr.cult_level
 		            WHEN 'vardig'    THEN 1
 		            WHEN 'praktfull' THEN 2
 		            WHEN 'overdadig' THEN 3
 		            ELSE 0
 		        END
 		    ), 0)
-		    FROM settlements
-		    WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'
-		      AND cult_level != 'forsummad'
+		    FROM player_world_records pwr
+		    WHERE pwr.world_id = $1 AND pwr.cult_level != 'forsummad'
 		)
 		WHERE id = $1`,
 		worldID,
