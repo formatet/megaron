@@ -589,6 +589,17 @@ footer {
 .wanax-table .dim { color: var(--text-dim); }
 .culture-tag.small { font-size: .7rem; padding: .05rem .3rem; }
 
+/* ── Kingdom page extras ────────────────────────────────────── */
+.treasury-balance { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.3rem; }
+.tr-bal-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.12em; color:var(--text-dim); font-family:var(--mono); }
+.tr-bal-val   { font-size:1.1rem; font-family:var(--mono); color:var(--gold); }
+.tr-tribute   { font-size:.75rem; color:var(--text-dim); font-family:var(--mono); }
+.tr-tribute-val { color:var(--safe); }
+
+.borrowed-panel { grid-column: 2 / -1; }
+.borrow-form-panel { grid-column: 1 / 2; }
+.unit-row input { background:var(--warm-white); border:1px solid var(--border); padding:.25rem .4rem; font-family:var(--mono); font-size:.8rem; width:100%; }
+
 /* ── Megaron (hub page) ─────────────────────────────────────── */
 .megaron-page { display: flex; flex-direction: column; gap: 1.5rem; }
 

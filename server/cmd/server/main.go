@@ -240,6 +240,7 @@ func main() {
 
 			r.Get("/worlds/{worldID}/kingdoms/{kingdomID}/election", kh.ElectionStatus)
 			r.Get("/worlds/{worldID}/kingdoms/{kingdomID}/borrowed-armies", kh.BorrowedArmiesList)
+			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/treasury/deposit", kh.TreasuryDeposit)
 		})
 	})
 

@@ -100,6 +100,7 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 			}
 			return key
 		},
+		"mul": func(a, b float64) float64 { return a * b },
 		"now": func() string {
 			return time.Now().UTC().Format(time.RFC3339)
 		},
@@ -656,10 +657,20 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 	).Scan(&settlementID, &settlementName)
 
 	var memberCount int
+	var treasuryGold float64
+	var tributeRate float64
 	if kingdomID != nil {
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT count(*) FROM kingdom_members WHERE kingdom_id = $1`, kingdomID,
 		).Scan(&memberCount)
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate)
+			 FROM kingdoms WHERE id = $1`, kingdomID,
+		).Scan(&treasuryGold)
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT tribute_rate FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
+			worldID, playerID,
+		).Scan(&tributeRate)
 	}
 	h.render(w, "kingdom.html", map[string]any{
 		"WorldID":        worldID,
@@ -672,6 +683,8 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 		"HasKingdom":     kingdomID != nil,
 		"SettlementID":   settlementID,
 		"SettlementName": settlementName,
+		"TreasuryGold":   treasuryGold,
+		"TributeRate":    tributeRate,
 	})
 }
 

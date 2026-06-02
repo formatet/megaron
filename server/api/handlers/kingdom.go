@@ -925,7 +925,8 @@ func (h *KingdomHandler) ElectionStatus(w http.ResponseWriter, r *http.Request) 
 }
 
 // BorrowedArmiesList handles GET /worlds/:worldID/kingdoms/:kingdomID/borrowed-armies.
-// Returns all unreturned borrowed armies for this kingdom.
+// Returns all unreturned borrowed armies for this kingdom, including the lender's settlement ID
+// (needed by the UI to call the return-army endpoint).
 func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Request) {
 	kingdomID, err := uuid.Parse(chi.URLParam(r, "kingdomID"))
 	if err != nil {
@@ -935,9 +936,13 @@ func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Reque
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT ba.id, ba.lender_id, p.username,
+		        COALESCE(s.id::text, '') AS lender_settlement_id,
 		        ba.infantry, ba.cavalry, ba.catapult, ba.priest, ba.ship, ba.borrowed_at
 		 FROM borrowed_armies ba
 		 JOIN players p ON p.id = ba.lender_id
+		 LEFT JOIN settlements s ON s.owner_id = ba.lender_id
+		     AND s.world_id = (SELECT world_id FROM kingdoms WHERE id = $1)
+		     AND s.is_capital = true
 		 WHERE ba.kingdom_id = $1 AND ba.returned_at IS NULL
 		 ORDER BY ba.borrowed_at`,
 		kingdomID,
@@ -949,20 +954,21 @@ func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Reque
 	defer rows.Close()
 
 	type entry struct {
-		ID         uuid.UUID `json:"id"`
-		LenderID   uuid.UUID `json:"lender_id"`
-		LenderName string    `json:"lender_name"`
-		Infantry   int       `json:"infantry"`
-		Cavalry    int       `json:"cavalry"`
-		Catapult   int       `json:"catapult"`
-		Priest     int       `json:"priest"`
-		Ship       int       `json:"ship"`
-		BorrowedAt time.Time `json:"borrowed_at"`
+		ID                 uuid.UUID `json:"id"`
+		LenderID           uuid.UUID `json:"lender_id"`
+		LenderName         string    `json:"lender_name"`
+		LenderSettlementID string    `json:"lender_settlement_id"`
+		Infantry           int       `json:"infantry"`
+		Cavalry            int       `json:"cavalry"`
+		Catapult           int       `json:"catapult"`
+		Priest             int       `json:"priest"`
+		Ship               int       `json:"ship"`
+		BorrowedAt         time.Time `json:"borrowed_at"`
 	}
 	var result []entry
 	for rows.Next() {
 		var e entry
-		if err := rows.Scan(&e.ID, &e.LenderID, &e.LenderName,
+		if err := rows.Scan(&e.ID, &e.LenderID, &e.LenderName, &e.LenderSettlementID,
 			&e.Infantry, &e.Cavalry, &e.Catapult, &e.Priest, &e.Ship, &e.BorrowedAt); err == nil {
 			result = append(result, e)
 		}
@@ -971,6 +977,102 @@ func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Reque
 		result = []entry{}
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// TreasuryDeposit handles POST /worlds/:worldID/kingdoms/:kingdomID/treasury/deposit.
+// Any kingdom member may deposit silver (gold_amount) from their capital into the shared treasury.
+func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request) {
+	kingdomID, err := uuid.Parse(chi.URLParam(r, "kingdomID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid kingdom ID")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var req struct {
+		Amount float64 `json:"amount"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Amount <= 0 {
+		writeError(w, http.StatusBadRequest, "amount must be positive")
+		return
+	}
+
+	// Verify caller is a member.
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT role FROM kingdom_members WHERE kingdom_id = $1 AND player_id = $2`,
+		kingdomID, playerID,
+	).Scan(new(string))
+	if err != nil {
+		writeError(w, http.StatusForbidden, "not a kingdom member")
+		return
+	}
+
+	// Find caller's capital settlement.
+	var settlementID uuid.UUID
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT id FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
+		worldID, playerID,
+	).Scan(&settlementID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "no capital settlement found")
+		return
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Deduct from settlement (materialized lazy-eval), fail if insufficient.
+	tag, err := tx.Exec(r.Context(),
+		`UPDATE settlements SET
+		   gold_amount = GREATEST(0,
+		       gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate)
+		   ) - $1,
+		   gold_calc_at = now()
+		 WHERE id = $2
+		   AND gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate) >= $1`,
+		req.Amount, settlementID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not deduct silver")
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
+		return
+	}
+
+	// Add to kingdom treasury (materialized).
+	_, err = tx.Exec(r.Context(),
+		`UPDATE kingdoms SET
+		   gold_amount = gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate) + $1,
+		   gold_calc_at = now()
+		 WHERE id = $2`,
+		req.Amount, kingdomID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not add to treasury")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"deposited": req.Amount})
 }
 
 // broadcastKingdomGossip sends gossip to all players within 5 hexes of the given
