@@ -105,7 +105,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1 AND p.id IS NULL
 		   AND mt.terrain IN ('plains','coast','hills','river_valley')
-		 ORDER BY RANDOM() + CASE WHEN mt.terrain = 'coast' THEN 0.4 ELSE 0 END DESC LIMIT 1`,
+		 ORDER BY RANDOM() LIMIT 1`,
 		worldID,
 	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
 	if err != nil {
