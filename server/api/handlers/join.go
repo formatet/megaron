@@ -138,16 +138,6 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Seed resource rates from terrain and pantheon.
-	regions := religion.DefaultPantheonRegions()
-	var maxPower float64
-	for _, reg := range regions {
-		if p := religion.LocalPower(reg, q, r2); p > maxPower {
-			maxPower = p
-		}
-	}
-	kharisRate := maxPower * 0.05
-
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -168,17 +158,15 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the settlement (capital). gold and kharis are settlement columns;
-	// all other goods (grain, cedar, stone, etc.) live in settlement_goods.
+	// Create the settlement (capital). Gold is the only column resource;
+	// kharis lives on player_world_records (set below).
 	var settlementID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO settlements
-		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
-		  kharis_rate, kharis_calc_at)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,$6,now())
+		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true)
 		 RETURNING id`,
 		worldID, provinceID, req.ProvinceName, req.Culture, playerID,
-		kharisRate,
 	).Scan(&settlementID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create settlement")
@@ -293,12 +281,25 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		settlementID, worldID, q, r2,
 	)
 
-	// Record in player_world_records.
+	// Compute starting kharis_rate from local pantheon power.
+	regions := religion.DefaultPantheonRegions()
+	var maxPower float64
+	for _, reg := range regions {
+		if p := religion.LocalPower(reg, q, r2); p > maxPower {
+			maxPower = p
+		}
+	}
+	kharisRate := maxPower * 0.05
+
+	// Record in player_world_records (also sets initial kharis_rate from pantheon geography).
 	_, err = tx.Exec(r.Context(),
-		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status)
-		 VALUES ($1, $2, $3, 'active')
-		 ON CONFLICT (player_id, world_id) DO UPDATE SET settlement_id = EXCLUDED.settlement_id, status = 'active'`,
-		playerID, worldID, settlementID,
+		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate)
+		 VALUES ($1, $2, $3, 'active', $4)
+		 ON CONFLICT (player_id, world_id) DO UPDATE SET
+		     settlement_id = EXCLUDED.settlement_id,
+		     status = 'active',
+		     kharis_rate = EXCLUDED.kharis_rate`,
+		playerID, worldID, settlementID, kharisRate,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not record join")
