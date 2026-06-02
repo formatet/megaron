@@ -5,7 +5,11 @@
 //	poleia login --server http://10.0.1.88:8080 --username alice
 //	poleia status
 //	poleia march --target Korinth --intent attack --hoplites 50
+//	poleia scout --q 14 --r -3 --hoplites 5
+//	poleia outpost --q 14 --r -3 --hoplites 20
+//	poleia outpost-recall <outpost-province-id>
 //	poleia marches
+//	poleia recall <march-id>
 //	poleia recruit --unit hoplites --count 20
 //	poleia build --type farm
 //	poleia craft --qty 5
@@ -60,6 +64,9 @@ func main() {
 		loginCmd(),
 		statusCmd(),
 		marchCmd(),
+		scoutCmd(),
+		outpostCmd(),
+		outpostRecallCmd(),
 		marchesCmd(),
 		recallCmd(),
 		recruitCmd(),

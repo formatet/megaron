@@ -191,9 +191,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
 		 SELECT $1, g.key,
 		        CASE g.key
-		            WHEN 'grain' THEN 150
-		            WHEN 'cedar' THEN 120
-		            WHEN 'stone' THEN 120
+		            WHEN 'grain' THEN 300
+		            WHEN 'cedar' THEN 200
+		            WHEN 'stone' THEN 300
 		            ELSE 0
 		        END,
 		        0,
@@ -279,7 +279,11 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 			         AND p.territory_state = 'controlled'
 			   )
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-			     rate = settlement_goods.rate + EXCLUDED.rate`,
+			     amount = LEAST(EXCLUDED.cap,
+			         settlement_goods.amount +
+			         EXTRACT(EPOCH FROM (now() - settlement_goods.calc_at))/60 * settlement_goods.rate),
+			     rate = settlement_goods.rate + EXCLUDED.rate,
+			     calc_at = now()`,
 			settlementID, worldID, q, r2,
 		)
 		if catchErr != nil {

@@ -216,15 +216,16 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	validIntents := map[string]bool{"attack": true, "reinforce": true, "support": true, "colonize": true}
+	validIntents := map[string]bool{"attack": true, "reinforce": true, "support": true, "colonize": true, "outpost": true, "scout": true}
 	if !validIntents[req.Intent] {
 		writeError(w, http.StatusBadRequest, "invalid intent")
 		return
 	}
 
 	var targetID uuid.UUID
-	if req.Intent == "colonize" && req.TargetQ != nil && req.TargetR != nil {
-		// Colonize an unclaimed tile: find or create a province row.
+	if (req.Intent == "colonize" || req.Intent == "outpost" || req.Intent == "scout") && req.TargetQ != nil && req.TargetR != nil {
+		// Coordinate-targeted intents: find or create a province row for the target tile.
+		// colonize/outpost reject settled targets; scout allows it (reconnaissance).
 		q, r2 := *req.TargetQ, *req.TargetR
 		var terrain string
 		if err = h.pool.QueryRow(r.Context(),
@@ -236,7 +237,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		}
 		if terrain == "deep_sea" || terrain == "coastal_sea" ||
 			terrain == "mountain_limestone" || terrain == "mountain_red" {
-			writeError(w, http.StatusUnprocessableEntity, "cannot colonize sea or mountain terrain")
+			writeError(w, http.StatusUnprocessableEntity, "cannot target sea or mountain terrain")
 			return
 		}
 		// Province may or may not exist; find or create it.
@@ -263,13 +264,15 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		// Reject if the province already has a settlement.
-		var existingSett uuid.UUID
-		if scanErr := h.pool.QueryRow(r.Context(),
-			`SELECT id FROM settlements WHERE province_id = $1`, targetID,
-		).Scan(&existingSett); scanErr == nil {
-			writeError(w, http.StatusUnprocessableEntity, "province already settled")
-			return
+		// colonize and outpost require an empty province (no settlement).
+		if req.Intent == "colonize" || req.Intent == "outpost" {
+			var existingSett uuid.UUID
+			if scanErr := h.pool.QueryRow(r.Context(),
+				`SELECT id FROM settlements WHERE province_id = $1`, targetID,
+			).Scan(&existingSett); scanErr == nil {
+				writeError(w, http.StatusUnprocessableEntity, "province already settled")
+				return
+			}
 		}
 	} else {
 		targetID, err = uuid.Parse(req.TargetID)
@@ -455,6 +458,123 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		"arrives_at": arrivesAt,
 		"distance":   dist,
 	})
+}
+
+// RecallOutpost handles DELETE /worlds/:worldID/provinces/:provinceID/outpost.
+// Tears down the player's outpost at provinceID, subtracts the production flows,
+// and returns the garrison to the feeding (origin) settlement.
+func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	// Verify player owns this outpost.
+	var outpostFeeds uuid.UUID
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT outpost_feeds FROM provinces
+		 WHERE id=$1 AND world_id=$2 AND owner_id=$3 AND controller_id IS NULL AND owner_id IS NOT NULL`,
+		provinceID, worldID, playerID,
+	).Scan(&outpostFeeds); err != nil {
+		writeError(w, http.StatusNotFound, "outpost not found or not yours")
+		return
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Load ledgered flows.
+	rows, err := tx.Query(r.Context(),
+		`SELECT settlement_id, good_key, rate FROM outpost_flows WHERE province_id=$1`,
+		provinceID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load outpost flows")
+		return
+	}
+	type flow struct {
+		settlementID uuid.UUID
+		key          string
+		rate         float64
+	}
+	var flows []flow
+	for rows.Next() {
+		var f flow
+		if err := rows.Scan(&f.settlementID, &f.key, &f.rate); err == nil {
+			flows = append(flows, f)
+		}
+	}
+	rows.Close()
+
+	// Settle-then-subtract exact ledgered rates.
+	for _, f := range flows {
+		if _, err := tx.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			     amount  = LEAST(cap, amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate),
+			     rate    = GREATEST(0, rate - $3),
+			     calc_at = now()
+			 WHERE settlement_id=$1 AND good_key=$2`,
+			f.settlementID, f.key, f.rate,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not remove outpost flow")
+			return
+		}
+	}
+
+	if _, err := tx.Exec(r.Context(), `DELETE FROM outpost_flows WHERE province_id=$1`, provinceID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not delete outpost flows")
+		return
+	}
+
+	// Return garrison to origin settlement from the resolved march record.
+	_, _ = tx.Exec(r.Context(),
+		`UPDATE settlements SET
+		     infantry       = infantry       + COALESCE(ma.infantry, 0),
+		     cavalry        = cavalry        + COALESCE(ma.cavalry, 0),
+		     catapult       = catapult       + COALESCE(ma.catapult, 0),
+		     priest         = priest         + COALESCE(ma.priest, 0),
+		     ship           = ship           + COALESCE(ma.ship, 0),
+		     elite_infantry = elite_infantry + COALESCE(ma.elite_infantry, 0)
+		 FROM (
+		     SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+		     FROM marching_armies
+		     WHERE target_id=$1 AND intent='outpost' AND resolved=true
+		     ORDER BY created_at DESC LIMIT 1
+		 ) ma
+		 WHERE settlements.province_id=$2`,
+		provinceID, outpostFeeds,
+	)
+
+	// Free the province.
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE provinces SET territory_state='free', owner_id=NULL, outpost_feeds=NULL, garrison_strength=0 WHERE id=$1`,
+		provinceID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not free province")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"status": "outpost_recalled", "province_id": provinceID})
 }
 
 // Build handles POST /worlds/:worldID/provinces/:provinceID/build.

@@ -316,20 +316,35 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 }
 
 // visibleOrigins loads the map positions of the player's province and all allied
-// kingdom member provinces. These are the "eyes" used for fog-of-war calculation.
+// kingdom member provinces, plus the origin and target endpoints of the player's
+// unresolved marches. These are the "eyes" used for fog-of-war calculation.
 func (h *WorldHandler) visibleOrigins(ctx context.Context, worldID, playerID uuid.UUID) []province.MapPosition {
-	// Provinces the player can see: own settlements and allied kingdom settlements.
 	rows, err := h.pool.Query(ctx,
-		`SELECT p.map_q, p.map_r
-		 FROM provinces p
-		 JOIN settlements s ON s.province_id = p.id
-		 WHERE p.world_id = $1 AND (
-		     s.owner_id = $2
-		     OR (s.kingdom_id IS NOT NULL AND s.kingdom_id IN (
-		         SELECT km.kingdom_id FROM kingdom_members km
-		         WHERE km.player_id = $2
-		     ))
-		 )`,
+		`SELECT DISTINCT pos.q, pos.r FROM (
+		     -- Own and allied settlements.
+		     SELECT p.map_q AS q, p.map_r AS r
+		     FROM provinces p
+		     JOIN settlements s ON s.province_id = p.id
+		     WHERE p.world_id = $1 AND (
+		         s.owner_id = $2
+		         OR (s.kingdom_id IS NOT NULL AND s.kingdom_id IN (
+		             SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
+		         ))
+		     )
+		     UNION ALL
+		     -- Origin and target endpoints of the player's in-flight marches.
+		     SELECT op.map_q, op.map_r
+		     FROM marching_armies ma
+		     JOIN provinces op ON op.id = ma.origin_id
+		     JOIN settlements os ON os.province_id = ma.origin_id
+		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
+		     UNION ALL
+		     SELECT tp.map_q, tp.map_r
+		     FROM marching_armies ma
+		     JOIN provinces tp ON tp.id = ma.target_id
+		     JOIN settlements os ON os.province_id = ma.origin_id
+		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
+		 ) pos`,
 		worldID, playerID,
 	)
 	if err != nil {

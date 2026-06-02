@@ -99,6 +99,25 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		return h.colonize(ctx, tx, march.OriginID, march.TargetID, march.Army, worldID, march.ColonyName)
 	}
 
+	if march.Intent == "scout" {
+		// Scouts auto-return home; vision was contributed during transit (FOW step).
+		return mergeArmy(ctx, tx, march.OriginID, march.Army)
+	}
+
+	if march.Intent == "outpost" {
+		return h.establishOutpost(ctx, tx, march.OriginID, march.TargetID, march.Army, worldID)
+	}
+
+	// Check if target is an outpost province (controlled without a settlement).
+	// Outposts are soft targets: any attack tears them down and returns home.
+	var outpostOwnerID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT owner_id FROM provinces WHERE id=$1 AND controller_id IS NULL AND owner_id IS NOT NULL`,
+		march.TargetID,
+	).Scan(&outpostOwnerID); err == nil {
+		return h.attackOutpost(ctx, tx, march.OriginID, march.TargetID, march.Army, outpostOwnerID, worldID)
+	}
+
 	// Load attacker support from allied marches at same target.
 	var supportStr float64
 	_ = tx.QueryRow(ctx,
@@ -578,6 +597,213 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	)
 
 	return nil
+}
+
+// goodCap returns the storage cap for a given good key, mirroring join/colonize.
+func goodCap(key string) int {
+	switch key {
+	case "grain", "stone":
+		return 1000
+	case "cedar":
+		return 500
+	case "copper", "tin":
+		return 300
+	default:
+		return 200
+	}
+}
+
+// establishOutpost converts an empty province into an outpost that feeds production
+// to the founding settlement. The garrison strength is tracked for combat resolution.
+func (h *ArrivalHandler) establishOutpost(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, army province.ArmyComposition, worldID uuid.UUID) error {
+	// Idempotency: already outposted — return army home.
+	var existing int
+	_ = tx.QueryRow(ctx, `SELECT COUNT(*) FROM outpost_flows WHERE province_id=$1`, targetID).Scan(&existing)
+	if existing > 0 {
+		return mergeArmy(ctx, tx, originID, army)
+	}
+	// Race with colonize: settlement appeared — return army home.
+	var existSett uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE province_id=$1`, targetID).Scan(&existSett); err == nil {
+		return mergeArmy(ctx, tx, originID, army)
+	}
+
+	// Load attacker owner and origin settlement ID.
+	var attackerOwnerID, originSettlementID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT owner_id, id FROM settlements WHERE province_id=$1`,
+		originID,
+	).Scan(&attackerOwnerID, &originSettlementID); err != nil {
+		return fmt.Errorf("load attacker settlement: %w", err)
+	}
+
+	// Load target terrain and deposits.
+	var terrainType string
+	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
+	if err := tx.QueryRow(ctx,
+		`SELECT terrain_type, copper_deposit, tin_deposit,
+		        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false)
+		 FROM provinces WHERE id=$1`,
+		targetID,
+	).Scan(&terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit); err != nil {
+		return fmt.Errorf("load target province: %w", err)
+	}
+
+	garrisonStr := int(Strength(army))
+
+	// Claim province as outpost.
+	if _, err := tx.Exec(ctx,
+		`UPDATE provinces SET territory_state='controlled', owner_id=$1, outpost_feeds=$2, garrison_strength=$3 WHERE id=$4`,
+		attackerOwnerID, originSettlementID, garrisonStr, targetID,
+	); err != nil {
+		return fmt.Errorf("claim province: %w", err)
+	}
+
+	// Read terrain production rules (building-free, 100% rate).
+	rows, err := tx.Query(ctx,
+		`SELECT good_key, rate_per_min FROM production_rules
+		 WHERE building_type IS NULL AND terrain_type=$1
+		   AND (requires_deposit IS NULL
+		        OR (requires_deposit='copper' AND $2)
+		        OR (requires_deposit='tin'    AND $3)
+		        OR (requires_deposit='silver' AND $4)
+		        OR (requires_deposit='cedar'  AND $5))`,
+		terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
+	)
+	if err != nil {
+		return fmt.Errorf("query production rules: %w", err)
+	}
+	type goodRate struct {
+		key  string
+		rate float64
+	}
+	var flows []goodRate
+	for rows.Next() {
+		var gr goodRate
+		if err := rows.Scan(&gr.key, &gr.rate); err != nil {
+			continue
+		}
+		flows = append(flows, gr)
+	}
+	rows.Close()
+
+	for _, gr := range flows {
+		// Ledger row — PK (province_id, good_key) makes re-insert a no-op.
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO outpost_flows (province_id, good_key, world_id, settlement_id, rate)
+			 VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+			targetID, gr.key, worldID, originSettlementID, gr.rate,
+		); err != nil {
+			return fmt.Errorf("insert outpost flow: %w", err)
+		}
+
+		// Settle-then-add: compute elapsed production first, then raise rate.
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+			 VALUES ($1, $2, 0, $3, $4, now())
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+			     amount  = LEAST(EXCLUDED.cap,
+			                 settlement_goods.amount +
+			                 EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60 * settlement_goods.rate),
+			     rate    = settlement_goods.rate + $3,
+			     calc_at = now()`,
+			originSettlementID, gr.key, gr.rate, goodCap(gr.key),
+		); err != nil {
+			return fmt.Errorf("update settlement goods: %w", err)
+		}
+	}
+
+	slog.Info("outpost established", "province", targetID, "owner", attackerOwnerID, "feeds", originSettlementID)
+
+	_, _ = h.eventStore.Append(ctx, targetID, events.StreamProvince, "OutpostEstablished", map[string]any{
+		"owner_id": attackerOwnerID,
+		"feeds":    originSettlementID,
+		"garrison": garrisonStr,
+		"terrain":  terrainType,
+	}, worldID, nil)
+
+	if h.hub != nil {
+		h.hub.BroadcastEvent(worldID, "OutpostEstablished", map[string]any{
+			"province_id": targetID,
+			"owner_id":    attackerOwnerID,
+		})
+	}
+	return nil
+}
+
+// teardownOutpost removes an outpost, subtracting the exact rates that were added.
+// reason is "abandoned" or "captured".
+func (h *ArrivalHandler) teardownOutpost(ctx context.Context, tx pgx.Tx, provinceID, worldID uuid.UUID, reason string) error {
+	rows, err := tx.Query(ctx,
+		`SELECT settlement_id, good_key, rate FROM outpost_flows WHERE province_id=$1`,
+		provinceID,
+	)
+	if err != nil {
+		return fmt.Errorf("load outpost flows: %w", err)
+	}
+	type flow struct {
+		settlementID uuid.UUID
+		key          string
+		rate         float64
+	}
+	var flows []flow
+	for rows.Next() {
+		var f flow
+		if err := rows.Scan(&f.settlementID, &f.key, &f.rate); err != nil {
+			continue
+		}
+		flows = append(flows, f)
+	}
+	rows.Close()
+
+	for _, f := range flows {
+		// Settle-then-subtract: ledgered rate, not recomputed, so terrain-rule changes can't desync.
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlement_goods SET
+			     amount  = LEAST(cap, amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate),
+			     rate    = GREATEST(0, rate - $3),
+			     calc_at = now()
+			 WHERE settlement_id=$1 AND good_key=$2`,
+			f.settlementID, f.key, f.rate,
+		); err != nil {
+			return fmt.Errorf("subtract outpost flow: %w", err)
+		}
+	}
+
+	if _, err := tx.Exec(ctx, `DELETE FROM outpost_flows WHERE province_id=$1`, provinceID); err != nil {
+		return fmt.Errorf("delete outpost flows: %w", err)
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE provinces SET territory_state='free', owner_id=NULL, outpost_feeds=NULL, garrison_strength=0 WHERE id=$1`,
+		provinceID,
+	); err != nil {
+		return fmt.Errorf("free province: %w", err)
+	}
+
+	eventType := "OutpostAbandoned"
+	if reason == "captured" {
+		eventType = "OutpostCaptured"
+	}
+	_, _ = h.eventStore.Append(ctx, provinceID, events.StreamProvince, eventType, map[string]any{
+		"reason": reason,
+	}, worldID, nil)
+
+	return nil
+}
+
+// attackOutpost handles an attack landing on an outpost province.
+// Outposts are soft targets: any force tears them down and returns home.
+func (h *ArrivalHandler) attackOutpost(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, army province.ArmyComposition, defOwnerID uuid.UUID, worldID uuid.UUID) error {
+	if err := h.teardownOutpost(ctx, tx, targetID, worldID, "captured"); err != nil {
+		return err
+	}
+	if h.hub != nil {
+		h.hub.BroadcastEvent(worldID, "OutpostCaptured", map[string]any{
+			"province_id": targetID,
+		})
+	}
+	return mergeArmy(ctx, tx, originID, army)
 }
 
 func (h *ArrivalHandler) recordEvent(ctx context.Context, streamID, worldID uuid.UUID, result CombatResult, marchID uuid.UUID) {
