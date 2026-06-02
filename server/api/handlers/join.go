@@ -91,15 +91,18 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// Find an unclaimed tile (no province row exists yet for this tile).
 	var q, r2 int
 	var terrainType string
-	var copperDeposit, tinDeposit, silverDeposit bool
+	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT mt.q, mt.r, mt.terrain, mt.copper_deposit, mt.tin_deposit, COALESCE(mt.silver_deposit, false)
+		`SELECT mt.q, mt.r, mt.terrain,
+		        mt.copper_deposit, mt.tin_deposit,
+		        COALESCE(mt.silver_deposit, false), COALESCE(mt.cedar_deposit, false)
 		 FROM map_tiles mt
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
-		 WHERE mt.world_id = $1 AND p.id IS NULL AND mt.terrain IN ('plains','coast','hills')
-		 ORDER BY RANDOM() LIMIT 1`,
+		 WHERE mt.world_id = $1 AND p.id IS NULL
+		   AND mt.terrain IN ('plains','coast','hills','river_valley')
+		 ORDER BY (mt.terrain = 'coast') DESC, RANDOM() LIMIT 1`,
 		worldID,
-	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit)
+	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
 	if err != nil {
 		writeError(w, http.StatusConflict, "no available tiles — try again")
 		return
@@ -125,9 +128,10 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// Create the province tile row — copy deposit flags from map_tiles.
 	var provinceID uuid.UUID
 	err = tx.QueryRow(r.Context(),
-		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state, copper_deposit, tin_deposit, silver_deposit)
-		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7) RETURNING id`,
-		worldID, q, r2, terrainType, copperDeposit, tinDeposit, silverDeposit,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
+		                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
+		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7, $8) RETURNING id`,
+		worldID, q, r2, terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
 	).Scan(&provinceID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create province")
@@ -213,10 +217,11 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		   AND (pr.requires_deposit IS NULL
 		        OR (pr.requires_deposit = 'copper' AND $3)
 		        OR (pr.requires_deposit = 'tin'    AND $4)
-		        OR (pr.requires_deposit = 'silver' AND $5))
+		        OR (pr.requires_deposit = 'silver' AND $5)
+		        OR (pr.requires_deposit = 'cedar'  AND $6))
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     rate = settlement_goods.rate + EXCLUDED.rate`,
-		settlementID, terrainType, copperDeposit, tinDeposit, silverDeposit,
+		settlementID, terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not init goods")

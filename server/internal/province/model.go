@@ -123,6 +123,7 @@ type Province struct {
 	CopperDeposit  bool
 	TinDeposit     bool
 	SilverDeposit  bool
+	CedarDeposit   bool
 }
 
 // MarchIntent identifies why an army is moving.

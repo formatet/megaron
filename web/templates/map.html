@@ -49,13 +49,14 @@
   </div>
 
   <div class="map-legend">
-    <span class="legend-item" style="--tc:#D4AC0D">Plains</span>
-    <span class="legend-item" style="--tc:#5D6D2E">Forest</span>
-    <span class="legend-item" style="--tc:#F0B27A">Hills</span>
-    <span class="legend-item" style="--tc:#F2EAD3">Mountain</span>
-    <span class="legend-item" style="--tc:#FAD7A0">Coast</span>
+    <span class="legend-item" style="--tc:#8AAF3A">Plains</span>
+    <span class="legend-item" style="--tc:#4CAF50">Floddal</span>
+    <span class="legend-item" style="--tc:#5A8C30">Skog</span>
+    <span class="legend-item" style="--tc:#C8A464">Kullar</span>
+    <span class="legend-item" style="--tc:#E0D4B8">Berg</span>
+    <span class="legend-item" style="--tc:#E8C97A">Kust</span>
     <span class="legend-item" style="--tc:#2E86C1">The Thalassa</span>
-    <span class="legend-item" style="--tc:#1C1C1C">Fog</span>
+    <span class="legend-item" style="--tc:#1C1C1C">Dimma</span>
   </div>
 </div>
 
@@ -204,13 +205,14 @@ const MY_SETTLEMENT_ID = "{{.SettlementID}}";
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
-  sea:      {c0:'#2E86C1', c1:'#1B4F72'},
-  coast:    {c0:'#E8C97A', c1:'#D4B060'},
-  plains:   {c0:'#8AAF3A', c1:'#74952C'},
-  forest:   {c0:'#5A8C30', c1:'#447020'},
-  hills:    {c0:'#C8A464', c1:'#B08C50'},
-  mountain: {c0:'#E0D4B8', c1:'#C8BCA0'},
-  fog:      {c0:'#1C1C1C', c1:'#252018'},
+  sea:          {c0:'#2E86C1', c1:'#1B4F72'},
+  coast:        {c0:'#E8C97A', c1:'#D4B060'},
+  plains:       {c0:'#8AAF3A', c1:'#74952C'},
+  river_valley: {c0:'#4CAF50', c1:'#388E3C'},  // lush green — very fertile
+  forest:       {c0:'#5A8C30', c1:'#447020'},
+  hills:        {c0:'#C8A464', c1:'#B08C50'},
+  mountain:     {c0:'#E0D4B8', c1:'#C8BCA0'},
+  fog:          {c0:'#1C1C1C', c1:'#252018'},
 };
 
 // Culture accent colours (banner / flag)
@@ -371,6 +373,19 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
         ctx.fillRect(tx,ty,1,2); ctx.fillRect(tx-1,ty+1,3,1);
       }
       if ((seed&15) < 4) { ctx.fillStyle='#C0392B'; ctx.fillRect(cx+(rng(3)%13)-6,cy+(rng(5)%9)-4,1,1); }
+      break;
+    }
+    case 'river_valley': {
+      // Lush green with blue river channel detail
+      ctx.fillStyle = '#2E7D32';
+      const tufts = [[cx-6,cy-3],[cx-1,cy+4],[cx+5,cy-3],[cx-4,cy+5],[cx+6,cy+1]];
+      for (const [tx,ty] of tufts.slice(0, 4+(seed%2))) {
+        ctx.fillRect(tx,ty,1,3); ctx.fillRect(tx-1,ty+1,3,1);
+      }
+      // River channel (blue wavy line)
+      ctx.fillStyle = '#1565C0';
+      ctx.fillRect(cx-8,cy,3,1); ctx.fillRect(cx-5,cy+1,3,1);
+      ctx.fillRect(cx-2,cy,4,1); ctx.fillRect(cx+2,cy+1,3,1); ctx.fillRect(cx+5,cy,3,1);
       break;
     }
     case 'forest': {
@@ -709,11 +724,12 @@ function resetView() {
 // ── Inspect panel ─────────────────────────────────────────────────────────
 // Maps terrain type to the base goods it produces.
 const TERRAIN_GOODS = {
-  plains:   'grain, horses',
-  hills:    'copper (if deposit)',
-  mountain: 'stone, tin (if deposit)',
-  forest:   'cedar',
-  coast:    'fish',
+  plains:       'grain, horses',
+  river_valley: 'grain ×3 (very fertile)',
+  hills:        'copper (if deposit), wine, oil',
+  mountain:     'stone, tin (if deposit)',
+  forest:       'cedar (if deposit)',
+  coast:        'fish',
   sea:      '—',
 };
 

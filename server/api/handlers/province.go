@@ -57,6 +57,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"copper_deposit":  prov.CopperDeposit,
 		"tin_deposit":     prov.TinDeposit,
 		"silver_deposit":  prov.SilverDeposit,
+		"cedar_deposit":   prov.CedarDeposit,
 	}
 
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
@@ -244,15 +245,18 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		).Scan(&targetID)
 		if err != nil {
 			// No province yet — create one so the march can reference it.
-			var copperDeposit, tinDeposit bool
+			var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
 			_ = h.pool.QueryRow(r.Context(),
-				`SELECT copper_deposit, tin_deposit FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+				`SELECT copper_deposit, tin_deposit,
+				        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false)
+				 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
 				worldID, q, r2,
-			).Scan(&copperDeposit, &tinDeposit)
+			).Scan(&copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
 			if err2 := h.pool.QueryRow(r.Context(),
-				`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state, copper_deposit, tin_deposit)
-				 VALUES ($1,$2,$3,$4,'free',$5,$6) RETURNING id`,
-				worldID, q, r2, terrain, copperDeposit, tinDeposit,
+				`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
+				                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
+				 VALUES ($1,$2,$3,$4,'free',$5,$6,$7,$8) RETURNING id`,
+				worldID, q, r2, terrain, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
 			).Scan(&targetID); err2 != nil {
 				writeError(w, http.StatusInternalServerError, "could not create target province")
 				return

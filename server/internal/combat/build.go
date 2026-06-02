@@ -82,7 +82,8 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		   AND (pr.requires_deposit IS NULL
 		        OR (pr.requires_deposit = 'copper' AND prov.copper_deposit)
 		        OR (pr.requires_deposit = 'tin'    AND prov.tin_deposit)
-		        OR (pr.requires_deposit = 'silver' AND prov.silver_deposit))
+		        OR (pr.requires_deposit = 'silver' AND prov.silver_deposit)
+		        OR (pr.requires_deposit = 'cedar'  AND prov.cedar_deposit))
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = settlement_goods.amount
 		         + EXTRACT(EPOCH FROM (now() - settlement_goods.calc_at))/60 * settlement_goods.rate,

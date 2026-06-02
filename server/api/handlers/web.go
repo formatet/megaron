@@ -371,11 +371,13 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 
 	// province.html uses .Province.ID in URLs — pass province_id as the ID.
 	// Province is the settlement struct, but with ID = province tile ID.
-	var copperDeposit, tinDeposit, silverDeposit bool
+	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT copper_deposit, tin_deposit, COALESCE(silver_deposit, false) FROM provinces WHERE id = $1`,
+		`SELECT copper_deposit, tin_deposit,
+		        COALESCE(silver_deposit, false), COALESCE(cedar_deposit, false)
+		 FROM provinces WHERE id = $1`,
 		s.ProvinceID,
-	).Scan(&copperDeposit, &tinDeposit, &silverDeposit)
+	).Scan(&copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
 
 	var kingdomName string
 	if s.KingdomID != nil {
@@ -398,6 +400,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		CopperDeposit bool
 		TinDeposit    bool
 		SilverDeposit bool
+		CedarDeposit  bool
 	}
 	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
 	pv := provinceView{
@@ -416,6 +419,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		CopperDeposit: copperDeposit,
 		TinDeposit:    tinDeposit,
 		SilverDeposit: silverDeposit,
+		CedarDeposit:  cedarDeposit,
 	}
 
 	// Load build queue.
