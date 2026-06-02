@@ -226,7 +226,7 @@
         <li class="march-item march-{{.Intent}}" id="march-{{.ID}}">
           <span class="intent-badge intent-{{.Intent}}">{{.Intent}}</span>
           <span class="march-target">→ {{.TargetName}}</span>
-          <span class="march-time">{{formatTime .ArrivesAt}}</span>
+          <span class="march-time eta" data-arrives="{{formatISO .ArrivesAt}}">{{formatTime .ArrivesAt}}</span>
           <button class="btn-small btn-secondary march-recall"
                   onclick="recallMarch('{{.ID}}')"
                   title="Recall army">↩</button>
@@ -245,7 +245,7 @@
           <span class="intent-badge intent-{{.Intent}}">{{.Intent}}</span>
           <strong>{{.Name}}</strong>
           <span class="march-units">{{.TotalUnits}} units</span>
-          <span class="march-time">{{formatTime .ArrivesAt}}</span>
+          <span class="march-time eta" data-arrives="{{formatISO .ArrivesAt}}">{{formatTime .ArrivesAt}}</span>
         </li>
         {{end}}
       </ul>
@@ -618,7 +618,27 @@ async function loadInboxCount() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => { loadGoods(); loadTradeRoutes(); loadBattleLog(); loadGossip(); loadCultLevel(); loadVisibleSettlements(); loadInboxCount(); });
+function fmtEta(isoStr) {
+  const ms = new Date(isoStr).getTime() - Date.now();
+  if (ms <= 0) return 'arrived';
+  const mins = Math.round(ms / 60000);
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+function refreshEtas() {
+  document.querySelectorAll('.eta[data-arrives]').forEach(el => {
+    el.textContent = fmtEta(el.dataset.arrives);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadGoods(); loadTradeRoutes(); loadBattleLog(); loadGossip();
+  loadCultLevel(); loadVisibleSettlements(); loadInboxCount();
+  refreshEtas();
+  setInterval(refreshEtas, 30000);
+});
 
 // ── Gossip ────────────────────────────────────────────────────────────────
 async function loadGossip() {
