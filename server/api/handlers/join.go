@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -302,6 +303,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		playerID, worldID, settlementID, kharisRate,
 	)
 	if err != nil {
+		slog.Error("could not record join", "err", err, "player", playerID, "world", worldID)
 		writeError(w, http.StatusInternalServerError, "could not record join")
 		return
 	}
