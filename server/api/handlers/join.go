@@ -94,18 +94,43 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Find an unclaimed tile (no province row exists yet for this tile).
+	// Find a suitable spawn tile:
+	// - not already a province
+	// - eligible terrain
+	// - at least 4 hexes from any existing settlement (no clustering)
+	// - prefer the landmass with fewer settlements to balance east/west
 	var q, r2 int
 	var terrainType string
 	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT mt.q, mt.r, mt.terrain,
+		`WITH west_count AS (
+		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q < 20
+		 ),
+		 east_count AS (
+		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q >= 20
+		 )
+		 SELECT mt.q, mt.r, mt.terrain,
 		        mt.copper_deposit, mt.tin_deposit,
 		        COALESCE(mt.silver_deposit, false), COALESCE(mt.cedar_deposit, false)
 		 FROM map_tiles mt
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
-		 WHERE mt.world_id = $1 AND p.id IS NULL
+		 WHERE mt.world_id = $1
+		   AND p.id IS NULL
 		   AND mt.terrain IN ('plains','coast','hills','river_valley')
-		 ORDER BY RANDOM() LIMIT 1`,
+		   AND NOT EXISTS (
+		       SELECT 1 FROM provinces p2
+		       WHERE p2.world_id = $1
+		         AND (ABS(mt.q - p2.map_q) + ABS(mt.r - p2.map_r) +
+		              ABS((mt.q + mt.r) - (p2.map_q + p2.map_r))) / 2 <= 4
+		   )
+		 ORDER BY
+		   CASE
+		     WHEN (SELECT count FROM west_count) <= (SELECT count FROM east_count)
+		       THEN (mt.q < 20)::int
+		     ELSE (mt.q >= 20)::int
+		   END DESC,
+		   RANDOM()
+		 LIMIT 1`,
 		worldID,
 	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
 	if err != nil {
