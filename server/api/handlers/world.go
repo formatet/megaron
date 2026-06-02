@@ -581,7 +581,8 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		        s.owner_id,
 		        COALESCE(prov.copper_deposit, false),
 		        COALESCE(prov.tin_deposit, false),
-		        COALESCE(prov.silver_deposit, false)
+		        COALESCE(prov.silver_deposit, false),
+		        COALESCE(prov.cedar_deposit, false)
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
@@ -609,6 +610,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		CopperDeposit bool   `json:"copper_deposit,omitempty"`
 		TinDeposit    bool   `json:"tin_deposit,omitempty"`
 		SilverDeposit bool   `json:"silver_deposit,omitempty"`
+		CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
 	}
 	var result []entry
 	for rows.Next() {
@@ -618,7 +620,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		var terrain *string
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&e.Walls, &e.Population, &e.ArmyDP, &ownerID,
-			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit); err != nil {
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit); err != nil {
 			continue
 		}
 		if kingdom != nil {
