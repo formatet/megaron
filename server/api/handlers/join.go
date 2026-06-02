@@ -252,32 +252,38 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if _, spErr := tx.Exec(r.Context(), `SAVEPOINT catchment`); spErr == nil {
 		_, catchErr := tx.Exec(r.Context(),
 			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-			 SELECT $1, pr.good_key, 0,
-			     pr.rate_per_min * 0.30,
-			     CASE pr.good_key
+			 SELECT $1, agg.good_key, 0,
+			     agg.rate,
+			     CASE agg.good_key
 			         WHEN 'grain'  THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
 			         WHEN 'copper' THEN 300  WHEN 'tin'   THEN 300 ELSE 200
 			     END,
 			     now()
-			 FROM map_tiles mt
-			 JOIN production_rules pr ON pr.terrain_type = mt.terrain AND pr.building_type IS NULL
-			     AND (pr.requires_deposit IS NULL
-			          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
-			          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
-			          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
-			          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
-			 WHERE mt.world_id = $2
-			   AND (
-			       (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR
-			       (mt.q = $3   AND mt.r = $4+1) OR (mt.q = $3   AND mt.r = $4-1) OR
-			       (mt.q = $3+1 AND mt.r = $4-1) OR (mt.q = $3-1 AND mt.r = $4+1)
-			   )
-			   AND mt.terrain NOT IN ('deep_sea','coastal_sea','mountain_limestone','mountain_red','semi_desert')
-			   AND NOT EXISTS (
-			       SELECT 1 FROM provinces p
-			       WHERE p.world_id = $2 AND p.map_q = mt.q AND p.map_r = mt.r
-			         AND p.territory_state = 'controlled'
-			   )
+			 FROM (
+			     -- Aggregate per good_key: several adjacent tiles can produce the same
+			     -- good, and ON CONFLICT cannot dedupe rows within one INSERT statement.
+			     SELECT pr.good_key, SUM(pr.rate_per_min) * 0.30 AS rate
+			     FROM map_tiles mt
+			     JOIN production_rules pr ON pr.terrain_type = mt.terrain AND pr.building_type IS NULL
+			         AND (pr.requires_deposit IS NULL
+			              OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
+			              OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
+			              OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+			              OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+			     WHERE mt.world_id = $2
+			       AND (
+			           (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR
+			           (mt.q = $3   AND mt.r = $4+1) OR (mt.q = $3   AND mt.r = $4-1) OR
+			           (mt.q = $3+1 AND mt.r = $4-1) OR (mt.q = $3-1 AND mt.r = $4+1)
+			       )
+			       AND mt.terrain NOT IN ('deep_sea','coastal_sea','mountain_limestone','mountain_red','semi_desert')
+			       AND NOT EXISTS (
+			           SELECT 1 FROM provinces p
+			           WHERE p.world_id = $2 AND p.map_q = mt.q AND p.map_r = mt.r
+			             AND p.territory_state = 'controlled'
+			       )
+			     GROUP BY pr.good_key
+			 ) agg
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount = LEAST(EXCLUDED.cap,
 			         settlement_goods.amount +
