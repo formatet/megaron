@@ -1,11 +1,13 @@
 {{template "base" .}}
 {{define "title"}}{{.Province.Name}} — Poleia{{end}}
 {{define "nav"}}
-  <a href="/world/{{.WorldID}}/map">Map</a>
-  <a href="/world/{{.WorldID}}/messages">Messages</a>
-  <a href="/world/{{.WorldID}}/kingdom">Kingdom</a>
-  <a href="/world/{{.WorldID}}/wanaxes">Wanaxes</a>
-  <a href="/world/{{.WorldID}}/market">Market</a>
+  <a href="/world/{{.WorldID}}/megaron">⌂</a>
+  <a href="/world/{{.WorldID}}/map">Kartrum</a>
+  <a href="/world/{{.WorldID}}">Skattkammaren</a>
+  <a href="/world/{{.WorldID}}/messages">Scribes</a>
+  <a href="/world/{{.WorldID}}/kingdom">Rådet</a>
+  <a href="/world/{{.WorldID}}/market">Agoran</a>
+  <a href="/world/{{.WorldID}}/wanaxes">Herolden</a>
 {{end}}
 {{define "content"}}
 <div class="province-page">

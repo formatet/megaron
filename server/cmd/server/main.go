@@ -150,6 +150,7 @@ func main() {
 	r.With(auth.WebMiddleware(authSvc)).Get("/play", webH.Play)
 	r.With(auth.WebMiddleware(authSvc)).Route("/world/{worldID}", func(r chi.Router) {
 		r.Get("/join", webH.JoinView)
+		r.Get("/megaron", webH.MegaronView)
 		r.Get("/", webH.Province)
 		r.Get("/map", webH.MapView)
 		r.Get("/kingdom", webH.KingdomView)

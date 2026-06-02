@@ -182,8 +182,8 @@ func (h *WebHandler) Index(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "index.html", nil)
 }
 
-// Play is the post-login landing. Redirects to the map if the player has a
-// settlement, or to the join page if they haven't entered the world yet.
+// Play is the post-login landing. Redirects to the megaron hub if the player
+// has a settlement, or to the join page if they haven't entered the world yet.
 func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
 	if !ok {
@@ -199,7 +199,86 @@ func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/world/"+h.worldID.String()+"/join", http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/world/"+h.worldID.String()+"/map", http.StatusSeeOther)
+	http.Redirect(w, r, "/world/"+h.worldID.String()+"/megaron", http.StatusSeeOther)
+}
+
+// MegaronView serves the hub page — the great hall from which all rooms are entered.
+func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		http.Error(w, "invalid world ID", http.StatusBadRequest)
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	s, err := loadPlayerCapital(r.Context(), h.pool, playerID, worldID)
+	if err != nil {
+		http.Redirect(w, r, "/world/"+worldID.String()+"/join", http.StatusSeeOther)
+		return
+	}
+
+	now := h.clk.Now()
+	resources := s.Resources.Snapshot(now)
+	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources, "grain", "silver")
+
+	var wld world.World
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT id, name, state, map_width, map_height, prestige, era_number FROM worlds WHERE id = $1`,
+		worldID,
+	).Scan(&wld.ID, &wld.Name, &wld.State, &wld.MapWidth, &wld.MapHeight, &wld.Prestige, &wld.EraNumber)
+
+	var kingdomName, kingdomState string
+	var memberCount int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT k.name, COALESCE(k.state,'forming'),
+		        (SELECT count(*) FROM kingdom_members WHERE kingdom_id = k.id)
+		 FROM kingdoms k JOIN kingdom_members km ON km.kingdom_id = k.id
+		 WHERE k.world_id = $1 AND km.player_id = $2`,
+		worldID, playerID,
+	).Scan(&kingdomName, &kingdomState, &memberCount)
+
+	var unreadCount int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT count(*) FROM messengers m
+		 JOIN settlements s ON s.id = m.destination_id
+		 WHERE m.world_id = $1 AND s.owner_id = $2 AND m.status = 'delivered'`,
+		worldID, playerID,
+	).Scan(&unreadCount)
+
+	var marchCount int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT count(*) FROM marching_armies WHERE origin_id = $1 AND resolved = false`,
+		s.ProvinceID,
+	).Scan(&marchCount)
+
+	var tradeCount int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT count(*) FROM trade_routes WHERE origin_settlement_id = $1 AND resolved = false`,
+		s.ID,
+	).Scan(&tradeCount)
+
+	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
+
+	h.render(w, "megaron.html", map[string]any{
+		"WorldID":      worldID,
+		"World":        wld,
+		"Settlement":   s,
+		"ArmyDP":       armyDP,
+		"Grain":        resources["grain"],
+		"GrainRate":    resources["grain_rate"],
+		"Silver":       resources["silver"],
+		"DivineMood":   kharisToMood(resources["kharis"]),
+		"KingdomName":  kingdomName,
+		"KingdomState": kingdomState,
+		"MemberCount":  memberCount,
+		"UnreadCount":  unreadCount,
+		"MarchCount":   marchCount,
+		"TradeCount":   tradeCount,
+	})
 }
 
 // JoinView serves the world join page — shown to new players before they have a settlement.

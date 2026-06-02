@@ -588,3 +588,122 @@ footer {
 .wanax-table .own-row td { background: color-mix(in srgb, var(--bg-raised) 30%, transparent); }
 .wanax-table .dim { color: var(--text-dim); }
 .culture-tag.small { font-size: .7rem; padding: .05rem .3rem; }
+
+/* ── Megaron (hub page) ─────────────────────────────────────── */
+.megaron-page { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.megaron-hero {
+  background: var(--bg-panel);
+  border: 2px solid var(--border);
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.mh-title { display: flex; flex-direction: column; gap: .2rem; }
+.mh-name  { font-size: 1.8rem; letter-spacing: .08em; color: var(--accent); margin: 0; }
+.mh-world { font-size: .78rem; font-family: var(--mono); color: var(--text-dim); letter-spacing: .1em; }
+
+.mh-stats { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: flex-end; }
+.mh-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  border-left: 1px solid var(--border);
+  padding-left: 1rem;
+}
+.mh-stat:first-child { border-left: none; padding-left: 0; }
+.mhs-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text-dim); font-family: var(--mono); }
+.mhs-val   { font-size: 1.05rem; font-family: var(--mono); color: var(--accent); line-height: 1.2; }
+.mhs-rate  { font-size: .7rem; font-family: var(--mono); color: var(--safe); }
+
+.mood-Favorable  { color: var(--safe) !important; }
+.mood-Indifferent{ color: var(--gold) !important; }
+.mood-Suspicious { color: var(--border) !important; }
+.mood-Wrathful   { color: var(--danger) !important; }
+
+/* Room grid — 3 columns on wide, 2 on medium, 1 on narrow */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 900px) { .room-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) { .room-grid { grid-template-columns: 1fr; } }
+
+.room-card {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  background: var(--bg-panel);
+  border: 2px solid var(--border);
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
+  padding: 1.1rem 1.2rem 1rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .12s, background .12s;
+  cursor: pointer;
+  min-height: 130px;
+}
+.room-card:hover { border-color: var(--accent); background: var(--bg-raised); text-decoration: none; }
+.room-card--alert { border-color: var(--gold); }
+.room-card--alert:hover { border-color: var(--accent); }
+
+.room-lintel {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: .6rem;
+}
+.room-glyph {
+  font-size: 1.4rem;
+  color: var(--text-dim);
+  line-height: 1;
+  width: 1.8rem;
+  text-align: center;
+}
+.room-name {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  color: var(--accent);
+  font-family: var(--mono);
+}
+
+.room-status {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  font-size: .82rem;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  flex: 1;
+}
+.rs-alert { color: var(--gold); }
+.rs-dim   { color: var(--text-dim); font-style: italic; }
+
+.room-enter {
+  font-size: .75rem;
+  font-family: var(--mono);
+  letter-spacing: .1em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-top: auto;
+}
+.room-card:hover .room-enter { color: var(--accent); }
+
+/* Nav badge for unread count */
+.nav-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--bg-raised);
+  font-size: .65rem;
+  font-family: var(--mono);
+  padding: .05rem .3rem;
+  line-height: 1.4;
+  vertical-align: middle;
+}
