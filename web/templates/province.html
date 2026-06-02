@@ -25,6 +25,7 @@
       {{if .Province.CopperDeposit}}<span class="stat-chip deposit-chip" title="Copper deposit">⛏ Copper</span>{{end}}
       {{if .Province.TinDeposit}}<span class="stat-chip deposit-chip" title="Tin deposit">⛏ Tin</span>{{end}}
       {{if .Province.SilverDeposit}}<span class="stat-chip deposit-chip" style="color:var(--gold)" title="Silver deposit">⛏ Silver</span>{{end}}
+      {{if .Province.CedarDeposit}}<span class="stat-chip deposit-chip" style="color:var(--safe)" title="Cedar deposit — lumbermill produces cedar">🌲 Cedar</span>{{end}}
       <a id="msg-count-chip" href="/world/{{.WorldID}}/messages" style="display:none" class="stat-chip msg-chip" title="Unread messages"></a>
     </div>
   </header>

@@ -81,11 +81,16 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = json.NewDecoder(r.Body).Decode(&req)
 
+	if req.Culture == "" {
+		// Random culture when joining via web (no preference specified).
+		cultures := []province.Culture{
+			province.CultureAkhaier, province.CultureKhemetiu, province.CultureKnaani,
+			province.CultureThrakes, province.CulturePelasger, province.CultureHatti,
+		}
+		req.Culture = string(cultures[playerCount%len(cultures)])
+	}
 	if req.ProvinceName == "" {
 		req.ProvinceName = province.SettlementNameForCulture(req.Culture)
-	}
-	if req.Culture == "" {
-		req.Culture = string(province.CultureAkhaier)
 	}
 
 	// Find an unclaimed tile (no province row exists yet for this tile).
