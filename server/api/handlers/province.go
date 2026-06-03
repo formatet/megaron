@@ -416,7 +416,17 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "insufficient units")
+		// The atomic UPDATE matched no row because at least one unit type was
+		// short. Report which units fell short and by how much so the caller
+		// can scale the march down instead of looping a blind 422.
+		var have province.ArmyComposition
+		_ = tx.QueryRow(r.Context(),
+			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
+			sourceID, worldID,
+		).Scan(&have.Infantry, &have.Cavalry, &have.Catapult,
+			&have.Priest, &have.Ship, &have.EliteInfantry)
+		writeError(w, http.StatusUnprocessableEntity, insufficientUnitsMsg(army, have))
 		return
 	}
 

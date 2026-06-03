@@ -1,6 +1,10 @@
 package handlers
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/poleia/server/internal/province"
+)
 
 // insufficientGoodsError must render a human/agent-readable list of exactly
 // what is short and by how much — the keryx agents read this string to learn
@@ -24,5 +28,38 @@ func TestInsufficientGoodsErrorSingle(t *testing.T) {
 	want := "insufficient resources: cedar (need 80, have 12)"
 	if got := err.Error(); got != want {
 		t.Errorf("Error() = %q, want %q", got, want)
+	}
+}
+
+// insufficientUnitsMsg turns a blind "insufficient units" 422 into an actionable
+// list: agents that try to outpost/march with more troops than their garrison
+// holds need to see which units are short and by how much to scale down.
+func TestInsufficientUnitsMsg(t *testing.T) {
+	// Wants 30 infantry + 5 cavalry, only holds 10 infantry + 5 cavalry.
+	want := province.ArmyComposition{Infantry: 30, Cavalry: 5}
+	have := province.ArmyComposition{Infantry: 10, Cavalry: 5}
+	got := insufficientUnitsMsg(want, have)
+	exp := "insufficient units: infantry (need 30, have 10)"
+	if got != exp {
+		t.Errorf("insufficientUnitsMsg = %q, want %q", got, exp)
+	}
+}
+
+func TestInsufficientUnitsMsgMultiple(t *testing.T) {
+	want := province.ArmyComposition{Infantry: 20, Ship: 3, EliteInfantry: 4}
+	have := province.ArmyComposition{Infantry: 5, Ship: 0, EliteInfantry: 1}
+	got := insufficientUnitsMsg(want, have)
+	exp := "insufficient units: infantry (need 20, have 5), ship (need 3, have 0), elite_infantry (need 4, have 1)"
+	if got != exp {
+		t.Errorf("insufficientUnitsMsg = %q, want %q", got, exp)
+	}
+}
+
+// When nothing is actually short (defensive — caller only invokes this on a
+// shortfall), fall back to the plain message rather than an empty list.
+func TestInsufficientUnitsMsgNoShortfall(t *testing.T) {
+	a := province.ArmyComposition{Infantry: 5}
+	if got := insufficientUnitsMsg(a, a); got != "insufficient units" {
+		t.Errorf("insufficientUnitsMsg = %q, want plain fallback", got)
 	}
 }

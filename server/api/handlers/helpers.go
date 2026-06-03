@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/province"
 )
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
@@ -45,6 +46,36 @@ func (e *insufficientGoodsError) Error() string {
 		parts[i] = fmt.Sprintf("%s (need %.0f, have %.0f)", s.Good, s.Need, s.Have)
 	}
 	return "insufficient resources: " + strings.Join(parts, ", ")
+}
+
+// insufficientUnitsMsg compares the army a caller tried to send (want) against
+// what the settlement actually holds (have) and lists every unit type that fell
+// short, so a blind "insufficient units" 422 becomes actionable — the caller
+// sees exactly which units it lacks and by how much (e.g. when an agent tries to
+// outpost with more troops than its fresh garrison holds). Unit keys are the
+// wire names the caller sends, so the message is machine-parseable.
+func insufficientUnitsMsg(want, have province.ArmyComposition) string {
+	units := []struct {
+		name string
+		w, h int
+	}{
+		{"infantry", want.Infantry, have.Infantry},
+		{"cavalry", want.Cavalry, have.Cavalry},
+		{"catapult", want.Catapult, have.Catapult},
+		{"priest", want.Priest, have.Priest},
+		{"ship", want.Ship, have.Ship},
+		{"elite_infantry", want.EliteInfantry, have.EliteInfantry},
+	}
+	var parts []string
+	for _, u := range units {
+		if u.w > u.h {
+			parts = append(parts, fmt.Sprintf("%s (need %d, have %d)", u.name, u.w, u.h))
+		}
+	}
+	if len(parts) == 0 {
+		return "insufficient units"
+	}
+	return "insufficient units: " + strings.Join(parts, ", ")
 }
 
 // deductGoods atomically deducts each good in costs from settlement_goods.
