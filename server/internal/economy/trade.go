@@ -55,6 +55,22 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 	defer tx.Rollback(ctx)
 
+	// Exactly-once claim: the worker marks the event done in a separate statement
+	// after this tx commits, so a crash in between would re-run this handler.
+	// trade_routes.resolved guards route-based legs, but messenger-trade legs
+	// (zero-UUID trade_route_id) have no route row — without this marker a retry
+	// would double-credit silver and double-schedule the goods return.
+	ct, err := tx.Exec(ctx,
+		`INSERT INTO processed_deliveries (event_id) VALUES ($1) ON CONFLICT DO NOTHING`,
+		e.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("claim delivery: %w", err)
+	}
+	if ct.RowsAffected() == 0 {
+		return nil // already processed in an earlier run
+	}
+
 	// Idempotency: only check trade_routes for route-based deliveries (zero UUID = direct silver leg).
 	hasRoute := p.TradeRouteID != (uuid.UUID{})
 	if hasRoute {
