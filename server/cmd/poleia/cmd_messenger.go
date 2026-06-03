@@ -62,8 +62,8 @@ func tradeAcceptCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Printf("Trade accepted · %.0f %s returning · gold paid: %.0f · arrives %v\n",
-				resp["quantity"], resp["good_key"], resp["gold_paid"], resp["returns_at"])
+			fmt.Printf("Trade accepted · %.0f %s incoming · silver paid: %.0f · goods arrive %v\n",
+				resp["quantity"], resp["good_key"], resp["silver_paid"], resp["goods_arrives_at"])
 			return nil
 		},
 	}

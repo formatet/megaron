@@ -48,6 +48,15 @@ func (e *insufficientGoodsError) Error() string {
 	return "insufficient resources: " + strings.Join(parts, ", ")
 }
 
+// insufficientTradeMsg renders the shortfall when a messenger trade cannot
+// settle, naming the party (buyer/seller), the good, and how much it holds —
+// so the agent learns whether to decline, restock, or counter instead of
+// retrying the same blind 422 forever (633 trade offers fired in playtest, most
+// dying on a bare "seller has insufficient goods").
+func insufficientTradeMsg(party, good string, need, have float64) string {
+	return fmt.Sprintf("%s has insufficient %s (need %.0f, have %.0f)", party, good, need, have)
+}
+
 // insufficientUnitsMsg compares the army a caller tried to send (want) against
 // what the settlement actually holds (have) and lists every unit type that fell
 // short, so a blind "insufficient units" 422 becomes actionable — the caller

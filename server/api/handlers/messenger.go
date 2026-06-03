@@ -405,7 +405,8 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		buyerSettlementID,
 	).Scan(&buyerGold)
 	if buyerGold < offerGold {
-		writeError(w, http.StatusUnprocessableEntity, "buyer has insufficient gold")
+		writeError(w, http.StatusUnprocessableEntity,
+			insufficientTradeMsg("buyer", "silver", offerGold, buyerGold))
 		return
 	}
 
@@ -436,7 +437,17 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		wantQty, destID, wantGood,
 	)
 	if err != nil || tag.RowsAffected() == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "seller has insufficient goods")
+		// Tell the accepting seller exactly how much of the requested good it
+		// holds, so a blind 422 becomes actionable (it can decline or restock
+		// instead of retrying forever). Mirrors the deductGoods shortfall style.
+		var have float64
+		_ = tx.QueryRow(r.Context(),
+			`SELECT COALESCE(amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate, 0)
+			   FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2`,
+			destID, wantGood,
+		).Scan(&have)
+		writeError(w, http.StatusUnprocessableEntity,
+			insufficientTradeMsg("seller", wantGood, wantQty, have))
 		return
 	}
 

@@ -66,6 +66,17 @@ func statusCmd() *cobra.Command {
 				}
 			}
 
+			// Completed buildings — so the agent doesn't re-queue what already exists.
+			if bs, ok := sett["buildings"].([]any); ok && len(bs) > 0 {
+				fmt.Println("\nBuildings")
+				for _, it := range bs {
+					m, _ := it.(map[string]any)
+					t, _ := m["type"].(string)
+					lvl, _ := m["level"].(float64)
+					fmt.Printf("  %-12s L%.0f\n", t, lvl)
+				}
+			}
+
 			unitLabels := map[string]string{
 				"infantry": "Hoplites", "cavalry": "Hippeis", "priest": "Hiereus",
 				"ship": "Trireme", "elite_infantry": "Agema", "catapult": "Siege",

@@ -63,3 +63,14 @@ func TestInsufficientUnitsMsgNoShortfall(t *testing.T) {
 		t.Errorf("insufficientUnitsMsg = %q, want plain fallback", got)
 	}
 }
+
+// A failed messenger trade must name the party, the good, and how much it holds
+// so the agent can decline/restock/counter instead of re-accepting forever.
+func TestInsufficientTradeMsg(t *testing.T) {
+	if got := insufficientTradeMsg("seller", "cedar", 100, 0); got != "seller has insufficient cedar (need 100, have 0)" {
+		t.Errorf("seller msg = %q", got)
+	}
+	if got := insufficientTradeMsg("buyer", "silver", 80, 12); got != "buyer has insufficient silver (need 80, have 12)" {
+		t.Errorf("buyer msg = %q", got)
+	}
+}
