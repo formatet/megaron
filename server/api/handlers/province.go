@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -688,8 +689,9 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct all building costs from settlement_goods atomically.
 	if err := deductGoods(r.Context(), h.pool, settlementID, spec.Costs); err != nil {
-		if err == errInsufficientGoods {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
+		var insErr *insufficientGoodsError
+		if errors.As(err, &insErr) {
+			writeError(w, http.StatusUnprocessableEntity, insErr.Error())
 		} else {
 			writeError(w, http.StatusInternalServerError, "could not deduct resources")
 		}
@@ -916,8 +918,9 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct all goods costs from settlement_goods atomically.
 	if err := deductGoods(r.Context(), h.pool, settlementID, totalCosts); err != nil {
-		if err == errInsufficientGoods {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient resources")
+		var insErr *insufficientGoodsError
+		if errors.As(err, &insErr) {
+			writeError(w, http.StatusUnprocessableEntity, insErr.Error())
 		} else {
 			writeError(w, http.StatusInternalServerError, fmt.Sprintf("could not deduct resources: %v", err))
 		}

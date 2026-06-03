@@ -3,11 +3,14 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
+	"sort"
+	"strings"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,32 +26,81 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
 
-// errInsufficientGoods is returned by deductGoods when stock is too low.
-var errInsufficientGoods = errors.New("insufficient goods")
+// goodShortfall reports one good the settlement cannot afford.
+type goodShortfall struct {
+	Good string  `json:"good"`
+	Need float64 `json:"need"`
+	Have float64 `json:"have"`
+}
+
+// insufficientGoodsError lists every good that fell short, so the API can tell
+// the caller exactly what to acquire (or trade for) instead of a blind 422.
+type insufficientGoodsError struct {
+	Short []goodShortfall
+}
+
+func (e *insufficientGoodsError) Error() string {
+	parts := make([]string, len(e.Short))
+	for i, s := range e.Short {
+		parts[i] = fmt.Sprintf("%s (need %.0f, have %.0f)", s.Good, s.Need, s.Have)
+	}
+	return "insufficient resources: " + strings.Join(parts, ", ")
+}
 
 // deductGoods atomically deducts each good in costs from settlement_goods.
-// Goods are deducted sequentially within the caller's DB pool (non-transactional).
-// Call inside a transaction if you need full atomicity across goods.
-// Returns errInsufficientGoods if any good lacks stock; returns a wrapped DB error otherwise.
+// All goods are checked and deducted inside one transaction: if ANY good lacks
+// stock, nothing is deducted and an *insufficientGoodsError (listing every
+// shortfall) is returned. This prevents the silent partial-drain that happened
+// when goods were deducted one-by-one on the pool and a later good failed.
 func deductGoods(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, costs map[string]float64) error {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// Pass 1: lock the rows and check effective (lazy-evaluated) stock.
+	var short []goodShortfall
 	for key, qty := range costs {
 		if qty <= 0 {
 			continue
 		}
-		tag, err := pool.Exec(ctx,
+		var have float64
+		err := tx.QueryRow(ctx,
+			`SELECT amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate
+			   FROM settlement_goods
+			  WHERE settlement_id = $1 AND good_key = $2
+			  FOR UPDATE`,
+			settlementID, key,
+		).Scan(&have)
+		if err == pgx.ErrNoRows {
+			have = 0 // settlement has never held this good
+		} else if err != nil {
+			return err
+		}
+		if have < qty {
+			short = append(short, goodShortfall{Good: key, Need: qty, Have: have})
+		}
+	}
+	if len(short) > 0 {
+		sort.Slice(short, func(i, j int) bool { return short[i].Good < short[j].Good })
+		return &insufficientGoodsError{Short: short}
+	}
+
+	// Pass 2: every good is affordable — deduct them all and commit.
+	for key, qty := range costs {
+		if qty <= 0 {
+			continue
+		}
+		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
 			     amount  = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
 			     calc_at = now()
-			 WHERE settlement_id = $2 AND good_key = $3
-			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+			 WHERE settlement_id = $2 AND good_key = $3`,
 			qty, settlementID, key,
-		)
-		if err != nil {
+		); err != nil {
 			return err
 		}
-		if tag.RowsAffected() == 0 {
-			return errInsufficientGoods
-		}
 	}
-	return nil
+	return tx.Commit(ctx)
 }
