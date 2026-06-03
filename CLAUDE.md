@@ -7,6 +7,28 @@ If code and this file conflict, trust the code, then fix this file.
 - **Before ending a session:** update `thalassa_todo.md` (living status, backlog, "Vägen framåt").
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
+- **Loose design dumps** (e.g. `frågor*` files in repo root) are an inbox, not a home: triage every point
+  into a todo line, a vault update, or a reasoned rejection — then delete the dump. Never leave it rotting in root.
+
+---
+
+## Design lens — Klafki (gate before building / triaging a feature)
+
+Klafkis bärande idé (*kategoriale Bildung*): innehåll förtjänar plats bara om det **öppnar världen** —
+en dubbelsidig öppning (*doppelseitige Erschließung*). Översatt: en mekanik förtjänar kod bara om den
+öppnar bronsåldersvärlden för en Wanax — inte om den bara lägger till en siffra att optimera.
+
+Kör varje mekanik — och varje `frågor`-punkt — genom de fem (buggar gateas ej; de fixas):
+1. **Exemplarisk** — exemplifierar den MVP-kärnan (geografi→brist→handel→diplomati→kingdom→kult→gudar),
+   eller är den en engångsgrej vid sidan om? *Faller den här → post-MVP, hur lockande den än är.*
+2. **Nuvärde** — vad betyder den för en Wanax som spelar *idag*? Märks den i upplevelsen?
+3. **Framtidsvärde** — öppnar den designrummet (Eras, Sjöfolket, kingdoms) eller är den en återvändsgränd?
+4. **Sakstruktur** — beståndsdelar, vad den **förutsätter att spelaren redan begriper**, vad den beror på
+   och vad som beror på den, samt vad som är den minimala kärnan att bevara (G1-paketordning, event-modellen).
+5. **Det konkreta fallet** — genom vilket *konkret fenomen* möter spelaren den först, och hur blir den
+   begriplig+användbar där (UI, keryx/Lawagetas-röst, actionabla felsträngar — för människa *och* LLM-agent)?
+
+(Vill du ha fyra: slå ihop 2+3 till en enda "betydelse"-fråga. De fem är dock Klafkis kanoniska antal.)
 
 ---
 
@@ -94,6 +116,11 @@ iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 **Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
 Settlement not Base · Kingdom not Alliance · Rite not Spell · March not Attack (verb) · Sea Peoples not Boss ·
 Collapse not Season-end · The Thalassa not The Sea.
+
+**Megaron-övergång (HARD, riktning):** Vi fasar **sakta** ut orden "Thalassa" och "Poleia" till förmån för
+**Megaron** (systemnamnet). Inget tvångsbyte i en sweep — men varje gång du ändå rör en yta där orden
+står (UI-text, ny kod, rubriker), välj Megaron-nomenklaturen. Permanent kvar: `terrain = "sea"` i DB.
+Mono-repo-målet temenos/megaron/keryx, se [[thalassa_todo]] "Projektbyte".
 
 ---
 
