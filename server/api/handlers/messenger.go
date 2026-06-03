@@ -239,6 +239,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		 WHERE m.world_id = $1
 		   AND ds.owner_id = $2
 		   AND m.status = 'delivered'
+		   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')
 		 ORDER BY m.arrives_at DESC LIMIT 30`,
 		worldID, playerID,
 	)
@@ -311,14 +312,27 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 
 	// Messenger must be delivered to one of the caller's settlements.
 	var destID, originID uuid.UUID
+	var offerStatus *string
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT m.destination_id, m.origin_id FROM messengers m
+		`SELECT m.destination_id, m.origin_id, m.trade_offer->>'status' FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.status = 'delivered'`,
 		messengerID, worldID, playerID,
-	).Scan(&destID, &originID)
+	).Scan(&destID, &originID, &offerStatus)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "messenger not found, not yours, or not yet arrived")
+		return
+	}
+
+	// A plain reply does NOT execute a trade. If this messenger carries a pending
+	// trade offer, point the caller at the verb that actually moves the goods —
+	// agents otherwise "accept" trades with prose ("Trade accepted, sending cedar")
+	// and nothing transfers.
+	if offerStatus != nil && *offerStatus == "pending" {
+		writeError(w, http.StatusConflict,
+			"this messenger carries a pending trade offer — replying does not execute it; "+
+				"use trade-accept --id "+messengerID.String()+" to accept (sends the goods) "+
+				"or trade-decline --id "+messengerID.String()+" to refuse")
 		return
 	}
 
