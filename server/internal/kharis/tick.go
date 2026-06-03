@@ -246,7 +246,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 }
 
 // applyDecay applies 1% daily decay to grain and timber stocks, resets
-// invasions_today, regenerates priest_strength, and adjusts population.
+// invasions_today, and adjusts population. (Rite success is driven by Kharis
+// mood, not a priest-strength stat — there is no priest_strength to regenerate.)
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	// Decay grain and timber by 1% per day; grain also consumed by population (0.5/person/day).
 	// Cedar is a luxury store-of-value (ädelträ) and does not rot.

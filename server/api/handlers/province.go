@@ -552,24 +552,48 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Return garrison to origin settlement from the resolved march record.
-	_, _ = tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		     infantry       = infantry       + COALESCE(ma.infantry, 0),
-		     cavalry        = cavalry        + COALESCE(ma.cavalry, 0),
-		     catapult       = catapult       + COALESCE(ma.catapult, 0),
-		     priest         = priest         + COALESCE(ma.priest, 0),
-		     ship           = ship           + COALESCE(ma.ship, 0),
-		     elite_infantry = elite_infantry + COALESCE(ma.elite_infantry, 0)
-		 FROM (
-		     SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
-		     FROM marching_armies
-		     WHERE target_id=$1 AND intent='outpost' AND resolved=true
-		     ORDER BY created_at DESC LIMIT 1
-		 ) ma
-		 WHERE settlements.province_id=$2`,
-		provinceID, outpostFeeds,
-	)
+	// Recall the garrison home as a return march — travel takes time (no teleport).
+	// Garrison size comes from the resolved outpost march that established it.
+	var gInf, gCav, gCat, gPri, gShip, gElite int
+	_ = tx.QueryRow(r.Context(),
+		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+		 FROM marching_armies
+		 WHERE target_id=$1 AND intent='outpost' AND resolved=true
+		 ORDER BY created_at DESC LIMIT 1`,
+		provinceID,
+	).Scan(&gInf, &gCav, &gCat, &gPri, &gShip, &gElite)
+
+	var returnMarchID uuid.UUID
+	var returnsAt time.Time
+	if gInf+gCav+gCat+gPri+gShip+gElite > 0 {
+		// Return-trip = full distance outpost→home × terrain cost (garrison is stationed, marches all the way).
+		var outpostTerrain string
+		_ = tx.QueryRow(r.Context(), `SELECT terrain_type FROM provinces WHERE id=$1`, provinceID).Scan(&outpostTerrain)
+		if outpostTerrain == "" {
+			outpostTerrain = "plains"
+		}
+		var oQ, oR, hQ, hR int
+		_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id=$1`, provinceID).Scan(&oQ, &oR)
+		_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id=$1`, outpostFeeds).Scan(&hQ, &hR)
+		dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: hQ, R: hR})
+		returnHours := float64(dist) * province.TerrainMoveHours(outpostTerrain)
+		if returnHours < 0.1 {
+			returnHours = 0.1 // minimum 6 minutes
+		}
+		returnsAt = h.clk.Now().Add(time.Duration(returnHours * float64(time.Hour)))
+		if err := tx.QueryRow(r.Context(),
+			`INSERT INTO marching_armies
+			 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11)
+			 RETURNING id`,
+			worldID, provinceID, outpostFeeds,
+			gInf, gCav, gCat, gPri, gShip, gElite,
+			h.clk.Now(), returnsAt,
+		).Scan(&returnMarchID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule garrison return march")
+			return
+		}
+	}
 
 	// Free the province.
 	if _, err := tx.Exec(r.Context(),
@@ -585,7 +609,16 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{"status": "outpost_recalled", "province_id": provinceID})
+	// Schedule arrival of the garrison's return march (outside tx — idempotent).
+	if returnMarchID != uuid.Nil {
+		_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledArmyArrival,
+			combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, returnsAt)
+	}
+	resp := map[string]any{"status": "outpost_recalled", "province_id": provinceID}
+	if returnMarchID != uuid.Nil {
+		resp["garrison_returns_at"] = returnsAt
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // Build handles POST /worlds/:worldID/provinces/:provinceID/build.
