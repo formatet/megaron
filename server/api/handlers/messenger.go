@@ -138,7 +138,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
 		return
 	}
-	arrivesAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
+	arrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
 
 	var tradeOfferJSON []byte
 	if req.TradeOffer != nil {
@@ -372,7 +372,7 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		originID,
 	).Scan(&oQ, &oR)
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
-	returnsAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
+	returnsAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
 
 	_, err = h.pool.Exec(r.Context(),
 		`UPDATE messengers SET reply_text = $1, status = 'returning' WHERE id = $2`,
@@ -513,7 +513,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 
 	// Leg 3: schedule silver delivery to seller (physical travel).
 	// When silver arrives the delivery handler will chain goods dispatch (leg 4).
-	silverArrivesAt := h.clk.Now().Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
+	silverArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
 	if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 		map[string]any{
 			"destination_id":     destID,           // seller receives silver
@@ -538,7 +538,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	goodsArrivesAt := silverArrivesAt.Add(time.Duration(float64(dist) * 0.5 * float64(time.Hour)))
+	goodsArrivesAt := silverArrivesAt.Add(messenger.TradeTravelDuration(dist))
 	writeJSON(w, http.StatusOK, map[string]any{
 		"good_key":          wantGood,
 		"quantity":          wantQty,

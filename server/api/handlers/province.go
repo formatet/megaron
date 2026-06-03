@@ -15,6 +15,7 @@ import (
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
 )
 
@@ -502,60 +503,9 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	tx, err := h.pool.Begin(r.Context())
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
-		return
-	}
-	defer tx.Rollback(r.Context())
-
-	// Load ledgered flows.
-	rows, err := tx.Query(r.Context(),
-		`SELECT settlement_id, good_key, rate FROM outpost_flows WHERE province_id=$1`,
-		provinceID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load outpost flows")
-		return
-	}
-	type flow struct {
-		settlementID uuid.UUID
-		key          string
-		rate         float64
-	}
-	var flows []flow
-	for rows.Next() {
-		var f flow
-		if err := rows.Scan(&f.settlementID, &f.key, &f.rate); err == nil {
-			flows = append(flows, f)
-		}
-	}
-	rows.Close()
-
-	// Settle-then-subtract exact ledgered rates.
-	for _, f := range flows {
-		if _, err := tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount  = LEAST(cap, amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate),
-			     rate    = GREATEST(0, rate - $3),
-			     calc_at = now()
-			 WHERE settlement_id=$1 AND good_key=$2`,
-			f.settlementID, f.key, f.rate,
-		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not remove outpost flow")
-			return
-		}
-	}
-
-	if _, err := tx.Exec(r.Context(), `DELETE FROM outpost_flows WHERE province_id=$1`, provinceID); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not delete outpost flows")
-		return
-	}
-
-	// Recall the garrison home as a return march — travel takes time (no teleport).
 	// Garrison size comes from the resolved outpost march that established it.
 	var gInf, gCav, gCat, gPri, gShip, gElite int
-	_ = tx.QueryRow(r.Context(),
+	_ = h.pool.QueryRow(r.Context(),
 		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
 		 FROM marching_armies
 		 WHERE target_id=$1 AND intent='outpost' AND resolved=true
@@ -563,44 +513,72 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		provinceID,
 	).Scan(&gInf, &gCav, &gCat, &gPri, &gShip, &gElite)
 
-	var returnMarchID uuid.UUID
-	var returnsAt time.Time
-	if gInf+gCav+gCat+gPri+gShip+gElite > 0 {
-		// Return-trip = full distance outpost→home × terrain cost (garrison is stationed, marches all the way).
-		var outpostTerrain string
-		_ = tx.QueryRow(r.Context(), `SELECT terrain_type FROM provinces WHERE id=$1`, provinceID).Scan(&outpostTerrain)
-		if outpostTerrain == "" {
-			outpostTerrain = "plains"
-		}
-		var oQ, oR, hQ, hR int
-		_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id=$1`, provinceID).Scan(&oQ, &oR)
-		_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id=$1`, outpostFeeds).Scan(&hQ, &hR)
-		dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: hQ, R: hR})
-		returnHours := float64(dist) * province.TerrainMoveHours(outpostTerrain)
-		if returnHours < 0.1 {
-			returnHours = 0.1 // minimum 6 minutes
-		}
-		returnsAt = h.clk.Now().Add(time.Duration(returnHours * float64(time.Hour)))
-		if err := tx.QueryRow(r.Context(),
-			`INSERT INTO marching_armies
-			 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11)
-			 RETURNING id`,
-			worldID, provinceID, outpostFeeds,
-			gInf, gCav, gCat, gPri, gShip, gElite,
-			h.clk.Now(), returnsAt,
-		).Scan(&returnMarchID); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not schedule garrison return march")
-			return
-		}
+	// Outpost position + terrain; home (feeding) settlement position + commanding settlement id.
+	var outpostTerrain string
+	var oQ, oR, hQ, hR int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT terrain_type, map_q, map_r FROM provinces WHERE id=$1`, provinceID,
+	).Scan(&outpostTerrain, &oQ, &oR)
+	if outpostTerrain == "" {
+		outpostTerrain = "plains"
+	}
+	var homeSettlementID uuid.UUID
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT s.id, p.map_q, p.map_r FROM provinces p
+		 JOIN settlements s ON s.province_id = p.id WHERE p.id=$1`,
+		outpostFeeds,
+	).Scan(&homeSettlementID, &hQ, &hR); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not locate home settlement")
+		return
 	}
 
-	// Free the province.
-	if _, err := tx.Exec(r.Context(),
-		`UPDATE provinces SET territory_state='free', owner_id=NULL, outpost_feeds=NULL, garrison_strength=0 WHERE id=$1`,
-		provinceID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not free province")
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Dispatch a visible recall messenger from home toward the outpost. The outpost keeps producing
+	// until the order arrives (ScheduledRecallArrival); only then is it torn down and the garrison sent home.
+	dist := province.HexDistance(province.MapPosition{Q: hQ, R: hR}, province.MapPosition{Q: oQ, R: oR})
+	messengerArrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+
+	var messengerID uuid.UUID
+	if err := tx.QueryRow(r.Context(),
+		`INSERT INTO messengers
+		     (world_id, sender_id, origin_id, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at)
+		 VALUES ($1,$2,$3,NULL,$4,'outbound','recall',$5,$6,$7,$8,$9)
+		 RETURNING id`,
+		worldID, playerID, homeSettlementID, "Recall order — abandon the outpost and return home.",
+		hQ, hR, oQ, oR, messengerArrivesAt,
+	).Scan(&messengerID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch recall messenger")
+		return
+	}
+
+	payload := messenger.RecallOutpostPayload{
+		Kind:           "outpost",
+		WorldID:        worldID,
+		MessengerID:    messengerID,
+		ProvinceID:     provinceID,
+		HomeID:         outpostFeeds,
+		Infantry:       gInf,
+		Cavalry:        gCav,
+		Catapult:       gCat,
+		Priest:         gPri,
+		Ship:           gShip,
+		EliteInfantry:  gElite,
+		OutpostTerrain: outpostTerrain,
+		OutpostQ:       oQ,
+		OutpostR:       oR,
+		HomeQ:          hQ,
+		HomeR:          hR,
+	}
+	// Messenger row + recall-arrival event committed atomically.
+	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledRecallArrival,
+		payload, messengerArrivesAt); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule recall arrival")
 		return
 	}
 
@@ -609,16 +587,13 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Schedule arrival of the garrison's return march (outside tx — idempotent).
-	if returnMarchID != uuid.Nil {
-		_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledArmyArrival,
-			combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, returnsAt)
-	}
-	resp := map[string]any{"status": "outpost_recalled", "province_id": provinceID}
-	if returnMarchID != uuid.Nil {
-		resp["garrison_returns_at"] = returnsAt
-	}
-	writeJSON(w, http.StatusOK, resp)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":               "recall_messenger_sent",
+		"province_id":          provinceID,
+		"messenger_id":         messengerID,
+		"messenger_arrives_at": messengerArrivesAt,
+		"messenger_distance":   dist,
+	})
 }
 
 // Build handles POST /worlds/:worldID/provinces/:provinceID/build.
@@ -1494,7 +1469,9 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 }
 
 // RecallMarch handles DELETE /worlds/:worldID/provinces/:provinceID/marches/:marchID.
-// Returns the army to the origin settlement without combat.
+// Issues a recall order: a messenger is dispatched from the home settlement to the
+// army's destination. The return march begins only when the messenger arrives.
+// Total recall time = messenger travel out + return march home.
 func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -1535,19 +1512,17 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		Resolved      bool
 		OriginID      uuid.UUID
 		TargetID      uuid.UUID
-		DepartsAt     time.Time
-		ArrivesAt     time.Time
 	}
 	err = tx.QueryRow(r.Context(),
 		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, resolved,
-		        origin_id, target_id, departs_at, arrives_at
+		        origin_id, target_id
 		 FROM marching_armies
 		 WHERE id = $1 AND world_id = $2 AND origin_id = $3
 		 FOR UPDATE`,
 		marchID, worldID, provinceID,
 	).Scan(&march.Infantry, &march.Cavalry, &march.Catapult, &march.Priest,
 		&march.Ship, &march.EliteInfantry, &march.Resolved,
-		&march.OriginID, &march.TargetID, &march.DepartsAt, &march.ArrivesAt)
+		&march.OriginID, &march.TargetID)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "march not found or not yours")
 		return
@@ -1557,73 +1532,68 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify player owns the origin province.
+	// Verify player owns the origin province; capture the commanding settlement for the messenger.
 	var ownerID *uuid.UUID
+	var originSettlementID uuid.UUID
 	_ = tx.QueryRow(r.Context(),
-		`SELECT owner_id FROM settlements WHERE province_id = $1 AND world_id = $2`,
+		`SELECT id, owner_id FROM settlements WHERE province_id = $1 AND world_id = $2`,
 		provinceID, worldID,
-	).Scan(&ownerID)
+	).Scan(&originSettlementID, &ownerID)
 	if ownerID == nil || *ownerID != playerID {
 		writeError(w, http.StatusForbidden, "not your province")
 		return
 	}
 
-	// Cancel outbound march.
-	if _, err := tx.Exec(r.Context(),
-		`UPDATE marching_armies SET resolved = true WHERE id = $1`, marchID); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not recall march")
-		return
-	}
+	// The army keeps marching — command is not instant. We do NOT resolve the outbound march here;
+	// a recall messenger is dispatched, and only when it reaches the army (ScheduledRecallArrival)
+	// does the army turn around. If the army arrives and fights first, the recall simply misses.
 
-	// Schedule return march: army marches back from how far they've gotten.
-	// Return trip duration = progress × original_distance × terrain_cost.
-	now := h.clk.Now()
-	total := march.ArrivesAt.Sub(march.DepartsAt)
-	var elapsed time.Duration
-	if now.After(march.DepartsAt) {
-		elapsed = now.Sub(march.DepartsAt)
-		if elapsed > total {
-			elapsed = total
-		}
-	}
-	progress := 0.0
-	if total > 0 {
-		progress = float64(elapsed) / float64(total)
-	}
-
-	// Load origin terrain for return-trip cost.
-	var originTerrain string
-	_ = tx.QueryRow(r.Context(),
-		`SELECT terrain_type FROM provinces WHERE id = $1`, provinceID,
-	).Scan(&originTerrain)
-	if originTerrain == "" {
-		originTerrain = "plains"
-	}
-
-	// Compute hex distance.
+	// Hex positions of origin (home) and target (where the army is heading).
 	var oQ, oR, tQ, tR int
 	_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id = $1`, march.OriginID).Scan(&oQ, &oR)
 	_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id = $1`, march.TargetID).Scan(&tQ, &tR)
-	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: tQ, R: tR})
-	hexesCovered := progress * float64(dist)
-	returnHours := hexesCovered * province.TerrainMoveHours(originTerrain)
-	if returnHours < 0.1 {
-		returnHours = 0.1 // minimum 6 minutes
-	}
-	returnsAt := now.Add(time.Duration(returnHours * float64(time.Hour)))
 
-	var returnMarchID uuid.UUID
-	err = tx.QueryRow(r.Context(),
-		`INSERT INTO marching_armies
-		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11)
+	// Dispatch a visible recall messenger toward the army's target province.
+	// Assumption: it aims at the destination, not the army's mid-march position — no interpolation,
+	// always physically safe (never faster than physics).
+	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: tQ, R: tR})
+	messengerArrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+
+	var messengerID uuid.UUID
+	if err := tx.QueryRow(r.Context(),
+		`INSERT INTO messengers
+		     (world_id, sender_id, origin_id, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at)
+		 VALUES ($1,$2,$3,NULL,$4,'outbound','recall',$5,$6,$7,$8,$9)
 		 RETURNING id`,
-		worldID, march.TargetID, march.OriginID,
-		march.Infantry, march.Cavalry, march.Catapult, march.Priest, march.Ship, march.EliteInfantry,
-		now, returnsAt,
-	).Scan(&returnMarchID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule return march")
+		worldID, playerID, originSettlementID, "Recall order — return home.",
+		oQ, oR, tQ, tR, messengerArrivesAt,
+	).Scan(&messengerID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch recall messenger")
+		return
+	}
+
+	payload := messenger.RecallMarchPayload{
+		Kind:          "march",
+		WorldID:       worldID,
+		MessengerID:   messengerID,
+		MarchID:       marchID,
+		Infantry:      march.Infantry,
+		Cavalry:       march.Cavalry,
+		Catapult:      march.Catapult,
+		Priest:        march.Priest,
+		Ship:          march.Ship,
+		EliteInfantry: march.EliteInfantry,
+		OriginQ:       oQ,
+		OriginR:       oR,
+		TargetQ:       tQ,
+		TargetR:       tR,
+		OriginID:      march.OriginID,
+		TargetID:      march.TargetID,
+	}
+	// Messenger row + recall-arrival event committed atomically.
+	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledRecallArrival,
+		payload, messengerArrivesAt); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule recall arrival")
 		return
 	}
 
@@ -1632,11 +1602,12 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Schedule arrival of return march (outside tx — idempotent).
-	_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledArmyArrival,
-		combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, returnsAt)
-
-	writeJSON(w, http.StatusOK, map[string]any{"recalled": true, "returns_at": returnsAt})
+	writeJSON(w, http.StatusOK, map[string]any{
+		"recalled":             true,
+		"messenger_id":         messengerID,
+		"messenger_arrives_at": messengerArrivesAt,
+		"messenger_distance":   dist,
+	})
 }
 
 // TradeRoutes handles GET /worlds/:worldID/provinces/:provinceID/trade.

@@ -536,12 +536,14 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, op.map_q, op.map_r, dp.map_q, dp.map_r, m.sent_at, m.arrives_at
+		`SELECT m.id, op.map_q, op.map_r,
+		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r),
+		        m.sent_at, m.arrives_at
 		 FROM messengers m
 		 JOIN settlements os ON os.id = m.origin_id
 		 JOIN provinces op ON op.id = os.province_id
-		 JOIN settlements ds ON ds.id = m.destination_id
-		 JOIN provinces dp ON dp.id = ds.province_id
+		 LEFT JOIN settlements ds ON ds.id = m.destination_id
+		 LEFT JOIN provinces dp ON dp.id = ds.province_id
 		 WHERE m.world_id = $1 AND m.status = 'outbound'`,
 		worldID,
 	)
