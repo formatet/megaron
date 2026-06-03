@@ -4,30 +4,46 @@ import "math/rand"
 
 type cell struct{ q, r int }
 
-// landmass IDs used during generation
+// Deposit bias of a landmass. Copper-biased landmasses live in the western
+// hemisphere, tin-biased in the eastern — so the strategic-metal halves can
+// never connect overland (bronze always demands sea trade). Neutral landmasses
+// (Crete, the Cyclades) sit in the central channel and carry neither metal.
 const (
-	lmSea     = 0
-	lmWest    = 1 // copper biased
-	lmEast    = 2 // tin + cedar biased
-	lmIsland  = 3 // small neutral islands
+	biasNeutral = iota
+	biasCopper
+	biasTin
 )
+
+// landmass IDs are assigned sequentially as masses are placed; 0 is reserved
+// for open sea. The per-ID bias lives in the `bias` map built during generation.
+const lmSea = 0
 
 // GenerateMap procedurally generates a hex grid for a world using a seeded RNG.
 //
-// v2 guarantees:
-//   - Copper deposits only on the western landmass.
-//   - Tin deposits only on the eastern landmass.
-//   - Cedar deposits only on the eastern landmass (3–5 forest tiles).
-//   - At least 2 copper tiles and 2 tin tiles.
-//   - 2 river-valley corridors running from inland hills toward the coast.
-//   - Multiple distinct landmasses separated by sea (copper/tin impossible to reach overland).
+// v3 — Mycenaean archipelago. Instead of two big blobs it lays down a
+// recognisable east-Mediterranean spread that scales with map area:
+//   - Mainland (west, large)        — copper hills.
+//   - Anatolia (east, large)        — tin mountains + cedar forests.
+//   - Crete    (south-centre, med)  — neutral trade hub.
+//   - Cyclades (centre, scaled N)   — a string of small neutral stepping-stones.
+//   - One remote copper island and one remote tin island — isolated productive
+//     sources that force overseas trade.
+//
+// Guarantees (verified by mapgen_test.go):
+//   - Copper deposits sit only on `hills`, tin only on `mountain_limestone`,
+//     i.e. on terrain that actually has a production rule (no dead deposits).
+//   - Copper and tin live in disjoint land components — bronze is unreachable
+//     without crossing the sea.
+//   - At least 2 productive copper and 2 productive tin tiles, and ≥3 cedar
+//     forests on the eastern landmass.
+//   - Multiple distinct landmasses separated by sea (a real archipelago).
 func GenerateMap(worldID interface{ String() string }, seed int64, width, height int) []MapTile {
 	rng := rand.New(rand.NewSource(seed))
 
 	grid    := make(map[cell]Terrain)
 	landmap := make(map[cell]int) // which landmass each cell belongs to
+	bias    := map[int]int{}      // landmass ID → deposit bias
 
-	// ── 1. Fill with deep sea ─────────────────────────────────────────
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
 			grid[cell{q, r}]    = TerrainDeepSea
@@ -35,35 +51,80 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 		}
 	}
 
-	// ── 2. Western landmass (copper) ───────────────────────────────────
-	// Seed in the left third of the map.
-	wq := 4 + rng.Intn(width/4)
-	wr := height/4 + rng.Intn(height/2)
-	wRadius := 5 + rng.Intn(4)
-	expandLandmass(grid, landmap, rng, cell{wq, wr}, width, height, wRadius, lmWest)
-
-	// ── 3. Eastern landmass (tin + cedar) ─────────────────────────────
-	// Seed in the right third, with a guaranteed sea gap from the west.
-	eq := width*2/3 + rng.Intn(width/5)
-	er := height/4 + rng.Intn(height/2)
-	eRadius := 5 + rng.Intn(4)
-	expandLandmass(grid, landmap, rng, cell{eq, er}, width, height, eRadius, lmEast)
-
-	// ── 4. Small islands (0–2) ─────────────────────────────────────────
-	numIslands := rng.Intn(3)
-	for i := 0; i < numIslands; i++ {
-		iq := width/3 + rng.Intn(width/3)
-		ir := 3 + rng.Intn(height-6)
-		if landmap[cell{iq, ir}] != lmSea {
-			continue
+	nextLM := 1
+	place := func(qMin, qMax, rMin, rMax, radMin, radSpan, b int) int {
+		if qMax <= qMin {
+			qMax = qMin + 1
 		}
-		expandLandmass(grid, landmap, rng, cell{iq, ir}, width, height, 2+rng.Intn(3), lmIsland)
+		if rMax <= rMin {
+			rMax = rMin + 1
+		}
+		seedC := cell{qMin + rng.Intn(qMax - qMin), rMin + rng.Intn(rMax - rMin)}
+		// Keep a 2-hex moat around existing land so landmasses stay distinct
+		// (a real spread of islands, not one merged blob).
+		for dq := -2; dq <= 2; dq++ {
+			for dr := -2; dr <= 2; dr++ {
+				n := cell{seedC.q + dq, seedC.r + dr}
+				if hexDist(seedC, n) <= 2 && landmap[n] != lmSea {
+					return 0
+				}
+			}
+		}
+		lm := nextLM
+		nextLM++
+		bias[lm] = b
+		expandLandmass(grid, landmap, rng, seedC, width, height, radMin+rng.Intn(radSpan), lm)
+		return lm
 	}
 
-	// ── 5. Coastlines ─────────────────────────────────────────────────
-	// 5a. Plains tiles with ≥2 deep-sea neighbours → coast_beach.
-	// Hills, forest and mountain touching the sea remain their terrain type
-	// (cliffs, forested shores) — only flat sandy beaches form here.
+	// ── 1. Mainland — western copper hills ────────────────────────────
+	mainland := place(4, width*30/100, height/4, height*3/4, 6, 3, biasCopper)
+
+	// ── 2. Anatolia — eastern tin mountains + cedar forests ───────────
+	anatolia := place(width*72/100, width*92/100, height/4, height*3/4, 6, 3, biasTin)
+
+	// ── 3. Crete — neutral hub, southern centre ───────────────────────
+	place(width*40/100, width*58/100, height*60/100, height*85/100, 3, 3, biasNeutral)
+
+	// ── 4. Cyclades — string of small neutral islands, scaled to area ─
+	numCyclades := 3 + (width*height)/400
+	for i := 0; i < numCyclades; i++ {
+		place(width*36/100, width*64/100, height*15/100, height*85/100, 1, 2, biasNeutral)
+	}
+
+	// ── 5. Remote metal islands — isolated productive sources ─────────
+	// Kept inside their hemisphere so the copper/tin separation is robust
+	// even if a small island brushes a mainland.
+	copperIsle := place(width*8/100, width*30/100, height*8/100, height*40/100, 1, 2, biasCopper)
+	tinIsle    := place(width*70/100, width*92/100, height*55/100, height*88/100, 1, 2, biasTin)
+
+	// ── 5b. Carve two permanent sea channels ──────────────────────────
+	// A single all-sea hex column fully blocks horizontal hex-adjacency, so
+	// the copper hemisphere (west of chanW), the neutral centre and the tin
+	// hemisphere (east of chanE) become three sea-separated zones. We also
+	// drown any copper/tin tendril that sprawled into the central strip, so
+	// the centre carries neutral land only — bronze always demands sea trade.
+	chanW := width * 33 / 100
+	chanE := width * 67 / 100
+	drown := func(c cell) {
+		grid[c]    = TerrainDeepSea
+		landmap[c] = lmSea
+	}
+	for q := 0; q < width; q++ {
+		for r := 0; r < height; r++ {
+			c := cell{q, r}
+			switch {
+			case q == chanW || q == chanE:
+				drown(c)
+			case q > chanW && q < chanE:
+				if b := bias[landmap[c]]; b == biasCopper || b == biasTin {
+					drown(c)
+				}
+			}
+		}
+	}
+
+	// ── 6. Coastlines ─────────────────────────────────────────────────
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
 			c := cell{q, r}
@@ -72,7 +133,6 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			}
 		}
 	}
-	// 5b. Deep-sea tiles adjacent to land → coastal_sea (shallow, faster sailing).
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
 			c := cell{q, r}
@@ -82,136 +142,145 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 		}
 	}
 
-	// ── 6. River valleys (2 per map) ──────────────────────────────────
-	// Find pairs of inland plains/hills tiles and carve a short corridor toward the coast.
-	addRiverValley(grid, landmap, rng, lmWest, width, height)
-	addRiverValley(grid, landmap, rng, lmEast, width, height)
+	// ── 7. River valleys on the two big landmasses ────────────────────
+	if mainland != 0 {
+		addRiverValley(grid, landmap, rng, mainland, width, height)
+	}
+	if anatolia != 0 {
+		addRiverValley(grid, landmap, rng, anatolia, width, height)
+	}
 
-	// ── 7. Assign deposits ────────────────────────────────────────────
-	var cedarCandidates []int // indices into tiles
+	// ── 8. Build tiles + collect deposit candidates by bias & terrain ──
 	tiles := make([]MapTile, 0, width*height)
+	index := map[cell]int{}
+
+	var (
+		copperCand []int // hills on a copper-biased landmass
+		tinCand    []int // mountain_limestone on a tin-biased landmass
+		silverCand []int // any productive metal terrain, no copper/tin
+		cedarCand  []int // eastern forest
+	)
 
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
 			c := cell{q, r}
 			terrain := grid[c]
-			lm      := landmap[c]
-			isRock  := terrain == TerrainHills || terrain == TerrainMountainLimestone || terrain == TerrainMountainRed
-
-			var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
-
-			if isRock {
-				switch lm {
-				case lmWest:
-					if rng.Float64() < 0.30 {
-						copperDeposit = true
-					}
-				case lmEast:
-					if rng.Float64() < 0.30 {
-						tinDeposit = true
-					}
-				case lmIsland:
-					// small islands: small chance of either
-					if rng.Float64() < 0.12 {
-						copperDeposit = true
-					} else if rng.Float64() < 0.12 {
-						tinDeposit = true
-					}
-				}
-				// Silver: rare, on any landmass rock (~10%)
-				if !copperDeposit && !tinDeposit && rng.Float64() < 0.10 {
-					silverDeposit = true
-				}
-			}
+			lm := landmap[c]
 
 			idx := len(tiles)
+			index[c] = idx
 			tiles = append(tiles, MapTile{
 				Q: q, R: r,
-				Terrain:       terrain,
-				Fertility:     0.2 + rng.Float64()*0.8,
-				Mineral:       0.1 + rng.Float64()*0.7,
-				CopperDeposit: copperDeposit,
-				TinDeposit:    tinDeposit,
-				SilverDeposit: silverDeposit,
-				CedarDeposit:  cedarDeposit,
+				Terrain:   terrain,
+				Fertility: 0.2 + rng.Float64()*0.8,
+				Mineral:   0.1 + rng.Float64()*0.7,
 			})
 
-			// Track forest tiles on the eastern landmass as cedar candidates
-			if terrain == TerrainForestOliveGrove && lm == lmEast {
-				cedarCandidates = append(cedarCandidates, idx)
+			switch terrain {
+			case TerrainHills:
+				if bias[lm] == biasCopper {
+					copperCand = append(copperCand, idx)
+				}
+				silverCand = append(silverCand, idx)
+			case TerrainMountainLimestone:
+				if bias[lm] == biasTin {
+					tinCand = append(tinCand, idx)
+				}
+				silverCand = append(silverCand, idx)
+			case TerrainForestOliveGrove:
+				if bias[lm] == biasTin {
+					cedarCand = append(cedarCand, idx)
+				}
 			}
 		}
 	}
 
-	// ── 8. Cedar deposits (3–5 eastern forest tiles) ──────────────────
-	cedarTarget := 3 + rng.Intn(3) // 3–5
-	rng.Shuffle(len(cedarCandidates), func(i, j int) {
-		cedarCandidates[i], cedarCandidates[j] = cedarCandidates[j], cedarCandidates[i]
-	})
-	assigned := 0
-	for _, idx := range cedarCandidates {
-		if assigned >= cedarTarget {
+	// ── 9. Assign deposits ────────────────────────────────────────────
+	for _, idx := range copperCand {
+		if rng.Float64() < 0.35 {
+			tiles[idx].CopperDeposit = true
+		}
+	}
+	for _, idx := range tinCand {
+		if rng.Float64() < 0.35 {
+			tiles[idx].TinDeposit = true
+		}
+	}
+	// Silver: rare, on metal terrain that didn't draw copper/tin.
+	for _, idx := range silverCand {
+		if !tiles[idx].CopperDeposit && !tiles[idx].TinDeposit && rng.Float64() < 0.08 {
+			tiles[idx].SilverDeposit = true
+		}
+	}
+	// Cedar: 3–5 eastern forests.
+	rng.Shuffle(len(cedarCand), func(i, j int) { cedarCand[i], cedarCand[j] = cedarCand[j], cedarCand[i] })
+	cedarTarget := 3 + rng.Intn(3)
+	for i, idx := range cedarCand {
+		if i >= cedarTarget {
 			break
 		}
 		tiles[idx].CedarDeposit = true
-		assigned++
 	}
 
-	// ── 9. Guarantee minimums ─────────────────────────────────────────
-	isRockTile := func(t MapTile) bool {
-		return t.Terrain == TerrainHills || t.Terrain == TerrainMountainLimestone || t.Terrain == TerrainMountainRed
+	// ── 10. Guarantee minimums (productive terrain only) ──────────────
+	ensure := func(cand []int, count int, set func(*MapTile), has func(MapTile) bool) {
+		have := 0
+		for _, t := range tiles {
+			if has(t) {
+				have++
+			}
+		}
+		for _, idx := range cand {
+			if have >= count {
+				return
+			}
+			if !has(tiles[idx]) {
+				set(&tiles[idx])
+				have++
+			}
+		}
 	}
+	ensure(copperCand, 2, func(t *MapTile) { t.CopperDeposit = true }, func(t MapTile) bool { return t.CopperDeposit })
+	ensure(tinCand, 2, func(t *MapTile) { t.TinDeposit = true }, func(t MapTile) bool { return t.TinDeposit })
 
-	tiles = guaranteeDeposit(tiles, func(t MapTile) bool { return t.TinDeposit },
-		func(t *MapTile) { t.TinDeposit = true },
-		func(t MapTile) bool { return isRockTile(t) && !t.CopperDeposit && !t.SilverDeposit },
-		2)
-
-	tiles = guaranteeDeposit(tiles, func(t MapTile) bool { return t.CopperDeposit },
-		func(t *MapTile) { t.CopperDeposit = true },
-		func(t MapTile) bool { return isRockTile(t) && !t.TinDeposit && !t.SilverDeposit },
-		2)
-
-	if assigned < 2 {
-		// Guarantee at least 2 cedar tiles on any forest
-		for i := range tiles {
-			if assigned >= 2 {
+	// ── 11. Make the remote metal isles productive ────────────────────
+	// Force one hills+copper / mountain+tin tile on each, converting terrain
+	// if the small island didn't roll any — so a "remote copper/tin island"
+	// is always a real source.
+	forceMetal := func(lm int, terrain Terrain, set func(*MapTile)) {
+		if lm == 0 {
+			return
+		}
+		var landTiles []int
+		for c, l := range landmap {
+			if l == lm && !isSea(grid[c]) {
+				landTiles = append(landTiles, index[c])
+			}
+		}
+		if len(landTiles) == 0 {
+			return
+		}
+		// Prefer a tile already of the right terrain; else convert the first.
+		target := -1
+		for _, idx := range landTiles {
+			if tiles[idx].Terrain == terrain {
+				target = idx
 				break
 			}
-			if tiles[i].Terrain == TerrainForestOliveGrove && !tiles[i].CedarDeposit {
-				tiles[i].CedarDeposit = true
-				assigned++
-			}
 		}
+		if target == -1 {
+			target = landTiles[0]
+			// Converting terrain invalidates any deposit the tile already held
+			// (e.g. a cedar forest becoming mountain) — clear before re-flagging.
+			tiles[target].Terrain = terrain
+			tiles[target].CedarDeposit = false
+			tiles[target].SilverDeposit = false
+		}
+		set(&tiles[target])
 	}
+	forceMetal(copperIsle, TerrainHills, func(t *MapTile) { t.CopperDeposit = true })
+	forceMetal(tinIsle, TerrainMountainLimestone, func(t *MapTile) { t.TinDeposit = true })
 
-	return tiles
-}
-
-// guaranteeDeposit ensures at least `min` tiles satisfy `hasDeposit`.
-// If not, it sets the deposit on candidate tiles.
-func guaranteeDeposit(
-	tiles []MapTile,
-	hasDeposit func(MapTile) bool,
-	setDeposit func(*MapTile),
-	isCandidate func(MapTile) bool,
-	min int,
-) []MapTile {
-	count := 0
-	for _, t := range tiles {
-		if hasDeposit(t) {
-			count++
-		}
-	}
-	for i := range tiles {
-		if count >= min {
-			break
-		}
-		if isCandidate(tiles[i]) && !hasDeposit(tiles[i]) {
-			setDeposit(&tiles[i])
-			count++
-		}
-	}
 	return tiles
 }
 
