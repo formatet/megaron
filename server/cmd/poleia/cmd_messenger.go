@@ -106,7 +106,24 @@ func outboxCmd() *cobra.Command {
 		Short: "List sent messengers and their pending trade offers",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, cfg.ProvinceID)
+			// Resolve own settlement_id from the province markers (cfg stores province_id, not settlement_id).
+			provinces, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
+			if err != nil {
+				return err
+			}
+			var markers []map[string]any
+			_ = json.Unmarshal(provinces, &markers)
+			var ownSettlementID string
+			for _, m := range markers {
+				if own, _ := m["own"].(bool); own {
+					ownSettlementID, _ = m["settlement_id"].(string)
+					break
+				}
+			}
+			if ownSettlementID == "" {
+				return fmt.Errorf("could not find own settlement")
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, ownSettlementID)
 			data, err := c.get(path)
 			if err != nil {
 				return err
