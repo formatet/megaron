@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type Client struct {
 	server string
 	token  string
 	http   *http.Client
+	cfg    *Config // for province self-heal after a respawn relocates the capital
 }
 
 func newClient(cfg *Config) *Client {
@@ -20,10 +22,15 @@ func newClient(cfg *Config) *Client {
 		server: cfg.Server,
 		token:  cfg.Token,
 		http:   &http.Client{Timeout: 15 * time.Second},
+		cfg:    cfg,
 	}
 }
 
 func (c *Client) do(method, path string, body any) ([]byte, int, error) {
+	return c.doWithHeal(method, path, body, true)
+}
+
+func (c *Client) doWithHeal(method, path string, body any, allowHeal bool) ([]byte, int, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -51,7 +58,56 @@ func (c *Client) do(method, path string, body any) ([]byte, int, error) {
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return data, resp.StatusCode, err
+	}
+
+	// Self-heal a stale province_id: after a respawn the player's capital moves to a
+	// new province, but the local config still points at the lost one, so every
+	// province-scoped call returns 403 "not your province". Re-resolve the current
+	// capital once, persist it, and retry the original request against the new ID.
+	if allowHeal && resp.StatusCode == http.StatusForbidden && c.cfg != nil &&
+		c.cfg.ProvinceID != "" && strings.Contains(path, c.cfg.ProvinceID) &&
+		isNotYourProvince(data) {
+		oldID := c.cfg.ProvinceID
+		if newID := c.resolveCapital(); newID != "" && newID != oldID {
+			c.cfg.ProvinceID = newID
+			_ = saveConfig(c.cfg)
+			return c.doWithHeal(method, strings.ReplaceAll(path, oldID, newID), body, false)
+		}
+	}
 	return data, resp.StatusCode, err
+}
+
+// isNotYourProvince reports whether an error body is the ownership-check rejection.
+func isNotYourProvince(data []byte) bool {
+	var e struct {
+		Error string `json:"error"`
+	}
+	return json.Unmarshal(data, &e) == nil && e.Error == "not your province"
+}
+
+// resolveCapital fetches the player's province markers and returns the province ID
+// of their current capital, or "" if none is found. Used to recover from respawn.
+func (c *Client) resolveCapital() string {
+	data, status, err := c.doWithHeal("GET",
+		fmt.Sprintf("/api/v1/worlds/%s/provinces", c.cfg.WorldID), nil, false)
+	if err != nil || status >= 400 {
+		return ""
+	}
+	var markers []struct {
+		ID        string `json:"id"`
+		IsCapital bool   `json:"is_capital"`
+	}
+	if json.Unmarshal(data, &markers) != nil {
+		return ""
+	}
+	for _, m := range markers {
+		if m.IsCapital {
+			return m.ID
+		}
+	}
+	return ""
 }
 
 func (c *Client) get(path string) ([]byte, error) {
