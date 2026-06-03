@@ -351,6 +351,17 @@ func (h *WorldHandler) visibleOrigins(ctx context.Context, worldID, playerID uui
 		     JOIN provinces tp ON tp.id = ma.target_id
 		     JOIN settlements os ON os.province_id = ma.origin_id
 		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
+		     UNION ALL
+		     -- Settlements this player has contacted by messenger stay visible:
+		     -- once a messenger reaches its destination (delivered and onward),
+		     -- contact is established, so the destination remains on the map
+		     -- afterwards — this is how a Wanax discovers trade partners.
+		     SELECT dp.map_q, dp.map_r
+		     FROM messengers m
+		     JOIN settlements ds ON ds.id = m.destination_id
+		     JOIN provinces dp ON dp.id = ds.province_id
+		     WHERE m.world_id = $1 AND m.sender_id = $2
+		       AND m.status IN ('delivered', 'returning', 'arrived')
 		 ) pos`,
 		worldID, playerID,
 	)
