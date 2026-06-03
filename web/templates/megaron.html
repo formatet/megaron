@@ -2,11 +2,11 @@
 {{define "title"}}{{.Settlement.Name}} — Megaron{{end}}
 {{define "nav"}}
   <a href="/world/{{.WorldID}}/megaron">⌂</a>
-  <a href="/world/{{.WorldID}}/map">Kartrum</a>
-  <a href="/world/{{.WorldID}}/messages">Inkorg{{if .UnreadCount}} <span class="nav-badge">{{.UnreadCount}}</span>{{end}}</a>
-  <a href="/world/{{.WorldID}}/kingdom">Rådet</a>
-  <a href="/world/{{.WorldID}}/market">Agoran</a>
-  <a href="/world/{{.WorldID}}/wanaxes">Herolden</a>
+  <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}/messages">Scribes{{if .UnreadCount}} <span class="nav-badge">{{.UnreadCount}}</span>{{end}}</a>
+  <a href="/world/{{.WorldID}}/kingdom">Council</a>
+  <a href="/world/{{.WorldID}}/market">Agora</a>
+  <a href="/world/{{.WorldID}}/wanaxes">Herald</a>
 {{end}}
 {{define "content"}}
 <div class="megaron-page">
@@ -19,7 +19,7 @@
     </div>
     <div class="mh-stats">
       <div class="mh-stat">
-        <span class="mhs-label">Korn</span>
+        <span class="mhs-label">Grain</span>
         <span class="mhs-val">{{resource .Grain}}</span>
         {{if .GrainRate}}<span class="mhs-rate">{{rate .GrainRate}}</span>{{end}}
       </div>
@@ -28,15 +28,15 @@
         <span class="mhs-val">{{fmtSilver .Silver}}</span>
       </div>
       <div class="mh-stat">
-        <span class="mhs-label">Armé</span>
+        <span class="mhs-label">Army</span>
         <span class="mhs-val">{{.ArmyDP}} DP</span>
       </div>
       <div class="mh-stat">
-        <span class="mhs-label">Folk</span>
+        <span class="mhs-label">People</span>
         <span class="mhs-val">{{.Settlement.Population}}</span>
       </div>
       <div class="mh-stat mhs-divine">
-        <span class="mhs-label">Gudarna</span>
+        <span class="mhs-label">The Gods</span>
         <span class="mhs-val mood-{{.DivineMood}}">{{.DivineMood}}</span>
       </div>
     </div>
@@ -45,33 +45,33 @@
   <!-- ── Rooms ─────────────────────────────────────────────────── -->
   <div class="room-grid">
 
-    <!-- Kartrum -->
+    <!-- Map -->
     <a href="/world/{{.WorldID}}/map" class="room-card">
       <div class="room-lintel">
         <span class="room-glyph">⬡</span>
-        <span class="room-name">Kartrum</span>
+        <span class="room-name">Map</span>
       </div>
       <div class="room-status">
-        <span>Karta · fog of war</span>
-        {{if .MarchCount}}<span class="rs-alert">{{.MarchCount}} arméer ute</span>{{end}}
+        <span>Map · fog of war</span>
+        {{if .MarchCount}}<span class="rs-alert">{{.MarchCount}} armies in the field</span>{{end}}
       </div>
-      <span class="room-enter">Gå in →</span>
+      <span class="room-enter">Enter →</span>
     </a>
 
-    <!-- Skattkammaren (province view) -->
+    <!-- Treasury (province view) -->
     <a href="/world/{{.WorldID}}/" class="room-card">
       <div class="room-lintel">
         <span class="room-glyph">⊞</span>
-        <span class="room-name">Skattkammaren</span>
+        <span class="room-name">Treasury</span>
       </div>
       <div class="room-status">
-        <span>Varor · byggnader · produktion</span>
-        {{if .Settlement.Loyalty}}<span>Lojalitet: {{.Settlement.Loyalty}}/4</span>{{end}}
+        <span>Goods · buildings · production</span>
+        {{if .Settlement.Loyalty}}<span>Loyalty: {{.Settlement.Loyalty}}/4</span>{{end}}
       </div>
-      <span class="room-enter">Gå in →</span>
+      <span class="room-enter">Enter →</span>
     </a>
 
-    <!-- Inkorg (messages) -->
+    <!-- Scribes (messages) -->
     <a href="/world/{{.WorldID}}/messages" class="room-card {{if .UnreadCount}}room-card--alert{{end}}">
       <div class="room-lintel">
         <span class="room-glyph">𓂀</span>
@@ -79,55 +79,55 @@
       </div>
       <div class="room-status">
         {{if .UnreadCount}}
-          <span class="rs-alert">{{.UnreadCount}} olästa meddelanden</span>
+          <span class="rs-alert">{{.UnreadCount}} unread messages</span>
         {{else}}
-          <span>Inga nya meddelanden</span>
+          <span>No new messages</span>
         {{end}}
-        {{if .TradeCount}}<span>{{.TradeCount}} aktiva handelsrutter</span>{{end}}
+        {{if .TradeCount}}<span>{{.TradeCount}} active trade routes</span>{{end}}
       </div>
-      <span class="room-enter">Gå in →</span>
+      <span class="room-enter">Enter →</span>
     </a>
 
-    <!-- Rådet (kingdom) -->
+    <!-- Council (kingdom) -->
     <a href="/world/{{.WorldID}}/kingdom" class="room-card">
       <div class="room-lintel">
         <span class="room-glyph">⚖</span>
-        <span class="room-name">Rådet</span>
+        <span class="room-name">Council</span>
       </div>
       <div class="room-status">
         {{if .KingdomName}}
           <span>{{.KingdomName}}</span>
-          <span class="pill state-{{.KingdomState}}">{{if eq .KingdomState "forming"}}Forming · {{.MemberCount}}/3{{else}}Aktivt{{end}}</span>
+          <span class="pill state-{{.KingdomState}}">{{if eq .KingdomState "forming"}}Forming · {{.MemberCount}}/3{{else}}Active{{end}}</span>
         {{else}}
-          <span class="rs-dim">Inget rike grundat</span>
+          <span class="rs-dim">No kingdom founded</span>
         {{end}}
       </div>
-      <span class="room-enter">Gå in →</span>
+      <span class="room-enter">Enter →</span>
     </a>
 
-    <!-- Agoran (market) -->
+    <!-- Agora (market) -->
     <a href="/world/{{.WorldID}}/market" class="room-card">
       <div class="room-lintel">
         <span class="room-glyph">☽</span>
-        <span class="room-name">Agoran</span>
+        <span class="room-name">Agora</span>
       </div>
       <div class="room-status">
-        <span>Varupriser · handelsöversikt</span>
-        {{if .TradeCount}}<span>{{.TradeCount}} rutter aktiva</span>{{end}}
+        <span>Goods prices · trade overview</span>
+        {{if .TradeCount}}<span>{{.TradeCount}} routes active</span>{{end}}
       </div>
-      <span class="room-enter">Gå in →</span>
+      <span class="room-enter">Enter →</span>
     </a>
 
-    <!-- Herolden (wanaxes rankings) -->
+    <!-- Herald (wanaxes rankings) -->
     <a href="/world/{{.WorldID}}/wanaxes" class="room-card">
       <div class="room-lintel">
         <span class="room-glyph">𓂓</span>
-        <span class="room-name">Herolden</span>
+        <span class="room-name">Herald</span>
       </div>
       <div class="room-status">
-        <span>Wanaxes · rang efter styrka</span>
+        <span>Wanaxes · ranked by strength</span>
       </div>
-      <span class="room-enter">Gå in →</span>
+      <span class="room-enter">Enter →</span>
     </a>
 
   </div>

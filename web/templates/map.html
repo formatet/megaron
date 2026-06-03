@@ -2,12 +2,12 @@
 {{define "title"}}Map — {{.World.Name}}{{end}}
 {{define "nav"}}
   <a href="/world/{{.WorldID}}/megaron">⌂</a>
-  <a href="/world/{{.WorldID}}/map">Kartrum</a>
-  <a href="/world/{{.WorldID}}">Skattkammaren</a>
+  <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}">Treasury</a>
   <a href="/world/{{.WorldID}}/messages">Scribes</a>
-  <a href="/world/{{.WorldID}}/kingdom">Rådet</a>
-  <a href="/world/{{.WorldID}}/market">Agoran</a>
-  <a href="/world/{{.WorldID}}/wanaxes">Herolden</a>
+  <a href="/world/{{.WorldID}}/kingdom">Council</a>
+  <a href="/world/{{.WorldID}}/market">Agora</a>
+  <a href="/world/{{.WorldID}}/wanaxes">Herald</a>
 {{end}}
 {{define "content"}}
 <div class="map-page">
@@ -49,15 +49,15 @@
   </div>
 
   <div class="map-legend">
-    <span class="legend-item" style="--tc:#8AAF3A">Slätter</span>
-    <span class="legend-item" style="--tc:#4CAF50">Floddal</span>
-    <span class="legend-item" style="--tc:#5A8C30">Olivlund</span>
-    <span class="legend-item" style="--tc:#C8A464">Kullar</span>
-    <span class="legend-item" style="--tc:#E0D4B8">Kalkstensberg</span>
-    <span class="legend-item" style="--tc:#E8C97A">Strand</span>
-    <span class="legend-item" style="--tc:#3A9AD9">Kusthav</span>
-    <span class="legend-item" style="--tc:#1A5276">Djuphav</span>
-    <span class="legend-item" style="--tc:#1C1C1C">Dimma</span>
+    <span class="legend-item" style="--tc:#8AAF3A">Plains</span>
+    <span class="legend-item" style="--tc:#4CAF50">River Valley</span>
+    <span class="legend-item" style="--tc:#5A8C30">Olive Grove</span>
+    <span class="legend-item" style="--tc:#C8A464">Hills</span>
+    <span class="legend-item" style="--tc:#E0D4B8">Limestone</span>
+    <span class="legend-item" style="--tc:#E8C97A">Shore</span>
+    <span class="legend-item" style="--tc:#3A9AD9">Coastal Sea</span>
+    <span class="legend-item" style="--tc:#1A5276">Deep Sea</span>
+    <span class="legend-item" style="--tc:#1C1C1C">Fog</span>
   </div>
 </div>
 
