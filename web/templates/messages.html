@@ -208,10 +208,16 @@ async function tradeAccept(id, btn) {
   const data = await res.json().catch(()=>({}));
   const block = btn.closest('.trade-block');
   if (res.ok) {
-    block.innerHTML = `<span style="color:var(--safe)">✓ Accepted — ${data.quantity} ${data.good_key} returning ${fmtEta(data.returns_at)} · paid ${data.gold_paid} silver</span>`;
+    block.innerHTML = `<span style="color:var(--safe)">✓ Accepted — ${data.quantity} ${data.good_key} arriving ${fmtEta(data.goods_arrives_at)} · paid ${data.silver_paid} silver</span>`;
   } else {
     btn.disabled = false;
-    block.insertAdjacentHTML('beforeend', `<div style="color:var(--accent);font-size:.78rem">${data.error||'failed'}</div>`);
+    block.querySelector('.trade-err')?.remove();
+    const errDiv = document.createElement('div');
+    errDiv.className = 'trade-err';
+    errDiv.style.cssText = 'color:var(--accent);font-size:.78rem;margin-top:.2rem';
+    errDiv.textContent = data.error || 'failed';
+    block.append(errDiv);
+    setTimeout(() => errDiv.remove(), 8000);
   }
 }
 

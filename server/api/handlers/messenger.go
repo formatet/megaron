@@ -90,6 +90,26 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Reject duplicate pending trade offers to the same destination for the same good.
+	// Agents otherwise re-send the same offer every turn, flooding the recipient's inbox.
+	if req.TradeOffer != nil {
+		var existing int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COUNT(*) FROM messengers
+			 WHERE origin_id = $1 AND destination_id = $2
+			   AND trade_offer IS NOT NULL
+			   AND trade_offer->>'want_good' = $3
+			   AND trade_offer->>'status' = 'pending'
+			   AND status IN ('delivering', 'delivered')`,
+			originID, destID, req.TradeOffer.WantGood,
+		).Scan(&existing)
+		if existing > 0 {
+			writeError(w, http.StatusConflict,
+				"pending trade offer for "+req.TradeOffer.WantGood+" to that settlement already exists — check your outbox or wait for a reply")
+			return
+		}
+	}
+
 	// Look up province hex coords for distance calculation.
 	var oQ, oR int
 	err = h.pool.QueryRow(r.Context(),
@@ -180,7 +200,7 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.status, m.reply_text, m.sent_at, m.arrives_at
+		`SELECT m.id, m.destination_id, s.name, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer
 		 FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
 		 WHERE m.origin_id = $1
@@ -194,19 +214,24 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		ID          uuid.UUID  `json:"id"`
-		DestID      uuid.UUID  `json:"destination_id"`
-		DestName    string     `json:"destination_name"`
-		Status      string     `json:"status"`
-		ReplyText   *string    `json:"reply_text"`
-		SentAt      time.Time  `json:"sent_at"`
-		ArrivesAt   time.Time  `json:"arrives_at"`
+		ID         uuid.UUID       `json:"id"`
+		DestID     uuid.UUID       `json:"destination_id"`
+		DestName   string          `json:"destination_name"`
+		Status     string          `json:"status"`
+		ReplyText  *string         `json:"reply_text"`
+		SentAt     time.Time       `json:"sent_at"`
+		ArrivesAt  time.Time       `json:"arrives_at"`
+		TradeOffer json.RawMessage `json:"trade_offer,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
+		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Status, &m.ReplyText,
-			&m.SentAt, &m.ArrivesAt); err == nil {
+			&m.SentAt, &m.ArrivesAt, &tradeOffer); err == nil {
+			if len(tradeOffer) > 0 {
+				m.TradeOffer = json.RawMessage(tradeOffer)
+			}
 			result = append(result, m)
 		}
 	}

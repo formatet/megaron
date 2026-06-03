@@ -81,6 +81,7 @@ func main() {
 		goodsCmd(),
 		tradeCmd(),
 		inboxCmd(),
+		outboxCmd(),
 		replyCmd(),
 		tradeAcceptCmd(),
 		tradeDeclineCmd(),
