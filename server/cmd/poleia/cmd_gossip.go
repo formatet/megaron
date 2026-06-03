@@ -75,39 +75,16 @@ func messengerCmd() *cobra.Command {
 			if err := json.Unmarshal(provinces, &markers); err != nil {
 				return err
 			}
-			var destID, destSettleName, ownSettlementID string
-			for _, m := range markers {
-				if own, _ := m["own"].(bool); own {
-					ownSettlementID, _ = m["settlement_id"].(string)
-				}
-				n, _ := m["name"].(string)
-				if strings.EqualFold(n, destName) {
-					destID, _ = m["settlement_id"].(string)
-					destSettleName = n
-				}
+			// Fall back to the public wanaxes list when the destination is not yet
+			// visible in our fog-of-war provinces.
+			var wanaxes []map[string]any
+			if wdata, werr := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID)); werr == nil {
+				_ = json.Unmarshal(wdata, &wanaxes)
 			}
-			if ownSettlementID == "" {
-				return fmt.Errorf("could not find own settlement")
-			}
-			// If not found in FOW provinces, fall back to wanaxes (public list).
-			if destID == "" {
-				wdata, werr := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID))
-				if werr == nil {
-					var wanaxes []map[string]any
-					if json.Unmarshal(wdata, &wanaxes) == nil {
-						for _, w := range wanaxes {
-							n, _ := w["name"].(string)
-							if strings.EqualFold(n, destName) {
-								destID, _ = w["settlement_id"].(string)
-								destSettleName = n
-								break
-							}
-						}
-					}
-				}
-			}
-			if destID == "" {
-				return fmt.Errorf("no settlement named %q found in visible provinces or world wanaxes", destName)
+
+			destID, destSettleName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName)
+			if err != nil {
+				return err
 			}
 
 			body := map[string]any{
@@ -151,4 +128,41 @@ func messengerCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("to")
 	_ = cmd.MarkFlagRequired("message")
 	return cmd
+}
+
+// resolveMessengerDest finds the caller's own settlement ID plus the destination
+// settlement ID for destName. It looks in the fog-of-war province markers first
+// (where own settlements are flagged "own": true), then falls back to the public
+// wanaxes list. Messengers cannot be sent to one's own settlement — that case is
+// rejected up front with an actionable error so the agent picks a real neighbour
+// instead of bouncing off the server's 400.
+func resolveMessengerDest(markers, wanaxes []map[string]any, destName string) (destID, resolvedName, ownID string, err error) {
+	for _, m := range markers {
+		if own, _ := m["own"].(bool); own {
+			ownID, _ = m["settlement_id"].(string)
+		}
+		if n, _ := m["name"].(string); strings.EqualFold(n, destName) {
+			destID, _ = m["settlement_id"].(string)
+			resolvedName = n
+		}
+	}
+	if ownID == "" {
+		return "", "", "", fmt.Errorf("could not find own settlement")
+	}
+	if destID == "" {
+		for _, w := range wanaxes {
+			if n, _ := w["name"].(string); strings.EqualFold(n, destName) {
+				destID, _ = w["settlement_id"].(string)
+				resolvedName = n
+				break
+			}
+		}
+	}
+	if destID == "" {
+		return "", "", "", fmt.Errorf("no settlement named %q found in visible provinces or world wanaxes", destName)
+	}
+	if destID == ownID {
+		return "", "", "", fmt.Errorf("%q is your own settlement — messengers go to other Wanaxes; pick a neighbour from `wanaxes` (rows without ★) or scout to discover new settlements", destName)
+	}
+	return destID, resolvedName, ownID, nil
 }
