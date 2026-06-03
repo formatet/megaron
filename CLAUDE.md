@@ -129,7 +129,9 @@ Mono-repo-målet temenos/megaron/keryx, se [[thalassa_todo]] "Projektbyte".
 - **Province ≠ settlement** — separate tables; outpost = province row, no settlement row. `thalassa_settlement.md`
 - **Loyalty 1–4 only**, never 0–100; event-sourced projection. `thalassa_settlement.md`
 - **Kharis** is a relationship, not mana; 5% floor always; mid-revision → rikes-pool per Wanax. `thalassa_kharis.md`
-- **Messengers** are physical, sacred (uninterceptable); reply arrives on return. `thalassa_settlement.md`
+- **Messengers** are physical, sacred (uninterceptable); reply arrives on return. **Load-bearing pillar:**
+  ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
+  (recall etc.) also travel by messenger — command is never instant. `thalassa_settlement.md`
 - **Kingdom** = Basileus + members; forming until 3 members; elections Sundays, 7-day lock. `thalassa_kingdoms.md`
 - **Combat** deterministic, no dice; walls L0–3 = 1.0 / 1.25 / 1.5 / 1.75×; priests give 0 field strength. `internal/combat`
 - **Priests** — rituella enheter, ingen stridsstyrka. Kharis avgör rit-framgång (80/50/20/5% per mood).
