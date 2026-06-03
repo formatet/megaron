@@ -10,6 +10,7 @@ import (
 const (
 	GoodGrain  = "grain"
 	GoodFish   = "fish"
+	GoodTimber = "timber"
 	GoodCedar  = "cedar"
 	GoodCopper = "copper"
 	GoodTin    = "tin"

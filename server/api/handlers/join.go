@@ -191,14 +191,15 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
 		 SELECT $1, g.key,
 		        CASE g.key
-		            WHEN 'grain' THEN 300
-		            WHEN 'cedar' THEN 200
-		            WHEN 'stone' THEN 300
+		            WHEN 'grain'  THEN 300
+		            WHEN 'timber' THEN 200
+		            WHEN 'stone'  THEN 300
 		            ELSE 0
 		        END,
 		        0,
 		        CASE g.key
 		            WHEN 'grain'  THEN 1000
+		            WHEN 'timber' THEN 500
 		            WHEN 'cedar'  THEN 500
 		            WHEN 'stone'  THEN 1000
 		            WHEN 'copper' THEN 300
@@ -220,9 +221,10 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// other goods default to 200.
 	_, err = tx.Exec(r.Context(),
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 SELECT $1, pr.good_key, 0, pr.rate_per_min,
-		        CASE pr.good_key
+		 SELECT $1, agg.good_key, 0, agg.rate,
+		        CASE agg.good_key
 		            WHEN 'grain'  THEN 1000
+		            WHEN 'timber' THEN 500
 		            WHEN 'cedar'  THEN 500
 		            WHEN 'stone'  THEN 1000
 		            WHEN 'copper' THEN 300
@@ -230,14 +232,21 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		            ELSE 200
 		        END,
 		        now()
-		 FROM production_rules pr
-		 WHERE pr.building_type IS NULL
-		   AND pr.terrain_type = $2
-		   AND (pr.requires_deposit IS NULL
-		        OR (pr.requires_deposit = 'copper' AND $3)
-		        OR (pr.requires_deposit = 'tin'    AND $4)
-		        OR (pr.requires_deposit = 'silver' AND $5)
-		        OR (pr.requires_deposit = 'cedar'  AND $6))
+		 FROM (
+		     -- Aggregate per good_key: a terrain may match several terrain-only rules
+		     -- for one good (e.g. forest + universal timber), and ON CONFLICT cannot
+		     -- dedupe rows within a single INSERT statement.
+		     SELECT pr.good_key, SUM(pr.rate_per_min) AS rate
+		     FROM production_rules pr
+		     WHERE pr.building_type IS NULL
+		       AND (pr.terrain_type = $2 OR pr.terrain_type IS NULL)
+		       AND (pr.requires_deposit IS NULL
+		            OR (pr.requires_deposit = 'copper' AND $3)
+		            OR (pr.requires_deposit = 'tin'    AND $4)
+		            OR (pr.requires_deposit = 'silver' AND $5)
+		            OR (pr.requires_deposit = 'cedar'  AND $6))
+		     GROUP BY pr.good_key
+		 ) agg
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     rate = settlement_goods.rate + EXCLUDED.rate`,
 		settlementID, terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
@@ -255,7 +264,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 			 SELECT $1, agg.good_key, 0,
 			     agg.rate,
 			     CASE agg.good_key
-			         WHEN 'grain'  THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
+			         WHEN 'grain'  THEN 1000 WHEN 'timber' THEN 500 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
 			         WHEN 'copper' THEN 300  WHEN 'tin'   THEN 300 ELSE 200
 			     END,
 			     now()

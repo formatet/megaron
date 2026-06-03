@@ -245,10 +245,11 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	return nil
 }
 
-// applyDecay applies 1% daily decay to grain and cedar stocks, resets
+// applyDecay applies 1% daily decay to grain and timber stocks, resets
 // invasions_today, regenerates priest_strength, and adjusts population.
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
-	// Decay grain and cedar by 1% per day; grain also consumed by population (0.5/person/day).
+	// Decay grain and timber by 1% per day; grain also consumed by population (0.5/person/day).
+	// Cedar is a luxury store-of-value (ädelträ) and does not rot.
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlement_goods sg SET
 		   amount = GREATEST(0,
@@ -263,7 +264,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		 FROM settlements s
 		 WHERE sg.settlement_id = s.id
 		   AND s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
-		   AND sg.good_key IN ('grain', 'cedar')`,
+		   AND sg.good_key IN ('grain', 'timber')`,
 		worldID,
 	); err != nil {
 		slog.Error("goods decay failed", "world", worldID, "err", err)
