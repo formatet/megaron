@@ -137,6 +137,9 @@ func messengerCmd() *cobra.Command {
 // rejected up front with an actionable error so the agent picks a real neighbour
 // instead of bouncing off the server's 400.
 func resolveMessengerDest(markers, wanaxes []map[string]any, destName string) (destID, resolvedName, ownID string, err error) {
+	if strings.TrimSpace(destName) == "" {
+		return "", "", "", fmt.Errorf("destination name is empty — use --to <settlement name>")
+	}
 	for _, m := range markers {
 		if own, _ := m["own"].(bool); own {
 			ownID, _ = m["settlement_id"].(string)
