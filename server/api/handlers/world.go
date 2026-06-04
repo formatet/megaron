@@ -596,8 +596,10 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 	return br.Close()
 }
 
-// Wanaxes handles GET /worlds/{worldID}/wanaxes — public leaderboard for API clients.
-// Returns all settlements sorted by army strength; includes terrain and settlement_id for trade routing.
+// Wanaxes handles GET /worlds/{worldID}/wanaxes — trade-discovery directory for API clients.
+// Returns settlements with terrain, deposits and settlement_id for trade routing. Army strength is
+// deliberately NOT exposed: that would leak military intel for free, contra the "info flows through
+// moving units" invariant. There is no public leaderboard.
 func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -611,8 +613,6 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		        (SELECT k.name FROM kingdoms k
 		         JOIN kingdom_members km ON km.kingdom_id = k.id
 		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
-		        s.wall_level, s.population,
-		        s.infantry + s.cavalry*3 + s.elite_infantry*2,
 		        s.owner_id,
 		        COALESCE(prov.copper_deposit, false),
 		        COALESCE(prov.tin_deposit, false),
@@ -622,7 +622,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
-		 ORDER BY s.infantry + s.cavalry*3 + s.elite_infantry*2 DESC`,
+		 ORDER BY s.name`,
 		worldID,
 	)
 	if err != nil {
@@ -638,9 +638,6 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		Culture       string `json:"culture"`
 		Terrain       string `json:"terrain"`
 		Kingdom       string `json:"kingdom,omitempty"`
-		Walls         int    `json:"walls"`
-		Population    int    `json:"population"`
-		ArmyDP        int    `json:"army_dp"`
 		Own           bool   `json:"own"`
 		CopperDeposit bool   `json:"copper_deposit,omitempty"`
 		TinDeposit    bool   `json:"tin_deposit,omitempty"`
@@ -654,7 +651,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		var kingdom *string
 		var terrain *string
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
-			&e.Walls, &e.Population, &e.ArmyDP, &ownerID,
+			&ownerID,
 			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit); err != nil {
 			continue
 		}

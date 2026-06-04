@@ -5,9 +5,7 @@
   <a href="/world/{{.WorldID}}/map">Map</a>
   <a href="/world/{{.WorldID}}/messages">Scribes{{if .UnreadCount}} <span class="nav-badge">{{.UnreadCount}}</span>{{end}}</a>
   <a href="/world/{{.WorldID}}/kingdom">Council</a>
-  <a href="/world/{{.WorldID}}/market">Agora</a>
-  <a href="/world/{{.WorldID}}/wanaxes">Herald</a>
-{{end}}
+  <a href="/world/{{.WorldID}}/market">Agora</a>{{end}}
 {{define "content"}}
 <div class="megaron-page">
 
@@ -114,18 +112,6 @@
       <div class="room-status">
         <span>Goods prices · trade overview</span>
         {{if .TradeCount}}<span>{{.TradeCount}} routes active</span>{{end}}
-      </div>
-      <span class="room-enter">Enter →</span>
-    </a>
-
-    <!-- Herald (wanaxes rankings) -->
-    <a href="/world/{{.WorldID}}/wanaxes" class="room-card">
-      <div class="room-lintel">
-        <span class="room-glyph">𓂓</span>
-        <span class="room-name">Herald</span>
-      </div>
-      <div class="room-status">
-        <span>Wanaxes · ranked by strength</span>
       </div>
       <span class="room-enter">Enter →</span>
     </a>
