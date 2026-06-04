@@ -334,16 +334,26 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Naval gating: ships may only embark from coast_beach and land on coast_beach or sea.
+	// Naval gating.
+	// Naval march (any ships): ships-only, embark from coast, land on coast/sea.
+	// Land march (no ships): cannot target sea tiles.
+	isSea := dst.TerrainType == "coastal_sea" || dst.TerrainType == "deep_sea"
 	if army.Ship > 0 {
 		if src.TerrainType != "coast_beach" {
 			writeError(w, http.StatusUnprocessableEntity, "ships can only embark from coastal settlements")
 			return
 		}
-		if dst.TerrainType != "coast_beach" && dst.TerrainType != "coastal_sea" && dst.TerrainType != "deep_sea" {
+		if dst.TerrainType != "coast_beach" && !isSea {
 			writeError(w, http.StatusUnprocessableEntity, "ships can only sail to coastal or sea provinces")
 			return
 		}
+		if army.Infantry > 0 || army.Cavalry > 0 || army.Catapult > 0 || army.EliteInfantry > 0 {
+			writeError(w, http.StatusUnprocessableEntity, "naval marches carry ships only — land units cannot board")
+			return
+		}
+	} else if isSea {
+		writeError(w, http.StatusUnprocessableEntity, "sea provinces require ships to reach")
+		return
 	}
 
 	now := h.clk.Now()
