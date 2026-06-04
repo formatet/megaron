@@ -1089,8 +1089,8 @@ async function openMarchCtx(target, screenX, screenY) {
   let defDP = 0;
   if (defRes && defRes.ok) {
     const defArmy = await defRes.json();
-    defDP = (defArmy.infantry || 0) + (defArmy.cavalry || 0) * 3
-          + (defArmy.elite_infantry || 0) * 2;
+    defDP = (defArmy.Infantry || 0) + (defArmy.Cavalry || 0) * 3
+          + (defArmy.EliteInfantry || 0) * 2;
   }
 
   renderArmyInputs(marchCtxArmy, !target.allied ? defDP : 0);

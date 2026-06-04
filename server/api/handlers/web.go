@@ -482,7 +482,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 
 	// Load incoming armies — join through settlements for name.
 	irows, _ := h.pool.Query(r.Context(),
-		`SELECT ma.origin_id, s.name, ma.infantry+ma.cavalry+ma.catapult+ma.priest AS total, ma.intent, ma.arrives_at
+		`SELECT ma.origin_id, s.name, ma.infantry+ma.cavalry+ma.catapult+ma.priest+ma.ship+ma.elite_infantry AS total, ma.intent, ma.arrives_at
 		 FROM marching_armies ma
 		 JOIN settlements s ON s.province_id = ma.origin_id
 		 WHERE ma.target_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,
