@@ -17,6 +17,7 @@ import (
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/timescale"
 )
 
 // ProvinceHandler handles HTTP requests for province endpoints.
@@ -347,7 +348,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 
 	now := h.clk.Now()
 	moveHours := province.TerrainMoveHours(dst.TerrainType) * float64(dist)
-	arrivesAt := now.Add(time.Duration(moveHours * float64(time.Hour)))
+	arrivesAt := now.Add(timescale.Apply(time.Duration(moveHours * float64(time.Hour))))
 
 	// Deduct units from source and insert march atomically — prevents sending
 	// units you don't have or using the same units in multiple marches.
@@ -733,7 +734,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	completeAt := h.clk.Now().Add(spec.Duration)
+	completeAt := h.clk.Now().Add(timescale.Apply(spec.Duration))
 	var queueID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at)
@@ -1061,7 +1062,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	completeAt := h.clk.Now().Add(spec.Duration * time.Duration(req.Count))
+	completeAt := h.clk.Now().Add(timescale.Apply(spec.Duration * time.Duration(req.Count)))
 
 	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTrainComplete,
 		combat.TrainCompletePayload{
@@ -1295,7 +1296,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arrivesAt := h.clk.Now().Add(time.Duration(travelMins * float64(time.Minute)))
+	arrivesAt := h.clk.Now().Add(timescale.Apply(time.Duration(travelMins * float64(time.Minute))))
 	var routeID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO trade_routes (world_id, origin_id, destination_id, good_key, quantity, arrives_at)

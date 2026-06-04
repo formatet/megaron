@@ -15,6 +15,7 @@ import (
 	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/timescale"
 )
 
 // SettlementHandler handles HTTP requests for settlement endpoints.
@@ -633,7 +634,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	success := rand.Intn(100) < chance
 	var expiresAt *time.Time
 	if success {
-		t := h.clk.Now().Add(6 * time.Hour)
+		t := h.clk.Now().Add(timescale.Apply(6 * time.Hour))
 		expiresAt = &t
 		if _, err = tx.Exec(r.Context(),
 			`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,

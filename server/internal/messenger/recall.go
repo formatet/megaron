@@ -20,6 +20,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
@@ -293,13 +294,13 @@ func returnDuration(dist int, terrain string) time.Duration {
 	if hours < 0.1 {
 		hours = 0.1 // minimum 6 minutes
 	}
-	return time.Duration(hours * float64(time.Hour))
+	return timescale.Apply(time.Duration(hours * float64(time.Hour)))
 }
 
 // MessengerTravelDuration returns the travel time for a recall messenger over dist hexes.
 // Pure function — exported for testing and reused by the recall HTTP handlers.
 func MessengerTravelDuration(dist int) time.Duration {
-	return time.Duration(float64(dist) * HoursPerHex * float64(time.Hour))
+	return timescale.Apply(time.Duration(float64(dist) * HoursPerHex * float64(time.Hour)))
 }
 
 // TradeHoursPerHex is the travel speed of a trade caravan (the silver/goods legs of a messenger trade).
@@ -309,5 +310,5 @@ const TradeHoursPerHex = 0.5
 
 // TradeTravelDuration returns the travel time for a trade caravan over dist hexes. Pure function.
 func TradeTravelDuration(dist int) time.Duration {
-	return time.Duration(float64(dist) * TradeHoursPerHex * float64(time.Hour))
+	return timescale.Apply(time.Duration(float64(dist) * TradeHoursPerHex * float64(time.Hour)))
 }
