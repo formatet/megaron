@@ -203,6 +203,7 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/march", ph.March)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)
+			r.Delete("/worlds/{worldID}/provinces/{provinceID}/build-queue/{queueID}", ph.CancelBuild)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/marches", ph.Marches)
 			r.Delete("/worlds/{worldID}/provinces/{provinceID}/marches/{marchID}", ph.RecallMarch)

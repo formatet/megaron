@@ -45,6 +45,53 @@ func goodsCmd() *cobra.Command {
 	}
 }
 
+func transferCmd() *cobra.Command {
+	var good string
+	var qty float64
+	var destName string
+
+	cmd := &cobra.Command{
+		Use:     "transfer",
+		Short:   "Send goods to one of your own settlements (internal logistics, no loss)",
+		Example: `  poleia transfer --good grain --qty 50 --dest Korinth`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			destID, err := resolveSettlement(c, cfg.WorldID, destName)
+			if err != nil {
+				return fmt.Errorf("resolve destination %q: %w", destName, err)
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, cfg.ProvinceID)
+			data, err := c.post(path, map[string]any{
+				"good_key":       good,
+				"quantity":       qty,
+				"destination_id": destID,
+			})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp map[string]any
+			if err := json.Unmarshal(data, &resp); err != nil {
+				return err
+			}
+			mins, _ := resp["travel_min"].(float64)
+			fmt.Printf("Transfer dispatched: %.1f %s → %s · arrives in %.0f min\n", qty, good, destName, mins)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVarP(&good, "good", "g", "", "good key (e.g. grain, timber, silver)")
+	cmd.Flags().Float64VarP(&qty, "qty", "q", 0, "quantity to send")
+	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name")
+	_ = cmd.MarkFlagRequired("good")
+	_ = cmd.MarkFlagRequired("qty")
+	_ = cmd.MarkFlagRequired("dest")
+	return cmd
+}
+
 func tradeCmd() *cobra.Command {
 	var good string
 	var qty float64

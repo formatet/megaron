@@ -762,6 +762,97 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// CancelBuild handles DELETE /worlds/:worldID/provinces/:provinceID/build-queue/:queueID.
+// Cancels a pending build, deletes the scheduled event, and refunds the costs.
+func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	queueID, err := uuid.Parse(chi.URLParam(r, "queueID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid queue ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	// Verify ownership and fetch the build entry.
+	var settlementID uuid.UUID
+	var buildingType string
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT bq.settlement_id, bq.building_type
+		 FROM build_queue bq
+		 JOIN settlements s ON s.id = bq.settlement_id
+		 WHERE bq.id = $1 AND bq.world_id = $2
+		   AND s.province_id = $3 AND s.owner_id = $4`,
+		queueID, worldID, provinceID, playerID,
+	).Scan(&settlementID, &buildingType)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "build queue entry not found or not yours")
+		return
+	}
+
+	spec, ok := province.BuildingSpecs[province.BuildingType(buildingType)]
+	if !ok {
+		writeError(w, http.StatusInternalServerError, "unknown building type in queue")
+		return
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Delete the queue entry (atomic check: still pending).
+	ct, err := tx.Exec(r.Context(), `DELETE FROM build_queue WHERE id = $1`, queueID)
+	if err != nil || ct.RowsAffected() == 0 {
+		writeError(w, http.StatusConflict, "build already completed or not found")
+		return
+	}
+
+	// Cancel the scheduled event so the worker never fires.
+	_, _ = tx.Exec(r.Context(),
+		`DELETE FROM scheduled_events
+		 WHERE event_type = 'BuildComplete'
+		   AND (payload->>'build_queue_id')::uuid = $1
+		   AND processed_at IS NULL`,
+		queueID,
+	)
+
+	// Refund costs.
+	for goodKey, qty := range spec.Costs {
+		if _, err = tx.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			     amount  = LEAST(amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate + $1, cap),
+			     calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = $3`,
+			qty, settlementID, goodKey,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not refund goods")
+			return
+		}
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"cancelled": buildingType})
+}
+
 // Buildings handles GET /worlds/:worldID/provinces/:provinceID/buildings.
 func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))

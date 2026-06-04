@@ -157,6 +157,8 @@
           <div class="bq-row">
             <span class="bq-name">{{buildingName .Type}}</span>
             <span class="bq-time">—</span>
+            <button class="btn-small btn-secondary" style="font-size:.65rem;padding:.1rem .3rem;margin-left:.4rem"
+                    onclick="cancelBuild('{{.ID}}')" title="Cancel and refund">✕</button>
           </div>
           <div class="bq-bar-wrap"><div class="bq-bar" style="width:0%"></div></div>
         </div>
@@ -342,6 +344,21 @@ function showResult(elId, text, ok) {
   el.textContent = text;
   el.style.color = ok ? '#D4AC0D' : '#922B21';
   setTimeout(() => el.textContent = '', 4000);
+}
+
+async function cancelBuild(queueID) {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/build-queue/${queueID}`, {
+    method: 'DELETE',
+    headers: token ? {'Authorization': 'Bearer ' + token} : {},
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showResult('build-result', `Cancelled — costs refunded`, true);
+    setTimeout(() => location.reload(), 800);
+  } else {
+    showResult('build-result', data.error || 'cancel failed', false);
+  }
 }
 
 async function startBuild() {

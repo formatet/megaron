@@ -118,6 +118,8 @@ details > summary { cursor:pointer; color:var(--accent); font-size:.8rem; user-s
 <script>
 const WORLD_ID       = {{printf "%q" .WorldID}};
 const MY_SETTLEMENT  = {{printf "%q" .MySettlementID}};
+const MY_PROVINCE_ID = {{printf "%q" .MyProvinceID}};
+let _myGoods = null; // cached goods map {key: amount}
 
 // ── auth helper ──────────────────────────────────────────────────────────────
 function authHdr() {
@@ -155,6 +157,16 @@ function showResult(id, msg, ok) {
 
 // ── Inbox ────────────────────────────────────────────────────────────────────
 async function loadInbox() {
+  // Pre-fetch own goods for accept-button validation.
+  if (!_myGoods && MY_PROVINCE_ID) {
+    const gr = await api('GET', `/worlds/${WORLD_ID}/provinces/${MY_PROVINCE_ID}/goods`);
+    if (gr.ok) {
+      const list = await gr.json().catch(()=>[]);
+      _myGoods = {};
+      list.forEach(g => { _myGoods[g.key] = g.amount; });
+    }
+  }
+
   const res = await api('GET', `/worlds/${WORLD_ID}/messengers/inbox`);
   const msgs = await res.json().catch(()=>[]);
   const el = document.getElementById('inbox-list');
@@ -163,11 +175,14 @@ async function loadInbox() {
     const offer = m.trade_offer;
     let tradeHtml = '';
     if (offer && offer.status === 'pending') {
+      const have = _myGoods ? (_myGoods[offer.want_good] || 0) : null;
+      const canAccept = have === null || have >= offer.want_qty;
+      const disAttr = canAccept ? '' : 'disabled title="Insufficient ' + esc(offer.want_good) + ' (have ' + (have||0).toFixed(0) + ', need ' + offer.want_qty + ')"';
       tradeHtml = `
         <div class="trade-block">
           <div class="trade-want">Wants <b>${esc(offer.want_qty+' '+offer.want_good)}</b> · Offers <b>${offer.offer_gold} silver</b></div>
           <div class="trade-btns">
-            <button class="btn-small btn-primary" onclick="tradeAccept('${m.id}',this)">Accept ✓</button>
+            <button class="btn-small btn-primary" onclick="tradeAccept('${m.id}',this)" ${disAttr}>Accept ✓</button>
             <button class="btn-small btn-danger"  onclick="tradeDecline('${m.id}',this)">Decline ✗</button>
           </div>
         </div>`;

@@ -437,19 +437,20 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 
 	// Load build queue.
 	qrows, _ := h.pool.Query(r.Context(),
-		`SELECT building_type, complete_at FROM build_queue
+		`SELECT id, building_type, complete_at FROM build_queue
 		 WHERE settlement_id = $1 ORDER BY complete_at`,
 		s.ID,
 	)
 	defer qrows.Close()
 	type buildItem struct {
+		ID         uuid.UUID
 		Type       string
 		CompleteAt time.Time
 	}
 	var queue []buildItem
 	for qrows.Next() {
 		var bi buildItem
-		_ = qrows.Scan(&bi.Type, &bi.CompleteAt)
+		_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CompleteAt)
 		queue = append(queue, bi)
 	}
 
@@ -927,11 +928,12 @@ func (h *WebHandler) MessagesView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Find player's capital settlement for sending messengers.
-	var mySettlementID, mySettlementName string
+	var mySettlementID, mySettlementName, myProvinceID string
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT id, name FROM settlements WHERE world_id=$1 AND owner_id=$2 AND is_capital=true`,
+		`SELECT s.id, s.name, s.province_id FROM settlements s
+		 WHERE s.world_id=$1 AND s.owner_id=$2 AND s.is_capital=true`,
 		worldID, playerID,
-	).Scan(&mySettlementID, &mySettlementName)
+	).Scan(&mySettlementID, &mySettlementName, &myProvinceID)
 
 	// Unread count for display.
 	var unread int
@@ -947,6 +949,7 @@ func (h *WebHandler) MessagesView(w http.ResponseWriter, r *http.Request) {
 		"WorldID":           worldID,
 		"MySettlementID":    mySettlementID,
 		"MySettlementName":  mySettlementName,
+		"MyProvinceID":      myProvinceID,
 		"UnreadCount":       unread,
 	})
 }
