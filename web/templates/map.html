@@ -445,6 +445,22 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
   ctx.restore();
 }
 
+// ── Outpost marker (small flag on a post, no building) ───────────────────
+function drawOutpost(ctx, cx, cy, p) {
+  const color = p.own ? '#CA8A04' : '#C0392B';
+  // Post
+  ctx.fillStyle = '#F2EAD3'; ctx.fillRect(cx-1, cy-10, 2, 10);
+  // Banner
+  ctx.fillStyle = color; ctx.fillRect(cx+1, cy-10, 7, 4);
+  ctx.fillStyle = '#1C1C1C'; ctx.fillRect(cx+1, cy-6, 7, 1);
+  // Outline
+  ctx.strokeStyle = '#1C1C1C'; ctx.lineWidth = 1;
+  ctx.strokeRect(cx+1, cy-10, 7, 4);
+  // Base dot
+  ctx.fillStyle = color; ctx.fillRect(cx-2, cy, 4, 3);
+  ctx.fillStyle = '#1C1C1C'; ctx.fillRect(cx-2, cy, 4, 1);
+}
+
 // ── Province building sprite + flag ──────────────────────────────────────
 function drawProvince(ctx, cx, cy, p) {
   const roofColor = p.own ? '#CA8A04' : (p.allied ? '#4CAF50' : '#C0392B');
@@ -618,11 +634,15 @@ function render() {
     ctx.closePath(); ctx.stroke(); ctx.restore();
   }
 
-  // 4. Province buildings + flags
+  // 4. Province buildings + flags (settlements and outposts)
   for (const p of provinceData) {
     const {x,y} = hexPx(p.q, p.r);
-    drawProvince(ctx, x, y, p);
-    if (camera.zoom >= 0.55) drawLabel(ctx, x, y, p.name, p.own);
+    if (p.is_outpost) {
+      drawOutpost(ctx, x, y, p);
+    } else {
+      drawProvince(ctx, x, y, p);
+    }
+    if (camera.zoom >= 0.55) drawLabel(ctx, x, y, p.is_outpost ? '⬡' : p.name, p.own);
   }
 
   // 5. Animated walkers for marching armies

@@ -77,6 +77,10 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, "trade_offer requires want_good, want_qty > 0, offer_gold > 0")
 			return
 		}
+		if req.TradeOffer.WantGood == "silver" || req.TradeOffer.WantGood == "gold" {
+			writeError(w, http.StatusBadRequest, "cannot trade for silver — silver is the payment currency, not a tradeable good")
+			return
+		}
 	}
 
 	// Verify caller owns the origin settlement.
