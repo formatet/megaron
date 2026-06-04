@@ -3,8 +3,8 @@
 Config file, not a knowledge base. **Instructions + pointers only — facts live in the vault and the code.**
 If code and this file conflict, trust the code, then fix this file.
 
-- **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/poleia_index.md` (**start here**).
-- **Before ending a session:** update `thalassa_todo.md` (living status, backlog, "Vägen framåt").
+- **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
+- **Before ending a session:** update `megaron_todo.md` (living status, backlog, "Vägen framåt").
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** (e.g. `frågor*` files in repo root) are an inbox, not a home: triage every point
@@ -36,11 +36,11 @@ Kör varje mekanik — och varje `frågor`-punkt — genom de fem (buggar gateas
 
 Persistent async multiplayer grand strategy, mythic Bronze Age east Mediterranean. 100 **Wanax** per world,
 each ruling a network of settlements; kingdoms form organically; the world runs whether you're online or not.
-Tone: serious, warm, human-scale. Full setting + rationale: `thalassa_worldbuilding.md`, `thalassa_designprinciper.md`.
+Tone: serious, warm, human-scale. Full setting + rationale: `temenos_worldbuilding.md`, `temenos_designprinciper.md`.
 
 **Name:** project = **Poleia**; the sea = **The Thalassa**. Permanent: `terrain = "sea"` in DB, "The Thalassa" in UI/labels.
 
-Current status & backlog live in `thalassa_todo.md` — do not restate them here (they go stale).
+Current status & backlog live in `megaron_todo.md` — do not restate them here (they go stale).
 
 ---
 
@@ -120,7 +120,7 @@ Collapse not Season-end · The Thalassa not The Sea.
 **Megaron-övergång (HARD, riktning):** Vi fasar **sakta** ut orden "Thalassa" och "Poleia" till förmån för
 **Megaron** (systemnamnet). Inget tvångsbyte i en sweep — men varje gång du ändå rör en yta där orden
 står (UI-text, ny kod, rubriker), välj Megaron-nomenklaturen. Permanent kvar: `terrain = "sea"` i DB.
-Mono-repo-målet temenos/megaron/keryx, se [[thalassa_todo]] "Projektbyte".
+Mono-repo-målet temenos/megaron/keryx, se [[megaron_todo]] "Projektbyte".
 
 **Silver-över-guld (HARD, riktning):** Valutan heter **silver**. Föredra ordet "silver" framför "gold/guld"
 i UI, API-fält, nya identifierare och kommentarer där du ändå rör koden. DB-kolumnerna förblir `gold_*`
@@ -131,20 +131,20 @@ inte valutan. Full svep = Sprint A.
 
 ## Design invariants (one-liners — rationale & full design in vault)
 
-- **Province ≠ settlement** — separate tables; outpost = province row, no settlement row. `thalassa_settlement.md`
-- **Loyalty 1–4 only**, never 0–100; event-sourced projection. `thalassa_settlement.md`
-- **Kharis** is a relationship, not mana; 5% floor always; mid-revision → rikes-pool per Wanax. `thalassa_kharis.md`
+- **Province ≠ settlement** — separate tables; outpost = province row, no settlement row. `temenos_settlement.md`
+- **Loyalty 1–4 only**, never 0–100; event-sourced projection. `temenos_settlement.md`
+- **Kharis** is a relationship, not mana; 5% floor always; mid-revision → rikes-pool per Wanax. `temenos_kharis.md`
 - **Messengers** are physical, sacred (uninterceptable); reply arrives on return. **Load-bearing pillar:**
   ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
-  (recall etc.) also travel by messenger — command is never instant. `thalassa_settlement.md`
-- **Kingdom** = Basileus + members; forming until 3 members; elections Sundays, 7-day lock. `thalassa_kingdoms.md`
+  (recall etc.) also travel by messenger — command is never instant. `temenos_settlement.md`
+- **Kingdom** = Basileus + members; forming until 3 members; elections Sundays, 7-day lock. `temenos_kingdoms.md`
 - **Combat** deterministic, no dice; walls L0–3 = 1.0 / 1.25 / 1.5 / 1.75×; priests give 0 field strength. `internal/combat`
 - **Priests** — rituella enheter, ingen stridsstyrka. Kharis avgör rit-framgång (80/50/20/5% per mood).
 - **Silver** — betalningsmedel (inte guld). DB-nyckel: `gold`. UI-visning: shekel/mina/talang. Fysiskt transporterbart.
-- **Collapse/Eras** — hidden prestige, risk from week 10, only survivable. `thalassa_worldbuilding.md`
+- **Collapse/Eras** — hidden prestige, risk from week 10, only survivable. `temenos_worldbuilding.md`
 - **Trade** — bilateral samtycke via budbärare. Intern resursflöde via /trade (egna settlements). extern = messenger+handelsoffert.
 
-> Authoritative current intent: `thalassa_todo.md` → "Vägen framåt".
+> Authoritative current intent: `megaron_todo.md` → "Vägen framåt".
 
 ---
 
@@ -155,7 +155,7 @@ inte valutan. Full svep = Sprint A.
 - Pixel art: 1px CHARCOAL outline on solids; no anti-aliasing, no gradients, no rounded corners;
   background terrain desaturated, foreground objects saturated.
 - The canvas renderer is exempt from the CSS vars (its own internal palette; culture accents live there).
-- Full spec: `thalassa_designprinciper.md`.
+- Full spec: `temenos_designprinciper.md`.
 
 ---
 
@@ -165,4 +165,4 @@ inte valutan. Full svep = Sprint A.
 - **Dev server** (CT 126, 10.0.1.88:8080): runs `air` (Go hot-reload). After pushing to master:
   `! ssh root@10.0.1.88 "cd /opt/poleia && git pull && echo done"` — `air` rebuilds. Force restart: append `&& systemctl restart poleia`.
 - **`poleia` binary:** `~/go/bin/poleia` — NOT in PATH, always use the full path.
-- **LLM playtest agents + live world:** `poleia_playtest.md`.
+- **LLM playtest agents + live world:** `keryx_playtest.md`.
