@@ -19,6 +19,7 @@
       <button onclick="zoom(1.25)" class="btn-small btn-secondary">+</button>
       <button onclick="zoom(0.8)"  class="btn-small btn-secondary">−</button>
       <button onclick="resetView()" class="btn-small btn-secondary">⌂</button>
+      <button id="music-btn" class="btn-small btn-secondary" onclick="toggleMusic()" title="Pause/resume music">♫</button>
     </div>
   </div>
 
@@ -722,6 +723,7 @@ async function loadMap() {
   if (tradeRes.ok) {
     tradeData = await tradeRes.json();
   }
+  MusicPlayer.update();
 }
 
 function centreCamera() {
@@ -735,8 +737,8 @@ function centreCamera() {
 
 // Reload provinces, marches, messengers, and trades every 30s
 setInterval(() => {
-  fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => provinceData = d));
-  fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; MusicPlayer.update(); }));
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { tradeData = d; dirty = true; }));
 }, 30000);
@@ -933,7 +935,8 @@ loadMap().then(() => { dirty = true; render(); });
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
       if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
-        fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => provinceData = d));
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; MusicPlayer.update(); }));
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
       }
     };
     ws.onclose = () => setTimeout(connect, 5000);
@@ -1232,5 +1235,70 @@ document.addEventListener('mousedown', e => {
     closeMarchCtx();
   }
 });
+
+// ── Music player ──────────────────────────────────────────────────────────
+const MusicPlayer = (() => {
+  let cur = null;
+  let curSrc = '';
+  let paused = false;
+  let started = false;
+
+  function ramp(el, to, ms, done) {
+    const steps = 20, dt = ms / steps, dv = (to - el.volume) / steps;
+    let i = 0;
+    const t = setInterval(() => {
+      el.volume = Math.max(0, Math.min(1, el.volume + dv));
+      if (++i >= steps) { clearInterval(t); if (done) done(); }
+    }, dt);
+  }
+
+  function play(src) {
+    if (curSrc === src) return;
+    curSrc = src;
+    const next = new Audio(src);
+    next.loop = true;
+    next.volume = 0;
+    if (started && !paused) {
+      next.play().catch(() => {});
+      ramp(next, 0.5, 1200);
+    }
+    if (cur) { const old = cur; ramp(old, 0, 800, () => old.pause()); }
+    cur = next;
+  }
+
+  function start() {
+    if (started) return;
+    started = true;
+    if (cur && !paused) { cur.play().catch(() => {}); ramp(cur, 0.5, 1200); }
+  }
+
+  function togglePause() {
+    paused = !paused;
+    if (paused) {
+      if (cur) ramp(cur, 0, 500, () => cur.pause());
+    } else {
+      if (cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 500); }
+    }
+    return paused;
+  }
+
+  function update() {
+    const capital = provinceData.find(p => p.is_capital);
+    if (!capital || !capital.culture) return;
+    const ownSet = new Set(provinceData.filter(p => p.own).map(p => p.q + ',' + p.r));
+    const war = marchData.some(m => m.intent === 'attack' && ownSet.has(m.target_q + ',' + m.target_r));
+    play('/static/music/' + capital.culture + '_' + (war ? 'war' : 'love') + '.ogg');
+  }
+
+  return { start, update, togglePause };
+})();
+
+function toggleMusic() {
+  const isPaused = MusicPlayer.togglePause();
+  document.getElementById('music-btn').textContent = isPaused ? '♪' : '♫';
+}
+
+// Start music on first user interaction (browser autoplay policy).
+document.addEventListener('pointerdown', () => MusicPlayer.start(), { once: true });
 </script>
 {{end}}
