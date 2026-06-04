@@ -99,8 +99,8 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		return h.colonize(ctx, tx, march.OriginID, march.TargetID, march.Army, worldID, march.ColonyName)
 	}
 
-	if march.Intent == "scout" {
-		// Scouts auto-return home; vision was contributed during transit (FOW step).
+	if march.Intent == "scout" || march.Intent == "explore" {
+		// Scouts and explores auto-return home; vision revealed during transit (FOW step).
 		return mergeArmy(ctx, tx, march.OriginID, march.Army)
 	}
 

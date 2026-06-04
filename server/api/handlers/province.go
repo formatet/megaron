@@ -219,14 +219,14 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	validIntents := map[string]bool{"attack": true, "reinforce": true, "support": true, "colonize": true, "outpost": true, "scout": true}
+	validIntents := map[string]bool{"attack": true, "reinforce": true, "support": true, "colonize": true, "outpost": true, "scout": true, "explore": true}
 	if !validIntents[req.Intent] {
 		writeError(w, http.StatusBadRequest, "invalid intent")
 		return
 	}
 
 	var targetID uuid.UUID
-	if (req.Intent == "colonize" || req.Intent == "outpost" || req.Intent == "scout") && req.TargetQ != nil && req.TargetR != nil {
+	if (req.Intent == "colonize" || req.Intent == "outpost" || req.Intent == "scout" || req.Intent == "explore") && req.TargetQ != nil && req.TargetR != nil {
 		// Coordinate-targeted intents: find or create a province row for the target tile.
 		// colonize/outpost reject settled targets; scout allows it (reconnaissance).
 		q, r2 := *req.TargetQ, *req.TargetR
@@ -238,9 +238,12 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusNotFound, "tile not found")
 			return
 		}
-		if terrain == "deep_sea" || terrain == "coastal_sea" ||
-			terrain == "mountain_limestone" || terrain == "mountain_red" {
-			writeError(w, http.StatusUnprocessableEntity, "cannot target sea or mountain terrain")
+		if terrain == "mountain_limestone" || terrain == "mountain_red" {
+			writeError(w, http.StatusUnprocessableEntity, "cannot target mountain terrain")
+			return
+		}
+		if req.Intent != "explore" && (terrain == "deep_sea" || terrain == "coastal_sea") {
+			writeError(w, http.StatusUnprocessableEntity, "cannot target sea terrain")
 			return
 		}
 		// Province may or may not exist; find or create it.
@@ -328,6 +331,11 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Intent == "explore" && army.Ship == 0 {
+		writeError(w, http.StatusBadRequest, "explore requires at least one ship")
+		return
+	}
+
 	// Mountains are impassable for all units.
 	if dst.TerrainType == "mountain_limestone" || dst.TerrainType == "mountain_red" {
 		writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
@@ -335,21 +343,47 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Naval gating.
-	// Naval march (any ships): ships-only, embark from coast, land on coast/sea.
-	// Land march (no ships): cannot target sea tiles.
 	isSea := dst.TerrainType == "coastal_sea" || dst.TerrainType == "deep_sea"
+	hasLandUnits := army.Infantry > 0 || army.Cavalry > 0 || army.Catapult > 0 || army.EliteInfantry > 0
 	if army.Ship > 0 {
+		// Embarkation: origin must be coast_beach OR have a harbour building.
 		if src.TerrainType != "coast_beach" {
-			writeError(w, http.StatusUnprocessableEntity, "ships can only embark from coastal settlements")
-			return
+			var hasHarbour bool
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT EXISTS(
+				   SELECT 1 FROM buildings b
+				   JOIN settlements s ON s.id = b.settlement_id
+				   WHERE s.province_id = $1 AND b.building_type = 'harbour'
+				 )`,
+				sourceID,
+			).Scan(&hasHarbour)
+			if !hasHarbour {
+				writeError(w, http.StatusUnprocessableEntity, "ships can only embark from coastal settlements or harbours")
+				return
+			}
 		}
-		if dst.TerrainType != "coast_beach" && !isSea {
-			writeError(w, http.StatusUnprocessableEntity, "ships can only sail to coastal or sea provinces")
-			return
-		}
-		if army.Infantry > 0 || army.Cavalry > 0 || army.Catapult > 0 || army.EliteInfantry > 0 {
-			writeError(w, http.StatusUnprocessableEntity, "naval marches carry ships only — land units cannot board")
-			return
+		if req.Intent == "explore" {
+			// Explore: ships only, any coastal or sea destination, auto-returns.
+			if hasLandUnits {
+				writeError(w, http.StatusUnprocessableEntity, "explore requires ships only — remove land units")
+				return
+			}
+			if dst.TerrainType != "coast_beach" && !isSea {
+				writeError(w, http.StatusUnprocessableEntity, "explore can only target coastal or sea provinces")
+				return
+			}
+		} else if hasLandUnits {
+			// Naval expedition: troops must land at a coast.
+			if dst.TerrainType != "coast_beach" {
+				writeError(w, http.StatusUnprocessableEntity, "naval expedition must land at a coastal province")
+				return
+			}
+		} else {
+			// Ships only (not explore): coast or sea destinations allowed.
+			if dst.TerrainType != "coast_beach" && !isSea {
+				writeError(w, http.StatusUnprocessableEntity, "ships can only sail to coastal or sea provinces")
+				return
+			}
 		}
 	} else if isSea {
 		writeError(w, http.StatusUnprocessableEntity, "sea provinces require ships to reach")
