@@ -142,7 +142,11 @@ inte valutan. Full svep = Sprint A.
 - **Priests** — rituella enheter, ingen stridsstyrka. Kharis avgör rit-framgång (80/50/20/5% per mood).
 - **Silver** — betalningsmedel (inte guld). DB-nyckel: `gold`. UI-visning: shekel/mina/talang. Fysiskt transporterbart.
 - **Collapse/Eras** — hidden prestige, risk from week 10, only survivable. `temenos_worldbuilding.md`
-- **Trade** — bilateral samtycke via budbärare. Intern resursflöde via /trade (egna settlements). extern = messenger+handelsoffert.
+- **Trade & budbärarlagret — tre skilda saker (håll isär):** (1) **meddelande** = fritext wanax↔wanax;
+  (2) **handelsoffert** = strukturerat erbjudande, bilateralt samtycke, **FOW-gatead — bara mot städer du
+  faktiskt kontaktat** (`visibleOrigins`), ingen global handelskatalog; (3) **intern överföring** egen→egen
+  stad = logistik, inget samtycke, fysisk karavan utan förlust (idag `Gift`, silver+grain, ej i klienter).
+  `temenos_settlement.md`
 
 > Authoritative current intent: `megaron_todo.md` → "Vägen framåt".
 
