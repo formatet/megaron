@@ -92,7 +92,7 @@
         </label>
         <label class="recruit-row{{if not $hasStable}} unit-unavailable{{end}}">
           <span class="recruit-label">Hippeis</span>
-          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 grain · 5 cedar{{end}}</span>
+          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 grain · 5 timber{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-hippeis"{{if not $hasStable}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
                   onclick="recruitUnit('cavalry', document.getElementById('rc-hippeis').value)"
@@ -197,19 +197,19 @@
       <!-- Build form -->
       <div class="build-form-wrap">
         <select id="build-select" class="build-select">
-          <option value="farm">Farm — 50 cedar 20 stone · +grain/m</option>
-          <option value="lumbermill">Lumbermill — 40 cedar 40 stone · +cedar/m</option>
-          <option value="stonequarry">Stone Quarry — 50 cedar 20 stone · +stone/m</option>
-          <option value="mine">Mine — 60 cedar 40 stone · +stone/m</option>
-          <option value="barracks">Barracks — 80 cedar 80 stone · recruits</option>
-          <option value="market">Market — 100 cedar 60 stone · +0.5 silver/m</option>
-          <option value="wall">Wall — 40 cedar 160 stone · +1 wall</option>
-          <option value="tower">Tower — 60 cedar 110 stone · +1 wall</option>
-          <option value="harbour">Harbour — 140 cedar 60 stone · ships</option>
-          <option value="foundry">Foundry — 80 cedar 100 stone · craft bronze</option>
-          <option value="stable">Stable — 60 cedar 40 stone · horses</option>
-          <option value="olive_press">Olive Press — 30 cedar 40 stone · +oil/m</option>
-          <option value="winery">Winery — 40 cedar 30 stone · +wine/m</option>
+          <option value="farm">Farm — 50 timber 20 stone · +grain/m</option>
+          <option value="lumbermill">Lumbermill — 40 timber 40 stone · +timber/m (+cedar if deposit)</option>
+          <option value="stonequarry">Stone Quarry — 50 timber 20 stone · +stone/m</option>
+          <option value="mine">Mine — 60 timber 40 stone · +stone/m</option>
+          <option value="barracks">Barracks — 80 timber 80 stone · recruits</option>
+          <option value="market">Market — 100 timber 60 stone · +0.5 silver/m</option>
+          <option value="wall">Wall — 40 timber 160 stone · +1 wall</option>
+          <option value="tower">Tower — 60 timber 110 stone · +1 wall</option>
+          <option value="harbour">Harbour — 140 timber 60 stone · ships</option>
+          <option value="foundry">Foundry — 80 timber 100 stone · craft bronze</option>
+          <option value="stable">Stable — 60 timber 40 stone · horses</option>
+          <option value="olive_press">Olive Press — 30 timber 40 stone · +oil/m</option>
+          <option value="winery">Winery — 40 timber 30 stone · +wine/m</option>
           <option value="bronze_wall">Bronze Wall — 100 stone 10 bronze · +1 wall</option>
         </select>
         <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
