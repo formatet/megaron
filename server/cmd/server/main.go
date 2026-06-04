@@ -121,6 +121,8 @@ func main() {
 	worker.Register(events.ScheduledTradeReturn, tradeReturnH.Handle)
 	worker.Register(events.ScheduledRespawn, respawnH.Handle)
 	worker.Register(events.ScheduledRecallArrival, recallH.Handle)
+	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
+	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
 	go worker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
 	go healDispossessed(ctx, pool, scheduler)
@@ -173,9 +175,9 @@ func main() {
 
 	// Game routes (authenticated).
 	wh := handlers.NewWorldHandler(pool, authSvc, gameClock)
-	kh := handlers.NewKingdomHandler(pool, gameClock)
+	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock)
-	sh := handlers.NewSettlementHandler(pool, eventStore, gameClock)
+	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock)
 	jh := handlers.NewJoinHandler(pool)
 

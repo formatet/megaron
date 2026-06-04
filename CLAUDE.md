@@ -122,6 +122,11 @@ Collapse not Season-end · The Thalassa not The Sea.
 står (UI-text, ny kod, rubriker), välj Megaron-nomenklaturen. Permanent kvar: `terrain = "sea"` i DB.
 Mono-repo-målet temenos/megaron/keryx, se [[thalassa_todo]] "Projektbyte".
 
+**Silver-över-guld (HARD, riktning):** Valutan heter **silver**. Föredra ordet "silver" framför "gold/guld"
+i UI, API-fält, nya identifierare och kommentarer där du ändå rör koden. DB-kolumnerna förblir `gold_*`
+(canonical) tills Sprint A-migrationen byter dem. "Gold/guld" reserveras för den framtida lyxvaran (good_key),
+inte valutan. Full svep = Sprint A.
+
 ---
 
 ## Design invariants (one-liners — rationale & full design in vault)

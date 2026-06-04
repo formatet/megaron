@@ -13,18 +13,21 @@ import (
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/loyalty"
+	"github.com/poleia/server/internal/messenger"
+	"github.com/poleia/server/internal/province"
 )
 
 // SettlementHandler handles HTTP requests for settlement endpoints.
 type SettlementHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
+	scheduler  *events.Scheduler
 	clk        clock.Clock
 }
 
 // NewSettlementHandler creates a SettlementHandler.
-func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store, clk clock.Clock) *SettlementHandler {
-	return &SettlementHandler{pool: pool, eventStore: store, clk: clk}
+func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store, sched *events.Scheduler, clk clock.Clock) *SettlementHandler {
+	return &SettlementHandler{pool: pool, eventStore: store, scheduler: sched, clk: clk}
 }
 
 // List handles GET /worlds/:worldID/settlements — returns the caller's settlements.
@@ -215,6 +218,17 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Caravan travel time: source capital → target settlement (both your own — internal supply line).
+	var sQ, sR, tQ, tR int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+		sourceID).Scan(&sQ, &sR)
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+		targetID).Scan(&tQ, &tR)
+	dist := province.HexDistance(province.MapPosition{Q: sQ, R: sR}, province.MapPosition{Q: tQ, R: tR})
+	arrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
+
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -255,31 +269,21 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Credit gold to target settlement column.
+	// Dispatch the gift as a caravan — it is credited to the target on ARRIVAL, not instantly.
+	// Internal supply line: no caravan-loss. Silver is the currency (gold_amount column → good_key "silver").
 	if req.Gold > 0 {
-		if _, err2 := tx.Exec(r.Context(),
-			`UPDATE settlements SET gold_amount = gold_amount + $1 WHERE id = $2`,
-			req.Gold, targetID,
-		); err2 != nil {
-			writeError(w, http.StatusInternalServerError, "could not credit gold")
+		if err2 := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
+			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "silver", "quantity": req.Gold},
+			arrivesAt); err2 != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule gift silver")
 			return
 		}
 	}
-
-	// Credit grain to target settlement_goods.
 	if req.Grain > 0 {
-		if _, err2 := tx.Exec(r.Context(),
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-			 VALUES ($1, 'grain', $2, 0, 1000, now())
-			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-			     amount  = LEAST(settlement_goods.cap,
-			                 settlement_goods.amount
-			                 + EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60 * settlement_goods.rate
-			                 + $2),
-			     calc_at = now()`,
-			targetID, req.Grain,
-		); err2 != nil {
-			writeError(w, http.StatusInternalServerError, "could not credit grain")
+		if err2 := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
+			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "grain", "quantity": req.Grain},
+			arrivesAt); err2 != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule gift grain")
 			return
 		}
 	}
@@ -289,7 +293,8 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Apply loyalty event — significant gift (50+ gold equivalent) gives +1 loyalty.
+	// Apply loyalty event — significant gift (50+ silver equivalent) gives +1 loyalty.
+	// Applied at send (the gesture is committed); goods themselves arrive after travel.
 	loyaltyDelta := 0
 	if req.Gold+req.Grain*0.5 >= 50 {
 		loyaltyDelta = 1
@@ -305,8 +310,9 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"loyalty_delta": loyaltyDelta,
-		"gold_sent":     req.Gold,
+		"silver_sent":   req.Gold,
 		"grain_sent":    req.Grain,
+		"arrives_at":    arrivesAt,
 	})
 }
 

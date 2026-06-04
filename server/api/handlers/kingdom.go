@@ -12,17 +12,21 @@ import (
 	"github.com/poleia/server/internal/ai"
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/messenger"
+	"github.com/poleia/server/internal/province"
 )
 
 // KingdomHandler handles HTTP requests for kingdom endpoints.
 type KingdomHandler struct {
-	pool *pgxpool.Pool
-	clk  clock.Clock
+	pool      *pgxpool.Pool
+	scheduler *events.Scheduler
+	clk       clock.Clock
 }
 
 // NewKingdomHandler creates a KingdomHandler.
-func NewKingdomHandler(pool *pgxpool.Pool, clk clock.Clock) *KingdomHandler {
-	return &KingdomHandler{pool: pool, clk: clk}
+func NewKingdomHandler(pool *pgxpool.Pool, sched *events.Scheduler, clk clock.Clock) *KingdomHandler {
+	return &KingdomHandler{pool: pool, scheduler: sched, clk: clk}
 }
 
 // List handles GET /worlds/:worldID/kingdoms.
@@ -1027,6 +1031,25 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// The silver physically travels to the treasury's seat — the Heqetas (Basileus) capital —
+	// and is credited on arrival, not instantly. No seat found (e.g. a forming kingdom) → no delay.
+	var cQ, cR, bQ, bR int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+		settlementID).Scan(&cQ, &cR)
+	seatErr := h.pool.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r
+		 FROM kingdom_members km
+		 JOIN settlements s ON s.owner_id = km.player_id AND s.world_id = $2 AND s.is_capital = true
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE km.kingdom_id = $1 AND km.role = 'basileus'`,
+		kingdomID, worldID).Scan(&bQ, &bR)
+	dist := 0
+	if seatErr == nil {
+		dist = province.HexDistance(province.MapPosition{Q: cQ, R: cR}, province.MapPosition{Q: bQ, R: bR})
+	}
+	arrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
+
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -1054,16 +1077,11 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Add to kingdom treasury (materialized).
-	_, err = tx.Exec(r.Context(),
-		`UPDATE kingdoms SET
-		   gold_amount = gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate) + $1,
-		   gold_calc_at = now()
-		 WHERE id = $2`,
-		req.Amount, kingdomID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not add to treasury")
+	// Schedule the tribute caravan — the treasury is credited on ARRIVAL, not instantly.
+	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
+		map[string]any{"kind": "treasury", "destination": kingdomID, "good_key": "silver", "quantity": req.Amount},
+		arrivesAt); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule treasury caravan")
 		return
 	}
 
@@ -1072,7 +1090,7 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{"deposited": req.Amount})
+	writeJSON(w, http.StatusOK, map[string]any{"deposited": req.Amount, "arrives_at": arrivesAt})
 }
 
 // broadcastKingdomGossip sends gossip to all players within 5 hexes of the given
