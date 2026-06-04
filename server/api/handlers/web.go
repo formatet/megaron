@@ -251,7 +251,8 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT count(*) FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
-		 WHERE m.world_id = $1 AND s.owner_id = $2 AND m.status = 'delivered'`,
+		 WHERE m.world_id = $1 AND s.owner_id = $2 AND m.status = 'delivered'
+		   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')`,
 		worldID, playerID,
 	).Scan(&unreadCount)
 
@@ -937,7 +938,8 @@ func (h *WebHandler) MessagesView(w http.ResponseWriter, r *http.Request) {
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT count(*) FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
-		 WHERE m.world_id=$1 AND s.owner_id=$2 AND m.status='delivered'`,
+		 WHERE m.world_id=$1 AND s.owner_id=$2 AND m.status='delivered'
+		   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')`,
 		worldID, playerID,
 	).Scan(&unread)
 
