@@ -263,13 +263,13 @@
       <h3>Goods</h3>
       <div id="goods-list"><p class="loading">Loading…</p></div>
       <div class="goods-trade-wrap" id="goods-trade-wrap" style="display:none">
-        <div class="lp-title" style="margin-top:.6rem">Send Trade</div>
+        <div class="lp-title" style="margin-top:.6rem">Transfer to own settlement</div>
         <select id="trade-good" class="build-select" style="margin:.3rem 0"></select>
         <input type="number" id="trade-qty" placeholder="Quantity" min="0.1" step="0.1" class="trade-qty-input">
         <select id="trade-dest" class="build-select" style="margin:.2rem 0">
           <option value="">— choose destination —</option>
         </select>
-        <button class="btn-primary btn-small" onclick="sendTrade()" style="width:100%;margin-top:.3rem">Send →</button>
+        <button class="btn-primary btn-small" onclick="sendTrade()" style="width:100%;margin-top:.3rem">Transfer →</button>
         <div id="trade-result" class="action-result"></div>
       </div>
       <div class="lp-title" style="margin-top:.8rem">En Route</div>
@@ -395,9 +395,9 @@ async function loadGoods() {
       </tr>`;
     }).join('')}</tbody>
   </table>`;
-  // Populate trade good selector
+  // Populate transfer good selector — prepend silver (lives in gold_amount column, not settlement_goods)
   const sel = document.getElementById('trade-good');
-  sel.innerHTML = _goodsData.map(g => `<option value="${g.key}">${g.name}</option>`).join('');
+  sel.innerHTML = '<option value="silver">Silver</option>' + _goodsData.map(g => `<option value="${g.key}">${g.name}</option>`).join('');
   document.getElementById('goods-trade-wrap').style.display = '';
 }
 
@@ -431,14 +431,13 @@ async function loadVisibleSettlements() {
   if (!res.ok) return;
   const markers = await res.json().catch(() => []);
   const sel = document.getElementById('trade-dest');
-  // Keep the placeholder, replace rest.
+  // Show only own settlements (not the current one) — /trade is internal transfer only.
   sel.innerHTML = '<option value="">— choose destination —</option>';
   markers.forEach(m => {
-    if (m.own) return; // skip own settlement
-    const label = m.name + (m.owner ? ` (${m.owner})` : '') + (m.allied ? ' ★' : '');
+    if (!m.own || m.settlement_id === SETTLEMENT_ID) return;
     const opt = document.createElement('option');
     opt.value = m.settlement_id;
-    opt.textContent = label;
+    opt.textContent = m.name + (m.is_capital ? ' ★' : '');
     sel.appendChild(opt);
   });
 }
@@ -473,9 +472,7 @@ async function sendTrade() {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    const bonus = data.distance_bonus ? ` · +${Math.round((data.distance_bonus - 1) * 100)}% distance` : '';
-    const delivered = data.delivered_qty ? ` → ${data.delivered_qty.toFixed(1)} delivered` : '';
-    showResult('trade-result', `${qty}× ${good}${delivered} · ${Math.round(data.travel_min)} min${bonus}`, true);
+    showResult('trade-result', `${qty}× ${good} → ${Math.round(data.travel_min)} min travel`, true);
     loadGoods();
     loadTradeRoutes();
   } else {
