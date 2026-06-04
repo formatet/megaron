@@ -14,7 +14,7 @@
     <span class="map-world-name">{{.World.Name}}</span>
     <span class="pill state-{{.World.State}}">{{.World.State}}</span>
     <span class="map-prestige" title="World prestige — drives collapse risk">Era {{.World.EraNumber}} · ✦ {{.World.Prestige}}</span>
-    <span class="map-hint">Drag · Scroll to zoom · Click province · Right-click to march · <span style="color:#922B21">■</span> armies <span style="color:#D4AC0D">■</span> messengers <span style="color:#7B4F28">■</span> caravans · <span style="color:#CA8A04">▲</span> your town <span style="color:#C0392B">▲</span> other Wanax</span>
+    <span class="map-hint">Drag · Scroll to zoom · Click province · Right-click to march · <span style="color:#922B21">■</span> armies <span style="color:#D4AC0D">■</span> messengers <span style="color:#7B4F28">■</span> caravans · <span style="color:#CA8A04">▲</span> your town <span style="color:#4CAF50">▲</span> allied <span style="color:#C0392B">▲</span> enemy</span>
     <div class="map-zoom-btns">
       <button onclick="zoom(1.25)" class="btn-small btn-secondary">+</button>
       <button onclick="zoom(0.8)"  class="btn-small btn-secondary">−</button>
@@ -447,8 +447,7 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
 
 // ── Province building sprite + flag ──────────────────────────────────────
 function drawProvince(ctx, cx, cy, p) {
-  const accent = CULTURE_ACCENT[p.culture] || '#C0392B';
-  const roofColor = p.own ? '#CA8A04' : (p.allied ? accent : '#C0392B');
+  const roofColor = p.own ? '#CA8A04' : (p.allied ? '#4CAF50' : '#C0392B');
   const bw=14, bh=10, bx=cx-7, by=cy-6;
   // Walls
   ctx.fillStyle = p.own ? '#FDFEFE' : '#F2EAD3'; ctx.fillRect(bx,by,bw,bh);
