@@ -70,6 +70,9 @@
     <button class="mctx-ibtn active" id="mctx-attack"    onclick="setMarchIntent('attack')"    title="March to attack — units fight defenders on arrival">Attack</button>
     <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')" title="March to reinforce — units join the garrison on arrival">Reinforce</button>
     <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')"   title="March in support — bolsters any allied attack arriving while still in transit; joins garrison on arrival">Support</button>
+    <button class="mctx-ibtn"        id="mctx-scout"     onclick="setMarchIntent('scout')"     title="Scout — units recon the tile and auto-return">Scout</button>
+    <button class="mctx-ibtn"        id="mctx-colonize"  onclick="setMarchIntent('colonize')"  title="Colonize — army founds a new settlement on arrival" style="display:none">Colonize</button>
+    <button class="mctx-ibtn"        id="mctx-outpost"   onclick="setMarchIntent('outpost')"   title="Outpost — army establishes a resource outpost on arrival" style="display:none">Outpost</button>
   </div>
   <div id="mctx-source-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
     From: <select id="mctx-source" onchange="onSourceChange()"
@@ -79,6 +82,9 @@
     Colonize: army founds a new settlement on arrival.
     <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
       style="display:block;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
+  </div>
+  <div id="mctx-outpost-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
+    Outpost: army establishes a resource outpost on arrival.
   </div>
   <div class="mctx-units" id="mctx-units"></div>
   <div class="mctx-foot">
@@ -946,6 +952,10 @@ function setMarchIntent(intent) {
   marchCtxIntent = intent;
   document.querySelectorAll('.mctx-ibtn').forEach(b => b.classList.remove('active'));
   document.getElementById('mctx-' + intent).classList.add('active');
+  document.getElementById('mctx-colonize-row').style.display = intent === 'colonize' ? 'block' : 'none';
+  document.getElementById('mctx-outpost-row').style.display  = intent === 'outpost'  ? 'block' : 'none';
+  const labels = { colonize: 'Colonize →', outpost: 'Outpost →', scout: 'Scout →' };
+  document.getElementById('mctx-send').textContent = labels[intent] || 'March →';
 }
 
 function populateSourceSelect(defaultID) {
@@ -1006,12 +1016,14 @@ async function openColonizeCtx(tile, screenX, screenY) {
   if (!capital) return;
   marchCtxTarget = null;
   marchCtxTile   = tile;
-  marchCtxIntent = 'colonize';
   marchCtxArmy   = null;
   document.getElementById('mctx-err').textContent = '';
   document.getElementById('mctx-name').textContent = `Empty tile (${tile.q},${tile.r})`;
-  document.getElementById('mctx-intent-row').style.display = 'none';
-  document.getElementById('mctx-colonize-row').style.display = 'block';
+  ['mctx-attack','mctx-reinforce','mctx-support'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  ['mctx-scout','mctx-colonize','mctx-outpost'].forEach(id => { document.getElementById(id).style.display = ''; });
+  document.getElementById('mctx-intent-row').style.display = '';
+  document.querySelectorAll('.mctx-ibtn').forEach(b => b.classList.remove('active'));
+  setMarchIntent('colonize');
 
   marchCtx.style.display = 'block';
   const vw = window.innerWidth, vh = window.innerHeight;
@@ -1027,7 +1039,6 @@ async function openColonizeCtx(tile, screenX, screenY) {
   marchCtxArmy = await res.json();
 
   renderArmyInputs(marchCtxArmy, null);
-  document.getElementById('mctx-send').textContent = 'Colonize →';
 
   const newH = marchCtx.offsetHeight;
   marchCtx.style.top = Math.min(screenY + 8, vh - newH - 8) + 'px';
@@ -1039,23 +1050,23 @@ async function openMarchCtx(target, screenX, screenY) {
 
   marchCtxTarget = target;
   marchCtxTile   = null;
-  marchCtxIntent = 'attack';
   marchCtxArmy   = null;
   document.getElementById('mctx-err').textContent = '';
-  document.getElementById('mctx-intent-row').style.display = '';
-  document.getElementById('mctx-colonize-row').style.display = 'none';
-  document.getElementById('mctx-send').textContent = 'March →';
   document.getElementById('mctx-name').textContent = target.name;
+  ['mctx-attack','mctx-reinforce','mctx-support','mctx-scout'].forEach(id => { document.getElementById(id).style.display = ''; });
+  ['mctx-colonize','mctx-outpost'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  document.getElementById('mctx-colonize-row').style.display = 'none';
+  document.getElementById('mctx-outpost-row').style.display = 'none';
+  document.getElementById('mctx-intent-row').style.display = '';
+  document.querySelectorAll('.mctx-ibtn').forEach(b => { b.classList.remove('active'); b.disabled = false; });
+  document.getElementById('mctx-send').textContent = 'March →';
+  marchCtxIntent = 'attack';
+  document.getElementById('mctx-attack').classList.add('active');
 
   // Intent buttons: reinforce/support only for allied provinces.
   const allied = !!target.allied;
-  const ri = document.getElementById('mctx-reinforce');
-  const si = document.getElementById('mctx-support');
-  ri.disabled = !allied;
-  si.disabled = !allied;
-  ri.classList.toggle('active', false);
-  si.classList.toggle('active', false);
-  document.getElementById('mctx-attack').classList.add('active');
+  document.getElementById('mctx-reinforce').disabled = !allied;
+  document.getElementById('mctx-support').disabled = !allied;
 
   // Position: keep within viewport.
   marchCtx.style.display = 'block';
