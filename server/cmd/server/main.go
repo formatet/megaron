@@ -157,6 +157,7 @@ func main() {
 		r.Get("/megaron", webH.MegaronView)
 		r.Get("/", webH.Province)
 		r.Get("/map", webH.MapView)
+		r.Get("/rawaketa", webH.RawakView)
 		r.Get("/kingdom", webH.KingdomView)
 		r.Get("/messages", webH.MessagesView)
 		r.Get("/market", webH.MarketView)

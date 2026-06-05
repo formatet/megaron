@@ -914,6 +914,225 @@ func clampF(v, lo, hi float64) float64 {
 	return v
 }
 
+// RawakView serves the Rawaketa page (army + recruit + movements).
+// Reuses the same data-loading pipeline as Province() but renders rawaketa.html.
+func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		http.Error(w, "invalid world ID", http.StatusBadRequest)
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	var s *settlement.Settlement
+	if sidStr := r.URL.Query().Get("sid"); sidStr != "" {
+		if sid, parseErr := uuid.Parse(sidStr); parseErr == nil {
+			if cand, loadErr := loadSettlement(r.Context(), h.pool, sid, worldID); loadErr == nil {
+				if cand.OwnerID != nil && *cand.OwnerID == playerID {
+					s = cand
+				}
+			}
+		}
+	}
+	if s == nil {
+		var err2 error
+		s, err2 = loadPlayerCapital(r.Context(), h.pool, playerID, worldID)
+		if err2 != nil {
+			h.render(w, "no_province.html", map[string]any{"WorldID": worldID})
+			return
+		}
+	}
+
+	now := h.clk.Now()
+	resources := s.Resources.Snapshot(now)
+	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
+	resources["gold_cap"] = s.Resources.Gold.Cap
+	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources, "grain", "cedar", "stone")
+	if s.OwnerID != nil {
+		if kh, err2 := loadPlayerKharis(r.Context(), h.pool, *s.OwnerID, worldID); err2 == nil {
+			resources["kharis"] = kh.Amount
+			resources["kharis_rate"] = kh.Rate
+		}
+	}
+
+	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT copper_deposit, tin_deposit,
+		        COALESCE(silver_deposit, false), COALESCE(cedar_deposit, false)
+		 FROM provinces WHERE id = $1`,
+		s.ProvinceID,
+	).Scan(&copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
+
+	type provinceView struct {
+		ID            uuid.UUID
+		SettlementID  uuid.UUID
+		WorldID       uuid.UUID
+		Name          string
+		CultureID     string
+		Army          any
+		ArmyDP        int
+		Population    int
+		Walls         int
+		Loyalty       int
+		KingdomID     *uuid.UUID
+		CopperDeposit bool
+		TinDeposit    bool
+		SilverDeposit bool
+		CedarDeposit  bool
+	}
+	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
+	pv := provinceView{
+		ID:            s.ProvinceID,
+		SettlementID:  s.ID,
+		WorldID:       worldID,
+		Name:          s.Name,
+		CultureID:     string(s.CultureID),
+		Army:          s.Army,
+		ArmyDP:        armyDP,
+		Population:    s.Population,
+		Walls:         s.WallLevel,
+		Loyalty:       s.Loyalty,
+		KingdomID:     s.KingdomID,
+		CopperDeposit: copperDeposit,
+		TinDeposit:    tinDeposit,
+		SilverDeposit: silverDeposit,
+		CedarDeposit:  cedarDeposit,
+	}
+
+	// Marches (outgoing).
+	mrows, _ := h.pool.Query(r.Context(),
+		`SELECT ma.id, ma.target_id, COALESCE(s2.name, ma.target_id::text),
+		        ma.infantry, ma.cavalry, ma.catapult, ma.priest, ma.ship, ma.intent, ma.arrives_at
+		 FROM marching_armies ma
+		 LEFT JOIN settlements s2 ON s2.province_id = ma.target_id
+		 WHERE ma.origin_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,
+		s.ProvinceID,
+	)
+	defer mrows.Close()
+	type marchItem struct {
+		ID         uuid.UUID
+		TargetID   uuid.UUID
+		TargetName string
+		Infantry   int
+		Cavalry    int
+		Intent     string
+		ArrivesAt  time.Time
+	}
+	var marches []marchItem
+	for mrows.Next() {
+		var mi marchItem
+		var cat, pri, ship int
+		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Cavalry, &cat, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
+		marches = append(marches, mi)
+	}
+
+	// Incoming armies.
+	irows, _ := h.pool.Query(r.Context(),
+		`SELECT ma.origin_id, s2.name, ma.infantry+ma.cavalry+ma.catapult+ma.priest+ma.ship+ma.elite_infantry, ma.intent, ma.arrives_at
+		 FROM marching_armies ma
+		 JOIN settlements s2 ON s2.province_id = ma.origin_id
+		 WHERE ma.target_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,
+		s.ProvinceID,
+	)
+	defer irows.Close()
+	type incomingItem struct {
+		OriginID   uuid.UUID
+		Name       string
+		TotalUnits int
+		Intent     string
+		ArrivesAt  time.Time
+	}
+	var incoming []incomingItem
+	for irows.Next() {
+		var ii incomingItem
+		_ = irows.Scan(&ii.OriginID, &ii.Name, &ii.TotalUnits, &ii.Intent, &ii.ArrivesAt)
+		incoming = append(incoming, ii)
+	}
+
+	// Recruit queue.
+	trrows, _ := h.pool.Query(r.Context(),
+		`SELECT (payload->>'unit_type')::text, (payload->>'count')::int, process_after
+		 FROM scheduled_events
+		 WHERE world_id = $1 AND event_type = 'TrainComplete'
+		   AND processed_at IS NULL
+		   AND (payload->>'settlement_id')::uuid = $2
+		 ORDER BY process_after`,
+		s.WorldID, s.ID,
+	)
+	defer trrows.Close()
+	type recruitItem struct {
+		Unit       string
+		Count      int
+		CompleteAt time.Time
+	}
+	var recruitQueue []recruitItem
+	for trrows.Next() {
+		var ri recruitItem
+		_ = trrows.Scan(&ri.Unit, &ri.Count, &ri.CompleteAt)
+		recruitQueue = append(recruitQueue, ri)
+	}
+
+	// Buildings.
+	bldRows, _ := h.pool.Query(r.Context(),
+		`SELECT building_type, level FROM buildings WHERE settlement_id = $1 ORDER BY building_type`,
+		s.ID,
+	)
+	defer bldRows.Close()
+	type buildingItem struct {
+		Type  string
+		Level int
+	}
+	var buildings []buildingItem
+	for bldRows.Next() {
+		var bi buildingItem
+		_ = bldRows.Scan(&bi.Type, &bi.Level)
+		buildings = append(buildings, bi)
+	}
+	built := make(map[string]bool)
+	for _, b := range buildings {
+		built[b.Type] = true
+	}
+
+	// Own settlements switcher.
+	type settSwitchItem struct {
+		ID          uuid.UUID
+		Name        string
+		IsCapital   bool
+		ControlType string
+	}
+	var ownSettlements []settSwitchItem
+	switchRows, _ := h.pool.Query(r.Context(),
+		`SELECT id, name, is_capital, control_type FROM settlements WHERE world_id = $1 AND owner_id = $2 ORDER BY is_capital DESC, name`,
+		worldID, playerID,
+	)
+	if switchRows != nil {
+		for switchRows.Next() {
+			var ss settSwitchItem
+			_ = switchRows.Scan(&ss.ID, &ss.Name, &ss.IsCapital, &ss.ControlType)
+			ownSettlements = append(ownSettlements, ss)
+		}
+		switchRows.Close()
+	}
+
+	h.render(w, "rawaketa.html", map[string]any{
+		"Province":         pv,
+		"Resources":        resources,
+		"Marches":          marches,
+		"Incoming":         incoming,
+		"RecruitQueue":     recruitQueue,
+		"Built":            built,
+		"WorldID":          worldID,
+		"Now":              now,
+		"DivineMood":       kharisToMood(resources["kharis"]),
+		"OwnSettlements":   ownSettlements,
+		"ActiveSettlement": s.ID,
+	})
+}
+
 // MessagesView serves the standalone messages/diplomacy page.
 func (h *WebHandler) MessagesView(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))

@@ -3,9 +3,11 @@
 {{define "nav"}}
   <a href="/world/{{.WorldID}}/megaron">⌂</a>
   <a href="/world/{{.WorldID}}/map">Map</a>
+  <a href="/world/{{.WorldID}}">Economy</a>
+  <a href="/world/{{.WorldID}}/rawaketa">Rawaketa</a>
   <a href="/world/{{.WorldID}}/messages">Scribes{{if .UnreadCount}} <span class="nav-badge">{{.UnreadCount}}</span>{{end}}</a>
-  <a href="/world/{{.WorldID}}/kingdom">Council</a>
-  <a href="/world/{{.WorldID}}/market">Agora</a>{{end}}
+  <a href="/world/{{.WorldID}}/kingdom">Oikos</a>
+{{end}}
 {{define "content"}}
 <div class="megaron-page">
 
@@ -56,15 +58,28 @@
       <span class="room-enter">Enter →</span>
     </a>
 
-    <!-- Treasury (province view) -->
+    <!-- Economy (province view) -->
     <a href="/world/{{.WorldID}}/" class="room-card">
       <div class="room-lintel">
         <span class="room-glyph">⊞</span>
-        <span class="room-name">Treasury</span>
+        <span class="room-name">Economy</span>
       </div>
       <div class="room-status">
-        <span>Goods · buildings · production</span>
+        <span>Varor · byggnader · produktion</span>
         {{if .Settlement.Loyalty}}<span>Loyalty: {{.Settlement.Loyalty}}/4</span>{{end}}
+      </div>
+      <span class="room-enter">Enter →</span>
+    </a>
+
+    <!-- Rawaketa (army + recruit) -->
+    <a href="/world/{{.WorldID}}/rawaketa" class="room-card">
+      <div class="room-lintel">
+        <span class="room-glyph">⚔</span>
+        <span class="room-name">Rawaketa</span>
+      </div>
+      <div class="room-status">
+        <span>Armé · rekrytera · marschorder</span>
+        {{if .ArmyDP}}<span>{{.ArmyDP}} DP i garnison</span>{{end}}
       </div>
       <span class="room-enter">Enter →</span>
     </a>
@@ -86,18 +101,18 @@
       <span class="room-enter">Enter →</span>
     </a>
 
-    <!-- Council (kingdom) -->
+    <!-- Oikos (kingdom) -->
     <a href="/world/{{.WorldID}}/kingdom" class="room-card">
       <div class="room-lintel">
         <span class="room-glyph">⚖</span>
-        <span class="room-name">Council</span>
+        <span class="room-name">Oikos</span>
       </div>
       <div class="room-status">
         {{if .KingdomName}}
           <span>{{.KingdomName}}</span>
           <span class="pill state-{{.KingdomState}}">{{if eq .KingdomState "forming"}}Forming · {{.MemberCount}}/3{{else}}Active{{end}}</span>
         {{else}}
-          <span class="rs-dim">No kingdom founded</span>
+          <span class="rs-dim">Inget oikos grundat</span>
         {{end}}
       </div>
       <span class="room-enter">Enter →</span>
