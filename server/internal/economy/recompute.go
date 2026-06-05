@@ -10,8 +10,9 @@ import (
 )
 
 // REF_LABOR is the reference population for the production formula.
-// A settlement with exactly 100 free laborers and weight 1.0 on a good
-// gets rate = base_potential (same as today's terrain-only rate).
+// yield_per_worker(g) = base_potential(g) / REF_LABOR.
+// A good produced by a settlement at REF_LABOR workers with all citizens
+// assigned gets base_potential as its rate — same as the pre-Fas-2 baseline.
 const REF_LABOR = 100.0
 
 // PopCosts mirrors province/training.go:UnitSpecs.PopCost.
@@ -34,16 +35,19 @@ type Tx interface {
 }
 
 // RecomputeProduction settles and rewrites settlement_goods.rate for every
-// producible good of the given settlement, using the labor-allocation formula:
+// producible good of the given settlement, using the citizen-allocation formula:
 //
 //	labor_pool        = max(0, population − Σ(army_col × PopCost) − Σ(in_transit × PopCost))
 //	base_potential(g) = SUM(production_rules matching terrain/deposits/buildings)
-//	rate(g)           = base_potential(g) × weight(g) × labor_pool / REF_LABOR
+//	yield_per_worker(g) = base_potential(g) / REF_LABOR
+//	rate(g)           = yield_per_worker(g) × citizens(g)
+//
+// Σ citizens ≤ labor_pool is validated at the allocation endpoint; here we
+// only recompute rates from whatever citizens are stored.
 //
 // The unconditional timber trickle (NULL terrain, NULL building rule) is
-// included in base_potential and therefore IS labor-scaled. However it is so
-// small relative to the other contributions that the anti-deadlock property
-// is preserved for any non-zero population.
+// included in base_potential so the anti-deadlock property is preserved for
+// any non-zero population and citizen allocation.
 //
 // Must be called inside an existing transaction. Passes ctx to every DB call.
 func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {
@@ -155,66 +159,68 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		return nil
 	}
 
-	// ── 4. Load allocation weights for this settlement ────────────────────────
-	wrows, err := tx.Query(ctx,
-		`SELECT good_key, weight FROM settlement_labor WHERE settlement_id = $1`,
+	// ── 4. Load citizen allocations for this settlement ───────────────────────
+	crows, err := tx.Query(ctx,
+		`SELECT good_key, citizens FROM settlement_labor WHERE settlement_id = $1`,
 		settlementID,
 	)
 	if err != nil {
-		return fmt.Errorf("recompute: load weights: %w", err)
+		return fmt.Errorf("recompute: load citizens: %w", err)
 	}
-	weights := make(map[string]float64)
-	for wrows.Next() {
+	citizens := make(map[string]int)
+	for crows.Next() {
 		var key string
-		var w float64
-		if err := wrows.Scan(&key, &w); err != nil {
-			wrows.Close()
-			return fmt.Errorf("recompute: scan weight: %w", err)
+		var c int
+		if err := crows.Scan(&key, &c); err != nil {
+			crows.Close()
+			return fmt.Errorf("recompute: scan citizens: %w", err)
 		}
-		weights[key] = w
+		citizens[key] = c
 	}
-	wrows.Close()
-	if err := wrows.Err(); err != nil {
-		return fmt.Errorf("recompute: weight rows err: %w", err)
+	crows.Close()
+	if err := crows.Err(); err != nil {
+		return fmt.Errorf("recompute: citizens rows err: %w", err)
 	}
 
 	// Ensure every producible good has an entry in settlement_labor.
-	// If the table is empty, seed uniform weights. If a new good appeared
-	// (e.g. fish after building a harbour) and is missing, insert it with a
-	// uniform share and re-normalise the existing weights proportionally.
-	if len(weights) == 0 {
-		n := float64(len(potentials))
+	// If the table is empty, seed equal citizens across producible goods.
+	// If a new good appeared (e.g. fish after harbour), insert it with a share
+	// of the remaining idle citizens (or 1 as a floor).
+	if len(citizens) == 0 {
+		// First-time seed: distribute labor_pool evenly.
+		n := len(potentials)
+		if n == 0 {
+			return nil
+		}
+		perGood := laborPool / n
+		if perGood < 1 {
+			perGood = 1
+		}
 		for _, gp := range potentials {
-			weights[gp.key] = 1.0 / n
+			citizens[gp.key] = perGood
+			if _, err := tx.Exec(ctx,
+				`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
+				 VALUES ($1, $2, $3)
+				 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+				settlementID, gp.key, perGood,
+			); err != nil {
+				return fmt.Errorf("recompute: seed citizens %s: %w", gp.key, err)
+			}
 		}
 	} else {
-		// Find goods that are now producible but have no weight row yet.
-		var newGoods []string
+		// Find goods that are now producible but have no citizens row yet.
 		for _, gp := range potentials {
-			if _, ok := weights[gp.key]; !ok {
-				newGoods = append(newGoods, gp.key)
-			}
-		}
-		if len(newGoods) > 0 {
-			// Allocate 1 share per new good; existing weights are renormalised
-			// so the total remains 1.0.
-			totalGoods := float64(len(weights) + len(newGoods))
-			for k := range weights {
-				weights[k] = weights[k] * float64(len(weights)) / totalGoods
-			}
-			share := 1.0 / totalGoods
-			for _, k := range newGoods {
-				weights[k] = share
-			}
-			// Persist new rows so UI/CLI can see and adjust them.
-			for _, k := range newGoods {
+			if _, ok := citizens[gp.key]; !ok {
+				// New good: allocate 1 citizen as a minimal placeholder so it
+				// appears in the UI with a non-zero yield. The Wanax can adjust.
+				citizens[gp.key] = 1
 				if _, err := tx.Exec(ctx,
-					`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-					 VALUES ($1, $2, $3)
+					`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
+					 VALUES ($1, $2, 1)
 					 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-					settlementID, k, weights[k],
+					settlementID, gp.key,
 				); err != nil {
-					return fmt.Errorf("recompute: seed new labor row %s: %w", k, err)
+					return fmt.Errorf("recompute: seed new citizens row %s: %w", gp.key, err)
 				}
 			}
 		}
@@ -222,8 +228,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	for _, gp := range potentials {
-		w := weights[gp.key] // 0 if good not in labor table
-		newRate := gp.basePotential * w * float64(laborPool) / REF_LABOR
+		c := citizens[gp.key] // 0 if good not allocated
+		yieldPerWorker := gp.basePotential / REF_LABOR
+		newRate := yieldPerWorker * float64(c)
 
 		// Settle existing amount at old rate, then overwrite rate + calc_at.
 		if _, err := tx.Exec(ctx,

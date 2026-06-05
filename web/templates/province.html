@@ -281,10 +281,10 @@
     <!-- ── Labor allocation ─────────────────────────── -->
     <section class="panel labor-panel">
       <h3>Labor</h3>
-      <p class="labor-hint">Allocate workers between goods. Output = base × share × labor / 100.</p>
-      <div class="labor-pool-line">Labor pool: <span id="labor-pool-val">—</span> workers</div>
+      <p class="labor-hint">Tilldela citizens per vara. Utflöde = yield/worker × citizens. Σ ≤ labor pool.</p>
+      <div class="labor-pool-line">Labor: <span id="labor-pool-val">—</span></div>
       <div id="labor-sliders"><p class="loading">Loading…</p></div>
-      <button class="btn-primary btn-small" onclick="saveLabor()" style="width:100%;margin-top:.5rem">Apply allocation</button>
+      <button class="btn-primary btn-small" onclick="saveLabor()" style="width:100%;margin-top:.5rem">Spara allokering</button>
       <div id="labor-result" class="action-result"></div>
     </section>
 
@@ -437,58 +437,54 @@ async function loadGoods() {
 }
 
 // ── Labor allocation ─────────────────────────────────────────────────────
-// Builds one slider per producible good from _goodsData (carries weight,
-// yield_per_worker, producible, labor_pool). Non-producible goods are greyed.
+// Renders per-good citizen inputs in the Labor panel.
+// Uses citizens (int) not normalised weights.
 function loadLabor() {
   const pool = _goodsData.length ? (_goodsData[0].labor_pool || 0) : 0;
-  document.getElementById('labor-pool-val').textContent = pool;
+  const idle = _goodsData.length ? (_goodsData[0].idle_citizens || 0) : 0;
+  document.getElementById('labor-pool-val').textContent = `${pool} workers · ${idle} idle`;
   const el = document.getElementById('labor-sliders');
   const producible = _goodsData.filter(g => g.producible);
   if (!producible.length) {
-    el.innerHTML = '<p class="empty-state">No producible goods on this terrain.</p>';
+    el.innerHTML = '<p class="empty-state">Inga producerbara varor på denna terräng.</p>';
     return;
   }
   el.innerHTML = producible.map(g => {
-    const pct = Math.round((g.weight || 0) * 100);
+    const citizens = g.citizens || 0;
     const rateH = (g.rate_per_min * 60);
     const rateStr = rateH >= 1 ? rateH.toFixed(1) : rateH.toFixed(2);
     return `<div class="labor-row">
       <div class="labor-row-head">
         <span class="labor-good">${g.name}</span>
-        <span class="labor-pct" id="lpct-${g.key}">${pct}%</span>
+        <span class="labor-pct">+${rateStr}/h</span>
       </div>
-      <input type="range" class="labor-slider" id="lsl-${g.key}" data-good="${g.key}"
-             min="0" max="100" value="${pct}" oninput="onLaborSlide()">
-      <div class="labor-yield">yield/worker ${(g.yield_per_worker||0).toFixed(4)} · now +${rateStr}/h</div>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <input type="number" class="labor-citizen-input recruit-count" id="lci-${g.key}" data-good="${g.key}"
+               min="0" max="${pool}" value="${citizens}" style="width:4.5rem">
+        <span class="labor-yield" style="font-size:.65rem">workers · yield/w ${(g.yield_per_worker||0).toFixed(4)}</span>
+      </div>
     </div>`;
   }).join('');
 }
 
-function onLaborSlide() {
-  // Live-update the percent labels (display only; normalization happens server-side).
-  document.querySelectorAll('.labor-slider').forEach(s => {
-    document.getElementById('lpct-' + s.dataset.good).textContent = s.value + '%';
-  });
-}
-
 async function saveLabor() {
-  const weights = {};
-  document.querySelectorAll('.labor-slider').forEach(s => {
-    const v = parseFloat(s.value);
-    if (v > 0) weights[s.dataset.good] = v;
+  const citizens = {};
+  document.querySelectorAll('.labor-citizen-input').forEach(inp => {
+    const v = parseInt(inp.value, 10);
+    if (v > 0) citizens[inp.dataset.good] = v;
   });
-  if (!Object.keys(weights).length) {
-    showResult('labor-result', 'set at least one good above zero', false);
+  if (!Object.keys(citizens).length) {
+    showResult('labor-result', 'ange minst en vara med workers > 0', false);
     return;
   }
   const token = localStorage.getItem('poleia_token');
   const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/labor`, {
     method: 'PUT',
     headers: {'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{})},
-    body: JSON.stringify({weights})
+    body: JSON.stringify({citizens})
   });
   if (res.ok) {
-    showResult('labor-result', 'allocation applied', true);
+    showResult('labor-result', 'allokering sparad', true);
     loadGoods();
   } else {
     const e = await res.json().catch(() => ({}));

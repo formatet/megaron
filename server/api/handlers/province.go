@@ -1260,17 +1260,17 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		laborPool = 0
 	}
 
-	// Load allocation weights.
+	// Load citizen allocations.
 	wrows, _ := h.pool.Query(r.Context(),
-		`SELECT good_key, weight FROM settlement_labor WHERE settlement_id = $1`, settlementID,
+		`SELECT good_key, citizens FROM settlement_labor WHERE settlement_id = $1`, settlementID,
 	)
-	laborWeights := make(map[string]float64)
+	laborCitizens := make(map[string]int)
 	if wrows != nil {
 		for wrows.Next() {
 			var k string
-			var w float64
-			_ = wrows.Scan(&k, &w)
-			laborWeights[k] = w
+			var c int
+			_ = wrows.Scan(&k, &c)
+			laborCitizens[k] = c
 		}
 		wrows.Close()
 	}
@@ -1318,19 +1318,30 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
+	// Sum allocated citizens for idle_citizens calculation.
+	var totalAllocated int
+	for _, c := range laborCitizens {
+		totalAllocated += c
+	}
+	idleCitizens := laborPool - totalAllocated
+	if idleCitizens < 0 {
+		idleCitizens = 0
+	}
+
 	type goodRow struct {
-		Key             string   `json:"key"`
-		Name            string   `json:"name"`
-		Tier            string   `json:"tier"`
-		Category        string   `json:"category"`
-		Amount          float64  `json:"amount"`
-		Rate            float64  `json:"rate_per_min"`
-		Cap             float64  `json:"cap"`
-		Price           float64  `json:"price"`
-		Weight          float64  `json:"weight"`
-		YieldPerWorker  float64  `json:"yield_per_worker"`
-		Producible      bool     `json:"producible"`
-		LaborPool       int      `json:"labor_pool"`
+		Key            string  `json:"key"`
+		Name           string  `json:"name"`
+		Tier           string  `json:"tier"`
+		Category       string  `json:"category"`
+		Amount         float64 `json:"amount"`
+		Rate           float64 `json:"rate_per_min"`
+		Cap            float64 `json:"cap"`
+		Price          float64 `json:"price"`
+		Citizens       int     `json:"citizens"`
+		YieldPerWorker float64 `json:"yield_per_worker"`
+		Producible     bool    `json:"producible"`
+		LaborPool      int     `json:"labor_pool"`
+		IdleCitizens   int     `json:"idle_citizens"`
 	}
 	var result []goodRow
 	for rows.Next() {
@@ -1359,10 +1370,11 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Rate:           rate,
 			Cap:            capV,
 			Price:          goodLocalPrice(baseValue, current, rate, capV),
-			Weight:         laborWeights[key],
+			Citizens:       laborCitizens[key],
 			YieldPerWorker: bp / economy.REF_LABOR,
 			Producible:     bp > 0,
 			LaborPool:      laborPool,
+			IdleCitizens:   idleCitizens,
 		})
 	}
 	if result == nil {
@@ -2140,8 +2152,9 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 }
 
 // LaborAlloc handles PUT /worlds/:worldID/provinces/:provinceID/labor.
-// Body: {"weights":{"timber":0.5,"grain":0.3,"stone":0.2}}
-// Weights are normalized to Σ=1 over producible goods; non-producible goods are ignored.
+// Body: {"citizens":{"timber":40,"grain":30,"stone":20}}
+// Each value is the number of citizens assigned to that good.
+// Σ citizens must not exceed labor_pool; non-producible goods are rejected with a 422.
 func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -2160,24 +2173,51 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Weights map[string]float64 `json:"weights"`
+		Citizens map[string]int `json:"citizens"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Weights) == 0 {
-		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"weights\":{...}}")
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Citizens) == 0 {
+		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"citizens\":{...}}")
 		return
 	}
 
-	// Verify ownership.
+	// Verify ownership and load labor_pool.
 	var settlementID uuid.UUID
+	var population, sInfantry, sCavalry, sCatapult, sPriest, sShip, sEliteInfantry int
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT s.id FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
+		`SELECT s.id, s.population, s.infantry, s.cavalry, s.catapult, s.priest, s.ship, s.elite_infantry
+		 FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
 		provinceID, worldID, playerID,
-	).Scan(&settlementID); err != nil {
+	).Scan(&settlementID, &population, &sInfantry, &sCavalry, &sCatapult, &sPriest, &sShip, &sEliteInfantry); err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
 
-	// Determine producible goods for this settlement.
+	homePop := sInfantry*economy.PopCosts["infantry"] +
+		sCavalry*economy.PopCosts["cavalry"] +
+		sCatapult*economy.PopCosts["catapult"] +
+		sPriest*economy.PopCosts["priest"] +
+		sShip*economy.PopCosts["ship"] +
+		sEliteInfantry*economy.PopCosts["elite_infantry"]
+
+	var transitPop int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT COALESCE(SUM(
+		     m.infantry*$2+m.cavalry*$3+m.catapult*$4+m.priest*$5+m.ship*$6+m.elite_infantry*$7
+		 ),0)
+		 FROM marching_armies m
+		 JOIN settlements s ON s.province_id=m.origin_id
+		 WHERE s.id=$1 AND m.resolved=false`,
+		settlementID,
+		economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
+		economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+	).Scan(&transitPop)
+
+	laborPool := population - homePop - transitPop
+	if laborPool < 0 {
+		laborPool = 0
+	}
+
+	// Determine producible goods for this settlement (single source of truth).
 	producible := make(map[string]bool)
 	prows, err := h.pool.Query(r.Context(),
 		`SELECT DISTINCT pr.good_key
@@ -2206,21 +2246,33 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 	prows.Close()
 
-	// Filter and normalize weights to producible goods only.
-	sum := 0.0
-	filtered := make(map[string]float64)
-	for key, wt := range req.Weights {
-		if producible[key] && wt > 0 {
-			filtered[key] = wt
-			sum += wt
+	// Validate: only producible goods, non-negative values; compute total.
+	total := 0
+	filtered := make(map[string]int)
+	for key, count := range req.Citizens {
+		if count < 0 {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("citizens for %s must be non-negative", key))
+			return
+		}
+		if !producible[key] {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("%s is not producible at this settlement", key))
+			return
+		}
+		if count > 0 {
+			filtered[key] = count
+			total += count
 		}
 	}
-	if sum == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "no valid producible goods in weights")
+	if total == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "no valid producible goods in citizens")
 		return
 	}
-	for key := range filtered {
-		filtered[key] /= sum
+	if total > laborPool {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("för många citizens: tilldelat %d, tillgängligt %d", total, laborPool))
+		return
 	}
 
 	tx, err := h.pool.Begin(r.Context())
@@ -2230,20 +2282,20 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Clear existing weights then upsert new ones.
+	// Clear existing allocations then upsert new ones.
 	if _, err := tx.Exec(r.Context(),
 		`DELETE FROM settlement_labor WHERE settlement_id = $1`, settlementID,
 	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not clear weights")
+		writeError(w, http.StatusInternalServerError, "could not clear labor")
 		return
 	}
-	for key, wt := range filtered {
+	for key, count := range filtered {
 		if _, err := tx.Exec(r.Context(),
-			`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-			 VALUES ($1,$2,$3) ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight=$3`,
-			settlementID, key, wt,
+			`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
+			 VALUES ($1,$2,$3) ON CONFLICT (settlement_id, good_key) DO UPDATE SET citizens=$3`,
+			settlementID, key, count,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not save weight")
+			writeError(w, http.StatusInternalServerError, "could not save citizens")
 			return
 		}
 	}
@@ -2258,9 +2310,12 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	idleCitizens := laborPool - total
 	writeJSON(w, http.StatusOK, map[string]any{
-		"weights": filtered,
-		"message": "labor allocation updated and production recomputed",
+		"citizens":      filtered,
+		"labor_pool":    laborPool,
+		"idle_citizens": idleCitizens,
+		"message":       "labor allocation updated and production recomputed",
 	})
 }
 

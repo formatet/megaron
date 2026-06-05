@@ -9,42 +9,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// allocateCmd sends a PUT .../labor request to set labor allocation weights.
-// Weights are provided as --<good> <value> flags (positive numbers, normalized to 1.0).
+// allocateCmd sends a PUT .../labor request to set citizen allocations per good.
+// Citizens are provided as --<good> <antal> flags (positive integers, not normalized).
 func allocateCmd() *cobra.Command {
-	// We accept any good key via --<good> flag; map of known goods for convenience.
 	knownGoods := []string{
 		"grain", "timber", "cedar", "stone", "copper", "tin",
 		"fish", "wine", "oil", "horses", "bronze", "livestock", "silver",
 	}
-	rawWeights := make(map[string]*float64, len(knownGoods))
+	rawCitizens := make(map[string]*int, len(knownGoods))
 
 	cmd := &cobra.Command{
 		Use:   "allocate",
-		Short: "Set labor allocation weights (production sliders)",
-		Long: `Allocate your settlement's workers between producible goods.
-Weights are normalized to 100% automatically — just provide relative numbers.
-Only producible goods (terrain-possible) can be allocated; others are silently ignored.
+		Short: "Tilldela citizens per vara (arbetsallokering)",
+		Long: `Tilldela ditt samhälles citizens till producerbara varor.
+Ange antal citizens per vara — summan får ej överstiga labor_pool.
+Icke-producerbara varor ignoreras av servern.
 
-Example:
-  poleia allocate --timber 50 --stone 30 --grain 20
-  poleia allocate --grain 1 --timber 1   (equal split, normalized to 50/50)`,
+Exempel:
+  poleia allocate --timber 40 --stone 30 --grain 30
+  poleia allocate --grain 50 --fish 20   (resten är idle)`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			weights := make(map[string]float64)
+			citizens := make(map[string]int)
 			for _, key := range knownGoods {
-				ptr := rawWeights[key]
+				ptr := rawCitizens[key]
 				if ptr != nil && *ptr > 0 {
-					weights[key] = *ptr
+					citizens[key] = *ptr
 				}
 			}
-			// Also parse any extra --good=value pairs passed via --extra flag-style (cobra handles known flags only).
-			if len(weights) == 0 {
-				return fmt.Errorf("no goods specified — use e.g. --timber 50 --grain 30")
+			if len(citizens) == 0 {
+				return fmt.Errorf("ingen vara angiven — använd t.ex. --timber 40 --grain 30")
 			}
 
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/labor", cfg.WorldID, cfg.ProvinceID)
-			data, err := c.put(path, map[string]any{"weights": weights})
+			data, err := c.put(path, map[string]any{"citizens": citizens})
 			if err != nil {
 				return err
 			}
@@ -56,17 +54,22 @@ Example:
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Println("Labor allocation updated:")
-			if wm, ok := resp["weights"].(map[string]any); ok {
-				// Sort for stable output.
+			fmt.Println("Arbetsallokering uppdaterad:")
+			if lp, ok := resp["labor_pool"].(float64); ok {
+				fmt.Printf("  Labor pool:   %d workers\n", int(lp))
+			}
+			if idle, ok := resp["idle_citizens"].(float64); ok {
+				fmt.Printf("  Idle workers: %d\n", int(idle))
+			}
+			fmt.Println()
+			if cm, ok := resp["citizens"].(map[string]any); ok {
 				order := []string{"grain", "timber", "cedar", "stone", "copper", "tin", "fish", "wine", "oil"}
 				for _, key := range order {
-					if v, ok := wm[key].(float64); ok {
-						fmt.Printf("  %-12s %5.1f%%\n", key, v*100)
+					if v, ok := cm[key].(float64); ok {
+						fmt.Printf("  %-12s %d workers\n", key, int(v))
 					}
 				}
-				// Print any remaining goods not in order list.
-				for k, v := range wm {
+				for k, v := range cm {
 					inOrder := false
 					for _, o := range order {
 						if o == k {
@@ -76,7 +79,7 @@ Example:
 					}
 					if !inOrder {
 						if f, ok := v.(float64); ok {
-							fmt.Printf("  %-12s %5.1f%%\n", k, f*100)
+							fmt.Printf("  %-12s %d workers\n", k, int(f))
 						}
 					}
 				}
@@ -86,14 +89,14 @@ Example:
 	}
 
 	for _, key := range knownGoods {
-		var v float64
-		rawWeights[key] = &v
-		cmd.Flags().Float64Var(&v, key, 0, fmt.Sprintf("weight for %s (any positive number, normalized)", key))
+		var v int
+		rawCitizens[key] = &v
+		cmd.Flags().IntVar(&v, key, 0, fmt.Sprintf("antal citizens till %s", key))
 	}
 
-	// Support --raw "timber=50,stone=30" for programmatic use.
+	// --raw "timber=40,stone=30" för programmatisk användning.
 	var raw string
-	cmd.Flags().StringVar(&raw, "raw", "", "raw weights as comma-separated key=value pairs")
+	cmd.Flags().StringVar(&raw, "raw", "", "comma-separated key=value (t.ex. timber=40,grain=30)")
 	cmd.PreRunE = func(cmd *cobra.Command, _ []string) error {
 		if raw == "" {
 			return nil
@@ -103,14 +106,14 @@ Example:
 			if len(parts) != 2 {
 				continue
 			}
-			v, err := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
+			v, err := strconv.Atoi(strings.TrimSpace(parts[1]))
 			if err != nil || v <= 0 {
 				continue
 			}
 			key := strings.TrimSpace(parts[0])
 			for _, k := range knownGoods {
 				if k == key {
-					*rawWeights[k] = v
+					*rawCitizens[k] = v
 					break
 				}
 			}

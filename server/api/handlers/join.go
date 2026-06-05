@@ -336,20 +336,38 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Seed uniform labor weights over this settlement's producible goods, then
-	// recompute production so settlement_goods.rate follows the labor formula
-	// from the first minute. (Producible = a good with rate > 0 from the
-	// terrain/deposit init above.)
+	// Seed initial citizen allocations over this settlement's producible goods.
+	// Producible = a good with rate > 0 from the terrain/deposit init above.
+	// Count producible goods first, then distribute labor_pool evenly.
+	var producibleCount int
+	_ = tx.QueryRow(r.Context(),
+		`SELECT COUNT(*) FROM settlement_goods sg WHERE sg.settlement_id = $1 AND sg.rate > 0`,
+		settlementID,
+	).Scan(&producibleCount)
+	if producibleCount == 0 {
+		producibleCount = 1 // floor: avoid division by zero
+	}
+	// labor_pool at join = population (no army yet). Starting population defaults to 200.
+	var startPop int
+	_ = tx.QueryRow(r.Context(),
+		`SELECT population FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&startPop)
+	if startPop < 1 {
+		startPop = 200
+	}
+	perGood := startPop / producibleCount
+	if perGood < 1 {
+		perGood = 1
+	}
 	if _, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 SELECT sg.settlement_id, sg.good_key,
-		        1.0 / COUNT(*) OVER (PARTITION BY sg.settlement_id)
+		`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
+		 SELECT sg.settlement_id, sg.good_key, $2
 		 FROM settlement_goods sg
 		 WHERE sg.settlement_id = $1 AND sg.rate > 0
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		settlementID,
+		settlementID, perGood,
 	); err != nil {
-		slog.Error("could not seed labor weights", "err", err)
+		slog.Error("could not seed labor citizens", "err", err)
 		writeError(w, http.StatusInternalServerError, "could not seed labor")
 		return
 	}

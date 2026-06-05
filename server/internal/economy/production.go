@@ -9,19 +9,20 @@ type ProductionRule struct {
 	RequiresDeposit *string // nil | "copper" | "tin"
 }
 
-// LaborRates computes production rates using the labor-allocation formula:
+// LaborRates computes production rates using the citizen-allocation formula:
 //
-//	rate(g) = base_potential(g) × weight(g) × laborPool / REF_LABOR
+//	yield_per_worker(g) = base_potential(g) / REF_LABOR
+//	rate(g)             = yield_per_worker(g) × citizens(g)
 //
 // baseRates is the output of EffectiveRates (base_potential per good).
-// weights maps good_key → allocation weight (Σ should = 1.0 over producible goods).
-// laborPool is max(0, population − army_pop − transit_pop).
-// Goods absent from weights get rate 0.
-func LaborRates(baseRates map[string]float64, weights map[string]float64, laborPool float64) map[string]float64 {
+// citizens maps good_key → number of citizens allocated to that good.
+// Goods absent from citizens get rate 0.
+// laborPool is accepted but unused (kept for backward compatibility with tests).
+func LaborRates(baseRates map[string]float64, citizens map[string]float64, _ float64) map[string]float64 {
 	result := make(map[string]float64, len(baseRates))
 	for good, base := range baseRates {
-		w := weights[good]
-		result[good] = base * w * laborPool / REF_LABOR
+		c := citizens[good]
+		result[good] = (base / REF_LABOR) * c
 	}
 	return result
 }

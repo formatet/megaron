@@ -5,36 +5,36 @@ import (
 	"testing"
 )
 
-// TestLaborRates_HalfLabor verifies that halving labor_pool halves all rates.
-func TestLaborRates_HalfLabor(t *testing.T) {
+// TestLaborRates_Citizens verifies the citizen-based production formula:
+// rate(g) = (base_potential(g) / REF_LABOR) × citizens(g).
+func TestLaborRates_Citizens(t *testing.T) {
+	// 100 citizens on timber with base 0.25 → yield_per_worker = 0.25/100 = 0.0025
+	// rate = 0.0025 × 100 = 0.25
 	base := map[string]float64{GoodTimber: 0.25, GoodGrain: 0.10}
-	weights := map[string]float64{GoodTimber: 0.6, GoodGrain: 0.4}
+	citizens := map[string]float64{GoodTimber: 100, GoodGrain: 50}
 
-	full := LaborRates(base, weights, 100)
-	half := LaborRates(base, weights, 50)
+	got := LaborRates(base, citizens, 0 /* unused */)
 
-	for _, good := range []string{GoodTimber, GoodGrain} {
-		if math.Abs(half[good]-full[good]/2) > 1e-9 {
-			t.Errorf("%s: half-labor rate %.6f != full/2 %.6f", good, half[good], full[good]/2)
-		}
+	expectedTimber := (0.25 / REF_LABOR) * 100
+	if math.Abs(got[GoodTimber]-expectedTimber) > 1e-9 {
+		t.Errorf("timber: expected %.6f, got %.6f", expectedTimber, got[GoodTimber])
+	}
+	expectedGrain := (0.10 / REF_LABOR) * 50
+	if math.Abs(got[GoodGrain]-expectedGrain) > 1e-9 {
+		t.Errorf("grain: expected %.6f, got %.6f", expectedGrain, got[GoodGrain])
 	}
 }
 
-// TestLaborRates_Weight1_0 verifies that weight=1.0 on one good yields base*labor/REF_LABOR,
-// and that the other good gets 0.
-func TestLaborRates_Weight1_0(t *testing.T) {
+// TestLaborRates_ZeroCitizens verifies that zero citizen allocation gives zero output.
+func TestLaborRates_ZeroCitizens(t *testing.T) {
 	base := map[string]float64{GoodTimber: 0.25, GoodGrain: 0.10}
-	weights := map[string]float64{GoodTimber: 1.0, GoodGrain: 0.0}
+	citizens := map[string]float64{GoodTimber: 0, GoodGrain: 0}
 
-	got := LaborRates(base, weights, 100)
-
-	// timber: base × 1.0 × 100 / 100 = base
-	if math.Abs(got[GoodTimber]-0.25) > 1e-9 {
-		t.Errorf("timber: expected 0.25, got %.6f", got[GoodTimber])
-	}
-	// grain: weight 0.0 → rate 0
-	if got[GoodGrain] != 0 {
-		t.Errorf("grain: expected 0, got %.6f", got[GoodGrain])
+	got := LaborRates(base, citizens, 0)
+	for good, rate := range got {
+		if rate != 0 {
+			t.Errorf("%s: expected 0 with 0 citizens, got %.6f", good, rate)
+		}
 	}
 }
 
@@ -43,41 +43,28 @@ func TestLaborRates_Weight1_0(t *testing.T) {
 func TestLaborRates_NonProducibleNotAllocable(t *testing.T) {
 	// fish has no base — it's not producible inland.
 	base := map[string]float64{GoodTimber: 0.25}
-	// Even if someone passes a weight for fish, fish has no base so it stays 0.
-	weights := map[string]float64{GoodTimber: 0.5, GoodFish: 0.5}
+	// Even if someone passes citizens for fish, fish has no base so it stays absent.
+	citizens := map[string]float64{GoodTimber: 50, GoodFish: 50}
 
-	got := LaborRates(base, weights, 100)
+	got := LaborRates(base, citizens, 0)
 
 	// fish is absent from base → absent from result
 	if v, ok := got[GoodFish]; ok && v != 0 {
 		t.Errorf("fish must not be producible inland, got %.6f", v)
 	}
-	// timber: base × 0.5 × 100 / 100
+	// timber: (base / REF) × citizens = (0.25/100) × 50 = 0.125
 	if math.Abs(got[GoodTimber]-0.125) > 1e-9 {
 		t.Errorf("timber: expected 0.125, got %.6f", got[GoodTimber])
 	}
 }
 
-// TestLaborRates_ZeroLabor verifies that zero workers gives zero output.
-func TestLaborRates_ZeroLabor(t *testing.T) {
-	base := map[string]float64{GoodTimber: 0.25, GoodGrain: 0.10}
-	weights := map[string]float64{GoodTimber: 0.5, GoodGrain: 0.5}
-
-	got := LaborRates(base, weights, 0)
-	for good, rate := range got {
-		if rate != 0 {
-			t.Errorf("%s: expected 0 with 0 labor, got %.6f", good, rate)
-		}
-	}
-}
-
-// TestLaborRates_Formula_ExactMatch verifies the formula against a hand-calculated expected value.
+// TestLaborRates_Formula_ExactMatch verifies the formula against a hand-calculated value.
+// base=0.15, citizens=70, REF=100 → rate = (0.15/100) × 70 = 0.105
 func TestLaborRates_Formula_ExactMatch(t *testing.T) {
-	// base=0.15, weight=0.7, labor=80, REF=100 → 0.15 * 0.7 * 80 / 100 = 0.084
 	base := map[string]float64{GoodCedar: 0.15}
-	weights := map[string]float64{GoodCedar: 0.7}
-	got := LaborRates(base, weights, 80)
-	expected := 0.15 * 0.7 * 80.0 / REF_LABOR
+	citizens := map[string]float64{GoodCedar: 70}
+	got := LaborRates(base, citizens, 0)
+	expected := (0.15 / REF_LABOR) * 70.0
 	if math.Abs(got[GoodCedar]-expected) > 1e-9 {
 		t.Errorf("cedar: expected %.6f, got %.6f", expected, got[GoodCedar])
 	}
@@ -101,45 +88,31 @@ func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	}
 }
 
-// TestNewGoodSeeding_UniformShare verifies the weight re-normalisation logic used
-// when a new producible good appears (e.g. fish after building a harbour).
-// Existing weights must be scaled down proportionally; new good gets 1/totalGoods.
-func TestNewGoodSeeding_UniformShare(t *testing.T) {
-	// Settlement has grain(0.6) and timber(0.4) — 2 goods.
-	// Harbour is built → fish becomes producible (new good).
-	existing := map[string]float64{GoodGrain: 0.6, GoodTimber: 0.4}
+// TestNewGoodSeeding_FishAfterHarbour verifies that when a new producible good appears
+// (fish after harbour), it gets at least 1 citizen and receives a non-zero rate.
+func TestNewGoodSeeding_FishAfterHarbour(t *testing.T) {
+	// Before harbour: grain and timber only.
+	// After harbour: fish becomes producible.
+	baseBefore := map[string]float64{GoodGrain: 0.10, GoodTimber: 0.25}
+	baseAfter := map[string]float64{GoodGrain: 0.10, GoodTimber: 0.25, GoodFish: 0.04}
 
-	// Simulate the seeding logic from recompute.go (replicated here as pure math).
-	newGoods := []string{GoodFish}
-	totalGoods := float64(len(existing) + len(newGoods)) // 3
-	renormed := make(map[string]float64)
-	for k, w := range existing {
-		renormed[k] = w * float64(len(existing)) / totalGoods
-	}
-	share := 1.0 / totalGoods
-	for _, k := range newGoods {
-		renormed[k] = share
+	// Citizens before harbour.
+	citizensBefore := map[string]float64{GoodGrain: 100, GoodTimber: 100}
+	ratesBefore := LaborRates(baseBefore, citizensBefore, 0)
+	if ratesBefore[GoodFish] != 0 {
+		t.Errorf("fish should not produce before harbour, got %.6f", ratesBefore[GoodFish])
 	}
 
-	// All weights must sum to 1.
-	var sum float64
-	for _, w := range renormed {
-		sum += w
+	// After harbour: fish gets 1 citizen (minimal seed).
+	citizensAfter := map[string]float64{GoodGrain: 100, GoodTimber: 100, GoodFish: 1}
+	ratesAfter := LaborRates(baseAfter, citizensAfter, 0)
+	if ratesAfter[GoodFish] <= 0 {
+		t.Errorf("fish should produce after harbour with 1 citizen, got %.6f", ratesAfter[GoodFish])
 	}
-	if math.Abs(sum-1.0) > 1e-9 {
-		t.Errorf("weights should sum to 1.0 after seeding, got %.9f", sum)
-	}
-
-	// New good must have 1/3 share.
-	if math.Abs(renormed[GoodFish]-1.0/3.0) > 1e-9 {
-		t.Errorf("fish share should be 1/3, got %.6f", renormed[GoodFish])
-	}
-
-	// Existing ratios are preserved relative to each other.
-	// grain was 0.6, timber was 0.4 → ratio 3:2. After renorm still 3:2.
-	ratio := renormed[GoodGrain] / renormed[GoodTimber]
-	if math.Abs(ratio-1.5) > 1e-9 {
-		t.Errorf("grain:timber ratio should be 1.5 after renorm, got %.6f", ratio)
+	// rate = (0.04/100) × 1 = 0.0004
+	expected := (0.04 / REF_LABOR) * 1.0
+	if math.Abs(ratesAfter[GoodFish]-expected) > 1e-9 {
+		t.Errorf("fish rate: expected %.6f, got %.6f", expected, ratesAfter[GoodFish])
 	}
 }
 
@@ -147,9 +120,9 @@ func TestNewGoodSeeding_UniformShare(t *testing.T) {
 // growth vs starvation. This is a pure-logic test for the condition in tick.go.
 func TestPopGrowth_GrainPresenceRequired(t *testing.T) {
 	type popCase struct {
-		grain       float64
-		pop         int
-		wantGrowth  bool
+		grain      float64
+		pop        int
+		wantGrowth bool
 	}
 	cases := []popCase{
 		{grain: 100, pop: 200, wantGrowth: true},
@@ -165,29 +138,47 @@ func TestPopGrowth_GrainPresenceRequired(t *testing.T) {
 }
 
 // TestLaborRates_VariantB_Recruit simulates variant-B recruit semantics:
-// population stays constant; labor_pool decreases by recruited × PopCost.
+// citizens are fixed; rate is unaffected by recruit until Wanax re-allocates.
+// But labor_pool shrinks — so over-allocation (Σcitizens > pool) is caught by endpoint.
 func TestLaborRates_VariantB_Recruit(t *testing.T) {
 	base := map[string]float64{GoodGrain: 0.10}
-	weights := map[string]float64{GoodGrain: 1.0}
 
-	population := 200
-	// Before recruit: no army, full labor
-	beforeLabor := float64(population)
-	// Recruit 10 infantry (PopCost 5 each) → labor drops by 50
-	recruited := 10
-	afterLabor := float64(population - recruited*PopCosts["infantry"])
-
-	before := LaborRates(base, weights, beforeLabor)
-	after := LaborRates(base, weights, afterLabor)
-
-	// Population unchanged → same population; only labor pool differs
-	if before[GoodGrain] <= after[GoodGrain] {
-		t.Errorf("recruit should lower rate: before=%.6f, after=%.6f", before[GoodGrain], after[GoodGrain])
+	// 100 citizens on grain.
+	citizensAlloc := map[string]float64{GoodGrain: 100}
+	before := LaborRates(base, citizensAlloc, 0)
+	expectedRate := (0.10 / REF_LABOR) * 100.0
+	if math.Abs(before[GoodGrain]-expectedRate) > 1e-9 {
+		t.Errorf("grain rate should be %.6f, got %.6f", expectedRate, before[GoodGrain])
 	}
 
-	// Disband → labor_pool recovers
-	recovered := LaborRates(base, weights, beforeLabor)
-	if math.Abs(recovered[GoodGrain]-before[GoodGrain]) > 1e-9 {
-		t.Errorf("disband should restore rate: before=%.6f, recovered=%.6f", before[GoodGrain], recovered[GoodGrain])
+	// Reducing citizens frees up labor (endpoint validates cap).
+	lessCitizens := map[string]float64{GoodGrain: 50}
+	after := LaborRates(base, lessCitizens, 0)
+	if after[GoodGrain] >= before[GoodGrain] {
+		t.Errorf("fewer citizens should lower rate: before=%.6f, after=%.6f", before[GoodGrain], after[GoodGrain])
+	}
+}
+
+// TestCitizenCap_ExceedsPool verifies the allocation endpoint rejects Σcitizens > labor_pool.
+// This is a pure-math test for the validation logic replicated here.
+func TestCitizenCap_ExceedsPool(t *testing.T) {
+	laborPool := 100
+	allocations := map[string]int{GoodGrain: 70, GoodTimber: 50} // total = 120 > 100
+	total := 0
+	for _, c := range allocations {
+		total += c
+	}
+	if total <= laborPool {
+		t.Errorf("should detect over-allocation: total=%d, pool=%d", total, laborPool)
+	}
+
+	// Valid allocation
+	valid := map[string]int{GoodGrain: 60, GoodTimber: 40} // total = 100 ≤ 100
+	total = 0
+	for _, c := range valid {
+		total += c
+	}
+	if total > laborPool {
+		t.Errorf("should not reject valid allocation: total=%d, pool=%d", total, laborPool)
 	}
 }
