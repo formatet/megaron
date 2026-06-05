@@ -359,7 +359,15 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 // kingdom member provinces, plus the origin and target endpoints of the player's
 // unresolved marches. These are the "eyes" used for fog-of-war calculation.
 func (h *WorldHandler) visibleOrigins(ctx context.Context, worldID, playerID uuid.UUID) []province.MapPosition {
-	rows, err := h.pool.Query(ctx,
+	return loadVisibleOrigins(ctx, h.pool, worldID, playerID)
+}
+
+// loadVisibleOrigins is the package-level implementation of the FOW origin query,
+// shared by WorldHandler and MessengerHandler (and any future handler that needs
+// to gate access by contact/visibility). Only h.pool is needed, so extracting
+// to a free function avoids constructing a partial WorldHandler.
+func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) []province.MapPosition {
+	rows, err := pool.Query(ctx,
 		`SELECT DISTINCT pos.q, pos.r FROM (
 		     -- Own and allied settlements.
 		     SELECT p.map_q AS q, p.map_r AS r
@@ -629,17 +637,26 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 	return br.Close()
 }
 
-// Wanaxes handles GET /worlds/{worldID}/wanaxes — trade-discovery directory for API clients.
-// Returns settlements with terrain, deposits and settlement_id for trade routing. Army strength is
-// deliberately NOT exposed: that would leak military intel for free, contra the "info flows through
-// moving units" invariant. There is no public leaderboard.
+// Wanaxes handles GET /worlds/{worldID}/wanaxes — FOW-gated trade-discovery directory
+// for API clients. Returns only settlements the requesting player can currently see
+// (within 5 hexes of their visibleOrigins — same FOW rule as /provinces). Army strength
+// is deliberately NOT exposed. Unauthenticated requests receive an empty list.
 func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid world ID")
 		return
 	}
-	playerID, _ := auth.PlayerIDFromContext(r.Context())
+	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
+
+	// Without authentication there is no FOW context — return empty list rather than
+	// leaking the full global settlement catalog.
+	if !authenticated {
+		writeJSON(w, http.StatusOK, []struct{}{})
+		return
+	}
+
+	origins := h.visibleOrigins(r.Context(), worldID, playerID)
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
@@ -650,7 +667,9 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(prov.copper_deposit, false),
 		        COALESCE(prov.tin_deposit, false),
 		        COALESCE(prov.silver_deposit, false),
-		        COALESCE(prov.cedar_deposit, false)
+		        COALESCE(prov.cedar_deposit, false),
+		        COALESCE(prov.map_q, 0),
+		        COALESCE(prov.map_r, 0)
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
@@ -683,9 +702,15 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		var ownerID *uuid.UUID
 		var kingdom *string
 		var terrain *string
+		var q, r int
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
-			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit); err != nil {
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit,
+			&q, &r); err != nil {
+			continue
+		}
+		// FOW gate: skip settlements the player cannot currently see.
+		if !province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 5) {
 			continue
 		}
 		if kingdom != nil {
@@ -698,6 +723,9 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 			e.Own = true
 		}
 		result = append(result, e)
+	}
+	if result == nil {
+		result = []entry{}
 	}
 	writeJSON(w, http.StatusOK, result)
 }

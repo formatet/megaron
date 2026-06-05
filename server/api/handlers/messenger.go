@@ -137,6 +137,16 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// FOW gate: the destination must be within the sender's current visibility.
+	// This mirrors the client-side compose-dropdown that uses /provinces (FOW-filtered).
+	// A player can only contact cities they have scouted or previously messaged.
+	origins := loadVisibleOrigins(r.Context(), h.pool, worldID, playerID)
+	if !province.VisibleFrom(province.MapPosition{Q: dQ, R: dR}, origins, 5) {
+		writeError(w, http.StatusForbidden,
+			"destination is not within your scouted range — send a scout or march closer before contacting this city")
+		return
+	}
+
 	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
 	if dist == 0 {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
