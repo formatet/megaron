@@ -619,10 +619,10 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 	batch := &pgx.Batch{}
 	for _, t := range tiles {
 		batch.Queue(
-			`INSERT INTO map_tiles (world_id, q, r, terrain, fertility, mineral, copper_deposit, tin_deposit, silver_deposit)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			`INSERT INTO map_tiles (world_id, q, r, terrain, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 			 ON CONFLICT (world_id, q, r) DO NOTHING`,
-			worldID, t.Q, t.R, string(t.Terrain), t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit,
+			worldID, t.Q, t.R, string(t.Terrain), t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit,
 		)
 	}
 	br := h.pool.SendBatch(ctx, batch)

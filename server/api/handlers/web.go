@@ -102,7 +102,7 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		},
 		"mul": func(a, b float64) float64 { return a * b },
 		"now": func() string {
-			return time.Now().UTC().Format(time.RFC3339)
+			return clk.Now().UTC().Format(time.RFC3339)
 		},
 		// fmtSilver formats a silver amount as shekel / mina / talang
 		// (1 mina = 60 shekel, 1 talang = 60 mina = 3600 shekel)
