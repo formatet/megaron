@@ -9,6 +9,23 @@ type ProductionRule struct {
 	RequiresDeposit *string // nil | "copper" | "tin"
 }
 
+// LaborRates computes production rates using the labor-allocation formula:
+//
+//	rate(g) = base_potential(g) × weight(g) × laborPool / REF_LABOR
+//
+// baseRates is the output of EffectiveRates (base_potential per good).
+// weights maps good_key → allocation weight (Σ should = 1.0 over producible goods).
+// laborPool is max(0, population − army_pop − transit_pop).
+// Goods absent from weights get rate 0.
+func LaborRates(baseRates map[string]float64, weights map[string]float64, laborPool float64) map[string]float64 {
+	result := make(map[string]float64, len(baseRates))
+	for good, base := range baseRates {
+		w := weights[good]
+		result[good] = base * w * laborPool / REF_LABOR
+	}
+	return result
+}
+
 // EffectiveRates returns the combined production rate per good key for a settlement.
 // terrain is the province terrain type; buildings is the list of completed building types;
 // hasCopper/hasTin are the province deposit flags.
