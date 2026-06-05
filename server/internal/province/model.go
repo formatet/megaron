@@ -70,13 +70,17 @@ func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
 }
 
 // ArmyComposition describes the military units in a settlement or marching army.
+// Ship = galley (standardskepp, byggd med timber). Display: "Galley".
+// DB-kolumnen heter `ship` för bakåtkompatibilitet med ~87 befintliga Go-refs.
 type ArmyComposition struct {
 	Infantry      int
 	Cavalry       int
 	Catapult      int
 	Priest        int
-	Ship          int
+	Ship          int // galley — DB-kolumn: ship
 	EliteInfantry int
+	WarGalley     int // krigsgalär, kräver foundry + bronze
+	Merchantman   int // handelsskepp, svag strid
 }
 
 // Building represents a constructed improvement in a settlement.

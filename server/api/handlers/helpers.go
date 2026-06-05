@@ -74,6 +74,8 @@ func insufficientUnitsMsg(want, have province.ArmyComposition) string {
 		{"priest", want.Priest, have.Priest},
 		{"ship", want.Ship, have.Ship},
 		{"elite_infantry", want.EliteInfantry, have.EliteInfantry},
+		{"war_galley", want.WarGalley, have.WarGalley},
+		{"merchantman", want.Merchantman, have.Merchantman},
 	}
 	var parts []string
 	for _, u := range units {

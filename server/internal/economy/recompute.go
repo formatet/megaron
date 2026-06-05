@@ -17,13 +17,16 @@ const REF_LABOR = 100.0
 
 // PopCosts mirrors province/training.go:UnitSpecs.PopCost.
 // Defined here so economy stays Go-import-free upward (G1).
+// ship = galley (DB-kolumn). war_galley + merchantman = nya skepp-typer (mig 039).
 var PopCosts = map[string]int{
 	"infantry":       5,
 	"cavalry":        8,
 	"catapult":       2,
 	"priest":         3,
-	"ship":           10,
+	"ship":           10, // galley
 	"elite_infantry": 10,
+	"war_galley":     12,
+	"merchantman":    8,
 }
 
 // Tx is the minimal interface accepted by RecomputeProduction so it can work
@@ -53,12 +56,12 @@ type Tx interface {
 func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {
 	// ── 1. Compute labor_pool ────────────────────────────────────────────────
 	var population int
-	var infantry, cavalry, catapult, priest, ship, eliteInfantry int
+	var infantry, cavalry, catapult, priest, ship, eliteInfantry, warGalley, merchantman int
 	err := tx.QueryRow(ctx,
-		`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry
+		`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
 		 FROM settlements WHERE id = $1`,
 		settlementID,
-	).Scan(&population, &infantry, &cavalry, &catapult, &priest, &ship, &eliteInfantry)
+	).Scan(&population, &infantry, &cavalry, &catapult, &priest, &ship, &eliteInfantry, &warGalley, &merchantman)
 	if err != nil {
 		return fmt.Errorf("recompute: load settlement: %w", err)
 	}
@@ -68,7 +71,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		catapult*PopCosts["catapult"] +
 		priest*PopCosts["priest"] +
 		ship*PopCosts["ship"] +
-		eliteInfantry*PopCosts["elite_infantry"]
+		eliteInfantry*PopCosts["elite_infantry"] +
+		warGalley*PopCosts["war_galley"] +
+		merchantman*PopCosts["merchantman"]
 
 	// Count pop-cost of units currently in transit from this settlement.
 	// marching_armies.origin_id is a province FK; resolved=false means in flight.
@@ -80,7 +85,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		     m.catapult       * $4 +
 		     m.priest         * $5 +
 		     m.ship           * $6 +
-		     m.elite_infantry * $7
+		     m.elite_infantry * $7 +
+		     m.war_galley     * $8 +
+		     m.merchantman    * $9
 		 ), 0)
 		 FROM marching_armies m
 		 JOIN settlements s ON s.province_id = m.origin_id
@@ -89,6 +96,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		settlementID,
 		PopCosts["infantry"], PopCosts["cavalry"], PopCosts["catapult"],
 		PopCosts["priest"], PopCosts["ship"], PopCosts["elite_infantry"],
+		PopCosts["war_galley"], PopCosts["merchantman"],
 	).Scan(&transitPop)
 
 	laborPool := population - homePop - transitPop
@@ -182,12 +190,12 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		return fmt.Errorf("recompute: citizens rows err: %w", err)
 	}
 
-	// Ensure every producible good has an entry in settlement_labor.
-	// If the table is empty, seed equal citizens across producible goods.
-	// If a new good appeared (e.g. fish after harbour), insert it with a share
-	// of the remaining idle citizens (or 1 as a floor).
+	// Fyll citizens om tabellen är tom (första gången — t.ex. vid join).
+	// Om rader redan finns, rör dem INTE: en ny producerbar vara (t.ex. fisk efter hamn)
+	// visas i Goods-endpointen med citizens=0 och producible=true — Wanax tilldelar
+	// själv via LaborAlloc. Ingen automatisk tilldelning av 1 citizen (fisk-buggen).
 	if len(citizens) == 0 {
-		// First-time seed: distribute labor_pool evenly.
+		// Första gången: fördela labor_pool jämnt.
 		n := len(potentials)
 		if n == 0 {
 			return nil
@@ -207,24 +215,10 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 				return fmt.Errorf("recompute: seed citizens %s: %w", gp.key, err)
 			}
 		}
-	} else {
-		// Find goods that are now producible but have no citizens row yet.
-		for _, gp := range potentials {
-			if _, ok := citizens[gp.key]; !ok {
-				// New good: allocate 1 citizen as a minimal placeholder so it
-				// appears in the UI with a non-zero yield. The Wanax can adjust.
-				citizens[gp.key] = 1
-				if _, err := tx.Exec(ctx,
-					`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
-					 VALUES ($1, $2, 1)
-					 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-					settlementID, gp.key,
-				); err != nil {
-					return fmt.Errorf("recompute: seed new citizens row %s: %w", gp.key, err)
-				}
-			}
-		}
 	}
+	// Nya producerbara varor (gp.key saknas i citizens) behandlas med 0 citizens —
+	// rate blir 0 tills Wanax allokerar via LaborAlloc. settlement_goods-raden
+	// skapas ändå (upsert nedan) med rate=0 så varan syns i Goods-endpointen.
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	for _, gp := range potentials {

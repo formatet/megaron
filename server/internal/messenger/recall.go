@@ -41,8 +41,10 @@ type RecallMarchPayload struct {
 	Cavalry       int       `json:"cavalry"`
 	Catapult      int       `json:"catapult"`
 	Priest        int       `json:"priest"`
-	Ship          int       `json:"ship"`
+	Ship          int       `json:"ship"` // galley
 	EliteInfantry int       `json:"elite_infantry"`
+	WarGalley     int       `json:"war_galley"`
+	Merchantman   int       `json:"merchantman"`
 	// The messenger is sent to the army's target province (the simplest fixed-point target).
 	// Assumption: for an in-flight army the messenger aims for the destination, not the army's
 	// instantaneous mid-march position. The return march is modelled as departing from the target.
@@ -66,8 +68,10 @@ type RecallOutpostPayload struct {
 	Cavalry        int       `json:"cavalry"`
 	Catapult       int       `json:"catapult"`
 	Priest         int       `json:"priest"`
-	Ship           int       `json:"ship"`
+	Ship           int       `json:"ship"` // galley
 	EliteInfantry  int       `json:"elite_infantry"`
+	WarGalley      int       `json:"war_galley"`
+	Merchantman    int       `json:"merchantman"`
 	OutpostTerrain string    `json:"outpost_terrain"`
 	OutpostQ       int       `json:"outpost_q"`
 	OutpostR       int       `json:"outpost_r"`
@@ -154,11 +158,13 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 	var returnMarchID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO marching_armies
-		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11)
+		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry,
+		  war_galley, merchantman, intent, departs_at, arrives_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'return',$12,$13)
 		 RETURNING id`,
 		p.WorldID, p.TargetID, p.OriginID,
 		p.Infantry, p.Cavalry, p.Catapult, p.Priest, p.Ship, p.EliteInfantry,
+		p.WarGalley, p.Merchantman,
 		now, returnsAt,
 	).Scan(&returnMarchID); err != nil {
 		return fmt.Errorf("create return march: %w", err)
@@ -251,7 +257,7 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 	// March the garrison home (if any).
 	var returnMarchID uuid.UUID
 	var returnsAt time.Time
-	if p.Infantry+p.Cavalry+p.Catapult+p.Priest+p.Ship+p.EliteInfantry > 0 {
+	if p.Infantry+p.Cavalry+p.Catapult+p.Priest+p.Ship+p.EliteInfantry+p.WarGalley+p.Merchantman > 0 {
 		dist := province.HexDistance(
 			province.MapPosition{Q: p.OutpostQ, R: p.OutpostR},
 			province.MapPosition{Q: p.HomeQ, R: p.HomeR},
@@ -260,11 +266,13 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 		returnsAt = now.Add(returnDuration(dist, p.OutpostTerrain))
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO marching_armies
-			 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11)
+			 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry,
+			  war_galley, merchantman, intent, departs_at, arrives_at)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'return',$12,$13)
 			 RETURNING id`,
 			p.WorldID, p.ProvinceID, p.HomeID,
 			p.Infantry, p.Cavalry, p.Catapult, p.Priest, p.Ship, p.EliteInfantry,
+			p.WarGalley, p.Merchantman,
 			now, returnsAt,
 		).Scan(&returnMarchID); err != nil {
 			return fmt.Errorf("create garrison return march: %w", err)

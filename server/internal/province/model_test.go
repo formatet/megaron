@@ -94,6 +94,67 @@ func TestBronzeChain_BronzeWallRequiresBronze(t *testing.T) {
 	}
 }
 
+// TestShipTaxonomy_GalleyTimber verifies galley (ship) byggs med timber, inte cedar.
+func TestShipTaxonomy_GalleyTimber(t *testing.T) {
+	spec, ok := UnitSpecs["ship"]
+	if !ok {
+		t.Fatal("ship (galley) must exist in UnitSpecs")
+	}
+	if _, hasCedar := spec.Costs["cedar"]; hasCedar {
+		t.Error("galley (ship) should not cost cedar — it costs timber")
+	}
+	timber, ok := spec.Costs["timber"]
+	if !ok || timber <= 0 {
+		t.Errorf("galley (ship) must cost timber > 0, got %.1f", timber)
+	}
+	if !spec.RequiresHarbour {
+		t.Error("galley (ship) must require harbour")
+	}
+}
+
+// TestShipTaxonomy_WarGalleyBronzeFoundry verifies war_galley kräver brons + gjuteri.
+func TestShipTaxonomy_WarGalleyBronzeFoundry(t *testing.T) {
+	spec, ok := UnitSpecs["war_galley"]
+	if !ok {
+		t.Fatal("war_galley must exist in UnitSpecs")
+	}
+	bronze, hasBronze := spec.Costs["bronze"]
+	if !hasBronze || bronze <= 0 {
+		t.Errorf("war_galley must cost bronze > 0, got %.1f", bronze)
+	}
+	cedar, hasCedar := spec.Costs["cedar"]
+	if !hasCedar || cedar <= 0 {
+		t.Errorf("war_galley must cost cedar > 0, got %.1f", cedar)
+	}
+	if !spec.RequiresHarbour {
+		t.Error("war_galley must require harbour")
+	}
+	if !spec.RequiresFoundry {
+		t.Error("war_galley must require foundry (bronskedja-gate)")
+	}
+	if spec.PopCost <= 10 {
+		t.Errorf("war_galley PopCost should be > galley (10), got %d", spec.PopCost)
+	}
+}
+
+// TestShipTaxonomy_MerchantmanTimberNoFoundry verifies merchantman byggs med timber, inget gjuteri.
+func TestShipTaxonomy_MerchantmanTimberNoFoundry(t *testing.T) {
+	spec, ok := UnitSpecs["merchantman"]
+	if !ok {
+		t.Fatal("merchantman must exist in UnitSpecs")
+	}
+	timber, ok := spec.Costs["timber"]
+	if !ok || timber <= 0 {
+		t.Errorf("merchantman must cost timber > 0, got %.1f", timber)
+	}
+	if spec.RequiresFoundry {
+		t.Error("merchantman should not require foundry")
+	}
+	if !spec.RequiresHarbour {
+		t.Error("merchantman must require harbour")
+	}
+}
+
 func TestResourceLedger_SnapshotGold(t *testing.T) {
 	base := time.Date(2026, 6, 2, 12, 0, 0, 0, time.UTC)
 	rl := ResourceLedger{Gold: ResourceState{Amount: 50, RatePerMinute: 1, Cap: 500, LastCalcAt: base}}

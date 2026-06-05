@@ -62,7 +62,9 @@
         <tr><td><canvas class="unit-icon" data-unit="cav"  width="12" height="12"></canvas> Hippeis</td>       <td class="num">{{.Province.Army.Cavalry}}</td></tr>
         {{if .Province.Army.Catapult}}<tr><td><canvas class="unit-icon" data-unit="cat"  width="12" height="12"></canvas> Siege</td><td class="num">{{.Province.Army.Catapult}}</td></tr>{{end}}
         <tr><td><canvas class="unit-icon" data-unit="pri"  width="12" height="12"></canvas> Hiereus</td>       <td class="num">{{.Province.Army.Priest}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Trireme</td>       <td class="num">{{.Province.Army.Ship}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Galley</td>        <td class="num">{{.Province.Army.Ship}}</td></tr>
+        {{if .Province.Army.WarGalley}}<tr><td><canvas class="unit-icon" data-unit="wgal" width="12" height="12"></canvas> War Galley</td>    <td class="num">{{.Province.Army.WarGalley}}</td></tr>{{end}}
+        {{if .Province.Army.Merchantman}}<tr><td><canvas class="unit-icon" data-unit="mer"  width="12" height="12"></canvas> Merchantman</td>  <td class="num">{{.Province.Army.Merchantman}}</td></tr>{{end}}
         <tr><td><canvas class="unit-icon" data-unit="eli"  width="12" height="12"></canvas> Agema</td>         <td class="num">{{.Province.Army.EliteInfantry}}</td></tr>
       </table>
       <div class="army-dp-row"><span class="army-dp-label">Defensive Power</span><span class="army-dp-val">{{.Province.ArmyDP}} DP</span></div>
@@ -100,11 +102,27 @@
                   onclick="recruitUnit('priest', document.getElementById('rc-hiereus').value)">Train</button>
         </label>
         <label class="recruit-row{{if not $hasHarbour}} unit-unavailable{{end}}">
-          <span class="recruit-label">Trireme</span>
-          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}110 cedar{{end}}</span>
-          <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-trireme"{{if not $hasHarbour}} disabled{{end}}>
+          <span class="recruit-label">Galley</span>
+          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}90 timber{{end}}</span>
+          <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-galley"{{if not $hasHarbour}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
-                  onclick="recruitUnit('ship', document.getElementById('rc-trireme').value)"
+                  onclick="recruitUnit('ship', document.getElementById('rc-galley').value)"
+                  {{if not $hasHarbour}}disabled{{end}}>Train</button>
+        </label>
+        <label class="recruit-row{{if not $hasHarbour}} unit-unavailable{{end}}">
+          <span class="recruit-label">War Galley</span>
+          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else if not $hasFoundry}}requires foundry{{else}}60 cedar · 4 bronze{{end}}</span>
+          <input class="recruit-count" type="number" min="1" max="10" value="1" id="rc-wargalley"{{if or (not $hasHarbour) (not $hasFoundry)}} disabled{{end}}>
+          <button type="button" class="btn-small btn-primary"
+                  onclick="recruitUnit('war_galley', document.getElementById('rc-wargalley').value)"
+                  {{if or (not $hasHarbour) (not $hasFoundry)}}disabled{{end}}>Train</button>
+        </label>
+        <label class="recruit-row{{if not $hasHarbour}} unit-unavailable{{end}}">
+          <span class="recruit-label">Merchantman</span>
+          <span class="recruit-cost">{{if not $hasHarbour}}requires harbour{{else}}70 timber{{end}}</span>
+          <input class="recruit-count" type="number" min="1" max="20" value="1" id="rc-merchantman"{{if not $hasHarbour}} disabled{{end}}>
+          <button type="button" class="btn-small btn-primary"
+                  onclick="recruitUnit('merchantman', document.getElementById('rc-merchantman').value)"
                   {{if not $hasHarbour}}disabled{{end}}>Train</button>
         </label>
         <label class="recruit-row{{if not $hasFoundry}} unit-unavailable{{end}}">
@@ -328,7 +346,7 @@ async function loadAffordability() {
   if (!data || !data.settlement) return;
   const canRecruit = {};
   (data.settlement.can_recruit || []).forEach(r => { canRecruit[r.unit] = r.can_recruit; });
-  const unitMap = {infantry:'hoplites', cavalry:'hippeis', priest:'hiereus', ship:'trireme', elite_infantry:'agema'};
+  const unitMap = {infantry:'hoplites', cavalry:'hippeis', priest:'hiereus', ship:'galley', war_galley:'wargalley', merchantman:'merchantman', elite_infantry:'agema'};
   Object.entries(unitMap).forEach(([unit, id]) => {
     const row = document.getElementById('rc-' + id)?.closest('.recruit-row');
     if (!row) return;

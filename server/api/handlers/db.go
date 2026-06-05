@@ -38,7 +38,7 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		        control_type, founded_from, governor_id, governor_is_ai,
 		        loyalty, loyalty_trend, wall_level, is_capital, state, population,
 		        gold_amount, gold_rate, gold_cap, gold_calc_at,
-		        infantry, cavalry, catapult, priest, ship, elite_infantry,
+		        infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman,
 		        updated_at
 		 FROM settlements WHERE id = $1 AND world_id = $2`,
 		id, worldID,
@@ -103,6 +103,7 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 		&s.Loyalty, &s.LoyaltyTrend, &s.WallLevel, &s.IsCapital, &s.State, &s.Population,
 		&s.Resources.Gold.Amount, &s.Resources.Gold.RatePerMinute, &s.Resources.Gold.Cap, &goldCalcAt,
 		&s.Army.Infantry, &s.Army.Cavalry, &s.Army.Catapult, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
+		&s.Army.WarGalley, &s.Army.Merchantman,
 		&s.UpdatedAt,
 	)
 	if err != nil {

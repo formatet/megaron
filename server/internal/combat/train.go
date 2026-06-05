@@ -85,9 +85,13 @@ func unitColumn(unitType string) string {
 	case "priest":
 		return "priest"
 	case "ship":
-		return "ship"
+		return "ship" // galley — DB-kolumn heter ship
 	case "elite_infantry":
 		return "elite_infantry"
+	case "war_galley":
+		return "war_galley"
+	case "merchantman":
+		return "merchantman"
 	}
 	return ""
 }

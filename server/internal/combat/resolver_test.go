@@ -74,14 +74,27 @@ func TestWallModifier(t *testing.T) {
 }
 
 func TestStrength(t *testing.T) {
-	// Elite ×2, cavalry ×3, infantry ×1; priests, ships and catapults add no field strength.
+	// Elite ×2, cavalry ×3, infantry ×1.
+	// Naval: war_galley ×3, galley(ship) ×1; merchantman og catapult ger 0 i strid.
+	// Priests ger noll stridsstyrka.
 	a := province.ArmyComposition{Infantry: 10, EliteInfantry: 5, Cavalry: 4, Priest: 3, Ship: 2, Catapult: 7}
-	want := float64(10*1 + 5*2 + 4*3) // 32
+	want := float64(10*1 + 5*2 + 4*3 + 2*1) // 34 (galley×1 ingår nu)
 	if got := Strength(a); got != want {
 		t.Errorf("Strength = %.0f, want %.0f", got, want)
 	}
-	if got := Strength(province.ArmyComposition{Priest: 9, Ship: 9, Catapult: 9}); got != 0 {
-		t.Errorf("non-combat units should give 0 strength, got %.0f", got)
+	// Catapults, priests, och merchantman ger 0 stridsstyrka.
+	if got := Strength(province.ArmyComposition{Priest: 9, Catapult: 9, Merchantman: 9}); got != 0 {
+		t.Errorf("präst/katapult/merchantman ska ge 0 stridsstyrka, got %.0f", got)
+	}
+}
+
+func TestStrength_NavalOrder(t *testing.T) {
+	// Sjöstridsstyrka: war_galley > galley > merchantman(0)
+	wg := Strength(province.ArmyComposition{WarGalley: 1})   // 3
+	g := Strength(province.ArmyComposition{Ship: 1})          // 1
+	m := Strength(province.ArmyComposition{Merchantman: 1})   // 0
+	if !(wg > g && g > m) {
+		t.Errorf("förväntad ordning war_galley(%.0f) > galley(%.0f) > merchantman(%.0f)", wg, g, m)
 	}
 }
 

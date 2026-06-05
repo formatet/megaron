@@ -147,11 +147,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			sett.Army.Catapult*economy.PopCosts["catapult"] +
 			sett.Army.Priest*economy.PopCosts["priest"] +
 			sett.Army.Ship*economy.PopCosts["ship"] +
-			sett.Army.EliteInfantry*economy.PopCosts["elite_infantry"]
+			sett.Army.EliteInfantry*economy.PopCosts["elite_infantry"] +
+			sett.Army.WarGalley*economy.PopCosts["war_galley"] +
+			sett.Army.Merchantman*economy.PopCosts["merchantman"]
 		var transitPop int
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT COALESCE(SUM(
 			     m.infantry*$2+m.cavalry*$3+m.catapult*$4+m.priest*$5+m.ship*$6+m.elite_infantry*$7
+			     +m.war_galley*$8+m.merchantman*$9
 			 ),0)
 			 FROM marching_armies m
 			 JOIN settlements s ON s.province_id=m.origin_id
@@ -159,6 +162,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			sett.ID,
 			economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
 			economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+			economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
 		).Scan(&transitPop)
 		laborPool := sett.Population - homePop - transitPop
 		if laborPool < 0 {
@@ -297,8 +301,10 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		Cavalry       int    `json:"cavalry"`
 		Catapult      int    `json:"catapult"`
 		Priest        int    `json:"priest"`
-		Ship          int    `json:"ship"`
+		Ship          int    `json:"ship"` // galley
 		EliteInfantry int    `json:"elite_infantry"`
+		WarGalley     int    `json:"war_galley"`
+		Merchantman   int    `json:"merchantman"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -408,17 +414,20 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		Cavalry:       req.Cavalry,
 		Catapult:      req.Catapult,
 		Priest:        req.Priest,
-		Ship:          req.Ship,
+		Ship:          req.Ship, // galley
 		EliteInfantry: req.EliteInfantry,
+		WarGalley:     req.WarGalley,
+		Merchantman:   req.Merchantman,
 	}
 
-	if combat.Strength(army) == 0 && army.Ship == 0 && army.Catapult == 0 && army.Priest == 0 {
+	hasNaval := army.Ship > 0 || army.WarGalley > 0 || army.Merchantman > 0
+	if combat.Strength(army) == 0 && !hasNaval && army.Catapult == 0 && army.Priest == 0 {
 		writeError(w, http.StatusBadRequest, "must send at least one unit")
 		return
 	}
 
-	if req.Intent == "explore" && army.Ship == 0 {
-		writeError(w, http.StatusBadRequest, "explore requires at least one ship")
+	if req.Intent == "explore" && !hasNaval {
+		writeError(w, http.StatusBadRequest, "explore requires at least one ship (galley, war galley, or merchantman)")
 		return
 	}
 
@@ -429,9 +438,10 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Naval gating.
+	// Alla tre skeppstyper (galley/war_galley/merchantman) räknas som naval.
 	isSea := dst.TerrainType == "coastal_sea" || dst.TerrainType == "deep_sea"
 	hasLandUnits := army.Infantry > 0 || army.Cavalry > 0 || army.Catapult > 0 || army.EliteInfantry > 0
-	if army.Ship > 0 {
+	if hasNaval {
 		// Embarkation: origin must be coast_beach OR have a harbour building.
 		if src.TerrainType != "coast_beach" {
 			var hasHarbour bool
@@ -493,11 +503,12 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	if req.Intent == "attack" {
 		var garrison province.ArmyComposition
 		if err := tx.QueryRow(r.Context(),
-			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
 			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
 			sourceID, worldID,
 		).Scan(&garrison.Infantry, &garrison.Cavalry, &garrison.Catapult,
 			&garrison.Priest, &garrison.Ship, &garrison.EliteInfantry,
+			&garrison.WarGalley, &garrison.Merchantman,
 		); err == nil {
 			garrisonDP := combat.Strength(garrison)
 			sentDP := combat.Strength(army)
@@ -510,11 +521,12 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		// Must send at least 75% of the defender's DP.
 		var defGarrison province.ArmyComposition
 		if err := tx.QueryRow(r.Context(),
-			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
 			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
 			targetID, worldID,
 		).Scan(&defGarrison.Infantry, &defGarrison.Cavalry, &defGarrison.Catapult,
 			&defGarrison.Priest, &defGarrison.Ship, &defGarrison.EliteInfantry,
+			&defGarrison.WarGalley, &defGarrison.Merchantman,
 		); err == nil {
 			defDP := combat.Strength(defGarrison)
 			sentDP := combat.Strength(army)
@@ -532,16 +544,20 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		   catapult       = GREATEST(0, catapult       - $3),
 		   priest         = GREATEST(0, priest         - $4),
 		   ship           = GREATEST(0, ship           - $5),
-		   elite_infantry = GREATEST(0, elite_infantry - $6)
-		 WHERE province_id = $7 AND world_id = $8
+		   elite_infantry = GREATEST(0, elite_infantry - $6),
+		   war_galley     = GREATEST(0, war_galley     - $7),
+		   merchantman    = GREATEST(0, merchantman    - $8)
+		 WHERE province_id = $9 AND world_id = $10
 		   AND infantry       >= $1
 		   AND cavalry        >= $2
 		   AND catapult       >= $3
 		   AND priest         >= $4
 		   AND ship           >= $5
-		   AND elite_infantry >= $6`,
+		   AND elite_infantry >= $6
+		   AND war_galley     >= $7
+		   AND merchantman    >= $8`,
 		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry,
-		sourceID, worldID,
+		army.WarGalley, army.Merchantman, sourceID, worldID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct army")
@@ -553,11 +569,12 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		// can scale the march down instead of looping a blind 422.
 		var have province.ArmyComposition
 		_ = tx.QueryRow(r.Context(),
-			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+			`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
 			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
 			sourceID, worldID,
 		).Scan(&have.Infantry, &have.Cavalry, &have.Catapult,
-			&have.Priest, &have.Ship, &have.EliteInfantry)
+			&have.Priest, &have.Ship, &have.EliteInfantry,
+			&have.WarGalley, &have.Merchantman)
 		writeError(w, http.StatusUnprocessableEntity, insufficientUnitsMsg(army, have))
 		return
 	}
@@ -571,11 +588,13 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	var marchID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO marching_armies
-		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry, intent, departs_at, arrives_at, colony_name)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+		 (world_id, origin_id, target_id, infantry, cavalry, catapult, priest, ship, elite_infantry,
+		  war_galley, merchantman, intent, departs_at, arrives_at, colony_name)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 		 RETURNING id`,
 		worldID, sourceID, targetID,
 		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry,
+		army.WarGalley, army.Merchantman,
 		req.Intent, now, arrivesAt, colonyName,
 	).Scan(&marchID)
 	if err != nil {
@@ -643,14 +662,14 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Garrison size comes from the resolved outpost march that established it.
-	var gInf, gCav, gCat, gPri, gShip, gElite int
+	var gInf, gCav, gCat, gPri, gShip, gElite, gWarGalley, gMerchantman int
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry
+		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
 		 FROM marching_armies
 		 WHERE target_id=$1 AND intent='outpost' AND resolved=true
 		 ORDER BY created_at DESC LIMIT 1`,
 		provinceID,
-	).Scan(&gInf, &gCav, &gCat, &gPri, &gShip, &gElite)
+	).Scan(&gInf, &gCav, &gCat, &gPri, &gShip, &gElite, &gWarGalley, &gMerchantman)
 
 	// Outpost position + terrain; home (feeding) settlement position + commanding settlement id.
 	var outpostTerrain string
@@ -708,6 +727,8 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		Priest:         gPri,
 		Ship:           gShip,
 		EliteInfantry:  gElite,
+		WarGalley:      gWarGalley,
+		Merchantman:    gMerchantman,
 		OutpostTerrain: outpostTerrain,
 		OutpostQ:       oQ,
 		OutpostR:       oR,
@@ -1130,19 +1151,21 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	// Recruit reduces labor_pool (army takes workers from production); population stays.
 	totalPopCost := spec.PopCost * req.Count
 	if totalPopCost > 0 {
-		var population, infantry, cavalry, catapult, priest, ship, eliteInfantry int
+		var population, infantry, cavalry, catapult, priest, ship, eliteInfantry, warGalley, merchantman int
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry
+			`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
 			 FROM settlements WHERE id = $1`,
 			settlementID,
-		).Scan(&population, &infantry, &cavalry, &catapult, &priest, &ship, &eliteInfantry)
+		).Scan(&population, &infantry, &cavalry, &catapult, &priest, &ship, &eliteInfantry, &warGalley, &merchantman)
 
 		homePop := infantry*economy.PopCosts["infantry"] +
 			cavalry*economy.PopCosts["cavalry"] +
 			catapult*economy.PopCosts["catapult"] +
 			priest*economy.PopCosts["priest"] +
 			ship*economy.PopCosts["ship"] +
-			eliteInfantry*economy.PopCosts["elite_infantry"]
+			eliteInfantry*economy.PopCosts["elite_infantry"] +
+			warGalley*economy.PopCosts["war_galley"] +
+			merchantman*economy.PopCosts["merchantman"]
 
 		var transitPop int
 		_ = h.pool.QueryRow(r.Context(),
@@ -1152,7 +1175,9 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			     m.catapult       * $4 +
 			     m.priest         * $5 +
 			     m.ship           * $6 +
-			     m.elite_infantry * $7
+			     m.elite_infantry * $7 +
+			     m.war_galley     * $8 +
+			     m.merchantman    * $9
 			 ), 0)
 			 FROM marching_armies m
 			 JOIN settlements s ON s.province_id = m.origin_id
@@ -1160,6 +1185,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			settlementID,
 			economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
 			economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+			economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
 		).Scan(&transitPop)
 
 		laborPool := population - homePop - transitPop
@@ -1292,21 +1318,24 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	now := h.clk.Now()
 
 	// Load labor pool for this settlement (pop − army pop-cost − transit pop-cost).
-	var population, sInfantry, sCavalry, sCatapult, sPriest, sShip, sEliteInfantry int
+	var population, sInfantry, sCavalry, sCatapult, sPriest, sShip, sEliteInfantry, sWarGalley, sMerchantman int
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry
+		`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
 		 FROM settlements WHERE id = $1`, settlementID,
-	).Scan(&population, &sInfantry, &sCavalry, &sCatapult, &sPriest, &sShip, &sEliteInfantry)
+	).Scan(&population, &sInfantry, &sCavalry, &sCatapult, &sPriest, &sShip, &sEliteInfantry, &sWarGalley, &sMerchantman)
 	homePop := sInfantry*economy.PopCosts["infantry"] +
 		sCavalry*economy.PopCosts["cavalry"] +
 		sCatapult*economy.PopCosts["catapult"] +
 		sPriest*economy.PopCosts["priest"] +
 		sShip*economy.PopCosts["ship"] +
-		sEliteInfantry*economy.PopCosts["elite_infantry"]
+		sEliteInfantry*economy.PopCosts["elite_infantry"] +
+		sWarGalley*economy.PopCosts["war_galley"] +
+		sMerchantman*economy.PopCosts["merchantman"]
 	var transitPop int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT COALESCE(SUM(
 		     m.infantry*$2+m.cavalry*$3+m.catapult*$4+m.priest*$5+m.ship*$6+m.elite_infantry*$7
+		     +m.war_galley*$8+m.merchantman*$9
 		 ),0)
 		 FROM marching_armies m
 		 JOIN settlements s ON s.province_id=m.origin_id
@@ -1314,6 +1343,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		settlementID,
 		economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
 		economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+		economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
 	).Scan(&transitPop)
 	laborPool := population - homePop - transitPop
 	if laborPool < 0 {
@@ -1797,7 +1827,7 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT id, target_id, intent, infantry, cavalry, catapult, priest, ship, elite_infantry,
-		        resolved, arrives_at, combat_report,
+		        war_galley, merchantman, resolved, arrives_at, combat_report,
 		        origin_id = $1 AS outgoing
 		 FROM marching_armies
 		 WHERE (origin_id = $1 OR (target_id = $1 AND resolved = true))
@@ -1819,8 +1849,10 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		Cavalry       int        `json:"cavalry"`
 		Catapult      int        `json:"catapult"`
 		Priest        int        `json:"priest"`
-		Ship          int        `json:"ship"`
+		Ship          int        `json:"ship"` // galley
 		EliteInfantry int        `json:"elite_infantry"`
+		WarGalley     int        `json:"war_galley"`
+		Merchantman   int        `json:"merchantman"`
 		Resolved      bool       `json:"resolved"`
 		ArrivesAt     time.Time  `json:"arrives_at"`
 		CombatReport  *string    `json:"combat_report,omitempty"`
@@ -1831,7 +1863,7 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		var m marchItem
 		if err := rows.Scan(&m.ID, &m.TargetID, &m.Intent,
 			&m.Infantry, &m.Cavalry, &m.Catapult, &m.Priest, &m.Ship, &m.EliteInfantry,
-			&m.Resolved, &m.ArrivesAt, &m.CombatReport, &m.Outgoing); err == nil {
+			&m.WarGalley, &m.Merchantman, &m.Resolved, &m.ArrivesAt, &m.CombatReport, &m.Outgoing); err == nil {
 			result = append(result, m)
 		}
 	}
@@ -1882,20 +1914,22 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		Priest        int
 		Ship          int
 		EliteInfantry int
+		WarGalley     int
+		Merchantman   int
 		Resolved      bool
 		OriginID      uuid.UUID
 		TargetID      uuid.UUID
 	}
 	err = tx.QueryRow(r.Context(),
-		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry, resolved,
-		        origin_id, target_id
+		`SELECT infantry, cavalry, catapult, priest, ship, elite_infantry,
+		        war_galley, merchantman, resolved, origin_id, target_id
 		 FROM marching_armies
 		 WHERE id = $1 AND world_id = $2 AND origin_id = $3
 		 FOR UPDATE`,
 		marchID, worldID, provinceID,
 	).Scan(&march.Infantry, &march.Cavalry, &march.Catapult, &march.Priest,
-		&march.Ship, &march.EliteInfantry, &march.Resolved,
-		&march.OriginID, &march.TargetID)
+		&march.Ship, &march.EliteInfantry, &march.WarGalley, &march.Merchantman,
+		&march.Resolved, &march.OriginID, &march.TargetID)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "march not found or not yours")
 		return
@@ -1956,6 +1990,8 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		Priest:        march.Priest,
 		Ship:          march.Ship,
 		EliteInfantry: march.EliteInfantry,
+		WarGalley:     march.WarGalley,
+		Merchantman:   march.Merchantman,
 		OriginQ:       oQ,
 		OriginR:       oR,
 		TargetQ:       tQ,
@@ -2149,8 +2185,10 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		Infantry      int `json:"infantry"`
 		Cavalry       int `json:"cavalry"`
 		Priest        int `json:"priest"`
-		Ship          int `json:"ship"`
+		Ship          int `json:"ship"` // galley
 		EliteInfantry int `json:"elite_infantry"`
+		WarGalley     int `json:"war_galley"`
+		Merchantman   int `json:"merchantman"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -2183,10 +2221,12 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		     cavalry        = GREATEST(0, cavalry        - $2),
 		     priest         = GREATEST(0, priest         - $3),
 		     ship           = GREATEST(0, ship           - $4),
-		     elite_infantry = GREATEST(0, elite_infantry - $5)
-		 WHERE id = $6`,
+		     elite_infantry = GREATEST(0, elite_infantry - $5),
+		     war_galley     = GREATEST(0, war_galley     - $6),
+		     merchantman    = GREATEST(0, merchantman    - $7)
+		 WHERE id = $8`,
 		req.Infantry, req.Cavalry, req.Priest, req.Ship, req.EliteInfantry,
-		settlementID,
+		req.WarGalley, req.Merchantman, settlementID,
 	)
 	if err != nil || tag.RowsAffected() == 0 {
 		writeError(w, http.StatusInternalServerError, "disband failed")
@@ -2207,6 +2247,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		"disbanded": map[string]int{
 			"infantry": req.Infantry, "cavalry": req.Cavalry,
 			"priest": req.Priest, "ship": req.Ship, "elite_infantry": req.EliteInfantry,
+			"war_galley": req.WarGalley, "merchantman": req.Merchantman,
 		},
 	})
 }
@@ -2242,12 +2283,14 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 
 	// Verify ownership and load labor_pool.
 	var settlementID uuid.UUID
-	var population, sInfantry, sCavalry, sCatapult, sPriest, sShip, sEliteInfantry int
+	var population, sInfantry, sCavalry, sCatapult, sPriest, sShip, sEliteInfantry, sWarGalley2, sMerchantman2 int
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT s.id, s.population, s.infantry, s.cavalry, s.catapult, s.priest, s.ship, s.elite_infantry
+		`SELECT s.id, s.population, s.infantry, s.cavalry, s.catapult, s.priest, s.ship, s.elite_infantry,
+		        s.war_galley, s.merchantman
 		 FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
 		provinceID, worldID, playerID,
-	).Scan(&settlementID, &population, &sInfantry, &sCavalry, &sCatapult, &sPriest, &sShip, &sEliteInfantry); err != nil {
+	).Scan(&settlementID, &population, &sInfantry, &sCavalry, &sCatapult, &sPriest, &sShip, &sEliteInfantry,
+		&sWarGalley2, &sMerchantman2); err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
@@ -2257,12 +2300,15 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		sCatapult*economy.PopCosts["catapult"] +
 		sPriest*economy.PopCosts["priest"] +
 		sShip*economy.PopCosts["ship"] +
-		sEliteInfantry*economy.PopCosts["elite_infantry"]
+		sEliteInfantry*economy.PopCosts["elite_infantry"] +
+		sWarGalley2*economy.PopCosts["war_galley"] +
+		sMerchantman2*economy.PopCosts["merchantman"]
 
 	var transitPop int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT COALESCE(SUM(
 		     m.infantry*$2+m.cavalry*$3+m.catapult*$4+m.priest*$5+m.ship*$6+m.elite_infantry*$7
+		     +m.war_galley*$8+m.merchantman*$9
 		 ),0)
 		 FROM marching_armies m
 		 JOIN settlements s ON s.province_id=m.origin_id
@@ -2270,6 +2316,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		settlementID,
 		economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
 		economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+		economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
 	).Scan(&transitPop)
 
 	laborPool := population - homePop - transitPop

@@ -74,12 +74,14 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	}
 	err := tx.QueryRow(ctx,
 		`SELECT id, origin_id, target_id, intent,
-		        infantry, cavalry, catapult, priest, ship, elite_infantry, resolved, colony_name
+		        infantry, cavalry, catapult, priest, ship, elite_infantry,
+		        war_galley, merchantman, resolved, colony_name
 		 FROM marching_armies WHERE id = $1 FOR UPDATE`,
 		marchID,
 	).Scan(&march.ID, &march.OriginID, &march.TargetID, &march.Intent,
 		&march.Army.Infantry, &march.Army.Cavalry, &march.Army.Catapult,
-		&march.Army.Priest, &march.Army.Ship, &march.Army.EliteInfantry, &march.Resolved,
+		&march.Army.Priest, &march.Army.Ship, &march.Army.EliteInfantry,
+		&march.Army.WarGalley, &march.Army.Merchantman, &march.Resolved,
 		&march.ColonyName)
 	if err != nil {
 		return fmt.Errorf("load march: %w", err)
@@ -159,12 +161,14 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		Culture        string
 	}
 	err = tx.QueryRow(ctx,
-		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, elite_infantry, wall_level, invasions_today, culture_id
+		`SELECT owner_id, infantry, cavalry, catapult, priest, ship, elite_infantry,
+		        war_galley, merchantman, wall_level, invasions_today, culture_id
 		 FROM settlements WHERE province_id = $1`,
 		march.TargetID,
 	).Scan(&def.OwnerID,
 		&def.Army.Infantry, &def.Army.Cavalry, &def.Army.Catapult,
-		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry, &def.Walls, &def.InvasionsToday,
+		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry,
+		&def.Army.WarGalley, &def.Army.Merchantman, &def.Walls, &def.InvasionsToday,
 		&def.Culture)
 	if err != nil {
 		return fmt.Errorf("load defending settlement: %w", err)
@@ -244,7 +248,9 @@ func armyPopCost(a province.ArmyComposition) int {
 		a.Catapult*economy.PopCosts["catapult"] +
 		a.Priest*economy.PopCosts["priest"] +
 		a.Ship*economy.PopCosts["ship"] +
-		a.EliteInfantry*economy.PopCosts["elite_infantry"]
+		a.EliteInfantry*economy.PopCosts["elite_infantry"] +
+		a.WarGalley*economy.PopCosts["war_galley"] +
+		a.Merchantman*economy.PopCosts["merchantman"]
 }
 
 func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, defOwnerID *uuid.UUID, attackArmy province.ArmyComposition, result CombatResult, worldID uuid.UUID) error {
@@ -254,12 +260,14 @@ func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 
 	// Variant B: attacker casualties = demographic loss on attacker's home settlement.
 	deadArmy := province.ArmyComposition{
-		Infantry:       attackArmy.Infantry - survivingInf,
-		Cavalry:        attackArmy.Cavalry - survivingCav,
-		EliteInfantry:  attackArmy.EliteInfantry - survivingElite,
-		Catapult:       int(float64(attackArmy.Catapult) * result.AttackerLosses),
-		Priest:         int(float64(attackArmy.Priest) * result.AttackerLosses),
-		Ship:           int(float64(attackArmy.Ship) * result.AttackerLosses),
+		Infantry:      attackArmy.Infantry - survivingInf,
+		Cavalry:       attackArmy.Cavalry - survivingCav,
+		EliteInfantry: attackArmy.EliteInfantry - survivingElite,
+		Catapult:      int(float64(attackArmy.Catapult) * result.AttackerLosses),
+		Priest:        int(float64(attackArmy.Priest) * result.AttackerLosses),
+		Ship:          int(float64(attackArmy.Ship) * result.AttackerLosses),
+		WarGalley:     int(float64(attackArmy.WarGalley) * result.AttackerLosses),
+		Merchantman:   int(float64(attackArmy.Merchantman) * result.AttackerLosses),
 	}
 	attackerPopLost := armyPopCost(deadArmy)
 	if attackerPopLost > 0 {
@@ -332,6 +340,8 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 		Catapult:      int(float64(attackArmy.Catapult) * result.AttackerLosses),
 		Priest:        int(float64(attackArmy.Priest) * result.AttackerLosses),
 		Ship:          int(float64(attackArmy.Ship) * result.AttackerLosses),
+		WarGalley:     int(float64(attackArmy.WarGalley) * result.AttackerLosses),
+		Merchantman:   int(float64(attackArmy.Merchantman) * result.AttackerLosses),
 	}
 	attackerPopLost := armyPopCost(attackerDeadArmy)
 	if attackerPopLost > 0 {
@@ -367,6 +377,8 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 		Catapult:      int(float64(defArmy.Catapult) * result.DefenderLosses),
 		Priest:        int(float64(defArmy.Priest) * result.DefenderLosses),
 		Ship:          int(float64(defArmy.Ship) * result.DefenderLosses),
+		WarGalley:     int(float64(defArmy.WarGalley) * result.DefenderLosses),
+		Merchantman:   int(float64(defArmy.Merchantman) * result.DefenderLosses),
 	}
 	defenderPopLost := armyPopCost(defenderDeadArmy)
 	if defenderPopLost > 0 {
@@ -404,9 +416,12 @@ func mergeArmy(ctx context.Context, tx pgx.Tx, targetID uuid.UUID, army province
 		   catapult       = catapult       + $3,
 		   priest         = priest         + $4,
 		   ship           = ship           + $5,
-		   elite_infantry = elite_infantry + $6
-		 WHERE province_id = $7`,
-		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry, targetID,
+		   elite_infantry = elite_infantry + $6,
+		   war_galley     = war_galley     + $7,
+		   merchantman    = merchantman    + $8
+		 WHERE province_id = $9`,
+		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry,
+		army.WarGalley, army.Merchantman, targetID,
 	)
 	if err != nil {
 		return err
@@ -438,7 +453,13 @@ func buildCombatReport(att, def province.ArmyComposition, walls int, result Comb
 			parts = append(parts, fmt.Sprintf("%d Hiereus", a.Priest))
 		}
 		if a.Ship > 0 {
-			parts = append(parts, fmt.Sprintf("%d Trireme", a.Ship))
+			parts = append(parts, fmt.Sprintf("%d Galley", a.Ship))
+		}
+		if a.WarGalley > 0 {
+			parts = append(parts, fmt.Sprintf("%d War Galley", a.WarGalley))
+		}
+		if a.Merchantman > 0 {
+			parts = append(parts, fmt.Sprintf("%d Merchantman", a.Merchantman))
 		}
 		if a.Catapult > 0 {
 			parts = append(parts, fmt.Sprintf("%d Siege", a.Catapult))
@@ -645,17 +666,20 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	)
 
 	// Colonists become the garrison.
-	if army.Infantry > 0 || army.Cavalry > 0 || army.EliteInfantry > 0 || army.Priest > 0 || army.Ship > 0 {
+	if army.Infantry > 0 || army.Cavalry > 0 || army.EliteInfantry > 0 || army.Priest > 0 ||
+		army.Ship > 0 || army.WarGalley > 0 || army.Merchantman > 0 {
 		_, _ = tx.Exec(ctx,
 			`UPDATE settlements SET
 			   infantry       = infantry       + $1,
 			   cavalry        = cavalry        + $2,
 			   elite_infantry = elite_infantry + $3,
 			   priest         = priest         + $4,
-			   ship           = ship           + $5
-			 WHERE id = $6`,
+			   ship           = ship           + $5,
+			   war_galley     = war_galley     + $6,
+			   merchantman    = merchantman    + $7
+			 WHERE id = $8`,
 			army.Infantry, army.Cavalry, army.EliteInfantry, army.Priest, army.Ship,
-			settlementID,
+			army.WarGalley, army.Merchantman, settlementID,
 		)
 	}
 

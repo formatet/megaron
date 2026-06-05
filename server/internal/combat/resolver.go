@@ -44,8 +44,11 @@ func WallModifier(level int) float64 {
 // Strength computes the raw combat strength of an army composition.
 // Elite infantry count at ×2; cavalry at ×3; catapults breach walls but add no field strength.
 // Priests provide no field strength — they perform rites, not combat.
+// Naval-styrka (sjöstrid): war_galley ×3, galley(ship) ×1, merchantman ×0
+// (merchantman transporterar — nästan ingen stridskraft).
 func Strength(a province.ArmyComposition) float64 {
-	return float64(a.Infantry*1 + a.EliteInfantry*2 + a.Cavalry*3)
+	return float64(a.Infantry*1 + a.EliteInfantry*2 + a.Cavalry*3 +
+		a.WarGalley*3 + a.Ship*1)
 }
 
 // CatapultEffect reduces effective wall level based on catapults present.

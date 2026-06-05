@@ -73,13 +73,16 @@ func TestLaborRates_Formula_ExactMatch(t *testing.T) {
 // TestPopCosts_MirrorTrainingGo verifies that PopCosts constants are internally consistent.
 func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	// These values must match province/training.go:UnitSpecs (G1: no import allowed).
+	// ship = galley (DB-kolumn). war_galley + merchantman = nya skepp-typer (mig 039).
 	expected := map[string]int{
 		"infantry":       5,
 		"cavalry":        8,
 		"catapult":       2,
 		"priest":         3,
-		"ship":           10,
+		"ship":           10, // galley
 		"elite_infantry": 10,
+		"war_galley":     12,
+		"merchantman":    8,
 	}
 	for unit, want := range expected {
 		if got := PopCosts[unit]; got != want {
@@ -88,31 +91,33 @@ func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	}
 }
 
-// TestNewGoodSeeding_FishAfterHarbour verifies that when a new producible good appears
-// (fish after harbour), it gets at least 1 citizen and receives a non-zero rate.
+// TestNewGoodSeeding_FishAfterHarbour verifies att fisk är producerbar med 0 citizens som
+// default (fisk-buggen var att 1 citizen auto-seedades → producerade utan Wanax val).
+// Fisk ska visas som producerbar (basePotential > 0) men ha rate=0 tills Wanax allokerar.
 func TestNewGoodSeeding_FishAfterHarbour(t *testing.T) {
-	// Before harbour: grain and timber only.
-	// After harbour: fish becomes producible.
+	// Utan hamn: grain och timber är producerbara; fisk saknas i basePotential.
 	baseBefore := map[string]float64{GoodGrain: 0.10, GoodTimber: 0.25}
-	baseAfter := map[string]float64{GoodGrain: 0.10, GoodTimber: 0.25, GoodFish: 0.04}
-
-	// Citizens before harbour.
 	citizensBefore := map[string]float64{GoodGrain: 100, GoodTimber: 100}
 	ratesBefore := LaborRates(baseBefore, citizensBefore, 0)
 	if ratesBefore[GoodFish] != 0 {
-		t.Errorf("fish should not produce before harbour, got %.6f", ratesBefore[GoodFish])
+		t.Errorf("fish ska inte produceras utan hamn, got %.6f", ratesBefore[GoodFish])
 	}
 
-	// After harbour: fish gets 1 citizen (minimal seed).
-	citizensAfter := map[string]float64{GoodGrain: 100, GoodTimber: 100, GoodFish: 1}
-	ratesAfter := LaborRates(baseAfter, citizensAfter, 0)
-	if ratesAfter[GoodFish] <= 0 {
-		t.Errorf("fish should produce after harbour with 1 citizen, got %.6f", ratesAfter[GoodFish])
+	// Med hamn: fish har basePotential > 0 men citizens=0 (ingen auto-seed).
+	// RecomputeProduction lägger INTE till 1 citizen automatiskt längre (fisk-fix).
+	baseAfter := map[string]float64{GoodGrain: 0.10, GoodTimber: 0.25, GoodFish: 0.04}
+	citizensZeroFish := map[string]float64{GoodGrain: 100, GoodTimber: 100, GoodFish: 0}
+	ratesZero := LaborRates(baseAfter, citizensZeroFish, 0)
+	if ratesZero[GoodFish] != 0 {
+		t.Errorf("fish rate ska vara 0 med 0 citizens (fisk-fix), got %.6f", ratesZero[GoodFish])
 	}
-	// rate = (0.04/100) × 1 = 0.0004
-	expected := (0.04 / REF_LABOR) * 1.0
-	if math.Abs(ratesAfter[GoodFish]-expected) > 1e-9 {
-		t.Errorf("fish rate: expected %.6f, got %.6f", expected, ratesAfter[GoodFish])
+
+	// Wanax tilldelar sedan citizens via LaborAlloc → fish producerar.
+	citizensAllocated := map[string]float64{GoodGrain: 100, GoodTimber: 100, GoodFish: 10}
+	ratesAllocated := LaborRates(baseAfter, citizensAllocated, 0)
+	expected := (0.04 / REF_LABOR) * 10.0
+	if math.Abs(ratesAllocated[GoodFish]-expected) > 1e-9 {
+		t.Errorf("fish rate med 10 citizens: want %.6f, got %.6f", expected, ratesAllocated[GoodFish])
 	}
 }
 
