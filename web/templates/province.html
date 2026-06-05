@@ -278,6 +278,23 @@
       <div id="trade-routes-list" class="trade-routes-list"><p class="loading">Loading…</p></div>
     </section>
 
+    <!-- ── Labor allocation ─────────────────────────── -->
+    <section class="panel labor-panel">
+      <h3>Labor</h3>
+      <p class="labor-hint">Allocate workers between goods. Output = base × share × labor / 100.</p>
+      <div class="labor-pool-line">Labor pool: <span id="labor-pool-val">—</span> workers</div>
+      <div id="labor-sliders"><p class="loading">Loading…</p></div>
+      <button class="btn-primary btn-small" onclick="saveLabor()" style="width:100%;margin-top:.5rem">Apply allocation</button>
+      <div id="labor-result" class="action-result"></div>
+    </section>
+
+    <!-- ── Outpost flows ────────────────────────────── -->
+    <section class="panel outpost-flows-panel">
+      <h3>Outposts</h3>
+      <p class="labor-hint">Terrain output (flat rate, no labor) flowing to your settlements.</p>
+      <div id="outpost-flows-list"><p class="loading">Loading…</p></div>
+    </section>
+
     <!-- ── Foundry — craft bronze ───────────────────── -->
     {{if (index .Built "foundry")}}
     <section class="panel foundry-panel">
@@ -416,6 +433,67 @@ async function loadGoods() {
   const sel = document.getElementById('trade-good');
   sel.innerHTML = '<option value="silver">Silver</option>' + _goodsData.map(g => `<option value="${g.key}">${g.name}</option>`).join('');
   document.getElementById('goods-trade-wrap').style.display = '';
+  loadLabor();
+}
+
+// ── Labor allocation ─────────────────────────────────────────────────────
+// Builds one slider per producible good from _goodsData (carries weight,
+// yield_per_worker, producible, labor_pool). Non-producible goods are greyed.
+function loadLabor() {
+  const pool = _goodsData.length ? (_goodsData[0].labor_pool || 0) : 0;
+  document.getElementById('labor-pool-val').textContent = pool;
+  const el = document.getElementById('labor-sliders');
+  const producible = _goodsData.filter(g => g.producible);
+  if (!producible.length) {
+    el.innerHTML = '<p class="empty-state">No producible goods on this terrain.</p>';
+    return;
+  }
+  el.innerHTML = producible.map(g => {
+    const pct = Math.round((g.weight || 0) * 100);
+    const rateH = (g.rate_per_min * 60);
+    const rateStr = rateH >= 1 ? rateH.toFixed(1) : rateH.toFixed(2);
+    return `<div class="labor-row">
+      <div class="labor-row-head">
+        <span class="labor-good">${g.name}</span>
+        <span class="labor-pct" id="lpct-${g.key}">${pct}%</span>
+      </div>
+      <input type="range" class="labor-slider" id="lsl-${g.key}" data-good="${g.key}"
+             min="0" max="100" value="${pct}" oninput="onLaborSlide()">
+      <div class="labor-yield">yield/worker ${(g.yield_per_worker||0).toFixed(4)} · now +${rateStr}/h</div>
+    </div>`;
+  }).join('');
+}
+
+function onLaborSlide() {
+  // Live-update the percent labels (display only; normalization happens server-side).
+  document.querySelectorAll('.labor-slider').forEach(s => {
+    document.getElementById('lpct-' + s.dataset.good).textContent = s.value + '%';
+  });
+}
+
+async function saveLabor() {
+  const weights = {};
+  document.querySelectorAll('.labor-slider').forEach(s => {
+    const v = parseFloat(s.value);
+    if (v > 0) weights[s.dataset.good] = v;
+  });
+  if (!Object.keys(weights).length) {
+    showResult('labor-result', 'set at least one good above zero', false);
+    return;
+  }
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/labor`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{})},
+    body: JSON.stringify({weights})
+  });
+  if (res.ok) {
+    showResult('labor-result', 'allocation applied', true);
+    loadGoods();
+  } else {
+    const e = await res.json().catch(() => ({}));
+    showResult('labor-result', e.error || 'failed', false);
+  }
 }
 
 async function doDisband() {
@@ -575,6 +653,32 @@ async function loadTradeRoutes() {
   el.innerHTML = html || '<p class="empty-state">No shipments en route.</p>';
 }
 
+// ── Outpost flows — what each outpost produces and which settlement it feeds ──
+async function loadOutpostFlows() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/outpost-flows`, {
+    headers: token ? {'Authorization':'Bearer '+token} : {},
+  });
+  const el = document.getElementById('outpost-flows-list');
+  if (!el) return;
+  if (!res.ok) { el.innerHTML = '<p class="empty-state">—</p>'; return; }
+  const flows = await res.json().catch(() => []);
+  if (!flows.length) { el.innerHTML = '<p class="empty-state">No outposts yet.</p>'; return; }
+  el.innerHTML = `<table class="goods-table">
+    <thead><tr><th>Good</th><th style="text-align:right">+/h</th><th>Loc</th><th>Home</th></tr></thead>
+    <tbody>${flows.map(f => {
+      const rateH = (f.rate_per_min || 0) * 60;
+      const rateStr = rateH >= 1 ? `+${rateH.toFixed(1)}` : `+${rateH.toFixed(2)}`;
+      return `<tr>
+        <td class="g-name">${f.good_key}</td>
+        <td class="g-num">${rateStr}</td>
+        <td class="g-num">(${f.q},${f.r})</td>
+        <td>${f.home_settlement_name}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
 // ── WebSocket — goods refresh on TradeDelivery ────────────────────────────
 (function() {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -650,6 +754,7 @@ function refreshEtas() {
 document.addEventListener('DOMContentLoaded', () => {
   loadGoods(); loadTradeRoutes(); loadBattleLog(); loadGossip();
   loadCultLevel(); loadVisibleSettlements(); loadInboxCount();
+  loadOutpostFlows();
   refreshEtas();
   setInterval(refreshEtas, 30000);
 });

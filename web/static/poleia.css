@@ -752,3 +752,47 @@ footer {
   line-height: 1.4;
   vertical-align: middle;
 }
+
+/* ── Labor allocation panel ─────────────────────────────────────────── */
+.labor-hint {
+  font-size: .72rem;
+  color: var(--text-dim);
+  margin: .2rem 0 .5rem;
+  line-height: 1.4;
+}
+.labor-pool-line {
+  font-family: var(--mono);
+  font-size: .8rem;
+  color: var(--accent);
+  margin-bottom: .6rem;
+}
+.labor-pool-line span { font-weight: bold; }
+.labor-row {
+  margin-bottom: .7rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--border);
+}
+.labor-row:last-of-type { border-bottom: none; }
+.labor-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: .2rem;
+}
+.labor-good { font-size: .85rem; color: var(--text); }
+.labor-pct {
+  font-family: var(--mono);
+  font-size: .8rem;
+  color: var(--accent);
+  font-weight: bold;
+}
+.labor-slider {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.labor-yield {
+  font-size: .68rem;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  margin-top: .15rem;
+}

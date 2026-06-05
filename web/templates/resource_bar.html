@@ -24,7 +24,7 @@
             data-base="{{index .Resources "grain"}}"
             data-rate="{{index .Resources "grain_rate"}}"
             data-cap="{{index .Resources "grain_cap"}}">{{resource (index .Resources "grain")}}</span>
-      <span class="res-rate">{{rate (index .Resources "grain_rate")}}</span>
+      <span class="res-rate" title="Production scales with your labor pool (population − army).">{{rate (index .Resources "grain_rate")}}</span>
     </div>
   </div>
   <div class="res" data-key="cedar">
@@ -35,7 +35,7 @@
             data-base="{{index .Resources "cedar"}}"
             data-rate="{{index .Resources "cedar_rate"}}"
             data-cap="{{index .Resources "cedar_cap"}}">{{resource (index .Resources "cedar")}}</span>
-      <span class="res-rate">{{rate (index .Resources "cedar_rate")}}</span>
+      <span class="res-rate" title="Production scales with your labor pool (population − army).">{{rate (index .Resources "cedar_rate")}}</span>
     </div>
   </div>
   <div class="res" data-key="stone">
@@ -46,7 +46,7 @@
             data-base="{{index .Resources "stone"}}"
             data-rate="{{index .Resources "stone_rate"}}"
             data-cap="{{index .Resources "stone_cap"}}">{{resource (index .Resources "stone")}}</span>
-      <span class="res-rate">{{rate (index .Resources "stone_rate")}}</span>
+      <span class="res-rate" title="Production scales with your labor pool (population − army).">{{rate (index .Resources "stone_rate")}}</span>
     </div>
   </div>
   <div class="res" data-key="kharis">
