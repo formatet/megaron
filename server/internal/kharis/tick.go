@@ -16,6 +16,7 @@ import (
 	"github.com/poleia/server/internal/ai"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/timescale"
 )
 
 const (
@@ -138,7 +139,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.accumulatePrestige(ctx, e.WorldID)
 
 	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledKharisTick,
-		struct{}{}, 24*time.Hour)
+		struct{}{}, timescale.Apply(24*time.Hour))
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {

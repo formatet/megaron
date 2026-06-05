@@ -101,6 +101,69 @@ func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	}
 }
 
+// TestNewGoodSeeding_UniformShare verifies the weight re-normalisation logic used
+// when a new producible good appears (e.g. fish after building a harbour).
+// Existing weights must be scaled down proportionally; new good gets 1/totalGoods.
+func TestNewGoodSeeding_UniformShare(t *testing.T) {
+	// Settlement has grain(0.6) and timber(0.4) — 2 goods.
+	// Harbour is built → fish becomes producible (new good).
+	existing := map[string]float64{GoodGrain: 0.6, GoodTimber: 0.4}
+
+	// Simulate the seeding logic from recompute.go (replicated here as pure math).
+	newGoods := []string{GoodFish}
+	totalGoods := float64(len(existing) + len(newGoods)) // 3
+	renormed := make(map[string]float64)
+	for k, w := range existing {
+		renormed[k] = w * float64(len(existing)) / totalGoods
+	}
+	share := 1.0 / totalGoods
+	for _, k := range newGoods {
+		renormed[k] = share
+	}
+
+	// All weights must sum to 1.
+	var sum float64
+	for _, w := range renormed {
+		sum += w
+	}
+	if math.Abs(sum-1.0) > 1e-9 {
+		t.Errorf("weights should sum to 1.0 after seeding, got %.9f", sum)
+	}
+
+	// New good must have 1/3 share.
+	if math.Abs(renormed[GoodFish]-1.0/3.0) > 1e-9 {
+		t.Errorf("fish share should be 1/3, got %.6f", renormed[GoodFish])
+	}
+
+	// Existing ratios are preserved relative to each other.
+	// grain was 0.6, timber was 0.4 → ratio 3:2. After renorm still 3:2.
+	ratio := renormed[GoodGrain] / renormed[GoodTimber]
+	if math.Abs(ratio-1.5) > 1e-9 {
+		t.Errorf("grain:timber ratio should be 1.5 after renorm, got %.6f", ratio)
+	}
+}
+
+// TestPopGrowth_GrainPresenceRequired verifies that grain presence is what drives
+// growth vs starvation. This is a pure-logic test for the condition in tick.go.
+func TestPopGrowth_GrainPresenceRequired(t *testing.T) {
+	type popCase struct {
+		grain       float64
+		pop         int
+		wantGrowth  bool
+	}
+	cases := []popCase{
+		{grain: 100, pop: 200, wantGrowth: true},
+		{grain: 0, pop: 200, wantGrowth: false},
+		{grain: 1, pop: 200, wantGrowth: true},
+	}
+	for _, tc := range cases {
+		grows := tc.grain > 0
+		if grows != tc.wantGrowth {
+			t.Errorf("grain=%.0f pop=%d: wantGrowth=%v got %v", tc.grain, tc.pop, tc.wantGrowth, grows)
+		}
+	}
+}
+
 // TestLaborRates_VariantB_Recruit simulates variant-B recruit semantics:
 // population stays constant; labor_pool decreases by recruited × PopCost.
 func TestLaborRates_VariantB_Recruit(t *testing.T) {

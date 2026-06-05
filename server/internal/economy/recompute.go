@@ -178,11 +178,45 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		return fmt.Errorf("recompute: weight rows err: %w", err)
 	}
 
-	// If no weights exist yet, fall back to uniform across producible goods.
+	// Ensure every producible good has an entry in settlement_labor.
+	// If the table is empty, seed uniform weights. If a new good appeared
+	// (e.g. fish after building a harbour) and is missing, insert it with a
+	// uniform share and re-normalise the existing weights proportionally.
 	if len(weights) == 0 {
 		n := float64(len(potentials))
 		for _, gp := range potentials {
 			weights[gp.key] = 1.0 / n
+		}
+	} else {
+		// Find goods that are now producible but have no weight row yet.
+		var newGoods []string
+		for _, gp := range potentials {
+			if _, ok := weights[gp.key]; !ok {
+				newGoods = append(newGoods, gp.key)
+			}
+		}
+		if len(newGoods) > 0 {
+			// Allocate 1 share per new good; existing weights are renormalised
+			// so the total remains 1.0.
+			totalGoods := float64(len(weights) + len(newGoods))
+			for k := range weights {
+				weights[k] = weights[k] * float64(len(weights)) / totalGoods
+			}
+			share := 1.0 / totalGoods
+			for _, k := range newGoods {
+				weights[k] = share
+			}
+			// Persist new rows so UI/CLI can see and adjust them.
+			for _, k := range newGoods {
+				if _, err := tx.Exec(ctx,
+					`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+					 VALUES ($1, $2, $3)
+					 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+					settlementID, k, weights[k],
+				); err != nil {
+					return fmt.Errorf("recompute: seed new labor row %s: %w", k, err)
+				}
+			}
 		}
 	}
 
