@@ -132,6 +132,17 @@ func (c *Client) post(path string, body any) ([]byte, error) {
 	return data, nil
 }
 
+func (c *Client) put(path string, body any) ([]byte, error) {
+	data, status, err := c.do("PUT", path, body)
+	if err != nil {
+		return nil, err
+	}
+	if status >= 400 {
+		return nil, apiError(data, status)
+	}
+	return data, nil
+}
+
 func (c *Client) patch(path string, body any) ([]byte, error) {
 	data, status, err := c.do("PATCH", path, body)
 	if err != nil {

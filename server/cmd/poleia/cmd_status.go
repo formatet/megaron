@@ -34,10 +34,11 @@ func statusCmd() *cobra.Command {
 			name, _ := sett["name"].(string)
 			culture, _ := sett["culture"].(string)
 			pop, _ := sett["population"].(float64)
+			labor, _ := sett["labor_pool"].(float64)
 			walls, _ := sett["walls"].(float64)
 			loyalty, _ := sett["loyalty"].(float64)
-			fmt.Printf("%s [%s]  Pop: %s  Walls: %.0f/3  Loyalty: %.0f\n\n",
-				name, culture, resource(pop), walls, loyalty)
+			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f\n\n",
+				name, culture, resource(pop), resource(labor), walls, loyalty)
 
 			res, _ := sett["resources"].(map[string]any)
 			if res != nil {

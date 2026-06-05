@@ -69,6 +69,7 @@ func main() {
 		exploreCmd(),
 		outpostCmd(),
 		outpostRecallCmd(),
+		outpostFlowsCmd(),
 		marchesCmd(),
 		recallCmd(),
 		recruitCmd(),
@@ -90,6 +91,7 @@ func main() {
 		tradeDeclineCmd(),
 		gossipCmd(),
 		messengerCmd(),
+		allocateCmd(),
 	)
 
 	if err := root.Execute(); err != nil {

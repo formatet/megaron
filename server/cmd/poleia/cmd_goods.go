@@ -30,15 +30,31 @@ func goodsCmd() *cobra.Command {
 				fmt.Println("No goods available.")
 				return nil
 			}
-			fmt.Printf("%-10s  %8s  %8s  %8s\n", "Good", "Stock", "Rate/d", "Price")
-			fmt.Println("──────────────────────────────────────────────")
+			// labor_pool is identical on every row — show it once as a header.
+			if lp, ok := goods[0]["labor_pool"].(float64); ok {
+				fmt.Printf("Labor pool: %.0f workers (population minus army/transit)\n\n", lp)
+			}
+			fmt.Printf("%-10s  %8s  %8s  %6s  %8s  %8s\n",
+				"Good", "Stock", "Rate/d", "Weight", "Yield/w", "Price")
+			fmt.Println("────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)
 				stock, _ := g["amount"].(float64)
 				rateM, _ := g["rate_per_min"].(float64)
 				price, _ := g["price"].(float64)
+				weight, _ := g["weight"].(float64)
+				yieldW, _ := g["yield_per_worker"].(float64)
+				producible, _ := g["producible"].(bool)
 				rateD := rateM * 60 * 24
-				fmt.Printf("%-10s  %8.1f  %8.1f  %8.1f\n", key, stock, rateD, price)
+				weightStr := fmt.Sprintf("%.0f%%", weight*100)
+				yieldStr := fmt.Sprintf("%.4f", yieldW)
+				if !producible {
+					// Terrain cannot produce this good — grey it out for the agent.
+					weightStr = "—"
+					yieldStr = "—"
+				}
+				fmt.Printf("%-10s  %8.1f  %8.1f  %6s  %8s  %8.1f\n",
+					key, stock, rateD, weightStr, yieldStr, price)
 			}
 			return nil
 		},
