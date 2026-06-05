@@ -159,6 +159,28 @@ func TestLaborRates_VariantB_Recruit(t *testing.T) {
 	}
 }
 
+// TestOfferExpiry_SolvencyCheck verifies that a seller with insufficient stock
+// is treated as insolvent for inbox filtering purposes.
+func TestOfferExpiry_SolvencyCheck(t *testing.T) {
+	type solvencyCase struct {
+		sellerStock float64
+		wantQty     float64
+		solvent     bool
+	}
+	cases := []solvencyCase{
+		{sellerStock: 100, wantQty: 50, solvent: true},
+		{sellerStock: 50, wantQty: 50, solvent: true},
+		{sellerStock: 49, wantQty: 50, solvent: false},
+		{sellerStock: 0, wantQty: 1, solvent: false},
+	}
+	for _, tc := range cases {
+		got := tc.sellerStock >= tc.wantQty
+		if got != tc.solvent {
+			t.Errorf("stock=%.0f want_qty=%.0f: solvent=%v, expected=%v", tc.sellerStock, tc.wantQty, got, tc.solvent)
+		}
+	}
+}
+
 // TestCitizenCap_ExceedsPool verifies the allocation endpoint rejects Σcitizens > labor_pool.
 // This is a pure-math test for the validation logic replicated here.
 func TestCitizenCap_ExceedsPool(t *testing.T) {

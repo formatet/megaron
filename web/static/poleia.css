@@ -494,6 +494,9 @@ footer {
 .recruit-count { width:48px; background:var(--warm-white); border:1px solid var(--border); padding:.2rem; font-size:.8rem; text-align:center; }
 .unit-unavailable { opacity:.35; pointer-events:none; }
 .unit-unavailable .recruit-cost { color:var(--text-dim); font-style:italic; }
+/* Affordability — can build but lacks resources */
+.unit-unaffordable { opacity:.55; }
+.unit-unaffordable .recruit-cost { color:var(--danger); font-style:italic; }
 
 /* Build queue */
 .bq-list { display:flex; flex-direction:column; gap:.5rem; margin-bottom:.6rem; }

@@ -318,8 +318,34 @@ function startEtaTimers() {
   });
 }
 
+async function loadAffordability() {
+  const token = localStorage.getItem('poleia_token');
+  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}`, {
+    headers: token ? {'Authorization':'Bearer '+token} : {}
+  });
+  if (!res.ok) return;
+  const data = await res.json().catch(() => null);
+  if (!data || !data.settlement) return;
+  const canRecruit = {};
+  (data.settlement.can_recruit || []).forEach(r => { canRecruit[r.unit] = r.can_recruit; });
+  const unitMap = {infantry:'hoplites', cavalry:'hippeis', priest:'hiereus', ship:'trireme', elite_infantry:'agema'};
+  Object.entries(unitMap).forEach(([unit, id]) => {
+    const row = document.getElementById('rc-' + id)?.closest('.recruit-row');
+    if (!row) return;
+    if (canRecruit[unit] === false) {
+      row.classList.add('unit-unaffordable');
+      const cost = row.querySelector('.recruit-cost');
+      if (cost && !cost.dataset.origText) {
+        cost.dataset.origText = cost.textContent;
+        cost.textContent += ' — saknar resurser';
+      }
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   loadBattleLog();
+  loadAffordability();
   startEtaTimers();
   // Unread message badge
   const chip = document.getElementById('msg-count-chip');

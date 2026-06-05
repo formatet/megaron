@@ -165,6 +165,64 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			laborPool = 0
 		}
 
+		// Load current goods amounts for affordability checks.
+		goodsStock := make(map[string]float64)
+		gsrows, _ := h.pool.Query(r.Context(),
+			`SELECT good_key, amount + EXTRACT(EPOCH FROM (now()-calc_at))/60 * rate
+			 FROM settlement_goods WHERE settlement_id = $1`, sett.ID,
+		)
+		if gsrows != nil {
+			for gsrows.Next() {
+				var k string
+				var v float64
+				_ = gsrows.Scan(&k, &v)
+				if v < 0 {
+					v = 0
+				}
+				goodsStock[k] = v
+			}
+			gsrows.Close()
+		}
+		goldStock := sett.Resources.Gold.Current(now)
+
+		// can_afford per building: all goods costs covered.
+		type buildAffordRow struct {
+			Type      string `json:"type"`
+			CanAfford bool   `json:"can_afford"`
+		}
+		var buildAfford []buildAffordRow
+		for bType, spec := range province.BuildingSpecs {
+			afford := goldStock >= spec.CostGold
+			if afford {
+				for goodKey, needed := range spec.Costs {
+					if goodsStock[goodKey] < needed {
+						afford = false
+						break
+					}
+				}
+			}
+			buildAfford = append(buildAfford, buildAffordRow{Type: string(bType), CanAfford: afford})
+		}
+
+		// can_recruit per unit: goods + labor pool (for 1 unit).
+		type recruitAffordRow struct {
+			Unit       string `json:"unit"`
+			CanRecruit bool   `json:"can_recruit"`
+		}
+		var recruitAfford []recruitAffordRow
+		for unitType, spec := range province.UnitSpecs {
+			afford := laborPool >= spec.PopCost
+			if afford {
+				for goodKey, needed := range spec.Costs {
+					if goodsStock[goodKey] < needed {
+						afford = false
+						break
+					}
+				}
+			}
+			recruitAfford = append(recruitAfford, recruitAffordRow{Unit: unitType, CanRecruit: afford})
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":             sett.ID,
 			"name":           sett.Name,
@@ -181,6 +239,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"build_queue":    buildQueue,
 			"training_queue": trainQueue,
 			"buildings":      buildings,
+			"can_afford":     buildAfford,
+			"can_recruit":    recruitAfford,
 		}
 	}
 

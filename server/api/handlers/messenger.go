@@ -163,11 +163,18 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			"status":     "pending",
 		})
 	}
+	// Trade offers expire 7 in-game days after arrival (so inactive offers clean up automatically).
+	// Non-trade messages have no expiry.
+	var expiresAt *time.Time
+	if req.TradeOffer != nil {
+		exp := arrivesAt.Add(7 * 24 * time.Hour)
+		expiresAt = &exp
+	}
 	var messengerID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
-		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at)
-		 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9) RETURNING id`,
-		worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt,
+		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at)
+		 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10) RETURNING id`,
+		worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt, expiresAt,
 	).Scan(&messengerID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create messenger")
@@ -278,7 +285,19 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		 WHERE m.world_id = $1
 		   AND ds.owner_id = $2
 		   AND m.status = 'delivered'
-		   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')
+		   AND (m.trade_offer IS NULL OR (
+		       -- keep only pending offers that have not expired
+		       m.trade_offer->>'status' = 'pending'
+		       AND (m.expires_at IS NULL OR m.expires_at > now())
+		       -- solvency check: seller must still have the requested good
+		       AND EXISTS (
+		           SELECT 1 FROM settlement_goods sg
+		           WHERE sg.settlement_id = m.origin_id
+		             AND sg.good_key = m.trade_offer->>'want_good'
+		             AND sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		                 >= (m.trade_offer->>'want_qty')::float
+		       )
+		   ))
 		 ORDER BY m.arrives_at DESC LIMIT 30`,
 		worldID, playerID,
 	)
