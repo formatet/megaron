@@ -212,6 +212,9 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
+			r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
+
+			r.Get("/worlds/{worldID}/outpost-flows", ph.OutpostFlows)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 

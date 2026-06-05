@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/ai"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 )
 
@@ -319,6 +320,28 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		worldID,
 	); err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
+	}
+
+	// Recompute production for all active settlements: population changed, so
+	// labor_pool (and therefore rates) must be updated.
+	sidRows, err := h.pool.Query(ctx,
+		`SELECT id FROM settlements WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
+		worldID,
+	)
+	if err == nil {
+		var ids []uuid.UUID
+		for sidRows.Next() {
+			var sid uuid.UUID
+			if sidRows.Scan(&sid) == nil {
+				ids = append(ids, sid)
+			}
+		}
+		sidRows.Close()
+		for _, sid := range ids {
+			if err := economy.RecomputeProduction(ctx, h.pool, sid); err != nil {
+				slog.Warn("recompute after pop tick failed", "settlement", sid, "err", err)
+			}
+		}
 	}
 }
 

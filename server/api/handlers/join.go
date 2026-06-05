@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/world"
@@ -332,6 +333,29 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("could not record join", "err", err, "player", playerID, "world", worldID)
 		writeError(w, http.StatusInternalServerError, "could not record join")
+		return
+	}
+
+	// Seed uniform labor weights over this settlement's producible goods, then
+	// recompute production so settlement_goods.rate follows the labor formula
+	// from the first minute. (Producible = a good with rate > 0 from the
+	// terrain/deposit init above.)
+	if _, err = tx.Exec(r.Context(),
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+		 SELECT sg.settlement_id, sg.good_key,
+		        1.0 / COUNT(*) OVER (PARTITION BY sg.settlement_id)
+		 FROM settlement_goods sg
+		 WHERE sg.settlement_id = $1 AND sg.rate > 0
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		settlementID,
+	); err != nil {
+		slog.Error("could not seed labor weights", "err", err)
+		writeError(w, http.StatusInternalServerError, "could not seed labor")
+		return
+	}
+	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
+		slog.Error("could not recompute production on join", "err", err)
+		writeError(w, http.StatusInternalServerError, "could not init production")
 		return
 	}
 

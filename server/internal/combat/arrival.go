@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
 )
@@ -235,10 +236,45 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	return nil
 }
 
+// armyPopCost returns the total population-cost for an ArmyComposition,
+// using the PopCosts table from the economy package.
+func armyPopCost(a province.ArmyComposition) int {
+	return a.Infantry*economy.PopCosts["infantry"] +
+		a.Cavalry*economy.PopCosts["cavalry"] +
+		a.Catapult*economy.PopCosts["catapult"] +
+		a.Priest*economy.PopCosts["priest"] +
+		a.Ship*economy.PopCosts["ship"] +
+		a.EliteInfantry*economy.PopCosts["elite_infantry"]
+}
+
 func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, defOwnerID *uuid.UUID, attackArmy province.ArmyComposition, result CombatResult, worldID uuid.UUID) error {
 	survivingInf := int(float64(attackArmy.Infantry) * (1 - result.AttackerLosses))
 	survivingCav := int(float64(attackArmy.Cavalry) * (1 - result.AttackerLosses))
 	survivingElite := int(float64(attackArmy.EliteInfantry) * (1 - result.AttackerLosses))
+
+	// Variant B: attacker casualties = demographic loss on attacker's home settlement.
+	deadArmy := province.ArmyComposition{
+		Infantry:       attackArmy.Infantry - survivingInf,
+		Cavalry:        attackArmy.Cavalry - survivingCav,
+		EliteInfantry:  attackArmy.EliteInfantry - survivingElite,
+		Catapult:       int(float64(attackArmy.Catapult) * result.AttackerLosses),
+		Priest:         int(float64(attackArmy.Priest) * result.AttackerLosses),
+		Ship:           int(float64(attackArmy.Ship) * result.AttackerLosses),
+	}
+	attackerPopLost := armyPopCost(deadArmy)
+	if attackerPopLost > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlements SET population = GREATEST(50, population - $1) WHERE province_id = $2`,
+			attackerPopLost, originID,
+		); err != nil {
+			return fmt.Errorf("attacker pop loss: %w", err)
+		}
+		// Recompute production for attacker home (pop changed).
+		var attackerSettlementID uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE province_id = $1`, originID).Scan(&attackerSettlementID); err == nil {
+			_ = economy.RecomputeProduction(ctx, tx, attackerSettlementID)
+		}
+	}
 
 	// Get attacker's owner from their settlement.
 	var attackerOwnerID *uuid.UUID
@@ -288,6 +324,29 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 	survivingAttCav := int(float64(attackArmy.Cavalry) * (1 - result.AttackerLosses))
 	survivingAttElite := int(float64(attackArmy.EliteInfantry) * (1 - result.AttackerLosses))
 
+	// Variant B: attacker casualties reduce home population.
+	attackerDeadArmy := province.ArmyComposition{
+		Infantry:      attackArmy.Infantry - survivingAttInf,
+		Cavalry:       attackArmy.Cavalry - survivingAttCav,
+		EliteInfantry: attackArmy.EliteInfantry - survivingAttElite,
+		Catapult:      int(float64(attackArmy.Catapult) * result.AttackerLosses),
+		Priest:        int(float64(attackArmy.Priest) * result.AttackerLosses),
+		Ship:          int(float64(attackArmy.Ship) * result.AttackerLosses),
+	}
+	attackerPopLost := armyPopCost(attackerDeadArmy)
+	if attackerPopLost > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlements SET population = GREATEST(50, population - $1) WHERE province_id = $2`,
+			attackerPopLost, originID,
+		); err != nil {
+			return fmt.Errorf("attacker pop loss (defender victory): %w", err)
+		}
+		var attackerSettlementID uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE province_id = $1`, originID).Scan(&attackerSettlementID); err == nil {
+			_ = economy.RecomputeProduction(ctx, tx, attackerSettlementID)
+		}
+	}
+
 	// Units were already deducted at march time — surviving attackers return home.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
@@ -300,7 +359,30 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 		return fmt.Errorf("return survivors: %w", err)
 	}
 
-	// Defender takes losses.
+	// Variant B: defender casualties reduce defender population.
+	defenderDeadArmy := province.ArmyComposition{
+		Infantry:      int(float64(defArmy.Infantry) * result.DefenderLosses),
+		Cavalry:       int(float64(defArmy.Cavalry) * result.DefenderLosses),
+		EliteInfantry: int(float64(defArmy.EliteInfantry) * result.DefenderLosses),
+		Catapult:      int(float64(defArmy.Catapult) * result.DefenderLosses),
+		Priest:        int(float64(defArmy.Priest) * result.DefenderLosses),
+		Ship:          int(float64(defArmy.Ship) * result.DefenderLosses),
+	}
+	defenderPopLost := armyPopCost(defenderDeadArmy)
+	if defenderPopLost > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlements SET population = GREATEST(50, population - $1) WHERE province_id = $2`,
+			defenderPopLost, targetID,
+		); err != nil {
+			return fmt.Errorf("defender pop loss: %w", err)
+		}
+		var defenderSettlementID uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE province_id = $1`, targetID).Scan(&defenderSettlementID); err == nil {
+			_ = economy.RecomputeProduction(ctx, tx, defenderSettlementID)
+		}
+	}
+
+	// Defender takes losses on army columns.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
 		   infantry       = GREATEST(0, FLOOR(infantry       * $1)),
@@ -326,7 +408,15 @@ func mergeArmy(ctx context.Context, tx pgx.Tx, targetID uuid.UUID, army province
 		 WHERE province_id = $7`,
 		army.Infantry, army.Cavalry, army.Catapult, army.Priest, army.Ship, army.EliteInfantry, targetID,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	// Recompute production: army cols changed, labor_pool changed.
+	var settlementID uuid.UUID
+	if err2 := tx.QueryRow(ctx, `SELECT id FROM settlements WHERE province_id = $1`, targetID).Scan(&settlementID); err2 == nil {
+		_ = economy.RecomputeProduction(ctx, tx, settlementID)
+	}
+	return nil
 }
 
 // buildCombatReport generates a human-readable battle summary stored once at resolution.

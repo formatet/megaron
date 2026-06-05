@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 )
 
@@ -48,6 +49,11 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	)
 	if err != nil {
 		return fmt.Errorf("add units: %w", err)
+	}
+
+	// Recompute production: army columns changed, so labor_pool changed.
+	if err := economy.RecomputeProduction(ctx, h.pool, p.SettlementID); err != nil {
+		slog.Warn("recompute production after training", "settlement", p.SettlementID, "err", err)
 	}
 
 	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "TrainComplete", map[string]any{

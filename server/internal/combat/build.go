@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
 )
@@ -70,28 +71,10 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return fmt.Errorf("insert building: %w", err)
 	}
 
-	// Update settlement_goods production rates from production_rules for this building.
-	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 SELECT $1, pr.good_key, 0, pr.rate_per_min, 100, now()
-		 FROM production_rules pr
-		 JOIN settlements s ON s.id = $1
-		 JOIN provinces prov ON prov.id = s.province_id
-		 WHERE pr.building_type = $2
-		   AND (pr.terrain_type IS NULL OR pr.terrain_type = prov.terrain_type)
-		   AND (pr.requires_deposit IS NULL
-		        OR (pr.requires_deposit = 'copper' AND prov.copper_deposit)
-		        OR (pr.requires_deposit = 'tin'    AND prov.tin_deposit)
-		        OR (pr.requires_deposit = 'silver' AND prov.silver_deposit)
-		        OR (pr.requires_deposit = 'cedar'  AND prov.cedar_deposit))
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-		     amount = settlement_goods.amount
-		         + EXTRACT(EPOCH FROM (now() - settlement_goods.calc_at))/60 * settlement_goods.rate,
-		     rate   = settlement_goods.rate + EXCLUDED.rate,
-		     calc_at = now()`,
-		p.SettlementID, p.BuildingType,
-	); err != nil {
-		return fmt.Errorf("update goods rates: %w", err)
+	// Update settlement_goods production rates via the central labor-allocation helper.
+	// This DRYs up the rate-UPSERT that was previously duplicated here and in join.go.
+	if err := economy.RecomputeProduction(ctx, tx, p.SettlementID); err != nil {
+		return fmt.Errorf("recompute production after build: %w", err)
 	}
 
 	// Apply gold and kharis rate bonuses to settlement columns.

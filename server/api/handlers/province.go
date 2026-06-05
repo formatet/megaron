@@ -14,6 +14,7 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/combat"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
@@ -140,6 +141,30 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			buildings = []buildingItem{}
 		}
 
+		// labor_pool = population − army pop-cost − transit pop-cost (variant B).
+		homePop := sett.Army.Infantry*economy.PopCosts["infantry"] +
+			sett.Army.Cavalry*economy.PopCosts["cavalry"] +
+			sett.Army.Catapult*economy.PopCosts["catapult"] +
+			sett.Army.Priest*economy.PopCosts["priest"] +
+			sett.Army.Ship*economy.PopCosts["ship"] +
+			sett.Army.EliteInfantry*economy.PopCosts["elite_infantry"]
+		var transitPop int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COALESCE(SUM(
+			     m.infantry*$2+m.cavalry*$3+m.catapult*$4+m.priest*$5+m.ship*$6+m.elite_infantry*$7
+			 ),0)
+			 FROM marching_armies m
+			 JOIN settlements s ON s.province_id=m.origin_id
+			 WHERE s.id=$1 AND m.resolved=false`,
+			sett.ID,
+			economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
+			economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+		).Scan(&transitPop)
+		laborPool := sett.Population - homePop - transitPop
+		if laborPool < 0 {
+			laborPool = 0
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":             sett.ID,
 			"name":           sett.Name,
@@ -148,6 +173,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"culture":        sett.CultureID,
 			"state":          sett.State,
 			"population":     sett.Population,
+			"labor_pool":     laborPool,
 			"walls":          sett.WallLevel,
 			"loyalty":        sett.Loyalty,
 			"resources":      sett.Resources.SnapshotFull(now),
@@ -495,6 +521,14 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not send army")
 		return
+	}
+
+	// Recompute production: army cols decremented + new transit march affects labor_pool.
+	var srcSettlementID uuid.UUID
+	if err2 := tx.QueryRow(r.Context(),
+		`SELECT id FROM settlements WHERE province_id=$1 AND world_id=$2`, sourceID, worldID,
+	).Scan(&srcSettlementID); err2 == nil {
+		_ = economy.RecomputeProduction(r.Context(), tx, srcSettlementID)
 	}
 
 	if err := tx.Commit(r.Context()); err != nil {
@@ -1031,17 +1065,50 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Population check — recruiting drains the settlement population.
+	// Variant-B labor check: population is the demographic total (unchanged by
+	// recruit/disband). labor_pool = population − existing army pop-cost − transit pop-cost.
+	// Recruit reduces labor_pool (army takes workers from production); population stays.
 	totalPopCost := spec.PopCost * req.Count
 	if totalPopCost > 0 {
-		var population int
+		var population, infantry, cavalry, catapult, priest, ship, eliteInfantry int
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT population FROM settlements WHERE id = $1`,
+			`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry
+			 FROM settlements WHERE id = $1`,
 			settlementID,
-		).Scan(&population)
-		if population-totalPopCost < 50 {
+		).Scan(&population, &infantry, &cavalry, &catapult, &priest, &ship, &eliteInfantry)
+
+		homePop := infantry*economy.PopCosts["infantry"] +
+			cavalry*economy.PopCosts["cavalry"] +
+			catapult*economy.PopCosts["catapult"] +
+			priest*economy.PopCosts["priest"] +
+			ship*economy.PopCosts["ship"] +
+			eliteInfantry*economy.PopCosts["elite_infantry"]
+
+		var transitPop int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COALESCE(SUM(
+			     m.infantry       * $2 +
+			     m.cavalry        * $3 +
+			     m.catapult       * $4 +
+			     m.priest         * $5 +
+			     m.ship           * $6 +
+			     m.elite_infantry * $7
+			 ), 0)
+			 FROM marching_armies m
+			 JOIN settlements s ON s.province_id = m.origin_id
+			 WHERE s.id = $1 AND m.resolved = false`,
+			settlementID,
+			economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
+			economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+		).Scan(&transitPop)
+
+		laborPool := population - homePop - transitPop
+		if laborPool < 0 {
+			laborPool = 0
+		}
+		if laborPool-totalPopCost < 0 {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("not enough population (need %d, have %d, floor 50)", totalPopCost, population-50))
+				fmt.Sprintf("inte nog arbetskraft: behöver %d, ledig %d", totalPopCost, laborPool))
 			return
 		}
 	}
@@ -1116,13 +1183,11 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Deduct population.
-	if totalPopCost > 0 {
-		_, _ = h.pool.Exec(r.Context(),
-			`UPDATE settlements SET population = GREATEST(50, population - $1) WHERE id = $2`,
-			totalPopCost, settlementID,
-		)
-	}
+	// Variant B: population is NOT decremented on recruit.
+	// Army units are "taken workers" — they remain in demographics but exit labor_pool.
+	// RecomputeProduction is called inside the train handler when units land in the army.
+	// Here we only need a recompute if we later add the army count synchronously,
+	// but since TrainComplete does the army col update, we skip it here.
 
 	completeAt := h.clk.Now().Add(timescale.Apply(spec.Duration * time.Duration(req.Count)))
 
@@ -1165,6 +1230,79 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := h.clk.Now()
+
+	// Load labor pool for this settlement (pop − army pop-cost − transit pop-cost).
+	var population, sInfantry, sCavalry, sCatapult, sPriest, sShip, sEliteInfantry int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry
+		 FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&population, &sInfantry, &sCavalry, &sCatapult, &sPriest, &sShip, &sEliteInfantry)
+	homePop := sInfantry*economy.PopCosts["infantry"] +
+		sCavalry*economy.PopCosts["cavalry"] +
+		sCatapult*economy.PopCosts["catapult"] +
+		sPriest*economy.PopCosts["priest"] +
+		sShip*economy.PopCosts["ship"] +
+		sEliteInfantry*economy.PopCosts["elite_infantry"]
+	var transitPop int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT COALESCE(SUM(
+		     m.infantry*$2+m.cavalry*$3+m.catapult*$4+m.priest*$5+m.ship*$6+m.elite_infantry*$7
+		 ),0)
+		 FROM marching_armies m
+		 JOIN settlements s ON s.province_id=m.origin_id
+		 WHERE s.id=$1 AND m.resolved=false`,
+		settlementID,
+		economy.PopCosts["infantry"], economy.PopCosts["cavalry"], economy.PopCosts["catapult"],
+		economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
+	).Scan(&transitPop)
+	laborPool := population - homePop - transitPop
+	if laborPool < 0 {
+		laborPool = 0
+	}
+
+	// Load allocation weights.
+	wrows, _ := h.pool.Query(r.Context(),
+		`SELECT good_key, weight FROM settlement_labor WHERE settlement_id = $1`, settlementID,
+	)
+	laborWeights := make(map[string]float64)
+	if wrows != nil {
+		for wrows.Next() {
+			var k string
+			var w float64
+			_ = wrows.Scan(&k, &w)
+			laborWeights[k] = w
+		}
+		wrows.Close()
+	}
+
+	// Load base_potential per good from production_rules.
+	baseRows, _ := h.pool.Query(r.Context(),
+		`SELECT pr.good_key, SUM(pr.rate_per_min) AS base_potential
+		 FROM production_rules pr
+		 JOIN settlements s ON s.id = $1
+		 JOIN provinces prov ON prov.id = s.province_id
+		 WHERE (pr.terrain_type IS NULL OR pr.terrain_type = prov.terrain_type)
+		   AND (pr.building_type IS NULL OR EXISTS (
+		           SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
+		   AND (pr.requires_deposit IS NULL
+		        OR (pr.requires_deposit = 'copper' AND prov.copper_deposit)
+		        OR (pr.requires_deposit = 'tin'    AND prov.tin_deposit)
+		        OR (pr.requires_deposit = 'silver' AND COALESCE(prov.silver_deposit,false))
+		        OR (pr.requires_deposit = 'cedar'  AND COALESCE(prov.cedar_deposit,false)))
+		 GROUP BY pr.good_key`,
+		settlementID,
+	)
+	basePotential := make(map[string]float64)
+	if baseRows != nil {
+		for baseRows.Next() {
+			var k string
+			var v float64
+			_ = baseRows.Scan(&k, &v)
+			basePotential[k] = v
+		}
+		baseRows.Close()
+	}
+
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT sg.good_key, sg.amount, sg.rate, sg.cap, sg.calc_at,
 		        g.base_value, g.name, g.tier, g.category
@@ -1181,22 +1319,26 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type goodRow struct {
-		Key      string  `json:"key"`
-		Name     string  `json:"name"`
-		Tier     string  `json:"tier"`
-		Category string  `json:"category"`
-		Amount   float64 `json:"amount"`
-		Rate     float64 `json:"rate_per_min"`
-		Cap      float64 `json:"cap"`
-		Price    float64 `json:"price"`
+		Key             string   `json:"key"`
+		Name            string   `json:"name"`
+		Tier            string   `json:"tier"`
+		Category        string   `json:"category"`
+		Amount          float64  `json:"amount"`
+		Rate            float64  `json:"rate_per_min"`
+		Cap             float64  `json:"cap"`
+		Price           float64  `json:"price"`
+		Weight          float64  `json:"weight"`
+		YieldPerWorker  float64  `json:"yield_per_worker"`
+		Producible      bool     `json:"producible"`
+		LaborPool       int      `json:"labor_pool"`
 	}
 	var result []goodRow
 	for rows.Next() {
 		var key, name, tier, category string
-		var amount, rate, cap float64
+		var amount, rate, capV float64
 		var calcAt time.Time
 		var baseValue float64
-		if err := rows.Scan(&key, &amount, &rate, &cap, &calcAt, &baseValue, &name, &tier, &category); err != nil {
+		if err := rows.Scan(&key, &amount, &rate, &capV, &calcAt, &baseValue, &name, &tier, &category); err != nil {
 			continue
 		}
 		elapsed := now.Sub(calcAt).Minutes()
@@ -1204,18 +1346,23 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		if current < 0 {
 			current = 0
 		}
-		if current > cap {
-			current = cap
+		if current > capV {
+			current = capV
 		}
+		bp := basePotential[key]
 		result = append(result, goodRow{
-			Key:      key,
-			Name:     name,
-			Tier:     tier,
-			Category: category,
-			Amount:   current,
-			Rate:     rate,
-			Cap:      cap,
-			Price:    goodLocalPrice(baseValue, current, rate, cap),
+			Key:            key,
+			Name:           name,
+			Tier:           tier,
+			Category:       category,
+			Amount:         current,
+			Rate:           rate,
+			Cap:            capV,
+			Price:          goodLocalPrice(baseValue, current, rate, capV),
+			Weight:         laborWeights[key],
+			YieldPerWorker: bp / economy.REF_LABOR,
+			Producible:     bp > 0,
+			LaborPool:      laborPool,
 		})
 	}
 	if result == nil {
@@ -1948,31 +2095,231 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Pop restored per unit type (mirror of UnitSpec.PopCost).
-	popRestored := req.Infantry*5 + req.Cavalry*8 + req.Priest*3 + req.Ship*10 + req.EliteInfantry*10
+	// Variant B: disband does NOT restore population.
+	// Disbanded units leave the army columns; labor_pool rises automatically
+	// because army pop-cost decreases. RecomputeProduction updates the rates.
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
 
-	tag, err := h.pool.Exec(r.Context(),
+	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlements SET
 		     infantry       = GREATEST(0, infantry       - $1),
 		     cavalry        = GREATEST(0, cavalry        - $2),
 		     priest         = GREATEST(0, priest         - $3),
 		     ship           = GREATEST(0, ship           - $4),
-		     elite_infantry = GREATEST(0, elite_infantry - $5),
-		     population     = LEAST(10000, population    + $6)
-		 WHERE id = $7`,
+		     elite_infantry = GREATEST(0, elite_infantry - $5)
+		 WHERE id = $6`,
 		req.Infantry, req.Cavalry, req.Priest, req.Ship, req.EliteInfantry,
-		popRestored, settlementID,
+		settlementID,
 	)
 	if err != nil || tag.RowsAffected() == 0 {
 		writeError(w, http.StatusInternalServerError, "disband failed")
 		return
 	}
 
+	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
+		writeError(w, http.StatusInternalServerError, "recompute production failed")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
-		"pop_restored": popRestored,
 		"disbanded": map[string]int{
 			"infantry": req.Infantry, "cavalry": req.Cavalry,
 			"priest": req.Priest, "ship": req.Ship, "elite_infantry": req.EliteInfantry,
 		},
 	})
+}
+
+// LaborAlloc handles PUT /worlds/:worldID/provinces/:provinceID/labor.
+// Body: {"weights":{"timber":0.5,"grain":0.3,"stone":0.2}}
+// Weights are normalized to Σ=1 over producible goods; non-producible goods are ignored.
+func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var req struct {
+		Weights map[string]float64 `json:"weights"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Weights) == 0 {
+		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"weights\":{...}}")
+		return
+	}
+
+	// Verify ownership.
+	var settlementID uuid.UUID
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT s.id FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
+		provinceID, worldID, playerID,
+	).Scan(&settlementID); err != nil {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	// Determine producible goods for this settlement.
+	producible := make(map[string]bool)
+	prows, err := h.pool.Query(r.Context(),
+		`SELECT DISTINCT pr.good_key
+		 FROM production_rules pr
+		 JOIN settlements s ON s.id = $1
+		 JOIN provinces prov ON prov.id = s.province_id
+		 WHERE
+		     (pr.terrain_type IS NULL OR pr.terrain_type = prov.terrain_type)
+		     AND (pr.building_type IS NULL OR EXISTS (
+		             SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
+		     AND (pr.requires_deposit IS NULL
+		          OR (pr.requires_deposit = 'copper' AND prov.copper_deposit)
+		          OR (pr.requires_deposit = 'tin'    AND prov.tin_deposit)
+		          OR (pr.requires_deposit = 'silver' AND COALESCE(prov.silver_deposit, false))
+		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(prov.cedar_deposit,  false)))`,
+		settlementID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load producible goods")
+		return
+	}
+	for prows.Next() {
+		var key string
+		_ = prows.Scan(&key)
+		producible[key] = true
+	}
+	prows.Close()
+
+	// Filter and normalize weights to producible goods only.
+	sum := 0.0
+	filtered := make(map[string]float64)
+	for key, wt := range req.Weights {
+		if producible[key] && wt > 0 {
+			filtered[key] = wt
+			sum += wt
+		}
+	}
+	if sum == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "no valid producible goods in weights")
+		return
+	}
+	for key := range filtered {
+		filtered[key] /= sum
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Clear existing weights then upsert new ones.
+	if _, err := tx.Exec(r.Context(),
+		`DELETE FROM settlement_labor WHERE settlement_id = $1`, settlementID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not clear weights")
+		return
+	}
+	for key, wt := range filtered {
+		if _, err := tx.Exec(r.Context(),
+			`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+			 VALUES ($1,$2,$3) ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight=$3`,
+			settlementID, key, wt,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not save weight")
+			return
+		}
+	}
+
+	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
+		writeError(w, http.StatusInternalServerError, "recompute production failed")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"weights": filtered,
+		"message": "labor allocation updated and production recomputed",
+	})
+}
+
+// OutpostFlows handles GET /worlds/:worldID/outpost-flows.
+// Returns all outpost_flows rows for the authenticated Wanax's settlements.
+func (h *ProvinceHandler) OutpostFlows(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT of.province_id, of.good_key, of.rate, of.settlement_id,
+		        s.name AS home_settlement_name,
+		        prov.terrain_type, prov.map_q, prov.map_r
+		 FROM outpost_flows of
+		 JOIN settlements s ON s.id = of.settlement_id
+		 JOIN provinces prov ON prov.id = of.province_id
+		 WHERE of.world_id = $1
+		   AND s.owner_id = $2
+		 ORDER BY s.name, of.good_key`,
+		worldID, playerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load outpost flows")
+		return
+	}
+	defer rows.Close()
+
+	type flowRow struct {
+		ProvinceID          uuid.UUID `json:"province_id"`
+		GoodKey             string    `json:"good_key"`
+		Rate                float64   `json:"rate_per_min"`
+		HomeSettlementID    uuid.UUID `json:"home_settlement_id"`
+		HomeSettlementName  string    `json:"home_settlement_name"`
+		Terrain             string    `json:"terrain"`
+		Q                   int       `json:"q"`
+		R                   int       `json:"r"`
+	}
+	var result []flowRow
+	for rows.Next() {
+		var fr flowRow
+		if err := rows.Scan(
+			&fr.ProvinceID, &fr.GoodKey, &fr.Rate,
+			&fr.HomeSettlementID, &fr.HomeSettlementName,
+			&fr.Terrain, &fr.Q, &fr.R,
+		); err != nil {
+			continue
+		}
+		result = append(result, fr)
+	}
+	if result == nil {
+		result = []flowRow{}
+	}
+	writeJSON(w, http.StatusOK, result)
 }
