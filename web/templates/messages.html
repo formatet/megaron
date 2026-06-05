@@ -180,7 +180,7 @@ async function loadInbox() {
       const disAttr = canAccept ? '' : 'disabled title="Insufficient ' + esc(offer.want_good) + ' (have ' + (have||0).toFixed(0) + ', need ' + offer.want_qty + ')"';
       tradeHtml = `
         <div class="trade-block">
-          <div class="trade-want">Wants <b>${esc(offer.want_qty+' '+offer.want_good)}</b> · Offers <b>${offer.offer_gold} silver</b></div>
+          <div class="trade-want">Wants <b>${esc(offer.want_qty+' '+offer.want_good)}</b> · Offers <b>${offer.offer_silver} silver</b></div>
           <div class="trade-btns">
             <button class="btn-small btn-primary" onclick="tradeAccept('${m.id}',this)" ${disAttr}>Accept ✓</button>
             <button class="btn-small btn-danger"  onclick="tradeDecline('${m.id}',this)">Decline ✗</button>
@@ -309,7 +309,7 @@ async function sendMsg() {
   const qty   = parseFloat(document.getElementById('offer-qty')?.value||'0');
   const silver= parseFloat(document.getElementById('offer-silver')?.value||'0');
   if (good && qty>0 && silver>0) {
-    body.trade_offer = {want_good:good, want_qty:qty, offer_gold:silver};
+    body.trade_offer = {want_good:good, want_qty:qty, offer_silver:silver};
   }
 
   const res  = await api('POST', `/worlds/${WORLD_ID}/settlements/${MY_SETTLEMENT}/messengers`, body);

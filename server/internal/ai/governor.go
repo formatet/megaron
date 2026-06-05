@@ -28,30 +28,30 @@ func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, 
 	}
 
 	// Passive governor: ensure loyalty doesn't fall below 2 by consuming a small
-	// gold reserve as a care action. If gold > 20, register a minimal gift event.
-	var gold float64
+	// silver reserve as a care action. If silver > 20, register a minimal gift event.
+	var silver float64
 	var loyalty int
 	err = pool.QueryRow(ctx,
-		`SELECT gold_amount + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate), loyalty
+		`SELECT silver_amount + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate), loyalty
 		 FROM settlements WHERE id = $1`,
 		settlementID,
-	).Scan(&gold, &loyalty)
+	).Scan(&silver, &loyalty)
 	if err != nil {
 		return fmt.Errorf("load settlement resources: %w", err)
 	}
 
-	if gold >= 20 && loyalty <= 2 {
+	if silver >= 20 && loyalty <= 2 {
 		_, err = pool.Exec(ctx,
 			`UPDATE settlements SET
-			   gold_amount = gold_amount
-			     + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate) - 10,
-			   gold_calc_at = now()
+			   silver_amount = silver_amount
+			     + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate) - 10,
+			   silver_calc_at = now()
 			 WHERE id = $1 AND
-			   gold_amount + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate) >= 10`,
+			   silver_amount + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate) >= 10`,
 			settlementID,
 		)
 		if err != nil {
-			slog.Warn("passive governor gold deduction failed", "settlement", settlementID)
+			slog.Warn("passive governor silver deduction failed", "settlement", settlementID)
 		}
 	}
 

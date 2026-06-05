@@ -58,8 +58,8 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	if p.GoodKey == "silver" {
 		if _, err = tx.Exec(ctx,
 			`UPDATE settlements SET
-			     gold_amount = LEAST(gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate + $1, gold_cap),
-			     gold_calc_at = now()
+			     silver_amount = LEAST(silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate + $1, silver_cap),
+			     silver_calc_at = now()
 			 WHERE id = $2`,
 			p.Quantity, p.DestinationID,
 		); err != nil {

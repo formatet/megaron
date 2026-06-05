@@ -5,15 +5,15 @@
      hx-get="/world/{{$p.WorldID}}/resource-bar"
      hx-trigger="every 30s"
      hx-swap="outerHTML">
-  <div class="res" data-key="gold">
-    <canvas class="res-icon" data-icon="gold" width="18" height="18"></canvas>
+  <div class="res" data-key="silver">
+    <canvas class="res-icon" data-icon="silver" width="18" height="18"></canvas>
     <div class="res-info">
       <span class="res-name">Silver</span>
       <span class="res-val"
-            data-base="{{index .Resources "gold"}}"
-            data-rate="{{index .Resources "gold_rate"}}"
-            data-cap="{{index .Resources "gold_cap"}}">{{resource (index .Resources "gold")}}</span>
-      <span class="res-rate">{{rate (index .Resources "gold_rate")}}</span>
+            data-base="{{index .Resources "silver"}}"
+            data-rate="{{index .Resources "silver_rate"}}"
+            data-cap="{{index .Resources "silver_cap"}}">{{resource (index .Resources "silver")}}</span>
+      <span class="res-rate">{{rate (index .Resources "silver_rate")}}</span>
     </div>
   </div>
   <div class="res" data-key="grain">
@@ -61,7 +61,7 @@
 (function(){
   function r(x,px,py,w,h,c){x.fillStyle=c;x.fillRect(px,py,w,h);}
   const P={
-    gold(x){r(x,5,6,8,8,'#CA8A04');r(x,6,5,6,1,'#CA8A04');r(x,7,4,4,1,'#F9E79F');r(x,6,5,6,2,'#F9E79F');r(x,5,7,8,2,'#D4AC0D');r(x,7,8,4,4,'#CA8A04');r(x,8,9,2,2,'#F9E79F');r(x,5,6,1,2,'#6E2C00');r(x,12,6,1,8,'#6E2C00');r(x,5,14,8,1,'#6E2C00');},
+    silver(x){r(x,5,6,8,8,'#9E9E9E');r(x,6,5,6,1,'#9E9E9E');r(x,7,4,4,1,'#E8E8E8');r(x,6,5,6,2,'#E8E8E8');r(x,5,7,8,2,'#C0C0C0');r(x,7,8,4,4,'#9E9E9E');r(x,8,9,2,2,'#E8E8E8');r(x,5,6,1,2,'#1C1C1C');r(x,12,6,1,8,'#1C1C1C');r(x,5,14,8,1,'#1C1C1C');},
     grain(x){r(x,8,12,2,4,'#A04000');r(x,6,8,2,5,'#D4AC0D');r(x,10,8,2,5,'#D4AC0D');r(x,7,5,4,4,'#D4AC0D');r(x,8,3,2,3,'#F9E79F');r(x,6,4,1,1,'#D4AC0D');r(x,11,4,1,1,'#D4AC0D');r(x,8,12,2,1,'#6E2C00');},
     cedar(x){r(x,3,12,12,4,'#A04000');r(x,3,8,12,4,'#C0392B');r(x,2,11,1,6,'#6E2C00');r(x,15,11,1,6,'#6E2C00');r(x,3,12,12,1,'#6E2C00');r(x,4,7,10,1,'#F0B27A');r(x,4,11,10,1,'#F0B27A');r(x,11,3,4,3,'#A04000');r(x,13,2,2,6,'#6E2C00');r(x,12,4,2,1,'#F0B27A');},
     stone(x){r(x,4,10,10,6,'#F2EAD3');r(x,3,11,11,4,'#F2EAD3');r(x,5,8,8,3,'#FDFEFE');r(x,7,6,4,3,'#FDFEFE');r(x,4,10,1,6,'#6E2C00');r(x,13,10,1,6,'#6E2C00');r(x,4,16,10,1,'#6E2C00');r(x,5,8,1,3,'#6E2C00');r(x,12,8,1,3,'#6E2C00');r(x,5,11,1,1,'#6E2C00');r(x,5,10,8,1,'#F0B27A');},

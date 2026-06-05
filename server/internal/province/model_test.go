@@ -155,15 +155,15 @@ func TestShipTaxonomy_MerchantmanTimberNoFoundry(t *testing.T) {
 	}
 }
 
-func TestResourceLedger_SnapshotGold(t *testing.T) {
+func TestResourceLedger_SnapshotSilver(t *testing.T) {
 	base := time.Date(2026, 6, 2, 12, 0, 0, 0, time.UTC)
-	rl := ResourceLedger{Gold: ResourceState{Amount: 50, RatePerMinute: 1, Cap: 500, LastCalcAt: base}}
+	rl := ResourceLedger{Silver: ResourceState{Amount: 50, RatePerMinute: 1, Cap: 500, LastCalcAt: base}}
 	snap := rl.Snapshot(base.Add(10 * time.Minute))
-	if math.Abs(snap["gold"]-60) > 1e-9 {
-		t.Errorf("gold snapshot should be 60, got %.3f", snap["gold"])
+	if math.Abs(snap["silver"]-60) > 1e-9 {
+		t.Errorf("silver snapshot should be 60, got %.3f", snap["silver"])
 	}
 	full := rl.SnapshotFull(base.Add(10 * time.Minute))
-	if math.Abs(full["gold"].Amount-60) > 1e-9 || full["gold"].Rate != 1 || full["gold"].Cap != 500 {
-		t.Errorf("full gold snapshot mismatch: %+v", full["gold"])
+	if math.Abs(full["silver"].Amount-60) > 1e-9 || full["silver"].Rate != 1 || full["silver"].Cap != 500 {
+		t.Errorf("full silver snapshot mismatch: %+v", full["silver"])
 	}
 }

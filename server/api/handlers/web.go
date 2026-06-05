@@ -365,8 +365,8 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 
 	now := h.clk.Now()
 	resources := s.Resources.Snapshot(now)
-	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
-	resources["gold_cap"] = s.Resources.Gold.Cap
+	resources["silver_rate"] = s.Resources.Silver.RatePerMinute
+	resources["silver_cap"] = s.Resources.Silver.Cap
 
 	// Load grain, cedar, stone from settlement_goods for the resource bar.
 	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources,
@@ -599,8 +599,8 @@ func (h *WebHandler) ResourceBar(w http.ResponseWriter, r *http.Request) {
 	}
 	now := h.clk.Now()
 	resources := s.Resources.Snapshot(now)
-	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
-	resources["gold_cap"] = s.Resources.Gold.Cap
+	resources["silver_rate"] = s.Resources.Silver.RatePerMinute
+	resources["silver_cap"] = s.Resources.Silver.Cap
 	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources,
 		"grain", "cedar", "stone")
 
@@ -687,7 +687,7 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 			`SELECT count(*) FROM kingdom_members WHERE kingdom_id = $1`, kingdomID,
 		).Scan(&memberCount)
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate)
+			`SELECT silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate)
 			 FROM kingdoms WHERE id = $1`, kingdomID,
 		).Scan(&treasuryGold)
 		_ = h.pool.QueryRow(r.Context(),
@@ -949,8 +949,8 @@ func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
 
 	now := h.clk.Now()
 	resources := s.Resources.Snapshot(now)
-	resources["gold_rate"] = s.Resources.Gold.RatePerMinute
-	resources["gold_cap"] = s.Resources.Gold.Cap
+	resources["silver_rate"] = s.Resources.Silver.RatePerMinute
+	resources["silver_cap"] = s.Resources.Silver.Cap
 	loadSettlementGoodsIntoResources(r.Context(), h.pool, s.ID, now, resources, "grain", "cedar", "stone")
 	if s.OwnerID != nil {
 		if kh, err2 := loadPlayerKharis(r.Context(), h.pool, *s.OwnerID, worldID); err2 == nil {

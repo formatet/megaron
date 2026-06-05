@@ -37,7 +37,7 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		`SELECT id, world_id, province_id, name, culture_id, owner_id, kingdom_id,
 		        control_type, founded_from, governor_id, governor_is_ai,
 		        loyalty, loyalty_trend, wall_level, is_capital, state, population,
-		        gold_amount, gold_rate, gold_cap, gold_calc_at,
+		        silver_amount, silver_rate, silver_cap, silver_calc_at,
 		        infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman,
 		        updated_at
 		 FROM settlements WHERE id = $1 AND world_id = $2`,
@@ -94,14 +94,14 @@ func resolveSettlementID(ctx context.Context, pool *pgxpool.Pool, provinceID, wo
 // scanSettlement reads a settlement from a pgx.Row.
 func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 	var s settlement.Settlement
-	var goldCalcAt time.Time
+	var silverCalcAt time.Time
 
 	err := row.Scan(
 		&s.ID, &s.WorldID, &s.ProvinceID, &s.Name, &s.CultureID,
 		&s.OwnerID, &s.KingdomID, &s.ControlType, &s.FoundedFrom,
 		&s.GovernorID, &s.GovernorIsAI,
 		&s.Loyalty, &s.LoyaltyTrend, &s.WallLevel, &s.IsCapital, &s.State, &s.Population,
-		&s.Resources.Gold.Amount, &s.Resources.Gold.RatePerMinute, &s.Resources.Gold.Cap, &goldCalcAt,
+		&s.Resources.Silver.Amount, &s.Resources.Silver.RatePerMinute, &s.Resources.Silver.Cap, &silverCalcAt,
 		&s.Army.Infantry, &s.Army.Cavalry, &s.Army.Catapult, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
 		&s.Army.WarGalley, &s.Army.Merchantman,
 		&s.UpdatedAt,
@@ -110,7 +110,7 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 		return nil, fmt.Errorf("scan settlement: %w", err)
 	}
 
-	s.Resources.Gold.LastCalcAt = goldCalcAt
+	s.Resources.Silver.LastCalcAt = silverCalcAt
 
 	return &s, nil
 }

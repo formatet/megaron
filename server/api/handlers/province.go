@@ -187,7 +187,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			gsrows.Close()
 		}
-		goldStock := sett.Resources.Gold.Current(now)
+		silverStock := sett.Resources.Silver.Current(now)
 
 		// can_afford per building: all goods costs covered.
 		type buildAffordRow struct {
@@ -196,7 +196,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		var buildAfford []buildAffordRow
 		for bType, spec := range province.BuildingSpecs {
-			afford := goldStock >= spec.CostGold
+			afford := silverStock >= spec.CostSilver
 			if afford {
 				for goodKey, needed := range spec.Costs {
 					if goodsStock[goodKey] < needed {
@@ -894,19 +894,19 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Deduct gold if required.
-	if spec.CostGold > 0 {
+	// Deduct silver if required.
+	if spec.CostSilver > 0 {
 		tag, err2 := h.pool.Exec(r.Context(),
 			`UPDATE settlements SET
-			   gold_amount = gold_amount
-			     + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate - $1,
-			   gold_calc_at = now()
+			   silver_amount = silver_amount
+			     + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate - $1,
+			   silver_calc_at = now()
 			 WHERE id = $2
-			   AND gold_amount + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate >= $1`,
-			spec.CostGold, settlementID,
+			   AND silver_amount + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate >= $1`,
+			spec.CostSilver, settlementID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient gold")
+			writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
 			return
 		}
 	}
@@ -1546,7 +1546,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get good weight. Special case: 'silver' draws from gold_amount column, not settlement_goods.
+	// Get good weight. Special case: 'silver' draws from silver_amount column, not settlement_goods.
 	const silverKey = "silver"
 	isSilver := req.GoodKey == silverKey
 
@@ -1577,15 +1577,15 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Deduct from origin — silver draws from gold_amount column, others from settlement_goods.
+	// Deduct from origin — silver draws from silver_amount column, others from settlement_goods.
 	var deductTag interface{ RowsAffected() int64 }
 	if isSilver {
 		deductTag, err = tx.Exec(r.Context(),
 			`UPDATE settlements SET
-			     gold_amount = GREATEST(0, gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate - $1),
-			     gold_calc_at = now()
+			     silver_amount = GREATEST(0, silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate - $1),
+			     silver_calc_at = now()
 			 WHERE id = $2
-			   AND gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate >= $1`,
+			   AND silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate >= $1`,
 			req.Quantity, originID,
 		)
 	} else {

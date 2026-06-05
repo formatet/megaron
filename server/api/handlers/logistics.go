@@ -56,11 +56,11 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 
 	switch p.Kind {
 	case "treasury":
-		// Silver into the kingdom treasury (kingdoms.gold_amount is the silver balance).
+		// Silver into the kingdom treasury (kingdoms.silver_amount is the silver balance).
 		if _, err = tx.Exec(ctx,
 			`UPDATE kingdoms SET
-			     gold_amount  = gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate) + $1,
-			     gold_calc_at = now()
+			     silver_amount  = silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate) + $1,
+			     silver_calc_at = now()
 			 WHERE id = $2`,
 			p.Quantity, p.Destination,
 		); err != nil {
@@ -68,13 +68,12 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 		}
 	case "settlement_good":
 		if p.GoodKey == "silver" {
-			// Silver currency lives in the gold_amount column (canonical until Sprint A rename).
 			if _, err = tx.Exec(ctx,
 				`UPDATE settlements SET
-				     gold_amount  = LEAST(
-				         gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate + $1,
-				         gold_cap),
-				     gold_calc_at = now()
+				     silver_amount  = LEAST(
+				         silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate + $1,
+				         silver_cap),
+				     silver_calc_at = now()
 				 WHERE id = $2`,
 				p.Quantity, p.Destination,
 			); err != nil {

@@ -52,7 +52,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		TradeOffer    *struct {
 			WantGood  string  `json:"want_good"`
 			WantQty   float64 `json:"want_qty"`
-			OfferGold float64 `json:"offer_gold"`
+			OfferSilver float64 `json:"offer_silver"`
 		} `json:"trade_offer,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -73,8 +73,8 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.TradeOffer != nil {
-		if req.TradeOffer.WantQty <= 0 || req.TradeOffer.OfferGold <= 0 || req.TradeOffer.WantGood == "" {
-			writeError(w, http.StatusBadRequest, "trade_offer requires want_good, want_qty > 0, offer_gold > 0")
+		if req.TradeOffer.WantQty <= 0 || req.TradeOffer.OfferSilver <= 0 || req.TradeOffer.WantGood == "" {
+			writeError(w, http.StatusBadRequest, "trade_offer requires want_good, want_qty > 0, offer_silver > 0")
 			return
 		}
 		if req.TradeOffer.WantGood == "silver" || req.TradeOffer.WantGood == "gold" {
@@ -157,10 +157,10 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	var tradeOfferJSON []byte
 	if req.TradeOffer != nil {
 		tradeOfferJSON, _ = json.Marshal(map[string]any{
-			"want_good":  req.TradeOffer.WantGood,
-			"want_qty":   req.TradeOffer.WantQty,
-			"offer_gold": req.TradeOffer.OfferGold,
-			"status":     "pending",
+			"want_good":    req.TradeOffer.WantGood,
+			"want_qty":     req.TradeOffer.WantQty,
+			"offer_silver": req.TradeOffer.OfferSilver,
+			"status":       "pending",
 		})
 	}
 	// Trade offers expire 7 in-game days after arrival (so inactive offers clean up automatically).
@@ -454,7 +454,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	err = h.pool.QueryRow(r.Context(),
 		`SELECT m.destination_id, m.origin_id,
 		        m.trade_offer->>'want_good', (m.trade_offer->>'want_qty')::float,
-		        (m.trade_offer->>'offer_gold')::float, m.trade_offer->>'status'
+		        (m.trade_offer->>'offer_silver')::float, m.trade_offer->>'status'
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3
@@ -473,7 +473,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	// Verify buyer (origin) has enough gold.
 	var buyerGold float64
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate FROM settlements WHERE id=$1`,
+		`SELECT silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate FROM settlements WHERE id=$1`,
 		buyerSettlementID,
 	).Scan(&buyerGold)
 	if buyerGold < offerGold {
@@ -526,8 +526,8 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	// Deduct offer_silver from buyer (leg 3 depart).
 	if _, err = tx.Exec(r.Context(),
 		`UPDATE settlements SET
-		     gold_amount = GREATEST(0, gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate - $1),
-		     gold_calc_at = now()
+		     silver_amount = GREATEST(0, silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate - $1),
+		     silver_calc_at = now()
 		 WHERE id=$2`,
 		offerGold, buyerSettlementID,
 	); err != nil {

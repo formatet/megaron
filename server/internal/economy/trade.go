@@ -111,14 +111,14 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		return nil
 	}
 
-	// Credit goods to destination. Silver goes to gold_amount column; everything else to settlement_goods.
+	// Credit goods to destination. Silver goes to silver_amount column; everything else to settlement_goods.
 	if p.GoodKey == "silver" {
 		if _, err = tx.Exec(ctx,
 			`UPDATE settlements SET
-			     gold_amount = LEAST(
-			         gold_amount + EXTRACT(EPOCH FROM (now()-gold_calc_at))/60*gold_rate + $1,
-			         gold_cap),
-			     gold_calc_at = now()
+			     silver_amount = LEAST(
+			         silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate + $1,
+			         silver_cap),
+			     silver_calc_at = now()
 			 WHERE id = $2`,
 			delivered, p.DestinationID,
 		); err != nil {

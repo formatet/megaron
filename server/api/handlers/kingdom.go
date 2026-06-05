@@ -984,7 +984,7 @@ func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Reque
 }
 
 // TreasuryDeposit handles POST /worlds/:worldID/kingdoms/:kingdomID/treasury/deposit.
-// Any kingdom member may deposit silver (gold_amount) from their capital into the shared treasury.
+// Any kingdom member may deposit silver from their capital into the shared treasury.
 func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request) {
 	kingdomID, err := uuid.Parse(chi.URLParam(r, "kingdomID"))
 	if err != nil {
@@ -1060,12 +1060,12 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	// Deduct from settlement (materialized lazy-eval), fail if insufficient.
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlements SET
-		   gold_amount = GREATEST(0,
-		       gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate)
+		   silver_amount = GREATEST(0,
+		       silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate)
 		   ) - $1,
-		   gold_calc_at = now()
+		   silver_calc_at = now()
 		 WHERE id = $2
-		   AND gold_amount + (EXTRACT(EPOCH FROM (now()-gold_calc_at))/60 * gold_rate) >= $1`,
+		   AND silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate) >= $1`,
 		req.Amount, settlementID,
 	)
 	if err != nil {

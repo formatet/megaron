@@ -78,7 +78,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	rows, err := h.pool.Query(ctx,
 		`SELECT pwr.player_id, s.id,
 		    GREATEST(0, pwr.kharis_amount + (EXTRACT(EPOCH FROM (now() - pwr.kharis_calc_at))/60 * pwr.kharis_rate)),
-		    GREATEST(0, s.gold_amount + (EXTRACT(EPOCH FROM (now() - s.gold_calc_at))/60 * s.gold_rate)),
+		    GREATEST(0, s.silver_amount + (EXTRACT(EPOCH FROM (now() - s.silver_calc_at))/60 * s.silver_rate)),
 		    GREATEST(0, COALESCE(grain.amount + (EXTRACT(EPOCH FROM (now() - grain.calc_at))/60 * grain.rate), 0)),
 		    pwr.cult_level,
 		    GREATEST(0, COALESCE(wine.amount  + (EXTRACT(EPOCH FROM (now() - wine.calc_at))/60  * wine.rate),  0)),
@@ -173,16 +173,16 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	canAfford := w.gold >= spec.gold && w.grain >= spec.grain &&
 		w.wine >= spec.wine && w.oil >= spec.oil && w.livestock >= spec.livestock
 	if canAfford {
-		// Deduct gold from capital settlement, gain kharis in player_world_records.
+		// Deduct silver from capital settlement, gain kharis in player_world_records.
 		_, err := h.pool.Exec(ctx,
 			`UPDATE settlements SET
-			   gold_amount  = gold_amount + (EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate) - $1,
-			   gold_calc_at = now()
+			   silver_amount  = silver_amount + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate) - $1,
+			   silver_calc_at = now()
 			 WHERE id = $2`,
 			spec.gold, w.settlementID,
 		)
 		if err != nil {
-			return fmt.Errorf("pay gold maintenance: %w", err)
+			return fmt.Errorf("pay silver maintenance: %w", err)
 		}
 		_, err = h.pool.Exec(ctx,
 			`UPDATE player_world_records SET
@@ -212,7 +212,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 			)
 		}
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
-			map[string]any{"cult_level": w.cultLevel, "gold": spec.gold, "grain": spec.grain,
+			map[string]any{"cult_level": w.cultLevel, "silver": spec.gold, "grain": spec.grain,
 				"wine": spec.wine, "oil": spec.oil, "livestock": spec.livestock, "kharis_gain": spec.kharisGain},
 			worldID, nil)
 		newKharis := w.kharis + spec.kharisGain

@@ -110,7 +110,7 @@
         <div style="margin-top:.4rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem;font-size:.8rem">
           <div><label>Want good</label><input id="offer-good" placeholder="e.g. grain" style="width:100%"></div>
           <div><label>Quantity</label><input id="offer-qty" type="number" min="0.1" step="0.1" placeholder="50" style="width:100%"></div>
-          <div><label>Offer gold</label><input id="offer-gold" type="number" min="1" step="1" placeholder="60" style="width:100%"></div>
+          <div><label>Offer silver</label><input id="offer-silver" type="number" min="1" step="1" placeholder="60" style="width:100%"></div>
         </div>
       </details>
       <button class="btn-primary btn-send" onclick="sendMessenger()">Dispatch →</button>
@@ -300,7 +300,7 @@ async function loadInbox() {
     const tradeBlock = offer && offer.status === 'pending' ? `
       <div class="trade-offer-block">
         <span class="trade-offer-label">Trade offer:</span>
-        <span class="trade-offer-detail">Wants <b>${offer.want_qty} ${offer.want_good}</b> · Offers <b>${offer.offer_gold} gold</b></span>
+        <span class="trade-offer-detail">Wants <b>${offer.want_qty} ${offer.want_good}</b> · Offers <b>${offer.offer_silver} silver</b></span>
         <div class="inbox-reply-wrap" style="margin-top:.4rem">
           <button class="btn-small btn-primary" onclick="tradeAccept('${m.id}')">Accept ✓</button>
           <button class="btn-small btn-danger" onclick="tradeDecline('${m.id}')">Decline ✗</button>
@@ -403,9 +403,9 @@ async function sendMessenger() {
   const body = {destination_id: destID, message: msg};
   const offerGood = (document.getElementById('offer-good')?.value || '').trim();
   const offerQty  = parseFloat(document.getElementById('offer-qty')?.value || '0');
-  const offerGold = parseFloat(document.getElementById('offer-gold')?.value || '0');
+  const offerGold = parseFloat(document.getElementById('offer-silver')?.value || '0');
   if (offerGood && offerQty > 0 && offerGold > 0) {
-    body.trade_offer = {want_good: offerGood, want_qty: offerQty, offer_gold: offerGold};
+    body.trade_offer = {want_good: offerGood, want_qty: offerQty, offer_silver: offerGold};
   }
   const res = await apiReq('POST',
     `/api/v1/worlds/${WORLD_ID}/settlements/${MY_SETTLEMENT_ID}/messengers`,

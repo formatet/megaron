@@ -184,15 +184,15 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Gold  float64 `json:"gold"`
-		Grain float64 `json:"grain"`
+		Silver float64 `json:"silver"`
+		Grain  float64 `json:"grain"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
-	if req.Gold < 0 || req.Grain < 0 || (req.Gold == 0 && req.Grain == 0) {
-		writeError(w, http.StatusBadRequest, "gift must include gold or grain")
+	if req.Silver < 0 || req.Grain < 0 || (req.Silver == 0 && req.Grain == 0) {
+		writeError(w, http.StatusBadRequest, "gift must include silver or grain")
 		return
 	}
 
@@ -237,19 +237,19 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Deduct gold from source settlement column.
-	if req.Gold > 0 {
+	// Deduct silver from source settlement column.
+	if req.Silver > 0 {
 		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE settlements SET
-			   gold_amount = gold_amount
-			     + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate - $1,
-			   gold_calc_at = now()
+			   silver_amount = silver_amount
+			     + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate - $1,
+			   silver_calc_at = now()
 			 WHERE id = $2
-			   AND gold_amount + EXTRACT(EPOCH FROM (now() - gold_calc_at))/60 * gold_rate >= $1`,
-			req.Gold, sourceID,
+			   AND silver_amount + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate >= $1`,
+			req.Silver, sourceID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient gold")
+			writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
 			return
 		}
 	}
@@ -271,10 +271,10 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Dispatch the gift as a caravan — it is credited to the target on ARRIVAL, not instantly.
-	// Internal supply line: no caravan-loss. Silver is the currency (gold_amount column → good_key "silver").
-	if req.Gold > 0 {
+	// Internal supply line: no caravan-loss.
+	if req.Silver > 0 {
 		if err2 := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
-			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "silver", "quantity": req.Gold},
+			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "silver", "quantity": req.Silver},
 			arrivesAt); err2 != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule gift silver")
 			return
@@ -297,7 +297,7 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	// Apply loyalty event — significant gift (50+ silver equivalent) gives +1 loyalty.
 	// Applied at send (the gesture is committed); goods themselves arrive after travel.
 	loyaltyDelta := 0
-	if req.Gold+req.Grain*0.5 >= 50 {
+	if req.Silver+req.Grain*0.5 >= 50 {
 		loyaltyDelta = 1
 	}
 
@@ -311,7 +311,7 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"loyalty_delta": loyaltyDelta,
-		"silver_sent":   req.Gold,
+		"silver_sent":   req.Silver,
 		"grain_sent":    req.Grain,
 		"arrives_at":    arrivesAt,
 	})
