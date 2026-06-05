@@ -387,11 +387,13 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 		     JOIN settlements os ON os.province_id = ma.origin_id
 		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
 		     UNION ALL
+		     -- Explore marches are excluded: vision is revealed on arrival, not dispatch.
 		     SELECT tp.map_q, tp.map_r
 		     FROM marching_armies ma
 		     JOIN provinces tp ON tp.id = ma.target_id
 		     JOIN settlements os ON os.province_id = ma.origin_id
 		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
+		       AND ma.intent != 'explore'
 		     UNION ALL
 		     -- Settlements this player has contacted by messenger stay visible:
 		     -- once a messenger reaches its destination (delivered and onward),
@@ -403,6 +405,12 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 		     JOIN provinces dp ON dp.id = ds.province_id
 		     WHERE m.world_id = $1 AND m.sender_id = $2
 		       AND m.status IN ('delivered', 'returning', 'arrived')
+		     UNION ALL
+		     -- Provinces scouted by explore marches remain visible after the ship returns.
+		     SELECT p.map_q, p.map_r
+		     FROM player_scouted_provinces sp
+		     JOIN provinces p ON p.id = sp.province_id
+		     WHERE sp.world_id = $1 AND sp.player_id = $2
 		 ) pos`,
 		worldID, playerID,
 	)

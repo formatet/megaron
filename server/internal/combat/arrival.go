@@ -103,7 +103,20 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	}
 
 	if march.Intent == "scout" || march.Intent == "explore" {
-		// Scouts and explores auto-return home; vision revealed during transit (FOW step).
+		if march.Intent == "explore" {
+			// Record persistent FOW contact: scouted province stays visible after ship returns.
+			var ownerID uuid.UUID
+			if err := tx.QueryRow(ctx,
+				`SELECT owner_id FROM settlements WHERE province_id = $1`, march.OriginID,
+			).Scan(&ownerID); err == nil {
+				_, _ = tx.Exec(ctx,
+					`INSERT INTO player_scouted_provinces (world_id, player_id, province_id)
+					 VALUES ($1, $2, $3)
+					 ON CONFLICT DO NOTHING`,
+					worldID, ownerID, march.TargetID,
+				)
+			}
+		}
 		return mergeArmy(ctx, tx, march.OriginID, march.Army)
 	}
 
