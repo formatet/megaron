@@ -4,7 +4,7 @@ import "math/rand"
 
 // CultureSettlementNames maps culture keys to Bronze Age city name pools.
 // akhaier/khemetiu/knaani/hatti sourced from bronsaleders_cities_mytologi.csv;
-// thrakes/pelasger from archaeological and Linear B sources.
+// thrakes/minoan from archaeological and Linear B sources.
 var CultureSettlementNames = map[string][]string{
 	// Mykensk + Minoisk (Kreta)
 	"akhaier": {
@@ -48,13 +48,13 @@ var CultureSettlementNames = map[string][]string{
 		"Tomis", "Kallatis", "Bizone", "Tyras", "Kardia",
 		"Lysimacheia", "Odrysai", "Eion", "Amphipolis", "Oisyme",
 	},
-	// Pelasgisk (förhellenistisk Egeiskum)
-	"pelasger": {
-		"Larisa", "Antron", "Pteleon", "Halos", "Aulis",
-		"Brauron", "Tanagra", "Thisbe", "Koroneia", "Itonos",
-		"Meliboia", "Krannon", "Gomphoi", "Olosson", "Phthia",
-		"Halai", "Arne", "Pelinnaion", "Achilleion", "Alope",
-		"Titarisios", "Enipeus", "Peiros", "Trikka", "Larymna",
+	// Minoisk (Kretensisk sjöfararkultur)
+	"minoan": {
+		"Knossos", "Phaistos", "Mallia", "Zakros", "Kydonia",
+		"Gournia", "Palaikastro", "Vasiliki", "Hagia Triada", "Archanes",
+		"Amnissos", "Tylissos", "Kommos", "Akrotiri", "Mochlos",
+		"Pseira", "Petras", "Vathypetro", "Nirou Chani", "Itanos",
+		"Praisos", "Lato", "Chersonesos", "Siteia", "Labyrinthos",
 	},
 }
 

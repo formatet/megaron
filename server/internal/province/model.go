@@ -16,7 +16,7 @@ const (
 	CultureKhemetiu Culture = "khemetiu"
 	CultureKnaani   Culture = "knaani"
 	CultureThrakes  Culture = "thrakes"
-	CulturePelasger Culture = "pelasger"
+	CultureMinoan Culture = "minoan"
 	CultureHatti    Culture = "hatti"
 )
 

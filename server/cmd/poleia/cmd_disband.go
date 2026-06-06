@@ -8,14 +8,15 @@ import (
 )
 
 func disbandCmd() *cobra.Command {
-	var hoplites, chariots, hiereus, trireme, agema int
+	var hoplites, chariots, hiereus, trireme, agema, warGalley, merchantman int
 	cmd := &cobra.Command{
 		Use:   "disband",
 		Short: "Release units back to population (they return to civilian life)",
 		Example: `  poleia disband --hoplites 20
-  poleia disband --hoplites 10 --chariots 5`,
+  poleia disband --hoplites 10 --chariots 5
+  poleia disband --war-galley 2 --merchantman 1`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if hoplites+chariots+hiereus+trireme+agema == 0 {
+			if hoplites+chariots+hiereus+trireme+agema+warGalley+merchantman == 0 {
 				return fmt.Errorf("specify at least one unit type to disband")
 			}
 			c := newClient(cfg)
@@ -26,6 +27,8 @@ func disbandCmd() *cobra.Command {
 				"priest":         hiereus,
 				"ship":           trireme,
 				"elite_infantry": agema,
+				"war_galley":     warGalley,
+				"merchantman":    merchantman,
 			})
 			if err != nil {
 				return err
@@ -46,7 +49,9 @@ func disbandCmd() *cobra.Command {
 	cmd.Flags().IntVar(&hoplites, "hoplites", 0, "infantry to disband")
 	cmd.Flags().IntVar(&chariots, "chariots", 0, "war chariots to disband")
 	cmd.Flags().IntVar(&hiereus, "hiereus", 0, "priests to disband")
-	cmd.Flags().IntVar(&trireme, "trireme", 0, "ships to disband")
+	cmd.Flags().IntVar(&trireme, "trireme", 0, "galleys to disband")
 	cmd.Flags().IntVar(&agema, "agema", 0, "elite infantry to disband")
+	cmd.Flags().IntVar(&warGalley, "war-galley", 0, "war galleys to disband")
+	cmd.Flags().IntVar(&merchantman, "merchantman", 0, "merchantmen to disband")
 	return cmd
 }

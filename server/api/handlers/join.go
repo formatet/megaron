@@ -87,7 +87,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		// Random culture when joining via web (no preference specified).
 		cultures := []province.Culture{
 			province.CultureAkhaier, province.CultureKhemetiu, province.CultureKnaani,
-			province.CultureThrakes, province.CulturePelasger, province.CultureHatti,
+			province.CultureThrakes, province.CultureMinoan, province.CultureHatti,
 		}
 		req.Culture = string(cultures[playerCount%len(cultures)])
 	}
