@@ -97,13 +97,24 @@
     .nc-oikos:hover     { background: rgba(78,122,82,0.32); }
     .nc-system:hover    { background: rgba(108,106,104,0.32); }
 
-    /* Colored dot — always visible, confirms domain even when compressed */
+    /*
+     * .nc-icon wraps dot + glyph. Fixed width, always centered.
+     * When the chip compresses to just this width, the icon stays visually
+     * centered regardless of the left border or surrounding padding.
+     */
+    .nc-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      min-width: 26px;
+      gap: 3px;
+      flex-shrink: 0;
+    }
     .nc-dot {
-      width: 5px;
-      height: 5px;
+      width: 5px; height: 5px;
       border-radius: 50%;
       flex-shrink: 0;
-      margin: 0 5px 0 7px;
     }
     .nc-war .nc-dot       { background: var(--accent-war); }
     .nc-city .nc-dot      { background: var(--accent-city); }
@@ -112,8 +123,8 @@
     .nc-oikos .nc-dot     { background: var(--accent-oikos); }
     .nc-system .nc-dot    { background: var(--accent-system); }
 
-    .nc-glyph { font-size: 0.8rem; flex-shrink: 0; margin-right: 4px; }
-    .nc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; }
+    .nc-glyph { font-size: 0.82rem; line-height: 1; }
+    .nc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; min-width: 0; }
     .nc-time  { font-size: 0.58rem; color: rgba(233,225,210,0.5); margin-right: 4px; flex-shrink: 0; }
     .nc-x {
       background: none; border: none; color: rgba(233,225,210,0.4);
@@ -656,7 +667,7 @@
   <div class="game-topbar">
 
     <!-- Logo: ΜΕΓΑΡΟΝ in Greek letterforms -->
-    <div class="gt-logo">ΜΕΓΑΡΟΝ</div>
+    <div class="gt-logo">MEGARON</div>
 
     <!-- Notification strip: chips slide in from right, newest = rightmost -->
     <div class="gt-notif-strip" id="gt-notif-strip"></div>
@@ -721,16 +732,16 @@
     <div class="win-trigger" id="trig-city"      onclick="toggleDrawer('city')">
       <span class="wt-glyph">🏛</span>City
     </div>
-    <div class="win-trigger" id="trig-war"       onclick="toggleDrawer('war')">
-      <span class="wt-glyph">⚔</span>War
-      <span class="wt-badge">1</span>
+    <div class="win-trigger" id="trig-economy"   onclick="toggleDrawer('economy')">
+      <span class="wt-glyph">⚖</span>Economy
     </div>
     <div class="win-trigger" id="trig-diplomacy" onclick="toggleDrawer('diplomacy')">
       <span class="wt-glyph">✉</span>Diplomacy
       <span class="wt-badge">2</span>
     </div>
-    <div class="win-trigger" id="trig-economy"   onclick="toggleDrawer('economy')">
-      <span class="wt-glyph">⚖</span>Economy
+    <div class="win-trigger" id="trig-war"       onclick="toggleDrawer('war')">
+      <span class="wt-glyph">⚔</span>War
+      <span class="wt-badge">1</span>
     </div>
     <div class="win-trigger" id="trig-oikos"     onclick="toggleDrawer('oikos')">
       <span class="wt-glyph">⛩</span>Oikos
@@ -1268,8 +1279,7 @@
     chip.className  = 'notif-chip nc-' + domain;
     chip.title      = text;   // native tooltip — visible when chip is compressed
     chip.innerHTML  = `
-      <span class="nc-dot"></span>
-      <span class="nc-glyph">${glyph}</span>
+      <span class="nc-icon"><span class="nc-dot"></span><span class="nc-glyph">${glyph}</span></span>
       <span class="nc-text">${text}</span>
       <span class="nc-time">${time}</span>
       <button class="nc-x" title="Dismiss">✕</button>
