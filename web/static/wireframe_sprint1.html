@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Megaron — Sprint 1 Wireframe</title>
   <link rel="stylesheet" href="/static/poleia.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap">
   <style>
     /* ── Map-first layout ──────────────────────────────────────── */
     html, body { overflow: hidden; height: 100%; }
@@ -32,9 +34,9 @@
     /* Logo */
     .gt-logo {
       padding: 0 1rem;
-      font-family: 'Georgia', serif;
-      font-size: 1rem;
-      letter-spacing: 0.18em;
+      font-family: 'Cinzel', 'Georgia', serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.22em;
       color: var(--accent);
       border-right: 1px solid var(--border);
       display: flex;
@@ -44,13 +46,13 @@
       text-shadow: 0 0 12px rgba(192,57,43,0.3);
     }
 
-    /* Notification strip — spans the middle */
+    /* Notification strip — chips pile from left (oldest near logo) toward right */
     .gt-notif-strip {
       flex: 1;
       display: flex;
       align-items: center;
       flex-direction: row;
-      justify-content: flex-end; /* newest anchors right, oldest pushed left */
+      justify-content: flex-start; /* oldest anchors left against logo */
       gap: 3px;
       padding: 0 6px;
       overflow: hidden;
@@ -154,8 +156,8 @@
       gap: 1px;
     }
     .cel-phase { font-size: 1rem; line-height: 1; }
-    .cel-date  { font-family: 'Georgia', serif; font-size: 0.62rem; color: var(--text-dim); white-space: nowrap; }
-    .cel-date strong { color: var(--gold); font-weight: normal; }
+    .cel-date  { font-family: 'Cinzel', 'Georgia', serif; font-size: 0.6rem; color: var(--text-dim); white-space: nowrap; letter-spacing: 0.05em; }
+    .cel-date strong { color: var(--gold); font-weight: 600; }
 
     /* Search button — tucked in celestial area */
     .gt-search-btn {
@@ -1084,8 +1086,6 @@
     if (tr) tr.classList.add('active');
     document.getElementById('map-dim').classList.add('visible');
     activeDrawer = name;
-    // Auto-dismiss matching chips when diplomacy drawer opens
-    if (name === 'diplomacy') dismissDomain('diplomacy', 800);
   }
   function closeDrawer(name) {
     const el = document.getElementById('drawer-' + name);
@@ -1136,14 +1136,12 @@
   }
 
   /* ── Celestial clock ── */
-  const GREEK_MONTHS = [
-    'Ποσιδεών','Γαμηλιών','Ἀνθεστηριών','Ἑλαφηβολιών',
-    'Μουνιχιών','Θαργηλιών','Σκιροφοριών','Ἑκατομβαιών',
-    'Μεταγειτνιών','Βοηδρομιών','Πυανεψιών','Μαιμακτηριών'
+  /* English transliterations — Latin letters, classical look via Cinzel font */
+  const MONTH_NAMES = [
+    'Posideon','Gamelion','Anthesterion','Elaphebolion',
+    'Mounichion','Thargelion','Skirophorion','Hekatombaion',
+    'Metageitnion','Boedromion','Pyanepsion','Maimakterion'
   ];
-  const GREEK_DAYS = ['','α\'','β\'','γ\'','δ\'','ε\'','ς\'','ζ\'','η\'','θ\'','ι\'',
-    'ια\'','ιβ\'','ιγ\'','ιδ\'','ιε\'','ις\'','ιζ\'','ιη\'','ιθ\'','κ\'',
-    'κα\'','κβ\'','κγ\'','κδ\'','κε\'','κς\'','κζ\'','κη\'','κθ\'','λ\''];
   const MOON_PHASES = ['🌑','🌒','🌒','🌓','🌔','🌔','🌕','🌖','🌖','🌗','🌘','🌘'];
 
   const REF_NEW_MOON = new Date('2025-01-29T12:35:00Z').getTime();
@@ -1154,9 +1152,16 @@
     return MOON_PHASES[Math.floor(age / LUNAR_CYCLE * 12) % 12];
   }
 
+  function toRoman(n) {
+    const vals = [10,9,5,4,1], syms = ['X','IX','V','IV','I'];
+    let r = '';
+    for (let i = 0; i < vals.length; i++) { while (n >= vals[i]) { r += syms[i]; n -= vals[i]; } }
+    return r;
+  }
+
   function updateCelestial() {
-    const now  = new Date();
-    const h    = now.getHours() + now.getMinutes() / 60;
+    const now   = new Date();
+    const h     = now.getHours() + now.getMinutes() / 60;
     const isDay = h >= 6 && h < 18;
 
     const body     = document.getElementById('cel-body');
@@ -1194,8 +1199,10 @@
     const dayOfMonth     = (daysSinceEpoch % 30) + 1;
     const monthIdx       = Math.floor(daysSinceEpoch / 30) % 12;
     const year           = Math.floor(daysSinceEpoch / 360) + 1;
+    const yearRoman      = 'Year ' + toRoman(year);
+
     document.getElementById('cel-date').innerHTML =
-      `<strong>${GREEK_DAYS[dayOfMonth]}</strong> ${GREEK_MONTHS[monthIdx]}<br>${year === 1 ? 'Ἔτος Α\'' : 'Ἔτος ' + year}`;
+      `<strong>${toRoman(dayOfMonth)}</strong> ${MONTH_NAMES[monthIdx]}<br>${yearRoman}`;
   }
 
   updateCelestial();
@@ -1203,98 +1210,121 @@
 
   /* ── Notification chips ─────────────────────────────────────── */
 
-  /*
-   * MAX_WIDTHS[depth]: depth 0 = newest (rightmost, full size).
-   * Depths beyond array length get the last value.
-   */
-  const MAX_WIDTHS = [200, 160, 110, 68, 34];
+  const MIN_W = 26;   // absolute minimum (just colored strip + dot)
+  const GAP   = 3;
 
+  /*
+   * Adaptive compression: all chips share available strip width
+   * using geometric weighting — newest gets most space, oldest least.
+   * Both the leftmost (oldest) AND rightmost (newest) can compress when
+   * the strip runs out of room.
+   */
   function recomputeChips() {
     const strip = document.getElementById('gt-notif-strip');
     const chips = [...strip.querySelectorAll('.notif-chip:not(.dismissing)')];
-    // chips[0] = oldest (leftmost), chips[last] = newest (rightmost)
+    if (!chips.length) return;
+
+    const n         = chips.length;
+    const available = strip.clientWidth - 12 - (n - 1) * GAP; // subtract padding + gaps
+
+    // Total weight: newest=n, second-newest=n-1, ..., oldest=1
+    const totalW = (n * (n + 1)) / 2;
+    const extra  = Math.max(0, available - n * MIN_W);
+
     chips.forEach((chip, i) => {
-      const depth  = chips.length - 1 - i; // 0 for newest, n-1 for oldest
-      const mw     = MAX_WIDTHS[Math.min(depth, MAX_WIDTHS.length - 1)];
-      const op     = Math.max(0.45, 1 - depth * 0.12);
-      chip.style.maxWidth = mw + 'px';
+      // i=0 oldest (leftmost), i=n-1 newest (rightmost)
+      const weight = i + 1;  // oldest gets weight 1, newest gets weight n
+      const width  = Math.round(MIN_W + (weight / totalW) * extra);
+      const depth  = n - 1 - i;  // 0=newest (least fade), n-1=oldest (most fade)
+      const op     = Math.max(0.42, 1 - depth * 0.1);
+
+      chip.style.maxWidth = width + 'px';
       chip.style.opacity  = op;
 
-      // Hide inner elements based on available width
       const textEl = chip.querySelector('.nc-text');
       const timeEl = chip.querySelector('.nc-time');
       const xEl    = chip.querySelector('.nc-x');
-      if (textEl) textEl.style.display = mw <= 68  ? 'none' : '';
-      if (timeEl) timeEl.style.display = mw <= 110 ? 'none' : '';
-      if (xEl)    xEl.style.display    = mw <= 110 ? 'none' : '';
+      if (textEl) textEl.style.display = width <= 70  ? 'none' : '';
+      if (timeEl) timeEl.style.display = width <= 115 ? 'none' : '';
+      if (xEl)    xEl.style.display    = width <= 115 ? 'none' : '';
     });
   }
 
   function dismissChip(chip) {
+    if (chip.classList.contains('dismissing')) return;
     chip.classList.add('dismissing');
     chip.addEventListener('animationend', () => { chip.remove(); recomputeChips(); }, { once: true });
   }
 
-  /* Dismiss all chips of a given domain (staggered) */
-  function dismissDomain(domain, delayMs) {
-    const strip = document.getElementById('gt-notif-strip');
-    [...strip.querySelectorAll('.nc-' + domain)].forEach((chip, i) => {
-      setTimeout(() => dismissChip(chip), delayMs + i * 150);
-    });
-  }
+  /* Domain → drawer mapping */
+  const DOMAIN_DRAWER = {
+    war: 'war', city: 'city', trade: 'diplomacy',
+    diplomacy: 'diplomacy', oikos: 'oikos', system: null,
+  };
 
-  function addNotifChip(domain, glyph, text, time, notifId) {
+  function addNotifChip(domain, glyph, text, time) {
     const strip = document.getElementById('gt-notif-strip');
     const chip  = document.createElement('div');
-    chip.className = 'notif-chip nc-' + domain;
-    if (notifId) chip.dataset.notifId = notifId;
-
-    chip.innerHTML = `
+    chip.className  = 'notif-chip nc-' + domain;
+    chip.title      = text;   // native tooltip — visible when chip is compressed
+    chip.innerHTML  = `
       <span class="nc-dot"></span>
       <span class="nc-glyph">${glyph}</span>
       <span class="nc-text">${text}</span>
       <span class="nc-time">${time}</span>
-      <button class="nc-x" onclick="dismissChip(this.parentElement);event.stopPropagation()">✕</button>
+      <button class="nc-x" title="Dismiss">✕</button>
     `;
-    strip.appendChild(chip); // rightmost = newest
+
+    // Left-click: open relevant drawer, then dismiss
+    chip.addEventListener('click', function(e) {
+      if (e.target.classList.contains('nc-x')) return;
+      const target = DOMAIN_DRAWER[domain];
+      if (target) openDrawer(target);
+      dismissChip(this);
+    });
+
+    // Right-click: dismiss only (no drawer)
+    chip.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      dismissChip(this);
+    });
+
+    // ✕ button
+    chip.querySelector('.nc-x').addEventListener('click', function(e) {
+      e.stopPropagation();
+      dismissChip(chip);
+    });
+
+    strip.appendChild(chip);  // rightmost = newest
     recomputeChips();
   }
 
   /* ── Demo ── */
   const DEMO_NOTIFS = [
-    { domain: 'war',       glyph: '⚔', text: 'Fientlig armé nära Tiryns',             time: 'nu' },
-    { domain: 'diplomacy', glyph: '✉', text: 'Offert — Idomeneus (Knossos)',            time: 'nu', id: 'offer-idomeneus' },
-    { domain: 'city',      glyph: '🏛', text: 'Stenväggar L2 klara — Tiryns',          time: 'nu' },
-    { domain: 'trade',     glyph: '🐂', text: 'Karavan anlänt — 200 grain',             time: 'nu' },
-    { domain: 'oikos',     glyph: '⛩', text: 'Gudarna välsignar — Kharis +8 %',       time: 'nu' },
-    { domain: 'war',       glyph: '🛡', text: 'Kohort I anlände Pylos hamn',            time: 'nu' },
-    { domain: 'diplomacy', glyph: '✉', text: 'Svar från Nestor — avböj allians',       time: 'nu' },
-    { domain: 'system',    glyph: '⚙', text: 'Ny era — Bronsåldern börjar',            time: 'nu' },
+    { domain: 'war',       glyph: '⚔', text: 'Fientlig armé nära Tiryns'          },
+    { domain: 'diplomacy', glyph: '✉', text: 'Offert — Idomeneus (Knossos)'        },
+    { domain: 'city',      glyph: '🏛', text: 'Stenväggar L2 klara — Tiryns'      },
+    { domain: 'trade',     glyph: '🐂', text: 'Karavan anlänt — 200 grain'         },
+    { domain: 'oikos',     glyph: '⛩', text: 'Gudarna välsignar — Kharis +8 %'   },
+    { domain: 'war',       glyph: '🛡', text: 'Kohort I anlände Pylos hamn'        },
+    { domain: 'diplomacy', glyph: '✉', text: 'Svar från Nestor — avböj allians'   },
+    { domain: 'system',    glyph: '⚙', text: 'Ny era — Bronsåldern börjar'        },
   ];
   let demoIdx = 0;
 
   function addDemoNotif() {
     const n = DEMO_NOTIFS[demoIdx % DEMO_NOTIFS.length];
-    addNotifChip(n.domain, n.glyph, n.text, n.time, n.id);
+    addNotifChip(n.domain, n.glyph, n.text, 'nu');
     demoIdx++;
   }
 
-  /* Seed on load */
-  setTimeout(() => addNotifChip('diplomacy', '✉', 'Offert — Idomeneus (Knossos)', 'nu', 'offer-idomeneus'), 600);
-  setTimeout(() => addNotifChip('war',       '⚔', 'Fientlig armé nära Tiryns',    'nu'), 1600);
-  setTimeout(() => addNotifChip('city',      '🏛', 'Hamn klar — Tiryns',           'nu'), 2600);
+  /* Seed on load — staggered so the slide-in animation is visible */
+  setTimeout(() => addNotifChip('diplomacy', '✉', 'Offert — Idomeneus (Knossos)',  'nu'), 500);
+  setTimeout(() => addNotifChip('war',       '⚔', 'Fientlig armé nära Tiryns',     'nu'), 1400);
+  setTimeout(() => addNotifChip('city',      '🏛', 'Hamn klar — Tiryns',            'nu'), 2300);
 
-  /* Auto-dismiss diplomacy chips when inbox items are interacted with */
-  document.querySelectorAll('.inbox-item .btn-primary, .inbox-item .btn-secondary').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const item = this.closest('.inbox-item');
-      item.style.transition = 'opacity 0.3s';
-      item.style.opacity    = '0';
-      setTimeout(() => item.remove(), 300);
-      /* dismiss the diplomacy chip (any remaining) after a beat */
-      setTimeout(() => dismissDomain('diplomacy', 0), 400);
-    });
-  });
+  /* Recompute on window resize */
+  window.addEventListener('resize', recomputeChips);
 </script>
 </body>
 </html>
