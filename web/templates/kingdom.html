@@ -60,11 +60,10 @@
       <div id="borrow-army-available" class="tr-tribute" style="margin:.2rem 0"></div>
       <div class="unit-row" style="margin-top:.4rem">
         <div><label>Hoplites</label><input id="bor-inf" type="number" min="0" value="0" class="unit-row input"></div>
-        <div><label>Hippeis</label><input id="bor-cav" type="number" min="0" value="0" class="unit-row input"></div>
+        <div><label>War Chariot</label><input id="bor-cha" type="number" min="0" value="0" class="unit-row input"></div>
         <div><label>Agema</label><input id="bor-eli" type="number" min="0" value="0" class="unit-row input"></div>
         <div><label>Hiereus</label><input id="bor-pri" type="number" min="0" value="0" class="unit-row input"></div>
         <div><label>Trireme</label><input id="bor-shi" type="number" min="0" value="0" class="unit-row input"></div>
-        <div><label>Siege</label><input id="bor-cat" type="number" min="0" value="0" class="unit-row input"></div>
       </div>
       <button class="btn-primary" onclick="borrowArmy()">Levy →</button>
     </div>
@@ -471,12 +470,11 @@ async function loadBorrowed() {
   const isBasileus = {{if eq .PlayerRole "basileus"}}true{{else}}false{{end}};
   el.innerHTML = list.map(b => {
     const units = [
-      b.infantry  ? `${b.infantry} Hoplites`  : '',
-      b.cavalry   ? `${b.cavalry} Hippeis`    : '',
+      b.infantry  ? `${b.infantry} Hoplites`    : '',
+      b.chariot   ? `${b.chariot} War Chariot`  : '',
       b.elite_infantry ? `${b.elite_infantry} Agema` : '',
-      b.catapult  ? `${b.catapult} Beläg.`   : '',
-      b.priest    ? `${b.priest} Hiereus`     : '',
-      b.ship      ? `${b.ship} Trireme`       : '',
+      b.priest    ? `${b.priest} Hiereus`       : '',
+      b.ship      ? `${b.ship} Trireme`         : '',
     ].filter(Boolean).join(' · ');
     const returnBtn = isBasileus && b.lender_settlement_id
       ? `<button class="btn-small btn-secondary" onclick="returnArmy('${b.lender_settlement_id}')">Return</button>`
@@ -510,7 +508,7 @@ async function loadBorrowMembers() {
   if (!sel) return;
   const others = _councilData.filter(m => m.player_id !== '{{.SettlementID}}');
   sel.innerHTML = '<option value="">— choose member —</option>' +
-    others.map(m => `<option value="${m.player_id}" data-inf="${m.infantry||0}" data-cav="${m.cavalry||0}">${escHtml(m.settlement_name||m.username)}</option>`).join('');
+    others.map(m => `<option value="${m.player_id}" data-inf="${m.infantry||0}" data-cha="${m.chariot||0}">${escHtml(m.settlement_name||m.username)}</option>`).join('');
 }
 
 function updateBorrowableArmy() {
@@ -528,19 +526,18 @@ async function borrowArmy() {
   const lenderPlayerID = memberSel.value;
   if (!lenderPlayerID) { showResult('borrow-result', 'Choose a Wanax', false); return; }
   const infantry = parseInt(document.getElementById('bor-inf').value)||0;
-  const cavalry  = parseInt(document.getElementById('bor-cav').value)||0;
-  const catapult = parseInt(document.getElementById('bor-cat').value)||0;
+  const chariot  = parseInt(document.getElementById('bor-cha').value)||0;
   const priest   = parseInt(document.getElementById('bor-pri').value)||0;
   const ship     = parseInt(document.getElementById('bor-shi').value)||0;
-  if (!infantry && !cavalry && !catapult && !priest && !ship) {
+  if (!infantry && !chariot && !priest && !ship) {
     showResult('borrow-result', 'Enter units to levy', false); return;
   }
   const res = await apiReq('POST',
     `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/borrow-army`,
-    {lender_player_id: lenderPlayerID, infantry, cavalry, catapult, priest, ship});
+    {lender_player_id: lenderPlayerID, infantry, chariot, priest, ship});
   if (res.ok) {
     showResult('borrow-result', '✓ Army levied', true);
-    ['bor-inf','bor-cav','bor-cat','bor-pri','bor-shi'].forEach(id => document.getElementById(id).value=0);
+    ['bor-inf','bor-cha','bor-pri','bor-shi'].forEach(id => document.getElementById(id).value=0);
     loadBorrowed();
   } else {
     const d = await res.json().catch(() => ({}));

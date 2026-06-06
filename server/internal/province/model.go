@@ -74,8 +74,7 @@ func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
 // DB-kolumnen heter `ship` för bakåtkompatibilitet med ~87 befintliga Go-refs.
 type ArmyComposition struct {
 	Infantry      int
-	Cavalry       int
-	Catapult      int
+	Chariot       int
 	Priest        int
 	Ship          int // galley — DB-kolumn: ship
 	EliteInfantry int

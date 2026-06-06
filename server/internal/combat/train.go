@@ -78,10 +78,8 @@ func unitColumn(unitType string) string {
 	switch unitType {
 	case "infantry":
 		return "infantry"
-	case "cavalry":
-		return "cavalry"
-	case "catapult":
-		return "catapult"
+	case "chariot":
+		return "chariot"
 	case "priest":
 		return "priest"
 	case "ship":

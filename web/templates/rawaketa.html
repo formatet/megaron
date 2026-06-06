@@ -59,8 +59,7 @@
       <h3>Army</h3>
       <table class="army-table">
         <tr><td><canvas class="unit-icon" data-unit="inf"  width="12" height="12"></canvas> Hoplites</td>      <td class="num">{{.Province.Army.Infantry}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="cav"  width="12" height="12"></canvas> Hippeis</td>       <td class="num">{{.Province.Army.Cavalry}}</td></tr>
-        {{if .Province.Army.Catapult}}<tr><td><canvas class="unit-icon" data-unit="cat"  width="12" height="12"></canvas> Siege</td><td class="num">{{.Province.Army.Catapult}}</td></tr>{{end}}
+        <tr><td><canvas class="unit-icon" data-unit="cha"  width="12" height="12"></canvas> War Chariot</td>   <td class="num">{{.Province.Army.Chariot}}</td></tr>
         <tr><td><canvas class="unit-icon" data-unit="pri"  width="12" height="12"></canvas> Hiereus</td>       <td class="num">{{.Province.Army.Priest}}</td></tr>
         <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Galley</td>        <td class="num">{{.Province.Army.Ship}}</td></tr>
         {{if .Province.Army.WarGalley}}<tr><td><canvas class="unit-icon" data-unit="wgal" width="12" height="12"></canvas> War Galley</td>    <td class="num">{{.Province.Army.WarGalley}}</td></tr>{{end}}
@@ -87,11 +86,11 @@
                   {{if not $hasBarracks}}disabled{{end}}>Train</button>
         </label>
         <label class="recruit-row{{if not $hasStable}} unit-unavailable{{end}}">
-          <span class="recruit-label">Hippeis</span>
+          <span class="recruit-label">War Chariot</span>
           <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 grain · 5 timber{{end}}</span>
-          <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-hippeis"{{if not $hasStable}} disabled{{end}}>
+          <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-chariot"{{if not $hasStable}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
-                  onclick="recruitUnit('cavalry', document.getElementById('rc-hippeis').value)"
+                  onclick="recruitUnit('chariot', document.getElementById('rc-chariot').value)"
                   {{if not $hasStable}}disabled{{end}}>Train</button>
         </label>
         <label class="recruit-row">
@@ -148,8 +147,8 @@
           <button class="btn-small btn-secondary" onclick="doDisband()">Disband</button>
         </label>
         <label class="recruit-row">
-          <span>Hippeis</span>
-          <input class="recruit-count" type="number" min="0" max="9999" value="0" id="db-hippeis">
+          <span>War Chariot</span>
+          <input class="recruit-count" type="number" min="0" max="9999" value="0" id="db-chariot">
         </label>
         <label class="recruit-row">
           <span>Hiereus</span>
@@ -259,19 +258,19 @@ async function recruitUnit(unitType, count) {
 
 async function doDisband() {
   const h = parseInt(document.getElementById('db-hoplites')?.value || '0');
-  const c = parseInt(document.getElementById('db-hippeis')?.value || '0');
+  const c = parseInt(document.getElementById('db-chariot')?.value || '0');
   const p = parseInt(document.getElementById('db-hiereus')?.value || '0');
   if (h + c + p === 0) { showResult('disband-result', 'enter units to disband', false); return; }
   const token = localStorage.getItem('poleia_token');
   const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/disband`, {
     method: 'POST',
     headers: {'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{})},
-    body: JSON.stringify({infantry: h, cavalry: c, priest: p})
+    body: JSON.stringify({infantry: h, chariot: c, priest: p})
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
     showResult('disband-result', `Disbanded`, true);
-    ['db-hoplites','db-hippeis','db-hiereus'].forEach(id => {
+    ['db-hoplites','db-chariot','db-hiereus'].forEach(id => {
       const el = document.getElementById(id); if (el) el.value = '0';
     });
   } else {
@@ -346,7 +345,7 @@ async function loadAffordability() {
   if (!data || !data.settlement) return;
   const canRecruit = {};
   (data.settlement.can_recruit || []).forEach(r => { canRecruit[r.unit] = r.can_recruit; });
-  const unitMap = {infantry:'hoplites', cavalry:'hippeis', priest:'hiereus', ship:'galley', war_galley:'wargalley', merchantman:'merchantman', elite_infantry:'agema'};
+  const unitMap = {infantry:'hoplites', chariot:'chariot', priest:'hiereus', ship:'galley', war_galley:'wargalley', merchantman:'merchantman', elite_infantry:'agema'};
   Object.entries(unitMap).forEach(([unit, id]) => {
     const row = document.getElementById('rc-' + id)?.closest('.recruit-row');
     if (!row) return;

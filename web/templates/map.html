@@ -807,7 +807,7 @@ function openInspect(marker) {
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marker.id}/army`).then(r => {
     if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
     r.json().then(a => {
-      const dp = (a.Infantry||0)*1 + (a.EliteInfantry||0)*2 + (a.Cavalry||0)*3;
+      const dp = (a.Infantry||0)*1 + (a.EliteInfantry||0)*2 + (a.Chariot||0)*3;
       document.getElementById('ip-army').textContent = dp > 0 ? `${dp} DP` : '—';
     });
   }).catch(() => { document.getElementById('ip-army').textContent = '—'; });
@@ -966,12 +966,11 @@ loadMap().then(() => { dirty = true; render(); });
 
 // ── March context menu ────────────────────────────────────────────────────
 const UNIT_DEFS = [
-  { key: 'infantry',       label: 'Hoplites',  apiKey: 'Infantry'      },
-  { key: 'elite_infantry', label: 'Agema',     apiKey: 'EliteInfantry' },
-  { key: 'cavalry',        label: 'Hippeis',   apiKey: 'Cavalry'       },
-  { key: 'priest',         label: 'Hiereus',   apiKey: 'Priest'        },
-  { key: 'ship',           label: 'Trireme',   apiKey: 'Ship'          },
-  { key: 'catapult',       label: 'Siege',     apiKey: 'Catapult'      },
+  { key: 'infantry',       label: 'Hoplites',    apiKey: 'Infantry'      },
+  { key: 'elite_infantry', label: 'Agema',       apiKey: 'EliteInfantry' },
+  { key: 'chariot',        label: 'War Chariot', apiKey: 'Chariot'       },
+  { key: 'priest',         label: 'Hiereus',     apiKey: 'Priest'        },
+  { key: 'ship',           label: 'Trireme',     apiKey: 'Ship'          },
 ];
 
 let marchCtxTarget = null;     // province marker (has .id) or null
@@ -1144,7 +1143,7 @@ async function openMarchCtx(target, screenX, screenY) {
   let defDP = 0;
   if (defRes && defRes.ok) {
     const defArmy = await defRes.json();
-    defDP = (defArmy.Infantry || 0) + (defArmy.Cavalry || 0) * 3
+    defDP = (defArmy.Infantry || 0) + (defArmy.Chariot || 0)*3
           + (defArmy.EliteInfantry || 0) * 2;
   }
 

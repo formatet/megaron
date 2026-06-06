@@ -42,33 +42,20 @@ func WallModifier(level int) float64 {
 }
 
 // Strength computes the raw combat strength of an army composition.
-// Elite infantry count at ×2; cavalry at ×3; catapults breach walls but add no field strength.
+// Elite infantry count at ×2; chariots at ×3.
 // Priests provide no field strength — they perform rites, not combat.
 // Naval-styrka (sjöstrid): war_galley ×3, galley(ship) ×1, merchantman ×0
 // (merchantman transporterar — nästan ingen stridskraft).
 func Strength(a province.ArmyComposition) float64 {
-	return float64(a.Infantry*1 + a.EliteInfantry*2 + a.Cavalry*3 +
+	return float64(a.Infantry*1 + a.EliteInfantry*2 + a.Chariot*3 +
 		a.WarGalley*3 + a.Ship*1)
-}
-
-// CatapultEffect reduces effective wall level based on catapults present.
-// Each catapult reduces effective wall level by 0.5.
-func CatapultEffect(catapults int, wallLevel int) int {
-	reduction := catapults / 2
-	effective := wallLevel - reduction
-	if effective < 0 {
-		return 0
-	}
-	return effective
 }
 
 // Resolve calculates the deterministic outcome of an attack.
 func Resolve(attack AttackForce, defence DefenceForce) CombatResult {
 	attackStr := Strength(attack.Army) + attack.SupportStrength
 
-	// Catapults reduce effective wall level before applying the wall modifier.
-	effectiveWalls := CatapultEffect(attack.Army.Catapult, defence.WallLevel)
-	defenceStr := (Strength(defence.Army) + defence.SupportStrength) * WallModifier(effectiveWalls)
+	defenceStr := (Strength(defence.Army) + defence.SupportStrength) * WallModifier(defence.WallLevel)
 
 	var result CombatResult
 	result.AttackStrength = attackStr

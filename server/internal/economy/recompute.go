@@ -18,10 +18,10 @@ const REF_LABOR = 100.0
 // PopCosts mirrors province/training.go:UnitSpecs.PopCost.
 // Defined here so economy stays Go-import-free upward (G1).
 // ship = galley (DB-kolumn). war_galley + merchantman = nya skepp-typer (mig 039).
+// chariot ersatte cavalry (mig 042); catapult borttagen.
 var PopCosts = map[string]int{
 	"infantry":       5,
-	"cavalry":        8,
-	"catapult":       2,
+	"chariot":        8,
 	"priest":         3,
 	"ship":           10, // galley
 	"elite_infantry": 10,
@@ -56,19 +56,18 @@ type Tx interface {
 func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {
 	// ── 1. Compute labor_pool ────────────────────────────────────────────────
 	var population int
-	var infantry, cavalry, catapult, priest, ship, eliteInfantry, warGalley, merchantman int
+	var infantry, chariot, priest, ship, eliteInfantry, warGalley, merchantman int
 	err := tx.QueryRow(ctx,
-		`SELECT population, infantry, cavalry, catapult, priest, ship, elite_infantry, war_galley, merchantman
+		`SELECT population, infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
 		 FROM settlements WHERE id = $1`,
 		settlementID,
-	).Scan(&population, &infantry, &cavalry, &catapult, &priest, &ship, &eliteInfantry, &warGalley, &merchantman)
+	).Scan(&population, &infantry, &chariot, &priest, &ship, &eliteInfantry, &warGalley, &merchantman)
 	if err != nil {
 		return fmt.Errorf("recompute: load settlement: %w", err)
 	}
 
 	homePop := infantry*PopCosts["infantry"] +
-		cavalry*PopCosts["cavalry"] +
-		catapult*PopCosts["catapult"] +
+		chariot*PopCosts["chariot"] +
 		priest*PopCosts["priest"] +
 		ship*PopCosts["ship"] +
 		eliteInfantry*PopCosts["elite_infantry"] +
@@ -81,20 +80,19 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	_ = tx.QueryRow(ctx,
 		`SELECT COALESCE(SUM(
 		     m.infantry       * $2 +
-		     m.cavalry        * $3 +
-		     m.catapult       * $4 +
-		     m.priest         * $5 +
-		     m.ship           * $6 +
-		     m.elite_infantry * $7 +
-		     m.war_galley     * $8 +
-		     m.merchantman    * $9
+		     m.chariot        * $3 +
+		     m.priest         * $4 +
+		     m.ship           * $5 +
+		     m.elite_infantry * $6 +
+		     m.war_galley     * $7 +
+		     m.merchantman    * $8
 		 ), 0)
 		 FROM marching_armies m
 		 JOIN settlements s ON s.province_id = m.origin_id
 		 WHERE s.id = $1
 		   AND m.resolved = false`,
 		settlementID,
-		PopCosts["infantry"], PopCosts["cavalry"], PopCosts["catapult"],
+		PopCosts["infantry"], PopCosts["chariot"],
 		PopCosts["priest"], PopCosts["ship"], PopCosts["elite_infantry"],
 		PopCosts["war_galley"], PopCosts["merchantman"],
 	).Scan(&transitPop)

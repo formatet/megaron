@@ -137,17 +137,17 @@ func AppendLoyaltyEvent(ctx context.Context, pool *pgxpool.Pool, store *events.S
 func checkRevolt(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) {
 	var loyalty int
 	var ownerID *uuid.UUID
-	var infantry, cavalry, catapult, priest, ship, warGalley, merchantman int
+	var infantry, chariot, priest, ship, warGalley, merchantman int
 	err := pool.QueryRow(ctx,
-		`SELECT loyalty, owner_id, infantry, cavalry, catapult, priest, ship, war_galley, merchantman
+		`SELECT loyalty, owner_id, infantry, chariot, priest, ship, war_galley, merchantman
 		 FROM settlements WHERE id = $1`,
 		settlementID,
-	).Scan(&loyalty, &ownerID, &infantry, &cavalry, &catapult, &priest, &ship, &warGalley, &merchantman)
+	).Scan(&loyalty, &ownerID, &infantry, &chariot, &priest, &ship, &warGalley, &merchantman)
 	if err != nil || loyalty > 1 {
 		return
 	}
 
-	total := infantry + cavalry + catapult + priest + ship + warGalley + merchantman
+	total := infantry + chariot + priest + ship + warGalley + merchantman
 	ownerFraction := 1.0
 	if total > 0 {
 		// For now: assume all garrison troops belong to owner; in future,

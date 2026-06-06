@@ -347,14 +347,14 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 }
 
 // applyStarvation punishes settlements where grain has hit zero: infantry and
-// cavalry each lose 5% (minimum 1 unit) per day.
+// chariots each lose 5% (minimum 1 unit) per day.
 func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 	rows, err := h.pool.Query(ctx,
 		`UPDATE settlements s SET
 		   infantry = GREATEST(0, infantry - GREATEST(1, (infantry * 0.05)::int)),
-		   cavalry  = GREATEST(0, cavalry  - GREATEST(1, (cavalry  * 0.05)::int))
+		   chariot  = GREATEST(0, chariot  - GREATEST(1, (chariot  * 0.05)::int))
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
-		   AND (s.infantry > 0 OR s.cavalry > 0)
+		   AND (s.infantry > 0 OR s.chariot > 0)
 		   AND COALESCE(
 		           (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
 		            FROM settlement_goods sg
@@ -397,9 +397,9 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 
 	punishments := []punishment{
 		{
-			"cavalry_loss",
-			"The gods have scattered your horses in the night. Cavalry has perished.",
-			`UPDATE settlements SET cavalry = GREATEST(0, cavalry - GREATEST(1, cavalry/5)) WHERE id = $1`,
+			"chariot_loss",
+			"The gods have scattered your war chariots in the night. Chariots have perished.",
+			`UPDATE settlements SET chariot = GREATEST(0, chariot - GREATEST(1, chariot/5)) WHERE id = $1`,
 		},
 		{
 			"ship_loss",

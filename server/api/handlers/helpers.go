@@ -69,8 +69,7 @@ func insufficientUnitsMsg(want, have province.ArmyComposition) string {
 		w, h int
 	}{
 		{"infantry", want.Infantry, have.Infantry},
-		{"cavalry", want.Cavalry, have.Cavalry},
-		{"catapult", want.Catapult, have.Catapult},
+		{"chariot", want.Chariot, have.Chariot},
 		{"priest", want.Priest, have.Priest},
 		{"ship", want.Ship, have.Ship},
 		{"elite_infantry", want.EliteInfantry, have.EliteInfantry},

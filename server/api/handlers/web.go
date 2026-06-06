@@ -63,11 +63,10 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 	}
 	unitNames := map[string]string{
 		"infantry":       "Hoplites",
-		"cavalry":        "Hippeis",
+		"chariot":        "War Chariot",
 		"priest":         "Hiereus",
 		"ship":           "Trireme",
 		"elite_infantry": "Agema",
-		"catapult":       "Siege",
 	}
 	funcs := template.FuncMap{
 		"formatTime": func(t time.Time) string {
@@ -268,7 +267,7 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 		s.ID,
 	).Scan(&tradeCount)
 
-	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
+	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Chariot*3
 
 	h.render(w, "megaron.html", map[string]any{
 		"WorldID":      worldID,
@@ -415,7 +414,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		SilverDeposit bool
 		CedarDeposit  bool
 	}
-	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
+	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Chariot*3
 	pv := provinceView{
 		ID:            s.ProvinceID,
 		SettlementID:  s.ID,
@@ -457,7 +456,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	// Load marching armies — join settlements so we can show the target name.
 	mrows, _ := h.pool.Query(r.Context(),
 		`SELECT ma.id, ma.target_id, COALESCE(s.name, ma.target_id::text),
-		        ma.infantry, ma.cavalry, ma.catapult, ma.priest, ma.ship, ma.intent, ma.arrives_at
+		        ma.infantry, ma.chariot, ma.priest, ma.ship, ma.intent, ma.arrives_at
 		 FROM marching_armies ma
 		 LEFT JOIN settlements s ON s.province_id = ma.target_id
 		 WHERE ma.origin_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,
@@ -469,21 +468,21 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		TargetID   uuid.UUID
 		TargetName string
 		Infantry   int
-		Cavalry    int
+		Chariot    int
 		Intent     string
 		ArrivesAt  time.Time
 	}
 	var marches []marchItem
 	for mrows.Next() {
 		var mi marchItem
-		var cat, pri, ship int
-		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Cavalry, &cat, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
+		var pri, ship int
+		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Chariot, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
 		marches = append(marches, mi)
 	}
 
 	// Load incoming armies — join through settlements for name.
 	irows, _ := h.pool.Query(r.Context(),
-		`SELECT ma.origin_id, s.name, ma.infantry+ma.cavalry+ma.catapult+ma.priest+ma.ship+ma.elite_infantry AS total, ma.intent, ma.arrives_at
+		`SELECT ma.origin_id, s.name, ma.infantry+ma.chariot+ma.priest+ma.ship+ma.elite_infantry AS total, ma.intent, ma.arrives_at
 		 FROM marching_armies ma
 		 JOIN settlements s ON s.province_id = ma.origin_id
 		 WHERE ma.target_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,
@@ -984,7 +983,7 @@ func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
 		SilverDeposit bool
 		CedarDeposit  bool
 	}
-	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Cavalry*3
+	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Chariot*3
 	pv := provinceView{
 		ID:            s.ProvinceID,
 		SettlementID:  s.ID,
@@ -1006,7 +1005,7 @@ func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
 	// Marches (outgoing).
 	mrows, _ := h.pool.Query(r.Context(),
 		`SELECT ma.id, ma.target_id, COALESCE(s2.name, ma.target_id::text),
-		        ma.infantry, ma.cavalry, ma.catapult, ma.priest, ma.ship, ma.intent, ma.arrives_at
+		        ma.infantry, ma.chariot, ma.priest, ma.ship, ma.intent, ma.arrives_at
 		 FROM marching_armies ma
 		 LEFT JOIN settlements s2 ON s2.province_id = ma.target_id
 		 WHERE ma.origin_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,
@@ -1018,21 +1017,21 @@ func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
 		TargetID   uuid.UUID
 		TargetName string
 		Infantry   int
-		Cavalry    int
+		Chariot    int
 		Intent     string
 		ArrivesAt  time.Time
 	}
 	var marches []marchItem
 	for mrows.Next() {
 		var mi marchItem
-		var cat, pri, ship int
-		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Cavalry, &cat, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
+		var pri, ship int
+		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Chariot, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
 		marches = append(marches, mi)
 	}
 
 	// Incoming armies.
 	irows, _ := h.pool.Query(r.Context(),
-		`SELECT ma.origin_id, s2.name, ma.infantry+ma.cavalry+ma.catapult+ma.priest+ma.ship+ma.elite_infantry, ma.intent, ma.arrives_at
+		`SELECT ma.origin_id, s2.name, ma.infantry+ma.chariot+ma.priest+ma.ship+ma.elite_infantry, ma.intent, ma.arrives_at
 		 FROM marching_armies ma
 		 JOIN settlements s2 ON s2.province_id = ma.origin_id
 		 WHERE ma.target_id = $1 AND ma.resolved = false ORDER BY ma.arrives_at`,

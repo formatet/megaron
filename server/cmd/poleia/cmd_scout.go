@@ -9,13 +9,13 @@ import (
 
 func scoutCmd() *cobra.Command {
 	var q, r int
-	var hoplites, hippeis int
+	var hoplites int
 
 	cmd := &cobra.Command{
 		Use:   "scout",
 		Short: "Send scouts to reveal fog-of-war at a hex",
 		Example: `  poleia scout --q 18 --r -2 --hoplites 5
-  poleia scout --q 10 --r 4 --hippeis 3`,
+  poleia scout --q 10 --r 4 --hoplites 3`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			body := map[string]any{
@@ -23,7 +23,6 @@ func scoutCmd() *cobra.Command {
 				"target_r": r,
 				"intent":   "scout",
 				"infantry": hoplites,
-				"cavalry":  hippeis,
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/march", cfg.WorldID, cfg.ProvinceID)
 			data, err := c.post(path, body)
@@ -45,7 +44,6 @@ func scoutCmd() *cobra.Command {
 	cmd.Flags().IntVar(&q, "q", 0, "hex Q coordinate (required)")
 	cmd.Flags().IntVar(&r, "r", 0, "hex R coordinate (required)")
 	cmd.Flags().IntVar(&hoplites, "hoplites", 1, "number of Hoplites")
-	cmd.Flags().IntVar(&hippeis, "hippeis", 0, "number of Hippeis")
 	_ = cmd.MarkFlagRequired("q")
 	_ = cmd.MarkFlagRequired("r")
 	return cmd
