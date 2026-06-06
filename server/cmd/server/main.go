@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -389,7 +390,19 @@ func runMigrations(dbURL string) error {
 		return fmt.Errorf("create migrator: %w", err)
 	}
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("migrate up: %w", err)
+		// Dirty state: force back to the previous clean version and retry once.
+		var dirtyErr migrate.ErrDirty
+		if errors.As(err, &dirtyErr) && dirtyErr.Version > 0 {
+			slog.Warn("dirty migration state — forcing to previous version", "version", dirtyErr.Version-1)
+			if fErr := m.Force(dirtyErr.Version - 1); fErr != nil {
+				return fmt.Errorf("force migration version: %w", fErr)
+			}
+			if err2 := m.Up(); err2 != nil && err2 != migrate.ErrNoChange {
+				return fmt.Errorf("migrate up (after force): %w", err2)
+			}
+		} else {
+			return fmt.Errorf("migrate up: %w", err)
+		}
 	}
 	slog.Info("migrations applied")
 	return nil
