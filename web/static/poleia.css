@@ -23,6 +23,25 @@
   --sea:       #2E86C1;   /* AEGEAN     — sea, join-button */
   --deep-sea:  #1B4F72;   /* DEEP_SEA   — sea text, deep water */
 
+  /* Domain accent colours — semantic game UI */
+  --accent-war:        #A23A32;
+  --accent-city:       #3E6BAA;
+  --accent-trade:      #C89A2B;
+  --accent-diplomacy:  #7A4AA5;
+  --accent-oikos:      #4E7A52;
+  --accent-system:     #6C6A68;
+
+  /* Notification chip tokens */
+  --chip-bg:              rgba(20,18,16,0.88);
+  --chip-border:          rgba(255,255,255,0.08);
+  --chip-text:            #E9E1D2;
+  --chip-shadow-war:       0 0 14px rgba(162,58,50,0.18);
+  --chip-shadow-city:      0 0 14px rgba(62,107,170,0.18);
+  --chip-shadow-trade:     0 0 14px rgba(200,154,43,0.18);
+  --chip-shadow-diplomacy: 0 0 14px rgba(122,74,165,0.18);
+  --chip-shadow-oikos:     0 0 14px rgba(78,122,82,0.18);
+  --chip-shadow-system:    0 0 14px rgba(108,106,104,0.18);
+
   --font: 'Georgia', 'Times New Roman', serif;
   --mono: 'Courier New', monospace;
 }

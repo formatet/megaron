@@ -49,54 +49,89 @@
       flex: 1;
       display: flex;
       align-items: center;
-      flex-direction: row;        /* left = oldest, right = newest (top of pile) */
-      justify-content: flex-end; /* newest anchors right */
-      gap: 4px;
+      flex-direction: row;
+      justify-content: flex-end; /* newest anchors right, oldest pushed left */
+      gap: 3px;
       padding: 0 6px;
       overflow: hidden;
       min-width: 0;
     }
 
+    /* ── Notification chip base ── */
     .notif-chip {
       display: flex;
       align-items: center;
-      gap: 5px;
-      padding: 0 8px;
+      gap: 0;
       height: 30px;
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
+      max-width: 200px;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--chip-border);
       border-left-width: 3px;
-      font-size: 0.7rem;
+      color: var(--chip-text);
+      font-size: 0.68rem;
       font-family: var(--mono);
       white-space: nowrap;
       cursor: pointer;
       flex-shrink: 0;
       position: relative;
-      animation: chipSlideIn 0.35s cubic-bezier(.22,.8,.45,1) forwards;
+      animation: chipSlideIn 0.38s cubic-bezier(.18,.85,.42,1) both;
+      /* max-width + opacity driven by JS recompute */
+      transition: max-width 0.3s ease, opacity 0.25s ease, box-shadow 0.2s ease, background 0.15s ease;
     }
-    .notif-chip:hover { border-color: var(--accent); }
-    .nc-lvl1 { border-left-color: var(--gold); }
-    .nc-lvl2 { border-left-color: var(--accent); }
-    .nc-lvl3 { border-left-color: var(--blood); }
 
-    .nc-glyph { font-size: 0.75rem; }
-    .nc-text  { color: var(--text); max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
-    .nc-time  { color: var(--text-dim); font-size: 0.6rem; }
+    /* ── Domain colours ── */
+    .nc-war       { border-left-color: var(--accent-war);       background: rgba(162,58,50,0.13);  box-shadow: var(--chip-shadow-war); }
+    .nc-city      { border-left-color: var(--accent-city);      background: rgba(62,107,170,0.13); box-shadow: var(--chip-shadow-city); }
+    .nc-trade     { border-left-color: var(--accent-trade);     background: rgba(200,154,43,0.13); box-shadow: var(--chip-shadow-trade); }
+    .nc-diplomacy { border-left-color: var(--accent-diplomacy); background: rgba(122,74,165,0.13); box-shadow: var(--chip-shadow-diplomacy); }
+    .nc-oikos     { border-left-color: var(--accent-oikos);     background: rgba(78,122,82,0.13);  box-shadow: var(--chip-shadow-oikos); }
+    .nc-system    { border-left-color: var(--accent-system);    background: rgba(108,106,104,0.13);box-shadow: var(--chip-shadow-system); }
+
+    .nc-war:hover       { background: rgba(162,58,50,0.32); }
+    .nc-city:hover      { background: rgba(62,107,170,0.32); }
+    .nc-trade:hover     { background: rgba(200,154,43,0.32); }
+    .nc-diplomacy:hover { background: rgba(122,74,165,0.32); }
+    .nc-oikos:hover     { background: rgba(78,122,82,0.32); }
+    .nc-system:hover    { background: rgba(108,106,104,0.32); }
+
+    /* Colored dot — always visible, confirms domain even when compressed */
+    .nc-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin: 0 5px 0 7px;
+    }
+    .nc-war .nc-dot       { background: var(--accent-war); }
+    .nc-city .nc-dot      { background: var(--accent-city); }
+    .nc-trade .nc-dot     { background: var(--accent-trade); }
+    .nc-diplomacy .nc-dot { background: var(--accent-diplomacy); }
+    .nc-oikos .nc-dot     { background: var(--accent-oikos); }
+    .nc-system .nc-dot    { background: var(--accent-system); }
+
+    .nc-glyph { font-size: 0.8rem; flex-shrink: 0; margin-right: 4px; }
+    .nc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; }
+    .nc-time  { font-size: 0.58rem; color: rgba(233,225,210,0.5); margin-right: 4px; flex-shrink: 0; }
     .nc-x {
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      padding: 0 0 0 4px;
-      font-size: 0.65rem;
-      line-height: 1;
+      background: none; border: none; color: rgba(233,225,210,0.4);
+      cursor: pointer; padding: 0 6px 0 2px; font-size: 0.6rem; flex-shrink: 0;
     }
-    .nc-x:hover { color: var(--accent); }
+    .nc-x:hover { color: var(--chip-text); }
 
-    /* Slide in from right, land in place */
+    /* Slide in from right edge of strip */
     @keyframes chipSlideIn {
-      from { transform: translateX(220px); opacity: 0; }
-      to   { transform: translateX(0);     opacity: 1; }
+      from { transform: translateX(240px); opacity: 0; max-width: 0; }
+      60%  { opacity: 1; }
+      to   { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Dismissal animation */
+    .notif-chip.dismissing {
+      animation: chipDismiss 0.25s ease forwards;
+    }
+    @keyframes chipDismiss {
+      to { max-width: 0; opacity: 0; padding: 0; margin: 0; border-width: 0; }
     }
 
     /* Celestial clock — right side */
@@ -1049,6 +1084,8 @@
     if (tr) tr.classList.add('active');
     document.getElementById('map-dim').classList.add('visible');
     activeDrawer = name;
+    // Auto-dismiss matching chips when diplomacy drawer opens
+    if (name === 'diplomacy') dismissDomain('diplomacy', 800);
   }
   function closeDrawer(name) {
     const el = document.getElementById('drawer-' + name);
@@ -1109,50 +1146,36 @@
     'κα\'','κβ\'','κγ\'','κδ\'','κε\'','κς\'','κζ\'','κη\'','κθ\'','λ\''];
   const MOON_PHASES = ['🌑','🌒','🌒','🌓','🌔','🌔','🌕','🌖','🌖','🌗','🌘','🌘'];
 
-  /* Known new moon reference: 2025-01-29 UTC */
   const REF_NEW_MOON = new Date('2025-01-29T12:35:00Z').getTime();
   const LUNAR_CYCLE  = 29.53058867 * 24 * 3600 * 1000;
 
   function moonPhase() {
     const age = ((Date.now() - REF_NEW_MOON) % LUNAR_CYCLE + LUNAR_CYCLE) % LUNAR_CYCLE;
-    const idx  = Math.floor(age / LUNAR_CYCLE * 12) % 12;
-    return MOON_PHASES[idx];
+    return MOON_PHASES[Math.floor(age / LUNAR_CYCLE * 12) % 12];
   }
 
-  /*
-   * Ancient calendar: day starts at sunset (18:00).
-   * "Today" in the game = day that began at the most recent 18:00.
-   * Arc: left = gryning (06:00), right = skymning (18:00)
-   *   Sun travels left→right 06:00–18:00
-   *   Moon travels right→left 18:00–06:00
-   * Arc center=(40,38) radius=34; arc endpoints (6,38) and (74,38)
-   */
   function updateCelestial() {
     const now  = new Date();
     const h    = now.getHours() + now.getMinutes() / 60;
     const isDay = h >= 6 && h < 18;
 
-    const body = document.getElementById('cel-body');
+    const body     = document.getElementById('cel-body');
     const nightTxt = document.getElementById('cel-night-txt');
-
-    // Arc geometry
     const cx = 40, cy = 38, r = 34;
 
-    let t, bodyX, bodyY, bodyColor;
+    let bodyX, bodyY, bodyColor;
     if (isDay) {
-      // Sun: 06:00 → left (6,38), 12:00 → top (40,4), 18:00 → right (74,38)
-      t = (h - 6) / 12;  // 0→1
-      const angle = Math.PI - t * Math.PI; // π→0 left→right
+      const t     = (h - 6) / 12;
+      const angle = Math.PI - t * Math.PI;
       bodyX = cx + r * Math.cos(angle);
       bodyY = cy - r * Math.sin(angle);
       bodyColor = '#F9E79F';
       body.setAttribute('r', '5');
       nightTxt.setAttribute('display', 'none');
     } else {
-      // Moon: 18:00 → right (74,38), 00:00 → top (40,4), 06:00 → left (6,38)
-      const hn = h >= 18 ? h - 18 : h + 6; // hours into night (0–12)
-      t = hn / 12;  // 0→1
-      const angle = t * Math.PI; // 0→π right→left
+      const hn    = h >= 18 ? h - 18 : h + 6;
+      const t     = hn / 12;
+      const angle = t * Math.PI;
       bodyX = cx + r * Math.cos(angle);
       bodyY = cy - r * Math.sin(angle);
       bodyColor = '#D0D8F0';
@@ -1163,75 +1186,115 @@
     body.setAttribute('cx', bodyX.toFixed(1));
     body.setAttribute('cy', bodyY.toFixed(1));
     body.setAttribute('fill', bodyColor);
-
-    // Moon phase emoji
     document.getElementById('cel-phase').textContent = isDay ? '☀' : moonPhase();
 
-    // Ancient date: game-day starts at 18:00.
-    // Days elapsed since game epoch = real days (approximate for wireframe)
-    const epoch = new Date('2026-06-01T18:00:00');
-    const msPerDay = 24 * 3600 * 1000;
-    // Shift clock back 18h so that "next day" trips at 18:00 real time
-    const shifted = new Date(now.getTime() - 18 * 3600 * 1000);
-    const daysSinceEpoch = Math.floor((shifted - epoch) / msPerDay);
-    const dayOfMonth = (daysSinceEpoch % 30) + 1;
-    const monthIdx   = Math.floor(daysSinceEpoch / 30) % 12;
-    const year       = Math.floor(daysSinceEpoch / 360) + 1;
-    const yearStr    = year === 1 ? 'Ἔτος Α\'' : 'Ἔτος ' + year;
-
+    const epoch          = new Date('2026-06-01T18:00:00');
+    const shifted        = new Date(now.getTime() - 18 * 3600 * 1000);
+    const daysSinceEpoch = Math.floor((shifted - epoch) / (24 * 3600 * 1000));
+    const dayOfMonth     = (daysSinceEpoch % 30) + 1;
+    const monthIdx       = Math.floor(daysSinceEpoch / 30) % 12;
+    const year           = Math.floor(daysSinceEpoch / 360) + 1;
     document.getElementById('cel-date').innerHTML =
-      `<strong>${GREEK_DAYS[dayOfMonth]}</strong> ${GREEK_MONTHS[monthIdx]}<br>${yearStr}`;
+      `<strong>${GREEK_DAYS[dayOfMonth]}</strong> ${GREEK_MONTHS[monthIdx]}<br>${year === 1 ? 'Ἔτος Α\'' : 'Ἔτος ' + year}`;
   }
 
   updateCelestial();
-  setInterval(updateCelestial, 60 * 1000); // update every minute
+  setInterval(updateCelestial, 60 * 1000);
 
-  /* ── Notification chips (topbar strip) ── */
-  const DEMO_NOTIFS = [
-    { lvl: 2, glyph: '✉', text: 'Handelsoffert — Idomeneus (Knossos)',  time: 'nu' },
-    { lvl: 1, glyph: '⚓', text: 'Kohort anlände — Pylos hamn',         time: 'nu' },
-    { lvl: 3, glyph: '⚔', text: 'Fientlig armé nära Tiryns',           time: 'nu' },
-    { lvl: 1, glyph: '✉', text: 'Svar från Nestor angående tribut',    time: 'nu' },
-    { lvl: 2, glyph: '⛩', text: 'Gudarna välsignar — Kharis +8 %',    time: 'nu' },
-    { lvl: 1, glyph: '🐂', text: 'Karavan anlänt — 200 grain i lager', time: 'nu' },
-  ];
-  let demoIdx = 0;
+  /* ── Notification chips ─────────────────────────────────────── */
 
-  function addNotifChip(lvl, glyph, text, time) {
+  /*
+   * MAX_WIDTHS[depth]: depth 0 = newest (rightmost, full size).
+   * Depths beyond array length get the last value.
+   */
+  const MAX_WIDTHS = [200, 160, 110, 68, 34];
+
+  function recomputeChips() {
     const strip = document.getElementById('gt-notif-strip');
+    const chips = [...strip.querySelectorAll('.notif-chip:not(.dismissing)')];
+    // chips[0] = oldest (leftmost), chips[last] = newest (rightmost)
+    chips.forEach((chip, i) => {
+      const depth  = chips.length - 1 - i; // 0 for newest, n-1 for oldest
+      const mw     = MAX_WIDTHS[Math.min(depth, MAX_WIDTHS.length - 1)];
+      const op     = Math.max(0.45, 1 - depth * 0.12);
+      chip.style.maxWidth = mw + 'px';
+      chip.style.opacity  = op;
 
-    // Evict oldest if more than 5 chips
-    const chips = strip.querySelectorAll('.notif-chip');
-    if (chips.length >= 5) {
-      chips[0].style.transition = 'opacity 0.3s, max-width 0.3s';
-      chips[0].style.opacity = '0';
-      chips[0].style.maxWidth = '0';
-      chips[0].style.padding = '0';
-      chips[0].style.overflow = 'hidden';
-      setTimeout(() => chips[0].remove(), 300);
-    }
+      // Hide inner elements based on available width
+      const textEl = chip.querySelector('.nc-text');
+      const timeEl = chip.querySelector('.nc-time');
+      const xEl    = chip.querySelector('.nc-x');
+      if (textEl) textEl.style.display = mw <= 68  ? 'none' : '';
+      if (timeEl) timeEl.style.display = mw <= 110 ? 'none' : '';
+      if (xEl)    xEl.style.display    = mw <= 110 ? 'none' : '';
+    });
+  }
 
-    const chip = document.createElement('div');
-    chip.className = `notif-chip nc-lvl${lvl}`;
+  function dismissChip(chip) {
+    chip.classList.add('dismissing');
+    chip.addEventListener('animationend', () => { chip.remove(); recomputeChips(); }, { once: true });
+  }
+
+  /* Dismiss all chips of a given domain (staggered) */
+  function dismissDomain(domain, delayMs) {
+    const strip = document.getElementById('gt-notif-strip');
+    [...strip.querySelectorAll('.nc-' + domain)].forEach((chip, i) => {
+      setTimeout(() => dismissChip(chip), delayMs + i * 150);
+    });
+  }
+
+  function addNotifChip(domain, glyph, text, time, notifId) {
+    const strip = document.getElementById('gt-notif-strip');
+    const chip  = document.createElement('div');
+    chip.className = 'notif-chip nc-' + domain;
+    if (notifId) chip.dataset.notifId = notifId;
+
     chip.innerHTML = `
+      <span class="nc-dot"></span>
       <span class="nc-glyph">${glyph}</span>
       <span class="nc-text">${text}</span>
       <span class="nc-time">${time}</span>
-      <button class="nc-x" onclick="this.parentElement.remove()">✕</button>
+      <button class="nc-x" onclick="dismissChip(this.parentElement);event.stopPropagation()">✕</button>
     `;
-    // Append as rightmost (newest/top of pile)
-    strip.appendChild(chip);
+    strip.appendChild(chip); // rightmost = newest
+    recomputeChips();
   }
+
+  /* ── Demo ── */
+  const DEMO_NOTIFS = [
+    { domain: 'war',       glyph: '⚔', text: 'Fientlig armé nära Tiryns',             time: 'nu' },
+    { domain: 'diplomacy', glyph: '✉', text: 'Offert — Idomeneus (Knossos)',            time: 'nu', id: 'offer-idomeneus' },
+    { domain: 'city',      glyph: '🏛', text: 'Stenväggar L2 klara — Tiryns',          time: 'nu' },
+    { domain: 'trade',     glyph: '🐂', text: 'Karavan anlänt — 200 grain',             time: 'nu' },
+    { domain: 'oikos',     glyph: '⛩', text: 'Gudarna välsignar — Kharis +8 %',       time: 'nu' },
+    { domain: 'war',       glyph: '🛡', text: 'Kohort I anlände Pylos hamn',            time: 'nu' },
+    { domain: 'diplomacy', glyph: '✉', text: 'Svar från Nestor — avböj allians',       time: 'nu' },
+    { domain: 'system',    glyph: '⚙', text: 'Ny era — Bronsåldern börjar',            time: 'nu' },
+  ];
+  let demoIdx = 0;
 
   function addDemoNotif() {
     const n = DEMO_NOTIFS[demoIdx % DEMO_NOTIFS.length];
-    addNotifChip(n.lvl, n.glyph, n.text, n.time);
+    addNotifChip(n.domain, n.glyph, n.text, n.time, n.id);
     demoIdx++;
   }
 
-  // Seed two notifications on load after short delays
-  setTimeout(() => addNotifChip(2, '✉', 'Handelsoffert — Idomeneus (Knossos)', 'nu'), 800);
-  setTimeout(() => addNotifChip(3, '⚔', 'Fientlig armé nära Tiryns', 'nu'), 2200);
+  /* Seed on load */
+  setTimeout(() => addNotifChip('diplomacy', '✉', 'Offert — Idomeneus (Knossos)', 'nu', 'offer-idomeneus'), 600);
+  setTimeout(() => addNotifChip('war',       '⚔', 'Fientlig armé nära Tiryns',    'nu'), 1600);
+  setTimeout(() => addNotifChip('city',      '🏛', 'Hamn klar — Tiryns',           'nu'), 2600);
+
+  /* Auto-dismiss diplomacy chips when inbox items are interacted with */
+  document.querySelectorAll('.inbox-item .btn-primary, .inbox-item .btn-secondary').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const item = this.closest('.inbox-item');
+      item.style.transition = 'opacity 0.3s';
+      item.style.opacity    = '0';
+      setTimeout(() => item.remove(), 300);
+      /* dismiss the diplomacy chip (any remaining) after a beat */
+      setTimeout(() => dismissDomain('diplomacy', 0), 400);
+    });
+  });
 </script>
 </body>
 </html>
