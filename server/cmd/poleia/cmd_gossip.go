@@ -93,9 +93,9 @@ func messengerCmd() *cobra.Command {
 			}
 			if wantGood != "" && wantQty > 0 && offerSilver > 0 {
 				body["trade_offer"] = map[string]any{
-					"want_good":  wantGood,
-					"want_qty":   wantQty,
-					"offer_gold": offerSilver,
+					"want_good":    wantGood,
+					"want_qty":     wantQty,
+					"offer_silver": offerSilver,
 				}
 			}
 
