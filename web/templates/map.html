@@ -497,8 +497,11 @@ function hexPath(ctx, pts) {
 
 function fillHex(ctx, pts, c0, c1, seed) {
   hexPath(ctx, pts);
-  ctx.fillStyle = (seed & 1) ? c0 : c1;
+  ctx.fillStyle = c0;
   ctx.fill();
+  ctx.strokeStyle = c0;
+  ctx.lineWidth = 1;
+  ctx.stroke();
 }
 
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
@@ -1566,6 +1569,17 @@ document.addEventListener('keydown', e => {
 // Drawer content loaders — fetch live data from JSON API on open
 async function loadDrawerContent(name) {
   const capital = provinceData.find(p => p.own && p.is_capital);
+  // Get terrain from tileData (not in provinceData)
+  const capitalTile = capital ? tileData.find(t => t.q === capital.q && t.r === capital.r) : null;
+  const terrainLabel = capitalTile
+    ? capitalTile.terrain.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    : '—';
+
+  // Update drawer title dynamically for city
+  if (name === 'city' && capital) {
+    const titleEl = document.querySelector('#drawer-city .drawer-title');
+    if (titleEl) titleEl.textContent = `City — ${capital.name}`;
+  }
 
   if (name === 'city') {
     const body = document.getElementById('city-body');
@@ -1574,32 +1588,57 @@ async function loadDrawerContent(name) {
       return;
     }
     body.innerHTML = `
-      <div class="dsec">
-        <div class="dsec-title">${capital.name}</div>
-        <div class="stat-row"><span class="sr-label">Terrain</span><span class="sr-val">${capital.terrain || '—'}</span></div>
-        <div class="stat-row"><span class="sr-label">Walls</span><span class="sr-val">${'▓'.repeat(capital.walls||0)}${'░'.repeat(Math.max(0,3-(capital.walls||0)))}</span></div>
-        <div class="stat-row"><span class="sr-label">Culture</span><span class="sr-val">${capital.culture || '—'}</span></div>
+      <div class="drawer-tabs">
+        <button class="dtab active">Produktion</button>
+        <button class="dtab">Byggnader</button>
+        <button class="dtab">Garnison</button>
+        <button class="dtab">Catchment</button>
       </div>
-      <div class="dsec">
-        <div class="dsec-title">Goods & Production</div>
-        <div id="city-goods-loading" class="loading" style="font-size:.8rem">Loading…</div>
-      </div>
-      <div class="dsec">
-        <a class="obj-cta" href="/world/${WORLD_ID}/" style="display:block;text-align:center;padding:.4rem;margin-top:.3rem">
+      <div id="city-tab-content" style="padding:.8rem">
+        <div class="dsec">
+          <div class="dsec-title">Produktion</div>
+          <div class="stat-row"><span class="sr-label">Population</span><span id="city-pop" class="sr-val">…</span></div>
+          <div class="stat-row"><span class="sr-label">Arbetspool</span><span id="city-labor" class="sr-val">…</span></div>
+          <div class="stat-row"><span class="sr-label">Idle</span><span id="city-idle" class="sr-val">…</span></div>
+        </div>
+        <div class="dsec">
+          <div class="dsec-title">Varor · Produktion</div>
+          <div id="city-prod-loading" class="loading" style="font-size:.8rem">Loading…</div>
+        </div>
+        <a class="obj-cta" href="/world/${WORLD_ID}/" style="display:block;text-align:center;padding:.4rem;margin-top:.5rem">
           Full City View →
         </a>
       </div>`;
-    // Async: fetch goods
+
+    // Wire up tabs (stub — only Produktion tab has content in Sprint 2)
+    body.querySelectorAll('.dtab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        body.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
     try {
       const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/goods`);
       if (r.ok) {
         const goods = await r.json();
-        const gl = document.getElementById('city-goods-loading');
+        // labor_pool + idle_citizens come on every row; take from silver row (always present)
+        const anyRow = goods[0];
+        if (anyRow) {
+          const popEl = document.getElementById('city-pop');
+          const labEl = document.getElementById('city-labor');
+          const idleEl = document.getElementById('city-idle');
+          // labor_pool is exposed on the goods rows
+          if (popEl) popEl.textContent = anyRow.labor_pool !== undefined ? anyRow.labor_pool : '—';
+          if (labEl) labEl.textContent = anyRow.labor_pool !== undefined ? anyRow.labor_pool : '—';
+          if (idleEl) idleEl.textContent = anyRow.idle_citizens !== undefined ? anyRow.idle_citizens : '—';
+        }
+        const gl = document.getElementById('city-prod-loading');
         if (!gl) return;
-        const producible = goods.filter(g => g.producible || g.amount > 0);
-        if (!producible.length) { gl.textContent = 'No production data.'; return; }
+        const producible = goods.filter(g => g.key !== 'silver' && (g.producible || g.rate_per_min > 0));
+        if (!producible.length) { gl.textContent = 'No production yet.'; return; }
         gl.outerHTML = `<table class="goods-mini">${
-          producible.map(g => `<tr><td>${g.good_key}</td><td>${g.amount !== undefined ? Math.floor(g.amount) : '—'}</td></tr>`).join('')
+          producible.map(g => `<tr><td>${g.name || g.key}</td><td style="color:var(--safe)">+${g.rate_per_min.toFixed(1)}/m</td></tr>`).join('')
         }</table>`;
       }
     } catch (_) {}
@@ -1670,20 +1709,20 @@ async function loadDrawerContent(name) {
       const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/goods`);
       if (r.ok) {
         const goods = await r.json();
-        const silver = goods.find(g => g.good_key === 'silver');
-        const others = goods.filter(g => g.good_key !== 'silver' && (g.amount > 0 || g.producible));
+        const silver = goods.find(g => g.key === 'silver');
+        const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible));
         body.innerHTML = `
           <div class="silver-balance">
             <div>
               <div class="sb-label">Silver</div>
               <div class="sb-val">${silver ? fmtSilver(silver.amount) : '0 shekel'}</div>
             </div>
-            ${silver && silver.rate_per_minute ? `<div class="sb-rate">+${silver.rate_per_minute.toFixed(2)}/m</div>` : ''}
+            ${silver && silver.rate_per_min ? `<div class="sb-rate">+${silver.rate_per_min.toFixed(2)}/m</div>` : ''}
           </div>
           <div class="dsec">
             <div class="dsec-title">Warehouse</div>
             <table class="goods-mini">
-              ${others.map(g => `<tr><td>${g.good_key}</td><td>${Math.floor(g.amount||0)}</td></tr>`).join('')}
+              ${others.map(g => `<tr><td>${g.name || g.key}</td><td>${Math.floor(g.amount||0)}</td></tr>`).join('')}
             </table>
           </div>
           <div class="dsec">
