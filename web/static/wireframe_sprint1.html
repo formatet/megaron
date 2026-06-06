@@ -20,64 +20,120 @@
     /* ── Game top bar ─────────────────────────────────────────── */
     .game-topbar {
       display: flex;
-      align-items: center;
-      height: 36px;
+      align-items: stretch;
+      height: 48px;
       background: var(--bg-panel);
       border-bottom: 2px solid var(--border);
       flex-shrink: 0;
       z-index: 50;
-      gap: 0;
-    }
-    .gt-logo {
-      padding: 0 1rem;
-      font-family: var(--mono);
-      font-size: 0.8rem;
-      letter-spacing: 0.2em;
-      color: var(--accent);
-      text-transform: uppercase;
-      border-right: 1px solid var(--border);
-      height: 100%;
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-    }
-    .gt-resources {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      flex: 1;
       overflow: hidden;
     }
-    .gt-res {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0 10px;
+
+    /* Logo */
+    .gt-logo {
+      padding: 0 1rem;
+      font-family: 'Georgia', serif;
+      font-size: 1rem;
+      letter-spacing: 0.18em;
+      color: var(--accent);
       border-right: 1px solid var(--border);
-      height: 100%;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .gtr-name { font-size: 7px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-family: var(--mono); }
-    .gtr-val  { font-size: 12px; font-weight: bold; color: var(--accent); font-family: var(--mono); }
-    .gtr-rate { font-size: 8px; color: var(--safe); font-family: var(--mono); }
-    .gt-right {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0 0.8rem;
       flex-shrink: 0;
+      white-space: nowrap;
+      text-shadow: 0 0 12px rgba(192,57,43,0.3);
     }
-    .gt-world { font-size: 0.7rem; color: var(--text-dim); font-family: var(--mono); }
-    .gt-era   { font-size: 0.7rem; color: var(--gold); font-family: var(--mono); }
+
+    /* Notification strip — spans the middle */
+    .gt-notif-strip {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      flex-direction: row;        /* left = oldest, right = newest (top of pile) */
+      justify-content: flex-end; /* newest anchors right */
+      gap: 4px;
+      padding: 0 6px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .notif-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 8px;
+      height: 30px;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+      position: relative;
+      animation: chipSlideIn 0.35s cubic-bezier(.22,.8,.45,1) forwards;
+    }
+    .notif-chip:hover { border-color: var(--accent); }
+    .nc-lvl1 { border-left-color: var(--gold); }
+    .nc-lvl2 { border-left-color: var(--accent); }
+    .nc-lvl3 { border-left-color: var(--blood); }
+
+    .nc-glyph { font-size: 0.75rem; }
+    .nc-text  { color: var(--text); max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
+    .nc-time  { color: var(--text-dim); font-size: 0.6rem; }
+    .nc-x {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 0 0 0 4px;
+      font-size: 0.65rem;
+      line-height: 1;
+    }
+    .nc-x:hover { color: var(--accent); }
+
+    /* Slide in from right, land in place */
+    @keyframes chipSlideIn {
+      from { transform: translateX(220px); opacity: 0; }
+      to   { transform: translateX(0);     opacity: 1; }
+    }
+
+    /* Celestial clock — right side */
+    .gt-celestial {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px 0 8px;
+      border-left: 1px solid var(--border);
+      flex-shrink: 0;
+      cursor: default;
+    }
+    .cel-arc-wrap { position: relative; width: 80px; height: 44px; flex-shrink: 0; }
+    #cel-svg { position: absolute; top: 0; left: 0; }
+
+    .cel-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1px;
+    }
+    .cel-phase { font-size: 1rem; line-height: 1; }
+    .cel-date  { font-family: 'Georgia', serif; font-size: 0.62rem; color: var(--text-dim); white-space: nowrap; }
+    .cel-date strong { color: var(--gold); font-weight: normal; }
+
+    /* Search button — tucked in celestial area */
     .gt-search-btn {
       background: none;
       border: 1px solid var(--border);
       color: var(--text-dim);
       padding: 0.15rem 0.5rem;
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       cursor: pointer;
+      flex-shrink: 0;
+      margin-left: 4px;
+      align-self: center;
     }
     .gt-search-btn:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -108,7 +164,6 @@
       user-select: none;
       letter-spacing: 0.5rem;
     }
-    /* Simulated hex tiles */
     .hex-tiles {
       position: absolute;
       inset: 0;
@@ -130,48 +185,6 @@
     .ms-ally  { border-color: var(--safe); background: rgba(212,172,13,0.2); }
     .ms-enemy { border-color: var(--blood); background: rgba(146,43,33,0.2); }
 
-    /* Notification scroll — top-left overlay */
-    .notif-scroll {
-      position: absolute;
-      top: 0.8rem;
-      left: 0.8rem;
-      width: 260px;
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      z-index: 100;
-      pointer-events: none;
-    }
-    .notif-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--gold);
-      padding: 0.35rem 0.6rem;
-      font-size: 0.76rem;
-      box-shadow: 2px 2px 10px rgba(0,0,0,0.7);
-      pointer-events: all;
-      cursor: pointer;
-      position: relative;
-    }
-    .notif-card:hover { border-color: var(--accent); }
-    .notif-card.lvl2 { border-left-color: var(--accent); }
-    .notif-card.lvl3 { border-left-color: var(--blood); }
-    .nc-lvl  { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--mono); color: var(--text-dim); }
-    .nc-text { color: var(--text); font-style: italic; margin: 0.1rem 0; line-height: 1.3; }
-    .nc-time { font-size: 0.62rem; color: var(--text-dim); font-family: var(--mono); }
-    .nc-dismiss {
-      position: absolute;
-      top: 0.2rem;
-      right: 0.3rem;
-      background: none;
-      border: none;
-      color: var(--text-dim);
-      cursor: pointer;
-      font-size: 0.65rem;
-      line-height: 1;
-    }
-    .nc-dismiss:hover { color: var(--accent); }
-
     /* No-province card */
     .no-province-card {
       position: absolute;
@@ -188,6 +201,18 @@
     .no-province-card.visible { display: block; }
     .npc-title { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.3rem; }
     .npc-text { font-size: 0.78rem; color: var(--text); margin-bottom: 0.6rem; line-height: 1.4; }
+
+    /* Map dim behind open drawer */
+    .map-dim {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.2);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s;
+      z-index: 5;
+    }
+    .map-dim.visible { opacity: 1; }
 
     /* ── Bottom nav ───────────────────────────────────────────── */
     .game-nav {
@@ -219,7 +244,7 @@
     }
     .win-trigger:last-child { border-right: none; }
     .win-trigger:hover { background: var(--bg-raised); color: var(--text); }
-    .win-trigger.active { color: var(--accent); background: var(--bg-raised); border-bottom: none; }
+    .win-trigger.active { color: var(--accent); background: var(--bg-raised); }
     .win-trigger.active::after {
       content: '';
       position: absolute;
@@ -244,7 +269,7 @@
     /* ── Drawer ───────────────────────────────────────────────── */
     .drawer {
       position: fixed;
-      top: 36px;
+      top: 48px;
       right: 0;
       bottom: 46px;
       width: 420px;
@@ -435,17 +460,19 @@
     .rite-name { color: var(--text); }
     .rite-cost { font-family: var(--mono); font-size: 0.7rem; color: var(--text-dim); }
 
-    /* ── Map dim overlay (behind open drawer) ─────────────────── */
-    .map-dim {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.2);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.18s;
-      z-index: 5;
+    /* Economy: silver balance */
+    .silver-balance {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.5rem 0.6rem;
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      margin-bottom: 0.6rem;
     }
-    .map-dim.visible { opacity: 1; }
+    .sb-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-family: var(--mono); }
+    .sb-val   { font-size: 1.1rem; font-family: var(--mono); color: var(--gold); }
+    .sb-rate  { font-size: 0.7rem; color: var(--safe); font-family: var(--mono); }
 
     /* ── Search overlay ───────────────────────────────────────── */
     .search-overlay {
@@ -524,7 +551,7 @@
       background: var(--bg);
     }
 
-    /* ── Role-variant toggle (post-MVP preview) ──────────────── */
+    /* ── Role-variant toggle ──────────────────────────────────── */
     .role-toggle-bar {
       position: fixed;
       bottom: 54px;
@@ -545,8 +572,6 @@
       cursor: pointer;
     }
     .role-btn.active { background: var(--accent); color: var(--bg-raised); border-color: var(--border-in); }
-
-    /* Role-gated trigger dim */
     .win-trigger.role-locked { opacity: 0.4; }
     .win-trigger.role-locked::before {
       content: '🔒';
@@ -556,40 +581,34 @@
       font-size: 0.55rem;
     }
 
-    /* ── Wireframe annotation bar ─────────────────────────────── */
+    /* ── Demo trigger (wireframe only) ───────────────────────── */
     .wf-bar {
       position: fixed;
       bottom: 54px;
       left: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      z-index: 300;
+    }
+    .wf-label {
       background: rgba(0,0,0,0.85);
       border: 1px solid var(--gold);
       color: var(--gold);
       padding: 0.25rem 0.6rem;
       font-family: var(--mono);
       font-size: 0.62rem;
-      letter-spacing: 0.05em;
-      z-index: 300;
     }
-
-    /* ── Economy drawer ──────────────────────────────────────── */
-    .silver-balance {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 0.5rem 0.6rem;
-      background: var(--bg-raised);
+    .wf-notif-btn {
+      background: rgba(0,0,0,0.85);
       border: 1px solid var(--border);
-      margin-bottom: 0.6rem;
+      color: var(--text-dim);
+      padding: 0.25rem 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      cursor: pointer;
     }
-    .sb-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-family: var(--mono); }
-    .sb-val   { font-size: 1.1rem; font-family: var(--mono); color: var(--gold); }
-    .sb-rate  { font-size: 0.7rem; color: var(--safe); font-family: var(--mono); }
-
-    /* Catchment info */
-    .catchment-row { display: flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; padding: 0.15rem 0; }
-    .cr-terrain { color: var(--text-dim); font-family: var(--mono); font-size: 0.7rem; }
-    .cr-good { color: var(--text); flex: 1; }
-    .cr-flow { color: var(--safe); font-family: var(--mono); font-size: 0.7rem; }
+    .wf-notif-btn:hover { border-color: var(--accent); color: var(--accent); }
   </style>
 </head>
 <body>
@@ -598,20 +617,43 @@
 
   <!-- ── Game top bar ── -->
   <div class="game-topbar">
-    <div class="gt-logo">MEGARON</div>
-    <div class="gt-resources">
-      <div class="gt-res"><div><div class="gtr-name">Silver</div><div class="gtr-val">340</div></div><div class="gtr-rate">+2.4/m</div></div>
-      <div class="gt-res"><div><div class="gtr-name">Grain</div><div class="gtr-val">1 820</div></div><div class="gtr-rate">+12/m</div></div>
-      <div class="gt-res"><div><div class="gtr-name">Timber</div><div class="gtr-val">640</div></div><div class="gtr-rate">+4/m</div></div>
-      <div class="gt-res"><div><div class="gtr-name">Copper</div><div class="gtr-val">210</div></div><div class="gtr-rate">+1.5/m</div></div>
-      <div class="gt-res"><div><div class="gtr-name">Tin</div><div class="gtr-val">88</div></div><div class="gtr-rate">+0.8/m</div></div>
-      <div class="gt-res"><div><div class="gtr-name">Bronze</div><div class="gtr-val">42</div></div><div class="gtr-rate">+0/m</div></div>
-    </div>
-    <div class="gt-right">
-      <span class="gt-world">Thalassa-1</span>
-      <span class="gt-era">Era I · ✦ 12</span>
+
+    <!-- Logo: ΜΕΓΑΡΟΝ in Greek letterforms -->
+    <div class="gt-logo">ΜΕΓΑΡΟΝ</div>
+
+    <!-- Notification strip: chips slide in from right, newest = rightmost -->
+    <div class="gt-notif-strip" id="gt-notif-strip"></div>
+
+    <!-- Celestial clock -->
+    <div class="gt-celestial">
+      <div class="cel-arc-wrap">
+        <svg id="cel-svg" viewBox="0 0 80 44" width="80" height="44">
+          <!-- Horizon line -->
+          <line x1="2" y1="38" x2="78" y2="38" stroke="#333322" stroke-width="1"/>
+          <!-- Arc dashed path: left=gryning(06:00) top=middag(12:00)/midnatt(00:00) right=skymning(18:00) -->
+          <path d="M 6 38 A 34 34 0 0 1 74 38"
+                fill="none" stroke="#2a2a1a" stroke-width="1" stroke-dasharray="3,4"/>
+          <!-- Dawn label -->
+          <text x="2" y="44" font-size="5" fill="#443322" font-family="monospace">GR</text>
+          <!-- Dusk label -->
+          <text x="60" y="44" font-size="5" fill="#443322" font-family="monospace">SK</text>
+          <!-- Celestial body (sun or moon) -->
+          <circle id="cel-body" cx="40" cy="4" r="5" fill="#F9E79F"/>
+          <!-- Night indicator (hidden by default) -->
+          <text id="cel-night-txt" x="30" y="22" font-size="8" fill="rgba(200,200,255,0.15)"
+                font-family="serif" display="none">☽</text>
+        </svg>
+      </div>
+      <div class="cel-info">
+        <div class="cel-phase" id="cel-phase">🌔</div>
+        <div class="cel-date" id="cel-date">
+          <strong>γ'</strong> Θαργηλιών<br>
+          Ἔτος Α'
+        </div>
+      </div>
       <button class="gt-search-btn" onclick="toggleSearch()">⌕ Sök</button>
     </div>
+
   </div>
 
   <!-- ── Map canvas ── -->
@@ -620,67 +662,41 @@
     <div class="hex-tiles"></div>
     <div class="map-placeholder">⬡</div>
 
-    <!-- Simulated settlements on map -->
-    <div class="map-settlement ms-own" style="top:45%;left:38%" title="Tiryns (din)"></div>
-    <div class="map-settlement ms-ally" style="top:38%;left:52%" title="Pylos (allierad)"></div>
+    <!-- Simulated settlements -->
+    <div class="map-settlement ms-own"   style="top:45%;left:38%" title="Tiryns (din)"></div>
+    <div class="map-settlement ms-ally"  style="top:38%;left:52%" title="Pylos (allierad)"></div>
     <div class="map-settlement ms-enemy" style="top:55%;left:60%" title="Gezer (fiende)"></div>
 
     <!-- Map dim -->
     <div class="map-dim" id="map-dim"></div>
 
-    <!-- Notification scroll -->
-    <div class="notif-scroll">
-      <div class="notif-card lvl2">
-        <button class="nc-dismiss" onclick="this.parentElement.remove()">✕</button>
-        <div class="nc-lvl">Budbärare</div>
-        <div class="nc-text">"En budbärare från Pylos bär ett brev — en handelsoffert."</div>
-        <div class="nc-time">nu · 09:41</div>
-      </div>
-      <div class="notif-card lvl1">
-        <button class="nc-dismiss" onclick="this.parentElement.remove()">✕</button>
-        <div class="nc-lvl">Produktion</div>
-        <div class="nc-text">"Lager av spannmål är full. Bönder vilar."</div>
-        <div class="nc-time">6 min sedan</div>
-      </div>
-      <div class="notif-card lvl3">
-        <button class="nc-dismiss" onclick="this.parentElement.remove()">✕</button>
-        <div class="nc-lvl">Militärt</div>
-        <div class="nc-text">"En fientlig armé marscherar mot Tiryns."</div>
-        <div class="nc-time">12 min sedan</div>
-      </div>
-    </div>
-
     <!-- No-province card (edge case) -->
     <div class="no-province-card" id="no-province-card">
       <div class="npc-title">Välj din startprovins</div>
       <div class="npc-text">Klicka på en ledig hex på kartan för att grunda ditt första megaron.</div>
-      <button class="btn-small btn-primary" onclick="document.getElementById('no-province-card').classList.remove('visible')">Förstå</button>
+      <button class="btn-small btn-primary"
+              onclick="document.getElementById('no-province-card').classList.remove('visible')">Förstå</button>
     </div>
   </div>
 
   <!-- ── Bottom nav ── -->
   <nav class="game-nav">
-    <div class="win-trigger" id="trig-city" onclick="toggleDrawer('city')">
-      <span class="wt-glyph">🏛</span>
-      City
+    <div class="win-trigger" id="trig-city"      onclick="toggleDrawer('city')">
+      <span class="wt-glyph">🏛</span>City
     </div>
-    <div class="win-trigger" id="trig-war" onclick="toggleDrawer('war')">
-      <span class="wt-glyph">⚔</span>
-      War
+    <div class="win-trigger" id="trig-war"       onclick="toggleDrawer('war')">
+      <span class="wt-glyph">⚔</span>War
       <span class="wt-badge">1</span>
     </div>
     <div class="win-trigger" id="trig-diplomacy" onclick="toggleDrawer('diplomacy')">
-      <span class="wt-glyph">✉</span>
-      Diplomacy
+      <span class="wt-glyph">✉</span>Diplomacy
       <span class="wt-badge">2</span>
     </div>
-    <div class="win-trigger" id="trig-economy" onclick="toggleDrawer('economy')">
-      <span class="wt-glyph">⚖</span>
-      Economy
+    <div class="win-trigger" id="trig-economy"   onclick="toggleDrawer('economy')">
+      <span class="wt-glyph">⚖</span>Economy
     </div>
-    <div class="win-trigger" id="trig-oikos" onclick="toggleDrawer('oikos')">
-      <span class="wt-glyph">⛩</span>
-      Oikos
+    <div class="win-trigger" id="trig-oikos"     onclick="toggleDrawer('oikos')">
+      <span class="wt-glyph">⛩</span>Oikos
     </div>
   </nav>
 
@@ -699,20 +715,16 @@
     <button class="dtab">Catchment</button>
   </div>
   <div class="drawer-body">
-    <!-- Settlement switcher -->
     <div class="sett-strip">
       <div class="sett-chip active">Tiryns</div>
       <div class="sett-chip">Utpost I</div>
     </div>
-
-    <!-- Produktion-flik -->
     <div class="dsec">
       <div class="dsec-title">Produktion</div>
       <div class="stat-row"><span class="sr-label">Population</span><span><span class="sr-val">480</span><span class="sr-rate"> +2/dag</span></span></div>
       <div class="stat-row"><span class="sr-label">Arbetspool</span><span class="sr-val">320</span></div>
       <div class="stat-row"><span class="sr-label">Idle</span><span class="sr-val">40</span></div>
     </div>
-
     <div class="dsec">
       <div class="dsec-title">Varor · produktion</div>
       <table class="goods-mini">
@@ -723,8 +735,6 @@
         <tr><td>Brons</td><td>+0/m (gjuteri)</td></tr>
       </table>
     </div>
-
-    <!-- Objekt-kort: Kategori A — Egen stad -->
     <div class="dsec">
       <div class="dsec-title">Objekt-kort A — Stad (exempelvy)</div>
       <div class="obj-card">
@@ -739,8 +749,6 @@
           <button class="obj-cta">Öppna</button>
         </div>
       </div>
-
-      <!-- Kategori A — Allierad -->
       <div class="obj-card">
         <div class="obj-icon">🏛</div>
         <div class="obj-info">
@@ -753,13 +761,11 @@
           <button class="obj-cta">Budbärare</button>
         </div>
       </div>
-
-      <!-- Kategori A — Fiende -->
       <div class="obj-card">
         <div class="obj-icon">🏛</div>
         <div class="obj-info">
           <div class="obj-name">Gezer</div>
-          <div class="obj-sub">Hills · Terrain</div>
+          <div class="obj-sub">Hills · Okänt</div>
           <div class="obj-stats">Okänt</div>
         </div>
         <div class="obj-right">
@@ -780,8 +786,6 @@
   <div class="drawer-body">
     <div class="dsec">
       <div class="dsec-title">Aktiva marscher</div>
-
-      <!-- Kategori B — Armé (marcherar) -->
       <div class="obj-card">
         <div class="obj-icon">⚔</div>
         <div class="obj-info">
@@ -794,8 +798,6 @@
           <button class="obj-cta">Ny order</button>
         </div>
       </div>
-
-      <!-- Kategori B — Budbärare -->
       <div class="obj-card">
         <div class="obj-icon">✉</div>
         <div class="obj-info">
@@ -808,34 +810,14 @@
         </div>
       </div>
     </div>
-
     <div class="dsec">
       <div class="dsec-title">Rekrytera</div>
-      <div class="rec-row">
-        <span class="rec-name">Infanteri</span>
-        <span class="rec-cost">10 grain · 0 pop</span>
-        <input class="rec-input" type="number" value="0" min="0">
-      </div>
-      <div class="rec-row">
-        <span class="rec-name">War Chariot</span>
-        <span class="rec-cost">30 grain · 4 bronze · 2 horses</span>
-        <input class="rec-input" type="number" value="0" min="0">
-      </div>
-      <div class="rec-row">
-        <span class="rec-name">Elite Infantry</span>
-        <span class="rec-cost">20 grain · 2 bronze</span>
-        <input class="rec-input" type="number" value="0" min="0">
-      </div>
-      <div class="rec-row">
-        <span class="rec-name">Präst</span>
-        <span class="rec-cost">5 grain · 10 silver</span>
-        <input class="rec-input" type="number" value="0" min="0">
-      </div>
-      <div style="margin-top:0.5rem">
-        <button class="btn-small btn-primary">Rekrytera</button>
-      </div>
+      <div class="rec-row"><span class="rec-name">Infanteri</span><span class="rec-cost">10 grain</span><input class="rec-input" type="number" value="0" min="0"></div>
+      <div class="rec-row"><span class="rec-name">War Chariot</span><span class="rec-cost">30 grain · 4 bronze</span><input class="rec-input" type="number" value="0" min="0"></div>
+      <div class="rec-row"><span class="rec-name">Elite Infantry</span><span class="rec-cost">20 grain · 2 bronze</span><input class="rec-input" type="number" value="0" min="0"></div>
+      <div class="rec-row"><span class="rec-name">Präst</span><span class="rec-cost">5 grain · 10 silver</span><input class="rec-input" type="number" value="0" min="0"></div>
+      <div style="margin-top:0.5rem"><button class="btn-small btn-primary">Rekrytera</button></div>
     </div>
-
     <div class="dsec">
       <div class="dsec-title">Garnison</div>
       <div class="stat-row"><span class="sr-label">Infanteri</span><span class="sr-val">40</span></div>
@@ -876,10 +858,8 @@
         </div>
       </div>
     </div>
-
     <div class="dsec">
-      <div class="dsec-title">Budbärare i transit (utbox)</div>
-      <!-- Kategori B — Budbärare (detaljkort) -->
+      <div class="dsec-title">Budbärare i transit</div>
       <div class="obj-card">
         <div class="obj-icon">✉</div>
         <div class="obj-info">
@@ -903,13 +883,9 @@
   </div>
   <div class="drawer-body">
     <div class="silver-balance">
-      <div>
-        <div class="sb-label">Silver</div>
-        <div class="sb-val">340 shekel</div>
-      </div>
+      <div><div class="sb-label">Silver</div><div class="sb-val">340 shekel</div></div>
       <div class="sb-rate">+2.4/m</div>
     </div>
-
     <div class="dsec">
       <div class="dsec-title">Varulager — Tiryns</div>
       <table class="goods-mini">
@@ -925,9 +901,8 @@
         <tr><td>Cedar</td><td>0</td></tr>
       </table>
     </div>
-
     <div class="dsec">
-      <div class="dsec-title">Interna karavaner (logistik)</div>
+      <div class="dsec-title">Interna karavaner</div>
       <div class="obj-card">
         <div class="obj-icon">🐂</div>
         <div class="obj-info">
@@ -935,16 +910,12 @@
           <div class="obj-sub">200 grain · Intern transfer</div>
           <div class="obj-stats">Anländer om 45 min</div>
         </div>
-        <div class="obj-right">
-          <span class="obj-rel rel-own">Logistik</span>
-        </div>
+        <div class="obj-right"><span class="obj-rel rel-own">Logistik</span></div>
       </div>
     </div>
-
     <div class="dsec">
       <div class="dsec-title">Gossip — handel & priser</div>
       <div style="font-size:0.76rem;font-style:italic;color:var(--text-dim);padding:0.2rem 0;">"Koppar är dyr i Knossos — ryktena talar om 3 silver per enhet."</div>
-      <div style="font-size:0.76rem;font-style:italic;color:var(--text-dim);padding:0.2rem 0;">"Timmer i överskott längs nordkusten."</div>
     </div>
   </div>
 </div>
@@ -972,32 +943,25 @@
         <button class="btn-small btn-secondary">Lämna</button>
       </div>
     </div>
-
     <div class="dsec">
-      <div class="dsec-title">Kharis (gudarnas förhållning)</div>
-      <div class="stat-row"><span class="sr-label">Nivå</span><span class="sr-val">Favorable</span></div>
+      <div class="dsec-title">Kharis</div>
+      <div class="stat-row"><span class="sr-label">Stämning</span><span class="sr-val">Favorable</span></div>
       <div class="stat-row"><span class="sr-label">Pool</span><span class="sr-val">62 %</span></div>
       <div class="kharis-bar"><div class="kharis-fill" style="width:62%"></div></div>
-      <div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.2rem;">Gudarna ser nådigt på Tiryns. Kharis sjunker 5 %/dag utan offer.</div>
+      <div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.2rem;">Gudarna ser nådigt på Tiryns. Sjunker 5 %/dag utan offer.</div>
     </div>
-
     <div class="dsec">
       <div class="dsec-title">Riter (Kult-nivå 2)</div>
       <div class="rite-row">
         <span class="rite-name">Stridsfrenzy</span>
-        <span class="rite-cost">20 kharis · 5 wine</span>
+        <span class="rite-cost">20 kharis · 5 vin</span>
         <button class="btn-small btn-primary">Aktivera</button>
       </div>
       <div class="rite-row">
         <span class="rite-name">Välsignelse</span>
-        <span class="rite-cost">10 kharis · 3 oil</span>
+        <span class="rite-cost">10 kharis · 3 olja</span>
         <button class="btn-small btn-primary">Aktivera</button>
       </div>
-    </div>
-
-    <div class="dsec">
-      <div class="dsec-title">Gossip — krig & politik</div>
-      <div style="font-size:0.76rem;font-style:italic;color:var(--text-dim);padding:0.2rem 0;">"Mykene och Pylos är i krig — slag utanför Sparta."</div>
     </div>
   </div>
 </div>
@@ -1055,59 +1019,54 @@
   </div>
 </div>
 
-<!-- ── Wireframe annotation ── -->
-<div class="wf-bar">Sprint 1 Wireframe — lo-fi · Sprint 0 beslut integrerade</div>
-
-<!-- ── Role-variant toggle (post-MVP preview) ── -->
+<!-- ── Role-variant toggle ── -->
 <div class="role-toggle-bar">
-  <button class="role-btn active" onclick="setRole('wanax', this)">Wanax</button>
-  <button class="role-btn" onclick="setRole('heqetas', this)">Heqetas (post-MVP)</button>
-  <button class="role-btn" onclick="setRole('lochagos', this)">Lochagos (post-MVP)</button>
+  <button class="role-btn active" onclick="setRole('wanax',this)">Wanax</button>
+  <button class="role-btn"        onclick="setRole('heqetas',this)">Heqetas (post-MVP)</button>
+  <button class="role-btn"        onclick="setRole('lochagos',this)">Lochagos (post-MVP)</button>
+</div>
+
+<!-- ── Wireframe annotation + demo trigger ── -->
+<div class="wf-bar">
+  <span class="wf-label">Sprint 1 Wireframe</span>
+  <button class="wf-notif-btn" onclick="addDemoNotif()">+ Demo-notis</button>
 </div>
 
 <script>
+  /* ── Drawer ── */
   let activeDrawer = null;
 
   function toggleDrawer(name) {
-    if (activeDrawer === name) {
-      closeDrawer(name);
-      return;
-    }
+    if (activeDrawer === name) { closeDrawer(name); return; }
     if (activeDrawer) closeDrawer(activeDrawer);
     openDrawer(name);
   }
-
   function openDrawer(name) {
-    const drawer = document.getElementById('drawer-' + name);
-    const trig   = document.getElementById('trig-' + name);
-    if (!drawer) return;
-    drawer.classList.add('open');
-    if (trig) trig.classList.add('active');
+    const el = document.getElementById('drawer-' + name);
+    const tr = document.getElementById('trig-' + name);
+    if (!el) return;
+    el.classList.add('open');
+    if (tr) tr.classList.add('active');
     document.getElementById('map-dim').classList.add('visible');
     activeDrawer = name;
   }
-
   function closeDrawer(name) {
-    const drawer = document.getElementById('drawer-' + name);
-    const trig   = document.getElementById('trig-' + name);
-    if (!drawer) return;
-    drawer.classList.remove('open');
-    if (trig) trig.classList.remove('active');
+    const el = document.getElementById('drawer-' + name);
+    const tr = document.getElementById('trig-' + name);
+    if (!el) return;
+    el.classList.remove('open');
+    if (tr) tr.classList.remove('active');
     document.getElementById('map-dim').classList.remove('visible');
     activeDrawer = null;
   }
 
+  /* ── Search ── */
   function toggleSearch() {
-    const overlay = document.getElementById('search-overlay');
-    overlay.classList.toggle('open');
-    if (overlay.classList.contains('open')) {
-      document.getElementById('search-input').focus();
-    }
+    const o = document.getElementById('search-overlay');
+    o.classList.toggle('open');
+    if (o.classList.contains('open')) document.getElementById('search-input').focus();
   }
-
-  function closeSearch(e) {
-    document.getElementById('search-overlay').classList.remove('open');
-  }
+  function closeSearch(e) { document.getElementById('search-overlay').classList.remove('open'); }
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -1115,40 +1074,164 @@
       if (activeDrawer) closeDrawer(activeDrawer);
     }
     if ((e.key === 'f' || e.key === '/') && document.activeElement.tagName !== 'INPUT') {
-      e.preventDefault();
-      toggleSearch();
+      e.preventDefault(); toggleSearch();
     }
   });
 
-  // Role-variant preview (post-MVP)
-  function setRole(role, btn) {
-    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const warTrig = document.getElementById('trig-war');
-    const oikosTrig = document.getElementById('trig-oikos');
-    if (role === 'lochagos') {
-      // Lochagos: War öppet, Oikos låst
-      oikosTrig.classList.add('role-locked');
-      warTrig.classList.remove('role-locked');
-    } else if (role === 'heqetas') {
-      // Heqetas: Oikos + Economy, War låst
-      warTrig.classList.add('role-locked');
-      oikosTrig.classList.remove('role-locked');
-    } else {
-      // Wanax: allt öppet
-      warTrig.classList.remove('role-locked');
-      oikosTrig.classList.remove('role-locked');
-    }
-  }
-
-  // Tab switching (simple demo)
+  /* ── Tabs ── */
   document.querySelectorAll('.dtab').forEach(tab => {
     tab.addEventListener('click', function() {
-      const tabs = this.closest('.drawer-tabs');
-      tabs.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+      this.closest('.drawer-tabs').querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
     });
   });
+
+  /* ── Role-variant ── */
+  function setRole(role, btn) {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const warTrig   = document.getElementById('trig-war');
+    const oikosTrig = document.getElementById('trig-oikos');
+    warTrig.classList.remove('role-locked');
+    oikosTrig.classList.remove('role-locked');
+    if (role === 'lochagos') oikosTrig.classList.add('role-locked');
+    if (role === 'heqetas')  warTrig.classList.add('role-locked');
+  }
+
+  /* ── Celestial clock ── */
+  const GREEK_MONTHS = [
+    'Ποσιδεών','Γαμηλιών','Ἀνθεστηριών','Ἑλαφηβολιών',
+    'Μουνιχιών','Θαργηλιών','Σκιροφοριών','Ἑκατομβαιών',
+    'Μεταγειτνιών','Βοηδρομιών','Πυανεψιών','Μαιμακτηριών'
+  ];
+  const GREEK_DAYS = ['','α\'','β\'','γ\'','δ\'','ε\'','ς\'','ζ\'','η\'','θ\'','ι\'',
+    'ια\'','ιβ\'','ιγ\'','ιδ\'','ιε\'','ις\'','ιζ\'','ιη\'','ιθ\'','κ\'',
+    'κα\'','κβ\'','κγ\'','κδ\'','κε\'','κς\'','κζ\'','κη\'','κθ\'','λ\''];
+  const MOON_PHASES = ['🌑','🌒','🌒','🌓','🌔','🌔','🌕','🌖','🌖','🌗','🌘','🌘'];
+
+  /* Known new moon reference: 2025-01-29 UTC */
+  const REF_NEW_MOON = new Date('2025-01-29T12:35:00Z').getTime();
+  const LUNAR_CYCLE  = 29.53058867 * 24 * 3600 * 1000;
+
+  function moonPhase() {
+    const age = ((Date.now() - REF_NEW_MOON) % LUNAR_CYCLE + LUNAR_CYCLE) % LUNAR_CYCLE;
+    const idx  = Math.floor(age / LUNAR_CYCLE * 12) % 12;
+    return MOON_PHASES[idx];
+  }
+
+  /*
+   * Ancient calendar: day starts at sunset (18:00).
+   * "Today" in the game = day that began at the most recent 18:00.
+   * Arc: left = gryning (06:00), right = skymning (18:00)
+   *   Sun travels left→right 06:00–18:00
+   *   Moon travels right→left 18:00–06:00
+   * Arc center=(40,38) radius=34; arc endpoints (6,38) and (74,38)
+   */
+  function updateCelestial() {
+    const now  = new Date();
+    const h    = now.getHours() + now.getMinutes() / 60;
+    const isDay = h >= 6 && h < 18;
+
+    const body = document.getElementById('cel-body');
+    const nightTxt = document.getElementById('cel-night-txt');
+
+    // Arc geometry
+    const cx = 40, cy = 38, r = 34;
+
+    let t, bodyX, bodyY, bodyColor;
+    if (isDay) {
+      // Sun: 06:00 → left (6,38), 12:00 → top (40,4), 18:00 → right (74,38)
+      t = (h - 6) / 12;  // 0→1
+      const angle = Math.PI - t * Math.PI; // π→0 left→right
+      bodyX = cx + r * Math.cos(angle);
+      bodyY = cy - r * Math.sin(angle);
+      bodyColor = '#F9E79F';
+      body.setAttribute('r', '5');
+      nightTxt.setAttribute('display', 'none');
+    } else {
+      // Moon: 18:00 → right (74,38), 00:00 → top (40,4), 06:00 → left (6,38)
+      const hn = h >= 18 ? h - 18 : h + 6; // hours into night (0–12)
+      t = hn / 12;  // 0→1
+      const angle = t * Math.PI; // 0→π right→left
+      bodyX = cx + r * Math.cos(angle);
+      bodyY = cy - r * Math.sin(angle);
+      bodyColor = '#D0D8F0';
+      body.setAttribute('r', '4');
+      nightTxt.setAttribute('display', '');
+    }
+
+    body.setAttribute('cx', bodyX.toFixed(1));
+    body.setAttribute('cy', bodyY.toFixed(1));
+    body.setAttribute('fill', bodyColor);
+
+    // Moon phase emoji
+    document.getElementById('cel-phase').textContent = isDay ? '☀' : moonPhase();
+
+    // Ancient date: game-day starts at 18:00.
+    // Days elapsed since game epoch = real days (approximate for wireframe)
+    const epoch = new Date('2026-06-01T18:00:00');
+    const msPerDay = 24 * 3600 * 1000;
+    // Shift clock back 18h so that "next day" trips at 18:00 real time
+    const shifted = new Date(now.getTime() - 18 * 3600 * 1000);
+    const daysSinceEpoch = Math.floor((shifted - epoch) / msPerDay);
+    const dayOfMonth = (daysSinceEpoch % 30) + 1;
+    const monthIdx   = Math.floor(daysSinceEpoch / 30) % 12;
+    const year       = Math.floor(daysSinceEpoch / 360) + 1;
+    const yearStr    = year === 1 ? 'Ἔτος Α\'' : 'Ἔτος ' + year;
+
+    document.getElementById('cel-date').innerHTML =
+      `<strong>${GREEK_DAYS[dayOfMonth]}</strong> ${GREEK_MONTHS[monthIdx]}<br>${yearStr}`;
+  }
+
+  updateCelestial();
+  setInterval(updateCelestial, 60 * 1000); // update every minute
+
+  /* ── Notification chips (topbar strip) ── */
+  const DEMO_NOTIFS = [
+    { lvl: 2, glyph: '✉', text: 'Handelsoffert — Idomeneus (Knossos)',  time: 'nu' },
+    { lvl: 1, glyph: '⚓', text: 'Kohort anlände — Pylos hamn',         time: 'nu' },
+    { lvl: 3, glyph: '⚔', text: 'Fientlig armé nära Tiryns',           time: 'nu' },
+    { lvl: 1, glyph: '✉', text: 'Svar från Nestor angående tribut',    time: 'nu' },
+    { lvl: 2, glyph: '⛩', text: 'Gudarna välsignar — Kharis +8 %',    time: 'nu' },
+    { lvl: 1, glyph: '🐂', text: 'Karavan anlänt — 200 grain i lager', time: 'nu' },
+  ];
+  let demoIdx = 0;
+
+  function addNotifChip(lvl, glyph, text, time) {
+    const strip = document.getElementById('gt-notif-strip');
+
+    // Evict oldest if more than 5 chips
+    const chips = strip.querySelectorAll('.notif-chip');
+    if (chips.length >= 5) {
+      chips[0].style.transition = 'opacity 0.3s, max-width 0.3s';
+      chips[0].style.opacity = '0';
+      chips[0].style.maxWidth = '0';
+      chips[0].style.padding = '0';
+      chips[0].style.overflow = 'hidden';
+      setTimeout(() => chips[0].remove(), 300);
+    }
+
+    const chip = document.createElement('div');
+    chip.className = `notif-chip nc-lvl${lvl}`;
+    chip.innerHTML = `
+      <span class="nc-glyph">${glyph}</span>
+      <span class="nc-text">${text}</span>
+      <span class="nc-time">${time}</span>
+      <button class="nc-x" onclick="this.parentElement.remove()">✕</button>
+    `;
+    // Append as rightmost (newest/top of pile)
+    strip.appendChild(chip);
+  }
+
+  function addDemoNotif() {
+    const n = DEMO_NOTIFS[demoIdx % DEMO_NOTIFS.length];
+    addNotifChip(n.lvl, n.glyph, n.text, n.time);
+    demoIdx++;
+  }
+
+  // Seed two notifications on load after short delays
+  setTimeout(() => addNotifChip(2, '✉', 'Handelsoffert — Idomeneus (Knossos)', 'nu'), 800);
+  setTimeout(() => addNotifChip(3, '⚔', 'Fientlig armé nära Tiryns', 'nu'), 2200);
 </script>
 </body>
 </html>
