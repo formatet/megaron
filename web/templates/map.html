@@ -692,10 +692,10 @@ function render() {
 }
 
 // ── Data loading ──────────────────────────────────────────────────────────
-async function fetchAuth(url) {
+async function fetchAuth(url, opts = {}) {
   const token = localStorage.getItem('poleia_token');
-  const headers = token ? {'Authorization': 'Bearer ' + token} : {};
-  return fetch(url, {headers});
+  const headers = Object.assign(token ? {'Authorization': 'Bearer ' + token} : {}, opts.headers || {});
+  return fetch(url, Object.assign({}, opts, {headers}));
 }
 
 async function loadMap() {
@@ -814,7 +814,12 @@ function openInspect(marker) {
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML = '';
-  if (marker.own) {
+  if (marker.own && marker.is_outpost) {
+    foot.innerHTML = `
+      <button id="btn-recall-outpost" style="width:100%;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;"
+        onclick="recallOutpost('${marker.id}')">Recall Outpost →</button>
+      <span id="recall-err" style="font-size:.75rem;color:var(--danger);display:block;margin-top:.2rem;"></span>`;
+  } else if (marker.own) {
     const a = document.createElement('a');
     // Capital: plain province URL; others: ?sid= to switch to that settlement.
     a.href = marker.is_capital
@@ -839,6 +844,21 @@ function openInspect(marker) {
 function closeInspect() {
   selectedProvince = null;
   document.getElementById('inspect-panel').style.display = 'none';
+}
+
+async function recallOutpost(provinceID) {
+  const btn = document.getElementById('btn-recall-outpost');
+  const err = document.getElementById('recall-err');
+  if (btn) btn.disabled = true;
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${provinceID}/outpost`, {method:'DELETE'});
+  if (res.ok) {
+    closeInspect();
+    await loadMap();
+  } else {
+    const body = await res.json().catch(() => ({}));
+    if (err) err.textContent = body.error || 'Recall failed';
+    if (btn) btn.disabled = false;
+  }
 }
 
 // Alias used when right-clicking own non-capital settlements.
