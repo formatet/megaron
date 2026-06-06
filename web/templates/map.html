@@ -510,9 +510,6 @@ function fillHex(ctx, pts, c0, c1, seed) {
   hexPath(ctx, pts);
   ctx.fillStyle = (seed & 1) ? c0 : c1;
   ctx.fill();
-  ctx.strokeStyle = '#00000022';
-  ctx.lineWidth = 0.5;
-  ctx.stroke();
 }
 
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
