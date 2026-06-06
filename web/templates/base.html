@@ -5,16 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{block "title" .}}Poleia{{end}}</title>
   <link rel="stylesheet" href="/static/poleia.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap">
   <script src="https://unpkg.com/htmx.org@2.0.0/dist/htmx.min.js"></script>
   <script>
-    // Inject JWT from localStorage on every HTMX request.
     document.addEventListener('htmx:configRequest', function(e) {
       const token = localStorage.getItem('poleia_token');
       if (token) e.detail.headers['Authorization'] = 'Bearer ' + token;
     });
 
-    // Silver weight display: shekel / mina / talang
-    // 1 mina = 60 shekel · 1 talang = 60 mina (= 3600 shekel)
     function fmtSilver(v) {
       v = Math.round(v);
       if (v === 0) return '0 shekel';
@@ -29,18 +28,22 @@
     }
   </script>
 </head>
-<body>
+<body{{if .MapMode}} class="map-mode"{{end}}>
+  {{if not .MapMode}}
   <nav class="topbar">
     <a href="/" class="logo">ΘΑΛΑΣΣΑ</a>
     <div class="nav-links">
       {{block "nav" .}}{{end}}
     </div>
   </nav>
+  {{end}}
   <main>
     {{block "content" .}}{{end}}
   </main>
+  {{if not .MapMode}}
   <footer>
-    <span>Poleia — Bronze Age strategy</span>
+    <span>Megaron — Bronze Age strategy</span>
   </footer>
+  {{end}}
 </body>
 </html>{{end}}

@@ -1,34 +1,57 @@
 {{template "base" .}}
-{{define "title"}}Map — {{.World.Name}}{{end}}
-{{define "nav"}}
-  <a href="/world/{{.WorldID}}/megaron">⌂</a>
-  <a href="/world/{{.WorldID}}/map">Map</a>
-  <a href="/world/{{.WorldID}}">Economy</a>
-  <a href="/world/{{.WorldID}}/rawaketa">Rawaketa</a>
-  <a href="/world/{{.WorldID}}/messages">Scribes</a>
-  <a href="/world/{{.WorldID}}/kingdom">Oikos</a>
-{{end}}
+{{define "title"}}MEGARON — {{.World.Name}}{{end}}
+{{define "nav"}}{{end}}
 {{define "content"}}
-<div class="map-page">
-  <div class="map-toolbar">
-    <span class="map-world-name">{{.World.Name}}</span>
-    <span class="pill state-{{.World.State}}">{{.World.State}}</span>
-    <span class="map-prestige" title="World prestige — drives collapse risk">Era {{.World.EraNumber}} · ✦ {{.World.Prestige}}</span>
-    <span class="map-hint">Drag · Scroll to zoom · Click province · Right-click to march · <span style="color:#922B21">■</span> armies <span style="color:#D4AC0D">■</span> messengers <span style="color:#7B4F28">■</span> caravans · <span style="color:#CA8A04">▲</span> your town <span style="color:#4CAF50">▲</span> allied <span style="color:#C0392B">▲</span> enemy</span>
-    <div class="map-zoom-btns">
-      <button onclick="zoom(1.25)" class="btn-small btn-secondary">+</button>
-      <button onclick="zoom(0.8)"  class="btn-small btn-secondary">−</button>
-      <button onclick="resetView()" class="btn-small btn-secondary">⌂</button>
-      <button id="music-btn" class="btn-small btn-secondary" onclick="toggleMusic()" title="Pause/resume music">♫</button>
+<div class="map-shell">
+
+  <!-- ── Game top bar ─────────────────────────────────────────────────── -->
+  <div class="game-topbar">
+    <div class="gt-logo">MEGARON</div>
+    <div class="gt-notif-strip" id="gt-notif-strip"></div>
+    <div class="gt-celestial">
+      <div class="cel-arc-wrap">
+        <svg id="cel-svg" viewBox="0 0 80 44" width="80" height="44">
+          <line x1="2" y1="38" x2="78" y2="38" stroke="#333322" stroke-width="1"/>
+          <path d="M 6 38 A 34 34 0 0 1 74 38" fill="none" stroke="#2a2a1a" stroke-width="1" stroke-dasharray="3,4"/>
+          <text x="2" y="44" font-size="5" fill="#443322" font-family="monospace">GR</text>
+          <text x="60" y="44" font-size="5" fill="#443322" font-family="monospace">SK</text>
+          <circle id="cel-body" cx="40" cy="4" r="5" fill="#F9E79F"/>
+          <text id="cel-night-txt" x="30" y="22" font-size="8" fill="rgba(200,200,255,0.15)" font-family="serif" display="none">☽</text>
+        </svg>
+      </div>
+      <div class="cel-info">
+        <div class="cel-phase" id="cel-phase">☀</div>
+        <div class="cel-date" id="cel-date"></div>
+      </div>
+      <button class="gt-search-btn" onclick="toggleSearch()">⌕</button>
     </div>
   </div>
 
-  <div class="map-layout">
-    <div class="map-container" id="map-root">
-      <canvas id="hex-canvas"></canvas>
+  <!-- ── Map canvas ───────────────────────────────────────────────────── -->
+  <div class="game-map" id="map-root">
+    <canvas id="hex-canvas"></canvas>
+
+    <!-- Zoom toolbar overlay -->
+    <div class="map-zoom-overlay">
+      <button onclick="zoom(1.25)" class="mzo-btn" title="Zoom in">+</button>
+      <button onclick="zoom(0.8)"  class="mzo-btn" title="Zoom out">−</button>
+      <button onclick="resetView()" class="mzo-btn" title="Centre map">⌂</button>
+      <button id="music-btn" class="mzo-btn" onclick="toggleMusic()" title="Music">♫</button>
     </div>
 
-    <!-- Inspect panel — shown when a province hex is clicked -->
+    <!-- Legend overlay -->
+    <div class="map-legend-overlay">
+      <span style="--tc:#8AAF3A">Plains</span>
+      <span style="--tc:#4CAF50">River</span>
+      <span style="--tc:#C8A464">Hills</span>
+      <span style="--tc:#E0D4B8">Mountain</span>
+      <span style="--tc:#E8C97A">Shore</span>
+      <span style="--tc:#3A9AD9">Coastal</span>
+      <span style="--tc:#1A5276">Deep</span>
+      <span style="--tc:#1C1C1C">Fog</span>
+    </div>
+
+    <!-- Inspect panel (right-side overlay) -->
     <aside class="inspect-panel" id="inspect-panel" style="display:none">
       <div class="inspect-header">
         <span id="ip-name" class="inspect-title">—</span>
@@ -46,21 +69,112 @@
       </div>
       <div class="inspect-foot" id="ip-foot"></div>
     </aside>
+
+    <!-- Map dim behind open drawer -->
+    <div class="map-dim" id="map-dim"></div>
+
+    <!-- No-province card (new player) -->
+    {{if not .SettlementID}}
+    <div class="no-province-card visible" id="no-province-card">
+      <div class="npc-title">Choose your starting province</div>
+      <div class="npc-text">Click a free hex on the map to found your first megaron.</div>
+      <button class="btn-small btn-primary"
+              onclick="document.getElementById('no-province-card').classList.remove('visible')">Understood</button>
+    </div>
+    {{end}}
   </div>
 
-  <div class="map-legend">
-    <span class="legend-item" style="--tc:#8AAF3A">Plains</span>
-    <span class="legend-item" style="--tc:#4CAF50">River Valley</span>
-    <span class="legend-item" style="--tc:#5A8C30">Olive Grove</span>
-    <span class="legend-item" style="--tc:#C8A464">Hills</span>
-    <span class="legend-item" style="--tc:#E0D4B8">Limestone</span>
-    <span class="legend-item" style="--tc:#E8C97A">Shore</span>
-    <span class="legend-item" style="--tc:#3A9AD9">Coastal Sea</span>
-    <span class="legend-item" style="--tc:#1A5276">Deep Sea</span>
-    <span class="legend-item" style="--tc:#1C1C1C">Fog</span>
+  <!-- ── Bottom nav ───────────────────────────────────────────────────── -->
+  <nav class="game-nav">
+    <div class="win-trigger" id="trig-city"      onclick="toggleDrawer('city')">
+      <span class="wt-glyph">🏛</span>City
+    </div>
+    <div class="win-trigger" id="trig-war"        onclick="toggleDrawer('war')">
+      <span class="wt-glyph">⚔</span>War
+    </div>
+    <div class="win-trigger" id="trig-diplomacy"  onclick="toggleDrawer('diplomacy')">
+      <span class="wt-glyph">✉</span>Diplomacy
+      {{if .UnreadCount}}<span class="wt-badge">{{.UnreadCount}}</span>{{end}}
+    </div>
+    <div class="win-trigger" id="trig-economy"    onclick="toggleDrawer('economy')">
+      <span class="wt-glyph">⚖</span>Economy
+    </div>
+    <div class="win-trigger" id="trig-oikos"      onclick="toggleDrawer('oikos')">
+      <span class="wt-glyph">⛩</span>Oikos
+    </div>
+  </nav>
+
+</div><!-- .map-shell -->
+
+<!-- ── CITY DRAWER ──────────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-city">
+  <div class="drawer-header">
+    <span class="drawer-title">City</span>
+    <button class="drawer-close" onclick="closeDrawer('city')">✕</button>
+  </div>
+  <div class="drawer-body" id="city-body">
+    <div class="loading">Loading…</div>
   </div>
 </div>
 
+<!-- ── WAR DRAWER ───────────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-war">
+  <div class="drawer-header">
+    <span class="drawer-title">War</span>
+    <button class="drawer-close" onclick="closeDrawer('war')">✕</button>
+  </div>
+  <div class="drawer-body" id="war-body">
+    <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<!-- ── DIPLOMACY DRAWER ─────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-diplomacy">
+  <div class="drawer-header">
+    <span class="drawer-title">Diplomacy</span>
+    <button class="drawer-close" onclick="closeDrawer('diplomacy')">✕</button>
+  </div>
+  <div class="drawer-body" id="diplomacy-body">
+    <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<!-- ── ECONOMY DRAWER ──────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-economy">
+  <div class="drawer-header">
+    <span class="drawer-title">Economy</span>
+    <button class="drawer-close" onclick="closeDrawer('economy')">✕</button>
+  </div>
+  <div class="drawer-body" id="economy-body">
+    <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<!-- ── OIKOS DRAWER ─────────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-oikos">
+  <div class="drawer-header">
+    <span class="drawer-title">Oikos</span>
+    <button class="drawer-close" onclick="closeDrawer('oikos')">✕</button>
+  </div>
+  <div class="drawer-body" id="oikos-body">
+    <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<!-- ── SEARCH OVERLAY ──────────────────────────────────────────────────── -->
+<div class="search-overlay" id="search-overlay" onclick="closeSearch(event)">
+  <div class="search-box" onclick="event.stopPropagation()">
+    <div class="search-input-row">
+      <span class="si-glyph">⌕</span>
+      <input class="si-input" id="search-input" placeholder="City, army, messenger…">
+      <button class="si-esc" onclick="toggleSearch()">ESC</button>
+    </div>
+    <div class="search-hint">Own objects + FOW-visible · ↑↓ navigate · Enter jump to</div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<!-- ── Tile tooltip and march context (position:fixed) ─────────────────── -->
 <div id="tile-tooltip" class="tile-tooltip" style="display:none"></div>
 <div id="march-ctx" class="march-ctx" style="display:none">
   <div class="mctx-header">
@@ -99,115 +213,161 @@
 </div>
 
 <style>
-.map-page { display:flex; flex-direction:column; gap:.6rem; height:calc(100vh - 6rem); }
-.map-toolbar {
-  display:flex; align-items:center; gap:.8rem; flex-wrap:wrap;
-  background:#F2EAD3; border:2px solid #E67E22; padding:.4rem .8rem;
-  box-shadow:inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
-}
-.map-world-name { font-family:var(--mono); font-size:.9rem; color:#C0392B; font-weight:bold; letter-spacing:.1em; }
-.map-prestige { font-family:var(--mono); font-size:.75rem; color:#F9E79F; letter-spacing:.08em; opacity:.85; }
-.map-hint { font-size:.75rem; color:#A04000; font-style:italic; flex:1; }
-.map-zoom-btns { display:flex; gap:.3rem; }
-.map-layout { display:flex; flex:1; min-height:0; gap:.6rem; }
-.map-container {
-  flex:1;
-  border:2px solid #E67E22;
-  background:#1B4F72;
-  overflow:hidden;
-  cursor:grab;
-  position:relative;
-  box-shadow:inset -1px -1px 0 #6E2C00;
-}
-.map-container:active { cursor:grabbing; }
-#hex-canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block; }
+/* ── Map-specific styles (overlays, not in poleia.css) ──────────────── */
 
-/* Inspect panel */
+/* Zoom overlay buttons */
+.map-zoom-overlay {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+}
+.mzo-btn {
+  width: 26px; height: 26px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.mzo-btn:hover { background: var(--bg-raised); color: var(--accent); border-color: var(--accent); }
+
+/* Legend overlay */
+.map-legend-overlay {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  pointer-events: none;
+  z-index: 10;
+}
+.map-legend-overlay span { display: flex; align-items: center; gap: 0.2rem; }
+.map-legend-overlay span::before { content: '■'; color: var(--tc); }
+
+/* World info overlay (top-right of map) */
+.map-world-info {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-align: right;
+  pointer-events: none;
+  z-index: 10;
+  line-height: 1.4;
+}
+.map-world-info strong { color: var(--gold); }
+
+/* Inspect panel — right-side overlay inside game-map */
 .inspect-panel {
-  width:220px; flex-shrink:0;
-  background:#F2EAD3; border:2px solid #E67E22;
-  box-shadow:inset 1px 1px 0 #FAD7A0, inset -1px -1px 0 #6E2C00;
-  display:flex; flex-direction:column;
-  font-size:.85rem;
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 220px;
+  background: var(--bg-panel);
+  border-left: 2px solid var(--border);
+  box-shadow: -3px 0 12px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  font-size: .85rem;
+  z-index: 15;
 }
 .inspect-header {
-  background:#E67E22; padding:.4rem .7rem;
-  display:flex; align-items:center; justify-content:space-between;
+  background: var(--border); padding: .4rem .7rem;
+  display: flex; align-items: center; justify-content: space-between;
 }
-.inspect-title { color:#FDFEFE; font-family:var(--mono); font-weight:bold; letter-spacing:.08em; }
-.inspect-close { background:none; border:none; color:#FDFEFE; cursor:pointer; font-size:1rem; padding:0 .2rem; }
-.inspect-body { padding:.7rem; flex:1; }
-.inspect-row { display:flex; justify-content:space-between; margin-bottom:.4rem; }
-.ir-label { color:#A04000; text-transform:uppercase; font-size:.72rem; letter-spacing:.08em; }
-.inspect-foot { padding:.7rem; border-top:1px solid #E67E22; }
-.inspect-foot a { display:block; text-align:center; padding:.4rem;
-  background:#F0B27A; border:2px solid #E67E22; color:#1C1C1C;
-  font-family:var(--mono); font-size:.8rem; letter-spacing:.1em; text-transform:uppercase;
-  text-decoration:none; }
-.inspect-foot a:hover { background:#FAD7A0; border-color:#C0392B; }
-.msg-textarea {
-  width:100%; box-sizing:border-box; resize:none;
-  background:var(--warm-white); border:1px solid var(--border);
-  font-family:var(--mono); font-size:.75rem; color:var(--text); padding:.3rem;
+.inspect-title { color: var(--warm-white); font-family: var(--mono); font-weight: bold; letter-spacing: .08em; }
+.inspect-close { background: none; border: none; color: var(--warm-white); cursor: pointer; font-size: 1rem; padding: 0 .2rem; }
+.inspect-body { padding: .7rem; flex: 1; overflow-y: auto; }
+.inspect-row { display: flex; justify-content: space-between; margin-bottom: .4rem; }
+.ir-label { color: var(--text-dim); text-transform: uppercase; font-size: .72rem; letter-spacing: .08em; }
+.inspect-foot { padding: .7rem; border-top: 1px solid var(--border); }
+.inspect-foot a {
+  display: block; text-align: center; padding: .4rem;
+  background: var(--bg-raised); border: 2px solid var(--border);
+  color: var(--text); font-family: var(--mono); font-size: .8rem;
+  letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
 }
-.msg-foot { display:flex; align-items:center; gap:.4rem; margin-top:.4rem; }
-.msg-send {
-  padding:.25rem .6rem; background:var(--sandstone); border:2px solid var(--border);
-  font-family:var(--mono); font-size:.72rem; letter-spacing:.07em; cursor:pointer;
-}
-.msg-send:hover { background:var(--bg-raised); border-color:var(--accent); }
-.msg-err { font-size:.7rem; flex:1; }
+.inspect-foot a:hover { background: var(--bg-raised); border-color: var(--accent); }
 
-.map-legend { display:flex; gap:.8rem; flex-wrap:wrap; font-size:.75rem; color:#A04000; }
-.legend-item { display:flex; align-items:center; gap:.3rem; }
-.legend-item::before { content:'■'; color:var(--tc); }
+.msg-textarea {
+  width: 100%; box-sizing: border-box; resize: none;
+  background: var(--warm-white); border: 1px solid var(--border);
+  font-family: var(--mono); font-size: .75rem; color: var(--text); padding: .3rem;
+}
+.msg-foot { display: flex; align-items: center; gap: .4rem; margin-top: .4rem; }
+.msg-send {
+  padding: .25rem .6rem; background: var(--sandstone); border: 2px solid var(--border);
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .07em; cursor: pointer;
+}
+.msg-send:hover { background: var(--bg-raised); border-color: var(--accent); }
+.msg-err { font-size: .7rem; flex: 1; }
+
+/* Tile tooltip */
 .tile-tooltip {
-  position:fixed; background:#1C1C1C; border:1px solid #E67E22;
-  color:#F2EAD3; padding:.15rem .5rem; font-size:.75rem;
-  font-family:var(--mono); pointer-events:none; z-index:200;
+  position: fixed; background: var(--bg); border: 1px solid var(--border);
+  color: var(--bg-panel); padding: .15rem .5rem; font-size: .75rem;
+  font-family: var(--mono); pointer-events: none; z-index: 400;
 }
 
 /* March context menu */
 .march-ctx {
-  position:fixed; z-index:300; width:210px;
-  background:var(--bg-panel); border:2px solid var(--border);
-  box-shadow:inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in), 3px 3px 0 #1C1C1C;
-  font-size:.82rem; color:var(--text);
+  position: fixed; z-index: 300; width: 210px;
+  background: var(--bg-panel); border: 2px solid var(--border);
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in), 3px 3px 0 #1C1C1C;
+  font-size: .82rem; color: var(--text);
 }
 .mctx-header {
-  background:var(--border); padding:.35rem .6rem;
-  display:flex; align-items:center; justify-content:space-between;
+  background: var(--border); padding: .35rem .6rem;
+  display: flex; align-items: center; justify-content: space-between;
 }
-.mctx-title { color:var(--warm-white); font-family:var(--mono); font-weight:bold; font-size:.8rem; letter-spacing:.07em; }
-.mctx-close { background:none; border:none; color:var(--warm-white); cursor:pointer; font-size:.9rem; padding:0 .2rem; line-height:1; }
-.mctx-intent { display:flex; gap:0; border-bottom:1px solid var(--border); }
+.mctx-title { color: var(--warm-white); font-family: var(--mono); font-weight: bold; font-size: .8rem; letter-spacing: .07em; }
+.mctx-close { background: none; border: none; color: var(--warm-white); cursor: pointer; font-size: .9rem; padding: 0 .2rem; line-height: 1; }
+.mctx-intent { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
 .mctx-ibtn {
-  flex:1; padding:.3rem 0; border:none; border-right:1px solid var(--border);
-  background:var(--bg-panel); color:var(--text-dim); font-family:var(--mono);
-  font-size:.72rem; letter-spacing:.06em; cursor:pointer;
+  flex: 1; padding: .3rem 0; border: none; border-right: 1px solid var(--border);
+  background: var(--bg-panel); color: var(--text-dim); font-family: var(--mono);
+  font-size: .72rem; letter-spacing: .06em; cursor: pointer;
 }
-.mctx-ibtn:last-child { border-right:none; }
-.mctx-ibtn.active { background:var(--accent); color:var(--warm-white); }
-.mctx-ibtn:disabled { opacity:.35; cursor:default; }
-.mctx-units { padding:.5rem .6rem; display:flex; flex-direction:column; gap:.3rem; }
-.mctx-row { display:flex; align-items:center; gap:.4rem; }
-.mctx-label { flex:1; color:var(--text-dim); font-size:.75rem; }
+.mctx-ibtn:last-child { border-right: none; }
+.mctx-ibtn.active { background: var(--accent); color: var(--warm-white); }
+.mctx-ibtn:disabled { opacity: .35; cursor: default; }
+.mctx-units { padding: .5rem .6rem; display: flex; flex-direction: column; gap: .3rem; }
+.mctx-row { display: flex; align-items: center; gap: .4rem; }
+.mctx-label { flex: 1; color: var(--text-dim); font-size: .75rem; }
 .mctx-input {
-  width:44px; padding:.15rem .3rem; border:1px solid var(--border);
-  background:var(--warm-white); font-family:var(--mono); font-size:.78rem;
-  text-align:right; color:var(--text);
+  width: 44px; padding: .15rem .3rem; border: 1px solid var(--border);
+  background: var(--warm-white); font-family: var(--mono); font-size: .78rem;
+  text-align: right; color: var(--text);
 }
-.mctx-max { color:var(--text-dim); font-size:.72rem; min-width:22px; }
+.mctx-max { color: var(--text-dim); font-size: .72rem; min-width: 22px; }
 .mctx-foot {
-  padding:.45rem .6rem; border-top:1px solid var(--border);
-  display:flex; align-items:center; gap:.5rem;
+  padding: .45rem .6rem; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: .5rem;
 }
 .mctx-send {
-  padding:.3rem .7rem; background:var(--sandstone); border:2px solid var(--border);
-  font-family:var(--mono); font-size:.75rem; letter-spacing:.07em; cursor:pointer;
+  padding: .3rem .7rem; background: var(--sandstone); border: 2px solid var(--border);
+  font-family: var(--mono); font-size: .75rem; letter-spacing: .07em; cursor: pointer;
 }
-.mctx-send:hover { background:var(--bg-raised); border-color:var(--accent); }
-.mctx-error { font-size:.72rem; color:var(--accent); flex:1; }
+.mctx-send:hover { background: var(--bg-raised); border-color: var(--accent); }
+.mctx-error { font-size: .72rem; color: var(--accent); flex: 1; }
+
+/* World name hint in topbar area */
+.map-page-hint {
+  font-size: .72rem; color: var(--text-dim); font-family: var(--mono);
+  padding: 0 .5rem; align-self: center; flex-shrink: 0;
+}
 </style>
 
 <script>
@@ -297,153 +457,170 @@ function hexNeighborToward(cq, cr, tq, tr) {
 
 // Build an adjacency-guaranteed hex path from (q1,r1) to (q2,r2) via greedy steps.
 // Cube-lerp has a known rounding defect where consecutive sampled hexes can be
-// distance-2 apart on diagonal paths — this avoids that by always stepping to
-// the nearest neighbour.
+// non-adjacent; this greedy approach is safe for small maps.
 function buildHexPath(q1, r1, q2, r2) {
-  const N = hexDist(q1, r1, q2, r2);
   const path = [{q: q1, r: r1}];
-  for (let i = 0; i < N; i++) {
-    const last = path[path.length - 1];
-    path.push(hexNeighborToward(last.q, last.r, q2, r2));
+  let cq = q1, cr = r1;
+  while (cq !== q2 || cr !== r2) {
+    const n = hexNeighborToward(cq, cr, q2, r2);
+    if (!n) break;
+    path.push(n);
+    cq = n.q; cr = n.r;
   }
   return path;
 }
 
-// Cache: key = "q1,r1,q2,r2"  → hex array. Paths are deterministic so never evicted.
-const _hexPathCache = new Map();
+const hexPathCache = {};
 function getHexPath(q1, r1, q2, r2) {
-  const k = `${q1},${r1},${q2},${r2}`;
-  if (!_hexPathCache.has(k)) _hexPathCache.set(k, buildHexPath(q1, r1, q2, r2));
-  return _hexPathCache.get(k);
+  const key = `${q1},${r1}-${q2},${r2}`;
+  if (!hexPathCache[key]) hexPathCache[key] = buildHexPath(q1, r1, q2, r2);
+  return hexPathCache[key];
 }
 
-// Return pixel position along hex path at fractional progress, plus current hex.
-// Uses a precomputed greedy path so every step is exactly one hex.
+// Interpolated pixel position along the hex path at fractional progress [0,1].
 function hexPathPx(q1, r1, q2, r2, progress) {
   const path = getHexPath(q1, r1, q2, r2);
-  const N = path.length - 1;
-  if (N === 0) { const p = hexPx(q1, r1); return {x: p.x, y: p.y, q: q1, r: r1}; }
-  const ft = Math.min(N - 0.001, progress * N);
-  const step = Math.floor(ft);
-  const frac = ft - step;
-  const cur = path[step], nxt = path[Math.min(step + 1, N)];
-  const cp = hexPx(cur.q, cur.r), np = hexPx(nxt.q, nxt.r);
-  return { x: cp.x + (np.x - cp.x) * frac, y: cp.y + (np.y - cp.y) * frac, q: cur.q, r: cur.r };
+  if (path.length === 0) return hexPx(q1, r1);
+  if (path.length === 1) return Object.assign({}, hexPx(q1, r1), {q: q1, r: r1});
+  const idx   = Math.min(path.length - 2, Math.floor(progress * (path.length - 1)));
+  const local = (progress * (path.length - 1)) - idx;
+  const a = hexPx(path[idx].q, path[idx].r);
+  const b = hexPx(path[idx+1].q, path[idx+1].r);
+  return {
+    x: a.x + (b.x - a.x) * local,
+    y: a.y + (b.y - a.y) * local,
+    q: path[idx].q,
+    r: path[idx].r,
+  };
 }
 
-// A tile is visible if tileData has it with terrain !== 'fog'.
 function isTileVisible(q, r) {
-  const t = tileData.find(t => t.q===q && t.r===r);
-  return t != null && t.terrain !== 'fog';
+  return tileData.some(t => t.q === q && t.r === r && t.terrain !== 'fog');
 }
 
 // ── Hex fill — solid path fill + outline ─────────────────────────────────
-// The old per-pixel fillRect loop cost ~2000 draw calls per hex (×1200 hexes
-// = 2.4M calls/frame). Path fill + stroke = 2 calls per hex.
 function hexPath(ctx, pts) {
   ctx.beginPath();
   ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let i=1;i<6;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  for (let i = 1; i < 6; i++) ctx.lineTo(pts[i][0], pts[i][1]);
   ctx.closePath();
 }
+
 function fillHex(ctx, pts, c0, c1, seed) {
   hexPath(ctx, pts);
-  // Alternate between c0/c1 per tile via seed so adjacent tiles have visible contrast.
-  ctx.fillStyle = (seed >> 2) & 1 ? c1 : c0;
+  ctx.fillStyle = (seed & 1) ? c0 : c1;
   ctx.fill();
-  ctx.strokeStyle = '#1C1C1C';
-  ctx.lineWidth = 1;
-  hexPath(ctx, pts);
+  ctx.strokeStyle = '#00000022';
+  ctx.lineWidth = 0.5;
   ctx.stroke();
 }
 
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
 function drawDetail(ctx, cx, cy, terrain, seed, frame) {
-  const rng = n => (seed*n ^ (n*37)) & 255;
   ctx.save();
-  switch(terrain) {
-    case 'sea': {
-      const phase = (frame >> 5) & 1;
-      ctx.fillStyle = '#5DADE2';
-      if (phase === 0) {
-        ctx.fillRect(cx-8,cy-2,5,1); ctx.fillRect(cx+3,cy+3,5,1); ctx.fillRect(cx-6,cy+6,4,1);
-      } else {
-        ctx.fillRect(cx-7,cy-1,5,1); ctx.fillRect(cx+4,cy+4,5,1); ctx.fillRect(cx-5,cy+5,4,1);
-      }
-      ctx.fillStyle = '#1B4F72'; ctx.fillRect(cx+2,cy-4,2,2);
-      break;
-    }
-    case 'coast': {
-      ctx.fillStyle = '#FAD7A0'; ctx.fillRect(cx-9,cy+4,19,9);
-      ctx.fillStyle = '#E8C97A'; ctx.fillRect(cx-7,cy+6,5,2);
-      ctx.fillStyle = '#5DADE2'; ctx.fillRect(cx-9,cy,19,5);
-      ctx.fillStyle = '#AED6F1'; ctx.fillRect(cx-8,cy+2,4,1); ctx.fillRect(cx+3,cy+1,5,1);
-      ctx.fillStyle = '#C8A464';
-      ctx.fillRect(cx-5,cy+7,2,1); ctx.fillRect(cx+2,cy+9,2,1); ctx.fillRect(cx+5,cy+7,1,1);
-      break;
-    }
-    case 'plains': {
-      ctx.fillStyle = '#5A8000';
-      const tufts = [[cx-7,cy-2],[cx-2,cy+3],[cx+4,cy-4],[cx-5,cy+6],[cx+7,cy+2],[cx,cy-6]];
-      for (const [tx,ty] of tufts.slice(0, 3+(seed%3))) {
-        ctx.fillRect(tx,ty,1,2); ctx.fillRect(tx-1,ty+1,3,1);
-      }
-      if ((seed&15) < 4) { ctx.fillStyle='#C0392B'; ctx.fillRect(cx+(rng(3)%13)-6,cy+(rng(5)%9)-4,1,1); }
-      break;
-    }
+  const r3 = (seed * 7 + 3) & 0xf;
+  const r4 = (seed * 13 + 5) & 0xf;
+  switch (terrain) {
+    case 'plains':
     case 'river_valley': {
-      // Lush green with blue river channel detail
-      ctx.fillStyle = '#2E7D32';
-      const tufts = [[cx-6,cy-3],[cx-1,cy+4],[cx+5,cy-3],[cx-4,cy+5],[cx+6,cy+1]];
-      for (const [tx,ty] of tufts.slice(0, 4+(seed%2))) {
-        ctx.fillRect(tx,ty,1,3); ctx.fillRect(tx-1,ty+1,3,1);
+      // tiny wheat stalks
+      for (let i = 0; i < 4; i++) {
+        const ox = ((seed * (i*7+1)) & 0x1f) - 14;
+        const oy = ((seed * (i*5+3)) & 0x1f) - 14;
+        ctx.strokeStyle = i % 2 === 0 ? '#D4C060' : '#A09030';
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(cx+ox, cy+oy+3);
+        ctx.lineTo(cx+ox, cy+oy-3);
+        ctx.stroke();
+        ctx.fillStyle = '#E8D070';
+        ctx.fillRect(cx+ox-0.5, cy+oy-4, 1, 2);
       }
-      // River channel (blue wavy line)
-      ctx.fillStyle = '#1565C0';
-      ctx.fillRect(cx-8,cy,3,1); ctx.fillRect(cx-5,cy+1,3,1);
-      ctx.fillRect(cx-2,cy,4,1); ctx.fillRect(cx+2,cy+1,3,1); ctx.fillRect(cx+5,cy,3,1);
       break;
     }
-    case 'forest': {
-      const trees = [[cx-6,cy-1],[cx+4,cy-4],[cx-1,cy+5]].slice(0, 2+(seed%2));
-      for (const [tx,ty] of trees) {
-        ctx.fillStyle = '#44601A'; ctx.fillRect(tx-4,ty+2,10,7);
-        ctx.fillStyle = '#6A9A30'; ctx.fillRect(tx-5,ty-1,11,8);
-        ctx.fillStyle = '#7CAA3A'; ctx.fillRect(tx-4,ty-3,9,6);
-        ctx.fillStyle = '#90BC50'; ctx.fillRect(tx-3,ty-4,7,5);
-        ctx.fillStyle = '#A8BC78'; ctx.fillRect(tx-3,ty-4,4,2); ctx.fillRect(tx-2,ty-5,3,1);
-        ctx.fillStyle = '#2A4010'; ctx.fillRect(tx-5,ty-1,1,8); ctx.fillRect(tx+5,ty-1,1,8);
-        ctx.fillRect(tx-4,ty-2,1,1); ctx.fillRect(tx+3,ty-4,1,1);
-        ctx.fillStyle = '#6E2C00'; ctx.fillRect(tx-1,ty+6,2,5);
+    case 'forest_olive_grove':
+    case 'forest_olive_cypress': {
+      const dotColor = terrain === 'forest_olive_grove' ? '#3A6818' : '#2A5010';
+      for (let i = 0; i < 3; i++) {
+        const ox = ((seed * (i*11+2)) & 0x1b) - 12;
+        const oy = ((seed * (i*9+4)) & 0x1b) - 12;
+        ctx.fillStyle = dotColor;
+        ctx.beginPath();
+        ctx.arc(cx+ox, cy+oy, 3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = '#5A9028';
+        ctx.beginPath();
+        ctx.arc(cx+ox-1, cy+oy-1, 1.5, 0, Math.PI*2);
+        ctx.fill();
       }
-      ctx.fillStyle = '#447020'; ctx.fillRect(cx-2,cy+8,5,3);
       break;
     }
     case 'hills': {
-      ctx.fillStyle = '#B08C50'; ctx.fillRect(cx-10,cy+3,12,9);
-      ctx.fillStyle = '#C8A464'; ctx.fillRect(cx-9,cy+1,10,4);
-      ctx.fillStyle = '#D8B878'; ctx.fillRect(cx-8,cy-1,8,3);
-      ctx.fillStyle = '#E8D090'; ctx.fillRect(cx-7,cy-3,6,3);
-      ctx.fillStyle = '#B08C50'; ctx.fillRect(cx+1,cy+5,10,7);
-      ctx.fillStyle = '#C8A464'; ctx.fillRect(cx+2,cy+2,8,4);
-      ctx.fillStyle = '#D8B878'; ctx.fillRect(cx+3,cy,6,3);
-      ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx-10,cy+3,1,9); ctx.fillRect(cx+10,cy+5,1,7);
-      ctx.fillRect(cx-9,cy+1,1,3); ctx.fillRect(cx+9,cy+2,1,4);
-      ctx.fillStyle = '#8C7050'; ctx.fillRect(cx-4,cy,1,4); ctx.fillRect(cx+4,cy+2,1,3);
-      ctx.fillStyle = '#7A9030'; ctx.fillRect(cx-6,cy+4,3,2); ctx.fillRect(cx+5,cy+6,3,2);
+      // rounded pebbles
+      ctx.fillStyle = '#A08050';
+      for (let i = 0; i < 3; i++) {
+        const ox = ((seed * (i*5+1)) & 0x17) - 10;
+        const oy = ((seed * (i*7+2)) & 0x13) - 8;
+        ctx.beginPath(); ctx.ellipse(cx+ox, cy+oy, 3.5, 2, 0.3, 0, Math.PI*2); ctx.fill();
+      }
       break;
     }
-    case 'mountain': {
-      ctx.fillStyle = '#C8BCA0'; ctx.fillRect(cx-10,cy+4,21,8);
-      ctx.fillStyle = '#D8CEB4'; ctx.fillRect(cx-8,cy,17,5);
-      ctx.fillStyle = '#E8DECC'; ctx.fillRect(cx-6,cy-4,13,5);
-      ctx.fillStyle = '#F0E8D4'; ctx.fillRect(cx-4,cy-7,9,4);
-      ctx.fillStyle = '#F8F4EC'; ctx.fillRect(cx-3,cy-9,7,3);
-      ctx.fillStyle = '#FDFEFE'; ctx.fillRect(cx-2,cy-11,5,3);
-      ctx.fillStyle = '#E8F0F8'; ctx.fillRect(cx-1,cy-12,3,2);
-      ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx+8,cy,3,12); ctx.fillRect(cx+6,cy-4,3,5); ctx.fillRect(cx+4,cy-7,3,4);
-      ctx.fillStyle = '#9A907C'; ctx.fillRect(cx-8,cy,1,5); ctx.fillRect(cx-6,cy-4,1,5); ctx.fillRect(cx-4,cy-7,1,4);
-      ctx.fillStyle = '#FDFEFE'; ctx.fillRect(cx-3,cy-9,4,1);
+    case 'mountain_limestone':
+    case 'mountain_red': {
+      // angular shards
+      const mc = terrain === 'mountain_limestone' ? '#B0A888' : '#A06048';
+      ctx.fillStyle = mc;
+      for (let i = 0; i < 2; i++) {
+        const ox = ((seed * (i*9+3)) & 0x13) - 8;
+        const oy = ((seed * (i*6+1)) & 0x0f) - 6;
+        ctx.beginPath();
+        ctx.moveTo(cx+ox, cy+oy-5);
+        ctx.lineTo(cx+ox+4, cy+oy+3);
+        ctx.lineTo(cx+ox-4, cy+oy+3);
+        ctx.closePath();
+        ctx.fill();
+      }
+      break;
+    }
+    case 'scrub_maquis': {
+      ctx.fillStyle = '#7A9040';
+      for (let i = 0; i < 5; i++) {
+        const ox = ((seed * (i*3+7)) & 0x1f) - 14;
+        const oy = ((seed * (i*4+2)) & 0x1f) - 14;
+        ctx.beginPath(); ctx.arc(cx+ox, cy+oy, 1.5, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+    }
+    case 'coast_beach': {
+      // animated wave ripple
+      const waveTick = (frame >> 4) & 0x3;
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 0.8;
+      for (let i = 0; i < 2; i++) {
+        const wox = r3 - 6, woy = r4 - 6 + i * 5 + waveTick;
+        ctx.beginPath();
+        ctx.arc(cx + wox, cy + woy, 5, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+      }
+      break;
+    }
+    case 'coastal_sea':
+    case 'deep_sea': {
+      // animated sea shimmer
+      const seaTick = (frame >> 5) & 0x7;
+      const alpha = 0.06 + 0.04 * Math.sin(seaTick * 0.8 + seed * 0.1);
+      ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.ellipse(cx + (r3-7)*0.8, cy + (r4-7)*0.5, 6, 2, 0.4, 0, Math.PI*2);
+      ctx.fill();
+      break;
+    }
+    case 'semi_desert': {
+      ctx.fillStyle = '#C09050';
+      for (let i = 0; i < 3; i++) {
+        const ox = ((seed*(i*7+2))&0x17)-10, oy = ((seed*(i*5+3))&0x13)-8;
+        ctx.fillRect(cx+ox, cy+oy, 1, 1);
+      }
       break;
     }
   }
@@ -452,110 +629,153 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
 
 // ── Outpost marker (small flag on a post, no building) ───────────────────
 function drawOutpost(ctx, cx, cy, p) {
-  const color = p.own ? '#CA8A04' : '#C0392B';
-  // Post
-  ctx.fillStyle = '#F2EAD3'; ctx.fillRect(cx-1, cy-10, 2, 10);
-  // Banner
-  ctx.fillStyle = color; ctx.fillRect(cx+1, cy-10, 7, 4);
-  ctx.fillStyle = '#1C1C1C'; ctx.fillRect(cx+1, cy-6, 7, 1);
-  // Outline
-  ctx.strokeStyle = '#1C1C1C'; ctx.lineWidth = 1;
-  ctx.strokeRect(cx+1, cy-10, 7, 4);
-  // Base dot
-  ctx.fillStyle = color; ctx.fillRect(cx-2, cy, 4, 3);
-  ctx.fillStyle = '#1C1C1C'; ctx.fillRect(cx-2, cy, 4, 1);
+  const accent = (p.own ? '#D4AC0D' : (p.allied ? '#4CAF50' : '#C0392B'));
+  ctx.save();
+  ctx.strokeStyle = '#3A2010';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + 2);
+  ctx.lineTo(cx, cy - 7);
+  ctx.stroke();
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 7);
+  ctx.lineTo(cx + 5, cy - 4);
+  ctx.lineTo(cx, cy - 1);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 }
 
 // ── Province building sprite + flag ──────────────────────────────────────
 function drawProvince(ctx, cx, cy, p) {
-  const roofColor = p.own ? '#CA8A04' : (p.allied ? '#4CAF50' : '#C0392B');
-  const bw=14, bh=10, bx=cx-7, by=cy-6;
-  // Walls
-  ctx.fillStyle = p.own ? '#FDFEFE' : '#F2EAD3'; ctx.fillRect(bx,by,bw,bh);
-  ctx.fillStyle = '#FDFEFE'; ctx.fillRect(bx,by,7,bh);        // sun side
-  ctx.fillStyle = '#E0D0B0'; ctx.fillRect(bx+10,by,4,bh);     // shade side
-  // Fired-clay roof
-  ctx.fillStyle = roofColor; ctx.fillRect(bx-1,by-4,bw+2,5);
-  ctx.fillStyle = '#E67E22'; ctx.fillRect(bx-1,by-4,bw+2,2);  // sun highlight
-  // Door
-  ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx-2,by+4,4,bh-4);
-  // Window
-  ctx.fillStyle = '#AED6F1'; ctx.fillRect(bx+3,by+2,3,3);
-  ctx.fillStyle = '#6E2C00'; ctx.fillRect(bx+3,by+2,1,3); ctx.fillRect(bx+3,by+2,3,1);
-  // Outline
-  ctx.strokeStyle = '#1C1C1C'; ctx.lineWidth = 1; ctx.strokeRect(bx,by,bw,bh);
-  // Flag pole
-  ctx.fillStyle = '#F2EAD3'; ctx.fillRect(cx+6,cy-14,1,12);
-  // Banner
-  ctx.fillStyle = roofColor; ctx.fillRect(cx+7,cy-14,8,5);
-  ctx.fillStyle = '#1C1C1C'; ctx.fillRect(cx+7,cy-9,8,1);
-  // Wall pips
-  for (let i=0; i<p.walls; i++) {
-    ctx.fillStyle = '#F2EAD3'; ctx.fillRect(cx-4+i*5,cy+S-2,3,4);
-    ctx.fillStyle = '#6E2C00'; ctx.fillRect(cx-4+i*5,cy+S-2,1,4);
+  const walls = Math.min(3, p.walls || 0);
+  const accent = p.own ? '#D4AC0D' : (p.allied ? '#4CAF50' : '#C0392B');
+  const culture = p.culture ? (CULTURE_ACCENT[p.culture] || '#888') : '#888';
+  ctx.save();
+  if (walls >= 1) {
+    ctx.strokeStyle = '#9A7A50';
+    ctx.lineWidth = walls >= 2 ? 2 : 1;
+    ctx.beginPath();
+    const r = 7 + walls;
+    for (let i = 0; i < 6; i++) {
+      const a = Math.PI / 3 * i;
+      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
   }
+  const bw = 6 + walls * 1, bh = 5 + walls;
+  ctx.fillStyle = '#D4B890';
+  ctx.strokeStyle = '#7A5030';
+  ctx.lineWidth = 0.8;
+  ctx.fillRect(cx - bw/2, cy - bh/2, bw, bh);
+  ctx.strokeRect(cx - bw/2, cy - bh/2, bw, bh);
+  ctx.fillStyle = '#8A6040';
+  ctx.fillRect(cx - 1.5, cy, 3, bh/2);
+  ctx.fillStyle = culture;
+  ctx.fillRect(cx - bw/2 + 1, cy - bh/2 + 1, bw - 2, 1.5);
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 0.6;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - bh/2 - 5);
+  ctx.lineTo(cx, cy - bh/2 - 1);
+  ctx.stroke();
+  ctx.fillStyle = accent;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - bh/2 - 5);
+  ctx.lineTo(cx + 4, cy - bh/2 - 3);
+  ctx.lineTo(cx, cy - bh/2 - 1);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
 }
 
 // ── Province name label (two-pass for legibility) ────────────────────────
 function drawLabel(ctx, cx, cy, text, own) {
   ctx.save();
-  ctx.font = '7px monospace'; ctx.textAlign = 'center';
-  ctx.fillStyle = '#1C1C1C'; ctx.fillText(text, cx+1, cy+S+13);
-  ctx.fillStyle = own ? '#F9E79F' : '#F2EAD3'; ctx.fillText(text, cx, cy+S+12);
+  ctx.font = own ? 'bold 7px monospace' : '6px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.strokeStyle = '#000000aa';
+  ctx.lineWidth = 2;
+  ctx.strokeText(text, cx, cy + 10);
+  ctx.fillStyle = own ? '#F9E79F' : '#E8D0A8';
+  ctx.fillText(text, cx, cy + 10);
   ctx.restore();
 }
 
 // ── Dirt road between two province centres ────────────────────────────────
 function drawRoad(ctx, ax, ay, bx, by) {
   ctx.save();
-  ctx.strokeStyle = '#A07040'; ctx.lineWidth = 2; ctx.setLineDash([3,2]);
-  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
-  ctx.strokeStyle = '#D4AC0D'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
-  ctx.setLineDash([]); ctx.restore();
+  ctx.strokeStyle = '#9A7850';
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([3, 4]);
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
 }
 
 // ── Trade caravan figure — brown cloak, sack on back ─────────────────────
 function drawCaravan(ctx, x, y, walkPhase) {
   ctx.save();
-  ctx.fillStyle = '#7B4F28'; // brown cloak
-  ctx.fillRect(x-2,y-3,4,5);
-  ctx.fillStyle = '#F0B27A'; ctx.fillRect(x-1,y-6,3,3); // head
-  // Pack / sack on back
-  ctx.fillStyle = '#A07050'; ctx.fillRect(x-5,y-4,3,5);
-  ctx.fillStyle = '#C89060'; ctx.fillRect(x-5,y-4,3,1);
-  ctx.fillStyle = '#8B6040'; ctx.fillRect(x-5,y+1,3,1);
-  if (walkPhase < 2) { ctx.fillStyle='#5A3010'; ctx.fillRect(x-2,y+2,2,3); ctx.fillRect(x,y+1,2,3); }
-  else               { ctx.fillStyle='#5A3010'; ctx.fillRect(x-2,y+1,2,3); ctx.fillRect(x,y+2,2,3); }
+  const bob = walkPhase < 2 ? 0 : 1;
+  ctx.fillStyle = '#7B4F28';
+  ctx.fillRect(x-1, y-5+bob, 3, 5);
+  ctx.fillStyle = '#5A3A18';
+  ctx.beginPath();
+  ctx.arc(x+0.5, y-7+bob, 2, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#9A7050';
+  ctx.fillRect(x+1, y-4+bob, 2, 2);
   ctx.restore();
 }
 
 // ── Messenger figure — olive cloak, scroll in hand ────────────────────────
 function drawMessenger(ctx, x, y, walkPhase) {
   ctx.save();
-  ctx.fillStyle = '#A07830'; // olive cloak
-  ctx.fillRect(x-2,y-3,4,5);
-  ctx.fillStyle = '#F0B27A'; ctx.fillRect(x-1,y-6,3,3); // head
-  ctx.fillStyle = '#D4AC0D'; // gold accent on cloak
-  ctx.fillRect(x-2,y-3,4,1);
-  if (walkPhase < 2) { ctx.fillStyle='#6E4010'; ctx.fillRect(x-2,y+2,2,3); ctx.fillRect(x,y+1,2,3); }
-  else               { ctx.fillStyle='#6E4010'; ctx.fillRect(x-2,y+1,2,3); ctx.fillRect(x,y+2,2,3); }
-  // Scroll in raised hand
-  ctx.fillStyle = '#F2EAD3'; ctx.fillRect(x+2,y-5,2,4);
-  ctx.fillStyle = '#1C1C1C'; ctx.fillRect(x+2,y-5,2,1); ctx.fillRect(x+2,y-2,2,1);
+  const bob = walkPhase < 2 ? 0 : 1;
+  ctx.fillStyle = '#6B8B4A';
+  ctx.fillRect(x-1, y-5+bob, 3, 5);
+  ctx.fillStyle = '#3A5A28';
+  ctx.beginPath();
+  ctx.arc(x+0.5, y-7+bob, 2, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#F2E8C0';
+  ctx.fillRect(x+1, y-6+bob, 1, 3);
   ctx.restore();
 }
 
 // ── Walking settler figure (8×10 px, Settlers-style) ─────────────────────
 function drawWalker(ctx, x, y, intent, walkPhase) {
   ctx.save();
-  ctx.fillStyle = intent === 'attack' ? '#922B21' : '#2E86C1';
-  ctx.fillRect(x-2,y-3,4,5);
-  ctx.fillStyle = '#F0B27A'; ctx.fillRect(x-1,y-6,3,3);
-  ctx.fillStyle = '#6E2C00';
-  if (walkPhase < 2) { ctx.fillRect(x-2,y+2,2,3); ctx.fillRect(x,y+1,2,3); }
-  else               { ctx.fillRect(x-2,y+1,2,3); ctx.fillRect(x,y+2,2,3); }
-  if (intent === 'attack') { ctx.fillStyle='#F2EAD3'; ctx.fillRect(x+2,y-5,1,7); }
+  const bob = walkPhase < 2 ? 0 : 1;
+  const bodyColor = {attack:'#922B21', reinforce:'#1A5276', support:'#145A32', scout:'#7D6608'}[intent] || '#555';
+  ctx.fillStyle = bodyColor;
+  ctx.fillRect(x-2, y-5+bob, 4, 5);
+  ctx.fillStyle = '#F4D0A0';
+  ctx.beginPath();
+  ctx.arc(x, y-7+bob, 2.5, 0, Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = '#3A2010';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  if (walkPhase < 2) {
+    ctx.moveTo(x-2, y-3+bob); ctx.lineTo(x-4, y-1+bob);
+    ctx.moveTo(x+2, y-3+bob); ctx.lineTo(x+4, y+0+bob);
+    ctx.moveTo(x-1, y+0+bob); ctx.lineTo(x-2, y+3+bob);
+    ctx.moveTo(x+1, y+0+bob); ctx.lineTo(x+2, y+2+bob);
+  } else {
+    ctx.moveTo(x-2, y-3+bob); ctx.lineTo(x-4, y+0+bob);
+    ctx.moveTo(x+2, y-3+bob); ctx.lineTo(x+4, y-1+bob);
+    ctx.moveTo(x-1, y+0+bob); ctx.lineTo(x-2, y+2+bob);
+    ctx.moveTo(x+1, y+0+bob); ctx.lineTo(x+2, y+3+bob);
+  }
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -758,7 +978,6 @@ function resetView() {
 }
 
 // ── Inspect panel ─────────────────────────────────────────────────────────
-// Maps terrain type to the base goods it produces.
 const TERRAIN_GOODS = {
   plains:       'grain, horses',
   river_valley: 'grain ×3 (very fertile)',
@@ -774,7 +993,6 @@ function openInspect(marker) {
   document.getElementById('ip-name').textContent    = marker.name;
   document.getElementById('ip-culture').textContent = marker.culture;
 
-  // Terrain and deposits from tileData.
   const tile = tileData.find(t => t.q === marker.q && t.r === marker.r);
   if (tile) {
     const tLabel = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
@@ -802,7 +1020,6 @@ function openInspect(marker) {
   const kName = marker.kingdom_name || 'Kingdom';
   const kText = marker.kingdom_id ? (marker.allied ? `⚑ ${kName} (allied)` : `⚑ ${kName}`) : '—';
   document.getElementById('ip-kingdom').textContent = kText;
-  // Fetch army strength asynchronously.
   document.getElementById('ip-army').textContent = '…';
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marker.id}/army`).then(r => {
     if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
@@ -821,7 +1038,6 @@ function openInspect(marker) {
       <span id="recall-err" style="font-size:.75rem;color:var(--danger);display:block;margin-top:.2rem;"></span>`;
   } else if (marker.own) {
     const a = document.createElement('a');
-    // Capital: plain province URL; others: ?sid= to switch to that settlement.
     a.href = marker.is_capital
       ? `/world/${WORLD_ID}/`
       : `/world/${WORLD_ID}/?sid=${marker.settlement_id}`;
@@ -861,7 +1077,6 @@ async function recallOutpost(provinceID) {
   }
 }
 
-// Alias used when right-clicking own non-capital settlements.
 function showInspect(marker) { openInspect(marker); }
 
 // ── Input: drag + zoom + click ────────────────────────────────────────────
@@ -873,7 +1088,6 @@ canvas.addEventListener('mouseup', e => {
   if (!dragging) return;
   const dx = e.clientX - lastMouse.x, dy = e.clientY - lastMouse.y;
   dragging = false;
-  // Click (no significant drag)
   if (Math.abs(dx) < 4 && Math.abs(dy) < 4) {
     const rect = canvas.getBoundingClientRect();
     const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
@@ -890,7 +1104,6 @@ canvas.addEventListener('mousemove', e => {
     lastMouse = {x: e.clientX, y: e.clientY};
     dirty = true;
   }
-  // Tooltip
   const rect = canvas.getBoundingClientRect();
   const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
   const tile = tileData.find(t => t.q === h.q && t.r === h.r);
@@ -930,7 +1143,6 @@ canvas.addEventListener('wheel', e => {
   dirty = true;
 }, {passive:false});
 
-// Also set dirty when province or tile data loads.
 window.addEventListener('resize', () => { dirty = true; });
 
 loadMap().then(() => { dirty = true; render(); });
@@ -944,7 +1156,6 @@ loadMap().then(() => { dirty = true; render(); });
     ws = new WebSocket(`${proto}//${location.host}/ws/${WORLD_ID}`);
     ws.onopen = () => {
       if (!firstConnect) {
-        // Reconnect: refresh all map data that may have changed while WS was down.
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; }));
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; }));
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
@@ -957,6 +1168,24 @@ loadMap().then(() => { dirty = true; render(); });
       if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; MusicPlayer.update(); }));
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
+      }
+      if (msg.kind === 'MessengerArrival') {
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
+        addNotifChip('diplomacy', '✉', msg.payload?.message || 'Messenger arrived', 'now');
+      }
+      if (msg.kind === 'ArmyArrival') {
+        const intent = msg.payload?.intent || '';
+        addNotifChip('war', '⚔', `Army arrived — ${intent}`, 'now');
+      }
+      if (msg.kind === 'BuildComplete') {
+        addNotifChip('city', '🏛', `Build complete`, 'now');
+      }
+      if (msg.kind === 'TradeCaravanArrival') {
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { tradeData = d; dirty = true; }));
+        addNotifChip('trade', '🐂', 'Caravan arrived', 'now');
+      }
+      if (msg.kind === 'KharisEvent') {
+        addNotifChip('oikos', '⛩', msg.payload?.message || 'Divine event', 'now');
       }
     };
     ws.onclose = () => setTimeout(connect, 5000);
@@ -973,11 +1202,11 @@ const UNIT_DEFS = [
   { key: 'ship',           label: 'Trireme',     apiKey: 'Ship'          },
 ];
 
-let marchCtxTarget = null;     // province marker (has .id) or null
-let marchCtxTile   = null;     // {q, r} for colonize intent (empty tile)
+let marchCtxTarget = null;
+let marchCtxTile   = null;
 let marchCtxIntent = 'attack';
 let marchCtxArmy   = null;
-let marchCtxSourceID = null;   // province ID of the selected source settlement
+let marchCtxSourceID = null;
 
 const marchCtx = document.getElementById('march-ctx');
 
@@ -1116,12 +1345,10 @@ async function openMarchCtx(target, screenX, screenY) {
   marchCtxIntent = 'attack';
   document.getElementById('mctx-attack').classList.add('active');
 
-  // Intent buttons: reinforce/support only for allied provinces.
   const allied = !!target.allied;
   document.getElementById('mctx-reinforce').disabled = !allied;
   document.getElementById('mctx-support').disabled = !allied;
 
-  // Position: keep within viewport.
   marchCtx.style.display = 'block';
   const vw = window.innerWidth, vh = window.innerHeight;
   const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
@@ -1130,7 +1357,6 @@ async function openMarchCtx(target, screenX, screenY) {
 
   populateSourceSelect(capital.id);
 
-  // Fetch source army and target army in parallel.
   document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
   const [res, defRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/army`),
@@ -1149,7 +1375,6 @@ async function openMarchCtx(target, screenX, screenY) {
 
   renderArmyInputs(marchCtxArmy, !target.allied ? defDP : 0);
 
-  // Re-position in case content changed height.
   const newH = marchCtx.offsetHeight;
   marchCtx.style.top = Math.min(screenY + 8, vh - newH - 8) + 'px';
 }
@@ -1192,7 +1417,6 @@ async function sendMarch() {
   document.getElementById('mctx-send').disabled = false;
   if (res.ok) {
     closeMarchCtx();
-    // Refresh province data so army counts update.
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; }));
   } else {
     const err = await res.json().catch(() => ({error: 'Unknown error'}));
@@ -1224,7 +1448,7 @@ async function sendMessengerFromInspect(destSettlementID) {
   }
 }
 
-// Right-click to open march menu; also close on outside click or Escape.
+// Right-click to open march menu
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault();
   const capital = provinceData.find(p => p.is_capital);
@@ -1233,15 +1457,13 @@ canvas.addEventListener('contextmenu', e => {
   const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
   const target = provinceData.find(p => p.q === h.q && p.r === h.r);
   if (target) {
-    if (target.is_capital) { closeMarchCtx(); return; } // own capital — no menu
+    if (target.is_capital) { closeMarchCtx(); return; }
     if (target.own) {
-      // Owned non-capital: show manage link via inspect panel
       showInspect(target, e.clientX, e.clientY);
       return;
     }
     openMarchCtx(target, e.clientX, e.clientY);
   } else {
-    // Empty tile — offer colonize if it's a habitable terrain.
     const tile = tileData.find(t => t.q === h.q && t.r === h.r);
     if (!tile || tile.terrain === 'sea' || tile.terrain === 'mountain' || tile.terrain === 'fog') { closeMarchCtx(); return; }
     openColonizeCtx({ q: h.q, r: h.r, terrain: tile.terrain }, e.clientX, e.clientY);
@@ -1317,7 +1539,448 @@ function toggleMusic() {
   document.getElementById('music-btn').textContent = isPaused ? '♪' : '♫';
 }
 
-// Start music on first user interaction (browser autoplay policy).
 document.addEventListener('pointerdown', () => MusicPlayer.start(), { once: true });
+
+// ── Drawer system ─────────────────────────────────────────────────────────
+let activeDrawer = null;
+
+function toggleDrawer(name) {
+  if (activeDrawer === name) { closeDrawer(name); return; }
+  if (activeDrawer) closeDrawer(activeDrawer);
+  openDrawer(name);
+}
+
+function openDrawer(name) {
+  const el = document.getElementById('drawer-' + name);
+  const tr = document.getElementById('trig-' + name);
+  if (!el) return;
+  el.classList.add('open');
+  if (tr) tr.classList.add('active');
+  document.getElementById('map-dim').classList.add('visible');
+  activeDrawer = name;
+  loadDrawerContent(name);
+}
+
+function closeDrawer(name) {
+  const el = document.getElementById('drawer-' + name);
+  const tr = document.getElementById('trig-' + name);
+  if (el) el.classList.remove('open');
+  if (tr) tr.classList.remove('active');
+  document.getElementById('map-dim').classList.remove('visible');
+  activeDrawer = null;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (activeDrawer) { closeDrawer(activeDrawer); return; }
+    document.getElementById('search-overlay').classList.remove('open');
+  }
+});
+
+// Drawer content loaders — fetch live data from JSON API on open
+async function loadDrawerContent(name) {
+  const capital = provinceData.find(p => p.own && p.is_capital);
+
+  if (name === 'city') {
+    const body = document.getElementById('city-body');
+    if (!capital) {
+      body.innerHTML = '<p class="empty-state" style="padding:1rem">No city founded yet. Click a hex to colonize.</p>';
+      return;
+    }
+    body.innerHTML = `
+      <div class="dsec">
+        <div class="dsec-title">${capital.name}</div>
+        <div class="stat-row"><span class="sr-label">Terrain</span><span class="sr-val">${capital.terrain || '—'}</span></div>
+        <div class="stat-row"><span class="sr-label">Walls</span><span class="sr-val">${'▓'.repeat(capital.walls||0)}${'░'.repeat(Math.max(0,3-(capital.walls||0)))}</span></div>
+        <div class="stat-row"><span class="sr-label">Culture</span><span class="sr-val">${capital.culture || '—'}</span></div>
+      </div>
+      <div class="dsec">
+        <div class="dsec-title">Goods & Production</div>
+        <div id="city-goods-loading" class="loading" style="font-size:.8rem">Loading…</div>
+      </div>
+      <div class="dsec">
+        <a class="obj-cta" href="/world/${WORLD_ID}/" style="display:block;text-align:center;padding:.4rem;margin-top:.3rem">
+          Full City View →
+        </a>
+      </div>`;
+    // Async: fetch goods
+    try {
+      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/goods`);
+      if (r.ok) {
+        const goods = await r.json();
+        const gl = document.getElementById('city-goods-loading');
+        if (!gl) return;
+        const producible = goods.filter(g => g.producible || g.amount > 0);
+        if (!producible.length) { gl.textContent = 'No production data.'; return; }
+        gl.outerHTML = `<table class="goods-mini">${
+          producible.map(g => `<tr><td>${g.good_key}</td><td>${g.amount !== undefined ? Math.floor(g.amount) : '—'}</td></tr>`).join('')
+        }</table>`;
+      }
+    } catch (_) {}
+
+  } else if (name === 'war') {
+    const body = document.getElementById('war-body');
+    if (!capital) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>'; return; }
+    const ownMarches = marchData.filter(m => m.own || m.origin_q === capital.q);
+    const garDP = (capital.infantry||0) + (capital.elite_infantry||0)*2 + (capital.chariot||0)*3;
+    body.innerHTML = `
+      <div class="dsec">
+        <div class="dsec-title">Garrison — ${capital.name}</div>
+        <div class="stat-row"><span class="sr-label">Strength</span><span class="sr-val">${garDP} DP</span></div>
+      </div>
+      <div class="dsec">
+        <div class="dsec-title">Active Marches (${ownMarches.length})</div>
+        ${ownMarches.length === 0 ? '<p class="empty-state">No armies in the field.</p>' :
+          ownMarches.map(m => `
+          <div class="obj-card">
+            <div class="obj-icon">⚔</div>
+            <div class="obj-info">
+              <div class="obj-name">${m.intent.charAt(0).toUpperCase()+m.intent.slice(1)} → (${m.target_q},${m.target_r})</div>
+              <div class="obj-sub">ETA ${fmtEta(m.arrives_at)}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="dsec">
+        <a class="obj-cta" href="/world/${WORLD_ID}/rawaketa" style="display:block;text-align:center;padding:.4rem">
+          Full War View →
+        </a>
+      </div>`;
+
+  } else if (name === 'diplomacy') {
+    const body = document.getElementById('diplomacy-body');
+    body.innerHTML = '<div class="loading" style="padding:.5rem">Loading inbox…</div>';
+    try {
+      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers/inbox`);
+      if (r.ok) {
+        const inbox = await r.json();
+        const pending = inbox.filter(m => !m.trade_offer || m.trade_offer.status === 'pending');
+        body.innerHTML = `
+          <div class="dsec">
+            <div class="dsec-title">Inbox (${pending.length})</div>
+            ${pending.length === 0 ? '<p class="empty-state">No new messages.</p>' :
+              pending.slice(0,5).map(m => `
+              <div class="inbox-item unread">
+                <div class="ii-from">${m.sender_name || 'Unknown'} · ${m.trade_offer ? 'Trade offer' : 'Message'}</div>
+                <div class="ii-body">${m.message ? m.message.substring(0,80) + (m.message.length>80?'…':'') : '(trade offer)'}</div>
+              </div>`).join('')}
+          </div>
+          <div class="dsec">
+            <a class="obj-cta" href="/world/${WORLD_ID}/messages" style="display:block;text-align:center;padding:.4rem">
+              Full Messages View →
+            </a>
+          </div>`;
+      } else {
+        body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load inbox.</p>';
+      }
+    } catch (_) {
+      body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load inbox.</p>';
+    }
+
+  } else if (name === 'economy') {
+    const body = document.getElementById('economy-body');
+    if (!capital) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No city.</p>'; return; }
+    body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
+    try {
+      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/goods`);
+      if (r.ok) {
+        const goods = await r.json();
+        const silver = goods.find(g => g.good_key === 'silver');
+        const others = goods.filter(g => g.good_key !== 'silver' && (g.amount > 0 || g.producible));
+        body.innerHTML = `
+          <div class="silver-balance">
+            <div>
+              <div class="sb-label">Silver</div>
+              <div class="sb-val">${silver ? fmtSilver(silver.amount) : '0 shekel'}</div>
+            </div>
+            ${silver && silver.rate_per_minute ? `<div class="sb-rate">+${silver.rate_per_minute.toFixed(2)}/m</div>` : ''}
+          </div>
+          <div class="dsec">
+            <div class="dsec-title">Warehouse</div>
+            <table class="goods-mini">
+              ${others.map(g => `<tr><td>${g.good_key}</td><td>${Math.floor(g.amount||0)}</td></tr>`).join('')}
+            </table>
+          </div>
+          <div class="dsec">
+            <a class="obj-cta" href="/world/${WORLD_ID}/" style="display:block;text-align:center;padding:.4rem">
+              Full Economy View →
+            </a>
+          </div>`;
+      } else {
+        body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
+      }
+    } catch (_) {
+      body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
+    }
+
+  } else if (name === 'oikos') {
+    const body = document.getElementById('oikos-body');
+    body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
+    try {
+      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/kingdoms`);
+      if (r.ok) {
+        const kingdoms = await r.json();
+        const myKingdom = kingdoms[0]; // player is member of at most one kingdom
+        if (myKingdom) {
+          body.innerHTML = `
+            <div class="dsec">
+              <div class="dsec-title">Kingdom — ${myKingdom.name}</div>
+              <div class="stat-row"><span class="sr-label">Role</span><span class="sr-val">${myKingdom.my_role || '—'}</span></div>
+              <div class="stat-row"><span class="sr-label">Members</span><span class="sr-val">${myKingdom.member_count || '—'}</span></div>
+              <div class="stat-row"><span class="sr-label">Status</span><span class="sr-val">${myKingdom.state || '—'}</span></div>
+            </div>
+            <div class="dsec">
+              <a class="obj-cta" href="/world/${WORLD_ID}/kingdom" style="display:block;text-align:center;padding:.4rem">
+                Full Kingdom View →
+              </a>
+            </div>`;
+        } else {
+          body.innerHTML = `
+            <div class="dsec">
+              <p class="empty-state">Not a kingdom member.</p>
+            </div>
+            <div class="dsec">
+              <a class="obj-cta" href="/world/${WORLD_ID}/kingdom" style="display:block;text-align:center;padding:.4rem">
+                Found a Kingdom →
+              </a>
+            </div>`;
+        }
+      } else {
+        body.innerHTML = `
+          <div class="dsec">
+            <p class="empty-state">No kingdom.</p>
+            <a class="obj-cta" href="/world/${WORLD_ID}/kingdom" style="display:block;text-align:center;padding:.4rem;margin-top:.5rem">
+              Kingdom View →
+            </a>
+          </div>`;
+      }
+    } catch (_) {
+      body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
+    }
+  }
+}
+
+// Helper: format ETA timestamp to human-readable
+function fmtEta(iso) {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return 'arrived';
+  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+// ── Celestial clock ───────────────────────────────────────────────────────
+const MONTH_NAMES = [
+  'Posideon','Gamelion','Anthesterion','Elaphebolion',
+  'Mounichion','Thargelion','Skirophorion','Hekatombaion',
+  'Metageitnion','Boedromion','Pyanepsion','Maimakterion'
+];
+const MOON_PHASES = ['🌑','🌒','🌒','🌓','🌔','🌔','🌕','🌖','🌖','🌗','🌘','🌘'];
+const REF_NEW_MOON = new Date('2025-01-29T12:35:00Z').getTime();
+const LUNAR_CYCLE  = 29.53058867 * 24 * 3600 * 1000;
+
+function moonPhase() {
+  const age = ((Date.now() - REF_NEW_MOON) % LUNAR_CYCLE + LUNAR_CYCLE) % LUNAR_CYCLE;
+  return MOON_PHASES[Math.floor(age / LUNAR_CYCLE * 12) % 12];
+}
+
+function toRoman(n) {
+  const vals = [10,9,5,4,1], syms = ['X','IX','V','IV','I'];
+  let r = '';
+  for (let i = 0; i < vals.length; i++) { while (n >= vals[i]) { r += syms[i]; n -= vals[i]; } }
+  return r;
+}
+
+function updateCelestial() {
+  const now = new Date();
+  const h   = now.getHours() + now.getMinutes() / 60;
+  const isDay = h >= 6 && h < 18;
+
+  const body     = document.getElementById('cel-body');
+  const nightTxt = document.getElementById('cel-night-txt');
+  const cx = 40, cy = 38, r = 34;
+
+  let bodyX, bodyY;
+  if (isDay) {
+    const t = (h - 6) / 12;
+    const angle = Math.PI - t * Math.PI;
+    bodyX = cx + r * Math.cos(angle);
+    bodyY = cy - r * Math.sin(angle);
+    body.setAttribute('r', '5');
+    body.setAttribute('fill', '#F9E79F');
+    nightTxt.setAttribute('display', 'none');
+  } else {
+    const hn = h >= 18 ? h - 18 : h + 6;
+    const t  = hn / 12;
+    const angle = t * Math.PI;
+    bodyX = cx + r * Math.cos(angle);
+    bodyY = cy - r * Math.sin(angle);
+    body.setAttribute('r', '4');
+    body.setAttribute('fill', '#D0D8F0');
+    nightTxt.setAttribute('display', '');
+  }
+
+  body.setAttribute('cx', bodyX.toFixed(1));
+  body.setAttribute('cy', bodyY.toFixed(1));
+  document.getElementById('cel-phase').textContent = isDay ? '☀' : moonPhase();
+
+  const epoch          = new Date('2026-06-01T18:00:00');
+  const shifted        = new Date(now.getTime() - 18 * 3600 * 1000);
+  const daysSinceEpoch = Math.floor((shifted - epoch) / (24 * 3600 * 1000));
+  const dayOfMonth     = (daysSinceEpoch % 30) + 1;
+  const monthIdx       = Math.floor(daysSinceEpoch / 30) % 12;
+  const year           = Math.floor(daysSinceEpoch / 360) + 1;
+
+  document.getElementById('cel-date').innerHTML =
+    `<strong>${toRoman(dayOfMonth)}</strong> ${MONTH_NAMES[monthIdx]}<br>Year ${toRoman(year)}`;
+}
+
+updateCelestial();
+setInterval(updateCelestial, 60 * 1000);
+
+// ── Notification chips ─────────────────────────────────────────────────────
+const MIN_W = 26;
+const GAP   = 3;
+
+function recomputeChips() {
+  const strip = document.getElementById('gt-notif-strip');
+  const chips = [...strip.querySelectorAll('.notif-chip:not(.dismissing)')];
+  if (!chips.length) return;
+  const n         = chips.length;
+  const available = strip.clientWidth - 12 - (n - 1) * GAP;
+  const totalW    = (n * (n + 1)) / 2;
+  const extra     = Math.max(0, available - n * MIN_W);
+  chips.forEach((chip, i) => {
+    const weight = i + 1;
+    const width  = Math.round(MIN_W + (weight / totalW) * extra);
+    const depth  = n - 1 - i;
+    const op     = Math.max(0.42, 1 - depth * 0.1);
+    chip.style.maxWidth = width + 'px';
+    chip.style.opacity  = op;
+    const textEl = chip.querySelector('.nc-text');
+    const timeEl = chip.querySelector('.nc-time');
+    const xEl    = chip.querySelector('.nc-x');
+    if (textEl) textEl.style.display = width <= 70  ? 'none' : '';
+    if (timeEl) timeEl.style.display = width <= 115 ? 'none' : '';
+    if (xEl)    xEl.style.display    = width <= 115 ? 'none' : '';
+  });
+}
+
+function dismissChip(chip) {
+  if (chip.classList.contains('dismissing')) return;
+  chip.classList.add('dismissing');
+  chip.addEventListener('animationend', () => { chip.remove(); recomputeChips(); }, { once: true });
+}
+
+const DOMAIN_DRAWER = {
+  war: 'war', city: 'city', trade: 'diplomacy',
+  diplomacy: 'diplomacy', oikos: 'oikos', system: null,
+};
+
+function addNotifChip(domain, glyph, text, time) {
+  const strip = document.getElementById('gt-notif-strip');
+  const chip  = document.createElement('div');
+  chip.className  = 'notif-chip nc-' + domain;
+  chip.title      = text;
+  chip.innerHTML  = `
+    <span class="nc-icon"><span class="nc-dot"></span><span class="nc-glyph">${glyph}</span></span>
+    <span class="nc-text">${text}</span>
+    <span class="nc-time">${time}</span>
+    <button class="nc-x" title="Dismiss">✕</button>
+  `;
+  chip.addEventListener('click', function(e) {
+    if (e.target.classList.contains('nc-x')) return;
+    const target = DOMAIN_DRAWER[domain];
+    if (target) openDrawer(target);
+    dismissChip(this);
+  });
+  chip.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    dismissChip(this);
+  });
+  chip.querySelector('.nc-x').addEventListener('click', function(e) {
+    e.stopPropagation();
+    dismissChip(chip);
+  });
+  strip.appendChild(chip);
+  recomputeChips();
+}
+
+window.addEventListener('resize', recomputeChips);
+
+// ── Search overlay ────────────────────────────────────────────────────────
+function toggleSearch() {
+  const o = document.getElementById('search-overlay');
+  o.classList.toggle('open');
+  if (o.classList.contains('open')) {
+    document.getElementById('search-input').focus();
+    renderSearch('');
+  }
+}
+function closeSearch(e) {
+  document.getElementById('search-overlay').classList.remove('open');
+}
+
+document.getElementById('search-input').addEventListener('input', function() {
+  renderSearch(this.value.toLowerCase());
+});
+
+function renderSearch(q) {
+  const results = document.getElementById('search-results');
+  const ownSettlements = provinceData.filter(p => p.own);
+  const visibleOther   = provinceData.filter(p => !p.own);
+  const ownArms = marchData.filter(m => m.own);
+  const myMsgs  = messengerData.filter(m => m.own || m.dest_settlement_id === MY_SETTLEMENT_ID);
+
+  function match(s) { return !q || s.toLowerCase().includes(q); }
+
+  let html = '';
+  const settOwn = ownSettlements.filter(p => match(p.name));
+  if (settOwn.length) {
+    html += `<div class="sr-category">Your Cities</div>`;
+    html += settOwn.map(p => `
+      <div class="sr-item" onclick="closeSearch();centreOn(${p.q},${p.r})">
+        <span class="sr-icon">🏛</span>
+        <span class="sr-name">${p.name}</span>
+        <span class="sr-meta">${p.terrain || ''} · L${p.walls||0} walls</span>
+        <span class="sr-type">City</span>
+      </div>`).join('');
+  }
+  const settOther = visibleOther.filter(p => match(p.name) && p.name);
+  if (settOther.length) {
+    html += `<div class="sr-category">Visible Cities</div>`;
+    html += settOther.slice(0,8).map(p => `
+      <div class="sr-item" onclick="closeSearch();centreOn(${p.q},${p.r})">
+        <span class="sr-icon">🏛</span>
+        <span class="sr-name">${p.name}</span>
+        <span class="sr-meta">${p.allied ? 'Ally' : p.owner || 'Enemy'}</span>
+        <span class="sr-type">${p.allied ? 'Ally' : 'Enemy'}</span>
+      </div>`).join('');
+  }
+  if (ownArms.length) {
+    html += `<div class="sr-category">Your Armies</div>`;
+    html += ownArms.map(m => `
+      <div class="sr-item" onclick="closeSearch();centreOn(${m.target_q},${m.target_r})">
+        <span class="sr-icon">⚔</span>
+        <span class="sr-name">→ (${m.target_q},${m.target_r}) · ${m.intent}</span>
+        <span class="sr-meta">ETA ${fmtEta(m.arrives_at)}</span>
+        <span class="sr-type">Army</span>
+      </div>`).join('');
+  }
+  if (!html) html = '<div style="padding:.6rem .8rem;font-size:.8rem;color:var(--text-dim)">No results.</div>';
+  results.innerHTML = html;
+}
+
+function centreOn(q, r) {
+  const {x, y} = hexPx(q, r);
+  camera.x = canvas.width/2  - x * SCALE * camera.zoom;
+  camera.y = canvas.height/2 - y * SCALE * camera.zoom;
+  dirty = true;
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.key === 'f' || e.key === '/') && document.activeElement.tagName !== 'INPUT') {
+    e.preventDefault();
+    toggleSearch();
+  }
+});
 </script>
 {{end}}

@@ -199,7 +199,7 @@ func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/world/"+h.worldID.String()+"/join", http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/world/"+h.worldID.String()+"/megaron", http.StatusSeeOther)
+	http.Redirect(w, r, "/world/"+h.worldID.String()+"/map", http.StatusSeeOther)
 }
 
 // MegaronView serves the hub page — the great hall from which all rooms are entered.
@@ -632,6 +632,7 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var settlementID string
+	var unreadCount int
 	if playerID, ok := auth.PlayerIDFromContext(r.Context()); ok {
 		var sid uuid.UUID
 		if err := h.pool.QueryRow(r.Context(),
@@ -640,12 +641,21 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		).Scan(&sid); err == nil {
 			settlementID = sid.String()
 		}
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT count(*) FROM messengers m
+			 JOIN settlements s ON s.id = m.destination_id
+			 WHERE m.world_id = $1 AND s.owner_id = $2 AND m.status = 'delivered'
+			   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')`,
+			worldID, playerID,
+		).Scan(&unreadCount)
 	}
 
 	h.render(w, "map.html", map[string]any{
 		"World":        wld,
 		"WorldID":      worldID,
 		"SettlementID": settlementID,
+		"UnreadCount":  unreadCount,
+		"MapMode":      true,
 	})
 }
 
