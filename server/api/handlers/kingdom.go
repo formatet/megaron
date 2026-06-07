@@ -408,7 +408,7 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(s.name,''), COALESCE(s.culture_id,''),
 		        COALESCE(s.infantry,0) + COALESCE(s.elite_infantry,0)*2
 		          + COALESCE(s.chariot,0)*3 AS dp,
-		        COALESCE(s.walls,0)
+		        COALESCE(s.wall_level,0)
 		 FROM kingdom_members km
 		 JOIN players p ON p.id = km.player_id
 		 LEFT JOIN settlements s ON s.owner_id = km.player_id AND s.world_id = (
