@@ -405,7 +405,7 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT km.player_id, p.username, km.role, km.joined_at,
-		        COALESCE(s.name,''), COALESCE(s.culture,''),
+		        COALESCE(s.name,''), COALESCE(s.culture_id,''),
 		        COALESCE(s.infantry,0) + COALESCE(s.elite_infantry,0)*2
 		          + COALESCE(s.chariot,0)*3 AS dp,
 		        COALESCE(s.walls,0)

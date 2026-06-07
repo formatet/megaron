@@ -241,7 +241,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	report := buildCombatReport(march.Army, def.Army, def.Walls, result, supportStr, frenzied)
 	_, _ = tx.Exec(ctx, `UPDATE marching_armies SET combat_report = $1 WHERE id = $2`, report, march.ID)
 
-	h.insertBattleGossip(ctx, tx, march.OriginID, march.TargetID, worldID, result.Outcome)
+	h.insertBattleGossip(ctx, tx, march.OriginID, march.TargetID, worldID, march.Army, def.Army, result)
 	h.recordEvent(ctx, march.TargetID, worldID, result, march.ID)
 	if h.hub != nil {
 		h.hub.BroadcastEvent(worldID, "ArmyArrival", map[string]any{
@@ -263,6 +263,13 @@ func armyPopCost(a province.ArmyComposition) int {
 		a.EliteInfantry*economy.PopCosts["elite_infantry"] +
 		a.WarGalley*economy.PopCosts["war_galley"] +
 		a.Merchantman*economy.PopCosts["merchantman"]
+}
+
+// totalUnits sums every unit type in an ArmyComposition — used to report
+// battle losses in plain numbers (e.g. "lost 4 units") in gossip text.
+func totalUnits(a province.ArmyComposition) int {
+	return a.Infantry + a.Chariot + a.Priest + a.Ship +
+		a.EliteInfantry + a.WarGalley + a.Merchantman
 }
 
 func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, defOwnerID *uuid.UUID, attackArmy province.ArmyComposition, result CombatResult, worldID uuid.UUID) error {
@@ -507,7 +514,8 @@ func buildCombatReport(att, def province.ArmyComposition, walls int, result Comb
 
 // insertBattleGossip writes rumour events to players within 5 hexes of the battle,
 // excluding the direct combatants who already receive WebSocket notifications.
-func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, originID, targetID, worldID uuid.UUID, outcome Outcome) {
+func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, originID, targetID, worldID uuid.UUID, attackArmy, defArmy province.ArmyComposition, result CombatResult) {
+	outcome := result.Outcome
 	type provInfo struct {
 		Name string
 		Q, R int
@@ -535,14 +543,45 @@ func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, orig
 	_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, originID).Scan(&attOwner)
 	_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, targetID).Scan(&defOwner)
 
-	// Direct notification for combatants (persists for offline players).
+	// Direct notification for combatants (persists for offline players) — spell out
+	// what was actually lost, so a Wanax returning later can explain a population/army
+	// drop without guessing (rather than just learning the battle's outcome).
+	attDead := province.ArmyComposition{
+		Infantry:      int(float64(attackArmy.Infantry) * result.AttackerLosses),
+		Chariot:       int(float64(attackArmy.Chariot) * result.AttackerLosses),
+		EliteInfantry: int(float64(attackArmy.EliteInfantry) * result.AttackerLosses),
+		Priest:        int(float64(attackArmy.Priest) * result.AttackerLosses),
+		Ship:          int(float64(attackArmy.Ship) * result.AttackerLosses),
+		WarGalley:     int(float64(attackArmy.WarGalley) * result.AttackerLosses),
+		Merchantman:   int(float64(attackArmy.Merchantman) * result.AttackerLosses),
+	}
+	defDead := province.ArmyComposition{
+		Infantry:      int(float64(defArmy.Infantry) * result.DefenderLosses),
+		Chariot:       int(float64(defArmy.Chariot) * result.DefenderLosses),
+		EliteInfantry: int(float64(defArmy.EliteInfantry) * result.DefenderLosses),
+		Priest:        int(float64(defArmy.Priest) * result.DefenderLosses),
+		Ship:          int(float64(defArmy.Ship) * result.DefenderLosses),
+		WarGalley:     int(float64(defArmy.WarGalley) * result.DefenderLosses),
+		Merchantman:   int(float64(defArmy.Merchantman) * result.DefenderLosses),
+	}
+	attPopLost, attUnitsLost := armyPopCost(attDead), totalUnits(attDead)
+	defPopLost, defUnitsLost := armyPopCost(defDead), totalUnits(defDead)
+
 	var attText, defText string
 	if outcome == OutcomeAttackerWins {
 		attText = fmt.Sprintf("Your forces seized %s. The province is now yours.", tgt.Name)
-		defText = fmt.Sprintf("Your settlement fell. Forces from %s broke through your defences.", orig.Name)
+		defText = fmt.Sprintf("Your settlement fell. Forces from %s broke through your defences — the settlement and everyone in it are lost.", orig.Name)
 	} else {
-		attText = fmt.Sprintf("Your assault on %s was repelled. Your forces withdrew.", tgt.Name)
-		defText = fmt.Sprintf("Your settlement held. The attack from %s was beaten back.", orig.Name)
+		if attUnitsLost > 0 {
+			attText = fmt.Sprintf("Your assault on %s was repelled. You lost %d population and %d units in the attempt.", tgt.Name, attPopLost, attUnitsLost)
+		} else {
+			attText = fmt.Sprintf("Your assault on %s was repelled. Your forces withdrew unscathed.", tgt.Name)
+		}
+		if defUnitsLost > 0 {
+			defText = fmt.Sprintf("Your settlement held against an attack from %s, but lost %d population and %d units defending it.", orig.Name, defPopLost, defUnitsLost)
+		} else {
+			defText = fmt.Sprintf("Your settlement held. The attack from %s was beaten back without loss.", orig.Name)
+		}
 	}
 	_, _ = tx.Exec(ctx,
 		`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text) VALUES ($1,$2,$3,$4,$5)`,

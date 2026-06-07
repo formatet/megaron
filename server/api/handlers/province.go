@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -2344,12 +2346,15 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not load producible goods")
 		return
 	}
+	var producibleKeys []string
 	for prows.Next() {
 		var key string
 		_ = prows.Scan(&key)
 		producible[key] = true
+		producibleKeys = append(producibleKeys, key)
 	}
 	prows.Close()
+	sort.Strings(producibleKeys)
 
 	// Validate: only producible goods, non-negative values; compute total.
 	total := 0
@@ -2362,7 +2367,8 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		}
 		if !producible[key] {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("%s is not producible at this settlement", key))
+				fmt.Sprintf("%s is not producible at this settlement (terrain/building gap) — producible here: %s",
+					key, strings.Join(producibleKeys, ", ")))
 			return
 		}
 		if count > 0 {
@@ -2376,7 +2382,8 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 	if total > laborPool {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("för många citizens: tilldelat %d, tillgängligt %d", total, laborPool))
+			fmt.Sprintf("insufficient labor: requested %d citizens but only %d are available (labor_pool=%d, %d already committed to army/buildings/marching) — lower the total or recall/disband units first",
+				total, laborPool, laborPool, population-laborPool))
 		return
 	}
 
