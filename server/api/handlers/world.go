@@ -267,7 +267,12 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
-		        s.state, s.wall_level, pl.username, COALESCE(k.name, '')
+		        s.state, s.wall_level, pl.username, COALESCE(k.name, ''),
+		        s.infantry + s.elite_infantry + s.chariot + s.ship + s.war_galley + s.merchantman AS army_total,
+		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
+		        EXISTS (SELECT 1 FROM scheduled_events se WHERE se.event_type = 'TrainComplete'
+		                AND se.processed_at IS NULL
+		                AND (se.payload->>'settlement_id')::uuid = s.id) AS train_active
 		 FROM provinces p
 		 JOIN settlements s ON s.province_id = p.id
 		 LEFT JOIN players pl ON pl.id = s.owner_id
@@ -298,11 +303,14 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		Allied       bool       `json:"allied"`
 		Visible      bool       `json:"visible"`
 		IsOutpost    bool       `json:"is_outpost,omitempty"`
+		ArmyTotal    int        `json:"army_total,omitempty"`
+		BuildActive  bool       `json:"build_active,omitempty"`
+		TrainActive  bool       `json:"train_active,omitempty"`
 	}
 	var markers []provinceMarker
 	for rows.Next() {
 		var m provinceMarker
-		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner, &m.KingdomName); err != nil {
+		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
 			continue
 		}
 		pos := province.MapPosition{Q: m.Q, R: m.R}
@@ -314,6 +322,12 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		}
 		if !m.Visible {
 			continue // don't reveal fog tiles
+		}
+		if !m.Own {
+			// Don't expose enemy/neutral garrison or activity — FOW.
+			m.ArmyTotal = 0
+			m.BuildActive = false
+			m.TrainActive = false
 		}
 		markers = append(markers, m)
 	}
@@ -452,7 +466,8 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT ma.id, ma.intent,
 		        op.map_q, op.map_r, tp.map_q, tp.map_r,
-		        ma.departs_at, ma.arrives_at
+		        ma.departs_at, ma.arrives_at,
+		        (COALESCE(ma.ship,0) + COALESCE(ma.war_galley,0) + COALESCE(ma.merchantman,0)) > 0 AS is_naval
 		 FROM marching_armies ma
 		 JOIN provinces op ON op.id = ma.origin_id
 		 JOIN provinces tp ON tp.id = ma.target_id
@@ -474,6 +489,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		TargetR   int       `json:"target_r"`
 		DepartsAt time.Time `json:"departs_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
+		IsNaval   bool      `json:"is_naval,omitempty"`
 	}
 
 	visible := func(q, r int) bool {
@@ -494,7 +510,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		var m marchMarker
 		if err := rows.Scan(&m.ID, &m.Intent,
 			&m.OriginQ, &m.OriginR, &m.TargetQ, &m.TargetR,
-			&m.DepartsAt, &m.ArrivesAt); err != nil {
+			&m.DepartsAt, &m.ArrivesAt, &m.IsNaval); err != nil {
 			continue
 		}
 		if !visible(m.OriginQ, m.OriginR) && !visible(m.TargetQ, m.TargetR) {
