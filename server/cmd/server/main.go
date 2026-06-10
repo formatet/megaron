@@ -69,6 +69,7 @@ func main() {
 	authSvc := auth.NewService(pool, jwtSecret)
 
 	hub := notify.New()
+	hub.SetPool(pool)
 
 	// GameClock — single source of time for all game logic.
 	// On startup, check for downtime since last heartbeat and absorb it.
@@ -184,6 +185,7 @@ func main() {
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock)
 	jh := handlers.NewJoinHandler(pool)
+	nh := handlers.NewNotificationsHandler(pool)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// World endpoints — list/get/map are public; create requires auth.
@@ -250,6 +252,9 @@ func main() {
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/reply", mh.Reply)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-accept", mh.TradeAccept)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-decline", mh.TradeDecline)
+
+			r.Get("/worlds/{worldID}/notifications", nh.List)
+			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)
 
 			r.Get("/worlds/{worldID}/kingdoms/{kingdomID}/election", kh.ElectionStatus)
 			r.Get("/worlds/{worldID}/kingdoms/{kingdomID}/borrowed-armies", kh.BorrowedArmiesList)

@@ -102,7 +102,9 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 
 	if h.hub != nil {
-		h.hub.BroadcastEvent(e.WorldID, "TradeReturn", map[string]any{
+		var ownerID uuid.UUID
+		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.DestinationID).Scan(&ownerID)
+		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TradeReturn", 3, map[string]any{
 			"destination_id": p.DestinationID,
 			"good_key":       p.GoodKey,
 			"quantity":       p.Quantity,

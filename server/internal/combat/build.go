@@ -127,7 +127,9 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	if h.hub != nil {
-		h.hub.BroadcastEvent(e.WorldID, "BuildComplete", map[string]any{
+		var ownerID uuid.UUID
+		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID)
+		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "BuildComplete", 4, map[string]any{
 			"settlement_id": p.SettlementID,
 			"building_type": p.BuildingType,
 		})

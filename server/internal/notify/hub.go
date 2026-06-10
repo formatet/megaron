@@ -4,12 +4,14 @@
 package notify
 
 import (
+	"context"
 	"encoding/json"
 	"log/slog"
 	"sync"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Msg is a JSON-encodable push message sent to all clients in a world.
@@ -30,6 +32,7 @@ type client struct {
 type Hub struct {
 	mu      sync.RWMutex
 	clients map[*client]struct{}
+	pool    *pgxpool.Pool
 }
 
 // New creates a Hub ready for use.
@@ -37,10 +40,34 @@ func New() *Hub {
 	return &Hub{clients: make(map[*client]struct{})}
 }
 
+// SetPool wires a database pool for notification persistence.
+// Call once at startup before any events are processed.
+func (h *Hub) SetPool(pool *pgxpool.Pool) { h.pool = pool }
+
 // BroadcastEvent is a convenience wrapper used by internal packages that must not
 // import notify directly. It satisfies economy.Broadcaster and combat.Broadcaster.
 func (h *Hub) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {
 	h.Broadcast(worldID, Msg{Kind: kind, Payload: payload})
+}
+
+// NotifyPlayer persists a notification for a specific player and broadcasts
+// the event to all clients in the world. If playerID is uuid.Nil or no pool
+// is configured, only broadcasts.
+func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
+	if h.pool != nil && playerID != uuid.Nil {
+		bodyJSON, err := json.Marshal(payload)
+		if err == nil {
+			if _, dbErr := h.pool.Exec(ctx,
+				`INSERT INTO notifications (world_id, player_id, kind, level, body_json)
+				 VALUES ($1, $2, $3, $4, $5)`,
+				worldID, playerID, kind, level, bodyJSON,
+			); dbErr != nil {
+				slog.Error("persist notification", "kind", kind, "err", dbErr)
+			}
+		}
+	}
+	h.BroadcastEvent(worldID, kind, payload)
+	return nil
 }
 
 // Broadcast sends msg to every client connected to worldID.

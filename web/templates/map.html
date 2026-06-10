@@ -23,6 +23,9 @@
         <div class="cel-phase" id="cel-phase">☀</div>
         <div class="cel-date" id="cel-date"></div>
       </div>
+      <button class="gt-notif-btn" id="gt-notif-btn" onclick="toggleDrawer('notif')" title="Notifications">
+        ☍<span class="gt-notif-badge" id="gt-notif-badge" style="display:none">0</span>
+      </button>
       <button class="gt-search-btn" onclick="toggleSearch()">⌕</button>
     </div>
   </div>
@@ -146,6 +149,17 @@
     <button class="drawer-close" onclick="closeDrawer('oikos')">✕</button>
   </div>
   <div class="drawer-body" id="oikos-body">
+    <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<!-- ── NOTIFICATIONS DRAWER ─────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-notif">
+  <div class="drawer-header">
+    <span class="drawer-title">Notifications</span>
+    <button class="drawer-close" onclick="closeDrawer('notif')">✕</button>
+  </div>
+  <div class="drawer-body" id="notif-body">
     <div class="loading">Loading…</div>
   </div>
 </div>
@@ -1152,6 +1166,10 @@ loadMap().then(() => { dirty = true; render(); });
       }
       firstConnect = false;
     };
+    const PERSISTENT_KINDS = new Set([
+      'BuildComplete','TrainComplete','ArmyArrival','ColonyFounded',
+      'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
+    ]);
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
       if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
@@ -1175,6 +1193,10 @@ loadMap().then(() => { dirty = true; render(); });
       }
       if (msg.kind === 'KharisEvent') {
         addNotifChip('oikos', '⛩', msg.payload?.message || 'Divine event', 'now');
+      }
+      if (PERSISTENT_KINDS.has(msg.kind)) {
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications?unread=true`)
+          .then(r => r.ok && r.json().then(d => updateNotifBadge(d.unread || 0)));
       }
     };
     ws.onclose = () => setTimeout(connect, 5000);
@@ -1781,6 +1803,38 @@ async function loadDrawerContent(name) {
     } catch (_) {
       body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
     }
+
+  } else if (name === 'notif') {
+    const body = document.getElementById('notif-body');
+    body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
+    try {
+      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications`);
+      if (r.ok) {
+        const data = await r.json();
+        updateNotifBadge(0);
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications/read-all`, { method: 'POST' });
+        if (!data.notifications.length) {
+          body.innerHTML = '<p class="empty-state" style="padding:1rem">No notifications yet.</p>';
+        } else {
+          body.innerHTML = data.notifications.map(n => {
+            const ago = fmtAgo(n.created_at);
+            const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
+            const text = notifText(n.kind, body_obj);
+            const lvlClass = n.level <= 2 ? 'nl-urgent' : n.level === 3 ? 'nl-info' : 'nl-routine';
+            const unread  = !n.read_at ? ' nl-unread' : '';
+            return `<div class="notif-list-item ${lvlClass}${unread}">
+              <span class="nli-kind">${notifIcon(n.kind)}</span>
+              <span class="nli-text">${text}</span>
+              <span class="nli-time">${ago}</span>
+            </div>`;
+          }).join('');
+        }
+      } else {
+        body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
+      }
+    } catch (_) {
+      body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
+    }
   }
 }
 
@@ -1860,6 +1914,67 @@ function updateCelestial() {
 
 updateCelestial();
 setInterval(updateCelestial, 60 * 1000);
+
+// ── Persistent notifications ──────────────────────────────────────────────
+function updateNotifBadge(count) {
+  const badge = document.getElementById('gt-notif-badge');
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : String(count);
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function fmtAgo(iso) {
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 60000)   return 'just now';
+  if (ms < 3600000) return Math.floor(ms / 60000) + 'm ago';
+  if (ms < 86400000) return Math.floor(ms / 3600000) + 'h ago';
+  return Math.floor(ms / 86400000) + 'd ago';
+}
+
+function notifIcon(kind) {
+  const icons = {
+    BuildComplete:      '🏛',
+    TrainComplete:      '⚔',
+    ArmyArrival:        '⚔',
+    ColonyFounded:      '🏛',
+    OutpostEstablished: '⛺',
+    OutpostCaptured:    '⚔',
+    TradeDelivery:      '🐂',
+    TradeLost:          '🌊',
+    TradeReturn:        '🐂',
+    MessengerArrival:   '✉',
+  };
+  return icons[kind] || '◉';
+}
+
+function notifText(kind, body) {
+  switch (kind) {
+    case 'BuildComplete':      return `Build complete: ${body.building_type || ''}`;
+    case 'TrainComplete':      return `Training done: ${body.count || ''} ${body.unit_type || ''}`;
+    case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
+    case 'ColonyFounded':      return `Colony founded: ${body.name || ''}`;
+    case 'OutpostEstablished': return 'Outpost established';
+    case 'OutpostCaptured':    return 'Enemy outpost captured';
+    case 'TradeDelivery':      return `Trade delivered: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
+    case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
+    case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
+    case 'MessengerArrival':   return body.message || 'Messenger arrived';
+    default:                   return kind;
+  }
+}
+
+(async function initNotifications() {
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications?unread=true`);
+    if (r.ok) {
+      const data = await r.json();
+      updateNotifBadge(data.unread || 0);
+    }
+  } catch (_) {}
+})();
 
 // ── Notification chips ─────────────────────────────────────────────────────
 const MIN_W = 26;

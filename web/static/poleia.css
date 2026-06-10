@@ -975,6 +975,35 @@ footer {
 }
 .gt-search-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+.gt-notif-btn {
+  position: relative;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 0.15rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+  align-self: center;
+}
+.gt-notif-btn:hover { border-color: var(--accent); color: var(--accent); }
+.gt-notif-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--danger, #c0392b);
+  color: #fff;
+  font-size: 0.55rem;
+  font-family: var(--mono);
+  border-radius: 2px;
+  padding: 0 2px;
+  min-width: 14px;
+  text-align: center;
+  line-height: 14px;
+  pointer-events: none;
+}
+
 /* ── Game map area ──────────────────────────────────────────────────────── */
 .game-map {
   flex: 1;
@@ -1244,6 +1273,23 @@ footer {
 .sb-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-family: var(--mono); }
 .sb-val   { font-size: 1.1rem; font-family: var(--mono); color: var(--gold); }
 .sb-rate  { font-size: 0.7rem; color: var(--safe); font-family: var(--mono); }
+
+/* ── Notification list items ─────────────────────────────────────────────── */
+.notif-list-item {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr auto;
+  gap: 0.3rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--bg-raised);
+  font-size: 0.78rem;
+  align-items: baseline;
+}
+.notif-list-item:last-child { border-bottom: none; }
+.notif-list-item.nl-unread { background: rgba(255,255,255,0.03); border-left: 2px solid var(--gold); padding-left: 0.3rem; }
+.notif-list-item.nl-urgent  { border-left: 2px solid var(--danger, #c0392b); }
+.nli-kind { font-size: 0.9rem; text-align: center; }
+.nli-text { color: var(--text); }
+.nli-time { color: var(--text-dim); font-family: var(--mono); font-size: 0.68rem; white-space: nowrap; }
 
 /* ── Search overlay ──────────────────────────────────────────────────────── */
 .search-overlay {

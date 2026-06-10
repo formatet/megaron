@@ -244,7 +244,9 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	h.insertBattleGossip(ctx, tx, march.OriginID, march.TargetID, worldID, march.Army, def.Army, result)
 	h.recordEvent(ctx, march.TargetID, worldID, result, march.ID)
 	if h.hub != nil {
-		h.hub.BroadcastEvent(worldID, "ArmyArrival", map[string]any{
+		var attackerOwnerID uuid.UUID
+		_ = tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE province_id = $1`, march.OriginID).Scan(&attackerOwnerID)
+		_ = h.hub.NotifyPlayer(ctx, worldID, attackerOwnerID, "ArmyArrival", 3, map[string]any{
 			"outcome":   result.Outcome,
 			"target_id": march.TargetID,
 			"origin_id": march.OriginID,
@@ -729,7 +731,7 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	slog.Info("colony founded", "settlement", settlementID, "name", name, "province", targetID, "owner", attackerOwnerID)
 
 	if h.hub != nil {
-		h.hub.BroadcastEvent(worldID, "ColonyFounded", map[string]any{
+		_ = h.hub.NotifyPlayer(ctx, worldID, attackerOwnerID, "ColonyFounded", 3, map[string]any{
 			"settlement_id": settlementID,
 			"name":          name,
 			"province_id":   targetID,
@@ -880,7 +882,7 @@ func (h *ArrivalHandler) establishOutpost(ctx context.Context, tx pgx.Tx, origin
 	}, worldID, nil)
 
 	if h.hub != nil {
-		h.hub.BroadcastEvent(worldID, "OutpostEstablished", map[string]any{
+		_ = h.hub.NotifyPlayer(ctx, worldID, attackerOwnerID, "OutpostEstablished", 4, map[string]any{
 			"province_id": targetID,
 			"owner_id":    attackerOwnerID,
 		})
@@ -956,7 +958,9 @@ func (h *ArrivalHandler) attackOutpost(ctx context.Context, tx pgx.Tx, originID,
 		return err
 	}
 	if h.hub != nil {
-		h.hub.BroadcastEvent(worldID, "OutpostCaptured", map[string]any{
+		var capturerID uuid.UUID
+		_ = tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE province_id = $1`, originID).Scan(&capturerID)
+		_ = h.hub.NotifyPlayer(ctx, worldID, capturerID, "OutpostCaptured", 3, map[string]any{
 			"province_id": targetID,
 		})
 	}

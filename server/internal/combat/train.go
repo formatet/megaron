@@ -64,7 +64,9 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	if h.hub != nil {
-		h.hub.BroadcastEvent(e.WorldID, "TrainComplete", map[string]any{
+		var ownerID uuid.UUID
+		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID)
+		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TrainComplete", 4, map[string]any{
 			"settlement_id": p.SettlementID,
 			"unit_type":     p.UnitType,
 			"count":         p.Count,

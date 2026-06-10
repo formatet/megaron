@@ -100,7 +100,9 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			e.WorldID, &e.ID,
 		)
 		if h.hub != nil {
-			h.hub.BroadcastEvent(e.WorldID, "TradeLost", map[string]any{
+			var ownerID uuid.UUID
+			_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.DestinationID).Scan(&ownerID)
+			_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TradeLost", 3, map[string]any{
 				"destination_id": p.DestinationID,
 				"good_key":       p.GoodKey,
 				"quantity":       p.Quantity,
@@ -184,7 +186,9 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 
 	if h.hub != nil {
-		h.hub.BroadcastEvent(e.WorldID, "TradeDelivery", map[string]any{
+		var ownerID uuid.UUID
+		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.DestinationID).Scan(&ownerID)
+		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TradeDelivery", 3, map[string]any{
 			"destination_id": p.DestinationID,
 			"good_key":       p.GoodKey,
 			"quantity":       delivered,
