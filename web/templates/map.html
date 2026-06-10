@@ -1823,62 +1823,10 @@ async function loadDrawerContent(name) {
     } catch(e) { console.error('city drawer', e); }
 
   } else if (name === 'war') {
-    const body = document.getElementById('war-body');
-    if (!capital) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>'; return; }
-    const ownMarches = marchData.filter(m => m.own || m.origin_q === capital.q);
-    const garDP = (capital.infantry||0) + (capital.elite_infantry||0)*2 + (capital.chariot||0)*3;
-    body.innerHTML = `
-      <div class="dsec">
-        <div class="dsec-title">Garrison — ${capital.name}</div>
-        <div class="stat-row"><span class="sr-label">Strength</span><span class="sr-val">${garDP} DP</span></div>
-      </div>
-      <div class="dsec">
-        <div class="dsec-title">Active Marches (${ownMarches.length})</div>
-        ${ownMarches.length === 0 ? '<p class="empty-state">No armies in the field.</p>' :
-          ownMarches.map(m => `
-          <div class="obj-card">
-            <div class="obj-icon">⚔</div>
-            <div class="obj-info">
-              <div class="obj-name">${m.intent.charAt(0).toUpperCase()+m.intent.slice(1)} → (${m.target_q},${m.target_r})</div>
-              <div class="obj-sub">ETA ${fmtEta(m.arrives_at)}</div>
-            </div>
-          </div>`).join('')}
-      </div>
-      <div class="dsec">
-        <a class="obj-cta" href="/world/${WORLD_ID}/rawaketa" style="display:block;text-align:center;padding:.4rem">
-          Full War View →
-        </a>
-      </div>`;
+    await loadWarDrawer();
 
   } else if (name === 'diplomacy') {
-    const body = document.getElementById('diplomacy-body');
-    body.innerHTML = '<div class="loading" style="padding:.5rem">Loading inbox…</div>';
-    try {
-      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers/inbox`);
-      if (r.ok) {
-        const inbox = await r.json();
-        const pending = inbox.filter(m => !m.trade_offer || m.trade_offer.status === 'pending');
-        body.innerHTML = `
-          <div class="dsec">
-            <div class="dsec-title">Inbox (${pending.length})</div>
-            ${pending.length === 0 ? '<p class="empty-state">No new messages.</p>' :
-              pending.slice(0,5).map(m => `
-              <div class="inbox-item unread">
-                <div class="ii-from">${m.sender_name || 'Unknown'} · ${m.trade_offer ? 'Trade offer' : 'Message'}</div>
-                <div class="ii-body">${m.message ? m.message.substring(0,80) + (m.message.length>80?'…':'') : '(trade offer)'}</div>
-              </div>`).join('')}
-          </div>
-          <div class="dsec">
-            <a class="obj-cta" href="/world/${WORLD_ID}/messages" style="display:block;text-align:center;padding:.4rem">
-              Full Messages View →
-            </a>
-          </div>`;
-      } else {
-        body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load inbox.</p>';
-      }
-    } catch (_) {
-      body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load inbox.</p>';
-    }
+    await loadDiplomacyDrawer();
 
   } else if (name === 'economy') {
     const body = document.getElementById('economy-body');
@@ -1993,6 +1941,409 @@ async function loadDrawerContent(name) {
       body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
     }
   }
+}
+
+// ── War drawer ────────────────────────────────────────────────────────────
+async function loadWarDrawer() {
+  const body = document.getElementById('war-body');
+  const capital = provinceData.find(p => p.own && p.is_capital);
+  if (!capital) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>'; return; }
+
+  body.innerHTML = `
+    <div class="drawer-tabs">
+      <button class="dtab active" data-tab="army">Army</button>
+      <button class="dtab" data-tab="recruit">Recruit</button>
+      <button class="dtab" data-tab="movements">Movements</button>
+    </div>
+    <div id="wtab-army" class="city-tab"><div class="loading" style="font-size:.8rem">Loading…</div></div>
+    <div id="wtab-recruit" class="city-tab" style="display:none"><div class="loading" style="font-size:.8rem">Loading…</div></div>
+    <div id="wtab-movements" class="city-tab" style="display:none"></div>`;
+
+  body.querySelectorAll('.dtab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      body.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      body.querySelectorAll('.city-tab').forEach(c => c.style.display = 'none');
+      const el = document.getElementById('wtab-' + this.dataset.tab);
+      if (el) el.style.display = '';
+    });
+  });
+
+  renderWarMovements(capital);
+
+  const UNIT_LBL  = { Infantry:'Hoplites', EliteInfantry:'Agema', Chariot:'War Chariot', Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
+                      infantry:'Hoplites', elite_infantry:'Agema', chariot:'War Chariot', priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman' };
+  const UNIT_DP   = { Infantry:1, EliteInfantry:2, Chariot:3, Priest:0, Ship:1, WarGalley:3, Merchantman:0 };
+  const POP_COSTS = { Infantry:5, EliteInfantry:10, Chariot:8, Priest:3, Ship:10, WarGalley:12, Merchantman:8 };
+
+  try {
+    const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}`);
+    if (!res.ok) throw new Error();
+    const pd = (await res.json()).settlement;
+    const army = pd.army || {};
+    const buildings = new Set((pd.buildings || []).map(b => b.type));
+    const canRec = {};
+    (pd.can_recruit || []).forEach(r => { canRec[r.unit] = r.can_recruit; });
+
+    // Army tab
+    const totalDP = Object.entries(UNIT_DP).reduce((s, [k, d]) => s + (army[k] || 0) * d, 0);
+    const present = Object.keys(UNIT_LBL).filter(k => k in UNIT_DP && (army[k] || 0) > 0);
+    const tq = pd.training_queue || [];
+    let armyHtml = '<div class="dsec"><div class="dsec-title">Garrison — ' + esc(capital.name) + '</div>';
+    if (present.length) {
+      armyHtml += '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Unit</td><td style="text-align:right">N</td><td style="text-align:right">DP</td></tr>';
+      armyHtml += present.map(k => '<tr><td>' + UNIT_LBL[k] + '</td><td style="text-align:right">' + army[k] + '</td><td style="text-align:right;color:var(--safe)">' + (army[k] || 0) * UNIT_DP[k] + '</td></tr>').join('');
+      armyHtml += '<tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--safe)">' + totalDP + ' DP</td></tr></table>';
+    } else {
+      armyHtml += '<p class="empty-state">No garrison. Recruit units below.</p>';
+    }
+    armyHtml += '</div>';
+    if (tq.length) {
+      armyHtml += '<div class="dsec"><div class="dsec-title">Training</div><table class="goods-mini">';
+      armyHtml += tq.map(t => '<tr><td>' + (UNIT_LBL[t.unit] || t.unit) + ' ×' + t.count + '</td><td style="color:var(--text-dim)">' + fmtEta(t.complete_at) + '</td></tr>').join('');
+      armyHtml += '</table></div>';
+    }
+    armyHtml += `<div class="dsec"><div class="dsec-title">Disband</div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;font-size:.78rem">
+        <input id="wdb-inf" type="number" min="0" value="0" style="width:44px;padding:.15rem .3rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.78rem">
+        <span style="color:var(--text-dim)">Hoplites</span>
+        <input id="wdb-cha" type="number" min="0" value="0" style="width:44px;padding:.15rem .3rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.78rem">
+        <span style="color:var(--text-dim)">Chariots</span>
+        <input id="wdb-pri" type="number" min="0" value="0" style="width:44px;padding:.15rem .3rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.78rem">
+        <span style="color:var(--text-dim)">Priests</span>
+        <button onclick="warDisband('${capital.id}')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.72rem;cursor:pointer">Disband</button>
+      </div>
+      <div id="war-disband-res" style="font-size:.72rem;margin-top:.2rem;min-height:1rem"></div>
+    </div>`;
+    document.getElementById('wtab-army').innerHTML = armyHtml;
+
+    // Recruit tab
+    const UNIT_SPECS = [
+      { id:'infantry',       lbl:'Hoplites',    req: buildings.has('barracks') ? null : 'barracks',   cost:'15 grain',            def:10 },
+      { id:'chariot',        lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'30 grain · 5 timber', def:5  },
+      { id:'priest',         lbl:'Hiereus',      req: null,                                             cost:'15 grain',            def:1  },
+      { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour',    cost:'90 timber',           def:1  },
+      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'60 cedar · 4 bronze', def:1 },
+      { id:'merchantman',    lbl:'Merchantman',  req: buildings.has('harbour')  ? null : 'harbour',    cost:'70 timber',           def:1  },
+      { id:'elite_infantry', lbl:'Agema',        req: buildings.has('foundry')  ? null : 'foundry',    cost:'25 grain · 2 bronze', def:1  },
+    ];
+    let recHtml = '<div class="dsec"><div class="dsec-title">Train Units</div>';
+    for (const u of UNIT_SPECS) {
+      const noBuilding = u.req !== null;
+      const noResources = !noBuilding && canRec[u.id] === false;
+      const disabled = noBuilding || noResources;
+      const costText = noBuilding ? ('requires ' + u.req) : (noResources ? u.cost + ' — insufficient' : u.cost);
+      const opStyle = disabled ? 'opacity:.5;' : '';
+      recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
+        + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
+        + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
+        + '<input type="number" id="wrc-' + u.id + '" min="1" max="999" value="' + u.def + '" ' + (disabled ? 'disabled' : '') + ' style="width:42px;padding:.12rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem;text-align:right">'
+        + '<button onclick="warRecruit(\'' + capital.id + '\',\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train</button>'
+        + '</div>';
+    }
+    recHtml += '</div><div id="war-recruit-res" style="font-size:.78rem;margin:.4rem .6rem;min-height:1rem"></div>';
+    document.getElementById('wtab-recruit').innerHTML = recHtml;
+
+  } catch(e) {
+    console.error('war drawer', e);
+    document.getElementById('wtab-army').innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load.</p>';
+    document.getElementById('wtab-recruit').innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load.</p>';
+  }
+}
+
+function renderWarMovements(capital) {
+  const el = document.getElementById('wtab-movements');
+  if (!el || !capital) return;
+  const ownPos = new Set(provinceData.filter(p => p.own).map(p => p.q + ',' + p.r));
+  const outgoing = marchData.filter(m => ownPos.has(m.origin_q + ',' + m.origin_r));
+  const incoming = marchData.filter(m => {
+    const t = provinceData.find(p => p.q === m.target_q && p.r === m.target_r && p.own);
+    return t && !ownPos.has(m.origin_q + ',' + m.origin_r);
+  });
+  let html = '';
+  if (outgoing.length) {
+    html += '<div class="dsec"><div class="dsec-title">Outgoing</div>';
+    html += outgoing.map(m => {
+      const originProv = provinceData.find(p => p.q === m.origin_q && p.r === m.origin_r);
+      const originID = originProv ? originProv.id : capital.id;
+      const target = provinceData.find(p => p.q === m.target_q && p.r === m.target_r);
+      const tname = target ? esc(target.name) : '(' + m.target_q + ',' + m.target_r + ')';
+      return '<div class="obj-card">'
+        + '<div class="obj-icon">⚔</div>'
+        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' → ' + tname + '</div><div class="obj-sub">ETA ' + fmtEta(m.arrives_at) + '</div></div>'
+        + '<button onclick="warRecall(\'' + originID + '\',\'' + m.id + '\')" title="Recall" style="padding:.2rem .4rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.8rem;cursor:pointer;flex-shrink:0">↩</button>'
+        + '</div>';
+    }).join('');
+    html += '</div>';
+  } else {
+    html += '<div class="dsec"><p class="empty-state">No armies in the field.</p></div>';
+  }
+  if (incoming.length) {
+    html += '<div class="dsec"><div class="dsec-title" style="color:var(--accent)">⚠ Incoming</div>';
+    html += incoming.map(m => {
+      const origin = provinceData.find(p => p.q === m.origin_q && p.r === m.origin_r);
+      const oname = origin ? esc(origin.name) : '(' + m.origin_q + ',' + m.origin_r + ')';
+      return '<div class="obj-card">'
+        + '<div class="obj-icon" style="color:var(--accent)">⚔</div>'
+        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' from ' + oname + '</div><div class="obj-sub">ETA ' + fmtEta(m.arrives_at) + '</div></div>'
+        + '</div>';
+    }).join('');
+    html += '</div>';
+  }
+  el.innerHTML = html || '<p class="empty-state" style="padding:.5rem">No movements.</p>';
+}
+
+async function warRecruit(provinceID, unitType) {
+  const el = document.getElementById('wrc-' + unitType);
+  const count = el ? (parseInt(el.value, 10) || 1) : 1;
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + provinceID + '/recruit', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ unit_type: unitType, count }),
+  });
+  const data = await res.json().catch(() => ({}));
+  const resEl = document.getElementById('war-recruit-res');
+  if (resEl) {
+    resEl.style.color = res.ok ? 'var(--safe)' : 'var(--accent)';
+    resEl.textContent = res.ok ? (count + '× ' + unitType + ' training') : (data.error || 'failed');
+    if (res.ok) setTimeout(() => { if (resEl) resEl.textContent = ''; }, 4000);
+  }
+}
+
+async function warDisband(provinceID) {
+  const inf = parseInt(document.getElementById('wdb-inf')?.value || '0');
+  const cha = parseInt(document.getElementById('wdb-cha')?.value || '0');
+  const pri = parseInt(document.getElementById('wdb-pri')?.value || '0');
+  if (inf + cha + pri === 0) return;
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + provinceID + '/disband', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ infantry: inf, chariot: cha, priest: pri }),
+  });
+  const data = await res.json().catch(() => ({}));
+  const resEl = document.getElementById('war-disband-res');
+  if (resEl) {
+    resEl.style.color = res.ok ? 'var(--safe)' : 'var(--accent)';
+    resEl.textContent = res.ok ? 'Disbanded' : (data.error || 'failed');
+    setTimeout(() => { if (resEl) resEl.textContent = ''; }, 4000);
+  }
+}
+
+async function warRecall(provinceID, marchID) {
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + provinceID + '/marches/' + marchID, { method: 'DELETE' });
+  if (res.ok) {
+    fetchAuth('/api/v1/worlds/' + WORLD_ID + '/marches').then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; }));
+    const capital = provinceData.find(p => p.own && p.is_capital);
+    renderWarMovements(capital);
+  } else {
+    const data = await res.json().catch(() => ({}));
+    alert(data.error || 'Recall failed');
+  }
+}
+
+// ── Diplomacy drawer ──────────────────────────────────────────────────────
+async function loadDiplomacyDrawer() {
+  const body = document.getElementById('diplomacy-body');
+  body.innerHTML = `
+    <div class="drawer-tabs">
+      <button class="dtab active" data-tab="inbox">Inbox</button>
+      <button class="dtab" data-tab="compose">Compose</button>
+      <button class="dtab" data-tab="sent">Sent</button>
+    </div>
+    <div id="dtab-inbox" class="city-tab"><div class="loading" style="font-size:.8rem">Loading…</div></div>
+    <div id="dtab-compose" class="city-tab" style="display:none"></div>
+    <div id="dtab-sent" class="city-tab" style="display:none"></div>`;
+
+  body.querySelectorAll('.dtab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      body.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      body.querySelectorAll('.city-tab').forEach(c => c.style.display = 'none');
+      const el = document.getElementById('dtab-' + this.dataset.tab);
+      if (el) el.style.display = '';
+      if (this.dataset.tab === 'compose') loadDipCompose();
+      if (this.dataset.tab === 'sent')    loadDipSent();
+    });
+  });
+
+  await loadDipInbox();
+}
+
+async function loadDipInbox() {
+  const el = document.getElementById('dtab-inbox');
+  if (!el) return;
+  let myGoods = {};
+  const capital = provinceData.find(p => p.own && p.is_capital);
+  if (capital) {
+    const gr = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + capital.id + '/goods');
+    if (gr.ok) { const list = await gr.json().catch(() => []); list.forEach(g => { myGoods[g.key] = g.amount || 0; }); }
+  }
+  try {
+    const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/messengers/inbox');
+    if (!r.ok) throw new Error();
+    const msgs = await r.json();
+    if (!msgs.length) { el.innerHTML = '<p class="empty-state" style="padding:.5rem">No messages.</p>'; return; }
+    el.innerHTML = msgs.map(m => {
+      const offer = m.trade_offer;
+      let tradeHtml = '';
+      if (offer && offer.status === 'pending') {
+        const have = myGoods[offer.want_good] || 0;
+        const canAccept = have >= offer.want_qty;
+        const dis = canAccept ? '' : 'disabled title="Need ' + offer.want_qty + ' ' + esc(offer.want_good) + ', have ' + Math.floor(have) + '"';
+        tradeHtml = '<div id="dip-trade-' + m.id + '" style="background:var(--bg-raised);border:1px solid var(--border);padding:.3rem .5rem;margin:.3rem 0;font-size:.78rem">'
+          + '<div>Wants <strong>' + offer.want_qty + ' ' + esc(offer.want_good) + '</strong> · Offers <strong>' + offer.offer_silver + ' silver</strong></div>'
+          + '<div style="display:flex;gap:.4rem;margin-top:.3rem">'
+          + '<button class="btn-small btn-primary" onclick="dipAccept(\'' + m.id + '\',this)" ' + dis + '>Accept ✓</button>'
+          + '<button class="btn-small btn-danger"  onclick="dipDecline(\'' + m.id + '\',this)">Decline ✗</button>'
+          + '</div></div>';
+      } else if (offer) {
+        tradeHtml = '<div style="font-size:.72rem;color:var(--text-dim);font-style:italic;margin:.2rem 0">Trade: ' + offer.status + '</div>';
+      }
+      const replyRow = !offer ? '<div id="dip-reply-row-' + m.id + '" style="display:flex;gap:.3rem;margin-top:.3rem">'
+        + '<input id="dip-reply-' + m.id + '" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)">'
+        + '<button onclick="dipReply(\'' + m.id + '\')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button>'
+        + '</div>' : '';
+      return '<div id="dip-msg-' + m.id + '" style="border-bottom:1px solid var(--border);padding:.5rem .6rem">'
+        + '<div style="display:flex;justify-content:space-between;align-items:baseline">'
+        + '<strong style="font-size:.82rem;color:var(--accent)">' + esc(m.sender_name || 'Unknown') + '</strong>'
+        + '<span style="font-size:.68rem;color:var(--text-dim)">' + fmtAgo(m.arrived_at) + '</span>'
+        + '</div>'
+        + (m.message ? '<div style="font-size:.8rem;font-style:italic;margin:.15rem 0">“' + esc(m.message) + '”</div>' : '')
+        + tradeHtml + replyRow + '</div>';
+    }).join('');
+  } catch(_) {
+    el.innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load inbox.</p>';
+  }
+}
+
+async function dipAccept(id, btn) {
+  btn.disabled = true;
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/messengers/' + id + '/trade-accept', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}',
+  });
+  const data = await res.json().catch(() => ({}));
+  const block = document.getElementById('dip-trade-' + id);
+  if (res.ok && block) {
+    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' arriving ' + fmtEta(data.goods_arrives_at) + ' · ' + data.silver_paid + ' silver paid</span>';
+  } else {
+    btn.disabled = false;
+    if (block) {
+      const err = document.createElement('div');
+      err.style.cssText = 'color:var(--accent);font-size:.72rem;margin-top:.2rem';
+      err.textContent = data.error || 'failed';
+      block.appendChild(err);
+      setTimeout(() => err.remove(), 6000);
+    }
+  }
+}
+
+async function dipDecline(id, btn) {
+  btn.disabled = true;
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/messengers/' + id + '/trade-decline', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}',
+  });
+  const block = document.getElementById('dip-trade-' + id);
+  if (res.ok && block) block.innerHTML = '<span style="color:var(--text-dim);font-style:italic">Declined.</span>';
+  else btn.disabled = false;
+}
+
+async function dipReply(id) {
+  const input = document.getElementById('dip-reply-' + id);
+  const text = input ? input.value.trim() : '';
+  if (!text) return;
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/messengers/' + id + '/reply', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ reply: text }),
+  });
+  const data = await res.json().catch(() => ({}));
+  const row = document.getElementById('dip-reply-row-' + id);
+  if (res.ok && row) {
+    row.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.2rem">✓ Reply dispatched · returns ' + fmtEta(data.returns_at) + '</div>';
+  }
+}
+
+function loadDipCompose() {
+  const el = document.getElementById('dtab-compose');
+  if (!el || el.dataset.loaded) return;
+  el.dataset.loaded = '1';
+  const others = provinceData.filter(p => !p.own && !p.is_outpost && p.settlement_id && p.name);
+  const opts = others.length
+    ? '<option value="">— choose settlement —</option>' + others.map(p => '<option value="' + p.settlement_id + '">' + esc(p.name) + ' (' + (p.allied ? 'ally' : 'foreign') + ')</option>').join('')
+    : '<option value="">No visible settlements — explore the map</option>';
+  el.innerHTML = '<div class="dsec"><div class="dsec-title">Send Messenger</div>'
+    + '<div style="display:flex;flex-direction:column;gap:.5rem">'
+    + '<select id="dip-dest" style="background:var(--warm-white);border:1px solid var(--border);padding:.3rem .4rem;font-size:.82rem">' + opts + '</select>'
+    + '<textarea id="dip-msg-text" maxlength="1000" placeholder="Your words travel with the messenger…" style="resize:vertical;min-height:4rem;background:var(--warm-white);border:1px solid var(--border);padding:.3rem .4rem;font-size:.82rem;font-family:var(--font)"></textarea>'
+    + '<details><summary style="cursor:pointer;color:var(--accent);font-size:.78rem;user-select:none">+ Attach trade offer</summary>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;margin-top:.4rem">'
+    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Want good</div><input id="dip-ogood" type="text" placeholder="grain" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
+    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Quantity</div><input id="dip-oqty" type="number" min="0.1" step="0.1" placeholder="50" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
+    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Offer silver</div><input id="dip-osilver" type="number" min="1" step="1" placeholder="60" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
+    + '</div></details>'
+    + '<button onclick="dipSend()" style="padding:.3rem .8rem;background:var(--sandstone);border:2px solid var(--border);font-family:var(--mono);font-size:.78rem;letter-spacing:.07em;cursor:pointer;align-self:flex-start">Dispatch →</button>'
+    + '<div id="dip-compose-res" style="font-size:.78rem;min-height:1rem"></div>'
+    + '</div></div>';
+}
+
+async function dipSend() {
+  const destID = document.getElementById('dip-dest')?.value;
+  const text   = document.getElementById('dip-msg-text')?.value.trim();
+  const resEl  = document.getElementById('dip-compose-res');
+  function showDipRes(msg, ok) { if (resEl) { resEl.style.color = ok ? 'var(--safe)' : 'var(--accent)'; resEl.textContent = msg; } }
+  if (!destID) { showDipRes('choose a destination', false); return; }
+  if (!text)   { showDipRes('write a message', false); return; }
+  if (!MY_SETTLEMENT_ID) { showDipRes('you have no settlement', false); return; }
+  const body = { destination_id: destID, message: text };
+  const good   = document.getElementById('dip-ogood')?.value.trim();
+  const qty    = parseFloat(document.getElementById('dip-oqty')?.value || '0');
+  const silver = parseFloat(document.getElementById('dip-osilver')?.value || '0');
+  if (good && qty > 0 && silver > 0) body.trade_offer = { want_good: good, want_qty: qty, offer_silver: silver };
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/messengers', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showDipRes('✓ Dispatched · arrives ' + fmtEta(data.arrives_at), true);
+    const mtel = document.getElementById('dip-msg-text'); if (mtel) mtel.value = '';
+    const dsel = document.getElementById('dip-dest'); if (dsel) dsel.value = '';
+    fetchAuth('/api/v1/worlds/' + WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
+  } else {
+    showDipRes(data.error || 'send failed', false);
+  }
+}
+
+async function loadDipSent() {
+  const el = document.getElementById('dtab-sent');
+  if (!el || !MY_SETTLEMENT_ID) return;
+  el.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
+  try {
+    const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/messengers');
+    if (!r.ok) throw new Error();
+    const msgs = await r.json();
+    if (!msgs.length) { el.innerHTML = '<p class="empty-state" style="padding:.5rem">No sent messages.</p>'; return; }
+    el.innerHTML = msgs.map(m => {
+      const status = m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
+                   : m.status === 'delivering' ? '<span>en route · ' + fmtEta(m.arrives_at) + '</span>'
+                   : '<span>' + esc(m.status || '') + '</span>';
+      const replyText = m.reply_text ? '<div style="font-size:.75rem;font-style:italic;color:var(--safe)">“' + esc(m.reply_text) + '”</div>' : '';
+      return '<div style="border-bottom:1px solid var(--border);padding:.4rem .6rem">'
+        + '<div style="display:flex;justify-content:space-between">'
+        + '<span style="font-size:.78rem;color:var(--text-dim)">→ ' + esc(m.to_name || 'unknown') + '</span>'
+        + '<span style="font-size:.68rem;color:var(--text-dim)">' + fmtAgo(m.sent_at || m.created_at) + '</span>'
+        + '</div>'
+        + '<div style="font-size:.78rem;font-style:italic;margin:.1rem 0">“' + esc(m.message_text || m.message || '') + '”</div>'
+        + replyText
+        + '<div style="font-size:.68rem;font-family:var(--mono);color:var(--text-dim)">' + status + '</div>'
+        + '</div>';
+    }).join('');
+  } catch(_) {
+    el.innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load.</p>';
+  }
+}
+
+// ── Shared helpers ────────────────────────────────────────────────────────
+function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+function fmtSilver(amount) {
+  const a = Math.floor(amount || 0);
+  if (a >= 3600) return (a / 3600).toFixed(1) + ' talent';
+  if (a >= 60)   return (a / 60).toFixed(1) + ' mina';
+  return a + ' shekel';
 }
 
 // Helper: format ETA timestamp to human-readable
