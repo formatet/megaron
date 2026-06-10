@@ -634,6 +634,7 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 	var settlementID string
 	var playerIDStr string
 	var unreadCount int
+	var playerKingdomRole string
 	if playerID, ok := auth.PlayerIDFromContext(r.Context()); ok {
 		playerIDStr = playerID.String()
 		var sid uuid.UUID
@@ -650,15 +651,22 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 			   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')`,
 			worldID, playerID,
 		).Scan(&unreadCount)
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT km.role FROM kingdom_members km
+			 JOIN kingdoms k ON k.id = km.kingdom_id
+			 WHERE k.world_id = $1 AND km.player_id = $2`,
+			worldID, playerID,
+		).Scan(&playerKingdomRole)
 	}
 
 	h.render(w, "map.html", map[string]any{
-		"World":        wld,
-		"WorldID":      worldID,
-		"SettlementID": settlementID,
-		"PlayerID":     playerIDStr,
-		"UnreadCount":  unreadCount,
-		"MapMode":      true,
+		"World":             wld,
+		"WorldID":           worldID,
+		"SettlementID":      settlementID,
+		"PlayerID":          playerIDStr,
+		"PlayerKingdomRole": playerKingdomRole,
+		"UnreadCount":       unreadCount,
+		"MapMode":           true,
 	})
 }
 

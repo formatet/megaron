@@ -217,6 +217,37 @@
 </div>
 
 <style>
+/* ── Lawagetas advisory brief ──────────────────────────────────────── */
+.lawagetas-brief {
+  position: relative;
+  background: var(--bg-raised);
+  border-left: 3px solid var(--gold);
+  padding: .45rem .9rem .45rem .65rem;
+  margin: .45rem .45rem .15rem;
+  font-family: 'Cinzel', 'Georgia', serif;
+  font-size: .7rem;
+  font-style: italic;
+  color: var(--border-in);
+  line-height: 1.55;
+}
+.lb-head {
+  font-style: normal;
+  font-size: .58rem;
+  text-transform: uppercase;
+  letter-spacing: .13em;
+  color: var(--gold);
+  margin-bottom: .2rem;
+  font-family: var(--mono);
+}
+.lb-dismiss {
+  position: absolute;
+  top: .25rem; right: .35rem;
+  background: none; border: none;
+  color: var(--text-dim); cursor: pointer;
+  font-size: .7rem; padding: 0; line-height: 1;
+}
+.lb-dismiss:hover { color: var(--accent); }
+
 /* ── Map-specific styles (overlays, not in poleia.css) ──────────────── */
 
 /* Zoom overlay buttons */
@@ -379,6 +410,51 @@
 const WORLD_ID = "{{.WorldID}}";
 const MY_SETTLEMENT_ID = "{{.SettlementID}}";
 const MY_PLAYER_ID = "{{.PlayerID}}";
+let MY_KINGDOM_ROLE = "{{.PlayerKingdomRole}}";
+
+// ── Lawagetas advisory voice ──────────────────────────────────────────────
+const LAWAGETAS_BRIEFS = {
+  city:      "Your megaron rises above all you rule, Wanax. Here your people labor — farmers, craftsmen, soldiers — each serving the palace that feeds and protects them. Assign your workers well; idle hands do not fill the granary.",
+  war:       "Bronze arms await your command, Wanax. Your Lochagos may march the army to distant lands — to raid, reinforce, or colonize. In battle, numbers count, but walls and elite agema often decide the day.",
+  diplomacy: "Words travel on foot, Wanax — a messenger's legs are your reach. You may only treat with those cities whose walls your messengers have touched. Send scouts first; then make your offers.",
+  economy:   "The palace scribes track every ingot and measure of grain, Wanax. Silver flows in and out; when it drains, armies cannot march and temples cannot stand. Study your stockpile.",
+  oikos:     "The oikos binds your kingdom together, Wanax. Your Heqetas leads the council; your Lochagos commands the host; your Navarchos commands the fleet. Through ritual and offering, you bind your people to the will of the gods.",
+  notif:     "Your herald brings word from beyond the megaron walls, Wanax — arrivals, battles resolved, buildings completed. Matters that demand your attention rise here first.",
+};
+
+function showLawagatasBrief(name) {
+  const text = LAWAGETAS_BRIEFS[name];
+  if (!text) return;
+  if (sessionStorage.getItem('lb_dismissed_' + name)) return;
+  const drawer = document.getElementById('drawer-' + name);
+  if (!drawer || drawer.querySelector('.lawagetas-brief')) return;
+  const el = document.createElement('div');
+  el.className = 'lawagetas-brief';
+  el.id = 'lb-' + name;
+  el.innerHTML = '<div class="lb-head">⊛ Lawagetas</div>' + text +
+    '<button class="lb-dismiss" onclick="dismissBrief(\'' + name + '\')" title="Dismiss">✕</button>';
+  const header = drawer.querySelector('.drawer-header');
+  if (header && header.nextSibling) {
+    drawer.insertBefore(el, header.nextSibling);
+  } else {
+    drawer.appendChild(el);
+  }
+}
+
+function dismissBrief(name) {
+  sessionStorage.setItem('lb_dismissed_' + name, '1');
+  const el = document.getElementById('lb-' + name);
+  if (el) el.remove();
+}
+
+function roleLabel(role) {
+  switch (role) {
+    case 'basileus': return 'Heqetas';
+    case 'lochagos': return 'Lochagos';
+    case 'navarchos': return 'Navarchos';
+    default: return 'Wanax';
+  }
+}
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -1756,6 +1832,7 @@ function openDrawer(name) {
   if (tr) tr.classList.add('active');
   document.getElementById('map-dim').classList.add('visible');
   activeDrawer = name;
+  showLawagatasBrief(name);
   loadDrawerContent(name);
 }
 
@@ -2069,30 +2146,62 @@ async function loadOikosKingdom() {
     const cr = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/council');
     const council = cr.ok ? (await cr.json()) : [];
     const me = council.find(function(m) { return m.player_id === MY_PLAYER_ID; });
-    const myRole    = me ? me.role : 'member';
+    const myRole     = me ? me.role : 'member';
     const isBasileus = myRole === 'basileus';
+    MY_KINGDOM_ROLE  = myRole;
+
+    const roleTag = {
+      basileus: '<span style="color:var(--gold);font-family:var(--mono);font-size:.7rem">⊛ Heqetas</span>',
+      lochagos: '<span style="color:var(--accent-war);font-family:var(--mono);font-size:.7rem">⚔ Lochagos</span>',
+      navarchos:'<span style="color:var(--accent-city);font-family:var(--mono);font-size:.7rem">⛵ Navarchos</span>',
+    };
 
     let html = '<div class="dsec"><div class="dsec-title">' + esc(kingdomName) + '</div>';
-    html += '<div class="stat-row"><span class="sr-label">Your role</span><span class="sr-val">' + esc(myRole) + '</span></div>';
+    html += '<div class="stat-row"><span class="sr-label">Your role</span><span class="sr-val">' +
+      (roleTag[myRole] || '<span style="font-family:var(--mono);font-size:.7rem">Wanax</span>') + '</span></div>';
     html += '<div class="stat-row"><span class="sr-label">Members</span><span class="sr-val">' + council.length + '</span></div></div>';
 
     // Council list
     html += '<div class="dsec"><div class="dsec-title">Council</div>';
     council.forEach(function(m) {
       const you = m.player_id === MY_PLAYER_ID ? ' <span style="color:var(--text-dim)">(you)</span>' : '';
+      const rl  = roleLabel(m.role);
       html += '<div class="stat-row"><span class="sr-label">' + esc(m.username) + you + '</span>' +
-        '<span class="sr-val">' + esc(m.role) + ' · ' + m.army_dp + ' DP</span></div>';
+        '<span class="sr-val">' + esc(rl) + ' · ' + m.army_dp + ' DP</span></div>';
     });
     html += '</div>';
+
+    // Role assignment (Heqetas only)
+    if (isBasileus) {
+      const assignableMembers = council.filter(function(m) { return m.player_id !== MY_PLAYER_ID; });
+      if (assignableMembers.length) {
+        html += '<div class="dsec"><div class="dsec-title">Assign Role</div>';
+        html += '<div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">';
+        html += '<select id="ok-role-member" style="flex:1;min-width:0;background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.2rem .3rem;font-size:.75rem">';
+        assignableMembers.forEach(function(m) {
+          html += '<option value="' + m.player_id + '">' + esc(m.username) + ' (' + roleLabel(m.role) + ')</option>';
+        });
+        html += '</select>';
+        html += '<select id="ok-role-sel" style="background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.2rem .3rem;font-size:.75rem">';
+        html += '<option value="lochagos">Lochagos</option>';
+        html += '<option value="navarchos">Navarchos</option>';
+        html += '<option value="member">Wanax (remove)</option>';
+        html += '</select>';
+        html += '<button class="obj-cta" onclick="okAssignRole(\'' + kingdomId + '\')">Assign</button>';
+        html += '</div>';
+        html += '<div id="ok-role-res" style="font-size:.72rem;margin-top:.25rem;min-height:.9rem"></div>';
+        html += '</div>';
+      }
+    }
 
     // Treasury deposit
     html += '<div class="dsec"><div class="dsec-title">Treasury</div>' +
       '<div style="display:flex;gap:.5rem;align-items:center">' +
       '<input type="number" id="ok-treasury-amt" min="1" placeholder="shekel"' +
-      ' style="flex:1;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem;font-family:var(--mono)">' +
+      ' style="flex:1;background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.25rem .4rem;font-family:var(--mono)">' +
       '<button class="obj-cta" onclick="okDeposit(\'' + kingdomId + '\')">Deposit</button></div></div>';
 
-    // Invite (Basileus only)
+    // Invite (Heqetas only)
     if (isBasileus) {
       const memberNames = new Set(council.map(function(m) { return m.settlement_name; }));
       const opts = provinceData.filter(function(p) {
@@ -2101,7 +2210,7 @@ async function loadOikosKingdom() {
       html += '<div class="dsec"><div class="dsec-title">Invite</div>';
       if (opts.length) {
         html += '<select id="ok-invite-sel"' +
-          ' style="width:100%;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem;margin-bottom:.4rem">';
+          ' style="width:100%;background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.25rem .4rem;margin-bottom:.4rem">';
         opts.forEach(function(p) {
           html += '<option value="' + p.id + '">' + esc(p.name) + '</option>';
         });
@@ -2113,7 +2222,7 @@ async function loadOikosKingdom() {
       html += '</div>';
     }
 
-    // Leave (non-Basileus)
+    // Leave (non-Heqetas)
     if (!isBasileus) {
       html += '<div class="dsec"><button class="btn-danger" onclick="okLeave(\'' + kingdomId + '\')">Leave Kingdom</button></div>';
     }
@@ -2221,6 +2330,27 @@ async function okInvite(kingdomId) {
   else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not invite'); }
 }
 
+async function okAssignRole(kingdomId) {
+  const memberSel = document.getElementById('ok-role-member');
+  const roleSel   = document.getElementById('ok-role-sel');
+  const res       = document.getElementById('ok-role-res');
+  if (!memberSel || !roleSel) return;
+  const targetPlayerId = memberSel.value;
+  const targetRole     = roleSel.value;
+  if (!targetPlayerId) return;
+  const r = await fetchAuth(
+    '/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/council/' + targetRole,
+    { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({player_id: targetPlayerId}) }
+  );
+  if (r.ok) {
+    if (res) res.textContent = 'Role assigned.';
+    loadOikosKingdom();
+  } else {
+    const d = await r.json().catch(function(){return {};});
+    if (res) res.textContent = d.error || 'Could not assign role';
+  }
+}
+
 async function okSetCult(level) {
   const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/cult-level',
     { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({cult_level: level}) });
@@ -2284,7 +2414,13 @@ async function loadWarDrawer() {
     const totalDP = Object.entries(UNIT_DP).reduce((s, [k, d]) => s + (army[k] || 0) * d, 0);
     const present = Object.keys(UNIT_LBL).filter(k => k in UNIT_DP && (army[k] || 0) > 0);
     const tq = pd.training_queue || [];
-    let armyHtml = '<div class="dsec"><div class="dsec-title">Garrison — ' + esc(capital.name) + '</div>';
+    let roleNote = '';
+    if (MY_KINGDOM_ROLE === 'lochagos') {
+      roleNote = '<div style="font-size:.68rem;font-family:var(--mono);color:var(--accent-war);margin-bottom:.3rem">⚔ Lochagos — army command role</div>';
+    } else if (MY_KINGDOM_ROLE === 'navarchos') {
+      roleNote = '<div style="font-size:.68rem;font-family:var(--mono);color:var(--accent-city);margin-bottom:.3rem">⛵ Navarchos — fleet command role</div>';
+    }
+    let armyHtml = '<div class="dsec"><div class="dsec-title">Garrison — ' + esc(capital.name) + '</div>' + roleNote;
     if (present.length) {
       armyHtml += '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Unit</td><td style="text-align:right">N</td><td style="text-align:right">DP</td></tr>';
       armyHtml += present.map(k => '<tr><td>' + UNIT_LBL[k] + '</td><td style="text-align:right">' + army[k] + '</td><td style="text-align:right;color:var(--safe)">' + (army[k] || 0) * UNIT_DP[k] + '</td></tr>').join('');

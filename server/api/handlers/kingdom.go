@@ -608,6 +608,14 @@ func (h *KingdomHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Only these roles are assignable; basileus is conferred only by election.
+	allowedRoles := map[string]int{"member": 0, "lochagos": 2, "navarchos": 1}
+	maxCount, ok := allowedRoles[targetRole]
+	if !ok {
+		writeError(w, http.StatusBadRequest, "invalid role — must be member, lochagos, or navarchos")
+		return
+	}
+
 	var req struct {
 		PlayerID string `json:"player_id"`
 	}
@@ -619,6 +627,23 @@ func (h *KingdomHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid player ID")
 		return
+	}
+	if targetPlayerID == playerID {
+		writeError(w, http.StatusBadRequest, "cannot assign a role to yourself")
+		return
+	}
+
+	// Enforce role cap (member has no cap — maxCount==0 means unlimited).
+	if maxCount > 0 {
+		var current int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT count(*) FROM kingdom_members WHERE kingdom_id = $1 AND role = $2 AND player_id != $3`,
+			kingdomID, targetRole, targetPlayerID,
+		).Scan(&current)
+		if current >= maxCount {
+			writeError(w, http.StatusConflict, "role limit reached for "+targetRole)
+			return
+		}
 	}
 
 	_, err = h.pool.Exec(r.Context(),
