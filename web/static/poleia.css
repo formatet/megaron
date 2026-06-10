@@ -1338,6 +1338,20 @@ footer {
 .sr-name { flex: 1; font-size: 0.82rem; color: var(--text); }
 .sr-meta { font-size: 0.68rem; color: var(--text-dim); font-family: var(--mono); }
 .sr-type { font-size: 0.6rem; padding: 0.03rem 0.3rem; border: 1px solid var(--border); color: var(--text-dim); flex-shrink: 0; }
+/* ── Sprint 5 — City drawer ──────────────────────────────────────────────── */
+.city-scene {
+  display: block;
+  width: calc(100% + 1.6rem);
+  margin: -.8rem -.8rem .4rem;
+  height: 110px;
+  image-rendering: pixelated;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.city-tab { /* padding comes from .drawer-body */ }
+.stat-row-strong .sr-label { color: var(--text); font-weight: bold; }
+.stat-row-strong .sr-val   { color: var(--accent); font-size: .85rem; }
+
 .sr-category {
   padding: 0.25rem 0.8rem; font-size: 0.62rem;
   text-transform: uppercase; letter-spacing: 0.12em;
