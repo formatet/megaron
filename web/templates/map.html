@@ -376,6 +376,7 @@
 <script>
 const WORLD_ID = "{{.WorldID}}";
 const MY_SETTLEMENT_ID = "{{.SettlementID}}";
+const MY_PLAYER_ID = "{{.PlayerID}}";
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -1865,49 +1866,7 @@ async function loadDrawerContent(name) {
     }
 
   } else if (name === 'oikos') {
-    const body = document.getElementById('oikos-body');
-    body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
-    try {
-      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/kingdoms`);
-      if (r.ok) {
-        const kingdoms = await r.json();
-        const myKingdom = kingdoms[0]; // player is member of at most one kingdom
-        if (myKingdom) {
-          body.innerHTML = `
-            <div class="dsec">
-              <div class="dsec-title">Kingdom — ${myKingdom.name}</div>
-              <div class="stat-row"><span class="sr-label">Role</span><span class="sr-val">${myKingdom.my_role || '—'}</span></div>
-              <div class="stat-row"><span class="sr-label">Members</span><span class="sr-val">${myKingdom.member_count || '—'}</span></div>
-              <div class="stat-row"><span class="sr-label">Status</span><span class="sr-val">${myKingdom.state || '—'}</span></div>
-            </div>
-            <div class="dsec">
-              <a class="obj-cta" href="/world/${WORLD_ID}/kingdom" style="display:block;text-align:center;padding:.4rem">
-                Full Kingdom View →
-              </a>
-            </div>`;
-        } else {
-          body.innerHTML = `
-            <div class="dsec">
-              <p class="empty-state">Not a kingdom member.</p>
-            </div>
-            <div class="dsec">
-              <a class="obj-cta" href="/world/${WORLD_ID}/kingdom" style="display:block;text-align:center;padding:.4rem">
-                Found a Kingdom →
-              </a>
-            </div>`;
-        }
-      } else {
-        body.innerHTML = `
-          <div class="dsec">
-            <p class="empty-state">No kingdom.</p>
-            <a class="obj-cta" href="/world/${WORLD_ID}/kingdom" style="display:block;text-align:center;padding:.4rem;margin-top:.5rem">
-              Kingdom View →
-            </a>
-          </div>`;
-      }
-    } catch (_) {
-      body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
-    }
+    await loadOikosDrawer();
 
   } else if (name === 'notif') {
     const body = document.getElementById('notif-body');
@@ -1940,6 +1899,239 @@ async function loadDrawerContent(name) {
     } catch (_) {
       body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
     }
+  }
+}
+
+// ── Oikos drawer ─────────────────────────────────────────────────────────
+async function loadOikosDrawer() {
+  const body = document.getElementById('oikos-body');
+  body.innerHTML =
+    '<div class="drawer-tabs">' +
+      '<button class="dtab active" data-tab="kingdom">Kingdom</button>' +
+      '<button class="dtab" data-tab="kult">Kult</button>' +
+    '</div>' +
+    '<div id="oktab-kingdom" class="city-tab"></div>' +
+    '<div id="oktab-kult"    class="city-tab" style="display:none"></div>';
+
+  body.querySelectorAll('.dtab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      body.querySelectorAll('.dtab').forEach(function(t) { t.classList.remove('active'); });
+      this.classList.add('active');
+      body.querySelectorAll('.city-tab').forEach(function(c) { c.style.display = 'none'; });
+      const el = document.getElementById('oktab-' + this.dataset.tab);
+      if (el) el.style.display = '';
+      if (this.dataset.tab === 'kingdom') loadOikosKingdom();
+      else if (this.dataset.tab === 'kult') loadOikosKult();
+    });
+  });
+
+  loadOikosKingdom();
+}
+
+async function loadOikosKingdom() {
+  const el = document.getElementById('oktab-kingdom');
+  el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
+
+  const myProvince = provinceData.find(function(p) { return p.own && !p.is_outpost; });
+  const kingdomId   = myProvince && myProvince.kingdom_id;
+  const kingdomName = myProvince && myProvince.kingdom_name;
+
+  if (!kingdomId) {
+    // No kingdom — show invitations + found form
+    let html = '';
+    try {
+      const ir = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/invitations');
+      if (ir.ok) {
+        const invitations = await ir.json();
+        if (invitations && invitations.length) {
+          html += '<div class="dsec"><div class="dsec-title">Invitations</div>';
+          invitations.forEach(function(inv) {
+            html += '<div class="stat-row"><span class="sr-label">' + esc(inv.kingdom_name) + '</span>' +
+              '<span class="sr-val"><button class="obj-cta btn-small" onclick="okJoin(\'' + inv.kingdom_id + '\')">Join</button></span></div>';
+          });
+          html += '</div>';
+        }
+      }
+    } catch(_) {}
+    html += '<div class="dsec"><div class="dsec-title">Found a Kingdom</div>' +
+      '<input type="text" id="ok-found-name" placeholder="Kingdom name"' +
+      ' style="width:100%;box-sizing:border-box;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem;margin-bottom:.4rem">' +
+      '<button class="obj-cta" style="width:100%" onclick="okFound()">Found Kingdom</button></div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  // Has kingdom
+  try {
+    const cr = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/council');
+    const council = cr.ok ? (await cr.json()) : [];
+    const me = council.find(function(m) { return m.player_id === MY_PLAYER_ID; });
+    const myRole    = me ? me.role : 'member';
+    const isBasileus = myRole === 'basileus';
+
+    let html = '<div class="dsec"><div class="dsec-title">' + esc(kingdomName) + '</div>';
+    html += '<div class="stat-row"><span class="sr-label">Your role</span><span class="sr-val">' + esc(myRole) + '</span></div>';
+    html += '<div class="stat-row"><span class="sr-label">Members</span><span class="sr-val">' + council.length + '</span></div></div>';
+
+    // Council list
+    html += '<div class="dsec"><div class="dsec-title">Council</div>';
+    council.forEach(function(m) {
+      const you = m.player_id === MY_PLAYER_ID ? ' <span style="color:var(--text-dim)">(you)</span>' : '';
+      html += '<div class="stat-row"><span class="sr-label">' + esc(m.username) + you + '</span>' +
+        '<span class="sr-val">' + esc(m.role) + ' · ' + m.army_dp + ' DP</span></div>';
+    });
+    html += '</div>';
+
+    // Treasury deposit
+    html += '<div class="dsec"><div class="dsec-title">Treasury</div>' +
+      '<div style="display:flex;gap:.5rem;align-items:center">' +
+      '<input type="number" id="ok-treasury-amt" min="1" placeholder="shekel"' +
+      ' style="flex:1;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem;font-family:var(--mono)">' +
+      '<button class="obj-cta" onclick="okDeposit(\'' + kingdomId + '\')">Deposit</button></div></div>';
+
+    // Invite (Basileus only)
+    if (isBasileus) {
+      const memberNames = new Set(council.map(function(m) { return m.settlement_name; }));
+      const opts = provinceData.filter(function(p) {
+        return !p.own && !p.is_outpost && p.settlement_id && p.name && !memberNames.has(p.name);
+      });
+      html += '<div class="dsec"><div class="dsec-title">Invite</div>';
+      if (opts.length) {
+        html += '<select id="ok-invite-sel"' +
+          ' style="width:100%;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem;margin-bottom:.4rem">';
+        opts.forEach(function(p) {
+          html += '<option value="' + p.id + '">' + esc(p.name) + '</option>';
+        });
+        html += '</select>' +
+          '<button class="obj-cta" style="width:100%" onclick="okInvite(\'' + kingdomId + '\')">Send Invitation</button>';
+      } else {
+        html += '<p class="empty-state">No eligible provinces visible.</p>';
+      }
+      html += '</div>';
+    }
+
+    // Leave (non-Basileus)
+    if (!isBasileus) {
+      html += '<div class="dsec"><button class="btn-danger" onclick="okLeave(\'' + kingdomId + '\')">Leave Kingdom</button></div>';
+    }
+
+    el.innerHTML = html;
+  } catch(_) {
+    el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
+  }
+}
+
+async function loadOikosKult() {
+  const el = document.getElementById('oktab-kult');
+  el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
+
+  if (!MY_SETTLEMENT_ID) {
+    el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
+    return;
+  }
+
+  try {
+    const sr = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID);
+    if (!sr.ok) throw new Error();
+    const sd = await sr.json();
+
+    const CULT_LEVELS = ['forsummad','enkel','vardig','praktfull','overdadig'];
+    const CULT_LABELS = { forsummad:'Försummad', enkel:'Enkel', vardig:'Värdig', praktfull:'Praktfull', overdadig:'Överdådig' };
+    const MOOD_LABELS = { Favorable:'Välvilliga', Indifferent:'Likgiltiga', Suspicious:'Misstänksamma', Wrathful:'Vredgade' };
+    const MOOD_COLORS = { Favorable:'var(--safe)', Indifferent:'var(--text-dim)', Suspicious:'var(--warn)', Wrathful:'var(--danger)' };
+
+    const mood      = sd.divine_mood  || 'Indifferent';
+    const cultLevel = sd.cult_level   || 'enkel';
+    const frenzyUntil = sd.battle_frenzy_until ? new Date(sd.battle_frenzy_until) : null;
+    const frenzyActive = frenzyUntil && frenzyUntil > new Date();
+
+    let html = '<div class="dsec"><div class="dsec-title">Divine favour</div>' +
+      '<div class="stat-row"><span class="sr-label">Mood</span>' +
+      '<span class="sr-val" style="color:' + (MOOD_COLORS[mood] || 'inherit') + '">' + (MOOD_LABELS[mood] || mood) + '</span></div></div>';
+
+    // Cult level selector
+    html += '<div class="dsec"><div class="dsec-title">Cult level</div>' +
+      '<select id="ok-cult-sel" onchange="okSetCult(this.value)"' +
+      ' style="width:100%;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem">';
+    CULT_LEVELS.forEach(function(lvl) {
+      html += '<option value="' + lvl + '"' + (lvl === cultLevel ? ' selected' : '') + '>' + CULT_LABELS[lvl] + '</option>';
+    });
+    html += '</select></div>';
+
+    // Rite / battle frenzy
+    html += '<div class="dsec"><div class="dsec-title">Rite — Battle Frenzy</div>';
+    if (frenzyActive) {
+      html += '<div class="stat-row"><span class="sr-label">Status</span>' +
+        '<span class="sr-val" style="color:var(--safe)">Active — expires ' + fmtEta(sd.battle_frenzy_until) + '</span></div>' +
+        '<p style="font-size:.78rem;color:var(--text-dim);margin:.25rem 0 0">Infantry fights at ×1.5 strength.</p>';
+    } else {
+      html += '<p style="font-size:.78rem;color:var(--text-dim);margin:.25rem 0 .5rem">Requires ≥1 Hiereus · costs 5 grain · success depends on divine mood.</p>' +
+        '<button class="obj-cta" style="width:100%" onclick="okRite()">Perform Rite</button>';
+    }
+    html += '</div>';
+
+    el.innerHTML = html;
+  } catch(_) {
+    el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
+  }
+}
+
+async function okDeposit(kingdomId) {
+  const amt = parseFloat((document.getElementById('ok-treasury-amt') || {}).value);
+  if (!amt || amt <= 0) return;
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/treasury/deposit',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({amount: amt}) });
+  if (r.ok) { loadOikosKingdom(); }
+  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Deposit failed'); }
+}
+
+async function okLeave(kingdomId) {
+  if (!confirm('Leave this kingdom?')) return;
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/leave', {method:'DELETE'});
+  if (r.ok) { loadOikosKingdom(); }
+  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not leave'); }
+}
+
+async function okJoin(kingdomId) {
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/join', {method:'POST'});
+  if (r.ok) { loadOikosKingdom(); }
+  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not join'); }
+}
+
+async function okFound() {
+  const nameEl = document.getElementById('ok-found-name');
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (!name) return;
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: name}) });
+  if (r.ok) { loadOikosKingdom(); }
+  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not found kingdom'); }
+}
+
+async function okInvite(kingdomId) {
+  const sel = document.getElementById('ok-invite-sel');
+  const provinceId = sel ? sel.value : '';
+  if (!provinceId) return;
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/invite',
+    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({province_id: provinceId}) });
+  if (r.ok) { alert('Invitation sent.'); }
+  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not invite'); }
+}
+
+async function okSetCult(level) {
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/cult-level',
+    { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({cult_level: level}) });
+  if (!r.ok) { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not set cult level'); }
+}
+
+async function okRite() {
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/rite', {method:'POST'});
+  const d = await r.json().catch(function(){return {};});
+  if (r.ok) {
+    alert(d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
+    loadOikosKult();
+  } else {
+    alert(d.error || 'Rite failed');
   }
 }
 

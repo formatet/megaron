@@ -632,8 +632,10 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var settlementID string
+	var playerIDStr string
 	var unreadCount int
 	if playerID, ok := auth.PlayerIDFromContext(r.Context()); ok {
+		playerIDStr = playerID.String()
 		var sid uuid.UUID
 		if err := h.pool.QueryRow(r.Context(),
 			`SELECT id FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
@@ -654,6 +656,7 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		"World":        wld,
 		"WorldID":      worldID,
 		"SettlementID": settlementID,
+		"PlayerID":     playerIDStr,
 		"UnreadCount":  unreadCount,
 		"MapMode":      true,
 	})
