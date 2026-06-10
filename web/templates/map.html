@@ -650,6 +650,39 @@ function drawOutpost(ctx, cx, cy, p) {
   ctx.restore();
 }
 
+// ── Deposit resource icons (Sprint 4.5) — tiny pixel markers ────────────
+function drawDepositIcons(ctx, cx, cy, tile) {
+  const types = [];
+  if (tile.copper_deposit) types.push('cu');
+  if (tile.tin_deposit)    types.push('sn');
+  if (tile.cedar_deposit)  types.push('cd');
+  if (tile.silver_deposit) types.push('ag');
+  if (!types.length) return;
+  ctx.save();
+  types.forEach((t, i) => {
+    const ox = cx + 9, oy = cy - 8 + i * 5;
+    switch (t) {
+      case 'cu':
+        ctx.fillStyle = '#C47C20';
+        ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill();
+        break;
+      case 'sn':
+        ctx.fillStyle = '#909090';
+        ctx.fillRect(ox - 2, oy - 1.5, 4, 3);
+        break;
+      case 'cd':
+        ctx.fillStyle = '#2A7010';
+        ctx.beginPath(); ctx.moveTo(ox, oy - 3); ctx.lineTo(ox + 2.5, oy + 1.5); ctx.lineTo(ox - 2.5, oy + 1.5); ctx.closePath(); ctx.fill();
+        break;
+      case 'ag':
+        ctx.fillStyle = '#C0C8D8';
+        ctx.beginPath(); ctx.moveTo(ox, oy - 2.5); ctx.lineTo(ox + 2, oy); ctx.lineTo(ox, oy + 2.5); ctx.lineTo(ox - 2, oy); ctx.closePath(); ctx.fill();
+        break;
+    }
+  });
+  ctx.restore();
+}
+
 // ── Province building sprite + flag ──────────────────────────────────────
 function drawProvince(ctx, cx, cy, p) {
   const walls = Math.min(3, p.walls || 0);
@@ -788,6 +821,7 @@ let provinceData = [];
 let marchData = [];
 let messengerData = [];
 let tradeData = [];
+let outpostFlowData = [];
 let camera = { x: 0, y: 0, zoom: 1 };
 let dragging = false, lastMouse = null;
 let selectedProvince = null;
@@ -826,7 +860,7 @@ function render() {
   ctx.translate(camera.x, camera.y);
   ctx.scale(camera.zoom * SCALE, camera.zoom * SCALE);
 
-  // 1. Terrain tiles with animated detail
+  // 1. Terrain tiles with animated detail + deposit icons
   for (const t of tileData) {
     const {x,y} = hexPx(t.q, t.r);
     const pts = hexPts(x, y);
@@ -834,6 +868,7 @@ function render() {
     const seed = (t.q*137 + t.r*31) & 0xff;
     fillHex(ctx, pts, base.c0, base.c1, seed);
     if (t.terrain !== 'fog') drawDetail(ctx, x, y, t.terrain, seed, animFrame);
+    if (t.terrain !== 'fog' && camera.zoom >= 0.5) drawDepositIcons(ctx, x, y, t);
   }
 
   // 2. Roads between adjacent own/allied provinces
@@ -848,6 +883,49 @@ function render() {
           drawRoad(ctx, fa.x, fa.y, fb.x, fb.y);
         }
       }
+    }
+  }
+
+  // 2.5 Catchment zone — subtle gold tint on the 6 adjacent tiles of own cities
+  if (camera.zoom >= 0.55) {
+    for (const p of provinceData) {
+      if (!p.own || p.is_outpost) continue;
+      for (const [dq, dr] of HEX_DIRS) {
+        const nq = p.q + dq, nr = p.r + dr;
+        if (provinceData.find(x => x.q === nq && x.r === nr)) continue;
+        const t = tileData.find(t => t.q === nq && t.r === nr);
+        if (!t || t.terrain === 'fog') continue;
+        const {x, y} = hexPx(nq, nr);
+        const pts = hexPts(x, y);
+        ctx.save();
+        hexPath(ctx, pts);
+        ctx.globalAlpha = 0.11;
+        ctx.fillStyle = '#D4AC0D';
+        ctx.fill();
+        ctx.globalAlpha = 0.25;
+        ctx.strokeStyle = '#D4AC0D';
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+
+  // 2.6 Outpost flow lines — dashed gold lines from outpost to home settlement
+  if (camera.zoom >= 0.45 && outpostFlowData.length) {
+    for (const flow of outpostFlowData) {
+      const home = provinceData.find(p => p.settlement_id === flow.home_settlement_id);
+      if (!home) continue;
+      const a = hexPx(flow.q, flow.r);
+      const b = hexPx(home.q, home.r);
+      ctx.save();
+      ctx.strokeStyle = '#D4AC0D';
+      ctx.lineWidth = 0.9;
+      ctx.setLineDash([2, 3]);
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
     }
   }
 
@@ -922,12 +1000,13 @@ async function fetchAuth(url, opts = {}) {
 }
 
 async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes, flowRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`),
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/outpost-flows`),
   ]);
 
   if (tilesRes.ok) {
@@ -946,6 +1025,9 @@ async function loadMap() {
   if (tradeRes.ok) {
     tradeData = await tradeRes.json();
   }
+  if (flowRes.ok) {
+    outpostFlowData = await flowRes.json();
+  }
   MusicPlayer.update();
 }
 
@@ -958,12 +1040,13 @@ function centreCamera() {
   camera.y = canvas.height/2 - (sumY/visible.length)*SCALE;
 }
 
-// Reload provinces, marches, messengers, and trades every 30s
+// Reload provinces, marches, messengers, trades and outpost flows every 30s
 setInterval(() => {
-  fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; MusicPlayer.update(); }));
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { tradeData = d; dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/outpost-flows`).then(r => r.ok && r.json().then(d => { outpostFlowData = d; dirty = true; }));
 }, 30000);
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
@@ -2046,11 +2129,14 @@ function addNotifChip(domain, glyph, text, time) {
 
 window.addEventListener('resize', recomputeChips);
 
-// ── Search overlay ────────────────────────────────────────────────────────
+// ── Search overlay (Sprint 4) ─────────────────────────────────────────────
+let searchFocusIdx = -1;
+
 function toggleSearch() {
   const o = document.getElementById('search-overlay');
   o.classList.toggle('open');
   if (o.classList.contains('open')) {
+    searchFocusIdx = -1;
     document.getElementById('search-input').focus();
     renderSearch('');
   }
@@ -2059,18 +2145,55 @@ function closeSearch(e) {
   document.getElementById('search-overlay').classList.remove('open');
 }
 
+function centreOn(q, r) {
+  const {x, y} = hexPx(q, r);
+  camera.x = canvas.width/2  - x * SCALE * camera.zoom;
+  camera.y = canvas.height/2 - y * SCALE * camera.zoom;
+  dirty = true;
+}
+
 document.getElementById('search-input').addEventListener('input', function() {
+  searchFocusIdx = -1;
   renderSearch(this.value.toLowerCase());
+});
+
+document.getElementById('search-input').addEventListener('keydown', function(e) {
+  const items = [...document.querySelectorAll('#search-results .sr-item')];
+  if (!items.length) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    searchFocusIdx = Math.min(searchFocusIdx + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('focused', i === searchFocusIdx));
+    items[searchFocusIdx].scrollIntoView({block: 'nearest'});
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    searchFocusIdx = Math.max(searchFocusIdx - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('focused', i === searchFocusIdx));
+    items[searchFocusIdx].scrollIntoView({block: 'nearest'});
+  } else if (e.key === 'Enter') {
+    if (searchFocusIdx >= 0 && searchFocusIdx < items.length) {
+      items[searchFocusIdx].click();
+    }
+  }
 });
 
 function renderSearch(q) {
   const results = document.getElementById('search-results');
-  const ownSettlements = provinceData.filter(p => p.own);
-  const visibleOther   = provinceData.filter(p => !p.own);
-  const ownArms = marchData.filter(m => m.own);
-  const myMsgs  = messengerData.filter(m => m.own || m.dest_settlement_id === MY_SETTLEMENT_ID);
 
-  function match(s) { return !q || s.toLowerCase().includes(q); }
+  // Own settlements and FOW-visible others (provinceData is already server-side FOW-filtered)
+  const ownSettlements = provinceData.filter(p => p.own && !p.is_outpost);
+  const visibleOther   = provinceData.filter(p => !p.own && !p.is_outpost && p.name);
+
+  // Own marches: origin q,r matches any own province
+  const ownPos = new Set(provinceData.filter(p => p.own).map(p => `${p.q},${p.r}`));
+  const ownArms = marchData.filter(m => ownPos.has(`${m.origin_q},${m.origin_r}`));
+
+  function match(s) { return !q || (s || '').toLowerCase().includes(q); }
+
+  function terrainLabel(p) {
+    const t = tileData.find(t => t.q === p.q && t.r === p.r);
+    return t ? t.terrain.replace(/_/g, ' ') : '';
+  }
 
   let html = '';
   const settOwn = ownSettlements.filter(p => match(p.name));
@@ -2080,40 +2203,33 @@ function renderSearch(q) {
       <div class="sr-item" onclick="closeSearch();centreOn(${p.q},${p.r})">
         <span class="sr-icon">🏛</span>
         <span class="sr-name">${p.name}</span>
-        <span class="sr-meta">${p.terrain || ''} · L${p.walls||0} walls</span>
+        <span class="sr-meta">${terrainLabel(p)}${p.walls ? ' · L' + p.walls + ' walls' : ''}</span>
         <span class="sr-type">City</span>
       </div>`).join('');
   }
-  const settOther = visibleOther.filter(p => match(p.name) && p.name);
+  const settOther = visibleOther.filter(p => match(p.name));
   if (settOther.length) {
     html += `<div class="sr-category">Visible Cities</div>`;
-    html += settOther.slice(0,8).map(p => `
+    html += settOther.slice(0, 8).map(p => `
       <div class="sr-item" onclick="closeSearch();centreOn(${p.q},${p.r})">
         <span class="sr-icon">🏛</span>
         <span class="sr-name">${p.name}</span>
-        <span class="sr-meta">${p.allied ? 'Ally' : p.owner || 'Enemy'}</span>
+        <span class="sr-meta">${p.allied ? 'Ally' : (p.owner || 'Enemy')}</span>
         <span class="sr-type">${p.allied ? 'Ally' : 'Enemy'}</span>
       </div>`).join('');
   }
-  if (ownArms.length) {
+  if (ownArms.length && (!q || match('army march'))) {
     html += `<div class="sr-category">Your Armies</div>`;
     html += ownArms.map(m => `
       <div class="sr-item" onclick="closeSearch();centreOn(${m.target_q},${m.target_r})">
         <span class="sr-icon">⚔</span>
-        <span class="sr-name">→ (${m.target_q},${m.target_r}) · ${m.intent}</span>
+        <span class="sr-name">${m.intent.charAt(0).toUpperCase()+m.intent.slice(1)} → (${m.target_q},${m.target_r})</span>
         <span class="sr-meta">ETA ${fmtEta(m.arrives_at)}</span>
         <span class="sr-type">Army</span>
       </div>`).join('');
   }
   if (!html) html = '<div style="padding:.6rem .8rem;font-size:.8rem;color:var(--text-dim)">No results.</div>';
   results.innerHTML = html;
-}
-
-function centreOn(q, r) {
-  const {x, y} = hexPx(q, r);
-  camera.x = canvas.width/2  - x * SCALE * camera.zoom;
-  camera.y = canvas.height/2 - y * SCALE * camera.zoom;
-  dirty = true;
 }
 
 document.addEventListener('keydown', e => {
