@@ -1107,6 +1107,29 @@ function render() {
     ctx.closePath(); ctx.stroke(); ctx.restore();
   }
 
+  // 3b. Incoming attack glow — pulsing red on target hex of any visible attack march
+  const attackTargets = new Set(
+    marchData.filter(m => m.intent === 'attack').map(m => `${m.target_q},${m.target_r}`)
+  );
+  if (attackTargets.size > 0) {
+    const pulse = 0.25 + 0.15 * Math.sin(animFrame * 0.08);
+    for (const p of provinceData) {
+      if (!attackTargets.has(`${p.q},${p.r}`)) continue;
+      const {x, y} = hexPx(p.q, p.r);
+      const pts = hexPts(x, y);
+      ctx.save();
+      hexPath(ctx, pts);
+      ctx.globalAlpha = pulse;
+      ctx.fillStyle = '#C0392B';
+      ctx.fill();
+      ctx.globalAlpha = pulse + 0.2;
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   // 4. Province buildings + flags (settlements and outposts)
   for (const p of provinceData) {
     const {x,y} = hexPx(p.q, p.r);
