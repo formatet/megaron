@@ -254,6 +254,13 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 		   AND (m.trade_offer IS NULL OR (
 		       m.trade_offer->>'status' = 'pending'
 		       AND (m.expires_at IS NULL OR m.expires_at > now())
+		       AND EXISTS (
+		           SELECT 1 FROM settlement_goods sg
+		           WHERE sg.settlement_id = m.origin_id
+		             AND sg.good_key = m.trade_offer->>'want_good'
+		             AND sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		                 >= (m.trade_offer->>'want_qty')::float
+		       )
 		   ))`,
 		worldID, playerID,
 	).Scan(&unreadCount)

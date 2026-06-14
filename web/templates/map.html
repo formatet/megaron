@@ -2427,7 +2427,7 @@ async function startBuild() {
   if (resultEl) resultEl.textContent = '';
   const r = await fetchAuth(
     `/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/build`,
-    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({type: btype}) }
+    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({building_type: btype}) }
   );
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
@@ -2705,7 +2705,7 @@ async function loadDipInbox() {
         + '</div>' : '';
       return '<div id="dip-msg-' + m.id + '" style="border-bottom:1px solid var(--border);padding:.5rem .6rem">'
         + '<div style="display:flex;justify-content:space-between;align-items:baseline">'
-        + '<strong style="font-size:.82rem;color:var(--accent)">' + esc(m.sender_name || 'Unknown') + '</strong>'
+        + '<strong style="font-size:.82rem;color:var(--accent)">' + esc(m.from_name || 'Unknown') + '</strong>'
         + '<span style="font-size:.68rem;color:var(--text-dim)">' + fmtAgo(m.arrived_at) + '</span>'
         + '</div>'
         + (m.message ? '<div style="font-size:.8rem;font-style:italic;margin:.15rem 0">“' + esc(m.message) + '”</div>' : '')
@@ -2827,7 +2827,7 @@ async function loadDipSent() {
       const replyText = m.reply_text ? '<div style="font-size:.75rem;font-style:italic;color:var(--safe)">“' + esc(m.reply_text) + '”</div>' : '';
       return '<div style="border-bottom:1px solid var(--border);padding:.4rem .6rem">'
         + '<div style="display:flex;justify-content:space-between">'
-        + '<span style="font-size:.78rem;color:var(--text-dim)">→ ' + esc(m.to_name || 'unknown') + '</span>'
+        + '<span style="font-size:.78rem;color:var(--text-dim)">→ ' + esc(m.destination_name || 'unknown') + '</span>'
         + '<span style="font-size:.68rem;color:var(--text-dim)">' + fmtAgo(m.sent_at || m.created_at) + '</span>'
         + '</div>'
         + '<div style="font-size:.78rem;font-style:italic;margin:.1rem 0">“' + esc(m.message_text || m.message || '') + '”</div>'

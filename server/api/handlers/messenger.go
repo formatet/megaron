@@ -221,7 +221,7 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer
+		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer
 		 FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
 		 WHERE m.origin_id = $1
@@ -238,6 +238,7 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 		ID         uuid.UUID       `json:"id"`
 		DestID     uuid.UUID       `json:"destination_id"`
 		DestName   string          `json:"destination_name"`
+		Message    string          `json:"message_text"`
 		Status     string          `json:"status"`
 		ReplyText  *string         `json:"reply_text"`
 		SentAt     time.Time       `json:"sent_at"`
@@ -248,7 +249,7 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
-		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Status, &m.ReplyText,
+		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
 			&m.SentAt, &m.ArrivesAt, &tradeOffer); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
