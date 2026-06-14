@@ -1326,13 +1326,14 @@ function openInspect(marker) {
         onclick="recallOutpost('${marker.id}')">Recall Outpost →</button>
       <span id="recall-err" style="font-size:.75rem;color:var(--danger);display:block;margin-top:.2rem;"></span>`;
   } else if (marker.own) {
-    const a = document.createElement('a');
-    a.href = marker.is_capital
-      ? `/world/${WORLD_ID}/`
-      : `/world/${WORLD_ID}/?sid=${marker.settlement_id}`;
-    a.textContent = marker.is_capital ? 'Manage Province →' : 'Manage Settlement →';
-    a.style.cssText = 'display:block;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);text-decoration:none;color:var(--text);font-size:.8rem;';
-    foot.appendChild(a);
+    const btn = document.createElement('button');
+    btn.textContent = marker.is_capital ? 'Manage Province →' : 'Manage Settlement →';
+    btn.style.cssText = 'display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;';
+    btn.addEventListener('click', function() {
+      closeInspect();
+      openDrawer('city');
+    });
+    foot.appendChild(btn);
   } else if (MY_SETTLEMENT_ID && marker.settlement_id) {
     foot.innerHTML = `
       <textarea id="ip-msg-text" class="msg-textarea" placeholder="Write message…" maxlength="1000" rows="3"></textarea>
@@ -1917,9 +1918,9 @@ async function loadDrawerContent(name) {
     body.innerHTML = `
       <canvas id="city-scene" class="city-scene" width="320" height="110"></canvas>
       <div class="drawer-tabs">
-        <button class="dtab active" data-tab="produktion">Produktion</button>
-        <button class="dtab" data-tab="byggnader">Byggnader</button>
-        <button class="dtab" data-tab="garnison">Garnison</button>
+        <button class="dtab active" data-tab="produktion">Production</button>
+        <button class="dtab" data-tab="byggnader">Buildings</button>
+        <button class="dtab" data-tab="garnison">Garrison</button>
         <button class="dtab" data-tab="catchment">Catchment</button>
       </div>
       <div id="ctab-produktion" class="city-tab">
@@ -1964,8 +1965,8 @@ async function loadDrawerContent(name) {
         const idle    = goods[0] ? (goods[0].idle_citizens || 0) : 0;
         document.getElementById('city-pop-sec').innerHTML = `
           <div class="stat-row"><span class="sr-label">Population</span><span class="sr-val">${pd.population}</span></div>
-          <div class="stat-row"><span class="sr-label">I tjänst</span><span class="sr-val">${armyPop}</span></div>
-          <div class="stat-row stat-row-strong"><span class="sr-label">Arbetspool</span><span class="sr-val">${lp}</span></div>
+          <div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${armyPop}</span></div>
+          <div class="stat-row stat-row-strong"><span class="sr-label">Labor pool</span><span class="sr-val">${lp}</span></div>
           <div class="stat-row"><span class="sr-label">Idle</span><span class="sr-val">${idle}</span></div>`;
       } else {
         document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
@@ -1981,16 +1982,36 @@ async function loadDrawerContent(name) {
       if (pd) {
         const blds = pd.buildings || [], bq = pd.build_queue || [], tq = pd.training_queue || [];
         let h2 = blds.length
-          ? `<div class="dsec-title">Uppförda</div><table class="goods-mini">${
+          ? `<div class="dsec-title">Built</div><table class="goods-mini">${
               blds.map(b => `<tr><td>${BLD_LBL[b.type]||b.type}</td><td>L${b.level}</td></tr>`).join('')
             }</table>`
-          : '<p class="empty-state">Inga byggnader ännu.</p>';
-        if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Byggkö</div><table class="goods-mini">${
+          : '<p class="empty-state">No buildings yet.</p>';
+        if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
           bq.map(b => `<tr><td>${BLD_LBL[b.type]||b.type}</td><td>${fmtEta(b.complete_at)}</td></tr>`).join('')
         }</table>`;
-        if (tq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Träningskö</div><table class="goods-mini">${
+        if (tq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Training queue</div><table class="goods-mini">${
           tq.map(t => `<tr><td>${UNIT_LBL[t.unit]||t.unit} ×${t.count}</td><td>${fmtEta(t.complete_at)}</td></tr>`).join('')
         }</table>`;
+        h2 += `
+          <div class="dsec-title" style="margin-top:.8rem">Construct</div>
+          <select id="city-build-select" class="build-select">
+            <option value="farm">Farm — 50 timber 20 stone · +grain/m</option>
+            <option value="lumbermill">Lumbermill — 40 timber 40 stone · +timber/m</option>
+            <option value="stonequarry">Stone Quarry — 50 timber 20 stone · +stone/m</option>
+            <option value="mine">Mine — 60 timber 40 stone · +ore/m</option>
+            <option value="barracks">Barracks — 80 timber 80 stone · recruits</option>
+            <option value="market">Market — 100 timber 60 stone · +0.5 silver/m</option>
+            <option value="wall">Wall — 40 timber 160 stone · +1 wall</option>
+            <option value="tower">Tower — 60 timber 110 stone · +1 wall</option>
+            <option value="harbour">Harbour — 140 timber 60 stone · ships</option>
+            <option value="foundry">Foundry — 80 timber 100 stone · craft bronze</option>
+            <option value="stable">Stable — 60 timber 40 stone · horses</option>
+            <option value="olive_press">Olive Press — 30 timber 40 stone · +oil/m</option>
+            <option value="winery">Winery — 40 timber 30 stone · +wine/m</option>
+            <option value="bronze_wall">Bronze Wall — 100 stone 10 bronze · +1 wall</option>
+          </select>
+          <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
+          <div id="city-build-result" class="action-result"></div>`;
         document.getElementById('city-bld-sec').innerHTML = h2;
       }
 
@@ -2002,14 +2023,14 @@ async function loadDrawerContent(name) {
         const totalPop = Object.entries(POP_COSTS).reduce((s,[k,c]) => s + (army[k]||0)*c, 0);
         document.getElementById('city-gar-sec').innerHTML = present.length
           ? `<table class="goods-mini">
-              <tr style="color:var(--text-dim);font-size:.7rem"><td>Enhet</td><td style="text-align:right">Antal</td><td style="text-align:right">Pop</td><td style="text-align:right">DP</td></tr>
+              <tr style="color:var(--text-dim);font-size:.7rem"><td>Unit</td><td style="text-align:right">Count</td><td style="text-align:right">Pop</td><td style="text-align:right">DP</td></tr>
               ${present.map(([k,lbl]) => {
                 const n = army[k]||0;
                 return `<tr><td>${lbl}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:var(--text-dim)">${n*POP_COSTS[k]}</td><td style="text-align:right;color:var(--safe)">${n*UNIT_DP[k]}</td></tr>`;
               }).join('')}
               <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Totalt</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe)">${totalDP} DP</td></tr>
             </table>`
-          : '<p class="empty-state">Ingen garnison. Rekrytera enheter i War-fliken.</p>';
+          : '<p class="empty-state">No garrison. Recruit units in the War tab.</p>';
       }
 
       // ── Catchment ───────────────────────────────────────────────────────────
@@ -2017,13 +2038,13 @@ async function loadDrawerContent(name) {
       if (myFlows.length) {
         const gnames = Object.fromEntries(goods.map(g => [g.key, g.name||g.key]));
         document.getElementById('city-ctm-sec').innerHTML =
-          `<div class="dsec-title">Utpost-flöden till ${capital.name}</div>
+          `<div class="dsec-title">Outpost flows to ${capital.name}</div>
            <table class="goods-mini">${myFlows.map(f =>
             `<tr><td>${gnames[f.good_key]||f.good_key}</td><td style="text-align:right;color:var(--text-dim);font-family:var(--mono)">(${f.q},${f.r})</td><td style="color:var(--safe)">+${f.rate_per_min.toFixed(1)}/m</td></tr>`
           ).join('')}</table>`;
       } else {
         document.getElementById('city-ctm-sec').innerHTML =
-          '<p class="empty-state">Inga utpost-flöden. Grundlägg utposter på grannhexar.</p>';
+          '<p class="empty-state">No outpost flows. Found outposts on adjacent hexes.</p>';
       }
 
     } catch(e) { console.error('city drawer', e); }
@@ -2036,36 +2057,38 @@ async function loadDrawerContent(name) {
 
   } else if (name === 'economy') {
     const body = document.getElementById('economy-body');
-    if (!capital) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No city.</p>'; return; }
+    const mySettlements = provinceData.filter(p => p.own && !p.is_outpost);
+    if (!mySettlements.length) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No settlements.</p>'; return; }
     body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
     try {
-      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/goods`);
-      if (r.ok) {
+      const results = await Promise.all(
+        mySettlements.map(s => fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${s.id}/goods`))
+      );
+      let html = '';
+      for (let i = 0; i < mySettlements.length; i++) {
+        const s = mySettlements[i];
+        const r = results[i];
+        if (!r.ok) continue;
         const goods = await r.json();
         const silver = goods.find(g => g.key === 'silver');
         const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible));
-        body.innerHTML = `
-          <div class="silver-balance">
+        html += `<div class="dsec-title" style="margin-top:${i>0?'.8rem':'0'}">${s.name}${s.is_capital?' ★':''}</div>`;
+        if (silver) {
+          html += `<div class="silver-balance">
             <div>
               <div class="sb-label">Silver</div>
-              <div class="sb-val">${silver ? fmtSilver(silver.amount) : '0 shekel'}</div>
+              <div class="sb-val">${fmtSilver(silver.amount)}</div>
             </div>
-            ${silver && silver.rate_per_min ? `<div class="sb-rate">+${silver.rate_per_min.toFixed(2)}/m</div>` : ''}
-          </div>
-          <div class="dsec">
-            <div class="dsec-title">Warehouse</div>
-            <table class="goods-mini">
-              ${others.map(g => `<tr><td>${g.name || g.key}</td><td>${Math.floor(g.amount||0)}</td></tr>`).join('')}
-            </table>
-          </div>
-          <div class="dsec">
-            <a class="obj-cta" href="/world/${WORLD_ID}/" style="display:block;text-align:center;padding:.4rem">
-              Full Economy View →
-            </a>
+            ${silver.rate_per_min ? `<div class="sb-rate">+${silver.rate_per_min.toFixed(2)}/m</div>` : ''}
           </div>`;
-      } else {
-        body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
+        }
+        if (others.length) {
+          html += `<table class="goods-mini">${others.map(g =>
+            `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${g.rate_per_min > 0 ? `<td style="color:var(--safe)">+${g.rate_per_min.toFixed(1)}/m</td>` : '<td></td>'}</tr>`
+          ).join('')}</table>`;
+        }
       }
+      body.innerHTML = html || '<p class="empty-state" style="padding:1rem">No goods data.</p>';
     } catch (_) {
       body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
     }
@@ -2113,7 +2136,7 @@ async function loadOikosDrawer() {
   body.innerHTML =
     '<div class="drawer-tabs">' +
       '<button class="dtab active" data-tab="kingdom">Kingdom</button>' +
-      '<button class="dtab" data-tab="kult">Kult</button>' +
+      '<button class="dtab" data-tab="kult">Cult</button>' +
     '</div>' +
     '<div id="oktab-kingdom" class="city-tab"></div>' +
     '<div id="oktab-kult"    class="city-tab" style="display:none"></div>';
@@ -2273,8 +2296,8 @@ async function loadOikosKult() {
     const sd = await sr.json();
 
     const CULT_LEVELS = ['forsummad','enkel','vardig','praktfull','overdadig'];
-    const CULT_LABELS = { forsummad:'Försummad', enkel:'Enkel', vardig:'Värdig', praktfull:'Praktfull', overdadig:'Överdådig' };
-    const MOOD_LABELS = { Favorable:'Välvilliga', Indifferent:'Likgiltiga', Suspicious:'Misstänksamma', Wrathful:'Vredgade' };
+    const CULT_LABELS = { forsummad:'Neglected', enkel:'Simple', vardig:'Worthy', praktfull:'Magnificent', overdadig:'Lavish' };
+    const MOOD_LABELS = { Favorable:'Favorable', Indifferent:'Indifferent', Suspicious:'Suspicious', Wrathful:'Wrathful' };
     const MOOD_COLORS = { Favorable:'var(--safe)', Indifferent:'var(--text-dim)', Suspicious:'var(--warn)', Wrathful:'var(--danger)' };
 
     const mood      = sd.divine_mood  || 'Indifferent';
@@ -2390,6 +2413,31 @@ async function okRite() {
     loadOikosKult();
   } else {
     alert(d.error || 'Rite failed');
+  }
+}
+
+// ── City build action ─────────────────────────────────────────────────────
+async function startBuild() {
+  const capital = provinceData.find(p => p.own && p.is_capital);
+  if (!capital) return;
+  const sel = document.getElementById('city-build-select');
+  const resultEl = document.getElementById('city-build-result');
+  if (!sel || !resultEl) return;
+  const btype = sel.value;
+  if (resultEl) resultEl.textContent = '';
+  const r = await fetchAuth(
+    `/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/build`,
+    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({type: btype}) }
+  );
+  const d = await r.json().catch(() => ({}));
+  if (r.ok) {
+    resultEl.style.color = 'var(--safe)';
+    resultEl.textContent = `${BLD_LBL[btype]||btype} queued.`;
+    // reload city drawer to show updated queue
+    loadDrawerContent('city');
+  } else {
+    resultEl.style.color = 'var(--accent)';
+    resultEl.textContent = d.error || 'Build failed.';
   }
 }
 

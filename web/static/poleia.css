@@ -1271,7 +1271,7 @@ footer {
   margin-bottom: 0.6rem;
 }
 .sb-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-family: var(--mono); }
-.sb-val   { font-size: 1.1rem; font-family: var(--mono); color: var(--gold); }
+.sb-val   { font-size: 1.1rem; font-family: var(--mono); color: var(--text); }
 .sb-rate  { font-size: 0.7rem; color: var(--safe); font-family: var(--mono); }
 
 /* ── Notification list items ─────────────────────────────────────────────── */

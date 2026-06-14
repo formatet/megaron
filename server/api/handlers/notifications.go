@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -21,12 +22,12 @@ func NewNotificationsHandler(pool *pgxpool.Pool) *NotificationsHandler {
 }
 
 type notificationRow struct {
-	ID        uuid.UUID  `json:"id"`
-	Kind      string     `json:"kind"`
-	Level     int        `json:"level"`
-	BodyJSON  any        `json:"body"`
-	CreatedAt time.Time  `json:"created_at"`
-	ReadAt    *time.Time `json:"read_at"`
+	ID        uuid.UUID        `json:"id"`
+	Kind      string           `json:"kind"`
+	Level     int              `json:"level"`
+	BodyJSON  json.RawMessage  `json:"body"`
+	CreatedAt time.Time        `json:"created_at"`
+	ReadAt    *time.Time       `json:"read_at"`
 }
 
 // List returns recent notifications for the authenticated player in this world.
@@ -69,7 +70,11 @@ func (h *NotificationsHandler) List(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&n.ID, &n.Kind, &n.Level, &bodyRaw, &n.CreatedAt, &n.ReadAt); err != nil {
 			continue
 		}
-		n.BodyJSON = bodyRaw
+		if len(bodyRaw) > 0 {
+			n.BodyJSON = json.RawMessage(bodyRaw)
+		} else {
+			n.BodyJSON = json.RawMessage("{}")
+		}
 		if n.ReadAt == nil {
 			unread++
 		}

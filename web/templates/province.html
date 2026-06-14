@@ -288,10 +288,10 @@
     <!-- ── Labor allocation ─────────────────────────── -->
     <section class="panel labor-panel">
       <h3>Labor</h3>
-      <p class="labor-hint">Tilldela citizens per vara. Utflöde = yield/worker × citizens. Σ ≤ labor pool.</p>
+      <p class="labor-hint">Assign citizens per good. Output = yield/worker × citizens. Σ ≤ labor pool.</p>
       <div class="labor-pool-line">Labor: <span id="labor-pool-val">—</span></div>
       <div id="labor-sliders"><p class="loading">Loading…</p></div>
-      <button class="btn-primary btn-small" onclick="saveLabor()" style="width:100%;margin-top:.5rem">Spara allokering</button>
+      <button class="btn-primary btn-small" onclick="saveLabor()" style="width:100%;margin-top:.5rem">Save allocation</button>
       <div id="labor-result" class="action-result"></div>
     </section>
 
@@ -453,7 +453,7 @@ function loadLabor() {
   const el = document.getElementById('labor-sliders');
   const producible = _goodsData.filter(g => g.producible);
   if (!producible.length) {
-    el.innerHTML = '<p class="empty-state">Inga producerbara varor på denna terräng.</p>';
+    el.innerHTML = '<p class="empty-state">No producible goods on this terrain.</p>';
     return;
   }
   el.innerHTML = producible.map(g => {

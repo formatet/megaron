@@ -251,7 +251,10 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 		`SELECT count(*) FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
 		 WHERE m.world_id = $1 AND s.owner_id = $2 AND m.status = 'delivered'
-		   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')`,
+		   AND (m.trade_offer IS NULL OR (
+		       m.trade_offer->>'status' = 'pending'
+		       AND (m.expires_at IS NULL OR m.expires_at > now())
+		   ))`,
 		worldID, playerID,
 	).Scan(&unreadCount)
 
