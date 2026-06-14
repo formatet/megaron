@@ -33,6 +33,8 @@ const (
 	ScheduledRespawn            ScheduledEventType = "Respawn"
 	ScheduledRecallArrival      ScheduledEventType = "RecallArrival"
 	ScheduledLogisticsArrival   ScheduledEventType = "LogisticsArrival"
+	// C1 — unit model; handler registered in C2+.
+	ScheduledUnitArrival        ScheduledEventType = "UnitArrival"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.
