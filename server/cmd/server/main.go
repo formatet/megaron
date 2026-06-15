@@ -125,6 +125,8 @@ func main() {
 	worker.Register(events.ScheduledRecallArrival, recallH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
+	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub)
+	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	go worker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
 	go healDispossessed(ctx, pool, scheduler)
@@ -186,6 +188,7 @@ func main() {
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock)
 	jh := handlers.NewJoinHandler(pool)
 	nh := handlers.NewNotificationsHandler(pool)
+	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// World endpoints — list/get/map are public; create requires auth.
@@ -236,6 +239,10 @@ func main() {
 			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/borrow-army", kh.BorrowArmy)
 			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/election", kh.CallElection)
 			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/vote", kh.Vote)
+
+			// Unit endpoints (C3/C4).
+			r.Get("/worlds/{worldID}/units", uh.ListUnits)
+			r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
 
 			r.Get("/worlds/{worldID}/settlements", sh.List)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)
