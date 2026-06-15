@@ -3013,18 +3013,21 @@ async function loadDipThreads() {
     const inbox  = (inR && inR.ok)  ? await inR.json().catch(() => [])  : [];
     const sent   = (outR && outR.ok) ? await outR.json().catch(() => []) : [];
 
-    // Normalise both sides into a common shape and group by counterpart name
-    // Inbox: from_name is the counterpart; Sent: destination_name is counterpart
-    const threads = {}; // key → { name, messages[] }
+    // Normalise both sides into a common shape and group by counterpart name.
+    // Also track the counterpart settlement_id so inline compose can address them.
+    // Inbox: from_name/from_id is the counterpart; Sent: destination_name/destination_id is counterpart.
+    const threads = {}; // key → { name, settlement_id, messages[] }
 
     for (const m of inbox) {
       const key = m.from_name || 'Unknown';
-      if (!threads[key]) threads[key] = { name: key, messages: [] };
+      if (!threads[key]) threads[key] = { name: key, settlement_id: m.from_id || null, messages: [] };
       threads[key].messages.push({ ...m, _dir: 'in' });
     }
     for (const m of sent) {
       const key = m.destination_name || 'unknown';
-      if (!threads[key]) threads[key] = { name: key, messages: [] };
+      if (!threads[key]) threads[key] = { name: key, settlement_id: m.destination_id || null, messages: [] };
+      // Prefer id from sent if inbox didn't set it yet
+      else if (!threads[key].settlement_id) threads[key].settlement_id = m.destination_id || null;
       threads[key].messages.push({ ...m, _dir: 'out' });
     }
 
@@ -3047,17 +3050,22 @@ async function loadDipThreads() {
       const hasPendingTrade = msgs.some(m => m._dir === 'in' && m.trade_offer && m.trade_offer.status === 'pending');
 
       const threadId = 'dip-thread-' + key.replace(/[^a-z0-9]/gi,'_');
+      const safeDestId = esc(thread.settlement_id || '');
+      const safeName   = esc(thread.name);
       const headerBadge = hasPendingTrade ? ' <span style=”color:var(--accent-trade);font-size:.65rem”>⚖ offer</span>' : '';
       const latestPreview = latest.message || latest.message_text || '';
 
-      let html = '<div class=”dip-thread” id=”' + threadId + '” style=”border-bottom:1px solid var(--border)”>'
-        + '<div onclick=”dipToggleThread(\'' + threadId + '\')” style=”display:flex;justify-content:space-between;align-items:baseline;padding:.5rem .6rem;cursor:pointer;background:var(--bg-panel)”>'
-        + '<span style=”font-size:.82rem;font-weight:bold;color:var(--accent)”>' + esc(thread.name) + headerBadge + '</span>'
-        + '<span style=”font-size:.68rem;color:var(--text-dim)”>' + fmtAgo(msgs[msgs.length-1].arrived_at || msgs[msgs.length-1].sent_at || msgs[msgs.length-1].created_at) + '</span>'
+      // Thread header + collapsed preview
+      let html = '<div class=”dip-thread” id=”' + threadId + '”>'
+        + '<div class=”dip-thread-header” onclick=”dipToggleThread(\'' + threadId + '\')”>'
+        + '<span style=”font-size:.82rem;font-weight:bold;color:var(--accent)”>' + safeName + headerBadge + '</span>'
+        + '<span style=”font-size:.68rem;color:var(--text-dim)”>' + fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at) + '</span>'
         + '</div>'
-        + (latestPreview ? '<div style=”padding:0 .6rem .35rem;font-size:.74rem;color:var(--text-dim);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis”>”' + esc(latestPreview.slice(0,80)) + '”</div>' : '')
-        + '<div class=”dip-thread-body” style=”display:none;padding:.2rem .6rem .5rem”>';
+        + (latestPreview ? '<div class=”dip-thread-preview” onclick=”dipToggleThread(\'' + threadId + '\')”>”' + esc(latestPreview.slice(0,80)) + (latestPreview.length > 80 ? '…' : '') + '”</div>' : '')
+        // Thread body: hidden by default
+        + '<div class=”dip-thread-body” style=”display:none”>';
 
+      // Messages
       for (const m of msgs) {
         if (m._dir === 'in') {
           const offer = m.trade_offer;
@@ -3079,29 +3087,47 @@ async function loadDipThreads() {
             + '<input id=”dip-reply-' + m.id + '” type=”text” placeholder=”Reply…” maxlength=”1000” style=”flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)”>'
             + '<button onclick=”dipReply(\'' + m.id + '\')” style=”padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer”>Reply</button>'
             + '</div>' : '';
-          html += '<div id=”dip-msg-' + m.id + '” style=”border-top:1px solid var(--border);padding:.35rem 0”>'
+          html += '<div id=”dip-msg-' + m.id + '” class=”dip-msg-bubble”>'
             + '<div style=”display:flex;justify-content:space-between;align-items:baseline”>'
             + '<span style=”font-size:.72rem;color:var(--accent)”>← ' + esc(m.from_name || 'Unknown') + '</span>'
             + '<span style=”font-size:.65rem;color:var(--text-dim)”>' + fmtAgo(m.arrived_at) + '</span>'
             + '</div>'
-            + (m.message ? '<div style=”font-size:.8rem;font-style:italic;margin:.1rem 0”>”' + esc(m.message) + '”</div>' : '')
+            + (m.message ? '<div class=”dip-msg-text”>”' + esc(m.message) + '”</div>' : '')
             + tradeHtml + replyRow + '</div>';
         } else {
           // Sent message
           const statusBit = m.status === 'returned'   ? '<span style=”color:var(--safe)”>↩ returned</span>'
                           : m.status === 'delivering' ? '<span style=”color:var(--text-dim)”>en route · ' + fmtEta(m.arrives_at) + '</span>'
                           : '<span style=”color:var(--text-dim)”>' + esc(m.status || '') + '</span>';
-          const replyText = m.reply_text ? '<div style=”font-size:.75rem;font-style:italic;color:var(--safe);margin:.1rem 0”>”' + esc(m.reply_text) + '”</div>' : '';
-          html += '<div style=”border-top:1px solid var(--border);padding:.35rem 0”>'
+          const replyText = m.reply_text ? '<div class=”dip-msg-text” style=”color:var(--safe)”>”' + esc(m.reply_text) + '”</div>' : '';
+          html += '<div class=”dip-msg-bubble”>'
             + '<div style=”display:flex;justify-content:space-between;align-items:baseline”>'
             + '<span style=”font-size:.72rem;color:var(--text-dim)”>→ ' + esc(m.destination_name || 'unknown') + '</span>'
             + '<span style=”font-size:.65rem;color:var(--text-dim)”>' + fmtAgo(m.sent_at || m.created_at) + '</span>'
             + '</div>'
-            + '<div style=”font-size:.8rem;font-style:italic;margin:.1rem 0”>”' + esc(m.message_text || m.message || '') + '”</div>'
+            + '<div class=”dip-msg-text”>”' + esc(m.message_text || m.message || '') + '”</div>'
             + replyText
             + '<div style=”font-size:.68rem;font-family:var(--mono)”>' + statusBit + '</div>'
             + '</div>';
         }
+      }
+
+      // Inline compose — only if we have a destination settlement_id to send to
+      if (thread.settlement_id && MY_SETTLEMENT_ID) {
+        const cid = threadId + '-compose';
+        html += '<div class=”dip-inline-compose” id=”' + cid + '”>'
+          + '<textarea id=”' + cid + '-text” maxlength=”1000” placeholder=”Send a message to ' + safeName + '…”></textarea>'
+          + '<details><summary style=”cursor:pointer;color:var(--accent);font-size:.75rem;user-select:none”>+ Attach trade offer</summary>'
+          + '<div class=”dip-inline-trade” style=”margin-top:.3rem”>'
+          + '<div><div style=”font-size:.68rem;color:var(--text-dim)”>Want good</div><input id=”' + cid + '-good” type=”text” placeholder=”grain”></div>'
+          + '<div><div style=”font-size:.68rem;color:var(--text-dim)”>Quantity</div><input id=”' + cid + '-qty” type=”number” min=”0.1” step=”0.1” placeholder=”50”></div>'
+          + '<div><div style=”font-size:.68rem;color:var(--text-dim)”>Offer silver</div><input id=”' + cid + '-silver” type=”number” min=”1” step=”1” placeholder=”60”></div>'
+          + '</div></details>'
+          + '<div class=”dip-inline-compose-row”>'
+          + '<button class=”btn-small btn-primary” onclick=”dipSendInThread(\'' + cid + '\',\'' + safeDestId + '\')”>Dispatch →</button>'
+          + '<span class=”dip-compose-status” id=”' + cid + '-status”></span>'
+          + '</div>'
+          + '</div>';
       }
 
       html += '</div></div>'; // close thread-body + thread
@@ -3118,6 +3144,39 @@ function dipToggleThread(id) {
   if (!el) return;
   const body = el.querySelector('.dip-thread-body');
   if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
+}
+
+async function dipSendInThread(cid, destId) {
+  const textEl   = document.getElementById(cid + '-text');
+  const statusEl = document.getElementById(cid + '-status');
+  const text = textEl ? textEl.value.trim() : '';
+  function showStatus(msg, ok) {
+    if (statusEl) { statusEl.style.color = ok ? 'var(--safe)' : 'var(--accent)'; statusEl.textContent = msg; }
+  }
+  if (!text)   { showStatus('write a message', false); return; }
+  if (!destId) { showStatus('no destination', false); return; }
+  if (!MY_SETTLEMENT_ID) { showStatus('no settlement', false); return; }
+  const body = { destination_id: destId, message: text };
+  const good   = document.getElementById(cid + '-good')?.value.trim();
+  const qty    = parseFloat(document.getElementById(cid + '-qty')?.value || '0');
+  const silver = parseFloat(document.getElementById(cid + '-silver')?.value || '0');
+  if (good && qty > 0 && silver > 0) body.trade_offer = { want_good: good, want_qty: qty, offer_silver: silver };
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/messengers', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    showStatus('✓ Dispatched · arrives ' + fmtEta(data.arrives_at), true);
+    if (textEl) textEl.value = '';
+    const goodEl = document.getElementById(cid + '-good'); if (goodEl) goodEl.value = '';
+    const qtyEl  = document.getElementById(cid + '-qty');  if (qtyEl)  qtyEl.value  = '';
+    const silEl  = document.getElementById(cid + '-silver'); if (silEl) silEl.value = '';
+    fetchAuth('/api/v1/worlds/' + WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
+    // Reload threads after a short delay so sent message appears
+    setTimeout(() => loadDipThreads(), 1200);
+  } else {
+    showStatus(data.error || 'send failed', false);
+  }
 }
 
 async function dipAccept(id, btn) {
