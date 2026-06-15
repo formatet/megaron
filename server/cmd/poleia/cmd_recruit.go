@@ -16,21 +16,27 @@ var unitAliases = map[string]string{
 
 func recruitCmd() *cobra.Command {
 	var unit string
-	var count int
+	var men int
 
 	cmd := &cobra.Command{
 		Use:   "recruit",
-		Short: "Recruit units",
-		Example: `  poleia recruit --unit hoplites --count 20
-  poleia recruit --unit chariot --count 5`,
+		Short: "Recruit men into a unit (multiples of 10, max 100 per batch)",
+		Example: `  poleia recruit --unit hoplites --men 10
+  poleia recruit --unit chariot --men 50`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			apiUnit, ok := unitAliases[unit]
 			if !ok {
 				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, hiereus, trireme, agema", unit)
 			}
+			if men <= 0 || men%10 != 0 {
+				return fmt.Errorf("--men must be a positive multiple of 10 (e.g. 10, 20, … 100)")
+			}
+			if men > 100 {
+				return fmt.Errorf("--men cannot exceed 100 per recruit call")
+			}
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/recruit", cfg.WorldID, cfg.ProvinceID)
-			data, err := c.post(path, map[string]any{"unit_type": apiUnit, "count": count})
+			data, err := c.post(path, map[string]any{"unit_type": apiUnit, "men": men})
 			if err != nil {
 				return err
 			}
@@ -38,13 +44,13 @@ func recruitCmd() *cobra.Command {
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Training %d %s\n", count, unit)
+			fmt.Printf("Recruiting %d men as %s\n", men, unit)
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVarP(&unit, "unit", "u", "", "unit type (required)")
-	cmd.Flags().IntVarP(&count, "count", "n", 1, "number to recruit")
+	cmd.Flags().IntVarP(&men, "men", "n", 10, "men to recruit (multiple of 10, max 100)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }

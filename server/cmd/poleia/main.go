@@ -102,6 +102,7 @@ func main() {
 		gossipCmd(),
 		messengerCmd(),
 		allocateCmd(),
+		unitCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
