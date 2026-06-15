@@ -1996,7 +1996,7 @@ async function loadDrawerContent(name) {
                 const n = army[k]||0;
                 return `<tr><td>${lbl}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:var(--text-dim)">${n*POP_COSTS[k]}</td><td style="text-align:right;color:var(--safe)">${n*UNIT_DP[k]}</td></tr>`;
               }).join('')}
-              <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Totalt</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe)">${totalDP} DP</td></tr>
+              <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe)">${totalDP} DP</td></tr>
             </table>`
           : '<p class="empty-state">No garrison. Recruit units in the War tab.</p>';
       }
@@ -2508,9 +2508,10 @@ async function loadWarDrawer() {
 
   try {
     const needTwo = prevRecruitCity !== capital.id;
-    const [res, recRes] = await Promise.all([
+    const [res, recRes, unitsRes] = await Promise.all([
       fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}`),
       needTwo ? fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${prevRecruitCity}`) : Promise.resolve(null),
+      fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`),
     ]);
     if (!res.ok) throw new Error();
     const pd = (await res.json()).settlement;
@@ -2519,54 +2520,51 @@ async function loadWarDrawer() {
     const buildings = new Set((recPd.buildings || []).map(b => b.type));
     const canRec = {};
     (recPd.can_recruit || []).forEach(r => { canRec[r.unit] = r.can_recruit; });
+    const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
 
-    // Army tab
-    const totalDP = Object.entries(UNIT_DP).reduce((s, [k, d]) => s + (army[k] || 0) * d, 0);
-    const present = Object.keys(UNIT_LBL).filter(k => k in UNIT_DP && (army[k] || 0) > 0);
-    const tq = pd.training_queue || [];
+    // Army tab — discrete units list
     let roleNote = '';
     if (MY_KINGDOM_ROLE === 'lochagos') {
       roleNote = '<div style="font-size:.68rem;font-family:var(--mono);color:var(--accent-war);margin-bottom:.3rem">⚔ Lochagos — army command role</div>';
     } else if (MY_KINGDOM_ROLE === 'navarchos') {
       roleNote = '<div style="font-size:.68rem;font-family:var(--mono);color:var(--accent-city);margin-bottom:.3rem">⛵ Navarchos — fleet command role</div>';
     }
-    let armyHtml = '<div class="dsec"><div class="dsec-title">Garrison — ' + esc(capital.name) + '</div>' + roleNote;
-    if (present.length) {
-      armyHtml += '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Unit</td><td style="text-align:right">N</td><td style="text-align:right">DP</td></tr>';
-      armyHtml += present.map(k => '<tr><td>' + UNIT_LBL[k] + '</td><td style="text-align:right">' + army[k] + '</td><td style="text-align:right;color:var(--safe)">' + (army[k] || 0) * UNIT_DP[k] + '</td></tr>').join('');
-      armyHtml += '<tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--safe)">' + totalDP + ' DP</td></tr></table>';
+    let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>' + roleNote;
+    if (allUnits.length) {
+      armyHtml += allUnits.map(u => renderUnitCard(u)).join('');
     } else {
-      armyHtml += '<p class="empty-state">No garrison. Recruit units below.</p>';
+      armyHtml += '<p class="empty-state">No units. Recruit in the Recruit tab.</p>';
     }
     armyHtml += '</div>';
-    if (tq.length) {
-      armyHtml += '<div class="dsec"><div class="dsec-title">Training</div><table class="goods-mini">';
-      armyHtml += tq.map(t => '<tr><td>' + (UNIT_LBL[t.unit] || t.unit) + ' ×' + t.count + '</td><td style="color:var(--text-dim)">' + fmtEta(t.complete_at) + '</td></tr>').join('');
-      armyHtml += '</table></div>';
-    }
-    armyHtml += `<div class="dsec"><div class="dsec-title">Disband</div>
-      <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;font-size:.78rem">
-        <input id="wdb-inf" type="number" min="0" value="0" style="width:44px;padding:.15rem .3rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.78rem">
-        <span style="color:var(--text-dim)">Hoplites</span>
-        <input id="wdb-cha" type="number" min="0" value="0" style="width:44px;padding:.15rem .3rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.78rem">
-        <span style="color:var(--text-dim)">Chariots</span>
-        <input id="wdb-pri" type="number" min="0" value="0" style="width:44px;padding:.15rem .3rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.78rem">
-        <span style="color:var(--text-dim)">Priests</span>
-        <button onclick="warDisband('${capital.id}')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.72rem;cursor:pointer">Disband</button>
+    armyHtml += '<div id="war-unit-res" style="font-size:.75rem;margin:.3rem .6rem;min-height:1rem"></div>';
+    armyHtml += `<div id="war-march-panel" style="display:none;background:var(--bg-raised);border:1px solid var(--border);border-radius:2px;margin:.4rem .6rem;padding:.5rem;font-size:.78rem">
+      <div style="font-weight:bold;margin-bottom:.3rem">March unit</div>
+      <div style="display:flex;gap:.3rem;align-items:center;flex-wrap:wrap">
+        <label style="color:var(--text-dim)">Q</label>
+        <input id="wmp-q" type="number" value="0" style="width:44px;padding:.1rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">
+        <label style="color:var(--text-dim)">R</label>
+        <input id="wmp-r" type="number" value="0" style="width:44px;padding:.1rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">
+        <label style="color:var(--text-dim)">Stance</label>
+        <select id="wmp-stance" style="font-size:.72rem;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white)">
+          <option value="">none</option>
+          <option value="storm">storm</option>
+          <option value="sentry">sentry</option>
+        </select>
+        <button onclick="unitMarchSend()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.7rem;cursor:pointer">March →</button>
+        <button onclick="closeMarchPanel()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.7rem;cursor:pointer">Cancel</button>
       </div>
-      <div id="war-disband-res" style="font-size:.72rem;margin-top:.2rem;min-height:1rem"></div>
+      <div id="wmp-err" style="color:var(--accent);font-size:.7rem;margin-top:.2rem;min-height:.8rem"></div>
     </div>`;
     document.getElementById('wtab-army').innerHTML = armyHtml;
 
     // Recruit tab
     const UNIT_SPECS = [
-      { id:'infantry',       lbl:'Hoplites',    req: buildings.has('barracks') ? null : 'barracks',   cost:'15 grain',            def:10 },
-      { id:'chariot',        lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'30 grain · 5 timber', def:5  },
-      { id:'priest',         lbl:'Hiereus',      req: null,                                             cost:'15 grain',            def:1  },
-      { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour',    cost:'90 timber',           def:1  },
-      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'60 cedar · 4 bronze', def:1 },
-      { id:'merchantman',    lbl:'Merchantman',  req: buildings.has('harbour')  ? null : 'harbour',    cost:'70 timber',           def:1  },
-      { id:'elite_infantry', lbl:'Agema',        req: buildings.has('foundry')  ? null : 'foundry',    cost:'25 grain · 2 bronze', def:1  },
+      { id:'infantry',       lbl:'Hoplites',    req: buildings.has('barracks') ? null : 'barracks',   cost:'3 grain/man'          },
+      { id:'chariot',        lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'3.75 grain + 0.625 timber/man' },
+      { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour',    cost:'9 timber/man (crew 20)' },
+      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'5 cedar + 0.33 bronze/man (crew 50)' },
+      { id:'merchantman',    lbl:'Merchantman',  req: buildings.has('harbour')  ? null : 'harbour',    cost:'8.75 timber/man (crew 10)' },
+      { id:'elite_infantry', lbl:'Agema',        req: buildings.has('foundry')  ? null : 'foundry',    cost:'2.5 grain + 0.2 bronze/man' },
     ];
     const mySettlements = provinceData.filter(p => p.own && !p.is_outpost);
     let settlementOpts = mySettlements.map(s =>
@@ -2581,8 +2579,8 @@ async function loadWarDrawer() {
     } else {
       recHtml += '<input type="hidden" id="war-recruit-city" value="' + capital.id + '">';
     }
-    const recruitProvinceID = capital.id; // used inline; on change loadWarDrawer re-renders
     recHtml += '<div class="dsec-title">Train Units</div>';
+    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Each batch = 10 men drafted from population</div>';
     for (const u of UNIT_SPECS) {
       const noBuilding = u.req !== null;
       const noResources = !noBuilding && canRec[u.id] === false;
@@ -2592,7 +2590,9 @@ async function loadWarDrawer() {
       recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
         + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
         + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
-        + '<input type="number" id="wrc-' + u.id + '" min="1" max="999" value="' + u.def + '" ' + (disabled ? 'disabled' : '') + ' style="width:42px;padding:.12rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem;text-align:right">'
+        + '<select id="wrc-' + u.id + '" ' + (disabled ? 'disabled' : '') + ' style="width:54px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">'
+        + [10,20,30,40,50,60,70,80,90,100].map(n => '<option value="' + n + '"' + (n===10?' selected':'') + '>' + n + '</option>').join('')
+        + '</select>'
         + '<button onclick="warRecruitFromUI(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train</button>'
         + '</div>';
     }
@@ -2657,9 +2657,9 @@ function warRecruitFromUI(unitType) {
 
 async function warRecruit(provinceID, unitType) {
   const el = document.getElementById('wrc-' + unitType);
-  const count = el ? (parseInt(el.value, 10) || 1) : 1;
+  const men = el ? (parseInt(el.value, 10) || 10) : 10;
   const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + provinceID + '/recruit', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ unit_type: unitType, count }),
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ unit_type: unitType, men }),
   });
   const data = await res.json().catch(() => ({}));
   const resEl = document.getElementById('war-recruit-res');
@@ -2698,6 +2698,208 @@ async function warRecall(provinceID, marchID) {
   } else {
     const data = await res.json().catch(() => ({}));
     alert(data.error || 'Recall failed');
+  }
+}
+
+// ── Discrete unit helpers (C8-web) ───────────────────────────────────────
+const UNIT_LABELS = {
+  infantry:'Hoplites', elite_infantry:'Agema', chariot:'War Chariot',
+  priest:'Hiereus', galley:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
+};
+
+// State for the march panel
+let _marchUnitID = null;
+
+function renderUnitCard(u) {
+  const lbl = UNIT_LABELS[u.type] || u.type;
+  const isNaval = u.category === 'naval';
+  const isForming = u.status === 'forming';
+  const isGarrison = u.status === 'garrison';
+  const isPositioned = u.status === 'positioned';
+  const isMarching = u.status === 'marching';
+  const isEmbarked = u.status === 'embarked';
+
+  // Location string
+  let loc = '';
+  if (isGarrison || isForming || isEmbarked) {
+    const prov = provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
+    loc = prov ? esc(prov.name) : 'city';
+  } else if (isMarching && u.target_q != null) {
+    loc = '→ (' + u.target_q + ',' + u.target_r + ') ETA ' + fmtEta(u.arrives_at);
+  } else if (u.q != null) {
+    loc = '(' + u.q + ',' + u.r + ')';
+  }
+
+  // Progress bar for forming
+  const progress = isForming
+    ? '<div style="margin:.2rem 0;background:var(--border);height:4px;border-radius:2px"><div style="background:var(--accent-war);height:4px;width:' + u.size + '%"></div></div>'
+      + '<span style="font-size:.65rem;color:var(--text-dim)">' + u.size + '/100 forming</span>'
+    : '';
+
+  // Stance badge
+  const stanceBadge = u.stance
+    ? '<span style="font-size:.6rem;padding:.1rem .25rem;border:1px solid var(--border);color:var(--text-dim);margin-left:.2rem">' + u.stance + '</span>'
+    : '';
+
+  // Crew badge for naval
+  const crewBadge = isNaval && u.crew
+    ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + u.crew + '</span>'
+    : '';
+
+  // Cargo badge
+  const cargoBadge = u.cargo_unit_id
+    ? '<span style="font-size:.6rem;color:var(--accent-city);margin-left:.3rem">carrying unit</span>'
+    : '';
+
+  // Action buttons
+  let actions = '';
+
+  // March button: land size==100 garrison (non-priest), or naval garrison
+  const canMarch = isGarrison && u.type !== 'priest' && (!isNaval || true) && (isNaval || u.size === 100);
+  if (canMarch) {
+    actions += '<button onclick="unitMarch(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> ';
+  }
+
+  // Stance buttons: garrison or positioned, non-priest
+  if ((isGarrison || isPositioned) && u.type !== 'priest') {
+    actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
+      + '<option value="none">stance…</option>'
+      + '<option value="fortify">fortify</option>'
+      + '<option value="storm">storm</option>'
+      + '<option value="sentry">sentry</option>'
+      + (u.stance ? '<option value="none">— clear</option>' : '')
+      + '</select> '
+      + '<button onclick="unitStance(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
+  }
+
+  // Load button: naval garrison without cargo — pick from co-located garrison land units
+  if (isNaval && isGarrison && !u.cargo_unit_id && u.settlement_id) {
+    actions += '<button onclick="unitLoadPrompt(\'' + u.id + '\',\'' + (u.settlement_id||'') + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Load</button> ';
+  }
+
+  // Unload button: naval garrison with cargo
+  if (isNaval && isGarrison && u.cargo_unit_id) {
+    actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
+  }
+
+  return '<div style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
+    + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
+    + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
+    + stanceBadge + crewBadge + cargoBadge
+    + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + u.status + '</span>'
+    + '</div>'
+    + progress
+    + (loc ? '<div style="font-size:.65rem;color:var(--text-dim)">' + loc + '</div>' : '')
+    + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
+    + '</div>';
+}
+
+function unitMarch(unitID) {
+  _marchUnitID = unitID;
+  const panel = document.getElementById('war-march-panel');
+  if (panel) {
+    panel.style.display = '';
+    document.getElementById('wmp-err').textContent = '';
+  }
+}
+
+function closeMarchPanel() {
+  _marchUnitID = null;
+  const panel = document.getElementById('war-march-panel');
+  if (panel) panel.style.display = 'none';
+}
+
+async function unitMarchSend() {
+  if (!_marchUnitID) return;
+  const q = parseInt(document.getElementById('wmp-q').value, 10);
+  const r = parseInt(document.getElementById('wmp-r').value, 10);
+  const stance = document.getElementById('wmp-stance').value || undefined;
+  const errEl = document.getElementById('wmp-err');
+  errEl.textContent = '';
+  const body = { target_q: q, target_r: r };
+  if (stance) body.stance = stance;
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${_marchUnitID}/march`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    closeMarchPanel();
+    loadWarDrawer();
+  } else {
+    errEl.textContent = data.error || 'March failed';
+  }
+}
+
+async function unitStance(unitID) {
+  const sel = document.getElementById('ustance-' + unitID);
+  if (!sel) return;
+  const stance = sel.value;
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${unitID}/stance`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ stance }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = data.error || 'Stance change failed';
+  }
+}
+
+function unitLoadPrompt(shipID, settlementID) {
+  // Find co-located garrison land units from allUnits cache
+  const shipEl = document.getElementById('war-unit-res');
+  // Re-fetch units to build select
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`).then(async r => {
+    if (!r.ok) return;
+    const units = (await r.json()).units || [];
+    const candidates = units.filter(u =>
+      u.category === 'land' && u.status === 'garrison' &&
+      u.settlement_id === settlementID && u.size === 100 && u.type !== 'priest'
+    );
+    if (!candidates.length) {
+      if (shipEl) { shipEl.style.color='var(--accent)'; shipEl.textContent='No eligible land unit at this city to load.'; }
+      return;
+    }
+    if (candidates.length === 1) {
+      unitLoad(shipID, candidates[0].id);
+      return;
+    }
+    // Multiple: show a quick alert-style select — rare case
+    const choice = candidates.find(u => u.id) || candidates[0];
+    unitLoad(shipID, choice.id);
+  });
+}
+
+async function unitLoad(shipID, cargoUnitID) {
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${shipID}/load`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ unit_id: cargoUnitID }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = data.error || 'Load failed';
+  }
+}
+
+async function unitUnload(shipID) {
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${shipID}/unload`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = data.error || 'Unload failed';
   }
 }
 
