@@ -1041,7 +1041,7 @@ footer {
   display: none;
 }
 .no-province-card.visible { display: block; }
-.npc-title { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 0.3rem; }
+.npc-title { font-family: var(--mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 0.3rem; }
 .npc-text  { font-size: 0.78rem; color: var(--text); margin-bottom: 0.6rem; line-height: 1.4; }
 
 /* ── Bottom nav (window triggers) ───────────────────────────────────────── */
