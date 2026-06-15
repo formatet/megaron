@@ -75,6 +75,7 @@ const (
 	StatusMarching   Status = "marching"   // in transit on the map
 	StatusPositioned Status = "positioned" // on the map, not moving (sentry/fortify/storm)
 	StatusDisbanded  Status = "disbanded"  // dissolved; men returned to population
+	StatusEmbarked   Status = "embarked"   // land unit aboard a naval vessel; moves with the ship
 )
 
 // Stance is the tactical posture of a stationary unit.

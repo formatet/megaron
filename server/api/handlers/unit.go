@@ -283,6 +283,403 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Load handles POST /worlds/{worldID}/units/{shipID}/load
+//
+// Embarks a land unit onto a naval unit (the ship). Rules (C6 plan):
+//   - Caller must own both units.
+//   - Both units must be in the same settlement (garrison).
+//   - Ship must be naval and have no current cargo (cargo_unit_id IS NULL).
+//   - Land unit must be status='garrison', size=100, and not a priest.
+//   - Origin must be a coastal settlement (coast_beach terrain) or have a harbour.
+//
+// Outcome: ship.cargo_unit_id = land_unit_id; land unit status → 'embarked'.
+// Emits ShipLoaded.
+func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	shipID, err := uuid.Parse(chi.URLParam(r, "shipID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid ship ID")
+		return
+	}
+
+	var req struct {
+		UnitID string `json:"unit_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	cargoID, err := uuid.Parse(req.UnitID)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid unit_id")
+		return
+	}
+
+	ctx := r.Context()
+
+	// Load ship.
+	ship, err := h.store.Get(ctx, shipID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "ship not found")
+		return
+	}
+	if ship.OwnerID != playerID || ship.WorldID != worldID {
+		writeError(w, http.StatusForbidden, "not your ship")
+		return
+	}
+	if unit.CategoryOf(ship.Type) != unit.CategoryNaval {
+		writeError(w, http.StatusUnprocessableEntity, "unit is not a naval vessel")
+		return
+	}
+	if ship.Status != unit.StatusGarrison {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("ship must be garrisoned to load (status: %s)", string(ship.Status)))
+		return
+	}
+	if ship.CargoUnitID != nil {
+		writeError(w, http.StatusConflict, "ship already carries a unit — unload first")
+		return
+	}
+	if ship.SettlementID == nil {
+		writeError(w, http.StatusUnprocessableEntity, "ship has no settlement; cannot load")
+		return
+	}
+
+	// Load cargo unit.
+	cargo, err := h.store.Get(ctx, cargoID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "cargo unit not found")
+		return
+	}
+	if cargo.OwnerID != playerID || cargo.WorldID != worldID {
+		writeError(w, http.StatusForbidden, "not your unit")
+		return
+	}
+	if unit.CategoryOf(cargo.Type) != unit.CategoryLand {
+		writeError(w, http.StatusUnprocessableEntity, "only land units can be loaded onto ships")
+		return
+	}
+	if cargo.Type == unit.TypePriest {
+		writeError(w, http.StatusUnprocessableEntity, "priests cannot embark")
+		return
+	}
+	if cargo.Status != unit.StatusGarrison {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("cargo unit must be garrisoned to embark (status: %s)", string(cargo.Status)))
+		return
+	}
+	if cargo.Size < 100 {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("cargo unit is still forming (%d/100); must be at full strength to embark", cargo.Size))
+		return
+	}
+	// Both must be in the same settlement.
+	if cargo.SettlementID == nil || *cargo.SettlementID != *ship.SettlementID {
+		writeError(w, http.StatusUnprocessableEntity, "ship and cargo unit must be in the same settlement")
+		return
+	}
+
+	// Embark-gating: settlement must be coastal (coast_beach) or have a harbour.
+	var settlementTerrain string
+	if err := h.pool.QueryRow(ctx,
+		`SELECT p.terrain_type
+		 FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE s.id = $1`,
+		*ship.SettlementID,
+	).Scan(&settlementTerrain); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check settlement terrain")
+		return
+	}
+	if settlementTerrain != "coast_beach" {
+		var hasHarbour bool
+		_ = h.pool.QueryRow(ctx,
+			`SELECT EXISTS(
+			   SELECT 1 FROM buildings b
+			   JOIN settlements s ON s.id = b.settlement_id
+			   WHERE s.id = $1 AND b.building_type = 'harbour'
+			 )`,
+			*ship.SettlementID,
+		).Scan(&hasHarbour)
+		if !hasHarbour {
+			writeError(w, http.StatusUnprocessableEntity, "units can only embark at coastal settlements or harbours")
+			return
+		}
+	}
+
+	// Atomic: lock both rows, apply changes.
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	// Re-read ship FOR UPDATE (idempotency guard).
+	var shipStatus string
+	var shipCargo *uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT status, cargo_unit_id FROM units WHERE id = $1 FOR UPDATE`, shipID,
+	).Scan(&shipStatus, &shipCargo); err != nil {
+		writeError(w, http.StatusNotFound, "ship not found in transaction")
+		return
+	}
+	if unit.Status(shipStatus) != unit.StatusGarrison {
+		writeError(w, http.StatusConflict, "ship status changed; load not applied")
+		return
+	}
+	if shipCargo != nil {
+		writeError(w, http.StatusConflict, "ship already has cargo (concurrent request)")
+		return
+	}
+
+	// Re-read cargo FOR UPDATE.
+	var cargoStatus string
+	if err := tx.QueryRow(ctx,
+		`SELECT status FROM units WHERE id = $1 FOR UPDATE`, cargoID,
+	).Scan(&cargoStatus); err != nil {
+		writeError(w, http.StatusNotFound, "cargo unit not found in transaction")
+		return
+	}
+	if unit.Status(cargoStatus) != unit.StatusGarrison {
+		writeError(w, http.StatusConflict, "cargo unit status changed; load not applied")
+		return
+	}
+
+	// Set cargo_unit_id on ship.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET cargo_unit_id = $2, updated_at = now() WHERE id = $1`,
+		shipID, cargoID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update ship")
+		return
+	}
+
+	// Mark cargo unit as embarked.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET status = 'embarked', updated_at = now() WHERE id = $1`,
+		cargoID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not embark unit")
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not commit load")
+		return
+	}
+
+	// Get ship position for event payload.
+	var posQ, posR int
+	if ship.Q != nil {
+		posQ = *ship.Q
+	}
+	if ship.R != nil {
+		posR = *ship.R
+	}
+
+	_, _ = h.eventStore.Append(ctx, shipID, events.StreamType(unit.StreamUnit), unit.EventShipLoaded,
+		unit.ShipLoadedPayload{
+			ShipUnitID:  shipID,
+			CargoUnitID: cargoID,
+			Q:           posQ,
+			R:           posR,
+		}, worldID, nil,
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"ship_id":       shipID,
+		"cargo_unit_id": cargoID,
+	})
+}
+
+// Unload handles POST /worlds/{worldID}/units/{shipID}/unload
+//
+// Disembarks the cargo land unit from a naval unit. Rules (C6 plan):
+//   - Caller must own the ship.
+//   - Ship must have a cargo unit (cargo_unit_id non-null).
+//   - Ship must be garrisoned at a coastal (coast_beach) settlement or harbour.
+//
+// Outcome: cargo unit status → 'garrison', q/r = ship's position, settlement_id =
+// ship's settlement; ship.cargo_unit_id = NULL.
+// Emits ShipUnloaded.
+func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	shipID, err := uuid.Parse(chi.URLParam(r, "shipID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid ship ID")
+		return
+	}
+
+	ctx := r.Context()
+
+	ship, err := h.store.Get(ctx, shipID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "ship not found")
+		return
+	}
+	if ship.OwnerID != playerID || ship.WorldID != worldID {
+		writeError(w, http.StatusForbidden, "not your ship")
+		return
+	}
+	if unit.CategoryOf(ship.Type) != unit.CategoryNaval {
+		writeError(w, http.StatusUnprocessableEntity, "unit is not a naval vessel")
+		return
+	}
+	if ship.Status != unit.StatusGarrison {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("ship must be garrisoned to unload (status: %s)", string(ship.Status)))
+		return
+	}
+	if ship.CargoUnitID == nil {
+		writeError(w, http.StatusUnprocessableEntity, "ship carries no unit")
+		return
+	}
+	if ship.SettlementID == nil {
+		writeError(w, http.StatusUnprocessableEntity, "ship has no settlement; cannot unload")
+		return
+	}
+
+	// Disembark gating: must be coastal or harbour.
+	var settlementTerrain string
+	if err := h.pool.QueryRow(ctx,
+		`SELECT p.terrain_type
+		 FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE s.id = $1`,
+		*ship.SettlementID,
+	).Scan(&settlementTerrain); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check settlement terrain")
+		return
+	}
+	if settlementTerrain != "coast_beach" {
+		var hasHarbour bool
+		_ = h.pool.QueryRow(ctx,
+			`SELECT EXISTS(
+			   SELECT 1 FROM buildings b
+			   JOIN settlements s ON s.id = b.settlement_id
+			   WHERE s.id = $1 AND b.building_type = 'harbour'
+			 )`,
+			*ship.SettlementID,
+		).Scan(&hasHarbour)
+		if !hasHarbour {
+			writeError(w, http.StatusUnprocessableEntity, "units can only disembark at coastal settlements or harbours")
+			return
+		}
+	}
+
+	cargoID := *ship.CargoUnitID
+
+	// Load cargo to get its current position for the event.
+	cargo, err := h.store.Get(ctx, cargoID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load cargo unit")
+		return
+	}
+
+	// Get destination position from ship.
+	var destQ, destR int
+	if ship.Q != nil {
+		destQ = *ship.Q
+	}
+	if ship.R != nil {
+		destR = *ship.R
+	}
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	// Re-read ship FOR UPDATE (idempotency guard).
+	var shipStatus string
+	var shipCargo *uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT status, cargo_unit_id FROM units WHERE id = $1 FOR UPDATE`, shipID,
+	).Scan(&shipStatus, &shipCargo); err != nil {
+		writeError(w, http.StatusNotFound, "ship not found in transaction")
+		return
+	}
+	if unit.Status(shipStatus) != unit.StatusGarrison {
+		writeError(w, http.StatusConflict, "ship status changed; unload not applied")
+		return
+	}
+	if shipCargo == nil {
+		writeError(w, http.StatusConflict, "ship has no cargo (concurrent request)")
+		return
+	}
+
+	// Clear cargo from ship.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET cargo_unit_id = NULL, updated_at = now() WHERE id = $1`,
+		shipID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update ship")
+		return
+	}
+
+	// Place cargo unit at ship's settlement.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status        = 'garrison',
+		   settlement_id = $2,
+		   q             = $3,
+		   r             = $4,
+		   updated_at    = now()
+		 WHERE id = $1`,
+		cargoID, *ship.SettlementID, destQ, destR,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not disembark unit")
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not commit unload")
+		return
+	}
+
+	_ = cargo // silence unused warning; used above for loading
+	_, _ = h.eventStore.Append(ctx, shipID, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
+		unit.ShipUnloadedPayload{
+			ShipUnitID:  shipID,
+			CargoUnitID: cargoID,
+			Q:           destQ,
+			R:           destR,
+		}, worldID, nil,
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"ship_id":       shipID,
+		"cargo_unit_id": cargoID,
+		"q":             destQ,
+		"r":             destR,
+	})
+}
+
 // ListUnits handles GET /worlds/{worldID}/units — returns all non-disbanded units
 // owned by the authenticated player in this world.
 func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {

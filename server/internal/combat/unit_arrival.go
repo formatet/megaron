@@ -110,6 +110,8 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 }
 
 // arriveGarrison places the unit at the destination as a garrison unit.
+// If the unit is a naval vessel with cargo, the cargo land unit's position is
+// updated to match the ship's destination (C6: cargo follows the ship).
 func (h *UnitArrivalHandler) arriveGarrison(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, destQ, destR int, settlementID *uuid.UUID, worldID uuid.UUID,
@@ -134,6 +136,26 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		u.id, newStatus, destQ, destR, settlementID,
 	); err != nil {
 		return fmt.Errorf("unit arrive garrison: %w", err)
+	}
+
+	// C6: if this ship carried a land unit, move the cargo to the ship's new position.
+	// The cargo stays 'embarked' — the Wanax must explicitly /unload to deploy it.
+	if u.cargoUnitID != nil {
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET
+			   q             = $2,
+			   r             = $3,
+			   settlement_id = $4,
+			   updated_at    = now()
+			 WHERE id = $1 AND status = 'embarked'`,
+			*u.cargoUnitID, destQ, destR, settlementID,
+		); err != nil {
+			// Non-fatal: log and continue (cargo ghost is bad but arrival must not fail).
+			slog.Warn("C6: could not update cargo unit position on ship arrival",
+				"ship", u.id, "cargo", *u.cargoUnitID, "err", err)
+		} else {
+			slog.Info("C6: cargo unit position updated with ship", "ship", u.id, "cargo", *u.cargoUnitID, "q", destQ, "r", destR)
+		}
 	}
 
 	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
@@ -260,6 +282,46 @@ func (h *UnitArrivalHandler) resolveCombat(
 	return nil
 }
 
+// disbandCargoIfPresent disbands a naval unit's cargo land unit when the ship is
+// destroyed in combat (C6). The cargo unit is marked 'disbanded'; men are
+// permanently lost (demographic cost applied to their owner's capital).
+// Non-fatal: errors are logged but do not abort the calling operation.
+func (h *UnitArrivalHandler) disbandCargoIfPresent(ctx context.Context, tx pgx.Tx, ship unitRow, worldID uuid.UUID) {
+	if ship.cargoUnitID == nil {
+		return
+	}
+	cargoID := *ship.cargoUnitID
+	// Mark cargo disbanded.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET status = 'disbanded', updated_at = now()
+		 WHERE id = $1 AND status = 'embarked'`,
+		cargoID,
+	); err != nil {
+		slog.Warn("C6: could not disband cargo unit after ship loss", "ship", ship.id, "cargo", cargoID, "err", err)
+		return
+	}
+	// Demographic loss: fetch cargo size and apply to owner's capital.
+	var cargoSize int
+	var cargoOwnerID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT size, owner_id FROM units WHERE id = $1`, cargoID,
+	).Scan(&cargoSize, &cargoOwnerID); err != nil {
+		slog.Warn("C6: could not read cargo unit for pop loss", "cargo", cargoID, "err", err)
+		return
+	}
+	if cargoSize > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlements SET
+			   population = GREATEST(50, population - $2)
+			 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
+			cargoOwnerID, cargoSize, worldID,
+		); err != nil {
+			slog.Warn("C6: could not apply cargo pop loss", "cargo", cargoID, "err", err)
+		}
+	}
+	slog.Info("C6: cargo unit disbanded after ship destruction", "ship", ship.id, "cargo", cargoID, "men_lost", cargoSize)
+}
+
 // applyAttackerWins: arriving unit captures the settlement; defender units take losses.
 func (h *UnitArrivalHandler) applyAttackerWins(
 	ctx context.Context, tx pgx.Tx,
@@ -276,6 +338,8 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 		); err != nil {
 			return fmt.Errorf("disband zeroed attacker: %w", err)
 		}
+		// C6: if this ship had cargo, disband the cargo too.
+		h.disbandCargoIfPresent(ctx, tx, u, worldID)
 	} else {
 		// Attacker becomes new garrison.
 		if _, err := tx.Exec(ctx,
@@ -406,6 +470,8 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		); err != nil {
 			return fmt.Errorf("disband zeroed attacker: %w", err)
 		}
+		// C6: if this ship had cargo, disband the cargo too.
+		h.disbandCargoIfPresent(ctx, tx, u, worldID)
 		// Dual-write: remove from legacy column at attacker's home.
 		colName := unitTypeToColumn(u.utype)
 		if colName != "" {
@@ -426,6 +492,8 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		); err != nil {
 			return fmt.Errorf("disband beaten attacker: %w", err)
 		}
+		// C6: if this ship had cargo, disband the cargo too.
+		h.disbandCargoIfPresent(ctx, tx, u, worldID)
 		colName := unitTypeToColumn(u.utype)
 		if colName != "" {
 			_, _ = tx.Exec(ctx,
@@ -476,21 +544,22 @@ func (h *UnitArrivalHandler) applyDefenderUnitLosses(
 	settlementID uuid.UUID, lossRate float64, worldID uuid.UUID,
 ) error {
 	rows, err := tx.Query(ctx,
-		`SELECT id, type, size FROM units WHERE settlement_id = $1 AND status = 'garrison'`,
+		`SELECT id, type, size, cargo_unit_id FROM units WHERE settlement_id = $1 AND status = 'garrison'`,
 		settlementID,
 	)
 	if err != nil {
 		return fmt.Errorf("load defender units: %w", err)
 	}
 	type defUnit struct {
-		id    uuid.UUID
-		utype string
-		size  int
+		id          uuid.UUID
+		utype       string
+		size        int
+		cargoUnitID *uuid.UUID
 	}
 	var defUnits []defUnit
 	for rows.Next() {
 		var du defUnit
-		if scanErr := rows.Scan(&du.id, &du.utype, &du.size); scanErr == nil {
+		if scanErr := rows.Scan(&du.id, &du.utype, &du.size, &du.cargoUnitID); scanErr == nil {
 			defUnits = append(defUnits, du)
 		}
 	}
@@ -511,6 +580,11 @@ func (h *UnitArrivalHandler) applyDefenderUnitLosses(
 				`UPDATE units SET status = 'disbanded', size = 0, updated_at = now() WHERE id = $1`, du.id,
 			); err != nil {
 				slog.Warn("could not disband defender unit", "unit", du.id, "err", err)
+			}
+			// C6: if this defender ship had cargo, disband the cargo too.
+			if du.cargoUnitID != nil {
+				shipRow := unitRow{id: du.id, ownerID: defOwnerID, cargoUnitID: du.cargoUnitID}
+				h.disbandCargoIfPresent(ctx, tx, shipRow, worldID)
 			}
 		} else {
 			if _, err := tx.Exec(ctx,

@@ -240,9 +240,11 @@ func main() {
 			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/election", kh.CallElection)
 			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/vote", kh.Vote)
 
-			// Unit endpoints (C3/C4).
+			// Unit endpoints (C3/C4/C6).
 			r.Get("/worlds/{worldID}/units", uh.ListUnits)
 			r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
+			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
+			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
 
 			r.Get("/worlds/{worldID}/settlements", sh.List)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)
