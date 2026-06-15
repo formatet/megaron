@@ -834,7 +834,7 @@ body:has(.auth-page) main {
 .game-topbar {
   display: flex;
   align-items: stretch;
-  height: 48px;
+  height: 40px;
   background: var(--bg-panel);
   border-bottom: 2px solid var(--border);
   flex-shrink: 0;
@@ -946,7 +946,8 @@ body:has(.auth-page) main {
   border-left: 1px solid var(--border);
   flex-shrink: 0;
 }
-.cel-arc-wrap { position: relative; width: 80px; height: 44px; flex-shrink: 0; }
+.cel-arc-wrap { position: relative; width: 68px; height: 38px; flex-shrink: 0; }
+.cel-arc-wrap #cel-svg { width: 68px; height: 38px; }
 #cel-svg { position: absolute; top: 0; left: 0; }
 .cel-info { display: flex; flex-direction: column; justify-content: center; gap: 1px; }
 .cel-phase { font-size: 1rem; line-height: 1; }
@@ -1044,7 +1045,7 @@ body:has(.auth-page) main {
 .game-nav {
   display: flex;
   align-items: stretch;
-  height: 46px;
+  height: 38px;
   background: var(--bg-panel);
   border-top: 2px solid var(--border);
   flex-shrink: 0;
@@ -1093,9 +1094,9 @@ body:has(.auth-page) main {
 /* ── Drawers ─────────────────────────────────────────────────────────────── */
 .drawer {
   position: fixed;
-  top: 48px;
+  top: 40px;
   right: 0;
-  bottom: 46px;
+  bottom: 38px;
   width: 420px;
   background: var(--bg-panel);
   border-left: 2px solid var(--border);
