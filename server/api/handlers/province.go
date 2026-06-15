@@ -662,8 +662,8 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 	}
 	var homeSettlementID uuid.UUID
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT s.id, p.map_q, p.map_r FROM provinces p
-		 JOIN settlements s ON s.province_id = p.id WHERE p.id=$1`,
+		`SELECT s.id, p.map_q, p.map_r FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id WHERE s.id=$1`,
 		outpostFeeds,
 	).Scan(&homeSettlementID, &hQ, &hR); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not locate home settlement")

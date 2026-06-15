@@ -410,6 +410,7 @@
 const WORLD_ID = "{{.WorldID}}";
 const MY_SETTLEMENT_ID = "{{.SettlementID}}";
 const MY_PLAYER_ID = "{{.PlayerID}}";
+const WORLD_CREATED_AT = "{{.WorldCreatedAt}}";
 let MY_KINGDOM_ROLE = "{{.PlayerKingdomRole}}";
 
 // ── Lawagetas advisory voice ──────────────────────────────────────────────
@@ -1369,6 +1370,36 @@ async function recallOutpost(provinceID) {
 
 function showInspect(marker) { openInspect(marker); }
 
+async function saveLaborAlloc(provinceID) {
+  const btn = document.getElementById('labor-save-btn');
+  const msg = document.getElementById('labor-save-msg');
+  const err = document.getElementById('labor-save-err');
+  if (btn) btn.disabled = true;
+  if (msg) msg.textContent = '';
+  if (err) err.textContent = '';
+  const citizens = {};
+  document.querySelectorAll('.labor-input').forEach(inp => {
+    const v = parseInt(inp.value||0, 10)||0;
+    if (v > 0) citizens[inp.dataset.good] = v;
+  });
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${provinceID}/labor`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({citizens}),
+  });
+  if (res.ok) {
+    const data = await res.json();
+    if (msg) msg.textContent = 'Saved!';
+    const idleEl = document.getElementById('labor-idle-disp');
+    if (idleEl && data.idle_citizens != null) idleEl.textContent = data.idle_citizens;
+    setTimeout(() => { if (msg) msg.textContent = ''; }, 2000);
+  } else {
+    const body = await res.json().catch(() => ({}));
+    if (err) err.textContent = body.error || 'Save failed';
+  }
+  if (btn) btn.disabled = false;
+}
+
 // ── Input: drag + zoom + click ────────────────────────────────────────────
 canvas.addEventListener('mousedown', e => {
   dragging = true;
@@ -1972,11 +2003,48 @@ async function loadDrawerContent(name) {
         document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
       }
       const prodGoods = goods.filter(g => g.key !== 'silver' && (g.producible || g.rate_per_min > 0));
-      document.getElementById('city-prod-sec').innerHTML = prodGoods.length
-        ? `<table class="goods-mini">${prodGoods.map(g =>
-            `<tr><td>${g.name||g.key}</td><td style="text-align:right;color:var(--text-dim);font-family:var(--mono)">${g.citizens||0}w</td><td style="color:var(--safe)">+${g.rate_per_min.toFixed(1)}/m</td></tr>`
-          ).join('')}</table>`
-        : '<p class="empty-state">No production yet.</p>';
+      if (prodGoods.length) {
+        const lp = pd ? (pd.labor_pool || 0) : 0;
+        // Render each producible good as a row with a number input for citizens.
+        const rows = prodGoods.map(g => {
+          const ypw = g.yield_per_worker ? g.yield_per_worker.toFixed(3) : '—';
+          return `<tr>
+            <td style="padding:.2rem .3rem">${g.name||g.key}</td>
+            <td style="padding:.2rem .3rem;text-align:right">
+              <input type="number" class="labor-input" data-good="${g.key}"
+                value="${g.citizens||0}" min="0" max="${lp}"
+                style="width:4.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">
+            </td>
+            <td style="padding:.2rem .3rem;color:var(--text-dim);font-size:.75rem">${ypw}/w</td>
+            <td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${g.rate_per_min.toFixed(1)}/m</td>
+          </tr>`;
+        }).join('');
+        document.getElementById('city-prod-sec').innerHTML =
+          `<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">Workers to assign (pool: <span id="labor-pool-disp">${lp}</span>, idle: <span id="labor-idle-disp">${(goods[0]||{}).idle_citizens||0}</span>)</div>
+           <table class="goods-mini" style="width:100%">
+             <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Workers</td><td>Rate/w</td><td>Prod/m</td></tr></thead>
+             <tbody>${rows}</tbody>
+           </table>
+           <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
+             <button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
+               style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">
+               Assign →
+             </button>
+             <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe)"></span>
+             <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span>
+           </div>`;
+        // Live preview: update idle count as user edits inputs.
+        document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(inp => {
+          inp.addEventListener('input', () => {
+            let total = 0;
+            document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(i => { total += parseInt(i.value||0,10)||0; });
+            const idleEl = document.getElementById('labor-idle-disp');
+            if (idleEl) idleEl.textContent = Math.max(0, lp - total);
+          });
+        });
+      } else {
+        document.getElementById('city-prod-sec').innerHTML = '<p class="empty-state">No production yet.</p>';
+      }
 
       // ── Byggnader ───────────────────────────────────────────────────────────
       // Delegate to refreshCityBuildings so startBuild() can call it too
@@ -3506,9 +3574,8 @@ function updateCelestial() {
   body.setAttribute('cy', bodyY.toFixed(1));
   document.getElementById('cel-phase').textContent = isDay ? '☀' : moonPhase();
 
-  const epoch          = new Date('2026-06-01T18:00:00');
-  const shifted        = new Date(now.getTime() - 18 * 3600 * 1000);
-  const daysSinceEpoch = Math.floor((shifted - epoch) / (24 * 3600 * 1000));
+  const epoch          = WORLD_CREATED_AT ? new Date(WORLD_CREATED_AT) : new Date('2026-06-01T00:00:00Z');
+  const daysSinceEpoch = Math.max(0, Math.floor((now - epoch) / (24 * 3600 * 1000)));
   const dayOfMonth     = (daysSinceEpoch % 30) + 1;
   const monthIdx       = Math.floor(daysSinceEpoch / 30) % 12;
   const year           = Math.floor(daysSinceEpoch / 360) + 1;

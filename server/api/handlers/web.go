@@ -633,9 +633,9 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 
 	var wld world.World
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT id, name, state, map_width, map_height, prestige, era_number FROM worlds WHERE id = $1`,
+		`SELECT id, name, state, map_width, map_height, prestige, era_number, created_at FROM worlds WHERE id = $1`,
 		worldID,
-	).Scan(&wld.ID, &wld.Name, &wld.State, &wld.MapWidth, &wld.MapHeight, &wld.Prestige, &wld.EraNumber)
+	).Scan(&wld.ID, &wld.Name, &wld.State, &wld.MapWidth, &wld.MapHeight, &wld.Prestige, &wld.EraNumber, &wld.CreatedAt)
 	if err != nil {
 		http.Error(w, "world not found", http.StatusNotFound)
 		return
@@ -672,6 +672,7 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 	h.render(w, "map.html", map[string]any{
 		"World":             wld,
 		"WorldID":           worldID,
+		"WorldCreatedAt":    wld.CreatedAt.UTC().Format(time.RFC3339),
 		"SettlementID":      settlementID,
 		"PlayerID":          playerIDStr,
 		"PlayerKingdomRole": playerKingdomRole,
