@@ -137,8 +137,6 @@ body:has(.auth-page) main {
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  /* terracotta cap at top — uses TERRACOTTA token, no hardcoded hex */
-  border-top: 4px solid var(--border);
 }
 
 .auth-artwork-img {
