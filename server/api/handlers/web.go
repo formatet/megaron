@@ -16,6 +16,7 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/settlement"
+	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/world"
 )
 
@@ -673,6 +674,7 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		"World":             wld,
 		"WorldID":           worldID,
 		"WorldCreatedAt":    wld.CreatedAt.UTC().Format(time.RFC3339),
+		"TimeScale":         timescale.Factor,
 		"SettlementID":      settlementID,
 		"PlayerID":          playerIDStr,
 		"PlayerKingdomRole": playerKingdomRole,

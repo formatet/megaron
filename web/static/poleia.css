@@ -1368,6 +1368,12 @@ body:has(.auth-page) main {
 }
 .dip-thread-header:hover { background: var(--bg-raised); }
 
+.dip-thread-expand-hint {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-left: 0.3rem;
+}
+
 .dip-thread-preview {
   padding: 0 0.6rem 0.35rem;
   font-size: 0.74rem;
@@ -1382,12 +1388,45 @@ body:has(.auth-page) main {
 
 .dip-thread-body {
   padding: 0.2rem 0.6rem 0.5rem;
+  display: none;
+}
+.dip-thread[data-open] .dip-thread-body { display: block; }
+
+/* Chat bubbles: received left, sent right */
+.dip-msg-row {
+  display: flex;
+  margin: 0.3rem 0;
+}
+.dip-msg-row-in  { justify-content: flex-start; }
+.dip-msg-row-out { justify-content: flex-end; }
+
+.dip-bubble {
+  max-width: 82%;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0;
+  font-size: 0.79rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.dip-bubble-in {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.dip-bubble-out {
+  background: var(--sandstone);
+  border: 1px solid var(--border-in);
+  color: var(--text);
+  text-align: right;
 }
 
-.dip-msg-bubble {
-  border-top: 1px solid var(--border);
-  padding: 0.35rem 0;
+.dip-bubble-meta {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-bottom: 0.15rem;
 }
+.dip-bubble-meta-out { text-align: right; }
 
 .dip-msg-text {
   font-size: 0.8rem;

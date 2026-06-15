@@ -411,6 +411,7 @@ const WORLD_ID = "{{.WorldID}}";
 const MY_SETTLEMENT_ID = "{{.SettlementID}}";
 const MY_PLAYER_ID = "{{.PlayerID}}";
 const WORLD_CREATED_AT = "{{.WorldCreatedAt}}";
+const TIME_SCALE = {{.TimeScale}};
 let MY_KINGDOM_ROLE = "{{.PlayerKingdomRole}}";
 
 // ── Lawagetas advisory voice ──────────────────────────────────────────────
@@ -2016,13 +2017,13 @@ async function loadDrawerContent(name) {
                 style="width:4.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">
             </td>
             <td style="padding:.2rem .3rem;color:var(--text-dim);font-size:.75rem">${ypw}/w</td>
-            <td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${g.rate_per_min.toFixed(1)}/m</td>
+            <td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${(g.rate_per_min*1440).toFixed(1)}/day</td>
           </tr>`;
         }).join('');
         document.getElementById('city-prod-sec').innerHTML =
           `<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">Workers to assign (pool: <span id="labor-pool-disp">${lp}</span>, idle: <span id="labor-idle-disp">${(goods[0]||{}).idle_citizens||0}</span>)</div>
            <table class="goods-mini" style="width:100%">
-             <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Workers</td><td>Rate/w</td><td>Prod/m</td></tr></thead>
+             <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Workers</td><td>Rate/w</td><td>Prod/day</td></tr></thead>
              <tbody>${rows}</tbody>
            </table>
            <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
@@ -2076,7 +2077,7 @@ async function loadDrawerContent(name) {
         document.getElementById('city-ctm-sec').innerHTML =
           `<div class="dsec-title">Outpost flows to ${capital.name}</div>
            <table class="goods-mini">${myFlows.map(f =>
-            `<tr><td>${gnames[f.good_key]||f.good_key}</td><td style="text-align:right;color:var(--text-dim);font-family:var(--mono)">(${f.q},${f.r})</td><td style="color:var(--safe)">+${f.rate_per_min.toFixed(1)}/m</td></tr>`
+            `<tr><td>${gnames[f.good_key]||f.good_key}</td><td style="text-align:right;color:var(--text-dim);font-family:var(--mono)">(${f.q},${f.r})</td><td style="color:var(--safe)">+${(f.rate_per_min*1440).toFixed(1)}/day</td></tr>`
           ).join('')}</table>`;
       } else {
         document.getElementById('city-ctm-sec').innerHTML =
@@ -2115,12 +2116,12 @@ async function loadDrawerContent(name) {
               <div class="sb-label">Silver</div>
               <div class="sb-val">${fmtSilver(silver.amount)}</div>
             </div>
-            ${silver.rate_per_min ? `<div class="sb-rate">+${silver.rate_per_min.toFixed(2)}/m</div>` : ''}
+            ${silver.rate_per_min ? `<div class="sb-rate">+${(silver.rate_per_min*1440).toFixed(1)}/day</div>` : ''}
           </div>`;
         }
         if (others.length) {
           html += `<table class="goods-mini">${others.map(g =>
-            `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${g.rate_per_min > 0 ? `<td style="color:var(--safe)">+${g.rate_per_min.toFixed(1)}/m</td>` : '<td></td>'}</tr>`
+            `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${g.rate_per_min > 0 ? `<td style="color:var(--safe)">+${(g.rate_per_min*1440).toFixed(1)}/day</td>` : '<td></td>'}</tr>`
           ).join('')}</table>`;
         }
       }
@@ -2976,7 +2977,7 @@ async function loadDiplomacyDrawer() {
   const body = document.getElementById('diplomacy-body');
   body.innerHTML = `
     <div class="drawer-tabs">
-      <button class="dtab active" data-tab="threads">Messages</button>
+      <button class="dtab active" data-tab="threads">Correspondence</button>
       <button class="dtab" data-tab="compose">Compose</button>
     </div>
     <div id="dtab-threads" class="city-tab"><div class="loading" style="font-size:.8rem">Loading…</div></div>
@@ -3014,7 +3015,6 @@ async function loadDipThreads() {
     const sent   = (outR && outR.ok) ? await outR.json().catch(() => []) : [];
 
     // Normalise both sides into a common shape and group by counterpart name.
-    // Also track the counterpart settlement_id so inline compose can address them.
     // Inbox: from_name/from_id is the counterpart; Sent: destination_name/destination_id is counterpart.
     const threads = {}; // key → { name, settlement_id, messages[] }
 
@@ -3026,15 +3026,13 @@ async function loadDipThreads() {
     for (const m of sent) {
       const key = m.destination_name || 'unknown';
       if (!threads[key]) threads[key] = { name: key, settlement_id: m.destination_id || null, messages: [] };
-      // Prefer id from sent if inbox didn't set it yet
       else if (!threads[key].settlement_id) threads[key].settlement_id = m.destination_id || null;
       threads[key].messages.push({ ...m, _dir: 'out' });
     }
 
     const keys = Object.keys(threads);
-    if (!keys.length) { el.innerHTML = '<p class=”empty-state” style=”padding:.5rem”>No messages yet.</p>'; return; }
+    if (!keys.length) { el.innerHTML = '<p class=”empty-state” style=”padding:.5rem”>No correspondence yet.</p>'; return; }
 
-    // Sort threads: newest message first (use arrived_at or sent_at or created_at)
     const msgTime = m => new Date(m.arrived_at || m.sent_at || m.created_at || 0).getTime();
     keys.sort((a,b) => {
       const ta = Math.max(...threads[a].messages.map(msgTime));
@@ -3042,30 +3040,49 @@ async function loadDipThreads() {
       return tb - ta;
     });
 
+    // Remember which threads were open so re-render keeps them open
+    const openSet = new Set();
+    el.querySelectorAll('.dip-thread[data-open]').forEach(t => openSet.add(t.id));
+
     el.innerHTML = keys.map(key => {
       const thread = threads[key];
-      // Sort messages within thread oldest→newest
       const msgs = [...thread.messages].sort((a,b) => msgTime(a) - msgTime(b));
       const latest = msgs[msgs.length - 1];
       const hasPendingTrade = msgs.some(m => m._dir === 'in' && m.trade_offer && m.trade_offer.status === 'pending');
+      const hasUnread = msgs.some(m => m._dir === 'in' && m.status === 'delivered');
 
       const threadId = 'dip-thread-' + key.replace(/[^a-z0-9]/gi,'_');
+      const isOpen = openSet.has(threadId);
       const safeDestId = esc(thread.settlement_id || '');
       const safeName   = esc(thread.name);
-      const headerBadge = hasPendingTrade ? ' <span style=”color:var(--accent-trade);font-size:.65rem”>⚖ offer</span>' : '';
+
+      let badges = '';
+      if (hasPendingTrade) badges += ' <span style=”color:var(--accent-trade);font-size:.65rem”>⚖</span>';
+      if (hasUnread)       badges += ' <span style=”color:var(--accent);font-size:.65rem”>●</span>';
       const latestPreview = latest.message || latest.message_text || '';
 
-      // Thread header + collapsed preview
-      let html = '<div class=”dip-thread” id=”' + threadId + '”>'
+      // Thread wrapper: data-open attribute controls CSS visibility of body
+      let html = '<div class=”dip-thread” id=”' + threadId + '”' + (isOpen ? ' data-open' : '') + '>'
         + '<div class=”dip-thread-header” onclick=”dipToggleThread(\'' + threadId + '\')”>'
-        + '<span style=”font-size:.82rem;font-weight:bold;color:var(--accent)”>' + safeName + headerBadge + '</span>'
-        + '<span style=”font-size:.68rem;color:var(--text-dim)”>' + fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at) + '</span>'
-        + '</div>'
-        + (latestPreview ? '<div class=”dip-thread-preview” onclick=”dipToggleThread(\'' + threadId + '\')”>”' + esc(latestPreview.slice(0,80)) + (latestPreview.length > 80 ? '…' : '') + '”</div>' : '')
-        // Thread body: hidden by default
-        + '<div class=”dip-thread-body” style=”display:none”>';
+        + '<span style=”font-size:.82rem;font-weight:bold;color:var(--accent-diplomacy)”>'
+        +   safeName + badges
+        + '</span>'
+        + '<span style=”font-size:.68rem;color:var(--text-dim)”>'
+        +   fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at)
+        +   ' <span class=”dip-thread-expand-hint”>' + (isOpen ? '▲' : '▼') + '</span>'
+        + '</span>'
+        + '</div>';
 
-      // Messages
+      if (latestPreview && !isOpen) {
+        html += '<div class=”dip-thread-preview” onclick=”dipToggleThread(\'' + threadId + '\')”>'
+          + '”' + esc(latestPreview.slice(0,80)) + (latestPreview.length > 80 ? '…' : '') + '”'
+          + '</div>';
+      }
+
+      // Thread body (CSS shows/hides via data-open on parent)
+      html += '<div class=”dip-thread-body”>';
+
+      // Messages as chat bubbles
       for (const m of msgs) {
         if (m._dir === 'in') {
           const offer = m.trade_offer;
@@ -3074,7 +3091,7 @@ async function loadDipThreads() {
             const have = myGoods[offer.want_good] || 0;
             const canAccept = have >= offer.want_qty;
             const dis = canAccept ? '' : 'disabled title=”Need ' + offer.want_qty + ' ' + esc(offer.want_good) + ', have ' + Math.floor(have) + '”';
-            tradeHtml = '<div id=”dip-trade-' + m.id + '” style=”background:var(--bg-raised);border:1px solid var(--border);padding:.3rem .5rem;margin:.3rem 0;font-size:.78rem”>'
+            tradeHtml = '<div id=”dip-trade-' + m.id + '” style=”background:var(--warm-white);border:1px solid var(--border);padding:.3rem .5rem;margin:.3rem 0;font-size:.78rem”>'
               + '<div>Wants <strong>' + offer.want_qty + ' ' + esc(offer.want_good) + '</strong> · Offers <strong>' + offer.offer_silver + ' silver</strong></div>'
               + '<div style=”display:flex;gap:.4rem;margin-top:.3rem”>'
               + '<button class=”btn-small btn-primary” onclick=”dipAccept(\'' + m.id + '\',this)” ' + dis + '>Accept ✓</button>'
@@ -3083,36 +3100,37 @@ async function loadDipThreads() {
           } else if (offer) {
             tradeHtml = '<div style=”font-size:.72rem;color:var(--text-dim);font-style:italic;margin:.2rem 0”>Trade: ' + esc(offer.status) + '</div>';
           }
-          const replyRow = !offer ? '<div id=”dip-reply-row-' + m.id + '” style=”display:flex;gap:.3rem;margin-top:.3rem”>'
-            + '<input id=”dip-reply-' + m.id + '” type=”text” placeholder=”Reply…” maxlength=”1000” style=”flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)”>'
-            + '<button onclick=”dipReply(\'' + m.id + '\')” style=”padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer”>Reply</button>'
-            + '</div>' : '';
-          html += '<div id=”dip-msg-' + m.id + '” class=”dip-msg-bubble”>'
-            + '<div style=”display:flex;justify-content:space-between;align-items:baseline”>'
-            + '<span style=”font-size:.72rem;color:var(--accent)”>← ' + esc(m.from_name || 'Unknown') + '</span>'
-            + '<span style=”font-size:.65rem;color:var(--text-dim)”>' + fmtAgo(m.arrived_at) + '</span>'
-            + '</div>'
-            + (m.message ? '<div class=”dip-msg-text”>”' + esc(m.message) + '”</div>' : '')
-            + tradeHtml + replyRow + '</div>';
+          const replyRow = !offer
+            ? '<div id=”dip-reply-row-' + m.id + '” style=”display:flex;gap:.3rem;margin-top:.3rem”>'
+              + '<input id=”dip-reply-' + m.id + '” type=”text” placeholder=”Reply…” maxlength=”1000” style=”flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)”>'
+              + '<button onclick=”dipReply(\'' + m.id + '\')” style=”padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer”>Reply</button>'
+              + '</div>'
+            : '';
+          html += '<div id=”dip-msg-' + m.id + '” class=”dip-msg-row dip-msg-row-in”>'
+            + '<div class=”dip-bubble dip-bubble-in”>'
+            + '<div class=”dip-bubble-meta”>← ' + esc(m.from_name || 'Unknown') + ' · ' + fmtAgo(m.arrived_at) + '</div>'
+            + (m.message ? '<div class=”dip-msg-text”>' + esc(m.message) + '</div>' : '')
+            + tradeHtml + replyRow
+            + '</div></div>';
         } else {
           // Sent message
           const statusBit = m.status === 'returned'   ? '<span style=”color:var(--safe)”>↩ returned</span>'
                           : m.status === 'delivering' ? '<span style=”color:var(--text-dim)”>en route · ' + fmtEta(m.arrives_at) + '</span>'
                           : '<span style=”color:var(--text-dim)”>' + esc(m.status || '') + '</span>';
-          const replyText = m.reply_text ? '<div class=”dip-msg-text” style=”color:var(--safe)”>”' + esc(m.reply_text) + '”</div>' : '';
-          html += '<div class=”dip-msg-bubble”>'
-            + '<div style=”display:flex;justify-content:space-between;align-items:baseline”>'
-            + '<span style=”font-size:.72rem;color:var(--text-dim)”>→ ' + esc(m.destination_name || 'unknown') + '</span>'
-            + '<span style=”font-size:.65rem;color:var(--text-dim)”>' + fmtAgo(m.sent_at || m.created_at) + '</span>'
-            + '</div>'
-            + '<div class=”dip-msg-text”>”' + esc(m.message_text || m.message || '') + '”</div>'
+          const replyText = m.reply_text
+            ? '<div class=”dip-msg-text” style=”color:var(--safe);text-align:right”>' + esc(m.reply_text) + '</div>'
+            : '';
+          html += '<div class=”dip-msg-row dip-msg-row-out”>'
+            + '<div class=”dip-bubble dip-bubble-out”>'
+            + '<div class=”dip-bubble-meta dip-bubble-meta-out”>You → ' + esc(m.destination_name || 'unknown') + ' · ' + fmtAgo(m.sent_at || m.created_at) + '</div>'
+            + '<div class=”dip-msg-text”>' + esc(m.message_text || m.message || '') + '</div>'
             + replyText
-            + '<div style=”font-size:.68rem;font-family:var(--mono)”>' + statusBit + '</div>'
-            + '</div>';
+            + '<div style=”font-size:.68rem;font-family:var(--mono);text-align:right”>' + statusBit + '</div>'
+            + '</div></div>';
         }
       }
 
-      // Inline compose — only if we have a destination settlement_id to send to
+      // Inline compose
       if (thread.settlement_id && MY_SETTLEMENT_ID) {
         const cid = threadId + '-compose';
         html += '<div class=”dip-inline-compose” id=”' + cid + '”>'
@@ -3134,16 +3152,27 @@ async function loadDipThreads() {
       return html;
     }).join('');
 
-  } catch(_) {
-    el.innerHTML = '<p class=”empty-state” style=”padding:.5rem”>Could not load messages.</p>';
+  } catch(e) {
+    console.error('loadDipThreads', e);
+    el.innerHTML = '<p class=”empty-state” style=”padding:.5rem”>Could not load correspondence.</p>';
   }
 }
 
 function dipToggleThread(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  const body = el.querySelector('.dip-thread-body');
-  if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
+  const isOpen = el.hasAttribute('data-open');
+  if (isOpen) {
+    el.removeAttribute('data-open');
+  } else {
+    el.setAttribute('data-open', '');
+  }
+  // Update chevron hint
+  const hint = el.querySelector('.dip-thread-expand-hint');
+  if (hint) hint.textContent = el.hasAttribute('data-open') ? '▲' : '▼';
+  // Show/hide preview when collapsed
+  const preview = el.querySelector('.dip-thread-preview');
+  if (preview) preview.style.display = el.hasAttribute('data-open') ? 'none' : '';
 }
 
 async function dipSendInThread(cid, destId) {
@@ -3601,50 +3630,61 @@ function toRoman(n) {
 }
 
 function updateCelestial() {
-  const now = new Date();
-  const h   = now.getHours() + now.getMinutes() / 60;
-  const isDay = h >= 6 && h < 18;
+  const now   = new Date();
+  const epoch = WORLD_CREATED_AT ? new Date(WORLD_CREATED_AT) : new Date('2026-06-01T00:00:00Z');
 
-  const body     = document.getElementById('cel-body');
+  // Scaled game time: TIME_SCALE ms of game time pass per 1 ms of real time.
+  // gameElapsedMs = wall-clock elapsed × TIME_SCALE
+  const gameElapsedMs = (now - epoch) * TIME_SCALE;
+
+  // Position within the current scaled game-day (24 game-hours)
+  const msPerDay   = 24 * 3600 * 1000;
+  const dayFrac    = (gameElapsedMs % msPerDay) / msPerDay; // 0..1 across one game day
+  const gameHour   = dayFrac * 24; // 0..24 hours within game-day
+
+  const isDay = gameHour >= 6 && gameHour < 18;
+
+  const celBody  = document.getElementById('cel-body');
   const nightTxt = document.getElementById('cel-night-txt');
   const cx = 40, cy = 38, r = 34;
 
   let bodyX, bodyY;
   if (isDay) {
-    const t = (h - 6) / 12;
+    const t = (gameHour - 6) / 12;          // 0..1 across day arc
     const angle = Math.PI - t * Math.PI;
     bodyX = cx + r * Math.cos(angle);
     bodyY = cy - r * Math.sin(angle);
-    body.setAttribute('r', '5');
-    body.setAttribute('fill', '#F9E79F');
+    celBody.setAttribute('r', '5');
+    celBody.setAttribute('fill', '#F9E79F');
     nightTxt.setAttribute('display', 'none');
   } else {
-    const hn = h >= 18 ? h - 18 : h + 6;
-    const t  = hn / 12;
+    const hn = gameHour >= 18 ? gameHour - 18 : gameHour + 6;
+    const t  = hn / 12;                     // 0..1 across night arc
     const angle = t * Math.PI;
     bodyX = cx + r * Math.cos(angle);
     bodyY = cy - r * Math.sin(angle);
-    body.setAttribute('r', '4');
-    body.setAttribute('fill', '#D0D8F0');
+    celBody.setAttribute('r', '4');
+    celBody.setAttribute('fill', '#D0D8F0');
     nightTxt.setAttribute('display', '');
   }
 
-  body.setAttribute('cx', bodyX.toFixed(1));
-  body.setAttribute('cy', bodyY.toFixed(1));
+  celBody.setAttribute('cx', bodyX.toFixed(1));
+  celBody.setAttribute('cy', bodyY.toFixed(1));
   document.getElementById('cel-phase').textContent = isDay ? '☀' : moonPhase();
 
-  const epoch          = WORLD_CREATED_AT ? new Date(WORLD_CREATED_AT) : new Date('2026-06-01T00:00:00Z');
-  const daysSinceEpoch = Math.max(0, Math.floor((now - epoch) / (24 * 3600 * 1000)));
-  const dayOfMonth     = (daysSinceEpoch % 30) + 1;
-  const monthIdx       = Math.floor(daysSinceEpoch / 30) % 12;
-  const year           = Math.floor(daysSinceEpoch / 360) + 1;
+  // Game date derived from scaled elapsed time
+  const gameDaysSinceEpoch = Math.max(0, Math.floor(gameElapsedMs / msPerDay));
+  const dayOfMonth = (gameDaysSinceEpoch % 30) + 1;
+  const monthIdx   = Math.floor(gameDaysSinceEpoch / 30) % 12;
+  const year       = Math.floor(gameDaysSinceEpoch / 360) + 1;
 
   document.getElementById('cel-date').innerHTML =
     `<strong>${toRoman(dayOfMonth)}</strong> ${MONTH_NAMES[monthIdx]}<br>Year ${toRoman(year)}`;
 }
 
 updateCelestial();
-setInterval(updateCelestial, 60 * 1000);
+// Update every 3 seconds so movement is visible at TIME_SCALE=100 (day = 14.4 min IRL)
+setInterval(updateCelestial, 3 * 1000);
 
 // ── Persistent notifications ──────────────────────────────────────────────
 function updateNotifBadge(count) {
