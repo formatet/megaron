@@ -116,28 +116,35 @@ footer {
   margin-top: 3rem;
 }
 
-/* ── Auth page ──────────────────────────────────────────────── */
+/* ── Auth page — hide chrome, full-bleed hero ─────────────── */
+body:has(.auth-page) .topbar,
+body:has(.auth-page) footer { display: none; }
+
+body:has(.auth-page) main {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+
 .auth-page {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width: 100%;
   min-height: 100vh;
-  background: var(--bg-base);
 }
 
 /* ── Hero artwork ─────────────────────────────────────────── */
 .auth-artwork {
   position: relative;
   width: 100%;
-  max-height: 60vh;
+  min-height: 100vh;
   overflow: hidden;
-  flex-shrink: 0;
+  /* terracotta cap at top — uses TERRACOTTA token, no hardcoded hex */
+  border-top: 4px solid var(--border);
 }
 
 .auth-artwork-img {
   display: block;
   width: 100%;
-  height: 60vh;
+  height: 100vh;
   object-fit: cover;
   object-position: center 20%;
   image-rendering: pixelated;
@@ -148,57 +155,48 @@ footer {
   to   { transform: scale(1.03); }
 }
 
-/* gradient fades: dark frame + strong bottom-fade to bg-base */
+/* gradient fades: subtle side vignette + bottom darkening behind login */
 .auth-artwork-fade {
   position: absolute;
   inset: 0;
   background:
     linear-gradient(to bottom,
-      #0f0e0dee 0%,
-      transparent 18%,
-      transparent 55%,
-      #0f0e0d 100%),
-    linear-gradient(to right,  #0f0e0d88 0%, transparent 12%, transparent 88%, #0f0e0d88 100%);
+      transparent 0%,
+      transparent 40%,
+      rgba(15,14,13,0.55) 100%),
+    linear-gradient(to right, rgba(15,14,13,0.35) 0%, transparent 10%, transparent 90%, rgba(15,14,13,0.35) 100%);
   pointer-events: none;
 }
 
-/* title sits at the bottom of the artwork */
+/* tagline — subtle, sits just above the login overlay */
 .auth-hero {
   position: absolute;
-  bottom: 0;
+  bottom: 13rem;
   left: 0; right: 0;
   text-align: center;
-  padding-bottom: 1.5rem;
-}
-.auth-hero h1 {
-  font-size: 4.5rem;
-  letter-spacing: 0.35em;
-  color: var(--gold);
-  text-shadow: 0 0 60px #c8962a88, 0 0 120px #c8962a44, 0 2px 0 #0f0e0d;
-  animation: glowhero 4s ease-in-out infinite alternate;
-}
-@keyframes glowhero {
-  from { text-shadow: 0 0 40px #c8962a66, 0 0 80px #c8962a22, 0 2px 0 #0f0e0d; }
-  to   { text-shadow: 0 0 80px #c8962aaa, 0 0 160px #c8962a55, 0 2px 0 #0f0e0d; }
+  pointer-events: none;
 }
 .tagline {
-  color: var(--text-dim);
+  color: var(--text-light);
   font-style: italic;
-  margin-top: 0.3rem;
   font-size: 0.95rem;
   letter-spacing: 0.05em;
-  text-shadow: 0 1px 3px #0f0e0dcc;
+  text-shadow: 0 1px 4px rgba(15,14,13,0.9), 0 0 20px rgba(15,14,13,0.7);
 }
 
-/* ── Auth form panel ──────────────────────────────────────── */
+/* ── Auth form panel — overlay at bottom-center of artwork ── */
 .auth-forms {
-  width: 100%;
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
   max-width: 380px;
-  background: var(--bg-panel);
+  background: color-mix(in srgb, var(--bg-panel) 93%, transparent);
   border: 2px solid var(--border);
-  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in);
+  box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in),
+              0 8px 32px rgba(15,14,13,0.6);
   padding: 1.5rem;
-  margin-top: -2px; /* flush against the artwork fade */
 }
 
 .tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); }

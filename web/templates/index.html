@@ -7,41 +7,40 @@
     <img src="/static/hero.png" alt="" class="auth-artwork-img">
     <div class="auth-artwork-fade"></div>
     <div class="auth-hero">
-      <h1>ΘΑΛΑΣΣΑ</h1>
       <p class="tagline">A Bronze Age world of provinces, kingdoms, and capricious gods.</p>
     </div>
-  </div>
 
-  <div class="auth-forms">
-    <div class="tabs" id="auth-tabs">
-      <button class="tab active" onclick="showTab('login')">Sign In</button>
-      <button class="tab" onclick="showTab('register')">New Player</button>
-    </div>
+    <div class="auth-forms">
+      <div class="tabs" id="auth-tabs">
+        <button class="tab active" onclick="showTab('login')">Sign In</button>
+        <button class="tab" onclick="showTab('register')">New Player</button>
+      </div>
 
-    <div id="tab-login">
-      <form id="login-form">
-        <div class="field">
-          <label>Username</label>
-          <input type="text" id="login-ident" required autocomplete="username">
-        </div>
-        <div id="login-error" class="form-error"></div>
-        <button type="submit" class="btn-primary">Enter</button>
-      </form>
-    </div>
+      <div id="tab-login">
+        <form id="login-form">
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="login-ident" required autocomplete="username">
+          </div>
+          <div id="login-error" class="form-error"></div>
+          <button type="submit" class="btn-primary">Enter</button>
+        </form>
+      </div>
 
-    <div id="tab-register" style="display:none">
-      <form id="register-form">
-        <div class="field">
-          <label>Username</label>
-          <input type="text" id="reg-username" required minlength="3" maxlength="24" autocomplete="username">
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="reg-email" required autocomplete="email">
-        </div>
-        <div id="reg-error" class="form-error"></div>
-        <button type="submit" class="btn-primary">Claim your seat</button>
-      </form>
+      <div id="tab-register" style="display:none">
+        <form id="register-form">
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="reg-username" required minlength="3" maxlength="24" autocomplete="username">
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="reg-email" required autocomplete="email">
+          </div>
+          <div id="reg-error" class="form-error"></div>
+          <button type="submit" class="btn-primary">Claim your seat</button>
+        </form>
+      </div>
     </div>
   </div>
 
