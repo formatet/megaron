@@ -113,6 +113,13 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// C5: a unit in fortify stance is locked in place until stance is changed.
+	if u.Stance != nil && *u.Stance == unit.StanceFortify {
+		writeError(w, http.StatusUnprocessableEntity,
+			"unit is in fortify stance and cannot march; change stance to 'none' first via POST /stance")
+		return
+	}
+
 	// Validate optional stance value.
 	if req.Stance != "" {
 		switch unit.Stance(req.Stance) {
@@ -677,6 +684,173 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		"cargo_unit_id": cargoID,
 		"q":             destQ,
 		"r":             destR,
+	})
+}
+
+// SetStance handles POST /worlds/{worldID}/units/{unitID}/stance
+//
+// Allows a garrison or positioned unit to adopt a combat stance without moving (C5).
+// Body: {"stance":"fortify"|"storm"|"sentry"|"none"}
+//
+// Rules:
+//   - Caller must own the unit.
+//   - Unit must be status='garrison' or status='positioned' (not marching, forming, etc.).
+//   - Priests may not take a stance.
+//   - "none" clears the stance.
+//   - "sentry": sets sentry_q/sentry_r to the unit's current hex.
+//
+// The march endpoint already blocks fortify units from marching (see March handler).
+func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	unitID, err := uuid.Parse(chi.URLParam(r, "unitID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid unit ID")
+		return
+	}
+
+	var req struct {
+		Stance string `json:"stance"` // fortify|storm|sentry|none
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+
+	// Validate stance value.
+	switch req.Stance {
+	case "fortify", "storm", "sentry", "none":
+		// valid
+	default:
+		writeError(w, http.StatusBadRequest, `invalid stance: must be "fortify", "storm", "sentry", or "none"`)
+		return
+	}
+
+	ctx := r.Context()
+
+	u, err := h.store.Get(ctx, unitID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "unit not found")
+		return
+	}
+	if u.OwnerID != playerID {
+		writeError(w, http.StatusForbidden, "not your unit")
+		return
+	}
+	if u.WorldID != worldID {
+		writeError(w, http.StatusForbidden, "unit not in this world")
+		return
+	}
+	if u.Type == unit.TypePriest {
+		writeError(w, http.StatusUnprocessableEntity, "priests cannot take a stance")
+		return
+	}
+	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("unit cannot change stance while %s (must be garrison or positioned)", string(u.Status)))
+		return
+	}
+
+	// Determine new stance value and sentry coords.
+	var newStance *string
+	var newSentryQ, newSentryR *int
+	if req.Stance != "none" {
+		s := req.Stance
+		newStance = &s
+	}
+	if req.Stance == "sentry" {
+		// sentry_q/r = unit's current hex position.
+		// For garrisoned units, resolve via settlement province.
+		var hexQ, hexR int
+		if u.Q != nil && u.R != nil {
+			hexQ, hexR = *u.Q, *u.R
+		} else if u.SettlementID != nil {
+			if err := h.pool.QueryRow(ctx,
+				`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+				*u.SettlementID,
+			).Scan(&hexQ, &hexR); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not resolve unit hex for sentry")
+				return
+			}
+		}
+		newSentryQ = &hexQ
+		newSentryR = &hexR
+	}
+
+	// Atomic update inside transaction with FOR UPDATE idempotency guard.
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	var currentStatus string
+	var currentStance *string
+	if err := tx.QueryRow(ctx,
+		`SELECT status, stance FROM units WHERE id = $1 FOR UPDATE`, unitID,
+	).Scan(&currentStatus, &currentStance); err != nil {
+		writeError(w, http.StatusNotFound, "unit not found in transaction")
+		return
+	}
+	if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
+		writeError(w, http.StatusConflict, "unit status changed; stance not applied")
+		return
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   stance     = $2,
+		   sentry_q   = $3,
+		   sentry_r   = $4,
+		   updated_at = now()
+		 WHERE id = $1`,
+		unitID, newStance, newSentryQ, newSentryR,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update stance")
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not commit stance change")
+		return
+	}
+
+	// Record stance-before for event payload.
+	stanceBefore := ""
+	if currentStance != nil {
+		stanceBefore = *currentStance
+	}
+	stanceAfter := req.Stance
+	if req.Stance == "none" {
+		stanceAfter = ""
+	}
+	_, _ = h.eventStore.Append(ctx, unitID, events.StreamType(unit.StreamUnit), unit.EventUnitStanceChanged,
+		unit.UnitStanceChangedPayload{
+			UnitID:       unitID,
+			WorldID:      worldID,
+			StanceBefore: stanceBefore,
+			StanceAfter:  stanceAfter,
+			SentryQ:      newSentryQ,
+			SentryR:      newSentryR,
+		}, worldID, nil,
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"unit_id":  unitID,
+		"stance":   stanceAfter,
+		"sentry_q": newSentryQ,
+		"sentry_r": newSentryR,
 	})
 }
 

@@ -28,6 +28,21 @@ import (
 // Idempotency: the arriving unit is fetched with FOR UPDATE and the handler
 // exits early if status != 'marching'. ON CONFLICT DO NOTHING is used for
 // projection inserts. Re-running the handler is therefore safe.
+//
+// C5 stance effects (implemented):
+//   - fortify: defending garrison units in fortify stance get ×1.5 strength.
+//   - storm:   arriving unit with storm stance halves the wall-level bonus of the target.
+//
+// TODO C5-sentry: sentry interception is NOT yet active.
+// Design: a periodic scan (e.g. ScheduledSentryScan every ~30 s, or a ticker
+// in main.go mirroring kharis seedDailyTicks) iterates all marching units,
+// computes their interpolated hex from departs_at/arrives_at on a straight line,
+// and for each active sentry unit (status='positioned', stance='sentry') within
+// 3 hex of sentry_q/r triggers an UnitIntercepted combat using resolveCombat.
+// Guard: intercepted_at column on units (or a separate table) prevents the same
+// march from being intercepted twice by the same sentry. Stub wired to
+// SetStance (stance can be set to 'sentry', sentry_q/r is persisted), but no
+// scan goroutine is started yet.
 type UnitArrivalHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
@@ -63,11 +78,11 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	var u unitRow
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
-		        status, target_q, target_r
+		        status, target_q, target_r, stance
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.targetQ, &u.targetR); err != nil {
+		&u.status, &u.targetQ, &u.targetR, &u.stance); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -187,9 +202,13 @@ func (h *UnitArrivalHandler) resolveCombat(
 
 	// ── Defence strength: dual-read ────────────────────────────────────────────
 	// 1. Units-table garrison at destination.
+	// C5: units in fortify stance receive a +50% defensive multiplier (tunable).
+	// Rationale: fortify represents dug-in defensive positions. Applied per-unit so
+	// a mixed garrison gets partial benefit. Constant: fortifyBonus = 1.5.
+	const fortifyBonus = 1.5
 	var defUnitStr float64
 	garrisonRows, err := tx.Query(ctx,
-		`SELECT type, size FROM units
+		`SELECT type, size, stance FROM units
 		 WHERE settlement_id = $1 AND status = 'garrison' AND status != 'disbanded'`,
 		*dest.settlementID,
 	)
@@ -197,8 +216,14 @@ func (h *UnitArrivalHandler) resolveCombat(
 		for garrisonRows.Next() {
 			var utype string
 			var usize int
-			if scanErr := garrisonRows.Scan(&utype, &usize); scanErr == nil {
-				defUnitStr += unitStrength(utype, usize)
+			var ustance *string
+			if scanErr := garrisonRows.Scan(&utype, &usize, &ustance); scanErr == nil {
+				str := unitStrength(utype, usize)
+				// C5: fortify stance grants +50% defence.
+				if ustance != nil && *ustance == "fortify" {
+					str *= fortifyBonus
+				}
+				defUnitStr += str
 			}
 		}
 		garrisonRows.Close()
@@ -216,7 +241,19 @@ func (h *UnitArrivalHandler) resolveCombat(
 		defBase = legacyStr
 	}
 
+	// C5: storm stance halves the wall bonus for the attacker.
+	// Normal wall multiplier: 1 + level×0.25.
+	// Storm effective wall:   1 + level×0.25/2  (tunable; stormWallDivisor = 2.0).
+	// Rationale: the attacking unit is carrying siege equipment and focusing on
+	// breaching rather than holding field position. The bonus only reduces the wall
+	// multiplier, not base unit-vs-unit strength.
+	const stormWallDivisor = 2.0
 	wallMod := WallModifier(dest.wallLevel)
+	if u.stance != nil && *u.stance == "storm" {
+		// Halve the extra bonus (the +0.25×level part); the base 1.0 is unchanged.
+		extra := float64(dest.wallLevel) * 0.25
+		wallMod = 1.0 + extra/stormWallDivisor
+	}
 	defStr := defBase * wallMod
 
 	// ── Resolve ───────────────────────────────────────────────────────────────
@@ -624,6 +661,7 @@ type unitRow struct {
 	status      string
 	targetQ     *int
 	targetR     *int
+	stance      *string // C5: fortify/storm/sentry or nil
 }
 
 type destSettlement struct {

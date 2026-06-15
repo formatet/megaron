@@ -22,6 +22,7 @@ const (
 	EventShipUnloaded       = "ShipUnloaded"        // land unit disembarked from vessel
 	EventUnitIntercepted    = "UnitIntercepted"     // sentry triggered interception combat
 	EventCityCollapsed      = "CityCollapsed"       // settlement exhausted; warband spawned
+	EventUnitStanceChanged  = "UnitStanceChanged"   // unit stance updated (C5)
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -137,6 +138,17 @@ type UnitInterceptedPayload struct {
 type ScheduledUnitArrivalPayload struct {
 	UnitID  uuid.UUID `json:"unit_id"`
 	WorldID uuid.UUID `json:"world_id"`
+}
+
+// UnitStanceChangedPayload is emitted when a garrison/positioned unit changes stance (C5).
+// StanceBefore is empty string when no prior stance was set.
+type UnitStanceChangedPayload struct {
+	UnitID       uuid.UUID `json:"unit_id"`
+	WorldID      uuid.UUID `json:"world_id"`
+	StanceBefore string    `json:"stance_before"` // "" if none
+	StanceAfter  string    `json:"stance_after"`  // "" means stance cleared
+	SentryQ      *int      `json:"sentry_q,omitempty"` // set when stance_after == "sentry"
+	SentryR      *int      `json:"sentry_r,omitempty"`
 }
 
 // CityCollapsedPayload is emitted when a settlement's population reaches ≤ 100
