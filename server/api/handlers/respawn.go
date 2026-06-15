@@ -18,12 +18,13 @@ import (
 // When a Wanax loses their last settlement they are reborn on a new province
 // with the same player_id, culture, and starter resources.
 type RespawnHandler struct {
-	pool *pgxpool.Pool
+	pool       *pgxpool.Pool
+	eventStore *events.Store
 }
 
 // NewRespawnHandler creates a RespawnHandler.
-func NewRespawnHandler(pool *pgxpool.Pool) *RespawnHandler {
-	return &RespawnHandler{pool: pool}
+func NewRespawnHandler(pool *pgxpool.Pool, eventStore *events.Store) *RespawnHandler {
+	return &RespawnHandler{pool: pool, eventStore: eventStore}
 }
 
 // Handle processes a single Respawn scheduled event.
@@ -43,7 +44,7 @@ func (h *RespawnHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		return nil
 	}
 
-	if err := respawnPlayer(ctx, h.pool, payload.PlayerID, payload.WorldID, payload.Culture); err != nil {
+	if err := respawnPlayer(ctx, h.pool, h.eventStore, payload.PlayerID, payload.WorldID, payload.Culture); err != nil {
 		return fmt.Errorf("respawn player %s: %w", payload.PlayerID, err)
 	}
 	slog.Info("player respawned", "player", payload.PlayerID, "world", payload.WorldID, "culture", payload.Culture)
@@ -52,7 +53,7 @@ func (h *RespawnHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 // respawnPlayer finds a free province and plants a new capital settlement for the player.
 // Uses the same starter goods as join.go so the player can begin again.
-func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID, culture string) error {
+func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, playerID, worldID uuid.UUID, culture string) error {
 	// Find an unclaimed tile.
 	var q, r int
 	var terrainType string
@@ -101,8 +102,8 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uu
 	if err = tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
-		  kharis_rate, kharis_calc_at)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,$6,now())
+		  population, kharis_rate, kharis_calc_at)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,2000,$6,now())
 		 RETURNING id`,
 		worldID, provinceID, name, culture, playerID, kharisRate,
 	).Scan(&settlementID); err != nil {
@@ -156,6 +157,11 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uu
 		playerID, worldID, settlementID,
 	); err != nil {
 		return fmt.Errorf("update records: %w", err)
+	}
+
+	// C7: seed starter units (coast → galley + infantry; inland → 2× infantry).
+	if err = seedStarterUnits(ctx, tx, eventStore, settlementID, playerID, worldID, q, r, terrainType); err != nil {
+		return fmt.Errorf("seed starter units: %w", err)
 	}
 
 	return tx.Commit(ctx)

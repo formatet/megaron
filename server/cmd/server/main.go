@@ -108,7 +108,7 @@ func main() {
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
-	respawnH := handlers.NewRespawnHandler(pool)
+	respawnH := handlers.NewRespawnHandler(pool, eventStore)
 	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, gameClock)
 	worker.Register(events.ScheduledArmyArrival, arrivalH.Handle)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
@@ -186,7 +186,7 @@ func main() {
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock)
-	jh := handlers.NewJoinHandler(pool)
+	jh := handlers.NewJoinHandler(pool, eventStore)
 	nh := handlers.NewNotificationsHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 

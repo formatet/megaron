@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/economy"
+	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/world"
@@ -18,12 +19,13 @@ import (
 
 // JoinHandler handles POST /worlds/:worldID/join.
 type JoinHandler struct {
-	pool *pgxpool.Pool
+	pool       *pgxpool.Pool
+	eventStore *events.Store
 }
 
 // NewJoinHandler creates a JoinHandler.
-func NewJoinHandler(pool *pgxpool.Pool) *JoinHandler {
-	return &JoinHandler{pool: pool}
+func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store) *JoinHandler {
+	return &JoinHandler{pool: pool, eventStore: eventStore}
 }
 
 // Join creates a province + settlement for the authenticated player in the given world.
@@ -374,6 +376,16 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
 		slog.Error("could not recompute production on join", "err", err)
 		writeError(w, http.StatusInternalServerError, "could not init production")
+		return
+	}
+
+	// C7: create starter units for the new settlement.
+	// Coast tile (respawn path) → 1 galley + 1 infantry garrison.
+	// Inland tile (join path today) → 2 infantry garrisons.
+	// Men drawn from population are accounted for inside seedStarterUnits.
+	if err := seedStarterUnits(r.Context(), tx, h.eventStore, settlementID, playerID, worldID, q, r2, terrainType); err != nil {
+		slog.Error("could not seed starter units", "err", err, "settlement", settlementID)
+		writeError(w, http.StatusInternalServerError, "could not seed starter units")
 		return
 	}
 
