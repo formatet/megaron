@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"math"
 	"net/http"
 	"sort"
@@ -1179,17 +1180,22 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// C2: men are drawn from population at recruit time.
-	// Population floor: keep at 50 (collapse-by-drain is a future C-collapse gate).
-	const popFloor = 50
+	// C2/C-collapse: men are drawn from population at recruit time.
+	// Allow draining population down to 1 (or below 100 → triggers city collapse).
+	// No hard floor here: if the Wanax chooses to overmobilise, the city collapses.
 	var population int
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT population FROM settlements WHERE id = $1`, settlementID,
+		`SELECT population FROM settlements WHERE id = $1 AND state != 'collapsed'`,
+		settlementID,
 	).Scan(&population)
-	if population-req.Men < popFloor {
+	if population == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "settlement has already collapsed")
+		return
+	}
+	if req.Men >= population {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("insufficient population: need %d men but only %d available above the floor of %d",
-				req.Men, population-popFloor, popFloor))
+			fmt.Sprintf("insufficient population: cannot draft %d men from a settlement of %d",
+				req.Men, population))
 		return
 	}
 
@@ -1275,12 +1281,33 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// C2: deduct population immediately — men leave civilian life to form up.
-	if _, err := h.pool.Exec(r.Context(),
-		`UPDATE settlements SET population = population - $1 WHERE id = $2`,
+	var popAfter int
+	if err := h.pool.QueryRow(r.Context(),
+		`UPDATE settlements SET population = population - $1 WHERE id = $2
+		 RETURNING population`,
 		req.Men, settlementID,
-	); err != nil {
+	).Scan(&popAfter); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not draft men")
 		return
+	}
+
+	// C-collapse: overmobilisation — city drained to ≤ 100 → schedule collapse.
+	if popAfter <= 100 {
+		if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledCollapseSettlement,
+			combat.CollapseSettlementPayload{
+				SettlementID: settlementID,
+				WorldID:      worldID,
+				Cause:        "overmobilisation",
+			},
+			h.clk.Now(),
+		); err != nil {
+			// Non-fatal: log and continue — the collapse will be picked up by the daily tick.
+			slog.Warn("recruit: could not schedule collapse event",
+				"settlement", settlementID, "pop_after", popAfter, "err", err)
+		} else {
+			slog.Info("recruit: overmobilisation collapse scheduled",
+				"settlement", settlementID, "pop_after", popAfter)
+		}
 	}
 
 	// Determine unit category and crew.

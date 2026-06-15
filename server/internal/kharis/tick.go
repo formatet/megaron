@@ -276,57 +276,87 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	// Reset invasions_today, update population.
 	//
 	// Growth model (daily tick):
-	//   pop < 100  → absolute: +2 (grain only) to +3 (full diet). Prevents recovery-lock at floor.
 	//   pop ≥ 100  → proportional: 0.5% base × food-variety multiplier × soft-cap factor.
 	//                food_variety = 1.0 (grain) + 0.1 per extra food type (fish/oil/wine/livestock) → max 1.4
-	//                soft_cap = max(0, 1 − pop/5000)  → growth → 0 near 5000
-	//   starvation → −0.5% (pop ≥ 100) or −2 (pop < 100), floor 50.
+	//                soft_cap = max(0, 1 − pop/15000)  → growth → 0 near 15000
+	//   starvation → −0.5% (pop ≥ 100), floor 101 (collapse fires for pop ≤ 100).
+	//
+	// C-collapse: the floor is 101, not 50. Any settlement that would drop below 101
+	// from starvation is held at 101 here; a follow-up query then schedules
+	// CollapseSettlement events for all settlements at pop ≤ 100.
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements s SET
 		   invasions_today = 0,
-		   population = GREATEST(50, LEAST(15000,
+		   population = GREATEST(101, LEAST(15000,
 		     CASE WHEN COALESCE(
 		              (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
 		               FROM settlement_goods sg
 		               WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
 		          THEN
-		            CASE WHEN s.population < 100
-		                 -- absolute mode: +2 base, +1 if any luxury food present
-		                 THEN s.population + 2 + LEAST(1,
-		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
-		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
-		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
-		                     (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END))
-		                 -- proportional mode: 0.5% × variety(1.0–1.4) × soft-cap
-		                 ELSE s.population + GREATEST(1, ROUND(
-		                     s.population
-		                     * 0.005
-		                     * (1.0
-		                         + 0.1 * (
-		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
-		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
-		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
-		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)))
-		                     * GREATEST(0, 1.0 - s.population::float / 15000.0)
-		                 ))
-		            END
-		          -- starvation
-		          ELSE
-		            CASE WHEN s.population < 100
-		                 THEN GREATEST(50, s.population - 2)
-		                 ELSE GREATEST(50, ROUND(s.population * 0.995))
-		            END
+		            -- proportional mode: 0.5% × variety(1.0–1.4) × soft-cap
+		            s.population + GREATEST(1, ROUND(
+		                s.population
+		                * 0.005
+		                * (1.0
+		                    + 0.1 * (
+		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
+		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
+		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
+		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)))
+		                * GREATEST(0, 1.0 - s.population::float / 15000.0)
+		            ))
+		          -- starvation: -0.5%, floor 101 so collapse logic fires below
+		          ELSE GREATEST(101, ROUND(s.population * 0.995))
 		     END))
-		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'`,
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk', 'collapsed')`,
 		worldID,
 	); err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
 	}
 
+	// C-collapse: schedule CollapseSettlement for any settlement that has already
+	// reached pop ≤ 100 (e.g. from overmobilisation via Recruit). The bulk UPDATE
+	// above floors at 101 so starvation alone won't create new ≤100 cases in one
+	// tick, but once pop is already at 101 and starvation fires, the GREATEST(101,…)
+	// clips it — meaning starvation settlement-death takes a second tick to manifest.
+	// This is acceptable: starvation collapse is a gradual process.
+	collapseRows, err := h.pool.Query(ctx,
+		`SELECT id FROM settlements
+		 WHERE world_id = $1 AND owner_id IS NOT NULL
+		   AND state NOT IN ('sunk', 'collapsed')
+		   AND population <= 100`,
+		worldID,
+	)
+	if err == nil {
+		var collapseIDs []uuid.UUID
+		for collapseRows.Next() {
+			var sid uuid.UUID
+			if collapseRows.Scan(&sid) == nil {
+				collapseIDs = append(collapseIDs, sid)
+			}
+		}
+		collapseRows.Close()
+		now := h.scheduler.Clock().Now()
+		for _, sid := range collapseIDs {
+			if err := h.scheduler.Enqueue(ctx, worldID, events.ScheduledCollapseSettlement,
+				struct {
+					SettlementID uuid.UUID `json:"settlement_id"`
+					WorldID      uuid.UUID `json:"world_id"`
+					Cause        string    `json:"cause"`
+				}{SettlementID: sid, WorldID: worldID, Cause: "starvation"},
+				now,
+			); err != nil {
+				slog.Warn("collapse: could not schedule collapse event",
+					"settlement", sid, "err", err)
+			}
+		}
+	}
+
 	// Recompute production for all active settlements: population changed, so
 	// labor_pool (and therefore rates) must be updated.
 	sidRows, err := h.pool.Query(ctx,
-		`SELECT id FROM settlements WHERE world_id = $1 AND owner_id IS NOT NULL AND state != 'sunk'`,
+		`SELECT id FROM settlements
+		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state NOT IN ('sunk', 'collapsed')`,
 		worldID,
 	)
 	if err == nil {

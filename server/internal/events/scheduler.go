@@ -35,6 +35,8 @@ const (
 	ScheduledLogisticsArrival   ScheduledEventType = "LogisticsArrival"
 	// C1 — unit model; handler registered in C2+.
 	ScheduledUnitArrival        ScheduledEventType = "UnitArrival"
+	// C-collapse — city exhausted to ≤100 pop; warband spawned.
+	ScheduledCollapseSettlement ScheduledEventType = "CollapseSettlement"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

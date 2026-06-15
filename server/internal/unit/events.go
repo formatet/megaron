@@ -11,16 +11,17 @@ import (
 // Stream: events.StreamUnit (defined below — same package so no circular import).
 // All payloads record OUTCOMES, not intentions (e.g. actual men drawn, not a pending roll).
 const (
-	EventUnitFormed        = "UnitFormed"        // a new unit row created (forming)
-	EventUnitReinforced    = "UnitReinforced"     // men added to an existing unit
-	EventUnitDeployed      = "UnitDeployed"       // unit transitions forming → garrison
-	EventUnitMarchOrdered  = "UnitMarchOrdered"   // unit begins moving; departure logged
-	EventUnitArrived       = "UnitArrived"        // unit reached its destination
-	EventUnitCombatResolved = "UnitCombatResolved" // combat outcome applied to this unit
-	EventUnitDisbanded     = "UnitDisbanded"      // unit dissolved; men returned to pop
-	EventShipLoaded        = "ShipLoaded"         // land unit embarked on vessel
-	EventShipUnloaded      = "ShipUnloaded"       // land unit disembarked from vessel
-	EventUnitIntercepted   = "UnitIntercepted"    // sentry triggered interception combat
+	EventUnitFormed         = "UnitFormed"         // a new unit row created (forming)
+	EventUnitReinforced     = "UnitReinforced"      // men added to an existing unit
+	EventUnitDeployed       = "UnitDeployed"        // unit transitions forming → garrison
+	EventUnitMarchOrdered   = "UnitMarchOrdered"    // unit begins moving; departure logged
+	EventUnitArrived        = "UnitArrived"         // unit reached its destination
+	EventUnitCombatResolved = "UnitCombatResolved"  // combat outcome applied to this unit
+	EventUnitDisbanded      = "UnitDisbanded"       // unit dissolved; men returned to pop
+	EventShipLoaded         = "ShipLoaded"          // land unit embarked on vessel
+	EventShipUnloaded       = "ShipUnloaded"        // land unit disembarked from vessel
+	EventUnitIntercepted    = "UnitIntercepted"     // sentry triggered interception combat
+	EventCityCollapsed      = "CityCollapsed"       // settlement exhausted; warband spawned
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -136,4 +137,18 @@ type UnitInterceptedPayload struct {
 type ScheduledUnitArrivalPayload struct {
 	UnitID  uuid.UUID `json:"unit_id"`
 	WorldID uuid.UUID `json:"world_id"`
+}
+
+// CityCollapsedPayload is emitted when a settlement's population reaches ≤ 100
+// and it ceases to exist as a city. The last 100 inhabitants leave as a warband.
+// Cause is "starvation" (daily tick) or "overmobilisation" (recruit drain).
+type CityCollapsedPayload struct {
+	SettlementID uuid.UUID `json:"settlement_id"`
+	OwnerID      uuid.UUID `json:"owner_id"`
+	WorldID      uuid.UUID `json:"world_id"`
+	WarbandUnitID uuid.UUID `json:"warband_unit_id"` // the spawned infantry unit
+	Q            int       `json:"q"`
+	R            int       `json:"r"`
+	Cause        string    `json:"cause"`            // "starvation" | "overmobilisation"
+	LastSettlement bool    `json:"last_settlement"`  // true if this was the owner's only city
 }

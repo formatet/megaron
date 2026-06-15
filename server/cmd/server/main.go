@@ -127,6 +127,8 @@ func main() {
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
+	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
+	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	go worker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
 	go healDispossessed(ctx, pool, scheduler)
