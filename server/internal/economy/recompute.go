@@ -40,7 +40,8 @@ type Tx interface {
 // RecomputeProduction settles and rewrites settlement_goods.rate for every
 // producible good of the given settlement, using the citizen-allocation formula:
 //
-//	labor_pool        = max(0, population − Σ(army_col × PopCost) − Σ(in_transit × PopCost))
+//	labor_pool        = population (Part B: soldiers are drawn from population at recruit time,
+//	                    so the integer army columns no longer represent a labor drain)
 //	base_potential(g) = SUM(production_rules matching terrain/deposits/buildings)
 //	yield_per_worker(g) = base_potential(g) / REF_LABOR
 //	rate(g)           = yield_per_worker(g) × citizens(g)
@@ -55,49 +56,18 @@ type Tx interface {
 // Must be called inside an existing transaction. Passes ctx to every DB call.
 func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {
 	// ── 1. Compute labor_pool ────────────────────────────────────────────────
+	// Part B: labor_pool = population. Soldiers are extracted from population at
+	// recruit time (population -= men), so the army columns are no longer a drain here.
 	var population int
-	var infantry, chariot, priest, ship, eliteInfantry, warGalley, merchantman int
 	err := tx.QueryRow(ctx,
-		`SELECT population, infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
-		 FROM settlements WHERE id = $1`,
+		`SELECT population FROM settlements WHERE id = $1`,
 		settlementID,
-	).Scan(&population, &infantry, &chariot, &priest, &ship, &eliteInfantry, &warGalley, &merchantman)
+	).Scan(&population)
 	if err != nil {
 		return fmt.Errorf("recompute: load settlement: %w", err)
 	}
 
-	homePop := infantry*PopCosts["infantry"] +
-		chariot*PopCosts["chariot"] +
-		priest*PopCosts["priest"] +
-		ship*PopCosts["ship"] +
-		eliteInfantry*PopCosts["elite_infantry"] +
-		warGalley*PopCosts["war_galley"] +
-		merchantman*PopCosts["merchantman"]
-
-	// Count pop-cost of units currently in transit from this settlement.
-	// marching_armies.origin_id is a province FK; resolved=false means in flight.
-	var transitPop int
-	_ = tx.QueryRow(ctx,
-		`SELECT COALESCE(SUM(
-		     m.infantry       * $2 +
-		     m.chariot        * $3 +
-		     m.priest         * $4 +
-		     m.ship           * $5 +
-		     m.elite_infantry * $6 +
-		     m.war_galley     * $7 +
-		     m.merchantman    * $8
-		 ), 0)
-		 FROM marching_armies m
-		 JOIN settlements s ON s.province_id = m.origin_id
-		 WHERE s.id = $1
-		   AND m.resolved = false`,
-		settlementID,
-		PopCosts["infantry"], PopCosts["chariot"],
-		PopCosts["priest"], PopCosts["ship"], PopCosts["elite_infantry"],
-		PopCosts["war_galley"], PopCosts["merchantman"],
-	).Scan(&transitPop)
-
-	laborPool := population - homePop - transitPop
+	laborPool := population
 	if laborPool < 0 {
 		laborPool = 0
 	}

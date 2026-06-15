@@ -7,7 +7,7 @@ import (
 )
 
 func TestResolve_AttackerWins(t *testing.T) {
-	attack := AttackForce{Army: province.ArmyComposition{Infantry: 100, Cavalry: 10}}
+	attack := AttackForce{Army: province.ArmyComposition{Infantry: 100, Chariot: 10}}
 	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 20}, WallLevel: 0}
 
 	result := Resolve(attack, defence)
@@ -18,7 +18,7 @@ func TestResolve_AttackerWins(t *testing.T) {
 
 func TestResolve_DefenderWins(t *testing.T) {
 	attack := AttackForce{Army: province.ArmyComposition{Infantry: 10}}
-	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 100, Cavalry: 20}, WallLevel: 2}
+	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 100, Chariot: 20}, WallLevel: 2}
 
 	result := Resolve(attack, defence)
 	if result.Outcome != OutcomeDefenderWins {
@@ -41,14 +41,14 @@ func TestResolve_WallModifierHelps(t *testing.T) {
 	}
 }
 
-func TestResolve_CatapultsReduceWalls(t *testing.T) {
-	// Same attacker with catapults vs strong walls should do better than without.
+func TestResolve_EliteReducesWallEffectively(t *testing.T) {
+	// Elite infantry (×2) vs strong walls: attacker with elites should do better than plain infantry.
 	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 40}, WallLevel: 3}
-	noCatapult := Resolve(AttackForce{Army: province.ArmyComposition{Infantry: 50}}, defence)
-	withCatapult := Resolve(AttackForce{Army: province.ArmyComposition{Infantry: 50, Catapult: 4}}, defence)
+	plainAttack := Resolve(AttackForce{Army: province.ArmyComposition{Infantry: 50}}, defence)
+	eliteAttack := Resolve(AttackForce{Army: province.ArmyComposition{EliteInfantry: 50}}, defence)
 
-	if withCatapult.DefenceStrength >= noCatapult.DefenceStrength {
-		t.Errorf("catapults should reduce effective wall defence")
+	if eliteAttack.AttackStrength <= plainAttack.AttackStrength {
+		t.Errorf("elite infantry should have higher attack strength than plain infantry")
 	}
 }
 
@@ -74,17 +74,17 @@ func TestWallModifier(t *testing.T) {
 }
 
 func TestStrength(t *testing.T) {
-	// Elite ×2, cavalry ×3, infantry ×1.
-	// Naval: war_galley ×3, galley(ship) ×1; merchantman og catapult ger 0 i strid.
-	// Priests ger noll stridsstyrka.
-	a := province.ArmyComposition{Infantry: 10, EliteInfantry: 5, Cavalry: 4, Priest: 3, Ship: 2, Catapult: 7}
-	want := float64(10*1 + 5*2 + 4*3 + 2*1) // 34 (galley×1 ingår nu)
+	// Elite ×2, chariot ×3, infantry ×1.
+	// Naval: war_galley ×3, galley(ship) ×1; merchantman gives 0 in combat.
+	// Priests give zero field strength.
+	a := province.ArmyComposition{Infantry: 10, EliteInfantry: 5, Chariot: 4, Priest: 3, Ship: 2}
+	want := float64(10*1 + 5*2 + 4*3 + 2*1) // 34 (galley×1 included)
 	if got := Strength(a); got != want {
 		t.Errorf("Strength = %.0f, want %.0f", got, want)
 	}
-	// Catapults, priests, och merchantman ger 0 stridsstyrka.
-	if got := Strength(province.ArmyComposition{Priest: 9, Catapult: 9, Merchantman: 9}); got != 0 {
-		t.Errorf("präst/katapult/merchantman ska ge 0 stridsstyrka, got %.0f", got)
+	// Priests and merchantman give zero combat strength.
+	if got := Strength(province.ArmyComposition{Priest: 9, Merchantman: 9}); got != 0 {
+		t.Errorf("priest/merchantman should give 0 combat strength, got %.0f", got)
 	}
 }
 
@@ -98,19 +98,17 @@ func TestStrength_NavalOrder(t *testing.T) {
 	}
 }
 
-func TestCatapultEffect(t *testing.T) {
-	cases := []struct {
-		catapults, wall, want int
-	}{
-		{0, 3, 3},  // no catapults — walls intact
-		{1, 3, 3},  // one catapult — needs two per level
-		{2, 3, 2},  // two catapults reduce one level
-		{4, 3, 1},  // four catapults reduce two levels
-		{10, 1, 0}, // never below zero
-	}
-	for _, c := range cases {
-		if got := CatapultEffect(c.catapults, c.wall); got != c.want {
-			t.Errorf("CatapultEffect(%d, %d) = %d, want %d", c.catapults, c.wall, got, c.want)
-		}
+func TestWallModifierChariot(t *testing.T) {
+	// Chariot (×3) attacker vs walled defender: verify wall modifier is applied.
+	noWall := Resolve(
+		AttackForce{Army: province.ArmyComposition{Chariot: 10}},
+		DefenceForce{Army: province.ArmyComposition{Infantry: 20}, WallLevel: 0},
+	)
+	withWall := Resolve(
+		AttackForce{Army: province.ArmyComposition{Chariot: 10}},
+		DefenceForce{Army: province.ArmyComposition{Infantry: 20}, WallLevel: 3},
+	)
+	if withWall.DefenceStrength <= noWall.DefenceStrength {
+		t.Errorf("walls should increase defence strength against chariot attack")
 	}
 }

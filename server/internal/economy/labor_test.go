@@ -71,13 +71,14 @@ func TestLaborRates_Formula_ExactMatch(t *testing.T) {
 }
 
 // TestPopCosts_MirrorTrainingGo verifies that PopCosts constants are internally consistent.
+// cavalry and catapult were removed in migration 042 (replaced by chariot).
 func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	// These values must match province/training.go:UnitSpecs (G1: no import allowed).
 	// ship = galley (DB-kolumn). war_galley + merchantman = nya skepp-typer (mig 039).
+	// chariot replaced cavalry (mig 042); catapult removed.
 	expected := map[string]int{
 		"infantry":       5,
-		"cavalry":        8,
-		"catapult":       2,
+		"chariot":        8,
 		"priest":         3,
 		"ship":           10, // galley
 		"elite_infantry": 10,

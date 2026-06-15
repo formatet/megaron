@@ -160,13 +160,13 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the settlement (capital). Gold is the only column resource;
-	// kharis lives on player_world_records (set below).
+	// Create the settlement (capital). Starting population 2000 (Part B).
+	// Gold is the only column resource; kharis lives on player_world_records (set below).
 	var settlementID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO settlements
-		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true)
+		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,2000)
 		 RETURNING id`,
 		worldID, provinceID, req.ProvinceName, req.Culture, playerID,
 	).Scan(&settlementID)
@@ -347,13 +347,13 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if producibleCount == 0 {
 		producibleCount = 1 // floor: avoid division by zero
 	}
-	// labor_pool at join = population (no army yet). Starting population defaults to 200.
+	// labor_pool at join = population (no army yet). Starting population: 2000 (Part B).
 	var startPop int
 	_ = tx.QueryRow(r.Context(),
 		`SELECT population FROM settlements WHERE id = $1`, settlementID,
 	).Scan(&startPop)
 	if startPop < 1 {
-		startPop = 200
+		startPop = 2000
 	}
 	perGood := startPop / producibleCount
 	if perGood < 1 {

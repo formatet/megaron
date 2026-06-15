@@ -21,6 +21,7 @@ import (
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/timescale"
+	"github.com/poleia/server/internal/unit"
 )
 
 // ProvinceHandler handles HTTP requests for province endpoints.
@@ -144,29 +145,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			buildings = []buildingItem{}
 		}
 
-		// labor_pool = population − army pop-cost − transit pop-cost (variant B).
-		homePop := sett.Army.Infantry*economy.PopCosts["infantry"] +
-			sett.Army.Chariot*economy.PopCosts["chariot"] +
-			sett.Army.Priest*economy.PopCosts["priest"] +
-			sett.Army.Ship*economy.PopCosts["ship"] +
-			sett.Army.EliteInfantry*economy.PopCosts["elite_infantry"] +
-			sett.Army.WarGalley*economy.PopCosts["war_galley"] +
-			sett.Army.Merchantman*economy.PopCosts["merchantman"]
-		var transitPop int
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT COALESCE(SUM(
-			     m.infantry*$2+m.chariot*$3+m.priest*$4+m.ship*$5+m.elite_infantry*$6
-			     +m.war_galley*$7+m.merchantman*$8
-			 ),0)
-			 FROM marching_armies m
-			 JOIN settlements s ON s.province_id=m.origin_id
-			 WHERE s.id=$1 AND m.resolved=false`,
-			sett.ID,
-			economy.PopCosts["infantry"], economy.PopCosts["chariot"],
-			economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
-			economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
-		).Scan(&transitPop)
-		laborPool := sett.Population - homePop - transitPop
+		// Part B: labor_pool = population. Soldiers are extracted from population at
+		// recruit time, so army columns are no longer a labor drain.
+		laborPool := sett.Population
 		if laborPool < 0 {
 			laborPool = 0
 		}
@@ -1075,7 +1056,51 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+// recruitPerManCosts returns the resource cost per man for a given unit type.
+// Derived from Skalbeslut (2026-06-15): per-man = old UnitSpec cost / old PopCost.
+// Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.
+func recruitPerManCosts(unitType string) map[string]float64 {
+	switch unitType {
+	case "infantry":
+		return map[string]float64{"grain": 3}
+	case "elite_infantry":
+		return map[string]float64{"grain": 2.5, "bronze": 0.2}
+	case "chariot":
+		return map[string]float64{"grain": 3.75, "timber": 0.625}
+	case "ship": // galley; crew 20
+		return map[string]float64{"timber": 9}
+	case "war_galley": // crew 50
+		return map[string]float64{"cedar": 5, "bronze": 0.33}
+	case "merchantman": // crew 10
+		return map[string]float64{"timber": 8.75}
+	case "priest": // stationary; same cost structure
+		return map[string]float64{"grain": 5}
+	}
+	return nil
+}
+
+// recruitBatchDuration returns the training time for one batch of 10 men,
+// equal to the old per-unit duration from province/training.go.
+func recruitBatchDuration(unitType string) time.Duration {
+	spec, ok := province.UnitSpecs[unitType]
+	if !ok {
+		return time.Minute
+	}
+	return spec.Duration
+}
+
 // Recruit handles POST /worlds/:worldID/provinces/:provinceID/recruit.
+//
+// C2 semantics: soldiers are drafted from the population in batches of 10 men.
+// Request: {"unit_type": "infantry", "men": 30}  (men must be a multiple of 10, max 100).
+// Population is decremented immediately; resources are deducted up-front.
+// A forming unit is created (or grown) in the units table; one TrainComplete is
+// scheduled per batch-of-10. At size == 100 the unit becomes deployable (garrison).
+// Naval units (galley/war_galley/merchantman) skip the 100-forming gate: they are
+// deployable as soon as their crew is drafted (one vessel = one unit, size always 1).
+//
+// DUAL-WRITE: the old integer army column is also incremented so existing
+// combat/display code continues to work until C4/C8.
 func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -1095,19 +1120,28 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		UnitType string `json:"unit_type"`
-		Count    int    `json:"count"`
+		Men      int    `json:"men"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
-	if req.Count <= 0 || req.Count > 500 {
-		writeError(w, http.StatusBadRequest, "count must be 1-500")
+	if req.Men <= 0 || req.Men > 100 {
+		writeError(w, http.StatusBadRequest, "men must be 1–100")
+		return
+	}
+	if req.Men%10 != 0 {
+		writeError(w, http.StatusBadRequest, "men must be a multiple of 10")
 		return
 	}
 
-	spec, ok := province.UnitSpecs[req.UnitType]
-	if !ok {
+	spec, specOK := province.UnitSpecs[req.UnitType]
+	if !specOK {
+		writeError(w, http.StatusBadRequest, "unknown unit type")
+		return
+	}
+	perManCosts := recruitPerManCosts(req.UnitType)
+	if perManCosts == nil {
 		writeError(w, http.StatusBadRequest, "unknown unit type")
 		return
 	}
@@ -1129,7 +1163,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Training queue cap: max 2 pending jobs per settlement (mirrors build queue).
+	// Training queue cap: max 10 pending batches per settlement.
 	var pendingTraining int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT COUNT(*) FROM scheduled_events
@@ -1138,60 +1172,25 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		   AND (payload->>'settlement_id')::uuid = $2`,
 		worldID, settlementID,
 	).Scan(&pendingTraining)
-	if pendingTraining >= 2 {
-		writeError(w, http.StatusUnprocessableEntity, "training queue is full (max 2 concurrent jobs)")
+	batches := req.Men / 10
+	if pendingTraining+batches > 10 {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("training queue would overflow: %d pending + %d new > 10", pendingTraining, batches))
 		return
 	}
 
-	// Variant-B labor check: population is the demographic total (unchanged by
-	// recruit/disband). labor_pool = population − existing army pop-cost − transit pop-cost.
-	// Recruit reduces labor_pool (army takes workers from production); population stays.
-	totalPopCost := spec.PopCost * req.Count
-	if totalPopCost > 0 {
-		var population, infantry, chariot, priest, ship, eliteInfantry, warGalley, merchantman int
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT population, infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
-			 FROM settlements WHERE id = $1`,
-			settlementID,
-		).Scan(&population, &infantry, &chariot, &priest, &ship, &eliteInfantry, &warGalley, &merchantman)
-
-		homePop := infantry*economy.PopCosts["infantry"] +
-			chariot*economy.PopCosts["chariot"] +
-			priest*economy.PopCosts["priest"] +
-			ship*economy.PopCosts["ship"] +
-			eliteInfantry*economy.PopCosts["elite_infantry"] +
-			warGalley*economy.PopCosts["war_galley"] +
-			merchantman*economy.PopCosts["merchantman"]
-
-		var transitPop int
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT COALESCE(SUM(
-			     m.infantry       * $2 +
-			     m.chariot        * $3 +
-			     m.priest         * $4 +
-			     m.ship           * $5 +
-			     m.elite_infantry * $6 +
-			     m.war_galley     * $7 +
-			     m.merchantman    * $8
-			 ), 0)
-			 FROM marching_armies m
-			 JOIN settlements s ON s.province_id = m.origin_id
-			 WHERE s.id = $1 AND m.resolved = false`,
-			settlementID,
-			economy.PopCosts["infantry"], economy.PopCosts["chariot"],
-			economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
-			economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
-		).Scan(&transitPop)
-
-		laborPool := population - homePop - transitPop
-		if laborPool < 0 {
-			laborPool = 0
-		}
-		if laborPool-totalPopCost < 0 {
-			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("inte nog arbetskraft: behöver %d, ledig %d", totalPopCost, laborPool))
-			return
-		}
+	// C2: men are drawn from population at recruit time.
+	// Population floor: keep at 50 (collapse-by-drain is a future C-collapse gate).
+	const popFloor = 50
+	var population int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT population FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&population)
+	if population-req.Men < popFloor {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("insufficient population: need %d men but only %d available above the floor of %d",
+				req.Men, population-popFloor, popFloor))
+		return
 	}
 
 	// Check building requirements.
@@ -1240,14 +1239,14 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Scale per-unit costs to total for the batch.
-	totalCosts := make(map[string]float64, len(spec.Costs))
-	for k, v := range spec.Costs {
-		totalCosts[k] = v * float64(req.Count)
+	// Compute total resource costs: per-man cost × number of men.
+	totalCosts := make(map[string]float64, len(perManCosts))
+	for k, v := range perManCosts {
+		totalCosts[k] = v * float64(req.Men)
 	}
-	totalKharis := spec.CostKharis * float64(req.Count)
+	totalKharis := spec.CostKharis * float64(req.Men)
 
-	// Deduct all goods costs from settlement_goods atomically.
+	// Deduct resource costs.
 	if err := deductGoods(r.Context(), h.pool, settlementID, totalCosts); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
@@ -1258,7 +1257,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Deduct kharis from the player's world record pool.
+	// Deduct kharis (if any).
 	if totalKharis > 0 {
 		tag, err2 := h.pool.Exec(r.Context(),
 			`UPDATE player_world_records SET
@@ -1275,29 +1274,101 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Variant B: population is NOT decremented on recruit.
-	// Army units are "taken workers" — they remain in demographics but exit labor_pool.
-	// RecomputeProduction is called inside the train handler when units land in the army.
-	// Here we only need a recompute if we later add the army count synchronously,
-	// but since TrainComplete does the army col update, we skip it here.
-
-	completeAt := h.clk.Now().Add(timescale.Apply(spec.Duration * time.Duration(req.Count)))
-
-	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTrainComplete,
-		combat.TrainCompletePayload{
-			SettlementID: settlementID,
-			UnitType:     req.UnitType,
-			Count:        req.Count,
-		}, completeAt,
+	// C2: deduct population immediately — men leave civilian life to form up.
+	if _, err := h.pool.Exec(r.Context(),
+		`UPDATE settlements SET population = population - $1 WHERE id = $2`,
+		req.Men, settlementID,
 	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule training")
+		writeError(w, http.StatusInternalServerError, "could not draft men")
 		return
 	}
 
+	// Determine unit category and crew.
+	uType := unit.Type(req.UnitType)
+	cat := unit.CategoryOf(uType)
+	crew := unit.CrewFor(uType)
+
+	// Naval note: for naval units, "men" = crew of ONE vessel. Size stays at 1
+	// and the unit is immediately garrison-ready upon completion.
+	// Land units: size grows in batches of 10; deployable at 100.
+
+	// Create or grow the forming unit in the units table.
+	// Find an existing forming unit of same type in this settlement.
+	var existingUnitID *uuid.UUID
+	var existingSize int
+	row := h.pool.QueryRow(r.Context(),
+		`SELECT id, size FROM units
+		 WHERE settlement_id = $1 AND type = $2 AND status = 'forming'
+		 ORDER BY created_at LIMIT 1`,
+		settlementID, string(uType),
+	)
+	var eid uuid.UUID
+	if scanErr := row.Scan(&eid, &existingSize); scanErr == nil {
+		existingUnitID = &eid
+	}
+
+	var unitID uuid.UUID
+	if existingUnitID != nil {
+		// Reinforce existing forming unit.
+		if err := h.pool.QueryRow(r.Context(),
+			`UPDATE units SET size = size + $1, updated_at = now()
+			 WHERE id = $2
+			 RETURNING id`,
+			req.Men, *existingUnitID,
+		).Scan(&unitID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not grow forming unit")
+			return
+		}
+	} else {
+		// Create new forming unit.
+		initialStatus := "forming"
+		if cat == unit.CategoryNaval {
+			// Naval: directly garrison-ready (one vessel, no 100-man gate).
+			initialStatus = "garrison"
+		}
+		if err := h.pool.QueryRow(r.Context(),
+			`INSERT INTO units
+			   (world_id, owner_id, type, category, size, crew, status, settlement_id)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			 RETURNING id`,
+			worldID, playerID, string(uType), string(cat),
+			req.Men, crew, initialStatus, settlementID,
+		).Scan(&unitID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not create forming unit")
+			return
+		}
+	}
+
+	// Determine the final size after this recruitment.
+	finalSize := existingSize + req.Men
+
+	// Schedule one TrainComplete per batch-of-10, staggered.
+	batchDuration := recruitBatchDuration(req.UnitType)
+	now := h.clk.Now()
+	var lastCompleteAt time.Time
+	for i := 0; i < batches; i++ {
+		completeAt := now.Add(timescale.Apply(batchDuration * time.Duration(i+1)))
+		lastCompleteAt = completeAt
+		if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTrainComplete,
+			combat.TrainCompletePayload{
+				SettlementID: settlementID,
+				UnitType:     req.UnitType,
+				Count:        10, // always 10 per batch
+				UnitID:       unitID,
+			}, completeAt,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule training batch")
+			return
+		}
+	}
+
 	writeJSON(w, http.StatusCreated, map[string]any{
+		"unit_id":     unitID,
 		"unit_type":   req.UnitType,
-		"count":       req.Count,
-		"complete_at": completeAt,
+		"men":         req.Men,
+		"batches":     batches,
+		"complete_at": lastCompleteAt,
+		"forming_size": finalSize,
 	})
 }
 
@@ -1323,34 +1394,12 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 
 	now := h.clk.Now()
 
-	// Load labor pool for this settlement (pop − army pop-cost − transit pop-cost).
-	var population, sInfantry, sChariot, sPriest, sShip, sEliteInfantry, sWarGalley, sMerchantman int
+	// Part B: labor_pool = population. Soldiers are extracted from population at recruit time.
+	var population int
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT population, infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
-		 FROM settlements WHERE id = $1`, settlementID,
-	).Scan(&population, &sInfantry, &sChariot, &sPriest, &sShip, &sEliteInfantry, &sWarGalley, &sMerchantman)
-	homePop := sInfantry*economy.PopCosts["infantry"] +
-		sChariot*economy.PopCosts["chariot"] +
-		sPriest*economy.PopCosts["priest"] +
-		sShip*economy.PopCosts["ship"] +
-		sEliteInfantry*economy.PopCosts["elite_infantry"] +
-		sWarGalley*economy.PopCosts["war_galley"] +
-		sMerchantman*economy.PopCosts["merchantman"]
-	var transitPop int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COALESCE(SUM(
-		     m.infantry*$2+m.chariot*$3+m.priest*$4+m.ship*$5+m.elite_infantry*$6
-		     +m.war_galley*$7+m.merchantman*$8
-		 ),0)
-		 FROM marching_armies m
-		 JOIN settlements s ON s.province_id=m.origin_id
-		 WHERE s.id=$1 AND m.resolved=false`,
-		settlementID,
-		economy.PopCosts["infantry"], economy.PopCosts["chariot"],
-		economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
-		economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
-	).Scan(&transitPop)
-	laborPool := population - homePop - transitPop
+		`SELECT population FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&population)
+	laborPool := population
 	if laborPool < 0 {
 		laborPool = 0
 	}
@@ -2284,43 +2333,18 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Verify ownership and load labor_pool.
+	// Part B: labor_pool = population (soldiers drawn from pop at recruit time).
 	var settlementID uuid.UUID
-	var population, sInfantry, sChariot2, sPriest, sShip, sEliteInfantry, sWarGalley2, sMerchantman2 int
+	var population int
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT s.id, s.population, s.infantry, s.chariot, s.priest, s.ship, s.elite_infantry,
-		        s.war_galley, s.merchantman
-		 FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
+		`SELECT s.id, s.population FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
 		provinceID, worldID, playerID,
-	).Scan(&settlementID, &population, &sInfantry, &sChariot2, &sPriest, &sShip, &sEliteInfantry,
-		&sWarGalley2, &sMerchantman2); err != nil {
+	).Scan(&settlementID, &population); err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
 
-	homePop := sInfantry*economy.PopCosts["infantry"] +
-		sChariot2*economy.PopCosts["chariot"] +
-		sPriest*economy.PopCosts["priest"] +
-		sShip*economy.PopCosts["ship"] +
-		sEliteInfantry*economy.PopCosts["elite_infantry"] +
-		sWarGalley2*economy.PopCosts["war_galley"] +
-		sMerchantman2*economy.PopCosts["merchantman"]
-
-	var transitPop int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COALESCE(SUM(
-		     m.infantry*$2+m.chariot*$3+m.priest*$4+m.ship*$5+m.elite_infantry*$6
-		     +m.war_galley*$7+m.merchantman*$8
-		 ),0)
-		 FROM marching_armies m
-		 JOIN settlements s ON s.province_id=m.origin_id
-		 WHERE s.id=$1 AND m.resolved=false`,
-		settlementID,
-		economy.PopCosts["infantry"], economy.PopCosts["chariot"],
-		economy.PopCosts["priest"], economy.PopCosts["ship"], economy.PopCosts["elite_infantry"],
-		economy.PopCosts["war_galley"], economy.PopCosts["merchantman"],
-	).Scan(&transitPop)
-
-	laborPool := population - homePop - transitPop
+	laborPool := population
 	if laborPool < 0 {
 		laborPool = 0
 	}

@@ -284,7 +284,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements s SET
 		   invasions_today = 0,
-		   population = GREATEST(50, LEAST(5000,
+		   population = GREATEST(50, LEAST(15000,
 		     CASE WHEN COALESCE(
 		              (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
 		               FROM settlement_goods sg
@@ -307,7 +307,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
 		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
 		                             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)))
-		                     * GREATEST(0, 1.0 - s.population::float / 5000.0)
+		                     * GREATEST(0, 1.0 - s.population::float / 15000.0)
 		                 ))
 		            END
 		          -- starvation

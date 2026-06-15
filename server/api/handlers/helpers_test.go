@@ -35,9 +35,9 @@ func TestInsufficientGoodsErrorSingle(t *testing.T) {
 // list: agents that try to outpost/march with more troops than their garrison
 // holds need to see which units are short and by how much to scale down.
 func TestInsufficientUnitsMsg(t *testing.T) {
-	// Wants 30 infantry + 5 cavalry, only holds 10 infantry + 5 cavalry.
-	want := province.ArmyComposition{Infantry: 30, Cavalry: 5}
-	have := province.ArmyComposition{Infantry: 10, Cavalry: 5}
+	// Wants 30 infantry + 5 chariot, only holds 10 infantry + 5 chariot.
+	want := province.ArmyComposition{Infantry: 30, Chariot: 5}
+	have := province.ArmyComposition{Infantry: 10, Chariot: 5}
 	got := insufficientUnitsMsg(want, have)
 	exp := "insufficient units: infantry (need 30, have 10)"
 	if got != exp {
