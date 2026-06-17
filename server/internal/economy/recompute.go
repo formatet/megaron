@@ -200,8 +200,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			 VALUES ($1, $2, 0, $3, $4, now())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount  = LEAST(settlement_goods.cap,
-			                 settlement_goods.amount +
-			                 EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60 * settlement_goods.rate),
+			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)),
 			     rate    = $3,
 			     calc_at = now()`,
 			settlementID, gp.key, newRate, goodCap(gp.key),

@@ -862,8 +862,7 @@ func (h *ArrivalHandler) establishOutpost(ctx context.Context, tx pgx.Tx, origin
 			 VALUES ($1, $2, 0, $3, $4, now())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount  = LEAST(EXCLUDED.cap,
-			                 settlement_goods.amount +
-			                 EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60 * settlement_goods.rate),
+			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)),
 			     rate    = settlement_goods.rate + $3,
 			     calc_at = now()`,
 			originSettlementID, gr.key, gr.rate, goodCap(gr.key),
@@ -919,7 +918,7 @@ func (h *ArrivalHandler) teardownOutpost(ctx context.Context, tx pgx.Tx, provinc
 		// Settle-then-subtract: ledgered rate, not recomputed, so terrain-rule changes can't desync.
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
-			     amount  = LEAST(cap, amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate),
+			     amount  = LEAST(cap, settled(amount, rate, calc_at)),
 			     rate    = GREATEST(0, rate - $3),
 			     calc_at = now()
 			 WHERE settlement_id=$1 AND good_key=$2`,

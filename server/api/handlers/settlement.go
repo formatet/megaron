@@ -241,11 +241,10 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	if req.Silver > 0 {
 		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE settlements SET
-			   silver_amount = silver_amount
-			     + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate - $1,
+			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at) - $1,
 			   silver_calc_at = now()
 			 WHERE id = $2
-			   AND silver_amount + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate >= $1`,
+			   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
 			req.Silver, sourceID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -258,10 +257,10 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	if req.Grain > 0 {
 		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			   amount  = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+			   amount  = settled(amount, rate, calc_at) - $1,
 			   calc_at = now()
 			 WHERE settlement_id = $2 AND good_key = 'grain'
-			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+			   AND settled(amount, rate, calc_at) >= $1`,
 			req.Grain, sourceID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -588,7 +587,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 	var kharisNow float64
 	_ = tx.QueryRow(r.Context(),
-		`SELECT GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now()-kharis_calc_at))/60 * kharis_rate))
+		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
 		 FROM player_world_records WHERE player_id = $1 AND world_id = $2
 		 FOR UPDATE`,
 		playerID, worldID,
@@ -620,7 +619,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Deduct 5 grain as an offering (regardless of outcome).
 	_, err = tx.Exec(r.Context(),
 		`UPDATE settlement_goods SET
-		    amount  = GREATEST(0, amount + (EXTRACT(EPOCH FROM (now()-calc_at))/60 * rate) - 5),
+		    amount  = GREATEST(0, settled(amount, rate, calc_at) - 5),
 		    calc_at = now()
 		 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		settlementID,

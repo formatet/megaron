@@ -58,7 +58,7 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	if p.GoodKey == "silver" {
 		if _, err = tx.Exec(ctx,
 			`UPDATE settlements SET
-			     silver_amount = LEAST(silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate + $1, silver_cap),
+			     silver_amount = LEAST(settled(silver_amount, silver_rate, silver_calc_at) + $1, silver_cap),
 			     silver_calc_at = now()
 			 WHERE id = $2`,
 			p.Quantity, p.DestinationID,
@@ -71,8 +71,7 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 			 VALUES ($1, $2, $3, 0, 100, now())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount = LEAST(
-			         settlement_goods.amount
-			             + EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60*settlement_goods.rate
+			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
 			             + $3,
 			         settlement_goods.cap),
 			     calc_at = now()`,

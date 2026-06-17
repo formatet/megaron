@@ -298,8 +298,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 			 ) agg
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount = LEAST(EXCLUDED.cap,
-			         settlement_goods.amount +
-			         EXTRACT(EPOCH FROM (now() - settlement_goods.calc_at))/60 * settlement_goods.rate),
+			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)),
 			     rate = settlement_goods.rate + EXCLUDED.rate,
 			     calc_at = now()`,
 			settlementID, worldID, q, r2,

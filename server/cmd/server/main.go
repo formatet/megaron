@@ -31,6 +31,7 @@ import (
 	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/notify"
+	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/world"
 )
 
@@ -54,6 +55,13 @@ func main() {
 
 	if err := runMigrations(dbURL); err != nil {
 		slog.Error("run migrations", "err", err)
+		os.Exit(1)
+	}
+
+	// Sync TIME_SCALE into sim_config so the settled() SQL function scales correctly.
+	slog.Info("time scale", "factor", timescale.Factor)
+	if _, err := pool.Exec(ctx, "UPDATE sim_config SET factor = $1 WHERE id = 1", timescale.Factor); err != nil {
+		slog.Error("sync sim_config factor", "err", err)
 		os.Exit(1)
 	}
 

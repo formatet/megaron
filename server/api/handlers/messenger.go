@@ -295,7 +295,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		           SELECT 1 FROM settlement_goods sg
 		           WHERE sg.settlement_id = m.origin_id
 		             AND sg.good_key = m.trade_offer->>'want_good'
-		             AND sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		             AND settled(sg.amount, sg.rate, sg.calc_at)
 		                 >= (m.trade_offer->>'want_qty')::float
 		       )
 		   ))
@@ -474,7 +474,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	// Verify buyer (origin) has enough gold.
 	var buyerGold float64
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate FROM settlements WHERE id=$1`,
+		`SELECT settled(silver_amount, silver_rate, silver_calc_at) FROM settlements WHERE id=$1`,
 		buyerSettlementID,
 	).Scan(&buyerGold)
 	if buyerGold < offerGold {
@@ -503,10 +503,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	// Deduct want_qty goods from seller (destination).
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlement_goods SET
-		     amount = amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate - $1,
+		     amount = settled(amount, rate, calc_at) - $1,
 		     calc_at = now()
 		 WHERE settlement_id=$2 AND good_key=$3
-		   AND amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate >= $1`,
+		   AND settled(amount, rate, calc_at) >= $1`,
 		wantQty, destID, wantGood,
 	)
 	if err != nil || tag.RowsAffected() == 0 {
@@ -515,7 +515,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// instead of retrying forever). Mirrors the deductGoods shortfall style.
 		var have float64
 		_ = tx.QueryRow(r.Context(),
-			`SELECT COALESCE(amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate, 0)
+			`SELECT COALESCE(settled(amount, rate, calc_at), 0)
 			   FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2`,
 			destID, wantGood,
 		).Scan(&have)
@@ -527,7 +527,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	// Deduct offer_silver from buyer (leg 3 depart).
 	if _, err = tx.Exec(r.Context(),
 		`UPDATE settlements SET
-		     silver_amount = GREATEST(0, silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate - $1),
+		     silver_amount = GREATEST(0, settled(silver_amount, silver_rate, silver_calc_at) - $1),
 		     silver_calc_at = now()
 		 WHERE id=$2`,
 		offerGold, buyerSettlementID,

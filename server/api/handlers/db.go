@@ -128,7 +128,7 @@ func loadPlayerKharis(ctx context.Context, pool *pgxpool.Pool, playerID, worldID
 	var k KharisState
 	err := pool.QueryRow(ctx,
 		`SELECT
-		    GREATEST(0, kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)),
+		    GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at)),
 		    kharis_rate, kharis_cap, cult_level
 		 FROM player_world_records
 		 WHERE player_id = $1 AND world_id = $2`,

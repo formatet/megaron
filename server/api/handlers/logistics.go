@@ -59,7 +59,7 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 		// Silver into the kingdom treasury (kingdoms.silver_amount is the silver balance).
 		if _, err = tx.Exec(ctx,
 			`UPDATE kingdoms SET
-			     silver_amount  = silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate) + $1,
+			     silver_amount  = settled(silver_amount, silver_rate, silver_calc_at) + $1,
 			     silver_calc_at = now()
 			 WHERE id = $2`,
 			p.Quantity, p.Destination,
@@ -71,7 +71,7 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 			if _, err = tx.Exec(ctx,
 				`UPDATE settlements SET
 				     silver_amount  = LEAST(
-				         silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate + $1,
+				         settled(silver_amount, silver_rate, silver_calc_at) + $1,
 				         silver_cap),
 				     silver_calc_at = now()
 				 WHERE id = $2`,
@@ -85,8 +85,7 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 				 VALUES ($1, $2, $3, 0, 1000, now())
 				 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 				     amount  = LEAST(
-				         settlement_goods.amount
-				             + EXTRACT(EPOCH FROM (now()-settlement_goods.calc_at))/60*settlement_goods.rate
+				         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
 				             + $3,
 				         settlement_goods.cap),
 				     calc_at = now()`,

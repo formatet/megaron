@@ -108,7 +108,7 @@ func deductGoods(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID
 		}
 		var have float64
 		err := tx.QueryRow(ctx,
-			`SELECT amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate
+			`SELECT settled(amount, rate, calc_at)
 			   FROM settlement_goods
 			  WHERE settlement_id = $1 AND good_key = $2
 			  FOR UPDATE`,
@@ -135,7 +135,7 @@ func deductGoods(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID
 		}
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
-			     amount  = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+			     amount  = settled(amount, rate, calc_at) - $1,
 			     calc_at = now()
 			 WHERE settlement_id = $2 AND good_key = $3`,
 			qty, settlementID, key,

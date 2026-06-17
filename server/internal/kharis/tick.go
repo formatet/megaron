@@ -77,13 +77,13 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	// ── 1. Kharis maintenance: one tick per player_world_record ────────────
 	rows, err := h.pool.Query(ctx,
 		`SELECT pwr.player_id, s.id,
-		    GREATEST(0, pwr.kharis_amount + (EXTRACT(EPOCH FROM (now() - pwr.kharis_calc_at))/60 * pwr.kharis_rate)),
-		    GREATEST(0, s.silver_amount + (EXTRACT(EPOCH FROM (now() - s.silver_calc_at))/60 * s.silver_rate)),
-		    GREATEST(0, COALESCE(grain.amount + (EXTRACT(EPOCH FROM (now() - grain.calc_at))/60 * grain.rate), 0)),
+		    GREATEST(0, settled(pwr.kharis_amount, pwr.kharis_rate, pwr.kharis_calc_at)),
+		    GREATEST(0, settled(s.silver_amount, s.silver_rate, s.silver_calc_at)),
+		    GREATEST(0, COALESCE(settled(grain.amount, grain.rate, grain.calc_at), 0)),
 		    pwr.cult_level,
-		    GREATEST(0, COALESCE(wine.amount  + (EXTRACT(EPOCH FROM (now() - wine.calc_at))/60  * wine.rate),  0)),
-		    GREATEST(0, COALESCE(oil.amount   + (EXTRACT(EPOCH FROM (now() - oil.calc_at))/60   * oil.rate),   0)),
-		    GREATEST(0, COALESCE(livestock.amount + (EXTRACT(EPOCH FROM (now() - livestock.calc_at))/60 * livestock.rate), 0))
+		    GREATEST(0, COALESCE(settled(wine.amount, wine.rate, wine.calc_at), 0)),
+		    GREATEST(0, COALESCE(settled(oil.amount, oil.rate, oil.calc_at), 0)),
+		    GREATEST(0, COALESCE(settled(livestock.amount, livestock.rate, livestock.calc_at), 0))
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 LEFT JOIN settlement_goods grain     ON grain.settlement_id     = s.id AND grain.good_key     = 'grain'
@@ -153,7 +153,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		_, err := h.pool.Exec(ctx,
 			`UPDATE player_world_records SET
 			   kharis_amount  = GREATEST(0,
-			       (kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)) * $1),
+			       settled(kharis_amount, kharis_rate, kharis_calc_at) * $1),
 			   kharis_calc_at = now()
 			 WHERE player_id = $2 AND world_id = $3`,
 			1.0-decayOnMissed, w.playerID, worldID,
@@ -176,7 +176,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// Deduct silver from capital settlement, gain kharis in player_world_records.
 		_, err := h.pool.Exec(ctx,
 			`UPDATE settlements SET
-			   silver_amount  = silver_amount + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate) - $1,
+			   silver_amount  = settled(silver_amount, silver_rate, silver_calc_at) - $1,
 			   silver_calc_at = now()
 			 WHERE id = $2`,
 			spec.gold, w.settlementID,
@@ -187,7 +187,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		_, err = h.pool.Exec(ctx,
 			`UPDATE player_world_records SET
 			   kharis_amount  = LEAST(kharis_cap,
-			       kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) + $1),
+			       settled(kharis_amount, kharis_rate, kharis_calc_at) + $1),
 			   kharis_calc_at = now()
 			 WHERE player_id = $2 AND world_id = $3`,
 			spec.kharisGain, w.playerID, worldID,
@@ -205,7 +205,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 			}
 			_, _ = h.pool.Exec(ctx,
 				`UPDATE settlement_goods SET
-				   amount  = GREATEST(0, amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1),
+				   amount  = GREATEST(0, settled(amount, rate, calc_at) - $1),
 				   calc_at = now()
 				 WHERE settlement_id = $2 AND good_key = $3`,
 				qty, w.settlementID, goodKey,
@@ -229,7 +229,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	_, err := h.pool.Exec(ctx,
 		`UPDATE player_world_records SET
 		   kharis_amount  = GREATEST(0,
-		       (kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)) * $1),
+		       settled(kharis_amount, kharis_rate, kharis_calc_at) * $1),
 		   kharis_calc_at = now()
 		 WHERE player_id = $2 AND world_id = $3`,
 		1.0-decayOnMissed, w.playerID, worldID,
@@ -258,10 +258,10 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		   amount = GREATEST(0,
 		       CASE sg.good_key
 		           WHEN 'grain' THEN
-		               (sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) * 0.99
+		               settled(sg.amount, sg.rate, sg.calc_at) * 0.99
 		               - s.population * 0.5
 		           ELSE
-		               (sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) * 0.99
+		               settled(sg.amount, sg.rate, sg.calc_at) * 0.99
 		       END),
 		   calc_at = now()
 		 FROM settlements s
@@ -289,7 +289,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		   invasions_today = 0,
 		   population = GREATEST(101, LEAST(15000,
 		     CASE WHEN COALESCE(
-		              (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		              (SELECT settled(sg.amount, sg.rate, sg.calc_at)
 		               FROM settlement_goods sg
 		               WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
 		          THEN
@@ -386,7 +386,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
 		   AND (s.infantry > 0 OR s.chariot > 0)
 		   AND COALESCE(
-		           (SELECT sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		           (SELECT settled(sg.amount, sg.rate, sg.calc_at)
 		            FROM settlement_goods sg
 		            WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) <= 0
 		 RETURNING s.id, s.owner_id, s.name`,
@@ -440,7 +440,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			"harvest_failure",
 			"The fields lie fallow by divine will. Half your grain stores have rotted.",
 			`UPDATE settlement_goods SET
-			   amount  = GREATEST(0, (amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate) * 0.5),
+			   amount  = GREATEST(0, settled(amount, rate, calc_at) * 0.5),
 			   calc_at = now()
 			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		},
@@ -477,7 +477,7 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 			"harvest_blessing",
 			"The gods smile upon your fields. An abundant harvest fills your granaries.",
 			`UPDATE settlement_goods SET
-			   amount  = LEAST(cap, (amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate) * 1.25),
+			   amount  = LEAST(cap, settled(amount, rate, calc_at) * 1.25),
 			   calc_at = now()
 			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		},

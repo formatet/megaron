@@ -81,7 +81,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	if spec.SilverRate > 0 {
 		_, err = tx.Exec(ctx,
 			`UPDATE settlements SET
-			   silver_amount = silver_amount + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate),
+			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at),
 			   silver_rate = silver_rate + $1,
 			   silver_calc_at = now()
 			 WHERE id = $2`,
@@ -93,7 +93,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	if spec.KharisRate > 0 {
 		_, err = tx.Exec(ctx,
 			`UPDATE player_world_records SET
-			   kharis_amount = kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate),
+			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_at),
 			   kharis_rate = kharis_rate + $1,
 			   kharis_calc_at = now()
 			 WHERE player_id = (SELECT owner_id FROM settlements WHERE id = $2)

@@ -847,7 +847,7 @@ func (h *KingdomHandler) resolveElection(ctx context.Context, electionID, kingdo
 	_ = h.pool.QueryRow(ctx,
 		`SELECT COALESCE(CAST(
 		   GREATEST(0,
-		     kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate)
+		     settled(kharis_amount, kharis_rate, kharis_calc_at)
 		   ) AS INT
 		 ), 0)
 		 FROM settlements
@@ -1081,11 +1081,11 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlements SET
 		   silver_amount = GREATEST(0,
-		       silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate)
+		       settled(silver_amount, silver_rate, silver_calc_at)
 		   ) - $1,
 		   silver_calc_at = now()
 		 WHERE id = $2
-		   AND silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate) >= $1`,
+		   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
 		req.Amount, settlementID,
 	)
 	if err != nil {

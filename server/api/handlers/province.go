@@ -156,7 +156,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// Load current goods amounts for affordability checks.
 		goodsStock := make(map[string]float64)
 		gsrows, _ := h.pool.Query(r.Context(),
-			`SELECT good_key, amount + EXTRACT(EPOCH FROM (now()-calc_at))/60 * rate
+			`SELECT good_key, settled(amount, rate, calc_at)
 			 FROM settlement_goods WHERE settlement_id = $1`, sett.ID,
 		)
 		if gsrows != nil {
@@ -877,11 +877,10 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	if spec.CostSilver > 0 {
 		tag, err2 := h.pool.Exec(r.Context(),
 			`UPDATE settlements SET
-			   silver_amount = silver_amount
-			     + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate - $1,
+			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at) - $1,
 			   silver_calc_at = now()
 			 WHERE id = $2
-			   AND silver_amount + EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate >= $1`,
+			   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
 			spec.CostSilver, settlementID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -992,7 +991,7 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 	for goodKey, qty := range spec.Costs {
 		if _, err = tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			     amount  = LEAST(amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate + $1, cap),
+			     amount  = LEAST(settled(amount, rate, calc_at) + $1, cap),
 			     calc_at = now()
 			 WHERE settlement_id = $2 AND good_key = $3`,
 			qty, settlementID, goodKey,
@@ -1267,11 +1266,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if totalKharis > 0 {
 		tag, err2 := h.pool.Exec(r.Context(),
 			`UPDATE player_world_records SET
-			   kharis_amount = kharis_amount
-			     + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) - $1,
+			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_at) - $1,
 			   kharis_calc_at = now()
 			 WHERE player_id = $2 AND world_id = $3
-			   AND kharis_amount + (EXTRACT(EPOCH FROM (now() - kharis_calc_at))/60 * kharis_rate) >= $1`,
+			   AND settled(kharis_amount, kharis_rate, kharis_calc_at) >= $1`,
 			totalKharis, playerID, worldID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -1663,19 +1661,19 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	if isSilver {
 		deductTag, err = tx.Exec(r.Context(),
 			`UPDATE settlements SET
-			     silver_amount = GREATEST(0, silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate - $1),
+			     silver_amount = GREATEST(0, settled(silver_amount, silver_rate, silver_calc_at) - $1),
 			     silver_calc_at = now()
 			 WHERE id = $2
-			   AND silver_amount + EXTRACT(EPOCH FROM (now()-silver_calc_at))/60*silver_rate >= $1`,
+			   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
 			req.Quantity, originID,
 		)
 	} else {
 		deductTag, err = tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			     amount = amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate - $1,
+			     amount = settled(amount, rate, calc_at) - $1,
 			     calc_at = now()
 			 WHERE settlement_id = $2 AND good_key = $3
-			   AND amount + EXTRACT(EPOCH FROM (now()-calc_at))/60*rate >= $1`,
+			   AND settled(amount, rate, calc_at) >= $1`,
 			req.Quantity, originID, req.GoodKey,
 		)
 	}
@@ -1831,10 +1829,10 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 		needed := i.qty * req.Quantity
 		tag, err := tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			     amount = amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate - $1,
+			     amount = settled(amount, rate, calc_at) - $1,
 			     calc_at = now()
 			 WHERE settlement_id = $2 AND good_key = $3
-			   AND amount + EXTRACT(EPOCH FROM (now() - calc_at))/60 * rate >= $1`,
+			   AND settled(amount, rate, calc_at) >= $1`,
 			needed, settlementID, i.key,
 		)
 		if err != nil {
@@ -1854,8 +1852,7 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 		 VALUES ($1, $2, $3, 0, 100, now())
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = LEAST(
-		         settlement_goods.amount
-		             + EXTRACT(EPOCH FROM (now() - settlement_goods.calc_at))/60 * settlement_goods.rate
+		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
 		             + $3,
 		         settlement_goods.cap),
 		     calc_at = now()`,

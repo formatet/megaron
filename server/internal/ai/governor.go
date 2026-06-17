@@ -32,7 +32,7 @@ func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, 
 	var silver float64
 	var loyalty int
 	err = pool.QueryRow(ctx,
-		`SELECT silver_amount + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate), loyalty
+		`SELECT settled(silver_amount, silver_rate, silver_calc_at), loyalty
 		 FROM settlements WHERE id = $1`,
 		settlementID,
 	).Scan(&silver, &loyalty)
@@ -43,11 +43,10 @@ func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, 
 	if silver >= 20 && loyalty <= 2 {
 		_, err = pool.Exec(ctx,
 			`UPDATE settlements SET
-			   silver_amount = silver_amount
-			     + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate) - 10,
+			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at) - 10,
 			   silver_calc_at = now()
 			 WHERE id = $1 AND
-			   silver_amount + (EXTRACT(EPOCH FROM (now() - silver_calc_at))/60 * silver_rate) >= 10`,
+			   settled(silver_amount, silver_rate, silver_calc_at) >= 10`,
 			settlementID,
 		)
 		if err != nil {

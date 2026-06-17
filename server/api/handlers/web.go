@@ -259,7 +259,7 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 		           SELECT 1 FROM settlement_goods sg
 		           WHERE sg.settlement_id = m.origin_id
 		             AND sg.good_key = m.trade_offer->>'want_good'
-		             AND sg.amount + EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate
+		             AND settled(sg.amount, sg.rate, sg.calc_at)
 		                 >= (m.trade_offer->>'want_qty')::float
 		       )
 		   ))`,
@@ -720,7 +720,7 @@ func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
 			`SELECT count(*) FROM kingdom_members WHERE kingdom_id = $1`, kingdomID,
 		).Scan(&memberCount)
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT silver_amount + (EXTRACT(EPOCH FROM (now()-silver_calc_at))/60 * silver_rate)
+			`SELECT settled(silver_amount, silver_rate, silver_calc_at)
 			 FROM kingdoms WHERE id = $1`, kingdomID,
 		).Scan(&treasuryGold)
 		_ = h.pool.QueryRow(r.Context(),
@@ -786,7 +786,7 @@ func (h *WebHandler) MarketView(w http.ResponseWriter, r *http.Request) {
 		        s.owner_id = $2 AS own,
 		        sg.good_key, g.name,
 		        GREATEST(0, LEAST(sg.cap,
-		            sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate))),
+		            settled(sg.amount, sg.rate, sg.calc_at))),
 		        sg.cap, g.base_value
 		 FROM settlements s
 		 JOIN provinces p ON p.id = s.province_id
@@ -800,7 +800,7 @@ func (h *WebHandler) MarketView(w http.ResponseWriter, r *http.Request) {
 		           SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
 		       ))
 		   )
-		   AND (sg.amount + (EXTRACT(EPOCH FROM (now()-sg.calc_at))/60 * sg.rate) > 0
+		   AND (settled(sg.amount, sg.rate, sg.calc_at) > 0
 		        OR sg.rate > 0)
 		 ORDER BY s.name, sg.good_key`,
 		worldID, playerID,
