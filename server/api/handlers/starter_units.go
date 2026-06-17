@@ -55,9 +55,8 @@ func seedStarterUnits(
 			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100, dualCol: "infantry", dualVal: 100},
 		}
 	} else {
-		// Inlandsstad: 2 infanterienheter (2 × 100 man)
+		// Inlandsstad: 1 infanterienhet (100 man)
 		units = []spec{
-			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100, dualCol: "infantry", dualVal: 100},
 			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100, dualCol: "infantry", dualVal: 100},
 		}
 	}

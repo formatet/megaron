@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/combat"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
@@ -103,7 +104,7 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
 		  population, kharis_rate, kharis_calc_at)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,2000,$6,now())
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000,$6,now())
 		 RETURNING id`,
 		worldID, provinceID, name, culture, playerID, kharisRate,
 	).Scan(&settlementID); err != nil {
@@ -159,7 +160,31 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		return fmt.Errorf("update records: %w", err)
 	}
 
-	// C7: seed starter units (coast → galley + infantry; inland → 2× infantry).
+	// Seed equal labor weights over producible goods, then compute production rates.
+	var producibleCount int
+	_ = tx.QueryRow(ctx,
+		`SELECT COUNT(*) FROM settlement_goods sg WHERE sg.settlement_id = $1 AND sg.rate > 0`,
+		settlementID,
+	).Scan(&producibleCount)
+	if producibleCount < 1 {
+		producibleCount = 1
+	}
+	initialWeight := 1.0 / float64(producibleCount)
+	if _, err = tx.Exec(ctx,
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+		 SELECT sg.settlement_id, sg.good_key, $2
+		 FROM settlement_goods sg
+		 WHERE sg.settlement_id = $1 AND sg.rate > 0
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		settlementID, initialWeight,
+	); err != nil {
+		slog.Error("could not seed labor weights on respawn", "err", err)
+	}
+	if err = economy.RecomputeProduction(ctx, tx, settlementID); err != nil {
+		return fmt.Errorf("recompute production on respawn: %w", err)
+	}
+
+	// C7: seed starter units (coast → galley + infantry; inland → 1× infantry).
 	if err = seedStarterUnits(ctx, tx, eventStore, settlementID, playerID, worldID, q, r, terrainType); err != nil {
 		return fmt.Errorf("seed starter units: %w", err)
 	}

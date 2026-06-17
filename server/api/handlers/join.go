@@ -120,7 +120,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1
 		   AND p.id IS NULL
-		   AND mt.terrain IN ('plains','hills','river_valley')
+		   AND mt.terrain IN ('plains','hills','river_valley','coast')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM provinces p2
 		       WHERE p2.world_id = $1
@@ -162,13 +162,13 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create the settlement (capital). Starting population 2000 (Part B).
+	// Create the settlement (capital). Starting population 5000 (W1).
 	// Gold is the only column resource; kharis lives on player_world_records (set below).
 	var settlementID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,2000)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000)
 		 RETURNING id`,
 		worldID, provinceID, req.ProvinceName, req.Culture, playerID,
 	).Scan(&settlementID)
@@ -337,38 +337,26 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Seed initial citizen allocations over this settlement's producible goods.
-	// Producible = a good with rate > 0 from the terrain/deposit init above.
-	// Count producible goods first, then distribute labor_pool evenly.
+	// Seed initial labor weights over this settlement's producible goods.
+	// weight = 1/N equally distributed; RecomputeProduction converts to rates.
 	var producibleCount int
 	_ = tx.QueryRow(r.Context(),
 		`SELECT COUNT(*) FROM settlement_goods sg WHERE sg.settlement_id = $1 AND sg.rate > 0`,
 		settlementID,
 	).Scan(&producibleCount)
-	if producibleCount == 0 {
-		producibleCount = 1 // floor: avoid division by zero
+	if producibleCount < 1 {
+		producibleCount = 1
 	}
-	// labor_pool at join = population (no army yet). Starting population: 2000 (Part B).
-	var startPop int
-	_ = tx.QueryRow(r.Context(),
-		`SELECT population FROM settlements WHERE id = $1`, settlementID,
-	).Scan(&startPop)
-	if startPop < 1 {
-		startPop = 2000
-	}
-	perGood := startPop / producibleCount
-	if perGood < 1 {
-		perGood = 1
-	}
+	initialWeight := 1.0 / float64(producibleCount)
 	if _, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
 		 SELECT sg.settlement_id, sg.good_key, $2
 		 FROM settlement_goods sg
 		 WHERE sg.settlement_id = $1 AND sg.rate > 0
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		settlementID, perGood,
+		settlementID, initialWeight,
 	); err != nil {
-		slog.Error("could not seed labor citizens", "err", err)
+		slog.Error("could not seed labor weights", "err", err)
 		writeError(w, http.StatusInternalServerError, "could not seed labor")
 		return
 	}

@@ -278,7 +278,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	// Growth model (daily tick):
 	//   pop ≥ 100  → proportional: 0.5% base × food-variety multiplier × soft-cap factor.
 	//                food_variety = 1.0 (grain) + 0.1 per extra food type (fish/oil/wine/livestock) → max 1.4
-	//                soft_cap = max(0, 1 − pop/15000)  → growth → 0 near 15000
+	//                soft_cap = max(0, 1 − pop/30000)  → growth → 0 near 30000
 	//   starvation → −0.5% (pop ≥ 100), floor 101 (collapse fires for pop ≤ 100).
 	//
 	// C-collapse: the floor is 101, not 50. Any settlement that would drop below 101
@@ -287,7 +287,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlements s SET
 		   invasions_today = 0,
-		   population = GREATEST(101, LEAST(15000,
+		   population = GREATEST(101, LEAST(30000,
 		     CASE WHEN COALESCE(
 		              (SELECT settled(sg.amount, sg.rate, sg.calc_at)
 		               FROM settlement_goods sg
@@ -303,7 +303,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
 		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
 		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)))
-		                * GREATEST(0, 1.0 - s.population::float / 15000.0)
+		                * GREATEST(0, 1.0 - s.population::float / 30000.0)
 		            ))
 		          -- starvation: -0.5%, floor 101 so collapse logic fires below
 		          ELSE GREATEST(101, ROUND(s.population * 0.995))

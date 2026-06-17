@@ -1455,17 +1455,17 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		laborPool = 0
 	}
 
-	// Load citizen allocations.
+	// Load labor weights (weight ∈ [0,1] = fraction of labor_pool).
 	wrows, _ := h.pool.Query(r.Context(),
-		`SELECT good_key, citizens FROM settlement_labor WHERE settlement_id = $1`, settlementID,
+		`SELECT good_key, weight FROM settlement_labor WHERE settlement_id = $1`, settlementID,
 	)
-	laborCitizens := make(map[string]int)
+	laborWeights := make(map[string]float64)
 	if wrows != nil {
 		for wrows.Next() {
 			var k string
-			var c int
-			_ = wrows.Scan(&k, &c)
-			laborCitizens[k] = c
+			var w float64
+			_ = wrows.Scan(&k, &w)
+			laborWeights[k] = w
 		}
 		wrows.Close()
 	}
@@ -1513,12 +1513,12 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	// Sum allocated citizens for idle_citizens calculation.
-	var totalAllocated int
-	for _, c := range laborCitizens {
-		totalAllocated += c
+	// Compute idle citizens from unallocated weight fraction.
+	var totalWeight float64
+	for _, w := range laborWeights {
+		totalWeight += w
 	}
-	idleCitizens := laborPool - totalAllocated
+	idleCitizens := int(math.Round((1.0 - totalWeight) * float64(laborPool)))
 	if idleCitizens < 0 {
 		idleCitizens = 0
 	}
@@ -1565,7 +1565,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Rate:           rate,
 			Cap:            capV,
 			Price:          goodLocalPrice(baseValue, current, rate, capV),
-			Citizens:       laborCitizens[key],
+			Citizens:       int(math.Round(laborWeights[key] * float64(laborPool))),
 			YieldPerWorker: bp / economy.REF_LABOR,
 			Producible:     bp > 0,
 			LaborPool:      laborPool,
@@ -2469,7 +2469,8 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Clear existing allocations then upsert new ones.
+	// Clear existing allocations then upsert new ones as weights.
+	// weight = citizens / laborPool so production auto-scales with population growth.
 	if _, err := tx.Exec(r.Context(),
 		`DELETE FROM settlement_labor WHERE settlement_id = $1`, settlementID,
 	); err != nil {
@@ -2477,12 +2478,13 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for key, count := range filtered {
+		wt := float64(count) / float64(laborPool)
 		if _, err := tx.Exec(r.Context(),
-			`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
-			 VALUES ($1,$2,$3) ON CONFLICT (settlement_id, good_key) DO UPDATE SET citizens=$3`,
-			settlementID, key, count,
+			`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+			 VALUES ($1,$2,$3) ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight=$3`,
+			settlementID, key, wt,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not save citizens")
+			writeError(w, http.StatusInternalServerError, "could not save labor weight")
 			return
 		}
 	}

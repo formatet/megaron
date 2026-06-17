@@ -135,64 +135,58 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		return nil
 	}
 
-	// ── 4. Load citizen allocations for this settlement ───────────────────────
+	// ── 4. Load weight allocations for this settlement ────────────────────────
+	// weight ∈ [0.0,1.0] = fraction of labor_pool dedicated to this good.
+	// effective_workers = weight × labor_pool; rate = (base_potential/REF_LABOR) × effective_workers.
 	crows, err := tx.Query(ctx,
-		`SELECT good_key, citizens FROM settlement_labor WHERE settlement_id = $1`,
+		`SELECT good_key, weight FROM settlement_labor WHERE settlement_id = $1`,
 		settlementID,
 	)
 	if err != nil {
-		return fmt.Errorf("recompute: load citizens: %w", err)
+		return fmt.Errorf("recompute: load weights: %w", err)
 	}
-	citizens := make(map[string]int)
+	weights := make(map[string]float64)
 	for crows.Next() {
 		var key string
-		var c int
-		if err := crows.Scan(&key, &c); err != nil {
+		var w float64
+		if err := crows.Scan(&key, &w); err != nil {
 			crows.Close()
-			return fmt.Errorf("recompute: scan citizens: %w", err)
+			return fmt.Errorf("recompute: scan weight: %w", err)
 		}
-		citizens[key] = c
+		weights[key] = w
 	}
 	crows.Close()
 	if err := crows.Err(); err != nil {
-		return fmt.Errorf("recompute: citizens rows err: %w", err)
+		return fmt.Errorf("recompute: weight rows err: %w", err)
 	}
 
-	// Fyll citizens om tabellen är tom (första gången — t.ex. vid join).
-	// Om rader redan finns, rör dem INTE: en ny producerbar vara (t.ex. fisk efter hamn)
-	// visas i Goods-endpointen med citizens=0 och producible=true — Wanax tilldelar
-	// själv via LaborAlloc. Ingen automatisk tilldelning av 1 citizen (fisk-buggen).
-	if len(citizens) == 0 {
-		// Första gången: fördela labor_pool jämnt.
+	// Seed equal weights on first call (e.g. at join before explicit allocation).
+	// Existing rows are never auto-adjusted — a new producible good gets weight=0
+	// until the Wanax allocates via LaborAlloc.
+	if len(weights) == 0 {
 		n := len(potentials)
 		if n == 0 {
 			return nil
 		}
-		perGood := laborPool / n
-		if perGood < 1 {
-			perGood = 1
-		}
+		w := 1.0 / float64(n)
 		for _, gp := range potentials {
-			citizens[gp.key] = perGood
+			weights[gp.key] = w
 			if _, err := tx.Exec(ctx,
-				`INSERT INTO settlement_labor (settlement_id, good_key, citizens)
+				`INSERT INTO settlement_labor (settlement_id, good_key, weight)
 				 VALUES ($1, $2, $3)
 				 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-				settlementID, gp.key, perGood,
+				settlementID, gp.key, w,
 			); err != nil {
-				return fmt.Errorf("recompute: seed citizens %s: %w", gp.key, err)
+				return fmt.Errorf("recompute: seed weight %s: %w", gp.key, err)
 			}
 		}
 	}
-	// Nya producerbara varor (gp.key saknas i citizens) behandlas med 0 citizens —
-	// rate blir 0 tills Wanax allokerar via LaborAlloc. settlement_goods-raden
-	// skapas ändå (upsert nedan) med rate=0 så varan syns i Goods-endpointen.
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	for _, gp := range potentials {
-		c := citizens[gp.key] // 0 if good not allocated
+		effectiveWorkers := weights[gp.key] * float64(laborPool)
 		yieldPerWorker := gp.basePotential / REF_LABOR
-		newRate := yieldPerWorker * float64(c)
+		newRate := yieldPerWorker * effectiveWorkers
 
 		// Settle existing amount at old rate, then overwrite rate + calc_at.
 		if _, err := tx.Exec(ctx,
