@@ -862,8 +862,16 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Deduct all building costs from settlement_goods atomically.
-	if err := deductGoods(r.Context(), h.pool, settlementID, spec.Costs); err != nil {
+	// Deduct building costs (goods + silver) atomically in one transaction so a
+	// silver shortfall can't leave the goods already committed (partial-drain).
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not deduct resources")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	if err := deductGoods(r.Context(), tx, settlementID, spec.Costs); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
 			writeError(w, http.StatusUnprocessableEntity, insErr.Error())
@@ -875,7 +883,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct silver if required.
 	if spec.CostSilver > 0 {
-		tag, err2 := h.pool.Exec(r.Context(),
+		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE settlements SET
 			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at) - $1,
 			   silver_calc_at = now()
@@ -887,6 +895,11 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
 			return
 		}
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not deduct resources")
+		return
 	}
 
 	completeAt := h.clk.Now().Add(timescale.Apply(spec.Duration))
@@ -1251,8 +1264,16 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	}
 	totalKharis := spec.CostKharis * float64(req.Men)
 
-	// Deduct resource costs.
-	if err := deductGoods(r.Context(), h.pool, settlementID, totalCosts); err != nil {
+	// Deduct payment (goods + kharis + population) atomically in one transaction so
+	// a kharis/population shortfall can't leave goods already committed (partial-drain).
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not deduct resources")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	if err := deductGoods(r.Context(), tx, settlementID, totalCosts); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
 			writeError(w, http.StatusUnprocessableEntity, insErr.Error())
@@ -1264,7 +1285,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct kharis (if any).
 	if totalKharis > 0 {
-		tag, err2 := h.pool.Exec(r.Context(),
+		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE player_world_records SET
 			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_at) - $1,
 			   kharis_calc_at = now()
@@ -1280,11 +1301,16 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 
 	// C2: deduct population immediately — men leave civilian life to form up.
 	var popAfter int
-	if err := h.pool.QueryRow(r.Context(),
+	if err := tx.QueryRow(r.Context(),
 		`UPDATE settlements SET population = population - $1 WHERE id = $2
 		 RETURNING population`,
 		req.Men, settlementID,
 	).Scan(&popAfter); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not draft men")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not draft men")
 		return
 	}

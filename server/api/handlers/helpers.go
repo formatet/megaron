@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/province"
 )
 
@@ -88,18 +87,13 @@ func insufficientUnitsMsg(want, have province.ArmyComposition) string {
 	return "insufficient units: " + strings.Join(parts, ", ")
 }
 
-// deductGoods atomically deducts each good in costs from settlement_goods.
-// All goods are checked and deducted inside one transaction: if ANY good lacks
+// deductGoods checks and deducts each good in costs from settlement_goods, using
+// the caller's transaction tx. All goods are checked first: if ANY good lacks
 // stock, nothing is deducted and an *insufficientGoodsError (listing every
-// shortfall) is returned. This prevents the silent partial-drain that happened
-// when goods were deducted one-by-one on the pool and a later good failed.
-func deductGoods(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, costs map[string]float64) error {
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
+// shortfall) is returned. The caller owns commit/rollback, so goods can be drained
+// atomically together with silver/kharis/population — closing the partial-drain
+// where goods were committed before a later currency deduction failed.
+func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) error {
 	// Pass 1: lock the rows and check effective (lazy-evaluated) stock.
 	var short []goodShortfall
 	for key, qty := range costs {
@@ -128,7 +122,7 @@ func deductGoods(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID
 		return &insufficientGoodsError{Short: short}
 	}
 
-	// Pass 2: every good is affordable — deduct them all and commit.
+	// Pass 2: every good is affordable — deduct them all (caller commits).
 	for key, qty := range costs {
 		if qty <= 0 {
 			continue
@@ -143,5 +137,5 @@ func deductGoods(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID
 			return err
 		}
 	}
-	return tx.Commit(ctx)
+	return nil
 }
