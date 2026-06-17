@@ -49,7 +49,7 @@ Current status & backlog live in `megaron_todo.md` — do not restate them here 
 Go 1.22+ · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/websocket · golang-migrate · log/slog · HTMX + vanilla JS.
 
 How to build:
-- **Event sourcing:** append-only `events` table — never UPDATE game state directly; projection tables are computed views.
+- **Event sourcing (hybrid — faktiskt kontrakt):** append-only `events`-tabell som audit-/notify-logg. **Endast lojalitet är replay-härledd** (`settlement/loyalty.go` räknar om från events). Resurser, armé, silver, kharis, population muteras med direkta `UPDATE` på projektionstabellerna — `events` är *inte* källa till sanning för dem. Skriv nya events ändå (de driver notiser + audit), men förlita dig inte på att kunna rebuilda settlement-state ur loggen. Mutera atomärt i en TX.
 - **Lazy resource eval:** store `(amount, rate_per_minute, calc_at)`, compute on read.
 - **Timed event queue** in PostgreSQL (SKIP LOCKED, worker polls every 10s). WebSocket hub per world for push.
 
