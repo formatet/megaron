@@ -71,7 +71,7 @@ If a handler is not idempotent, mark it with a `// TODO: idempotent` comment and
 
 ### Events store outcomes, not intentions (Fas 2.3)
 Probabilistic rolls happen **once** in the handler; the **result** is what goes in the event payload.
-A `DivinePunishment` event must say `{"type":"cavalry_loss","amount":3}`, not `{"roll_pending":true}`.
+A `DivinePunishment` event must say `{"type":"chariot_loss","amount":3}`, not `{"roll_pending":true}`.
 No event may say "check if X happened" — it must say "X happened" or not exist.
 
 ### Event versioning (Fas 2.4)
@@ -111,7 +111,7 @@ iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 
 **Columns:**
 - Resources: `gold_amount`, `gold_rate`, `gold_cap`, `gold_calc_at` — NOT `*_last_calc_at`.
-- Army: bare names — `infantry`, `cavalry`, `catapult`, `priest`, `ship`, `elite_infantry`.
+- Army: bare names — `infantry`, `chariot`, `ship`, `elite_infantry`. (catapult borttagen mig 042; priest är ingen enhet längre — kult = tempel-labor.)
 
 **Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
 Settlement not Base · Kingdom not Alliance · Rite not Spell · March not Attack (verb) · Sea Peoples not Boss ·
@@ -138,9 +138,14 @@ inte valutan. Full svep = Sprint A.
   ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
   (recall etc.) also travel by messenger — command is never instant. `temenos_settlement.md`
 - **Kingdom** = Basileus + members; forming until 3 members; elections Sundays, 7-day lock. `temenos_kingdoms.md`
-- **Combat** deterministic, no dice; walls L0–3 = 1.0 / 1.25 / 1.5 / 1.75×; priests give 0 field strength. `internal/combat`
-- **Priests** — rituella enheter, ingen stridsstyrka. Kharis avgör rit-framgång (80/50/20/5% per mood).
-- **Silver** — betalningsmedel (inte guld). DB-nyckel: `gold`. UI-visning: shekel/mina/talang. Fysiskt transporterbart.
+- **Combat** = deterministisk effektiv styrka + bounded ~20% kharis-biased fortune (RNG rullas EN gång i handlern, utfall i event — Fas 2.3); walls L0–3 scale defense (multipliers in `internal/combat`); moral/rout — låg moral → enheten flyr, ej utplåning. `temenos_kharis.md`
+- **Kult** produceras av befolkning allokerad till tempel; **inga prästenheter** (varken byggbara eller starter); rit gateas av tempel + kharis (fyra mood-nivåer; siffrorna i `internal/kharis` / `temenos_kharis.md`).
+- **Silver** — betalningsmedel (inte guld). DB-nyckel: `gold`. UI-visning: shekel/mina/talang. Fysiskt transporterbart. **Silver-sänka = armé-upkeep (grain + silver), löpande; obetald → desertering/attrition.** Präst/kult ingen upkeep.
+- **Catchment = enda produktionskällan** — staden producerar bara från sin catchment (omgivande hexar brukas direkt, utan outpost); dynamiskt + lazy + deterministiskt. `temenos_terrain.md`
+- **Startstaden självförsörjande** (hård invariant) — första staden klarar basförsörjning utan handling; andra städer får svälta vid försummelse. Handel = för att avancera, ej överleva.
+- **Coast är ingen terräng** — egenskap = granne till hav (grannskaps-check); `coast_beach` borttagen ur enum.
+- **Labor = andel av pop** (weight-semantik), ej absoluta citizens → växande pop följer procenten automatiskt.
+- **Soldater = utvunnen pop** med löpande upkeep; övermobilisering tömmer staden (→ Collapse/warband).
 - **Collapse/Eras** — hidden prestige, risk from week 10, only survivable. `temenos_worldbuilding.md`
 - **Trade & budbärarlagret — tre skilda saker (håll isär):** (1) **meddelande** = fritext wanax↔wanax;
   (2) **handelsoffert** = strukturerat erbjudande, bilateralt samtycke, **FOW-gatead — bara mot städer du
