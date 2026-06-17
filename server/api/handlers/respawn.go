@@ -58,16 +58,17 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 	// Find an unclaimed tile.
 	var q, r int
 	var terrainType string
-	var copperDeposit, tinDeposit bool
-	// Prefer coast tiles; fall back to plains/hills if none available.
+	var copperDeposit, tinDeposit, tileCoastal bool
+	// Prefer coastal tiles (adjacent to sea); fall back to any habitable land.
 	err := pool.QueryRow(ctx,
-		`SELECT mt.q, mt.r, mt.terrain, mt.copper_deposit, mt.tin_deposit
+		`SELECT mt.q, mt.r, mt.terrain, mt.copper_deposit, mt.tin_deposit, COALESCE(mt.coastal, false)
 		 FROM map_tiles mt
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
-		 WHERE mt.world_id = $1 AND p.id IS NULL AND mt.terrain IN ('plains','coast','hills')
-		 ORDER BY (mt.terrain = 'coast') DESC, RANDOM() LIMIT 1`,
+		 WHERE mt.world_id = $1 AND p.id IS NULL
+		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
+		 ORDER BY mt.coastal DESC, RANDOM() LIMIT 1`,
 		worldID,
-	).Scan(&q, &r, &terrainType, &copperDeposit, &tinDeposit)
+	).Scan(&q, &r, &terrainType, &copperDeposit, &tinDeposit, &tileCoastal)
 	if err != nil {
 		return fmt.Errorf("no free tiles for respawn: %w", err)
 	}
@@ -90,9 +91,9 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 
 	var provinceID uuid.UUID
 	if err = tx.QueryRow(ctx,
-		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state, copper_deposit, tin_deposit)
-		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6) RETURNING id`,
-		worldID, q, r, terrainType, copperDeposit, tinDeposit,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state, copper_deposit, tin_deposit, coastal)
+		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7) RETURNING id`,
+		worldID, q, r, terrainType, copperDeposit, tinDeposit, tileCoastal,
 	).Scan(&provinceID); err != nil {
 		return fmt.Errorf("create province: %w", err)
 	}
@@ -184,8 +185,8 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		return fmt.Errorf("recompute production on respawn: %w", err)
 	}
 
-	// C7: seed starter units (coast → galley + infantry; inland → 1× infantry).
-	if err = seedStarterUnits(ctx, tx, eventStore, settlementID, playerID, worldID, q, r, terrainType); err != nil {
+	// C7: seed starter units (coastal → galley + infantry; inland → 1× infantry).
+	if err = seedStarterUnits(ctx, tx, eventStore, settlementID, playerID, worldID, q, r, tileCoastal); err != nil {
 		return fmt.Errorf("seed starter units: %w", err)
 	}
 

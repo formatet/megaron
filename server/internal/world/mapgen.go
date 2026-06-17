@@ -125,14 +125,8 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 	}
 
 	// ── 6. Coastlines ─────────────────────────────────────────────────
-	for q := 0; q < width; q++ {
-		for r := 0; r < height; r++ {
-			c := cell{q, r}
-			if grid[c] == TerrainPlains && countDeepSeaNeighbours(grid, c, width, height) >= 2 {
-				grid[c] = TerrainCoastBeach
-			}
-		}
-	}
+	// Deep-sea tiles adjacent to land become coastal_sea (shallow water).
+	// Land terrain is NOT changed — "coast" is a property (coastal flag), not a terrain type.
 	for q := 0; q < width; q++ {
 		for r := 0; r < height; r++ {
 			c := cell{q, r}
@@ -172,6 +166,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			tiles = append(tiles, MapTile{
 				Q: q, R: r,
 				Terrain:   terrain,
+				Coastal:   !isSea(terrain) && hasCoastalSeaNeighbour(grid, c, width, height),
 				Fertility: 0.2 + rng.Float64()*0.8,
 				Mineral:   0.1 + rng.Float64()*0.7,
 			})
@@ -376,7 +371,7 @@ func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 		if next.q < 0 || next.q >= width || next.r < 0 || next.r >= height {
 			break
 		}
-		if isSea(grid[next]) || grid[next] == TerrainCoastBeach {
+		if isSea(grid[next]) {
 			break
 		}
 		c = next
@@ -425,6 +420,16 @@ func countDeepSeaNeighbours(grid map[cell]Terrain, c cell, w, h int) int {
 func hasLandNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	for _, n := range hexNeighbours(c, w, h) {
 		if !isSea(grid[n]) {
+			return true
+		}
+	}
+	return false
+}
+
+// hasCoastalSeaNeighbour reports whether a land tile borders any coastal_sea tile.
+func hasCoastalSeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
+	for _, n := range hexNeighbours(c, w, h) {
+		if grid[n] == TerrainCoastalSea {
 			return true
 		}
 	}

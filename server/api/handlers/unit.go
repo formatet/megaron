@@ -395,19 +395,19 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Embark-gating: settlement must be coastal (coast_beach) or have a harbour.
-	var settlementTerrain string
+	// Embark-gating: settlement must be coastal or have a harbour.
+	var settlementCoastal bool
 	if err := h.pool.QueryRow(ctx,
-		`SELECT p.terrain_type
+		`SELECT COALESCE(p.coastal, false)
 		 FROM settlements s
 		 JOIN provinces p ON p.id = s.province_id
 		 WHERE s.id = $1`,
 		*ship.SettlementID,
-	).Scan(&settlementTerrain); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not check settlement terrain")
+	).Scan(&settlementCoastal); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check settlement coastal")
 		return
 	}
-	if settlementTerrain != "coast_beach" {
+	if !settlementCoastal {
 		var hasHarbour bool
 		_ = h.pool.QueryRow(ctx,
 			`SELECT EXISTS(
@@ -568,18 +568,18 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Disembark gating: must be coastal or harbour.
-	var settlementTerrain string
+	var disembarkCoastal bool
 	if err := h.pool.QueryRow(ctx,
-		`SELECT p.terrain_type
+		`SELECT COALESCE(p.coastal, false)
 		 FROM settlements s
 		 JOIN provinces p ON p.id = s.province_id
 		 WHERE s.id = $1`,
 		*ship.SettlementID,
-	).Scan(&settlementTerrain); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not check settlement terrain")
+	).Scan(&disembarkCoastal); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check settlement coastal")
 		return
 	}
-	if settlementTerrain != "coast_beach" {
+	if !disembarkCoastal {
 		var hasHarbour bool
 		_ = h.pool.QueryRow(ctx,
 			`SELECT EXISTS(

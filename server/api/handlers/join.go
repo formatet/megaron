@@ -105,7 +105,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// - prefer the landmass with fewer settlements to balance east/west
 	var q, r2 int
 	var terrainType string
-	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
+	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal bool
 	err = h.pool.QueryRow(r.Context(),
 		`WITH west_count AS (
 		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q < 20
@@ -115,12 +115,13 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 )
 		 SELECT mt.q, mt.r, mt.terrain,
 		        mt.copper_deposit, mt.tin_deposit,
-		        COALESCE(mt.silver_deposit, false), COALESCE(mt.cedar_deposit, false)
+		        COALESCE(mt.silver_deposit, false), COALESCE(mt.cedar_deposit, false),
+		        COALESCE(mt.coastal, false)
 		 FROM map_tiles mt
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1
 		   AND p.id IS NULL
-		   AND mt.terrain IN ('plains','hills','river_valley','coast')
+		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM provinces p2
 		       WHERE p2.world_id = $1
@@ -136,7 +137,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		   RANDOM()
 		 LIMIT 1`,
 		worldID,
-	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
+	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &tileCoastal)
 	if err != nil {
 		writeError(w, http.StatusConflict, "no available tiles — try again")
 		return
@@ -153,9 +154,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	var provinceID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
-		                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
-		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7, $8) RETURNING id`,
-		worldID, q, r2, terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
+		                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, coastal)
+		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7, $8, $9) RETURNING id`,
+		worldID, q, r2, terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal,
 	).Scan(&provinceID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create province")
@@ -370,7 +371,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// Coast tile (respawn path) → 1 galley + 1 infantry garrison.
 	// Inland tile (join path today) → 2 infantry garrisons.
 	// Men drawn from population are accounted for inside seedStarterUnits.
-	if err := seedStarterUnits(r.Context(), tx, h.eventStore, settlementID, playerID, worldID, q, r2, terrainType); err != nil {
+	if err := seedStarterUnits(r.Context(), tx, h.eventStore, settlementID, playerID, worldID, q, r2, tileCoastal); err != nil {
 		slog.Error("could not seed starter units", "err", err, "settlement", settlementID)
 		writeError(w, http.StatusInternalServerError, "could not seed starter units")
 		return

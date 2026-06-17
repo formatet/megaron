@@ -24,11 +24,6 @@ import (
 	"github.com/poleia/server/internal/unit"
 )
 
-// isCoastalTerrain returns true for terrain types that give naval starter units.
-func isCoastalTerrain(terrain string) bool {
-	return terrain == "coast" || terrain == "coastal_sea"
-}
-
 // seedStarterUnits inserts garrison units for the new settlement and adjusts population.
 func seedStarterUnits(
 	ctx context.Context,
@@ -36,7 +31,7 @@ func seedStarterUnits(
 	eventStore *events.Store,
 	settlementID, ownerID, worldID uuid.UUID,
 	q, r int,
-	terrain string,
+	coastal bool,
 ) error {
 	type spec struct {
 		utype  unit.Type
@@ -48,7 +43,7 @@ func seedStarterUnits(
 	}
 
 	var units []spec
-	if isCoastalTerrain(terrain) {
+	if coastal {
 		// Kuststad: galley (besättning 20) + 1 infanterienhet (100 man)
 		units = []spec{
 			{utype: unit.TypeGalley, size: 1, crew: 20, popCost: 20, dualCol: "ship", dualVal: 20},

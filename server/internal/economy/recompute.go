@@ -72,19 +72,20 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		laborPool = 0
 	}
 
-	// ── 2. Gather terrain/deposit info for this settlement ────────────────────
+	// ── 2. Gather terrain/deposit/coastal info for this settlement ───────────
 	var terrainType string
-	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
+	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, coastal bool
 	err = tx.QueryRow(ctx,
 		`SELECT prov.terrain_type,
 		        prov.copper_deposit, prov.tin_deposit,
 		        COALESCE(prov.silver_deposit, false),
-		        COALESCE(prov.cedar_deposit,  false)
+		        COALESCE(prov.cedar_deposit,  false),
+		        COALESCE(prov.coastal, false)
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.id = $1`,
 		settlementID,
-	).Scan(&terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
+	).Scan(&terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &coastal)
 	if err != nil {
 		return fmt.Errorf("recompute: load terrain: %w", err)
 	}
@@ -97,6 +98,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		 FROM production_rules pr
 		 WHERE
 		     (pr.terrain_type IS NULL OR pr.terrain_type = $1)
+		     AND (NOT pr.requires_coastal OR $7)
 		     AND (pr.building_type IS NULL OR EXISTS (
 		             SELECT 1 FROM buildings b
 		             WHERE b.settlement_id = $2 AND b.building_type = pr.building_type))
@@ -107,7 +109,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		          OR (pr.requires_deposit = 'cedar'  AND $6))
 		 GROUP BY pr.good_key`,
 		terrainType, settlementID,
-		copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
+		copperDeposit, tinDeposit, silverDeposit, cedarDeposit, coastal,
 	)
 	if err != nil {
 		return fmt.Errorf("recompute: query production rules: %w", err)

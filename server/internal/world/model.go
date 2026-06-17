@@ -102,7 +102,6 @@ const (
 	TerrainHills             Terrain = "hills"
 	TerrainMountainLimestone Terrain = "mountain_limestone"
 	TerrainMountainRed       Terrain = "mountain_red"
-	TerrainCoastBeach        Terrain = "coast_beach"
 	TerrainCoastalSea        Terrain = "coastal_sea"
 	TerrainDeepSea           Terrain = "deep_sea"
 	TerrainRiverValley       Terrain = "river_valley"
@@ -116,6 +115,7 @@ type MapTile struct {
 	Q             int
 	R             int
 	Terrain       Terrain
+	Coastal       bool // true = land tile adjacent to coastal_sea (coastal property, not terrain type)
 	Fertility     float64
 	Mineral       float64
 	CopperDeposit bool

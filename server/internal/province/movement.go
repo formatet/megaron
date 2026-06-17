@@ -6,8 +6,6 @@ func TerrainMoveHours(terrain string) float64 {
 	switch terrain {
 	case "plains", "river_valley":
 		return 0.75
-	case "coast_beach":
-		return 0.8
 	case "coastal_sea":
 		return 0.4 // fast sailing near land
 	case "deep_sea":

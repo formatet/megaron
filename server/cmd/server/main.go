@@ -514,10 +514,10 @@ func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) 
 	tiles := world.GenerateMap(id, seed, width, height)
 	for _, t := range tiles {
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO map_tiles (world_id, q, r, terrain, fertility, mineral,
+			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral,
 			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (world_id, q, r) DO NOTHING`,
-			id, t.Q, t.R, string(t.Terrain), t.Fertility, t.Mineral,
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) ON CONFLICT (world_id, q, r) DO NOTHING`,
+			id, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral,
 			t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit,
 		); err != nil {
 			return uuid.Nil, fmt.Errorf("store map tile: %w", err)

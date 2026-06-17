@@ -119,6 +119,7 @@ type Province struct {
 	WorldID        uuid.UUID
 	MapTile        MapPosition
 	TerrainType    string
+	Coastal        bool // true = land tile adjacent to coastal_sea
 	TerritoryState string // 'free' | 'controlled'
 	ControllerID   *uuid.UUID
 	CopperDeposit  bool

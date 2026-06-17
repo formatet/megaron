@@ -424,8 +424,8 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	isSea := dst.TerrainType == "coastal_sea" || dst.TerrainType == "deep_sea"
 	hasLandUnits := army.Infantry > 0 || army.Chariot > 0 || army.EliteInfantry > 0
 	if hasNaval {
-		// Embarkation: origin must be coast_beach OR have a harbour building.
-		if src.TerrainType != "coast_beach" {
+		// Embarkation: origin must be coastal OR have a harbour building.
+		if !src.Coastal {
 			var hasHarbour bool
 			_ = h.pool.QueryRow(r.Context(),
 				`SELECT EXISTS(
@@ -446,19 +446,19 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 				writeError(w, http.StatusUnprocessableEntity, "explore requires ships only — remove land units")
 				return
 			}
-			if dst.TerrainType != "coast_beach" && !isSea {
+			if !dst.Coastal && !isSea {
 				writeError(w, http.StatusUnprocessableEntity, "explore can only target coastal or sea provinces")
 				return
 			}
 		} else if hasLandUnits {
 			// Naval expedition: troops must land at a coast.
-			if dst.TerrainType != "coast_beach" {
+			if !dst.Coastal {
 				writeError(w, http.StatusUnprocessableEntity, "naval expedition must land at a coastal province")
 				return
 			}
 		} else {
 			// Ships only (not explore): coast or sea destinations allowed.
-			if dst.TerrainType != "coast_beach" && !isSea {
+			if !dst.Coastal && !isSea {
 				writeError(w, http.StatusUnprocessableEntity, "ships can only sail to coastal or sea provinces")
 				return
 			}

@@ -7,6 +7,7 @@ type ProductionRule struct {
 	GoodKey         string
 	RatePerMin      float64
 	RequiresDeposit *string // nil | "copper" | "tin"
+	RequiresCoastal bool    // true = only produced at coastal settlements
 }
 
 // LaborRates computes production rates using the citizen-allocation formula:
