@@ -347,7 +347,11 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 			if exists {
 				continue
 			}
-			if err := sched.EnqueueAfter(ctx, wid, tt, struct{}{}, 24*time.Hour); err != nil {
+			// Scale the first tick by TIME_SCALE to match the self-reschedule in each
+			// handler (e.g. kharis tick.go uses timescale.Apply). Without this a fresh
+			// world's daily ticks wouldn't fire for 24h *real* — 100 game-days at ×100 —
+			// leaving cult/upkeep/loyalty frozen until then.
+			if err := sched.EnqueueAfter(ctx, wid, tt, struct{}{}, timescale.Apply(24*time.Hour)); err != nil {
 				slog.Error("seed daily tick", "world", wid, "type", tt, "err", err)
 			}
 		}
