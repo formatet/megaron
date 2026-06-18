@@ -128,6 +128,18 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		         AND (ABS(mt.q - p2.map_q) + ABS(mt.r - p2.map_r) +
 		              ABS((mt.q + mt.r) - (p2.map_q + p2.map_r))) / 2 <= 4
 		   )
+		   -- Self-sufficiency invariant: the starter catchment (the 6 adjacent
+		   -- hexes RecomputeProduction reads) must contain at least one real
+		   -- grain tile (plains/river_valley) so the capital can feed a basic
+		   -- army without trade. hills grain (0.01/min) is a trickle, not food.
+		   AND EXISTS (
+		       SELECT 1 FROM map_tiles g
+		       WHERE g.world_id = mt.world_id
+		         AND g.terrain IN ('plains','river_valley')
+		         AND ((g.q = mt.q+1 AND g.r = mt.r  ) OR (g.q = mt.q-1 AND g.r = mt.r  ) OR
+		              (g.q = mt.q   AND g.r = mt.r+1) OR (g.q = mt.q   AND g.r = mt.r-1) OR
+		              (g.q = mt.q+1 AND g.r = mt.r-1) OR (g.q = mt.q-1 AND g.r = mt.r+1))
+		   )
 		 ORDER BY
 		   CASE
 		     WHEN (SELECT count FROM west_count) <= (SELECT count FROM east_count)

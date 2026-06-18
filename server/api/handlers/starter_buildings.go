@@ -31,11 +31,13 @@ func seedStarterBuildings(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID
 		return fmt.Errorf("seed starter buildings: %w", err)
 	}
 
-	// Market provides silver income; also seed a little starting silver so the
-	// trade subsystem can run from t=0 rather than waiting for market accrual.
+	// Market provides silver income; also seed starting silver so buy-offers can
+	// clear from t=0. Without this every Wanax sits at silver=0 and no buy-offer
+	// is ever generated (the trade contract only supports paying silver, not
+	// barter), so silver never enters circulation — a zero-liquidity deadlock.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
-		   silver_amount  = 200,
+		   silver_amount  = 300,
 		   silver_rate    = silver_rate + $1,
 		   silver_calc_at = now()
 		 WHERE id = $2`,
