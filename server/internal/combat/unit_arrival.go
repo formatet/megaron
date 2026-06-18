@@ -5,12 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/unit"
 )
 
@@ -47,11 +51,13 @@ type UnitArrivalHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	hub        Broadcaster
+	scheduler  *events.Scheduler
+	clk        clock.Clock
 }
 
 // NewUnitArrivalHandler creates a UnitArrivalHandler.
-func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster) *UnitArrivalHandler {
-	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub}
+func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster, scheduler *events.Scheduler, clk clock.Clock) *UnitArrivalHandler {
+	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk}
 }
 
 // Handle processes one ScheduledUnitArrival scheduled event.
@@ -78,11 +84,11 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	var u unitRow
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
-		        status, target_q, target_r, stance
+		        status, q, r, target_q, target_r, stance
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.targetQ, &u.targetR, &u.stance); err != nil {
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -102,7 +108,7 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		`SELECT s.id, s.owner_id, s.wall_level,
 		        s.infantry, s.chariot, s.elite_infantry,
 		        s.ship, s.war_galley, s.merchantman,
-		        p.id
+		        p.id, p.terrain_type
 		 FROM provinces p
 		 LEFT JOIN settlements s ON s.province_id = p.id
 		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
@@ -111,7 +117,7 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		&dest.wallLevel,
 		&dest.legacyInfantry, &dest.legacyChariot, &dest.legacyElite,
 		&dest.legacyShip, &dest.legacyWarGalley, &dest.legacyMerchantman,
-		&dest.provinceID)
+		&dest.provinceID, &dest.terrain)
 
 	hasSettlement := err == nil && dest.settlementID != nil
 
@@ -256,29 +262,30 @@ func (h *UnitArrivalHandler) resolveCombat(
 	}
 	defStr := defBase * wallMod
 
-	// ── Resolve ───────────────────────────────────────────────────────────────
-	var result CombatResult
-	if attStr > defStr {
-		result.Outcome = OutcomeAttackerWins
-		result.AttackerLosses = 0.1 + 0.3*(defStr/maxF(attStr, 1))
-		result.DefenderLosses = 0.5 + 0.4*(attStr/maxF(defStr, 1))
-		if result.DefenderLosses > 1.0 {
-			result.DefenderLosses = 1.0
-		}
-	} else {
-		result.Outcome = OutcomeDefenderWins
-		result.DefenderLosses = 0.05 + 0.15*(attStr/maxF(defStr, 1))
-		result.AttackerLosses = 0.4 + 0.5*(defStr/maxF(attStr, 1))
-		if result.AttackerLosses > 1.0 {
-			result.AttackerLosses = 1.0
-		}
+	// ── Fortune (W5): roll once, bias by kharis delta ─────────────────────────
+	var attackerKharis, defenderKharis float64
+	_ = tx.QueryRow(ctx,
+		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+		u.ownerID, worldID,
+	).Scan(&attackerKharis)
+	if dest.ownerID != nil {
+		_ = tx.QueryRow(ctx,
+			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+			*dest.ownerID, worldID,
+		).Scan(&defenderKharis)
 	}
-	result.AttackStrength = attStr
-	result.DefenceStrength = defStr
+	fortune := rollFortune(attackerKharis, defenderKharis)
+	attStrWithFortune := attStr * (1 + fortune)
+
+	// ── Resolve ───────────────────────────────────────────────────────────────
+	result := ResolveStrengths(attStrWithFortune, defStr, fortune)
 
 	slog.Info("unit combat resolved",
 		"unit", u.id, "q", destQ, "r", destR,
-		"att", attStr, "def", defStr, "outcome", result.Outcome)
+		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome,
+		"rounds", result.Rounds, "att_routed", result.AttackerRouted)
 
 	// ── Apply losses ──────────────────────────────────────────────────────────
 	attSizeBefore := u.size
@@ -290,7 +297,7 @@ func (h *UnitArrivalHandler) resolveCombat(
 			return err
 		}
 	} else {
-		if err := h.applyDefenderWins(ctx, tx, u, dest, attSizeAfter, attPopLost, result, worldID); err != nil {
+		if err := h.applyDefenderWins(ctx, tx, u, dest, attSizeAfter, attPopLost, result, destQ, destR, worldID); err != nil {
 			return err
 		}
 	}
@@ -308,12 +315,16 @@ func (h *UnitArrivalHandler) resolveCombat(
 
 	_, _ = h.eventStore.Append(ctx, dest.provinceID, events.StreamCombat, "UnitCombatResolved",
 		map[string]any{
-			"unit_id":     u.id,
-			"outcome":     string(result.Outcome),
-			"att":         attStr,
-			"def":         defStr,
-			"att_losses":  result.AttackerLosses,
-			"def_losses":  result.DefenderLosses,
+			"unit_id":        u.id,
+			"outcome":        string(result.Outcome),
+			"att":            attStr,
+			"fortune":        result.Fortune,
+			"def":            defStr,
+			"att_losses":     result.AttackerLosses,
+			"def_losses":     result.DefenderLosses,
+			"att_routed":     result.AttackerRouted,
+			"def_routed":     result.DefenderRouted,
+			"rounds":         result.Rounds,
 		}, worldID, nil)
 
 	return nil
@@ -492,14 +503,19 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 	return nil
 }
 
-// applyDefenderWins: arriving unit is beaten back, takes losses, may be destroyed.
+// applyDefenderWins: arriving unit is beaten back, takes losses.
+// If the unit routed (result.AttackerRouted), it survives with remaining men and
+// marches back to its origin. If destroyed (size after losses = 0), it is disbanded.
 func (h *UnitArrivalHandler) applyDefenderWins(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, dest destSettlement,
 	attSizeAfter, attPopLost int,
 	result CombatResult,
+	destQ, destR int,
 	worldID uuid.UUID,
 ) error {
+	colName := unitTypeToColumn(u.utype)
+
 	if attSizeAfter <= 0 {
 		// Unit destroyed: demographic loss, unit disbanded.
 		if _, err := tx.Exec(ctx,
@@ -507,10 +523,7 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		); err != nil {
 			return fmt.Errorf("disband zeroed attacker: %w", err)
 		}
-		// C6: if this ship had cargo, disband the cargo too.
 		h.disbandCargoIfPresent(ctx, tx, u, worldID)
-		// Dual-write: remove from legacy column at attacker's home.
-		colName := unitTypeToColumn(u.utype)
 		if colName != "" {
 			_, _ = tx.Exec(ctx,
 				fmt.Sprintf(`UPDATE settlements SET %s = GREATEST(0, %s - $1)
@@ -518,20 +531,65 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 				u.size, u.ownerID, worldID,
 			)
 		}
+	} else if result.AttackerRouted && h.scheduler != nil {
+		// Rout (W5): unit survives with remaining men, retreats to origin.
+		// origin = (u.q, u.r) — the hex the unit marched FROM (set by march handler).
+		dist := province.HexDistance(
+			province.MapPosition{Q: destQ, R: destR},
+			province.MapPosition{Q: u.q, R: u.r},
+		)
+		if dist < 1 {
+			dist = 1
+		}
+		var originTerrain string
+		_ = tx.QueryRow(ctx,
+			`SELECT terrain_type FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
+			worldID, u.q, u.r,
+		).Scan(&originTerrain)
+		if originTerrain == "" {
+			originTerrain = "plains"
+		}
+		moveHours := province.TerrainMoveHours(originTerrain) * float64(dist)
+		arrivesAt := h.clk.Now().Add(timescale.Apply(time.Duration(moveHours * float64(time.Hour))))
+
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET
+			   size        = $2,
+			   status      = 'marching',
+			   q           = $3,
+			   r           = $4,
+			   target_q    = $5,
+			   target_r    = $6,
+			   departs_at  = now(),
+			   arrives_at  = $7,
+			   settlement_id = NULL,
+			   updated_at  = now()
+			 WHERE id = $1`,
+			u.id, attSizeAfter, destQ, destR, u.q, u.r, arrivesAt,
+		); err != nil {
+			return fmt.Errorf("route unit back to origin: %w", err)
+		}
+		arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
+		if err := h.scheduler.EnqueueTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, arrivesAt); err != nil {
+			return fmt.Errorf("schedule rout return march: %w", err)
+		}
+		// Dual-write: reduce legacy column by deaths (not total, unit still alive).
+		if colName != "" && attPopLost > 0 {
+			_, _ = tx.Exec(ctx,
+				fmt.Sprintf(`UPDATE settlements SET %s = GREATEST(0, %s - $1)
+				 WHERE owner_id = $2 AND world_id = $3 AND is_capital = true`, colName, colName),
+				attPopLost, u.ownerID, worldID,
+			)
+		}
+		slog.Info("unit routed, returning to origin", "unit", u.id, "origin_q", u.q, "origin_r", u.r, "size", attSizeAfter)
 	} else {
-		// Attacker survives but reduced; they have already left their settlement, so
-		// they land at their current position (q/r) as positioned.
-		// For simplicity in C3/C4, a beaten attacker is disbanded (they never
-		// established a stable position). Return men to population.
-		// TODO C5: implement "retreat" to origin instead of disband.
+		// Beaten (not routed) — unit disbanded, treat as destroyed.
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, u.id,
 		); err != nil {
 			return fmt.Errorf("disband beaten attacker: %w", err)
 		}
-		// C6: if this ship had cargo, disband the cargo too.
 		h.disbandCargoIfPresent(ctx, tx, u, worldID)
-		colName := unitTypeToColumn(u.utype)
 		if colName != "" {
 			_, _ = tx.Exec(ctx,
 				fmt.Sprintf(`UPDATE settlements SET %s = GREATEST(0, %s - $1)
@@ -659,22 +717,25 @@ type unitRow struct {
 	crew        int
 	cargoUnitID *uuid.UUID
 	status      string
+	q           int    // origin hex (set by march handler; used for rout routing)
+	r           int
 	targetQ     *int
 	targetR     *int
 	stance      *string // C5: fortify/storm/sentry or nil
 }
 
 type destSettlement struct {
-	provinceID         uuid.UUID
-	settlementID       *uuid.UUID
-	ownerID            *uuid.UUID
-	wallLevel          int
-	legacyInfantry     int
-	legacyChariot      int
-	legacyElite        int
-	legacyShip         int
-	legacyWarGalley    int
-	legacyMerchantman  int
+	provinceID        uuid.UUID
+	settlementID      *uuid.UUID
+	ownerID           *uuid.UUID
+	wallLevel         int
+	terrain           string
+	legacyInfantry    int
+	legacyChariot     int
+	legacyElite       int
+	legacyShip        int
+	legacyWarGalley   int
+	legacyMerchantman int
 }
 
 // ── Strength helpers ───────────────────────────────────────────────────────────
@@ -722,10 +783,3 @@ func unitTypeToColumn(utype string) string {
 	return ""
 }
 
-// maxF is a local float64 max helper (avoids importing math for a single call).
-func maxF(a, b float64) float64 {
-	if a > b {
-		return a
-	}
-	return b
-}

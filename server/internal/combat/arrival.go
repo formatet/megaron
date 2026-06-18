@@ -199,9 +199,30 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		return fmt.Errorf("load defending settlement: %w", err)
 	}
 
+	// Load kharis for fortune roll (best-effort; failure → fortune = 0).
+	var attackerKharis, defenderKharis float64
+	{
+		var attOwnerID uuid.UUID
+		_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, march.OriginID).Scan(&attOwnerID)
+		_ = tx.QueryRow(ctx,
+			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+			attOwnerID, worldID,
+		).Scan(&attackerKharis)
+		if def.OwnerID != nil {
+			_ = tx.QueryRow(ctx,
+				`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+				 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+				*def.OwnerID, worldID,
+			).Scan(&defenderKharis)
+		}
+	}
+	fortune := rollFortune(attackerKharis, defenderKharis)
+
 	result := Resolve(
 		AttackForce{Army: effectiveArmy, SupportStrength: supportStr},
 		DefenceForce{Army: def.Army, WallLevel: def.Walls},
+		fortune,
 	)
 
 	// Scale defender losses down for repeated invasions on the same day.
@@ -985,6 +1006,10 @@ func (h *ArrivalHandler) recordEvent(ctx context.Context, streamID, worldID uuid
 		"defence_strength": result.DefenceStrength,
 		"attacker_losses":  result.AttackerLosses,
 		"defender_losses":  result.DefenderLosses,
+		"attacker_routed":  result.AttackerRouted,
+		"defender_routed":  result.DefenderRouted,
+		"fortune":          result.Fortune,
+		"rounds":           result.Rounds,
 		"march_id":         marchID,
 		"resolved_at":      h.clk.Now(),
 	}, worldID, nil)

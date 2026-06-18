@@ -133,7 +133,7 @@ func main() {
 	worker.Register(events.ScheduledRecallArrival, recallH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
-	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub)
+	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
