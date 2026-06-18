@@ -237,14 +237,14 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Deduct silver from source settlement column.
+	// Deduct silver from source settlement good row.
 	if req.Silver > 0 {
 		tag, err2 := tx.Exec(r.Context(),
-			`UPDATE settlements SET
-			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at) - $1,
-			   silver_calc_at = now()
-			 WHERE id = $2
-			   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
+			`UPDATE settlement_goods
+			   SET amount  = settled(amount, rate, calc_at) - $1,
+			       calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = 'silver'
+			   AND settled(amount, rate, calc_at) >= $1`,
 			req.Silver, sourceID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {

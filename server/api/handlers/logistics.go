@@ -67,32 +67,19 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 			return fmt.Errorf("credit treasury: %w", err)
 		}
 	case "settlement_good":
-		if p.GoodKey == "silver" {
-			if _, err = tx.Exec(ctx,
-				`UPDATE settlements SET
-				     silver_amount  = LEAST(
-				         settled(silver_amount, silver_rate, silver_calc_at) + $1,
-				         silver_cap),
-				     silver_calc_at = now()
-				 WHERE id = $2`,
-				p.Quantity, p.Destination,
-			); err != nil {
-				return fmt.Errorf("credit settlement silver: %w", err)
-			}
-		} else {
-			if _, err = tx.Exec(ctx,
-				`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-				 VALUES ($1, $2, $3, 0, 1000, now())
-				 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-				     amount  = LEAST(
-				         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
-				             + $3,
-				         settlement_goods.cap),
-				     calc_at = now()`,
-				p.Destination, p.GoodKey, p.Quantity,
-			); err != nil {
-				return fmt.Errorf("credit settlement good: %w", err)
-			}
+		// Silver is now a normal good in settlement_goods — no special case needed.
+		if _, err = tx.Exec(ctx,
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+			 VALUES ($1, $2, $3, 0, 1000, now())
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+			     amount  = LEAST(
+			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
+			             + $3,
+			         settlement_goods.cap),
+			     calc_at = now()`,
+			p.Destination, p.GoodKey, p.Quantity,
+		); err != nil {
+			return fmt.Errorf("credit settlement good: %w", err)
 		}
 	default:
 		return fmt.Errorf("unknown logistics kind: %q", p.Kind)

@@ -77,19 +77,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return fmt.Errorf("recompute production after build: %w", err)
 	}
 
-	// Apply silver and kharis rate bonuses to settlement columns.
-	if spec.SilverRate > 0 {
-		_, err = tx.Exec(ctx,
-			`UPDATE settlements SET
-			   silver_amount = LEAST(settled(silver_amount, silver_rate, silver_calc_at), silver_cap),
-			   silver_rate = silver_rate + $1,
-			   silver_calc_at = now()
-			 WHERE id = $2`,
-			spec.SilverRate, p.SettlementID)
-		if err != nil {
-			return fmt.Errorf("update silver rate: %w", err)
-		}
-	}
+	// Apply kharis rate bonus to settlement columns.
 	if spec.KharisRate > 0 {
 		_, err = tx.Exec(ctx,
 			`UPDATE player_world_records SET

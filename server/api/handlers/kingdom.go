@@ -1077,15 +1077,13 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	}
 	defer tx.Rollback(r.Context())
 
-	// Deduct from settlement (materialized lazy-eval), fail if insufficient.
+	// Deduct from settlement silver good row, fail if insufficient.
 	tag, err := tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		   silver_amount = GREATEST(0,
-		       settled(silver_amount, silver_rate, silver_calc_at)
-		   ) - $1,
-		   silver_calc_at = now()
-		 WHERE id = $2
-		   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
+		`UPDATE settlement_goods
+		   SET amount  = settled(amount, rate, calc_at) - $1,
+		       calc_at = now()
+		 WHERE settlement_id = $2 AND good_key = 'silver'
+		   AND settled(amount, rate, calc_at) >= $1`,
 		req.Amount, settlementID,
 	)
 	if err != nil {

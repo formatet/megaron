@@ -30,23 +30,29 @@ func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, 
 	// Passive governor: ensure loyalty doesn't fall below 2 by consuming a small
 	// silver reserve as a care action. If silver > 20, register a minimal gift event.
 	var silver float64
-	var loyalty int
-	err = pool.QueryRow(ctx,
-		`SELECT settled(silver_amount, silver_rate, silver_calc_at), loyalty
-		 FROM settlements WHERE id = $1`,
+	if err = pool.QueryRow(ctx,
+		`SELECT COALESCE(settled(amount, rate, calc_at), 0)
+		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
 		settlementID,
-	).Scan(&silver, &loyalty)
-	if err != nil {
+	).Scan(&silver); err != nil {
+		silver = 0
+	}
+
+	var loyalty int
+	if err = pool.QueryRow(ctx,
+		`SELECT loyalty FROM settlements WHERE id = $1`,
+		settlementID,
+	).Scan(&loyalty); err != nil {
 		return fmt.Errorf("load settlement resources: %w", err)
 	}
 
 	if silver >= 20 && loyalty <= 2 {
 		_, err = pool.Exec(ctx,
-			`UPDATE settlements SET
-			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at) - 10,
-			   silver_calc_at = now()
-			 WHERE id = $1 AND
-			   settled(silver_amount, silver_rate, silver_calc_at) >= 10`,
+			`UPDATE settlement_goods
+			   SET amount  = settled(amount, rate, calc_at) - 10,
+			       calc_at = now()
+			 WHERE settlement_id = $1 AND good_key = 'silver'
+			   AND settled(amount, rate, calc_at) >= 10`,
 			settlementID,
 		)
 		if err != nil {

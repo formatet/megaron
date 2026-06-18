@@ -886,11 +886,11 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	// Deduct silver if required.
 	if spec.CostSilver > 0 {
 		tag, err2 := tx.Exec(r.Context(),
-			`UPDATE settlements SET
-			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at) - $1,
-			   silver_calc_at = now()
-			 WHERE id = $2
-			   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
+			`UPDATE settlement_goods
+			   SET amount  = settled(amount, rate, calc_at) - $1,
+			       calc_at = now()
+			 WHERE settlement_id = $2 AND good_key = 'silver'
+			   AND settled(amount, rate, calc_at) >= $1`,
 			spec.CostSilver, settlementID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -1668,10 +1668,6 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get good weight. Special case: 'silver' draws from silver_amount column, not settlement_goods.
-	const silverKey = "silver"
-	isSilver := req.GoodKey == silverKey
-
 	var weight float64
 	if err := h.pool.QueryRow(r.Context(),
 		`SELECT COALESCE(weight, 2) FROM goods WHERE key = $1`,
@@ -1699,27 +1695,15 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Deduct from origin — silver draws from silver_amount column, others from settlement_goods.
-	var deductTag interface{ RowsAffected() int64 }
-	if isSilver {
-		deductTag, err = tx.Exec(r.Context(),
-			`UPDATE settlements SET
-			     silver_amount = GREATEST(0, settled(silver_amount, silver_rate, silver_calc_at) - $1),
-			     silver_calc_at = now()
-			 WHERE id = $2
-			   AND settled(silver_amount, silver_rate, silver_calc_at) >= $1`,
-			req.Quantity, originID,
-		)
-	} else {
-		deductTag, err = tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount = settled(amount, rate, calc_at) - $1,
-			     calc_at = now()
-			 WHERE settlement_id = $2 AND good_key = $3
-			   AND settled(amount, rate, calc_at) >= $1`,
-			req.Quantity, originID, req.GoodKey,
-		)
-	}
+	// Deduct from origin — silver is now a normal good in settlement_goods.
+	deductTag, err := tx.Exec(r.Context(),
+		`UPDATE settlement_goods SET
+		     amount = settled(amount, rate, calc_at) - $1,
+		     calc_at = now()
+		 WHERE settlement_id = $2 AND good_key = $3
+		   AND settled(amount, rate, calc_at) >= $1`,
+		req.Quantity, originID, req.GoodKey,
+	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct goods")
 		return

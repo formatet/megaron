@@ -471,10 +471,11 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify buyer (origin) has enough gold.
+	// Verify buyer (origin) has enough silver.
 	var buyerGold float64
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT settled(silver_amount, silver_rate, silver_calc_at) FROM settlements WHERE id=$1`,
+		`SELECT COALESCE(settled(amount, rate, calc_at), 0)
+		 FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
 		buyerSettlementID,
 	).Scan(&buyerGold)
 	if buyerGold < offerGold {
@@ -526,10 +527,11 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct offer_silver from buyer (leg 3 depart).
 	if _, err = tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		     silver_amount = GREATEST(0, settled(silver_amount, silver_rate, silver_calc_at) - $1),
-		     silver_calc_at = now()
-		 WHERE id=$2`,
+		`UPDATE settlement_goods
+		   SET amount  = settled(amount, rate, calc_at) - $1,
+		       calc_at = now()
+		 WHERE settlement_id=$2 AND good_key='silver'
+		   AND settled(amount, rate, calc_at) >= $1`,
 		offerGold, buyerSettlementID,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct silver from buyer")

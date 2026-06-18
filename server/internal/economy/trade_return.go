@@ -53,32 +53,19 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 	defer tx.Rollback(ctx)
 
-	// Credit goods to buyer.
-	// Credit goods (or silver) to buyer.
-	if p.GoodKey == "silver" {
-		if _, err = tx.Exec(ctx,
-			`UPDATE settlements SET
-			     silver_amount = LEAST(settled(silver_amount, silver_rate, silver_calc_at) + $1, silver_cap),
-			     silver_calc_at = now()
-			 WHERE id = $2`,
-			p.Quantity, p.DestinationID,
-		); err != nil {
-			return fmt.Errorf("credit silver to buyer: %w", err)
-		}
-	} else {
-		if _, err = tx.Exec(ctx,
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-			 VALUES ($1, $2, $3, 0, 100, now())
-			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-			     amount = LEAST(
-			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
-			             + $3,
-			         settlement_goods.cap),
-			     calc_at = now()`,
-			p.DestinationID, p.GoodKey, p.Quantity,
-		); err != nil {
-			return fmt.Errorf("credit goods to buyer: %w", err)
-		}
+	// Credit goods to buyer — silver is now a normal good in settlement_goods.
+	if _, err = tx.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		 VALUES ($1, $2, $3, 0, 100, now())
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+		     amount = LEAST(
+		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
+		             + $3,
+		         settlement_goods.cap),
+		     calc_at = now()`,
+		p.DestinationID, p.GoodKey, p.Quantity,
+	); err != nil {
+		return fmt.Errorf("credit goods to buyer: %w", err)
 	}
 
 	// Mark as returned.

@@ -38,7 +38,10 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		`SELECT id, world_id, province_id, name, culture_id, owner_id, kingdom_id,
 		        control_type, founded_from, governor_id, governor_is_ai,
 		        loyalty, loyalty_trend, wall_level, is_capital, state, population,
-		        silver_amount, silver_rate, silver_cap, silver_calc_at,
+		        COALESCE((SELECT settled(amount,rate,calc_at) FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
+		        COALESCE((SELECT rate FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
+		        COALESCE((SELECT cap  FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),1000),
+		        now(),
 		        infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman,
 		        updated_at
 		 FROM settlements WHERE id = $1 AND world_id = $2`,
