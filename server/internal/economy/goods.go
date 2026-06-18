@@ -8,24 +8,27 @@ import (
 
 // Good key constants — match the goods table.
 const (
-	GoodGrain  = "grain"
-	GoodFish   = "fish"
-	GoodTimber = "timber"
-	GoodCedar  = "cedar"
-	GoodCopper = "copper"
-	GoodTin    = "tin"
-	GoodWine   = "wine"
-	GoodOil    = "oil"
-	GoodHorses = "horses"
-	GoodBronze = "bronze"
+	GoodGrain   = "grain"
+	GoodFish    = "fish"
+	GoodTimber  = "timber"
+	GoodCedar   = "cedar"
+	GoodCopper  = "copper"
+	GoodTin     = "tin"
+	GoodWine    = "wine"
+	GoodOil     = "oil"
+	GoodHorses  = "horses"
+	GoodBronze  = "bronze"
+	GoodPurple  = "purple"
+	GoodPottery = "pottery"
+	GoodLuxury  = "luxury"
 )
 
 // Good is the catalog entry for a tradeable good.
 type Good struct {
 	Key       string
 	Name      string
-	Tier      string  // 'commodity' | 'manufactured'
-	Category  string  // 'staple' | 'strategic' | 'prestige' | 'bulk'
+	Tier      string // 'commodity' | 'manufactured'
+	Category  string // 'staple' | 'strategic' | 'prestige' | 'bulk'
 	BaseValue float64
 	Weight    float64 // transport cost multiplier
 }

@@ -223,6 +223,8 @@ func goodCap(key string) float64 {
 		return 1000
 	case "copper", "tin":
 		return 300
+	case "pottery":
+		return 500
 	default:
 		return 200
 	}
