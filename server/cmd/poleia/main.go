@@ -104,6 +104,8 @@ func main() {
 		allocateCmd(),
 		unitCmd(),
 		wantsCmd(),
+		riteCmd(),
+		godCmd(),
 	)
 
 	if err := root.Execute(); err != nil {

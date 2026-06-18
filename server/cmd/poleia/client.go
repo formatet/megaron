@@ -11,10 +11,11 @@ import (
 )
 
 type Client struct {
-	server string
-	token  string
-	http   *http.Client
-	cfg    *Config // for province self-heal after a respawn relocates the capital
+	server       string
+	token        string
+	http         *http.Client
+	cfg          *Config // for province self-heal after a respawn relocates the capital
+	extraHeaders map[string]string
 }
 
 func newClient(cfg *Config) *Client {
@@ -49,6 +50,9 @@ func (c *Client) doWithHeal(method, path string, body any, allowHeal bool) ([]by
 	}
 	if c.token != "" {
 		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
+	for k, v := range c.extraHeaders {
+		req.Header.Set(k, v)
 	}
 
 	resp, err := c.http.Do(req)

@@ -201,8 +201,11 @@ func main() {
 	jh := handlers.NewJoinHandler(pool, eventStore)
 	nh := handlers.NewNotificationsHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
+	godH := handlers.NewGodHandler(pool)
 
 	r.Route("/api/v1", func(r chi.Router) {
+		// Admin routes — no JWT, keyed by X-Admin-Key header.
+		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
 		// World endpoints — list/get/map are public; create requires auth.
 		r.Get("/worlds", wh.List)
 		r.With(auth.Middleware(authSvc)).Post("/worlds", wh.Create)

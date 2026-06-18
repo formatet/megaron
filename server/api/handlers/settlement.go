@@ -479,7 +479,7 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 }
 
 // Rite handles POST /worlds/:worldID/settlements/:settlementID/rite.
-// Performs a ritual intercession — requires ≥1 stationed Hiereus, costs 5 grain.
+// Performs a ritual intercession — requires a temple, costs 5 grain.
 // Success probability is determined by divine mood (kharis level):
 //
 //	Favorable (≥800 kharis): 80% · Indifferent (≥400): 50% · Suspicious (≥100): 20% · Wrathful: 5%
@@ -509,20 +509,24 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	var priestCount int
 	var alreadyFrenzied bool
 	err = tx.QueryRow(r.Context(),
-		`SELECT priest,
-		        (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
+		`SELECT (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
 		 FROM settlements
 		 WHERE id = $1 AND world_id = $2 AND owner_id = $3
 		 FOR UPDATE`,
 		settlementID, worldID, playerID,
-	).Scan(&priestCount, &alreadyFrenzied)
+	).Scan(&alreadyFrenzied)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
+
+	var hasTemple bool
+	_ = tx.QueryRow(r.Context(),
+		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
+		settlementID,
+	).Scan(&hasTemple)
 
 	var kharisNow float64
 	_ = tx.QueryRow(r.Context(),
@@ -532,8 +536,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		playerID, worldID,
 	).Scan(&kharisNow)
 
-	if priestCount < 1 {
-		writeError(w, http.StatusBadRequest, "a Hiereus must be stationed to perform a rite")
+	if !hasTemple {
+		writeError(w, http.StatusBadRequest, "a temple must be built to perform rites")
 		return
 	}
 	if alreadyFrenzied {

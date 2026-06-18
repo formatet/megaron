@@ -38,8 +38,8 @@ func resolveCapitalProvinceID(c *Client, name string) (string, error) {
 func kingdomFoundCmd() *cobra.Command {
 	var name string
 	cmd := &cobra.Command{
-		Use:   "kingdom-found",
-		Short: "Found a new kingdom (requires an active capital, not already in a kingdom)",
+		Use:     "kingdom-found",
+		Short:   "Found a new kingdom (requires an active capital, not already in a kingdom)",
 		Example: `  poleia kingdom-found --name "Achaean League"`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if name == "" {
@@ -70,8 +70,8 @@ func kingdomFoundCmd() *cobra.Command {
 func kingdomInviteCmd() *cobra.Command {
 	var kingdomID, target string
 	cmd := &cobra.Command{
-		Use:   "kingdom-invite",
-		Short: "Invite a Wanax (by settlement name) to your kingdom — basileus only",
+		Use:     "kingdom-invite",
+		Short:   "Invite a Wanax (by settlement name) to your kingdom — basileus only",
 		Example: `  poleia kingdom-invite --kingdom <id> --target Akhilles`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" || target == "" {
@@ -98,8 +98,8 @@ func kingdomInviteCmd() *cobra.Command {
 func kingdomJoinCmd() *cobra.Command {
 	var kingdomID string
 	cmd := &cobra.Command{
-		Use:   "kingdom-join",
-		Short: "Join a kingdom you've been invited to",
+		Use:     "kingdom-join",
+		Short:   "Join a kingdom you've been invited to",
 		Example: `  poleia kingdom-join --kingdom <id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" {
@@ -154,8 +154,8 @@ func kingdomInvitationsCmd() *cobra.Command {
 func kingdomCouncilCmd() *cobra.Command {
 	var kingdomID string
 	cmd := &cobra.Command{
-		Use:   "kingdom-council",
-		Short: "List a kingdom's council — members, roles, settlement strength",
+		Use:     "kingdom-council",
+		Short:   "List a kingdom's council — members, roles, settlement strength",
 		Example: `  poleia kingdom-council --kingdom <id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" {
@@ -189,8 +189,8 @@ func kingdomCouncilCmd() *cobra.Command {
 func kingdomElectionCmd() *cobra.Command {
 	var kingdomID string
 	cmd := &cobra.Command{
-		Use:   "kingdom-election",
-		Short: "Show the active election for a kingdom, if any",
+		Use:     "kingdom-election",
+		Short:   "Show the active election for a kingdom, if any",
 		Example: `  poleia kingdom-election --kingdom <id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" {
@@ -226,8 +226,8 @@ func kingdomElectionCmd() *cobra.Command {
 func kingdomElectionCallCmd() *cobra.Command {
 	var kingdomID, candidateID string
 	cmd := &cobra.Command{
-		Use:   "kingdom-election-call",
-		Short: "Call an election for basileus (Sundays only, kingdom must be unlocked)",
+		Use:     "kingdom-election-call",
+		Short:   "Call an election for basileus (Sundays only, kingdom must be unlocked)",
 		Example: `  poleia kingdom-election-call --kingdom <id> --candidate <player-id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" || candidateID == "" {
@@ -259,8 +259,8 @@ func kingdomElectionCallCmd() *cobra.Command {
 func kingdomVoteCmd() *cobra.Command {
 	var kingdomID, candidateID string
 	cmd := &cobra.Command{
-		Use:   "kingdom-vote",
-		Short: "Cast your vote in an open basileus election",
+		Use:     "kingdom-vote",
+		Short:   "Cast your vote in an open basileus election",
 		Example: `  poleia kingdom-vote --kingdom <id> --candidate <player-id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" || candidateID == "" {
@@ -297,8 +297,8 @@ func kingdomTreasuryDepositCmd() *cobra.Command {
 	var kingdomID string
 	var amount float64
 	cmd := &cobra.Command{
-		Use:   "kingdom-treasury-deposit",
-		Short: "Send silver from your capital to the kingdom treasury (travels as a caravan)",
+		Use:     "kingdom-treasury-deposit",
+		Short:   "Send silver from your capital to the kingdom treasury (travels as a caravan)",
 		Example: `  poleia kingdom-treasury-deposit --kingdom <id> --amount 100`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" || amount <= 0 {
@@ -331,8 +331,8 @@ func kingdomBorrowArmyCmd() *cobra.Command {
 	var kingdomID, lenderID string
 	var infantry, chariot, priest, ship int
 	cmd := &cobra.Command{
-		Use:   "kingdom-borrow-army",
-		Short: "Borrow units from a kingdom member's settlement — basileus only",
+		Use:     "kingdom-borrow-army",
+		Short:   "Borrow units from a kingdom member's settlement — basileus only",
 		Example: `  poleia kingdom-borrow-army --kingdom <id> --lender <player-id> --infantry 20`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if kingdomID == "" || lenderID == "" {

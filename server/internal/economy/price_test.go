@@ -44,8 +44,8 @@ func TestLocalPrice_NeverNegative(t *testing.T) {
 
 func TestLocalPrice_RateProjection(t *testing.T) {
 	// High positive rate should push projected stock up → lower price than zero-rate
-	priceWithRate := LocalPrice(1.0, 0, 1.0, 100)     // producing fast
-	priceZeroRate := LocalPrice(1.0, 0, 0, 100)        // not producing
+	priceWithRate := LocalPrice(1.0, 0, 1.0, 100) // producing fast
+	priceZeroRate := LocalPrice(1.0, 0, 0, 100)   // not producing
 	if priceWithRate >= priceZeroRate {
 		t.Errorf("positive rate should reduce shortage price: withRate=%.3f zeroRate=%.3f",
 			priceWithRate, priceZeroRate)

@@ -876,7 +876,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	if err := deductGoods(r.Context(), tx, settlementID, spec.Costs); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
-			writeError(w, http.StatusUnprocessableEntity, insErr.Error())
+			writeGoodsError(w, insErr)
 		} else {
 			writeError(w, http.StatusInternalServerError, "could not deduct resources")
 		}
@@ -1293,7 +1293,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if err := deductGoods(r.Context(), tx, settlementID, totalCosts); err != nil {
 		var insErr *insufficientGoodsError
 		if errors.As(err, &insErr) {
-			writeError(w, http.StatusUnprocessableEntity, insErr.Error())
+			writeGoodsError(w, insErr)
 		} else {
 			writeError(w, http.StatusInternalServerError, fmt.Sprintf("could not deduct resources: %v", err))
 		}

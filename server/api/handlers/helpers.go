@@ -26,6 +26,25 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 	writeJSON(w, status, map[string]string{"error": msg})
 }
 
+// writeGoodsError emits a structured 422 with error_code "insufficient_goods"
+// and a machine-parseable missing list so agents can act on the shortfall
+// instead of retrying against an opaque prose string.
+func writeGoodsError(w http.ResponseWriter, e *insufficientGoodsError) {
+	type missingEntry struct {
+		Good string  `json:"good"`
+		Need float64 `json:"need"`
+		Have float64 `json:"have"`
+	}
+	missing := make([]missingEntry, len(e.Short))
+	for i, s := range e.Short {
+		missing[i] = missingEntry{Good: s.Good, Need: s.Need, Have: s.Have}
+	}
+	writeJSON(w, http.StatusUnprocessableEntity, map[string]any{
+		"error":   "insufficient_goods",
+		"missing": missing,
+	})
+}
+
 // goodShortfall reports one good the settlement cannot afford.
 type goodShortfall struct {
 	Good string  `json:"good"`

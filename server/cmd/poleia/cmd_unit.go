@@ -228,8 +228,8 @@ func unitLoadCmd() *cobra.Command {
 	var shipID, landUnitID string
 
 	cmd := &cobra.Command{
-		Use:   "load",
-		Short: "Embark a land unit onto a ship",
+		Use:     "load",
+		Short:   "Embark a land unit onto a ship",
 		Example: `  poleia unit load --ship <ship-id> --unit <land-unit-id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -260,8 +260,8 @@ func unitUnloadCmd() *cobra.Command {
 	var shipID string
 
 	cmd := &cobra.Command{
-		Use:   "unload",
-		Short: "Disembark the cargo unit from a ship",
+		Use:     "unload",
+		Short:   "Disembark the cargo unit from a ship",
 		Example: `  poleia unit unload --ship <ship-id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)

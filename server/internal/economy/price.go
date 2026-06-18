@@ -3,9 +3,9 @@ package economy
 import "math"
 
 const (
-	referenceRatio    = 0.3  // comfortable stock = cap × referenceRatio
-	shortageMultipler = 2.0  // at stock=0: price = base × (1 + 2) = 3×base
-	surplusMultiplier = 0.5  // at stock=cap: price = base × (1 - 0.5) = 0.5×base
+	referenceRatio    = 0.3 // comfortable stock = cap × referenceRatio
+	shortageMultipler = 2.0 // at stock=0: price = base × (1 + 2) = 3×base
+	surplusMultiplier = 0.5 // at stock=cap: price = base × (1 - 0.5) = 0.5×base
 )
 
 // LocalPrice returns the local market price for one unit of a good.

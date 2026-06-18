@@ -118,8 +118,8 @@ func tradeCmd() *cobra.Command {
 	var destName string
 
 	cmd := &cobra.Command{
-		Use:   "trade",
-		Short: "Send a trade route to another settlement",
+		Use:     "trade",
+		Short:   "Send a trade route to another settlement",
 		Example: `  poleia trade --good grain --qty 10 --dest Korinth`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
