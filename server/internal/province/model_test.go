@@ -74,23 +74,24 @@ func TestBronzeChain_EliteInfantryRequirements(t *testing.T) {
 	}
 }
 
-// TestBronzeChain_BronzeWallRequiresBronze verifies that bronze_wall costs bronze.
-// The bronze wall is the defensive counterpart of elite_infantry — both are
-// only accessible once a city can produce/acquire bronze.
-func TestBronzeChain_BronzeWallRequiresBronze(t *testing.T) {
-	spec, ok := BuildingSpecs[BuildingBronzeWall]
+// TestWallLevel3RequiresBronze verifies that the top-tier wall (level 3, Bronze Wall)
+// costs bronze. This is the defensive counterpart of elite_infantry — both are
+// only accessible once a city can produce/acquire bronze. WallLevelSpecs[3] is the
+// canonical gate; the separate bronze_wall building type has been removed.
+func TestWallLevel3RequiresBronze(t *testing.T) {
+	spec, ok := WallLevelSpecs[3]
 	if !ok {
-		t.Fatal("bronze_wall must exist in BuildingSpecs")
+		t.Fatal("WallLevelSpecs[3] must exist")
 	}
 	bronze, ok := spec.Costs["bronze"]
 	if !ok {
-		t.Fatal("bronze_wall must consume bronze")
+		t.Fatal("WallLevelSpecs[3] must consume bronze")
 	}
 	if bronze <= 0 {
-		t.Errorf("bronze_wall bronze cost must be > 0, got %.1f", bronze)
+		t.Errorf("WallLevelSpecs[3] bronze cost must be > 0, got %.1f", bronze)
 	}
 	if spec.WallsBonus <= 0 {
-		t.Error("bronze_wall must grant a walls bonus")
+		t.Error("WallLevelSpecs[3] must grant a walls bonus")
 	}
 }
 

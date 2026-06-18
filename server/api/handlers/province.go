@@ -820,7 +820,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	// 2. No double-queueing the same building.
 	// 3. Cap concurrent queue at maxParallelBuilds.
 	const maxParallelBuilds = 2
-	upgradeable := map[string]bool{"wall": true, "tower": true, "bronze_wall": true}
+	upgradeable := map[string]bool{"wall": true}
 
 	if !upgradeable[req.BuildingType] {
 		var alreadyBuilt bool
@@ -841,6 +841,8 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "walls are already at maximum (level 3)")
 			return
 		}
+		// Use the cost/duration for the next wall level (1–3); wl is 0–2 here.
+		spec = province.WallLevelSpecs[wl+1]
 	}
 
 	var queueDepth int
@@ -975,6 +977,21 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		writeError(w, http.StatusInternalServerError, "unknown building type in queue")
 		return
+	}
+
+	// For wall, refund the cost of the queued level (wall_level+1 at time of cancel,
+	// since wall_level is only incremented on completion).
+	if buildingType == "wall" {
+		var wl int
+		_ = h.pool.QueryRow(r.Context(), `SELECT wall_level FROM settlements WHERE id = $1`, settlementID).Scan(&wl)
+		next := wl + 1
+		if next < 1 {
+			next = 1
+		}
+		if next > 3 {
+			next = 3
+		}
+		spec = province.WallLevelSpecs[next]
 	}
 
 	tx, err := h.pool.Begin(r.Context())
@@ -1414,11 +1431,11 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"unit_id":     unitID,
-		"unit_type":   req.UnitType,
-		"men":         req.Men,
-		"batches":     batches,
-		"complete_at": lastCompleteAt,
+		"unit_id":      unitID,
+		"unit_type":    req.UnitType,
+		"men":          req.Men,
+		"batches":      batches,
+		"complete_at":  lastCompleteAt,
 		"forming_size": finalSize,
 	})
 }
@@ -1946,20 +1963,20 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type marchItem struct {
-		ID            uuid.UUID  `json:"id"`
-		TargetID      uuid.UUID  `json:"target_id"`
-		Intent        string     `json:"intent"`
-		Infantry      int        `json:"infantry"`
-		Chariot       int        `json:"chariot"`
-		Priest        int        `json:"priest"`
-		Ship          int        `json:"ship"` // galley
-		EliteInfantry int        `json:"elite_infantry"`
-		WarGalley     int        `json:"war_galley"`
-		Merchantman   int        `json:"merchantman"`
-		Resolved      bool       `json:"resolved"`
-		ArrivesAt     time.Time  `json:"arrives_at"`
-		CombatReport  *string    `json:"combat_report,omitempty"`
-		Outgoing      bool       `json:"outgoing"`
+		ID            uuid.UUID `json:"id"`
+		TargetID      uuid.UUID `json:"target_id"`
+		Intent        string    `json:"intent"`
+		Infantry      int       `json:"infantry"`
+		Chariot       int       `json:"chariot"`
+		Priest        int       `json:"priest"`
+		Ship          int       `json:"ship"` // galley
+		EliteInfantry int       `json:"elite_infantry"`
+		WarGalley     int       `json:"war_galley"`
+		Merchantman   int       `json:"merchantman"`
+		Resolved      bool      `json:"resolved"`
+		ArrivesAt     time.Time `json:"arrives_at"`
+		CombatReport  *string   `json:"combat_report,omitempty"`
+		Outgoing      bool      `json:"outgoing"`
 	}
 	var result []marchItem
 	for rows.Next() {
@@ -2541,14 +2558,14 @@ func (h *ProvinceHandler) OutpostFlows(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type flowRow struct {
-		ProvinceID          uuid.UUID `json:"province_id"`
-		GoodKey             string    `json:"good_key"`
-		Rate                float64   `json:"rate_per_min"`
-		HomeSettlementID    uuid.UUID `json:"home_settlement_id"`
-		HomeSettlementName  string    `json:"home_settlement_name"`
-		Terrain             string    `json:"terrain"`
-		Q                   int       `json:"q"`
-		R                   int       `json:"r"`
+		ProvinceID         uuid.UUID `json:"province_id"`
+		GoodKey            string    `json:"good_key"`
+		Rate               float64   `json:"rate_per_min"`
+		HomeSettlementID   uuid.UUID `json:"home_settlement_id"`
+		HomeSettlementName string    `json:"home_settlement_name"`
+		Terrain            string    `json:"terrain"`
+		Q                  int       `json:"q"`
+		R                  int       `json:"r"`
 	}
 	var result []flowRow
 	for rows.Next() {

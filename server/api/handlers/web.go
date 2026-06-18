@@ -54,11 +54,10 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		"barracks":    "Barracks",
 		"market":      "Market",
 		"wall":        "Wall",
-		"tower":       "Tower",
 		"harbour":     "Harbour",
 		"foundry":     "Foundry",
 		"stable":      "Stable",
-		"bronze_wall": "Bronze Wall",
+		"temple":      "Temple",
 		"olive_press": "Olive Press",
 		"winery":      "Winery",
 	}

@@ -21,7 +21,7 @@ type UnitSpec struct {
 //
 // Skepp-taxonomi (migration 039):
 //   - "ship"        = galley — standardskepp, byggs med timber, kräver hamn.
-//                     DB-kolumn heter `ship` för bakåtkompatibilitet.
+//     DB-kolumn heter `ship` för bakåtkompatibilitet.
 //   - "war_galley"  = krigsgalär, elit. Kräver hamn + gjuteri + brons.
 //   - "merchantman" = handelsskepp, svag strid, byggs med timber, kräver hamn.
 //

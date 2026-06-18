@@ -16,7 +16,7 @@ const (
 	CultureKhemetiu Culture = "khemetiu"
 	CultureKnaani   Culture = "knaani"
 	CultureThrakes  Culture = "thrakes"
-	CultureMinoan Culture = "minoan"
+	CultureMinoan   Culture = "minoan"
 	CultureHatti    Culture = "hatti"
 )
 
@@ -102,11 +102,10 @@ const (
 	BuildingStonequarry BuildingType = "stonequarry"
 	BuildingMarket      BuildingType = "market"
 	BuildingWall        BuildingType = "wall"
-	BuildingTower       BuildingType = "tower"
 	BuildingHarbour     BuildingType = "harbour"
 	BuildingFoundry     BuildingType = "foundry"
 	BuildingStable      BuildingType = "stable"
-	BuildingBronzeWall  BuildingType = "bronze_wall"
+	BuildingTemple      BuildingType = "temple"
 	BuildingOlivePress  BuildingType = "olive_press"
 	BuildingWinery      BuildingType = "winery"
 )
@@ -119,7 +118,7 @@ type Province struct {
 	WorldID        uuid.UUID
 	MapTile        MapPosition
 	TerrainType    string
-	Coastal        bool // true = land tile adjacent to coastal_sea
+	Coastal        bool   // true = land tile adjacent to coastal_sea
 	TerritoryState string // 'free' | 'controlled'
 	ControllerID   *uuid.UUID
 	CopperDeposit  bool
