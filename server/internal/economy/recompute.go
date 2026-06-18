@@ -225,6 +225,8 @@ func goodCap(key string) float64 {
 		return 300
 	case "pottery":
 		return 500
+	case "cult":
+		return 2000
 	default:
 		return 200
 	}

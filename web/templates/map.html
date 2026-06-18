@@ -2344,14 +2344,10 @@ async function loadOikosKult() {
       '<div class="stat-row"><span class="sr-label">Mood</span>' +
       '<span class="sr-val" style="color:' + (MOOD_COLORS[mood] || 'inherit') + '">' + (MOOD_LABELS[mood] || mood) + '</span></div></div>';
 
-    // Cult level selector
+    // Cult level — derived from kharis (read-only; set by daily temple tick)
     html += '<div class="dsec"><div class="dsec-title">Cult level</div>' +
-      '<select id="ok-cult-sel" onchange="okSetCult(this.value)"' +
-      ' style="width:100%;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem">';
-    CULT_LEVELS.forEach(function(lvl) {
-      html += '<option value="' + lvl + '"' + (lvl === cultLevel ? ' selected' : '') + '>' + CULT_LABELS[lvl] + '</option>';
-    });
-    html += '</select></div>';
+      '<div class="stat-row"><span class="sr-label">Level</span>' +
+      '<span class="sr-val">' + (CULT_LABELS[cultLevel] || cultLevel) + '</span></div></div>';
 
     // Rite / battle frenzy
     html += '<div class="dsec"><div class="dsec-title">Rite — Battle Frenzy</div>';
@@ -2434,11 +2430,6 @@ async function okAssignRole(kingdomId) {
   }
 }
 
-async function okSetCult(level) {
-  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/cult-level',
-    { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({cult_level: level}) });
-  if (!r.ok) { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not set cult level'); }
-}
 
 async function okRite() {
   const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/rite', {method:'POST'});

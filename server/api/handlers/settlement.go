@@ -135,23 +135,23 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 	divineMood := kharisToMood(kharisNow)
 
 	resp := map[string]any{
-		"id":                   sett.ID,
-		"province_id":          sett.ProvinceID,
-		"name":                 sett.Name,
-		"culture":              sett.CultureID,
-		"control_type":         sett.ControlType,
-		"loyalty":              sett.Loyalty,
-		"loyalty_trend":        sett.LoyaltyTrend,
-		"wall_level":           sett.WallLevel,
-		"is_capital":           sett.IsCapital,
-		"state":                sett.State,
-		"population":           sett.Population,
-		"resources":            sett.Resources.Snapshot(now),
-		"army":                 sett.Army,
-		"cult_level":           cultLevel,
-		"divine_mood":          divineMood,
-		"battle_frenzy_until":  frenzyUntil,
-		"updated_at":           sett.UpdatedAt,
+		"id":                  sett.ID,
+		"province_id":         sett.ProvinceID,
+		"name":                sett.Name,
+		"culture":             sett.CultureID,
+		"control_type":        sett.ControlType,
+		"loyalty":             sett.Loyalty,
+		"loyalty_trend":       sett.LoyaltyTrend,
+		"wall_level":          sett.WallLevel,
+		"is_capital":          sett.IsCapital,
+		"state":               sett.State,
+		"population":          sett.Population,
+		"resources":           sett.Resources.Snapshot(now),
+		"army":                sett.Army,
+		"cult_level":          cultLevel,
+		"divine_mood":         divineMood,
+		"battle_frenzy_until": frenzyUntil,
+		"updated_at":          sett.UpdatedAt,
 	}
 
 	// Only owner sees the full resources; others see limited info.
@@ -478,73 +478,12 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// SetCultLevel handles PATCH /worlds/:worldID/settlements/:settlementID/cult-level.
-// The Wanax chooses how generously to maintain the temple.
-func (h *SettlementHandler) SetCultLevel(w http.ResponseWriter, r *http.Request) {
-	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid world ID")
-		return
-	}
-	settlementID, err := uuid.Parse(chi.URLParam(r, "settlementID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid settlement ID")
-		return
-	}
-	playerID, ok := auth.PlayerIDFromContext(r.Context())
-	if !ok {
-		writeError(w, http.StatusUnauthorized, "not authenticated")
-		return
-	}
-
-	var req struct {
-		CultLevel string `json:"cult_level"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid JSON")
-		return
-	}
-
-	valid := map[string]bool{
-		"forsummad": true, "enkel": true, "vardig": true,
-		"praktfull": true, "overdadig": true,
-	}
-	if !valid[req.CultLevel] {
-		writeError(w, http.StatusBadRequest, "cult_level must be forsummad, enkel, vardig, praktfull, or overdadig")
-		return
-	}
-
-	// Verify the player owns a settlement in this world before updating cult level.
-	var ownerCheck int
-	if err := h.pool.QueryRow(r.Context(),
-		`SELECT 1 FROM settlements WHERE id = $1 AND world_id = $2 AND owner_id = $3`,
-		settlementID, worldID, playerID,
-	).Scan(&ownerCheck); err != nil {
-		writeError(w, http.StatusForbidden, "not your settlement")
-		return
-	}
-
-	tag, err := h.pool.Exec(r.Context(),
-		`UPDATE player_world_records SET cult_level = $1
-		 WHERE player_id = $2 AND world_id = $3`,
-		req.CultLevel, playerID, worldID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not update cult level")
-		return
-	}
-	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusNotFound, "world record not found")
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{"cult_level": req.CultLevel})
-}
-
 // Rite handles POST /worlds/:worldID/settlements/:settlementID/rite.
 // Performs a ritual intercession — requires ≥1 stationed Hiereus, costs 5 grain.
 // Success probability is determined by divine mood (kharis level):
-//   Favorable (≥800 kharis): 80% · Indifferent (≥400): 50% · Suspicious (≥100): 20% · Wrathful: 5%
+//
+//	Favorable (≥800 kharis): 80% · Indifferent (≥400): 50% · Suspicious (≥100): 20% · Wrathful: 5%
+//
 // On success: sets battle_frenzy for 6 hours — attacker infantry fights at ×1.5 strength.
 func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
@@ -654,9 +593,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"chance":  chance,
 	}
 	if success {
-		resp["effect"]     = "battle_frenzy"
+		resp["effect"] = "battle_frenzy"
 		resp["expires_at"] = expiresAt
-		resp["message"]    = "The gods answer your plea — your warriors fight with divine fury!"
+		resp["message"] = "The gods answer your plea — your warriors fight with divine fury!"
 	} else {
 		resp["message"] = "The gods are silent. Your offering was received, but they do not answer."
 	}

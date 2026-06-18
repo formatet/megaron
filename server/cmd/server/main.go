@@ -19,7 +19,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
-	"github.com/redis/go-redis/v9"
 	"github.com/poleia/server/api/handlers"
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/chronicle"
@@ -33,6 +32,7 @@ import (
 	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/world"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -262,7 +262,6 @@ func main() {
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}/loyalty-log", sh.LoyaltyLog)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/return-army", sh.ReturnArmy)
-			r.Patch("/worlds/{worldID}/settlements/{settlementID}/cult-level", sh.SetCultLevel)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/rite", sh.Rite)
 			r.Get("/worlds/{worldID}/gossip", sh.Gossip)
 

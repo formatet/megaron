@@ -21,6 +21,7 @@ const (
 	GoodPurple  = "purple"
 	GoodPottery = "pottery"
 	GoodLuxury  = "luxury"
+	GoodCult    = "cult" // internal sacred good produced by temple labor → converted to kharis daily
 )
 
 // Good is the catalog entry for a tradeable good.
