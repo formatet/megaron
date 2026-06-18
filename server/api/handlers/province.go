@@ -1598,6 +1598,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		Cap            float64 `json:"cap"`
 		Price          float64 `json:"price"`
 		Citizens       int     `json:"citizens"`
+		Percent        float64 `json:"percent"`
 		YieldPerWorker float64 `json:"yield_per_worker"`
 		Producible     bool    `json:"producible"`
 		LaborPool      int     `json:"labor_pool"`
@@ -1631,6 +1632,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Cap:            capV,
 			Price:          goodLocalPrice(baseValue, current, rate, capV),
 			Citizens:       int(math.Round(laborWeights[key] * float64(laborPool))),
+			Percent:        laborWeights[key] * 100.0,
 			YieldPerWorker: bp / economy.REF_LABOR,
 			Producible:     bp > 0,
 			LaborPool:      laborPool,
@@ -2403,9 +2405,10 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 }
 
 // LaborAlloc handles PUT /worlds/:worldID/provinces/:provinceID/labor.
-// Body: {"citizens":{"timber":40,"grain":30,"stone":20}}
-// Each value is the number of citizens assigned to that good.
-// Σ citizens must not exceed labor_pool; non-producible goods are rejected with a 422.
+// Body: {"percent":{"timber":40,"grain":30,"silver":20}}
+// Each value is the share of the population assigned to that good (0–100).
+// Σ percent must not exceed 100; non-producible goods are rejected with a 422.
+// Stored as weight = percent/100, so production auto-scales with population.
 func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -2424,10 +2427,10 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Citizens map[string]int `json:"citizens"`
+		Percent map[string]float64 `json:"percent"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Citizens) == 0 {
-		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"citizens\":{...}}")
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Percent) == 0 {
+		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"percent\":{\"silver\":25,...}} (each value = % of population, Σ ≤ 100)")
 		return
 	}
 
@@ -2489,13 +2492,15 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	prows.Close()
 	sort.Strings(producibleKeys)
 
-	// Validate: only producible goods, non-negative values; compute total.
-	total := 0
-	filtered := make(map[string]int)
-	for key, count := range req.Citizens {
-		if count < 0 {
+	// Validate: only producible goods, percent ∈ [0,100]; Σ ≤ 100.
+	// Each value is a share of the population; weight = percent/100 is stored
+	// directly so production auto-scales as population grows or shrinks.
+	totalPct := 0.0
+	filtered := make(map[string]float64)
+	for key, pct := range req.Percent {
+		if pct < 0 || pct > 100 {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("citizens for %s must be non-negative", key))
+				fmt.Sprintf("percent for %s must be between 0 and 100", key))
 			return
 		}
 		if !producible[key] {
@@ -2504,19 +2509,19 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 					key, strings.Join(producibleKeys, ", ")))
 			return
 		}
-		if count > 0 {
-			filtered[key] = count
-			total += count
+		if pct > 0 {
+			filtered[key] = pct
+			totalPct += pct
 		}
 	}
-	if total == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "no valid producible goods in citizens")
+	if totalPct == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "no valid producible goods in percent")
 		return
 	}
-	if total > laborPool {
+	if totalPct > 100.0001 {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("insufficient labor: requested %d citizens but only %d are available (labor_pool=%d, %d already committed to army/buildings/marching) — lower the total or recall/disband units first",
-				total, laborPool, laborPool, population-laborPool))
+			fmt.Sprintf("labor over-allocated: percentages sum to %.1f%% but must not exceed 100%% — lower one or more shares",
+				totalPct))
 		return
 	}
 
@@ -2528,15 +2533,15 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback(r.Context())
 
 	// Clear existing allocations then upsert new ones as weights.
-	// weight = citizens / laborPool so production auto-scales with population growth.
+	// weight = percent/100 = fraction of population; production auto-scales with pop.
 	if _, err := tx.Exec(r.Context(),
 		`DELETE FROM settlement_labor WHERE settlement_id = $1`, settlementID,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not clear labor")
 		return
 	}
-	for key, count := range filtered {
-		wt := float64(count) / float64(laborPool)
+	for key, pct := range filtered {
+		wt := pct / 100.0
 		if _, err := tx.Exec(r.Context(),
 			`INSERT INTO settlement_labor (settlement_id, good_key, weight)
 			 VALUES ($1,$2,$3) ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight=$3`,
@@ -2557,11 +2562,19 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idleCitizens := laborPool - total
+	// Echo both the percent levers and the resulting citizen counts: the share
+	// auto-scales with population, but real output depends on the absolute number
+	// of citizens (more citizens produce more, even at a lower percent).
+	citizens := make(map[string]int, len(filtered))
+	for key, pct := range filtered {
+		citizens[key] = int(pct / 100.0 * float64(laborPool))
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"citizens":      filtered,
+		"percent":       filtered,
+		"citizens":      citizens,
+		"idle_percent":  100.0 - totalPct,
+		"idle_citizens": int((100.0 - totalPct) / 100.0 * float64(laborPool)),
 		"labor_pool":    laborPool,
-		"idle_citizens": idleCitizens,
 		"message":       "labor allocation updated and production recomputed",
 	})
 }

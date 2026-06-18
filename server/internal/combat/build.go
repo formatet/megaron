@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -100,6 +101,47 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 	}
 
+	// Determine goods this building just unlocked that are present in the
+	// catchment but have no labor assigned yet. RecomputeProduction does not
+	// auto-allocate, so a mine (or any production-gating building) produces 0
+	// until the Wanax allocates labor — surface that in the completion notice
+	// so a human or LLM agent knows the required second step.
+	var unlockedGoods []string
+	urows, uerr := tx.Query(ctx,
+		`SELECT DISTINCT pr.good_key
+		 FROM production_rules pr
+		 JOIN settlements s ON s.id = $1
+		 JOIN provinces prov ON prov.id = s.province_id
+		 JOIN map_tiles mt ON mt.world_id = s.world_id
+		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
+		     AND (
+		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
+		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
+		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
+		     )
+		 WHERE pr.building_type = $2
+		   AND (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
+		   AND (NOT pr.requires_coastal OR mt.coastal)
+		   AND (pr.requires_deposit IS NULL
+		        OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
+		        OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
+		        OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+		        OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit,  false)))
+		   AND NOT EXISTS (
+		        SELECT 1 FROM settlement_labor sl
+		        WHERE sl.settlement_id = s.id AND sl.good_key = pr.good_key AND sl.weight > 0)`,
+		p.SettlementID, p.BuildingType,
+	)
+	if uerr == nil {
+		for urows.Next() {
+			var k string
+			if urows.Scan(&k) == nil {
+				unlockedGoods = append(unlockedGoods, k)
+			}
+		}
+		urows.Close()
+	}
+
 	if _, err := tx.Exec(ctx, `DELETE FROM build_queue WHERE id = $1`, p.BuildQueueID); err != nil {
 		return fmt.Errorf("delete build queue entry: %w", err)
 	}
@@ -117,10 +159,19 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	if h.hub != nil {
 		var ownerID uuid.UUID
 		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID)
-		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "BuildComplete", 4, map[string]any{
+		body := map[string]any{
 			"settlement_id": p.SettlementID,
 			"building_type": p.BuildingType,
-		})
+		}
+		// Tell the player/agent that the new good needs a labor allocation,
+		// otherwise the building they just paid for produces nothing.
+		if len(unlockedGoods) > 0 {
+			body["unlocked_goods"] = unlockedGoods
+			body["hint"] = fmt.Sprintf(
+				"%s is built but idle. How large a share of the population should work it? Set a labor percent for %s to begin production.",
+				p.BuildingType, strings.Join(unlockedGoods, ", "))
+		}
+		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "BuildComplete", 4, body)
 	}
 	slog.Info("build complete", "settlement", p.SettlementID, "building", p.BuildingType)
 	return nil

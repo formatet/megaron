@@ -1376,21 +1376,21 @@ async function saveLaborAlloc(provinceID) {
   if (btn) btn.disabled = true;
   if (msg) msg.textContent = '';
   if (err) err.textContent = '';
-  const citizens = {};
+  const percent = {};
   document.querySelectorAll('.labor-input').forEach(inp => {
-    const v = parseInt(inp.value||0, 10)||0;
-    if (v > 0) citizens[inp.dataset.good] = v;
+    const v = parseFloat(inp.value||0)||0;
+    if (v > 0) percent[inp.dataset.good] = v;
   });
   const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${provinceID}/labor`, {
     method: 'PUT',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({citizens}),
+    body: JSON.stringify({percent}),
   });
   if (res.ok) {
     const data = await res.json();
     if (msg) msg.textContent = 'Saved!';
     const idleEl = document.getElementById('labor-idle-disp');
-    if (idleEl && data.idle_citizens != null) idleEl.textContent = data.idle_citizens;
+    if (idleEl && data.idle_percent != null) idleEl.textContent = Math.round(data.idle_percent);
     setTimeout(() => { if (msg) msg.textContent = ''; }, 2000);
   } else {
     const body = await res.json().catch(() => ({}));
@@ -2001,27 +2001,31 @@ async function loadDrawerContent(name) {
       } else {
         document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
       }
-      const prodGoods = goods.filter(g => g.key !== 'silver' && (g.producible || g.rate_per_min > 0));
+      const prodGoods = goods.filter(g => g.producible || g.rate_per_min > 0);
       if (prodGoods.length) {
         const lp = pd ? (pd.labor_pool || 0) : 0;
-        // Render each producible good as a row with a number input for citizens.
+        // Each good gets a percent input (share of population). The percent auto-scales
+        // with population; the resulting citizen count is shown so the player sees that
+        // more citizens produce more even at a lower percent.
         const rows = prodGoods.map(g => {
           const ypw = g.yield_per_worker ? g.yield_per_worker.toFixed(3) : '—';
+          const pct = g.percent != null ? Math.round(g.percent) : 0;
           return `<tr>
             <td style="padding:.2rem .3rem">${g.name||g.key}</td>
-            <td style="padding:.2rem .3rem;text-align:right">
+            <td style="padding:.2rem .3rem;text-align:right;white-space:nowrap">
               <input type="number" class="labor-input" data-good="${g.key}"
-                value="${g.citizens||0}" min="0" max="${lp}"
-                style="width:4.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">
+                value="${pct}" min="0" max="100" step="1"
+                style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
             </td>
-            <td style="padding:.2rem .3rem;color:var(--text-dim);font-size:.75rem">${ypw}/w</td>
+            <td style="padding:.2rem .3rem;text-align:right;color:var(--text-dim);font-size:.75rem"><span class="labor-cit" data-good="${g.key}">${g.citizens||0}</span> cit</td>
             <td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${(g.rate_per_min*1440).toFixed(1)}/day</td>
           </tr>`;
         }).join('');
+        const idlePct = Math.round((goods[0]||{}).idle_citizens!=null ? (100 - prodGoods.reduce((s,g)=>s+(g.percent||0),0)) : 0);
         document.getElementById('city-prod-sec').innerHTML =
-          `<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">Workers to assign (pool: <span id="labor-pool-disp">${lp}</span>, idle: <span id="labor-idle-disp">${(goods[0]||{}).idle_citizens||0}</span>)</div>
+          `<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">Share of population to assign (pop: <span id="labor-pool-disp">${lp}</span>, idle: <span id="labor-idle-disp">${Math.max(0,idlePct)}</span>%)</div>
            <table class="goods-mini" style="width:100%">
-             <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Workers</td><td>Rate/w</td><td>Prod/day</td></tr></thead>
+             <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Share</td><td style="text-align:right">Workers</td><td>Prod/day</td></tr></thead>
              <tbody>${rows}</tbody>
            </table>
            <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
@@ -2032,13 +2036,18 @@ async function loadDrawerContent(name) {
              <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe)"></span>
              <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span>
            </div>`;
-        // Live preview: update idle count as user edits inputs.
+        // Live preview: recompute resulting citizen counts + idle percent as the user edits.
         document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(inp => {
           inp.addEventListener('input', () => {
-            let total = 0;
-            document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(i => { total += parseInt(i.value||0,10)||0; });
+            let totalPct = 0;
+            document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(i => {
+              const p = parseFloat(i.value||0)||0;
+              totalPct += p;
+              const cit = document.querySelector(`.labor-cit[data-good="${i.dataset.good}"]`);
+              if (cit) cit.textContent = Math.round(p/100*lp);
+            });
             const idleEl = document.getElementById('labor-idle-disp');
-            if (idleEl) idleEl.textContent = Math.max(0, lp - total);
+            if (idleEl) idleEl.textContent = Math.max(0, Math.round(100 - totalPct));
           });
         });
       } else {

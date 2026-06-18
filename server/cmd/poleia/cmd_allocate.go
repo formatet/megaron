@@ -9,40 +9,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// allocateCmd sends a PUT .../labor request to set citizen allocations per good.
-// Citizens are provided as --<good> <antal> flags (positive integers, not normalized).
+// allocateCmd sends a PUT .../labor request to set labor allocations per good.
+// Allocations are provided as --<good> <percent> flags (0–100, share of population).
+// Σ percent must not exceed 100; the stored weight auto-scales with population.
 func allocateCmd() *cobra.Command {
 	knownGoods := []string{
 		"grain", "timber", "cedar", "stone", "copper", "tin",
 		"fish", "wine", "oil", "horses", "bronze", "livestock", "silver",
 	}
-	rawCitizens := make(map[string]*int, len(knownGoods))
+	rawPercent := make(map[string]*int, len(knownGoods))
 
 	cmd := &cobra.Command{
 		Use:   "allocate",
-		Short: "Tilldela citizens per vara (arbetsallokering)",
-		Long: `Tilldela ditt samhälles citizens till producerbara varor.
-Ange antal citizens per vara — summan får ej överstiga labor_pool.
-Icke-producerbara varor ignoreras av servern.
+		Short: "Tilldela andel av befolkningen per vara (arbetsallokering, %)",
+		Long: `Tilldela en andel (%) av ditt samhälles befolkning till producerbara varor.
+Ange procent per vara — summan får ej överstiga 100.
+Andelen auto-skalar med befolkningen (växer pop, växer antalet arbetare).
+Icke-producerbara varor avvisas av servern.
 
 Exempel:
   poleia allocate --timber 40 --stone 30 --grain 30
   poleia allocate --grain 50 --fish 20   (resten är idle)`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			citizens := make(map[string]int)
+			percent := make(map[string]int)
 			for _, key := range knownGoods {
-				ptr := rawCitizens[key]
+				ptr := rawPercent[key]
 				if ptr != nil && *ptr > 0 {
-					citizens[key] = *ptr
+					percent[key] = *ptr
 				}
 			}
-			if len(citizens) == 0 {
+			if len(percent) == 0 {
 				return fmt.Errorf("ingen vara angiven — använd t.ex. --timber 40 --grain 30")
 			}
 
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/labor", cfg.WorldID, cfg.ProvinceID)
-			data, err := c.put(path, map[string]any{"citizens": citizens})
+			data, err := c.put(path, map[string]any{"percent": percent})
 			if err != nil {
 				return err
 			}
@@ -56,31 +58,32 @@ Exempel:
 			}
 			fmt.Println("Arbetsallokering uppdaterad:")
 			if lp, ok := resp["labor_pool"].(float64); ok {
-				fmt.Printf("  Labor pool:   %d workers\n", int(lp))
+				fmt.Printf("  Befolkning:  %d\n", int(lp))
 			}
-			if idle, ok := resp["idle_citizens"].(float64); ok {
-				fmt.Printf("  Idle workers: %d\n", int(idle))
+			if idle, ok := resp["idle_percent"].(float64); ok {
+				idleC, _ := resp["idle_citizens"].(float64)
+				fmt.Printf("  Idle:        %.0f%% (%d citizens)\n", idle, int(idleC))
 			}
 			fmt.Println()
-			if cm, ok := resp["citizens"].(map[string]any); ok {
-				order := []string{"grain", "timber", "cedar", "stone", "copper", "tin", "fish", "wine", "oil"}
+			pm, _ := resp["percent"].(map[string]any)
+			cm, _ := resp["citizens"].(map[string]any)
+			if pm != nil {
+				order := []string{"grain", "timber", "cedar", "stone", "copper", "tin", "fish", "wine", "oil", "silver"}
+				printed := make(map[string]bool)
+				printRow := func(key string) {
+					pct, _ := pm[key].(float64)
+					cit, _ := cm[key].(float64)
+					fmt.Printf("  %-12s %3.0f%%  (%d citizens)\n", key, pct, int(cit))
+				}
 				for _, key := range order {
-					if v, ok := cm[key].(float64); ok {
-						fmt.Printf("  %-12s %d workers\n", key, int(v))
+					if _, ok := pm[key].(float64); ok {
+						printRow(key)
+						printed[key] = true
 					}
 				}
-				for k, v := range cm {
-					inOrder := false
-					for _, o := range order {
-						if o == k {
-							inOrder = true
-							break
-						}
-					}
-					if !inOrder {
-						if f, ok := v.(float64); ok {
-							fmt.Printf("  %-12s %d workers\n", k, int(f))
-						}
+				for k := range pm {
+					if !printed[k] {
+						printRow(k)
 					}
 				}
 			}
@@ -90,13 +93,13 @@ Exempel:
 
 	for _, key := range knownGoods {
 		var v int
-		rawCitizens[key] = &v
-		cmd.Flags().IntVar(&v, key, 0, fmt.Sprintf("antal citizens till %s", key))
+		rawPercent[key] = &v
+		cmd.Flags().IntVar(&v, key, 0, fmt.Sprintf("andel (%%) av befolkningen till %s", key))
 	}
 
 	// --raw "timber=40,stone=30" för programmatisk användning.
 	var raw string
-	cmd.Flags().StringVar(&raw, "raw", "", "comma-separated key=value (t.ex. timber=40,grain=30)")
+	cmd.Flags().StringVar(&raw, "raw", "", "comma-separated key=value i procent (t.ex. timber=40,grain=30)")
 	cmd.PreRunE = func(cmd *cobra.Command, _ []string) error {
 		if raw == "" {
 			return nil
@@ -113,7 +116,7 @@ Exempel:
 			key := strings.TrimSpace(parts[0])
 			for _, k := range knownGoods {
 				if k == key {
-					*rawCitizens[k] = v
+					*rawPercent[k] = v
 					break
 				}
 			}
