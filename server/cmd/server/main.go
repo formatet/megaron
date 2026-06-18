@@ -237,6 +237,7 @@ func main() {
 			r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
 
 			r.Get("/worlds/{worldID}/outpost-flows", ph.OutpostFlows)
+			r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 

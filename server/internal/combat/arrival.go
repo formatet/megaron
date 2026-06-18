@@ -117,6 +117,18 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 				)
 			}
 		}
+		// Mildare FOW: scouting reveals the target settlement's market (its wants),
+		// not just its existence. Best-effort; uses its own connection.
+		var scoutPlayerID, targetSettlementID uuid.UUID
+		if err := tx.QueryRow(ctx,
+			`SELECT owner_id FROM settlements WHERE province_id = $1`, march.OriginID,
+		).Scan(&scoutPlayerID); err == nil {
+			if err := tx.QueryRow(ctx,
+				`SELECT id FROM settlements WHERE province_id = $1`, march.TargetID,
+			).Scan(&targetSettlementID); err == nil {
+				_ = economy.RecordMarketSnapshot(ctx, h.pool, scoutPlayerID, targetSettlementID)
+			}
+		}
 		return mergeArmy(ctx, tx, march.OriginID, march.Army)
 	}
 

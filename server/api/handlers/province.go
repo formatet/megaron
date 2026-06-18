@@ -2584,3 +2584,102 @@ func (h *ProvinceHandler) OutpostFlows(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, result)
 }
+
+// MarketWants handles GET /worlds/{worldID}/market/wants.
+// Returns, per settlement the player has price-knowledge of (market_snapshots),
+// the goods that settlement WANTS to buy — goods in shortage (price > base × 1.1).
+// Demand signal for traders and LLM agents. FOW-gated: only known settlements.
+func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at
+		 FROM market_snapshots ms
+		 JOIN goods g ON g.key = ms.good_key
+		 JOIN settlements s ON s.id = ms.settlement_id
+		 WHERE ms.player_id = $1 AND s.world_id = $2
+		   AND ms.price > g.base_value * 1.1
+		   AND g.category <> 'sacred'
+		   AND ms.good_key <> 'silver'
+		 ORDER BY ms.settlement_id, (ms.price / g.base_value) DESC`,
+		playerID, worldID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "query failed")
+		return
+	}
+	defer rows.Close()
+
+	type wantItem struct {
+		Good          string  `json:"good"`
+		Price         float64 `json:"price"`
+		BaseValue     float64 `json:"base_value"`
+		ShortageRatio float64 `json:"shortage_ratio"`
+		WantLevel     string  `json:"want_level"`
+		Stock         float64 `json:"stock"`
+	}
+	type settlementWants struct {
+		SettlementID uuid.UUID  `json:"settlement_id"`
+		Name         string     `json:"name"`
+		ObservedAt   time.Time  `json:"observed_at"`
+		Goods        []wantItem `json:"goods"`
+	}
+
+	order := []uuid.UUID{}
+	byID := map[uuid.UUID]*settlementWants{}
+
+	for rows.Next() {
+		var (
+			settlementID            uuid.UUID
+			name, goodKey           string
+			price, stock, baseValue float64
+			observedAt              time.Time
+		)
+		if err := rows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt); err != nil {
+			continue
+		}
+		if _, seen := byID[settlementID]; !seen {
+			byID[settlementID] = &settlementWants{
+				SettlementID: settlementID,
+				Name:         name,
+				ObservedAt:   observedAt,
+				Goods:        []wantItem{},
+			}
+			order = append(order, settlementID)
+		}
+		ratio := price / baseValue
+		level := "low"
+		if ratio >= 2.0 {
+			level = "high"
+		} else if ratio >= 1.5 {
+			level = "medium"
+		}
+		byID[settlementID].Goods = append(byID[settlementID].Goods, wantItem{
+			Good:          goodKey,
+			Price:         price,
+			BaseValue:     baseValue,
+			ShortageRatio: ratio,
+			WantLevel:     level,
+			Stock:         stock,
+		})
+	}
+	if rows.Err() != nil {
+		writeError(w, http.StatusInternalServerError, "scan failed")
+		return
+	}
+
+	wants := make([]settlementWants, 0, len(order))
+	for _, id := range order {
+		wants = append(wants, *byID[id])
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"wants": wants})
+}

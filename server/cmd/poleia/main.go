@@ -103,6 +103,7 @@ func main() {
 		messengerCmd(),
 		allocateCmd(),
 		unitCmd(),
+		wantsCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
