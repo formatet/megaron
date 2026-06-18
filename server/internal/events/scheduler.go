@@ -17,26 +17,28 @@ import (
 type ScheduledEventType string
 
 const (
-	ScheduledArmyArrival      ScheduledEventType = "ArmyArrival"
-	ScheduledBuildComplete    ScheduledEventType = "BuildComplete"
-	ScheduledTrainComplete    ScheduledEventType = "TrainComplete"
-	ScheduledCollapseCheck    ScheduledEventType = "CollapseCheck"
-	ScheduledDivineRoll       ScheduledEventType = "DivineRoll"
+	ScheduledArmyArrival       ScheduledEventType = "ArmyArrival"
+	ScheduledBuildComplete     ScheduledEventType = "BuildComplete"
+	ScheduledTrainComplete     ScheduledEventType = "TrainComplete"
+	ScheduledCollapseCheck     ScheduledEventType = "CollapseCheck"
+	ScheduledDivineRoll        ScheduledEventType = "DivineRoll"
 	ScheduledLoyaltyDecayTick  ScheduledEventType = "LoyaltyDecayTick"
-	ScheduledColonyPenaltyTick  ScheduledEventType = "ColonyPenaltyTick"
-	ScheduledBorrowedArmyTick   ScheduledEventType = "BorrowedArmyTick"
-	ScheduledMessengerArrival   ScheduledEventType = "MessengerArrival"
-	ScheduledMessengerReturn    ScheduledEventType = "MessengerReturn"
-	ScheduledKharisTick         ScheduledEventType = "KharisTick"
-	ScheduledTradeDelivery      ScheduledEventType = "TradeDelivery"
-	ScheduledTradeReturn        ScheduledEventType = "TradeReturn"
-	ScheduledRespawn            ScheduledEventType = "Respawn"
-	ScheduledRecallArrival      ScheduledEventType = "RecallArrival"
-	ScheduledLogisticsArrival   ScheduledEventType = "LogisticsArrival"
+	ScheduledColonyPenaltyTick ScheduledEventType = "ColonyPenaltyTick"
+	ScheduledBorrowedArmyTick  ScheduledEventType = "BorrowedArmyTick"
+	ScheduledMessengerArrival  ScheduledEventType = "MessengerArrival"
+	ScheduledMessengerReturn   ScheduledEventType = "MessengerReturn"
+	ScheduledKharisTick        ScheduledEventType = "KharisTick"
+	ScheduledTradeDelivery     ScheduledEventType = "TradeDelivery"
+	ScheduledTradeReturn       ScheduledEventType = "TradeReturn"
+	ScheduledRespawn           ScheduledEventType = "Respawn"
+	ScheduledRecallArrival     ScheduledEventType = "RecallArrival"
+	ScheduledLogisticsArrival  ScheduledEventType = "LogisticsArrival"
 	// C1 — unit model; handler registered in C2+.
-	ScheduledUnitArrival        ScheduledEventType = "UnitArrival"
+	ScheduledUnitArrival ScheduledEventType = "UnitArrival"
 	// C-collapse — city exhausted to ≤100 pop; warband spawned.
 	ScheduledCollapseSettlement ScheduledEventType = "CollapseSettlement"
+	// W4e — daily grain+silver upkeep for all active units.
+	ScheduledUpkeepTick ScheduledEventType = "UpkeepTick"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

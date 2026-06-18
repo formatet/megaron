@@ -137,6 +137,8 @@ func main() {
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
+	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore)
+	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
 	go worker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
 	go healDispossessed(ctx, pool, scheduler)
@@ -329,6 +331,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledColonyPenaltyTick,
 		events.ScheduledBorrowedArmyTick,
 		events.ScheduledKharisTick,
+		events.ScheduledUpkeepTick,
 	}
 
 	for _, wid := range worldIDs {
