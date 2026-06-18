@@ -144,6 +144,12 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		return fmt.Errorf("update records: %w", err)
 	}
 
+	// Seed the minimal starter building set (farm/lumbermill/temple/market) so the
+	// religion + silver subsystems are alive from t=0. Must precede RecomputeProduction.
+	if err = seedStarterBuildings(ctx, tx, settlementID); err != nil {
+		return fmt.Errorf("seed starter buildings on respawn: %w", err)
+	}
+
 	// RecomputeProduction reads catchment tiles, auto-seeds equal labor weights,
 	// and writes rates. No prior terrain-init needed.
 	if err = economy.RecomputeProduction(ctx, tx, settlementID); err != nil {

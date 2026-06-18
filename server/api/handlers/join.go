@@ -248,6 +248,14 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Seed the minimal starter building set (farm/lumbermill/temple/market) so the
+	// religion + silver subsystems are alive from t=0. Must precede RecomputeProduction.
+	if err := seedStarterBuildings(r.Context(), tx, settlementID); err != nil {
+		slog.Error("could not seed starter buildings", "err", err, "settlement", settlementID)
+		writeError(w, http.StatusInternalServerError, "could not seed starter buildings")
+		return
+	}
+
 	// RecomputeProduction reads catchment tiles, auto-seeds equal labor weights
 	// (since no settlement_labor rows exist yet), and writes rates.
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
