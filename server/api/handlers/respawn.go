@@ -104,8 +104,9 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 	if err = tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
-		  population, kharis_rate, kharis_calc_at)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000,$6,now())
+		  population, kharis_rate, kharis_calc_at,
+		  silver_amount, silver_rate, silver_cap, silver_calc_at)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000,$6,now(), 0, 0, 1000, now())
 		 RETURNING id`,
 		worldID, provinceID, name, culture, playerID, kharisRate,
 	).Scan(&settlementID); err != nil {

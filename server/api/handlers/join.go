@@ -164,12 +164,14 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create the settlement (capital). Starting population 5000 (W1).
-	// Gold is the only column resource; kharis lives on player_world_records (set below).
+	// silver_rate=0: income only from buildings (market +0.5, harbour +0.3).
+	// Explicit zeros override the column DEFAULT 1.0 (legacy from mig 005).
 	var settlementID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO settlements
-		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000)
+		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population,
+		  silver_amount, silver_rate, silver_cap, silver_calc_at)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000, 0, 0, 1000, now())
 		 RETURNING id`,
 		worldID, provinceID, req.ProvinceName, req.Culture, playerID,
 	).Scan(&settlementID)

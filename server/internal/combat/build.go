@@ -81,7 +81,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	if spec.SilverRate > 0 {
 		_, err = tx.Exec(ctx,
 			`UPDATE settlements SET
-			   silver_amount = settled(silver_amount, silver_rate, silver_calc_at),
+			   silver_amount = LEAST(settled(silver_amount, silver_rate, silver_calc_at), silver_cap),
 			   silver_rate = silver_rate + $1,
 			   silver_calc_at = now()
 			 WHERE id = $2`,
