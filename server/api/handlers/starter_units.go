@@ -34,25 +34,23 @@ func seedStarterUnits(
 	coastal bool,
 ) error {
 	type spec struct {
-		utype  unit.Type
-		size   int // land men or naval size (always 1)
-		crew   int // 0 for land
+		utype   unit.Type
+		size    int // land men or naval size (always 1)
+		crew    int // 0 for land
 		popCost int // men drawn from population
-		dualCol string // settlements integer column to dual-write
-		dualVal int    // value to add to that column
 	}
 
 	var units []spec
 	if coastal {
 		// Kuststad: galley (besättning 20) + 1 infanterienhet (100 man)
 		units = []spec{
-			{utype: unit.TypeGalley, size: 1, crew: 20, popCost: 20, dualCol: "ship", dualVal: 20},
-			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100, dualCol: "infantry", dualVal: 100},
+			{utype: unit.TypeGalley, size: 1, crew: 20, popCost: 20},
+			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100},
 		}
 	} else {
 		// Inlandsstad: 1 infanterienhet (100 man)
 		units = []spec{
-			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100, dualCol: "infantry", dualVal: 100},
+			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100},
 		}
 	}
 
@@ -82,14 +80,6 @@ func seedStarterUnits(
 			sp.size, sp.crew, settlementID,
 		).Scan(&unitID); err != nil {
 			return fmt.Errorf("insert starter unit %s: %w", sp.utype, err)
-		}
-
-		// Dual-write: update old integer army column so legacy combat/display works.
-		if _, err := tx.Exec(ctx,
-			fmt.Sprintf(`UPDATE settlements SET %s = %s + $1 WHERE id = $2`, sp.dualCol, sp.dualCol),
-			sp.dualVal, settlementID,
-		); err != nil {
-			return fmt.Errorf("dual-write %s for starter unit: %w", sp.dualCol, err)
 		}
 
 		// Emit UnitFormed event (outcome, not intention; idempotency lives in join check).

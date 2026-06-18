@@ -8,6 +8,7 @@
 *.out
 /server/thalassa-server
 /server/poleia
+/server/server
 
 # Environment
 .env

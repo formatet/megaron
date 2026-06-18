@@ -18,16 +18,11 @@ import (
 	"github.com/poleia/server/internal/unit"
 )
 
-// UnitArrivalHandler processes ScheduledUnitArrival events (C4).
+// UnitArrivalHandler processes ScheduledUnitArrival events.
 //
 // When a marching unit arrives at its destination it either:
 //   - Joins garrison (empty/own/allied hex)
 //   - Triggers deterministic combat (enemy settlement present)
-//
-// Dual-read: defence strength is computed from BOTH units-table garrison units
-// AND the legacy integer army columns on settlements. This ensures that units
-// trained via C2 and settlements using old integer columns both contribute to
-// defence during the dual-write transition period (until C8).
 //
 // Idempotency: the arriving unit is fetched with FOR UPDATE and the handler
 // exits early if status != 'marching'. ON CONFLICT DO NOTHING is used for
@@ -105,18 +100,12 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// Find settlement at destination (if any).
 	var dest destSettlement
 	err := tx.QueryRow(ctx,
-		`SELECT s.id, s.owner_id, s.wall_level,
-		        s.infantry, s.chariot, s.elite_infantry,
-		        s.ship, s.war_galley, s.merchantman,
-		        p.id, p.terrain_type
+		`SELECT s.id, s.owner_id, s.wall_level, p.id, p.terrain_type
 		 FROM provinces p
 		 LEFT JOIN settlements s ON s.province_id = p.id
 		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
 		worldID, destQ, destR,
-	).Scan(&dest.settlementID, &dest.ownerID,
-		&dest.wallLevel,
-		&dest.legacyInfantry, &dest.legacyChariot, &dest.legacyElite,
-		&dest.legacyShip, &dest.legacyWarGalley, &dest.legacyMerchantman,
+	).Scan(&dest.settlementID, &dest.ownerID, &dest.wallLevel,
 		&dest.provinceID, &dest.terrain)
 
 	hasSettlement := err == nil && dest.settlementID != nil
@@ -235,18 +224,6 @@ func (h *UnitArrivalHandler) resolveCombat(
 		garrisonRows.Close()
 	}
 
-	// 2. Legacy integer columns (dual-read for backward compat during C2→C4 transition).
-	legacyStr := float64(dest.legacyInfantry*1 + dest.legacyElite*2 + dest.legacyChariot*3 +
-		dest.legacyWarGalley*3 + dest.legacyShip*1)
-
-	// Take the maximum to avoid double-counting when both sources represent the
-	// same garrison (C2 dual-writes both). Once C4 is the sole writer, units-table
-	// will always dominate and legacy will be 0.
-	defBase := defUnitStr
-	if legacyStr > defUnitStr {
-		defBase = legacyStr
-	}
-
 	// C5: storm stance halves the wall bonus for the attacker.
 	// Normal wall multiplier: 1 + level×0.25.
 	// Storm effective wall:   1 + level×0.25/2  (tunable; stormWallDivisor = 2.0).
@@ -260,7 +237,7 @@ func (h *UnitArrivalHandler) resolveCombat(
 		extra := float64(dest.wallLevel) * 0.25
 		wallMod = 1.0 + extra/stormWallDivisor
 	}
-	defStr := defBase * wallMod
+	defStr := defUnitStr * wallMod
 
 	// ── Fortune (W5): roll once, bias by kharis delta ─────────────────────────
 	var attackerKharis, defenderKharis float64
@@ -427,34 +404,6 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 		return err
 	}
 
-	// Defender legacy columns: scale down proportionally.
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlements SET
-		   infantry       = GREATEST(0, FLOOR(infantry       * $1)),
-		   chariot        = GREATEST(0, FLOOR(chariot        * $1)),
-		   elite_infantry = GREATEST(0, FLOOR(elite_infantry * $1)),
-		   ship           = GREATEST(0, FLOOR(ship           * $1)),
-		   war_galley     = GREATEST(0, FLOOR(war_galley     * $1)),
-		   merchantman    = GREATEST(0, FLOOR(merchantman    * $1))
-		 WHERE id = $2`,
-		1.0-result.DefenderLosses, *dest.settlementID,
-	); err != nil {
-		return fmt.Errorf("apply legacy defender losses (attacker win): %w", err)
-	}
-
-	// Also subtract dual-write column for the arriving unit's losses.
-	colName := unitTypeToColumn(u.utype)
-	if colName != "" && attPopLost > 0 {
-		// Reduce attacker's home settlement's legacy integer column.
-		if _, err := tx.Exec(ctx,
-			fmt.Sprintf(`UPDATE settlements SET %s = GREATEST(0, %s - $1)
-			 WHERE owner_id = $2 AND world_id = $3 AND is_capital = true`, colName, colName),
-			attPopLost, u.ownerID, worldID,
-		); err != nil {
-			slog.Warn("could not dual-write attacker legacy col loss", "col", colName, "err", err)
-		}
-	}
-
 	// Transfer settlement ownership.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
@@ -514,8 +463,6 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 	destQ, destR int,
 	worldID uuid.UUID,
 ) error {
-	colName := unitTypeToColumn(u.utype)
-
 	if attSizeAfter <= 0 {
 		// Unit destroyed: demographic loss, unit disbanded.
 		if _, err := tx.Exec(ctx,
@@ -524,13 +471,6 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 			return fmt.Errorf("disband zeroed attacker: %w", err)
 		}
 		h.disbandCargoIfPresent(ctx, tx, u, worldID)
-		if colName != "" {
-			_, _ = tx.Exec(ctx,
-				fmt.Sprintf(`UPDATE settlements SET %s = GREATEST(0, %s - $1)
-				 WHERE owner_id = $2 AND world_id = $3 AND is_capital = true`, colName, colName),
-				u.size, u.ownerID, worldID,
-			)
-		}
 	} else if result.AttackerRouted && h.scheduler != nil {
 		// Rout (W5): unit survives with remaining men, retreats to origin.
 		// origin = (u.q, u.r) — the hex the unit marched FROM (set by march handler).
@@ -573,14 +513,6 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		if err := h.scheduler.EnqueueTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, arrivesAt); err != nil {
 			return fmt.Errorf("schedule rout return march: %w", err)
 		}
-		// Dual-write: reduce legacy column by deaths (not total, unit still alive).
-		if colName != "" && attPopLost > 0 {
-			_, _ = tx.Exec(ctx,
-				fmt.Sprintf(`UPDATE settlements SET %s = GREATEST(0, %s - $1)
-				 WHERE owner_id = $2 AND world_id = $3 AND is_capital = true`, colName, colName),
-				attPopLost, u.ownerID, worldID,
-			)
-		}
 		slog.Info("unit routed, returning to origin", "unit", u.id, "origin_q", u.q, "origin_r", u.r, "size", attSizeAfter)
 	} else {
 		// Beaten (not routed) — unit disbanded, treat as destroyed.
@@ -590,13 +522,6 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 			return fmt.Errorf("disband beaten attacker: %w", err)
 		}
 		h.disbandCargoIfPresent(ctx, tx, u, worldID)
-		if colName != "" {
-			_, _ = tx.Exec(ctx,
-				fmt.Sprintf(`UPDATE settlements SET %s = GREATEST(0, %s - $1)
-				 WHERE owner_id = $2 AND world_id = $3 AND is_capital = true`, colName, colName),
-				u.size, u.ownerID, worldID,
-			)
-		}
 	}
 
 	// Permanent demographic loss for attacker.
@@ -615,17 +540,6 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 	if dest.settlementID != nil {
 		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
 			return err
-		}
-		// Defender legacy columns.
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET
-			   infantry       = GREATEST(0, FLOOR(infantry       * $1)),
-			   chariot        = GREATEST(0, FLOOR(chariot        * $1)),
-			   elite_infantry = GREATEST(0, FLOOR(elite_infantry * $1))
-			 WHERE id = $2`,
-			1.0-result.DefenderLosses, *dest.settlementID,
-		); err != nil {
-			return fmt.Errorf("apply legacy defender losses (def win): %w", err)
 		}
 	}
 
@@ -725,17 +639,11 @@ type unitRow struct {
 }
 
 type destSettlement struct {
-	provinceID        uuid.UUID
-	settlementID      *uuid.UUID
-	ownerID           *uuid.UUID
-	wallLevel         int
-	terrain           string
-	legacyInfantry    int
-	legacyChariot     int
-	legacyElite       int
-	legacyShip        int
-	legacyWarGalley   int
-	legacyMerchantman int
+	provinceID   uuid.UUID
+	settlementID *uuid.UUID
+	ownerID      *uuid.UUID
+	wallLevel    int
+	terrain      string
 }
 
 // ── Strength helpers ───────────────────────────────────────────────────────────
@@ -762,24 +670,4 @@ func unitStrength(utype string, size int) float64 {
 	}
 }
 
-// unitTypeToColumn maps a unit type to its legacy integer column name.
-func unitTypeToColumn(utype string) string {
-	switch utype {
-	case "infantry":
-		return "infantry"
-	case "elite_infantry":
-		return "elite_infantry"
-	case "chariot":
-		return "chariot"
-	case "priest":
-		return "priest"
-	case "galley", "ship":
-		return "ship"
-	case "war_galley":
-		return "war_galley"
-	case "merchantman":
-		return "merchantman"
-	}
-	return ""
-}
 

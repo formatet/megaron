@@ -57,16 +57,6 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 
 	isNaval := col == "ship" || col == "war_galley" || col == "merchantman"
 
-	// ── DUAL-WRITE: update old integer army column ─────────────────────────────
-	// This keeps legacy combat/display working until C4/C8.
-	// For C2 batches, each batch = 10 men. For legacy batches, Count is the total.
-	if _, err := h.pool.Exec(ctx,
-		fmt.Sprintf(`UPDATE settlements SET %s = %s + $1 WHERE id = $2`, col, col),
-		p.Count, p.SettlementID,
-	); err != nil {
-		return fmt.Errorf("dual-write army column: %w", err)
-	}
-
 	// ── C2 units table: check forming→garrison transition ──────────────────────
 	var newSize int
 	unitNotZero := p.UnitID != uuid.Nil
