@@ -135,24 +135,6 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 	}
 
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 SELECT $1, pr.good_key, 0, pr.rate_per_min,
-		        CASE pr.good_key WHEN 'grain' THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
-		                        WHEN 'copper' THEN 300 WHEN 'tin' THEN 300 ELSE 200 END,
-		        now()
-		 FROM production_rules pr
-		 WHERE pr.building_type IS NULL AND pr.terrain_type = $2
-		   AND (pr.requires_deposit IS NULL
-		        OR (pr.requires_deposit = 'copper' AND $3)
-		        OR (pr.requires_deposit = 'tin'    AND $4))
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-		     rate = settlement_goods.rate + EXCLUDED.rate`,
-		settlementID, terrainType, copperDeposit, tinDeposit,
-	); err != nil {
-		return fmt.Errorf("init production: %w", err)
-	}
-
-	if _, err = tx.Exec(ctx,
 		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status)
 		 VALUES ($1, $2, $3, 'active')
 		 ON CONFLICT (player_id, world_id) DO UPDATE SET settlement_id = EXCLUDED.settlement_id, status = 'active'`,
@@ -161,26 +143,8 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		return fmt.Errorf("update records: %w", err)
 	}
 
-	// Seed equal labor weights over producible goods, then compute production rates.
-	var producibleCount int
-	_ = tx.QueryRow(ctx,
-		`SELECT COUNT(*) FROM settlement_goods sg WHERE sg.settlement_id = $1 AND sg.rate > 0`,
-		settlementID,
-	).Scan(&producibleCount)
-	if producibleCount < 1 {
-		producibleCount = 1
-	}
-	initialWeight := 1.0 / float64(producibleCount)
-	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 SELECT sg.settlement_id, sg.good_key, $2
-		 FROM settlement_goods sg
-		 WHERE sg.settlement_id = $1 AND sg.rate > 0
-		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		settlementID, initialWeight,
-	); err != nil {
-		slog.Error("could not seed labor weights on respawn", "err", err)
-	}
+	// RecomputeProduction reads catchment tiles, auto-seeds equal labor weights,
+	// and writes rates. No prior terrain-init needed.
 	if err = economy.RecomputeProduction(ctx, tx, settlementID); err != nil {
 		return fmt.Errorf("recompute production on respawn: %w", err)
 	}

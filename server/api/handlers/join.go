@@ -188,9 +188,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Seed a zero row for every good first so the settlement always has full
-	// inventory schema regardless of terrain. The production-rule UPSERT below
-	// only adds rate for goods the terrain actually produces.
+	// Seed a zero row for every good so the settlement always has full inventory
+	// schema regardless of terrain. RecomputeProduction (below) writes actual rates
+	// from catchment tiles; zero rows here ensure non-producible goods are visible.
 	_, err = tx.Exec(r.Context(),
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
 		 SELECT $1, g.key,
@@ -220,98 +220,6 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Init settlement_goods from terrain-only production rules.
-	// Cap is chosen per good: staples (grain) get 1000, bulk (cedar, stone) get 500-1000,
-	// other goods default to 200.
-	_, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 SELECT $1, agg.good_key, 0, agg.rate,
-		        CASE agg.good_key
-		            WHEN 'grain'  THEN 1000
-		            WHEN 'timber' THEN 500
-		            WHEN 'cedar'  THEN 500
-		            WHEN 'stone'  THEN 1000
-		            WHEN 'copper' THEN 300
-		            WHEN 'tin'    THEN 300
-		            ELSE 200
-		        END,
-		        now()
-		 FROM (
-		     -- Aggregate per good_key: a terrain may match several terrain-only rules
-		     -- for one good (e.g. forest + universal timber), and ON CONFLICT cannot
-		     -- dedupe rows within a single INSERT statement.
-		     SELECT pr.good_key, SUM(pr.rate_per_min) AS rate
-		     FROM production_rules pr
-		     WHERE pr.building_type IS NULL
-		       AND (pr.terrain_type = $2 OR pr.terrain_type IS NULL)
-		       AND (pr.requires_deposit IS NULL
-		            OR (pr.requires_deposit = 'copper' AND $3)
-		            OR (pr.requires_deposit = 'tin'    AND $4)
-		            OR (pr.requires_deposit = 'silver' AND $5)
-		            OR (pr.requires_deposit = 'cedar'  AND $6))
-		     GROUP BY pr.good_key
-		 ) agg
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-		     rate = settlement_goods.rate + EXCLUDED.rate`,
-		settlementID, terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not init goods")
-		return
-	}
-
-	// Sprint 5 — Catchment: add 30% of terrain production from adjacent uncontrolled tiles.
-	// Uses a savepoint so a query error doesn't abort the outer transaction.
-	if _, spErr := tx.Exec(r.Context(), `SAVEPOINT catchment`); spErr == nil {
-		_, catchErr := tx.Exec(r.Context(),
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-			 SELECT $1, agg.good_key, 0,
-			     agg.rate,
-			     CASE agg.good_key
-			         WHEN 'grain'  THEN 1000 WHEN 'timber' THEN 500 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
-			         WHEN 'copper' THEN 300  WHEN 'tin'   THEN 300 ELSE 200
-			     END,
-			     now()
-			 FROM (
-			     -- Aggregate per good_key: several adjacent tiles can produce the same
-			     -- good, and ON CONFLICT cannot dedupe rows within one INSERT statement.
-			     SELECT pr.good_key, SUM(pr.rate_per_min) * 0.30 AS rate
-			     FROM map_tiles mt
-			     JOIN production_rules pr ON pr.terrain_type = mt.terrain AND pr.building_type IS NULL
-			         AND (pr.requires_deposit IS NULL
-			              OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
-			              OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
-			              OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
-			              OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
-			     WHERE mt.world_id = $2
-			       AND (
-			           (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR
-			           (mt.q = $3   AND mt.r = $4+1) OR (mt.q = $3   AND mt.r = $4-1) OR
-			           (mt.q = $3+1 AND mt.r = $4-1) OR (mt.q = $3-1 AND mt.r = $4+1)
-			       )
-			       AND mt.terrain NOT IN ('deep_sea','coastal_sea','mountain_limestone','mountain_red','semi_desert')
-			       AND NOT EXISTS (
-			           SELECT 1 FROM provinces p
-			           WHERE p.world_id = $2 AND p.map_q = mt.q AND p.map_r = mt.r
-			             AND p.territory_state = 'controlled'
-			       )
-			     GROUP BY pr.good_key
-			 ) agg
-			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-			     amount = LEAST(EXCLUDED.cap,
-			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)),
-			     rate = settlement_goods.rate + EXCLUDED.rate,
-			     calc_at = now()`,
-			settlementID, worldID, q, r2,
-		)
-		if catchErr != nil {
-			slog.Warn("catchment production init failed", "err", catchErr)
-			_, _ = tx.Exec(r.Context(), `ROLLBACK TO SAVEPOINT catchment`)
-		} else {
-			_, _ = tx.Exec(r.Context(), `RELEASE SAVEPOINT catchment`)
-		}
-	}
-
 	// Compute starting kharis_rate from local pantheon power.
 	regions := religion.DefaultPantheonRegions()
 	var maxPower float64
@@ -338,29 +246,8 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Seed initial labor weights over this settlement's producible goods.
-	// weight = 1/N equally distributed; RecomputeProduction converts to rates.
-	var producibleCount int
-	_ = tx.QueryRow(r.Context(),
-		`SELECT COUNT(*) FROM settlement_goods sg WHERE sg.settlement_id = $1 AND sg.rate > 0`,
-		settlementID,
-	).Scan(&producibleCount)
-	if producibleCount < 1 {
-		producibleCount = 1
-	}
-	initialWeight := 1.0 / float64(producibleCount)
-	if _, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 SELECT sg.settlement_id, sg.good_key, $2
-		 FROM settlement_goods sg
-		 WHERE sg.settlement_id = $1 AND sg.rate > 0
-		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		settlementID, initialWeight,
-	); err != nil {
-		slog.Error("could not seed labor weights", "err", err)
-		writeError(w, http.StatusInternalServerError, "could not seed labor")
-		return
-	}
+	// RecomputeProduction reads catchment tiles, auto-seeds equal labor weights
+	// (since no settlement_labor rows exist yet), and writes rates.
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
 		slog.Error("could not recompute production on join", "err", err)
 		writeError(w, http.StatusInternalServerError, "could not init production")

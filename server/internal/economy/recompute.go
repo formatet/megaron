@@ -72,44 +72,48 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		laborPool = 0
 	}
 
-	// ── 2. Gather terrain/deposit/coastal info for this settlement ───────────
-	var terrainType string
-	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, coastal bool
+	// ── 2. Gather catchment coordinates for this settlement ──────────────────
+	// W3: production comes from the 6 adjacent catchment tiles, not the own hex.
+	var worldID uuid.UUID
+	var q, r int
 	err = tx.QueryRow(ctx,
-		`SELECT prov.terrain_type,
-		        prov.copper_deposit, prov.tin_deposit,
-		        COALESCE(prov.silver_deposit, false),
-		        COALESCE(prov.cedar_deposit,  false),
-		        COALESCE(prov.coastal, false)
+		`SELECT prov.world_id, prov.map_q, prov.map_r
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.id = $1`,
 		settlementID,
-	).Scan(&terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &coastal)
+	).Scan(&worldID, &q, &r)
 	if err != nil {
-		return fmt.Errorf("recompute: load terrain: %w", err)
+		return fmt.Errorf("recompute: load province coords: %w", err)
 	}
 
-	// ── 3. Compute base_potential per producible good ─────────────────────────
-	// A good is producible if at least one production_rule fires (terrain +
-	// buildings + deposits). Aggregate via SUM so multiple rules sum up.
+	// ── 3. Compute base_potential per producible good from catchment ──────────
+	// Each of the 6 adjacent map_tiles contributes based on its own terrain,
+	// deposits, and coastal flag. The settlement's buildings gate building-gated
+	// rules. Sea tiles (deep_sea, coastal_sea) are excluded — no land production.
 	rows, err := tx.Query(ctx,
 		`SELECT pr.good_key, SUM(pr.rate_per_min) AS base_potential
-		 FROM production_rules pr
-		 WHERE
-		     (pr.terrain_type IS NULL OR pr.terrain_type = $1)
-		     AND (NOT pr.requires_coastal OR $7)
+		 FROM map_tiles mt
+		 JOIN production_rules pr ON
+		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
+		     AND (NOT pr.requires_coastal OR mt.coastal)
 		     AND (pr.building_type IS NULL OR EXISTS (
 		             SELECT 1 FROM buildings b
-		             WHERE b.settlement_id = $2 AND b.building_type = pr.building_type))
+		             WHERE b.settlement_id = $1 AND b.building_type = pr.building_type))
 		     AND (pr.requires_deposit IS NULL
-		          OR (pr.requires_deposit = 'copper' AND $3)
-		          OR (pr.requires_deposit = 'tin'    AND $4)
-		          OR (pr.requires_deposit = 'silver' AND $5)
-		          OR (pr.requires_deposit = 'cedar'  AND $6))
+		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
+		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
+		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+		 WHERE mt.world_id = $2
+		   AND mt.terrain NOT IN ('deep_sea', 'coastal_sea')
+		   AND (
+		       (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR
+		       (mt.q = $3   AND mt.r = $4+1) OR (mt.q = $3   AND mt.r = $4-1) OR
+		       (mt.q = $3+1 AND mt.r = $4-1) OR (mt.q = $3-1 AND mt.r = $4+1)
+		   )
 		 GROUP BY pr.good_key`,
-		terrainType, settlementID,
-		copperDeposit, tinDeposit, silverDeposit, cedarDeposit, coastal,
+		settlementID, worldID, q, r,
 	)
 	if err != nil {
 		return fmt.Errorf("recompute: query production rules: %w", err)
