@@ -56,16 +56,54 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Collect deposit types present in the 6 catchment tiles so clients/agents
+	// can decide whether building a mine is worthwhile.
+	var catchmentDeposits []string
+	cdrows, _ := h.pool.Query(r.Context(),
+		`SELECT DISTINCT
+		    CASE WHEN copper_deposit THEN 'copper' END,
+		    CASE WHEN tin_deposit    THEN 'tin'    END,
+		    CASE WHEN COALESCE(silver_deposit,false) THEN 'silver' END,
+		    CASE WHEN COALESCE(cedar_deposit, false) THEN 'cedar'  END
+		 FROM map_tiles
+		 WHERE world_id = $1
+		   AND terrain NOT IN ('deep_sea','coastal_sea')
+		   AND (
+		       (q = $2+1 AND r = $3  ) OR (q = $2-1 AND r = $3  ) OR
+		       (q = $2   AND r = $3+1) OR (q = $2   AND r = $3-1) OR
+		       (q = $2+1 AND r = $3-1) OR (q = $2-1 AND r = $3+1)
+		   )`,
+		worldID, prov.MapTile.Q, prov.MapTile.R,
+	)
+	if cdrows != nil {
+		seen := make(map[string]bool)
+		for cdrows.Next() {
+			var copper, tin, silver, cedar *string
+			_ = cdrows.Scan(&copper, &tin, &silver, &cedar)
+			for _, v := range []*string{copper, tin, silver, cedar} {
+				if v != nil && !seen[*v] {
+					seen[*v] = true
+					catchmentDeposits = append(catchmentDeposits, *v)
+				}
+			}
+		}
+		cdrows.Close()
+	}
+	if catchmentDeposits == nil {
+		catchmentDeposits = []string{}
+	}
+
 	resp := map[string]any{
-		"id":              prov.ID,
-		"world_id":        prov.WorldID,
-		"map_tile":        prov.MapTile,
-		"terrain_type":    prov.TerrainType,
-		"territory_state": prov.TerritoryState,
-		"copper_deposit":  prov.CopperDeposit,
-		"tin_deposit":     prov.TinDeposit,
-		"silver_deposit":  prov.SilverDeposit,
-		"cedar_deposit":   prov.CedarDeposit,
+		"id":                 prov.ID,
+		"world_id":           prov.WorldID,
+		"map_tile":           prov.MapTile,
+		"terrain_type":       prov.TerrainType,
+		"territory_state":    prov.TerritoryState,
+		"copper_deposit":     prov.CopperDeposit,
+		"tin_deposit":        prov.TinDeposit,
+		"silver_deposit":     prov.SilverDeposit,
+		"cedar_deposit":      prov.CedarDeposit,
+		"catchment_deposits": catchmentDeposits,
 	}
 
 	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
@@ -1487,20 +1525,30 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		wrows.Close()
 	}
 
-	// Load base_potential per good from production_rules.
+	// Load base_potential per good from production_rules using catchment tiles
+	// (same logic as RecomputeProduction — 6 adjacent map_tiles, not the own province tile).
 	baseRows, _ := h.pool.Query(r.Context(),
 		`SELECT pr.good_key, SUM(pr.rate_per_min) AS base_potential
-		 FROM production_rules pr
-		 JOIN settlements s ON s.id = $1
+		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
-		 WHERE (pr.terrain_type IS NULL OR pr.terrain_type = prov.terrain_type)
-		   AND (pr.building_type IS NULL OR EXISTS (
-		           SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
-		   AND (pr.requires_deposit IS NULL
-		        OR (pr.requires_deposit = 'copper' AND prov.copper_deposit)
-		        OR (pr.requires_deposit = 'tin'    AND prov.tin_deposit)
-		        OR (pr.requires_deposit = 'silver' AND COALESCE(prov.silver_deposit,false))
-		        OR (pr.requires_deposit = 'cedar'  AND COALESCE(prov.cedar_deposit,false)))
+		 JOIN map_tiles mt ON mt.world_id = s.world_id
+		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
+		     AND (
+		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
+		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
+		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
+		     )
+		 JOIN production_rules pr ON
+		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
+		     AND (NOT pr.requires_coastal OR mt.coastal)
+		     AND (pr.building_type IS NULL OR EXISTS (
+		             SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
+		     AND (pr.requires_deposit IS NULL
+		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
+		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
+		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit,false))
+		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+		 WHERE s.id = $1
 		 GROUP BY pr.good_key`,
 		settlementID,
 	)
@@ -2400,22 +2448,31 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		laborPool = 0
 	}
 
-	// Determine producible goods for this settlement (single source of truth).
+	// Determine producible goods for this settlement using catchment tiles
+	// (same logic as RecomputeProduction — 6 adjacent map_tiles, not the own province tile).
 	producible := make(map[string]bool)
 	prows, err := h.pool.Query(r.Context(),
 		`SELECT DISTINCT pr.good_key
-		 FROM production_rules pr
-		 JOIN settlements s ON s.id = $1
+		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
-		 WHERE
-		     (pr.terrain_type IS NULL OR pr.terrain_type = prov.terrain_type)
+		 JOIN map_tiles mt ON mt.world_id = s.world_id
+		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
+		     AND (
+		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
+		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
+		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
+		     )
+		 JOIN production_rules pr ON
+		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
+		     AND (NOT pr.requires_coastal OR mt.coastal)
 		     AND (pr.building_type IS NULL OR EXISTS (
 		             SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
 		     AND (pr.requires_deposit IS NULL
-		          OR (pr.requires_deposit = 'copper' AND prov.copper_deposit)
-		          OR (pr.requires_deposit = 'tin'    AND prov.tin_deposit)
-		          OR (pr.requires_deposit = 'silver' AND COALESCE(prov.silver_deposit, false))
-		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(prov.cedar_deposit,  false)))`,
+		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
+		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
+		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit,  false)))
+		 WHERE s.id = $1`,
 		settlementID,
 	)
 	if err != nil {
