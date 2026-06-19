@@ -137,12 +137,14 @@ func unitMarchCmd() *cobra.Command {
 	var unitID string
 	var targetQ, targetR int
 	var stance string
+	var intent, name string
 
 	cmd := &cobra.Command{
 		Use:   "march",
 		Short: "Order a unit to march to a hex",
 		Example: `  poleia unit march --unit <id> --q 5 --r -3
-  poleia unit march --unit <id> --q 5 --r -3 --stance fortify`,
+  poleia unit march --unit <id> --q 5 --r -3 --stance fortify
+  poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			body := map[string]any{
 				"target_q": targetQ,
@@ -150,6 +152,12 @@ func unitMarchCmd() *cobra.Command {
 			}
 			if stance != "" {
 				body["stance"] = stance
+			}
+			if intent != "" {
+				body["intent"] = intent
+			}
+			if name != "" {
+				body["name"] = name
 			}
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
@@ -179,6 +187,8 @@ func unitMarchCmd() *cobra.Command {
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q (required)")
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R (required)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a colony on the target hex)")
+	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("q")
 	_ = cmd.MarkFlagRequired("r")

@@ -79,11 +79,11 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	var u unitRow
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
-		        status, q, r, target_q, target_r, stance
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance); err != nil {
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -109,6 +109,12 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		&dest.provinceID, &dest.terrain)
 
 	hasSettlement := err == nil && dest.settlementID != nil
+
+	// Colonize intent on an empty hex → found a colony (the unit becomes its garrison).
+	// If the hex turned out to be settled (race), fall through to the normal paths.
+	if u.marchIntent != nil && *u.marchIntent == "colonize" && !hasSettlement {
+		return h.foundColony(ctx, tx, u, dest.provinceID, destQ, destR, worldID)
+	}
 
 	// No settlement or uncontested → become garrison.
 	if !hasSettlement || dest.ownerID == nil || *dest.ownerID == u.ownerID {
@@ -177,6 +183,155 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		}, worldID, nil)
 
 	slog.Info("unit arrived (garrison)", "unit", u.id, "q", destQ, "r", destR, "status", newStatus)
+	return nil
+}
+
+// foundColony establishes a new colony settlement at an empty destination hex,
+// with the arriving unit as its garrison. This is the discrete-unit equivalent
+// of the legacy ArmyComposition colonize() in arrival.go: a genuinely separate
+// settlement (own catchment, loyalty, governor, building queue) that is still
+// integrated into the Wanax's network (same owner, shares the per-Wanax kharis
+// pool, revolts if the capital falls, counts toward the divine expansion brake).
+//
+// existingProvinceID is uuid.Nil when no provinces row exists for the hex yet
+// (the common case — provinces are sparse); then we create one from map_tiles.
+// If a row already exists (e.g. a prior outpost province) we reuse it.
+func (h *UnitArrivalHandler) foundColony(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, existingProvinceID uuid.UUID, destQ, destR int, worldID uuid.UUID,
+) error {
+	// Owner's culture + parent settlement come from their capital (fallback: any
+	// of their settlements). The parent is recorded as founded_from (lineage).
+	var culture string
+	var parentID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT id, culture_id FROM settlements WHERE owner_id = $1
+		 ORDER BY is_capital DESC LIMIT 1`,
+		u.ownerID,
+	).Scan(&parentID, &culture); err != nil {
+		return fmt.Errorf("foundColony: load owner capital: %w", err)
+	}
+
+	// Ensure a province row exists for the hex, with deposit flags copied from the map.
+	provinceID := existingProvinceID
+	if provinceID == uuid.Nil {
+		var terrain string
+		var copperDep, tinDep, silverDep, cedarDep, coastal bool
+		if err := tx.QueryRow(ctx,
+			`SELECT terrain, copper_deposit, tin_deposit,
+			        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false), COALESCE(coastal,false)
+			 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			worldID, destQ, destR,
+		).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &coastal); err != nil {
+			return fmt.Errorf("foundColony: load map tile: %w", err)
+		}
+		if err := tx.QueryRow(ctx,
+			`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
+			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, coastal)
+			 VALUES ($1,$2,$3,$4,'controlled',$5,$6,$7,$8,$9) RETURNING id`,
+			worldID, destQ, destR, terrain, copperDep, tinDep, silverDep, cedarDep, coastal,
+		).Scan(&provinceID); err != nil {
+			return fmt.Errorf("foundColony: create province: %w", err)
+		}
+	} else {
+		_, _ = tx.Exec(ctx,
+			`UPDATE provinces SET territory_state='controlled' WHERE id=$1`, provinceID)
+	}
+
+	// Colony name: chosen, else culture-appropriate default.
+	name := province.SettlementNameForCulture(culture)
+	if u.colonyName != nil && *u.colonyName != "" {
+		name = *u.colonyName
+	}
+
+	// Create the colony. Starting population 1500 — a real but modest second city.
+	// Unlike the capital it is NOT guaranteed self-sufficient (it can starve if
+	// neglected); that asymmetry is the intended cost of expansion.
+	var colonyID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO settlements
+		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
+		  loyalty, governor_is_ai, population, founded_from)
+		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,true,1500,$6)
+		 RETURNING id`,
+		worldID, provinceID, name, culture, u.ownerID, parentID,
+	).Scan(&colonyID); err != nil {
+		return fmt.Errorf("foundColony: create settlement: %w", err)
+	}
+
+	// Link province back to its controlling settlement.
+	_, _ = tx.Exec(ctx, `UPDATE provinces SET controller_id=$1 WHERE id=$2`, colonyID, provinceID)
+
+	// Seed a zero/baseline row for every good (mirrors join.go), then let
+	// RecomputeProduction write real rates from the catchment + labor weights.
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		 SELECT $1, g.key,
+		        CASE g.key WHEN 'grain' THEN 300 WHEN 'timber' THEN 200 WHEN 'stone' THEN 300 ELSE 0 END,
+		        0,
+		        CASE g.key WHEN 'grain' THEN 1000 WHEN 'timber' THEN 500 WHEN 'cedar' THEN 500
+		                   WHEN 'stone' THEN 1000 WHEN 'copper' THEN 300 WHEN 'tin' THEN 300
+		                   WHEN 'silver' THEN 1000 ELSE 200 END,
+		        now()
+		 FROM goods g
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		colonyID,
+	); err != nil {
+		return fmt.Errorf("foundColony: seed goods: %w", err)
+	}
+
+	// Baseline labor: grain dominates so the colony feeds itself; cult floor keeps a
+	// temple (once built) non-inert. Same seed as the capital — the agent reallocates
+	// toward ore via LaborAlloc once it builds a mine on the deposit it colonized for.
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+		 VALUES ($1,'grain',0.85), ($1,'cult',0.15)
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		colonyID,
+	); err != nil {
+		return fmt.Errorf("foundColony: seed labor: %w", err)
+	}
+
+	if err := economy.RecomputeProduction(ctx, tx, colonyID); err != nil {
+		return fmt.Errorf("foundColony: recompute production: %w", err)
+	}
+
+	// Re-home the colonizing unit as the colony's garrison (discrete-unit model —
+	// no integer army columns). Clears march + intent fields.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status        = 'garrison',
+		   q             = $2,
+		   r             = $3,
+		   settlement_id = $4,
+		   target_q      = NULL,
+		   target_r      = NULL,
+		   departs_at    = NULL,
+		   arrives_at    = NULL,
+		   march_intent  = NULL,
+		   colony_name   = NULL,
+		   updated_at    = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR, colonyID,
+	); err != nil {
+		return fmt.Errorf("foundColony: rehome garrison unit: %w", err)
+	}
+
+	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
+		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "garrison"}, worldID, nil)
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, map[string]any{
+			"settlement_id": colonyID,
+			"name":          name,
+			"province_id":   provinceID,
+			"q":             destQ,
+			"r":             destR,
+		})
+	}
+
+	slog.Info("colony founded (discrete unit)", "settlement", colonyID, "name", name,
+		"province", provinceID, "owner", u.ownerID, "garrison_unit", u.id, "q", destQ, "r", destR)
 	return nil
 }
 
@@ -636,6 +791,8 @@ type unitRow struct {
 	targetQ     *int
 	targetR     *int
 	stance      *string // C5: fortify/storm/sentry or nil
+	marchIntent *string // "colonize" or nil (plain march)
+	colonyName  *string // chosen colony name or nil
 }
 
 type destSettlement struct {

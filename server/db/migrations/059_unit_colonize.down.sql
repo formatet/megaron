@@ -1,0 +1,2 @@
+ALTER TABLE units DROP COLUMN IF EXISTS march_intent;
+ALTER TABLE units DROP COLUMN IF EXISTS colony_name;

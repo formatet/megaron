@@ -67,7 +67,9 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		TargetQ int    `json:"target_q"`
 		TargetR int    `json:"target_r"`
-		Stance  string `json:"stance"` // optional; fortify|storm|sentry — persisted for C5
+		Stance  string `json:"stance"`  // optional; fortify|storm|sentry — persisted for C5
+		Intent  string `json:"intent"`  // optional; "" = plain march, "colonize" = found a colony on arrival
+		Name    string `json:"name"`    // optional colony name (only used with intent=colonize)
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -167,6 +169,34 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Colonize intent: validate up front so the agent gets an actionable error
+	// instead of a silent return-home at arrival. Only "colonize" is supported.
+	if req.Intent != "" && req.Intent != "colonize" {
+		writeError(w, http.StatusBadRequest,
+			fmt.Sprintf("unknown march intent %q (only \"colonize\" is supported)", req.Intent))
+		return
+	}
+	if req.Intent == "colonize" {
+		// Only land units found colonies — they become the new colony's garrison.
+		if unit.CategoryOf(u.Type) != unit.CategoryLand {
+			writeError(w, http.StatusUnprocessableEntity, "only land units can found a colony")
+			return
+		}
+		// The target province must be unclaimed (no settlement). Best-effort pre-flight;
+		// the arrival handler re-checks under lock and returns the unit home on a race.
+		var existing int
+		if err := h.pool.QueryRow(ctx,
+			`SELECT count(*) FROM settlements s
+			 JOIN provinces p ON p.id = s.province_id
+			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
+			worldID, req.TargetQ, req.TargetR,
+		).Scan(&existing); err == nil && existing > 0 {
+			writeError(w, http.StatusUnprocessableEntity,
+				"target hex already has a settlement — colonize requires an empty hex")
+			return
+		}
+	}
+
 	// Mountains are impassable.
 	if destTerrain == "mountain_limestone" || destTerrain == "mountain_red" {
 		writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
@@ -227,6 +257,16 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		stanceArg = &s
 	}
 
+	// Colonize intent + optional name ride along on the unit so the arrival
+	// handler can found a colony. NULL intent = plain march (cleared each dispatch).
+	var intentArg, nameArg *string
+	if req.Intent == "colonize" {
+		intentArg = &req.Intent
+		if req.Name != "" {
+			nameArg = &req.Name
+		}
+	}
+
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET
 		   status       = 'marching',
@@ -238,9 +278,11 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		   arrives_at   = $7,
 		   settlement_id = NULL,
 		   stance       = COALESCE($8, stance),
+		   march_intent = $9,
+		   colony_name  = $10,
 		   updated_at   = now()
 		 WHERE id = $1`,
-		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg,
+		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg, intentArg, nameArg,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not update unit")
 		return
