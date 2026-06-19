@@ -297,7 +297,7 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 //   - Both units must be in the same settlement (garrison).
 //   - Ship must be naval and have no current cargo (cargo_unit_id IS NULL).
 //   - Land unit must be status='garrison', size=100, and not a priest.
-//   - Origin must be a coastal settlement (coast_beach terrain) or have a harbour.
+//   - Origin must be a coastal settlement (adjacent to sea) or have a harbour.
 //
 // Outcome: ship.cargo_unit_id = land_unit_id; land unit status → 'embarked'.
 // Emits ShipLoaded.
@@ -516,7 +516,7 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 // Disembarks the cargo land unit from a naval unit. Rules (C6 plan):
 //   - Caller must own the ship.
 //   - Ship must have a cargo unit (cargo_unit_id non-null).
-//   - Ship must be garrisoned at a coastal (coast_beach) settlement or harbour.
+//   - Ship must be garrisoned at a coastal (adjacent to sea) settlement or harbour.
 //
 // Outcome: cargo unit status → 'garrison', q/r = ship's position, settlement_id =
 // ship's settlement; ship.cargo_unit_id = NULL.

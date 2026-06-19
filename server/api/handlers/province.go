@@ -822,33 +822,29 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Harbour requires the settlement to be on coast_beach OR adjacent to a coastal/sea hex.
+	// Harbour requires the settlement to be adjacent to a sea hex (coast is a property, not a terrain).
 	if req.BuildingType == "harbour" {
 		var pq, pr int
-		var terrain string
 		_ = h.pool.QueryRow(r.Context(),
-			`SELECT p.map_q, p.map_r, p.terrain_type FROM provinces p WHERE p.id = $1`, provinceID,
-		).Scan(&pq, &pr, &terrain)
-		if terrain != "coast_beach" {
-			// Check all 6 axial neighbours for coastal/sea terrain.
-			var coastNeighbour bool
-			_ = h.pool.QueryRow(r.Context(),
-				`SELECT EXISTS(
-				   SELECT 1 FROM map_tiles
-				   WHERE world_id = $1
-				     AND (q, r) IN (
-				       ($2+1,$3), ($2-1,$3),
-				       ($2,$3+1), ($2,$3-1),
-				       ($2+1,$3-1), ($2-1,$3+1)
-				     )
-				     AND terrain IN ('coast_beach','coastal_sea','deep_sea')
-				 )`,
-				worldID, pq, pr,
-			).Scan(&coastNeighbour)
-			if !coastNeighbour {
-				writeError(w, http.StatusUnprocessableEntity, "harbour requires a coastal or sea tile on an adjacent hex")
-				return
-			}
+			`SELECT p.map_q, p.map_r FROM provinces p WHERE p.id = $1`, provinceID,
+		).Scan(&pq, &pr)
+		var coastNeighbour bool
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT EXISTS(
+			   SELECT 1 FROM map_tiles
+			   WHERE world_id = $1
+			     AND (q, r) IN (
+			       ($2+1,$3), ($2-1,$3),
+			       ($2,$3+1), ($2,$3-1),
+			       ($2+1,$3-1), ($2-1,$3+1)
+			     )
+			     AND terrain IN ('coastal_sea','deep_sea')
+			 )`,
+			worldID, pq, pr,
+		).Scan(&coastNeighbour)
+		if !coastNeighbour {
+			writeError(w, http.StatusUnprocessableEntity, "harbour requires a coastal or sea tile on an adjacent hex")
+			return
 		}
 	}
 

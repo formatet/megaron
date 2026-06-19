@@ -10,7 +10,7 @@ func TerrainMoveHours(terrain string) float64 {
 		return 0.4 // fast sailing near land
 	case "deep_sea":
 		return 0.7 // slower open-sea sailing
-	case "forest_olive_grove", "forest_olive_cypress":
+	case "forest_olive_grove":
 		return 1.5
 	case "hills", "scrub_maquis":
 		return 1.25
