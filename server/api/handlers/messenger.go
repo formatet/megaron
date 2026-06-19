@@ -141,7 +141,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	// This mirrors the client-side compose-dropdown that uses /provinces (FOW-filtered).
 	// A player can only contact cities they have scouted or previously messaged.
 	origins := loadVisibleOrigins(r.Context(), h.pool, worldID, playerID)
-	if !province.VisibleFrom(province.MapPosition{Q: dQ, R: dR}, origins, 5) {
+	if !province.VisibleFrom(province.MapPosition{Q: dQ, R: dR}, origins, 6) {
 		writeError(w, http.StatusForbidden,
 			"destination is not within your scouted range — send a scout or march closer before contacting this city")
 		return

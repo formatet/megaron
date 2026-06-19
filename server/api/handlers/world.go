@@ -204,7 +204,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		pos := province.MapPosition{Q: t.Q, R: t.R}
-		t.Visible = !authenticated || province.VisibleFrom(pos, origins, 5)
+		t.Visible = !authenticated || province.VisibleFrom(pos, origins, 6)
 		if !t.Visible {
 			t.F = 0
 			t.M = 0
@@ -314,7 +314,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		pos := province.MapPosition{Q: m.Q, R: m.R}
-		m.Visible = !authenticated || province.VisibleFrom(pos, origins, 5)
+		m.Visible = !authenticated || province.VisibleFrom(pos, origins, 6)
 		if authenticated {
 			m.Own = ownSettlements[m.ID]
 			m.IsCapital = m.ID == ownProvinceID
@@ -355,7 +355,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 			m.IsOutpost = true
 			m.Name = "Outpost"
 			pos := province.MapPosition{Q: m.Q, R: m.R}
-			m.Visible = !authenticated || province.VisibleFrom(pos, origins, 5)
+			m.Visible = !authenticated || province.VisibleFrom(pos, origins, 6)
 			if !m.Visible {
 				continue
 			}
@@ -502,7 +502,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 				ps[i] = province.MapPosition{Q: visQ[i], R: visR[i]}
 			}
 			return ps
-		}(), 5)
+		}(), 6)
 	}
 
 	var markers []marchMarker
@@ -573,8 +573,8 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			&m.DepartsAt, &m.ArrivesAt); err != nil {
 			continue
 		}
-		if authenticated && !province.VisibleFrom(province.MapPosition{Q: m.OriginQ, R: m.OriginR}, origins, 5) &&
-			!province.VisibleFrom(province.MapPosition{Q: m.DestQ, R: m.DestR}, origins, 5) {
+		if authenticated && !province.VisibleFrom(province.MapPosition{Q: m.OriginQ, R: m.OriginR}, origins, 6) &&
+			!province.VisibleFrom(province.MapPosition{Q: m.DestQ, R: m.DestR}, origins, 6) {
 			continue
 		}
 		markers = append(markers, m)
@@ -635,8 +635,8 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			&m.SentAt, &m.ArrivesAt); err != nil {
 			continue
 		}
-		if authenticated && !province.VisibleFrom(province.MapPosition{Q: m.OriginQ, R: m.OriginR}, origins, 5) &&
-			!province.VisibleFrom(province.MapPosition{Q: m.DestQ, R: m.DestR}, origins, 5) {
+		if authenticated && !province.VisibleFrom(province.MapPosition{Q: m.OriginQ, R: m.OriginR}, origins, 6) &&
+			!province.VisibleFrom(province.MapPosition{Q: m.DestQ, R: m.DestR}, origins, 6) {
 			continue
 		}
 		markers = append(markers, m)
@@ -734,7 +734,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		// FOW gate: skip settlements the player cannot currently see.
-		if !province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 5) {
+		if !province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 6) {
 			continue
 		}
 		if kingdom != nil {
