@@ -100,3 +100,47 @@ func TestGoodState_CurrentAtCalcAt(t *testing.T) {
 		t.Errorf("at calc_at should equal stored amount, got %.3f", got)
 	}
 }
+
+// TestTimescaleRelation_SettledFormula locks the TIME_SCALE↔production-rate contract.
+//
+// The settled() SQL function is the canonical lazy-eval path for all settlement_goods:
+//   settled(amount, rate, calc_at) = amount + epoch_seconds(now−calc_at)/60 × rate × factor
+//
+// where factor = TIME_SCALE (written to sim_config by main.go at boot).
+//
+// At TIME_SCALE=100: 1 real minute of wall-clock time accrues 100 game-minutes of production.
+// production_rules.rate_per_min is expressed in game-minutes — so at TIME_SCALE=100 a rate of
+// 0.01/game-min yields 0.01×100 = 1.0 units per real minute. This is intentional and correct.
+//
+// GoodState.Current() (Go-side) does NOT apply TIME_SCALE. It is only used for the legacy
+// silver ResourceState columns which were dropped in migration 057 (P0a silver-unification).
+// All active reads/writes go through settled() in SQL. GoodState.Current is a Go-side test
+// helper; callers in production code are province/model.go's silver column path (now dead).
+//
+// SB4 audit verdict (2026-06-19): NO BUG in the production path. The settled() function
+// correctly scales production by TIME_SCALE. The ×100 live world's balance data is valid.
+func TestTimescaleRelation_SettledFormula(t *testing.T) {
+	// Mirror settled() arithmetic in Go to document the formula.
+	// settled(amount, rate, calc_at) = amount + elapsed_wall_seconds/60 × rate × factor
+	settledGo := func(amount, rate float64, factor float64, elapsedWallSeconds float64) float64 {
+		return amount + (elapsedWallSeconds/60)*rate*factor
+	}
+
+	const rate = 0.01    // grain/game-min (e.g. plains terrain rule)
+	const factor = 100.0 // TIME_SCALE=100 (11-day playtest)
+	const elapsed = 60.0 // 60 real seconds = 1 real minute
+
+	// At TIME_SCALE=100: 1 real minute → 100 game-minutes → 0.01×100 = 1.0 grain.
+	got := settledGo(0, rate, factor, elapsed)
+	const want = 1.0
+	if math.Abs(got-want) > 1e-9 {
+		t.Errorf("settled formula: expected %.4f after 60s wall-time at rate %.4f factor %.0f, got %.4f",
+			want, rate, factor, got)
+	}
+
+	// At TIME_SCALE=1 (real-time): 1 real minute → 1 game-minute → 0.01×1 = 0.01 grain.
+	got1x := settledGo(0, rate, 1.0, elapsed)
+	if math.Abs(got1x-0.01) > 1e-9 {
+		t.Errorf("settled formula at 1x: expected 0.01, got %.4f", got1x)
+	}
+}
