@@ -137,30 +137,30 @@ func AppendLoyaltyEvent(ctx context.Context, pool *pgxpool.Pool, store *events.S
 func checkRevolt(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) {
 	var loyalty int
 	var ownerID *uuid.UUID
-	var infantry, chariot, priest, ship, warGalley, merchantman int
 	err := pool.QueryRow(ctx,
-		`SELECT loyalty, owner_id, infantry, chariot, priest, ship, war_galley, merchantman
-		 FROM settlements WHERE id = $1`,
+		`SELECT loyalty, owner_id FROM settlements WHERE id = $1`,
 		settlementID,
-	).Scan(&loyalty, &ownerID, &infantry, &chariot, &priest, &ship, &warGalley, &merchantman)
+	).Scan(&loyalty, &ownerID)
 	if err != nil || loyalty > 1 {
 		return
 	}
 
-	total := infantry + chariot + priest + ship + warGalley + merchantman
-	ownerFraction := 1.0
-	if total > 0 {
-		// For now: assume all garrison troops belong to owner; in future,
-		// borrowed army complicates this.
-		ownerFraction = 1.0
-	}
+	// Count garrison units from the units table (discrete unit model, mig 047).
+	var garrisonCount int
+	_ = pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM units WHERE settlement_id = $1 AND status = 'garrison'`,
+		settlementID,
+	).Scan(&garrisonCount)
 
+	ownerFraction := 1.0
+	// For now: assume all garrison troops belong to owner; in future,
+	// borrowed army complicates this.
 	if ownerID == nil {
 		ownerFraction = 0
 	}
 
-	// Trigger event: loyalty just hit 1 and garrison is thin (fewer than 5 total).
-	triggerOccurred := total < 5
+	// Trigger event: loyalty just hit 1 and garrison is thin (fewer than 5 units).
+	triggerOccurred := garrisonCount < 5
 
 	if loyalty == 1 && ownerFraction < 0.5 && triggerOccurred {
 		_, _ = pool.Exec(ctx,
