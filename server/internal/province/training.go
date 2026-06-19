@@ -31,7 +31,7 @@ type UnitSpec struct {
 var UnitSpecs = map[string]UnitSpec{
 	"infantry":       {Costs: map[string]float64{"grain": 15}, PopCost: 5, Duration: time.Minute, RequiresBarracks: true},
 	"chariot":        {Costs: map[string]float64{"grain": 30, "timber": 5}, PopCost: 8, Duration: 4 * time.Minute, RequiresStable: true},
-	"priest":         {Costs: map[string]float64{"grain": 15}, PopCost: 3, Duration: 60 * time.Minute},
+	// priest borttagen som enhet (mig 060) — präst är ingen enhet längre, kult = tempel-labor.
 	"ship":           {Costs: map[string]float64{"timber": 90}, PopCost: 10, Duration: 45 * time.Minute, RequiresHarbour: true},
 	"elite_infantry": {Costs: map[string]float64{"grain": 25, "bronze": 2}, PopCost: 10, Duration: 5 * time.Minute, RequiresBarracks: true, RequiresFoundry: true},
 	"war_galley":     {Costs: map[string]float64{"cedar": 60, "bronze": 4}, PopCost: 12, Duration: 90 * time.Minute, RequiresHarbour: true, RequiresFoundry: true},

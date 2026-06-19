@@ -9,7 +9,6 @@ import (
 var unitAliases = map[string]string{
 	"hoplites": "infantry", "hoplite": "infantry", "inf": "infantry", "infantry": "infantry",
 	"chariot": "chariot", "chariots": "chariot", "cha": "chariot", "war_chariot": "chariot",
-	"hiereus": "priest", "priest": "priest", "pri": "priest",
 	"trireme": "ship", "ship": "ship", "shp": "ship",
 	"agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry",
 }
@@ -26,7 +25,7 @@ func recruitCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			apiUnit, ok := unitAliases[unit]
 			if !ok {
-				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, hiereus, trireme, agema", unit)
+				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, trireme, agema", unit)
 			}
 			if men <= 0 || men%10 != 0 {
 				return fmt.Errorf("--men must be a positive multiple of 10 (e.g. 10, 20, … 100)")
