@@ -88,6 +88,8 @@ func main() {
 		tradeDeclineCmd(),
 		gossipCmd(),
 		messengerCmd(),
+		messageCmd(),
+		tradeOfferCmd(),
 		allocateCmd(),
 		unitCmd(),
 		wantsCmd(),
