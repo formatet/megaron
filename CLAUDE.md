@@ -6,6 +6,9 @@ If code and this file conflict, trust the code, then fix this file.
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
 - **Before ending a session:** update `megaron_todo.md` (living status, backlog, "Vägen framåt").
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
+- **When you mark something done in `megaron_todo.md`:** stamp it with the **actual** wall-clock time pulled from
+  `TZ=Europe/Stockholm date` — never a guessed or remembered time. Your internal time-sense drifts; anchor every
+  completion (and "live since"/reseed note) to the real clock. Format `(YYYY-MM-DD HH:MM)`.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** (e.g. `frågor*` files in repo root) are an inbox, not a home: triage every point
   into a todo line, a vault update, or a reasoned rejection — then delete the dump. Never leave it rotting in root.
@@ -38,7 +41,7 @@ Persistent async multiplayer grand strategy, mythic Bronze Age east Mediterranea
 each ruling a network of settlements; kingdoms form organically; the world runs whether you're online or not.
 Tone: serious, warm, human-scale. Full setting + rationale: `temenos_worldbuilding.md`, `temenos_designprinciper.md`.
 
-**Name:** project = **Poleia**; the sea = **The Thalassa**. Permanent: `terrain = "sea"` in DB, "The Thalassa" in UI/labels.
+**Name:** project = **Poleia** (system rename to Megaron in progress — see Naming below).
 
 Current status & backlog live in `megaron_todo.md` — do not restate them here (they go stale).
 
@@ -111,15 +114,18 @@ iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 
 **Columns:**
 - Resources: `gold_amount`, `gold_rate`, `gold_cap`, `gold_calc_at` — NOT `*_last_calc_at`.
-- Army: bare names — `infantry`, `chariot`, `ship`, `elite_infantry`. (catapult borttagen mig 042; priest är ingen enhet längre — kult = tempel-labor.)
+- Army: bare names — `infantry`, `chariot`, `ship`, `elite_infantry`. (priest är ingen enhet längre — kult = tempel-labor.)
 
 **Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
 Settlement not Base · Kingdom not Alliance · Rite not Spell · March not Attack (verb) · Sea Peoples not Boss ·
 Collapse not Season-end · The Thalassa not The Sea.
 
+**The Thalassa** = the sea's in-world lore name. Permanent: `terrain = "sea"` in DB. NOT affected by the
+Megaron rename (which is about the system/repo name, not the world).
+
 **Megaron-övergång (HARD, riktning):** Vi fasar **sakta** ut orden "Thalassa" och "Poleia" till förmån för
 **Megaron** (systemnamnet). Inget tvångsbyte i en sweep — men varje gång du ändå rör en yta där orden
-står (UI-text, ny kod, rubriker), välj Megaron-nomenklaturen. Permanent kvar: `terrain = "sea"` i DB.
+står (UI-text, ny kod, rubriker), välj Megaron-nomenklaturen.
 Mono-repo-målet temenos/megaron/keryx, se [[megaron_todo]] "Projektbyte".
 
 **Silver-över-guld (HARD, riktning):** Valutan heter **silver**. Föredra ordet "silver" framför "gold/guld"
@@ -137,10 +143,10 @@ inte valutan. Full svep = Sprint A.
 - **Messengers** are physical, sacred (uninterceptable); reply arrives on return. **Load-bearing pillar:**
   ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
   (recall etc.) also travel by messenger — command is never instant. `temenos_settlement.md`
-- **Kingdom** = Basileus + members; forming until 3 members; elections Sundays, 7-day lock. `temenos_kingdoms.md`
-- **Combat** = deterministisk effektiv styrka + bounded ~20% kharis-biased fortune (RNG rullas EN gång i handlern, utfall i event — Fas 2.3); walls L0–3 scale defense (multipliers in `internal/combat`); moral/rout — låg moral → enheten flyr, ej utplåning. `temenos_kharis.md`
+- **Kingdom** = Basileus + members; ≥3 members to form. `temenos_kingdoms.md`
+- **Combat** = deterministisk effektiv styrka + bounded kharis-biased fortune (RNG rullas EN gång i handlern, utfall i event — Fas 2.3); moral/rout — låg moral → enheten flyr, ej utplåning. `temenos_kharis.md`
 - **Kult** produceras av befolkning allokerad till tempel; **inga prästenheter** (varken byggbara eller starter); rit gateas av tempel + kharis (fyra mood-nivåer; siffrorna i `internal/kharis` / `temenos_kharis.md`).
-- **Silver** — betalningsmedel (inte guld). DB-nyckel: `gold`. UI-visning: shekel/mina/talang. Fysiskt transporterbart. **Silver-sänka = armé-upkeep (grain + silver), löpande; obetald → desertering/attrition.** Präst/kult ingen upkeep.
+- **Silver** — betalningsmedel, fysiskt transporterbart. Silver-sänka = armé-upkeep (grain + silver), löpande; obetald → desertering/attrition. Präst/kult ingen upkeep.
 - **Catchment = enda produktionskällan** — staden producerar bara från sin catchment (omgivande hexar brukas direkt, utan outpost); dynamiskt + lazy + deterministiskt. `temenos_terrain.md`
 - **Startstaden självförsörjande** (hård invariant) — första staden klarar basförsörjning utan handling; andra städer får svälta vid försummelse. Handel = för att avancera, ej överleva.
 - **Coast är ingen terräng** — egenskap = granne till hav (grannskaps-check); `coast_beach` borttagen ur enum.
