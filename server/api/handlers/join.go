@@ -267,8 +267,27 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// RecomputeProduction reads catchment tiles, auto-seeds equal labor weights
-	// (since no settlement_labor rows exist yet), and writes rates.
+	// Seed baseline labor weights: grain dominates (85%) so the starter city is
+	// self-sufficient from t=0; cult gets a server-floor (15%) so the temple is
+	// never inert and kharis doesn't decay before the first agent allocation.
+	// These two goods are the only ones seeded explicitly — other goods start at
+	// zero weight and are allocated by the Wanax/agent via LaborAlloc. Together
+	// they satisfy both hard invariants: "grain feeds the city" and "cult always
+	// produces so kharis has a floor."
+	if _, err := tx.Exec(r.Context(),
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+		 VALUES ($1, 'grain', 0.85), ($1, 'cult', 0.15)
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		settlementID,
+	); err != nil {
+		slog.Error("could not seed labor weights", "err", err, "settlement", settlementID)
+		writeError(w, http.StatusInternalServerError, "could not seed labor weights")
+		return
+	}
+
+	// RecomputeProduction reads catchment tiles and settlement_labor weights, then
+	// writes rates. The equal-weight seeder (len(weights)==0 path) is bypassed since
+	// we already seeded grain + cult above.
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
 		slog.Error("could not recompute production on join", "err", err)
 		writeError(w, http.StatusInternalServerError, "could not init production")

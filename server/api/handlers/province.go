@@ -2548,6 +2548,24 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Server-floor: always ensure a baseline cult weight (0.15) so temples are
+	// never inert regardless of agent/Wanax allocation choices. This satisfies
+	// the "starter city self-sufficient" and "kharis 5% floor always" invariants.
+	// Cult weight is additive (does not compete with grain workers — 15% of pop
+	// serves the temple alongside other duties), so grain self-sufficiency is
+	// unaffected. Only applied when the settlement has a temple; no-op otherwise
+	// (ON CONFLICT DO NOTHING skips the insert if agent already allocated cult ≥ 0.15).
+	if _, err := tx.Exec(r.Context(),
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+		 SELECT $1, 'cult', 0.15
+		 WHERE EXISTS (SELECT 1 FROM buildings b WHERE b.settlement_id = $1 AND b.building_type = 'temple')
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		settlementID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not apply cult labor floor")
+		return
+	}
+
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
 		writeError(w, http.StatusInternalServerError, "recompute production failed")
 		return

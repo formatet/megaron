@@ -149,8 +149,19 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		return fmt.Errorf("seed starter buildings on respawn: %w", err)
 	}
 
-	// RecomputeProduction reads catchment tiles, auto-seeds equal labor weights,
-	// and writes rates. No prior terrain-init needed.
+	// Seed baseline labor weights (same as join): grain=0.85, cult=0.15.
+	// Ensures the respawned city is self-sufficient and cult never starts inert.
+	if _, err = tx.Exec(ctx,
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+		 VALUES ($1, 'grain', 0.85), ($1, 'cult', 0.15)
+		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
+		settlementID,
+	); err != nil {
+		return fmt.Errorf("seed labor weights on respawn: %w", err)
+	}
+
+	// RecomputeProduction reads catchment tiles and settlement_labor weights, then
+	// writes rates. Bypasses the equal-weight seeder since weights are pre-seeded.
 	if err = economy.RecomputeProduction(ctx, tx, settlementID); err != nil {
 		return fmt.Errorf("recompute production on respawn: %w", err)
 	}
