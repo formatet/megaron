@@ -104,10 +104,10 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 	if err = tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
-		  population, kharis_rate, kharis_calc_at)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000,$6,now())
+		  population)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000)
 		 RETURNING id`,
-		worldID, provinceID, name, culture, playerID, kharisRate,
+		worldID, provinceID, name, culture, playerID,
 	).Scan(&settlementID); err != nil {
 		return fmt.Errorf("create settlement: %w", err)
 	}
@@ -134,11 +134,20 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		return fmt.Errorf("seed goods: %w", err)
 	}
 
+	// Kharis lives on player_world_records (mig 029, rikes-pool per Wanax), not on
+	// settlements. A reborn Wanax starts with an empty pool and a fresh rate from the
+	// new location's pantheon — reset amount/calc_at so the stale pre-collapse calc_at
+	// can't balloon into a settled() windfall on respawn.
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status)
-		 VALUES ($1, $2, $3, 'active')
-		 ON CONFLICT (player_id, world_id) DO UPDATE SET settlement_id = EXCLUDED.settlement_id, status = 'active'`,
-		playerID, worldID, settlementID,
+		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate, kharis_amount, kharis_calc_at)
+		 VALUES ($1, $2, $3, 'active', $4, 0, now())
+		 ON CONFLICT (player_id, world_id) DO UPDATE SET
+		     settlement_id = EXCLUDED.settlement_id,
+		     status = 'active',
+		     kharis_rate = EXCLUDED.kharis_rate,
+		     kharis_amount = 0,
+		     kharis_calc_at = now()`,
+		playerID, worldID, settlementID, kharisRate,
 	); err != nil {
 		return fmt.Errorf("update records: %w", err)
 	}

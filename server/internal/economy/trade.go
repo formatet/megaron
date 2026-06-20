@@ -97,7 +97,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 		_, _ = h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeLost",
 			map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason, "route_id": p.TradeRouteID},
-			e.WorldID, &e.ID,
+			e.WorldID, nil, // e.ID is a scheduled_events id, not an events(id) — would break events_causation_fkey.
 		)
 		if h.hub != nil {
 			var ownerID uuid.UUID
@@ -163,9 +163,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		return fmt.Errorf("commit: %w", err)
 	}
 
+	// causation is nil: e.ID is a scheduled_events row id, not an events(id), so passing
+	// it would violate events_causation_fkey. A timer-driven delivery has no causing event.
 	if _, err := h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeDelivery",
 		map[string]any{"good_key": p.GoodKey, "quantity": delivered, "route_id": p.TradeRouteID},
-		e.WorldID, &e.ID,
+		e.WorldID, nil,
 	); err != nil {
 		slog.Error("record TradeDelivery event", "err", err)
 	}

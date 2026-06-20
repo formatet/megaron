@@ -82,7 +82,7 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 
 	if _, err = h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeReturn",
 		map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "messenger_id": p.MessengerID},
-		e.WorldID, &e.ID,
+		e.WorldID, nil, // e.ID is a scheduled_events id, not an events(id) — would break events_causation_fkey.
 	); err != nil {
 		slog.Error("record TradeReturn event", "err", err)
 	}
