@@ -310,9 +310,13 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		TrainActive  bool       `json:"train_active,omitempty"`
 	}
 	var markers []provinceMarker
+	var dbgRows, dbgScanErr, dbgVisible int
 	for rows.Next() {
+		dbgRows++
 		var m provinceMarker
 		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
+			dbgScanErr++
+			slog.Error("provinces marker scan failed", "err", err)
 			continue
 		}
 		pos := province.MapPosition{Q: m.Q, R: m.R}
@@ -325,6 +329,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		if !m.Visible {
 			continue // don't reveal fog tiles
 		}
+		dbgVisible++
 		if !m.Own {
 			// Don't expose enemy/neutral garrison or activity — FOW.
 			m.ArmyTotal = 0
@@ -332,6 +337,9 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 			m.TrainActive = false
 		}
 		markers = append(markers, m)
+	}
+	if authenticated {
+		slog.Info("provinces debug", "player", playerID, "rows", dbgRows, "scanErr", dbgScanErr, "visible", dbgVisible, "origins", len(origins))
 	}
 	if markers == nil {
 		markers = []provinceMarker{}
