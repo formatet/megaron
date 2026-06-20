@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -442,7 +443,7 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 			origins = append(origins, pos)
 		}
 	}
-	slog.Info("loadVisibleOrigins debug", "world", worldID, "player", playerID, "origins", len(origins))
+	slog.Info("loadVisibleOrigins debug", "world", worldID, "player", playerID, "origins", len(origins), "positions", fmt.Sprintf("%v", origins))
 	return origins
 }
 
