@@ -3,8 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -269,7 +267,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
-		        s.state, s.wall_level, pl.username, COALESCE(k.name, ''),
+		        s.state, s.wall_level, COALESCE(pl.username, ''), COALESCE(k.name, ''),
 		        s.infantry + s.elite_infantry + s.chariot + s.ship + s.war_galley + s.merchantman AS army_total,
 		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
 		        EXISTS (SELECT 1 FROM scheduled_events se WHERE se.event_type = 'TrainComplete'
@@ -310,13 +308,9 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		TrainActive  bool       `json:"train_active,omitempty"`
 	}
 	var markers []provinceMarker
-	var dbgRows, dbgScanErr, dbgVisible int
 	for rows.Next() {
-		dbgRows++
 		var m provinceMarker
 		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
-			dbgScanErr++
-			slog.Error("provinces marker scan failed", "err", err)
 			continue
 		}
 		pos := province.MapPosition{Q: m.Q, R: m.R}
@@ -329,7 +323,6 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		if !m.Visible {
 			continue // don't reveal fog tiles
 		}
-		dbgVisible++
 		if !m.Own {
 			// Don't expose enemy/neutral garrison or activity — FOW.
 			m.ArmyTotal = 0
@@ -338,8 +331,12 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		}
 		markers = append(markers, m)
 	}
-	if authenticated {
-		slog.Info("provinces debug", "player", playerID, "rows", dbgRows, "scanErr", dbgScanErr, "visible", dbgVisible, "origins", len(origins))
+	// A row error here (e.g. a NULL scanned into a non-nullable dest) closes the pgx
+	// result set mid-stream, silently truncating markers. Surface it instead of
+	// returning a partial/empty map that looks like fog-of-war.
+	if err := rows.Err(); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load provinces")
+		return
 	}
 	if markers == nil {
 		markers = []provinceMarker{}
@@ -439,7 +436,6 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 		worldID, playerID,
 	)
 	if err != nil {
-		slog.Error("loadVisibleOrigins query failed", "err", err, "world", worldID, "player", playerID)
 		return nil
 	}
 	defer rows.Close()
@@ -451,7 +447,6 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 			origins = append(origins, pos)
 		}
 	}
-	slog.Info("loadVisibleOrigins debug", "world", worldID, "player", playerID, "origins", len(origins), "positions", fmt.Sprintf("%v", origins))
 	return origins
 }
 
