@@ -389,6 +389,33 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 		return fmt.Sprintf("Lojaliteten i %s eroderar", s)
 	case "LoyaltyChanged":
 		return fmt.Sprintf("Lojaliteten i %s ändrades till %v", s, p["new_level"])
+	// ── discrete-unit model (C1–C8): unit stream carries a unit_id, not a settlement,
+	// so render from payload coords rather than the (unknown) settlement subject. ──
+	case "UnitMarchOrdered":
+		return fmt.Sprintf("En styrka marscherar från (%v,%v) mot (%v,%v)",
+			p["origin_q"], p["origin_r"], p["target_q"], p["target_r"])
+	case "UnitArrived":
+		return fmt.Sprintf("En styrka anlände till (%v,%v)", p["q"], p["r"])
+	case "UnitDeserted":
+		return fmt.Sprintf("Soldater deserterade (%v man) — silverbrist", p["lost"])
+	case "UnitAttrition":
+		return fmt.Sprintf("Soldater gick förlorade (%v man) — spannmålsbrist", p["lost"])
+	case "UnitFormed":
+		return "En ny styrka börjar formeras"
+	case "UnitReinforced":
+		return "En styrka förstärktes"
+	case "UnitDeployed":
+		return "En styrka ställdes upp i garnison"
+	case "UnitDisbanded":
+		return "En styrka upplöstes — männen återvände till befolkningen"
+	case "UnitStanceChanged":
+		return fmt.Sprintf("En styrka ändrade hållning till %s", str(p, "stance"))
+	case "UnitCombatResolved", "UnitIntercepted":
+		return fmt.Sprintf("Strid avgjordes för en styrka vid (%v,%v)", p["q"], p["r"])
+	case "CityCollapsed":
+		return fmt.Sprintf("%s kollapsade (%s) — en warband reser sig ur ruinerna", s, str(p, "cause"))
+	case "OutpostEstablished":
+		return fmt.Sprintf("%s upprättade en utpost", a)
 	default:
 		return fmt.Sprintf("[%s] %s (%s)", e.EventType, s, compactPayload(e.Payload))
 	}
