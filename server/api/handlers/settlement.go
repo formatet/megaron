@@ -1,13 +1,16 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
@@ -15,6 +18,7 @@ import (
 	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/timescale"
 )
 
@@ -479,12 +483,17 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 }
 
 // Rite handles POST /worlds/:worldID/settlements/:settlementID/rite.
-// Performs a ritual intercession — requires a temple, costs 5 grain.
+// Performs a cultural prayer — requires a temple, costs 5 grain.
+// Body: {"prayer":"<prayer_id>","target":"<optional uuid>"}.
+// Omitting prayer defaults to the culture's battle_frenzy prayer (backward compat).
+//
 // Success probability is determined by divine mood (kharis level):
 //
 //	Favorable (≥800 kharis): 80% · Indifferent (≥400): 50% · Suspicious (≥100): 20% · Wrathful: 5%
 //
-// On success: sets battle_frenzy for 6 hours — attacker infantry fights at ×1.5 strength.
+// The prayer must belong to the settlement's culture (403 otherwise).
+// The prayer must be off cooldown (409 otherwise).
+// Outcome is rolled once in the handler and stored in the RiteCast event (Fas 2.3).
 func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -502,6 +511,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Decode optional body.
+	var body struct {
+		Prayer string `json:"prayer"`
+		Target string `json:"target"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&body)
+
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not begin transaction")
@@ -509,16 +525,39 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
+	// Lock the settlement row and read culture + battle_frenzy state.
+	var cultureID string
 	var alreadyFrenzied bool
 	err = tx.QueryRow(r.Context(),
-		`SELECT (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
+		`SELECT culture_id,
+		        (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
 		 FROM settlements
 		 WHERE id = $1 AND world_id = $2 AND owner_id = $3
 		 FOR UPDATE`,
 		settlementID, worldID, playerID,
-	).Scan(&alreadyFrenzied)
+	).Scan(&cultureID, &alreadyFrenzied)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	// Resolve prayer: empty → default battle_frenzy for this culture.
+	prayerID := body.Prayer
+	if prayerID == "" {
+		prayerID = religion.DefaultBattleFrenzyFor(cultureID)
+	}
+
+	// Validate prayer exists.
+	spec, ok := religion.PrayerSpecs[prayerID]
+	if !ok {
+		writeError(w, http.StatusBadRequest, fmt.Sprintf("unknown prayer %q", prayerID))
+		return
+	}
+
+	// Culture gate.
+	if !religion.AllowedForCulture(cultureID, prayerID) {
+		writeError(w, http.StatusForbidden,
+			fmt.Sprintf("prayer %q is not available to culture %q", prayerID, cultureID))
 		return
 	}
 
@@ -527,6 +566,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
 		settlementID,
 	).Scan(&hasTemple)
+	if !hasTemple {
+		writeError(w, http.StatusBadRequest, "a temple must be built to perform rites")
+		return
+	}
 
 	var kharisNow float64
 	_ = tx.QueryRow(r.Context(),
@@ -536,13 +579,45 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		playerID, worldID,
 	).Scan(&kharisNow)
 
-	if !hasTemple {
-		writeError(w, http.StatusBadRequest, "a temple must be built to perform rites")
+	// Kharis tier gate.
+	if kharisNow < spec.MinKharis {
+		writeError(w, http.StatusBadRequest,
+			fmt.Sprintf("insufficient divine favour: prayer %q requires %.0f kharis (you have %.0f)",
+				prayerID, spec.MinKharis, kharisNow))
 		return
 	}
-	if alreadyFrenzied {
+
+	// Battle-frenzy-specific guard (can't stack).
+	if spec.EffectType == religion.EffectBattleFrenzy && alreadyFrenzied {
 		writeError(w, http.StatusConflict, "battle frenzy already active — wait for it to expire")
 		return
+	}
+
+	// Cooldown check: query last successful RiteCast for this (player, prayer) from events table.
+	// Column-free: uses the existing event log, no new schema.
+	if spec.Cooldown > 0 {
+		var lastCast time.Time
+		cooldownErr := h.pool.QueryRow(r.Context(),
+			`SELECT created_at FROM events
+			 WHERE world_id = $1
+			   AND event_type = 'RiteCast'
+			   AND payload->>'player_id' = $2
+			   AND payload->>'prayer' = $3
+			   AND (payload->>'success')::boolean = true
+			 ORDER BY created_at DESC LIMIT 1`,
+			worldID, playerID.String(), prayerID,
+		).Scan(&lastCast)
+		if cooldownErr == nil {
+			elapsed := h.clk.Now().Sub(lastCast)
+			remaining := spec.Cooldown - elapsed
+			if remaining > 0 {
+				writeError(w, http.StatusConflict,
+					fmt.Sprintf("prayer %q is on cooldown for another %.0f minutes",
+						prayerID, remaining.Minutes()))
+				return
+			}
+		}
+		// ErrNoRows = never cast before = allowed.
 	}
 
 	// Determine success probability from divine mood.
@@ -559,31 +634,61 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		chance, mood = 5, "Wrathful"
 	}
 
-	// Deduct 5 grain as an offering (regardless of outcome).
-	_, err = tx.Exec(r.Context(),
-		`UPDATE settlement_goods SET
-		    amount  = GREATEST(0, settled(amount, rate, calc_at) - 5),
-		    calc_at = now()
-		 WHERE settlement_id = $1 AND good_key = 'grain'`,
-		settlementID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct offering")
-		return
-	}
-
-	success := rand.Intn(100) < chance
-	var expiresAt *time.Time
-	if success {
-		t := h.clk.Now().Add(timescale.Apply(6 * time.Hour))
-		expiresAt = &t
-		if _, err = tx.Exec(r.Context(),
-			`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
-			*expiresAt, settlementID,
-		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not set frenzy")
+	// Affordability check + deduct the material offering. The gods take the
+	// sacrifice regardless of outcome. Kharis is never part of this — it is
+	// standing (gated above); the offering is in trade goods (wine/oil/silver/…),
+	// the deliberate economic sink that makes religion drive trade.
+	for good, need := range spec.Offering {
+		var have float64
+		if scanErr := tx.QueryRow(r.Context(),
+			`SELECT GREATEST(0, settled(amount, rate, calc_at))
+			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+			settlementID, good,
+		).Scan(&have); scanErr != nil || have < need {
+			writeError(w, http.StatusBadRequest,
+				fmt.Sprintf("insufficient offering for %q: need %.0f %s (have %.0f)",
+					prayerID, need, good, have))
 			return
 		}
+	}
+	for good, need := range spec.Offering {
+		if _, err = tx.Exec(r.Context(),
+			`UPDATE settlement_goods SET
+			    amount  = GREATEST(0, settled(amount, rate, calc_at) - $2),
+			    calc_at = now()
+			 WHERE settlement_id = $1 AND good_key = $3`,
+			settlementID, need, good,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not deduct offering")
+			return
+		}
+	}
+
+	// Roll outcome once (Fas 2.3 — result goes into the event, not "roll_pending").
+	success := rand.Intn(100) < chance
+
+	// Apply effect on success.
+	effectPayload := map[string]any{}
+	var message string
+
+	if success {
+		switch spec.EffectType {
+		case religion.EffectBattleFrenzy:
+			effectPayload, message, err = h.applyBattleFrenzy(r.Context(), tx, settlementID)
+		case religion.EffectOracleRevealDeposits:
+			effectPayload, message, err = h.applyOracleRevealDeposits(r.Context(), tx, settlementID, worldID, playerID, spec)
+		case religion.EffectHarvestBlessing:
+			effectPayload, message, err = h.applyHarvestBlessing(r.Context(), tx, settlementID, spec)
+		default:
+			effectPayload = map[string]any{"type": spec.EffectType}
+			message = fmt.Sprintf("The gods accept your prayer — %s is granted.", spec.Name)
+		}
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not apply effect")
+			return
+		}
+	} else {
+		message = "The gods are silent. Your offering was received, but they do not answer."
 	}
 
 	if err := tx.Commit(r.Context()); err != nil {
@@ -591,19 +696,178 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Emit RiteCast event AFTER commit (event store uses pool, not the now-committed TX).
+	// Payload carries the full outcome (Fas 2.3).
+	eventPayload := map[string]any{
+		"player_id":   playerID.String(),
+		"prayer":      prayerID,
+		"effect_type": spec.EffectType,
+		"success":     success,
+		"offering":    spec.Offering,
+		"effect":      effectPayload,
+	}
+	_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamReligion, "RiteCast",
+		eventPayload, worldID, nil)
+
 	resp := map[string]any{
 		"success": success,
 		"mood":    mood,
 		"chance":  chance,
+		"prayer":  prayerID,
+		"message": message,
 	}
 	if success {
-		resp["effect"] = "battle_frenzy"
-		resp["expires_at"] = expiresAt
-		resp["message"] = "The gods answer your plea — your warriors fight with divine fury!"
-	} else {
-		resp["message"] = "The gods are silent. Your offering was received, but they do not answer."
+		resp["effect_type"] = spec.EffectType
+		resp["effect"] = effectPayload
 	}
 	writeJSON(w, http.StatusOK, resp)
+}
+
+// applyBattleFrenzy sets battle_frenzy_until for 6 scaled hours.
+func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (map[string]any, string, error) {
+	t := h.clk.Now().Add(timescale.Apply(6 * time.Hour))
+	if _, err := tx.Exec(ctx,
+		`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
+		t, settlementID,
+	); err != nil {
+		return nil, "", err
+	}
+	return map[string]any{"expires_at": t}, "The gods answer your plea — your warriors fight with divine fury!", nil
+}
+
+// applyHarvestBlessing boosts the settlement's grain by 25% (one-shot abundance).
+// Mirrors the tick-level applyDivineBlessing harvest_blessing SQL.
+func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, spec religion.PrayerSpec) (map[string]any, string, error) {
+	if _, err := tx.Exec(ctx,
+		`UPDATE settlement_goods SET
+		    amount  = LEAST(cap, settled(amount, rate, calc_at) * 1.25),
+		    calc_at = now()
+		 WHERE settlement_id = $1 AND good_key = 'grain'`,
+		settlementID,
+	); err != nil {
+		return nil, "", err
+	}
+	msg := fmt.Sprintf("%s smiles upon your fields — grain stocks swell by a quarter.", spec.God)
+	return map[string]any{"good": "grain", "multiplier": 1.25}, msg, nil
+}
+
+// applyOracleRevealDeposits reveals the nearest unscouted province(s) with a
+// copper, tin, or silver deposit within 8 hexes of the settlement's province.
+// Tin is prioritised (higher tier) when multiple candidates exist.
+// Inserts into player_scouted_provinces ON CONFLICT DO NOTHING (idempotent).
+func (h *SettlementHandler) applyOracleRevealDeposits(
+	ctx context.Context,
+	tx pgx.Tx,
+	settlementID, worldID, playerID uuid.UUID,
+	spec religion.PrayerSpec,
+) (map[string]any, string, error) {
+	const oracleRadius = 8
+
+	// Find the settlement's province position.
+	var originQ, originR int
+	if err := tx.QueryRow(ctx,
+		`SELECT p.map_q, p.map_r FROM provinces p
+		 JOIN settlements s ON s.province_id = p.id
+		 WHERE s.id = $1`,
+		settlementID,
+	).Scan(&originQ, &originR); err != nil {
+		return nil, "", fmt.Errorf("oracle: could not find settlement province: %w", err)
+	}
+
+	// Query nearby provinces with ore deposits that the player has NOT yet scouted.
+	// Hex distance in axial coords: (|dq| + |dq+dr| + |dr|) / 2.
+	// Prioritise tin (rarest), then copper, then silver.
+	rows, err := tx.Query(ctx,
+		`SELECT p.id, p.map_q, p.map_r,
+		        mt.tin_deposit, mt.copper_deposit, COALESCE(mt.silver_deposit, false)
+		 FROM provinces p
+		 JOIN map_tiles mt ON mt.world_id = p.world_id AND mt.q = p.map_q AND mt.r = p.map_r
+		 WHERE p.world_id = $1
+		   AND (mt.tin_deposit OR mt.copper_deposit OR COALESCE(mt.silver_deposit, false))
+		   AND p.id NOT IN (
+		       SELECT province_id FROM player_scouted_provinces
+		       WHERE world_id = $1 AND player_id = $2
+		   )
+		   AND (
+		       ABS(p.map_q - $3) + ABS((p.map_q - $3) + (p.map_r - $4)) + ABS(p.map_r - $4)
+		   ) / 2 <= $5
+		 ORDER BY
+		   mt.tin_deposit DESC,
+		   mt.copper_deposit DESC,
+		   (ABS(p.map_q - $3) + ABS((p.map_q - $3) + (p.map_r - $4)) + ABS(p.map_r - $4))
+		 LIMIT 2`,
+		worldID, playerID, originQ, originR, oracleRadius,
+	)
+	if err != nil {
+		return nil, "", fmt.Errorf("oracle: query deposits: %w", err)
+	}
+	defer rows.Close()
+
+	type revealedProvince struct {
+		ID      uuid.UUID
+		Q, R    int
+		Tin     bool
+		Copper  bool
+		Silver  bool
+	}
+	var revealed []revealedProvince
+	for rows.Next() {
+		var rp revealedProvince
+		if err := rows.Scan(&rp.ID, &rp.Q, &rp.R, &rp.Tin, &rp.Copper, &rp.Silver); err == nil {
+			revealed = append(revealed, rp)
+		}
+	}
+	rows.Close()
+
+	if len(revealed) == 0 {
+		msg := fmt.Sprintf("%s gazes into the distance — no hidden ore deposits lie within reach.", spec.God)
+		return map[string]any{"provinces_revealed": 0}, msg, nil
+	}
+
+	// Insert scouted rows.
+	for _, rp := range revealed {
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO player_scouted_provinces (world_id, player_id, province_id)
+			 VALUES ($1, $2, $3)
+			 ON CONFLICT DO NOTHING`,
+			worldID, playerID, rp.ID,
+		); err != nil {
+			return nil, "", fmt.Errorf("oracle: insert scouted province: %w", err)
+		}
+	}
+
+	// Build human-readable message naming the deposits.
+	depositName := func(rp revealedProvince) string {
+		switch {
+		case rp.Tin:
+			return "tin"
+		case rp.Copper:
+			return "copper"
+		default:
+			return "silver"
+		}
+	}
+	var parts []string
+	for _, rp := range revealed {
+		parts = append(parts, fmt.Sprintf("%s at (%d,%d)", depositName(rp), rp.Q, rp.R))
+	}
+
+	var msg string
+	switch len(parts) {
+	case 1:
+		msg = fmt.Sprintf("%s reveals hidden ore — %s.", spec.God, parts[0])
+	default:
+		msg = fmt.Sprintf("%s reveals hidden ore — %s.", spec.God, parts[0]+"; "+parts[1])
+	}
+
+	provinceIDs := make([]string, len(revealed))
+	for i, rp := range revealed {
+		provinceIDs[i] = rp.ID.String()
+	}
+	return map[string]any{
+		"provinces_revealed": len(revealed),
+		"province_ids":       provinceIDs,
+	}, msg, nil
 }
 
 // Gossip handles GET /worlds/:worldID/gossip — the player's gossip feed.

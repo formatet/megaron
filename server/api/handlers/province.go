@@ -21,6 +21,7 @@ import (
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/unit"
 )
@@ -249,24 +250,53 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			recruitAfford = append(recruitAfford, recruitAffordRow{Unit: unitType, CanRecruit: afford})
 		}
 
+		// available_prayers: the settlement culture's prayers with material
+		// offering + goods-affordability. The kharis tier gate (min_kharis) is
+		// left to the client, which already knows its own kharis standing.
+		type prayerRow struct {
+			ID         string             `json:"id"`
+			Name       string             `json:"name"`
+			God        string             `json:"god"`
+			EffectType string             `json:"effect_type"`
+			MinKharis  float64            `json:"min_kharis"`
+			Offering   map[string]float64 `json:"offering"`
+			Affordable bool               `json:"affordable"`
+		}
+		prayers := []prayerRow{}
+		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
+			spec := religion.PrayerSpecs[pid]
+			afford := true
+			for g, need := range spec.Offering {
+				if goodsStock[g] < need {
+					afford = false
+					break
+				}
+			}
+			prayers = append(prayers, prayerRow{
+				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
+				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
+			})
+		}
+
 		resp["settlement"] = map[string]any{
-			"id":             sett.ID,
-			"name":           sett.Name,
-			"owner_id":       sett.OwnerID,
-			"kingdom_id":     sett.KingdomID,
-			"culture":        sett.CultureID,
-			"state":          sett.State,
-			"population":     sett.Population,
-			"labor_pool":     laborPool,
-			"walls":          sett.WallLevel,
-			"loyalty":        sett.Loyalty,
-			"resources":      sett.Resources.SnapshotFull(now),
-			"army":           sett.Army,
-			"build_queue":    buildQueue,
-			"training_queue": trainQueue,
-			"buildings":      buildings,
-			"can_afford":     buildAfford,
-			"can_recruit":    recruitAfford,
+			"id":                sett.ID,
+			"name":              sett.Name,
+			"owner_id":          sett.OwnerID,
+			"kingdom_id":        sett.KingdomID,
+			"culture":           sett.CultureID,
+			"state":             sett.State,
+			"population":        sett.Population,
+			"labor_pool":        laborPool,
+			"walls":             sett.WallLevel,
+			"loyalty":           sett.Loyalty,
+			"resources":         sett.Resources.SnapshotFull(now),
+			"army":              sett.Army,
+			"build_queue":       buildQueue,
+			"training_queue":    trainQueue,
+			"buildings":         buildings,
+			"can_afford":        buildAfford,
+			"can_recruit":       recruitAfford,
+			"available_prayers": prayers,
 		}
 	}
 
