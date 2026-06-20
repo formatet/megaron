@@ -1,6 +1,12 @@
 package world
 
-import "math/rand"
+import (
+	"fmt"
+	"log/slog"
+	"math/rand"
+	"sort"
+	"strings"
+)
 
 type cell struct{ q, r int }
 
@@ -37,7 +43,89 @@ const lmSea = 0
 //   - At least 2 productive copper and 2 productive tin tiles, and ≥3 cedar
 //     forests on the eastern landmass.
 //   - Multiple distinct landmasses separated by sea (a real archipelago).
-func GenerateMap(worldID interface{ String() string }, seed int64, width, height int) []MapTile {
+//
+// The unit-test guarantees are now *enforced at generation time*: GenerateMap
+// validates each candidate map and reseeds until one passes (rejection sampling),
+// so a map that lacks a tin pole can never reach a live world. It returns the
+// effective seed that produced the returned map — callers MUST persist it (it
+// may differ from the requested seed when an early candidate was rejected).
+func GenerateMap(worldID interface{ String() string }, seed int64, width, height int) ([]MapTile, int64) {
+	for attempt := int64(0); attempt < maxMapAttempts; attempt++ {
+		eff := seed + attempt
+		tiles := generateMapOnce(worldID, eff, width, height)
+		if err := validateMap(tiles); err != nil {
+			slog.Warn("mapgen: invalid map, reseeding",
+				"world", worldID.String(), "seed", eff, "width", width, "height", height, "err", err)
+			continue
+		}
+		return tiles, eff
+	}
+	// A broken map must never host a world — fail loud rather than serve a
+	// world whose MVP loop (cross-sea bronze trade) is structurally impossible.
+	panic(fmt.Sprintf("mapgen: no valid map in %d attempts from seed %d (%dx%d)",
+		maxMapAttempts, seed, width, height))
+}
+
+// maxMapAttempts bounds the rejection-sampling loop. Valid maps are common
+// (seeds 0–19 already pass every invariant), so this ceiling is only a guard.
+const maxMapAttempts = 100
+
+// Minimum guarantees a generated map must satisfy before it can host a world.
+// Mirror the thresholds asserted by TestGenerateMap_DepositsOnProductiveTerrain
+// and the validation checklist in temenos_mapgen.md.
+const (
+	minProductiveCopper = 2
+	minProductiveTin    = 2
+	minCedar            = 2
+)
+
+// validateMap returns a non-nil error naming every invariant the tile set
+// violates. The tin check is the one the live 0620 world silently failed:
+// 0 mountain_limestone tiles → 0 productive tin → no tin pole → dead MVP loop.
+func validateMap(tiles []MapTile) error {
+	copperProd, tinProd, cedar := 0, 0, 0
+	comp := landComponents(tiles)
+	copperComps := map[int]bool{}
+	tinComps := map[int]bool{}
+	for _, t := range tiles {
+		k := [2]int{t.Q, t.R}
+		if t.CopperDeposit && t.Terrain == TerrainHills {
+			copperProd++
+			copperComps[comp[k]] = true
+		}
+		if t.TinDeposit && t.Terrain == TerrainMountainLimestone {
+			tinProd++
+			tinComps[comp[k]] = true
+		}
+		if t.CedarDeposit {
+			cedar++
+		}
+	}
+
+	var fails []string
+	if copperProd < minProductiveCopper {
+		fails = append(fails, fmt.Sprintf("productive copper = %d (want >= %d)", copperProd, minProductiveCopper))
+	}
+	if tinProd < minProductiveTin {
+		fails = append(fails, fmt.Sprintf("productive tin = %d (want >= %d)", tinProd, minProductiveTin))
+	}
+	if cedar < minCedar {
+		fails = append(fails, fmt.Sprintf("cedar = %d (want >= %d)", cedar, minCedar))
+	}
+	for c := range copperComps {
+		if tinComps[c] {
+			fails = append(fails, fmt.Sprintf("copper and tin share land component %d", c))
+		}
+	}
+	if len(fails) > 0 {
+		return fmt.Errorf("invalid map: %s", strings.Join(fails, "; "))
+	}
+	return nil
+}
+
+// generateMapOnce produces a single candidate map for a seed. It is wrapped by
+// GenerateMap, which validates and reseeds. Deterministic per seed.
+func generateMapOnce(worldID interface{ String() string }, seed int64, width, height int) []MapTile {
 	rng := rand.New(rand.NewSource(seed))
 
 	grid    := make(map[cell]Terrain)
@@ -242,7 +330,12 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 	// Force one hills+copper / mountain+tin tile on each, converting terrain
 	// if the small island didn't roll any — so a "remote copper/tin island"
 	// is always a real source.
-	forceMetal := func(lm int, terrain Terrain, set func(*MapTile)) {
+	forceMetal := func(lm, fallback int, terrain Terrain, set func(*MapTile)) {
+		if lm == 0 {
+			// Remote isle failed to place (moat collision) — force the metal on
+			// its hemisphere's mainland instead, so the pole always exists.
+			lm = fallback
+		}
 		if lm == 0 {
 			return
 		}
@@ -255,6 +348,9 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 		if len(landTiles) == 0 {
 			return
 		}
+		// landmap iterates in random order — sort so tile selection (and thus the
+		// generated map) stays deterministic for a given seed.
+		sort.Ints(landTiles)
 		// Prefer a tile already of the right terrain; else convert the first.
 		target := -1
 		for _, idx := range landTiles {
@@ -273,10 +369,57 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 		}
 		set(&tiles[target])
 	}
-	forceMetal(copperIsle, TerrainHills, func(t *MapTile) { t.CopperDeposit = true })
-	forceMetal(tinIsle, TerrainMountainLimestone, func(t *MapTile) { t.TinDeposit = true })
+	forceMetal(copperIsle, mainland, TerrainHills, func(t *MapTile) { t.CopperDeposit = true })
+	forceMetal(tinIsle, anatolia, TerrainMountainLimestone, func(t *MapTile) { t.TinDeposit = true })
 
 	return tiles
+}
+
+// tileIsLand reports whether a terrain is land (not sea).
+func tileIsLand(t Terrain) bool {
+	return !isSea(t)
+}
+
+// landComponents groups contiguous land tiles into connected components and
+// returns, for each tile coordinate, the component ID it belongs to.
+func landComponents(tiles []MapTile) map[[2]int]int {
+	terrain := map[[2]int]Terrain{}
+	for _, t := range tiles {
+		terrain[[2]int{t.Q, t.R}] = t.Terrain
+	}
+	comp := map[[2]int]int{}
+	next := 0
+	dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+	for _, t := range tiles {
+		key := [2]int{t.Q, t.R}
+		if !tileIsLand(t.Terrain) {
+			continue
+		}
+		if _, seen := comp[key]; seen {
+			continue
+		}
+		id := next
+		next++
+		queue := [][2]int{key}
+		comp[key] = id
+		for len(queue) > 0 {
+			c := queue[0]
+			queue = queue[1:]
+			for _, d := range dirs {
+				n := [2]int{c[0] + d[0], c[1] + d[1]}
+				tt, ok := terrain[n]
+				if !ok || !tileIsLand(tt) {
+					continue
+				}
+				if _, seen := comp[n]; seen {
+					continue
+				}
+				comp[n] = id
+				queue = append(queue, n)
+			}
+		}
+	}
+	return comp
 }
 
 // expandLandmass flood-fills terrain from a seed cell, marking each cell with the given landmass ID.

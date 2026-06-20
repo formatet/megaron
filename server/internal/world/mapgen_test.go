@@ -7,54 +7,12 @@ type stubID struct{}
 
 func (stubID) String() string { return "test-world" }
 
+// genTiles returns the validated tile set for a seed (effective seed discarded).
+// tileIsLand and landComponents now live in mapgen.go (non-test) so validateMap
+// can share them.
 func genTiles(seed int64, w, h int) []MapTile {
-	return GenerateMap(stubID{}, seed, w, h)
-}
-
-func tileIsLand(t Terrain) bool {
-	return t != TerrainDeepSea && t != TerrainCoastalSea
-}
-
-// landComponents groups contiguous land tiles into connected components and
-// returns, for each tile coordinate, the component ID it belongs to.
-func landComponents(tiles []MapTile) map[[2]int]int {
-	terrain := map[[2]int]Terrain{}
-	for _, t := range tiles {
-		terrain[[2]int{t.Q, t.R}] = t.Terrain
-	}
-	comp := map[[2]int]int{}
-	next := 0
-	dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
-	for _, t := range tiles {
-		key := [2]int{t.Q, t.R}
-		if !tileIsLand(t.Terrain) {
-			continue
-		}
-		if _, seen := comp[key]; seen {
-			continue
-		}
-		id := next
-		next++
-		queue := [][2]int{key}
-		comp[key] = id
-		for len(queue) > 0 {
-			c := queue[0]
-			queue = queue[1:]
-			for _, d := range dirs {
-				n := [2]int{c[0] + d[0], c[1] + d[1]}
-				tt, ok := terrain[n]
-				if !ok || !tileIsLand(tt) {
-					continue
-				}
-				if _, seen := comp[n]; seen {
-					continue
-				}
-				comp[n] = id
-				queue = append(queue, n)
-			}
-		}
-	}
-	return comp
+	tiles, _ := GenerateMap(stubID{}, seed, w, h)
+	return tiles
 }
 
 func TestGenerateMap_TileCountAndBounds(t *testing.T) {
@@ -151,6 +109,51 @@ func TestGenerateMap_CopperTinSeaSeparated(t *testing.T) {
 				t.Fatalf("seed %d: copper and tin share land component %d", seed, c)
 			}
 		}
+	}
+}
+
+// The invariant is now enforced at generation time: GenerateMap must return a
+// map that passes validateMap for every seed AND every map size — including the
+// production 56×40 that the unit suite never covered before the 0620 incident.
+func TestGenerateMap_InvariantsEnforcedAcrossSizesAndSeeds(t *testing.T) {
+	sizes := [][2]int{{40, 30}, {56, 40}, {30, 20}}
+	for _, sz := range sizes {
+		w, h := sz[0], sz[1]
+		for seed := int64(0); seed < 200; seed++ {
+			tiles, _ := GenerateMap(stubID{}, seed, w, h)
+			if err := validateMap(tiles); err != nil {
+				t.Fatalf("%dx%d seed %d: GenerateMap returned invalid map: %v", w, h, seed, err)
+			}
+		}
+		// A spread of large pseudo-random seeds (the live world used one of these).
+		for _, seed := range []int64{1781944573308082963, 9223372036854775807, 42424242424242, 7000000000000000001} {
+			tiles, eff := GenerateMap(stubID{}, seed, w, h)
+			if err := validateMap(tiles); err != nil {
+				t.Fatalf("%dx%d seed %d (eff %d): invalid map: %v", w, h, seed, eff, err)
+			}
+		}
+	}
+}
+
+// Regression for the 0620 incident: the live world (seed 1781944573308082963 at
+// 56×40) shipped with ZERO productive tin — no tin pole, dead MVP loop. Whatever
+// path produced that, the guarantee now holds: this exact seed/size must yield a
+// map with a real tin pole (>= 2 productive tin) reachable from the wrapper.
+func TestGenerateMap_RegressionTinPole_0620(t *testing.T) {
+	const seed, w, h = int64(1781944573308082963), 56, 40
+
+	tiles, _ := GenerateMap(stubID{}, seed, w, h)
+	if err := validateMap(tiles); err != nil {
+		t.Fatalf("0620 seed still produces an invalid map: %v", err)
+	}
+	tin := 0
+	for _, t := range tiles {
+		if t.TinDeposit && t.Terrain == TerrainMountainLimestone {
+			tin++
+		}
+	}
+	if tin < minProductiveTin {
+		t.Fatalf("0620 seed: productive tin = %d, want >= %d (the bug that killed the world)", tin, minProductiveTin)
 	}
 }
 

@@ -103,13 +103,22 @@ func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tiles := world.GenerateMap(id, seed, req.MapWidth, req.MapHeight)
+	tiles, effSeed := world.GenerateMap(id, seed, req.MapWidth, req.MapHeight)
 	if err := h.storeTiles(r.Context(), id, tiles); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not store map tiles")
 		return
 	}
+	// GenerateMap may reseed to satisfy map invariants — persist the seed that
+	// actually produced the stored map so it stays reproducible.
+	if effSeed != seed {
+		if _, err := h.pool.Exec(r.Context(),
+			`UPDATE worlds SET map_seed = $1 WHERE id = $2`, effSeed, id); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not persist effective map seed")
+			return
+		}
+	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{"id": id, "map_seed": seed})
+	writeJSON(w, http.StatusCreated, map[string]any{"id": id, "map_seed": effSeed})
 }
 
 // Get handles GET /worlds/:worldID.

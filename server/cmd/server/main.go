@@ -515,8 +515,16 @@ func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) 
 		return uuid.Nil, fmt.Errorf("create world: %w", err)
 	}
 
-	// Generate and store map tiles.
-	tiles := world.GenerateMap(id, seed, width, height)
+	// Generate and store map tiles. GenerateMap may reseed to satisfy map
+	// invariants — persist the seed that actually produced the stored map.
+	tiles, effSeed := world.GenerateMap(id, seed, width, height)
+	if effSeed != seed {
+		if _, err := pool.Exec(ctx,
+			`UPDATE worlds SET map_seed = $1 WHERE id = $2`, effSeed, id); err != nil {
+			return uuid.Nil, fmt.Errorf("persist effective map seed: %w", err)
+		}
+		seed = effSeed
+	}
 	for _, t := range tiles {
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral,
