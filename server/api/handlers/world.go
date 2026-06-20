@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -429,6 +430,7 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 		worldID, playerID,
 	)
 	if err != nil {
+		slog.Error("loadVisibleOrigins query failed", "err", err, "world", worldID, "player", playerID)
 		return nil
 	}
 	defer rows.Close()
