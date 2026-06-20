@@ -442,6 +442,7 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 			origins = append(origins, pos)
 		}
 	}
+	slog.Info("loadVisibleOrigins debug", "world", worldID, "player", playerID, "origins", len(origins))
 	return origins
 }
 
