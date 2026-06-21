@@ -19,7 +19,7 @@ type PrayerSpec struct {
 	Name       string
 }
 
-// Offerings are material sacrifices (wine/oil/silver/grain) — the gods take them
+// Offerings are material sacrifices (wine/oil/grain) — the gods take them
 // whether or not they answer. This is the deliberate economic sink that makes the
 // grandest prayers demand trade goods you must acquire: religion drives trade.
 // Kharis is NEVER part of an offering — it is standing, gated by MinKharis.
@@ -42,7 +42,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	// ── Akhaier (Olympians) ────────────────────────────────────────────────
 	"akhaier_oracle_deposits": {
 		ID: "akhaier_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: 100, Offering: map[string]float64{"oil": 15, "silver": 20},
+		MinKharis: 100, Offering: map[string]float64{"oil": 20, "wine": 10},
 		Cooldown: 24 * time.Hour, TargetKind: "",
 		God: "Apollon", Name: "Apollon's Sight",
 	},
@@ -62,7 +62,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	// ── Khemetiu (Egyptian) ───────────────────────────────────────────────
 	"khemetiu_oracle_deposits": {
 		ID: "khemetiu_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: 100, Offering: map[string]float64{"oil": 15, "silver": 20},
+		MinKharis: 100, Offering: map[string]float64{"grain": 25, "oil": 15},
 		Cooldown: 24 * time.Hour, TargetKind: "",
 		God: "Thoth", Name: "Thoth's Revelation",
 	},
@@ -82,7 +82,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	// ── Kna'ani (Baal / Levant) ───────────────────────────────────────────
 	"knaani_oracle_deposits": {
 		ID: "knaani_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: 100, Offering: map[string]float64{"silver": 30, "oil": 10},
+		MinKharis: 100, Offering: map[string]float64{"oil": 20, "wine": 15},
 		Cooldown: 24 * time.Hour, TargetKind: "",
 		God: "El", Name: "El's Oracle",
 	},
@@ -94,7 +94,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	},
 	"knaani_battle_frenzy": {
 		ID: "knaani_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: 100, Offering: map[string]float64{"grain": 10, "silver": 10},
+		MinKharis: 100, Offering: map[string]float64{"wine": 10, "grain": 10},
 		Cooldown: 6 * time.Hour, TargetKind: "",
 		God: "Anat", Name: "Anat's Rage",
 	},
@@ -102,7 +102,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	// ── Thrakes ──────────────────────────────────────────────────────────
 	"thrakes_oracle_deposits": {
 		ID: "thrakes_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: 100, Offering: map[string]float64{"oil": 15, "silver": 20},
+		MinKharis: 100, Offering: map[string]float64{"wine": 25, "oil": 10},
 		Cooldown: 24 * time.Hour, TargetKind: "",
 		God: "Sabazios", Name: "Sabazios' Dream",
 	},
@@ -122,7 +122,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	// ── Minoan ───────────────────────────────────────────────────────────
 	"minoan_oracle_deposits": {
 		ID: "minoan_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: 100, Offering: map[string]float64{"oil": 15, "silver": 15},
+		MinKharis: 100, Offering: map[string]float64{"oil": 20, "wine": 15},
 		Cooldown: 24 * time.Hour, TargetKind: "",
 		God: "Potnia", Name: "Potnia's Vision",
 	},
@@ -142,7 +142,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	// ── Hatti (Hittite) ──────────────────────────────────────────────────
 	"hatti_oracle_deposits": {
 		ID: "hatti_oracle_deposits", EffectType: EffectOracleRevealDeposits,
-		MinKharis: 100, Offering: map[string]float64{"oil": 15, "silver": 20},
+		MinKharis: 100, Offering: map[string]float64{"grain": 20, "wine": 15},
 		Cooldown: 24 * time.Hour, TargetKind: "",
 		God: "Hepat", Name: "Hepat's Counsel",
 	},
@@ -154,7 +154,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 	},
 	"hatti_battle_frenzy": {
 		ID: "hatti_battle_frenzy", EffectType: EffectBattleFrenzy,
-		MinKharis: 100, Offering: map[string]float64{"silver": 15, "wine": 10},
+		MinKharis: 100, Offering: map[string]float64{"grain": 15, "wine": 10},
 		Cooldown: 6 * time.Hour, TargetKind: "",
 		God: "Teshub", Name: "Teshub's Thunder",
 	},

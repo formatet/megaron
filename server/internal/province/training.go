@@ -29,11 +29,11 @@ type UnitSpec struct {
 //   - "chariot" = stridsvagn, kräver stable. Ersätter "cavalry".
 //     Katapulten (catapult) saknar historisk förankring i bronsåldern och tas bort.
 var UnitSpecs = map[string]UnitSpec{
-	"infantry":       {Costs: map[string]float64{"grain": 15}, PopCost: 5, Duration: time.Minute, RequiresBarracks: true},
-	"chariot":        {Costs: map[string]float64{"grain": 30, "timber": 5}, PopCost: 8, Duration: 4 * time.Minute, RequiresStable: true},
+	"infantry":       {Costs: map[string]float64{"grain": 15, "silver": 2}, PopCost: 5, Duration: time.Minute, RequiresBarracks: true},
+	"chariot":        {Costs: map[string]float64{"grain": 30, "timber": 5, "silver": 5}, PopCost: 8, Duration: 4 * time.Minute, RequiresStable: true},
 	// priest borttagen som enhet (mig 060) — präst är ingen enhet längre, kult = tempel-labor.
-	"ship":           {Costs: map[string]float64{"timber": 90}, PopCost: 10, Duration: 45 * time.Minute, RequiresHarbour: true},
-	"elite_infantry": {Costs: map[string]float64{"grain": 25, "bronze": 2}, PopCost: 10, Duration: 5 * time.Minute, RequiresBarracks: true, RequiresFoundry: true},
-	"war_galley":     {Costs: map[string]float64{"cedar": 60, "bronze": 4}, PopCost: 12, Duration: 90 * time.Minute, RequiresHarbour: true, RequiresFoundry: true},
-	"merchantman":    {Costs: map[string]float64{"timber": 70}, PopCost: 8, Duration: 60 * time.Minute, RequiresHarbour: true},
+	"ship":           {Costs: map[string]float64{"timber": 90, "silver": 3}, PopCost: 10, Duration: 45 * time.Minute, RequiresHarbour: true},
+	"elite_infantry": {Costs: map[string]float64{"grain": 25, "bronze": 2, "silver": 4}, PopCost: 10, Duration: 5 * time.Minute, RequiresBarracks: true, RequiresFoundry: true},
+	"war_galley":     {Costs: map[string]float64{"cedar": 60, "bronze": 4, "silver": 6}, PopCost: 12, Duration: 90 * time.Minute, RequiresHarbour: true, RequiresFoundry: true},
+	"merchantman":    {Costs: map[string]float64{"timber": 70, "silver": 2}, PopCost: 8, Duration: 60 * time.Minute, RequiresHarbour: true},
 }

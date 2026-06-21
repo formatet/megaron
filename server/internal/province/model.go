@@ -98,6 +98,7 @@ const (
 	BuildingFarm        BuildingType = "farm"
 	BuildingBarracks    BuildingType = "barracks"
 	BuildingMine        BuildingType = "mine"
+	BuildingSilverMine  BuildingType = "silver_mine"
 	BuildingLumbermill  BuildingType = "lumbermill"
 	BuildingStonequarry BuildingType = "stonequarry"
 	BuildingMarket      BuildingType = "market"

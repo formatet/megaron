@@ -1156,17 +1156,17 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 func recruitPerManCosts(unitType string) map[string]float64 {
 	switch unitType {
 	case "infantry":
-		return map[string]float64{"grain": 3}
+		return map[string]float64{"grain": 3, "silver": 0.2}
 	case "elite_infantry":
-		return map[string]float64{"grain": 2.5, "bronze": 0.2}
+		return map[string]float64{"grain": 2.5, "bronze": 0.2, "silver": 0.4}
 	case "chariot":
-		return map[string]float64{"grain": 3.75, "timber": 0.625}
+		return map[string]float64{"grain": 3.75, "timber": 0.625, "silver": 0.5}
 	case "ship": // galley; crew 20
-		return map[string]float64{"timber": 9}
+		return map[string]float64{"timber": 9, "silver": 0.3}
 	case "war_galley": // crew 50
-		return map[string]float64{"cedar": 5, "bronze": 0.33}
+		return map[string]float64{"cedar": 5, "bronze": 0.33, "silver": 0.6}
 	case "merchantman": // crew 10
-		return map[string]float64{"timber": 8.75}
+		return map[string]float64{"timber": 8.75, "silver": 0.2}
 	case "priest": // stationary; same cost structure
 		return map[string]float64{"grain": 5}
 	}

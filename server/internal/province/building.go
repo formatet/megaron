@@ -21,6 +21,7 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingFarm:        {Costs: map[string]float64{"timber": 50, "stone": 20}, Duration: 30 * time.Minute},
 	BuildingBarracks:    {Costs: map[string]float64{"timber": 80, "stone": 80}, Duration: 60 * time.Minute},
 	BuildingMine:        {Costs: map[string]float64{"timber": 60, "stone": 40}, Duration: 45 * time.Minute},
+	BuildingSilverMine:  {Costs: map[string]float64{"timber": 60, "stone": 40}, Duration: 45 * time.Minute},
 	BuildingLumbermill:  {Costs: map[string]float64{"timber": 40, "stone": 40}, Duration: 30 * time.Minute},
 	BuildingStonequarry: {Costs: map[string]float64{"timber": 50, "stone": 20}, Duration: 30 * time.Minute},
 	BuildingMarket:      {Costs: map[string]float64{"timber": 100, "stone": 60}, Duration: 90 * time.Minute},
