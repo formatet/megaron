@@ -878,6 +878,44 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Mines require the matching ore deposit in the 6-tile catchment — production
+	// reads only the catchment (not the settlement's own tile), so a mine without a
+	// matching deposit nearby would produce nothing. Gate it at build time.
+	if req.BuildingType == "mine" || req.BuildingType == "silver_mine" {
+		var pq, pr int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT map_q, map_r FROM provinces WHERE id = $1`, provinceID,
+		).Scan(&pq, &pr)
+		var depositCond, oreName string
+		if req.BuildingType == "silver_mine" {
+			depositCond = "COALESCE(silver_deposit,false)"
+			oreName = "silver"
+		} else {
+			depositCond = "(copper_deposit OR tin_deposit)"
+			oreName = "copper or tin"
+		}
+		var hasDeposit bool
+		_ = h.pool.QueryRow(r.Context(),
+			fmt.Sprintf(`SELECT EXISTS(
+			   SELECT 1 FROM map_tiles
+			   WHERE world_id = $1
+			     AND terrain NOT IN ('coastal_sea','deep_sea')
+			     AND (q, r) IN (
+			       ($2+1,$3), ($2-1,$3),
+			       ($2,$3+1), ($2,$3-1),
+			       ($2+1,$3-1), ($2-1,$3+1)
+			     )
+			     AND %s
+			 )`, depositCond),
+			worldID, pq, pr,
+		).Scan(&hasDeposit)
+		if !hasDeposit {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("a %s here would produce nothing — no %s deposit in this settlement's catchment (the 6 surrounding hexes). Build it at a settlement adjacent to the ore.", req.BuildingType, oreName))
+			return
+		}
+	}
+
 	// Queue guards — block before we deduct resources.
 	// 1. Walls/towers/bronze walls upgrade an existing wall_level; everything else
 	//    is a one-instance building (production_rules use UPSERT, duplicates waste resources).
