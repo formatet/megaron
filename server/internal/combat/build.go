@@ -72,40 +72,9 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return fmt.Errorf("insert building: %w", err)
 	}
 
-	// Update settlement_goods production rates via the central labor-allocation helper.
-	// This DRYs up the rate-UPSERT that was previously duplicated here and in join.go.
-	if err := economy.RecomputeProduction(ctx, tx, p.SettlementID); err != nil {
-		return fmt.Errorf("recompute production after build: %w", err)
-	}
-
-	// Apply kharis rate bonus to settlement columns.
-	if spec.KharisRate > 0 {
-		_, err = tx.Exec(ctx,
-			`UPDATE player_world_records SET
-			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_at),
-			   kharis_rate = kharis_rate + $1,
-			   kharis_calc_at = now()
-			 WHERE player_id = (SELECT owner_id FROM settlements WHERE id = $2)
-			   AND world_id = (SELECT world_id FROM settlements WHERE id = $2)`,
-			spec.KharisRate, p.SettlementID)
-		if err != nil {
-			return fmt.Errorf("update kharis rate: %w", err)
-		}
-	}
-	if spec.WallsBonus > 0 {
-		_, err = tx.Exec(ctx,
-			`UPDATE settlements SET wall_level = LEAST(wall_level + $1, 3) WHERE id = $2`,
-			spec.WallsBonus, p.SettlementID)
-		if err != nil {
-			return fmt.Errorf("update wall level: %w", err)
-		}
-	}
-
 	// Determine goods this building just unlocked that are present in the
-	// catchment but have no labor assigned yet. RecomputeProduction does not
-	// auto-allocate, so a mine (or any production-gating building) produces 0
-	// until the Wanax allocates labor — surface that in the completion notice
-	// so a human or LLM agent knows the required second step.
+	// catchment but have no labor assigned yet. We do this BEFORE RecomputeProduction
+	// so auto-allocation is reflected in the rates written by that call.
 	var unlockedGoods []string
 	urows, uerr := tx.Query(ctx,
 		`SELECT DISTINCT pr.good_key
@@ -142,6 +111,44 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		urows.Close()
 	}
 
+	// Auto-allocate a starting labor slice to newly unlocked goods (skims grain if needed).
+	// This runs before RecomputeProduction so the new weights are reflected in the rates.
+	autoAllocated, autoErr := economy.AutoAllocateUnlocked(ctx, tx, p.SettlementID, unlockedGoods)
+	if autoErr != nil {
+		slog.Warn("auto-allocate labor after build", "settlement", p.SettlementID, "building", p.BuildingType, "err", autoErr)
+		// Non-fatal: fall through so the build still completes.
+		autoAllocated = nil
+	}
+
+	// Update settlement_goods production rates via the central labor-allocation helper.
+	// This DRYs up the rate-UPSERT that was previously duplicated here and in join.go.
+	if err := economy.RecomputeProduction(ctx, tx, p.SettlementID); err != nil {
+		return fmt.Errorf("recompute production after build: %w", err)
+	}
+
+	// Apply kharis rate bonus to settlement columns.
+	if spec.KharisRate > 0 {
+		_, err = tx.Exec(ctx,
+			`UPDATE player_world_records SET
+			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_at),
+			   kharis_rate = kharis_rate + $1,
+			   kharis_calc_at = now()
+			 WHERE player_id = (SELECT owner_id FROM settlements WHERE id = $2)
+			   AND world_id = (SELECT world_id FROM settlements WHERE id = $2)`,
+			spec.KharisRate, p.SettlementID)
+		if err != nil {
+			return fmt.Errorf("update kharis rate: %w", err)
+		}
+	}
+	if spec.WallsBonus > 0 {
+		_, err = tx.Exec(ctx,
+			`UPDATE settlements SET wall_level = LEAST(wall_level + $1, 3) WHERE id = $2`,
+			spec.WallsBonus, p.SettlementID)
+		if err != nil {
+			return fmt.Errorf("update wall level: %w", err)
+		}
+	}
+
 	if _, err := tx.Exec(ctx, `DELETE FROM build_queue WHERE id = $1`, p.BuildQueueID); err != nil {
 		return fmt.Errorf("delete build queue entry: %w", err)
 	}
@@ -163,9 +170,13 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			"settlement_id": p.SettlementID,
 			"building_type": p.BuildingType,
 		}
-		// Tell the player/agent that the new good needs a labor allocation,
-		// otherwise the building they just paid for produces nothing.
-		if len(unlockedGoods) > 0 {
+		if len(autoAllocated) > 0 {
+			body["unlocked_goods"] = autoAllocated
+			body["hint"] = fmt.Sprintf(
+				"%s is built — 15%% labor auto-allocated to %s to start production. Adjust with /labor if you want more.",
+				p.BuildingType, strings.Join(autoAllocated, ", "))
+		} else if len(unlockedGoods) > 0 {
+			// Auto-alloc failed (no capacity) — give the old manual hint.
 			body["unlocked_goods"] = unlockedGoods
 			body["hint"] = fmt.Sprintf(
 				"%s is built but idle. How large a share of the population should work it? Set a labor percent for %s to begin production.",

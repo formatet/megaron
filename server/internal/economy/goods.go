@@ -14,6 +14,7 @@ const (
 	GoodCedar   = "cedar"
 	GoodCopper  = "copper"
 	GoodTin     = "tin"
+	GoodSilver  = "silver"
 	GoodWine    = "wine"
 	GoodOil     = "oil"
 	GoodHorses  = "horses"
