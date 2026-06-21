@@ -60,6 +60,9 @@ func kingdomFoundCmd() *cobra.Command {
 				return err
 			}
 			fmt.Printf("Kingdom founded · %s · %v\n", resp["name"], resp["id"])
+			fmt.Printf("Next: it stays 'forming' (inactive) until it reaches 3 members. "+
+				"Invite at least 2 other Wanaxes by name now:\n"+
+				"  poleia kingdom-invite --kingdom %v --target <WanaxName>\n", resp["id"])
 			return nil
 		},
 	}
