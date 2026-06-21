@@ -463,6 +463,7 @@ const TERRAIN_BASE = {
   coast_beach:        {c0:'#E8C97A', c1:'#D4B060'},
   plains:             {c0:'#8AAF3A', c1:'#74952C'},
   river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
+  river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
   forest_olive_grove: {c0:'#5A8C30', c1:'#447020'},
   forest_olive_cypress:{c0:'#4A7A20', c1:'#386010'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
@@ -604,7 +605,8 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
   const r4 = (seed * 13 + 5) & 0xf;
   switch (terrain) {
     case 'plains':
-    case 'river_valley': {
+    case 'river_valley':
+    case 'river_delta': {
       // tiny wheat stalks
       for (let i = 0; i < 4; i++) {
         const ox = ((seed * (i*7+1)) & 0x1f) - 14;
@@ -1270,6 +1272,7 @@ function resetView() {
 const TERRAIN_GOODS = {
   plains:       'grain, horses',
   river_valley: 'grain ×3 (very fertile)',
+  river_delta:  'grain ×4 (richest — exposed coast)',
   hills:        'copper (if deposit), wine, oil',
   mountain:     'stone, tin (if deposit)',
   forest:       'cedar (if deposit)',
@@ -3374,7 +3377,7 @@ function startCityAnim(canvas, tile, buildings, buildQueue) {
 
 function _renderCityFrame(ctx, W, H, S, ground, tile, buildings, buildQueue, wr, smoke) {
   const OUTLINE = '#2a1a08';
-  const BG = {plains:'#c0b882', river_valley:'#a0c070', hills:'#b0a268',
+  const BG = {plains:'#c0b882', river_valley:'#a0c070', river_delta:'#8ccc70', hills:'#b0a268',
               mountain:'#989690', forest:'#728a60', coast:'#6aa0b0',
               coast_beach:'#c8b87a', sea:'#4870a0'};
   ctx.fillStyle = BG[tile?.terrain] || BG.plains;

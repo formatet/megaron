@@ -105,6 +105,7 @@ const (
 	TerrainCoastalSea        Terrain = "coastal_sea"
 	TerrainDeepSea           Terrain = "deep_sea"
 	TerrainRiverValley       Terrain = "river_valley"
+	TerrainRiverDelta        Terrain = "river_delta"
 	TerrainScrubMaquis       Terrain = "scrub_maquis"
 	TerrainSemiDesert        Terrain = "semi_desert"
 )

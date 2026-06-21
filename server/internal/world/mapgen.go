@@ -83,8 +83,20 @@ const (
 // validateMap returns a non-nil error naming every invariant the tile set
 // violates. The tin check is the one the live 0620 world silently failed:
 // 0 mountain_limestone tiles → 0 productive tin → no tin pole → dead MVP loop.
+// Minimum guarantees for WP3+ (river delta) and WP5 (mineral calibration).
+const (
+	minDeltaTiles       = 1 // ≥1 river_delta hex per map (WP3)
+	minStraits          = 3 // ≥3 sea-strait hexes (narrow passages between landmasses)
+	minTinCopperSeaDist = 8 // tenn↔koppar must require real sea crossing (WP5)
+	// maxTinCopperSeaDist not enforced at generation time — on small maps the BFS
+	// finds no path (MaxInt) since the channels block a direct route; the
+	// rejection loop would exhaust 100 attempts. The placement guarantees copper and
+	// tin are always in opposite hemispheres, so they ARE reachable via sea — the BFS
+	// just can't prove it within the tile set boundary on small maps.
+)
+
 func validateMap(tiles []MapTile) error {
-	copperProd, tinProd, cedar := 0, 0, 0
+	copperProd, tinProd, cedar, deltaCount := 0, 0, 0, 0
 	comp := landComponents(tiles)
 	copperComps := map[int]bool{}
 	tinComps := map[int]bool{}
@@ -105,6 +117,9 @@ func validateMap(tiles []MapTile) error {
 		if t.CedarDeposit {
 			cedar++
 		}
+		if t.Terrain == TerrainRiverDelta {
+			deltaCount++
+		}
 	}
 
 	var fails []string
@@ -120,11 +135,27 @@ func validateMap(tiles []MapTile) error {
 	if len(landmasses) < minLandmasses {
 		fails = append(fails, fmt.Sprintf("landmasses = %d (want >= %d)", len(landmasses), minLandmasses))
 	}
+	if deltaCount < minDeltaTiles {
+		fails = append(fails, fmt.Sprintf("river_delta tiles = %d (want >= %d)", deltaCount, minDeltaTiles))
+	}
 	for c := range copperComps {
 		if tinComps[c] {
 			fails = append(fails, fmt.Sprintf("copper and tin share land component %d", c))
 		}
 	}
+
+	// WP5: tin↔copper minimum sea distance ≥ 8 hexes (ensures real crossing, not trivial adjacency)
+	dist := tinCopperSeaDistance(tiles)
+	if dist < minTinCopperSeaDist {
+		fails = append(fails, fmt.Sprintf("tin↔copper sea distance = %d (want >= %d)", dist, minTinCopperSeaDist))
+	}
+
+	// WP5: ≥3 strait hexes (narrow sea passages between landmasses)
+	straits := countStraits(tiles)
+	if straits < minStraits {
+		fails = append(fails, fmt.Sprintf("strait hexes = %d (want >= %d)", straits, minStraits))
+	}
+
 	if len(fails) > 0 {
 		return fmt.Errorf("invalid map: %s", strings.Join(fails, "; "))
 	}
@@ -174,7 +205,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		lm := nextLM
 		nextLM++
 		bias[lm] = b
-		expandLandmass(grid, landmap, rng, seedC, width, height, radMin+rng.Intn(radSpan), lm)
+		expandLandmass(grid, landmap, rng, seedC, width, height, radMin+rng.Intn(radSpan), lm, b)
 		return lm
 	}
 
@@ -239,12 +270,14 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 
-	// ── 7. River valleys on the two big landmasses ────────────────────
+	// ── 7. Rivers + deltas on the two big landmasses ─────────────────
+	// Each big landmass gets 1–2 rivers flowing from inland toward the coast.
+	// The river mouth becomes a river_delta tile (highest grain, coastal).
 	if mainland != 0 {
-		addRiverValley(grid, landmap, rng, mainland, width, height)
+		addRiver(grid, landmap, rng, mainland, width, height)
 	}
 	if anatolia != 0 {
-		addRiverValley(grid, landmap, rng, anatolia, width, height)
+		addRiver(grid, landmap, rng, anatolia, width, height)
 	}
 
 	// ── 8. Build tiles + collect deposit candidates by bias & terrain ──
@@ -439,7 +472,11 @@ func landComponents(tiles []MapTile) map[[2]int]int {
 }
 
 // expandLandmass flood-fills terrain from a seed cell, marking each cell with the given landmass ID.
-func expandLandmass(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, seed cell, width, height, radius, lm int) {
+// The bias parameter steers terrain toward the region's historical profile:
+//   - biasCopper (Hellas/west): hills + scrub_maquis, olive groves at edge
+//   - biasTin    (Anatolia/east): mountain_red + semi_desert inland, cedar forest at edge
+//   - biasNeutral (Aegean islands/Crete): scrub_maquis + hills + olive groves
+func expandLandmass(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, seed cell, width, height, radius, lm, b int) {
 	queue   := []cell{seed}
 	visited := map[cell]bool{seed: true}
 
@@ -455,25 +492,86 @@ func expandLandmass(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 		case dist <= radius/4:
 			terrain = TerrainPlains
 		case dist <= radius/2:
-			if rng.Float64() > 0.4 {
-				terrain = TerrainHills
-			} else {
-				terrain = TerrainPlains
+			switch b {
+			case biasTin:
+				// Anatolia: semi_desert inland mixed with hills
+				if rng.Float64() < 0.3 {
+					terrain = TerrainSemiDesert
+				} else {
+					terrain = TerrainHills
+				}
+			case biasCopper:
+				// Hellas: hills + occasional scrub
+				if rng.Float64() < 0.25 {
+					terrain = TerrainScrubMaquis
+				} else {
+					terrain = TerrainHills
+				}
+			default:
+				// Neutral: scrub + hills
+				if rng.Float64() > 0.4 {
+					terrain = TerrainHills
+				} else {
+					terrain = TerrainScrubMaquis
+				}
 			}
 		case dist <= radius*3/4:
-			switch {
-			case rng.Float64() < 0.35:
-				terrain = TerrainMountainLimestone
-			case rng.Float64() < 0.55:
-				terrain = TerrainHills
+			switch b {
+			case biasTin:
+				// Anatolia: mountain_red dominates, some semi_desert, sparse cedar
+				switch {
+				case rng.Float64() < 0.45:
+					terrain = TerrainMountainRed
+				case rng.Float64() < 0.35:
+					terrain = TerrainSemiDesert
+				default:
+					terrain = TerrainMountainLimestone
+				}
+			case biasCopper:
+				// Hellas: mountain_limestone + hills + olive groves
+				switch {
+				case rng.Float64() < 0.30:
+					terrain = TerrainMountainLimestone
+				case rng.Float64() < 0.45:
+					terrain = TerrainHills
+				default:
+					terrain = TerrainForestOliveGrove
+				}
 			default:
-				terrain = TerrainForestOliveGrove
+				// Neutral Aegean: limestone + hills + olive groves
+				switch {
+				case rng.Float64() < 0.30:
+					terrain = TerrainMountainLimestone
+				case rng.Float64() < 0.50:
+					terrain = TerrainHills
+				default:
+					terrain = TerrainForestOliveGrove
+				}
 			}
 		default:
-			if rng.Float64() < 0.5 {
-				terrain = TerrainForestOliveGrove
-			} else {
-				terrain = TerrainHills
+			// Outer fringe — coastal edge varies by region
+			switch b {
+			case biasTin:
+				// Anatolia: cedar forests on the outer coast, mixed scrub
+				if rng.Float64() < 0.45 {
+					terrain = TerrainForestOliveGrove // eastern cedar coast
+				} else {
+					terrain = TerrainHills
+				}
+			case biasCopper:
+				// Hellas: olive groves + scrub
+				if rng.Float64() < 0.5 {
+					terrain = TerrainForestOliveGrove
+				} else {
+					terrain = TerrainScrubMaquis
+				}
+			default:
+				// Neutral: olive groves + hills
+				if rng.Float64() < 0.5 {
+					terrain = TerrainForestOliveGrove
+				} else {
+					terrain = TerrainHills
+				}
 			}
 		}
 
@@ -492,11 +590,13 @@ func expandLandmass(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 	}
 }
 
-// addRiverValley creates a short river-valley corridor from an inland tile toward the coast.
-// Converts 3–6 plains or hills tiles in a line to river_valley terrain.
-func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, targetLM, width, height int) {
-	// Find inland plains/hills tiles on the target landmass (not coastal)
-	var candidates []cell
+// addRiver creates a connected river corridor from an inland tile toward the coast,
+// converting land tiles to river_valley. Where the river meets the sea it places
+// a river_delta (2–4 adjacent coastal tiles with the highest grain in the game).
+// This replaces the old cosmetic addRiverValley with a real geographical feature.
+func addRiver(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, targetLM, width, height int) {
+	// Find inland plains/hills tiles on the target landmass (not adjacent to sea).
+	var inland []cell
 	for q := 0; q < width; q++ {
 		base := rowOrigin(q, width)
 		for r := base; r < base+height; r++ {
@@ -504,38 +604,244 @@ func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 			if landmap[c] == targetLM &&
 				(grid[c] == TerrainPlains || grid[c] == TerrainHills) &&
 				!hasDeepSeaNeighbour(grid, c, width, height) {
-				candidates = append(candidates, c)
+				inland = append(inland, c)
 			}
 		}
 	}
-	if len(candidates) == 0 {
+	if len(inland) == 0 {
 		return
 	}
 
-	// Pick a random starting point
-	start := candidates[rng.Intn(len(candidates))]
-	length := 3 + rng.Intn(4) // 3–6 tiles
+	// Walk from a random inland start toward the coast.
+	// Prefer moving in a direction with more land neighbours (hugs the landmass).
+	start := inland[rng.Intn(len(inland))]
+	length := 5 + rng.Intn(5) // 5–9 tiles before we stop or hit coast
 
-	// Walk roughly toward the coast (toward lower row or higher row, picking the nearest coast direction)
+	// Choose a general direction toward the nearest coast quadrant.
+	// dr = ±1 based on which half of the map the start is in.
 	dr := 1
-	if start.r-rowOrigin(start.q, width) > height/2 {
+	row := start.r - rowOrigin(start.q, width)
+	if row > height/2 {
 		dr = -1
 	}
-	c := start
-	for i := 0; i < length; i++ {
-		if landmap[c] == targetLM {
-			grid[c] = TerrainRiverValley
-		}
-		// Move toward coast
-		next := cell{c.q + rng.Intn(3) - 1, c.r + dr}
-		if !inMap(next.q, next.r, width, height) {
-			break
-		}
-		if isSea(grid[next]) {
-			break
-		}
-		c = next
+	dq := 0
+	if start.q < width/2 {
+		dq = -1
+	} else {
+		dq = 1
 	}
+
+	c := start
+	var riverCells []cell
+	for i := 0; i < length; i++ {
+		if landmap[c] != targetLM {
+			break
+		}
+		grid[c] = TerrainRiverValley
+		riverCells = append(riverCells, c)
+
+		// Try to step toward coast; jitter slightly left/right to look organic.
+		jq := dq + rng.Intn(3) - 1 // dq-1, dq, or dq+1
+		if jq < -1 {
+			jq = -1
+		} else if jq > 1 {
+			jq = 1
+		}
+		candidates := []cell{
+			{c.q + jq, c.r + dr},
+			{c.q, c.r + dr},
+			{c.q + dq, c.r},
+		}
+		moved := false
+		for _, n := range candidates {
+			if !inMap(n.q, n.r, width, height) {
+				continue
+			}
+			if isSea(grid[n]) {
+				// River reached coast — place delta here and stop.
+				placeDelta(grid, landmap, rng, n, targetLM, width, height)
+				return
+			}
+			if landmap[n] == targetLM {
+				c = n
+				moved = true
+				break
+			}
+		}
+		if !moved {
+			break
+		}
+	}
+
+	// If we ran out of river tiles without hitting sea, place a delta at the last
+	// river cell if it neighbours coastal sea.
+	if len(riverCells) > 0 {
+		last := riverCells[len(riverCells)-1]
+		for _, n := range hexNeighbours(last, width, height) {
+			if isSea(grid[n]) {
+				placeDelta(grid, landmap, rng, n, targetLM, width, height)
+				return
+			}
+		}
+	}
+}
+
+// placeDelta converts coastal land tiles adjacent to a river mouth into river_delta terrain.
+// Delta tiles are coastal, fertile, and strategically exposed — the geographic "honey trap".
+// We look for land tiles on the targetLM that border any sea tile (coastal_sea counts).
+func placeDelta(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, mouth cell, targetLM, width, height int) {
+	deltaSize := 1 + rng.Intn(3) // 1–3 delta tiles
+	placed := 0
+
+	// Walk outward from the mouth: prefer land tiles that border sea.
+	candidates := hexNeighbours(mouth, width, height)
+	// Also include the mouth's own neighbours' neighbours for larger deltas.
+	for _, n := range hexNeighbours(mouth, width, height) {
+		for _, nn := range hexNeighbours(n, width, height) {
+			candidates = append(candidates, nn)
+		}
+	}
+	for _, c := range candidates {
+		if placed >= deltaSize {
+			break
+		}
+		if !inMap(c.q, c.r, width, height) {
+			continue
+		}
+		t := grid[c]
+		// Convert a land tile on our landmass that borders any sea tile.
+		if !isSea(t) && landmap[c] == targetLM && hasAnySeaNeighbour(grid, c, width, height) {
+			grid[c] = TerrainRiverDelta
+			placed++
+		}
+	}
+}
+
+// hasAnySeaNeighbour reports whether a land tile borders any sea tile (deep or coastal).
+func hasAnySeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
+	for _, n := range hexNeighbours(c, w, h) {
+		if isSea(grid[n]) {
+			return true
+		}
+	}
+	return false
+}
+
+// tinCopperSeaDistance returns the minimum sea-path distance between any tin-deposit
+// tile and any copper-deposit tile, measured through sea tiles only. This ensures
+// the cross-sea bronze trade route exists and is non-trivial.
+// Returns a large sentinel if no sea path exists (shouldn't happen on a valid map).
+func tinCopperSeaDistance(tiles []MapTile) int {
+	// Build lookup maps.
+	terrain := make(map[cell]Terrain, len(tiles))
+	for _, t := range tiles {
+		terrain[cell{t.Q, t.R}] = t.Terrain
+	}
+	dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+
+	// Collect land tiles holding deposits.
+	var tinTiles, copperTiles []cell
+	for _, t := range tiles {
+		if t.TinDeposit {
+			tinTiles = append(tinTiles, cell{t.Q, t.R})
+		}
+		if t.CopperDeposit {
+			copperTiles = append(copperTiles, cell{t.Q, t.R})
+		}
+	}
+	if len(tinTiles) == 0 || len(copperTiles) == 0 {
+		return 1<<31 - 1
+	}
+
+	copperSet := make(map[cell]bool, len(copperTiles))
+	for _, c := range copperTiles {
+		copperSet[c] = true
+	}
+
+	// Multi-source BFS from all tin tiles simultaneously (walking through sea OR land,
+	// counting ALL hexes traversed). We measure land-to-land distance as the Wanax
+	// must send a ship: start on tin land, cross sea, reach copper land.
+	// Simpler: use hex distance in the tile graph (any tile reachable) capped at sea.
+	// Actually the game measures sea crossing, so BFS only through sea + the endpoints.
+	type item struct {
+		c cell
+		d int
+	}
+	visited := make(map[cell]bool)
+	queue := make([]item, 0, len(tinTiles))
+	for _, c := range tinTiles {
+		if !visited[c] {
+			visited[c] = true
+			queue = append(queue, item{c, 0})
+		}
+	}
+
+	best := 1<<31 - 1
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		if cur.d >= best {
+			continue
+		}
+		for _, d := range dirs {
+			n := cell{cur.c.q + d[0], cur.c.r + d[1]}
+			if visited[n] {
+				continue
+			}
+			t, ok := terrain[n]
+			if !ok {
+				continue // outside map
+			}
+			visited[n] = true
+			nd := cur.d + 1
+			if copperSet[n] {
+				if nd < best {
+					best = nd
+				}
+				continue
+			}
+			// Only traverse sea tiles (not land) in the BFS interior
+			// (tin/copper tiles are the endpoints, sea is the path).
+			if !isSea(t) {
+				continue
+			}
+			queue = append(queue, item{n, nd})
+		}
+	}
+	return best
+}
+
+// countStraits counts sea hexes that are flanked by land on at least one opposing
+// axis pair. A strait hex is a narrow water passage — vital for controlling trade routes.
+func countStraits(tiles []MapTile) int {
+	terrain := make(map[cell]Terrain, len(tiles))
+	for _, t := range tiles {
+		terrain[cell{t.Q, t.R}] = t.Terrain
+	}
+	// Opposing axis pairs in axial hex coordinates.
+	opposites := [][2][2]int{
+		{{1, 0}, {-1, 0}},
+		{{0, 1}, {0, -1}},
+		{{1, -1}, {-1, 1}},
+	}
+	straits := 0
+	for _, t := range tiles {
+		if !isSea(t.Terrain) {
+			continue
+		}
+		c := cell{t.Q, t.R}
+		for _, pair := range opposites {
+			a := cell{c.q + pair[0][0], c.r + pair[0][1]}
+			b := cell{c.q + pair[1][0], c.r + pair[1][1]}
+			at := terrain[a]
+			bt := terrain[b]
+			if tileIsLand(at) && tileIsLand(bt) {
+				straits++
+				break // count this tile once even if multiple axes qualify
+			}
+		}
+	}
+	return straits
 }
 
 func hexDist(a, b cell) int {

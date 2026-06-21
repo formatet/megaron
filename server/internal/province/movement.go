@@ -4,7 +4,7 @@ package province
 // Messengers travel at 0.5×, trade caravans at 1.5×.
 func TerrainMoveHours(terrain string) float64 {
 	switch terrain {
-	case "plains", "river_valley":
+	case "plains", "river_valley", "river_delta":
 		return 0.75
 	case "coastal_sea":
 		return 0.4 // fast sailing near land
