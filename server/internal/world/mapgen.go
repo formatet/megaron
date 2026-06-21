@@ -77,6 +77,7 @@ const (
 	minProductiveCopper = 2
 	minProductiveTin    = 2
 	minCedar            = 2
+	minLandmasses       = 4 // a real archipelago, not one merged blob
 )
 
 // validateMap returns a non-nil error naming every invariant the tile set
@@ -87,8 +88,12 @@ func validateMap(tiles []MapTile) error {
 	comp := landComponents(tiles)
 	copperComps := map[int]bool{}
 	tinComps := map[int]bool{}
+	landmasses := map[int]bool{}
 	for _, t := range tiles {
 		k := [2]int{t.Q, t.R}
+		if tileIsLand(t.Terrain) {
+			landmasses[comp[k]] = true
+		}
 		if t.CopperDeposit && t.Terrain == TerrainHills {
 			copperProd++
 			copperComps[comp[k]] = true
@@ -112,6 +117,9 @@ func validateMap(tiles []MapTile) error {
 	if cedar < minCedar {
 		fails = append(fails, fmt.Sprintf("cedar = %d (want >= %d)", cedar, minCedar))
 	}
+	if len(landmasses) < minLandmasses {
+		fails = append(fails, fmt.Sprintf("landmasses = %d (want >= %d)", len(landmasses), minLandmasses))
+	}
 	for c := range copperComps {
 		if tinComps[c] {
 			fails = append(fails, fmt.Sprintf("copper and tin share land component %d", c))
@@ -133,7 +141,8 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	bias    := map[int]int{}      // landmass ID → deposit bias
 
 	for q := 0; q < width; q++ {
-		for r := 0; r < height; r++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
 			grid[cell{q, r}]    = TerrainDeepSea
 			landmap[cell{q, r}] = lmSea
 		}
@@ -147,7 +156,11 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		if rMax <= rMin {
 			rMax = rMin + 1
 		}
-		seedC := cell{qMin + rng.Intn(qMax - qMin), rMin + rng.Intn(rMax - rMin)}
+		// qMin..qMax are columns; rMin..rMax are screen-rows (height fractions).
+		// Convert the row to axial r for the sheared rectangular domain.
+		seedCol := qMin + rng.Intn(qMax - qMin)
+		seedRow := rMin + rng.Intn(rMax - rMin)
+		seedC := cell{seedCol, rowOrigin(seedCol, width) + seedRow}
 		// Keep a 2-hex moat around existing land so landmasses stay distinct
 		// (a real spread of islands, not one merged blob).
 		for dq := -2; dq <= 2; dq++ {
@@ -199,7 +212,8 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		landmap[c] = lmSea
 	}
 	for q := 0; q < width; q++ {
-		for r := 0; r < height; r++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
 			c := cell{q, r}
 			switch {
 			case q == chanW || q == chanE:
@@ -216,7 +230,8 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	// Deep-sea tiles adjacent to land become coastal_sea (shallow water).
 	// Land terrain is NOT changed — "coast" is a property (coastal flag), not a terrain type.
 	for q := 0; q < width; q++ {
-		for r := 0; r < height; r++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
 			c := cell{q, r}
 			if grid[c] == TerrainDeepSea && hasLandNeighbour(grid, c, width, height) {
 				grid[c] = TerrainCoastalSea
@@ -244,7 +259,8 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	)
 
 	for q := 0; q < width; q++ {
-		for r := 0; r < height; r++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
 			c := cell{q, r}
 			terrain := grid[c]
 			lm := landmap[c]
@@ -482,7 +498,8 @@ func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 	// Find inland plains/hills tiles on the target landmass (not coastal)
 	var candidates []cell
 	for q := 0; q < width; q++ {
-		for r := 0; r < height; r++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
 			c := cell{q, r}
 			if landmap[c] == targetLM &&
 				(grid[c] == TerrainPlains || grid[c] == TerrainHills) &&
@@ -499,9 +516,9 @@ func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 	start := candidates[rng.Intn(len(candidates))]
 	length := 3 + rng.Intn(4) // 3–6 tiles
 
-	// Walk roughly toward the coast (toward lower r or higher r, picking the nearest coast direction)
+	// Walk roughly toward the coast (toward lower row or higher row, picking the nearest coast direction)
 	dr := 1
-	if start.r > height/2 {
+	if start.r-rowOrigin(start.q, width) > height/2 {
 		dr = -1
 	}
 	c := start
@@ -511,7 +528,7 @@ func addRiverValley(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand,
 		}
 		// Move toward coast
 		next := cell{c.q + rng.Intn(3) - 1, c.r + dr}
-		if next.q < 0 || next.q >= width || next.r < 0 || next.r >= height {
+		if !inMap(next.q, next.r, width, height) {
 			break
 		}
 		if isSea(grid[next]) {
@@ -527,12 +544,30 @@ func hexDist(a, b cell) int {
 	return (iAbs(dq) + iAbs(dq+dr) + iAbs(dr)) / 2
 }
 
+// rowOrigin is the per-column r-origin that turns the axial generation domain
+// into a rectangle. The renderer positions a tile at y = √3·S·(r + q/2); laying
+// each column's r over [rowOrigin(q), rowOrigin(q)+height) with
+// rowOrigin(q) = (width-1)/2 − ⌊q/2⌋ cancels that +q/2 shear, so the world reads
+// as an offset ("brick") rectangle instead of a sheared parallelogram — while all
+// neighbour/distance math stays axial. (width-1)/2 keeps r ≥ 0 for every column.
+// See temenos_mapgen_v4.md §A.
+func rowOrigin(q, width int) int { return (width-1)/2 - q/2 }
+
+// inMap reports whether axial (q,r) is inside the rectangular generation domain.
+func inMap(q, r, width, height int) bool {
+	if q < 0 || q >= width {
+		return false
+	}
+	row := r - rowOrigin(q, width)
+	return row >= 0 && row < height
+}
+
 func hexNeighbours(c cell, w, h int) []cell {
 	dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 	var out []cell
 	for _, d := range dirs {
 		nq, nr := c.q+d[0], c.r+d[1]
-		if nq >= 0 && nq < w && nr >= 0 && nr < h {
+		if inMap(nq, nr, w, h) {
 			out = append(out, cell{nq, nr})
 		}
 	}

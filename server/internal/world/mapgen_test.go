@@ -23,8 +23,11 @@ func TestGenerateMap_TileCountAndBounds(t *testing.T) {
 	}
 	seen := map[[2]int]bool{}
 	for _, tile := range tiles {
-		if tile.Q < 0 || tile.Q >= w || tile.R < 0 || tile.R >= h {
-			t.Fatalf("tile out of bounds: (%d,%d)", tile.Q, tile.R)
+		// Tiles live in the rectangular offset domain: q in [0,w), and the
+		// per-column row (r - rowOrigin(q)) in [0,h). See mapgen.go rowOrigin.
+		row := tile.R - rowOrigin(tile.Q, w)
+		if tile.Q < 0 || tile.Q >= w || row < 0 || row >= h {
+			t.Fatalf("tile out of rectangular domain: (%d,%d) row=%d", tile.Q, tile.R, row)
 		}
 		k := [2]int{tile.Q, tile.R}
 		if seen[k] {
