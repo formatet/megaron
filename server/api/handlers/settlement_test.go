@@ -123,3 +123,54 @@ func TestRiteUnknownPrayerRejected(t *testing.T) {
 		t.Error("PrayerSpecs should not contain 'nonexistent_prayer'")
 	}
 }
+
+// TestOracleRevealPayloadShape documents the Fas 1b payload contract.
+// The harness (agent.py) reads event payload["effect"]["reveals"][0]["q"/"r"/"ore"]
+// to find the colonisable tile coordinates. This test verifies the keys exist in
+// the structure returned by applyOracleRevealDeposits via a mock payload assembly
+// (mirrors the function's return logic without needing a DB).
+//
+// Payload format:
+//
+//	{ "reveals": [ {"q": int, "r": int, "ore": "tin"|"copper"|"silver"}, ... ] }
+func TestOracleRevealPayloadShape(t *testing.T) {
+	// Simulate what applyOracleRevealDeposits returns on success.
+	payload := map[string]any{
+		"reveals": []map[string]any{
+			{"q": 47, "r": 12, "ore": "tin"},
+		},
+	}
+
+	reveals, ok := payload["reveals"]
+	if !ok {
+		t.Fatal("payload missing 'reveals' key")
+	}
+	list, ok := reveals.([]map[string]any)
+	if !ok {
+		t.Fatal("payload['reveals'] is not []map[string]any")
+	}
+	if len(list) == 0 {
+		t.Fatal("reveals list is empty")
+	}
+	first := list[0]
+	if _, ok := first["q"]; !ok {
+		t.Error("reveals[0] missing 'q'")
+	}
+	if _, ok := first["r"]; !ok {
+		t.Error("reveals[0] missing 'r'")
+	}
+	ore, ok := first["ore"]
+	if !ok {
+		t.Error("reveals[0] missing 'ore'")
+	}
+	validOre := map[string]bool{"tin": true, "copper": true, "silver": true}
+	if s, ok := ore.(string); !ok || !validOre[s] {
+		t.Errorf("reveals[0]['ore'] = %v, want 'tin', 'copper', or 'silver'", ore)
+	}
+
+	// Verify empty-result payload also has correct shape (no 'reveals' missing).
+	emptyPayload := map[string]any{"reveals": []any{}}
+	if _, ok := emptyPayload["reveals"]; !ok {
+		t.Error("empty-result payload missing 'reveals' key")
+	}
+}

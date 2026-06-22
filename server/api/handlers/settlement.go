@@ -751,10 +751,34 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 	return map[string]any{"good": "grain", "multiplier": 1.25}, msg, nil
 }
 
-// applyOracleRevealDeposits reveals the nearest unscouted province(s) with a
-// copper, tin, or silver deposit within 8 hexes of the settlement's province.
-// Tin is prioritised (higher tier) when multiple candidates exist.
-// Inserts into player_scouted_provinces ON CONFLICT DO NOTHING (idempotent).
+// applyOracleRevealDeposits reveals the nearest uncolonised tile(s) within 8 hexes
+// of the settlement whose 6-hex catchment contains a tin, copper, or silver deposit.
+// Tin is prioritised (rarest); copper next; silver last.
+//
+// FIX (Fas 1b, 2026-06-22): the previous query searched the `provinces` table (only
+// already-settled hexes joined to map_tiles). Tin tiles are `mountain_limestone`
+// (impassable, never settled), and their colonisable hills-neighbours were always
+// unclaimed → zero results. The new query searches `map_tiles` directly for a
+// **buildable** candidate tile (terrain eligible as a colony site) whose 6 axial
+// neighbours include a deposit tile, skipping tiles the player already owns.
+//
+// Payload format returned in effectPayload (nested under "effect" in RiteCast event):
+//
+//	{
+//	  "reveals": [
+//	    { "q": 47, "r": 12, "ore": "tin" },
+//	    { "q": 45, "r": 14, "ore": "copper" }   // optional second result
+//	  ]
+//	}
+//
+// Harness usage: read event payload["effect"]["reveals"][0]["q"/"r"] to get the
+// colonisable tile coordinates, then issue a settle action there. colonize validation
+// (unit.go:179) only requires a buildable unoccupied tile — FOW-visibility is NOT
+// required, so no player_scouted_tiles table is needed.
+//
+// Idempotency: the rite cooldown (checked in Rite handler before this call) prevents
+// re-casting. This function itself has no side-effects beyond building the payload,
+// so it is safe to call twice if the TX is somehow retried.
 func (h *SettlementHandler) applyOracleRevealDeposits(
 	ctx context.Context,
 	tx pgx.Tx,
@@ -763,7 +787,7 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 ) (map[string]any, string, error) {
 	const oracleRadius = 8
 
-	// Find the settlement's province position.
+	// Find the settlement's province position (origin for radius search).
 	var originQ, originR int
 	if err := tx.QueryRow(ctx,
 		`SELECT p.map_q, p.map_r FROM provinces p
@@ -774,27 +798,52 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		return nil, "", fmt.Errorf("oracle: could not find settlement province: %w", err)
 	}
 
-	// Query nearby provinces with ore deposits that the player has NOT yet scouted.
-	// Hex distance in axial coords: (|dq| + |dq+dr| + |dr|) / 2.
-	// Prioritise tin (rarest), then copper, then silver.
+	// Find buildable tiles (colony candidates) in map_tiles:
+	//   - terrain is eligible for settlement (not sea, impassable mountains, or semi_desert)
+	//   - at least one of their 6 axial neighbours carries a deposit
+	//   - not already owned by this player (no province row with owner = playerID)
+	//   - within oracleRadius hex-distance from origin
+	//
+	// We generate the 6 neighbour offsets inline in SQL using LATERAL / VALUES so
+	// this stays a single round-trip with no application-side loops.
+	// Prioritise: tin > copper > silver; tie-break by distance (closest first).
 	rows, err := tx.Query(ctx,
-		`SELECT p.id, p.map_q, p.map_r,
-		        mt.tin_deposit, mt.copper_deposit, COALESCE(mt.silver_deposit, false)
-		 FROM provinces p
-		 JOIN map_tiles mt ON mt.world_id = p.world_id AND mt.q = p.map_q AND mt.r = p.map_r
-		 WHERE p.world_id = $1
-		   AND (mt.tin_deposit OR mt.copper_deposit OR COALESCE(mt.silver_deposit, false))
-		   AND p.id NOT IN (
-		       SELECT province_id FROM player_scouted_provinces
-		       WHERE world_id = $1 AND player_id = $2
+		`SELECT site.q, site.r,
+		        BOOL_OR(nb.tin_deposit)                     AS has_tin,
+		        BOOL_OR(nb.copper_deposit)                   AS has_copper,
+		        BOOL_OR(COALESCE(nb.silver_deposit, false))  AS has_silver
+		 FROM map_tiles site
+		 -- join each site to its 6 axial neighbours
+		 JOIN LATERAL (VALUES
+		     (1,0),(-1,0),(0,1),(0,-1),(1,-1),(-1,1)
+		 ) AS d(dq, dr) ON true
+		 JOIN map_tiles nb
+		   ON nb.world_id = site.world_id
+		  AND nb.q = site.q + d.dq
+		  AND nb.r = site.r + d.dr
+		  AND (nb.tin_deposit OR nb.copper_deposit OR COALESCE(nb.silver_deposit, false))
+		 WHERE site.world_id = $1
+		   -- buildable terrain only (same list as join.go capital placement)
+		   AND site.terrain NOT IN
+		       ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
+		   -- within oracle radius (axial hex distance formula)
+		   AND (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4)) / 2 <= $5
+		   -- exclude tiles already controlled by this player
+		   AND NOT EXISTS (
+		       SELECT 1 FROM provinces p
+		       WHERE p.world_id = site.world_id
+		         AND p.map_q = site.q AND p.map_r = site.r
+		         AND p.controller_id IN (
+		             SELECT id FROM settlements WHERE owner_id = $2 AND world_id = site.world_id
+		         )
 		   )
-		   AND (
-		       ABS(p.map_q - $3) + ABS((p.map_q - $3) + (p.map_r - $4)) + ABS(p.map_r - $4)
-		   ) / 2 <= $5
+		 GROUP BY site.q, site.r
 		 ORDER BY
-		   mt.tin_deposit DESC,
-		   mt.copper_deposit DESC,
-		   (ABS(p.map_q - $3) + ABS((p.map_q - $3) + (p.map_r - $4)) + ABS(p.map_r - $4))
+		   -- tin first (rarest, highest tier)
+		   BOOL_OR(nb.tin_deposit) DESC,
+		   BOOL_OR(nb.copper_deposit) DESC,
+		   -- closest first within each tier
+		   (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4))
 		 LIMIT 2`,
 		worldID, playerID, originQ, originR, oracleRadius,
 	)
@@ -803,70 +852,60 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 	}
 	defer rows.Close()
 
-	type revealedProvince struct {
-		ID      uuid.UUID
-		Q, R    int
-		Tin     bool
-		Copper  bool
-		Silver  bool
+	type revealedSite struct {
+		Q, R   int
+		Tin    bool
+		Copper bool
+		Silver bool
 	}
-	var revealed []revealedProvince
+	var revealed []revealedSite
 	for rows.Next() {
-		var rp revealedProvince
-		if err := rows.Scan(&rp.ID, &rp.Q, &rp.R, &rp.Tin, &rp.Copper, &rp.Silver); err == nil {
-			revealed = append(revealed, rp)
+		var rs revealedSite
+		if err := rows.Scan(&rs.Q, &rs.R, &rs.Tin, &rs.Copper, &rs.Silver); err == nil {
+			revealed = append(revealed, rs)
 		}
 	}
 	rows.Close()
 
 	if len(revealed) == 0 {
-		msg := fmt.Sprintf("%s gazes into the distance — no hidden ore deposits lie within reach.", spec.God)
-		return map[string]any{"provinces_revealed": 0}, msg, nil
+		msg := fmt.Sprintf("%s gazes into the distance — no ore deposits lie within reach to reveal.", spec.God)
+		return map[string]any{"reveals": []any{}}, msg, nil
 	}
 
-	// Insert scouted rows.
-	for _, rp := range revealed {
-		if _, err := tx.Exec(ctx,
-			`INSERT INTO player_scouted_provinces (world_id, player_id, province_id)
-			 VALUES ($1, $2, $3)
-			 ON CONFLICT DO NOTHING`,
-			worldID, playerID, rp.ID,
-		); err != nil {
-			return nil, "", fmt.Errorf("oracle: insert scouted province: %w", err)
-		}
-	}
-
-	// Build human-readable message naming the deposits.
-	depositName := func(rp revealedProvince) string {
+	// Build human-readable message and structured payload.
+	oreKey := func(rs revealedSite) string {
 		switch {
-		case rp.Tin:
+		case rs.Tin:
 			return "tin"
-		case rp.Copper:
+		case rs.Copper:
 			return "copper"
 		default:
 			return "silver"
 		}
 	}
+
 	var parts []string
-	for _, rp := range revealed {
-		parts = append(parts, fmt.Sprintf("%s at (%d,%d)", depositName(rp), rp.Q, rp.R))
+	revealsPayload := make([]map[string]any, 0, len(revealed))
+	for _, rs := range revealed {
+		ore := oreKey(rs)
+		parts = append(parts, fmt.Sprintf("%s at (%d,%d)", ore, rs.Q, rs.R))
+		revealsPayload = append(revealsPayload, map[string]any{
+			"q":   rs.Q,
+			"r":   rs.R,
+			"ore": ore,
+		})
 	}
 
 	var msg string
 	switch len(parts) {
 	case 1:
-		msg = fmt.Sprintf("%s reveals hidden ore — %s.", spec.God, parts[0])
+		msg = fmt.Sprintf("%s reveals a site near hidden ore — %s.", spec.God, parts[0])
 	default:
-		msg = fmt.Sprintf("%s reveals hidden ore — %s.", spec.God, parts[0]+"; "+parts[1])
+		msg = fmt.Sprintf("%s reveals sites near hidden ore — %s.", spec.God, parts[0]+"; "+parts[1])
 	}
 
-	provinceIDs := make([]string, len(revealed))
-	for i, rp := range revealed {
-		provinceIDs[i] = rp.ID.String()
-	}
 	return map[string]any{
-		"provinces_revealed": len(revealed),
-		"province_ids":       provinceIDs,
+		"reveals": revealsPayload,
 	}, msg, nil
 }
 

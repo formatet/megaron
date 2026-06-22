@@ -101,8 +101,16 @@ func validateMap(tiles []MapTile) error {
 	copperComps := map[int]bool{}
 	tinComps := map[int]bool{}
 	landmasses := map[int]bool{}
+
+	// Build a fast lookup for the catchment check below.
+	tileMap := make(map[[2]int]MapTile, len(tiles))
+	maxQ := 0
 	for _, t := range tiles {
 		k := [2]int{t.Q, t.R}
+		tileMap[k] = t
+		if t.Q > maxQ {
+			maxQ = t.Q
+		}
 		if tileIsLand(t.Terrain) {
 			landmasses[comp[k]] = true
 		}
@@ -154,6 +162,66 @@ func validateMap(tiles []MapTile) error {
 	straits := countStraits(tiles)
 	if straits < minStraits {
 		fails = append(fails, fmt.Sprintf("strait hexes = %d (want >= %d)", straits, minStraits))
+	}
+
+	// Fas 1a (handelskedjan): guarantee that at least one start-eligible tile in each
+	// hemisphere has its malm within catchment — so the first wanax to settle there
+	// produces ore from turn 1 without needing an oracle or extra colonisation.
+	//
+	// "Buildable" mirrors the terrain exclusion list in join.go capital placement:
+	//   NOT IN (coastal_sea, deep_sea, mountain_limestone, mountain_red, semi_desert)
+	// "Catchment" = the 6 axial neighbours RecomputeProduction reads (same as production logic).
+	// "West" = q <= maxQ/2; "East" = q > maxQ/2 (east hemisphere, where tin is placed).
+	//
+	// A tile with a deposit that has ≥1 buildable neighbour is sufficient: that neighbour is
+	// a valid colony site and the deposit tile is in its 6-hex catchment.
+	halfQ := maxQ / 2
+	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+	isBuildable := func(t MapTile) bool {
+		switch t.Terrain {
+		case TerrainCoastalSea, TerrainDeepSea,
+			TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
+			return false
+		}
+		return true
+	}
+
+	westCopperCatchment := false // ≥1 buildable west tile whose catchment has copper
+	eastTinCatchment := false    // ≥1 buildable east tile whose catchment has tin
+
+	for _, t := range tiles {
+		if !isBuildable(t) {
+			continue
+		}
+		var hasCopperNeighbour, hasTinNeighbour bool
+		for _, d := range dirs6 {
+			nb, ok := tileMap[[2]int{t.Q + d[0], t.R + d[1]}]
+			if !ok {
+				continue
+			}
+			if nb.CopperDeposit {
+				hasCopperNeighbour = true
+			}
+			if nb.TinDeposit {
+				hasTinNeighbour = true
+			}
+		}
+		if hasCopperNeighbour && t.Q <= halfQ {
+			westCopperCatchment = true
+		}
+		if hasTinNeighbour && t.Q > halfQ {
+			eastTinCatchment = true
+		}
+		if westCopperCatchment && eastTinCatchment {
+			break
+		}
+	}
+
+	if !westCopperCatchment {
+		fails = append(fails, "no buildable west tile (q <= maxQ/2) has copper in its 6-hex catchment")
+	}
+	if !eastTinCatchment {
+		fails = append(fails, "no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment")
 	}
 
 	if len(fails) > 0 {
@@ -925,4 +993,30 @@ func iAbs(x int) int {
 		return -x
 	}
 	return x
+}
+
+// SpawnOreCatchmentScore returns 1 when a candidate spawn tile has the
+// hemisphere's strategic ore in its 6-hex catchment, 0 otherwise. This
+// mirrors the ORDER BY ore-bias CASE expression in join.go: west tiles
+// (q <= halfQ) score 1 if a copper-deposit neighbour exists; east tiles
+// (q > halfQ) score 1 if a tin-deposit neighbour exists. A score of 1
+// sorts ahead of 0 so the first joiners prefer ore-catchment tiles.
+//
+// The function is deliberately side-effect-free and DB-free — it exists so
+// the spawn-bias contract can be unit-tested without a real database.
+func SpawnOreCatchmentScore(candidate MapTile, tileMap map[[2]int]MapTile, halfQ int) int {
+	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+	for _, d := range dirs6 {
+		nb, ok := tileMap[[2]int{candidate.Q + d[0], candidate.R + d[1]}]
+		if !ok {
+			continue
+		}
+		if candidate.Q <= halfQ && nb.CopperDeposit {
+			return 1
+		}
+		if candidate.Q > halfQ && nb.TinDeposit {
+			return 1
+		}
+	}
+	return 0
 }

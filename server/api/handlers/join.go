@@ -52,16 +52,21 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify world is in a joinable state.
+	// Verify world is in a joinable state; also read map_width so we can
+	// compute the hemisphere boundary (half_q = (map_width-1)/2) for the
+	// ore-catchment spawn bias further down.
 	var wState string
-	var maxProvinces int
+	var maxProvinces, mapWidth int
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT state, max_provinces FROM worlds WHERE id = $1`,
+		`SELECT state, max_provinces, map_width FROM worlds WHERE id = $1`,
 		worldID,
-	).Scan(&wState, &maxProvinces); err != nil {
+	).Scan(&wState, &maxProvinces, &mapWidth); err != nil {
 		writeError(w, http.StatusNotFound, "world not found")
 		return
 	}
+	// half_q mirrors the validateMap/mapgen convention: west hemisphere is q <= halfQ,
+	// east hemisphere is q > halfQ. Copper lives in the west, tin in the east.
+	halfQ := (mapWidth - 1) / 2
 	if wState != "forming" && wState != "active" {
 		writeError(w, http.StatusConflict, "world is not accepting new players")
 		return
@@ -103,15 +108,18 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// - eligible terrain
 	// - at least 4 hexes from any existing settlement (no clustering)
 	// - prefer the landmass with fewer settlements to balance east/west
+	// - tiebreak: prefer tiles whose 6-hex catchment contains the hemisphere's
+	//   ore (copper for west q<=halfQ, tin for east q>halfQ) so early joiners
+	//   land on ore-catchment tiles and produce ore from turn 1.
 	var q, r2 int
 	var terrainType string
 	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal bool
 	err = h.pool.QueryRow(r.Context(),
 		`WITH west_count AS (
-		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q < 20
+		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q <= $2
 		 ),
 		 east_count AS (
-		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q >= 20
+		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q > $2
 		 )
 		 SELECT mt.q, mt.r, mt.terrain,
 		        mt.copper_deposit, mt.tin_deposit,
@@ -141,14 +149,45 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		              (g.q = mt.q+1 AND g.r = mt.r-1) OR (g.q = mt.q-1 AND g.r = mt.r+1))
 		   )
 		 ORDER BY
+		   -- 1. Hemisphere balance: fill the side with fewer settlements first.
 		   CASE
 		     WHEN (SELECT count FROM west_count) <= (SELECT count FROM east_count)
-		       THEN (mt.q < 20)::int
-		     ELSE (mt.q >= 20)::int
+		       THEN (mt.q <= $2)::int
+		     ELSE (mt.q > $2)::int
+		   END DESC,
+		   -- 2. Ore-catchment bias (tiebreak within the winning hemisphere):
+		   --    west tiles that have a copper-deposit neighbour rank ahead of those
+		   --    that do not; east tiles prefer tin-deposit neighbours. This ensures
+		   --    the first joiners land on ore-catchment tiles so they mine from
+		   --    turn 1 — the self-sufficiency invariant is preserved because the
+		   --    viability filters above still gate every candidate tile.
+		   --    When no ore-catchment tile is eligible the bias is 0 for all and
+		   --    we fall back to RANDOM() as before.
+		   CASE
+		     WHEN mt.q <= $2 THEN (
+		       EXISTS (
+		         SELECT 1 FROM map_tiles nb
+		         WHERE nb.world_id = mt.world_id
+		           AND nb.copper_deposit = true
+		           AND ((nb.q = mt.q+1 AND nb.r = mt.r  ) OR (nb.q = mt.q-1 AND nb.r = mt.r  ) OR
+		                (nb.q = mt.q   AND nb.r = mt.r+1) OR (nb.q = mt.q   AND nb.r = mt.r-1) OR
+		                (nb.q = mt.q+1 AND nb.r = mt.r-1) OR (nb.q = mt.q-1 AND nb.r = mt.r+1))
+		       )::int
+		     )
+		     ELSE (
+		       EXISTS (
+		         SELECT 1 FROM map_tiles nb
+		         WHERE nb.world_id = mt.world_id
+		           AND nb.tin_deposit = true
+		           AND ((nb.q = mt.q+1 AND nb.r = mt.r  ) OR (nb.q = mt.q-1 AND nb.r = mt.r  ) OR
+		                (nb.q = mt.q   AND nb.r = mt.r+1) OR (nb.q = mt.q   AND nb.r = mt.r-1) OR
+		                (nb.q = mt.q+1 AND nb.r = mt.r-1) OR (nb.q = mt.q-1 AND nb.r = mt.r+1))
+		       )::int
+		     )
 		   END DESC,
 		   RANDOM()
 		 LIMIT 1`,
-		worldID,
+		worldID, halfQ,
 	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &tileCoastal)
 	if err != nil {
 		writeError(w, http.StatusConflict, "no available tiles — try again")
