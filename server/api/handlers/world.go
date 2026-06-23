@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -26,6 +27,82 @@ type WorldHandler struct {
 // NewWorldHandler creates a WorldHandler.
 func NewWorldHandler(pool *pgxpool.Pool, authSvc *auth.Service, clk clock.Clock) *WorldHandler {
 	return &WorldHandler{pool: pool, authSvc: authSvc, clk: clk}
+}
+
+// worldNamePool — Egyptian primordial / Zep Tepi ("the first time") names. A reseed
+// with no explicit name draws from here so worlds read as myth, not UUID. Recurrence
+// is dressed as a dynasty ("Nun II") since worlds.name is UNIQUE.
+var worldNamePool = []string{
+	"Nun", "Atum", "Benben", "Zep-Tepi", "Khepri",
+	"Naunet", "Heh", "Hauhet", "Kek", "Kauket", "Amun", "Amaunet",
+}
+
+// pickWorldName returns an unused mythic world name, avoiding the 3 most recently
+// created worlds (no repeats in a row) and appending a dynastic numeral on collision.
+func (h *WorldHandler) pickWorldName(ctx context.Context) (string, error) {
+	rows, err := h.pool.Query(ctx, `SELECT name FROM worlds ORDER BY created_at DESC`)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	taken := map[string]bool{}
+	var recent []string
+	for rows.Next() {
+		var n string
+		if err := rows.Scan(&n); err != nil {
+			return "", err
+		}
+		taken[n] = true
+		if len(recent) < 3 {
+			recent = append(recent, n)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return "", err
+	}
+
+	recentBase := map[string]bool{}
+	for _, n := range recent {
+		recentBase[n] = true
+	}
+	candidates := make([]string, 0, len(worldNamePool))
+	for _, n := range worldNamePool {
+		if !recentBase[n] {
+			candidates = append(candidates, n)
+		}
+	}
+	if len(candidates) == 0 {
+		candidates = worldNamePool
+	}
+
+	rng := rand.New(rand.NewSource(h.clk.Now().UnixNano()))
+	base := candidates[rng.Intn(len(candidates))]
+	if !taken[base] {
+		return base, nil
+	}
+	for i := 2; ; i++ {
+		cand := base + " " + roman(i)
+		if !taken[cand] {
+			return cand, nil
+		}
+	}
+}
+
+// roman renders small positive integers as Roman numerals (dynasty suffixes).
+func roman(n int) string {
+	vals := []struct {
+		v int
+		s string
+	}{{1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"}, {100, "C"}, {90, "XC"},
+		{50, "L"}, {40, "XL"}, {10, "X"}, {9, "IX"}, {5, "V"}, {4, "IV"}, {1, "I"}}
+	out := ""
+	for _, p := range vals {
+		for n >= p.v {
+			out += p.s
+			n -= p.v
+		}
+	}
+	return out
 }
 
 // List handles GET /worlds.
@@ -75,8 +152,12 @@ func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.Name == "" {
-		writeError(w, http.StatusBadRequest, "world name required")
-		return
+		name, err := h.pickWorldName(r.Context())
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not assign world name")
+			return
+		}
+		req.Name = name
 	}
 	if req.MapWidth == 0 {
 		req.MapWidth = 40
