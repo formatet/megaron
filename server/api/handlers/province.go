@@ -278,6 +278,17 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
+		// Live kharis pool (per-Wanax, on player_world_records) — NOT the stale
+		// settlement-level resources.kharis (≈0 since kharis moved to the pool).
+		// The oracle/rite tier-gate (MinKharis) reads this, so the agent must see
+		// it to know which prayers it can actually cast.
+		var kharisNow, kharisRate float64
+		if sett.OwnerID != nil {
+			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
+				kharisNow, kharisRate = k.Amount, k.Rate
+			}
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":                sett.ID,
 			"name":              sett.Name,
@@ -290,6 +301,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"walls":             sett.WallLevel,
 			"loyalty":           sett.Loyalty,
 			"resources":         sett.Resources.SnapshotFull(now),
+			"kharis":            kharisNow,
+			"kharis_rate":       kharisRate,
 			"army":              sett.Army,
 			"build_queue":       buildQueue,
 			"training_queue":    trainQueue,
