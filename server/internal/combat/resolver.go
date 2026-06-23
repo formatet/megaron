@@ -58,10 +58,10 @@ func WallModifier(level int) float64 {
 }
 
 // Strength computes the raw combat strength of an army composition.
-// Multipliers: infantry ×1, elite_infantry ×2, chariot ×3, galley(ship) ×1, war_galley ×3.
+// Multipliers: spearman ×1, elite_infantry ×3, war_chariot ×4, galley(ship) ×1, war_galley ×3.
 // Priest and merchantman contribute 0 field strength.
 func Strength(a province.ArmyComposition) float64 {
-	return float64(a.Infantry*1 + a.EliteInfantry*2 + a.Chariot*3 +
+	return float64(a.Spearman*1 + a.EliteInfantry*3 + a.WarChariot*4 +
 		a.WarGalley*3 + a.Ship*1)
 }
 

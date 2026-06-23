@@ -1316,7 +1316,7 @@ function openInspect(marker) {
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marker.id}/army`).then(r => {
     if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
     r.json().then(a => {
-      const dp = (a.Infantry||0)*1 + (a.EliteInfantry||0)*2 + (a.Chariot||0)*3;
+      const dp = (a.Spearman||0)*1 + (a.EliteInfantry||0)*3 + (a.WarChariot||0)*4;
       document.getElementById('ip-army').textContent = dp > 0 ? `${dp} DP` : '—';
     });
   }).catch(() => { document.getElementById('ip-army').textContent = '—'; });
@@ -1531,9 +1531,9 @@ loadMap().then(() => { dirty = true; render(); });
 
 // ── March context menu ────────────────────────────────────────────────────
 const UNIT_DEFS = [
-  { key: 'infantry',       label: 'Hoplites',    apiKey: 'Infantry'      },
+  { key: 'spearman',       label: 'Hoplites',    apiKey: 'Spearman'      },
   { key: 'elite_infantry', label: 'Agema',       apiKey: 'EliteInfantry' },
-  { key: 'chariot',        label: 'War Chariot', apiKey: 'Chariot'       },
+  { key: 'war_chariot',    label: 'War Chariot', apiKey: 'WarChariot'    },
   { key: 'priest',         label: 'Hiereus',     apiKey: 'Priest'        },
   { key: 'ship',           label: 'Trireme',     apiKey: 'Ship'          },
 ];
@@ -1706,8 +1706,8 @@ async function openMarchCtx(target, screenX, screenY) {
   let defDP = 0;
   if (defRes && defRes.ok) {
     const defArmy = await defRes.json();
-    defDP = (defArmy.Infantry || 0) + (defArmy.Chariot || 0)*3
-          + (defArmy.EliteInfantry || 0) * 2;
+    defDP = (defArmy.Spearman || 0) + (defArmy.WarChariot || 0)*4
+          + (defArmy.EliteInfantry || 0) * 3;
   }
 
   renderArmyInputs(marchCtxArmy, !target.allied ? defDP : 0);
@@ -1939,12 +1939,12 @@ async function loadDrawerContent(name) {
     }
 
     // Capitalized keys match province API's ArmyComposition struct field names.
-    const POP_COSTS = { Infantry:5, EliteInfantry:10, Chariot:8, Priest:3, Ship:10, WarGalley:12, Merchantman:8 };
-    const UNIT_DP   = { Infantry:1, EliteInfantry:2,  Chariot:3, Priest:0, Ship:1,  WarGalley:3,  Merchantman:0 };
+    const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Priest:3, Ship:10, WarGalley:12, Merchantman:8 };
+    const UNIT_DP   = { Spearman:1, EliteInfantry:3,  WarChariot:4, Priest:0, Ship:1,  WarGalley:3,  Merchantman:0 };
     const UNIT_LBL  = {
-      Infantry:'Hoplites', EliteInfantry:'Agema', Chariot:'War Chariot',
+      Spearman:'Hoplites', EliteInfantry:'Agema', WarChariot:'War Chariot',
       Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
-      infantry:'Hoplites', elite_infantry:'Agema', chariot:'War Chariot',
+      spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot',
       priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
     };
 
@@ -2366,7 +2366,7 @@ async function loadOikosKult() {
     if (frenzyActive) {
       html += '<div class="stat-row"><span class="sr-label">Status</span>' +
         '<span class="sr-val" style="color:var(--safe)">Active — expires ' + fmtEta(sd.battle_frenzy_until) + '</span></div>' +
-        '<p style="font-size:.78rem;color:var(--text-dim);margin:.25rem 0 0">Infantry fights at ×1.5 strength.</p>';
+        '<p style="font-size:.78rem;color:var(--text-dim);margin:.25rem 0 0">Spearman fights at ×1.5 strength.</p>';
     } else {
       html += '<p style="font-size:.78rem;color:var(--text-dim);margin:.25rem 0 .5rem">Requires ≥1 Hiereus · costs 5 grain · success depends on divine mood.</p>' +
         '<button class="obj-cta" style="width:100%" onclick="okRite()">Perform Rite</button>';
@@ -2491,9 +2491,9 @@ async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
   if (!bldSec) return;
   const UNIT_LBL = {
-    Infantry:'Hoplites', EliteInfantry:'Agema', Chariot:'War Chariot',
+    Spearman:'Hoplites', EliteInfantry:'Agema', WarChariot:'War Chariot',
     Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
-    infantry:'Hoplites', elite_infantry:'Agema', chariot:'War Chariot',
+    spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot',
     priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
   };
   try {
@@ -2570,10 +2570,10 @@ async function loadWarDrawer() {
 
   renderWarMovements(capital);
 
-  const UNIT_LBL  = { Infantry:'Hoplites', EliteInfantry:'Agema', Chariot:'War Chariot', Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
-                      infantry:'Hoplites', elite_infantry:'Agema', chariot:'War Chariot', priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman' };
-  const UNIT_DP   = { Infantry:1, EliteInfantry:2, Chariot:3, Priest:0, Ship:1, WarGalley:3, Merchantman:0 };
-  const POP_COSTS = { Infantry:5, EliteInfantry:10, Chariot:8, Priest:3, Ship:10, WarGalley:12, Merchantman:8 };
+  const UNIT_LBL  = { Spearman:'Hoplites', EliteInfantry:'Agema', WarChariot:'War Chariot', Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
+                      spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot', priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman' };
+  const UNIT_DP   = { Spearman:1, EliteInfantry:3, WarChariot:4, Priest:0, Ship:1, WarGalley:3, Merchantman:0 };
+  const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Priest:3, Ship:10, WarGalley:12, Merchantman:8 };
 
   try {
     const needTwo = prevRecruitCity !== capital.id;
@@ -2628,8 +2628,8 @@ async function loadWarDrawer() {
 
     // Recruit tab
     const UNIT_SPECS = [
-      { id:'infantry',       lbl:'Hoplites',    req: buildings.has('barracks') ? null : 'barracks',   cost:'3 grain/man'          },
-      { id:'chariot',        lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'3.75 grain + 0.625 timber/man' },
+      { id:'spearman',       lbl:'Hoplites',    req: buildings.has('barracks') ? null : 'barracks',   cost:'3 grain/man'          },
+      { id:'war_chariot',    lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'3.75 grain + 0.625 timber + 0.375 bronze/man' },
       { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour',    cost:'9 timber/man (crew 20)' },
       { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'5 cedar + 0.33 bronze/man (crew 50)' },
       { id:'merchantman',    lbl:'Merchantman',  req: buildings.has('harbour')  ? null : 'harbour',    cost:'8.75 timber/man (crew 10)' },
@@ -2747,7 +2747,7 @@ async function warDisband(provinceID) {
   const pri = parseInt(document.getElementById('wdb-pri')?.value || '0');
   if (inf + cha + pri === 0) return;
   const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + provinceID + '/disband', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ infantry: inf, chariot: cha, priest: pri }),
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ spearman: inf, war_chariot: cha, priest: pri }),
   });
   const data = await res.json().catch(() => ({}));
   const resEl = document.getElementById('war-disband-res');
@@ -2772,7 +2772,7 @@ async function warRecall(provinceID, marchID) {
 
 // ── Discrete unit helpers (C8-web) ───────────────────────────────────────
 const UNIT_LABELS = {
-  infantry:'Hoplites', elite_infantry:'Agema', chariot:'War Chariot',
+  spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot',
   priest:'Hiereus', galley:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
 };
 

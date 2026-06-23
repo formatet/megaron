@@ -156,6 +156,25 @@ func TestShipTaxonomy_MerchantmanTimberNoFoundry(t *testing.T) {
 	}
 }
 
+// TestWarChariotRequiresBronzeStableNotFoundry verifies war_chariot costs bronze and
+// requires a stable but NOT a foundry — a city that BUYS bronze can still build it.
+func TestWarChariotRequiresBronzeStableNotFoundry(t *testing.T) {
+	spec, ok := UnitSpecs["war_chariot"]
+	if !ok {
+		t.Fatal("war_chariot must exist in UnitSpecs")
+	}
+	bronze, hasBronze := spec.Costs["bronze"]
+	if !hasBronze || bronze <= 0 {
+		t.Errorf("war_chariot must cost bronze > 0, got %.1f", bronze)
+	}
+	if !spec.RequiresStable {
+		t.Error("war_chariot must require a stable")
+	}
+	if spec.RequiresFoundry {
+		t.Error("war_chariot must NOT require a foundry (buyable-bronze design)")
+	}
+}
+
 func TestResourceLedger_SnapshotSilver(t *testing.T) {
 	base := time.Date(2026, 6, 2, 12, 0, 0, 0, time.UTC)
 	rl := ResourceLedger{Silver: ResourceState{Amount: 50, RatePerMinute: 1, Cap: 500, LastCalcAt: base}}

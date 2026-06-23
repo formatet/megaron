@@ -62,8 +62,8 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		"winery":      "Winery",
 	}
 	unitNames := map[string]string{
-		"infantry":       "Hoplites",
-		"chariot":        "War Chariot",
+		"spearman":       "Hoplites",
+		"war_chariot":    "War Chariot",
 		"priest":         "Hiereus",
 		"ship":           "Trireme",
 		"elite_infantry": "Agema",
@@ -277,7 +277,7 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 		s.ID,
 	).Scan(&tradeCount)
 
-	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Chariot*3
+	armyDP := s.Army.Spearman + s.Army.EliteInfantry*2 + s.Army.WarChariot*3
 
 	h.render(w, "megaron.html", map[string]any{
 		"WorldID":      worldID,
@@ -424,7 +424,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		SilverDeposit bool
 		CedarDeposit  bool
 	}
-	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Chariot*3
+	armyDP := s.Army.Spearman + s.Army.EliteInfantry*2 + s.Army.WarChariot*3
 	pv := provinceView{
 		ID:            s.ProvinceID,
 		SettlementID:  s.ID,
@@ -477,8 +477,8 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 		ID         uuid.UUID
 		TargetID   uuid.UUID
 		TargetName string
-		Infantry   int
-		Chariot    int
+		Spearman   int
+		WarChariot int
 		Intent     string
 		ArrivesAt  time.Time
 	}
@@ -486,7 +486,7 @@ func (h *WebHandler) Province(w http.ResponseWriter, r *http.Request) {
 	for mrows.Next() {
 		var mi marchItem
 		var pri, ship int
-		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Chariot, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
+		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Spearman, &mi.WarChariot, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
 		marches = append(marches, mi)
 	}
 
@@ -1016,7 +1016,7 @@ func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
 		SilverDeposit bool
 		CedarDeposit  bool
 	}
-	armyDP := s.Army.Infantry + s.Army.EliteInfantry*2 + s.Army.Chariot*3
+	armyDP := s.Army.Spearman + s.Army.EliteInfantry*2 + s.Army.WarChariot*3
 	pv := provinceView{
 		ID:            s.ProvinceID,
 		SettlementID:  s.ID,
@@ -1049,8 +1049,8 @@ func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
 		ID         uuid.UUID
 		TargetID   uuid.UUID
 		TargetName string
-		Infantry   int
-		Chariot    int
+		Spearman   int
+		WarChariot int
 		Intent     string
 		ArrivesAt  time.Time
 	}
@@ -1058,7 +1058,7 @@ func (h *WebHandler) RawakView(w http.ResponseWriter, r *http.Request) {
 	for mrows.Next() {
 		var mi marchItem
 		var pri, ship int
-		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Infantry, &mi.Chariot, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
+		_ = mrows.Scan(&mi.ID, &mi.TargetID, &mi.TargetName, &mi.Spearman, &mi.WarChariot, &pri, &ship, &mi.Intent, &mi.ArrivesAt)
 		marches = append(marches, mi)
 	}
 

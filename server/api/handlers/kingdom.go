@@ -481,8 +481,8 @@ func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		LenderPlayerID string `json:"lender_player_id"`
-		Infantry       int    `json:"infantry"`
-		Chariot        int    `json:"chariot"`
+		Spearman       int    `json:"spearman"`
+		WarChariot     int    `json:"war_chariot"`
 		Priest         int    `json:"priest"`
 		Ship           int    `json:"ship"`
 	}
@@ -495,11 +495,11 @@ func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid lender player ID")
 		return
 	}
-	if req.Infantry < 0 || req.Chariot < 0 || req.Priest < 0 || req.Ship < 0 {
+	if req.Spearman < 0 || req.WarChariot < 0 || req.Priest < 0 || req.Ship < 0 {
 		writeError(w, http.StatusBadRequest, "unit counts must be non-negative")
 		return
 	}
-	if req.Infantry+req.Chariot+req.Priest+req.Ship == 0 {
+	if req.Spearman+req.WarChariot+req.Priest+req.Ship == 0 {
 		writeError(w, http.StatusBadRequest, "must borrow at least one unit")
 		return
 	}
@@ -546,7 +546,7 @@ func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 		   AND chariot  >= $2
 		   AND priest   >= $3
 		   AND ship     >= $4`,
-		req.Infantry, req.Chariot, req.Priest, req.Ship, settlementID,
+		req.Spearman, req.WarChariot, req.Priest, req.Ship, settlementID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct units")
@@ -563,7 +563,7 @@ func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 		`INSERT INTO borrowed_armies (kingdom_id, lender_id, infantry, chariot, priest, ship)
 		 VALUES ($1, $2, $3, $4, $5, $6)
 		 RETURNING id`,
-		kingdomID, lenderID, req.Infantry, req.Chariot, req.Priest, req.Ship,
+		kingdomID, lenderID, req.Spearman, req.WarChariot, req.Priest, req.Ship,
 	).Scan(&borrowID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not record borrowed army")
@@ -576,11 +576,11 @@ func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"id":       borrowID,
-		"infantry": req.Infantry,
-		"chariot":  req.Chariot,
-		"priest":   req.Priest,
-		"ship":     req.Ship,
+		"id":          borrowID,
+		"spearman":    req.Spearman,
+		"war_chariot": req.WarChariot,
+		"priest":      req.Priest,
+		"ship":        req.Ship,
 	})
 }
 
@@ -983,8 +983,8 @@ func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Reque
 		LenderID           uuid.UUID `json:"lender_id"`
 		LenderName         string    `json:"lender_name"`
 		LenderSettlementID string    `json:"lender_settlement_id"`
-		Infantry           int       `json:"infantry"`
-		Chariot            int       `json:"chariot"`
+		Spearman           int       `json:"spearman"`
+		WarChariot         int       `json:"war_chariot"`
 		Priest             int       `json:"priest"`
 		Ship               int       `json:"ship"`
 		BorrowedAt         time.Time `json:"borrowed_at"`
@@ -993,7 +993,7 @@ func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Reque
 	for rows.Next() {
 		var e entry
 		if err := rows.Scan(&e.ID, &e.LenderID, &e.LenderName, &e.LenderSettlementID,
-			&e.Infantry, &e.Chariot, &e.Priest, &e.Ship, &e.BorrowedAt); err == nil {
+			&e.Spearman, &e.WarChariot, &e.Priest, &e.Ship, &e.BorrowedAt); err == nil {
 			result = append(result, e)
 		}
 	}

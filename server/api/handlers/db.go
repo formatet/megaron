@@ -106,7 +106,7 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 		&s.GovernorID, &s.GovernorIsAI,
 		&s.Loyalty, &s.LoyaltyTrend, &s.WallLevel, &s.IsCapital, &s.State, &s.Population,
 		&s.Resources.Silver.Amount, &s.Resources.Silver.RatePerMinute, &s.Resources.Silver.Cap, &silverCalcAt,
-		&s.Army.Infantry, &s.Army.Chariot, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
+		&s.Army.Spearman, &s.Army.WarChariot, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
 		&s.Army.WarGalley, &s.Army.Merchantman,
 		&s.UpdatedAt,
 	)

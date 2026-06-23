@@ -110,10 +110,10 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 
 func unitColumn(unitType string) string {
 	switch unitType {
-	case "infantry":
-		return "infantry"
-	case "chariot":
-		return "chariot"
+	case "spearman":
+		return "infantry" // legacy integer army column kept as `infantry`
+	case "war_chariot":
+		return "chariot" // legacy integer army column kept as `chariot`
 	case "priest":
 		return "priest"
 	case "ship":

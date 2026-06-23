@@ -476,7 +476,7 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"returned": map[string]int{
-			"infantry": inf, "chariot": cha,
+			"spearman": inf, "war_chariot": cha,
 			"priest": pri, "ship": ship,
 		},
 	})

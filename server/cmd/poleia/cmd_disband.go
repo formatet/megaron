@@ -22,8 +22,8 @@ func disbandCmd() *cobra.Command {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/disband", cfg.WorldID, cfg.ProvinceID)
 			data, err := c.post(path, map[string]any{
-				"infantry":       hoplites,
-				"chariot":        chariots,
+				"spearman":       hoplites,
+				"war_chariot":    chariots,
 				"priest":         hiereus,
 				"ship":           trireme,
 				"elite_infantry": agema,

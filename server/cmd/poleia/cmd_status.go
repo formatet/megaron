@@ -56,7 +56,7 @@ func statusCmd() *cobra.Command {
 			if army != nil {
 				fmt.Println("Army")
 				units := []struct{ key, label string }{
-					{"Infantry", "Hoplites"}, {"Chariot", "War Chariot"}, {"Priest", "Hiereus"},
+					{"Spearman", "Hoplites"}, {"WarChariot", "War Chariot"}, {"Priest", "Hiereus"},
 					{"Ship", "Trireme"}, {"EliteInfantry", "Agema"},
 				}
 				for _, u := range units {
@@ -79,7 +79,7 @@ func statusCmd() *cobra.Command {
 			}
 
 			unitLabels := map[string]string{
-				"infantry": "Hoplites", "chariot": "War Chariot", "priest": "Hiereus",
+				"spearman": "Hoplites", "war_chariot": "War Chariot", "priest": "Hiereus",
 				"ship": "Trireme", "elite_infantry": "Agema",
 			}
 

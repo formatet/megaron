@@ -21,9 +21,9 @@ type UpkeepSpec struct {
 // UpkeepSpecs: landenheter skalas med size/100; navala är flat (size=1).
 // Präst = ingen upkeep (kult kostar inget löpande).
 var UpkeepSpecs = map[string]UpkeepSpec{
-	"infantry":       {Grain: 5, Silver: 2},
+	"spearman":       {Grain: 5, Silver: 2},
 	"elite_infantry": {Grain: 6, Silver: 4},
-	"chariot":        {Grain: 8, Silver: 6},
+	"war_chariot":    {Grain: 8, Silver: 6},
 	"ship":           {Grain: 4, Silver: 3},
 	"war_galley":     {Grain: 6, Silver: 5},
 	"merchantman":    {Grain: 3, Silver: 2},

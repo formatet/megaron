@@ -37,8 +37,8 @@ type RecallMarchPayload struct {
 	WorldID       uuid.UUID `json:"world_id"`
 	MessengerID   uuid.UUID `json:"messenger_id"` // the visible recall messenger, marked arrived on fire
 	MarchID       uuid.UUID `json:"march_id"`
-	Infantry      int       `json:"infantry"`
-	Chariot       int       `json:"chariot"`
+	Spearman      int       `json:"spearman"`
+	WarChariot    int       `json:"war_chariot"`
 	Priest        int       `json:"priest"`
 	Ship          int       `json:"ship"` // galley
 	EliteInfantry int       `json:"elite_infantry"`
@@ -63,8 +63,8 @@ type RecallOutpostPayload struct {
 	MessengerID    uuid.UUID `json:"messenger_id"`
 	ProvinceID     uuid.UUID `json:"province_id"` // the outpost province
 	HomeID         uuid.UUID `json:"home_id"`     // province the garrison returns to
-	Infantry       int       `json:"infantry"`
-	Chariot        int       `json:"chariot"`
+	Spearman       int       `json:"spearman"`
+	WarChariot     int       `json:"war_chariot"`
 	Priest         int       `json:"priest"`
 	Ship           int       `json:"ship"` // galley
 	EliteInfantry  int       `json:"elite_infantry"`
@@ -161,7 +161,7 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12)
 		 RETURNING id`,
 		p.WorldID, p.TargetID, p.OriginID,
-		p.Infantry, p.Chariot, p.Priest, p.Ship, p.EliteInfantry,
+		p.Spearman, p.WarChariot, p.Priest, p.Ship, p.EliteInfantry,
 		p.WarGalley, p.Merchantman,
 		now, returnsAt,
 	).Scan(&returnMarchID); err != nil {
@@ -255,7 +255,7 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 	// March the garrison home (if any).
 	var returnMarchID uuid.UUID
 	var returnsAt time.Time
-	if p.Infantry+p.Chariot+p.Priest+p.Ship+p.EliteInfantry+p.WarGalley+p.Merchantman > 0 {
+	if p.Spearman+p.WarChariot+p.Priest+p.Ship+p.EliteInfantry+p.WarGalley+p.Merchantman > 0 {
 		dist := province.HexDistance(
 			province.MapPosition{Q: p.OutpostQ, R: p.OutpostR},
 			province.MapPosition{Q: p.HomeQ, R: p.HomeR},
@@ -269,7 +269,7 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12)
 			 RETURNING id`,
 			p.WorldID, p.ProvinceID, p.HomeID,
-			p.Infantry, p.Chariot, p.Priest, p.Ship, p.EliteInfantry,
+			p.Spearman, p.WarChariot, p.Priest, p.Ship, p.EliteInfantry,
 			p.WarGalley, p.Merchantman,
 			now, returnsAt,
 		).Scan(&returnMarchID); err != nil {

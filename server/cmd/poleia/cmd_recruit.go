@@ -7,8 +7,8 @@ import (
 )
 
 var unitAliases = map[string]string{
-	"hoplites": "infantry", "hoplite": "infantry", "inf": "infantry", "infantry": "infantry",
-	"chariot": "chariot", "chariots": "chariot", "cha": "chariot", "war_chariot": "chariot",
+	"hoplites": "spearman", "hoplite": "spearman", "inf": "spearman", "infantry": "spearman", "spearman": "spearman", "spear": "spearman",
+	"chariot": "war_chariot", "chariots": "war_chariot", "cha": "war_chariot", "war_chariot": "war_chariot",
 	"trireme": "ship", "ship": "ship", "shp": "ship",
 	"agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry",
 }

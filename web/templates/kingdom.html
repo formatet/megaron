@@ -470,8 +470,8 @@ async function loadBorrowed() {
   const isBasileus = {{if eq .PlayerRole "basileus"}}true{{else}}false{{end}};
   el.innerHTML = list.map(b => {
     const units = [
-      b.infantry  ? `${b.infantry} Hoplites`    : '',
-      b.chariot   ? `${b.chariot} War Chariot`  : '',
+      b.spearman  ? `${b.spearman} Hoplites`       : '',
+      b.war_chariot ? `${b.war_chariot} War Chariot` : '',
       b.elite_infantry ? `${b.elite_infantry} Agema` : '',
       b.priest    ? `${b.priest} Hiereus`       : '',
       b.ship      ? `${b.ship} Trireme`         : '',
@@ -508,7 +508,7 @@ async function loadBorrowMembers() {
   if (!sel) return;
   const others = _councilData.filter(m => m.player_id !== '{{.SettlementID}}');
   sel.innerHTML = '<option value="">— choose member —</option>' +
-    others.map(m => `<option value="${m.player_id}" data-inf="${m.infantry||0}" data-cha="${m.chariot||0}">${escHtml(m.settlement_name||m.username)}</option>`).join('');
+    others.map(m => `<option value="${m.player_id}" data-inf="${m.spearman||0}" data-cha="${m.war_chariot||0}">${escHtml(m.settlement_name||m.username)}</option>`).join('');
 }
 
 function updateBorrowableArmy() {
@@ -534,7 +534,7 @@ async function borrowArmy() {
   }
   const res = await apiReq('POST',
     `/api/v1/worlds/${WORLD_ID}/kingdoms/${KINGDOM_ID}/borrow-army`,
-    {lender_player_id: lenderPlayerID, infantry, chariot, priest, ship});
+    {lender_player_id: lenderPlayerID, spearman: infantry, war_chariot: chariot, priest, ship});
   if (res.ok) {
     showResult('borrow-result', '✓ Army levied', true);
     ['bor-inf','bor-cha','bor-pri','bor-shi'].forEach(id => document.getElementById(id).value=0);

@@ -73,8 +73,8 @@ func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
 // Ship = galley (standardskepp, byggd med timber). Display: "Galley".
 // DB-kolumnen heter `ship` för bakåtkompatibilitet med ~87 befintliga Go-refs.
 type ArmyComposition struct {
-	Infantry      int
-	Chariot       int
+	Spearman      int
+	WarChariot    int
 	Priest        int
 	Ship          int // galley — DB-kolumn: ship
 	EliteInfantry int

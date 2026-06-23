@@ -77,8 +77,8 @@ func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	// ship = galley (DB-kolumn). war_galley + merchantman = nya skepp-typer (mig 039).
 	// chariot replaced cavalry (mig 042); catapult removed.
 	expected := map[string]int{
-		"infantry":       5,
-		"chariot":        8,
+		"spearman":       5,
+		"war_chariot":    8,
 		"priest":         3,
 		"ship":           10, // galley
 		"elite_infantry": 10,

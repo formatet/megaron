@@ -58,8 +58,8 @@
     <section class="panel army-panel">
       <h3>Army</h3>
       <table class="army-table">
-        <tr><td><canvas class="unit-icon" data-unit="inf"  width="12" height="12"></canvas> Hoplites</td>      <td class="num">{{.Province.Army.Infantry}}</td></tr>
-        <tr><td><canvas class="unit-icon" data-unit="cha"  width="12" height="12"></canvas> War Chariot</td>   <td class="num">{{.Province.Army.Chariot}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="inf"  width="12" height="12"></canvas> Hoplites</td>      <td class="num">{{.Province.Army.Spearman}}</td></tr>
+        <tr><td><canvas class="unit-icon" data-unit="cha"  width="12" height="12"></canvas> War Chariot</td>   <td class="num">{{.Province.Army.WarChariot}}</td></tr>
         <tr><td><canvas class="unit-icon" data-unit="pri"  width="12" height="12"></canvas> Hiereus</td>       <td class="num">{{.Province.Army.Priest}}</td></tr>
         <tr><td><canvas class="unit-icon" data-unit="shp"  width="12" height="12"></canvas> Galley</td>        <td class="num">{{.Province.Army.Ship}}</td></tr>
         {{if .Province.Army.WarGalley}}<tr><td><canvas class="unit-icon" data-unit="wgal" width="12" height="12"></canvas> War Galley</td>    <td class="num">{{.Province.Army.WarGalley}}</td></tr>{{end}}
@@ -82,15 +82,15 @@
           <span class="recruit-cost">{{if not $hasBarracks}}requires barracks{{else}}15 grain{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="100" value="10" id="rc-hoplites"{{if not $hasBarracks}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
-                  onclick="recruitUnit('infantry', document.getElementById('rc-hoplites').value)"
+                  onclick="recruitUnit('spearman', document.getElementById('rc-hoplites').value)"
                   {{if not $hasBarracks}}disabled{{end}}>Train</button>
         </label>
         <label class="recruit-row{{if not $hasStable}} unit-unavailable{{end}}">
           <span class="recruit-label">War Chariot</span>
-          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 grain · 5 timber{{end}}</span>
+          <span class="recruit-cost">{{if not $hasStable}}requires stable{{else}}30 grain · 5 timber · 3 bronze{{end}}</span>
           <input class="recruit-count" type="number" min="1" max="50" value="5" id="rc-chariot"{{if not $hasStable}} disabled{{end}}>
           <button type="button" class="btn-small btn-primary"
-                  onclick="recruitUnit('chariot', document.getElementById('rc-chariot').value)"
+                  onclick="recruitUnit('war_chariot', document.getElementById('rc-chariot').value)"
                   {{if not $hasStable}}disabled{{end}}>Train</button>
         </label>
         <label class="recruit-row">
@@ -265,7 +265,7 @@ async function doDisband() {
   const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${PROVINCE_ID}/disband`, {
     method: 'POST',
     headers: {'Content-Type':'application/json', ...(token?{'Authorization':'Bearer '+token}:{})},
-    body: JSON.stringify({infantry: h, chariot: c, priest: p})
+    body: JSON.stringify({spearman: h, war_chariot: c, priest: p})
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
@@ -345,7 +345,7 @@ async function loadAffordability() {
   if (!data || !data.settlement) return;
   const canRecruit = {};
   (data.settlement.can_recruit || []).forEach(r => { canRecruit[r.unit] = r.can_recruit; });
-  const unitMap = {infantry:'hoplites', chariot:'chariot', priest:'hiereus', ship:'galley', war_galley:'wargalley', merchantman:'merchantman', elite_infantry:'agema'};
+  const unitMap = {spearman:'hoplites', war_chariot:'chariot', priest:'hiereus', ship:'galley', war_galley:'wargalley', merchantman:'merchantman', elite_infantry:'agema'};
   Object.entries(unitMap).forEach(([unit, id]) => {
     const row = document.getElementById('rc-' + id)?.closest('.recruit-row');
     if (!row) return;

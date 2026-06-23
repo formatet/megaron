@@ -36,20 +36,20 @@ func TestInsufficientGoodsErrorSingle(t *testing.T) {
 // holds need to see which units are short and by how much to scale down.
 func TestInsufficientUnitsMsg(t *testing.T) {
 	// Wants 30 infantry + 5 chariot, only holds 10 infantry + 5 chariot.
-	want := province.ArmyComposition{Infantry: 30, Chariot: 5}
-	have := province.ArmyComposition{Infantry: 10, Chariot: 5}
+	want := province.ArmyComposition{Spearman: 30, WarChariot: 5}
+	have := province.ArmyComposition{Spearman: 10, WarChariot: 5}
 	got := insufficientUnitsMsg(want, have)
-	exp := "insufficient units: infantry (need 30, have 10)"
+	exp := "insufficient units: spearman (need 30, have 10)"
 	if got != exp {
 		t.Errorf("insufficientUnitsMsg = %q, want %q", got, exp)
 	}
 }
 
 func TestInsufficientUnitsMsgMultiple(t *testing.T) {
-	want := province.ArmyComposition{Infantry: 20, Ship: 3, EliteInfantry: 4}
-	have := province.ArmyComposition{Infantry: 5, Ship: 0, EliteInfantry: 1}
+	want := province.ArmyComposition{Spearman: 20, Ship: 3, EliteInfantry: 4}
+	have := province.ArmyComposition{Spearman: 5, Ship: 0, EliteInfantry: 1}
 	got := insufficientUnitsMsg(want, have)
-	exp := "insufficient units: infantry (need 20, have 5), ship (need 3, have 0), elite_infantry (need 4, have 1)"
+	exp := "insufficient units: spearman (need 20, have 5), ship (need 3, have 0), elite_infantry (need 4, have 1)"
 	if got != exp {
 		t.Errorf("insufficientUnitsMsg = %q, want %q", got, exp)
 	}
@@ -58,7 +58,7 @@ func TestInsufficientUnitsMsgMultiple(t *testing.T) {
 // When nothing is actually short (defensive — caller only invokes this on a
 // shortfall), fall back to the plain message rather than an empty list.
 func TestInsufficientUnitsMsgNoShortfall(t *testing.T) {
-	a := province.ArmyComposition{Infantry: 5}
+	a := province.ArmyComposition{Spearman: 5}
 	if got := insufficientUnitsMsg(a, a); got != "insufficient units" {
 		t.Errorf("insufficientUnitsMsg = %q, want plain fallback", got)
 	}

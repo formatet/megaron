@@ -356,8 +356,8 @@ func kingdomBorrowArmyCmd() *cobra.Command {
 			path := fmt.Sprintf("/api/v1/worlds/%s/kingdoms/%s/borrow-army", cfg.WorldID, kingdomID)
 			_, err := c.post(path, map[string]any{
 				"lender_player_id": lenderID,
-				"infantry":         infantry,
-				"chariot":          chariot,
+				"spearman":         infantry,
+				"war_chariot":      chariot,
 				"priest":           priest,
 				"ship":             ship,
 			})
@@ -370,8 +370,8 @@ func kingdomBorrowArmyCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&kingdomID, "kingdom", "", "kingdom ID")
 	cmd.Flags().StringVar(&lenderID, "lender", "", "lender's player ID")
-	cmd.Flags().IntVar(&infantry, "infantry", 0, "infantry to borrow")
-	cmd.Flags().IntVar(&chariot, "chariot", 0, "chariots to borrow")
+	cmd.Flags().IntVar(&infantry, "spearman", 0, "spearmen to borrow")
+	cmd.Flags().IntVar(&chariot, "war-chariot", 0, "war chariots to borrow")
 	cmd.Flags().IntVar(&priest, "priest", 0, "priests to borrow")
 	cmd.Flags().IntVar(&ship, "ship", 0, "ships to borrow")
 	return cmd

@@ -26,11 +26,12 @@ type UnitSpec struct {
 //   - "merchantman" = handelsskepp, svag strid, byggs med timber, kräver hamn.
 //
 // Enhetskorrektur (migration 042):
-//   - "chariot" = stridsvagn, kräver stable. Ersätter "cavalry".
+//   - "war_chariot" = stridsvagn, kräver stable + brons (men INTE foundry — en stad
+//     som KÖPER brons ska kunna bygga den vid sitt stall). Ersätter "cavalry"/"chariot".
 //     Katapulten (catapult) saknar historisk förankring i bronsåldern och tas bort.
 var UnitSpecs = map[string]UnitSpec{
-	"infantry":       {Costs: map[string]float64{"grain": 15, "silver": 2}, PopCost: 5, Duration: time.Minute, RequiresBarracks: true},
-	"chariot":        {Costs: map[string]float64{"grain": 30, "timber": 5, "silver": 5}, PopCost: 8, Duration: 4 * time.Minute, RequiresStable: true},
+	"spearman":       {Costs: map[string]float64{"grain": 15, "silver": 2}, PopCost: 5, Duration: time.Minute, RequiresBarracks: true},
+	"war_chariot":    {Costs: map[string]float64{"grain": 30, "timber": 5, "bronze": 3, "silver": 5}, PopCost: 8, Duration: 4 * time.Minute, RequiresStable: true},
 	// priest borttagen som enhet (mig 060) — präst är ingen enhet längre, kult = tempel-labor.
 	"ship":           {Costs: map[string]float64{"timber": 90, "silver": 3}, PopCost: 10, Duration: 45 * time.Minute, RequiresHarbour: true},
 	"elite_infantry": {Costs: map[string]float64{"grain": 25, "bronze": 2, "silver": 4}, PopCost: 10, Duration: 5 * time.Minute, RequiresBarracks: true, RequiresFoundry: true},

@@ -23,9 +23,9 @@ import (
 type Type string
 
 const (
-	TypeInfantry      Type = "infantry"
+	TypeSpearman      Type = "spearman"
 	TypeEliteInfantry Type = "elite_infantry"
-	TypeChariot       Type = "chariot"
+	TypeWarChariot    Type = "war_chariot"
 	TypePriest        Type = "priest"
 	TypeGalley        Type = "galley"    // DB: type='galley'; crew 20
 	TypeWarGalley     Type = "war_galley" // crew 50

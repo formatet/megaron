@@ -79,7 +79,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		 FROM marching_armies WHERE id = $1 FOR UPDATE`,
 		marchID,
 	).Scan(&march.ID, &march.OriginID, &march.TargetID, &march.Intent,
-		&march.Army.Infantry, &march.Army.Chariot,
+		&march.Army.Spearman, &march.Army.WarChariot,
 		&march.Army.Priest, &march.Army.Ship, &march.Army.EliteInfantry,
 		&march.Army.WarGalley, &march.Army.Merchantman, &march.Resolved,
 		&march.ColonyName)
@@ -173,8 +173,8 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 
 	// Build effective attack army — frenzy inflates infantry strength for this battle only.
 	effectiveArmy := march.Army
-	if frenzied && effectiveArmy.Infantry > 0 {
-		effectiveArmy.Infantry = int(float64(effectiveArmy.Infantry) * 1.5)
+	if frenzied && effectiveArmy.Spearman > 0 {
+		effectiveArmy.Spearman = int(float64(effectiveArmy.Spearman) * 1.5)
 	}
 
 	// Load defender settlement (looked up by province_id). Culture is used for respawn.
@@ -191,7 +191,7 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		 FROM settlements WHERE province_id = $1`,
 		march.TargetID,
 	).Scan(&def.OwnerID,
-		&def.Army.Infantry, &def.Army.Chariot,
+		&def.Army.Spearman, &def.Army.WarChariot,
 		&def.Army.Priest, &def.Army.Ship, &def.Army.EliteInfantry,
 		&def.Army.WarGalley, &def.Army.Merchantman, &def.Walls, &def.InvasionsToday,
 		&def.Culture)
@@ -291,8 +291,8 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 // armyPopCost returns the total population-cost for an ArmyComposition,
 // using the PopCosts table from the economy package.
 func armyPopCost(a province.ArmyComposition) int {
-	return a.Infantry*economy.PopCosts["infantry"] +
-		a.Chariot*economy.PopCosts["chariot"] +
+	return a.Spearman*economy.PopCosts["spearman"] +
+		a.WarChariot*economy.PopCosts["war_chariot"] +
 		a.Priest*economy.PopCosts["priest"] +
 		a.Ship*economy.PopCosts["ship"] +
 		a.EliteInfantry*economy.PopCosts["elite_infantry"] +
@@ -303,19 +303,19 @@ func armyPopCost(a province.ArmyComposition) int {
 // totalUnits sums every unit type in an ArmyComposition — used to report
 // battle losses in plain numbers (e.g. "lost 4 units") in gossip text.
 func totalUnits(a province.ArmyComposition) int {
-	return a.Infantry + a.Chariot + a.Priest + a.Ship +
+	return a.Spearman + a.WarChariot + a.Priest + a.Ship +
 		a.EliteInfantry + a.WarGalley + a.Merchantman
 }
 
 func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, defOwnerID *uuid.UUID, attackArmy province.ArmyComposition, result CombatResult, worldID uuid.UUID) error {
-	survivingInf := int(float64(attackArmy.Infantry) * (1 - result.AttackerLosses))
-	survivingCha := int(float64(attackArmy.Chariot) * (1 - result.AttackerLosses))
+	survivingInf := int(float64(attackArmy.Spearman) * (1 - result.AttackerLosses))
+	survivingCha := int(float64(attackArmy.WarChariot) * (1 - result.AttackerLosses))
 	survivingElite := int(float64(attackArmy.EliteInfantry) * (1 - result.AttackerLosses))
 
 	// Variant B: attacker casualties = demographic loss on attacker's home settlement.
 	deadArmy := province.ArmyComposition{
-		Infantry:      attackArmy.Infantry - survivingInf,
-		Chariot:       attackArmy.Chariot - survivingCha,
+		Spearman:      attackArmy.Spearman - survivingInf,
+		WarChariot:    attackArmy.WarChariot - survivingCha,
 		EliteInfantry: attackArmy.EliteInfantry - survivingElite,
 		Priest:        int(float64(attackArmy.Priest) * result.AttackerLosses),
 		Ship:          int(float64(attackArmy.Ship) * result.AttackerLosses),
@@ -380,14 +380,14 @@ func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 }
 
 func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uuid.UUID, attackArmy, defArmy province.ArmyComposition, result CombatResult) error {
-	survivingAttInf := int(float64(attackArmy.Infantry) * (1 - result.AttackerLosses))
-	survivingAttCha := int(float64(attackArmy.Chariot) * (1 - result.AttackerLosses))
+	survivingAttInf := int(float64(attackArmy.Spearman) * (1 - result.AttackerLosses))
+	survivingAttCha := int(float64(attackArmy.WarChariot) * (1 - result.AttackerLosses))
 	survivingAttElite := int(float64(attackArmy.EliteInfantry) * (1 - result.AttackerLosses))
 
 	// Variant B: attacker casualties reduce home population.
 	attackerDeadArmy := province.ArmyComposition{
-		Infantry:      attackArmy.Infantry - survivingAttInf,
-		Chariot:       attackArmy.Chariot - survivingAttCha,
+		Spearman:      attackArmy.Spearman - survivingAttInf,
+		WarChariot:    attackArmy.WarChariot - survivingAttCha,
 		EliteInfantry: attackArmy.EliteInfantry - survivingAttElite,
 		Priest:        int(float64(attackArmy.Priest) * result.AttackerLosses),
 		Ship:          int(float64(attackArmy.Ship) * result.AttackerLosses),
@@ -422,8 +422,8 @@ func applyDefenderVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 
 	// Variant B: defender casualties reduce defender population.
 	defenderDeadArmy := province.ArmyComposition{
-		Infantry:      int(float64(defArmy.Infantry) * result.DefenderLosses),
-		Chariot:       int(float64(defArmy.Chariot) * result.DefenderLosses),
+		Spearman:      int(float64(defArmy.Spearman) * result.DefenderLosses),
+		WarChariot:    int(float64(defArmy.WarChariot) * result.DefenderLosses),
 		EliteInfantry: int(float64(defArmy.EliteInfantry) * result.DefenderLosses),
 		Priest:        int(float64(defArmy.Priest) * result.DefenderLosses),
 		Ship:          int(float64(defArmy.Ship) * result.DefenderLosses),
@@ -469,7 +469,7 @@ func mergeArmy(ctx context.Context, tx pgx.Tx, targetID uuid.UUID, army province
 		   war_galley     = war_galley     + $6,
 		   merchantman    = merchantman    + $7
 		 WHERE province_id = $8`,
-		army.Infantry, army.Chariot, army.Priest, army.Ship, army.EliteInfantry,
+		army.Spearman, army.WarChariot, army.Priest, army.Ship, army.EliteInfantry,
 		army.WarGalley, army.Merchantman, targetID,
 	)
 	if err != nil {
@@ -489,14 +489,14 @@ func buildCombatReport(att, def province.ArmyComposition, walls int, result Comb
 
 	armyStr := func(a province.ArmyComposition) string {
 		parts := []string{}
-		if a.Infantry > 0 {
-			parts = append(parts, fmt.Sprintf("%d Hoplites", a.Infantry))
+		if a.Spearman > 0 {
+			parts = append(parts, fmt.Sprintf("%d Hoplites", a.Spearman))
 		}
 		if a.EliteInfantry > 0 {
 			parts = append(parts, fmt.Sprintf("%d Agema", a.EliteInfantry))
 		}
-		if a.Chariot > 0 {
-			parts = append(parts, fmt.Sprintf("%d War Chariot", a.Chariot))
+		if a.WarChariot > 0 {
+			parts = append(parts, fmt.Sprintf("%d War Chariot", a.WarChariot))
 		}
 		if a.Priest > 0 {
 			parts = append(parts, fmt.Sprintf("%d Hiereus", a.Priest))
@@ -582,8 +582,8 @@ func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, orig
 	// what was actually lost, so a Wanax returning later can explain a population/army
 	// drop without guessing (rather than just learning the battle's outcome).
 	attDead := province.ArmyComposition{
-		Infantry:      int(float64(attackArmy.Infantry) * result.AttackerLosses),
-		Chariot:       int(float64(attackArmy.Chariot) * result.AttackerLosses),
+		Spearman:      int(float64(attackArmy.Spearman) * result.AttackerLosses),
+		WarChariot:    int(float64(attackArmy.WarChariot) * result.AttackerLosses),
 		EliteInfantry: int(float64(attackArmy.EliteInfantry) * result.AttackerLosses),
 		Priest:        int(float64(attackArmy.Priest) * result.AttackerLosses),
 		Ship:          int(float64(attackArmy.Ship) * result.AttackerLosses),
@@ -591,8 +591,8 @@ func (h *ArrivalHandler) insertBattleGossip(ctx context.Context, tx pgx.Tx, orig
 		Merchantman:   int(float64(attackArmy.Merchantman) * result.AttackerLosses),
 	}
 	defDead := province.ArmyComposition{
-		Infantry:      int(float64(defArmy.Infantry) * result.DefenderLosses),
-		Chariot:       int(float64(defArmy.Chariot) * result.DefenderLosses),
+		Spearman:      int(float64(defArmy.Spearman) * result.DefenderLosses),
+		WarChariot:    int(float64(defArmy.WarChariot) * result.DefenderLosses),
 		EliteInfantry: int(float64(defArmy.EliteInfantry) * result.DefenderLosses),
 		Priest:        int(float64(defArmy.Priest) * result.DefenderLosses),
 		Ship:          int(float64(defArmy.Ship) * result.DefenderLosses),
@@ -744,7 +744,7 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	)
 
 	// Colonists become the garrison.
-	if army.Infantry > 0 || army.Chariot > 0 || army.EliteInfantry > 0 || army.Priest > 0 ||
+	if army.Spearman > 0 || army.WarChariot > 0 || army.EliteInfantry > 0 || army.Priest > 0 ||
 		army.Ship > 0 || army.WarGalley > 0 || army.Merchantman > 0 {
 		_, _ = tx.Exec(ctx,
 			`UPDATE settlements SET
@@ -756,7 +756,7 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 			   war_galley     = war_galley     + $6,
 			   merchantman    = merchantman    + $7
 			 WHERE id = $8`,
-			army.Infantry, army.Chariot, army.EliteInfantry, army.Priest, army.Ship,
+			army.Spearman, army.WarChariot, army.EliteInfantry, army.Priest, army.Ship,
 			army.WarGalley, army.Merchantman, settlementID,
 		)
 	}

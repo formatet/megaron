@@ -7,8 +7,8 @@ import (
 )
 
 func TestResolve_AttackerWins(t *testing.T) {
-	attack := AttackForce{Army: province.ArmyComposition{Infantry: 100, Chariot: 10}}
-	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 20}, WallLevel: 0}
+	attack := AttackForce{Army: province.ArmyComposition{Spearman: 100, WarChariot: 10}}
+	defence := DefenceForce{Army: province.ArmyComposition{Spearman: 20}, WallLevel: 0}
 
 	result := Resolve(attack, defence, 0)
 	if result.Outcome != OutcomeAttackerWins {
@@ -17,8 +17,8 @@ func TestResolve_AttackerWins(t *testing.T) {
 }
 
 func TestResolve_DefenderWins(t *testing.T) {
-	attack := AttackForce{Army: province.ArmyComposition{Infantry: 10}}
-	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 100, Chariot: 20}, WallLevel: 2}
+	attack := AttackForce{Army: province.ArmyComposition{Spearman: 10}}
+	defence := DefenceForce{Army: province.ArmyComposition{Spearman: 100, WarChariot: 20}, WallLevel: 2}
 
 	result := Resolve(attack, defence, 0)
 	if result.Outcome != OutcomeDefenderWins {
@@ -27,14 +27,14 @@ func TestResolve_DefenderWins(t *testing.T) {
 }
 
 func TestResolve_WallModifierHelps(t *testing.T) {
-	army := province.ArmyComposition{Infantry: 50}
+	army := province.ArmyComposition{Spearman: 50}
 	noWall := Resolve(
-		AttackForce{Army: province.ArmyComposition{Infantry: 60}},
+		AttackForce{Army: province.ArmyComposition{Spearman: 60}},
 		DefenceForce{Army: army, WallLevel: 0},
 		0,
 	)
 	withWall := Resolve(
-		AttackForce{Army: province.ArmyComposition{Infantry: 60}},
+		AttackForce{Army: province.ArmyComposition{Spearman: 60}},
 		DefenceForce{Army: army, WallLevel: 3},
 		0,
 	)
@@ -44,8 +44,8 @@ func TestResolve_WallModifierHelps(t *testing.T) {
 }
 
 func TestResolve_EliteReducesWallEffectively(t *testing.T) {
-	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 40}, WallLevel: 3}
-	plainAttack := Resolve(AttackForce{Army: province.ArmyComposition{Infantry: 50}}, defence, 0)
+	defence := DefenceForce{Army: province.ArmyComposition{Spearman: 40}, WallLevel: 3}
+	plainAttack := Resolve(AttackForce{Army: province.ArmyComposition{Spearman: 50}}, defence, 0)
 	eliteAttack := Resolve(AttackForce{Army: province.ArmyComposition{EliteInfantry: 50}}, defence, 0)
 
 	if eliteAttack.AttackStrength <= plainAttack.AttackStrength {
@@ -54,7 +54,7 @@ func TestResolve_EliteReducesWallEffectively(t *testing.T) {
 }
 
 func TestResolve_EqualForcesDefenderWins(t *testing.T) {
-	army := province.ArmyComposition{Infantry: 50}
+	army := province.ArmyComposition{Spearman: 50}
 	result := Resolve(
 		AttackForce{Army: army},
 		DefenceForce{Army: army, WallLevel: 0},
@@ -75,8 +75,8 @@ func TestWallModifier(t *testing.T) {
 }
 
 func TestStrength(t *testing.T) {
-	a := province.ArmyComposition{Infantry: 10, EliteInfantry: 5, Chariot: 4, Priest: 3, Ship: 2}
-	want := float64(10*1 + 5*2 + 4*3 + 2*1) // 34
+	a := province.ArmyComposition{Spearman: 10, EliteInfantry: 5, WarChariot: 4, Priest: 3, Ship: 2}
+	want := float64(10*1 + 5*3 + 4*4 + 2*1) // 43
 	if got := Strength(a); got != want {
 		t.Errorf("Strength = %.0f, want %.0f", got, want)
 	}
@@ -96,13 +96,13 @@ func TestStrength_NavalOrder(t *testing.T) {
 
 func TestWallModifierChariot(t *testing.T) {
 	noWall := Resolve(
-		AttackForce{Army: province.ArmyComposition{Chariot: 10}},
-		DefenceForce{Army: province.ArmyComposition{Infantry: 20}, WallLevel: 0},
+		AttackForce{Army: province.ArmyComposition{WarChariot: 10}},
+		DefenceForce{Army: province.ArmyComposition{Spearman: 20}, WallLevel: 0},
 		0,
 	)
 	withWall := Resolve(
-		AttackForce{Army: province.ArmyComposition{Chariot: 10}},
-		DefenceForce{Army: province.ArmyComposition{Infantry: 20}, WallLevel: 3},
+		AttackForce{Army: province.ArmyComposition{WarChariot: 10}},
+		DefenceForce{Army: province.ArmyComposition{Spearman: 20}, WallLevel: 3},
 		0,
 	)
 	if withWall.DefenceStrength <= noWall.DefenceStrength {
@@ -113,7 +113,7 @@ func TestWallModifierChariot(t *testing.T) {
 // ── W5: fortune + multi-round + rout ─────────────────────────────────────────
 
 func TestResolve_FortuneStored(t *testing.T) {
-	army := province.ArmyComposition{Infantry: 50}
+	army := province.ArmyComposition{Spearman: 50}
 	result := Resolve(AttackForce{Army: army}, DefenceForce{Army: army, WallLevel: 0}, 0.15)
 	if result.Fortune != 0.15 {
 		t.Errorf("Fortune not stored in result: got %.3f, want 0.150", result.Fortune)
@@ -122,7 +122,7 @@ func TestResolve_FortuneStored(t *testing.T) {
 
 func TestResolve_PositiveFortuneFavoursAttacker(t *testing.T) {
 	// Equal armies: with fortune=0 defender wins; with fortune=+0.2 attacker should win more often.
-	army := province.ArmyComposition{Infantry: 50}
+	army := province.ArmyComposition{Spearman: 50}
 	neutral := Resolve(AttackForce{Army: army}, DefenceForce{Army: army}, 0)
 	favoured := Resolve(AttackForce{Army: army}, DefenceForce{Army: army}, 0.2)
 
@@ -136,8 +136,8 @@ func TestResolve_PositiveFortuneFavoursAttacker(t *testing.T) {
 
 func TestResolve_NegativeFortuneFavoursDefender(t *testing.T) {
 	// Slight attacker advantage nullified by max negative fortune.
-	attack := AttackForce{Army: province.ArmyComposition{Infantry: 60}}
-	defence := DefenceForce{Army: province.ArmyComposition{Infantry: 55}, WallLevel: 0}
+	attack := AttackForce{Army: province.ArmyComposition{Spearman: 60}}
+	defence := DefenceForce{Army: province.ArmyComposition{Spearman: 55}, WallLevel: 0}
 
 	withoutFortune := Resolve(attack, defence, 0)
 	withBadFortune := Resolve(attack, defence, -0.2)
@@ -153,8 +153,8 @@ func TestResolve_NegativeFortuneFavoursDefender(t *testing.T) {
 func TestResolve_RoutedSideHasLossesBelow100(t *testing.T) {
 	// Overwhelming attacker: defender should route, not be 100% destroyed.
 	result := Resolve(
-		AttackForce{Army: province.ArmyComposition{Infantry: 200}},
-		DefenceForce{Army: province.ArmyComposition{Infantry: 50}},
+		AttackForce{Army: province.ArmyComposition{Spearman: 200}},
+		DefenceForce{Army: province.ArmyComposition{Spearman: 50}},
 		0,
 	)
 	if result.Outcome != OutcomeAttackerWins {
@@ -171,8 +171,8 @@ func TestResolve_RoutedSideHasLossesBelow100(t *testing.T) {
 func TestResolve_AttackerRoutedOnLoss(t *testing.T) {
 	// Overwhelming defender: attacker should route.
 	result := Resolve(
-		AttackForce{Army: province.ArmyComposition{Infantry: 30}},
-		DefenceForce{Army: province.ArmyComposition{Infantry: 200}},
+		AttackForce{Army: province.ArmyComposition{Spearman: 30}},
+		DefenceForce{Army: province.ArmyComposition{Spearman: 200}},
 		0,
 	)
 	if result.Outcome != OutcomeDefenderWins {
@@ -188,8 +188,8 @@ func TestResolve_AttackerRoutedOnLoss(t *testing.T) {
 
 func TestResolve_RoundsRecorded(t *testing.T) {
 	result := Resolve(
-		AttackForce{Army: province.ArmyComposition{Infantry: 100}},
-		DefenceForce{Army: province.ArmyComposition{Infantry: 100}},
+		AttackForce{Army: province.ArmyComposition{Spearman: 100}},
+		DefenceForce{Army: province.ArmyComposition{Spearman: 100}},
 		0,
 	)
 	if result.Rounds < 1 || result.Rounds > combatMaxRounds {

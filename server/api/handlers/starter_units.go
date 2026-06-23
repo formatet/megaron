@@ -45,12 +45,12 @@ func seedStarterUnits(
 		// Kuststad: galley (besättning 20) + 1 infanterienhet (100 man)
 		units = []spec{
 			{utype: unit.TypeGalley, size: 1, crew: 20, popCost: 20},
-			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100},
+			{utype: unit.TypeSpearman, size: 100, crew: 0, popCost: 100},
 		}
 	} else {
 		// Inlandsstad: 1 infanterienhet (100 man)
 		units = []spec{
-			{utype: unit.TypeInfantry, size: 100, crew: 0, popCost: 100},
+			{utype: unit.TypeSpearman, size: 100, crew: 0, popCost: 100},
 		}
 	}
 

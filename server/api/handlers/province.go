@@ -349,8 +349,8 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		TargetR       *int   `json:"target_r"`
 		ColonyName    string `json:"colony_name"` // optional player-chosen name for colonize
 		Intent        string `json:"intent"`
-		Infantry      int    `json:"infantry"`
-		Chariot       int    `json:"chariot"`
+		Spearman      int    `json:"spearman"`
+		WarChariot    int    `json:"war_chariot"`
 		Priest        int    `json:"priest"`
 		Ship          int    `json:"ship"` // galley
 		EliteInfantry int    `json:"elite_infantry"`
@@ -461,8 +461,8 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 
 	army := province.ArmyComposition{
-		Infantry:      req.Infantry,
-		Chariot:       req.Chariot,
+		Spearman:      req.Spearman,
+		WarChariot:    req.WarChariot,
 		Priest:        req.Priest,
 		Ship:          req.Ship, // galley
 		EliteInfantry: req.EliteInfantry,
@@ -490,7 +490,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 	// Naval gating.
 	// Alla tre skeppstyper (galley/war_galley/merchantman) räknas som naval.
 	isSea := dst.TerrainType == "coastal_sea" || dst.TerrainType == "deep_sea"
-	hasLandUnits := army.Infantry > 0 || army.Chariot > 0 || army.EliteInfantry > 0
+	hasLandUnits := army.Spearman > 0 || army.WarChariot > 0 || army.EliteInfantry > 0
 	if hasNaval {
 		// Embarkation: origin must be coastal OR have a harbour building.
 		if !src.Coastal {
@@ -556,7 +556,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			`SELECT infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
 			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
 			sourceID, worldID,
-		).Scan(&garrison.Infantry, &garrison.Chariot,
+		).Scan(&garrison.Spearman, &garrison.WarChariot,
 			&garrison.Priest, &garrison.Ship, &garrison.EliteInfantry,
 			&garrison.WarGalley, &garrison.Merchantman,
 		); err == nil {
@@ -574,7 +574,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			`SELECT infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
 			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
 			targetID, worldID,
-		).Scan(&defGarrison.Infantry, &defGarrison.Chariot,
+		).Scan(&defGarrison.Spearman, &defGarrison.WarChariot,
 			&defGarrison.Priest, &defGarrison.Ship, &defGarrison.EliteInfantry,
 			&defGarrison.WarGalley, &defGarrison.Merchantman,
 		); err == nil {
@@ -604,7 +604,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		   AND elite_infantry >= $5
 		   AND war_galley     >= $6
 		   AND merchantman    >= $7`,
-		army.Infantry, army.Chariot, army.Priest, army.Ship, army.EliteInfantry,
+		army.Spearman, army.WarChariot, army.Priest, army.Ship, army.EliteInfantry,
 		army.WarGalley, army.Merchantman, sourceID, worldID,
 	)
 	if err != nil {
@@ -620,7 +620,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			`SELECT infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
 			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
 			sourceID, worldID,
-		).Scan(&have.Infantry, &have.Chariot,
+		).Scan(&have.Spearman, &have.WarChariot,
 			&have.Priest, &have.Ship, &have.EliteInfantry,
 			&have.WarGalley, &have.Merchantman)
 		writeError(w, http.StatusUnprocessableEntity, insufficientUnitsMsg(army, have))
@@ -641,7 +641,7 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 		 RETURNING id`,
 		worldID, sourceID, targetID,
-		army.Infantry, army.Chariot, army.Priest, army.Ship, army.EliteInfantry,
+		army.Spearman, army.WarChariot, army.Priest, army.Ship, army.EliteInfantry,
 		army.WarGalley, army.Merchantman,
 		req.Intent, now, arrivesAt, colonyName,
 	).Scan(&marchID)
@@ -769,8 +769,8 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		MessengerID:    messengerID,
 		ProvinceID:     provinceID,
 		HomeID:         outpostFeeds,
-		Infantry:       gInf,
-		Chariot:        gCha,
+		Spearman:       gInf,
+		WarChariot:     gCha,
 		Priest:         gPri,
 		Ship:           gShip,
 		EliteInfantry:  gElite,
@@ -1193,12 +1193,12 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 // Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.
 func recruitPerManCosts(unitType string) map[string]float64 {
 	switch unitType {
-	case "infantry":
+	case "spearman":
 		return map[string]float64{"grain": 3, "silver": 0.2}
 	case "elite_infantry":
 		return map[string]float64{"grain": 2.5, "bronze": 0.2, "silver": 0.4}
-	case "chariot":
-		return map[string]float64{"grain": 3.75, "timber": 0.625, "silver": 0.5}
+	case "war_chariot":
+		return map[string]float64{"grain": 3.75, "timber": 0.625, "bronze": 0.375, "silver": 0.5}
 	case "ship": // galley; crew 20
 		return map[string]float64{"timber": 9, "silver": 0.3}
 	case "war_galley": // crew 50
@@ -1224,7 +1224,7 @@ func recruitBatchDuration(unitType string) time.Duration {
 // Recruit handles POST /worlds/:worldID/provinces/:provinceID/recruit.
 //
 // C2 semantics: soldiers are drafted from the population in batches of 10 men.
-// Request: {"unit_type": "infantry", "men": 30}  (men must be a multiple of 10, max 100).
+// Request: {"unit_type": "spearman", "men": 30}  (men must be a multiple of 10, max 100).
 // Population is decremented immediately; resources are deducted up-front.
 // A forming unit is created (or grown) in the units table; one TrainComplete is
 // scheduled per batch-of-10. At size == 100 the unit becomes deployable (garrison).
@@ -2064,8 +2064,8 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		ID            uuid.UUID `json:"id"`
 		TargetID      uuid.UUID `json:"target_id"`
 		Intent        string    `json:"intent"`
-		Infantry      int       `json:"infantry"`
-		Chariot       int       `json:"chariot"`
+		Spearman      int       `json:"spearman"`
+		WarChariot    int       `json:"war_chariot"`
 		Priest        int       `json:"priest"`
 		Ship          int       `json:"ship"` // galley
 		EliteInfantry int       `json:"elite_infantry"`
@@ -2080,7 +2080,7 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m marchItem
 		if err := rows.Scan(&m.ID, &m.TargetID, &m.Intent,
-			&m.Infantry, &m.Chariot, &m.Priest, &m.Ship, &m.EliteInfantry,
+			&m.Spearman, &m.WarChariot, &m.Priest, &m.Ship, &m.EliteInfantry,
 			&m.WarGalley, &m.Merchantman, &m.Resolved, &m.ArrivesAt, &m.CombatReport, &m.Outgoing); err == nil {
 			result = append(result, m)
 		}
@@ -2126,8 +2126,8 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 
 	// Load march and verify ownership via FOR UPDATE (prevents race with arrival handler).
 	var march struct {
-		Infantry      int
-		Chariot       int
+		Spearman      int
+		WarChariot    int
 		Priest        int
 		Ship          int
 		EliteInfantry int
@@ -2144,7 +2144,7 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		 WHERE id = $1 AND world_id = $2 AND origin_id = $3
 		 FOR UPDATE`,
 		marchID, worldID, provinceID,
-	).Scan(&march.Infantry, &march.Chariot, &march.Priest,
+	).Scan(&march.Spearman, &march.WarChariot, &march.Priest,
 		&march.Ship, &march.EliteInfantry, &march.WarGalley, &march.Merchantman,
 		&march.Resolved, &march.OriginID, &march.TargetID)
 	if err != nil {
@@ -2201,8 +2201,8 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		WorldID:       worldID,
 		MessengerID:   messengerID,
 		MarchID:       marchID,
-		Infantry:      march.Infantry,
-		Chariot:       march.Chariot,
+		Spearman:      march.Spearman,
+		WarChariot:    march.WarChariot,
 		Priest:        march.Priest,
 		Ship:          march.Ship,
 		EliteInfantry: march.EliteInfantry,
@@ -2398,8 +2398,8 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Infantry      int `json:"infantry"`
-		Chariot       int `json:"chariot"`
+		Spearman      int `json:"spearman"`
+		WarChariot    int `json:"war_chariot"`
 		Priest        int `json:"priest"`
 		Ship          int `json:"ship"` // galley
 		EliteInfantry int `json:"elite_infantry"`
@@ -2441,7 +2441,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		     war_galley     = GREATEST(0, war_galley     - $6),
 		     merchantman    = GREATEST(0, merchantman    - $7)
 		 WHERE id = $8`,
-		req.Infantry, req.Chariot, req.Priest, req.Ship, req.EliteInfantry,
+		req.Spearman, req.WarChariot, req.Priest, req.Ship, req.EliteInfantry,
 		req.WarGalley, req.Merchantman, settlementID,
 	)
 	if err != nil || tag.RowsAffected() == 0 {
@@ -2461,7 +2461,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"disbanded": map[string]int{
-			"infantry": req.Infantry, "chariot": req.Chariot,
+			"spearman": req.Spearman, "war_chariot": req.WarChariot,
 			"priest": req.Priest, "ship": req.Ship, "elite_infantry": req.EliteInfantry,
 			"war_galley": req.WarGalley, "merchantman": req.Merchantman,
 		},
