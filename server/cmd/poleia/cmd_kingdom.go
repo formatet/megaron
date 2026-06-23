@@ -9,28 +9,36 @@ import (
 )
 
 // resolveCapitalProvinceID looks up a Wanax's capital province ID by settlement
-// name — the agent only ever sees names (state["wanaxes"][].name), never raw
-// province UUIDs, so the CLI does the lookup (mirrors `trade --dest <name>`).
+// name. It queries /wanaxes (the same FOW-gated directory the agent reads) so
+// the set of resolvable names is always identical to state["wanaxes"].
 func resolveCapitalProvinceID(c *Client, name string) (string, error) {
-	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID))
 	if err != nil {
 		return "", err
 	}
-	var markers []map[string]any
-	if err := json.Unmarshal(data, &markers); err != nil {
+	var entries []map[string]any
+	if err := json.Unmarshal(data, &entries); err != nil {
 		return "", err
 	}
-	for _, m := range markers {
-		mName, _ := m["name"].(string)
-		isCapital, _ := m["is_capital"].(bool)
-		own, _ := m["own"].(bool)
-		if isCapital && strings.EqualFold(mName, name) {
-			if own {
-				return "", fmt.Errorf("%q is your own settlement — kingdom invites go to other Wanaxes; pick a neighbour from state[\"wanaxes\"] (rows without \"own\":true)", name)
-			}
-			id, _ := m["id"].(string)
-			return id, nil
+	for _, e := range entries {
+		eName, _ := e["name"].(string)
+		if !strings.EqualFold(eName, name) {
+			continue
 		}
+		own, _ := e["own"].(bool)
+		if own {
+			return "", fmt.Errorf("%q is your own settlement — kingdom invites go to other Wanaxes; pick a neighbour from state[\"wanaxes\"] (rows without \"own\":true)", name)
+		}
+		isCapital, _ := e["is_capital"].(bool)
+		if !isCapital {
+			// Name matched a colony, not a capital — keep looking for the capital row.
+			continue
+		}
+		provID, _ := e["province_id"].(string)
+		if provID == "" {
+			return "", fmt.Errorf("no visible capital settlement named %q (check spelling — exact name from state[\"wanaxes\"])", name)
+		}
+		return provID, nil
 	}
 	return "", fmt.Errorf("no visible capital settlement named %q (check spelling — exact name from state[\"wanaxes\"])", name)
 }

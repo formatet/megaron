@@ -729,7 +729,9 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(prov.silver_deposit, false),
 		        COALESCE(prov.cedar_deposit, false),
 		        COALESCE(prov.map_q, 0),
-		        COALESCE(prov.map_r, 0)
+		        COALESCE(prov.map_r, 0),
+		        COALESCE(prov.id::text, ''),
+		        s.is_capital
 		 FROM settlements s
 		 LEFT JOIN players p ON p.id = s.owner_id
 		 LEFT JOIN provinces prov ON prov.id = s.province_id
@@ -755,6 +757,8 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		TinDeposit    bool   `json:"tin_deposit,omitempty"`
 		SilverDeposit bool   `json:"silver_deposit,omitempty"`
 		CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
+		ProvinceID    string `json:"province_id,omitempty"`
+		IsCapital     bool   `json:"is_capital,omitempty"`
 	}
 	var result []entry
 	for rows.Next() {
@@ -766,7 +770,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
 			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit,
-			&q, &r); err != nil {
+			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
 			continue
 		}
 		// FOW gate: skip settlements the player cannot currently see.
