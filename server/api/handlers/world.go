@@ -92,30 +92,50 @@ func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
 		seed = h.clk.Now().UnixNano()
 	}
 
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		return
+	}
+	defer tx.Rollback(r.Context()) //nolint:errcheck
+
+	// Archive any currently active world before inserting the new one.
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not archive active world")
+		return
+	}
+
 	var id uuid.UUID
-	err := h.pool.QueryRow(r.Context(),
+	if err := tx.QueryRow(r.Context(),
 		`INSERT INTO worlds (name, map_seed, map_width, map_height)
 		 VALUES ($1, $2, $3, $4) RETURNING id`,
 		req.Name, seed, req.MapWidth, req.MapHeight,
-	).Scan(&id)
-	if err != nil {
+	).Scan(&id); err != nil {
 		writeError(w, http.StatusConflict, "world name already exists or DB error")
 		return
 	}
 
 	tiles, effSeed := world.GenerateMap(id, seed, req.MapWidth, req.MapHeight)
-	if err := h.storeTiles(r.Context(), id, tiles); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not store map tiles")
-		return
-	}
+
 	// GenerateMap may reseed to satisfy map invariants — persist the seed that
 	// actually produced the stored map so it stays reproducible.
 	if effSeed != seed {
-		if _, err := h.pool.Exec(r.Context(),
+		if _, err := tx.Exec(r.Context(),
 			`UPDATE worlds SET map_seed = $1 WHERE id = $2`, effSeed, id); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not persist effective map seed")
 			return
 		}
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not commit world creation")
+		return
+	}
+
+	if err := h.storeTiles(r.Context(), id, tiles); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not store map tiles")
+		return
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{"id": id, "map_seed": effSeed})

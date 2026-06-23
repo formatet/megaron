@@ -176,6 +176,7 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		     WHERE processed_at IS NULL
 		       AND failed_at IS NULL
 		       AND process_after <= $1
+		       AND world_id IN (SELECT id FROM worlds WHERE status = 'active')
 		     ORDER BY process_after
 		     LIMIT 20
 		     FOR UPDATE SKIP LOCKED
