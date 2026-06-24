@@ -40,17 +40,20 @@ func statusCmd() *cobra.Command {
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f\n\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty)
 
-			res, _ := sett["resources"].(map[string]any)
-			if res != nil {
-				fmt.Println("Resources")
-				for _, k := range []string{"silver", "kharis"} {
-					label := map[string]string{"silver": "Silver", "kharis": "Kharis"}[k]
-					v, _ := res[k].(float64)
-					r, _ := res[k+"_rate"].(float64)
-					fmt.Printf("  %-8s %6s  %s\n", label, resource(v), rate(r))
+			// Resources: silver lives in resources as a {amount,rate,cap} object;
+			// kharis is the per-Wanax pool exposed at the settlement top level.
+			fmt.Println("Resources")
+			if res, ok := sett["resources"].(map[string]any); ok {
+				if sd, ok := res["silver"].(map[string]any); ok {
+					amt, _ := sd["amount"].(float64)
+					rt, _ := sd["rate"].(float64)
+					fmt.Printf("  %-8s %6s  %s\n", "Silver", resource(amt), rate(rt))
 				}
-				fmt.Println()
 			}
+			kv, _ := sett["kharis"].(float64)
+			kr, _ := sett["kharis_rate"].(float64)
+			fmt.Printf("  %-8s %6s  %s\n", "Kharis", resource(kv), rate(kr))
+			fmt.Println()
 
 			army, _ := sett["army"].(map[string]any)
 			if army != nil {

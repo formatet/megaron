@@ -289,6 +289,19 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Silver is authoritative in settlement_goods (mig 057 silver_unify); the
+		// ResourceLedger.Silver column is stale (~0). Inject the live value so the
+		// status view doesn't report 0 silver while `goods` shows the real stock.
+		resSnap := sett.Resources.SnapshotFull(now)
+		var sAmt, sRate, sCap float64
+		if err := h.pool.QueryRow(r.Context(),
+			`SELECT GREATEST(0, settled(amount, rate, calc_at)), rate, cap
+			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
+			sett.ID,
+		).Scan(&sAmt, &sRate, &sCap); err == nil {
+			resSnap["silver"] = province.ResourceDetail{Amount: sAmt, Rate: sRate, Cap: sCap}
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":                sett.ID,
 			"name":              sett.Name,
@@ -300,7 +313,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"labor_pool":        laborPool,
 			"walls":             sett.WallLevel,
 			"loyalty":           sett.Loyalty,
-			"resources":         sett.Resources.SnapshotFull(now),
+			"resources":         resSnap,
 			"kharis":            kharisNow,
 			"kharis_rate":       kharisRate,
 			"army":              sett.Army,
