@@ -104,7 +104,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			   AND trade_offer IS NOT NULL
 			   AND trade_offer->>'want_good' = $3
 			   AND trade_offer->>'status' = 'pending'
-			   AND status IN ('delivering', 'delivered')`,
+			   AND status IN ('outbound', 'delivered')`,
 			originID, destID, req.TradeOffer.WantGood,
 		).Scan(&existing)
 		if existing > 0 {
@@ -290,10 +290,14 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		       -- keep only pending offers that have not expired
 		       m.trade_offer->>'status' = 'pending'
 		       AND (m.expires_at IS NULL OR m.expires_at > now())
-		       -- solvency check: seller must still have the requested good
+		       -- solvency check: seller must still have the requested good.
+		       -- The seller is the offer's DESTINATION (the recipient being asked to
+		       -- sell want_good); origin is the buyer, who by definition lacks it.
+		       -- Checking origin here hid every genuine buy-offer from the recipient's
+		       -- inbox — the trade receiver side was dead.
 		       AND EXISTS (
 		           SELECT 1 FROM settlement_goods sg
-		           WHERE sg.settlement_id = m.origin_id
+		           WHERE sg.settlement_id = m.destination_id
 		             AND sg.good_key = m.trade_offer->>'want_good'
 		             AND settled(sg.amount, sg.rate, sg.calc_at)
 		                 >= (m.trade_offer->>'want_qty')::float
