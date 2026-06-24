@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -692,6 +693,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			message = fmt.Sprintf("The gods accept your prayer — %s is granted.", spec.Name)
 		}
 		if err != nil {
+			slog.Error("rite: apply effect failed", "prayer", prayerID,
+				"effect", spec.EffectType, "settlement", settlementID, "err", err)
 			writeError(w, http.StatusInternalServerError, "could not apply effect")
 			return
 		}
