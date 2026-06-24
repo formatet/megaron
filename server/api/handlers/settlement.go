@@ -837,13 +837,16 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		       AND site.terrain NOT IN
 		           ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
 		       AND (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4)) / 2 <= $5
+		       -- the revealed site must be COLONISABLE: no active settlement on it
+		       -- (any owner). Revealing a hex someone else already holds is useless —
+		       -- you can't colonise it. ($2 = caller, kept for the controller subquery
+		       -- semantics but the exclusion is now owner-agnostic.)
 		       AND NOT EXISTS (
-		           SELECT 1 FROM provinces p
+		           SELECT 1 FROM settlements s2
+		           JOIN provinces p ON p.id = s2.province_id
 		           WHERE p.world_id = site.world_id
 		             AND p.map_q = site.q AND p.map_r = site.r
-		             AND p.controller_id IN (
-		                 SELECT id FROM settlements WHERE owner_id = $2 AND world_id = site.world_id
-		             )
+		             AND s2.state = 'active'
 		       )
 		     GROUP BY site.q, site.r
 		 )
