@@ -829,7 +829,7 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		            BOOL_OR(nb.tin_deposit)                     AS has_tin,
 		            BOOL_OR(nb.copper_deposit)                   AS has_copper,
 		            BOOL_OR(COALESCE(nb.silver_deposit, false))  AS has_silver,
-		            (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4)) / 2 AS dist
+		            (ABS(site.q - $2) + ABS((site.q - $2) + (site.r - $3)) + ABS(site.r - $3)) / 2 AS dist
 		     FROM map_tiles site
 		     JOIN LATERAL (VALUES
 		         (1,0),(-1,0),(0,1),(0,-1),(1,-1),(-1,1)
@@ -842,11 +842,12 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		     WHERE site.world_id = $1
 		       AND site.terrain NOT IN
 		           ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
-		       AND (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4)) / 2 <= $5
+		       AND (ABS(site.q - $2) + ABS((site.q - $2) + (site.r - $3)) + ABS(site.r - $3)) / 2 <= $4
 		       -- the revealed site must be COLONISABLE: no active settlement on it
 		       -- (any owner). Revealing a hex someone else already holds is useless —
-		       -- you can't colonise it. ($2 = caller, kept for the controller subquery
-		       -- semantics but the exclusion is now owner-agnostic.)
+		       -- you can't colonise it. The exclusion is owner-agnostic, so playerID is
+		       -- no longer a query parameter (passing an unreferenced $2 made Postgres
+		       -- fail with "could not determine data type of parameter $2").
 		       AND NOT EXISTS (
 		           SELECT 1 FROM settlements s2
 		           JOIN provinces p ON p.id = s2.province_id
@@ -861,7 +862,7 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_copper AND NOT has_tin ORDER BY dist LIMIT 1)
 		 UNION ALL
 		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_silver AND NOT has_tin AND NOT has_copper ORDER BY dist LIMIT 1)`,
-		worldID, playerID, originQ, originR, oracleRadius,
+		worldID, originQ, originR, oracleRadius,
 	)
 	if err != nil {
 		return nil, "", fmt.Errorf("oracle: query deposits: %w", err)
