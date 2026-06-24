@@ -909,6 +909,151 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 	}, msg, nil
 }
 
+// Abandon handles POST /worlds/:worldID/settlements/:settlementID/abandon.
+//
+// Voluntarily gives up a colony: the garrison is disbanded, the settlement's own
+// province and any outpost provinces it fed are freed, and the row is marked
+// state='abandoned'. This is the consolidation valve that pairs with the
+// MaxSettlementsPerWanax cap — abandoning frees a slot (the cap counts state='active').
+//
+// Distinct from collapse: abandonment is peaceful (no warband spawns) and lighter
+// (the owner keeps their capital and any kingdom membership). The capital itself
+// cannot be abandoned — losing your seat is collapse, not a voluntary act.
+func (h *SettlementHandler) Abandon(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	settlementID, err := uuid.Parse(chi.URLParam(r, "settlementID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid settlement ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Lock the settlement; verify ownership, that it is active, and not the capital.
+	var isCapital bool
+	var state string
+	var provinceID uuid.UUID
+	var name string
+	err = tx.QueryRow(r.Context(),
+		`SELECT is_capital, state, province_id, name
+		 FROM settlements
+		 WHERE id = $1 AND world_id = $2 AND owner_id = $3
+		 FOR UPDATE`,
+		settlementID, worldID, playerID,
+	).Scan(&isCapital, &state, &provinceID, &name)
+	if err != nil {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+	if state != "active" {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("settlement is already %q and cannot be abandoned", state))
+		return
+	}
+	if isCapital {
+		writeError(w, http.StatusUnprocessableEntity,
+			"your capital cannot be abandoned — losing your seat is collapse, not a voluntary act")
+		return
+	}
+
+	// Disband garrison units (and any embarked cargo) so no orphan rows remain.
+	garrisonRows, err := tx.Query(r.Context(),
+		`SELECT id, cargo_unit_id FROM units WHERE settlement_id = $1 AND status = 'garrison'`,
+		settlementID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load garrison")
+		return
+	}
+	var garrisonIDs, cargoIDs []uuid.UUID
+	for garrisonRows.Next() {
+		var gid uuid.UUID
+		var cargoID *uuid.UUID
+		if scanErr := garrisonRows.Scan(&gid, &cargoID); scanErr == nil {
+			garrisonIDs = append(garrisonIDs, gid)
+			if cargoID != nil {
+				cargoIDs = append(cargoIDs, *cargoID)
+			}
+		}
+	}
+	garrisonRows.Close()
+	for _, gid := range garrisonIDs {
+		_, _ = tx.Exec(r.Context(),
+			`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, gid)
+	}
+	for _, cid := range cargoIDs {
+		_, _ = tx.Exec(r.Context(),
+			`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1 AND status = 'embarked'`, cid)
+	}
+
+	// Free any outpost provinces this settlement fed, then drop the flows.
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE provinces SET territory_state = 'free', owner_id = NULL,
+		     outpost_feeds = NULL, garrison_strength = 0
+		 WHERE id IN (SELECT province_id FROM outpost_flows WHERE settlement_id = $1)`,
+		settlementID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not free outpost provinces")
+		return
+	}
+	if _, err := tx.Exec(r.Context(),
+		`DELETE FROM outpost_flows WHERE settlement_id = $1`, settlementID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not clear outpost flows")
+		return
+	}
+
+	// Free the settlement's own province so the hex is colonisable again.
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE provinces SET territory_state = 'free', owner_id = NULL,
+		     outpost_feeds = NULL, garrison_strength = 0
+		 WHERE id = $1`,
+		provinceID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not free province")
+		return
+	}
+
+	// Mark the settlement abandoned (dispossessed, leaves any kingdom).
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE settlements SET owner_id = NULL, kingdom_id = NULL,
+		     state = 'abandoned', updated_at = now()
+		 WHERE id = $1`,
+		settlementID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not abandon settlement")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamProvince, "SettlementAbandoned",
+		map[string]any{"player_id": playerID.String(), "name": name}, worldID, nil)
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"abandoned": settlementID.String(),
+		"name":      name,
+		"message":   fmt.Sprintf("%s has been abandoned. Its people scatter and the hex falls quiet.", name),
+	})
+}
+
 // Gossip handles GET /worlds/:worldID/gossip — the player's gossip feed.
 func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))

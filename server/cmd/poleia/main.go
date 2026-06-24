@@ -94,6 +94,7 @@ func main() {
 		unitCmd(),
 		wantsCmd(),
 		riteCmd(),
+		abandonCmd(),
 		godCmd(),
 	)
 

@@ -264,6 +264,7 @@ func main() {
 			r.Get("/worlds/{worldID}/settlements/{settlementID}/loyalty-log", sh.LoyaltyLog)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/return-army", sh.ReturnArmy)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/rite", sh.Rite)
+			r.Post("/worlds/{worldID}/settlements/{settlementID}/abandon", sh.Abandon)
 			r.Get("/worlds/{worldID}/gossip", sh.Gossip)
 
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/messengers", mh.Send)
