@@ -11,7 +11,7 @@ import (
 // No goods — pure diplomatic communication. FOW-gated on the server.
 // This is SB8 verb #1: distinct from trade-offer and transfer.
 func messageCmd() *cobra.Command {
-	var destName, text string
+	var destName, text, fromName string
 	cmd := &cobra.Command{
 		Use:     "message",
 		Short:   "Send a free-text message to another Wanax (no goods)",
@@ -32,7 +32,7 @@ func messageCmd() *cobra.Command {
 				_ = json.Unmarshal(wdata, &wanaxes)
 			}
 
-			destID, destName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName)
+			destID, destName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName, fromName)
 			if err != nil {
 				return err
 			}
@@ -59,6 +59,7 @@ func messageCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVarP(&text, "text", "x", "", "message text (required)")
+	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital)")
 	_ = cmd.MarkFlagRequired("to")
 	_ = cmd.MarkFlagRequired("text")
 	return cmd
@@ -69,7 +70,7 @@ func messageCmd() *cobra.Command {
 // The recipient must explicitly accept; no goods move without consent.
 // This is SB8 verb #3: distinct from message (no goods) and transfer (own→own, no consent).
 func tradeOfferCmd() *cobra.Command {
-	var destName, wantGood, msgText string
+	var destName, wantGood, msgText, fromName string
 	var wantQty, offerSilver float64
 
 	cmd := &cobra.Command{
@@ -92,7 +93,7 @@ func tradeOfferCmd() *cobra.Command {
 				_ = json.Unmarshal(wdata, &wanaxes)
 			}
 
-			destID, resolvedName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName)
+			destID, resolvedName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName, fromName)
 			if err != nil {
 				return err
 			}
@@ -130,6 +131,7 @@ func tradeOfferCmd() *cobra.Command {
 	cmd.Flags().StringVar(&wantGood, "want-good", "", "good key to request (e.g. grain, copper, cedar)")
 	cmd.Flags().Float64Var(&wantQty, "want-qty", 0, "quantity of good to request")
 	cmd.Flags().Float64Var(&offerSilver, "offer-silver", 0, "silver to offer in exchange")
+	cmd.Flags().StringVar(&fromName, "from", "", "your city to send/pay from (default: capital — the silver hub)")
 	cmd.Flags().StringVarP(&msgText, "message", "m", "", "optional message text (auto-generated if omitted)")
 	_ = cmd.MarkFlagRequired("to")
 	_ = cmd.MarkFlagRequired("want-good")

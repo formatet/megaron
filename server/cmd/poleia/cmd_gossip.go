@@ -56,7 +56,7 @@ func gossipCmd() *cobra.Command {
 }
 
 func messengerCmd() *cobra.Command {
-	var destName, message, wantGood string
+	var destName, message, wantGood, fromName string
 	var wantQty, offerSilver float64
 	cmd := &cobra.Command{
 		Use:   "messenger",
@@ -82,7 +82,7 @@ func messengerCmd() *cobra.Command {
 				_ = json.Unmarshal(wdata, &wanaxes)
 			}
 
-			destID, destSettleName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName)
+			destID, destSettleName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName, fromName)
 			if err != nil {
 				return err
 			}
@@ -122,6 +122,7 @@ func messengerCmd() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVarP(&message, "message", "m", "", "message text (required)")
+	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital — the silver hub)")
 	cmd.Flags().StringVar(&wantGood, "want-good", "", "good to request (e.g. grain, cedar)")
 	cmd.Flags().Float64Var(&wantQty, "want-qty", 0, "quantity of good to request")
 	cmd.Flags().Float64Var(&offerSilver, "offer-silver", 0, "silver to offer in exchange")
@@ -136,18 +137,49 @@ func messengerCmd() *cobra.Command {
 // wanaxes list. Messengers cannot be sent to one's own settlement — that case is
 // rejected up front with an actionable error so the agent picks a real neighbour
 // instead of bouncing off the server's 400.
-func resolveMessengerDest(markers, wanaxes []map[string]any, destName string) (destID, resolvedName, ownID string, err error) {
+func resolveMessengerDest(markers, wanaxes []map[string]any, destName, fromName string) (destID, resolvedName, ownID string, err error) {
 	if strings.TrimSpace(destName) == "" {
 		return "", "", "", fmt.Errorf("destination name is empty — use --to <settlement name>")
 	}
+	// Pick the origin city deterministically. Default is the capital (the marker
+	// whose province id matches cfg.ProvinceID) — it holds the silver by the
+	// self-sufficiency invariant, so buy-offers pass the buyer-solvency check.
+	// --from <city> overrides it. Previously this loop kept the LAST own marker,
+	// so offers shipped from an arbitrary (often silver-less) colony and the
+	// recipient's accept failed with "buyer has insufficient silver".
+	var capitalID, firstOwnID, fromID string
 	for _, m := range markers {
 		if own, _ := m["own"].(bool); own {
-			ownID, _ = m["settlement_id"].(string)
+			sid, _ := m["settlement_id"].(string)
+			if sid != "" {
+				if firstOwnID == "" {
+					firstOwnID = sid
+				}
+				if pid, _ := m["id"].(string); pid == cfg.ProvinceID {
+					capitalID = sid
+				}
+				if fromName != "" {
+					if n, _ := m["name"].(string); strings.EqualFold(n, fromName) {
+						fromID = sid
+					}
+				}
+			}
 		}
 		if n, _ := m["name"].(string); strings.EqualFold(n, destName) {
 			destID, _ = m["settlement_id"].(string)
 			resolvedName = n
 		}
+	}
+	switch {
+	case fromName != "":
+		if fromID == "" {
+			return "", "", "", fmt.Errorf("you have no settlement named %q to send from — pick one of your own cities (see `settlements`)", fromName)
+		}
+		ownID = fromID
+	case capitalID != "":
+		ownID = capitalID
+	default:
+		ownID = firstOwnID
 	}
 	if ownID == "" {
 		return "", "", "", fmt.Errorf("could not find own settlement")
