@@ -44,6 +44,11 @@ func recruitCmd() *cobra.Command {
 				return nil
 			}
 			fmt.Printf("Recruiting %d men as %s\n", men, unit)
+			if apiUnit != "ship" && apiUnit != "war_galley" && apiUnit != "merchantman" {
+				fmt.Println("Note: a land unit must reach 100 men before it can march or colonize. " +
+					"Recruit more of the same type into this settlement, then `poleia unit list` " +
+					"(watch `deployable`/`men_to_deploy`).")
+			}
 			return nil
 		},
 	}

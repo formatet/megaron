@@ -942,6 +942,13 @@ type unitSummary struct {
 	Size         int        `json:"size"`
 	Crew         int        `json:"crew,omitempty"`
 	Status       string     `json:"status"`
+	// Deployable is false while a land unit is still "forming": it cannot march,
+	// colonize, or otherwise leave its settlement until it reaches 100 men. JSON
+	// consumers (LLM agents, iOS) must see this in the data — the human `unit list`
+	// already spells it out, but `--json` callers were misreading `complete_at`
+	// (per-batch training time) as a deploy time and getting stuck.
+	Deployable  bool `json:"deployable"`
+	MenToDeploy int  `json:"men_to_deploy,omitempty"`
 	Stance       *string    `json:"stance,omitempty"`
 	SettlementID *uuid.UUID `json:"settlement_id,omitempty"`
 	Q            *int       `json:"q,omitempty"`
@@ -960,6 +967,14 @@ func unitSummaries(us []*unit.Unit) []unitSummary {
 			s := string(*u.Stance)
 			stance = &s
 		}
+		// A land unit is deployable once it is no longer "forming" (it auto-flips to
+		// garrison at 100 men). Naval units are deployable from creation. men_to_deploy
+		// tells a forming land unit exactly how many more men to recruit.
+		deployable := u.Status != "forming"
+		menToDeploy := 0
+		if u.Status == "forming" {
+			menToDeploy = 100 - u.Size
+		}
 		out = append(out, unitSummary{
 			ID:           u.ID,
 			Type:         string(u.Type),
@@ -967,6 +982,8 @@ func unitSummaries(us []*unit.Unit) []unitSummary {
 			Size:         u.Size,
 			Crew:         u.Crew,
 			Status:       string(u.Status),
+			Deployable:   deployable,
+			MenToDeploy:  menToDeploy,
 			Stance:       stance,
 			SettlementID: u.SettlementID,
 			Q:            u.Q,
