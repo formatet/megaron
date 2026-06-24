@@ -72,10 +72,12 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Count current players via settlements.
+	// Count current players via DISTINCT owners — not settlement rows. A Wanax holds
+	// many settlements (colonies), so COUNT(*) would falsely report "full" once colonies
+	// outnumber max_provinces even with few actual players.
 	var playerCount int
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COUNT(*) FROM settlements WHERE world_id = $1 AND owner_id IS NOT NULL`,
+		`SELECT COUNT(DISTINCT owner_id) FROM settlements WHERE world_id = $1 AND owner_id IS NOT NULL`,
 		worldID,
 	).Scan(&playerCount)
 	if playerCount >= maxProvinces {
