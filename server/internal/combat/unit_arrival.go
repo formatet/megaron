@@ -112,7 +112,17 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 
 	// Colonize intent on an empty hex → found a colony (the unit becomes its garrison).
 	// If the hex turned out to be settled (race), fall through to the normal paths.
+	// Authoritative settlement-cap check (dispatch enforces it too, but the count can
+	// change mid-transit): over the cap → the unit just garrisons the empty hex instead.
 	if u.marchIntent != nil && *u.marchIntent == "colonize" && !hasSettlement {
+		var owned int
+		if err := tx.QueryRow(ctx,
+			`SELECT count(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND state = 'active'`,
+			worldID, u.ownerID,
+		).Scan(&owned); err == nil && owned >= province.MaxSettlementsPerWanax {
+			slog.Info("colonize blocked at arrival: settlement cap reached", "owner", u.ownerID, "owned", owned)
+			return h.arriveGarrison(ctx, tx, u, destQ, destR, dest.settlementID, worldID)
+		}
 		return h.foundColony(ctx, tx, u, dest.provinceID, destQ, destR, worldID)
 	}
 

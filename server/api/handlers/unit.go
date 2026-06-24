@@ -195,6 +195,20 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 				"target hex already has a settlement — colonize requires an empty hex")
 			return
 		}
+		// Settlement cap: a Wanax may hold at most maxSettlementsPerWanax active
+		// settlements. Enforced at dispatch so the harness gets immediate feedback
+		// and the colonising army never wastes the march. The arrival handler is the
+		// authoritative fallback if the count changes mid-transit.
+		var owned int
+		if err := h.pool.QueryRow(ctx,
+			`SELECT count(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND state = 'active'`,
+			worldID, playerID,
+		).Scan(&owned); err == nil && owned >= province.MaxSettlementsPerWanax {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("settlement cap reached: you already hold %d/%d settlements — consolidate before founding more",
+					owned, province.MaxSettlementsPerWanax))
+			return
+		}
 	}
 
 	// Mountains are impassable.

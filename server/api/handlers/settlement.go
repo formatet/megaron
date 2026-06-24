@@ -489,7 +489,7 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 //
 // Success probability is determined by divine mood (kharis level):
 //
-//	Favorable (≥800 kharis): 80% · Indifferent (≥400): 50% · Suspicious (≥100): 20% · Wrathful: 5%
+//	Favorable (≥800 kharis): 95% · Indifferent (≥400): 80% · Suspicious (≥100): 60% · Wrathful: 25%
 //
 // The prayer must belong to the settlement's culture (403 otherwise).
 // The prayer must be off cooldown (409 otherwise).
@@ -625,13 +625,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	var mood string
 	switch {
 	case kharisNow >= 800:
-		chance, mood = 80, "Favorable"
+		chance, mood = 95, "Favorable"
 	case kharisNow >= 400:
-		chance, mood = 50, "Indifferent"
+		chance, mood = 80, "Indifferent"
 	case kharisNow >= 100:
-		chance, mood = 20, "Suspicious"
+		chance, mood = 60, "Suspicious"
 	default:
-		chance, mood = 5, "Wrathful"
+		chance, mood = 25, "Wrathful"
 	}
 
 	// Affordability check + deduct the material offering. The gods take the

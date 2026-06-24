@@ -29,6 +29,12 @@ type UnitSpec struct {
 //   - "war_chariot" = stridsvagn, kräver stable + brons (men INTE foundry — en stad
 //     som KÖPER brons ska kunna bygga den vid sitt stall). Ersätter "cavalry"/"chariot".
 //     Katapulten (catapult) saknar historisk förankring i bronsåldern och tas bort.
+// MaxSettlementsPerWanax caps how many active settlements a single Wanax may hold.
+// Stops runaway colony-spam from drowning the MVP signal; tune as the metagame settles.
+// Lives here (province pkg) so both the dispatch handler and the arrival handler can
+// reference it without crossing the G1 dependency order.
+const MaxSettlementsPerWanax = 5
+
 var UnitSpecs = map[string]UnitSpec{
 	"spearman":       {Costs: map[string]float64{"grain": 15, "silver": 2}, PopCost: 5, Duration: time.Minute, RequiresBarracks: true},
 	"war_chariot":    {Costs: map[string]float64{"grain": 30, "timber": 5, "bronze": 3, "silver": 5}, PopCost: 8, Duration: 4 * time.Minute, RequiresStable: true},
