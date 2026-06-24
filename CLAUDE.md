@@ -3,6 +3,13 @@
 Config file, not a knowledge base. **Instructions + pointers only — facts live in the vault and the code.**
 If code and this file conflict, trust the code, then fix this file.
 
+**Three authority levels — keep them un-blurred (this is the rule that keeps this file honest):**
+- **MUST** — invariant constraints; wrong → broken code/build. These earn their always-on space.
+- **PREFER** — directions; genuine instructions but low-frequency → keep as a *pointer*, not prose (`temenos_riktningar.md`).
+- **Calibration numbers** (thresholds, %, ranges, enums) are *not* instructions — they live in code/vault, read on
+  demand. **Never quote a tunable number here as if it were an invariant** (a `≥3` beside the word "invariant" makes
+  an agent refuse to tune it — that is the exact bug this rule prevents).
+
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
 - **Before ending a session:** update `megaron_todo.md` (living status, backlog, "Vägen framåt").
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
@@ -110,7 +117,7 @@ iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 
 ---
 
-## Naming (HARD)
+## Naming (MUST)
 
 **Columns:**
 - Resources: `gold_amount`, `gold_rate`, `gold_cap`, `gold_calc_at` — NOT `*_last_calc_at`.
@@ -123,38 +130,36 @@ Collapse not Season-end · The Thalassa not The Sea.
 **The Thalassa** = the sea's in-world lore name. Permanent: `terrain = "sea"` in DB. NOT affected by the
 Megaron rename (which is about the system/repo name, not the world).
 
-**Megaron-övergång (HARD, riktning):** Vi fasar **sakta** ut orden "Thalassa" och "Poleia" till förmån för
-**Megaron** (systemnamnet). Inget tvångsbyte i en sweep — men varje gång du ändå rör en yta där orden
-står (UI-text, ny kod, rubriker), välj Megaron-nomenklaturen.
-Mono-repo-målet temenos/megaron/keryx, se [[megaron_todo]] "Projektbyte".
-
-**Silver-över-guld (HARD, riktning):** Valutan heter **silver**. Föredra ordet "silver" framför "gold/guld"
-i UI, API-fält, nya identifierare och kommentarer där du ändå rör koden. DB-kolumnerna förblir `gold_*`
-(canonical) tills Sprint A-migrationen byter dem. "Gold/guld" reserveras för den framtida lyxvaran (good_key),
-inte valutan. Full svep = Sprint A.
+**Riktningar (PREFER — ej MUST):** löpande nomenklatur-skiften som tillämpas *när du ändå rör en yta*, aldrig
+som tvångssvep. Full text, skäl och undantag i `temenos_riktningar.md`. I korthet: (1) **Megaron** ersätter
+sakta "Poleia"/"Thalassa" som system-/reponamn på ny yta (rör ej "The Thalassa" = havet); (2) **silver**
+framför "gold/guld" för valutan i UI/API/nya identifierare (DB-kolumnerna förblir `gold_*` tills Sprint A).
 
 ---
 
-## Design invariants (one-liners — rationale & full design in vault)
+## Design guardrails (MUST-respect the SHAPE — concrete numbers live in code/vault)
+
+> Get the *shape* wrong and you write wrong code. **No calibration number is canonical here** — for an exact
+> value (threshold, %, range, enum) read the code or the linked doc. Full design map: `megaron_moc.md`.
 
 - **Province ≠ settlement** — separate tables; outpost = province row, no settlement row. `temenos_settlement.md`
-- **Loyalty 1–4 only**, never 0–100; event-sourced projection. `temenos_settlement.md`
-- **Kharis** is a relationship, not mana; 5% floor always; mid-revision → rikes-pool per Wanax. `temenos_kharis.md`
+- **Loyalty** — bounded low-integer projection, never 0–100; event-sourced (range in code). `temenos_settlement.md`
+- **Kharis** is a relationship, not mana; always a floor (never 0); mid-revision → rikes-pool per Wanax. `temenos_kharis.md`
 - **Messengers** are physical, sacred (uninterceptable); reply arrives on return. **Load-bearing pillar:**
   ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
   (recall etc.) also travel by messenger — command is never instant. `temenos_settlement.md`
-- **Kingdom** = Basileus + members; ≥3 members to form. `temenos_kingdoms.md`
+- **Kingdom** = Basileus + members; activates at a member threshold (value in `kingdom.go`). `temenos_kingdoms.md`
 - **Combat** = deterministisk effektiv styrka + bounded kharis-biased fortune (RNG rullas EN gång i handlern, utfall i event — Fas 2.3); moral/rout — låg moral → enheten flyr, ej utplåning. `temenos_kharis.md`
-- **Kult** produceras av befolkning allokerad till tempel; **inga prästenheter** (varken byggbara eller starter); rit gateas av tempel + kharis (fyra mood-nivåer; siffrorna i `internal/kharis` / `temenos_kharis.md`).
+- **Kult** produceras av befolkning allokerad till tempel; **inga prästenheter** (varken byggbara eller starter); rit gateas av tempel + kharis (nivåer + siffror i `internal/kharis` / `temenos_kharis.md`).
 - **Silver** — betalningsmedel, fysiskt transporterbart. Silver-sänka = armé-upkeep (grain + silver), löpande; obetald → desertering/attrition. Präst/kult ingen upkeep.
 - **Kostnad ↔ upkeep** — upkeep = grain+silver ∝ byggkostnad; strategiska metaller (brons/cedar) hör i bygg-gate + recruit + attrition, ALDRIG platt upkeep (bronsupkeep = desertering-spiral). `temenos_ekonomi.md`
-- **Gruv-deposit-gate** — `mine` kräver koppar/tenn, `silver_mine` kräver silver i 6-grannars-catchment vid bygge (annars 422); ny malm auto-allokeras ~15 % labor (skim grain). `temenos_ekonomi.md`
+- **Gruv-deposit-gate** — `mine`/`silver_mine` kräver matchande malm-deposit i stadens catchment vid bygge (annars 422); ny malm auto-allokeras en labor-andel (skim grain). `temenos_ekonomi.md`
 - **Catchment = enda produktionskällan** — staden producerar bara från sin catchment (omgivande hexar brukas direkt, utan outpost); dynamiskt + lazy + deterministiskt. `temenos_terrain.md`
 - **Startstaden självförsörjande** (hård invariant) — första staden klarar basförsörjning utan handling; andra städer får svälta vid försummelse. Handel = för att avancera, ej överleva.
 - **Coast är ingen terräng** — egenskap = granne till hav (grannskaps-check); `coast_beach` borttagen ur enum.
 - **Labor = andel av pop** (weight-semantik), ej absoluta citizens → växande pop följer procenten automatiskt.
 - **Soldater = utvunnen pop** med löpande upkeep; övermobilisering tömmer staden (→ Collapse/warband).
-- **Collapse/Eras** — hidden prestige, risk from week 10, only survivable. `temenos_worldbuilding.md`
+- **Collapse/Eras** — hidden prestige, only survivable. `temenos_worldbuilding.md`
 - **Trade & budbärarlagret — tre skilda saker (håll isär):** (1) **meddelande** = fritext wanax↔wanax;
   (2) **handelsoffert** = strukturerat erbjudande, bilateralt samtycke, **FOW-gatead — bara mot städer du
   faktiskt kontaktat** (`visibleOrigins`), ingen global handelskatalog; (3) **intern överföring** egen→egen

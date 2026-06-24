@@ -28,3 +28,6 @@ redis-data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Concept art (lives in vault, not the repo)
+img/
