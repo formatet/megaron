@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/timescale"
 )
 
 const tradeRiskPct = 0.05 // 5% chance a caravan is lost to storm or pirates
@@ -147,8 +148,13 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			TravelMins    float64 `json:"travel_mins"`
 		}
 		if jsonErr := json.Unmarshal(p.ThenReturn, &ret); jsonErr == nil && ret.DestinationID != "" {
+			// Apply the global time-compression factor — the silver leg and the
+			// offer trip both go through timescale.Apply, but this chained goods
+			// leg didn't, so under TIME_SCALE>1 the copper crawled in at full
+			// real-time speed while everything else was compressed (goods never
+			// seemed to arrive). dist*30min == TradeTravelDuration's pre-scale value.
 			returnAt := h.scheduler.Clock().Now().Add(
-				time.Duration(ret.TravelMins * float64(time.Minute)))
+				timescale.Apply(time.Duration(ret.TravelMins * float64(time.Minute))))
 			_ = h.scheduler.EnqueueTx(ctx, tx, e.WorldID, events.ScheduledTradeReturn,
 				map[string]any{
 					"destination_id": ret.DestinationID,
