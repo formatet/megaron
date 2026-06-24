@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -609,7 +610,11 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		).Scan(&lastCast)
 		if cooldownErr == nil {
 			elapsed := h.clk.Now().Sub(lastCast)
-			remaining := spec.Cooldown - elapsed
+			// Scale the cooldown to game-time: a 24h prayer cooldown means 24 GAME hours,
+			// so at TIME_SCALE=100 it elapses in ~14 real minutes (matches battle_frenzy's
+			// timescale-applied duration). Without this the cooldown is 24 *real* hours —
+			// 100 game-days at 100× — which silently locks the keystone oracle for a day.
+			remaining := timescale.Apply(spec.Cooldown) - elapsed
 			if remaining > 0 {
 				writeError(w, http.StatusConflict,
 					fmt.Sprintf("prayer %q is on cooldown for another %.0f minutes",
@@ -806,45 +811,47 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 	//
 	// We generate the 6 neighbour offsets inline in SQL using LATERAL / VALUES so
 	// this stays a single round-trip with no application-side loops.
-	// Prioritise: tin > copper > silver; tie-break by distance (closest first).
+	//
+	// Bronze needs BOTH copper AND tin, but the oracle is gated by a long cooldown —
+	// so a single cast must seed the whole chain, not roll one random metal (rolling
+	// silver used to lock a Wanax out of the bronze metals for the whole cooldown).
+	// Reveal the nearest TIN site and the nearest COPPER site (the two bronze metals),
+	// plus the nearest silver-only site as a bonus when present.
 	rows, err := tx.Query(ctx,
-		`SELECT site.q, site.r,
-		        BOOL_OR(nb.tin_deposit)                     AS has_tin,
-		        BOOL_OR(nb.copper_deposit)                   AS has_copper,
-		        BOOL_OR(COALESCE(nb.silver_deposit, false))  AS has_silver
-		 FROM map_tiles site
-		 -- join each site to its 6 axial neighbours
-		 JOIN LATERAL (VALUES
-		     (1,0),(-1,0),(0,1),(0,-1),(1,-1),(-1,1)
-		 ) AS d(dq, dr) ON true
-		 JOIN map_tiles nb
-		   ON nb.world_id = site.world_id
-		  AND nb.q = site.q + d.dq
-		  AND nb.r = site.r + d.dr
-		  AND (nb.tin_deposit OR nb.copper_deposit OR COALESCE(nb.silver_deposit, false))
-		 WHERE site.world_id = $1
-		   -- buildable terrain only (same list as join.go capital placement)
-		   AND site.terrain NOT IN
-		       ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
-		   -- within oracle radius (axial hex distance formula)
-		   AND (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4)) / 2 <= $5
-		   -- exclude tiles already controlled by this player
-		   AND NOT EXISTS (
-		       SELECT 1 FROM provinces p
-		       WHERE p.world_id = site.world_id
-		         AND p.map_q = site.q AND p.map_r = site.r
-		         AND p.controller_id IN (
-		             SELECT id FROM settlements WHERE owner_id = $2 AND world_id = site.world_id
-		         )
-		   )
-		 GROUP BY site.q, site.r
-		 ORDER BY
-		   -- tin first (rarest, highest tier)
-		   BOOL_OR(nb.tin_deposit) DESC,
-		   BOOL_OR(nb.copper_deposit) DESC,
-		   -- closest first within each tier
-		   (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4))
-		 LIMIT 2`,
+		`WITH sites AS (
+		     SELECT site.q AS q, site.r AS r,
+		            BOOL_OR(nb.tin_deposit)                     AS has_tin,
+		            BOOL_OR(nb.copper_deposit)                   AS has_copper,
+		            BOOL_OR(COALESCE(nb.silver_deposit, false))  AS has_silver,
+		            (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4)) / 2 AS dist
+		     FROM map_tiles site
+		     JOIN LATERAL (VALUES
+		         (1,0),(-1,0),(0,1),(0,-1),(1,-1),(-1,1)
+		     ) AS d(dq, dr) ON true
+		     JOIN map_tiles nb
+		       ON nb.world_id = site.world_id
+		      AND nb.q = site.q + d.dq
+		      AND nb.r = site.r + d.dr
+		      AND (nb.tin_deposit OR nb.copper_deposit OR COALESCE(nb.silver_deposit, false))
+		     WHERE site.world_id = $1
+		       AND site.terrain NOT IN
+		           ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
+		       AND (ABS(site.q - $3) + ABS((site.q - $3) + (site.r - $4)) + ABS(site.r - $4)) / 2 <= $5
+		       AND NOT EXISTS (
+		           SELECT 1 FROM provinces p
+		           WHERE p.world_id = site.world_id
+		             AND p.map_q = site.q AND p.map_r = site.r
+		             AND p.controller_id IN (
+		                 SELECT id FROM settlements WHERE owner_id = $2 AND world_id = site.world_id
+		             )
+		       )
+		     GROUP BY site.q, site.r
+		 )
+		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_tin ORDER BY dist LIMIT 1)
+		 UNION ALL
+		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_copper AND NOT has_tin ORDER BY dist LIMIT 1)
+		 UNION ALL
+		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_silver AND NOT has_tin AND NOT has_copper ORDER BY dist LIMIT 1)`,
 		worldID, playerID, originQ, originR, oracleRadius,
 	)
 	if err != nil {
@@ -897,11 +904,10 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 	}
 
 	var msg string
-	switch len(parts) {
-	case 1:
+	if len(parts) == 1 {
 		msg = fmt.Sprintf("%s reveals a site near hidden ore — %s.", spec.God, parts[0])
-	default:
-		msg = fmt.Sprintf("%s reveals sites near hidden ore — %s.", spec.God, parts[0]+"; "+parts[1])
+	} else {
+		msg = fmt.Sprintf("%s reveals sites near hidden ore — %s.", spec.God, strings.Join(parts, "; "))
 	}
 
 	return map[string]any{
