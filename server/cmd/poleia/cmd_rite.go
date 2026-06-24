@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -38,11 +40,12 @@ func riteCmd() *cobra.Command {
 				var p struct {
 					Settlement struct {
 						AvailablePrayers []struct {
-							ID         string  `json:"id"`
-							Name       string  `json:"name"`
-							God        string  `json:"god"`
-							MinKharis  float64 `json:"min_kharis"`
-							Affordable bool    `json:"affordable"`
+							ID         string             `json:"id"`
+							Name       string             `json:"name"`
+							God        string             `json:"god"`
+							MinKharis  float64            `json:"min_kharis"`
+							Offering   map[string]float64 `json:"offering"`
+							Affordable bool               `json:"affordable"`
 						} `json:"available_prayers"`
 					} `json:"settlement"`
 				}
@@ -53,13 +56,27 @@ func riteCmd() *cobra.Command {
 					fmt.Println("No prayers available (no settlement here, or none for this culture).")
 					return nil
 				}
-				fmt.Printf("%-28s  %-20s  %-8s  %s\n", "Prayer ID", "Name", "MinKhar", "Affordable")
+				fmt.Printf("%-28s  %-20s  %-8s  %-22s  %s\n", "Prayer ID", "Name", "MinKhar", "Offering", "Affordable")
 				for _, pr := range p.Settlement.AvailablePrayers {
 					afford := "no"
 					if pr.Affordable {
 						afford = "yes"
 					}
-					fmt.Printf("%-28s  %-20s  %-8.0f  %s\n", pr.ID, pr.Name, pr.MinKharis, afford)
+					// Render the material offering (the real blocker when kharis is met),
+					// e.g. "grain×25 oil×15", sorted for stable output.
+					keys := make([]string, 0, len(pr.Offering))
+					for g := range pr.Offering {
+						keys = append(keys, g)
+					}
+					sort.Strings(keys)
+					offer := ""
+					for _, g := range keys {
+						offer += fmt.Sprintf("%s×%.0f ", g, pr.Offering[g])
+					}
+					if offer == "" {
+						offer = "—"
+					}
+					fmt.Printf("%-28s  %-20s  %-8.0f  %-22s  %s\n", pr.ID, pr.Name, pr.MinKharis, strings.TrimSpace(offer), afford)
 				}
 				return nil
 			}

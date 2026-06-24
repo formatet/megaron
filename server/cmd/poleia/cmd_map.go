@@ -26,7 +26,7 @@ func mapCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "map",
-		Short: "Show nearby visible hexes you can scout or outpost (sorted by distance)",
+		Short: "Show nearby visible land hexes — colony/outpost candidates and ore deposits (sorted by distance)",
 		Example: `  poleia map
   poleia map --radius 12`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -124,6 +124,9 @@ func mapCmd() *cobra.Command {
 				}
 				fmt.Printf("  (%3d,%3d) d%-2d %-20s%s%s\n", t.Q, t.R, t.Distance, t.Terrain, dep, tag)
 			}
+			fmt.Print("\nTo act on a hex, march a land unit there (find unit IDs with `poleia unit list`):\n" +
+				"  poleia unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\n" +
+				"Intents: colonize (found a colony), outpost (resource outpost), scout/explore (reconnaissance).\n")
 			return nil
 		},
 	}
