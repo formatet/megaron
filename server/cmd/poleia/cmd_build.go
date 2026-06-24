@@ -9,15 +9,23 @@ import (
 
 func buildCmd() *cobra.Command {
 	var buildingType string
+	var provinceID string
 
 	cmd := &cobra.Command{
 		Use:   "build",
-		Short: "Start construction of a building",
+		Short: "Start construction of a building (defaults to your capital; --province targets a colony)",
 		Example: `  poleia build --type farm
-  poleia build --type barracks`,
+  poleia build --type barracks
+  poleia build --type mine --province <province-id>   # build in a colony`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build", cfg.WorldID, cfg.ProvinceID)
+			// Default to the capital; --province lets you build in any province you own
+			// (the server verifies ownership). Without this, every build hit the capital.
+			prov := cfg.ProvinceID
+			if provinceID != "" {
+				prov = provinceID
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build", cfg.WorldID, prov)
 			data, err := c.post(path, map[string]string{"building_type": buildingType})
 			if err != nil {
 				return err
@@ -32,6 +40,7 @@ func buildCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (required)")
+	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
 	_ = cmd.MarkFlagRequired("type")
 	return cmd
 }
