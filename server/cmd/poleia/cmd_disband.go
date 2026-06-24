@@ -13,7 +13,8 @@ func disbandCmd() *cobra.Command {
 		Use:   "disband",
 		Short: "Release units back to population (they return to civilian life)",
 		Example: `  poleia disband --hoplites 20
-  poleia disband --hoplites 10 --chariots 5
+  poleia disband --hoplites 10 --chariots 5 --agema 2
+  poleia disband --trireme 3 --agema 1
   poleia disband --war-galley 2 --merchantman 1`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if hoplites+chariots+hiereus+trireme+agema+warGalley+merchantman == 0 {

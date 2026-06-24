@@ -146,6 +146,17 @@ func unitMarchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "march",
 		Short: "Order a unit to march to a hex",
+		Long: `Order a unit to march to a target hex (q,r coordinates).
+
+Terrain passability:
+  Impassable (all units):  mountain_limestone, mountain_red
+  Land units only:         plains, hills, forest_olive_grove, scrub_maquis,
+                           semi_desert, river_valley, river_delta
+  Naval units only:        coastal_sea, deep_sea
+  (Land units cannot enter sea; naval units cannot enter land.)
+
+A land unit must reach 100 men (garrison status) before it can march.
+A unit in fortify stance must be cleared (stance none) before marching.`,
 		Example: `  poleia unit march --unit <id> --q 5 --r -3
   poleia unit march --unit <id> --q 5 --r -3 --stance fortify
   poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos`,

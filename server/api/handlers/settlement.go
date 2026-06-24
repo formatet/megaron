@@ -903,6 +903,7 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 
 	var parts []string
 	revealsPayload := make([]map[string]any, 0, len(revealed))
+	foundTin, foundCopper, foundSilver := false, false, false
 	for _, rs := range revealed {
 		ore := oreKey(rs)
 		parts = append(parts, fmt.Sprintf("%s at (%d,%d)", ore, rs.Q, rs.R))
@@ -911,13 +912,37 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 			"r":   rs.R,
 			"ore": ore,
 		})
+		switch ore {
+		case "tin":
+			foundTin = true
+		case "copper":
+			foundCopper = true
+		case "silver":
+			foundSilver = true
+		}
+	}
+
+	// Name absent metals explicitly so the player doesn't wait on cooldown hoping for more.
+	var absent []string
+	if !foundTin {
+		absent = append(absent, "no tin")
+	}
+	if !foundCopper {
+		absent = append(absent, "no copper")
+	}
+	if !foundSilver {
+		absent = append(absent, "no silver")
+	}
+	absentNote := ""
+	if len(absent) > 0 {
+		absentNote = " (" + strings.Join(absent, ", ") + " within reach)"
 	}
 
 	var msg string
 	if len(parts) == 1 {
-		msg = fmt.Sprintf("%s reveals a site near hidden ore — %s.", spec.God, parts[0])
+		msg = fmt.Sprintf("%s reveals a site near hidden ore — %s%s.", spec.God, parts[0], absentNote)
 	} else {
-		msg = fmt.Sprintf("%s reveals sites near hidden ore — %s.", spec.God, strings.Join(parts, "; "))
+		msg = fmt.Sprintf("%s reveals sites near hidden ore — %s%s.", spec.God, strings.Join(parts, "; "), absentNote)
 	}
 
 	return map[string]any{

@@ -25,13 +25,14 @@ func settlementsCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &markers); err != nil {
 				return err
 			}
-			fmt.Printf("%-20s  %-12s  %s\n", "Name", "Relation", "Settlement ID")
-			fmt.Println("────────────────────────────────────────────────────────────")
+			fmt.Printf("%-20s  %-12s  %-36s  %s\n", "Name", "Relation", "Province ID (--province)", "Settlement ID")
+			fmt.Println("──────────────────────────────────────────────────────────────────────────────────────────────────────────")
 			for _, m := range markers {
 				sid, _ := m["settlement_id"].(string)
 				if sid == "" {
 					continue
 				}
+				pid, _ := m["id"].(string) // province ID — used with --province flag
 				name, _ := m["name"].(string)
 				own, _ := m["own"].(bool)
 				allied, _ := m["allied"].(bool)
@@ -41,7 +42,7 @@ func settlementsCmd() *cobra.Command {
 				} else if allied {
 					rel = "allied"
 				}
-				fmt.Printf("%-20s  %-12s  %s\n", name, rel, sid)
+				fmt.Printf("%-20s  %-12s  %-36s  %s\n", name, rel, pid, sid)
 			}
 			return nil
 		},

@@ -2594,9 +2594,18 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !producible[key] {
+			hint := ""
+			switch key {
+			case "copper":
+				hint = " (requires mine + hills catchment tile with copper deposit)"
+			case "tin":
+				hint = " (requires mine + mountain_limestone catchment tile with tin deposit)"
+			case "silver":
+				hint = " (requires silver_mine + catchment tile with silver deposit)"
+			}
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("%s is not producible at this settlement (terrain/building gap) — producible here: %s",
-					key, strings.Join(producibleKeys, ", ")))
+				fmt.Sprintf("%s is not producible at this settlement%s — producible here: %s",
+					key, hint, strings.Join(producibleKeys, ", ")))
 			return
 		}
 		if pct > 0 {
