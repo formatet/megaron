@@ -8,12 +8,21 @@ import (
 )
 
 func statusCmd() *cobra.Command {
-	return &cobra.Command{
+	var provinceID string
+	cmd := &cobra.Command{
 		Use:   "status",
-		Short: "Show your province status",
+		Short: "Show your province status (defaults to your capital; --province inspects a colony)",
+		Example: `  poleia status
+  poleia status --province <province-id>   # inspect a colony`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, cfg.ProvinceID)
+			// Default to the capital; --province lets you inspect any province you own
+			// (the server FOW/ownership-gates it), mirroring `build --province`.
+			prov := cfg.ProvinceID
+			if provinceID != "" {
+				prov = provinceID
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov)
 			data, err := c.get(path)
 			if err != nil {
 				return err
@@ -113,4 +122,6 @@ func statusCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
+	return cmd
 }

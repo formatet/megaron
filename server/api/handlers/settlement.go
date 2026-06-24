@@ -594,8 +594,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Cooldown check: query last successful RiteCast for this (player, prayer) from events table.
+	// Cooldown check: query last successful RiteCast for this (player, prayer, temple) from events table.
 	// Column-free: uses the existing event log, no new schema.
+	// Keyed on stream_id = settlementID so the cooldown is per TEMPLE, not per Wanax:
+	// a Wanax with temples in five cities can cast five prayers per cycle (one per city).
 	if spec.Cooldown > 0 {
 		var lastCast time.Time
 		cooldownErr := h.pool.QueryRow(r.Context(),
@@ -605,8 +607,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			   AND payload->>'player_id' = $2
 			   AND payload->>'prayer' = $3
 			   AND (payload->>'success')::boolean = true
+			   AND stream_id = $4
 			 ORDER BY created_at DESC LIMIT 1`,
-			worldID, playerID.String(), prayerID,
+			worldID, playerID.String(), prayerID, settlementID,
 		).Scan(&lastCast)
 		if cooldownErr == nil {
 			elapsed := h.clk.Now().Sub(lastCast)

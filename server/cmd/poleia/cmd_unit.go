@@ -85,7 +85,11 @@ type unitRow struct {
 
 func formatSize(u unitRow) string {
 	if u.Status == "forming" {
-		return fmt.Sprintf("%d/100", u.Size)
+		// A land unit auto-deploys (forming → garrison) the moment its size reaches
+		// 100 men; you grow it by recruiting more of the same type into the same
+		// settlement. Spell that out so the unit isn't left stuck at e.g. 40/100.
+		return fmt.Sprintf("%d/100 (forming — recruit %d more %s here to deploy)",
+			u.Size, 100-u.Size, u.Type)
 	}
 	if u.Category == "naval" {
 		return fmt.Sprintf("1 vessel (crew %d)", u.Crew)

@@ -106,35 +106,46 @@ func outboxCmd() *cobra.Command {
 		Short: "List sent messengers and their pending trade offers",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			// Resolve own settlement_id from the province markers (cfg stores province_id, not settlement_id).
+			// Resolve own settlement_ids from the province markers (cfg stores province_id, not settlement_id).
+			// Aggregate sent messengers across ALL owned settlements — a pending offer may have been
+			// sent from a colony, and listing only one settlement made it look like the outbox was empty
+			// while the server still rejected re-sends with "check your outbox".
 			provinces, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
 			if err != nil {
 				return err
 			}
 			var markers []map[string]any
 			_ = json.Unmarshal(provinces, &markers)
-			var ownSettlementID string
+			var ownSettlementIDs []string
 			for _, m := range markers {
 				if own, _ := m["own"].(bool); own {
-					ownSettlementID, _ = m["settlement_id"].(string)
-					break
+					if sid, _ := m["settlement_id"].(string); sid != "" {
+						ownSettlementIDs = append(ownSettlementIDs, sid)
+					}
 				}
 			}
-			if ownSettlementID == "" {
+			if len(ownSettlementIDs) == 0 {
 				return fmt.Errorf("could not find own settlement")
 			}
-			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, ownSettlementID)
-			data, err := c.get(path)
-			if err != nil {
-				return err
+			var msgs []map[string]any
+			for _, sid := range ownSettlementIDs {
+				path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, sid)
+				data, err := c.get(path)
+				if err != nil {
+					return err
+				}
+				if jsonMode {
+					printRawJSON(data)
+					continue
+				}
+				var part []map[string]any
+				if err := json.Unmarshal(data, &part); err != nil {
+					return err
+				}
+				msgs = append(msgs, part...)
 			}
 			if jsonMode {
-				printRawJSON(data)
 				return nil
-			}
-			var msgs []map[string]any
-			if err := json.Unmarshal(data, &msgs); err != nil {
-				return err
 			}
 			if len(msgs) == 0 {
 				fmt.Println("Outbox empty.")
@@ -161,7 +172,7 @@ func outboxCmd() *cobra.Command {
 					offerStatus, _ := offer["status"].(string)
 					good, _ := offer["want_good"].(string)
 					qty, _ := offer["want_qty"].(float64)
-					silver, _ := offer["offer_gold"].(float64)
+					silver, _ := offer["offer_silver"].(float64)
 					line += fmt.Sprintf("  trade: want %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatus)
 				}
 				fmt.Println(line)
