@@ -180,7 +180,17 @@ func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context()) //nolint:errcheck
 
-	// Archive any currently active world before inserting the new one.
+	// Archive any currently active world before inserting the new one, and
+	// cascade to its player records so a Wanax is only ever 'active' in the one
+	// live world (single-world enforcement — otherwise stale records accumulate
+	// across reseeds and clients can't tell which world they belong to).
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE player_world_records SET status = 'archived'
+		 WHERE status = 'active'
+		   AND world_id IN (SELECT id FROM worlds WHERE status = 'active')`); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not archive player records")
+		return
+	}
 	if _, err := tx.Exec(r.Context(),
 		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not archive active world")

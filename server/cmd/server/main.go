@@ -224,6 +224,9 @@ func main() {
 		// Province and kingdom endpoints require authentication.
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Middleware(authSvc))
+			// Single-world enforcement: reject writes aimed at an archived world
+			// (a stale client otherwise gets writes accepted but never ticked).
+			r.Use(handlers.RequireActiveWorld(pool))
 
 			r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/army", ph.GetArmy)
