@@ -39,6 +39,8 @@ const (
 	ScheduledCollapseSettlement ScheduledEventType = "CollapseSettlement"
 	// W4e — daily grain+silver upkeep for all active units.
 	ScheduledUpkeepTick ScheduledEventType = "UpkeepTick"
+	// Escrow expiry: refund buyer silver if a trade offer expires without being accepted.
+	ScheduledOfferExpiry ScheduledEventType = "OfferExpiry"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

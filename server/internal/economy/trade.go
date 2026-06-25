@@ -14,6 +14,81 @@ import (
 	"github.com/poleia/server/internal/timescale"
 )
 
+// OfferExpiryHandler refunds escrowed silver to the buyer when a trade offer
+// expires without being accepted or declined.
+type OfferExpiryHandler struct {
+	pool      *pgxpool.Pool
+	scheduler *events.Scheduler
+}
+
+// NewOfferExpiryHandler creates an OfferExpiryHandler.
+func NewOfferExpiryHandler(pool *pgxpool.Pool, sched *events.Scheduler) *OfferExpiryHandler {
+	return &OfferExpiryHandler{pool: pool, scheduler: sched}
+}
+
+// Handle processes a ScheduledOfferExpiry event. Idempotent: does nothing if the
+// offer is no longer pending (already accepted, declined, or previously expired).
+func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
+	var p struct {
+		MessengerID string `json:"messenger_id"`
+	}
+	if err := json.Unmarshal(e.Payload, &p); err != nil {
+		return fmt.Errorf("unmarshal offer expiry: %w", err)
+	}
+	messengerID, err := uuid.Parse(p.MessengerID)
+	if err != nil {
+		return fmt.Errorf("parse messenger_id: %w", err)
+	}
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Guarded flip: only act if the offer is still pending.
+	tag, err := tx.Exec(ctx,
+		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"expired"}'
+		  WHERE id=$1 AND trade_offer->>'status'='pending'`,
+		messengerID,
+	)
+	if err != nil {
+		return fmt.Errorf("expire offer: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		// Already resolved (accepted/declined/expired) — idempotent no-op.
+		return tx.Commit(ctx)
+	}
+
+	// Read origin_id and offer_silver from the now-expired messenger.
+	var originID uuid.UUID
+	var offerSilver float64
+	if err := tx.QueryRow(ctx,
+		`SELECT origin_id, (trade_offer->>'offer_silver')::float FROM messengers WHERE id=$1`,
+		messengerID,
+	).Scan(&originID, &offerSilver); err != nil {
+		return fmt.Errorf("read expired messenger: %w", err)
+	}
+
+	// Refund escrowed silver to buyer (origin settlement).
+	if _, err = tx.Exec(ctx,
+		`UPDATE settlement_goods
+		    SET amount  = settled(amount, rate, calc_at) + $1,
+		        calc_at = now()
+		  WHERE settlement_id=$2 AND good_key='silver'`,
+		offerSilver, originID,
+	); err != nil {
+		return fmt.Errorf("refund silver on expiry: %w", err)
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit expiry refund: %w", err)
+	}
+
+	slog.Info("trade offer expired, silver refunded", "messenger", messengerID, "silver", offerSilver)
+	return nil
+}
+
 const tradeRiskPct = 0.05 // 5% chance a caravan is lost to storm or pirates
 
 var tradeLostReasons = []string{"storm", "pirates", "pirates", "storm", "bandits"}

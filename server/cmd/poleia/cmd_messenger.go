@@ -174,6 +174,11 @@ func outboxCmd() *cobra.Command {
 					qty, _ := offer["want_qty"].(float64)
 					silver, _ := offer["offer_silver"].(float64)
 					line += fmt.Sprintf("  trade: want %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatus)
+					// Pending offers have the buyer's silver held in escrow until the
+					// seller accepts/declines or the offer expires (then it's refunded).
+					if offerStatus == "pending" {
+						line += fmt.Sprintf("  (%.0f silver escrowed)", silver)
+					}
 				}
 				fmt.Println(line)
 			}

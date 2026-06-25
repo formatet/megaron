@@ -137,6 +137,8 @@ func main() {
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore)
 	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
+	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler)
+	worker.Register(events.ScheduledOfferExpiry, offerExpiryH.Handle)
 	go worker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
 	go healDispossessed(ctx, pool, scheduler)

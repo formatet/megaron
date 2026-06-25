@@ -171,18 +171,78 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		expiresAt = &exp
 	}
 	var messengerID uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
-		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at)
-		 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10) RETURNING id`,
-		worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt, expiresAt,
-	).Scan(&messengerID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not create messenger")
-		return
-	}
 
-	_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledMessengerArrival,
-		messenger.ArrivalPayload{MessengerID: messengerID}, arrivesAt)
+	if req.TradeOffer != nil {
+		// Trade offer: escrow buyer's silver atomically with the INSERT and both
+		// scheduled events so a crash can never leave silver deducted without a
+		// messenger, or a messenger without an expiry that would refund on timeout.
+		tx, err := h.pool.Begin(r.Context())
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "transaction error")
+			return
+		}
+		defer tx.Rollback(r.Context())
+
+		// Escrow: deduct offer_silver from the buyer (origin) now.
+		var buyerSilver float64
+		_ = tx.QueryRow(r.Context(),
+			`SELECT COALESCE(settled(amount, rate, calc_at), 0)
+			   FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
+			originID,
+		).Scan(&buyerSilver)
+		tag, err := tx.Exec(r.Context(),
+			`UPDATE settlement_goods
+			    SET amount  = settled(amount, rate, calc_at) - $1,
+			        calc_at = now()
+			  WHERE settlement_id=$2 AND good_key='silver'
+			    AND settled(amount, rate, calc_at) >= $1`,
+			req.TradeOffer.OfferSilver, originID,
+		)
+		if err != nil || tag.RowsAffected() == 0 {
+			writeError(w, http.StatusUnprocessableEntity,
+				insufficientTradeMsg("buyer", "silver", req.TradeOffer.OfferSilver, buyerSilver))
+			return
+		}
+
+		if err = tx.QueryRow(r.Context(),
+			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at)
+			 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10) RETURNING id`,
+			worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt, expiresAt,
+		).Scan(&messengerID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not create messenger")
+			return
+		}
+
+		if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
+			messenger.ArrivalPayload{MessengerID: messengerID}, arrivesAt); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule arrival")
+			return
+		}
+		if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledOfferExpiry,
+			map[string]any{"messenger_id": messengerID.String()}, *expiresAt); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule offer expiry")
+			return
+		}
+
+		if err = tx.Commit(r.Context()); err != nil {
+			writeError(w, http.StatusInternalServerError, "commit failed")
+			return
+		}
+	} else {
+		// Plain message: non-transactional path unchanged.
+		err = h.pool.QueryRow(r.Context(),
+			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at)
+			 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10) RETURNING id`,
+			worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt, expiresAt,
+		).Scan(&messengerID)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not create messenger")
+			return
+		}
+
+		_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledMessengerArrival,
+			messenger.ArrivalPayload{MessengerID: messengerID}, arrivesAt)
+	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"id":         messengerID,
@@ -475,18 +535,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify buyer (origin) has enough silver.
-	var buyerGold float64
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COALESCE(settled(amount, rate, calc_at), 0)
-		 FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
-		buyerSettlementID,
-	).Scan(&buyerGold)
-	if buyerGold < offerGold {
-		writeError(w, http.StatusUnprocessableEntity,
-			insufficientTradeMsg("buyer", "silver", offerGold, buyerGold))
-		return
-	}
+	// Buyer's silver was escrowed at offer-send time — no balance check needed here.
 
 	// Calculate distance for return travel time.
 	var bQ, bR, dQ, dR int
@@ -529,25 +578,22 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Deduct offer_silver from buyer (leg 3 depart).
-	if _, err = tx.Exec(r.Context(),
-		`UPDATE settlement_goods
-		   SET amount  = settled(amount, rate, calc_at) - $1,
-		       calc_at = now()
-		 WHERE settlement_id=$2 AND good_key='silver'
-		   AND settled(amount, rate, calc_at) >= $1`,
-		offerGold, buyerSettlementID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct silver from buyer")
+	// Mark trade_offer as accepted. Guard on status='pending' so that if the
+	// offer expired (and its silver was refunded) between the pool-read above and
+	// this transaction, the accept aborts cleanly instead of shipping refunded
+	// silver to the seller — which would mint silver from nothing.
+	// (Silver was already escrowed at offer-send; no deduction here.)
+	tag, err = tx.Exec(r.Context(),
+		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"accepted"}'
+		  WHERE id=$1 AND trade_offer->>'status'='pending'`,
+		messengerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update offer status")
 		return
 	}
-
-	// Mark trade_offer as accepted.
-	if _, err = tx.Exec(r.Context(),
-		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"accepted"}' WHERE id=$1`,
-		messengerID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not update offer status")
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusConflict, "trade offer is no longer available (expired or already resolved)")
 		return
 	}
 
@@ -608,14 +654,17 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var offerStatus string
+	var buyerSettlementID uuid.UUID
+	var offerSilver float64
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT m.trade_offer->>'status'
+		`SELECT m.trade_offer->>'status', m.origin_id,
+		        (m.trade_offer->>'offer_silver')::float
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3
 		   AND m.status='delivered' AND m.trade_offer IS NOT NULL`,
 		messengerID, worldID, playerID,
-	).Scan(&offerStatus)
+	).Scan(&offerStatus, &buyerSettlementID, &offerSilver)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "trade offer not found")
 		return
@@ -625,13 +674,46 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	_, err = h.pool.Exec(r.Context(),
-		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"declined"}' WHERE id=$1`,
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Flip to declined first, guarded on status='pending'. If a concurrent expiry
+	// already resolved+refunded the offer, RowsAffected is 0 and we abort without
+	// refunding a second time (which would mint silver from nothing).
+	tag, err := tx.Exec(r.Context(),
+		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"declined"}'
+		  WHERE id=$1 AND trade_offer->>'status'='pending'`,
 		messengerID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not update offer")
 		return
 	}
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusConflict, "trade offer is no longer available (expired or already resolved)")
+		return
+	}
+
+	// Refund escrowed silver to buyer (origin settlement).
+	if _, err = tx.Exec(r.Context(),
+		`UPDATE settlement_goods
+		    SET amount  = settled(amount, rate, calc_at) + $1,
+		        calc_at = now()
+		  WHERE settlement_id=$2 AND good_key='silver'`,
+		offerSilver, buyerSettlementID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not refund silver to buyer")
+		return
+	}
+
+	if err = tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{"status": "declined"})
 }

@@ -7,6 +7,12 @@ func marker(name, id string, own bool) map[string]any {
 }
 
 func TestResolveMessengerDest(t *testing.T) {
+	// resolveMessengerDest reads the global cfg (for the capital province id);
+	// give it a non-nil value so the capital lookup is a no-op here and the
+	// resolver falls back to the first own marker.
+	cfg = &Config{ProvinceID: "cap-prov"}
+	t.Cleanup(func() { cfg = nil })
+
 	markers := []map[string]any{
 		marker("Mykene", "self-1", true),
 		marker("Korinth", "k-2", false),
@@ -16,7 +22,7 @@ func TestResolveMessengerDest(t *testing.T) {
 	}
 
 	t.Run("resolves visible neighbour", func(t *testing.T) {
-		dest, name, own, err := resolveMessengerDest(markers, wanaxes, "korinth")
+		dest, name, own, err := resolveMessengerDest(markers, wanaxes, "korinth", "")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -26,7 +32,7 @@ func TestResolveMessengerDest(t *testing.T) {
 	})
 
 	t.Run("falls back to wanaxes list", func(t *testing.T) {
-		dest, _, _, err := resolveMessengerDest(markers, wanaxes, "Pylos")
+		dest, _, _, err := resolveMessengerDest(markers, wanaxes, "Pylos", "")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -36,7 +42,7 @@ func TestResolveMessengerDest(t *testing.T) {
 	})
 
 	t.Run("rejects own settlement with actionable error", func(t *testing.T) {
-		_, _, _, err := resolveMessengerDest(markers, wanaxes, "Mykene")
+		_, _, _, err := resolveMessengerDest(markers, wanaxes, "Mykene", "")
 		if err == nil {
 			t.Fatal("expected error sending to own settlement")
 		}
@@ -46,7 +52,7 @@ func TestResolveMessengerDest(t *testing.T) {
 	})
 
 	t.Run("unknown destination", func(t *testing.T) {
-		_, _, _, err := resolveMessengerDest(markers, wanaxes, "Atlantis")
+		_, _, _, err := resolveMessengerDest(markers, wanaxes, "Atlantis", "")
 		if err == nil {
 			t.Fatal("expected error for unknown settlement")
 		}
@@ -54,7 +60,7 @@ func TestResolveMessengerDest(t *testing.T) {
 
 	t.Run("missing own settlement", func(t *testing.T) {
 		noOwn := []map[string]any{marker("Korinth", "k-2", false)}
-		_, _, _, err := resolveMessengerDest(noOwn, nil, "Korinth")
+		_, _, _, err := resolveMessengerDest(noOwn, nil, "Korinth", "")
 		if err == nil {
 			t.Fatal("expected error when own settlement is absent")
 		}
