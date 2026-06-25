@@ -24,18 +24,21 @@ $$;
 
 -- ── settlement_goods.calc_at → calc_tick INT ────────────────────────────────────
 ALTER TABLE settlement_goods
+    ALTER COLUMN calc_at DROP DEFAULT,
     ALTER COLUMN calc_at TYPE int USING 0,
     ALTER COLUMN calc_at SET DEFAULT 0;
 ALTER TABLE settlement_goods RENAME COLUMN calc_at TO calc_tick;
 
 -- ── player_world_records.kharis_calc_at → kharis_calc_tick INT ─────────────────
 ALTER TABLE player_world_records
+    ALTER COLUMN kharis_calc_at DROP DEFAULT,
     ALTER COLUMN kharis_calc_at TYPE int USING 0,
     ALTER COLUMN kharis_calc_at SET DEFAULT 0;
 ALTER TABLE player_world_records RENAME COLUMN kharis_calc_at TO kharis_calc_tick;
 
 -- ── kingdoms.silver_calc_at → silver_calc_tick INT ─────────────────────────────
 ALTER TABLE kingdoms
+    ALTER COLUMN silver_calc_at DROP DEFAULT,
     ALTER COLUMN silver_calc_at TYPE int USING 0,
     ALTER COLUMN silver_calc_at SET DEFAULT 0;
 ALTER TABLE kingdoms RENAME COLUMN silver_calc_at TO silver_calc_tick;
