@@ -156,7 +156,13 @@ Terrain passability:
   (Land units cannot enter sea; naval units cannot enter land.)
 
 A land unit must reach 100 men (garrison status) before it can march.
-A unit in fortify stance must be cleared (stance none) before marching.`,
+A unit in fortify stance must be cleared (stance none) before marching.
+
+Ore on mountain terrain (copper, tin, silver):
+  Mountains are impassable — you cannot colonize the mountain hex itself.
+  Instead, colonize an ADJACENT passable hex: the ore deposit will fall in
+  the new colony's catchment and can be mined from there.
+  Use 'poleia map' to see which adjacent hexes are passable.`,
 		Example: `  poleia unit march --unit <id> --q 5 --r -3
   poleia unit march --unit <id> --q 5 --r -3 --stance fortify
   poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos`,

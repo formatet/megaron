@@ -437,7 +437,26 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if terrain == "mountain_limestone" || terrain == "mountain_red" {
-			writeError(w, http.StatusUnprocessableEntity, "cannot target mountain terrain")
+			if req.Intent == "colonize" || req.Intent == "outpost" {
+				// Check whether the target tile has ore deposits — if so, give the
+				// player the actionable hint about adjacent colonization.
+				var hasOre bool
+				_ = h.pool.QueryRow(r.Context(),
+					`SELECT copper_deposit OR tin_deposit
+					        OR COALESCE(silver_deposit,false) OR COALESCE(cedar_deposit,false)
+					 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+					worldID, q, r2,
+				).Scan(&hasOre)
+				if hasOre {
+					writeError(w, http.StatusUnprocessableEntity,
+						"cannot settle impassable mountain — found a colony on an adjacent passable hex instead: the ore deposit will fall in the new colony's catchment and be mineable from there")
+				} else {
+					writeError(w, http.StatusUnprocessableEntity,
+						"cannot settle impassable mountain terrain — target an adjacent passable hex instead")
+				}
+			} else {
+				writeError(w, http.StatusUnprocessableEntity, "cannot target mountain terrain")
+			}
 			return
 		}
 		if req.Intent != "explore" && (terrain == "deep_sea" || terrain == "coastal_sea") {
