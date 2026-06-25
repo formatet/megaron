@@ -109,6 +109,36 @@ func (s *Scheduler) EnqueueAfterTx(ctx context.Context, tx pgx.Tx, worldID uuid.
 	return s.EnqueueTx(ctx, tx, worldID, eventType, payload, s.clock.Now().Add(d))
 }
 
+// EnqueueTick schedules a new event to fire when worlds.current_tick reaches dueTick.
+// process_after is set to now() to satisfy the NOT NULL constraint; the scheduler
+// fires this event via the due_tick path, not the process_after path.
+func (s *Scheduler) EnqueueTick(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, dueTick int) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal scheduled payload: %w", err)
+	}
+	_, err = s.pool.Exec(ctx,
+		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick)
+		 VALUES ($1, $2, $3, now(), $4)`,
+		worldID, string(eventType), raw, dueTick,
+	)
+	return err
+}
+
+// EnqueueTickTx schedules a tick-gated event within an existing transaction.
+func (s *Scheduler) EnqueueTickTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, eventType ScheduledEventType, payload any, dueTick int) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal scheduled payload: %w", err)
+	}
+	_, err = tx.Exec(ctx,
+		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick)
+		 VALUES ($1, $2, $3, now(), $4)`,
+		worldID, string(eventType), raw, dueTick,
+	)
+	return err
+}
+
 // Handler processes a single scheduled event. It must propagate ctx to all DB calls.
 type Handler func(ctx context.Context, e ScheduledEvent) error
 
@@ -177,8 +207,13 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		     SELECT id FROM scheduled_events
 		     WHERE processed_at IS NULL
 		       AND failed_at IS NULL
-		       AND process_after <= $1
 		       AND world_id IN (SELECT id FROM worlds WHERE status = 'active')
+		       AND (
+		           (due_tick IS NOT NULL
+		            AND due_tick <= (SELECT current_tick FROM worlds w2 WHERE w2.id = scheduled_events.world_id))
+		           OR
+		           (due_tick IS NULL AND process_after <= $1)
+		       )
 		     ORDER BY process_after
 		     LIMIT 20
 		     FOR UPDATE SKIP LOCKED
