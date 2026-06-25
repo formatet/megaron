@@ -1,0 +1,2 @@
+ALTER TABLE worlds ADD COLUMN current_tick  INT         NOT NULL DEFAULT 0;
+ALTER TABLE worlds ADD COLUMN last_tick_at  TIMESTAMPTZ NOT NULL DEFAULT now();

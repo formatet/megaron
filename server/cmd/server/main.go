@@ -30,6 +30,7 @@ import (
 	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/notify"
+	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/world"
 	"github.com/redis/go-redis/v9"
@@ -140,6 +141,8 @@ func main() {
 	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler)
 	worker.Register(events.ScheduledOfferExpiry, offerExpiryH.Handle)
 	go worker.Run(ctx)
+	tickWorker := tick.New(pool, gameClock, eventStore)
+	go tickWorker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
 	go healDispossessed(ctx, pool, scheduler)
 

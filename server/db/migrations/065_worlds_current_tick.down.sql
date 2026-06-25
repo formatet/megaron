@@ -1,0 +1,2 @@
+ALTER TABLE worlds DROP COLUMN IF EXISTS current_tick;
+ALTER TABLE worlds DROP COLUMN IF EXISTS last_tick_at;
