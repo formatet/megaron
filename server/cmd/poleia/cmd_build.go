@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -10,15 +12,73 @@ import (
 func buildCmd() *cobra.Command {
 	var buildingType string
 	var provinceID string
+	var list bool
 
 	cmd := &cobra.Command{
 		Use:   "build",
-		Short: "Start construction of a building (defaults to your capital; --province targets a colony)",
-		Example: `  poleia build --type farm
-  poleia build --type barracks
+		Short: "Start construction of a building (--list to see all options; defaults to capital)",
+		Example: `  poleia build --list
+  poleia build --type farm
+  poleia build --type harbour          # requires coastal (adjacent sea hex)
   poleia build --type mine --province <province-id>   # build in a colony`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+
+			// --list (or no --type): show the building catalogue and exit.
+			if list || buildingType == "" {
+				data, err := c.get("/api/v1/buildings")
+				if err != nil {
+					return err
+				}
+				if jsonMode {
+					printRawJSON(data)
+					return nil
+				}
+				var catalogue []struct {
+					Type             string             `json:"type"`
+					Costs            map[string]float64 `json:"costs"`
+					CostSilver       float64            `json:"cost_silver"`
+					DurationMinutes  float64            `json:"duration_minutes"`
+					RequiresCoastal  bool               `json:"requires_coastal"`
+					RequiresDeposits []string           `json:"requires_deposits"`
+					Purpose          string             `json:"purpose"`
+				}
+				if err := json.Unmarshal(data, &catalogue); err != nil {
+					return err
+				}
+				fmt.Printf("%-14s  %-28s  %-8s  %-24s  %s\n", "Type", "Costs", "Mins", "Requires", "Purpose")
+				fmt.Println(strings.Repeat("─", 100))
+				for _, b := range catalogue {
+					// Format costs: "timber×50 stone×20"
+					costParts := make([]string, 0, len(b.Costs))
+					for g, q := range b.Costs {
+						costParts = append(costParts, fmt.Sprintf("%s×%.0f", g, q))
+					}
+					sort.Strings(costParts)
+					if b.CostSilver > 0 {
+						costParts = append(costParts, fmt.Sprintf("silver×%.0f", b.CostSilver))
+					}
+					costStr := strings.Join(costParts, " ")
+
+					// Format gate requirements
+					reqs := []string{}
+					if b.RequiresCoastal {
+						reqs = append(reqs, "coastal (adj sea)")
+					}
+					for _, d := range b.RequiresDeposits {
+						reqs = append(reqs, d+" deposit")
+					}
+					reqStr := strings.Join(reqs, ", ")
+					if reqStr == "" {
+						reqStr = "—"
+					}
+
+					fmt.Printf("%-14s  %-28s  %-8.0f  %-24s  %s\n",
+						b.Type, costStr, b.DurationMinutes, reqStr, b.Purpose)
+				}
+				return nil
+			}
+
 			// Default to the capital; --province lets you build in any province you own
 			// (the server verifies ownership). Without this, every build hit the capital.
 			prov := cfg.ProvinceID
@@ -39,9 +99,9 @@ func buildCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (required)")
+	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
-	_ = cmd.MarkFlagRequired("type")
+	cmd.Flags().BoolVar(&list, "list", false, "show the building catalogue and exit")
 	return cmd
 }
 

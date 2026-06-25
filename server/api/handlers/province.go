@@ -1242,6 +1242,84 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+// BuildingCatalogue handles GET /api/v1/buildings — returns the static catalogue of
+// all constructable buildings: costs, duration, gate (requires_coastal, requires_deposit)
+// joined from production_rules, and a human purpose string.
+// No world auth required — this is static reference data.
+func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Request) {
+	// Load requires_coastal and requires_deposit per building_type from production_rules.
+	// A building may have multiple rules; we collect all deposit requirements and
+	// collapse coastal to a single bool (any rule requiring coastal → true).
+	type gateInfo struct {
+		requiresCoastal  bool
+		requiresDeposits []string
+	}
+	gates := map[string]*gateInfo{}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT DISTINCT building_type, requires_coastal, requires_deposit
+		 FROM production_rules
+		 WHERE building_type IS NOT NULL`,
+	)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var bt string
+			var coastal bool
+			var deposit *string
+			if err := rows.Scan(&bt, &coastal, &deposit); err != nil {
+				continue
+			}
+			if _, ok := gates[bt]; !ok {
+				gates[bt] = &gateInfo{}
+			}
+			if coastal {
+				gates[bt].requiresCoastal = true
+			}
+			if deposit != nil && *deposit != "" {
+				gates[bt].requiresDeposits = append(gates[bt].requiresDeposits, *deposit)
+			}
+		}
+	}
+
+	type buildingEntry struct {
+		Type             string             `json:"type"`
+		Costs            map[string]float64 `json:"costs"`
+		CostSilver       float64            `json:"cost_silver,omitempty"`
+		DurationMinutes  float64            `json:"duration_minutes"`
+		RequiresCoastal  bool               `json:"requires_coastal,omitempty"`
+		RequiresDeposits []string           `json:"requires_deposits,omitempty"`
+		Purpose          string             `json:"purpose"`
+	}
+
+	// Stable ordering: sort building types alphabetically.
+	order := make([]string, 0, len(province.BuildingSpecs))
+	for bt := range province.BuildingSpecs {
+		order = append(order, string(bt))
+	}
+	sort.Strings(order)
+
+	result := make([]buildingEntry, 0, len(order))
+	for _, bt := range order {
+		spec := province.BuildingSpecs[province.BuildingType(bt)]
+		entry := buildingEntry{
+			Type:            bt,
+			Costs:           spec.Costs,
+			CostSilver:      spec.CostSilver,
+			DurationMinutes: spec.Duration.Minutes(),
+			Purpose:         province.BuildingPurposes[province.BuildingType(bt)],
+		}
+		if g, ok := gates[bt]; ok {
+			entry.RequiresCoastal = g.requiresCoastal
+			if len(g.requiresDeposits) > 0 {
+				entry.RequiresDeposits = g.requiresDeposits
+			}
+		}
+		result = append(result, entry)
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 // recruitPerManCosts returns the resource cost per man for a given unit type.
 // Derived from Skalbeslut (2026-06-15): per-man = old UnitSpec cost / old PopCost.
 // Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.

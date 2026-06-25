@@ -13,6 +13,25 @@ type BuildingSpec struct {
 	WallsBonus int     // added to settlements.wall_level (capped at 3)
 }
 
+// BuildingPurposes is a short human-readable description of each building's role,
+// exposed via GET /api/v1/buildings and the CLI `build --list`.
+var BuildingPurposes = map[BuildingType]string{
+	BuildingFarm:        "Raises grain and oil production from plains; wine from hills",
+	BuildingBarracks:    "Enables recruiting spearmen and war chariots",
+	BuildingMine:        "Extracts copper or tin from ore deposits in catchment (requires deposit)",
+	BuildingSilverMine:  "Extracts silver from silver deposits in catchment (requires deposit)",
+	BuildingLumbermill:  "Increases cedar timber production from forest hexes",
+	BuildingStonequarry: "Increases stone production from hills and mountain catchment",
+	BuildingMarket:      "Enables trade offers and updates market price snapshots",
+	BuildingWall:        "Adds a wall tier (Palisade → Stone Wall → Bronze Wall) for combat defence",
+	BuildingHarbour:     "Enables ships and fish production (requires coastal — adjacent sea hex)",
+	BuildingFoundry:     "Enables bronze smelting (copper + tin → bronze)",
+	BuildingStable:      "Produces horses and enables war chariots",
+	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
+	BuildingOlivePress:  "Increases oil production from plains and hills",
+	BuildingWinery:      "Increases wine production from hills",
+}
+
 // BuildingSpecs is the canonical catalogue of all constructable buildings.
 // Rate bonuses for goods (grain, cedar, stone, etc.) are registered as
 // production_rules rows and applied by BuildCompleteHandler via the UPSERT

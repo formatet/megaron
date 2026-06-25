@@ -206,6 +206,9 @@ func main() {
 	r.Route("/api/v1", func(r chi.Router) {
 		// Admin routes — no JWT, keyed by X-Admin-Key header.
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
+		// Reference catalogue — no auth, static data.
+		r.Get("/buildings", ph.BuildingCatalogue)
+
 		// World endpoints — list/get/map are public; create requires auth.
 		r.Get("/worlds", wh.List)
 		r.With(auth.Middleware(authSvc)).Post("/worlds", wh.Create)
