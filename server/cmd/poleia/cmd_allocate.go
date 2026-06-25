@@ -19,17 +19,19 @@ func allocateCmd() *cobra.Command {
 	}
 	rawPercent := make(map[string]*int, len(knownGoods))
 
+	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "allocate",
-		Short: "Tilldela andel av befolkningen per vara (arbetsallokering, %)",
-		Long: `Tilldela en andel (%) av ditt samhälles befolkning till producerbara varor.
-Ange procent per vara — summan får ej överstiga 100.
-Andelen auto-skalar med befolkningen (växer pop, växer antalet arbetare).
-Icke-producerbara varor avvisas av servern.
+		Short: "Set population labor allocation per good (%, defaults to capital; --province for a colony)",
+		Long: `Allocate a share (%) of your settlement's population to producible goods.
+Give a percent per good — the sum must not exceed 100.
+The share auto-scales with population (pop grows, the worker count grows).
+Non-producible goods are rejected by the server.
 
-Exempel:
+Examples:
   poleia allocate --timber 40 --stone 30 --grain 30
-  poleia allocate --grain 50 --fish 20   (resten är idle)`,
+  poleia allocate --grain 50 --fish 20                       (the rest is idle)
+  poleia allocate --grain 70 --tin 30 --province <prov-id>   (allocate a colony)`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			percent := make(map[string]int)
 			for _, key := range knownGoods {
@@ -39,11 +41,17 @@ Exempel:
 				}
 			}
 			if len(percent) == 0 {
-				return fmt.Errorf("ingen vara angiven — använd t.ex. --timber 40 --grain 30")
+				return fmt.Errorf("no good given — use e.g. --timber 40 --grain 30")
 			}
 
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/labor", cfg.WorldID, cfg.ProvinceID)
+			// Default to the capital; --province lets you allocate any province you own
+			// (the server ownership-gates it), mirroring `build`/`status --province`.
+			prov := cfg.ProvinceID
+			if provinceID != "" {
+				prov = provinceID
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/labor", cfg.WorldID, prov)
 			data, err := c.put(path, map[string]any{"percent": percent})
 			if err != nil {
 				return err
@@ -56,9 +64,9 @@ Exempel:
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Println("Arbetsallokering uppdaterad:")
+			fmt.Println("Labor allocation updated:")
 			if lp, ok := resp["labor_pool"].(float64); ok {
-				fmt.Printf("  Befolkning:  %d\n", int(lp))
+				fmt.Printf("  Population:  %d\n", int(lp))
 			}
 			if idle, ok := resp["idle_percent"].(float64); ok {
 				idleC, _ := resp["idle_citizens"].(float64)
@@ -94,12 +102,13 @@ Exempel:
 	for _, key := range knownGoods {
 		var v int
 		rawPercent[key] = &v
-		cmd.Flags().IntVar(&v, key, 0, fmt.Sprintf("andel (%%) av befolkningen till %s", key))
+		cmd.Flags().IntVar(&v, key, 0, fmt.Sprintf("share (%%) of population to %s", key))
 	}
+	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to allocate (default: your capital)")
 
-	// --raw "timber=40,stone=30" för programmatisk användning.
+	// --raw "timber=40,stone=30" for programmatic use.
 	var raw string
-	cmd.Flags().StringVar(&raw, "raw", "", "comma-separated key=value i procent (t.ex. timber=40,grain=30)")
+	cmd.Flags().StringVar(&raw, "raw", "", "comma-separated key=value in percent (e.g. timber=40,grain=30)")
 	cmd.PreRunE = func(cmd *cobra.Command, _ []string) error {
 		if raw == "" {
 			return nil

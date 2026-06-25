@@ -54,15 +54,29 @@ func statusCmd() *cobra.Command {
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s\n\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty, coastalNote)
 
-			// Resources: silver lives in resources as a {amount,rate,cap} object;
-			// kharis is the per-Wanax pool exposed at the settlement top level.
+			// Resources: silver + the bronze-chain goods live in resources as
+			// {amount,rate,cap} objects; kharis is the per-Wanax pool exposed at the
+			// settlement top level. Silver always prints (even 0); grain + the metals
+			// print when present so a colony's tin/copper output is visible here, not
+			// only via `goods`.
 			fmt.Println("Resources")
 			if res, ok := sett["resources"].(map[string]any); ok {
-				if sd, ok := res["silver"].(map[string]any); ok {
-					amt, _ := sd["amount"].(float64)
-					rt, _ := sd["rate"].(float64)
-					fmt.Printf("  %-8s %6s  %s\n", "Silver", resource(amt), rate(rt))
+				printRes := func(label, key string, always bool) {
+					rd, ok := res[key].(map[string]any)
+					if !ok {
+						return
+					}
+					amt, _ := rd["amount"].(float64)
+					rt, _ := rd["rate"].(float64)
+					if always || amt > 0 || rt != 0 {
+						fmt.Printf("  %-8s %6s  %s\n", label, resource(amt), rate(rt))
+					}
 				}
+				printRes("Silver", "silver", true)
+				printRes("Grain", "grain", false)
+				printRes("Copper", "copper", false)
+				printRes("Tin", "tin", false)
+				printRes("Bronze", "bronze", false)
 			}
 			kv, _ := sett["kharis"].(float64)
 			kr, _ := sett["kharis_rate"].(float64)

@@ -8,12 +8,21 @@ import (
 )
 
 func goodsCmd() *cobra.Command {
-	return &cobra.Command{
+	var provinceID string
+	cmd := &cobra.Command{
 		Use:   "goods",
-		Short: "Show goods inventory and local prices",
+		Short: "Show goods inventory and local prices (defaults to capital; --province for a colony)",
+		Example: `  poleia goods
+  poleia goods --province <province-id>   # inspect a colony`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/goods", cfg.WorldID, cfg.ProvinceID)
+			// Default to the capital; --province lets you inspect any province you own,
+			// mirroring `build`/`status --province`.
+			prov := cfg.ProvinceID
+			if provinceID != "" {
+				prov = provinceID
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/goods", cfg.WorldID, prov)
 			data, err := c.get(path)
 			if err != nil {
 				return err
@@ -63,6 +72,8 @@ func goodsCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
+	return cmd
 }
 
 func transferCmd() *cobra.Command {
