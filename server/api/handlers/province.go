@@ -291,14 +291,16 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// available_prayers: the settlement culture's prayers with full affordability:
 		// material offering costs + kharis tier gate + temple presence.
 		// All three gates mirror the real Rite handler so affordable:true is trustworthy.
+		// cooldown_remaining_minutes is >0 when the prayer is on cooldown.
 		type prayerRow struct {
-			ID         string             `json:"id"`
-			Name       string             `json:"name"`
-			God        string             `json:"god"`
-			EffectType string             `json:"effect_type"`
-			MinKharis  float64            `json:"min_kharis"`
-			Offering   map[string]float64 `json:"offering"`
-			Affordable bool               `json:"affordable"`
+			ID                      string             `json:"id"`
+			Name                    string             `json:"name"`
+			God                     string             `json:"god"`
+			EffectType              string             `json:"effect_type"`
+			MinKharis               float64            `json:"min_kharis"`
+			Offering                map[string]float64 `json:"offering"`
+			Affordable              bool               `json:"affordable"`
+			CooldownRemainingMins   float64            `json:"cooldown_remaining_minutes,omitempty"`
 		}
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
@@ -312,9 +314,34 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
+			// Check cooldown: same query as the Rite handler.
+			// Use sett.OwnerID (not request auth) so spectators see the owner's cooldown.
+			var cooldownRemainingMins float64
+			if spec.Cooldown > 0 && sett.OwnerID != nil {
+				var lastCast time.Time
+				if cdErr := h.pool.QueryRow(r.Context(),
+					`SELECT created_at FROM events
+					 WHERE world_id = $1
+					   AND event_type = 'RiteCast'
+					   AND payload->>'player_id' = $2
+					   AND payload->>'prayer' = $3
+					   AND (payload->>'success')::boolean = true
+					   AND stream_id = $4
+					 ORDER BY created_at DESC LIMIT 1`,
+					worldID, sett.OwnerID.String(), pid, sett.ID,
+				).Scan(&lastCast); cdErr == nil {
+					elapsed := h.clk.Now().Sub(lastCast)
+					remaining := timescale.Apply(spec.Cooldown) - elapsed
+					if remaining > 0 {
+						cooldownRemainingMins = remaining.Minutes()
+						afford = false
+					}
+				}
+			}
 			prayers = append(prayers, prayerRow{
 				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
+				CooldownRemainingMins: cooldownRemainingMins,
 			})
 		}
 
@@ -2978,5 +3005,75 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 	for _, id := range order {
 		wants = append(wants, *byID[id])
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"wants": wants})
+
+	// Surplus: goods with price < base_value * 0.9 (export candidates).
+	surplusRows, err := h.pool.Query(r.Context(),
+		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at
+		 FROM market_snapshots ms
+		 JOIN goods g ON g.key = ms.good_key
+		 JOIN settlements s ON s.id = ms.settlement_id
+		 WHERE ms.player_id = $1 AND s.world_id = $2
+		   AND ms.price < g.base_value * 0.9
+		   AND g.category <> 'sacred'
+		   AND ms.good_key <> 'silver'
+		 ORDER BY ms.settlement_id, ms.price / g.base_value ASC`,
+		playerID, worldID,
+	)
+
+	type surplusItem struct {
+		Good         string  `json:"good"`
+		Price        float64 `json:"price"`
+		BaseValue    float64 `json:"base_value"`
+		SurplusRatio float64 `json:"surplus_ratio"`
+		Stock        float64 `json:"stock"`
+	}
+	type settlementSurplus struct {
+		SettlementID uuid.UUID    `json:"settlement_id"`
+		Name         string       `json:"name"`
+		ObservedAt   time.Time    `json:"observed_at"`
+		Goods        []surplusItem `json:"goods"`
+	}
+
+	var surplusList []settlementSurplus
+	if err == nil {
+		defer surplusRows.Close()
+		surplusOrder := []uuid.UUID{}
+		surplusByID := map[uuid.UUID]*settlementSurplus{}
+		for surplusRows.Next() {
+			var (
+				settlementID            uuid.UUID
+				name, goodKey           string
+				price, stock, baseValue float64
+				observedAt              time.Time
+			)
+			if err := surplusRows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt); err != nil {
+				continue
+			}
+			if _, seen := surplusByID[settlementID]; !seen {
+				surplusByID[settlementID] = &settlementSurplus{
+					SettlementID: settlementID,
+					Name:         name,
+					ObservedAt:   observedAt,
+					Goods:        []surplusItem{},
+				}
+				surplusOrder = append(surplusOrder, settlementID)
+			}
+			surplusByID[settlementID].Goods = append(surplusByID[settlementID].Goods, surplusItem{
+				Good:         goodKey,
+				Price:        price,
+				BaseValue:    baseValue,
+				SurplusRatio: price / baseValue,
+				Stock:        stock,
+			})
+		}
+		surplusList = make([]settlementSurplus, 0, len(surplusOrder))
+		for _, id := range surplusOrder {
+			surplusList = append(surplusList, *surplusByID[id])
+		}
+	}
+	if surplusList == nil {
+		surplusList = []settlementSurplus{}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"wants": wants, "surplus": surplusList})
 }

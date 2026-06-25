@@ -40,12 +40,13 @@ func riteCmd() *cobra.Command {
 				var p struct {
 					Settlement struct {
 						AvailablePrayers []struct {
-							ID         string             `json:"id"`
-							Name       string             `json:"name"`
-							God        string             `json:"god"`
-							MinKharis  float64            `json:"min_kharis"`
-							Offering   map[string]float64 `json:"offering"`
-							Affordable bool               `json:"affordable"`
+							ID                    string             `json:"id"`
+							Name                  string             `json:"name"`
+							God                   string             `json:"god"`
+							MinKharis             float64            `json:"min_kharis"`
+							Offering              map[string]float64 `json:"offering"`
+							Affordable            bool               `json:"affordable"`
+							CooldownRemainingMins float64            `json:"cooldown_remaining_minutes"`
 						} `json:"available_prayers"`
 					} `json:"settlement"`
 				}
@@ -56,11 +57,20 @@ func riteCmd() *cobra.Command {
 					fmt.Println("No prayers available (no settlement here, or none for this culture).")
 					return nil
 				}
-				fmt.Printf("%-28s  %-20s  %-8s  %-22s  %s\n", "Prayer ID", "Name", "MinKhar", "Offering", "Affordable")
+				fmt.Printf("%-28s  %-20s  %-8s  %-22s  %-12s  %s\n", "Prayer ID", "Name", "MinKhar", "Offering", "Ready", "Cooldown")
 				for _, pr := range p.Settlement.AvailablePrayers {
-					afford := "no"
-					if pr.Affordable {
-						afford = "yes"
+					ready := "yes"
+					cooldownStr := "—"
+					if pr.CooldownRemainingMins > 0 {
+						ready = "cooldown"
+						mins := pr.CooldownRemainingMins
+						if mins < 60 {
+							cooldownStr = fmt.Sprintf("%.0fm remaining", mins)
+						} else {
+							cooldownStr = fmt.Sprintf("%.1fh remaining", mins/60)
+						}
+					} else if !pr.Affordable {
+						ready = "no"
 					}
 					// Render the material offering (the real blocker when kharis is met),
 					// e.g. "grain×25 oil×15", sorted for stable output.
@@ -76,7 +86,7 @@ func riteCmd() *cobra.Command {
 					if offer == "" {
 						offer = "—"
 					}
-					fmt.Printf("%-28s  %-20s  %-8.0f  %-22s  %s\n", pr.ID, pr.Name, pr.MinKharis, strings.TrimSpace(offer), afford)
+					fmt.Printf("%-28s  %-20s  %-8.0f  %-22s  %-12s  %s\n", pr.ID, pr.Name, pr.MinKharis, strings.TrimSpace(offer), ready, cooldownStr)
 				}
 				return nil
 			}
