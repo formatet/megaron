@@ -22,7 +22,7 @@ import (
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
-	"github.com/poleia/server/internal/timescale"
+	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/unit"
 )
 
@@ -317,7 +317,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// Check cooldown: same query as the Rite handler.
 			// Use sett.OwnerID (not request auth) so spectators see the owner's cooldown.
 			var cooldownRemainingMins float64
-			if spec.Cooldown > 0 && sett.OwnerID != nil {
+			if spec.CooldownTicks > 0 && sett.OwnerID != nil {
 				var lastCast time.Time
 				if cdErr := h.pool.QueryRow(r.Context(),
 					`SELECT created_at FROM events
@@ -331,7 +331,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					worldID, sett.OwnerID.String(), pid, sett.ID,
 				).Scan(&lastCast); cdErr == nil {
 					elapsed := h.clk.Now().Sub(lastCast)
-					remaining := timescale.Apply(spec.Cooldown) - elapsed
+					remaining := time.Duration(spec.CooldownTicks*tick.TickMinutes)*time.Minute - elapsed
 					if remaining > 0 {
 						cooldownRemainingMins = remaining.Minutes()
 						afford = false
@@ -648,7 +648,13 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 
 	now := h.clk.Now()
 	moveHours := province.TerrainMoveHours(dst.TerrainType) * float64(dist)
-	arrivesAt := now.Add(timescale.Apply(time.Duration(moveHours * float64(time.Hour))))
+	arrivesAt := now.Add(time.Duration(moveHours * float64(time.Hour)))
+	var marchCurrentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&marchCurrentTick)
+	marchTravelTicks := int(math.Round(moveHours))
+	if marchTravelTicks < 1 {
+		marchTravelTicks = 1
+	}
 
 	// Deduct units from source and insert march atomically — prevents sending
 	// units you don't have or using the same units in multiple marches.
@@ -773,9 +779,9 @@ func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledArmyArrival,
+	if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledArmyArrival,
 		combat.ArmyArrivalPayload{MarchingArmyID: marchID},
-		arrivesAt,
+		marchCurrentTick+marchTravelTicks,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule arrival")
 		return
@@ -860,6 +866,10 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 	dist := province.HexDistance(province.MapPosition{Q: hQ, R: hR}, province.MapPosition{Q: oQ, R: oR})
 	messengerArrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
 
+	var recallCurrentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&recallCurrentTick)
+	recallDueTick := recallCurrentTick + messenger.MessengerTravelTicks(dist)
+
 	var messengerID uuid.UUID
 	if err := tx.QueryRow(r.Context(),
 		`INSERT INTO messengers
@@ -893,8 +903,8 @@ func (h *ProvinceHandler) RecallOutpost(w http.ResponseWriter, r *http.Request) 
 		HomeR:          hR,
 	}
 	// Messenger row + recall-arrival event committed atomically.
-	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledRecallArrival,
-		payload, messengerArrivesAt); err != nil {
+	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledRecallArrival,
+		payload, recallDueTick); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule recall arrival")
 		return
 	}
@@ -1116,7 +1126,10 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	completeAt := h.clk.Now().Add(timescale.Apply(spec.Duration))
+	var buildCurrentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&buildCurrentTick)
+	buildDueTick := buildCurrentTick + spec.DurationTicks
+	completeAt := h.clk.Now().Add(time.Duration(spec.DurationTicks*tick.TickMinutes) * time.Minute)
 	var queueID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at)
@@ -1128,12 +1141,12 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledBuildComplete,
+	if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledBuildComplete,
 		combat.BuildCompletePayload{
 			SettlementID: settlementID,
 			BuildQueueID: queueID,
 			BuildingType: req.BuildingType,
-		}, completeAt,
+		}, buildDueTick,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule build")
 		return
@@ -1362,7 +1375,7 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 			Type:            bt,
 			Costs:           spec.Costs,
 			CostSilver:      spec.CostSilver,
-			DurationMinutes: spec.Duration.Minutes(),
+			DurationMinutes: float64(spec.DurationTicks * tick.TickMinutes),
 			Purpose:         province.BuildingPurposes[province.BuildingType(bt)],
 		}
 		if g, ok := gates[bt]; ok {
@@ -1399,14 +1412,13 @@ func recruitPerManCosts(unitType string) map[string]float64 {
 	return nil
 }
 
-// recruitBatchDuration returns the training time for one batch of 10 men,
-// equal to the old per-unit duration from province/training.go.
-func recruitBatchDuration(unitType string) time.Duration {
+// recruitBatchTicks returns the training ticks for one batch of 10 men.
+func recruitBatchTicks(unitType string) int {
 	spec, ok := province.UnitSpecs[unitType]
 	if !ok {
-		return time.Minute
+		return 1
 	}
-	return spec.Duration
+	return spec.DurationTicks
 }
 
 // Recruit handles POST /worlds/:worldID/provinces/:provinceID/recruit.
@@ -1624,13 +1636,15 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 
 	// C-collapse: overmobilisation — city drained to ≤ 100 → schedule collapse.
 	if popAfter <= 100 {
-		if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledCollapseSettlement,
+		var collapseCurrentTick int
+		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&collapseCurrentTick)
+		if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledCollapseSettlement,
 			combat.CollapseSettlementPayload{
 				SettlementID: settlementID,
 				WorldID:      worldID,
 				Cause:        "overmobilisation",
 			},
-			h.clk.Now(),
+			collapseCurrentTick,
 		); err != nil {
 			// Non-fatal: log and continue — the collapse will be picked up by the daily tick.
 			slog.Warn("recruit: could not schedule collapse event",
@@ -1701,19 +1715,22 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	finalSize := existingSize + req.Men
 
 	// Schedule one TrainComplete per batch-of-10, staggered.
-	batchDuration := recruitBatchDuration(req.UnitType)
+	batchTicks := recruitBatchTicks(req.UnitType)
+	var trainCurrentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainCurrentTick)
 	now := h.clk.Now()
 	var lastCompleteAt time.Time
 	for i := 0; i < batches; i++ {
-		completeAt := now.Add(timescale.Apply(batchDuration * time.Duration(i+1)))
+		dueTick := trainCurrentTick + batchTicks*(i+1)
+		completeAt := now.Add(time.Duration(batchTicks*(i+1)*tick.TickMinutes) * time.Minute)
 		lastCompleteAt = completeAt
-		if err := h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledTrainComplete,
+		if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledTrainComplete,
 			combat.TrainCompletePayload{
 				SettlementID: settlementID,
 				UnitType:     req.UnitType,
 				Count:        10, // always 10 per batch
 				UnitID:       unitID,
-			}, completeAt,
+			}, dueTick,
 		); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule training batch")
 			return
@@ -2015,7 +2032,13 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arrivesAt := h.clk.Now().Add(timescale.Apply(time.Duration(travelMins * float64(time.Minute))))
+	arrivesAt := h.clk.Now().Add(time.Duration(travelMins * float64(time.Minute)))
+	var tradeCurrentTick int
+	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeCurrentTick)
+	tradeTravelTicks := int(math.Round(travelMins / 60))
+	if tradeTravelTicks < 1 {
+		tradeTravelTicks = 1
+	}
 	var routeID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO trade_routes (world_id, origin_id, destination_id, good_key, quantity, arrives_at)
@@ -2033,14 +2056,14 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	deliveredQty := req.Quantity * distBonus
 
 	// Enqueue delivery within the same transaction — atomic with the deduction.
-	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
+	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 		map[string]any{
 			"trade_route_id":     routeID,
 			"destination_id":     req.DestinationID,
 			"good_key":           req.GoodKey,
 			"quantity":           req.Quantity,
 			"delivered_quantity": deliveredQty,
-		}, arrivesAt); err != nil {
+		}, tradeCurrentTick+tradeTravelTicks); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule delivery")
 		return
 	}
@@ -2371,6 +2394,10 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: tQ, R: tR})
 	messengerArrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
 
+	var marchRecallCurrentTick int
+	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&marchRecallCurrentTick)
+	marchRecallDueTick := marchRecallCurrentTick + messenger.MessengerTravelTicks(dist)
+
 	var messengerID uuid.UUID
 	if err := tx.QueryRow(r.Context(),
 		`INSERT INTO messengers
@@ -2404,8 +2431,8 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		TargetID:      march.TargetID,
 	}
 	// Messenger row + recall-arrival event committed atomically.
-	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledRecallArrival,
-		payload, messengerArrivesAt); err != nil {
+	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledRecallArrival,
+		payload, marchRecallDueTick); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule recall arrival")
 		return
 	}

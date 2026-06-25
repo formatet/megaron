@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -67,8 +66,8 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 		}
 	}
 
-	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledLoyaltyDecayTick,
-		DailyTickPayload{}, 24*time.Hour)
+	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledLoyaltyDecayTick,
+		DailyTickPayload{}, e.DueTick+1)
 }
 
 func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uuid.UUID) error {

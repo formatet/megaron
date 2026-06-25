@@ -244,14 +244,15 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 	err = h.pool.QueryRow(r.Context(),
 		`SELECT id, name, state, prestige, era_number, era_started_at,
 		        max_provinces, min_era_weeks, max_era_weeks,
-		        kingdom_min_size, kingdom_max_size, map_seed, map_width, map_height, created_at
+		        kingdom_min_size, kingdom_max_size, map_seed, map_width, map_height, created_at,
+		        current_tick
 		 FROM worlds WHERE id = $1`,
 		worldID,
 	).Scan(
 		&wld.ID, &wld.Name, &wld.State, &wld.Prestige, &wld.EraNumber, &wld.EraStartedAt,
 		&wld.MaxProvinces, &wld.MinEraWeeks, &wld.MaxEraWeeks,
 		&wld.KingdomMinSize, &wld.KingdomMaxSize, &wld.MapSeed, &wld.MapWidth, &wld.MapHeight,
-		&wld.CreatedAt,
+		&wld.CreatedAt, &wld.CurrentTick,
 	)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "world not found")
@@ -264,7 +265,7 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		worldID,
 	).Scan(&activeWars)
 
-	collapse := world.ComputeCollapse(&wld, activeWars, h.clk.Now())
+	collapse := world.ComputeCollapse(&wld, activeWars, wld.CurrentTick)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":             wld.ID,
 		"name":           wld.Name,

@@ -21,7 +21,7 @@ import (
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
-	"github.com/poleia/server/internal/timescale"
+	"github.com/poleia/server/internal/tick"
 )
 
 // SettlementHandler handles HTTP requests for settlement endpoints.
@@ -235,6 +235,9 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 		targetID).Scan(&tQ, &tR)
 	dist := province.HexDistance(province.MapPosition{Q: sQ, R: sR}, province.MapPosition{Q: tQ, R: tR})
 	arrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
+	var giftCurrentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&giftCurrentTick)
+	giftDueTick := giftCurrentTick + messenger.TradeTravelTicks(dist)
 
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
@@ -278,17 +281,17 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	// Dispatch the gift as a caravan — it is credited to the target on ARRIVAL, not instantly.
 	// Internal supply line: no caravan-loss.
 	if req.Silver > 0 {
-		if err2 := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
+		if err2 := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
 			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "silver", "quantity": req.Silver},
-			arrivesAt); err2 != nil {
+			giftDueTick); err2 != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule gift silver")
 			return
 		}
 	}
 	if req.Grain > 0 {
-		if err2 := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
+		if err2 := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
 			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "grain", "quantity": req.Grain},
-			arrivesAt); err2 != nil {
+			giftDueTick); err2 != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule gift grain")
 			return
 		}
@@ -599,7 +602,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Column-free: uses the existing event log, no new schema.
 	// Keyed on stream_id = settlementID so the cooldown is per TEMPLE, not per Wanax:
 	// a Wanax with temples in five cities can cast five prayers per cycle (one per city).
-	if spec.Cooldown > 0 {
+	if spec.CooldownTicks > 0 {
 		var lastCast time.Time
 		cooldownErr := h.pool.QueryRow(r.Context(),
 			`SELECT created_at FROM events
@@ -614,11 +617,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		).Scan(&lastCast)
 		if cooldownErr == nil {
 			elapsed := h.clk.Now().Sub(lastCast)
-			// Scale the cooldown to game-time: a 24h prayer cooldown means 24 GAME hours,
-			// so at TIME_SCALE=100 it elapses in ~14 real minutes (matches battle_frenzy's
-			// timescale-applied duration). Without this the cooldown is 24 *real* hours —
-			// 100 game-days at 100× — which silently locks the keystone oracle for a day.
-			remaining := timescale.Apply(spec.Cooldown) - elapsed
+			remaining := time.Duration(spec.CooldownTicks*tick.TickMinutes)*time.Minute - elapsed
 			if remaining > 0 {
 				writeError(w, http.StatusConflict,
 					fmt.Sprintf("prayer %q is on cooldown for another %.0f minutes",
@@ -736,7 +735,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 // applyBattleFrenzy sets battle_frenzy_until for 6 scaled hours.
 func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (map[string]any, string, error) {
-	t := h.clk.Now().Add(timescale.Apply(6 * time.Hour))
+	t := h.clk.Now().Add(time.Duration(6*tick.TickMinutes) * time.Minute)
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
 		t, settlementID,

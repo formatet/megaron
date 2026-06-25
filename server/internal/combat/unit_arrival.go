@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +15,6 @@ import (
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/unit"
 )
 
@@ -655,7 +655,14 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 			originTerrain = "plains"
 		}
 		moveHours := province.TerrainMoveHours(originTerrain) * float64(dist)
-		arrivesAt := h.clk.Now().Add(timescale.Apply(time.Duration(moveHours * float64(time.Hour))))
+		arrivesAt := h.clk.Now().Add(time.Duration(moveHours * float64(time.Hour)))
+
+		var currentTick int
+		_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+		travelTicks := int(math.Round(moveHours))
+		if travelTicks < 1 {
+			travelTicks = 1
+		}
 
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET
@@ -675,7 +682,7 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 			return fmt.Errorf("route unit back to origin: %w", err)
 		}
 		arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
-		if err := h.scheduler.EnqueueTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, arrivesAt); err != nil {
+		if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
 			return fmt.Errorf("schedule rout return march: %w", err)
 		}
 		slog.Info("unit routed, returning to origin", "unit", u.id, "origin_q", u.q, "origin_r", u.r, "size", attSizeAfter)

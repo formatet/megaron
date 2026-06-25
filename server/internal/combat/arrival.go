@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -259,9 +258,11 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 				worldID, *def.OwnerID,
 			).Scan(&remaining)
 			if remaining == 0 {
-				_ = h.scheduler.EnqueueAfterTx(ctx, tx, worldID, events.ScheduledRespawn,
+				var currentTick int
+				_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+				_ = h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledRespawn,
 					RespawnPayload{PlayerID: *def.OwnerID, WorldID: worldID, Culture: def.Culture},
-					30*time.Second,
+					currentTick+12,
 				)
 			}
 		}

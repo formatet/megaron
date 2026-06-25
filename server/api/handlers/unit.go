@@ -9,11 +9,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"math"
+
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/unit"
 )
 
@@ -245,7 +246,10 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := h.clk.Now()
-	arrivesAt := now.Add(timescale.Apply(time.Duration(moveHours * float64(time.Hour))))
+	arrivesAt := now.Add(time.Duration(moveHours * float64(time.Hour)))
+	var unitMarchCurrentTick int
+	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&unitMarchCurrentTick)
+	unitTravelTicks := max(1, int(math.Round(moveHours)))
 
 	// Atomic DB update: set unit to marching and schedule arrival event.
 	tx, err := h.pool.Begin(ctx)
@@ -311,7 +315,7 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		UnitID:  unitID,
 		WorldID: worldID,
 	}
-	if err := h.scheduler.EnqueueTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, arrivesAt); err != nil {
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, unitMarchCurrentTick+unitTravelTicks); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule unit arrival")
 		return
 	}

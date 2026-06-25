@@ -307,15 +307,16 @@ func collapseSettlement(
 		}
 
 		if isLastCity {
-			// Schedule Respawn to fire immediately (process_after = now).
-			// Using EnqueueTx so the enqueue is atomic with the collapse TX.
-			if err := scheduler.EnqueueTx(ctx, tx, worldID, events.ScheduledRespawn,
+			// Schedule Respawn after 12 ticks (~12 game hours). Atomic with the collapse TX.
+			var currentTick int
+			_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+			if err := scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledRespawn,
 				RespawnPayload{
 					PlayerID: effectiveOwnerID,
 					WorldID:  worldID,
 					Culture:  cultureID,
 				},
-				scheduler.Clock().Now(),
+				currentTick+12,
 			); err != nil {
 				slog.Warn("collapse: could not schedule respawn",
 					"player", effectiveOwnerID, "err", err)

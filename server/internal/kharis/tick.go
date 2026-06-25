@@ -9,14 +9,12 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/ai"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/timescale"
 )
 
 const (
@@ -116,8 +114,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.applyStarvation(ctx, e.WorldID)
 	h.accumulatePrestige(ctx, e.WorldID)
 
-	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledKharisTick,
-		struct{}{}, timescale.Apply(24*time.Hour))
+	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledKharisTick,
+		struct{}{}, e.DueTick+1)
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {
@@ -299,15 +297,16 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 			}
 		}
 		collapseRows.Close()
-		now := h.scheduler.Clock().Now()
+		var currentTick int
+		_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
 		for _, sid := range collapseIDs {
-			if err := h.scheduler.Enqueue(ctx, worldID, events.ScheduledCollapseSettlement,
+			if err := h.scheduler.EnqueueTick(ctx, worldID, events.ScheduledCollapseSettlement,
 				struct {
 					SettlementID uuid.UUID `json:"settlement_id"`
 					WorldID      uuid.UUID `json:"world_id"`
 					Cause        string    `json:"cause"`
 				}{SettlementID: sid, WorldID: worldID, Cause: "starvation"},
-				now,
+				currentTick,
 			); err != nil {
 				slog.Warn("collapse: could not schedule collapse event",
 					"settlement", sid, "err", err)

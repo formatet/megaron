@@ -78,8 +78,8 @@ func (h *BorrowedArmyPenaltyHandler) Handle(ctx context.Context, e events.Schedu
 		}
 	}
 
-	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledBorrowedArmyTick,
-		DailyTickPayload{}, 24*time.Hour)
+	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledBorrowedArmyTick,
+		DailyTickPayload{}, e.DueTick+1)
 }
 
 // penaliseKingKharis drains 5 kharis from the king's capital settlement.

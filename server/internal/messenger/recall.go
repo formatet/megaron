@@ -15,12 +15,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
@@ -153,6 +153,10 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 	now := h.clk.Now()
 	returnsAt := now.Add(returnDuration(dist, targetTerrain))
 
+	var currentTick int
+	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	dueTick := currentTick + returnTicks(dist, targetTerrain)
+
 	var returnMarchID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO marching_armies
@@ -169,8 +173,8 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 	}
 
 	// Atomic with the claim — no orphan return march if we crash before the worker marks done.
-	if err := h.scheduler.EnqueueTx(ctx, tx, p.WorldID, events.ScheduledArmyArrival,
-		combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, returnsAt); err != nil {
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledArmyArrival,
+		combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, dueTick); err != nil {
 		return fmt.Errorf("schedule army arrival: %w", err)
 	}
 
@@ -262,6 +266,11 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 		)
 		now := h.clk.Now()
 		returnsAt = now.Add(returnDuration(dist, p.OutpostTerrain))
+
+		var currentTick int
+		_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+		dueTick := currentTick + returnTicks(dist, p.OutpostTerrain)
+
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO marching_armies
 			 (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
@@ -275,8 +284,8 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 		).Scan(&returnMarchID); err != nil {
 			return fmt.Errorf("create garrison return march: %w", err)
 		}
-		if err := h.scheduler.EnqueueTx(ctx, tx, p.WorldID, events.ScheduledArmyArrival,
-			combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, returnsAt); err != nil {
+		if err := h.scheduler.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledArmyArrival,
+			combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, dueTick); err != nil {
 			return fmt.Errorf("schedule garrison arrival: %w", err)
 		}
 	}
@@ -293,20 +302,39 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 	return nil
 }
 
-// returnDuration is the travel time of a return march over dist hexes of the given terrain,
-// with a 6-minute floor. Pure function — unit-tested.
+// returnDuration is the wall-clock travel time of a return march over dist hexes of the given terrain.
+// Used for marching_armies.arrives_at display column only; actual scheduling uses returnTicks.
 func returnDuration(dist int, terrain string) time.Duration {
 	hours := float64(dist) * province.TerrainMoveHours(terrain)
 	if hours < 0.1 {
-		hours = 0.1 // minimum 6 minutes
+		hours = 0.1 // minimum ~6 minutes
 	}
-	return timescale.Apply(time.Duration(hours * float64(time.Hour)))
+	return time.Duration(hours * float64(time.Hour))
 }
 
-// MessengerTravelDuration returns the travel time for a recall messenger over dist hexes.
-// Pure function — exported for testing and reused by the recall HTTP handlers.
+// returnTicks converts a terrain-weighted march distance to world ticks (1 tick = 1 game hour).
+func returnTicks(dist int, terrain string) int {
+	hours := float64(dist) * province.TerrainMoveHours(terrain)
+	t := int(math.Round(hours))
+	if t < 1 {
+		return 1
+	}
+	return t
+}
+
+// MessengerTravelDuration returns the wall-clock travel time for a messenger over dist hexes.
+// Used for messengers.arrives_at display column only; scheduling uses messengerTravelTicks.
 func MessengerTravelDuration(dist int) time.Duration {
-	return timescale.Apply(time.Duration(float64(dist) * HoursPerHex * float64(time.Hour)))
+	return time.Duration(float64(dist) * HoursPerHex * float64(time.Hour))
+}
+
+// MessengerTravelTicks returns the world-tick travel time for a messenger over dist hexes.
+func MessengerTravelTicks(dist int) int {
+	t := int(math.Round(float64(dist) * HoursPerHex))
+	if t < 1 {
+		return 1
+	}
+	return t
 }
 
 // TradeHoursPerHex is the travel speed of a trade caravan (the silver/goods legs of a messenger trade).
@@ -314,7 +342,17 @@ func MessengerTravelDuration(dist int) time.Duration {
 // without affecting messenger/recall speed.
 const TradeHoursPerHex = 0.5
 
-// TradeTravelDuration returns the travel time for a trade caravan over dist hexes. Pure function.
+// TradeTravelDuration returns the wall-clock travel time for a trade caravan over dist hexes.
+// Used for display columns only; scheduling uses TradeTravelTicks.
 func TradeTravelDuration(dist int) time.Duration {
-	return timescale.Apply(time.Duration(float64(dist) * TradeHoursPerHex * float64(time.Hour)))
+	return time.Duration(float64(dist) * TradeHoursPerHex * float64(time.Hour))
+}
+
+// TradeTravelTicks returns the world-tick travel time for a trade caravan over dist hexes.
+func TradeTravelTicks(dist int) int {
+	t := int(math.Round(float64(dist) * TradeHoursPerHex))
+	if t < 1 {
+		return 1
+	}
+	return t
 }

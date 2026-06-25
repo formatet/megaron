@@ -21,11 +21,14 @@ const (
 type CollapsePhase string
 
 const (
-	CollapseStable    CollapsePhase = "stable"
-	CollapseWarning   CollapsePhase = "warning"
+	CollapseStable     CollapsePhase = "stable"
+	CollapseWarning    CollapsePhase = "warning"
 	CollapseCollapsing CollapsePhase = "collapsing"
-	CollapseEnded     CollapsePhase = "ended"
+	CollapseEnded      CollapsePhase = "ended"
 )
+
+// WorldLifeTicks is the total number of ticks a world lives (720 ticks ≈ 1 month at 1 tick/hour).
+const WorldLifeTicks = 720
 
 // World is a single game instance. Each world is fully self-contained.
 type World struct {
@@ -34,35 +37,37 @@ type World struct {
 	State          State
 	Prestige       int
 	EraNumber      int
-	EraStartedAt   time.Time
+	EraStartedAt   time.Time // kept for DB scan compatibility; not used in collapse logic
 	MaxProvinces   int
-	MinEraWeeks    int
-	MaxEraWeeks    int
+	MinEraWeeks    int // legacy field; kept for DB scan compatibility
+	MaxEraWeeks    int // legacy field; kept for DB scan compatibility
 	KingdomMinSize int
 	KingdomMaxSize int
 	MapSeed        int64
 	MapWidth       int
 	MapHeight      int
+	CurrentTick    int
 	CreatedAt      time.Time
 }
 
 // CollapseState is the computed collapse risk for a world.
 type CollapseState struct {
 	WorldID      uuid.UUID
-	EraWeek      int
+	Tick         int // current world tick (replaces legacy EraWeek)
 	CollapseRisk float64
 	Phase        CollapsePhase
 }
 
-// ComputeCollapse calculates the collapse state for a world at a given time.
-// The formula is hidden from players. Risk reaches 1.0 at week 25 (configurable).
+// ComputeCollapse calculates the collapse state for a world at a given tick.
+// Progress = currentTick / WorldLifeTicks; risk ramps in the last quarter (ticks 540–720).
+// A world ends when currentTick >= WorldLifeTicks.
 // High prestige and active wars accelerate collapse risk.
-func ComputeCollapse(w *World, activeWarCount int, at time.Time) CollapseState {
-	eraWeek := int(at.Sub(w.EraStartedAt).Hours() / (7 * 24))
-
+func ComputeCollapse(w *World, activeWarCount int, currentTick int) CollapseState {
 	var risk float64
-	if eraWeek >= w.MinEraWeeks {
-		risk = float64(eraWeek-w.MinEraWeeks) / float64(w.MaxEraWeeks-w.MinEraWeeks)
+	if currentTick >= WorldLifeTicks {
+		risk = 1.0
+	} else if currentTick >= 540 {
+		risk = float64(currentTick-540) / float64(WorldLifeTicks-540)
 	}
 
 	// Prestige and wars add a modest modifier (capped to avoid runaway values).
@@ -75,7 +80,7 @@ func ComputeCollapse(w *World, activeWarCount int, at time.Time) CollapseState {
 
 	var phase CollapsePhase
 	switch {
-	case w.State == StateEnded:
+	case w.State == StateEnded || currentTick >= WorldLifeTicks:
 		phase = CollapseEnded
 	case risk >= 0.7:
 		phase = CollapseCollapsing
@@ -87,7 +92,7 @@ func ComputeCollapse(w *World, activeWarCount int, at time.Time) CollapseState {
 
 	return CollapseState{
 		WorldID:      w.ID,
-		EraWeek:      eraWeek,
+		Tick:         currentTick,
 		CollapseRisk: risk,
 		Phase:        phase,
 	}

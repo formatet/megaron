@@ -142,7 +142,7 @@ func TestRiteAffordableFlag_SufficientKharisIsAffordable(t *testing.T) {
 func TestRiteIdempotencyContract_OracleCooldownPreventsDoubleReveal(t *testing.T) {
 	for id, spec := range religion.PrayerSpecs {
 		if spec.EffectType == religion.EffectOracleRevealDeposits {
-			if spec.Cooldown <= 0 {
+			if spec.CooldownTicks <= 0 {
 				t.Errorf("oracle prayer %q has zero cooldown — double-reveal is possible", id)
 			}
 		}

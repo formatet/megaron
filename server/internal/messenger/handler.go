@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -80,9 +79,9 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 	slog.Info("messenger delivered", "id", payload.MessengerID, "destination", destinationID)
 
-	// Auto-return after 48h if the recipient does not reply sooner.
-	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledMessengerReturn,
-		ReturnPayload{MessengerID: payload.MessengerID}, 48*time.Hour)
+	// Auto-return after 48 ticks (48 game hours) if the recipient does not reply sooner.
+	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledMessengerReturn,
+		ReturnPayload{MessengerID: payload.MessengerID}, e.DueTick+48)
 }
 
 // ReturnHandler handles MessengerReturn events.

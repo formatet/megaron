@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/timescale"
 )
 
 // UpkeepSpec — grain + silver per upkeep-period för en full-size enhet.
@@ -203,8 +201,8 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	}
 
 	// 4. Re-enqueue for the next daily cycle.
-	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledUpkeepTick,
-		upkeepDailyTickPayload{}, timescale.Apply(24*time.Hour))
+	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledUpkeepTick,
+		upkeepDailyTickPayload{}, e.DueTick+1)
 }
 
 // applyAttrition removes upkeepAttritionStep men from the unit due to grain shortage.

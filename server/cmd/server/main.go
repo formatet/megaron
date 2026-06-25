@@ -31,7 +31,6 @@ import (
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/timescale"
 	"github.com/poleia/server/internal/world"
 	"github.com/redis/go-redis/v9"
 )
@@ -59,12 +58,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Sync TIME_SCALE into sim_config so the settled() SQL function scales correctly.
-	slog.Info("time scale", "factor", timescale.Factor)
-	if _, err := pool.Exec(ctx, "UPDATE sim_config SET factor = $1 WHERE id = 1", timescale.Factor); err != nil {
-		slog.Error("sync sim_config factor", "err", err)
-		os.Exit(1)
-	}
 
 	redisURL := mustEnv("REDIS_URL")
 	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
@@ -360,11 +353,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 			if exists {
 				continue
 			}
-			// Scale the first tick by TIME_SCALE to match the self-reschedule in each
-			// handler (e.g. kharis tick.go uses timescale.Apply). Without this a fresh
-			// world's daily ticks wouldn't fire for 24h *real* — 100 game-days at ×100 —
-			// leaving cult/upkeep/loyalty frozen until then.
-			if err := sched.EnqueueAfter(ctx, wid, tt, struct{}{}, timescale.Apply(24*time.Hour)); err != nil {
+			if err := sched.EnqueueTick(ctx, wid, tt, struct{}{}, 1); err != nil {
 				slog.Error("seed daily tick", "world", wid, "type", tt, "err", err)
 			}
 		}
@@ -415,10 +404,12 @@ func healDispossessed(ctx context.Context, pool *pgxpool.Pool, sched *events.Sch
 		}
 	}
 
+	var healCurrentTick int
+	_ = pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&healCurrentTick)
 	for _, v := range victims {
-		if err := sched.EnqueueAfter(ctx, v.worldID, events.ScheduledRespawn,
+		if err := sched.EnqueueTick(ctx, v.worldID, events.ScheduledRespawn,
 			map[string]any{"player_id": v.playerID, "world_id": v.worldID, "culture": v.culture},
-			5*time.Second,
+			healCurrentTick,
 		); err != nil {
 			slog.Error("healDispossessed: enqueue", "player", v.playerID, "err", err)
 		} else {

@@ -153,6 +153,9 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	arrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+	var msgSendCurrentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&msgSendCurrentTick)
+	msgArrivalDueTick := msgSendCurrentTick + messenger.MessengerTravelTicks(dist)
 
 	var tradeOfferJSON []byte
 	if req.TradeOffer != nil {
@@ -213,13 +216,14 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
-			messenger.ArrivalPayload{MessengerID: messengerID}, arrivesAt); err != nil {
+		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
+			messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule arrival")
 			return
 		}
-		if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledOfferExpiry,
-			map[string]any{"messenger_id": messengerID.String()}, *expiresAt); err != nil {
+		// Offer expiry: 7 in-game days (7*24 ticks) after arrival.
+		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledOfferExpiry,
+			map[string]any{"messenger_id": messengerID.String()}, msgArrivalDueTick+7*24); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule offer expiry")
 			return
 		}
@@ -240,8 +244,8 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledMessengerArrival,
-			messenger.ArrivalPayload{MessengerID: messengerID}, arrivesAt)
+		_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
+			messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick)
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
@@ -471,6 +475,9 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	).Scan(&oQ, &oR)
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
 	returnsAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+	var replyCurrentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&replyCurrentTick)
+	replyReturnDueTick := replyCurrentTick + messenger.MessengerTravelTicks(dist)
 
 	_, err = h.pool.Exec(r.Context(),
 		`UPDATE messengers SET reply_text = $1, status = 'returning' WHERE id = $2`,
@@ -482,8 +489,8 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Schedule return. The auto-return (48h from delivery) is harmless — ReturnHandler is idempotent.
-	_ = h.scheduler.Enqueue(r.Context(), worldID, events.ScheduledMessengerReturn,
-		messenger.ReturnPayload{MessengerID: messengerID}, returnsAt)
+	_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerReturn,
+		messenger.ReturnPayload{MessengerID: messengerID}, replyReturnDueTick)
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"returns_at": returnsAt,
@@ -599,8 +606,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 
 	// Leg 3: schedule silver delivery to seller (physical travel).
 	// When silver arrives the delivery handler will chain goods dispatch (leg 4).
-	silverArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
-	if err = h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
+	var tradeAcceptCurrentTick int
+	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeAcceptCurrentTick)
+	tradeAcceptDueTick := tradeAcceptCurrentTick + messenger.TradeTravelTicks(dist)
+	if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 		map[string]any{
 			"destination_id":     destID,           // seller receives silver
 			"good_key":           "silver",
@@ -614,7 +623,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 				"messenger_id":   messengerID.String(),
 				"travel_mins":    float64(dist) * 30.0,
 			},
-		}, silverArrivesAt); err != nil {
+		}, tradeAcceptDueTick); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule silver delivery")
 		return
 	}
@@ -624,6 +633,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	silverArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
 	goodsArrivesAt := silverArrivesAt.Add(messenger.TradeTravelDuration(dist))
 	writeJSON(w, http.StatusOK, map[string]any{
 		"good_key":          wantGood,

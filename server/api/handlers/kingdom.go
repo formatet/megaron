@@ -1077,6 +1077,10 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	}
 	defer tx.Rollback(r.Context())
 
+	var kingdomTribCurrentTick int
+	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&kingdomTribCurrentTick)
+	kingdomTribDueTick := kingdomTribCurrentTick + messenger.TradeTravelTicks(dist)
+
 	// Deduct from settlement silver good row, fail if insufficient.
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlement_goods
@@ -1096,9 +1100,9 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Schedule the tribute caravan — the treasury is credited on ARRIVAL, not instantly.
-	if err := h.scheduler.EnqueueTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
+	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
 		map[string]any{"kind": "treasury", "destination": kingdomID, "good_key": "silver", "quantity": req.Amount},
-		arrivesAt); err != nil {
+		kingdomTribDueTick); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule treasury caravan")
 		return
 	}

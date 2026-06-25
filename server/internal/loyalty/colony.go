@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -66,8 +65,8 @@ func (h *ColonyPenaltyHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 	}
 
-	return h.scheduler.EnqueueAfter(ctx, e.WorldID, events.ScheduledColonyPenaltyTick,
-		DailyTickPayload{}, 24*time.Hour)
+	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledColonyPenaltyTick,
+		DailyTickPayload{}, e.DueTick+1)
 }
 
 // applyColonyPenalty writes a loyalty_events row for each colony belonging to owner.

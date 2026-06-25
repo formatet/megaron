@@ -28,6 +28,19 @@ const (
 	EventWorldTick = "WorldTick"
 )
 
+// TickMinutes is the runtime tick cadence (minutes of real time per tick).
+// Read once from TICK_MINUTES at init; mirrors the value used by Worker.
+// Handlers use this to convert tick durations to approximate wall-clock times
+// for display purposes (build_queue.complete_at, messenger arrives_at, etc.).
+var TickMinutes = func() int {
+	if v := os.Getenv("TICK_MINUTES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		}
+	}
+	return defaultTickMinutes
+}()
+
 // WorldTickPayload is the event payload for a WorldTick event.
 type WorldTickPayload struct {
 	WorldID uuid.UUID `json:"world_id"`

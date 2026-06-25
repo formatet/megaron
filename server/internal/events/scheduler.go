@@ -53,6 +53,7 @@ type ScheduledEvent struct {
 	ProcessedAt  *time.Time
 	FailedAt     *time.Time
 	Attempts     int
+	DueTick      int
 }
 
 // Scheduler enqueues timed game events.
@@ -62,7 +63,7 @@ type Scheduler struct {
 }
 
 // NewScheduler creates a Scheduler backed by the given connection pool.
-// clk is used for all due_at calculations — pass a TestClock in tests.
+// clk is used for audit timestamps — pass a TestClock in tests.
 func NewScheduler(pool *pgxpool.Pool, clk clock.Clock) *Scheduler {
 	return &Scheduler{pool: pool, clock: clk}
 }
@@ -70,48 +71,9 @@ func NewScheduler(pool *pgxpool.Pool, clk clock.Clock) *Scheduler {
 // Clock returns the scheduler's clock (used by delivery handlers for chained events).
 func (s *Scheduler) Clock() clock.Clock { return s.clock }
 
-// EnqueueAfter schedules an event to fire d duration from now (game time).
-func (s *Scheduler) EnqueueAfter(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, d time.Duration) error {
-	return s.Enqueue(ctx, worldID, eventType, payload, s.clock.Now().Add(d))
-}
-
-// Enqueue schedules a new event to be processed at or after processAfter.
-func (s *Scheduler) Enqueue(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, processAfter time.Time) error {
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("marshal scheduled payload: %w", err)
-	}
-	_, err = s.pool.Exec(ctx,
-		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after)
-		 VALUES ($1, $2, $3, $4)`,
-		worldID, string(eventType), raw, processAfter,
-	)
-	return err
-}
-
-// EnqueueTx schedules a new event within an existing transaction. Use this when
-// you need the enqueue to be atomic with other DB work (e.g. trade deductions).
-func (s *Scheduler) EnqueueTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, eventType ScheduledEventType, payload any, processAfter time.Time) error {
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("marshal scheduled payload: %w", err)
-	}
-	_, err = tx.Exec(ctx,
-		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after)
-		 VALUES ($1, $2, $3, $4)`,
-		worldID, string(eventType), raw, processAfter,
-	)
-	return err
-}
-
-// EnqueueAfterTx schedules a relative event within an existing transaction.
-func (s *Scheduler) EnqueueAfterTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, eventType ScheduledEventType, payload any, d time.Duration) error {
-	return s.EnqueueTx(ctx, tx, worldID, eventType, payload, s.clock.Now().Add(d))
-}
-
 // EnqueueTick schedules a new event to fire when worlds.current_tick reaches dueTick.
 // process_after is set to now() to satisfy the NOT NULL constraint; the scheduler
-// fires this event via the due_tick path, not the process_after path.
+// fires this event via the due_tick path only.
 func (s *Scheduler) EnqueueTick(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, dueTick int) error {
 	raw, err := json.Marshal(payload)
 	if err != nil {
@@ -199,7 +161,6 @@ func (w *Worker) Run(ctx context.Context) {
 }
 
 func (w *Worker) processBatch(ctx context.Context) error {
-	now := w.clock.Now()
 	rows, err := w.pool.Query(ctx,
 		`UPDATE scheduled_events
 		 SET attempts = attempts + 1
@@ -208,18 +169,13 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		     WHERE processed_at IS NULL
 		       AND failed_at IS NULL
 		       AND world_id IN (SELECT id FROM worlds WHERE status = 'active')
-		       AND (
-		           (due_tick IS NOT NULL
-		            AND due_tick <= (SELECT current_tick FROM worlds w2 WHERE w2.id = scheduled_events.world_id))
-		           OR
-		           (due_tick IS NULL AND process_after <= $1)
-		       )
-		     ORDER BY process_after
+		       AND due_tick IS NOT NULL
+		       AND due_tick <= (SELECT current_tick FROM worlds w2 WHERE w2.id = scheduled_events.world_id)
+		     ORDER BY due_tick, id
 		     LIMIT 20
 		     FOR UPDATE SKIP LOCKED
 		 )
-		 RETURNING id, world_id, event_type, payload, process_after, processed_at, failed_at, attempts`,
-		now,
+		 RETURNING id, world_id, event_type, payload, process_after, processed_at, failed_at, attempts, due_tick`,
 	)
 	if err != nil {
 		return fmt.Errorf("claim events: %w", err)
@@ -229,7 +185,7 @@ func (w *Worker) processBatch(ctx context.Context) error {
 	var batch []ScheduledEvent
 	for rows.Next() {
 		var e ScheduledEvent
-		if err := rows.Scan(&e.ID, &e.WorldID, &e.EventType, &e.Payload, &e.ProcessAfter, &e.ProcessedAt, &e.FailedAt, &e.Attempts); err != nil {
+		if err := rows.Scan(&e.ID, &e.WorldID, &e.EventType, &e.Payload, &e.ProcessAfter, &e.ProcessedAt, &e.FailedAt, &e.Attempts, &e.DueTick); err != nil {
 			return fmt.Errorf("scan scheduled event: %w", err)
 		}
 		batch = append(batch, e)

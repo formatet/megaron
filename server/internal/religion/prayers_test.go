@@ -118,8 +118,8 @@ func TestPrayerSpecsHaveRequiredFields(t *testing.T) {
 		if spec.Name == "" {
 			t.Errorf("PrayerSpecs[%q].Name is empty", key)
 		}
-		if spec.Cooldown <= 0 {
-			t.Errorf("PrayerSpecs[%q].Cooldown is zero or negative", key)
+		if spec.CooldownTicks <= 0 {
+			t.Errorf("PrayerSpecs[%q].CooldownTicks is zero or negative", key)
 		}
 		// Every prayer must demand a material offering — no free prayers.
 		// Religion is an economic sink that drives trade for wine/oil/silver.
