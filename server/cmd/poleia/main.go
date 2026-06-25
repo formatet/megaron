@@ -86,6 +86,7 @@ func main() {
 		replyCmd(),
 		tradeAcceptCmd(),
 		tradeDeclineCmd(),
+		tradeCancelCmd(),
 		gossipCmd(),
 		messengerCmd(),
 		messageCmd(),

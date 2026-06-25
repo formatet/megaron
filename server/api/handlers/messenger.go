@@ -717,3 +717,101 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 
 	writeJSON(w, http.StatusOK, map[string]any{"status": "declined"})
 }
+
+// CancelOffer handles POST /worlds/:worldID/messengers/:messengerID/trade-cancel.
+// The SENDER (buyer) cancels a pending outgoing trade offer and reclaims the
+// escrowed silver. The ScheduledOfferExpiry event is left in place — its
+// guarded flip (status='pending') will no-op once the status is 'cancelled'.
+// Idempotent: if the offer is already resolved (accepted/declined/expired/
+// cancelled), returns 200 with no silver movement.
+func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	messengerID, err := uuid.Parse(chi.URLParam(r, "messengerID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid messenger ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	// Verify caller owns the ORIGIN settlement (they are the buyer/sender).
+	var offerStatus string
+	var originID uuid.UUID
+	var offerSilver float64
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT m.trade_offer->>'status', m.origin_id,
+		        (m.trade_offer->>'offer_silver')::float
+		 FROM messengers m
+		 JOIN settlements os ON os.id = m.origin_id
+		 WHERE m.id=$1 AND m.world_id=$2 AND os.owner_id=$3
+		   AND m.trade_offer IS NOT NULL`,
+		messengerID, worldID, playerID,
+	).Scan(&offerStatus, &originID, &offerSilver)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "trade offer not found or not yours")
+		return
+	}
+
+	// Already resolved — idempotent no-op (silver already refunded or consumed).
+	if offerStatus != "pending" {
+		writeJSON(w, http.StatusOK, map[string]any{"status": offerStatus})
+		return
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Guarded flip: if a concurrent expiry or accept already resolved the offer,
+	// RowsAffected is 0 and we skip the refund (silver already handled).
+	tag, err := tx.Exec(r.Context(),
+		`UPDATE messengers SET trade_offer = trade_offer || '{"status":"cancelled"}'
+		  WHERE id=$1 AND trade_offer->>'status'='pending'`,
+		messengerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not cancel offer")
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		// Concurrent resolution — treat as already done.
+		if err = tx.Commit(r.Context()); err != nil {
+			writeError(w, http.StatusInternalServerError, "commit failed")
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"status": "already_resolved"})
+		return
+	}
+
+	// Refund escrowed silver to buyer (origin settlement).
+	if _, err = tx.Exec(r.Context(),
+		`UPDATE settlement_goods
+		    SET amount  = settled(amount, rate, calc_at) + $1,
+		        calc_at = now()
+		  WHERE settlement_id=$2 AND good_key='silver'`,
+		offerSilver, originID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not refund silver")
+		return
+	}
+
+	if err = tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":          "cancelled",
+		"silver_refunded": offerSilver,
+	})
+}

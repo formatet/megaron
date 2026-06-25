@@ -93,7 +93,7 @@ func mapCmd() *cobra.Command {
 					continue
 				}
 				d := hexDist(oq, or, t.Q, t.R)
-				if d == 0 || d > radius {
+				if d > radius {
 					continue
 				}
 				out = append(out, cand{
@@ -110,7 +110,7 @@ func mapCmd() *cobra.Command {
 				fmt.Println(string(b))
 				return nil
 			}
-			fmt.Printf("Your hex: (%d,%d) · %d nearby visible land hexes within %d:\n\n", oq, or, len(out), radius)
+			fmt.Printf("Your hex: (%d,%d) · %d visible land hexes within radius %d (d=0 = your hex):\n\n", oq, or, len(out), radius)
 			for _, t := range out {
 				tag := ""
 				if t.Occupied {
@@ -125,8 +125,9 @@ func mapCmd() *cobra.Command {
 				fmt.Printf("  (%3d,%3d) d%-2d %-20s%s%s\n", t.Q, t.R, t.Distance, t.Terrain, dep, tag)
 			}
 			fmt.Print("\nTo act on a hex, march a land unit there (find unit IDs with `poleia unit list`):\n" +
+				"  poleia unit march --unit <id> --q <Q> --r <R>\n" +
 				"  poleia unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\n" +
-				"Intents: colonize (found a colony), outpost (resource outpost), scout/explore (reconnaissance).\n")
+				"Intent: colonize — founds a colony when the unit arrives on an empty hex.\n")
 			return nil
 		},
 	}

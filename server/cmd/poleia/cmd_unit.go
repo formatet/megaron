@@ -202,7 +202,7 @@ A unit in fortify stance must be cleared (stance none) before marching.`,
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q (required)")
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R (required)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a colony), outpost (resource outpost), scout/explore (reconnaissance), attack/reinforce/support (combat)")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony on arrival — use --name to name it)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("q")

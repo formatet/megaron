@@ -231,7 +231,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			buildAfford = append(buildAfford, buildAffordRow{Type: string(bType), CanAfford: afford})
 		}
 
-		// can_recruit per unit: goods + labor pool (for 1 unit).
+		// Index completed buildings for O(1) lookup in the can_recruit loop below.
+		builtTypes := make(map[string]bool, len(buildings))
+		for _, b := range buildings {
+			builtTypes[b.Type] = true
+		}
+
+		// can_recruit per unit: goods + labor pool + building requirements (for 1 unit).
+		// Mirrors the actual Recruit handler gates so can_recruit:false is trustworthy.
 		type recruitAffordRow struct {
 			Unit       string `json:"unit"`
 			CanRecruit bool   `json:"can_recruit"`
@@ -239,6 +246,18 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		var recruitAfford []recruitAffordRow
 		for unitType, spec := range province.UnitSpecs {
 			afford := laborPool >= spec.PopCost
+			if afford && spec.RequiresBarracks && !builtTypes["barracks"] {
+				afford = false
+			}
+			if afford && spec.RequiresStable && !builtTypes["stable"] {
+				afford = false
+			}
+			if afford && spec.RequiresHarbour && !builtTypes["harbour"] {
+				afford = false
+			}
+			if afford && spec.RequiresFoundry && !builtTypes["foundry"] {
+				afford = false
+			}
 			if afford {
 				for goodKey, needed := range spec.Costs {
 					if goodsStock[goodKey] < needed {
@@ -250,9 +269,27 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			recruitAfford = append(recruitAfford, recruitAffordRow{Unit: unitType, CanRecruit: afford})
 		}
 
-		// available_prayers: the settlement culture's prayers with material
-		// offering + goods-affordability. The kharis tier gate (min_kharis) is
-		// left to the client, which already knows its own kharis standing.
+		// Live kharis pool (per-Wanax, on player_world_records) — NOT the stale
+		// settlement-level resources.kharis (≈0 since kharis moved to the pool).
+		// The oracle/rite tier-gate (MinKharis) reads this, so the agent must see
+		// it to know which prayers it can actually cast.
+		var kharisNow, kharisRate float64
+		if sett.OwnerID != nil {
+			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
+				kharisNow, kharisRate = k.Amount, k.Rate
+			}
+		}
+
+		// Temple presence — required by the rite handler for any prayer.
+		var hasTemple bool
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'temple')`,
+			sett.ID,
+		).Scan(&hasTemple)
+
+		// available_prayers: the settlement culture's prayers with full affordability:
+		// material offering costs + kharis tier gate + temple presence.
+		// All three gates mirror the real Rite handler so affordable:true is trustworthy.
 		type prayerRow struct {
 			ID         string             `json:"id"`
 			Name       string             `json:"name"`
@@ -265,28 +302,19 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
 			spec := religion.PrayerSpecs[pid]
-			afford := true
-			for g, need := range spec.Offering {
-				if goodsStock[g] < need {
-					afford = false
-					break
+			afford := hasTemple && kharisNow >= spec.MinKharis
+			if afford {
+				for g, need := range spec.Offering {
+					if goodsStock[g] < need {
+						afford = false
+						break
+					}
 				}
 			}
 			prayers = append(prayers, prayerRow{
 				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
 			})
-		}
-
-		// Live kharis pool (per-Wanax, on player_world_records) — NOT the stale
-		// settlement-level resources.kharis (≈0 since kharis moved to the pool).
-		// The oracle/rite tier-gate (MinKharis) reads this, so the agent must see
-		// it to know which prayers it can actually cast.
-		var kharisNow, kharisRate float64
-		if sett.OwnerID != nil {
-			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
-				kharisNow, kharisRate = k.Amount, k.Rate
-			}
 		}
 
 		// Silver is authoritative in settlement_goods (mig 057 silver_unify); the

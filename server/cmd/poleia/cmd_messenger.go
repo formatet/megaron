@@ -99,6 +99,44 @@ func tradeDeclineCmd() *cobra.Command {
 	return cmd
 }
 
+func tradeCancelCmd() *cobra.Command {
+	var msgID string
+	cmd := &cobra.Command{
+		Use:   "trade-cancel",
+		Short: "Cancel an outgoing pending trade offer and reclaim escrowed silver",
+		Example: `  poleia trade-cancel --id <messenger-id>`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if msgID == "" {
+				return fmt.Errorf("--id required (find the id with: poleia outbox)")
+			}
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/trade-cancel", cfg.WorldID, msgID)
+			data, err := c.post(path, map[string]any{})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp map[string]any
+			if err := json.Unmarshal(data, &resp); err != nil {
+				return err
+			}
+			status, _ := resp["status"].(string)
+			silver, _ := resp["silver_refunded"].(float64)
+			if status == "cancelled" {
+				fmt.Printf("Offer cancelled · %.0f silver refunded\n", silver)
+			} else {
+				fmt.Printf("Offer already resolved (status: %s)\n", status)
+			}
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (find with: poleia outbox)")
+	return cmd
+}
+
 // outboxCmd lists your last 20 sent messengers (with trade_offer details).
 func outboxCmd() *cobra.Command {
 	return &cobra.Command{
@@ -152,6 +190,7 @@ func outboxCmd() *cobra.Command {
 				return nil
 			}
 			for _, m := range msgs {
+				id, _ := m["id"].(string)
 				dest, _ := m["destination_name"].(string)
 				status, _ := m["status"].(string)
 				sentStr, _ := m["sent_at"].(string)
@@ -167,7 +206,7 @@ func outboxCmd() *cobra.Command {
 						when = fmt.Sprintf("%dd ago", int(ago.Hours()/24))
 					}
 				}
-				line := fmt.Sprintf("→ %s  [%s]  (%s)", dest, status, when)
+				line := fmt.Sprintf("→ %s  [%s]  (%s)  id:%s", dest, status, when, id)
 				if offer, ok := m["trade_offer"].(map[string]any); ok {
 					offerStatus, _ := offer["status"].(string)
 					good, _ := offer["want_good"].(string)
@@ -177,7 +216,7 @@ func outboxCmd() *cobra.Command {
 					// Pending offers have the buyer's silver held in escrow until the
 					// seller accepts/declines or the offer expires (then it's refunded).
 					if offerStatus == "pending" {
-						line += fmt.Sprintf("  (%.0f silver escrowed)", silver)
+						line += fmt.Sprintf("  (%.0f silver escrowed — cancel with: poleia trade-cancel --id %s)", silver, id)
 					}
 				}
 				fmt.Println(line)

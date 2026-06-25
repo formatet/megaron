@@ -101,10 +101,11 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Must be garrisoned (not forming, marching, disbanded, etc.).
-	if u.Status != unit.StatusGarrison {
+	// Must be garrisoned or positioned (positioned = on map without a settlement,
+	// e.g. landed on empty hex; it must be able to march back or onward).
+	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("unit cannot march: status is '%s' (must be 'garrison')", string(u.Status)))
+			fmt.Sprintf("unit cannot march: status is '%s' (must be 'garrison' or 'positioned')", string(u.Status)))
 		return
 	}
 
@@ -133,23 +134,26 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// The unit must be in a settlement to have an origin position.
-	if u.SettlementID == nil {
-		writeError(w, http.StatusUnprocessableEntity, "unit has no settlement origin; cannot determine departure hex")
-		return
-	}
-
-	// Load origin settlement → province → map position.
+	// Resolve origin position. Garrisoned units use their settlement's province
+	// hex; positioned units (on the map without a settlement) use their stored q/r.
 	var originQ, originR int
-	var originTerrain string
-	if err := h.pool.QueryRow(ctx,
-		`SELECT p.map_q, p.map_r, p.terrain_type
-		 FROM settlements s
-		 JOIN provinces p ON p.id = s.province_id
-		 WHERE s.id = $1`,
-		*u.SettlementID,
-	).Scan(&originQ, &originR, &originTerrain); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load origin province")
+	if u.SettlementID != nil {
+		var originTerrain string
+		if err := h.pool.QueryRow(ctx,
+			`SELECT p.map_q, p.map_r, p.terrain_type
+			 FROM settlements s
+			 JOIN provinces p ON p.id = s.province_id
+			 WHERE s.id = $1`,
+			*u.SettlementID,
+		).Scan(&originQ, &originR, &originTerrain); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not load origin province")
+			return
+		}
+	} else if u.Q != nil && u.R != nil {
+		// positioned unit: origin is its current hex.
+		originQ, originR = *u.Q, *u.R
+	} else {
+		writeError(w, http.StatusUnprocessableEntity, "unit has no known position; cannot determine departure hex")
 		return
 	}
 
@@ -259,7 +263,7 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "unit not found in transaction")
 		return
 	}
-	if unit.Status(currentStatus) != unit.StatusGarrison {
+	if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
 		writeError(w, http.StatusConflict, "unit status changed; march not sent")
 		return
 	}

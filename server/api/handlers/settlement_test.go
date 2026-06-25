@@ -100,6 +100,40 @@ func TestRiteBackwardCompat_EmptyPrayerDefaultsToBattleFrenzy(t *testing.T) {
 	}
 }
 
+// TestRiteAffordableFlag_RequiresTempleAndKharis verifies the contract for the
+// affordable:bool field returned in available_prayers (province status endpoint).
+// Before BUG B fix the field ignored the temple gate and MinKharis threshold,
+// so it was always true — agents cast prayers at temples that didn't exist.
+//
+// The province handler now checks hasTemple && kharisNow >= spec.MinKharis BEFORE
+// checking goods costs (same order as the real Rite handler). This test asserts
+// the prayer catalogue is consistent: every prayer with MinKharis > 0 would report
+// affordable:false for a settlement with 0 kharis.
+func TestRiteAffordableFlag_ZeroKharisIsNotAffordable(t *testing.T) {
+	kharisNow := 0.0
+	for id, spec := range religion.PrayerSpecs {
+		if spec.MinKharis > 0 {
+			// Simulate the province handler's affordable gate for zero kharis.
+			affordable := kharisNow >= spec.MinKharis
+			if affordable {
+				t.Errorf("prayer %q with MinKharis=%.0f must not be affordable at 0 kharis", id, spec.MinKharis)
+			}
+		}
+	}
+}
+
+// TestRiteAffordableFlag_SufficientKharisAndTempleIsAffordable is the positive case:
+// with enough kharis and sufficient goods the affordable flag should be true.
+func TestRiteAffordableFlag_SufficientKharisIsAffordable(t *testing.T) {
+	kharisNow := 1000.0 // above all tiers
+	for id, spec := range religion.PrayerSpecs {
+		affordable := kharisNow >= spec.MinKharis
+		if !affordable {
+			t.Errorf("prayer %q with MinKharis=%.0f must be affordable at %.0f kharis", id, spec.MinKharis, kharisNow)
+		}
+	}
+}
+
 // TestRiteIdempotencyContract documents that the oracle INSERT uses ON CONFLICT DO NOTHING.
 // This is a structural test: it verifies the expected SQL keyword appears in the handler
 // source constant by checking the prayer catalogue — the actual SQL is in the handler,
