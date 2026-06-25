@@ -278,7 +278,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT q, r, terrain, fertility, mineral, copper_deposit, tin_deposit,
+		`SELECT q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit,
 		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false)
 		 FROM map_tiles WHERE world_id = $1`,
 		worldID,
@@ -298,6 +298,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		Q             int     `json:"q"`
 		R             int     `json:"r"`
 		Terrain       string  `json:"terrain"`
+		Coastal       bool    `json:"coastal,omitempty"`
 		Visible       bool    `json:"visible"`
 		F             float64 `json:"fertility,omitempty"`
 		M             float64 `json:"mineral,omitempty"`
@@ -309,7 +310,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	var tiles []tileView
 	for rows.Next() {
 		var t tileView
-		if err := rows.Scan(&t.Q, &t.R, &t.Terrain, &t.F, &t.M, &t.CopperDeposit, &t.TinDeposit,
+		if err := rows.Scan(&t.Q, &t.R, &t.Terrain, &t.Coastal, &t.F, &t.M, &t.CopperDeposit, &t.TinDeposit,
 			&t.CedarDeposit, &t.SilverDeposit); err != nil {
 			continue
 		}
@@ -318,6 +319,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		if !t.Visible {
 			t.F = 0
 			t.M = 0
+			t.Coastal = false
 			t.CopperDeposit = false
 			t.TinDeposit = false
 			t.CedarDeposit = false

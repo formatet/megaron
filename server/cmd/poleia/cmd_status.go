@@ -46,8 +46,13 @@ func statusCmd() *cobra.Command {
 			labor, _ := sett["labor_pool"].(float64)
 			walls, _ := sett["walls"].(float64)
 			loyalty, _ := sett["loyalty"].(float64)
-			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f\n\n",
-				name, culture, resource(pop), resource(labor), walls, loyalty)
+			coastal, _ := p["coastal"].(bool)
+			coastalNote := ""
+			if coastal {
+				coastalNote = "  [coastal — can build harbour → ships]"
+			}
+			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s\n\n",
+				name, culture, resource(pop), resource(labor), walls, loyalty, coastalNote)
 
 			// Resources: silver lives in resources as a {amount,rate,cap} object;
 			// kharis is the per-Wanax pool exposed at the settlement top level.

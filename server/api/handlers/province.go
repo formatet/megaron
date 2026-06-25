@@ -100,6 +100,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"map_tile":           prov.MapTile,
 		"terrain_type":       prov.TerrainType,
 		"territory_state":    prov.TerritoryState,
+		"coastal":            prov.Coastal,
 		"copper_deposit":     prov.CopperDeposit,
 		"tin_deposit":        prov.TinDeposit,
 		"silver_deposit":     prov.SilverDeposit,

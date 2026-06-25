@@ -52,6 +52,7 @@ func mapCmd() *cobra.Command {
 				Q             int    `json:"q"`
 				R             int    `json:"r"`
 				Terrain       string `json:"terrain"`
+				Coastal       bool   `json:"coastal"`
 				Visible       bool   `json:"visible"`
 				CopperDeposit bool   `json:"copper_deposit"`
 				TinDeposit    bool   `json:"tin_deposit"`
@@ -72,13 +73,15 @@ func mapCmd() *cobra.Command {
 				occupied[[2]int{m.Q, m.R}] = true
 			}
 
-			// 4. Filter to visible, non-sea, non-fog land within radius; rank by distance.
+			// 4. Filter to visible, non-fog tiles within radius; rank by distance.
+			// Sea tiles are included so the player can see where the coast is.
 			type cand struct {
 				Q             int    `json:"q"`
 				R             int    `json:"r"`
 				Terrain       string `json:"terrain"`
+				Coastal       bool   `json:"coastal,omitempty"`
 				Distance      int    `json:"distance"`
-				Occupied      bool   `json:"occupied"`
+				Occupied      bool   `json:"occupied,omitempty"`
 				CopperDeposit bool   `json:"copper_deposit,omitempty"`
 				TinDeposit    bool   `json:"tin_deposit,omitempty"`
 				CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
@@ -89,15 +92,12 @@ func mapCmd() *cobra.Command {
 				if !t.Visible || t.Terrain == "fog" {
 					continue
 				}
-				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
-					continue
-				}
 				d := hexDist(oq, or, t.Q, t.R)
 				if d > radius {
 					continue
 				}
 				out = append(out, cand{
-					Q: t.Q, R: t.R, Terrain: t.Terrain, Distance: d,
+					Q: t.Q, R: t.R, Terrain: t.Terrain, Coastal: t.Coastal, Distance: d,
 					Occupied:      occupied[[2]int{t.Q, t.R}],
 					CopperDeposit: t.CopperDeposit, TinDeposit: t.TinDeposit,
 					CedarDeposit: t.CedarDeposit, SilverDeposit: t.SilverDeposit,
@@ -110,24 +110,59 @@ func mapCmd() *cobra.Command {
 				fmt.Println(string(b))
 				return nil
 			}
-			fmt.Printf("Your hex: (%d,%d) · %d visible land hexes within radius %d (d=0 = your hex):\n\n", oq, or, len(out), radius)
+
+			// Count visible sea and coastal land hexes for the summary line.
+			seaCount := 0
+			coastalLand := 0
+			for _, t := range out {
+				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
+					seaCount++
+				} else if t.Coastal {
+					coastalLand++
+				}
+			}
+			fmt.Printf("Your hex: (%d,%d) · radius %d · %d visible hexes (%d sea, %d coastal land):\n\n",
+				oq, or, radius, len(out), seaCount, coastalLand)
 			for _, t := range out {
 				tag := ""
+				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
+					// Sea hexes: no deposit/occupied tags, just label
+					fmt.Printf("  (%3d,%3d) d%-2d %-20s[sea]\n", t.Q, t.R, t.Distance, t.Terrain)
+					continue
+				}
 				if t.Occupied {
 					tag = " [settled]"
 				}
+				coastTag := ""
+				if t.Coastal {
+					coastTag = " [coastal—can build harbour]"
+				}
 				dep := ""
-				for label, has := range map[string]bool{"copper": t.CopperDeposit, "tin": t.TinDeposit, "cedar": t.CedarDeposit, "silver": t.SilverDeposit} {
-					if has {
-						dep += " +" + label
+				impassable := t.Terrain == "mountain_limestone" || t.Terrain == "mountain_red"
+				for _, item := range []struct {
+					label string
+					has   bool
+				}{
+					{"copper", t.CopperDeposit},
+					{"tin", t.TinDeposit},
+					{"cedar", t.CedarDeposit},
+					{"silver", t.SilverDeposit},
+				} {
+					if item.has {
+						dep += " +" + item.label
+						if impassable {
+							dep += "(colonize adjacent hex)"
+						}
 					}
 				}
-				fmt.Printf("  (%3d,%3d) d%-2d %-20s%s%s\n", t.Q, t.R, t.Distance, t.Terrain, dep, tag)
+				fmt.Printf("  (%3d,%3d) d%-2d %-20s%s%s%s\n", t.Q, t.R, t.Distance, t.Terrain, dep, coastTag, tag)
 			}
 			fmt.Print("\nTo act on a hex, march a land unit there (find unit IDs with `poleia unit list`):\n" +
 				"  poleia unit march --unit <id> --q <Q> --r <R>\n" +
 				"  poleia unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\n" +
-				"Intent: colonize — founds a colony when the unit arrives on an empty hex.\n")
+				"Intent: colonize — founds a colony when the unit arrives on an empty hex.\n" +
+				"Note: ore on mountain terrain is impassable — colonize an ADJACENT passable hex\n" +
+				"      so the deposit falls in the new colony's catchment.\n")
 			return nil
 		},
 	}
