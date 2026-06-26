@@ -245,7 +245,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// schema regardless of terrain. RecomputeProduction (below) writes actual rates
 	// from catchment tiles; zero rows here ensure non-producible goods are visible.
 	_, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
 		        CASE g.key
 		            WHEN 'grain'  THEN 300
@@ -264,7 +264,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		            WHEN 'silver' THEN 1000
 		            ELSE 200
 		        END,
-		        now()
+		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		settlementID,

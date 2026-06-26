@@ -38,7 +38,7 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		`SELECT id, world_id, province_id, name, culture_id, owner_id, kingdom_id,
 		        control_type, founded_from, governor_id, governor_is_ai,
 		        loyalty, loyalty_trend, wall_level, is_capital, state, population,
-		        COALESCE((SELECT settled(amount,rate,calc_at) FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
+		        COALESCE((SELECT settled(amount,rate,calc_tick) FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
 		        COALESCE((SELECT rate FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
 		        COALESCE((SELECT cap  FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),1000),
 		        now(),
@@ -132,7 +132,7 @@ func loadPlayerKharis(ctx context.Context, pool *pgxpool.Pool, playerID, worldID
 	var k KharisState
 	err := pool.QueryRow(ctx,
 		`SELECT
-		    GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at)),
+		    GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick)),
 		    kharis_rate, kharis_cap, cult_level
 		 FROM player_world_records
 		 WHERE player_id = $1 AND world_id = $2`,

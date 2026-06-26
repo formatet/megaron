@@ -34,9 +34,9 @@ func seedStarterBuildings(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID
 	// contract only supports paying silver, not barter), so silver never enters
 	// circulation — a zero-liquidity deadlock.
 	if _, err := tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 VALUES ($1, 'silver', 300, 0, 1000, now())
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = 300, calc_at = now()`,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, 'silver', 300, 0, 1000, current_world_tick())
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = 300, calc_tick = current_world_tick()`,
 		settlementID,
 	); err != nil {
 		return fmt.Errorf("seed starting silver: %w", err)

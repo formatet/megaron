@@ -59,8 +59,8 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 		// Silver into the kingdom treasury (kingdoms.silver_amount is the silver balance).
 		if _, err = tx.Exec(ctx,
 			`UPDATE kingdoms SET
-			     silver_amount  = settled(silver_amount, silver_rate, silver_calc_at) + $1,
-			     silver_calc_at = now()
+			     silver_amount  = settled(silver_amount, silver_rate, silver_calc_tick) + $1,
+			     silver_calc_tick = current_world_tick()
 			 WHERE id = $2`,
 			p.Quantity, p.Destination,
 		); err != nil {
@@ -69,14 +69,14 @@ func (h *LogisticsArrivalHandler) Handle(ctx context.Context, e events.Scheduled
 	case "settlement_good":
 		// Silver is now a normal good in settlement_goods — no special case needed.
 		if _, err = tx.Exec(ctx,
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-			 VALUES ($1, $2, $3, 0, 1000, now())
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+			 VALUES ($1, $2, $3, 0, 1000, current_world_tick())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount  = LEAST(
-			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
+			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
 			             + $3,
 			         settlement_goods.cap),
-			     calc_at = now()`,
+			     calc_tick = current_world_tick()`,
 			p.Destination, p.GoodKey, p.Quantity,
 		); err != nil {
 			return fmt.Errorf("credit settlement good: %w", err)

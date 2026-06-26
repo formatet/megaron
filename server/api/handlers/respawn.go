@@ -121,13 +121,13 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 
 	// Seed goods: zero row for every good, then starter amounts + production rules.
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
 		        CASE g.key WHEN 'grain' THEN 150 WHEN 'cedar' THEN 120 WHEN 'stone' THEN 120 ELSE 0 END,
 		        0,
 		        CASE g.key WHEN 'grain' THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
 		                   WHEN 'copper' THEN 300 WHEN 'tin' THEN 300 WHEN 'silver' THEN 1000 ELSE 200 END,
-		        now()
+		        current_world_tick()
 		 FROM goods g ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		settlementID,
 	); err != nil {
@@ -136,17 +136,17 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 
 	// Kharis lives on player_world_records (mig 029, rikes-pool per Wanax), not on
 	// settlements. A reborn Wanax starts with an empty pool and a fresh rate from the
-	// new location's pantheon — reset amount/calc_at so the stale pre-collapse calc_at
+	// new location's pantheon — reset amount/calc_tick so the stale pre-collapse calc_tick
 	// can't balloon into a settled() windfall on respawn.
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate, kharis_amount, kharis_calc_at)
-		 VALUES ($1, $2, $3, 'active', $4, 0, now())
+		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate, kharis_amount, kharis_calc_tick)
+		 VALUES ($1, $2, $3, 'active', $4, 0, current_world_tick())
 		 ON CONFLICT (player_id, world_id) DO UPDATE SET
 		     settlement_id = EXCLUDED.settlement_id,
 		     status = 'active',
 		     kharis_rate = EXCLUDED.kharis_rate,
 		     kharis_amount = 0,
-		     kharis_calc_at = now()`,
+		     kharis_calc_tick = current_world_tick()`,
 		playerID, worldID, settlementID, kharisRate,
 	); err != nil {
 		return fmt.Errorf("update records: %w", err)

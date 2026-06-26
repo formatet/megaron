@@ -121,7 +121,7 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 		}
 		var have float64
 		err := tx.QueryRow(ctx,
-			`SELECT settled(amount, rate, calc_at)
+			`SELECT settled(amount, rate, calc_tick)
 			   FROM settlement_goods
 			  WHERE settlement_id = $1 AND good_key = $2
 			  FOR UPDATE`,
@@ -148,8 +148,8 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 		}
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
-			     amount  = settled(amount, rate, calc_at) - $1,
-			     calc_at = now()
+			     amount  = settled(amount, rate, calc_tick) - $1,
+			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = $3`,
 			qty, settlementID, key,
 		); err != nil {

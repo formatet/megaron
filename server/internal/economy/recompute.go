@@ -194,15 +194,15 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		yieldPerWorker := gp.basePotential / REF_LABOR
 		newRate := yieldPerWorker * effectiveWorkers
 
-		// Settle existing amount at old rate, then overwrite rate + calc_at.
+		// Settle existing amount at old rate, then overwrite rate + calc_tick.
 		if _, err := tx.Exec(ctx,
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-			 VALUES ($1, $2, 0, $3, $4, now())
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+			 VALUES ($1, $2, 0, $3, $4, current_world_tick())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount  = LEAST(settlement_goods.cap,
-			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)),
+			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)),
 			     rate    = $3,
-			     calc_at = now()`,
+			     calc_tick = current_world_tick()`,
 			settlementID, gp.key, newRate, goodCap(gp.key),
 		); err != nil {
 			return fmt.Errorf("recompute: upsert good %s: %w", gp.key, err)

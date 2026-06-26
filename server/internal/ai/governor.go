@@ -31,7 +31,7 @@ func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, 
 	// silver reserve as a care action. If silver > 20, register a minimal gift event.
 	var silver float64
 	if err = pool.QueryRow(ctx,
-		`SELECT COALESCE(settled(amount, rate, calc_at), 0)
+		`SELECT COALESCE(settled(amount, rate, calc_tick), 0)
 		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
 		settlementID,
 	).Scan(&silver); err != nil {
@@ -49,10 +49,10 @@ func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, 
 	if silver >= 20 && loyalty <= 2 {
 		_, err = pool.Exec(ctx,
 			`UPDATE settlement_goods
-			   SET amount  = settled(amount, rate, calc_at) - 10,
-			       calc_at = now()
+			   SET amount  = settled(amount, rate, calc_tick) - 10,
+			       calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = 'silver'
-			   AND settled(amount, rate, calc_at) >= 10`,
+			   AND settled(amount, rate, calc_tick) >= 10`,
 			settlementID,
 		)
 		if err != nil {

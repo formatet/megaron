@@ -93,7 +93,7 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 		        s.infantry + s.elite_infantry + s.chariot + s.ship + s.war_galley + s.merchantman AS army_total,
 		        COALESCE(k.name, ''),
 		        s.battle_frenzy_until,
-		        COALESCE((SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+		        COALESCE((SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
 		                  FROM player_world_records pwr
 		                  WHERE pwr.player_id = s.owner_id AND pwr.world_id = s.world_id), 0)
 		 FROM settlements s

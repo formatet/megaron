@@ -130,9 +130,9 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	if spec.KharisRate > 0 {
 		_, err = tx.Exec(ctx,
 			`UPDATE player_world_records SET
-			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_at),
+			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_tick),
 			   kharis_rate = kharis_rate + $1,
-			   kharis_calc_at = now()
+			   kharis_calc_tick = current_world_tick()
 			 WHERE player_id = (SELECT owner_id FROM settlements WHERE id = $2)
 			   AND world_id = (SELECT world_id FROM settlements WHERE id = $2)`,
 			spec.KharisRate, p.SettlementID)
