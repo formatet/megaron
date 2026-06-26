@@ -59,32 +59,54 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		return tx.Commit(ctx)
 	}
 
-	// Read origin_id and offer_silver from the now-expired messenger.
+	// Read origin_id, kind, and escrowed value from the now-expired messenger.
 	var originID uuid.UUID
-	var offerSilver float64
+	var kind, offerGood string
+	var offerSilver, offerQty float64
 	if err := tx.QueryRow(ctx,
-		`SELECT origin_id, (trade_offer->>'offer_silver')::float FROM messengers WHERE id=$1`,
+		`SELECT origin_id,
+		        COALESCE(trade_offer->>'kind', 'buy'),
+		        COALESCE((trade_offer->>'offer_silver')::float, 0),
+		        COALESCE(trade_offer->>'offer_good', ''),
+		        COALESCE((trade_offer->>'offer_qty')::float, 0)
+		 FROM messengers WHERE id=$1`,
 		messengerID,
-	).Scan(&originID, &offerSilver); err != nil {
+	).Scan(&originID, &kind, &offerSilver, &offerGood, &offerQty); err != nil {
 		return fmt.Errorf("read expired messenger: %w", err)
 	}
 
-	// Refund escrowed silver to buyer (origin settlement).
-	if _, err = tx.Exec(ctx,
-		`UPDATE settlement_goods
-		    SET amount  = settled(amount, rate, calc_tick) + $1,
-		        calc_tick = current_world_tick()
-		  WHERE settlement_id=$2 AND good_key='silver'`,
-		offerSilver, originID,
-	); err != nil {
-		return fmt.Errorf("refund silver on expiry: %w", err)
+	// Refund escrowed value to origin:
+	//   buy  → silver to buyer (origin)
+	//   sell → goods to seller (origin)
+	if kind == "sell" {
+		if _, err = tx.Exec(ctx,
+			`UPDATE settlement_goods
+			    SET amount    = settled(amount, rate, calc_tick) + $1,
+			        calc_tick = current_world_tick()
+			  WHERE settlement_id=$2 AND good_key=$3`,
+			offerQty, originID, offerGood,
+		); err != nil {
+			return fmt.Errorf("refund goods on expiry: %w", err)
+		}
+		if err = tx.Commit(ctx); err != nil {
+			return fmt.Errorf("commit expiry refund: %w", err)
+		}
+		slog.Info("trade offer expired, goods refunded", "messenger", messengerID, "good", offerGood, "qty", offerQty)
+	} else {
+		if _, err = tx.Exec(ctx,
+			`UPDATE settlement_goods
+			    SET amount    = settled(amount, rate, calc_tick) + $1,
+			        calc_tick = current_world_tick()
+			  WHERE settlement_id=$2 AND good_key='silver'`,
+			offerSilver, originID,
+		); err != nil {
+			return fmt.Errorf("refund silver on expiry: %w", err)
+		}
+		if err = tx.Commit(ctx); err != nil {
+			return fmt.Errorf("commit expiry refund: %w", err)
+		}
+		slog.Info("trade offer expired, silver refunded", "messenger", messengerID, "silver", offerSilver)
 	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit expiry refund: %w", err)
-	}
-
-	slog.Info("trade offer expired, silver refunded", "messenger", messengerID, "silver", offerSilver)
 	return nil
 }
 

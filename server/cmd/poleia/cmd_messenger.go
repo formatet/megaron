@@ -209,14 +209,25 @@ func outboxCmd() *cobra.Command {
 				line := fmt.Sprintf("→ %s  [%s]  (%s)  id:%s", dest, status, when, id)
 				if offer, ok := m["trade_offer"].(map[string]any); ok {
 					offerStatus, _ := offer["status"].(string)
-					good, _ := offer["want_good"].(string)
-					qty, _ := offer["want_qty"].(float64)
-					silver, _ := offer["offer_silver"].(float64)
-					line += fmt.Sprintf("  trade: want %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatus)
-					// Pending offers have the buyer's silver held in escrow until the
-					// seller accepts/declines or the offer expires (then it's refunded).
-					if offerStatus == "pending" {
-						line += fmt.Sprintf("  (%.0f silver escrowed — cancel with: poleia trade-cancel --id %s)", silver, id)
+					offerKind, _ := offer["kind"].(string)
+					if offerKind == "sell" {
+						good, _ := offer["offer_good"].(string)
+						qty, _ := offer["offer_qty"].(float64)
+						silver, _ := offer["want_silver"].(float64)
+						line += fmt.Sprintf("  trade: sell %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatus)
+						if offerStatus == "pending" {
+							line += fmt.Sprintf("  (%.0f %s escrowed — cancel with: poleia trade-cancel --id %s)", qty, good, id)
+						}
+					} else {
+						good, _ := offer["want_good"].(string)
+						qty, _ := offer["want_qty"].(float64)
+						silver, _ := offer["offer_silver"].(float64)
+						line += fmt.Sprintf("  trade: want %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatus)
+						// Pending buy offers have the buyer's silver held in escrow until the
+						// seller accepts/declines or the offer expires (then it's refunded).
+						if offerStatus == "pending" {
+							line += fmt.Sprintf("  (%.0f silver escrowed — cancel with: poleia trade-cancel --id %s)", silver, id)
+						}
 					}
 				}
 				fmt.Println(line)
