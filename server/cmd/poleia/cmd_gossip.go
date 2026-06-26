@@ -194,7 +194,7 @@ func resolveMessengerDest(markers, wanaxes []map[string]any, destName, fromName 
 		}
 	}
 	if destID == "" {
-		return "", "", "", fmt.Errorf("no settlement named %q found in visible provinces or world wanaxes", destName)
+		return "", "", "", fmt.Errorf("no settlement named %q in view — run 'wanaxes' to list reachable settlements; only those within vision can be traded with, so expand to discover more", destName)
 	}
 	if destID == ownID {
 		return "", "", "", fmt.Errorf("%q is your own settlement — messengers go to other Wanaxes; pick a neighbour from `wanaxes` (rows without ★) or scout to discover new settlements", destName)

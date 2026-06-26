@@ -10,7 +10,7 @@ import (
 func wanaxesCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "wanaxes",
-		Short: "List all Wanaxes in the world (trade-discovery directory)",
+		Short: "List Wanaxes within your vision (FOW-gated trade-discovery directory)",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID))
@@ -52,6 +52,11 @@ func wanaxesCmd() *cobra.Command {
 				}
 				fmt.Printf("%s%-21s %-8s %-10s %-12s  %-7s  %s\n",
 					marker, name, terrain, culture, kingdom, deposit, sid)
+			}
+			if len(entries) <= 1 {
+				fmt.Println("\nNo other settlements within your vision — this directory is FOW-gated, not global.")
+				fmt.Println("Trade needs a visible neighbour: send a unit outward (`march`) or colonise to")
+				fmt.Println("expand your vision and discover Wanaxes you can trade with.")
 			}
 			return nil
 		},

@@ -793,7 +793,7 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 
 // Wanaxes handles GET /worlds/{worldID}/wanaxes — FOW-gated trade-discovery directory
 // for API clients. Returns only settlements the requesting player can currently see
-// (within 5 hexes of their visibleOrigins — same FOW rule as /provinces). Army strength
+// (within 6 hexes of their visibleOrigins — same FOW rule as /provinces). Army strength
 // is deliberately NOT exposed. Unauthenticated requests receive an empty list.
 func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
