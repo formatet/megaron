@@ -847,7 +847,7 @@ func (h *KingdomHandler) resolveElection(ctx context.Context, electionID, kingdo
 	_ = h.pool.QueryRow(ctx,
 		`SELECT COALESCE(CAST(
 		   GREATEST(0,
-		     settled(kharis_amount, kharis_rate, kharis_calc_at)
+		     settled(kharis_amount, kharis_rate, kharis_calc_tick)
 		   ) AS INT
 		 ), 0)
 		 FROM settlements
@@ -1084,10 +1084,10 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	// Deduct from settlement silver good row, fail if insufficient.
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlement_goods
-		   SET amount  = settled(amount, rate, calc_at) - $1,
-		       calc_at = now()
+		   SET amount  = settled(amount, rate, calc_tick) - $1,
+		       calc_tick = current_world_tick()
 		 WHERE settlement_id = $2 AND good_key = 'silver'
-		   AND settled(amount, rate, calc_at) >= $1`,
+		   AND settled(amount, rate, calc_tick) >= $1`,
 		req.Amount, settlementID,
 	)
 	if err != nil {

@@ -100,8 +100,8 @@ func (h *BorrowedArmyPenaltyHandler) penaliseKingKharis(ctx context.Context, kin
 
 	_, err = h.pool.Exec(ctx,
 		`UPDATE settlements SET
-		   kharis_amount = GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at) - 5),
-		   kharis_calc_at = now()
+		   kharis_amount = GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick) - 5),
+		   kharis_calc_tick = current_world_tick()
 		 WHERE id = $1`,
 		kingSettlementID,
 	)

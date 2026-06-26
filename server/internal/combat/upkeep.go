@@ -140,11 +140,11 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			} else {
 				tag, err := h.pool.Exec(ctx,
 					`UPDATE settlement_goods
-					 SET amount  = settled(amount, rate, calc_at) - $1,
-					     calc_at = now()
+					 SET amount  = settled(amount, rate, calc_tick) - $1,
+					     calc_tick = current_world_tick()
 					 WHERE settlement_id = $2
 					   AND good_key = 'grain'
-					   AND settled(amount, rate, calc_at) >= $1`,
+					   AND settled(amount, rate, calc_tick) >= $1`,
 					grainNeed, sid,
 				)
 				if err != nil {
@@ -173,10 +173,10 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 		tag, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods
-			 SET amount   = LEAST(settled(amount, rate, calc_at), cap) - $1,
-			     calc_at  = now()
+			 SET amount   = LEAST(settled(amount, rate, calc_tick), cap) - $1,
+			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = 'silver'
-			   AND LEAST(settled(amount, rate, calc_at), cap) >= $1`,
+			   AND LEAST(settled(amount, rate, calc_tick), cap) >= $1`,
 			silverNeed, sid,
 		)
 		if err != nil {

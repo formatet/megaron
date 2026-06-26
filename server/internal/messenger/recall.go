@@ -243,9 +243,9 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 	for _, f := range flows {
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
-			     amount  = LEAST(cap, settled(amount, rate, calc_at)),
+			     amount  = LEAST(cap, settled(amount, rate, calc_tick)),
 			     rate    = GREATEST(0, rate - $3),
-			     calc_at = now()
+			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = $2`,
 			f.settlementID, f.key, f.rate,
 		); err != nil {

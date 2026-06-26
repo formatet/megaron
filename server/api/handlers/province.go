@@ -196,7 +196,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// Load current goods amounts for affordability checks.
 		goodsStock := make(map[string]float64)
 		gsrows, _ := h.pool.Query(r.Context(),
-			`SELECT good_key, settled(amount, rate, calc_at)
+			`SELECT good_key, settled(amount, rate, calc_tick)
 			 FROM settlement_goods WHERE settlement_id = $1`, sett.ID,
 		)
 		if gsrows != nil {
@@ -351,7 +351,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// as `goods` (previously it reported only silver, hiding a colony's tin output).
 		resSnap := sett.Resources.SnapshotFull(now)
 		if grows, gerr := h.pool.Query(r.Context(),
-			`SELECT good_key, GREATEST(0, settled(amount, rate, calc_at)), rate, cap
+			`SELECT good_key, GREATEST(0, settled(amount, rate, calc_tick)), rate, cap
 			 FROM settlement_goods
 			 WHERE settlement_id = $1
 			   AND good_key IN ('silver','grain','copper','tin','bronze')`,
@@ -1109,10 +1109,10 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	if spec.CostSilver > 0 {
 		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE settlement_goods
-			   SET amount  = settled(amount, rate, calc_at) - $1,
-			       calc_at = now()
+			   SET amount  = settled(amount, rate, calc_tick) - $1,
+			       calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = 'silver'
-			   AND settled(amount, rate, calc_at) >= $1`,
+			   AND settled(amount, rate, calc_tick) >= $1`,
 			spec.CostSilver, settlementID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -1246,8 +1246,8 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 	for goodKey, qty := range spec.Costs {
 		if _, err = tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			     amount  = LEAST(settled(amount, rate, calc_at) + $1, cap),
-			     calc_at = now()
+			     amount  = LEAST(settled(amount, rate, calc_tick) + $1, cap),
+			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = $3`,
 			qty, settlementID, goodKey,
 		); err != nil {
@@ -1606,10 +1606,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if totalKharis > 0 {
 		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE player_world_records SET
-			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_at) - $1,
-			   kharis_calc_at = now()
+			   kharis_amount = settled(kharis_amount, kharis_rate, kharis_calc_tick) - $1,
+			   kharis_calc_tick = current_world_tick()
 			 WHERE player_id = $2 AND world_id = $3
-			   AND settled(kharis_amount, kharis_rate, kharis_calc_at) >= $1`,
+			   AND settled(kharis_amount, kharis_rate, kharis_calc_tick) >= $1`,
 			totalKharis, playerID, worldID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -1833,7 +1833,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT sg.good_key, sg.amount, sg.rate, sg.cap, sg.calc_at,
+		`SELECT sg.good_key, sg.amount, sg.rate, sg.cap, sg.calc_tick,
 		        g.base_value, g.name, g.tier, g.category
 		 FROM settlement_goods sg
 		 JOIN goods g ON g.key = sg.good_key
@@ -2017,10 +2017,10 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// Deduct from origin — silver is now a normal good in settlement_goods.
 	deductTag, err := tx.Exec(r.Context(),
 		`UPDATE settlement_goods SET
-		     amount = settled(amount, rate, calc_at) - $1,
-		     calc_at = now()
+		     amount = settled(amount, rate, calc_tick) - $1,
+		     calc_tick = current_world_tick()
 		 WHERE settlement_id = $2 AND good_key = $3
-		   AND settled(amount, rate, calc_at) >= $1`,
+		   AND settled(amount, rate, calc_tick) >= $1`,
 		req.Quantity, originID, req.GoodKey,
 	)
 	if err != nil {
@@ -2181,10 +2181,10 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 		needed := i.qty * req.Quantity
 		tag, err := tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			     amount = settled(amount, rate, calc_at) - $1,
-			     calc_at = now()
+			     amount = settled(amount, rate, calc_tick) - $1,
+			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = $3
-			   AND settled(amount, rate, calc_at) >= $1`,
+			   AND settled(amount, rate, calc_tick) >= $1`,
 			needed, settlementID, i.key,
 		)
 		if err != nil {
@@ -2200,14 +2200,14 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 	// Credit output.
 	produced := outputQty * req.Quantity
 	_, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 VALUES ($1, $2, $3, 0, 100, now())
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, $2, $3, 0, 100, current_world_tick())
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = LEAST(
-		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
+		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
 		             + $3,
 		         settlement_goods.cap),
-		     calc_at = now()`,
+		     calc_tick = current_world_tick()`,
 		settlementID, outputKey, produced,
 	)
 	if err != nil {

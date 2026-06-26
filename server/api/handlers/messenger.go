@@ -189,16 +189,16 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		// Escrow: deduct offer_silver from the buyer (origin) now.
 		var buyerSilver float64
 		_ = tx.QueryRow(r.Context(),
-			`SELECT COALESCE(settled(amount, rate, calc_at), 0)
+			`SELECT COALESCE(settled(amount, rate, calc_tick), 0)
 			   FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
 			originID,
 		).Scan(&buyerSilver)
 		tag, err := tx.Exec(r.Context(),
 			`UPDATE settlement_goods
-			    SET amount  = settled(amount, rate, calc_at) - $1,
-			        calc_at = now()
+			    SET amount  = settled(amount, rate, calc_tick) - $1,
+			        calc_tick = current_world_tick()
 			  WHERE settlement_id=$2 AND good_key='silver'
-			    AND settled(amount, rate, calc_at) >= $1`,
+			    AND settled(amount, rate, calc_tick) >= $1`,
 			req.TradeOffer.OfferSilver, originID,
 		)
 		if err != nil || tag.RowsAffected() == 0 {
@@ -363,7 +363,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		           SELECT 1 FROM settlement_goods sg
 		           WHERE sg.settlement_id = m.destination_id
 		             AND sg.good_key = m.trade_offer->>'want_good'
-		             AND settled(sg.amount, sg.rate, sg.calc_at)
+		             AND settled(sg.amount, sg.rate, sg.calc_tick)
 		                 >= (m.trade_offer->>'want_qty')::float
 		       )
 		   ))
@@ -564,10 +564,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	// Deduct want_qty goods from seller (destination).
 	tag, err := tx.Exec(r.Context(),
 		`UPDATE settlement_goods SET
-		     amount = settled(amount, rate, calc_at) - $1,
-		     calc_at = now()
+		     amount = settled(amount, rate, calc_tick) - $1,
+		     calc_tick = current_world_tick()
 		 WHERE settlement_id=$2 AND good_key=$3
-		   AND settled(amount, rate, calc_at) >= $1`,
+		   AND settled(amount, rate, calc_tick) >= $1`,
 		wantQty, destID, wantGood,
 	)
 	if err != nil || tag.RowsAffected() == 0 {
@@ -576,7 +576,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// instead of retrying forever). Mirrors the deductGoods shortfall style.
 		var have float64
 		_ = tx.QueryRow(r.Context(),
-			`SELECT COALESCE(settled(amount, rate, calc_at), 0)
+			`SELECT COALESCE(settled(amount, rate, calc_tick), 0)
 			   FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2`,
 			destID, wantGood,
 		).Scan(&have)
@@ -711,8 +711,8 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	// Refund escrowed silver to buyer (origin settlement).
 	if _, err = tx.Exec(r.Context(),
 		`UPDATE settlement_goods
-		    SET amount  = settled(amount, rate, calc_at) + $1,
-		        calc_at = now()
+		    SET amount  = settled(amount, rate, calc_tick) + $1,
+		        calc_tick = current_world_tick()
 		  WHERE settlement_id=$2 AND good_key='silver'`,
 		offerSilver, buyerSettlementID,
 	); err != nil {
@@ -806,8 +806,8 @@ func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
 	// Refund escrowed silver to buyer (origin settlement).
 	if _, err = tx.Exec(r.Context(),
 		`UPDATE settlement_goods
-		    SET amount  = settled(amount, rate, calc_at) + $1,
-		        calc_at = now()
+		    SET amount  = settled(amount, rate, calc_tick) + $1,
+		        calc_tick = current_world_tick()
 		  WHERE settlement_id=$2 AND good_key='silver'`,
 		offerSilver, originID,
 	); err != nil {

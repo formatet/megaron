@@ -250,10 +250,10 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	if req.Silver > 0 {
 		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE settlement_goods
-			   SET amount  = settled(amount, rate, calc_at) - $1,
-			       calc_at = now()
+			   SET amount  = settled(amount, rate, calc_tick) - $1,
+			       calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = 'silver'
-			   AND settled(amount, rate, calc_at) >= $1`,
+			   AND settled(amount, rate, calc_tick) >= $1`,
 			req.Silver, sourceID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -266,10 +266,10 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	if req.Grain > 0 {
 		tag, err2 := tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			   amount  = settled(amount, rate, calc_at) - $1,
-			   calc_at = now()
+			   amount  = settled(amount, rate, calc_tick) - $1,
+			   calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = 'grain'
-			   AND settled(amount, rate, calc_at) >= $1`,
+			   AND settled(amount, rate, calc_tick) >= $1`,
 			req.Grain, sourceID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
@@ -578,7 +578,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 	var kharisNow float64
 	_ = tx.QueryRow(r.Context(),
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
 		 FROM player_world_records WHERE player_id = $1 AND world_id = $2
 		 FOR UPDATE`,
 		playerID, worldID,
@@ -649,7 +649,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	for good, need := range spec.Offering {
 		var have float64
 		if scanErr := tx.QueryRow(r.Context(),
-			`SELECT GREATEST(0, settled(amount, rate, calc_at))
+			`SELECT GREATEST(0, settled(amount, rate, calc_tick))
 			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
 			settlementID, good,
 		).Scan(&have); scanErr != nil || have < need {
@@ -662,8 +662,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	for good, need := range spec.Offering {
 		if _, err = tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
-			    amount  = GREATEST(0, settled(amount, rate, calc_at) - $2),
-			    calc_at = now()
+			    amount  = GREATEST(0, settled(amount, rate, calc_tick) - $2),
+			    calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = $3`,
 			settlementID, need, good,
 		); err != nil {
@@ -750,8 +750,8 @@ func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, se
 func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, spec religion.PrayerSpec) (map[string]any, string, error) {
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlement_goods SET
-		    amount  = LEAST(cap, settled(amount, rate, calc_at) * 1.25),
-		    calc_at = now()
+		    amount  = LEAST(cap, settled(amount, rate, calc_tick) * 1.25),
+		    calc_tick = current_world_tick()
 		 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		settlementID,
 	); err != nil {

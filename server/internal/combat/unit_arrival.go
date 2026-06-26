@@ -275,14 +275,14 @@ func (h *UnitArrivalHandler) foundColony(
 	// Seed a zero/baseline row for every good (mirrors join.go), then let
 	// RecomputeProduction write real rates from the catchment + labor weights.
 	if _, err := tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
 		        CASE g.key WHEN 'grain' THEN 300 WHEN 'timber' THEN 200 WHEN 'stone' THEN 300 ELSE 0 END,
 		        0,
 		        CASE g.key WHEN 'grain' THEN 1000 WHEN 'timber' THEN 500 WHEN 'cedar' THEN 500
 		                   WHEN 'stone' THEN 1000 WHEN 'copper' THEN 300 WHEN 'tin' THEN 300
 		                   WHEN 'silver' THEN 1000 ELSE 200 END,
-		        now()
+		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		colonyID,
@@ -407,13 +407,13 @@ func (h *UnitArrivalHandler) resolveCombat(
 	// ── Fortune (W5): roll once, bias by kharis delta ─────────────────────────
 	var attackerKharis, defenderKharis float64
 	_ = tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
 		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
 		u.ownerID, worldID,
 	).Scan(&attackerKharis)
 	if dest.ownerID != nil {
 		_ = tx.QueryRow(ctx,
-			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
 			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
 			*dest.ownerID, worldID,
 		).Scan(&defenderKharis)

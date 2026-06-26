@@ -204,13 +204,13 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		var attOwnerID uuid.UUID
 		_ = tx.QueryRow(ctx, `SELECT COALESCE(owner_id, gen_random_uuid()) FROM settlements WHERE province_id = $1`, march.OriginID).Scan(&attOwnerID)
 		_ = tx.QueryRow(ctx,
-			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
 			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
 			attOwnerID, worldID,
 		).Scan(&attackerKharis)
 		if def.OwnerID != nil {
 			_ = tx.QueryRow(ctx,
-				`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_at))
+				`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
 				 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
 				*def.OwnerID, worldID,
 			).Scan(&defenderKharis)
@@ -718,21 +718,21 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 
 	// Seed all goods rows (zero amounts), then apply terrain production rates.
 	_, _ = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key, 0, 0,
 		        CASE g.key WHEN 'grain' THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
 		                   WHEN 'copper' THEN 300  WHEN 'tin' THEN 300  ELSE 200 END,
-		        now()
+		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		settlementID,
 	)
 	_, _ = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, pr.good_key, 0, pr.rate_per_min,
 		        CASE pr.good_key WHEN 'grain' THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
 		                        WHEN 'copper' THEN 300  WHEN 'tin' THEN 300  ELSE 200 END,
-		        now()
+		        current_world_tick()
 		 FROM production_rules pr
 		 WHERE pr.building_type IS NULL AND pr.terrain_type = $2
 		   AND (pr.requires_deposit IS NULL
@@ -892,13 +892,13 @@ func (h *ArrivalHandler) establishOutpost(ctx context.Context, tx pgx.Tx, origin
 
 		// Settle-then-add: compute elapsed production first, then raise rate.
 		if _, err := tx.Exec(ctx,
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-			 VALUES ($1, $2, 0, $3, $4, now())
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+			 VALUES ($1, $2, 0, $3, $4, current_world_tick())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount  = LEAST(EXCLUDED.cap,
-			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)),
+			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)),
 			     rate    = settlement_goods.rate + $3,
-			     calc_at = now()`,
+			     calc_tick = current_world_tick()`,
 			originSettlementID, gr.key, gr.rate, goodCap(gr.key),
 		); err != nil {
 			return fmt.Errorf("update settlement goods: %w", err)
@@ -952,9 +952,9 @@ func (h *ArrivalHandler) teardownOutpost(ctx context.Context, tx pgx.Tx, provinc
 		// Settle-then-subtract: ledgered rate, not recomputed, so terrain-rule changes can't desync.
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
-			     amount  = LEAST(cap, settled(amount, rate, calc_at)),
+			     amount  = LEAST(cap, settled(amount, rate, calc_tick)),
 			     rate    = GREATEST(0, rate - $3),
-			     calc_at = now()
+			     calc_tick = current_world_tick()
 			 WHERE settlement_id=$1 AND good_key=$2`,
 			f.settlementID, f.key, f.rate,
 		); err != nil {

@@ -57,10 +57,10 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	// ── 1. Kharis maintenance: one tick per player_world_record ────────────
 	rows, err := h.pool.Query(ctx,
 		`SELECT pwr.player_id, s.id AS capital_id,
-		    GREATEST(0, settled(pwr.kharis_amount, pwr.kharis_rate, pwr.kharis_calc_at)) AS kharis,
+		    GREATEST(0, settled(pwr.kharis_amount, pwr.kharis_rate, pwr.kharis_calc_tick)) AS kharis,
 		    pwr.kharis_cap,
 		    COALESCE((
-		        SELECT SUM(GREATEST(0, settled(sg.amount, sg.rate, sg.calc_at)))
+		        SELECT SUM(GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick)))
 		        FROM settlement_goods sg
 		        JOIN settlements s2 ON s2.id = sg.settlement_id
 		        WHERE s2.owner_id = pwr.player_id AND s2.world_id = pwr.world_id AND sg.good_key = 'cult'
@@ -128,8 +128,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		if _, err := h.pool.Exec(ctx,
 			`UPDATE player_world_records SET
 			   kharis_amount  = LEAST(kharis_cap,
-			       settled(kharis_amount, kharis_rate, kharis_calc_at) + $1),
-			   kharis_calc_at = now()
+			       settled(kharis_amount, kharis_rate, kharis_calc_tick) + $1),
+			   kharis_calc_tick = current_world_tick()
 			 WHERE player_id = $2 AND world_id = $3`,
 			gain, w.playerID, worldID,
 		); err != nil {
@@ -140,7 +140,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		if _, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods sg SET
 			   amount   = 0,
-			   calc_at  = now()
+			   calc_tick = current_world_tick()
 			 FROM settlements s2
 			 WHERE sg.settlement_id = s2.id
 			   AND s2.owner_id = $1 AND s2.world_id = $2
@@ -166,8 +166,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		if _, err := h.pool.Exec(ctx,
 			`UPDATE player_world_records SET
 			   kharis_amount  = GREATEST(0,
-			       settled(kharis_amount, kharis_rate, kharis_calc_at) * $1),
-			   kharis_calc_at = now()
+			       settled(kharis_amount, kharis_rate, kharis_calc_tick) * $1),
+			   kharis_calc_tick = current_world_tick()
 			 WHERE player_id = $2 AND world_id = $3`,
 			1.0-decayOnMissed, w.playerID, worldID,
 		); err != nil {
@@ -219,12 +219,12 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		   amount = GREATEST(0,
 		       CASE sg.good_key
 		           WHEN 'grain' THEN
-		               settled(sg.amount, sg.rate, sg.calc_at) * 0.99
+		               settled(sg.amount, sg.rate, sg.calc_tick) * 0.99
 		               - s.population * 0.5
 		           ELSE
-		               settled(sg.amount, sg.rate, sg.calc_at) * 0.99
+		               settled(sg.amount, sg.rate, sg.calc_tick) * 0.99
 		       END),
-		   calc_at = now()
+		   calc_tick = current_world_tick()
 		 FROM settlements s
 		 WHERE sg.settlement_id = s.id
 		   AND s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
@@ -250,7 +250,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		   invasions_today = 0,
 		   population = GREATEST(101, LEAST(30000,
 		     CASE WHEN COALESCE(
-		              (SELECT settled(sg.amount, sg.rate, sg.calc_at)
+		              (SELECT settled(sg.amount, sg.rate, sg.calc_tick)
 		               FROM settlement_goods sg
 		               WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
 		          THEN
@@ -348,7 +348,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
 		   AND (s.infantry > 0 OR s.chariot > 0)
 		   AND COALESCE(
-		           (SELECT settled(sg.amount, sg.rate, sg.calc_at)
+		           (SELECT settled(sg.amount, sg.rate, sg.calc_tick)
 		            FROM settlement_goods sg
 		            WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) <= 0
 		 RETURNING s.id, s.owner_id, s.name`,
@@ -402,8 +402,8 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			"harvest_failure",
 			"The fields lie fallow by divine will. Half your grain stores have rotted.",
 			`UPDATE settlement_goods SET
-			   amount  = GREATEST(0, settled(amount, rate, calc_at) * 0.5),
-			   calc_at = now()
+			   amount  = GREATEST(0, settled(amount, rate, calc_tick) * 0.5),
+			   calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		},
 		{
@@ -439,8 +439,8 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 			"harvest_blessing",
 			"The gods smile upon your fields. An abundant harvest fills your granaries.",
 			`UPDATE settlement_goods SET
-			   amount  = LEAST(cap, settled(amount, rate, calc_at) * 1.25),
-			   calc_at = now()
+			   amount  = LEAST(cap, settled(amount, rate, calc_tick) * 1.25),
+			   calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		},
 		{

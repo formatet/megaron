@@ -72,8 +72,8 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// Refund escrowed silver to buyer (origin settlement).
 	if _, err = tx.Exec(ctx,
 		`UPDATE settlement_goods
-		    SET amount  = settled(amount, rate, calc_at) + $1,
-		        calc_at = now()
+		    SET amount  = settled(amount, rate, calc_tick) + $1,
+		        calc_tick = current_world_tick()
 		  WHERE settlement_id=$2 AND good_key='silver'`,
 		offerSilver, originID,
 	); err != nil {
@@ -190,14 +190,14 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 
 	// Credit goods to destination — silver is now a normal good in settlement_goods.
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_at)
-		 VALUES ($1, $2, $3, 0, 100, now())
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, $2, $3, 0, 100, current_world_tick())
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = LEAST(
-		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_at)
+		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
 		             + $3,
 		         settlement_goods.cap),
-		     calc_at = now()`,
+		     calc_tick = current_world_tick()`,
 		p.DestinationID, p.GoodKey, delivered,
 	); err != nil {
 		return fmt.Errorf("credit goods: %w", err)

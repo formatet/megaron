@@ -215,9 +215,9 @@ func collapseSettlement(
 		// Settle-then-subtract (same pattern as teardownOutpost in arrival.go).
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
-			     amount  = LEAST(cap, settled(amount, rate, calc_at)),
+			     amount  = LEAST(cap, settled(amount, rate, calc_tick)),
 			     rate    = GREATEST(0, rate - $3),
-			     calc_at = now()
+			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = $2`,
 			settlementID, f.goodKey, f.rate,
 		); err != nil {
