@@ -555,6 +555,9 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 		     FROM player_scouted_provinces sp
 		     JOIN provinces p ON p.id = sp.province_id
 		     WHERE sp.world_id = $1 AND sp.player_id = $2
+		     UNION ALL
+		     -- Tiles scouted by unit marches (route-swept FOW).
+		     SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2
 		 ) pos`,
 		worldID, playerID,
 	)

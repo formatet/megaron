@@ -229,6 +229,24 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// A* pathfinding: verify that a traversable route exists and derive the real
+	// path cost for ETA. This catches the land-over-sea bug (target on land, but
+	// the only route crosses water) and routes around mountains correctly.
+	_, pathCost, pathOK, pathErr := province.FindPath(ctx, h.pool, worldID,
+		province.MapPosition{Q: originQ, R: originR},
+		province.MapPosition{Q: req.TargetQ, R: req.TargetR},
+		string(unit.CategoryOf(u.Type)),
+	)
+	if pathErr != nil {
+		writeError(w, http.StatusInternalServerError, "pathfinding error")
+		return
+	}
+	if !pathOK {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("no passable route to (%d,%d) for this unit — a sea crossing needs a ship (embark), and mountains must be routed around", req.TargetQ, req.TargetR))
+		return
+	}
+
 	// Calculate movement time.
 	dist := province.HexDistance(
 		province.MapPosition{Q: originQ, R: originR},
@@ -239,7 +257,7 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	moveHours := province.TerrainMoveHours(destTerrain) * float64(dist)
+	moveHours := pathCost
 	// Loaded ships move 1.5× slower.
 	if u.CargoUnitID != nil {
 		moveHours *= 1.5

@@ -97,6 +97,27 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 
 	destQ, destR := *u.targetQ, *u.targetR
 
+	// Sweep FOW along the actual path walked by this unit. Best-effort: log on
+	// error, never abort the arrival. Runs for every arrival (garrison, combat,
+	// colonise) so isolated spawns always reveal the terrain they traversed.
+	if path, _, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+		province.MapPosition{Q: u.q, R: u.r},
+		province.MapPosition{Q: destQ, R: destR},
+		u.category,
+	); pathErr != nil {
+		slog.Warn("pathfind error during arrival FOW sweep", "unit", unitID, "err", pathErr)
+	} else if pathOK {
+		for _, tile := range path {
+			if _, insErr := tx.Exec(ctx,
+				`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+				 VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
+				worldID, u.ownerID, tile.Q, tile.R,
+			); insErr != nil {
+				slog.Warn("FOW sweep insert failed", "unit", unitID, "q", tile.Q, "r", tile.R, "err", insErr)
+			}
+		}
+	}
+
 	// Find settlement at destination (if any).
 	var dest destSettlement
 	err := tx.QueryRow(ctx,
