@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/gossip"
 	"github.com/poleia/server/internal/province"
 )
 
@@ -146,6 +147,43 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			spec.WallsBonus, p.SettlementID)
 		if err != nil {
 			return fmt.Errorf("update wall level: %w", err)
+		}
+	}
+
+	// Rumor: a completed mine is minor news — witnessed only by nearby owners
+	// (temenos_gossip.md PASS 2b). Subject = this settlement, hint = the ore, so
+	// it registers as rumour-known ("rich in copper") for anyone who hears of it
+	// without having seen it. Best-effort — never fail the build over gossip.
+	if p.BuildingType == string(province.BuildingMine) || p.BuildingType == string(province.BuildingSilverMine) {
+		ore := "silver"
+		if p.BuildingType == string(province.BuildingMine) {
+			// "mine" gates on copper OR tin present in the catchment (see
+			// province.go's build-time deposit gate) — prefer copper as the hint
+			// when both are present.
+			ore = "tin"
+			var hasCopper bool
+			if err := tx.QueryRow(ctx,
+				`SELECT EXISTS(
+				   SELECT 1 FROM map_tiles mt
+				   JOIN settlements s ON s.id = $1
+				   JOIN provinces prov ON prov.id = s.province_id
+				   WHERE mt.world_id = s.world_id
+				     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
+				     AND (
+				         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
+				         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
+				         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
+				     )
+				     AND mt.copper_deposit)`,
+				p.SettlementID,
+			).Scan(&hasCopper); err == nil && hasCopper {
+				ore = "copper"
+			}
+		}
+		if err := gossip.Broadcast(ctx, tx, e.WorldID, p.SettlementID, "economy",
+			"A "+ore+" mine has opened.", 6,
+			gossip.ImportanceMinor, p.SettlementID, ore); err != nil {
+			slog.Warn("build complete: broadcast gossip", "settlement", p.SettlementID, "err", err)
 		}
 	}
 

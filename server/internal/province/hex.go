@@ -1,5 +1,10 @@
 package province
 
+import (
+	"fmt"
+	"math"
+)
+
 // HexDistance returns the distance between two axial hex coordinates.
 func HexDistance(a, b MapPosition) int {
 	dq := a.Q - b.Q
@@ -88,4 +93,50 @@ func abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+// compassSectors are the 8 directions FuzzyBearing buckets a bearing angle
+// into, ordered by increasing angle (radians, standard atan2 convention:
+// 0 = +x axis, counter-clockwise).
+var compassSectors = [8]string{"E", "NE", "N", "NW", "W", "SW", "S", "SE"}
+
+// FuzzyBearing describes target's approximate position relative to landmark as
+// a coarse compass direction + a fuzzed distance, e.g. "~5 hexes E" — used for
+// rumour-known settlements (temenos_gossip.md PASS 2b), which must never
+// expose exact (q,r). The caller appends the landmark's name ("... of Byblos");
+// FuzzyBearing itself only sees positions, not names.
+//
+// Axial deltas are converted to a cartesian vector (x = dq + dr/2,
+// y = dr·√3/2) before bucketing into 8 sectors — a continuous angle describes
+// direction more naturally than the hex grid's 6-neighbour geometry would.
+func FuzzyBearing(target, landmark MapPosition) string {
+	dist := HexDistance(target, landmark)
+	if dist == 0 {
+		return "right at the landmark"
+	}
+
+	dq := float64(target.Q - landmark.Q)
+	dr := float64(target.R - landmark.R)
+	x := dq + dr/2
+	y := dr * math.Sqrt(3) / 2
+
+	angle := math.Atan2(y, x)
+	if angle < 0 {
+		angle += 2 * math.Pi
+	}
+	sector := int(math.Round(angle/(math.Pi/4))) % 8
+	dir := compassSectors[sector]
+
+	return fmt.Sprintf("~%d hexes %s", fuzzDistance(dist), dir)
+}
+
+// fuzzDistance rounds an exact hex distance to the nearest 5 (minimum 5) so a
+// rumour never reads as a precise measurement. Tunable bucket size, not an
+// invariant — see temenos_gossip.md PASS 2b.
+func fuzzDistance(dist int) int {
+	rounded := ((dist + 2) / 5) * 5
+	if rounded < 5 {
+		rounded = 5
+	}
+	return rounded
 }

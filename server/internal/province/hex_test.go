@@ -124,3 +124,71 @@ func TestHexNeighbors_ReturnsSixAdjacent(t *testing.T) {
 		seen[n] = true
 	}
 }
+
+// --- FuzzyBearing (temenos_gossip.md PASS 2b) --------------------------------
+
+// TestFuzzyBearing_DirectionBuckets pins the 8-sector compass bucketing for a
+// few canonical directions, derived from the doc's own cartesian conversion
+// (x = dq + dr/2, y = dr·√3/2).
+func TestFuzzyBearing_DirectionBuckets(t *testing.T) {
+	landmark := MapPosition{Q: 0, R: 0}
+	cases := []struct {
+		name   string
+		target MapPosition
+		want   string
+	}{
+		{"due E (dr=0)", MapPosition{Q: 5, R: 0}, "E"},
+		{"due W (dr=0)", MapPosition{Q: -5, R: 0}, "W"},
+		{"due N (x cancels out)", MapPosition{Q: -2, R: 4}, "N"},
+		{"NE (positive dr only)", MapPosition{Q: 0, R: 5}, "NE"},
+	}
+	for _, c := range cases {
+		got := FuzzyBearing(c.target, landmark)
+		wantSuffix := " " + c.want
+		if len(got) < len(wantSuffix) || got[len(got)-len(wantSuffix):] != wantSuffix {
+			t.Errorf("%s: FuzzyBearing(%+v, %+v) = %q, want to end with %q", c.name, c.target, landmark, got, wantSuffix)
+		}
+	}
+}
+
+// TestFuzzyBearing_SameHexIsNotADirection verifies the degenerate case (target
+// == landmark) never divides by zero or produces a nonsensical direction.
+func TestFuzzyBearing_SameHexIsNotADirection(t *testing.T) {
+	pos := MapPosition{Q: 3, R: 3}
+	got := FuzzyBearing(pos, pos)
+	if got == "" {
+		t.Error("FuzzyBearing must return a non-empty string even at distance 0")
+	}
+}
+
+// TestFuzzyBearing_NeverExposesExactDistance verifies the distance component
+// is fuzzed (bucketed), not the raw HexDistance — a rumour must never read as
+// a precise measurement.
+func TestFuzzyBearing_NeverExposesExactDistance(t *testing.T) {
+	landmark := MapPosition{Q: 0, R: 0}
+	// Distance 7 (exact) must NOT appear verbatim in the bearing string.
+	got := FuzzyBearing(MapPosition{Q: 7, R: 0}, landmark)
+	if got == "~7 hexes E" {
+		t.Errorf("expected the exact distance to be fuzzed away, got %q", got)
+	}
+}
+
+// TestFuzzDistance_RoundsToNearestFiveWithFloor pins the fuzz bucket size.
+func TestFuzzDistance_RoundsToNearestFiveWithFloor(t *testing.T) {
+	cases := []struct {
+		dist int
+		want int
+	}{
+		{1, 5},
+		{3, 5},
+		{7, 5},
+		{8, 10},
+		{12, 10},
+		{13, 15},
+	}
+	for _, c := range cases {
+		if got := fuzzDistance(c.dist); got != c.want {
+			t.Errorf("fuzzDistance(%d) = %d, want %d", c.dist, got, c.want)
+		}
+	}
+}

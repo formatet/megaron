@@ -94,7 +94,8 @@ func TestBroadcast(t *testing.T) {
 	testSettlement(t, pool, worldID, nearbyOwner, 1, 0, "Nearville")
 	testSettlement(t, pool, worldID, farOwner, 50, 50, "Farhaven")
 
-	if err := Broadcast(ctx, pool, worldID, source, "political", "Big news", 3); err != nil {
+	if err := Broadcast(ctx, pool, worldID, source, "political", "Big news", 3,
+		ImportanceMinor, uuid.Nil, ""); err != nil {
 		t.Fatalf("Broadcast: %v", err)
 	}
 
@@ -125,7 +126,7 @@ func TestBroadcast(t *testing.T) {
 // TestPropagateOnContact verifies mechanism 2: a rumor known to a settlement
 // owner (hops=0) reaches a contact at hops=1 with the same rumor_id; repeat
 // contact does not duplicate it; and a rumor already at the hop ceiling does
-// not propagate further.
+// not propagate further. Both seeded rumors default to importance='minor'.
 func TestPropagateOnContact(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
@@ -178,7 +179,7 @@ func TestPropagateOnContact(t *testing.T) {
 		t.Fatalf("count dead rumor propagation: %v", err)
 	}
 	if deadCount != 0 {
-		t.Errorf("a rumor at hops>=3 must not propagate further, got %d rows", deadCount)
+		t.Errorf("a minor rumor already at hops>=1 must not propagate further, got %d rows", deadCount)
 	}
 
 	// A second contact with the same source must not duplicate the rumor.
@@ -194,5 +195,209 @@ func TestPropagateOnContact(t *testing.T) {
 	}
 	if freshCount != 1 {
 		t.Errorf("expected exactly one copy of the rumor at the learner, got %d", freshCount)
+	}
+}
+
+// TestMinorRumorPropagatesOnlyFromWitness verifies the PASS 2b gate: a MINOR
+// rumor only travels from a holder at hops=0 (a firsthand witness). Once a
+// learner receives it at hops=1, they hold it but cannot pass it on again —
+// the classic "I heard it from a friend, but I'm not spreading it further"
+// rule (temenos_gossip.md PASS 2b).
+func TestMinorRumorPropagatesOnlyFromWitness(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, players := testWorld(t, pool, "witness-b", "learner-a", "third-c")
+	witnessB, learnerA, thirdC := players[0], players[1], players[2]
+	settlementB := testSettlement(t, pool, worldID, witnessB, 0, 0, "Witnessville")
+	settlementA := testSettlement(t, pool, worldID, learnerA, 10, 10, "Learnerton")
+
+	rumorID := uuid.New()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text, rumor_id, hops, importance)
+		 VALUES ($1, $2, 'Somewhere', 'economy', 'A copper mine has opened.', $3, 0, 'minor')`,
+		worldID, witnessB, rumorID,
+	); err != nil {
+		t.Fatalf("seed witness rumor: %v", err)
+	}
+
+	// A contacts B (the witness) — A should receive the rumor at hops=1.
+	if err := PropagateOnContact(ctx, pool, learnerA, settlementB, worldID); err != nil {
+		t.Fatalf("PropagateOnContact A<-B: %v", err)
+	}
+	var aHops int
+	if err := pool.QueryRow(ctx,
+		`SELECT hops FROM gossip_events WHERE world_id = $1 AND recipient_id = $2 AND rumor_id = $3`,
+		worldID, learnerA, rumorID,
+	).Scan(&aHops); err != nil {
+		t.Fatalf("expected A to receive the minor rumor from the witness: %v", err)
+	}
+	if aHops != 1 {
+		t.Errorf("expected A's copy at hops=1, got %d", aHops)
+	}
+
+	// C now contacts A. A's copy is at hops=1 (no longer a firsthand witness),
+	// so the minor rumor must NOT propagate further.
+	if err := PropagateOnContact(ctx, pool, thirdC, settlementA, worldID); err != nil {
+		t.Fatalf("PropagateOnContact C<-A: %v", err)
+	}
+	var cCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM gossip_events WHERE world_id = $1 AND recipient_id = $2 AND rumor_id = $3`,
+		worldID, thirdC, rumorID,
+	).Scan(&cCount); err != nil {
+		t.Fatalf("count C's copies: %v", err)
+	}
+	if cCount != 0 {
+		t.Errorf("a minor rumor held at hops=1 must not propagate to a second hop, got %d rows", cCount)
+	}
+}
+
+// TestMajorRumorPropagatesAcrossHops verifies the PASS 2b gate: a MAJOR rumor
+// (a settlement falling) travels as hearsay while hops < maxMajorHops (4), and
+// stops once it reaches the ceiling.
+func TestMajorRumorPropagatesAcrossHops(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, players := testWorld(t, pool, "teacher-b", "learner-a", "learner-d")
+	teacherB, learnerA, learnerD := players[0], players[1], players[2]
+	settlementB := testSettlement(t, pool, worldID, teacherB, 0, 0, "Teacherton")
+	settlementA := testSettlement(t, pool, worldID, learnerA, 10, 10, "Learnerton")
+
+	travelingRumor := uuid.New()
+	ceilingRumor := uuid.New()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text, rumor_id, hops, importance)
+		 VALUES ($1, $2, 'Somewhere', 'military', 'A city has fallen.', $3, 3, 'major')`,
+		worldID, teacherB, travelingRumor,
+	); err != nil {
+		t.Fatalf("seed hops=3 major rumor: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text, rumor_id, hops, importance)
+		 VALUES ($1, $2, 'Somewhere', 'military', 'Old news of a fallen city.', $3, 4, 'major')`,
+		worldID, teacherB, ceilingRumor,
+	); err != nil {
+		t.Fatalf("seed hops=4 major rumor: %v", err)
+	}
+
+	if err := PropagateOnContact(ctx, pool, learnerA, settlementB, worldID); err != nil {
+		t.Fatalf("PropagateOnContact A<-B: %v", err)
+	}
+
+	var aHops int
+	if err := pool.QueryRow(ctx,
+		`SELECT hops FROM gossip_events WHERE world_id = $1 AND recipient_id = $2 AND rumor_id = $3`,
+		worldID, learnerA, travelingRumor,
+	).Scan(&aHops); err != nil {
+		t.Fatalf("expected A to receive the major rumor at hops<4: %v", err)
+	}
+	if aHops != 4 {
+		t.Errorf("expected A's copy at hops=4, got %d", aHops)
+	}
+
+	var ceilingCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM gossip_events WHERE world_id = $1 AND recipient_id = $2 AND rumor_id = $3`,
+		worldID, learnerA, ceilingRumor,
+	).Scan(&ceilingCount); err != nil {
+		t.Fatalf("count ceiling rumor propagation: %v", err)
+	}
+	if ceilingCount != 0 {
+		t.Errorf("a major rumor already at hops=4 (the ceiling) must not propagate further, got %d rows", ceilingCount)
+	}
+
+	// D now contacts A, whose copy of travelingRumor sits at hops=4 (the
+	// ceiling) — it must not travel a further hop.
+	if err := PropagateOnContact(ctx, pool, learnerD, settlementA, worldID); err != nil {
+		t.Fatalf("PropagateOnContact D<-A: %v", err)
+	}
+	var dCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM gossip_events WHERE world_id = $1 AND recipient_id = $2 AND rumor_id = $3`,
+		worldID, learnerD, travelingRumor,
+	).Scan(&dCount); err != nil {
+		t.Fatalf("count D's copies: %v", err)
+	}
+	if dCount != 0 {
+		t.Errorf("a major rumor at the hop ceiling must not travel further, got %d rows", dCount)
+	}
+}
+
+// TestBroadcastUpsertsKnownSettlement verifies that a rumor naming a subject
+// settlement registers it as rumour-known (known_settlements, level='rumour')
+// for every recipient, carrying the industry hint.
+func TestBroadcastUpsertsKnownSettlement(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, players := testWorld(t, pool, "source-owner", "nearby-owner")
+	sourceOwner, nearbyOwner := players[0], players[1]
+
+	source := testSettlement(t, pool, worldID, sourceOwner, 0, 0, "Coppertown")
+	testSettlement(t, pool, worldID, nearbyOwner, 1, 0, "Nearville")
+
+	if err := Broadcast(ctx, pool, worldID, source, "economy", "A copper mine has opened.", 3,
+		ImportanceMinor, source, "copper"); err != nil {
+		t.Fatalf("Broadcast: %v", err)
+	}
+
+	var level, hint string
+	if err := pool.QueryRow(ctx,
+		`SELECT level, industry_hint FROM known_settlements
+		 WHERE world_id = $1 AND player_id = $2 AND settlement_id = $3`,
+		worldID, nearbyOwner, source,
+	).Scan(&level, &hint); err != nil {
+		t.Fatalf("expected known_settlements row for the recipient: %v", err)
+	}
+	if level != "rumour" {
+		t.Errorf("expected level=rumour, got %q", level)
+	}
+	if hint != "copper" {
+		t.Errorf("expected industry_hint=copper, got %q", hint)
+	}
+}
+
+// TestPropagateOnContactUpsertsKnownSettlement verifies that a rumor with a
+// subject settlement, propagated via contact, also registers rumour-known
+// knowledge for the learner (not just the original broadcast recipients).
+func TestPropagateOnContactUpsertsKnownSettlement(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, players := testWorld(t, pool, "teacher-b", "learner-a", "subject-owner")
+	teacherB, learnerA, subjectOwner := players[0], players[1], players[2]
+	settlementB := testSettlement(t, pool, worldID, teacherB, 0, 0, "Teacherton")
+	subjectSettlement := testSettlement(t, pool, worldID, subjectOwner, 20, 20, "Tinhaven")
+
+	rumorID := uuid.New()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO gossip_events
+		   (world_id, recipient_id, source_region, category, text, rumor_id, hops,
+		    importance, subject_settlement_id, industry_hint)
+		 VALUES ($1, $2, 'Somewhere', 'economy', 'A tin mine has opened.', $3, 0, 'minor', $4, 'tin')`,
+		worldID, teacherB, rumorID, subjectSettlement,
+	); err != nil {
+		t.Fatalf("seed subject rumor: %v", err)
+	}
+
+	if err := PropagateOnContact(ctx, pool, learnerA, settlementB, worldID); err != nil {
+		t.Fatalf("PropagateOnContact: %v", err)
+	}
+
+	var level, hint string
+	if err := pool.QueryRow(ctx,
+		`SELECT level, industry_hint FROM known_settlements
+		 WHERE world_id = $1 AND player_id = $2 AND settlement_id = $3`,
+		worldID, learnerA, subjectSettlement,
+	).Scan(&level, &hint); err != nil {
+		t.Fatalf("expected known_settlements row for the learner: %v", err)
+	}
+	if level != "rumour" {
+		t.Errorf("expected level=rumour, got %q", level)
+	}
+	if hint != "tin" {
+		t.Errorf("expected industry_hint=tin, got %q", hint)
 	}
 }

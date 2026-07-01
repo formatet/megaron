@@ -36,6 +36,8 @@ func gossipCmd() *cobra.Command {
 				region, _ := g["source_region"].(string)
 				text, _ := g["text"].(string)
 				tsStr, _ := g["generated_at"].(string)
+				importance, _ := g["importance"].(string)
+				hops, _ := g["hops"].(float64)
 				var when string
 				if t, err := time.Parse(time.RFC3339, tsStr); err == nil {
 					ago := time.Since(t)
@@ -48,11 +50,27 @@ func gossipCmd() *cobra.Command {
 						when = fmt.Sprintf("%dd ago", int(ago.Hours()/24))
 					}
 				}
-				fmt.Printf("[%s]  %s\n  %s\n\n", when, region, text)
+				marker := " "
+				if importance == "major" {
+					marker = "!" // major rumor: falls a settlement, travels several hops
+				}
+				hopLabel := ""
+				if hops > 0 {
+					hopLabel = fmt.Sprintf(" (heard %d hop%s away)", int(hops), plural(int(hops)))
+				}
+				fmt.Printf("%s[%s]  %s%s\n  %s\n\n", marker, when, region, hopLabel, text)
 			}
 			return nil
 		},
 	}
+}
+
+// plural returns "s" unless n == 1 — used for "N hops away".
+func plural(n int) string {
+	if n == 1 {
+		return ""
+	}
+	return "s"
 }
 
 func messengerCmd() *cobra.Command {
@@ -194,10 +212,10 @@ func resolveMessengerDest(markers, wanaxes []map[string]any, destName, fromName 
 		}
 	}
 	if destID == "" {
-		return "", "", "", fmt.Errorf("no settlement named %q in view — run 'wanaxes' to list reachable settlements; only those within vision can be traded with, so expand to discover more", destName)
+		return "", "", "", fmt.Errorf("no settlement named %q in view — run 'cities' to list reachable settlements; only known (not rumour-only) rows can be traded with, so expand to discover more", destName)
 	}
 	if destID == ownID {
-		return "", "", "", fmt.Errorf("%q is your own settlement — messengers go to other Wanaxes; pick a neighbour from `wanaxes` (rows without ★) or scout to discover new settlements", destName)
+		return "", "", "", fmt.Errorf("%q is your own settlement — messengers go to other Wanaxes; pick a neighbour from `cities` (rows without ★, knowledge=known) or scout to discover new settlements", destName)
 	}
 	return destID, resolvedName, ownID, nil
 }

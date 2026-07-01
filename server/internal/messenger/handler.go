@@ -77,12 +77,10 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 			slog.Error("market snapshot on messenger arrival", "err", snapErr)
 		}
 
-		// Gossip mechanism: contact spreads secondhand market knowledge of OTHER
-		// settlements (transitive discovery) and any rumors the destination's
-		// owner is carrying. Best-effort — never fail the arrival over this.
-		if err := economy.PropagateMarketKnowledge(ctx, h.pool, senderID, destinationID); err != nil {
-			slog.Error("propagate market knowledge on messenger arrival", "err", err)
-		}
+		// Gossip mechanism: contact spreads any rumors the destination's owner is
+		// carrying (temenos_gossip.md PASS 2b — detailed market knowledge stays
+		// firsthand only; see RecordMarketSnapshot above). Best-effort — never fail
+		// the arrival over this.
 		if err := gossip.PropagateOnContact(ctx, h.pool, senderID, destinationID, e.WorldID); err != nil {
 			slog.Error("propagate gossip on messenger arrival", "err", err)
 		}

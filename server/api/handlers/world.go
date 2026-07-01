@@ -1031,3 +1031,267 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, result)
 }
+
+// cityEntry is one row of the /cities directory (temenos_gossip.md PASS 2b).
+// Knowledge is "known" (seen/remembered/contacted — exact q,r/terrain/deposits)
+// or "rumour" (heard of via gossip — fuzzy Bearing + IndustryHint only, Q/R nil,
+// never contactable until explored into the known set).
+type cityEntry struct {
+	SettlementID  string `json:"settlement_id"`
+	Name          string `json:"name"`
+	Owner         string `json:"owner,omitempty"`
+	OwnerID       string `json:"owner_id,omitempty"`
+	Culture       string `json:"culture,omitempty"`
+	Terrain       string `json:"terrain,omitempty"`
+	Kingdom       string `json:"kingdom,omitempty"`
+	Own           bool   `json:"own,omitempty"`
+	CopperDeposit bool   `json:"copper_deposit,omitempty"`
+	TinDeposit    bool   `json:"tin_deposit,omitempty"`
+	SilverDeposit bool   `json:"silver_deposit,omitempty"`
+	CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
+	ProvinceID    string `json:"province_id,omitempty"`
+	IsCapital     bool   `json:"is_capital,omitempty"`
+	Knowledge     string `json:"knowledge"` // "known" | "rumour"
+	Q             *int   `json:"q,omitempty"`
+	R             *int   `json:"r,omitempty"`
+	Bearing       string `json:"bearing,omitempty"`
+	IndustryHint  string `json:"industry_hint,omitempty"`
+	Note          string `json:"note,omitempty"`
+}
+
+// loadCities builds the combined known + rumour-known directory for playerID:
+// the "known" tier is exactly the legacy Wanaxes/wanaxes gate (loadVisibleOrigins
+// KNOWN-set: own/allied + contacted + remembered), carrying exact coordinates;
+// the "rumour" tier comes from known_settlements (level='rumour', minus anything
+// already in the known tier) with a fuzzy bearing off the nearest known
+// settlement instead of exact coordinates. Returns nil for an unauthenticated
+// caller (playerID == uuid.Nil is not checked here — callers gate that).
+func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UUID) []cityEntry {
+	origins := h.visibleOrigins(ctx, worldID, playerID)
+
+	rows, err := h.pool.Query(ctx,
+		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
+		        (SELECT k.name FROM kingdoms k
+		         JOIN kingdom_members km ON km.kingdom_id = k.id
+		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
+		        s.owner_id,
+		        COALESCE(prov.copper_deposit, false),
+		        COALESCE(prov.tin_deposit, false),
+		        COALESCE(prov.silver_deposit, false),
+		        COALESCE(prov.cedar_deposit, false),
+		        COALESCE(prov.map_q, 0),
+		        COALESCE(prov.map_r, 0),
+		        COALESCE(prov.id::text, ''),
+		        s.is_capital
+		 FROM settlements s
+		 LEFT JOIN players p ON p.id = s.owner_id
+		 LEFT JOIN provinces prov ON prov.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		 ORDER BY s.name`,
+		worldID,
+	)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var result []cityEntry
+	known := map[string]bool{}
+	for rows.Next() {
+		var e cityEntry
+		var ownerID *uuid.UUID
+		var kingdom *string
+		var terrain *string
+		var q, r int
+		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
+			&ownerID,
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit,
+			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
+			continue
+		}
+		// FOW gate: skip settlements the player cannot currently see/remember/contact.
+		if !province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 6) {
+			continue
+		}
+		if kingdom != nil {
+			e.Kingdom = *kingdom
+		}
+		if terrain != nil {
+			e.Terrain = *terrain
+		}
+		if ownerID != nil {
+			e.OwnerID = ownerID.String()
+			if *ownerID == playerID {
+				e.Own = true
+			}
+		}
+		e.Knowledge = "known"
+		qCopy, rCopy := q, r
+		e.Q, e.R = &qCopy, &rCopy
+		result = append(result, e)
+		known[e.SettlementID] = true
+	}
+
+	// Rumour tier: settlements heard of via gossip but never seen/remembered/contacted.
+	rumourRows, err := h.pool.Query(ctx,
+		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
+		        (SELECT k.name FROM kingdoms k
+		         JOIN kingdom_members km ON km.kingdom_id = k.id
+		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
+		        s.owner_id,
+		        COALESCE(prov.copper_deposit, false),
+		        COALESCE(prov.tin_deposit, false),
+		        COALESCE(prov.silver_deposit, false),
+		        COALESCE(prov.cedar_deposit, false),
+		        prov.map_q, prov.map_r,
+		        COALESCE(ks.industry_hint, '')
+		 FROM known_settlements ks
+		 JOIN settlements s ON s.id = ks.settlement_id
+		 LEFT JOIN players p ON p.id = s.owner_id
+		 LEFT JOIN provinces prov ON prov.id = s.province_id
+		 WHERE ks.world_id = $1 AND ks.player_id = $2 AND ks.level = 'rumour'
+		   AND s.state != 'sunk'`,
+		worldID, playerID,
+	)
+	if err != nil {
+		return result
+	}
+	defer rumourRows.Close()
+
+	for rumourRows.Next() {
+		var e cityEntry
+		var ownerID *uuid.UUID
+		var kingdom, terrain *string
+		var q, r *int
+		if err := rumourRows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
+			&ownerID,
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit,
+			&q, &r, &e.IndustryHint); err != nil {
+			continue
+		}
+		if known[e.SettlementID] {
+			continue // already known at a stronger tier — do not downgrade the listing.
+		}
+		if kingdom != nil {
+			e.Kingdom = *kingdom
+		}
+		if terrain != nil {
+			e.Terrain = *terrain
+		}
+		if ownerID != nil {
+			e.OwnerID = ownerID.String()
+		}
+		e.Knowledge = "rumour"
+		e.Note = "explore to confirm — not contactable yet"
+		if q != nil && r != nil {
+			target := province.MapPosition{Q: *q, R: *r}
+			if landmarkName, landmarkPos, ok := nearestLandmark(result, target); ok {
+				e.Bearing = province.FuzzyBearing(target, landmarkPos) + " of " + landmarkName
+			}
+		}
+		result = append(result, e)
+	}
+	return result
+}
+
+// nearestLandmark finds the closest known-tier city entry to target, for use
+// as the reference point in a rumour's fuzzy bearing (temenos_gossip.md PASS 2b:
+// "landmark = the nearest of the player's own settlements + remembered named
+// cities" — the known tier already covers both).
+func nearestLandmark(known []cityEntry, target province.MapPosition) (name string, pos province.MapPosition, ok bool) {
+	best := -1
+	for _, e := range known {
+		if e.Q == nil || e.R == nil {
+			continue
+		}
+		candidate := province.MapPosition{Q: *e.Q, R: *e.R}
+		dist := province.HexDistance(candidate, target)
+		if best == -1 || dist < best {
+			best = dist
+			name = e.Name
+			pos = candidate
+			ok = true
+		}
+	}
+	return name, pos, ok
+}
+
+// Cities handles GET /worlds/{worldID}/cities — the combined known + rumour-known
+// settlement directory (temenos_gossip.md PASS 2b). See loadCities for the tier
+// split. Unauthenticated requests receive an empty list.
+func (h *WorldHandler) Cities(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
+	if !authenticated {
+		writeJSON(w, http.StatusOK, []struct{}{})
+		return
+	}
+
+	result := h.loadCities(r.Context(), worldID, playerID)
+	if result == nil {
+		result = []cityEntry{}
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+// diplomacyEntry is one Wanax in the /diplomacy directory: an owner of at least
+// one known or rumour-known city.
+type diplomacyEntry struct {
+	Owner        string `json:"owner"`
+	OwnerID      string `json:"owner_id,omitempty"`
+	Kingdom      string `json:"kingdom,omitempty"`
+	KnownCities  int    `json:"known_cities"`
+	RumourCities int    `json:"rumour_cities"`
+	RumourOnly   bool   `json:"rumour_only,omitempty"`
+	Own          bool   `json:"own,omitempty"`
+}
+
+// Diplomacy handles GET /worlds/{worldID}/diplomacy — a ruler-centric view of
+// Cities: one row per Wanax who owns a known or rumour-known city, flagging
+// rumour-only rulers (nobody whose cities the player has actually seen/
+// remembered/contacted yet). Unauthenticated requests receive an empty list.
+func (h *WorldHandler) Diplomacy(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
+	if !authenticated {
+		writeJSON(w, http.StatusOK, []struct{}{})
+		return
+	}
+
+	cities := h.loadCities(r.Context(), worldID, playerID)
+
+	byOwner := map[string]*diplomacyEntry{}
+	var order []string
+	for _, c := range cities {
+		if c.OwnerID == "" || c.Own {
+			continue // skip ownerless rows and the player's own cities
+		}
+		d, seen := byOwner[c.OwnerID]
+		if !seen {
+			d = &diplomacyEntry{Owner: c.Owner, OwnerID: c.OwnerID, Kingdom: c.Kingdom}
+			byOwner[c.OwnerID] = d
+			order = append(order, c.OwnerID)
+		}
+		if c.Knowledge == "known" {
+			d.KnownCities++
+		} else {
+			d.RumourCities++
+		}
+	}
+
+	result := make([]diplomacyEntry, 0, len(order))
+	for _, id := range order {
+		d := byOwner[id]
+		d.RumourOnly = d.KnownCities == 0
+		result = append(result, *d)
+	}
+	writeJSON(w, http.StatusOK, result)
+}

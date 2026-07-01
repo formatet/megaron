@@ -1117,7 +1117,7 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, source_region, category, text, generated_at
+		`SELECT id, source_region, category, text, generated_at, importance, hops
 		 FROM gossip_events
 		 WHERE world_id = $1 AND recipient_id = $2
 		 ORDER BY generated_at DESC
@@ -1136,11 +1136,13 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 		Category     string    `json:"category"`
 		Text         string    `json:"text"`
 		GeneratedAt  time.Time `json:"generated_at"`
+		Importance   string    `json:"importance"`
+		Hops         int       `json:"hops"`
 	}
 	var result []item
 	for rows.Next() {
 		var g item
-		if err := rows.Scan(&g.ID, &g.SourceRegion, &g.Category, &g.Text, &g.GeneratedAt); err == nil {
+		if err := rows.Scan(&g.ID, &g.SourceRegion, &g.Category, &g.Text, &g.GeneratedAt, &g.Importance, &g.Hops); err == nil {
 			result = append(result, g)
 		}
 	}

@@ -1123,7 +1123,10 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 // rumor_id that lets the news later spread further through contact.
 func (h *KingdomHandler) broadcastKingdomGossip(ctx context.Context, settlementID, worldID uuid.UUID, category, text string) {
 	const kingdomGossipRadius = 5
-	if err := gossip.Broadcast(ctx, h.pool, worldID, settlementID, category, text, kingdomGossipRadius); err != nil {
+	// No single settlement is "the subject" of a kingdom formation/join — importance
+	// minor, no known_settlements entry (subjectSettlementID uuid.Nil).
+	if err := gossip.Broadcast(ctx, h.pool, worldID, settlementID, category, text, kingdomGossipRadius,
+		gossip.ImportanceMinor, uuid.Nil, ""); err != nil {
 		slog.Error("broadcast kingdom gossip", "err", err)
 	}
 }

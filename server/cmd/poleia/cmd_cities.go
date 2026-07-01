@@ -7,13 +7,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func wanaxesCmd() *cobra.Command {
+func citiesCmd() *cobra.Command {
 	return &cobra.Command{
-		Use:   "wanaxes",
-		Short: "List Wanaxes within your vision (FOW-gated trade-discovery directory)",
+		Use:     "cities",
+		Aliases: []string{"wanaxes"}, // kept working for one version — see temenos_gossip.md PASS 2b
+		Short:   "List known and rumour-known settlements (FOW-gated trade-discovery directory)",
+		Long: `List known and rumour-known settlements.
+
+"known" rows (seen, remembered, or contacted) show exact terrain/deposit/position
+and are safe to trade or send a messenger to.
+
+"rumour" rows were only heard OF through gossip — a fuzzy bearing and a coarse
+industry hint, never exact coordinates. They are NOT contactable yet: explore
+there (march/colonize) to turn a rumour into a real contact.`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/wanaxes", cfg.WorldID))
+			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/cities", cfg.WorldID))
 			if err != nil {
 				return err
 			}
@@ -28,7 +37,12 @@ func wanaxesCmd() *cobra.Command {
 			fmt.Printf("%-22s %-8s %-10s %-12s  %-7s  %s\n",
 				"Name", "Terrain", "Culture", "Kingdom", "Deposit", "Settlement ID")
 			fmt.Println("──────────────────────────────────────────────────────────────────────────")
+			var rumours []map[string]any
 			for _, e := range entries {
+				if knowledge, _ := e["knowledge"].(string); knowledge == "rumour" {
+					rumours = append(rumours, e)
+					continue
+				}
 				name, _ := e["name"].(string)
 				terrain, _ := e["terrain"].(string)
 				culture, _ := e["culture"].(string)
@@ -53,10 +67,23 @@ func wanaxesCmd() *cobra.Command {
 				fmt.Printf("%s%-21s %-8s %-10s %-12s  %-7s  %s\n",
 					marker, name, terrain, culture, kingdom, deposit, sid)
 			}
-			if len(entries) <= 1 {
+			if len(entries)-len(rumours) <= 1 {
 				fmt.Println("\nNo other settlements within your vision — this directory is FOW-gated, not global.")
 				fmt.Println("Trade needs a visible neighbour: send a unit outward (`march`) or colonise to")
 				fmt.Println("expand your vision and discover Wanaxes you can trade with.")
+			}
+			if len(rumours) > 0 {
+				fmt.Println("\nRUMOUR-KNOWN (heard of, not yet contactable — explore to confirm):")
+				for _, e := range rumours {
+					name, _ := e["name"].(string)
+					bearing, _ := e["bearing"].(string)
+					hint, _ := e["industry_hint"].(string)
+					if hint != "" {
+						fmt.Printf("  %s — %s, rich in %s\n", name, bearing, hint)
+					} else {
+						fmt.Printf("  %s — %s\n", name, bearing)
+					}
+				}
 			}
 			return nil
 		},

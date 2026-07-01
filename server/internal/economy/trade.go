@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/gossip"
 )
 
 // OfferExpiryHandler refunds escrowed silver to the buyer when a trade offer
@@ -295,6 +296,24 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		).Scan(&ownerID); err == nil {
 			if snapErr := RecordMarketSnapshot(ctx, h.pool, ownerID, p.DestinationID); snapErr != nil {
 				slog.Error("market snapshot on delivery", "err", snapErr)
+			}
+		}
+	}
+
+	// Rumor: a completed delivery is minor news — witnessed only by nearby owners
+	// (temenos_gossip.md PASS 2b). Subject = the origin (the settlement whose
+	// surplus this good reveals), hint = the good, so it registers as
+	// rumour-known for anyone who hears of it without having seen it.
+	// Best-effort — never fail the delivery over gossip.
+	if originSettlementID != uuid.Nil {
+		var originName, destName string
+		_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, originSettlementID).Scan(&originName)
+		_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, p.DestinationID).Scan(&destName)
+		if originName != "" && destName != "" {
+			if err := gossip.Broadcast(ctx, h.pool, e.WorldID, originSettlementID, "economy",
+				fmt.Sprintf("%s flows from %s to %s.", p.GoodKey, originName, destName), 6,
+				gossip.ImportanceMinor, originSettlementID, p.GoodKey); err != nil {
+				slog.Error("trade delivery: broadcast gossip", "err", err)
 			}
 		}
 	}

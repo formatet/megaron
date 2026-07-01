@@ -359,10 +359,13 @@ func (h *UnitArrivalHandler) foundColony(
 	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
 		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "disbanded"}, worldID, nil)
 
-	// Rumor: a new colony nearby is news. Best-effort — never fail colonization
-	// over gossip.
+	// Rumor: a new colony nearby is news — minor, witnessed only by nearby owners
+	// (temenos_gossip.md PASS 2b). Subject = the colony itself, so it registers as
+	// rumour-known for anyone who hears of it without having seen it. Best-effort —
+	// never fail colonization over gossip.
 	if err := gossip.Broadcast(ctx, tx, worldID, colonyID, "political",
-		name+" has been founded nearby.", 6); err != nil {
+		name+" has been founded nearby.", 6,
+		gossip.ImportanceMinor, colonyID, ""); err != nil {
 		slog.Warn("foundColony: broadcast gossip", "colony", colonyID, "err", err)
 	}
 
@@ -606,6 +609,8 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 	}
 
 	// Transfer settlement ownership.
+	var fallenName string
+	_ = tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, *dest.settlementID).Scan(&fallenName)
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
 		   owner_id     = $2,
@@ -616,6 +621,17 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 		*dest.settlementID, u.ownerID,
 	); err != nil {
 		return fmt.Errorf("transfer settlement ownership: %w", err)
+	}
+
+	// Rumor: a settlement falling to conquest is major news — hearsay, several
+	// hops (temenos_gossip.md PASS 2b). Best-effort — never fail the conquest
+	// over gossip.
+	if fallenName != "" {
+		if err := gossip.Broadcast(ctx, tx, worldID, *dest.settlementID, "military",
+			fallenName+" has fallen to conquest.", 6,
+			gossip.ImportanceMajor, *dest.settlementID, ""); err != nil {
+			slog.Warn("applyAttackerWins: broadcast gossip", "settlement", *dest.settlementID, "err", err)
+		}
 	}
 
 	// Update province territory state.

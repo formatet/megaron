@@ -13,9 +13,9 @@ func wantsCmd() *cobra.Command {
 		Short: "Show goods in shortage (wants) and surplus (exports) at known settlements",
 		Long: `Show goods in shortage (wants) and surplus (exports) at known settlements.
 
-Settlements marked "(rumour)" were learned secondhand — a contact told you
-about their market through gossip, not something you observed directly.
-Secondhand prices can go stale faster; go verify with your own messenger.`,
+Prices are always firsthand — observed by your own messenger or caravan
+reaching the settlement (temenos_gossip.md PASS 2b: gossip only ever tells you
+a settlement exists and a coarse industry hint, never its detailed market).`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/market/wants", cfg.WorldID)
@@ -31,7 +31,6 @@ Secondhand prices can go stale faster; go verify with your own messenger.`,
 				Wants []struct {
 					Name       string `json:"name"`
 					ObservedAt string `json:"observed_at"`
-					Secondhand bool   `json:"secondhand"`
 					Goods      []struct {
 						Good      string  `json:"good"`
 						WantLevel string  `json:"want_level"`
@@ -40,9 +39,8 @@ Secondhand prices can go stale faster; go verify with your own messenger.`,
 					} `json:"goods"`
 				} `json:"wants"`
 				Surplus []struct {
-					Name       string `json:"name"`
-					Secondhand bool   `json:"secondhand"`
-					Goods      []struct {
+					Name  string `json:"name"`
+					Goods []struct {
 						Good      string  `json:"good"`
 						Price     float64 `json:"price"`
 						BaseValue float64 `json:"base_value"`
@@ -60,11 +58,7 @@ Secondhand prices can go stale faster; go verify with your own messenger.`,
 			if len(resp.Wants) > 0 {
 				fmt.Println("SHORTAGES (good to sell here):")
 				for _, s := range resp.Wants {
-					label := s.Name
-					if s.Secondhand {
-						label += " (rumour)"
-					}
-					fmt.Printf("  %s:\n", label)
+					fmt.Printf("  %s:\n", s.Name)
 					for _, g := range s.Goods {
 						fmt.Printf("    %s (%s) — price %.0f (base %.0f)\n",
 							g.Good, g.WantLevel, g.Price, g.BaseValue)
@@ -74,11 +68,7 @@ Secondhand prices can go stale faster; go verify with your own messenger.`,
 			if len(resp.Surplus) > 0 {
 				fmt.Println("\nSURPLUS (good to buy here):")
 				for _, s := range resp.Surplus {
-					label := s.Name
-					if s.Secondhand {
-						label += " (rumour)"
-					}
-					fmt.Printf("  %s:\n", label)
+					fmt.Printf("  %s:\n", s.Name)
 					for _, g := range s.Goods {
 						fmt.Printf("    %s — price %.0f (base %.0f) stock %.0f\n",
 							g.Good, g.Price, g.BaseValue, g.Stock)

@@ -39,6 +39,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/gossip"
 	"github.com/poleia/server/internal/unit"
 )
 
@@ -96,15 +97,15 @@ func collapseSettlement(
 ) error {
 	// ── 1. Load settlement with FOR UPDATE (idempotency guard) ─────────────────
 	var ownerID *uuid.UUID
-	var cultureID string
+	var cultureID, name string
 	var provinceID uuid.UUID
 	var state string
 
 	if err := tx.QueryRow(ctx,
-		`SELECT owner_id, culture_id, province_id, state
+		`SELECT owner_id, culture_id, province_id, state, name
 		 FROM settlements WHERE id = $1 FOR UPDATE`,
 		settlementID,
-	).Scan(&ownerID, &cultureID, &provinceID, &state); err != nil {
+	).Scan(&ownerID, &cultureID, &provinceID, &state, &name); err != nil {
 		return fmt.Errorf("load settlement for collapse: %w", err)
 	}
 
@@ -284,6 +285,14 @@ func collapseSettlement(
 
 	// Recompute production (owner changed, rates will be stale).
 	_ = economy.RecomputeProduction(ctx, tx, settlementID)
+
+	// Rumor: a city collapsing is major news — hearsay, several hops
+	// (temenos_gossip.md PASS 2b). Best-effort — never fail the collapse over gossip.
+	if err := gossip.Broadcast(ctx, tx, worldID, settlementID, "military",
+		name+" has fallen ("+cause+").", 6,
+		gossip.ImportanceMajor, settlementID, ""); err != nil {
+		slog.Warn("collapse: broadcast gossip", "settlement", settlementID, "err", err)
+	}
 
 	// ── 7. Last-city check → Respawn ───────────────────────────────────────────
 	isLastCity := false
