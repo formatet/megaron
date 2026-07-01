@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/gossip"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
 )
@@ -1116,37 +1118,12 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 }
 
 // broadcastKingdomGossip sends gossip to all players within 5 hexes of the given
-// settlement. Used for kingdom formation and membership changes.
+// settlement. Used for kingdom formation and membership changes. Thin wrapper
+// around gossip.Broadcast (internal/gossip), which also seeds the shared
+// rumor_id that lets the news later spread further through contact.
 func (h *KingdomHandler) broadcastKingdomGossip(ctx context.Context, settlementID, worldID uuid.UUID, category, text string) {
-	rows, err := h.pool.Query(ctx,
-		`SELECT DISTINCT s2.owner_id
-		 FROM settlements s1
-		 JOIN provinces p1 ON p1.id = s1.province_id
-		 JOIN provinces p2 ON p2.world_id = p1.world_id
-		 JOIN settlements s2 ON s2.province_id = p2.id
-		 WHERE s1.id = $1
-		   AND s2.owner_id IS NOT NULL
-		   AND (ABS(p2.map_q - p1.map_q) + ABS(p2.map_r - p1.map_r) +
-		        ABS((p2.map_q + p2.map_r) - (p1.map_q + p1.map_r))) / 2 <= 5`,
-		settlementID,
-	)
-	if err != nil {
-		return
-	}
-	defer rows.Close()
-
-	var regionName string
-	_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&regionName)
-
-	for rows.Next() {
-		var recipID uuid.UUID
-		if err := rows.Scan(&recipID); err != nil {
-			continue
-		}
-		_, _ = h.pool.Exec(ctx,
-			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
-			 VALUES ($1, $2, $3, $4, $5)`,
-			worldID, recipID, regionName, category, text,
-		)
+	const kingdomGossipRadius = 5
+	if err := gossip.Broadcast(ctx, h.pool, worldID, settlementID, category, text, kingdomGossipRadius); err != nil {
+		slog.Error("broadcast kingdom gossip", "err", err)
 	}
 }

@@ -81,7 +81,7 @@ type UnitArrivedPayload struct {
 	UnitID  uuid.UUID `json:"unit_id"`
 	Q       int       `json:"q"`
 	R       int       `json:"r"`
-	NewStatus string  `json:"new_status"` // garrison|positioned
+	NewStatus string  `json:"new_status"` // garrison|positioned|disbanded (colonize: colonists become citizens)
 }
 
 // UnitCombatResolvedPayload records the outcome of combat for one unit.

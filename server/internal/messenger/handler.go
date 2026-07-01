@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/gossip"
 )
 
 // ArrivalPayload is the scheduled event payload for a messenger reaching its destination.
@@ -74,6 +75,16 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	).Scan(&senderID); err == nil {
 		if snapErr := economy.RecordMarketSnapshot(ctx, h.pool, senderID, destinationID); snapErr != nil {
 			slog.Error("market snapshot on messenger arrival", "err", snapErr)
+		}
+
+		// Gossip mechanism: contact spreads secondhand market knowledge of OTHER
+		// settlements (transitive discovery) and any rumors the destination's
+		// owner is carrying. Best-effort — never fail the arrival over this.
+		if err := economy.PropagateMarketKnowledge(ctx, h.pool, senderID, destinationID); err != nil {
+			slog.Error("propagate market knowledge on messenger arrival", "err", err)
+		}
+		if err := gossip.PropagateOnContact(ctx, h.pool, senderID, destinationID, e.WorldID); err != nil {
+			slog.Error("propagate gossip on messenger arrival", "err", err)
 		}
 	}
 

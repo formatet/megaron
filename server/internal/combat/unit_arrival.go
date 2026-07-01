@@ -14,6 +14,7 @@ import (
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/gossip"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/unit"
 )
@@ -131,7 +132,8 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 
 	hasSettlement := err == nil && dest.settlementID != nil
 
-	// Colonize intent on an empty hex → found a colony (the unit becomes its garrison).
+	// Colonize intent on an empty hex → found a colony (the unit disbands into
+	// its founding populace — colonists become citizens, not a garrison).
 	// If the hex turned out to be settled (race), fall through to the normal paths.
 	// Authoritative settlement-cap check (dispatch enforces it too, but the count can
 	// change mid-transit): over the cap → the unit just garrisons the empty hex instead.
@@ -217,9 +219,11 @@ func (h *UnitArrivalHandler) arriveGarrison(
 	return nil
 }
 
-// foundColony establishes a new colony settlement at an empty destination hex,
-// with the arriving unit as its garrison. This is the discrete-unit equivalent
-// of the legacy ArmyComposition colonize() in arrival.go: a genuinely separate
+// foundColony establishes a new colony settlement at an empty destination hex.
+// The arriving unit disbands into the colony's founding populace (colonists
+// become citizens, not a garrison — an undefended new colony is the intended
+// cost of expansion). This is the discrete-unit equivalent of the legacy
+// ArmyComposition colonize() in arrival.go: a genuinely separate
 // settlement (own catchment, loyalty, governor, building queue) that is still
 // integrated into the Wanax's network (same owner, shares the per-Wanax kharis
 // pool, revolts if the capital falls, counts toward the divine expansion brake).
@@ -275,17 +279,21 @@ func (h *UnitArrivalHandler) foundColony(
 		name = *u.colonyName
 	}
 
-	// Create the colony. Starting population 1500 — a real but modest second city.
-	// Unlike the capital it is NOT guaranteed self-sufficient (it can starve if
+	// Create the colony. Starting population 1500 — a real but modest second city
+	// — plus the colonizing unit's own size, since its colonists join the founding
+	// populace (they become citizens, not a garrison; see below). Unlike the
+	// capital the colony is NOT guaranteed self-sufficient (it can starve if
 	// neglected); that asymmetry is the intended cost of expansion.
+	const colonyBasePopulation = 1500
+	population := colonyBasePopulation + u.size
 	var colonyID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
 		  loyalty, governor_is_ai, population, founded_from)
-		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,true,1500,$6)
+		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,true,$7,$6)
 		 RETURNING id`,
-		worldID, provinceID, name, culture, u.ownerID, parentID,
+		worldID, provinceID, name, culture, u.ownerID, parentID, population,
 	).Scan(&colonyID); err != nil {
 		return fmt.Errorf("foundColony: create settlement: %w", err)
 	}
@@ -327,14 +335,14 @@ func (h *UnitArrivalHandler) foundColony(
 		return fmt.Errorf("foundColony: recompute production: %w", err)
 	}
 
-	// Re-home the colonizing unit as the colony's garrison (discrete-unit model —
-	// no integer army columns). Clears march + intent fields.
+	// Disband the colonizing unit into the colony's populace — colonists become
+	// citizens, not a garrison (their headcount is already folded into
+	// `population` above). No garrison remains: a new colony is undefended by
+	// design. Clears march + intent fields the same way arriveGarrison would.
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET
-		   status        = 'garrison',
-		   q             = $2,
-		   r             = $3,
-		   settlement_id = $4,
+		   status        = 'disbanded',
+		   settlement_id = $2,
 		   target_q      = NULL,
 		   target_r      = NULL,
 		   departs_at    = NULL,
@@ -343,13 +351,20 @@ func (h *UnitArrivalHandler) foundColony(
 		   colony_name   = NULL,
 		   updated_at    = now()
 		 WHERE id = $1`,
-		u.id, destQ, destR, colonyID,
+		u.id, colonyID,
 	); err != nil {
-		return fmt.Errorf("foundColony: rehome garrison unit: %w", err)
+		return fmt.Errorf("foundColony: disband colonizing unit: %w", err)
 	}
 
 	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
-		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "garrison"}, worldID, nil)
+		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "disbanded"}, worldID, nil)
+
+	// Rumor: a new colony nearby is news. Best-effort — never fail colonization
+	// over gossip.
+	if err := gossip.Broadcast(ctx, tx, worldID, colonyID, "political",
+		name+" has been founded nearby.", 6); err != nil {
+		slog.Warn("foundColony: broadcast gossip", "colony", colonyID, "err", err)
+	}
 
 	if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, map[string]any{
@@ -362,7 +377,7 @@ func (h *UnitArrivalHandler) foundColony(
 	}
 
 	slog.Info("colony founded (discrete unit)", "settlement", colonyID, "name", name,
-		"province", provinceID, "owner", u.ownerID, "garrison_unit", u.id, "q", destQ, "r", destR)
+		"province", provinceID, "owner", u.ownerID, "founding_unit", u.id, "population", population, "q", destQ, "r", destR)
 	return nil
 }
 

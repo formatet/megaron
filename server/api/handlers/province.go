@@ -2962,7 +2962,7 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at
+		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at, ms.secondhand
 		 FROM market_snapshots ms
 		 JOIN goods g ON g.key = ms.good_key
 		 JOIN settlements s ON s.id = ms.settlement_id
@@ -2991,6 +2991,7 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 		SettlementID uuid.UUID  `json:"settlement_id"`
 		Name         string     `json:"name"`
 		ObservedAt   time.Time  `json:"observed_at"`
+		Secondhand   bool       `json:"secondhand"` // learned via a contact's gossip, not observed directly
 		Goods        []wantItem `json:"goods"`
 	}
 
@@ -3003,8 +3004,9 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 			name, goodKey           string
 			price, stock, baseValue float64
 			observedAt              time.Time
+			secondhand              bool
 		)
-		if err := rows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt); err != nil {
+		if err := rows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt, &secondhand); err != nil {
 			continue
 		}
 		if _, seen := byID[settlementID]; !seen {
@@ -3012,6 +3014,7 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 				SettlementID: settlementID,
 				Name:         name,
 				ObservedAt:   observedAt,
+				Secondhand:   secondhand,
 				Goods:        []wantItem{},
 			}
 			order = append(order, settlementID)
@@ -3044,7 +3047,7 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 
 	// Surplus: goods with price < base_value * 0.9 (export candidates).
 	surplusRows, err := h.pool.Query(r.Context(),
-		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at
+		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at, ms.secondhand
 		 FROM market_snapshots ms
 		 JOIN goods g ON g.key = ms.good_key
 		 JOIN settlements s ON s.id = ms.settlement_id
@@ -3064,9 +3067,10 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 		Stock        float64 `json:"stock"`
 	}
 	type settlementSurplus struct {
-		SettlementID uuid.UUID    `json:"settlement_id"`
-		Name         string       `json:"name"`
-		ObservedAt   time.Time    `json:"observed_at"`
+		SettlementID uuid.UUID     `json:"settlement_id"`
+		Name         string        `json:"name"`
+		ObservedAt   time.Time     `json:"observed_at"`
+		Secondhand   bool          `json:"secondhand"` // learned via a contact's gossip, not observed directly
 		Goods        []surplusItem `json:"goods"`
 	}
 
@@ -3081,8 +3085,9 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 				name, goodKey           string
 				price, stock, baseValue float64
 				observedAt              time.Time
+				secondhand              bool
 			)
-			if err := surplusRows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt); err != nil {
+			if err := surplusRows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt, &secondhand); err != nil {
 				continue
 			}
 			if _, seen := surplusByID[settlementID]; !seen {
@@ -3090,6 +3095,7 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 					SettlementID: settlementID,
 					Name:         name,
 					ObservedAt:   observedAt,
+					Secondhand:   secondhand,
 					Goods:        []surplusItem{},
 				}
 				surplusOrder = append(surplusOrder, settlementID)
