@@ -39,9 +39,21 @@ func TestFoundColony_UnitDisbandsIntoPopulace(t *testing.T) {
 	ctx := context.Background()
 
 	// foundColony's settlement_goods seeding calls current_world_tick(), which
-	// reads the single globally-active world (status='active', enforced by a
-	// unique partial index) — so this fixture world must be active. It is
-	// cleaned up (deleted) at the end of the test, restoring "no active world".
+	// reads the single globally-active world (status='active', enforced by the
+	// one_active_world unique partial index) — so this fixture world must be
+	// active. It is cleaned up (deleted) at the end of the test, restoring "no
+	// active world". A prior test run that crashed before t.Cleanup ran can
+	// leave an active `test-world-…` behind on the shared dev DB, which would
+	// trip one_active_world on this run's INSERT. Archive our own detritus first
+	// — the name prefix guarantees we only ever touch this test's leftovers,
+	// never a real world. Archiving (not deleting) frees the partial unique
+	// index (it only covers status='active') without chasing the web of
+	// settlement-referencing tables that lack ON DELETE CASCADE.
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+	); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
 	var worldID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
@@ -57,8 +69,11 @@ func TestFoundColony_UnitDisbandsIntoPopulace(t *testing.T) {
 		t.Fatalf("create test player: %v", err)
 	}
 	t.Cleanup(func() {
-		_, _ = pool.Exec(ctx, `DELETE FROM worlds WHERE id = $1`, worldID)
-		_, _ = pool.Exec(ctx, `DELETE FROM players WHERE id = $1`, ownerID)
+		// Archive rather than delete: it restores "no active world" (all the
+		// unique index cares about) without needing to unwind the settlement-
+		// referencing tables that lack ON DELETE CASCADE. Any leftover an
+		// aborted run misses is re-archived by the sweep above on the next run.
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
 	})
 
 	// The owner needs a capital settlement — foundColony looks up the parent/
