@@ -119,3 +119,42 @@ func TestFindPath_StraightLandCost(t *testing.T) {
 		t.Errorf("unexpected path order: %v", path)
 	}
 }
+
+// TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect is a regression
+// test for R2 (megaron_todo §9): the A* heuristic must use HexDistance × minCost
+// (0.4 for naval, the cost of coastal_sea) rather than HexDistance × 1.0.
+//
+// This map is adversarial against the un-scaled heuristic: a straight 3-hex route
+// crosses deep_sea (0.7/hex, total 1.8 incl. the shared target hex) while a longer
+// 4-hex detour stays on coastal_sea (0.4/hex, total 1.6). The detour is truly
+// cheaper despite being longer. With heuristic × 1.0 (the a2daf11 regression),
+// A* pops the direct route's goal node (f=1.8) before ever expanding the detour
+// far enough to discover it costs less — it returns the suboptimal 1.8 route.
+// With the admissible × minCost heuristic, A* correctly returns the 1.6 detour.
+func TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect(t *testing.T) {
+	tiles := map[[2]int]string{
+		{0, 0}: "coastal_sea", // origin
+		{1, 0}: "deep_sea",    // direct route
+		{2, 0}: "deep_sea",    // direct route
+		{3, 0}: "coastal_sea", // target (shared final hex)
+		{0, 1}: "coastal_sea", // detour
+		{1, 1}: "coastal_sea", // detour
+		{2, 1}: "coastal_sea", // detour
+	}
+
+	origin := MapPosition{Q: 0, R: 0}
+	target := MapPosition{Q: 3, R: 0}
+
+	path, cost, ok := findPath(tiles, origin, target, "naval")
+	if !ok {
+		t.Fatal("expected a naval path to be found")
+	}
+
+	const wantCost = 1.6 // 3×0.4 (detour intermediates) + 0.4 (target) — NOT 1.8 (2×0.7 + 0.4 direct)
+	if math.Abs(cost-wantCost) > 1e-9 {
+		t.Errorf("expected optimal cost %.2f (cheaper detour), got %.2f — heuristic is not admissible", wantCost, cost)
+	}
+	if len(path) != 5 {
+		t.Errorf("expected the 5-hex detour path, got length %d: %v", len(path), path)
+	}
+}

@@ -66,6 +66,19 @@ func isPassable(terrain, category string) bool {
 	return true
 }
 
+// minPassableCost returns the cheapest TerrainMoveHours among terrains passable
+// for the given category. It is the admissible A* heuristic multiplier: the
+// heuristic (HexDistance × minPassableCost) must never overestimate the true
+// remaining cost, and the true cost per hex is never lower than this floor.
+//   - land: plains (0.75) is the cheapest passable terrain.
+//   - naval: coastal_sea (0.4) is the cheapest passable terrain.
+func minPassableCost(category string) float64 {
+	if category == "naval" {
+		return TerrainMoveHours("coastal_sea") // 0.4
+	}
+	return TerrainMoveHours("plains") // 0.75
+}
+
 // findPath is the pure A* implementation over an in-memory tile map.
 // It returns the shortest passable path from origin to target (ok=true),
 // or ok=false if the route is absent or unreachable.
@@ -83,6 +96,10 @@ func findPath(tiles map[[2]int]string, origin, target MapPosition, category stri
 
 	_ = originTerrain // validated; cost to enter origin is not added (path[0] is free)
 
+	// Admissible heuristic multiplier: the true cost of any passable hex is never
+	// below this floor, so HexDistance × minCost never overestimates (R2 fix).
+	minCost := minPassableCost(category)
+
 	// A* state: gScore[node] = best known cost from origin to node.
 	gScore := map[MapPosition]float64{origin: 0}
 	prev := map[MapPosition]MapPosition{}
@@ -92,7 +109,7 @@ func findPath(tiles map[[2]int]string, origin, target MapPosition, category stri
 	heap.Push(pq, &aStarItem{
 		pos: origin,
 		g:   0,
-		f:   float64(HexDistance(origin, target)),
+		f:   float64(HexDistance(origin, target)) * minCost,
 	})
 
 	for pq.Len() > 0 {
@@ -131,7 +148,7 @@ func findPath(tiles map[[2]int]string, origin, target MapPosition, category stri
 			if !seen || ng < prev_g-1e-9 {
 				gScore[npos] = ng
 				prev[npos] = pos
-				h := float64(HexDistance(npos, target))
+				h := float64(HexDistance(npos, target)) * minCost
 				heap.Push(pq, &aStarItem{pos: npos, g: ng, f: ng + h})
 			}
 		}

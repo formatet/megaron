@@ -660,22 +660,39 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 	} else if result.AttackerRouted && h.scheduler != nil {
 		// Rout (W5): unit survives with remaining men, retreats to origin.
 		// origin = (u.q, u.r) — the hex the unit marched FROM (set by march handler).
-		dist := province.HexDistance(
+		// Route via A* (same passability graph the forward march used) instead of a
+		// straight line, so a routing unit cannot teleport across impassable terrain.
+		_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 			province.MapPosition{Q: destQ, R: destR},
 			province.MapPosition{Q: u.q, R: u.r},
+			u.category,
 		)
-		if dist < 1 {
-			dist = 1
+		var moveHours float64
+		if pathErr == nil && pathOK {
+			moveHours = pathHours
+		} else {
+			// Defensive fallback: the forward march already proved a route exists,
+			// so this should not happen. Straight-line estimate keeps the rout from
+			// stalling if it ever does.
+			slog.Warn("rout retreat: FindPath failed, falling back to straight line",
+				"unit", u.id, "err", pathErr)
+			dist := province.HexDistance(
+				province.MapPosition{Q: destQ, R: destR},
+				province.MapPosition{Q: u.q, R: u.r},
+			)
+			if dist < 1 {
+				dist = 1
+			}
+			var originTerrain string
+			_ = tx.QueryRow(ctx,
+				`SELECT terrain_type FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
+				worldID, u.q, u.r,
+			).Scan(&originTerrain)
+			if originTerrain == "" {
+				originTerrain = "plains"
+			}
+			moveHours = province.TerrainMoveHours(originTerrain) * float64(dist)
 		}
-		var originTerrain string
-		_ = tx.QueryRow(ctx,
-			`SELECT terrain_type FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
-			worldID, u.q, u.r,
-		).Scan(&originTerrain)
-		if originTerrain == "" {
-			originTerrain = "plains"
-		}
-		moveHours := province.TerrainMoveHours(originTerrain) * float64(dist)
 		arrivesAt := h.clk.Now().Add(time.Duration(moveHours * float64(time.Hour)))
 
 		var currentTick int

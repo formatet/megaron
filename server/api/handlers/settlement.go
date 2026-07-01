@@ -784,11 +784,11 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 // Harness usage: read event payload["effect"]["reveals"][0]["q"/"r"] to get the
 // colonisable tile coordinates, then issue a settle action there. colonize validation
 // (unit.go:179) only requires a buildable unoccupied tile — FOW-visibility is NOT
-// required, so no player_scouted_tiles table is needed.
+// required to colonize it. The reveal is still written to player_scouted_tiles so the
+// coordinate persists as map/FOW memory for the player (movement-motor Pass II).
 //
-// Idempotency: the rite cooldown (checked in Rite handler before this call) prevents
-// re-casting. This function itself has no side-effects beyond building the payload,
-// so it is safe to call twice if the TX is somehow retried.
+// Idempotency: each reveal is INSERT ... ON CONFLICT DO NOTHING against
+// player_scouted_tiles, so re-running (e.g. a retried TX) is safe.
 func (h *SettlementHandler) applyOracleRevealDeposits(
 	ctx context.Context,
 	tx pgx.Tx,
@@ -911,6 +911,15 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 			"r":   rs.R,
 			"ore": ore,
 		})
+		// Persist the reveal as scouted-tile memory (R3): the coordinate stays on the
+		// player's map/FOW after this rite even though colonize itself is not FOW-gated.
+		if _, insErr := tx.Exec(ctx,
+			`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+			 VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
+			worldID, playerID, rs.Q, rs.R,
+		); insErr != nil {
+			slog.Warn("oracle: scouted-tile insert failed", "q", rs.Q, "r", rs.R, "err", insErr)
+		}
 		switch ore {
 		case "tin":
 			foundTin = true
