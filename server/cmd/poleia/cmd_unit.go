@@ -158,6 +158,14 @@ Terrain passability:
 A land unit must reach 100 men (garrison status) before it can march.
 A unit in fortify stance must be cleared (stance none) before marching.
 
+Exploring: marching into fog or unknown territory is fully allowed — the
+server does not FOW-gate the destination, only the route (A* over known
+terrain). Sending a unit into the fog frontier IS how you explore: the
+route it sweeps is revealed and remembered (dimmed on 'poleia map'
+thereafter) once the unit arrives. Run 'poleia map' first to see the
+frontier coordinates (fog tiles bordering what you already know) — march
+a unit there to push the frontier outward.
+
 Ore on mountain terrain (copper, tin, silver):
   Mountains are impassable — you cannot colonize the mountain hex itself.
   Instead, colonize an ADJACENT passable hex: the ore deposit will fall in
@@ -165,7 +173,9 @@ Ore on mountain terrain (copper, tin, silver):
   Use 'poleia map' to see which adjacent hexes are passable.`,
 		Example: `  poleia unit march --unit <id> --q 5 --r -3
   poleia unit march --unit <id> --q 5 --r -3 --stance fortify
-  poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos`,
+  poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
+  # Explore: march toward a frontier coordinate from 'poleia map' to reveal it
+  poleia unit march --unit <id> --q 12 --r -8`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			body := map[string]any{
 				"target_q": targetQ,

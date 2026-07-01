@@ -300,9 +300,11 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var origins []province.MapPosition
+	var eyes []province.Eye
+	var remembered map[[2]int]bool
 	if authenticated {
-		origins = h.visibleOrigins(r.Context(), worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
+		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 	}
 
 	type tileView struct {
@@ -311,6 +313,8 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		Terrain       string  `json:"terrain"`
 		Coastal       bool    `json:"coastal,omitempty"`
 		Visible       bool    `json:"visible"`
+		Tier          string  `json:"tier"` // "live" | "remembered" | "fog"
+		Frontier      bool    `json:"frontier,omitempty"`
 		F             float64 `json:"fertility,omitempty"`
 		M             float64 `json:"mineral,omitempty"`
 		CopperDeposit bool    `json:"copper_deposit,omitempty"`
@@ -319,6 +323,8 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		SilverDeposit bool    `json:"silver_deposit,omitempty"`
 	}
 	var tiles []tileView
+	tierByPos := map[[2]int]string{}
+	var liveTiles []province.MapPosition
 	for rows.Next() {
 		var t tileView
 		if err := rows.Scan(&t.Q, &t.R, &t.Terrain, &t.Coastal, &t.F, &t.M, &t.CopperDeposit, &t.TinDeposit,
@@ -326,7 +332,18 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		pos := province.MapPosition{Q: t.Q, R: t.R}
-		t.Visible = !authenticated || province.VisibleFrom(pos, origins, 6)
+		switch {
+		case !authenticated:
+			t.Tier = "live"
+		case province.AnyEyeSees(eyes, pos, t.Terrain):
+			t.Tier = "live"
+			liveTiles = append(liveTiles, pos)
+		case remembered[[2]int{t.Q, t.R}]:
+			t.Tier = "remembered"
+		default:
+			t.Tier = "fog"
+		}
+		t.Visible = t.Tier != "fog"
 		if !t.Visible {
 			t.F = 0
 			t.M = 0
@@ -337,11 +354,45 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 			t.SilverDeposit = false
 			t.Terrain = "fog"
 		}
+		tierByPos[[2]int{t.Q, t.R}] = t.Tier
 		tiles = append(tiles, t)
 	}
+
+	// Frontier: a fog tile adjacent to a known (live or remembered) tile — the edge
+	// of the explored world, so the client/CLI can point the player at where to
+	// explore next (temenos_synlighet.md tier 3).
+	for i := range tiles {
+		if tiles[i].Tier != "fog" {
+			continue
+		}
+		for _, n := range province.HexNeighbors(province.MapPosition{Q: tiles[i].Q, R: tiles[i].R}) {
+			if nt, ok := tierByPos[[2]int{n.Q, n.R}]; ok && nt != "fog" {
+				tiles[i].Frontier = true
+				break
+			}
+		}
+	}
+
 	if tiles == nil {
 		tiles = []tileView{}
 	}
+
+	// Memory grows where the player currently sees: upsert this turn's live tiles
+	// into player_scouted_tiles so they remain (dimmed) after the eye moves on.
+	// Idempotent — ON CONFLICT DO NOTHING, safe to run on every Map read.
+	if authenticated && len(liveTiles) > 0 {
+		batch := &pgx.Batch{}
+		for _, pos := range liveTiles {
+			batch.Queue(
+				`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+				 VALUES ($1, $2, $3, $4) ON CONFLICT (world_id, player_id, q, r) DO NOTHING`,
+				worldID, playerID, pos.Q, pos.R,
+			)
+		}
+		br := h.pool.SendBatch(r.Context(), batch)
+		_ = br.Close()
+	}
+
 	writeJSON(w, http.StatusOK, tiles)
 }
 
@@ -506,10 +557,16 @@ func (h *WorldHandler) visibleOrigins(ctx context.Context, worldID, playerID uui
 	return loadVisibleOrigins(ctx, h.pool, worldID, playerID)
 }
 
-// loadVisibleOrigins is the package-level implementation of the FOW origin query,
-// shared by WorldHandler and MessengerHandler (and any future handler that needs
-// to gate access by contact/visibility). Only h.pool is needed, so extracting
-// to a free function avoids constructing a partial WorldHandler.
+// loadVisibleOrigins is the package-level implementation of the KNOWN-set query
+// (live ∪ remembered ∪ contacted), shared by WorldHandler and MessengerHandler (and
+// any future handler that needs to gate access by contact/visibility) — NOT the
+// tiered live-vision eyes used for map rendering (see loadLiveEyes). Keeping this
+// generous flat-radius set is the CRITICAL invariant from temenos_synlighet.md:
+// messenger Send and the Wanaxes directory must keep gating on everything a player
+// has ever discovered, not just what their eyes currently see, or shrinking live
+// sight to 2-3 hexes would lock players out of cities they already contacted.
+// Only h.pool is needed, so extracting to a free function avoids constructing a
+// partial WorldHandler.
 func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) []province.MapPosition {
 	rows, err := pool.Query(ctx,
 		`SELECT DISTINCT pos.q, pos.r FROM (
@@ -576,8 +633,93 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 	return origins
 }
 
+// loadLiveEyes returns the player's tier-1 (live) vision sources: own and allied
+// settlements, plus own units currently on the map (marching or positioned — units
+// still 'forming'/'garrison' have no q/r of their own and are seen only via their
+// settlement's eye; 'embarked' units carry no position, they move with their ship).
+// Each eye is typed so province.LiveRadius can size vision per temenos_synlighet.md's
+// per-eye-kind × per-target-terrain table. Scouted tiles/provinces and messenger
+// contacts are NOT eyes — they are tier-2 memory (see loadRememberedTiles).
+func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) []province.Eye {
+	rows, err := pool.Query(ctx,
+		`SELECT q, r, kind FROM (
+		     SELECT p.map_q AS q, p.map_r AS r, 'settlement' AS kind
+		     FROM provinces p
+		     JOIN settlements s ON s.province_id = p.id
+		     WHERE p.world_id = $1 AND (
+		         s.owner_id = $2
+		         OR (s.kingdom_id IS NOT NULL AND s.kingdom_id IN (
+		             SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
+		         ))
+		     )
+		     UNION ALL
+		     SELECT u.q, u.r,
+		            CASE WHEN u.category = 'naval' THEN 'ship' ELSE 'land-unit' END AS kind
+		     FROM units u
+		     WHERE u.world_id = $1 AND u.owner_id = $2
+		       AND u.status != 'embarked'
+		       AND u.q IS NOT NULL AND u.r IS NOT NULL
+		 ) eyes`,
+		worldID, playerID,
+	)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var eyes []province.Eye
+	for rows.Next() {
+		var e province.Eye
+		if err := rows.Scan(&e.Pos.Q, &e.Pos.R, &e.Kind); err == nil {
+			eyes = append(eyes, e)
+		}
+	}
+	return eyes
+}
+
+// loadRememberedTiles returns the set of tiles the player has ever live-seen and
+// therefore remembers (tier 2, temenos_synlighet.md): tiles swept by unit marches,
+// provinces scouted by explore marches, and cities reached by messenger contact.
+// These stay visible (terrain + last-seen deposits/city, dimmed, frozen) after the
+// live eye that revealed them moves on — but carry no live activity.
+func loadRememberedTiles(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) map[[2]int]bool {
+	rows, err := pool.Query(ctx,
+		`SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2
+		 UNION
+		 SELECT p.map_q, p.map_r
+		 FROM player_scouted_provinces sp
+		 JOIN provinces p ON p.id = sp.province_id
+		 WHERE sp.world_id = $1 AND sp.player_id = $2
+		 UNION
+		 SELECT dp.map_q, dp.map_r
+		 FROM messengers m
+		 JOIN settlements ds ON ds.id = m.destination_id
+		 JOIN provinces dp ON dp.id = ds.province_id
+		 WHERE m.world_id = $1 AND m.sender_id = $2
+		   AND m.status IN ('delivered', 'returning', 'arrived')`,
+		worldID, playerID,
+	)
+	if err != nil {
+		return map[[2]int]bool{}
+	}
+	defer rows.Close()
+
+	set := map[[2]int]bool{}
+	for rows.Next() {
+		var q, r int
+		if err := rows.Scan(&q, &r); err == nil {
+			set[[2]int{q, r}] = true
+		}
+	}
+	return set
+}
+
 // Marches handles GET /worlds/:worldID/marches — all unresolved marching armies visible
 // to the player. Used by the map renderer to draw animated walkers.
+//
+// Live activity only (temenos_synlighet.md): a march is shown only while its origin
+// or target sits on a tier-1 LIVE tile — remembered (tier-2) tiles show frozen
+// terrain/last-seen state, never moving armies.
 func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -586,19 +728,14 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
-	// Fog of war: only show marches originating from or heading to visible provinces.
-	var visQ, visR []int
+	var eyes []province.Eye
 	if authenticated {
-		origins := h.visibleOrigins(r.Context(), worldID, playerID)
-		for _, o := range origins {
-			visQ = append(visQ, o.Q)
-			visR = append(visR, o.R)
-		}
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
 	}
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT ma.id, ma.intent,
-		        op.map_q, op.map_r, tp.map_q, tp.map_r,
+		        op.map_q, op.map_r, op.terrain_type, tp.map_q, tp.map_r, tp.terrain_type,
 		        ma.departs_at, ma.arrives_at,
 		        (COALESCE(ma.ship,0) + COALESCE(ma.war_galley,0) + COALESCE(ma.merchantman,0)) > 0 AS is_naval
 		 FROM marching_armies ma
@@ -625,28 +762,23 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		IsNaval   bool      `json:"is_naval,omitempty"`
 	}
 
-	visible := func(q, r int) bool {
+	visible := func(q, r int, terrain string) bool {
 		if !authenticated {
 			return false
 		}
-		return province.VisibleFrom(province.MapPosition{Q: q, R: r}, func() []province.MapPosition {
-			ps := make([]province.MapPosition, len(visQ))
-			for i := range visQ {
-				ps[i] = province.MapPosition{Q: visQ[i], R: visR[i]}
-			}
-			return ps
-		}(), 6)
+		return province.AnyEyeSees(eyes, province.MapPosition{Q: q, R: r}, terrain)
 	}
 
 	var markers []marchMarker
 	for rows.Next() {
 		var m marchMarker
+		var originTerrain, targetTerrain string
 		if err := rows.Scan(&m.ID, &m.Intent,
-			&m.OriginQ, &m.OriginR, &m.TargetQ, &m.TargetR,
+			&m.OriginQ, &m.OriginR, &originTerrain, &m.TargetQ, &m.TargetR, &targetTerrain,
 			&m.DepartsAt, &m.ArrivesAt, &m.IsNaval); err != nil {
 			continue
 		}
-		if !visible(m.OriginQ, m.OriginR) && !visible(m.TargetQ, m.TargetR) {
+		if !visible(m.OriginQ, m.OriginR, originTerrain) && !visible(m.TargetQ, m.TargetR, targetTerrain) {
 			continue
 		}
 		markers = append(markers, m)
@@ -659,6 +791,8 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 
 // MapTrades handles GET /worlds/:worldID/trades — active trade caravans visible to the
 // player. Used by the map renderer to draw animated caravan walkers.
+//
+// Live activity only (temenos_synlighet.md) — same tier-1 gate as Marches.
 func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -667,13 +801,14 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
-	var origins []province.MapPosition
+	var eyes []province.Eye
 	if authenticated {
-		origins = h.visibleOrigins(r.Context(), worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT tr.id, tr.good_key, op.map_q, op.map_r, dp.map_q, dp.map_r, tr.departs_at, tr.arrives_at
+		`SELECT tr.id, tr.good_key, op.map_q, op.map_r, op.terrain_type,
+		        dp.map_q, dp.map_r, dp.terrain_type, tr.departs_at, tr.arrives_at
 		 FROM trade_routes tr
 		 JOIN settlements os ON os.id = tr.origin_id
 		 JOIN provinces op ON op.id = os.province_id
@@ -702,12 +837,14 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	var markers []tradeMarker
 	for rows.Next() {
 		var m tradeMarker
-		if err := rows.Scan(&m.ID, &m.GoodKey, &m.OriginQ, &m.OriginR, &m.DestQ, &m.DestR,
-			&m.DepartsAt, &m.ArrivesAt); err != nil {
+		var originTerrain, destTerrain string
+		if err := rows.Scan(&m.ID, &m.GoodKey, &m.OriginQ, &m.OriginR, &originTerrain,
+			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt); err != nil {
 			continue
 		}
-		if authenticated && !province.VisibleFrom(province.MapPosition{Q: m.OriginQ, R: m.OriginR}, origins, 6) &&
-			!province.VisibleFrom(province.MapPosition{Q: m.DestQ, R: m.DestR}, origins, 6) {
+		if authenticated &&
+			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.OriginQ, R: m.OriginR}, originTerrain) &&
+			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.DestQ, R: m.DestR}, destTerrain) {
 			continue
 		}
 		markers = append(markers, m)
@@ -720,6 +857,8 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 
 // MapMessengers handles GET /worlds/:worldID/messengers — outbound messengers visible
 // to the player. Used by the map renderer to draw animated messenger walkers.
+//
+// Live activity only (temenos_synlighet.md) — same tier-1 gate as Marches.
 func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -728,14 +867,14 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
-	var origins []province.MapPosition
+	var eyes []province.Eye
 	if authenticated {
-		origins = h.visibleOrigins(r.Context(), worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, op.map_q, op.map_r,
-		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r),
+		`SELECT m.id, op.map_q, op.map_r, op.terrain_type,
+		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
 		        m.sent_at, m.arrives_at
 		 FROM messengers m
 		 JOIN settlements os ON os.id = m.origin_id
@@ -752,24 +891,26 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type messengerMarker struct {
-		ID       uuid.UUID `json:"id"`
-		OriginQ  int       `json:"origin_q"`
-		OriginR  int       `json:"origin_r"`
-		DestQ    int       `json:"dest_q"`
-		DestR    int       `json:"dest_r"`
-		SentAt   time.Time `json:"sent_at"`
+		ID        uuid.UUID `json:"id"`
+		OriginQ   int       `json:"origin_q"`
+		OriginR   int       `json:"origin_r"`
+		DestQ     int       `json:"dest_q"`
+		DestR     int       `json:"dest_r"`
+		SentAt    time.Time `json:"sent_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
 	}
 
 	var markers []messengerMarker
 	for rows.Next() {
 		var m messengerMarker
-		if err := rows.Scan(&m.ID, &m.OriginQ, &m.OriginR, &m.DestQ, &m.DestR,
+		var originTerrain, destTerrain string
+		if err := rows.Scan(&m.ID, &m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
 			&m.SentAt, &m.ArrivesAt); err != nil {
 			continue
 		}
-		if authenticated && !province.VisibleFrom(province.MapPosition{Q: m.OriginQ, R: m.OriginR}, origins, 6) &&
-			!province.VisibleFrom(province.MapPosition{Q: m.DestQ, R: m.DestR}, origins, 6) {
+		if authenticated &&
+			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.OriginQ, R: m.OriginR}, originTerrain) &&
+			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.DestQ, R: m.DestR}, destTerrain) {
 			continue
 		}
 		markers = append(markers, m)
