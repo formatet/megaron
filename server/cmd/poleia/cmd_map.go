@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 
 	"github.com/spf13/cobra"
@@ -19,6 +20,28 @@ func hexDist(q1, r1, q2, r2 int) int {
 		return x
 	}
 	return (abs(dq) + abs(dr) + abs(s)) / 2
+}
+
+// compassDirection returns an 8-point compass bearing (N/NE/E/SE/S/SW/W/NW) from
+// origin to target. The CLI has no visual grid, so raw (q,r) pairs alone make
+// adjacency/direction hard to judge — this gives a coarse orientation aid
+// alongside the exact coordinates already shown. Mirrors the angle bucketing in
+// internal/province/hex.go's FuzzyBearing (kept local rather than imported —
+// the CLI is a pure HTTP client, deliberately decoupled from server internals).
+func compassDirection(oq, or, tq, tr int) string {
+	if oq == tq && or == tr {
+		return ""
+	}
+	dq := float64(tq - oq)
+	dr := float64(tr - or)
+	x := dq + dr/2
+	y := dr * math.Sqrt(3) / 2
+	angle := math.Atan2(y, x)
+	if angle < 0 {
+		angle += 2 * math.Pi
+	}
+	sectors := [8]string{"E", "NE", "N", "NW", "W", "SW", "S", "SE"}
+	return sectors[int(math.Round(angle/(math.Pi/4)))%8]
 }
 
 func mapCmd() *cobra.Command {
@@ -151,9 +174,10 @@ func mapCmd() *cobra.Command {
 				if t.Tier == "remembered" {
 					dim = " [remembered]"
 				}
+				bearing := compassDirection(oq, or, t.Q, t.R)
 				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
 					// Sea hexes: no deposit/occupied tags, just label
-					fmt.Printf("  (%3d,%3d) d%-2d %-20s[sea]%s\n", t.Q, t.R, t.Distance, t.Terrain, dim)
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[sea]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
 					continue
 				}
 				tag := ""
@@ -182,7 +206,7 @@ func mapCmd() *cobra.Command {
 						}
 					}
 				}
-				fmt.Printf("  (%3d,%3d) d%-2d %-20s%s%s%s%s\n", t.Q, t.R, t.Distance, t.Terrain, dep, coastTag, tag, dim)
+				fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s%s%s%s%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dep, coastTag, tag, dim)
 			}
 			if len(frontier) > 0 {
 				fmt.Printf("\nFrontier — unexplored hexes bordering the known world (%d, nearest first):\n", len(frontier))
@@ -191,7 +215,7 @@ func mapCmd() *cobra.Command {
 					max = 15
 				}
 				for _, f := range frontier[:max] {
-					fmt.Printf("  (%3d,%3d) d%-2d\n", f.Q, f.R, f.Distance)
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s\n", f.Q, f.R, f.Distance, compassDirection(oq, or, f.Q, f.R))
 				}
 				if len(frontier) > max {
 					fmt.Printf("  … and %d more\n", len(frontier)-max)
