@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,11 +32,12 @@ type ProvinceHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
 	clk       clock.Clock
+	sitosCfg  economy.SitosConfig
 }
 
 // NewProvinceHandler creates a ProvinceHandler.
-func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock) *ProvinceHandler {
-	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk}
+func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig) *ProvinceHandler {
+	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg}
 }
 
 // Get handles GET /worlds/:worldID/provinces/:provinceID.
@@ -367,6 +369,58 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			grows.Close()
 		}
 
+		// Sitos-fonden surface (always visible): the fund's silver + smoothed grain
+		// reference price. Rate shown is the tax leg's "up to" amount per tick (the
+		// applied tax is additionally silver-gated).
+		var currentTick int
+		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
+		var sitosFundSilver float64
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT GREATEST(0, sitos_fund_silver) FROM settlements WHERE id = $1`, sett.ID,
+		).Scan(&sitosFundSilver)
+		var grainBaseValue, grainAmount, grainRate, grainCap float64
+		var grainCalcTick int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT g.base_value, sg.amount, sg.rate, sg.cap, sg.calc_tick
+			 FROM settlement_goods sg JOIN goods g ON g.key = sg.good_key
+			 WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'`,
+			sett.ID,
+		).Scan(&grainBaseValue, &grainAmount, &grainRate, &grainCap, &grainCalcTick)
+		sitosFundCap := economy.FundCap(sett.Population, grainBaseValue, h.sitosCfg)
+		refPriceGrain := economy.RefPrice(grainBaseValue, grainAmount, grainRate,
+			float64(grainCalcTick), grainCap, currentTick, h.sitosCfg)
+		taxRatePerTick := float64(sett.Population) * h.sitosCfg.TaxRate / float64(events.TicksPerDay)
+
+		// "Senaste tick" summary (Fas 2 point 8): derive prod/cons from the same
+		// per-tick rates already in resSnap, and sum this tick's Sitos silver delta
+		// from the events log. Summarizes the journal without replacing it.
+		lastTickProd := map[string]float64{}
+		lastTickCons := map[string]float64{}
+		for k, rd := range resSnap {
+			if rd.Rate > 0 {
+				lastTickProd[k] = rd.Rate
+			} else if rd.Rate < 0 {
+				lastTickCons[k] = -rd.Rate
+			}
+		}
+		var lastTickSitosDelta float64
+		if lrows, lerr := h.pool.Query(r.Context(),
+			`SELECT payload FROM events
+			 WHERE stream_id = $1 AND world_tick = $2 AND event_type = 'SitosTransaction'`,
+			sett.ID, currentTick,
+		); lerr == nil {
+			for lrows.Next() {
+				var pl []byte
+				if lrows.Scan(&pl) == nil {
+					var p economy.SitosTransactionPayload
+					if json.Unmarshal(pl, &p) == nil {
+						lastTickSitosDelta += p.SilverDelta
+					}
+				}
+			}
+			lrows.Close()
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":                sett.ID,
 			"name":              sett.Name,
@@ -388,6 +442,20 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"can_afford":        buildAfford,
 			"can_recruit":       recruitAfford,
 			"available_prayers": prayers,
+			"sitos": map[string]any{
+				"fund_silver":        sitosFundSilver,
+				"fund_cap":           sitosFundCap,
+				"fund_rate_per_tick": taxRatePerTick,
+				"ref_price_grain":    refPriceGrain,
+				"ref_price_floor":    h.sitosCfg.RefPriceFloor,
+				"ref_price_ceiling":  h.sitosCfg.RefPriceCeiling,
+			},
+			"last_tick": map[string]any{
+				"tick":        currentTick,
+				"production":  lastTickProd,
+				"consumption": lastTickCons,
+				"sitos_delta": lastTickSitosDelta,
+			},
 		}
 	}
 
@@ -1894,7 +1962,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Amount:         current,
 			Rate:           rate,
 			Cap:            capV,
-			Price:          goodLocalPrice(baseValue, current, rate, capV),
+			Price:          economy.LocalPrice(baseValue, current, rate, capV),
 			Citizens:       int(math.Round(laborWeights[key] * float64(laborPool))),
 			Percent:        laborWeights[key] * 100.0,
 			YieldPerWorker: bp / economy.REF_LABOR,
@@ -1907,6 +1975,127 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		result = []goodRow{}
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// Ticklog handles GET /worlds/:worldID/provinces/:provinceID/ticklog?last=N&order=asc.
+// Per-city tick-journal (temenos_sitos.md Fas 2): for each tick in
+// [current−N+1, current] it derives production/consumption flows from the
+// settlement_goods rates (lazy, per-tick) and buckets the discrete events
+// (SitosTransaction, TradeDelivery, BuildComplete, …) stamped with that tick.
+// Newest-first by default; ?order=asc for chronological. The loyalty row is the
+// placeholder "—" until Fas 3.
+func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	sett, err := loadSettlementByProvince(r.Context(), h.pool, provinceID, worldID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "no settlement here")
+		return
+	}
+
+	last := 10
+	if v := r.URL.Query().Get("last"); v != "" {
+		if n, e := strconv.Atoi(v); e == nil {
+			last = n
+		}
+	}
+	if last < 1 {
+		last = 1
+	}
+	if last > 200 {
+		last = 200
+	}
+	ascOrder := r.URL.Query().Get("order") == "asc"
+
+	var currentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
+	fromTick := currentTick - last + 1
+	if fromTick < 0 {
+		fromTick = 0
+	}
+
+	// Derive per-tick flows from current settlement_goods rates (per-tick).
+	// Rate is assumed constant across the window (true between RecomputeProduction
+	// calls). Positive rate = production; negative = consumption (shown positive).
+	production := map[string]float64{}
+	consumption := map[string]float64{}
+	if grows, gerr := h.pool.Query(r.Context(),
+		`SELECT good_key, rate FROM settlement_goods WHERE settlement_id = $1`, sett.ID,
+	); gerr == nil {
+		for grows.Next() {
+			var k string
+			var rt float64
+			if grows.Scan(&k, &rt) == nil {
+				if rt > 0 {
+					production[k] = rt
+				} else if rt < 0 {
+					consumption[k] = -rt
+				}
+			}
+		}
+		grows.Close()
+	}
+
+	// Bucket discrete events by tick.
+	type tickEvent struct {
+		Type    string          `json:"type"`
+		Payload json.RawMessage `json:"payload"`
+	}
+	eventsByTick := map[int][]tickEvent{}
+	if erows, eerr := h.pool.Query(r.Context(),
+		`SELECT world_tick, event_type, payload FROM events
+		 WHERE stream_id = $1 AND world_tick BETWEEN $2 AND $3
+		 ORDER BY world_tick, id`,
+		sett.ID, fromTick, currentTick,
+	); eerr == nil {
+		for erows.Next() {
+			var tk int
+			var et string
+			var pl json.RawMessage
+			if erows.Scan(&tk, &et, &pl) == nil {
+				eventsByTick[tk] = append(eventsByTick[tk], tickEvent{Type: et, Payload: pl})
+			}
+		}
+		erows.Close()
+	}
+
+	type tickRow struct {
+		Tick        int              `json:"tick"`
+		Production  map[string]float64 `json:"production"`
+		Consumption map[string]float64 `json:"consumption"`
+		Events      []tickEvent      `json:"events"`
+		Loyalty     string           `json:"loyalty"` // "—" until Fas 3
+	}
+	ticks := make([]tickRow, 0, last)
+	for tk := fromTick; tk <= currentTick; tk++ {
+		evs := eventsByTick[tk]
+		if evs == nil {
+			evs = []tickEvent{}
+		}
+		ticks = append(ticks, tickRow{
+			Tick: tk, Production: production, Consumption: consumption,
+			Events: evs, Loyalty: "—",
+		})
+	}
+	if !ascOrder {
+		for i, j := 0, len(ticks)-1; i < j; i, j = i+1, j-1 {
+			ticks[i], ticks[j] = ticks[j], ticks[i]
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"settlement_id": sett.ID,
+		"current_tick":  currentTick,
+		"ticks":         ticks,
+	})
 }
 
 // Trade handles POST /worlds/:worldID/provinces/:provinceID/trade.
@@ -2559,32 +2748,6 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 		result = []routeItem{}
 	}
 	writeJSON(w, http.StatusOK, result)
-}
-
-// goodLocalPrice mirrors economy.LocalPrice for use within this package.
-func goodLocalPrice(baseValue, stock, ratePerMin, cap float64) float64 {
-	const lookahead = 60.0 * 24.0
-	projected := stock + ratePerMin*lookahead
-	if projected < 0 {
-		projected = 0
-	}
-	if projected > cap {
-		projected = cap
-	}
-	reference := cap * 0.3
-	if reference <= 0 {
-		return baseValue
-	}
-	shortage := math.Max(0, (reference-projected)/reference)
-	surplus := 0.0
-	if cap-reference > 0 {
-		surplus = math.Max(0, (projected-reference)/(cap-reference))
-	}
-	price := baseValue * (1 + 2.0*shortage) * (1 - 0.5*surplus)
-	if price < 0 {
-		price = 0
-	}
-	return price
 }
 
 // Disband handles POST /worlds/:worldID/provinces/:provinceID/disband.

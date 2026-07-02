@@ -21,11 +21,12 @@ import (
 type JoinHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
+	sitosCfg   economy.SitosConfig
 }
 
 // NewJoinHandler creates a JoinHandler.
-func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store) *JoinHandler {
-	return &JoinHandler{pool: pool, eventStore: eventStore}
+func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store, sitosCfg economy.SitosConfig) *JoinHandler {
+	return &JoinHandler{pool: pool, eventStore: eventStore, sitosCfg: sitosCfg}
 }
 
 // Join creates a province + settlement for the authenticated player in the given world.
@@ -229,6 +230,20 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create settlement")
 		return
+	}
+
+	// Sitos genesis seed: sow the fund's starting silver (a deliberate silver-
+	// invariant exception, like start-grain/pop — see temenos_sitos.md). Capital
+	// population is the literal 5000 above.
+	if grainBaseValue, gbErr := economy.GoodBaseValue(r.Context(), tx, "grain"); gbErr != nil {
+		slog.Error("sitos genesis: load grain base value", "err", gbErr)
+	} else {
+		seed, _ := economy.GenesisFundSeed(5000, grainBaseValue, h.sitosCfg)
+		if _, err := tx.Exec(r.Context(),
+			`UPDATE settlements SET sitos_fund_silver = $1 WHERE id = $2`, seed, settlementID,
+		); err != nil {
+			slog.Error("sitos genesis seed failed", "err", err, "settlement", settlementID)
+		}
 	}
 
 	// Link province back to its controlling settlement.

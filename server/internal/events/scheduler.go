@@ -57,6 +57,9 @@ const (
 	ScheduledUpkeepTick ScheduledEventType = "UpkeepTick"
 	// Escrow expiry: refund buyer silver if a trade offer expires without being accepted.
 	ScheduledOfferExpiry ScheduledEventType = "OfferExpiry"
+	// Sitos-fonden: self-rescheduling stabilization pass, cadence +1 tick (every
+	// tick, not daily) — see internal/economy/sitos_tick.go.
+	ScheduledSitosTick ScheduledEventType = "SitosTick"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

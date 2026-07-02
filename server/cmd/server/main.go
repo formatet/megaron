@@ -107,6 +107,8 @@ func main() {
 	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore)
+	sitosCfg := economy.LoadSitosConfig()
+	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
 	respawnH := handlers.NewRespawnHandler(pool, eventStore)
@@ -119,13 +121,14 @@ func main() {
 	worker.Register(events.ScheduledMessengerArrival, messengerArrivalH.Handle)
 	worker.Register(events.ScheduledMessengerReturn, messengerReturnH.Handle)
 	worker.Register(events.ScheduledKharisTick, kharisH.Handle)
+	worker.Register(events.ScheduledSitosTick, sitosH.Handle)
 	worker.Register(events.ScheduledTradeDelivery, tradeH.Handle)
 	worker.Register(events.ScheduledTradeReturn, tradeReturnH.Handle)
 	worker.Register(events.ScheduledRespawn, respawnH.Handle)
 	worker.Register(events.ScheduledRecallArrival, recallH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
-	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock)
+	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
@@ -191,10 +194,10 @@ func main() {
 	// Game routes (authenticated).
 	wh := handlers.NewWorldHandler(pool, authSvc, gameClock)
 	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
-	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock)
+	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock)
-	jh := handlers.NewJoinHandler(pool, eventStore)
+	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg)
 	nh := handlers.NewNotificationsHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 	godH := handlers.NewGodHandler(pool)
@@ -230,6 +233,7 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/army", ph.GetArmy)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/buildings", ph.Buildings)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/ticklog", ph.Ticklog)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)
 			r.Delete("/worlds/{worldID}/provinces/{provinceID}/build-queue/{queueID}", ph.CancelBuild)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
@@ -339,6 +343,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledBorrowedArmyTick,
 		events.ScheduledKharisTick,
 		events.ScheduledUpkeepTick,
+		events.ScheduledSitosTick,
 	}
 
 	for _, wid := range worldIDs {

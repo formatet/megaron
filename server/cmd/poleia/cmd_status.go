@@ -65,6 +65,37 @@ func statusCmd() *cobra.Command {
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s\n\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty, coastalNote)
 
+			// Sitos-fonden (grain reserve): the automatic last-resort counterparty
+			// for subsistence goods. Always shown so its silver + reference price
+			// are legible every tick.
+			if sitos, ok := sett["sitos"].(map[string]any); ok {
+				fund, _ := sitos["fund_silver"].(float64)
+				cap, _ := sitos["fund_cap"].(float64)
+				rt, _ := sitos["fund_rate_per_tick"].(float64)
+				ref, _ := sitos["ref_price_grain"].(float64)
+				floor, _ := sitos["ref_price_floor"].(float64)
+				ceil, _ := sitos["ref_price_ceiling"].(float64)
+				fmt.Printf("Sitos-fonden (spannmålsreserv): %s silver (+%.1f/tick, cap %s) · Referenspris grain: %.2f silver/enhet (golv %.1f, tak %.1f)\n\n",
+					resource(fund), rt, resource(cap), ref, floor, ceil)
+			}
+
+			// "Senaste tick"-sammanfattning: summerar journalen (poleia ticklog)
+			// utan att ersätta den.
+			if lt, ok := sett["last_tick"].(map[string]any); ok {
+				tk, _ := lt["tick"].(float64)
+				sitosDelta, _ := lt["sitos_delta"].(float64)
+				prodN := 0
+				if p, ok := lt["production"].(map[string]any); ok {
+					prodN = len(p)
+				}
+				consN := 0
+				if c2, ok := lt["consumption"].(map[string]any); ok {
+					consN = len(c2)
+				}
+				fmt.Printf("Senaste tick (%d): %d varor produceras, %d förbrukas, Sitos-delta %+.1f silver  ·  poleia ticklog för detaljer\n\n",
+					int(tk), prodN, consN, sitosDelta)
+			}
+
 			// Resources: silver + the bronze-chain goods live in resources as
 			// {amount,rate,cap} objects; kharis is the per-Wanax pool exposed at the
 			// settlement top level. Silver always prints (even 0); grain + the metals

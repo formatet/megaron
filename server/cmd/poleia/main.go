@@ -80,6 +80,7 @@ func main() {
 		citiesCmd(),
 		diplomacyCmd(),
 		goodsCmd(),
+		ticklogCmd(),
 		transferCmd(),
 		tradeCmd(),
 		inboxCmd(),

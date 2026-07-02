@@ -1,6 +1,10 @@
 package economy
 
-import "math"
+import (
+	"math"
+
+	"github.com/poleia/server/internal/events"
+)
 
 const (
 	referenceRatio    = 0.3 // comfortable stock = cap × referenceRatio
@@ -16,14 +20,15 @@ const (
 //	shortage = max(0, (reference − effective_stock) / reference)   — 0..1
 //	surplus  = max(0, (effective_stock − reference) / (cap − reference))  — 0..1
 //
-// ratePerMin is the net production/consumption rate. Positive = net producer
-// (mild downward pressure on price); negative = net consumer (shortage builds faster).
-// Currently rates are always ≥ 0 in settlement_goods, but the parameter is wired up
-// so it works correctly once net consumption is tracked continuously.
-func LocalPrice(baseValue, stock, ratePerMin, cap float64) float64 {
-	// Project stock 1 day ahead using net rate (captures whether we're filling or draining).
-	const lookaheadMin = 60.0 * 24.0
-	projected := stock + ratePerMin*lookaheadMin
+// ratePerTick is the net production/consumption rate PER TICK (settlement_goods.rate
+// is per-tick after mig 071 — the per-minute unit was retired). Positive = net
+// producer (mild downward pressure on price); negative = net consumer (shortage
+// builds faster; grain's net rate folds population consumption, so it can be < 0).
+func LocalPrice(baseValue, stock, ratePerTick, cap float64) float64 {
+	// Project stock one day (TicksPerDay ticks) ahead using the net per-tick rate
+	// (captures whether we're filling or draining).
+	lookaheadTicks := float64(events.TicksPerDay)
+	projected := stock + ratePerTick*lookaheadTicks
 	if projected < 0 {
 		projected = 0
 	}

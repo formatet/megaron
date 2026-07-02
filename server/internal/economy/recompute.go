@@ -39,6 +39,18 @@ type Tx interface {
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 }
 
+// GoodBaseValue reads a good's base_value from the goods catalog. Shared by the
+// genesis-seed paths (handlers.Join, combat.foundColony) so the Sitos capacity
+// formula uses the live catalog value rather than a hardcoded constant. Accepts
+// the same Tx interface as RecomputeProduction (pgx.Tx or *pgxpool.Pool).
+func GoodBaseValue(ctx context.Context, tx Tx, key string) (float64, error) {
+	var v float64
+	if err := tx.QueryRow(ctx, `SELECT base_value FROM goods WHERE key = $1`, key).Scan(&v); err != nil {
+		return 0, fmt.Errorf("good base value %s: %w", key, err)
+	}
+	return v, nil
+}
+
 // RecomputeProduction settles and rewrites settlement_goods.rate for every
 // producible good of the given settlement, using the citizen-allocation formula:
 //

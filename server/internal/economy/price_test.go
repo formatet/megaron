@@ -3,6 +3,8 @@ package economy
 import (
 	"math"
 	"testing"
+
+	"github.com/poleia/server/internal/events"
 )
 
 func TestLocalPrice_AtReference(t *testing.T) {
@@ -49,5 +51,25 @@ func TestLocalPrice_RateProjection(t *testing.T) {
 	if priceWithRate >= priceZeroRate {
 		t.Errorf("positive rate should reduce shortage price: withRate=%.3f zeroRate=%.3f",
 			priceWithRate, priceZeroRate)
+	}
+}
+
+// TestLocalPrice_PerTickLookahead pins the tick-based lookahead so an accidental
+// revert to the old per-minute constant (60×24=1440) is caught. With rate=1/tick
+// the projected stock is stock + rate×TicksPerDay = 0 + 24 = 24 (< reference 30 →
+// mild shortage), NOT 0 + 1440 = 1440 (capped, deep surplus). The two constants
+// give opposite price directions here, so this is a decisive regression guard.
+func TestLocalPrice_PerTickLookahead(t *testing.T) {
+	cap := 100.0
+	reference := cap * referenceRatio // 30
+	projected := 0.0 + 1.0*float64(events.TicksPerDay)
+	if projected >= reference {
+		t.Fatalf("test premise broke: projected %.1f should be below reference %.1f with per-tick lookahead", projected, reference)
+	}
+	// Per-tick: projected 24 < ref 30 → price ABOVE base (shortage).
+	price := LocalPrice(1.0, 0, 1.0, cap)
+	if price <= 1.0 {
+		t.Errorf("per-tick lookahead should yield a mild-shortage price above base, got %.3f "+
+			"(a per-minute lookahead would over-project to cap and give a surplus price below base)", price)
 	}
 }

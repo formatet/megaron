@@ -49,11 +49,12 @@ type UnitArrivalHandler struct {
 	hub        Broadcaster
 	scheduler  *events.Scheduler
 	clk        clock.Clock
+	sitosCfg   economy.SitosConfig
 }
 
 // NewUnitArrivalHandler creates a UnitArrivalHandler.
-func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster, scheduler *events.Scheduler, clk clock.Clock) *UnitArrivalHandler {
-	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk}
+func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig) *UnitArrivalHandler {
+	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg}
 }
 
 // Handle processes one ScheduledUnitArrival scheduled event.
@@ -296,6 +297,20 @@ func (h *UnitArrivalHandler) foundColony(
 		worldID, provinceID, name, culture, u.ownerID, parentID, population,
 	).Scan(&colonyID); err != nil {
 		return fmt.Errorf("foundColony: create settlement: %w", err)
+	}
+
+	// Sitos genesis seed: sow the colony's fund (pop-scaled, so a small colony and
+	// a large capital get proportionally identical coverage). Silver-invariant
+	// exception, like the colony's start-grain — see temenos_sitos.md.
+	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
+		slog.Error("sitos genesis: load grain base value", "err", gbErr)
+	} else {
+		seed, _ := economy.GenesisFundSeed(population, grainBaseValue, h.sitosCfg)
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlements SET sitos_fund_silver = $1 WHERE id = $2`, seed, colonyID,
+		); err != nil {
+			slog.Error("sitos genesis seed failed", "err", err, "settlement", colonyID)
+		}
 	}
 
 	// Link province back to its controlling settlement.
