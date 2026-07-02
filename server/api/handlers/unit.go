@@ -150,6 +150,24 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not load origin province")
 			return
 		}
+		// Naval units cannot occupy land: a galley garrisoned at a coastal
+		// settlement actually departs from the settlement's harbour — the nearest
+		// adjacent sea hex — not the settlement's own (land) province hex. Without
+		// this, FindPath always rejected the unit's own origin as impassable and
+		// the ship could never leave port, no matter what it was told to do.
+		if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+			seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, h.pool, worldID, originQ, originR)
+			if seaErr != nil {
+				writeError(w, http.StatusInternalServerError, "could not resolve naval departure hex")
+				return
+			}
+			if !foundSea {
+				writeError(w, http.StatusUnprocessableEntity,
+					"settlement has no adjacent sea hex — naval units cannot depart an inland settlement")
+				return
+			}
+			originQ, originR = seaQ, seaR
+		}
 	} else if u.Q != nil && u.R != nil {
 		// positioned unit: origin is its current hex.
 		originQ, originR = *u.Q, *u.R
@@ -242,8 +260,12 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !pathOK {
+		hint := "a sea crossing needs a ship (embark), and mountains must be routed around"
+		if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+			hint = "no sea route connects your harbour to that hex — land blocks the way"
+		}
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("no passable route to (%d,%d) for this unit — a sea crossing needs a ship (embark), and mountains must be routed around", req.TargetQ, req.TargetR))
+			fmt.Sprintf("no passable route to (%d,%d) for this unit — %s", req.TargetQ, req.TargetR, hint))
 		return
 	}
 

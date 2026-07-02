@@ -66,6 +66,39 @@ func isPassable(terrain, category string) bool {
 	return true
 }
 
+// NearestSeaNeighbor returns the coordinates of a hex adjacent to (q,r) that is
+// sea terrain (coastal_sea or deep_sea). Naval units garrisoned at a settlement
+// have no position of their own — their origin resolves to the settlement's own
+// (land) province hex, which a naval unit can never legally occupy. Callers use
+// this to resolve the real departure hex (the harbour dock) before pathfinding,
+// instead of letting FindPath reject the unit at its own settlement.
+// found=false when no neighbouring hex is sea (e.g. an inland settlement).
+func NearestSeaNeighbor(ctx context.Context, db Queryer, worldID uuid.UUID, q, r int) (sq, sr int, found bool, err error) {
+	for _, d := range axialDirs {
+		nq, nr := q+d[0], r+d[1]
+		rows, qerr := db.Query(ctx,
+			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			worldID, nq, nr,
+		)
+		if qerr != nil {
+			return 0, 0, false, qerr
+		}
+		var terrain string
+		hasRow := rows.Next()
+		if hasRow {
+			if scanErr := rows.Scan(&terrain); scanErr != nil {
+				rows.Close()
+				return 0, 0, false, scanErr
+			}
+		}
+		rows.Close()
+		if hasRow && (terrain == "coastal_sea" || terrain == "deep_sea") {
+			return nq, nr, true, nil
+		}
+	}
+	return 0, 0, false, nil
+}
+
 // minPassableCost returns the cheapest TerrainMoveHours among terrains passable
 // for the given category. It is the admissible A* heuristic multiplier: the
 // heuristic (HexDistance × minPassableCost) must never overestimate the true

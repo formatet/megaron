@@ -171,9 +171,21 @@ func (c *Client) delete(path string) ([]byte, error) {
 
 func apiError(body []byte, status int) error {
 	var e struct {
-		Error string `json:"error"`
+		Error   string `json:"error"`
+		Missing []struct {
+			Good string  `json:"good"`
+			Need float64 `json:"need"`
+			Have float64 `json:"have"`
+		} `json:"missing"`
 	}
 	if err := json.Unmarshal(body, &e); err == nil && e.Error != "" {
+		if len(e.Missing) > 0 {
+			parts := make([]string, len(e.Missing))
+			for i, m := range e.Missing {
+				parts[i] = fmt.Sprintf("%s (need %.0f, have %.0f)", m.Good, m.Need, m.Have)
+			}
+			return fmt.Errorf("%s: %s (HTTP %d)", e.Error, strings.Join(parts, ", "), status)
+		}
 		return fmt.Errorf("%s (HTTP %d)", e.Error, status)
 	}
 	return fmt.Errorf("HTTP %d", status)

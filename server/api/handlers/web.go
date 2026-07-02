@@ -64,7 +64,7 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		"spearman":       "Hoplites",
 		"war_chariot":    "War Chariot",
 		"priest":         "Hiereus",
-		"ship":           "Trireme",
+		"ship":           "Galley",
 		"elite_infantry": "Agema",
 	}
 	funcs := template.FuncMap{

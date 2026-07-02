@@ -3,9 +3,20 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 )
+
+// localDone parses an RFC3339 (UTC) completion timestamp and formats it in the
+// player's local time, matching `unit march`'s ETA display — a raw UTC string
+// like "2026-07-02T04:37:52Z" otherwise forces manual timezone math.
+func localDone(iso string) string {
+	if t, err := time.Parse(time.RFC3339, iso); err == nil {
+		return t.Local().Format("15:04 Jan 2")
+	}
+	return iso
+}
 
 func statusCmd() *cobra.Command {
 	var provinceID string
@@ -74,6 +85,8 @@ func statusCmd() *cobra.Command {
 				}
 				printRes("Silver", "silver", true)
 				printRes("Grain", "grain", false)
+				printRes("Timber", "timber", false)
+				printRes("Stone", "stone", false)
 				printRes("Copper", "copper", false)
 				printRes("Tin", "tin", false)
 				printRes("Bronze", "bronze", false)
@@ -88,7 +101,7 @@ func statusCmd() *cobra.Command {
 				fmt.Println("Army")
 				units := []struct{ key, label string }{
 					{"Spearman", "Hoplites"}, {"WarChariot", "War Chariot"}, {"Priest", "Hiereus"},
-					{"Ship", "Trireme"}, {"EliteInfantry", "Agema"},
+					{"Ship", "Galley"}, {"EliteInfantry", "Agema"},
 				}
 				for _, u := range units {
 					v, _ := army[u.key].(float64)
@@ -111,7 +124,7 @@ func statusCmd() *cobra.Command {
 
 			unitLabels := map[string]string{
 				"spearman": "Hoplites", "war_chariot": "War Chariot", "priest": "Hiereus",
-				"ship": "Trireme", "elite_infantry": "Agema",
+				"ship": "Galley", "elite_infantry": "Agema",
 			}
 
 			if bq, ok := sett["build_queue"].([]any); ok && len(bq) > 0 {
@@ -120,7 +133,7 @@ func statusCmd() *cobra.Command {
 					m, _ := it.(map[string]any)
 					t, _ := m["type"].(string)
 					ca, _ := m["complete_at"].(string)
-					fmt.Printf("  %-12s done %s\n", t, ca)
+					fmt.Printf("  %-12s done %s\n", t, localDone(ca))
 				}
 			}
 
@@ -135,7 +148,7 @@ func statusCmd() *cobra.Command {
 					if label == "" {
 						label = u
 					}
-					fmt.Printf("  %.0f× %-10s done %s\n", c, label, ca)
+					fmt.Printf("  %.0f× %-10s done %s\n", c, label, localDone(ca))
 				}
 			}
 			return nil

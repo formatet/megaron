@@ -346,15 +346,15 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Silver is authoritative in settlement_goods (mig 057 silver_unify); the
-		// ResourceLedger.Silver column is stale (~0). Inject the live value — plus
-		// grain and the bronze-chain metals — so the status view shows the same stock
-		// as `goods` (previously it reported only silver, hiding a colony's tin output).
+		// ResourceLedger.Silver column is stale (~0). Inject the live value for every
+		// good the settlement holds — not a hard-coded subset — so the status view
+		// shows the same stock as `goods` (previously it reported only silver+metals,
+		// hiding timber/stone even when labor was actively allocated to them).
 		resSnap := sett.Resources.SnapshotFull(now)
 		if grows, gerr := h.pool.Query(r.Context(),
 			`SELECT good_key, GREATEST(0, settled(amount, rate, calc_tick)), rate, cap
 			 FROM settlement_goods
-			 WHERE settlement_id = $1
-			   AND good_key IN ('silver','grain','copper','tin','bronze')`,
+			 WHERE settlement_id = $1`,
 			sett.ID,
 		); gerr == nil {
 			for grows.Next() {
