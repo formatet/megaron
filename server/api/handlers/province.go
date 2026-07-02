@@ -1797,7 +1797,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// Load base_potential per good from production_rules using catchment tiles
 	// (same logic as RecomputeProduction — 6 adjacent map_tiles, not the own province tile).
 	baseRows, _ := h.pool.Query(r.Context(),
-		`SELECT pr.good_key, SUM(pr.rate_per_min) AS base_potential
+		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
@@ -1863,7 +1863,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		Tier           string  `json:"tier"`
 		Category       string  `json:"category"`
 		Amount         float64 `json:"amount"`
-		Rate           float64 `json:"rate_per_min"`
+		Rate           float64 `json:"rate_per_tick"`
 		Cap            float64 `json:"cap"`
 		Price          float64 `json:"price"`
 		Citizens       int     `json:"citizens"`
@@ -2920,7 +2920,7 @@ func (h *ProvinceHandler) OutpostFlows(w http.ResponseWriter, r *http.Request) {
 	type flowRow struct {
 		ProvinceID         uuid.UUID `json:"province_id"`
 		GoodKey            string    `json:"good_key"`
-		Rate               float64   `json:"rate_per_min"`
+		Rate               float64   `json:"rate_per_tick"`
 		HomeSettlementID   uuid.UUID `json:"home_settlement_id"`
 		HomeSettlementName string    `json:"home_settlement_name"`
 		Terrain            string    `json:"terrain"`

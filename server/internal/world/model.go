@@ -17,19 +17,6 @@ const (
 	StateEnded      State = "ended"
 )
 
-// CollapsePhase describes the current collapse risk level visible to players.
-type CollapsePhase string
-
-const (
-	CollapseStable     CollapsePhase = "stable"
-	CollapseWarning    CollapsePhase = "warning"
-	CollapseCollapsing CollapsePhase = "collapsing"
-	CollapseEnded      CollapsePhase = "ended"
-)
-
-// WorldLifeTicks is the total number of ticks a world lives (720 ticks ≈ 1 month at 1 tick/hour).
-const WorldLifeTicks = 720
-
 // World is a single game instance. Each world is fully self-contained.
 type World struct {
 	ID             uuid.UUID
@@ -48,54 +35,6 @@ type World struct {
 	MapHeight      int
 	CurrentTick    int
 	CreatedAt      time.Time
-}
-
-// CollapseState is the computed collapse risk for a world.
-type CollapseState struct {
-	WorldID      uuid.UUID
-	Tick         int // current world tick (replaces legacy EraWeek)
-	CollapseRisk float64
-	Phase        CollapsePhase
-}
-
-// ComputeCollapse calculates the collapse state for a world at a given tick.
-// Progress = currentTick / WorldLifeTicks; risk ramps in the last quarter (ticks 540–720).
-// A world ends when currentTick >= WorldLifeTicks.
-// High prestige and active wars accelerate collapse risk.
-func ComputeCollapse(w *World, activeWarCount int, currentTick int) CollapseState {
-	var risk float64
-	if currentTick >= WorldLifeTicks {
-		risk = 1.0
-	} else if currentTick >= 540 {
-		risk = float64(currentTick-540) / float64(WorldLifeTicks-540)
-	}
-
-	// Prestige and wars add a modest modifier (capped to avoid runaway values).
-	prestigeMod := float64(w.Prestige) / 10000.0
-	warMod := float64(activeWarCount) * 0.02
-	risk += prestigeMod + warMod
-	if risk > 1.0 {
-		risk = 1.0
-	}
-
-	var phase CollapsePhase
-	switch {
-	case w.State == StateEnded || currentTick >= WorldLifeTicks:
-		phase = CollapseEnded
-	case risk >= 0.7:
-		phase = CollapseCollapsing
-	case risk >= 0.3:
-		phase = CollapseWarning
-	default:
-		phase = CollapseStable
-	}
-
-	return CollapseState{
-		WorldID:      w.ID,
-		Tick:         currentTick,
-		CollapseRisk: risk,
-		Phase:        phase,
-	}
 }
 
 // Terrain describes the type of a hex tile.

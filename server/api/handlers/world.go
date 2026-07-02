@@ -259,13 +259,6 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var activeWars int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COUNT(*) FROM marching_armies WHERE world_id = $1 AND resolved = false AND intent = 'attack'`,
-		worldID,
-	).Scan(&activeWars)
-
-	collapse := world.ComputeCollapse(&wld, activeWars, wld.CurrentTick)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":             wld.ID,
 		"name":           wld.Name,
@@ -273,7 +266,6 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"prestige":       wld.Prestige,
 		"era_number":     wld.EraNumber,
 		"era_started_at": wld.EraStartedAt,
-		"collapse":       collapse,
 		"created_at":     wld.CreatedAt,
 	})
 }

@@ -35,12 +35,12 @@ func outpostFlowsCmd() *cobra.Command {
 			fmt.Println("──────────────────────────────────────────────────────────────────────")
 			for _, f := range flows {
 				good, _ := f["good_key"].(string)
-				rateM, _ := f["rate_per_min"].(float64)
+				rateT, _ := f["rate_per_tick"].(float64)
 				home, _ := f["home_settlement_name"].(string)
 				terrain, _ := f["terrain"].(string)
 				q, _ := f["q"].(float64)
 				r, _ := f["r"].(float64)
-				rateD := rateM * 60 * 24
+				rateD := rateT * 24 // per-tick × 24 ticks/day
 				loc := fmt.Sprintf("(%d,%d)", int(q), int(r))
 				fmt.Printf("%-12s  %10.1f  %10s  %-20s  %s\n", good, rateD, loc, home, terrain)
 			}

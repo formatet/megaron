@@ -115,7 +115,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.accumulatePrestige(ctx, e.WorldID)
 
 	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledKharisTick,
-		struct{}{}, e.DueTick+1)
+		struct{}{}, e.DueTick+events.TicksPerDay)
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {
@@ -212,18 +212,14 @@ func deriveMood(kharis float64) string {
 // invasions_today, and adjusts population. (Rite success is driven by Kharis
 // mood, not a priest-strength stat — there is no priest_strength to regenerate.)
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
-	// Decay grain and timber by 1% per day; grain also consumed by population (0.5/person/day).
+	// Decay grain and timber by 1% per day. Population grain-consumption is NOT
+	// applied here anymore: it is folded into grain's net rate in
+	// economy.RecomputeProduction (continuous per-tick draw), so it never exceeds
+	// the grain cap and a self-sufficient city holds a stable positive stock.
 	// Cedar is a luxury store-of-value (ädelträ) and does not rot.
 	if _, err := h.pool.Exec(ctx,
 		`UPDATE settlement_goods sg SET
-		   amount = GREATEST(0,
-		       CASE sg.good_key
-		           WHEN 'grain' THEN
-		               settled(sg.amount, sg.rate, sg.calc_tick) * 0.99
-		               - s.population * 0.5
-		           ELSE
-		               settled(sg.amount, sg.rate, sg.calc_tick) * 0.99
-		       END),
+		   amount = GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick) * 0.99),
 		   calc_tick = current_world_tick()
 		 FROM settlements s
 		 WHERE sg.settlement_id = s.id

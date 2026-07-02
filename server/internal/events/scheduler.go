@@ -13,6 +13,22 @@ import (
 	"github.com/poleia/server/internal/clock"
 )
 
+// TicksPerDay is how many world ticks make up one game "day".
+//
+// One tick = one game-hour, so a day is 24 ticks. The "daily" handlers (kharis
+// maintenance, unit upkeep, loyalty decay/colony/borrowed-army) fire once every
+// TicksPerDay ticks — NOT every tick — the discrete "midnight tick" where day-
+// scale consequences (starvation, desertion, loyalty drift) land. Grain
+// population-consumption is per day, folded into grain's net rate as pop*0.5 /
+// TicksPerDay per tick (continuous, lazy — never a lump).
+//
+// Production rates are per-tick (production_rules.rate_per_tick, mig 071); the
+// per-minute unit has been retired. Real-time pacing is a SEPARATE, unlocked
+// axis (TICK_MINUTES in internal/tick — e.g. 2 min/tick ≈ one game-month per
+// real day) and does not live here. The broader economy re-balance is tracked
+// separately — see temenos_ekonomi.md.
+const TicksPerDay = 24
+
 // ScheduledEventType identifies what should happen when the event fires.
 type ScheduledEventType string
 

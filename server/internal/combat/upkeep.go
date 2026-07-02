@@ -202,7 +202,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	// 4. Re-enqueue for the next daily cycle.
 	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledUpkeepTick,
-		upkeepDailyTickPayload{}, e.DueTick+1)
+		upkeepDailyTickPayload{}, e.DueTick+events.TicksPerDay)
 }
 
 // applyAttrition removes upkeepAttritionStep men from the unit due to grain shortage.

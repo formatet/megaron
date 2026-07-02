@@ -729,7 +729,7 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 	)
 	_, _ = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 SELECT $1, pr.good_key, 0, pr.rate_per_min,
+		 SELECT $1, pr.good_key, 0, pr.rate_per_tick,
 		        CASE pr.good_key WHEN 'grain' THEN 1000 WHEN 'cedar' THEN 500 WHEN 'stone' THEN 1000
 		                        WHEN 'copper' THEN 300  WHEN 'tin' THEN 300  ELSE 200 END,
 		        current_world_tick()
@@ -854,7 +854,7 @@ func (h *ArrivalHandler) establishOutpost(ctx context.Context, tx pgx.Tx, origin
 
 	// Read terrain production rules (building-free, 100% rate).
 	rows, err := tx.Query(ctx,
-		`SELECT good_key, rate_per_min FROM production_rules
+		`SELECT good_key, rate_per_tick FROM production_rules
 		 WHERE building_type IS NULL AND terrain_type=$1
 		   AND (requires_deposit IS NULL
 		        OR (requires_deposit='copper' AND $2)

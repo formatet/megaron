@@ -67,7 +67,7 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 	}
 
 	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledLoyaltyDecayTick,
-		DailyTickPayload{}, e.DueTick+1)
+		DailyTickPayload{}, e.DueTick+events.TicksPerDay)
 }
 
 func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uuid.UUID) error {

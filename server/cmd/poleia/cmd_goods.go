@@ -53,12 +53,12 @@ func goodsCmd() *cobra.Command {
 			for _, g := range goods {
 				key, _ := g["key"].(string)
 				stock, _ := g["amount"].(float64)
-				rateM, _ := g["rate_per_min"].(float64)
+				rateT, _ := g["rate_per_tick"].(float64)
 				price, _ := g["price"].(float64)
 				citizens, _ := g["citizens"].(float64)
 				yieldW, _ := g["yield_per_worker"].(float64)
 				producible, _ := g["producible"].(bool)
-				rateD := rateM * 60 * 24
+				rateD := rateT * 24 // per-tick × 24 ticks/day
 				workersStr := fmt.Sprintf("%d", int(citizens))
 				yieldStr := fmt.Sprintf("%.4f", yieldW)
 				if !producible {

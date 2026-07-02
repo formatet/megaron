@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/poleia/server/internal/events"
 )
 
 // REF_LABOR is the reference population for the production formula.
@@ -92,7 +94,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// deposits, and coastal flag. The settlement's buildings gate building-gated
 	// rules. Sea tiles (deep_sea, coastal_sea) are excluded — no land production.
 	rows, err := tx.Query(ctx,
-		`SELECT pr.good_key, SUM(pr.rate_per_min) AS base_potential
+		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
 		 FROM map_tiles mt
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
@@ -188,11 +190,24 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 	}
 
+	// Grain carries a population-consumption term folded into its NET rate:
+	// pop × 0.5 per day ÷ TicksPerDay = consumption per tick. Folding it (rather
+	// than subtracting a daily lump elsewhere) keeps consumption continuous, so it
+	// never exceeds the grain cap and a self-sufficient city sits at a stable
+	// positive stock instead of sawtoothing to zero every day. laborPool is the
+	// non-negative population (Σ eaters). See events.TicksPerDay for calibration.
+	grainConsumptionPerTick := float64(laborPool) * 0.5 / float64(events.TicksPerDay)
+
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
+	grainSeen := false
 	for _, gp := range potentials {
 		effectiveWorkers := weights[gp.key] * float64(laborPool)
 		yieldPerWorker := gp.basePotential / REF_LABOR
 		newRate := yieldPerWorker * effectiveWorkers
+		if gp.key == "grain" {
+			newRate -= grainConsumptionPerTick // net = production − consumption
+			grainSeen = true
+		}
 
 		// Settle existing amount at old rate, then overwrite rate + calc_tick.
 		if _, err := tx.Exec(ctx,
@@ -206,6 +221,24 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			settlementID, gp.key, newRate, goodCap(gp.key),
 		); err != nil {
 			return fmt.Errorf("recompute: upsert good %s: %w", gp.key, err)
+		}
+	}
+
+	// A settlement with population but no grain-producing catchment still eats:
+	// write a grain row with a pure-consumption (negative) net rate so neglected
+	// non-farming cities drain and starve as designed.
+	if !grainSeen && grainConsumptionPerTick > 0 {
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+			 VALUES ($1, 'grain', 0, $2, $3, current_world_tick())
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+			     amount  = LEAST(settlement_goods.cap,
+			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)),
+			     rate    = $2,
+			     calc_tick = current_world_tick()`,
+			settlementID, -grainConsumptionPerTick, goodCap("grain"),
+		); err != nil {
+			return fmt.Errorf("recompute: upsert grain consumption: %w", err)
 		}
 	}
 
