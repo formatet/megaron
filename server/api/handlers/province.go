@@ -1767,8 +1767,6 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := h.clk.Now()
-
 	// Part B: labor_pool = population. Soldiers are extracted from population at recruit time.
 	var population int
 	_ = h.pool.QueryRow(r.Context(),
@@ -1833,7 +1831,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT sg.good_key, sg.amount, sg.rate, sg.cap, sg.calc_tick,
+		`SELECT sg.good_key, settled(sg.amount, sg.rate, sg.calc_tick), sg.rate, sg.cap,
 		        g.base_value, g.name, g.tier, g.category
 		 FROM settlement_goods sg
 		 JOIN goods g ON g.key = sg.good_key
@@ -1876,14 +1874,11 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	var result []goodRow
 	for rows.Next() {
 		var key, name, tier, category string
-		var amount, rate, capV float64
-		var calcAt time.Time
+		var current, rate, capV float64
 		var baseValue float64
-		if err := rows.Scan(&key, &amount, &rate, &capV, &calcAt, &baseValue, &name, &tier, &category); err != nil {
+		if err := rows.Scan(&key, &current, &rate, &capV, &baseValue, &name, &tier, &category); err != nil {
 			continue
 		}
-		elapsed := now.Sub(calcAt).Minutes()
-		current := amount + elapsed*rate
 		if current < 0 {
 			current = 0
 		}
