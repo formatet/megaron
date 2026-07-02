@@ -29,6 +29,41 @@ const (
 // Tunbar — calibrated in W8.
 const kharisPerCult = 0.01
 
+// grainPerCitizen is the grain cost of one new citizen at the daily growth
+// tick — makes growth a real economic draw on grain instead of a binary gate.
+//
+// Calibration story (see TestApplyDecay_GrainFundedGrowth_* for the measured
+// numbers): a naive read of "consume 50–70% of surplus" against the good's
+// storage CAP (1000) doesn't hold up once measured — the decay step above
+// writes an uncapped settled() value, so any self-sufficient catchment's raw
+// daily accrual (rate × TicksPerDay) is many multiples of the 1000 cap
+// (≈5450 for the minimal one-plains-tile guaranteed floor, ≈13000+ for a
+// two-plains-tile catchment at start pop 5000). A modest draw against that
+// (25 × desired_new, ≈500/day) vanishes into the overshoot and
+// RecomputeProduction's own end-of-tick LEAST(cap,…) clamp re-pins the stock
+// at 1000 regardless — satisfying neither "cap un-pinned" nor "richer
+// catchment grows faster" (both catchments simply re-saturate identically).
+// grainPerCitizen=300 instead prices growth against that *raw* daily accrual:
+// the minimal one-plains catchment can only ever afford ~17–18 of the 21
+// desired new citizens/day (its cost, 21×300=6300, exceeds its ≈5450
+// accrual), spending nearly all of it and leaving a small-but-always-positive
+// remainder (1–300 grain, varies day to day, never zero — proven over 40 days
+// in TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient) — this is
+// what makes success criterion #2 (cap un-pinned) hold. A richer catchment
+// (≥2 grain tiles) has proportionally more accrual against the SAME cost
+// (desired_new depends on population/soft-cap only, not catchment), so it
+// affords desired growth in full every day and grows measurably faster —
+// criterion #3 — while its own stock re-saturates at cap (expected: its
+// surplus genuinely exceeds what a day's growth can spend). The floor-division
+// throttle (§ actual_new = floor(grain_now/grainPerCitizen) when unaffordable)
+// necessarily leaves a remainder in [0, grainPerCitizen) — occasionally small
+// in absolute terms on a given day — but it is mathematically always ≥ 0 and
+// never sign-flips negative (GREATEST(0,…) floors throughout), and a second
+// same-tick firing is a safe no-op (draw=0 when nothing is affordable). If
+// this ever measures as breaking the never-starve invariant for some other
+// catchment shape, lower it.
+const grainPerCitizen = 300.0
+
 // TickHandler applies daily temple maintenance to all active settlements in a world.
 type TickHandler struct {
 	pool      *pgxpool.Pool
@@ -230,43 +265,106 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		slog.Error("goods decay failed", "world", worldID, "err", err)
 	}
 
-	// Reset invasions_today, update population.
+	// Reset invasions_today, update population, and — grain-funded growth —
+	// draw the grain cost of whatever growth is actually affordable.
 	//
 	// Growth model (daily tick):
-	//   pop ≥ 100  → proportional: 0.5% base × food-variety multiplier × soft-cap factor.
-	//                food_variety = 1.0 (grain) + 0.1 per extra food type (fish/oil/wine/livestock) → max 1.4
-	//                soft_cap = max(0, 1 − pop/30000)  → growth → 0 near 30000
+	//   pop ≥ 100  → proportional: 0.5% base × food-variety multiplier × soft-cap factor
+	//                gives a DESIRED new-citizen count; food_variety = 1.0 (grain) +
+	//                0.1 per extra food type (fish/oil/wine/livestock) → max 1.4,
+	//                soft_cap = max(0, 1 − pop/30000) → growth → 0 near 30000.
+	//                That desired growth then costs desired_new × grainPerCitizen
+	//                grain: if the settled grain stock affords it in full, all of
+	//                it is applied and the cost is deducted; if not, growth is
+	//                throttled to floor(grain_now / grainPerCitizen) citizens and
+	//                grain is drawn down to (near) zero. Growth never grows the
+	//                city for grain it doesn't have.
 	//   starvation → −0.5% (pop ≥ 100), floor 101 (collapse fires for pop ≤ 100).
+	//                Unchanged — no grain is drawn on the starvation path.
 	//
 	// C-collapse: the floor is 101, not 50. Any settlement that would drop below 101
 	// from starvation is held at 101 here; a follow-up query then schedules
 	// CollapseSettlement events for all settlements at pop ≤ 100.
+	//
+	// Single CTE-chained statement (not a bare TX) so the population increment and
+	// the grain deduction are computed ONCE from the same snapshot and applied
+	// atomically — pop-added always equals grain-drawn/grainPerCitizen, never more.
+	//
+	// grain_now reads the raw settled() value (uncapped) — the same value the
+	// rest of the codebase treats as "available now" before a write clamps it.
+	// This matters for catchment differentiation (success criterion #3): the
+	// good's storage cap (1000) is a fixed constant unrelated to a catchment's
+	// richness, so clamping grain_now to it before pricing growth would make
+	// every self-sufficient catchment (however rich) read identically and grow
+	// at the identical rate — erasing the very signal geography is supposed to
+	// provide. Leaving it uncapped means a poor catchment's genuinely smaller
+	// daily accrual can fall short of desired growth's cost (throttling it)
+	// while a rich catchment's larger accrual doesn't — see
+	// TestApplyDecay_GrainFundedGrowth_GeographyDifferentiates.
 	if _, err := h.pool.Exec(ctx,
-		`UPDATE settlements s SET
-		   invasions_today = 0,
-		   population = GREATEST(101, LEAST(30000,
-		     CASE WHEN COALESCE(
-		              (SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-		               FROM settlement_goods sg
-		               WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) > 0
-		          THEN
-		            -- proportional mode: 0.5% × variety(1.0–1.4) × soft-cap
-		            s.population + GREATEST(1, ROUND(
-		                s.population
-		                * 0.005
-		                * (1.0
-		                    + 0.1 * (
-		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
-		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
-		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
-		                        (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)))
-		                * GREATEST(0, 1.0 - s.population::float / 30000.0)
-		            ))
-		          -- starvation: -0.5%, floor 101 so collapse logic fires below
-		          ELSE GREATEST(101, ROUND(s.population * 0.995))
-		     END))
-		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk', 'collapsed')`,
-		worldID,
+		`WITH growth_calc AS (
+		     SELECT
+		         s.id,
+		         s.population AS pop,
+		         COALESCE(
+		             (SELECT settled(sg.amount, sg.rate, sg.calc_tick)
+		              FROM settlement_goods sg
+		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0
+		         ) AS grain_now,
+		         (1.0 + 0.1 * (
+		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
+		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
+		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
+		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)
+		         )) AS variety,
+		         GREATEST(0, 1.0 - s.population::float / 30000.0) AS softcap
+		     FROM settlements s
+		     WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk', 'collapsed')
+		 ),
+		 resolved AS (
+		     SELECT
+		         id, pop, grain_now,
+		         (grain_now > 0) AS growing,
+		         GREATEST(1, ROUND(pop * 0.005 * variety * softcap)) AS desired_new
+		     FROM growth_calc
+		 ),
+		 priced AS (
+		     SELECT
+		         id, pop, grain_now, growing,
+		         CASE
+		             WHEN NOT growing THEN 0
+		             WHEN grain_now >= desired_new * $2::float THEN desired_new
+		             ELSE FLOOR(grain_now / $2::float)
+		         END AS actual_new
+		     FROM resolved
+		 ),
+		 final AS (
+		     SELECT
+		         id, grain_now,
+		         GREATEST(101, LEAST(30000,
+		             CASE WHEN growing THEN pop + actual_new ELSE ROUND(pop * 0.995) END
+		         )) AS new_pop,
+		         CASE WHEN growing THEN actual_new * $2::float ELSE 0 END AS grain_draw
+		     FROM priced
+		 ),
+		 pop_upd AS (
+		     UPDATE settlements s SET
+		         invasions_today = 0,
+		         population = f.new_pop
+		     FROM final f
+		     WHERE f.id = s.id
+		     RETURNING s.id
+		 ),
+		 grain_upd AS (
+		     UPDATE settlement_goods sg SET
+		         amount    = GREATEST(0, f.grain_now - f.grain_draw),
+		         calc_tick = current_world_tick()
+		     FROM final f
+		     WHERE f.grain_draw > 0 AND sg.settlement_id = f.id AND sg.good_key = 'grain'
+		     RETURNING sg.settlement_id
+		 )
+		 SELECT count(*) FROM pop_upd`,
+		worldID, grainPerCitizen,
 	); err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
 	}
