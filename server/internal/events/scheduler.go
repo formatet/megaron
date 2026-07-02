@@ -60,6 +60,10 @@ const (
 	// Sitos-fonden: self-rescheduling stabilization pass, cadence +1 tick (every
 	// tick, not daily) — see internal/economy/sitos_tick.go.
 	ScheduledSitosTick ScheduledEventType = "SitosTick"
+	// March recall/redirect: a recall or redirect messenger reaching a marching
+	// discrete unit (temenos_march_recall.md). Distinct from ScheduledRecallArrival,
+	// which turns around legacy marching_armies/outposts.
+	ScheduledMarchRecall ScheduledEventType = "MarchRecall"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

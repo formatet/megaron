@@ -23,6 +23,8 @@ const (
 	EventUnitIntercepted    = "UnitIntercepted"     // sentry triggered interception combat
 	EventCityCollapsed      = "CityCollapsed"       // settlement exhausted; warband spawned
 	EventUnitStanceChanged  = "UnitStanceChanged"   // unit stance updated (C5)
+	EventUnitMarchRecalled   = "MarchRecalled"      // recall messenger reached a marching unit; it turned home
+	EventUnitMarchRedirected = "MarchRedirected"    // redirect messenger reached a marching unit; new course set
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -149,6 +151,28 @@ type UnitStanceChangedPayload struct {
 	StanceAfter  string    `json:"stance_after"`  // "" means stance cleared
 	SentryQ      *int      `json:"sentry_q,omitempty"` // set when stance_after == "sentry"
 	SentryR      *int      `json:"sentry_r,omitempty"`
+}
+
+// MarchRecalledPayload is emitted when a recall messenger reaches a marching
+// unit; the unit turns back toward the hex it originally departed from.
+type MarchRecalledPayload struct {
+	UnitID    uuid.UUID `json:"unit_id"`
+	FromQ     int       `json:"from_q"`
+	FromR     int       `json:"from_r"`
+	OriginQ   int       `json:"origin_q"`
+	OriginR   int       `json:"origin_r"`
+	ArrivesAt string    `json:"arrives_at"` // RFC3339
+}
+
+// MarchRedirectedPayload is emitted when a redirect messenger reaches a
+// marching unit; the unit is set on a new course from its current position.
+type MarchRedirectedPayload struct {
+	UnitID     uuid.UUID `json:"unit_id"`
+	FromQ      int       `json:"from_q"`
+	FromR      int       `json:"from_r"`
+	NewTargetQ int       `json:"new_target_q"`
+	NewTargetR int       `json:"new_target_r"`
+	ArrivesAt  string    `json:"arrives_at"` // RFC3339
 }
 
 // CityCollapsedPayload is emitted when a settlement's population reaches ≤ 100

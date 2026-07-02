@@ -113,6 +113,7 @@ func main() {
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
 	respawnH := handlers.NewRespawnHandler(pool, eventStore)
 	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, gameClock)
+	marchRecallH := messenger.NewMarchRecallHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
 	worker.Register(events.ScheduledLoyaltyDecayTick, decayH.Handle)
@@ -126,6 +127,7 @@ func main() {
 	worker.Register(events.ScheduledTradeReturn, tradeReturnH.Handle)
 	worker.Register(events.ScheduledRespawn, respawnH.Handle)
 	worker.Register(events.ScheduledRecallArrival, recallH.Handle)
+	worker.Register(events.ScheduledMarchRecall, marchRecallH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
@@ -264,6 +266,7 @@ func main() {
 			// Unit endpoints (C3/C4/C5/C6).
 			r.Get("/worlds/{worldID}/units", uh.ListUnits)
 			r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
+			r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)

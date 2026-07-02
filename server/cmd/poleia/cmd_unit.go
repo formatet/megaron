@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,6 +19,8 @@ func unitCmd() *cobra.Command {
 	cmd.AddCommand(
 		unitListCmd(),
 		unitMarchCmd(),
+		unitRecallCmd(),
+		unitRedirectCmd(),
 		unitStanceCmd(),
 		unitLoadCmd(),
 		unitUnloadCmd(),
@@ -224,6 +227,109 @@ Ore on mountain terrain (copper, tin, silver):
 	_ = cmd.MarkFlagRequired("q")
 	_ = cmd.MarkFlagRequired("r")
 	return cmd
+}
+
+// ---- unit recall / redirect ---------------------------------------------------
+
+// recallResponse is the shared JSON shape returned by /recall for both modes.
+type recallResponse struct {
+	UnitID             string    `json:"unit_id"`
+	MessengerID        string    `json:"messenger_id"`
+	MessengerArrivesAt time.Time `json:"messenger_arrives_at"`
+	DueTick            int       `json:"due_tick"`
+	Mode               string    `json:"mode"`
+}
+
+func unitRecallCmd() *cobra.Command {
+	var unitID string
+
+	cmd := &cobra.Command{
+		Use:   "recall",
+		Short: "Recall a marching unit — turn it home",
+		Long: `Send a recall order to a marching unit. The order travels as a visible
+messenger; command is never instant — the unit keeps marching on its original
+course until the messenger physically catches up with it, then turns for home
+(the hex it originally departed from).`,
+		Example: `  poleia unit recall --unit <id>`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
+			data, err := c.post(path, map[string]any{})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp recallResponse
+			_ = json.Unmarshal(data, &resp)
+			fmt.Printf("Recall order sent to unit %s — messenger arrives %s (tick %d); the unit turns home once it catches up.\n",
+				unitID[:8], resp.MessengerArrivesAt.Local().Format("15:04 Jan 2"), resp.DueTick)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	_ = cmd.MarkFlagRequired("unit")
+	return cmd
+}
+
+func unitRedirectCmd() *cobra.Command {
+	var unitID, target string
+
+	cmd := &cobra.Command{
+		Use:   "redirect",
+		Short: "Redirect a marching unit to a new hex",
+		Long: `Send a redirect order to a marching unit, giving it a new destination.
+Command is never instant — the unit keeps marching on its original course until
+the order messenger physically catches up with it, then turns onto the new course.`,
+		Example: `  poleia unit redirect --unit <id> --target 5,-3`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			q, r, err := parseQR(target)
+			if err != nil {
+				return err
+			}
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
+			data, err := c.post(path, map[string]any{"target_q": q, "target_r": r})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp recallResponse
+			_ = json.Unmarshal(data, &resp)
+			fmt.Printf("Redirect order sent to unit %s (new course %d,%d) — messenger arrives %s (tick %d).\n",
+				unitID[:8], q, r, resp.MessengerArrivesAt.Local().Format("15:04 Jan 2"), resp.DueTick)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r (required)")
+	_ = cmd.MarkFlagRequired("unit")
+	_ = cmd.MarkFlagRequired("target")
+	return cmd
+}
+
+// parseQR parses a "q,r" flag value into two ints.
+func parseQR(s string) (int, int, error) {
+	parts := strings.Split(s, ",")
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("invalid --target %q: expected \"q,r\"", s)
+	}
+	q, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid --target %q: q is not an integer", s)
+	}
+	r, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return 0, 0, fmt.Errorf("invalid --target %q: r is not an integer", s)
+	}
+	return q, r, nil
 }
 
 // ---- unit stance -------------------------------------------------------------

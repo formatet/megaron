@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/unit"
 )
@@ -391,6 +393,226 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		"origin_r":   originR,
 		"target_q":   req.TargetQ,
 		"target_r":   req.TargetR,
+	})
+}
+
+// Recall handles POST /worlds/{worldID}/units/{unitID}/recall
+//
+// Sends a physical recall/redirect order to a marching unit (temenos_march_recall.md).
+// Body (optional): {"target_q":int,"target_r":int} — omitted = recall (turn home to
+// the hex the unit departed from); both given = redirect (new course). The order
+// travels as a visible messenger; the unit keeps marching on its original course
+// until the messenger physically catches up with it — command is never instant.
+func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	unitID, err := uuid.Parse(chi.URLParam(r, "unitID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid unit ID")
+		return
+	}
+
+	var req struct {
+		TargetQ *int `json:"target_q"`
+		TargetR *int `json:"target_r"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil && err != io.EOF {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	if (req.TargetQ == nil) != (req.TargetR == nil) {
+		writeError(w, http.StatusBadRequest, "must provide both target_q and target_r, or neither (omit both to recall home)")
+		return
+	}
+	mode := "recall"
+	if req.TargetQ != nil {
+		mode = "redirect"
+	}
+
+	ctx := r.Context()
+
+	// Ownership + existence collapsed into one 404: don't reveal a unit's
+	// existence/status to a non-owner.
+	u, err := h.store.Get(ctx, unitID)
+	if err != nil || u.OwnerID != playerID || u.WorldID != worldID {
+		writeError(w, http.StatusNotFound, "unit not found")
+		return
+	}
+	if u.Status != unit.StatusMarching {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("unit is not marching (status: %s) — nothing to recall", string(u.Status)))
+		return
+	}
+	if u.Q == nil || u.R == nil || u.TargetQ == nil || u.TargetR == nil || u.DepartsAt == nil || u.ArrivesAt == nil {
+		writeError(w, http.StatusInternalServerError, "marching unit missing position data")
+		return
+	}
+
+	// Guard: an earlier recall/redirect is already in flight for this unit.
+	var pendingMessengerID uuid.UUID
+	if err := h.pool.QueryRow(ctx,
+		`SELECT (payload->>'messenger_id')::uuid
+		 FROM scheduled_events
+		 WHERE event_type = $1 AND (payload->>'unit_id')::uuid = $2
+		   AND processed_at IS NULL AND failed_at IS NULL`,
+		string(events.ScheduledMarchRecall), unitID,
+	).Scan(&pendingMessengerID); err == nil {
+		var eta time.Time
+		_ = h.pool.QueryRow(ctx, `SELECT arrives_at FROM messengers WHERE id=$1`, pendingMessengerID).Scan(&eta)
+		writeError(w, http.StatusConflict,
+			fmt.Sprintf("a recall/redirect order is already on its way to this unit (ETA %s)", eta.Local().Format(time.RFC3339)))
+		return
+	}
+
+	origin := province.MapPosition{Q: *u.Q, R: *u.R}
+	target := province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}
+	category := string(unit.CategoryOf(u.Type))
+
+	var newTargetQ, newTargetR int
+	if mode == "redirect" {
+		newTargetQ, newTargetR = *req.TargetQ, *req.TargetR
+
+		var destTerrain string
+		if err := h.pool.QueryRow(ctx,
+			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			worldID, newTargetQ, newTargetR,
+		).Scan(&destTerrain); err != nil {
+			writeError(w, http.StatusNotFound, "target hex not found")
+			return
+		}
+		if destTerrain == "mountain_limestone" || destTerrain == "mountain_red" {
+			writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
+			return
+		}
+		isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea"
+		if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
+			writeError(w, http.StatusUnprocessableEntity, "land units cannot enter sea terrain")
+			return
+		}
+	}
+
+	// Interpolate the unit's actual current position along the path it already
+	// proved traversable at dispatch — never a straight-line guess.
+	currentPos, posOK, err := province.InterpolatePosition(ctx, h.pool, worldID, origin, target, category,
+		*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve unit's current position")
+		return
+	}
+	if !posOK {
+		currentPos = origin
+	}
+
+	if mode == "redirect" {
+		newTarget := province.MapPosition{Q: newTargetQ, R: newTargetR}
+		if _, _, pathOK, pathErr := province.FindPath(ctx, h.pool, worldID, currentPos, newTarget, category); pathErr != nil {
+			writeError(w, http.StatusInternalServerError, "pathfinding error")
+			return
+		} else if !pathOK {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("no passable route from the unit's current position to (%d,%d)", newTargetQ, newTargetR))
+			return
+		}
+	}
+
+	// Resolve the settlement that dispatches the order messenger: the settlement
+	// at the unit's march origin if one still stands there, else the owner's
+	// capital (a positioned unit's origin hex may hold no settlement, but the
+	// messengers row's origin_id is a hard settlement FK).
+	var homeSettlementID uuid.UUID
+	var homeQ, homeR int
+	if err := h.pool.QueryRow(ctx,
+		`SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
+		worldID, origin.Q, origin.R,
+	).Scan(&homeSettlementID, &homeQ, &homeR); err != nil {
+		if err := h.pool.QueryRow(ctx,
+			`SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
+			 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.is_capital = true`,
+			worldID, playerID,
+		).Scan(&homeSettlementID, &homeQ, &homeR); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not resolve a settlement to dispatch the order from")
+			return
+		}
+	}
+
+	dist := province.HexDistance(province.MapPosition{Q: homeQ, R: homeR}, currentPos)
+	now := h.clk.Now()
+	messengerArrivesAt := now.Add(messenger.MessengerTravelDuration(dist))
+	var currentTick int
+	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	dueTick := currentTick + messenger.MessengerTravelTicks(dist)
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	// Idempotency / race guard: re-check status FOR UPDATE inside the tx.
+	var lockedStatus string
+	if err := tx.QueryRow(ctx, `SELECT status FROM units WHERE id = $1 FOR UPDATE`, unitID).Scan(&lockedStatus); err != nil {
+		writeError(w, http.StatusNotFound, "unit not found in transaction")
+		return
+	}
+	if unit.Status(lockedStatus) != unit.StatusMarching {
+		writeError(w, http.StatusConflict, "unit status changed; order not sent")
+		return
+	}
+
+	msgText := "Recall order — return home."
+	if mode == "redirect" {
+		msgText = fmt.Sprintf("Redirect order — new course to (%d,%d).", newTargetQ, newTargetR)
+	}
+
+	var messengerID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO messengers
+		     (world_id, sender_id, origin_id, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at)
+		 VALUES ($1,$2,$3,NULL,$4,'outbound','recall',$5,$6,$7,$8,$9)
+		 RETURNING id`,
+		worldID, playerID, homeSettlementID, msgText, homeQ, homeR, currentPos.Q, currentPos.R, messengerArrivesAt,
+	).Scan(&messengerID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch order messenger")
+		return
+	}
+
+	payload := messenger.MarchRecallPayload{
+		WorldID:     worldID,
+		UnitID:      unitID,
+		MessengerID: messengerID,
+		Mode:        mode,
+	}
+	if mode == "redirect" {
+		payload.NewTargetQ = &newTargetQ
+		payload.NewTargetR = &newTargetR
+	}
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMarchRecall, payload, dueTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule order arrival")
+		return
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not commit order")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":               "recall_order_sent",
+		"unit_id":              unitID,
+		"messenger_id":         messengerID,
+		"messenger_arrives_at": messengerArrivesAt,
+		"due_tick":             dueTick,
+		"mode":                 mode,
 	})
 }
 
