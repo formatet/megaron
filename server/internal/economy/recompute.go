@@ -227,7 +227,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			 VALUES ($1, $2, 0, $3, $4, current_world_tick())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount  = LEAST(settlement_goods.cap,
-			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)),
+			                 GREATEST(0, settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick))),
 			     rate    = $3,
 			     calc_tick = current_world_tick()`,
 			settlementID, gp.key, newRate, goodCap(gp.key),
@@ -245,7 +245,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			 VALUES ($1, 'grain', 0, $2, $3, current_world_tick())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount  = LEAST(settlement_goods.cap,
-			                 settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)),
+			                 GREATEST(0, settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick))),
 			     rate    = $2,
 			     calc_tick = current_world_tick()`,
 			settlementID, -grainConsumptionPerTick, goodCap("grain"),
