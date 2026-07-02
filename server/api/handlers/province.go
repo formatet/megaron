@@ -55,6 +55,20 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	prov, err := loadTerrainProvince(r.Context(), h.pool, provinceID, worldID)
 	if err != nil {
+		// The CLI resolver (poleia --province) now catches this client-side, but direct
+		// API callers (iOS client, curl) can still pass a settlement ID where a province
+		// ID is expected — check for that before giving a bare 404.
+		var sName string
+		var sProvinceID uuid.UUID
+		if sErr := h.pool.QueryRow(r.Context(),
+			`SELECT name, province_id FROM settlements WHERE id = $1 AND world_id = $2`,
+			provinceID, worldID,
+		).Scan(&sName, &sProvinceID); sErr == nil {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("that is a settlement ID, not a province ID — settlement %q sits in province %s; retry with --province %s (or just the settlement name)",
+					sName, sProvinceID, sProvinceID))
+			return
+		}
 		writeError(w, http.StatusNotFound, "province not found")
 		return
 	}

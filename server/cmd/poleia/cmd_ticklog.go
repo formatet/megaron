@@ -25,7 +25,11 @@ func ticklogCmd() *cobra.Command {
 			c := newClient(cfg)
 			prov := cfg.ProvinceID
 			if provinceID != "" {
-				prov = provinceID
+				resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+				if err != nil {
+					return err
+				}
+				prov = resolved
 			}
 			order := ""
 			if asc {

@@ -49,7 +49,11 @@ Examples:
 			// (the server ownership-gates it), mirroring `build`/`status --province`.
 			prov := cfg.ProvinceID
 			if provinceID != "" {
-				prov = provinceID
+				resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+				if err != nil {
+					return err
+				}
+				prov = resolved
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/labor", cfg.WorldID, prov)
 			data, err := c.put(path, map[string]any{"percent": percent})

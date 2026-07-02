@@ -20,7 +20,11 @@ func goodsCmd() *cobra.Command {
 			// mirroring `build`/`status --province`.
 			prov := cfg.ProvinceID
 			if provinceID != "" {
-				prov = provinceID
+				resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+				if err != nil {
+					return err
+				}
+				prov = resolved
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/goods", cfg.WorldID, prov)
 			data, err := c.get(path)

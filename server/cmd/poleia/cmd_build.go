@@ -83,7 +83,11 @@ func buildCmd() *cobra.Command {
 			// (the server verifies ownership). Without this, every build hit the capital.
 			prov := cfg.ProvinceID
 			if provinceID != "" {
-				prov = provinceID
+				resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+				if err != nil {
+					return err
+				}
+				prov = resolved
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build", cfg.WorldID, prov)
 			data, err := c.post(path, map[string]string{"building_type": buildingType})
