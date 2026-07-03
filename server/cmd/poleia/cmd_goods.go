@@ -84,18 +84,30 @@ func transferCmd() *cobra.Command {
 	var good string
 	var qty float64
 	var destName string
+	var provinceID string
 
 	cmd := &cobra.Command{
 		Use:     "transfer",
 		Short:   "Send goods to one of your own settlements (internal logistics, no loss)",
-		Example: `  poleia transfer --good grain --qty 50 --dest Korinth`,
+		Example: `  poleia transfer --good grain --qty 50 --dest Korinth
+  poleia transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			destID, err := resolveSettlement(c, cfg.WorldID, destName)
 			if err != nil {
 				return fmt.Errorf("resolve destination %q: %w", destName, err)
 			}
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, cfg.ProvinceID)
+			// Default source is the capital; --from/--province lets you pull a
+			// colony's surplus home instead, mirroring `goods`/`build --province`.
+			src := cfg.ProvinceID
+			if provinceID != "" {
+				resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+				if err != nil {
+					return err
+				}
+				src = resolved
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, src)
 			data, err := c.post(path, map[string]any{
 				"good_key":       good,
 				"quantity":       qty,
@@ -121,6 +133,8 @@ func transferCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&good, "good", "g", "", "good key (e.g. grain, timber, silver)")
 	cmd.Flags().Float64VarP(&qty, "qty", "q", 0, "quantity to send")
 	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name")
+	cmd.Flags().StringVar(&provinceID, "province", "", "source province/settlement (default: your capital)")
+	cmd.Flags().StringVar(&provinceID, "from", "", "alias for --province")
 	_ = cmd.MarkFlagRequired("good")
 	_ = cmd.MarkFlagRequired("qty")
 	_ = cmd.MarkFlagRequired("dest")
