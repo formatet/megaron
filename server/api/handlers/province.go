@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/capabilities"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/economy"
@@ -1474,24 +1475,18 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 // recruitPerManCosts returns the resource cost per man for a given unit type.
 // Derived from Skalbeslut (2026-06-15): per-man = old UnitSpec cost / old PopCost.
 // Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.
+// recruitPerManCosts delegates to province.UnitSpecs so this handler and the
+// capabilities recruit checker (poleia actions) read the exact same per-man
+// cost table — before Fas 3 they were two separately hand-maintained copies
+// that had already drifted apart (temenos_capabilities.md Fas 3). Note:
+// "priest" is not a recruitable unit (removed mig 060) and is caught earlier
+// by the UnitSpecs lookup in Recruit, so it never reaches this function.
 func recruitPerManCosts(unitType string) map[string]float64 {
-	switch unitType {
-	case "spearman":
-		return map[string]float64{"grain": 3, "silver": 0.2}
-	case "elite_infantry":
-		return map[string]float64{"grain": 2.5, "bronze": 0.2, "silver": 0.4}
-	case "war_chariot":
-		return map[string]float64{"grain": 3.75, "timber": 0.625, "bronze": 0.375, "silver": 0.5}
-	case "ship": // galley; crew 20
-		return map[string]float64{"timber": 9, "silver": 0.3}
-	case "war_galley": // crew 50
-		return map[string]float64{"cedar": 5, "bronze": 0.33, "silver": 0.6}
-	case "merchantman": // crew 10
-		return map[string]float64{"timber": 8.75, "silver": 0.2}
-	case "priest": // stationary; same cost structure
-		return map[string]float64{"grain": 5}
+	spec, ok := province.UnitSpecs[unitType]
+	if !ok {
+		return nil
 	}
-	return nil
+	return spec.Costs
 }
 
 // recruitBatchTicks returns the training ticks for one batch of 10 men.
@@ -1622,8 +1617,19 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		`SELECT population FROM settlements WHERE id = $1 AND state != 'collapsed'`,
 		settlementID,
 	).Scan(&population)
-	if population == 0 {
-		writeError(w, http.StatusUnprocessableEntity, "settlement has already collapsed")
+
+	// Coarse precondition — the same checker `poleia actions` uses
+	// (temenos_capabilities.md Fas 3): population > 0, and at least one unit
+	// type affordable at the 10-man minimum batch. Sound as a full gate here
+	// (not just population): if NO type is affordable even at the smallest
+	// valid batch (10 men — the floor enforced above), no larger request for
+	// ANY type can succeed either, so this cannot false-reject a request that
+	// would otherwise go through. The finer per-type building/goods checks
+	// below stay handler-specific — they depend on exactly which type and
+	// how many men this specific request asks for.
+	cc := capabilities.NewContext(r.Context(), h.pool, h.clk, worldID, provinceID, playerID, settlementID)
+	if v := capabilities.CanRecruit(cc); !v.Available {
+		writeError(w, http.StatusUnprocessableEntity, capabilities.FirstUnsatisfied(v))
 		return
 	}
 	totalMen := req.Men * effectiveCount
@@ -2366,15 +2372,32 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check required building is present.
-	var hasBuilding bool
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT EXISTS (SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
-		settlementID, buildingType,
-	).Scan(&hasBuilding)
-	if !hasBuilding {
-		writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s required", buildingType))
-		return
+	if req.RecipeID == 1 {
+		// The load-bearing bronze recipe has a capabilities checker
+		// (temenos_capabilities.md) — reuse it here so this 422 and
+		// `poleia actions` can never show a different requirement for the
+		// same gate (Fas 3 anti-drift). Covers both the foundry-presence
+		// gate and "you don't hold enough of an ingredient to craft even
+		// one unit" — sound as a precondition for ANY requested quantity,
+		// since a smaller stock than one unit's worth cannot satisfy a
+		// larger batch either.
+		cc := capabilities.NewContext(r.Context(), h.pool, h.clk, worldID, provinceID, playerID, settlementID)
+		if v := capabilities.CanCraft(cc); !v.Available {
+			writeError(w, http.StatusUnprocessableEntity, capabilities.FirstUnsatisfied(v))
+			return
+		}
+	} else {
+		// Other recipes (e.g. luxury goods) have no capabilities checker yet —
+		// fall back to the generic building-presence gate.
+		var hasBuilding bool
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT EXISTS (SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
+			settlementID, buildingType,
+		).Scan(&hasBuilding)
+		if !hasBuilding {
+			writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s required", buildingType))
+			return
+		}
 	}
 
 	// Load recipe ingredients.

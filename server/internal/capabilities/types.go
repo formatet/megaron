@@ -47,6 +47,20 @@ func req(text string, satisfied bool, detail, hint string) Requirement {
 	return Requirement{Text: text, Satisfied: satisfied, Detail: detail, Hint: hint}
 }
 
+// FirstUnsatisfied returns the Hint of v's first unsatisfied requirement, or
+// "" if v is available (a caller reaching a 422 should always find one — this
+// is the exact string that must appear both in the /actions listing and in
+// the mutating handler's 422 body, so the two can never drift apart
+// (temenos_capabilities.md Fas 3).
+func FirstUnsatisfied(v Verb) string {
+	for _, r := range v.Requirements {
+		if !r.Satisfied {
+			return r.Hint
+		}
+	}
+	return ""
+}
+
 // verb builds a Verb, computing Available as the AND of every requirement.
 // A verb with no requirements is trivially available (F3 — still listed).
 func verb(name, category, purpose string, reqs []Requirement) Verb {

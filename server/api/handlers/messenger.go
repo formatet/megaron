@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/capabilities"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
@@ -115,6 +116,27 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	if err != nil || ownerID == nil || *ownerID != playerID {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
+	}
+
+	// Coarse precondition for trade offers — the same checker `poleia actions`
+	// uses (temenos_capabilities.md Fas 3). Sound as an early gate: if NO
+	// foreign settlement is visible at all, the specific destination this
+	// Send targets (itself necessarily a foreign settlement, once the FOW
+	// check below runs) cannot be visible either. The per-destination FOW
+	// check further down remains the authoritative, more specific gate for
+	// "some other city is visible, but not this one".
+	if req.TradeOffer != nil {
+		cc := capabilities.NewContext(r.Context(), h.pool, h.clk, worldID, uuid.Nil, playerID, originID)
+		var v capabilities.Verb
+		if req.TradeOffer.Kind == "sell" {
+			v = capabilities.CanSell(cc)
+		} else {
+			v = capabilities.CanTradeOffer(cc)
+		}
+		if !v.Available {
+			writeError(w, http.StatusUnprocessableEntity, capabilities.FirstUnsatisfied(v))
+			return
+		}
 	}
 
 	// Reject duplicate pending trade offers to the same destination for the same good.
@@ -654,12 +676,6 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	if kind == "sell" {
 		// Sell offer: origin=seller (escrowed goods at send), destination=buyer (acceptor).
 		// Step 1: deduct want_silver from buyer (destination). Goods already escrowed at send — do NOT deduct again.
-		var buyerSilver float64
-		_ = tx.QueryRow(r.Context(),
-			`SELECT COALESCE(settled(amount, rate, calc_tick), 0)
-			   FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
-			destID,
-		).Scan(&buyerSilver)
 		tag, err := tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
 			     amount    = settled(amount, rate, calc_tick) - $1,
@@ -669,14 +685,11 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			wantSilver, destID,
 		)
 		if err != nil || tag.RowsAffected() == 0 {
-			var have float64
-			_ = tx.QueryRow(r.Context(),
-				`SELECT COALESCE(settled(amount, rate, calc_tick), 0)
-				   FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
-				destID,
-			).Scan(&have)
-			writeError(w, http.StatusUnprocessableEntity,
-				insufficientTradeMsg("buyer", "silver", wantSilver, have))
+			// Same hint text as capabilities' trade-accept solvency
+			// requirement (temenos_capabilities.md Fas 3 anti-drift) —
+			// poleia actions and this 422 can never disagree about what
+			// "insolvent" means here.
+			writeError(w, http.StatusUnprocessableEntity, capabilities.HintTradeAcceptInsolvent)
 			return
 		}
 
@@ -742,16 +755,11 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			wantQty, destID, wantGood,
 		)
 		if err != nil || tag.RowsAffected() == 0 {
-			// Tell the accepting seller exactly how much of the requested good it
-			// holds, so a blind 422 becomes actionable.
-			var have float64
-			_ = tx.QueryRow(r.Context(),
-				`SELECT COALESCE(settled(amount, rate, calc_tick), 0)
-				   FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2`,
-				destID, wantGood,
-			).Scan(&have)
-			writeError(w, http.StatusUnprocessableEntity,
-				insufficientTradeMsg("seller", wantGood, wantQty, have))
+			// Same hint text as capabilities' trade-accept solvency
+			// requirement (temenos_capabilities.md Fas 3 anti-drift) —
+			// poleia actions and this 422 can never disagree about what
+			// "insolvent" means here.
+			writeError(w, http.StatusUnprocessableEntity, capabilities.HintTradeAcceptInsolvent)
 			return
 		}
 

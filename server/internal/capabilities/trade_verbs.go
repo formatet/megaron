@@ -2,9 +2,36 @@ package capabilities
 
 import "fmt"
 
+// HintTradeAcceptInsolvent is trade-accept's actionable hint when the
+// accepting settlement cannot yet cover a pending offer's cost. Shared
+// verbatim between canTradeAccept's solvency requirement and
+// MessengerHandler.TradeAccept's 422 (Fas 3 anti-drift) — the two check
+// different scopes (canTradeAccept's earliest pending offer, in general, vs.
+// TradeAccept's one specific offer being accepted), so a shared constant
+// keeps the actionable text identical without forcing the handler through
+// the aggregate checker for a per-offer decision.
+const HintTradeAcceptInsolvent = "you can't yet cover this offer's cost — wait for silver/goods to accrue, or decline the offer"
+
+// CanTradeOffer exposes canTradeOffer to api/handlers.MessengerHandler.Send,
+// whose trade_offer (kind="buy") precondition uses it (Fas 3 anti-drift).
+func CanTradeOffer(cc checkContext) Verb { return canTradeOffer(cc) }
+
+// CanSell exposes canSell to api/handlers.MessengerHandler.Send, whose
+// trade_offer (kind="sell") precondition uses it (Fas 3 anti-drift).
+func CanSell(cc checkContext) Verb { return canSell(cc) }
+
+// CanTradeAccept exposes canTradeAccept for symmetry with the other exported
+// checkers; MessengerHandler.TradeAccept reuses HintTradeAcceptInsolvent
+// directly rather than the whole verb (see that constant's doc).
+func CanTradeAccept(cc checkContext) Verb { return canTradeAccept(cc) }
+
 // canTradeOffer covers the "buy" mode of trade-offer: request a good from a
 // contacted Wanax in exchange for silver you hold.
-// TODO: Fas 3 unify with handler gate.
+// Fas 3: api/handlers.MessengerHandler.Send calls CanTradeOffer/CanSell as an
+// early aggregate precondition (sound: if NO foreign settlement is visible at
+// all, the specific destination Send targets — which must itself be a
+// foreign settlement — cannot be visible either). Send's own per-destination
+// FOW check remains the authoritative, more specific gate below that.
 func canTradeOffer(cc checkContext) Verb {
 	foreign := cc.visibleForeignSettlements()
 	foreignOK := foreign > 0
@@ -44,15 +71,71 @@ func canSell(cc checkContext) Verb {
 		})
 }
 
+// canTradeAccept gates on a pending inbound offer plus (temenos_capabilities.md
+// Fas 3.5) solvency: whether this settlement can currently cover the
+// EARLIEST such offer's cost. Solvency is only meaningful once a pending
+// offer exists, so the second requirement is only appended then.
 func canTradeAccept(cc checkContext) Verb {
 	ok := cc.pendingInboundTradeOffer()
-	return verb("trade-accept", CategoryTrade,
-		"Accept a pending inbound trade offer.",
-		[]Requirement{
-			req("a pending inbound trade offer", ok,
-				boolDetail(ok, "an offer is waiting", "no pending inbound offer"),
-				"wait for a Wanax to send a trade offer, or check `poleia inbox`"),
-		})
+	reqs := []Requirement{
+		req("a pending inbound trade offer", ok,
+			boolDetail(ok, "an offer is waiting", "no pending inbound offer"),
+			"wait for a Wanax to send a trade offer, or check `poleia inbox`"),
+	}
+	if ok {
+		solvent, detail := cc.pendingOfferAffordable()
+		reqs = append(reqs, req("solvent for the pending offer's cost", solvent, detail,
+			HintTradeAcceptInsolvent))
+	}
+	return verb("trade-accept", CategoryTrade, "Accept a pending inbound trade offer.", reqs)
+}
+
+// pendingOfferAffordable reports whether this settlement can currently
+// afford to accept its EARLIEST pending inbound trade offer — the acceptor's
+// side of the cost (silver for a "sell" offer, the wanted good for a "buy"
+// offer). Listing-level only: MessengerHandler.TradeAccept checks the
+// SPECIFIC offer being accepted via TradeOfferAffordable directly, since a
+// settlement may have more than one pending offer outstanding at once.
+func (cc checkContext) pendingOfferAffordable() (ok bool, detail string) {
+	if !cc.hasSettlement() {
+		return true, ""
+	}
+	var kind, wantGood string
+	var wantQty, wantSilver float64
+	err := cc.pool.QueryRow(cc.ctx,
+		`SELECT COALESCE(trade_offer->>'kind','buy'),
+		        COALESCE(trade_offer->>'want_good',''),
+		        COALESCE((trade_offer->>'want_qty')::float,0),
+		        COALESCE((trade_offer->>'want_silver')::float,0)
+		   FROM messengers
+		  WHERE destination_id = $1 AND status = 'delivered'
+		    AND trade_offer IS NOT NULL AND trade_offer->>'status' = 'pending'
+		  ORDER BY arrives_at ASC LIMIT 1`,
+		cc.settlementID,
+	).Scan(&kind, &wantGood, &wantQty, &wantSilver)
+	if err != nil {
+		return true, ""
+	}
+	afford, have := TradeOfferAffordable(cc, kind, wantGood, wantQty, wantSilver)
+	need, key := wantQty, wantGood
+	if kind == "sell" {
+		need, key = wantSilver, "silver"
+	}
+	return afford, fmt.Sprintf("%s %.0f/%.0f", key, have, need)
+}
+
+// TradeOfferAffordable reports whether cc's settlement holds enough to cover
+// the ACCEPTOR side of a trade offer: silver >= wantSilver for a "sell" offer
+// (the accepting buyer pays silver), or wantGood >= wantQty for a "buy" offer
+// (the accepting seller ships goods) — mirrors MessengerHandler.TradeAccept's
+// own deduction gate exactly (temenos_capabilities.md Fas 3.5).
+func TradeOfferAffordable(cc checkContext, kind, wantGood string, wantQty, wantSilver float64) (ok bool, have float64) {
+	if kind == "sell" {
+		have = cc.goodAmount("silver")
+		return have >= wantSilver, have
+	}
+	have = cc.goodAmount(wantGood)
+	return have >= wantQty, have
 }
 
 func canTradeDecline(cc checkContext) Verb {

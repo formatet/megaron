@@ -33,12 +33,20 @@ type UnitSpec struct {
 // reference it without crossing the G1 dependency order.
 const MaxSettlementsPerWanax = 5
 
+// Costs below are PER-MAN (per crew member for naval), matching what
+// api/handlers/province.go's Recruit handler actually deducts (Recruit
+// multiplies Costs[good] by the number of men drafted). Before Fas 3
+// (temenos_capabilities.md) these numbers disagreed with the handler's own
+// recruitPerManCosts() — capabilities' recruit checker and the /status
+// endpoint's can_recruit both read Costs but nothing enforced the two tables
+// staying in sync. recruitPerManCosts now delegates to UnitSpecs[type].Costs
+// so there is exactly one source (Fas 3 anti-drift).
 var UnitSpecs = map[string]UnitSpec{
-	"spearman":       {Costs: map[string]float64{"grain": 15, "silver": 2}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
-	"war_chariot":    {Costs: map[string]float64{"grain": 30, "timber": 5, "bronze": 3, "silver": 5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
+	"spearman":       {Costs: map[string]float64{"grain": 3, "silver": 0.2}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
+	"war_chariot":    {Costs: map[string]float64{"grain": 3.75, "timber": 0.625, "bronze": 0.375, "silver": 0.5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
 	// priest borttagen som enhet (mig 060) — präst är ingen enhet längre, kult = tempel-labor.
-	"ship":           {Costs: map[string]float64{"timber": 90, "silver": 3}, PopCost: 10, DurationTicks: 3, RequiresHarbour: true},
-	"elite_infantry": {Costs: map[string]float64{"grain": 25, "bronze": 2, "silver": 4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
-	"war_galley":     {Costs: map[string]float64{"cedar": 60, "bronze": 4, "silver": 6}, PopCost: 12, DurationTicks: 5, RequiresHarbour: true, RequiresFoundry: true},
-	"merchantman":    {Costs: map[string]float64{"timber": 70, "silver": 2}, PopCost: 8, DurationTicks: 4, RequiresHarbour: true},
+	"ship":           {Costs: map[string]float64{"timber": 9, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresHarbour: true},
+	"elite_infantry": {Costs: map[string]float64{"grain": 2.5, "bronze": 0.2, "silver": 0.4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
+	"war_galley":     {Costs: map[string]float64{"cedar": 5, "bronze": 0.33, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresHarbour: true, RequiresFoundry: true},
+	"merchantman":    {Costs: map[string]float64{"timber": 8.75, "silver": 0.2}, PopCost: 8, DurationTicks: 4, RequiresHarbour: true},
 }

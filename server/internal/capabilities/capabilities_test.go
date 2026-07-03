@@ -7,6 +7,7 @@ package capabilities
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -257,6 +258,151 @@ func TestCanTradeOfferAndSell_UnlockedWithVisibleForeignCity(t *testing.T) {
 	v := canSell(f.cc(fakeClock(time.Now())))
 	if !v.Available {
 		t.Fatalf("sell must be unlocked with a visible foreign city + goods in stock: %+v", v.Requirements)
+	}
+}
+
+// ---- trade-accept (Fas 3.5 — pending offer + solvency) ------------------------
+
+func TestCanTradeAccept_LockedWithNoPendingOffer(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+
+	v := canTradeAccept(f.cc(fakeClock(time.Now())))
+	if v.Available {
+		t.Fatal("trade-accept must be locked with no pending inbound offer")
+	}
+	if len(v.Requirements) != 1 {
+		t.Fatalf("with no pending offer, solvency must not be evaluated yet — got %d requirements, want 1", len(v.Requirements))
+	}
+}
+
+// insertPendingBuyOffer creates a "buy" trade offer (a foreign Wanax wants
+// wantGood, in exchange for offer_silver) delivered to f's settlement,
+// pending acceptance — the seller side, which must hold wantGood to accept.
+func (f fixture) insertPendingBuyOffer(t *testing.T, wantGood string, wantQty float64) {
+	t.Helper()
+	var senderID, originID uuid.UUID
+	must(t, f.pool.QueryRow(context.Background(),
+		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
+		"cap-test-buyer-"+uuid.NewString(), uuid.NewString()+"@test.invalid",
+	).Scan(&senderID))
+	var otherProvince uuid.UUID
+	must(t, f.pool.QueryRow(context.Background(),
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 1, 0, 'plains') RETURNING id`,
+		f.worldID,
+	).Scan(&otherProvince))
+	must(t, f.pool.QueryRow(context.Background(),
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, is_capital, state, population)
+		 VALUES ($1, $2, 'Buyertown', 'akhaier', $3, true, 'active', 500) RETURNING id`,
+		f.worldID, otherProvince, senderID,
+	).Scan(&originID))
+
+	tradeOffer := fmt.Sprintf(`{"kind":"buy","want_good":%q,"want_qty":%v,"offer_silver":10,"status":"pending"}`, wantGood, wantQty)
+	f.exec(t, `INSERT INTO messengers
+	             (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, status, arrives_at)
+	           VALUES ($1, $2, $3, $4, 'trade', $5::jsonb, 1, 0, 'delivered', now())`,
+		f.worldID, senderID, originID, f.settlementID, tradeOffer)
+}
+
+func TestCanTradeAccept_LockedWhenPendingButInsolvent(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	f.insertPendingBuyOffer(t, "copper", 100)
+	// No copper in stock at all — the accepting seller cannot cover the offer.
+
+	v := canTradeAccept(f.cc(fakeClock(time.Now())))
+	if v.Available {
+		t.Fatal("trade-accept must be locked when the pending offer cannot be afforded")
+	}
+	if len(v.Requirements) != 2 {
+		t.Fatalf("with a pending offer, solvency must be evaluated too — got %d requirements, want 2", len(v.Requirements))
+	}
+	if v.Requirements[1].Satisfied {
+		t.Fatal("solvency requirement must be unsatisfied with zero copper in stock")
+	}
+	if got := v.Requirements[1].Hint; got != HintTradeAcceptInsolvent {
+		t.Errorf("solvency hint = %q, want %q (HintTradeAcceptInsolvent)", got, HintTradeAcceptInsolvent)
+	}
+}
+
+func TestCanTradeAccept_UnlockedWhenPendingAndSolvent(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	f.insertPendingBuyOffer(t, "copper", 100)
+	f.exec(t, `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+	           VALUES ($1, 'copper', 200, 0, 1000, 0)`, f.settlementID)
+
+	v := canTradeAccept(f.cc(fakeClock(time.Now())))
+	if !v.Available {
+		t.Fatalf("trade-accept must be unlocked with a pending, affordable offer: %+v", v.Requirements)
+	}
+}
+
+// TestTradeOfferAffordable_MatchesTradeAcceptHandlerGate verifies the exact
+// math api/handlers/messenger.go's TradeAccept uses to deduct a "buy" offer's
+// want_qty of want_good from the accepting seller (and, for a "sell" offer,
+// want_silver of silver from the accepting buyer) — TradeOfferAffordable is
+// the single function both TradeAccept's precondition and this checker's
+// solvency requirement are built from (Fas 3 anti-drift).
+func TestTradeOfferAffordable_MatchesTradeAcceptHandlerGate(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	f.exec(t, `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+	           VALUES ($1, 'copper', 50, 0, 1000, 0)`, f.settlementID)
+	cc := f.cc(fakeClock(time.Now()))
+
+	if ok, have := TradeOfferAffordable(cc, "buy", "copper", 50, 0); !ok || have != 50 {
+		t.Errorf("buy offer for exactly 50 copper: ok=%v have=%v, want ok=true have=50", ok, have)
+	}
+	if ok, _ := TradeOfferAffordable(cc, "buy", "copper", 51, 0); ok {
+		t.Error("buy offer for 51 copper must be unaffordable with only 50 in stock")
+	}
+	if ok, have := TradeOfferAffordable(cc, "sell", "", 0, 1); ok || have != 0 {
+		t.Errorf("sell offer wanting 1 silver with 0 silver in stock: ok=%v have=%v, want ok=false have=0", ok, have)
+	}
+}
+
+// ---- FirstUnsatisfied (the 422 <-> actions hint contract, Fas 3) --------------
+
+func TestFirstUnsatisfied_ReturnsFirstUnsatisfiedHint(t *testing.T) {
+	v := verb("x", CategoryProvince, "p", []Requirement{
+		{Satisfied: true, Hint: "irrelevant — already satisfied"},
+		{Satisfied: false, Hint: "fix this first"},
+		{Satisfied: false, Hint: "unreachable — never checked once an earlier one is unsatisfied"},
+	})
+	if got := FirstUnsatisfied(v); got != "fix this first" {
+		t.Errorf("FirstUnsatisfied = %q, want %q", got, "fix this first")
+	}
+
+	allSatisfied := verb("x", CategoryProvince, "p", []Requirement{{Satisfied: true, Hint: "n/a"}})
+	if got := FirstUnsatisfied(allSatisfied); got != "" {
+		t.Errorf("FirstUnsatisfied on an available verb = %q, want \"\"", got)
+	}
+}
+
+// ---- settlement-cap / population requirement split (Fas 3, shared with handlers) --
+
+func TestSettlementCapRequirement_MatchesColonizesSecondRequirement(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	cc := f.cc(fakeClock(time.Now()))
+
+	standalone := SettlementCapRequirement(cc)
+	fromVerb := canColonize(cc).Requirements[1]
+	if standalone != fromVerb {
+		t.Errorf("SettlementCapRequirement() = %+v, want identical to canColonize's second requirement %+v", standalone, fromVerb)
+	}
+}
+
+func TestPopulationRequirement_MatchesRecruitsFirstRequirement(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	cc := f.cc(fakeClock(time.Now()))
+
+	standalone := PopulationRequirement(cc)
+	fromVerb := canRecruit(cc).Requirements[0]
+	if standalone != fromVerb {
+		t.Errorf("PopulationRequirement() = %+v, want identical to canRecruit's first requirement %+v", standalone, fromVerb)
 	}
 }
 

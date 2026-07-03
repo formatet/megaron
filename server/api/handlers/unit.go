@@ -13,6 +13,7 @@ import (
 	"math"
 
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/capabilities"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
@@ -224,14 +225,18 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		// settlements. Enforced at dispatch so the harness gets immediate feedback
 		// and the colonising army never wastes the march. The arrival handler is the
 		// authoritative fallback if the count changes mid-transit.
-		var owned int
-		if err := h.pool.QueryRow(ctx,
-			`SELECT count(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND state = 'active'`,
-			worldID, playerID,
-		).Scan(&owned); err == nil && owned >= province.MaxSettlementsPerWanax {
-			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("settlement cap reached: you already hold %d/%d settlements — consolidate before founding more",
-					owned, province.MaxSettlementsPerWanax))
+		//
+		// Reuses capabilities' colonize checker's settlement-cap requirement
+		// directly (temenos_capabilities.md Fas 3 anti-drift) — not the whole
+		// CanColonize verb, because its OTHER requirement ("a deployable land
+		// unit garrisoned here") is aggregate-per-settlement and would wrongly
+		// reject a "positioned" unit (already off any settlement, mid-journey)
+		// that this handler has already validated is deployable by other means
+		// (status + size checks above).
+		capReq := capabilities.SettlementCapRequirement(
+			capabilities.NewContext(ctx, h.pool, h.clk, worldID, uuid.Nil, playerID, uuid.Nil))
+		if !capReq.Satisfied {
+			writeError(w, http.StatusUnprocessableEntity, capReq.Hint)
 			return
 		}
 	}

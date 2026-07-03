@@ -109,15 +109,37 @@ func canDisband(cc checkContext) Verb {
 		})
 }
 
+// CanColonize exposes canColonize to api/handlers.UnitHandler.March, whose
+// colonize-intent precondition uses it (Fas 3 anti-drift).
+func CanColonize(cc checkContext) Verb { return canColonize(cc) }
+
+// SettlementCapRequirement exposes settlementCapRequirement to
+// UnitHandler.March. March already validates, per the SPECIFIC unit being
+// dispatched, that it is a deployable (>=100 men, garrison-or-positioned)
+// land unit — canColonize's "deployable land unit garrisoned here" requirement
+// is an AGGREGATE (any unit at the settlement) that would wrongly reject a
+// positioned unit (already off any settlement, mid-journey) that is
+// perfectly valid to colonize with. Only the settlement-cap piece — which
+// depends solely on worldID/playerID, not on which unit is marching — maps
+// 1:1 onto March's own check, so it is split out and reused directly rather
+// than routing through the whole verb's Available flag.
+func SettlementCapRequirement(cc checkContext) Requirement { return cc.settlementCapRequirement() }
+
+// settlementCapRequirement is colonize's "room under the settlement cap" gate.
+func (cc checkContext) settlementCapRequirement() Requirement {
+	total, _ := cc.ownSettlements()
+	capOK := total < province.MaxSettlementsPerWanax
+	return req(fmt.Sprintf("under the settlement cap (%d)", province.MaxSettlementsPerWanax), capOK,
+		fmt.Sprintf("%d/%d settlements held", total, province.MaxSettlementsPerWanax),
+		"abandon or consolidate a settlement before founding another")
+}
+
 // canColonize is the keystone example from temenos_capabilities.md: a
 // deployable land unit (garrison, size>=100) plus headroom under the
-// per-Wanax settlement cap. TODO: Fas 3 unify with handler gate.
+// per-Wanax settlement cap.
 func canColonize(cc checkContext) Verb {
 	deployable := cc.deployableLandUnits()
 	deployableOK := deployable > 0
-
-	total, _ := cc.ownSettlements()
-	capOK := total < province.MaxSettlementsPerWanax
 
 	return verb("colonize", CategoryMilitary,
 		"March a full-strength land unit to an empty hex with intent=colonize to found a new settlement there.",
@@ -125,8 +147,6 @@ func canColonize(cc checkContext) Verb {
 			req("a deployable land unit garrisoned here (>=100 men)", deployableOK,
 				fmt.Sprintf("%d/1 deployable", deployable),
 				"recruit 100 men of one land type in this settlement, then march it with --intent colonize"),
-			req(fmt.Sprintf("under the settlement cap (%d)", province.MaxSettlementsPerWanax), capOK,
-				fmt.Sprintf("%d/%d settlements held", total, province.MaxSettlementsPerWanax),
-				"abandon or consolidate a settlement before founding another"),
+			cc.settlementCapRequirement(),
 		})
 }

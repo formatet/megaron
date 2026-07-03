@@ -34,11 +34,22 @@ func canAllocate(cc checkContext) Verb {
 		"Set the share of population working each producible good.", nil)
 }
 
+// CanCraft exposes canCraft to api/handlers.ProvinceHandler.Craft, which
+// calls it for recipe_id=1 (bronze) as its own precondition check (Fas 3
+// anti-drift) — see the TODO this replaces below.
+func CanCraft(cc checkContext) Verb { return canCraft(cc) }
+
+// CanRecruit exposes canRecruit to api/handlers.ProvinceHandler.Recruit,
+// which calls it as its own precondition check (Fas 3 anti-drift).
+func CanRecruit(cc checkContext) Verb { return canRecruit(cc) }
+
 // canCraft checks the load-bearing bronze recipe (recipe_id=1: copper+tin →
 // bronze @ foundry) — the MVP-chain's craft step. Luxury (recipe 2) is a
 // second recipe the same endpoint serves but is not part of the MVP chain
 // this spec calls out, so it is not separately modeled here.
-// TODO: Fas 3 unify with handler gate.
+// Fas 3: api/handlers.ProvinceHandler.Craft calls CanCraft directly for
+// recipe_id=1 and 422s with FirstUnsatisfied, so this and the handler's own
+// gate cannot drift apart.
 func canCraft(cc checkContext) Verb {
 	const recipeID = 1
 	type ingredient struct {
@@ -86,18 +97,30 @@ func canCraft(cc checkContext) Verb {
 		fmt.Sprintf("Smelt %s at your %s from the recipe's ingredients.", outputKey, buildingType), reqs)
 }
 
-// canRecruit checks population and, for a representative minimal batch (10
-// men), building requirements + affordability per unit type — mirroring
-// api/handlers/province.go Recruit's own gates.
-// TODO: Fas 3 unify with handler gate.
-func canRecruit(cc checkContext) Verb {
+// PopulationRequirement exposes populationRequirement to api/handlers'
+// Recruit, whose own "settlement has already collapsed" 422 is the same
+// population>0 gate (Fas 3 anti-drift) — split out from canRecruit's other
+// (aggregate, listing-only) requirement so the handler isn't forced to also
+// evaluate the 10-man-batch affordability scan for an unrelated check.
+func PopulationRequirement(cc checkContext) Requirement { return cc.populationRequirement() }
+
+// populationRequirement is recruit's coarse "any population at all" gate.
+func (cc checkContext) populationRequirement() Requirement {
 	pop := cc.population()
 	popOK := pop > 0
-	reqs := []Requirement{
-		req("population > 0", popOK,
-			fmt.Sprintf("population %d", pop),
-			"grow population (idle labor, or wait for grain surplus) before recruiting"),
-	}
+	return req("population > 0", popOK,
+		fmt.Sprintf("population %d", pop),
+		"grow population (idle labor, or wait for grain surplus) before recruiting")
+}
+
+// canRecruit checks population and, for a representative minimal batch (10
+// men), building requirements + affordability per unit type — mirroring
+// api/handlers/province.go Recruit's own gates. Fas 3: Recruit calls CanRecruit
+// directly as its full precondition (sound because a settlement that cannot
+// afford even the cheapest type at the 10-man minimum batch cannot afford
+// ANY valid recruit request, which must be >=10 men of some type).
+func canRecruit(cc checkContext) Verb {
+	reqs := []Requirement{cc.populationRequirement()}
 
 	// Affordability per type for a 10-man batch — enumerate deterministically.
 	types := make([]string, 0, len(province.UnitSpecs))

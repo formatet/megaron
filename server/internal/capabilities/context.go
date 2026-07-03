@@ -24,6 +24,24 @@ type checkContext struct {
 	settlementID uuid.UUID
 }
 
+// NewContext builds the same checkContext List uses, for api/handlers callers
+// that need to run a single verb's checker as a mutating handler's
+// precondition (Fas 3 anti-drift) — the exact inputs guarantee a 422 can
+// never disagree with what GET .../actions shows for the same verb.
+// settlementID may be uuid.Nil where the check does not need one (e.g. the
+// colonize settlement-cap requirement, which only reads worldID/playerID).
+func NewContext(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, worldID, provinceID, playerID, settlementID uuid.UUID) checkContext {
+	return checkContext{
+		ctx:          ctx,
+		pool:         pool,
+		clk:          clk,
+		worldID:      worldID,
+		provinceID:   provinceID,
+		playerID:     playerID,
+		settlementID: settlementID,
+	}
+}
+
 // hasSettlement reports whether this province resolved to an owned settlement.
 func (cc checkContext) hasSettlement() bool {
 	return cc.settlementID != uuid.Nil
