@@ -146,6 +146,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	}
 
 	h.applyDecay(ctx, e.WorldID)
+	h.applyStarvationWarning(ctx, e.WorldID)
 	h.applyStarvation(ctx, e.WorldID)
 	h.accumulatePrestige(ctx, e.WorldID)
 
@@ -429,6 +430,50 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 				slog.Warn("recompute after pop tick failed", "settlement", sid, "err", err)
 			}
 		}
+	}
+}
+
+// applyStarvationWarning is the proactive counterpart to applyStarvation
+// (Fas 2d): the reactive "⚠ X is starving" gossip line only ever fired after
+// grain had ALREADY hit zero and damage was already being applied — a Wanax
+// got no notice before the harm. This warns once per day while grain is
+// still positive but trending to empty within the next game-day (net rate
+// negative, amount/|rate| <= TicksPerDay) — same gossip channel, same
+// no-dedup-while-condition-holds precedent as SitosFundLow (economy package):
+// it re-fires every day the trend still holds, which is a reminder, not spam,
+// at daily cadence.
+func (h *TickHandler) applyStarvationWarning(ctx context.Context, worldID uuid.UUID) {
+	rows, err := h.pool.Query(ctx,
+		`SELECT s.id, s.owner_id, s.name,
+		        settled(sg.amount, sg.rate, sg.calc_tick) / -sg.rate AS ticks_to_empty
+		 FROM settlements s
+		 JOIN settlement_goods sg ON sg.settlement_id = s.id AND sg.good_key = 'grain'
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		   AND sg.rate < 0
+		   AND settled(sg.amount, sg.rate, sg.calc_tick) > 0
+		   AND settled(sg.amount, sg.rate, sg.calc_tick) / -sg.rate <= $2`,
+		worldID, events.TicksPerDay,
+	)
+	if err != nil {
+		slog.Error("starvation warning tick failed", "world", worldID, "err", err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id, ownerID uuid.UUID
+		var name string
+		var ticksToEmpty float64
+		if err := rows.Scan(&id, &ownerID, &name, &ticksToEmpty); err != nil {
+			continue
+		}
+		_, _ = h.pool.Exec(ctx,
+			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
+			 VALUES ($1, $2, $3, 'economy', $4)`,
+			worldID, ownerID, name,
+			fmt.Sprintf("⚠ %s's grain is running out — empty in ~%.0f hours at current rate. Buy or reallocate labor before stores hit zero.",
+				name, ticksToEmpty),
+		)
 	}
 }
 
