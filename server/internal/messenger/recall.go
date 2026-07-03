@@ -24,6 +24,7 @@ import (
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/tick"
 )
 
 // HoursPerHex is the travel speed of a messenger (hours per hex). Shared by diplomatic
@@ -302,14 +303,15 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 	return nil
 }
 
-// returnDuration is the wall-clock travel time of a return march over dist hexes of the given terrain.
-// Used for marching_armies.arrives_at display column only; actual scheduling uses returnTicks.
+// returnDuration is the wall-clock travel time of a return march over dist hexes of the given
+// terrain, for the marching_armies.arrives_at DISPLAY column. Actual scheduling uses returnTicks
+// (1 tick = 1 game hour); this must convert those same ticks through the real tick cadence
+// (tick.TickMinutes, e.g. 1 real minute/tick on a sped-up dev server) rather than assuming
+// "1 game hour = 1 real hour" — that assumption only holds at the default 60 min/tick cadence,
+// and was silently wrong on any faster world, producing arrives_at timestamps hours ahead of the
+// real (tick-driven) delivery and negative "ago"/ETA once the CLI compared them to wall time.
 func returnDuration(dist int, terrain string) time.Duration {
-	hours := float64(dist) * province.TerrainMoveHours(terrain)
-	if hours < 0.1 {
-		hours = 0.1 // minimum ~6 minutes
-	}
-	return time.Duration(hours * float64(time.Hour))
+	return time.Duration(returnTicks(dist, terrain)) * time.Duration(tick.TickMinutes) * time.Minute
 }
 
 // returnTicks converts a terrain-weighted march distance to world ticks (1 tick = 1 game hour).
@@ -322,10 +324,13 @@ func returnTicks(dist int, terrain string) int {
 	return t
 }
 
-// MessengerTravelDuration returns the wall-clock travel time for a messenger over dist hexes.
-// Used for messengers.arrives_at display column only; scheduling uses messengerTravelTicks.
+// MessengerTravelDuration returns the wall-clock travel time for a messenger over dist hexes,
+// for the messengers.arrives_at DISPLAY column. Scheduling uses MessengerTravelTicks (1 tick =
+// 1 game hour); converted through tick.TickMinutes for the same reason as returnDuration above —
+// a fixed "1 game hour = 1 real hour" assumption drifts from the actual tick-driven delivery on
+// any world not running the default 60 min/tick cadence.
 func MessengerTravelDuration(dist int) time.Duration {
-	return time.Duration(float64(dist) * HoursPerHex * float64(time.Hour))
+	return time.Duration(MessengerTravelTicks(dist)) * time.Duration(tick.TickMinutes) * time.Minute
 }
 
 // MessengerTravelTicks returns the world-tick travel time for a messenger over dist hexes.
@@ -342,10 +347,11 @@ func MessengerTravelTicks(dist int) int {
 // without affecting messenger/recall speed.
 const TradeHoursPerHex = 0.5
 
-// TradeTravelDuration returns the wall-clock travel time for a trade caravan over dist hexes.
-// Used for display columns only; scheduling uses TradeTravelTicks.
+// TradeTravelDuration returns the wall-clock travel time for a trade caravan over dist hexes,
+// for display columns only (scheduling uses TradeTravelTicks) — same tick.TickMinutes conversion
+// as MessengerTravelDuration/returnDuration above.
 func TradeTravelDuration(dist int) time.Duration {
-	return time.Duration(float64(dist) * TradeHoursPerHex * float64(time.Hour))
+	return time.Duration(TradeTravelTicks(dist)) * time.Duration(tick.TickMinutes) * time.Minute
 }
 
 // TradeTravelTicks returns the world-tick travel time for a trade caravan over dist hexes.
