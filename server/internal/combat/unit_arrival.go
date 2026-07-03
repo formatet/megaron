@@ -216,6 +216,20 @@ func (h *UnitArrivalHandler) arriveGarrison(
 			NewStatus: newStatus,
 		}, worldID, nil)
 
+	// Fas 2h: this was the one arrival path with no player-facing notification —
+	// ColonyFounded/ArmyArrival/OutpostEstablished already notify, but a plain
+	// peaceful march (no combat, no colonize) only ever wrote the audit event
+	// above, so a Wanax had to poll `unit list`/`map` to learn a march landed.
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+			"unit_id": u.id,
+			"type":    u.utype,
+			"q":       destQ,
+			"r":       destR,
+			"status":  newStatus,
+		})
+	}
+
 	slog.Info("unit arrived (garrison)", "unit", u.id, "q", destQ, "r", destR, "status", newStatus)
 	return nil
 }

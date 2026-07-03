@@ -100,6 +100,7 @@ func main() {
 		abandonCmd(),
 		godCmd(),
 		actionsCmd(),
+		notificationsCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
