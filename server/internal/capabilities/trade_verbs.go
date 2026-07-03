@@ -49,7 +49,12 @@ func canTradeOffer(cc checkContext) Verb {
 		})
 }
 
-// canSell covers the "sell" mode: offer a good you hold in exchange for silver.
+// canSell covers the "sell" mode of trade-offer: offer a good you hold in
+// exchange for silver. Named "trade-offer" (not "sell") in the actions
+// listing — "sell" isn't a CLI command, it's the sell-mode flag combo
+// (--offer-good/--offer-qty/--want-silver) on `poleia trade-offer`; a
+// distinct verb name that names no real command left agents unable to act
+// on the hint (Fas 1b anti-drift).
 // TODO: Fas 3 unify with handler gate.
 func canSell(cc checkContext) Verb {
 	foreign := cc.visibleForeignSettlements()
@@ -60,8 +65,8 @@ func canSell(cc checkContext) Verb {
 	if goodOK {
 		detail = fmt.Sprintf("%s %.0f in stock", good, qty)
 	}
-	return verb("sell", CategoryTrade,
-		"Send a sell offer (offer a good, want silver) to a contacted Wanax — bilateral, FOW-gated.",
+	return verb("trade-offer", CategoryTrade,
+		"Send a sell offer to a contacted Wanax: trade-offer --offer-good <good> --offer-qty <n> --want-silver <n> — bilateral, FOW-gated.",
 		[]Requirement{
 			req("a contacted foreign settlement (FOW-visible)", foreignOK,
 				fmt.Sprintf("%d visible foreign settlement(s)", foreign),
