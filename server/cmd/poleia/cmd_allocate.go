@@ -16,6 +16,7 @@ func allocateCmd() *cobra.Command {
 	knownGoods := []string{
 		"grain", "timber", "cedar", "stone", "copper", "tin",
 		"fish", "wine", "oil", "horses", "bronze", "livestock", "silver",
+		"purple", "pottery",
 	}
 	rawPercent := make(map[string]*int, len(knownGoods))
 
