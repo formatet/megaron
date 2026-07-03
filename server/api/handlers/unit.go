@@ -643,7 +643,7 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid world ID")
 		return
 	}
-	shipID, err := uuid.Parse(chi.URLParam(r, "shipID"))
+	shipID, err := uuid.Parse(chi.URLParam(r, "unitID"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid ship ID")
 		return
@@ -863,7 +863,7 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid world ID")
 		return
 	}
-	shipID, err := uuid.Parse(chi.URLParam(r, "shipID"))
+	shipID, err := uuid.Parse(chi.URLParam(r, "unitID"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "invalid ship ID")
 		return
