@@ -72,7 +72,15 @@ func inboxCmd() *cobra.Command {
 						fmt.Printf("    → you SELL %.0f %s and receive %.0f silver\n", qty, good, silver)
 					}
 					fmt.Printf("    accept:  poleia trade-accept --id %s\n", id)
-					fmt.Printf("    decline: poleia trade-decline --id %s\n\n", id)
+					fmt.Printf("    decline: poleia trade-decline --id %s\n", id)
+					if offerStatus, _ := offer["status"].(string); offerStatus == "pending" {
+						if expStr, ok := m["expires_at"].(string); ok {
+							if expT, err := time.Parse(time.RFC3339, expStr); err == nil {
+								fmt.Printf("    expires in %s (escrow refunds if left unanswered)\n", countdown(expT))
+							}
+						}
+					}
+					fmt.Println()
 					continue
 				}
 				fmt.Printf("From: %s  (%s)\n  \"%s\"\n    reply: poleia reply --id %s --text \"...\"\n\n", from, when, text, id)

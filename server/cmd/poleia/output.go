@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 )
 
 // jsonMode is set by the --json flag.
@@ -41,4 +42,22 @@ func rate(v float64) string {
 		return "—"
 	}
 	return fmt.Sprintf("+%.1f/tick", v)
+}
+
+// countdown formats the time remaining until t (e.g. a pending trade offer's
+// escrow expires_at) as a short human string, for inbox/outbox display —
+// without this, a pending offer's silver/goods stayed locked with no visible
+// deadline (Fas 2b).
+func countdown(t time.Time) string {
+	remaining := time.Until(t)
+	if remaining <= 0 {
+		return "any moment"
+	}
+	if remaining < time.Hour {
+		return fmt.Sprintf("%dm", int(remaining.Minutes()))
+	}
+	if remaining < 24*time.Hour {
+		return fmt.Sprintf("%dh %dm", int(remaining.Hours()), int(remaining.Minutes())%60)
+	}
+	return fmt.Sprintf("%dd %dh", int(remaining.Hours()/24), int(remaining.Hours())%24)
 }

@@ -229,6 +229,16 @@ func outboxCmd() *cobra.Command {
 							line += fmt.Sprintf("  (%.0f silver escrowed — cancel with: poleia trade-cancel --id %s)", silver, id)
 						}
 					}
+					// Escrow countdown (Fas 2b) — a pending offer's expires_at wasn't
+					// shown anywhere before, so there was no visible deadline for when
+					// the lock releases.
+					if offerStatus == "pending" {
+						if expStr, ok := m["expires_at"].(string); ok {
+							if expT, err := time.Parse(time.RFC3339, expStr); err == nil {
+								line += fmt.Sprintf("  expires in %s", countdown(expT))
+							}
+						}
+					}
 				}
 				fmt.Println(line)
 			}

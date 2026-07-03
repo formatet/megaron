@@ -381,7 +381,7 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer
+		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at
 		 FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
 		 WHERE m.origin_id = $1
@@ -404,13 +404,14 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 		SentAt     time.Time       `json:"sent_at"`
 		ArrivesAt  time.Time       `json:"arrives_at"`
 		TradeOffer json.RawMessage `json:"trade_offer,omitempty"`
+		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
-			&m.SentAt, &m.ArrivesAt, &tradeOffer); err == nil {
+			&m.SentAt, &m.ArrivesAt, &tradeOffer, &m.ExpiresAt); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}
@@ -439,7 +440,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT m.id, m.origin_id, os.name, m.destination_id, ds.name,
-		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at
+		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at
 		 FROM messengers m
 		 JOIN settlements os ON os.id = m.origin_id
 		 JOIN settlements ds ON ds.id = m.destination_id
@@ -491,13 +492,14 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		Status     string          `json:"status"`
 		SentAt     time.Time       `json:"sent_at"`
 		ArrivedAt  time.Time       `json:"arrived_at"`
+		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName,
-			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt); err == nil {
+			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}
