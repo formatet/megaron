@@ -40,5 +40,5 @@ func rate(v float64) string {
 	if v == 0 {
 		return "—"
 	}
-	return fmt.Sprintf("+%.1f/m", v)
+	return fmt.Sprintf("+%.1f/tick", v)
 }
