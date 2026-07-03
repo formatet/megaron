@@ -134,14 +134,17 @@ func statusCmd() *cobra.Command {
 			army, _ := sett["army"].(map[string]any)
 			if army != nil {
 				fmt.Println("Army")
-				units := []struct{ key, label string }{
-					{"Spearman", "Hoplites"}, {"WarChariot", "War Chariot"}, {"Priest", "Hiereus"},
-					{"Ship", "Galley"}, {"EliteInfantry", "Agema"},
+				// jsonKey = province.ArmyComposition's Go field name (no JSON tags,
+				// so it serializes verbatim); dbType feeds the shared display map.
+				units := []struct{ jsonKey, dbType string }{
+					{"Spearman", "spearman"}, {"WarChariot", "war_chariot"}, {"Priest", "priest"},
+					{"Ship", "ship"}, {"EliteInfantry", "elite_infantry"},
+					{"WarGalley", "war_galley"}, {"Merchantman", "merchantman"},
 				}
 				for _, u := range units {
-					v, _ := army[u.key].(float64)
+					v, _ := army[u.jsonKey].(float64)
 					if v > 0 {
-						fmt.Printf("  %-10s %4.0f\n", u.label, v)
+						fmt.Printf("  %-10s %4.0f\n", unitDisplayName(u.dbType), v)
 					}
 				}
 			}
@@ -155,11 +158,6 @@ func statusCmd() *cobra.Command {
 					lvl, _ := m["level"].(float64)
 					fmt.Printf("  %-12s L%.0f\n", t, lvl)
 				}
-			}
-
-			unitLabels := map[string]string{
-				"spearman": "Hoplites", "war_chariot": "War Chariot", "priest": "Hiereus",
-				"ship": "Galley", "elite_infantry": "Agema",
 			}
 
 			if bq, ok := sett["build_queue"].([]any); ok && len(bq) > 0 {
@@ -179,11 +177,7 @@ func statusCmd() *cobra.Command {
 					u, _ := m["unit"].(string)
 					c, _ := m["count"].(float64)
 					ca, _ := m["complete_at"].(string)
-					label := unitLabels[u]
-					if label == "" {
-						label = u
-					}
-					fmt.Printf("  %.0f× %-10s done %s\n", c, label, localDone(ca))
+					fmt.Printf("  %.0f× %-10s done %s\n", c, unitDisplayName(u), localDone(ca))
 				}
 			}
 			return nil

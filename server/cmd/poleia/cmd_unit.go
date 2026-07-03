@@ -62,7 +62,7 @@ func unitListCmd() *cobra.Command {
 			fmt.Println(strings.Repeat("─", 110))
 			for _, u := range resp.Units {
 				fmt.Printf("%-36s  %-16s  %-8s  %-10s  %-9s  %s\n",
-					u.ID, u.Type, formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
+					u.ID, unitDisplayName(u.Type), formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
 			}
 			return nil
 		},
@@ -94,7 +94,7 @@ func formatSize(u unitRow) string {
 		// 100 men; you grow it by recruiting more of the same type into the same
 		// settlement. Spell that out so the unit isn't left stuck at e.g. 40/100.
 		return fmt.Sprintf("%d/100 (forming — recruit %d more %s here to deploy)",
-			u.Size, 100-u.Size, u.Type)
+			u.Size, 100-u.Size, unitDisplayName(u.Type))
 	}
 	if u.Category == "naval" {
 		return fmt.Sprintf("1 vessel (crew %d)", u.Crew)

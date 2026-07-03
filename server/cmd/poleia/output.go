@@ -44,6 +44,31 @@ func rate(v float64) string {
 	return fmt.Sprintf("+%.1f/tick", v)
 }
 
+// unitDisplayNames is the ONE canonical display name per unit type (DB key),
+// shared by `status`, `unit list`, and recruit help so the same unit never
+// shows two different names in the CLI (Fas 2g) — recruiting via `--unit
+// hoplites` used to show up as the raw DB key "spearman" in `unit list` while
+// `status` already called it "Hoplites". DB keys themselves are untouched.
+var unitDisplayNames = map[string]string{
+	"spearman":       "Hoplites",
+	"war_chariot":    "War Chariot",
+	"priest":         "Hiereus",
+	"ship":           "Galley",
+	"galley":         "Galley",
+	"elite_infantry": "Agema",
+	"war_galley":     "War Galley",
+	"merchantman":    "Merchantman",
+}
+
+// unitDisplayName returns the canonical display name for a unit's DB type
+// key, falling back to the raw key for any type not yet in the table.
+func unitDisplayName(dbType string) string {
+	if label, ok := unitDisplayNames[dbType]; ok {
+		return label
+	}
+	return dbType
+}
+
 // countdown formats the time remaining until t (e.g. a pending trade offer's
 // escrow expires_at) as a short human string, for inbox/outbox display —
 // without this, a pending offer's silver/goods stayed locked with no visible
