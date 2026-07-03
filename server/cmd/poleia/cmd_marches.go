@@ -71,6 +71,12 @@ func inboxCmd() *cobra.Command {
 						fmt.Printf("  ⇄ TRADE OFFER — they want to buy %.0f %s, paying %.0f silver\n", qty, good, silver)
 						fmt.Printf("    → you SELL %.0f %s and receive %.0f silver\n", qty, good, silver)
 					}
+					// Fas 2a: an offer you can't currently afford still shows up here
+					// (it used to vanish from the inbox entirely, leaving no way to
+					// find its id to decline it) — affordable==false says so plainly.
+					if afford, ok := m["affordable"].(bool); ok && !afford {
+						fmt.Println("    you can't yet afford this — wait for silver/goods to accrue, or decline it")
+					}
 					fmt.Printf("    accept:  poleia trade-accept --id %s\n", id)
 					fmt.Printf("    decline: poleia trade-decline --id %s\n", id)
 					if offerStatus, _ := offer["status"].(string); offerStatus == "pending" {

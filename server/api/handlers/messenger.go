@@ -440,7 +440,30 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT m.id, m.origin_id, os.name, m.destination_id, ds.name,
-		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at
+		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at,
+		        -- Fas 2a: affordability is DATA, not a visibility filter. It used to be
+		        -- part of the WHERE clause, which made an insolvent pending offer's
+		        -- entire row (and therefore its id) disappear from the inbox — leaving
+		        -- capabilities' own "decline the offer" hint (canTradeAccept,
+		        -- HintTradeAcceptInsolvent) pointing at something the player could never
+		        -- find to act on. Surfaced instead so the CLI can show "can't afford yet".
+		        CASE
+		            WHEN m.trade_offer IS NULL THEN NULL
+		            WHEN COALESCE(m.trade_offer->>'kind', 'buy') = 'buy' THEN EXISTS (
+		                SELECT 1 FROM settlement_goods sg
+		                WHERE sg.settlement_id = m.destination_id
+		                  AND sg.good_key = m.trade_offer->>'want_good'
+		                  AND settled(sg.amount, sg.rate, sg.calc_tick)
+		                      >= (m.trade_offer->>'want_qty')::float
+		            )
+		            ELSE EXISTS (
+		                SELECT 1 FROM settlement_goods sg
+		                WHERE sg.settlement_id = m.destination_id
+		                  AND sg.good_key = 'silver'
+		                  AND settled(sg.amount, sg.rate, sg.calc_tick)
+		                      >= (m.trade_offer->>'want_silver')::float
+		            )
+		        END AS affordable
 		 FROM messengers m
 		 JOIN settlements os ON os.id = m.origin_id
 		 JOIN settlements ds ON ds.id = m.destination_id
@@ -451,26 +474,6 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		       -- keep only pending offers that have not expired
 		       m.trade_offer->>'status' = 'pending'
 		       AND (m.expires_at IS NULL OR m.expires_at > now())
-		       -- solvency check: branch on kind.
-		       --   buy (or unset kind): destination=seller must have the requested good.
-		       --   sell: destination=buyer must have the silver to pay.
-		       AND (
-		           (COALESCE(m.trade_offer->>'kind', 'buy') = 'buy' AND EXISTS (
-		               SELECT 1 FROM settlement_goods sg
-		               WHERE sg.settlement_id = m.destination_id
-		                 AND sg.good_key = m.trade_offer->>'want_good'
-		                 AND settled(sg.amount, sg.rate, sg.calc_tick)
-		                     >= (m.trade_offer->>'want_qty')::float
-		           ))
-		           OR
-		           (m.trade_offer->>'kind' = 'sell' AND EXISTS (
-		               SELECT 1 FROM settlement_goods sg
-		               WHERE sg.settlement_id = m.destination_id
-		                 AND sg.good_key = 'silver'
-		                 AND settled(sg.amount, sg.rate, sg.calc_tick)
-		                     >= (m.trade_offer->>'want_silver')::float
-		           ))
-		       )
 		   ))
 		 ORDER BY m.arrives_at DESC LIMIT 30`,
 		worldID, playerID,
@@ -493,13 +496,14 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		SentAt     time.Time       `json:"sent_at"`
 		ArrivedAt  time.Time       `json:"arrived_at"`
 		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
+		Affordable *bool           `json:"affordable,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName,
-			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt); err == nil {
+			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.Affordable); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}
