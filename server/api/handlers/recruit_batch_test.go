@@ -134,22 +134,20 @@ func TestRecruitBatch_TrainingQueueCapCountsAllVessels(t *testing.T) {
 	}
 }
 
-// TestRecruitBatch_ShipCategoryMismatch documents a pre-existing, unrelated
-// bug discovered while implementing --count: unit.Type("ship") does not equal
-// unit.TypeGalley ("galley"), so unit.CategoryOf/CrewFor fall through to their
-// land/zero defaults for the "ship" unit type — even though every other part
-// of the codebase (province.UnitSpecs, cmd_recruit.go aliases, train.go's
-// isNaval string check) treats "ship" as the canonical galley type. This test
-// pins the CURRENT (buggy) behaviour so it doesn't regress silently further;
-// it is NOT a design decision this task is authorized to fix — see the recruit
-// handler comment "Naval units ... size always 1" for the intended contract
-// this bug also violates (size is set to req.Men, not 1, for ALL naval types,
-// including war_galley/merchantman which resolve correctly).
-func TestRecruitBatch_ShipCategoryMismatch(t *testing.T) {
-	got := unit.CategoryOf(unit.Type("ship"))
-	if got != unit.CategoryLand {
-		t.Errorf(`unit.CategoryOf("ship") = %s — if this now returns "naval", the `+
-			`TypeGalley/"ship" mismatch has been fixed; update the Recruit handler's `+
-			`naval branch assumptions and this test`, got)
+// TestRecruitBatch_ShipResolvesToNavalGalley guards the fix for the "ship"/"galley"
+// split found while implementing --count: the canonical API/UnitSpecs/CLI value is
+// "ship" while the unit-model constant is "galley". Before the fix CategoryOf("ship")
+// fell through to land and CrewFor("ship") to 0, so the Recruit handler built a broken
+// forming land-unit (crew 0, never garrison) for the standard galley — TrainComplete's
+// isNaval check then skipped the forming→garrison flip, stranding it forever. "ship"
+// must now resolve to the naval galley (crew 20). Full rename→galley = D-stream/SB7.
+// NOTE: the separate size-semantics bug (size set to req.Men, not 1, for ALL naval
+// types) is still open and owned by Timothy (#7 naval flottdesign).
+func TestRecruitBatch_ShipResolvesToNavalGalley(t *testing.T) {
+	if got := unit.CategoryOf(unit.Type("ship")); got != unit.CategoryNaval {
+		t.Errorf(`unit.CategoryOf("ship") = %s, want naval`, got)
+	}
+	if got := unit.CrewFor(unit.Type("ship")); got != 20 {
+		t.Errorf(`unit.CrewFor("ship") = %d, want 20`, got)
 	}
 }

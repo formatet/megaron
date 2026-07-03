@@ -27,8 +27,9 @@ const (
 	TypeEliteInfantry Type = "elite_infantry"
 	TypeWarChariot    Type = "war_chariot"
 	TypePriest        Type = "priest"
-	TypeGalley        Type = "galley"    // DB: type='galley'; crew 20
-	TypeWarGalley     Type = "war_galley" // crew 50
+	TypeGalley        Type = "galley"     // kanonisk standardgalär; crew 20
+	TypeShip          Type = "ship"       // legacy-alias för galley — DB-kolumn + UnitSpecs-nyckel heter fortf. "ship"; full rename→galley = D-stream/SB7
+	TypeWarGalley     Type = "war_galley"  // crew 50
 	TypeMerchantman   Type = "merchantman" // crew 10
 )
 
@@ -44,7 +45,7 @@ const (
 // Returns CategoryLand for unknown types (safe default).
 func CategoryOf(t Type) Category {
 	switch t {
-	case TypeGalley, TypeWarGalley, TypeMerchantman:
+	case TypeGalley, TypeShip, TypeWarGalley, TypeMerchantman:
 		return CategoryNaval
 	default:
 		return CategoryLand
@@ -55,7 +56,7 @@ func CategoryOf(t Type) Category {
 // unit types. Returns 0 for land units.
 func CrewFor(t Type) int {
 	switch t {
-	case TypeGalley:
+	case TypeGalley, TypeShip:
 		return 20
 	case TypeWarGalley:
 		return 50
