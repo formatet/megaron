@@ -99,6 +99,7 @@ func main() {
 		riteCmd(),
 		abandonCmd(),
 		godCmd(),
+		actionsCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
