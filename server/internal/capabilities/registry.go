@@ -1,0 +1,75 @@
+package capabilities
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/clock"
+)
+
+// checkers lists every mutating verb's checker, in the fixed display order
+// used by `poleia actions <category>` and the --json output. Keep this in
+// sync with temenos_capabilities.md's verb registry when a new mutating verb
+// is added to cmd/poleia or main.go's routes.
+var checkers = []func(checkContext) Verb{
+	// province
+	canBuild,
+	canCancelBuild,
+	canAllocate,
+	canCraft,
+	canRecruit,
+	canAbandon,
+	// military
+	canMarch,
+	canRecall,
+	canRedirect,
+	canStance,
+	canLoad,
+	canUnload,
+	canDisband,
+	canColonize,
+	// trade
+	canTradeOffer,
+	canSell,
+	canTradeAccept,
+	canTradeDecline,
+	canTradeCancel,
+	canTransfer,
+	// diplomacy
+	canMessage,
+	canReply,
+	canMessenger,
+	// kingdom
+	canKingdomFound,
+	canKingdomInvite,
+	canKingdomJoin,
+	canKingdomVote,
+	canKingdomElectionCall,
+	canKingdomTreasuryDeposit,
+	canKingdomBorrowArmy,
+	canKingdomCouncil,
+	// cult
+	canRite,
+}
+
+// List returns every mutating verb's capability for the given province, in
+// registry order. settlementID may be uuid.Nil if the province has no
+// settlement — settlement-scoped verbs then simply report themselves
+// unsatisfied rather than erroring.
+func List(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, worldID, provinceID, playerID, settlementID uuid.UUID) []Verb {
+	cc := checkContext{
+		ctx:          ctx,
+		pool:         pool,
+		clk:          clk,
+		worldID:      worldID,
+		provinceID:   provinceID,
+		playerID:     playerID,
+		settlementID: settlementID,
+	}
+	verbs := make([]Verb, 0, len(checkers))
+	for _, fn := range checkers {
+		verbs = append(verbs, fn(cc))
+	}
+	return verbs
+}

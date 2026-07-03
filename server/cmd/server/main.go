@@ -232,6 +232,7 @@ func main() {
 			r.Use(handlers.RequireActiveWorld(pool))
 
 			r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/actions", ph.Actions)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/army", ph.GetArmy)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/buildings", ph.Buildings)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
