@@ -378,6 +378,13 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				var k string
 				var amt, rt, cp float64
 				if grows.Scan(&k, &amt, &rt, &cp) == nil {
+					// settled() extrapolates linearly with no ceiling — clamp to cap
+					// here too (Goods already does this), otherwise a good that hasn't
+					// been settled in a while shows an ever-growing uncapped number in
+					// status while goods correctly reports it flat at cap.
+					if amt > cp {
+						amt = cp
+					}
 					resSnap[k] = province.ResourceDetail{Amount: amt, Rate: rt, Cap: cp}
 				}
 			}
