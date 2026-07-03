@@ -317,6 +317,23 @@ func (h *SitosTickHandler) stabilizeGood(ctx context.Context, tx pgx.Tx, settlem
 			GoodDelta: goodDelta, RefPrice: refPrice, FundSilver: newFund,
 		},
 		worldID, nil)
+
+	// Fas 2c: the fund's safety net (selling emergency stock into a shortage)
+	// previously only showed up in `ticklog` — a Wanax had to think to go
+	// looking for it after the fact. The "sell" leg IS the rescue case (the
+	// settlement receives good, paying silver); "buy" is routine surplus
+	// absorption and stays silent as before.
+	if h.hub != nil && action.Kind == "sell" {
+		var ownerID uuid.UUID
+		if err := h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, settlementID).Scan(&ownerID); err == nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "SitosIntervention", 2, map[string]any{
+				"settlement_id": settlementID,
+				"good":          good,
+				"quantity":      action.Quantity,
+				"silver_cost":   action.SilverMoved,
+			})
+		}
+	}
 	return newFund, nil
 }
 
