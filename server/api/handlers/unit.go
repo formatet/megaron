@@ -1232,6 +1232,11 @@ type unitSummary struct {
 	TargetR      *int       `json:"target_r,omitempty"`
 	ArrivesAt    *time.Time `json:"arrives_at,omitempty"`
 	CargoUnitID  *uuid.UUID `json:"cargo_unit_id,omitempty"`
+	// MarchIntent/ColonyName surface a pending colony before it exists (Fas
+	// 2i): a colonize march has no settlement row until it arrives, so this
+	// was the only place its chosen name was visible at all.
+	MarchIntent *string `json:"march_intent,omitempty"`
+	ColonyName  *string `json:"colony_name,omitempty"`
 }
 
 func unitSummaries(us []*unit.Unit) []unitSummary {
@@ -1267,6 +1272,8 @@ func unitSummaries(us []*unit.Unit) []unitSummary {
 			TargetR:      u.TargetR,
 			ArrivesAt:    u.ArrivesAt,
 			CargoUnitID:  u.CargoUnitID,
+			MarchIntent:  u.MarchIntent,
+			ColonyName:   u.ColonyName,
 		})
 	}
 	return out

@@ -116,6 +116,9 @@ type Unit struct {
 	DepartsAt *time.Time
 	ArrivesAt *time.Time
 
+	MarchIntent *string // "colonize" or nil (plain march)
+	ColonyName  *string // chosen colony name when MarchIntent == "colonize"
+
 	SentryQ *int // patrol centre when stance = sentry
 	SentryR *int
 
@@ -147,6 +150,7 @@ const selectCols = `
 	target_q, target_r, departs_at, arrives_at,
 	sentry_q, sentry_r,
 	leader_role,
+	march_intent, colony_name,
 	created_at, updated_at`
 
 func scanUnit(row interface {
@@ -163,6 +167,7 @@ func scanUnit(row interface {
 		&u.TargetQ, &u.TargetR, &u.DepartsAt, &u.ArrivesAt,
 		&u.SentryQ, &u.SentryR,
 		&u.LeaderRole,
+		&u.MarchIntent, &u.ColonyName,
 		&u.CreatedAt, &u.UpdatedAt,
 	); err != nil {
 		return nil, err

@@ -84,6 +84,8 @@ type unitRow struct {
 	TargetR      *int       `json:"target_r"`
 	ArrivesAt    *time.Time `json:"arrives_at"`
 	CargoUnitID  *string    `json:"cargo_unit_id"`
+	MarchIntent  *string    `json:"march_intent"`
+	ColonyName   *string    `json:"colony_name"`
 }
 
 func formatSize(u unitRow) string {
@@ -111,8 +113,13 @@ func locationStr(u unitRow) string {
 	switch u.Status {
 	case "marching":
 		loc := ""
+		// Fas 2i: a colonize march has no settlement row until it arrives — this
+		// was the only place its chosen name was visible at all before then.
+		if u.MarchIntent != nil && *u.MarchIntent == "colonize" && u.ColonyName != nil && *u.ColonyName != "" {
+			loc = fmt.Sprintf("founding %q (pending) — ", *u.ColonyName)
+		}
 		if u.Q != nil && u.R != nil {
-			loc = fmt.Sprintf("(%d,%d)→", *u.Q, *u.R)
+			loc += fmt.Sprintf("(%d,%d)→", *u.Q, *u.R)
 		}
 		if u.TargetQ != nil && u.TargetR != nil {
 			loc += fmt.Sprintf("(%d,%d)", *u.TargetQ, *u.TargetR)
