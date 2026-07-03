@@ -90,7 +90,7 @@ func canCraft(cc checkContext) Verb {
 			fmt.Sprintf("%s >= %.0f (per unit crafted)", i.good, i.qty),
 			ok,
 			fmt.Sprintf("%s %.0f/%.0f", i.good, have, i.qty),
-			fmt.Sprintf("acquire %s via a colony/mine or trade for it", i.good),
+			fmt.Sprintf("acquire %s via a colony/mine, or check `poleia wants` for who's buying/selling it", i.good),
 		))
 	}
 	return verb("craft", CategoryProvince,
