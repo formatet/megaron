@@ -1,4 +1,4 @@
-# POLEIA — Claude Workspace Context
+# MEGARON — Claude Workspace Context
 
 Config file, not a knowledge base. **Instructions + pointers only — facts live in the vault and the code.**
 If code and this file conflict, trust the code, then fix this file.
@@ -35,6 +35,9 @@ Kör varje mekanik — och varje `frågor`-punkt — genom de fem (buggar gateas
 3. **Framtidsvärde** — öppnar den designrummet (Eras, Sjöfolket, kingdoms) eller är den en återvändsgränd?
 4. **Sakstruktur** — beståndsdelar, vad den **förutsätter att spelaren redan begriper**, vad den beror på
    och vad som beror på den, samt vad som är den minimala kärnan att bevara (G1-paketordning, event-modellen).
+   *Deferrar du den som post-MVP: är den **substrat** (nedströms-features förutsätter den) eller **syskon**
+   (vill bara ha den)? En billig delslice av ett substrat är ofta en illusion — kollapsar den ärliga versionen
+   tillbaka till hela motorn finns ingen genväg; då sekvenseras den FÖRST.*
 5. **Det konkreta fallet** — genom vilket *konkret fenomen* möter spelaren den först, och hur blir den
    begriplig+användbar där (UI, keryx/Lawagetas-röst, actionabla felsträngar — för människa *och* LLM-agent)?
 
@@ -48,7 +51,10 @@ Persistent async multiplayer grand strategy, mythic Bronze Age east Mediterranea
 each ruling a network of settlements; kingdoms form organically; the world runs whether you're online or not.
 Tone: serious, warm, human-scale. Full setting + rationale: `temenos_worldbuilding.md`, `temenos_designprinciper.md`.
 
-**Name:** project = **Poleia** (system rename to Megaron in progress — see Naming below).
+**Name:** project = **Megaron** (game + web-GUI). Server = **Temenos**, CLI = **Keryx**, iOS = **Lawagetas**.
+"Poleia" is being **purged as a word** (Timothy 2026-07-03) — see Naming below. Live-infra identifiers
+(`/opt/poleia`, `POLEIA_*`, `cmd/poleia`, `poleia` binary, Go-modul) still read `poleia` until the Lager B
+cutover ([[megaron_todo]] → "Poleia-utrensning Lager B") — commands in this file stay accurate to reality until then.
 
 Current status & backlog live in `megaron_todo.md` — do not restate them here (they go stale).
 
@@ -130,10 +136,12 @@ Collapse not Season-end · The Thalassa not The Sea.
 **The Thalassa** = the sea's in-world lore name. Permanent: `terrain = "sea"` in DB. NOT affected by the
 Megaron rename (which is about the system/repo name, not the world).
 
-**Riktningar (PREFER — ej MUST):** löpande nomenklatur-skiften som tillämpas *när du ändå rör en yta*, aldrig
-som tvångssvep. Full text, skäl och undantag i `temenos_riktningar.md`. I korthet: (1) **Megaron** ersätter
-sakta "Poleia"/"Thalassa" som system-/reponamn på ny yta (rör ej "The Thalassa" = havet); (2) **silver**
-framför "gold/guld" för valutan i UI/API/nya identifierare (DB-kolumnerna förblir `gold_*` tills Sprint A).
+**Namn-utrensning (Timothy 2026-07-03):** "Poleia" ska **bort som ord**. Kanoniskt: **Megaron** (spel + web),
+**Temenos** (server), **Keryx** (CLI), **Lawagetas** (iOS). **Lager A** (ordet i docs/display/CSS) körs nu;
+**Lager B** (live-infra: Go-modul, `cmd/poleia`→`cmd/keryx`, binär, systemd, `/opt/poleia`→`/opt/megaron`,
+`POLEIA_*`-env, gitea-repo, alla `poleia <verb>`-CLI-exempel) är ett koordinerat cutover-svep — se
+[[megaron_todo]] → "Poleia-utrensning Lager B". Rör ej "The Thalassa" (= havet, lore-permanent).
+**silver framför "gold/guld"** för valutan i UI/API/nya identifierare (DB-kolumnerna förblir `gold_*` tills Sprint A).
 
 ---
 
@@ -172,8 +180,8 @@ framför "gold/guld" för valutan i UI/API/nya identifierare (DB-kolumnerna för
 
 ## Visual style (RULES — palette lives in code)
 
-- Colours: use the CSS custom properties in `web/static/poleia.css` `:root`. **Never** hardcode hex in
-  templates/CSS, and never inline `style="color:#..."` — add a class to `poleia.css` instead.
+- Colours: use the CSS custom properties in `web/static/megaron.css` `:root`. **Never** hardcode hex in
+  templates/CSS, and never inline `style="color:#..."` — add a class to `megaron.css` instead.
 - Pixel art: 1px CHARCOAL outline on solids; no anti-aliasing, no gradients, no rounded corners;
   background terrain desaturated, foreground objects saturated.
 - The canvas renderer is exempt from the CSS vars (its own internal palette; culture accents live there).
