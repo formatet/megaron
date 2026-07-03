@@ -47,20 +47,30 @@ func inboxCmd() *cobra.Command {
 						when = fmt.Sprintf("%dd ago", int(ago.Hours()/24))
 					}
 				}
-				// A delivered messenger may carry a trade offer (a buyer asking to
-				// purchase a good from you). Render it from the RECEIVER's side — you
-				// are the seller — with the exact commands to act on it. Without this,
+				// A delivered messenger may carry a trade offer — either a buy offer
+				// (sender wants a good from you, offers silver) or a sell offer
+				// (sender offers a good, wants silver from you). Render it from the
+				// RECEIVER's side with the exact commands to act on it. Without this,
 				// a human player could see the message but never the offer or its id.
 				if offer, ok := m["trade_offer"].(map[string]any); ok {
-					good, _ := offer["want_good"].(string)
-					qty, _ := offer["want_qty"].(float64)
-					silver, _ := offer["offer_silver"].(float64)
+					kind, _ := offer["kind"].(string)
 					fmt.Printf("From: %s  (%s)\n", from, when)
 					if text != "" {
 						fmt.Printf("  \"%s\"\n", text)
 					}
-					fmt.Printf("  ⇄ TRADE OFFER — they want to buy %.0f %s, paying %.0f silver\n", qty, good, silver)
-					fmt.Printf("    → you SELL %.0f %s and receive %.0f silver\n", qty, good, silver)
+					if kind == "sell" {
+						good, _ := offer["offer_good"].(string)
+						qty, _ := offer["offer_qty"].(float64)
+						silver, _ := offer["want_silver"].(float64)
+						fmt.Printf("  ⇄ TRADE OFFER — they want to sell %.0f %s, asking %.0f silver\n", qty, good, silver)
+						fmt.Printf("    → you BUY %.0f %s and pay %.0f silver\n", qty, good, silver)
+					} else {
+						good, _ := offer["want_good"].(string)
+						qty, _ := offer["want_qty"].(float64)
+						silver, _ := offer["offer_silver"].(float64)
+						fmt.Printf("  ⇄ TRADE OFFER — they want to buy %.0f %s, paying %.0f silver\n", qty, good, silver)
+						fmt.Printf("    → you SELL %.0f %s and receive %.0f silver\n", qty, good, silver)
+					}
 					fmt.Printf("    accept:  poleia trade-accept --id %s\n", id)
 					fmt.Printf("    decline: poleia trade-decline --id %s\n\n", id)
 					continue
