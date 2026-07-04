@@ -31,6 +31,12 @@ type SitosConfig struct {
 	// SubsistenceGoods lists the good keys the fund stabilizes. Defaults to
 	// the goods.category='staple' set (grain, fish).
 	SubsistenceGoods []string
+	// SilverLiquidCapDays: a settlement's liquid silver-good cap =
+	// dailyGrainNeedInSilver × SilverLiquidCapDays (see GenesisSilverLiquid).
+	SilverLiquidCapDays float64
+	// SilverStartDays: a settlement's genesis liquid silver seed =
+	// dailyGrainNeedInSilver × SilverStartDays (see GenesisSilverLiquid).
+	SilverStartDays float64
 }
 
 func envFloat(key string, def float64) float64 {
@@ -69,9 +75,11 @@ func LoadSitosConfig() SitosConfig {
 		TaxRate:             envFloat("SITOS_TAX_RATE", 0.01),
 		RefPriceFloor:       envFloat("SITOS_REF_PRICE_FLOOR", 0.5),
 		RefPriceCeiling:     envFloat("SITOS_REF_PRICE_CEILING", 3.0),
-		FundCapMult:         envFloat("SITOS_FUND_CAP_MULT", 20),
-		StartingFundDays:    envFloat("SITOS_STARTING_FUND_DAYS", 10),
+		FundCapMult:         envFloat("SITOS_FUND_CAP_MULT", 3),
+		StartingFundDays:    envFloat("SITOS_STARTING_FUND_DAYS", 2),
 		PriceSmoothingTicks: envInt("SITOS_PRICE_SMOOTHING_TICKS", 6),
 		SubsistenceGoods:    list,
+		SilverLiquidCapDays: envFloat("SITOS_SILVER_CAP_DAYS", 10),
+		SilverStartDays:     envFloat("SITOS_SILVER_START_DAYS", 5),
 	}
 }

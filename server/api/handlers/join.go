@@ -218,7 +218,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create the settlement (capital). Starting population 5000 (W1).
-	// Silver now lives in settlement_goods (seeded below + by seedStarterBuildings).
+	// Silver now lives in settlement_goods (seeded below via GenesisSilverLiquid).
 	var settlementID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO settlements
@@ -287,6 +287,25 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not seed goods")
 		return
+	}
+
+	// Sitos genesis seed: sow LIQUID silver (goods.silver), separate from the
+	// fund seed above — a settlement with 0 liquid silver can't pay for buy
+	// offers or army upkeep even with a full fund (temenos_sitos.md). Same
+	// silver-invariant exception class as the fund seed. Runs before
+	// RecomputeProduction below so a same-tick recompute settles from this
+	// amount rather than the bulk-insert's placeholder 0.
+	if grainBaseValue, gbErr := economy.GoodBaseValue(r.Context(), tx, "grain"); gbErr != nil {
+		slog.Error("sitos genesis: load grain base value for liquid silver", "err", gbErr)
+	} else {
+		liquidSeed, liquidCap := economy.GenesisSilverLiquid(5000, grainBaseValue, h.sitosCfg)
+		if _, err := tx.Exec(r.Context(),
+			`UPDATE settlement_goods SET amount = $1, cap = $2, calc_tick = current_world_tick()
+			 WHERE settlement_id = $3 AND good_key = 'silver'`,
+			liquidSeed, liquidCap, settlementID,
+		); err != nil {
+			slog.Error("sitos genesis: seed liquid silver failed", "err", err, "settlement", settlementID)
+		}
 	}
 
 	// Compute starting kharis_rate from local pantheon power.

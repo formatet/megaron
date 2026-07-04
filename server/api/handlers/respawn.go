@@ -21,11 +21,12 @@ import (
 type RespawnHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
+	sitosCfg   economy.SitosConfig
 }
 
 // NewRespawnHandler creates a RespawnHandler.
-func NewRespawnHandler(pool *pgxpool.Pool, eventStore *events.Store) *RespawnHandler {
-	return &RespawnHandler{pool: pool, eventStore: eventStore}
+func NewRespawnHandler(pool *pgxpool.Pool, eventStore *events.Store, sitosCfg economy.SitosConfig) *RespawnHandler {
+	return &RespawnHandler{pool: pool, eventStore: eventStore, sitosCfg: sitosCfg}
 }
 
 // Handle processes a single Respawn scheduled event.
@@ -45,7 +46,7 @@ func (h *RespawnHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		return nil
 	}
 
-	if err := respawnPlayer(ctx, h.pool, h.eventStore, payload.PlayerID, payload.WorldID, payload.Culture); err != nil {
+	if err := respawnPlayer(ctx, h.pool, h.eventStore, h.sitosCfg, payload.PlayerID, payload.WorldID, payload.Culture); err != nil {
 		return fmt.Errorf("respawn player %s: %w", payload.PlayerID, err)
 	}
 	slog.Info("player respawned", "player", payload.PlayerID, "world", payload.WorldID, "culture", payload.Culture)
@@ -54,7 +55,7 @@ func (h *RespawnHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 // respawnPlayer finds a free province and plants a new capital settlement for the player.
 // Uses the same starter goods as join.go so the player can begin again.
-func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, playerID, worldID uuid.UUID, culture string) error {
+func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, sitosCfg economy.SitosConfig, playerID, worldID uuid.UUID, culture string) error {
 	// Find an unclaimed tile.
 	var q, r int
 	var terrainType string
@@ -132,6 +133,22 @@ func respawnPlayer(ctx context.Context, pool *pgxpool.Pool, eventStore *events.S
 		settlementID,
 	); err != nil {
 		return fmt.Errorf("seed goods: %w", err)
+	}
+
+	// Sitos genesis seed: sow LIQUID silver (goods.silver) so a reborn Wanax isn't
+	// stuck at 0 liquid silver — same exception class as join.go/foundColony (see
+	// temenos_sitos.md). Population is the literal 5000 set above.
+	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
+		slog.Error("sitos genesis: load grain base value for liquid silver", "err", gbErr)
+	} else {
+		liquidSeed, liquidCap := economy.GenesisSilverLiquid(5000, grainBaseValue, sitosCfg)
+		if _, err = tx.Exec(ctx,
+			`UPDATE settlement_goods SET amount = $1, cap = $2, calc_tick = current_world_tick()
+			 WHERE settlement_id = $3 AND good_key = 'silver'`,
+			liquidSeed, liquidCap, settlementID,
+		); err != nil {
+			slog.Error("sitos genesis: seed liquid silver failed", "err", err, "settlement", settlementID)
+		}
 	}
 
 	// Kharis lives on player_world_records (mig 029, rikes-pool per Wanax), not on

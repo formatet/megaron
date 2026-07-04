@@ -14,6 +14,8 @@ func testSitosCfg() SitosConfig {
 		StartingFundDays:    10,
 		PriceSmoothingTicks: 6,
 		SubsistenceGoods:    []string{"grain", "fish"},
+		SilverLiquidCapDays: 10,
+		SilverStartDays:     5,
 	}
 }
 
@@ -48,6 +50,24 @@ func TestGenesisFundSeed_PopInvariant(t *testing.T) {
 		}
 		if math.Abs(cap/need-cfg.FundCapMult) > 1e-9 {
 			t.Errorf("pop=%d cap-days=%.6f, want %.1f", pop, cap/need, cfg.FundCapMult)
+		}
+	}
+}
+
+// TestGenesisSilverLiquid_PopInvariant: the genesis LIQUID silver seed and cap,
+// in days-of-grain-need, are exactly SilverStartDays / SilverLiquidCapDays for
+// any population — pop-invariant, same shape as GenesisFundSeed.
+func TestGenesisSilverLiquid_PopInvariant(t *testing.T) {
+	cfg := testSitosCfg()
+	const base = 3.0
+	for _, pop := range []int{100, 20000} {
+		need := dailyGrainNeedInSilver(pop, base)
+		seed, cap := GenesisSilverLiquid(pop, base, cfg)
+		if math.Abs(seed/need-cfg.SilverStartDays) > 1e-9 {
+			t.Errorf("pop=%d seed-days=%.6f, want %.1f", pop, seed/need, cfg.SilverStartDays)
+		}
+		if math.Abs(cap/need-cfg.SilverLiquidCapDays) > 1e-9 {
+			t.Errorf("pop=%d cap-days=%.6f, want %.1f", pop, cap/need, cfg.SilverLiquidCapDays)
 		}
 	}
 }

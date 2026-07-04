@@ -348,6 +348,23 @@ func (h *UnitArrivalHandler) foundColony(
 		return fmt.Errorf("foundColony: seed goods: %w", err)
 	}
 
+	// Sitos genesis seed: sow LIQUID silver (goods.silver), separate from the fund
+	// seed above — a colony with 0 liquid silver can't pay for buy offers or army
+	// upkeep even with a full fund (temenos_sitos.md). Same exception class as the
+	// fund seed. Runs before RecomputeProduction below.
+	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
+		slog.Error("sitos genesis: load grain base value for liquid silver", "err", gbErr)
+	} else {
+		liquidSeed, liquidCap := economy.GenesisSilverLiquid(population, grainBaseValue, h.sitosCfg)
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlement_goods SET amount = $1, cap = $2, calc_tick = current_world_tick()
+			 WHERE settlement_id = $3 AND good_key = 'silver'`,
+			liquidSeed, liquidCap, colonyID,
+		); err != nil {
+			slog.Error("sitos genesis: seed liquid silver failed", "err", err, "settlement", colonyID)
+		}
+	}
+
 	// Baseline labor: grain dominates so the colony feeds itself; cult floor keeps a
 	// temple (once built) non-inert. Same seed as the capital — the agent reallocates
 	// toward ore via LaborAlloc once it builds a mine on the deposit it colonized for.

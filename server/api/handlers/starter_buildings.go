@@ -16,9 +16,13 @@ import (
 // trade subsystems exercise regardless of how the (8B) governor plays.
 //
 // Must be called inside an open pgx.Tx, BEFORE RecomputeProduction, so the temple →
-// cult and farm/lumbermill rates are picked up. Seeds starting silver (300) directly
-// into the settlement_goods silver row for immediate trade liquidity. Idempotent
-// via ON CONFLICT.
+// cult and farm/lumbermill rates are picked up. Idempotent via ON CONFLICT.
+//
+// Starting liquid silver is NOT seeded here — it used to be a flat 300/cap-1000
+// stopgap for the zero-liquidity deadlock, but that flat seed ran after (and
+// clobbered) the caller's pop-scaled genesis liquid-silver seed
+// (economy.GenesisSilverLiquid, temenos_sitos.md). Callers (join.go, respawn.go)
+// seed liquid silver themselves, earlier in the same tx, before calling this.
 func seedStarterBuildings(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) error {
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO buildings (settlement_id, building_type, level)
@@ -27,19 +31,6 @@ func seedStarterBuildings(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID
 		settlementID,
 	); err != nil {
 		return fmt.Errorf("seed starter buildings: %w", err)
-	}
-
-	// Seed starting silver so buy-offers can clear from t=0. Without this every
-	// Wanax sits at silver=0 and no buy-offer is ever generated (the trade
-	// contract only supports paying silver, not barter), so silver never enters
-	// circulation — a zero-liquidity deadlock.
-	if _, err := tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, 'silver', 300, 0, 1000, current_world_tick())
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = 300, calc_tick = current_world_tick()`,
-		settlementID,
-	); err != nil {
-		return fmt.Errorf("seed starting silver: %w", err)
 	}
 	return nil
 }

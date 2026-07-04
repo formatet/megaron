@@ -31,6 +31,15 @@ func GenesisFundSeed(population int, grainBaseValue float64, cfg SitosConfig) (s
 	return need * cfg.StartingFundDays, need * cfg.FundCapMult
 }
 
+// GenesisSilverLiquid returns a new settlement's starting LIQUID silver (goods
+// amount) and its silver-good cap, both pop-anchored to grain-need so the ratio
+// to the fund stays pop-invariant. Deliberate genesis silver injection — same
+// documented exception class as GenesisFundSeed (temenos_sitos.md).
+func GenesisSilverLiquid(population int, grainBaseValue float64, cfg SitosConfig) (seed, cap float64) {
+	need := dailyGrainNeedInSilver(population, grainBaseValue)
+	return need * cfg.SilverStartDays, need * cfg.SilverLiquidCapDays
+}
+
 // RefPrice computes the fund's smoothed, clamped shadow price for a
 // subsistence good. The moving average is derived deterministically from the
 // lazy-eval tuple (amount, rate, calcTick) — no price-history table needed:
