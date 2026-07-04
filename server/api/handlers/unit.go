@@ -189,8 +189,18 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Sanity: cannot march to own hex.
-	if req.TargetQ == originQ && req.TargetR == originR {
+	// Fas 2f: colonize-in-place. A field-positioned land unit (already on the
+	// map, no settlement) may found a colony on the exact empty hex it occupies,
+	// without marching one hex out and back. Target == its own hex. This
+	// deliberately bypasses FindPath (a zero-distance query it was never built
+	// to answer) and settles on the next tick via the normal arrival→foundColony
+	// path. The colonize preconditions below (land unit, empty target,
+	// settlement cap) still apply.
+	colonizeInPlace := req.Intent == "colonize" && u.SettlementID == nil &&
+		req.TargetQ == originQ && req.TargetR == originR
+
+	// Sanity: cannot march to own hex (colonize-in-place, above, is the exception).
+	if !colonizeInPlace && req.TargetQ == originQ && req.TargetR == originR {
 		writeError(w, http.StatusBadRequest, "cannot march to own hex")
 		return
 	}
@@ -257,36 +267,40 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	// A* pathfinding: verify that a traversable route exists and derive the real
 	// path cost for ETA. This catches the land-over-sea bug (target on land, but
 	// the only route crosses water) and routes around mountains correctly.
-	_, pathCost, pathOK, pathErr := province.FindPath(ctx, h.pool, worldID,
-		province.MapPosition{Q: originQ, R: originR},
-		province.MapPosition{Q: req.TargetQ, R: req.TargetR},
-		string(unit.CategoryOf(u.Type)),
-	)
-	if pathErr != nil {
-		writeError(w, http.StatusInternalServerError, "pathfinding error")
-		return
-	}
-	if !pathOK {
-		hint := "a sea crossing needs a ship (embark), and mountains must be routed around"
-		if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-			hint = "no sea route connects your harbour to that hex — land blocks the way"
+	// Skipped for colonize-in-place: origin == target, so there is no route to
+	// find and no distance to travel — the colony settles on the next tick.
+	var moveHours float64
+	if !colonizeInPlace {
+		_, pathCost, pathOK, pathErr := province.FindPath(ctx, h.pool, worldID,
+			province.MapPosition{Q: originQ, R: originR},
+			province.MapPosition{Q: req.TargetQ, R: req.TargetR},
+			string(unit.CategoryOf(u.Type)),
+		)
+		if pathErr != nil {
+			writeError(w, http.StatusInternalServerError, "pathfinding error")
+			return
 		}
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("no passable route to (%d,%d) for this unit — %s", req.TargetQ, req.TargetR, hint))
-		return
-	}
+		if !pathOK {
+			hint := "a sea crossing needs a ship (embark), and mountains must be routed around"
+			if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+				hint = "no sea route connects your harbour to that hex — land blocks the way"
+			}
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("no passable route to (%d,%d) for this unit — %s", req.TargetQ, req.TargetR, hint))
+			return
+		}
 
-	// Calculate movement time.
-	dist := province.HexDistance(
-		province.MapPosition{Q: originQ, R: originR},
-		province.MapPosition{Q: req.TargetQ, R: req.TargetR},
-	)
-	if dist == 0 {
-		writeError(w, http.StatusBadRequest, "target is the same hex as origin")
-		return
+		// Calculate movement time.
+		dist := province.HexDistance(
+			province.MapPosition{Q: originQ, R: originR},
+			province.MapPosition{Q: req.TargetQ, R: req.TargetR},
+		)
+		if dist == 0 {
+			writeError(w, http.StatusBadRequest, "target is the same hex as origin")
+			return
+		}
+		moveHours = pathCost
 	}
-
-	moveHours := pathCost
 	// Loaded ships move 1.5× slower.
 	if u.CargoUnitID != nil {
 		moveHours *= 1.5

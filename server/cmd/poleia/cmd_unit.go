@@ -184,9 +184,25 @@ Ore on mountain terrain (copper, tin, silver):
 		Example: `  poleia unit march --unit <id> --q 5 --r -3
   poleia unit march --unit <id> --q 5 --r -3 --stance fortify
   poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
+  # Colonize the hex the unit already stands on (no coords needed):
+  poleia unit march --unit <id> --intent colonize --name Thapsos
   # Explore: march toward a frontier coordinate from 'poleia map' to reveal it
   poleia unit march --unit <id> --q 12 --r -8`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			qSet, rSet := cmd.Flags().Changed("q"), cmd.Flags().Changed("r")
+			// Fas 2f: colonize the hex you already stand on. Omit --q/--r together
+			// with --intent colonize and we resolve the unit's current field
+			// position, so you never have to look the coordinates up.
+			if intent == "colonize" && !qSet && !rSet {
+				cq, cr, err := currentHex(c, cfg.WorldID, unitID)
+				if err != nil {
+					return err
+				}
+				targetQ, targetR = cq, cr
+			} else if !qSet || !rSet {
+				return fmt.Errorf("--q and --r are required (or use --intent colonize alone to found a colony on the hex your unit already occupies)")
+			}
 			body := map[string]any{
 				"target_q": targetQ,
 				"target_r": targetR,
@@ -200,7 +216,6 @@ Ore on mountain terrain (copper, tin, silver):
 			if name != "" {
 				body["name"] = name
 			}
-			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			data, err := c.post(path, body)
 			if err != nil {
@@ -213,7 +228,11 @@ Ore on mountain terrain (copper, tin, silver):
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
 			arrivesAt, _ := resp["arrives_at"].(string)
-			fmt.Printf("Unit %s marching to (%d,%d)", unitID[:8], targetQ, targetR)
+			verb := "marching to"
+			if intent == "colonize" {
+				verb = "colonizing"
+			}
+			fmt.Printf("Unit %s %s (%d,%d)", unitID[:8], verb, targetQ, targetR)
 			if arrivesAt != "" {
 				if t, err := time.Parse(time.RFC3339, arrivesAt); err == nil {
 					fmt.Printf(" — arrives %s", t.Local().Format("15:04 Jan 2"))
@@ -225,15 +244,42 @@ Ore on mountain terrain (copper, tin, silver):
 	}
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q (required)")
-	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R (required)")
+	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q (required, unless colonizing in place)")
+	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R (required, unless colonizing in place)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony on arrival — use --name to name it)")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
 	_ = cmd.MarkFlagRequired("unit")
-	_ = cmd.MarkFlagRequired("q")
-	_ = cmd.MarkFlagRequired("r")
 	return cmd
+}
+
+// currentHex resolves a field-positioned unit's current (q,r) so the
+// colonize-in-place shortcut can found a colony where the unit already stands
+// without the Wanax looking up coordinates.
+func currentHex(c *Client, worldID, unitID string) (int, int, error) {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/units", worldID))
+	if err != nil {
+		return 0, 0, err
+	}
+	var resp struct {
+		Units []unitRow `json:"units"`
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return 0, 0, fmt.Errorf("parse units: %w", err)
+	}
+	for _, u := range resp.Units {
+		if u.ID != unitID {
+			continue
+		}
+		if u.SettlementID != nil {
+			return 0, 0, fmt.Errorf("unit is garrisoned in a settlement, not standing on an open hex — march it to the hex you want to colonize, or pass --q/--r")
+		}
+		if u.Q == nil || u.R == nil {
+			return 0, 0, fmt.Errorf("unit has no map position yet; pass --q/--r")
+		}
+		return *u.Q, *u.R, nil
+	}
+	return 0, 0, fmt.Errorf("unit %s not found among your units", unitID)
 }
 
 // ---- unit recall / redirect ---------------------------------------------------
