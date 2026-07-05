@@ -793,17 +793,12 @@ func (h *ArrivalHandler) colonize(ctx context.Context, tx pgx.Tx, originID, targ
 }
 
 // goodCap returns the storage cap for a given good key, mirroring join/colonize.
+// Loosened to a non-binding ceiling — see economy.goodCap's doc comment
+// (2026-07-05, temenos_ekonomi.md §Lagringstak) for why. Note: this duplicate
+// pre-dates this change and had already drifted from the economy package's
+// version (missing "timber", "pottery", "cult" cases) — not resolved here.
 func goodCap(key string) int {
-	switch key {
-	case "grain", "stone":
-		return 1000
-	case "cedar":
-		return 500
-	case "copper", "tin":
-		return 300
-	default:
-		return 200
-	}
+	return 1_000_000
 }
 
 // establishOutpost converts an empty province into an outpost that feeds production

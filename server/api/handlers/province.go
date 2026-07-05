@@ -410,7 +410,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		).Scan(&grainBaseValue, &grainAmount, &grainRate, &grainCap, &grainCalcTick)
 		sitosFundCap := economy.FundCap(sett.Population, grainBaseValue, h.sitosCfg)
 		refPriceGrain := economy.RefPrice(grainBaseValue, grainAmount, grainRate,
-			float64(grainCalcTick), grainCap, currentTick, h.sitosCfg)
+			float64(grainCalcTick), currentTick, h.sitosCfg)
 		taxRatePerTick := float64(sett.Population) * h.sitosCfg.TaxRate / float64(events.TicksPerDay)
 
 		// "Senaste tick" summary (Fas 2 point 8): derive prod/cons from the same
@@ -2022,7 +2022,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Amount:         current,
 			Rate:           rate,
 			Cap:            capV,
-			Price:          economy.LocalPrice(baseValue, current, rate, capV),
+			Price:          economy.LocalPrice(baseValue, current, rate),
 			Citizens:       int(math.Round(laborWeights[key] * float64(laborPool))),
 			Percent:        laborWeights[key] * 100.0,
 			YieldPerWorker: bp / economy.REF_LABOR,

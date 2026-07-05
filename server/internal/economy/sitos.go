@@ -46,7 +46,7 @@ func GenesisSilverLiquid(population int, grainBaseValue float64, cfg SitosConfig
 // settled() stock at tick T−i is amount + rate·(T−i−calcTick), evaluated for
 // the last PriceSmoothingTicks ticks. This assumes rate is constant across
 // the window, true between RecomputeProduction calls (daily).
-func RefPrice(baseValue, amount, rate, calcTick, cap float64, currentTick int, cfg SitosConfig) float64 {
+func RefPrice(baseValue, amount, rate, calcTick float64, currentTick int, cfg SitosConfig) float64 {
 	w := cfg.PriceSmoothingTicks
 	if w < 1 {
 		w = 1
@@ -61,10 +61,7 @@ func RefPrice(baseValue, amount, rate, calcTick, cap float64, currentTick int, c
 		if stock < 0 {
 			stock = 0
 		}
-		if stock > cap {
-			stock = cap
-		}
-		sum += LocalPrice(baseValue, stock, rate, cap)
+		sum += LocalPrice(baseValue, stock, rate)
 	}
 	avg := sum / float64(w)
 	if avg < cfg.RefPriceFloor {
@@ -103,11 +100,10 @@ type SitosAction struct {
 //     fund's cap headroom.
 //   - Empty fund (surplus case) or settlement can't pay (shortage case) →
 //     "noop" — no transaction. This is intended, not an error.
-func EvaluateSitosAction(refPrice, actualPrice, stock, cap float64, fundSilver, fundCap, settlementSilver, settlementSilverCap float64) SitosAction {
+func EvaluateSitosAction(refPrice, actualPrice, stock, reference float64, fundSilver, fundCap, settlementSilver, settlementSilverCap float64) SitosAction {
 	if refPrice <= 0 {
 		return SitosAction{Kind: "noop"}
 	}
-	reference := cap * referenceRatio
 
 	switch {
 	case actualPrice < refPrice && stock > reference:

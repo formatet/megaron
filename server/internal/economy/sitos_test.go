@@ -75,20 +75,20 @@ func TestGenesisSilverLiquid_PopInvariant(t *testing.T) {
 // TestEvaluateSitosAction_Exhaustion: an empty fund cannot buy surplus (noop),
 // and a nearly-empty fund never spends more silver than it has.
 func TestEvaluateSitosAction_Exhaustion(t *testing.T) {
-	cap := 100.0
-	stock := 90.0 // well above reference (30) → surplus
+	reference := 30.0
+	stock := 90.0 // well above reference → surplus
 	refPrice := 1.0
 	actualPrice := 0.4 // < ref → surplus condition
 
 	// Empty fund → noop.
-	a := EvaluateSitosAction(refPrice, actualPrice, stock, cap, 0, 2000, 50, 1000)
+	a := EvaluateSitosAction(refPrice, actualPrice, stock, reference, 0, 2000, 50, 1000)
 	if a.Kind != "noop" {
 		t.Errorf("empty fund should noop on surplus, got %+v", a)
 	}
 
 	// Small fund → buys, but never spends more than it holds.
 	fundSilver := 5.0
-	a = EvaluateSitosAction(refPrice, actualPrice, stock, cap, fundSilver, 2000, 50, 1000)
+	a = EvaluateSitosAction(refPrice, actualPrice, stock, reference, fundSilver, 2000, 50, 1000)
 	if a.Kind != "buy" {
 		t.Fatalf("small fund should still buy on surplus, got %+v", a)
 	}
@@ -100,12 +100,12 @@ func TestEvaluateSitosAction_Exhaustion(t *testing.T) {
 // TestEvaluateSitosAction_SettlementCantPay: a shortage where the settlement has
 // no silver → noop (the fund never gives grain away for free).
 func TestEvaluateSitosAction_SettlementCantPay(t *testing.T) {
-	cap := 100.0
-	stock := 5.0        // below reference (30) → shortage
+	reference := 30.0
+	stock := 5.0       // below reference → shortage
 	refPrice := 1.0
 	actualPrice := 2.5 // > ref → shortage condition
 
-	a := EvaluateSitosAction(refPrice, actualPrice, stock, cap, 500, 2000, 0, 1000)
+	a := EvaluateSitosAction(refPrice, actualPrice, stock, reference, 500, 2000, 0, 1000)
 	if a.Kind != "noop" {
 		t.Errorf("settlement with no silver should noop on shortage, got %+v", a)
 	}
@@ -115,13 +115,13 @@ func TestEvaluateSitosAction_SettlementCantPay(t *testing.T) {
 // fix: neither leg may overshoot the RECEIVING party's cap headroom, so no silver
 // is ever silently clipped after leaving the other party.
 func TestEvaluateSitosAction_CapHeadroomGating(t *testing.T) {
-	cap := 100.0
+	reference := 30.0
 	refPrice := 1.0
 
 	// Sell leg: settlement has plenty of silver, but the fund is almost at cap.
 	// SilverMoved must not exceed fund headroom.
 	fundSilver, fundCap := 1990.0, 2000.0
-	a := EvaluateSitosAction(refPrice, 2.5, 5.0, cap, fundSilver, fundCap, 1000, 1000)
+	a := EvaluateSitosAction(refPrice, 2.5, 5.0, reference, fundSilver, fundCap, 1000, 1000)
 	if a.Kind != "sell" {
 		t.Fatalf("expected sell, got %+v", a)
 	}
@@ -132,7 +132,7 @@ func TestEvaluateSitosAction_CapHeadroomGating(t *testing.T) {
 	// Buy leg: fund has plenty, but the settlement's silver is almost at its cap.
 	// SilverMoved must not exceed the settlement's silver headroom.
 	settlementSilver, settlementSilverCap := 995.0, 1000.0
-	a = EvaluateSitosAction(refPrice, 0.4, 90.0, cap, 5000, 10000, settlementSilver, settlementSilverCap)
+	a = EvaluateSitosAction(refPrice, 0.4, 90.0, reference, 5000, 10000, settlementSilver, settlementSilverCap)
 	if a.Kind != "buy" {
 		t.Fatalf("expected buy, got %+v", a)
 	}
@@ -146,7 +146,7 @@ func TestEvaluateSitosAction_CapHeadroomGating(t *testing.T) {
 // jump — the plan's "chock hoppar ej mer" requirement as a comparative assertion.
 func TestRefPrice_SmoothingDampensShock(t *testing.T) {
 	cfg := testSitosCfg()
-	const base, cap = 3.0, 100.0
+	const base = 3.0
 
 	// A settlement draining fast (rate<0): stock at calc_tick=100 is 20, dropping
 	// 5/tick. Compare price change between currentTick=100 and 101.
@@ -157,12 +157,12 @@ func TestRefPrice_SmoothingDampensShock(t *testing.T) {
 		if stock < 0 {
 			stock = 0
 		}
-		return LocalPrice(base, stock, rate, cap)
+		return LocalPrice(base, stock, rate)
 	}
 	rawDelta := math.Abs(rawAt(101) - rawAt(100))
 	smoothDelta := math.Abs(
-		RefPrice(base, amount, rate, calcTick, cap, 101, cfg) -
-			RefPrice(base, amount, rate, calcTick, cap, 100, cfg))
+		RefPrice(base, amount, rate, calcTick, 101, cfg) -
+			RefPrice(base, amount, rate, calcTick, 100, cfg))
 
 	if smoothDelta > rawDelta+1e-9 {
 		t.Errorf("smoothing should dampen tick-to-tick shock: smoothDelta=%.4f rawDelta=%.4f", smoothDelta, rawDelta)
@@ -172,16 +172,17 @@ func TestRefPrice_SmoothingDampensShock(t *testing.T) {
 // TestRefPrice_ClampsToFloorCeiling: extreme stocks still yield a price in range.
 func TestRefPrice_ClampsToFloorCeiling(t *testing.T) {
 	cfg := testSitosCfg()
-	const base, cap = 3.0, 100.0
+	const base = 3.0
 
 	// Empty & draining → would price very high → clamp to ceiling.
-	high := RefPrice(base, 0, -10, 100, cap, 106, cfg)
+	high := RefPrice(base, 0, -10, 100, 106, cfg)
 	if high > cfg.RefPriceCeiling+1e-9 || high < cfg.RefPriceFloor-1e-9 {
 		t.Errorf("high-shortage refPrice %.4f out of [%.1f,%.1f]", high, cfg.RefPriceFloor, cfg.RefPriceCeiling)
 	}
 
-	// Full & filling → would price very low → clamp to floor.
-	low := RefPrice(base, cap, 10, 100, cap, 106, cfg)
+	// Stock far above its rate-derived reference (rate=10 → reference=720) →
+	// deep surplus → would price very low → clamp to floor.
+	low := RefPrice(base, 2000, 10, 100, 106, cfg)
 	if low < cfg.RefPriceFloor-1e-9 || low > cfg.RefPriceCeiling+1e-9 {
 		t.Errorf("low-surplus refPrice %.4f out of [%.1f,%.1f]", low, cfg.RefPriceFloor, cfg.RefPriceCeiling)
 	}

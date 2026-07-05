@@ -257,22 +257,16 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	return nil
 }
 
-// goodCap returns the storage cap for a good key (mirrors join.go caps).
+// goodCap returns the storage cap for a good key (mirrors join.go/arrival.go
+// caps). Deliberately loosened to a non-binding ceiling for this dev phase
+// (2026-07-05): the old flat per-good values (grain=1000 etc.) were far below
+// what population-scaled production reaches within a single day, so every
+// growing settlement pegged at cap regardless of terrain — masking the
+// geography-driven scarcity/surplus differentiation temenos_ekonomi.md is
+// built on. Pricing no longer derives its reference from cap (see
+// ProductionReference in price.go), so this value is now purely a technical
+// storage ceiling, not a gameplay lever — kept finite for SQL/float safety,
+// not calibrated as a balance number.
 func goodCap(key string) float64 {
-	switch key {
-	case "grain":
-		return 1000
-	case "timber", "cedar":
-		return 500
-	case "stone":
-		return 1000
-	case "copper", "tin":
-		return 300
-	case "pottery":
-		return 500
-	case "cult":
-		return 2000
-	default:
-		return 200
-	}
+	return 1_000_000
 }

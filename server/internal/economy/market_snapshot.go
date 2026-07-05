@@ -40,7 +40,7 @@ func RecordMarketSnapshot(ctx context.Context, pool *pgxpool.Pool, playerID, set
 		if err := rows.Scan(&goodKey, &baseValue, &stock, &rate, &cap); err != nil {
 			continue
 		}
-		snaps = append(snaps, snap{goodKey: goodKey, stock: stock, price: LocalPrice(baseValue, stock, rate, cap)})
+		snaps = append(snaps, snap{goodKey: goodKey, stock: stock, price: LocalPrice(baseValue, stock, rate)})
 	}
 	if err := rows.Err(); err != nil {
 		return err

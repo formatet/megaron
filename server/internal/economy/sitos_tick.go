@@ -242,13 +242,11 @@ func (h *SitosTickHandler) stabilizeGood(ctx context.Context, tx pgx.Tx, settlem
 	if stock < 0 {
 		stock = 0
 	}
-	if stock > cap {
-		stock = cap
-	}
-	refPrice := RefPrice(baseValue, amount, rate, float64(calcTick), cap, currentTick, h.cfg)
-	actualPrice := LocalPrice(baseValue, stock, rate, cap)
+	reference := ProductionReference(rate)
+	refPrice := RefPrice(baseValue, amount, rate, float64(calcTick), currentTick, h.cfg)
+	actualPrice := LocalPrice(baseValue, stock, rate)
 
-	action := EvaluateSitosAction(refPrice, actualPrice, stock, cap,
+	action := EvaluateSitosAction(refPrice, actualPrice, stock, reference,
 		fundSilver, fundCap, settlementSilver, settlementSilverCap)
 	if action.Kind == "noop" {
 		return fundSilver, nil
