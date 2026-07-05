@@ -165,16 +165,12 @@ func outboxCmd() *cobra.Command {
 			if len(ownSettlementIDs) == 0 {
 				return fmt.Errorf("could not find own settlement")
 			}
-			var msgs []map[string]any
+			msgs := []map[string]any{}
 			for _, sid := range ownSettlementIDs {
 				path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, sid)
 				data, err := c.get(path)
 				if err != nil {
 					return err
-				}
-				if jsonMode {
-					printRawJSON(data)
-					continue
 				}
 				var part []map[string]any
 				if err := json.Unmarshal(data, &part); err != nil {
@@ -183,6 +179,7 @@ func outboxCmd() *cobra.Command {
 				msgs = append(msgs, part...)
 			}
 			if jsonMode {
+				printJSON(msgs)
 				return nil
 			}
 			if len(msgs) == 0 {
