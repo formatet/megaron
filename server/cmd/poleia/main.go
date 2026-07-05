@@ -11,7 +11,7 @@
 //	poleia kingdoms
 //	poleia settlements
 //	poleia goods
-//	poleia trade --good grain --qty 10 --dest Korinth
+//	poleia transfer --good grain --qty 10 --dest Korinth
 //	poleia inbox
 //
 // Environment variables:
@@ -82,7 +82,6 @@ func main() {
 		goodsCmd(),
 		ticklogCmd(),
 		transferCmd(),
-		tradeCmd(),
 		inboxCmd(),
 		outboxCmd(),
 		replyCmd(),

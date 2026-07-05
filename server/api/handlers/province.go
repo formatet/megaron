@@ -2294,11 +2294,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Distance bonus: caravans that travel farther deliver more.
-	// bonus = 1 + sqrt(dist) × 0.1  (d=1→1.1×, d=4→1.2×, d=9→1.3×, d=16→1.4×)
-	distBonus := 1.0 + math.Sqrt(float64(dist))*0.1
-	deliveredQty := req.Quantity * distBonus
-
+	// Internal transfer: no loss, no gain — delivered quantity equals what was sent.
 	// Enqueue delivery within the same transaction — atomic with the deduction.
 	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 		map[string]any{
@@ -2306,7 +2302,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			"destination_id":     req.DestinationID,
 			"good_key":           req.GoodKey,
 			"quantity":           req.Quantity,
-			"delivered_quantity": deliveredQty,
+			"delivered_quantity": req.Quantity,
 		}, tradeCurrentTick+tradeTravelTicks); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule delivery")
 		return
@@ -2318,12 +2314,11 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"route_id":       routeID,
-		"arrives_at":     arrivesAt,
-		"distance":       dist,
-		"travel_min":     travelMins,
-		"distance_bonus": distBonus,
-		"delivered_qty":  deliveredQty,
+		"route_id":      routeID,
+		"arrives_at":    arrivesAt,
+		"distance":      dist,
+		"travel_min":    travelMins,
+		"delivered_qty": req.Quantity,
 	})
 }
 
@@ -2759,15 +2754,14 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type routeItem struct {
-		ID            uuid.UUID `json:"id"`
-		PeerName      string    `json:"peer_name"` // destination for outgoing, origin for incoming
-		GoodKey       string    `json:"good_key"`
-		Quantity      float64   `json:"quantity"`
-		DeliveredQty  float64   `json:"delivered_qty"`
-		DistanceBonus float64   `json:"distance_bonus"`
-		Direction     string    `json:"direction"` // "outgoing" | "incoming"
-		DepartsAt     time.Time `json:"departs_at"`
-		ArrivesAt     time.Time `json:"arrives_at"`
+		ID           uuid.UUID `json:"id"`
+		PeerName     string    `json:"peer_name"` // destination for outgoing, origin for incoming
+		GoodKey      string    `json:"good_key"`
+		Quantity     float64   `json:"quantity"`
+		DeliveredQty float64   `json:"delivered_qty"`
+		Direction    string    `json:"direction"` // "outgoing" | "incoming"
+		DepartsAt    time.Time `json:"departs_at"`
+		ArrivesAt    time.Time `json:"arrives_at"`
 	}
 	var result []routeItem
 	for rows.Next() {
@@ -2775,9 +2769,7 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 		var oq, or_, dq, dr int
 		if err := rows.Scan(&ri.ID, &ri.PeerName, &ri.GoodKey, &ri.Quantity, &ri.DepartsAt, &ri.ArrivesAt,
 			&oq, &or_, &dq, &dr); err == nil {
-			dist := province.HexDistance(province.MapPosition{Q: oq, R: or_}, province.MapPosition{Q: dq, R: dr})
-			ri.DistanceBonus = 1.0 + math.Sqrt(float64(dist))*0.1
-			ri.DeliveredQty = ri.Quantity * ri.DistanceBonus
+			ri.DeliveredQty = ri.Quantity
 			ri.Direction = "outgoing"
 			result = append(result, ri)
 		}
@@ -2811,9 +2803,7 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 				var oq, or_, dq, dr int
 				if err := inRows.Scan(&ri.ID, &ri.PeerName, &ri.GoodKey, &ri.Quantity, &ri.DepartsAt, &ri.ArrivesAt,
 					&oq, &or_, &dq, &dr); err == nil {
-					dist := province.HexDistance(province.MapPosition{Q: oq, R: or_}, province.MapPosition{Q: dq, R: dr})
-					ri.DistanceBonus = 1.0 + math.Sqrt(float64(dist))*0.1
-					ri.DeliveredQty = ri.Quantity * ri.DistanceBonus
+					ri.DeliveredQty = ri.Quantity
 					ri.Direction = "incoming"
 					result = append(result, ri)
 				}
