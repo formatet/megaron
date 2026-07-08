@@ -126,8 +126,9 @@ iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 ## Naming (MUST)
 
 **Columns:**
-- Resources: `gold_amount`, `gold_rate`, `gold_cap`, `gold_calc_at` — NOT `*_last_calc_at`.
-- Army: bare names — `infantry`, `chariot`, `ship`, `elite_infantry`. (priest är ingen enhet längre — kult = tempel-labor.)
+- Lazy-tuple-suffix: `*_amount`, `*_rate`, `*_cap`, `*_calc_tick` (t.ex. `kharis_*` på `player_world_records`) — NOT `*_last_calc_at`.
+- **Silver är en good i `settlement_goods`** (mig 057) — inga `silver_*`/`gold_*`-kolumner på settlements (enda undantag: `sitos_fund_silver`).
+- Army: bare names — `infantry`, `chariot`, `ship`, `elite_infantry` (legacy dual-write-kolumner tills SB7/C8). (priest är ingen enhet längre — kult = tempel-labor.)
 
 **Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
 Settlement not Base · Kingdom not Alliance · Rite not Spell · March not Attack (verb) · Sea Peoples not Boss ·
@@ -141,7 +142,7 @@ Megaron rename (which is about the system/repo name, not the world).
 **Lager B** (live-infra: Go-modul, `cmd/poleia`→`cmd/keryx`, binär, systemd, `/opt/poleia`→`/opt/megaron`,
 `POLEIA_*`-env, gitea-repo, alla `poleia <verb>`-CLI-exempel) är ett koordinerat cutover-svep — se
 [[megaron_todo]] → "Poleia-utrensning Lager B". Rör ej "The Thalassa" (= havet, lore-permanent).
-**silver framför "gold/guld"** för valutan i UI/API/nya identifierare (DB-kolumnerna förblir `gold_*` tills Sprint A).
+**silver framför "gold/guld"** för valutan i UI/API/nya identifierare (Sprint A KLAR — inga gold-kolumner kvar; "gold" är reserverat för framtida lyxvara).
 
 ---
 
@@ -192,7 +193,7 @@ Megaron rename (which is about the system/repo name, not the world).
 ## Running it
 
 - **Local:** `docker compose up` at project root (migrations run on startup; copy `.env.example` → `.env` first).
-- **Dev server** (CT 126, 10.0.1.88:8080): runs `air` (Go hot-reload). After pushing to master:
-  `! ssh root@10.0.1.88 "cd /opt/poleia && git pull && echo done"` — `air` rebuilds. Force restart: append `&& systemctl restart poleia`.
+- **Dev server** (CT 126, 10.0.1.92:8080): runs `air` (Go hot-reload). After pushing to master:
+  `! ssh root@10.0.1.92 "cd /opt/poleia && git pull && echo done"` — `air` rebuilds. Force restart: append `&& systemctl restart poleia`.
 - **`poleia` binary:** `~/go/bin/poleia` — NOT in PATH, always use the full path.
 - **LLM playtest agents + live world:** `keryx_playtest.md`.
