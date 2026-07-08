@@ -29,7 +29,8 @@ en dubbelsidig öppning (*doppelseitige Erschließung*). Översatt: en mekanik f
 öppnar bronsåldersvärlden för en Wanax — inte om den bara lägger till en siffra att optimera.
 
 Kör varje mekanik — och varje `frågor`-punkt — genom de fem (buggar gateas ej; de fixas):
-1. **Exemplarisk** — exemplifierar den MVP-kärnan (geografi→brist→handel→diplomati→kingdom→kult→gudar),
+1. **Exemplarisk** — exemplifierar den MVP-kärnan (geografi→brist→handel→diplomati→kult→gudar;
+   **kingdom struket ur MVP-kedjan**, Timothy 2026-07-08 — ytor inaktiveras, se `megaron_web_spelbar_plan.md`),
    eller är den en engångsgrej vid sidan om? *Faller den här → post-MVP, hur lockande den än är.*
 2. **Nuvärde** — vad betyder den för en Wanax som spelar *idag*? Märks den i upplevelsen?
 3. **Framtidsvärde** — öppnar den designrummet (Eras, Sjöfolket, kingdoms) eller är den en återvändsgränd?
@@ -157,7 +158,8 @@ Megaron rename (which is about the system/repo name, not the world).
 - **Messengers** are physical, sacred (uninterceptable); reply arrives on return. **Load-bearing pillar:**
   ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
   (recall etc.) also travel by messenger — command is never instant. `temenos_settlement.md`
-- **Kingdom** = Basileus + members; activates at a member threshold (value in `kingdom.go`). `temenos_kingdoms.md`
+- **Kingdom** = Basileus + members; activates at a member threshold (value in `kingdom.go`). **POST-MVP
+  (Timothy 2026-07-08): all spelaryta inaktiveras (CLI/capabilities/web); server-koden behålls gated.** `temenos_kingdoms.md`
 - **Combat** = deterministisk effektiv styrka + bounded kharis-biased fortune (RNG rullas EN gång i handlern, utfall i event — Fas 2.3); moral/rout — låg moral → enheten flyr, ej utplåning. `temenos_kharis.md`
 - **Kult** produceras av befolkning allokerad till tempel; **inga prästenheter** (varken byggbara eller starter); rit gateas av tempel + kharis (nivåer + siffror i `internal/kharis` / `temenos_kharis.md`).
 - **Silver** — betalningsmedel, fysiskt transporterbart. Silver-sänka = armé-upkeep (grain + silver), löpande; obetald → desertering/attrition. Präst/kult ingen upkeep.
