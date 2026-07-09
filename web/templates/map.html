@@ -2163,21 +2163,41 @@ async function loadEconomyTransfer(mySettlements) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Need at least two of your own settlements to transfer between.</p>';
     return;
   }
-  const opts = mySettlements.map(s => `<option value="${s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
+  // From is addressed by PROVINCE id (the /provinces/{id}/trade URL); To is the
+  // DESTINATION SETTLEMENT id (the handler resolves the destination by settlement
+  // id — sending a province id here was the "destination settlement not found" bug).
+  const fromOpts = mySettlements.map(s => `<option value="${s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
+  const toOpts   = mySettlements.map(s => `<option value="${s.settlement_id||s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
+  const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
   el.innerHTML = `
     <div class="dsec">
       <div class="dsec-title">Internal transfer</div>
       <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
-        <label>From <select id="ec-tr-from" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">${opts}</select></label>
-        <label>To <select id="ec-tr-to" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">${opts}</select></label>
-        <label>Good <input type="text" id="ec-tr-good" placeholder="e.g. grain" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem"></label>
-        <label>Quantity <input type="number" id="ec-tr-qty" min="1" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem"></label>
+        <label>From <select id="ec-tr-from" onchange="loadTransferGoods(this.value)" style="${inputStyle}">${fromOpts}</select></label>
+        <label>To <select id="ec-tr-to" style="${inputStyle}">${toOpts}</select></label>
+        <label>Good <select id="ec-tr-good" style="${inputStyle}"><option value="">Loading…</option></select></label>
+        <label>Quantity <input type="number" id="ec-tr-qty" min="1" style="${inputStyle}"></label>
         <button class="btn-primary btn-small" onclick="startTransfer()">Transfer →</button>
         <div id="ec-tr-result" class="action-result"></div>
       </div>
     </div>`;
   const toSel = document.getElementById('ec-tr-to');
   if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
+  loadTransferGoods(document.getElementById('ec-tr-from').value);
+}
+
+// Populate the Good dropdown with the From settlement's goods in stock, so the
+// player picks a real good and sees how much is available (no more free-text).
+async function loadTransferGoods(fromProvId) {
+  const sel = document.getElementById('ec-tr-good');
+  if (!sel || !fromProvId) return;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${fromProvId}/goods`);
+  if (!r.ok) { sel.innerHTML = '<option value="">Could not load goods</option>'; return; }
+  const goods = ((await r.json()) || []).filter(g => (g.amount || 0) > 0);
+  sel.innerHTML = goods.length
+    ? goods.map(g => `<option value="${g.key}">${esc(g.name || g.key)} — ${Math.floor(g.amount || 0)} in stock</option>`).join('')
+    : '<option value="">No goods in stock</option>';
 }
 
 async function startTransfer() {
