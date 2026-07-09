@@ -182,27 +182,24 @@
     <span id="mctx-name" class="mctx-title"></span>
     <button class="mctx-close" onclick="closeMarchCtx()">✕</button>
   </div>
-  <div class="mctx-intent" id="mctx-intent-row">
-    <button class="mctx-ibtn active" id="mctx-attack"    onclick="setMarchIntent('attack')"    title="March to attack — units fight defenders on arrival">Attack</button>
-    <button class="mctx-ibtn"        id="mctx-reinforce" onclick="setMarchIntent('reinforce')" title="March to reinforce — units join the garrison on arrival">Reinforce</button>
-    <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')"   title="March in support — bolsters any allied attack arriving while still in transit; joins garrison on arrival">Support</button>
-    <button class="mctx-ibtn"        id="mctx-scout"     onclick="setMarchIntent('scout')"     title="Scout — units recon the tile and auto-return">Scout</button>
-    <button class="mctx-ibtn"        id="mctx-colonize"  onclick="setMarchIntent('colonize')"  title="Colonize — army founds a new settlement on arrival" style="display:none">Colonize</button>
-    <button class="mctx-ibtn"        id="mctx-explore"   onclick="setMarchIntent('explore')"   title="Explore — ships scout coastal and sea hexes, revealing fog-of-war, then auto-return" style="display:none">Explore</button>
-  </div>
-  <div id="mctx-source-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
-    From: <select id="mctx-source" onchange="onSourceChange()"
-      style="margin-left:.3rem;font-size:.75rem;padding:.15rem .3rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);"></select>
-  </div>
-  <div id="mctx-colonize-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
-    Colonize: army founds a new settlement on arrival.
+  <div id="mctx-hint" style="padding:.35rem .55rem .15rem;font-size:.72rem;color:var(--text-dim)"></div>
+  <div id="mctx-colonize-row" style="display:none;padding:.1rem .55rem;font-size:.75rem;color:var(--text-dim)">
+    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+      <input type="checkbox" id="mctx-colonize-chk" onchange="onColonizeToggle()"> Found a new settlement on arrival
+    </label>
     <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
-      style="display:block;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
-  </div>
-  <div id="mctx-explore-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
-    Explore: ships reveal fog-of-war and auto-return home.
+      style="display:none;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
   </div>
   <div class="mctx-units" id="mctx-units"></div>
+  <div id="mctx-stance-row" style="display:none;padding:.15rem .55rem .3rem;font-size:.75rem;color:var(--text-dim)">
+    Stance:
+    <select id="mctx-stance"
+      style="margin-left:.3rem;font-size:.75rem;padding:.15rem .3rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
+      <option value="">none</option>
+      <option value="storm">storm</option>
+      <option value="sentry">sentry</option>
+    </select>
+  </div>
   <div class="mctx-foot">
     <button class="mctx-send" id="mctx-send" onclick="sendMarch()">March →</button>
     <span class="mctx-error" id="mctx-err"></span>
@@ -1442,234 +1439,154 @@ loadMap().then(() => { dirty = true; render(); });
   connect();
 })();
 
-// ── March context menu ────────────────────────────────────────────────────
-const UNIT_DEFS = [
-  { key: 'spearman',       label: 'Hoplites',    apiKey: 'Spearman'      },
-  { key: 'elite_infantry', label: 'Agema',       apiKey: 'EliteInfantry' },
-  { key: 'war_chariot',    label: 'War Chariot', apiKey: 'WarChariot'    },
-  { key: 'priest',         label: 'Hiereus',     apiKey: 'Priest'        },
-  { key: 'ship',           label: 'Trireme',     apiKey: 'Ship'          },
-];
+// ── March context menu (per-unit model) ───────────────────────────────────
+// Right-clicking a hex orders individual units to it via
+// POST /worlds/{id}/units/{unitID}/march. The old aggregate
+// /provinces/{id}/march route was removed in the per-unit migration; the map
+// now marches discrete units, the same model the War drawer uses. A sea hex
+// lists only ships (galleys); a land hex lists only land units. Attack vs
+// reinforce is decided server-side on arrival from the target's ownership —
+// there is no client-chosen intent beyond optional colonize + stance.
+const UNIT_MENU_LABELS = {
+  spearman:'Spearman', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
+  priest:'Hiereus', ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
+};
 
-let marchCtxTarget = null;
-let marchCtxTile   = null;
-let marchCtxIntent = 'attack';
-let marchCtxArmy   = null;
-let marchCtxSourceID = null;
+let marchCtxDest  = null;   // { q, r, terrain, isSea, name, isSettlement, allied }
+let marchCtxUnits = [];     // eligible units currently listed
 
 const marchCtx = document.getElementById('march-ctx');
 
 function closeMarchCtx() {
   marchCtx.style.display = 'none';
-  marchCtxTarget = null;
-  marchCtxTile   = null;
-  marchCtxArmy   = null;
-  marchCtxSourceID = null;
+  marchCtxDest  = null;
+  marchCtxUnits = [];
   document.getElementById('mctx-err').textContent = '';
-  document.getElementById('mctx-source-row').style.display = 'none';
   const nameEl = document.getElementById('mctx-colony-name');
-  if (nameEl) nameEl.value = '';
+  if (nameEl) { nameEl.value = ''; nameEl.style.display = 'none'; }
+  const chk = document.getElementById('mctx-colonize-chk');
+  if (chk) chk.checked = false;
 }
 
-function setMarchIntent(intent) {
-  marchCtxIntent = intent;
-  document.querySelectorAll('.mctx-ibtn').forEach(b => b.classList.remove('active'));
-  document.getElementById('mctx-' + intent).classList.add('active');
-  document.getElementById('mctx-colonize-row').style.display = intent === 'colonize' ? 'block' : 'none';
-  document.getElementById('mctx-explore-row').style.display  = intent === 'explore'  ? 'block' : 'none';
-  const labels = { colonize: 'Colonize →', scout: 'Scout →', explore: 'Explore →' };
-  document.getElementById('mctx-send').textContent = labels[intent] || 'March →';
+function onColonizeToggle() {
+  const chk = document.getElementById('mctx-colonize-chk');
+  const nameEl = document.getElementById('mctx-colony-name');
+  if (nameEl) nameEl.style.display = chk && chk.checked ? 'block' : 'none';
 }
 
-function populateSourceSelect(defaultID) {
-  const sel = document.getElementById('mctx-source');
-  sel.innerHTML = '';
-  const owned = provinceData.filter(p => p.own);
-  if (owned.length <= 1) {
-    document.getElementById('mctx-source-row').style.display = 'none';
-    marchCtxSourceID = owned.length === 1 ? owned[0].id : defaultID;
+function positionMarchCtx(screenX, screenY) {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
+  marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
+  marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
+}
+
+// Open the march menu for a destination hex.
+// dest = { q, r, terrain, isSea, name, isSettlement, allied }
+async function openMarchCtx(dest, screenX, screenY) {
+  marchCtxDest  = dest;
+  marchCtxUnits = [];
+  document.getElementById('mctx-err').textContent = '';
+  document.getElementById('mctx-name').textContent = dest.name;
+
+  let hint;
+  if (dest.isSea)             hint = 'Order galleys here — they reveal fog-of-war as they sail. Recall them from the War drawer to sail home.';
+  else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here to attack on arrival.';
+  else                        hint = 'March land units to this hex, or found a new settlement here.';
+  document.getElementById('mctx-hint').textContent = hint;
+
+  // Colonize option only for empty land tiles.
+  const colRow = document.getElementById('mctx-colonize-row');
+  colRow.style.display = (!dest.isSea && !dest.isSettlement) ? 'block' : 'none';
+  const chk = document.getElementById('mctx-colonize-chk');
+  if (chk) chk.checked = false;
+  onColonizeToggle();
+
+  marchCtx.style.display = 'block';
+  positionMarchCtx(screenX, screenY);
+
+  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading units…</span>';
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`);
+  if (!res.ok) { document.getElementById('mctx-units').innerHTML = '<span style="color:var(--accent);font-size:.75rem">Could not load units.</span>'; return; }
+  const all = ((await res.json()).units) || [];
+
+  // Eligible to march: garrisoned or positioned, non-priest, deployable.
+  // Naval hex → ships; land hex → full-strength land units.
+  const wantNaval = dest.isSea;
+  marchCtxUnits = all.filter(u => {
+    if (u.type === 'priest') return false;
+    if (u.status !== 'garrison' && u.status !== 'positioned') return false;
+    const naval = u.category === 'naval';
+    if (wantNaval !== naval) return false;
+    if (!naval && u.size < 100) return false;
+    return true;
+  });
+
+  renderMarchUnitList();
+  positionMarchCtx(screenX, screenY);
+}
+
+function renderMarchUnitList() {
+  const el = document.getElementById('mctx-units');
+  const stanceRow = document.getElementById('mctx-stance-row');
+  if (!marchCtxUnits.length) {
+    el.innerHTML = '<p style="font-size:.73rem;color:var(--text-dim);margin:.3rem 0">'
+      + (marchCtxDest && marchCtxDest.isSea
+          ? 'No galleys available. Build ships in a coastal city first.'
+          : 'No land units ready to march.') + '</p>';
+    stanceRow.style.display = 'none';
     return;
   }
-  for (const p of owned) {
-    const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.name + (p.is_capital ? ' ★' : '');
-    if (p.id === defaultID) opt.selected = true;
-    sel.appendChild(opt);
-  }
-  marchCtxSourceID = sel.value;
-  document.getElementById('mctx-source-row').style.display = 'block';
-}
-
-async function onSourceChange() {
-  const sel = document.getElementById('mctx-source');
-  marchCtxSourceID = sel.value;
-  marchCtxArmy = null;
-  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
-  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/army`);
-  if (!res.ok) { document.getElementById('mctx-units').innerHTML = ''; return; }
-  marchCtxArmy = await res.json();
-  renderArmyInputs(marchCtxArmy, null);
-}
-
-function renderArmyInputs(army, defDP) {
-  const unitsEl = document.getElementById('mctx-units');
-  unitsEl.innerHTML = '';
-  if (defDP != null && defDP > 0) {
-    const need = Math.ceil(defDP * 0.75);
-    const info = document.createElement('div');
-    info.style.cssText = 'font-size:.72rem;color:var(--text-dim);font-family:var(--mono);margin-bottom:.3rem;';
-    info.textContent = `Defender ~${defDP} DP · need ≥${need} to attack`;
-    unitsEl.appendChild(info);
-  }
-  for (const u of UNIT_DEFS) {
-    if (u.key === 'priest') continue; // Hiereus are ritual units — they do not march or scout
-    const max = army[u.apiKey] || 0;
-    const row = document.createElement('div');
-    row.className = 'mctx-row';
-    row.innerHTML = `
-      <span class="mctx-label">${u.label}</span>
-      <input class="mctx-input" type="number" id="mi-${u.key}" min="0" max="${max}" value="0" ${max === 0 ? 'disabled' : ''}>
-      <span class="mctx-max">/${max}</span>`;
-    unitsEl.appendChild(row);
-  }
-}
-
-async function openColonizeCtx(tile, screenX, screenY) {
-  const capital = provinceData.find(p => p.is_capital);
-  if (!capital) return;
-  marchCtxTarget = null;
-  marchCtxTile   = tile;
-  marchCtxArmy   = null;
-  document.getElementById('mctx-err').textContent = '';
-  document.getElementById('mctx-name').textContent = `Empty tile (${tile.q},${tile.r})`;
-  const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
-  ['mctx-attack','mctx-reinforce','mctx-support'].forEach(id => { document.getElementById(id).style.display = 'none'; });
-  if (isSea) {
-    ['mctx-scout','mctx-colonize'].forEach(id => { document.getElementById(id).style.display = 'none'; });
-    document.getElementById('mctx-explore').style.display = '';
-  } else {
-    ['mctx-scout','mctx-colonize'].forEach(id => { document.getElementById(id).style.display = ''; });
-    document.getElementById('mctx-explore').style.display = 'none';
-  }
-  document.getElementById('mctx-intent-row').style.display = '';
-  document.querySelectorAll('.mctx-ibtn').forEach(b => b.classList.remove('active'));
-  setMarchIntent(isSea ? 'explore' : 'colonize');
-
-  marchCtx.style.display = 'block';
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
-  marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
-  marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
-
-  populateSourceSelect(capital.id);
-
-  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
-  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/army`);
-  if (!res.ok) { closeMarchCtx(); return; }
-  marchCtxArmy = await res.json();
-
-  renderArmyInputs(marchCtxArmy, null);
-
-  const newH = marchCtx.offsetHeight;
-  marchCtx.style.top = Math.min(screenY + 8, vh - newH - 8) + 'px';
-}
-
-async function openMarchCtx(target, screenX, screenY) {
-  const capital = provinceData.find(p => p.is_capital);
-  if (!capital) return;
-
-  marchCtxTarget = target;
-  marchCtxTile   = null;
-  marchCtxArmy   = null;
-  document.getElementById('mctx-err').textContent = '';
-  document.getElementById('mctx-name').textContent = target.name;
-  ['mctx-attack','mctx-reinforce','mctx-support','mctx-scout'].forEach(id => { document.getElementById(id).style.display = ''; });
-  ['mctx-colonize','mctx-explore'].forEach(id => { document.getElementById(id).style.display = 'none'; });
-  document.getElementById('mctx-colonize-row').style.display = 'none';
-  document.getElementById('mctx-intent-row').style.display = '';
-  document.querySelectorAll('.mctx-ibtn').forEach(b => { b.classList.remove('active'); b.disabled = false; });
-  document.getElementById('mctx-send').textContent = 'March →';
-  marchCtxIntent = 'attack';
-  document.getElementById('mctx-attack').classList.add('active');
-
-  const allied = !!target.allied;
-  document.getElementById('mctx-reinforce').disabled = !allied;
-  document.getElementById('mctx-support').disabled = !allied;
-
-  marchCtx.style.display = 'block';
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
-  marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
-  marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
-
-  populateSourceSelect(capital.id);
-
-  document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading…</span>';
-  const [res, defRes] = await Promise.all([
-    fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/army`),
-    !target.allied ? fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${target.id}/army`) : Promise.resolve(null),
-  ]);
-  if (!res.ok) { closeMarchCtx(); return; }
-  marchCtxArmy = await res.json();
-  document.getElementById('mctx-explore').style.display = (marchCtxArmy.Ship || 0) > 0 ? '' : 'none';
-
-  let defDP = 0;
-  if (defRes && defRes.ok) {
-    const defArmy = await defRes.json();
-    defDP = (defArmy.Spearman || 0) + (defArmy.WarChariot || 0)*4
-          + (defArmy.EliteInfantry || 0) * 3;
-  }
-
-  renderArmyInputs(marchCtxArmy, !target.allied ? defDP : 0);
-
-  const newH = marchCtx.offsetHeight;
-  marchCtx.style.top = Math.min(screenY + 8, vh - newH - 8) + 'px';
+  stanceRow.style.display = 'block';
+  el.innerHTML = marchCtxUnits.map(u => {
+    const lbl  = UNIT_MENU_LABELS[u.type] || u.type;
+    const prov = provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
+    const loc  = prov ? esc(prov.name) : (u.q != null ? '(' + u.q + ',' + u.r + ')' : '');
+    return '<label class="mctx-row" style="cursor:pointer">'
+      + '<input type="checkbox" class="mctx-unit-chk" value="' + u.id + '">'
+      + '<span class="mctx-label">' + lbl + '</span>'
+      + '<span class="mctx-max">' + loc + '</span>'
+      + '</label>';
+  }).join('');
 }
 
 async function sendMarch() {
-  if (!marchCtxSourceID || (!marchCtxTarget && !marchCtxTile)) return;
-
-  const body = { intent: marchCtxIntent };
-  if (marchCtxTile) {
-    body.target_q = marchCtxTile.q;
-    body.target_r = marchCtxTile.r;
-    const nameEl = document.getElementById('mctx-colony-name');
-    const chosenName = nameEl ? nameEl.value.trim() : '';
-    if (chosenName) body.colony_name = chosenName;
-  } else {
-    body.target_id = marchCtxTarget.id;
-  }
-  let anyUnit = false;
-  for (const u of UNIT_DEFS) {
-    const el = document.getElementById('mi-' + u.key);
-    const v = el ? parseInt(el.value, 10) || 0 : 0;
-    body[u.key] = v;
-    if (v > 0) anyUnit = true;
-  }
-  if (!anyUnit) {
-    document.getElementById('mctx-err').textContent = 'Send at least one unit.';
+  if (!marchCtxDest) return;
+  const checked = Array.from(document.querySelectorAll('.mctx-unit-chk'))
+    .filter(c => c.checked).map(c => c.value);
+  if (!checked.length) {
+    document.getElementById('mctx-err').textContent = 'Select at least one unit.';
     return;
   }
+  const stance = document.getElementById('mctx-stance').value || '';
+  const chk = document.getElementById('mctx-colonize-chk');
+  const colonize = !!(chk && chk.checked
+    && document.getElementById('mctx-colonize-row').style.display !== 'none');
+  const nameEl = document.getElementById('mctx-colony-name');
+  const colonyName = colonize && nameEl ? nameEl.value.trim() : '';
 
   document.getElementById('mctx-send').disabled = true;
   document.getElementById('mctx-err').textContent = '';
 
-  const token = localStorage.getItem('poleia_token');
-  const res = await fetch(`/api/v1/worlds/${WORLD_ID}/provinces/${marchCtxSourceID}/march`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-    body: JSON.stringify(body),
-  });
+  const results = await Promise.all(checked.map(uid => {
+    const body = { target_q: marchCtxDest.q, target_r: marchCtxDest.r };
+    if (stance)   body.stance = stance;
+    if (colonize) { body.intent = 'colonize'; if (colonyName) body.name = colonyName; }
+    return fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${uid}/march`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    }).then(async res => ({ ok: res.ok, err: res.ok ? '' : (((await res.json().catch(() => ({}))).error) || 'March failed') }));
+  }));
 
   document.getElementById('mctx-send').disabled = false;
-  if (res.ok) {
+  const failed = results.filter(r => !r.ok);
+  if (!failed.length) {
     closeMarchCtx();
-    fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; }));
   } else {
-    const err = await res.json().catch(() => ({error: 'Unknown error'}));
-    document.getElementById('mctx-err').textContent = err.error || 'Error';
+    const okCount = results.length - failed.length;
+    document.getElementById('mctx-err').textContent = (okCount ? okCount + ' sent · ' : '') + failed[0].err;
   }
+  // Refresh marches either way — some units may have dispatched.
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
 }
 
 // ── Messenger compose from inspect panel ──────────────────────────────────
@@ -1704,18 +1621,25 @@ canvas.addEventListener('contextmenu', e => {
   const rect = canvas.getBoundingClientRect();
   const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
   const target = provinceData.find(p => p.q === h.q && p.r === h.r);
+  const tile = tileData.find(t => t.q === h.q && t.r === h.r);
+  if (!tile || tile.terrain === 'fog') { closeMarchCtx(); return; }
+  const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
+  const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
   if (target) {
     if (target.is_capital) { closeMarchCtx(); return; }
-    if (target.own) {
-      showInspect(target, e.clientX, e.clientY);
-      return;
-    }
-    openMarchCtx(target, e.clientX, e.clientY);
-  } else {
-    const tile = tileData.find(t => t.q === h.q && t.r === h.r);
-    if (!tile || tile.terrain === 'sea' || tile.terrain === 'mountain' || tile.terrain === 'fog') { closeMarchCtx(); return; }
-    openColonizeCtx({ q: h.q, r: h.r, terrain: tile.terrain }, e.clientX, e.clientY);
+    if (target.own) { showInspect(target, e.clientX, e.clientY); return; }
+    // Another Wanax's settlement — march to attack (or reinforce if allied).
+    openMarchCtx({ q: h.q, r: h.r, terrain: tile.terrain, isSea,
+                   name: target.name, isSettlement: true, allied: !!target.allied },
+                 e.clientX, e.clientY);
+    return;
   }
+  // Empty hex. Mountains are impassable; sea hexes take ships.
+  if (isMountain) { closeMarchCtx(); return; }
+  openMarchCtx({ q: h.q, r: h.r, terrain: tile.terrain, isSea,
+                 name: isSea ? `Sea (${h.q},${h.r})` : `Empty hex (${h.q},${h.r})`,
+                 isSettlement: false, allied: false },
+               e.clientX, e.clientY);
 });
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMarchCtx(); });
@@ -1853,9 +1777,9 @@ async function loadDrawerContent(name) {
     const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Priest:3, Ship:10, WarGalley:12, Merchantman:8 };
     const UNIT_DP   = { Spearman:1, EliteInfantry:3,  WarChariot:4, Priest:0, Ship:1,  WarGalley:3,  Merchantman:0 };
     const UNIT_LBL  = {
-      Spearman:'Hoplites', EliteInfantry:'Agema', WarChariot:'War Chariot',
+      Spearman:'Spearman', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot',
       Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
-      spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot',
+      spearman:'Spearman', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
       priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
     };
 
@@ -2017,7 +1941,7 @@ async function loadDrawerContent(name) {
         document.getElementById('city-gar-sec').innerHTML += `
           <div class="dsec-title" style="margin-top:.8rem">Disband</div>
           <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;font-size:.75rem">
-            <label>Hoplites <input type="number" id="wdb-inf" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
+            <label>Spearman <input type="number" id="wdb-inf" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
             <label>Chariot <input type="number" id="wdb-cha" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
             <label>Hiereus <input type="number" id="wdb-pri" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
             <button class="btn-small" onclick="warDisband('${capital.id}')">Disband →</button>
@@ -2410,9 +2334,9 @@ async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
   if (!bldSec) return;
   const UNIT_LBL = {
-    Spearman:'Hoplites', EliteInfantry:'Agema', WarChariot:'War Chariot',
+    Spearman:'Spearman', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot',
     Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
-    spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot',
+    spearman:'Spearman', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
     priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
   };
   try {
@@ -2503,8 +2427,8 @@ async function loadWarDrawer() {
 
   renderWarMovements(capital);
 
-  const UNIT_LBL  = { Spearman:'Hoplites', EliteInfantry:'Agema', WarChariot:'War Chariot', Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
-                      spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot', priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman' };
+  const UNIT_LBL  = { Spearman:'Spearman', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot', Priest:'Hiereus', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Merchantman',
+                      spearman:'Spearman', elite_infantry:'Elite Infantry', war_chariot:'War Chariot', priest:'Hiereus', ship:'Galley', war_galley:'War Galley', merchantman:'Merchantman' };
   const UNIT_DP   = { Spearman:1, EliteInfantry:3, WarChariot:4, Priest:0, Ship:1, WarGalley:3, Merchantman:0 };
   const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Priest:3, Ship:10, WarGalley:12, Merchantman:8 };
 
@@ -2555,12 +2479,12 @@ async function loadWarDrawer() {
 
     // Recruit tab
     const UNIT_SPECS = [
-      { id:'spearman',       lbl:'Hoplites',    req: buildings.has('barracks') ? null : 'barracks',   cost:'3 grain/man'          },
+      { id:'spearman',       lbl:'Spearman',    req: buildings.has('barracks') ? null : 'barracks',   cost:'3 grain/man'          },
       { id:'war_chariot',    lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'3.75 grain + 0.625 timber + 0.375 bronze/man' },
       { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour',    cost:'9 timber/man (crew 20)' },
       { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'5 cedar + 0.33 bronze/man (crew 50)' },
       { id:'merchantman',    lbl:'Merchantman',  req: buildings.has('harbour')  ? null : 'harbour',    cost:'8.75 timber/man (crew 10)' },
-      { id:'elite_infantry', lbl:'Agema',        req: buildings.has('foundry')  ? null : 'foundry',    cost:'2.5 grain + 0.2 bronze/man' },
+      { id:'elite_infantry', lbl:'Elite Infantry',        req: buildings.has('foundry')  ? null : 'foundry',    cost:'2.5 grain + 0.2 bronze/man' },
     ];
     const mySettlements = provinceData.filter(p => p.own && !p.is_outpost);
     let settlementOpts = mySettlements.map(s =>
@@ -2695,7 +2619,7 @@ async function warDisband(provinceID) {
 
 // ── Discrete unit helpers (C8-web) ───────────────────────────────────────
 const UNIT_LABELS = {
-  spearman:'Hoplites', elite_infantry:'Agema', war_chariot:'War Chariot',
+  spearman:'Spearman', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
   priest:'Hiereus', galley:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
 };
 
