@@ -131,20 +131,21 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 		// Build queue — include so API clients don't need a separate endpoint.
 		type buildItem struct {
+			ID         uuid.UUID `json:"id"`
 			Type       string    `json:"type"`
 			CreatedAt  time.Time `json:"created_at"`
 			CompleteAt time.Time `json:"complete_at"`
 		}
 		var buildQueue []buildItem
 		qrows, _ := h.pool.Query(r.Context(),
-			`SELECT building_type, created_at, complete_at FROM build_queue
+			`SELECT id, building_type, created_at, complete_at FROM build_queue
 			 WHERE settlement_id = $1 ORDER BY complete_at`,
 			sett.ID,
 		)
 		if qrows != nil {
 			for qrows.Next() {
 				var bi buildItem
-				_ = qrows.Scan(&bi.Type, &bi.CreatedAt, &bi.CompleteAt)
+				_ = qrows.Scan(&bi.ID, &bi.Type, &bi.CreatedAt, &bi.CompleteAt)
 				buildQueue = append(buildQueue, bi)
 			}
 			qrows.Close()

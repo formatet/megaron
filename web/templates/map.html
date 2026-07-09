@@ -1869,6 +1869,8 @@ async function loadDrawerContent(name) {
       <div id="ctab-produktion" class="city-tab">
         <div class="dsec"><div class="dsec-title">Befolkning</div><div id="city-pop-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
         <div class="dsec"><div class="dsec-title">Produktion</div><div id="city-prod-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+        <div class="dsec"><div class="dsec-title">Sitos</div><div id="city-sitos-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+        <div class="dsec"><div class="dsec-title">Senaste tick</div><div id="city-lasttick-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       </div>
       <div id="ctab-byggnader" class="city-tab" style="display:none"><div id="city-bld-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
@@ -1911,6 +1913,29 @@ async function loadDrawerContent(name) {
       } else {
         document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
       }
+
+      // ── Sitos + senaste tick ──────────────────────────────────────────────
+      if (pd && pd.sitos) {
+        const s = pd.sitos;
+        document.getElementById('city-sitos-sec').innerHTML = `
+          <div class="stat-row"><span class="sr-label">Fund</span><span class="sr-val">${fmtSilver(s.fund_silver)} / ${fmtSilver(s.fund_cap)}</span></div>
+          <div class="stat-row"><span class="sr-label">Tax rate</span><span class="sr-val">+${s.fund_rate_per_tick.toFixed(2)}/tick</span></div>
+          <div class="stat-row"><span class="sr-label">Grain ref. price</span><span class="sr-val">${s.ref_price_grain.toFixed(2)} (floor ${s.ref_price_floor} · ceiling ${s.ref_price_ceiling})</span></div>`;
+      } else {
+        document.getElementById('city-sitos-sec').innerHTML = '<p class="empty-state">—</p>';
+      }
+      if (pd && pd.last_tick) {
+        const lt = pd.last_tick;
+        const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${v.toFixed(2)}</td></tr>`).join('');
+        const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${v.toFixed(2)}</td></tr>`).join('');
+        document.getElementById('city-lasttick-sec').innerHTML = `
+          <div class="stat-row"><span class="sr-label">Tick</span><span class="sr-val">#${lt.tick}</span></div>
+          <div class="stat-row"><span class="sr-label">Sitos delta</span><span class="sr-val" style="color:${lt.sitos_delta>=0?'var(--safe)':'var(--accent)'}">${lt.sitos_delta>=0?'+':''}${lt.sitos_delta.toFixed(2)}</span></div>
+          ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
+      } else {
+        document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
+      }
+
       const prodGoods = goods.filter(g => g.producible || g.rate_per_min > 0);
       if (prodGoods.length) {
         const lp = pd ? (pd.labor_pool || 0) : 0;
@@ -1985,6 +2010,15 @@ async function loadDrawerContent(name) {
               <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe)">${totalDP} DP</td></tr>
             </table>`
           : '<p class="empty-state">No garrison. Recruit units in the War tab.</p>';
+        document.getElementById('city-gar-sec').innerHTML += `
+          <div class="dsec-title" style="margin-top:.8rem">Disband</div>
+          <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;font-size:.75rem">
+            <label>Hoplites <input type="number" id="wdb-inf" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
+            <label>Chariot <input type="number" id="wdb-cha" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
+            <label>Hiereus <input type="number" id="wdb-pri" min="0" value="0" style="width:3.2rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .25rem;font-family:var(--mono)"></label>
+            <button class="btn-small" onclick="warDisband('${capital.id}')">Disband →</button>
+          </div>
+          <div id="war-disband-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div>`;
       }
 
     } catch(e) { console.error('city drawer', e); }
@@ -2165,6 +2199,37 @@ async function startBuild() {
   }
 }
 
+async function startCraft(provinceID) {
+  const qtyEl = document.getElementById('city-craft-qty');
+  const resultEl = document.getElementById('city-craft-result');
+  const qty = qtyEl ? parseInt(qtyEl.value, 10) || 0 : 0;
+  if (!resultEl || qty <= 0) return;
+  resultEl.textContent = '';
+  const r = await fetchAuth(
+    `/api/v1/worlds/${WORLD_ID}/provinces/${provinceID}/craft`,
+    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({recipe_id: 1, quantity: qty}) }
+  );
+  const d = await r.json().catch(() => ({}));
+  if (r.ok) {
+    resultEl.style.color = 'var(--safe)';
+    resultEl.textContent = `${qty} bronze crafted.`;
+    await refreshCityBuildings(provinceID);
+  } else {
+    resultEl.style.color = 'var(--accent)';
+    resultEl.textContent = d.error || 'Craft failed.';
+  }
+}
+
+async function cancelBuild(provinceID, queueID) {
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${provinceID}/build-queue/${queueID}`, { method: 'DELETE' });
+  if (res.ok) {
+    await refreshCityBuildings(provinceID);
+  } else {
+    const d = await res.json().catch(() => ({}));
+    alert(d.error || 'Could not cancel build');
+  }
+}
+
 // Re-fetch province data and update only the buildings/queue section of the city drawer.
 async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
@@ -2187,11 +2252,25 @@ async function refreshCityBuildings(provinceID) {
         }</table>`
       : '<p class="empty-state">No buildings yet.</p>';
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
-      bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${fmtEta(b.complete_at)}</td></tr>`).join('')
+      bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${fmtEta(b.complete_at)}</td>` +
+        `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
     if (tq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Training queue</div><table class="goods-mini">${
       tq.map(t => `<tr><td>${UNIT_LBL[t.unit]||t.unit} ×${t.count}</td><td>${fmtEta(t.complete_at)}</td></tr>`).join('')
     }</table>`;
+    if (blds.some(b => b.type === 'foundry')) {
+      const res = pd.resources || {};
+      const copper = (res.copper || {}).amount || 0;
+      const tin    = (res.tin    || {}).amount || 0;
+      h2 += `
+        <div class="dsec-title" style="margin-top:.8rem">Craft — Bronze</div>
+        <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">2 copper + 1 tin → 1 bronze · stock: ${copper.toFixed(0)} copper, ${tin.toFixed(0)} tin</div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <input type="number" id="city-craft-qty" min="1" value="1" style="width:4rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .3rem;font-family:var(--mono);font-size:.75rem">
+          <button class="btn-primary btn-small" onclick="startCraft('${provinceID}')">Craft →</button>
+        </div>
+        <div id="city-craft-result" class="action-result"></div>`;
+    }
     const prevSel = document.getElementById('city-build-select')?.value || '';
     h2 += `
       <div class="dsec-title" style="margin-top:.8rem">Construct</div>
@@ -2423,11 +2502,11 @@ async function warDisband(provinceID) {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ spearman: inf, war_chariot: cha, priest: pri }),
   });
   const data = await res.json().catch(() => ({}));
-  const resEl = document.getElementById('war-disband-res');
-  if (resEl) {
-    resEl.style.color = res.ok ? 'var(--safe)' : 'var(--accent)';
-    resEl.textContent = res.ok ? 'Disbanded' : (data.error || 'failed');
-    setTimeout(() => { if (resEl) resEl.textContent = ''; }, 4000);
+  if (res.ok) {
+    await loadDrawerContent('city');
+  } else {
+    const resEl = document.getElementById('war-disband-res');
+    if (resEl) resEl.textContent = data.error || 'failed';
   }
 }
 
