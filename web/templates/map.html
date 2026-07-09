@@ -2192,15 +2192,29 @@ async function loadEconomyWants() {
     const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/market/wants`);
     if (!r.ok) { el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>'; return; }
     const data = await r.json();
-    if (!data || !data.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known shortages yet — visit settlements to learn their market.</p>'; return; }
+    const wants = data.wants || [], surplus = data.surplus || [];
+    if (!wants.length && !surplus.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known market intel yet — visit settlements to learn their market.</p>'; return; }
     const LEVEL_COLOR = { high: 'var(--danger)', medium: 'var(--warn)', low: 'var(--text-dim)' };
-    el.innerHTML = data.map(sw => `
-      <div class="dsec">
-        <div class="dsec-title">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
-        <table class="goods-mini">${sw.goods.map(g =>
-          `<tr><td>${g.good}</td><td style="color:${LEVEL_COLOR[g.want_level]||'inherit'}">${g.want_level}</td><td style="text-align:right">${g.price.toFixed(2)} <span style="color:var(--text-dim)">(base ${g.base_value.toFixed(2)})</span></td></tr>`
-        ).join('')}</table>
-      </div>`).join('');
+    let html = '';
+    if (wants.length) {
+      html += '<div class="dsec-title">Wants — buy here at a premium</div>' + wants.map(sw => `
+        <div class="dsec">
+          <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
+          <table class="goods-mini">${sw.goods.map(g =>
+            `<tr><td>${g.good}</td><td style="color:${LEVEL_COLOR[g.want_level]||'inherit'}">${g.want_level}</td><td style="text-align:right">${g.price.toFixed(2)} <span style="color:var(--text-dim)">(base ${g.base_value.toFixed(2)})</span></td></tr>`
+          ).join('')}</table>
+        </div>`).join('');
+    }
+    if (surplus.length) {
+      html += '<div class="dsec-title" style="margin-top:.6rem">Surplus — sell cheap here</div>' + surplus.map(sw => `
+        <div class="dsec">
+          <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
+          <table class="goods-mini">${sw.goods.map(g =>
+            `<tr><td>${g.good}</td><td style="text-align:right">${g.price.toFixed(2)} <span style="color:var(--text-dim)">(base ${g.base_value.toFixed(2)})</span></td></tr>`
+          ).join('')}</table>
+        </div>`).join('');
+    }
+    el.innerHTML = html;
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
   }
