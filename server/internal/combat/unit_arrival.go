@@ -139,6 +139,13 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		return h.exploreReturned(ctx, tx, u, destQ, destR, worldID)
 	}
 
+	// Assault intent: a laden galley has reached the sea hex next to an enemy
+	// coastal settlement. The ship cannot enter land, so its cargo storms the
+	// beach — the landing is resolved with the cargo's strength, not the ship's.
+	if u.marchIntent != nil && *u.marchIntent == "assault" {
+		return h.resolveAmphibiousAssault(ctx, tx, u, destQ, destR, worldID)
+	}
+
 	// Find settlement at destination (if any).
 	var dest destSettlement
 	err := tx.QueryRow(ctx,
@@ -789,6 +796,208 @@ func (h *UnitArrivalHandler) disbandCargoIfPresent(ctx context.Context, tx pgx.T
 		}
 	}
 	slog.Info("C6: cargo unit disbanded after ship destruction", "ship", ship.id, "cargo", cargoID, "men_lost", cargoSize)
+}
+
+// resolveAmphibiousAssault handles a laden galley arriving at the sea hex next to
+// an enemy coastal settlement. The ship cannot enter land, so the CARGO land unit
+// does the fighting (not the galley): its strength storms the garrison, and on a
+// win it disembarks as the settlement's new garrison — capturing the settlement and
+// everything in its stores (goods follow settlement_id, so the tin is taken with it).
+// The galley itself is emptied and left positioned at the sea hex. Mirrors
+// resolveCombat's strength + fortune math (see there for the canonical version).
+func (h *UnitArrivalHandler) resolveAmphibiousAssault(
+	ctx context.Context, tx pgx.Tx, u unitRow, seaQ, seaR int, worldID uuid.UUID,
+) error {
+	// No cargo → nothing to land. Fall back to a plain garrison at the sea hex.
+	if u.cargoUnitID == nil {
+		return h.arriveGarrison(ctx, tx, u, seaQ, seaR, nil, worldID)
+	}
+
+	// Find an enemy (non-owned) coastal settlement adjacent to the landing hex.
+	var dest destSettlement
+	var settleQ, settleR int
+	if err := tx.QueryRow(ctx,
+		`SELECT s.id, s.owner_id, s.wall_level, p.id, p.terrain_type, p.map_q, p.map_r
+		 FROM provinces p
+		 JOIN settlements s ON s.province_id = p.id
+		 WHERE p.world_id = $1 AND s.state = 'active' AND s.owner_id <> $2
+		   AND COALESCE(p.coastal, false) = true
+		   AND (ABS(p.map_q - $3) + ABS(p.map_r - $4) +
+		        ABS((p.map_q + p.map_r) - ($3 + $4))) / 2 = 1
+		 ORDER BY s.id
+		 LIMIT 1`,
+		worldID, u.ownerID, seaQ, seaR,
+	).Scan(&dest.settlementID, &dest.ownerID, &dest.wallLevel,
+		&dest.provinceID, &dest.terrain, &settleQ, &settleR); err != nil {
+		// The target vanished (captured, abandoned, or ownership changed) before the
+		// landing. Nothing to storm — the ship simply garrisons at the beach.
+		slog.Info("amphibious assault: no adjacent enemy coastal settlement, garrisoning at sea",
+			"ship", u.id, "q", seaQ, "r", seaR)
+		return h.arriveGarrison(ctx, tx, u, seaQ, seaR, nil, worldID)
+	}
+
+	// Load the cargo land unit — it is the real attacker.
+	cargoID := *u.cargoUnitID
+	var cargoType string
+	var cargoSize int
+	if err := tx.QueryRow(ctx,
+		`SELECT type, size FROM units WHERE id = $1`, cargoID,
+	).Scan(&cargoType, &cargoSize); err != nil {
+		return fmt.Errorf("amphibious assault: load cargo: %w", err)
+	}
+
+	// ── Attack strength: the disembarking land unit. ──
+	attStr := unitStrength(cargoType, cargoSize)
+
+	// ── Defence strength (mirrors resolveCombat: garrison units + wall modifier). ──
+	const fortifyBonus = 1.5
+	var defUnitStr float64
+	if garrisonRows, gErr := tx.Query(ctx,
+		`SELECT type, size, stance FROM units
+		 WHERE settlement_id = $1 AND status = 'garrison' AND status != 'disbanded'`,
+		*dest.settlementID,
+	); gErr == nil {
+		for garrisonRows.Next() {
+			var gtype string
+			var gsize int
+			var gstance *string
+			if scanErr := garrisonRows.Scan(&gtype, &gsize, &gstance); scanErr == nil {
+				str := unitStrength(gtype, gsize)
+				if gstance != nil && *gstance == "fortify" {
+					str *= fortifyBonus
+				}
+				defUnitStr += str
+			}
+		}
+		garrisonRows.Close()
+	}
+	const stormWallDivisor = 2.0
+	wallMod := WallModifier(dest.wallLevel)
+	if u.stance != nil && *u.stance == "storm" {
+		extra := float64(dest.wallLevel) * 0.25
+		wallMod = 1.0 + extra/stormWallDivisor
+	}
+	defStr := defUnitStr * wallMod
+
+	// ── Fortune (kharis-biased, rolled once). ──
+	var attackerKharis, defenderKharis float64
+	_ = tx.QueryRow(ctx,
+		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
+		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+		u.ownerID, worldID,
+	).Scan(&attackerKharis)
+	if dest.ownerID != nil {
+		_ = tx.QueryRow(ctx,
+			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
+			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+			*dest.ownerID, worldID,
+		).Scan(&defenderKharis)
+	}
+	fortune := rollFortune(attackerKharis, defenderKharis)
+	result := ResolveStrengths(attStr*(1+fortune), defStr, fortune)
+
+	slog.Info("amphibious assault resolved",
+		"ship", u.id, "cargo", cargoID, "settlement", *dest.settlementID,
+		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome)
+
+	cargoSizeAfter := int(float64(cargoSize) * (1 - result.AttackerLosses))
+	cargoPopLost := cargoSize - cargoSizeAfter
+
+	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 {
+		// Cargo storms ashore and becomes the captured settlement's garrison.
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET
+			   size = $2, status = 'garrison', settlement_id = $3,
+			   q = $4, r = $5, target_q = NULL, target_r = NULL,
+			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			 WHERE id = $1`,
+			cargoID, cargoSizeAfter, *dest.settlementID, settleQ, settleR,
+		); err != nil {
+			return fmt.Errorf("amphibious assault: land cargo garrison: %w", err)
+		}
+		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
+			return err
+		}
+		// Transfer ownership — goods follow settlement_id, so the tin is captured.
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlements SET owner_id = $2, control_type = 'occupied',
+			   kingdom_id = NULL, updated_at = now() WHERE id = $1`,
+			*dest.settlementID, u.ownerID,
+		); err != nil {
+			return fmt.Errorf("amphibious assault: transfer ownership: %w", err)
+		}
+		// Empty the galley; it rests positioned at the landing hex.
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
+			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
+			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			 WHERE id = $1`,
+			u.id, seaQ, seaR,
+		); err != nil {
+			return fmt.Errorf("amphibious assault: empty galley: %w", err)
+		}
+	} else {
+		// Landing repelled. Defender takes its losses; the cargo is spent or thrown back.
+		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
+			return err
+		}
+		if cargoSizeAfter <= 0 {
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, cargoID,
+			); err != nil {
+				return fmt.Errorf("amphibious assault: disband spent cargo: %w", err)
+			}
+		} else {
+			// Cargo survives, still aboard.
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET size = $2, updated_at = now() WHERE id = $1`,
+				cargoID, cargoSizeAfter,
+			); err != nil {
+				return fmt.Errorf("amphibious assault: apply cargo losses: %w", err)
+			}
+		}
+		// The galley withdraws to the sea hex (keeps surviving cargo aboard).
+		cargoClause := ""
+		if cargoSizeAfter <= 0 {
+			cargoClause = "cargo_unit_id = NULL, "
+		}
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET `+cargoClause+`status = 'positioned',
+			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
+			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			 WHERE id = $1`,
+			u.id, seaQ, seaR,
+		); err != nil {
+			return fmt.Errorf("amphibious assault: withdraw galley: %w", err)
+		}
+	}
+
+	// Attacker demographic loss → cargo owner's capital.
+	if cargoPopLost > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlements SET population = GREATEST(50, population - $2)
+			 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
+			u.ownerID, cargoPopLost, worldID,
+		); err != nil {
+			slog.Warn("amphibious assault: could not apply attacker pop loss", "cargo", cargoID, "err", err)
+		}
+	}
+
+	// Combat events (outcome, not intention).
+	_, _ = h.eventStore.Append(ctx, cargoID, events.StreamType(unit.StreamUnit), unit.EventUnitCombatResolved,
+		unit.UnitCombatResolvedPayload{
+			UnitID: cargoID, Role: "attacker",
+			SizeBefore: cargoSize, SizeAfter: cargoSizeAfter,
+			Outcome: string(result.Outcome), PopLost: cargoPopLost,
+		}, worldID, nil)
+	_, _ = h.eventStore.Append(ctx, dest.provinceID, events.StreamCombat, "UnitCombatResolved",
+		map[string]any{
+			"unit_id": cargoID, "ship_id": u.id, "amphibious": true,
+			"outcome": string(result.Outcome), "att": attStr, "fortune": result.Fortune,
+			"def": defStr, "att_losses": result.AttackerLosses, "def_losses": result.DefenderLosses,
+		}, worldID, nil)
+
+	return nil
 }
 
 // applyAttackerWins: arriving unit captures the settlement; defender units take losses.

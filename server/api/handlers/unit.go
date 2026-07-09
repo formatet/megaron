@@ -194,6 +194,36 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Amphibious assault: a laden galley ordered against a coastal settlement it
+	// does not own cannot enter the land hex, so it sails to the adjacent sea hex
+	// and lands its cargo on the beach. The arrival handler resolves the storming
+	// with the cargo's strength (combat.resolveAmphibiousAssault). Detected here so
+	// the ship is routed to the offshore hex and tagged intent=assault.
+	assaultLanding := false
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval && u.CargoUnitID != nil {
+		var settOwner uuid.UUID
+		var settCoastal bool
+		if sErr := h.pool.QueryRow(ctx,
+			`SELECT s.owner_id, COALESCE(p.coastal, false)
+			 FROM provinces p JOIN settlements s ON s.province_id = p.id
+			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active'`,
+			worldID, req.TargetQ, req.TargetR,
+		).Scan(&settOwner, &settCoastal); sErr == nil && settOwner != playerID && settCoastal {
+			seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, h.pool, worldID, req.TargetQ, req.TargetR)
+			if seaErr != nil {
+				writeError(w, http.StatusInternalServerError, "could not resolve landing hex")
+				return
+			}
+			if !foundSea {
+				writeError(w, http.StatusUnprocessableEntity,
+					"that settlement has no adjacent sea hex to land on")
+				return
+			}
+			assaultLanding = true
+			req.TargetQ, req.TargetR = seaQ, seaR
+		}
+	}
+
 	// Target hex must exist on this world's map.
 	var destTerrain string
 	if err := h.pool.QueryRow(ctx,
@@ -388,6 +418,12 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		if req.Intent == "explore" {
 			homeSettlementArg = u.SettlementID
 		}
+	}
+	// Amphibious assault: the ship carries intent=assault to its offshore hex so
+	// the arrival handler storms the adjacent coastal settlement with the cargo.
+	if assaultLanding {
+		a := "assault"
+		intentArg = &a
 	}
 
 	if _, err := tx.Exec(ctx,
