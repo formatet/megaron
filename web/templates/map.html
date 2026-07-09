@@ -2561,6 +2561,16 @@ async function loadWarDrawer() {
         + '</div>';
     }
     recHtml += '</div><div id="war-recruit-res" style="font-size:.78rem;margin:.4rem .6rem;min-height:1rem"></div>';
+
+    const abandonable = mySettlements.filter(s => !s.is_capital);
+    if (abandonable.length) {
+      recHtml += '<div class="dsec"><div class="dsec-title" style="color:var(--accent)">Abandon settlement</div>'
+        + abandonable.map(s =>
+          '<div class="stat-row"><span class="sr-label">' + esc(s.name) + '</span>'
+          + '<span class="sr-val"><button class="btn-small btn-danger" onclick="warAbandon(\'' + s.settlement_id + '\',\'' + esc(s.name) + '\')">Abandon</button></span></div>'
+        ).join('')
+        + '<div id="war-abandon-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div></div>';
+    }
     document.getElementById('wtab-recruit').innerHTML = recHtml;
 
   } catch(e) {
@@ -2583,14 +2593,11 @@ function renderWarMovements(capital) {
   if (outgoing.length) {
     html += '<div class="dsec"><div class="dsec-title">Outgoing</div>';
     html += outgoing.map(m => {
-      const originProv = provinceData.find(p => p.q === m.origin_q && p.r === m.origin_r);
-      const originID = originProv ? originProv.id : capital.id;
       const target = provinceData.find(p => p.q === m.target_q && p.r === m.target_r);
       const tname = target ? esc(target.name) : '(' + m.target_q + ',' + m.target_r + ')';
       return '<div class="obj-card">'
         + '<div class="obj-icon">⚔</div>'
-        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' → ' + tname + '</div><div class="obj-sub">ETA ' + fmtEta(m.arrives_at) + '</div></div>'
-        + '<button onclick="warRecall(\'' + originID + '\',\'' + m.id + '\')" title="Recall" style="padding:.2rem .4rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.8rem;cursor:pointer;flex-shrink:0">↩</button>'
+        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' → ' + tname + '</div><div class="obj-sub">ETA ' + fmtEta(m.arrives_at) + ' · recall/redirect in the Army tab</div></div>'
         + '</div>';
     }).join('');
     html += '</div>';
@@ -2650,18 +2657,6 @@ async function warDisband(provinceID) {
   } else {
     const resEl = document.getElementById('war-disband-res');
     if (resEl) resEl.textContent = data.error || 'failed';
-  }
-}
-
-async function warRecall(provinceID, marchID) {
-  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + provinceID + '/marches/' + marchID, { method: 'DELETE' });
-  if (res.ok) {
-    fetchAuth('/api/v1/worlds/' + WORLD_ID + '/marches').then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; }));
-    const capital = provinceData.find(p => p.own && p.is_capital);
-    renderWarMovements(capital);
-  } else {
-    const data = await res.json().catch(() => ({}));
-    alert(data.error || 'Recall failed');
   }
 }
 
@@ -2746,6 +2741,20 @@ function renderUnitCard(u) {
     actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
   }
 
+  // Recall/redirect: marching units only. The order travels by messenger —
+  // it does not apply instantly (temenos_settlement.md load-bearing pillar).
+  let redirectRow = '';
+  if (isMarching) {
+    actions += '<button onclick="unitRecall(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> ';
+    actions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
+    redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center;font-size:.65rem">'
+      + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+      + '<label>R <input id="uredir-r-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+      + '<button onclick="unitRedirect(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button>'
+      + '</div>';
+  }
+  const orderStatus = '<div id="uorder-' + u.id + '" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div>';
+
   return '<div style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
     + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
@@ -2755,7 +2764,56 @@ function renderUnitCard(u) {
     + progress
     + (loc ? '<div style="font-size:.65rem;color:var(--text-dim)">' + loc + '</div>' : '')
     + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
+    + redirectRow + (isMarching ? orderStatus : '')
     + '</div>';
+}
+
+async function warAbandon(settlementID, name) {
+  if (!confirm('Abandon ' + name + '? This cannot be undone.')) return;
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/settlements/${settlementID}/abandon`, { method: 'POST' });
+  const resEl = document.getElementById('war-abandon-res');
+  if (res.ok) {
+    await loadMap();
+    loadWarDrawer();
+  } else {
+    const d = await res.json().catch(() => ({}));
+    if (resEl) resEl.textContent = d.error || 'Abandon failed';
+  }
+}
+
+async function unitRecall(unitID) {
+  const statusEl = document.getElementById('uorder-' + unitID);
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${unitID}/recall`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}',
+  });
+  const d = await res.json().catch(() => ({}));
+  if (res.ok) {
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by messenger — reaches the unit ' + fmtEta(d.messenger_arrives_at) + '.'; }
+  } else if (statusEl) {
+    statusEl.style.color = 'var(--accent)';
+    statusEl.textContent = d.error || 'Recall failed';
+  }
+}
+
+function unitRedirectToggle(unitID) {
+  const row = document.getElementById('uredir-' + unitID);
+  if (row) row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+}
+
+async function unitRedirect(unitID) {
+  const q = parseInt(document.getElementById('uredir-q-' + unitID)?.value || '0', 10);
+  const r = parseInt(document.getElementById('uredir-r-' + unitID)?.value || '0', 10);
+  const statusEl = document.getElementById('uorder-' + unitID);
+  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${unitID}/recall`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ target_q: q, target_r: r }),
+  });
+  const d = await res.json().catch(() => ({}));
+  if (res.ok) {
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by messenger — reaches the unit ' + fmtEta(d.messenger_arrives_at) + '.'; }
+  } else if (statusEl) {
+    statusEl.style.color = 'var(--accent)';
+    statusEl.textContent = d.error || 'Redirect failed';
+  }
 }
 
 function unitMarch(unitID) {
