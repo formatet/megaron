@@ -17,17 +17,25 @@ import (
 	"github.com/poleia/server/internal/events"
 )
 
+// Kharis omdesign (Timothy 2026-07-09, temenos_kharis.md §"KANONISK OMDESIGN"):
+// the pool moved from a 0–2000 scale to a single hidden 0–100 number. All
+// thresholds below are STRAWMAN — balance is calibrated later
+// (temenos_balans_spakar.md §9). See megaron_kharis_plan.md FAS 0.
 const (
-	decayOnMissed     = 0.10  // 10% kharis lost when maintenance missed
-	punishThreshold   = 100.0 // kharis below this risks divine punishment
-	punishProbability = 0.30  // 30% chance of divine punishment per missed day below threshold
-	blessThreshold    = 200.0 // kharis above this may attract divine favour
-	blessProbability  = 0.15  // 15% chance of divine blessing per maintained day above threshold
+	// decayOnMissed: 10% kharis lost when maintenance missed. Superseded by dailyDecay
+	// (FAS 2) as the sole depreciation source once that lands — kept only until then.
+	decayOnMissed     = 0.10
+	punishThreshold   = 30.0 // kharis below this risks divine punishment (was 100/2000)
+	punishProbability = 0.30 // 30% chance of divine punishment per missed day below threshold
+	blessThreshold    = 60.0 // kharis above this may attract divine favour (was 200/2000)
+	blessProbability  = 0.15 // 15% chance of divine blessing per maintained day above threshold
 )
 
 // kharisPerCult is the conversion factor from accumulated cult stock to kharis gain per tick.
-// Tunbar — calibrated in W8.
-const kharisPerCult = 0.01
+// Rescaled 0.01 → 0.0005 for the 0–100 scale: the old rate produced ~16/2000 ≈ 0.8%/day
+// of cap from typical cult production, so the new rate targets the same ~0.8/day of a
+// 0–100 pool. Tunbar — calibrated in W8.
+const kharisPerCult = 0.0005
 
 // grainPerCitizen is the grain cost of one new citizen at the daily growth
 // tick — makes growth a real economic draw on grain instead of a binary gate.
@@ -228,19 +236,22 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	return nil
 }
 
-// deriveMood maps kharis level to a mood label (replaces player-set cult_level).
+// deriveMood maps the 0–100 kharis level to a mood label (replaces player-set
+// cult_level). This is the SINGLE canonical threshold table — mood, rite success
+// (settlement.go), and api/handlers.kharisToMood (web.go) all read the same four
+// tiers (60/30/10, strawman — temenos_balans_spakar.md §9) so there is no longer a
+// dual scale. Swedish labels for the two lower tiers ("tveksam"/"vredgad") are new
+// strawman coinages — the design doc only names the English mood words for those.
 func deriveMood(kharis float64) string {
 	switch {
-	case kharis >= 200:
-		return "overdadig"
-	case kharis >= 100:
-		return "praktfull"
-	case kharis >= 50:
-		return "vardig"
-	case kharis > 0:
-		return "enkel"
+	case kharis >= 60:
+		return "overdadig" // Favorable
+	case kharis >= 30:
+		return "vardig" // Indifferent
+	case kharis >= 10:
+		return "tveksam" // Suspicious
 	default:
-		return "forsummad"
+		return "vredgad" // Wrathful
 	}
 }
 
@@ -651,7 +662,8 @@ func (h *TickHandler) addDivineGossip(ctx context.Context, settlementID, worldID
 }
 
 // accumulatePrestige adds daily prestige to the world based on active cult devotion.
-// One point per active settlement, plus a tier bonus (vardig+1, praktfull+2, overdadig+3).
+// One point per active (non-Wrathful) settlement, plus a tier bonus (vardig+1,
+// overdadig+2 — strawman, rescaled for the 4-tier mood table, FAS 0).
 // Prestige feeds into the collapse risk algorithm.
 func (h *TickHandler) accumulatePrestige(ctx context.Context, worldID uuid.UUID) {
 	// Prestige is driven by cult level — now lives on player_world_records.
@@ -660,13 +672,12 @@ func (h *TickHandler) accumulatePrestige(ctx context.Context, worldID uuid.UUID)
 		    SELECT COALESCE(SUM(
 		        1 + CASE pwr.cult_level
 		            WHEN 'vardig'    THEN 1
-		            WHEN 'praktfull' THEN 2
-		            WHEN 'overdadig' THEN 3
+		            WHEN 'overdadig' THEN 2
 		            ELSE 0
 		        END
 		    ), 0)
 		    FROM player_world_records pwr
-		    WHERE pwr.world_id = $1 AND pwr.cult_level != 'forsummad'
+		    WHERE pwr.world_id = $1 AND pwr.cult_level != 'vredgad'
 		)
 		WHERE id = $1`,
 		worldID,

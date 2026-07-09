@@ -35,26 +35,28 @@ func TestRiteCultureGate_KnaaniCanCastOwnPrayer(t *testing.T) {
 	}
 }
 
-// TestRiteTierGate_OraclePrayerRequires100Kharis verifies that every oracle prayer
-// requires at least 100 kharis — the minimum "Suspicious" tier. No oracle should be
-// gated behind 0 kharis (that would be free allvetskap).
-func TestRiteTierGate_OraclePrayerRequires100Kharis(t *testing.T) {
+// TestRiteTierGate_OraclePrayerRequires5Kharis verifies that every oracle prayer
+// requires at least 5 kharis (0-100 scale) — the minimum "Suspicious" tier. No
+// oracle should be gated behind 0 kharis (that would be free allvetskap).
+// (Was 100 on the pre-2026-07-09 0-2000 scale.)
+func TestRiteTierGate_OraclePrayerRequires5Kharis(t *testing.T) {
 	for id, spec := range religion.PrayerSpecs {
 		if spec.EffectType == religion.EffectOracleRevealDeposits {
-			if spec.MinKharis < 100 {
-				t.Errorf("prayer %q: oracle MinKharis = %.0f, want >= 100 (tier gate)", id, spec.MinKharis)
+			if spec.MinKharis < 5 {
+				t.Errorf("prayer %q: oracle MinKharis = %.0f, want >= 5 (tier gate)", id, spec.MinKharis)
 			}
 		}
 	}
 }
 
-// TestRiteTierGate_HarvestBlessingRequires400Kharis verifies that harvest blessings
-// are gated at Indifferent tier (400) — they're more powerful than battle_frenzy.
-func TestRiteTierGate_HarvestBlessingRequires400Kharis(t *testing.T) {
+// TestRiteTierGate_HarvestBlessingRequires30Kharis verifies that harvest blessings
+// are gated at the Indifferent tier (30 on the 0-100 scale, was 400) — they're
+// more powerful than battle_frenzy.
+func TestRiteTierGate_HarvestBlessingRequires30Kharis(t *testing.T) {
 	for id, spec := range religion.PrayerSpecs {
 		if spec.EffectType == religion.EffectHarvestBlessing {
-			if spec.MinKharis < 400 {
-				t.Errorf("prayer %q: harvest_blessing MinKharis = %.0f, want >= 400", id, spec.MinKharis)
+			if spec.MinKharis < 30 {
+				t.Errorf("prayer %q: harvest_blessing MinKharis = %.0f, want >= 30", id, spec.MinKharis)
 			}
 		}
 	}

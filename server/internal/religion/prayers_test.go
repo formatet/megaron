@@ -92,10 +92,11 @@ func TestDefaultBattleFrenzyFor(t *testing.T) {
 func TestKharisNeverSpent(t *testing.T) {
 	for id, spec := range PrayerSpecs {
 		// MinKharis is a minimum threshold (gate), not a deduction.
-		// Verify it maps to one of the three supported tier thresholds.
-		validThresholds := map[float64]bool{100: true, 400: true, 800: true}
+		// Verify it maps to one of the three supported tier thresholds
+		// (0-100 scale, Timothy 2026-07-09 kharis omdesign — was 100/400/800).
+		validThresholds := map[float64]bool{5: true, 30: true, 60: true}
 		if !validThresholds[spec.MinKharis] {
-			t.Errorf("prayer %q: MinKharis = %.0f is not a recognised tier (100/400/800)", id, spec.MinKharis)
+			t.Errorf("prayer %q: MinKharis = %.0f is not a recognised tier (5/30/60)", id, spec.MinKharis)
 		}
 	}
 }
