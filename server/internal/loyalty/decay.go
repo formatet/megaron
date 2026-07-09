@@ -9,14 +9,33 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/tick"
 )
 
 // DailyTickPayload is the payload for recurring daily world tick events.
 type DailyTickPayload struct{}
 
+// loyaltyDecayGraceDays is how many game-days a colony may go without a
+// loyalty-raising event (gift/governor_visit/victory_nearby) before decay
+// applies. Expressed in game-days — NOT wall-clock — because the decay tick
+// itself is tick-scheduled (fires once per game-day). The window is converted
+// to real time via tick.TickMinutes at query time, the same conversion the
+// messenger travel durations use (internal/messenger/recall.go). A hard-coded
+// "48 hours" silently became ~120 game-days at TICK_MINUTES=1, disabling decay
+// in sped-up worlds (the "loyalty 2 uniformly" soak finding).
+const loyaltyDecayGraceDays = 2
+
+// decayGraceMinutes converts the grace window to real minutes at the current
+// tick cadence: graceDays × ticks/day × minutes/tick. At the default 60
+// min/tick this is 2880 (48 h, preserving the old behaviour); at
+// TICK_MINUTES=1 it is 48 (a true 2 game-days).
+func decayGraceMinutes() int {
+	return loyaltyDecayGraceDays * events.TicksPerDay * tick.TickMinutes
+}
+
 // DecayHandler applies loyalty decay for neglected colonies.
-// A colony (is_capital=false) that received no gift in the last 48 hours
-// loses 1 loyalty point (minimum 1).
+// A colony (is_capital=false) that received no gift in the last
+// loyaltyDecayGraceDays game-days loses 1 loyalty point (minimum 1).
 type DecayHandler struct {
 	pool       *pgxpool.Pool
 	scheduler  *events.Scheduler
@@ -40,9 +59,9 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 		       SELECT 1 FROM loyalty_events le
 		       WHERE le.settlement_id = settlements.id
 		         AND le.event_type IN ('gift', 'governor_visit', 'victory_nearby')
-		         AND le.created_at > now() - interval '48 hours'
+		         AND le.created_at > now() - ($2 * interval '1 minute')
 		   )`,
-		e.WorldID,
+		e.WorldID, decayGraceMinutes(),
 	)
 	if err != nil {
 		return fmt.Errorf("query neglected colonies: %w", err)
