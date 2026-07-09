@@ -28,17 +28,36 @@ const (
 	EventWorldTick = "WorldTick"
 )
 
-// TickMinutes is the runtime tick cadence (minutes of real time per tick).
-// Read once from TICK_MINUTES at init; mirrors the value used by Worker.
-// Handlers use this to convert tick durations to approximate wall-clock times
-// for display purposes (build_queue.complete_at, messenger arrives_at, etc.).
-var TickMinutes = func() int {
-	if v := os.Getenv("TICK_MINUTES"); v != "" {
+// tickSeconds resolves the real-time cadence (seconds per tick) from the
+// environment. TICK_SECONDS wins when set (allows a sub-minute, sped-up dev
+// cadence, e.g. TICK_SECONDS=6 for 10× a 1-minute tick); otherwise
+// TICK_MINUTES × 60; otherwise the 60-minute default.
+func tickSeconds() int {
+	if v := os.Getenv("TICK_SECONDS"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
 			return n
 		}
 	}
-	return defaultTickMinutes
+	if v := os.Getenv("TICK_MINUTES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n * 60
+		}
+	}
+	return defaultTickMinutes * 60
+}
+
+// TickMinutes is the runtime tick cadence in minutes, used by handlers to
+// convert tick counts into approximate wall-clock times for DISPLAY only
+// (build_queue.complete_at, messenger arrives_at, etc.); actual scheduling is
+// tick-based. Derived from tickSeconds() and floored at 1 so display maths
+// never divides/multiplies by zero on a sub-minute dev cadence — labels then
+// read coarser than reality on a sped-up world, but nothing breaks.
+var TickMinutes = func() int {
+	m := tickSeconds() / 60
+	if m < 1 {
+		m = 1
+	}
+	return m
 }()
 
 // WorldTickPayload is the event payload for a WorldTick event.
@@ -54,23 +73,17 @@ type Worker struct {
 	pool        *pgxpool.Pool
 	clock       clock.Clock
 	store       *events.Store
-	tickMinutes int
+	tickSeconds int
 }
 
 // New creates a Worker. clk is the sole time source; pass clock.TestClock in
 // tests. TICK_MINUTES env var overrides the default 60-minute cadence.
 func New(pool *pgxpool.Pool, clk clock.Clock, store *events.Store) *Worker {
-	minutes := defaultTickMinutes
-	if v := os.Getenv("TICK_MINUTES"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 {
-			minutes = n
-		}
-	}
 	return &Worker{
 		pool:        pool,
 		clock:       clk,
 		store:       store,
-		tickMinutes: minutes,
+		tickSeconds: tickSeconds(),
 	}
 }
 
@@ -78,15 +91,24 @@ func New(pool *pgxpool.Pool, clk clock.Clock, store *events.Store) *Worker {
 // Runs once immediately on startup to catch up after downtime, then every
 // 30 seconds thereafter.
 func (w *Worker) Run(ctx context.Context) {
-	slog.Info("tick worker started", "tick_minutes", w.tickMinutes)
-	tickDur := time.Duration(w.tickMinutes) * time.Minute
+	slog.Info("tick worker started", "tick_seconds", w.tickSeconds)
+	tickDur := time.Duration(w.tickSeconds) * time.Second
 
 	// Catch-up pass on startup.
 	if err := w.advancePending(ctx, tickDur); err != nil {
 		slog.Error("tick advance failed on startup", "err", err)
 	}
 
-	ticker := time.NewTicker(30 * time.Second)
+	// Poll at least as often as the cadence (so a sub-minute tick actually fires
+	// on time) but never faster than every 2 s, and never slower than 30 s.
+	pollDur := tickDur
+	if pollDur > 30*time.Second {
+		pollDur = 30 * time.Second
+	}
+	if pollDur < 2*time.Second {
+		pollDur = 2 * time.Second
+	}
+	ticker := time.NewTicker(pollDur)
 	defer ticker.Stop()
 	for {
 		select {
