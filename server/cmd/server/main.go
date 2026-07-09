@@ -172,16 +172,11 @@ func main() {
 	r.With(auth.WebMiddleware(authSvc)).Get("/play", webH.Play)
 	r.With(auth.WebMiddleware(authSvc)).Route("/world/{worldID}", func(r chi.Router) {
 		r.Get("/join", webH.JoinView)
-		r.Get("/megaron", webH.MegaronView)
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			worldID := chi.URLParam(r, "worldID")
 			http.Redirect(w, r, "/world/"+worldID+"/map", http.StatusSeeOther)
 		})
 		r.Get("/map", webH.MapView)
-		r.Get("/rawaketa", webH.RawakView)
-		r.Get("/messages", webH.MessagesView)
-		r.Get("/market", webH.MarketView)
-		r.Get("/resource-bar", webH.ResourceBar)
 	})
 
 	// Auth routes (public).
