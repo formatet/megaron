@@ -59,6 +59,18 @@ const (
 	offerWinePerTemple = 1.0
 )
 
+// templeTierMultiplier is the FAS 4 hook point — DEFERRED, not built in this
+// branch (megaron_kharis_plan.md: "Kräver tempel-nivåer/upgrade-tiers som inte
+// finns än"). It depends on the city-building upgrade epic (temenos_
+// stadsbyggnad.md) and is sequenced after the kharis core (FAS 0-3). For now
+// every temple is level 1 and this always returns 1.0 (no-op multiplier) —
+// nothing in FAS 0-3 calls it yet.
+// TODO: once temple upgrade tiers exist, multiply gain (and/or effective cap)
+// by this — "coola tempel" per the design doc §4.
+func templeTierMultiplier(level int) float64 {
+	return 1.0
+}
+
 // kharisFloor is the "heligt golv" the kharis METER itself never crosses below —
 // distinct from riteFloor (api/handlers/settlement.go), which is the rite SUCCESS
 // floor. Design text: "kharis_amount ∈ [0, 100] ... aldrig exakt 0 — gudarna
