@@ -1,15 +1,19 @@
 package handlers
 
-// Regression test for Fas 1g: the Oracle rite (~60% success at the
-// "Suspicious" kharis tier) must debit its material offering atomically
-// regardless of outcome, and the RNG must be rolled exactly once in the
-// handler (Fas 2.3 invariant: the event stores the outcome, never
+// Regression test for Fas 1g: the Oracle rite must debit its material offering
+// atomically regardless of outcome, and the RNG must be rolled exactly once in
+// the handler (Fas 2.3 invariant: the event stores the outcome, never
 // "roll_pending"). Reading Rite (api/handlers/settlement.go) shows the
 // offering deduction happening unconditionally BEFORE the success roll, in
 // the same transaction that commits regardless of outcome — this test
 // verifies that structural claim end-to-end against a real DB rather than by
 // re-reading the source, and that every response carries a discrete
 // success:true/false rather than any pending/deferred state.
+//
+// Kharis seed updated for the 2026-07-09 0-100 rescale (FAS 0/1): kharis=50
+// gives ~50% success (riteSuccessChance = kharis/100 + offerMod, offerMod=0 at
+// the default offer_multiplier), the same "see both outcomes across repeated
+// casts" property the old 150/2000 ("Suspicious" tier, 60%) seed exercised.
 
 import (
 	"bytes"
@@ -75,11 +79,12 @@ func TestRiteOffering_DeductedRegardlessOfOutcome(t *testing.T) {
 	}
 	playerID := claims.PlayerID
 
-	// kharis=150 sits in the "Suspicious" tier (100–400) — chance=60%, the
-	// exact scenario flagged as unverified ("~60% success").
+	// kharis=50 (0-100 scale) → riteSuccessChance ≈ 0.50 at the default
+	// offer_multiplier (offerMod=0) — a mid-range chance that reliably produces
+	// both outcomes across repeated casts, same role the old 150/2000 seed played.
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO player_world_records (player_id, world_id, kharis_amount, kharis_rate)
-		 VALUES ($1, $2, 150, 0)`,
+		 VALUES ($1, $2, 50, 0)`,
 		playerID, worldID,
 	); err != nil {
 		t.Fatalf("seed player_world_records: %v", err)
