@@ -1261,6 +1261,10 @@ type unitSummary struct {
 	R            *int       `json:"r,omitempty"`
 	TargetQ      *int       `json:"target_q,omitempty"`
 	TargetR      *int       `json:"target_r,omitempty"`
+	// DepartsAt + ArrivesAt let the map interpolate a marching unit's position
+	// along its route (same as marches/messengers/trades); without departs_at a
+	// per-unit march could not be animated and stayed invisible on the canvas.
+	DepartsAt    *time.Time `json:"departs_at,omitempty"`
 	ArrivesAt    *time.Time `json:"arrives_at,omitempty"`
 	CargoUnitID  *uuid.UUID `json:"cargo_unit_id,omitempty"`
 	// MarchIntent/ColonyName surface a pending colony before it exists (Fas
@@ -1301,6 +1305,7 @@ func unitSummaries(us []*unit.Unit) []unitSummary {
 			R:            u.R,
 			TargetQ:      u.TargetQ,
 			TargetR:      u.TargetR,
+			DepartsAt:    u.DepartsAt,
 			ArrivesAt:    u.ArrivesAt,
 			CargoUnitID:  u.CargoUnitID,
 			MarchIntent:  u.MarchIntent,

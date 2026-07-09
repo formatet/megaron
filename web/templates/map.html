@@ -945,6 +945,7 @@ let provinceData = [];
 let marchData = [];
 let messengerData = [];
 let tradeData = [];
+let unitsData = [];  // per-unit armies/fleets (units table) — drawn on the canvas
 let camera = { x: 0, y: 0, zoom: 1 };
 let dragging = false, lastMouse = null;
 let selectedProvince = null;
@@ -979,7 +980,8 @@ function render() {
   const seaChanged = seaTick !== lastSeaTick;
   if (seaChanged) lastSeaTick = seaTick;
 
-  if (!dirty && !seaChanged && marchData.length === 0 && messengerData.length === 0 && tradeData.length === 0) {
+  if (!dirty && !seaChanged && marchData.length === 0 && messengerData.length === 0 && tradeData.length === 0
+      && !unitsData.some(u => u.status === 'marching')) {
     requestAnimationFrame(render);
     return;
   }
@@ -1108,6 +1110,33 @@ function render() {
     }
   }
 
+  // 5b. Per-unit armies & fleets (per-unit march model). Marching units animate
+  // along their route (interpolated like marches); positioned units (on the map
+  // without a settlement) sit where they stand. Garrison/forming/embarked units
+  // live at a settlement and are already represented by its province, so they
+  // are not drawn here.
+  for (const u of unitsData) {
+    const naval = u.category === 'naval';
+    if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
+      const now = Date.now();
+      const departs = new Date(u.departs_at).getTime();
+      const arrives = new Date(u.arrives_at).getTime();
+      const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
+      const pos = hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
+      if (isTileVisible(pos.q, pos.r)) {
+        // explore/explore_return share the cyan "explore" sail; other legs use
+        // the neutral default colour (intent is resolved server-side on arrival).
+        const intent = (u.march_intent === 'explore' || u.march_intent === 'explore_return') ? 'explore' : (u.march_intent || '');
+        if (naval) drawShip(ctx, Math.round(pos.x), Math.round(pos.y), intent, walkPhase);
+        else       drawWalker(ctx, Math.round(pos.x), Math.round(pos.y), intent, walkPhase);
+      }
+    } else if (u.status === 'positioned' && u.q != null && isTileVisible(u.q, u.r)) {
+      const {x, y} = hexPx(u.q, u.r);
+      if (naval) drawShip(ctx, Math.round(x), Math.round(y), '', walkPhase);
+      else       drawWalker(ctx, Math.round(x), Math.round(y), '', walkPhase);
+    }
+  }
+
   // 6. Animated messengers
   for (const m of messengerData) {
     const now = Date.now();
@@ -1144,12 +1173,13 @@ async function fetchAuth(url, opts = {}) {
 }
 
 async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`),
+    fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`),
   ]);
 
   if (tilesRes.ok) {
@@ -1161,6 +1191,9 @@ async function loadMap() {
   }
   if (marchRes.ok) {
     marchData = await marchRes.json();
+  }
+  if (unitsRes.ok) {
+    unitsData = (await unitsRes.json()).units || [];
   }
   if (msgRes.ok) {
     messengerData = await msgRes.json();
@@ -1186,6 +1219,7 @@ setInterval(() => {
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { tradeData = d; dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { unitsData = d.units || []; dirty = true; }));
 }, 30000);
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
@@ -1611,7 +1645,9 @@ async function sendMarch() {
     const okCount = results.length - failed.length;
     document.getElementById('mctx-err').textContent = (okCount ? okCount + ' sent · ' : '') + failed[0].err;
   }
-  // Refresh marches either way — some units may have dispatched.
+  // Refresh either way — some units may have dispatched. Units drive the map's
+  // per-unit movement layer; marches keeps the legacy layer/music in sync.
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { unitsData = d.units || []; dirty = true; }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
 }
 
