@@ -408,11 +408,11 @@ const TIME_SCALE = {{.TimeScale}};
 
 // ── Lawagetas advisory voice ──────────────────────────────────────────────
 const LAWAGETAS_BRIEFS = {
-  city:      "Your megaron rises above all you rule, Wanax. Here your people labor — farmers, craftsmen, soldiers — each serving the palace that feeds and protects them. Assign your workers well; idle hands do not fill the granary.",
-  war:       "Bronze arms await your command, Wanax. Your Lochagos may march the army to distant lands — to raid, reinforce, or colonize. In battle, numbers count, but walls and elite agema often decide the day.",
-  diplomacy: "Words travel on foot, Wanax — a messenger's legs are your reach. You may only treat with those cities whose walls your messengers have touched. Send scouts first; then make your offers.",
-  economy:   "The palace scribes track every ingot and measure of grain, Wanax. Silver flows in and out; when it drains, armies cannot march and temples cannot stand. Study your stockpile.",
-  kult:      "The gods watch your megaron, Wanax. Your temple's cult level and divine mood shape what rites you may call upon — tend it, and the gods answer; neglect it, and they turn away.",
+  city:      "Your megaron rises above all you rule, Wanax. Here your people labor — farmers, craftsmen, soldiers — each serving the palace that feeds and protects them. Assign your workers well; a foundry lets your smiths turn copper and tin into bronze. Idle hands do not fill the granary.",
+  war:       "Bronze arms await your command, Wanax. March the army to distant lands — to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day.",
+  diplomacy: "Words travel on foot, Wanax — a messenger's legs are your reach. You may only treat with those cities whose walls your messengers have touched. Consult the Cities ledger for rumours of distant lands, and the Rulers roll for who commands them; then send scouts, then make your offers — to buy or to sell.",
+  economy:   "The palace scribes track every ingot and measure of grain, Wanax. Move goods freely between your own cities, but silver alone crosses borders with strangers. Watch the Wants ledger — it names what your trading partners hunger for, and where your surplus might fetch a premium.",
+  kult:      "The gods watch your megaron, Wanax. Your temple's cult level and divine mood shape what rites you may call upon — tend it, and the gods answer; neglect it, and they turn away. Each prayer asks its own offering; choose with care.",
   notif:     "Your herald brings word from beyond the megaron walls, Wanax — arrivals, battles resolved, buildings completed. Matters that demand your attention rise here first.",
 };
 
@@ -1871,6 +1871,10 @@ async function loadDrawerContent(name) {
         <div class="dsec"><div class="dsec-title">Produktion</div><div id="city-prod-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
         <div class="dsec"><div class="dsec-title">Sitos</div><div id="city-sitos-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
         <div class="dsec"><div class="dsec-title">Senaste tick</div><div id="city-lasttick-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+        <div class="dsec">
+          <div class="dsec-title">Ticklog <button class="btn-small" onclick="loadTicklog()" style="margin-left:.4rem;padding:.05rem .3rem;font-size:.65rem;cursor:pointer">Show recent ticks</button></div>
+          <div id="city-ticklog-sec"></div>
+        </div>
       </div>
       <div id="ctab-byggnader" class="city-tab" style="display:none"><div id="city-bld-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
@@ -2021,6 +2025,8 @@ async function loadDrawerContent(name) {
           <div id="war-disband-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div>`;
       }
 
+      document.getElementById('city-gar-sec').innerHTML += await renderLockedActions('province');
+
     } catch(e) { console.error('city drawer', e); }
 
   } else if (name === 'war') {
@@ -2132,7 +2138,7 @@ async function loadEconomyGoods(mySettlements) {
         ).join('')}</table>`;
       }
     }
-    el.innerHTML = html || '<p class="empty-state" style="padding:1rem">No goods data.</p>';
+    el.innerHTML = (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
   }
@@ -2291,6 +2297,7 @@ async function loadKultDrawer() {
     }
     html += '</div>';
 
+    html += await renderLockedActions('cult');
     el.innerHTML = html;
   } catch(_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
@@ -2360,6 +2367,31 @@ async function startCraft(provinceID) {
   } else {
     resultEl.style.color = 'var(--accent)';
     resultEl.textContent = d.error || 'Craft failed.';
+  }
+}
+
+async function loadTicklog() {
+  const capital = provinceData.find(p => p.own && p.is_capital);
+  const el = document.getElementById('city-ticklog-sec');
+  if (!capital || !el) return;
+  el.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/ticklog?last=10`);
+    if (!r.ok) { el.innerHTML = '<p class="empty-state">Could not load.</p>'; return; }
+    const data = await r.json();
+    const ticks = data.ticks || [];
+    if (!ticks.length) { el.innerHTML = '<p class="empty-state">No tick history yet.</p>'; return; }
+    el.innerHTML = `<table class="goods-mini">
+      <tr style="color:var(--text-dim);font-size:.7rem"><td>Tick</td><td>Production</td><td>Consumption</td><td>Events</td></tr>
+      ${ticks.map(t => {
+        const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${v.toFixed(1)}`).join(', ');
+        const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${v.toFixed(1)}`).join(', ');
+        const evs  = (t.events||[]).map(e => e.type).join(', ');
+        return `<tr><td>#${t.tick}</td><td style="color:var(--safe)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
+      }).join('')}
+    </table>`;
+  } catch (_) {
+    el.innerHTML = '<p class="empty-state">Could not load.</p>';
   }
 }
 
@@ -2572,6 +2604,7 @@ async function loadWarDrawer() {
         + '<div id="war-abandon-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div></div>';
     }
     document.getElementById('wtab-recruit').innerHTML = recHtml;
+    document.getElementById('wtab-recruit').innerHTML += await renderLockedActions('military');
 
   } catch(e) {
     console.error('war drawer', e);
@@ -3179,6 +3212,7 @@ async function loadDipThreads() {
       html += '</div></div>'; // close thread-body + thread
       return html;
     }).join('');
+    el.innerHTML += await renderLockedActions('diplomacy');
 
   } catch(e) {
     console.error('loadDipThreads', e);
@@ -3384,6 +3418,28 @@ async function dipSend() {
   }
 }
 
+
+// ── Locked-verb hints — server-authoritative (GET .../actions) ────────────
+// Same source of truth as `poleia actions`: no client-side gate logic here,
+// just render what the server already decided (temenos_capabilities.md).
+async function renderLockedActions(category) {
+  const capital = provinceData.find(p => p.own && p.is_capital);
+  if (!capital) return '';
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/actions`);
+    if (!r.ok) return '';
+    const verbs = (await r.json()).filter(v => v.category === category && !v.available);
+    if (!verbs.length) return '';
+    return '<div class="dsec"><div class="dsec-title" style="color:var(--text-dim)">Locked</div>' +
+      verbs.map(v => {
+        const hint = (v.requirements.find(req => !req.satisfied) || {}).hint || '';
+        return '<div class="stat-row"><span class="sr-label">' + esc(v.name) + '</span>' +
+          '<span class="sr-val" style="color:var(--text-dim);font-size:.7rem;text-align:right">' + esc(hint) + '</span></div>';
+      }).join('') + '</div>';
+  } catch (_) {
+    return '';
+  }
+}
 
 // ── Shared helpers ────────────────────────────────────────────────────────
 function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
