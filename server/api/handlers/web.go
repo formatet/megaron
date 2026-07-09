@@ -17,13 +17,18 @@ import (
 	"github.com/poleia/server/internal/world"
 )
 
+// kharisToMood maps the 0-100 kharis level to its English display mood.
+// Same canonical thresholds as internal/kharis.deriveMood (60/30/10, strawman —
+// temenos_balans_spakar.md §9) — kept as two functions (Go/Swedish label sets,
+// different packages per the G1 dependency order) but ONE threshold table, per
+// the 2026-07-09 kharis omdesign's "Ta bort ev. dubbel skala" instruction.
 func kharisToMood(k float64) string {
 	switch {
-	case k >= 800:
+	case k >= 60:
 		return "Favorable"
-	case k >= 400:
+	case k >= 30:
 		return "Indifferent"
-	case k >= 100:
+	case k >= 10:
 		return "Suspicious"
 	default:
 		return "Wrathful"

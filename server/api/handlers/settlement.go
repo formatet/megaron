@@ -487,14 +487,85 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// riteFloor and riteCeil are the "heligt golv/tak" (holy floor/ceiling) — a rite
+// never has a 0% or 100% chance; the gods are not machines (Timothy 2026-07-09
+// kharis omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 1). Strawman —
+// temenos_balans_spakar.md §9.
+const (
+	riteFloor = 0.10
+	riteCeil  = 0.98
+)
+
+// Offer-multiplier bounds and the offerMod it produces at each end. A "fett
+// offer" (offer_multiplier > 1, more goods than the prayer's baseline) nudges
+// success up; a "snålt offer" (< 1, cheaper than baseline) nudges it down.
+// offer_multiplier omitted or <= 0 defaults to 1.0 (exactly the baseline
+// Offering, offerMod = 0) — fully backward compatible with callers that never
+// send the field. Strawman constants — temenos_balans_spakar.md §9.
+const (
+	riteOfferMultiplierMin = 0.5
+	riteOfferMultiplierMax = 2.0
+	riteOfferModFat        = 0.10  // bonus at riteOfferMultiplierMax
+	riteOfferModStingy     = -0.15 // penalty at riteOfferMultiplierMin
+)
+
+// riteOfferMultiplier clamps a requested offer multiplier into
+// [riteOfferMultiplierMin, riteOfferMultiplierMax], defaulting to 1.0 (baseline,
+// no modifier) for the JSON zero-value / omitted-field / invalid (<=0) case.
+func riteOfferMultiplier(raw float64) float64 {
+	if raw <= 0 {
+		return 1.0
+	}
+	if raw < riteOfferMultiplierMin {
+		return riteOfferMultiplierMin
+	}
+	if raw > riteOfferMultiplierMax {
+		return riteOfferMultiplierMax
+	}
+	return raw
+}
+
+// riteOfferMod maps an offer multiplier to the success-chance modifier: linear
+// on each side of 1.0 (baseline), hitting riteOfferModFat exactly at
+// riteOfferMultiplierMax and riteOfferModStingy exactly at
+// riteOfferMultiplierMin, continuous (0) at multiplier == 1.0.
+func riteOfferMod(multiplier float64) float64 {
+	switch {
+	case multiplier > 1.0:
+		return (multiplier - 1.0) / (riteOfferMultiplierMax - 1.0) * riteOfferModFat
+	case multiplier < 1.0:
+		return (multiplier - 1.0) / (1.0 - riteOfferMultiplierMin) * (-riteOfferModStingy)
+	default:
+		return 0
+	}
+}
+
+// riteSuccessChance is the FAS 1 continuous rite formula: the kharis level
+// (0-100) IS the success percentage, nudged by offerMod and clamped to the holy
+// floor/ceiling. Replaces the old 4-tier lookup (95/80/60/25 at 800/400/100
+// kharis) — "talet ÄR mätaren", not a tier.
+func riteSuccessChance(kharisNow, offerMod float64) float64 {
+	c := kharisNow/100.0 + offerMod
+	if c < riteFloor {
+		return riteFloor
+	}
+	if c > riteCeil {
+		return riteCeil
+	}
+	return c
+}
+
 // Rite handles POST /worlds/:worldID/settlements/:settlementID/rite.
-// Performs a cultural prayer — requires a temple, costs 5 grain.
-// Body: {"prayer":"<prayer_id>","target":"<optional uuid>"}.
+// Performs a cultural prayer — requires a temple, costs a material offering.
+// Body: {"prayer":"<prayer_id>","target":"<optional uuid>","offer_multiplier":<optional float>}.
 // Omitting prayer defaults to the culture's battle_frenzy prayer (backward compat).
+// offer_multiplier (default 1.0, clamped to [0.5, 2.0]) scales the prayer's
+// material offering up ("fett offer") or down ("snålt offer") and nudges the
+// success chance accordingly — see riteOfferMod.
 //
-// Success probability is determined by divine mood (kharis level):
-//
-//	Favorable (≥800 kharis): 95% · Indifferent (≥400): 80% · Suspicious (≥100): 60% · Wrathful: 25%
+// Success probability is continuous, not tiered (FAS 1): the kharis level
+// (0-100) IS the success percentage — kharis 95 → ~95%, kharis 40 → ~40% —
+// nudged by offerMod and clamped to [riteFloor, riteCeil]. See riteSuccessChance.
 //
 // The prayer must belong to the settlement's culture (403 otherwise).
 // The prayer must be off cooldown (409 otherwise).
@@ -518,8 +589,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 	// Decode optional body.
 	var body struct {
-		Prayer string `json:"prayer"`
-		Target string `json:"target"`
+		Prayer          string  `json:"prayer"`
+		Target          string  `json:"target"`
+		OfferMultiplier float64 `json:"offer_multiplier"`
 	}
 	_ = json.NewDecoder(r.Body).Decode(&body)
 
@@ -628,25 +700,25 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		// ErrNoRows = never cast before = allowed.
 	}
 
-	// Determine success probability from divine mood.
-	var chance int
-	var mood string
-	switch {
-	case kharisNow >= 800:
-		chance, mood = 95, "Favorable"
-	case kharisNow >= 400:
-		chance, mood = 80, "Indifferent"
-	case kharisNow >= 100:
-		chance, mood = 60, "Suspicious"
-	default:
-		chance, mood = 25, "Wrathful"
-	}
+	// Determine success probability — continuous (FAS 1), not tiered: the kharis
+	// level IS the success percentage, nudged by how much was offered.
+	offerMultiplier := riteOfferMultiplier(body.OfferMultiplier)
+	offerMod := riteOfferMod(offerMultiplier)
+	successChance := riteSuccessChance(kharisNow, offerMod)
+	chance := int(successChance*100 + 0.5) // percentage, rounded, for the roll + response
+	mood := kharisToMood(kharisNow)
 
-	// Affordability check + deduct the material offering. The gods take the
-	// sacrifice regardless of outcome. Kharis is never part of this — it is
-	// standing (gated above); the offering is in trade goods (wine/oil/silver/…),
-	// the deliberate economic sink that makes religion drive trade.
-	for good, need := range spec.Offering {
+	// Affordability check + deduct the material offering, scaled by
+	// offerMultiplier (a "fett offer" costs proportionally more goods; a "snålt
+	// offer" costs less). The gods take the sacrifice regardless of outcome.
+	// Kharis is never part of this — it is standing (gated above); the offering
+	// is in trade goods (wine/oil/silver/…), the deliberate economic sink that
+	// makes religion drive trade.
+	scaledOffering := make(map[string]float64, len(spec.Offering))
+	for good, baseline := range spec.Offering {
+		scaledOffering[good] = baseline * offerMultiplier
+	}
+	for good, need := range scaledOffering {
 		var have float64
 		if scanErr := tx.QueryRow(r.Context(),
 			`SELECT GREATEST(0, settled(amount, rate, calc_tick))
@@ -654,12 +726,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			settlementID, good,
 		).Scan(&have); scanErr != nil || have < need {
 			writeError(w, http.StatusBadRequest,
-				fmt.Sprintf("insufficient offering for %q: need %.0f %s (have %.0f)",
+				fmt.Sprintf("insufficient offering for %q: need %.1f %s (have %.1f)",
 					prayerID, need, good, have))
 			return
 		}
 	}
-	for good, need := range spec.Offering {
+	for good, need := range scaledOffering {
 		if _, err = tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
 			    amount  = GREATEST(0, settled(amount, rate, calc_tick) - $2),
@@ -709,22 +781,24 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Emit RiteCast event AFTER commit (event store uses pool, not the now-committed TX).
 	// Payload carries the full outcome (Fas 2.3).
 	eventPayload := map[string]any{
-		"player_id":   playerID.String(),
-		"prayer":      prayerID,
-		"effect_type": spec.EffectType,
-		"success":     success,
-		"offering":    spec.Offering,
-		"effect":      effectPayload,
+		"player_id":        playerID.String(),
+		"prayer":           prayerID,
+		"effect_type":      spec.EffectType,
+		"success":          success,
+		"offering":         scaledOffering,
+		"offer_multiplier": offerMultiplier,
+		"effect":           effectPayload,
 	}
 	_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamReligion, "RiteCast",
 		eventPayload, worldID, nil)
 
 	resp := map[string]any{
-		"success": success,
-		"mood":    mood,
-		"chance":  chance,
-		"prayer":  prayerID,
-		"message": message,
+		"success":          success,
+		"mood":             mood,
+		"chance":           chance,
+		"offer_multiplier": offerMultiplier,
+		"prayer":           prayerID,
+		"message":          message,
 	}
 	if success {
 		resp["effect_type"] = spec.EffectType
