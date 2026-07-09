@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"math/rand"
 	"net/http"
 	"time"
@@ -295,7 +296,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	var eyes []province.Eye
 	var remembered map[[2]int]bool
 	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 	}
 
@@ -632,41 +633,111 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 // Each eye is typed so province.LiveRadius can size vision per temenos_synlighet.md's
 // per-eye-kind × per-target-terrain table. Scouted tiles/provinces and messenger
 // contacts are NOT eyes — they are tier-2 memory (see loadRememberedTiles).
-func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) []province.Eye {
-	rows, err := pool.Query(ctx,
-		`SELECT q, r, kind FROM (
-		     SELECT p.map_q AS q, p.map_r AS r, 'settlement' AS kind
-		     FROM provinces p
-		     JOIN settlements s ON s.province_id = p.id
-		     WHERE p.world_id = $1 AND (
-		         s.owner_id = $2
-		         OR (s.kingdom_id IS NOT NULL AND s.kingdom_id IN (
-		             SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
-		         ))
-		     )
-		     UNION ALL
-		     SELECT u.q, u.r,
-		            CASE WHEN u.category = 'naval' THEN 'ship' ELSE 'land-unit' END AS kind
-		     FROM units u
-		     WHERE u.world_id = $1 AND u.owner_id = $2
-		       AND u.status != 'embarked'
-		       AND u.q IS NOT NULL AND u.r IS NOT NULL
-		 ) eyes`,
+//
+// A marching unit's stored (q,r) is its ORIGIN hex — March (unit.go) never moves it,
+// only target_q/target_r/departs_at/arrives_at are set at dispatch. So a marching
+// unit's eye is placed at its interpolated position along its route (see
+// interpolatedEyePos) instead of the stored origin, or the fog bubble would sit at
+// the harbour for the whole voyage instead of tracking the ship. now must come from
+// the caller's injected clock.Clock — never time.Now() (CLAUDE.md Time rule).
+func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, now time.Time) []province.Eye {
+	var eyes []province.Eye
+
+	sRows, err := pool.Query(ctx,
+		`SELECT p.map_q, p.map_r
+		 FROM provinces p
+		 JOIN settlements s ON s.province_id = p.id
+		 WHERE p.world_id = $1 AND (
+		     s.owner_id = $2
+		     OR (s.kingdom_id IS NOT NULL AND s.kingdom_id IN (
+		         SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
+		     ))
+		 )`,
 		worldID, playerID,
 	)
-	if err != nil {
-		return nil
-	}
-	defer rows.Close()
-
-	var eyes []province.Eye
-	for rows.Next() {
-		var e province.Eye
-		if err := rows.Scan(&e.Pos.Q, &e.Pos.R, &e.Kind); err == nil {
-			eyes = append(eyes, e)
+	if err == nil {
+		for sRows.Next() {
+			var pos province.MapPosition
+			if sRows.Scan(&pos.Q, &pos.R) == nil {
+				eyes = append(eyes, province.Eye{Pos: pos, Kind: province.EyeSettlement})
+			}
 		}
+		sRows.Close()
 	}
+
+	uRows, err := pool.Query(ctx,
+		`SELECT status, q, r, target_q, target_r, category, departs_at, arrives_at
+		 FROM units
+		 WHERE world_id = $1 AND owner_id = $2
+		   AND status != 'embarked'
+		   AND q IS NOT NULL AND r IS NOT NULL`,
+		worldID, playerID,
+	)
+	if err == nil {
+		for uRows.Next() {
+			var status, category string
+			var q, r int
+			var targetQ, targetR *int
+			var departsAt, arrivesAt *time.Time
+			if uRows.Scan(&status, &q, &r, &targetQ, &targetR, &category, &departsAt, &arrivesAt) != nil {
+				continue
+			}
+			kind := province.EyeLandUnit
+			if category == "naval" {
+				kind = province.EyeShip
+			}
+			pos := province.MapPosition{Q: q, R: r}
+			if status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
+				path, _, ok, pathErr := province.FindPath(ctx, pool, worldID, pos,
+					province.MapPosition{Q: *targetQ, R: *targetR}, category)
+				if pathErr == nil && ok && len(path) > 0 {
+					pos = interpolatedEyePos(now, *departsAt, *arrivesAt, path)
+				}
+				// FindPath failure/empty path: best-effort fallback to the stored
+				// origin (q,r) set above — never drop the eye.
+			}
+			eyes = append(eyes, province.Eye{Pos: pos, Kind: kind})
+		}
+		uRows.Close()
+	}
+
 	return eyes
+}
+
+// interpolatedEyePos returns a marching unit's live-vision position: its location
+// along path at the current point in its journey, linearly interpolated by elapsed
+// wall-clock time between departsAt and arrivesAt (temenos_synlighet.md tier 1 —
+// vision must track a moving ship/unit, not just its departure or arrival hex).
+//
+// progress is clamped to [0,1] so a read before departure or after arrival snaps to
+// the first/last hex rather than extrapolating. idx = round(progress*(len(path)-1))
+// picks the nearest path hex to the elapsed fraction. Pure and DB-free: path is
+// precomputed by the caller (province.FindPath) so this is unit-testable with fixed
+// time.Time values and no clock. An empty path has no position to return; callers
+// must check len(path) > 0 before calling and fall back to the unit's stored (q,r)
+// otherwise — this function returns the zero MapPosition rather than panicking.
+func interpolatedEyePos(now, departsAt, arrivesAt time.Time, path []province.MapPosition) province.MapPosition {
+	if len(path) == 0 {
+		return province.MapPosition{}
+	}
+
+	var progress float64
+	if total := arrivesAt.Sub(departsAt); total > 0 {
+		progress = float64(now.Sub(departsAt)) / float64(total)
+	}
+	if progress < 0 {
+		progress = 0
+	} else if progress > 1 {
+		progress = 1
+	}
+
+	idx := int(math.Round(progress * float64(len(path)-1)))
+	if idx < 0 {
+		idx = 0
+	} else if idx >= len(path) {
+		idx = len(path) - 1
+	}
+	return path[idx]
 }
 
 // loadRememberedTiles returns the set of tiles the player has ever live-seen and
@@ -722,7 +793,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 
 	var eyes []province.Eye
 	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 	}
 
 	rows, err := h.pool.Query(r.Context(),
@@ -795,7 +866,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 
 	var eyes []province.Eye
 	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 	}
 
 	rows, err := h.pool.Query(r.Context(),
@@ -861,7 +932,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 
 	var eyes []province.Eye
 	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 	}
 
 	rows, err := h.pool.Query(r.Context(),
