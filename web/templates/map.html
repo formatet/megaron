@@ -1452,15 +1452,17 @@ const UNIT_MENU_LABELS = {
   priest:'Hiereus', ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
 };
 
-let marchCtxDest  = null;   // { q, r, terrain, isSea, name, isSettlement, allied }
-let marchCtxUnits = [];     // eligible units currently listed
+let marchCtxDest   = null;  // { q, r, terrain, isSea, name, isSettlement, allied }
+let marchCtxUnits  = [];    // eligible units currently listed
+let marchCtxGroups = [];    // eligible units grouped by type+origin (quantity picker)
 
 const marchCtx = document.getElementById('march-ctx');
 
 function closeMarchCtx() {
   marchCtx.style.display = 'none';
-  marchCtxDest  = null;
-  marchCtxUnits = [];
+  marchCtxDest   = null;
+  marchCtxUnits  = [];
+  marchCtxGroups = [];
   document.getElementById('mctx-err').textContent = '';
   const nameEl = document.getElementById('mctx-colony-name');
   if (nameEl) { nameEl.value = ''; nameEl.style.display = 'none'; }
@@ -1529,6 +1531,7 @@ async function openMarchCtx(dest, screenX, screenY) {
 function renderMarchUnitList() {
   const el = document.getElementById('mctx-units');
   const stanceRow = document.getElementById('mctx-stance-row');
+  marchCtxGroups = [];
   if (!marchCtxUnits.length) {
     el.innerHTML = '<p style="font-size:.73rem;color:var(--text-dim);margin:.3rem 0">'
       + (marchCtxDest && marchCtxDest.isSea
@@ -1537,28 +1540,48 @@ function renderMarchUnitList() {
     stanceRow.style.display = 'none';
     return;
   }
-  stanceRow.style.display = 'block';
-  el.innerHTML = marchCtxUnits.map(u => {
-    const lbl  = UNIT_MENU_LABELS[u.type] || u.type;
+  // Each unit is one vessel (naval) or one 100-man stack (land). Group the
+  // fungible ones by type + origin so the player picks a quantity ("send 3 of
+  // 5") instead of hunting identical checkboxes — the count expands back into
+  // that many discrete /units/{id}/march calls on send.
+  const byKey = new Map();
+  for (const u of marchCtxUnits) {
     const prov = provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
-    const loc  = prov ? esc(prov.name) : (u.q != null ? '(' + u.q + ',' + u.r + ')' : '');
-    return '<label class="mctx-row" style="cursor:pointer">'
-      + '<input type="checkbox" class="mctx-unit-chk" value="' + u.id + '">'
-      + '<span class="mctx-label">' + lbl + '</span>'
-      + '<span class="mctx-max">' + loc + '</span>'
-      + '</label>';
+    const loc  = prov ? prov.name : (u.q != null ? '(' + u.q + ',' + u.r + ')' : '');
+    const key  = u.type + '|' + loc;
+    if (!byKey.has(key)) byKey.set(key, { type: u.type, loc, ids: [] });
+    byKey.get(key).ids.push(u.id);
+  }
+  marchCtxGroups = Array.from(byKey.values());
+  el.innerHTML = marchCtxGroups.map((g, i) => {
+    const lbl    = UNIT_MENU_LABELS[g.type] || g.type;
+    const max    = g.ids.length;
+    const locTag = g.loc ? ' <span style="color:var(--text-dim)">· ' + esc(g.loc) + '</span>' : '';
+    return '<div class="mctx-row">'
+      + '<span class="mctx-label">' + lbl + locTag + '</span>'
+      + '<input class="mctx-input" type="number" id="mg-' + i + '" min="0" max="' + max + '" value="0">'
+      + '<span class="mctx-max">/' + max + '</span>'
+      + '</div>';
   }).join('');
+  // Fleets have no stance — only land units take a stance.
+  stanceRow.style.display = (marchCtxDest && marchCtxDest.isSea) ? 'none' : 'block';
 }
 
 async function sendMarch() {
   if (!marchCtxDest) return;
-  const checked = Array.from(document.querySelectorAll('.mctx-unit-chk'))
-    .filter(c => c.checked).map(c => c.value);
-  if (!checked.length) {
-    document.getElementById('mctx-err').textContent = 'Select at least one unit.';
+  const picks = [];
+  marchCtxGroups.forEach((g, i) => {
+    const el = document.getElementById('mg-' + i);
+    let n = el ? parseInt(el.value, 10) || 0 : 0;
+    n = Math.max(0, Math.min(n, g.ids.length));
+    for (let k = 0; k < n; k++) picks.push(g.ids[k]);
+  });
+  if (!picks.length) {
+    document.getElementById('mctx-err').textContent = 'Choose how many units to send.';
     return;
   }
-  const stance = document.getElementById('mctx-stance').value || '';
+  // Naval fleets carry no stance.
+  const stance = marchCtxDest.isSea ? '' : (document.getElementById('mctx-stance').value || '');
   const chk = document.getElementById('mctx-colonize-chk');
   const colonize = !!(chk && chk.checked
     && document.getElementById('mctx-colonize-row').style.display !== 'none');
@@ -1568,7 +1591,7 @@ async function sendMarch() {
   document.getElementById('mctx-send').disabled = true;
   document.getElementById('mctx-err').textContent = '';
 
-  const results = await Promise.all(checked.map(uid => {
+  const results = await Promise.all(picks.map(uid => {
     const body = { target_q: marchCtxDest.q, target_r: marchCtxDest.r };
     if (stance)   body.stance = stance;
     if (colonize) { body.intent = 'colonize'; if (colonyName) body.name = colonyName; }
