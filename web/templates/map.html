@@ -2229,11 +2229,21 @@ async function loadKultDrawer() {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
     return;
   }
+  const capital = provinceData.find(p => p.own && p.is_capital);
+  if (!capital) {
+    el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
+    return;
+  }
 
   try {
-    const sr = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID);
+    const [sr, pr] = await Promise.all([
+      fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID),
+      fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + capital.id),
+    ]);
     if (!sr.ok) throw new Error();
     const sd = await sr.json();
+    const pd = pr.ok ? (await pr.json()).settlement : null;
+    const prayers = (pd && pd.available_prayers) || [];
 
     const CULT_LEVELS = ['forsummad','enkel','vardig','praktfull','overdadig'];
     const CULT_LABELS = { forsummad:'Neglected', enkel:'Simple', vardig:'Worthy', praktfull:'Magnificent', overdadig:'Lavish' };
@@ -2242,8 +2252,6 @@ async function loadKultDrawer() {
 
     const mood      = sd.divine_mood  || 'Indifferent';
     const cultLevel = sd.cult_level   || 'enkel';
-    const frenzyUntil = sd.battle_frenzy_until ? new Date(sd.battle_frenzy_until) : null;
-    const frenzyActive = frenzyUntil && frenzyUntil > new Date();
 
     let html = '<div class="dsec"><div class="dsec-title">Divine favour</div>' +
       '<div class="stat-row"><span class="sr-label">Mood</span>' +
@@ -2254,15 +2262,32 @@ async function loadKultDrawer() {
       '<div class="stat-row"><span class="sr-label">Level</span>' +
       '<span class="sr-val">' + (CULT_LABELS[cultLevel] || cultLevel) + '</span></div></div>';
 
-    // Rite / battle frenzy
-    html += '<div class="dsec"><div class="dsec-title">Rite — Battle Frenzy</div>';
-    if (frenzyActive) {
-      html += '<div class="stat-row"><span class="sr-label">Status</span>' +
-        '<span class="sr-val" style="color:var(--safe)">Active — expires ' + fmtEta(sd.battle_frenzy_until) + '</span></div>' +
-        '<p style="font-size:.78rem;color:var(--text-dim);margin:.25rem 0 0">Spearman fights at ×1.5 strength.</p>';
+    // Prayer catalog
+    html += '<div class="dsec"><div class="dsec-title">Prayers</div>';
+    if (!prayers.length) {
+      html += '<p class="empty-state">No prayers available — build a temple first.</p>';
     } else {
-      html += '<p style="font-size:.78rem;color:var(--text-dim);margin:.25rem 0 .5rem">Requires ≥1 Hiereus · costs 5 grain · success depends on divine mood.</p>' +
-        '<button class="obj-cta" style="width:100%" onclick="okRite()">Perform Rite</button>';
+      const frenzyUntil = sd.battle_frenzy_until ? new Date(sd.battle_frenzy_until) : null;
+      const frenzyActive = frenzyUntil && frenzyUntil > new Date();
+      prayers.forEach(p => {
+        const offeringStr = Object.entries(p.offering || {}).map(([g,q]) => `${q} ${g}`).join(' + ') || '—';
+        const onCooldown = p.cooldown_remaining_minutes > 0;
+        let statusHtml;
+        if (p.effect_type === 'battle_frenzy' && frenzyActive) {
+          statusHtml = `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(sd.battle_frenzy_until)}</span>`;
+        } else if (onCooldown) {
+          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${Math.ceil(p.cooldown_remaining_minutes)}m</span>`;
+        } else if (!p.affordable) {
+          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">not affordable</span>`;
+        } else {
+          statusHtml = `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Perform →</button>`;
+        }
+        html += `<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap">
+          <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis)</span><br>
+          <span style="color:var(--text-dim);font-size:.7rem">offering: ${offeringStr}</span></span>
+          <span class="sr-val">${statusHtml}</span>
+        </div>`;
+      });
     }
     html += '</div>';
 
@@ -2272,8 +2297,10 @@ async function loadKultDrawer() {
   }
 }
 
-async function okRite() {
-  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/rite', {method:'POST'});
+async function okRite(prayerID) {
+  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/rite', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ prayer: prayerID || '' }),
+  });
   const d = await r.json().catch(function(){return {};});
   if (r.ok) {
     alert(d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
