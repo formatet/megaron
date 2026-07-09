@@ -188,7 +188,6 @@
     <button class="mctx-ibtn"        id="mctx-support"   onclick="setMarchIntent('support')"   title="March in support — bolsters any allied attack arriving while still in transit; joins garrison on arrival">Support</button>
     <button class="mctx-ibtn"        id="mctx-scout"     onclick="setMarchIntent('scout')"     title="Scout — units recon the tile and auto-return">Scout</button>
     <button class="mctx-ibtn"        id="mctx-colonize"  onclick="setMarchIntent('colonize')"  title="Colonize — army founds a new settlement on arrival" style="display:none">Colonize</button>
-    <button class="mctx-ibtn"        id="mctx-outpost"   onclick="setMarchIntent('outpost')"   title="Outpost — army establishes a resource outpost on arrival" style="display:none">Outpost</button>
     <button class="mctx-ibtn"        id="mctx-explore"   onclick="setMarchIntent('explore')"   title="Explore — ships scout coastal and sea hexes, revealing fog-of-war, then auto-return" style="display:none">Explore</button>
   </div>
   <div id="mctx-source-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
@@ -199,9 +198,6 @@
     Colonize: army founds a new settlement on arrival.
     <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
       style="display:block;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
-  </div>
-  <div id="mctx-outpost-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
-    Outpost: army establishes a resource outpost on arrival.
   </div>
   <div id="mctx-explore-row" style="display:none;padding:.3rem .5rem .1rem;font-size:.75rem;color:var(--text-dim)">
     Explore: ships reveal fog-of-war and auto-return home.
@@ -700,26 +696,6 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
   ctx.restore();
 }
 
-// ── Outpost marker (small flag on a post, no building) ───────────────────
-function drawOutpost(ctx, cx, cy, p) {
-  const accent = (p.own ? '#D4AC0D' : (p.allied ? '#4CAF50' : '#C0392B'));
-  ctx.save();
-  ctx.strokeStyle = '#3A2010';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + 2);
-  ctx.lineTo(cx, cy - 7);
-  ctx.stroke();
-  ctx.fillStyle = accent;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - 7);
-  ctx.lineTo(cx + 5, cy - 4);
-  ctx.lineTo(cx, cy - 1);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
-
 // ── Deposit resource icons (Sprint 4.5) — tiny pixel markers ────────────
 function drawDepositIcons(ctx, cx, cy, tile) {
   const types = [];
@@ -972,7 +948,6 @@ let provinceData = [];
 let marchData = [];
 let messengerData = [];
 let tradeData = [];
-let outpostFlowData = [];
 let camera = { x: 0, y: 0, zoom: 1 };
 let dragging = false, lastMouse = null;
 let selectedProvince = null;
@@ -1069,24 +1044,6 @@ function render() {
     }
   }
 
-  // 2.6 Outpost flow lines — dashed gold lines from outpost to home settlement
-  if (camera.zoom >= 0.45 && outpostFlowData.length) {
-    for (const flow of outpostFlowData) {
-      const home = provinceData.find(p => p.settlement_id === flow.home_settlement_id);
-      if (!home) continue;
-      const a = hexPx(flow.q, flow.r);
-      const b = hexPx(home.q, home.r);
-      ctx.save();
-      ctx.strokeStyle = '#D4AC0D';
-      ctx.lineWidth = 0.9;
-      ctx.setLineDash([2, 3]);
-      ctx.globalAlpha = 0.5;
-      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
-    }
-  }
-
   // 3. Highlight selected hex
   if (selectedProvince) {
     const {x,y} = hexPx(selectedProvince.q, selectedProvince.r);
@@ -1121,15 +1078,11 @@ function render() {
     }
   }
 
-  // 4. Province buildings + flags (settlements and outposts)
+  // 4. Province buildings + flags
   for (const p of provinceData) {
     const {x,y} = hexPx(p.q, p.r);
-    if (p.is_outpost) {
-      drawOutpost(ctx, x, y, p);
-    } else {
-      drawProvince(ctx, x, y, p);
-    }
-    if (camera.zoom >= 0.55) drawLabel(ctx, x, y, p.is_outpost ? '⬡' : p.name, p.own);
+    drawProvince(ctx, x, y, p);
+    if (camera.zoom >= 0.55) drawLabel(ctx, x, y, p.name, p.own);
   }
 
   // 4b. Activity overlay badges (own non-outpost cities, zoom >= 0.4)
@@ -1194,13 +1147,12 @@ async function fetchAuth(url, opts = {}) {
 }
 
 async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes, flowRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`),
     fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`),
-    fetchAuth(`/api/v1/worlds/${WORLD_ID}/outpost-flows`),
   ]);
 
   if (tilesRes.ok) {
@@ -1219,9 +1171,6 @@ async function loadMap() {
   if (tradeRes.ok) {
     tradeData = await tradeRes.json();
   }
-  if (flowRes.ok) {
-    outpostFlowData = await flowRes.json();
-  }
   MusicPlayer.update();
 }
 
@@ -1234,13 +1183,12 @@ function centreCamera() {
   camera.y = canvas.height/2 - (sumY/visible.length)*SCALE;
 }
 
-// Reload provinces, marches, messengers, trades and outpost flows every 30s
+// Reload provinces, marches, messengers and trades every 30s
 setInterval(() => {
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { tradeData = d; dirty = true; }));
-  fetchAuth(`/api/v1/worlds/${WORLD_ID}/outpost-flows`).then(r => r.ok && r.json().then(d => { outpostFlowData = d; dirty = true; }));
 }, 30000);
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
@@ -1309,12 +1257,7 @@ function openInspect(marker) {
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML = '';
-  if (marker.own && marker.is_outpost) {
-    foot.innerHTML = `
-      <button id="btn-recall-outpost" style="width:100%;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;"
-        onclick="recallOutpost('${marker.id}')">Recall Outpost →</button>
-      <span id="recall-err" style="font-size:.75rem;color:var(--danger);display:block;margin-top:.2rem;"></span>`;
-  } else if (marker.own) {
+  if (marker.own) {
     const btn = document.createElement('button');
     btn.textContent = marker.is_capital ? 'Manage Province →' : 'Manage Settlement →';
     btn.style.cssText = 'display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;';
@@ -1339,21 +1282,6 @@ function openInspect(marker) {
 function closeInspect() {
   selectedProvince = null;
   document.getElementById('inspect-panel').style.display = 'none';
-}
-
-async function recallOutpost(provinceID) {
-  const btn = document.getElementById('btn-recall-outpost');
-  const err = document.getElementById('recall-err');
-  if (btn) btn.disabled = true;
-  const res = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${provinceID}/outpost`, {method:'DELETE'});
-  if (res.ok) {
-    closeInspect();
-    await loadMap();
-  } else {
-    const body = await res.json().catch(() => ({}));
-    if (err) err.textContent = body.error || 'Recall failed';
-    if (btn) btn.disabled = false;
-  }
 }
 
 function showInspect(marker) { openInspect(marker); }
@@ -1548,9 +1476,8 @@ function setMarchIntent(intent) {
   document.querySelectorAll('.mctx-ibtn').forEach(b => b.classList.remove('active'));
   document.getElementById('mctx-' + intent).classList.add('active');
   document.getElementById('mctx-colonize-row').style.display = intent === 'colonize' ? 'block' : 'none';
-  document.getElementById('mctx-outpost-row').style.display  = intent === 'outpost'  ? 'block' : 'none';
   document.getElementById('mctx-explore-row').style.display  = intent === 'explore'  ? 'block' : 'none';
-  const labels = { colonize: 'Colonize →', outpost: 'Outpost →', scout: 'Scout →', explore: 'Explore →' };
+  const labels = { colonize: 'Colonize →', scout: 'Scout →', explore: 'Explore →' };
   document.getElementById('mctx-send').textContent = labels[intent] || 'March →';
 }
 
@@ -1619,10 +1546,10 @@ async function openColonizeCtx(tile, screenX, screenY) {
   const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
   ['mctx-attack','mctx-reinforce','mctx-support'].forEach(id => { document.getElementById(id).style.display = 'none'; });
   if (isSea) {
-    ['mctx-scout','mctx-colonize','mctx-outpost'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+    ['mctx-scout','mctx-colonize'].forEach(id => { document.getElementById(id).style.display = 'none'; });
     document.getElementById('mctx-explore').style.display = '';
   } else {
-    ['mctx-scout','mctx-colonize','mctx-outpost'].forEach(id => { document.getElementById(id).style.display = ''; });
+    ['mctx-scout','mctx-colonize'].forEach(id => { document.getElementById(id).style.display = ''; });
     document.getElementById('mctx-explore').style.display = 'none';
   }
   document.getElementById('mctx-intent-row').style.display = '';
@@ -1658,9 +1585,8 @@ async function openMarchCtx(target, screenX, screenY) {
   document.getElementById('mctx-err').textContent = '';
   document.getElementById('mctx-name').textContent = target.name;
   ['mctx-attack','mctx-reinforce','mctx-support','mctx-scout'].forEach(id => { document.getElementById(id).style.display = ''; });
-  ['mctx-colonize','mctx-outpost','mctx-explore'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  ['mctx-colonize','mctx-explore'].forEach(id => { document.getElementById(id).style.display = 'none'; });
   document.getElementById('mctx-colonize-row').style.display = 'none';
-  document.getElementById('mctx-outpost-row').style.display = 'none';
   document.getElementById('mctx-intent-row').style.display = '';
   document.querySelectorAll('.mctx-ibtn').forEach(b => { b.classList.remove('active'); b.disabled = false; });
   document.getElementById('mctx-send').textContent = 'March →';
@@ -1939,15 +1865,13 @@ async function loadDrawerContent(name) {
         <button class="dtab active" data-tab="produktion">Production</button>
         <button class="dtab" data-tab="byggnader">Buildings</button>
         <button class="dtab" data-tab="garnison">Garrison</button>
-        <button class="dtab" data-tab="catchment">Catchment</button>
       </div>
       <div id="ctab-produktion" class="city-tab">
         <div class="dsec"><div class="dsec-title">Befolkning</div><div id="city-pop-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
         <div class="dsec"><div class="dsec-title">Produktion</div><div id="city-prod-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       </div>
       <div id="ctab-byggnader" class="city-tab" style="display:none"><div id="city-bld-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div id="ctab-catchment" class="city-tab" style="display:none"><div id="city-ctm-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
+      <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
 
     body.querySelectorAll('.dtab').forEach(tab => {
       tab.addEventListener('click', function() {
@@ -1962,14 +1886,12 @@ async function loadDrawerContent(name) {
     const capitalTile = tileData.find(t => t.q === capital.q && t.r === capital.r);
 
     try {
-      const [settResp, goodsResp, flowsResp] = await Promise.all([
+      const [settResp, goodsResp] = await Promise.all([
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}`),
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/goods`),
-        fetchAuth(`/api/v1/worlds/${WORLD_ID}/outpost-flows`),
       ]);
       const pd    = settResp.ok  ? (await settResp.json()).settlement : null;
       const goods = goodsResp.ok ? await goodsResp.json() : [];
-      const flows = flowsResp.ok ? await flowsResp.json() : [];
 
       // Canvas — start animated city scene.
       startCityAnim(document.getElementById('city-scene'), capitalTile,
@@ -2063,20 +1985,6 @@ async function loadDrawerContent(name) {
               <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe)">${totalDP} DP</td></tr>
             </table>`
           : '<p class="empty-state">No garrison. Recruit units in the War tab.</p>';
-      }
-
-      // ── Catchment ───────────────────────────────────────────────────────────
-      const myFlows = flows.filter(f => f.home_settlement_id === capital.settlement_id);
-      if (myFlows.length) {
-        const gnames = Object.fromEntries(goods.map(g => [g.key, g.name||g.key]));
-        document.getElementById('city-ctm-sec').innerHTML =
-          `<div class="dsec-title">Outpost flows to ${capital.name}</div>
-           <table class="goods-mini">${myFlows.map(f =>
-            `<tr><td>${gnames[f.good_key]||f.good_key}</td><td style="text-align:right;color:var(--text-dim);font-family:var(--mono)">(${f.q},${f.r})</td><td style="color:var(--safe)">+${(f.rate_per_min*1440).toFixed(1)}/day</td></tr>`
-          ).join('')}</table>`;
-      } else {
-        document.getElementById('city-ctm-sec').innerHTML =
-          '<p class="empty-state">No outpost flows. Found outposts on adjacent hexes.</p>';
       }
 
     } catch(e) { console.error('city drawer', e); }

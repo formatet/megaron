@@ -58,7 +58,6 @@ func main() {
 		loginCmd(),
 		statusCmd(),
 		mapCmd(),
-		outpostFlowsCmd(),
 		recruitCmd(),
 		disbandCmd(),
 		buildCmd(),

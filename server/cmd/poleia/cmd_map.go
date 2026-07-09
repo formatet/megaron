@@ -49,7 +49,7 @@ func mapCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "map",
-		Short: "Show nearby visible land hexes — colony/outpost candidates and ore deposits (sorted by distance)",
+		Short: "Show nearby visible land hexes — colony candidates and ore deposits (sorted by distance)",
 		Example: `  poleia map
   poleia map --radius 12`,
 		RunE: func(cmd *cobra.Command, _ []string) error {

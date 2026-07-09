@@ -240,14 +240,12 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)
 			r.Delete("/worlds/{worldID}/provinces/{provinceID}/build-queue/{queueID}", ph.CancelBuild)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
-			r.Delete("/worlds/{worldID}/provinces/{provinceID}/outpost", ph.RecallOutpost)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade", ph.TradeRoutes)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
 			r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
 
-			r.Get("/worlds/{worldID}/outpost-flows", ph.OutpostFlows)
 			r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
