@@ -81,11 +81,11 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	var u unitRow
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
-		        status, q, r, target_q, target_r, stance, march_intent, colony_name
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName); err != nil {
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -118,6 +118,24 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 				slog.Warn("FOW sweep insert failed", "unit", unitID, "q", tile.Q, "r", tile.R, "err", insErr)
 			}
 		}
+	}
+
+	// Explore intent: the unit reaches its target and immediately turns for
+	// home — it never garrisons or fights there (temenos_todo.md "Explore-order
+	// auto-retur"). The FOW sweep above already revealed and permanently
+	// recorded the route (including this hex), so the only remaining step is
+	// to dispatch the return leg.
+	if u.marchIntent != nil && *u.marchIntent == "explore" {
+		return h.exploreArrived(ctx, tx, u, destQ, destR, worldID)
+	}
+
+	// Explore-return intent: the unit is back at its home settlement's
+	// departure hex. Re-garrison it directly via the known home_settlement_id —
+	// bypassing the normal hex→settlement lookup below, which fails for a
+	// naval unit resting at the sea hex adjacent to a coastal settlement (that
+	// hex has no settlement row of its own).
+	if u.marchIntent != nil && *u.marchIntent == "explore_return" {
+		return h.exploreReturned(ctx, tx, u, destQ, destR, worldID)
 	}
 
 	// Find settlement at destination (if any).
@@ -231,6 +249,179 @@ func (h *UnitArrivalHandler) arriveGarrison(
 	}
 
 	slog.Info("unit arrived (garrison)", "unit", u.id, "q", destQ, "r", destR, "status", newStatus)
+	return nil
+}
+
+// exploreArrived handles a unit reaching its explore target: instead of
+// garrisoning or fighting, it immediately turns back toward the settlement it
+// departed from (captured at dispatch as home_settlement_id, since the normal
+// march dispatch nulls settlement_id). The outbound fog sweep already ran at
+// the top of resolve(); the return leg's own arrival sweeps the way home.
+func (h *UnitArrivalHandler) exploreArrived(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if u.homeSettlementID == nil {
+		// Defensive: dispatch validated the unit had a home settlement, but
+		// never strand a unit with nothing to return to.
+		slog.Warn("explore arrival: unit has no home_settlement_id, garrisoning in place instead of returning", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+
+	// Resolve the return target hex the same way March dispatch resolves a
+	// departure hex: the home settlement's own province hex for land units,
+	// or its nearest sea neighbour for naval units (a ship can never legally
+	// occupy the settlement's land hex — see unit.go March's origin comment).
+	var homeQ, homeR int
+	if err := tx.QueryRow(ctx,
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+		*u.homeSettlementID,
+	).Scan(&homeQ, &homeR); err != nil {
+		return fmt.Errorf("exploreArrived: load home settlement province: %w", err)
+	}
+	if u.category == "naval" {
+		if seaQ, seaR, found, seaErr := province.NearestSeaNeighbor(ctx, tx, worldID, homeQ, homeR); seaErr != nil {
+			return fmt.Errorf("exploreArrived: resolve naval return hex: %w", seaErr)
+		} else if found {
+			homeQ, homeR = seaQ, seaR
+		} else {
+			slog.Warn("explore return: home settlement has no adjacent sea hex, using its land hex", "unit", u.id, "settlement", *u.homeSettlementID)
+		}
+	}
+
+	// Route home via A* — the same passability graph the outbound leg proved.
+	_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+		province.MapPosition{Q: destQ, R: destR},
+		province.MapPosition{Q: homeQ, R: homeR},
+		u.category,
+	)
+	var moveHours float64
+	if pathErr == nil && pathOK {
+		moveHours = pathHours
+	} else {
+		// Defensive fallback: the outbound march already proved passability
+		// between these regions, so this should not happen.
+		slog.Warn("explore return: FindPath failed, falling back to straight line", "unit", u.id, "err", pathErr)
+		dist := province.HexDistance(province.MapPosition{Q: destQ, R: destR}, province.MapPosition{Q: homeQ, R: homeR})
+		if dist < 1 {
+			dist = 1
+		}
+		var destTerrain string
+		_ = tx.QueryRow(ctx,
+			`SELECT terrain_type FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
+			worldID, destQ, destR,
+		).Scan(&destTerrain)
+		if destTerrain == "" {
+			destTerrain = "plains"
+		}
+		moveHours = province.TerrainMoveHours(destTerrain) * float64(dist)
+	}
+	arrivesAt := h.clk.Now().Add(time.Duration(moveHours * float64(time.Hour)))
+
+	var currentTick int
+	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	travelTicks := int(math.Round(moveHours))
+	if travelTicks < 1 {
+		travelTicks = 1
+	}
+
+	returnIntent := "explore_return"
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status        = 'marching',
+		   q             = $2,
+		   r             = $3,
+		   target_q      = $4,
+		   target_r      = $5,
+		   departs_at    = now(),
+		   arrives_at    = $6,
+		   settlement_id = NULL,
+		   march_intent  = $7,
+		   updated_at    = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR, homeQ, homeR, arrivesAt, returnIntent,
+	); err != nil {
+		return fmt.Errorf("exploreArrived: dispatch return march: %w", err)
+	}
+
+	if h.scheduler == nil {
+		return fmt.Errorf("exploreArrived: no scheduler configured, cannot dispatch return leg")
+	}
+	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
+		return fmt.Errorf("exploreArrived: schedule return arrival: %w", err)
+	}
+
+	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitExploreReturned,
+		unit.UnitExploreReturnedPayload{
+			UnitID:           u.id,
+			Q:                destQ,
+			R:                destR,
+			HomeSettlementID: *u.homeSettlementID,
+			ArrivesAt:        arrivesAt.Format(time.RFC3339),
+		}, worldID, nil)
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitExploreReturned", 5, map[string]any{
+			"unit_id":    u.id,
+			"q":          destQ,
+			"r":          destR,
+			"arrives_at": arrivesAt,
+		})
+	}
+
+	slog.Info("unit reached explore target, turning for home", "unit", u.id, "q", destQ, "r", destR, "home_q", homeQ, "home_r", homeR)
+	return nil
+}
+
+// exploreReturned re-garrisons a unit that finished the explore-order's
+// return leg. It forces settlement_id = home_settlement_id directly instead
+// of looking up a settlement by (destQ, destR): a naval unit's return target
+// is the sea hex adjacent to its home settlement (see exploreArrived above),
+// which has no settlement row of its own, so the normal hex→settlement lookup
+// would leave it 'positioned' at sea instead of back in garrison.
+func (h *UnitArrivalHandler) exploreReturned(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if u.homeSettlementID == nil {
+		// Defensive: should not happen — dispatch always sets it for explore.
+		slog.Warn("explore return arrival: unit has no home_settlement_id, garrisoning in place instead", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status             = 'garrison',
+		   q                  = $2,
+		   r                  = $3,
+		   settlement_id      = $4,
+		   home_settlement_id = NULL,
+		   target_q           = NULL,
+		   target_r           = NULL,
+		   departs_at         = NULL,
+		   arrives_at         = NULL,
+		   march_intent       = NULL,
+		   updated_at         = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR, *u.homeSettlementID,
+	); err != nil {
+		return fmt.Errorf("exploreReturned: re-garrison: %w", err)
+	}
+
+	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
+		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "garrison"}, worldID, nil)
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+			"unit_id": u.id,
+			"q":       destQ,
+			"r":       destR,
+			"status":  "garrison",
+		})
+	}
+
+	slog.Info("unit returned home from explore", "unit", u.id, "settlement", *u.homeSettlementID)
 	return nil
 }
 
@@ -923,8 +1114,9 @@ type unitRow struct {
 	targetQ     *int
 	targetR     *int
 	stance      *string // C5: fortify/storm/sentry or nil
-	marchIntent *string // "colonize" or nil (plain march)
+	marchIntent *string // "colonize" | "explore" | "explore_return" | nil (plain march)
 	colonyName  *string // chosen colony name or nil
+	homeSettlementID *uuid.UUID // set for "explore"/"explore_return"; the settlement to return to
 }
 
 type destSettlement struct {

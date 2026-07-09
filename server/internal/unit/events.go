@@ -25,6 +25,7 @@ const (
 	EventUnitStanceChanged  = "UnitStanceChanged"   // unit stance updated (C5)
 	EventUnitMarchRecalled   = "MarchRecalled"      // recall messenger reached a marching unit; it turned home
 	EventUnitMarchRedirected = "MarchRedirected"    // redirect messenger reached a marching unit; new course set
+	EventUnitExploreReturned = "UnitExploreReturned" // explore order reached its target; unit turned for home
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -173,6 +174,16 @@ type MarchRedirectedPayload struct {
 	NewTargetQ int       `json:"new_target_q"`
 	NewTargetR int       `json:"new_target_r"`
 	ArrivesAt  string    `json:"arrives_at"` // RFC3339
+}
+
+// UnitExploreReturnedPayload is emitted when an explore-ordered unit reaches
+// its target and turns for home. ArrivesAt is the return leg's ETA.
+type UnitExploreReturnedPayload struct {
+	UnitID           uuid.UUID `json:"unit_id"`
+	Q                int       `json:"q"`
+	R                int       `json:"r"`
+	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
+	ArrivesAt        string    `json:"arrives_at"` // RFC3339
 }
 
 // CityCollapsedPayload is emitted when a settlement's population reaches ≤ 100

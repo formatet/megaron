@@ -118,6 +118,15 @@ func locationStr(u unitRow) string {
 		if u.MarchIntent != nil && *u.MarchIntent == "colonize" && u.ColonyName != nil && *u.ColonyName != "" {
 			loc = fmt.Sprintf("founding %q (pending) — ", *u.ColonyName)
 		}
+		// Explore order: exploring the target, then automatically turns for
+		// home (explore_return) — no recall needed, spell that out so it isn't
+		// mistaken for a stranded unit.
+		if u.MarchIntent != nil && *u.MarchIntent == "explore" {
+			loc = "exploring (auto-returns home) — "
+		}
+		if u.MarchIntent != nil && *u.MarchIntent == "explore_return" {
+			loc = "returning home from explore — "
+		}
 		if u.Q != nil && u.R != nil {
 			loc += fmt.Sprintf("(%d,%d)→", *u.Q, *u.R)
 		}
@@ -168,13 +177,17 @@ Terrain passability:
 A land unit must reach 100 men (garrison status) before it can march.
 A unit in fortify stance must be cleared (stance none) before marching.
 
-Exploring: marching into fog or unknown territory is fully allowed — the
+Exploring: any march into fog or unknown territory reveals the route it
+sweeps (dimmed on 'poleia map' thereafter) once the unit arrives — the
 server does not FOW-gate the destination, only the route (A* over known
-terrain). Sending a unit into the fog frontier IS how you explore: the
-route it sweeps is revealed and remembered (dimmed on 'poleia map'
-thereafter) once the unit arrives. Run 'poleia map' first to see the
-frontier coordinates (fog tiles bordering what you already know) — march
-a unit there to push the frontier outward.
+terrain). Run 'poleia map' first to see the frontier coordinates (fog
+tiles bordering what you already know).
+
+--intent explore sends the unit there AND automatically marches it back
+home afterwards — no recall needed. The unit must currently be garrisoned
+at a settlement (it needs a home to return to). Works for land or naval
+units; its main use is sending a ship out to sweep fog and sail home on
+its own.
 
 Ore on mountain terrain (copper, tin, silver):
   Mountains are impassable — you cannot colonize the mountain hex itself.
@@ -186,8 +199,10 @@ Ore on mountain terrain (copper, tin, silver):
   poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
   # Colonize the hex the unit already stands on (no coords needed):
   poleia unit march --unit <id> --intent colonize --name Thapsos
-  # Explore: march toward a frontier coordinate from 'poleia map' to reveal it
-  poleia unit march --unit <id> --q 12 --r -8`,
+  # Any march reveals fog along its route toward a frontier coordinate:
+  poleia unit march --unit <id> --q 12 --r -8
+  # Explore: sails/marches to the target then automatically returns home
+  poleia unit march --unit <id> --q 12 --r -8 --intent explore`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			qSet, rSet := cmd.Flags().Changed("q"), cmd.Flags().Changed("r")
@@ -231,12 +246,17 @@ Ore on mountain terrain (copper, tin, silver):
 			verb := "marching to"
 			if intent == "colonize" {
 				verb = "colonizing"
+			} else if intent == "explore" {
+				verb = "exploring"
 			}
 			fmt.Printf("Unit %s %s (%d,%d)", unitID[:8], verb, targetQ, targetR)
 			if arrivesAt != "" {
 				if t, err := time.Parse(time.RFC3339, arrivesAt); err == nil {
 					fmt.Printf(" — arrives %s", t.Local().Format("15:04 Jan 2"))
 				}
+			}
+			if intent == "explore" {
+				fmt.Print(" — it will sail/march home automatically once it arrives")
 			}
 			fmt.Println()
 			return nil
@@ -247,7 +267,7 @@ Ore on mountain terrain (copper, tin, silver):
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q (required, unless colonizing in place)")
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R (required, unless colonizing in place)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on)")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd

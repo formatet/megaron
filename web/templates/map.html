@@ -1492,7 +1492,7 @@ async function openMarchCtx(dest, screenX, screenY) {
   document.getElementById('mctx-name').textContent = dest.name;
 
   let hint;
-  if (dest.isSea)             hint = 'Order galleys here — they reveal fog-of-war as they sail. Recall them from the War drawer to sail home.';
+  if (dest.isSea)             hint = 'Order galleys here — they reveal fog-of-war and sail home on their own.';
   else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here to attack on arrival.';
   else                        hint = 'March land units to this hex, or found a new settlement here.';
   document.getElementById('mctx-hint').textContent = hint;
@@ -1595,6 +1595,9 @@ async function sendMarch() {
     const body = { target_q: marchCtxDest.q, target_r: marchCtxDest.r };
     if (stance)   body.stance = stance;
     if (colonize) { body.intent = 'colonize'; if (colonyName) body.name = colonyName; }
+    // Sea destinations are explore orders: the ship sweeps fog at the target
+    // then sails home automatically — no separate recall needed.
+    if (marchCtxDest.isSea) body.intent = 'explore';
     return fetchAuth(`/api/v1/worlds/${WORLD_ID}/units/${uid}/march`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     }).then(async res => ({ ok: res.ok, err: res.ok ? '' : (((await res.json().catch(() => ({}))).error) || 'March failed') }));

@@ -205,11 +205,20 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Colonize intent: validate up front so the agent gets an actionable error
-	// instead of a silent return-home at arrival. Only "colonize" is supported.
-	if req.Intent != "" && req.Intent != "colonize" {
+	// Intent validation: colonize and explore are the only supported intents.
+	// Validate up front so the agent gets an actionable error instead of a
+	// silent return-home at arrival.
+	if req.Intent != "" && req.Intent != "colonize" && req.Intent != "explore" {
 		writeError(w, http.StatusBadRequest,
-			fmt.Sprintf("unknown march intent %q (only \"colonize\" is supported)", req.Intent))
+			fmt.Sprintf("unknown march intent %q (must be \"colonize\" or \"explore\")", req.Intent))
+		return
+	}
+	// Explore: the unit marches to the target and returns home automatically —
+	// it needs a home to return to, so it must currently be garrisoned at a
+	// settlement (not already field-positioned).
+	if req.Intent == "explore" && u.SettlementID == nil {
+		writeError(w, http.StatusUnprocessableEntity,
+			"explore requires a unit currently garrisoned at a settlement (it needs a home to return to)")
 		return
 	}
 	if req.Intent == "colonize" {
@@ -342,11 +351,18 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 
 	// Colonize intent + optional name ride along on the unit so the arrival
 	// handler can found a colony. NULL intent = plain march (cleared each dispatch).
+	// Explore intent captures the unit's home settlement (about to be nulled
+	// below) so the arrival handler can dispatch the return leg — see
+	// combat.UnitArrivalHandler.exploreArrived.
 	var intentArg, nameArg *string
-	if req.Intent == "colonize" {
+	var homeSettlementArg *uuid.UUID
+	if req.Intent != "" {
 		intentArg = &req.Intent
-		if req.Name != "" {
+		if req.Intent == "colonize" && req.Name != "" {
 			nameArg = &req.Name
+		}
+		if req.Intent == "explore" {
+			homeSettlementArg = u.SettlementID
 		}
 	}
 
@@ -363,9 +379,10 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		   stance       = COALESCE($8, stance),
 		   march_intent = $9,
 		   colony_name  = $10,
+		   home_settlement_id = $11,
 		   updated_at   = now()
 		 WHERE id = $1`,
-		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg, intentArg, nameArg,
+		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not update unit")
 		return
