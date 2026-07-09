@@ -22,9 +22,6 @@ import (
 // thresholds below are STRAWMAN — balance is calibrated later
 // (temenos_balans_spakar.md §9). See megaron_kharis_plan.md FAS 0.
 const (
-	// decayOnMissed: 10% kharis lost when maintenance missed. Superseded by dailyDecay
-	// (FAS 2) as the sole depreciation source once that lands — kept only until then.
-	decayOnMissed     = 0.10
 	punishThreshold   = 30.0 // kharis below this risks divine punishment (was 100/2000)
 	punishProbability = 0.30 // 30% chance of divine punishment per missed day below threshold
 	blessThreshold    = 60.0 // kharis above this may attract divine favour (was 200/2000)
@@ -36,6 +33,28 @@ const (
 // of cap from typical cult production, so the new rate targets the same ~0.8/day of a
 // 0–100 pool. Tunbar — calibrated in W8.
 const kharisPerCult = 0.0005
+
+// FAS 2 — natural depreciation + imperie-belastning (Timothy 2026-07-09 kharis
+// omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2/3): kharis now decays a
+// little EVERY day, whether or not the temple was maintained — "pegged forever"
+// is no longer possible. dailyDecay = decayBas + decayPerKoloni × colonies
+// without their own temple beyond decayFreeColonies free ones: a Wanax who
+// expands without building temples in the new colonies pays for it; a temple
+// (any offer/cult activity is irrelevant here — presence of the building alone
+// suffices) in a colony zeroes that colony's contribution. All strawman —
+// temenos_balans_spakar.md §9.
+const (
+	decayBas          = 4.0 // base daily decay, applies even with zero colonies
+	decayPerKoloni    = 1.0 // extra daily decay per templeless colony beyond decayFreeColonies
+	decayFreeColonies = 4   // this many templeless colonies cost nothing extra
+)
+
+// kharisFloor is the "heligt golv" the kharis METER itself never crosses below —
+// distinct from riteFloor (api/handlers/settlement.go), which is the rite SUCCESS
+// floor. Design text: "kharis_amount ∈ [0, 100] ... aldrig exakt 0 — gudarna
+// lyssnar alltid ibland." No exact number is given in the design docs; 1.0 is a
+// strawman pick, easy to retune — temenos_balans_spakar.md §9.
+const kharisFloor = 1.0
 
 // grainPerCitizen is the grain cost of one new citizen at the daily growth
 // tick — makes growth a real economic draw on grain instead of a binary gate.
@@ -88,11 +107,12 @@ func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.S
 // Kharis lives on player_world_records; cultSum aggregates cult good across all
 // of the player's settlements in this world.
 type wanaxSnap struct {
-	playerID     uuid.UUID
-	settlementID uuid.UUID // capital settlement (for event emission and divine effects)
-	kharis       float64
-	kharisCap    float64
-	cultSum      float64
+	playerID           uuid.UUID
+	settlementID       uuid.UUID // capital settlement (for event emission and divine effects)
+	kharis             float64
+	kharisCap          float64
+	cultSum            float64
+	templelessColonies int // FAS 2: non-capital settlements with no temple building
 }
 
 // Handle processes a KharisTick scheduled event.
@@ -107,7 +127,17 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		        FROM settlement_goods sg
 		        JOIN settlements s2 ON s2.id = sg.settlement_id
 		        WHERE s2.owner_id = pwr.player_id AND s2.world_id = pwr.world_id AND sg.good_key = 'cult'
-		    ), 0) AS cult_sum
+		    ), 0) AS cult_sum,
+		    COALESCE((
+		        SELECT COUNT(*)
+		        FROM settlements s3
+		        WHERE s3.owner_id = pwr.player_id AND s3.world_id = pwr.world_id
+		          AND s3.is_capital = false AND s3.state NOT IN ('sunk', 'collapsed')
+		          AND NOT EXISTS (
+		              SELECT 1 FROM buildings b
+		              WHERE b.settlement_id = s3.id AND b.building_type = 'temple'
+		          )
+		    ), 0) AS templeless_colonies
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 WHERE pwr.world_id = $1`,
@@ -122,7 +152,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	for rows.Next() {
 		var w wanaxSnap
 		if err := rows.Scan(&w.playerID, &w.settlementID,
-			&w.kharis, &w.kharisCap, &w.cultSum); err == nil {
+			&w.kharis, &w.kharisCap, &w.cultSum, &w.templelessColonies); err == nil {
 			snaps = append(snaps, w)
 		}
 	}
@@ -162,24 +192,58 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		struct{}{}, e.DueTick+events.TicksPerDay)
 }
 
+// computeDailyDecay is the FAS 2 imperie-belastning formula: dailyDecay =
+// decayBas + decayPerKoloni × colonies without their own temple beyond
+// decayFreeColonies free ones. Pure function — unit-testable without a DB.
+func computeDailyDecay(templelessColonies int) float64 {
+	over := templelessColonies - decayFreeColonies
+	if over < 0 {
+		over = 0
+	}
+	return decayBas + decayPerKoloni*float64(over)
+}
+
+// clampKharis bounds newKharis to [kharisFloor, cap] — the "heligt golv" (never
+// exactly 0) and the Wanax's kharis_cap (100 by default post-FAS-0 migration).
+func clampKharis(newKharis, cap float64) float64 {
+	if newKharis < kharisFloor {
+		return kharisFloor
+	}
+	if newKharis > cap {
+		return cap
+	}
+	return newKharis
+}
+
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {
-	var newKharis float64
+	// FAS 2 (Timothy 2026-07-09 kharis omdesign): dailyDecay now applies EVERY
+	// day, maintained or not — "Kharis sjunker alltid" — replacing the old
+	// missed-day-only multiplicative decay (was 10%/day, decayOnMissed, retired
+	// in this FAS). gain (from cult production) is the only term that differs
+	// between the two branches below;
+	// bless/punish eligibility still follows the maintained/missed split
+	// (temenos_balans_spakar.md §9: bless only on a maintained day, punish only
+	// on a missed one) even though the arithmetic is now unified.
+	maintained := w.cultSum > 0
+	var gain float64
+	if maintained {
+		gain = w.cultSum * kharisPerCult
+	}
+	dailyDecay := computeDailyDecay(w.templelessColonies)
+	newKharis := clampKharis(w.kharis+gain-dailyDecay, w.kharisCap)
 
-	if w.cultSum > 0 {
-		gain := w.cultSum * kharisPerCult
+	// 1. Write the netted kharis value.
+	if _, err := h.pool.Exec(ctx,
+		`UPDATE player_world_records SET
+		   kharis_amount    = $1,
+		   kharis_calc_tick = current_world_tick()
+		 WHERE player_id = $2 AND world_id = $3`,
+		newKharis, w.playerID, worldID,
+	); err != nil {
+		return fmt.Errorf("update kharis: %w", err)
+	}
 
-		// 1. Add kharis (capped).
-		if _, err := h.pool.Exec(ctx,
-			`UPDATE player_world_records SET
-			   kharis_amount  = LEAST(kharis_cap,
-			       settled(kharis_amount, kharis_rate, kharis_calc_tick) + $1),
-			   kharis_calc_tick = current_world_tick()
-			 WHERE player_id = $2 AND world_id = $3`,
-			gain, w.playerID, worldID,
-		); err != nil {
-			return fmt.Errorf("update kharis after cult maintenance: %w", err)
-		}
-
+	if maintained {
 		// 2. Consume cult across all player's settlements (zero it out).
 		if _, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods sg SET
@@ -196,31 +260,30 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 
 		// 3. Event + divine effects.
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
-			map[string]any{"cult_consumed": w.cultSum, "kharis_gain": gain},
+			map[string]any{
+				"cult_consumed":       w.cultSum,
+				"kharis_gain":         gain,
+				"daily_decay":         dailyDecay,
+				"net":                 gain - dailyDecay,
+				"templeless_colonies": w.templelessColonies,
+			},
 			worldID, nil)
-		newKharis = w.kharis + gain
-		if newKharis > blessThreshold && rand.Float64() < blessProbability {
+		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
 			h.applyDivineBlessing(ctx, w.settlementID, worldID)
 		}
 		if rand.Float64() < 0.20 {
 			h.generateOmen(ctx, w.settlementID, worldID)
 		}
 	} else {
-		// No temple production — kharis decays.
-		if _, err := h.pool.Exec(ctx,
-			`UPDATE player_world_records SET
-			   kharis_amount  = GREATEST(0,
-			       settled(kharis_amount, kharis_rate, kharis_calc_tick) * $1),
-			   kharis_calc_tick = current_world_tick()
-			 WHERE player_id = $2 AND world_id = $3`,
-			1.0-decayOnMissed, w.playerID, worldID,
-		); err != nil {
-			return fmt.Errorf("kharis decay (no cult production): %w", err)
-		}
+		// No temple production this day — dailyDecay above is the only kharis
+		// change (gain=0). Punish roll only fires on this (missed) branch.
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
-			map[string]any{"reason": "no_cult_production", "decay_fraction": decayOnMissed},
+			map[string]any{
+				"reason":              "no_cult_production",
+				"daily_decay":         dailyDecay,
+				"templeless_colonies": w.templelessColonies,
+			},
 			worldID, nil)
-		newKharis = w.kharis * (1.0 - decayOnMissed)
 		if newKharis < punishThreshold && rand.Float64() < punishProbability {
 			h.applyDivinePunishment(ctx, w.settlementID, worldID)
 		}
