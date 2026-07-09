@@ -57,12 +57,12 @@ func unitListCmd() *cobra.Command {
 				fmt.Println("No units.")
 				return nil
 			}
-			fmt.Printf("%-36s  %-16s  %-8s  %-10s  %-9s  %s\n",
-				"ID", "Type", "Size", "Status", "Stance", "Location / ETA")
-			fmt.Println(strings.Repeat("─", 110))
+			fmt.Printf("%-36s  %-16s  %-14s  %-8s  %-10s  %-9s  %s\n",
+				"ID", "Type", "Name", "Size", "Status", "Stance", "Location / ETA")
+			fmt.Println(strings.Repeat("─", 125))
 			for _, u := range resp.Units {
-				fmt.Printf("%-36s  %-16s  %-8s  %-10s  %-9s  %s\n",
-					u.ID, unitDisplayName(u.Type), formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
+				fmt.Printf("%-36s  %-16s  %-14s  %-8s  %-10s  %-9s  %s\n",
+					u.ID, unitDisplayName(u.Type), shipNameStr(u.Name), formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
 			}
 			return nil
 		},
@@ -70,26 +70,37 @@ func unitListCmd() *cobra.Command {
 }
 
 type unitRow struct {
-	ID           string     `json:"id"`
-	Type         string     `json:"type"`
-	Category     string     `json:"category"`
-	Size         int        `json:"size"`
-	Crew         int        `json:"crew"`
-	Status       string     `json:"status"`
-	Stance       *string    `json:"stance"`
-	SettlementID *string    `json:"settlement_id"`
-	Q            *int       `json:"q"`
-	R            *int       `json:"r"`
-	TargetQ      *int       `json:"target_q"`
-	TargetR      *int       `json:"target_r"`
-	ArrivesAt    *time.Time `json:"arrives_at"`
-	CargoUnitID  *string    `json:"cargo_unit_id"`
-	MarchIntent  *string    `json:"march_intent"`
-	ColonyName   *string    `json:"colony_name"`
+	ID              string     `json:"id"`
+	Type            string     `json:"type"`
+	Category        string     `json:"category"`
+	Size            int        `json:"size"`
+	Crew            int        `json:"crew"`
+	Status          string     `json:"status"`
+	Name            *string    `json:"name"`
+	BuildCompleteAt *time.Time `json:"build_complete_at"`
+	Stance          *string    `json:"stance"`
+	SettlementID    *string    `json:"settlement_id"`
+	Q               *int       `json:"q"`
+	R               *int       `json:"r"`
+	TargetQ         *int       `json:"target_q"`
+	TargetR         *int       `json:"target_r"`
+	ArrivesAt       *time.Time `json:"arrives_at"`
+	CargoUnitID     *string    `json:"cargo_unit_id"`
+	MarchIntent     *string    `json:"march_intent"`
+	ColonyName      *string    `json:"colony_name"`
 }
 
 func formatSize(u unitRow) string {
 	if u.Status == "forming" {
+		if u.Category == "naval" {
+			// A ship builds as one vessel with a fixed build time (ship-build
+			// overhaul 2026-07-09) — not size-based like land, so show the ETA.
+			eta := "unknown"
+			if u.BuildCompleteAt != nil {
+				eta = u.BuildCompleteAt.Local().Format("15:04 Jan 2")
+			}
+			return fmt.Sprintf("building (crew %d) — ready %s", u.Crew, eta)
+		}
 		// A land unit auto-deploys (forming → garrison) the moment its size reaches
 		// 100 men; you grow it by recruiting more of the same type into the same
 		// settlement. Spell that out so the unit isn't left stuck at e.g. 40/100.
@@ -100,6 +111,13 @@ func formatSize(u unitRow) string {
 		return fmt.Sprintf("1 vessel (crew %d)", u.Crew)
 	}
 	return fmt.Sprintf("%d men", u.Size)
+}
+
+func shipNameStr(name *string) string {
+	if name == nil || *name == "" {
+		return "—"
+	}
+	return *name
 }
 
 func stanceStr(s *string) string {

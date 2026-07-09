@@ -40,9 +40,14 @@ func NewTrainCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub B
 // unit has reached 100 men and flip it to garrison status. We also write the
 // old integer army column (dual-write) so legacy combat/display continues to work.
 //
+// Naval (ship-build overhaul 2026-07-09): each vessel schedules exactly one
+// TrainComplete (its build time, not a per-10-crew batch); this handler flips
+// it forming→garrison unconditionally (no size threshold — naval size is
+// always 1) and clears build_complete_at.
+//
 // Legacy path (p.UnitID zero): behaves as before — increments the column by Count.
 //
-// Idempotent: the units UPDATE uses a conditional status check so re-running
+// Idempotent: the units UPDATEs use a conditional status check so re-running
 // a completed batch is a safe no-op.
 func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var p TrainCompletePayload
@@ -78,7 +83,20 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			}
 		}
 	}
-	// Naval: already set to garrison at creation time; nothing to flip.
+	// Naval (ship-build overhaul 2026-07-09): a vessel is created in
+	// 'forming' status with build_complete_at set to this event's due time —
+	// one TrainComplete fires per vessel (build time), not per 10-crew batch
+	// like land. Flip forming→garrison and clear the ETA. Idempotent: only
+	// flips if still forming, same guard as the land path.
+	if unitNotZero && isNaval {
+		if _, flipErr := h.pool.Exec(ctx,
+			`UPDATE units SET status = 'garrison', build_complete_at = NULL, updated_at = now()
+			 WHERE id = $1 AND status = 'forming'`,
+			p.UnitID,
+		); flipErr != nil {
+			slog.Warn("naval forming→garrison flip failed", "unit", p.UnitID, "err", flipErr)
+		}
+	}
 
 	// Recompute production: labor rates may depend on population (already deducted at recruit).
 	if err := economy.RecomputeProduction(ctx, h.pool, p.SettlementID); err != nil {

@@ -1115,6 +1115,10 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, "priests cannot take a stance")
 		return
 	}
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+		writeError(w, http.StatusUnprocessableEntity, "naval units cannot take a stance")
+		return
+	}
 	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
 		writeError(w, http.StatusUnprocessableEntity,
 			fmt.Sprintf("unit cannot change stance while %s (must be garrison or positioned)", string(u.Status)))
@@ -1255,6 +1259,13 @@ type unitSummary struct {
 	// (per-batch training time) as a deploy time and getting stuck.
 	Deployable  bool `json:"deployable"`
 	MenToDeploy int  `json:"men_to_deploy,omitempty"`
+	// Name is the ship's name (Wanax-chosen or suggested at recruit time);
+	// nil for land units (ship-build overhaul 2026-07-09).
+	Name *string `json:"name,omitempty"`
+	// BuildCompleteAt is the ETA for a still-forming naval unit; nil once
+	// garrisoned, and always nil for land units (whose "forming" is
+	// size-based, not time-based).
+	BuildCompleteAt *time.Time `json:"build_complete_at,omitempty"`
 	Stance       *string    `json:"stance,omitempty"`
 	SettlementID *uuid.UUID `json:"settlement_id,omitempty"`
 	Q            *int       `json:"q,omitempty"`
@@ -1283,23 +1294,27 @@ func unitSummaries(us []*unit.Unit) []unitSummary {
 			stance = &s
 		}
 		// A land unit is deployable once it is no longer "forming" (it auto-flips to
-		// garrison at 100 men). Naval units are deployable from creation. men_to_deploy
-		// tells a forming land unit exactly how many more men to recruit.
+		// garrison at 100 men). A naval unit is deployable once its build completes
+		// (also "forming" until then, ship-build overhaul 2026-07-09) — men_to_deploy
+		// only makes sense for land (size-based); naval forming shows build_complete_at
+		// instead.
 		deployable := u.Status != "forming"
 		menToDeploy := 0
-		if u.Status == "forming" {
+		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size
 		}
 		out = append(out, unitSummary{
-			ID:           u.ID,
-			Type:         string(u.Type),
-			Category:     string(u.Category),
-			Size:         u.Size,
-			Crew:         u.Crew,
-			Status:       string(u.Status),
-			Deployable:   deployable,
-			MenToDeploy:  menToDeploy,
-			Stance:       stance,
+			ID:              u.ID,
+			Type:            string(u.Type),
+			Category:        string(u.Category),
+			Size:            u.Size,
+			Crew:            u.Crew,
+			Status:          string(u.Status),
+			Deployable:      deployable,
+			MenToDeploy:     menToDeploy,
+			Name:            u.Name,
+			BuildCompleteAt: u.BuildCompleteAt,
+			Stance:          stance,
 			SettlementID: u.SettlementID,
 			Q:            u.Q,
 			R:            u.R,

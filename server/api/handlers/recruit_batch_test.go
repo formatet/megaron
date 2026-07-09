@@ -115,22 +115,25 @@ func TestRecruitBatch_CostsScaleWithCount(t *testing.T) {
 }
 
 // TestRecruitBatch_TrainingQueueCapCountsAllVessels verifies the pending-batch
-// cap check must account for every vessel's own TrainComplete batches, not
-// just one — otherwise a large --count could blow past the 10-pending cap
-// undetected.
+// cap check must account for every vessel's own TrainComplete, not just one —
+// otherwise a large --count could blow past the 10-pending cap undetected.
+//
+// Ship-build overhaul (2026-07-09): a naval build schedules exactly ONE
+// TrainComplete per vessel (its build time), regardless of crew size — not
+// one per 10 crew like land. So totalBatches for naval is simply the vessel
+// count.
 func TestRecruitBatch_TrainingQueueCapCountsAllVessels(t *testing.T) {
-	men := 20 // ship crew → batches = 2 (20/10)
-	batchesPerUnit := men / 10
-	count := 6
-	totalBatches := batchesPerUnit * count
+	const batchesPerVessel = 1
+	count := 11 // over the 10-pending cap on its own
+	totalBatches := batchesPerVessel * count
 
-	if totalBatches != 12 {
-		t.Fatalf("totalBatches = %d, want 12 (2 batches × 6 vessels)", totalBatches)
+	if totalBatches != 11 {
+		t.Fatalf("totalBatches = %d, want 11 (1 batch × 11 vessels)", totalBatches)
 	}
 
 	pending := 0
 	if pending+totalBatches <= 10 {
-		t.Error("6 ships at 20 crew each should overflow the 10-pending training queue cap, but check passed")
+		t.Error("11 ships should overflow the 10-pending training queue cap, but check passed")
 	}
 }
 
@@ -141,8 +144,9 @@ func TestRecruitBatch_TrainingQueueCapCountsAllVessels(t *testing.T) {
 // forming land-unit (crew 0, never garrison) for the standard galley — TrainComplete's
 // isNaval check then skipped the forming→garrison flip, stranding it forever. "ship"
 // must now resolve to the naval galley (crew 20). Full rename→galley = D-stream/SB7.
-// NOTE: the separate size-semantics bug (size set to req.Men, not 1, for ALL naval
-// types) is still open and owned by Timothy (#7 naval flottdesign).
+// The separate size-semantics bug (size set to req.Men, not 1, for naval types) was
+// fixed by the ship-build overhaul (2026-07-09): naval size is now always 1 — see
+// TestRecruitShip_NavalBuildsOneForming{Vessel,Unit} in recruit_ship_test.go.
 func TestRecruitBatch_ShipResolvesToNavalGalley(t *testing.T) {
 	if got := unit.CategoryOf(unit.Type("ship")); got != unit.CategoryNaval {
 		t.Errorf(`unit.CategoryOf("ship") = %s, want naval`, got)

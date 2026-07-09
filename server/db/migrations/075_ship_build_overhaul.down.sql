@@ -1,0 +1,2 @@
+ALTER TABLE units DROP COLUMN IF EXISTS build_complete_at;
+ALTER TABLE units DROP COLUMN IF EXISTS name;

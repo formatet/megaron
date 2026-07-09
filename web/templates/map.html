@@ -1214,7 +1214,17 @@ function centreCamera() {
 }
 
 // Reload provinces, marches, messengers and trades every 30s
+// Refetch the fog-of-war map (tileData) WITHOUT recentring the camera. Fog
+// changes — a scout/explore revealing new tiles, a unit's live vision moving —
+// only land here, so this must run on the poll (and after unit arrivals);
+// otherwise the canvas keeps the fog it had at page load and exploration looks
+// like it did nothing.
+function refreshTiles() {
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/map`).then(r => r.ok && r.json().then(d => { tileData = d; dirty = true; }));
+}
+
 setInterval(() => {
+  refreshTiles();
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { provinceData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { marchData = d; dirty = true; MusicPlayer.update(); }));
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { messengerData = d; dirty = true; }));
@@ -1462,6 +1472,13 @@ loadMap().then(() => { dirty = true; render(); });
       }
       if (msg.kind === 'KharisEvent') {
         addNotifChip('kult', '⛩', msg.payload?.message || 'Divine event', 'now');
+      }
+      if (['UnitArrived','UnitExploreReturned','ArmyArrival'].includes(msg.kind)) {
+        // A unit reached or left a hex: its route may have revealed fog and its
+        // position changed. Refresh the fog map and the unit layer immediately
+        // rather than waiting for the 30 s poll.
+        refreshTiles();
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { unitsData = d.units || []; dirty = true; }));
       }
       if (PERSISTENT_KINDS.has(msg.kind)) {
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications?unread=true`)
@@ -2562,21 +2579,32 @@ async function loadWarDrawer() {
       recHtml += '<input type="hidden" id="war-recruit-city" value="' + capital.id + '">';
     }
     recHtml += '<div class="dsec-title">Train Units</div>';
-    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Each batch = 10 men drafted from population</div>';
+    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land units train in batches of 10 men (up to 100). Ships are built one at a time.</div>';
+    const NAVAL_SPEC_IDS = ['ship', 'war_galley', 'merchantman'];
     for (const u of UNIT_SPECS) {
       const noBuilding = u.req !== null;
       const noResources = !noBuilding && canRec[u.id] === false;
       const disabled = noBuilding || noResources;
       const costText = noBuilding ? ('requires ' + u.req) : (noResources ? u.cost + ' — insufficient' : u.cost);
       const opStyle = disabled ? 'opacity:.5;' : '';
-      recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
-        + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
-        + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
-        + '<select id="wrc-' + u.id + '" ' + (disabled ? 'disabled' : '') + ' style="width:54px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">'
-        + [10,20,30,40,50,60,70,80,90,100].map(n => '<option value="' + n + '"' + (n===10?' selected':'') + '>' + n + '</option>').join('')
-        + '</select>'
-        + '<button onclick="warRecruitFromUI(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train</button>'
-        + '</div>';
+      if (NAVAL_SPEC_IDS.includes(u.id)) {
+        // Ship-build overhaul: one vessel per build, optional name, no men select.
+        recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
+          + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
+          + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
+          + '<input id="wrc-name-' + u.id + '" type="text" placeholder="name (optional)" ' + (disabled ? 'disabled' : '') + ' style="width:100px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.7rem">'
+          + '<button onclick="warRecruitShip(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Build 1 Ship</button>'
+          + '</div>';
+      } else {
+        recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
+          + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
+          + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
+          + '<select id="wrc-' + u.id + '" ' + (disabled ? 'disabled' : '') + ' style="width:54px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">'
+          + [10,20,30,40,50,60,70,80,90,100].map(n => '<option value="' + n + '"' + (n===10?' selected':'') + '>' + n + '</option>').join('')
+          + '</select>'
+          + '<button onclick="warRecruitFromUI(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train</button>'
+          + '</div>';
+      }
     }
     recHtml += '</div><div id="war-recruit-res" style="font-size:.78rem;margin:.4rem .6rem;min-height:1rem"></div>';
 
@@ -2662,6 +2690,34 @@ async function warRecruit(provinceID, unitType) {
   }
 }
 
+// Ship-build overhaul: builds exactly one vessel (no men field — crew is
+// fixed per type); an empty name input means "let the game suggest one".
+async function warRecruitShip(unitType) {
+  const sel = document.getElementById('war-recruit-city');
+  const pid = sel ? sel.value : null;
+  if (!pid) return;
+  const nameEl = document.getElementById('wrc-name-' + unitType);
+  const name = nameEl ? nameEl.value.trim() : '';
+  const body = { unit_type: unitType };
+  if (name) body.name = name;
+  const res = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + pid + '/recruit', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  const resEl = document.getElementById('war-recruit-res');
+  if (res.ok) {
+    if (resEl) {
+      const built = (data.names && data.names[0]) ? data.names[0] : unitType;
+      resEl.style.color = 'var(--text-dim)';
+      resEl.textContent = 'Building "' + built + '" — ready ' + fmtEta(data.complete_at);
+    }
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = data.error || 'failed';
+  }
+}
+
 async function warDisband(provinceID) {
   const inf = parseInt(document.getElementById('wdb-inf')?.value || '0');
   const cha = parseInt(document.getElementById('wdb-cha')?.value || '0');
@@ -2682,14 +2738,14 @@ async function warDisband(provinceID) {
 // ── Discrete unit helpers (C8-web) ───────────────────────────────────────
 const UNIT_LABELS = {
   spearman:'Spearman', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-  priest:'Hiereus', galley:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
+  priest:'Hiereus', ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Merchantman',
 };
 
 // State for the march panel
 let _marchUnitID = null;
 
 function renderUnitCard(u) {
-  const lbl = UNIT_LABELS[u.type] || u.type;
+  const lbl = (UNIT_LABELS[u.type] || u.type) + (u.name ? ' "' + esc(u.name) + '"' : '');
   const isNaval = u.category === 'naval';
   const isForming = u.status === 'forming';
   const isGarrison = u.status === 'garrison';
@@ -2708,10 +2764,13 @@ function renderUnitCard(u) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
 
-  // Progress bar for forming
+  // Progress: forming naval shows the build ETA (size is always 1, not a
+  // percentage); forming land keeps the men/100 bar.
   const progress = isForming
-    ? '<div style="margin:.2rem 0;background:var(--border);height:4px;border-radius:2px"><div style="background:var(--accent-war);height:4px;width:' + u.size + '%"></div></div>'
-      + '<span style="font-size:.65rem;color:var(--text-dim)">' + u.size + '/100 forming</span>'
+    ? (isNaval
+        ? '<span style="font-size:.65rem;color:var(--text-dim)">building — ready ' + fmtEta(u.build_complete_at) + '</span>'
+        : '<div style="margin:.2rem 0;background:var(--border);height:4px;border-radius:2px"><div style="background:var(--accent-war);height:4px;width:' + u.size + '%"></div></div>'
+          + '<span style="font-size:.65rem;color:var(--text-dim)">' + u.size + '/100 forming</span>')
     : '';
 
   // Stance badge
@@ -2738,8 +2797,9 @@ function renderUnitCard(u) {
     actions += '<button onclick="unitMarch(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> ';
   }
 
-  // Stance buttons: garrison or positioned, non-priest
-  if ((isGarrison || isPositioned) && u.type !== 'priest') {
+  // Stance buttons: garrison or positioned, non-priest, land only — naval
+  // units carry no stance (ship-build overhaul 2026-07-09).
+  if ((isGarrison || isPositioned) && u.type !== 'priest' && !isNaval) {
     actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
       + '<option value="none">stance…</option>'
       + '<option value="fortify">fortify</option>'

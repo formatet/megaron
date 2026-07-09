@@ -101,6 +101,14 @@ type Unit struct {
 	Size     int // land: men (0–100); naval: always 1 vessel
 	Crew     int // naval: men from population; 0 for land
 
+	// Name is set for naval units (Wanax-chosen or game-suggested at recruit
+	// time, ship-build overhaul 2026-07-09); nil for land units.
+	Name *string
+	// BuildCompleteAt is set while a naval unit is status='forming' (its
+	// TrainComplete ETA); cleared (nil) once it flips to garrison. Land units
+	// never set it — their forming progress is size-based, not time-based.
+	BuildCompleteAt *time.Time
+
 	CargoUnitID *uuid.UUID // naval: land unit being transported
 
 	Status Status
@@ -151,6 +159,7 @@ const selectCols = `
 	sentry_q, sentry_r,
 	leader_role,
 	march_intent, colony_name,
+	name, build_complete_at,
 	created_at, updated_at`
 
 func scanUnit(row interface {
@@ -168,6 +177,7 @@ func scanUnit(row interface {
 		&u.SentryQ, &u.SentryR,
 		&u.LeaderRole,
 		&u.MarchIntent, &u.ColonyName,
+		&u.Name, &u.BuildCompleteAt,
 		&u.CreatedAt, &u.UpdatedAt,
 	); err != nil {
 		return nil, err

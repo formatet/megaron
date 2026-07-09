@@ -48,6 +48,11 @@ type UnitFormedPayload struct {
 	InitialSize  int       `json:"initial_size"` // men added in this batch (≤ 100)
 	Crew         int       `json:"crew"`          // for naval: men drawn from population
 	PopDrawn     int       `json:"pop_drawn"`     // population actually deducted
+	// Name is the chosen (Wanax-given or game-suggested) ship name — the
+	// outcome of a one-time pick made in the recruit handler (Fas 2.3), never
+	// re-rolled. Naval only; omitted for land units (ship-build overhaul
+	// 2026-07-09).
+	Name string `json:"name,omitempty"`
 }
 
 // UnitReinforcedPayload is emitted when men are added to an existing forming unit.

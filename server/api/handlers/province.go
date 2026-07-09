@@ -26,19 +26,21 @@ import (
 	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/unit"
+	"github.com/poleia/server/internal/unit/shipnames"
 )
 
 // ProvinceHandler handles HTTP requests for province endpoints.
 type ProvinceHandler struct {
-	pool      *pgxpool.Pool
-	scheduler *events.Scheduler
-	clk       clock.Clock
-	sitosCfg  economy.SitosConfig
+	pool       *pgxpool.Pool
+	scheduler  *events.Scheduler
+	clk        clock.Clock
+	sitosCfg   economy.SitosConfig
+	eventStore *events.Store // may be nil in tests that don't exercise Recruit's naval path
 }
 
 // NewProvinceHandler creates a ProvinceHandler.
-func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig) *ProvinceHandler {
-	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg}
+func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig, eventStore *events.Store) *ProvinceHandler {
+	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg, eventStore: eventStore}
 }
 
 // Get handles GET /worlds/:worldID/provinces/:provinceID.
@@ -1410,24 +1412,13 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		UnitType string `json:"unit_type"`
 		Men      int    `json:"men"`
 		Count    int    `json:"count"`
+		// Name is naval-only: an optional Wanax-chosen ship name. Ignored for
+		// land units. If omitted, a name is suggested from a culture-appropriate
+		// pool (ship-build overhaul 2026-07-09).
+		Name string `json:"name"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
-		return
-	}
-	if req.Men <= 0 || req.Men > 100 {
-		writeError(w, http.StatusBadRequest, "men must be 1–100")
-		return
-	}
-	if req.Men%10 != 0 {
-		writeError(w, http.StatusBadRequest, "men must be a multiple of 10")
-		return
-	}
-	if req.Count == 0 {
-		req.Count = 1
-	}
-	if req.Count < 1 || req.Count > 20 {
-		writeError(w, http.StatusBadRequest, "count must be 1–20")
 		return
 	}
 
@@ -1442,17 +1433,36 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Batch recruit (soak QoL): count > 1 only applies to naval vessels — each
-	// vessel is size 1 (one indivisible unit), so N vessels means N separate
-	// units/anrop today; count lets a Wanax get all N in one call. Land units
-	// already batch via --men (a single unit grows to 100), so count is ignored
-	// for them.
+	// Skepp-taxonomi (temenos_enheter.md "Flottdesign", Timothy 2026-07-02):
+	// naval units are built ONE VESSEL AT A TIME with a fixed crew per type
+	// (unit.CrewFor) — `men` never applies to them and is ignored if sent.
+	// Land units keep the existing 10–100-men batch gate. `count` (1–20) still
+	// lets a Wanax queue several vessels in one call, but the default (count
+	// omitted) and the Web UI both build exactly one ship.
 	uType := unit.Type(req.UnitType)
 	cat := unit.CategoryOf(uType)
+	if cat == unit.CategoryLand {
+		if req.Men <= 0 || req.Men > 100 {
+			writeError(w, http.StatusBadRequest, "men must be 1–100")
+			return
+		}
+		if req.Men%10 != 0 {
+			writeError(w, http.StatusBadRequest, "men must be a multiple of 10")
+			return
+		}
+	}
+	if req.Count == 0 {
+		req.Count = 1
+	}
+	if req.Count < 1 || req.Count > 20 {
+		writeError(w, http.StatusBadRequest, "count must be 1–20")
+		return
+	}
 	effectiveCount := 1
 	if cat == unit.CategoryNaval {
 		effectiveCount = req.Count
 	}
+	crew := unit.CrewFor(uType)
 
 	// Verify ownership via settlement.
 	var ownerID *uuid.UUID
@@ -1471,7 +1481,9 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Training queue cap: max 10 pending batches per settlement.
+	// Training queue cap: max 10 pending batches per settlement. Naval builds
+	// schedule exactly one TrainComplete per vessel (its build time), not one
+	// per 10 crew like land — see the create-loop below.
 	var pendingTraining int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT COUNT(*) FROM scheduled_events
@@ -1480,7 +1492,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		   AND (payload->>'settlement_id')::uuid = $2`,
 		worldID, settlementID,
 	).Scan(&pendingTraining)
-	batches := req.Men / 10
+	batches := 1
+	if cat == unit.CategoryLand {
+		batches = req.Men / 10
+	}
 	totalBatches := batches * effectiveCount
 	if pendingTraining+totalBatches > 10 {
 		writeError(w, http.StatusUnprocessableEntity,
@@ -1511,7 +1526,12 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, capabilities.FirstUnsatisfied(v))
 		return
 	}
+	// totalMen is the actual head-count drafted from population — for naval
+	// this is crew (fixed per type), never req.Men.
 	totalMen := req.Men * effectiveCount
+	if cat == unit.CategoryNaval {
+		totalMen = crew * effectiveCount
+	}
 	if totalMen >= population {
 		writeError(w, http.StatusUnprocessableEntity,
 			fmt.Sprintf("insufficient population: cannot draft %d men from a settlement of %d",
@@ -1644,29 +1664,112 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Determine crew (uType/cat were already resolved above, for effectiveCount).
-	crew := unit.CrewFor(uType)
-
-	// Naval note: for naval units, "men" = crew of ONE vessel. The unit is
-	// immediately garrison-ready upon completion. Land units: size grows in
-	// batches of 10; deployable at 100.
-	//
-	// Naval batch (count > 1): loop `effectiveCount` times, each iteration doing
-	// exactly what a single recruit call does today — create one independent
-	// unit row and schedule its own TrainComplete batches. For land, count is
-	// always forced to 1 above, so this loop runs once (unchanged behaviour).
+	// batchTicks: for land this is the per-10-men batch duration (looped);
+	// for naval it is reused, unlooped, as the single vessel's build time —
+	// same UnitSpecs[type].DurationTicks tunable, just a different multiplier
+	// below (ship-build overhaul 2026-07-09).
 	batchTicks := recruitBatchTicks(req.UnitType)
 	var trainCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainCurrentTick)
 	now := h.clk.Now()
 
+	// Naval-only: resolve the Wanax's culture (from their capital settlement,
+	// same pattern as the music player's capital.culture on the web client)
+	// for a culture-appropriate name suggestion, and collect this Wanax's
+	// existing ship names in this world so we can steer clear of a repeat.
+	var culture string
+	takenNames := make(map[string]bool)
+	if cat == unit.CategoryNaval {
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT culture_id FROM settlements WHERE owner_id = $1 AND world_id = $2 AND is_capital = true`,
+			playerID, worldID,
+		).Scan(&culture)
+		if nameRows, nameErr := h.pool.Query(r.Context(),
+			`SELECT name FROM units WHERE owner_id = $1 AND world_id = $2 AND name IS NOT NULL`,
+			playerID, worldID,
+		); nameErr == nil {
+			for nameRows.Next() {
+				var n string
+				if nameRows.Scan(&n) == nil {
+					takenNames[n] = true
+				}
+			}
+			nameRows.Close()
+		}
+	}
+
 	var unitIDs []uuid.UUID
+	var unitNames []string
 	var lastCompleteAt time.Time
 	var finalSize int
 
 	for n := 0; n < effectiveCount; n++ {
-		// Create or grow the forming unit in the units table.
-		// Find an existing forming unit of same type in this settlement.
+		if cat == unit.CategoryNaval {
+			// One vessel per iteration: always a new row, size fixed at 1, no
+			// reinforcement of an existing forming unit (that batching model is
+			// land-only). Build takes batchTicks (one event, not a batch loop).
+			chosenName := strings.TrimSpace(req.Name)
+			if n > 0 || chosenName == "" {
+				chosenName = shipnames.Suggest(culture, takenNames)
+			}
+			takenNames[chosenName] = true
+
+			dueTick := trainCurrentTick + batchTicks
+			completeAt := now.Add(time.Duration(batchTicks*tick.TickMinutes) * time.Minute)
+			lastCompleteAt = completeAt
+
+			var unitID uuid.UUID
+			if err := h.pool.QueryRow(r.Context(),
+				`INSERT INTO units
+				   (world_id, owner_id, type, category, size, crew, status, settlement_id, name, build_complete_at)
+				 VALUES ($1, $2, $3, $4, 1, $5, 'forming', $6, $7, $8)
+				 RETURNING id`,
+				worldID, playerID, string(uType), string(cat),
+				crew, settlementID, chosenName, completeAt,
+			).Scan(&unitID); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not create ship")
+				return
+			}
+			unitIDs = append(unitIDs, unitID)
+			unitNames = append(unitNames, chosenName)
+			finalSize = 1
+
+			if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledTrainComplete,
+				combat.TrainCompletePayload{
+					SettlementID: settlementID,
+					UnitType:     req.UnitType,
+					Count:        1,
+					UnitID:       unitID,
+				}, dueTick,
+			); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not schedule ship build")
+				return
+			}
+
+			// Outcome (Fas 2.3: the name was already chosen above, once) + row
+			// (Fas 2.2/2.4: UnitFormed already existed for starter units; this is
+			// its first use from Recruit, adding the optional Name field it was
+			// defined with).
+			if h.eventStore != nil {
+				_, _ = h.eventStore.Append(r.Context(), unitID, events.StreamType(unit.StreamUnit), unit.EventUnitFormed,
+					unit.UnitFormedPayload{
+						UnitID:       unitID,
+						OwnerID:      playerID,
+						WorldID:      worldID,
+						SettlementID: settlementID,
+						UnitType:     req.UnitType,
+						Category:     string(cat),
+						InitialSize:  1,
+						Crew:         crew,
+						PopDrawn:     crew,
+						Name:         chosenName,
+					}, worldID, nil,
+				)
+			}
+			continue
+		}
+
+		// Land: unchanged — create or grow a forming unit in batches of 10 men.
 		var existingUnitID *uuid.UUID
 		var existingSize int
 		row := h.pool.QueryRow(r.Context(),
@@ -1694,18 +1797,13 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			// Create new forming unit.
-			initialStatus := "forming"
-			if cat == unit.CategoryNaval {
-				// Naval: directly garrison-ready (one vessel, no 100-man gate).
-				initialStatus = "garrison"
-			}
 			if err := h.pool.QueryRow(r.Context(),
 				`INSERT INTO units
 				   (world_id, owner_id, type, category, size, crew, status, settlement_id)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+				 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7)
 				 RETURNING id`,
 				worldID, playerID, string(uType), string(cat),
-				req.Men, crew, initialStatus, settlementID,
+				req.Men, crew, settlementID,
 			).Scan(&unitID); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not create forming unit")
 				return
@@ -1735,15 +1833,20 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	menForResponse := req.Men
+	if cat == unit.CategoryNaval {
+		menForResponse = crew
+	}
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"unit_id":      unitIDs[len(unitIDs)-1],
 		"unit_ids":     unitIDs,
 		"unit_type":    req.UnitType,
-		"men":          req.Men,
+		"men":          menForResponse,
 		"count":        effectiveCount,
 		"batches":      batches,
 		"complete_at":  lastCompleteAt,
 		"forming_size": finalSize,
+		"names":        unitNames,
 	})
 }
 
