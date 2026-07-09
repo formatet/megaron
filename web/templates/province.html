@@ -416,7 +416,7 @@ async function loadGoods() {
   el.innerHTML = `<table class="goods-table">
     <thead><tr><th>Good</th><th style="text-align:right">Amt</th><th style="text-align:right">+/h</th><th style="text-align:right">Price</th></tr></thead>
     <tbody>${_goodsData.map(g => {
-      const rateH = g.rate_per_min * 60;
+      const rateH = g.rate_per_tick || 0;
       const rateStr = rateH === 0 ? '—' : (rateH >= 1 ? `+${rateH.toFixed(1)}` : `+${rateH.toFixed(2)}`);
       const priceStr = (typeof fmtSilver === 'function') ? fmtSilver(Math.round(g.price)) : g.price.toFixed(1);
       return `<tr>
@@ -449,7 +449,7 @@ function loadLabor() {
   }
   el.innerHTML = producible.map(g => {
     const citizens = g.citizens || 0;
-    const rateH = (g.rate_per_min * 60);
+    const rateH = (g.rate_per_tick || 0);
     const rateStr = rateH >= 1 ? rateH.toFixed(1) : rateH.toFixed(2);
     return `<div class="labor-row">
       <div class="labor-row-head">
