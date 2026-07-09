@@ -18,6 +18,7 @@ import (
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/unit"
 )
 
@@ -38,6 +39,20 @@ func NewUnitHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore 
 		eventStore: eventStore,
 		clk:        clk,
 		store:      unit.NewStore(pool),
+	}
+}
+
+// navalSpeedFactor scales a unit's travel time by ship type (Timothy 2026-07-09):
+// war galley fastest, merchantman (emporos) slowest, galley in between. Lower =
+// faster. Non-naval and unknown types get 1.0 (no change). Tunable calibration.
+func navalSpeedFactor(t unit.Type) float64 {
+	switch t {
+	case unit.TypeWarGalley:
+		return 0.6
+	case unit.TypeMerchantman:
+		return 1.4
+	default:
+		return 1.0
 	}
 }
 
@@ -310,16 +325,25 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		}
 		moveHours = pathCost
 	}
+	// Ship types vary in speed (Timothy 2026-07-09): war galley fastest,
+	// merchantman slowest, galley between. Factor scales travel time (lower =
+	// faster); tunable, lives in navalSpeedFactor.
+	moveHours *= navalSpeedFactor(u.Type)
 	// Loaded ships move 1.5× slower.
 	if u.CargoUnitID != nil {
 		moveHours *= 1.5
 	}
 
 	now := h.clk.Now()
-	arrivesAt := now.Add(time.Duration(moveHours * float64(time.Hour)))
 	var unitMarchCurrentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&unitMarchCurrentTick)
 	unitTravelTicks := max(1, int(math.Round(moveHours)))
+	// arrives_at must mirror the real tick-scheduled arrival (unitTravelTicks
+	// ticks × real seconds/tick), NOT moveHours-as-hours: the map interpolates
+	// the marching unit's position against this window, so a wall-clock value
+	// (~24 min for a short hop) leaves the unit frozen at its origin until the
+	// real tick arrival (6 s at TICK_SECONDS=6) teleports it home.
+	arrivesAt := now.Add(time.Duration(unitTravelTicks*tick.TickSeconds) * time.Second)
 
 	// Atomic DB update: set unit to marching and schedule arrival event.
 	tx, err := h.pool.Begin(ctx)

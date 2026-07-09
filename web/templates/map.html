@@ -1232,6 +1232,16 @@ setInterval(() => {
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { unitsData = d.units || []; dirty = true; }));
 }, 30000);
 
+// While any own unit is marching, refresh units + fog fast so the fog visibly
+// sweeps around the moving unit during the trip (the ship's on-screen position
+// already interpolates every frame; this is only needed so server-computed fog
+// keeps up). Idle — and cheap — whenever nothing is moving.
+setInterval(() => {
+  if (!unitsData.some(u => u.status === 'marching')) return;
+  refreshTiles();
+  fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { unitsData = d.units || []; dirty = true; }));
+}, 3000);
+
 // ── Zoom helpers ──────────────────────────────────────────────────────────
 function zoom(factor) {
   const cx = canvas.width/2, cy = canvas.height/2;

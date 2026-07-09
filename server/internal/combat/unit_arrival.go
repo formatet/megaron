@@ -16,6 +16,7 @@ import (
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/gossip"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/unit"
 )
 
@@ -316,14 +317,16 @@ func (h *UnitArrivalHandler) exploreArrived(
 		}
 		moveHours = province.TerrainMoveHours(destTerrain) * float64(dist)
 	}
-	arrivesAt := h.clk.Now().Add(time.Duration(moveHours * float64(time.Hour)))
-
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
 	travelTicks := int(math.Round(moveHours))
 	if travelTicks < 1 {
 		travelTicks = 1
 	}
+	// arrives_at mirrors the real tick-scheduled return (travelTicks × real
+	// seconds/tick), not moveHours-as-hours — same reason as the outbound leg in
+	// unit.go March: the map animates the ship against this window.
+	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
 	returnIntent := "explore_return"
 	if _, err := tx.Exec(ctx,

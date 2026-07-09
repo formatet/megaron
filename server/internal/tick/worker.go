@@ -46,6 +46,13 @@ func tickSeconds() int {
 	return defaultTickMinutes * 60
 }
 
+// TickSeconds is the runtime tick cadence in seconds of real time per tick.
+// Use this (not TickMinutes) whenever a display time DRIVES animation — e.g. a
+// marching unit's arrives_at, which the map interpolates the unit's position
+// against: it must match the real tick-scheduled arrival or the unit appears
+// frozen at its origin then teleports on arrival (acute on a sub-minute cadence).
+var TickSeconds = tickSeconds()
+
 // TickMinutes is the runtime tick cadence in minutes, used by handlers to
 // convert tick counts into approximate wall-clock times for DISPLAY only
 // (build_queue.complete_at, messenger arrives_at, etc.); actual scheduling is
