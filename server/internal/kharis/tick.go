@@ -49,6 +49,16 @@ const (
 	decayFreeColonies = 4   // this many templeless colonies cost nothing extra
 )
 
+// FAS 3 — offer-underhåll (Timothy 2026-07-09 kharis omdesign, temenos_kharis.md
+// §"KANONISK OMDESIGN" §4): each temple consumes a small daily material offer
+// (oil+wine) from ITS OWN settlement's goods — offerings are local, you feed
+// the temple where it stands, not from a shared pool. Strawman quantities —
+// temenos_balans_spakar.md §9.
+const (
+	offerOilPerTemple  = 2.0
+	offerWinePerTemple = 1.0
+)
+
 // kharisFloor is the "heligt golv" the kharis METER itself never crosses below —
 // distinct from riteFloor (api/handlers/settlement.go), which is the rite SUCCESS
 // floor. Design text: "kharis_amount ∈ [0, 100] ... aldrig exakt 0 — gudarna
@@ -215,20 +225,123 @@ func clampKharis(newKharis, cap float64) float64 {
 	return newKharis
 }
 
+// computeOfferFraction is the FAS 3 gain-scaling formula: fed/total temples.
+// 0 when there are no temples to feed — defensive only; a maintained day
+// (cultSum > 0) implies at least one temple is already producing cult, so
+// total should never be 0 on the only call site that matters. Pure function —
+// unit-testable without a DB.
+func computeOfferFraction(fed, total int) float64 {
+	if total <= 0 {
+		return 0
+	}
+	return float64(fed) / float64(total)
+}
+
+// applyTempleOffering consumes offerOilPerTemple/offerWinePerTemple from each
+// of the Wanax's temple-having settlements' OWN oil/wine stock. A settlement is
+// "fed" only if it can afford BOTH goods in full (checked before either is
+// deducted, so a partial offer never happens). Returns (fed, total) for
+// computeOfferFraction.
+func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID uuid.UUID) (fed, total int) {
+	rows, err := h.pool.Query(ctx,
+		`SELECT s.id,
+		    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
+		              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'), 0) AS oil,
+		    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
+		              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'), 0) AS wine
+		 FROM settlements s
+		 WHERE s.owner_id = $1 AND s.world_id = $2 AND s.state NOT IN ('sunk', 'collapsed')
+		   AND EXISTS (SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = 'temple')`,
+		playerID, worldID,
+	)
+	if err != nil {
+		slog.Error("temple offering query failed", "player", playerID, "err", err)
+		return 0, 0
+	}
+	defer rows.Close()
+
+	type templeGoods struct {
+		id        uuid.UUID
+		oil, wine float64
+	}
+	var temples []templeGoods
+	for rows.Next() {
+		var t templeGoods
+		if rows.Scan(&t.id, &t.oil, &t.wine) == nil {
+			temples = append(temples, t)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		slog.Error("temple offering rows error", "player", playerID, "err", err)
+	}
+
+	for _, t := range temples {
+		total++
+		if t.oil < offerOilPerTemple || t.wine < offerWinePerTemple {
+			continue // this temple's city can't afford today's offer — no deduction, not fed.
+		}
+		if _, err := h.pool.Exec(ctx,
+			`UPDATE settlement_goods SET
+			   amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
+			   calc_tick = current_world_tick()
+			 WHERE settlement_id = $1 AND good_key = 'oil'`,
+			t.id, offerOilPerTemple,
+		); err != nil {
+			slog.Error("temple offering oil deduction failed", "settlement", t.id, "err", err)
+			continue
+		}
+		if _, err := h.pool.Exec(ctx,
+			`UPDATE settlement_goods SET
+			   amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
+			   calc_tick = current_world_tick()
+			 WHERE settlement_id = $1 AND good_key = 'wine'`,
+			t.id, offerWinePerTemple,
+		); err != nil {
+			slog.Error("temple offering wine deduction failed", "settlement", t.id, "err", err)
+			continue
+		}
+		fed++
+	}
+	return fed, total
+}
+
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {
 	// FAS 2 (Timothy 2026-07-09 kharis omdesign): dailyDecay now applies EVERY
 	// day, maintained or not — "Kharis sjunker alltid" — replacing the old
 	// missed-day-only multiplicative decay (was 10%/day, decayOnMissed, retired
-	// in this FAS). gain (from cult production) is the only term that differs
-	// between the two branches below;
-	// bless/punish eligibility still follows the maintained/missed split
-	// (temenos_balans_spakar.md §9: bless only on a maintained day, punish only
-	// on a missed one) even though the arithmetic is now unified.
+	// in this FAS). gain (from cult production, FAS 3-scaled by material offer)
+	// is the only term that differs between the two branches below; bless/punish
+	// eligibility still follows the maintained/missed split (temenos_balans_
+	// spakar.md §9: bless only on a maintained day, punish only on a missed one)
+	// even though the arithmetic is now unified.
 	maintained := w.cultSum > 0
+
+	// FAS 3 — offer-underhåll: a maintained day's cult-gain is scaled by how
+	// many of the Wanax's temples were actually fed a material offer today.
+	// Full offer everywhere -> full gain; no offer anywhere -> zero gain (the
+	// dailyDecay below then wins outright regardless of cult labor). Cult-labor
+	// still never costs kharis — only goods+labor. Offering is only attempted
+	// on a maintained day: gain is 0×anything otherwise, so there's no point
+	// draining a Wanax's oil/wine for a day that already produces no gain.
 	var gain float64
+	var offerFed, offerTotal int
+	var offerFraction float64
 	if maintained {
-		gain = w.cultSum * kharisPerCult
+		cultGain := w.cultSum * kharisPerCult
+		offerFed, offerTotal = h.applyTempleOffering(ctx, w.playerID, worldID)
+		offerFraction = computeOfferFraction(offerFed, offerTotal)
+		gain = cultGain * offerFraction
+		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisOffering",
+			map[string]any{
+				"temples_fed":            offerFed,
+				"temples_total":          offerTotal,
+				"offer_fraction":         offerFraction,
+				"cult_gain_before_offer": cultGain,
+				"kharis_gain":            gain,
+			},
+			worldID, nil)
 	}
+
 	dailyDecay := computeDailyDecay(w.templelessColonies)
 	newKharis := clampKharis(w.kharis+gain-dailyDecay, w.kharisCap)
 
@@ -266,6 +379,9 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 				"daily_decay":         dailyDecay,
 				"net":                 gain - dailyDecay,
 				"templeless_colonies": w.templelessColonies,
+				"offer_fraction":      offerFraction,
+				"temples_fed":         offerFed,
+				"temples_total":       offerTotal,
 			},
 			worldID, nil)
 		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
