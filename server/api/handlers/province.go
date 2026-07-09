@@ -2325,16 +2325,24 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Credit output.
+	// Credit output. cap = 1_000_000: the non-binding technical ceiling shared
+	// by all goods rows since the 2026-07-05 cap loosening (mirrors
+	// economy.goodCap / combat.goodCap — each package hard-mirrors the value).
+	// The old hard-coded 100 here, plus the genesis seed's ELSE=200 cap in
+	// join.go, pinned every craft output (bronze, luxury, pottery, purple) at a
+	// binding low ceiling — bronze could never be stored >200. Set cap via
+	// EXCLUDED so an existing genesis-placeholder row is lifted on first craft,
+	// and clamp to that same ceiling (pattern mirrors combat/arrival.go).
 	produced := outputQty * req.Quantity
 	_, err = tx.Exec(r.Context(),
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, $2, $3, 0, 100, current_world_tick())
+		 VALUES ($1, $2, $3, 0, 1000000, current_world_tick())
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = LEAST(
 		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
 		             + $3,
-		         settlement_goods.cap),
+		         EXCLUDED.cap),
+		     cap = EXCLUDED.cap,
 		     calc_tick = current_world_tick()`,
 		settlementID, outputKey, produced,
 	)
