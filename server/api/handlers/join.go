@@ -269,16 +269,11 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		            ELSE 0
 		        END,
 		        0,
-		        CASE g.key
-		            WHEN 'grain'  THEN 1000
-		            WHEN 'timber' THEN 500
-		            WHEN 'cedar'  THEN 500
-		            WHEN 'stone'  THEN 1000
-		            WHEN 'copper' THEN 300
-		            WHEN 'tin'    THEN 300
-		            WHEN 'silver' THEN 1000
-		            ELSE 200
-		        END,
+		        1000000, -- non-binding storage ceiling (mirrors economy.goodCap);
+		                 -- the old per-good caps predated the 2026-07-05 cap
+		                 -- loosening and pinned never-produced/never-crafted goods
+		                 -- at a low binding value (silver's real cap is set by the
+		                 -- Sitos liquid-silver seed below)
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
