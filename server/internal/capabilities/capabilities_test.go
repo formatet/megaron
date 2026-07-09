@@ -426,6 +426,10 @@ func TestTrivialVerbs_AlwaysAvailable(t *testing.T) {
 // ---- registry shape -------------------------------------------------------------
 
 func TestList_CoversAllSixCategories(t *testing.T) {
+	// Kingdoms are gated behind KINGDOMS_ENABLED (post-MVP, Timothy 2026-07-08)
+	// — set it here so this test still verifies every checker is registered.
+	// The gate itself is covered by TestList_KingdomCategoryGatedByEnv.
+	t.Setenv("KINGDOMS_ENABLED", "1")
 	pool := testPool(t)
 	f := newFixture(t, pool)
 	verbs := List(context.Background(), pool, fakeClock(time.Now()), f.worldID, f.provinceID, f.playerID, f.settlementID)
@@ -441,6 +445,21 @@ func TestList_CoversAllSixCategories(t *testing.T) {
 	}
 	if len(verbs) != len(checkers) {
 		t.Errorf("List returned %d verbs, want %d (one per checker)", len(verbs), len(checkers))
+	}
+}
+
+// TestList_KingdomCategoryGatedByEnv verifies kingdoms are post-MVP by default
+// (Timothy 2026-07-08): with KINGDOMS_ENABLED unset, the category must not
+// appear in List's output at all — keryx and agent.py read only this list.
+func TestList_KingdomCategoryGatedByEnv(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	verbs := List(context.Background(), pool, fakeClock(time.Now()), f.worldID, f.provinceID, f.playerID, f.settlementID)
+
+	for _, v := range verbs {
+		if v.Category == CategoryKingdom {
+			t.Errorf("kingdom verb %q present in List() output with KINGDOMS_ENABLED unset", v.Name)
+		}
 	}
 }
 

@@ -891,14 +891,14 @@ body:has(.auth-page) main {
 .nc-city      { border-left-color: var(--accent-city);      background: rgba(62,107,170,0.13); box-shadow: var(--chip-shadow-city); }
 .nc-trade     { border-left-color: var(--accent-trade);     background: rgba(200,154,43,0.13); box-shadow: var(--chip-shadow-trade); }
 .nc-diplomacy { border-left-color: var(--accent-diplomacy); background: rgba(122,74,165,0.13); box-shadow: var(--chip-shadow-diplomacy); }
-.nc-oikos     { border-left-color: var(--accent-oikos);     background: rgba(78,122,82,0.13);  box-shadow: var(--chip-shadow-oikos); }
+.nc-kult     { border-left-color: var(--accent-oikos);     background: rgba(78,122,82,0.13);  box-shadow: var(--chip-shadow-oikos); }
 .nc-system    { border-left-color: var(--accent-system);    background: rgba(108,106,104,0.13);box-shadow: var(--chip-shadow-system); }
 
 .nc-war:hover       { background: rgba(162,58,50,0.32); }
 .nc-city:hover      { background: rgba(62,107,170,0.32); }
 .nc-trade:hover     { background: rgba(200,154,43,0.32); }
 .nc-diplomacy:hover { background: rgba(122,74,165,0.32); }
-.nc-oikos:hover     { background: rgba(78,122,82,0.32); }
+.nc-kult:hover     { background: rgba(78,122,82,0.32); }
 .nc-system:hover    { background: rgba(108,106,104,0.32); }
 
 .nc-icon {
@@ -915,7 +915,7 @@ body:has(.auth-page) main {
 .nc-city .nc-dot      { background: var(--accent-city); }
 .nc-trade .nc-dot     { background: var(--accent-trade); }
 .nc-diplomacy .nc-dot { background: var(--accent-diplomacy); }
-.nc-oikos .nc-dot     { background: var(--accent-oikos); }
+.nc-kult .nc-dot     { background: var(--accent-oikos); }
 .nc-system .nc-dot    { background: var(--accent-system); }
 
 .nc-glyph { font-size: 0.82rem; line-height: 1; }

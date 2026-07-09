@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -178,7 +179,6 @@ func main() {
 		})
 		r.Get("/map", webH.MapView)
 		r.Get("/rawaketa", webH.RawakView)
-		r.Get("/kingdom", webH.KingdomView)
 		r.Get("/messages", webH.MessagesView)
 		r.Get("/market", webH.MarketView)
 		r.Get("/resource-bar", webH.ResourceBar)
@@ -252,17 +252,23 @@ func main() {
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
 
-			r.Get("/worlds/{worldID}/kingdoms", kh.List)
-			r.Post("/worlds/{worldID}/kingdoms", kh.Found)
-			r.Get("/worlds/{worldID}/kingdoms/invitations", kh.Invitations)
-			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/invite", kh.Invite)
-			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/join", kh.Join)
-			r.Delete("/worlds/{worldID}/kingdoms/{kingdomID}/leave", kh.Leave)
-			r.Get("/worlds/{worldID}/kingdoms/{kingdomID}/council", kh.Council)
-			r.Patch("/worlds/{worldID}/kingdoms/{kingdomID}/council/{role}", kh.AssignRole)
-			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/borrow-army", kh.BorrowArmy)
-			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/election", kh.CallElection)
-			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/vote", kh.Vote)
+			r.Route("/worlds/{worldID}/kingdoms", func(r chi.Router) {
+				r.Use(requireKingdomsEnabled)
+				r.Get("/", kh.List)
+				r.Post("/", kh.Found)
+				r.Get("/invitations", kh.Invitations)
+				r.Post("/{kingdomID}/invite", kh.Invite)
+				r.Post("/{kingdomID}/join", kh.Join)
+				r.Delete("/{kingdomID}/leave", kh.Leave)
+				r.Get("/{kingdomID}/council", kh.Council)
+				r.Patch("/{kingdomID}/council/{role}", kh.AssignRole)
+				r.Post("/{kingdomID}/borrow-army", kh.BorrowArmy)
+				r.Post("/{kingdomID}/election", kh.CallElection)
+				r.Post("/{kingdomID}/vote", kh.Vote)
+				r.Get("/{kingdomID}/election", kh.ElectionStatus)
+				r.Get("/{kingdomID}/borrowed-armies", kh.BorrowedArmiesList)
+				r.Post("/{kingdomID}/treasury/deposit", kh.TreasuryDeposit)
+			})
 
 			// Unit endpoints (C3/C4/C5/C6).
 			r.Get("/worlds/{worldID}/units", uh.ListUnits)
@@ -291,10 +297,6 @@ func main() {
 
 			r.Get("/worlds/{worldID}/notifications", nh.List)
 			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)
-
-			r.Get("/worlds/{worldID}/kingdoms/{kingdomID}/election", kh.ElectionStatus)
-			r.Get("/worlds/{worldID}/kingdoms/{kingdomID}/borrowed-armies", kh.BorrowedArmiesList)
-			r.Post("/worlds/{worldID}/kingdoms/{kingdomID}/treasury/deposit", kh.TreasuryDeposit)
 		})
 	})
 
@@ -485,6 +487,25 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// requireKingdomsEnabled gates the /kingdoms subtree behind KINGDOMS_ENABLED
+// (default off — kingdoms are post-MVP, Timothy 2026-07-08). Handlers stay
+// registered per temenos_arkitektur Fas 6 (endpoints always exist, they just
+// answer disabled) — this middleware is the only thing that changes.
+func requireKingdomsEnabled(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if os.Getenv("KINGDOMS_ENABLED") == "" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusForbidden)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": "kingdoms_disabled",
+				"hint":  "Kingdoms är avstängt i MVP — riken återkommer efter grundmekanik-beviset",
+			})
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // absorbStartupDowntime reads the most recent server heartbeat and, if the gap

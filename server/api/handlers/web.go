@@ -235,16 +235,6 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 		worldID,
 	).Scan(&wld.ID, &wld.Name, &wld.State, &wld.MapWidth, &wld.MapHeight, &wld.Prestige, &wld.EraNumber)
 
-	var kingdomName, kingdomState string
-	var memberCount int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT k.name, COALESCE(k.state,'forming'),
-		        (SELECT count(*) FROM kingdom_members WHERE kingdom_id = k.id)
-		 FROM kingdoms k JOIN kingdom_members km ON km.kingdom_id = k.id
-		 WHERE k.world_id = $1 AND km.player_id = $2`,
-		worldID, playerID,
-	).Scan(&kingdomName, &kingdomState, &memberCount)
-
 	var unreadCount int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT count(*) FROM messengers m
@@ -287,9 +277,6 @@ func (h *WebHandler) MegaronView(w http.ResponseWriter, r *http.Request) {
 		"GrainRate":    resources["grain_rate"],
 		"Silver":       resources["silver"],
 		"DivineMood":   kharisToMood(resources["kharis"]),
-		"KingdomName":  kingdomName,
-		"KingdomState": kingdomState,
-		"MemberCount":  memberCount,
 		"UnreadCount":  unreadCount,
 		"MarchCount":   marchCount,
 		"TradeCount":   tradeCount,
@@ -643,7 +630,6 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 	var settlementID string
 	var playerIDStr string
 	var unreadCount int
-	var playerKingdomRole string
 	if playerID, ok := auth.PlayerIDFromContext(r.Context()); ok {
 		playerIDStr = playerID.String()
 		var sid uuid.UUID
@@ -660,85 +646,17 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 			   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')`,
 			worldID, playerID,
 		).Scan(&unreadCount)
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT km.role FROM kingdom_members km
-			 JOIN kingdoms k ON k.id = km.kingdom_id
-			 WHERE k.world_id = $1 AND km.player_id = $2`,
-			worldID, playerID,
-		).Scan(&playerKingdomRole)
 	}
 
 	h.render(w, "map.html", map[string]any{
-		"World":             wld,
-		"WorldID":           worldID,
-		"WorldCreatedAt":    wld.CreatedAt.UTC().Format(time.RFC3339),
-		"TimeScale":         1,
-		"SettlementID":      settlementID,
-		"PlayerID":          playerIDStr,
-		"PlayerKingdomRole": playerKingdomRole,
-		"UnreadCount":       unreadCount,
-		"MapMode":           true,
-	})
-}
-
-// KingdomView serves the kingdom overview page.
-func (h *WebHandler) KingdomView(w http.ResponseWriter, r *http.Request) {
-	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
-	if err != nil {
-		http.Error(w, "invalid world ID", http.StatusBadRequest)
-		return
-	}
-	playerID, ok := auth.PlayerIDFromContext(r.Context())
-	if !ok {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	var kingdomID *uuid.UUID
-	var kingdomName, playerRole, kingdomState string
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT k.id, k.name, km.role, COALESCE(k.state,'forming') FROM kingdoms k
-		 JOIN kingdom_members km ON km.kingdom_id = k.id
-		 WHERE k.world_id = $1 AND km.player_id = $2`,
-		worldID, playerID,
-	).Scan(&kingdomID, &kingdomName, &playerRole, &kingdomState)
-
-	var settlementID uuid.UUID
-	var settlementName string
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT id, name FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
-		worldID, playerID,
-	).Scan(&settlementID, &settlementName)
-
-	var memberCount int
-	var treasuryGold float64
-	var tributeRate float64
-	if kingdomID != nil {
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT count(*) FROM kingdom_members WHERE kingdom_id = $1`, kingdomID,
-		).Scan(&memberCount)
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT settled(silver_amount, silver_rate, silver_calc_tick)
-			 FROM kingdoms WHERE id = $1`, kingdomID,
-		).Scan(&treasuryGold)
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT tribute_rate FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
-			worldID, playerID,
-		).Scan(&tributeRate)
-	}
-	h.render(w, "kingdom.html", map[string]any{
+		"World":          wld,
 		"WorldID":        worldID,
-		"KingdomID":      kingdomID,
-		"KingdomName":    kingdomName,
-		"KingdomState":   kingdomState,
-		"KingdomForming": kingdomState == "forming",
-		"MemberCount":    memberCount,
-		"PlayerRole":     playerRole,
-		"HasKingdom":     kingdomID != nil,
+		"WorldCreatedAt": wld.CreatedAt.UTC().Format(time.RFC3339),
+		"TimeScale":      1,
 		"SettlementID":   settlementID,
-		"SettlementName": settlementName,
-		"TreasuryGold":   treasuryGold,
-		"TributeRate":    tributeRate,
+		"PlayerID":       playerIDStr,
+		"UnreadCount":    unreadCount,
+		"MapMode":        true,
 	})
 }
 

@@ -6,7 +6,6 @@
   <a href="/world/{{.WorldID}}">Economy</a>
   <a href="/world/{{.WorldID}}/rawaketa">Rawaketa</a>
   <a href="/world/{{.WorldID}}/messages">Scribes{{if .UnreadCount}} <span class="nav-badge">{{.UnreadCount}}</span>{{end}}</a>
-  <a href="/world/{{.WorldID}}/kingdom">Oikos</a>
 {{end}}
 {{define "content"}}
 <div class="megaron-page">
@@ -97,23 +96,6 @@
           <span>No new messages</span>
         {{end}}
         {{if .TradeCount}}<span>{{.TradeCount}} active trade routes</span>{{end}}
-      </div>
-      <span class="room-enter">Enter →</span>
-    </a>
-
-    <!-- Oikos (kingdom) -->
-    <a href="/world/{{.WorldID}}/kingdom" class="room-card">
-      <div class="room-lintel">
-        <span class="room-glyph">⚖</span>
-        <span class="room-name">Oikos</span>
-      </div>
-      <div class="room-status">
-        {{if .KingdomName}}
-          <span>{{.KingdomName}}</span>
-          <span class="pill state-{{.KingdomState}}">{{if eq .KingdomState "forming"}}Forming · {{.MemberCount}}/3{{else}}Active{{end}}</span>
-        {{else}}
-          <span class="rs-dim">Inget oikos grundat</span>
-        {{end}}
       </div>
       <span class="room-enter">Enter →</span>
     </a>

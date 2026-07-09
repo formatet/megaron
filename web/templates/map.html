@@ -55,7 +55,6 @@
         <div class="inspect-row"><span class="ir-label">Culture</span><span id="ip-culture">—</span></div>
         <div class="inspect-row"><span class="ir-label">Owner</span><span id="ip-owner">—</span></div>
         <div class="inspect-row"><span class="ir-label">Walls</span><span id="ip-walls">—</span></div>
-        <div class="inspect-row"><span class="ir-label">Kingdom</span><span id="ip-kingdom">—</span></div>
         <div class="inspect-row"><span class="ir-label">Army</span><span id="ip-army">—</span></div>
       </div>
       <div class="inspect-foot" id="ip-foot"></div>
@@ -90,8 +89,8 @@
     <div class="win-trigger" id="trig-economy"    onclick="toggleDrawer('economy')">
       <span class="wt-glyph">⚖</span>Economy
     </div>
-    <div class="win-trigger" id="trig-oikos"      onclick="toggleDrawer('oikos')">
-      <span class="wt-glyph">⛩</span>Oikos
+    <div class="win-trigger" id="trig-kult"       onclick="toggleDrawer('kult')">
+      <span class="wt-glyph">⛩</span>Kult
     </div>
   </nav>
 
@@ -141,13 +140,13 @@
   </div>
 </div>
 
-<!-- ── OIKOS DRAWER ─────────────────────────────────────────────────────── -->
-<div class="drawer" id="drawer-oikos">
+<!-- ── KULT DRAWER ──────────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-kult">
   <div class="drawer-header">
-    <span class="drawer-title">Oikos</span>
-    <button class="drawer-close" onclick="closeDrawer('oikos')">✕</button>
+    <span class="drawer-title">Kult</span>
+    <button class="drawer-close" onclick="closeDrawer('kult')">✕</button>
   </div>
-  <div class="drawer-body" id="oikos-body">
+  <div class="drawer-body" id="kult-body">
     <div class="loading">Loading…</div>
   </div>
 </div>
@@ -410,7 +409,6 @@ const MY_SETTLEMENT_ID = "{{.SettlementID}}";
 const MY_PLAYER_ID = "{{.PlayerID}}";
 const WORLD_CREATED_AT = "{{.WorldCreatedAt}}";
 const TIME_SCALE = {{.TimeScale}};
-let MY_KINGDOM_ROLE = "{{.PlayerKingdomRole}}";
 
 // ── Lawagetas advisory voice ──────────────────────────────────────────────
 const LAWAGETAS_BRIEFS = {
@@ -418,7 +416,7 @@ const LAWAGETAS_BRIEFS = {
   war:       "Bronze arms await your command, Wanax. Your Lochagos may march the army to distant lands — to raid, reinforce, or colonize. In battle, numbers count, but walls and elite agema often decide the day.",
   diplomacy: "Words travel on foot, Wanax — a messenger's legs are your reach. You may only treat with those cities whose walls your messengers have touched. Send scouts first; then make your offers.",
   economy:   "The palace scribes track every ingot and measure of grain, Wanax. Silver flows in and out; when it drains, armies cannot march and temples cannot stand. Study your stockpile.",
-  oikos:     "The oikos binds your kingdom together, Wanax. Your Heqetas leads the council; your Lochagos commands the host; your Navarchos commands the fleet. Through ritual and offering, you bind your people to the will of the gods.",
+  kult:      "The gods watch your megaron, Wanax. Your temple's cult level and divine mood shape what rites you may call upon — tend it, and the gods answer; neglect it, and they turn away.",
   notif:     "Your herald brings word from beyond the megaron walls, Wanax — arrivals, battles resolved, buildings completed. Matters that demand your attention rise here first.",
 };
 
@@ -445,15 +443,6 @@ function dismissBrief(name) {
   sessionStorage.setItem('lb_dismissed_' + name, '1');
   const el = document.getElementById('lb-' + name);
   if (el) el.remove();
-}
-
-function roleLabel(role) {
-  switch (role) {
-    case 'basileus': return 'Heqetas';
-    case 'lochagos': return 'Lochagos';
-    case 'navarchos': return 'Navarchos';
-    default: return 'Wanax';
-  }
 }
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -1309,9 +1298,6 @@ function openInspect(marker) {
   if (marker.allied && !marker.own) ownerText += ' (allied)';
   document.getElementById('ip-owner').textContent   = ownerText;
   document.getElementById('ip-walls').textContent   = '▓'.repeat(marker.walls) + '░'.repeat(Math.max(0,3-marker.walls));
-  const kName = marker.kingdom_name || 'Kingdom';
-  const kText = marker.kingdom_id ? (marker.allied ? `⚑ ${kName} (allied)` : `⚑ ${kName}`) : '—';
-  document.getElementById('ip-kingdom').textContent = kText;
   document.getElementById('ip-army').textContent = '…';
   fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${marker.id}/army`).then(r => {
     if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
@@ -1440,7 +1426,6 @@ canvas.addEventListener('mousemove', e => {
     if (prov) {
       const parts = [prov.name, tl];
       if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
-      if (prov.kingdom_name) parts.push(`⚑ ${prov.kingdom_name}`);
       if (prov.walls > 0) parts.push(`Walls L${prov.walls}`);
       if (prov.culture) parts.push(prov.culture);
       if (prov.own) parts.push('(you)');
@@ -1517,7 +1502,7 @@ loadMap().then(() => { dirty = true; render(); });
         addNotifChip('trade', '🐂', 'Caravan arrived', 'now');
       }
       if (msg.kind === 'KharisEvent') {
-        addNotifChip('oikos', '⛩', msg.payload?.message || 'Divine event', 'now');
+        addNotifChip('kult', '⛩', msg.payload?.message || 'Divine event', 'now');
       }
       if (PERSISTENT_KINDS.has(msg.kind)) {
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications?unread=true`)
@@ -2140,8 +2125,8 @@ async function loadDrawerContent(name) {
       body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
     }
 
-  } else if (name === 'oikos') {
-    await loadOikosDrawer();
+  } else if (name === 'kult') {
+    await loadKultDrawer();
 
   } else if (name === 'notif') {
     const body = document.getElementById('notif-body');
@@ -2177,159 +2162,9 @@ async function loadDrawerContent(name) {
   }
 }
 
-// ── Oikos drawer ─────────────────────────────────────────────────────────
-async function loadOikosDrawer() {
-  const body = document.getElementById('oikos-body');
-  body.innerHTML =
-    '<div class="drawer-tabs">' +
-      '<button class="dtab active" data-tab="kingdom">Kingdom</button>' +
-      '<button class="dtab" data-tab="kult">Cult</button>' +
-    '</div>' +
-    '<div id="oktab-kingdom" class="city-tab"></div>' +
-    '<div id="oktab-kult"    class="city-tab" style="display:none"></div>';
-
-  body.querySelectorAll('.dtab').forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      body.querySelectorAll('.dtab').forEach(function(t) { t.classList.remove('active'); });
-      this.classList.add('active');
-      body.querySelectorAll('.city-tab').forEach(function(c) { c.style.display = 'none'; });
-      const el = document.getElementById('oktab-' + this.dataset.tab);
-      if (el) el.style.display = '';
-      if (this.dataset.tab === 'kingdom') loadOikosKingdom();
-      else if (this.dataset.tab === 'kult') loadOikosKult();
-    });
-  });
-
-  loadOikosKingdom();
-}
-
-async function loadOikosKingdom() {
-  const el = document.getElementById('oktab-kingdom');
-  el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
-
-  const myProvince = provinceData.find(function(p) { return p.own && !p.is_outpost; });
-  const kingdomId   = myProvince && myProvince.kingdom_id;
-  const kingdomName = myProvince && myProvince.kingdom_name;
-
-  if (!kingdomId) {
-    // No kingdom — show invitations + found form
-    let html = '';
-    try {
-      const ir = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/invitations');
-      if (ir.ok) {
-        const invitations = await ir.json();
-        if (invitations && invitations.length) {
-          html += '<div class="dsec"><div class="dsec-title">Invitations</div>';
-          invitations.forEach(function(inv) {
-            html += '<div class="stat-row"><span class="sr-label">' + esc(inv.kingdom_name) + '</span>' +
-              '<span class="sr-val"><button class="obj-cta btn-small" onclick="okJoin(\'' + inv.kingdom_id + '\')">Join</button></span></div>';
-          });
-          html += '</div>';
-        }
-      }
-    } catch(_) {}
-    html += '<div class="dsec"><div class="dsec-title">Found a Kingdom</div>' +
-      '<input type="text" id="ok-found-name" placeholder="Kingdom name"' +
-      ' style="width:100%;box-sizing:border-box;background:var(--CHARCOAL);color:var(--IVORY);border:1px solid var(--STONE);padding:.25rem .4rem;margin-bottom:.4rem">' +
-      '<button class="obj-cta" style="width:100%" onclick="okFound()">Found Kingdom</button></div>';
-    el.innerHTML = html;
-    return;
-  }
-
-  // Has kingdom
-  try {
-    const cr = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/council');
-    const council = cr.ok ? (await cr.json()) : [];
-    const me = council.find(function(m) { return m.player_id === MY_PLAYER_ID; });
-    const myRole     = me ? me.role : 'member';
-    const isBasileus = myRole === 'basileus';
-    MY_KINGDOM_ROLE  = myRole;
-
-    const roleTag = {
-      basileus: '<span style="color:var(--accent);font-family:var(--mono);font-size:.7rem">⊛ Heqetas</span>',
-      lochagos: '<span style="color:var(--accent-war);font-family:var(--mono);font-size:.7rem">⚔ Lochagos</span>',
-      navarchos:'<span style="color:var(--accent-city);font-family:var(--mono);font-size:.7rem">⛵ Navarchos</span>',
-    };
-
-    let html = '<div class="dsec"><div class="dsec-title">' + esc(kingdomName) + '</div>';
-    html += '<div class="stat-row"><span class="sr-label">Your role</span><span class="sr-val">' +
-      (roleTag[myRole] || '<span style="font-family:var(--mono);font-size:.7rem">Wanax</span>') + '</span></div>';
-    html += '<div class="stat-row"><span class="sr-label">Members</span><span class="sr-val">' + council.length + '</span></div></div>';
-
-    // Council list
-    html += '<div class="dsec"><div class="dsec-title">Council</div>';
-    council.forEach(function(m) {
-      const you = m.player_id === MY_PLAYER_ID ? ' <span style="color:var(--text-dim)">(you)</span>' : '';
-      const rl  = roleLabel(m.role);
-      html += '<div class="stat-row"><span class="sr-label">' + esc(m.username) + you + '</span>' +
-        '<span class="sr-val">' + esc(rl) + ' · ' + m.army_dp + ' DP</span></div>';
-    });
-    html += '</div>';
-
-    // Role assignment (Heqetas only)
-    if (isBasileus) {
-      const assignableMembers = council.filter(function(m) { return m.player_id !== MY_PLAYER_ID; });
-      if (assignableMembers.length) {
-        html += '<div class="dsec"><div class="dsec-title">Assign Role</div>';
-        html += '<div style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">';
-        html += '<select id="ok-role-member" style="flex:1;min-width:0;background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.2rem .3rem;font-size:.75rem">';
-        assignableMembers.forEach(function(m) {
-          html += '<option value="' + m.player_id + '">' + esc(m.username) + ' (' + roleLabel(m.role) + ')</option>';
-        });
-        html += '</select>';
-        html += '<select id="ok-role-sel" style="background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.2rem .3rem;font-size:.75rem">';
-        html += '<option value="lochagos">Lochagos</option>';
-        html += '<option value="navarchos">Navarchos</option>';
-        html += '<option value="member">Wanax (remove)</option>';
-        html += '</select>';
-        html += '<button class="obj-cta" onclick="okAssignRole(\'' + kingdomId + '\')">Assign</button>';
-        html += '</div>';
-        html += '<div id="ok-role-res" style="font-size:.72rem;margin-top:.25rem;min-height:.9rem"></div>';
-        html += '</div>';
-      }
-    }
-
-    // Treasury deposit
-    html += '<div class="dsec"><div class="dsec-title">Treasury</div>' +
-      '<div style="display:flex;gap:.5rem;align-items:center">' +
-      '<input type="number" id="ok-treasury-amt" min="1" placeholder="shekel"' +
-      ' style="flex:1;background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.25rem .4rem;font-family:var(--mono)">' +
-      '<button class="obj-cta" onclick="okDeposit(\'' + kingdomId + '\')">Deposit</button></div></div>';
-
-    // Invite (Heqetas only)
-    if (isBasileus) {
-      const memberNames = new Set(council.map(function(m) { return m.settlement_name; }));
-      const opts = provinceData.filter(function(p) {
-        return !p.own && !p.is_outpost && p.settlement_id && p.name && !memberNames.has(p.name);
-      });
-      html += '<div class="dsec"><div class="dsec-title">Invite</div>';
-      if (opts.length) {
-        html += '<select id="ok-invite-sel"' +
-          ' style="width:100%;background:var(--bg-panel);color:var(--text);border:1px solid var(--border);padding:.25rem .4rem;margin-bottom:.4rem">';
-        opts.forEach(function(p) {
-          html += '<option value="' + p.id + '">' + esc(p.name) + '</option>';
-        });
-        html += '</select>' +
-          '<button class="obj-cta" style="width:100%" onclick="okInvite(\'' + kingdomId + '\')">Send Invitation</button>';
-      } else {
-        html += '<p class="empty-state">No eligible provinces visible.</p>';
-      }
-      html += '</div>';
-    }
-
-    // Leave (non-Heqetas)
-    if (!isBasileus) {
-      html += '<div class="dsec"><button class="btn-danger" onclick="okLeave(\'' + kingdomId + '\')">Leave Kingdom</button></div>';
-    }
-
-    el.innerHTML = html;
-  } catch(_) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
-  }
-}
-
-async function loadOikosKult() {
-  const el = document.getElementById('oktab-kult');
+// ── Kult drawer ───────────────────────────────────────────────────────────
+async function loadKultDrawer() {
+  const el = document.getElementById('kult-body');
   el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
 
   if (!MY_SETTLEMENT_ID) {
@@ -2379,76 +2214,12 @@ async function loadOikosKult() {
   }
 }
 
-async function okDeposit(kingdomId) {
-  const amt = parseFloat((document.getElementById('ok-treasury-amt') || {}).value);
-  if (!amt || amt <= 0) return;
-  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/treasury/deposit',
-    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({amount: amt}) });
-  if (r.ok) { loadOikosKingdom(); }
-  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Deposit failed'); }
-}
-
-async function okLeave(kingdomId) {
-  if (!confirm('Leave this kingdom?')) return;
-  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/leave', {method:'DELETE'});
-  if (r.ok) { loadOikosKingdom(); }
-  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not leave'); }
-}
-
-async function okJoin(kingdomId) {
-  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/join', {method:'POST'});
-  if (r.ok) { loadOikosKingdom(); }
-  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not join'); }
-}
-
-async function okFound() {
-  const nameEl = document.getElementById('ok-found-name');
-  const name = nameEl ? nameEl.value.trim() : '';
-  if (!name) return;
-  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms',
-    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: name}) });
-  if (r.ok) { loadOikosKingdom(); }
-  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not found kingdom'); }
-}
-
-async function okInvite(kingdomId) {
-  const sel = document.getElementById('ok-invite-sel');
-  const provinceId = sel ? sel.value : '';
-  if (!provinceId) return;
-  const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/invite',
-    { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({province_id: provinceId}) });
-  if (r.ok) { alert('Invitation sent.'); }
-  else { const d = await r.json().catch(function(){return {};}); alert(d.error || 'Could not invite'); }
-}
-
-async function okAssignRole(kingdomId) {
-  const memberSel = document.getElementById('ok-role-member');
-  const roleSel   = document.getElementById('ok-role-sel');
-  const res       = document.getElementById('ok-role-res');
-  if (!memberSel || !roleSel) return;
-  const targetPlayerId = memberSel.value;
-  const targetRole     = roleSel.value;
-  if (!targetPlayerId) return;
-  const r = await fetchAuth(
-    '/api/v1/worlds/' + WORLD_ID + '/kingdoms/' + kingdomId + '/council/' + targetRole,
-    { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({player_id: targetPlayerId}) }
-  );
-  if (r.ok) {
-    if (res) res.textContent = 'Role assigned.';
-    loadOikosKingdom();
-  } else {
-    const d = await r.json().catch(function(){return {};});
-    if (res) res.textContent = d.error || 'Could not assign role';
-  }
-}
-
-
 async function okRite() {
   const r = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/settlements/' + MY_SETTLEMENT_ID + '/rite', {method:'POST'});
   const d = await r.json().catch(function(){return {};});
   if (r.ok) {
     alert(d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
-    loadOikosKult();
+    loadKultDrawer();
   } else {
     alert(d.error || 'Rite failed');
   }
@@ -2592,13 +2363,7 @@ async function loadWarDrawer() {
     const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
 
     // Army tab — discrete units list
-    let roleNote = '';
-    if (MY_KINGDOM_ROLE === 'lochagos') {
-      roleNote = '<div style="font-size:.68rem;font-family:var(--mono);color:var(--accent-war);margin-bottom:.3rem">⚔ Lochagos — army command role</div>';
-    } else if (MY_KINGDOM_ROLE === 'navarchos') {
-      roleNote = '<div style="font-size:.68rem;font-family:var(--mono);color:var(--accent-city);margin-bottom:.3rem">⛵ Navarchos — fleet command role</div>';
-    }
-    let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>' + roleNote;
+    let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>';
     if (allUnits.length) {
       armyHtml += allUnits.map(u => renderUnitCard(u)).join('');
     } else {
@@ -3783,7 +3548,7 @@ function dismissChip(chip) {
 
 const DOMAIN_DRAWER = {
   war: 'war', city: 'city', trade: 'diplomacy',
-  diplomacy: 'diplomacy', oikos: 'oikos', system: null,
+  diplomacy: 'diplomacy', kult: 'kult', system: null,
 };
 
 function addNotifChip(domain, glyph, text, time) {

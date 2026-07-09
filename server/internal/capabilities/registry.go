@@ -2,6 +2,7 @@ package capabilities
 
 import (
 	"context"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -67,9 +68,18 @@ func List(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, worldID, pro
 		playerID:     playerID,
 		settlementID: settlementID,
 	}
+	// Kingdoms are post-MVP (Timothy 2026-07-08) — the category vanishes from
+	// the actions response entirely unless explicitly re-enabled, so keryx and
+	// agent.py never see it (server = enda sanning).
+	kingdomsEnabled := os.Getenv("KINGDOMS_ENABLED") != ""
+
 	verbs := make([]Verb, 0, len(checkers))
 	for _, fn := range checkers {
-		verbs = append(verbs, fn(cc))
+		v := fn(cc)
+		if v.Category == CategoryKingdom && !kingdomsEnabled {
+			continue
+		}
+		verbs = append(verbs, v)
 	}
 	return verbs
 }
