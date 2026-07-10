@@ -52,6 +52,9 @@ const (
 	// carrying a goods manifest arrives at its destination. Supersedes the abstract
 	// LogisticsArrival for movers that have a map position (see internal/transport).
 	ScheduledTransportArrival ScheduledEventType = "TransportArrival"
+	// Recurring sweep that intercepts in-transit caravans passing an enemy sentry
+	// (movement-motor Slice C). Messengers are never scanned — sacred/uninterceptable.
+	ScheduledInterceptScan ScheduledEventType = "InterceptScan"
 	// C1 — unit model; handler registered in C2+.
 	ScheduledUnitArrival ScheduledEventType = "UnitArrival"
 	// C-collapse — city exhausted to ≤100 pop; warband spawned.

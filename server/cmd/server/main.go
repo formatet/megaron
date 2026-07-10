@@ -132,6 +132,8 @@ func main() {
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
 	transportH := transport.NewArrivalHandler(pool)
 	worker.Register(events.ScheduledTransportArrival, transportH.Handle)
+	interceptH := transport.NewInterceptScanHandler(pool, scheduler, eventStore, hub, gameClock)
+	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
@@ -345,6 +347,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledKharisTick,
 		events.ScheduledUpkeepTick,
 		events.ScheduledSitosTick,
+		events.ScheduledInterceptScan,
 	}
 
 	for _, wid := range worldIDs {
