@@ -22,6 +22,7 @@ import (
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/tick"
+	"github.com/poleia/server/internal/transport"
 )
 
 // SettlementHandler handles HTTP requests for settlement endpoints.
@@ -278,23 +279,29 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Dispatch the gift as a caravan — it is credited to the target on ARRIVAL, not instantly.
-	// Internal supply line: no caravan-loss.
-	if req.Silver > 0 {
-		if err2 := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
-			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "silver", "quantity": req.Silver},
-			giftDueTick); err2 != nil {
-			writeError(w, http.StatusInternalServerError, "could not schedule gift silver")
-			return
-		}
-	}
-	if req.Grain > 0 {
-		if err2 := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledLogisticsArrival,
-			map[string]any{"kind": "settlement_good", "destination": targetID, "good_key": "grain", "quantity": req.Grain},
-			giftDueTick); err2 != nil {
-			writeError(w, http.StatusInternalServerError, "could not schedule gift grain")
-			return
-		}
+	// Dispatch the gift as a PHYSICAL caravan — a mover on the map (province route,
+	// lazy-interpolated position), credited to the target on ARRIVAL, not instantly.
+	// Internal supply line: exempt from the random trade-loss roll (interception is a
+	// separate, deliberate mechanic — Del 3-fas-4).
+	if _, err2 := transport.Dispatch(r.Context(), tx, h.scheduler, transport.DispatchParams{
+		WorldID:       worldID,
+		OwnerID:       playerID,
+		Kind:          "transfer",
+		OriginID:      sourceID,
+		DestID:        targetID,
+		Category:      "land",
+		OriginQ:       sQ,
+		OriginR:       sR,
+		DestQ:         tQ,
+		DestR:         tR,
+		DepartsAt:     h.clk.Now(),
+		ArrivesAt:     arrivesAt,
+		DueTick:       giftDueTick,
+		Manifest:      transport.Manifest{"silver": req.Silver, "grain": req.Grain},
+		Interceptable: true,
+	}); err2 != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch gift caravan")
+		return
 	}
 
 	if err := tx.Commit(r.Context()); err != nil {

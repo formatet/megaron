@@ -1,0 +1,95 @@
+// Package transport models goods in physical transit across the map — the caravans
+// and ships that carry an internal transfer or a trade delivery from one settlement
+// to another. Unlike the old abstract scheduled-event model, a transport has an
+// origin and destination hex and a route, so its live position can be computed
+// (province.InterpolatePosition) for rendering and, later, interception.
+//
+// G1: transport sits at the messenger tier — it may use province, events, clock.
+// Nothing below it imports transport.
+package transport
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/province"
+)
+
+// Manifest maps a good key to the quantity a transport carries. Silver is a good
+// like any other here.
+type Manifest map[string]float64
+
+// DispatchParams describes one caravan/ship to send. The caller must already have
+// deducted the manifest goods from the source in the same transaction — Dispatch
+// only creates the mover and schedules its arrival.
+type DispatchParams struct {
+	WorldID       uuid.UUID
+	OwnerID       uuid.UUID
+	Kind          string // "transfer" | "trade" | "trade_return"
+	OriginID      uuid.UUID
+	DestID        uuid.UUID
+	Category      string // "land" (caravan) | "naval" (ship)
+	OriginQ       int
+	OriginR       int
+	DestQ         int
+	DestR         int
+	DepartsAt     time.Time
+	ArrivesAt     time.Time
+	DueTick       int
+	Manifest      Manifest
+	Interceptable bool
+}
+
+// Dispatch inserts a transport mover and its goods manifest, then schedules the
+// arrival event. Returns the new transport id.
+func Dispatch(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, p DispatchParams) (uuid.UUID, error) {
+	var id uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO transports
+		   (world_id, owner_id, kind, origin_id, dest_id, category,
+		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+		 RETURNING id`,
+		p.WorldID, p.OwnerID, p.Kind, p.OriginID, p.DestID, p.Category,
+		p.OriginQ, p.OriginR, p.DestQ, p.DestR, p.DepartsAt, p.ArrivesAt, p.DueTick, p.Interceptable,
+	).Scan(&id); err != nil {
+		return uuid.Nil, fmt.Errorf("insert transport: %w", err)
+	}
+
+	for good, qty := range p.Manifest {
+		if qty <= 0 {
+			continue
+		}
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1,$2,$3)`,
+			id, good, qty,
+		); err != nil {
+			return uuid.Nil, fmt.Errorf("insert transport manifest %q: %w", good, err)
+		}
+	}
+
+	if err := sched.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledTransportArrival,
+		map[string]any{"transport_id": id}, p.DueTick); err != nil {
+		return uuid.Nil, fmt.Errorf("schedule transport arrival: %w", err)
+	}
+	return id, nil
+}
+
+// CurrentPosition returns the hex a live transport currently occupies, re-walking
+// its FindPath route in proportion to elapsed travel time (province.InterpolatePosition).
+// ok is false when the route can no longer be found; callers fall back to the origin.
+func CurrentPosition(
+	ctx context.Context, db province.Queryer, worldID uuid.UUID,
+	originQ, originR, destQ, destR int, category string,
+	departsAt, arrivesAt, now time.Time,
+) (province.MapPosition, bool, error) {
+	return province.InterpolatePosition(ctx, db, worldID,
+		province.MapPosition{Q: originQ, R: originR},
+		province.MapPosition{Q: destQ, R: destR},
+		category, departsAt, arrivesAt, now,
+	)
+}

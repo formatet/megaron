@@ -32,6 +32,7 @@ import (
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/tick"
+	"github.com/poleia/server/internal/transport"
 	"github.com/poleia/server/internal/world"
 	"github.com/redis/go-redis/v9"
 )
@@ -129,6 +130,8 @@ func main() {
 	worker.Register(events.ScheduledMarchRecall, marchRecallH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
+	transportH := transport.NewArrivalHandler(pool)
+	worker.Register(events.ScheduledTransportArrival, transportH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)

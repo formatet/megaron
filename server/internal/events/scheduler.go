@@ -48,6 +48,10 @@ const (
 	ScheduledTradeReturn       ScheduledEventType = "TradeReturn"
 	ScheduledRecallArrival     ScheduledEventType = "RecallArrival"
 	ScheduledLogisticsArrival  ScheduledEventType = "LogisticsArrival"
+	// Physical goods transport (movement-motor transport layer) — a caravan/ship
+	// carrying a goods manifest arrives at its destination. Supersedes the abstract
+	// LogisticsArrival for movers that have a map position (see internal/transport).
+	ScheduledTransportArrival ScheduledEventType = "TransportArrival"
 	// C1 — unit model; handler registered in C2+.
 	ScheduledUnitArrival ScheduledEventType = "UnitArrival"
 	// C-collapse — city exhausted to ≤100 pop; warband spawned.
