@@ -138,9 +138,11 @@ func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
 		t.Fatalf("create galley: %v", err)
 	}
 
+	fb := &fakeBroadcaster{}
 	h := &UnitArrivalHandler{
 		pool:       pool,
 		eventStore: events.NewStore(pool),
+		hub:        fb,
 		scheduler:  events.NewScheduler(pool, clock.NewTestClock(time.Now())),
 		clk:        clock.NewTestClock(time.Now()),
 	}
@@ -170,6 +172,19 @@ func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
 	}
 	if controlType != "occupied" {
 		t.Errorf("control_type = %q, want \"occupied\"", controlType)
+	}
+
+	// Both sides must be notified the settlement changed hands — the dispossessed
+	// owner especially (async play → offline when the raid lands). Regression guard
+	// for the amphibious notification gap (was silent: only unit/combat-stream events).
+	var captures int
+	for _, k := range fb.notified {
+		if k == "SettlementCaptured" {
+			captures++
+		}
+	}
+	if captures != 2 {
+		t.Errorf("SettlementCaptured notifications = %d, want 2 (defender + attacker); got %v", captures, fb.notified)
 	}
 
 	// The tin came with it.

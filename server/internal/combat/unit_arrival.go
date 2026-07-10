@@ -997,6 +997,29 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 			"def": defStr, "att_losses": result.AttackerLosses, "def_losses": result.DefenderLosses,
 		}, worldID, nil)
 
+	// Capture notification. The amphibious path emits only unit/combat-stream events,
+	// so without this the dispossessed owner gets no signal their city fell — and in
+	// async play they are typically offline when the raid lands. Mirror the land-march
+	// paths that already notify on OutpostCaptured/ArmyArrival. Same guard as the
+	// ownership transfer above (win AND cargo survived to storm ashore).
+	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 {
+		_, _ = h.eventStore.Append(ctx, *dest.settlementID, events.StreamProvince, "SettlementCaptured",
+			map[string]any{
+				"settlement_id": *dest.settlementID, "former_owner": dest.ownerID,
+				"new_owner": u.ownerID, "amphibious": true,
+			}, worldID, nil)
+		if h.hub != nil {
+			if dest.ownerID != nil {
+				_ = h.hub.NotifyPlayer(ctx, worldID, *dest.ownerID, "SettlementCaptured", 2, map[string]any{
+					"settlement_id": *dest.settlementID, "role": "defender", "amphibious": true,
+				})
+			}
+			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "SettlementCaptured", 3, map[string]any{
+				"settlement_id": *dest.settlementID, "role": "attacker", "amphibious": true,
+			})
+		}
+	}
+
 	return nil
 }
 
