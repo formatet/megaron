@@ -32,8 +32,17 @@ func main() {
 	}
 	defer tx.Rollback(ctx)
 
-	// Archive old worlds
-	tx.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE status = 'active'`)
+	// Wipe old worlds entirely — reseed = fresh start ("ta bort världen"), not
+	// archive. The hardcoded world name is UNIQUE, so archiving (keeping the old
+	// row) makes a second reseed collide on worlds_name_key; deleting frees it.
+	// trade_routes has a non-cascade FK to worlds — clear it first; every other
+	// world-scoped table is ON DELETE CASCADE and goes with the worlds rows.
+	if _, err := tx.Exec(ctx, `DELETE FROM trade_routes`); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM worlds`); err != nil {
+		log.Fatal(err)
+	}
 
 	// Create world
 	id := uuid.New()
