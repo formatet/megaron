@@ -33,14 +33,14 @@ func main() {
 	defer tx.Rollback(ctx)
 
 	// Wipe old worlds entirely — reseed = fresh start ("ta bort världen"), not
-	// archive. The hardcoded world name is UNIQUE, so archiving (keeping the old
-	// row) makes a second reseed collide on worlds_name_key; deleting frees it.
-	// trade_routes has a non-cascade FK to worlds — clear it first; every other
-	// world-scoped table is ON DELETE CASCADE and goes with the worlds rows.
-	if _, err := tx.Exec(ctx, `DELETE FROM trade_routes`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := tx.Exec(ctx, `DELETE FROM worlds`); err != nil {
+	// archive. worlds.name is UNIQUE and the world name is hardcoded, so archiving
+	// (keeping the row) makes a second reseed collide on worlds_name_key. TRUNCATE
+	// ... CASCADE clears worlds and every world-scoped dependent in one shot,
+	// following the whole FK graph (settlements, provinces, gossip_events, marches,
+	// trade_routes, units, …) — a plain DELETE trips over the many non-cascade
+	// child FKs. Global reference tables (players, goods, production_rules) are
+	// parents, not dependents, so they are untouched.
+	if _, err := tx.Exec(ctx, `TRUNCATE worlds CASCADE`); err != nil {
 		log.Fatal(err)
 	}
 
