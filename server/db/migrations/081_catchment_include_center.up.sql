@@ -7,11 +7,12 @@
 -- Existing settlement_goods rates are settled into `amount` then nulled so they
 -- recompute (including the centre hex) next tick; settlement_labor is cleared so
 -- auto-seeding re-picks the producible set from the full 7-tile catchment. Mirrors
--- migration 051.
+-- migration 051, updated for the tick substrate (mig 067: calc_at → calc_tick INT,
+-- settled() takes a tick, now() → current_world_tick()).
 
 UPDATE settlement_goods
-SET amount  = LEAST(cap, settled(amount, rate, calc_at)),
-    rate    = 0,
-    calc_at = now();
+SET amount    = LEAST(cap, settled(amount, rate, calc_tick)),
+    rate      = 0,
+    calc_tick = current_world_tick();
 
 DELETE FROM settlement_labor;
