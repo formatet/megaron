@@ -390,6 +390,11 @@ func (h *SettlementHandler) LoyaltyLog(w http.ResponseWriter, r *http.Request) {
 
 // ReturnArmy handles POST /worlds/:worldID/settlements/:settlementID/return-army.
 // The king returns a borrowed army to its settlement.
+//
+// NOTE (SB7): the restore SQL below still writes the retired settlements.* army
+// columns; like its counterpart KingdomHandler.BorrowArmy it must be rebuilt on the
+// units model when kingdoms are re-enabled. The route is gated off (kingdoms are
+// POST-MVP), so this never runs live. See megaron_todo → "SB7 follow-up: borrow-army på units".
 func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {

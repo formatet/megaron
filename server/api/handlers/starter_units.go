@@ -7,7 +7,8 @@ package handlers
 //
 // All units are immediately garrison-ready (status = 'garrison').
 // Population is decremented by total men drawn (land: 100/unit; naval: crew).
-// Dual-write: old integer army columns on settlements are updated in parallel.
+// The units table is the single source of truth for the army (the settlements.*
+// integer army columns were retired in SB7); nothing is written to them here.
 // A UnitFormed event is appended to the unit stream for each unit created.
 //
 // Must be called inside an open pgx.Tx; the transaction is NOT committed here.

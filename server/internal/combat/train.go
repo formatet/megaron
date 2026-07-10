@@ -35,10 +35,11 @@ func NewTrainCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub B
 
 // Handle processes a ScheduledTrainComplete event.
 //
-// C2 dual-write: if p.UnitID is set, this is a C2 batch (10 men). The unit's
-// size was already written at recruit time; here we only need to check if the
-// unit has reached 100 men and flip it to garrison status. We also write the
-// old integer army column (dual-write) so legacy combat/display continues to work.
+// If p.UnitID is set, this is a C2 batch (10 men). The unit's size was already
+// written at recruit time; here we only need to check if the unit has reached
+// 100 men and flip it to garrison status. The units table is the single source
+// of truth for a settlement's army (the old settlements.* integer columns were
+// retired in SB7); nothing is dual-written here.
 //
 // Naval (ship-build overhaul 2026-07-09): each vessel schedules exactly one
 // TrainComplete (its build time, not a per-10-crew batch); this handler flips

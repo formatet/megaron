@@ -21,7 +21,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/tick"
@@ -31,6 +30,16 @@ import (
 // messengers (api/handlers messenger send) and recall messengers so the rate lives in one place.
 // A future "blessed messengers" rite would turn this into a multiplier-driven value (see thalassa_todo).
 const HoursPerHex = 0.5
+
+// armyArrivalPayload is the ScheduledArmyArrival payload for a legacy return march.
+// The legacy aggregate-army combat handler that consumed this event was retired with
+// the SB7 dual-write drop (its handler was never registered on the worker); the type
+// lived in combat/arrival.go. Kept locally so the legacy recall path still compiles and
+// behaves exactly as before (the event has no registered consumer → it dead-letters,
+// same as pre-SB7). Retiring the legacy recall path entirely is separate cleanup.
+type armyArrivalPayload struct {
+	MarchingArmyID uuid.UUID `json:"marching_army_id"`
+}
 
 // RecallMarchPayload is the RecallArrival payload for an in-flight army recall.
 type RecallMarchPayload struct {
@@ -175,7 +184,7 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 
 	// Atomic with the claim — no orphan return march if we crash before the worker marks done.
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledArmyArrival,
-		combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, dueTick); err != nil {
+		armyArrivalPayload{MarchingArmyID: returnMarchID}, dueTick); err != nil {
 		return fmt.Errorf("schedule army arrival: %w", err)
 	}
 
@@ -286,7 +295,7 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 			return fmt.Errorf("create garrison return march: %w", err)
 		}
 		if err := h.scheduler.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledArmyArrival,
-			combat.ArmyArrivalPayload{MarchingArmyID: returnMarchID}, dueTick); err != nil {
+			armyArrivalPayload{MarchingArmyID: returnMarchID}, dueTick); err != nil {
 			return fmt.Errorf("schedule garrison arrival: %w", err)
 		}
 	}

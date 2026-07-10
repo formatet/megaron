@@ -453,6 +453,13 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 // BorrowArmy handles POST /worlds/:worldID/kingdoms/:kingdomID/borrow-army.
 // The king requests an army from a member settlement. Units are removed from the
 // settlement and recorded in borrowed_armies until returned.
+// NOTE (SB7): the deduct/return SQL below still references the retired settlements.*
+// army columns. Borrow-army moves a flat infantry/chariot/priest/ship *count* between
+// a settlement and borrowed_armies — a model that predates the units table and has no
+// clean units translation (priest is no longer a unit; unit identity can't be rebuilt
+// on return). Kingdoms are POST-MVP and this route is gated off (requireKingdomsEnabled),
+// so this path never runs in the live game. It must be rebuilt on the units model when
+// kingdoms are re-enabled — see megaron_todo → "SB7 follow-up: borrow-army på units".
 func (h *KingdomHandler) BorrowArmy(w http.ResponseWriter, r *http.Request) {
 	kingdomID, err := uuid.Parse(chi.URLParam(r, "kingdomID"))
 	if err != nil {

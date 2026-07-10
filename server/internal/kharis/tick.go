@@ -682,41 +682,64 @@ func (h *TickHandler) applyStarvationWarning(ctx context.Context, worldID uuid.U
 // applyStarvation punishes settlements where grain has hit zero: infantry and
 // chariots each lose 5% (minimum 1 unit) per day.
 func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
+	// The standing army lives in the units table (settlements.* army columns
+	// retired, SB7). Select starving settlements that have a garrison to attrit,
+	// collect them, then attrit + notify (a fresh conn per Exec — don't mutate
+	// while iterating the cursor).
 	rows, err := h.pool.Query(ctx,
-		`UPDATE settlements s SET
-		   infantry = GREATEST(0, infantry - GREATEST(1, (infantry * 0.05)::int)),
-		   chariot  = GREATEST(0, chariot  - GREATEST(1, (chariot  * 0.05)::int))
+		`SELECT s.id, s.owner_id, s.name FROM settlements s
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
-		   AND (s.infantry > 0 OR s.chariot > 0)
+		   AND EXISTS (SELECT 1 FROM units u
+		               WHERE u.settlement_id = s.id AND u.status = 'garrison'
+		                 AND u.type IN ('spearman','war_chariot') AND u.size > 0)
 		   AND COALESCE(
 		           (SELECT settled(sg.amount, sg.rate, sg.calc_tick)
 		            FROM settlement_goods sg
-		            WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) <= 0
-		 RETURNING s.id, s.owner_id, s.name`,
+		            WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) <= 0`,
 		worldID,
 	)
 	if err != nil {
 		slog.Error("starvation tick failed", "world", worldID, "err", err)
 		return
 	}
-	defer rows.Close()
-
+	type starving struct {
+		id, owner uuid.UUID
+		name      string
+	}
+	var list []starving
 	for rows.Next() {
-		var id, ownerID uuid.UUID
-		var name string
-		if err := rows.Scan(&id, &ownerID, &name); err != nil {
+		var s starving
+		if err := rows.Scan(&s.id, &s.owner, &s.name); err == nil {
+			list = append(list, s)
+		}
+	}
+	rows.Close()
+
+	for _, s := range list {
+		// Spearmen and chariots each lose 5% (minimum 1) per starving day.
+		if _, err := h.pool.Exec(ctx,
+			`UPDATE units SET size = GREATEST(0, size - GREATEST(1, (size * 0.05)::int)), updated_at = now()
+			 WHERE settlement_id = $1 AND status = 'garrison' AND type IN ('spearman','war_chariot')`,
+			s.id,
+		); err != nil {
+			slog.Error("starvation attrition failed", "settlement", s.id, "err", err)
 			continue
 		}
-		_, _ = h.store.Append(ctx, id, events.StreamProvince, "StarvationDamage",
+		// Disband any unit starved to nothing.
+		_, _ = h.pool.Exec(ctx,
+			`UPDATE units SET status = 'disbanded', updated_at = now()
+			 WHERE settlement_id = $1 AND status = 'garrison' AND size <= 0`, s.id)
+
+		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "StarvationDamage",
 			map[string]any{"reason": "no_food"}, worldID, nil)
 		// Gossip: notify the owner so it appears in their messages/notifications.
 		_, _ = h.pool.Exec(ctx,
 			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
 			 VALUES ($1, $2, $3, 'economy', $4)`,
-			worldID, ownerID, name,
-			"⚠ "+name+" is starving — grain stores empty. Send messengers to buy grain urgently.",
+			worldID, s.owner, s.name,
+			"⚠ "+s.name+" is starving — grain stores empty. Send messengers to buy grain urgently.",
 		)
-		slog.Info("starvation damage applied", "settlement", id)
+		slog.Info("starvation damage applied", "settlement", s.id)
 	}
 }
 
@@ -732,12 +755,14 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		{
 			"chariot_loss",
 			"The gods have scattered your war chariots in the night. Chariots have perished.",
-			`UPDATE settlements SET chariot = GREATEST(0, chariot - GREATEST(1, chariot/5)) WHERE id = $1`,
+			`UPDATE units SET size = GREATEST(0, size - GREATEST(1, size/5)), updated_at = now()
+			 WHERE settlement_id = $1 AND status = 'garrison' AND type = 'war_chariot'`,
 		},
 		{
 			"ship_loss",
 			"A divine storm has claimed a vessel from your harbour.",
-			`UPDATE settlements SET ship = GREATEST(0, ship - 1) WHERE id = $1`,
+			`UPDATE units SET status = 'disbanded', updated_at = now()
+			 WHERE id = (SELECT id FROM units WHERE settlement_id = $1 AND status = 'garrison' AND type = 'ship' ORDER BY size LIMIT 1)`,
 		},
 		{
 			"harvest_failure",
@@ -750,7 +775,8 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		{
 			"garrison_plague",
 			"A dark pestilence has moved through the barracks. Many hoplites have fallen.",
-			`UPDATE settlements SET infantry = GREATEST(0, infantry - GREATEST(1, infantry/5)) WHERE id = $1`,
+			`UPDATE units SET size = GREATEST(0, size - GREATEST(1, size/5)), updated_at = now()
+			 WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'`,
 		},
 	}
 
@@ -759,6 +785,11 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		slog.Error("divine punishment failed", "settlement", settlementID, "type", p.name, "err", err)
 		return
 	}
+	// Disband any garrison unit reduced to nothing by the punishment (no-op for
+	// the grain-only harvest_failure case). Army lives in units (SB7).
+	_, _ = h.pool.Exec(ctx,
+		`UPDATE units SET status = 'disbanded', updated_at = now()
+		 WHERE settlement_id = $1 AND status = 'garrison' AND size <= 0`, settlementID)
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
 		map[string]any{"type": p.name}, worldID, nil)
@@ -785,22 +816,27 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 		},
 		{
+			// Army lives in the units table (SB7) — handled by applyArmyBlessing,
+			// not a settlements UPDATE. Empty sql signals the code path below.
 			"divine_recruits",
 			"Warriors answer a divine call and join your ranks. New hoplites have arrived.",
-			`UPDATE settlements SET
-			   infantry = infantry + GREATEST(2, infantry / 5)
-			 WHERE id = $1`,
+			"",
 		},
 		{
 			"sea_blessing",
 			"Poseidon guides a vessel to your harbour. A trireme joins your fleet.",
-			`UPDATE settlements SET ship = ship + 1 WHERE id = $1`,
+			"",
 		},
 	}
 
 	b := blessings[rand.Intn(len(blessings))]
-	if _, err := h.pool.Exec(ctx, b.sql, settlementID); err != nil {
-		slog.Error("divine blessing failed", "settlement", settlementID, "type", b.name, "err", err)
+	if b.sql != "" {
+		if _, err := h.pool.Exec(ctx, b.sql, settlementID); err != nil {
+			slog.Error("divine blessing failed", "settlement", settlementID, "type", b.name, "err", err)
+			return
+		}
+	} else if err := h.applyArmyBlessing(ctx, settlementID, worldID, b.name); err != nil {
+		slog.Error("divine army blessing failed", "settlement", settlementID, "type", b.name, "err", err)
 		return
 	}
 
@@ -808,6 +844,50 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 		map[string]any{"type": b.name}, worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_favour", b.text)
 	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name)
+}
+
+// applyArmyBlessing grants the army-boosting divine blessings against the units
+// table (SB7: the army lives in units, not the retired settlements.* columns).
+func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, worldID uuid.UUID, name string) error {
+	switch name {
+	case "divine_recruits":
+		// Reinforce the strongest garrison spearman unit (min +2); if the
+		// settlement has none, form a fresh small garrison.
+		tag, err := h.pool.Exec(ctx,
+			`UPDATE units SET size = size + GREATEST(2, size/5), updated_at = now()
+			 WHERE id = (SELECT id FROM units
+			             WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'
+			             ORDER BY size DESC LIMIT 1)`,
+			settlementID)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 0 {
+			return h.insertGarrisonUnit(ctx, settlementID, worldID, "spearman", "land", 2, 0)
+		}
+		return nil
+	case "sea_blessing":
+		return h.insertGarrisonUnit(ctx, settlementID, worldID, "ship", "naval", 1, 20)
+	}
+	return nil
+}
+
+// insertGarrisonUnit forms a new garrison unit for the settlement's owner.
+func (h *TickHandler) insertGarrisonUnit(ctx context.Context, settlementID, worldID uuid.UUID, utype, category string, size, crew int) error {
+	var ownerID *uuid.UUID
+	if err := h.pool.QueryRow(ctx,
+		`SELECT owner_id FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&ownerID); err != nil {
+		return err
+	}
+	if ownerID == nil {
+		return nil // ownerless settlement — no one to receive the unit
+	}
+	_, err := h.pool.Exec(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, 'garrison', $7)`,
+		worldID, *ownerID, utype, category, size, crew, settlementID)
+	return err
 }
 
 // generateOmen produces an atmospheric temple omen (20% chance per maintained day).

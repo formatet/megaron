@@ -42,7 +42,17 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		        COALESCE((SELECT rate FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
 		        COALESCE((SELECT cap  FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),1000),
 		        now(),
-		        infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman,
+		        -- Army = the units-table garrison (single source of truth since the
+		        -- SB7 drop of the frozen settlements.* army columns). Same source the
+		        -- combat resolver reads, so shown army == army that actually fights.
+		        -- priest is no longer a unit → always 0.
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='spearman'),0)::int,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='war_chariot'),0)::int,
+		        0,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='ship'),0)::int,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='elite_infantry'),0)::int,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='war_galley'),0)::int,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='merchantman'),0)::int,
 		        updated_at
 		 FROM settlements WHERE id = $1 AND world_id = $2`,
 		id, worldID,

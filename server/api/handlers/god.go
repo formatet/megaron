@@ -90,7 +90,7 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 		        p.map_q, p.map_r, p.terrain_type,
 		        COALESCE(pl.username, ''), s.owner_id,
 		        s.population, s.wall_level,
-		        s.infantry + s.elite_infantry + s.chariot + s.ship + s.war_galley + s.merchantman AS army_total,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        COALESCE(k.name, ''),
 		        s.battle_frenzy_until,
 		        COALESCE((SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))

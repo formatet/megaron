@@ -435,7 +435,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
 		        s.state, s.wall_level, COALESCE(pl.username, ''), COALESCE(k.name, ''),
-		        s.infantry + s.elite_infantry + s.chariot + s.ship + s.war_galley + s.merchantman AS army_total,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
 		        EXISTS (SELECT 1 FROM scheduled_events se WHERE se.event_type = 'TrainComplete'
 		                AND se.processed_at IS NULL

@@ -313,14 +313,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// All three gates mirror the real Rite handler so affordable:true is trustworthy.
 		// cooldown_remaining_minutes is >0 when the prayer is on cooldown.
 		type prayerRow struct {
-			ID                      string             `json:"id"`
-			Name                    string             `json:"name"`
-			God                     string             `json:"god"`
-			EffectType              string             `json:"effect_type"`
-			MinKharis               float64            `json:"min_kharis"`
-			Offering                map[string]float64 `json:"offering"`
-			Affordable              bool               `json:"affordable"`
-			CooldownRemainingMins   float64            `json:"cooldown_remaining_minutes,omitempty"`
+			ID                    string             `json:"id"`
+			Name                  string             `json:"name"`
+			God                   string             `json:"god"`
+			EffectType            string             `json:"effect_type"`
+			MinKharis             float64            `json:"min_kharis"`
+			Offering              map[string]float64 `json:"offering"`
+			Affordable            bool               `json:"affordable"`
+			CooldownRemainingMins float64            `json:"cooldown_remaining_minutes,omitempty"`
 		}
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
@@ -506,385 +506,6 @@ func (h *ProvinceHandler) GetArmy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, sett.Army)
-}
-
-// March handles POST /worlds/:worldID/provinces/:provinceID/march.
-func (h *ProvinceHandler) March(w http.ResponseWriter, r *http.Request) {
-	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid world ID")
-		return
-	}
-	sourceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid province ID")
-		return
-	}
-
-	playerID, ok := auth.PlayerIDFromContext(r.Context())
-	if !ok {
-		writeError(w, http.StatusUnauthorized, "not authenticated")
-		return
-	}
-
-	var req struct {
-		TargetID      string `json:"target_id"`
-		TargetQ       *int   `json:"target_q"` // for colonize: (q,r) of unclaimed tile
-		TargetR       *int   `json:"target_r"`
-		ColonyName    string `json:"colony_name"` // optional player-chosen name for colonize
-		Intent        string `json:"intent"`
-		Spearman      int    `json:"spearman"`
-		WarChariot    int    `json:"war_chariot"`
-		Priest        int    `json:"priest"`
-		Ship          int    `json:"ship"` // galley
-		EliteInfantry int    `json:"elite_infantry"`
-		WarGalley     int    `json:"war_galley"`
-		Merchantman   int    `json:"merchantman"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid JSON")
-		return
-	}
-
-	validIntents := map[string]bool{"attack": true, "reinforce": true, "support": true, "colonize": true, "outpost": true, "scout": true, "explore": true}
-	if !validIntents[req.Intent] {
-		writeError(w, http.StatusBadRequest, "invalid intent")
-		return
-	}
-
-	var targetID uuid.UUID
-	if (req.Intent == "colonize" || req.Intent == "outpost" || req.Intent == "scout" || req.Intent == "explore") && req.TargetQ != nil && req.TargetR != nil {
-		// Coordinate-targeted intents: find or create a province row for the target tile.
-		// colonize/outpost reject settled targets; scout allows it (reconnaissance).
-		q, r2 := *req.TargetQ, *req.TargetR
-		var terrain string
-		if err = h.pool.QueryRow(r.Context(),
-			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
-			worldID, q, r2,
-		).Scan(&terrain); err != nil {
-			writeError(w, http.StatusNotFound, "tile not found")
-			return
-		}
-		if terrain == "mountain_limestone" || terrain == "mountain_red" {
-			if req.Intent == "colonize" || req.Intent == "outpost" {
-				// Check whether the target tile has ore deposits — if so, give the
-				// player the actionable hint about adjacent colonization.
-				var hasOre bool
-				_ = h.pool.QueryRow(r.Context(),
-					`SELECT copper_deposit OR tin_deposit
-					        OR COALESCE(silver_deposit,false) OR COALESCE(cedar_deposit,false)
-					 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
-					worldID, q, r2,
-				).Scan(&hasOre)
-				if hasOre {
-					writeError(w, http.StatusUnprocessableEntity,
-						"cannot settle impassable mountain — found a colony on an adjacent passable hex instead: the ore deposit will fall in the new colony's catchment and be mineable from there")
-				} else {
-					writeError(w, http.StatusUnprocessableEntity,
-						"cannot settle impassable mountain terrain — target an adjacent passable hex instead")
-				}
-			} else {
-				writeError(w, http.StatusUnprocessableEntity, "cannot target mountain terrain")
-			}
-			return
-		}
-		if req.Intent != "explore" && (terrain == "deep_sea" || terrain == "coastal_sea") {
-			writeError(w, http.StatusUnprocessableEntity, "cannot target sea terrain")
-			return
-		}
-		// Province may or may not exist; find or create it.
-		err = h.pool.QueryRow(r.Context(),
-			`SELECT id FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
-			worldID, q, r2,
-		).Scan(&targetID)
-		if err != nil {
-			// No province yet — create one so the march can reference it.
-			var copperDeposit, tinDeposit, silverDeposit, cedarDeposit bool
-			_ = h.pool.QueryRow(r.Context(),
-				`SELECT copper_deposit, tin_deposit,
-				        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false)
-				 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
-				worldID, q, r2,
-			).Scan(&copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit)
-			if err2 := h.pool.QueryRow(r.Context(),
-				`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
-				                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
-				 VALUES ($1,$2,$3,$4,'free',$5,$6,$7,$8) RETURNING id`,
-				worldID, q, r2, terrain, copperDeposit, tinDeposit, silverDeposit, cedarDeposit,
-			).Scan(&targetID); err2 != nil {
-				writeError(w, http.StatusInternalServerError, "could not create target province")
-				return
-			}
-		}
-		// colonize and outpost require an empty province (no settlement).
-		if req.Intent == "colonize" || req.Intent == "outpost" {
-			var existingSett uuid.UUID
-			if scanErr := h.pool.QueryRow(r.Context(),
-				`SELECT id FROM settlements WHERE province_id = $1`, targetID,
-			).Scan(&existingSett); scanErr == nil {
-				writeError(w, http.StatusUnprocessableEntity, "province already settled")
-				return
-			}
-		}
-	} else {
-		targetID, err = uuid.Parse(req.TargetID)
-		if err != nil {
-			writeError(w, http.StatusBadRequest, "invalid target ID")
-			return
-		}
-	}
-
-	// Verify ownership via settlement.
-	var ownerID *uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT owner_id FROM settlements WHERE province_id = $1 AND world_id = $2`,
-		sourceID, worldID,
-	).Scan(&ownerID)
-	if err != nil || ownerID == nil || *ownerID != playerID {
-		writeError(w, http.StatusForbidden, "not your province")
-		return
-	}
-
-	// Load source and target terrain for distance calculation.
-	src, err := loadTerrainProvince(r.Context(), h.pool, sourceID, worldID)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "source province not found")
-		return
-	}
-	dst, err := loadTerrainProvince(r.Context(), h.pool, targetID, worldID)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "target province not found")
-		return
-	}
-
-	dist := province.HexDistance(src.MapTile, dst.MapTile)
-	if dist == 0 {
-		writeError(w, http.StatusBadRequest, "cannot march to own province")
-		return
-	}
-
-	army := province.ArmyComposition{
-		Spearman:      req.Spearman,
-		WarChariot:    req.WarChariot,
-		Priest:        req.Priest,
-		Ship:          req.Ship, // galley
-		EliteInfantry: req.EliteInfantry,
-		WarGalley:     req.WarGalley,
-		Merchantman:   req.Merchantman,
-	}
-
-	hasNaval := army.Ship > 0 || army.WarGalley > 0 || army.Merchantman > 0
-	if combat.Strength(army) == 0 && !hasNaval && army.Priest == 0 {
-		writeError(w, http.StatusBadRequest, "must send at least one unit")
-		return
-	}
-
-	if req.Intent == "explore" && !hasNaval {
-		writeError(w, http.StatusBadRequest, "explore requires at least one ship (galley, war galley, or merchantman)")
-		return
-	}
-
-	// Mountains are impassable for all units.
-	if dst.TerrainType == "mountain_limestone" || dst.TerrainType == "mountain_red" {
-		writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
-		return
-	}
-
-	// Naval gating.
-	// Alla tre skeppstyper (galley/war_galley/merchantman) räknas som naval.
-	isSea := dst.TerrainType == "coastal_sea" || dst.TerrainType == "deep_sea"
-	hasLandUnits := army.Spearman > 0 || army.WarChariot > 0 || army.EliteInfantry > 0
-	if hasNaval {
-		// Embarkation: origin must be coastal OR have a harbour building.
-		if !src.Coastal {
-			var hasHarbour bool
-			_ = h.pool.QueryRow(r.Context(),
-				`SELECT EXISTS(
-				   SELECT 1 FROM buildings b
-				   JOIN settlements s ON s.id = b.settlement_id
-				   WHERE s.province_id = $1 AND b.building_type = 'harbour'
-				 )`,
-				sourceID,
-			).Scan(&hasHarbour)
-			if !hasHarbour {
-				writeError(w, http.StatusUnprocessableEntity, "ships can only embark from coastal settlements or harbours")
-				return
-			}
-		}
-		if req.Intent == "explore" {
-			// Explore: ships only, any coastal or sea destination, auto-returns.
-			if hasLandUnits {
-				writeError(w, http.StatusUnprocessableEntity, "explore requires ships only — remove land units")
-				return
-			}
-			if !dst.Coastal && !isSea {
-				writeError(w, http.StatusUnprocessableEntity, "explore can only target coastal or sea provinces")
-				return
-			}
-		} else if hasLandUnits {
-			// Naval expedition: troops must land at a coast.
-			if !dst.Coastal {
-				writeError(w, http.StatusUnprocessableEntity, "naval expedition must land at a coastal province")
-				return
-			}
-		} else {
-			// Ships only (not explore): coast or sea destinations allowed.
-			if !dst.Coastal && !isSea {
-				writeError(w, http.StatusUnprocessableEntity, "ships can only sail to coastal or sea provinces")
-				return
-			}
-		}
-	} else if isSea {
-		writeError(w, http.StatusUnprocessableEntity, "sea provinces require ships to reach")
-		return
-	}
-
-	now := h.clk.Now()
-	moveHours := province.TerrainMoveHours(dst.TerrainType) * float64(dist)
-	arrivesAt := now.Add(time.Duration(moveHours * float64(time.Hour)))
-	var marchCurrentTick int
-	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&marchCurrentTick)
-	marchTravelTicks := int(math.Round(moveHours))
-	if marchTravelTicks < 1 {
-		marchTravelTicks = 1
-	}
-
-	// Deduct units from source and insert march atomically — prevents sending
-	// units you don't have or using the same units in multiple marches.
-	tx, err := h.pool.Begin(r.Context())
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
-		return
-	}
-	defer tx.Rollback(r.Context())
-
-	// 40% garrison + 75% attacker rules (attack only — skip for colonize/reinforce/support).
-	if req.Intent == "attack" {
-		var garrison province.ArmyComposition
-		if err := tx.QueryRow(r.Context(),
-			`SELECT infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
-			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
-			sourceID, worldID,
-		).Scan(&garrison.Spearman, &garrison.WarChariot,
-			&garrison.Priest, &garrison.Ship, &garrison.EliteInfantry,
-			&garrison.WarGalley, &garrison.Merchantman,
-		); err == nil {
-			garrisonDP := combat.Strength(garrison)
-			sentDP := combat.Strength(army)
-			if garrisonDP > 0 && sentDP > 0 && sentDP > 0.6*garrisonDP {
-				writeError(w, http.StatusUnprocessableEntity, "cannot send more than 60% of garrison strength — you must defend your home")
-				return
-			}
-		}
-
-		// Must send at least 75% of the defender's DP.
-		var defGarrison province.ArmyComposition
-		if err := tx.QueryRow(r.Context(),
-			`SELECT infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
-			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
-			targetID, worldID,
-		).Scan(&defGarrison.Spearman, &defGarrison.WarChariot,
-			&defGarrison.Priest, &defGarrison.Ship, &defGarrison.EliteInfantry,
-			&defGarrison.WarGalley, &defGarrison.Merchantman,
-		); err == nil {
-			defDP := combat.Strength(defGarrison)
-			sentDP := combat.Strength(army)
-			if defDP > 0 && sentDP < 0.75*defDP {
-				writeError(w, http.StatusUnprocessableEntity, "must send at least 75% of the defender's strength to mount a serious attack")
-				return
-			}
-		}
-	}
-
-	tag, err := tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		   infantry       = GREATEST(0, infantry       - $1),
-		   chariot        = GREATEST(0, chariot        - $2),
-		   priest         = GREATEST(0, priest         - $3),
-		   ship           = GREATEST(0, ship           - $4),
-		   elite_infantry = GREATEST(0, elite_infantry - $5),
-		   war_galley     = GREATEST(0, war_galley     - $6),
-		   merchantman    = GREATEST(0, merchantman    - $7)
-		 WHERE province_id = $8 AND world_id = $9
-		   AND infantry       >= $1
-		   AND chariot        >= $2
-		   AND priest         >= $3
-		   AND ship           >= $4
-		   AND elite_infantry >= $5
-		   AND war_galley     >= $6
-		   AND merchantman    >= $7`,
-		army.Spearman, army.WarChariot, army.Priest, army.Ship, army.EliteInfantry,
-		army.WarGalley, army.Merchantman, sourceID, worldID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not deduct army")
-		return
-	}
-	if tag.RowsAffected() == 0 {
-		// The atomic UPDATE matched no row because at least one unit type was
-		// short. Report which units fell short and by how much so the caller
-		// can scale the march down instead of looping a blind 422.
-		var have province.ArmyComposition
-		_ = tx.QueryRow(r.Context(),
-			`SELECT infantry, chariot, priest, ship, elite_infantry, war_galley, merchantman
-			 FROM settlements WHERE province_id = $1 AND world_id = $2`,
-			sourceID, worldID,
-		).Scan(&have.Spearman, &have.WarChariot,
-			&have.Priest, &have.Ship, &have.EliteInfantry,
-			&have.WarGalley, &have.Merchantman)
-		writeError(w, http.StatusUnprocessableEntity, insufficientUnitsMsg(army, have))
-		return
-	}
-
-	var colonyName *string
-	if req.Intent == "colonize" && req.ColonyName != "" {
-		n := req.ColonyName
-		colonyName = &n
-	}
-
-	var marchID uuid.UUID
-	err = tx.QueryRow(r.Context(),
-		`INSERT INTO marching_armies
-		 (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
-		  war_galley, merchantman, intent, departs_at, arrives_at, colony_name)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-		 RETURNING id`,
-		worldID, sourceID, targetID,
-		army.Spearman, army.WarChariot, army.Priest, army.Ship, army.EliteInfantry,
-		army.WarGalley, army.Merchantman,
-		req.Intent, now, arrivesAt, colonyName,
-	).Scan(&marchID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not send army")
-		return
-	}
-
-	// Recompute production: army cols decremented + new transit march affects labor_pool.
-	var srcSettlementID uuid.UUID
-	if err2 := tx.QueryRow(r.Context(),
-		`SELECT id FROM settlements WHERE province_id=$1 AND world_id=$2`, sourceID, worldID,
-	).Scan(&srcSettlementID); err2 == nil {
-		_ = economy.RecomputeProduction(r.Context(), tx, srcSettlementID)
-	}
-
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
-		return
-	}
-
-	if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledArmyArrival,
-		combat.ArmyArrivalPayload{MarchingArmyID: marchID},
-		marchCurrentTick+marchTravelTicks,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule arrival")
-		return
-	}
-
-	writeJSON(w, http.StatusCreated, map[string]any{
-		"march_id":   marchID,
-		"arrives_at": arrivesAt,
-		"distance":   dist,
-	})
 }
 
 // Build handles POST /worlds/:worldID/provinces/:provinceID/build.
@@ -2103,11 +1724,11 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type tickRow struct {
-		Tick        int              `json:"tick"`
+		Tick        int                `json:"tick"`
 		Production  map[string]float64 `json:"production"`
 		Consumption map[string]float64 `json:"consumption"`
-		Events      []tickEvent      `json:"events"`
-		Loyalty     string           `json:"loyalty"` // "—" until Fas 3
+		Events      []tickEvent        `json:"events"`
+		Loyalty     string             `json:"loyalty"` // "—" until Fas 3
 	}
 	ticks := make([]tickRow, 0, last)
 	for tk := fromTick; tk <= currentTick; tk++ {
@@ -2800,9 +2421,34 @@ func (h *ProvinceHandler) TradeRoutes(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, result)
 }
 
+// disbandPlan decides how to satisfy a disband of `men` from a set of garrison
+// units of one type, given their sizes in the order they should be consumed
+// (callers pass them smallest-first, so leftover fragments clear before
+// full-strength units are touched). It returns, per input unit, how many men to
+// remove from it: 0 = untouched, ==size = disband the whole unit, in between =
+// shrink it. Never removes more than a unit holds, and stops once `men` is met,
+// so asking to disband more than the garrison has simply disbands what exists.
+func disbandPlan(sizes []int, men int) []int {
+	plan := make([]int, len(sizes))
+	remaining := men
+	for i, size := range sizes {
+		if remaining <= 0 {
+			break
+		}
+		take := size
+		if take > remaining {
+			take = remaining
+		}
+		plan[i] = take
+		remaining -= take
+	}
+	return plan
+}
+
 // Disband handles POST /worlds/:worldID/provinces/:provinceID/disband.
-// Releases units back into the population. Soldiers return to civilian life:
-// each disbanded unit adds PopCost back to population.
+// Releases garrison units of the requested types back into civilian life,
+// consuming them from the units table (the SB7 source of truth). Variant B:
+// disband does not restore population directly; labor rises as army pop-cost falls.
 func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -2845,8 +2491,10 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Variant B: disband does NOT restore population.
-	// Disbanded units leave the army columns; labor_pool rises automatically
-	// because army pop-cost decreases. RecomputeProduction updates the rates.
+	// The army lives in the units table (single source of truth since the SB7
+	// drop of the settlements.* army columns). Disbanding consumes garrison units
+	// of the requested type; labor_pool rises automatically because the army's
+	// pop-cost decreases. RecomputeProduction updates the rates.
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -2854,22 +2502,77 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	tag, err := tx.Exec(r.Context(),
-		`UPDATE settlements SET
-		     infantry       = GREATEST(0, infantry       - $1),
-		     chariot        = GREATEST(0, chariot        - $2),
-		     priest         = GREATEST(0, priest         - $3),
-		     ship           = GREATEST(0, ship           - $4),
-		     elite_infantry = GREATEST(0, elite_infantry - $5),
-		     war_galley     = GREATEST(0, war_galley     - $6),
-		     merchantman    = GREATEST(0, merchantman    - $7)
-		 WHERE id = $8`,
-		req.Spearman, req.WarChariot, req.Priest, req.Ship, req.EliteInfantry,
-		req.WarGalley, req.Merchantman, settlementID,
-	)
-	if err != nil || tag.RowsAffected() == 0 {
-		writeError(w, http.StatusInternalServerError, "disband failed")
-		return
+	// priest is no longer a unit (removed mig 060), so it is never disbandable.
+	wanted := []struct {
+		men int
+		typ string
+		key string
+	}{
+		{req.Spearman, "spearman", "spearman"},
+		{req.WarChariot, "war_chariot", "war_chariot"},
+		{req.Ship, "ship", "ship"},
+		{req.EliteInfantry, "elite_infantry", "elite_infantry"},
+		{req.WarGalley, "war_galley", "war_galley"},
+		{req.Merchantman, "merchantman", "merchantman"},
+	}
+
+	disbanded := map[string]int{"priest": 0}
+	for _, want := range wanted {
+		disbanded[want.key] = 0
+		if want.men <= 0 {
+			continue
+		}
+		// Load the garrison units of this type, smallest first, so a disband
+		// clears leftover fragments before biting into full-strength units.
+		rows, err := tx.Query(r.Context(),
+			`SELECT id, size FROM units
+			 WHERE settlement_id = $1 AND status = 'garrison' AND type = $2
+			 ORDER BY size ASC`,
+			settlementID, want.typ,
+		)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "disband failed")
+			return
+		}
+		var ids []uuid.UUID
+		var sizes []int
+		for rows.Next() {
+			var id uuid.UUID
+			var size int
+			if scanErr := rows.Scan(&id, &size); scanErr != nil {
+				rows.Close()
+				writeError(w, http.StatusInternalServerError, "disband failed")
+				return
+			}
+			ids = append(ids, id)
+			sizes = append(sizes, size)
+		}
+		rows.Close()
+
+		// Decide the per-unit consumption, then apply it: a unit consumed in full
+		// is disbanded, a partially-consumed one is shrunk.
+		plan := disbandPlan(sizes, want.men)
+		for i, take := range plan {
+			if take <= 0 {
+				continue
+			}
+			if take >= sizes[i] {
+				if _, err := tx.Exec(r.Context(),
+					`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, ids[i],
+				); err != nil {
+					writeError(w, http.StatusInternalServerError, "disband failed")
+					return
+				}
+			} else {
+				if _, err := tx.Exec(r.Context(),
+					`UPDATE units SET size = size - $1, updated_at = now() WHERE id = $2`, take, ids[i],
+				); err != nil {
+					writeError(w, http.StatusInternalServerError, "disband failed")
+					return
+				}
+			}
+			disbanded[want.key] += take
+		}
 	}
 
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
@@ -2882,12 +2585,10 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Report what was actually disbanded (may be less than requested if the
+	// garrison held fewer men of a type than asked).
 	writeJSON(w, http.StatusOK, map[string]any{
-		"disbanded": map[string]int{
-			"spearman": req.Spearman, "war_chariot": req.WarChariot,
-			"priest": req.Priest, "ship": req.Ship, "elite_infantry": req.EliteInfantry,
-			"war_galley": req.WarGalley, "merchantman": req.Merchantman,
-		},
+		"disbanded": disbanded,
 	})
 }
 
