@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -29,6 +30,15 @@ func craftCmd() *cobra.Command {
   poleia craft --recipe 1 --qty 5        # same as bronze (numeric ID still works)`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			// Resolve recipe name → id if --recipe is a name, not a number.
+			// A bare numeric --recipe (e.g. "1") is used as the id directly —
+			// the help text and error string both advertise this, and LLM
+			// agents overwhelmingly pass the numeric form.
+			if recipeName != "" {
+				if n, numErr := strconv.Atoi(strings.TrimSpace(recipeName)); numErr == nil {
+					recipeID = n
+					recipeName = ""
+				}
+			}
 			if recipeName != "" {
 				id, ok := recipeNameToID[strings.ToLower(recipeName)]
 				if !ok {
