@@ -1090,20 +1090,12 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 		return fmt.Errorf("update territory state: %w", err)
 	}
 
-	// Mark old owner dispossessed.
+	// Succession / game-over for the dispossessed defender. Ownership of this
+	// settlement was just transferred to the attacker above, so handleOwnerCityLoss
+	// sees it as no longer the defender's.
 	if dest.ownerID != nil {
-		_, _ = tx.Exec(ctx,
-			`UPDATE player_world_records SET status = 'dispossessed', settlement_id = NULL
-			 WHERE player_id = $1 AND world_id = $2`,
-			*dest.ownerID, worldID,
-		)
-		// Recompute production for defender (pop changed).
-		var defSett uuid.UUID
-		if err := tx.QueryRow(ctx,
-			`SELECT id FROM settlements WHERE owner_id = $1 AND world_id = $2 AND is_capital = true`,
-			*dest.ownerID, worldID,
-		).Scan(&defSett); err == nil {
-			_ = economy.RecomputeProduction(ctx, tx, defSett)
+		if _, err := handleOwnerCityLoss(ctx, tx, *dest.ownerID, worldID, *dest.settlementID); err != nil {
+			return fmt.Errorf("handle defender city loss: %w", err)
 		}
 	}
 

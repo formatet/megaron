@@ -15,18 +15,17 @@ package combat
 //      remove them from kingdom_members if they remain in one.
 //   6. Dispossess: owner_id = NULL, control_type = 'occupied', kingdom_id = NULL,
 //      state = 'collapsed' on the settlement row.
-//   7. Mark player dispossessed in player_world_records IF this was their last city;
-//      schedule Respawn if it was.
+//   7. Succession: promote the highest-loyalty survivor to capital, or — if this
+//      was the player's last city — mark them dispossessed for the epitaph.
 //   8. Emit CityCollapsed event.
 //
 // Garrison-unit decision: existing garrison units are disbanded (status='disbanded')
 // so no orphan rows remain. Their men are "subsumed into" the new warband narratively;
 // no pop is credited back (they were already removed from pop at recruit time).
 //
-// Last-city respawn decision: if this was the player's last settlement, we schedule
-// a Respawn event (fire immediately) rather than calling respawnPlayer inline,
-// because respawnPlayer uses pool (not tx) and creates a new TX — nesting would
-// risk deadlock. The Respawn handler is idempotent (checks for existing capital).
+// Succession decision: metropolis-succession and game-over are handled by the
+// shared handleOwnerCityLoss (succession.go), so all three loss paths (collapse and
+// the two conquest paths) behave identically. Respawn was removed 2026-07-10.
 
 import (
 	"context"
@@ -84,7 +83,8 @@ func (h *CollapseSettlementHandler) Handle(ctx context.Context, e events.Schedul
 }
 
 // collapseSettlement performs the full teardown of a city reduced to ≤ 100 pop.
-// All DB writes use ctx and tx (G2). Respawn is enqueued via scheduler (atomic with TX).
+// All DB writes use ctx and tx (G2). Succession/game-over is handled inline in
+// step 7 via handleOwnerCityLoss (succession.go).
 //
 // Idempotent: returns nil immediately if state == 'collapsed'.
 func collapseSettlement(
@@ -97,15 +97,15 @@ func collapseSettlement(
 ) error {
 	// ── 1. Load settlement with FOR UPDATE (idempotency guard) ─────────────────
 	var ownerID *uuid.UUID
-	var cultureID, name string
+	var name string
 	var provinceID uuid.UUID
 	var state string
 
 	if err := tx.QueryRow(ctx,
-		`SELECT owner_id, culture_id, province_id, state, name
+		`SELECT owner_id, province_id, state, name
 		 FROM settlements WHERE id = $1 FOR UPDATE`,
 		settlementID,
-	).Scan(&ownerID, &cultureID, &provinceID, &state, &name); err != nil {
+	).Scan(&ownerID, &provinceID, &state, &name); err != nil {
 		return fmt.Errorf("load settlement for collapse: %w", err)
 	}
 
@@ -294,43 +294,18 @@ func collapseSettlement(
 		slog.Warn("collapse: broadcast gossip", "settlement", settlementID, "err", err)
 	}
 
-	// ── 7. Last-city check → Respawn ───────────────────────────────────────────
+	// ── 7. Succession / game-over ──────────────────────────────────────────────
+	// owner_id was cleared in step 6, so the fallen city no longer counts as the
+	// player's. handleOwnerCityLoss decides between metropolis succession (promote
+	// the highest-loyalty survivor) and game-over (last city → dispossessed, with
+	// last_settlement_id anchored for the epitaph crawl).
 	isLastCity := false
 	if effectiveOwnerID != uuid.Nil {
-		var remaining int
-		_ = tx.QueryRow(ctx,
-			`SELECT COUNT(*) FROM settlements
-			 WHERE owner_id = $1 AND world_id = $2 AND state != 'collapsed'`,
-			effectiveOwnerID, worldID,
-		).Scan(&remaining)
-		isLastCity = (remaining == 0)
-
-		// Mark dispossessed regardless — the player has lost this city.
-		if _, err := tx.Exec(ctx,
-			`UPDATE player_world_records
-			   SET status = 'dispossessed', settlement_id = NULL
-			 WHERE player_id = $1 AND world_id = $2`,
-			effectiveOwnerID, worldID,
-		); err != nil {
-			slog.Warn("collapse: mark dispossessed", "player", effectiveOwnerID, "err", err)
+		gameOver, lossErr := handleOwnerCityLoss(ctx, tx, effectiveOwnerID, worldID, settlementID)
+		if lossErr != nil {
+			return fmt.Errorf("handle owner city loss: %w", lossErr)
 		}
-
-		if isLastCity {
-			// Schedule Respawn after 12 ticks (~12 game hours). Atomic with the collapse TX.
-			var currentTick int
-			_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-			if err := scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledRespawn,
-				RespawnPayload{
-					PlayerID: effectiveOwnerID,
-					WorldID:  worldID,
-					Culture:  cultureID,
-				},
-				currentTick+12,
-			); err != nil {
-				slog.Warn("collapse: could not schedule respawn",
-					"player", effectiveOwnerID, "err", err)
-			}
-		}
+		isLastCity = gameOver
 	}
 
 	// ── 8. Emit CityCollapsed event ────────────────────────────────────────────

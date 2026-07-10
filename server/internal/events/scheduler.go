@@ -46,7 +46,6 @@ const (
 	ScheduledKharisTick        ScheduledEventType = "KharisTick"
 	ScheduledTradeDelivery     ScheduledEventType = "TradeDelivery"
 	ScheduledTradeReturn       ScheduledEventType = "TradeReturn"
-	ScheduledRespawn           ScheduledEventType = "Respawn"
 	ScheduledRecallArrival     ScheduledEventType = "RecallArrival"
 	ScheduledLogisticsArrival  ScheduledEventType = "LogisticsArrival"
 	// C1 — unit model; handler registered in C2+.

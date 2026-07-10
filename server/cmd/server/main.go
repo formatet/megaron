@@ -112,7 +112,6 @@ func main() {
 	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
-	respawnH := handlers.NewRespawnHandler(pool, eventStore, sitosCfg)
 	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, gameClock)
 	marchRecallH := messenger.NewMarchRecallHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
@@ -126,7 +125,6 @@ func main() {
 	worker.Register(events.ScheduledSitosTick, sitosH.Handle)
 	worker.Register(events.ScheduledTradeDelivery, tradeH.Handle)
 	worker.Register(events.ScheduledTradeReturn, tradeReturnH.Handle)
-	worker.Register(events.ScheduledRespawn, respawnH.Handle)
 	worker.Register(events.ScheduledRecallArrival, recallH.Handle)
 	worker.Register(events.ScheduledMarchRecall, marchRecallH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
@@ -143,7 +141,6 @@ func main() {
 	tickWorker := tick.New(pool, gameClock, eventStore)
 	go tickWorker.Run(ctx)
 	go seedDailyTicks(ctx, pool, scheduler)
-	go healDispossessed(ctx, pool, scheduler)
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -169,9 +166,11 @@ func main() {
 
 	// Web (HTML) routes.
 	r.Get("/", webH.Index)
+	r.Get("/logout", webH.Logout)
 	r.With(auth.WebMiddleware(authSvc)).Get("/play", webH.Play)
 	r.With(auth.WebMiddleware(authSvc)).Route("/world/{worldID}", func(r chi.Router) {
 		r.Get("/join", webH.JoinView)
+		r.Get("/epitaph", webH.EpitaphView)
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			worldID := chi.URLParam(r, "worldID")
 			http.Redirect(w, r, "/world/"+worldID+"/map", http.StatusSeeOther)
@@ -367,65 +366,6 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 	slog.Info("daily ticks seeded", "worlds", len(worldIDs))
 }
 
-// healDispossessed queues a Respawn event for every dispossessed player that has
-// no capital and no pending respawn already in the queue. Runs once at startup
-// to recover players that were defeated before the respawn scheduler existed.
-func healDispossessed(ctx context.Context, pool *pgxpool.Pool, sched *events.Scheduler) {
-	rows, err := pool.Query(ctx, `
-		SELECT pwr.player_id, pwr.world_id,
-		       COALESCE(
-		           (SELECT s.culture_id FROM settlements s
-		            WHERE s.world_id = pwr.world_id AND s.owner_id = pwr.player_id
-		            LIMIT 1),
-		           'akhaier'
-		       ) AS culture
-		FROM player_world_records pwr
-		WHERE pwr.status = 'dispossessed'
-		  AND NOT EXISTS (
-		      SELECT 1 FROM settlements
-		      WHERE world_id = pwr.world_id AND owner_id = pwr.player_id AND is_capital = true
-		  )
-		  AND NOT EXISTS (
-		      SELECT 1 FROM scheduled_events
-		      WHERE world_id = pwr.world_id AND event_type = 'Respawn'
-		        AND payload->>'player_id' = pwr.player_id::text
-		        AND processed_at IS NULL AND failed_at IS NULL
-		  )`)
-	if err != nil {
-		slog.Error("healDispossessed: query", "err", err)
-		return
-	}
-	defer rows.Close()
-
-	type victim struct {
-		playerID uuid.UUID
-		worldID  uuid.UUID
-		culture  string
-	}
-	var victims []victim
-	for rows.Next() {
-		var v victim
-		if err := rows.Scan(&v.playerID, &v.worldID, &v.culture); err == nil {
-			victims = append(victims, v)
-		}
-	}
-
-	var healCurrentTick int
-	_ = pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&healCurrentTick)
-	for _, v := range victims {
-		if err := sched.EnqueueTick(ctx, v.worldID, events.ScheduledRespawn,
-			map[string]any{"player_id": v.playerID, "world_id": v.worldID, "culture": v.culture},
-			healCurrentTick,
-		); err != nil {
-			slog.Error("healDispossessed: enqueue", "player", v.playerID, "err", err)
-		} else {
-			slog.Info("healDispossessed: queued respawn", "player", v.playerID)
-		}
-	}
-	if len(victims) > 0 {
-		slog.Info("healDispossessed: scheduled respawns", "count", len(victims))
-	}
-}
 
 func runMigrations(dbURL string) error {
 	m, err := migrate.New("file://db/migrations", dbURL)

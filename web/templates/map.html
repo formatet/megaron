@@ -62,16 +62,6 @@
 
     <!-- Map dim behind open drawer -->
     <div class="map-dim" id="map-dim"></div>
-
-    <!-- No-province card (new player) -->
-    {{if not .SettlementID}}
-    <div class="no-province-card visible" id="no-province-card">
-      <div class="npc-title">Choose your starting province</div>
-      <div class="npc-text">Click a free hex on the map to found your first megaron.</div>
-      <button class="btn-small btn-primary"
-              onclick="document.getElementById('no-province-card').classList.remove('visible')">Understood</button>
-    </div>
-    {{end}}
   </div>
 
   <!-- ── Bottom nav ───────────────────────────────────────────────────── -->

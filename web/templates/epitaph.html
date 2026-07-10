@@ -1,0 +1,124 @@
+{{template "base" .}}
+{{define "title"}}The reign of {{.Wanax}} — Megaron{{end}}
+{{define "content"}}
+<div class="epitaph-stage">
+
+  <!-- receding starfield-ish wash + top fade so the crawl melts into the distance -->
+  <div class="epitaph-sky"></div>
+  <div class="epitaph-fade"></div>
+
+  <div class="epitaph-viewport">
+    <div class="epitaph-crawl">
+      <div class="epitaph-kicker">Här slutar</div>
+      <h1 class="epitaph-name">Wanax {{.Wanax}}</h1>
+      {{if .City}}<div class="epitaph-seat">av {{.City}}</div>{{end}}
+      <div class="epitaph-body">
+        {{range .Lines}}<p>{{.}}</p>{{end}}
+      </div>
+    </div>
+  </div>
+
+  <div class="epitaph-actions">
+    <button class="epitaph-btn" onclick="beginAnew()">Begin anew</button>
+  </div>
+</div>
+
+<style>
+  /* A death screen commits to darkness regardless of the viewer's theme. */
+  .epitaph-stage {
+    position: fixed; inset: 0;
+    background: radial-gradient(120% 90% at 50% 8%, #101427 0%, #05060a 62%, #000 100%);
+    overflow: hidden;
+    font-family: 'Cinzel', Georgia, serif;
+    color: #f3d688;
+  }
+  .epitaph-sky {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.35), transparent),
+      radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,.25), transparent),
+      radial-gradient(1px 1px at 40% 60%, rgba(255,255,255,.18), transparent),
+      radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,.22), transparent);
+  }
+  /* Top fade: the crawl dissolves into the horizon rather than clipping. */
+  .epitaph-fade {
+    position: absolute; left: 0; right: 0; top: 0; height: 42%; z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(#05060a 8%, rgba(5,6,10,0) 100%);
+  }
+
+  /* The 3D stage. perspective + a forward tilt gives the receding crawl. */
+  .epitaph-viewport {
+    position: absolute; inset: 0; z-index: 1;
+    perspective: 380px;
+    perspective-origin: 50% 0%;
+    overflow: hidden;
+  }
+  .epitaph-crawl {
+    position: absolute; top: 100%; left: 50%;
+    width: min(92%, 660px);
+    transform-origin: 50% 0%;
+    transform: translateX(-50%) rotateX(30deg);
+    text-align: center;
+    animation: epitaph-scroll 60s linear forwards;
+  }
+  @keyframes epitaph-scroll {
+    from { top: 100%; }
+    to   { top: -340%; }
+  }
+
+  .epitaph-kicker {
+    font-size: .8rem; letter-spacing: .35em; text-transform: uppercase;
+    color: #b7935a; margin-bottom: .6rem;
+  }
+  .epitaph-name {
+    font-size: 2.4rem; font-weight: 600; margin: 0; color: #f9e79f;
+    text-shadow: 0 0 18px rgba(249,231,159,.25);
+  }
+  .epitaph-seat {
+    font-size: 1.2rem; color: #cbb079; margin-top: .2rem;
+    font-style: italic;
+  }
+  .epitaph-body {
+    margin-top: 2.4rem; font-size: 1.5rem; line-height: 2.05; color: #efd995;
+  }
+  .epitaph-body p { margin: 0 0 1.1rem; }
+
+  /* "Begin anew" — always reachable, floating above the crawl. */
+  .epitaph-actions {
+    position: absolute; left: 0; right: 0; bottom: 2rem; z-index: 5;
+    display: flex; justify-content: center;
+  }
+  .epitaph-btn {
+    background: transparent; color: #f3d688;
+    border: 1px solid rgba(243,214,136,.55);
+    padding: .7rem 1.8rem; font-family: 'Cinzel', Georgia, serif;
+    font-size: .95rem; letter-spacing: .18em; text-transform: uppercase;
+    cursor: pointer; transition: background .2s, border-color .2s, color .2s;
+  }
+  .epitaph-btn:hover {
+    background: rgba(243,214,136,.12);
+    border-color: #f9e79f; color: #f9e79f;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .epitaph-crawl {
+      position: static; transform: none; animation: none;
+      margin: 3rem auto 7rem; top: auto;
+    }
+    .epitaph-viewport { overflow: auto; }
+    .epitaph-fade { display: none; }
+  }
+</style>
+
+<script>
+  function beginAnew() {
+    try {
+      localStorage.removeItem('poleia_token');
+      localStorage.removeItem('poleia_refresh');
+    } catch (e) { /* ignore */ }
+    // /logout clears the httpOnly auth cookie server-side, then redirects to /.
+    window.location.href = '/logout';
+  }
+</script>
+{{end}}

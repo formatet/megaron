@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -178,11 +180,23 @@ func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 		`SELECT EXISTS (SELECT 1 FROM settlements WHERE owner_id = $1 AND world_id = $2)`,
 		playerID, h.worldID,
 	).Scan(&exists)
-	if !exists {
-		http.Redirect(w, r, "/world/"+h.worldID.String()+"/join", http.StatusSeeOther)
+	if exists {
+		http.Redirect(w, r, "/world/"+h.worldID.String()+"/map", http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/world/"+h.worldID.String()+"/map", http.StatusSeeOther)
+	// No settlement. A dispossessed Wanax (lost their last city) is shown their
+	// epitaph; a Wanax who never joined goes to the join page.
+	var dispossessed bool
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT EXISTS (SELECT 1 FROM player_world_records
+		   WHERE player_id = $1 AND world_id = $2 AND status = 'dispossessed')`,
+		playerID, h.worldID,
+	).Scan(&dispossessed)
+	if dispossessed {
+		http.Redirect(w, r, "/world/"+h.worldID.String()+"/epitaph", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/world/"+h.worldID.String()+"/join", http.StatusSeeOther)
 }
 
 // JoinView serves the world join page — shown to new players before they have a settlement.
@@ -243,6 +257,14 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		).Scan(&unreadCount)
 	}
 
+	// An authenticated Wanax with no settlement here (never joined, or lost their
+	// last city) must not land on a fog-only map — route them through /play, which
+	// sends them to the join page or their epitaph as appropriate.
+	if playerIDStr != "" && settlementID == "" {
+		http.Redirect(w, r, "/play", http.StatusSeeOther)
+		return
+	}
+
 	h.render(w, "map.html", map[string]any{
 		"World":          wld,
 		"WorldID":        worldID,
@@ -253,4 +275,147 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		"UnreadCount":    unreadCount,
 		"MapMode":        true,
 	})
+}
+
+// EpitaphView renders a fallen Wanax's reign as a scrolling crawl. Only a
+// dispossessed player (one who lost their last settlement) has an epitaph; anyone
+// else is bounced back through /play.
+func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	var status string
+	var lastSettlementID *uuid.UUID
+	err := h.pool.QueryRow(r.Context(),
+		`SELECT status, last_settlement_id FROM player_world_records
+		 WHERE player_id = $1 AND world_id = $2`,
+		playerID, h.worldID,
+	).Scan(&status, &lastSettlementID)
+	if err != nil || status != "dispossessed" {
+		http.Redirect(w, r, "/play", http.StatusSeeOther)
+		return
+	}
+
+	var wanax string
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT username FROM players WHERE id = $1`, playerID).Scan(&wanax)
+	if wanax == "" {
+		wanax = "en okänd Wanax"
+	}
+
+	var cityName, culture string
+	if lastSettlementID != nil {
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT name, culture_id FROM settlements WHERE id = $1`, *lastSettlementID,
+		).Scan(&cityName, &culture)
+	}
+
+	h.render(w, "epitaph.html", map[string]any{
+		"Wanax":   wanax,
+		"City":    cityName,
+		"Culture": culture,
+		"Lines":   h.epitaphLines(r.Context(), lastSettlementID, cityName),
+		"WorldID": h.worldID,
+		"MapMode": true, // suppress the site nav/footer for a full-screen crawl
+	})
+}
+
+// epitaphLines reconstructs a fallen Wanax's reign as short Swedish prose lines,
+// drawn from the fallen capital's own event stream (stream_id = settlementID). The
+// founding and closing lines are synthesized — the event log carries no explicit
+// "settlement founded" event — so the crawl always has a beginning and an end even
+// for a very short reign.
+func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, cityName string) []string {
+	city := cityName
+	if city == "" {
+		city = "staden"
+	}
+	lines := []string{city + " restes vid Thalassas kust."}
+
+	if settlementID != nil {
+		rows, err := h.pool.Query(ctx,
+			`SELECT event_type, payload FROM events
+			 WHERE stream_id = $1
+			 ORDER BY id ASC
+			 LIMIT 200`,
+			*settlementID,
+		)
+		if err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				var eventType string
+				var payload []byte
+				if rows.Scan(&eventType, &payload) != nil {
+					continue
+				}
+				if line := epitaphLine(eventType, payload, city); line != "" {
+					lines = append(lines, line)
+				}
+			}
+		}
+	}
+
+	lines = append(lines, "Så slutade en Wanax' regeringstid.")
+	return lines
+}
+
+// epitaphLine renders one reign-worthy event into a Swedish crawl line, or "" to
+// skip it. Deliberately narrow — only the beats that read as a story (buildings
+// raised, armies mustered, battles, divine favour, the fall) earn a line.
+func epitaphLine(eventType string, payload []byte, city string) string {
+	var p map[string]any
+	_ = json.Unmarshal(payload, &p)
+	str := func(k string) string {
+		if v, ok := p[k].(string); ok {
+			return v
+		}
+		return ""
+	}
+	switch eventType {
+	case "BuildComplete":
+		if b := str("building_type"); b != "" {
+			return "Reste " + b + " i " + city + "."
+		}
+		return "Ett byggnadsverk restes i " + city + "."
+	case "TrainComplete":
+		if u := str("unit_type"); u != "" {
+			return "Mönstrade " + u + " ur " + city + "."
+		}
+		return "Mönstrade en här ur " + city + "."
+	case "CombatResolved", "UnitCombatResolved":
+		return "Krigets vindar drog över " + city + "."
+	case "DivineBlessing":
+		return "Gudarna log mot " + city + "."
+	case "DivinePunishment":
+		return "Gudarna vände sig från " + city + "."
+	case "CityCollapsed":
+		switch str("cause") {
+		case "starvation":
+			return "Hungern kom. " + city + " föll."
+		case "overmobilisation":
+			return "Härarna tömde " + city + ". Staden föll."
+		default:
+			return city + " föll."
+		}
+	default:
+		return ""
+	}
+}
+
+// Logout clears the auth cookie and returns to the start screen. The epitaph's
+// "Begin anew" button hits this after clearing localStorage client-side.
+func (h *WebHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "poleia_token",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+	})
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

@@ -21,13 +21,6 @@ type ArmyArrivalPayload struct {
 	MarchingArmyID uuid.UUID `json:"marching_army_id"`
 }
 
-// RespawnPayload is the scheduled_events payload for Respawn events.
-type RespawnPayload struct {
-	PlayerID uuid.UUID `json:"player_id"`
-	WorldID  uuid.UUID `json:"world_id"`
-	Culture  string    `json:"culture"`
-}
-
 // ArrivalHandler resolves army arrivals. Register with events.Worker at startup.
 type ArrivalHandler struct {
 	pool       *pgxpool.Pool
@@ -176,7 +169,8 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 		effectiveArmy.Spearman = int(float64(effectiveArmy.Spearman) * 1.5)
 	}
 
-	// Load defender settlement (looked up by province_id). Culture is used for respawn.
+	// Load defender settlement (looked up by province_id). (Culture is still loaded
+	// but no longer read — it fed respawn, removed 2026-07-10.)
 	var def struct {
 		OwnerID        *uuid.UUID
 		Army           province.ArmyComposition
@@ -247,24 +241,10 @@ func (h *ArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, marchID, worldI
 	)
 
 	if result.Outcome == OutcomeAttackerWins {
+		// Ownership transfer + succession/game-over are handled inside
+		// applyAttackerVictory (via handleOwnerCityLoss).
 		if err := applyAttackerVictory(ctx, tx, march.OriginID, march.TargetID, def.OwnerID, march.Army, result, worldID); err != nil {
 			return err
-		}
-		// Queue respawn if the defeated player has no remaining settlements.
-		if def.OwnerID != nil && h.scheduler != nil {
-			var remaining int
-			_ = tx.QueryRow(ctx,
-				`SELECT COUNT(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
-				worldID, *def.OwnerID,
-			).Scan(&remaining)
-			if remaining == 0 {
-				var currentTick int
-				_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-				_ = h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledRespawn,
-					RespawnPayload{PlayerID: *def.OwnerID, WorldID: worldID, Culture: def.Culture},
-					currentTick+12,
-				)
-			}
 		}
 	} else {
 		if err := applyDefenderVictory(ctx, tx, march.OriginID, march.TargetID, march.Army, def.Army, result); err != nil {
@@ -369,13 +349,18 @@ func applyAttackerVictory(ctx context.Context, tx pgx.Tx, originID, targetID uui
 
 	// Units were already deducted when the march was sent — nothing to deduct here.
 
-	// Mark old owner dispossessed.
+	// Succession / game-over for the dispossessed defender. The settlement's owner_id
+	// was just transferred to the attacker above, so handleOwnerCityLoss sees it as no
+	// longer the defender's.
 	if defOwnerID != nil {
-		_, _ = tx.Exec(ctx,
-			`UPDATE player_world_records SET status = 'dispossessed', settlement_id = NULL
-			 WHERE player_id = $1 AND world_id = $2`,
-			*defOwnerID, worldID,
-		)
+		var lostSettlementID uuid.UUID
+		if err := tx.QueryRow(ctx,
+			`SELECT id FROM settlements WHERE province_id = $1`, targetID,
+		).Scan(&lostSettlementID); err == nil {
+			if _, err := handleOwnerCityLoss(ctx, tx, *defOwnerID, worldID, lostSettlementID); err != nil {
+				return fmt.Errorf("handle defender city loss: %w", err)
+			}
+		}
 	}
 	return nil
 }
