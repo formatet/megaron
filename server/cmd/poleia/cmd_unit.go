@@ -179,6 +179,7 @@ func unitMarchCmd() *cobra.Command {
 	var targetQ, targetR int
 	var stance string
 	var intent, name string
+	var mode string
 
 	cmd := &cobra.Command{
 		Use:   "march",
@@ -211,7 +212,13 @@ Ore on mountain terrain (copper, tin, silver):
   Mountains are impassable — you cannot colonize the mountain hex itself.
   Instead, colonize an ADJACENT passable hex: the ore deposit will fall in
   the new colony's catchment and can be mined from there.
-  Use 'poleia map' to see which adjacent hexes are passable.`,
+  Use 'poleia map' to see which adjacent hexes are passable.
+
+Conquest choice (--mode, only matters when the target is an enemy settlement):
+  sack (default) — loot goods (silver + a share of the rest, weighted by
+    portability) and raze the settlement; the loot is carried home as a
+    physical, interceptable caravan. annex — keep today's behaviour: take
+    the settlement outright (a captured capital becomes an ordinary colony).`,
 		Example: `  poleia unit march --unit <id> --q 5 --r -3
   poleia unit march --unit <id> --q 5 --r -3 --stance fortify
   poleia unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
@@ -220,7 +227,9 @@ Ore on mountain terrain (copper, tin, silver):
   # Any march reveals fog along its route toward a frontier coordinate:
   poleia unit march --unit <id> --q 12 --r -8
   # Explore: sails/marches to the target then automatically returns home
-  poleia unit march --unit <id> --q 12 --r -8 --intent explore`,
+  poleia unit march --unit <id> --q 12 --r -8 --intent explore
+  # Attack an enemy settlement and annex it instead of the sack default:
+  poleia unit march --unit <id> --q 5 --r -3 --mode annex`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			qSet, rSet := cmd.Flags().Changed("q"), cmd.Flags().Changed("r")
@@ -248,6 +257,9 @@ Ore on mountain terrain (copper, tin, silver):
 			}
 			if name != "" {
 				body["name"] = name
+			}
+			if mode != "" {
+				body["mode"] = mode
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			data, err := c.post(path, body)
@@ -287,6 +299,7 @@ Ore on mountain terrain (copper, tin, silver):
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
 	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
+	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }

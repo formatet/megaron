@@ -718,6 +718,22 @@ function drawDepositIcons(ctx, cx, cy, tile) {
 
 // ── Province building sprite + flag ──────────────────────────────────────
 function drawProvince(ctx, cx, cy, p) {
+  // Razed (Del 2b sack) or collapsed: an abandoned ruin, not a standing city —
+  // no owner, no flag, no garrison dot. Dim broken rubble instead of the building.
+  if (p.state === 'razed' || p.state === 'collapsed') {
+    ctx.save();
+    ctx.fillStyle = '#5A5048';
+    ctx.strokeStyle = '#2A2420';
+    ctx.lineWidth = 0.8;
+    ctx.fillRect(cx - 4, cy - 2, 3, 4);
+    ctx.strokeRect(cx - 4, cy - 2, 3, 4);
+    ctx.fillRect(cx, cy - 4, 4, 3);
+    ctx.strokeRect(cx, cy - 4, 4, 3);
+    ctx.fillStyle = '#3A342E';
+    ctx.fillRect(cx - 1, cy + 1, 2, 1);
+    ctx.restore();
+    return;
+  }
   const walls = Math.min(3, p.walls || 0);
   const accent = p.own ? '#D4AC0D' : (p.allied ? '#4CAF50' : '#C0392B');
   const culture = p.culture ? (CULTURE_ACCENT[p.culture] || '#888') : '#888';

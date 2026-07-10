@@ -82,11 +82,11 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	var u unitRow
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
-		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID); err != nil {
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -903,7 +903,41 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 	cargoSizeAfter := int(float64(cargoSize) * (1 - result.AttackerLosses))
 	cargoPopLost := cargoSize - cargoSizeAfter
 
-	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 {
+	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 && u.captureMode != "annex" {
+		// Del 2b sack: the cargo storms ashore but does not garrison — it stands
+		// positioned at the settlement's hex, and sackSettlement razes the city
+		// instead of it being occupied.
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET
+			   size = $2, status = 'positioned', settlement_id = NULL,
+			   q = $3, r = $4, target_q = NULL, target_r = NULL,
+			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			 WHERE id = $1`,
+			cargoID, cargoSizeAfter, settleQ, settleR,
+		); err != nil {
+			return fmt.Errorf("amphibious sack: position cargo: %w", err)
+		}
+		if err := h.sackSettlement(ctx, tx, u.ownerID, dest, settleQ, settleR, worldID); err != nil {
+			return fmt.Errorf("amphibious sack: %w", err)
+		}
+		// Empty the galley; it rests positioned at the landing hex.
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
+			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
+			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			 WHERE id = $1`,
+			u.id, seaQ, seaR,
+		); err != nil {
+			return fmt.Errorf("amphibious sack: empty galley: %w", err)
+		}
+	} else if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 {
+		// Defender garrison units take their losses BEFORE the cargo lands as
+		// garrison below — same double-punish bug and fix as applyAttackerWins'
+		// annex branch (applyDefenderUnitLosses has no owner filter, so it would
+		// otherwise also strike the cargo's own just-placed garrison row).
+		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
+			return err
+		}
 		// Cargo storms ashore and becomes the captured settlement's garrison.
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET
@@ -914,9 +948,6 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 			cargoID, cargoSizeAfter, *dest.settlementID, settleQ, settleR,
 		); err != nil {
 			return fmt.Errorf("amphibious assault: land cargo garrison: %w", err)
-		}
-		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
-			return err
 		}
 		// Transfer ownership — goods follow settlement_id, so the tin is captured.
 		// is_capital is cleared: a captured metropolis becomes an ordinary colony
@@ -1013,12 +1044,14 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 			"def": defStr, "att_losses": result.AttackerLosses, "def_losses": result.DefenderLosses,
 		}, worldID, nil)
 
-	// Capture notification. The amphibious path emits only unit/combat-stream events,
-	// so without this the dispossessed owner gets no signal their city fell — and in
-	// async play they are typically offline when the raid lands. Mirror the land-march
-	// paths that already notify on OutpostCaptured/ArmyArrival. Same guard as the
-	// ownership transfer above (win AND cargo survived to storm ashore).
-	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 {
+	// Capture notification (annex only — sack emits its own SettlementSacked
+	// notification inside sackSettlement above). The amphibious path otherwise
+	// emits only unit/combat-stream events, so without this the dispossessed owner
+	// gets no signal their city fell — and in async play they are typically offline
+	// when the raid lands. Mirror the land-march paths that already notify on
+	// OutpostCaptured/ArmyArrival. Same guard as the ownership transfer above (win
+	// AND cargo survived to storm ashore).
+	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 && u.captureMode == "annex" {
 		_, _ = h.eventStore.Append(ctx, *dest.settlementID, events.StreamProvince, "SettlementCaptured",
 			map[string]any{
 				"settlement_id": *dest.settlementID, "former_owner": dest.ownerID,
@@ -1040,6 +1073,11 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 }
 
 // applyAttackerWins: arriving unit captures the settlement; defender units take losses.
+// Del 2b (Timothy 2026-07-10): the capture is now a CHOICE carried on the attacking
+// unit (u.captureMode). "annex" is this function's original behaviour, below.
+// "sack" (default) diverts to sackSettlement instead of taking the city: the
+// attacker's own losses still apply (it fought), but it ends up positioned on the
+// map rather than garrisoned in the enemy city, and the settlement is razed.
 func (h *UnitArrivalHandler) applyAttackerWins(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, dest destSettlement,
@@ -1047,6 +1085,60 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 	result CombatResult,
 	destQ, destR int, worldID uuid.UUID,
 ) error {
+	if u.captureMode != "annex" {
+		// Attacker takes its own losses same as annex, but ends up positioned at the
+		// battlefield hex instead of garrisoned inside the (about to be razed) city.
+		if attSizeAfter <= 0 {
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, u.id,
+			); err != nil {
+				return fmt.Errorf("sack: disband zeroed attacker: %w", err)
+			}
+			h.disbandCargoIfPresent(ctx, tx, u, worldID)
+		} else {
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET
+				   size          = $2,
+				   status        = 'positioned',
+				   q             = $3,
+				   r             = $4,
+				   settlement_id = NULL,
+				   target_q      = NULL,
+				   target_r      = NULL,
+				   departs_at    = NULL,
+				   arrives_at    = NULL,
+				   updated_at    = now()
+				 WHERE id = $1`,
+				u.id, attSizeAfter, destQ, destR,
+			); err != nil {
+				return fmt.Errorf("sack: position attacker: %w", err)
+			}
+		}
+		if attPopLost > 0 {
+			if _, err := tx.Exec(ctx,
+				`UPDATE settlements SET
+				   population = GREATEST(50, population - $2)
+				 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
+				u.ownerID, attPopLost, worldID,
+			); err != nil {
+				slog.Warn("could not apply attacker pop loss (sack)", "unit", u.id, "lost", attPopLost, "err", err)
+			}
+		}
+		return h.sackSettlement(ctx, tx, u.ownerID, dest, destQ, destR, worldID)
+	}
+
+	// ── annex (unchanged conquest behaviour) ──────────────────────────────────
+
+	// Defender garrison units take their losses BEFORE the attacker is placed as
+	// garrison below — otherwise the attacker's own newly-placed unit is also
+	// sitting at settlement_id with status='garrison' by the time this query runs,
+	// and applyDefenderUnitLosses (which has no owner filter) double-punishes it on
+	// top of the AttackerLosses it already took in resolveCombat. Bug found during
+	// the Del 2b sack build (2026-07-10), fixed here since it shares this victory path.
+	if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
+		return err
+	}
+
 	// Apply attacker losses to the arriving unit.
 	if attSizeAfter <= 0 {
 		// Attacker destroyed (shouldn't happen on win, but be safe).
@@ -1089,11 +1181,6 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 		); err != nil {
 			slog.Warn("could not apply attacker pop loss", "unit", u.id, "lost", attPopLost, "err", err)
 		}
-	}
-
-	// Defender garrison units: apply losses and disband zeroed units.
-	if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
-		return err
 	}
 
 	// Transfer settlement ownership.
@@ -1389,6 +1476,7 @@ type unitRow struct {
 	marchIntent *string // "colonize" | "explore" | "explore_return" | nil (plain march)
 	colonyName  *string // chosen colony name or nil
 	homeSettlementID *uuid.UUID // set for "explore"/"explore_return"; the settlement to return to
+	captureMode string // "sack" (default) | "annex" — set at march dispatch, read on conquest
 }
 
 type destSettlement struct {

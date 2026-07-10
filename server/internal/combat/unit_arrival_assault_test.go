@@ -125,13 +125,15 @@ func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
 		t.Fatalf("create cargo unit: %v", err)
 	}
 	// The laden galley, arriving at the landing hex (2,0) with intent=assault.
+	// capture_mode='annex' (Del 2b default is 'sack') — this test exercises the
+	// take-and-hold path; see unit_arrival_sack_test.go for the sack assertions.
 	var galleyID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units
 		   (world_id, owner_id, type, category, size, crew, status, q, r,
-		    target_q, target_r, departs_at, arrives_at, march_intent, cargo_unit_id)
+		    target_q, target_r, departs_at, arrives_at, march_intent, cargo_unit_id, capture_mode)
 		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'marching', 1, 0,
-		         2, 0, now(), now(), 'assault', $3)
+		         2, 0, now(), now(), 'assault', $3, 'annex')
 		 RETURNING id`,
 		worldID, attacker, cargoID,
 	).Scan(&galleyID); err != nil {

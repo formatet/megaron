@@ -4,8 +4,11 @@
 // origin and destination hex and a route, so its live position can be computed
 // (province.InterpolatePosition) for rendering and, later, interception.
 //
-// G1: transport sits at the messenger tier — it may use province, events, clock.
-// Nothing below it imports transport.
+// G1: transport itself only uses province, events, clock (no upward deps), so
+// despite living conceptually at the messenger tier it is safe for combat (Del 2b
+// sack, internal/combat/sack.go) to call transport.Dispatch directly for plunder
+// caravans — there is no cycle. CLAUDE.md's G1 diagram predates this package and
+// doesn't list it; treat transport as sitting just above province/settlement.
 package transport
 
 import (

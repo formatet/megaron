@@ -89,6 +89,7 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		Stance  string `json:"stance"`  // optional; fortify|storm|sentry — persisted for C5
 		Intent  string `json:"intent"`  // optional; "" = plain march, "colonize" = found a colony on arrival
 		Name    string `json:"name"`    // optional colony name (only used with intent=colonize)
+		Mode    string `json:"mode"`    // optional; "" = sack (default) | "annex" — conquest choice on arrival (Del 2b)
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -257,6 +258,18 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest,
 			fmt.Sprintf("unknown march intent %q (must be \"colonize\" or \"explore\")", req.Intent))
 		return
+	}
+	// Del 2b: conquest choice. Empty defaults to "sack" (loot + raze); "annex" keeps
+	// the settlement (capital→colony takeover). Validated up front, same reasoning
+	// as intent above — actionable error instead of a silent default at arrival.
+	if req.Mode != "" && req.Mode != "sack" && req.Mode != "annex" {
+		writeError(w, http.StatusBadRequest,
+			fmt.Sprintf("unknown capture mode %q (must be \"sack\" or \"annex\")", req.Mode))
+		return
+	}
+	captureMode := req.Mode
+	if captureMode == "" {
+		captureMode = "sack"
 	}
 	// Explore: the unit marches to the target and returns home automatically —
 	// it needs a home to return to, so it must currently be garrisoned at a
@@ -440,9 +453,10 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		   march_intent = $9,
 		   colony_name  = $10,
 		   home_settlement_id = $11,
+		   capture_mode = $12,
 		   updated_at   = now()
 		 WHERE id = $1`,
-		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg,
+		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not update unit")
 		return
