@@ -943,7 +943,7 @@ let unitsData = [];  // per-unit armies/fleets (units table) — drawn on the ca
 // capital) even though the player still held colonies. Capital loss is meant to
 // be recoverable (Timothy 2026-07-10), so the UI keeps working on a colony.
 function ownCapital() {
-  return ownCapital()
+  return provinceData.find(p => p.own && p.is_capital)
       || provinceData.find(p => p.own && !p.is_outpost)
       || provinceData.find(p => p.own)
       || null;
