@@ -15,7 +15,7 @@ var unitAliases = map[string]string{
 	"trireme": "ship", "ship": "ship", "shp": "ship",
 	"war_galley": "war_galley", "wargalley": "war_galley", "warship": "war_galley",
 	"merchantman": "merchantman", "merchant": "merchantman", "trader": "merchantman",
-	"agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry",
+	"agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry", "elite_infantry": "elite_infantry",
 }
 
 func recruitCmd() *cobra.Command {
