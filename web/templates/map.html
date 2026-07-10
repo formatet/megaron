@@ -946,6 +946,18 @@ let marchData = [];
 let messengerData = [];
 let tradeData = [];
 let unitsData = [];  // per-unit armies/fleets (units table) — drawn on the canvas
+
+// The player's capital ("Metropolis"), or — if it was lost and the server has
+// not yet promoted a replacement — any surviving owned settlement. Without this
+// fallback, losing the capital blanked the whole UI (every drawer keys off the
+// capital) even though the player still held colonies. Capital loss is meant to
+// be recoverable (Timothy 2026-07-10), so the UI keeps working on a colony.
+function ownCapital() {
+  return ownCapital()
+      || provinceData.find(p => p.own && !p.is_outpost)
+      || provinceData.find(p => p.own)
+      || null;
+}
 let camera = { x: 0, y: 0, zoom: 1 };
 let dragging = false, lastMouse = null;
 let selectedProvince = null;
@@ -1705,7 +1717,7 @@ async function sendMessengerFromInspect(destSettlementID) {
 // Right-click to open march menu
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault();
-  const capital = provinceData.find(p => p.is_capital);
+  const capital = ownCapital();
   if (!capital) return;
   const rect = canvas.getBoundingClientRect();
   const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
@@ -1785,7 +1797,7 @@ const MusicPlayer = (() => {
   }
 
   function update() {
-    const capital = provinceData.find(p => p.is_capital);
+    const capital = ownCapital();
     if (!capital || !capital.culture) return;
     const ownSet = new Set(provinceData.filter(p => p.own).map(p => p.q + ',' + p.r));
     const war = marchData.some(m => m.intent === 'attack' && ownSet.has(m.target_q + ',' + m.target_r));
@@ -1842,7 +1854,7 @@ document.addEventListener('keydown', e => {
 
 // Drawer content loaders — fetch live data from JSON API on open
 async function loadDrawerContent(name) {
-  const capital = provinceData.find(p => p.own && p.is_capital);
+  const capital = ownCapital();
   // Get terrain from tileData (not in provinceData)
   const capitalTile = capital ? tileData.find(t => t.q === capital.q && t.r === capital.r) : null;
   const terrainLabel = capitalTile
@@ -2268,7 +2280,7 @@ async function loadKultDrawer() {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
     return;
   }
-  const capital = provinceData.find(p => p.own && p.is_capital);
+  const capital = ownCapital();
   if (!capital) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>';
     return;
@@ -2359,7 +2371,7 @@ const _BLD_LBL = {
 };
 
 async function startBuild() {
-  const capital = provinceData.find(p => p.own && p.is_capital);
+  const capital = ownCapital();
   if (!capital) return;
   const sel = document.getElementById('city-build-select');
   const resultEl = document.getElementById('city-build-result');
@@ -2404,7 +2416,7 @@ async function startCraft(provinceID) {
 }
 
 async function loadTicklog() {
-  const capital = provinceData.find(p => p.own && p.is_capital);
+  const capital = ownCapital();
   const el = document.getElementById('city-ticklog-sec');
   if (!capital || !el) return;
   el.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
@@ -2509,7 +2521,7 @@ async function refreshCityBuildings(provinceID) {
 // ── War drawer ────────────────────────────────────────────────────────────
 async function loadWarDrawer() {
   const body = document.getElementById('war-body');
-  const capital = provinceData.find(p => p.own && p.is_capital);
+  const capital = ownCapital();
   if (!capital) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>'; return; }
   // Preserve recruit-city selection across reloads
   const prevRecruitCity = document.getElementById('war-recruit-city')?.value || capital.id;
@@ -3115,7 +3127,7 @@ async function loadDipThreads() {
   const el = document.getElementById('dtab-threads');
   if (!el) return;
   let myGoods = {};
-  const capital = provinceData.find(p => p.own && p.is_capital);
+  const capital = ownCapital();
   if (capital) {
     const gr = await fetchAuth('/api/v1/worlds/' + WORLD_ID + '/provinces/' + capital.id + '/goods');
     if (gr.ok) { const list = await gr.json().catch(() => []); list.forEach(g => { myGoods[g.key] = g.amount || 0; }); }
@@ -3503,7 +3515,7 @@ async function dipSend() {
 // Same source of truth as `poleia actions`: no client-side gate logic here,
 // just render what the server already decided (temenos_capabilities.md).
 async function renderLockedActions(category) {
-  const capital = provinceData.find(p => p.own && p.is_capital);
+  const capital = ownCapital();
   if (!capital) return '';
   try {
     const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/actions`);
