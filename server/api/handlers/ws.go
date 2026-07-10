@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -31,6 +32,15 @@ func (h *WSHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
+	}
+	// The http.Server's ReadTimeout/WriteTimeout set short deadlines on the raw
+	// connection for a normal request/response. A WebSocket is long-lived, so
+	// those deadlines would kill it after a few seconds (→ 504 at the proxy, no
+	// realtime push reaching the client). Clear them on the hijacked connection —
+	// this exempts only the WS; every normal HTTP route keeps its timeouts. The
+	// hub manages the connection's lifetime instead.
+	if nc := conn.NetConn(); nc != nil {
+		_ = nc.SetDeadline(time.Time{})
 	}
 	h.hub.Register(conn, worldID) // blocks until disconnect
 }
