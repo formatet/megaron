@@ -869,15 +869,25 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 	}
 
+	// Physical caravans in motion (movement-motor transport layer). Every in-transit
+	// row is a real mover — trade legs (delivery + return) AND internal transfers —
+	// so all of them render, and an intercepted caravan (status != 'in_transit')
+	// vanishes from the map the moment it is seized. good_key = the heaviest manifest
+	// good, for display. origin/dest coords come off the transport row itself; the
+	// settlement join only supplies terrain for the fog-of-war gate.
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT tr.id, tr.good_key, op.map_q, op.map_r, op.terrain_type,
-		        dp.map_q, dp.map_r, dp.terrain_type, tr.departs_at, tr.arrives_at
-		 FROM trade_routes tr
-		 JOIN settlements os ON os.id = tr.origin_id
-		 JOIN provinces op ON op.id = os.province_id
-		 JOIN settlements ds ON ds.id = tr.destination_id
-		 JOIN provinces dp ON dp.id = ds.province_id
-		 WHERE tr.world_id = $1 AND tr.resolved = false`,
+		`SELECT t.id,
+		        COALESCE((SELECT g.good_key FROM transport_goods g
+		                  WHERE g.transport_id = t.id ORDER BY g.quantity DESC LIMIT 1), ''),
+		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
+		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
+		        t.departs_at, t.arrives_at
+		 FROM transports t
+		 LEFT JOIN settlements os ON os.id = t.origin_id
+		 LEFT JOIN provinces op ON op.id = os.province_id
+		 LEFT JOIN settlements ds ON ds.id = t.dest_id
+		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 WHERE t.world_id = $1 AND t.status = 'in_transit'`,
 		worldID,
 	)
 	if err != nil {
