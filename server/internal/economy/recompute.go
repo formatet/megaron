@@ -87,7 +87,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 
 	// ── 2. Gather catchment coordinates for this settlement ──────────────────
-	// W3: production comes from the 6 adjacent catchment tiles, not the own hex.
+	// Catchment = the 7 tiles the city works: its own hex + the 6 adjacent.
 	var worldID uuid.UUID
 	var q, r int
 	err = tx.QueryRow(ctx,
@@ -102,7 +102,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 
 	// ── 3. Compute base_potential per producible good from catchment ──────────
-	// Each of the 6 adjacent map_tiles contributes based on its own terrain,
+	// Each of the 7 catchment map_tiles contributes based on its own terrain,
 	// deposits, and coastal flag. The settlement's buildings gate building-gated
 	// rules. Sea tiles (deep_sea, coastal_sea) are excluded — no land production.
 	rows, err := tx.Query(ctx,
@@ -122,6 +122,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		 WHERE mt.world_id = $2
 		   AND mt.terrain NOT IN ('deep_sea', 'coastal_sea')
 		   AND (
+		       (mt.q = $3   AND mt.r = $4  ) OR
 		       (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR
 		       (mt.q = $3   AND mt.r = $4+1) OR (mt.q = $3   AND mt.r = $4-1) OR
 		       (mt.q = $3+1 AND mt.r = $4-1) OR (mt.q = $3-1 AND mt.r = $4+1)

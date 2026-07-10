@@ -77,8 +77,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Collect deposit types present in the 6 catchment tiles so clients/agents
-	// can decide whether building a mine is worthwhile.
+	// Collect deposit types present in the 7 catchment tiles (own hex + 6 adjacent)
+	// so clients/agents can decide whether building a mine is worthwhile.
 	var catchmentDeposits []string
 	cdrows, _ := h.pool.Query(r.Context(),
 		`SELECT DISTINCT
@@ -90,6 +90,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		 WHERE world_id = $1
 		   AND terrain NOT IN ('deep_sea','coastal_sea')
 		   AND (
+		       (q = $2   AND r = $3  ) OR
 		       (q = $2+1 AND r = $3  ) OR (q = $2-1 AND r = $3  ) OR
 		       (q = $2   AND r = $3+1) OR (q = $2   AND r = $3-1) OR
 		       (q = $2+1 AND r = $3-1) OR (q = $2-1 AND r = $3+1)
@@ -648,9 +649,9 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Mines require the matching ore deposit in the 6-tile catchment — production
-	// reads only the catchment (not the settlement's own tile), so a mine without a
-	// matching deposit nearby would produce nothing. Gate it at build time.
+	// Mines require the matching ore deposit in the 7-tile catchment (own hex + 6
+	// adjacent) — production reads only the catchment, so a mine without a matching
+	// deposit in reach would produce nothing. Gate it at build time.
 	if req.BuildingType == "mine" || req.BuildingType == "silver_mine" {
 		var pq, pr int
 		_ = h.pool.QueryRow(r.Context(),
@@ -671,6 +672,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			   WHERE world_id = $1
 			     AND terrain NOT IN ('coastal_sea','deep_sea')
 			     AND (q, r) IN (
+			       ($2,$3),
 			       ($2+1,$3), ($2-1,$3),
 			       ($2,$3+1), ($2,$3-1),
 			       ($2+1,$3-1), ($2-1,$3+1)
@@ -681,7 +683,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		).Scan(&hasDeposit)
 		if !hasDeposit {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("a %s here would produce nothing — no %s deposit in this settlement's catchment (the 6 surrounding hexes). Build it at a settlement adjacent to the ore.", req.BuildingType, oreName))
+				fmt.Sprintf("a %s here would produce nothing — no %s deposit in this settlement's catchment (its own hex or the 6 surrounding hexes). Build it on or next to the ore.", req.BuildingType, oreName))
 			return
 		}
 	}
@@ -1582,7 +1584,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load base_potential per good from production_rules using catchment tiles
-	// (same logic as RecomputeProduction — 6 adjacent map_tiles, not the own province tile).
+	// (same logic as RecomputeProduction — 7 catchment map_tiles: own hex + 6 adjacent).
 	baseRows, _ := h.pool.Query(r.Context(),
 		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
 		 FROM settlements s
@@ -1590,6 +1592,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
 		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
 		     AND (
+		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
@@ -2705,7 +2708,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Determine producible goods for this settlement using catchment tiles
-	// (same logic as RecomputeProduction — 6 adjacent map_tiles, not the own province tile).
+	// (same logic as RecomputeProduction — 7 catchment map_tiles: own hex + 6 adjacent).
 	producible := make(map[string]bool)
 	prows, err := h.pool.Query(r.Context(),
 		`SELECT DISTINCT pr.good_key
@@ -2714,6 +2717,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
 		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
 		     AND (
+		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)

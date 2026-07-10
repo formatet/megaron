@@ -85,6 +85,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
 		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
 		     AND (
+		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
@@ -170,6 +171,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 				   WHERE mt.world_id = s.world_id
 				     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
 				     AND (
+				         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 				         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
 				         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
 				         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)

@@ -165,7 +165,7 @@ Megaron rename (which is about the system/repo name, not the world).
 - **Silver** — betalningsmedel, fysiskt transporterbart. Silver-sänka = armé-upkeep (grain + silver), löpande; obetald → desertering/attrition. Präst/kult ingen upkeep.
 - **Kostnad ↔ upkeep** — upkeep = grain+silver ∝ byggkostnad; strategiska metaller (brons/cedar) hör i bygg-gate + recruit + attrition, ALDRIG platt upkeep (bronsupkeep = desertering-spiral). `temenos_ekonomi.md`
 - **Gruv-deposit-gate** — `mine`/`silver_mine` kräver matchande malm-deposit i stadens catchment vid bygge (annars 422); ny malm auto-allokeras en labor-andel (skim grain). `temenos_ekonomi.md`
-- **Catchment = enda produktionskällan** — staden producerar bara från sin catchment (omgivande hexar brukas direkt, utan outpost); dynamiskt + lazy + deterministiskt. `temenos_terrain.md`
+- **Catchment = enda produktionskällan** — staden producerar bara från sin catchment: **stadens eget hex + de 6 omgivande** (7 hex totalt), brukade direkt utan outpost; dynamiskt + lazy + deterministiskt. `temenos_terrain.md`
 - **Startstaden självförsörjande** (hård invariant) — första staden klarar basförsörjning utan handling; andra städer får svälta vid försummelse. Handel = för att avancera, ej överleva.
 - **Coast är ingen terräng** — egenskap = granne till hav (grannskaps-check); `coast_beach` borttagen ur enum.
 - **Labor = andel av pop** (weight-semantik), ej absoluta citizens → växande pop följer procenten automatiskt.

@@ -1020,13 +1020,16 @@ function render() {
     }
   }
 
-  // 2.5 Catchment zone — subtle gold tint on the 6 adjacent tiles of own cities
+  // 2.5 Catchment zone — subtle gold tint on the 7 catchment tiles of own cities
+  // (the city's own hex + the 6 adjacent). [0,0] = the settlement's own hex.
   if (camera.zoom >= 0.55) {
     for (const p of provinceData) {
       if (!p.own || p.is_outpost) continue;
-      for (const [dq, dr] of HEX_DIRS) {
+      for (const [dq, dr] of [[0, 0], ...HEX_DIRS]) {
         const nq = p.q + dq, nr = p.r + dr;
-        if (provinceData.find(x => x.q === nq && x.r === nr)) continue;
+        if (dq !== 0 || dr !== 0) {
+          if (provinceData.find(x => x.q === nq && x.r === nr)) continue;
+        }
         const t = tileData.find(t => t.q === nq && t.r === nr);
         if (!t || t.terrain === 'fog') continue;
         const {x, y} = hexPx(nq, nr);
