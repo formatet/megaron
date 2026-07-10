@@ -28,6 +28,24 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 	"priest":         {Grain: 0, Silver: 0},
 }
 
+// UnitUpkeep returns the grain + silver one unit costs per upkeep-period (the
+// daily upkeep tick). Land units scale with size/100; naval and everything else
+// are flat (per vessel); priest and unknown types cost nothing. This is the single
+// source of truth for the scaling — both the charging loop (Handle) and the army
+// read surface (api/handlers) call it, so shown upkeep can never drift from what
+// is actually debited.
+func UnitUpkeep(unitType, category string, size int) UpkeepSpec {
+	spec, ok := UpkeepSpecs[unitType]
+	if !ok {
+		return UpkeepSpec{}
+	}
+	if category == "land" {
+		f := float64(size) / 100.0
+		return UpkeepSpec{Grain: spec.Grain * f, Silver: spec.Silver * f}
+	}
+	return spec // naval/other: flat
+}
+
 const (
 	upkeepAttritionStep    = 10 // män förlorade per tick vid grain-brist
 	upkeepDesertionStep    = 10 // män förlorade per tick vid silver-brist (efter tröskel)
@@ -114,18 +132,13 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	// 3. Process each unit.
 	for _, u := range units {
-		spec, ok := UpkeepSpecs[u.unitType]
-		if !ok || (spec.Grain == 0 && spec.Silver == 0) {
+		up := UnitUpkeep(u.unitType, u.category, u.size)
+		if up.Grain == 0 && up.Silver == 0 {
 			continue // priest or unknown type — no upkeep
 		}
 
-		sizeFactor := 1.0
-		if u.category == "land" {
-			sizeFactor = float64(u.size) / 100.0
-		}
-
-		grainNeed := spec.Grain * sizeFactor
-		silverNeed := spec.Silver * sizeFactor
+		grainNeed := up.Grain
+		silverNeed := up.Silver
 
 		sid, hasSid := payingSettlement(u)
 

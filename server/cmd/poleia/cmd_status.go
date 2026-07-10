@@ -147,6 +147,15 @@ func statusCmd() *cobra.Command {
 						fmt.Printf("  %-10s %4.0f\n", unitDisplayName(u.dbType), v)
 					}
 				}
+				// Upkeep the standing garrison drains each day (grain shortage → attrition,
+				// silver shortage → desertion). Same figures the daily upkeep tick debits.
+				if up, ok := sett["army_upkeep"].(map[string]any); ok {
+					g, _ := up["grain"].(float64)
+					s, _ := up["silver"].(float64)
+					if g > 0 || s > 0 {
+						fmt.Printf("  %-10s %.1f grain, %.1f silver / day\n", "Upkeep", g, s)
+					}
+				}
 			}
 
 			// Completed buildings — so the agent doesn't re-queue what already exists.

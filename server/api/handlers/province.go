@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -446,6 +447,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			lrows.Close()
 		}
 
+		armyUp, _, upErr := armyUpkeep(r.Context(), h.pool, sett.ID)
+		if upErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
+			return
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":                sett.ID,
 			"name":              sett.Name,
@@ -461,6 +468,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis":            kharisNow,
 			"kharis_rate":       kharisRate,
 			"army":              sett.Army,
+			"army_upkeep":       armyUp,
 			"build_queue":       buildQueue,
 			"training_queue":    trainQueue,
 			"buildings":         buildings,
@@ -487,6 +495,48 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// upkeepAmount is a grain+silver upkeep total per upkeep-period (the daily tick).
+type upkeepAmount struct {
+	Grain  float64 `json:"grain"`
+	Silver float64 `json:"silver"`
+}
+
+// armyUpkeep sums the per-period upkeep of a settlement's garrison from the units
+// table (the SB7 source of truth), via combat.UnitUpkeep so the shown cost always
+// matches what the daily upkeep tick actually debits. Returns the total plus a
+// per-unit-type breakdown.
+func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (upkeepAmount, map[string]upkeepAmount, error) {
+	total := upkeepAmount{}
+	perType := map[string]upkeepAmount{}
+	rows, err := pool.Query(ctx,
+		`SELECT type, category, size FROM units
+		 WHERE settlement_id = $1 AND status = 'garrison'`,
+		settlementID,
+	)
+	if err != nil {
+		return total, perType, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var unitType, category string
+		var size int
+		if err := rows.Scan(&unitType, &category, &size); err != nil {
+			return total, perType, err
+		}
+		up := combat.UnitUpkeep(unitType, category, size)
+		if up.Grain == 0 && up.Silver == 0 {
+			continue
+		}
+		total.Grain += up.Grain
+		total.Silver += up.Silver
+		agg := perType[unitType]
+		agg.Grain += up.Grain
+		agg.Silver += up.Silver
+		perType[unitType] = agg
+	}
+	return total, perType, rows.Err()
+}
+
 // GetArmy handles GET /worlds/:worldID/provinces/:provinceID/army.
 func (h *ProvinceHandler) GetArmy(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
@@ -505,7 +555,22 @@ func (h *ProvinceHandler) GetArmy(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "no settlement in province")
 		return
 	}
-	writeJSON(w, http.StatusOK, sett.Army)
+	up, perType, err := armyUpkeep(r.Context(), h.pool, sett.ID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
+		return
+	}
+	// Embed ArmyComposition so its fields stay at the top level (non-breaking for
+	// existing /army consumers); add the upkeep totals + per-type breakdown.
+	writeJSON(w, http.StatusOK, struct {
+		province.ArmyComposition
+		UpkeepPerPeriod upkeepAmount            `json:"upkeep_per_period"`
+		UpkeepPerType   map[string]upkeepAmount `json:"upkeep_per_type,omitempty"`
+	}{
+		ArmyComposition: sett.Army,
+		UpkeepPerPeriod: up,
+		UpkeepPerType:   perType,
+	})
 }
 
 // Build handles POST /worlds/:worldID/provinces/:provinceID/build.
