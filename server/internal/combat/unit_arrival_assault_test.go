@@ -214,6 +214,32 @@ func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
 		t.Errorf("cargo size after win = %d, want > 0", cargoSize)
 	}
 
+	// The captured metropolis is demoted to an ordinary colony — no Wanax may hold
+	// two capitals (regression: is_capital stayed true under the conqueror).
+	var stillCapital bool
+	if err := pool.QueryRow(ctx,
+		`SELECT is_capital FROM settlements WHERE id = $1`, defSettlement,
+	).Scan(&stillCapital); err != nil {
+		t.Fatalf("read is_capital after capture: %v", err)
+	}
+	if stillCapital {
+		t.Errorf("captured settlement is_capital = true, want false (conqueror must not gain a second capital)")
+	}
+
+	// No ghost garrison: the defeated defender's surviving units are evicted, not
+	// left as the conqueror's troops (regression for the ghost-garrison bug).
+	var ghostGarrison int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM units
+		 WHERE settlement_id = $1 AND status = 'garrison' AND owner_id = $2`,
+		defSettlement, defender,
+	).Scan(&ghostGarrison); err != nil {
+		t.Fatalf("count ghost garrison: %v", err)
+	}
+	if ghostGarrison != 0 {
+		t.Errorf("defender ghost garrison units = %d, want 0 (evicted on capture)", ghostGarrison)
+	}
+
 	// The galley is empty and positioned at the landing hex.
 	var galleyStatus string
 	var galleyCargo *uuid.UUID

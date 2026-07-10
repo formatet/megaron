@@ -919,12 +919,28 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 			return err
 		}
 		// Transfer ownership — goods follow settlement_id, so the tin is captured.
+		// is_capital is cleared: a captured metropolis becomes an ordinary colony
+		// under the conqueror (no Wanax may hold two capitals). If it WAS the
+		// defender's capital, handleOwnerCityLoss below promotes a survivor.
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlements SET owner_id = $2, control_type = 'occupied',
-			   kingdom_id = NULL, updated_at = now() WHERE id = $1`,
+			   is_capital = false, kingdom_id = NULL, updated_at = now() WHERE id = $1`,
 			*dest.settlementID, u.ownerID,
 		); err != nil {
 			return fmt.Errorf("amphibious assault: transfer ownership: %w", err)
+		}
+		// Evict the defeated defender's surviving garrison so they don't linger as
+		// the conqueror's troops (the ghost-garrison bug).
+		if err := h.evictDefeatedDefenders(ctx, tx, *dest.settlementID, u.ownerID); err != nil {
+			return err
+		}
+		// Succession / game-over for the dispossessed defender (mirrors the land
+		// conquest path, which the amphibious path previously skipped). Ownership
+		// was just transferred, so the fallen city no longer counts as theirs.
+		if dest.ownerID != nil {
+			if _, err := handleOwnerCityLoss(ctx, tx, *dest.ownerID, worldID, *dest.settlementID); err != nil {
+				return fmt.Errorf("amphibious assault: handle defender city loss: %w", err)
+			}
 		}
 		// Empty the galley; it rests positioned at the landing hex.
 		if _, err := tx.Exec(ctx,
@@ -1083,16 +1099,25 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 	// Transfer settlement ownership.
 	var fallenName string
 	_ = tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, *dest.settlementID).Scan(&fallenName)
+	// is_capital is cleared on transfer: a captured metropolis becomes an ordinary
+	// colony under the conqueror (no Wanax may hold two capitals). If it was the
+	// defender's capital, handleOwnerCityLoss below promotes a survivor.
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
 		   owner_id     = $2,
 		   control_type = 'occupied',
+		   is_capital   = false,
 		   kingdom_id   = NULL,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		*dest.settlementID, u.ownerID,
 	); err != nil {
 		return fmt.Errorf("transfer settlement ownership: %w", err)
+	}
+	// Evict the defeated defender's surviving garrison so they don't linger as the
+	// conqueror's troops (the ghost-garrison bug).
+	if err := h.evictDefeatedDefenders(ctx, tx, *dest.settlementID, u.ownerID); err != nil {
+		return err
 	}
 
 	// Rumor: a settlement falling to conquest is major news — hearsay, several
@@ -1322,6 +1347,26 @@ func (h *UnitArrivalHandler) applyDefenderUnitLosses(
 		}
 	}
 
+	return nil
+}
+
+// evictDefeatedDefenders disbands any garrison units still sitting in a settlement
+// that just changed hands but are NOT owned by the new owner — the defeated
+// defender's survivors. Without this they silently become the conqueror's garrison
+// (the ghost-garrison bug: a beaten 1-man chariot left inside the captured city).
+// Called AFTER ownership has transferred to newOwnerID. The conqueror's own newly
+// placed garrison (owner_id = newOwnerID) is left untouched.
+func (h *UnitArrivalHandler) evictDefeatedDefenders(
+	ctx context.Context, tx pgx.Tx, settlementID, newOwnerID uuid.UUID,
+) error {
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET status = 'disbanded', size = 0, updated_at = now()
+		 WHERE settlement_id = $1 AND status = 'garrison'
+		   AND owner_id IS DISTINCT FROM $2`,
+		settlementID, newOwnerID,
+	); err != nil {
+		return fmt.Errorf("evict defeated defenders: %w", err)
+	}
 	return nil
 }
 
