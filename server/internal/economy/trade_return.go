@@ -30,6 +30,7 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		GoodKey       string    `json:"good_key"`
 		Quantity      float64   `json:"quantity"`
 		MessengerID   uuid.UUID `json:"messenger_id"`
+		TransportID   uuid.UUID `json:"transport_id"` // physical return caravan (0 = legacy event)
 	}
 	if err := json.Unmarshal(e.Payload, &p); err != nil {
 		return fmt.Errorf("unmarshal trade return: %w", err)
@@ -53,6 +54,17 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 	defer tx.Rollback(ctx)
 
+	// Physical-caravan interception veto: if the return caravan was intercepted or
+	// lost (Del 3-fas-4), cancel delivery — the goods were seized en route.
+	if p.TransportID != (uuid.UUID{}) {
+		var tstatus string
+		if qErr := tx.QueryRow(ctx,
+			`SELECT status FROM transports WHERE id = $1 FOR UPDATE`, p.TransportID,
+		).Scan(&tstatus); qErr == nil && tstatus != "in_transit" {
+			return tx.Commit(ctx)
+		}
+	}
+
 	// Credit goods to buyer — silver is now a normal good in settlement_goods.
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
@@ -74,6 +86,11 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		p.MessengerID,
 	); err != nil {
 		return fmt.Errorf("mark returned: %w", err)
+	}
+
+	// The return caravan has arrived.
+	if p.TransportID != (uuid.UUID{}) {
+		_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'delivered', updated_at = now() WHERE id = $1`, p.TransportID)
 	}
 
 	if err = tx.Commit(ctx); err != nil {

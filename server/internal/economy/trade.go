@@ -136,6 +136,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		GoodKey           string          `json:"good_key"`
 		Quantity          float64         `json:"quantity"`
 		DeliveredQuantity float64         `json:"delivered_quantity"` // includes distance bonus
+		TransportID       uuid.UUID       `json:"transport_id"`       // physical caravan for this leg (0 = legacy event)
 		ThenReturn        json.RawMessage `json:"then_return,omitempty"`
 	}
 	if err := json.Unmarshal(e.Payload, &p); err != nil {
@@ -184,11 +185,29 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 	}
 
+	// Physical-caravan interception veto: if this leg's transport was intercepted or
+	// lost en route (Del 3-fas-4), cancel delivery — the goods were seized, not
+	// delivered. FOR UPDATE so a concurrent interception can't race the credit.
+	if p.TransportID != (uuid.UUID{}) {
+		var tstatus string
+		if err := tx.QueryRow(ctx,
+			`SELECT status FROM transports WHERE id = $1 FOR UPDATE`, p.TransportID,
+		).Scan(&tstatus); err == nil && tstatus != "in_transit" {
+			if hasRoute {
+				_, _ = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID)
+			}
+			return tx.Commit(ctx)
+		}
+	}
+
 	// Trade risk: 5% chance caravan is lost to storm or pirates.
 	if rand.Float64() < tradeRiskPct {
 		reason := tradeLostReasons[rand.Intn(len(tradeLostReasons))]
 		if _, err = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID); err != nil {
 			return fmt.Errorf("mark lost route resolved: %w", err)
+		}
+		if p.TransportID != (uuid.UUID{}) {
+			_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'lost', updated_at = now() WHERE id = $1`, p.TransportID)
 		}
 		if err := tx.Commit(ctx); err != nil {
 			return fmt.Errorf("commit loss: %w", err)
@@ -235,7 +254,13 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 	}
 
-	// Chain: if this was a silver leg, dispatch the goods return now.
+	// Leg 1's physical caravan has arrived.
+	if p.TransportID != (uuid.UUID{}) {
+		_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'delivered', updated_at = now() WHERE id = $1`, p.TransportID)
+	}
+
+	// Chain: if this was a silver leg, dispatch the goods return now — as its own
+	// physical caravan (leg 2), so the return trip is visible and interceptable too.
 	if len(p.ThenReturn) > 0 && h.scheduler != nil {
 		var ret struct {
 			DestinationID string  `json:"destination_id"`
@@ -243,6 +268,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			Quantity      float64 `json:"quantity"`
 			MessengerID   string  `json:"messenger_id"`
 			TravelMins    float64 `json:"travel_mins"`
+			OwnerID       string  `json:"owner_id"`
+			OriginQ       int     `json:"origin_q"`
+			OriginR       int     `json:"origin_r"`
+			DestQ         int     `json:"dest_q"`
+			DestR         int     `json:"dest_r"`
 		}
 		if jsonErr := json.Unmarshal(p.ThenReturn, &ret); jsonErr == nil && ret.DestinationID != "" {
 			var currentTick int
@@ -251,12 +281,35 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			if travelTicks < 1 {
 				travelTicks = 1
 			}
+
+			// Build the return caravan (leg 2: this settlement → the buyer/seller origin).
+			// Raw SQL: economy may not import the transport package (G1). Best-effort —
+			// a missing physical row must never block the goods return itself.
+			var leg2ID uuid.UUID
+			retOwner, _ := uuid.Parse(ret.OwnerID)
+			retDest, _ := uuid.Parse(ret.DestinationID)
+			if scanErr := tx.QueryRow(ctx,
+				`INSERT INTO transports
+				   (world_id, owner_id, kind, origin_id, dest_id, category,
+				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable)
+				 VALUES ($1,$2,'trade_return',$3,$4,'land',$5,$6,$7,$8,
+				         now(), now() + make_interval(mins => $9), $10, true)
+				 RETURNING id`,
+				e.WorldID, retOwner, p.DestinationID, retDest,
+				ret.OriginQ, ret.OriginR, ret.DestQ, ret.DestR, ret.TravelMins, currentTick+travelTicks,
+			).Scan(&leg2ID); scanErr == nil {
+				_, _ = tx.Exec(ctx,
+					`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1,$2,$3)`,
+					leg2ID, ret.GoodKey, ret.Quantity)
+			}
+
 			_ = h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledTradeReturn,
 				map[string]any{
 					"destination_id": ret.DestinationID,
 					"good_key":       ret.GoodKey,
 					"quantity":       ret.Quantity,
 					"messenger_id":   ret.MessengerID,
+					"transport_id":   leg2ID.String(),
 				}, currentTick+travelTicks)
 		}
 	}

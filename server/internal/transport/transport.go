@@ -45,8 +45,29 @@ type DispatchParams struct {
 }
 
 // Dispatch inserts a transport mover and its goods manifest, then schedules the
-// arrival event. Returns the new transport id.
+// generic ScheduledTransportArrival. Use this for movers whose arrival is handled
+// by the transport ArrivalHandler (e.g. internal transfers). Returns the new id.
 func Dispatch(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, p DispatchParams) (uuid.UUID, error) {
+	id, err := insertRow(ctx, tx, p)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if err := sched.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledTransportArrival,
+		map[string]any{"transport_id": id}, p.DueTick); err != nil {
+		return uuid.Nil, fmt.Errorf("schedule transport arrival: %w", err)
+	}
+	return id, nil
+}
+
+// CreateShadow inserts a transport mover and its manifest WITHOUT scheduling an
+// arrival. Use it for legs whose arrival is already driven by a domain-specific
+// event/handler (e.g. trade delivery/return): the physical row exists purely for
+// map position and interception, and that handler marks it delivered/lost itself.
+func CreateShadow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, error) {
+	return insertRow(ctx, tx, p)
+}
+
+func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, error) {
 	var id uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO transports
@@ -70,11 +91,6 @@ func Dispatch(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, p Dispatc
 		); err != nil {
 			return uuid.Nil, fmt.Errorf("insert transport manifest %q: %w", good, err)
 		}
-	}
-
-	if err := sched.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledTransportArrival,
-		map[string]any{"transport_id": id}, p.DueTick); err != nil {
-		return uuid.Nil, fmt.Errorf("schedule transport arrival: %w", err)
 	}
 	return id, nil
 }

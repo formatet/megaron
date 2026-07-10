@@ -14,6 +14,7 @@ import (
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/transport"
 )
 
 // MessengerHandler handles HTTP requests for messenger endpoints.
@@ -668,6 +669,11 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		destID).Scan(&dQ, &dR)
 	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
 
+	// Owner of the goods dispatched on leg 1 (the origin's Wanax) — the physical
+	// caravan belongs to whoever sends that leg, so a third party can raid it.
+	var originOwner uuid.UUID
+	_ = h.pool.QueryRow(r.Context(), `SELECT owner_id FROM settlements WHERE id=$1`, originID).Scan(&originOwner)
+
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -678,6 +684,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	var tradeAcceptCurrentTick int
 	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeAcceptCurrentTick)
 	tradeAcceptDueTick := tradeAcceptCurrentTick + messenger.TradeTravelTicks(dist)
+	leg1ArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
 
 	if kind == "sell" {
 		// Sell offer: origin=seller (escrowed goods at send), destination=buyer (acceptor).
@@ -714,20 +721,38 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Step 3: schedule goods delivery to buyer (leg 1), then silver return to seller (leg 2).
+		// Step 3: dispatch leg 1 as a PHYSICAL caravan (goods seller→buyer), then chain
+		// the silver return (leg 2) on arrival. The shadow transport row carries map
+		// position + interceptability; the trade delivery event drives crediting.
+		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+			WorldID: worldID, OwnerID: originOwner, Kind: "trade",
+			OriginID: originID, DestID: destID, Category: "land",
+			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
+			DepartsAt: h.clk.Now(), ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
+			Manifest: transport.Manifest{offerGood: offerQty}, Interceptable: true,
+		})
+		if tErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not dispatch goods caravan")
+			return
+		}
 		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 			map[string]any{
 				"destination_id":     destID,    // buyer receives goods
 				"good_key":           offerGood,
 				"quantity":           offerQty,
 				"delivered_quantity": offerQty,
-				// Chained: when goods arrive at buyer, dispatch silver to seller.
+				"transport_id":       leg1ID.String(),
+				// Chained: when goods arrive at buyer, dispatch silver to seller (leg 2:
+				// destID→originID). Coords let the delivery handler build the return caravan.
 				"then_return": map[string]any{
 					"destination_id": originID.String(), // seller receives silver
 					"good_key":       "silver",
 					"quantity":       wantSilver,
 					"messenger_id":   messengerID.String(),
 					"travel_mins":    float64(dist) * 30.0,
+					"owner_id":       playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
+					"origin_q":       dQ, "origin_r": dR,
+					"dest_q":         oQ, "dest_r": oR,
 				},
 			}, tradeAcceptDueTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule goods delivery")
@@ -787,20 +812,37 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Step 3: schedule silver delivery to seller (leg 1), then goods return to buyer (leg 2).
+		// Step 3: dispatch leg 1 as a PHYSICAL caravan (silver buyer→seller), then chain
+		// the goods return (leg 2) on arrival. Shadow row = position + interceptability.
+		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+			WorldID: worldID, OwnerID: originOwner, Kind: "trade",
+			OriginID: originID, DestID: destID, Category: "land",
+			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
+			DepartsAt: h.clk.Now(), ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
+			Manifest: transport.Manifest{"silver": offerSilver}, Interceptable: true,
+		})
+		if tErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not dispatch silver caravan")
+			return
+		}
 		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 			map[string]any{
 				"destination_id":     destID,           // seller receives silver
 				"good_key":           "silver",
 				"quantity":           offerSilver,
 				"delivered_quantity": offerSilver,
-				// Chained: when silver arrives at seller, dispatch goods to buyer.
+				"transport_id":       leg1ID.String(),
+				// Chained: when silver arrives at seller, dispatch goods to buyer (leg 2:
+				// destID→originID).
 				"then_return": map[string]any{
 					"destination_id": originID.String(),
 					"good_key":       wantGood,
 					"quantity":       wantQty,
 					"messenger_id":   messengerID.String(),
 					"travel_mins":    float64(dist) * 30.0,
+					"owner_id":       playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
+					"origin_q":       dQ, "origin_r": dR,
+					"dest_q":         oQ, "dest_r": oR,
 				},
 			}, tradeAcceptDueTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule silver delivery")
