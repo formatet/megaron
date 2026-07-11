@@ -179,10 +179,13 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		}
 
 		if !hasSid {
-			// No paying settlement — treat as unpaid.
-			h.recordUnpaid(ctx, u, e.WorldID)
+			// No paying settlement — treat as unpaid (unknown loyalty → baseline).
+			h.recordUnpaid(ctx, u, e.WorldID, defaultLoyalty)
 			continue
 		}
+
+		// L2: the supplying settlement's loyalty scales desertion severity.
+		loyalty := settlementLoyalty(ctx, h.pool, sid)
 
 		tag, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods
@@ -209,7 +212,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			}
 		} else {
 			// Unpaid.
-			h.recordUnpaid(ctx, u, e.WorldID)
+			h.recordUnpaid(ctx, u, e.WorldID, loyalty)
 		}
 	}
 
@@ -259,12 +262,13 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 }
 
 // recordUnpaid increments unpaid_periods and applies desertion if the threshold is reached.
-func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID) {
+// loyalty is the supplying settlement's loyalty (L2): lower loyalty ⇒ more men desert.
+func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int) {
 	np := u.unpaidPeriods + 1
 
 	if np >= upkeepDesertionPeriods {
-		// Desertion.
-		lost := upkeepDesertionStep
+		// Desertion — severity scales with the supplying settlement's loyalty.
+		lost := desertionStepForLoyalty(loyalty)
 		if lost > u.size {
 			lost = u.size
 		}

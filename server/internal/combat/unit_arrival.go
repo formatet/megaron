@@ -15,6 +15,7 @@ import (
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/gossip"
+	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/unit"
@@ -707,13 +708,20 @@ func (h *UnitArrivalHandler) resolveCombat(
 	fortune := rollFortune(attackerKharis, defenderKharis)
 	attStrWithFortune := attStr * (1 + fortune)
 
+	// ── L2 unit-loyalty: bias each side's rout threshold by the loyalty of the
+	// settlement supplying it (attacker's capital; defender's own settlement). ──
+	attSettleID, attLoyalty, attHasSettle := supplyingSettlement(ctx, tx, u.ownerID, nil, worldID)
+	defLoyalty := settlementLoyalty(ctx, tx, *dest.settlementID)
+
 	// ── Resolve ───────────────────────────────────────────────────────────────
-	result := ResolveStrengths(attStrWithFortune, defStr, fortune)
+	result := ResolveStrengthsWithRout(attStrWithFortune, defStr, fortune,
+		routFractionForLoyalty(attLoyalty), routFractionForLoyalty(defLoyalty))
 
 	slog.Info("unit combat resolved",
 		"unit", u.id, "q", destQ, "r", destR,
 		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome,
-		"rounds", result.Rounds, "att_routed", result.AttackerRouted)
+		"rounds", result.Rounds, "att_routed", result.AttackerRouted,
+		"att_loyalty", attLoyalty, "def_loyalty", defLoyalty)
 
 	// ── Apply losses ──────────────────────────────────────────────────────────
 	attSizeBefore := u.size
@@ -755,7 +763,41 @@ func (h *UnitArrivalHandler) resolveCombat(
 			"rounds":         result.Rounds,
 		}, worldID, nil)
 
+	// ── L2 military-outcome loyalty (atomic on this tx) ──────────────────────
+	h.applyBattleLoyalty(ctx, tx, result.Outcome, attSettleID, attHasSettle, dest.settlementID, worldID)
+
 	return nil
+}
+
+// applyBattleLoyalty records the settlement-loyalty consequences of a resolved
+// battle (L2 "militär framgång/förlust"): the winning army's supplying
+// settlement gains loyalty, the losing one loses it. The defender's settlement
+// gains loyalty only when it holds — on a loss it is captured or razed by the
+// caller, so a loyalty delta there is moot. Written on the combat tx so the
+// change is atomic with the battle's other effects.
+func (h *UnitArrivalHandler) applyBattleLoyalty(
+	ctx context.Context, tx pgx.Tx, outcome Outcome,
+	attSettleID uuid.UUID, attHasSettle bool, defSettleID *uuid.UUID, worldID uuid.UUID,
+) {
+	attackerWon := outcome == OutcomeAttackerWins
+
+	if attHasSettle {
+		delta, evType, reason := -1, "battle_lost", "lost_battle"
+		if attackerWon {
+			delta, evType, reason = +1, "shared_victory", "won_battle"
+		}
+		if err := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, attSettleID, worldID, evType, delta, reason); err != nil {
+			slog.Warn("L2: attacker battle loyalty failed", "settlement", attSettleID, "err", err)
+		}
+	}
+
+	// Defender's own settlement: reward a successful defence; skip a lost one
+	// (it is being captured/razed in the same tx).
+	if !attackerWon && defSettleID != nil {
+		if err := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, *defSettleID, worldID, "shared_victory", +1, "defended_settlement"); err != nil {
+			slog.Warn("L2: defender battle loyalty failed", "settlement", *defSettleID, "err", err)
+		}
+	}
 }
 
 // disbandCargoIfPresent disbands a naval unit's cargo land unit when the ship is
@@ -894,11 +936,18 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 		).Scan(&defenderKharis)
 	}
 	fortune := rollFortune(attackerKharis, defenderKharis)
-	result := ResolveStrengths(attStr*(1+fortune), defStr, fortune)
+
+	// ── L2 unit-loyalty rout bias (attacker's capital supplies the cargo; the
+	// defender is supplied by its own settlement). ──
+	attSettleID, attLoyalty, attHasSettle := supplyingSettlement(ctx, tx, u.ownerID, nil, worldID)
+	defLoyalty := settlementLoyalty(ctx, tx, *dest.settlementID)
+	result := ResolveStrengthsWithRout(attStr*(1+fortune), defStr, fortune,
+		routFractionForLoyalty(attLoyalty), routFractionForLoyalty(defLoyalty))
 
 	slog.Info("amphibious assault resolved",
 		"ship", u.id, "cargo", cargoID, "settlement", *dest.settlementID,
-		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome)
+		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome,
+		"att_loyalty", attLoyalty, "def_loyalty", defLoyalty)
 
 	cargoSizeAfter := int(float64(cargoSize) * (1 - result.AttackerLosses))
 	cargoPopLost := cargoSize - cargoSizeAfter
@@ -1068,6 +1117,9 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 			})
 		}
 	}
+
+	// ── L2 military-outcome loyalty (atomic on this tx) ──────────────────────
+	h.applyBattleLoyalty(ctx, tx, result.Outcome, attSettleID, attHasSettle, dest.settlementID, worldID)
 
 	return nil
 }

@@ -7,10 +7,20 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/tick"
 )
+
+// loyaltyExecutor is the subset of pgx used to write a loyalty change. Both
+// *pgxpool.Pool and pgx.Tx satisfy it, so AppendLoyaltyEvent (pool, non-tx
+// daily handlers) and AppendLoyaltyEventTx (callers already inside a tx, e.g.
+// combat resolution) can share the same two writes.
+type loyaltyExecutor interface {
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+}
 
 // DailyTickPayload is the payload for recurring daily world tick events.
 type DailyTickPayload struct{}
@@ -110,11 +120,13 @@ func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uui
 	return nil
 }
 
-// AppendLoyaltyEvent writes a loyalty_events row and updates settlement.loyalty.
-// Delta is clamped so loyalty stays in [1, 4].
-func AppendLoyaltyEvent(ctx context.Context, pool *pgxpool.Pool, store *events.Store, settlementID, worldID uuid.UUID, eventType string, delta int, reason string) error {
+// appendLoyaltyEventOn writes the loyalty projection UPDATE + loyalty_events row
+// + audit event on the given executor (pool or tx). Delta is clamped so loyalty
+// stays in [1, 4]. It does NOT evaluate revolt — that is the pool-based wrapper's
+// job (checkRevolt must run against committed rows, not an open tx).
+func appendLoyaltyEventOn(ctx context.Context, db loyaltyExecutor, store *events.Store, settlementID, worldID uuid.UUID, eventType string, delta int, reason string) error {
 	// Clamp to [1,4].
-	_, err := pool.Exec(ctx,
+	_, err := db.Exec(ctx,
 		`UPDATE settlements
 		 SET loyalty = GREATEST(1, LEAST(4, loyalty + $1)),
 		     loyalty_trend = CASE
@@ -129,7 +141,7 @@ func AppendLoyaltyEvent(ctx context.Context, pool *pgxpool.Pool, store *events.S
 		return fmt.Errorf("update loyalty: %w", err)
 	}
 
-	_, err = pool.Exec(ctx,
+	_, err = db.Exec(ctx,
 		`INSERT INTO loyalty_events (settlement_id, world_id, event_type, loyalty_delta, reason)
 		 VALUES ($1, $2, $3, $4, $5)`,
 		settlementID, worldID, eventType, delta, reason,
@@ -144,10 +156,29 @@ func AppendLoyaltyEvent(ctx context.Context, pool *pgxpool.Pool, store *events.S
 	); serr != nil {
 		slog.Error("record loyalty event", "err", serr)
 	}
+	return nil
+}
 
+// AppendLoyaltyEvent writes a loyalty_events row and updates settlement.loyalty.
+// Delta is clamped so loyalty stays in [1, 4]. For callers on the pool (daily
+// tick handlers); it also evaluates revolt conditions after the change.
+func AppendLoyaltyEvent(ctx context.Context, pool *pgxpool.Pool, store *events.Store, settlementID, worldID uuid.UUID, eventType string, delta int, reason string) error {
+	if err := appendLoyaltyEventOn(ctx, pool, store, settlementID, worldID, eventType, delta, reason); err != nil {
+		return err
+	}
 	// Check revolt conditions after any loyalty change.
 	go checkRevolt(context.Background(), pool, settlementID)
 	return nil
+}
+
+// AppendLoyaltyEventTx writes the same loyalty change on an existing transaction,
+// so the loyalty projection is atomic with the caller's surrounding writes
+// (combat resolution updates settlements/units/goods in one tx — a cross-
+// connection pool write would block on that tx's own locks). Revolt is not
+// evaluated here; a battle that drops a settlement to loyalty 1 is picked up by
+// the next pool-based loyalty change or the daily decay handler's checkRevolt.
+func AppendLoyaltyEventTx(ctx context.Context, tx pgx.Tx, store *events.Store, settlementID, worldID uuid.UUID, eventType string, delta int, reason string) error {
+	return appendLoyaltyEventOn(ctx, tx, store, settlementID, worldID, eventType, delta, reason)
 }
 
 // checkRevolt runs asynchronously after loyalty changes and flips settlement

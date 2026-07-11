@@ -33,10 +33,28 @@ const (
 // Combat tuning constants (retuned at W8 reseed; change only these, not the formulas).
 const (
 	combatMaxRounds    = 3    // rounds before a forced decision
-	combatRoutFraction = 0.25 // side at ≤25% of effective start strength routes
+	combatRoutFraction = 0.25 // side at ≤25% of effective start strength routes (loyalty 2 baseline)
 	roundAttritionBase = 0.30 // base damage fraction per round
 	roundAttritionMax  = 0.70 // per-round loss cap (prevents single-round annihilation)
 )
+
+// routFractionForLoyalty (L2) biases the rout threshold by the loyalty of the
+// settlement supplying an army: a disloyal army breaks sooner (routs at a
+// HIGHER remaining-strength fraction), a fanatical one holds longer. Folded in
+// deterministically like fortune — the roll still happens once in the handler.
+// Calibration, not invariants; loyalty 2 (starting loyalty) is the baseline.
+func routFractionForLoyalty(loyalty int) float64 {
+	switch loyalty {
+	case 1:
+		return 0.35 // near-revolt: breaks early
+	case 3:
+		return 0.20 // devoted: holds
+	case 4:
+		return 0.15 // fanatical: holds hardest
+	default:
+		return combatRoutFraction // loyalty 2 (and unknown) = 0.25
+	}
+}
 
 // CombatResult holds the full outcome of a resolved battle.
 type CombatResult struct {
@@ -74,6 +92,15 @@ func Strength(a province.ArmyComposition) float64 {
 // rather than being annihilated. If neither routes after combatMaxRounds, higher remaining
 // strength wins; ties go to the defender (home advantage).
 func ResolveStrengths(attStr, defStr, fortune float64) CombatResult {
+	return ResolveStrengthsWithRout(attStr, defStr, fortune, combatRoutFraction, combatRoutFraction)
+}
+
+// ResolveStrengthsWithRout is ResolveStrengths with per-side rout thresholds
+// (L2 loyalty bias). attRoutFraction/defRoutFraction are the fractions of each
+// side's effective start strength at or below which that side routs — derive
+// them from the supplying settlement's loyalty via routFractionForLoyalty.
+// Passing combatRoutFraction for both reproduces ResolveStrengths exactly.
+func ResolveStrengthsWithRout(attStr, defStr, fortune, attRoutFraction, defRoutFraction float64) CombatResult {
 	startAtt, startDef := attStr, defStr
 	curAtt, curDef := attStr, defStr
 
@@ -87,8 +114,8 @@ func ResolveStrengths(attStr, defStr, fortune float64) CombatResult {
 		attLoss := math.Min(roundAttritionBase/ratio, roundAttritionMax)
 		curDef *= 1 - defLoss
 		curAtt *= 1 - attLoss
-		attRouted = curAtt <= startAtt*combatRoutFraction
-		defRouted = curDef <= startDef*combatRoutFraction
+		attRouted = curAtt <= startAtt*attRoutFraction
+		defRouted = curDef <= startDef*defRoutFraction
 	}
 
 	// Both route simultaneously or neither → defender holds (home advantage).
