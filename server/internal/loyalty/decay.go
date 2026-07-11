@@ -100,15 +100,14 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 }
 
 func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uuid.UUID) error {
-	tag, err := h.pool.Exec(ctx,
-		`UPDATE settlements SET loyalty = GREATEST(1, loyalty - 1)
-		 WHERE id = $1 AND loyalty > 1`,
-		settlementID,
-	)
+	// Neglect erodes loyalty_points (a -1 intent, scaled by the loss factor); the
+	// integer loyalty is re-derived. The query already filtered to loyalty > 1, so
+	// this only bites colonies with headroom above near-revolt.
+	rows, err := applyLoyaltyPointsDelta(ctx, h.pool, settlementID, scaleDeltaToPoints(-1))
 	if err != nil {
 		return err
 	}
-	if tag.RowsAffected() == 0 {
+	if rows == 0 {
 		return nil
 	}
 
@@ -125,28 +124,19 @@ func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uui
 // stays in [1, 4]. It does NOT evaluate revolt — that is the pool-based wrapper's
 // job (checkRevolt must run against committed rows, not an open tx).
 func appendLoyaltyEventOn(ctx context.Context, db loyaltyExecutor, store *events.Store, settlementID, worldID uuid.UUID, eventType string, delta int, reason string) error {
-	// Clamp to [1,4].
-	_, err := db.Exec(ctx,
-		`UPDATE settlements
-		 SET loyalty = GREATEST(1, LEAST(4, loyalty + $1)),
-		     loyalty_trend = CASE
-		         WHEN $1 > 0 THEN 'rising'
-		         WHEN $1 < 0 THEN 'falling'
-		         ELSE loyalty_trend
-		     END
-		 WHERE id = $2`,
-		delta, settlementID,
-	)
-	if err != nil {
-		return fmt.Errorf("update loyalty: %w", err)
+	// Accumulator model: the integer delta is an INTENT — it moves the hidden
+	// loyalty_points (scaled + asymmetric), and the integer loyalty (1–4) is
+	// re-derived from the bands. loyalty_events still logs the integer intent for
+	// audit legibility.
+	if _, err := applyLoyaltyPointsDelta(ctx, db, settlementID, scaleDeltaToPoints(delta)); err != nil {
+		return fmt.Errorf("update loyalty points: %w", err)
 	}
 
-	_, err = db.Exec(ctx,
+	if _, err := db.Exec(ctx,
 		`INSERT INTO loyalty_events (settlement_id, world_id, event_type, loyalty_delta, reason)
 		 VALUES ($1, $2, $3, $4, $5)`,
 		settlementID, worldID, eventType, delta, reason,
-	)
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf("insert loyalty_event: %w", err)
 	}
 

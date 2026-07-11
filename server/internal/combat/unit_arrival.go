@@ -507,10 +507,10 @@ func (h *UnitArrivalHandler) foundColony(
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital,
-		  loyalty, governor_is_ai, population, founded_from)
-		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,true,$7,$6)
+		  loyalty, loyalty_points, governor_is_ai, population, founded_from)
+		 VALUES ($1,$2,$3,$4,$5,'colony',false,2,$8,true,$7,$6)
 		 RETURNING id`,
-		worldID, provinceID, name, culture, u.ownerID, parentID, population,
+		worldID, provinceID, name, culture, u.ownerID, parentID, population, loyalty.LoyaltyStartColony,
 	).Scan(&colonyID); err != nil {
 		return fmt.Errorf("foundColony: create settlement: %w", err)
 	}

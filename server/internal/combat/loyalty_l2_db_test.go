@@ -75,12 +75,28 @@ func TestApplyBattleLoyalty_MovesSettlementLoyalty(t *testing.T) {
 		clk:        clock.NewTestClock(time.Now()),
 	}
 
+	// Loyalty is a slow points accumulator: one battle moves loyalty_points by a
+	// scaled ±1 intent (gain ×1.0, loss ×1.5), not a whole band. Seed points at a
+	// band edge so a single event crosses into the next band, proving both the
+	// points move AND the integer re-derivation.
+	pointsOf := func(id uuid.UUID) float64 {
+		var p float64
+		if err := pool.QueryRow(ctx, `SELECT loyalty_points FROM settlements WHERE id = $1`, id).Scan(&p); err != nil {
+			t.Fatalf("read loyalty_points: %v", err)
+		}
+		return p
+	}
 	loyaltyOf := func(id uuid.UUID) int {
 		var l int
 		if err := pool.QueryRow(ctx, `SELECT loyalty FROM settlements WHERE id = $1`, id).Scan(&l); err != nil {
 			t.Fatalf("read loyalty: %v", err)
 		}
 		return l
+	}
+	setPoints := func(id uuid.UUID, p float64) {
+		if _, err := pool.Exec(ctx, `UPDATE settlements SET loyalty_points = $2 WHERE id = $1`, id, p); err != nil {
+			t.Fatalf("set loyalty_points: %v", err)
+		}
 	}
 	eventCount := func(id uuid.UUID, eventType, reason string) int {
 		var n int
@@ -92,6 +108,7 @@ func TestApplyBattleLoyalty_MovesSettlementLoyalty(t *testing.T) {
 		}
 		return n
 	}
+	approx := func(got, want float64) bool { return got-want < 0.001 && want-got < 0.001 }
 	run := func(outcome Outcome) {
 		tx, err := pool.Begin(ctx)
 		if err != nil {
@@ -103,25 +120,36 @@ func TestApplyBattleLoyalty_MovesSettlementLoyalty(t *testing.T) {
 		}
 	}
 
-	// ── Attacker wins: its home gains loyalty; the (captured) defender is skipped. ──
+	// ── Attacker wins: +1 gain (×1.0) crosses band-2 ceiling → loyalty 2→3;
+	// the (captured) defender is skipped. ──
+	setPoints(attCapital, 49.5) // loyalty 2, just under Band2Ceil (50)
 	run(OutcomeAttackerWins)
+	if got := pointsOf(attCapital); !approx(got, 50.5) {
+		t.Errorf("attacker win: capital points want 50.5, got %.3f", got)
+	}
 	if got := loyaltyOf(attCapital); got != 3 {
 		t.Errorf("attacker win: capital loyalty want 3, got %d", got)
 	}
-	if got := loyaltyOf(defCity); got != 2 {
-		t.Errorf("attacker win: defender loyalty must be untouched (captured/razed), want 2, got %d", got)
+	if got := pointsOf(defCity); !approx(got, 37) { // untouched (captured/razed)
+		t.Errorf("attacker win: defender points must be untouched (37), got %.3f", got)
 	}
 	if got := eventCount(attCapital, "shared_victory", "won_battle"); got != 1 {
 		t.Errorf("attacker win: want 1 won_battle event, got %d", got)
 	}
 
-	// ── Defender wins: attacker's home loses loyalty; the held city gains it. ──
-	if _, err := pool.Exec(ctx, `UPDATE settlements SET loyalty = 2 WHERE id = $1`, attCapital); err != nil {
-		t.Fatalf("reset attacker loyalty: %v", err)
-	}
+	// ── Defender wins: attacker's home takes a -1 loss (×1.5 = -1.5) crossing
+	// Band1Ceil → loyalty 2→1; the held city gains +1 crossing Band2Ceil → 2→3. ──
+	setPoints(attCapital, 25.5) // loyalty 2, just above Band1Ceil (25)
+	setPoints(defCity, 49.5)    // loyalty 2, just under Band2Ceil (50)
 	run(OutcomeDefenderWins)
+	if got := pointsOf(attCapital); !approx(got, 24.0) {
+		t.Errorf("defender win: attacker points want 24.0, got %.3f", got)
+	}
 	if got := loyaltyOf(attCapital); got != 1 {
 		t.Errorf("defender win: attacker loyalty want 1, got %d", got)
+	}
+	if got := pointsOf(defCity); !approx(got, 50.5) {
+		t.Errorf("defender win: defender points want 50.5, got %.3f", got)
 	}
 	if got := loyaltyOf(defCity); got != 3 {
 		t.Errorf("defender win: defender loyalty want 3, got %d", got)

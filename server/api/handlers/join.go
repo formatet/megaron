@@ -11,6 +11,7 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/world"
@@ -222,10 +223,10 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	var settlementID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO settlements
-		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,5000)
+		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, loyalty, loyalty_points, population)
+		 VALUES ($1,$2,$3,$4,$5,'capital',true,3,$6,5000)
 		 RETURNING id`,
-		worldID, provinceID, req.ProvinceName, req.Culture, playerID,
+		worldID, provinceID, req.ProvinceName, req.Culture, playerID, loyalty.LoyaltyStartCapital,
 	).Scan(&settlementID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create settlement")
