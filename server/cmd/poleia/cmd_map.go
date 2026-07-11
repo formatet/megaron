@@ -46,17 +46,30 @@ func compassDirection(oq, or, tq, tr int) string {
 
 func mapCmd() *cobra.Command {
 	var radius int
+	var provinceID string
 
 	cmd := &cobra.Command{
 		Use:   "map",
 		Short: "Show nearby visible land hexes — colony candidates and ore deposits (sorted by distance)",
 		Example: `  poleia map
-  poleia map --radius 12`,
+  poleia map --radius 12
+  poleia map --province <province-id>   # inspect a colony's surroundings`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 
+			// Default to the capital; --province lets you inspect any province you own
+			// (the server verifies ownership), mirroring `build`/`allocate`.
+			prov := cfg.ProvinceID
+			if provinceID != "" {
+				resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+				if err != nil {
+					return err
+				}
+				prov = resolved
+			}
+
 			// 1. Own coordinates from status.
-			statusData, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, cfg.ProvinceID))
+			statusData, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov))
 			if err != nil {
 				return err
 			}
@@ -233,5 +246,6 @@ func mapCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().IntVar(&radius, "radius", 8, "max hex distance to list")
+	cmd.Flags().StringVar(&provinceID, "province", "", "province to center the map on (default: your capital)")
 	return cmd
 }

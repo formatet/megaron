@@ -34,9 +34,9 @@ there (march/colonize) to turn a rumour into a real contact.`,
 			if err := json.Unmarshal(data, &entries); err != nil {
 				return err
 			}
-			fmt.Printf("%-22s %-8s %-10s %-12s  %-7s  %s\n",
-				"Name", "Terrain", "Culture", "Kingdom", "Deposit", "Settlement ID")
-			fmt.Println("──────────────────────────────────────────────────────────────────────────")
+			fmt.Printf("%-22s %-16s %-8s %-10s %-12s  %-7s  %s\n",
+				"Name", "Owner", "Terrain", "Culture", "Kingdom", "Deposit", "Settlement ID")
+			fmt.Println("────────────────────────────────────────────────────────────────────────────────────")
 			var rumours []map[string]any
 			for _, e := range entries {
 				if knowledge, _ := e["knowledge"].(string); knowledge == "rumour" {
@@ -44,6 +44,7 @@ there (march/colonize) to turn a rumour into a real contact.`,
 					continue
 				}
 				name, _ := e["name"].(string)
+				owner, _ := e["owner"].(string)
 				terrain, _ := e["terrain"].(string)
 				culture, _ := e["culture"].(string)
 				kingdom, _ := e["kingdom"].(string)
@@ -56,6 +57,9 @@ there (march/colonize) to turn a rumour into a real contact.`,
 				if own {
 					marker = "★"
 				}
+				if owner == "" {
+					owner = "—"
+				}
 				deposit := "—"
 				if silver {
 					deposit = "⛏silver"
@@ -64,8 +68,8 @@ there (march/colonize) to turn a rumour into a real contact.`,
 				} else if tin {
 					deposit = "⛏tin"
 				}
-				fmt.Printf("%s%-21s %-8s %-10s %-12s  %-7s  %s\n",
-					marker, name, terrain, culture, kingdom, deposit, sid)
+				fmt.Printf("%s%-21s %-16s %-8s %-10s %-12s  %-7s  %s\n",
+					marker, name, owner, terrain, culture, kingdom, deposit, sid)
 			}
 			if len(entries)-len(rumours) <= 1 {
 				fmt.Println("\nNo other settlements within your vision — this directory is FOW-gated, not global.")

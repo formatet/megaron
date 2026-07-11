@@ -23,18 +23,20 @@ func recruitCmd() *cobra.Command {
 	var men int
 	var count int
 	var name string
+	var provinceID string
 
 	cmd := &cobra.Command{
 		Use:   "recruit",
 		Short: "Recruit men into a land unit, or build a ship (naval units build one vessel at a time)",
 		Example: `  poleia recruit --unit hoplites --men 10
   poleia recruit --unit chariot --men 50
-  poleia recruit --unit trireme --name Asterion
-  poleia recruit --unit war_galley --count 3`,
+  poleia recruit --unit ship --name Asterion
+  poleia recruit --unit war_galley --count 3
+  poleia recruit --unit hoplites --men 10 --province <province-id>   # recruit in a colony`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			apiUnit, ok := unitAliases[unit]
 			if !ok {
-				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, trireme, war_galley, merchantman, agema", unit)
+				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, ship, war_galley, merchantman, agema", unit)
 			}
 			isNaval := apiUnit == "ship" || apiUnit == "war_galley" || apiUnit == "merchantman"
 			if !isNaval {
@@ -55,7 +57,17 @@ func recruitCmd() *cobra.Command {
 				return fmt.Errorf("--name gäller bara skepp")
 			}
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/recruit", cfg.WorldID, cfg.ProvinceID)
+			// Default to the capital; --province lets you recruit in any province you own
+			// (the server verifies ownership), mirroring `build`/`allocate`.
+			prov := cfg.ProvinceID
+			if provinceID != "" {
+				resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+				if err != nil {
+					return err
+				}
+				prov = resolved
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/recruit", cfg.WorldID, prov)
 			body := map[string]any{"unit_type": apiUnit, "count": count}
 			if !isNaval {
 				body["men"] = men
@@ -102,6 +114,7 @@ func recruitCmd() *cobra.Command {
 	cmd.Flags().IntVarP(&men, "men", "n", 10, "men to recruit (multiple of 10, max 100; ignored for ships)")
 	cmd.Flags().IntVarP(&count, "count", "c", 1, "number of vessels to build in one call (ships only, 1–20)")
 	cmd.Flags().StringVar(&name, "name", "", "ship name (ships only; omit for a suggested name)")
+	cmd.Flags().StringVar(&provinceID, "province", "", "province to recruit in (default: your capital)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }

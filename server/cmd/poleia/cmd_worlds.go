@@ -40,36 +40,3 @@ func worldsCmd() *cobra.Command {
 		},
 	}
 }
-
-func kingdomsCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "kingdoms",
-		Short: "List kingdoms in the active world",
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/kingdoms", cfg.WorldID)
-			data, err := c.get(path)
-			if err != nil {
-				return err
-			}
-			if jsonMode {
-				printRawJSON(data)
-				return nil
-			}
-			var kingdoms []map[string]any
-			if err := json.Unmarshal(data, &kingdoms); err != nil {
-				return err
-			}
-			if len(kingdoms) == 0 {
-				fmt.Println("No kingdoms yet.")
-				return nil
-			}
-			for _, k := range kingdoms {
-				name, _ := k["name"].(string)
-				id, _ := k["id"].(string)
-				fmt.Printf("  %s  %s\n", name, id)
-			}
-			return nil
-		},
-	}
-}
