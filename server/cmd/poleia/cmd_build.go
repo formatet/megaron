@@ -13,16 +13,33 @@ func buildCmd() *cobra.Command {
 	var buildingType string
 	var provinceID string
 	var list bool
+	var queue bool
 
 	cmd := &cobra.Command{
 		Use:   "build",
-		Short: "Start construction of a building (--list to see all options; defaults to capital)",
+		Short: "Start construction of a building (--list for options, --queue to see what's queued; defaults to capital)",
 		Example: `  poleia build --list
   poleia build --type farm
   poleia build --type harbour          # requires coastal (adjacent sea hex)
-  poleia build --type mine --province <province-id>   # build in a colony`,
+  poleia build --type mine --province <province-id>   # build in a colony
+  poleia build --queue                 # see what's already queued, with cancel-build IDs`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+
+			// --queue: show this settlement's build queue (with queue IDs for
+			// cancel-build) and exit. Added because `build` used to only say
+			// "already in the queue" without any way to see what — or its ID.
+			if queue {
+				prov := cfg.ProvinceID
+				if provinceID != "" {
+					resolved, err := resolveProvince(c, cfg.WorldID, provinceID)
+					if err != nil {
+						return err
+					}
+					prov = resolved
+				}
+				return printBuildQueue(c, cfg.WorldID, prov)
+			}
 
 			// --list (or no --type): show the building catalogue and exit.
 			if list || buildingType == "" {
@@ -106,7 +123,49 @@ func buildCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
 	cmd.Flags().BoolVar(&list, "list", false, "show the building catalogue and exit")
+	cmd.Flags().BoolVar(&queue, "queue", false, "show this settlement's build queue (with queue IDs for cancel-build) and exit")
 	return cmd
+}
+
+// printBuildQueue implements `build --queue`: shows what's already queued in a
+// settlement, including each entry's queue ID, so `cancel-build --id` is
+// actually usable — build previously only ever said "already in the queue"
+// with no way to see what, or its ID. The data itself already exists (province
+// GET returns build_queue, the same field `poleia status` prints without the
+// ID); this just gives it its own focused, ID-inclusive view.
+func printBuildQueue(c *Client, worldID, provinceID string) error {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", worldID, provinceID))
+	if err != nil {
+		return err
+	}
+	if jsonMode {
+		printRawJSON(data)
+		return nil
+	}
+	var p map[string]any
+	if err := json.Unmarshal(data, &p); err != nil {
+		return err
+	}
+	sett, _ := p["settlement"].(map[string]any)
+	if sett == nil {
+		fmt.Println("No settlement here.")
+		return nil
+	}
+	bq, _ := sett["build_queue"].([]any)
+	if len(bq) == 0 {
+		fmt.Println("Build queue is empty.")
+		return nil
+	}
+	fmt.Printf("%-14s  %-38s  %s\n", "Type", "Queue ID (cancel-build --id)", "Done")
+	fmt.Println(strings.Repeat("─", 90))
+	for _, it := range bq {
+		m, _ := it.(map[string]any)
+		t, _ := m["type"].(string)
+		id, _ := m["id"].(string)
+		ca, _ := m["complete_at"].(string)
+		fmt.Printf("%-14s  %-38s  %s\n", t, id, localDone(ca))
+	}
+	return nil
 }
 
 func cancelBuildCmd() *cobra.Command {

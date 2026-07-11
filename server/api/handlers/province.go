@@ -1059,6 +1059,58 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 	writeJSON(w, http.StatusOK, result)
 }
 
+// UnitCatalogue handles GET /api/v1/units — returns the static catalogue of all
+// recruitable unit types: the resource cost for one recruit action (a 10-man
+// batch for land units, one vessel for naval — the same quantities `recruitPerManCosts`
+// scales up to deduct), the population-pool gate, training duration, and the
+// building requirement. No world/auth required — static reference data,
+// mirrors BuildingCatalogue.
+func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) {
+	type unitEntry struct {
+		Type             string             `json:"type"`
+		Costs            map[string]float64 `json:"costs"`
+		BatchMen         int                `json:"batch_men"` // men (land) or crew (naval) the Costs above pay for in one recruit call
+		PopCost          int                `json:"pop_cost"`
+		DurationMinutes  float64            `json:"duration_minutes"`
+		RequiresBarracks bool               `json:"requires_barracks,omitempty"`
+		RequiresStable   bool               `json:"requires_stable,omitempty"`
+		RequiresHarbour  bool               `json:"requires_harbour,omitempty"`
+		RequiresFoundry  bool               `json:"requires_foundry,omitempty"`
+	}
+
+	// Stable ordering: sort unit types alphabetically (mirrors BuildingCatalogue).
+	order := make([]string, 0, len(province.UnitSpecs))
+	for ut := range province.UnitSpecs {
+		order = append(order, ut)
+	}
+	sort.Strings(order)
+
+	result := make([]unitEntry, 0, len(order))
+	for _, ut := range order {
+		spec := province.UnitSpecs[ut]
+		batchMen := 10
+		if unit.CategoryOf(unit.Type(ut)) == unit.CategoryNaval {
+			batchMen = unit.CrewFor(unit.Type(ut))
+		}
+		costs := make(map[string]float64, len(spec.Costs))
+		for g, v := range spec.Costs {
+			costs[g] = v * float64(batchMen)
+		}
+		result = append(result, unitEntry{
+			Type:             ut,
+			Costs:            costs,
+			BatchMen:         batchMen,
+			PopCost:          spec.PopCost,
+			DurationMinutes:  float64(spec.DurationTicks * tick.TickMinutes),
+			RequiresBarracks: spec.RequiresBarracks,
+			RequiresStable:   spec.RequiresStable,
+			RequiresHarbour:  spec.RequiresHarbour,
+			RequiresFoundry:  spec.RequiresFoundry,
+		})
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 // recruitPerManCosts returns the resource cost per man for a given unit type.
 // Derived from Skalbeslut (2026-06-15): per-man = old UnitSpec cost / old PopCost.
 // Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.

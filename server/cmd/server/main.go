@@ -208,6 +208,7 @@ func main() {
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
 		// Reference catalogue — no auth, static data.
 		r.Get("/buildings", ph.BuildingCatalogue)
+		r.Get("/units", ph.UnitCatalogue)
 
 		// World endpoints — list/get/map are public; create requires auth.
 		r.Get("/worlds", wh.List)
