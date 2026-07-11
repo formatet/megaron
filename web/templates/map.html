@@ -89,7 +89,11 @@
 <!-- ── CITY DRAWER ──────────────────────────────────────────────────────── -->
 <div class="drawer" id="drawer-city">
   <div class="drawer-header">
-    <span class="drawer-title">City</span>
+    <div class="drawer-title-group">
+      <button class="drawer-nav" onclick="cycleCityView(-1)" title="Previous settlement">‹</button>
+      <span class="drawer-title" id="city-drawer-title">City</span>
+      <button class="drawer-nav" onclick="cycleCityView(1)" title="Next settlement">›</button>
+    </div>
     <button class="drawer-close" onclick="closeDrawer('city')">✕</button>
   </div>
   <div class="drawer-body" id="city-body">
@@ -964,6 +968,26 @@ function ownCapital() {
       || provinceData.find(p => p.own)
       || null;
 }
+
+// The settlement the City drawer currently shows. Defaults to the capital,
+// but the player can cycle through their own settlements via the drawer's
+// prev/next arrows (cycleCityView) or by clicking a settlement on the map.
+let cityViewID = null; // province ID of the settlement the City drawer currently shows
+function activeCitySettlement() {
+  const mine = provinceData.filter(p => p.own && !p.is_outpost);
+  if (!mine.length) return null;
+  const chosen = cityViewID && mine.find(p => p.id === cityViewID);
+  return chosen || mine.find(p => p.is_capital) || mine[0];
+}
+function cycleCityView(dir) {
+  const mine = provinceData.filter(p => p.own && !p.is_outpost);
+  if (mine.length < 2) return;
+  const current = activeCitySettlement();
+  let idx = mine.findIndex(p => p.id === current.id);
+  idx = (idx + dir + mine.length) % mine.length;
+  cityViewID = mine[idx].id;
+  loadDrawerContent('city');
+}
 let camera = { x: 0, y: 0, zoom: 1 };
 let dragging = false, lastMouse = null;
 let selectedProvince = null;
@@ -1334,6 +1358,7 @@ function openInspect(marker) {
     btn.textContent = marker.is_capital ? 'Manage Province →' : 'Manage Settlement →';
     btn.style.cssText = 'display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;';
     btn.addEventListener('click', function() {
+      cityViewID = marker.id;
       closeInspect();
       openDrawer('city');
     });
@@ -1863,7 +1888,7 @@ document.addEventListener('keydown', e => {
 
 // Drawer content loaders — fetch live data from JSON API on open
 async function loadDrawerContent(name) {
-  const capital = ownCapital();
+  const capital = activeCitySettlement();
   // Get terrain from tileData (not in provinceData)
   const capitalTile = capital ? tileData.find(t => t.q === capital.q && t.r === capital.r) : null;
   const terrainLabel = capitalTile
@@ -1871,9 +1896,11 @@ async function loadDrawerContent(name) {
     : '—';
 
   // Update drawer title dynamically for city
-  if (name === 'city' && capital) {
-    const titleEl = document.querySelector('#drawer-city .drawer-title');
-    if (titleEl) titleEl.textContent = `City — ${capital.name}`;
+  if (name === 'city') {
+    const titleEl = document.getElementById('city-drawer-title');
+    if (titleEl) titleEl.textContent = capital ? `City — ${capital.name}${capital.is_capital ? ' ★' : ''}` : 'City';
+    const mineCount = provinceData.filter(p => p.own && !p.is_outpost).length;
+    document.querySelectorAll('#drawer-city .drawer-nav').forEach(b => b.disabled = mineCount < 2);
   }
 
   if (name === 'city') {
@@ -2059,7 +2086,7 @@ async function loadDrawerContent(name) {
           <div id="war-disband-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div>`;
       }
 
-      document.getElementById('city-gar-sec').innerHTML += await renderLockedActions('province');
+      document.getElementById('city-gar-sec').innerHTML += await renderLockedActions('province', capital.id);
 
     } catch(e) { console.error('city drawer', e); }
 
@@ -2380,7 +2407,7 @@ const _BLD_LBL = {
 };
 
 async function startBuild() {
-  const capital = ownCapital();
+  const capital = activeCitySettlement();
   if (!capital) return;
   const sel = document.getElementById('city-build-select');
   const resultEl = document.getElementById('city-build-result');
@@ -2425,7 +2452,7 @@ async function startCraft(provinceID) {
 }
 
 async function loadTicklog() {
-  const capital = ownCapital();
+  const capital = activeCitySettlement();
   const el = document.getElementById('city-ticklog-sec');
   if (!capital || !el) return;
   el.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
@@ -3523,11 +3550,11 @@ async function dipSend() {
 // ── Locked-verb hints — server-authoritative (GET .../actions) ────────────
 // Same source of truth as `poleia actions`: no client-side gate logic here,
 // just render what the server already decided (temenos_capabilities.md).
-async function renderLockedActions(category) {
-  const capital = ownCapital();
-  if (!capital) return '';
+async function renderLockedActions(category, provinceID) {
+  const id = provinceID || (ownCapital() || {}).id;
+  if (!id) return '';
   try {
-    const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${capital.id}/actions`);
+    const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/provinces/${id}/actions`);
     if (!r.ok) return '';
     const verbs = (await r.json()).filter(v => v.category === category && !v.available);
     if (!verbs.length) return '';

@@ -1143,6 +1143,11 @@ body:has(.auth-page) main {
 }
 .drawer-close:hover { color: var(--accent); border-color: var(--accent); }
 
+.drawer-title-group { display: flex; align-items: center; gap: .3rem; }
+.drawer-nav { background: none; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; padding: 0.05rem 0.4rem; font-family: var(--mono); font-size: 0.85rem; }
+.drawer-nav:hover { color: var(--accent); border-color: var(--accent); }
+.drawer-nav:disabled { opacity: .35; cursor: default; }
+
 .drawer-tabs {
   display: flex;
   border-bottom: 1px solid var(--border);
