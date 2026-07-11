@@ -63,6 +63,19 @@ func TestComputeDailyDecay_TempleInColonyZeroesItsContribution(t *testing.T) {
 	}
 }
 
+// TestDecayBas_NetNeutralBand guards the net-neutral recalibration (Timothy
+// 2026-07-11, A#4 kharis-rot): decayBas must stay near the passive geographic
+// kharis_rate (~0.6/day) so a bare passive Wanax nets ~neutral and an offering-fed
+// temple climbs — NOT the old 4.0, which made maintained temples net-negative,
+// bled kharis to the floor (bless unreachable), and let a restart's tick catch-up
+// nuke every Wanax to 1 in one burst. If a soak proves the climb too fast/slow,
+// re-tune within this band; a value ≥ ~2 reintroduces the always-sinks bug.
+func TestDecayBas_NetNeutralBand(t *testing.T) {
+	if decayBas <= 0 || decayBas > 1.5 {
+		t.Errorf("decayBas = %v, want (0, 1.5] — near the passive kharis_rate for net-neutral maintenance", decayBas)
+	}
+}
+
 func TestClampKharis_FloorAndCap(t *testing.T) {
 	if got := clampKharis(-50, 100); got != kharisFloor {
 		t.Errorf("clampKharis(-50, 100) = %v, want floor %v", got, kharisFloor)

@@ -35,16 +35,26 @@ const (
 const kharisPerCult = 0.0005
 
 // FAS 2 — natural depreciation + imperie-belastning (Timothy 2026-07-09 kharis
-// omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2/3): kharis now decays a
-// little EVERY day, whether or not the temple was maintained — "pegged forever"
-// is no longer possible. dailyDecay = decayBas + decayPerKoloni × colonies
-// without their own temple beyond decayFreeColonies free ones: a Wanax who
-// expands without building temples in the new colonies pays for it; a temple
-// (any offer/cult activity is irrelevant here — presence of the building alone
-// suffices) in a colony zeroes that colony's contribution. All strawman —
-// temenos_balans_spakar.md §9.
+// omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2/3): dailyDecay =
+// decayBas + decayPerKoloni × colonies without their own temple beyond
+// decayFreeColonies free ones. A Wanax who expands without building temples in
+// the new colonies pays for it; a temple (presence of the building alone
+// suffices) in a colony zeroes that colony's contribution.
+//
+// NET-NEUTRAL recalibration (Timothy 2026-07-11, A#4 kharis-rot): decayBas was
+// 4.0, which made a maintained temple net NEGATIVE (~−1.8/day vs the passive
+// geographic kharis_rate ~0.6/day + cult-gain), so kharis bled to the floor and
+// bless (≥60) was unreachable — and on a sped-up world (TICK_SECONDS) a restart's
+// tick catch-up replayed dozens of those net-negative days in one burst, flooring
+// every Wanax to 1. Intent now: PASSIVE (bare geographic kharis_rate, no active
+// offering) ≈ neutral / slow fade — "the relationship is tended actively"; an
+// OFFERING-fed temple is the only way UP (rites SPEND standing, they don't add
+// kharis). decayBas ≈ the typical passive rate achieves that shape regardless of
+// the exact cult-gain (design target ~0.8/day, live-observed ~2.2 — the climb
+// RATE is uncertain and must be re-measured at the next soak, but the SIGN is
+// right either way). Tunbar. temenos_balans_spakar.md §9 · temenos_kharis.md.
 const (
-	decayBas          = 4.0 // base daily decay, applies even with zero colonies
+	decayBas          = 1.0 // base daily decay ≈ passive kharis_rate → passive nets ~neutral; offering climbs
 	decayPerKoloni    = 1.0 // extra daily decay per templeless colony beyond decayFreeColonies
 	decayFreeColonies = 4   // this many templeless colonies cost nothing extra
 )
@@ -318,14 +328,15 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {
-	// FAS 2 (Timothy 2026-07-09 kharis omdesign): dailyDecay now applies EVERY
-	// day, maintained or not — "Kharis sjunker alltid" — replacing the old
-	// missed-day-only multiplicative decay (was 10%/day, decayOnMissed, retired
-	// in this FAS). gain (from cult production, FAS 3-scaled by material offer)
-	// is the only term that differs between the two branches below; bless/punish
-	// eligibility still follows the maintained/missed split (temenos_balans_
-	// spakar.md §9: bless only on a maintained day, punish only on a missed one)
-	// even though the arithmetic is now unified.
+	// dailyDecay applies EVERY day, maintained or not (replacing the old
+	// missed-day-only 10%/day decayOnMissed, retired in FAS 2). Post net-neutral
+	// recalibration (Timothy 2026-07-11, see decayBas above) the base term is small
+	// — ≈ the passive geographic kharis_rate — so a bare passive Wanax nets ~neutral
+	// and an offering-fed temple climbs; it is no longer a hard "sjunker alltid"
+	// drain. gain (from cult production, FAS 3-scaled by material offer) is the only
+	// term that differs between the two branches below; bless/punish eligibility
+	// still follows the maintained/missed split (temenos_balans_spakar.md §9: bless
+	// only on a maintained day, punish only on a missed one).
 	maintained := w.cultSum > 0
 
 	// FAS 3 — offer-underhåll: a maintained day's cult-gain is scaled by how
