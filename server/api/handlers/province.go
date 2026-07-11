@@ -454,6 +454,20 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Settlement cap: same "how many colonies do I hold vs. the per-Wanax
+		// ceiling" figure `poleia actions` derives for the colonize gate
+		// (capabilities.settlementCapRequirement / province.MaxSettlementsPerWanax),
+		// surfaced here too so status doesn't require a second round-trip to see
+		// it. Scoped by sett.OwnerID (not the requesting player) to match the
+		// existing kharis/cooldown convention above — spectators see the owner's count.
+		var settlementsOwned int
+		if sett.OwnerID != nil {
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT count(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND state = 'active'`,
+				worldID, *sett.OwnerID,
+			).Scan(&settlementsOwned)
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":                sett.ID,
 			"name":              sett.Name,
@@ -476,6 +490,10 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"can_afford":        buildAfford,
 			"can_recruit":       recruitAfford,
 			"available_prayers": prayers,
+			"settlement_cap": map[string]any{
+				"used": settlementsOwned,
+				"max":  province.MaxSettlementsPerWanax,
+			},
 			"sitos": map[string]any{
 				"fund_silver":        sitosFundSilver,
 				"fund_cap":           sitosFundCap,

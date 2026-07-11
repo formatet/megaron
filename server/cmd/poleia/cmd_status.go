@@ -66,8 +66,16 @@ func statusCmd() *cobra.Command {
 			if coastal {
 				coastalNote = "  [coastal — can build harbour → ships]"
 			}
-			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s\n\n",
-				name, culture, resource(pop), resource(labor), walls, loyalty, coastalNote)
+			settlementsNote := ""
+			if cap, ok := sett["settlement_cap"].(map[string]any); ok {
+				used, _ := cap["used"].(float64)
+				max, _ := cap["max"].(float64)
+				settlementsNote = fmt.Sprintf("  Settlements: %.0f/%.0f", used, max)
+			}
+			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
+				name, culture, resource(pop), resource(labor), walls, loyalty, settlementsNote, coastalNote)
+			fmt.Println("  Loyalty 1–4 (1=lägst; revolt kräver även fientlig garnison-majoritet + utlösande händelse)")
+			fmt.Println()
 
 			// Sitos-fonden (grain reserve): the automatic last-resort counterparty
 			// for subsistence goods. Always shown so its silver + reference price
