@@ -25,6 +25,9 @@ const (
 	GoodCult    = "cult" // internal sacred good produced by temple labor → converted to kharis daily
 )
 
+// FoodGoods är de varor som räknas som mat för kost-variation (Timothy 2026-07-11: bred palett).
+var FoodGoods = []string{GoodGrain, GoodFish, GoodWine, GoodOil}
+
 // Good is the catalog entry for a tradeable good.
 type Good struct {
 	Key       string

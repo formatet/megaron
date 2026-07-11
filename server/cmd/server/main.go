@@ -104,6 +104,7 @@ func main() {
 	buildH := combat.NewBuildCompleteHandler(pool, eventStore, hub)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, hub)
 	decayH := loyalty.NewDecayHandler(pool, scheduler, eventStore)
+	welfareH := loyalty.NewWelfareHandler(pool, scheduler, eventStore)
 	colonyH := loyalty.NewColonyPenaltyHandler(pool, scheduler, eventStore)
 	borrowedH := loyalty.NewBorrowedArmyPenaltyHandler(pool, scheduler, eventStore, gameClock)
 	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
@@ -118,6 +119,7 @@ func main() {
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
 	worker.Register(events.ScheduledLoyaltyDecayTick, decayH.Handle)
+	worker.Register(events.ScheduledLoyaltyWelfareTick, welfareH.Handle)
 	worker.Register(events.ScheduledColonyPenaltyTick, colonyH.Handle)
 	worker.Register(events.ScheduledBorrowedArmyTick, borrowedH.Handle)
 	worker.Register(events.ScheduledMessengerArrival, messengerArrivalH.Handle)
@@ -343,6 +345,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 
 	tickTypes := []events.ScheduledEventType{
 		events.ScheduledLoyaltyDecayTick,
+		events.ScheduledLoyaltyWelfareTick,
 		events.ScheduledColonyPenaltyTick,
 		events.ScheduledBorrowedArmyTick,
 		events.ScheduledKharisTick,
