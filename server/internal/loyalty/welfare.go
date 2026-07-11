@@ -140,16 +140,16 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 }
 
 func (h *WelfareHandler) applyWelfare(ctx context.Context, w welfareRow, worldID uuid.UUID) error {
-	// "Grain-underskott" reuses the exact quantity anchor sitos_tick.go uses to
-	// decide the fund's shortage/surplus action (economy.ProductionReference —
-	// the same `reference` sitos_tick.go's stabilizeGood computes for the
-	// EvaluateSitosAction shortage gate): stock below that comfortable-buffer
-	// anchor is a grain deficit, at/above it is well-fed. Not inventing a new
-	// concept — same anchor, no price smoothing needed for this boolean gate.
-	reference := economy.ProductionReference(w.grainRate)
+	// "Mätt vs svält" = kan staden föda sig? Grain flödar genom varje tick
+	// (grain-cap-pegging borttagen) så en självförsörjande stad håller bara
+	// ~1 ticks buffert — DÄRFÖR duger inte ProductionReference (~3-dygns-ankare)
+	// som tröskel; den kallade friska huvudstäder "svält". Rätt diskriminator är
+	// grain-NETTOT: rate ≥ 0 (självförsörjande/överskott) = mätt; rate < 0 eller
+	// tomt/negativt lager (redan i underskott) = svält. Verifierat mot rådata
+	// (c3c289e5 2026-07-11): friska huvudstäder rate +300…+2300, svältande −6…−15.
 	kharisGood := w.kharis >= kharisBlessThresholdRef
-	fed := w.grainStock >= reference
-	starving := !fed
+	starving := w.grainStock <= 0 || w.grainRate < 0
+	fed := !starving
 	varied := w.foodVariety >= varietyThreshold
 
 	delta := welfareDelta(kharisGood, fed, starving, w.foodVariety)
