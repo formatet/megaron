@@ -1256,6 +1256,8 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 	destQ, destR int,
 	worldID uuid.UUID,
 ) error {
+	// Rout retreat is half the speed of an orderly advance (Timothy 2026-07-01).
+	const routRetreatSlowdown = 2.0
 	if attSizeAfter <= 0 {
 		// Unit destroyed: demographic loss, unit disbanded.
 		if _, err := tx.Exec(ctx,
@@ -1269,6 +1271,8 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		// origin = (u.q, u.r) — the hex the unit marched FROM (set by march handler).
 		// Route via A* (same passability graph the forward march used) instead of a
 		// straight line, so a routing unit cannot teleport across impassable terrain.
+		// A routing unit falls back in disorder: retreat is half the speed of an
+		// orderly advance (Timothy 2026-07-01), i.e. 2× the forward path time.
 		_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 			province.MapPosition{Q: destQ, R: destR},
 			province.MapPosition{Q: u.q, R: u.r},
@@ -1300,6 +1304,7 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 			}
 			moveHours = province.TerrainMoveHours(originTerrain) * float64(dist)
 		}
+		moveHours *= routRetreatSlowdown
 		arrivesAt := h.clk.Now().Add(time.Duration(moveHours * float64(time.Hour)))
 
 		var currentTick int
