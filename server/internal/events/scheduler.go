@@ -39,6 +39,9 @@ const (
 	ScheduledCollapseCheck     ScheduledEventType = "CollapseCheck"
 	ScheduledDivineRoll        ScheduledEventType = "DivineRoll"
 	ScheduledLoyaltyDecayTick  ScheduledEventType = "LoyaltyDecayTick"
+	// L1 — daily loyalty welfare signals (kharis favour, feeding, starvation,
+	// diet variety), internal/loyalty/welfare.go.
+	ScheduledLoyaltyWelfareTick ScheduledEventType = "LoyaltyWelfareTick"
 	ScheduledColonyPenaltyTick ScheduledEventType = "ColonyPenaltyTick"
 	ScheduledBorrowedArmyTick  ScheduledEventType = "BorrowedArmyTick"
 	ScheduledMessengerArrival  ScheduledEventType = "MessengerArrival"
