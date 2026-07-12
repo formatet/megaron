@@ -1292,6 +1292,12 @@ body:has(.auth-page) main {
 .nli-kind { font-size: 0.9rem; text-align: center; }
 .nli-text { color: var(--text); }
 .nli-time { color: var(--text-dim); font-family: var(--mono); font-size: 0.68rem; white-space: nowrap; }
+.nli-grain { grid-column: 2 / -1; color: var(--text-dim); font-size: 0.72rem; }
+/* SubsistenceWarning tiers (DEL D) — never collapsed; critical floats to the
+   top of the feed. Placed after .nl-unread/.nl-urgent so the tier border wins. */
+.notif-list-item.notif-tier-yellow   { border-left: 2px solid var(--safe);   padding-left: 0.3rem; }
+.notif-list-item.notif-tier-red      { border-left: 2px solid var(--accent); padding-left: 0.3rem; }
+.notif-list-item.notif-tier-critical { border-left: 3px solid var(--blood);  padding-left: 0.3rem; background: rgba(146, 43, 33, 0.12); }
 
 /* ── Search overlay ──────────────────────────────────────────────────────── */
 .search-overlay {

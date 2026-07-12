@@ -183,6 +183,7 @@
     </label>
     <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
       style="display:none;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
+    <div id="mctx-colonize-preview" style="display:none;margin-top:.3rem;font-size:.72rem;line-height:1.35"></div>
   </div>
   <div class="mctx-units" id="mctx-units"></div>
   <div id="mctx-stance-row" style="display:none;padding:.15rem .55rem .3rem;font-size:.75rem;color:var(--text-dim)">
@@ -1550,6 +1551,13 @@ loadMap().then(() => { dirty = true; render(); });
       if (msg.kind === 'BuildComplete') {
         addNotifChip('city', '🏛', `Build complete`, 'now');
       }
+      if (msg.kind === 'ColonyFounded') {
+        // Founding grain balance rides in the payload (DEL B) — a colony that
+        // starts at a deficit drains its seed from THIS tick, so say so now.
+        const p = msg.payload || {};
+        const grainLine = colonyFoundedGrainLine(p);
+        addNotifChip('city', '🏛', notifText('ColonyFounded', p) + (grainLine ? ' — ' + grainLine : ''), 'now');
+      }
       if (msg.kind === 'TradeCaravanArrival') {
         fetchAuth(`/api/v1/worlds/${WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { tradeData = d; dirty = true; }));
         addNotifChip('trade', '🐂', 'Caravan arrived', 'now');
@@ -1608,12 +1616,82 @@ function closeMarchCtx() {
   if (nameEl) { nameEl.value = ''; nameEl.style.display = 'none'; }
   const chk = document.getElementById('mctx-colonize-chk');
   if (chk) chk.checked = false;
+  const prevEl = document.getElementById('mctx-colonize-preview');
+  if (prevEl) { prevEl.style.display = 'none'; prevEl.innerHTML = ''; }
 }
 
-function onColonizeToggle() {
+async function onColonizeToggle() {
   const chk = document.getElementById('mctx-colonize-chk');
   const nameEl = document.getElementById('mctx-colony-name');
   if (nameEl) nameEl.style.display = chk && chk.checked ? 'block' : 'none';
+
+  // Colonize catchment forecast (DEL A parity with keryx): show the founding
+  // grain balance before the march is committed. Best-effort — a failed fetch
+  // never blocks the March button.
+  const prevEl = document.getElementById('mctx-colonize-preview');
+  if (!prevEl) return;
+  if (!(chk && chk.checked) || !marchCtxDest) {
+    prevEl.style.display = 'none';
+    prevEl.innerHTML = '';
+    return;
+  }
+  const dest = marchCtxDest;
+  prevEl.style.display = 'block';
+  prevEl.innerHTML = '<span style="color:var(--text-dim)">Reading the land…</span>';
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/colonize-preview?q=${dest.q}&r=${dest.r}`);
+    if (!r.ok) throw new Error();
+    const p = await r.json();
+    if (marchCtxDest !== dest) return; // the menu moved on while we fetched
+    prevEl.innerHTML = renderColonizePreviewHTML(p);
+  } catch (_) {
+    if (marchCtxDest === dest) prevEl.innerHTML = '<span style="color:var(--text-dim)">No forecast available.</span>';
+  }
+}
+
+// Mirrors keryx's renderColonizePreview (cmd_unit.go): grain prod − cons = net
+// per game-day (rates are per-tick from the server, ×24), seed reach, farm
+// note, plus known deposits/goods. FOW-safe — only known:true catchment hexes
+// contribute to the deposit list; unknown hexes are counted, not guessed at.
+function renderColonizePreviewHTML(p) {
+  const td = 24;
+  const g = p.grain || {};
+  const total = (p.catchment || []).length;
+  const known = total - (p.unknown_hexes || 0);
+  const prodDay = (g.base_per_tick || 0) * td;
+  const netDay  = (g.est_net_per_tick || 0) * td;
+  const consDay = prodDay - netDay;
+
+  let html = `<div style="color:var(--text-dim)">Catchment forecast — ${known}/${total} hexes known</div>`;
+  html += `<div>Grain: prod ~${prodDay.toFixed(0)} − cons ~${consDay.toFixed(0)} = ` +
+    `<b style="color:${netDay < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netDay >= 0 ? '+' : ''}${netDay.toFixed(0)}/day</b></div>`;
+  if (netDay < 0) {
+    const reach = g.days_until_empty != null ? ` → lasts ~${g.days_until_empty.toFixed(0)} days` : '';
+    const farmNetDay = (g.with_farm_per_tick || 0) * td - consDay;
+    const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
+      ? ' (no farmland in known catchment — a farm will not help here)' : '';
+    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain${reach}. With farm: ${farmNetDay >= 0 ? '+' : ''}${farmNetDay.toFixed(0)}/day${farmNote}</div>`;
+    html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
+  } else {
+    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain — the colony feeds itself.</div>`;
+  }
+
+  const dep = {};
+  (p.catchment || []).forEach(ce => {
+    if (!ce.known) return;
+    if (ce.copper_deposit) dep.copper = true;
+    if (ce.tin_deposit)    dep.tin = true;
+    if (ce.silver_deposit) dep.silver = true;
+    if (ce.cedar_deposit)  dep.cedar = true;
+  });
+  const extras = ['copper', 'tin', 'silver', 'cedar'].filter(d => dep[d]).map(d => d + '-deposit ✓');
+  Object.keys(p.goods || {}).sort().forEach(gk => {
+    if (gk === 'grain') return;
+    const rate = (p.goods[gk] || 0) * td;
+    if (rate > 0) extras.push(`${gk} ~${rate.toFixed(0)}/day`);
+  });
+  if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
+  return html;
 }
 
 function positionMarchCtx(screenX, screenY) {
@@ -2013,14 +2091,26 @@ async function loadDrawerContent(name) {
       }
 
       // ── Sitos + senaste tick ──────────────────────────────────────────────
+      // Grain itemized as prod − cons = net per day (keryx `status` parity,
+      // DEL C): the stored rate is already net, so a lone negative number
+      // reads as an alarm when it is often just normal balance.
+      let grainRow = '';
+      if (pd && pd.grain_prod_rate != null) {
+        const prodDay = (pd.grain_prod_rate || 0) * 24;
+        const consDay = (pd.grain_consum_rate || 0) * 24;
+        const netDay  = prodDay - consDay;
+        const be = pd.breakeven_grain_weight != null
+          ? ` <span style="color:var(--text-dim);font-size:.7rem">(break-even ≥${Math.round(pd.breakeven_grain_weight * 100)}% grain share)</span>` : '';
+        grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodDay.toFixed(1)} − cons ${consDay.toFixed(1)} = <b style="color:${netDay >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netDay >= 0 ? '+' : ''}${netDay.toFixed(1)}/day</b>${be}</span></div>`;
+      }
       if (pd && pd.sitos) {
         const s = pd.sitos;
-        document.getElementById('city-sitos-sec').innerHTML = `
+        document.getElementById('city-sitos-sec').innerHTML = grainRow + `
           <div class="stat-row"><span class="sr-label">Fund</span><span class="sr-val">${fmtSilver(s.fund_silver)} / ${fmtSilver(s.fund_cap)}</span></div>
           <div class="stat-row"><span class="sr-label">Tax rate</span><span class="sr-val">+${s.fund_rate_per_tick.toFixed(2)}/tick</span></div>
           <div class="stat-row"><span class="sr-label">Grain ref. price</span><span class="sr-val">${s.ref_price_grain.toFixed(2)} (floor ${s.ref_price_floor} · ceiling ${s.ref_price_ceiling})</span></div>`;
       } else {
-        document.getElementById('city-sitos-sec').innerHTML = '<p class="empty-state">—</p>';
+        document.getElementById('city-sitos-sec').innerHTML = grainRow || '<p class="empty-state">—</p>';
       }
       if (pd && pd.last_tick) {
         const lt = pd.last_tick;
@@ -2136,36 +2226,90 @@ async function loadDrawerContent(name) {
     await loadKultDrawer();
 
   } else if (name === 'notif') {
-    const body = document.getElementById('notif-body');
-    body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
-    try {
-      const r = await fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications`);
-      if (r.ok) {
-        const data = await r.json();
-        updateNotifBadge(0);
-        fetchAuth(`/api/v1/worlds/${WORLD_ID}/notifications/read-all`, { method: 'POST' });
-        if (!data.notifications.length) {
-          body.innerHTML = '<p class="empty-state" style="padding:1rem">No notifications yet.</p>';
-        } else {
-          body.innerHTML = data.notifications.map(n => {
-            const ago = fmtAgo(n.created_at);
-            const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
-            const text = notifText(n.kind, body_obj);
-            const lvlClass = n.level <= 2 ? 'nl-urgent' : n.level === 3 ? 'nl-info' : 'nl-routine';
-            const unread  = !n.read_at ? ' nl-unread' : '';
-            return `<div class="notif-list-item ${lvlClass}${unread}">
-              <span class="nli-kind">${notifIcon(n.kind)}</span>
-              <span class="nli-text">${text}</span>
-              <span class="nli-time">${ago}</span>
-            </div>`;
-          }).join('');
-        }
-      } else {
-        body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
-      }
-    } catch (_) {
+    await loadNotifDrawer();
+  }
+}
+
+// ── Notifications drawer ──────────────────────────────────────────────────
+// Mirrors keryx `notifications` (DEL B/D): the default view excludes the noisy
+// Sitos kinds (~99% of the feed) so real events stay visible, with a "+N —
+// click to view" drill-down per hidden kind. SubsistenceWarning is never
+// collapsed; its critical tier floats to the very top of the feed.
+const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
+
+function notifShowKind(kind) { loadNotifDrawer(kind || null); }
+
+async function loadNotifDrawer(kindFilter) {
+  const body = document.getElementById('notif-body');
+  body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
+  try {
+    const base = `/api/v1/worlds/${WORLD_ID}/notifications`;
+    const url = kindFilter
+      ? `${base}?kind=${encodeURIComponent(kindFilter)}`
+      : `${base}?exclude=${encodeURIComponent(NOISY_NOTIF_KINDS.join(','))}`;
+    const r = await fetchAuth(url);
+    if (!r.ok) {
       body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
+      return;
     }
+    const data = await r.json();
+    if (!kindFilter) {
+      updateNotifBadge(0);
+      fetchAuth(`${base}/read-all`, { method: 'POST' });
+    }
+
+    // Critical SubsistenceWarnings first — a starving city must never scroll
+    // past. Stable within each partition (server orders created_at DESC).
+    const notifs = (data.notifications || []).slice();
+    const tierOf = n => {
+      if (n.kind !== 'SubsistenceWarning') return '';
+      const b = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
+      return b.tier || '';
+    };
+    notifs.sort((a, b) => (tierOf(b) === 'critical' ? 1 : 0) - (tierOf(a) === 'critical' ? 1 : 0));
+
+    let html = '';
+    if (kindFilter) {
+      html += `<div class="notif-list-item" style="cursor:pointer;color:var(--text-dim)" onclick="notifShowKind()">
+        <span class="nli-kind">←</span><span class="nli-text">All notifications</span><span class="nli-time"></span></div>`;
+    }
+    html += notifs.map(n => {
+      const ago = fmtAgo(n.created_at);
+      const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
+      const text = notifText(n.kind, body_obj);
+      const lvlClass = n.level <= 2 ? 'nl-urgent' : n.level === 3 ? 'nl-info' : 'nl-routine';
+      const unread  = !n.read_at ? ' nl-unread' : '';
+      const tier = tierOf(n);
+      const tierClass = tier ? ` notif-tier-${tier}` : '';
+      const grainLine = n.kind === 'ColonyFounded' ? colonyFoundedGrainLine(body_obj) : '';
+      return `<div class="notif-list-item ${lvlClass}${unread}${tierClass}">
+        <span class="nli-kind">${notifIcon(n.kind)}</span>
+        <span class="nli-text">${text}</span>
+        <span class="nli-time">${ago}</span>
+        ${grainLine ? `<span class="nli-grain">${grainLine}</span>` : ''}
+      </div>`;
+    }).join('');
+
+    // Hidden-kind drill-down (default view only): best-effort counts of what
+    // the exclude filter hid, mirroring keryx's "+N — --kind X för alla" line.
+    if (!kindFilter) {
+      for (const kind of NOISY_NOTIF_KINDS) {
+        try {
+          const cr = await fetchAuth(`${base}?kind=${encodeURIComponent(kind)}`);
+          if (!cr.ok) continue;
+          const cd = await cr.json();
+          const count = (cd.notifications || []).length;
+          if (count > 0) {
+            html += `<div class="notif-list-item" style="cursor:pointer;color:var(--text-dim)" onclick="notifShowKind('${kind}')">
+              <span class="nli-kind">◉</span><span class="nli-text">+${count} ${kind} — click to view</span><span class="nli-time"></span></div>`;
+          }
+        } catch (_) {}
+      }
+    }
+
+    body.innerHTML = html || '<p class="empty-state" style="padding:1rem">No notifications yet.</p>';
+  } catch (_) {
+    body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
   }
 }
 
@@ -2375,12 +2519,37 @@ async function loadKultDrawer() {
 
     let html = '<div class="dsec"><div class="dsec-title">Divine favour</div>' +
       '<div class="stat-row"><span class="sr-label">Mood</span>' +
-      '<span class="sr-val" style="color:' + (MOOD_COLORS[mood] || 'inherit') + '">' + (MOOD_LABELS[mood] || mood) + '</span></div></div>';
+      '<span class="sr-val" style="color:' + (MOOD_COLORS[mood] || 'inherit') + '">' + (MOOD_LABELS[mood] || mood) + '</span></div>';
+    // Kharis is DAILY-maintenance-driven — show the passive geographic rate
+    // per game-day (keryx `status` parity), never a per-tick figure.
+    if (pd && pd.kharis_per_day != null) {
+      html += '<div class="stat-row"><span class="sr-label">Passive</span><span class="sr-val">' +
+        (pd.kharis_per_day >= 0 ? '+' : '') + pd.kharis_per_day.toFixed(1) + ' kharis/day</span></div>';
+    }
+    html += '</div>';
 
     // Cult level — derived from kharis (read-only; set by daily temple tick)
     html += '<div class="dsec"><div class="dsec-title">Cult level</div>' +
       '<div class="stat-row"><span class="sr-label">Level</span>' +
       '<span class="sr-val">' + (CULT_LABELS[cultLevel] || cultLevel) + '</span></div></div>';
+
+    // Temple offerings — read-only mirror of the daily offer gate (keryx
+    // `status` parity): answers "will my kharis climb today" per temple city.
+    // Fed status is ✓/✗ against the oil/wine requirement — never a percent.
+    if (pd && Array.isArray(pd.temple_offers)) {
+      html += '<div class="dsec"><div class="dsec-title">Temple offerings</div>';
+      if (!pd.temple_offers.length) {
+        html += '<p class="empty-state">No temples — kharis will not climb without a temple and offerings.</p>';
+      } else {
+        pd.temple_offers.forEach(t => {
+          const mark = t.fed ? '<span style="color:var(--safe)">✓</span>' : '<span style="color:var(--accent)">✗</span>';
+          html += '<div class="stat-row" style="align-items:flex-start"><span class="sr-label">' + esc(t.name || '') + '</span>' +
+            '<span class="sr-val">needs ' + (t.oil_needed || 0).toFixed(0) + ' oil + ' + (t.wine_needed || 0).toFixed(0) +
+            ' wine/day — has oil ' + Math.floor(t.oil || 0) + ', wine ' + Math.floor(t.wine || 0) + ' ' + mark + '</span></div>';
+        });
+      }
+      html += '</div>';
+    }
 
     // Prayer catalog
     html += '<div class="dsec"><div class="dsec-title">Prayers</div>';
@@ -4017,6 +4186,7 @@ function notifIcon(kind) {
     MessengerArrival:   '✉',
     UnitAttrition:      '💀',
     UnitDeserted:       '🏃',
+    SubsistenceWarning: '🌾',
   };
   return icons[kind] || '◉';
 }
@@ -4039,8 +4209,34 @@ function notifText(kind, body) {
     case 'UnitDeserted':       return body.disbanded
                                  ? `${body.unit_type || 'A unit'} deserted — unpaid, unit lost`
                                  : `${body.unit_type || 'A unit'} deserting — ${body.lost || 0} left (unpaid)`;
+    case 'SubsistenceWarning': {
+      // Payload per kharis.emitSubsistenceWarning: name, tier, net_per_day,
+      // days_left, pop_loss. Never a percent — days and grain/day only.
+      const name = body.name || 'A settlement';
+      if (body.tier === 'critical') {
+        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain ${(body.net_per_day || 0).toFixed(0)}/day.`;
+      }
+      const days = body.days_left ? ` — grain lasts ~${Math.round(body.days_left)} days` : '';
+      return `${name}: grain net ${(body.net_per_day || 0).toFixed(0)}/day${days}`;
+    }
     default:                   return kind;
   }
+}
+
+// Mirrors keryx's printColonyFoundedGrainLine (cmd_notifications.go): the
+// founding grain balance carried additively in a ColonyFounded body. A colony
+// does NOT feed itself automatically, so a founding deficit is surfaced
+// immediately, with how long the seed lasts and the two remedies. Returns ''
+// for older bodies without grain_net_per_tick (back-compatible).
+function colonyFoundedGrainLine(body) {
+  if (!body || body.grain_net_per_tick == null) return '';
+  const name = body.name || 'The colony';
+  const perDay = body.grain_net_per_tick * 24;
+  if (perDay < 0) {
+    const days = body.grain_days != null ? ` — grain lasts ~${Math.round(body.grain_days)} days` : '';
+    return `${name} does not feed itself (~${Math.round(-perDay)} grain/day deficit)${days}. Build a farm if the land bears it, or send grain by internal transfer.`;
+  }
+  return `${name} feeds itself (~+${Math.round(perDay)} grain/day).`;
 }
 
 (async function initNotifications() {
