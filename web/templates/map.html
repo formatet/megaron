@@ -182,14 +182,14 @@
       <input type="checkbox" id="mctx-colonize-chk" onchange="onColonizeToggle()"> Found a new settlement on arrival
     </label>
     <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
-      style="display:none;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
+      style="display:none;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--warm-white);color:var(--text);border:1px solid var(--border);">
     <div id="mctx-colonize-preview" style="display:none;margin-top:.3rem;font-size:.72rem;line-height:1.35"></div>
   </div>
   <div class="mctx-units" id="mctx-units"></div>
   <div id="mctx-stance-row" style="display:none;padding:.15rem .55rem .3rem;font-size:.75rem;color:var(--text-dim)">
     Stance:
     <select id="mctx-stance"
-      style="margin-left:.3rem;font-size:.75rem;padding:.15rem .3rem;background:var(--bg-base);color:var(--text);border:1px solid var(--border);">
+      style="margin-left:.3rem;font-size:.75rem;padding:.15rem .3rem;background:var(--warm-white);color:var(--text);border:1px solid var(--border);">
       <option value="">none</option>
       <option value="storm">storm</option>
       <option value="sentry">sentry</option>
@@ -2457,7 +2457,7 @@ async function loadEconomyWants() {
     const data = await r.json();
     const wants = data.wants || [], surplus = data.surplus || [];
     if (!wants.length && !surplus.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known market intel yet — visit settlements to learn their market.</p>'; return; }
-    const LEVEL_COLOR = { high: 'var(--danger)', medium: 'var(--warn)', low: 'var(--text-dim)' };
+    const LEVEL_COLOR = { high: 'var(--danger)', medium: 'var(--border)', low: 'var(--text-dim)' };
     let html = '';
     if (wants.length) {
       html += '<div class="dsec-title">Wants — buy here at a premium</div>' + wants.map(sw => `
@@ -2511,7 +2511,7 @@ async function loadKultDrawer() {
     const CULT_LEVELS = ['forsummad','enkel','vardig','praktfull','overdadig'];
     const CULT_LABELS = { forsummad:'Neglected', enkel:'Simple', vardig:'Worthy', praktfull:'Magnificent', overdadig:'Lavish' };
     const MOOD_LABELS = { Favorable:'Favorable', Indifferent:'Indifferent', Suspicious:'Suspicious', Wrathful:'Wrathful' };
-    const MOOD_COLORS = { Favorable:'var(--safe)', Indifferent:'var(--text-dim)', Suspicious:'var(--warn)', Wrathful:'var(--danger)' };
+    const MOOD_COLORS = { Favorable:'var(--safe)', Indifferent:'var(--text-dim)', Suspicious:'var(--border)', Wrathful:'var(--danger)' };
 
     const mood      = sd.divine_mood  || 'Indifferent';
     const cultLevel = sd.cult_level   || 'enkel';
