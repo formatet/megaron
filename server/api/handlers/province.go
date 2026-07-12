@@ -418,6 +418,29 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			float64(grainCalcTick), currentTick, h.sitosCfg)
 		taxRatePerTick := float64(sett.Population) * h.sitosCfg.TaxRate / float64(events.TicksPerDay)
 
+		// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md): the
+		// stored grain rate is already NET (production − consumption, folded in
+		// RecomputeProduction) — reconstruct the two components from the same
+		// consumption formula rather than re-running a recompute, so `status` can
+		// show "prod X − konsum Y = netto Z" instead of one unmarked number.
+		grainConsumRate := float64(laborPool) * economy.GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
+		grainProdRate := grainRate + grainConsumRate
+
+		// Break-even grain labor-weight for this settlement's catchment
+		// (pop-independent — see DEL C step 4): the minimum grain weight that
+		// keeps a citizen fed. basePot_grain comes from the same catchment-query
+		// path RecomputeProduction uses (economy.CatchmentBasePotential) so it
+		// never drifts from the real production formula. nil when the catchment
+		// can't produce grain at all (no plains/farm tile) — no weight helps.
+		var breakevenGrainWeight *float64
+		if basePots, bperr := economy.CatchmentBasePotential(r.Context(), h.pool, sett.ID); bperr == nil {
+			if basePotGrain := basePots["grain"]; basePotGrain > 0 {
+				be := economy.GrainConsumptionPerCitizenPerDay * economy.REF_LABOR /
+					(basePotGrain * float64(events.TicksPerDay))
+				breakevenGrainWeight = &be
+			}
+		}
+
 		// "Senaste tick" summary (Fas 2 point 8): derive prod/cons from the same
 		// per-tick rates already in resSnap, and sum this tick's Sitos silver delta
 		// from the events log. Summarizes the journal without replacing it.
@@ -469,27 +492,30 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp["settlement"] = map[string]any{
-			"id":                sett.ID,
-			"name":              sett.Name,
-			"owner_id":          sett.OwnerID,
-			"kingdom_id":        sett.KingdomID,
-			"culture":           sett.CultureID,
-			"state":             sett.State,
-			"population":        sett.Population,
-			"labor_pool":        laborPool,
-			"walls":             sett.WallLevel,
-			"loyalty":           sett.Loyalty,
-			"resources":         resSnap,
-			"kharis":            kharisNow,
-			"kharis_rate":       kharisRate,
-			"army":              sett.Army,
-			"army_upkeep":       armyUp,
-			"build_queue":       buildQueue,
-			"training_queue":    trainQueue,
-			"buildings":         buildings,
-			"can_afford":        buildAfford,
-			"can_recruit":       recruitAfford,
-			"available_prayers": prayers,
+			"id":                     sett.ID,
+			"name":                   sett.Name,
+			"owner_id":               sett.OwnerID,
+			"kingdom_id":             sett.KingdomID,
+			"culture":                sett.CultureID,
+			"state":                  sett.State,
+			"population":             sett.Population,
+			"labor_pool":             laborPool,
+			"walls":                  sett.WallLevel,
+			"loyalty":                sett.Loyalty,
+			"resources":              resSnap,
+			"kharis":                 kharisNow,
+			"kharis_rate":            kharisRate,
+			"grain_prod_rate":        grainProdRate,
+			"grain_consum_rate":      grainConsumRate,
+			"breakeven_grain_weight": breakevenGrainWeight,
+			"army":                   sett.Army,
+			"army_upkeep":            armyUp,
+			"build_queue":            buildQueue,
+			"training_queue":         trainQueue,
+			"buildings":              buildings,
+			"can_afford":             buildAfford,
+			"can_recruit":            recruitAfford,
+			"available_prayers":      prayers,
 			"settlement_cap": map[string]any{
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,

@@ -17,6 +17,13 @@ import (
 // assigned gets base_potential as its rate — same as the pre-Fas-2 baseline.
 const REF_LABOR = 100.0
 
+// GrainConsumptionPerCitizenPerDay is the daily grain eaten per citizen,
+// folded into grain's net production rate below. Exported so read-only
+// callers (status endpoint's grain-netto breakdown/break-even hint, DEL C
+// of megaron_ekonomi_legibilitet_plan.md) can re-derive prod/consum from the
+// stored net rate instead of duplicating this number.
+const GrainConsumptionPerCitizenPerDay = 0.5
+
 // PopCosts mirrors province/training.go:UnitSpecs.PopCost.
 // Defined here so economy stays Go-import-free upward (G1).
 // ship = galley (DB-kolumn). war_galley + merchantman = nya skepp-typer (mig 039).
@@ -209,7 +216,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// never exceeds the grain cap and a self-sufficient city sits at a stable
 	// positive stock instead of sawtoothing to zero every day. laborPool is the
 	// non-negative population (Σ eaters). See events.TicksPerDay for calibration.
-	grainConsumptionPerTick := float64(laborPool) * 0.5 / float64(events.TicksPerDay)
+	grainConsumptionPerTick := float64(laborPool) * GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	grainSeen := false

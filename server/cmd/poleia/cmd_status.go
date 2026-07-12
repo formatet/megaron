@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/poleia/server/internal/events"
 	"github.com/spf13/cobra"
 )
 
@@ -114,6 +115,7 @@ func statusCmd() *cobra.Command {
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
+			fmt.Println("  (rate = netto: produktion − konsumtion, per tick)")
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)
@@ -123,11 +125,46 @@ func statusCmd() *cobra.Command {
 					amt, _ := rd["amount"].(float64)
 					rt, _ := rd["rate"].(float64)
 					if always || amt > 0 || rt != 0 {
-						fmt.Printf("  %-8s %6s  %s\n", label, resource(amt), rate(rt))
+						line := fmt.Sprintf("  %-8s %6s  %s", label, resource(amt), rate(rt))
+						if rt < 0 {
+							line += " netto"
+							// Real shortage risk: current stock runs out inside a day
+							// (events.TicksPerDay ticks) at this net rate — most negative
+							// nettos are a stable balance a stock buffer absorbs, not an
+							// emergency (DEL C grain-netto-märkning: don't cry wolf).
+							if amt/-rt < float64(events.TicksPerDay) {
+								line += "  ⚠ tar slut inom ett dygn"
+							}
+						}
+						fmt.Println(line)
 					}
 				}
 				printRes("Silver", "silver", true)
-				printRes("Grain", "grain", false)
+
+				// Grain: itemized prod/konsum/netto per DYGN (DEL C fuller fix,
+				// GREENLIT 2026-07-12) instead of one unmarked netto rate — the stored
+				// rate is already net, so a negative number alone reads as an alarm
+				// when it's often just normal balance. Components are additive fields
+				// the status endpoint derives from the same consumption formula
+				// RecomputeProduction folds into grain's rate (economy.
+				// GrainConsumptionPerCitizenPerDay), not a re-derivation of the mechanic.
+				if gRd, ok := res["grain"].(map[string]any); ok {
+					gAmt, _ := gRd["amount"].(float64)
+					gProdRate, _ := sett["grain_prod_rate"].(float64)
+					gConsumRate, _ := sett["grain_consum_rate"].(float64)
+					if gAmt > 0 || gProdRate != 0 || gConsumRate != 0 {
+						prodDay := gProdRate * float64(events.TicksPerDay)
+						consumDay := gConsumRate * float64(events.TicksPerDay)
+						netDay := prodDay - consumDay
+						line := fmt.Sprintf("  %-8s %6s  prod %.1f − konsum %.1f = netto %+.1f /dygn",
+							"Grain", resource(gAmt), prodDay, consumDay, netDay)
+						if be, ok := sett["breakeven_grain_weight"].(float64); ok {
+							line += fmt.Sprintf("  (break-even grain-vikt ≥%.0f%%)", be*100)
+						}
+						fmt.Println(line)
+					}
+				}
+
 				printRes("Timber", "timber", false)
 				printRes("Stone", "stone", false)
 				printRes("Copper", "copper", false)
