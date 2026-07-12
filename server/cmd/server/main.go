@@ -218,6 +218,7 @@ func main() {
 		r.Get("/worlds/{worldID}", wh.Get)
 		// Map and province list use OptionalMiddleware: fog-of-war when authenticated.
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
+		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)
 		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/messengers", wh.MapMessengers)

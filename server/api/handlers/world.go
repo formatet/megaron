@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -14,6 +15,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/economy"
+	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/world"
 )
@@ -387,6 +390,173 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, tiles)
+}
+
+// ColonizePreview handles GET /worlds/:worldID/colonize-preview?q=&r= — a
+// read-only grain/goods forecast for founding a colony on the given hex, shown
+// to the Wanax BEFORE the colonize march is dispatched (DEL A of
+// megaron_koloni_legibilitet_plan.md). It runs no colonize gates (cap, empty
+// hex, ...) — those belong to the March POST; this only reports what the target
+// hex's catchment could feed a new colony.
+//
+// FOW-CRITICAL: the catchment is tiered with the SAME live∪remembered logic as
+// Map (loadLiveEyes + loadRememberedTiles + AnyEyeSees). A fog hex is reported as
+// {known:false} with NO terrain/deposit fields, and contributes nothing to the
+// goods/grain estimate — an unseen hex's contents must never leak here.
+func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	q, qErr := strconv.Atoi(r.URL.Query().Get("q"))
+	rr, rErr := strconv.Atoi(r.URL.Query().Get("r"))
+	if qErr != nil || rErr != nil {
+		writeError(w, http.StatusBadRequest, "q and r query params are required integers")
+		return
+	}
+
+	ctx := r.Context()
+	playerID, authenticated := auth.PlayerIDFromContext(ctx)
+
+	// Catchment = centre + 6 neighbours. SAME axial offsets as
+	// economy.RecomputeProduction (recompute.go step 2) — keep them identical.
+	catchment := [][2]int{
+		{q, rr},
+		{q + 1, rr}, {q - 1, rr},
+		{q, rr + 1}, {q, rr - 1},
+		{q + 1, rr - 1}, {q - 1, rr + 1},
+	}
+
+	// Live vision + remembered memory, exactly as Map computes them.
+	var eyes []province.Eye
+	var remembered map[[2]int]bool
+	if authenticated {
+		eyes = loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
+		remembered = loadRememberedTiles(ctx, h.pool, worldID, playerID)
+	}
+
+	// Fetch the 7 catchment tiles server-side (needed to compute visibility); we
+	// only ever REVEAL a tile's terrain/deposits in the response if it is known.
+	qs := make([]int32, len(catchment))
+	rs := make([]int32, len(catchment))
+	for i, c := range catchment {
+		qs[i], rs[i] = int32(c[0]), int32(c[1])
+	}
+	type catTile struct {
+		terrain                          string
+		coastal, copper, tin, cedar, sil bool
+	}
+	tiles := map[[2]int]catTile{}
+	trows, err := h.pool.Query(ctx,
+		`SELECT mt.q, mt.r, mt.terrain, mt.coastal, mt.copper_deposit, mt.tin_deposit,
+		        COALESCE(mt.cedar_deposit,false), COALESCE(mt.silver_deposit,false)
+		 FROM map_tiles mt
+		 JOIN unnest($2::int[], $3::int[]) AS hx(q, r) ON hx.q = mt.q AND hx.r = mt.r
+		 WHERE mt.world_id = $1`,
+		worldID, qs, rs,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load catchment tiles")
+		return
+	}
+	for trows.Next() {
+		var tq, tr int
+		var ct catTile
+		if err := trows.Scan(&tq, &tr, &ct.terrain, &ct.coastal, &ct.copper, &ct.tin, &ct.cedar, &ct.sil); err != nil {
+			continue
+		}
+		tiles[[2]int{tq, tr}] = ct
+	}
+	trows.Close()
+
+	type catchmentEntry struct {
+		Q             int    `json:"q"`
+		R             int    `json:"r"`
+		Known         bool   `json:"known"`
+		Terrain       string `json:"terrain,omitempty"`
+		Coastal       bool   `json:"coastal,omitempty"`
+		CopperDeposit bool   `json:"copper_deposit,omitempty"`
+		TinDeposit    bool   `json:"tin_deposit,omitempty"`
+		SilverDeposit bool   `json:"silver_deposit,omitempty"`
+		CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
+	}
+	view := make([]catchmentEntry, 0, len(catchment))
+	var knownHexes [][2]int
+	unknown := 0
+	for _, c := range catchment {
+		key := [2]int{c[0], c[1]}
+		ct, exists := tiles[key]
+		known := false
+		if exists {
+			switch {
+			case !authenticated:
+				// Mirror Map: an unauthenticated caller has no FOW context and sees
+				// the world as live (the /map endpoint is public the same way).
+				known = true
+			case province.AnyEyeSees(eyes, province.MapPosition{Q: c[0], R: c[1]}, ct.terrain):
+				known = true
+			case remembered[key]:
+				known = true
+			}
+		}
+		e := catchmentEntry{Q: c[0], R: c[1], Known: known}
+		if known {
+			e.Terrain = ct.terrain
+			e.Coastal = ct.coastal
+			e.CopperDeposit = ct.copper
+			e.TinDeposit = ct.tin
+			e.SilverDeposit = ct.sil
+			e.CedarDeposit = ct.cedar
+			knownHexes = append(knownHexes, key)
+		} else {
+			unknown++
+		}
+		view = append(view, e)
+	}
+
+	// Goods potential over KNOWN hexes only (building-free), and the same with a
+	// hypothetical farm to answer "could this place ever feed itself?".
+	goods, err := economy.CatchmentBasePotentialAt(ctx, h.pool, worldID, knownHexes, nil)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not compute catchment potential")
+		return
+	}
+	withFarm, err := economy.CatchmentBasePotentialAt(ctx, h.pool, worldID, knownHexes, []string{"farm"})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not compute farm potential")
+		return
+	}
+
+	// Founding grain balance. Consumption at the founding population, per tick,
+	// re-using the exported calibration constants (never duplicated here).
+	consumptionPerTick := float64(economy.ColonyBaseFoundingPopulation) *
+		economy.GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
+	basePerTick := goods["grain"]
+	estNetPerTick := basePerTick - consumptionPerTick
+	seed := economy.ColonyGrainSeed
+
+	var daysUntilEmpty *float64
+	if estNetPerTick < 0 {
+		dailyDrain := -estNetPerTick * float64(events.TicksPerDay)
+		if dailyDrain > 0 {
+			d := float64(seed) / dailyDrain
+			daysUntilEmpty = &d
+		}
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"catchment": view,
+		"goods":     goods,
+		"grain": map[string]any{
+			"base_per_tick":      basePerTick,
+			"est_net_per_tick":   estNetPerTick,
+			"seed":               seed,
+			"days_until_empty":   daysUntilEmpty,
+			"with_farm_per_tick": withFarm["grain"],
+		},
+		"unknown_hexes": unknown,
+	})
 }
 
 // Provinces handles GET /worlds/:worldID/provinces — returns all province markers for the map.

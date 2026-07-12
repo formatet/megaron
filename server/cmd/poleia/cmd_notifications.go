@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/poleia/server/internal/events"
 	"github.com/spf13/cobra"
 )
 
@@ -58,6 +59,44 @@ func printNotificationRow(n notificationItem) {
 		marker = "*"
 	}
 	fmt.Printf("%s[%s]  %-20s  %s\n", marker, notificationAge(n.CreatedAt), n.Kind, string(n.Body))
+	if n.Kind == "ColonyFounded" {
+		printColonyFoundedGrainLine(n)
+	}
+}
+
+// printColonyFoundedGrainLine renders the founding grain balance carried in a
+// ColonyFounded notification (DEL B, megaron_koloni_legibilitet_plan.md). A colony
+// does NOT feed itself automatically, so a negative net grain rate at founding is
+// surfaced immediately — in the Lawagetas voice, per game-day — with how long the
+// seed lasts and the two remedies (build a farm if the catchment bears it, else
+// send grain by internal transfer). A self-sustaining colony gets one short
+// positive line. Additive/back-compatible: an older ColonyFounded body without the
+// grain_* fields prints nothing extra.
+func printColonyFoundedGrainLine(n notificationItem) {
+	var body struct {
+		Name            string   `json:"name"`
+		GrainAmount     *float64 `json:"grain_amount"`
+		GrainNetPerTick *float64 `json:"grain_net_per_tick"`
+		GrainDays       *float64 `json:"grain_days"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil || body.GrainNetPerTick == nil {
+		return
+	}
+	name := body.Name
+	if name == "" {
+		name = "Kolonin"
+	}
+	perDay := *body.GrainNetPerTick * float64(events.TicksPerDay)
+	if perDay < 0 {
+		days := ""
+		if body.GrainDays != nil {
+			days = fmt.Sprintf(" — grain räcker ~%.0f speldygn", *body.GrainDays)
+		}
+		fmt.Printf("      %s föder inte sig själv (~%.0f grain/dygn i underskott)%s. Bygg farm om catchment bär det, annars sänd grain: poleia transfer --good grain --qty <n> --dest %s\n",
+			name, -perDay, days, name)
+	} else {
+		fmt.Printf("      %s försörjer sig själv (~%+.0f grain/dygn).\n", name, perDay)
+	}
 }
 
 // notificationsCmd surfaces the persistent notifications feed (server since

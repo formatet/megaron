@@ -18,6 +18,10 @@ import (
 // full recompute or duplicating the SQL a third time. If the two queries ever
 // drift, RecomputeProduction's is the source of truth (it writes the live
 // rates); this one must be kept in sync with it.
+//
+// Sibling: CatchmentBasePotentialAt (catchment_preview.go) is the hex-scoped,
+// pre-settlement variant used by the colonize preview (assumed buildings instead
+// of actual ones). Same joins — keep all three in sync.
 func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]float64, error) {
 	var worldID uuid.UUID
 	var q, r int
