@@ -8,6 +8,10 @@ package religion
 // CooldownTicks is the minimum number of world ticks between successive casts of the same prayer.
 // TargetKind is "" for self-effect prayers, "province" when a target is meaningful.
 // God and Name are display strings for UI and keryx voice.
+// Description is a short human-readable line of what the prayer DOES if the gods
+// answer (Plan A / A7, megaron_kult_legibilitet_plan.md) — shown in `available_prayers`
+// and keryx `rite --list` so a Wanax knows what they're casting for before they
+// commit an offering. Never states an odds — that stays internal to the Rite handler.
 type PrayerSpec struct {
 	ID            string
 	EffectType    string             // "oracle_reveal_deposits" | "battle_frenzy" | "harvest_blessing"
@@ -17,6 +21,7 @@ type PrayerSpec struct {
 	TargetKind    string             // "" or "province"
 	God           string
 	Name          string
+	Description   string // human-readable effect line — no odds, ever
 }
 
 // Offerings are material sacrifices (wine/oil/grain) — the gods take them
@@ -45,18 +50,21 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: 5, Offering: map[string]float64{"oil": 20, "wine": 10},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Apollon", Name: "Apollon's Sight",
+		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
 	},
 	"akhaier_harvest_blessing": {
 		ID: "akhaier_harvest_blessing", EffectType: EffectHarvestBlessing,
 		MinKharis: 30, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Demeter", Name: "Demeter's Bounty",
+		Description: "Blesses the harvest — grain stores swell by a quarter.",
 	},
 	"akhaier_battle_frenzy": {
 		ID: "akhaier_battle_frenzy", EffectType: EffectBattleFrenzy,
 		MinKharis: 5, Offering: map[string]float64{"grain": 10, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Ares", Name: "Ares' Fury",
+		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
 	},
 
 	// ── Khemetiu (Egyptian) ───────────────────────────────────────────────
@@ -65,18 +73,21 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: 5, Offering: map[string]float64{"grain": 25, "oil": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Thoth", Name: "Thoth's Revelation",
+		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
 	},
 	"khemetiu_harvest_blessing": {
 		ID: "khemetiu_harvest_blessing", EffectType: EffectHarvestBlessing,
 		MinKharis: 30, Offering: map[string]float64{"grain": 20, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Osiris", Name: "Osiris' Flood",
+		Description: "Blesses the harvest — grain stores swell by a quarter.",
 	},
 	"khemetiu_battle_frenzy": {
 		ID: "khemetiu_battle_frenzy", EffectType: EffectBattleFrenzy,
 		MinKharis: 5, Offering: map[string]float64{"grain": 10, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Sekhmet", Name: "Sekhmet's Wrath",
+		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
 	},
 
 	// ── Kna'ani (Baal / Levant) ───────────────────────────────────────────
@@ -85,18 +96,21 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: 5, Offering: map[string]float64{"oil": 20, "wine": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "El", Name: "El's Oracle",
+		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
 	},
 	"knaani_harvest_blessing": {
 		ID: "knaani_harvest_blessing", EffectType: EffectHarvestBlessing,
 		MinKharis: 30, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Baal", Name: "Baal's Rain",
+		Description: "Blesses the harvest — grain stores swell by a quarter.",
 	},
 	"knaani_battle_frenzy": {
 		ID: "knaani_battle_frenzy", EffectType: EffectBattleFrenzy,
 		MinKharis: 5, Offering: map[string]float64{"wine": 10, "grain": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Anat", Name: "Anat's Rage",
+		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
 	},
 
 	// ── Thrakes ──────────────────────────────────────────────────────────
@@ -105,18 +119,21 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: 5, Offering: map[string]float64{"wine": 25, "oil": 10},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Sabazios", Name: "Sabazios' Dream",
+		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
 	},
 	"thrakes_harvest_blessing": {
 		ID: "thrakes_harvest_blessing", EffectType: EffectHarvestBlessing,
 		MinKharis: 30, Offering: map[string]float64{"wine": 20, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Bendis", Name: "Bendis' Harvest",
+		Description: "Blesses the harvest — grain stores swell by a quarter.",
 	},
 	"thrakes_battle_frenzy": {
 		ID: "thrakes_battle_frenzy", EffectType: EffectBattleFrenzy,
 		MinKharis: 5, Offering: map[string]float64{"wine": 25},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Ares Thrakios", Name: "Thrakian Battle Rage",
+		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
 	},
 
 	// ── Minoan ───────────────────────────────────────────────────────────
@@ -125,18 +142,21 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: 5, Offering: map[string]float64{"oil": 20, "wine": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Potnia", Name: "Potnia's Vision",
+		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
 	},
 	"minoan_harvest_blessing": {
 		ID: "minoan_harvest_blessing", EffectType: EffectHarvestBlessing,
 		MinKharis: 30, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Britomartis", Name: "Britomartis' Gift",
+		Description: "Blesses the harvest — grain stores swell by a quarter.",
 	},
 	"minoan_battle_frenzy": {
 		ID: "minoan_battle_frenzy", EffectType: EffectBattleFrenzy,
 		MinKharis: 5, Offering: map[string]float64{"grain": 10, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Poseidon", Name: "Poseidon's Storm",
+		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
 	},
 
 	// ── Hatti (Hittite) ──────────────────────────────────────────────────
@@ -145,18 +165,21 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: 5, Offering: map[string]float64{"grain": 20, "wine": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Hepat", Name: "Hepat's Counsel",
+		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
 	},
 	"hatti_harvest_blessing": {
 		ID: "hatti_harvest_blessing", EffectType: EffectHarvestBlessing,
 		MinKharis: 30, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Telipinu", Name: "Telipinu's Return",
+		Description: "Blesses the harvest — grain stores swell by a quarter.",
 	},
 	"hatti_battle_frenzy": {
 		ID: "hatti_battle_frenzy", EffectType: EffectBattleFrenzy,
 		MinKharis: 5, Offering: map[string]float64{"grain": 15, "wine": 10},
 		CooldownTicks: 6, TargetKind: "",
 		God: "Teshub", Name: "Teshub's Thunder",
+		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
 	},
 }
 

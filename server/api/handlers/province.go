@@ -360,11 +360,17 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// material offering costs + kharis tier gate + temple presence.
 		// All three gates mirror the real Rite handler so affordable:true is trustworthy.
 		// cooldown_remaining_minutes is >0 when the prayer is on cooldown.
+		// Effect (Plan A / A7, megaron_kult_legibilitet_plan.md) surfaces spec.Description
+		// so a Wanax knows what a prayer does before casting it. DESIGN INVARIANT
+		// (Timothy 2026-07-11, HARD): never add a success_chance/odds field here — the
+		// gods are not machines. Gynnsamhet is read via the settlement's kharis_mood
+		// sibling field (kharisToMood, web.go), not a computed percentage.
 		type prayerRow struct {
 			ID                    string             `json:"id"`
 			Name                  string             `json:"name"`
 			God                   string             `json:"god"`
 			EffectType            string             `json:"effect_type"`
+			Effect                string             `json:"effect"`
 			MinKharis             float64            `json:"min_kharis"`
 			Offering              map[string]float64 `json:"offering"`
 			Affordable            bool               `json:"affordable"`
@@ -408,6 +414,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			prayers = append(prayers, prayerRow{
 				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
+				Effect:    spec.Description,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
 				CooldownRemainingMins: cooldownRemainingMins,
 			})
