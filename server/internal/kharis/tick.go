@@ -125,16 +125,26 @@ const kharisFloor = 1.0
 // catchment shape, lower it.
 const grainPerCitizen = 300.0
 
+// starvationDailyPopLossRate is the fraction of population a starving city loses
+// per day — the read-side mirror of applyDecay's starvation branch, which writes
+// ROUND(pop * 0.995) (i.e. −0.5%/day). Kept here only to report the modelled
+// pop_loss in the critical SubsistenceWarning payload; the MECHANIC still lives
+// solely in applyDecay's SQL (this is emit/legibility, not a second write path).
+// If applyDecay's 0.995 factor is ever retuned, keep this in sync.
+const starvationDailyPopLossRate = 0.005
+
 // TickHandler applies daily temple maintenance to all active settlements in a world.
 type TickHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
 	store     *events.Store
+	hub       Broadcaster
 }
 
-// NewTickHandler creates a TickHandler.
-func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store) *TickHandler {
-	return &TickHandler{pool: pool, scheduler: sched, store: store}
+// NewTickHandler creates a TickHandler. hub may be nil (tests) — every
+// NotifyPlayer call is nil-guarded, matching the other tick/upkeep handlers.
+func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster) *TickHandler {
+	return &TickHandler{pool: pool, scheduler: sched, store: store, hub: hub}
 }
 
 // wanaxSnap holds the per-Wanax state needed for daily temple maintenance.
@@ -220,6 +230,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.applyDecay(ctx, e.WorldID)
 	h.applyStarvationWarning(ctx, e.WorldID)
 	h.applyStarvation(ctx, e.WorldID)
+	h.applySubsistenceCritical(ctx, e.WorldID)
 	h.accumulatePrestige(ctx, e.WorldID)
 
 	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledKharisTick,
@@ -648,48 +659,159 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	}
 }
 
+// SubsistenceWarning tiers. Numeric notification levels follow the codebase's
+// convention (level ≤2 = urgent, 3 = info; see web notif styling + combat
+// notifyUnitLoss): critical is the most severe.
+const (
+	subsistenceKind = "SubsistenceWarning"
+
+	tierYellow   = "yellow"   // grain net < 0 (any buffer) — a heads-up
+	tierRed      = "red"      // net < 0 AND empties within one game-day
+	tierCritical = "critical" // grain empty AND population being ground down
+
+	levelYellow   = 3 // info
+	levelRed      = 2 // urgent
+	levelCritical = 1 // urgent, top priority
+)
+
 // applyStarvationWarning is the proactive counterpart to applyStarvation
-// (Fas 2d): the reactive "⚠ X is starving" gossip line only ever fired after
-// grain had ALREADY hit zero and damage was already being applied — a Wanax
-// got no notice before the harm. This warns once per day while grain is
-// still positive but trending to empty within the next game-day (net rate
-// negative, amount/|rate| <= TicksPerDay) — same gossip channel, same
-// no-dedup-while-condition-holds precedent as SitosFundLow (economy package):
-// it re-fires every day the trend still holds, which is a reminder, not spam,
-// at daily cadence.
+// (Sparta-forensiken 2026-07-12): the old code only warned via gossip_events —
+// a LIMIT-30 minor channel — and stayed SILENT the moment grain hit zero (the
+// `settled(...) > 0` gate), i.e. exactly when the collapse began. It now emits
+// through the notify hub (NotifyPlayer → persistent notifications feed) in two
+// escalating tiers while grain is still positive:
+//   - yellow: grain net rate < 0 (regardless of buffer) — "grain is falling".
+//   - red:    net < 0 AND it empties within the next game-day (TicksPerDay).
+// The grain-empty case (population already dropping) is the critical tier and is
+// emitted from applySubsistenceCritical below, so it fires EVERY starving day.
+//
+// Dedupe: an insert is skipped if an UNREAD SubsistenceWarning for the same
+// settlement+tier already exists — otherwise a sped-up world (short TICK_SECONDS)
+// would re-fire every catch-up day and spam the feed. Once the Wanax reads it,
+// a still-holding trend warns again — a reminder, not spam.
 func (h *TickHandler) applyStarvationWarning(ctx context.Context, worldID uuid.UUID) {
+	if h.hub == nil {
+		return
+	}
 	rows, err := h.pool.Query(ctx,
 		`SELECT s.id, s.owner_id, s.name,
-		        settled(sg.amount, sg.rate, sg.calc_tick) / -sg.rate AS ticks_to_empty
+		        settled(sg.amount, sg.rate, sg.calc_tick) AS grain_now,
+		        sg.rate AS grain_rate
 		 FROM settlements s
 		 JOIN settlement_goods sg ON sg.settlement_id = s.id AND sg.good_key = 'grain'
 		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
 		   AND sg.rate < 0
-		   AND settled(sg.amount, sg.rate, sg.calc_tick) > 0
-		   AND settled(sg.amount, sg.rate, sg.calc_tick) / -sg.rate <= $2`,
-		worldID, events.TicksPerDay,
+		   AND settled(sg.amount, sg.rate, sg.calc_tick) > 0`,
+		worldID,
 	)
 	if err != nil {
 		slog.Error("starvation warning tick failed", "world", worldID, "err", err)
 		return
 	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var id, ownerID uuid.UUID
-		var name string
-		var ticksToEmpty float64
-		if err := rows.Scan(&id, &ownerID, &name, &ticksToEmpty); err != nil {
-			continue
-		}
-		_, _ = h.pool.Exec(ctx,
-			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
-			 VALUES ($1, $2, $3, 'economy', $4)`,
-			worldID, ownerID, name,
-			fmt.Sprintf("⚠ %s's grain is running out — empty in ~%.0f hours at current rate. Buy or reallocate labor before stores hit zero.",
-				name, ticksToEmpty),
-		)
+	type warn struct {
+		id, ownerID uuid.UUID
+		name        string
+		grainNow    float64
+		grainRate   float64
 	}
+	var list []warn
+	for rows.Next() {
+		var wr warn
+		if err := rows.Scan(&wr.id, &wr.ownerID, &wr.name, &wr.grainNow, &wr.grainRate); err == nil {
+			list = append(list, wr)
+		}
+	}
+	rows.Close()
+
+	for _, wr := range list {
+		ticksToEmpty := wr.grainNow / -wr.grainRate // grainRate < 0 by the WHERE clause
+		netPerDay := wr.grainRate * float64(events.TicksPerDay)
+		daysLeft := ticksToEmpty / float64(events.TicksPerDay)
+
+		tier, level := tierYellow, levelYellow
+		if ticksToEmpty <= float64(events.TicksPerDay) {
+			tier, level = tierRed, levelRed
+		}
+		h.emitSubsistenceWarning(ctx, worldID, wr.ownerID, wr.id, wr.name, tier, level, netPerDay, daysLeft, 0)
+	}
+}
+
+// applySubsistenceCritical emits the critical SubsistenceWarning for every owned
+// settlement whose grain has hit zero and whose net rate is still negative —
+// the case that used to be entirely silent (grain 0 → the old warning's
+// `> 0` gate suppressed it while pop was actually collapsing). It runs after
+// applyDecay/applyStarvation so the population figure is post-reduction; the
+// reported pop_loss is the modelled daily draw (starvationDailyPopLossRate),
+// not a re-read of the write. Fires every starving day (dedupe still applies).
+func (h *TickHandler) applySubsistenceCritical(ctx context.Context, worldID uuid.UUID) {
+	if h.hub == nil {
+		return
+	}
+	rows, err := h.pool.Query(ctx,
+		`SELECT s.id, s.owner_id, s.name, s.population,
+		        COALESCE(sg.rate, 0) AS grain_rate
+		 FROM settlements s
+		 JOIN settlement_goods sg ON sg.settlement_id = s.id AND sg.good_key = 'grain'
+		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
+		   AND sg.rate < 0
+		   AND settled(sg.amount, sg.rate, sg.calc_tick) <= 0`,
+		worldID,
+	)
+	if err != nil {
+		slog.Error("subsistence critical tick failed", "world", worldID, "err", err)
+		return
+	}
+	type crit struct {
+		id, ownerID uuid.UUID
+		name        string
+		population  int
+		grainRate   float64
+	}
+	var list []crit
+	for rows.Next() {
+		var c crit
+		if err := rows.Scan(&c.id, &c.ownerID, &c.name, &c.population, &c.grainRate); err == nil {
+			list = append(list, c)
+		}
+	}
+	rows.Close()
+
+	for _, c := range list {
+		netPerDay := c.grainRate * float64(events.TicksPerDay)
+		popLoss := int(float64(c.population) * starvationDailyPopLossRate)
+		h.emitSubsistenceWarning(ctx, worldID, c.ownerID, c.id, c.name, tierCritical, levelCritical, netPerDay, 0, popLoss)
+	}
+}
+
+// emitSubsistenceWarning inserts one SubsistenceWarning notification for the
+// settlement owner via the hub, unless an unread one of the same settlement+tier
+// already exists (dedupe). Payload matches the plan: settlement_id, name, tier,
+// net_per_day, days_left, pop_loss.
+func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, ownerID, settlementID uuid.UUID, name, tier string, level int, netPerDay, daysLeft float64, popLoss int) {
+	var exists bool
+	if err := h.pool.QueryRow(ctx,
+		`SELECT EXISTS (
+		    SELECT 1 FROM notifications
+		    WHERE world_id = $1 AND player_id = $2 AND kind = $3 AND read_at IS NULL
+		      AND body_json->>'settlement_id' = $4 AND body_json->>'tier' = $5
+		 )`,
+		worldID, ownerID, subsistenceKind, settlementID.String(), tier,
+	).Scan(&exists); err != nil {
+		slog.Error("subsistence warning dedupe check failed", "settlement", settlementID, "err", err)
+		return
+	}
+	if exists {
+		return
+	}
+	payload := map[string]any{
+		"settlement_id": settlementID,
+		"name":          name,
+		"tier":          tier,
+		"net_per_day":   netPerDay,
+		"days_left":     daysLeft,
+		"pop_loss":      popLoss,
+	}
+	_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, subsistenceKind, level, payload)
 }
 
 // applyStarvation punishes settlements where grain has hit zero: infantry and
@@ -745,13 +867,10 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 
 		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "StarvationDamage",
 			map[string]any{"reason": "no_food"}, worldID, nil)
-		// Gossip: notify the owner so it appears in their messages/notifications.
-		_, _ = h.pool.Exec(ctx,
-			`INSERT INTO gossip_events (world_id, recipient_id, source_region, category, text)
-			 VALUES ($1, $2, $3, 'economy', $4)`,
-			worldID, s.owner, s.name,
-			"⚠ "+s.name+" is starving — grain stores empty. Send messengers to buy grain urgently.",
-		)
+		// Owner notice is now the critical SubsistenceWarning (applySubsistenceCritical,
+		// via the notify hub) — the old gossip_events line here was the "wrong channel
+		// for your own city's status" the Sparta-forensiken flagged (buried in a LIMIT-30
+		// minor feed), so it is retired.
 		slog.Info("starvation damage applied", "settlement", s.id)
 	}
 }

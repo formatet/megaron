@@ -236,6 +236,24 @@ func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, wor
 	if disbanded {
 		level = 2
 	}
+	// Dedupe (DEL D, megaron_ekonomi_legibilitet_plan.md): a unit bleeding men
+	// day after day would otherwise notify every upkeep tick — spam on a sped-up
+	// world. Skip if an UNREAD notification of the same kind for this unit already
+	// exists. A destruction (disbanded) is never suppressed: it's the outcome the
+	// Wanax most needs to see, even if an earlier bleed is still unread.
+	if !disbanded {
+		var exists bool
+		if err := h.pool.QueryRow(ctx,
+			`SELECT EXISTS (
+			    SELECT 1 FROM notifications
+			    WHERE world_id = $1 AND player_id = $2 AND kind = $3 AND read_at IS NULL
+			      AND body_json->>'unit_id' = $4
+			 )`,
+			worldID, u.ownerID, kind, u.id.String(),
+		).Scan(&exists); err == nil && exists {
+			return
+		}
+	}
 	payload := map[string]any{
 		"unit_id":   u.id,
 		"unit_type": u.unitType,

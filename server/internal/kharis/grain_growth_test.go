@@ -166,7 +166,7 @@ func advanceOneDay(t *testing.T, h *TickHandler, pool *pgxpool.Pool, worldID uui
 func newTestTickHandler(pool *pgxpool.Pool) *TickHandler {
 	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
 	store := events.NewStore(pool)
-	return NewTickHandler(pool, sched, store)
+	return NewTickHandler(pool, sched, store, nil)
 }
 
 // TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient is the hard
