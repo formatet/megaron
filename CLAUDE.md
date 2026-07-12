@@ -118,8 +118,10 @@ Handlers **must** pass `ctx` to every DB call (`QueryContext`, `ExecContext`).
 Three consecutive failures → dead-lettered (logged as ERROR, `failed_at` set).
 
 ### Auth (G3)
-Bearer token in `Authorization` header — not httpOnly cookie.
-HTMX wires it via `htmx:configRequest` listener in `web/static/js/auth.js`.
+Bearer token in `Authorization` header — not httpOnly cookie. (A `poleia_token` cookie also exists,
+but ONLY for web page navigation through `auth.WebMiddleware`; all API calls use Bearer.)
+Map client wires it in `web/static/js/megaron/api.js` (`fetchAuth`); the HTMX pages via the
+`htmx:configRequest` listener in `web/templates/base.html`.
 iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
 
 ---
