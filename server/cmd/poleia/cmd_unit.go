@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/poleia/server/internal/unit"
 	"github.com/spf13/cobra"
 )
 
@@ -62,7 +63,7 @@ func unitListCmd() *cobra.Command {
 			fmt.Println(strings.Repeat("─", 125))
 			for _, u := range resp.Units {
 				fmt.Printf("%-36s  %-16s  %-14s  %-8s  %-10s  %-9s  %s\n",
-					u.ID, unitDisplayName(u.Type), shipNameStr(u.Name), formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
+					u.ID, unit.DisplayName(u.Type), shipNameStr(u.Name), formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
 			}
 			return nil
 		},
@@ -105,7 +106,7 @@ func formatSize(u unitRow) string {
 		// 100 men; you grow it by recruiting more of the same type into the same
 		// settlement. Spell that out so the unit isn't left stuck at e.g. 40/100.
 		return fmt.Sprintf("%d/100 (forming — recruit %d more %s here to deploy)",
-			u.Size, 100-u.Size, unitDisplayName(u.Type))
+			u.Size, 100-u.Size, unit.DisplayName(u.Type))
 	}
 	if u.Category == "naval" {
 		return fmt.Sprintf("1 vessel (crew %d)", u.Crew)

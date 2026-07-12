@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/poleia/server/internal/unit"
 	"github.com/spf13/cobra"
 )
 
@@ -187,7 +188,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	fmt.Println(strings.Repeat("─", 110))
 	for _, u := range catalogue {
 		label := u.Type
-		if dn := unitDisplayName(u.Type); dn != u.Type {
+		if dn := unit.DisplayName(u.Type); dn != u.Type {
 			label = fmt.Sprintf("%s (%s)", u.Type, dn)
 		}
 

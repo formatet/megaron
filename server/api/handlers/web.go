@@ -16,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/unit"
 	"github.com/poleia/server/internal/world"
 )
 
@@ -65,13 +66,6 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		"olive_press": "Olive Press",
 		"winery":      "Winery",
 	}
-	unitNames := map[string]string{
-		"spearman":       "Hoplites",
-		"war_chariot":    "War Chariot",
-		"priest":         "Hiereus",
-		"ship":           "Galley",
-		"elite_infantry": "Agema",
-	}
 	funcs := template.FuncMap{
 		"formatTime": func(t time.Time) string {
 			return t.Format("2006-01-02 15:04")
@@ -97,13 +91,8 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 			}
 			return key
 		},
-		"unitName": func(key string) string {
-			if n, ok := unitNames[key]; ok {
-				return n
-			}
-			return key
-		},
-		"mul": func(a, b float64) float64 { return a * b },
+		"unitName": unit.DisplayName,
+		"mul":      func(a, b float64) float64 { return a * b },
 		"now": func() string {
 			return clk.Now().UTC().Format(time.RFC3339)
 		},
