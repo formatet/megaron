@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -181,6 +183,7 @@ func unitMarchCmd() *cobra.Command {
 	var stance string
 	var intent, name string
 	var mode string
+	var yes bool
 
 	cmd := &cobra.Command{
 		Use:   "march",
@@ -246,6 +249,32 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			} else if !qSet || !rSet {
 				return fmt.Errorf("--q and --r are required (or use --intent colonize alone to found a colony on the hex your unit already occupies)")
 			}
+
+			// Colonize catchment forecast (DEL A, megaron_koloni_legibilitet_plan.md):
+			// show the grain balance the new colony would start with BEFORE the march
+			// is dispatched, then confirm. Skipped in --json mode (machine caller).
+			// --yes or a non-interactive stdin (the agent harness) prints the forecast
+			// but does not block on the y/N — same pattern as `poleia rite`.
+			if intent == "colonize" && !jsonMode {
+				preview, perr := fetchColonizePreview(c, cfg.WorldID, targetQ, targetR)
+				if perr != nil {
+					// Never block colonization on a forecast failure — warn and proceed.
+					fmt.Printf("(kunde inte hämta catchment-prognos: %v)\n", perr)
+				} else {
+					renderColonizePreview(preview, targetQ, targetR)
+					if !yes && stdinIsTerminal() {
+						ok, aerr := askYesNo("Grunda kolonin?")
+						if aerr != nil {
+							return aerr
+						}
+						if !ok {
+							fmt.Println("Avbröt — ingen koloni grundad.")
+							return nil
+						}
+					}
+				}
+			}
+
 			body := map[string]any{
 				"target_q": targetQ,
 				"target_r": targetR,
@@ -301,8 +330,124 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
 	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
+	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
+}
+
+// colonizePreview mirrors the /colonize-preview endpoint's JSON (DEL A).
+type colonizePreview struct {
+	Catchment []struct {
+		Q             int    `json:"q"`
+		R             int    `json:"r"`
+		Known         bool   `json:"known"`
+		Terrain       string `json:"terrain"`
+		CopperDeposit bool   `json:"copper_deposit"`
+		TinDeposit    bool   `json:"tin_deposit"`
+		SilverDeposit bool   `json:"silver_deposit"`
+		CedarDeposit  bool   `json:"cedar_deposit"`
+	} `json:"catchment"`
+	Goods map[string]float64 `json:"goods"`
+	Grain struct {
+		BasePerTick     float64  `json:"base_per_tick"`
+		EstNetPerTick   float64  `json:"est_net_per_tick"`
+		Seed            float64  `json:"seed"`
+		DaysUntilEmpty  *float64 `json:"days_until_empty"`
+		WithFarmPerTick float64  `json:"with_farm_per_tick"`
+	} `json:"grain"`
+	UnknownHexes int `json:"unknown_hexes"`
+}
+
+// fetchColonizePreview GETs the grain/goods forecast for founding a colony at (q,r).
+func fetchColonizePreview(c *Client, worldID string, q, r int) (*colonizePreview, error) {
+	path := fmt.Sprintf("/api/v1/worlds/%s/colonize-preview?q=%d&r=%d", worldID, q, r)
+	data, err := c.get(path)
+	if err != nil {
+		return nil, err
+	}
+	var p colonizePreview
+	if err := json.Unmarshal(data, &p); err != nil {
+		return nil, fmt.Errorf("parse preview: %w", err)
+	}
+	return &p, nil
+}
+
+// renderColonizePreview prints the founding grain balance per game-day, so a
+// Wanax sees whether a target hex can feed a colony before committing the march.
+// All rates are per-tick from the server; ×TicksPerDay converts to per-day.
+func renderColonizePreview(p *colonizePreview, q, r int) {
+	td := float64(events.TicksPerDay)
+	known := len(p.Catchment) - p.UnknownHexes
+
+	fmt.Printf("Colonize (%d,%d) — catchment-prognos (%d/%d hexar kända, %d okända):\n",
+		q, r, known, len(p.Catchment), p.UnknownHexes)
+
+	prodPerDay := p.Grain.BasePerTick * td
+	netPerDay := p.Grain.EstNetPerTick * td
+	consPerDay := prodPerDay - netPerDay
+	fmt.Printf("  Grain: produktion ~%.0f/dygn − konsumtion ~%.0f/dygn = NETTO %+.0f/dygn\n",
+		prodPerDay, consPerDay, netPerDay)
+
+	if netPerDay < 0 {
+		reach := ""
+		if p.Grain.DaysUntilEmpty != nil {
+			reach = fmt.Sprintf(" → räcker ~%.0f speldygn", *p.Grain.DaysUntilEmpty)
+		}
+		farmNetPerDay := p.Grain.WithFarmPerTick*td - consPerDay
+		farmNote := ""
+		if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
+			farmNote = " (ingen jordbruksterräng i känd catchment — en farm hjälper inte här)"
+		}
+		fmt.Printf("  Startlager %.0f grain%s. Med farm: ~%+.0f/dygn%s\n",
+			p.Grain.Seed, reach, farmNetPerDay, farmNote)
+	} else {
+		fmt.Printf("  Startlager %.0f grain — kolonin är självförsörjande.\n", p.Grain.Seed)
+	}
+
+	// "Övrigt": deposits present in the known catchment + any building-free
+	// non-grain production. Sorted for stable output.
+	var extras []string
+	dep := map[string]bool{}
+	for _, ce := range p.Catchment {
+		if !ce.Known {
+			continue
+		}
+		if ce.CopperDeposit {
+			dep["copper"] = true
+		}
+		if ce.TinDeposit {
+			dep["tin"] = true
+		}
+		if ce.SilverDeposit {
+			dep["silver"] = true
+		}
+		if ce.CedarDeposit {
+			dep["cedar"] = true
+		}
+	}
+	for _, d := range []string{"copper", "tin", "silver", "cedar"} {
+		if dep[d] {
+			extras = append(extras, d+"-deposit ✓")
+		}
+	}
+	goodKeys := make([]string, 0, len(p.Goods))
+	for g := range p.Goods {
+		goodKeys = append(goodKeys, g)
+	}
+	sort.Strings(goodKeys)
+	for _, g := range goodKeys {
+		if g == "grain" {
+			continue
+		}
+		if rate := p.Goods[g] * td; rate > 0 {
+			extras = append(extras, fmt.Sprintf("%s ~%.0f/dygn", g, rate))
+		}
+	}
+	if len(extras) > 0 {
+		fmt.Printf("  Övrigt: %s\n", strings.Join(extras, ", "))
+	}
+
+	fmt.Println("En koloni försörjer inte sig själv automatiskt — bygg farm om terrängen bär, annars ordna grain via intern transfer (poleia transfer --good grain --qty <n> --dest <koloni>).")
 }
 
 // currentHex resolves a field-positioned unit's current (q,r) so the

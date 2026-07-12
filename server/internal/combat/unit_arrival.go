@@ -618,13 +618,37 @@ func (h *UnitArrivalHandler) foundColony(
 	}
 
 	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, map[string]any{
-			"settlement_id": colonyID,
-			"name":          name,
-			"province_id":   provinceID,
-			"q":             destQ,
-			"r":             destR,
-		})
+		// DEL B (megaron_koloni_legibilitet_plan.md): carry the colony's founding
+		// grain balance additively in the payload so the notification can warn that
+		// the colony starts draining its seed THIS tick if net < 0. RecomputeProduction
+		// above already wrote the real net grain rate into settlement_goods (same TX),
+		// so read it back here rather than re-deriving it. Best-effort: a missing row
+		// just leaves the fields at zero. Old payload fields are unchanged (web stays
+		// back-compatible — see the plan's web note).
+		var grainAmount, grainNet float64
+		_ = tx.QueryRow(ctx,
+			`SELECT amount, rate FROM settlement_goods
+			 WHERE settlement_id = $1 AND good_key = 'grain'`,
+			colonyID,
+		).Scan(&grainAmount, &grainNet)
+
+		payload := map[string]any{
+			"settlement_id":      colonyID,
+			"name":               name,
+			"province_id":        provinceID,
+			"q":                  destQ,
+			"r":                  destR,
+			"grain_amount":       grainAmount,
+			"grain_net_per_tick": grainNet,
+		}
+		// grain_days: how long the seed lasts at the current deficit; null (omitted)
+		// when the colony is self-sustaining (net ≥ 0).
+		if grainNet < 0 {
+			if dailyDrain := -grainNet * float64(events.TicksPerDay); dailyDrain > 0 {
+				payload["grain_days"] = grainAmount / dailyDrain
+			}
+		}
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, payload)
 	}
 
 	slog.Info("colony founded (discrete unit)", "settlement", colonyID, "name", name,
