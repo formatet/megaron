@@ -22,6 +22,7 @@ import (
 	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/kharis"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
@@ -303,6 +304,51 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		// Kult-block (PLAN B §3, megaron_kult_legibilitet_plan.md): per temple-city,
+		// today's offer requirement vs current oil/wine stock — a read-only mirror of
+		// kharis.applyTempleOffering's own query (same gate, same numbers), so "will
+		// my kharis climb today" is answerable from `status` without waiting for the
+		// daily tick to run. Scoped by owner (not requesting player) to match the
+		// kharis/cooldown convention above — spectators see the owner's temples.
+		type templeOfferRow struct {
+			SettlementID uuid.UUID `json:"settlement_id"`
+			Name         string    `json:"name"`
+			Oil          float64   `json:"oil"`
+			Wine         float64   `json:"wine"`
+			OilNeeded    float64   `json:"oil_needed"`
+			WineNeeded   float64   `json:"wine_needed"`
+			Fed          bool      `json:"fed"`
+		}
+		var templeOffers []templeOfferRow
+		if sett.OwnerID != nil {
+			if trows, terr := h.pool.Query(r.Context(),
+				`SELECT s.id, s.name,
+				    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
+				              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'), 0) AS oil,
+				    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
+				              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'), 0) AS wine
+				 FROM settlements s
+				 WHERE s.owner_id = $1 AND s.world_id = $2 AND s.state NOT IN ('sunk', 'collapsed')
+				   AND EXISTS (SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = 'temple')
+				 ORDER BY s.name`,
+				*sett.OwnerID, worldID,
+			); terr == nil {
+				for trows.Next() {
+					var t templeOfferRow
+					if trows.Scan(&t.SettlementID, &t.Name, &t.Oil, &t.Wine) == nil {
+						t.OilNeeded = kharis.OfferOilPerTemple
+						t.WineNeeded = kharis.OfferWinePerTemple
+						t.Fed = t.Oil >= kharis.OfferOilPerTemple && t.Wine >= kharis.OfferWinePerTemple
+						templeOffers = append(templeOffers, t)
+					}
+				}
+				trows.Close()
+			}
+		}
+		if templeOffers == nil {
+			templeOffers = []templeOfferRow{}
+		}
+
 		// Temple presence — required by the rite handler for any prayer.
 		var hasTemple bool
 		_ = h.pool.QueryRow(r.Context(),
@@ -505,6 +551,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"resources":              resSnap,
 			"kharis":                 kharisNow,
 			"kharis_rate":            kharisRate,
+			"kharis_mood":            kharisToMood(kharisNow),
+			"kharis_per_day":         kharisRate * float64(events.TicksPerDay),
+			"temple_offers":          templeOffers,
 			"grain_prod_rate":        grainProdRate,
 			"grain_consum_rate":      grainConsumRate,
 			"breakeven_grain_weight": breakevenGrainWeight,

@@ -171,9 +171,43 @@ func statusCmd() *cobra.Command {
 				printRes("Tin", "tin", false)
 				printRes("Bronze", "bronze", false)
 			}
+			// Kharis (PLAN B, megaron_kult_legibilitet_plan.md): kharis is now
+			// DAILY-maintenance-driven, not per-tick — a per-tick rate rendered
+			// "+0.0/tick" for any typical passive value (A4a-buggen). Show the mood
+			// (gynnsamhets-signal, never a computed odds — see `rite --list`) and the
+			// passive geographic rate per DYGN instead.
 			kv, _ := sett["kharis"].(float64)
-			kr, _ := sett["kharis_rate"].(float64)
-			fmt.Printf("  %-8s %6s  %s\n", "Kharis", resource(kv), rate(kr))
+			mood, _ := sett["kharis_mood"].(string)
+			kpd, _ := sett["kharis_per_day"].(float64)
+			fmt.Printf("  %-8s %6s  (%s) · passiv %+.1f/dygn\n", "Kharis", resource(kv), mood, kpd)
+
+			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
+			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
+			if temples, ok := sett["temple_offers"].([]any); ok {
+				if len(temples) == 0 {
+					fmt.Println("  Tempel: inga — kharis klättrar inte utan tempel + offer.")
+				}
+				anyUnfed := false
+				for _, it := range temples {
+					m, _ := it.(map[string]any)
+					name, _ := m["name"].(string)
+					oil, _ := m["oil"].(float64)
+					wine, _ := m["wine"].(float64)
+					oilNeeded, _ := m["oil_needed"].(float64)
+					wineNeeded, _ := m["wine_needed"].(float64)
+					fed, _ := m["fed"].(bool)
+					mark := "✓"
+					if !fed {
+						mark = "✗"
+						anyUnfed = true
+					}
+					fmt.Printf("  Tempel i %s: kräver %.0f olja + %.0f vin/dygn — lager: olja %s, vin %s  %s\n",
+						name, oilNeeded, wineNeeded, resource(oil), resource(wine), mark)
+				}
+				if mood == "Suspicious" || mood == "Wrathful" || anyUnfed {
+					fmt.Println("  → mata templen (bygg upp olja/vin) eller kasta rit — se `poleia rite --list`.")
+				}
+			}
 			fmt.Println()
 
 			army, _ := sett["army"].(map[string]any)

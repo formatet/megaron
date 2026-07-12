@@ -63,10 +63,12 @@ const (
 // §"KANONISK OMDESIGN" §4): each temple consumes a small daily material offer
 // (oil+wine) from ITS OWN settlement's goods — offerings are local, you feed
 // the temple where it stands, not from a shared pool. Strawman quantities —
-// temenos_balans_spakar.md §9.
+// temenos_balans_spakar.md §9. Exported (PLAN B, megaron_kult_legibilitet_plan.md)
+// so the status endpoint (api/handlers/province.go) can show the same
+// requirement the tick actually enforces instead of duplicating the numbers.
 const (
-	offerOilPerTemple  = 2.0
-	offerWinePerTemple = 1.0
+	OfferOilPerTemple  = 2.0
+	OfferWinePerTemple = 1.0
 )
 
 // templeTierMultiplier is the FAS 4 hook point — DEFERRED, not built in this
@@ -259,7 +261,7 @@ func computeOfferFraction(fed, total int) float64 {
 	return float64(fed) / float64(total)
 }
 
-// applyTempleOffering consumes offerOilPerTemple/offerWinePerTemple from each
+// applyTempleOffering consumes OfferOilPerTemple/OfferWinePerTemple from each
 // of the Wanax's temple-having settlements' OWN oil/wine stock. A settlement is
 // "fed" only if it can afford BOTH goods in full (checked before either is
 // deducted, so a partial offer never happens). Returns (fed, total) for
@@ -299,7 +301,7 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 
 	for _, t := range temples {
 		total++
-		if t.oil < offerOilPerTemple || t.wine < offerWinePerTemple {
+		if t.oil < OfferOilPerTemple || t.wine < OfferWinePerTemple {
 			continue // this temple's city can't afford today's offer — no deduction, not fed.
 		}
 		if _, err := h.pool.Exec(ctx,
@@ -307,7 +309,7 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 			   amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
 			   calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = 'oil'`,
-			t.id, offerOilPerTemple,
+			t.id, OfferOilPerTemple,
 		); err != nil {
 			slog.Error("temple offering oil deduction failed", "settlement", t.id, "err", err)
 			continue
@@ -317,7 +319,7 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 			   amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
 			   calc_tick = current_world_tick()
 			 WHERE settlement_id = $1 AND good_key = 'wine'`,
-			t.id, offerWinePerTemple,
+			t.id, OfferWinePerTemple,
 		); err != nil {
 			slog.Error("temple offering wine deduction failed", "settlement", t.id, "err", err)
 			continue
