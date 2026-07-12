@@ -162,7 +162,7 @@ func main() {
 	templateDir := getEnv("TEMPLATE_DIR", "../../web/templates")
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
 
-	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir, gameClock, serverWorldID)
+	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir, staticDir, gameClock, serverWorldID)
 	if err != nil {
 		slog.Error("load templates", "err", err)
 		os.Exit(1)
