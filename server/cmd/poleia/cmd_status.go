@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -115,6 +116,7 @@ func statusCmd() *cobra.Command {
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
+			fmt.Println("  (rate = netto: produktion − konsumtion, per tick)")
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)
@@ -124,20 +126,89 @@ func statusCmd() *cobra.Command {
 					amt, _ := rd["amount"].(float64)
 					rt, _ := rd["rate"].(float64)
 					if always || amt > 0 || rt != 0 {
-						fmt.Printf("  %-8s %6s  %s\n", label, resource(amt), rate(rt))
+						line := fmt.Sprintf("  %-8s %6s  %s", label, resource(amt), rate(rt))
+						if rt < 0 {
+							line += " netto"
+							// Real shortage risk: current stock runs out inside a day
+							// (events.TicksPerDay ticks) at this net rate — most negative
+							// nettos are a stable balance a stock buffer absorbs, not an
+							// emergency (DEL C grain-netto-märkning: don't cry wolf).
+							if amt/-rt < float64(events.TicksPerDay) {
+								line += "  ⚠ tar slut inom ett dygn"
+							}
+						}
+						fmt.Println(line)
 					}
 				}
 				printRes("Silver", "silver", true)
-				printRes("Grain", "grain", false)
+
+				// Grain: itemized prod/konsum/netto per DYGN (DEL C fuller fix,
+				// GREENLIT 2026-07-12) instead of one unmarked netto rate — the stored
+				// rate is already net, so a negative number alone reads as an alarm
+				// when it's often just normal balance. Components are additive fields
+				// the status endpoint derives from the same consumption formula
+				// RecomputeProduction folds into grain's rate (economy.
+				// GrainConsumptionPerCitizenPerDay), not a re-derivation of the mechanic.
+				if gRd, ok := res["grain"].(map[string]any); ok {
+					gAmt, _ := gRd["amount"].(float64)
+					gProdRate, _ := sett["grain_prod_rate"].(float64)
+					gConsumRate, _ := sett["grain_consum_rate"].(float64)
+					if gAmt > 0 || gProdRate != 0 || gConsumRate != 0 {
+						prodDay := gProdRate * float64(events.TicksPerDay)
+						consumDay := gConsumRate * float64(events.TicksPerDay)
+						netDay := prodDay - consumDay
+						line := fmt.Sprintf("  %-8s %6s  prod %.1f − konsum %.1f = netto %+.1f /dygn",
+							"Grain", resource(gAmt), prodDay, consumDay, netDay)
+						if be, ok := sett["breakeven_grain_weight"].(float64); ok {
+							line += fmt.Sprintf("  (break-even grain-vikt ≥%.0f%%)", be*100)
+						}
+						fmt.Println(line)
+					}
+				}
+
 				printRes("Timber", "timber", false)
 				printRes("Stone", "stone", false)
 				printRes("Copper", "copper", false)
 				printRes("Tin", "tin", false)
 				printRes("Bronze", "bronze", false)
 			}
+			// Kharis (PLAN B, megaron_kult_legibilitet_plan.md): kharis is now
+			// DAILY-maintenance-driven, not per-tick — a per-tick rate rendered
+			// "+0.0/tick" for any typical passive value (A4a-buggen). Show the mood
+			// (gynnsamhets-signal, never a computed odds — see `rite --list`) and the
+			// passive geographic rate per DYGN instead.
 			kv, _ := sett["kharis"].(float64)
-			kr, _ := sett["kharis_rate"].(float64)
-			fmt.Printf("  %-8s %6s  %s\n", "Kharis", resource(kv), rate(kr))
+			mood, _ := sett["kharis_mood"].(string)
+			kpd, _ := sett["kharis_per_day"].(float64)
+			fmt.Printf("  %-8s %6s  (%s) · passiv %+.1f/dygn\n", "Kharis", resource(kv), mood, kpd)
+
+			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
+			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
+			if temples, ok := sett["temple_offers"].([]any); ok {
+				if len(temples) == 0 {
+					fmt.Println("  Tempel: inga — kharis klättrar inte utan tempel + offer.")
+				}
+				anyUnfed := false
+				for _, it := range temples {
+					m, _ := it.(map[string]any)
+					name, _ := m["name"].(string)
+					oil, _ := m["oil"].(float64)
+					wine, _ := m["wine"].(float64)
+					oilNeeded, _ := m["oil_needed"].(float64)
+					wineNeeded, _ := m["wine_needed"].(float64)
+					fed, _ := m["fed"].(bool)
+					mark := "✓"
+					if !fed {
+						mark = "✗"
+						anyUnfed = true
+					}
+					fmt.Printf("  Tempel i %s: kräver %.0f olja + %.0f vin/dygn — lager: olja %s, vin %s  %s\n",
+						name, oilNeeded, wineNeeded, resource(oil), resource(wine), mark)
+				}
+				if mood == "Suspicious" || mood == "Wrathful" || anyUnfed {
+					fmt.Println("  → mata templen (bygg upp olja/vin) eller kasta rit — se `poleia rite --list`.")
+				}
+			}
 			fmt.Println()
 
 			army, _ := sett["army"].(map[string]any)

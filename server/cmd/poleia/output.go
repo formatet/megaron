@@ -41,7 +41,9 @@ func rate(v float64) string {
 	if v == 0 {
 		return "—"
 	}
-	return fmt.Sprintf("+%.1f/tick", v)
+	// %+.1f supplies its own sign (was "+%.1f", which mangled negative rates
+	// into "+-5.3/tick" — DEL C grain-netto-märkning surfaced this).
+	return fmt.Sprintf("%+.1f/tick", v)
 }
 
 // countdown formats the time remaining until t (e.g. a pending trade offer's
