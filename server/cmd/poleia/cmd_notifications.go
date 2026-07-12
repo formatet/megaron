@@ -16,7 +16,7 @@ import (
 // kind (e.g. SubsistenceWarning) is never silently swallowed just because
 // it happens to fire often. Today: only Sitos' routine noise (~99% of the
 // feed — see megaron_ekonomi_legibilitet_plan.md DEL B).
-var noisyNotificationKinds = []string{"SitosIntervention"}
+var noisyNotificationKinds = []string{"SitosIntervention", "SitosFundLow"}
 
 type notificationItem struct {
 	ID        string          `json:"id"`
