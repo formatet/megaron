@@ -22,30 +22,48 @@ type Queryer interface {
 // ok is false when the origin or target tile is absent or impassable, or when no
 // traversable route exists. err is non-nil only for DB or scan failures.
 func FindPath(ctx context.Context, db Queryer, worldID uuid.UUID, origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool, err error) {
+	g, err := LoadTileGraph(ctx, db, worldID)
+	if err != nil {
+		return nil, 0, false, err
+	}
+	path, cost, ok = g.FindPath(origin, target, category)
+	return path, cost, ok, nil
+}
+
+// TileGraph is an in-memory snapshot of a world's terrain. Load it once with
+// LoadTileGraph, then call FindPath many times without re-querying map_tiles —
+// used when a single request must path several units (e.g. the /marches and
+// /units map endpoints), where per-unit FindPath would reload all tiles each time.
+type TileGraph map[[2]int]string
+
+// LoadTileGraph loads every tile of a world into memory for repeated pathfinding.
+func LoadTileGraph(ctx context.Context, db Queryer, worldID uuid.UUID) (TileGraph, error) {
 	rows, err := db.Query(ctx,
 		`SELECT q, r, terrain FROM map_tiles WHERE world_id = $1`,
 		worldID,
 	)
 	if err != nil {
-		return nil, 0, false, err
+		return nil, err
 	}
 	defer rows.Close()
 
-	tiles := make(map[[2]int]string)
+	tiles := make(TileGraph)
 	for rows.Next() {
 		var q, r int
 		var terrain string
 		if scanErr := rows.Scan(&q, &r, &terrain); scanErr != nil {
-			return nil, 0, false, scanErr
+			return nil, scanErr
 		}
 		tiles[[2]int{q, r}] = terrain
 	}
-	if err = rows.Err(); err != nil {
-		return nil, 0, false, err
-	}
+	return tiles, rows.Err()
+}
 
-	path, cost, ok = findPath(tiles, origin, target, category)
-	return path, cost, ok, nil
+// FindPath runs A* over an already-loaded graph (no DB access). Semantics match
+// the package-level FindPath: path includes origin (first) and target (last);
+// ok is false when origin/target is absent/impassable or no route exists.
+func (g TileGraph) FindPath(origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool) {
+	return findPath(g, origin, target, category)
 }
 
 // axialDirs lists the 6 axial hex neighbours.

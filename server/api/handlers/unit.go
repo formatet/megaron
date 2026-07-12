@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -1314,8 +1315,43 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	summaries := unitSummaries(units)
+	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
+
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"units": unitSummaries(units)})
+	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
+}
+
+// attachUnitPaths fills Path (the real A* route) for every marching unit, loading
+// the world's tile graph once. Non-marching units are left with an empty path —
+// they are not animated. Reuses marchPathWaypoints (world.go).
+func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID, summaries []unitSummary) {
+	marching := false
+	for i := range summaries {
+		s := &summaries[i]
+		if s.Status == "marching" && s.Q != nil && s.R != nil && s.TargetQ != nil && s.TargetR != nil {
+			marching = true
+			break
+		}
+	}
+	if !marching {
+		return
+	}
+	g, err := province.LoadTileGraph(ctx, db, worldID)
+	if err != nil {
+		return
+	}
+	for i := range summaries {
+		s := &summaries[i]
+		if s.Status != "marching" || s.Q == nil || s.R == nil || s.TargetQ == nil || s.TargetR == nil {
+			continue
+		}
+		cat := "land"
+		if s.Category == "naval" {
+			cat = "naval"
+		}
+		s.Path = marchPathWaypoints(g, *s.Q, *s.R, *s.TargetQ, *s.TargetR, cat)
+	}
 }
 
 // unitSummary is the JSON shape returned to clients.
@@ -1351,6 +1387,11 @@ type unitSummary struct {
 	// per-unit march could not be animated and stayed invisible on the canvas.
 	DepartsAt    *time.Time `json:"departs_at,omitempty"`
 	ArrivesAt    *time.Time `json:"arrives_at,omitempty"`
+	// Path is the A* route [[q,r],...] a marching unit follows (via sea / around
+	// mountains). The map animates the walker along it instead of a straight line,
+	// so it is drawn where the unit truly is. Empty for non-marching units and when
+	// no route exists (client falls back to the straight line). See marchPathWaypoints.
+	Path         [][2]int   `json:"path,omitempty"`
 	CargoUnitID  *uuid.UUID `json:"cargo_unit_id,omitempty"`
 	// MarchIntent/ColonyName surface a pending colony before it exists (Fas
 	// 2i): a colonize march has no settlement row until it arrives, so this
