@@ -27,8 +27,8 @@ const (
 	TypeEliteInfantry Type = "elite_infantry"
 	TypeWarChariot    Type = "war_chariot"
 	TypePriest        Type = "priest"
-	TypeGalley        Type = "galley"     // kanonisk standardgalär; crew 20
-	TypeShip          Type = "ship"       // legacy-alias för galley — DB-kolumn + UnitSpecs-nyckel heter fortf. "ship"; full rename→galley = D-stream/SB7
+	TypeGalley        Type = "galley"      // kanonisk standardgalär; crew 20
+	TypeShip          Type = "ship"        // legacy-alias för galley — DB-kolumn + UnitSpecs-nyckel heter fortf. "ship"; full rename→galley = D-stream/SB7
 	TypeWarGalley     Type = "war_galley"  // crew 50
 	TypeMerchantman   Type = "merchantman" // crew 10
 )
@@ -65,6 +65,39 @@ func CrewFor(t Type) int {
 	default:
 		return 0
 	}
+}
+
+// ---- Display names -------------------------------------------------------
+
+// displayNames is the ONE canonical display name per unit type (DB key),
+// consumed by keryx (CLI), the web/API layer, and notifications so the same
+// unit never shows a different name in different channels (A8). DB keys
+// themselves are untouched — this is presentation only.
+//
+// Taxonomy decided 2026-07-10 (Timothy) — clarity first, flavour only where
+// it earns its keep: "Hoplites"/"Agema"/"Hiereus" retired. "ship" and the
+// legacy "trireme" key both collapse to the canonical "galley" display.
+// "priest" (mig 060, dead unit) has deliberately no entry — unmapped keys
+// fall back to the raw key.
+var displayNames = map[string]string{
+	string(TypeSpearman):      "Spearmen",
+	string(TypeEliteInfantry): "Elite Infantry",
+	string(TypeWarChariot):    "War Chariot",
+	string(TypeGalley):        "Galley",
+	string(TypeShip):          "Galley",
+	"trireme":                 "Galley",
+	string(TypeWarGalley):     "War Galley",
+	string(TypeMerchantman):   "Emporos",
+}
+
+// DisplayName returns the canonical human-readable name for a unit's DB type
+// key, falling back to the raw key for any type not yet in the table (e.g. a
+// future unit, or the retired "priest").
+func DisplayName(t string) string {
+	if label, ok := displayNames[t]; ok {
+		return label
+	}
+	return t
 }
 
 // Status is the lifecycle state of a unit.

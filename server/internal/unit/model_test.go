@@ -41,3 +41,38 @@ func TestOtherNavalUnaffected(t *testing.T) {
 		t.Errorf("spearman should be land/crew0, got cat=%q crew=%d", CategoryOf(TypeSpearman), CrewFor(TypeSpearman))
 	}
 }
+
+// TestDisplayName_ConsistentAcrossKnownTypes pins the decided display-name
+// taxonomy (Namn-hygien C / A8, Timothy 2026-07-10): one canonical display
+// string per DB unit type, moved here from cmd/poleia's now-retired local
+// unitDisplayName so keryx, web/API, and notifications all read the same
+// table. "Hoplites"/"Agema"/"Hiereus" are retired; "priest" (dead unit,
+// mig 060) has no entry and falls back to its raw key.
+func TestDisplayName_ConsistentAcrossKnownTypes(t *testing.T) {
+	cases := map[string]string{
+		"spearman":       "Spearmen",
+		"war_chariot":    "War Chariot",
+		"ship":           "Galley",
+		"galley":         "Galley",
+		"trireme":        "Galley",
+		"elite_infantry": "Elite Infantry",
+		"war_galley":     "War Galley",
+		"merchantman":    "Emporos",
+	}
+	for dbType, want := range cases {
+		if got := DisplayName(dbType); got != want {
+			t.Errorf("DisplayName(%q) = %q, want %q", dbType, got, want)
+		}
+	}
+}
+
+// TestDisplayName_UnknownFallsBackToRawKey verifies that an unmapped type
+// (e.g. a future new unit, or the retired "priest") degrades to showing its
+// raw key rather than an empty string or a retired flavour name.
+func TestDisplayName_UnknownFallsBackToRawKey(t *testing.T) {
+	for _, dbType := range []string{"some_future_unit", "priest"} {
+		if got := DisplayName(dbType); got != dbType {
+			t.Errorf("DisplayName(%q) = %q, want fallback to the raw key", dbType, got)
+		}
+	}
+}

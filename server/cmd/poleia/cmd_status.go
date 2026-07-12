@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/poleia/server/internal/unit"
 	"github.com/spf13/cobra"
 )
 
@@ -152,7 +153,7 @@ func statusCmd() *cobra.Command {
 				for _, u := range units {
 					v, _ := army[u.jsonKey].(float64)
 					if v > 0 {
-						fmt.Printf("  %-10s %4.0f\n", unitDisplayName(u.dbType), v)
+						fmt.Printf("  %-10s %4.0f\n", unit.DisplayName(u.dbType), v)
 					}
 				}
 				// Upkeep the standing garrison drains each day (grain shortage → attrition,
@@ -194,7 +195,7 @@ func statusCmd() *cobra.Command {
 					u, _ := m["unit"].(string)
 					c, _ := m["count"].(float64)
 					ca, _ := m["complete_at"].(string)
-					fmt.Printf("  %.0f× %-10s done %s\n", c, unitDisplayName(u), localDone(ca))
+					fmt.Printf("  %.0f× %-10s done %s\n", c, unit.DisplayName(u), localDone(ca))
 				}
 			}
 			return nil
