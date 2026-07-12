@@ -823,6 +823,12 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		DepartsAt time.Time `json:"departs_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
 		IsNaval   bool      `json:"is_naval,omitempty"`
+		// Path is the A* route [[q,r],...] the army actually follows (via sea for
+		// naval, around mountains for land) — the client animates along it instead
+		// of a straight origin→target line, so the walker is drawn where the unit
+		// truly is (matches province.InterpolatePosition). Empty ⇒ client falls back
+		// to the straight line.
+		Path [][2]int `json:"path,omitempty"`
 	}
 
 	visible := func(q, r int, terrain string) bool {
@@ -849,7 +855,35 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	if markers == nil {
 		markers = []marchMarker{}
 	}
+	// Attach the real A* route to each march. Load the tile graph once, then path
+	// every marker against it — per-marker FindPath would reload all tiles each time.
+	if len(markers) > 0 {
+		if g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID); gerr == nil {
+			for i := range markers {
+				cat := "land"
+				if markers[i].IsNaval {
+					cat = "naval"
+				}
+				markers[i].Path = marchPathWaypoints(g, markers[i].OriginQ, markers[i].OriginR, markers[i].TargetQ, markers[i].TargetR, cat)
+			}
+		}
+	}
 	writeJSON(w, http.StatusOK, markers)
+}
+
+// marchPathWaypoints returns the A* route as [[q,r],...] (origin+target included)
+// for a unit of the given category over a pre-loaded tile graph. Returns nil when
+// no route exists or the path is trivial, so the client falls back to a straight line.
+func marchPathWaypoints(g province.TileGraph, oq, or, tq, tr int, category string) [][2]int {
+	path, _, ok := g.FindPath(province.MapPosition{Q: oq, R: or}, province.MapPosition{Q: tq, R: tr}, category)
+	if !ok || len(path) < 2 {
+		return nil
+	}
+	out := make([][2]int, len(path))
+	for i, p := range path {
+		out[i] = [2]int{p.Q, p.R}
+	}
+	return out
 }
 
 // MapTrades handles GET /worlds/:worldID/trades — active trade caravans visible to the
