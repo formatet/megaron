@@ -2943,6 +2943,25 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Break-even grain labor-weight guardrail (DEL D, megaron_ekonomi_legibilitet_plan.md).
+	// Sparta-forensiken 2026-07-12: a re-allocation dropping grain below its break-even
+	// weight silently starved the capital, and this DELETE+INSERT was entirely unaudited.
+	// Build the weight map now, and compute the pop-independent break-even from the SAME
+	// settlement-scoped catchment helper the status endpoint uses (economy.CatchmentBasePotential
+	// — never a second formula), so the audit event and the warning read identical values.
+	weights := make(map[string]float64, len(filtered))
+	for key, pct := range filtered {
+		weights[key] = pct / 100.0
+	}
+	var breakevenGrainWeight *float64
+	if basePots, bperr := economy.CatchmentBasePotential(r.Context(), h.pool, settlementID); bperr == nil {
+		if basePotGrain := basePots["grain"]; basePotGrain > 0 {
+			be := economy.GrainConsumptionPerCitizenPerDay * economy.REF_LABOR /
+				(basePotGrain * float64(events.TicksPerDay))
+			breakevenGrainWeight = &be
+		}
+	}
+
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -2998,6 +3017,30 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Audit the (previously silent) re-allocation + break-even so a future forensic
+	// can attribute a starvation collapse to the labour lever that caused it. stream =
+	// settlement (StreamProvince, keyed by settlementID — the settlement's own stream).
+	if h.eventStore != nil {
+		auditPayload := map[string]any{"weights": weights}
+		if breakevenGrainWeight != nil {
+			auditPayload["breakeven_grain_weight"] = *breakevenGrainWeight
+		}
+		_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamProvince, "LaborAllocated",
+			auditPayload, worldID, nil)
+	}
+
+	// Guardrail: accept the allocation regardless (the Wanax's freedom), but if the
+	// grain weight is below break-even, return a warning — the city will slowly starve
+	// at this weight. Keryx renders it AFTER confirming the allocation.
+	var warning string
+	if breakevenGrainWeight != nil {
+		grainWeight := weights["grain"] // 0 if grain not allocated at all
+		if grainWeight < *breakevenGrainWeight {
+			warning = fmt.Sprintf("grain-vikt %.2f < break-even ~%.2f för denna catchment → staden kommer svälta vid denna allokering",
+				grainWeight, *breakevenGrainWeight)
+		}
+	}
+
 	// Echo both the percent levers and the resulting citizen counts: the share
 	// auto-scales with population, but real output depends on the absolute number
 	// of citizens (more citizens produce more, even at a lower percent).
@@ -3005,14 +3048,21 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	for key, pct := range filtered {
 		citizens[key] = int(pct / 100.0 * float64(laborPool))
 	}
-	writeJSON(w, http.StatusOK, map[string]any{
+	resp := map[string]any{
 		"percent":       filtered,
 		"citizens":      citizens,
 		"idle_percent":  100.0 - totalPct,
 		"idle_citizens": int((100.0 - totalPct) / 100.0 * float64(laborPool)),
 		"labor_pool":    laborPool,
 		"message":       "labor allocation updated and production recomputed",
-	})
+	}
+	if breakevenGrainWeight != nil {
+		resp["breakeven_grain_weight"] = *breakevenGrainWeight
+	}
+	if warning != "" {
+		resp["warning"] = warning
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // MarketWants handles GET /worlds/{worldID}/market/wants.

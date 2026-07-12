@@ -18,6 +18,41 @@ import (
 // feed — see megaron_ekonomi_legibilitet_plan.md DEL B).
 var noisyNotificationKinds = []string{"SitosIntervention", "SitosFundLow"}
 
+// subsistenceWarningKind is the own-city grain-subsistence warning (DEL D,
+// megaron_ekonomi_legibilitet_plan.md). It is deliberately NOT in
+// noisyNotificationKinds — it must never be collapsed or hidden, and its
+// critical tier floats to the very top of the feed (see notificationsCmd).
+const subsistenceWarningKind = "SubsistenceWarning"
+
+// subsistenceTier extracts the tier ("yellow"/"red"/"critical") from a
+// SubsistenceWarning's body; "" for anything else or an unparseable body.
+func subsistenceTier(n notificationItem) string {
+	if n.Kind != subsistenceWarningKind || len(n.Body) == 0 {
+		return ""
+	}
+	var b struct {
+		Tier string `json:"tier"`
+	}
+	if json.Unmarshal(n.Body, &b) != nil {
+		return ""
+	}
+	return b.Tier
+}
+
+// subsistenceTierLabel renders the tier marker shown in the keryx feed.
+func subsistenceTierLabel(tier string) string {
+	switch tier {
+	case "critical":
+		return "KRITISK"
+	case "red":
+		return "röd"
+	case "yellow":
+		return "gul"
+	default:
+		return tier
+	}
+}
+
 type notificationItem struct {
 	ID        string          `json:"id"`
 	Kind      string          `json:"kind"`
@@ -57,7 +92,11 @@ func printNotificationRow(n notificationItem) {
 	if n.ReadAt == nil {
 		marker = "*"
 	}
-	fmt.Printf("%s[%s]  %-20s  %s\n", marker, notificationAge(n.CreatedAt), n.Kind, string(n.Body))
+	kind := n.Kind
+	if tier := subsistenceTier(n); tier != "" {
+		kind = n.Kind + " [" + subsistenceTierLabel(tier) + "]"
+	}
+	fmt.Printf("%s[%s]  %-20s  %s\n", marker, notificationAge(n.CreatedAt), kind, string(n.Body))
 }
 
 // notificationsCmd surfaces the persistent notifications feed (server since
@@ -163,14 +202,25 @@ func notificationsCmd() *cobra.Command {
 			fmt.Printf("%d notification(s), %d unread\n", len(resp.Notifications), resp.Unread)
 			fmt.Println("────────────────────────────────────────────────────────────")
 
+			// Critical SubsistenceWarnings float to the very top (DEL D,
+			// Sparta-forensiken): a starving capital must never scroll past.
+			for _, n := range resp.Notifications {
+				if n.Kind == subsistenceWarningKind && subsistenceTier(n) == "critical" {
+					printNotificationRow(n)
+				}
+			}
+
 			// Non-noisy notifications shown in full, at the top, unabridged.
 			grouped := map[string][]notificationItem{}
 			for _, n := range resp.Notifications {
 				if isNoisyNotificationKind(n.Kind) {
 					grouped[n.Kind] = append(grouped[n.Kind], n)
-				} else {
-					printNotificationRow(n)
+					continue
 				}
+				if n.Kind == subsistenceWarningKind && subsistenceTier(n) == "critical" {
+					continue // already printed at the very top
+				}
+				printNotificationRow(n)
 			}
 
 			// Noisy kinds present in this response (e.g. explicit --kind

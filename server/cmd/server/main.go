@@ -109,7 +109,7 @@ func main() {
 	borrowedH := loyalty.NewBorrowedArmyPenaltyHandler(pool, scheduler, eventStore, gameClock)
 	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore)
-	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore)
+	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore, hub)
 	sitosCfg := economy.LoadSitosConfig()
 	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)

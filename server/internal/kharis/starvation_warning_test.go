@@ -1,18 +1,77 @@
 package kharis
 
-// Regression test for Fas 2d: the starvation gossip warning only ever fired
-// AFTER grain hit zero (applyStarvation) — a Wanax got no notice before the
-// damage started. applyStarvationWarning is the proactive counterpart: it
-// fires while grain is still positive but on a trend that empties it within
-// the next game-day (TicksPerDay ticks).
+// Regression tests for the Sparta-forensiken 2026-07-12 rework: the starvation
+// warning used to land in gossip_events (a LIMIT-30 minor channel) and went
+// SILENT the moment grain hit zero — exactly when the collapse began. It now
+// emits SubsistenceWarning notifications through the notify hub, in escalating
+// tiers (yellow while grain still positive; red when it empties within a day;
+// critical from applySubsistenceCritical once grain is empty and pop drops).
 
 import (
 	"context"
+	"sync"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/events"
 )
+
+// notifyRecorder is a Broadcaster test double: it records each NotifyPlayer
+// call AND persists to the real notifications table via the test pool, so the
+// emitSubsistenceWarning dedupe query (unread same kind+settlement+tier) sees
+// prior inserts exactly like *notify.Hub does in production.
+type notifyRecorder struct {
+	pool  *pgxpool.Pool
+	mu    sync.Mutex
+	calls []recordedNotify
+}
+
+type recordedNotify struct {
+	playerID uuid.UUID
+	kind     string
+	level    int
+	tier     string
+}
+
+func newNotifyRecorder(pool *pgxpool.Pool) *notifyRecorder {
+	return &notifyRecorder{pool: pool}
+}
+
+func (r *notifyRecorder) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
+	tier := ""
+	var settlementID uuid.UUID
+	if m, ok := payload.(map[string]any); ok {
+		if t, ok := m["tier"].(string); ok {
+			tier = t
+		}
+		if sid, ok := m["settlement_id"].(uuid.UUID); ok {
+			settlementID = sid
+		}
+	}
+	r.mu.Lock()
+	r.calls = append(r.calls, recordedNotify{playerID: playerID, kind: kind, level: level, tier: tier})
+	r.mu.Unlock()
+
+	bodyJSON := []byte(`{"settlement_id":"` + settlementID.String() + `","tier":"` + tier + `"}`)
+	_, _ = r.pool.Exec(ctx,
+		`INSERT INTO notifications (world_id, player_id, kind, level, body_json)
+		 VALUES ($1, $2, $3, $4, $5)`,
+		worldID, playerID, kind, level, bodyJSON)
+	return nil
+}
+
+func (r *notifyRecorder) countTier(playerID uuid.UUID, tier string) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	n := 0
+	for _, c := range r.calls {
+		if c.playerID == playerID && c.kind == subsistenceKind && c.tier == tier {
+			n++
+		}
+	}
+	return n
+}
 
 // starvationWarningFixture builds a minimal active world + settlement with a
 // single grain settlement_goods row — lighter than newGrowthFixture since
@@ -68,63 +127,71 @@ func starvationWarningFixture(t *testing.T, grainAmount, grainRate float64) (wor
 	return worldID, settlementID, ownerID
 }
 
-func gossipCount(t *testing.T, worldID, recipientID uuid.UUID) int {
-	t.Helper()
-	pool := testPool(t)
-	var n int
-	if err := pool.QueryRow(context.Background(),
-		`SELECT count(*) FROM gossip_events WHERE world_id = $1 AND recipient_id = $2 AND text LIKE '%running out%'`,
-		worldID, recipientID,
-	).Scan(&n); err != nil {
-		t.Fatalf("count gossip: %v", err)
-	}
-	return n
-}
-
-func TestApplyStarvationWarning_FiresWhenGrainWillEmptyWithinADay(t *testing.T) {
+func TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinADay(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
 	// amount=100, rate=-10/tick → empty in 10 ticks, well within TicksPerDay (24).
 	worldID, _, ownerID := starvationWarningFixture(t, 100, -10)
 
-	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool))
+	rec := newNotifyRecorder(pool)
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)
 	h.applyStarvationWarning(ctx, worldID)
 
-	if n := gossipCount(t, worldID, ownerID); n != 1 {
-		t.Errorf("gossip warning count = %d, want 1 (grain trending to empty within a day)", n)
+	if n := rec.countTier(ownerID, tierRed); n != 1 {
+		t.Errorf("red warning count = %d, want 1 (grain empties within a day)", n)
 	}
 }
 
-func TestApplyStarvationWarning_SilentWhenGrainAlreadyEmpty(t *testing.T) {
+func TestApplyStarvationWarning_YellowWhenTrendIsFarOff(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	// Already at zero — this is applyStarvation's (reactive) territory, not
-	// the proactive warning's; the two must not double up.
-	worldID, _, ownerID := starvationWarningFixture(t, 0, -10)
-
-	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool))
-	h.applyStarvationWarning(ctx, worldID)
-
-	if n := gossipCount(t, worldID, ownerID); n != 0 {
-		t.Errorf("gossip warning count = %d, want 0 (already-empty grain is applyStarvation's case, not the warning's)", n)
-	}
-}
-
-func TestApplyStarvationWarning_SilentWhenTrendIsSafe(t *testing.T) {
-	pool := testPool(t)
-	ctx := context.Background()
-
-	// amount=10000, rate=-1/tick → empty in 10000 ticks, far beyond the
-	// one-day (24-tick) horizon — no warning warranted yet.
+	// amount=10000, rate=-1/tick → empty in 10000 ticks: net negative but far
+	// beyond the one-day horizon → yellow, not red.
 	worldID, _, ownerID := starvationWarningFixture(t, 10000, -1)
 
-	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool))
+	rec := newNotifyRecorder(pool)
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)
 	h.applyStarvationWarning(ctx, worldID)
 
-	if n := gossipCount(t, worldID, ownerID); n != 0 {
-		t.Errorf("gossip warning count = %d, want 0 (trend is not near-term)", n)
+	if n := rec.countTier(ownerID, tierYellow); n != 1 {
+		t.Errorf("yellow warning count = %d, want 1 (net negative, not near-term)", n)
+	}
+	if n := rec.countTier(ownerID, tierRed); n != 0 {
+		t.Errorf("red warning count = %d, want 0 (not near-term)", n)
+	}
+}
+
+func TestApplyStarvationWarning_SilentFromWarningWhenGrainAlreadyEmpty(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	// Already at zero — this is applySubsistenceCritical's territory, not the
+	// proactive (grain>0) warning's; the two must not double up.
+	worldID, _, ownerID := starvationWarningFixture(t, 0, -10)
+
+	rec := newNotifyRecorder(pool)
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)
+	h.applyStarvationWarning(ctx, worldID)
+
+	if n := rec.countTier(ownerID, tierYellow) + rec.countTier(ownerID, tierRed); n != 0 {
+		t.Errorf("proactive warning count = %d, want 0 (already-empty is the critical pass's case)", n)
+	}
+}
+
+func TestApplySubsistenceCritical_FiresWhenGrainEmpty(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, _, ownerID := starvationWarningFixture(t, 0, -10)
+
+	rec := newNotifyRecorder(pool)
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)
+	h.applySubsistenceCritical(ctx, worldID)
+
+	if n := rec.countTier(ownerID, tierCritical); n != 1 {
+		t.Errorf("critical warning count = %d, want 1 (grain empty + negative net)", n)
 	}
 }
 
@@ -134,10 +201,29 @@ func TestApplyStarvationWarning_SilentWhenGrainGrowing(t *testing.T) {
 
 	worldID, _, ownerID := starvationWarningFixture(t, 100, 5)
 
-	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool))
+	rec := newNotifyRecorder(pool)
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)
 	h.applyStarvationWarning(ctx, worldID)
 
-	if n := gossipCount(t, worldID, ownerID); n != 0 {
-		t.Errorf("gossip warning count = %d, want 0 (positive rate — not trending toward empty)", n)
+	if n := rec.countTier(ownerID, tierYellow) + rec.countTier(ownerID, tierRed); n != 0 {
+		t.Errorf("warning count = %d, want 0 (positive rate — not trending toward empty)", n)
+	}
+}
+
+func TestEmitSubsistenceWarning_DedupesUnreadSameTier(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, _, ownerID := starvationWarningFixture(t, 100, -10)
+
+	rec := newNotifyRecorder(pool)
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)
+	// Two consecutive passes with the same still-holding trend: the second must
+	// be deduped (unread red already exists in notifications).
+	h.applyStarvationWarning(ctx, worldID)
+	h.applyStarvationWarning(ctx, worldID)
+
+	if n := rec.countTier(ownerID, tierRed); n != 1 {
+		t.Errorf("red warning count after two passes = %d, want 1 (unread dedupe)", n)
 	}
 }

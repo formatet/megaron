@@ -100,6 +100,13 @@ Examples:
 					}
 				}
 			}
+			// Break-even guardrail (DEL D): the allocation IS applied, but if the
+			// grain share is below break-even the city will slowly starve — surface
+			// it after confirming the change so it isn't missed.
+			if warning, ok := resp["warning"].(string); ok && warning != "" {
+				fmt.Println()
+				fmt.Printf("  ⚠ %s\n", warning)
+			}
 			return nil
 		},
 	}
