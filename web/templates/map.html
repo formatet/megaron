@@ -1504,6 +1504,7 @@ loadMap().then(() => { dirty = true; render(); });
     const PERSISTENT_KINDS = new Set([
       'BuildComplete','TrainComplete','ArmyArrival','ColonyFounded',
       'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
+      'UnitAttrition','UnitDeserted',
     ]);
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
@@ -1528,6 +1529,11 @@ loadMap().then(() => { dirty = true; render(); });
       }
       if (msg.kind === 'KharisEvent') {
         addNotifChip('kult', '⛩', msg.payload?.message || 'Divine event', 'now');
+      }
+      if (msg.kind === 'UnitAttrition' || msg.kind === 'UnitDeserted') {
+        // Units bleeding out from grain/silver shortage — previously silent.
+        addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        fetchAuth(`/api/v1/worlds/${WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { unitsData = d.units || []; dirty = true; }));
       }
       if (['UnitArrived','UnitExploreReturned','ArmyArrival'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its
@@ -3982,6 +3988,8 @@ function notifIcon(kind) {
     TradeLost:          '🌊',
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
+    UnitAttrition:      '💀',
+    UnitDeserted:       '🏃',
   };
   return icons[kind] || '◉';
 }
@@ -3998,6 +4006,12 @@ function notifText(kind, body) {
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
     case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
     case 'MessengerArrival':   return body.message || 'Messenger arrived';
+    case 'UnitAttrition':      return body.disbanded
+                                 ? `${body.unit_type || 'A unit'} starved to nothing — no grain`
+                                 : `${body.unit_type || 'A unit'} starving — lost ${body.lost || 0} to hunger`;
+    case 'UnitDeserted':       return body.disbanded
+                                 ? `${body.unit_type || 'A unit'} deserted — unpaid, unit lost`
+                                 : `${body.unit_type || 'A unit'} deserting — ${body.lost || 0} left (unpaid)`;
     default:                   return kind;
   }
 }

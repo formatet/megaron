@@ -72,11 +72,13 @@ type UpkeepHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
 	store     *events.Store
+	hub       Broadcaster
 }
 
-// NewUpkeepHandler creates an UpkeepHandler.
-func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store) *UpkeepHandler {
-	return &UpkeepHandler{pool: pool, scheduler: sched, store: store}
+// NewUpkeepHandler creates an UpkeepHandler. hub may be nil (tests) — every
+// NotifyPlayer call is nil-guarded, matching the other combat handlers.
+func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster) *UpkeepHandler {
+	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub}
 }
 
 // Handle processes a ScheduledUpkeepTick event.
@@ -149,7 +151,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		if grainNeed > 0 {
 			if !hasSid {
 				// No paying settlement — treat as grain shortage.
-				disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID)
+				disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
 			} else {
 				tag, err := h.pool.Exec(ctx,
 					`UPDATE settlement_goods
@@ -164,7 +166,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 					slog.Error("upkeep: grain deduction failed", "unit", u.id, "err", err)
 				} else if tag.RowsAffected() == 0 {
 					// Grain shortage — attrition.
-					disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID)
+					disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
 				}
 			}
 		}
@@ -180,7 +182,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 		if !hasSid {
 			// No paying settlement — treat as unpaid (unknown loyalty → baseline).
-			h.recordUnpaid(ctx, u, e.WorldID, defaultLoyalty)
+			h.recordUnpaid(ctx, u, e.WorldID, defaultLoyalty, sid)
 			continue
 		}
 
@@ -212,7 +214,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			}
 		} else {
 			// Unpaid.
-			h.recordUnpaid(ctx, u, e.WorldID, loyalty)
+			h.recordUnpaid(ctx, u, e.WorldID, loyalty, sid)
 		}
 	}
 
@@ -221,9 +223,36 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		upkeepDailyTickPayload{}, e.DueTick+events.TicksPerDay)
 }
 
+// notifyUnitLoss pushes a player-facing notification for grain attrition or
+// silver desertion. Before this, these losses were audit-only (an event append
+// with no NotifyPlayer), so units starved/deserted to death entirely silently —
+// a whole army could evaporate without a single chip (Sparta 5000→300, live
+// 2026-07-12). level 2 = the unit was destroyed; 3 = it merely bled men.
+func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, worldID, sid uuid.UUID, kind, reason string, lost int, disbanded bool) {
+	if h.hub == nil {
+		return
+	}
+	level := 3
+	if disbanded {
+		level = 2
+	}
+	payload := map[string]any{
+		"unit_id":   u.id,
+		"unit_type": u.unitType,
+		"lost":      lost,
+		"disbanded": disbanded,
+		"reason":    reason,
+	}
+	if sid != (uuid.UUID{}) {
+		payload["settlement_id"] = sid
+	}
+	_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, kind, level, payload)
+}
+
 // applyAttrition removes upkeepAttritionStep men from the unit due to grain shortage.
-// Returns true if the unit was disbanded.
-func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ float64, worldID uuid.UUID) bool {
+// Returns true if the unit was disbanded. sid = the settlement that failed to feed
+// it (uuid.Nil if none), passed through to the notification for deep-linking.
+func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ float64, worldID, sid uuid.UUID) bool {
 	lost := upkeepAttritionStep
 	if lost > u.size {
 		lost = u.size
@@ -258,12 +287,14 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 		worldID, nil,
 	)
 	slog.Info("upkeep: grain attrition", "unit", u.id, "lost", lost, "disbanded", disbanded)
+	h.notifyUnitLoss(ctx, u, worldID, sid, "UnitAttrition", "grain_shortage", lost, disbanded)
 	return disbanded
 }
 
 // recordUnpaid increments unpaid_periods and applies desertion if the threshold is reached.
 // loyalty is the supplying settlement's loyalty (L2): lower loyalty ⇒ more men desert.
-func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int) {
+// sid = the settlement that failed to pay (uuid.Nil if none), for the notification deep-link.
+func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int, sid uuid.UUID) {
 	np := u.unpaidPeriods + 1
 
 	if np >= upkeepDesertionPeriods {
@@ -302,6 +333,7 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 			worldID, nil,
 		)
 		slog.Info("upkeep: silver desertion", "unit", u.id, "lost", lost, "disbanded", disbanded)
+		h.notifyUnitLoss(ctx, u, worldID, sid, "UnitDeserted", "silver_shortage", lost, disbanded)
 	} else {
 		// Not yet at threshold — just increment counter.
 		if _, err := h.pool.Exec(ctx,
