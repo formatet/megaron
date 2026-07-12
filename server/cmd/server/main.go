@@ -140,7 +140,7 @@ func main() {
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
-	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore)
+	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
 	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler)
 	worker.Register(events.ScheduledOfferExpiry, offerExpiryH.Handle)
