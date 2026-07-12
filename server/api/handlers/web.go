@@ -17,7 +17,6 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/unit"
-	"github.com/poleia/server/internal/world"
 )
 
 // kharisToMood maps the 0-100 kharis level to its English display mood.
@@ -44,13 +43,14 @@ type WebHandler struct {
 	authSvc     *auth.Service
 	base        *template.Template // base.html only, cloned per request
 	templateDir string
+	mapFile     string // static/map.html — served directly, no Go templating (FAS 1 frikoppling)
 	clk         clock.Clock
 	worldID     uuid.UUID // the single world this server hosts
 }
 
 // NewWebHandler creates a WebHandler. Only base.html is pre-parsed; page
 // templates are parsed fresh per request so each gets its own "content" block.
-func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, clk clock.Clock, worldID uuid.UUID) (*WebHandler, error) {
+func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, staticDir string, clk clock.Clock, worldID uuid.UUID) (*WebHandler, error) {
 	buildingNames := map[string]string{
 		"farm":        "Farm",
 		"lumbermill":  "Lumbermill",
@@ -129,7 +129,7 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 	if err != nil {
 		return nil, err
 	}
-	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir, clk: clk, worldID: worldID}, nil
+	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir, mapFile: filepath.Join(staticDir, "map.html"), clk: clk, worldID: worldID}, nil
 }
 
 // render renders a full-page template that extends base.html.
@@ -207,7 +207,11 @@ func (h *WebHandler) JoinView(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// MapView serves the hex map page.
+// MapView serves the hex map page. map.html is a static file (FAS 1
+// frikoppling — no Go templating); the client bootstraps its own state via
+// the API. This handler keeps only what the redirect logic needs: 404 on an
+// unknown world, and the /play redirect for an authenticated Wanax with no
+// settlement here.
 func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -215,19 +219,16 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var wld world.World
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT id, name, state, map_width, map_height, prestige, era_number, created_at FROM worlds WHERE id = $1`,
-		worldID,
-	).Scan(&wld.ID, &wld.Name, &wld.State, &wld.MapWidth, &wld.MapHeight, &wld.Prestige, &wld.EraNumber, &wld.CreatedAt)
-	if err != nil {
+	var exists bool
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT EXISTS (SELECT 1 FROM worlds WHERE id = $1)`, worldID,
+	).Scan(&exists); err != nil || !exists {
 		http.Error(w, "world not found", http.StatusNotFound)
 		return
 	}
 
 	var settlementID string
 	var playerIDStr string
-	var unreadCount int
 	if playerID, ok := auth.PlayerIDFromContext(r.Context()); ok {
 		playerIDStr = playerID.String()
 		var sid uuid.UUID
@@ -237,13 +238,6 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		).Scan(&sid); err == nil {
 			settlementID = sid.String()
 		}
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT count(*) FROM messengers m
-			 JOIN settlements s ON s.id = m.destination_id
-			 WHERE m.world_id = $1 AND s.owner_id = $2 AND m.status = 'delivered'
-			   AND (m.trade_offer IS NULL OR m.trade_offer->>'status' = 'pending')`,
-			worldID, playerID,
-		).Scan(&unreadCount)
 	}
 
 	// An authenticated Wanax with no settlement here (never joined, or lost their
@@ -254,16 +248,7 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.render(w, "map.html", map[string]any{
-		"World":          wld,
-		"WorldID":        worldID,
-		"WorldCreatedAt": wld.CreatedAt.UTC().Format(time.RFC3339),
-		"TimeScale":      1,
-		"SettlementID":   settlementID,
-		"PlayerID":       playerIDStr,
-		"UnreadCount":    unreadCount,
-		"MapMode":        true,
-	})
+	http.ServeFile(w, r, h.mapFile)
 }
 
 // EpitaphView renders a fallen Wanax's reign as a scrolling crawl. Only a
