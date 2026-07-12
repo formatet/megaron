@@ -119,6 +119,9 @@ func TestPrayerSpecsHaveRequiredFields(t *testing.T) {
 		if spec.Name == "" {
 			t.Errorf("PrayerSpecs[%q].Name is empty", key)
 		}
+		if spec.Description == "" {
+			t.Errorf("PrayerSpecs[%q].Description is empty — rite --list needs an effect line (A7)", key)
+		}
 		if spec.CooldownTicks <= 0 {
 			t.Errorf("PrayerSpecs[%q].CooldownTicks is zero or negative", key)
 		}

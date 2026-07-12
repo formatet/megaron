@@ -717,7 +717,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	offerMultiplier := riteOfferMultiplier(body.OfferMultiplier)
 	offerMod := riteOfferMod(offerMultiplier)
 	successChance := riteSuccessChance(kharisNow, offerMod)
-	chance := int(successChance*100 + 0.5) // percentage, rounded, for the roll + response
+	chance := int(successChance*100 + 0.5) // percentage, rounded — for the roll ONLY.
+	// DESIGN INVARIANT (Timothy 2026-07-11, HARD): `chance` never leaves this handler —
+	// the gods are not machines. It is used below purely to weight rand.Intn(100) and
+	// must NOT be added to `resp`. Gynnsamhet is communicated via `mood` instead.
 	mood := kharisToMood(kharisNow)
 
 	// Affordability check + deduct the material offering, scaled by
@@ -807,7 +810,6 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	resp := map[string]any{
 		"success":          success,
 		"mood":             mood,
-		"chance":           chance,
 		"offer_multiplier": offerMultiplier,
 		"prayer":           prayerID,
 		"message":          message,
