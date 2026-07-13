@@ -1,12 +1,12 @@
 package combat
 
 // collapseSettlement — C-collapse: a city whose population reaches ≤ 100 ceases
-// to exist. The last 100 inhabitants leave as a single infantry warband (garrison
-// unit, 100 men) placed on the city's hex. The city is then torn down.
+// to exist. The last 100 inhabitants leave as a single spearman warband (100 men)
+// placed on the city's hex. The city is then torn down.
 //
 // Teardown sequence:
 //   1. Idempotency guard: if settlement.state == 'collapsed' → return nil.
-//   2. Spawn warband: INSERT into units (infantry, 100 men, status=garrison, same q/r).
+//   2. Spawn warband: INSERT into units (spearman, 100 men, positioned, same q/r).
 //   3. Disband existing garrison units (they join the warband as stragglers; simplest
 //      approach that leaves no orphan rows). Men were already drawn from pop at recruit
 //      time so no pop is returned — they are "part of the collapse".
@@ -128,15 +128,19 @@ func collapseSettlement(
 		effectiveOwnerID = *ownerID
 	}
 
-	// ── 2. Spawn warband: 100 infantry, positioned on city's hex ──────────────
+	// ── 2. Spawn warband: 100 spearmen, positioned on city's hex ──────────────
 	// status='positioned': the unit is on the map but not inside a functioning
 	// settlement (the city is about to be collapsed). settlement_id stays NULL
 	// so no FK to a dead settlement is created.
+	// Type 'spearman', NOT 'infantry': the canonical taxonomy (unit/model.go)
+	// has no bare-infantry type — a phantom type is invisible in the army
+	// aggregate (db.go), undisbandable (the disband handler's type list), and
+	// unknown to strength/upkeep tables. Found live 2026-07-13.
 	var warbandID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO units
 		   (world_id, owner_id, type, category, size, crew, status, q, r)
-		 VALUES ($1, $2, 'infantry', 'land', 100, 0, 'positioned', $3, $4)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'positioned', $3, $4)
 		 RETURNING id`,
 		worldID, ownerID, q, r,
 	).Scan(&warbandID); err != nil {
