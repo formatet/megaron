@@ -455,9 +455,12 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		   colony_name  = $10,
 		   home_settlement_id = $11,
 		   capture_mode = $12,
+		   depart_tick  = $13,
+		   arrive_tick  = $14,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
+		unitMarchCurrentTick, unitMarchCurrentTick+unitTravelTicks,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not update unit")
 		return
@@ -500,10 +503,17 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		"unit_id":    unitID,
 		"departs_at": now,
 		"arrives_at": arrivesAt,
-		"origin_q":   originQ,
-		"origin_r":   originR,
-		"target_q":   req.TargetQ,
-		"target_r":   req.TargetR,
+		// K4 tick-contract: timing expressed in world ticks (source of truth under
+		// the tick substrate), plus a derived UTC convenience. arrivesAt is already
+		// the tick-derived instant (now + travelTicks × TickSeconds), so
+		// arrives_at_utc is that same instant normalised to UTC.
+		"arrival_tick":   unitMarchCurrentTick + unitTravelTicks,
+		"duration_ticks": unitTravelTicks,
+		"arrives_at_utc": arrivesAt.UTC(),
+		"origin_q":       originQ,
+		"origin_r":       originR,
+		"target_q":       req.TargetQ,
+		"target_r":       req.TargetR,
 	})
 }
 
@@ -1315,7 +1325,9 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	summaries := unitSummaries(units)
+	var currentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
+	summaries := unitSummaries(units, currentTick, h.clk)
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -1387,6 +1399,15 @@ type unitSummary struct {
 	// per-unit march could not be animated and stayed invisible on the canvas.
 	DepartsAt    *time.Time `json:"departs_at,omitempty"`
 	ArrivesAt    *time.Time `json:"arrives_at,omitempty"`
+	// K4 tick-contract: a marching unit's timing in world ticks (the source of
+	// truth under the tick substrate, mig 067), plus a derived UTC convenience.
+	// ArrivalTick/DurationTicks come straight off the unit row (arrive_tick,
+	// arrive_tick − depart_tick); ArrivesAtUTC is derived via tick.EtaAt from the
+	// world's current tick. All nil for a non-marching unit (tick columns cleared
+	// on arrival, exactly like arrives_at).
+	ArrivalTick   *int       `json:"arrival_tick,omitempty"`
+	DurationTicks *int       `json:"duration_ticks,omitempty"`
+	ArrivesAtUTC  *time.Time `json:"arrives_at_utc,omitempty"`
 	// Path is the A* route [[q,r],...] a marching unit follows (via sea / around
 	// mountains). The map animates the walker along it instead of a straight line,
 	// so it is drawn where the unit truly is. Empty for non-marching units and when
@@ -1400,13 +1421,28 @@ type unitSummary struct {
 	ColonyName  *string `json:"colony_name,omitempty"`
 }
 
-func unitSummaries(us []*unit.Unit) []unitSummary {
+func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSummary {
 	out := make([]unitSummary, 0, len(us))
 	for _, u := range us {
 		var stance *string
 		if u.Stance != nil {
 			s := string(*u.Stance)
 			stance = &s
+		}
+		// K4 tick-contract: surface the march's arrival in ticks (+ a derived UTC).
+		// arrive_tick is the tick-native mirror of arrives_at and is nil unless the
+		// unit is marching, so these three all appear together or not at all.
+		var arrivalTick, durationTicks *int
+		var arrivesAtUTC *time.Time
+		if u.ArriveTick != nil {
+			at := *u.ArriveTick
+			arrivalTick = &at
+			utc := tick.EtaAt(clk, at, currentTick).UTC()
+			arrivesAtUTC = &utc
+			if u.DepartTick != nil {
+				d := at - *u.DepartTick
+				durationTicks = &d
+			}
 		}
 		// A land unit is deployable once it is no longer "forming" (it auto-flips to
 		// garrison at 100 men). A naval unit is deployable once its build completes
@@ -1437,6 +1473,9 @@ func unitSummaries(us []*unit.Unit) []unitSummary {
 			TargetR:      u.TargetR,
 			DepartsAt:    u.DepartsAt,
 			ArrivesAt:    u.ArrivesAt,
+			ArrivalTick:   arrivalTick,
+			DurationTicks: durationTicks,
+			ArrivesAtUTC:  arrivesAtUTC,
 			CargoUnitID:  u.CargoUnitID,
 			MarchIntent:  u.MarchIntent,
 			ColonyName:   u.ColonyName,

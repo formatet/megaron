@@ -208,6 +208,8 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		   target_r      = NULL,
 		   departs_at    = NULL,
 		   arrives_at    = NULL,
+		   depart_tick   = NULL,
+		   arrive_tick   = NULL,
 		   updated_at    = now()
 		 WHERE id = $1`,
 		u.id, newStatus, destQ, destR, settlementID,
@@ -346,11 +348,13 @@ func (h *UnitArrivalHandler) exploreArrived(
 		   target_r      = $5,
 		   departs_at    = now(),
 		   arrives_at    = $6,
+		   depart_tick   = $8,
+		   arrive_tick   = $9,
 		   settlement_id = NULL,
 		   march_intent  = $7,
 		   updated_at    = now()
 		 WHERE id = $1`,
-		u.id, destQ, destR, homeQ, homeR, arrivesAt, returnIntent,
+		u.id, destQ, destR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks,
 	); err != nil {
 		return fmt.Errorf("exploreArrived: dispatch return march: %w", err)
 	}
@@ -412,6 +416,8 @@ func (h *UnitArrivalHandler) exploreReturned(
 		   target_r           = NULL,
 		   departs_at         = NULL,
 		   arrives_at         = NULL,
+		   depart_tick        = NULL,
+		   arrive_tick        = NULL,
 		   march_intent       = NULL,
 		   updated_at         = now()
 		 WHERE id = $1`,
@@ -595,6 +601,8 @@ func (h *UnitArrivalHandler) foundColony(
 		   target_r      = NULL,
 		   departs_at    = NULL,
 		   arrives_at    = NULL,
+		   depart_tick   = NULL,
+		   arrive_tick   = NULL,
 		   march_intent  = NULL,
 		   colony_name   = NULL,
 		   updated_at    = now()
@@ -984,7 +992,7 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 			`UPDATE units SET
 			   size = $2, status = 'positioned', settlement_id = NULL,
 			   q = $3, r = $4, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
 			 WHERE id = $1`,
 			cargoID, cargoSizeAfter, settleQ, settleR,
 		); err != nil {
@@ -997,7 +1005,7 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
 			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
 			 WHERE id = $1`,
 			u.id, seaQ, seaR,
 		); err != nil {
@@ -1016,7 +1024,7 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 			`UPDATE units SET
 			   size = $2, status = 'garrison', settlement_id = $3,
 			   q = $4, r = $5, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
 			 WHERE id = $1`,
 			cargoID, cargoSizeAfter, *dest.settlementID, settleQ, settleR,
 		); err != nil {
@@ -1050,7 +1058,7 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
 			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
 			 WHERE id = $1`,
 			u.id, seaQ, seaR,
 		); err != nil {
@@ -1084,7 +1092,7 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET `+cargoClause+`status = 'positioned',
 			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, updated_at = now()
+			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
 			 WHERE id = $1`,
 			u.id, seaQ, seaR,
 		); err != nil {
@@ -1183,6 +1191,8 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 				   target_r      = NULL,
 				   departs_at    = NULL,
 				   arrives_at    = NULL,
+				   depart_tick   = NULL,
+				   arrive_tick   = NULL,
 				   updated_at    = now()
 				 WHERE id = $1`,
 				u.id, attSizeAfter, destQ, destR,
@@ -1238,6 +1248,8 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 			   target_r     = NULL,
 			   departs_at   = NULL,
 			   arrives_at   = NULL,
+			   depart_tick  = NULL,
+			   arrive_tick  = NULL,
 			   updated_at   = now()
 			 WHERE id = $1`,
 			u.id, attSizeAfter, destQ, destR, dest.settlementID,
@@ -1400,10 +1412,12 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 			   target_r    = $6,
 			   departs_at  = now(),
 			   arrives_at  = $7,
+			   depart_tick = $8,
+			   arrive_tick = $9,
 			   settlement_id = NULL,
 			   updated_at  = now()
 			 WHERE id = $1`,
-			u.id, attSizeAfter, destQ, destR, u.q, u.r, arrivesAt,
+			u.id, attSizeAfter, destQ, destR, u.q, u.r, arrivesAt, currentTick, currentTick+travelTicks,
 		); err != nil {
 			return fmt.Errorf("route unit back to origin: %w", err)
 		}

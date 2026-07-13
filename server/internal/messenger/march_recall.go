@@ -163,9 +163,12 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		   arrives_at   = $7,
 		   march_intent = $8,
 		   colony_name  = $9,
+		   depart_tick  = $10,
+		   arrive_tick  = $11,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		p.UnitID, currentPos.Q, currentPos.R, newTarget.Q, newTarget.R, now, arrivesAtNew, newIntent, newColonyName,
+		currentTick, currentTick+travelTicks,
 	); err != nil {
 		return fmt.Errorf("turn unit toward new course: %w", err)
 	}

@@ -172,6 +172,13 @@ type Unit struct {
 	TargetR   *int
 	DepartsAt *time.Time
 	ArrivesAt *time.Time
+	// DepartTick/ArriveTick are the tick-native mirror of DepartsAt/ArrivesAt
+	// (mig 085, K4 tick-contract): the world tick a march left and the tick it
+	// arrives. Set in the same UPDATE as the wall-clock pair at every
+	// course-setting site, and cleared (nil) on arrival. The API derives
+	// arrival_tick/duration_ticks/arrives_at_utc from them.
+	DepartTick *int
+	ArriveTick *int
 
 	MarchIntent *string // "colonize" or nil (plain march)
 	ColonyName  *string // chosen colony name when MarchIntent == "colonize"
@@ -205,6 +212,7 @@ const selectCols = `
 	settlement_id,
 	q, r,
 	target_q, target_r, departs_at, arrives_at,
+	depart_tick, arrive_tick,
 	sentry_q, sentry_r,
 	leader_role,
 	march_intent, colony_name,
@@ -223,6 +231,7 @@ func scanUnit(row interface {
 		&u.SettlementID,
 		&u.Q, &u.R,
 		&u.TargetQ, &u.TargetR, &u.DepartsAt, &u.ArrivesAt,
+		&u.DepartTick, &u.ArriveTick,
 		&u.SentryQ, &u.SentryR,
 		&u.LeaderRole,
 		&u.MarchIntent, &u.ColonyName,
