@@ -701,7 +701,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		).Scan(&lastCast)
 		if cooldownErr == nil {
 			elapsed := h.clk.Now().Sub(lastCast)
-			remaining := time.Duration(spec.CooldownTicks*tick.TickMinutes)*time.Minute - elapsed
+			remaining := tick.RealUntil(spec.CooldownTicks, 0) - elapsed
 			if remaining > 0 {
 				writeError(w, http.StatusConflict,
 					fmt.Sprintf("prayer %q is on cooldown for another %.0f minutes",
@@ -823,7 +823,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 // applyBattleFrenzy sets battle_frenzy_until for 6 scaled hours.
 func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (map[string]any, string, error) {
-	t := h.clk.Now().Add(time.Duration(6*tick.TickMinutes) * time.Minute)
+	t := h.clk.Now().Add(tick.RealUntil(6, 0))
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
 		t, settlementID,
