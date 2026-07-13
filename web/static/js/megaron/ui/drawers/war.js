@@ -452,8 +452,15 @@ export function unitMarch(unitID) {
   _marchUnitID = unitID;
   const panel = document.getElementById('war-march-panel');
   if (panel) {
+    // The panel renders once at the bottom of the army tab — below the fold as
+    // soon as the unit list fills the drawer, so opening it looked like a dead
+    // button. Move it directly under the clicked unit's card instead.
+    const card = document.getElementById('ucard-' + unitID);
+    if (card) card.after(panel);
     panel.style.display = '';
     document.getElementById('wmp-err').textContent = '';
+    panel.scrollIntoView({ block: 'nearest' });
+    document.getElementById('wmp-q')?.focus();
   }
 }
 
