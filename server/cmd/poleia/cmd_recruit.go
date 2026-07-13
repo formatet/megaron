@@ -15,7 +15,7 @@ import (
 var unitAliases = map[string]string{
 	"hoplites": "spearman", "hoplite": "spearman", "inf": "spearman", "infantry": "spearman", "spearman": "spearman", "spear": "spearman",
 	"chariot": "war_chariot", "chariots": "war_chariot", "cha": "war_chariot", "war_chariot": "war_chariot",
-	"trireme": "ship", "ship": "ship", "shp": "ship",
+	"trireme": "galley", "ship": "galley", "shp": "galley", "galley": "galley",
 	"war_galley": "war_galley", "wargalley": "war_galley", "warship": "war_galley",
 	"merchantman": "merchantman", "merchant": "merchantman", "trader": "merchantman",
 	"agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry", "elite_infantry": "elite_infantry",
@@ -62,9 +62,9 @@ func recruitCmd() *cobra.Command {
 
 			apiUnit, ok := unitAliases[unit]
 			if !ok {
-				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, ship, war_galley, merchantman, agema (or `poleia recruit --list`)", unit)
+				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, galley, war_galley, merchantman, agema (or `poleia recruit --list`)", unit)
 			}
-			isNaval := apiUnit == "ship" || apiUnit == "war_galley" || apiUnit == "merchantman"
+			isNaval := apiUnit == "galley" || apiUnit == "war_galley" || apiUnit == "merchantman"
 			if !isNaval {
 				if men <= 0 || men%10 != 0 {
 					return fmt.Errorf("--men must be a positive multiple of 10 (e.g. 10, 20, … 100)")
@@ -192,7 +192,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			label = fmt.Sprintf("%s (%s)", u.Type, dn)
 		}
 
-		isNaval := u.Type == "ship" || u.Type == "war_galley" || u.Type == "merchantman"
+		isNaval := u.Type == "galley" || u.Type == "war_galley" || u.Type == "merchantman"
 		batch := fmt.Sprintf("%d men", u.BatchMen)
 		if isNaval {
 			batch = fmt.Sprintf("1 vessel (%d crew)", u.BatchMen)

@@ -137,21 +137,25 @@ func TestRecruitBatch_TrainingQueueCapCountsAllVessels(t *testing.T) {
 	}
 }
 
-// TestRecruitBatch_ShipResolvesToNavalGalley guards the fix for the "ship"/"galley"
-// split found while implementing --count: the canonical API/UnitSpecs/CLI value is
-// "ship" while the unit-model constant is "galley". Before the fix CategoryOf("ship")
-// fell through to land and CrewFor("ship") to 0, so the Recruit handler built a broken
-// forming land-unit (crew 0, never garrison) for the standard galley — TrainComplete's
-// isNaval check then skipped the forming→garrison flip, stranding it forever. "ship"
-// must now resolve to the naval galley (crew 20). Full rename→galley = D-stream/SB7.
-// The separate size-semantics bug (size set to req.Men, not 1, for naval types) was
-// fixed by the ship-build overhaul (2026-07-09): naval size is now always 1 — see
+// TestRecruitBatch_ShipResolvesToNavalGalley guards the fix for the historical
+// "ship"/"galley" split found while implementing --count (before namn-hygien A,
+// mig 084, made "galley" the sole canonical units.type value): a legacy client
+// sending unit_type "ship" must still resolve to the naval galley (crew 20) via
+// unit.Canonical, not fall through to a broken forming land-unit (crew 0, never
+// garrison) — TrainComplete's isNaval check would then skip the forming→garrison
+// flip, stranding it forever. The separate size-semantics bug (size set to
+// req.Men, not 1, for naval types) was fixed by the ship-build overhaul
+// (2026-07-09): naval size is now always 1 — see
 // TestRecruitShip_NavalBuildsOneForming{Vessel,Unit} in recruit_ship_test.go.
 func TestRecruitBatch_ShipResolvesToNavalGalley(t *testing.T) {
-	if got := unit.CategoryOf(unit.Type("ship")); got != unit.CategoryNaval {
-		t.Errorf(`unit.CategoryOf("ship") = %s, want naval`, got)
+	canonical := unit.Canonical("ship")
+	if canonical != "galley" {
+		t.Fatalf(`unit.Canonical("ship") = %q, want "galley"`, canonical)
 	}
-	if got := unit.CrewFor(unit.Type("ship")); got != 20 {
-		t.Errorf(`unit.CrewFor("ship") = %d, want 20`, got)
+	if got := unit.CategoryOf(unit.Type(canonical)); got != unit.CategoryNaval {
+		t.Errorf(`unit.CategoryOf(%q) = %s, want naval`, canonical, got)
+	}
+	if got := unit.CrewFor(unit.Type(canonical)); got != 20 {
+		t.Errorf(`unit.CrewFor(%q) = %d, want 20`, canonical, got)
 	}
 }

@@ -93,7 +93,7 @@ func TestLoadSettlement_ArmyReflectsUnitsGarrison(t *testing.T) {
 		{"spearman", "land", 100, "garrison"},
 		{"spearman", "land", 41, "garrison"},
 		{"war_chariot", "land", 10, "garrison"},
-		{"ship", "naval", 1, "garrison"},
+		{"galley", "naval", 1, "garrison"},
 		{"spearman", "land", 60, "forming"}, // excluded
 	}
 	for _, u := range seed {

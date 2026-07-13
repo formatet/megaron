@@ -49,7 +49,7 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='spearman'),0)::int,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='war_chariot'),0)::int,
 		        0,
-		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='ship'),0)::int,
+		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='galley'),0)::int,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='elite_infantry'),0)::int,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='war_galley'),0)::int,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='merchantman'),0)::int,

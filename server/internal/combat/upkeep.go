@@ -22,7 +22,7 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 	"spearman":       {Grain: 5, Silver: 2},
 	"elite_infantry": {Grain: 6, Silver: 4},
 	"war_chariot":    {Grain: 8, Silver: 6},
-	"ship":           {Grain: 4, Silver: 3},
+	"galley":         {Grain: 4, Silver: 3},
 	"war_galley":     {Grain: 6, Silver: 5},
 	"merchantman":    {Grain: 3, Silver: 2},
 	"priest":         {Grain: 0, Silver: 0},

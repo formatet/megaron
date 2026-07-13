@@ -244,7 +244,7 @@ func statusCmd() *cobra.Command {
 				// so it serializes verbatim); dbType feeds the shared display map.
 				units := []struct{ jsonKey, dbType string }{
 					{"Spearman", "spearman"}, {"WarChariot", "war_chariot"}, {"Priest", "priest"},
-					{"Ship", "ship"}, {"EliteInfantry", "elite_infantry"},
+					{"Ship", "galley"}, {"EliteInfantry", "elite_infantry"},
 					{"WarGalley", "war_galley"}, {"Merchantman", "merchantman"},
 				}
 				for _, u := range units {
