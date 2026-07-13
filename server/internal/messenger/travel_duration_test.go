@@ -15,10 +15,10 @@ package messenger
 // negative.
 //
 // Fas A Run 2: these three functions now convert through tick.RealUntil
-// (tick.TickSeconds), not tick.TickMinutes — TickMinutes floors to 1 minute
-// and silently produces coarse (or, on a sub-minute TICK_SECONDS cadence like
-// the CT 126 dev server's TICK_SECONDS=6, 10x too long) display durations.
-// See internal/tick/eta.go.
+// (package tick's TickSeconds), not the deprecated TickMinutes var — it
+// floors to 1 minute and silently produces coarse (or, on a sub-minute
+// TICK_SECONDS cadence like the CT 126 dev server's TICK_SECONDS=6, 10x too
+// long) display durations. See internal/tick/eta.go.
 
 import (
 	"testing"
