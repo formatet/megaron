@@ -1288,6 +1288,13 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Normalize legacy/alias unit-type strings ("ship"/"trireme"→"galley",
+	// "chariot"→"war_chariot") so old clients (web, cached CLI) that still send
+	// the pre-rename value keep recruiting instead of hitting "unknown unit
+	// type" after namn-hygien A+B (mig 084) made galley/war_chariot the only
+	// units.type values.
+	req.UnitType = unit.Canonical(req.UnitType)
+
 	spec, specOK := province.UnitSpecs[req.UnitType]
 	if !specOK {
 		writeError(w, http.StatusBadRequest, "unknown unit type")
@@ -2756,7 +2763,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	}{
 		{req.Spearman, "spearman", "spearman"},
 		{req.WarChariot, "war_chariot", "war_chariot"},
-		{req.Ship, "ship", "ship"},
+		{req.Ship, "galley", "ship"},
 		{req.EliteInfantry, "elite_infantry", "elite_infantry"},
 		{req.WarGalley, "war_galley", "war_galley"},
 		{req.Merchantman, "merchantman", "merchantman"},

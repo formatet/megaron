@@ -17,9 +17,10 @@ type UnitSpec struct {
 
 // UnitSpecs is the canonical catalogue of all trainable unit types.
 //
-// Skepp-taxonomi (migration 039):
-//   - "ship"        = galley — standardskepp, byggs med timber, kräver hamn.
-//     DB-kolumn heter `ship` för bakåtkompatibilitet.
+// Skepp-taxonomi (migration 039; units.type-nyckel bytt "ship"→"galley" av
+// namn-hygien A, migration 084):
+//   - "galley"      = standardskepp, byggs med timber, kräver hamn.
+//     DB:s legacy integer-armékolumn heter fortf. `ship` (SB7/C8 byter den).
 //   - "war_galley"  = krigsgalär, elit. Kräver hamn + gjuteri + brons.
 //   - "merchantman" = handelsskepp, svag strid, byggs med timber, kräver hamn.
 //
@@ -45,7 +46,7 @@ var UnitSpecs = map[string]UnitSpec{
 	"spearman":       {Costs: map[string]float64{"grain": 3, "silver": 0.2}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
 	"war_chariot":    {Costs: map[string]float64{"grain": 3.75, "timber": 0.625, "bronze": 0.375, "silver": 0.5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
 	// priest borttagen som enhet (mig 060) — präst är ingen enhet längre, kult = tempel-labor.
-	"ship":           {Costs: map[string]float64{"timber": 9, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresHarbour: true},
+	"galley":         {Costs: map[string]float64{"timber": 9, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresHarbour: true},
 	"elite_infantry": {Costs: map[string]float64{"grain": 2.5, "bronze": 0.2, "silver": 0.4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
 	"war_galley":     {Costs: map[string]float64{"cedar": 5, "bronze": 0.33, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresHarbour: true, RequiresFoundry: true},
 	"merchantman":    {Costs: map[string]float64{"timber": 8.75, "silver": 0.2}, PopCost: 8, DurationTicks: 4, RequiresHarbour: true},

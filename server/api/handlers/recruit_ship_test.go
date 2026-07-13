@@ -179,9 +179,9 @@ func TestRecruitShip_NavalBuildsOneFormingVesselWithNameAndETA(t *testing.T) {
 	ctx := context.Background()
 
 	recruitPath := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/recruit"
-	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "ship"})
+	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "galley"})
 	if rec.Code != http.StatusCreated {
-		t.Fatalf("Recruit(ship) = %d %q, want 201", rec.Code, rec.Body.String())
+		t.Fatalf("Recruit(galley) = %d %q, want 201", rec.Code, rec.Body.String())
 	}
 
 	unitIDs, _ := resp["unit_ids"].([]any)
@@ -270,7 +270,7 @@ func TestRecruitShip_NavalBuildsOneFormingVesselWithNameAndETA(t *testing.T) {
 	// clears the ETA.
 	payload, _ := json.Marshal(combat.TrainCompletePayload{
 		SettlementID: f.settlementID,
-		UnitType:     "ship",
+		UnitType:     "galley",
 		Count:        1,
 		UnitID:       unitID,
 	})
@@ -361,7 +361,7 @@ func TestRecruitShip_StanceRejectedOnNaval(t *testing.T) {
 	var shipID uuid.UUID
 	if err := f.pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id, name)
-		 VALUES ($1, $2, 'ship', 'naval', 1, 20, 'garrison', $3, 'Test Vessel') RETURNING id`,
+		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'garrison', $3, 'Test Vessel') RETURNING id`,
 		f.worldID, f.playerID, f.settlementID,
 	).Scan(&shipID); err != nil {
 		t.Fatalf("create garrisoned ship: %v", err)

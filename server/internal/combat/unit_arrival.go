@@ -1581,7 +1581,7 @@ func unitStrength(utype string, size int) float64 {
 		return float64(size) * 3
 	case "war_chariot":
 		return float64(size) * 4
-	case "galley", "ship":
+	case "galley":
 		return float64(size) * 1
 	case "war_galley":
 		return float64(size) * 3

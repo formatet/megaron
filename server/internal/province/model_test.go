@@ -95,18 +95,18 @@ func TestWallLevel3RequiresBronze(t *testing.T) {
 	}
 }
 
-// TestShipTaxonomy_GalleyTimber verifies galley (ship) byggs med timber, inte cedar.
+// TestShipTaxonomy_GalleyTimber verifies galley byggs med timber, inte cedar.
 func TestShipTaxonomy_GalleyTimber(t *testing.T) {
-	spec, ok := UnitSpecs["ship"]
+	spec, ok := UnitSpecs["galley"]
 	if !ok {
-		t.Fatal("ship (galley) must exist in UnitSpecs")
+		t.Fatal("galley must exist in UnitSpecs")
 	}
 	if _, hasCedar := spec.Costs["cedar"]; hasCedar {
-		t.Error("galley (ship) should not cost cedar — it costs timber")
+		t.Error("galley should not cost cedar — it costs timber")
 	}
 	timber, ok := spec.Costs["timber"]
 	if !ok || timber <= 0 {
-		t.Errorf("galley (ship) must cost timber > 0, got %.1f", timber)
+		t.Errorf("galley must cost timber > 0, got %.1f", timber)
 	}
 	if !spec.RequiresHarbour {
 		t.Error("galley (ship) must require harbour")

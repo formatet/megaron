@@ -74,7 +74,7 @@ func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {
 	}{
 		{"spearman", "land", 100, "garrison"},
 		{"spearman", "land", 41, "garrison"},
-		{"ship", "naval", 1, "garrison"},
+		{"galley", "naval", 1, "garrison"},
 		{"spearman", "land", 60, "forming"}, // excluded
 	}
 	for _, u := range seed {
@@ -103,7 +103,7 @@ func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {
 	if math.Abs(perType["spearman"].Grain-7.05) > eps {
 		t.Errorf("spearman grain = %v, want 7.05", perType["spearman"].Grain)
 	}
-	if math.Abs(perType["ship"].Grain-4) > eps {
-		t.Errorf("ship grain = %v, want 4 (naval flat, independent of size)", perType["ship"].Grain)
+	if math.Abs(perType["galley"].Grain-4) > eps {
+		t.Errorf("galley grain = %v, want 4 (naval flat, independent of size)", perType["galley"].Grain)
 	}
 }

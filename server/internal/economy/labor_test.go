@@ -74,13 +74,14 @@ func TestLaborRates_Formula_ExactMatch(t *testing.T) {
 // cavalry and catapult were removed in migration 042 (replaced by chariot).
 func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	// These values must match province/training.go:UnitSpecs (G1: no import allowed).
-	// ship = galley (DB-kolumn). war_galley + merchantman = nya skepp-typer (mig 039).
-	// chariot replaced cavalry (mig 042); catapult removed.
+	// galley = standardgalär (units.type key renamed from "ship" by mig 084).
+	// war_galley + merchantman = nya skepp-typer (mig 039). chariot replaced
+	// cavalry (mig 042); catapult removed.
 	expected := map[string]int{
 		"spearman":       5,
 		"war_chariot":    8,
 		"priest":         3,
-		"ship":           10, // galley
+		"galley":         10,
 		"elite_infantry": 10,
 		"war_galley":     12,
 		"merchantman":    8,

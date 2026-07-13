@@ -894,7 +894,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			"ship_loss",
 			"A divine storm has claimed a vessel from your harbour.",
 			`UPDATE units SET status = 'disbanded', updated_at = now()
-			 WHERE id = (SELECT id FROM units WHERE settlement_id = $1 AND status = 'garrison' AND type = 'ship' ORDER BY size LIMIT 1)`,
+			 WHERE id = (SELECT id FROM units WHERE settlement_id = $1 AND status = 'garrison' AND type = 'galley' ORDER BY size LIMIT 1)`,
 		},
 		{
 			"harvest_failure",
@@ -1027,7 +1027,7 @@ func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, world
 		}
 		return nil
 	case "sea_blessing":
-		return h.insertGarrisonUnit(ctx, settlementID, worldID, "ship", "naval", 1, 20)
+		return h.insertGarrisonUnit(ctx, settlementID, worldID, "galley", "naval", 1, 20)
 	}
 	return nil
 }

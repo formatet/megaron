@@ -28,7 +28,6 @@ const (
 	TypeWarChariot    Type = "war_chariot"
 	TypePriest        Type = "priest"
 	TypeGalley        Type = "galley"      // kanonisk standardgalär; crew 20
-	TypeShip          Type = "ship"        // legacy-alias för galley — DB-kolumn + UnitSpecs-nyckel heter fortf. "ship"; full rename→galley = D-stream/SB7
 	TypeWarGalley     Type = "war_galley"  // crew 50
 	TypeMerchantman   Type = "merchantman" // crew 10
 )
@@ -45,7 +44,7 @@ const (
 // Returns CategoryLand for unknown types (safe default).
 func CategoryOf(t Type) Category {
 	switch t {
-	case TypeGalley, TypeShip, TypeWarGalley, TypeMerchantman:
+	case TypeGalley, TypeWarGalley, TypeMerchantman:
 		return CategoryNaval
 	default:
 		return CategoryLand
@@ -56,7 +55,7 @@ func CategoryOf(t Type) Category {
 // unit types. Returns 0 for land units.
 func CrewFor(t Type) int {
 	switch t {
-	case TypeGalley, TypeShip:
+	case TypeGalley:
 		return 20
 	case TypeWarGalley:
 		return 50
@@ -75,8 +74,10 @@ func CrewFor(t Type) int {
 // themselves are untouched — this is presentation only.
 //
 // Taxonomy decided 2026-07-10 (Timothy) — clarity first, flavour only where
-// it earns its keep: "Hoplites"/"Agema"/"Hiereus" retired. "ship" and the
-// legacy "trireme" key both collapse to the canonical "galley" display.
+// it earns its keep: "Hoplites"/"Agema"/"Hiereus" retired. The legacy
+// "trireme" key collapses to the canonical "galley" display ("ship" is no
+// longer a units.type value after the namn-hygien A rename, mig 084 — see
+// Canonical below for the recruit/disband input alias).
 // "priest" (mig 060, dead unit) has deliberately no entry — unmapped keys
 // fall back to the raw key.
 var displayNames = map[string]string{
@@ -84,7 +85,6 @@ var displayNames = map[string]string{
 	string(TypeEliteInfantry): "Elite Infantry",
 	string(TypeWarChariot):    "War Chariot",
 	string(TypeGalley):        "Galley",
-	string(TypeShip):          "Galley",
 	"trireme":                 "Galley",
 	string(TypeWarGalley):     "War Galley",
 	string(TypeMerchantman):   "Emporos",
@@ -98,6 +98,22 @@ func DisplayName(t string) string {
 		return label
 	}
 	return t
+}
+
+// Canonical normalizes a legacy/alias unit-type string to its canonical
+// units.type value, so old clients (or the CLI's input aliases) that still
+// send "ship"/"trireme"/"chariot" keep working after the namn-hygien A+B
+// rename (mig 084): "galley" and "war_chariot" are now the only values ever
+// written to units.type. Unrecognized strings pass through unchanged.
+func Canonical(t string) string {
+	switch t {
+	case "ship", "trireme":
+		return string(TypeGalley)
+	case "chariot":
+		return string(TypeWarChariot)
+	default:
+		return t
+	}
 }
 
 // Status is the lifecycle state of a unit.
