@@ -962,6 +962,34 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 	}
 
 	b := blessings[rand.Intn(len(blessings))]
+	// Poseidon does not beach triremes inland: sea_blessing requires a coastal
+	// settlement (a sea tile among the province's six neighbours — coast is a
+	// neighbourhood property, not a terrain). Inland cities get divine recruits
+	// instead. Before this gate, blessing-ships spawned landlocked (Sparta,
+	// 2026-07-13) and could never depart — the march handler 422s on "no
+	// adjacent sea hex".
+	if b.name == "sea_blessing" {
+		var coastal bool
+		if err := h.pool.QueryRow(ctx,
+			`SELECT EXISTS (
+			   SELECT 1
+			   FROM settlements s
+			   JOIN provinces p ON p.id = s.province_id
+			   JOIN map_tiles t ON t.world_id = $2
+			     AND (t.q, t.r) IN ((p.map_q+1,p.map_r),(p.map_q-1,p.map_r),
+			                        (p.map_q,p.map_r+1),(p.map_q,p.map_r-1),
+			                        (p.map_q+1,p.map_r-1),(p.map_q-1,p.map_r+1))
+			   WHERE s.id = $1 AND t.terrain IN ('coastal_sea','deep_sea'))`,
+			settlementID, worldID,
+		).Scan(&coastal); err != nil || !coastal {
+			for i := range blessings {
+				if blessings[i].name == "divine_recruits" {
+					b = blessings[i]
+					break
+				}
+			}
+		}
+	}
 	if b.sql != "" {
 		if _, err := h.pool.Exec(ctx, b.sql, settlementID); err != nil {
 			slog.Error("divine blessing failed", "settlement", settlementID, "type", b.name, "err", err)

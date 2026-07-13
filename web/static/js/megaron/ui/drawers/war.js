@@ -84,6 +84,7 @@ export async function loadWarDrawer() {
       <div id="wmp-err" style="color:var(--accent);font-size:.7rem;margin-top:.2rem;min-height:.8rem"></div>
     </div>`;
     document.getElementById('wtab-army').innerHTML = armyHtml;
+    applyUnitFocus();
 
     // Recruit tab
     const UNIT_SPECS = [
@@ -269,6 +270,25 @@ const UNIT_LABELS = {
   ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
 };
 
+// Map → drawer bridge: clicking a hex with an own positioned/marching unit
+// selects it — the War drawer opens with that unit's card highlighted and
+// scrolled into view, so orders (march, stance, recall) are given from the
+// card. Called from render/map.js via the window bridge.
+let _focusUnitID = null;
+export function warFocusUnit(unitID) {
+  _focusUnitID = unitID;
+  window.openDrawer('war');
+}
+
+function applyUnitFocus() {
+  if (!_focusUnitID) return;
+  const card = document.getElementById('ucard-' + _focusUnitID);
+  _focusUnitID = null;
+  if (!card) return;
+  card.classList.add('ucard-focus');
+  card.scrollIntoView({ block: 'center' });
+}
+
 // State for the march panel — module-local, only ever read/written from the
 // functions in this file.
 let _marchUnitID = null;
@@ -367,7 +387,7 @@ function renderUnitCard(u) {
   }
   const orderStatus = '<div id="uorder-' + u.id + '" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div>';
 
-  return '<div style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
+  return '<div id="ucard-' + u.id + '" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
     + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
     + stanceBadge + crewBadge + cargoBadge

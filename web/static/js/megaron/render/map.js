@@ -905,7 +905,6 @@ export function closeInspect() {
   document.getElementById('inspect-panel').style.display = 'none';
 }
 
-function showInspect(marker) { openInspect(marker); }
 export async function sendMessengerFromInspect(destSettlementID) {
   const textEl = document.getElementById('ip-msg-text');
   const errEl  = document.getElementById('ip-msg-err');
@@ -951,8 +950,14 @@ export function initMap() {
       const rect = canvas.getBoundingClientRect();
       const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
       const marker = State.provinceData.find(p => p.q === h.q && p.r === h.r);
-      if (marker) openInspect(marker);
-      else closeInspect();
+      if (marker) { openInspect(marker); return; }
+      // No settlement here — an own unit on the hex? Select it: open the War
+      // drawer with its card highlighted so orders are given from there.
+      // (/units only returns the player's own units, so no owner check.)
+      const unitHere = (State.unitsData || []).find(u =>
+        u.q === h.q && u.r === h.r && (u.status === 'positioned' || u.status === 'marching'));
+      if (unitHere) { window.warFocusUnit(unitHere.id); return; }
+      closeInspect();
     }
   });
   canvas.addEventListener('mouseleave', () => { State.dragging = false; tooltip.style.display = 'none'; });
@@ -1023,8 +1028,14 @@ export function initMap() {
     const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
     const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
     if (target) {
-      if (target.is_capital) { window.closeMarchCtx(); return; }
-      if (target.own) { showInspect(target, e.clientX, e.clientY); return; }
+      if (target.own) {
+        // Own settlement (capital included): march units home to reinforce the
+        // garrison. Inspect lives on left-click — right-click is always orders.
+        window.openMarchCtx({ q: h.q, r: h.r, terrain: tile.terrain, isSea,
+                       name: target.name, isSettlement: true, allied: true },
+                     e.clientX, e.clientY);
+        return;
+      }
       // Another Wanax's settlement — march to attack (or reinforce if allied).
       window.openMarchCtx({ q: h.q, r: h.r, terrain: tile.terrain, isSea,
                      name: target.name, isSettlement: true, allied: !!target.allied },

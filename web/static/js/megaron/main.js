@@ -31,7 +31,7 @@ import {
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
   unitRecall, unitRedirect, unitRedirectToggle, unitMarch, unitMarchSend,
-  closeMarchPanel, unitStance, unitLoadPrompt, unitUnload,
+  closeMarchPanel, unitStance, unitLoadPrompt, unitUnload, warFocusUnit,
 } from './ui/drawers/war.js';
 import {
   loadEconomyDrawer, loadTransferGoods, startTransfer,
@@ -161,6 +161,7 @@ Object.assign(window, {
   openMarchCtx,
   refreshTiles,
   updateNotifBadge,
+  warFocusUnit,
 });
 
 // ── Bootstrap — fetch what the Go-template used to inline ─────────────────

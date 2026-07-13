@@ -331,6 +331,8 @@ body:has(.auth-page) main {
   padding-bottom: 0.4rem;
 }
 .empty-state { color: var(--text-dim); font-style: italic; font-size: 0.9rem; }
+/* Unit card selected from the map (render/map.js click → warFocusUnit) */
+.ucard-focus { outline: 2px solid var(--accent-war); outline-offset: -2px; background: var(--bg-raised); }
 
 /* ── Worlds page ────────────────────────────────────────────── */
 .page-worlds h2 { margin-bottom: 1.5rem; }
