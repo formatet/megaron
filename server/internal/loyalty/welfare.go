@@ -135,8 +135,8 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		}
 	}
 
-	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledLoyaltyWelfareTick,
-		DailyTickPayload{}, e.DueTick+events.TicksPerDay)
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledLoyaltyWelfareTick,
+		DailyTickPayload{}, e.DueTick, events.TicksPerDay)
 }
 
 func (h *WelfareHandler) applyWelfare(ctx context.Context, w welfareRow, worldID uuid.UUID) error {

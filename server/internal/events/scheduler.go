@@ -119,6 +119,28 @@ func (s *Scheduler) EnqueueTick(ctx context.Context, worldID uuid.UUID, eventTyp
 	return err
 }
 
+// EnqueueTickRecurring schedules the next firing of a self-rescheduling
+// periodic event: nextDue = lastDue + intervalTicks, clamped to never land in
+// the past. If the previous firing ran late (catch-up after the queue fell
+// behind), a bare lastDue+interval would still be overdue and the handler
+// would re-fire every worker poll until it replayed every missed interval —
+// the KharisTick treadmill (2026-07-13, six sea_blessing ships in six
+// minutes). Missed intervals are skipped, not replayed: rates are lazy and
+// continuous, so only the discrete consequence check is periodic.
+func (s *Scheduler) EnqueueTickRecurring(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, lastDue, intervalTicks int) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal scheduled payload: %w", err)
+	}
+	_, err = s.pool.Exec(ctx,
+		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick)
+		 VALUES ($1, $2, $3, now(),
+		         GREATEST($4::int, (SELECT current_tick FROM worlds WHERE id = $1) + $5::int))`,
+		worldID, string(eventType), raw, lastDue+intervalTicks, intervalTicks,
+	)
+	return err
+}
+
 // EnqueueTickTx schedules a tick-gated event within an existing transaction.
 func (s *Scheduler) EnqueueTickTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, eventType ScheduledEventType, payload any, dueTick int) error {
 	raw, err := json.Marshal(payload)

@@ -113,8 +113,8 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	// Re-enqueue the next sweep.
-	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledInterceptScan,
-		struct{}{}, e.DueTick+interceptScanIntervalTicks)
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledInterceptScan,
+		struct{}{}, e.DueTick, interceptScanIntervalTicks)
 }
 
 // seize marks the caravan intercepted and moves its manifest to the interceptor's

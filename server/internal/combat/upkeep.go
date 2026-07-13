@@ -219,8 +219,8 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	}
 
 	// 4. Re-enqueue for the next daily cycle.
-	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledUpkeepTick,
-		upkeepDailyTickPayload{}, e.DueTick+events.TicksPerDay)
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUpkeepTick,
+		upkeepDailyTickPayload{}, e.DueTick, events.TicksPerDay)
 }
 
 // notifyUnitLoss pushes a player-facing notification for grain attrition or

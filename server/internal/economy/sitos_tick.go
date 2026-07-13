@@ -89,8 +89,8 @@ func (h *SitosTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) 
 
 	// Reschedule next tick (cadence +1). Last line, matching the kharis/colony
 	// precedent: a reschedule failure is the only thing that retries the pass.
-	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledSitosTick,
-		struct{}{}, e.DueTick+1)
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledSitosTick,
+		struct{}{}, e.DueTick, 1)
 }
 
 // tickSettlement runs the tax + stabilization for one settlement in a single TX.

@@ -233,8 +233,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.applySubsistenceCritical(ctx, e.WorldID)
 	h.accumulatePrestige(ctx, e.WorldID)
 
-	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledKharisTick,
-		struct{}{}, e.DueTick+events.TicksPerDay)
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledKharisTick,
+		struct{}{}, e.DueTick, events.TicksPerDay)
 }
 
 // computeDailyDecay is the FAS 2 imperie-belastning formula: dailyDecay =
