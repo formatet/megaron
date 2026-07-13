@@ -506,7 +506,18 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				lastTickCons[k] = -rd.Rate
 			}
 		}
+		// DEL A Sitos-delta-itemisering (megaron_ekonomi_legibilitet_plan.md):
+		// beyond the net silver delta, tally the grain-moving legs separately so
+		// `status` can say WHAT Sitos did for this settlement this tick, not just
+		// the silver blob. "sell" = rescue leg (fund sells grain to the city:
+		// GoodDelta positive = grain arrived, SilverDelta positive = city paid
+		// the fund). "buy" = surplus-absorption leg (fund buys the city's excess
+		// grain: GoodDelta negative = grain left, SilverDelta negative = fund
+		// paid the city). "tax" legs have GoodDelta == 0 (silver-only, routine)
+		// and are already folded into lastTickSitosDelta — not itemized here.
 		var lastTickSitosDelta float64
+		var sitosInterventions int
+		var sitosGrainIn, sitosGrainOut, sitosSilverIn, sitosSilverOut float64
 		if lrows, lerr := h.pool.Query(r.Context(),
 			`SELECT payload FROM events
 			 WHERE stream_id = $1 AND world_tick = $2 AND event_type = 'SitosTransaction'`,
@@ -518,6 +529,16 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					var p economy.SitosTransactionPayload
 					if json.Unmarshal(pl, &p) == nil {
 						lastTickSitosDelta += p.SilverDelta
+						switch p.Kind {
+						case "sell":
+							sitosInterventions++
+							sitosGrainIn += p.GoodDelta
+							sitosSilverIn += p.SilverDelta
+						case "buy":
+							sitosInterventions++
+							sitosGrainOut += -p.GoodDelta
+							sitosSilverOut += -p.SilverDelta
+						}
 					}
 				}
 			}
@@ -585,10 +606,15 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"ref_price_ceiling":  h.sitosCfg.RefPriceCeiling,
 			},
 			"last_tick": map[string]any{
-				"tick":        currentTick,
-				"production":  lastTickProd,
-				"consumption": lastTickCons,
-				"sitos_delta": lastTickSitosDelta,
+				"tick":                currentTick,
+				"production":          lastTickProd,
+				"consumption":         lastTickCons,
+				"sitos_delta":         lastTickSitosDelta,
+				"sitos_interventions": sitosInterventions,
+				"sitos_grain_in":      sitosGrainIn,
+				"sitos_grain_out":     sitosGrainOut,
+				"sitos_silver_in":     sitosSilverIn,
+				"sitos_silver_out":    sitosSilverOut,
 			},
 		}
 	}

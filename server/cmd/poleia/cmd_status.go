@@ -98,6 +98,9 @@ func statusCmd() *cobra.Command {
 			if lt, ok := sett["last_tick"].(map[string]any); ok {
 				tk, _ := lt["tick"].(float64)
 				sitosDelta, _ := lt["sitos_delta"].(float64)
+				sitosInterventions, _ := lt["sitos_interventions"].(float64)
+				sitosGrainIn, _ := lt["sitos_grain_in"].(float64)
+				sitosGrainOut, _ := lt["sitos_grain_out"].(float64)
 				prodN := 0
 				if p, ok := lt["production"].(map[string]any); ok {
 					prodN = len(p)
@@ -106,8 +109,31 @@ func statusCmd() *cobra.Command {
 				if c2, ok := lt["consumption"].(map[string]any); ok {
 					consN = len(c2)
 				}
-				fmt.Printf("Senaste tick (%d): %d varor produceras, %d förbrukas, Sitos-delta %+.1f silver  ·  poleia ticklog för detaljer\n\n",
-					int(tk), prodN, consN, sitosDelta)
+				// DEL A Sitos-delta-itemisering (megaron_ekonomi_legibilitet_plan.md):
+				// the net silver delta alone hides WHAT happened — when grain
+				// actually moved (rescue "sell" legs bring grain in, surplus "buy"
+				// legs take grain out), spell it out; when the tick only had
+				// silver-only "tax" legs (or nothing), keep today's short form.
+				sitosNote := fmt.Sprintf("Sitos-delta %+.1f silver", sitosDelta)
+				if sitosInterventions > 0 {
+					detail := ""
+					if sitosGrainIn > 0 {
+						detail = fmt.Sprintf("staden fick %s grain", resource(sitosGrainIn))
+					}
+					if sitosGrainOut > 0 {
+						if detail != "" {
+							detail += " / "
+						}
+						detail += fmt.Sprintf("gav %s grain", resource(sitosGrainOut))
+					}
+					word := "ingripande"
+					if int(sitosInterventions) != 1 {
+						word += "n"
+					}
+					sitosNote = fmt.Sprintf("%s (%s via %d %s)", sitosNote, detail, int(sitosInterventions), word)
+				}
+				fmt.Printf("Senaste tick (%d): %d varor produceras, %d förbrukas, %s  ·  poleia ticklog för detaljer\n\n",
+					int(tk), prodN, consN, sitosNote)
 			}
 
 			// Resources: silver + the bronze-chain goods live in resources as
