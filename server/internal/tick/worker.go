@@ -53,12 +53,18 @@ func tickSeconds() int {
 // frozen at its origin then teleports on arrival (acute on a sub-minute cadence).
 var TickSeconds = tickSeconds()
 
-// TickMinutes is the runtime tick cadence in minutes, used by handlers to
-// convert tick counts into approximate wall-clock times for DISPLAY only
-// (build_queue.complete_at, messenger arrives_at, etc.); actual scheduling is
-// tick-based. Derived from tickSeconds() and floored at 1 so display maths
-// never divides/multiplies by zero on a sub-minute dev cadence — labels then
-// read coarser than reality on a sped-up world, but nothing breaks.
+// TickMinutes is the runtime tick cadence in minutes.
+//
+// Deprecated: floors tickSeconds()/60 at 1, so it silently misrepresents any
+// sub-minute TICK_SECONDS cadence (e.g. TICK_SECONDS=6 reads as 1 minute —
+// 10x too long). Do NOT use it for ETA/display-time derivation — use
+// RealUntil/EtaAt (eta.go), which convert exactly via TickSeconds instead.
+// TickMinutes is intentionally kept for the two use classes where a floored
+// minute is fine or even desired: loyalty grace-window/threshold maths
+// (internal/loyalty/decay.go, welfare.go — a coarse day-scale window, not a
+// display ETA) and the static catalogue DURATION fields (province.go
+// BuildingCatalogue/UnitCatalogue — "how long this type of build takes" in
+// general, not "when this instance completes").
 var TickMinutes = func() int {
 	m := tickSeconds() / 60
 	if m < 1 {
