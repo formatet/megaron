@@ -160,26 +160,40 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Training queue — pending recruits from the scheduled-events queue.
+		// Reads due_tick (the authoritative tick-scheduling column), not
+		// process_after: tick-scheduled events set process_after = now() only
+		// to satisfy the NOT NULL constraint (events.Scheduler.EnqueueTick) —
+		// it is not when the event actually fires, so ordering/displaying by
+		// it read a frozen "now" instead of the real queue order/ETA.
 		type trainItem struct {
 			Unit       string    `json:"unit"`
 			Count      int       `json:"count"`
 			CompleteAt time.Time `json:"complete_at"`
 		}
 		var trainQueue []trainItem
+		var trainQueueCurrentTick int
+		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainQueueCurrentTick)
 		trrows, _ := h.pool.Query(r.Context(),
-			`SELECT (payload->>'unit_type')::text, (payload->>'count')::int, process_after
+			`SELECT (payload->>'unit_type')::text, (payload->>'count')::int, due_tick
 			 FROM scheduled_events
 			 WHERE world_id = $1 AND event_type = 'TrainComplete'
 			   AND processed_at IS NULL
 			   AND (payload->>'settlement_id')::uuid = $2
-			 ORDER BY process_after`,
+			 ORDER BY due_tick`,
 			worldID, sett.ID,
 		)
 		if trrows != nil {
 			for trrows.Next() {
-				var ti trainItem
-				_ = trrows.Scan(&ti.Unit, &ti.Count, &ti.CompleteAt)
-				trainQueue = append(trainQueue, ti)
+				var unitType string
+				var count int
+				var dueTick int
+				if trrows.Scan(&unitType, &count, &dueTick) == nil {
+					trainQueue = append(trainQueue, trainItem{
+						Unit:       unitType,
+						Count:      count,
+						CompleteAt: tick.EtaAt(h.clk, dueTick, trainQueueCurrentTick),
+					})
+				}
 			}
 			trrows.Close()
 		}
@@ -405,7 +419,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					worldID, sett.OwnerID.String(), pid, sett.ID,
 				).Scan(&lastCast); cdErr == nil {
 					elapsed := h.clk.Now().Sub(lastCast)
-					remaining := time.Duration(spec.CooldownTicks*tick.TickMinutes)*time.Minute - elapsed
+					remaining := tick.RealUntil(spec.CooldownTicks, 0) - elapsed
 					if remaining > 0 {
 						cooldownRemainingMins = remaining.Minutes()
 						afford = false
@@ -907,7 +921,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	var buildCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&buildCurrentTick)
 	buildDueTick := buildCurrentTick + spec.DurationTicks
-	completeAt := h.clk.Now().Add(time.Duration(spec.DurationTicks*tick.TickMinutes) * time.Minute)
+	completeAt := tick.EtaAt(h.clk, buildDueTick, buildCurrentTick)
 	var queueID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at)
@@ -1544,7 +1558,6 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	batchTicks := recruitBatchTicks(req.UnitType)
 	var trainCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainCurrentTick)
-	now := h.clk.Now()
 
 	// Naval-only: resolve the Wanax's culture (from their capital settlement,
 	// same pattern as the music player's capital.culture on the web client)
@@ -1588,7 +1601,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			takenNames[chosenName] = true
 
 			dueTick := trainCurrentTick + batchTicks
-			completeAt := now.Add(time.Duration(batchTicks*tick.TickMinutes) * time.Minute)
+			completeAt := tick.EtaAt(h.clk, dueTick, trainCurrentTick)
 			lastCompleteAt = completeAt
 
 			var unitID uuid.UUID
@@ -1690,7 +1703,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		// Schedule one TrainComplete per batch-of-10, staggered.
 		for i := 0; i < batches; i++ {
 			dueTick := trainCurrentTick + batchTicks*(i+1)
-			completeAt := now.Add(time.Duration(batchTicks*(i+1)*tick.TickMinutes) * time.Minute)
+			completeAt := tick.EtaAt(h.clk, dueTick, trainCurrentTick)
 			lastCompleteAt = completeAt
 			if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledTrainComplete,
 				combat.TrainCompletePayload{
