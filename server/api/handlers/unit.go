@@ -822,6 +822,10 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, "priests cannot embark")
 		return
 	}
+	if !unit.CanEmbark(cargo.Type) {
+		writeError(w, http.StatusUnprocessableEntity, "a people on the move cannot go aboard")
+		return
+	}
 	if cargo.Status != unit.StatusGarrison {
 		writeError(w, http.StatusUnprocessableEntity,
 			fmt.Sprintf("cargo unit must be garrisoned to embark (status: %s)", string(cargo.Status)))

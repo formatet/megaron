@@ -90,6 +90,15 @@ func CanFoundMetropolis(t Type) bool {
 	return t == TypeNomadicHost
 }
 
+// CanEmbark reports whether a unit type may be loaded aboard a ship as cargo.
+// False for the nomadic host — a people on the move cannot embark (locked
+// 2026-07-15; sea travel for the host is a post-MVP design question). Until now
+// the host was only blocked by the size<100 forming gate by accident (size=1);
+// this gate is the deliberate rule and must survive that gate's removal.
+func CanEmbark(t Type) bool {
+	return t != TypeNomadicHost
+}
+
 // MarchHoursFactorFor returns the multiplier to apply to
 // province.TerrainMoveHours for this unit type.
 //

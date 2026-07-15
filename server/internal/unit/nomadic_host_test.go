@@ -56,6 +56,19 @@ func TestNomadicHost_IsALandUnit(t *testing.T) {
 	}
 }
 
+// Locked decision (Timothy 2026-07-15): the host may not embark in MVP. The
+// size<100 forming gate blocked it only by accident (size=1); this is the rule.
+func TestNomadicHost_CannotEmbark(t *testing.T) {
+	if CanEmbark(TypeNomadicHost) {
+		t.Fatal("the nomadic host must never be able to embark")
+	}
+	for _, ty := range []Type{TypeSpearman, TypeEliteInfantry, TypeWarChariot} {
+		if !CanEmbark(ty) {
+			t.Fatalf("%s must still be able to embark", ty)
+		}
+	}
+}
+
 func TestNomadicHost_HasCanonicalDisplayName(t *testing.T) {
 	if got := DisplayName(string(TypeNomadicHost)); got != "Nomadic Host" {
 		t.Fatalf("DisplayName(nomadic_host) = %q, want %q", got, "Nomadic Host")
