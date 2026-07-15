@@ -24,6 +24,18 @@ const REF_LABOR = 100.0
 // stored net rate instead of duplicating this number.
 const GrainConsumptionPerCitizenPerDay = 0.5
 
+// GrainConsumptionPerTick is the grain a population of pop eats each tick.
+// It depends on head-count alone — not on labor weights, terrain or buildings —
+// so callers outside a settlement (the founder-phase host, which has people but
+// no city yet) can use it without a settlements row. RecomputeProduction folds
+// the same call into grain's net rate, so the number lives in exactly one place.
+func GrainConsumptionPerTick(pop int) float64 {
+	if pop < 0 {
+		pop = 0
+	}
+	return float64(pop) * GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
+}
+
 // PopCosts mirrors province/training.go:UnitSpecs.PopCost.
 // Defined here so economy stays Go-import-free upward (G1).
 // galley = standardgalär (mig 084 renamed the canonical units.type key from
@@ -218,7 +230,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// never exceeds the grain cap and a self-sufficient city sits at a stable
 	// positive stock instead of sawtoothing to zero every day. laborPool is the
 	// non-negative population (Σ eaters). See events.TicksPerDay for calibration.
-	grainConsumptionPerTick := float64(laborPool) * GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
+	grainConsumptionPerTick := GrainConsumptionPerTick(laborPool)
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	grainSeen := false

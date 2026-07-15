@@ -30,6 +30,12 @@ const (
 	TypeGalley        Type = "galley"      // kanonisk standardgalär; crew 20
 	TypeWarGalley     Type = "war_galley"  // crew 50
 	TypeMerchantman   Type = "merchantman" // crew 10
+
+	// TypeNomadicHost is the founder-phase token: the player's people before they
+	// have a capital. It is a single movable marker (size 1) — the 4 000 people it
+	// represents live in founder_phase.population, never in units.size. It dissolves
+	// permanently when the capital is founded.
+	TypeNomadicHost Type = "nomadic_host"
 )
 
 // Category groups unit types into land and naval.
@@ -66,6 +72,48 @@ func CrewFor(t Type) int {
 	}
 }
 
+// ---- Behaviour gates ---------------------------------------------------------
+//
+// These gate per type, the same way CategoryOf/CrewFor already do, rather than
+// adding capability columns to units. One source of truth per question.
+
+// CombatCapable reports whether a unit type may attack, defend, support, raid or
+// besiege. The nomadic host may do none of these — it is a people on the move,
+// not an army.
+func CombatCapable(t Type) bool {
+	return t != TypeNomadicHost
+}
+
+// CanFoundCapital reports whether a unit type may found the player's first
+// settlement (dissolving itself in the act).
+func CanFoundCapital(t Type) bool {
+	return t == TypeNomadicHost
+}
+
+// FOVFor returns the unit's own vision radius in hexes. The host sees exactly one
+// hex: it is slow, blind and dependent on its spearmen and messengers for sight.
+//
+// This is the unit's INTRINSIC radius. It is not the whole vision model — the
+// server resolves live sight per eye-kind × target terrain in
+// province.LiveRadius (sea is seen from further, mountains are high). Callers
+// wanting "can this eye see that hex" must use LiveRadius, not this.
+func FOVFor(t Type) int {
+	if t == TypeNomadicHost {
+		return 1
+	}
+	return 2
+}
+
+// SpeedFactorFor returns the unit's speed as a multiplier on the baseline march
+// speed. The design fixes the ladder relative to messengers: host = ½ spearman,
+// spearman = ½ messenger. Land units are the baseline (1.0).
+func SpeedFactorFor(t Type) float64 {
+	if t == TypeNomadicHost {
+		return 0.5
+	}
+	return 1.0
+}
+
 // ---- Display names -------------------------------------------------------
 
 // displayNames is the ONE canonical display name per unit type (DB key),
@@ -86,6 +134,7 @@ var displayNames = map[string]string{
 	string(TypeWarChariot):    "War Chariot",
 	string(TypeGalley):        "Galley",
 	"trireme":                 "Galley",
+	string(TypeNomadicHost):   "Nomadic Host",
 	string(TypeWarGalley):     "War Galley",
 	string(TypeMerchantman):   "Emporos",
 }

@@ -84,11 +84,23 @@ func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events
 // Handle processes a ScheduledUpkeepTick event.
 func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	// 1. Load all active units in the world.
+	//
+	// Units belonging to a player still in the founder phase are skipped: their
+	// keep is already folded into founder_phase's grain/silver drain rate, and
+	// there is no capital for payingSettlement to fall back on yet. Charging them
+	// here would bill the same cohort twice (temenos_nomadic_host_bygg.md B3).
+	// The exclusion lifts by itself at founding, when active flips to false.
 	rows, err := h.pool.Query(ctx,
 		`SELECT id, owner_id, type, category, size, settlement_id, unpaid_periods
-		 FROM units
+		 FROM units u
 		 WHERE world_id = $1
-		   AND status IN ('garrison', 'marching', 'positioned')`,
+		   AND status IN ('garrison', 'marching', 'positioned')
+		   AND NOT EXISTS (
+		       SELECT 1 FROM founder_phase fp
+		       WHERE fp.world_id = u.world_id
+		         AND fp.owner_id = u.owner_id
+		         AND fp.active
+		   )`,
 		e.WorldID,
 	)
 	if err != nil {
