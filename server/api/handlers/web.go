@@ -166,7 +166,8 @@ func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 	}
 	var exists bool
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT EXISTS (SELECT 1 FROM settlements WHERE owner_id = $1 AND world_id = $2)`,
+		`SELECT EXISTS (SELECT 1 FROM settlements WHERE owner_id = $1 AND world_id = $2)
+		     OR EXISTS (SELECT 1 FROM founder_phase WHERE owner_id = $1 AND world_id = $2 AND active)`,
 		playerID, h.worldID,
 	).Scan(&exists)
 	if exists {
@@ -242,10 +243,20 @@ func (h *WebHandler) MapView(w http.ResponseWriter, r *http.Request) {
 
 	// An authenticated Wanax with no settlement here (never joined, or lost their
 	// last city) must not land on a fog-only map — route them through /play, which
-	// sends them to the join page or their epitaph as appropriate.
+	// sends them to the join page or their epitaph as appropriate. EXCEPT a
+	// founder: an active founder phase has no settlement by design (the host IS
+	// the player's presence), and the map is where its whole surface lives —
+	// without this the join → map redirect loops back to /join forever.
 	if playerIDStr != "" && settlementID == "" {
-		http.Redirect(w, r, "/play", http.StatusSeeOther)
-		return
+		var founder bool
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT EXISTS (SELECT 1 FROM founder_phase WHERE world_id = $1 AND owner_id = $2 AND active)`,
+			worldID, playerIDStr,
+		).Scan(&founder)
+		if !founder {
+			http.Redirect(w, r, "/play", http.StatusSeeOther)
+			return
+		}
 	}
 
 	http.ServeFile(w, r, h.mapFile)
