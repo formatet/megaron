@@ -11,7 +11,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
@@ -319,9 +321,52 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// The real opening grain balance, read back inside the TX: RecomputeProduction
+	// already wrote the net rate, and the host's carried grain is poured in — this
+	// is what the notice reports, never a re-derivation. (Same pattern as
+	// ColonyFounded, internal/combat/unit_arrival.go.)
+	var grainAmount, grainNet float64
+	_ = tx.QueryRow(r.Context(),
+		`SELECT amount, rate FROM settlement_goods
+		 WHERE settlement_id = $1 AND good_key = 'grain'`,
+		founded.SettlementID,
+	).Scan(&grainAmount, &grainNet)
+
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
+	}
+
+	// MetropolisFounded — the design's founding notice (grain balance, carried
+	// stock, known/unknown catchment, Poseidon status). Sent only after a
+	// successful commit; nil-guarded like every hub site.
+	if h.hub != nil {
+		known, unknownHexes := countKnownCatchment(r.Context(), h.pool, h.clk, worldID, playerID, founded.Q, founded.R)
+		payload := map[string]any{
+			"settlement_id":      founded.SettlementID,
+			"province_id":        founded.ProvinceID,
+			"name":               req.Name,
+			"q":                  founded.Q,
+			"r":                  founded.R,
+			"coastal":            founded.Coastal,
+			"grain_amount":       grainAmount,
+			"grain_net_per_tick": grainNet,
+			"grain_carried":      founded.GrainCarried,
+			"silver_carried":     founded.SilverCarried,
+			"known_hexes":        known,
+			"unknown_hexes":      unknownHexes,
+		}
+		if founded.GalleyID != nil {
+			payload["poseidon_gift"] = *founded.GalleyID
+		}
+		// grain_days: how long the stock lasts at the current deficit; omitted
+		// when the metropolis is self-sustaining (net ≥ 0).
+		if grainNet < 0 {
+			if dailyDrain := -grainNet * float64(events.TicksPerDay); dailyDrain > 0 {
+				payload["grain_days"] = grainAmount / dailyDrain
+			}
+		}
+		_ = h.hub.NotifyPlayer(r.Context(), worldID, playerID, "MetropolisFounded", 2, payload)
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
@@ -333,4 +378,57 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		"grain_carried":  founded.GrainCarried,
 		"silver_carried": founded.SilverCarried,
 	})
+}
+
+// countKnownCatchment reports how many of a founding hex's 7 catchment tiles the
+// player has actually seen (live vision ∪ remembered memory — the same tiering as
+// Map and ColonizePreview), for the founding notice. FOW-safe by construction: it
+// returns counts only, never a fogged tile's contents.
+func countKnownCatchment(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, worldID, playerID uuid.UUID, q, r int) (known, unknown int) {
+	// Centre + 6 neighbours — SAME axial offsets as economy.RecomputeProduction
+	// and ColonizePreview; keep them identical.
+	catchment := [][2]int{
+		{q, r},
+		{q + 1, r}, {q - 1, r},
+		{q, r + 1}, {q, r - 1},
+		{q + 1, r - 1}, {q - 1, r + 1},
+	}
+	eyes := loadLiveEyes(ctx, pool, worldID, playerID, clk.Now())
+	remembered := loadRememberedTiles(ctx, pool, worldID, playerID)
+
+	qs := make([]int32, len(catchment))
+	rs := make([]int32, len(catchment))
+	for i, c := range catchment {
+		qs[i], rs[i] = int32(c[0]), int32(c[1])
+	}
+	terrains := map[[2]int]string{}
+	rows, err := pool.Query(ctx,
+		`SELECT mt.q, mt.r, mt.terrain
+		 FROM map_tiles mt
+		 JOIN unnest($2::int[], $3::int[]) AS hx(q, r) ON hx.q = mt.q AND hx.r = mt.r
+		 WHERE mt.world_id = $1`,
+		worldID, qs, rs,
+	)
+	if err != nil {
+		return 0, len(catchment)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tq, tr int
+		var terrain string
+		if rows.Scan(&tq, &tr, &terrain) == nil {
+			terrains[[2]int{tq, tr}] = terrain
+		}
+	}
+
+	for _, c := range catchment {
+		key := [2]int{c[0], c[1]}
+		terrain, exists := terrains[key]
+		if exists && (province.AnyEyeSees(eyes, province.MapPosition{Q: c[0], R: c[1]}, terrain) || remembered[key]) {
+			known++
+		} else {
+			unknown++
+		}
+	}
+	return known, unknown
 }

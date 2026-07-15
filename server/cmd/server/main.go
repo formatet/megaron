@@ -217,7 +217,7 @@ func main() {
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock)
-	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg)
+	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
 	nh := handlers.NewNotificationsHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 	godH := handlers.NewGodHandler(pool)

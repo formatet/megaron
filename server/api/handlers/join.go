@@ -9,8 +9,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/auth"
+	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/world"
 )
@@ -25,11 +27,13 @@ type JoinHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	sitosCfg   economy.SitosConfig
+	clk        clock.Clock
+	hub        *notify.Hub // nil-guarded; carries the MetropolisFounded notice
 }
 
 // NewJoinHandler creates a JoinHandler.
-func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store, sitosCfg economy.SitosConfig) *JoinHandler {
-	return &JoinHandler{pool: pool, eventStore: eventStore, sitosCfg: sitosCfg}
+func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store, sitosCfg economy.SitosConfig, clk clock.Clock, hub *notify.Hub) *JoinHandler {
+	return &JoinHandler{pool: pool, eventStore: eventStore, sitosCfg: sitosCfg, clk: clk, hub: hub}
 }
 
 // Join creates a province + settlement for the authenticated player in the given world.
