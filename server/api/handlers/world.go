@@ -530,17 +530,28 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 
 	// Founding grain balance. Consumption at the founding population, per tick,
 	// re-using the exported calibration constants (never duplicated here).
-	consumptionPerTick := float64(economy.ColonyBaseFoundingPopulation) *
+	// ?pop= and ?seed= let the founder phase reuse this exact forecast for the
+	// metropolis (4 000 people, the host's carried grain as stock) instead of
+	// growing its own endpoint — temenos_nomadic_host_fas4_plan.md 4.3. Defaults
+	// are the colony's, so every existing caller is untouched.
+	forecastPop := economy.ColonyBaseFoundingPopulation
+	if v, err := strconv.Atoi(r.URL.Query().Get("pop")); err == nil && v > 0 {
+		forecastPop = v
+	}
+	seed := float64(economy.ColonyGrainSeed)
+	if v, err := strconv.ParseFloat(r.URL.Query().Get("seed"), 64); err == nil && v >= 0 {
+		seed = v
+	}
+	consumptionPerTick := float64(forecastPop) *
 		economy.GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
 	basePerTick := goods["grain"]
 	estNetPerTick := basePerTick - consumptionPerTick
-	seed := economy.ColonyGrainSeed
 
 	var daysUntilEmpty *float64
 	if estNetPerTick < 0 {
 		dailyDrain := -estNetPerTick * float64(events.TicksPerDay)
 		if dailyDrain > 0 {
-			d := float64(seed) / dailyDrain
+			d := seed / dailyDrain
 			daysUntilEmpty = &d
 		}
 	}

@@ -887,6 +887,7 @@ function producesText(tile) {
 const UNIT_LABELS_SHORT = {
   spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
   ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
+  nomadic_host:'Nomadic Host',
 };
 
 function unitListHTML(units) {
@@ -988,7 +989,10 @@ function openCityPanel(h, tile, marker, units) {
 
   const foot = document.getElementById('ip-foot');
   let footHtml = unitListHTML(units);
-  if (State.MY_SETTLEMENT_ID && marker.settlement_id) {
+  // A settlement OR a wandering host can send — the host's first contact with a
+  // met city is one of its designed uses (mig 087; sendMessengerFromInspect
+  // picks the endpoint).
+  if ((State.MY_SETTLEMENT_ID || State.founderPhase) && marker.settlement_id) {
     footHtml += `
       <textarea id="ip-msg-text" class="msg-textarea" placeholder="Write message…" maxlength="1000" rows="3"></textarea>
       <div class="msg-foot">
@@ -1026,6 +1030,13 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
   const dest = destFromHex(h, tile, null);
   if (isSea) {
     footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Skicka galärer →</button>';
+  } else if (State.founderPhase) {
+    // Founder phase: empty land is a POSSIBLE HOME, never a colony ("aldrig
+    // Kolonisera"). March the host here; the founding forecast shows what the
+    // ground would feed. Settle itself lives on the Host panel — the server
+    // founds where the host stands, nowhere else.
+    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>'
+             +  '<div id="ip-found-preview" style="font-size:.73rem;margin-top:.4rem">Hämtar grundningsprognos…</div>';
   } else {
     footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>'
              +  '<button id="ip-colonize-btn" style="' + MARCH_BTN_STYLE + '">Kolonisera →</button>';
@@ -1033,6 +1044,18 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
   bindMarchButton(document.getElementById('ip-march-btn'), dest, isSea ? 'ship' : 'land');
+
+  if (!isSea && State.founderPhase) {
+    const fp = State.founderPhase;
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
+        + `&pop=${fp.population}&seed=${Math.max(0, Math.round(fp.grain?.amount || 0))}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(p => {
+        const el = document.getElementById('ip-found-preview');
+        if (el && p) el.innerHTML = window.renderColonizePreviewHTML(p);
+      })
+      .catch(() => {});
+  }
 
   const colBtn = document.getElementById('ip-colonize-btn');
   if (colBtn) {
@@ -1048,6 +1071,83 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
+// ── Founder phase: the Host panel (temenos_nomadic_host_fas4_plan.md 4.3) ──
+// The people-on-the-move's own surface: status from /founding/status, the
+// founding forecast from /colonize-preview with ?pop=&seed= (the metropolis's
+// 4 000 and the carried grain — same endpoint and renderer as colonization,
+// never its own), and the irreversible Settle. Disappears entirely the moment
+// founder_phase.active goes false.
+
+// One store line: "X speldygn kvar (≈ Y verklig tid)" — both derived from
+// ticks_left at render time (B2: never a stored wall clock).
+function hostStoreLine(label, s, tickSeconds) {
+  if (!s || s.ticks_left == null) return `${label}: räcker tills vidare`;
+  const gameDays = (s.ticks_left / 24).toFixed(0);
+  const realH = Math.round(s.ticks_left * tickSeconds / 3600);
+  const real = realH >= 48 ? `≈ ${Math.round(realH / 24)} dygn` : `≈ ${realH} h`;
+  return `${label}: ${gameDays} speldygn kvar (${real} verklig tid)`;
+}
+
+async function openHostPanel(h, tile) {
+  // Refresh the store numbers on every open — they drain per tick.
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/founding/status`);
+    if (r.ok) {
+      const fp = await r.json();
+      State.founderPhase = fp.active ? fp : null;
+    }
+  } catch (_) {}
+  const fp = State.founderPhase;
+  if (!fp) { openHexPanel(h); return; } // settled meanwhile — normal routing
+
+  document.getElementById('ip-name').textContent = 'Nomadic Host';
+  setCityFieldsVisible(false);
+  fillTerrainFields(tile);
+
+  const foot = document.getElementById('ip-foot');
+  foot.innerHTML =
+    `<div style="margin-bottom:.5rem;line-height:1.5">
+       <div>${(fp.population || 0).toLocaleString('sv-SE')} folk · Kan inte strida · Syn: 1 hex</div>
+       <div>${hostStoreLine('Grain', fp.grain, fp.tick_seconds)}</div>
+       <div>${hostStoreLine('Silver för Spearmen', fp.silver, fp.tick_seconds)}</div>
+       <div>${fp.spearmen_in_field || 0} Spearmen-kohort${fp.spearmen_in_field === 1 ? '' : 'er'} i fält</div>
+       <div>Budbärare: fria att sända</div>
+     </div>
+     <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem;margin-bottom:.3rem">Hämtar grundningsprognos…</div>
+     <button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Grunda huvudstaden här</button>
+     <span class="msg-err" id="ip-settle-err"></span>`;
+  document.getElementById('inspect-panel').style.display = 'flex';
+
+  // The forecast for the hex the host STANDS on — settle founds here, nowhere else.
+  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
+      + `&pop=${fp.population}&seed=${Math.max(0, Math.round(fp.grain?.amount || 0))}`)
+    .then(r => r.ok ? r.json() : null)
+    .then(p => {
+      const el = document.getElementById('ip-found-preview');
+      if (el && p) el.innerHTML = window.renderColonizePreviewHTML(p);
+    })
+    .catch(() => {});
+
+  document.getElementById('ip-settle-btn').addEventListener('click', async () => {
+    if (!confirm('Grunda din huvudstad här? Hostet upplöses — för alltid.')) return;
+    const errEl = document.getElementById('ip-settle-err');
+    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/founding/settle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (res.ok) {
+      // The world changed shape: new province, new eyes, host gone. Reload
+      // outright — founding happens once per world, a full refresh is honest.
+      location.reload();
+    } else {
+      const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+      errEl.style.color = 'var(--accent)';
+      errEl.textContent = err.error || 'Error';
+    }
+  });
+}
+
 // Dispatcher for a left-click (non-drag) on any hex — the affordance matrix.
 // Always selects the hex (highlight), then routes to the right view.
 function openHexPanel(h) {
@@ -1059,6 +1159,13 @@ function openHexPanel(h) {
   const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);
 
   if (!tile || tile.terrain === 'fog') { openFogPanel(h); return; }
+
+  // Founder phase: the host's own hex opens the Host panel, never a unit view.
+  if (State.founderPhase && (State.unitsData || []).some(u =>
+      u.type === 'nomadic_host' && u.q === h.q && u.r === h.r)) {
+    openHostPanel(h, tile);
+    return;
+  }
 
   if (prov && prov.own) {
     // Own settlement — no mid-panel, the city drawer IS the info (framgångskriterium 2).
@@ -1091,7 +1198,11 @@ export async function sendMessengerFromInspect(destSettlementID) {
   const text = textEl ? textEl.value.trim() : '';
   if (!text) { if (errEl) { errEl.style.color='var(--accent)'; errEl.textContent='Write a message first.'; } return; }
   const token = localStorage.getItem('poleia_token');
-  const res = await fetch(`/api/v1/worlds/${State.WORLD_ID}/settlements/${State.MY_SETTLEMENT_ID}/messengers`, {
+  // Founder phase: no settlement to send from — the host itself is the origin.
+  const sendPath = State.MY_SETTLEMENT_ID
+    ? `/api/v1/worlds/${State.WORLD_ID}/settlements/${State.MY_SETTLEMENT_ID}/messengers`
+    : `/api/v1/worlds/${State.WORLD_ID}/founding/messengers`;
+  const res = await fetch(sendPath, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
     body: JSON.stringify({ destination_id: destSettlementID, message: text }),

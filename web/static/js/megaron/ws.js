@@ -51,6 +51,9 @@ export function initWS() {
       if (msg.kind === 'BuildComplete') {
         window.addNotifChip('city', '🏛', `Build complete`, 'now');
       }
+      if (msg.kind === 'MetropolisFounded') {
+        window.addNotifChip('city', '👑', notifText('MetropolisFounded', msg.payload || {}), 'now');
+      }
       if (msg.kind === 'ColonyFounded') {
         // Founding grain balance rides in the payload (DEL B) — a colony that
         // starts at a deficit drains its seed from THIS tick, so say so now.

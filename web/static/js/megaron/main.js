@@ -23,7 +23,10 @@ import {
 } from './ui/misc.js';
 import { updateNotifBadge, initNotifications, addNotifChip } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
-import { closeMarchCtx, onColonizeToggle, openMarchCtx, sendMarch } from './ui/marchctx.js';
+import {
+  closeMarchCtx, onColonizeToggle, openMarchCtx, sendMarch,
+  renderColonizePreviewHTML,
+} from './ui/marchctx.js';
 import {
   loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild, startCraft,
   loadTicklog, cancelBuild,
@@ -160,6 +163,7 @@ Object.assign(window, {
   openDrawer,
   openMarchCtx,
   refreshTiles,
+  renderColonizePreviewHTML,
   updateNotifBadge,
   warFocusUnit,
 });
@@ -204,6 +208,16 @@ async function bootstrap() {
     console.error('bootstrap: world/provinces fetch failed', e);
     State.WORLD_CREATED_AT = '';
     State.MY_SETTLEMENT_ID = '';
+  }
+
+  // Founder phase (Nomadic Host): active → the map shows the Host panel and
+  // founding affordances instead of city surfaces. Cleared on settle.
+  try {
+    const fp = await get('/api/v1/worlds/' + worldID + '/founding/status');
+    State.founderPhase = fp.active ? fp : null;
+  } catch (e) {
+    console.error('bootstrap: founding status fetch failed', e);
+    State.founderPhase = null;
   }
 
   // Diplomacy badge — non-blocking.

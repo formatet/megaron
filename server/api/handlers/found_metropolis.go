@@ -17,6 +17,7 @@ import (
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/unit"
 	"github.com/poleia/server/internal/world"
 )
@@ -37,12 +38,12 @@ var (
 
 // foundedMetropolis reports what the founding produced, for the notice.
 type foundedMetropolis struct {
-	ProvinceID   uuid.UUID
-	SettlementID uuid.UUID
-	Q, R         int
-	Coastal      bool
-	GalleyID     *uuid.UUID // Poseidon's gift; nil inland
-	GrainCarried float64    // store moved into the city
+	ProvinceID    uuid.UUID
+	SettlementID  uuid.UUID
+	Q, R          int
+	Coastal       bool
+	GalleyID      *uuid.UUID // Poseidon's gift; nil inland
+	GrainCarried  float64    // store moved into the city
 	SilverCarried float64
 }
 
@@ -377,6 +378,78 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		"poseidon_gift":  founded.GalleyID,
 		"grain_carried":  founded.GrainCarried,
 		"silver_carried": founded.SilverCarried,
+	})
+}
+
+// FoundingStatus handles GET /worlds/{worldID}/founding/status — the founder
+// phase read surface for the web Host panel and keryx `founding status`. Store
+// amounts are settled at read (lazy tuple, mig 086); ticks_left is derived from
+// amount/-rate, never stored, and clients derive game-day and real-time ETAs
+// from ticks (B2: never a stored wall clock). tick_seconds rides along so a
+// client can convert ticks to real time without knowing the server's cadence.
+func (h *JoinHandler) FoundingStatus(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var (
+		hostID                *uuid.UUID
+		q, r2                 *int
+		population            int
+		grainAmt, grainRate   float64
+		silverAmt, silverRate float64
+		currentTick           int
+	)
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT fp.host_unit_id, u.q, u.r, fp.population,
+		        GREATEST(0, settled(fp.grain_amount, fp.grain_rate, fp.calc_tick)), fp.grain_rate,
+		        GREATEST(0, settled(fp.silver_amount, fp.silver_rate, fp.calc_tick)), fp.silver_rate,
+		        current_world_tick()
+		 FROM founder_phase fp
+		 LEFT JOIN units u ON u.id = fp.host_unit_id
+		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active`,
+		worldID, playerID,
+	).Scan(&hostID, &q, &r2, &population, &grainAmt, &grainRate, &silverAmt, &silverRate, &currentTick)
+	if err != nil {
+		// No active phase — settled (or never a founder). Not an error: the panel
+		// and keryx both key off active=false to show nothing.
+		writeJSON(w, http.StatusOK, map[string]any{"active": false})
+		return
+	}
+
+	var spearmenInField int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT count(*) FROM units
+		 WHERE world_id = $1 AND owner_id = $2 AND type = 'spearman'
+		   AND status IN ('positioned', 'marching')`,
+		worldID, playerID,
+	).Scan(&spearmenInField)
+
+	store := func(amount, rate float64) map[string]any {
+		s := map[string]any{"amount": amount, "rate_per_tick": rate}
+		if rate < 0 {
+			s["ticks_left"] = int(amount / -rate)
+		}
+		return s
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"active":            true,
+		"host_unit_id":      hostID,
+		"q":                 q,
+		"r":                 r2,
+		"population":        population,
+		"spearmen_in_field": spearmenInField,
+		"current_tick":      currentTick,
+		"tick_seconds":      tick.TickSeconds,
+		"grain":             store(grainAmt, grainRate),
+		"silver":            store(silverAmt, silverRate),
 	})
 }
 

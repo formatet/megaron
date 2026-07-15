@@ -274,6 +274,7 @@ func main() {
 			// Founder phase: messengers from the wandering host (mig 087).
 			r.Post("/worlds/{worldID}/founding/messengers", mh.SendFromHost)
 			r.Get("/worlds/{worldID}/founding/messengers", mh.ListFromHost)
+			r.Get("/worlds/{worldID}/founding/status", jh.FoundingStatus)
 
 			r.Route("/worlds/{worldID}/kingdoms", func(r chi.Router) {
 				r.Use(requireKingdomsEnabled)

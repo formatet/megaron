@@ -42,6 +42,7 @@ export function notifIcon(kind) {
     TrainComplete:      '⚔',
     ArmyArrival:        '⚔',
     ColonyFounded:      '🏛',
+    MetropolisFounded:  '👑',
     OutpostEstablished: '⛺',
     OutpostCaptured:    '⚔',
     TradeDelivery:      '🐂',
@@ -61,6 +62,15 @@ export function notifText(kind, body) {
     case 'TrainComplete':      return `Training done: ${body.count || ''} ${body.unit_type || ''}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
     case 'ColonyFounded':      return `Colony founded: ${body.name || ''}`;
+    case 'MetropolisFounded': {
+      // The founder phase's closing line: the one-per-world capital. Catchment
+      // knowledge + Poseidon ride along; the grain balance reuses the colony line
+      // (colonyFoundedGrainLine reads the same grain_* fields).
+      const parts = [`Your metropolis is founded: ${body.name || ''}`];
+      if (body.known_hexes != null) parts.push(`${body.known_hexes}/${(body.known_hexes || 0) + (body.unknown_hexes || 0)} catchment hexes known`);
+      if (body.poseidon_gift) parts.push('Poseidon grants a galley');
+      return parts.join(' — ');
+    }
     case 'OutpostEstablished': return 'Outpost established';
     case 'OutpostCaptured':    return 'Enemy outpost captured';
     case 'TradeDelivery':      return `Trade delivered: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;

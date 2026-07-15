@@ -48,6 +48,13 @@ export const State = {
 
   // Search overlay (ui/search.js).
   searchFocusIdx: -1,
+
+  // Founder phase (Nomadic Host). Null when settled/none; otherwise the
+  // /founding/status response object (active, host_unit_id, q/r, population,
+  // grain/silver stores, spearmen_in_field, current_tick, tick_seconds).
+  // Set at bootstrap (main.js) and cleared the moment founding succeeds —
+  // every founder affordance in the map client keys off this one property.
+  founderPhase: null,
 };
 
 // The player's capital ("Metropolis"), or — if it was lost and the server has

@@ -15,6 +15,7 @@ import { canvas } from '../render/map.js';
 const UNIT_MENU_LABELS = {
   spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
   ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
+  nomadic_host:'Nomadic Host',
 };
 
 
@@ -67,7 +68,9 @@ export async function onColonizeToggle() {
 // per game-day (rates are per-tick from the server, ×24), seed reach, farm
 // note, plus known deposits/goods. FOW-safe — only known:true catchment hexes
 // contribute to the deposit list; unknown hexes are counted, not guessed at.
-function renderColonizePreviewHTML(p) {
+// Exported for the founder-phase Host panel (render/map.js via the window
+// bridge) — the founding forecast is the SAME surface with ?pop=&seed=.
+export function renderColonizePreviewHTML(p) {
   const td = 24;
   const g = p.grain || {};
   const total = (p.catchment || []).length;
@@ -129,9 +132,11 @@ export async function openMarchCtx(dest, screenX, screenY) {
   else                        hint = 'March land units to this hex, or found a new settlement here.';
   document.getElementById('mctx-hint').textContent = hint;
 
-  // Colonize option only for empty land tiles.
+  // Colonize option only for empty land tiles — and never in founder phase:
+  // a people without a city cannot colonize, they FOUND (the Host panel owns
+  // that affordance).
   const colRow = document.getElementById('mctx-colonize-row');
-  colRow.style.display = (!dest.isSea && !dest.isSettlement) ? 'block' : 'none';
+  colRow.style.display = (!dest.isSea && !dest.isSettlement && !State.founderPhase) ? 'block' : 'none';
   const chk = document.getElementById('mctx-colonize-chk');
   if (chk) chk.checked = false;
   onColonizeToggle();
@@ -152,7 +157,10 @@ export async function openMarchCtx(dest, screenX, screenY) {
     if (u.status !== 'garrison' && u.status !== 'positioned') return false;
     const naval = u.category === 'naval';
     if (wantNaval !== naval) return false;
-    if (!naval && u.size < 100) return false;
+    // size guards land units still forming (recruits trickle in 0→100). The
+    // host is size=1 by construction — one movable marker, never "forming" —
+    // and the server lets it march (Fas 2 rev size-grinden for it).
+    if (!naval && u.size < 100 && u.type !== 'nomadic_host') return false;
     return true;
   });
 
