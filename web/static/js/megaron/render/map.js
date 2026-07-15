@@ -1,5 +1,6 @@
 import { State, ownCapital } from '../state.js';
 import { fetchAuth } from '../api.js';
+import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS } from '../config.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -70,6 +71,15 @@ const HEX_DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
 // Hex distance in axial coords (cube formula).
 function hexDist(q1, r1, q2, r2) {
   return (Math.abs(q1-q2) + Math.abs(q1+r1-q2-r2) + Math.abs(r1-r2)) / 2;
+}
+
+// Mirrors server/internal/province/hex.go LiveRadius(eyeKind, targetTerrain) —
+// see config.js LIVE_RADIUS_* for the mirrored constants.
+function liveRadius(kind, terrain) {
+  if (terrain === 'coastal_sea' || terrain === 'deep_sea') return LIVE_RADIUS_SEA;
+  let base = LIVE_RADIUS_BASE[kind] ?? LIVE_RADIUS_BASE.land;
+  if (terrain === 'mountain_limestone' || terrain === 'mountain_red') base += LIVE_RADIUS_MOUNTAIN_BONUS;
+  return base;
 }
 
 // Adjacent neighbor of (cq,cr) that is one step closer to (tq,tr).
@@ -634,14 +644,39 @@ function render() {
   }
 
   // 3. Highlight selected hex
-  if (State.selectedProvince) {
-    const {x,y} = hexPx(State.selectedProvince.q, State.selectedProvince.r);
+  if (State.selectedHex) {
+    const {x,y} = hexPx(State.selectedHex.q, State.selectedHex.r);
     const pts = hexPts(x, y);
     ctx.save();
     ctx.strokeStyle = '#F9E79F'; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
     for (let i=1;i<6;i++) ctx.lineTo(pts[i][0], pts[i][1]);
     ctx.closePath(); ctx.stroke(); ctx.restore();
+  }
+
+  // 3.5 FOV preview band — hexes that would become live-visible from the hovered
+  // march affordance's target, per server/internal/province/hex.go LiveRadius.
+  // Fog tiles use the conservative base radius (no mountain bonus) since we
+  // can't know their real terrain without leaking it through the band shape.
+  if (State.fovPreview) {
+    const { q: fq, r: fr, kind } = State.fovPreview;
+    for (const t of State.tileData) {
+      const known = t.terrain !== 'fog';
+      const radius = known ? liveRadius(kind, t.terrain) : LIVE_RADIUS_BASE[kind];
+      if (hexDist(fq, fr, t.q, t.r) > radius) continue;
+      const {x, y} = hexPx(t.q, t.r);
+      const pts = hexPts(x, y);
+      ctx.save();
+      hexPath(ctx, pts);
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = '#C87F2A';
+      ctx.fill();
+      ctx.globalAlpha = 0.45;
+      ctx.strokeStyle = '#C87F2A';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   // 3b. Incoming attack glow — pulsing red on target hex of any visible attack march
@@ -826,46 +861,122 @@ export function resetView() {
 }
 
 // ── Inspect panel ─────────────────────────────────────────────────────────
+// Canonical keys as of migration 028 (terrain enum) — mountain/forest/coast/sea
+// were stale pre-rename leftovers that never matched a real tile.terrain value.
+// "coast" has no terrain-enum replacement: migration 050 replaced the coast_beach
+// terrain with a `coastal` boolean flag on land tiles, so fish is folded into
+// producesText() below via that flag instead of a dict key.
 const TERRAIN_GOODS = {
-  plains:       'grain, horses',
-  river_valley: 'grain ×3 (very fertile)',
-  river_delta:  'grain ×4 (richest — exposed coast)',
-  hills:        'copper (if deposit), wine, oil',
-  mountain:     'stone, tin (if deposit)',
-  forest:       'cedar (if deposit)',
-  coast:        'fish',
-  sea:      '—',
+  plains:             'grain, horses',
+  river_valley:       'grain ×3 (very fertile)',
+  river_delta:        'grain ×4 (richest — exposed coast)',
+  hills:              'copper (if deposit), wine, oil',
+  mountain_limestone: 'stone, tin (if deposit)',
+  mountain_red:       'stone, tin (if deposit)',
+  forest_olive_grove: 'cedar (if deposit)',
+  coastal_sea:        '—',
+  deep_sea:           '—',
 };
 
-function openInspect(marker) {
-  State.selectedProvince = marker;
-  document.getElementById('ip-name').textContent    = marker.name;
-  document.getElementById('ip-culture').textContent = marker.culture;
+function producesText(tile) {
+  const base = TERRAIN_GOODS[tile.terrain] || '—';
+  if (!tile.coastal) return base;
+  return base === '—' ? 'fish' : base + ', fish';
+}
 
-  const tile = State.tileData.find(t => t.q === marker.q && t.r === marker.r);
-  if (tile) {
-    const tLabel = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
-    document.getElementById('ip-terrain').textContent = tLabel;
-    const deps = [tile.copper_deposit ? 'Copper' : null, tile.tin_deposit ? 'Tin' : null].filter(Boolean);
-    const depRow = document.getElementById('ip-deposits-row');
-    if (deps.length > 0) {
-      document.getElementById('ip-deposits').textContent = deps.join(' · ');
-      depRow.style.display = '';
-    } else {
-      depRow.style.display = 'none';
-    }
-    document.getElementById('ip-produces').textContent = TERRAIN_GOODS[tile.terrain] || '—';
+const UNIT_LABELS_SHORT = {
+  spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
+  ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
+};
+
+function unitListHTML(units) {
+  if (!units.length) return '';
+  const rows = units.map(u => {
+    const lbl = UNIT_LABELS_SHORT[u.type] || u.type;
+    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
+      + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
+      + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Visa →</button>'
+      + '</div>';
+  }).join('');
+  return '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Units here</div>' + rows + '</div>';
+}
+
+function bindUnitButtons(foot) {
+  foot.querySelectorAll('[data-unit-id]').forEach(b => {
+    b.addEventListener('click', () => window.warFocusUnit(b.dataset.unitId));
+  });
+}
+
+const MARCH_BTN_STYLE = 'display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;margin-top:.3rem;';
+
+// Wire a march-affordance button: click opens march-ctx pre-filled with dest,
+// hover sets the FOV preview band (map.js render §3.5) for `kind` ('land'|'ship').
+function bindMarchButton(btn, dest, kind) {
+  if (!btn) return;
+  btn.addEventListener('click', e => window.openMarchCtx(dest, e.clientX, e.clientY));
+  btn.addEventListener('mouseenter', () => { State.fovPreview = { q: dest.q, r: dest.r, kind }; State.dirty = true; });
+  btn.addEventListener('mouseleave', () => { State.fovPreview = null; State.dirty = true; });
+}
+
+function fillTerrainFields(tile) {
+  const tLabel = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
+  document.getElementById('ip-terrain').textContent = tLabel;
+  const deps = [tile.copper_deposit ? 'Copper' : null, tile.tin_deposit ? 'Tin' : null,
+                tile.silver_deposit ? 'Silver' : null, tile.cedar_deposit ? 'Cedar' : null].filter(Boolean);
+  const depRow = document.getElementById('ip-deposits-row');
+  if (deps.length > 0) {
+    document.getElementById('ip-deposits').textContent = deps.join(' · ');
+    depRow.style.display = '';
   } else {
-    document.getElementById('ip-terrain').textContent  = '—';
-    document.getElementById('ip-produces').textContent = '—';
-    document.getElementById('ip-deposits-row').style.display = 'none';
+    depRow.style.display = 'none';
   }
+  document.getElementById('ip-produces').textContent = producesText(tile);
+}
+
+function setCityFieldsVisible(visible) {
+  ['ip-culture-row', 'ip-owner-row', 'ip-walls-row', 'ip-army-row'].forEach(id => {
+    document.getElementById(id).style.display = visible ? '' : 'none';
+  });
+}
+
+// Build the same dest object the march-ctx menu consumes, whether the caller is
+// the left-click affordance panel or the right-click context menu. target is the
+// province marker at (h.q,h.r), or null for an empty/sea/mountain hex.
+function destFromHex(h, tile, target) {
+  const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
+  if (target) {
+    return { q: h.q, r: h.r, terrain: tile.terrain, isSea,
+             name: target.name, isSettlement: true, allied: target.own ? true : !!target.allied };
+  }
+  return { q: h.q, r: h.r, terrain: tile.terrain, isSea,
+           name: isSea ? `Sea (${h.q},${h.r})` : `Empty hex (${h.q},${h.r})`,
+           isSettlement: false, allied: false };
+}
+
+// Fog: nothing known yet — no terrain/deposits/produces, no affordances.
+function openFogPanel(h) {
+  document.getElementById('ip-name').textContent = 'Outforskat land';
+  setCityFieldsVisible(false);
+  document.getElementById('ip-terrain').textContent = `(${h.q},${h.r})`;
+  document.getElementById('ip-deposits-row').style.display = 'none';
+  document.getElementById('ip-produces').textContent = '—';
+  document.getElementById('ip-foot').innerHTML = '<p class="empty-state">Segla eller marschera i närheten för att avslöja.</p>';
+  document.getElementById('inspect-panel').style.display = 'flex';
+}
+
+// Foreign/allied settlement — today's openInspect content (Wanax/culture/walls/DP),
+// plus the units-here list and a Marschera button. Own settlements never reach
+// this function — they bypass the panel for the city drawer (see openHexPanel).
+function openCityPanel(h, tile, marker, units) {
+  document.getElementById('ip-name').textContent    = marker.name;
+  setCityFieldsVisible(true);
+  document.getElementById('ip-culture').textContent = marker.culture;
+  fillTerrainFields(tile);
 
   let ownerText = marker.owner || '(unoccupied)';
-  if (marker.own)    ownerText += ' ★';
-  if (marker.allied && !marker.own) ownerText += ' (allied)';
-  document.getElementById('ip-owner').textContent   = ownerText;
-  document.getElementById('ip-walls').textContent   = '▓'.repeat(marker.walls) + '░'.repeat(Math.max(0,3-marker.walls));
+  if (marker.allied) ownerText += ' (allied)';
+  document.getElementById('ip-owner').textContent = ownerText;
+  document.getElementById('ip-walls').textContent = '▓'.repeat(marker.walls) + '░'.repeat(Math.max(0,3-marker.walls));
   document.getElementById('ip-army').textContent = '…';
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${marker.id}/army`).then(r => {
     if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
@@ -876,33 +987,102 @@ function openInspect(marker) {
   }).catch(() => { document.getElementById('ip-army').textContent = '—'; });
 
   const foot = document.getElementById('ip-foot');
-  foot.innerHTML = '';
-  if (marker.own) {
-    const btn = document.createElement('button');
-    btn.textContent = marker.is_capital ? 'Manage Province →' : 'Manage Settlement →';
-    btn.style.cssText = 'display:block;width:100%;text-align:center;padding:.3rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);font-size:.8rem;cursor:pointer;';
-    btn.addEventListener('click', function() {
-      State.cityViewID = marker.id;
-      closeInspect();
-      window.openDrawer('city');
-    });
-    foot.appendChild(btn);
-  } else if (State.MY_SETTLEMENT_ID && marker.settlement_id) {
-    foot.innerHTML = `
+  let footHtml = unitListHTML(units);
+  if (State.MY_SETTLEMENT_ID && marker.settlement_id) {
+    footHtml += `
       <textarea id="ip-msg-text" class="msg-textarea" placeholder="Write message…" maxlength="1000" rows="3"></textarea>
       <div class="msg-foot">
         <button class="msg-send" onclick="sendMessengerFromInspect('${marker.settlement_id}')">Send Messenger</button>
         <span class="msg-err" id="ip-msg-err"></span>
       </div>`;
   }
+  footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>';
+  foot.innerHTML = footHtml;
+  bindUnitButtons(foot);
+  bindMarchButton(document.getElementById('ip-march-btn'), destFromHex(h, tile, marker), 'land');
 
-  const panel = document.getElementById('inspect-panel');
-  panel.style.display = 'flex';
+  document.getElementById('inspect-panel').style.display = 'flex';
+}
+
+// Mountain / sea / empty land — no province here. Mountains explain their own
+// absence of affordances; sea gets galleys; empty land gets march + colonize.
+function openTerrainPanel(h, tile, isMountain, isSea, units) {
+  document.getElementById('ip-name').textContent =
+    isSea ? `Sea (${h.q},${h.r})` : (isMountain ? `Mountains (${h.q},${h.r})` : `Empty hex (${h.q},${h.r})`);
+  setCityFieldsVisible(false);
+  fillTerrainFields(tile);
+
+  const foot = document.getElementById('ip-foot');
+  let footHtml = unitListHTML(units);
+
+  if (isMountain) {
+    footHtml += '<p class="empty-state">Ogenomträngligt — arméer kan inte gå här.</p>';
+    foot.innerHTML = footHtml;
+    bindUnitButtons(foot);
+    document.getElementById('inspect-panel').style.display = 'flex';
+    return;
+  }
+
+  const dest = destFromHex(h, tile, null);
+  if (isSea) {
+    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Skicka galärer →</button>';
+  } else {
+    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>'
+             +  '<button id="ip-colonize-btn" style="' + MARCH_BTN_STYLE + '">Kolonisera →</button>';
+  }
+  foot.innerHTML = footHtml;
+  bindUnitButtons(foot);
+  bindMarchButton(document.getElementById('ip-march-btn'), dest, isSea ? 'ship' : 'land');
+
+  const colBtn = document.getElementById('ip-colonize-btn');
+  if (colBtn) {
+    bindMarchButton(colBtn, dest, 'land');
+    // Same march-ctx as Marschera, just pre-check the colonize box on open —
+    // no second order code path (plan §"Målbild").
+    colBtn.addEventListener('click', () => {
+      const chk = document.getElementById('mctx-colonize-chk');
+      if (chk) { chk.checked = true; window.onColonizeToggle(); }
+    });
+  }
+
+  document.getElementById('inspect-panel').style.display = 'flex';
+}
+
+// Dispatcher for a left-click (non-drag) on any hex — the affordance matrix.
+// Always selects the hex (highlight), then routes to the right view.
+function openHexPanel(h) {
+  State.selectedHex = { q: h.q, r: h.r };
+  State.fovPreview = null;
+  State.dirty = true;
+
+  const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
+  const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);
+
+  if (!tile || tile.terrain === 'fog') { openFogPanel(h); return; }
+
+  if (prov && prov.own) {
+    // Own settlement — no mid-panel, the city drawer IS the info (framgångskriterium 2).
+    document.getElementById('inspect-panel').style.display = 'none';
+    State.cityViewID = prov.id;
+    window.openDrawer('city');
+    return;
+  }
+
+  const units = (State.unitsData || []).filter(u =>
+    u.q === h.q && u.r === h.r && (u.status === 'positioned' || u.status === 'marching'));
+
+  if (prov) { openCityPanel(h, tile, prov, units); return; }
+
+  const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
+  const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
+  openTerrainPanel(h, tile, isMountain, isSea, units);
 }
 
 export function closeInspect() {
-  State.selectedProvince = null;
+  State.selectedHex = null;
+  State.fovPreview = null;
   document.getElementById('inspect-panel').style.display = 'none';
+  State.dirty = true;
 }
 
 export async function sendMessengerFromInspect(destSettlementID) {
@@ -949,15 +1129,7 @@ export function initMap() {
     if (Math.abs(dx) < 4 && Math.abs(dy) < 4) {
       const rect = canvas.getBoundingClientRect();
       const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
-      const marker = State.provinceData.find(p => p.q === h.q && p.r === h.r);
-      if (marker) { openInspect(marker); return; }
-      // No settlement here — an own unit on the hex? Select it: open the War
-      // drawer with its card highlighted so orders are given from there.
-      // (/units only returns the player's own units, so no owner check.)
-      const unitHere = (State.unitsData || []).find(u =>
-        u.q === h.q && u.r === h.r && (u.status === 'positioned' || u.status === 'marching'));
-      if (unitHere) { window.warFocusUnit(unitHere.id); return; }
-      closeInspect();
+      openHexPanel(h);
     }
   });
   canvas.addEventListener('mouseleave', () => { State.dragging = false; tooltip.style.display = 'none'; });
@@ -1025,29 +1197,17 @@ export function initMap() {
     const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
     const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
     if (!tile || tile.terrain === 'fog') { window.closeMarchCtx(); return; }
-    const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
     const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
     if (target) {
-      if (target.own) {
-        // Own settlement (capital included): march units home to reinforce the
-        // garrison. Inspect lives on left-click — right-click is always orders.
-        window.openMarchCtx({ q: h.q, r: h.r, terrain: tile.terrain, isSea,
-                       name: target.name, isSettlement: true, allied: true },
-                     e.clientX, e.clientY);
-        return;
-      }
-      // Another Wanax's settlement — march to attack (or reinforce if allied).
-      window.openMarchCtx({ q: h.q, r: h.r, terrain: tile.terrain, isSea,
-                     name: target.name, isSettlement: true, allied: !!target.allied },
-                   e.clientX, e.clientY);
+      // Own settlement (capital included): march units home to reinforce the
+      // garrison. Another Wanax's settlement: march to attack (or reinforce if
+      // allied). Inspect lives on left-click — right-click is always orders.
+      window.openMarchCtx(destFromHex(h, tile, target), e.clientX, e.clientY);
       return;
     }
     // Empty hex. Mountains are impassable; sea hexes take ships.
     if (isMountain) { window.closeMarchCtx(); return; }
-    window.openMarchCtx({ q: h.q, r: h.r, terrain: tile.terrain, isSea,
-                   name: isSea ? `Sea (${h.q},${h.r})` : `Empty hex (${h.q},${h.r})`,
-                   isSettlement: false, allied: false },
-                 e.clientX, e.clientY);
+    window.openMarchCtx(destFromHex(h, tile, null), e.clientX, e.clientY);
   });
 
   // Reload provinces, marches, messengers and trades every 30s
