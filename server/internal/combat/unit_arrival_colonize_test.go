@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 )
 
@@ -154,9 +155,8 @@ func TestFoundColony_UnitDisbandsIntoPopulace(t *testing.T) {
 	).Scan(&population); err != nil {
 		t.Fatalf("load colony population: %v", err)
 	}
-	const colonyBasePopulation = 1500
-	if population != colonyBasePopulation+unitSize {
-		t.Errorf("expected population=%d (baseline+unit size), got %d", colonyBasePopulation+unitSize, population)
+	if population != economy.ColonyBaseFoundingPopulation+unitSize {
+		t.Errorf("expected population=%d (baseline+unit size), got %d", economy.ColonyBaseFoundingPopulation+unitSize, population)
 	}
 
 	var unitStatus string

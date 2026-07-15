@@ -7,15 +7,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// Colony founding assumptions, mirrored from combat.foundColony (unit_arrival.go).
-//
-// DRIFT-GUARD: foundColony is the source of truth — it writes the real colony
-// with a local `colonyBasePopulation = 1500` and seeds grain=300 inline in its
-// goods-seed SQL. These constants are duplicated here only so the colonize
-// preview (DEL A of megaron_koloni_legibilitet_plan.md) can estimate the founding
-// grain balance BEFORE any settlement row exists to read. If either number
-// changes in foundColony, change it here too (and ideally switch foundColony to
-// reference these once its file is in scope for editing).
+// Colony founding assumptions — the single source of truth, shared with
+// combat.foundColony (unit_arrival.go), which references these directly when it
+// writes the real colony. They also let the colonize preview (DEL A of
+// megaron_koloni_legibilitet_plan.md) estimate the founding grain balance BEFORE
+// any settlement row exists to read. Change a number here and both the live
+// colony and its preview move together.
 const (
 	// ColonyBaseFoundingPopulation is a new colony's baseline population before
 	// the colonising unit's own size is added (see foundColony).

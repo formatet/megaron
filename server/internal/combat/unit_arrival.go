@@ -502,13 +502,13 @@ func (h *UnitArrivalHandler) foundColony(
 		name = *u.colonyName
 	}
 
-	// Create the colony. Starting population 1500 — a real but modest second city
-	// — plus the colonizing unit's own size, since its colonists join the founding
-	// populace (they become citizens, not a garrison; see below). Unlike the
-	// capital the colony is NOT guaranteed self-sufficient (it can starve if
-	// neglected); that asymmetry is the intended cost of expansion.
-	const colonyBasePopulation = 1500
-	population := colonyBasePopulation + u.size
+	// Create the colony. Baseline population (economy.ColonyBaseFoundingPopulation,
+	// currently 1500 — a real but modest second city) plus the colonizing unit's
+	// own size, since its colonists join the founding populace (they become
+	// citizens, not a garrison; see below). Unlike the capital the colony is NOT
+	// guaranteed self-sufficient (it can starve if neglected); that asymmetry is
+	// the intended cost of expansion.
+	population := economy.ColonyBaseFoundingPopulation + u.size
 	var colonyID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO settlements
@@ -543,7 +543,7 @@ func (h *UnitArrivalHandler) foundColony(
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
-		        CASE g.key WHEN 'grain' THEN 300 WHEN 'timber' THEN 200 WHEN 'stone' THEN 300 ELSE 0 END,
+		        CASE g.key WHEN 'grain' THEN $2::int WHEN 'timber' THEN 200 WHEN 'stone' THEN 300 ELSE 0 END,
 		        0,
 		        CASE g.key WHEN 'grain' THEN 1000 WHEN 'timber' THEN 500 WHEN 'cedar' THEN 500
 		                   WHEN 'stone' THEN 1000 WHEN 'copper' THEN 300 WHEN 'tin' THEN 300
@@ -551,7 +551,7 @@ func (h *UnitArrivalHandler) foundColony(
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		colonyID,
+		colonyID, economy.ColonyGrainSeed,
 	); err != nil {
 		return fmt.Errorf("foundColony: seed goods: %w", err)
 	}
