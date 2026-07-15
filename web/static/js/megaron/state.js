@@ -30,7 +30,8 @@ export const State = {
   camera: { x: 0, y: 0, zoom: 1 },
   dragging: false,
   lastMouse: null,
-  selectedProvince: null,
+  selectedHex: null,   // {q, r} of the clicked hex — any hex, not just settled ones
+  fovPreview: null,    // {q, r, kind} while hovering a march affordance button; kind: 'land' | 'ship'
   animFrame: 0,
   dirty: true,
   lastSeaTick: -1,
