@@ -48,11 +48,13 @@ export async function onColonizeToggle() {
   if (!(chk && chk.checked) || !State.marchCtxDest) {
     prevEl.style.display = 'none';
     prevEl.innerHTML = '';
+    repositionMarchCtx();
     return;
   }
   const dest = State.marchCtxDest;
   prevEl.style.display = 'block';
   prevEl.innerHTML = '<span style="color:var(--text-dim)">Reading the land…</span>';
+  repositionMarchCtx();
   try {
     const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${dest.q}&r=${dest.r}`);
     if (!r.ok) throw new Error();
@@ -62,6 +64,7 @@ export async function onColonizeToggle() {
   } catch (_) {
     if (State.marchCtxDest === dest) prevEl.innerHTML = '<span style="color:var(--text-dim)">No forecast available.</span>';
   }
+  repositionMarchCtx();
 }
 
 // Mirrors keryx's renderColonizePreview (cmd_unit.go): grain prod − cons = net
@@ -111,11 +114,23 @@ export function renderColonizePreviewHTML(p) {
   return html;
 }
 
+let lastCtxPos = null;
+
 function positionMarchCtx(screenX, screenY) {
+  lastCtxPos = { x: screenX, y: screenY };
   const vw = window.innerWidth, vh = window.innerHeight;
   const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
   marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
-  marchCtx.style.top  = Math.min(screenY + 8, vh - h - 8) + 'px';
+  // Clamp top ≥ 8 too: a menu taller than the viewport must anchor at the top
+  // (max-height + overflow in .march-ctx takes it from there), never above it.
+  marchCtx.style.top  = Math.max(8, Math.min(screenY + 8, vh - h - 8)) + 'px';
+}
+
+// Re-clamp against the viewport after content loads/expands async (unit list,
+// colonize forecast) — the menu was positioned when it was still small, so a
+// late expansion pushed the send button below the screen edge.
+function repositionMarchCtx() {
+  if (lastCtxPos && marchCtx.style.display !== 'none') positionMarchCtx(lastCtxPos.x, lastCtxPos.y);
 }
 
 // Open the march menu for a destination hex.

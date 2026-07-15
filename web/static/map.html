@@ -355,6 +355,9 @@
   background: var(--bg-panel); border: 2px solid var(--border);
   box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in), 3px 3px 0 #1C1C1C;
   font-size: .82rem; color: var(--text);
+  /* The menu grows async (unit list, colonize forecast) — never let it extend
+     past the viewport, or the send button becomes unreachable. */
+  max-height: calc(100vh - 16px); overflow-y: auto;
 }
 .mctx-header {
   background: var(--border); padding: .35rem .6rem;
