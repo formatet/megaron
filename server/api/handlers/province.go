@@ -1745,7 +1745,6 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		"unit_type":    req.UnitType,
 		"men":          menForResponse,
 		"count":        effectiveCount,
-		"batches":      batches,
 		"complete_at":  lastCompleteAt,
 		"forming_size": finalSize,
 		"names":        unitNames,
