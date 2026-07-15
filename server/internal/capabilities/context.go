@@ -121,7 +121,7 @@ func (cc checkContext) anyUnitsHere() int {
 	var n int
 	_ = cc.pool.QueryRow(cc.ctx,
 		`SELECT count(*) FROM units
-		 WHERE settlement_id = $1 AND owner_id = $2 AND status IN ('garrison', 'forming')`,
+		 WHERE settlement_id = $1 AND owner_id = $2 AND status IN ('garrison', 'forming', 'training')`,
 		cc.settlementID, cc.playerID,
 	).Scan(&n)
 	return n

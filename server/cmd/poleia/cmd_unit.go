@@ -94,7 +94,8 @@ type unitRow struct {
 }
 
 func formatSize(u unitRow) string {
-	if u.Status == "forming" {
+	switch u.Status {
+	case "forming":
 		if u.Category == "naval" {
 			// A ship builds as one vessel with a fixed build time (ship-build
 			// overhaul 2026-07-09) — not size-based like land, so show the ETA.
@@ -104,11 +105,17 @@ func formatSize(u unitRow) string {
 			}
 			return fmt.Sprintf("building (crew %d) — ready %s", u.Crew, eta)
 		}
-		// A land unit auto-deploys (forming → garrison) the moment its size reaches
-		// 100 men; you grow it by recruiting more of the same type into the same
-		// settlement. Spell that out so the unit isn't left stuck at e.g. 40/100.
-		return fmt.Sprintf("%d/100 (forming — recruit %d more %s here to deploy)",
+		// Land: still gathering men. At 100 it enters training (below); grow it by
+		// recruiting more of the same type into the same settlement.
+		return fmt.Sprintf("%d/100 (forming — recruit %d more %s here)",
 			u.Size, 100-u.Size, unit.DisplayName(u.Type))
+	case "training":
+		// Land: full at 100, maturing to a deployable garrison at the ready ETA.
+		eta := "unknown"
+		if u.BuildCompleteAt != nil {
+			eta = u.BuildCompleteAt.Local().Format("15:04 Jan 2")
+		}
+		return fmt.Sprintf("100/100 (training — ready %s)", eta)
 	}
 	if u.Category == "naval" {
 		return fmt.Sprintf("1 vessel (crew %d)", u.Crew)

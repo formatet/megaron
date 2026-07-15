@@ -285,56 +285,28 @@ func statusCmd() *cobra.Command {
 				}
 			}
 
-			if tq, ok := sett["training_queue"].([]any); ok && len(tq) > 0 {
-				// Recruit schedules one TrainComplete per 10-man batch, so an 80-man
-				// order otherwise shows as 8 near-identical "10× done" rows. Collapse
-				// them into one line per unit type: köade (total recruited) = klara
-				// (trained, size − queued) + tränar (still in the queue).
-				type agg struct {
-					traenar int       // men still queued (sum of remaining batch counts)
-					last    time.Time // latest completion ETA across this type's batches
-					naval   bool
-				}
-				byType := map[string]*agg{}
-				order := []string{}
-				for _, it := range tq {
+			if tus, ok := sett["training_units"].([]any); ok && len(tus) > 0 {
+				// One line per maturing unit: forming (gathering men), training
+				// (full at 100, counting down to garrison), or naval building.
+				fmt.Println("\nTraining")
+				for _, it := range tus {
 					m, _ := it.(map[string]any)
 					u, _ := m["unit"].(string)
-					c, _ := m["count"].(float64)
-					ca, _ := m["complete_at"].(string)
-					a := byType[u]
-					if a == nil {
-						a = &agg{naval: unit.CategoryOf(unit.Type(u)) == unit.CategoryNaval}
-						byType[u] = a
-						order = append(order, u)
-					}
-					a.traenar += int(c)
-					if t, err := time.Parse(time.RFC3339, ca); err == nil && t.After(a.last) {
-						a.last = t
-					}
-				}
-				forming, _ := sett["forming_units"].(map[string]any)
-				fmt.Println("\nTraining")
-				for _, u := range order {
-					a := byType[u]
+					sz, _ := m["size"].(float64)
+					status, _ := m["status"].(string)
+					cat, _ := m["category"].(string)
 					name := unit.DisplayName(u)
-					eta := localDone(a.last.Format(time.RFC3339))
-					koade := 0
-					if forming != nil {
-						if v, ok := forming[u].(float64); ok {
-							koade = int(v)
-						}
+					ready := ""
+					if ra, ok := m["ready_at"].(string); ok && ra != "" {
+						ready = " — klar " + localDone(ra)
 					}
 					switch {
-					case a.naval:
-						// One TrainComplete per vessel (count=1) — show vessels building.
-						fmt.Printf("  %-10s %d byggs · klar %s\n", name, a.traenar, eta)
-					case koade > a.traenar:
-						fmt.Printf("  %-10s %d köade — %d klara, %d tränar · sista klar %s\n",
-							name, koade, koade-a.traenar, a.traenar, eta)
-					default:
-						// No forming row (unit already flipped to garrison) or köade == tränar.
-						fmt.Printf("  %-10s %d tränar · sista klar %s\n", name, a.traenar, eta)
+					case cat == "naval":
+						fmt.Printf("  %-10s bygger%s\n", name, ready)
+					case status == "training":
+						fmt.Printf("  %-10s %.0f/100 · tränar%s\n", name, sz, ready)
+					default: // forming
+						fmt.Printf("  %-10s %.0f/100 · formerar (%.0f kvar att rekrytera)\n", name, sz, 100-sz)
 					}
 				}
 			}

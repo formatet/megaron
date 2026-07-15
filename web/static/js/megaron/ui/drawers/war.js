@@ -297,6 +297,7 @@ function renderUnitCard(u) {
   const lbl = (UNIT_LABELS[u.type] || u.type) + (u.name ? ' "' + esc(u.name) + '"' : '');
   const isNaval = u.category === 'naval';
   const isForming = u.status === 'forming';
+  const isTraining = u.status === 'training';
   const isGarrison = u.status === 'garrison';
   const isPositioned = u.status === 'positioned';
   const isMarching = u.status === 'marching';
@@ -304,7 +305,7 @@ function renderUnitCard(u) {
 
   // Location string
   let loc = '';
-  if (isGarrison || isForming || isEmbarked) {
+  if (isGarrison || isForming || isTraining || isEmbarked) {
     const prov = State.provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
     loc = prov ? esc(prov.name) : 'city';
   } else if (isMarching && u.target_q != null) {
@@ -313,14 +314,19 @@ function renderUnitCard(u) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
 
-  // Progress: forming naval shows the build ETA (size is always 1, not a
-  // percentage); forming land keeps the men/100 bar.
-  const progress = isForming
-    ? (isNaval
-        ? '<span style="font-size:.65rem;color:var(--text-dim)">building — ready ' + fmtEta(u.build_complete_at) + '</span>'
-        : '<div style="margin:.2rem 0;background:var(--border);height:4px;border-radius:2px"><div style="background:var(--accent-war);height:4px;width:' + u.size + '%"></div></div>'
-          + '<span style="font-size:.65rem;color:var(--text-dim)">' + u.size + '/100 forming</span>')
-    : '';
+  // Progress: naval forming shows the build ETA (size is always 1); land forming
+  // shows the men/100 gathering bar; land training shows a full bar + ready ETA
+  // (it has all 100 men and is maturing to a deployable garrison).
+  const bar = (pct) => '<div style="margin:.2rem 0;background:var(--border);height:4px;border-radius:2px"><div style="background:var(--accent-war);height:4px;width:' + pct + '%"></div></div>';
+  const dim = (txt) => '<span style="font-size:.65rem;color:var(--text-dim)">' + txt + '</span>';
+  let progress = '';
+  if (isNaval && isForming) {
+    progress = dim('building — ready ' + fmtEta(u.build_complete_at));
+  } else if (isForming) {
+    progress = bar(u.size) + dim(u.size + '/100 · forming');
+  } else if (isTraining) {
+    progress = bar(100) + dim('100/100 · training — ready ' + fmtEta(u.build_complete_at));
+  }
 
   // Stance badge
   const stanceBadge = u.stance

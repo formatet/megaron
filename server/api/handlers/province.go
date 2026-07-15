@@ -159,71 +159,39 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			buildQueue = []buildItem{}
 		}
 
-		// Training queue — pending recruits from the scheduled-events queue.
-		// Reads due_tick (the authoritative tick-scheduling column), not
-		// process_after: tick-scheduled events set process_after = now() only
-		// to satisfy the NOT NULL constraint (events.Scheduler.EnqueueTick) —
-		// it is not when the event actually fires, so ordering/displaying by
-		// it read a frozen "now" instead of the real queue order/ETA.
-		type trainItem struct {
-			Unit       string    `json:"unit"`
-			Count      int       `json:"count"`
-			CompleteAt time.Time `json:"complete_at"`
+		// Units still maturing — the recruit pipeline before a unit is deployable.
+		// One row per unit so the client can render the lifecycle directly:
+		//   land forming   (size < 100)      → "80/100 forming" (gathering men)
+		//   land training  (size = 100)      → "100/100 training — ready HH:MM"
+		//   naval forming  (a vessel builds) → "building — ready HH:MM"
+		// ready_at is the unit's build_complete_at (null for a still-gathering
+		// forming land unit, which has no timer yet). Replaces the old per-batch
+		// training_queue + forming_units fields (the per-10 batch model is gone).
+		type trainingUnit struct {
+			Unit     string     `json:"unit"`
+			Size     int        `json:"size"`
+			Status   string     `json:"status"`
+			Category string     `json:"category"`
+			ReadyAt  *time.Time `json:"ready_at,omitempty"`
 		}
-		var trainQueue []trainItem
-		var trainQueueCurrentTick int
-		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainQueueCurrentTick)
-		trrows, _ := h.pool.Query(r.Context(),
-			`SELECT (payload->>'unit_type')::text, (payload->>'count')::int, due_tick
-			 FROM scheduled_events
-			 WHERE world_id = $1 AND event_type = 'TrainComplete'
-			   AND processed_at IS NULL
-			   AND (payload->>'settlement_id')::uuid = $2
-			 ORDER BY due_tick`,
-			worldID, sett.ID,
-		)
-		if trrows != nil {
-			for trrows.Next() {
-				var unitType string
-				var count int
-				var dueTick int
-				if trrows.Scan(&unitType, &count, &dueTick) == nil {
-					trainQueue = append(trainQueue, trainItem{
-						Unit:       unitType,
-						Count:      count,
-						CompleteAt: tick.EtaAt(h.clk, dueTick, trainQueueCurrentTick),
-					})
-				}
-			}
-			trrows.Close()
-		}
-		if trainQueue == nil {
-			trainQueue = []trainItem{}
-		}
-
-		// Forming land units — men already recruited toward a not-yet-deployable
-		// unit (size set to the full order at recruit time; the unit stays 'forming'
-		// until it reaches 100 and flips to garrison). The training_queue above only
-		// holds the REMAINING batches (still training); this total lets a client
-		// split a type into köade = size, tränar = queued men, klara = size − tränar.
-		// Land only: naval "forming" is a size-1 vessel building, a different model.
-		// Keyed by unit type. Additive field — existing consumers ignore it.
-		formingUnits := map[string]int{}
-		if frows, ferr := h.pool.Query(r.Context(),
-			`SELECT type, COALESCE(SUM(size), 0)::int
+		var trainingUnits []trainingUnit
+		if trows, terr := h.pool.Query(r.Context(),
+			`SELECT type, size, status, category, build_complete_at
 			 FROM units
-			 WHERE settlement_id = $1 AND status = 'forming' AND category = 'land'
-			 GROUP BY type`,
+			 WHERE settlement_id = $1 AND status IN ('forming', 'training')
+			 ORDER BY category, status DESC, created_at`,
 			sett.ID,
-		); ferr == nil {
-			for frows.Next() {
-				var t string
-				var sz int
-				if frows.Scan(&t, &sz) == nil {
-					formingUnits[t] = sz
+		); terr == nil {
+			for trows.Next() {
+				var tu trainingUnit
+				if trows.Scan(&tu.Unit, &tu.Size, &tu.Status, &tu.Category, &tu.ReadyAt) == nil {
+					trainingUnits = append(trainingUnits, tu)
 				}
 			}
-			frows.Close()
+			trows.Close()
+		}
+		if trainingUnits == nil {
+			trainingUnits = []trainingUnit{}
 		}
 
 		// Buildings — already completed (agents/clients use this to avoid re-queuing).
@@ -627,8 +595,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"army":                   sett.Army,
 			"army_upkeep":            armyUp,
 			"build_queue":            buildQueue,
-			"training_queue":         trainQueue,
-			"forming_units":          formingUnits,
+			"training_units":         trainingUnits,
 			"buildings":              buildings,
 			"can_afford":             buildAfford,
 			"can_recruit":            recruitAfford,
@@ -1394,26 +1361,24 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Training queue cap: max 10 pending batches per settlement. Naval builds
-	// schedule exactly one TrainComplete per vessel (its build time), not one
-	// per 10 crew like land — see the create-loop below.
-	var pendingTraining int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COUNT(*) FROM scheduled_events
-		 WHERE world_id = $1 AND event_type = 'TrainComplete'
-		   AND processed_at IS NULL AND failed_at IS NULL
-		   AND (payload->>'settlement_id')::uuid = $2`,
-		worldID, settlementID,
-	).Scan(&pendingTraining)
-	batches := 1
-	if cat == unit.CategoryLand {
-		batches = req.Men / 10
-	}
-	totalBatches := batches * effectiveCount
-	if pendingTraining+totalBatches > 10 {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("training queue would overflow: %d pending + %d new > 10", pendingTraining, totalBatches))
-		return
+	// Naval build-queue cap: at most 10 vessels building per settlement (one
+	// TrainComplete per vessel = its build time). Land no longer schedules
+	// per-10-men batches — a unit trains as a single job when it reaches 100
+	// (see the create-loop below) — so this cap is naval-only now.
+	if cat == unit.CategoryNaval {
+		var pendingBuilds int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COUNT(*) FROM scheduled_events
+			 WHERE world_id = $1 AND event_type = 'TrainComplete'
+			   AND processed_at IS NULL AND failed_at IS NULL
+			   AND (payload->>'settlement_id')::uuid = $2`,
+			worldID, settlementID,
+		).Scan(&pendingBuilds)
+		if pendingBuilds+effectiveCount > 10 {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("build queue would overflow: %d pending + %d new > 10", pendingBuilds, effectiveCount))
+			return
+		}
 	}
 
 	// C2/C-collapse: men are drawn from population at recruit time.
@@ -1681,7 +1646,12 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Land: unchanged — create or grow a forming unit in batches of 10 men.
+		// Land: grow (or create) this settlement's forming unit of this type. A
+		// unit gathers men until it reaches 100, then enters `training` for one
+		// duration (batchTicks = the type's DurationTicks) before deploying to
+		// garrison — a single TrainComplete, not per-10-men batches. Men beyond
+		// 100 spill into a fresh forming unit. (forming units are always < 100;
+		// at 100 they become training, so an existing forming row is safe to top up.)
 		var existingUnitID *uuid.UUID
 		var existingSize int
 		row := h.pool.QueryRow(r.Context(),
@@ -1695,52 +1665,72 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			existingUnitID = &eid
 		}
 
+		newSize := existingSize + req.Men
+		unitSize := newSize
+		if unitSize > 100 {
+			unitSize = 100 // cap; the remainder spills into a new forming unit below
+		}
+
 		var unitID uuid.UUID
 		if existingUnitID != nil {
-			// Reinforce existing forming unit.
 			if err := h.pool.QueryRow(r.Context(),
-				`UPDATE units SET size = size + $1, updated_at = now()
-				 WHERE id = $2
-				 RETURNING id`,
-				req.Men, *existingUnitID,
+				`UPDATE units SET size = $1, updated_at = now() WHERE id = $2 RETURNING id`,
+				unitSize, *existingUnitID,
 			).Scan(&unitID); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not grow forming unit")
 				return
 			}
 		} else {
-			// Create new forming unit.
 			if err := h.pool.QueryRow(r.Context(),
 				`INSERT INTO units
 				   (world_id, owner_id, type, category, size, crew, status, settlement_id)
 				 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7)
 				 RETURNING id`,
 				worldID, playerID, string(uType), string(cat),
-				req.Men, crew, settlementID,
+				unitSize, crew, settlementID,
 			).Scan(&unitID); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not create forming unit")
 				return
 			}
 		}
 		unitIDs = append(unitIDs, unitID)
+		finalSize = unitSize
 
-		// Determine the final size after this recruitment.
-		finalSize = existingSize + req.Men
-
-		// Schedule one TrainComplete per batch-of-10, staggered.
-		for i := 0; i < batches; i++ {
-			dueTick := trainCurrentTick + batchTicks*(i+1)
+		if newSize >= 100 {
+			// Full → enter training: one completion event at now + the type's
+			// training duration. build_complete_at carries the ready ETA (shared
+			// with naval). Not deployable until TrainComplete flips it to garrison.
+			dueTick := trainCurrentTick + batchTicks
 			completeAt := tick.EtaAt(h.clk, dueTick, trainCurrentTick)
 			lastCompleteAt = completeAt
+			if _, err := h.pool.Exec(r.Context(),
+				`UPDATE units SET status = 'training', build_complete_at = $1, updated_at = now() WHERE id = $2`,
+				completeAt, unitID,
+			); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not start unit training")
+				return
+			}
 			if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledTrainComplete,
 				combat.TrainCompletePayload{
 					SettlementID: settlementID,
 					UnitType:     req.UnitType,
-					Count:        10, // always 10 per batch
+					Count:        100,
 					UnitID:       unitID,
 				}, dueTick,
 			); err != nil {
-				writeError(w, http.StatusInternalServerError, "could not schedule training batch")
+				writeError(w, http.StatusInternalServerError, "could not schedule training")
 				return
+			}
+			// Spill the overflow into a new forming unit of the same type.
+			if newSize > 100 {
+				if _, err := h.pool.Exec(r.Context(),
+					`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
+					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7)`,
+					worldID, playerID, string(uType), string(cat), newSize-100, crew, settlementID,
+				); err != nil {
+					writeError(w, http.StatusInternalServerError, "could not create spill forming unit")
+					return
+				}
 			}
 		}
 	}

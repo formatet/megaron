@@ -369,7 +369,7 @@ async function refreshCityBuildings(provinceID) {
     if (!res.ok) return;
     const pd = (await res.json()).settlement;
     if (!pd) return;
-    const blds = pd.buildings || [], bq = pd.build_queue || [], tq = pd.training_queue || [];
+    const blds = pd.buildings || [], bq = pd.build_queue || [], tu = pd.training_units || [];
     let h2 = blds.length
       ? `<div class="dsec-title">Built</div><table class="goods-mini">${
           blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>L${b.level}</td></tr>`).join('')
@@ -379,28 +379,17 @@ async function refreshCityBuildings(provinceID) {
       bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${fmtEta(b.complete_at)}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
-    if (tq.length) {
-      // Recruit schedules one TrainComplete per 10-man batch, so an 80-man order
-      // otherwise renders as 8 near-identical "×10" rows. Aggregate per unit type:
-      // queued (total recruited, from forming_units) = ready (trained, size − queued)
-      // + training (still in the queue). Naval = size-1 vessels, shown as "building".
-      const forming = pd.forming_units || {};
-      const NAVAL = new Set(['galley', 'ship', 'war_galley', 'merchantman']);
-      const agg = {}, order = [];
-      for (const t of tq) {
-        let a = agg[t.unit];
-        if (!a) { a = agg[t.unit] = { training: 0, last: null, naval: NAVAL.has(t.unit) }; order.push(t.unit); }
-        a.training += t.count;
-        if (!a.last || new Date(t.complete_at) > new Date(a.last)) a.last = t.complete_at;
-      }
-      h2 += `<div class="dsec-title" style="margin-top:.8rem">Training queue</div><table class="goods-mini">${
-        order.map(u => {
-          const a = agg[u], name = UNIT_LBL[u] || u, queued = forming[u] || 0;
-          let label;
-          if (a.naval) label = `${a.training} building`;
-          else if (queued > a.training) label = `${queued} queued — ${queued - a.training} ready, ${a.training} training`;
-          else label = `${a.training} training`;
-          return `<tr><td>${name}</td><td>${label}</td><td>${fmtEta(a.last)}</td></tr>`;
+    if (tu.length) {
+      // One row per maturing unit: land gathers men (forming, X/100), then trains
+      // (100/100, ready ETA), then deploys to garrison; naval builds a vessel.
+      h2 += `<div class="dsec-title" style="margin-top:.8rem">Training</div><table class="goods-mini">${
+        tu.map(u => {
+          const name = UNIT_LBL[u.unit] || u.unit;
+          let label, eta = u.ready_at ? fmtEta(u.ready_at) : '';
+          if (u.category === 'naval') label = 'building';
+          else if (u.status === 'training') label = `${u.size}/100 · training`;
+          else label = `${u.size}/100 · forming`;
+          return `<tr><td>${name}</td><td>${label}</td><td>${eta}</td></tr>`;
         }).join('')
       }</table>`;
     }

@@ -1444,12 +1444,13 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 				durationTicks = &d
 			}
 		}
-		// A land unit is deployable once it is no longer "forming" (it auto-flips to
-		// garrison at 100 men). A naval unit is deployable once its build completes
-		// (also "forming" until then, ship-build overhaul 2026-07-09) — men_to_deploy
-		// only makes sense for land (size-based); naval forming shows build_complete_at
-		// instead.
-		deployable := u.Status != "forming"
+		// A land unit is deployable once it reaches garrison: it gathers men while
+		// "forming" (< 100), then matures for one training duration as "training"
+		// (100/100, build_complete_at = ready ETA), then flips to garrison. A naval
+		// unit is deployable once its build completes ("forming" until then, ship-
+		// build overhaul 2026-07-09). men_to_deploy only makes sense for a gathering
+		// land unit; training/naval forming show build_complete_at instead.
+		deployable := u.Status != "forming" && u.Status != "training"
 		menToDeploy := 0
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size

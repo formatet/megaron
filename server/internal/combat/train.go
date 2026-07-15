@@ -35,11 +35,12 @@ func NewTrainCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub B
 
 // Handle processes a ScheduledTrainComplete event.
 //
-// If p.UnitID is set, this is a C2 batch (10 men). The unit's size was already
-// written at recruit time; here we only need to check if the unit has reached
-// 100 men and flip it to garrison status. The units table is the single source
-// of truth for a settlement's army (the old settlements.* integer columns were
-// retired in SB7); nothing is dual-written here.
+// If p.UnitID is set, this is a land unit's training completion. Recruit fills
+// the unit to 100 and flips it forming→training with one scheduled TrainComplete
+// (no per-10-men batches); here we flip training→garrison, i.e. the unit becomes
+// deployable. The units table is the single source of truth for a settlement's
+// army (the old settlements.* integer columns were retired in SB7); nothing is
+// dual-written here.
 //
 // Naval (ship-build overhaul 2026-07-09): each vessel schedules exactly one
 // TrainComplete (its build time, not a per-10-crew batch); this handler flips
@@ -67,20 +68,21 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	var newSize int
 	unitNotZero := p.UnitID != uuid.Nil
 	if unitNotZero && !isNaval {
-		// For land units: flip to garrison when size reaches 100.
-		// The size was already set at recruit time; just check current size.
+		// Land: the unit was filled to 100 and set to `training` at recruit time;
+		// flip it to garrison (deployable) and clear the ready ETA. The size>=100
+		// guard defends against a legacy/partial row. Idempotent: the status guard
+		// (`forming` kept for pre-lifecycle rows) makes a re-run a safe no-op.
 		if scanErr := h.pool.QueryRow(ctx,
 			`SELECT size FROM units WHERE id = $1`, p.UnitID,
 		).Scan(&newSize); scanErr != nil {
 			slog.Warn("C2 unit size check failed", "unit", p.UnitID, "err", scanErr)
 		} else if newSize >= 100 {
-			// Idempotent: only flip if still forming.
 			if _, flipErr := h.pool.Exec(ctx,
-				`UPDATE units SET status = 'garrison', updated_at = now()
-				 WHERE id = $1 AND status = 'forming'`,
+				`UPDATE units SET status = 'garrison', build_complete_at = NULL, updated_at = now()
+				 WHERE id = $1 AND status IN ('training', 'forming')`,
 				p.UnitID,
 			); flipErr != nil {
-				slog.Warn("C2 forming→garrison flip failed", "unit", p.UnitID, "err", flipErr)
+				slog.Warn("C2 training→garrison flip failed", "unit", p.UnitID, "err", flipErr)
 			}
 		}
 	}
