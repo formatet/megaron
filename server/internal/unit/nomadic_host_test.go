@@ -27,13 +27,8 @@ func TestNomadicHost_AloneMayFoundMetropolis(t *testing.T) {
 	}
 }
 
-func TestNomadicHost_SeesOneHexAndMovesAtHalfSpeed(t *testing.T) {
-	if got := FOVFor(TypeNomadicHost); got != 1 {
-		t.Fatalf("host FOV = %d, want exactly 1 hex", got)
-	}
-	if got := FOVFor(TypeSpearman); got != 2 {
-		t.Fatalf("spearman FOV = %d, want the land baseline 2", got)
-	}
+// Vision lives in province.LiveRadius (tested there); this covers movement only.
+func TestNomadicHost_MovesAtHalfSpeed(t *testing.T) {
 	// Guards the direction of the multiplier: it scales HOURS, so the host's
 	// number must be ABOVE the baseline. A value below 1.0 would silently make the
 	// slowest thing in the game the fastest.

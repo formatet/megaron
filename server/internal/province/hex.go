@@ -44,6 +44,8 @@ func HexNeighbors(pos MapPosition) [6]MapPosition {
 const (
 	EyeSettlement = "settlement"
 	EyeLandUnit   = "land-unit"
+	// EyeNomadicHost is the founder-phase host: a people on the move, not a scout.
+	EyeNomadicHost = "nomadic-host"
 	EyeShip       = "ship"
 )
 
@@ -70,6 +72,12 @@ func LiveRadius(eyeKind string, targetTerrain string) int {
 		base = 1
 	case EyeLandUnit:
 		base = 2
+	case EyeNomadicHost:
+		// Half a land unit's reach: a people on the move, not a scout. Only the
+		// BASE is lowered — the host still sees open sea at 4 and reads a mountain
+		// at 1+2 like anyone else (Timothy 2026-07-15). It is short-sighted, not
+		// blind: what it cannot do is peer across ordinary ground.
+		base = 1
 	}
 	if targetTerrain == "mountain_limestone" || targetTerrain == "mountain_red" {
 		base += 2

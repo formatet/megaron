@@ -130,13 +130,6 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Land units must be at full strength.
-	if unit.CategoryOf(u.Type) == unit.CategoryLand && u.Size < 100 {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("unit is still forming (%d/100 men); it cannot march until fully recruited", u.Size))
-		return
-	}
-
 	// C5: a unit in fortify stance is locked in place until stance is changed.
 	if u.Stance != nil && *u.Stance == unit.StanceFortify {
 		writeError(w, http.StatusUnprocessableEntity,
@@ -373,6 +366,9 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	// merchantman slowest, galley between. Factor scales travel time (lower =
 	// faster); tunable, lives in navalSpeedFactor.
 	moveHours *= navalSpeedFactor(u.Type)
+	// The nomadic host is the slowest thing on the map: half a spearman's speed,
+	// i.e. DOUBLE its hours. Every other type is unaffected (factor 1.0).
+	moveHours *= unit.MarchHoursFactorFor(u.Type)
 	// Loaded ships move 1.5× slower.
 	if u.CargoUnitID != nil {
 		moveHours *= 1.5

@@ -836,7 +836,7 @@ func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uui
 	}
 
 	uRows, err := pool.Query(ctx,
-		`SELECT status, q, r, target_q, target_r, category, departs_at, arrives_at
+		`SELECT status, q, r, target_q, target_r, category, type, departs_at, arrives_at
 		 FROM units
 		 WHERE world_id = $1 AND owner_id = $2
 		   AND status != 'embarked'
@@ -845,11 +845,11 @@ func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uui
 	)
 	if err == nil {
 		for uRows.Next() {
-			var status, category string
+			var status, category, utype string
 			var q, r int
 			var targetQ, targetR *int
 			var departsAt, arrivesAt *time.Time
-			if uRows.Scan(&status, &q, &r, &targetQ, &targetR, &category, &departsAt, &arrivesAt) != nil {
+			if uRows.Scan(&status, &q, &r, &targetQ, &targetR, &category, &utype, &departsAt, &arrivesAt) != nil {
 				continue
 			}
 			kind := province.EyeLandUnit

@@ -90,20 +90,6 @@ func CanFoundMetropolis(t Type) bool {
 	return t == TypeNomadicHost
 }
 
-// FOVFor returns the unit's own vision radius in hexes. The host sees exactly one
-// hex: it is slow, blind and dependent on its spearmen and messengers for sight.
-//
-// This is the unit's INTRINSIC radius. It is not the whole vision model — the
-// server resolves live sight per eye-kind × target terrain in
-// province.LiveRadius (sea is seen from further, mountains are high). Callers
-// wanting "can this eye see that hex" must use LiveRadius, not this.
-func FOVFor(t Type) int {
-	if t == TypeNomadicHost {
-		return 1
-	}
-	return 2
-}
-
 // MarchHoursFactorFor returns the multiplier to apply to
 // province.TerrainMoveHours for this unit type.
 //
