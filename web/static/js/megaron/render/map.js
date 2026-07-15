@@ -919,9 +919,22 @@ function bindMarchButton(btn, dest, kind) {
   btn.addEventListener('mouseleave', () => { State.fovPreview = null; State.dirty = true; });
 }
 
+// Human names for the terrain enum — the raw keys leaked into panels and menu
+// headers as "River_valley"/"Empty hex", machine-speak in the most prominent slot.
+const TERRAIN_LABELS = {
+  plains: 'Plains', hills: 'Hills', forest_olive_grove: 'Olive Grove',
+  scrub_maquis: 'Maquis Scrub', semi_desert: 'Semi-Desert',
+  river_valley: 'River Valley', river_delta: 'River Delta',
+  coastal_sea: 'Coastal Sea', deep_sea: 'Deep Sea',
+  mountain_limestone: 'Limestone Mountains', mountain_red: 'Red Mountains',
+};
+
+function terrainLabel(t) {
+  return TERRAIN_LABELS[t] || (t.charAt(0).toUpperCase() + t.slice(1).replaceAll('_', ' '));
+}
+
 function fillTerrainFields(tile) {
-  const tLabel = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
-  document.getElementById('ip-terrain').textContent = tLabel;
+  document.getElementById('ip-terrain').textContent = terrainLabel(tile.terrain);
   const deps = [tile.copper_deposit ? 'Copper' : null, tile.tin_deposit ? 'Tin' : null,
                 tile.silver_deposit ? 'Silver' : null, tile.cedar_deposit ? 'Cedar' : null].filter(Boolean);
   const depRow = document.getElementById('ip-deposits-row');
@@ -950,7 +963,7 @@ function destFromHex(h, tile, target) {
              name: target.name, isSettlement: true, allied: target.own ? true : !!target.allied };
   }
   return { q: h.q, r: h.r, terrain: tile.terrain, isSea,
-           name: isSea ? `Sea (${h.q},${h.r})` : `Empty hex (${h.q},${h.r})`,
+           name: `${terrainLabel(tile.terrain)} (${h.q},${h.r})`,
            isSettlement: false, allied: false };
 }
 
