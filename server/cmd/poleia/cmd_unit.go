@@ -94,6 +94,12 @@ type unitRow struct {
 }
 
 func formatSize(u unitRow) string {
+	// The host is a size-1 map token; the people it represents live in
+	// founder_phase.population, never in units.size — "1 men" would be a lie
+	// (4.5 displayfällan). The real numbers live in `poleia founding status`.
+	if u.Type == string(unit.TypeNomadicHost) {
+		return "a people on the move"
+	}
 	switch u.Status {
 	case "forming":
 		if u.Category == "naval" {
@@ -367,7 +373,18 @@ type colonizePreview struct {
 
 // fetchColonizePreview GETs the grain/goods forecast for founding a colony at (q,r).
 func fetchColonizePreview(c *Client, worldID string, q, r int) (*colonizePreview, error) {
-	path := fmt.Sprintf("/api/v1/worlds/%s/colonize-preview?q=%d&r=%d", worldID, q, r)
+	return fetchPreviewPath(c, fmt.Sprintf("/api/v1/worlds/%s/colonize-preview?q=%d&r=%d", worldID, q, r))
+}
+
+// fetchColonizePreviewParams is the founder-phase variant: ?pop=&seed= makes the
+// SAME endpoint forecast the metropolis (its population, the host's carried
+// grain as stock) instead of a colony — temenos_nomadic_host_fas4_plan.md 4.3.
+func fetchColonizePreviewParams(c *Client, worldID string, q, r, pop, seed int) (*colonizePreview, error) {
+	return fetchPreviewPath(c, fmt.Sprintf("/api/v1/worlds/%s/colonize-preview?q=%d&r=%d&pop=%d&seed=%d",
+		worldID, q, r, pop, seed))
+}
+
+func fetchPreviewPath(c *Client, path string) (*colonizePreview, error) {
 	data, err := c.get(path)
 	if err != nil {
 		return nil, err
@@ -381,13 +398,20 @@ func fetchColonizePreview(c *Client, worldID string, q, r int) (*colonizePreview
 
 // renderColonizePreview prints the founding grain balance per game-day, so a
 // Wanax sees whether a target hex can feed a colony before committing the march.
-// All rates are per-tick from the server; ×TicksPerDay converts to per-day.
 func renderColonizePreview(p *colonizePreview, q, r int) {
+	renderCatchmentForecast(fmt.Sprintf("Colonize (%d,%d)", q, r), p)
+	fmt.Println("En koloni försörjer inte sig själv automatiskt — bygg farm om terrängen bär, annars ordna grain via intern transfer (poleia transfer --good grain --qty <n> --dest <koloni>).")
+}
+
+// renderCatchmentForecast is the shared forecast body — colonization and the
+// founder-phase settle print the same numbers under different headers.
+// All rates are per-tick from the server; ×TicksPerDay converts to per-day.
+func renderCatchmentForecast(title string, p *colonizePreview) {
 	td := float64(events.TicksPerDay)
 	known := len(p.Catchment) - p.UnknownHexes
 
-	fmt.Printf("Colonize (%d,%d) — catchment-prognos (%d/%d hexar kända, %d okända):\n",
-		q, r, known, len(p.Catchment), p.UnknownHexes)
+	fmt.Printf("%s — catchment-prognos (%d/%d hexar kända, %d okända):\n",
+		title, known, len(p.Catchment), p.UnknownHexes)
 
 	prodPerDay := p.Grain.BasePerTick * td
 	netPerDay := p.Grain.EstNetPerTick * td
@@ -408,7 +432,7 @@ func renderColonizePreview(p *colonizePreview, q, r int) {
 		fmt.Printf("  Startlager %.0f grain%s. Med farm: ~%+.0f/dygn%s\n",
 			p.Grain.Seed, reach, farmNetPerDay, farmNote)
 	} else {
-		fmt.Printf("  Startlager %.0f grain — kolonin är självförsörjande.\n", p.Grain.Seed)
+		fmt.Printf("  Startlager %.0f grain — staden är självförsörjande.\n", p.Grain.Seed)
 	}
 
 	// "Övrigt": deposits present in the known catchment + any building-free
@@ -453,8 +477,6 @@ func renderColonizePreview(p *colonizePreview, q, r int) {
 	if len(extras) > 0 {
 		fmt.Printf("  Övrigt: %s\n", strings.Join(extras, ", "))
 	}
-
-	fmt.Println("En koloni försörjer inte sig själv automatiskt — bygg farm om terrängen bär, annars ordna grain via intern transfer (poleia transfer --good grain --qty <n> --dest <koloni>).")
 }
 
 // currentHex resolves a field-positioned unit's current (q,r) so the

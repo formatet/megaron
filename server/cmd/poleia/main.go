@@ -95,6 +95,7 @@ func main() {
 		tradeOfferCmd(),
 		allocateCmd(),
 		unitCmd(),
+		foundingCmd(),
 		wantsCmd(),
 		riteCmd(),
 		abandonCmd(),

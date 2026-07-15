@@ -219,3 +219,31 @@ func resolveMessengerDest(markers, wanaxes []map[string]any, destName, fromName 
 	}
 	return destID, resolvedName, ownID, nil
 }
+
+// resolveDestByName is the destination half of resolveMessengerDest, for a
+// sender with no own settlement: the nomadic host (founder phase). Same lookup
+// order — visible province markers first, then the public wanaxes list.
+func resolveDestByName(markers, wanaxes []map[string]any, destName string) (destID, resolvedName string, err error) {
+	if strings.TrimSpace(destName) == "" {
+		return "", "", fmt.Errorf("destination name is empty — use --to <settlement name>")
+	}
+	for _, m := range markers {
+		if n, _ := m["name"].(string); strings.EqualFold(n, destName) {
+			destID, _ = m["settlement_id"].(string)
+			resolvedName = n
+		}
+	}
+	if destID == "" {
+		for _, w := range wanaxes {
+			if n, _ := w["name"].(string); strings.EqualFold(n, destName) {
+				destID, _ = w["settlement_id"].(string)
+				resolvedName = n
+				break
+			}
+		}
+	}
+	if destID == "" {
+		return "", "", fmt.Errorf("no settlement named %q in view — wander closer (the host's march sweeps fog) and check 'poleia cities'", destName)
+	}
+	return destID, resolvedName, nil
+}

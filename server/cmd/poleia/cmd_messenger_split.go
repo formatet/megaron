@@ -12,11 +12,16 @@ import (
 // This is SB8 verb #1: distinct from trade-offer and transfer.
 func messageCmd() *cobra.Command {
 	var destName, text, fromName string
+	var fromHost bool
 	cmd := &cobra.Command{
-		Use:     "message",
-		Short:   "Send a free-text message to another Wanax (no goods)",
-		Example: `  poleia message --to Korinth --text "Greetings, neighbour"`,
+		Use:   "message",
+		Short: "Send a free-text message to another Wanax (no goods)",
+		Example: `  poleia message --to Korinth --text "Greetings, neighbour"
+  poleia message --from-host --to Korinth --text "A people seeks passage"`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if fromHost && fromName != "" {
+				return fmt.Errorf("--from och --from-host kan inte kombineras — hostet ÄR avsändaren")
+			}
 			c := newClient(cfg)
 
 			provinces, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
@@ -32,12 +37,41 @@ func messageCmd() *cobra.Command {
 				_ = json.Unmarshal(wdata, &wanaxes)
 			}
 
+			// Founder phase: no settlement to send from — the host itself is the
+			// origin (POST /founding/messengers, mig 087 unit-origin). Free, like
+			// every messenger; no trade from the host.
+			var path, resolvedName string
+			if fromHost {
+				destID, name, err := resolveDestByName(markers, wanaxes, destName)
+				if err != nil {
+					return err
+				}
+				resolvedName = name
+				path = fmt.Sprintf("/api/v1/worlds/%s/founding/messengers", cfg.WorldID)
+				data, err := c.post(path, map[string]any{
+					"destination_id": destID,
+					"message":        text,
+				})
+				if err != nil {
+					return err
+				}
+				if jsonMode {
+					printRawJSON(data)
+					return nil
+				}
+				var resp map[string]any
+				json.Unmarshal(data, &resp)
+				arrivesAt, _ := resp["arrives_at"].(string)
+				fmt.Printf("Messenger dispatched from the host to %s · arrives %s\n", resolvedName, arrivesAt)
+				return nil
+			}
+
 			destID, destName, ownSettlementID, err := resolveMessengerDest(markers, wanaxes, destName, fromName)
 			if err != nil {
 				return err
 			}
 
-			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, ownSettlementID)
+			path = fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, ownSettlementID)
 			data, err := c.post(path, map[string]any{
 				"destination_id": destID,
 				"message":        text,
@@ -60,6 +94,7 @@ func messageCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
 	cmd.Flags().StringVarP(&text, "text", "x", "", "message text (required)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital)")
+	cmd.Flags().BoolVar(&fromHost, "from-host", false, "send from your wandering Nomadic Host (founder phase) instead of a city")
 	_ = cmd.MarkFlagRequired("to")
 	_ = cmd.MarkFlagRequired("text")
 	return cmd

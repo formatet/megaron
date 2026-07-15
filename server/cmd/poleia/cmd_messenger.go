@@ -162,10 +162,20 @@ func outboxCmd() *cobra.Command {
 					}
 				}
 			}
-			if len(ownSettlementIDs) == 0 {
+			msgs := []map[string]any{}
+			// Host-origin messengers (founder phase, mig 087) live on their own
+			// endpoint — merged in so the correspondence is readable both while the
+			// host wanders (no settlement exists) and after founding (replies to a
+			// dissolved host still come home).
+			if hostData, herr := c.get(fmt.Sprintf("/api/v1/worlds/%s/founding/messengers", cfg.WorldID)); herr == nil {
+				var part []map[string]any
+				if json.Unmarshal(hostData, &part) == nil {
+					msgs = append(msgs, part...)
+				}
+			}
+			if len(ownSettlementIDs) == 0 && len(msgs) == 0 {
 				return fmt.Errorf("could not find own settlement")
 			}
-			msgs := []map[string]any{}
 			for _, sid := range ownSettlementIDs {
 				path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/messengers", cfg.WorldID, sid)
 				data, err := c.get(path)
@@ -204,6 +214,11 @@ func outboxCmd() *cobra.Command {
 					}
 				}
 				line := fmt.Sprintf("→ %s  [%s]  (%s)  id:%s", dest, status, when, id)
+				// The reply rides home with the returning messenger — without this
+				// line the correspondence's whole payoff was --json-only.
+				if reply, ok := m["reply_text"].(string); ok && reply != "" {
+					line += fmt.Sprintf("  svar: %q", reply)
+				}
 				if offer, ok := m["trade_offer"].(map[string]any); ok {
 					offerStatus, _ := offer["status"].(string)
 					offerKind, _ := offer["kind"].(string)

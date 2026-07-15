@@ -65,6 +65,13 @@ Categories: province, military, trade, diplomacy, kingdom, cult`,
 				}
 				prov = resolved
 			}
+			// Founder phase: no province exists yet, and the server's /actions is
+			// settlement-scoped (403s at the ownership gate before any verb check) —
+			// so the host's verbs are surfaced client-side here instead. Everything
+			// in temenos must be visible AND actionable in keryx.
+			if prov == "" {
+				return printFounderActions(c)
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/actions", cfg.WorldID, prov)
 			data, err := c.get(path)
 			if err != nil {
@@ -93,6 +100,45 @@ Categories: province, military, trade, diplomacy, kingdom, cult`,
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
 	return cmd
+}
+
+// printFounderActions is the founder-phase action surface: what a Wanax whose
+// people still wander can actually do. Built client-side from /founding/status
+// because the capabilities endpoint requires an owned settlement.
+func printFounderActions(c *Client) error {
+	fp, err := fetchFoundingStatus(c)
+	if err != nil {
+		return err
+	}
+	if !fp.Active {
+		return fmt.Errorf("ingen provins i config och ingen aktiv founder-fas — kör 'poleia login' igen")
+	}
+	hostID := "<host-id>"
+	if fp.HostUnitID != nil {
+		hostID = *fp.HostUnitID
+	}
+	verbs := []actionVerb{
+		{Name: "march", Category: "military", Available: true,
+			Purpose: fmt.Sprintf("Vandra: poleia unit march --unit %s --q <q> --r <r>", hostID)},
+		{Name: "settle", Category: "province", Available: true,
+			Purpose: "Grunda huvudstaden där hostet står (oåterkalleligt): poleia founding settle"},
+		{Name: "message", Category: "diplomacy", Available: true,
+			Purpose: "Budbärare från hostet (gratis, FOW-gatead): poleia message --from-host --to <stad> --text \"...\""},
+		{Name: "founding-status", Category: "province", Available: true,
+			Purpose: "Folket, eskortens förråd, position: poleia founding status"},
+	}
+	if jsonMode {
+		printJSON(verbs)
+		return nil
+	}
+	fmt.Println("Founder-fas — ditt folk vandrar ännu; inga stadsverb förrän huvudstaden är grundad.")
+	fmt.Println(strings.Repeat("─", 60))
+	fmt.Println("\nAvailable now")
+	for _, v := range verbs {
+		fmt.Printf("  %-16s %s\n", v.Name, v.Purpose)
+	}
+	fmt.Println("\nLocked — allt stadsbundet (build, recruit, trade, rite …) låses upp av: poleia founding settle")
+	return nil
 }
 
 func isKnownCategory(c string) bool {
