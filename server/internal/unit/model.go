@@ -104,12 +104,17 @@ func FOVFor(t Type) int {
 	return 2
 }
 
-// SpeedFactorFor returns the unit's speed as a multiplier on the baseline march
-// speed. The design fixes the ladder relative to messengers: host = ½ spearman,
-// spearman = ½ messenger. Land units are the baseline (1.0).
-func SpeedFactorFor(t Type) float64 {
+// MarchHoursFactorFor returns the multiplier to apply to
+// province.TerrainMoveHours for this unit type.
+//
+// It scales HOURS, not speed — a larger number is a SLOWER unit. Naming it for
+// speed invites the opposite reading and would make the host twice as fast as an
+// army instead of half: the ladder the design fixes is host = ½ spearman's speed
+// = double a spearman's hours. Spearmen are the baseline an army marches at
+// (messengers already halve it themselves, see TerrainMoveHours' own comment).
+func MarchHoursFactorFor(t Type) float64 {
 	if t == TypeNomadicHost {
-		return 0.5
+		return 2.0
 	}
 	return 1.0
 }

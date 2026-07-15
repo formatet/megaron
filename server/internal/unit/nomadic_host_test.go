@@ -34,11 +34,18 @@ func TestNomadicHost_SeesOneHexAndMovesAtHalfSpeed(t *testing.T) {
 	if got := FOVFor(TypeSpearman); got != 2 {
 		t.Fatalf("spearman FOV = %d, want the land baseline 2", got)
 	}
-	if got := SpeedFactorFor(TypeNomadicHost); got != 0.5 {
-		t.Fatalf("host speed factor = %v, want half a spearman's 0.5", got)
+	// Guards the direction of the multiplier: it scales HOURS, so the host's
+	// number must be ABOVE the baseline. A value below 1.0 would silently make the
+	// slowest thing in the game the fastest.
+	host, base := MarchHoursFactorFor(TypeNomadicHost), MarchHoursFactorFor(TypeSpearman)
+	if host != 2.0 {
+		t.Fatalf("host march-hours factor = %v, want 2.0 (double a spearman's hours = half its speed)", host)
 	}
-	if got := SpeedFactorFor(TypeSpearman); got != 1.0 {
-		t.Fatalf("spearman speed factor = %v, want the baseline 1.0", got)
+	if base != 1.0 {
+		t.Fatalf("spearman march-hours factor = %v, want the baseline 1.0", base)
+	}
+	if host <= base {
+		t.Fatalf("host factor %v must EXCEED the baseline %v — it scales hours, not speed", host, base)
 	}
 }
 

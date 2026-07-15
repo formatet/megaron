@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/poleia/server/internal/combat"
-	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/unit"
 )
@@ -21,10 +20,21 @@ const (
 	nomadicHostSpearmen     = 2
 	nomadicHostSpearmenSize = 100 // men per cohort
 
-	// nomadicHostRationTicks is how long the locked store lasts standing still:
-	// four game months at 24 ticks/day. Movement costs no extra grain — the slow
-	// march spends this same clock, which is the whole strategic cost.
-	nomadicHostRationTicks = 96
+	// nomadicHostRationTicks is how long the escort's pay and rations last:
+	// four game months (2 880 ticks = 120 game days at 24 ticks/day).
+	//
+	// The figure is sized in the player's time, not the world's: at the intended
+	// cadence (TICK_MINUTES=2, ~1 game month per real day) this is ~4 real days —
+	// long enough to sleep on the decision, which an async game must allow. Four
+	// game DAYS, the number the design first named, would have been ~3 real hours:
+	// log off overnight, come back to a starved escort.
+	//
+	// It is affordable only because the host itself eats nothing: 2 880 ticks of
+	// escort keep is ~1 200 grain and ~480 silver, which is modest to carry into
+	// the new metropolis (an ordinary city seeds with 300 grain). Were the 4 000
+	// civilians fed from this store it would be ~241 000 grain and would drown the
+	// opening's scarcity outright. (Decision Timothy 2026-07-15.)
+	nomadicHostRationTicks = 2880
 )
 
 // seedNomadicHost creates a player's founder phase: the host token, its two
@@ -71,20 +81,23 @@ func seedNomadicHost(
 		spearIDs = append(spearIDs, id)
 	}
 
-	// Drain rates, derived from the same functions the settled game uses — never
-	// hardcoded, so a calibration change moves the founder phase with it.
-	// UpkeepSpecs is per DAY (combat/upkeep.go:13, fired every TicksPerDay), so it
-	// must be divided down before it can sit next to a per-tick rate.
+	// The store feeds and pays the ESCORT ONLY. The host itself has no upkeep at
+	// all while it wanders (decision Timothy 2026-07-15): a people on the move
+	// forages as it goes, and does not eat like a city of 4 000 sitting still.
+	// That is also what keeps the founding honest — were the 4 000 fed from the
+	// store, four days of city rations would pour into the new metropolis and
+	// drown the geography→scarcity pressure the opening exists to create.
+	//
+	// Rates come from the same functions the settled game uses, never hardcoded,
+	// so a calibration change moves the founder phase with it. UpkeepSpecs is per
+	// DAY (combat/upkeep.go:13, fired every TicksPerDay) and must be divided down
+	// before it can sit beside a per-tick rate.
 	perDay := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize)
-	escortGrainPerTick := float64(nomadicHostSpearmen) * perDay.Grain / float64(events.TicksPerDay)
-	escortSilverPerTick := float64(nomadicHostSpearmen) * perDay.Silver / float64(events.TicksPerDay)
+	grainRate := -float64(nomadicHostSpearmen) * perDay.Grain / float64(events.TicksPerDay)
+	silverRate := -float64(nomadicHostSpearmen) * perDay.Silver / float64(events.TicksPerDay)
 
-	grainRate := -(economy.GrainConsumptionPerTick(nomadicHostPopulation) + escortGrainPerTick)
-	silverRate := -escortSilverPerTick
-
-	// The store holds exactly the rations named in the design: grain for everyone,
-	// silver for the cohorts' pay alone. Amounts follow from the rates, so the two
-	// can never disagree about how long the phase lasts.
+	// Amounts follow from the rates, so the two can never disagree about how long
+	// the escort lasts.
 	grainAmount := -grainRate * nomadicHostRationTicks
 	silverAmount := -silverRate * nomadicHostRationTicks
 
