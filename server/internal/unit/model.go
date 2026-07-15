@@ -34,7 +34,7 @@ const (
 	// TypeNomadicHost is the founder-phase token: the player's people before they
 	// have a capital. It is a single movable marker (size 1) — the 4 000 people it
 	// represents live in founder_phase.population, never in units.size. It dissolves
-	// permanently when the capital is founded.
+	// permanently when the metropolis is founded.
 	TypeNomadicHost Type = "nomadic_host"
 )
 
@@ -84,9 +84,9 @@ func CombatCapable(t Type) bool {
 	return t != TypeNomadicHost
 }
 
-// CanFoundCapital reports whether a unit type may found the player's first
-// settlement (dissolving itself in the act).
-func CanFoundCapital(t Type) bool {
+// CanFoundMetropolis reports whether a unit type may found the player's first
+// settlement — a metropolis — dissolving itself in the act.
+func CanFoundMetropolis(t Type) bool {
 	return t == TypeNomadicHost
 }
 

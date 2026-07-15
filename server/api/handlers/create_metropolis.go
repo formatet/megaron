@@ -11,12 +11,12 @@ import (
 	"github.com/poleia/server/internal/religion"
 )
 
-// capitalParams describes the capital to raise. Population is a parameter rather
+// metropolisParams describes the capital to raise. Population is a parameter rather
 // than a constant because the two callers disagree: an ordinary join lands 5 000
 // people (W1), while a Nomadic Host founds with the 4 000 civilians it carried
 // (temenos_nomadic_host_plan.md). Everything downstream — the Sitos seeds, grain
 // consumption, labor — derives from it.
-type capitalParams struct {
+type metropolisParams struct {
 	WorldID  uuid.UUID
 	PlayerID uuid.UUID
 
@@ -35,28 +35,28 @@ type capitalParams struct {
 	Population int
 }
 
-// createdCapital identifies the rows createCapital raised.
-type createdCapital struct {
+// createdMetropolis identifies the rows createMetropolis raised.
+type createdMetropolis struct {
 	ProvinceID   uuid.UUID
 	SettlementID uuid.UUID
 }
 
-// capitalError carries the message the HTTP layer should show alongside the real
-// cause. Without it, extracting createCapital out of the join handler would
+// metropolisError carries the message the HTTP layer should show alongside the real
+// cause. Without it, extracting createMetropolis out of the join handler would
 // collapse eight distinct response bodies into one — a behaviour change hiding
 // inside a refactor.
-type capitalError struct {
+type metropolisError struct {
 	userMsg string
 	cause   error
 }
 
-func (e *capitalError) Error() string { return e.userMsg + ": " + e.cause.Error() }
-func (e *capitalError) Unwrap() error { return e.cause }
+func (e *metropolisError) Error() string { return e.userMsg + ": " + e.cause.Error() }
+func (e *metropolisError) Unwrap() error { return e.cause }
 
 // UserMessage is the response body the caller should write.
-func (e *capitalError) UserMessage() string { return e.userMsg }
+func (e *metropolisError) UserMessage() string { return e.userMsg }
 
-// createCapital raises a player's capital: province, settlement, opening stores,
+// createMetropolis raises a player's capital: province, settlement, opening stores,
 // the Sitos seeds, starter buildings, labor weights, and the first production
 // pass. It runs inside the caller's transaction and does NOT commit.
 //
@@ -69,8 +69,8 @@ func (e *capitalError) UserMessage() string { return e.userMsg }
 //
 // Extracted from Join so the Nomadic Host's founding transaction raises its
 // capital through exactly the same path rather than a parallel copy that drifts.
-func createCapital(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig, p capitalParams) (createdCapital, error) {
-	var out createdCapital
+func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig, p metropolisParams) (createdMetropolis, error) {
+	var out createdMetropolis
 
 	// Create the province tile row — copy deposit flags from map_tiles.
 	err := tx.QueryRow(ctx,
@@ -80,7 +80,7 @@ func createCapital(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig,
 		p.WorldID, p.Q, p.R, p.Terrain, p.Copper, p.Tin, p.Silver, p.Cedar, p.Coastal,
 	).Scan(&out.ProvinceID)
 	if err != nil {
-		return out, &capitalError{"could not create province", err}
+		return out, &metropolisError{"could not create province", err}
 	}
 
 	// Create the settlement (capital).
@@ -93,7 +93,7 @@ func createCapital(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig,
 		p.WorldID, out.ProvinceID, p.Name, p.Culture, p.PlayerID, loyalty.LoyaltyStartCapital, p.Population,
 	).Scan(&out.SettlementID)
 	if err != nil {
-		return out, &capitalError{"could not create settlement", err}
+		return out, &metropolisError{"could not create settlement", err}
 	}
 
 	// Sitos genesis seed: sow the fund's starting silver (a deliberate silver-
@@ -114,7 +114,7 @@ func createCapital(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig,
 		`UPDATE provinces SET controller_id = $1 WHERE id = $2`,
 		out.SettlementID, out.ProvinceID,
 	); err != nil {
-		return out, &capitalError{"could not link province", err}
+		return out, &metropolisError{"could not link province", err}
 	}
 
 	// Seed a zero row for every good so the settlement always has full inventory
@@ -140,7 +140,7 @@ func createCapital(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig,
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		out.SettlementID,
 	); err != nil {
-		return out, &capitalError{"could not seed goods", err}
+		return out, &metropolisError{"could not seed goods", err}
 	}
 
 	// Sitos genesis seed: sow LIQUID silver (goods.silver), separate from the
@@ -182,13 +182,13 @@ func createCapital(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig,
 		     kharis_rate = EXCLUDED.kharis_rate`,
 		p.PlayerID, p.WorldID, out.SettlementID, kharisRate,
 	); err != nil {
-		return out, &capitalError{"could not record join", err}
+		return out, &metropolisError{"could not record join", err}
 	}
 
 	// Seed the minimal starter building set (farm/lumbermill/temple/market) so the
 	// religion + silver subsystems are alive from t=0. Must precede RecomputeProduction.
 	if err = seedStarterBuildings(ctx, tx, out.SettlementID); err != nil {
-		return out, &capitalError{"could not seed starter buildings", err}
+		return out, &metropolisError{"could not seed starter buildings", err}
 	}
 
 	// Seed baseline labor weights: grain dominates (85%) so the starter city is
@@ -204,14 +204,14 @@ func createCapital(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig,
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		out.SettlementID,
 	); err != nil {
-		return out, &capitalError{"could not seed labor weights", err}
+		return out, &metropolisError{"could not seed labor weights", err}
 	}
 
 	// RecomputeProduction reads catchment tiles and settlement_labor weights, then
 	// writes rates. The equal-weight seeder (len(weights)==0 path) is bypassed since
 	// we already seeded grain + cult above.
 	if err = economy.RecomputeProduction(ctx, tx, out.SettlementID); err != nil {
-		return out, &capitalError{"could not init production", err}
+		return out, &metropolisError{"could not init production", err}
 	}
 
 	return out, nil

@@ -17,7 +17,7 @@ import (
 
 // joinStartingPopulation is the population an ordinary join lands with (W1).
 // The Nomadic Host founds with its own carried civilians instead — see
-// capitalParams.Population.
+// metropolisParams.Population.
 const joinStartingPopulation = 5000
 
 // JoinHandler handles POST /worlds/:worldID/join.
@@ -238,7 +238,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// A new player arrives as a Nomadic Host: a people on the move with four
 	// months of rations, looking for somewhere to become a city. No settlement and
 	// no province are created here — those are born at founding, on a hex the
-	// player chose (temenos_nomadic_host_plan.md). createCapital stands ready for
+	// player chose (temenos_nomadic_host_plan.md). createMetropolis stands ready for
 	// that founding transaction; join no longer calls it.
 	hostID, err := seedNomadicHost(r.Context(), tx, h.eventStore, worldID, playerID, q, r2)
 	if err != nil {

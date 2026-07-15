@@ -3,7 +3,7 @@ package unit
 import "testing"
 
 // The host is defined as much by what it cannot do as by what it is: it carries a
-// people, it cannot fight, and it may found the one capital. These gates are the
+// people, it cannot fight, and it may found the one metropolis. These gates are the
 // only thing standing between "founder phase" and "an unkillable 4 000-man army".
 func TestNomadicHost_CannotFight(t *testing.T) {
 	if CombatCapable(TypeNomadicHost) {
@@ -16,13 +16,13 @@ func TestNomadicHost_CannotFight(t *testing.T) {
 	}
 }
 
-func TestNomadicHost_AloneMayFoundCapital(t *testing.T) {
-	if !CanFoundCapital(TypeNomadicHost) {
-		t.Fatal("the nomadic host must be able to found the capital")
+func TestNomadicHost_AloneMayFoundMetropolis(t *testing.T) {
+	if !CanFoundMetropolis(TypeNomadicHost) {
+		t.Fatal("the nomadic host must be able to found the metropolis")
 	}
 	for _, ty := range []Type{TypeSpearman, TypeGalley, TypeMerchantman, TypeEliteInfantry} {
-		if CanFoundCapital(ty) {
-			t.Fatalf("%s must not be able to found a capital", ty)
+		if CanFoundMetropolis(ty) {
+			t.Fatalf("%s must not be able to found a metropolis", ty)
 		}
 	}
 }

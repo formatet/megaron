@@ -14,7 +14,7 @@ import (
 
 // The founder phase's opening figures (temenos_nomadic_host_plan.md §Grundregler).
 // The two spearmen cohorts sit ON TOP of these civilians — 4 200 people leave the
-// starting line, and only the 4 000 become the capital's population at founding
+// starting line, and only the 4 000 become the metropolis's population at founding
 // (decision Timothy 2026-07-15). Soldiers are separate from population throughout.
 const (
 	nomadicHostPopulation   = 4000
