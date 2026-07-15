@@ -201,6 +201,31 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			trainQueue = []trainItem{}
 		}
 
+		// Forming land units — men already recruited toward a not-yet-deployable
+		// unit (size set to the full order at recruit time; the unit stays 'forming'
+		// until it reaches 100 and flips to garrison). The training_queue above only
+		// holds the REMAINING batches (still training); this total lets a client
+		// split a type into köade = size, tränar = queued men, klara = size − tränar.
+		// Land only: naval "forming" is a size-1 vessel building, a different model.
+		// Keyed by unit type. Additive field — existing consumers ignore it.
+		formingUnits := map[string]int{}
+		if frows, ferr := h.pool.Query(r.Context(),
+			`SELECT type, COALESCE(SUM(size), 0)::int
+			 FROM units
+			 WHERE settlement_id = $1 AND status = 'forming' AND category = 'land'
+			 GROUP BY type`,
+			sett.ID,
+		); ferr == nil {
+			for frows.Next() {
+				var t string
+				var sz int
+				if frows.Scan(&t, &sz) == nil {
+					formingUnits[t] = sz
+				}
+			}
+			frows.Close()
+		}
+
 		// Buildings — already completed (agents/clients use this to avoid re-queuing).
 		type buildingItem struct {
 			Type  string `json:"type"`
@@ -603,6 +628,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"army_upkeep":            armyUp,
 			"build_queue":            buildQueue,
 			"training_queue":         trainQueue,
+			"forming_units":          formingUnits,
 			"buildings":              buildings,
 			"can_afford":             buildAfford,
 			"can_recruit":            recruitAfford,
