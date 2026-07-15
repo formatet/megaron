@@ -352,6 +352,136 @@ func TestRecruitShip_LandRecruitUnchanged(t *testing.T) {
 	}
 }
 
+// TestRecruit_LandLifecycle verifies the forming→training→garrison lifecycle
+// (Timothy 2026-07-15, temenos_recruit_lifecycle_plan.md): a land unit gathers
+// men as `forming` (< 100), enters `training` with exactly ONE TrainComplete
+// when it reaches 100, is NOT deployable until that fires, then flips to
+// `garrison`. An over-100 recruit caps the unit at 100 and spills the remainder
+// into a fresh forming unit. No per-10-men batches.
+func TestRecruit_LandLifecycle(t *testing.T) {
+	f := setupRecruitShipFixture(t)
+	ctx := context.Background()
+	recruitPath := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/recruit"
+
+	// (1) A full 100-man recruit enters `training` (not `garrison`) with exactly
+	// one scheduled TrainComplete and a ready ETA.
+	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 100})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("Recruit(spearman, men=100) = %d %q, want 201", rec.Code, rec.Body.String())
+	}
+	unitIDs, _ := resp["unit_ids"].([]any)
+	trainingID, err := uuid.Parse(unitIDs[0].(string))
+	if err != nil {
+		t.Fatalf("parse unit id: %v", err)
+	}
+	var status string
+	var size int
+	var bca *time.Time
+	if err := f.pool.QueryRow(ctx,
+		`SELECT status, size, build_complete_at FROM units WHERE id=$1`, trainingID,
+	).Scan(&status, &size, &bca); err != nil {
+		t.Fatalf("load unit: %v", err)
+	}
+	if status != "training" {
+		t.Errorf("status = %q, want training (full at 100, not yet deployable)", status)
+	}
+	if size != 100 {
+		t.Errorf("size = %d, want 100", size)
+	}
+	if bca == nil {
+		t.Error("build_complete_at nil — a training unit must carry a ready ETA")
+	}
+	var pending int
+	if err := f.pool.QueryRow(ctx,
+		`SELECT count(*) FROM scheduled_events WHERE event_type='TrainComplete'
+		   AND processed_at IS NULL AND (payload->>'unit_id')::uuid=$1`, trainingID,
+	).Scan(&pending); err != nil {
+		t.Fatalf("count scheduled: %v", err)
+	}
+	if pending != 1 {
+		t.Errorf("pending TrainComplete = %d, want exactly 1 (no per-10 batches)", pending)
+	}
+
+	// Not deployable while training.
+	getReq := httptest.NewRequest(http.MethodGet, "/worlds/"+f.worldID.String()+"/units", nil)
+	getReq.Header.Set("Authorization", "Bearer "+f.accessToken)
+	getRec := httptest.NewRecorder()
+	f.router.ServeHTTP(getRec, getReq)
+	var listBody struct {
+		Units []struct {
+			ID         string `json:"id"`
+			Deployable bool   `json:"deployable"`
+		} `json:"units"`
+	}
+	if err := json.Unmarshal(getRec.Body.Bytes(), &listBody); err != nil {
+		t.Fatalf("parse unit list: %v", err)
+	}
+	for _, u := range listBody.Units {
+		if u.ID == trainingID.String() && u.Deployable {
+			t.Error("deployable = true while training, want false")
+		}
+	}
+
+	// Fire TrainComplete → garrison, ETA cleared.
+	payload, _ := json.Marshal(combat.TrainCompletePayload{
+		SettlementID: f.settlementID, UnitType: "spearman", Count: 100, UnitID: trainingID,
+	})
+	if err := f.trainH.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, Payload: payload}); err != nil {
+		t.Fatalf("TrainComplete handle: %v", err)
+	}
+	if err := f.pool.QueryRow(ctx,
+		`SELECT status, build_complete_at FROM units WHERE id=$1`, trainingID,
+	).Scan(&status, &bca); err != nil {
+		t.Fatalf("reload after flip: %v", err)
+	}
+	if status != "garrison" {
+		t.Errorf("status after TrainComplete = %q, want garrison", status)
+	}
+	if bca != nil {
+		t.Errorf("build_complete_at after flip = %v, want nil (cleared)", bca)
+	}
+
+	// (2) Spill: a fresh forming unit at 80, then +40 caps it at 100 (training)
+	// and spills 20 into a new forming unit.
+	if r, _ := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 80}); r.Code != http.StatusCreated {
+		t.Fatalf("Recruit(spearman, men=80) = %d, want 201", r.Code)
+	}
+	var formingSize int
+	if err := f.pool.QueryRow(ctx,
+		`SELECT size FROM units WHERE settlement_id=$1 AND type='spearman' AND status='forming'`,
+		f.settlementID,
+	).Scan(&formingSize); err != nil {
+		t.Fatalf("load forming after 80: %v", err)
+	}
+	if formingSize != 80 {
+		t.Errorf("forming size after recruit 80 = %d, want 80", formingSize)
+	}
+
+	if r, _ := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 40}); r.Code != http.StatusCreated {
+		t.Fatalf("Recruit(spearman, men=40) = %d, want 201", r.Code)
+	}
+	var trainingCount, trainingSz int
+	if err := f.pool.QueryRow(ctx,
+		`SELECT count(*), COALESCE(max(size),0) FROM units
+		 WHERE settlement_id=$1 AND type='spearman' AND status='training'`, f.settlementID,
+	).Scan(&trainingCount, &trainingSz); err != nil {
+		t.Fatalf("load training after spill: %v", err)
+	}
+	if trainingCount != 1 || trainingSz != 100 {
+		t.Errorf("training units = %d (max size %d), want 1 at 100", trainingCount, trainingSz)
+	}
+	var spillSize int
+	if err := f.pool.QueryRow(ctx,
+		`SELECT size FROM units WHERE settlement_id=$1 AND type='spearman' AND status='forming'`,
+		f.settlementID,
+	).Scan(&spillSize); err != nil {
+		t.Fatalf("load spill forming: %v", err)
+	}
+	if spillSize != 20 {
+		t.Errorf("spill forming size = %d, want 20 (120 − 100)", spillSize)
+	}
+}
+
 // TestRecruitShip_StanceRejectedOnNaval verifies SetStance 422s for a naval
 // unit (ships carry no stance — Skepp-taxonomi, temenos_enheter.md).
 func TestRecruitShip_StanceRejectedOnNaval(t *testing.T) {
