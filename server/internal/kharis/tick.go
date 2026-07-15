@@ -126,11 +126,12 @@ const kharisFloor = 1.0
 const grainPerCitizen = 300.0
 
 // starvationDailyPopLossRate is the fraction of population a starving city loses
-// per day — the read-side mirror of applyDecay's starvation branch, which writes
-// ROUND(pop * 0.995) (i.e. −0.5%/day). Kept here only to report the modelled
-// pop_loss in the critical SubsistenceWarning payload; the MECHANIC still lives
-// solely in applyDecay's SQL (this is emit/legibility, not a second write path).
-// If applyDecay's 0.995 factor is ever retuned, keep this in sync.
+// per day (−0.5%/day). Single source of truth for BOTH sides: applyDecay's SQL
+// binds it as a parameter — ROUND(pop * (1 - $3)::numeric) — to write the real
+// pop mutation, and applyStarvationWarning multiplies by it to report the
+// modelled pop_loss in the critical SubsistenceWarning payload. Retune here and
+// both move together. (Reported loss stays an estimate: the SQL rounds survivors
+// and floors at 101, the warning truncates the loss — same rate, not same delta.)
 const starvationDailyPopLossRate = 0.005
 
 // TickHandler applies daily temple maintenance to all active settlements in a world.
@@ -569,7 +570,11 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		     SELECT
 		         id, grain_now,
 		         GREATEST(101, LEAST(30000,
-		             CASE WHEN growing THEN pop + actual_new ELSE ROUND(pop * 0.995) END
+		             -- Starvation: retain (1 - starvationDailyPopLossRate) of pop. The
+		             -- ::numeric cast keeps this exact numeric ROUND (half away from
+		             -- zero) — a bare float8 product would round half-to-even and drift
+		             -- by ±1 at pop ≡ 100 (mod 200); verified over pop 101..30000.
+		             CASE WHEN growing THEN pop + actual_new ELSE ROUND(pop * (1 - $3::float8)::numeric) END
 		         )) AS new_pop,
 		         CASE WHEN growing THEN actual_new * $2::float ELSE 0 END AS grain_draw
 		     FROM priced
@@ -591,7 +596,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		     RETURNING sg.settlement_id
 		 )
 		 SELECT count(*) FROM pop_upd`,
-		worldID, grainPerCitizen,
+		worldID, grainPerCitizen, starvationDailyPopLossRate,
 	); err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
 	}
