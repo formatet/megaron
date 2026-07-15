@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
 
@@ -54,6 +53,19 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		worldID, playerID,
 	).Scan(&existingProvID); err == nil {
 		writeJSON(w, http.StatusOK, map[string]any{"province_id": existingProvID, "existing": true})
+		return
+	}
+
+	// Already wandering as a host? Same idempotency guarantee as above — a player
+	// gets exactly one founder phase per world, ever (founder_phase's unique key
+	// enforces it; this is the friendly answer rather than a constraint violation).
+	var existingHostID uuid.UUID
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT host_unit_id FROM founder_phase
+		 WHERE world_id = $1 AND owner_id = $2 AND active`,
+		worldID, playerID,
+	).Scan(&existingHostID); err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"host_unit_id": existingHostID, "existing": true})
 		return
 	}
 
@@ -122,11 +134,24 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	var terrainType string
 	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal bool
 	err = h.pool.QueryRow(r.Context(),
-		`WITH west_count AS (
-		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q <= $2
+		// Occupancy counts BOTH settled provinces and wandering hosts: a host that
+		// has not founded yet is occupied ground too. Counting only provinces would
+		// compare 0 against 0 for the whole founder phase and pile every player into
+		// one valley — and worlds will later mix the two, when players spawn a host
+		// into an already-inhabited world (Timothy 2026-07-15).
+		`WITH hosts AS (
+		     SELECT hu.q, hu.r
+		     FROM units hu
+		     JOIN founder_phase fp ON fp.host_unit_id = hu.id AND fp.active
+		     WHERE hu.world_id = $1 AND hu.q IS NOT NULL AND hu.r IS NOT NULL
+		 ),
+		 west_count AS (
+		     SELECT (SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q <= $2)
+		          + (SELECT count(*) FROM hosts WHERE q <= $2) AS count
 		 ),
 		 east_count AS (
-		     SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q > $2
+		     SELECT (SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q > $2)
+		          + (SELECT count(*) FROM hosts WHERE q > $2) AS count
 		 )
 		 SELECT mt.q, mt.r, mt.terrain,
 		        mt.copper_deposit, mt.tin_deposit,
@@ -137,24 +162,26 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 WHERE mt.world_id = $1
 		   AND p.id IS NULL
 		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
+		   -- Keep clear of settled ground …
 		   AND NOT EXISTS (
 		       SELECT 1 FROM provinces p2
 		       WHERE p2.world_id = $1
 		         AND (ABS(mt.q - p2.map_q) + ABS(mt.r - p2.map_r) +
 		              ABS((mt.q + mt.r) - (p2.map_q + p2.map_r))) / 2 <= 4
 		   )
-		   -- Self-sufficiency invariant: the starter catchment (the 6 adjacent
-		   -- hexes RecomputeProduction reads) must contain at least one real
-		   -- grain tile (plains/river_valley) so the capital can feed a basic
-		   -- army without trade. hills grain (0.01/min) is a trickle, not food.
-		   AND EXISTS (
-		       SELECT 1 FROM map_tiles g
-		       WHERE g.world_id = mt.world_id
-		         AND g.terrain IN ('plains','river_valley')
-		         AND ((g.q = mt.q+1 AND g.r = mt.r  ) OR (g.q = mt.q-1 AND g.r = mt.r  ) OR
-		              (g.q = mt.q   AND g.r = mt.r+1) OR (g.q = mt.q   AND g.r = mt.r-1) OR
-		              (g.q = mt.q+1 AND g.r = mt.r-1) OR (g.q = mt.q-1 AND g.r = mt.r+1))
+		   -- … and of other hosts, by the same measure.
+		   AND NOT EXISTS (
+		       SELECT 1 FROM hosts h
+		       WHERE (ABS(mt.q - h.q) + ABS(mt.r - h.r) +
+		              ABS((mt.q + mt.r) - (h.q + h.r))) / 2 <= 4
 		   )
+		   -- NOTE: the old "starter catchment must hold a grain tile" filter is
+		   -- deliberately gone. It was a self-sufficiency invariant for a capital
+		   -- born where it lands; a host carries four months of rations and is
+		   -- meant to go looking for its site. Pre-picking fertile ground would
+		   -- answer the question the founder phase exists to ask. The grain check
+		   -- lives in the founding forecast instead
+		   -- (temenos_nomadic_host_plan.md §Spawn, §Platsprognos).
 		 ORDER BY
 		   -- 1. Hemisphere balance: fill the side with fewer settlements first.
 		   CASE
@@ -208,43 +235,30 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Raise the capital: province, settlement, opening stores, Sitos seeds,
-	// starter buildings, labor and the first production pass. Shared with the
-	// Nomadic Host's founding transaction so the two cannot drift apart.
-	cap, err := createCapital(r.Context(), tx, h.sitosCfg, capitalParams{
-		WorldID:  worldID,
-		PlayerID: playerID,
-		Q:        q,
-		R:        r2,
-		Terrain:  terrainType,
-		Copper:   copperDeposit,
-		Tin:      tinDeposit,
-		Silver:   silverDeposit,
-		Cedar:    cedarDeposit,
-		Coastal:  tileCoastal,
-		Name:     req.ProvinceName,
-		Culture:  req.Culture,
-		Population: joinStartingPopulation,
-	})
+	// A new player arrives as a Nomadic Host: a people on the move with four
+	// months of rations, looking for somewhere to become a city. No settlement and
+	// no province are created here — those are born at founding, on a hex the
+	// player chose (temenos_nomadic_host_plan.md). createCapital stands ready for
+	// that founding transaction; join no longer calls it.
+	hostID, err := seedNomadicHost(r.Context(), tx, h.eventStore, worldID, playerID, q, r2)
 	if err != nil {
-		slog.Error("join: could not create capital", "err", err, "player", playerID, "world", worldID)
-		msg := "could not create capital"
-		var ce *capitalError
-		if errors.As(err, &ce) {
-			msg = ce.UserMessage()
-		}
-		writeError(w, http.StatusInternalServerError, msg)
+		slog.Error("join: could not seed nomadic host", "err", err, "player", playerID, "world", worldID)
+		writeError(w, http.StatusInternalServerError, "could not create nomadic host")
 		return
 	}
-	provinceID, settlementID := cap.ProvinceID, cap.SettlementID
 
-	// C7: create starter units for the new settlement.
-	// Coast tile (respawn path) → 1 galley + 1 infantry garrison.
-	// Inland tile (join path today) → 2 infantry garrisons.
-	// Men drawn from population are accounted for inside seedStarterUnits.
-	if err := seedStarterUnits(r.Context(), tx, h.eventStore, settlementID, playerID, worldID, q, r2, tileCoastal); err != nil {
-		slog.Error("could not seed starter units", "err", err, "settlement", settlementID)
-		writeError(w, http.StatusInternalServerError, "could not seed starter units")
+	// Record the player as active with no settlement yet — settlement_id is
+	// nullable and stays NULL until founding fills it in. kharis_rate keeps its
+	// default: it is derived from the pantheon geography of the capital's hex,
+	// which does not exist yet.
+	if _, err := tx.Exec(r.Context(),
+		`INSERT INTO player_world_records (player_id, world_id, status)
+		 VALUES ($1, $2, 'active')
+		 ON CONFLICT (player_id, world_id) DO UPDATE SET status = 'active'`,
+		playerID, worldID,
+	); err != nil {
+		slog.Error("could not record join", "err", err, "player", playerID, "world", worldID)
+		writeError(w, http.StatusInternalServerError, "could not record join")
 		return
 	}
 
@@ -262,8 +276,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"province_id": provinceID,
-		"tile":        world.MapTile{Q: q, R: r2},
-		"culture":     req.Culture,
+		"host_unit_id": hostID,
+		"tile":         world.MapTile{Q: q, R: r2},
+		"culture":      req.Culture,
+		"population":   nomadicHostPopulation,
 	})
 }

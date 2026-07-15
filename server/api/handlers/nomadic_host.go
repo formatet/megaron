@@ -1,0 +1,133 @@
+package handlers
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/poleia/server/internal/combat"
+	"github.com/poleia/server/internal/economy"
+	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/unit"
+)
+
+// The founder phase's opening figures (temenos_nomadic_host_plan.md §Grundregler).
+// The two spearmen cohorts sit ON TOP of these civilians — 4 200 people leave the
+// starting line, and only the 4 000 become the capital's population at founding
+// (decision Timothy 2026-07-15). Soldiers are separate from population throughout.
+const (
+	nomadicHostPopulation   = 4000
+	nomadicHostSpearmen     = 2
+	nomadicHostSpearmenSize = 100 // men per cohort
+
+	// nomadicHostRationTicks is how long the locked store lasts standing still:
+	// four game months at 24 ticks/day. Movement costs no extra grain — the slow
+	// march spends this same clock, which is the whole strategic cost.
+	nomadicHostRationTicks = 96
+)
+
+// seedNomadicHost creates a player's founder phase: the host token, its two
+// free-standing spearmen cohorts, and the locked store that feeds them all.
+// It runs inside the caller's transaction and does NOT commit.
+//
+// No settlement, no province: those are born at founding. The host stands on the
+// map (status 'positioned', q/r set, settlement_id NULL), which is also why
+// combat.UpkeepHandler must skip these units — it processes 'positioned' and
+// would bill the cohorts a second time (temenos_nomadic_host_bygg.md B3).
+func seedNomadicHost(
+	ctx context.Context,
+	tx pgx.Tx,
+	eventStore *events.Store,
+	worldID, playerID uuid.UUID,
+	q, r int,
+) (uuid.UUID, error) {
+	// The host token: one movable marker. Its 4 000 people live in
+	// founder_phase.population — units.size is 0–100 for land and means men.
+	var hostID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
+		 VALUES ($1, $2, $3, $4, 1, 0, 'positioned', $5, $6)
+		 RETURNING id`,
+		worldID, playerID, string(unit.TypeNomadicHost), string(unit.CategoryOf(unit.TypeNomadicHost)), q, r,
+	).Scan(&hostID); err != nil {
+		return uuid.Nil, fmt.Errorf("insert nomadic host: %w", err)
+	}
+
+	// The escort: two ordinary spearmen cohorts, standing with the host. They are
+	// ordinary units in every way except who pays them (the store, until founding).
+	spearIDs := make([]uuid.UUID, 0, nomadicHostSpearmen)
+	for i := 0; i < nomadicHostSpearmen; i++ {
+		var id uuid.UUID
+		if err := tx.QueryRow(ctx,
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
+			 VALUES ($1, $2, $3, $4, $5, 0, 'positioned', $6, $7)
+			 RETURNING id`,
+			worldID, playerID, string(unit.TypeSpearman), string(unit.CategoryLand),
+			nomadicHostSpearmenSize, q, r,
+		).Scan(&id); err != nil {
+			return uuid.Nil, fmt.Errorf("insert host spearman %d: %w", i+1, err)
+		}
+		spearIDs = append(spearIDs, id)
+	}
+
+	// Drain rates, derived from the same functions the settled game uses — never
+	// hardcoded, so a calibration change moves the founder phase with it.
+	// UpkeepSpecs is per DAY (combat/upkeep.go:13, fired every TicksPerDay), so it
+	// must be divided down before it can sit next to a per-tick rate.
+	perDay := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize)
+	escortGrainPerTick := float64(nomadicHostSpearmen) * perDay.Grain / float64(events.TicksPerDay)
+	escortSilverPerTick := float64(nomadicHostSpearmen) * perDay.Silver / float64(events.TicksPerDay)
+
+	grainRate := -(economy.GrainConsumptionPerTick(nomadicHostPopulation) + escortGrainPerTick)
+	silverRate := -escortSilverPerTick
+
+	// The store holds exactly the rations named in the design: grain for everyone,
+	// silver for the cohorts' pay alone. Amounts follow from the rates, so the two
+	// can never disagree about how long the phase lasts.
+	grainAmount := -grainRate * nomadicHostRationTicks
+	silverAmount := -silverRate * nomadicHostRationTicks
+
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO founder_phase
+		   (world_id, owner_id, host_unit_id, population,
+		    grain_amount, grain_rate, silver_amount, silver_rate, calc_tick, active)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, current_world_tick(), true)`,
+		worldID, playerID, hostID, nomadicHostPopulation,
+		grainAmount, grainRate, silverAmount, silverRate,
+	); err != nil {
+		return uuid.Nil, fmt.Errorf("insert founder phase: %w", err)
+	}
+
+	// UnitFormed for each unit, on its own stream: these units have no settlement
+	// to be an aggregate of yet. PopDrawn is 0 — the host's people were never in a
+	// city's population to draw from (the cohorts ride on top of the 4 000).
+	formed := append([]uuid.UUID{hostID}, spearIDs...)
+	types := append([]unit.Type{unit.TypeNomadicHost},
+		make([]unit.Type, nomadicHostSpearmen)...)
+	sizes := append([]int{1}, make([]int, nomadicHostSpearmen)...)
+	for i := 1; i <= nomadicHostSpearmen; i++ {
+		types[i] = unit.TypeSpearman
+		sizes[i] = nomadicHostSpearmenSize
+	}
+
+	for i, id := range formed {
+		payload := unit.UnitFormedPayload{
+			UnitID:      id,
+			OwnerID:     playerID,
+			WorldID:     worldID,
+			UnitType:    string(types[i]),
+			Category:    string(unit.CategoryOf(types[i])),
+			InitialSize: sizes[i],
+			Crew:        0,
+			PopDrawn:    0,
+		}
+		if _, err := eventStore.Append(ctx, id, events.StreamType(unit.StreamUnit),
+			unit.EventUnitFormed, payload, worldID, nil,
+		); err != nil {
+			return uuid.Nil, fmt.Errorf("append UnitFormed for %s: %w", types[i], err)
+		}
+	}
+
+	return hostID, nil
+}
