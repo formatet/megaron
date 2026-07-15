@@ -269,6 +269,8 @@ func main() {
 			r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
+			// Founder phase: the Nomadic Host becomes a metropolis where it stands.
+			r.Post("/worlds/{worldID}/founding/settle", jh.Settle)
 
 			r.Route("/worlds/{worldID}/kingdoms", func(r chi.Router) {
 				r.Use(requireKingdomsEnabled)
