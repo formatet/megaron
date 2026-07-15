@@ -640,25 +640,39 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Resolve the settlement that dispatches the order messenger: the settlement
-	// at the unit's march origin if one still stands there, else the owner's
-	// capital (a positioned unit's origin hex may hold no settlement, but the
-	// messengers row's origin_id is a hard settlement FK).
-	var homeSettlementID uuid.UUID
+	// Resolve who dispatches the order messenger: the settlement at the unit's
+	// march origin if one still stands there, else the owner's capital, else —
+	// founder phase — the wandering host itself (mig 087 lets a messenger have a
+	// unit origin; before founding there is no settlement anywhere to send from,
+	// and reaching/recalling the escort is one of the host's designed uses).
+	var originSettlementID, originUnitID *uuid.UUID
 	var homeQ, homeR int
+	var homeSettlementID uuid.UUID
 	if err := h.pool.QueryRow(ctx,
 		`SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
 		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
 		worldID, origin.Q, origin.R,
-	).Scan(&homeSettlementID, &homeQ, &homeR); err != nil {
+	).Scan(&homeSettlementID, &homeQ, &homeR); err == nil {
+		originSettlementID = &homeSettlementID
+	} else if err := h.pool.QueryRow(ctx,
+		`SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.is_capital = true`,
+		worldID, playerID,
+	).Scan(&homeSettlementID, &homeQ, &homeR); err == nil {
+		originSettlementID = &homeSettlementID
+	} else {
+		var hostID uuid.UUID
 		if err := h.pool.QueryRow(ctx,
-			`SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
-			 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.is_capital = true`,
+			`SELECT fp.host_unit_id, u.q, u.r
+			 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
+			 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
+			   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
 			worldID, playerID,
-		).Scan(&homeSettlementID, &homeQ, &homeR); err != nil {
+		).Scan(&hostID, &homeQ, &homeR); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not resolve a settlement to dispatch the order from")
 			return
 		}
+		originUnitID = &hostID
 	}
 
 	dist := province.HexDistance(province.MapPosition{Q: homeQ, R: homeR}, currentPos)
@@ -691,13 +705,21 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		msgText = fmt.Sprintf("Redirect order — new course to (%d,%d).", newTargetQ, newTargetR)
 	}
 
+	// origin_q/origin_r only ride along on a unit origin (mig 087): the host's
+	// departure point is frozen here; a settlement origin keeps its coords in
+	// the settlement row as before.
+	var originQ, originR *int
+	if originUnitID != nil {
+		originQ, originR = &homeQ, &homeR
+	}
 	var messengerID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO messengers
-		     (world_id, sender_id, origin_id, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at)
-		 VALUES ($1,$2,$3,NULL,$4,'outbound','recall',$5,$6,$7,$8,$9)
+		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','recall',$8,$9,$10,$11,$12)
 		 RETURNING id`,
-		worldID, playerID, homeSettlementID, msgText, homeQ, homeR, currentPos.Q, currentPos.R, messengerArrivesAt,
+		worldID, playerID, originSettlementID, originUnitID, originQ, originR,
+		msgText, homeQ, homeR, currentPos.Q, currentPos.R, messengerArrivesAt,
 	).Scan(&messengerID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch order messenger")
 		return

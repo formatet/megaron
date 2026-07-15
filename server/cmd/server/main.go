@@ -271,6 +271,9 @@ func main() {
 			r.Post("/worlds/{worldID}/join", jh.Join)
 			// Founder phase: the Nomadic Host becomes a metropolis where it stands.
 			r.Post("/worlds/{worldID}/founding/settle", jh.Settle)
+			// Founder phase: messengers from the wandering host (mig 087).
+			r.Post("/worlds/{worldID}/founding/messengers", mh.SendFromHost)
+			r.Get("/worlds/{worldID}/founding/messengers", mh.ListFromHost)
 
 			r.Route("/worlds/{worldID}/kingdoms", func(r chi.Router) {
 				r.Use(requireKingdomsEnabled)

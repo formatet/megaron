@@ -1150,12 +1150,16 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, op.map_q, op.map_r, op.terrain_type,
+		`SELECT m.id, COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
+		        COALESCE(op.terrain_type, omt.terrain, ''),
 		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
 		        m.sent_at, m.arrives_at
 		 FROM messengers m
-		 JOIN settlements os ON os.id = m.origin_id
-		 JOIN provinces op ON op.id = os.province_id
+		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its frozen
+		 -- departure point (origin_q/origin_r) places it, with terrain off the tile.
+		 LEFT JOIN settlements os ON os.id = m.origin_id
+		 LEFT JOIN provinces op ON op.id = os.province_id
+		 LEFT JOIN map_tiles omt ON omt.world_id = m.world_id AND omt.q = m.origin_q AND omt.r = m.origin_r
 		 LEFT JOIN settlements ds ON ds.id = m.destination_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
 		 WHERE m.world_id = $1 AND m.status = 'outbound'`,

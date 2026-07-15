@@ -114,8 +114,10 @@ func (h *ReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	var status string
 	var originID uuid.UUID
+	// origin_id is NULL for a host-sent messenger (mig 087); the origin unit is
+	// then the stream the MessengerReturned event belongs to.
 	err := h.pool.QueryRow(ctx,
-		`SELECT status, origin_id FROM messengers WHERE id = $1`,
+		`SELECT status, COALESCE(origin_id, origin_unit_id) FROM messengers WHERE id = $1`,
 		payload.MessengerID,
 	).Scan(&status, &originID)
 	if err != nil {

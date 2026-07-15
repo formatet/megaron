@@ -352,6 +352,171 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// SendFromHost handles POST /worlds/:worldID/founding/messengers.
+// The Nomadic Host sends a messenger from wherever it stands: first contact with
+// a met settlement, or an ordinary message once contact is made. Free, like every
+// messenger (design §Budbärare) — no grain, silver or capacity cost, and no trade:
+// the founder phase's silver is locked to the escort.
+func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	var req struct {
+		DestinationID string          `json:"destination_id"`
+		Message       string          `json:"message"`
+		TradeOffer    json.RawMessage `json:"trade_offer,omitempty"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	if len(req.TradeOffer) > 0 && string(req.TradeOffer) != "null" {
+		writeError(w, http.StatusUnprocessableEntity,
+			"a people on the move cannot trade — found your metropolis first")
+		return
+	}
+	destID, err := uuid.Parse(req.DestinationID)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid destination ID")
+		return
+	}
+	if len(req.Message) == 0 || len(req.Message) > 1000 {
+		writeError(w, http.StatusBadRequest, "message must be 1–1000 characters")
+		return
+	}
+
+	// The sender: an active founder phase with the host still on the map. The
+	// host's position is frozen onto the messenger row as its departure point
+	// (origin_q/origin_r, mig 087) — the host may walk on, or found and dissolve,
+	// while the messenger travels.
+	var hostID uuid.UUID
+	var oQ, oR int
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT fp.host_unit_id, u.q, u.r
+		 FROM founder_phase fp
+		 JOIN units u ON u.id = fp.host_unit_id
+		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
+		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
+		worldID, playerID,
+	).Scan(&hostID, &oQ, &oR)
+	if err != nil {
+		writeError(w, http.StatusConflict,
+			"you have no wandering host — send messengers from a settlement instead")
+		return
+	}
+
+	var dQ, dR int
+	err = h.pool.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r FROM provinces p
+		 JOIN settlements s ON s.province_id = p.id WHERE s.id = $1 AND s.world_id = $2`,
+		destID, worldID,
+	).Scan(&dQ, &dR)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "destination settlement not found in this world")
+		return
+	}
+
+	// Same FOW gate as settlement Send: contact requires having actually seen the
+	// city (the host's own march-swept tiles feed the known set).
+	origins := loadVisibleOrigins(r.Context(), h.pool, worldID, playerID)
+	if !province.VisibleFrom(province.MapPosition{Q: dQ, R: dR}, origins, 6) {
+		writeError(w, http.StatusForbidden,
+			"destination is not within your scouted range — wander closer before contacting this city")
+		return
+	}
+
+	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+	if dist == 0 {
+		writeError(w, http.StatusBadRequest, "the host is standing on that settlement's province")
+		return
+	}
+	arrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+	var currentTick int
+	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
+	dueTick := currentTick + messenger.MessengerTravelTicks(dist)
+
+	var messengerID uuid.UUID
+	if err = h.pool.QueryRow(r.Context(),
+		`INSERT INTO messengers (world_id, sender_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, hex_q, hex_r, arrives_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+		worldID, playerID, hostID, oQ, oR, destID, req.Message, dQ, dR, arrivesAt,
+	).Scan(&messengerID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not create messenger")
+		return
+	}
+
+	_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
+		messenger.ArrivalPayload{MessengerID: messengerID}, dueTick)
+
+	writeJSON(w, http.StatusCreated, map[string]any{
+		"id":         messengerID,
+		"arrives_at": arrivesAt,
+		"distance":   dist,
+	})
+}
+
+// ListFromHost handles GET /worlds/:worldID/founding/messengers.
+// The host's outbox: every messenger this player sent from a unit origin, so a
+// reply that comes home is readable — before and after founding (the correspondence
+// does not evaporate when the host dissolves into a metropolis).
+func (h *MessengerHandler) ListFromHost(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at
+		 FROM messengers m
+		 LEFT JOIN settlements s ON s.id = m.destination_id
+		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.origin_unit_id IS NOT NULL
+		 ORDER BY m.sent_at DESC LIMIT 20`,
+		worldID, playerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load messengers")
+		return
+	}
+	defer rows.Close()
+
+	type item struct {
+		ID        uuid.UUID  `json:"id"`
+		DestID    *uuid.UUID `json:"destination_id"`
+		DestName  string     `json:"destination_name"`
+		Message   string     `json:"message_text"`
+		Status    string     `json:"status"`
+		ReplyText *string    `json:"reply_text"`
+		SentAt    time.Time  `json:"sent_at"`
+		ArrivesAt time.Time  `json:"arrives_at"`
+	}
+	var result []item
+	for rows.Next() {
+		var m item
+		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
+			&m.SentAt, &m.ArrivesAt); err == nil {
+			result = append(result, m)
+		}
+	}
+	if result == nil {
+		result = []item{}
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 // ListSent handles GET /worlds/:worldID/settlements/:settlementID/messengers.
 // Returns the last 20 messengers sent from this settlement (owner only).
 func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
@@ -440,7 +605,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.origin_id, os.name, m.destination_id, ds.name,
+		`SELECT m.id, COALESCE(m.origin_id, m.origin_unit_id), COALESCE(os.name, 'Nomadic Host'), m.destination_id, ds.name,
 		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at,
 		        -- Fas 2a: affordability is DATA, not a visibility filter. It used to be
 		        -- part of the WHERE clause, which made an insolvent pending offer's
@@ -466,7 +631,9 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		            )
 		        END AS affordable
 		 FROM messengers m
-		 JOIN settlements os ON os.id = m.origin_id
+		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its
+		 -- sender shows as the host, and it must still land in the inbox.
+		 LEFT JOIN settlements os ON os.id = m.origin_id
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.world_id = $1
 		   AND ds.owner_id = $2
@@ -549,14 +716,18 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Messenger must be delivered to one of the caller's settlements.
-	var destID, originID uuid.UUID
+	// origin_id is NULL for a host-sent messenger (mig 087); its frozen departure
+	// point (origin_q/origin_r) then carries the return-trip geometry instead.
+	var destID uuid.UUID
+	var originID *uuid.UUID
+	var originQ, originR *int
 	var offerStatus *string
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT m.destination_id, m.origin_id, m.trade_offer->>'status' FROM messengers m
+		`SELECT m.destination_id, m.origin_id, m.origin_q, m.origin_r, m.trade_offer->>'status' FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.status = 'delivered'`,
 		messengerID, worldID, playerID,
-	).Scan(&destID, &originID, &offerStatus)
+	).Scan(&destID, &originID, &originQ, &originR, &offerStatus)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "messenger not found, not yours, or not yet arrived")
 		return
@@ -580,10 +751,14 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
 		destID,
 	).Scan(&dQ, &dR)
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
-		originID,
-	).Scan(&oQ, &oR)
+	if originID != nil {
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
+			originID,
+		).Scan(&oQ, &oR)
+	} else if originQ != nil && originR != nil {
+		oQ, oR = *originQ, *originR
+	}
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
 	returnsAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
 	var replyCurrentTick int
