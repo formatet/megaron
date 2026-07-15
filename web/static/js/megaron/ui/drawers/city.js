@@ -81,7 +81,7 @@ export async function loadCityDrawer() {
     Spearman:'Spearmen', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot',
     Ship:'Galley', WarGalley:'War Galley', Merchantman:'Emporos',
     spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-    ship:'Galley', war_galley:'War Galley', merchantman:'Emporos',
+    ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
   };
 
   body.innerHTML = `
@@ -362,7 +362,7 @@ async function refreshCityBuildings(provinceID) {
     Spearman:'Spearmen', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot',
     Ship:'Galley', WarGalley:'War Galley', Merchantman:'Emporos',
     spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-    ship:'Galley', war_galley:'War Galley', merchantman:'Emporos',
+    ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
   };
   try {
     const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}`);
@@ -379,9 +379,31 @@ async function refreshCityBuildings(provinceID) {
       bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${fmtEta(b.complete_at)}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
-    if (tq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Training queue</div><table class="goods-mini">${
-      tq.map(t => `<tr><td>${UNIT_LBL[t.unit]||t.unit} ×${t.count}</td><td>${fmtEta(t.complete_at)}</td></tr>`).join('')
-    }</table>`;
+    if (tq.length) {
+      // Recruit schedules one TrainComplete per 10-man batch, so an 80-man order
+      // otherwise renders as 8 near-identical "×10" rows. Aggregate per unit type:
+      // queued (total recruited, from forming_units) = ready (trained, size − queued)
+      // + training (still in the queue). Naval = size-1 vessels, shown as "building".
+      const forming = pd.forming_units || {};
+      const NAVAL = new Set(['galley', 'ship', 'war_galley', 'merchantman']);
+      const agg = {}, order = [];
+      for (const t of tq) {
+        let a = agg[t.unit];
+        if (!a) { a = agg[t.unit] = { training: 0, last: null, naval: NAVAL.has(t.unit) }; order.push(t.unit); }
+        a.training += t.count;
+        if (!a.last || new Date(t.complete_at) > new Date(a.last)) a.last = t.complete_at;
+      }
+      h2 += `<div class="dsec-title" style="margin-top:.8rem">Training queue</div><table class="goods-mini">${
+        order.map(u => {
+          const a = agg[u], name = UNIT_LBL[u] || u, queued = forming[u] || 0;
+          let label;
+          if (a.naval) label = `${a.training} building`;
+          else if (queued > a.training) label = `${queued} queued — ${queued - a.training} ready, ${a.training} training`;
+          else label = `${a.training} training`;
+          return `<tr><td>${name}</td><td>${label}</td><td>${fmtEta(a.last)}</td></tr>`;
+        }).join('')
+      }</table>`;
+    }
     if (blds.some(b => b.type === 'foundry')) {
       const res = pd.resources || {};
       const copper = (res.copper || {}).amount || 0;
