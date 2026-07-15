@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -11,12 +12,14 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/loyalty"
 	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/world"
 )
 
+// joinStartingPopulation is the population an ordinary join lands with (W1).
+// The Nomadic Host founds with its own carried civilians instead — see
+// capitalParams.Population.
+const joinStartingPopulation = 5000
 
 // JoinHandler handles POST /worlds/:worldID/join.
 type JoinHandler struct {
@@ -205,165 +208,35 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Create the province tile row — copy deposit flags from map_tiles.
-	var provinceID uuid.UUID
-	err = tx.QueryRow(r.Context(),
-		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
-		                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, coastal)
-		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7, $8, $9) RETURNING id`,
-		worldID, q, r2, terrainType, copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal,
-	).Scan(&provinceID)
+	// Raise the capital: province, settlement, opening stores, Sitos seeds,
+	// starter buildings, labor and the first production pass. Shared with the
+	// Nomadic Host's founding transaction so the two cannot drift apart.
+	cap, err := createCapital(r.Context(), tx, h.sitosCfg, capitalParams{
+		WorldID:  worldID,
+		PlayerID: playerID,
+		Q:        q,
+		R:        r2,
+		Terrain:  terrainType,
+		Copper:   copperDeposit,
+		Tin:      tinDeposit,
+		Silver:   silverDeposit,
+		Cedar:    cedarDeposit,
+		Coastal:  tileCoastal,
+		Name:     req.ProvinceName,
+		Culture:  req.Culture,
+		Population: joinStartingPopulation,
+	})
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not create province")
-		return
-	}
-
-	// Create the settlement (capital). Starting population 5000 (W1).
-	// Silver now lives in settlement_goods (seeded below via GenesisSilverLiquid).
-	var settlementID uuid.UUID
-	err = tx.QueryRow(r.Context(),
-		`INSERT INTO settlements
-		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, loyalty, loyalty_points, population)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,3,$6,5000)
-		 RETURNING id`,
-		worldID, provinceID, req.ProvinceName, req.Culture, playerID, loyalty.LoyaltyStartCapital,
-	).Scan(&settlementID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not create settlement")
-		return
-	}
-
-	// Sitos genesis seed: sow the fund's starting silver (a deliberate silver-
-	// invariant exception, like start-grain/pop — see temenos_sitos.md). Capital
-	// population is the literal 5000 above.
-	if grainBaseValue, gbErr := economy.GoodBaseValue(r.Context(), tx, "grain"); gbErr != nil {
-		slog.Error("sitos genesis: load grain base value", "err", gbErr)
-	} else {
-		seed, _ := economy.GenesisFundSeed(5000, grainBaseValue, h.sitosCfg)
-		if _, err := tx.Exec(r.Context(),
-			`UPDATE settlements SET sitos_fund_silver = $1 WHERE id = $2`, seed, settlementID,
-		); err != nil {
-			slog.Error("sitos genesis seed failed", "err", err, "settlement", settlementID)
+		slog.Error("join: could not create capital", "err", err, "player", playerID, "world", worldID)
+		msg := "could not create capital"
+		var ce *capitalError
+		if errors.As(err, &ce) {
+			msg = ce.UserMessage()
 		}
-	}
-
-	// Link province back to its controlling settlement.
-	_, err = tx.Exec(r.Context(),
-		`UPDATE provinces SET controller_id = $1 WHERE id = $2`,
-		settlementID, provinceID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not link province")
+		writeError(w, http.StatusInternalServerError, msg)
 		return
 	}
-
-	// Seed a zero row for every good so the settlement always has full inventory
-	// schema regardless of terrain. RecomputeProduction (below) writes actual rates
-	// from catchment tiles; zero rows here ensure non-producible goods are visible.
-	_, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 SELECT $1, g.key,
-		        CASE g.key
-		            WHEN 'grain'  THEN 300
-		            WHEN 'timber' THEN 200
-		            WHEN 'stone'  THEN 300
-		            ELSE 0
-		        END,
-		        0,
-		        1000000, -- non-binding storage ceiling (mirrors economy.goodCap);
-		                 -- the old per-good caps predated the 2026-07-05 cap
-		                 -- loosening and pinned never-produced/never-crafted goods
-		                 -- at a low binding value (silver's real cap is set by the
-		                 -- Sitos liquid-silver seed below)
-		        current_world_tick()
-		 FROM goods g
-		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		settlementID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not seed goods")
-		return
-	}
-
-	// Sitos genesis seed: sow LIQUID silver (goods.silver), separate from the
-	// fund seed above — a settlement with 0 liquid silver can't pay for buy
-	// offers or army upkeep even with a full fund (temenos_sitos.md). Same
-	// silver-invariant exception class as the fund seed. Runs before
-	// RecomputeProduction below so a same-tick recompute settles from this
-	// amount rather than the bulk-insert's placeholder 0.
-	if grainBaseValue, gbErr := economy.GoodBaseValue(r.Context(), tx, "grain"); gbErr != nil {
-		slog.Error("sitos genesis: load grain base value for liquid silver", "err", gbErr)
-	} else {
-		liquidSeed, liquidCap := economy.GenesisSilverLiquid(5000, grainBaseValue, h.sitosCfg)
-		if _, err := tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET amount = $1, cap = $2, calc_tick = current_world_tick()
-			 WHERE settlement_id = $3 AND good_key = 'silver'`,
-			liquidSeed, liquidCap, settlementID,
-		); err != nil {
-			slog.Error("sitos genesis: seed liquid silver failed", "err", err, "settlement", settlementID)
-		}
-	}
-
-	// Compute starting kharis_rate from local pantheon power.
-	regions := religion.DefaultPantheonRegions()
-	var maxPower float64
-	for _, reg := range regions {
-		if p := religion.LocalPower(reg, q, r2); p > maxPower {
-			maxPower = p
-		}
-	}
-	kharisRate := maxPower * 0.05
-
-	// Record in player_world_records (also sets initial kharis_rate from pantheon geography).
-	_, err = tx.Exec(r.Context(),
-		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate)
-		 VALUES ($1, $2, $3, 'active', $4)
-		 ON CONFLICT (player_id, world_id) DO UPDATE SET
-		     settlement_id = EXCLUDED.settlement_id,
-		     status = 'active',
-		     kharis_rate = EXCLUDED.kharis_rate`,
-		playerID, worldID, settlementID, kharisRate,
-	)
-	if err != nil {
-		slog.Error("could not record join", "err", err, "player", playerID, "world", worldID)
-		writeError(w, http.StatusInternalServerError, "could not record join")
-		return
-	}
-
-	// Seed the minimal starter building set (farm/lumbermill/temple/market) so the
-	// religion + silver subsystems are alive from t=0. Must precede RecomputeProduction.
-	if err := seedStarterBuildings(r.Context(), tx, settlementID); err != nil {
-		slog.Error("could not seed starter buildings", "err", err, "settlement", settlementID)
-		writeError(w, http.StatusInternalServerError, "could not seed starter buildings")
-		return
-	}
-
-	// Seed baseline labor weights: grain dominates (85%) so the starter city is
-	// self-sufficient from t=0; cult gets a server-floor (15%) so the temple is
-	// never inert and kharis doesn't decay before the first agent allocation.
-	// These two goods are the only ones seeded explicitly — other goods start at
-	// zero weight and are allocated by the Wanax/agent via LaborAlloc. Together
-	// they satisfy both hard invariants: "grain feeds the city" and "cult always
-	// produces so kharis has a floor."
-	if _, err := tx.Exec(r.Context(),
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 VALUES ($1, 'grain', 0.85), ($1, 'cult', 0.15)
-		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		settlementID,
-	); err != nil {
-		slog.Error("could not seed labor weights", "err", err, "settlement", settlementID)
-		writeError(w, http.StatusInternalServerError, "could not seed labor weights")
-		return
-	}
-
-	// RecomputeProduction reads catchment tiles and settlement_labor weights, then
-	// writes rates. The equal-weight seeder (len(weights)==0 path) is bypassed since
-	// we already seeded grain + cult above.
-	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
-		slog.Error("could not recompute production on join", "err", err)
-		writeError(w, http.StatusInternalServerError, "could not init production")
-		return
-	}
+	provinceID, settlementID := cap.ProvinceID, cap.SettlementID
 
 	// C7: create starter units for the new settlement.
 	// Coast tile (respawn path) → 1 galley + 1 infantry garrison.
