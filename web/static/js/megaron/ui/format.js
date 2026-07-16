@@ -33,6 +33,21 @@ export function fmtAgo(iso) {
   return Math.floor(ms / 86400000) + 'd ago';
 }
 
+// fmtSoon: local, minimal future-relative helper for notifText's OfferAccepted
+// ETA tail. Deliberately NOT delegated to ui/time.js's fmtEta — that module
+// imports esc/fmtAgo FROM this file, so importing it back here would be a
+// cycle. Same rough bucketing as fmtAgo above, just future-facing. Guards
+// missing/invalid timestamps by returning '' so callers can omit the tail.
+function fmtSoon(iso) {
+  const t = iso ? new Date(iso).getTime() : NaN;
+  if (Number.isNaN(t)) return '';
+  const ms = t - serverNow();
+  if (ms <= 0)        return 'any moment now';
+  if (ms < 3600000)   return 'in ~' + Math.max(1, Math.round(ms / 60000)) + ' min';
+  if (ms < 86400000)  return 'in ~' + (ms / 3600000).toFixed(1) + ' h';
+  return 'in ~' + (ms / 86400000).toFixed(1) + ' d';
+}
+
 export function notifIcon(kind) {
   const icons = {
     BuildComplete:      '🏛',
@@ -49,6 +64,9 @@ export function notifIcon(kind) {
     UnitAttrition:      '💀',
     UnitDeserted:       '🏃',
     SubsistenceWarning: '🌾',
+    OfferAccepted:      '🤝',
+    OfferDeclined:      '🚫',
+    OfferExpired:       '⏳',
   };
   return icons[kind] || '◉';
 }
@@ -89,6 +107,36 @@ export function notifText(kind, body) {
       }
       const days = body.days_left ? ` — grain lasts ~${Math.round(body.days_left)} days` : '';
       return `${name}: grain net ${(body.net_per_day || 0).toFixed(0)}/day${days}`;
+    }
+    case 'OfferAccepted': {
+      // Payload per TradeAccept (messenger.go): good_key/quantity/silver are
+      // already kind-branched correctly on the server, unlike Declined/Expired
+      // below. Direction-aware ETA tail: for 'sell' the originator is the
+      // seller waiting on the silver leg; for 'buy' the originator is the
+      // buyer waiting on the goods leg.
+      const qty = Math.floor(body.quantity || 0);
+      const eta = body.kind === 'sell' ? fmtSoon(body.silver_arrives_at) : fmtSoon(body.goods_arrives_at);
+      const tail = eta ? (body.kind === 'sell' ? ` — silver arrives ${eta}` : ` — goods arrive ${eta}`) : '';
+      return `Offer accepted: ${qty} ${body.good_key || ''} ⇄ ${body.silver || 0} silver${tail}`;
+    }
+    case 'OfferDeclined':
+    case 'OfferExpired': {
+      // NOTE: unlike OfferAccepted, the server's Decline/Expiry handlers
+      // (trade.go OfferExpiryHandler, messenger.go TradeDecline) query only
+      // offer_good/offer_qty/offer_silver regardless of kind — those three
+      // columns only exist in a 'sell' trade_offer JSON; a 'buy' offer stores
+      // its good under want_good/want_qty. So for kind==='buy', good_key/
+      // quantity in this payload are empty/0 (server-side bug, out of scope
+      // for this client change). Sidestepping it: 'sell' escrows GOODS (whose
+      // fields ARE correct here), 'buy' escrows SILVER (whose field IS
+      // correct here) — so picking by kind shows only the correct half.
+      // Refund is immediate (direct settlement_goods credit in the same DB
+      // transaction, verified in trade.go) — no caravan, no later TradeReturn.
+      const verb = kind === 'OfferDeclined' ? 'declined' : 'expired';
+      const refund = body.kind === 'buy'
+        ? `${body.silver || 0} silver`
+        : `${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
+      return `Offer ${verb}: ${refund} — escrow refunded immediately`;
     }
     default:                   return kind;
   }

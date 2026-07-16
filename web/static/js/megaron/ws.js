@@ -42,7 +42,7 @@ export function initWS() {
     const PERSISTENT_KINDS = new Set([
       'BuildComplete','TrainComplete','ArmyArrival','ColonyFounded',
       'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
-      'UnitAttrition','UnitDeserted',
+      'UnitAttrition','UnitDeserted','OfferAccepted','OfferDeclined','OfferExpired',
     ]);
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
@@ -82,6 +82,13 @@ export function initWS() {
         // Units bleeding out from grain/silver shortage — previously silent.
         window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+      }
+      if (['OfferAccepted','OfferDeclined','OfferExpired'].includes(msg.kind)) {
+        // Trade offer resolution — the offer's originator (see economy/trade.go,
+        // messenger.go) — previously silent until the delayed TradeDelivery/
+        // TradeReturn. Domain 'trade' → chip click opens the diplomacy drawer
+        // via DOMAIN_DRAWER, where the offer thread actually lives.
+        window.addNotifChip('trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
       if (['UnitArrived','UnitExploreReturned','ArmyArrival'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its

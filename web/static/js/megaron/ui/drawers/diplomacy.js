@@ -204,7 +204,11 @@ async function loadDipThreads() {
             + '</div></div>';
         } else {
           // Sent message
-          const statusBit = m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
+          const offerStatus = m.trade_offer && m.trade_offer.status;
+          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted</span>'
+                          : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
+                          : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
+                          : m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
                           : m.status === 'delivering' ? '<span style="color:var(--text-dim)">en route · arrives ' + arrivalHTML(m.arrives_at) + '</span>'
                           : '<span style="color:var(--text-dim)">' + esc(m.status || '') + '</span>';
           const replyText = m.reply_text
