@@ -77,14 +77,53 @@ const (
 	// hemisphere's mainland/anatolia) is eligible as the "remote isle" that
 	// forceMetal makes productive to force overseas trade.
 	remoteIsleMaxTiles = 15
+)
 
-	// Height-percentile bands within the land range [cutoff, max]: below
-	// lowBandMax → plains/scrub, below midBandMax → hills, at/above →
-	// mountains. coastalFringeMax caps how high a coastal cell can be and
-	// still get the forest/scrub fringe instead of its band terrain.
-	lowBandMax       = 0.35
-	midBandMax       = 0.7
-	coastalFringeMax = 0.6
+// ── P2 terrain-lookup calibration numbers (bor i koden, itereras via PNG) ──
+// temenos_mapgen_arkipelag_plan.md §P2. terrainFor (below) is the single
+// height×moisture→terrain table; these consts are its thresholds only — the
+// SHAPE of the table (which zone maps to which terrain) is the invariant,
+// not these numbers.
+const (
+	// moistureWavelength is the moisture fBm wavelength in hexes: regional
+	// wet/dry streaks, bigger than the height field's Cycladic high-frequency
+	// scatter (highFreqWavelength) but well inside a hemisphere — plan §P2's
+	// 8–20 hex window.
+	moistureWavelength = 14.0
+
+	// Height-percentile bands within the land range [cutoff, max] that
+	// terrainFor reads: below lowBandMax → low band (food land / scrub),
+	// below midBandMax → mid band (the full moisture spread), at/above →
+	// high band (bare rock).
+	lowBandMax = 0.35
+	midBandMax = 0.7
+
+	// Moisture zones (0..1 after normalisation, hemisphere shift, and the
+	// coastal bonus below) that terrainFor reads for the mid band's 4-way
+	// spread: below moistureAridMax → arid, below moistureMid → dry, below
+	// moistureLushMin → moist, at/above → wet. The low and high bands only
+	// need the wet/dry line, so they split at moistureMid directly.
+	moistureAridMax = 0.15
+	moistureMid     = 0.3
+	moistureLushMin = 0.65
+
+	// hemisphereMoistureShift nudges the moisture reading before bucketing —
+	// west (copper) land reads wetter, east (tin) land reads drier. This IS
+	// the entire replacement for the old per-region terrain bias (plan §P2
+	// invariant: the lookup itself never changes, only the fields feeding it).
+	// Kept modest on purpose: the old provisional terrain deliberately kept a
+	// wet MINORITY on the tin hemisphere (a limestone/forest minority amid
+	// mountain_red majority) because tin ore only sits on mountain_limestone
+	// and cedar only on forest_olive_grove — shift too far and the east loses
+	// its own strategic terrain.
+	hemisphereMoistureShift = 0.07
+
+	// coastalMoistureBonus keeps the shoreline from reading as bare desert or
+	// bare rock: land bordering the sea always reads moister, so a
+	// forest/scrub/plains presence survives along every coastline instead of
+	// needing a special-cased branch in terrainFor (plan §P2: "coastal fringe
+	// keeps a forest/scrub presence").
+	coastalMoistureBonus = 0.2
 )
 
 // GenerateMap procedurally generates a hex grid for a world using a seeded RNG.
@@ -105,6 +144,16 @@ const (
 // component for "anatolia" (rivers + the remote-isle fallback target them);
 // a small (<remoteIsleMaxTiles) component of the matching bias, if one
 // exists, is forced productive as the remote overseas source.
+//
+// v5 (P2) — height×moisture terrain. A second fBm field (moistureField)
+// replaces P1's provisional height-band terrain: terrainFor looks up BOTH
+// fields to pick a terrain, so biomes cluster along the moisture streaks
+// instead of forming concentric height rings. The old per-region terrain
+// bias is gone too — hemisphereMoistureShift nudges the moisture reading
+// instead, reusing the same west=copper/east=tin split as step 3 above. See
+// terrainFor's doc comment for the invariant this replaces forever, not just
+// for this Era: the height×moisture→terrain table is the player's stable
+// visual language and never changes; only the fields feeding it vary by seed.
 //
 // Guarantees (verified by mapgen_test.go):
 //   - Copper deposits sit only on `hills`, tin only on `mountain_limestone`,
@@ -318,6 +367,13 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 
+	// ── 1b. Moisture field (P2) ──────────────────────────────────────────
+	// Independent field, drawn from the SAME map rng one step later than the
+	// height-field noise generators — still fully determined by the map seed,
+	// no second seed parameter needed for determinism.
+	moisture := moistureField(rng, width, height)
+	moistureMin, moistureMax := moistureRange(moisture)
+
 	// ── 2. Carve the two permanent sea channels ─────────────────────────
 	// A single all-sea column fully blocks horizontal hex-adjacency, so land
 	// can never span a channel — every component ends up entirely west of
@@ -425,11 +481,12 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 
-	// ── 4. Provisional terrain: height band × hemisphere bias ───────────
-	// Real terrain semantics (height × moisture lookup) land in P2 — this is
-	// only enough texture for every terrain the deposit steps below need to
-	// actually occur: hills (copper), mountain_limestone (tin, silver),
-	// forest_olive_grove on tin-biased land (cedar).
+	// ── 4. Terrain: height × moisture lookup (P2) ────────────────────────
+	// terrainFor is the game's stable visual language (plan §P2 invariant) —
+	// every terrain the deposit steps below need actually occurs as a natural
+	// consequence of the lookup: hills (copper) and forest_olive_grove
+	// (cedar) in the mid moisture band, mountain_limestone (tin, silver) in
+	// the high band's wet half.
 	grid := make(map[cell]Terrain, width*height)
 	for q := 0; q < width; q++ {
 		base := rowOrigin(q, width)
@@ -439,18 +496,21 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 				grid[c] = TerrainDeepSea
 				continue
 			}
-			norm := 0.0
+			heightNorm := 0.0
 			if maxHeight > cutoff {
-				norm = (field[c] - cutoff) / (maxHeight - cutoff)
+				heightNorm = (field[c] - cutoff) / (maxHeight - cutoff)
 			}
-			coastal := false
+			moistureNorm := 0.0
+			if moistureMax > moistureMin {
+				moistureNorm = (moisture[c] - moistureMin) / (moistureMax - moistureMin)
+			}
 			for _, n := range hexNeighbours(c, width, height) {
 				if !landSet[n] {
-					coastal = true
+					moistureNorm += coastalMoistureBonus
 					break
 				}
 			}
-			grid[c] = provisionalTerrain(norm, compBias[landmap[c]], coastal, rng)
+			grid[c] = terrainFor(heightNorm, moistureNorm, compBias[landmap[c]])
 		}
 	}
 
@@ -773,53 +833,123 @@ func landCutoff(field map[cell]float64, fraction float64) (cutoff, maxHeight flo
 	return vals[idx], vals[len(vals)-1]
 }
 
-// provisionalTerrain is P1's placeholder terrain rule: height band ×
-// hemisphere bias × a coastal fringe, with just enough rng mix to avoid flat
-// bands. It exists to unblock P1 (the real height×moisture terrain lookup is
-// P2, temenos_mapgen_arkipelag_plan.md §P2) while still guaranteeing every
-// terrain the deposit steps need actually occurs: hills everywhere (copper
-// on copper-biased land), mountain_limestone in the high band (tin-biased
-// high band keeps a limestone minority so tin ore — which only sits on
-// limestone — actually exists on the east), and forest_olive_grove on the
-// coastal fringe (cedar candidates on tin-biased land).
-func provisionalTerrain(heightNorm float64, bias int, coastal bool, rng *rand.Rand) Terrain {
-	switch {
-	case coastal && heightNorm < coastalFringeMax:
-		// Coastal fringe: forest/scrub mix. Tin-biased coast leans forest —
-		// that's where cedar deposits are allowed to land.
-		forestChance := 0.45
-		if bias == biasTin {
-			forestChance = 0.55
+// moistureField computes a per-cell moisture value via single-scale fBm
+// (see moistureWavelength). Independent Perlin permutation table, drawn from
+// the same map rng as heightField's generators — one step later in the
+// sequence, so still fully determined by the map seed with no second seed
+// parameter. 3 octaves gives enough fractal texture to read as regional
+// streaks rather than either flat gradients or high-frequency confetti.
+//
+// Domain matches heightField: axis-aligned (q, row) sampling, row = r -
+// rowOrigin(q, width), so the field itself isn't sheared with the hex grid.
+func moistureField(rng *rand.Rand, width, height int) map[cell]float64 {
+	noise := perlin.NewPerlin(2, 2, 3, rng.Int63())
+
+	field := make(map[cell]float64, width*height)
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			row := float64(r - base)
+			field[cell{q, r}] = noise.Noise2D(float64(q)/moistureWavelength, row/moistureWavelength)
 		}
-		if rng.Float64() < forestChance {
-			return TerrainForestOliveGrove
-		}
-		return TerrainScrubMaquis
-	case heightNorm < lowBandMax:
-		// Low band: plains with a scrub fringe.
-		if rng.Float64() < 0.15 {
-			return TerrainScrubMaquis
-		}
-		return TerrainPlains
-	case heightNorm < midBandMax:
-		// Mid band: hills — the copper terrain. Tin-biased land gets an
-		// occasional semi_desert patch instead (Anatolia texture).
-		if bias == biasTin && rng.Float64() < 0.25 {
-			return TerrainSemiDesert
-		}
-		return TerrainHills
-	default:
-		// High band: mountain_red dominates the tin hemisphere,
-		// mountain_limestone elsewhere — with a limestone minority kept on
-		// tin land so tin ore has somewhere to exist.
-		if bias == biasTin {
-			if rng.Float64() < 0.3 {
-				return TerrainMountainLimestone
-			}
-			return TerrainMountainRed
-		}
-		return TerrainMountainLimestone
 	}
+	return field
+}
+
+// moistureRange returns a field's min and max value so callers can rescale
+// it into [0,1]. Unlike landCutoff (a percentile — land share must be
+// EXACT), moisture has no target split: the raw fBm shape already IS the
+// regional wet/dry streak pattern, so a plain min-max rescale is enough.
+func moistureRange(field map[cell]float64) (min, max float64) {
+	first := true
+	for _, v := range field {
+		if first || v < min {
+			min = v
+		}
+		if first || v > max {
+			max = v
+		}
+		first = false
+	}
+	return min, max
+}
+
+// heightBand and moistureZone are terrainFor's two lookup axes.
+type heightBand int
+type moistureZone int
+
+const (
+	bandLow heightBand = iota
+	bandMid
+	bandHigh
+)
+
+const (
+	zoneArid moistureZone = iota
+	zoneDry
+	zoneMoist
+	zoneWet
+)
+
+func heightBandOf(heightNorm float64) heightBand {
+	switch {
+	case heightNorm < lowBandMax:
+		return bandLow
+	case heightNorm < midBandMax:
+		return bandMid
+	default:
+		return bandHigh
+	}
+}
+
+func moistureZoneOf(moistureNorm float64) moistureZone {
+	switch {
+	case moistureNorm < moistureAridMax:
+		return zoneArid
+	case moistureNorm < moistureMid:
+		return zoneDry
+	case moistureNorm < moistureLushMin:
+		return zoneMoist
+	default:
+		return zoneWet
+	}
+}
+
+// terrainTable is the plan's INVARIANT (temenos_mapgen_arkipelag_plan.md
+// §P2): the player's stable visual language — wet+low = food land, dry+high
+// = hard passage + mineral potential, wet+high = quarriable limestone. This
+// table never changes between Eras; only the height/moisture FIELDS (and
+// hence which cell lands where in it) vary per seed. The low/high bands only
+// need the wet/dry line (zoneArid and zoneDry both read "dry"; zoneMoist and
+// zoneWet both read "wet") — the mid band alone uses the full 4-way spread.
+var terrainTable = map[heightBand]map[moistureZone]Terrain{
+	bandHigh: {
+		zoneArid: TerrainMountainRed, zoneDry: TerrainMountainRed,
+		zoneMoist: TerrainMountainLimestone, zoneWet: TerrainMountainLimestone,
+	},
+	bandMid: {
+		zoneArid: TerrainSemiDesert, zoneDry: TerrainScrubMaquis,
+		zoneMoist: TerrainHills, zoneWet: TerrainForestOliveGrove,
+	},
+	bandLow: {
+		zoneArid: TerrainScrubMaquis, zoneDry: TerrainScrubMaquis,
+		zoneMoist: TerrainPlains, zoneWet: TerrainPlains,
+	},
+}
+
+// terrainFor is the P2 height×moisture terrain lookup — see terrainTable's
+// comment for the invariant it encodes. hemisphereBias shifts which side of
+// the wet/dry line a cell falls on (west/copper reads wetter, east/tin reads
+// drier via hemisphereMoistureShift) instead of the old per-region terrain
+// bias; a neutral-bias cell (the central belt) reads the fields unshifted.
+func terrainFor(heightNorm, moistureNorm float64, hemisphereBias int) Terrain {
+	switch hemisphereBias {
+	case biasCopper:
+		moistureNorm += hemisphereMoistureShift
+	case biasTin:
+		moistureNorm -= hemisphereMoistureShift
+	}
+	return terrainTable[heightBandOf(heightNorm)][moistureZoneOf(moistureNorm)]
 }
 
 // addRiver creates a connected river corridor from an inland tile toward the coast,
