@@ -42,16 +42,36 @@ const (
 	// Cycladic/Ionian island-scatter grain, independent of map size.
 	highFreqWavelength = 8.0
 
-	// Blend weights (single source of truth — flip composition here only):
-	// low-frequency dominates in the west/east hemispheres (a few large
-	// landmasses), high-frequency dominates in the central belt between the
-	// two channels (dense island scatter — the "Ionian" belt). Setting
-	// belt{Low,High}Weight equal to hemisphere{Low,High}Weight collapses the
-	// belt boost and yields a uniform Earthsea-style blend everywhere.
+	// Blend weights (single source of truth — flip composition here only).
+	// PRIMARY mode (Timothy's eyeball round 2026-07-16): a uniform
+	// Earthsea-style blend — belt weights equal the hemisphere weights, so
+	// low-frequency dominates everywhere and the scatter is even seasoning.
+	// The losing alternative ("östra Medelhavet": a dense central scatter
+	// belt) is the two-line change beltLow/HighWeight = 0.3/0.7 — keep the
+	// mechanism, it may return once real play data exists.
 	hemisphereLowWeight  = 0.7
 	hemisphereHighWeight = 0.3
-	beltLowWeight        = 0.3
-	beltHighWeight       = 0.7
+	beltLowWeight        = 0.7
+	beltHighWeight       = 0.3
+
+	// Channel-depression band (Timothy 2026-07-16: "kanalerna kanske kan
+	// vara lite mer oregelbundna?"): the hard all-sea columns stay (they are
+	// THE adjacency blocker for copper/tin separation), but the height field
+	// is depressed in a band around each column whose half-width wobbles
+	// noisily along the channel — so the channel reads as an irregular sea
+	// corridor with ragged coasts instead of a ruler-straight canal.
+	channelBandMin        = 2.0 // narrowest half-width of the depressed band, in columns
+	channelBandMax        = 6.0 // widest half-width — also the early-out distance
+	channelBandWavelength = 8.0 // hexes along r between band-width wobbles
+	// Raw 1D Perlin amplitude is well under ±1, which left the half-width
+	// pinned near its midpoint (≈ a straight coast 3 columns off the column,
+	// the seam Timothy flagged). The gain stretches the wobble across the
+	// full min..max range; clamping handles the overshoot.
+	channelBandNoiseGain = 3.0
+	// Depression at the column itself; fades linearly to 0 at the band edge.
+	// The fBm blend spans roughly ±1.2, so 1.6 pushes near-column cells far
+	// below any land percentile — land almost never touches the straight edge.
+	channelDepressionDepth = 1.6
 
 	// remoteIsleMaxTiles: a land component smaller than this (and not the
 	// hemisphere's mainland/anatolia) is eligible as the "remote isle" that
@@ -659,22 +679,27 @@ func seaChannels(width int) (chanW, chanE int) {
 // heightField computes a per-cell elevation via two-scale fractional Brownian
 // motion (fBm): a low-frequency field (wavelength ≈ width/lowFreqDivisor)
 // that produces a handful of large Earthsea-scale landmasses, and a
-// high-frequency field (wavelength ≈ highFreqWavelength hexes) that produces
-// Cycladic/Ionian island scatter. The blend weight is position-dependent —
-// low-frequency dominates in the west/east hemispheres, high-frequency
-// dominates in the central belt between the two sea channels — so the
-// scatter reads as a regional feature (plan §P1 MÅLBILD-UTSEENDE: "ETT tätt
-// strösselbälte", not the map's overall grain).
+// high-frequency field (wavelength ≈ highFreqWavelength hexes) that adds
+// Cycladic island scatter as even seasoning (plan §P1 MÅLBILD-UTSEENDE).
+// The blend weight is position-aware — hemispheres vs. the central belt
+// between the sea channels — though in the primary mode both use the same
+// weights (see the blend-weight consts for the alternative).
+//
+// Around each channel column the field is depressed in a band whose
+// half-width wobbles noisily along r (channelDepressionAt), so the coast
+// facing a channel is ragged instead of tracing the ruler-straight column.
 //
 // Domain: the same sheared-rectangle generation domain as the rest of the
 // file (rowOrigin/inMap), but noise is sampled on axis-aligned (q, row)
 // coordinates — row = r - rowOrigin(q, width) — so the field itself isn't
 // sheared along with the hex grid.
 func heightField(rng *rand.Rand, width, height int) map[cell]float64 {
-	// Two independent Perlin permutation tables, seeded from the map's own
-	// rng so the whole field stays deterministic per seed.
-	low := perlin.NewPerlin(2, 2, 3, rng.Int63())  // 3 octaves: a little fractal roughness at continent scale
-	high := perlin.NewPerlin(2, 2, 2, rng.Int63()) // 2 octaves: cheap, high-frequency scatter
+	// Independent Perlin permutation tables, seeded from the map's own rng
+	// so the whole field stays deterministic per seed.
+	low := perlin.NewPerlin(2, 2, 3, rng.Int63())   // 3 octaves: a little fractal roughness at continent scale
+	high := perlin.NewPerlin(2, 2, 2, rng.Int63())  // 2 octaves: cheap, high-frequency scatter
+	bandW := perlin.NewPerlin(2, 2, 1, rng.Int63()) // 1D band-width wobble, western channel
+	bandE := perlin.NewPerlin(2, 2, 1, rng.Int63()) // 1D band-width wobble, eastern channel
 
 	chanW, chanE := seaChannels(width)
 	lowWavelength := float64(width) / lowFreqDivisor
@@ -690,10 +715,41 @@ func heightField(rng *rand.Rand, width, height int) map[cell]float64 {
 			row := float64(r - base)
 			lowVal := low.Noise2D(float64(q)/lowWavelength, row/lowWavelength)
 			highVal := high.Noise2D(float64(q)/highFreqWavelength, row/highFreqWavelength)
-			field[cell{q, r}] = wLow*lowVal + wHigh*highVal
+			v := wLow*lowVal + wHigh*highVal
+			v -= channelDepressionAt(q, row, chanW, bandW)
+			v -= channelDepressionAt(q, row, chanE, bandE)
+			field[cell{q, r}] = v
 		}
 	}
 	return field
+}
+
+// channelDepressionAt returns how much the height field is lowered at column
+// q by the sea channel at chanQ. The depression is channelDepressionDepth at
+// the column itself and fades linearly to zero at a half-width that wobbles
+// between channelBandMin and channelBandMax columns, driven by 1D noise
+// along the channel — so the channel-facing coastline lands at a different
+// distance on every row and never traces the straight column. The percentile
+// land threshold is applied AFTER this, so total land share is untouched;
+// the land simply migrates away from the channels.
+func channelDepressionAt(q int, row float64, chanQ int, band *perlin.Perlin) float64 {
+	dist := float64(iAbs(q - chanQ))
+	if dist >= channelBandMax {
+		return 0
+	}
+	// Amplify the (small-amplitude) 1D Perlin so the half-width actually
+	// sweeps the full min..max range, then clamp before mapping onto it.
+	n := channelBandNoiseGain * band.Noise1D(row/channelBandWavelength)
+	if n > 1 {
+		n = 1
+	} else if n < -1 {
+		n = -1
+	}
+	halfWidth := channelBandMin + (channelBandMax-channelBandMin)*(n+1)/2
+	if dist >= halfWidth {
+		return 0
+	}
+	return channelDepressionDepth * (1 - dist/halfWidth)
 }
 
 // landCutoff sorts every height-field value and returns the elevation at the
