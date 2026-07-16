@@ -250,6 +250,10 @@ type MapMetrics struct {
 	CedarDeposits   int `json:"cedar_deposits"`
 	Straits         int `json:"straits"`
 	DeltaTiles      int `json:"delta_tiles"`
+	// RiverValleyTiles is the river footprint (river_valley terrain count) —
+	// P3 review data: river_valley is extra-fertile, so a bloated footprint
+	// is a food-inflation signal even when every river has its delta.
+	RiverValleyTiles int `json:"river_valley_tiles"`
 
 	CompactnessPerComponent []ComponentCompactness `json:"compactness_per_component"`
 	// Per terrain class: fraction of (tile, in-map neighbour) pairs where the
@@ -302,6 +306,9 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		}
 		if t.Terrain == TerrainRiverDelta {
 			m.DeltaTiles++
+		}
+		if t.Terrain == TerrainRiverValley {
+			m.RiverValleyTiles++
 		}
 		for _, d := range dirs6 {
 			nt, ok := terrain[[2]int{t.Q + d[0], t.R + d[1]}]

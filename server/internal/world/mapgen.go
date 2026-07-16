@@ -1205,14 +1205,70 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 		return
 	}
 
+	// Thin the carve to a line (round-2 fix): the DFS stack path is loop-free
+	// but NOT blob-free — in a flat pit every step finds another unvisited
+	// neighbour, so the walk serpentines across the whole pit floor without
+	// ever dead-ending, and the entire tour stays on the "committed" path
+	// (backtracking only trims true dead-ends). Carving that floods the pit
+	// with river_valley — 15+-tile lake-like patches of the game's
+	// extra-fertile terrain, i.e. a food-inflation hotspot (same scarcity
+	// logic as deltas/tin). So the explored path is treated as a CORRIDOR,
+	// not the river itself: riverLine below re-derives the shortest route
+	// through the visited set from source to the mouth-adjacent cell, which
+	// crosses a pit in a line instead of touring its floor. Only that line
+	// is carved; every other explored tile keeps its terrainFor terrain.
 	origin := path[len(path)-1]
-	for _, c := range path {
+	for _, c := range riverLine(visited, source, origin, width, height) {
 		grid[c] = TerrainRiverValley
 	}
 	placeDelta(grid, landmap, rng, mouth, origin, targetLM, width, height)
 	if grid[origin] != TerrainRiverDelta {
 		panic(fmt.Sprintf("mapgen: river ending at %v (mouth %v) produced no delta tile at its own mouth — carving invariant broken", origin, mouth))
 	}
+}
+
+// riverLine returns the shortest path from source to origin walking only
+// cells in the descent's visited set — the thin line addRiver actually
+// carves out of the explored corridor (see the round-2 comment there). Plain
+// BFS with riverNeighbourOrder as the fixed expansion order, so the chosen
+// line is deterministic per seed. origin is always reachable from source
+// within visited (they are endpoints of the same connected DFS walk), so the
+// fallback return is defensive only.
+func riverLine(visited map[cell]bool, source, origin cell, width, height int) []cell {
+	if source == origin {
+		return []cell{origin}
+	}
+	parent := map[cell]cell{source: source}
+	queue := []cell{source}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, d := range riverNeighbourOrder {
+			n := cell{cur.q + d[0], cur.r + d[1]}
+			if !inMap(n.q, n.r, width, height) || !visited[n] {
+				continue
+			}
+			if _, seen := parent[n]; seen {
+				continue
+			}
+			parent[n] = cur
+			if n == origin {
+				// Walk parents back to source, then reverse.
+				line := []cell{n}
+				for line[len(line)-1] != source {
+					line = append(line, parent[line[len(line)-1]])
+				}
+				for i, j := 0, len(line)-1; i < j; i, j = i+1, j-1 {
+					line[i], line[j] = line[j], line[i]
+				}
+				return line
+			}
+			queue = append(queue, n)
+		}
+	}
+	// Unreachable by construction — carve at least the mouth cell so the
+	// delta invariant still holds.
+	return []cell{origin}
 }
 
 // placeDelta converts coastal land tiles adjacent to a river mouth into river_delta terrain.
