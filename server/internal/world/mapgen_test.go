@@ -461,6 +461,89 @@ func TestSpawnOreCatchmentScore_RealMap(t *testing.T) {
 	}
 }
 
+// TestGenerateMap_EveryRiverReachesDelta is the black-box counterpart to the
+// panic-based invariant addRiver asserts internally (mapgen.go): every
+// connected clump of river_valley/river_delta tiles must contain at least one
+// river_delta tile. This is the P3 regression for the "Amyklai-class" silent
+// failure (temenos_mapgen.md §Kända begränsningar) — a river that reached the
+// coast but produced no delta, caught only by reading DB rows by hand. Since
+// the old random-walk river is gone (replaced by steepest-descent + pit-fill
+// over the height field, which by construction never carves a tile unless it
+// already reached the sea), this should never fail — that is exactly the
+// point of asserting it as a permanent test, not just an ad-hoc PNG look.
+//
+// Sizes/seed counts mirror the plan's verification ask (20 seeds at 56×40, a
+// few at 120×84 and 230×230 — kept small there so `go test` stays fast).
+func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
+	cases := []struct {
+		w, h, seeds int
+	}{
+		{56, 40, 20},
+		{120, 84, 5},
+		{230, 230, 3},
+	}
+	for _, tc := range cases {
+		for seed := int64(0); seed < int64(tc.seeds); seed++ {
+			tiles, eff := GenerateMap(stubID{}, seed, tc.w, tc.h)
+
+			terrain := make(map[cell]Terrain, len(tiles))
+			for _, t := range tiles {
+				terrain[cell{t.Q, t.R}] = t.Terrain
+			}
+
+			// Connected components over river_valley + river_delta tiles only
+			// (hex adjacency, same 6 axial directions as landComponents).
+			dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+			isRiver := func(t Terrain) bool { return t == TerrainRiverValley || t == TerrainRiverDelta }
+			seen := map[cell]bool{}
+			var valleyTiles, deltaTiles int
+			riverComponents := 0
+			for c, terr := range terrain {
+				if !isRiver(terr) || seen[c] {
+					continue
+				}
+				riverComponents++
+				hasDelta := false
+				queue := []cell{c}
+				seen[c] = true
+				for len(queue) > 0 {
+					cur := queue[0]
+					queue = queue[1:]
+					if terrain[cur] == TerrainRiverDelta {
+						hasDelta = true
+					}
+					for _, d := range dirs {
+						n := cell{cur.q + d[0], cur.r + d[1]}
+						nt, ok := terrain[n]
+						if !ok || !isRiver(nt) || seen[n] {
+							continue
+						}
+						seen[n] = true
+						queue = append(queue, n)
+					}
+				}
+				if !hasDelta {
+					t.Fatalf("%dx%d seed %d (eff %d): a river component has no delta tile — Amyklai-class failure regressed",
+						tc.w, tc.h, seed, eff)
+				}
+			}
+			for _, terr := range terrain {
+				switch terr {
+				case TerrainRiverValley:
+					valleyTiles++
+				case TerrainRiverDelta:
+					deltaTiles++
+				}
+			}
+			if riverComponents == 0 {
+				t.Fatalf("%dx%d seed %d (eff %d): no river tiles at all", tc.w, tc.h, seed, eff)
+			}
+			t.Logf("%dx%d seed %d (eff %d): %d rivers, %d river_valley tiles, %d river_delta tiles",
+				tc.w, tc.h, seed, eff, riverComponents, valleyTiles, deltaTiles)
+		}
+	}
+}
+
 // It is an archipelago: many distinct landmasses separated by sea.
 func TestGenerateMap_IsArchipelago(t *testing.T) {
 	for seed := int64(0); seed < 20; seed++ {
