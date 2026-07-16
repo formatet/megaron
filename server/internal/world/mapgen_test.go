@@ -127,14 +127,14 @@ func TestGenerateMap_InvariantsEnforcedAcrossSizesAndSeeds(t *testing.T) {
 		w, h := sz[0], sz[1]
 		for seed := int64(0); seed < 200; seed++ {
 			tiles, _ := GenerateMap(stubID{}, seed, w, h)
-			if err := validateMap(tiles); err != nil {
+			if err := validateMap(tiles, w, h); err != nil {
 				t.Fatalf("%dx%d seed %d: GenerateMap returned invalid map: %v", w, h, seed, err)
 			}
 		}
 		// A spread of large pseudo-random seeds (the live world used one of these).
 		for _, seed := range []int64{1781944573308082963, 9223372036854775807, 42424242424242, 7000000000000000001} {
 			tiles, eff := GenerateMap(stubID{}, seed, w, h)
-			if err := validateMap(tiles); err != nil {
+			if err := validateMap(tiles, w, h); err != nil {
 				t.Fatalf("%dx%d seed %d (eff %d): invalid map: %v", w, h, seed, eff, err)
 			}
 		}
@@ -149,7 +149,7 @@ func TestGenerateMap_RegressionTinPole_0620(t *testing.T) {
 	const seed, w, h = int64(1781944573308082963), 56, 40
 
 	tiles, _ := GenerateMap(stubID{}, seed, w, h)
-	if err := validateMap(tiles); err != nil {
+	if err := validateMap(tiles, w, h); err != nil {
 		t.Fatalf("0620 seed still produces an invalid map: %v", err)
 	}
 	tin := 0
@@ -563,6 +563,62 @@ func TestGenerateMap_IsArchipelago(t *testing.T) {
 		}
 		if sea == 0 {
 			t.Fatalf("seed %d: no sea tiles", seed)
+		}
+	}
+}
+
+// TestGenerateMap_TinCapAndSpread is the P4 regression for the deposit-
+// clustering rewrite (plan §P4-A/D): tin_sources (connected components of
+// tin-deposit tiles) must never exceed the design-invariant tinSourceCap on
+// any map size — the pre-P4 per-hex-% roll let tin explode to 48 hexes on
+// one seed and monopolise a single cluster on another (plan §P4 empirics).
+//
+// Once a map has >=2 tin sources AND the underlying candidate terrain
+// (mountain_limestone on tin-biased land) actually spans >=2 distinct land
+// components, at least 2 sources must land on different components — the
+// monopoly case plan §A names explicitly (230×230 seed 303: 6 tin hexes, one
+// area). When the candidate terrain itself only exists on a single
+// landmass, spread is structurally impossible — plan §A: "Får kandidaterna
+// bara ihop en landmassa: acceptera + logga, validateMap avgör" — so that
+// case is skipped, not failed.
+func TestGenerateMap_TinCapAndSpread(t *testing.T) {
+	sizes := [][2]int{{56, 40}, {120, 84}, {230, 230}}
+	for _, sz := range sizes {
+		w, h := sz[0], sz[1]
+		for seed := int64(0); seed < 10; seed++ {
+			tiles, eff := GenerateMap(stubID{}, seed, w, h)
+
+			sources := depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit })
+			if sources > tinSourceCap {
+				t.Fatalf("%dx%d seed %d (eff %d): tin_sources = %d, want <= %d",
+					w, h, seed, eff, sources, tinSourceCap)
+			}
+			if sources < 2 {
+				continue // spread is only meaningful once >=2 sources exist
+			}
+
+			comp := landComponents(tiles)
+			_, chanE := seaChannels(w)
+			candidateComps := map[int]bool{}
+			for _, t := range tiles {
+				if t.Terrain == TerrainMountainLimestone && t.Q > chanE {
+					candidateComps[comp[[2]int{t.Q, t.R}]] = true
+				}
+			}
+			if len(candidateComps) < 2 {
+				continue // candidate terrain itself only spans one landmass
+			}
+
+			tinLandmasses := map[int]bool{}
+			for _, t := range tiles {
+				if t.TinDeposit {
+					tinLandmasses[comp[[2]int{t.Q, t.R}]] = true
+				}
+			}
+			if len(tinLandmasses) < 2 {
+				t.Fatalf("%dx%d seed %d (eff %d): %d tin sources, %d candidate landmasses, but all sources on a single land component (monopoly)",
+					w, h, seed, eff, sources, len(candidateComps))
+			}
 		}
 	}
 }
