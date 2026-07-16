@@ -127,14 +127,14 @@ func TestGenerateMap_InvariantsEnforcedAcrossSizesAndSeeds(t *testing.T) {
 		w, h := sz[0], sz[1]
 		for seed := int64(0); seed < 200; seed++ {
 			tiles, _ := GenerateMap(stubID{}, seed, w, h)
-			if err := validateMap(tiles); err != nil {
+			if err := validateMap(tiles, w, h); err != nil {
 				t.Fatalf("%dx%d seed %d: GenerateMap returned invalid map: %v", w, h, seed, err)
 			}
 		}
 		// A spread of large pseudo-random seeds (the live world used one of these).
 		for _, seed := range []int64{1781944573308082963, 9223372036854775807, 42424242424242, 7000000000000000001} {
 			tiles, eff := GenerateMap(stubID{}, seed, w, h)
-			if err := validateMap(tiles); err != nil {
+			if err := validateMap(tiles, w, h); err != nil {
 				t.Fatalf("%dx%d seed %d (eff %d): invalid map: %v", w, h, seed, eff, err)
 			}
 		}
@@ -149,7 +149,7 @@ func TestGenerateMap_RegressionTinPole_0620(t *testing.T) {
 	const seed, w, h = int64(1781944573308082963), 56, 40
 
 	tiles, _ := GenerateMap(stubID{}, seed, w, h)
-	if err := validateMap(tiles); err != nil {
+	if err := validateMap(tiles, w, h); err != nil {
 		t.Fatalf("0620 seed still produces an invalid map: %v", err)
 	}
 	tin := 0
