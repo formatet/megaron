@@ -1,6 +1,8 @@
 // ── Shared formatting helpers ──────────────────────────────────────────────
 // Pure functions, no DOM/State deps — safe for any other module to import
 // directly regardless of layer (config/state ← api/ws ← render ← ui ← main).
+// (clock.js sits on the same low layer, so importing it keeps that promise.)
+import { serverNow } from '../clock.js';
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 // NOTE (FAS 2, flagged in the execution report): the original map.html script
@@ -20,16 +22,17 @@ export function fmtSilver(amount) {
   return a + ' shekel';
 }
 
-// Helper: format ETA timestamp to human-readable
+// Helper: format ETA timestamp to human-readable. ETAs are server
+// timestamps, so they are measured against server time — see clock.js.
 export function fmtEta(iso) {
-  const ms = new Date(iso).getTime() - Date.now();
+  const ms = new Date(iso).getTime() - serverNow();
   if (ms <= 0) return 'arrived';
   const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 export function fmtAgo(iso) {
-  const ms = Date.now() - new Date(iso).getTime();
+  const ms = serverNow() - new Date(iso).getTime();
   if (ms < 60000)   return 'just now';
   if (ms < 3600000) return Math.floor(ms / 60000) + 'm ago';
   if (ms < 86400000) return Math.floor(ms / 3600000) + 'h ago';

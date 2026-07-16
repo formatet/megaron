@@ -1,5 +1,6 @@
 import { State, ownCapital } from '../state.js';
 import { fetchAuth } from '../api.js';
+import { serverNow } from '../clock.js';
 import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS } from '../config.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -721,7 +722,7 @@ function render() {
   // 5. Animated walkers for marching armies
   const walkPhase = Math.floor(State.animFrame / 8) % 4;
   for (const m of State.marchData) {
-    const now = Date.now();
+    const now = serverNow();
     const departs = new Date(m.departs_at).getTime();
     const arrives  = new Date(m.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
@@ -745,7 +746,7 @@ function render() {
   for (const u of State.unitsData) {
     const naval = u.category === 'naval';
     if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
-      const now = Date.now();
+      const now = serverNow();
       const departs = new Date(u.departs_at).getTime();
       const arrives = new Date(u.arrives_at).getTime();
       const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
@@ -768,7 +769,7 @@ function render() {
 
   // 6. Animated messengers
   for (const m of State.messengerData) {
-    const now = Date.now();
+    const now = serverNow();
     const sent   = new Date(m.sent_at).getTime();
     const arrives = new Date(m.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - sent) / (arrives - sent)));
@@ -780,7 +781,7 @@ function render() {
 
   // 7. Animated trade caravans
   for (const t of State.tradeData) {
-    const now = Date.now();
+    const now = serverNow();
     const departs = new Date(t.departs_at).getTime();
     const arrives = new Date(t.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));

@@ -1,5 +1,6 @@
 // ── Sprint 10: Animated pixel city scene ─────────────────────────────────
 // Canvas renderer; exempt from CSS vars (own palette).
+import { serverNow } from '../clock.js';
 
 const _CITY_BLD_PRIORITY = [
   'wall','bronze_wall','tower',
@@ -150,7 +151,7 @@ function _renderCityFrame(ctx, W, H, S, ground, tile, buildings, buildQueue, wr,
 }
 
 function _cityPhase(item) {
-  const now = Date.now();
+  const now = serverNow();
   const start = item.created_at ? new Date(item.created_at).getTime() : now - 30000;
   const end   = new Date(item.complete_at).getTime();
   if (end <= now) return 1;

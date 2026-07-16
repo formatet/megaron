@@ -1,6 +1,7 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { esc, fmtEta } from '../format.js';
+import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
@@ -76,7 +77,7 @@ export async function loadKultDrawer() {
       html += '<p class="empty-state">No prayers available — build a temple first.</p>';
     } else {
       const frenzyUntil = sd.battle_frenzy_until ? new Date(sd.battle_frenzy_until) : null;
-      const frenzyActive = frenzyUntil && frenzyUntil > new Date();
+      const frenzyActive = frenzyUntil && frenzyUntil.getTime() > serverNow();
       prayers.forEach(p => {
         const offeringStr = Object.entries(p.offering || {}).map(([g,q]) => `${q} ${g}`).join(' + ') || '—';
         const onCooldown = p.cooldown_remaining_minutes > 0;
