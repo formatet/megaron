@@ -859,12 +859,13 @@ body:has(.auth-page) main {
   text-shadow: 0 0 12px rgba(192,57,43,0.3);
 }
 
-/* Dev tempo label (Tid & kalender Fas B): shown when TICK_SECONDS < 60 */
+/* Dev tempo label (Tid & kalender Fas B): shown when TICK_SECONDS < 60.
+   text-dim, not gold — the topbar face is light plaster where gold vanishes. */
 .gt-devtempo {
   padding: 0 0.7rem;
   font-size: 0.66rem;
   letter-spacing: 0.06em;
-  color: var(--gold);
+  color: var(--text-dim);
   border-right: 1px solid var(--border);
   display: flex;
   align-items: center;
