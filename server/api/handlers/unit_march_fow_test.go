@@ -123,7 +123,7 @@ func TestMarch_FOWRule(t *testing.T) {
 	if rec.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("march to never-seen hex = %d %q, want 422", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "never seen") {
+	if !strings.Contains(rec.Body.String(), "into unknown land") {
 		t.Errorf("FOW rejection should explain the rule, got %q", rec.Body.String())
 	}
 
@@ -229,7 +229,7 @@ func TestRecall_FOW_RedirectNeverSeenRejected(t *testing.T) {
 	if rec.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("redirect to never-seen hex = %d %q, want 422", rec.Code, rec.Body.String())
 	}
-	if !strings.Contains(rec.Body.String(), "never seen") {
+	if !strings.Contains(rec.Body.String(), "into unknown land") {
 		t.Errorf("FOW rejection should explain the rule, got %q", rec.Body.String())
 	}
 }
