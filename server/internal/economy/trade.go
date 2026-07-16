@@ -19,11 +19,12 @@ import (
 type OfferExpiryHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
+	hub       Broadcaster // nil-guarded; carries OfferExpired to the offer's originator
 }
 
 // NewOfferExpiryHandler creates an OfferExpiryHandler.
-func NewOfferExpiryHandler(pool *pgxpool.Pool, sched *events.Scheduler) *OfferExpiryHandler {
-	return &OfferExpiryHandler{pool: pool, scheduler: sched}
+func NewOfferExpiryHandler(pool *pgxpool.Pool, sched *events.Scheduler, hub Broadcaster) *OfferExpiryHandler {
+	return &OfferExpiryHandler{pool: pool, scheduler: sched, hub: hub}
 }
 
 // Handle processes a ScheduledOfferExpiry event. Idempotent: does nothing if the
@@ -60,19 +61,19 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		return tx.Commit(ctx)
 	}
 
-	// Read origin_id, kind, and escrowed value from the now-expired messenger.
-	var originID uuid.UUID
+	// Read origin_id, destination_id, kind, and escrowed value from the now-expired messenger.
+	var originID, destID uuid.UUID
 	var kind, offerGood string
 	var offerSilver, offerQty float64
 	if err := tx.QueryRow(ctx,
-		`SELECT origin_id,
+		`SELECT origin_id, destination_id,
 		        COALESCE(trade_offer->>'kind', 'buy'),
 		        COALESCE((trade_offer->>'offer_silver')::float, 0),
 		        COALESCE(trade_offer->>'offer_good', ''),
 		        COALESCE((trade_offer->>'offer_qty')::float, 0)
 		 FROM messengers WHERE id=$1`,
 		messengerID,
-	).Scan(&originID, &kind, &offerSilver, &offerGood, &offerQty); err != nil {
+	).Scan(&originID, &destID, &kind, &offerSilver, &offerGood, &offerQty); err != nil {
 		return fmt.Errorf("read expired messenger: %w", err)
 	}
 
@@ -107,6 +108,25 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 			return fmt.Errorf("commit expiry refund: %w", err)
 		}
 		slog.Info("trade offer expired, silver refunded", "messenger", messengerID, "silver", offerSilver)
+	}
+
+	// OfferExpired — the offer's originator gets an immediate decision notice
+	// instead of only learning via the delayed TradeReturn on escrow arrival.
+	// Fires only on the real transition above (RowsAffected>0 guarded the early
+	// return), never on the idempotent no-op.
+	if h.hub != nil {
+		var ownerID uuid.UUID
+		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, originID).Scan(&ownerID)
+		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "OfferExpired", 3, map[string]any{
+			"messenger_id":    messengerID,
+			"settlement_id":   originID,
+			"counterparty_id": destID,
+			"kind":            kind,
+			"good_key":        offerGood,
+			"quantity":        offerQty,
+			"silver":          offerSilver,
+			"resolution":      "expired",
+		})
 	}
 	return nil
 }
