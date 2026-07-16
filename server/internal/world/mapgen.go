@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"sort"
 	"strings"
+
+	"github.com/aquilax/go-perlin"
 )
 
 type cell struct{ q, r int }
@@ -24,16 +26,85 @@ const (
 // for open sea. The per-ID bias lives in the `bias` map built during generation.
 const lmSea = 0
 
+// ── P1 height-field calibration numbers (bor i koden, itereras via PNG) ────
+// temenos_mapgen_arkipelag_plan.md §P1.
+const (
+	// landFraction is the top-elevation share of the height field that
+	// becomes land. A percentile threshold makes land share IDENTICAL on
+	// every seed and every map size — fixes the old fixed-radius collapse
+	// (0.22 → 0.07 → 0.03 across 56×40 / 120×84 / 230×230).
+	landFraction = 0.25
+
+	// lowFreqDivisor sets the low-frequency wavelength (width/lowFreqDivisor):
+	// a handful of large Earthsea-scale landmasses per hemisphere.
+	lowFreqDivisor = 3.0
+	// highFreqWavelength is the high-frequency wavelength in hexes:
+	// Cycladic/Ionian island-scatter grain, independent of map size.
+	highFreqWavelength = 8.0
+
+	// Blend weights (single source of truth — flip composition here only).
+	// PRIMARY mode (Timothy's eyeball round 2026-07-16): a uniform
+	// Earthsea-style blend — belt weights equal the hemisphere weights, so
+	// low-frequency dominates everywhere and the scatter is even seasoning.
+	// The losing alternative ("östra Medelhavet": a dense central scatter
+	// belt) is the two-line change beltLow/HighWeight = 0.3/0.7 — keep the
+	// mechanism, it may return once real play data exists.
+	hemisphereLowWeight  = 0.7
+	hemisphereHighWeight = 0.3
+	beltLowWeight        = 0.7
+	beltHighWeight       = 0.3
+
+	// Channel-depression band (Timothy 2026-07-16: "kanalerna kanske kan
+	// vara lite mer oregelbundna?"): the hard all-sea columns stay (they are
+	// THE adjacency blocker for copper/tin separation), but the height field
+	// is depressed in a band around each column whose half-width wobbles
+	// noisily along the channel — so the channel reads as an irregular sea
+	// corridor with ragged coasts instead of a ruler-straight canal.
+	channelBandMin        = 2.0 // narrowest half-width of the depressed band, in columns
+	channelBandMax        = 6.0 // widest half-width — also the early-out distance
+	channelBandWavelength = 8.0 // hexes along r between band-width wobbles
+	// Raw 1D Perlin amplitude is well under ±1, which left the half-width
+	// pinned near its midpoint (≈ a straight coast 3 columns off the column,
+	// the seam Timothy flagged). The gain stretches the wobble across the
+	// full min..max range; clamping handles the overshoot.
+	channelBandNoiseGain = 3.0
+	// Depression at the column itself; fades linearly to 0 at the band edge.
+	// The fBm blend spans roughly ±1.2, so 1.6 pushes near-column cells far
+	// below any land percentile — land almost never touches the straight edge.
+	channelDepressionDepth = 1.6
+
+	// remoteIsleMaxTiles: a land component smaller than this (and not the
+	// hemisphere's mainland/anatolia) is eligible as the "remote isle" that
+	// forceMetal makes productive to force overseas trade.
+	remoteIsleMaxTiles = 15
+
+	// Height-percentile bands within the land range [cutoff, max]: below
+	// lowBandMax → plains/scrub, below midBandMax → hills, at/above →
+	// mountains. coastalFringeMax caps how high a coastal cell can be and
+	// still get the forest/scrub fringe instead of its band terrain.
+	lowBandMax       = 0.35
+	midBandMax       = 0.7
+	coastalFringeMax = 0.6
+)
+
 // GenerateMap procedurally generates a hex grid for a world using a seeded RNG.
 //
-// v3 — Mycenaean archipelago. Instead of two big blobs it lays down a
-// recognisable east-Mediterranean spread that scales with map area:
-//   - Mainland (west, large)        — copper hills.
-//   - Anatolia (east, large)        — tin mountains + cedar forests.
-//   - Crete    (south-centre, med)  — neutral trade hub.
-//   - Cyclades (centre, scaled N)   — a string of small neutral stepping-stones.
-//   - One remote copper island and one remote tin island — isolated productive
-//     sources that force overseas trade.
+// v4 (P1) — height-field archipelago. A two-scale fBm height field (see
+// heightField) replaces the old fixed-radius blob placement: land is simply
+// the top landFraction of the field by elevation, so every seed and every map
+// size gets the same land share and organic (non-hexagonal) coastlines. The
+// old six-region layout (Mainland/Anatolia/Crete/Cyclades/remote isles) is
+// gone — per plan §Beslut 2026-07-16 #3 the region model is replaced by
+// hemisphere guarantees derived from where each land COMPONENT ends up after
+// the sea channels are carved:
+//   - Entirely west of the western channel  → copper bias.
+//   - Entirely east of the eastern channel  → tin bias.
+//   - In the central belt between them      → neutral (the scatter/"Ionian" belt).
+//
+// The largest copper component stands in for "mainland", the largest tin
+// component for "anatolia" (rivers + the remote-isle fallback target them);
+// a small (<remoteIsleMaxTiles) component of the matching bias, if one
+// exists, is forced productive as the remote overseas source.
 //
 // Guarantees (verified by mapgen_test.go):
 //   - Copper deposits sit only on `hills`, tin only on `mountain_limestone`,
@@ -235,97 +306,155 @@ func validateMap(tiles []MapTile) error {
 func generateMapOnce(worldID interface{ String() string }, seed int64, width, height int) []MapTile {
 	rng := rand.New(rand.NewSource(seed))
 
-	grid    := make(map[cell]Terrain)
-	landmap := make(map[cell]int) // which landmass each cell belongs to
-	bias    := map[int]int{}      // landmass ID → deposit bias
+	chanW, chanE := seaChannels(width)
 
+	// ── 1. Height field + percentile land threshold ────────────────────
+	field := heightField(rng, width, height)
+	cutoff, maxHeight := landCutoff(field, landFraction)
+	landSet := make(map[cell]bool, width*height)
+	for c, v := range field {
+		if v >= cutoff {
+			landSet[c] = true
+		}
+	}
+
+	// ── 2. Carve the two permanent sea channels ─────────────────────────
+	// A single all-sea column fully blocks horizontal hex-adjacency, so land
+	// can never span a channel — every component ends up entirely west of
+	// chanW, entirely east of chanE, or entirely in the central belt. That
+	// makes the old per-blob "drown any tendril that sprawled into the
+	// centre" rule redundant: bias is read off each component's side AFTER
+	// carving (step 3), so there is nothing left to drown.
 	for q := 0; q < width; q++ {
+		if q != chanW && q != chanE {
+			continue
+		}
 		base := rowOrigin(q, width)
 		for r := base; r < base+height; r++ {
-			grid[cell{q, r}]    = TerrainDeepSea
-			landmap[cell{q, r}] = lmSea
+			delete(landSet, cell{q, r})
 		}
 	}
 
-	nextLM := 1
-	place := func(qMin, qMax, rMin, rMax, radMin, radSpan, b int) int {
-		if qMax <= qMin {
-			qMax = qMin + 1
-		}
-		if rMax <= rMin {
-			rMax = rMin + 1
-		}
-		// qMin..qMax are columns; rMin..rMax are screen-rows (height fractions).
-		// Convert the row to axial r for the sheared rectangular domain.
-		seedCol := qMin + rng.Intn(qMax - qMin)
-		seedRow := rMin + rng.Intn(rMax - rMin)
-		seedC := cell{seedCol, rowOrigin(seedCol, width) + seedRow}
-		// Keep a 2-hex moat around existing land so landmasses stay distinct
-		// (a real spread of islands, not one merged blob).
-		for dq := -2; dq <= 2; dq++ {
-			for dr := -2; dr <= 2; dr++ {
-				n := cell{seedC.q + dq, seedC.r + dr}
-				if hexDist(seedC, n) <= 2 && landmap[n] != lmSea {
-					return 0
-				}
-			}
-		}
-		lm := nextLM
-		nextLM++
-		bias[lm] = b
-		expandLandmass(grid, landmap, rng, seedC, width, height, radMin+rng.Intn(radSpan), lm, b)
-		return lm
-	}
-
-	// ── 1. Mainland — western copper hills ────────────────────────────
-	mainland := place(4, width*30/100, height/4, height*3/4, 6, 3, biasCopper)
-
-	// ── 2. Anatolia — eastern tin mountains + cedar forests ───────────
-	anatolia := place(width*72/100, width*92/100, height/4, height*3/4, 6, 3, biasTin)
-
-	// ── 3. Crete — neutral hub, southern centre ───────────────────────
-	place(width*40/100, width*58/100, height*60/100, height*85/100, 3, 3, biasNeutral)
-
-	// ── 4. Cyclades — string of small neutral islands, scaled to area ─
-	numCyclades := 3 + (width*height)/400
-	for i := 0; i < numCyclades; i++ {
-		place(width*36/100, width*64/100, height*15/100, height*85/100, 1, 2, biasNeutral)
-	}
-
-	// ── 5. Remote metal islands — isolated productive sources ─────────
-	// Kept inside their hemisphere so the copper/tin separation is robust
-	// even if a small island brushes a mainland.
-	copperIsle := place(width*8/100, width*30/100, height*8/100, height*40/100, 1, 2, biasCopper)
-	tinIsle    := place(width*70/100, width*92/100, height*55/100, height*88/100, 1, 2, biasTin)
-
-	// ── 5b. Carve two permanent sea channels ──────────────────────────
-	// A single all-sea hex column fully blocks horizontal hex-adjacency, so
-	// the copper hemisphere (west of chanW), the neutral centre and the tin
-	// hemisphere (east of chanE) become three sea-separated zones. We also
-	// drown any copper/tin tendril that sprawled into the central strip, so
-	// the centre carries neutral land only — bronze always demands sea trade.
-	chanW := width * 33 / 100
-	chanE := width * 67 / 100
-	drown := func(c cell) {
-		grid[c]    = TerrainDeepSea
-		landmap[c] = lmSea
-	}
+	// ── 3. Land components + position-derived bias ──────────────────────
+	// Build placeholder tiles (real terrain isn't decided until step 4) just
+	// so landComponents — the same connectivity rule validateMap uses — can
+	// group land into components.
+	placeholder := make([]MapTile, 0, width*height)
 	for q := 0; q < width; q++ {
 		base := rowOrigin(q, width)
 		for r := base; r < base+height; r++ {
 			c := cell{q, r}
+			terrain := TerrainDeepSea
+			if landSet[c] {
+				terrain = TerrainPlains
+			}
+			placeholder = append(placeholder, MapTile{Q: q, R: r, Terrain: terrain})
+		}
+	}
+	rawComp := landComponents(placeholder)
+
+	// landmap/compBias/compSize use the file's existing ID space: 0 is always
+	// sea (lmSea); real components start at 1 (landComponents itself starts
+	// IDs at 0, so we offset by one to keep that convention intact — forceMetal
+	// below relies on 0 meaning "no component").
+	landmap := make(map[cell]int, width*height)
+	compSize := map[int]int{}
+	compBias := map[int]int{}
+	for _, t := range placeholder {
+		c := cell{t.Q, t.R}
+		if !tileIsLand(t.Terrain) {
+			landmap[c] = lmSea
+			continue
+		}
+		id := rawComp[[2]int{t.Q, t.R}] + 1
+		landmap[c] = id
+		compSize[id]++
+		if _, seen := compBias[id]; !seen {
 			switch {
-			case q == chanW || q == chanE:
-				drown(c)
-			case q > chanW && q < chanE:
-				if b := bias[landmap[c]]; b == biasCopper || b == biasTin {
-					drown(c)
-				}
+			case t.Q < chanW:
+				compBias[id] = biasCopper
+			case t.Q > chanE:
+				compBias[id] = biasTin
+			default:
+				compBias[id] = biasNeutral
 			}
 		}
 	}
 
-	// ── 6. Coastlines ─────────────────────────────────────────────────
+	// Deterministic id order (Go map range order is not) for the "largest
+	// component" and "small isle" picks below.
+	ids := make([]int, 0, len(compSize))
+	for id := range compSize {
+		ids = append(ids, id)
+	}
+	sort.Ints(ids)
+
+	// Largest copper component = "mainland", largest tin component =
+	// "anatolia" — they stand in for the old named landmasses as the
+	// river/remote-isle-fallback targets.
+	mainland, anatolia := 0, 0
+	maxCopper, maxTin := 0, 0
+	for _, id := range ids {
+		switch compBias[id] {
+		case biasCopper:
+			if compSize[id] > maxCopper {
+				maxCopper, mainland = compSize[id], id
+			}
+		case biasTin:
+			if compSize[id] > maxTin {
+				maxTin, anatolia = compSize[id], id
+			}
+		}
+	}
+	// A small (<remoteIsleMaxTiles) component of the matching bias becomes
+	// the "remote isle" forceMetal makes productive below (step 10).
+	copperIsle, tinIsle := 0, 0
+	for _, id := range ids {
+		if id == mainland || id == anatolia || compSize[id] >= remoteIsleMaxTiles {
+			continue
+		}
+		switch compBias[id] {
+		case biasCopper:
+			if copperIsle == 0 {
+				copperIsle = id
+			}
+		case biasTin:
+			if tinIsle == 0 {
+				tinIsle = id
+			}
+		}
+	}
+
+	// ── 4. Provisional terrain: height band × hemisphere bias ───────────
+	// Real terrain semantics (height × moisture lookup) land in P2 — this is
+	// only enough texture for every terrain the deposit steps below need to
+	// actually occur: hills (copper), mountain_limestone (tin, silver),
+	// forest_olive_grove on tin-biased land (cedar).
+	grid := make(map[cell]Terrain, width*height)
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			c := cell{q, r}
+			if !landSet[c] {
+				grid[c] = TerrainDeepSea
+				continue
+			}
+			norm := 0.0
+			if maxHeight > cutoff {
+				norm = (field[c] - cutoff) / (maxHeight - cutoff)
+			}
+			coastal := false
+			for _, n := range hexNeighbours(c, width, height) {
+				if !landSet[n] {
+					coastal = true
+					break
+				}
+			}
+			grid[c] = provisionalTerrain(norm, compBias[landmap[c]], coastal, rng)
+		}
+	}
+
+	// ── 5. Coastlines ─────────────────────────────────────────────────
 	// Deep-sea tiles adjacent to land become coastal_sea (shallow water).
 	// Land terrain is NOT changed — "coast" is a property (coastal flag), not a terrain type.
 	for q := 0; q < width; q++ {
@@ -338,9 +467,9 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 
-	// ── 7. Rivers + deltas on the two big landmasses ─────────────────
-	// Each big landmass gets 1–2 rivers flowing from inland toward the coast.
-	// The river mouth becomes a river_delta tile (highest grain, coastal).
+	// ── 6. Rivers + deltas on the two hemisphere-largest landmasses ────
+	// Each gets 1–2 rivers flowing from inland toward the coast. The river
+	// mouth becomes a river_delta tile (highest grain, coastal).
 	if mainland != 0 {
 		addRiver(grid, landmap, rng, mainland, width, height)
 	}
@@ -348,7 +477,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		addRiver(grid, landmap, rng, anatolia, width, height)
 	}
 
-	// ── 8. Build tiles + collect deposit candidates by bias & terrain ──
+	// ── 7. Build tiles + collect deposit candidates by bias & terrain ──
 	tiles := make([]MapTile, 0, width*height)
 	index := map[cell]int{}
 
@@ -356,7 +485,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		copperCand []int // hills on a copper-biased landmass
 		tinCand    []int // mountain_limestone on a tin-biased landmass
 		silverCand []int // any productive metal terrain, no copper/tin
-		cedarCand  []int // eastern forest
+		cedarCand  []int // forest_olive_grove on a tin-biased landmass
 	)
 
 	for q := 0; q < width; q++ {
@@ -378,24 +507,24 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 
 			switch terrain {
 			case TerrainHills:
-				if bias[lm] == biasCopper {
+				if compBias[lm] == biasCopper {
 					copperCand = append(copperCand, idx)
 				}
 				silverCand = append(silverCand, idx)
 			case TerrainMountainLimestone:
-				if bias[lm] == biasTin {
+				if compBias[lm] == biasTin {
 					tinCand = append(tinCand, idx)
 				}
 				silverCand = append(silverCand, idx)
 			case TerrainForestOliveGrove:
-				if bias[lm] == biasTin {
+				if compBias[lm] == biasTin {
 					cedarCand = append(cedarCand, idx)
 				}
 			}
 		}
 	}
 
-	// ── 9. Assign deposits ────────────────────────────────────────────
+	// ── 8. Assign deposits ────────────────────────────────────────────
 	for _, idx := range copperCand {
 		if rng.Float64() < 0.35 {
 			tiles[idx].CopperDeposit = true
@@ -422,7 +551,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		tiles[idx].CedarDeposit = true
 	}
 
-	// ── 10. Guarantee minimums (productive terrain only) ──────────────
+	// ── 9. Guarantee minimums (productive terrain only) ────────────────
 	ensure := func(cand []int, count int, set func(*MapTile), has func(MapTile) bool) {
 		have := 0
 		for _, t := range tiles {
@@ -443,14 +572,14 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	ensure(copperCand, 2, func(t *MapTile) { t.CopperDeposit = true }, func(t MapTile) bool { return t.CopperDeposit })
 	ensure(tinCand, 2, func(t *MapTile) { t.TinDeposit = true }, func(t MapTile) bool { return t.TinDeposit })
 
-	// ── 11. Make the remote metal isles productive ────────────────────
+	// ── 10. Make the remote metal isles productive ──────────────────────
 	// Force one hills+copper / mountain+tin tile on each, converting terrain
 	// if the small island didn't roll any — so a "remote copper/tin island"
 	// is always a real source.
 	forceMetal := func(lm, fallback int, terrain Terrain, set func(*MapTile)) {
 		if lm == 0 {
-			// Remote isle failed to place (moat collision) — force the metal on
-			// its hemisphere's mainland instead, so the pole always exists.
+			// No small isle of the right bias exists — force the metal on the
+			// hemisphere's mainland instead, so the pole always exists.
 			lm = fallback
 		}
 		if lm == 0 {
@@ -539,122 +668,157 @@ func landComponents(tiles []MapTile) map[[2]int]int {
 	return comp
 }
 
-// expandLandmass flood-fills terrain from a seed cell, marking each cell with the given landmass ID.
-// The bias parameter steers terrain toward the region's historical profile:
-//   - biasCopper (Hellas/west): hills + scrub_maquis, olive groves at edge
-//   - biasTin    (Anatolia/east): mountain_red + semi_desert inland, cedar forest at edge
-//   - biasNeutral (Aegean islands/Crete): scrub_maquis + hills + olive groves
-func expandLandmass(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, seed cell, width, height, radius, lm, b int) {
-	queue   := []cell{seed}
-	visited := map[cell]bool{seed: true}
+// seaChannels returns the two permanent sea-channel columns (33 %/67 % of
+// width) that split the map into copper (west), neutral (centre) and tin
+// (east) zones. Single source of truth for both heightField's belt weighting
+// and generateMapOnce's channel carving — they must never drift apart.
+func seaChannels(width int) (chanW, chanE int) {
+	return width * 33 / 100, width * 67 / 100
+}
 
-	for len(queue) > 0 {
-		c := queue[0]
-		queue = queue[1:]
+// heightField computes a per-cell elevation via two-scale fractional Brownian
+// motion (fBm): a low-frequency field (wavelength ≈ width/lowFreqDivisor)
+// that produces a handful of large Earthsea-scale landmasses, and a
+// high-frequency field (wavelength ≈ highFreqWavelength hexes) that adds
+// Cycladic island scatter as even seasoning (plan §P1 MÅLBILD-UTSEENDE).
+// The blend weight is position-aware — hemispheres vs. the central belt
+// between the sea channels — though in the primary mode both use the same
+// weights (see the blend-weight consts for the alternative).
+//
+// Around each channel column the field is depressed in a band whose
+// half-width wobbles noisily along r (channelDepressionAt), so the coast
+// facing a channel is ragged instead of tracing the ruler-straight column.
+//
+// Domain: the same sheared-rectangle generation domain as the rest of the
+// file (rowOrigin/inMap), but noise is sampled on axis-aligned (q, row)
+// coordinates — row = r - rowOrigin(q, width) — so the field itself isn't
+// sheared along with the hex grid.
+func heightField(rng *rand.Rand, width, height int) map[cell]float64 {
+	// Independent Perlin permutation tables, seeded from the map's own rng
+	// so the whole field stays deterministic per seed.
+	low := perlin.NewPerlin(2, 2, 3, rng.Int63())   // 3 octaves: a little fractal roughness at continent scale
+	high := perlin.NewPerlin(2, 2, 2, rng.Int63())  // 2 octaves: cheap, high-frequency scatter
+	bandW := perlin.NewPerlin(2, 2, 1, rng.Int63()) // 1D band-width wobble, western channel
+	bandE := perlin.NewPerlin(2, 2, 1, rng.Int63()) // 1D band-width wobble, eastern channel
 
-		dist := hexDist(c, seed)
-		var terrain Terrain
-		switch {
-		case dist == 0:
-			terrain = TerrainPlains
-		case dist <= radius/4:
-			terrain = TerrainPlains
-		case dist <= radius/2:
-			switch b {
-			case biasTin:
-				// Anatolia: semi_desert inland mixed with hills
-				if rng.Float64() < 0.3 {
-					terrain = TerrainSemiDesert
-				} else {
-					terrain = TerrainHills
-				}
-			case biasCopper:
-				// Hellas: hills + occasional scrub
-				if rng.Float64() < 0.25 {
-					terrain = TerrainScrubMaquis
-				} else {
-					terrain = TerrainHills
-				}
-			default:
-				// Neutral: scrub + hills
-				if rng.Float64() > 0.4 {
-					terrain = TerrainHills
-				} else {
-					terrain = TerrainScrubMaquis
-				}
-			}
-		case dist <= radius*3/4:
-			switch b {
-			case biasTin:
-				// Anatolia: mountain_red dominates, some semi_desert, sparse cedar
-				switch {
-				case rng.Float64() < 0.45:
-					terrain = TerrainMountainRed
-				case rng.Float64() < 0.35:
-					terrain = TerrainSemiDesert
-				default:
-					terrain = TerrainMountainLimestone
-				}
-			case biasCopper:
-				// Hellas: mountain_limestone + hills + olive groves
-				switch {
-				case rng.Float64() < 0.30:
-					terrain = TerrainMountainLimestone
-				case rng.Float64() < 0.45:
-					terrain = TerrainHills
-				default:
-					terrain = TerrainForestOliveGrove
-				}
-			default:
-				// Neutral Aegean: limestone + hills + olive groves
-				switch {
-				case rng.Float64() < 0.30:
-					terrain = TerrainMountainLimestone
-				case rng.Float64() < 0.50:
-					terrain = TerrainHills
-				default:
-					terrain = TerrainForestOliveGrove
-				}
-			}
-		default:
-			// Outer fringe — coastal edge varies by region
-			switch b {
-			case biasTin:
-				// Anatolia: cedar forests on the outer coast, mixed scrub
-				if rng.Float64() < 0.45 {
-					terrain = TerrainForestOliveGrove // eastern cedar coast
-				} else {
-					terrain = TerrainHills
-				}
-			case biasCopper:
-				// Hellas: olive groves + scrub
-				if rng.Float64() < 0.5 {
-					terrain = TerrainForestOliveGrove
-				} else {
-					terrain = TerrainScrubMaquis
-				}
-			default:
-				// Neutral: olive groves + hills
-				if rng.Float64() < 0.5 {
-					terrain = TerrainForestOliveGrove
-				} else {
-					terrain = TerrainHills
-				}
-			}
+	chanW, chanE := seaChannels(width)
+	lowWavelength := float64(width) / lowFreqDivisor
+
+	field := make(map[cell]float64, width*height)
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		wLow, wHigh := hemisphereLowWeight, hemisphereHighWeight
+		if q > chanW && q < chanE {
+			wLow, wHigh = beltLowWeight, beltHighWeight
 		}
-
-		grid[c]    = terrain
-		landmap[c] = lm
-
-		if dist >= radius {
-			continue
+		for r := base; r < base+height; r++ {
+			row := float64(r - base)
+			lowVal := low.Noise2D(float64(q)/lowWavelength, row/lowWavelength)
+			highVal := high.Noise2D(float64(q)/highFreqWavelength, row/highFreqWavelength)
+			v := wLow*lowVal + wHigh*highVal
+			v -= channelDepressionAt(q, row, chanW, bandW)
+			v -= channelDepressionAt(q, row, chanE, bandE)
+			field[cell{q, r}] = v
 		}
-		for _, n := range hexNeighbours(c, width, height) {
-			if !visited[n] && rng.Float64() > 0.25 {
-				visited[n] = true
-				queue = append(queue, n)
+	}
+	return field
+}
+
+// channelDepressionAt returns how much the height field is lowered at column
+// q by the sea channel at chanQ. The depression is channelDepressionDepth at
+// the column itself and fades linearly to zero at a half-width that wobbles
+// between channelBandMin and channelBandMax columns, driven by 1D noise
+// along the channel — so the channel-facing coastline lands at a different
+// distance on every row and never traces the straight column. The percentile
+// land threshold is applied AFTER this, so total land share is untouched;
+// the land simply migrates away from the channels.
+func channelDepressionAt(q int, row float64, chanQ int, band *perlin.Perlin) float64 {
+	dist := float64(iAbs(q - chanQ))
+	if dist >= channelBandMax {
+		return 0
+	}
+	// Amplify the (small-amplitude) 1D Perlin so the half-width actually
+	// sweeps the full min..max range, then clamp before mapping onto it.
+	n := channelBandNoiseGain * band.Noise1D(row/channelBandWavelength)
+	if n > 1 {
+		n = 1
+	} else if n < -1 {
+		n = -1
+	}
+	halfWidth := channelBandMin + (channelBandMax-channelBandMin)*(n+1)/2
+	if dist >= halfWidth {
+		return 0
+	}
+	return channelDepressionDepth * (1 - dist/halfWidth)
+}
+
+// landCutoff sorts every height-field value and returns the elevation at the
+// landFraction percentile (cells at/above it become land) plus the field's
+// maximum, so callers can normalise land elevation into [0,1]. Land share is
+// therefore identical across every seed and map size — no more area-dependent
+// collapse (baseline: 0.22 → 0.07 → 0.03 across 56×40/120×84/230×230).
+func landCutoff(field map[cell]float64, fraction float64) (cutoff, maxHeight float64) {
+	vals := make([]float64, 0, len(field))
+	for _, v := range field {
+		vals = append(vals, v)
+	}
+	sort.Float64s(vals)
+	idx := int(float64(len(vals)) * (1 - fraction))
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= len(vals) {
+		idx = len(vals) - 1
+	}
+	return vals[idx], vals[len(vals)-1]
+}
+
+// provisionalTerrain is P1's placeholder terrain rule: height band ×
+// hemisphere bias × a coastal fringe, with just enough rng mix to avoid flat
+// bands. It exists to unblock P1 (the real height×moisture terrain lookup is
+// P2, temenos_mapgen_arkipelag_plan.md §P2) while still guaranteeing every
+// terrain the deposit steps need actually occurs: hills everywhere (copper
+// on copper-biased land), mountain_limestone in the high band (tin-biased
+// high band keeps a limestone minority so tin ore — which only sits on
+// limestone — actually exists on the east), and forest_olive_grove on the
+// coastal fringe (cedar candidates on tin-biased land).
+func provisionalTerrain(heightNorm float64, bias int, coastal bool, rng *rand.Rand) Terrain {
+	switch {
+	case coastal && heightNorm < coastalFringeMax:
+		// Coastal fringe: forest/scrub mix. Tin-biased coast leans forest —
+		// that's where cedar deposits are allowed to land.
+		forestChance := 0.45
+		if bias == biasTin {
+			forestChance = 0.55
+		}
+		if rng.Float64() < forestChance {
+			return TerrainForestOliveGrove
+		}
+		return TerrainScrubMaquis
+	case heightNorm < lowBandMax:
+		// Low band: plains with a scrub fringe.
+		if rng.Float64() < 0.15 {
+			return TerrainScrubMaquis
+		}
+		return TerrainPlains
+	case heightNorm < midBandMax:
+		// Mid band: hills — the copper terrain. Tin-biased land gets an
+		// occasional semi_desert patch instead (Anatolia texture).
+		if bias == biasTin && rng.Float64() < 0.25 {
+			return TerrainSemiDesert
+		}
+		return TerrainHills
+	default:
+		// High band: mountain_red dominates the tin hemisphere,
+		// mountain_limestone elsewhere — with a limestone minority kept on
+		// tin land so tin ore has somewhere to exist.
+		if bias == biasTin {
+			if rng.Float64() < 0.3 {
+				return TerrainMountainLimestone
 			}
+			return TerrainMountainRed
 		}
+		return TerrainMountainLimestone
 	}
 }
 
