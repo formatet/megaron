@@ -76,10 +76,15 @@ var debugComponentColors = []color.RGBA{
 
 // ExportDebugOverlayPNG renders the readability overlay: land components
 // color-coded, the two permanent sea-channel columns (33 %/67 % of width)
-// marked, sea tinted by hemisphere (west = cool blue / east = violet), spawn
-// candidates dotted white, and each deposit with its 7-hex catchment outlined.
+// marked, sea tinted by hemisphere (west = cool blue / east = violet), strait
+// hexes marked amber, river-delta tiles outlined cyan, spawn candidates
+// dotted white, and each deposit with its 7-hex catchment outlined.
 // Harbours and passability are deliberately absent — those concepts do not
 // exist in code yet; the overlay draws no fiction.
+//
+// P0-uppföljning (Timothy 2026-07-16 "var är sunden? och deltat"): straits
+// and deltas were already counted into the sidecar JSON but never rendered —
+// this is strategic readability #1, so both get a dedicated marker below.
 func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) error {
 	img := newDebugImage(width, height)
 	comp := landComponents(tiles)
@@ -93,6 +98,8 @@ func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) erro
 	seaEast := color.RGBA{0x35, 0x28, 0x4A, 0xFF}   // east hemisphere tint (tin side)
 	chanColor := color.RGBA{0x55, 0xAA, 0xFF, 0xFF} // channel columns — always sea
 	spawnDot := color.RGBA{0xFF, 0xFF, 0xFF, 0xFF}
+	straitColor := color.RGBA{0xFF, 0xD5, 0x00, 0xFF} // amber — sund (strait) marker
+	deltaColor := color.RGBA{0x00, 0xFF, 0xFF, 0xFF}  // bright cyan — river-delta marker
 
 	// 1. Base fill: component colors on land, hemisphere-tinted sea, channels.
 	for _, t := range tiles {
@@ -113,7 +120,50 @@ func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) erro
 		fillRect(img, x, y, debugTilePx, debugTilePx, c)
 	}
 
-	// 2. Deposit catchments: outline the deposit tile plus its 6 axial
+	// 2. Strait hexes: sea tiles flanked by land on an opposing axis pair —
+	// same per-tile rule as countStraits (mapgen.go), replicated read-only
+	// here (see spawnBuildable below for the same "copy on purpose"
+	// reasoning: this file must never become an import target for game logic).
+	terrainAt := make(map[[2]int]Terrain, len(tiles))
+	for _, t := range tiles {
+		terrainAt[[2]int{t.Q, t.R}] = t.Terrain
+	}
+	straitAxes := [][2][2]int{
+		{{1, 0}, {-1, 0}},
+		{{0, 1}, {0, -1}},
+		{{1, -1}, {-1, 1}},
+	}
+	for _, t := range tiles {
+		if !isSea(t.Terrain) {
+			continue
+		}
+		strait := false
+		for _, pair := range straitAxes {
+			a := terrainAt[[2]int{t.Q + pair[0][0], t.R + pair[0][1]}]
+			b := terrainAt[[2]int{t.Q + pair[1][0], t.R + pair[1][1]}]
+			if tileIsLand(a) && tileIsLand(b) {
+				strait = true
+				break
+			}
+		}
+		if strait {
+			x, y := debugTileOrigin(t.Q, t.R, width)
+			fillRect(img, x+2, y+2, 4, 4, straitColor)
+		}
+	}
+
+	// 3. River deltas: outline in a bright marker on top of the component
+	// fill, so the mouth is easy to spot without hunting for the (subtle)
+	// light-cyan terrain color.
+	for _, t := range tiles {
+		if t.Terrain != TerrainRiverDelta {
+			continue
+		}
+		x, y := debugTileOrigin(t.Q, t.R, width)
+		outlineRect(img, x, y, debugTilePx, debugTilePx, deltaColor)
+	}
+
+	// 4. Deposit catchments: outline the deposit tile plus its 6 axial
 	// neighbours (the 7-hex catchment RecomputeProduction reads).
 	inMapTiles := map[[2]int]bool{}
 	for _, t := range tiles {
@@ -135,7 +185,7 @@ func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) erro
 		}
 	}
 
-	// 3. Spawn candidates (buildable terrain, see spawnBuildable) + deposit dots.
+	// 5. Spawn candidates (buildable terrain, see spawnBuildable) + deposit dots.
 	for _, t := range tiles {
 		x, y := debugTileOrigin(t.Q, t.R, width)
 		if spawnBuildable(t.Terrain) {
