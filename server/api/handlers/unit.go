@@ -265,6 +265,24 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	if captureMode == "" {
 		captureMode = "sack"
 	}
+	// FOW march rule (Timothy 2026-07-15/16, temenos_orderlopare_plan.md Fas 0):
+	// a march can only be ordered onto land the Wanax has actually seen — tier-1
+	// live vision or tier-2 remembered (scouted/contacted). Never-seen fog is not
+	// a valid target. This runs BEFORE the terrain/settlement responses below so
+	// their error strings cannot leak what stands on an unseen hex.
+	// Exempt: explore-intent (the sanctioned order INTO the unknown — denying it
+	// would make the fog frontier unpushable) and colonize-in-place (own hex).
+	if !colonizeInPlace && req.Intent != "explore" {
+		fowTarget := province.MapPosition{Q: req.TargetQ, R: req.TargetR}
+		eyes := loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
+		if !province.AnyEyeSees(eyes, fowTarget, destTerrain) &&
+			!loadRememberedTiles(ctx, h.pool, worldID, playerID)[[2]int{req.TargetQ, req.TargetR}] {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("none of your men have ever seen (%d,%d) — a march cannot be ordered into unknown land; send a scout first (march with intent \"explore\")",
+					req.TargetQ, req.TargetR))
+			return
+		}
+	}
 	// Explore: the unit marches to the target and returns home automatically —
 	// it needs a home to return to, so it must currently be garrisoned at a
 	// settlement (not already field-positioned).
@@ -603,6 +621,19 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			worldID, newTargetQ, newTargetR,
 		).Scan(&destTerrain); err != nil {
 			writeError(w, http.StatusNotFound, "target hex not found")
+			return
+		}
+		// FOW march rule — a redirect is a march order like any other; the new
+		// destination must be seen or remembered (temenos_orderlopare_plan.md
+		// Fas 0). Checked before the terrain responses below to avoid leaking
+		// what stands on an unseen hex.
+		fowTarget := province.MapPosition{Q: newTargetQ, R: newTargetR}
+		eyes := loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
+		if !province.AnyEyeSees(eyes, fowTarget, destTerrain) &&
+			!loadRememberedTiles(ctx, h.pool, worldID, playerID)[[2]int{newTargetQ, newTargetR}] {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("none of your men have ever seen (%d,%d) — a march cannot be redirected into unknown land",
+					newTargetQ, newTargetR))
 			return
 		}
 		if destTerrain == "mountain_limestone" || destTerrain == "mountain_red" {
