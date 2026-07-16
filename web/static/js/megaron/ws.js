@@ -1,5 +1,6 @@
 import { BASE } from './config.js';
 import { State } from './state.js';
+import { serverNow } from './clock.js';
 import { fetchAuth } from './api.js';
 import { notifText, notifIcon, colonyFoundedGrainLine } from './ui/format.js';
 
@@ -22,7 +23,16 @@ export function initWS() {
     ws = new WebSocket(`${wsBase}/ws/${State.WORLD_ID}`);
     ws.onopen = () => {
       if (!firstConnect) {
+        // Re-anchor the tick↔realtime mapping (Fas B): a reconnect is exactly
+        // when the server may have restarted and paused the world, which is
+        // what makes stored wall-clock stamps — and a stale anchor — lie.
+        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}`).then(r => r.ok && r.json().then(d => {
+          if (d.current_tick != null && d.tick_seconds > 0) {
+            State.CURRENT_TICK = d.current_tick; State.TICK_SECONDS = d.tick_seconds; State.TICK_ANCHOR_MS = serverNow();
+          }
+        }));
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; }));
+        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; }));
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
@@ -32,7 +42,7 @@ export function initWS() {
     const PERSISTENT_KINDS = new Set([
       'BuildComplete','TrainComplete','ArmyArrival','ColonyFounded',
       'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
-      'UnitAttrition','UnitDeserted',
+      'UnitAttrition','UnitDeserted','OfferAccepted','OfferDeclined','OfferExpired',
     ]);
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
@@ -72,6 +82,13 @@ export function initWS() {
         // Units bleeding out from grain/silver shortage — previously silent.
         window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+      }
+      if (['OfferAccepted','OfferDeclined','OfferExpired'].includes(msg.kind)) {
+        // Trade offer resolution — the offer's originator (see economy/trade.go,
+        // messenger.go) — previously silent until the delayed TradeDelivery/
+        // TradeReturn. Domain 'trade' → chip click opens the diplomacy drawer
+        // via DOMAIN_DRAWER, where the offer thread actually lives.
+        window.addNotifChip('trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
       if (['UnitArrived','UnitExploreReturned','ArmyArrival'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its

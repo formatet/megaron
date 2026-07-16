@@ -3,6 +3,7 @@ package world
 import (
 	"fmt"
 	"log/slog"
+	"math"
 	"math/rand"
 	"sort"
 	"strings"
@@ -126,6 +127,135 @@ const (
 	coastalMoistureBonus = 0.2
 )
 
+// ── P3 river calibration numbers (bor i koden, itereras via PNG) ───────────
+// temenos_mapgen_arkipelag_plan.md §P3.
+const (
+	// riverDensityDivisor sets river count = max(minRivers, landTiles /
+	// riverDensityDivisor). The plan's starting number (~1 per 150 land hexes)
+	// produces ~88 rivers on 230×230 — that dilutes the delta honey-trap:
+	// deltas are the HIGHEST-grain tile in the game, so delta inflation is
+	// food inflation, the same scarcity logic already applied to tin. Landed
+	// on 500 after eyeballing the PNG suite (temenos_mapgen_arkipelag_plan.md
+	// §P3 explicitly names the 300–600 window): ~2 rivers at 56×40, ~5 at
+	// 120×84, high-20s at 230×230 — visibly gradient-fed without turning the
+	// coastline into a lattice of cyan. "Scarcity beats abundance" per plan.
+	riverDensityDivisor = 500
+	// minRivers is the map-wide floor regardless of land area — even a small
+	// map gets at least two rivers (plan §P3).
+	minRivers = 2
+
+	// riverMinComponentTiles: a land component smaller than this never gets a
+	// river source — rivers on specks read as noise, not geography (plan §P3
+	// "high-elevation tiles ... preferring LARGE components"). Comfortably
+	// above remoteIsleMaxTiles (15) so a forced-metal remote isle never
+	// doubles as a river source too.
+	riverMinComponentTiles = 25
+
+	// riverSourceSpacing is the minimum hex distance between two river
+	// sources — plan §P3 "no two sources adjacent or near-adjacent".
+	riverSourceSpacing = 6
+)
+
+// ── P4 deposit-cluster + scaled-validation calibration numbers ─────────────
+// temenos_mapgen_arkipelag_plan.md §P4. Replaces the old per-hex-% deposit
+// roll (35 % copper/tin, 8 % silver on candidate terrain) — that made metal
+// quantity a function of how much candidate terrain the height/moisture
+// fields happened to roll, with wild variance (empirically: 120×84 seed 201
+// rolled 48 tin hexes; 230×230 seed 303 rolled 6 in a single monopoly
+// cluster). Deposits are now target-counted source CLUSTERS, sized off
+// playersFor, so quantity tracks intended population instead of noise.
+const (
+	// playersAreaDivisor derives target players from map area: 529 = 23²,
+	// chosen so it round-trips BOTH plan calibration anchors exactly —
+	// 230×230 (52 900 = 230²) divides to exactly 100 (the plan's
+	// "hundraspelarmål"), while 56×40 (2240/529 ≈ 4) floors to the 10-player
+	// minimum below.
+	playersAreaDivisor = 529.0
+	// playersFloor is the driftvärld minimum (today's 56×40 world takes 10
+	// players) — playersFor never returns less than this regardless of area.
+	playersFloor = 10
+
+	// Copper is the deliberately generous metal (plan §A "väst-hemisfären
+	// ska vara kopparrik") — no source-cluster cap, so both its cluster size
+	// and its source-count target are allowed to scale with players.
+	copperClusterMin    = 2
+	copperClusterMax    = 4
+	copperSourceFloor   = 4  // plan §A literal: "max(4, players/6)"
+	copperSourceDivisor = 6
+
+	// Silver sits between copper and tin ("mellanting").
+	silverClusterMin    = 1
+	silverClusterMax    = 3
+	silverSourceFloor   = 3 // plan §A literal: "max(3, players/10)"
+	silverSourceDivisor = 10
+
+	// Tin is the opposite of copper: capped, not scaled. tinSourceCap is a
+	// DESIGN INVARIANT (Timothy 2026-07-16, plan §A) — tin must get SCARCER
+	// relative to player count as the map grows ("scarcity ska bli MER
+	// kännbar med 100 spelare, inte mindre"), so the source-cluster count
+	// never exceeds 4 no matter how big the map or how many players it's
+	// sized for.
+	tinClusterMin    = 1
+	tinClusterMax    = 3
+	tinSourceFloor   = 2  // matches the pre-P4 minProductiveTin floor
+	tinSourceDivisor = 25 // gentle ramp: floor holds until ~50 players, caps at 100
+	tinSourceCap     = 4
+
+	// landmassAreaDivisor / straitSqrtDivisor calibrate validateMap's scaled
+	// floors (below) against the P1 Earthsea blend's empirically observed
+	// landComponents/countStraits at the plan's three sizes — see
+	// minLandmassesFor/minStraitsFor's doc comments for the anchor numbers.
+	landmassAreaDivisor = 900
+	straitSqrtDivisor   = 15.0
+
+	// maxLargestComponentFraction is a DESIGN INVARIANT (Timothy 2026-07-16,
+	// plan §C), not a tunable: without it the height-field noise melts into
+	// one super-continent on large maps. Largest single land component may
+	// never exceed 15 % of total map tiles.
+	maxLargestComponentFraction = 0.15
+)
+
+// playersFor derives a world's target player count from its map area — the
+// dimension every P4 scarcity/validation number below is scaled from (plan
+// §P4-B). See playersAreaDivisor's comment for why 529 round-trips both
+// calibration anchors exactly.
+func playersFor(width, height int) int {
+	players := int(math.Round(float64(width*height) / playersAreaDivisor))
+	if players < playersFloor {
+		players = playersFloor
+	}
+	return players
+}
+
+func copperSourceTarget(players int) int {
+	v := players / copperSourceDivisor
+	if v < copperSourceFloor {
+		v = copperSourceFloor
+	}
+	return v
+}
+
+func silverSourceTarget(players int) int {
+	v := players / silverSourceDivisor
+	if v < silverSourceFloor {
+		v = silverSourceFloor
+	}
+	return v
+}
+
+// tinSourceTarget is capped at tinSourceCap regardless of players — see the
+// const block's DESIGN INVARIANT comment.
+func tinSourceTarget(players int) int {
+	v := players / tinSourceDivisor
+	if v < tinSourceFloor {
+		v = tinSourceFloor
+	}
+	if v > tinSourceCap {
+		v = tinSourceCap
+	}
+	return v
+}
+
 // GenerateMap procedurally generates a hex grid for a world using a seeded RNG.
 //
 // v4 (P1) — height-field archipelago. A two-scale fBm height field (see
@@ -173,7 +303,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 	for attempt := int64(0); attempt < maxMapAttempts; attempt++ {
 		eff := seed + attempt
 		tiles := generateMapOnce(worldID, eff, width, height)
-		if err := validateMap(tiles); err != nil {
+		if err := validateMap(tiles, width, height); err != nil {
 			slog.Warn("mapgen: invalid map, reseeding",
 				"world", worldID.String(), "seed", eff, "width", width, "height", height, "err", err)
 			continue
@@ -193,12 +323,56 @@ const maxMapAttempts = 100
 // Minimum guarantees a generated map must satisfy before it can host a world.
 // Mirror the thresholds asserted by TestGenerateMap_DepositsOnProductiveTerrain
 // and the validation checklist in temenos_mapgen.md.
+//
+// minProductiveCopper, minLandmasses and minStraits are FUNCTIONS below, not
+// consts (P4, plan §C "skalad validateMap") — a 230×230 world should demand a
+// bigger archipelago, more straits and more copper than a 56×40 one.
+// minProductiveTin and minCedar stay flat consts on purpose: tin must get
+// SCARCER relative to player count as the map grows (plan §P4-A), and cedar
+// is already count-based independent of map size (plan §A, untouched by P4).
 const (
-	minProductiveCopper = 2
-	minProductiveTin    = 2
-	minCedar            = 2
-	minLandmasses       = 4 // a real archipelago, not one merged blob
+	minProductiveTin = 2
+	minCedar         = 2
 )
+
+// minProductiveCopperFor scales the copper floor with target players (plan
+// §C "max(2, players/8) som startvärde") — copper has no source-cluster cap
+// (§A "koppar generösare"), so its floor can genuinely grow with population.
+// players/8 keeps today's 56×40/10-player floor at 2 and reaches 12 at the
+// 100-player/230×230 ceiling.
+func minProductiveCopperFor(players int) int {
+	v := players / 8
+	if v < 2 {
+		v = 2
+	}
+	return v
+}
+
+// minLandmassesFor scales the archipelago-size floor with map area (plan §C
+// "minLandmasses ∝ area, 56×40 → dagens 4"). landmassAreaDivisor is
+// calibrated against the P1 Earthsea blend's actual observed landComponents
+// count at each plan size (see the P4 verification notes), not derived from
+// first principles.
+func minLandmassesFor(width, height int) int {
+	v := (width * height) / landmassAreaDivisor
+	if v < 4 {
+		v = 4
+	}
+	return v
+}
+
+// minStraitsFor scales the strait-count floor with √area, not area (plan
+// §C) — straits are a coastline feature (linear), not an area-filling one,
+// so a huge map shouldn't need proportionally as many more of them as it
+// needs more land or metal. straitSqrtDivisor is calibrated so 56×40 lands
+// exactly on today's floor of 3.
+func minStraitsFor(width, height int) int {
+	v := int(math.Round(math.Sqrt(float64(width*height)) / straitSqrtDivisor))
+	if v < 3 {
+		v = 3
+	}
+	return v
+}
 
 // validateMap returns a non-nil error naming every invariant the tile set
 // violates. The tin check is the one the live 0620 world silently failed:
@@ -206,21 +380,30 @@ const (
 // Minimum guarantees for WP3+ (river delta) and WP5 (mineral calibration).
 const (
 	minDeltaTiles       = 1 // ≥1 river_delta hex per map (WP3)
-	minStraits          = 3 // ≥3 sea-strait hexes (narrow passages between landmasses)
 	minTinCopperSeaDist = 8 // tenn↔koppar must require real sea crossing (WP5)
 	// maxTinCopperSeaDist not enforced at generation time — on small maps the BFS
 	// finds no path (MaxInt) since the channels block a direct route; the
 	// rejection loop would exhaust 100 attempts. The placement guarantees copper and
 	// tin are always in opposite hemispheres, so they ARE reachable via sea — the BFS
 	// just can't prove it within the tile set boundary on small maps.
+	// minStraits (P4: was a flat const) is now minStraitsFor(width, height) above.
 )
 
-func validateMap(tiles []MapTile) error {
+// validateMap takes the map's width/height explicitly (P4, plan §C) rather
+// than inferring area from len(tiles) — every scaled floor below needs
+// width/height anyway (playersFor, minStraitsFor, minLandmassesFor), and the
+// caller (GenerateMap) already has both to hand.
+func validateMap(tiles []MapTile, width, height int) error {
+	players := playersFor(width, height)
+	minProductiveCopper := minProductiveCopperFor(players)
+	minLandmasses := minLandmassesFor(width, height)
+	minStraits := minStraitsFor(width, height)
+
 	copperProd, tinProd, cedar, deltaCount := 0, 0, 0, 0
 	comp := landComponents(tiles)
 	copperComps := map[int]bool{}
 	tinComps := map[int]bool{}
-	landmasses := map[int]bool{}
+	landmassSize := map[int]int{}
 
 	// Build a fast lookup for the catchment check below.
 	tileMap := make(map[[2]int]MapTile, len(tiles))
@@ -232,7 +415,7 @@ func validateMap(tiles []MapTile) error {
 			maxQ = t.Q
 		}
 		if tileIsLand(t.Terrain) {
-			landmasses[comp[k]] = true
+			landmassSize[comp[k]]++
 		}
 		if t.CopperDeposit && t.Terrain == TerrainHills {
 			copperProd++
@@ -260,8 +443,22 @@ func validateMap(tiles []MapTile) error {
 	if cedar < minCedar {
 		fails = append(fails, fmt.Sprintf("cedar = %d (want >= %d)", cedar, minCedar))
 	}
-	if len(landmasses) < minLandmasses {
-		fails = append(fails, fmt.Sprintf("landmasses = %d (want >= %d)", len(landmasses), minLandmasses))
+	if len(landmassSize) < minLandmasses {
+		fails = append(fails, fmt.Sprintf("landmasses = %d (want >= %d)", len(landmassSize), minLandmasses))
+	}
+	largestLand := 0
+	for _, sz := range landmassSize {
+		if sz > largestLand {
+			largestLand = sz
+		}
+	}
+	largestFraction := 0.0
+	if len(tiles) > 0 {
+		largestFraction = float64(largestLand) / float64(len(tiles))
+	}
+	if largestFraction > maxLargestComponentFraction {
+		fails = append(fails, fmt.Sprintf("largest landmass = %.1f%% of map area (want <= %.0f%%)",
+			largestFraction*100, maxLargestComponentFraction*100))
 	}
 	if deltaCount < minDeltaTiles {
 		fails = append(fails, fmt.Sprintf("river_delta tiles = %d (want >= %d)", deltaCount, minDeltaTiles))
@@ -527,14 +724,31 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 
-	// ── 6. Rivers + deltas on the two hemisphere-largest landmasses ────
-	// Each gets 1–2 rivers flowing from inland toward the coast. The river
-	// mouth becomes a river_delta tile (highest grain, coastal).
-	if mainland != 0 {
-		addRiver(grid, landmap, rng, mainland, width, height)
+	// ── 6. Gradientfloder (P3): height-driven rivers, steepest descent ─────
+	// Sources are local height maxima on large land components (specks read
+	// as noise, not geography), spaced apart so two rivers never start side
+	// by side. Each river then walks downhill over the SAME height field
+	// that decided land — ties broken by a fixed neighbour order, so a seed
+	// always carves the same rivers — until it reaches the sea. An inland
+	// pit (no strictly-lower neighbour) doesn't kill the river: it keeps
+	// going via the next-best unvisited neighbour, a loop-guarded DFS that
+	// always terminates inside the finite land component and — because every
+	// land component borders sea somewhere — always finds it. This replaces
+	// the old random walk (addRiver used to jitter toward a guessed
+	// direction and could wander away from the coast and die inland — the
+	// Amyklai-class silent failure documented in temenos_mapgen.md §Kända
+	// begränsningar). See addRiver for the per-river delta guarantee this
+	// construction makes possible.
+	landArea := 0
+	for _, sz := range compSize {
+		landArea += sz
 	}
-	if anatolia != 0 {
-		addRiver(grid, landmap, rng, anatolia, width, height)
+	riverCount := landArea / riverDensityDivisor
+	if riverCount < minRivers {
+		riverCount = minRivers
+	}
+	for _, src := range riverSources(field, landmap, compSize, grid, riverCount, width, height) {
+		addRiver(grid, landmap, field, rng, src, width, height)
 	}
 
 	// ── 7. Build tiles + collect deposit candidates by bias & terrain ──
@@ -584,24 +798,37 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 
-	// ── 8. Assign deposits ────────────────────────────────────────────
-	for _, idx := range copperCand {
-		if rng.Float64() < 0.35 {
-			tiles[idx].CopperDeposit = true
-		}
-	}
-	for _, idx := range tinCand {
-		if rng.Float64() < 0.35 {
-			tiles[idx].TinDeposit = true
-		}
-	}
-	// Silver: rare, on metal terrain that didn't draw copper/tin.
+	// ── 8. Assign deposits: target-counted source clusters (P4) ────────
+	// Per-hex-% placement (the pre-P4 code, a single rng.Float64() < p roll
+	// per candidate tile) made metal quantity a function of how much
+	// candidate terrain the fields happened to roll — see the P4 const
+	// block's doc comment for the empirical fallout. placeDepositClusters
+	// instead grows a fixed NUMBER of small clusters (targets/sizes from the
+	// P4 const block), so quantity tracks playersFor, not noise.
+	players := playersFor(width, height)
+
+	placeDepositClusters(tiles, copperCand, landmap, rng,
+		copperSourceTarget(players), copperClusterMin, copperClusterMax, width, height,
+		func(t *MapTile) { t.CopperDeposit = true })
+	placeDepositClusters(tiles, tinCand, landmap, rng,
+		tinSourceTarget(players), tinClusterMin, tinClusterMax, width, height,
+		func(t *MapTile) { t.TinDeposit = true })
+
+	// Silver candidates exclude anything copper/tin already claimed just
+	// above — filtered here rather than in step 7, since copper/tin
+	// placement has only just happened.
+	var silverCandFree []int
 	for _, idx := range silverCand {
-		if !tiles[idx].CopperDeposit && !tiles[idx].TinDeposit && rng.Float64() < 0.08 {
-			tiles[idx].SilverDeposit = true
+		if !tiles[idx].CopperDeposit && !tiles[idx].TinDeposit {
+			silverCandFree = append(silverCandFree, idx)
 		}
 	}
-	// Cedar: 3–5 eastern forests.
+	placeDepositClusters(tiles, silverCandFree, landmap, rng,
+		silverSourceTarget(players), silverClusterMin, silverClusterMax, width, height,
+		func(t *MapTile) { t.SilverDeposit = true })
+
+	// Cedar: 3–5 eastern forests — unchanged, already count-based (plan §A
+	// "rör ej").
 	rng.Shuffle(len(cedarCand), func(i, j int) { cedarCand[i], cedarCand[j] = cedarCand[j], cedarCand[i] })
 	cedarTarget := 3 + rng.Intn(3)
 	for i, idx := range cedarCand {
@@ -612,6 +839,12 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	}
 
 	// ── 9. Guarantee minimums (productive terrain only) ────────────────
+	// Mechanism unchanged from pre-P4 (plan §A "steg 9 behålls oförändrat i
+	// beteende") — only the target counts now come from the scaled floors
+	// instead of a hardcoded 2, so this is a no-op on the common path where
+	// step 8's clustering already cleared them (it clears them even in the
+	// worst case of zero cluster growth, one tile per source — see the
+	// const block's target/floor arithmetic).
 	ensure := func(cand []int, count int, set func(*MapTile), has func(MapTile) bool) {
 		have := 0
 		for _, t := range tiles {
@@ -629,8 +862,8 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 			}
 		}
 	}
-	ensure(copperCand, 2, func(t *MapTile) { t.CopperDeposit = true }, func(t MapTile) bool { return t.CopperDeposit })
-	ensure(tinCand, 2, func(t *MapTile) { t.TinDeposit = true }, func(t MapTile) bool { return t.TinDeposit })
+	ensure(copperCand, minProductiveCopperFor(players), func(t *MapTile) { t.CopperDeposit = true }, func(t MapTile) bool { return t.CopperDeposit })
+	ensure(tinCand, minProductiveTin, func(t *MapTile) { t.TinDeposit = true }, func(t MapTile) bool { return t.TinDeposit })
 
 	// ── 10. Make the remote metal isles productive ──────────────────────
 	// Force one hills+copper / mountain+tin tile on each, converting terrain
@@ -676,9 +909,183 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		set(&tiles[target])
 	}
 	forceMetal(copperIsle, mainland, TerrainHills, func(t *MapTile) { t.CopperDeposit = true })
-	forceMetal(tinIsle, anatolia, TerrainMountainLimestone, func(t *MapTile) { t.TinDeposit = true })
+	// Tin only: skip forcing a remote isle productive when the tinSourceCap
+	// (plan §A DESIGN INVARIANT, see the P4 const block) is already met —
+	// forceMetal picks the isle's first land tile regardless of adjacency to
+	// an existing tin cluster, so an unconditional call here could mint a
+	// 5th distinct source component on some seeds. Copper has no such cap
+	// (see forceMetal call above), so it stays unconditional.
+	if depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit }) < tinSourceCap {
+		forceMetal(tinIsle, anatolia, TerrainMountainLimestone, func(t *MapTile) { t.TinDeposit = true })
+	}
 
 	return tiles
+}
+
+// growCluster grows one deposit source cluster from seed by BFS restricted
+// to cells still marked available in avail — the same candidate-terrain
+// class the seed came from (plan §P4-A: "väx varje frö till ett litet
+// sammanhängande kluster ... via grannar i samma kandidatlista"). Growth
+// stops at targetSize cells or when the local candidate patch runs out.
+// riverNeighbourOrder's fixed direction order makes growth deterministic for
+// a fixed avail set and seed — avail only ever shrinks as clusters are
+// placed (callers never reorder it), so a seed always grows the same
+// cluster for a given map.
+func growCluster(seed cell, avail map[cell]bool, targetSize int) []cell {
+	if !avail[seed] {
+		return nil
+	}
+	cluster := []cell{seed}
+	visited := map[cell]bool{seed: true}
+	queue := []cell{seed}
+	for len(cluster) < targetSize && len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, d := range riverNeighbourOrder {
+			if len(cluster) >= targetSize {
+				break
+			}
+			n := cell{cur.q + d[0], cur.r + d[1]}
+			if visited[n] || !avail[n] {
+				continue
+			}
+			visited[n] = true
+			cluster = append(cluster, n)
+			queue = append(queue, n)
+		}
+	}
+	return cluster
+}
+
+// depositSources picks up to targetSources seed cells for growCluster, drawn
+// round-robin across the land components touching cand. The plan's spread
+// requirement (§P4-A: "när ≥2 källor finns ska minst 2 ligga på skilda
+// landmassor") falls out of this for free: as long as ≥2 components have
+// candidates, the first two seeds returned always come from two different
+// ones, because every round visits every component (ascending component-id
+// order — deterministic) before any component repeats. WHICH candidate is
+// picked within a component is randomised once via the map's own rng
+// (shuffled per component); map-range iteration order never leaks into the
+// result, only rng draws do.
+func depositSources(cand []int, tiles []MapTile, landmap map[cell]int, rng *rand.Rand, targetSources int) []cell {
+	byComp := map[int][]int{}
+	var compIDs []int
+	for _, idx := range cand {
+		lm := landmap[cell{tiles[idx].Q, tiles[idx].R}]
+		if _, ok := byComp[lm]; !ok {
+			compIDs = append(compIDs, lm)
+		}
+		byComp[lm] = append(byComp[lm], idx)
+	}
+	sort.Ints(compIDs)
+	for _, lm := range compIDs {
+		g := byComp[lm]
+		rng.Shuffle(len(g), func(i, j int) { g[i], g[j] = g[j], g[i] })
+	}
+
+	pos := make(map[int]int, len(compIDs))
+	var seeds []cell
+	for len(seeds) < targetSources {
+		progressed := false
+		for _, lm := range compIDs {
+			if len(seeds) >= targetSources {
+				break
+			}
+			g := byComp[lm]
+			p := pos[lm]
+			if p >= len(g) {
+				continue
+			}
+			idx := g[p]
+			pos[lm] = p + 1
+			seeds = append(seeds, cell{tiles[idx].Q, tiles[idx].R})
+			progressed = true
+		}
+		if !progressed {
+			break // every component's candidates are exhausted
+		}
+	}
+	return seeds
+}
+
+// placeDepositClusters is step 8's shared engine for copper/tin/silver: pick
+// up to targetSources seeds spread across land components (depositSources),
+// grow each into a cluster of clusterMin..clusterMax cells (growCluster),
+// and flip their deposit flag via set. A seed that collided with an earlier
+// cluster's growth (avail[seed] already false) is silently skipped — the
+// achieved source count can land under target on a crowded landmass, which
+// is fine: GenerateMap's rejection-sampling loop (reseed until validateMap
+// passes) is the backstop for "not enough", not a retry loop in here.
+func placeDepositClusters(tiles []MapTile, cand []int, landmap map[cell]int, rng *rand.Rand, targetSources, clusterMin, clusterMax, width, height int, set func(*MapTile)) {
+	if targetSources <= 0 || len(cand) == 0 {
+		return
+	}
+	seeds := depositSources(cand, tiles, landmap, rng, targetSources)
+
+	avail := make(map[cell]bool, len(cand))
+	index := make(map[cell]int, len(cand))
+	for _, idx := range cand {
+		c := cell{tiles[idx].Q, tiles[idx].R}
+		avail[c] = true
+		index[c] = idx
+	}
+
+	for _, seed := range seeds {
+		if !avail[seed] {
+			continue
+		}
+		size := clusterMin
+		if clusterMax > clusterMin {
+			size += rng.Intn(clusterMax - clusterMin + 1)
+		}
+		cluster := growCluster(seed, avail, size)
+		for _, c := range cluster {
+			set(&tiles[index[c]])
+			avail[c] = false
+		}
+	}
+}
+
+// depositSourceCount counts connected components among tiles for which has
+// returns true — the "how many separate source clusters" reading both the
+// tinSourceCap guard (generateMapOnce step 10) and the P4 JSON contract
+// (copper_sources/tin_sources/silver_sources, debugpng.go) need. Adjacency
+// is the same 6-axial rule as landComponents, but over the deposit flag
+// instead of the land/sea terrain split. Iteration order over the resulting
+// map is nondeterministic (Go map ranging), but the component COUNT it
+// produces is invariant to traversal order, so that doesn't threaten
+// mapgen's determinism contract — this is read-only accounting, not
+// placement.
+func depositSourceCount(tiles []MapTile, has func(MapTile) bool) int {
+	present := map[[2]int]bool{}
+	for _, t := range tiles {
+		if has(t) {
+			present[[2]int{t.Q, t.R}] = true
+		}
+	}
+	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+	seen := map[[2]int]bool{}
+	count := 0
+	for k := range present {
+		if seen[k] {
+			continue
+		}
+		count++
+		queue := [][2]int{k}
+		seen[k] = true
+		for len(queue) > 0 {
+			cur := queue[0]
+			queue = queue[1:]
+			for _, d := range dirs6 {
+				n := [2]int{cur[0] + d[0], cur[1] + d[1]}
+				if present[n] && !seen[n] {
+					seen[n] = true
+					queue = append(queue, n)
+				}
+			}
+		}
+	}
+	return count
 }
 
 // tileIsLand reports whether a terrain is land (not sea).
@@ -952,111 +1359,300 @@ func terrainFor(heightNorm, moistureNorm float64, hemisphereBias int) Terrain {
 	return terrainTable[heightBandOf(heightNorm)][moistureZoneOf(moistureNorm)]
 }
 
-// addRiver creates a connected river corridor from an inland tile toward the coast,
-// converting land tiles to river_valley. Where the river meets the sea it places
-// a river_delta (2–4 adjacent coastal tiles with the highest grain in the game).
-// This replaces the old cosmetic addRiverValley with a real geographical feature.
-func addRiver(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, targetLM, width, height int) {
-	// Find inland plains/hills tiles on the target landmass (not adjacent to sea).
-	var inland []cell
+// riverNeighbourOrder is the fixed hex-neighbour direction order rivers use
+// for deterministic tie-breaking (descentOrder, firstSeaNeighbour) — the same
+// six directions as hexNeighbours' dirs, named here so the descent logic
+// reads as an intentional contract rather than an anonymous literal borrowed
+// from elsewhere in the file.
+var riverNeighbourOrder = [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+
+// riverSources picks up to n well-separated local-height-maxima land cells as
+// river start points (plan §P3: "högsta lokala höjdpunkter på stora
+// landkomponenter"). Candidates are restricted to components with at least
+// riverMinComponentTiles tiles (specks read as noise, not geography), sorted
+// by height descending, and accepted greedily as long as they clear
+// riverSourceSpacing hexes from every already-chosen source — so two rivers
+// never start side by side even on a broad plateau. Iteration is in the
+// file's standard column-major (q, then r) order and ties are broken by
+// (q, r) explicitly, so the result is fully deterministic for a given field.
+func riverSources(field map[cell]float64, landmap map[cell]int, compSize map[int]int, grid map[cell]Terrain, n, width, height int) []cell {
+	type candidate struct {
+		c cell
+		h float64
+	}
+	var candidates []candidate
 	for q := 0; q < width; q++ {
 		base := rowOrigin(q, width)
 		for r := base; r < base+height; r++ {
 			c := cell{q, r}
-			if landmap[c] == targetLM &&
-				(grid[c] == TerrainPlains || grid[c] == TerrainHills) &&
-				!hasDeepSeaNeighbour(grid, c, width, height) {
-				inland = append(inland, c)
-			}
-		}
-	}
-	if len(inland) == 0 {
-		return
-	}
-
-	// Walk from a random inland start toward the coast.
-	// Prefer moving in a direction with more land neighbours (hugs the landmass).
-	start := inland[rng.Intn(len(inland))]
-	length := 5 + rng.Intn(5) // 5–9 tiles before we stop or hit coast
-
-	// Choose a general direction toward the nearest coast quadrant.
-	// dr = ±1 based on which half of the map the start is in.
-	dr := 1
-	row := start.r - rowOrigin(start.q, width)
-	if row > height/2 {
-		dr = -1
-	}
-	dq := 0
-	if start.q < width/2 {
-		dq = -1
-	} else {
-		dq = 1
-	}
-
-	c := start
-	var riverCells []cell
-	for i := 0; i < length; i++ {
-		if landmap[c] != targetLM {
-			break
-		}
-		grid[c] = TerrainRiverValley
-		riverCells = append(riverCells, c)
-
-		// Try to step toward coast; jitter slightly left/right to look organic.
-		jq := dq + rng.Intn(3) - 1 // dq-1, dq, or dq+1
-		if jq < -1 {
-			jq = -1
-		} else if jq > 1 {
-			jq = 1
-		}
-		candidates := []cell{
-			{c.q + jq, c.r + dr},
-			{c.q, c.r + dr},
-			{c.q + dq, c.r},
-		}
-		moved := false
-		for _, n := range candidates {
-			if !inMap(n.q, n.r, width, height) {
+			lm := landmap[c]
+			if lm == lmSea || compSize[lm] < riverMinComponentTiles || isSea(grid[c]) {
 				continue
 			}
-			if isSea(grid[n]) {
-				// River reached coast — place delta here and stop.
-				placeDelta(grid, landmap, rng, n, targetLM, width, height)
-				return
+			isMax := true
+			for _, d := range riverNeighbourOrder {
+				nb := cell{c.q + d[0], c.r + d[1]}
+				if landmap[nb] == lm && field[nb] > field[c] {
+					isMax = false
+					break
+				}
 			}
-			if landmap[n] == targetLM {
-				c = n
-				moved = true
+			if isMax {
+				candidates = append(candidates, candidate{c, field[c]})
+			}
+		}
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].h != candidates[j].h {
+			return candidates[i].h > candidates[j].h
+		}
+		if candidates[i].c.q != candidates[j].c.q {
+			return candidates[i].c.q < candidates[j].c.q
+		}
+		return candidates[i].c.r < candidates[j].c.r
+	})
+
+	var sources []cell
+	for _, cd := range candidates {
+		if len(sources) >= n {
+			break
+		}
+		tooClose := false
+		for _, s := range sources {
+			if hexDist(cd.c, s) < riverSourceSpacing {
+				tooClose = true
 				break
 			}
 		}
-		if !moved {
-			break
+		if !tooClose {
+			sources = append(sources, cd.c)
 		}
+	}
+	return sources
+}
+
+// descentOrder returns c's land neighbours on targetLM (sea and other
+// landmasses excluded — a river only ever steps onto its own component or,
+// via firstSeaNeighbour, straight into its mouth) sorted by height ascending:
+// steepest descent first. Ties are broken by riverNeighbourOrder's fixed
+// direction order (a stable sort over neighbours built in that order), never
+// by map/iteration order, so a seed always carves the same river.
+func descentOrder(field map[cell]float64, landmap map[cell]int, targetLM int, c cell, width, height int) []cell {
+	var out []cell
+	for _, d := range riverNeighbourOrder {
+		n := cell{c.q + d[0], c.r + d[1]}
+		if !inMap(n.q, n.r, width, height) || landmap[n] != targetLM {
+			continue
+		}
+		out = append(out, n)
+	}
+	sort.SliceStable(out, func(i, j int) bool { return field[out[i]] < field[out[j]] })
+	return out
+}
+
+// firstSeaNeighbour returns c's first sea hex neighbour in riverNeighbourOrder
+// — deterministic mouth selection when a river's current cell borders more
+// than one sea tile.
+func firstSeaNeighbour(grid map[cell]Terrain, c cell, width, height int) (cell, bool) {
+	for _, d := range riverNeighbourOrder {
+		n := cell{c.q + d[0], c.r + d[1]}
+		if inMap(n.q, n.r, width, height) && isSea(grid[n]) {
+			return n, true
+		}
+	}
+	return cell{}, false
+}
+
+// addRiver carves one river from source to the sea by steepest descent over
+// the height field (plan §P3), then places its delta at the mouth. It is a
+// loop-guarded depth-first walk, not a plain greedy walk: at each cell it
+// tries its lowest unvisited neighbour first (steepest descent), but if that
+// branch dead-ends (an inland pit whose every neighbour is already visited)
+// it backtracks and tries the next-best neighbour of the previous cell —
+// "filling the pit" by continuing via a higher neighbour instead of dying,
+// exactly as plan §P3 asks, without needing a real priority-flood structure.
+// Because no cell is ever visited twice, the walk is bounded by the land
+// component's size and therefore always terminates; because every land
+// component borders sea somewhere (it is carved as a connected patch inside
+// a sea-majority field), that termination is always "reached the sea", never
+// "ran out of map". A river whose source can't reach the sea within the
+// safety cap (should be unreachable — see above) is simply not counted as
+// generated: nothing is carved and no delta is asserted for it.
+//
+// Per-river delta guarantee (plan §P3, "not globalt utan per flod"): the
+// invariant lives HERE in code, not in validateMap. validateMap only ever
+// sees the flattened []MapTile list — it has no notion of "which delta
+// belongs to which river" unless we thread river results through its
+// signature, which every existing caller (including the test helpers that
+// call validateMap(tiles) directly) would have to grow a parameter for, for
+// a check this constructor already makes mathematically true: placeDelta is
+// called with origin = the river's own last carved cell and ALWAYS tries
+// origin first (see placeDelta's doc comment) — origin borders mouth (that's
+// the definition of "mouth"), so it unconditionally passes placeDelta's
+// eligibility filter and is placed before the delta-size budget can run out.
+// The delta doesn't just exist "somewhere near the coast", it touches the
+// carved river itself. Asserting it right after the call catches a real bug
+// in the carving/placement logic loudly (same "fail loud" contract
+// GenerateMap already uses for its own invariants), instead of letting a
+// silently-broken river slip through as a passing map — this is exactly the
+// gap a first draft of this function had: placeDelta's candidate list used
+// to start from the mouth's hex neighbours in a fixed direction order with
+// no preference for the actual river cell, so on a bending coastline the
+// delta could land on unrelated nearby land while the true river dead-ended
+// with no delta touching it — caught by the black-box connectivity test
+// (TestGenerateMap_EveryRiverReachesDelta), not by eyeballing PNGs. validateMap
+// keeps its existing minDeltaTiles>=1 floor as the map-level backstop (plan:
+// "Keep minDeltaTiles ≥ 1 as the map-level floor") — untouched.
+func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float64, rng *rand.Rand, source cell, width, height int) {
+	targetLM := landmap[source]
+	if targetLM == lmSea {
+		return
 	}
 
-	// If we ran out of river tiles without hitting sea, place a delta at the last
-	// river cell if it neighbours coastal sea.
-	if len(riverCells) > 0 {
-		last := riverCells[len(riverCells)-1]
-		for _, n := range hexNeighbours(last, width, height) {
-			if isSea(grid[n]) {
-				placeDelta(grid, landmap, rng, n, targetLM, width, height)
-				return
+	visited := map[cell]bool{source: true}
+	path := []cell{source}
+
+	type frame struct {
+		c         cell
+		remaining []cell
+	}
+	stack := []frame{{c: source, remaining: descentOrder(field, landmap, targetLM, source, width, height)}}
+
+	var mouth cell
+	reached := false
+
+	// Each cell is pushed at most once (visited-gated), so the loop runs at
+	// most O(land component size) iterations. The cap is a pure safety net
+	// against a future bookkeeping bug, not a limit real landmasses can hit.
+	maxIter := width*height + 10
+	for iter := 0; iter < maxIter && len(stack) > 0; iter++ {
+		top := &stack[len(stack)-1]
+		cur := top.c
+
+		if n, ok := firstSeaNeighbour(grid, cur, width, height); ok {
+			mouth = n
+			reached = true
+			break
+		}
+
+		var next cell
+		found := false
+		for len(top.remaining) > 0 {
+			cand := top.remaining[0]
+			top.remaining = top.remaining[1:]
+			if !visited[cand] {
+				next = cand
+				found = true
+				break
 			}
 		}
+		if !found {
+			// Every neighbour of cur is already visited and none was sea —
+			// cur is a fully-explored dead branch. Backtrack: it is not part
+			// of the final river.
+			stack = stack[:len(stack)-1]
+			path = path[:len(path)-1]
+			continue
+		}
+
+		visited[next] = true
+		path = append(path, next)
+		stack = append(stack, frame{c: next, remaining: descentOrder(field, landmap, targetLM, next, width, height)})
 	}
+
+	if !reached {
+		// Should be unreachable (see doc comment) — treat defensively as "no
+		// river" rather than carve a corridor that never gets a delta.
+		return
+	}
+
+	// Thin the carve to a line (round-2 fix): the DFS stack path is loop-free
+	// but NOT blob-free — in a flat pit every step finds another unvisited
+	// neighbour, so the walk serpentines across the whole pit floor without
+	// ever dead-ending, and the entire tour stays on the "committed" path
+	// (backtracking only trims true dead-ends). Carving that floods the pit
+	// with river_valley — 15+-tile lake-like patches of the game's
+	// extra-fertile terrain, i.e. a food-inflation hotspot (same scarcity
+	// logic as deltas/tin). So the explored path is treated as a CORRIDOR,
+	// not the river itself: riverLine below re-derives the shortest route
+	// through the visited set from source to the mouth-adjacent cell, which
+	// crosses a pit in a line instead of touring its floor. Only that line
+	// is carved; every other explored tile keeps its terrainFor terrain.
+	origin := path[len(path)-1]
+	for _, c := range riverLine(visited, source, origin, width, height) {
+		grid[c] = TerrainRiverValley
+	}
+	placeDelta(grid, landmap, rng, mouth, origin, targetLM, width, height)
+	if grid[origin] != TerrainRiverDelta {
+		panic(fmt.Sprintf("mapgen: river ending at %v (mouth %v) produced no delta tile at its own mouth — carving invariant broken", origin, mouth))
+	}
+}
+
+// riverLine returns the shortest path from source to origin walking only
+// cells in the descent's visited set — the thin line addRiver actually
+// carves out of the explored corridor (see the round-2 comment there). Plain
+// BFS with riverNeighbourOrder as the fixed expansion order, so the chosen
+// line is deterministic per seed. origin is always reachable from source
+// within visited (they are endpoints of the same connected DFS walk), so the
+// fallback return is defensive only.
+func riverLine(visited map[cell]bool, source, origin cell, width, height int) []cell {
+	if source == origin {
+		return []cell{origin}
+	}
+	parent := map[cell]cell{source: source}
+	queue := []cell{source}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, d := range riverNeighbourOrder {
+			n := cell{cur.q + d[0], cur.r + d[1]}
+			if !inMap(n.q, n.r, width, height) || !visited[n] {
+				continue
+			}
+			if _, seen := parent[n]; seen {
+				continue
+			}
+			parent[n] = cur
+			if n == origin {
+				// Walk parents back to source, then reverse.
+				line := []cell{n}
+				for line[len(line)-1] != source {
+					line = append(line, parent[line[len(line)-1]])
+				}
+				for i, j := 0, len(line)-1; i < j; i, j = i+1, j-1 {
+					line[i], line[j] = line[j], line[i]
+				}
+				return line
+			}
+			queue = append(queue, n)
+		}
+	}
+	// Unreachable by construction — carve at least the mouth cell so the
+	// delta invariant still holds.
+	return []cell{origin}
 }
 
 // placeDelta converts coastal land tiles adjacent to a river mouth into river_delta terrain.
 // Delta tiles are coastal, fertile, and strategically exposed — the geographic "honey trap".
 // We look for land tiles on the targetLM that border any sea tile (coastal_sea counts).
-func placeDelta(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, mouth cell, targetLM, width, height int) {
+// origin is the river's own last carved land cell — the reason mouth counts
+// as a mouth in the first place. It is ALWAYS tried first, ahead of the
+// generic "land near mouth" candidates: on a bending coastline, mouth can
+// have several land neighbours, and the fixed hexNeighbours direction order
+// has no reason to reach origin before some unrelated tile that also happens
+// to border the sea. Without this, a river's delta could land next to it
+// geographically but not actually touch its carved river_valley chain — the
+// exact per-river guarantee P3 exists to make airtight (see addRiver's doc
+// comment). origin always passes the eligibility filter below (it borders
+// mouth, which is sea, by construction) and deltaSize is always >= 1, so
+// origin becoming river_delta is guaranteed, not probabilistic.
+func placeDelta(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, mouth, origin cell, targetLM, width, height int) {
 	deltaSize := 1 + rng.Intn(3) // 1–3 delta tiles
 	placed := 0
 
+	candidates := []cell{origin}
 	// Walk outward from the mouth: prefer land tiles that border sea.
-	candidates := hexNeighbours(mouth, width, height)
+	candidates = append(candidates, hexNeighbours(mouth, width, height)...)
 	// Also include the mouth's own neighbours' neighbours for larger deltas.
 	for _, n := range hexNeighbours(mouth, width, height) {
 		for _, nn := range hexNeighbours(n, width, height) {
@@ -1244,22 +1840,6 @@ func hexNeighbours(c cell, w, h int) []cell {
 
 func isSea(t Terrain) bool {
 	return t == TerrainDeepSea || t == TerrainCoastalSea
-}
-
-// hasDeepSeaNeighbour reports whether a land tile borders deep sea.
-func hasDeepSeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
-	return countDeepSeaNeighbours(grid, c, w, h) > 0
-}
-
-// countDeepSeaNeighbours returns how many of the 6 hex neighbours are deep sea.
-func countDeepSeaNeighbours(grid map[cell]Terrain, c cell, w, h int) int {
-	n := 0
-	for _, nb := range hexNeighbours(c, w, h) {
-		if grid[nb] == TerrainDeepSea {
-			n++
-		}
-	}
-	return n
 }
 
 // hasLandNeighbour reports whether a sea tile borders any land tile.

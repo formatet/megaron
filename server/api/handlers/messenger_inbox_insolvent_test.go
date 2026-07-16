@@ -131,7 +131,7 @@ func TestInbox_InsolventPendingOfferStillVisible(t *testing.T) {
 	}
 
 	clk := clock.NewTestClock(time.Now())
-	mh := NewMessengerHandler(pool, events.NewScheduler(pool, clk), clk)
+	mh := NewMessengerHandler(pool, events.NewScheduler(pool, clk), clk, nil)
 
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))

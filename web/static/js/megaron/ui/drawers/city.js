@@ -1,6 +1,7 @@
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { fmtSilver, fmtEta } from '../format.js';
+import { fmtSilver } from '../format.js';
+import { arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { startCityAnim } from '../../render/city.js';
 
@@ -376,7 +377,7 @@ async function refreshCityBuildings(provinceID) {
         }</table>`
       : '<p class="empty-state">No buildings yet.</p>';
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
-      bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${fmtEta(b.complete_at)}</td>` +
+      bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${arrivalHTML(b.complete_at)}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
     if (tu.length) {
@@ -385,7 +386,7 @@ async function refreshCityBuildings(provinceID) {
       h2 += `<div class="dsec-title" style="margin-top:.8rem">Training</div><table class="goods-mini">${
         tu.map(u => {
           const name = UNIT_LBL[u.unit] || u.unit;
-          let label, eta = u.ready_at ? fmtEta(u.ready_at) : '';
+          let label, eta = u.ready_at ? arrivalHTML(u.ready_at) : '';
           if (u.category === 'naval') label = 'building';
           else if (u.status === 'training') label = `${u.size}/100 · training`;
           else label = `${u.size}/100 · forming`;

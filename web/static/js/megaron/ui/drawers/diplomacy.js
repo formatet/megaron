@@ -1,6 +1,7 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { esc, fmtEta, fmtAgo } from '../format.js';
+import { esc, fmtAgo } from '../format.js';
+import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 
 // ── Diplomacy drawer ──────────────────────────────────────────────────────
@@ -203,8 +204,12 @@ async function loadDipThreads() {
             + '</div></div>';
         } else {
           // Sent message
-          const statusBit = m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
-                          : m.status === 'delivering' ? '<span style="color:var(--text-dim)">en route · ' + fmtEta(m.arrives_at) + '</span>'
+          const offerStatus = m.trade_offer && m.trade_offer.status;
+          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted</span>'
+                          : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
+                          : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
+                          : m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
+                          : m.status === 'delivering' ? '<span style="color:var(--text-dim)">en route · arrives ' + arrivalHTML(m.arrives_at) + '</span>'
                           : '<span style="color:var(--text-dim)">' + esc(m.status || '') + '</span>';
           const replyText = m.reply_text
             ? '<div class="dip-msg-text" style="color:var(--safe);text-align:right">' + esc(m.reply_text) + '</div>'
@@ -318,7 +323,7 @@ export async function dipSendInThread(cid, destId) {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    showStatus('✓ Dispatched · arrives ' + fmtEta(data.arrives_at), true);
+    showStatus('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at), true);
     if (textEl) textEl.value = '';
     fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     // Reload threads after a short delay so sent message appears
@@ -350,7 +355,7 @@ export async function dipAccept(id, btn) {
   const data = await res.json().catch(() => ({}));
   const block = document.getElementById('dip-trade-' + id);
   if (res.ok && block) {
-    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' arriving ' + fmtEta(data.goods_arrives_at) + ' · ' + data.silver_paid + ' silver paid</span>';
+    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' arriving ' + arrivalHTML(data.goods_arrives_at) + ' · ' + data.silver_paid + ' silver paid</span>';
   } else {
     btn.disabled = false;
     if (block) {
@@ -383,7 +388,7 @@ export async function dipReply(id) {
   const data = await res.json().catch(() => ({}));
   const row = document.getElementById('dip-reply-row-' + id);
   if (res.ok && row) {
-    row.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.2rem">✓ Reply dispatched · returns ' + fmtEta(data.returns_at) + '</div>';
+    row.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + '</div>';
   }
 }
 
@@ -454,7 +459,7 @@ export async function dipSend() {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    showDipRes('✓ Dispatched · arrives ' + fmtEta(data.arrives_at), true);
+    showDipRes('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at), true);
     const mtel = document.getElementById('dip-msg-text'); if (mtel) mtel.value = '';
     const dsel = document.getElementById('dip-dest'); if (dsel) dsel.value = '';
     fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));

@@ -13,6 +13,7 @@ import (
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
+	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/transport"
 )
@@ -22,11 +23,12 @@ type MessengerHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
 	clk       clock.Clock
+	hub       *notify.Hub // nil-guarded; carries OfferAccepted/OfferDeclined to the offer's originator
 }
 
 // NewMessengerHandler creates a MessengerHandler.
-func NewMessengerHandler(pool *pgxpool.Pool, sched *events.Scheduler, clk clock.Clock) *MessengerHandler {
-	return &MessengerHandler{pool: pool, scheduler: sched, clk: clk}
+func NewMessengerHandler(pool *pgxpool.Pool, sched *events.Scheduler, clk clock.Clock, hub *notify.Hub) *MessengerHandler {
+	return &MessengerHandler{pool: pool, scheduler: sched, clk: clk, hub: hub}
 }
 
 // Send handles POST /worlds/:worldID/settlements/:settlementID/messengers.
@@ -941,6 +943,25 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 
 		goodsArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
 		silverArrivesAt := goodsArrivesAt.Add(messenger.TradeTravelDuration(dist))
+
+		// OfferAccepted — the offer's originator (here: the seller, who has been
+		// silently waiting since Send) gets an immediate decision notice instead of
+		// only learning via the delayed TradeDelivery/TradeReturn on physical arrival.
+		if h.hub != nil {
+			_ = h.hub.NotifyPlayer(r.Context(), worldID, originOwner, "OfferAccepted", 3, map[string]any{
+				"messenger_id":      messengerID,
+				"settlement_id":     originID,
+				"counterparty_id":   destID,
+				"kind":              kind,
+				"good_key":          offerGood,
+				"quantity":          offerQty,
+				"silver":            wantSilver,
+				"resolution":        "accepted",
+				"goods_arrives_at":  goodsArrivesAt,
+				"silver_arrives_at": silverArrivesAt,
+			})
+		}
+
 		writeJSON(w, http.StatusOK, map[string]any{
 			"good_key":           offerGood,
 			"quantity":           offerQty,
@@ -1031,6 +1052,24 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 
 		silverArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
 		goodsArrivesAt := silverArrivesAt.Add(messenger.TradeTravelDuration(dist))
+
+		// OfferAccepted — the offer's originator (here: the buyer) gets an immediate
+		// decision notice instead of only learning via the delayed TradeReturn.
+		if h.hub != nil {
+			_ = h.hub.NotifyPlayer(r.Context(), worldID, originOwner, "OfferAccepted", 3, map[string]any{
+				"messenger_id":      messengerID,
+				"settlement_id":     originID,
+				"counterparty_id":   destID,
+				"kind":              kind,
+				"good_key":          wantGood,
+				"quantity":          wantQty,
+				"silver":            offerSilver,
+				"resolution":        "accepted",
+				"goods_arrives_at":  goodsArrivesAt,
+				"silver_arrives_at": silverArrivesAt,
+			})
+		}
+
 		writeJSON(w, http.StatusOK, map[string]any{
 			"good_key":          wantGood,
 			"quantity":          wantQty,
@@ -1061,20 +1100,22 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var offerStatus, kind, offerGood string
-	var originID uuid.UUID
+	var originID, destID, originOwner uuid.UUID
 	var offerSilver, offerQty float64
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT m.trade_offer->>'status', m.origin_id,
+		`SELECT m.trade_offer->>'status', m.origin_id, m.destination_id,
+		        COALESCE(os.owner_id, '00000000-0000-0000-0000-000000000000'::uuid),
 		        COALESCE(m.trade_offer->>'kind', 'buy'),
 		        COALESCE((m.trade_offer->>'offer_silver')::float, 0),
 		        COALESCE(m.trade_offer->>'offer_good', ''),
 		        COALESCE((m.trade_offer->>'offer_qty')::float, 0)
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
+		 JOIN settlements os ON os.id = m.origin_id
 		 WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3
 		   AND m.status='delivered' AND m.trade_offer IS NOT NULL`,
 		messengerID, worldID, playerID,
-	).Scan(&offerStatus, &originID, &kind, &offerSilver, &offerGood, &offerQty)
+	).Scan(&offerStatus, &originID, &destID, &originOwner, &kind, &offerSilver, &offerGood, &offerQty)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "trade offer not found")
 		return
@@ -1138,6 +1179,21 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	if err = tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
+	}
+
+	// OfferDeclined — the offer's originator gets an immediate decision notice
+	// instead of only learning via the delayed TradeReturn on escrow arrival.
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(r.Context(), worldID, originOwner, "OfferDeclined", 3, map[string]any{
+			"messenger_id":    messengerID,
+			"settlement_id":   originID,
+			"counterparty_id": destID,
+			"kind":            kind,
+			"good_key":        offerGood,
+			"quantity":        offerQty,
+			"silver":          offerSilver,
+			"resolution":      "declined",
+		})
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"status": "declined"})

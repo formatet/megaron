@@ -213,6 +213,49 @@ func spawnBuildable(t Terrain) bool {
 	return true
 }
 
+// EstimatePlayerCapacity greedily packs spawn-eligible hexes (spawnBuildable
+// — the same terrain exclusion as join.go's capital-placement query) with a
+// minimum hex distance from every already-picked hex, replicating join.go's
+// clustering guard (api/handlers/join.go ~line 132-174: "at least 4 hexes
+// from any existing settlement", i.e. NOT EXISTS a prior pick with hex
+// distance <= 4). join.go itself is untouched — this is a read-only replica
+// for CLI/JSON reporting only (plan §P4-B). Candidates are sorted by (q, r)
+// before the greedy pass so the same tile set always yields the same count,
+// independent of Go's map iteration order.
+func EstimatePlayerCapacity(tiles []MapTile, width, height int) int {
+	type c struct{ q, r int }
+	candidates := make([]c, 0, len(tiles))
+	for _, t := range tiles {
+		if spawnBuildable(t.Terrain) {
+			candidates = append(candidates, c{t.Q, t.R})
+		}
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].q != candidates[j].q {
+			return candidates[i].q < candidates[j].q
+		}
+		return candidates[i].r < candidates[j].r
+	})
+
+	var picked []c
+	for _, cand := range candidates {
+		tooClose := false
+		for _, p := range picked {
+			dq := cand.q - p.q
+			dr := cand.r - p.r
+			dist := (iAbs(dq) + iAbs(dq+dr) + iAbs(dr)) / 2
+			if dist <= 4 {
+				tooClose = true
+				break
+			}
+		}
+		if !tooClose {
+			picked = append(picked, cand)
+		}
+	}
+	return len(picked)
+}
+
 // ── Metrics ────────────────────────────────────────────────────────────────
 
 // ComponentCompactness is the isoperimetric quotient of one land component:
@@ -250,6 +293,20 @@ type MapMetrics struct {
 	CedarDeposits   int `json:"cedar_deposits"`
 	Straits         int `json:"straits"`
 	DeltaTiles      int `json:"delta_tiles"`
+
+	// P4 calibration/capacity fields (plan §P4-B).
+	TargetPlayers  int `json:"target_players"`  // playersFor(width, height)
+	PlayerCapacity int `json:"player_capacity"` // greedy packing estimate, see EstimatePlayerCapacity
+	// *Sources are connected components of same-metal deposit tiles — "how
+	// many separate source clusters", not raw tile counts (those are the
+	// *Deposits fields above).
+	CopperSources int `json:"copper_sources"`
+	TinSources    int `json:"tin_sources"`
+	SilverSources int `json:"silver_sources"`
+	// RiverValleyTiles is the river footprint (river_valley terrain count) —
+	// P3 review data: river_valley is extra-fertile, so a bloated footprint
+	// is a food-inflation signal even when every river has its delta.
+	RiverValleyTiles int `json:"river_valley_tiles"`
 
 	CompactnessPerComponent []ComponentCompactness `json:"compactness_per_component"`
 	// Per terrain class: fraction of (tile, in-map neighbour) pairs where the
@@ -303,6 +360,9 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		if t.Terrain == TerrainRiverDelta {
 			m.DeltaTiles++
 		}
+		if t.Terrain == TerrainRiverValley {
+			m.RiverValleyTiles++
+		}
 		for _, d := range dirs6 {
 			nt, ok := terrain[[2]int{t.Q + d[0], t.R + d[1]}]
 			if !ok {
@@ -329,6 +389,12 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		m.LargestComponentFraction = float64(largest) / float64(len(tiles))
 	}
 	m.Straits = countStraits(tiles)
+
+	m.TargetPlayers = playersFor(width, height)
+	m.PlayerCapacity = EstimatePlayerCapacity(tiles, width, height)
+	m.CopperSources = depositSourceCount(tiles, func(t MapTile) bool { return t.CopperDeposit })
+	m.TinSources = depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit })
+	m.SilverSources = depositSourceCount(tiles, func(t MapTile) bool { return t.SilverDeposit })
 
 	for t, total := range totalPairs {
 		m.TerrainNeighbourMix[string(t)] = float64(samePairs[t]) / float64(total)

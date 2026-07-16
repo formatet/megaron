@@ -241,6 +241,17 @@ func outboxCmd() *cobra.Command {
 							line += fmt.Sprintf("  (%.0f silver escrowed — cancel with: poleia trade-cancel --id %s)", silver, id)
 						}
 					}
+					// Arrival ETA (B2) — while the messenger is still travelling, the
+					// destination can't yet see or act on this offer at all; without
+					// this the outbox showed no timeline until the (later) escrow
+					// deadline below.
+					if offerStatus == "pending" && status != "delivered" {
+						if arrStr, ok := m["arrives_at"].(string); ok {
+							if arrT, err := time.Parse(time.RFC3339, arrStr); err == nil {
+								line += fmt.Sprintf("  arrives in %s", countdown(arrT))
+							}
+						}
+					}
 					// Escrow countdown (Fas 2b) — a pending offer's expires_at wasn't
 					// shown anywhere before, so there was no visible deadline for when
 					// the lock releases.

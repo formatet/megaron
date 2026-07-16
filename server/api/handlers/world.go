@@ -18,6 +18,7 @@ import (
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/world"
 )
 
@@ -271,6 +272,11 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"era_number":     wld.EraNumber,
 		"era_started_at": wld.EraStartedAt,
 		"created_at":     wld.CreatedAt,
+		// Tick anchor for the client (Tid & kalender Fas B / K4 contract):
+		// current_tick + the runtime cadence let countdowns be recomputed
+		// locally from an authoritative arrival_tick without a new fetch.
+		"current_tick": wld.CurrentTick,
+		"tick_seconds": tick.TickSeconds,
 	})
 }
 

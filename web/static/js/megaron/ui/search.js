@@ -1,6 +1,6 @@
 import { State } from '../state.js';
 import { hexPx, SCALE, canvas } from '../render/map.js';
-import { fmtEta } from './format.js';
+import { arrivalHTML } from './time.js';
 
 // ── Search overlay (Sprint 4) ─────────────────────────────────────────────
 export function toggleSearch() {
@@ -95,7 +95,7 @@ function renderSearch(q) {
       <div class="sr-item" onclick="closeSearch();centreOn(${m.target_q},${m.target_r})">
         <span class="sr-icon">⚔</span>
         <span class="sr-name">${m.intent.charAt(0).toUpperCase()+m.intent.slice(1)} → (${m.target_q},${m.target_r})</span>
-        <span class="sr-meta">ETA ${fmtEta(m.arrives_at)}</span>
+        <span class="sr-meta">Arrives ${arrivalHTML(m.arrives_at)}</span>
         <span class="sr-type">Army</span>
       </div>`).join('');
   }

@@ -127,14 +127,14 @@ func TestGenerateMap_InvariantsEnforcedAcrossSizesAndSeeds(t *testing.T) {
 		w, h := sz[0], sz[1]
 		for seed := int64(0); seed < 200; seed++ {
 			tiles, _ := GenerateMap(stubID{}, seed, w, h)
-			if err := validateMap(tiles); err != nil {
+			if err := validateMap(tiles, w, h); err != nil {
 				t.Fatalf("%dx%d seed %d: GenerateMap returned invalid map: %v", w, h, seed, err)
 			}
 		}
 		// A spread of large pseudo-random seeds (the live world used one of these).
 		for _, seed := range []int64{1781944573308082963, 9223372036854775807, 42424242424242, 7000000000000000001} {
 			tiles, eff := GenerateMap(stubID{}, seed, w, h)
-			if err := validateMap(tiles); err != nil {
+			if err := validateMap(tiles, w, h); err != nil {
 				t.Fatalf("%dx%d seed %d (eff %d): invalid map: %v", w, h, seed, eff, err)
 			}
 		}
@@ -149,7 +149,7 @@ func TestGenerateMap_RegressionTinPole_0620(t *testing.T) {
 	const seed, w, h = int64(1781944573308082963), 56, 40
 
 	tiles, _ := GenerateMap(stubID{}, seed, w, h)
-	if err := validateMap(tiles); err != nil {
+	if err := validateMap(tiles, w, h); err != nil {
 		t.Fatalf("0620 seed still produces an invalid map: %v", err)
 	}
 	tin := 0
@@ -461,6 +461,89 @@ func TestSpawnOreCatchmentScore_RealMap(t *testing.T) {
 	}
 }
 
+// TestGenerateMap_EveryRiverReachesDelta is the black-box counterpart to the
+// panic-based invariant addRiver asserts internally (mapgen.go): every
+// connected clump of river_valley/river_delta tiles must contain at least one
+// river_delta tile. This is the P3 regression for the "Amyklai-class" silent
+// failure (temenos_mapgen.md §Kända begränsningar) — a river that reached the
+// coast but produced no delta, caught only by reading DB rows by hand. Since
+// the old random-walk river is gone (replaced by steepest-descent + pit-fill
+// over the height field, which by construction never carves a tile unless it
+// already reached the sea), this should never fail — that is exactly the
+// point of asserting it as a permanent test, not just an ad-hoc PNG look.
+//
+// Sizes/seed counts mirror the plan's verification ask (20 seeds at 56×40, a
+// few at 120×84 and 230×230 — kept small there so `go test` stays fast).
+func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
+	cases := []struct {
+		w, h, seeds int
+	}{
+		{56, 40, 20},
+		{120, 84, 5},
+		{230, 230, 3},
+	}
+	for _, tc := range cases {
+		for seed := int64(0); seed < int64(tc.seeds); seed++ {
+			tiles, eff := GenerateMap(stubID{}, seed, tc.w, tc.h)
+
+			terrain := make(map[cell]Terrain, len(tiles))
+			for _, t := range tiles {
+				terrain[cell{t.Q, t.R}] = t.Terrain
+			}
+
+			// Connected components over river_valley + river_delta tiles only
+			// (hex adjacency, same 6 axial directions as landComponents).
+			dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+			isRiver := func(t Terrain) bool { return t == TerrainRiverValley || t == TerrainRiverDelta }
+			seen := map[cell]bool{}
+			var valleyTiles, deltaTiles int
+			riverComponents := 0
+			for c, terr := range terrain {
+				if !isRiver(terr) || seen[c] {
+					continue
+				}
+				riverComponents++
+				hasDelta := false
+				queue := []cell{c}
+				seen[c] = true
+				for len(queue) > 0 {
+					cur := queue[0]
+					queue = queue[1:]
+					if terrain[cur] == TerrainRiverDelta {
+						hasDelta = true
+					}
+					for _, d := range dirs {
+						n := cell{cur.q + d[0], cur.r + d[1]}
+						nt, ok := terrain[n]
+						if !ok || !isRiver(nt) || seen[n] {
+							continue
+						}
+						seen[n] = true
+						queue = append(queue, n)
+					}
+				}
+				if !hasDelta {
+					t.Fatalf("%dx%d seed %d (eff %d): a river component has no delta tile — Amyklai-class failure regressed",
+						tc.w, tc.h, seed, eff)
+				}
+			}
+			for _, terr := range terrain {
+				switch terr {
+				case TerrainRiverValley:
+					valleyTiles++
+				case TerrainRiverDelta:
+					deltaTiles++
+				}
+			}
+			if riverComponents == 0 {
+				t.Fatalf("%dx%d seed %d (eff %d): no river tiles at all", tc.w, tc.h, seed, eff)
+			}
+			t.Logf("%dx%d seed %d (eff %d): %d rivers, %d river_valley tiles, %d river_delta tiles",
+				tc.w, tc.h, seed, eff, riverComponents, valleyTiles, deltaTiles)
+		}
+	}
+}
+
 // It is an archipelago: many distinct landmasses separated by sea.
 func TestGenerateMap_IsArchipelago(t *testing.T) {
 	for seed := int64(0); seed < 20; seed++ {
@@ -480,6 +563,62 @@ func TestGenerateMap_IsArchipelago(t *testing.T) {
 		}
 		if sea == 0 {
 			t.Fatalf("seed %d: no sea tiles", seed)
+		}
+	}
+}
+
+// TestGenerateMap_TinCapAndSpread is the P4 regression for the deposit-
+// clustering rewrite (plan §P4-A/D): tin_sources (connected components of
+// tin-deposit tiles) must never exceed the design-invariant tinSourceCap on
+// any map size — the pre-P4 per-hex-% roll let tin explode to 48 hexes on
+// one seed and monopolise a single cluster on another (plan §P4 empirics).
+//
+// Once a map has >=2 tin sources AND the underlying candidate terrain
+// (mountain_limestone on tin-biased land) actually spans >=2 distinct land
+// components, at least 2 sources must land on different components — the
+// monopoly case plan §A names explicitly (230×230 seed 303: 6 tin hexes, one
+// area). When the candidate terrain itself only exists on a single
+// landmass, spread is structurally impossible — plan §A: "Får kandidaterna
+// bara ihop en landmassa: acceptera + logga, validateMap avgör" — so that
+// case is skipped, not failed.
+func TestGenerateMap_TinCapAndSpread(t *testing.T) {
+	sizes := [][2]int{{56, 40}, {120, 84}, {230, 230}}
+	for _, sz := range sizes {
+		w, h := sz[0], sz[1]
+		for seed := int64(0); seed < 10; seed++ {
+			tiles, eff := GenerateMap(stubID{}, seed, w, h)
+
+			sources := depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit })
+			if sources > tinSourceCap {
+				t.Fatalf("%dx%d seed %d (eff %d): tin_sources = %d, want <= %d",
+					w, h, seed, eff, sources, tinSourceCap)
+			}
+			if sources < 2 {
+				continue // spread is only meaningful once >=2 sources exist
+			}
+
+			comp := landComponents(tiles)
+			_, chanE := seaChannels(w)
+			candidateComps := map[int]bool{}
+			for _, t := range tiles {
+				if t.Terrain == TerrainMountainLimestone && t.Q > chanE {
+					candidateComps[comp[[2]int{t.Q, t.R}]] = true
+				}
+			}
+			if len(candidateComps) < 2 {
+				continue // candidate terrain itself only spans one landmass
+			}
+
+			tinLandmasses := map[int]bool{}
+			for _, t := range tiles {
+				if t.TinDeposit {
+					tinLandmasses[comp[[2]int{t.Q, t.R}]] = true
+				}
+			}
+			if len(tinLandmasses) < 2 {
+				t.Fatalf("%dx%d seed %d (eff %d): %d tin sources, %d candidate landmasses, but all sources on a single land component (monopoly)",
+					w, h, seed, eff, sources, len(candidateComps))
+			}
 		}
 	}
 }
