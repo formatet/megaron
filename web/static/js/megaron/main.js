@@ -11,6 +11,7 @@
 //      script load in the old single <script> and needs State populated).
 import { BASE } from './config.js';
 import { State } from './state.js';
+import { serverNow } from './clock.js';
 import { initWS } from './ws.js';
 import {
   initMap, refreshTiles, loadMap, zoom, resetView, toggleActivityOverlay,
@@ -201,6 +202,25 @@ async function bootstrap() {
     ]);
     State.WORLD_CREATED_AT = world.created_at;
     document.title = 'MEGARON — ' + world.name;
+
+    // Tick anchor for local ETA math (ui/time.js, K4 contract). serverNow()
+    // may still be un-anchored this early — bootstrap uses bare fetch(), so
+    // no Date header has passed through noteServerDate yet — but the skew is
+    // bounded by clock.js's noise floor and self-corrects at first re-anchor.
+    if (world.current_tick != null && world.tick_seconds > 0) {
+      State.CURRENT_TICK   = world.current_tick;
+      State.TICK_SECONDS   = world.tick_seconds;
+      State.TICK_ANCHOR_MS = serverNow();
+      // Dev tempo label: at production cadence 1 tick = 1 game hour takes a
+      // real hour; anything under a real minute per tick is a test world.
+      if (world.tick_seconds < 60) {
+        const el = document.getElementById('gt-devtempo');
+        if (el) {
+          el.textContent = 'Test world — time runs ' + Math.round(3600 / world.tick_seconds) + '× faster';
+          el.style.display = '';
+        }
+      }
+    }
 
     const capital = provinces.find(p => p.own && p.is_capital);
     State.MY_SETTLEMENT_ID = capital ? capital.settlement_id : '';

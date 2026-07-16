@@ -1,6 +1,7 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { esc, fmtEta } from '../format.js';
+import { esc } from '../format.js';
+import { fmtEta } from '../time.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 

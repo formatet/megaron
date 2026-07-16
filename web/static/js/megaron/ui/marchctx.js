@@ -1,6 +1,7 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { esc } from './format.js';
+import { arrivalHTML } from './time.js';
 import { MusicPlayer } from './misc.js';
 import { canvas } from '../render/map.js';
 
@@ -27,6 +28,9 @@ export function closeMarchCtx() {
   State.marchCtxUnits  = [];
   State.marchCtxGroups = [];
   document.getElementById('mctx-err').textContent = '';
+  const etaEl = document.getElementById('mctx-eta');
+  if (etaEl) { etaEl.style.display = 'none'; etaEl.innerHTML = ''; }
+  document.getElementById('mctx-send').style.display = ''; // restore after a post-send confirmation collapse
   const nameEl = document.getElementById('mctx-colony-name');
   if (nameEl) { nameEl.value = ''; nameEl.style.display = 'none'; }
   const chk = document.getElementById('mctx-colonize-chk');
@@ -255,16 +259,39 @@ export async function sendMarch() {
     if (State.marchCtxDest.isSea) body.intent = 'explore';
     return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${uid}/march`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-    }).then(async res => ({ ok: res.ok, err: res.ok ? '' : (((await res.json().catch(() => ({}))).error) || 'March failed') }));
+    }).then(async res => {
+      const data = await res.json().catch(() => ({}));
+      return { ok: res.ok, data, err: res.ok ? '' : (data.error || 'March failed') };
+    });
   }));
 
   document.getElementById('mctx-send').disabled = false;
   const failed = results.filter(r => !r.ok);
-  if (!failed.length) {
-    closeMarchCtx();
-  } else {
+  // Arrival line (Fas B): the march response carries the authoritative
+  // arrival_tick + derived arrives_at_utc (K4). Same destination for every
+  // unit sent, so the first success speaks for all of them. The panel stays
+  // open so the ETA is readable — Escape/click-away closes it as usual.
+  const first = results.find(r => r.ok);
+  const etaEl = document.getElementById('mctx-eta');
+  const showEta = first && etaEl && (first.data.arrives_at_utc || first.data.arrives_at);
+  if (showEta) {
+    etaEl.innerHTML = '✓ Marching — arrives ' +
+      arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
+    etaEl.style.display = 'block';
+  }
+  if (failed.length) {
     const okCount = results.length - failed.length;
     document.getElementById('mctx-err').textContent = (okCount ? okCount + ' sent · ' : '') + failed[0].err;
+  } else if (showEta) {
+    // All sent — collapse the order form into a confirmation so a second
+    // "March →" can't re-send the same (now marching) units. Escape/click-away
+    // closes; openMarchCtx rebuilds the form from scratch next time.
+    document.getElementById('mctx-units').innerHTML = '';
+    document.getElementById('mctx-stance-row').style.display = 'none';
+    document.getElementById('mctx-colonize-row').style.display = 'none';
+    document.getElementById('mctx-send').style.display = 'none';
+  } else {
+    closeMarchCtx();
   }
   // Refresh either way — some units may have dispatched. Units drive the map's
   // per-unit movement layer; marches keeps the legacy layer/music in sync.
