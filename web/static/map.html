@@ -14,6 +14,7 @@
   <!-- ── Game top bar ─────────────────────────────────────────────────── -->
   <div class="game-topbar">
     <div class="gt-logo">ΜΕΓΑΡΟΝ</div>
+    <div class="gt-devtempo" id="gt-devtempo" style="display:none"></div>
     <div class="gt-notif-strip" id="gt-notif-strip"></div>
     <div class="gt-celestial">
       <div class="cel-arc-wrap">
@@ -206,6 +207,9 @@
     <button class="mctx-send" id="mctx-send" onclick="sendMarch()">March →</button>
     <span class="mctx-error" id="mctx-err"></span>
   </div>
+  <!-- Arrival ETA after dispatch (Tid & kalender Fas B) — owned by ui/time.js
+       via marchctx.js; hexval owns the rest of the panel. -->
+  <div class="mctx-eta" id="mctx-eta" style="display:none"></div>
 </div>
 
 <style>
@@ -393,6 +397,7 @@
 }
 .mctx-send:hover { background: var(--bg-raised); border-color: var(--accent); }
 .mctx-error { font-size: .72rem; color: var(--accent); flex: 1; }
+.mctx-eta { padding: .3rem .6rem .45rem; font-size: .73rem; color: var(--safe); }
 
 /* World name hint in topbar area */
 .map-page-hint {

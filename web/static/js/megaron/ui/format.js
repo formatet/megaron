@@ -22,14 +22,8 @@ export function fmtSilver(amount) {
   return a + ' shekel';
 }
 
-// Helper: format ETA timestamp to human-readable. ETAs are server
-// timestamps, so they are measured against server time — see clock.js.
-export function fmtEta(iso) {
-  const ms = new Date(iso).getTime() - serverNow();
-  if (ms <= 0) return 'arrived';
-  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
+// fmtEta moved to ui/time.js (Tid & kalender Fas B) — the whole ETA family
+// (relative, local-clock, tick-aware) lives there now.
 
 export function fmtAgo(iso) {
   const ms = serverNow() - new Date(iso).getTime();

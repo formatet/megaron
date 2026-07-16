@@ -17,6 +17,16 @@ export const State = {
   WORLD_CREATED_AT: null,
   TIME_SCALE: 1,
 
+  // Tick anchor (Tid & kalender Fas B): the world's current_tick as of the
+  // instant TICK_ANCHOR_MS (serverNow-frame), advancing at TICK_SECONDS real
+  // seconds per tick. Lets ui/time.js convert an authoritative arrival_tick
+  // (K4 contract) to a countdown locally, without a fetch per repaint.
+  // Anchored at bootstrap (main.js) and re-anchored on WS reconnect (ws.js) —
+  // a reconnect is exactly when the server may have paused the world.
+  CURRENT_TICK: null,
+  TICK_SECONDS: null,
+  TICK_ANCHOR_MS: null,
+
   // Server-fetched map data (render/map.js loadMap()/refreshTiles() and the
   // WebSocket handler in ws.js keep these current).
   tileData: [],

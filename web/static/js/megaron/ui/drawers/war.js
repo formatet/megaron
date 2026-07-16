@@ -1,6 +1,7 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { esc, fmtEta } from '../format.js';
+import { esc } from '../format.js';
+import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
@@ -174,7 +175,7 @@ function renderWarMovements(capital) {
       const tname = target ? esc(target.name) : '(' + m.target_q + ',' + m.target_r + ')';
       return '<div class="obj-card">'
         + '<div class="obj-icon">⚔</div>'
-        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' → ' + tname + '</div><div class="obj-sub">ETA ' + fmtEta(m.arrives_at) + ' · recall/redirect in the Army tab</div></div>'
+        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' → ' + tname + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + ' · recall/redirect in the Army tab</div></div>'
         + '</div>';
     }).join('');
     html += '</div>';
@@ -188,7 +189,7 @@ function renderWarMovements(capital) {
       const oname = origin ? esc(origin.name) : '(' + m.origin_q + ',' + m.origin_r + ')';
       return '<div class="obj-card">'
         + '<div class="obj-icon" style="color:var(--accent)">⚔</div>'
-        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' from ' + oname + '</div><div class="obj-sub">ETA ' + fmtEta(m.arrives_at) + '</div></div>'
+        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' from ' + oname + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + '</div></div>'
         + '</div>';
     }).join('');
     html += '</div>';
@@ -239,7 +240,7 @@ export async function warRecruitShip(unitType) {
     if (resEl) {
       const built = (data.names && data.names[0]) ? data.names[0] : unitType;
       resEl.style.color = 'var(--text-dim)';
-      resEl.textContent = 'Building "' + built + '" — ready ' + fmtEta(data.complete_at);
+      resEl.textContent = 'Building "' + built + '" — ready ' + fmtArrival(data.complete_at);
     }
     loadWarDrawer();
   } else if (resEl) {
@@ -309,7 +310,9 @@ function renderUnitCard(u) {
     const prov = State.provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
     loc = prov ? esc(prov.name) : 'city';
   } else if (isMarching && u.target_q != null) {
-    loc = '→ (' + u.target_q + ',' + u.target_r + ') ETA ' + fmtEta(u.arrives_at);
+    // arrival_tick is the authoritative arrival (K4) — the stored arrives_at
+    // stamp lies across server downtime; the tick self-corrects.
+    loc = '→ (' + u.target_q + ',' + u.target_r + ') arrives ' + arrivalHTML(u.arrives_at, u.arrival_tick);
   } else if (u.q != null) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
@@ -321,11 +324,11 @@ function renderUnitCard(u) {
   const dim = (txt) => '<span style="font-size:.65rem;color:var(--text-dim)">' + txt + '</span>';
   let progress = '';
   if (isNaval && isForming) {
-    progress = dim('building — ready ' + fmtEta(u.build_complete_at));
+    progress = dim('building — ready ' + fmtArrival(u.build_complete_at));
   } else if (isForming) {
     progress = bar(u.size) + dim(u.size + '/100 · forming');
   } else if (isTraining) {
-    progress = bar(100) + dim('100/100 · training — ready ' + fmtEta(u.build_complete_at));
+    progress = bar(100) + dim('100/100 · training — ready ' + fmtArrival(u.build_complete_at));
   }
 
   // Stance badge
@@ -426,7 +429,7 @@ export async function unitRecall(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by messenger — reaches the unit ' + fmtEta(d.messenger_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by messenger — reaches the unit ' + fmtArrival(d.messenger_arrives_at) + '.'; }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Recall failed';
@@ -447,7 +450,7 @@ export async function unitRedirect(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by messenger — reaches the unit ' + fmtEta(d.messenger_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by messenger — reaches the unit ' + fmtArrival(d.messenger_arrives_at) + '.'; }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Redirect failed';
