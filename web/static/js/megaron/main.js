@@ -12,7 +12,7 @@
 import { BASE } from './config.js';
 import { State } from './state.js';
 import { serverNow } from './clock.js';
-import { initWS } from './ws.js';
+import { initWS, fullResync, checkWsLiveness } from './ws.js';
 import {
   initMap, refreshTiles, loadMap, zoom, resetView, toggleActivityOverlay,
   closeInspect, sendMessengerFromInspect,
@@ -101,6 +101,28 @@ async function loadDrawerContent(name) {
   }
 }
 
+// reloadActiveDrawer — window-bridge target for ws.js: rebuild the open drawer so
+// it reflects fresh data after a WS event / resync. Drawer renderers already
+// rebuild innerHTML idempotently. Guard: skip if the user is mid-entry in a field
+// inside the drawer, so a live update never clobbers a recruit/march form.
+function reloadActiveDrawer() {
+  if (!State.activeDrawer) return;
+  const drawerEl = document.getElementById('drawer-' + State.activeDrawer);
+  const ae = document.activeElement;
+  if (drawerEl && ae && drawerEl.contains(ae) && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return;
+  loadDrawerContent(State.activeDrawer);
+}
+
+// A tab returning to the foreground may have missed WS events while hidden (and
+// its socket may be silently dead). Drop a dead socket at once, then refetch
+// everything a page load would — the reconnect's onopen resync covers the rest.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    checkWsLiveness();
+    fullResync();
+  }
+});
+
 // ── Window exposures ──────────────────────────────────────────────────────
 // (a) Inline-handler targets: every name referenced from an on*="..."
 //     attribute in the static shell or in a module's template-literal HTML.
@@ -164,6 +186,7 @@ Object.assign(window, {
   openDrawer,
   openMarchCtx,
   refreshTiles,
+  reloadActiveDrawer,
   renderColonizePreviewHTML,
   updateNotifBadge,
   warFocusUnit,

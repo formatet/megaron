@@ -12,18 +12,62 @@ import { notifText, notifIcon, colonyFoundedGrainLine } from './ui/format.js';
 // is not allowed to import per the config/state ← api/ws ← render ← ui ← main
 // dependency order — those are reached via the window.* bridge that main.js
 // sets up (same convention used for canvas → drawer calls in render/map.js).
+// ── Module-scoped connection state ────────────────────────────────────────
+// ws lives at module scope so the watchdog AND main.js's visibilitychange
+// handler (via checkWsLiveness) can reach the live socket.
+let ws = null;
+let firstConnect = true;
+// Watchdog thresholds. The server pings + heartbeats every ~25 s (notify/hub.go);
+// if nothing at all arrives for STALE_MS the path is dead (silent NAT/WG drop
+// with no FIN), so force-close to trigger the reconnect loop.
+const STALE_MS = 65000;
+const WATCHDOG_MS = 20000;
+
+// checkWsLiveness closes a socket gone silent past STALE_MS so onclose fires and
+// reconnects. Runs on a timer AND on tab-visible (main.js) so a dead WS is
+// dropped immediately on return instead of after up to one watchdog tick.
+export function checkWsLiveness() {
+  if (ws && ws.readyState === WebSocket.OPEN &&
+      State.lastWsMsgAt && Date.now() - State.lastWsMsgAt > STALE_MS) {
+    ws.close();
+  }
+}
+
+// Debounced bridge to main.js's reloadActiveDrawer — coalesces the burst of
+// data-updating WS events into at most one drawer rebuild per second.
+let drawerTimer = null;
+function reloadDrawerDebounced() {
+  clearTimeout(drawerTimer);
+  drawerTimer = setTimeout(() => window.reloadActiveDrawer && window.reloadActiveDrawer(), 1000);
+}
+
+// WS event kinds that mutate units/province/march/trade/messenger state — an open
+// drawer showing that data should rebuild after them.
+const DATA_KINDS = new Set([
+  'ArmyArrival','BuildComplete','TrainComplete','MessengerArrival',
+  'TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
+]);
+
+// fullResync refetches exactly what a fresh page load would — provinces, units,
+// marches, messengers, trades, the fog/tile layer and the unread badge — so a
+// reconnect or a tab-visible transition lands the client back on the truth.
+export function fullResync() {
+  const w = State.WORLD_ID;
+  fetchAuth(`/api/v1/worlds/${w}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${w}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${w}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${w}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${w}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
+  window.refreshTiles();
+  fetchAuth(`/api/v1/worlds/${w}/notifications?unread=true`).then(r => r.ok && r.json().then(d => window.updateNotifBadge(d.unread || 0)));
+  reloadDrawerDebounced(); // reflect the fresh data in an open drawer too
+}
+
 export function initWS() {
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
   // BASE-prepend equivalent for the WS endpoint (see config.js): with BASE ''
   // (same origin, today) this is exactly the old `${proto}//${location.host}` URL.
   const wsBase = BASE ? BASE.replace(/^http/, 'ws') : `${proto}//${location.host}`;
-  let ws;
-  let firstConnect = true;
-  // Watchdog thresholds. The server pings + heartbeats every ~25 s (notify/hub.go);
-  // if nothing at all arrives for STALE_MS the path is dead (silent NAT/WG drop that
-  // never sends a FIN), so force-close to trigger the reconnect below.
-  const STALE_MS = 65000;
-  const WATCHDOG_MS = 20000;
   function connect() {
     ws = new WebSocket(`${wsBase}/ws/${State.WORLD_ID}`);
     ws.onopen = () => {
@@ -37,11 +81,7 @@ export function initWS() {
             State.CURRENT_TICK = d.current_tick; State.TICK_SECONDS = d.tick_seconds; State.TICK_ANCHOR_MS = serverNow();
           }
         }));
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; }));
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; }));
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
+        fullResync(); // provinces + units + marches + messengers + trades + tiles + badge
       }
       firstConnect = false;
     };
@@ -108,6 +148,8 @@ export function initWS() {
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/notifications?unread=true`)
           .then(r => r.ok && r.json().then(d => window.updateNotifBadge(d.unread || 0)));
       }
+      // An open drawer showing units/province/trade data should follow the update.
+      if (DATA_KINDS.has(msg.kind)) reloadDrawerDebounced();
     };
     ws.onclose = () => setTimeout(connect, 5000);
   }
@@ -116,10 +158,5 @@ export function initWS() {
   // Watchdog: a silently-dead path (NAT/WG drop with no FIN) leaves ws in OPEN
   // forever, so onclose never fires and reconnect never runs. Close it ourselves
   // once frames stop arriving past STALE_MS; onclose then schedules the retry.
-  setInterval(() => {
-    if (ws && ws.readyState === WebSocket.OPEN &&
-        State.lastWsMsgAt && Date.now() - State.lastWsMsgAt > STALE_MS) {
-      ws.close();
-    }
-  }, WATCHDOG_MS);
+  setInterval(checkWsLiveness, WATCHDOG_MS);
 }

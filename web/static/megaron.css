@@ -873,6 +873,21 @@ body:has(.auth-page) main {
   white-space: nowrap;
 }
 
+/* Net-status pill — shown by api.js while a GET is retrying after a network
+   error / 5xx, cleared on the first reachable response. Discreet, non-blocking. */
+.gt-netstatus {
+  display: none;
+  padding: 0 0.7rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  border-right: 1px solid var(--border);
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.gt-netstatus.visible { display: flex; }
+
 /* Notification strip — chips slide in from right */
 .gt-notif-strip {
   flex: 1;
