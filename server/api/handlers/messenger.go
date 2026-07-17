@@ -1100,23 +1100,27 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var offerStatus, kind, offerGood string
+	var offerStatus, kind, offerGood, wantGood string
 	var originID, destID, originOwner uuid.UUID
-	var offerSilver, offerQty float64
+	var offerSilver, offerQty, wantQty, wantSilver float64
 	err = h.pool.QueryRow(r.Context(),
 		`SELECT m.trade_offer->>'status', m.origin_id, m.destination_id,
 		        COALESCE(os.owner_id, '00000000-0000-0000-0000-000000000000'::uuid),
 		        COALESCE(m.trade_offer->>'kind', 'buy'),
 		        COALESCE((m.trade_offer->>'offer_silver')::float, 0),
 		        COALESCE(m.trade_offer->>'offer_good', ''),
-		        COALESCE((m.trade_offer->>'offer_qty')::float, 0)
+		        COALESCE((m.trade_offer->>'offer_qty')::float, 0),
+		        COALESCE(m.trade_offer->>'want_good', ''),
+		        COALESCE((m.trade_offer->>'want_qty')::float, 0),
+		        COALESCE((m.trade_offer->>'want_silver')::float, 0)
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 JOIN settlements os ON os.id = m.origin_id
 		 WHERE m.id=$1 AND m.world_id=$2 AND ds.owner_id=$3
 		   AND m.status='delivered' AND m.trade_offer IS NOT NULL`,
 		messengerID, worldID, playerID,
-	).Scan(&offerStatus, &originID, &destID, &originOwner, &kind, &offerSilver, &offerGood, &offerQty)
+	).Scan(&offerStatus, &originID, &destID, &originOwner, &kind, &offerSilver, &offerGood, &offerQty,
+		&wantGood, &wantQty, &wantSilver)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "trade offer not found")
 		return
@@ -1184,15 +1188,21 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 
 	// OfferDeclined — the offer's originator gets an immediate decision notice
 	// instead of only learning via the delayed TradeReturn on escrow arrival.
+	// trade_offer fields are kind-dependent (buy: want_*/offer_silver · sell:
+	// offer_*/want_silver) — pick per kind, mirroring OfferAccepted.
 	if h.hub != nil {
+		notifGood, notifQty, notifSilver := wantGood, wantQty, offerSilver
+		if kind == "sell" {
+			notifGood, notifQty, notifSilver = offerGood, offerQty, wantSilver
+		}
 		_ = h.hub.NotifyPlayer(r.Context(), worldID, originOwner, "OfferDeclined", 3, map[string]any{
 			"messenger_id":    messengerID,
 			"settlement_id":   originID,
 			"counterparty_id": destID,
 			"kind":            kind,
-			"good_key":        offerGood,
-			"quantity":        offerQty,
-			"silver":          offerSilver,
+			"good_key":        notifGood,
+			"quantity":        notifQty,
+			"silver":          notifSilver,
 			"resolution":      "declined",
 		})
 	}

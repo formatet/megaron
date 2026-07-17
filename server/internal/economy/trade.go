@@ -63,17 +63,21 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 
 	// Read origin_id, destination_id, kind, and escrowed value from the now-expired messenger.
 	var originID, destID uuid.UUID
-	var kind, offerGood string
-	var offerSilver, offerQty float64
+	var kind, offerGood, wantGood string
+	var offerSilver, offerQty, wantQty, wantSilver float64
 	if err := tx.QueryRow(ctx,
 		`SELECT origin_id, destination_id,
 		        COALESCE(trade_offer->>'kind', 'buy'),
 		        COALESCE((trade_offer->>'offer_silver')::float, 0),
 		        COALESCE(trade_offer->>'offer_good', ''),
-		        COALESCE((trade_offer->>'offer_qty')::float, 0)
+		        COALESCE((trade_offer->>'offer_qty')::float, 0),
+		        COALESCE(trade_offer->>'want_good', ''),
+		        COALESCE((trade_offer->>'want_qty')::float, 0),
+		        COALESCE((trade_offer->>'want_silver')::float, 0)
 		 FROM messengers WHERE id=$1`,
 		messengerID,
-	).Scan(&originID, &destID, &kind, &offerSilver, &offerGood, &offerQty); err != nil {
+	).Scan(&originID, &destID, &kind, &offerSilver, &offerGood, &offerQty,
+		&wantGood, &wantQty, &wantSilver); err != nil {
 		return fmt.Errorf("read expired messenger: %w", err)
 	}
 
@@ -114,7 +118,13 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// instead of only learning via the delayed TradeReturn on escrow arrival.
 	// Fires only on the real transition above (RowsAffected>0 guarded the early
 	// return), never on the idempotent no-op.
+	// trade_offer fields are kind-dependent (buy: want_*/offer_silver · sell:
+	// offer_*/want_silver) — pick per kind, mirroring OfferAccepted.
 	if h.hub != nil {
+		notifGood, notifQty, notifSilver := wantGood, wantQty, offerSilver
+		if kind == "sell" {
+			notifGood, notifQty, notifSilver = offerGood, offerQty, wantSilver
+		}
 		var ownerID uuid.UUID
 		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, originID).Scan(&ownerID)
 		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "OfferExpired", 3, map[string]any{
@@ -122,9 +132,9 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 			"settlement_id":   originID,
 			"counterparty_id": destID,
 			"kind":            kind,
-			"good_key":        offerGood,
-			"quantity":        offerQty,
-			"silver":          offerSilver,
+			"good_key":        notifGood,
+			"quantity":        notifQty,
+			"silver":          notifSilver,
 			"resolution":      "expired",
 		})
 	}
