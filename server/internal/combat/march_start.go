@@ -43,17 +43,18 @@ type MarchOrder struct {
 	Mode     string // optional; "" = sack (default) | "annex"
 }
 
-// MarchReject is a validation failure with the HTTP status the API layer
-// should answer with; the delivery handler maps it to an OrderFailed notice.
-type MarchReject struct {
+// OrderReject is a game-rule validation failure with the HTTP status the API
+// layer should answer with; the delivery handler maps it to an OrderFailed
+// notice. Shared by every order verb (march, stance, …).
+type OrderReject struct {
 	Status int
 	Reason string
 }
 
-func (e *MarchReject) Error() string { return e.Reason }
+func (e *OrderReject) Error() string { return e.Reason }
 
-func reject(status int, format string, args ...any) *MarchReject {
-	return &MarchReject{Status: status, Reason: fmt.Sprintf(format, args...)}
+func reject(status int, format string, args ...any) *OrderReject {
+	return &OrderReject{Status: status, Reason: fmt.Sprintf(format, args...)}
 }
 
 // MarchStarted describes the accepted march (the handler's 202 body fields).
@@ -88,7 +89,7 @@ func NavalSpeedFactor(t unit.Type) float64 {
 }
 
 // StartMarch validates and executes one march order atomically. On success the
-// unit is marching and its UnitArrival is scheduled. Any *MarchReject return
+// unit is marching and its UnitArrival is scheduled. Any *OrderReject return
 // carries the HTTP status + reason exactly as the March handler answered.
 func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore *events.Store, clk clock.Clock, o MarchOrder, targetKnown TargetKnownFunc) (*MarchStarted, error) {
 	store := unit.NewStore(pool)

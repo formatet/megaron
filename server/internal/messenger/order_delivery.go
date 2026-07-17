@@ -36,8 +36,9 @@ type OrderDeliveryPayload struct {
 	PlayerID    uuid.UUID          `json:"player_id"`
 	UnitID      uuid.UUID          `json:"unit_id"`
 	MessengerID uuid.UUID          `json:"messenger_id"`
-	Verb        string             `json:"verb"` // "march" (Fas 2; more verbs in Fas 3)
-	March       *combat.MarchOrder `json:"march,omitempty"`
+	Verb        string              `json:"verb"` // "march" | "stance"
+	March       *combat.MarchOrder  `json:"march,omitempty"`
+	Stance      *combat.StanceOrder `json:"stance,omitempty"`
 }
 
 // OrderDeliveryHandler processes ScheduledOrderDelivery events.
@@ -79,7 +80,7 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		// FOW was checked at dispatch (knowledge-at-order-time) — nil here.
 		res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.March, nil)
 		if err != nil {
-			var rej *combat.MarchReject
+			var rej *combat.OrderReject
 			if errors.As(err, &rej) {
 				// Game-rule rejection at delivery: final, never silent.
 				h.notifyOrderFailed(ctx, p, rej.Reason)
@@ -91,6 +92,23 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 		slog.Info("order delivered — march started",
 			"unit", p.UnitID, "target_q", res.TargetQ, "target_r", res.TargetR, "arrival_tick", res.ArrivalTick)
+		return nil
+	case "stance":
+		if p.Stance == nil {
+			return fmt.Errorf("order delivery %s: stance verb without stance payload", p.MessengerID)
+		}
+		res, err := combat.SetStance(ctx, h.pool, h.eventStore, *p.Stance)
+		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				h.notifyOrderFailed(ctx, p, rej.Reason)
+				return nil
+			}
+			slog.Error("order delivery: stance execution failed after claim — order dropped",
+				"messenger", p.MessengerID, "unit", p.UnitID, "err", err)
+			return nil
+		}
+		slog.Info("order delivered — stance applied", "unit", p.UnitID, "stance", res.Stance)
 		return nil
 	default:
 		return fmt.Errorf("order delivery %s: unknown verb %q", p.MessengerID, p.Verb)
