@@ -10,9 +10,9 @@ import { loadCityDrawer } from './city.js';
 export async function loadWarDrawer() {
   const body = document.getElementById('war-body');
   const capital = ownCapital();
-  if (!capital) { body.innerHTML = '<p class="empty-state" style="padding:1rem">No settlement.</p>'; return; }
-  // Preserve recruit-city selection across reloads
-  const prevRecruitCity = document.getElementById('war-recruit-city')?.value || capital.id;
+  // Preserve recruit-city selection across reloads. Founder phase (no capital
+  // yet) has no settlement to recruit at, so this stays null there.
+  const prevRecruitCity = capital ? (document.getElementById('war-recruit-city')?.value || capital.id) : null;
 
   body.innerHTML = `
     <div class="drawer-tabs">
@@ -42,6 +42,24 @@ export async function loadWarDrawer() {
   const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Ship:10, WarGalley:12, Merchantman:8 };
 
   try {
+    if (!capital) {
+      // Founder phase: no settlement yet, but /units is settlement-independent
+      // — the host + any field cohorts already exist server-side. Show them
+      // in Army/Movements; Recruit needs a city, so it stays locked.
+      const unitsRes = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
+      const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
+      let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>';
+      armyHtml += allUnits.length
+        ? allUnits.map(u => renderUnitCard(u)).join('')
+        : '<p class="empty-state">No units.</p>';
+      armyHtml += '</div>';
+      document.getElementById('wtab-army').innerHTML = armyHtml;
+      applyUnitFocus();
+      document.getElementById('wtab-recruit').innerHTML =
+        '<p class="empty-state" style="padding:1rem">No capital yet — found a settlement to train troops.</p>';
+      return;
+    }
+
     const needTwo = prevRecruitCity !== capital.id;
     const [res, recRes, unitsRes] = await Promise.all([
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}`),
@@ -160,7 +178,10 @@ export async function loadWarDrawer() {
 
 function renderWarMovements(capital) {
   const el = document.getElementById('wtab-movements');
-  if (!el || !capital) return;
+  if (!el) return;
+  // capital may be null (founder phase) — State.provinceData has no owned
+  // rows yet then, so ownPos/outgoing/incoming all come out empty and the
+  // tab falls through to "No movements." below.
   const ownPos = new Set(State.provinceData.filter(p => p.own).map(p => p.q + ',' + p.r));
   const outgoing = State.marchData.filter(m => ownPos.has(m.origin_q + ',' + m.origin_r));
   const incoming = State.marchData.filter(m => {
