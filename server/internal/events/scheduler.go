@@ -73,6 +73,9 @@ const (
 	// discrete unit (temenos_march_recall.md). Distinct from ScheduledRecallArrival,
 	// which turns around legacy marching_armies/outposts.
 	ScheduledMarchRecall ScheduledEventType = "MarchRecall"
+	// ScheduledOrderDelivery: an order courier reaching its unit — the carried
+	// order (march etc.) executes on delivery (temenos_orderlopare_plan.md Fas 2).
+	ScheduledOrderDelivery ScheduledEventType = "OrderDelivery"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

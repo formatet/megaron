@@ -95,6 +95,25 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return loadRememberedTiles(fctx, h.pool, worldID, playerID)[[2]int{target.Q, target.R}]
 	}
 
+	// Order latency (temenos_orderlopare_plan.md Fas 2): a unit outside any
+	// settlement cannot be commanded instantly — the order travels by runner
+	// from the nearest own city (Timothy 2026-07-16) and executes only on
+	// delivery. A garrisoned unit is distance 0 (the order originates in the
+	// city it sits in) and executes immediately via StartMarch below. Marching
+	// units keep using recall/redirect (already courier-borne; Fas 3 unifies).
+	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
+		u.OwnerID == playerID && u.WorldID == worldID &&
+		u.Status == unit.StatusPositioned && u.SettlementID == nil &&
+		u.Q != nil && u.R != nil {
+		order := combat.MarchOrder{
+			WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+			TargetQ: req.TargetQ, TargetR: req.TargetR,
+			Stance: req.Stance, Intent: req.Intent, Name: req.Name, Mode: req.Mode,
+		}
+		h.dispatchMarchCourier(w, ctx, order, province.MapPosition{Q: *u.Q, R: *u.R}, targetKnown)
+		return
+	}
+
 	// Validate+execute core shared with the order-courier delivery path
 	// (temenos_orderlopare_plan.md Fas 1) — internal/combat.StartMarch.
 	res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, combat.MarchOrder{
@@ -135,6 +154,161 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		"origin_r":       res.OriginR,
 		"target_q":       res.TargetQ,
 		"target_r":       res.TargetR,
+	})
+}
+
+// dispatchMarchCourier sends a march order to a field unit by physical runner
+// (temenos_orderlopare_plan.md Fas 2). Cheap pre-flights only (target exists,
+// FOW) — the delivery handler re-validates authoritatively against the unit's
+// state when the courier arrives; an order that can no longer be carried out
+// fails with an OrderFailed notice, never silently. No pending-order guard:
+// latest delivered wins (Timothy 2026-07-16).
+func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Context, order combat.MarchOrder, unitPos province.MapPosition, targetKnown combat.TargetKnownFunc) {
+	// Target hex must exist (map bounds are public knowledge).
+	var destTerrain string
+	if err := h.pool.QueryRow(ctx,
+		`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+		order.WorldID, order.TargetQ, order.TargetR,
+	).Scan(&destTerrain); err != nil {
+		writeError(w, http.StatusNotFound, "target hex not found")
+		return
+	}
+	// FOW march rule — checked at dispatch (the player's knowledge NOW is what
+	// authorises the order). Exempt: explore and colonize-in-place (own hex).
+	colonizeInPlace := order.Intent == "colonize" && order.TargetQ == unitPos.Q && order.TargetR == unitPos.R
+	if !colonizeInPlace && order.Intent != "explore" &&
+		!targetKnown(ctx, province.MapPosition{Q: order.TargetQ, R: order.TargetR}, destTerrain) {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("none of your men have ever seen (%d,%d) — a march cannot be ordered into unknown land; send a scout first (march with intent \"explore\")",
+				order.TargetQ, order.TargetR))
+		return
+	}
+
+	// The order originates from the NEAREST own city (Timothy 2026-07-16) —
+	// founder phase falls back to the wandering host (mig 087 unit origin).
+	var originSettlementID, originUnitID *uuid.UUID
+	var bestQ, bestR, bestDist int
+	found := false
+	rows, err := h.pool.Query(ctx,
+		`SELECT s.id, p.map_q, p.map_r FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.state = 'active'`,
+		order.WorldID, order.PlayerID)
+	if err == nil {
+		for rows.Next() {
+			var sid uuid.UUID
+			var q, r int
+			if rows.Scan(&sid, &q, &r) != nil {
+				continue
+			}
+			d := province.HexDistance(province.MapPosition{Q: q, R: r}, unitPos)
+			if !found || d < bestDist {
+				found, bestDist, bestQ, bestR = true, d, q, r
+				s := sid
+				originSettlementID, originUnitID = &s, nil
+			}
+		}
+		rows.Close()
+	}
+	if !found {
+		var hostID uuid.UUID
+		var q, r int
+		if err := h.pool.QueryRow(ctx,
+			`SELECT fp.host_unit_id, u.q, u.r
+			 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
+			 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
+			   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
+			order.WorldID, order.PlayerID,
+		).Scan(&hostID, &q, &r); err != nil {
+			writeError(w, http.StatusUnprocessableEntity,
+				"you have no city (and no wandering host) to dispatch an order runner from")
+			return
+		}
+		hid := hostID
+		originUnitID, bestQ, bestR, bestDist = &hid, q, r, province.HexDistance(province.MapPosition{Q: q, R: r}, unitPos)
+	}
+
+	// Distance 0 (the commanding presence stands with the unit): execute now.
+	if bestDist == 0 {
+		res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, order, targetKnown)
+		if err != nil {
+			var rej *combat.MarchReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "march failed")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"unit_id": res.UnitID, "departs_at": res.DepartsAt, "arrives_at": res.ArrivesAt,
+			"arrival_tick": res.ArrivalTick, "duration_ticks": res.DurationTicks,
+			"arrives_at_utc": res.ArrivesAt.UTC(),
+			"origin_q":       res.OriginQ, "origin_r": res.OriginR,
+			"target_q": res.TargetQ, "target_r": res.TargetR,
+		})
+		return
+	}
+
+	now := h.clk.Now()
+	courierArrivesAt := now.Add(messenger.MessengerTravelDuration(bestDist))
+	var currentTick int
+	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	dueTick := currentTick + messenger.MessengerTravelTicks(bestDist)
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	payload := messenger.OrderDeliveryPayload{
+		WorldID: order.WorldID, PlayerID: order.PlayerID, UnitID: order.UnitID,
+		Verb: "march", March: &order,
+	}
+	orderJSON, _ := json.Marshal(payload)
+
+	var originQ, originR *int
+	if originUnitID != nil {
+		originQ, originR = &bestQ, &bestR
+	}
+	var messengerID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO messengers
+		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at, order_payload)
+		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','order',$8,$9,$10,$11,$12,$13)
+		 RETURNING id`,
+		order.WorldID, order.PlayerID, originSettlementID, originUnitID, originQ, originR,
+		fmt.Sprintf("March order — to (%d,%d).", order.TargetQ, order.TargetR),
+		bestQ, bestR, unitPos.Q, unitPos.R, courierArrivesAt, orderJSON,
+	).Scan(&messengerID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch order runner")
+		return
+	}
+	payload.MessengerID = messengerID
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, order.WorldID, events.ScheduledOrderDelivery, payload, dueTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule order delivery")
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not commit order dispatch")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"status":             "order_dispatched",
+		"verb":               "march",
+		"unit_id":            order.UnitID,
+		"messenger_id":       messengerID,
+		"courier_arrives_at": courierArrivesAt,
+		"courier_due_tick":   dueTick,
+		"target_q":           order.TargetQ,
+		"target_r":           order.TargetR,
 	})
 }
 
