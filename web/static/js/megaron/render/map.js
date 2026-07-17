@@ -688,6 +688,33 @@ function render() {
     }
   }
 
+  // 3.6 Catchment preview — the 7 catchment hexes (target + 6 neighbours) of a
+  // hovered/armed colonize affordance. This is deliberately NOT the FOV band
+  // above: colonize's true footprint is the fixed 7-hex catchment (same shape
+  // as 2.5's own-city tint), not the per-tile live-visibility radius, which
+  // reads as a much bigger and irregular area than what the colony will
+  // actually work (Bugg 3).
+  if (State.catchmentPreview) {
+    const { q: cq, r: cr } = State.catchmentPreview;
+    for (const [dq, dr] of [[0, 0], ...HEX_DIRS]) {
+      const nq = cq + dq, nr = cr + dr;
+      const t = State.tileData.find(t => t.q === nq && t.r === nr);
+      if (!t || t.terrain === 'fog') continue;
+      const {x, y} = hexPx(nq, nr);
+      const pts = hexPts(x, y);
+      ctx.save();
+      hexPath(ctx, pts);
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = '#F5B041';
+      ctx.fill();
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = '#F5B041';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   // 3b. Incoming attack glow — pulsing red on target hex of any visible attack march
   const attackTargets = new Set(
     State.marchData.filter(m => m.intent === 'attack').map(m => `${m.target_q},${m.target_r}`)
@@ -937,6 +964,17 @@ function bindMarchButton(btn, dest, kind) {
   btn.addEventListener('mouseleave', () => { State.fovPreview = null; State.dirty = true; });
 }
 
+// Wire the colonize affordance button: same click behaviour as a march button
+// (opens march-ctx pre-filled with dest), but hover previews the 7-hex
+// catchment (render §3.6) instead of the FOV band — colonize's footprint is
+// the fixed catchment, not live-visibility (Bugg 3).
+function bindCatchmentPreviewButton(btn, dest) {
+  if (!btn) return;
+  btn.addEventListener('click', e => window.openMarchCtx(dest, e.clientX, e.clientY));
+  btn.addEventListener('mouseenter', () => { State.catchmentPreview = { q: dest.q, r: dest.r }; State.dirty = true; });
+  btn.addEventListener('mouseleave', () => { State.catchmentPreview = null; State.dirty = true; });
+}
+
 // Human names for the terrain enum — the raw keys leaked into panels and menu
 // headers as "River_valley"/"Empty hex", machine-speak in the most prominent slot.
 const TERRAIN_LABELS = {
@@ -1090,7 +1128,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
 
   const colBtn = document.getElementById('ip-colonize-btn');
   if (colBtn) {
-    bindMarchButton(colBtn, dest, 'land');
+    bindCatchmentPreviewButton(colBtn, dest);
     // Same march-ctx as Marschera, just pre-check the colonize box on open —
     // no second order code path (plan §"Målbild").
     colBtn.addEventListener('click', () => {
@@ -1184,6 +1222,7 @@ async function openHostPanel(h, tile) {
 function openHexPanel(h) {
   State.selectedHex = { q: h.q, r: h.r };
   State.fovPreview = null;
+  State.catchmentPreview = null;
   State.dirty = true;
 
   const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
