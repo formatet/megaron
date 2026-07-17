@@ -103,7 +103,9 @@ economy, religion  ← may use clock, events
   ↑
 settlement, province  ← may use economy, religion, clock, events
   ↑
-combat, kingdom  ← may use settlement, province, economy, religion, clock, events
+transport  ← may use province, clock, events
+  ↑
+combat, kingdom  ← may use transport, settlement, province, economy, religion, clock, events
   ↑
 messenger, notify  ← may use all above
   ↑
