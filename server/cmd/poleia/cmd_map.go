@@ -245,7 +245,8 @@ func mapCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().IntVar(&radius, "radius", 8, "max hex distance to list")
+	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province to center the map on (default: your capital)")
+	cmd.Flags().IntVar(&radius, "radius", 8, "max hex distance to list")
 	return cmd
 }

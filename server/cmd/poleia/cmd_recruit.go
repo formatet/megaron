@@ -125,11 +125,12 @@ func recruitCmd() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().SortFlags = false
+	cmd.Flags().StringVar(&provinceID, "province", "", "province to recruit in (default: your capital)")
 	cmd.Flags().StringVarP(&unit, "unit", "u", "", "unit type (required unless --list)")
 	cmd.Flags().IntVarP(&men, "men", "n", 10, "men to recruit (multiple of 10, max 100; ignored for ships)")
 	cmd.Flags().IntVarP(&count, "count", "c", 1, "number of vessels to build in one call (ships only, 1–20)")
 	cmd.Flags().StringVar(&name, "name", "", "ship name (ships only; omit for a suggested name)")
-	cmd.Flags().StringVar(&provinceID, "province", "", "province to recruit in (default: your capital)")
 	cmd.Flags().BoolVar(&list, "list", false, "show the recruitable-unit catalogue and exit")
 	return cmd
 }

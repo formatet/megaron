@@ -120,8 +120,9 @@ func buildCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
+	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
+	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
 	cmd.Flags().BoolVar(&list, "list", false, "show the building catalogue and exit")
 	cmd.Flags().BoolVar(&queue, "queue", false, "show this settlement's build queue (with queue IDs for cancel-build) and exit")
 	return cmd

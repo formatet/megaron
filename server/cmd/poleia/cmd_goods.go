@@ -76,6 +76,7 @@ func goodsCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
 	return cmd
 }
