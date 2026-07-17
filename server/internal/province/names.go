@@ -22,6 +22,7 @@ var CultureSettlementNames = map[string][]string{
 		"Karnak", "Amarna", "Herakleopolis", "Sais", "Bubastis",
 		"Buto", "Mendes", "Giza", "Saqqara", "Busiris",
 		"Hermopolis", "Coptos", "Elephantine", "Philae", "Abu Simbel",
+		"Avaris",
 	},
 	// Kanaanitisk/Fenicisk
 	"knaani": {
