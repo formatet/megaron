@@ -1361,7 +1361,8 @@ export function initMap() {
       tooltip.style.display = 'block';
       tooltip.style.left = (e.clientX + 14) + 'px';
       tooltip.style.top  = (e.clientY - 22) + 'px';
-      const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null].filter(Boolean).join(' · ');
+      const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null,
+                        tile.silver_deposit ? '⚒ Silver' : null, tile.cedar_deposit ? '⚒ Cedar' : null].filter(Boolean).join(' · ');
       const tl = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
       if (prov) {
         const parts = [prov.name, tl];
