@@ -888,6 +888,47 @@ func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uui
 		uRows.Close()
 	}
 
+	// Hemerodromoi — the player's own outbound messengers (orders, diplomatic
+	// letters, recalls) are live eyes along their route, seeing as a land unit
+	// (temenos_synlighet.md §Nivå 1, beslut Timothy 2026-07-16). Position is
+	// interpolated along the courier A*-path (land at 2× spearman speed, sea by
+	// boat) between sent_at and arrives_at — same pattern as marching units.
+	// The return leg (status='returning') carries no usable timing window on
+	// the row (arrives_at still holds the outbound arrival) and is left without
+	// an eye until that plumbing exists; couriers are uninterceptable either way.
+	mRows, err := pool.Query(ctx,
+		`SELECT m.hex_q, m.hex_r,
+		        COALESCE(m.dest_q, dp.map_q), COALESCE(m.dest_r, dp.map_r),
+		        m.sent_at, m.arrives_at
+		 FROM messengers m
+		 LEFT JOIN settlements ds ON ds.id = m.destination_id
+		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'outbound'`,
+		worldID, playerID,
+	)
+	if err == nil {
+		for mRows.Next() {
+			var oq, or_ int
+			var dq, dr *int
+			var sentAt, arrivesAt time.Time
+			if mRows.Scan(&oq, &or_, &dq, &dr, &sentAt, &arrivesAt) != nil {
+				continue
+			}
+			pos := province.MapPosition{Q: oq, R: or_}
+			if dq != nil && dr != nil {
+				path, _, ok, pathErr := province.FindPath(ctx, pool, worldID, pos,
+					province.MapPosition{Q: *dq, R: *dr}, province.CategoryCourier)
+				if pathErr == nil && ok && len(path) > 0 {
+					pos = interpolatedEyePos(now, sentAt, arrivesAt, path)
+				}
+				// FindPath failure: best-effort fallback to the origin hex — the
+				// courier still sees from somewhere, never drops the eye.
+			}
+			eyes = append(eyes, province.Eye{Pos: pos, Kind: province.EyeLandUnit})
+		}
+		mRows.Close()
+	}
+
 	return eyes
 }
 

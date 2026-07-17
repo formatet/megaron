@@ -279,10 +279,12 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 // ScheduledOrderDelivery, answering 202 order_dispatched with the courier ETA.
 func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any) {
 	now := h.clk.Now()
-	courierArrivesAt := now.Add(messenger.MessengerTravelDuration(origin.dist))
+	courierTravelTicks, courierTravelDur := messenger.CourierTravel(ctx, h.pool, payload.WorldID,
+		province.MapPosition{Q: origin.q, R: origin.r}, unitPos)
+	courierArrivesAt := now.Add(courierTravelDur)
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	dueTick := currentTick + messenger.MessengerTravelTicks(origin.dist)
+	dueTick := currentTick + courierTravelTicks
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
@@ -515,12 +517,13 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		originUnitID = &hostID
 	}
 
-	dist := province.HexDistance(province.MapPosition{Q: homeQ, R: homeR}, currentPos)
 	now := h.clk.Now()
-	messengerArrivesAt := now.Add(messenger.MessengerTravelDuration(dist))
+	recallTravelTicks, recallTravelDur := messenger.CourierTravel(ctx, h.pool, worldID,
+		province.MapPosition{Q: homeQ, R: homeR}, currentPos)
+	messengerArrivesAt := now.Add(recallTravelDur)
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	dueTick := currentTick + messenger.MessengerTravelTicks(dist)
+	dueTick := currentTick + recallTravelTicks
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
