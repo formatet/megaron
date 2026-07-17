@@ -62,31 +62,35 @@ func TestMarch_ResponseCarriesTickContract(t *testing.T) {
 	).Scan(&capProvID); err != nil {
 		t.Fatalf("create capital province: %v", err)
 	}
-	if _, err := pool.Exec(ctx,
+	var capSettID uuid.UUID
+	if err := pool.QueryRow(ctx,
 		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
-		 VALUES ($1, $2, 'Capital', 'achaean', $3, 'capital', true)`,
+		 VALUES ($1, $2, 'Capital', 'achaean', $3, 'capital', true) RETURNING id`,
 		worldID, capProvID, playerID,
-	); err != nil {
+	).Scan(&capSettID); err != nil {
 		t.Fatalf("create capital settlement: %v", err)
 	}
 
-	// A field-positioned colonist that colonizes the hex it stands on: this
-	// bypasses FindPath (zero-distance) so the test needs no tile graph, while
-	// still exercising the March UPDATE + response with a real travel of 1 tick.
-	const hexQ, hexR = 3, -1
-	if _, err := pool.Exec(ctx,
-		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, 'plains')`,
-		worldID, hexQ, hexR,
-	); err != nil {
-		t.Fatalf("create target tile: %v", err)
+	// A unit GARRISONED at the capital: distance 0 to the commanding city, so
+	// the march executes immediately (order-courier latency applies only to
+	// field units — temenos_orderlopare_plan.md Fas 2) and the HTTP response
+	// carries the K4 tick contract this test guards. One-hex march over plains
+	// (0.75 h) still rounds to the 1-tick floor the assertions expect.
+	for q := 0; q <= 1; q++ {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'plains')`,
+			worldID, q,
+		); err != nil {
+			t.Fatalf("create map tile (%d,0): %v", q, err)
+		}
 	}
 	var unitID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r)
-		 VALUES ($1, $2, 'spearman', 'land', 100, 'positioned', $3, $4) RETURNING id`,
-		worldID, playerID, hexQ, hexR,
+		`INSERT INTO units (world_id, owner_id, settlement_id, type, category, size, status)
+		 VALUES ($1, $2, $3, 'spearman', 'land', 100, 'garrison') RETURNING id`,
+		worldID, playerID, capSettID,
 	).Scan(&unitID); err != nil {
-		t.Fatalf("create colonist: %v", err)
+		t.Fatalf("create garrisoned unit: %v", err)
 	}
 
 	clk := clock.NewTestClock(time.Now())
@@ -95,7 +99,7 @@ func TestMarch_ResponseCarriesTickContract(t *testing.T) {
 	r.Use(auth.Middleware(authSvc))
 	r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
 
-	body, _ := json.Marshal(map[string]any{"target_q": hexQ, "target_r": hexR, "intent": "colonize"})
+	body, _ := json.Marshal(map[string]any{"target_q": 1, "target_r": 0})
 	req := httptest.NewRequest(http.MethodPost,
 		"/worlds/"+worldID.String()+"/units/"+unitID.String()+"/march", bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -115,7 +119,7 @@ func TestMarch_ResponseCarriesTickContract(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
 		t.Fatalf("decode march response: %v", err)
 	}
-	// A zero-distance colonize travels the floor of 1 tick.
+	// A one-hex plains march (0.75 h) travels the floor of 1 tick.
 	if resp.DurationTicks == nil || *resp.DurationTicks != 1 {
 		t.Errorf("duration_ticks = %v, want 1", resp.DurationTicks)
 	}

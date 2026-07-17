@@ -353,6 +353,27 @@ func MessengerTravelTicks(dist int) int {
 	return t
 }
 
+// CourierTravel returns the world-tick and wall-clock travel time for a
+// hemerodromos from 'from' to 'to' (temenos_orderlopare_plan.md Fas 4): A*
+// over the courier graph — land at half a land unit's terrain hours (2×
+// spearman speed), sea legs at the flat boat rate province.CourierSeaHours,
+// mountains routed around. Falls back to the legacy straight-line rate when no
+// route exists (should be unreachable with sea passable — e.g. a target walled
+// in by mountains) so an order is never stranded by the pathfinder.
+// One speed model for ALL messengers: diplomatic, recall/redirect and order
+// runners alike (trade CARAVANS keep their own TradeHoursPerHex seam below).
+func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration) {
+	if _, hours, ok, err := province.FindPath(ctx, db, worldID, from, to, province.CategoryCourier); err == nil && ok {
+		t := int(math.Round(hours))
+		if t < 1 {
+			t = 1
+		}
+		return t, tick.RealUntil(t, 0)
+	}
+	dist := province.HexDistance(from, to)
+	return MessengerTravelTicks(dist), MessengerTravelDuration(dist)
+}
+
 // TradeHoursPerHex is the travel speed of a trade caravan (the silver/goods legs of a messenger trade).
 // Kept as a separate seam from messengers so caravans can later be tuned slower than runners
 // without affecting messenger/recall speed.

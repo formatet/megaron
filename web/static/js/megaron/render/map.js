@@ -469,18 +469,26 @@ function drawCaravan(ctx, x, y, walkPhase) {
   ctx.restore();
 }
 
-// ── Messenger figure — olive cloak, scroll in hand ────────────────────────
-function drawMessenger(ctx, x, y, walkPhase) {
+// ── Messenger figure — olive cloak, scroll in hand. A hemerodromos (order
+// runner, kind='order') wears a crimson cloak so it reads as command, not
+// diplomacy; own couriers additionally carry a small gold pennant so it is
+// visible WHOSE runner it is (temenos_orderlopare_plan.md Fas 5).
+function drawMessenger(ctx, x, y, walkPhase, isOrder, isOwn) {
   ctx.save();
   const bob = walkPhase < 2 ? 0 : 1;
-  ctx.fillStyle = '#6B8B4A';
+  ctx.fillStyle = isOrder ? '#A03A2A' : '#6B8B4A';
   ctx.fillRect(x-1, y-5+bob, 3, 5);
-  ctx.fillStyle = '#3A5A28';
+  ctx.fillStyle = isOrder ? '#6E2418' : '#3A5A28';
   ctx.beginPath();
   ctx.arc(x+0.5, y-7+bob, 2, 0, Math.PI*2);
   ctx.fill();
   ctx.fillStyle = '#F2E8C0';
   ctx.fillRect(x+1, y-6+bob, 1, 3);
+  if (isOwn) {
+    ctx.fillStyle = '#D8B84A';
+    ctx.fillRect(x-2, y-10+bob, 1, 3);
+    ctx.fillRect(x-1, y-10+bob, 2, 1);
+  }
   ctx.restore();
 }
 
@@ -767,15 +775,24 @@ function render() {
     }
   }
 
-  // 6. Animated messengers
+  // 6. Animated messengers — OWN couriers are drawn along their whole route,
+  // dimmed over fog (the player's own hemerodromos is information they already
+  // possess — temenos_orderlopare_plan.md Fas 5); foreign messengers only
+  // inside live-visible tiles, as before.
   for (const m of State.messengerData) {
     const now = serverNow();
     const sent   = new Date(m.sent_at).getTime();
     const arrives = new Date(m.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - sent) / (arrives - sent)));
     const pos = hexPathPx(m.origin_q, m.origin_r, m.dest_q, m.dest_r, progress);
-    if (isTileVisible(pos.q, pos.r)) {
-      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase);
+    const visible = isTileVisible(pos.q, pos.r);
+    if (m.own) {
+      ctx.save();
+      if (!visible) ctx.globalAlpha = 0.45;
+      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase, m.kind === 'order', true);
+      ctx.restore();
+    } else if (visible) {
+      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase, m.kind === 'order', false);
     }
   }
 
@@ -1350,8 +1367,15 @@ export function initMap() {
   // already interpolates every frame; this is only needed so server-computed fog
   // keeps up). Idle — and cheap — whenever nothing is moving.
   setInterval(() => {
-    if (!State.unitsData.some(u => u.status === 'marching')) return;
+    const courierOut = State.messengerData.some(m => m.own);
+    if (!State.unitsData.some(u => u.status === 'marching') && !courierOut) return;
     refreshTiles();
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+    // A running hemerodromos needs the same fast cadence: its delivery flips
+    // the unit to marching (or applies a stance) server-side — poll messengers
+    // so the runner vanishes and the unit moves without waiting for the 30s tick.
+    if (courierOut) {
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+    }
   }, 3000);
 }

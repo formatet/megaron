@@ -217,10 +217,14 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
 		return
 	}
-	arrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+	// Hemerodromos travel: path-based over the courier graph (land at 2×
+	// spearman speed, sea legs by boat) — temenos_orderlopare_plan.md Fas 4.
+	msgTravelTicks, msgTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
+		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+	arrivesAt := h.clk.Now().Add(msgTravelDur)
 	var msgSendCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&msgSendCurrentTick)
-	msgArrivalDueTick := msgSendCurrentTick + messenger.MessengerTravelTicks(dist)
+	msgArrivalDueTick := msgSendCurrentTick + msgTravelTicks
 
 	var tradeOfferJSON []byte
 	if req.TradeOffer != nil {
@@ -440,10 +444,12 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 		writeError(w, http.StatusBadRequest, "the host is standing on that settlement's province")
 		return
 	}
-	arrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+	hostTravelTicks, hostTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
+		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+	arrivesAt := h.clk.Now().Add(hostTravelDur)
 	var currentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
-	dueTick := currentTick + messenger.MessengerTravelTicks(dist)
+	dueTick := currentTick + hostTravelTicks
 
 	var messengerID uuid.UUID
 	if err = h.pool.QueryRow(r.Context(),
@@ -762,10 +768,12 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		oQ, oR = *originQ, *originR
 	}
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
-	returnsAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+	replyTravelTicks, replyTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
+		province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
+	returnsAt := h.clk.Now().Add(replyTravelDur)
 	var replyCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&replyCurrentTick)
-	replyReturnDueTick := replyCurrentTick + messenger.MessengerTravelTicks(dist)
+	replyReturnDueTick := replyCurrentTick + replyTravelTicks
 
 	_, err = h.pool.Exec(r.Context(),
 		`UPDATE messengers SET reply_text = $1, status = 'returning' WHERE id = $2`,

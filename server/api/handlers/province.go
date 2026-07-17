@@ -2532,12 +2532,13 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 	// Dispatch a visible recall messenger toward the army's target province.
 	// Assumption: it aims at the destination, not the army's mid-march position — no interpolation,
 	// always physically safe (never faster than physics).
-	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: tQ, R: tR})
-	messengerArrivesAt := h.clk.Now().Add(messenger.MessengerTravelDuration(dist))
+	recallTravelTicks, recallTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
+		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: tQ, R: tR})
+	messengerArrivesAt := h.clk.Now().Add(recallTravelDur)
 
 	var marchRecallCurrentTick int
 	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&marchRecallCurrentTick)
-	marchRecallDueTick := marchRecallCurrentTick + messenger.MessengerTravelTicks(dist)
+	marchRecallDueTick := marchRecallCurrentTick + recallTravelTicks
 
 	var messengerID uuid.UUID
 	if err := tx.QueryRow(r.Context(),
@@ -2587,7 +2588,7 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		"recalled":             true,
 		"messenger_id":         messengerID,
 		"messenger_arrives_at": messengerArrivesAt,
-		"messenger_distance":   dist,
+		"messenger_travel_ticks": recallTravelTicks,
 	})
 }
 

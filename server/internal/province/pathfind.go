@@ -69,19 +69,48 @@ func (g TileGraph) FindPath(origin, target MapPosition, category string) (path [
 // axialDirs lists the 6 axial hex neighbours.
 var axialDirs = [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 
+// CategoryCourier routes hemerodromoi — order/message runners
+// (temenos_orderlopare_plan.md Fas 4, beslut Timothy 2026-07-16): every land
+// hex except mountains at HALF a land unit's terrain hours (2× spearman
+// speed), and sea hexes at the flat boat rate CourierSeaHours (no land route =
+// the runner commandeers a boat). Mountains are routed around like for land.
+const CategoryCourier = "courier"
+
+// CourierSeaHours is a courier's hours per sea hex — the abstracted boat
+// passage. Replaced by real ships/trade-route legs when that mechanic exists.
+const CourierSeaHours = 0.5
+
 // isPassable reports whether terrain is traversable for the given unit category.
 //   - "naval": only coastal_sea and deep_sea are passable.
+//   - "courier": everything except mountains (sea = boat passage).
 //   - "land" (and any other value): coastal_sea, deep_sea, mountain_limestone,
 //     mountain_red are impassable; semi_desert costs 2.0 but is passable.
 func isPassable(terrain, category string) bool {
 	if category == "naval" {
 		return terrain == "coastal_sea" || terrain == "deep_sea"
 	}
+	if category == CategoryCourier {
+		return terrain != "mountain_limestone" && terrain != "mountain_red"
+	}
 	switch terrain {
 	case "coastal_sea", "deep_sea", "mountain_limestone", "mountain_red":
 		return false
 	}
 	return true
+}
+
+// moveHoursFor returns the cost to enter a hex of terrain for the category.
+// Couriers run land at half a land unit's terrain hours (2× spearman speed —
+// temenos_synlighet.md §Nivå 1) and cross sea at the flat boat rate; every
+// other category pays the plain TerrainMoveHours.
+func moveHoursFor(terrain, category string) float64 {
+	if category == CategoryCourier {
+		if terrain == "coastal_sea" || terrain == "deep_sea" {
+			return CourierSeaHours
+		}
+		return TerrainMoveHours(terrain) / 2
+	}
+	return TerrainMoveHours(terrain)
 }
 
 // NearestSeaNeighbor returns the coordinates of a hex adjacent to (q,r) that is
@@ -123,9 +152,14 @@ func NearestSeaNeighbor(ctx context.Context, db Queryer, worldID uuid.UUID, q, r
 // remaining cost, and the true cost per hex is never lower than this floor.
 //   - land: plains (0.75) is the cheapest passable terrain.
 //   - naval: coastal_sea (0.4) is the cheapest passable terrain.
+//   - courier: plains at half hours (0.375) is the cheapest passable terrain
+//     (cheaper than the 0.5 sea boat rate).
 func minPassableCost(category string) float64 {
 	if category == "naval" {
 		return TerrainMoveHours("coastal_sea") // 0.4
+	}
+	if category == CategoryCourier {
+		return TerrainMoveHours("plains") / 2 // 0.375
 	}
 	return TerrainMoveHours("plains") // 0.75
 }
@@ -194,7 +228,7 @@ func findPath(tiles map[[2]int]string, origin, target MapPosition, category stri
 			if !exists || !isPassable(nterrain, category) {
 				continue
 			}
-			ng := gScore[pos] + TerrainMoveHours(nterrain) // cost to ENTER npos
+			ng := gScore[pos] + moveHoursFor(nterrain, category) // cost to ENTER npos
 			prev_g, seen := gScore[npos]
 			if !seen || ng < prev_g-1e-9 {
 				gScore[npos] = ng

@@ -888,6 +888,47 @@ func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uui
 		uRows.Close()
 	}
 
+	// Hemerodromoi — the player's own outbound messengers (orders, diplomatic
+	// letters, recalls) are live eyes along their route, seeing as a land unit
+	// (temenos_synlighet.md §Nivå 1, beslut Timothy 2026-07-16). Position is
+	// interpolated along the courier A*-path (land at 2× spearman speed, sea by
+	// boat) between sent_at and arrives_at — same pattern as marching units.
+	// The return leg (status='returning') carries no usable timing window on
+	// the row (arrives_at still holds the outbound arrival) and is left without
+	// an eye until that plumbing exists; couriers are uninterceptable either way.
+	mRows, err := pool.Query(ctx,
+		`SELECT m.hex_q, m.hex_r,
+		        COALESCE(m.dest_q, dp.map_q), COALESCE(m.dest_r, dp.map_r),
+		        m.sent_at, m.arrives_at
+		 FROM messengers m
+		 LEFT JOIN settlements ds ON ds.id = m.destination_id
+		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'outbound'`,
+		worldID, playerID,
+	)
+	if err == nil {
+		for mRows.Next() {
+			var oq, or_ int
+			var dq, dr *int
+			var sentAt, arrivesAt time.Time
+			if mRows.Scan(&oq, &or_, &dq, &dr, &sentAt, &arrivesAt) != nil {
+				continue
+			}
+			pos := province.MapPosition{Q: oq, R: or_}
+			if dq != nil && dr != nil {
+				path, _, ok, pathErr := province.FindPath(ctx, pool, worldID, pos,
+					province.MapPosition{Q: *dq, R: *dr}, province.CategoryCourier)
+				if pathErr == nil && ok && len(path) > 0 {
+					pos = interpolatedEyePos(now, sentAt, arrivesAt, path)
+				}
+				// FindPath failure: best-effort fallback to the origin hex — the
+				// courier still sees from somewhere, never drops the eye.
+			}
+			eyes = append(eyes, province.Eye{Pos: pos, Kind: province.EyeLandUnit})
+		}
+		mRows.Close()
+	}
+
 	return eyes
 }
 
@@ -1167,7 +1208,8 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
+		`SELECT m.id, m.sender_id, m.kind, m.order_payload->>'unit_id',
+		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
 		        COALESCE(op.terrain_type, omt.terrain, ''),
 		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
 		        m.sent_at, m.arrives_at
@@ -1189,24 +1231,42 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type messengerMarker struct {
-		ID        uuid.UUID `json:"id"`
-		OriginQ   int       `json:"origin_q"`
-		OriginR   int       `json:"origin_r"`
-		DestQ     int       `json:"dest_q"`
-		DestR     int       `json:"dest_r"`
-		SentAt    time.Time `json:"sent_at"`
+		ID      uuid.UUID `json:"id"`
+		OriginQ int       `json:"origin_q"`
+		OriginR int       `json:"origin_r"`
+		DestQ   int       `json:"dest_q"`
+		DestR   int       `json:"dest_r"`
+		SentAt  time.Time `json:"sent_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
+		// Own marks the requesting player's hemerodromoi — the client draws
+		// them along their WHOLE route (dimmed over fog): a player's own
+		// courier is information they already possess (temenos_orderlopare_
+		// plan.md Fas 5). Foreign messengers keep the tier-1 endpoint gate.
+		Own  bool   `json:"own"`
+		Kind string `json:"kind"`
+		// OrderUnitID ties a kind='order' hemerodromos to the unit it is
+		// running to, so the unit card can show "order på väg" + courier ETA.
+		OrderUnitID *uuid.UUID `json:"order_unit_id,omitempty"`
 	}
 
 	var markers []messengerMarker
 	for rows.Next() {
 		var m messengerMarker
+		var senderID uuid.UUID
+		var orderUnitID *string
 		var originTerrain, destTerrain string
-		if err := rows.Scan(&m.ID, &m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
+		if err := rows.Scan(&m.ID, &senderID, &m.Kind, &orderUnitID,
+			&m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
 			&m.SentAt, &m.ArrivesAt); err != nil {
 			continue
 		}
-		if authenticated &&
+		m.Own = authenticated && senderID == playerID
+		if m.Own && orderUnitID != nil {
+			if uid, err := uuid.Parse(*orderUnitID); err == nil {
+				m.OrderUnitID = &uid
+			}
+		}
+		if !m.Own && authenticated &&
 			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.OriginQ, R: m.OriginR}, originTerrain) &&
 			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.DestQ, R: m.DestR}, destTerrain) {
 			continue

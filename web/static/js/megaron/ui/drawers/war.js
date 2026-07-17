@@ -331,6 +331,13 @@ function renderUnitCard(u) {
     progress = bar(100) + dim('100/100 · training — ready ' + fmtArrival(u.build_complete_at));
   }
 
+  // Pending order (Fas 5): a hemerodromos is running to this unit — the order
+  // executes only on delivery; surface the courier ETA on the card.
+  const runner = (State.messengerData || []).find(m => m.own && m.kind === 'order' && m.order_unit_id === u.id);
+  const pendingOrder = runner
+    ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Hemerodromos en route — order arrives ' + arrivalHTML(runner.arrives_at) + '</div>'
+    : '';
+
   // Stance badge
   const stanceBadge = u.stance
     ? '<span style="font-size:.6rem;padding:.1rem .25rem;border:1px solid var(--border);color:var(--text-dim);margin-left:.2rem">' + u.stance + '</span>'
@@ -404,6 +411,7 @@ function renderUnitCard(u) {
     + '</div>'
     + progress
     + (loc ? '<div style="font-size:.65rem;color:var(--text-dim)">' + loc + '</div>' : '')
+    + pendingOrder
     + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
     + redirectRow + (isMarching ? orderStatus : '')
     + '</div>';
@@ -511,6 +519,16 @@ export async function unitStance(unitID) {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
+    // Field unit: 202 order_dispatched — the stance travels by hemerodromos
+    // and applies on delivery (temenos_orderlopare_plan.md Fas 5). Refresh
+    // messengers so the runner + the card's pending-order line show at once.
+    if (data.status === 'order_dispatched') {
+      if (resEl) {
+        resEl.style.color = 'var(--text-dim)';
+        resEl.textContent = '🏃 Hemerodromos carries the stance order — applies on delivery';
+      }
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+    }
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';

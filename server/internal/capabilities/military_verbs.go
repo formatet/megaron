@@ -21,7 +21,7 @@ func canMarch(cc checkContext) Verb {
 	}
 	ok := n > 0
 	return verb("march", CategoryMilitary,
-		"Order a garrisoned unit to march to a hex.",
+		"Order a garrisoned unit to march to a hex you have seen (live or remembered); intent \"explore\" may push into unseen land.",
 		[]Requirement{
 			req("a deployable unit garrisoned here (land >=100 men, or any ship)", ok,
 				fmt.Sprintf("%d deployable unit(s) here", n),

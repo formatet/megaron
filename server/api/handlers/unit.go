@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,11 +12,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"math"
 
 	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/capabilities"
 	"github.com/poleia/server/internal/clock"
+	"github.com/poleia/server/internal/combat"
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/province"
@@ -40,20 +40,6 @@ func NewUnitHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore 
 		eventStore: eventStore,
 		clk:        clk,
 		store:      unit.NewStore(pool),
-	}
-}
-
-// navalSpeedFactor scales a unit's travel time by ship type (Timothy 2026-07-09):
-// war galley fastest, merchantman (emporos) slowest, galley in between. Lower =
-// faster. Non-naval and unknown types get 1.0 (no change). Tunable calibration.
-func navalSpeedFactor(t unit.Type) float64 {
-	switch t {
-	case unit.TypeWarGalley:
-		return 0.6
-	case unit.TypeMerchantman:
-		return 1.4
-	default:
-		return 1.0
 	}
 }
 
@@ -99,293 +85,207 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	// Load unit.
-	u, err := h.store.Get(ctx, unitID)
+	// FOW march rule (Fas 0): knowledge is checked at dispatch, in the API
+	// layer that owns the fog helpers — tier-1 live ∪ tier-2 remembered.
+	targetKnown := func(fctx context.Context, target province.MapPosition, terrain string) bool {
+		eyes := loadLiveEyes(fctx, h.pool, worldID, playerID, h.clk.Now())
+		if province.AnyEyeSees(eyes, target, terrain) {
+			return true
+		}
+		return loadRememberedTiles(fctx, h.pool, worldID, playerID)[[2]int{target.Q, target.R}]
+	}
+
+	// Order latency (temenos_orderlopare_plan.md Fas 2): a unit outside any
+	// settlement cannot be commanded instantly — the order travels by runner
+	// from the nearest own city (Timothy 2026-07-16) and executes only on
+	// delivery. A garrisoned unit is distance 0 (the order originates in the
+	// city it sits in) and executes immediately via StartMarch below. Marching
+	// units keep using recall/redirect (already courier-borne; Fas 3 unifies).
+	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
+		u.OwnerID == playerID && u.WorldID == worldID &&
+		u.Status == unit.StatusPositioned && u.SettlementID == nil &&
+		u.Q != nil && u.R != nil {
+		order := combat.MarchOrder{
+			WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+			TargetQ: req.TargetQ, TargetR: req.TargetR,
+			Stance: req.Stance, Intent: req.Intent, Name: req.Name, Mode: req.Mode,
+		}
+		h.dispatchMarchCourier(w, ctx, order, province.MapPosition{Q: *u.Q, R: *u.R}, targetKnown)
+		return
+	}
+
+	// Validate+execute core shared with the order-courier delivery path
+	// (temenos_orderlopare_plan.md Fas 1) — internal/combat.StartMarch.
+	res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, combat.MarchOrder{
+		WorldID:  worldID,
+		PlayerID: playerID,
+		UnitID:   unitID,
+		TargetQ:  req.TargetQ,
+		TargetR:  req.TargetR,
+		Stance:   req.Stance,
+		Intent:   req.Intent,
+		Name:     req.Name,
+		Mode:     req.Mode,
+	}, targetKnown)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "unit not found")
-		return
-	}
-
-	// Ownership check.
-	if u.OwnerID != playerID {
-		writeError(w, http.StatusForbidden, "not your unit")
-		return
-	}
-	if u.WorldID != worldID {
-		writeError(w, http.StatusForbidden, "unit not in this world")
-		return
-	}
-
-	// Priests are stationary by rule.
-	if u.Type == unit.TypePriest {
-		writeError(w, http.StatusUnprocessableEntity, "priests are stationary and cannot march")
-		return
-	}
-
-	// Must be garrisoned or positioned (positioned = on map without a settlement,
-	// e.g. landed on empty hex; it must be able to march back or onward).
-	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("unit cannot march: status is '%s' (must be 'garrison' or 'positioned')", string(u.Status)))
-		return
-	}
-
-	// C5: a unit in fortify stance is locked in place until stance is changed.
-	if u.Stance != nil && *u.Stance == unit.StanceFortify {
-		writeError(w, http.StatusUnprocessableEntity,
-			"unit is in fortify stance and cannot march; change stance to 'none' first via POST /stance")
-		return
-	}
-
-	// Validate optional stance value.
-	if req.Stance != "" {
-		switch unit.Stance(req.Stance) {
-		case unit.StanceFortify, unit.StanceStorm, unit.StanceSentry:
-			// valid
-		default:
-			writeError(w, http.StatusBadRequest, "invalid stance: must be fortify, storm, or sentry")
+		var rej *combat.OrderReject
+		if errors.As(err, &rej) {
+			writeError(w, rej.Status, rej.Reason)
 			return
 		}
-	}
-
-	// Resolve origin position. Garrisoned units use their settlement's province
-	// hex; positioned units (on the map without a settlement) use their stored q/r.
-	var originQ, originR int
-	if u.SettlementID != nil {
-		var originTerrain string
-		if err := h.pool.QueryRow(ctx,
-			`SELECT p.map_q, p.map_r, p.terrain_type
-			 FROM settlements s
-			 JOIN provinces p ON p.id = s.province_id
-			 WHERE s.id = $1`,
-			*u.SettlementID,
-		).Scan(&originQ, &originR, &originTerrain); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not load origin province")
-			return
-		}
-		// Naval units cannot occupy land: a galley garrisoned at a coastal
-		// settlement actually departs from the settlement's harbour — the nearest
-		// adjacent sea hex — not the settlement's own (land) province hex. Without
-		// this, FindPath always rejected the unit's own origin as impassable and
-		// the ship could never leave port, no matter what it was told to do.
-		if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-			seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, h.pool, worldID, originQ, originR)
-			if seaErr != nil {
-				writeError(w, http.StatusInternalServerError, "could not resolve naval departure hex")
-				return
-			}
-			if !foundSea {
-				writeError(w, http.StatusUnprocessableEntity,
-					"settlement has no adjacent sea hex — naval units cannot depart an inland settlement")
-				return
-			}
-			originQ, originR = seaQ, seaR
-		}
-	} else if u.Q != nil && u.R != nil {
-		// positioned unit: origin is its current hex.
-		originQ, originR = *u.Q, *u.R
-	} else {
-		writeError(w, http.StatusUnprocessableEntity, "unit has no known position; cannot determine departure hex")
+		writeError(w, http.StatusInternalServerError, "march failed")
 		return
 	}
 
-	// Amphibious assault: a laden galley ordered against a coastal settlement it
-	// does not own cannot enter the land hex, so it sails to the adjacent sea hex
-	// and lands its cargo on the beach. The arrival handler resolves the storming
-	// with the cargo's strength (combat.resolveAmphibiousAssault). Detected here so
-	// the ship is routed to the offshore hex and tagged intent=assault.
-	assaultLanding := false
-	if unit.CategoryOf(u.Type) == unit.CategoryNaval && u.CargoUnitID != nil {
-		var settOwner uuid.UUID
-		var settCoastal bool
-		if sErr := h.pool.QueryRow(ctx,
-			`SELECT s.owner_id, COALESCE(p.coastal, false)
-			 FROM provinces p JOIN settlements s ON s.province_id = p.id
-			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active'`,
-			worldID, req.TargetQ, req.TargetR,
-		).Scan(&settOwner, &settCoastal); sErr == nil && settOwner != playerID && settCoastal {
-			seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, h.pool, worldID, req.TargetQ, req.TargetR)
-			if seaErr != nil {
-				writeError(w, http.StatusInternalServerError, "could not resolve landing hex")
-				return
-			}
-			if !foundSea {
-				writeError(w, http.StatusUnprocessableEntity,
-					"that settlement has no adjacent sea hex to land on")
-				return
-			}
-			assaultLanding = true
-			req.TargetQ, req.TargetR = seaQ, seaR
-		}
-	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"unit_id":    res.UnitID,
+		"departs_at": res.DepartsAt,
+		"arrives_at": res.ArrivesAt,
+		// K4 tick-contract: timing expressed in world ticks (source of truth under
+		// the tick substrate), plus a derived UTC convenience. ArrivesAt is already
+		// the tick-derived instant (now + travelTicks × TickSeconds), so
+		// arrives_at_utc is that same instant normalised to UTC.
+		"arrival_tick":   res.ArrivalTick,
+		"duration_ticks": res.DurationTicks,
+		"arrives_at_utc": res.ArrivesAt.UTC(),
+		"origin_q":       res.OriginQ,
+		"origin_r":       res.OriginR,
+		"target_q":       res.TargetQ,
+		"target_r":       res.TargetR,
+	})
+}
 
-	// Target hex must exist on this world's map.
+// dispatchMarchCourier sends a march order to a field unit by physical runner —
+// a hemerodromos, the Greek day-runner (Timothy 2026-07-17); DB identifier stays
+// kind='order' (temenos_orderlopare_plan.md Fas 2). Cheap pre-flights only
+// (target exists, FOW) — the delivery handler re-validates authoritatively
+// against the unit's state when the courier arrives; an order that can no
+// longer be carried out fails with an OrderFailed notice, never silently.
+// No pending-order guard: latest delivered wins (Timothy 2026-07-16).
+func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Context, order combat.MarchOrder, unitPos province.MapPosition, targetKnown combat.TargetKnownFunc) {
+	// Target hex must exist (map bounds are public knowledge).
 	var destTerrain string
 	if err := h.pool.QueryRow(ctx,
 		`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
-		worldID, req.TargetQ, req.TargetR,
+		order.WorldID, order.TargetQ, order.TargetR,
 	).Scan(&destTerrain); err != nil {
 		writeError(w, http.StatusNotFound, "target hex not found")
 		return
 	}
-
-	// Fas 2f: colonize-in-place. A field-positioned land unit (already on the
-	// map, no settlement) may found a colony on the exact empty hex it occupies,
-	// without marching one hex out and back. Target == its own hex. This
-	// deliberately bypasses FindPath (a zero-distance query it was never built
-	// to answer) and settles on the next tick via the normal arrival→foundColony
-	// path. The colonize preconditions below (land unit, empty target,
-	// settlement cap) still apply.
-	colonizeInPlace := req.Intent == "colonize" && u.SettlementID == nil &&
-		req.TargetQ == originQ && req.TargetR == originR
-
-	// Sanity: cannot march to own hex (colonize-in-place, above, is the exception).
-	if !colonizeInPlace && req.TargetQ == originQ && req.TargetR == originR {
-		writeError(w, http.StatusBadRequest, "cannot march to own hex")
-		return
-	}
-
-	// Intent validation: colonize and explore are the only supported intents.
-	// Validate up front so the agent gets an actionable error instead of a
-	// silent return-home at arrival.
-	if req.Intent != "" && req.Intent != "colonize" && req.Intent != "explore" {
-		writeError(w, http.StatusBadRequest,
-			fmt.Sprintf("unknown march intent %q (must be \"colonize\" or \"explore\")", req.Intent))
-		return
-	}
-	// Del 2b: conquest choice. Empty defaults to "sack" (loot + raze); "annex" keeps
-	// the settlement (capital→colony takeover). Validated up front, same reasoning
-	// as intent above — actionable error instead of a silent default at arrival.
-	if req.Mode != "" && req.Mode != "sack" && req.Mode != "annex" {
-		writeError(w, http.StatusBadRequest,
-			fmt.Sprintf("unknown capture mode %q (must be \"sack\" or \"annex\")", req.Mode))
-		return
-	}
-	captureMode := req.Mode
-	if captureMode == "" {
-		captureMode = "sack"
-	}
-	// Explore: the unit marches to the target and returns home automatically —
-	// it needs a home to return to, so it must currently be garrisoned at a
-	// settlement (not already field-positioned).
-	if req.Intent == "explore" && u.SettlementID == nil {
+	// FOW march rule — checked at dispatch (the player's knowledge NOW is what
+	// authorises the order). Exempt: explore and colonize-in-place (own hex).
+	colonizeInPlace := order.Intent == "colonize" && order.TargetQ == unitPos.Q && order.TargetR == unitPos.R
+	if !colonizeInPlace && order.Intent != "explore" &&
+		!targetKnown(ctx, province.MapPosition{Q: order.TargetQ, R: order.TargetR}, destTerrain) {
 		writeError(w, http.StatusUnprocessableEntity,
-			"explore requires a unit currently garrisoned at a settlement (it needs a home to return to)")
-		return
-	}
-	if req.Intent == "colonize" {
-		// Only land units found colonies — they become the new colony's garrison.
-		if unit.CategoryOf(u.Type) != unit.CategoryLand {
-			writeError(w, http.StatusUnprocessableEntity, "only land units can found a colony")
-			return
-		}
-		// The target province must be unclaimed (no settlement). Best-effort pre-flight;
-		// the arrival handler re-checks under lock and returns the unit home on a race.
-		var existing int
-		if err := h.pool.QueryRow(ctx,
-			`SELECT count(*) FROM settlements s
-			 JOIN provinces p ON p.id = s.province_id
-			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
-			worldID, req.TargetQ, req.TargetR,
-		).Scan(&existing); err == nil && existing > 0 {
-			writeError(w, http.StatusUnprocessableEntity,
-				"target hex already has a settlement — colonize requires an empty hex")
-			return
-		}
-		// Settlement cap: a Wanax may hold at most maxSettlementsPerWanax active
-		// settlements. Enforced at dispatch so the harness gets immediate feedback
-		// and the colonising army never wastes the march. The arrival handler is the
-		// authoritative fallback if the count changes mid-transit.
-		//
-		// Reuses capabilities' colonize checker's settlement-cap requirement
-		// directly (temenos_capabilities.md Fas 3 anti-drift) — not the whole
-		// CanColonize verb, because its OTHER requirement ("a deployable land
-		// unit garrisoned here") is aggregate-per-settlement and would wrongly
-		// reject a "positioned" unit (already off any settlement, mid-journey)
-		// that this handler has already validated is deployable by other means
-		// (status + size checks above).
-		capReq := capabilities.SettlementCapRequirement(
-			capabilities.NewContext(ctx, h.pool, h.clk, worldID, uuid.Nil, playerID, uuid.Nil))
-		if !capReq.Satisfied {
-			writeError(w, http.StatusUnprocessableEntity, capReq.Hint)
-			return
-		}
-	}
-
-	// Mountains are impassable.
-	if destTerrain == "mountain_limestone" || destTerrain == "mountain_red" {
-		writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
+			fmt.Sprintf("none of your men have ever seen (%d,%d) — a march cannot be ordered into unknown land; send a scout first (march with intent \"explore\")",
+				order.TargetQ, order.TargetR))
 		return
 	}
 
-	// Land units cannot enter sea hexes.
-	isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea"
-	if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
-		writeError(w, http.StatusUnprocessableEntity, "land units cannot enter sea terrain")
+	origin, ok := h.resolveOrderOrigin(w, ctx, order.WorldID, order.PlayerID, unitPos)
+	if !ok {
 		return
 	}
 
-	// A* pathfinding: verify that a traversable route exists and derive the real
-	// path cost for ETA. This catches the land-over-sea bug (target on land, but
-	// the only route crosses water) and routes around mountains correctly.
-	// Skipped for colonize-in-place: origin == target, so there is no route to
-	// find and no distance to travel — the colony settles on the next tick.
-	var moveHours float64
-	if !colonizeInPlace {
-		_, pathCost, pathOK, pathErr := province.FindPath(ctx, h.pool, worldID,
-			province.MapPosition{Q: originQ, R: originR},
-			province.MapPosition{Q: req.TargetQ, R: req.TargetR},
-			string(unit.CategoryOf(u.Type)),
-		)
-		if pathErr != nil {
-			writeError(w, http.StatusInternalServerError, "pathfinding error")
-			return
-		}
-		if !pathOK {
-			hint := "a sea crossing needs a ship (embark), and mountains must be routed around"
-			if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-				hint = "no sea route connects your harbour to that hex — land blocks the way"
+	// Distance 0 (the commanding presence stands with the unit): execute now.
+	if origin.dist == 0 {
+		res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, order, targetKnown)
+		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+				return
 			}
+			writeError(w, http.StatusInternalServerError, "march failed")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"unit_id": res.UnitID, "departs_at": res.DepartsAt, "arrives_at": res.ArrivesAt,
+			"arrival_tick": res.ArrivalTick, "duration_ticks": res.DurationTicks,
+			"arrives_at_utc": res.ArrivesAt.UTC(),
+			"origin_q":       res.OriginQ, "origin_r": res.OriginR,
+			"target_q": res.TargetQ, "target_r": res.TargetR,
+		})
+		return
+	}
+
+	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
+		WorldID: order.WorldID, PlayerID: order.PlayerID, UnitID: order.UnitID,
+		Verb: "march", March: &order,
+	}, fmt.Sprintf("Hemerodromos — march order to (%d,%d).", order.TargetQ, order.TargetR),
+		origin, unitPos, map[string]any{"target_q": order.TargetQ, "target_r": order.TargetR})
+}
+
+// orderOrigin is the resolved dispatching city — the NEAREST own settlement to
+// the unit (Timothy 2026-07-16) — or, in founder phase, the wandering host.
+type orderOrigin struct {
+	settlementID *uuid.UUID
+	unitID       *uuid.UUID
+	q, r, dist   int
+}
+
+// resolveOrderOrigin finds the order's origin; on failure it writes the 422
+// and returns ok=false.
+func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Context, worldID, playerID uuid.UUID, unitPos province.MapPosition) (orderOrigin, bool) {
+	var o orderOrigin
+	found := false
+	rows, err := h.pool.Query(ctx,
+		`SELECT s.id, p.map_q, p.map_r FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.state = 'active'`,
+		worldID, playerID)
+	if err == nil {
+		for rows.Next() {
+			var sid uuid.UUID
+			var q, r int
+			if rows.Scan(&sid, &q, &r) != nil {
+				continue
+			}
+			d := province.HexDistance(province.MapPosition{Q: q, R: r}, unitPos)
+			if !found || d < o.dist {
+				found = true
+				s := sid
+				o = orderOrigin{settlementID: &s, q: q, r: r, dist: d}
+			}
+		}
+		rows.Close()
+	}
+	if !found {
+		var hostID uuid.UUID
+		var q, r int
+		if err := h.pool.QueryRow(ctx,
+			`SELECT fp.host_unit_id, u.q, u.r
+			 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
+			 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
+			   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
+			worldID, playerID,
+		).Scan(&hostID, &q, &r); err != nil {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("no passable route to (%d,%d) for this unit — %s", req.TargetQ, req.TargetR, hint))
-			return
+				"you have no city (and no wandering host) to dispatch a hemerodromos from")
+			return o, false
 		}
-
-		// Calculate movement time.
-		dist := province.HexDistance(
-			province.MapPosition{Q: originQ, R: originR},
-			province.MapPosition{Q: req.TargetQ, R: req.TargetR},
-		)
-		if dist == 0 {
-			writeError(w, http.StatusBadRequest, "target is the same hex as origin")
-			return
-		}
-		moveHours = pathCost
+		hid := hostID
+		o = orderOrigin{unitID: &hid, q: q, r: r, dist: province.HexDistance(province.MapPosition{Q: q, R: r}, unitPos)}
 	}
-	// Ship types vary in speed (Timothy 2026-07-09): war galley fastest,
-	// merchantman slowest, galley between. Factor scales travel time (lower =
-	// faster); tunable, lives in navalSpeedFactor.
-	moveHours *= navalSpeedFactor(u.Type)
-	// The nomadic host is the slowest thing on the map: half a spearman's speed,
-	// i.e. DOUBLE its hours. Every other type is unaffected (factor 1.0).
-	moveHours *= unit.MarchHoursFactorFor(u.Type)
-	// Loaded ships move 1.5× slower.
-	if u.CargoUnitID != nil {
-		moveHours *= 1.5
-	}
+	return o, true
+}
 
+// sendOrderCourier inserts the kind='order' hemerodromos and schedules its
+// ScheduledOrderDelivery, answering 202 order_dispatched with the courier ETA.
+func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any) {
 	now := h.clk.Now()
-	var unitMarchCurrentTick int
-	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&unitMarchCurrentTick)
-	unitTravelTicks := max(1, int(math.Round(moveHours)))
-	// arrives_at must mirror the real tick-scheduled arrival (unitTravelTicks
-	// ticks × real seconds/tick), NOT moveHours-as-hours: the map interpolates
-	// the marching unit's position against this window, so a wall-clock value
-	// (~24 min for a short hop) leaves the unit frozen at its origin until the
-	// real tick arrival (6 s at TICK_SECONDS=6) teleports it home.
-	arrivesAt := now.Add(time.Duration(unitTravelTicks*tick.TickSeconds) * time.Second)
+	courierTravelTicks, courierTravelDur := messenger.CourierTravel(ctx, h.pool, payload.WorldID,
+		province.MapPosition{Q: origin.q, R: origin.r}, unitPos)
+	courierArrivesAt := now.Add(courierTravelDur)
+	var currentTick int
+	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	dueTick := currentTick + courierTravelTicks
 
-	// Atomic DB update: set unit to marching and schedule arrival event.
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not begin transaction")
@@ -393,124 +293,53 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(ctx)
 
-	// Idempotency guard: re-read status inside the transaction with FOR UPDATE.
-	var currentStatus string
+	var originQ, originR *int
+	if origin.unitID != nil {
+		originQ, originR = &origin.q, &origin.r
+	}
+	var messengerID uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT status FROM units WHERE id = $1 FOR UPDATE`, unitID,
-	).Scan(&currentStatus); err != nil {
-		writeError(w, http.StatusNotFound, "unit not found in transaction")
+		`INSERT INTO messengers
+		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at, order_payload)
+		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','order',$8,$9,$10,$11,$12,$13)
+		 RETURNING id`,
+		payload.WorldID, payload.PlayerID, origin.settlementID, origin.unitID, originQ, originR,
+		msgText, origin.q, origin.r, unitPos.Q, unitPos.R, courierArrivesAt, mustJSON(payload),
+	).Scan(&messengerID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch order runner")
 		return
 	}
-	if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
-		writeError(w, http.StatusConflict, "unit status changed; march not sent")
+	payload.MessengerID = messengerID
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, payload.WorldID, events.ScheduledOrderDelivery, payload, dueTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not schedule order delivery")
 		return
 	}
-
-	// Build stance SET clause only when provided.
-	var stanceArg *string
-	if req.Stance != "" {
-		s := req.Stance
-		stanceArg = &s
-	}
-
-	// Colonize intent + optional name ride along on the unit so the arrival
-	// handler can found a colony. NULL intent = plain march (cleared each dispatch).
-	// Explore intent captures the unit's home settlement (about to be nulled
-	// below) so the arrival handler can dispatch the return leg — see
-	// combat.UnitArrivalHandler.exploreArrived.
-	var intentArg, nameArg *string
-	var homeSettlementArg *uuid.UUID
-	if req.Intent != "" {
-		intentArg = &req.Intent
-		if req.Intent == "colonize" && req.Name != "" {
-			nameArg = &req.Name
-		}
-		if req.Intent == "explore" {
-			homeSettlementArg = u.SettlementID
-		}
-	}
-	// Amphibious assault: the ship carries intent=assault to its offshore hex so
-	// the arrival handler storms the adjacent coastal settlement with the cargo.
-	if assaultLanding {
-		a := "assault"
-		intentArg = &a
-	}
-
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET
-		   status       = 'marching',
-		   q            = $2,
-		   r            = $3,
-		   target_q     = $4,
-		   target_r     = $5,
-		   departs_at   = $6,
-		   arrives_at   = $7,
-		   settlement_id = NULL,
-		   stance       = COALESCE($8, stance),
-		   march_intent = $9,
-		   colony_name  = $10,
-		   home_settlement_id = $11,
-		   capture_mode = $12,
-		   depart_tick  = $13,
-		   arrive_tick  = $14,
-		   updated_at   = now()
-		 WHERE id = $1`,
-		unitID, originQ, originR, req.TargetQ, req.TargetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
-		unitMarchCurrentTick, unitMarchCurrentTick+unitTravelTicks,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not update unit")
-		return
-	}
-
-	// Schedule the UnitArrival event.
-	arrPayload := unit.ScheduledUnitArrivalPayload{
-		UnitID:  unitID,
-		WorldID: worldID,
-	}
-	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, unitMarchCurrentTick+unitTravelTicks); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule unit arrival")
-		return
-	}
-
 	if err := tx.Commit(ctx); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not commit march")
+		writeError(w, http.StatusInternalServerError, "could not commit order dispatch")
 		return
 	}
 
-	// Append domain event (outcome, not intention).
-	stanceStr := req.Stance
-	_, _ = h.eventStore.Append(ctx, unitID, events.StreamType(unit.StreamUnit), unit.EventUnitMarchOrdered,
-		unit.UnitMarchOrderedPayload{
-			UnitID:    unitID,
-			OriginQ:   originQ,
-			OriginR:   originR,
-			TargetQ:   req.TargetQ,
-			TargetR:   req.TargetR,
-			Stance:    stanceStr,
-			DepartsAt: now.Format(time.RFC3339),
-			ArrivesAt: arrivesAt.Format(time.RFC3339),
-		},
-		worldID, nil,
-	)
-
+	resp := map[string]any{
+		"status":             "order_dispatched",
+		"verb":               payload.Verb,
+		"unit_id":            payload.UnitID,
+		"messenger_id":       messengerID,
+		"courier_arrives_at": courierArrivesAt,
+		"courier_due_tick":   dueTick,
+	}
+	for k, v := range extra {
+		resp[k] = v
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	_ = json.NewEncoder(w).Encode(map[string]any{
-		"unit_id":    unitID,
-		"departs_at": now,
-		"arrives_at": arrivesAt,
-		// K4 tick-contract: timing expressed in world ticks (source of truth under
-		// the tick substrate), plus a derived UTC convenience. arrivesAt is already
-		// the tick-derived instant (now + travelTicks × TickSeconds), so
-		// arrives_at_utc is that same instant normalised to UTC.
-		"arrival_tick":   unitMarchCurrentTick + unitTravelTicks,
-		"duration_ticks": unitTravelTicks,
-		"arrives_at_utc": arrivesAt.UTC(),
-		"origin_q":       originQ,
-		"origin_r":       originR,
-		"target_q":       req.TargetQ,
-		"target_r":       req.TargetR,
-	})
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+// mustJSON marshals the order envelope for the messenger row; the payload is
+// built from typed structs and cannot fail to encode.
+func mustJSON(v any) []byte {
+	b, _ := json.Marshal(v)
+	return b
 }
 
 // Recall handles POST /worlds/{worldID}/units/{unitID}/recall
@@ -605,6 +434,19 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusNotFound, "target hex not found")
 			return
 		}
+		// FOW march rule — a redirect is a march order like any other; the new
+		// destination must be seen or remembered (temenos_orderlopare_plan.md
+		// Fas 0). Checked before the terrain responses below to avoid leaking
+		// what stands on an unseen hex.
+		fowTarget := province.MapPosition{Q: newTargetQ, R: newTargetR}
+		eyes := loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
+		if !province.AnyEyeSees(eyes, fowTarget, destTerrain) &&
+			!loadRememberedTiles(ctx, h.pool, worldID, playerID)[[2]int{newTargetQ, newTargetR}] {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("none of your men have ever seen (%d,%d) — a march cannot be redirected into unknown land",
+					newTargetQ, newTargetR))
+			return
+		}
 		if destTerrain == "mountain_limestone" || destTerrain == "mountain_red" {
 			writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
 			return
@@ -675,12 +517,13 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		originUnitID = &hostID
 	}
 
-	dist := province.HexDistance(province.MapPosition{Q: homeQ, R: homeR}, currentPos)
 	now := h.clk.Now()
-	messengerArrivesAt := now.Add(messenger.MessengerTravelDuration(dist))
+	recallTravelTicks, recallTravelDur := messenger.CourierTravel(ctx, h.pool, worldID,
+		province.MapPosition{Q: homeQ, R: homeR}, currentPos)
+	messengerArrivesAt := now.Add(recallTravelDur)
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	dueTick := currentTick + messenger.MessengerTravelTicks(dist)
+	dueTick := currentTick + recallTravelTicks
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
@@ -1194,136 +1037,64 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate stance value.
-	switch req.Stance {
-	case "fortify", "storm", "sentry", "none":
-		// valid
-	default:
-		writeError(w, http.StatusBadRequest, `invalid stance: must be "fortify", "storm", "sentry", or "none"`)
-		return
-	}
-
 	ctx := r.Context()
+	order := combat.StanceOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID, Stance: req.Stance}
 
-	u, err := h.store.Get(ctx, unitID)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "unit not found")
-		return
-	}
-	if u.OwnerID != playerID {
-		writeError(w, http.StatusForbidden, "not your unit")
-		return
-	}
-	if u.WorldID != worldID {
-		writeError(w, http.StatusForbidden, "unit not in this world")
-		return
-	}
-	if u.Type == unit.TypePriest {
-		writeError(w, http.StatusUnprocessableEntity, "priests cannot take a stance")
-		return
-	}
-	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-		writeError(w, http.StatusUnprocessableEntity, "naval units cannot take a stance")
-		return
-	}
-	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("unit cannot change stance while %s (must be garrison or positioned)", string(u.Status)))
-		return
-	}
-
-	// Determine new stance value and sentry coords.
-	var newStance *string
-	var newSentryQ, newSentryR *int
-	if req.Stance != "none" {
-		s := req.Stance
-		newStance = &s
-	}
-	if req.Stance == "sentry" {
-		// sentry_q/r = unit's current hex position.
-		// For garrisoned units, resolve via settlement province.
-		var hexQ, hexR int
-		if u.Q != nil && u.R != nil {
-			hexQ, hexR = *u.Q, *u.R
-		} else if u.SettlementID != nil {
-			if err := h.pool.QueryRow(ctx,
-				`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
-				*u.SettlementID,
-			).Scan(&hexQ, &hexR); err != nil {
-				writeError(w, http.StatusInternalServerError, "could not resolve unit hex for sentry")
-				return
-			}
+	// Order latency (temenos_orderlopare_plan.md Fas 3): a stance order to a
+	// field unit travels by hemerodromos from the nearest own city and applies
+	// only on delivery. Garrisoned units are distance 0 — the order originates
+	// in the city the unit sits in — and apply immediately below.
+	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
+		u.OwnerID == playerID && u.WorldID == worldID &&
+		u.Status == unit.StatusPositioned && u.SettlementID == nil &&
+		u.Q != nil && u.R != nil {
+		// Cheap pre-flights so an obviously bad order fails NOW, not by notice.
+		switch req.Stance {
+		case "fortify", "storm", "sentry", "none":
+			// valid
+		default:
+			writeError(w, http.StatusBadRequest, `invalid stance: must be "fortify", "storm", "sentry", or "none"`)
+			return
 		}
-		newSentryQ = &hexQ
-		newSentryR = &hexR
+		if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+			writeError(w, http.StatusUnprocessableEntity, "naval units cannot take a stance")
+			return
+		}
+		unitPos := province.MapPosition{Q: *u.Q, R: *u.R}
+		origin, originOK := h.resolveOrderOrigin(w, ctx, worldID, playerID, unitPos)
+		if !originOK {
+			return
+		}
+		if origin.dist > 0 {
+			h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
+				WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+				Verb: "stance", Stance: &order,
+			}, fmt.Sprintf("Hemerodromos — stance order (%s).", req.Stance),
+				origin, unitPos, map[string]any{"stance": req.Stance})
+			return
+		}
 	}
 
-	// Atomic update inside transaction with FOR UPDATE idempotency guard.
-	tx, err := h.pool.Begin(ctx)
+	// Validate+execute core shared with the order-courier delivery path
+	// (temenos_orderlopare_plan.md Fas 3) — internal/combat.SetStance.
+	res, err := combat.SetStance(ctx, h.pool, h.eventStore, order)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not begin transaction")
+		var rej *combat.OrderReject
+		if errors.As(err, &rej) {
+			writeError(w, rej.Status, rej.Reason)
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "stance change failed")
 		return
 	}
-	defer tx.Rollback(ctx)
-
-	var currentStatus string
-	var currentStance *string
-	if err := tx.QueryRow(ctx,
-		`SELECT status, stance FROM units WHERE id = $1 FOR UPDATE`, unitID,
-	).Scan(&currentStatus, &currentStance); err != nil {
-		writeError(w, http.StatusNotFound, "unit not found in transaction")
-		return
-	}
-	if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
-		writeError(w, http.StatusConflict, "unit status changed; stance not applied")
-		return
-	}
-
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET
-		   stance     = $2,
-		   sentry_q   = $3,
-		   sentry_r   = $4,
-		   updated_at = now()
-		 WHERE id = $1`,
-		unitID, newStance, newSentryQ, newSentryR,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not update stance")
-		return
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not commit stance change")
-		return
-	}
-
-	// Record stance-before for event payload.
-	stanceBefore := ""
-	if currentStance != nil {
-		stanceBefore = *currentStance
-	}
-	stanceAfter := req.Stance
-	if req.Stance == "none" {
-		stanceAfter = ""
-	}
-	_, _ = h.eventStore.Append(ctx, unitID, events.StreamType(unit.StreamUnit), unit.EventUnitStanceChanged,
-		unit.UnitStanceChangedPayload{
-			UnitID:       unitID,
-			WorldID:      worldID,
-			StanceBefore: stanceBefore,
-			StanceAfter:  stanceAfter,
-			SentryQ:      newSentryQ,
-			SentryR:      newSentryR,
-		}, worldID, nil,
-	)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"unit_id":  unitID,
-		"stance":   stanceAfter,
-		"sentry_q": newSentryQ,
-		"sentry_r": newSentryR,
+		"unit_id":  res.UnitID,
+		"stance":   res.Stance,
+		"sentry_q": res.SentryQ,
+		"sentry_r": res.SentryR,
 	})
 }
 
