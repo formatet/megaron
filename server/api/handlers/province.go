@@ -901,7 +901,15 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			spec.CostSilver, settlementID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
+			// Name the shortfall (need/have) like writeGoodsError does for goods —
+			// a bare "insufficient silver" left a silver-poor Wanax guessing.
+			var have float64
+			_ = tx.QueryRow(r.Context(),
+				`SELECT settled(amount, rate, calc_tick) FROM settlement_goods
+				  WHERE settlement_id = $1 AND good_key = 'silver'`,
+				settlementID).Scan(&have)
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("insufficient silver (need %.0f, have %.0f)", spec.CostSilver, have))
 			return
 		}
 	}
@@ -1500,7 +1508,14 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			totalKharis, playerID, worldID,
 		)
 		if err2 != nil || tag.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient kharis")
+			// Name the shortfall (need/have) — kharis lives on the per-Wanax pool.
+			var have float64
+			_ = tx.QueryRow(r.Context(),
+				`SELECT settled(kharis_amount, kharis_rate, kharis_calc_tick)
+				   FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+				playerID, worldID).Scan(&have)
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("insufficient kharis (need %.1f, have %.1f)", totalKharis, have))
 			return
 		}
 	}
