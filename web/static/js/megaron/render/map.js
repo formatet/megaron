@@ -7,12 +7,10 @@ import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS } from '.
 const TERRAIN_BASE = {
   deep_sea:           {c0:'#1A5276', c1:'#154360'},
   coastal_sea:        {c0:'#3A9AD9', c1:'#2E86C1'},
-  coast_beach:        {c0:'#E8C97A', c1:'#D4B060'},
   plains:             {c0:'#8AAF3A', c1:'#74952C'},
   river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
   river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
   forest_olive_grove: {c0:'#5A8C30', c1:'#447020'},
-  forest_olive_cypress:{c0:'#4A7A20', c1:'#386010'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
   mountain_limestone: {c0:'#E0D4B8', c1:'#C8BCA0'},
   mountain_red:       {c0:'#C8906A', c1:'#B07050'},
