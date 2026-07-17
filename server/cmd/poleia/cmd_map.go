@@ -68,16 +68,29 @@ func mapCmd() *cobra.Command {
 				prov = resolved
 			}
 
-			// 1. Own coordinates from status.
-			statusData, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov))
-			if err != nil {
-				return err
+			// 1. Own coordinates from status — or, in founder-fas (ingen
+			// province än), from the wandering host's position.
+			var oq, or int
+			if prov == "" {
+				fp, err := fetchFoundingStatus(c)
+				if err != nil {
+					return err
+				}
+				if !fp.Active || fp.Q == nil || fp.R == nil {
+					return fmt.Errorf("no province in config and no active founder phase — rejoin the world or set province_id")
+				}
+				oq, or = *fp.Q, *fp.R
+			} else {
+				statusData, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov))
+				if err != nil {
+					return err
+				}
+				var status struct {
+					MapTile struct{ Q, R int } `json:"map_tile"`
+				}
+				_ = json.Unmarshal(statusData, &status)
+				oq, or = status.MapTile.Q, status.MapTile.R
 			}
-			var status struct {
-				MapTile struct{ Q, R int } `json:"map_tile"`
-			}
-			_ = json.Unmarshal(statusData, &status)
-			oq, or := status.MapTile.Q, status.MapTile.R
 
 			// 2. All visible tiles (three tiers: live / remembered / fog — see
 			// temenos_synlighet.md). Fog tiles carry only q/r + frontier.

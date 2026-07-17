@@ -39,6 +39,25 @@ func statusCmd() *cobra.Command {
 				}
 				prov = resolved
 			}
+			// Founder-fas: ingen province än — det vandrande hostet ÄR statusen.
+			if prov == "" {
+				if jsonMode {
+					data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/founding/status", cfg.WorldID))
+					if err != nil {
+						return err
+					}
+					printRawJSON(data)
+					return nil
+				}
+				fp, err := fetchFoundingStatus(c)
+				if err != nil {
+					return err
+				}
+				if fp.Active {
+					return printFoundingStatus(fp)
+				}
+				return fmt.Errorf("no province in config and no active founder phase — rejoin the world or set province_id")
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov)
 			data, err := c.get(path)
 			if err != nil {

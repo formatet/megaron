@@ -58,6 +58,34 @@ func foundingStoreLine(label string, s foundingStore, tickSeconds float64) strin
 	return fmt.Sprintf("%s: %.0f kvar — %.0f speldygn (%s verklig tid)", label, s.Amount, gameDays, real)
 }
 
+// printFoundingStatus renders the wandering host's status block — shared by
+// `founding status` and the founder-fallback in `status`/`map` (a Wanax
+// without a settlement must still see and act, feedback_keryx_surface).
+func printFoundingStatus(fp *foundingStatusResp) error {
+	pos := "okänd"
+	if fp.Q != nil && fp.R != nil {
+		pos = fmt.Sprintf("(%d,%d)", *fp.Q, *fp.R)
+	}
+	hostID := ""
+	if fp.HostUnitID != nil {
+		hostID = *fp.HostUnitID
+	}
+	fmt.Println("Nomadic Host — ditt folk på vandring")
+	fmt.Printf("  %d folk · kan inte strida · syn 1 hex · position %s\n", fp.Population, pos)
+	fmt.Printf("  %s\n", foundingStoreLine("Grain (eskortens ranson)", fp.Grain, fp.TickSeconds))
+	fmt.Printf("  %s\n", foundingStoreLine("Silver (eskortens sold)", fp.Silver, fp.TickSeconds))
+	kohort := "kohorter"
+	if fp.SpearmenInField == 1 {
+		kohort = "kohort"
+	}
+	fmt.Printf("  %d Spearmen-%s i fält · budbärare fria att sända\n", fp.SpearmenInField, kohort)
+	fmt.Println("\nNästa steg:")
+	fmt.Printf("  poleia unit march --unit %s --q <q> --r <r>   # vandra\n", hostID)
+	fmt.Println("  poleia founding settle                       # grunda huvudstaden där hostet står")
+	fmt.Println("  poleia message --from-host --to <stad> --text \"...\"")
+	return nil
+}
+
 func foundingCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "founding",
@@ -93,28 +121,7 @@ func foundingStatusCmd() *cobra.Command {
 				fmt.Println("Ingen aktiv founder-fas — huvudstaden är grundad (se: poleia status).")
 				return nil
 			}
-			pos := "okänd"
-			if fp.Q != nil && fp.R != nil {
-				pos = fmt.Sprintf("(%d,%d)", *fp.Q, *fp.R)
-			}
-			hostID := ""
-			if fp.HostUnitID != nil {
-				hostID = *fp.HostUnitID
-			}
-			fmt.Println("Nomadic Host — ditt folk på vandring")
-			fmt.Printf("  %d folk · kan inte strida · syn 1 hex · position %s\n", fp.Population, pos)
-			fmt.Printf("  %s\n", foundingStoreLine("Grain (eskortens ranson)", fp.Grain, fp.TickSeconds))
-			fmt.Printf("  %s\n", foundingStoreLine("Silver (eskortens sold)", fp.Silver, fp.TickSeconds))
-			kohort := "kohorter"
-			if fp.SpearmenInField == 1 {
-				kohort = "kohort"
-			}
-			fmt.Printf("  %d Spearmen-%s i fält · budbärare fria att sända\n", fp.SpearmenInField, kohort)
-			fmt.Println("\nNästa steg:")
-			fmt.Printf("  poleia unit march --unit %s --q <q> --r <r>   # vandra\n", hostID)
-			fmt.Println("  poleia founding settle                       # grunda huvudstaden där hostet står")
-			fmt.Println("  poleia message --from-host --to <stad> --text \"...\"")
-			return nil
+			return printFoundingStatus(fp)
 		},
 	}
 }
