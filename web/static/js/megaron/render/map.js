@@ -1112,7 +1112,14 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
   }
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
-  bindMarchButton(document.getElementById('ip-march-btn'), dest, isSea ? 'ship' : 'land');
+  // Founder phase: marching the host to an empty hex FOUNDS there — so hovering
+  // the march button previews the 7-hex catchment (bug 3 shape), not the FOV
+  // band. Every other case keeps the plain march affordance.
+  if (!isSea && State.founderPhase) {
+    bindCatchmentPreviewButton(document.getElementById('ip-march-btn'), dest);
+  } else {
+    bindMarchButton(document.getElementById('ip-march-btn'), dest, isSea ? 'ship' : 'land');
+  }
 
   if (!isSea && State.founderPhase) {
     const fp = State.founderPhase;
@@ -1186,6 +1193,13 @@ async function openHostPanel(h, tile) {
      <button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Grunda huvudstaden här</button>
      <span class="msg-err" id="ip-settle-err"></span>`;
   document.getElementById('inspect-panel').style.display = 'flex';
+
+  // Glow the 7 catchment hexes the host would found on, for as long as the Host
+  // panel is open — the map then shows exactly the ground the forecast below
+  // describes, so "granska catchmenten före grundning" (design 2026-07-15) is
+  // visible, not just tabular. Cleared by openHexPanel on the next hex click.
+  State.catchmentPreview = { q: h.q, r: h.r };
+  State.dirty = true;
 
   // The forecast for the hex the host STANDS on — settle founds here, nowhere else.
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
