@@ -25,6 +25,7 @@ import (
 	"github.com/poleia/server/internal/auth"
 	"github.com/poleia/server/internal/clock"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/messenger"
 )
 
 func TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex(t *testing.T) {
@@ -117,6 +118,34 @@ func TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex(t *testing.T) {
 	if rec.Code != http.StatusAccepted {
 		t.Fatalf("March(colonize own hex) = %d %q, want 202 (a positioned unit must be able to colonize the hex it stands on)",
 			rec.Code, rec.Body.String())
+	}
+
+	// Order latency (temenos_orderlopare_plan.md Fas 2): the colonist stands in
+	// the field, so the order travels by hemerodromos from the nearest own city
+	// and executes only on delivery. The 202 is a dispatch receipt; deliver the
+	// courier to get the march started.
+	var dispatchResp struct {
+		Status      string    `json:"status"`
+		MessengerID uuid.UUID `json:"messenger_id"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &dispatchResp); err != nil {
+		t.Fatalf("decode dispatch response: %v", err)
+	}
+	if dispatchResp.Status != "order_dispatched" {
+		t.Fatalf("dispatch status = %q, want order_dispatched (field unit orders travel by runner)", dispatchResp.Status)
+	}
+	var rawPayload []byte
+	if err := pool.QueryRow(ctx,
+		`SELECT payload FROM scheduled_events
+		 WHERE event_type = 'OrderDelivery' AND (payload->>'messenger_id')::uuid = $1
+		   AND processed_at IS NULL AND failed_at IS NULL`,
+		dispatchResp.MessengerID,
+	).Scan(&rawPayload); err != nil {
+		t.Fatalf("load scheduled OrderDelivery: %v", err)
+	}
+	odh := messenger.NewOrderDeliveryHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
+	if err := odh.Handle(ctx, events.ScheduledEvent{Payload: rawPayload}); err != nil {
+		t.Fatalf("deliver order: %v", err)
 	}
 
 	var intent, status string

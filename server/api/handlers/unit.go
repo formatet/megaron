@@ -157,8 +157,9 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// dispatchMarchCourier sends a march order to a field unit by physical runner
-// (temenos_orderlopare_plan.md Fas 2). Cheap pre-flights only (target exists,
+// dispatchMarchCourier sends a march order to a field unit by physical runner —
+// a hemerodromos, the Greek day-runner (Timothy 2026-07-17); DB identifier stays
+// kind='order' (temenos_orderlopare_plan.md Fas 2). Cheap pre-flights only (target exists,
 // FOW) — the delivery handler re-validates authoritatively against the unit's
 // state when the courier arrives; an order that can no longer be carried out
 // fails with an OrderFailed notice, never silently. No pending-order guard:
@@ -221,7 +222,7 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 			order.WorldID, order.PlayerID,
 		).Scan(&hostID, &q, &r); err != nil {
 			writeError(w, http.StatusUnprocessableEntity,
-				"you have no city (and no wandering host) to dispatch an order runner from")
+				"you have no city (and no wandering host) to dispatch a hemerodromos from")
 			return
 		}
 		hid := hostID
@@ -282,7 +283,7 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','order',$8,$9,$10,$11,$12,$13)
 		 RETURNING id`,
 		order.WorldID, order.PlayerID, originSettlementID, originUnitID, originQ, originR,
-		fmt.Sprintf("March order — to (%d,%d).", order.TargetQ, order.TargetR),
+		fmt.Sprintf("Hemerodromos — march order to (%d,%d).", order.TargetQ, order.TargetR),
 		bestQ, bestR, unitPos.Q, unitPos.R, courierArrivesAt, orderJSON,
 	).Scan(&messengerID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch order runner")

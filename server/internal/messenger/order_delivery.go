@@ -1,7 +1,7 @@
 package messenger
 
-// OrderDelivery: an order courier physically reaching its unit
-// (temenos_orderlopare_plan.md Fas 2). The runner carries the order envelope;
+// OrderDelivery: an order courier — a hemerodromos, pl. hemerodromoi (Timothy
+// 2026-07-17) — physically reaching its unit (temenos_orderlopare_plan.md Fas 2). The runner carries the order envelope;
 // the order executes only at delivery — command is never instant.
 //
 // Latest-delivered-wins (Timothy 2026-07-16): dispatch never guards on a
