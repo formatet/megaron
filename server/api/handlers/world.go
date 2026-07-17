@@ -1027,7 +1027,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT ma.id, ma.intent,
 		        op.map_q, op.map_r, op.terrain_type, tp.map_q, tp.map_r, tp.terrain_type,
-		        ma.departs_at, ma.arrives_at,
+		        ma.departs_at, ma.arrives_at, ma.depart_tick, ma.arrive_tick,
 		        (COALESCE(ma.ship,0) + COALESCE(ma.war_galley,0) + COALESCE(ma.merchantman,0)) > 0 AS is_naval
 		 FROM marching_armies ma
 		 JOIN provinces op ON op.id = ma.origin_id
@@ -1050,7 +1050,12 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		TargetR   int       `json:"target_r"`
 		DepartsAt time.Time `json:"departs_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
-		IsNaval   bool      `json:"is_naval,omitempty"`
+		// Tick-anchored timing (mig 089, tid Fas B): authoritative under tempo
+		// changes where the ISO snapshots go stale. Nil on pre-089 rows — the
+		// client falls back to arrives_at (ui/time.js msUntil).
+		DepartTick  *int `json:"depart_tick,omitempty"`
+		ArrivalTick *int `json:"arrival_tick,omitempty"`
+		IsNaval     bool `json:"is_naval,omitempty"`
 		// Path is the A* route [[q,r],...] the army actually follows (via sea for
 		// naval, around mountains for land) — the client animates along it instead
 		// of a straight origin→target line, so the walker is drawn where the unit
@@ -1072,7 +1077,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		var originTerrain, targetTerrain string
 		if err := rows.Scan(&m.ID, &m.Intent,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.TargetQ, &m.TargetR, &targetTerrain,
-			&m.DepartsAt, &m.ArrivesAt, &m.IsNaval); err != nil {
+			&m.DepartsAt, &m.ArrivesAt, &m.DepartTick, &m.ArrivalTick, &m.IsNaval); err != nil {
 			continue
 		}
 		if !visible(m.OriginQ, m.OriginR, originTerrain) && !visible(m.TargetQ, m.TargetR, targetTerrain) {

@@ -171,13 +171,13 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO marching_armies
 		 (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
-		  war_galley, merchantman, intent, departs_at, arrives_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12)
+		  war_galley, merchantman, intent, departs_at, arrives_at, depart_tick, arrive_tick)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12,$13,$14)
 		 RETURNING id`,
 		p.WorldID, p.TargetID, p.OriginID,
 		p.Spearman, p.WarChariot, p.Priest, p.Ship, p.EliteInfantry,
 		p.WarGalley, p.Merchantman,
-		now, returnsAt,
+		now, returnsAt, currentTick, dueTick,
 	).Scan(&returnMarchID); err != nil {
 		return fmt.Errorf("create return march: %w", err)
 	}
@@ -284,13 +284,13 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO marching_armies
 			 (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
-			  war_galley, merchantman, intent, departs_at, arrives_at)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12)
+			  war_galley, merchantman, intent, departs_at, arrives_at, depart_tick, arrive_tick)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12,$13,$14)
 			 RETURNING id`,
 			p.WorldID, p.ProvinceID, p.HomeID,
 			p.Spearman, p.WarChariot, p.Priest, p.Ship, p.EliteInfantry,
 			p.WarGalley, p.Merchantman,
-			now, returnsAt,
+			now, returnsAt, currentTick, dueTick,
 		).Scan(&returnMarchID); err != nil {
 			return fmt.Errorf("create garrison return march: %w", err)
 		}
