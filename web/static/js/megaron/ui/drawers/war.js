@@ -1,4 +1,5 @@
 import { State, ownCapital } from '../../state.js';
+import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
 import { esc } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
@@ -355,9 +356,15 @@ function renderUnitCard(u) {
   // Pending order (Fas 5): a hemerodromos is running to this unit — the order
   // executes only on delivery; surface the courier ETA on the card.
   const runner = (State.messengerData || []).find(m => m.own && m.kind === 'order' && m.order_unit_id === u.id);
-  const pendingOrder = runner
-    ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Hemerodromos en route — order arrives ' + arrivalHTML(runner.arrives_at) + '</div>'
-    : '';
+  let pendingOrder = '';
+  if (runner) {
+    // Once the runner has arrived, the order is being applied server-side (a
+    // worker poll away) — say "delivering", not the stale "en route" ETA.
+    const arrived = serverNow() >= new Date(runner.arrives_at).getTime();
+    pendingOrder = arrived
+      ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Hemerodromos levererar ordern…</div>'
+      : '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Hemerodromos en route — order arrives ' + arrivalHTML(runner.arrives_at) + '</div>';
+  }
 
   // Stance badge
   const stanceBadge = u.stance

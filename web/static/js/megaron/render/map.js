@@ -473,9 +473,12 @@ function drawCaravan(ctx, x, y, walkPhase) {
 // runner, kind='order') wears a crimson cloak so it reads as command, not
 // diplomacy; own couriers additionally carry a small gold pennant so it is
 // visible WHOSE runner it is (temenos_orderlopare_plan.md Fas 5).
-function drawMessenger(ctx, x, y, walkPhase, isOrder, isOwn) {
+function drawMessenger(ctx, x, y, walkPhase, isOrder, isOwn, delivering) {
   ctx.save();
-  const bob = walkPhase < 2 ? 0 : 1;
+  // Delivering: the runner has reached the unit and stopped to hand over the
+  // scroll — freeze the gait so it doesn't jog in place (Timothy 2026-07-17)
+  // during the worker-poll window before the order applies server-side.
+  const bob = (delivering || walkPhase < 2) ? 0 : 1;
   ctx.fillStyle = isOrder ? '#A03A2A' : '#6B8B4A';
   ctx.fillRect(x-1, y-5+bob, 3, 5);
   ctx.fillStyle = isOrder ? '#6E2418' : '#3A5A28';
@@ -483,11 +486,22 @@ function drawMessenger(ctx, x, y, walkPhase, isOrder, isOwn) {
   ctx.arc(x+0.5, y-7+bob, 2, 0, Math.PI*2);
   ctx.fill();
   ctx.fillStyle = '#F2E8C0';
-  ctx.fillRect(x+1, y-6+bob, 1, 3);
+  // Scroll: held forward as a handover gesture while delivering, else at the side.
+  if (delivering) ctx.fillRect(x+2, y-5, 3, 2);
+  else            ctx.fillRect(x+1, y-6+bob, 1, 3);
   if (isOwn) {
     ctx.fillStyle = '#D8B84A';
     ctx.fillRect(x-2, y-10+bob, 1, 3);
     ctx.fillRect(x-1, y-10+bob, 2, 1);
+  }
+  if (delivering) {
+    // Faint gold pulse — a deliberate "handing over the order" beat.
+    ctx.globalAlpha = 0.3 + 0.25 * Math.sin(State.animFrame * 0.12);
+    ctx.strokeStyle = '#D8B84A';
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.arc(x+0.5, y-4, 5, 0, Math.PI*2);
+    ctx.stroke();
   }
   ctx.restore();
 }
@@ -813,13 +827,17 @@ function render() {
     const progress = Math.min(1, Math.max(0, (now - sent) / (arrives - sent)));
     const pos = hexPathPx(m.origin_q, m.origin_r, m.dest_q, m.dest_r, progress);
     const visible = isTileVisible(pos.q, pos.r);
+    // An order runner at journey's end hasn't "failed to move" — it has arrived
+    // and is delivering; the unit starts marching once the worker applies the
+    // order (a poll away). Draw a settled handover instead of a jog-in-place.
+    const delivering = m.kind === 'order' && progress >= 1;
     if (m.own) {
       ctx.save();
       if (!visible) ctx.globalAlpha = 0.45;
-      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase, m.kind === 'order', true);
+      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase, m.kind === 'order', true, delivering);
       ctx.restore();
     } else if (visible) {
-      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase, m.kind === 'order', false);
+      drawMessenger(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase, m.kind === 'order', false, delivering);
     }
   }
 
