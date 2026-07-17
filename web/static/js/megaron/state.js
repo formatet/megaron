@@ -42,6 +42,7 @@ export const State = {
   lastMouse: null,
   selectedHex: null,   // {q, r} of the clicked hex — any hex, not just settled ones
   fovPreview: null,    // {q, r, kind} while hovering a march affordance button; kind: 'land' | 'ship'
+  catchmentPreview: null, // {q, r} while previewing a colonize target's 7-hex catchment
   animFrame: 0,
   dirty: true,
   lastSeaTick: -1,

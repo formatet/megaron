@@ -37,12 +37,23 @@ export function closeMarchCtx() {
   if (chk) chk.checked = false;
   const prevEl = document.getElementById('mctx-colonize-preview');
   if (prevEl) { prevEl.style.display = 'none'; prevEl.innerHTML = ''; }
+  // The menu is gone — so is any catchment preview it armed (Bugg 3).
+  State.catchmentPreview = null;
+  State.dirty = true;
 }
 
 export async function onColonizeToggle() {
   const chk = document.getElementById('mctx-colonize-chk');
   const nameEl = document.getElementById('mctx-colony-name');
   if (nameEl) nameEl.style.display = chk && chk.checked ? 'block' : 'none';
+
+  // 7-hex catchment tint (render §3.6) while the colonize box is armed — NOT
+  // the FOV band (that's the plain march button's affordance, bindMarchButton
+  // in render/map.js). Mirrors the box's own on/off, independent of whether
+  // the forecast text below (colonize-preview element) exists.
+  State.catchmentPreview = (chk && chk.checked && State.marchCtxDest)
+    ? { q: State.marchCtxDest.q, r: State.marchCtxDest.r } : null;
+  State.dirty = true;
 
   // Colonize catchment forecast (DEL A parity with keryx): show the founding
   // grain balance before the march is committed. Best-effort — a failed fetch
@@ -115,7 +126,37 @@ export function renderColonizePreviewHTML(p) {
     if (rate > 0) extras.push(`${gk} ~${rate.toFixed(0)}/day`);
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
+
+  // Per-hex breakdown (DEL C — terräng-luckan): the aggregate above answers
+  // "will it feed itself"; this answers "what IS the catchment" hex by hex, so
+  // the Host panel lets a founder actually inspect the ground before settling
+  // instead of only seeing the one hex the host stands on. FOW-safe: a
+  // catchment entry only carries terrain/deposit fields when known:true — an
+  // unknown hex has nothing here to leak. Server orders `catchment` as
+  // [centre, ...6 neighbours] (world.go ColonizePreview) — entry 0 is tagged
+  // "centrum" for readability, but nothing above depends on that ordering.
+  const hexRows = (p.catchment || []).map((ce, i) => {
+    const centerTag = i === 0 ? ' <span style="color:var(--text-dim)">(centrum)</span>' : '';
+    if (!ce.known) return `<div>? <span style="color:var(--text-dim)">outforskad</span>${centerTag}</div>`;
+    const hexDeps = [];
+    if (ce.copper_deposit) hexDeps.push('koppar');
+    if (ce.tin_deposit)    hexDeps.push('tenn');
+    if (ce.silver_deposit) hexDeps.push('silver');
+    if (ce.cedar_deposit)  hexDeps.push('ceder');
+    const depStr = hexDeps.length ? ` <span style="color:var(--text-dim)">· ${hexDeps.join(', ')}</span>` : '';
+    return `<div>${catchmentTerrainLabel(ce.terrain)}${depStr}${centerTag}</div>`;
+  }).join('');
+  if (hexRows) {
+    html += `<div style="font-size:.7rem;line-height:1.4;margin-top:.4rem;border-top:1px solid var(--border);padding-top:.3rem">${hexRows}</div>`;
+  }
   return html;
+}
+
+// Human terrain label for the per-hex catchment breakdown above. Not the full
+// TERRAIN_LABELS map from render/map.js (not importable here without pulling
+// in the whole canvas renderer) — same fallback shape as its terrainLabel().
+function catchmentTerrainLabel(t) {
+  return t.charAt(0).toUpperCase() + t.slice(1).replaceAll('_', ' ');
 }
 
 let lastCtxPos = null;
