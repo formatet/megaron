@@ -1,5 +1,6 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
+import { track } from '../telemetry.js';
 import { esc } from './format.js';
 import { arrivalHTML } from './time.js';
 import { MusicPlayer } from './misc.js';
@@ -308,6 +309,9 @@ export async function sendMarch() {
 
   document.getElementById('mctx-send').disabled = false;
   const failed = results.filter(r => !r.ok);
+  if (failed.length < results.length) {
+    track('march_sent', { intent: colonize ? 'colonize' : State.marchCtxDest.isSea ? 'explore' : (stance || 'march') });
+  }
   // Arrival line (Fas B): the march response carries the authoritative
   // arrival_tick + derived arrives_at_utc (K4). Same destination for every
   // unit sent, so the first success speaks for all of them. The panel stays

@@ -1,5 +1,6 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
+import { track } from '../../telemetry.js';
 import { esc } from '../format.js';
 import { fmtEta } from '../time.js';
 import { serverNow } from '../../clock.js';
@@ -114,6 +115,7 @@ export async function okRite(prayerID) {
   });
   const d = await r.json().catch(function(){return {};});
   if (r.ok) {
+    track('rite_performed', { rite: prayerID || '' });
     alert(d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
     loadKultDrawer();
   } else {

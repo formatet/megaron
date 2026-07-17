@@ -1,5 +1,11 @@
 import { BASE } from './config.js';
 import { noteServerDate } from './clock.js';
+import { track } from './telemetry.js';
+
+// Strip UUIDs from a path so retry/fail events aggregate by shape
+// (`/api/v1/worlds/:id/units`) instead of exploding per world/unit.
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+const telemetryPath = url => url.split('?')[0].replace(UUID_RE, ':id');
 
 // fetchAuth — the one place a Bearer token is attached to an API request.
 // Call sites pass a path relative to the API root (e.g. `/api/v1/worlds/...`);
@@ -31,17 +37,21 @@ export async function fetchAuth(url, opts = {}) {
       noteServerDate(res.headers.get('Date'));
       if (res.status >= 500 && attempt < backoffs.length) {
         setNetStatus(true);
+        track('fetch_retry', { path: telemetryPath(url), status: res.status });
         await sleep(backoffs[attempt]);
         continue;
       }
+      if (res.status >= 500) track('fetch_fail', { path: telemetryPath(url), status: res.status });
       if (res.status < 500) setNetStatus(false); // reachable → clear the pill
       return res;
     } catch (e) {
       if (attempt < backoffs.length) {
         setNetStatus(true);
+        track('fetch_retry', { path: telemetryPath(url), status: 0 });
         await sleep(backoffs[attempt]);
         continue;
       }
+      track('fetch_fail', { path: telemetryPath(url), status: 0 });
       throw e; // retries exhausted (or a mutation) — propagate as before
     }
   }

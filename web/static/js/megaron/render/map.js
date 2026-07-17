@@ -1,5 +1,6 @@
 import { State, ownCapital } from '../state.js';
 import { fetchAuth } from '../api.js';
+import { track } from '../telemetry.js';
 import { serverNow } from '../clock.js';
 import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS } from '../config.js';
 
@@ -1236,6 +1237,7 @@ async function openHostPanel(h, tile) {
       body: JSON.stringify({}),
     });
     if (res.ok) {
+      track('settle');
       // The world changed shape: new province, new eyes, host gone. Reload
       // outright — founding happens once per world, a full refresh is honest.
       location.reload();

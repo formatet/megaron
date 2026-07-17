@@ -1,5 +1,6 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
+import { track } from '../../telemetry.js';
 import { esc, fmtAgo } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
@@ -323,6 +324,8 @@ export async function dipSendInThread(cid, destId) {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
+    if (body.trade_offer) track('trade_offer', { kind: body.trade_offer.kind });
+    else track('messenger_sent');
     showStatus('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at), true);
     if (textEl) textEl.value = '';
     fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));

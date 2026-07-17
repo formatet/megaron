@@ -2,6 +2,7 @@ import { BASE } from './config.js';
 import { State } from './state.js';
 import { serverNow } from './clock.js';
 import { fetchAuth } from './api.js';
+import { track } from './telemetry.js';
 import { notifText, notifIcon, colonyFoundedGrainLine } from './ui/format.js';
 
 // ── WebSocket — real-time province updates ────────────────────────────────
@@ -17,6 +18,9 @@ import { notifText, notifIcon, colonyFoundedGrainLine } from './ui/format.js';
 // handler (via checkWsLiveness) can reach the live socket.
 let ws = null;
 let firstConnect = true;
+// Wall-clock of the last close, so onopen can report the reconnect downtime as a
+// WS-fix kvittensmätare (megaron_plan_umami.md). null before the first close.
+let closedAt = null;
 // Watchdog thresholds. The server pings + heartbeats every ~25 s (notify/hub.go);
 // if nothing at all arrives for STALE_MS the path is dead (silent NAT/WG drop
 // with no FIN), so force-close to trigger the reconnect loop.
@@ -29,6 +33,7 @@ const WATCHDOG_MS = 20000;
 export function checkWsLiveness() {
   if (ws && ws.readyState === WebSocket.OPEN &&
       State.lastWsMsgAt && Date.now() - State.lastWsMsgAt > STALE_MS) {
+    track('ws_dead_watchdog');
     ws.close();
   }
 }
@@ -83,6 +88,7 @@ export function initWS() {
     ws = new WebSocket(`${wsBase}/ws/${State.WORLD_ID}`);
     ws.onopen = () => {
       State.lastWsMsgAt = Date.now();
+      if (closedAt) { track('ws_reconnect', { downtime_s: Math.round((Date.now() - closedAt) / 1000) }); closedAt = null; }
       if (!firstConnect) {
         // Re-anchor the tick↔realtime mapping (Fas B): a reconnect is exactly
         // when the server may have restarted and paused the world, which is
@@ -162,7 +168,7 @@ export function initWS() {
       // An open drawer showing units/province/trade data should follow the update.
       if (DATA_KINDS.has(msg.kind)) reloadDrawerDebounced();
     };
-    ws.onclose = () => setTimeout(connect, 5000);
+    ws.onclose = () => { closedAt = Date.now(); setTimeout(connect, 5000); };
   }
   connect();
 

@@ -1,6 +1,7 @@
 import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
+import { track } from '../../telemetry.js';
 import { esc } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
@@ -235,6 +236,7 @@ async function warRecruit(provinceID, unitType) {
   const data = await res.json().catch(() => ({}));
   const resEl = document.getElementById('war-recruit-res');
   if (res.ok) {
+    track('recruit_started', { unit: unitType });
     // Reload war drawer to show updated training queue
     loadWarDrawer();
   } else if (resEl) {
@@ -259,6 +261,7 @@ export async function warRecruitShip(unitType) {
   const data = await res.json().catch(() => ({}));
   const resEl = document.getElementById('war-recruit-res');
   if (res.ok) {
+    track('recruit_started', { unit: unitType });
     if (resEl) {
       const built = (data.names && data.names[0]) ? data.names[0] : unitType;
       resEl.style.color = 'var(--text-dim)';
@@ -533,6 +536,7 @@ export async function unitMarchSend() {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
+    track('march_sent', { intent: stance || 'march' });
     closeMarchPanel();
     loadWarDrawer();
   } else {

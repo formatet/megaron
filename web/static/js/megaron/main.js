@@ -12,6 +12,7 @@
 import { BASE } from './config.js';
 import { State } from './state.js';
 import { serverNow } from './clock.js';
+import { track } from './telemetry.js';
 import { initWS, fullResync, checkWsLiveness } from './ws.js';
 import {
   initMap, refreshTiles, loadMap, zoom, resetView, toggleActivityOverlay,
@@ -62,6 +63,7 @@ export function openDrawer(name) {
   if (tr) tr.classList.add('active');
   document.getElementById('map-dim').classList.add('visible');
   State.activeDrawer = name;
+  track('drawer_open', { name });
   showLawagatasBrief(name);
   loadDrawerContent(name);
 }

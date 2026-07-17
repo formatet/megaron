@@ -1,5 +1,6 @@
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
+import { track } from '../../telemetry.js';
 import { fmtSilver } from '../format.js';
 import { arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
@@ -289,6 +290,7 @@ export async function startBuild() {
   );
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
+    track('build_started', { building: btype });
     resultEl.style.color = 'var(--safe)';
     resultEl.textContent = `${_BLD_LBL[btype]||btype} queued.`;
     // Refresh only the buildings section — avoids resetting the active tab
