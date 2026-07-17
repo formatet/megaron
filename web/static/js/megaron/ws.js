@@ -19,9 +19,15 @@ export function initWS() {
   const wsBase = BASE ? BASE.replace(/^http/, 'ws') : `${proto}//${location.host}`;
   let ws;
   let firstConnect = true;
+  // Watchdog thresholds. The server pings + heartbeats every ~25 s (notify/hub.go);
+  // if nothing at all arrives for STALE_MS the path is dead (silent NAT/WG drop that
+  // never sends a FIN), so force-close to trigger the reconnect below.
+  const STALE_MS = 65000;
+  const WATCHDOG_MS = 20000;
   function connect() {
     ws = new WebSocket(`${wsBase}/ws/${State.WORLD_ID}`);
     ws.onopen = () => {
+      State.lastWsMsgAt = Date.now();
       if (!firstConnect) {
         // Re-anchor the tick↔realtime mapping (Fas B): a reconnect is exactly
         // when the server may have restarted and paused the world, which is
@@ -45,6 +51,7 @@ export function initWS() {
       'UnitAttrition','UnitDeserted','OfferAccepted','OfferDeclined','OfferExpired',
     ]);
     ws.onmessage = e => {
+      State.lastWsMsgAt = Date.now();
       const msg = JSON.parse(e.data);
       if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; window.MusicPlayer.update(); }));
@@ -105,4 +112,14 @@ export function initWS() {
     ws.onclose = () => setTimeout(connect, 5000);
   }
   connect();
+
+  // Watchdog: a silently-dead path (NAT/WG drop with no FIN) leaves ws in OPEN
+  // forever, so onclose never fires and reconnect never runs. Close it ourselves
+  // once frames stop arriving past STALE_MS; onclose then schedules the retry.
+  setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN &&
+        State.lastWsMsgAt && Date.now() - State.lastWsMsgAt > STALE_MS) {
+      ws.close();
+    }
+  }, WATCHDOG_MS);
 }

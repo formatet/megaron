@@ -8,11 +8,37 @@ import (
 	"encoding/json"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// WebSocket liveness timings. These are TRANSPORT deadlines: the OS netpoller
+// compares them against the real monotonic/wall clock, so they use the time
+// package directly and NOT clock.Clock. The pause-aware game clock must never
+// drive a socket deadline — its accumulated pause offset would push the deadline
+// into the past after any absorbed downtime and kill every connection instantly.
+// Time here is plumbing, not game logic (same reasoning as auth token expiry in
+// internal/auth/service.go).
+const (
+	// pingPeriod — how often the write pump emits a protocol ping + app heartbeat.
+	// Chosen well under Cloudflare's ~100 s idle-WS cap and common proxy defaults.
+	pingPeriod = 25 * time.Second
+	// pongWait — the read side gives up if no pong (or any frame) arrives within
+	// this. Must exceed pingPeriod so a healthy peer always refreshes it first.
+	pongWait = 60 * time.Second
+	// writeWait — max time a single write may block before the peer is dead.
+	writeWait = 10 * time.Second
+	// readLimit — we never expect large client→server frames; cap to bound memory.
+	readLimit = 512
+)
+
+// heartbeatFrame is the app-level liveness message. Browser JS cannot observe
+// protocol pings, so this is the client's only way to measure liveness (its
+// watchdog refreshes on any inbound frame; the onmessage if-chain ignores it).
+var heartbeatFrame, _ = json.Marshal(Msg{Kind: "Heartbeat"})
 
 // Msg is a JSON-encodable push message sent to all clients in a world.
 type Msg struct {
@@ -94,8 +120,30 @@ func (h *Hub) Broadcast(worldID uuid.UUID, msg Msg) {
 	}
 }
 
-// Register adds a new WebSocket client to the hub and starts its write pump.
-// Blocks until the connection is closed.
+// unregister removes c from the hub and tears its connection down exactly once.
+// Ordering is load-bearing: delete-then-close under the same lock guarantees no
+// in-flight Broadcast can send on a closed channel — Broadcast holds RLock while
+// iterating, so it either sees c with an open send channel or does not see c at
+// all. Idempotent via the membership check: both pumps call it on exit, and
+// whichever loses the race is a no-op.
+func (h *Hub) unregister(c *client) {
+	h.mu.Lock()
+	_, ok := h.clients[c]
+	if ok {
+		delete(h.clients, c)
+		close(c.send)
+	}
+	h.mu.Unlock()
+	if ok {
+		c.conn.Close() // unblocks the other pump's in-flight Read/Write
+	}
+}
+
+// Register adds a new WebSocket client and runs its read pump, blocking until
+// the connection is closed. A companion write pump goroutine drains broadcasts
+// and emits periodic pings + heartbeats. Either pump exiting calls unregister,
+// which closes the connection and so unblocks the other pump — no goroutine
+// leak, no double close, no send on a closed channel.
 func (h *Hub) Register(conn *websocket.Conn, worldID uuid.UUID) {
 	c := &client{conn: conn, worldID: worldID, send: make(chan []byte, 32), hub: h}
 
@@ -103,26 +151,49 @@ func (h *Hub) Register(conn *websocket.Conn, worldID uuid.UUID) {
 	h.clients[c] = struct{}{}
 	h.mu.Unlock()
 
-	defer func() {
-		h.mu.Lock()
-		delete(h.clients, c)
-		h.mu.Unlock()
-		conn.Close()
-	}()
+	defer h.unregister(c) // covers normal read-pump exit and any panic
 
-	// Write pump — drain send channel to the WebSocket.
+	// Write pump — the ONLY goroutine that writes to conn (gorilla requires a
+	// single concurrent writer), so broadcasts, pings and heartbeats serialise here.
 	go func() {
-		for raw := range c.send {
-			if err := conn.WriteMessage(websocket.TextMessage, raw); err != nil {
-				return
+		ticker := time.NewTicker(pingPeriod)
+		defer ticker.Stop()
+		for {
+			select {
+			case raw, ok := <-c.send:
+				if !ok {
+					return // read pump tore the client down
+				}
+				_ = conn.SetWriteDeadline(time.Now().Add(writeWait))
+				if err := conn.WriteMessage(websocket.TextMessage, raw); err != nil {
+					h.unregister(c)
+					return
+				}
+			case <-ticker.C:
+				_ = conn.SetWriteDeadline(time.Now().Add(writeWait))
+				if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+					h.unregister(c)
+					return
+				}
+				_ = conn.SetWriteDeadline(time.Now().Add(writeWait))
+				if err := conn.WriteMessage(websocket.TextMessage, heartbeatFrame); err != nil {
+					h.unregister(c)
+					return
+				}
 			}
 		}
 	}()
 
-	// Read pump — keep connection alive, detect client disconnect.
+	// Read pump — detects disconnect and keeps the read deadline fresh. A browser
+	// auto-pongs our pings, so the pong handler is what keeps a healthy connection
+	// alive; silence past pongWait ⇒ dead peer and ReadMessage errors out.
+	conn.SetReadLimit(readLimit)
+	_ = conn.SetReadDeadline(time.Now().Add(pongWait))
+	conn.SetPongHandler(func(string) error {
+		return conn.SetReadDeadline(time.Now().Add(pongWait))
+	})
 	for {
 		if _, _, err := conn.ReadMessage(); err != nil {
-			close(c.send)
 			return
 		}
 	}

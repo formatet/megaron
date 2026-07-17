@@ -48,6 +48,11 @@ export const State = {
   lastSeaTick: -1,
   activityOverlay: false,
 
+  // WebSocket liveness — timestamp (ms) of the last frame received on the WS,
+  // heartbeats included. The ws.js watchdog closes a socket that goes silent
+  // past the server's ping interval so a dead NAT/WG path is retried.
+  lastWsMsgAt: 0,
+
   // City drawer + generic drawer system.
   cityViewID: null, // province ID of the settlement the City drawer currently shows
   activeDrawer: null,
