@@ -273,10 +273,18 @@ export async function sendMarch() {
   // open so the ETA is readable — Escape/click-away closes it as usual.
   const first = results.find(r => r.ok);
   const etaEl = document.getElementById('mctx-eta');
-  const showEta = first && etaEl && (first.data.arrives_at_utc || first.data.arrives_at);
+  // A field unit's order travels by hemerodromos (temenos_orderlopare_plan.md
+  // Fas 5): the 202 is a dispatch receipt with the COURIER's ETA — the march
+  // begins only on delivery. Garrisoned units keep the immediate arrival line.
+  const dispatched = first && first.data.status === 'order_dispatched';
+  const showEta = first && etaEl && (dispatched || first.data.arrives_at_utc || first.data.arrives_at);
   if (showEta) {
-    etaEl.innerHTML = '✓ Marching — arrives ' +
-      arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
+    etaEl.innerHTML = dispatched
+      ? '🏃 Hemerodromos carries the order — reaches the unit ' +
+        arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
+        '; the march begins on delivery'
+      : '✓ Marching — arrives ' +
+        arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
     etaEl.style.display = 'block';
   }
   if (failed.length) {
@@ -297,6 +305,8 @@ export async function sendMarch() {
   // per-unit movement layer; marches keeps the legacy layer/music in sync.
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; MusicPlayer.update(); }));
+  // …and messengers, so a dispatched hemerodromos appears on the map at once.
+  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMarchCtx(); });
