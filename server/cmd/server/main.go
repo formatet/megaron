@@ -140,6 +140,7 @@ func main() {
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
+	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub)

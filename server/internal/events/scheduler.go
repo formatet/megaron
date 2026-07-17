@@ -60,6 +60,10 @@ const (
 	ScheduledInterceptScan ScheduledEventType = "InterceptScan"
 	// C1 — unit model; handler registered in C2+.
 	ScheduledUnitArrival ScheduledEventType = "UnitArrival"
+	// Naval sentry patrol: a ship posted on sentry at a coastal_sea hex auto-returns
+	// home when its patrol timer fires (SentryPatrolTicks after arrival). No recall —
+	// the timer is the only control (self-terminating sea order).
+	ScheduledSentryReturn ScheduledEventType = "SentryReturn"
 	// C-collapse — city exhausted to ≤100 pop; warband spawned.
 	ScheduledCollapseSettlement ScheduledEventType = "CollapseSettlement"
 	// W4e — daily grain+silver upkeep for all active units.

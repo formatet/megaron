@@ -22,12 +22,55 @@ func unitCmd() *cobra.Command {
 	cmd.AddCommand(
 		unitListCmd(),
 		unitMarchCmd(),
+		unitSentryCmd(),
 		unitRecallCmd(),
 		unitRedirectCmd(),
 		unitStanceCmd(),
 		unitLoadCmd(),
 		unitUnloadCmd(),
 	)
+	return cmd
+}
+
+// ---- unit sentry -------------------------------------------------------------
+
+// unitSentryCmd posts a naval unit on sentry patrol at a coastal_sea hex. It is a
+// thin convenience over `unit march --intent sentry`: the ship sails to the hex,
+// holds there watching the approaches (fog-of-war + caravan interception) and
+// turns for home on its own when the patrol timer runs out. No recall — the timer
+// is the only control (self-terminating sea order).
+func unitSentryCmd() *cobra.Command {
+	var unitID string
+	var q, r int
+	cmd := &cobra.Command{
+		Use:   "sentry",
+		Short: "Post a ship on sentry patrol at a coastal-sea hex (auto-returns after its patrol)",
+		Long: `Send a naval unit to a shallow-water (coastal_sea) hex you have seen and hold it
+there on sentry: it watches the approaches (fog-of-war) and intercepts enemy
+caravans passing within reach. There is no recall — the ship turns for home on
+its own when the patrol timer runs out.`,
+		Example: "  poleia unit sentry --unit <id> --q 8 --r -3",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
+			data, err := c.post(path, map[string]any{"q": q, "r": r, "intent": "sentry"})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			fmt.Printf("Sentry order dispatched: ship %s → (%d,%d). It will patrol, then sail home on its own.\n", unitID, q, r)
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit id (required)")
+	cmd.Flags().IntVar(&q, "q", 0, "target hex Q (required)")
+	cmd.Flags().IntVar(&r, "r", 0, "target hex R (required)")
+	_ = cmd.MarkFlagRequired("unit")
+	_ = cmd.MarkFlagRequired("q")
+	_ = cmd.MarkFlagRequired("r")
 	return cmd
 }
 

@@ -140,6 +140,14 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		return h.exploreReturned(ctx, tx, u, destQ, destR, worldID)
 	}
 
+	// Sentry intent: a ship reaches its patrol hex and HOLDS there (positioned +
+	// sentry stance) rather than turning home immediately like explore — a patrol
+	// timer (ScheduledSentryReturn) turns it home later. The return leg itself
+	// reuses the explore_return machinery.
+	if u.marchIntent != nil && *u.marchIntent == "sentry" {
+		return h.sentryArrived(ctx, tx, u, destQ, destR, worldID)
+	}
+
 	// Assault intent: a laden galley has reached the sea hex next to an enemy
 	// coastal settlement. The ship cannot enter land, so its cargo storms the
 	// beach — the landing is resolved with the cargo's strength, not the ship's.
@@ -279,30 +287,40 @@ func (h *UnitArrivalHandler) exploreArrived(
 		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
 	}
 
-	// Resolve the return target hex the same way March dispatch resolves a
-	// departure hex: the home settlement's own province hex for land units,
-	// or its nearest sea neighbour for naval units (a ship can never legally
-	// occupy the settlement's land hex — see unit.go March's origin comment).
+	return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID)
+}
+
+// dispatchReturnHome turns a field unit around and marches it back to its home
+// settlement's departure hex (the settlement's own province hex for land units,
+// its nearest sea neighbour for naval). Shared by the explore auto-return
+// (exploreArrived) and the naval sentry patrol timer (HandleSentryReturn): both
+// need the identical "route home via A*, mark marching intent=explore_return,
+// schedule the return arrival" dance. fromQ/fromR is the hex the unit turns home
+// FROM. Assumes u.homeSettlementID != nil (callers guard it).
+func (h *UnitArrivalHandler) dispatchReturnHome(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, fromQ, fromR int, worldID uuid.UUID,
+) error {
 	var homeQ, homeR int
 	if err := tx.QueryRow(ctx,
 		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
 		*u.homeSettlementID,
 	).Scan(&homeQ, &homeR); err != nil {
-		return fmt.Errorf("exploreArrived: load home settlement province: %w", err)
+		return fmt.Errorf("dispatchReturnHome: load home settlement province: %w", err)
 	}
 	if u.category == "naval" {
 		if seaQ, seaR, found, seaErr := province.NearestSeaNeighbor(ctx, tx, worldID, homeQ, homeR); seaErr != nil {
-			return fmt.Errorf("exploreArrived: resolve naval return hex: %w", seaErr)
+			return fmt.Errorf("dispatchReturnHome: resolve naval return hex: %w", seaErr)
 		} else if found {
 			homeQ, homeR = seaQ, seaR
 		} else {
-			slog.Warn("explore return: home settlement has no adjacent sea hex, using its land hex", "unit", u.id, "settlement", *u.homeSettlementID)
+			slog.Warn("return home: home settlement has no adjacent sea hex, using its land hex", "unit", u.id, "settlement", *u.homeSettlementID)
 		}
 	}
 
 	// Route home via A* — the same passability graph the outbound leg proved.
 	_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
-		province.MapPosition{Q: destQ, R: destR},
+		province.MapPosition{Q: fromQ, R: fromR},
 		province.MapPosition{Q: homeQ, R: homeR},
 		u.category,
 	)
@@ -312,20 +330,20 @@ func (h *UnitArrivalHandler) exploreArrived(
 	} else {
 		// Defensive fallback: the outbound march already proved passability
 		// between these regions, so this should not happen.
-		slog.Warn("explore return: FindPath failed, falling back to straight line", "unit", u.id, "err", pathErr)
-		dist := province.HexDistance(province.MapPosition{Q: destQ, R: destR}, province.MapPosition{Q: homeQ, R: homeR})
+		slog.Warn("return home: FindPath failed, falling back to straight line", "unit", u.id, "err", pathErr)
+		dist := province.HexDistance(province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: homeQ, R: homeR})
 		if dist < 1 {
 			dist = 1
 		}
-		var destTerrain string
+		var fromTerrain string
 		_ = tx.QueryRow(ctx,
 			`SELECT terrain_type FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
-			worldID, destQ, destR,
-		).Scan(&destTerrain)
-		if destTerrain == "" {
-			destTerrain = "plains"
+			worldID, fromQ, fromR,
+		).Scan(&fromTerrain)
+		if fromTerrain == "" {
+			fromTerrain = "plains"
 		}
-		moveHours = province.TerrainMoveHours(destTerrain) * float64(dist)
+		moveHours = province.TerrainMoveHours(fromTerrain) * float64(dist)
 	}
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
@@ -351,27 +369,30 @@ func (h *UnitArrivalHandler) exploreArrived(
 		   depart_tick   = $8,
 		   arrive_tick   = $9,
 		   settlement_id = NULL,
+		   stance        = NULL,
+		   sentry_q      = NULL,
+		   sentry_r      = NULL,
 		   march_intent  = $7,
 		   updated_at    = now()
 		 WHERE id = $1`,
-		u.id, destQ, destR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks,
+		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks,
 	); err != nil {
-		return fmt.Errorf("exploreArrived: dispatch return march: %w", err)
+		return fmt.Errorf("dispatchReturnHome: dispatch return march: %w", err)
 	}
 
 	if h.scheduler == nil {
-		return fmt.Errorf("exploreArrived: no scheduler configured, cannot dispatch return leg")
+		return fmt.Errorf("dispatchReturnHome: no scheduler configured, cannot dispatch return leg")
 	}
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
-		return fmt.Errorf("exploreArrived: schedule return arrival: %w", err)
+		return fmt.Errorf("dispatchReturnHome: schedule return arrival: %w", err)
 	}
 
 	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitExploreReturned,
 		unit.UnitExploreReturnedPayload{
 			UnitID:           u.id,
-			Q:                destQ,
-			R:                destR,
+			Q:                fromQ,
+			R:                fromR,
 			HomeSettlementID: *u.homeSettlementID,
 			ArrivesAt:        arrivesAt.Format(time.RFC3339),
 		}, worldID, nil)
@@ -379,13 +400,13 @@ func (h *UnitArrivalHandler) exploreArrived(
 	if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitExploreReturned", 5, map[string]any{
 			"unit_id":    u.id,
-			"q":          destQ,
-			"r":          destR,
+			"q":          fromQ,
+			"r":          fromR,
 			"arrives_at": arrivesAt,
 		})
 	}
 
-	slog.Info("unit reached explore target, turning for home", "unit", u.id, "q", destQ, "r", destR, "home_q", homeQ, "home_r", homeR)
+	slog.Info("field unit turning for home", "unit", u.id, "from_q", fromQ, "from_r", fromR, "home_q", homeQ, "home_r", homeR)
 	return nil
 }
 
@@ -440,6 +461,109 @@ func (h *UnitArrivalHandler) exploreReturned(
 
 	slog.Info("unit returned home from explore", "unit", u.id, "settlement", *u.homeSettlementID)
 	return nil
+}
+
+// SentryPatrolTicks is how long a naval sentry holds its patrol hex before the
+// auto-return timer turns it home. Tunable (game-hours of patrol); 24 ticks =
+// one game-day. No recall verb exists — this timer is the only control, so a
+// sentry order can never strand a ship ("self-terminating sea orders").
+const SentryPatrolTicks = 24
+
+// sentryArrived posts a naval unit on patrol: it reached its coastal_sea target
+// and now HOLDS there (status='positioned' + stance='sentry' + sentry_q/r) — the
+// same posture SetStance produces, so the existing InterceptScan seizes enemy
+// caravans passing within reach and the ship projects fog-of-war over the
+// approaches. A ScheduledSentryReturn timer (SentryPatrolTicks out) turns it home
+// via dispatchReturnHome; there is no recall, the timer is the only control.
+func (h *UnitArrivalHandler) sentryArrived(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if h.scheduler == nil {
+		return fmt.Errorf("sentryArrived: no scheduler configured, cannot arm patrol timer")
+	}
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status       = 'positioned',
+		   q            = $2,
+		   r            = $3,
+		   stance       = 'sentry',
+		   sentry_q     = $2,
+		   sentry_r     = $3,
+		   target_q     = NULL,
+		   target_r     = NULL,
+		   departs_at   = NULL,
+		   arrives_at   = NULL,
+		   depart_tick  = NULL,
+		   arrive_tick  = NULL,
+		   march_intent = NULL,
+		   updated_at   = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR,
+	); err != nil {
+		return fmt.Errorf("sentryArrived: post sentry: %w", err)
+	}
+
+	var currentTick int
+	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	retPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledSentryReturn, retPayload, currentTick+SentryPatrolTicks); err != nil {
+		return fmt.Errorf("sentryArrived: arm patrol timer: %w", err)
+	}
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+			"unit_id": u.id,
+			"q":       destQ,
+			"r":       destR,
+			"status":  "positioned",
+			"stance":  "sentry",
+		})
+	}
+
+	slog.Info("naval unit posted on sentry patrol", "unit", u.id, "q", destQ, "r", destR, "return_tick", currentTick+SentryPatrolTicks)
+	return nil
+}
+
+// HandleSentryReturn is the scheduled handler for ScheduledSentryReturn: the
+// patrol timer fired, so turn the ship home. Idempotent — if the unit is no
+// longer holding sentry (it moved, was intercepted/destroyed, or already turned
+// home) it is a no-op. Mirrors Handle: FOR UPDATE, guard, then dispatch home.
+func (h *UnitArrivalHandler) HandleSentryReturn(ctx context.Context, e events.ScheduledEvent) error {
+	var payload unit.ScheduledUnitArrivalPayload
+	if err := json.Unmarshal(e.Payload, &payload); err != nil {
+		return fmt.Errorf("unmarshal sentry return payload: %w", err)
+	}
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	var u unitRow
+	if err := tx.QueryRow(ctx,
+		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode
+		 FROM units WHERE id = $1 FOR UPDATE`,
+		payload.UnitID,
+	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil // unit gone (disbanded/destroyed) — nothing to return
+		}
+		return fmt.Errorf("load sentry unit: %w", err)
+	}
+
+	// Idempotent: only a unit still holding its sentry patrol turns home here.
+	if u.status != "positioned" || u.stance == nil || *u.stance != "sentry" || u.homeSettlementID == nil {
+		return tx.Commit(ctx)
+	}
+
+	if err := h.dispatchReturnHome(ctx, tx, u, u.q, u.r, payload.WorldID); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }
 
 // foundColony establishes a new colony settlement at an empty destination hex.
