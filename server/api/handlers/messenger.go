@@ -400,24 +400,17 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// The sender: an active founder phase with the host still on the map. The
-	// host's position is frozen onto the messenger row as its departure point
-	// (origin_q/origin_r, mig 087) — the host may walk on, or found and dissolve,
-	// while the messenger travels.
-	var hostID uuid.UUID
-	var oQ, oR int
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT fp.host_unit_id, u.q, u.r
-		 FROM founder_phase fp
-		 JOIN units u ON u.id = fp.host_unit_id
-		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
-		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
-		worldID, playerID,
-	).Scan(&hostID, &oQ, &oR)
-	if err != nil {
+	// host's CURRENT position (interpolated while marching — a marching unit's
+	// stored q/r is its origin hex, Timothys fynd 2026-07-17) is frozen onto
+	// the messenger row as its departure point (origin_q/origin_r, mig 087) —
+	// the host may walk on, or found and dissolve, while the messenger travels.
+	hostID, hostPos, hostOK := hostCurrentPos(r.Context(), h.pool, h.clk.Now(), worldID, playerID)
+	if !hostOK {
 		writeError(w, http.StatusConflict,
 			"you have no wandering host — send messengers from a settlement instead")
 		return
 	}
+	oQ, oR := hostPos.Q, hostPos.R
 
 	var dQ, dR int
 	err = h.pool.QueryRow(r.Context(),

@@ -221,6 +221,39 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 		origin, unitPos, map[string]any{"target_q": order.TargetQ, "target_r": order.TargetR})
 }
 
+// hostCurrentPos resolves the founder host's CURRENT position: its stored hex,
+// or — while the host is marching — its interpolated position along its route.
+// A marching unit's stored (q,r) is its ORIGIN hex (updated only on arrival),
+// so reading it raw made orders and messengers depart from where the host LAST
+// stood still (Timothys fynd 2026-07-17). Mirrors loadLiveEyes' marching-unit
+// eye: FindPath over the unit's own category + interpolatedEyePos.
+func hostCurrentPos(ctx context.Context, pool *pgxpool.Pool, now time.Time, worldID, playerID uuid.UUID) (uuid.UUID, province.MapPosition, bool) {
+	var hostID uuid.UUID
+	var status, category string
+	var q, r int
+	var targetQ, targetR *int
+	var departsAt, arrivesAt *time.Time
+	if err := pool.QueryRow(ctx,
+		`SELECT fp.host_unit_id, u.status, u.category, u.q, u.r, u.target_q, u.target_r, u.departs_at, u.arrives_at
+		 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
+		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
+		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
+		worldID, playerID,
+	).Scan(&hostID, &status, &category, &q, &r, &targetQ, &targetR, &departsAt, &arrivesAt); err != nil {
+		return uuid.Nil, province.MapPosition{}, false
+	}
+	pos := province.MapPosition{Q: q, R: r}
+	if status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
+		path, _, ok, err := province.FindPath(ctx, pool, worldID, pos,
+			province.MapPosition{Q: *targetQ, R: *targetR}, category)
+		if err == nil && ok && len(path) > 0 {
+			pos = interpolatedEyePos(now, *departsAt, *arrivesAt, path)
+		}
+		// FindPath failure: best-effort fallback to the stored origin hex.
+	}
+	return hostID, pos, true
+}
+
 // orderOrigin is the resolved dispatching city — the NEAREST own settlement to
 // the unit (Timothy 2026-07-16) — or, in founder phase, the wandering host.
 type orderOrigin struct {
@@ -256,21 +289,14 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 		rows.Close()
 	}
 	if !found {
-		var hostID uuid.UUID
-		var q, r int
-		if err := h.pool.QueryRow(ctx,
-			`SELECT fp.host_unit_id, u.q, u.r
-			 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
-			 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
-			   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
-			worldID, playerID,
-		).Scan(&hostID, &q, &r); err != nil {
+		hostID, pos, ok := hostCurrentPos(ctx, h.pool, h.clk.Now(), worldID, playerID)
+		if !ok {
 			writeError(w, http.StatusUnprocessableEntity,
 				"you have no city (and no wandering host) to dispatch a hemerodromos from")
 			return o, false
 		}
 		hid := hostID
-		o = orderOrigin{unitID: &hid, q: q, r: r, dist: province.HexDistance(province.MapPosition{Q: q, R: r}, unitPos)}
+		o = orderOrigin{unitID: &hid, q: pos.Q, r: pos.R, dist: province.HexDistance(pos, unitPos)}
 	}
 	return o, true
 }
@@ -503,18 +529,13 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	).Scan(&homeSettlementID, &homeQ, &homeR); err == nil {
 		originSettlementID = &homeSettlementID
 	} else {
-		var hostID uuid.UUID
-		if err := h.pool.QueryRow(ctx,
-			`SELECT fp.host_unit_id, u.q, u.r
-			 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
-			 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
-			   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
-			worldID, playerID,
-		).Scan(&hostID, &homeQ, &homeR); err != nil {
+		hostID, pos, ok := hostCurrentPos(ctx, h.pool, h.clk.Now(), worldID, playerID)
+		if !ok {
 			writeError(w, http.StatusInternalServerError, "could not resolve a settlement to dispatch the order from")
 			return
 		}
-		originUnitID = &hostID
+		hid := hostID
+		originUnitID, homeQ, homeR = &hid, pos.Q, pos.R
 	}
 
 	now := h.clk.Now()
