@@ -717,11 +717,8 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 			fmt.Sprintf("cargo unit must be garrisoned to embark (status: %s)", string(cargo.Status)))
 		return
 	}
-	if cargo.Size < 100 {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("cargo unit is still forming (%d/100); must be at full strength to embark", cargo.Size))
-		return
-	}
+	// No size gate: 'garrison' status already excludes forming/training units, and
+	// a battle-worn cohort (size < 100 after losses) is a real unit that can embark.
 	// Both must be in the same settlement.
 	if cargo.SettlementID == nil || *cargo.SettlementID != *ship.SettlementID {
 		writeError(w, http.StatusUnprocessableEntity, "ship and cargo unit must be in the same settlement")

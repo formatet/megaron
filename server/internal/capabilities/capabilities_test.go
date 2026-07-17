@@ -132,6 +132,22 @@ func TestCanColonize_UnlockedWithDeployableUnit(t *testing.T) {
 	}
 }
 
+// A battle-worn garrison cohort (size < 100 after combat/desertion losses) is a
+// finished, deployable unit — status is the gate, not size. Regression for the
+// bug where the size>=100 filter treated a bloody veteran as an unfinished recruit.
+func TestCanColonize_UnlockedWithBattleWornUnit(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	f.exec(t, `INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
+	           VALUES ($1, $2, 'spearman', 'land', 60, 0, 'garrison', $3)`,
+		f.worldID, f.playerID, f.settlementID)
+
+	v := canColonize(f.cc(fakeClock(time.Now())))
+	if !v.Available {
+		t.Fatalf("colonize must be unlocked with a battle-worn (size 60) garrison unit: %+v", v.Requirements)
+	}
+}
+
 // ---- craft (bronze: foundry + copper/tin) ------------------------------------
 
 func TestCanCraft_LockedWithoutFoundry(t *testing.T) {

@@ -6,16 +6,15 @@ import (
 	"github.com/poleia/server/internal/province"
 )
 
-// canMarch requires a unit at this settlement able to march: a full-strength
-// (>=100) land unit, or any garrisoned naval unit (ships have no size gate).
-// TODO: Fas 3 unify with handler gate.
+// canMarch requires a garrisoned unit at this settlement. Status is the gate, not
+// size: a 'garrison' unit is finished and can march (a battle-worn cohort under
+// 100 men included); 'forming'/'training' units are still maturing and excluded.
 func canMarch(cc checkContext) Verb {
 	var n int
 	if cc.hasSettlement() {
 		_ = cc.pool.QueryRow(cc.ctx,
 			`SELECT count(*) FROM units
-			 WHERE settlement_id = $1 AND owner_id = $2 AND status = 'garrison'
-			   AND (category = 'naval' OR size >= 100)`,
+			 WHERE settlement_id = $1 AND owner_id = $2 AND status = 'garrison'`,
 			cc.settlementID, cc.playerID,
 		).Scan(&n)
 	}
@@ -23,9 +22,9 @@ func canMarch(cc checkContext) Verb {
 	return verb("march", CategoryMilitary,
 		"Order a garrisoned unit to march to a hex you have seen (live or remembered); intent \"explore\" may push into unseen land.",
 		[]Requirement{
-			req("a deployable unit garrisoned here (land >=100 men, or any ship)", ok,
+			req("a garrisoned unit here", ok,
 				fmt.Sprintf("%d deployable unit(s) here", n),
-				"recruit more of the same land type here to reach 100 men, or build/recruit a ship"),
+				"recruit or build a unit here first — only garrisoned units can march"),
 		})
 }
 
@@ -135,18 +134,18 @@ func (cc checkContext) settlementCapRequirement() Requirement {
 }
 
 // canColonize is the keystone example from temenos_capabilities.md: a
-// deployable land unit (garrison, size>=100) plus headroom under the
-// per-Wanax settlement cap.
+// garrisoned (deployable) land unit plus headroom under the per-Wanax
+// settlement cap.
 func canColonize(cc checkContext) Verb {
 	deployable := cc.deployableLandUnits()
 	deployableOK := deployable > 0
 
 	return verb("colonize", CategoryMilitary,
-		"March a full-strength land unit to an empty hex with intent=colonize to found a new settlement there.",
+		"March a garrisoned land unit to an empty hex with intent=colonize to found a new settlement there.",
 		[]Requirement{
-			req("a deployable land unit garrisoned here (>=100 men)", deployableOK,
+			req("a deployable land unit garrisoned here", deployableOK,
 				fmt.Sprintf("%d/1 deployable", deployable),
-				"recruit 100 men of one land type in this settlement, then march it with --intent colonize"),
+				"recruit a land unit in this settlement, then march it with --intent colonize"),
 			cc.settlementCapRequirement(),
 		})
 }

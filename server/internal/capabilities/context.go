@@ -95,9 +95,10 @@ func (cc checkContext) population() int {
 	return pop
 }
 
-// deployableLandUnits counts this settlement's garrisoned land units at full
-// strength (size >= 100) — the unit a colonize/march order can actually use.
-// TODO: Fas 3 unify with handler gate.
+// deployableLandUnits counts this settlement's garrisoned land units — the unit
+// a colonize/march order can actually use. Status is the truth: 'garrison' means
+// finished and deployable, so a battle-worn cohort (size < 100 after losses) still
+// counts; only 'forming'/'training' units are excluded.
 func (cc checkContext) deployableLandUnits() int {
 	if !cc.hasSettlement() {
 		return 0
@@ -106,7 +107,7 @@ func (cc checkContext) deployableLandUnits() int {
 	_ = cc.pool.QueryRow(cc.ctx,
 		`SELECT count(*) FROM units
 		 WHERE settlement_id = $1 AND owner_id = $2
-		   AND status = 'garrison' AND category = 'land' AND size >= 100`,
+		   AND status = 'garrison' AND category = 'land'`,
 		cc.settlementID, cc.playerID,
 	).Scan(&n)
 	return n
