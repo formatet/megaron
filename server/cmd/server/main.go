@@ -48,7 +48,18 @@ func main() {
 	defer cancel()
 
 	dbURL := mustEnv("DATABASE_URL")
-	pool, err := pgxpool.New(ctx, dbURL)
+	poolCfg, err := pgxpool.ParseConfig(dbURL)
+	if err != nil {
+		slog.Error("parse database config", "err", err)
+		os.Exit(1)
+	}
+	// pgx defaults MaxConns to max(4, nproc) = 4 on CT 126 — the fan-out
+	// bottleneck: a burst of WS events queues behind 4 connections and trips the
+	// 5 s handler timeouts on /units, /provinces (UnitArrival). Lift the ceiling;
+	// Postgres max_connections default 100 leaves ample headroom.
+	poolCfg.MaxConns = 16
+	poolCfg.MinConns = 2
+	pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
 	if err != nil {
 		slog.Error("connect to database", "err", err)
 		os.Exit(1)

@@ -41,6 +41,17 @@ function reloadDrawerDebounced() {
   drawerTimer = setTimeout(() => window.reloadActiveDrawer && window.reloadActiveDrawer(), 1000);
 }
 
+// Coalesce event-triggered refetches per endpoint: a burst of WS events collapses
+// to one fetch per endpoint per ~2 s, so load scales with events, not events×
+// clients. The 30 s poll (render/map.js) is the backstop. Latency-sensitive UI
+// (chips, fog) stays immediate below — only the fetches wait out the window.
+const refetchScheduled = {};
+function coalesce(key, fn, ms = 2000) {
+  if (refetchScheduled[key]) return;
+  refetchScheduled[key] = true;
+  setTimeout(() => { refetchScheduled[key] = false; fn(); }, ms);
+}
+
 // WS event kinds that mutate units/province/march/trade/messenger state — an open
 // drawer showing that data should rebuild after them.
 const DATA_KINDS = new Set([
@@ -94,11 +105,11 @@ export function initWS() {
       State.lastWsMsgAt = Date.now();
       const msg = JSON.parse(e.data);
       if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; window.MusicPlayer.update(); }));
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; window.MusicPlayer.update(); }));
+        coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; window.MusicPlayer.update(); })));
+        coalesce('marches', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; window.MusicPlayer.update(); })));
       }
       if (msg.kind === 'MessengerArrival') {
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+        coalesce('messengers', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; })));
         window.addNotifChip('diplomacy', '✉', msg.payload?.message || 'Messenger arrived', 'now');
       }
       if (msg.kind === 'ArmyArrival') {
@@ -119,7 +130,7 @@ export function initWS() {
         window.addNotifChip('city', '🏛', notifText('ColonyFounded', p) + (grainLine ? ' — ' + grainLine : ''), 'now');
       }
       if (msg.kind === 'TradeCaravanArrival') {
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
+        coalesce('trades', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; })));
         window.addNotifChip('trade', '🐂', 'Caravan arrived', 'now');
       }
       if (msg.kind === 'KharisEvent') {
@@ -128,7 +139,7 @@ export function initWS() {
       if (msg.kind === 'UnitAttrition' || msg.kind === 'UnitDeserted') {
         // Units bleeding out from grain/silver shortage — previously silent.
         window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+        coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
       }
       if (['OfferAccepted','OfferDeclined','OfferExpired'].includes(msg.kind)) {
         // Trade offer resolution — the offer's originator (see economy/trade.go,
@@ -142,11 +153,11 @@ export function initWS() {
         // position changed. Refresh the fog map and the unit layer immediately
         // rather than waiting for the 30 s poll.
         window.refreshTiles();
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+        coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
       }
       if (PERSISTENT_KINDS.has(msg.kind)) {
-        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/notifications?unread=true`)
-          .then(r => r.ok && r.json().then(d => window.updateNotifBadge(d.unread || 0)));
+        coalesce('notifications', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/notifications?unread=true`)
+          .then(r => r.ok && r.json().then(d => window.updateNotifBadge(d.unread || 0))));
       }
       // An open drawer showing units/province/trade data should follow the update.
       if (DATA_KINDS.has(msg.kind)) reloadDrawerDebounced();
