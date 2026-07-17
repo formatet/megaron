@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/poleia/server/internal/world"
 )
+
+func envInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		n, err := strconv.Atoi(v)
+		if err != nil {
+			log.Fatalf("%s: not an integer: %q", key, v)
+		}
+		return n
+	}
+	return def
+}
 
 func main() {
 	dbURL := os.Getenv("DATABASE_URL")
@@ -47,7 +59,7 @@ func main() {
 	// Create world
 	id := uuid.New()
 	seed := time.Now().UnixNano()
-	width, height := 56, 40
+	width, height := envInt("MAP_WIDTH", 56), envInt("MAP_HEIGHT", 40)
 
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO worlds (id, name, map_seed, map_width, map_height, status, state)
@@ -87,6 +99,7 @@ func main() {
 	pool.QueryRow(ctx, "SELECT COUNT(*) FROM map_tiles WHERE world_id = $1 AND tin_deposit", id).Scan(&tinCount)
 
 	fmt.Printf("✓ World created: %s\n", id)
+	fmt.Printf("✓ Map: %dx%d (%d tiles)\n", width, height, len(tiles))
 	fmt.Printf("✓ Tin deposits: %d\n", tinCount)
 	if tinCount < 2 {
 		fmt.Printf("⚠️  WARNING: Tin < 2 — reseed again!\n")
