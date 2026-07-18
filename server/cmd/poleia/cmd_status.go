@@ -3,12 +3,52 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/unit"
 	"github.com/spf13/cobra"
 )
+
+// unusedCatchmentDeposits returns the ore deposit types present in a settlement's
+// 7-hex catchment (server-computed top-level "catchment_deposits" on the province
+// response) that have no matching extraction building yet — "mine" services both
+// copper and tin, "silver_mine" services silver (see api/handlers/province.go's
+// build-gate: BuildingType == "mine" || "silver_mine"). Cedar has no mine-equivalent
+// gate, so it is intentionally not flagged here.
+//
+// P1a (soak 2026-07-18): `status` only ever showed Copper/Tin as a PRODUCED good
+// (after a mine already existed) — a player who never built one saw no signal that
+// an ore sat unused in their own catchment, waiting to be mined.
+func unusedCatchmentDeposits(catchmentDeposits []any, buildings []any) []string {
+	hasMine := false
+	hasSilverMine := false
+	for _, it := range buildings {
+		m, _ := it.(map[string]any)
+		switch m["type"] {
+		case "mine":
+			hasMine = true
+		case "silver_mine":
+			hasSilverMine = true
+		}
+	}
+	var unused []string
+	for _, d := range catchmentDeposits {
+		ds, _ := d.(string)
+		switch ds {
+		case "copper", "tin":
+			if !hasMine {
+				unused = append(unused, ds)
+			}
+		case "silver":
+			if !hasSilverMine {
+				unused = append(unused, ds)
+			}
+		}
+	}
+	return unused
+}
 
 // localDone parses an RFC3339 (UTC) completion timestamp and formats it in the
 // player's local time, matching `unit march`'s ETA display — a raw UTC string
@@ -241,6 +281,16 @@ func statusCmd() *cobra.Command {
 				printRes("Copper", "copper", false)
 				printRes("Tin", "tin", false)
 				printRes("Bronze", "bronze", false)
+			}
+			// Obruten deposit i catchmenten (P1a, soak 2026-07-18): se
+			// unusedCatchmentDeposits — flaggar koppar/tenn/silver som ligger i
+			// stadens 7-hex catchment men saknar mine/silver_mine.
+			if cd, ok := p["catchment_deposits"].([]any); ok {
+				buildings, _ := sett["buildings"].([]any)
+				if unused := unusedCatchmentDeposits(cd, buildings); len(unused) > 0 {
+					fmt.Printf("  ⚠ Obruten deposit i catchmenten: %s — bygg mine/silver_mine här för att utvinna\n",
+						strings.Join(unused, ", "))
+				}
 			}
 			// Kharis (PLAN B, megaron_kult_legibilitet_plan.md): kharis is now
 			// DAILY-maintenance-driven, not per-tick — a per-tick rate rendered

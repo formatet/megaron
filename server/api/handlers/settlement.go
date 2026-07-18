@@ -849,9 +849,19 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 	return map[string]any{"good": "grain", "multiplier": 1.25}, msg, nil
 }
 
-// applyOracleRevealDeposits reveals the nearest uncolonised tile(s) within 8 hexes
-// of the settlement whose 6-hex catchment contains a tin, copper, or silver deposit.
-// Tin is prioritised (rarest); copper next; silver last.
+// applyOracleRevealDeposits reveals the nearest uncolonised tile(s) within
+// oracleRadius hexes of the settlement whose 6-hex catchment contains a tin,
+// copper, or silver deposit. Tin is prioritised (rarest); copper next; silver last.
+//
+// P1b (soak 2026-07-18): radius was 8, which on a sparse map (5 tin deposits
+// across a 230×230 mostly-sea world for 14 players) meant most casts found
+// nothing — the oracle is the ONLY discovery surface for deposits outside a
+// settlement's own catchment, so a narrow radius made tin permanently
+// undiscoverable for players whose nearest tin site fell outside it. Widened
+// 8 → 20. (The soak note that only the capital could cast was checked against
+// the code and found stale: Rite already gates on ownership only — see the
+// `owner_id = playerID` lock query above, not `is_capital` — so any owned
+// settlement with a temple can already cast; no change needed there.)
 //
 // FIX (Fas 1b, 2026-06-22): the previous query searched the `provinces` table (only
 // already-settled hexes joined to map_tiles). Tin tiles are `mountain_limestone`
@@ -883,7 +893,7 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 	settlementID, worldID, playerID uuid.UUID,
 	spec religion.PrayerSpec,
 ) (map[string]any, string, error) {
-	const oracleRadius = 8
+	const oracleRadius = 20
 
 	// Find the settlement's province position (origin for radius search).
 	var originQ, originR int
