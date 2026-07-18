@@ -268,11 +268,40 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			builtTypes[b.Type] = true
 		}
 
+		// Upkeep carrying-capacity (P6, soak 2026-07-18): a galley disbanded the
+		// instant it garrisoned ("grain_shortage") and garrisoned spearmen starved
+		// to death in a city whose grain rate LOOKED healthy — because army upkeep
+		// is a separate once-daily discrete debit (combat/upkeep.go), never folded
+		// into settlement_goods' continuous rate. Nothing warned a Wanax before
+		// recruit/build that the city was already at, or about to go into, upkeep
+		// deficit. Computed once here (before can_recruit) and reused below for the
+		// settlement-level net-after-upkeep figures `status` shows.
+		var upkeepGrainRate, upkeepSilverRate float64
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT
+			    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'), 0),
+			    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0)`,
+			sett.ID,
+		).Scan(&upkeepGrainRate, &upkeepSilverRate)
+		armyUp, _, upErr := armyUpkeep(r.Context(), h.pool, sett.ID)
+		if upErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
+			return
+		}
+		netGrainPerDay, netSilverPerDay := upkeepNetPerDay(upkeepGrainRate, upkeepSilverRate, armyUp)
+
 		// can_recruit per unit: goods + labor pool + building requirements (for 1 unit).
 		// Mirrors the actual Recruit handler gates so can_recruit:false is trustworthy.
+		// upkeep_grain_per_day/upkeep_silver_per_day + sustainable project what this
+		// unit costs once it FINISHES TRAINING AND GARRISONS (forming/training units
+		// draw no upkeep yet) against the city's current net-after-upkeep capacity —
+		// answering "can this city carry one more of these" before the Wanax commits.
 		type recruitAffordRow struct {
-			Unit       string `json:"unit"`
-			CanRecruit bool   `json:"can_recruit"`
+			Unit               string  `json:"unit"`
+			CanRecruit         bool    `json:"can_recruit"`
+			UpkeepGrainPerDay  float64 `json:"upkeep_grain_per_day"`
+			UpkeepSilverPerDay float64 `json:"upkeep_silver_per_day"`
+			Sustainable        bool    `json:"sustainable"`
 		}
 		var recruitAfford []recruitAffordRow
 		for unitType, spec := range province.UnitSpecs {
@@ -297,7 +326,18 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			recruitAfford = append(recruitAfford, recruitAffordRow{Unit: unitType, CanRecruit: afford})
+			fullSize := 100
+			cat := string(unit.CategoryOf(unit.Type(unitType)))
+			if cat != "land" {
+				fullSize = 1 // naval upkeep is flat, independent of size
+			}
+			newUnitUp := combat.UnitUpkeep(unitType, cat, fullSize)
+			sustainable := (netGrainPerDay-newUnitUp.Grain) >= 0 && (netSilverPerDay-newUnitUp.Silver) >= 0
+			recruitAfford = append(recruitAfford, recruitAffordRow{
+				Unit: unitType, CanRecruit: afford,
+				UpkeepGrainPerDay: newUnitUp.Grain, UpkeepSilverPerDay: newUnitUp.Silver,
+				Sustainable: sustainable,
+			})
 		}
 
 		// Live kharis pool (per-Wanax, on player_world_records) — NOT the stale
@@ -552,12 +592,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			lrows.Close()
 		}
 
-		armyUp, _, upErr := armyUpkeep(r.Context(), h.pool, sett.ID)
-		if upErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
-			return
-		}
-
 		// Settlement cap: same "how many colonies do I hold vs. the per-Wanax
 		// ceiling" figure `poleia actions` derives for the colonize gate
 		// (capabilities.settlementCapRequirement / province.MaxSettlementsPerWanax),
@@ -573,33 +607,35 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp["settlement"] = map[string]any{
-			"id":                     sett.ID,
-			"name":                   sett.Name,
-			"owner_id":               sett.OwnerID,
-			"kingdom_id":             sett.KingdomID,
-			"culture":                sett.CultureID,
-			"state":                  sett.State,
-			"population":             sett.Population,
-			"labor_pool":             laborPool,
-			"walls":                  sett.WallLevel,
-			"loyalty":                sett.Loyalty,
-			"resources":              resSnap,
-			"kharis":                 kharisNow,
-			"kharis_rate":            kharisRate,
-			"kharis_mood":            kharisToMood(kharisNow),
-			"kharis_per_day":         kharisRate * float64(events.TicksPerDay),
-			"temple_offers":          templeOffers,
-			"grain_prod_rate":        grainProdRate,
-			"grain_consum_rate":      grainConsumRate,
-			"breakeven_grain_weight": breakevenGrainWeight,
-			"army":                   sett.Army,
-			"army_upkeep":            armyUp,
-			"build_queue":            buildQueue,
-			"training_units":         trainingUnits,
-			"buildings":              buildings,
-			"can_afford":             buildAfford,
-			"can_recruit":            recruitAfford,
-			"available_prayers":      prayers,
+			"id":                              sett.ID,
+			"name":                            sett.Name,
+			"owner_id":                        sett.OwnerID,
+			"kingdom_id":                      sett.KingdomID,
+			"culture":                         sett.CultureID,
+			"state":                           sett.State,
+			"population":                      sett.Population,
+			"labor_pool":                      laborPool,
+			"walls":                           sett.WallLevel,
+			"loyalty":                         sett.Loyalty,
+			"resources":                       resSnap,
+			"kharis":                          kharisNow,
+			"kharis_rate":                     kharisRate,
+			"kharis_mood":                     kharisToMood(kharisNow),
+			"kharis_per_day":                  kharisRate * float64(events.TicksPerDay),
+			"temple_offers":                   templeOffers,
+			"grain_prod_rate":                 grainProdRate,
+			"grain_consum_rate":               grainConsumRate,
+			"breakeven_grain_weight":          breakevenGrainWeight,
+			"army":                            sett.Army,
+			"army_upkeep":                     armyUp,
+			"net_grain_per_day_after_upkeep":  netGrainPerDay,
+			"net_silver_per_day_after_upkeep": netSilverPerDay,
+			"build_queue":                     buildQueue,
+			"training_units":                  trainingUnits,
+			"buildings":                       buildings,
+			"can_afford":                      buildAfford,
+			"can_recruit":                     recruitAfford,
+			"available_prayers":               prayers,
 			"settlement_cap": map[string]any{
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,
@@ -669,6 +705,21 @@ func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID)
 		perType[unitType] = agg
 	}
 	return total, perType, rows.Err()
+}
+
+// upkeepNetPerDay converts a settlement's raw grain/silver production rates
+// (settlement_goods.rate, per tick — production net of CITIZEN consumption
+// only) into the carrying-capacity figure a Wanax needs before adding an
+// upkeep-bearing unit: netted against the ALREADY-GARRISONED army's upkeep.
+// Army upkeep is a separate once-daily discrete debit (combat/upkeep.go),
+// never folded into the continuous rate, so a settlement's displayed grain
+// rate can look healthy right up until the daily upkeep tick disbands a unit
+// (P6, soak 2026-07-18). Pure function — no DB — so it's unit-testable
+// without a database.
+func upkeepNetPerDay(grainRatePerTick, silverRatePerTick float64, up upkeepAmount) (grainNetPerDay, silverNetPerDay float64) {
+	grainNetPerDay = grainRatePerTick*float64(events.TicksPerDay) - up.Grain
+	silverNetPerDay = silverRatePerTick*float64(events.TicksPerDay) - up.Silver
+	return grainNetPerDay, silverNetPerDay
 }
 
 // GetArmy handles GET /worlds/:worldID/provinces/:provinceID/army.
@@ -1754,7 +1805,30 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if cat == unit.CategoryNaval {
 		menForResponse = crew
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{
+
+	// Upkeep warning (P6, soak 2026-07-18): this unit draws no upkeep until it
+	// finishes training and garrisons (upkeep.go only charges 'garrison'/
+	// 'marching'/'positioned'), so warn NOW about what happens THEN — a Wanax
+	// otherwise had no signal before a galley disbanded the instant it
+	// garrisoned. Best-effort: a failed capacity read never blocks the recruit
+	// that already succeeded above.
+	var upkeepWarning string
+	if netGrainPerDay, netSilverPerDay, capErr := settlementUpkeepCapacity(r.Context(), h.pool, settlementID); capErr == nil {
+		fullSize := 100
+		if cat == unit.CategoryNaval {
+			fullSize = 1
+		}
+		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize)
+		if (netGrainPerDay-newUnitUp.Grain) < 0 || (netSilverPerDay-newUnitUp.Silver) < 0 {
+			upkeepWarning = fmt.Sprintf(
+				"warning: once this unit garrisons it needs %.1f grain + %.1f silver/day upkeep — "+
+					"this settlement's current net after its existing army's upkeep is %+.1f grain/day, %+.1f silver/day; "+
+					"it may starve/desert without more production or fewer units (`poleia status`)",
+				newUnitUp.Grain, newUnitUp.Silver, netGrainPerDay, netSilverPerDay)
+		}
+	}
+
+	resp := map[string]any{
 		"unit_id":      unitIDs[len(unitIDs)-1],
 		"unit_ids":     unitIDs,
 		"unit_type":    req.UnitType,
@@ -1763,7 +1837,34 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		"complete_at":  lastCompleteAt,
 		"forming_size": finalSize,
 		"names":        unitNames,
-	})
+	}
+	if upkeepWarning != "" {
+		resp["upkeep_warning"] = upkeepWarning
+	}
+	writeJSON(w, http.StatusCreated, resp)
+}
+
+// settlementUpkeepCapacity loads this settlement's current grain/silver
+// production rate and existing (already-garrisoned) army upkeep, returning
+// the net-per-day surplus/deficit after upkeep. Thin DB-hitting wrapper
+// around upkeepNetPerDay for callers (like Recruit) that don't already have
+// the rate/armyUp values loaded from a broader province-status query.
+func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (grainNetPerDay, silverNetPerDay float64, err error) {
+	var grainRate, silverRate float64
+	if err = pool.QueryRow(ctx,
+		`SELECT
+		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'), 0),
+		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0)`,
+		settlementID,
+	).Scan(&grainRate, &silverRate); err != nil {
+		return 0, 0, err
+	}
+	up, _, upErr := armyUpkeep(ctx, pool, settlementID)
+	if upErr != nil {
+		return 0, 0, upErr
+	}
+	grainNetPerDay, silverNetPerDay = upkeepNetPerDay(grainRate, silverRate, up)
+	return grainNetPerDay, silverNetPerDay, nil
 }
 
 // Goods handles GET /worlds/:worldID/provinces/:provinceID/goods.
@@ -2600,9 +2701,9 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"recalled":             true,
-		"messenger_id":         messengerID,
-		"messenger_arrives_at": messengerArrivesAt,
+		"recalled":               true,
+		"messenger_id":           messengerID,
+		"messenger_arrives_at":   messengerArrivesAt,
 		"messenger_travel_ticks": recallTravelTicks,
 	})
 }

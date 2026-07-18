@@ -121,6 +121,15 @@ func recruitCmd() *cobra.Command {
 					"Recruit more of the same type into this settlement, then `poleia unit list` " +
 					"(watch `deployable`/`men_to_deploy`).")
 			}
+			// Upkeep warning (P6, soak 2026-07-18): present on either path when the
+			// server projects this unit will push the settlement into grain/silver
+			// deficit once it garrisons.
+			var warnResp struct {
+				UpkeepWarning string `json:"upkeep_warning"`
+			}
+			if json.Unmarshal(data, &warnResp) == nil && warnResp.UpkeepWarning != "" {
+				fmt.Println(warnResp.UpkeepWarning)
+			}
 			return nil
 		},
 	}
@@ -167,7 +176,17 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 
 	// Affordability against the target settlement — reuse can_recruit from the
 	// province GET (already mirrors the real Recruit handler's gates).
-	afford := map[string]bool{}
+	// upkeep_grain_per_day/upkeep_silver_per_day + sustainable (P6, soak
+	// 2026-07-18) project what this unit costs once it garrisons against the
+	// settlement's current net-after-upkeep capacity — the warning `recruit`
+	// itself gives at the moment of the POST, surfaced here BEFORE committing.
+	type recruitAffordInfo struct {
+		canRecruit  bool
+		upkeepGrain float64
+		upkeepSilv  float64
+		sustainable bool
+	}
+	afford := map[string]recruitAffordInfo{}
 	if sdata, serr := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", worldID, provinceID)); serr == nil {
 		var p map[string]any
 		if json.Unmarshal(sdata, &p) == nil {
@@ -177,15 +196,21 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 						m, _ := it.(map[string]any)
 						u, _ := m["unit"].(string)
 						can, _ := m["can_recruit"].(bool)
-						afford[u] = can
+						ug, _ := m["upkeep_grain_per_day"].(float64)
+						us, _ := m["upkeep_silver_per_day"].(float64)
+						sustain, sustainOK := m["sustainable"].(bool)
+						if !sustainOK {
+							sustain = true // older server without the field: don't false-warn
+						}
+						afford[u] = recruitAffordInfo{canRecruit: can, upkeepGrain: ug, upkeepSilv: us, sustainable: sustain}
 					}
 				}
 			}
 		}
 	}
 
-	fmt.Printf("%-24s  %-14s  %-28s  %-6s  %-5s  %-16s  %s\n",
-		"Type (--unit)", "Batch", "Cost", "Mins", "Pop", "Requires", "Afford")
+	fmt.Printf("%-24s  %-14s  %-28s  %-6s  %-5s  %-16s  %-6s  %s\n",
+		"Type (--unit)", "Batch", "Cost", "Mins", "Pop", "Requires", "Afford", "Upkeep/day (once garrisoned)")
 	fmt.Println(strings.Repeat("─", 110))
 	for _, u := range catalogue {
 		label := u.Type
@@ -225,16 +250,23 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		}
 
 		affordStr := "?"
-		if can, ok := afford[u.Type]; ok {
-			if can {
+		upkeepStr := ""
+		if info, ok := afford[u.Type]; ok {
+			if info.canRecruit {
 				affordStr = "✓"
 			} else {
 				affordStr = "✗"
 			}
+			if info.upkeepGrain > 0 || info.upkeepSilv > 0 {
+				upkeepStr = fmt.Sprintf("%.1f grain, %.1f silver", info.upkeepGrain, info.upkeepSilv)
+				if !info.sustainable {
+					upkeepStr += "  ⚠ city can't carry this yet"
+				}
+			}
 		}
 
-		fmt.Printf("%-24s  %-14s  %-28s  %-6.0f  %-5d  %-16s  %s\n",
-			label, batch, costStr, u.DurationMinutes, u.PopCost, reqStr, affordStr)
+		fmt.Printf("%-24s  %-14s  %-28s  %-6.0f  %-5d  %-16s  %-6s  %s\n",
+			label, batch, costStr, u.DurationMinutes, u.PopCost, reqStr, affordStr, upkeepStr)
 	}
 	return nil
 }

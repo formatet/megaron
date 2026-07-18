@@ -211,6 +211,22 @@ func statusCmd() *cobra.Command {
 					}
 				}
 
+				// Netto EFTER arméns upkeep (P6, soak 2026-07-18): grain/silver "netto"
+				// above is citizens only — army upkeep is a separate once-daily debit
+				// (poleia ticklog), never folded into that rate. A galley disbanded the
+				// instant it garrisoned in a city whose grain netto looked healthy. This
+				// line is the number to check BEFORE `recruit`/building another ship —
+				// `recruit --list` shows the same math per unit type.
+				if netG, ok := sett["net_grain_per_day_after_upkeep"].(float64); ok {
+					netS, _ := sett["net_silver_per_day_after_upkeep"].(float64)
+					warn := ""
+					if netG < 0 || netS < 0 {
+						warn = "  ⚠ täcker inte arméns upkeep — enheter kan svälta/desertera (se `poleia recruit --list`)"
+					}
+					fmt.Printf("  %-8s %+.1f grain/dygn, %+.1f silver/dygn (efter arméns upkeep)%s\n",
+						"Netto", netG, netS, warn)
+				}
+
 				printRes("Timber", "timber", false)
 				printRes("Stone", "stone", false)
 				printRes("Copper", "copper", false)
