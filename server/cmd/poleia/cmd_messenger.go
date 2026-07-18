@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -265,7 +266,68 @@ func outboxCmd() *cobra.Command {
 				}
 				fmt.Println(line)
 			}
+			// Total escrow exposure (P5c) — each pending offer's lock was only ever
+			// shown one-at-a-time on its own line; a Wanax with several pending
+			// offers out had no single place to see how much silver/goods were
+			// tied up in total. Silence here reads as "my resources are free" when
+			// they may not be.
+			if summary := escrowExposureSummary(msgs); summary != "" {
+				fmt.Println(summary)
+			}
 			return nil
 		},
 	}
+}
+
+// escrowExposureSummary aggregates the escrow locked by every PENDING trade
+// offer in msgs (as returned by outbox/ListSent) into one human-readable
+// line: total silver (from pending buy offers) plus total quantity per good
+// (from pending sell offers). Returns "" if nothing is currently escrowed.
+func escrowExposureSummary(msgs []map[string]any) string {
+	var totalSilver float64
+	goodsLocked := map[string]float64{}
+	var goodOrder []string
+	pendingCount := 0
+
+	for _, m := range msgs {
+		offer, ok := m["trade_offer"].(map[string]any)
+		if !ok {
+			continue
+		}
+		if status, _ := offer["status"].(string); status != "pending" {
+			continue
+		}
+		pendingCount++
+		kind, _ := offer["kind"].(string)
+		if kind == "sell" {
+			good, _ := offer["offer_good"].(string)
+			qty, _ := offer["offer_qty"].(float64)
+			if _, seen := goodsLocked[good]; !seen {
+				goodOrder = append(goodOrder, good)
+			}
+			goodsLocked[good] += qty
+		} else {
+			silver, _ := offer["offer_silver"].(float64)
+			totalSilver += silver
+		}
+	}
+
+	if pendingCount == 0 {
+		return ""
+	}
+
+	parts := []string{}
+	if totalSilver > 0 {
+		parts = append(parts, fmt.Sprintf("%.0f silver", totalSilver))
+	}
+	for _, good := range goodOrder {
+		parts = append(parts, fmt.Sprintf("%.0f %s", goodsLocked[good], good))
+	}
+
+	offerWord := "offer"
+	if pendingCount != 1 {
+		offerWord = "offers"
+	}
+	return fmt.Sprintf("⚠ Escrow exposure: %s locked across %d pending %s",
+		strings.Join(parts, " + "), pendingCount, offerWord)
 }
