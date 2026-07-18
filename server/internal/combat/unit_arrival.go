@@ -185,7 +185,24 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		return h.foundColony(ctx, tx, u, dest.provinceID, destQ, destR, worldID)
 	}
 
-	// No settlement or uncontested → become garrison.
+	// No settlement or uncontested → become garrison — UNLESS a hostile unit
+	// already holds this hex without a settlement (P2 fix, 2026-07-18 soak:
+	// "Dole mot Eastern Outpost"). Before this fix, marching onto a hex where
+	// only an enemy's field-positioned unit sat (no settlements row there —
+	// province.owner_id-style outposts are not currently establishable by any
+	// code path, so the soak-observed "Outpost" was in fact a hostile unit
+	// sitting status='positioned' on an empty hex) fell straight through to
+	// arriveGarrison: the arriving unit simply co-located with the enemy — no
+	// combat, no capture, no notification. Settlements are still resolved via
+	// resolveCombat below; this only covers the settlement-less hex.
+	if !hasSettlement {
+		defenders, ferr := loadFieldDefenders(ctx, tx, worldID, destQ, destR, u.ownerID)
+		if ferr != nil {
+			slog.Warn("resolve: load field defenders failed, proceeding as peaceful arrival", "unit", unitID, "err", ferr)
+		} else if len(defenders) > 0 {
+			return h.resolveFieldCombat(ctx, tx, u, defenders, destQ, destR, worldID)
+		}
+	}
 	if !hasSettlement || dest.ownerID == nil || *dest.ownerID == u.ownerID {
 		return h.arriveGarrison(ctx, tx, u, destQ, destR, dest.settlementID, worldID)
 	}
