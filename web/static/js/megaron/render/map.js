@@ -1219,8 +1219,10 @@ async function openHostPanel(h, tile) {
   State.dirty = true;
 
   // The forecast for the hex the host STANDS on — settle founds here, nowhere else.
+  // starter_farm=1: a metropolis founding seeds a starter farm (createMetropolis),
+  // unlike a plain colony — see founding-forecast-fix-plan.
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
-      + `&pop=${fp.population}&seed=${Math.max(0, Math.round(fp.grain?.amount || 0))}`)
+      + `&pop=${fp.population}&seed=${Math.max(0, Math.round(fp.grain?.amount || 0))}&starter_farm=1`)
     .then(r => r.ok ? r.json() : null)
     .then(p => {
       const el = document.getElementById('ip-found-preview');

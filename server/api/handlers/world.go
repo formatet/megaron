@@ -548,10 +548,19 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	if v, err := strconv.ParseFloat(r.URL.Query().Get("seed"), 64); err == nil && v >= 0 {
 		seed = v
 	}
-	consumptionPerTick := float64(forecastPop) *
-		economy.GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
-	basePerTick := goods["grain"]
-	estNetPerTick := basePerTick - consumptionPerTick
+	// starter_farm=1 for a metropolis founding (gets a starter farm seeded by
+	// createMetropolis), unset/0 for a colony (builds its own farm later, see
+	// foundColony in unit_arrival.go). Explicit param rather than inferring
+	// from ?pop= so the semantics are self-documenting.
+	starterFarm := r.URL.Query().Get("starter_farm") == "1"
+	basePerTick, estNetPerTick := economy.FoundingGrainNetPerTick(
+		goods["grain"], withFarm["grain"], forecastPop, starterFarm)
+	// with_farm_per_tick reports labor-scaled with-farm PRODUCTION (not net) —
+	// the client derives consumption itself as base_per_tick − est_net_per_tick,
+	// so this must stay on the same "production" footing for the colony hint
+	// ("bygg en farm") to read coherently.
+	withFarmProdPerTick, _ := economy.FoundingGrainNetPerTick(
+		withFarm["grain"], withFarm["grain"], forecastPop, true)
 
 	var daysUntilEmpty *float64
 	if estNetPerTick < 0 {
@@ -570,7 +579,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"est_net_per_tick":   estNetPerTick,
 			"seed":               seed,
 			"days_until_empty":   daysUntilEmpty,
-			"with_farm_per_tick": withFarm["grain"],
+			"with_farm_per_tick": withFarmProdPerTick,
 		},
 		"unknown_hexes": unknown,
 	})
