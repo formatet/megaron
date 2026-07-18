@@ -95,6 +95,8 @@ func main() {
 		tradeOfferCmd(),
 		allocateCmd(),
 		unitCmd(),
+		armyAliasCmd(),
+		marchAliasCmd(),
 		foundingCmd(),
 		wantsCmd(),
 		riteCmd(),

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -212,6 +213,14 @@ func resolveMessengerDest(markers, wanaxes []map[string]any, destName, fromName 
 		}
 	}
 	if destID == "" {
+		// P9: --to only ever matches a SETTLEMENT name. A Wanax (ruler) name looks
+		// just as plausible to type — it's the column right next to the city name
+		// in `cities`/`diplomacy` — but silently fails the same generic lookup.
+		// Detect that specific mix-up and name the actual city(s) to use instead.
+		if cities := settlementsRuledBy(wanaxes, destName); len(cities) > 0 {
+			return "", "", "", fmt.Errorf("%q is a Wanax (ruler) name, not a settlement — messengers go to a CITY. "+
+				"%s rules: %s — try --to %s", destName, destName, strings.Join(cities, ", "), cities[0])
+		}
 		return "", "", "", fmt.Errorf("no settlement named %q in view — run 'cities' to list reachable settlements; only known (not rumour-only) rows can be traded with, so expand to discover more", destName)
 	}
 	if destID == ownID {
@@ -243,7 +252,36 @@ func resolveDestByName(markers, wanaxes []map[string]any, destName string) (dest
 		}
 	}
 	if destID == "" {
+		// P9: same Wanax-name/settlement-name mix-up as resolveMessengerDest.
+		if cities := settlementsRuledBy(wanaxes, destName); len(cities) > 0 {
+			return "", "", fmt.Errorf("%q is a Wanax (ruler) name, not a settlement — messengers go to a CITY. "+
+				"%s rules: %s — try --to %s", destName, destName, strings.Join(cities, ", "), cities[0])
+		}
 		return "", "", fmt.Errorf("no settlement named %q in view — wander closer (the host's march sweeps fog) and check 'poleia cities'", destName)
 	}
 	return destID, resolvedName, nil
+}
+
+// settlementsRuledBy returns the (sorted, deduplicated) settlement names in
+// wanaxes owned by the Wanax (ruler/username) called wanaxName — used to turn
+// "message --to <king name>" (a settlement lookup miss) into an actionable
+// hint naming the actual cities that ruler holds, instead of a bare "not
+// found" that leaves the mix-up invisible.
+func settlementsRuledBy(wanaxes []map[string]any, wanaxName string) []string {
+	seen := map[string]bool{}
+	var cities []string
+	for _, w := range wanaxes {
+		owner, _ := w["owner"].(string)
+		if !strings.EqualFold(owner, wanaxName) {
+			continue
+		}
+		name, _ := w["name"].(string)
+		if name == "" || seen[name] {
+			continue
+		}
+		seen[name] = true
+		cities = append(cities, name)
+	}
+	sort.Strings(cities)
+	return cities
 }

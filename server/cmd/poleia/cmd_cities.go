@@ -11,7 +11,7 @@ func citiesCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:     "cities",
 		Aliases: []string{"wanaxes"}, // kept working for one version — see temenos_gossip.md PASS 2b
-		Short:   "List known and rumour-known settlements (FOW-gated trade-discovery directory)",
+		Short:   "List known and rumour-known settlements — city-centric (see `diplomacy` for the ruler-centric view)",
 		Long: `List known and rumour-known settlements.
 
 "known" rows (seen, remembered, or contacted) show exact terrain/deposit/position
