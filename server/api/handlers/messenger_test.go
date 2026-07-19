@@ -24,6 +24,7 @@ package handlers
 import (
 	"encoding/json"
 	"testing"
+	"time"
 )
 
 // TestCancelOffer_IdempotencyContract verifies that a cancel on a non-pending
@@ -217,4 +218,39 @@ func TestSellOffer_ExpiryRefundsGoods(t *testing.T) {
 	if !sellRefund.ToOrigin || !buyRefund.ToOrigin {
 		t.Error("expiry refund must always go to origin (the escrowing party)")
 	}
+}
+
+// TestTradeAccept_DeliveryETAAssignment covers P5 (leverans-ETA): TradeAccept
+// now stamps goods_arrives_at/silver_arrives_at onto trade_offer at accept
+// time (previously these ETAs only ever appeared in the accept response
+// itself, never anywhere a Wanax could look back at later, e.g. `poleia
+// outbox`). The two legs are chained (leg 2 departs only once leg 1 lands),
+// so whichever good moves FIRST determines which ETA equals leg1ArrivesAt and
+// which is leg1ArrivesAt+travelDuration — this is the routing contract for
+// that assignment (see TradeAccept's sell/buy branches).
+func TestTradeAccept_DeliveryETAAssignment(t *testing.T) {
+	leg1ArrivesAt := time.Date(2026, 7, 19, 12, 0, 0, 0, time.UTC)
+	legDuration := 90 * time.Minute
+
+	t.Run("sell: goods move first (seller->buyer), silver returns second", func(t *testing.T) {
+		goodsArrivesAt := leg1ArrivesAt
+		silverArrivesAt := leg1ArrivesAt.Add(legDuration)
+		if !goodsArrivesAt.Equal(leg1ArrivesAt) {
+			t.Errorf("sell-kind: goods must arrive with leg 1, got %v want %v", goodsArrivesAt, leg1ArrivesAt)
+		}
+		if !silverArrivesAt.After(goodsArrivesAt) {
+			t.Errorf("sell-kind: silver (leg 2, chained) must arrive strictly after goods (leg 1)")
+		}
+	})
+
+	t.Run("buy: silver moves first (buyer->seller), goods return second", func(t *testing.T) {
+		silverArrivesAt := leg1ArrivesAt
+		goodsArrivesAt := leg1ArrivesAt.Add(legDuration)
+		if !silverArrivesAt.Equal(leg1ArrivesAt) {
+			t.Errorf("buy-kind: silver must arrive with leg 1, got %v want %v", silverArrivesAt, leg1ArrivesAt)
+		}
+		if !goodsArrivesAt.After(silverArrivesAt) {
+			t.Errorf("buy-kind: goods (leg 2, chained) must arrive strictly after silver (leg 1)")
+		}
+	})
 }

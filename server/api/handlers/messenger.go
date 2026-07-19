@@ -884,11 +884,22 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Step 2: guarded flip to accepted.
+		// P5 (leverans-ETA): leg 1 delivers the goods to the buyer, leg 2 (chained,
+		// same travel duration) returns silver to the seller — compute both ETAs
+		// now, from leg1ArrivesAt, and persist them onto trade_offer itself so a
+		// later `poleia outbox` read (long after this request's response has been
+		// forgotten) can still show "delivery expected <time>" instead of nothing.
+		goodsArrivesAt := leg1ArrivesAt
+		silverArrivesAt := leg1ArrivesAt.Add(messenger.TradeTravelDuration(dist))
+
+		// Step 2: guarded flip to accepted, ETAs stamped in the same merge.
 		tag, err = tx.Exec(r.Context(),
-			`UPDATE messengers SET trade_offer = trade_offer || '{"status":"accepted"}'
+			`UPDATE messengers SET trade_offer = trade_offer || jsonb_build_object(
+			     'status', 'accepted',
+			     'goods_arrives_at', $2::timestamptz,
+			     'silver_arrives_at', $3::timestamptz)
 			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID,
+			messengerID, goodsArrivesAt, silverArrivesAt,
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")
@@ -942,9 +953,6 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		goodsArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
-		silverArrivesAt := goodsArrivesAt.Add(messenger.TradeTravelDuration(dist))
-
 		// OfferAccepted — the offer's originator (here: the seller, who has been
 		// silently waiting since Send) gets an immediate decision notice instead of
 		// only learning via the delayed TradeDelivery/TradeReturn on physical arrival.
@@ -991,14 +999,25 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Step 2: guarded flip to accepted. Guard on status='pending' so that if the
-		// offer expired (and its silver was refunded) between the pool-read above and
-		// this transaction, the accept aborts cleanly instead of shipping refunded
-		// silver to the seller — which would mint silver from nothing.
+		// P5 (leverans-ETA): leg 1 delivers silver to the seller, leg 2 (chained,
+		// same travel duration) returns goods to the buyer — see sell-kind branch
+		// above for why these are persisted onto trade_offer, not just returned
+		// in this response.
+		silverArrivesAt := leg1ArrivesAt
+		goodsArrivesAt := leg1ArrivesAt.Add(messenger.TradeTravelDuration(dist))
+
+		// Step 2: guarded flip to accepted, ETAs stamped in the same merge. Guard on
+		// status='pending' so that if the offer expired (and its silver was refunded)
+		// between the pool-read above and this transaction, the accept aborts cleanly
+		// instead of shipping refunded silver to the seller — which would mint silver
+		// from nothing.
 		tag, err = tx.Exec(r.Context(),
-			`UPDATE messengers SET trade_offer = trade_offer || '{"status":"accepted"}'
+			`UPDATE messengers SET trade_offer = trade_offer || jsonb_build_object(
+			     'status', 'accepted',
+			     'goods_arrives_at', $2::timestamptz,
+			     'silver_arrives_at', $3::timestamptz)
 			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID,
+			messengerID, goodsArrivesAt, silverArrivesAt,
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")
@@ -1050,9 +1069,6 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "commit failed")
 			return
 		}
-
-		silverArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
-		goodsArrivesAt := silverArrivesAt.Add(messenger.TradeTravelDuration(dist))
 
 		// OfferAccepted — the offer's originator (here: the buyer) gets an immediate
 		// decision notice instead of only learning via the delayed TradeReturn.

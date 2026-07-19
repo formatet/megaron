@@ -263,6 +263,17 @@ func outboxCmd() *cobra.Command {
 							}
 						}
 					}
+					// Delivery ETA (P5) — once accepted, trade-accept's response was the
+					// ONLY place goods_arrives_at/silver_arrives_at ever appeared; outbox
+					// (checked any time after) showed just "[accepted]" with no timeline,
+					// so a Wanax had no way to tell "still in transit" from "lost/stuck".
+					// The handler now stamps both ETAs onto trade_offer itself at accept
+					// time (api/handlers/messenger.go TradeAccept) so this can read them back.
+					if offerStatus == "accepted" {
+						if eta := deliveryETALine(offer); eta != "" {
+							line += eta
+						}
+					}
 				}
 				fmt.Println(line)
 			}
@@ -277,6 +288,40 @@ func outboxCmd() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// deliveryETALine formats the goods/silver delivery ETA for an ACCEPTED trade
+// offer (as persisted by TradeAccept onto trade_offer — goods_arrives_at /
+// silver_arrives_at). Returns "" if neither timestamp is present (e.g. an
+// older offer accepted before this field existed). Uses whichever of the two
+// legs is still in the future; a leg already in the past reads "delivered".
+func deliveryETALine(offer map[string]any) string {
+	fmtLeg := func(label, raw string) string {
+		if raw == "" {
+			return ""
+		}
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return ""
+		}
+		if t.Before(time.Now()) {
+			return fmt.Sprintf("%s delivered", label)
+		}
+		return fmt.Sprintf("%s in %s", label, countdown(t))
+	}
+	goodsAt, _ := offer["goods_arrives_at"].(string)
+	silverAt, _ := offer["silver_arrives_at"].(string)
+	var parts []string
+	if s := fmtLeg("goods", goodsAt); s != "" {
+		parts = append(parts, s)
+	}
+	if s := fmtLeg("silver", silverAt); s != "" {
+		parts = append(parts, s)
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return "  " + strings.Join(parts, " · ")
 }
 
 // escrowExposureSummary aggregates the escrow locked by every PENDING trade

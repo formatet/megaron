@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 // TestEscrowExposureSummary covers P5c: a Wanax with several pending trade
@@ -86,6 +87,60 @@ func TestEscrowExposureSummary(t *testing.T) {
 		}
 		if got := escrowExposureSummary(msgs); got != "" {
 			t.Fatalf("expected empty summary once offers resolved, got %q", got)
+		}
+	})
+}
+
+// TestDeliveryETALine covers P5 (leverans-ETA): before this, `poleia outbox`
+// showed "[accepted]" for an accepted trade offer with no further detail — the
+// only place goods_arrives_at/silver_arrives_at ever appeared was the one-shot
+// response to `trade-accept` itself. Once that terminal scrolled away, a Wanax
+// checking outbox later had no way to tell "still in transit" from "silently
+// lost". TradeAccept (api/handlers/messenger.go) now persists both ETAs onto
+// trade_offer at accept time; this is a regression test for the CLI formatter
+// that reads them back.
+func TestDeliveryETALine(t *testing.T) {
+	future := func(d time.Duration) string { return time.Now().Add(d).Format(time.RFC3339) }
+	past := func(d time.Duration) string { return time.Now().Add(-d).Format(time.RFC3339) }
+
+	t.Run("no ETA fields present (older offer, or non-accepted) returns empty", func(t *testing.T) {
+		if got := deliveryETALine(map[string]any{"status": "accepted"}); got != "" {
+			t.Fatalf("expected empty line with no ETA fields, got %q", got)
+		}
+	})
+
+	t.Run("both legs still in transit show countdowns for both", func(t *testing.T) {
+		offer := map[string]any{
+			"goods_arrives_at":  future(2 * time.Hour),
+			"silver_arrives_at": future(4 * time.Hour),
+		}
+		got := deliveryETALine(offer)
+		if !strings.Contains(got, "goods in") {
+			t.Errorf("expected a goods countdown, got %q", got)
+		}
+		if !strings.Contains(got, "silver in") {
+			t.Errorf("expected a silver countdown, got %q", got)
+		}
+	})
+
+	t.Run("a leg already in the past reads as delivered, not a negative countdown", func(t *testing.T) {
+		offer := map[string]any{
+			"goods_arrives_at":  past(time.Hour), // leg 1 already landed
+			"silver_arrives_at": future(time.Hour),
+		}
+		got := deliveryETALine(offer)
+		if !strings.Contains(got, "goods delivered") {
+			t.Errorf("expected past leg to read 'goods delivered', got %q", got)
+		}
+		if !strings.Contains(got, "silver in") {
+			t.Errorf("expected future leg to still show a countdown, got %q", got)
+		}
+	})
+
+	t.Run("malformed timestamp is ignored, not a crash", func(t *testing.T) {
+		offer := map[string]any{"goods_arrives_at": "not-a-timestamp"}
+		if got := deliveryETALine(offer); got != "" {
+			t.Errorf("expected empty line for malformed timestamp, got %q", got)
 		}
 	})
 }
