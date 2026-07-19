@@ -131,16 +131,22 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	}
 
 	// ── UpkeepSettled per settlement matches the per-unit facit. ──
-	type settled struct{ paid, unpaid int; grain, gross, circ, destroyed float64 }
+	type settled struct {
+		paid, unpaid                  int
+		grain, gross, circ, destroyed float64
+		unpaidSilver                  float64
+		circulatedTo                  string
+	}
 	readSettled := func(sid uuid.UUID) settled {
 		var s settled
 		if err := pool.QueryRow(ctx,
 			`SELECT (payload->>'units_paid')::int, (payload->>'units_unpaid')::int,
 			        (payload->>'grain_total')::float, (payload->>'silver_gross')::float,
-			        (payload->>'silver_circulated')::float, (payload->>'silver_destroyed')::float
+			        (payload->>'silver_circulated')::float, (payload->>'silver_destroyed')::float,
+			        (payload->>'silver_unpaid')::float, (payload->'circulated_to')::text
 			 FROM events WHERE world_id = $1 AND event_type = 'UpkeepSettled' AND stream_id = $2`,
 			worldID, sid,
-		).Scan(&s.paid, &s.unpaid, &s.grain, &s.gross, &s.circ, &s.destroyed); err != nil {
+		).Scan(&s.paid, &s.unpaid, &s.grain, &s.gross, &s.circ, &s.destroyed, &s.unpaidSilver, &s.circulatedTo); err != nil {
 			t.Fatalf("read UpkeepSettled for %s: %v", sid, err)
 		}
 		return s
@@ -150,8 +156,9 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 			t.Errorf("%s UpkeepSettled = %+v, want %+v", name, got, want)
 		}
 	}
-	wantSettled("Argyros", readSettled(sA), settled{paid: 1, unpaid: 0, grain: 5, gross: 2, circ: 0, destroyed: 2})
-	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 8, gross: 6, circ: 0, destroyed: 6})
+	// Both units pay in full → no circulation (no soldShare), no unpaid, empty map.
+	wantSettled("Argyros", readSettled(sA), settled{paid: 1, unpaid: 0, grain: 5, gross: 2, circ: 0, destroyed: 2, unpaidSilver: 0, circulatedTo: "{}"})
+	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 8, gross: 6, circ: 0, destroyed: 6, unpaidSilver: 0, circulatedTo: "{}"})
 
 	// ── SilverAudit stocks (first audit ⇒ no prev, mined 0, delta 0). ──
 	// A: 10000 − 2 = 9998; B: 10000 − 6 = 9994 → liquid 19992. fund 500+300=800.

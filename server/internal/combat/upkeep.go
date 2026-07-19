@@ -246,8 +246,11 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 				}
 			}
 		} else {
-			// Unpaid.
-			agg(sid).unitsUnpaid++
+			// Unpaid — silver the town couldn't afford. silver_unpaid keeps this
+			// out of silver_destroyed: it never left the world, the gate stopped it.
+			a := agg(sid)
+			a.unitsUnpaid++
+			a.silverUnpaid += silverNeed
 			h.recordUnpaid(ctx, u, e.WorldID, loyalty, sid)
 		}
 	}

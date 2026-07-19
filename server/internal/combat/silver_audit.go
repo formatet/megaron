@@ -24,28 +24,37 @@ type upkeepAgg struct {
 	grainTotal       float64
 	silverGross      float64 // silver actually debited for upkeep
 	silverCirculated float64 // credited back to a garrison town (Del C; 0 until then)
-	silverDestroyed  float64 // left the world entirely (= gross until Del C)
+	silverDestroyed  float64 // left the world entirely
+	silverUnpaid     float64 // gate-stopped: never debited, never left the world
 }
 
-// UpkeepSettledPayload is the per-settlement daily upkeep outcome. silver_gross
-// = silver_circulated + silver_destroyed always holds. The circulated field is
-// present from the first version so the schema never has to change when Del C
-// starts populating it.
+// UpkeepSettledPayload is the per-settlement daily upkeep outcome. For paid units
+// silver_gross = silver_circulated + silver_destroyed; silver_unpaid is the
+// separate bucket for upkeep the affordability gate stopped (kept out of
+// destroyed so the flow analysis can tell real destruction from a gate-stop —
+// review condition, Perplexity). circulated_to maps recipient settlement → amount
+// for the credit leg; empty until Del C, present in the schema from the first
+// version so the later payer-variant (metropolis-as-payer) needs no schema change.
 type UpkeepSettledPayload struct {
-	SettlementID     uuid.UUID `json:"settlement_id"`
-	UnitsPaid        int       `json:"units_paid"`
-	UnitsUnpaid      int       `json:"units_unpaid"`
-	GrainTotal       float64   `json:"grain_total"`
-	SilverGross      float64   `json:"silver_gross"`
-	SilverCirculated float64   `json:"silver_circulated"`
-	SilverDestroyed  float64   `json:"silver_destroyed"`
+	SettlementID     uuid.UUID             `json:"settlement_id"`
+	UnitsPaid        int                   `json:"units_paid"`
+	UnitsUnpaid      int                   `json:"units_unpaid"`
+	GrainTotal       float64               `json:"grain_total"`
+	SilverGross      float64               `json:"silver_gross"`
+	SilverCirculated float64               `json:"silver_circulated"`
+	SilverDestroyed  float64               `json:"silver_destroyed"`
+	SilverUnpaid     float64               `json:"silver_unpaid"`
+	CirculatedTo     map[uuid.UUID]float64 `json:"circulated_to"`
 }
 
 // SilverAuditPayload is the world's daily silver stock-take. Stocks are point-
-// in-time; mined_since_last is the only inflow term (genesis seeds fold into the
-// residual — see plan). Destruction is not stored: it is derived offline as
-// audit_prev_total + mined_since_last + genesis − current_total, so no sink has
-// to be instrumented individually here.
+// in-time; mined_since_last is the only inflow term. No destruction figure is
+// stored: the residual is derived offline as `unattributed_delta` =
+// audit_prev_total + mined_since_last − current_total (genesis seeds fold into
+// it). It is deliberately NOT called "destruction" — it mixes rites, builds,
+// recruitment and genesis until those are separately instrumented, so the name
+// must not claim more than it knows (review condition, Perplexity). The largest
+// sink (upkeep) is itemised via UpkeepSettled; the rest stays unattributed here.
 type SilverAuditPayload struct {
 	AuditTick      int     `json:"audit_tick"`
 	LiquidTotal    float64 `json:"liquid_total"`
@@ -64,6 +73,13 @@ func (p SilverAuditPayload) total() float64 { return p.LiquidTotal + p.FundTotal
 // appends above).
 func (h *UpkeepHandler) emitUpkeepSettled(ctx context.Context, worldID uuid.UUID, aggs map[uuid.UUID]*upkeepAgg) {
 	for sid, a := range aggs {
+		// circulated_to: recipient → amount. In the MVP payer=recipient, so a single
+		// entry {sid: circulated} when anything circulated; empty ({}) otherwise. The
+		// map (not a scalar) is what carries the later metropolis-as-payer variant.
+		circulatedTo := map[uuid.UUID]float64{}
+		if a.silverCirculated > 0 {
+			circulatedTo[sid] = a.silverCirculated
+		}
 		_, _ = h.store.Append(ctx, sid, events.StreamProvince, "UpkeepSettled",
 			UpkeepSettledPayload{
 				SettlementID:     sid,
@@ -73,6 +89,8 @@ func (h *UpkeepHandler) emitUpkeepSettled(ctx context.Context, worldID uuid.UUID
 				SilverGross:      a.silverGross,
 				SilverCirculated: a.silverCirculated,
 				SilverDestroyed:  a.silverDestroyed,
+				SilverUnpaid:     a.silverUnpaid,
+				CirculatedTo:     circulatedTo,
 			},
 			worldID, nil)
 	}
