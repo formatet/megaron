@@ -31,6 +31,13 @@ import (
 	"github.com/poleia/server/internal/unit/shipnames"
 )
 
+// maxParallelBuilds caps how many buildings a single settlement may have
+// queued at once (Build's queue guard, below). Hoisted to package scope
+// (P10, soak 2026-07-18) so Get can also surface it as "build_queue_max"
+// alongside "build_queue" — before this it only ever appeared in the 422
+// error a player got AFTER trying to queue a 3rd building.
+const maxParallelBuilds = 2
+
 // ProvinceHandler handles HTTP requests for province endpoints.
 type ProvinceHandler struct {
 	pool       *pgxpool.Pool
@@ -631,6 +638,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"net_grain_per_day_after_upkeep":  netGrainPerDay,
 			"net_silver_per_day_after_upkeep": netSilverPerDay,
 			"build_queue":                     buildQueue,
+			"build_queue_max":                 maxParallelBuilds,
 			"training_units":                  trainingUnits,
 			"buildings":                       buildings,
 			"can_afford":                      buildAfford,
@@ -876,8 +884,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	// 1. Walls/towers/bronze walls upgrade an existing wall_level; everything else
 	//    is a one-instance building (production_rules use UPSERT, duplicates waste resources).
 	// 2. No double-queueing the same building.
-	// 3. Cap concurrent queue at maxParallelBuilds.
-	const maxParallelBuilds = 2
+	// 3. Cap concurrent queue at maxParallelBuilds (package-level const above).
 	upgradeable := map[string]bool{"wall": true}
 
 	if !upgradeable[req.BuildingType] {
@@ -1156,21 +1163,30 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 }
 
 // BuildingCatalogue handles GET /api/v1/buildings — returns the static catalogue of
-// all constructable buildings: costs, duration, gate (requires_coastal, requires_deposit)
-// joined from production_rules, and a human purpose string.
+// all constructable buildings: costs, duration, gate (requires_coastal, requires_deposit,
+// requires_terrain) joined from production_rules, and a human purpose string.
 // No world auth required — this is static reference data.
 func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Request) {
-	// Load requires_coastal and requires_deposit per building_type from production_rules.
-	// A building may have multiple rules; we collect all deposit requirements and
-	// collapse coastal to a single bool (any rule requiring coastal → true).
+	// Load requires_coastal, requires_deposit and terrain_type per building_type
+	// from production_rules. A building may have multiple rules; we collect all
+	// deposit requirements, collapse coastal to a single bool (any rule requiring
+	// coastal → true), and — for requires_terrain — only flag a terrain set when
+	// EVERY rule for that building names a terrain (no NULL/"any terrain" row):
+	// farm, lumbermill etc. have terrain-conditioned BONUS rules alongside a
+	// terrain-free baseline rule, so they still produce something anywhere and
+	// must not be flagged. Winery (P10, soak 2026-07-18) has exactly one rule,
+	// terrain_type='hills', and NO baseline — built off-hills it produces
+	// nothing at all, silently, which is exactly the "hidden gate" this closes.
 	type gateInfo struct {
 		requiresCoastal  bool
 		requiresDeposits []string
+		terrains         map[string]bool
+		hasAnyTerrain    bool // saw a NULL terrain_type row (matches any terrain)
 	}
 	gates := map[string]*gateInfo{}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT DISTINCT building_type, requires_coastal, requires_deposit
+		`SELECT building_type, terrain_type, requires_coastal, requires_deposit
 		 FROM production_rules
 		 WHERE building_type IS NOT NULL`,
 	)
@@ -1178,19 +1194,38 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		defer rows.Close()
 		for rows.Next() {
 			var bt string
+			var terrain *string
 			var coastal bool
 			var deposit *string
-			if err := rows.Scan(&bt, &coastal, &deposit); err != nil {
+			if err := rows.Scan(&bt, &terrain, &coastal, &deposit); err != nil {
 				continue
 			}
-			if _, ok := gates[bt]; !ok {
-				gates[bt] = &gateInfo{}
+			g, ok := gates[bt]
+			if !ok {
+				g = &gateInfo{terrains: map[string]bool{}}
+				gates[bt] = g
 			}
 			if coastal {
-				gates[bt].requiresCoastal = true
+				g.requiresCoastal = true
 			}
 			if deposit != nil && *deposit != "" {
-				gates[bt].requiresDeposits = append(gates[bt].requiresDeposits, *deposit)
+				// No DISTINCT in the query above (terrain_type now varies per row for
+				// the same building/deposit pair) — dedupe here instead.
+				dup := false
+				for _, d := range g.requiresDeposits {
+					if d == *deposit {
+						dup = true
+						break
+					}
+				}
+				if !dup {
+					g.requiresDeposits = append(g.requiresDeposits, *deposit)
+				}
+			}
+			if terrain == nil {
+				g.hasAnyTerrain = true
+			} else {
+				g.terrains[*terrain] = true
 			}
 		}
 	}
@@ -1202,6 +1237,7 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		DurationMinutes  float64            `json:"duration_minutes"`
 		RequiresCoastal  bool               `json:"requires_coastal,omitempty"`
 		RequiresDeposits []string           `json:"requires_deposits,omitempty"`
+		RequiresTerrain  []string           `json:"requires_terrain,omitempty"`
 		Purpose          string             `json:"purpose"`
 	}
 
@@ -1225,7 +1261,16 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		if g, ok := gates[bt]; ok {
 			entry.RequiresCoastal = g.requiresCoastal
 			if len(g.requiresDeposits) > 0 {
+				sort.Strings(g.requiresDeposits)
 				entry.RequiresDeposits = g.requiresDeposits
+			}
+			if !g.hasAnyTerrain && len(g.terrains) > 0 {
+				terrains := make([]string, 0, len(g.terrains))
+				for t := range g.terrains {
+					terrains = append(terrains, t)
+				}
+				sort.Strings(terrains)
+				entry.RequiresTerrain = terrains
 			}
 		}
 		result = append(result, entry)

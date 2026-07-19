@@ -22,6 +22,7 @@ func buildCmd() *cobra.Command {
   poleia build --type farm
   poleia build --type harbour          # requires coastal (adjacent sea hex)
   poleia build --type mine --province <province-id>   # build in a colony
+  poleia build --type winery           # produces nothing unless a hills tile is in catchment
   poleia build --queue                 # see what's already queued, with cancel-build IDs`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -58,13 +59,16 @@ func buildCmd() *cobra.Command {
 					DurationMinutes  float64            `json:"duration_minutes"`
 					RequiresCoastal  bool               `json:"requires_coastal"`
 					RequiresDeposits []string           `json:"requires_deposits"`
+					RequiresTerrain  []string           `json:"requires_terrain"`
 					Purpose          string             `json:"purpose"`
 				}
 				if err := json.Unmarshal(data, &catalogue); err != nil {
 					return err
 				}
-				fmt.Printf("%-14s  %-28s  %-8s  %-24s  %s\n", "Type", "Costs", "Mins", "Requires", "Purpose")
-				fmt.Println(strings.Repeat("─", 100))
+				fmt.Println("Build queue: `build --queue` shows how many slots your settlement has left.")
+				fmt.Println()
+				fmt.Printf("%-14s  %-28s  %-8s  %-30s  %s\n", "Type", "Costs", "Mins", "Requires", "Purpose")
+				fmt.Println(strings.Repeat("─", 105))
 				for _, b := range catalogue {
 					// Format costs: "timber×50 stone×20"
 					costParts := make([]string, 0, len(b.Costs))
@@ -85,12 +89,19 @@ func buildCmd() *cobra.Command {
 					for _, d := range b.RequiresDeposits {
 						reqs = append(reqs, d+" deposit")
 					}
+					if len(b.RequiresTerrain) > 0 {
+						// P10 (soak 2026-07-18): buildings whose ENTIRE production is
+						// terrain-locked (e.g. winery — hills only, no fallback rule)
+						// produced nothing off that terrain, silently, until you tried
+						// it. Surface the requirement up front.
+						reqs = append(reqs, strings.Join(b.RequiresTerrain, "/")+" terrain")
+					}
 					reqStr := strings.Join(reqs, ", ")
 					if reqStr == "" {
 						reqStr = "—"
 					}
 
-					fmt.Printf("%-14s  %-28s  %-8.0f  %-24s  %s\n",
+					fmt.Printf("%-14s  %-28s  %-8.0f  %-30s  %s\n",
 						b.Type, costStr, b.DurationMinutes, reqStr, b.Purpose)
 				}
 				return nil
@@ -153,6 +164,12 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 		return nil
 	}
 	bq, _ := sett["build_queue"].([]any)
+	// P10 (soak 2026-07-18): the queue depth cap (build's 422 said "max N
+	// concurrent" only AFTER a 3rd build was refused) is now printed up front
+	// here, every time — not just when you hit it.
+	if qmax, ok := sett["build_queue_max"].(float64); ok {
+		fmt.Printf("Queue: %d/%.0f slots used\n", len(bq), qmax)
+	}
 	if len(bq) == 0 {
 		fmt.Println("Build queue is empty.")
 		return nil

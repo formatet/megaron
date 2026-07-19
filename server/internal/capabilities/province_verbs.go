@@ -10,14 +10,18 @@ import (
 // canBuild: constructing SOME building is (almost) always possible — most
 // building types (farm, barracks, temple, ...) carry no structural gate at
 // all, only a resource cost, which capabilities does not check (see craft/
-// recruit for the affordance pattern this DOES apply to). The two building
-// types that DO carry a live structural gate (harbour: coastal; mine/
-// silver_mine: catchment deposit) are already fully surfaced by the existing
+// recruit for the affordance pattern this DOES apply to). The building types
+// that DO carry a live structural gate (harbour: coastal; mine/silver_mine:
+// catchment deposit; winery: hills terrain, P10 soak 2026-07-18 — its only
+// production_rules row is terrain-locked with no fallback, so off-hills it
+// silently produces nothing) are already fully surfaced by the existing
 // `poleia build --list` / `GET /buildings` catalogue (requires_coastal /
-// requires_deposits per type) — the anchor this capabilities layer
-// generalizes from. Duplicating that per-type gate here as a single
-// AND-computed `available` would misrepresent reality (build IS usable even
-// when harbour specifically is not), so build is listed trivially, per F3.
+// requires_deposits / requires_terrain per type), same for the build queue's
+// concurrent-slot cap (`poleia build --queue` / Get's build_queue_max) — the
+// anchor this capabilities layer generalizes from. Duplicating that per-type
+// gate here as a single AND-computed `available` would misrepresent reality
+// (build IS usable even when harbour specifically is not), so build is
+// listed trivially, per F3.
 func canBuild(cc checkContext) Verb {
 	return verb("build", CategoryProvince,
 		"Queue construction of a building in this settlement (see `poleia build --list` for per-type costs and gates such as coastal/deposit).",
