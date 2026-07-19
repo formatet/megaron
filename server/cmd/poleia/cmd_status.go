@@ -96,6 +96,15 @@ func statusCmd() *cobra.Command {
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty, settlementsNote, coastalNote)
 			fmt.Println("  Loyalty 1–4 (1=lägst; revolt kräver även fientlig garnison-majoritet + utlösande händelse)")
+			// P11 (soak 2026-07-18): loyalty had no visible raising lever — colonies
+			// sat at 1–2 with no signal why, or what to do about it. The mechanic
+			// already exists server-side (internal/loyalty: welfare.go daily
+			// kharis/feeding/diet ticks, decay.go neglect, colony.go overextension,
+			// borrowed_army.go, plus gift/battle deltas in api/handlers/settlement.go
+			// + internal/combat/unit_arrival.go) — it was just never surfaced. Pull
+			// the settlement's own loyalty-log (already-existing endpoint, never
+			// wired into keryx) so a Wanax sees WHY loyalty moved, not just the number.
+			printLoyaltyLog(c, cfg.WorldID, sett)
 			fmt.Println()
 
 			// Sitos-fonden (grain reserve): the automatic last-resort counterparty
@@ -351,4 +360,74 @@ func statusCmd() *cobra.Command {
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
 	return cmd
+}
+
+// loyaltyLogEntry mirrors one row of the settlement loyalty-log endpoint
+// (api/handlers/settlement.go SettlementHandler.LoyaltyLog, wired at GET
+// .../settlements/:id/loyalty-log in cmd/server/main.go).
+type loyaltyLogEntry struct {
+	EventType    string `json:"event_type"`
+	LoyaltyDelta int    `json:"loyalty_delta"`
+	Reason       string `json:"reason"`
+	CreatedAt    string `json:"created_at"`
+}
+
+// loyaltyLegend is the static "what moves this number" explainer (P11, soak
+// 2026-07-18: "loyalty stuck at 1-2, no visible raising mechanic"). The
+// mechanic already exists server-side — daily welfare ticks for kharis/
+// feeding/diet variety (internal/loyalty/welfare.go), neglect decay
+// (decay.go), colony overextension (colony.go), borrowed-army penalties
+// (borrowed_army.go), plus instant gift (api/handlers/settlement.go Gift)
+// and battle deltas (internal/combat/unit_arrival.go applyBattleLoyalty) — it
+// was just never surfaced to a Wanax. This legend names the actual levers so
+// `status` teaches the mechanic instead of just showing a stuck number.
+const loyaltyLegend = "  Höjs av: kharis ≥ favör-tröskel, mätt/varierad kost (dagliga welfare-tick), " +
+	"gåvor ≥50 silver-motsvarande (`poleia transfer`), vunna/försvarade strider.\n" +
+	"  Sänks av: svält, för många kolonier (överexpansion), försummelse (>2 dygn utan gåva), " +
+	"förlorade strider, lånad armé kvar för länge."
+
+// formatLoyaltyLog turns a settlement's loyalty-log entries into the lines
+// `status` prints under the Loyalty line — most recent first, capped at 5,
+// always followed by loyaltyLegend so the mechanic is explained even when a
+// fired event's reason string is terse. Pure — no DB, no HTTP — so this is
+// unit-testable without a live server.
+func formatLoyaltyLog(entries []loyaltyLogEntry) []string {
+	if len(entries) == 0 {
+		return []string{"  Inga lojalitetshändelser ännu.", loyaltyLegend}
+	}
+	lines := []string{"  Senaste lojalitetshändelser:"}
+	n := 5
+	if len(entries) < n {
+		n = len(entries)
+	}
+	for _, e := range entries[:n] {
+		lines = append(lines, fmt.Sprintf("    %+d  %-20s %s (%s)", e.LoyaltyDelta, e.EventType, e.Reason, localDone(e.CreatedAt)))
+	}
+	lines = append(lines, loyaltyLegend)
+	return lines
+}
+
+// printLoyaltyLog fetches and prints this settlement's recent loyalty-changing
+// events, falling back to the static legend alone when the settlement ID is
+// missing, the request fails, or the response doesn't parse — best-effort,
+// never blocks `status`.
+func printLoyaltyLog(c *Client, worldID string, sett map[string]any) {
+	settlementID, _ := sett["id"].(string)
+	if settlementID == "" {
+		fmt.Println(loyaltyLegend)
+		return
+	}
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/loyalty-log", worldID, settlementID))
+	if err != nil {
+		fmt.Println(loyaltyLegend)
+		return
+	}
+	var entries []loyaltyLogEntry
+	if jerr := json.Unmarshal(data, &entries); jerr != nil {
+		fmt.Println(loyaltyLegend)
+		return
+	}
+	for _, line := range formatLoyaltyLog(entries) {
+		fmt.Println(line)
+	}
 }
