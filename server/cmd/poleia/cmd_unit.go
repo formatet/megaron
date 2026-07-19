@@ -424,7 +424,8 @@ type colonizePreview struct {
 		DaysUntilEmpty  *float64 `json:"days_until_empty"`
 		WithFarmPerTick float64  `json:"with_farm_per_tick"`
 	} `json:"grain"`
-	UnknownHexes int `json:"unknown_hexes"`
+	UnknownHexes    int    `json:"unknown_hexes"`
+	IsolatedWarning string `json:"isolated_warning,omitempty"`
 }
 
 // fetchColonizePreview GETs the grain/goods forecast for founding a colony at (q,r).
@@ -534,6 +535,14 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	}
 	if len(extras) > 0 {
 		fmt.Printf("  Övrigt: %s\n", strings.Join(extras, ", "))
+	}
+
+	// P8 (soak 2026-07-18): make an isolated founding site visible BEFORE the
+	// Wanax commits — server-computed conservative heuristic (no hills, no
+	// ore, no neighbour within reach; see isolationWarningText in
+	// api/handlers/world.go). Heads-up, not a gate — founding still proceeds.
+	if p.IsolatedWarning != "" {
+		fmt.Printf("  ⚠ %s\n", p.IsolatedWarning)
 	}
 }
 

@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math"
 	"math/rand"
 	"net/http"
@@ -571,7 +572,41 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
+	// P8 (soak 2026-07-18): a plains-only, no-neighbour founding site is a
+	// structural dead end for bronze (copper+tin), cult-chain expansion, and
+	// trade — none of which this forecast's grain math says anything about.
+	// The founding design is deliberately "prognos + spelarval, INTE garanti"
+	// (CLAUDE.md; temenos_nomadic_host_plan.md) — a Wanax may still choose an
+	// isolated site — so this is a heads-up alongside the grain forecast, not
+	// a gate: same spirit as the grain days-until-empty figure above.
+	// Conservative on purpose: only fires when every catchment hex is
+	// actually known (unknown == 0) — a fogged hex could hold the very
+	// hills/deposit that clears the flag, and a false "isolated" reading on
+	// an unexplored-but-fine site would be worse than staying silent.
+	var isolatedWarning string
+	if unknown == 0 {
+		hasHills, hasMetal := false, false
+		for _, e := range view {
+			if !e.Known {
+				continue
+			}
+			if e.Terrain == "hills" {
+				hasHills = true
+			}
+			if e.CopperDeposit || e.TinDeposit || e.SilverDeposit {
+				hasMetal = true
+			}
+		}
+		hasNeighbor := true // default to "not isolated" if the neighbour check errors — never false-alarm on a DB hiccup.
+		if !hasHills && !hasMetal {
+			if hn, nerr := anySettlementWithin(ctx, h.pool, worldID, q, rr, isolationNeighborRadius); nerr == nil {
+				hasNeighbor = hn
+			}
+		}
+		isolatedWarning = isolationWarningText(hasHills, hasMetal, hasNeighbor, isolationNeighborRadius)
+	}
+
+	resp := map[string]any{
 		"catchment": view,
 		"goods":     goods,
 		"grain": map[string]any{
@@ -582,7 +617,63 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"with_farm_per_tick": withFarmProdPerTick,
 		},
 		"unknown_hexes": unknown,
-	})
+	}
+	if isolatedWarning != "" {
+		resp["isolated_warning"] = isolatedWarning
+	}
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// isolationWarningText returns the P8 isolated-start message, or "" when the
+// site clears any one of the three checks. Pure — no DB, no HTTP — so the
+// heuristic is unit-testable without a live server or world data.
+func isolationWarningText(hasHills, hasMetal, hasNeighbor bool, radius int) string {
+	if hasHills || hasMetal || hasNeighbor {
+		return ""
+	}
+	return fmt.Sprintf(
+		"isolated start: no hills and no copper/tin/silver deposit in this catchment, "+
+			"and no other settlement within %d hexes — bronze, cult expansion, and trade may be "+
+			"a permanent dead end here. Founding is still your choice; this is a heads-up, not a block.",
+		radius)
+}
+
+// isolationNeighborRadius is the "practical reach" heuristic radius for the
+// isolated-start warning: generously large on purpose, so the flag only ever
+// fires on a genuinely remote site, never a merely-quiet one. Calibration —
+// not an invariant — retune freely; sized above kingdomGossipRadius (5) and
+// oracleRadius (8) since this asks a coarser question ("is there anyone out
+// there at all") than either.
+const isolationNeighborRadius = 10
+
+// anySettlementWithin reports whether any active, owned settlement in worldID
+// lies within radius hexes of (q, r). A world holds at most ~100 Wanax
+// (CLAUDE.md), so fetching every settlement position and filtering in Go via
+// province.HexDistance is cheap — no spatial index needed.
+func anySettlementWithin(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, q, r, radius int) (bool, error) {
+	rows, err := pool.Query(ctx,
+		`SELECT p.map_q, p.map_r
+		 FROM provinces p
+		 JOIN settlements s ON s.province_id = p.id
+		 WHERE p.world_id = $1 AND s.owner_id IS NOT NULL AND s.state = 'active'`,
+		worldID,
+	)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	target := province.MapPosition{Q: q, R: r}
+	for rows.Next() {
+		var oq, or_ int
+		if err := rows.Scan(&oq, &or_); err != nil {
+			continue
+		}
+		if province.HexDistance(target, province.MapPosition{Q: oq, R: or_}) <= radius {
+			return true, nil
+		}
+	}
+	return false, rows.Err()
 }
 
 // Provinces handles GET /worlds/:worldID/provinces — returns all province markers for the map.
