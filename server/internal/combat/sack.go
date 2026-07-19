@@ -35,11 +35,15 @@ func (h *UnitArrivalHandler) sackSettlement(
 	settlementID := *dest.settlementID
 
 	// ── Loot manifest: silver 50%, everything else weighted by portability. ──
+	// `g.weight > 0` is load-bearing, not cosmetic: weight-0 goods (cult — temple
+	// output, not a physical good you can cart home) would make the `0.5 / g.weight`
+	// divisor a division-by-zero that aborts the whole tx mid-stream. Excluding them
+	// is also correct on the merits — cult is not lootable plunder.
 	rows, err := tx.Query(ctx,
 		`SELECT sg.good_key, floor(settled(sg.amount, sg.rate, sg.calc_tick) *
 		        CASE WHEN sg.good_key = 'silver' THEN 0.5 ELSE 0.5 / g.weight END) AS loot
 		 FROM settlement_goods sg JOIN goods g ON g.key = sg.good_key
-		 WHERE sg.settlement_id = $1`,
+		 WHERE sg.settlement_id = $1 AND g.weight > 0`,
 		settlementID,
 	)
 	if err != nil {
