@@ -125,6 +125,7 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	store := events.NewStore(pool)
 	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
 	h := NewUpkeepHandler(pool, sched, store, nil)
+	h.soldShare = 0 // audit plumbing baseline: whole upkeep destroyed, no circulation
 
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)
