@@ -843,13 +843,28 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 
 // Unload handles POST /worlds/{worldID}/units/{shipID}/unload
 //
-// Disembarks the cargo land unit from a naval unit. Rules (C6 plan):
+// Disembarks the cargo land unit from a naval unit. Rules (C6 plan, extended
+// P7 soak fix 2026-07-19):
 //   - Caller must own the ship.
 //   - Ship must have a cargo unit (cargo_unit_id non-null).
-//   - Ship must be garrisoned at a coastal (adjacent to sea) settlement or harbour.
+//   - Ship must be either:
+//     (a) garrisoned at a coastal (adjacent to sea) settlement or harbour — the
+//         original path, cargo joins that settlement's garrison; or
+//     (b) field-positioned (status='positioned', no settlement) at a sea hex
+//         next to unclaimed land — the cargo steps ashore there as a
+//         field-positioned unit of its own, exactly like a unit that marched
+//         there directly, so a normal `march --intent colonize` can found a
+//         colony on it afterwards.
 //
-// Outcome: cargo unit status → 'garrison', q/r = ship's position, settlement_id =
-// ship's settlement; ship.cargo_unit_id = NULL.
+// Before (b), landing troops from a ship anywhere but an already-friendly
+// harbour was structurally impossible: a ship scouting to genuinely new
+// coastline had no way to put its cargo ashore there at all, so a sea-enclosed
+// start could never expand territorially by ship (P7, temenos_soak_fixlista
+// 2026-07-18). Amphibious ASSAULT against an enemy settlement already worked
+// via a separate path (march intent=assault, unit_arrival.go
+// resolveAmphibiousAssault) — this is the peaceful equivalent for empty land.
+//
+// Outcome: cargo unit status → 'garrison' (a) or 'positioned' (b); ship.cargo_unit_id = NULL.
 // Emits ShipUnloaded.
 func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
@@ -883,46 +898,75 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, "unit is not a naval vessel")
 		return
 	}
-	if ship.Status != unit.StatusGarrison {
+	if ship.Status != unit.StatusGarrison && ship.Status != unit.StatusPositioned {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("ship must be garrisoned to unload (status: %s)", string(ship.Status)))
+			fmt.Sprintf("ship must be garrisoned or positioned to unload (status: %s)", string(ship.Status)))
 		return
 	}
 	if ship.CargoUnitID == nil {
 		writeError(w, http.StatusUnprocessableEntity, "ship carries no unit")
 		return
 	}
-	if ship.SettlementID == nil {
-		writeError(w, http.StatusUnprocessableEntity, "ship has no settlement; cannot unload")
-		return
-	}
 
-	// Disembark gating: must be coastal or harbour.
-	var disembarkCoastal bool
-	if err := h.pool.QueryRow(ctx,
-		`SELECT COALESCE(p.coastal, false)
-		 FROM settlements s
-		 JOIN provinces p ON p.id = s.province_id
-		 WHERE s.id = $1`,
-		*ship.SettlementID,
-	).Scan(&disembarkCoastal); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not check settlement coastal")
-		return
-	}
-	if !disembarkCoastal {
-		var hasHarbour bool
-		_ = h.pool.QueryRow(ctx,
-			`SELECT EXISTS(
-			   SELECT 1 FROM buildings b
-			   JOIN settlements s ON s.id = b.settlement_id
-			   WHERE s.id = $1 AND b.building_type = 'harbour'
-			 )`,
+	// destQ/destR is where the cargo unit ends up; destSettlementID is nil for
+	// a bare-land landing (b). Resolved up front so both the pre-flight and the
+	// in-tx re-check below agree on the same target.
+	var destQ, destR int
+	var destSettlementID *uuid.UUID
+
+	if ship.SettlementID != nil {
+		// (a) Ship is docked at a settlement — disembark gating: must be coastal or harbour.
+		var disembarkCoastal bool
+		if err := h.pool.QueryRow(ctx,
+			`SELECT COALESCE(p.coastal, false)
+			 FROM settlements s
+			 JOIN provinces p ON p.id = s.province_id
+			 WHERE s.id = $1`,
 			*ship.SettlementID,
-		).Scan(&hasHarbour)
-		if !hasHarbour {
-			writeError(w, http.StatusUnprocessableEntity, "units can only disembark at coastal settlements or harbours")
+		).Scan(&disembarkCoastal); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check settlement coastal")
 			return
 		}
+		if !disembarkCoastal {
+			var hasHarbour bool
+			_ = h.pool.QueryRow(ctx,
+				`SELECT EXISTS(
+				   SELECT 1 FROM buildings b
+				   JOIN settlements s ON s.id = b.settlement_id
+				   WHERE s.id = $1 AND b.building_type = 'harbour'
+				 )`,
+				*ship.SettlementID,
+			).Scan(&hasHarbour)
+			if !hasHarbour {
+				writeError(w, http.StatusUnprocessableEntity, "units can only disembark at coastal settlements or harbours")
+				return
+			}
+		}
+		if ship.Q != nil {
+			destQ = *ship.Q
+		}
+		if ship.R != nil {
+			destR = *ship.R
+		}
+		destSettlementID = ship.SettlementID
+	} else {
+		// (b) Ship is field-positioned (out at sea) with no settlement of its
+		// own — land the cargo on an adjacent hex of unclaimed dry ground.
+		if ship.Q == nil || ship.R == nil {
+			writeError(w, http.StatusUnprocessableEntity, "ship has no known position; cannot resolve a landing hex")
+			return
+		}
+		lq, lr, found, nErr := province.NearestUnclaimedLandNeighbor(ctx, h.pool, worldID, *ship.Q, *ship.R)
+		if nErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not resolve a landing hex")
+			return
+		}
+		if !found {
+			writeError(w, http.StatusUnprocessableEntity,
+				"no unclaimed land adjacent to this hex to land on — every neighbour is sea, mountain, or already settled; sail somewhere with open shore, or dock at one of your own harbours to unload normally")
+			return
+		}
+		destQ, destR = lq, lr
 	}
 
 	cargoID := *ship.CargoUnitID
@@ -932,15 +976,6 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load cargo unit")
 		return
-	}
-
-	// Get destination position from ship.
-	var destQ, destR int
-	if ship.Q != nil {
-		destQ = *ship.Q
-	}
-	if ship.R != nil {
-		destR = *ship.R
 	}
 
 	tx, err := h.pool.Begin(ctx)
@@ -959,7 +994,7 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "ship not found in transaction")
 		return
 	}
-	if unit.Status(shipStatus) != unit.StatusGarrison {
+	if unit.Status(shipStatus) != unit.StatusGarrison && unit.Status(shipStatus) != unit.StatusPositioned {
 		writeError(w, http.StatusConflict, "ship status changed; unload not applied")
 		return
 	}
@@ -977,16 +1012,24 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Place cargo unit at ship's settlement.
+	// Place the cargo unit at its resolved destination: garrisoned at the
+	// ship's settlement (a), or field-positioned on the bare land hex (b) —
+	// mirrors arriveGarrison's own "positioned when settlementID is nil" rule
+	// (unit_arrival.go), so the same `march --intent colonize` path that
+	// handles any other field-positioned unit picks this one up too.
+	newStatus := "garrison"
+	if destSettlementID == nil {
+		newStatus = "positioned"
+	}
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET
-		   status        = 'garrison',
-		   settlement_id = $2,
-		   q             = $3,
-		   r             = $4,
+		   status        = $2,
+		   settlement_id = $3,
+		   q             = $4,
+		   r             = $5,
 		   updated_at    = now()
 		 WHERE id = $1`,
-		cargoID, *ship.SettlementID, destQ, destR,
+		cargoID, newStatus, destSettlementID, destQ, destR,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not disembark unit")
 		return
@@ -1014,6 +1057,7 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		"cargo_unit_id": cargoID,
 		"q":             destQ,
 		"r":             destR,
+		"status":        newStatus,
 	})
 }
 

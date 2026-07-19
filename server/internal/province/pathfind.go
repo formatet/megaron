@@ -146,6 +146,54 @@ func NearestSeaNeighbor(ctx context.Context, db Queryer, worldID uuid.UUID, q, r
 	return 0, 0, false, nil
 }
 
+// NearestUnclaimedLandNeighbor returns the coordinates of a hex adjacent to
+// (q,r) that is land (not sea, not impassable mountain) and has no settlement
+// of its own — i.e. open ground a land unit could step onto or found a colony
+// on. P7 soak fix (2026-07-19, "unit unload kräver hamn/garrison — embark kan
+// aldrig etablera fotfäste på ny mark"): a ship carrying cargo that sails to a
+// sea hex next to unclaimed shore (rather than into one of its own harbours)
+// used to have no way at all to put that cargo ashore — Unload required the
+// ship to already be garrisoned at a friendly settlement, so a ship-borne
+// landing on genuinely new coastline was structurally impossible. This lets
+// the Unload handler find where the cargo can step off onto dry, unclaimed
+// land. found=false when every neighbour is sea/mountain or already settled
+// (by anyone) — the caller reports that as a clear, actionable rejection
+// rather than silently doing nothing.
+func NearestUnclaimedLandNeighbor(ctx context.Context, db Queryer, worldID uuid.UUID, q, r int) (lq, lr int, found bool, err error) {
+	for _, d := range axialDirs {
+		nq, nr := q+d[0], r+d[1]
+		rows, qerr := db.Query(ctx,
+			`SELECT mt.terrain,
+			        EXISTS(
+			          SELECT 1 FROM provinces p JOIN settlements s ON s.province_id = p.id
+			          WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3
+			        ) AS settled
+			 FROM map_tiles mt
+			 WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3`,
+			worldID, nq, nr,
+		)
+		if qerr != nil {
+			return 0, 0, false, qerr
+		}
+		var terrain string
+		var settled bool
+		hasRow := rows.Next()
+		if hasRow {
+			if scanErr := rows.Scan(&terrain, &settled); scanErr != nil {
+				rows.Close()
+				return 0, 0, false, scanErr
+			}
+		}
+		rows.Close()
+		isSea := terrain == "coastal_sea" || terrain == "deep_sea"
+		isMountain := terrain == "mountain_limestone" || terrain == "mountain_red"
+		if hasRow && !isSea && !isMountain && !settled {
+			return nq, nr, true, nil
+		}
+	}
+	return 0, 0, false, nil
+}
+
 // minPassableCost returns the cheapest TerrainMoveHours among terrains passable
 // for the given category. It is the admissible A* heuristic multiplier: the
 // heuristic (HexDistance × minPassableCost) must never overestimate the true

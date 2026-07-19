@@ -260,11 +260,32 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	}
 
 	// Explore: the unit marches to the target and returns home automatically —
-	// it needs a home to return to, so it must currently be garrisoned at a
-	// settlement (not already field-positioned).
-	if o.Intent == "explore" && u.SettlementID == nil {
-		return nil, reject(http.StatusUnprocessableEntity,
-			"explore requires a unit currently garrisoned at a settlement (it needs a home to return to)")
+	// it needs a home to return to. A garrisoned unit's home is simply the
+	// settlement it stands in. P7 soak fix (2026-07-19, "explore kräver
+	// garrison — moment 22 för skepp till havs"): a unit that is ALREADY
+	// field-positioned (no settlement — e.g. a ship that plain-marched out, or
+	// one that just landed cargo via Unload) used to be flatly rejected here
+	// with no way forward except sailing all the way home first just to issue
+	// the same order. It still needs a real settlement to return to, so
+	// instead of requiring it to be standing IN one right now, resolve the
+	// player's nearest OWNED settlement as home — the same "nearest own city"
+	// notion resolveOrderOrigin already uses for field-unit order dispatch
+	// (api/handlers/unit.go). Only reject when the player owns none at all.
+	var exploreHomeID *uuid.UUID
+	if o.Intent == "explore" {
+		if u.SettlementID != nil {
+			exploreHomeID = u.SettlementID
+		} else {
+			nearest, found, hErr := nearestOwnedSettlement(ctx, pool, o.WorldID, o.PlayerID, originQ, originR)
+			if hErr != nil {
+				return nil, reject(http.StatusInternalServerError, "could not resolve a home settlement for explore")
+			}
+			if !found {
+				return nil, reject(http.StatusUnprocessableEntity,
+					"explore requires at least one settlement of yours to return to, and you currently hold none")
+			}
+			exploreHomeID = &nearest
+		}
 	}
 	// Sentry: a naval sea order — a ship posts on a coastal_sea hex, holds there
 	// (projecting FOW + intercepting passing enemy caravans via the sentry stance)
@@ -429,10 +450,14 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			name := o.Name
 			nameArg = &name
 		}
-		if o.Intent == "explore" || o.Intent == "sentry" {
-			// Capture the home port (about to be nulled below) so the arrival
-			// handler — exploreArrived, or sentryArrived + its patrol timer —
-			// can turn the unit for home.
+		if o.Intent == "explore" {
+			// Resolved above — either the settlement the unit is standing in, or
+			// (P7 fix) the nearest owned settlement when it was already field-positioned.
+			homeSettlementArg = exploreHomeID
+		}
+		if o.Intent == "sentry" {
+			// Capture the home port (about to be nulled below) so
+			// sentryArrived's patrol timer can turn the ship for home.
 			homeSettlementArg = u.SettlementID
 		}
 	}
@@ -507,4 +532,38 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		TargetQ:       targetQ,
 		TargetR:       targetR,
 	}, nil
+}
+
+// nearestOwnedSettlement finds the player's active settlement closest to
+// (q,r) — used by the P7 explore fix above to give a field-positioned unit a
+// home to return to without requiring it to already be standing in one.
+// found=false when the player owns no active settlement at all.
+func nearestOwnedSettlement(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, q, r int) (uuid.UUID, bool, error) {
+	rows, err := pool.Query(ctx,
+		`SELECT s.id, p.map_q, p.map_r FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.state = 'active'`,
+		worldID, playerID,
+	)
+	if err != nil {
+		return uuid.Nil, false, err
+	}
+	defer rows.Close()
+	var best uuid.UUID
+	found := false
+	bestDist := 0
+	for rows.Next() {
+		var sid uuid.UUID
+		var sq, sr int
+		if rows.Scan(&sid, &sq, &sr) != nil {
+			continue
+		}
+		d := province.HexDistance(province.MapPosition{Q: sq, R: sr}, province.MapPosition{Q: q, R: r})
+		if !found || d < bestDist {
+			found = true
+			bestDist = d
+			best = sid
+		}
+	}
+	return best, found, rows.Err()
 }
