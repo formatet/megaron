@@ -144,6 +144,19 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		return sid, true
 	}
 
+	// Per-settlement silver/grain accounting for the UpkeepSettled audit event
+	// (silver flow bookkeeping, Del A). Keyed by paying settlement; units with no
+	// paying settlement (no capital yet) are not attributed.
+	aggs := make(map[uuid.UUID]*upkeepAgg)
+	agg := func(sid uuid.UUID) *upkeepAgg {
+		a := aggs[sid]
+		if a == nil {
+			a = &upkeepAgg{}
+			aggs[sid] = a
+		}
+		return a
+	}
+
 	// 3. Process each unit.
 	for _, u := range units {
 		up := UnitUpkeep(u.unitType, u.category, u.size)
@@ -179,6 +192,8 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 				} else if tag.RowsAffected() == 0 {
 					// Grain shortage — attrition.
 					disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
+				} else {
+					agg(sid).grainTotal += grainNeed
 				}
 			}
 		}
@@ -215,7 +230,13 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		}
 
 		if tag.RowsAffected() > 0 {
-			// Paid — reset unpaid_periods if needed.
+			// Paid. Pre-Del-C the whole debit leaves the world (destroyed); Del C
+			// splits gross into circulated (garrison sold spent at home) + destroyed.
+			a := agg(sid)
+			a.unitsPaid++
+			a.silverGross += silverNeed
+			a.silverDestroyed += silverNeed
+			// Reset unpaid_periods if needed.
 			if u.unpaidPeriods > 0 {
 				if _, err := h.pool.Exec(ctx,
 					`UPDATE units SET unpaid_periods = 0 WHERE id = $1`,
@@ -226,9 +247,15 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			}
 		} else {
 			// Unpaid.
+			agg(sid).unitsUnpaid++
 			h.recordUnpaid(ctx, u, e.WorldID, loyalty, sid)
 		}
 	}
+
+	// Silver flow bookkeeping (Del A): one UpkeepSettled per paying settlement,
+	// one SilverAudit for the world — both best-effort, after the loop.
+	h.emitUpkeepSettled(ctx, e.WorldID, aggs)
+	h.emitSilverAudit(ctx, e.WorldID)
 
 	// 4. Re-enqueue for the next daily cycle.
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUpkeepTick,
