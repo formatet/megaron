@@ -27,6 +27,23 @@ type SitosTransactionPayload struct {
 	FundSilver  float64 `json:"fund_silver"`
 }
 
+// SitosFundReleasePayload is the outcome of releasing a fund's over-cap overhang
+// into the settlement's liquid silver (silver-plan Del B). silver_moved > 0
+// always (no event on noop); fund_after is the fund balance after the move and is
+// always ≥ cap. A distinct event type — NOT a new "kind" on SitosTransaction,
+// whose semantics are frozen (event-versioning rule).
+//
+// Diegetic meaning (recorded here, NOT surfaced in the MVP): the fund is winding
+// down reserve it holds beyond what price stabilization needs — "the grain-watcher
+// repays the city" — so a future keryx/web feedback line has a legible story to
+// tell, not an unexplained silver payout.
+type SitosFundReleasePayload struct {
+	SettlementID uuid.UUID `json:"settlement_id"`
+	SilverMoved  float64   `json:"silver_moved"`
+	FundAfter    float64   `json:"fund_after"`
+	Cap          float64   `json:"cap"`
+}
+
 // SitosTickHandler is the self-rescheduling per-world stabilization pass. It runs
 // every tick (cadence +1, not daily), taxing a slice of each settlement's silver
 // into its fund and then buying surplus / selling shortage for subsistence goods
@@ -131,6 +148,14 @@ func (h *SitosTickHandler) tickSettlement(ctx context.Context, settlementID, wor
 		}
 	}
 
+	// Release leg: push any fund overhang above cap into the settlement's liquid
+	// silver, so the ~89% of M0 dammsuget into funds circulates. Reads the fund
+	// from the DB (locked above) rather than the clamped local — over-cap funds
+	// (e.g. after SITOS_FUND_CAP_MULT was lowered) live only in the DB.
+	if err := h.releaseOverhang(ctx, tx, settlementID, worldID, fundCap); err != nil {
+		return fmt.Errorf("release: %w", err)
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
@@ -206,6 +231,81 @@ func (h *SitosTickHandler) applyTax(ctx context.Context, tx pgx.Tx, settlementID
 		SitosTransactionPayload{Good: GoodSilver, Kind: "tax", SilverDelta: tax, GoodDelta: 0, FundSilver: newFund},
 		worldID, nil)
 	return newFund, nil
+}
+
+// releaseOverhang moves any Sitos fund above cap into the settlement's liquid
+// silver, bounded by the liquid silver cap's headroom. This is the sole
+// conservation-preserving path for over-cap funds: the alternative — letting the
+// cap's LEAST() clamps in the tax/sell legs silently claw the overhang down —
+// would destroy silver outright. The moved amount is computed BEFORE any UPDATE
+// (triple-gate principle: never clip after silver has left a party), so both
+// legs move exactly the same amount and silver stays conserved. Fund_after is
+// always ≥ cap: if liquid headroom can't absorb the whole overhang, the rest is
+// released on later ticks.
+func (h *SitosTickHandler) releaseOverhang(ctx context.Context, tx pgx.Tx, settlementID, worldID uuid.UUID, fundCap float64) error {
+	var fund float64
+	if err := tx.QueryRow(ctx,
+		`SELECT GREATEST(0, sitos_fund_silver) FROM settlements WHERE id = $1`,
+		settlementID,
+	).Scan(&fund); err != nil {
+		return fmt.Errorf("load fund: %w", err)
+	}
+	overhang := fund - fundCap
+	if overhang <= 0 {
+		return nil // fund within cap — noop
+	}
+
+	var liquid, silverCap float64
+	err := tx.QueryRow(ctx,
+		`SELECT COALESCE(GREATEST(0, settled(amount, rate, calc_tick)), 0), COALESCE(cap, 1000)
+		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
+		settlementID,
+	).Scan(&liquid, &silverCap)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil // no silver row to receive the release — leave the fund as is
+	}
+	if err != nil {
+		return fmt.Errorf("load silver: %w", err)
+	}
+
+	headroom := silverCap - liquid
+	if headroom <= 0 {
+		return nil // liquid already at cap; release the rest next tick
+	}
+	moved := overhang
+	if headroom < moved {
+		moved = headroom
+	}
+	if moved <= 0 {
+		return nil
+	}
+
+	// moved ≤ headroom ⇒ liquid+moved ≤ cap, so LEAST never clips (conserved).
+	if _, err := tx.Exec(ctx,
+		`UPDATE settlement_goods
+		    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
+		        calc_tick = current_world_tick()
+		  WHERE settlement_id = $2 AND good_key = 'silver'`,
+		moved, settlementID,
+	); err != nil {
+		return fmt.Errorf("credit settlement silver: %w", err)
+	}
+	if _, err := tx.Exec(ctx,
+		`UPDATE settlements SET sitos_fund_silver = GREATEST(0, sitos_fund_silver - $1) WHERE id = $2`,
+		moved, settlementID,
+	); err != nil {
+		return fmt.Errorf("debit fund: %w", err)
+	}
+
+	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "SitosFundRelease",
+		SitosFundReleasePayload{
+			SettlementID: settlementID,
+			SilverMoved:  moved,
+			FundAfter:    fund - moved,
+			Cap:          fundCap,
+		},
+		worldID, nil)
+	return nil
 }
 
 // stabilizeGood evaluates and applies the fund's buy/sell action for one good.

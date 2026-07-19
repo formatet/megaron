@@ -75,7 +75,7 @@ func LoadSitosConfig() SitosConfig {
 		TaxRate:             envFloat("SITOS_TAX_RATE", 0.01),
 		RefPriceFloor:       envFloat("SITOS_REF_PRICE_FLOOR", 0.5),
 		RefPriceCeiling:     envFloat("SITOS_REF_PRICE_CEILING", 3.0),
-		FundCapMult:         envFloat("SITOS_FUND_CAP_MULT", 3),
+		FundCapMult:         envFloat("SITOS_FUND_CAP_MULT", 1),
 		StartingFundDays:    envFloat("SITOS_STARTING_FUND_DAYS", 2),
 		PriceSmoothingTicks: envInt("SITOS_PRICE_SMOOTHING_TICKS", 6),
 		SubsistenceGoods:    list,
