@@ -781,15 +781,23 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 
 			switch terrain {
 			case TerrainHills:
+				// Hills is itself buildable — a colony founded directly on the
+				// deposit tile already has it in catchment, so no reachability
+				// filter is needed here (see hasBuildableNeighbour's doc comment).
 				if compBias[lm] == biasCopper {
 					copperCand = append(copperCand, idx)
 				}
 				silverCand = append(silverCand, idx)
 			case TerrainMountainLimestone:
-				if compBias[lm] == biasTin {
-					tinCand = append(tinCand, idx)
+				// P1c: mountain_limestone is NOT itself buildable, so only tiles
+				// with a colonisable neighbour are viable candidates — otherwise
+				// the deposit can never land in any settlement's catchment.
+				if hasBuildableNeighbour(grid, c, width, height) {
+					if compBias[lm] == biasTin {
+						tinCand = append(tinCand, idx)
+					}
+					silverCand = append(silverCand, idx)
 				}
-				silverCand = append(silverCand, idx)
 			case TerrainForestOliveGrove:
 				if compBias[lm] == biasTin {
 					cedarCand = append(cedarCand, idx)
@@ -890,16 +898,41 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		// landmap iterates in random order — sort so tile selection (and thus the
 		// generated map) stays deterministic for a given seed.
 		sort.Ints(landTiles)
-		// Prefer a tile already of the right terrain; else convert the first.
-		target := -1
-		for _, idx := range landTiles {
-			if tiles[idx].Terrain == terrain {
-				target = idx
-				break
+		// P1c: prefer a tile that ALSO has a buildable neighbour — forcing the
+		// metal onto a tile with no colonisable neighbour (only relevant for
+		// mountain_limestone terrain; hills is self-buildable, see
+		// hasBuildableNeighbour's doc comment) would mint a phantom source no
+		// settlement can ever mine, defeating the "always a real source"
+		// guarantee this step exists for. Degrade through: right terrain +
+		// buildable neighbour → right terrain alone → any tile with a
+		// buildable neighbour (convert it) → any tile at all (convert it,
+		// the pre-P1c fallback) — so a genuinely all-mountain remote isle
+		// still gets SOME source rather than none.
+		pick := func(want func(idx int) bool) int {
+			for _, idx := range landTiles {
+				if want(idx) {
+					return idx
+				}
 			}
+			return -1
+		}
+		buildable := func(idx int) bool {
+			return hasBuildableNeighbour(grid, cell{tiles[idx].Q, tiles[idx].R}, width, height)
+		}
+		target := pick(func(idx int) bool { return tiles[idx].Terrain == terrain && buildable(idx) })
+		if target == -1 {
+			// Reachability beats terrain-match here: a buildable-neighbour tile
+			// converted to the right terrain is mineable; a same-terrain tile
+			// with no buildable neighbour never is (see doc comment above).
+			target = pick(buildable)
+		}
+		if target == -1 {
+			target = pick(func(idx int) bool { return tiles[idx].Terrain == terrain })
 		}
 		if target == -1 {
 			target = landTiles[0]
+		}
+		if tiles[target].Terrain != terrain {
 			// Converting terrain invalidates any deposit the tile already held
 			// (e.g. a cedar forest becoming mountain) — clear before re-flagging.
 			tiles[target].Terrain = terrain
@@ -917,6 +950,40 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	// (see forceMetal call above), so it stays unconditional.
 	if depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit }) < tinSourceCap {
 		forceMetal(tinIsle, anatolia, TerrainMountainLimestone, func(t *MapTile) { t.TinDeposit = true })
+	}
+
+	// ── 11. Final reachability sweep (P1c) ───────────────────────────────
+	// Belt-and-suspenders on top of step 7's candidate pre-filter and step
+	// 10's buildable-preferring target selection: forceMetal's own terrain
+	// conversions mutate `tiles` after `grid` (step 4) was captured, so a
+	// forced tile can steal the one buildable neighbour an already-placed
+	// tin/silver tile (from step 8) depended on — checking against the
+	// stale `grid` snapshot misses that. Re-check against `tiles`' CURRENT
+	// terrain (via `index`, built in step 7 and still valid — tiles are
+	// mutated in place, never reordered) and clear any mountain_limestone
+	// deposit that ended up with zero buildable neighbour. validateMap's
+	// minProductiveTin/eastTinCatchment floors then naturally trigger a
+	// reseed if too few genuinely-mineable tin tiles remain, instead of
+	// silently serving a phantom deposit no settlement can ever catch.
+	currentlyBuildable := func(c cell) bool {
+		for _, n := range hexNeighbours(c, width, height) {
+			if idx, ok := index[n]; ok && spawnBuildable(tiles[idx].Terrain) {
+				return true
+			}
+		}
+		return false
+	}
+	for i := range tiles {
+		if tiles[i].Terrain != TerrainMountainLimestone {
+			continue
+		}
+		if !tiles[i].TinDeposit && !tiles[i].SilverDeposit {
+			continue
+		}
+		if !currentlyBuildable(cell{tiles[i].Q, tiles[i].R}) {
+			tiles[i].TinDeposit = false
+			tiles[i].SilverDeposit = false
+		}
 	}
 
 	return tiles
@@ -1846,6 +1913,31 @@ func isSea(t Terrain) bool {
 func hasLandNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	for _, n := range hexNeighbours(c, w, h) {
 		if !isSea(grid[n]) {
+			return true
+		}
+	}
+	return false
+}
+
+// hasBuildableNeighbour reports whether c has at least one hex-adjacent
+// neighbour on colonisable terrain (spawnBuildable, the same exclusion list
+// join.go's capital placement uses).
+//
+// P1c (soak 2026-07-18): mountain_limestone — tin's and (one branch of)
+// silver's deposit terrain — is ITSELF excluded from spawnBuildable, unlike
+// hills (copper, self-buildable: a colony can found directly on the deposit
+// tile, trivially landing it in that settlement's own catchment hex). A tin
+// tile with no buildable neighbour can never fall inside ANY settlement's
+// 7-hex catchment (own hex + 6 neighbours) — it is placed but permanently
+// unmineable, independent of how many tin tiles exist in total. Empirically
+// (230×230, seeds 0-29) up to 4 of a map's 4-11 tin tiles landed this way —
+// a placement-candidate bug, orthogonal to and NOT a relaxation of the
+// tinSourceCap scarcity design invariant (Timothy 2026-07-16, plan §A):
+// filtering candidates here doesn't change how many clusters get placed,
+// only which candidate tiles are eligible to receive one.
+func hasBuildableNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
+	for _, n := range hexNeighbours(c, w, h) {
+		if spawnBuildable(grid[n]) {
 			return true
 		}
 	}

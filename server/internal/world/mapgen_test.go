@@ -599,14 +599,24 @@ func TestGenerateMap_TinCapAndSpread(t *testing.T) {
 
 			comp := landComponents(tiles)
 			_, chanE := seaChannels(w)
+			grid := make(map[cell]Terrain, len(tiles))
+			for _, t := range tiles {
+				grid[cell{t.Q, t.R}] = t.Terrain
+			}
 			candidateComps := map[int]bool{}
 			for _, t := range tiles {
-				if t.Terrain == TerrainMountainLimestone && t.Q > chanE {
+				// P1c: only terrain with a buildable neighbour is a REACHABLE tin
+				// candidate (mapgen.go's step-7 filter, hasBuildableNeighbour) — a
+				// landmass whose mountain_limestone is entirely landlocked never
+				// gets a source post-fix, so it must not count as a "candidate
+				// landmass" the spread check expects tin to reach.
+				if t.Terrain == TerrainMountainLimestone && t.Q > chanE &&
+					hasBuildableNeighbour(grid, cell{t.Q, t.R}, w, h) {
 					candidateComps[comp[[2]int{t.Q, t.R}]] = true
 				}
 			}
 			if len(candidateComps) < 2 {
-				continue // candidate terrain itself only spans one landmass
+				continue // reachable candidate terrain itself only spans one landmass
 			}
 
 			tinLandmasses := map[int]bool{}
@@ -618,6 +628,49 @@ func TestGenerateMap_TinCapAndSpread(t *testing.T) {
 			if len(tinLandmasses) < 2 {
 				t.Fatalf("%dx%d seed %d (eff %d): %d tin sources, %d candidate landmasses, but all sources on a single land component (monopoly)",
 					w, h, seed, eff, sources, len(candidateComps))
+			}
+		}
+	}
+}
+
+// TestGenerateMap_TinAndSilverDepositsAreReachable is the regression guard for
+// P1c (soak 2026-07-18, fixlista §P1c): tin lives only on mountain_limestone,
+// which — unlike copper's hills — is ITSELF excluded from buildable/spawnable
+// terrain (see spawnBuildable, debugpng.go). A tin (or mountain-sourced
+// silver) tile whose 6 neighbours are ALL non-buildable (more mountain, or
+// sea) can never fall inside any settlement's 7-hex catchment: it is placed
+// but permanently unmineable, independent of the tinSourceCap scarcity
+// design invariant (Timothy 2026-07-16) — this is a placement bug, not a
+// relaxation of that invariant. Before the fix (step 7's candidate
+// pre-filter + step 10's buildable-preferring forceMetal target + step 11's
+// final sweep), 230×230 seeds 0-29 placed on average ~25% of tin tiles with
+// zero buildable neighbour (up to 4 of 8-11 on some seeds). This test
+// demands zero, across all three plan sizes.
+func TestGenerateMap_TinAndSilverDepositsAreReachable(t *testing.T) {
+	sizes := [][2]int{{56, 40}, {120, 84}, {230, 230}}
+	for _, sz := range sizes {
+		w, h := sz[0], sz[1]
+		for seed := int64(0); seed < 15; seed++ {
+			tiles, eff := GenerateMap(stubID{}, seed, w, h)
+			grid := make(map[cell]Terrain, len(tiles))
+			for _, tl := range tiles {
+				grid[cell{tl.Q, tl.R}] = tl.Terrain
+			}
+			for _, tl := range tiles {
+				if tl.Terrain != TerrainMountainLimestone {
+					continue
+				}
+				if !tl.TinDeposit && !tl.SilverDeposit {
+					continue
+				}
+				if !hasBuildableNeighbour(grid, cell{tl.Q, tl.R}, w, h) {
+					kind := "tin"
+					if tl.SilverDeposit {
+						kind = "silver"
+					}
+					t.Fatalf("%dx%d seed %d (eff %d): %s deposit at (%d,%d) has no buildable neighbour — unmineable by any settlement",
+						w, h, seed, eff, kind, tl.Q, tl.R)
+				}
 			}
 		}
 	}
