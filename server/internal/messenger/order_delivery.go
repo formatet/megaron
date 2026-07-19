@@ -115,6 +115,30 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 }
 
+// NotifyDeadLetter is the events.Worker dead-letter hook for
+// ScheduledOrderDelivery (P3 soak fix, 2026-07-19): if a courier's delivery
+// keeps failing (transient DB/load errors — a game-rule OrderReject already
+// notifies via notifyOrderFailed and never reaches dead-lettering) until it is
+// dead-lettered, the owner is told instead of the order silently vanishing —
+// the dispatch's 202 said a hemerodromos was en route, and without this the
+// player would never learn it never arrived.
+func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.ScheduledEvent) error {
+	var p OrderDeliveryPayload
+	if err := json.Unmarshal(e.Payload, &p); err != nil {
+		return fmt.Errorf("dead-letter: unmarshal order delivery payload: %w", err)
+	}
+	if h.hub == nil {
+		return nil
+	}
+	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 1, map[string]any{
+		"unit_id": p.UnitID,
+		"verb":    p.Verb,
+		"reason":  fmt.Sprintf("your %s order's hemerodromos could not deliver it after repeated attempts (system fault) — the unit never received it; check its status and reissue the order", p.Verb),
+	})
+	slog.Warn("dead-letter: notified owner of stalled order delivery", "messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb)
+	return nil
+}
+
 // notifyOrderFailed tells the owner their delivered order could not be carried
 // out, and why — an explained failure, not a silent fizzle.
 func (h *OrderDeliveryHandler) notifyOrderFailed(ctx context.Context, p OrderDeliveryPayload, reason string) {

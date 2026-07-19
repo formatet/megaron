@@ -78,6 +78,38 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	return tx.Commit(ctx)
 }
 
+// NotifyDeadLetter is the events.Worker dead-letter hook for ScheduledUnitArrival
+// (P3 soak fix, 2026-07-19): registered in main.go so that if an arrival keeps
+// failing under load until it is dead-lettered, the owner is told instead of
+// the march simply vanishing with no signal ("tyst framgång" — the dispatch's
+// 202 promised an arrival that never came, and nothing ever said otherwise).
+// Best-effort: a lookup failure here only means the player misses this one
+// notification, never a second failure mode on top of the dead-letter itself.
+func (h *UnitArrivalHandler) NotifyDeadLetter(ctx context.Context, e events.ScheduledEvent) error {
+	var payload unit.ScheduledUnitArrivalPayload
+	if err := json.Unmarshal(e.Payload, &payload); err != nil {
+		return fmt.Errorf("dead-letter: unmarshal unit arrival payload: %w", err)
+	}
+	if h.hub == nil {
+		return nil
+	}
+	var ownerID uuid.UUID
+	var status, utype string
+	if err := h.pool.QueryRow(ctx,
+		`SELECT owner_id, status, type FROM units WHERE id = $1`, payload.UnitID,
+	).Scan(&ownerID, &status, &utype); err != nil {
+		return fmt.Errorf("dead-letter: load unit owner: %w", err)
+	}
+	_ = h.hub.NotifyPlayer(ctx, payload.WorldID, ownerID, "MarchStalled", 1, map[string]any{
+		"unit_id": payload.UnitID,
+		"reason": fmt.Sprintf(
+			"your %s's arrival could not be processed after repeated attempts (system fault) — check `unit list`/`map`; its status is currently %q and may need a fresh march order",
+			utype, status),
+	})
+	slog.Warn("dead-letter: notified owner of stalled unit arrival", "unit", payload.UnitID, "owner", ownerID)
+	return nil
+}
+
 func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, worldID uuid.UUID) error {
 	// Load arriving unit with FOR UPDATE — idempotency guard.
 	var u unitRow

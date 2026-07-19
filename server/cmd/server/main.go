@@ -135,6 +135,10 @@ func main() {
 	worker.Register(events.ScheduledColonyPenaltyTick, colonyH.Handle)
 	worker.Register(events.ScheduledBorrowedArmyTick, borrowedH.Handle)
 	worker.Register(events.ScheduledOrderDelivery, orderDeliveryH.Handle)
+	// P3 soak fix (2026-07-19): notify the owner if a march order's courier
+	// delivery keeps failing until dead-lettered, instead of it silently
+	// vanishing after the dispatch's 202 promised it was en route.
+	worker.RegisterDeadLetterHook(events.ScheduledOrderDelivery, orderDeliveryH.NotifyDeadLetter)
 	worker.Register(events.ScheduledMessengerArrival, messengerArrivalH.Handle)
 	worker.Register(events.ScheduledMessengerReturn, messengerReturnH.Handle)
 	worker.Register(events.ScheduledKharisTick, kharisH.Handle)
@@ -151,6 +155,10 @@ func main() {
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
+	// P3 soak fix (2026-07-19): same reasoning as the order-delivery hook above —
+	// a marching unit's arrival that dead-letters must tell its owner, not just
+	// stay silently "marching" forever with no player-facing signal.
+	worker.RegisterDeadLetterHook(events.ScheduledUnitArrival, unitArrivalH.NotifyDeadLetter)
 	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)

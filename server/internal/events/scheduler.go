@@ -175,19 +175,21 @@ const DeadLetterAttempts = 3
 // Each handler is called with a per-handler timeout context (G2). Three consecutive
 // timeouts or errors mark the event as dead-lettered for manual inspection.
 type Worker struct {
-	pool     *pgxpool.Pool
-	clock    clock.Clock
-	handlers map[ScheduledEventType]Handler
-	timeouts map[ScheduledEventType]time.Duration
+	pool            *pgxpool.Pool
+	clock           clock.Clock
+	handlers        map[ScheduledEventType]Handler
+	timeouts        map[ScheduledEventType]time.Duration
+	deadLetterHooks map[ScheduledEventType]Handler
 }
 
 // NewWorker creates a Worker. clk must be the same Clock used by Scheduler.
 func NewWorker(pool *pgxpool.Pool, clk clock.Clock) *Worker {
 	return &Worker{
-		pool:     pool,
-		clock:    clk,
-		handlers: make(map[ScheduledEventType]Handler),
-		timeouts: make(map[ScheduledEventType]time.Duration),
+		pool:            pool,
+		clock:           clk,
+		handlers:        make(map[ScheduledEventType]Handler),
+		timeouts:        make(map[ScheduledEventType]time.Duration),
+		deadLetterHooks: make(map[ScheduledEventType]Handler),
 	}
 }
 
@@ -200,6 +202,22 @@ func (w *Worker) Register(t ScheduledEventType, h Handler) {
 func (w *Worker) RegisterWithTimeout(t ScheduledEventType, h Handler, timeout time.Duration) {
 	w.handlers[t] = h
 	w.timeouts[t] = timeout
+}
+
+// RegisterDeadLetterHook binds a best-effort callback invoked when an event of
+// type t is about to be dead-lettered (DeadLetterAttempts consecutive
+// failures). P3 soak fix (2026-07-19): before this hook existed, a scheduled
+// event that kept failing under DB/load pressure (e.g. a march's
+// ScheduledUnitArrival or ScheduledOrderDelivery) was marked failed_at with
+// only a server-side ERROR log — the affected Wanax was never told. From the
+// player's side that reads as "tyst framgång": the CLI's original 202 said the
+// unit was departing/a courier was dispatched, and nothing ever contradicted
+// it, so they believe the order went through while the unit never actually
+// moves. The hook receives the SAME event the handler failed on (including its
+// payload) so it can look up the owner and emit a player-facing notification.
+// A hook error is logged but never blocks dead-lettering itself.
+func (w *Worker) RegisterDeadLetterHook(t ScheduledEventType, h Handler) {
+	w.deadLetterHooks[t] = h
 }
 
 // Run polls for due events until ctx is cancelled.
@@ -283,6 +301,17 @@ func (w *Worker) dispatch(ctx context.Context, e ScheduledEvent) {
 		if e.Attempts >= DeadLetterAttempts {
 			slog.Error("dead-lettering event after repeated failures",
 				"type", e.EventType, "id", e.ID)
+			if hook, ok := w.deadLetterHooks[e.EventType]; ok {
+				// Best-effort, generous timeout of its own — this is the last chance
+				// to tell the player anything, so give it room independent of the
+				// handler's own (possibly just-expired) timeout budget.
+				hookCtx, hookCancel := context.WithTimeout(ctx, DefaultHandlerTimeout)
+				if hookErr := hook(hookCtx, e); hookErr != nil {
+					slog.Error("dead-letter notification hook failed",
+						"type", e.EventType, "id", e.ID, "err", hookErr)
+				}
+				hookCancel()
+			}
 			w.markFailed(ctx, e.ID)
 		}
 		return
