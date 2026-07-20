@@ -142,3 +142,60 @@ func transferCmd() *cobra.Command {
 	return cmd
 }
 
+func giftCmd() *cobra.Command {
+	var silver, grain float64
+	var destName string
+
+	cmd := &cobra.Command{
+		Use:   "gift",
+		Short: "Send silver/grain from your capital to one of your own colonies (boosts loyalty at 50+ silver-equivalent)",
+		Example: `  poleia gift --silver 60 --dest Korinth
+  poleia gift --grain 100 --silver 20 --dest Korinth`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if silver <= 0 && grain <= 0 {
+				return fmt.Errorf("gift must include --silver or --grain")
+			}
+			c := newClient(cfg)
+			destID, err := resolveSettlement(c, cfg.WorldID, destName)
+			if err != nil {
+				return fmt.Errorf("resolve destination %q: %w", destName, err)
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/gift", cfg.WorldID, destID)
+			data, err := c.post(path, map[string]any{
+				"silver": silver,
+				"grain":  grain,
+			})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp struct {
+				LoyaltyDelta int     `json:"loyalty_delta"`
+				SilverSent   float64 `json:"silver_sent"`
+				GrainSent    float64 `json:"grain_sent"`
+				ArrivesAt    string  `json:"arrives_at"`
+			}
+			if err := json.Unmarshal(data, &resp); err != nil {
+				return err
+			}
+			fmt.Printf("Gift dispatched to %s: silver %.0f, grain %.0f · arrives %s\n",
+				destName, resp.SilverSent, resp.GrainSent, resp.ArrivesAt)
+			if resp.LoyaltyDelta > 0 {
+				fmt.Printf("Loyalty +%d on arrival.\n", resp.LoyaltyDelta)
+			} else {
+				fmt.Println("Below the 50 silver-equivalent threshold — no loyalty gain.")
+			}
+			return nil
+		},
+	}
+
+	cmd.Flags().Float64Var(&silver, "silver", 0, "silver to send")
+	cmd.Flags().Float64Var(&grain, "grain", 0, "grain to send")
+	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name (must be your own)")
+	_ = cmd.MarkFlagRequired("dest")
+	return cmd
+}
+

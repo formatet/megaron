@@ -202,18 +202,5 @@ func canKingdomCouncil(cc checkContext) Verb {
 
 // capitalSilver returns the live silver stock at the player's capital.
 func (cc checkContext) capitalSilver() float64 {
-	settlementID, _, _, ok := cc.capitalSettlement()
-	if !ok {
-		return 0
-	}
-	var amt float64
-	err := cc.pool.QueryRow(cc.ctx,
-		`SELECT GREATEST(0, settled(amount, rate, calc_tick))
-		   FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
-		settlementID,
-	).Scan(&amt)
-	if err != nil {
-		return 0
-	}
-	return amt
+	return cc.capitalGoodAmount("silver")
 }

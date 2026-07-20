@@ -83,6 +83,7 @@ func main() {
 		goodsCmd(),
 		ticklogCmd(),
 		transferCmd(),
+		giftCmd(),
 		inboxCmd(),
 		outboxCmd(),
 		replyCmd(),

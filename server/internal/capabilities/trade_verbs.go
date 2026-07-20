@@ -189,6 +189,28 @@ func canTransfer(cc checkContext) Verb {
 		})
 }
 
+// canGift is the loyalty-boosting caravan from the player's capital to one
+// of their own colonies (api/handlers.SettlementHandler.Gift). Distinct from
+// canTransfer (own→own logistics, any good, no loyalty effect): gift moves
+// only silver/grain and applies +1 loyalty at 50+ silver-equivalent sent.
+func canGift(cc checkContext) Verb {
+	_, nonCapital := cc.ownSettlements()
+	destOK := nonCapital >= 1
+	silver := cc.capitalGoodAmount("silver")
+	grain := cc.capitalGoodAmount("grain")
+	haveOK := silver > 0 || grain > 0
+	return verb("gift", CategoryTrade,
+		"Send silver/grain from your capital to one of your own colonies — boosts loyalty at 50+ silver-equivalent.",
+		[]Requirement{
+			req("a colony to gift to", destOK,
+				fmt.Sprintf("%d colonies", nonCapital),
+				"found or hold a colony before sending a gift"),
+			req("silver or grain at your capital", haveOK,
+				fmt.Sprintf("silver %.0f, grain %.0f", silver, grain),
+				"tax production for silver, or wait for grain to accrue"),
+		})
+}
+
 // anySellableGood returns the first non-silver good in stock (amount > 0),
 // deterministically ordered, for use as an example in a Detail string.
 func (cc checkContext) anySellableGood() (key string, qty float64) {

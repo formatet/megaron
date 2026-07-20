@@ -353,6 +353,26 @@ func (cc checkContext) cultureID() string {
 	return culture
 }
 
+// capitalGoodAmount returns the live stock of a good at the player's
+// capital, regardless of which province/settlement cc is currently scoped
+// to — mirrors goodAmount but always resolves the capital first.
+func (cc checkContext) capitalGoodAmount(goodKey string) float64 {
+	settlementID, _, _, ok := cc.capitalSettlement()
+	if !ok {
+		return 0
+	}
+	var amt float64
+	err := cc.pool.QueryRow(cc.ctx,
+		`SELECT GREATEST(0, settled(amount, rate, calc_tick))
+		   FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+		settlementID, goodKey,
+	).Scan(&amt)
+	if err != nil {
+		return 0
+	}
+	return amt
+}
+
 // capitalSettlement returns the player's active capital settlement ID and
 // province ID in this world, if any.
 func (cc checkContext) capitalSettlement() (settlementID, provinceID uuid.UUID, kingdomID *uuid.UUID, ok bool) {
