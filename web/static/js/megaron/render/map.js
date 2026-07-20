@@ -869,11 +869,13 @@ export async function loadMap() {
 
   if (tilesRes.ok) {
     State.tileData = await tilesRes.json();
-    centreCamera();
   }
   if (provRes.ok) {
+    // Must land before centreCamera() below — homePosition() reads the
+    // capital out of State.provinceData.
     State.provinceData = await provRes.json();
   }
+  centreCamera();
   if (marchRes.ok) {
     State.marchData = await marchRes.json();
   }
@@ -889,7 +891,30 @@ export async function loadMap() {
   window.MusicPlayer.update();
 }
 
+// The player's home hex: capital settlement, or — during the founder phase,
+// before any settlement exists — the Nomadic Host's position. Camera should
+// always open on this, never on the mean of every visible tile (that reads
+// as a meaningless empty mid-ocean centre on a large/sparse map).
+function homePosition() {
+  const capital = ownCapital();
+  if (capital) return { q: capital.q, r: capital.r };
+  if (State.founderPhase && State.founderPhase.q != null) {
+    return { q: State.founderPhase.q, r: State.founderPhase.r };
+  }
+  return null;
+}
+
 function centreCamera() {
+  const home = homePosition();
+  if (home) {
+    const { x, y } = hexPx(home.q, home.r);
+    State.camera.x = canvas.width/2  - x*SCALE;
+    State.camera.y = canvas.height/2 - y*SCALE;
+    return;
+  }
+  // Fallback for a transitional state with neither a capital nor an active
+  // founder phase yet (e.g. mid-succession) — centre on visible tiles rather
+  // than leaving the camera wherever it last was.
   const visible = State.tileData.filter(t => t.terrain !== 'fog');
   if (!visible.length) return;
   const sumX = visible.reduce((s,t) => s + hexPx(t.q,t.r).x, 0);
