@@ -64,6 +64,7 @@ type upkeepUnitRow struct {
 	size          int
 	settlementID  *uuid.UUID
 	unpaidPeriods int
+	cargoUnitID   *uuid.UUID
 }
 
 // UpkeepHandler applies grain + silver upkeep to all active units each day.
@@ -91,7 +92,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// here would bill the same cohort twice (temenos_nomadic_host_bygg.md B3).
 	// The exclusion lifts by itself at founding, when active flips to false.
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, type, category, size, settlement_id, unpaid_periods
+		`SELECT id, owner_id, type, category, size, settlement_id, unpaid_periods, cargo_unit_id
 		 FROM units u
 		 WHERE world_id = $1
 		   AND status IN ('garrison', 'marching', 'positioned')
@@ -112,7 +113,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	for rows.Next() {
 		var u upkeepUnitRow
 		if err := rows.Scan(&u.id, &u.ownerID, &u.unitType, &u.category,
-			&u.size, &u.settlementID, &u.unpaidPeriods); err != nil {
+			&u.size, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID); err != nil {
 			return fmt.Errorf("upkeep: scan unit: %w", err)
 		}
 		units = append(units, u)
@@ -309,6 +310,22 @@ func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, wor
 	_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, kind, level, payload)
 }
 
+// cascadeCargoDisband disbands a ship's embarked cargo unit when the ship itself
+// is disbanded (grain attrition or silver desertion). Mirrors collapse.go's
+// cargo cascade — without this, a deserted/starved ship's cargo_unit_id points
+// at a unit stuck in 'embarked' with no ship, unreachable by march/unload/disband.
+func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, shipID uuid.UUID, cargoUnitID *uuid.UUID) {
+	if cargoUnitID == nil {
+		return
+	}
+	if _, err := h.pool.Exec(ctx,
+		`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1 AND status = 'embarked'`,
+		*cargoUnitID,
+	); err != nil {
+		slog.Error("upkeep: disband cargo unit after ship loss", "ship", shipID, "cargo", *cargoUnitID, "err", err)
+	}
+}
+
 // applyAttrition removes upkeepAttritionStep men from the unit due to grain shortage.
 // Returns true if the unit was disbanded. sid = the settlement that failed to feed
 // it (uuid.Nil if none), passed through to the notification for deep-linking.
@@ -335,6 +352,9 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 	}
 	if updateErr != nil {
 		slog.Error("upkeep: attrition update failed", "unit", u.id, "err", updateErr)
+	}
+	if disbanded {
+		h.cascadeCargoDisband(ctx, u.id, u.cargoUnitID)
 	}
 
 	_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitAttrition",
@@ -381,6 +401,9 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 		}
 		if updateErr != nil {
 			slog.Error("upkeep: desertion update failed", "unit", u.id, "err", updateErr)
+		}
+		if disbanded {
+			h.cascadeCargoDisband(ctx, u.id, u.cargoUnitID)
 		}
 
 		_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitDeserted",
