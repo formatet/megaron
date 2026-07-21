@@ -25,8 +25,8 @@ func settlementsCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &markers); err != nil {
 				return err
 			}
-			fmt.Printf("%-20s  %-12s  %-36s  %s\n", "Name", "Relation", "Province ID (--province)", "Settlement ID")
-			fmt.Println("──────────────────────────────────────────────────────────────────────────────────────────────────────────")
+			fmt.Printf("%-20s  %-10s  %-9s  %-36s  %s\n", "Name", "Relation", "Role", "Province ID (--province)", "Settlement ID")
+			fmt.Println("──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────")
 			for _, m := range markers {
 				sid, _ := m["settlement_id"].(string)
 				if sid == "" {
@@ -36,13 +36,34 @@ func settlementsCmd() *cobra.Command {
 				name, _ := m["name"].(string)
 				own, _ := m["own"].(bool)
 				allied, _ := m["allied"].(bool)
+				state, _ := m["state"].(string)
+				// A razed/collapsed settlement is a ruin, not "foreign" — say so
+				// (owner_id is NULL on both, which otherwise falls through to foreign).
 				rel := "foreign"
-				if own {
+				switch {
+				case state == "razed" || state == "collapsed":
+					rel = state
+				case own:
 					rel = "own"
-				} else if allied {
+				case allied:
 					rel = "allied"
 				}
-				fmt.Printf("%-20s  %-12s  %-36s  %s\n", name, rel, pid, sid)
+				// Role: only meaningful for the player's own settlements (is_capital
+				// is set server-side only for own rows).
+				role := "—"
+				if own {
+					isOutpost, _ := m["is_outpost"].(bool)
+					isCapital, _ := m["is_capital"].(bool)
+					switch {
+					case isOutpost:
+						role = "outpost"
+					case isCapital:
+						role = "capital"
+					default:
+						role = "colony"
+					}
+				}
+				fmt.Printf("%-20s  %-10s  %-9s  %-36s  %s\n", name, rel, role, pid, sid)
 			}
 			return nil
 		},
