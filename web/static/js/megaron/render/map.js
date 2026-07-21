@@ -2,7 +2,7 @@ import { State, ownCapital } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
 import { serverNow } from '../clock.js';
-import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS } from '../config.js';
+import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS, LOCAL_ZOOM } from '../config.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -571,6 +571,55 @@ function drawShip(ctx, x, y, intent, walkPhase) {
   ctx.stroke();
   ctx.restore();
 }
+// ── Rural projections (Fas A2, megaron_lokal_varld.md) ───────────────────
+// A rural sprite is NOT a new building — it is a cartographic projection of an
+// existing city building onto a compatible catchment hex, placed server-side
+// (rural-projections endpoint). Static (no gait): these are places, not movers.
+// 1px charcoal outline, saturated foreground, no AA — temenos_designprinciper.
+const RURAL_OUTLINE = '#33291E';
+
+function drawFarm(ctx, x, y) {
+  ctx.fillStyle = '#C9A227';         // ripe wheat
+  ctx.strokeStyle = RURAL_OUTLINE; ctx.lineWidth = 0.7;
+  ctx.fillRect(x - 4, y - 1, 8, 4);  // tilled plot
+  ctx.strokeRect(x - 4, y - 1, 8, 4);
+  ctx.strokeStyle = '#8A6A12';       // furrows
+  ctx.beginPath();
+  ctx.moveTo(x - 2, y - 1); ctx.lineTo(x - 2, y + 3);
+  ctx.moveTo(x, y - 1);     ctx.lineTo(x, y + 3);
+  ctx.moveTo(x + 2, y - 1); ctx.lineTo(x + 2, y + 3);
+  ctx.stroke();
+}
+
+function drawMine(ctx, x, y) {
+  ctx.fillStyle = '#8A8078';         // grey spoil heap
+  ctx.strokeStyle = RURAL_OUTLINE; ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(x - 4, y + 3);
+  ctx.lineTo(x, y - 3);
+  ctx.lineTo(x + 4, y + 3);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#241C16';         // adit mouth
+  ctx.fillRect(x - 1, y + 1, 2, 2);
+}
+
+function drawLumbermill(ctx, x, y) {
+  ctx.strokeStyle = RURAL_OUTLINE; ctx.lineWidth = 0.7;
+  ctx.fillStyle = '#7B4F28';         // stacked logs (end-on)
+  for (const [dx, dy] of [[-3, 1], [0, 1], [3, 1], [-1.5, -2], [1.5, -2]]) {
+    ctx.beginPath();
+    ctx.arc(x + dx, y + dy, 1.6, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.fillStyle = '#C8A464';         // core rings
+  for (const [dx, dy] of [[-3, 1], [0, 1], [3, 1], [-1.5, -2], [1.5, -2]]) {
+    ctx.fillRect(x + dx - 0.5, y + dy - 0.5, 1, 1);
+  }
+}
+
+const RURAL_SPRITES = { farm: drawFarm, mine: drawMine, lumbermill: drawLumbermill };
+
 // ── Main renderer ─────────────────────────────────────────────────────────
 
 export function toggleActivityOverlay() {
@@ -662,6 +711,23 @@ function render() {
         ctx.stroke();
         ctx.restore();
       }
+    }
+  }
+
+  // 2.6 Rural projections — own city buildings drawn on their catchment hexes.
+  // LOCAL register only (LOCAL_ZOOM): "why does THIS place work?" is a local
+  // question; the strategic overview tones them down. Server places them within
+  // the owner's FOW; skip any hex that has gone to fog since the last fetch.
+  if (State.camera.zoom >= LOCAL_ZOOM) {
+    for (const rp of State.ruralData) {
+      const sprite = RURAL_SPRITES[rp.building_type];
+      if (!sprite) continue;
+      const t = State.tileData.find(t => t.q === rp.q && t.r === rp.r);
+      if (!t || t.terrain === 'fog') continue;
+      const { x, y } = hexPx(rp.q, rp.r);
+      ctx.save();
+      sprite(ctx, x, y);
+      ctx.restore();
     }
   }
 
@@ -858,13 +924,14 @@ function render() {
 
 // ── Data loading ──────────────────────────────────────────────────────────
 export async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`),
   ]);
 
   if (tilesRes.ok) {
@@ -887,6 +954,9 @@ export async function loadMap() {
   }
   if (tradeRes.ok) {
     State.tradeData = await tradeRes.json();
+  }
+  if (ruralRes.ok) {
+    State.ruralData = await ruralRes.json();
   }
   window.MusicPlayer.update();
 }
@@ -1189,6 +1259,33 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
+// Rural projection object card (Fas A2). Identity (what + whose omland) + the
+// terrain it sits on, and a single primary CTA back to the owning city — the
+// projection is a representation, so its card leads to the real building
+// (megaron_lokal_varld.md). Any unit standing on the hex stays reachable via
+// the units list; marching here is a right-click order, not a panel button.
+const RURAL_LABELS = { farm: 'Farm', mine: 'Mine', lumbermill: 'Lumbermill' };
+
+function openRuralPanel(h, tile, rural, units) {
+  document.getElementById('ip-name').textContent = RURAL_LABELS[rural.building_type] || rural.building_type;
+  setCityFieldsVisible(false);
+  fillTerrainFields(tile);
+
+  const foot = document.getElementById('ip-foot');
+  let footHtml = `<p class="empty-state">Del av ${rural.name}s omland — brukas härifrån.</p>`;
+  footHtml += unitListHTML(units);
+  footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Öppna ${rural.name} →</button>`;
+  foot.innerHTML = footHtml;
+  bindUnitButtons(foot);
+  document.getElementById('ip-rural-city-btn').addEventListener('click', () => {
+    document.getElementById('inspect-panel').style.display = 'none';
+    State.cityViewID = rural.province_id;
+    window.openDrawer('city');
+  });
+
+  document.getElementById('inspect-panel').style.display = 'flex';
+}
+
 // ── Founder phase: the Host panel (temenos_nomadic_host_fas4_plan.md 4.3) ──
 // The people-on-the-move's own surface: status from /founding/status, the
 // founding forecast from /colonize-preview with ?pop=&seed= (the metropolis's
@@ -1308,6 +1405,14 @@ function openHexPanel(h) {
     u.q === h.q && u.r === h.r && (u.status === 'positioned' || u.status === 'marching'));
 
   if (prov) { openCityPanel(h, tile, prov, units); return; }
+
+  // Rural projection hex — a catchment hex carrying one of the player's own city
+  // buildings (Fas A2). The card names it, says whose omland it is, and its
+  // primary CTA leads back to the owning city's building context (the doc's
+  // rule: the projection is a representation, its card leads to the real
+  // building). Marching still works via right-click, so no march button here.
+  const rural = (State.ruralData || []).find(rp => rp.q === h.q && rp.r === h.r);
+  if (rural) { openRuralPanel(h, tile, rural, units); return; }
 
   const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
   const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
@@ -1459,6 +1564,7 @@ export function initMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`).then(r => r.ok && r.json().then(d => { State.ruralData = d; State.dirty = true; }));
   }, 30000);
 
   // While any own unit is marching, refresh units + fog fast so the fog visibly

@@ -35,6 +35,7 @@ export const State = {
   messengerData: [],
   tradeData: [],
   unitsData: [],  // per-unit armies/fleets (units table) — drawn on the canvas
+  ruralData: [],  // rural building projections on own catchment hexes (Fas A2)
 
   // Canvas camera + interaction state (render/map.js).
   camera: { x: 0, y: 0, zoom: 1 },

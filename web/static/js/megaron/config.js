@@ -11,3 +11,12 @@ export const BASE = '';
 export const LIVE_RADIUS_SEA = 4;
 export const LIVE_RADIUS_BASE = { settlement: 3, ship: 1, land: 2 };
 export const LIVE_RADIUS_MOUNTAIN_BONUS = 2;
+
+// ── LOD registers (megaron_lokal_varld.md §Zoom som spelinstrument) ────────
+// The camera has two discrete rendering registers on one continuous zoom.
+// LOCAL_ZOOM is the boundary: at/above it the "lokal trakt" register is active
+// and local-only signals appear (rural projections, catchment tint) — the
+// answer to "why does THIS place work?". Below it the "strategisk" register
+// keeps the overview and tones those down. This is the register boundary; the
+// other per-signal thresholds in render/map.js are their own calibration.
+export const LOCAL_ZOOM = 0.55;
