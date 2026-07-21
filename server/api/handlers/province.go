@@ -1562,7 +1562,22 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			settlementID,
 		).Scan(&exists)
 		if !exists {
-			writeError(w, http.StatusUnprocessableEntity, "foundry required")
+			// Distinguish "no foundry at all" from "foundry finishing" — the
+			// latter is the surprise the player hits crafting right after a build
+			// shows done: the BuildComplete event (which inserts the buildings row)
+			// is a poll away. Point at the real cause instead of a bare "required".
+			var queued bool
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT EXISTS(SELECT 1 FROM build_queue WHERE settlement_id = $1 AND building_type = 'foundry')`,
+				settlementID,
+			).Scan(&queued)
+			if queued {
+				writeError(w, http.StatusUnprocessableEntity,
+					"foundry is still finishing here — it becomes usable within a tick of completion; retry shortly")
+			} else {
+				writeError(w, http.StatusUnprocessableEntity,
+					"foundry required — build a foundry here first (bronze is smelted at a foundry)")
+			}
 			return
 		}
 	}

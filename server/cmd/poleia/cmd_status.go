@@ -60,6 +60,22 @@ func localDone(iso string) string {
 	return iso
 }
 
+// buildQueueETA formats a build-queue entry's completion. A row STILL in the
+// queue whose complete_at has already passed is not usable yet — the
+// BuildComplete event (which inserts the buildings row and removes the queue
+// entry) hasn't fired. Show "finishing…" rather than a past timestamp that reads
+// as done, so `craft` answering "foundry required" moments after the build no
+// longer surprises. Once the event fires the entry is gone from the queue.
+func buildQueueETA(iso string) string {
+	if t, err := time.Parse(time.RFC3339, iso); err == nil {
+		if !t.After(time.Now()) {
+			return "finishing…"
+		}
+		return t.Local().Format("15:04 Jan 2")
+	}
+	return iso
+}
+
 func statusCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
@@ -375,7 +391,7 @@ func statusCmd() *cobra.Command {
 					m, _ := it.(map[string]any)
 					t, _ := m["type"].(string)
 					ca, _ := m["complete_at"].(string)
-					fmt.Printf("  %-12s done %s\n", t, localDone(ca))
+					fmt.Printf("  %-12s %s\n", t, buildQueueETA(ca))
 				}
 			}
 
