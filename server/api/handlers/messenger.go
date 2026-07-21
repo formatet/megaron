@@ -763,14 +763,21 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
 	replyTravelTicks, replyTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
 		province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
-	returnsAt := h.clk.Now().Add(replyTravelDur)
+	replyDepartsAt := h.clk.Now()
+	returnsAt := replyDepartsAt.Add(replyTravelDur)
 	var replyCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&replyCurrentTick)
 	replyReturnDueTick := replyCurrentTick + replyTravelTicks
 
+	// Give the return leg its own time window: return_departs_at = now, arrives_at =
+	// the reply's homecoming. sent_at is left untouched (the correspondence log
+	// keys on the original send). Without this the return leg carried the outbound
+	// window and the hemerodromos had no eye on the way home (temenos_orderlopare
+	// §(b)).
 	_, err = h.pool.Exec(r.Context(),
-		`UPDATE messengers SET reply_text = $1, status = 'returning' WHERE id = $2`,
-		req.Reply, messengerID,
+		`UPDATE messengers SET reply_text = $1, status = 'returning',
+		        return_departs_at = $2, arrives_at = $3 WHERE id = $4`,
+		req.Reply, replyDepartsAt, returnsAt, messengerID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not save reply")

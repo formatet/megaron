@@ -993,9 +993,11 @@ func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uui
 	// (temenos_synlighet.md §Nivå 1, beslut Timothy 2026-07-16). Position is
 	// interpolated along the courier A*-path (land at 2× spearman speed, sea by
 	// boat) between sent_at and arrives_at — same pattern as marching units.
-	// The return leg (status='returning') carries no usable timing window on
-	// the row (arrives_at still holds the outbound arrival) and is left without
-	// an eye until that plumbing exists; couriers are uninterceptable either way.
+	// The return leg (status='returning') is handled by the second query below;
+	// on reply the courier gets a fresh return window (return_departs_at→arrives_at)
+	// so it can be interpolated home just like the outbound leg. Couriers are
+	// uninterceptable either way — the eye is purely so the sender's own runner
+	// keeps revealing fog on the way there AND back.
 	mRows, err := pool.Query(ctx,
 		`SELECT m.hex_q, m.hex_r,
 		        COALESCE(m.dest_q, dp.map_q), COALESCE(m.dest_r, dp.map_r),
@@ -1027,6 +1029,44 @@ func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uui
 			eyes = append(eyes, province.Eye{Pos: pos, Kind: province.EyeLandUnit})
 		}
 		mRows.Close()
+	}
+
+	// Return leg: a replied courier runs from the delivery point (destination)
+	// home to its origin. Built on explicit origin/dest joins rather than
+	// hex_q/hex_r (whose meaning differs between send paths); window is the fresh
+	// return_departs_at→arrives_at set by the Reply handler.
+	rRows, err := pool.Query(ctx,
+		`SELECT COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r),
+		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
+		        m.return_departs_at, m.arrives_at
+		 FROM messengers m
+		 LEFT JOIN settlements os ON os.id = m.origin_id
+		 LEFT JOIN provinces op ON op.id = os.province_id
+		 LEFT JOIN settlements ds ON ds.id = m.destination_id
+		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'returning'
+		   AND m.return_departs_at IS NOT NULL`,
+		worldID, playerID,
+	)
+	if err == nil {
+		for rRows.Next() {
+			var sq, sr int  // return start = delivery point (destination)
+			var hq, hr *int // return end = home (origin)
+			var departsAt, arrivesAt time.Time
+			if rRows.Scan(&sq, &sr, &hq, &hr, &departsAt, &arrivesAt) != nil {
+				continue
+			}
+			pos := province.MapPosition{Q: sq, R: sr}
+			if hq != nil && hr != nil {
+				path, _, ok, pathErr := province.FindPath(ctx, pool, worldID, pos,
+					province.MapPosition{Q: *hq, R: *hr}, province.CategoryCourier)
+				if pathErr == nil && ok && len(path) > 0 {
+					pos = interpolatedEyePos(now, departsAt, arrivesAt, path)
+				}
+			}
+			eyes = append(eyes, province.Eye{Pos: pos, Kind: province.EyeLandUnit})
+		}
+		rRows.Close()
 	}
 
 	return eyes
@@ -1317,7 +1357,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
 		        COALESCE(op.terrain_type, omt.terrain, ''),
 		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
-		        m.sent_at, m.arrives_at
+		        m.sent_at, m.arrives_at, m.status, m.return_departs_at
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its frozen
 		 -- departure point (origin_q/origin_r) places it, with terrain off the tile.
@@ -1326,7 +1366,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN map_tiles omt ON omt.world_id = m.world_id AND omt.q = m.origin_q AND omt.r = m.origin_r
 		 LEFT JOIN settlements ds ON ds.id = m.destination_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
-		 WHERE m.world_id = $1 AND m.status = 'outbound'`,
+		 WHERE m.world_id = $1 AND m.status IN ('outbound', 'returning')`,
 		worldID,
 	)
 	if err != nil {
@@ -1360,10 +1400,24 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		var senderID uuid.UUID
 		var orderUnitID *string
 		var originTerrain, destTerrain string
+		var status string
+		var returnDepartsAt *time.Time
 		if err := rows.Scan(&m.ID, &senderID, &m.Kind, &orderUnitID,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
-			&m.SentAt, &m.ArrivesAt); err != nil {
+			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt); err != nil {
 			continue
+		}
+		// Return leg: the courier runs home, so the client must draw it
+		// destination→origin over the fresh return window. Swap the endpoints
+		// (and their terrain) and use return_departs_at as the leg's start; the
+		// row's origin/dest columns stay semantically "who sent to whom".
+		if status == "returning" {
+			m.OriginQ, m.DestQ = m.DestQ, m.OriginQ
+			m.OriginR, m.DestR = m.DestR, m.OriginR
+			originTerrain, destTerrain = destTerrain, originTerrain
+			if returnDepartsAt != nil {
+				m.SentAt = *returnDepartsAt
+			}
 		}
 		m.Own = authenticated && senderID == playerID
 		if m.Own && orderUnitID != nil {
