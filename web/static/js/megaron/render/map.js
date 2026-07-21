@@ -199,9 +199,8 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
       }
       break;
     }
-    case 'forest_olive_grove':
-    case 'forest_olive_cypress': {
-      const dotColor = terrain === 'forest_olive_grove' ? '#3A6818' : '#2A5010';
+    case 'forest_olive_grove': {
+      const dotColor = '#3A6818';
       for (let i = 0; i < 3; i++) {
         const ox = ((seed * (i*11+2)) & 0x1b) - 12;
         const oy = ((seed * (i*9+4)) & 0x1b) - 12;
@@ -249,19 +248,6 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
         const ox = ((seed * (i*3+7)) & 0x1f) - 14;
         const oy = ((seed * (i*4+2)) & 0x1f) - 14;
         ctx.beginPath(); ctx.arc(cx+ox, cy+oy, 1.5, 0, Math.PI*2); ctx.fill();
-      }
-      break;
-    }
-    case 'coast_beach': {
-      // animated wave ripple
-      const waveTick = (frame >> 4) & 0x3;
-      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-      ctx.lineWidth = 0.8;
-      for (let i = 0; i < 2; i++) {
-        const wox = r3 - 6, woy = r4 - 6 + i * 5 + waveTick;
-        ctx.beginPath();
-        ctx.arc(cx + wox, cy + woy, 5, 0.2, Math.PI - 0.2);
-        ctx.stroke();
       }
       break;
     }

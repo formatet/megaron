@@ -55,8 +55,7 @@ export function startCityAnim(canvas, tile, buildings, buildQueue) {
 function _renderCityFrame(ctx, W, H, S, ground, tile, buildings, buildQueue, wr, smoke) {
   const OUTLINE = '#2a1a08';
   const BG = {plains:'#c0b882', river_valley:'#a0c070', river_delta:'#8ccc70', hills:'#b0a268',
-              mountain:'#989690', forest:'#728a60', coast:'#6aa0b0',
-              coast_beach:'#c8b87a', sea:'#4870a0'};
+              mountain:'#989690', forest:'#728a60', coast:'#6aa0b0', sea:'#4870a0'};
   ctx.fillStyle = BG[tile?.terrain] || BG.plains;
   ctx.fillRect(0, 0, W, H);
 
