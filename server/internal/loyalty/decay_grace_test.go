@@ -1,19 +1,16 @@
 package loyalty
 
-// Regression test for the loyalty-decay grace window (Fynd 2026-07-08).
+// Regression test for the loyalty-decay grace window (Fynd 2026-07-08, sub-minute
+// fix 2026-07-22).
 //
 // Root cause: DecayHandler.Handle filtered "recently reassured" colonies with a
 // hard-coded `le.created_at > now() - interval '48 hours'` WALL-CLOCK window,
-// while the decay tick itself is TICK-scheduled (fires once per game-day,
-// e.DueTick + events.TicksPerDay). At the default 60 min/tick the two happen to
-// agree (1 game-day = 24 ticks = 24 real-hours, so 48 h = 2 game-days). But on
-// the CT 126 dev server (TICK_MINUTES=1) 48 real-hours = 2880 ticks = 120
-// game-days, so the grace window swallowed the entire run and decay never fired
-// — the "loyalty 2 uniformly" soak symptom. Same bug class as the messenger
-// ETA fix (f354fd6): a tick-quantity expressed in raw wall-clock time.
-//
-// The window is now graceDays × TicksPerDay × TickMinutes minutes, scaling
-// through tick.TickMinutes exactly like the messenger travel durations.
+// while the decay tick itself is TICK-scheduled (fires once per game-day). The
+// first fix scaled through tick.TickMinutes — but TickMinutes FLOORS to 1 minute,
+// so on the CT 126 sub-minute cadence (TICK_SECONDS=6) 2 game-days (= 48 ticks =
+// 288 real seconds = 4.8 min) still read as 2×24×1 = 48 minutes — ~10× too long,
+// leaving decay effectively disabled again. The window is now graceDays ×
+// TicksPerDay × TickSeconds SECONDS, scaling exactly like tick/eta.go.
 
 import (
 	"testing"
@@ -22,48 +19,48 @@ import (
 	"github.com/poleia/server/internal/tick"
 )
 
-// withTickMinutes overrides the package-level tick.TickMinutes for the duration
-// of a test and restores it after — a plain var (read once from TICK_MINUTES at
-// init), safe to swap in-process. Mirrors the messenger travel-duration tests.
-func withTickMinutes(t *testing.T, minutes int) {
+// withTickSeconds overrides the package-level tick.TickSeconds for the duration
+// of a test and restores it after — a plain var (read once from the env at init),
+// safe to swap in-process. Mirrors the messenger travel-duration tests.
+func withTickSeconds(t *testing.T, seconds int) {
 	t.Helper()
-	orig := tick.TickMinutes
-	tick.TickMinutes = minutes
-	t.Cleanup(func() { tick.TickMinutes = orig })
+	orig := tick.TickSeconds
+	tick.TickSeconds = seconds
+	t.Cleanup(func() { tick.TickSeconds = orig })
 }
 
-// TestDecayGraceMinutes_DefaultCadence pins the historical (correct-by-
-// coincidence) case: at the default 60 min/tick the grace window must still be
-// 2880 minutes (48 h), so the fix does not change behaviour for the common case.
-func TestDecayGraceMinutes_DefaultCadence(t *testing.T) {
-	withTickMinutes(t, 60)
-	want := loyaltyDecayGraceDays * events.TicksPerDay * 60 // 2 × 24 × 60 = 2880
-	if got := decayGraceMinutes(); got != want {
-		t.Errorf("decayGraceMinutes() at default cadence = %d, want %d (== 48 h)", got, want)
+// TestDecayGraceSeconds_DefaultCadence pins the historical (correct-by-
+// coincidence) case: at the default 60 min/tick (3600 s) the grace window must
+// still be 172800 s (48 h), so the fix does not change behaviour for the common case.
+func TestDecayGraceSeconds_DefaultCadence(t *testing.T) {
+	withTickSeconds(t, 3600)
+	want := loyaltyDecayGraceDays * events.TicksPerDay * 3600 // 2 × 24 × 3600 = 172800 (48 h)
+	if got := decayGraceSeconds(); got != want {
+		t.Errorf("decayGraceSeconds() at default cadence = %d, want %d (== 48 h)", got, want)
 	}
 }
 
-// TestDecayGraceMinutes_FastCadence is the load-bearing case: on a sped-up world
-// (TICK_MINUTES=1) the window must collapse to a true 2 game-days = 48 real
-// minutes, not 48 real hours. Before the fix this was effectively ~120
-// game-days and decay never fired.
-func TestDecayGraceMinutes_FastCadence(t *testing.T) {
-	withTickMinutes(t, 1)
-	want := loyaltyDecayGraceDays * events.TicksPerDay * 1 // 2 × 24 × 1 = 48
-	if got := decayGraceMinutes(); got != want {
-		t.Errorf("decayGraceMinutes() at TICK_MINUTES=1 = %d, want %d (== 2 game-days)", got, want)
+// TestDecayGraceSeconds_SubMinuteCadence is the load-bearing case: on the CT 126
+// dev cadence (TICK_SECONDS=6) the window must collapse to a true 2 game-days =
+// 288 real seconds (4.8 min), not the 48 minutes the floored-minute conversion
+// produced. This is the exact case the earlier TickMinutes fix still got wrong.
+func TestDecayGraceSeconds_SubMinuteCadence(t *testing.T) {
+	withTickSeconds(t, 6)
+	want := loyaltyDecayGraceDays * events.TicksPerDay * 6 // 2 × 24 × 6 = 288 s = 4.8 min
+	if got := decayGraceSeconds(); got != want {
+		t.Errorf("decayGraceSeconds() at TICK_SECONDS=6 = %d, want %d (== 2 game-days)", got, want)
 	}
-	if got := decayGraceMinutes(); got >= 48*60 {
-		t.Errorf("decayGraceMinutes() = %d min still spans the old 48-hour wall-clock window", got)
+	if got := decayGraceSeconds(); got >= 48*60 {
+		t.Errorf("decayGraceSeconds() = %d s still ≥ the floored-minute 48-minute window", got)
 	}
 }
 
-// TestDecayGraceMinutes_ScalesWithCadence checks the window tracks Timothy's
-// normal 2 min/tick cadence too (2 game-days = 96 real minutes).
-func TestDecayGraceMinutes_ScalesWithCadence(t *testing.T) {
-	withTickMinutes(t, 2)
-	want := loyaltyDecayGraceDays * events.TicksPerDay * 2 // 2 × 24 × 2 = 96
-	if got := decayGraceMinutes(); got != want {
-		t.Errorf("decayGraceMinutes() at TICK_MINUTES=2 = %d, want %d", got, want)
+// TestDecayGraceSeconds_ScalesWithCadence checks Timothy's normal 2 min/tick
+// cadence (120 s/tick → 2 game-days = 5760 s = 96 real minutes).
+func TestDecayGraceSeconds_ScalesWithCadence(t *testing.T) {
+	withTickSeconds(t, 120)
+	want := loyaltyDecayGraceDays * events.TicksPerDay * 120 // 2 × 24 × 120 = 5760 s = 96 min
+	if got := decayGraceSeconds(); got != want {
+		t.Errorf("decayGraceSeconds() at 120 s/tick = %d, want %d", got, want)
 	}
 }

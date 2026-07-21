@@ -29,18 +29,20 @@ type DailyTickPayload struct{}
 // loyalty-raising event (gift/governor_visit/victory_nearby) before decay
 // applies. Expressed in game-days — NOT wall-clock — because the decay tick
 // itself is tick-scheduled (fires once per game-day). The window is converted
-// to real time via tick.TickMinutes at query time, the same conversion the
-// messenger travel durations use (internal/messenger/recall.go). A hard-coded
-// "48 hours" silently became ~120 game-days at TICK_MINUTES=1, disabling decay
-// in sped-up worlds (the "loyalty 2 uniformly" soak finding).
+// to real time via tick.TickSeconds at query time. A hard-coded "48 hours"
+// silently became ~120 game-days at TICK_MINUTES=1, disabling decay in sped-up
+// worlds (the "loyalty 2 uniformly" soak finding).
 const loyaltyDecayGraceDays = 2
 
-// decayGraceMinutes converts the grace window to real minutes at the current
-// tick cadence: graceDays × ticks/day × minutes/tick. At the default 60
-// min/tick this is 2880 (48 h, preserving the old behaviour); at
-// TICK_MINUTES=1 it is 48 (a true 2 game-days).
-func decayGraceMinutes() int {
-	return loyaltyDecayGraceDays * events.TicksPerDay * tick.TickMinutes
+// decayGraceSeconds converts the grace window to real SECONDS at the current
+// tick cadence: graceDays × ticks/day × seconds/tick. Uses tick.TickSeconds,
+// NOT tick.TickMinutes — the latter floors to 1 minute and on a sub-minute
+// cadence (TICK_SECONDS=6) inflated the window ~10× (2 game-days read as 48 min
+// instead of the real 4.8), leaving decay effectively disabled. At the default
+// 60 min/tick this is 172800 (48 h, unchanged); at TICK_MINUTES=1, 2880 (48 min);
+// at TICK_SECONDS=6, 288 (a true 2 game-days). Same fix class as eta.go.
+func decayGraceSeconds() int {
+	return loyaltyDecayGraceDays * events.TicksPerDay * tick.TickSeconds
 }
 
 // DecayHandler applies loyalty decay for neglected colonies.
@@ -69,9 +71,9 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 		       SELECT 1 FROM loyalty_events le
 		       WHERE le.settlement_id = settlements.id
 		         AND le.event_type IN ('gift', 'governor_visit', 'victory_nearby')
-		         AND le.created_at > now() - ($2 * interval '1 minute')
+		         AND le.created_at > now() - ($2 * interval '1 second')
 		   )`,
-		e.WorldID, decayGraceMinutes(),
+		e.WorldID, decayGraceSeconds(),
 	)
 	if err != nil {
 		return fmt.Errorf("query neglected colonies: %w", err)

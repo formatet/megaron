@@ -80,13 +80,13 @@ func TestClassifyWelfare_VariedDietAlone(t *testing.T) {
 	}
 }
 
-func TestWelfareWindowMinutes_MatchesTickSubstrate(t *testing.T) {
-	withTickMinutes(t, 60)
-	if got, want := welfareWindowMinutes(), 24*60; got != want {
-		t.Errorf("welfareWindowMinutes() at 60 min/tick = %d, want %d (1 game-day)", got, want)
+func TestWelfareWindowSeconds_MatchesTickSubstrate(t *testing.T) {
+	withTickSeconds(t, 3600)
+	if got, want := welfareWindowSeconds(), 24*3600; got != want {
+		t.Errorf("welfareWindowSeconds() at 60 min/tick = %d, want %d (1 game-day)", got, want)
 	}
-	withTickMinutes(t, 1)
-	if got, want := welfareWindowMinutes(), 24*1; got != want {
-		t.Errorf("welfareWindowMinutes() at 1 min/tick = %d, want %d (1 game-day)", got, want)
+	withTickSeconds(t, 6)
+	if got, want := welfareWindowSeconds(), 24*6; got != want {
+		t.Errorf("welfareWindowSeconds() at TICK_SECONDS=6 = %d, want %d (1 game-day)", got, want)
 	}
 }

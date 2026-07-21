@@ -52,13 +52,14 @@ const (
 	welfareEventVariedDiet   = "varied_diet"
 )
 
-// welfareWindowMinutes is one game-day expressed in wall-clock minutes at the
+// welfareWindowSeconds is one game-day expressed in wall-clock SECONDS at the
 // current tick cadence — the same tick-substrate-derived conversion decay.go
-// uses for its (2-game-day) grace window (see decayGraceMinutes), applied here
-// to a single game-day so the idempotency guard below tracks the tick
-// substrate rather than a raw wall-clock constant.
-func welfareWindowMinutes() int {
-	return events.TicksPerDay * tick.TickMinutes
+// uses for its (2-game-day) grace window (see decayGraceSeconds), applied here
+// to a single game-day so the idempotency guard below tracks the tick substrate
+// rather than a raw wall-clock constant. Uses tick.TickSeconds (not TickMinutes,
+// which floors to 1 minute and inflates the window ~10× on a sub-minute cadence).
+func welfareWindowSeconds() int {
+	return events.TicksPerDay * tick.TickSeconds
 }
 
 // WelfareHandler applies daily loyalty welfare signals (kharis favour, feeding,
@@ -106,11 +107,11 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		       SELECT 1 FROM loyalty_events le
 		       WHERE le.settlement_id = s.id
 		         AND le.event_type IN ($4, $5, $6, $7)
-		         AND le.created_at > now() - ($8 * interval '1 minute')
+		         AND le.created_at > now() - ($8 * interval '1 second')
 		   )`,
 		e.WorldID, economy.FoodGoods, foodStockMinimum,
 		welfareEventWellFavoured, welfareEventWellFed, welfareEventStarving, welfareEventVariedDiet,
-		welfareWindowMinutes(),
+		welfareWindowSeconds(),
 	)
 	if err != nil {
 		return fmt.Errorf("query settlements for welfare tick: %w", err)
