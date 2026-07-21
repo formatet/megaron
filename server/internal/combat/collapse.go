@@ -251,12 +251,21 @@ func collapseSettlement(
 	}
 
 	// ── 5. Kingdom membership ──────────────────────────────────────────────────
-	// Remove the owner from kingdom_members if they were in one. The settlement's
-	// kingdom_id is nulled in step 6; here we clean the membership table.
+	// Remove the owner from kingdom_members ONLY if this was their last city.
+	// Losing one city while others survive triggers succession (step 7 promotes a
+	// new capital) — the player lives on and must KEEP their kingdom seat. The
+	// NOT EXISTS excludes the collapsing settlement (still owned here; owner_id is
+	// nulled in step 6) so a survivor's membership is untouched. Latent until
+	// kingdoms are re-enabled, but the unconditional delete was simply wrong.
 	if effectiveOwnerID != uuid.Nil {
 		if _, err := tx.Exec(ctx,
-			`DELETE FROM kingdom_members WHERE player_id = $1`,
-			effectiveOwnerID,
+			`DELETE FROM kingdom_members WHERE player_id = $1
+			   AND NOT EXISTS (
+			       SELECT 1 FROM settlements s
+			       WHERE s.owner_id = $1 AND s.id <> $2
+			         AND s.state NOT IN ('collapsed', 'razed')
+			   )`,
+			effectiveOwnerID, settlementID,
 		); err != nil {
 			slog.Warn("collapse: remove kingdom membership", "player", effectiveOwnerID, "err", err)
 		}
