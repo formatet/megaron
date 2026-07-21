@@ -112,6 +112,13 @@ func main() {
 	eventStore := events.NewStore(pool, chronicler)
 	scheduler := events.NewScheduler(pool, gameClock)
 	worker := events.NewWorker(pool, gameClock)
+	// Poll at least as often as ticks advance so due events don't wait >1 tick.
+	// On the production cadence (minutes/tick) the 10 s default already wins; only
+	// a sub-minute TICK_SECONDS dev cadence tightens it. (Set here, not in
+	// internal/events, to avoid the events→tick import cycle.)
+	if tickDur := time.Duration(tick.TickSeconds) * time.Second; tickDur < 10*time.Second {
+		worker.SetPollInterval(tickDur)
+	}
 	buildH := combat.NewBuildCompleteHandler(pool, eventStore, hub)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, hub)
 	decayH := loyalty.NewDecayHandler(pool, scheduler, eventStore)

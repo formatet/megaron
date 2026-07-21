@@ -180,7 +180,13 @@ type Worker struct {
 	handlers        map[ScheduledEventType]Handler
 	timeouts        map[ScheduledEventType]time.Duration
 	deadLetterHooks map[ScheduledEventType]Handler
+	pollInterval    time.Duration
 }
+
+// defaultWorkerPoll is the batch poll cadence at the production tick rate. On a
+// sub-minute dev cadence it is tightened via SetPollInterval so due events don't
+// wait longer than a tick.
+const defaultWorkerPoll = 10 * time.Second
 
 // NewWorker creates a Worker. clk must be the same Clock used by Scheduler.
 func NewWorker(pool *pgxpool.Pool, clk clock.Clock) *Worker {
@@ -190,6 +196,19 @@ func NewWorker(pool *pgxpool.Pool, clk clock.Clock) *Worker {
 		handlers:        make(map[ScheduledEventType]Handler),
 		timeouts:        make(map[ScheduledEventType]time.Duration),
 		deadLetterHooks: make(map[ScheduledEventType]Handler),
+		pollInterval:    defaultWorkerPoll,
+	}
+}
+
+// SetPollInterval tightens (or relaxes) the batch poll cadence. main.go scales it
+// to the tick rate — a 10 s poll leaves events up to 10 s (>1 tick) late on the
+// sub-minute TICK_SECONDS=6 dev cadence. Kept out of internal/events itself
+// because reading the cadence means importing internal/tick, which imports
+// internal/events (G1 cycle) — the caller that owns both wires it. No-op for
+// non-positive d.
+func (w *Worker) SetPollInterval(d time.Duration) {
+	if d > 0 {
+		w.pollInterval = d
 	}
 }
 
@@ -222,8 +241,8 @@ func (w *Worker) RegisterDeadLetterHook(t ScheduledEventType, h Handler) {
 
 // Run polls for due events until ctx is cancelled.
 func (w *Worker) Run(ctx context.Context) {
-	slog.Info("scheduled event worker started")
-	ticker := time.NewTicker(10 * time.Second)
+	slog.Info("scheduled event worker started", "poll", w.pollInterval)
+	ticker := time.NewTicker(w.pollInterval)
 	defer ticker.Stop()
 
 	for {
