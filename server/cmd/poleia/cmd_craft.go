@@ -21,6 +21,7 @@ func craftCmd() *cobra.Command {
 	var qty float64
 	var recipeID int
 	var recipeName string
+	var provinceID string
 
 	cmd := &cobra.Command{
 		Use:   "craft",
@@ -51,8 +52,15 @@ func craftCmd() *cobra.Command {
 				}
 				recipeID = id
 			}
+			// Craft at a chosen province (e.g. a foundry colony), defaulting to the
+			// capital — matches --province on build/goods/recruit. Bronze often lives
+			// at an ore colony, not the capital, so a capital-only craft was a wall.
+			prov := cfg.ProvinceID
+			if provinceID != "" {
+				prov = provinceID
+			}
 			c := newClient(cfg)
-			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/craft", cfg.WorldID, cfg.ProvinceID)
+			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/craft", cfg.WorldID, prov)
 			data, err := c.post(path, map[string]any{
 				"recipe_id": recipeID,
 				"quantity":  qty,
@@ -78,5 +86,6 @@ func craftCmd() *cobra.Command {
 
 	cmd.Flags().Float64VarP(&qty, "qty", "q", 1, "quantity to craft")
 	cmd.Flags().StringVarP(&recipeName, "recipe", "r", "", "recipe name (bronze, luxury) or numeric id (1, 2)")
+	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to craft in (default: your capital)")
 	return cmd
 }
