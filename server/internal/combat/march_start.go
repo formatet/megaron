@@ -113,6 +113,15 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusUnprocessableEntity, "priests are stationary and cannot march")
 	}
 
+	// A disbanded unit no longer exists — most often a stale Nomadic Host id used
+	// after founding (the host dissolves into its metropolis), but also a unit lost
+	// in battle or to starvation. Say so plainly instead of the bare "status is
+	// 'disbanded'" that read as a system error to players marching an old host id.
+	if u.Status == unit.StatusDisbanded {
+		return nil, reject(http.StatusUnprocessableEntity,
+			"that unit no longer exists — it has been disbanded (a Nomadic Host becomes its metropolis once founded; a defeated or starved unit dissolves into the populace). Order your capital's garrison instead.")
+	}
+
 	// Must be garrisoned or positioned (positioned = on map without a settlement,
 	// e.g. landed on empty hex; it must be able to march back or onward).
 	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
