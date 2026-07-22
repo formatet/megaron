@@ -24,6 +24,28 @@ type ReturnPayload struct {
 	MessengerID uuid.UUID `json:"messenger_id"`
 }
 
+// How long a messenger waits at its destination before heading home unanswered.
+//
+// A plain message waits ReplyStayTicks. A messenger carrying a trade offer waits
+// OfferExpiryTicks — the same number the offer's expiry is scheduled on, because
+// the two are one thing: the offer can only be read or accepted while its bearer
+// is standing there (the inbox and both trade-accept paths require
+// status='delivered'). When the bearer left after 48 ticks while the offer stayed
+// pending for 168, the offer spent 120 ticks visible to nobody and acceptable by
+// nobody, with the sender's escrow locked the whole time.
+const (
+	ReplyStayTicks   = 48     // 2 in-game days
+	OfferExpiryTicks = 7 * 24 // 7 in-game days
+)
+
+// stayTicks returns how long a messenger waits at its destination.
+func stayTicks(carriesOffer bool) int {
+	if carriesOffer {
+		return OfferExpiryTicks
+	}
+	return ReplyStayTicks
+}
+
 // ArrivalHandler handles MessengerArrival events.
 type ArrivalHandler struct {
 	pool      *pgxpool.Pool
@@ -46,10 +68,11 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 	var status string
 	var destinationID uuid.UUID
+	var carriesOffer bool
 	err := h.pool.QueryRow(ctx,
-		`SELECT status, destination_id FROM messengers WHERE id = $1`,
+		`SELECT status, destination_id, trade_offer IS NOT NULL FROM messengers WHERE id = $1`,
 		payload.MessengerID,
-	).Scan(&status, &destinationID)
+	).Scan(&status, &destinationID, &carriesOffer)
 	if err != nil {
 		return nil // deleted or not found — silently skip
 	}
@@ -88,9 +111,10 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 
 	slog.Info("messenger delivered", "id", payload.MessengerID, "destination", destinationID)
 
-	// Auto-return after 48 ticks (48 game hours) if the recipient does not reply sooner.
+	// Auto-return once the stay is up, if the recipient does not reply sooner.
+	// An offer-bearing messenger stays as long as its offer lives — see stayTicks.
 	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledMessengerReturn,
-		ReturnPayload{MessengerID: payload.MessengerID}, e.DueTick+48)
+		ReturnPayload{MessengerID: payload.MessengerID}, e.DueTick+stayTicks(carriesOffer))
 }
 
 // ReturnHandler handles MessengerReturn events.

@@ -20,9 +20,11 @@ import (
 )
 
 // offerExpiryTicks is how long a trade offer stays pending after its messenger
-// arrives: 7 in-game days. Both the scheduled expiry event and the expires_at
-// column must derive from this same number — see the comment at its use site.
-const offerExpiryTicks = 7 * 24
+// arrives. It is messenger.OfferExpiryTicks — the same number that keeps the
+// bearer standing at the destination, since the offer is only readable and
+// acceptable while it is there. The scheduled expiry event, the expires_at
+// column and the bearer's stay must all derive from this one number.
+const offerExpiryTicks = messenger.OfferExpiryTicks
 
 // MessengerHandler handles HTTP requests for messenger endpoints.
 type MessengerHandler struct {
