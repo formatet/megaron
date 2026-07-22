@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -70,6 +71,7 @@ func riteCmd() *cobra.Command {
 	var list bool
 	var yes bool
 	var offerMultiplier float64
+	var offer string
 
 	cmd := &cobra.Command{
 		Use:   "rite",
@@ -187,6 +189,17 @@ func riteCmd() *cobra.Command {
 			if offerMultiplier != 0 {
 				body["offer_multiplier"] = offerMultiplier
 			}
+			// Composed offering: bring what you judge worthy instead of the
+			// prayer's inherited recipe. Worth is the world's scarcity times this
+			// god's taste, weighed against the same god's traditional recipe —
+			// so the old recipe still reads as exactly adequate.
+			if offer != "" {
+				composed, perr := parseOffering(offer)
+				if perr != nil {
+					return perr
+				}
+				body["offering"] = composed
+			}
 
 			path := fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/rite", cfg.WorldID, settlementID)
 			data, err := c.post(path, body)
@@ -231,6 +244,8 @@ func riteCmd() *cobra.Command {
 	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to culture battle_frenzy)")
 	cmd.Flags().StringVar(&targetID, "target", "", "target province UUID (for future targeted prayers)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
+	cmd.Flags().StringVar(&offer, "offer", "",
+		"composed offering, e.g. --offer wine=20,oil=10 (overrides --offer-multiplier; the gods value what the world is short of)")
 	cmd.Flags().Float64Var(&offerMultiplier, "offer-multiplier", 0,
 		"scale the material offering (0.5-2.0; a fatter offer pleases the gods more, a stingy one less — omit for baseline 1.0)")
 	return cmd
@@ -319,4 +334,29 @@ func askYesNo(prompt string) (bool, error) {
 	}
 	answer := strings.ToLower(strings.TrimSpace(line))
 	return answer == "y" || answer == "yes", nil
+}
+
+// parseOffering reads --offer wine=20,oil=10 into the map the Rite endpoint takes.
+// Same shape as allocate --raw, so the two read alike.
+func parseOffering(raw string) (map[string]float64, error) {
+	out := map[string]float64{}
+	for _, pair := range strings.Split(raw, ",") {
+		pair = strings.TrimSpace(pair)
+		if pair == "" {
+			continue
+		}
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("bad --offer entry %q — use good=amount, e.g. wine=20,oil=10", pair)
+		}
+		amount, err := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
+		if err != nil || amount <= 0 {
+			return nil, fmt.Errorf("bad amount in %q — must be a positive number", pair)
+		}
+		out[strings.TrimSpace(parts[0])] = amount
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("--offer was empty — name at least one good, e.g. --offer wine=20")
+	}
+	return out, nil
 }

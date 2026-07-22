@@ -22,6 +22,42 @@ type PrayerSpec struct {
 	God           string
 	Name          string
 	Description   string // human-readable effect line — no odds, ever
+	// Favours is this god's taste: good_key→weight over the offering. Goods
+	// absent weigh affinityDefault — an unfavoured gift is a lesser gift, never
+	// an insult. Empty means "use the effect's archetype", see FavoursFor.
+	Favours map[string]float64
+}
+
+// FavoursFor returns the god's taste for a prayer, falling back to the archetype
+// of its effect. Gods who do the same work want the same kinds of things: the
+// one who finds ore wants what is rare and worked, the one who feeds a people
+// wants what grows, the one who wins battles wants what is slaughtered and drunk.
+// Per-prayer Favours override this when a god needs a character of their own.
+func FavoursFor(spec PrayerSpec) map[string]float64 {
+	if len(spec.Favours) > 0 {
+		return spec.Favours
+	}
+	return favoursByEffect[spec.EffectType]
+}
+
+// favoursByEffect keeps the catalogue honest: 18 hand-written taste maps would
+// drift apart within a month. Weights are strawman — tune against soak data.
+var favoursByEffect = map[string]map[string]float64{
+	EffectOracleRevealDeposits: {
+		// The seer wants what is dug and worked — like calls to like.
+		"purple": 2.0, "oil": 1.5, "silver": 1.4, "bronze": 1.3, "pottery": 1.1,
+		"grain": 0.6, "fish": 0.5, "stone": 0.4,
+	},
+	EffectHarvestBlessing: {
+		// The one who feeds a people wants what grows and what is poured out.
+		"wine": 2.0, "oil": 1.6, "grain": 1.3, "livestock": 1.3, "fish": 0.9,
+		"stone": 0.3, "timber": 0.4, "tin": 0.5, "copper": 0.5,
+	},
+	EffectBattleFrenzy: {
+		// The war god wants blood, drink and the means of war.
+		"livestock": 2.0, "wine": 1.7, "horses": 1.6, "bronze": 1.5, "grain": 1.0,
+		"pottery": 0.5, "stone": 0.4, "fish": 0.4,
+	},
 }
 
 // Offerings are material sacrifices (wine/oil/grain) — the gods take them

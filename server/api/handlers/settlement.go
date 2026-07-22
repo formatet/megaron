@@ -604,6 +604,10 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		Prayer          string  `json:"prayer"`
 		Target          string  `json:"target"`
 		OfferMultiplier float64 `json:"offer_multiplier"`
+		// Offering is the composed sacrifice: good_key→amount, the Wanax's own
+		// choice of what to carry to the altar. Omitted → the prayer's
+		// traditional recipe scaled by OfferMultiplier (unchanged behaviour).
+		Offering map[string]float64 `json:"offering"`
 	}
 	_ = json.NewDecoder(r.Body).Decode(&body)
 
@@ -731,7 +735,37 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Determine success probability — continuous (FAS 1), not tiered: the kharis
 	// level IS the success percentage, nudged by how much was offered.
 	offerMultiplier := riteOfferMultiplier(body.OfferMultiplier)
+	// Composed offering (Timothy 2026-07-22): the Wanax may bring whatever they
+	// judge worthy instead of the prayer's inherited recipe. What it is worth is
+	// the world's scarcity (divine_valuations, repriced daily by the kharis tick)
+	// times this god's taste — and it is weighed against the SAME god's
+	// traditional recipe valued the same way, so bringing exactly the old recipe
+	// still lands on offerMod 0. Omitting `offering` keeps the old
+	// offer_multiplier path untouched: no client breaks.
+	// temenos_prayers_komposition_plan.md
+	offering := scaleOffering(spec.Offering, offerMultiplier)
 	offerMod := riteOfferMod(offerMultiplier)
+	var offeringWorth, offeringBaseline float64
+	if len(body.Offering) > 0 {
+		divineValues, dvErr := religion.LoadDivineValues(r.Context(), h.pool, worldID)
+		if dvErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not read the gods' reckoning")
+			return
+		}
+		if len(divineValues) == 0 {
+			// The daily tick has not priced this world yet (fresh world, or the
+			// first day). Fall back rather than value every gift at zero, which
+			// would read as an empty altar and floor the odds.
+			offering = scaleOffering(spec.Offering, offerMultiplier)
+		} else {
+			favours := religion.FavoursFor(spec)
+			offering = body.Offering
+			offeringWorth = religion.OfferingWorth(offering, divineValues, favours)
+			offeringBaseline = religion.TraditionalBaseline(spec, divineValues)
+			offerMod = religion.OfferMod(offeringWorth, offeringBaseline,
+				religion.DistinctGoods(offering))
+		}
+	}
 	successChance := riteSuccessChance(kharisNow, offerMod)
 	chance := int(successChance*100 + 0.5) // percentage, rounded — for the roll ONLY.
 	// DESIGN INVARIANT (Timothy 2026-07-11, HARD): `chance` never leaves this handler —
@@ -745,11 +779,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Kharis is never part of this — it is standing (gated above); the offering
 	// is in trade goods (wine/oil/silver/…), the deliberate economic sink that
 	// makes religion drive trade.
-	scaledOffering := make(map[string]float64, len(spec.Offering))
-	for good, baseline := range spec.Offering {
-		scaledOffering[good] = baseline * offerMultiplier
-	}
-	for good, need := range scaledOffering {
+	// `offering` was resolved above: either the composed one the Wanax brought or
+	// the prayer's traditional recipe scaled by offer_multiplier.
+	for good, need := range offering {
 		var have float64
 		if scanErr := tx.QueryRow(r.Context(),
 			`SELECT GREATEST(0, settled(amount, rate, calc_tick))
@@ -762,7 +794,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	for good, need := range scaledOffering {
+	for good, need := range offering {
 		if _, err = tx.Exec(r.Context(),
 			`UPDATE settlement_goods SET
 			    amount  = GREATEST(0, settled(amount, rate, calc_tick) - $2),
@@ -816,9 +848,16 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"prayer":           prayerID,
 		"effect_type":      spec.EffectType,
 		"success":          success,
-		"offering":         scaledOffering,
+		"offering":         offering,
 		"offer_multiplier": offerMultiplier,
 		"effect":           effectPayload,
+		// What the gods made of the gift. New fields on an existing event
+		// (Fas 2.4: old fields keep their meaning) — without them a composed
+		// offering leaves no trace of WHY the odds were what they were, and the
+		// whole system becomes uncalibratable after the fact.
+		"offering_worth":    offeringWorth,
+		"offering_baseline": offeringBaseline,
+		"offer_mod":         offerMod,
 	}
 	_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamReligion, "RiteCast",
 		eventPayload, worldID, nil)
@@ -1264,4 +1303,15 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 		result = []item{}
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// scaleOffering returns a prayer's traditional recipe scaled by the legacy
+// offer_multiplier. Kept as the fallback path so every client that never learns
+// about composed offerings keeps working exactly as before.
+func scaleOffering(recipe map[string]float64, multiplier float64) map[string]float64 {
+	scaled := make(map[string]float64, len(recipe))
+	for good, amount := range recipe {
+		scaled[good] = amount * multiplier
+	}
+	return scaled
 }

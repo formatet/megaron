@@ -35,7 +35,7 @@ type Temple struct {
 	ID         uuid.UUID
 	ProvinceID uuid.UUID
 	PantheonID PantheonID
-	Level      int    // 1-3
+	Level      int     // 1-3
 	LocalPower float64 // 0.0-1.0
 	PriestID   *uuid.UUID
 	BuiltAt    time.Time
@@ -48,7 +48,7 @@ type DivineIntervention struct {
 	PantheonID  PantheonID
 	Type        InterventionType
 	TargetID    uuid.UUID
-	Probability float64    // shaped by priest actions; resolved probabilistically at trigger time
+	Probability float64 // shaped by priest actions; resolved probabilistically at trigger time
 	TriggeredAt *time.Time
 	CreatedAt   time.Time
 }
@@ -56,10 +56,10 @@ type DivineIntervention struct {
 // PantheonRegion defines where a pantheon has its strongest influence.
 // Power decays with hex distance from the core region centre.
 type PantheonRegion struct {
-	PantheonID      PantheonID
-	CoreQ           int
-	CoreR           int
-	PowerDecayRate  float64 // power reduction per hex of distance
+	PantheonID     PantheonID
+	CoreQ          int
+	CoreR          int
+	PowerDecayRate float64 // power reduction per hex of distance
 }
 
 // DefaultPantheonRegions returns approximate geographic centres for each pantheon.

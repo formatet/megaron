@@ -15,6 +15,7 @@ import (
 	"github.com/poleia/server/internal/ai"
 	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/events"
+	"github.com/poleia/server/internal/religion"
 )
 
 // Kharis omdesign (Timothy 2026-07-09, temenos_kharis.md §"KANONISK OMDESIGN"):
@@ -162,6 +163,16 @@ type wanaxSnap struct {
 
 // Handle processes a KharisTick scheduled event.
 func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
+	// ── 0. The gods reprice the world ──────────────────────────────────────
+	// Scarcity-driven divine valuation, recomputed once here rather than per
+	// rite — a prayer must never pay for a world-wide scan
+	// (temenos_prayers_komposition_plan.md). Best-effort: a failed reprice must
+	// not abort the day's kharis maintenance, and the previous day's valuation
+	// stays readable, so the worst case is a stale price list.
+	if err := religion.RecomputeDivineValuations(ctx, h.pool, e.WorldID); err != nil {
+		slog.Error("divine valuation reprice failed", "err", err, "world", e.WorldID)
+	}
+
 	// ── 1. Kharis maintenance: one tick per player_world_record ────────────
 	rows, err := h.pool.Query(ctx,
 		`SELECT pwr.player_id, s.id AS capital_id,
@@ -687,6 +698,7 @@ const (
 // escalating tiers while grain is still positive:
 //   - yellow: grain net rate < 0 (regardless of buffer) — "grain is falling".
 //   - red:    net < 0 AND it empties within the next game-day (TicksPerDay).
+//
 // The grain-empty case (population already dropping) is the critical tier and is
 // emitted from applySubsistenceCritical below, so it fires EVERY starving day.
 //
