@@ -1269,6 +1269,13 @@ type unitSummary struct {
 	// no route exists (client falls back to the straight line). See marchPathWaypoints.
 	Path         [][2]int   `json:"path,omitempty"`
 	CargoUnitID  *uuid.UUID `json:"cargo_unit_id,omitempty"`
+	// CarrierShipID/Name identify the ship an embarked land unit is aboard (the
+	// ship whose cargo_unit_id points back at this unit). Without them a `unit
+	// list` row for embarked cargo could not say which vessel carried it, so a
+	// cargo unit stranded at sea (assault target vanished) looked orphaned.
+	// Nil unless the unit is embarked.
+	CarrierShipID   *uuid.UUID `json:"carrier_ship_id,omitempty"`
+	CarrierShipName *string    `json:"carrier_ship_name,omitempty"`
 	// MarchIntent/ColonyName surface a pending colony before it exists (Fas
 	// 2i): a colonize march has no settlement row until it arrives, so this
 	// was the only place its chosen name was visible at all.
@@ -1277,6 +1284,15 @@ type unitSummary struct {
 }
 
 func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSummary {
+	// Reverse map: cargo unit id → the ship carrying it, so an embarked unit can
+	// name its carrier. A ship and its cargo are owned by the same Wanax, so both
+	// rows are in us — no extra query needed.
+	carrierByCargo := make(map[uuid.UUID]*unit.Unit)
+	for _, u := range us {
+		if u.CargoUnitID != nil {
+			carrierByCargo[*u.CargoUnitID] = u
+		}
+	}
 	out := make([]unitSummary, 0, len(us))
 	for _, u := range us {
 		var stance *string
@@ -1310,6 +1326,15 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size
 		}
+		var carrierShipID *uuid.UUID
+		var carrierShipName *string
+		if u.Status == "embarked" {
+			if ship, ok := carrierByCargo[u.ID]; ok {
+				cid := ship.ID
+				carrierShipID = &cid
+				carrierShipName = ship.Name
+			}
+		}
 		out = append(out, unitSummary{
 			ID:              u.ID,
 			Type:            string(u.Type),
@@ -1332,9 +1357,11 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 			ArrivalTick:   arrivalTick,
 			DurationTicks: durationTicks,
 			ArrivesAtUTC:  arrivesAtUTC,
-			CargoUnitID:  u.CargoUnitID,
-			MarchIntent:  u.MarchIntent,
-			ColonyName:   u.ColonyName,
+			CargoUnitID:     u.CargoUnitID,
+			CarrierShipID:   carrierShipID,
+			CarrierShipName: carrierShipName,
+			MarchIntent:     u.MarchIntent,
+			ColonyName:      u.ColonyName,
 		})
 	}
 	return out

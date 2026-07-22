@@ -267,6 +267,7 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		   arrives_at    = NULL,
 		   depart_tick   = NULL,
 		   arrive_tick   = NULL,
+		   march_intent  = NULL,
 		   updated_at    = now()
 		 WHERE id = $1`,
 		u.id, newStatus, destQ, destR, settlementID,

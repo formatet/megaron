@@ -132,6 +132,8 @@ type unitRow struct {
 	TargetR         *int       `json:"target_r"`
 	ArrivesAt       *time.Time `json:"arrives_at"`
 	CargoUnitID     *string    `json:"cargo_unit_id"`
+	CarrierShipID   *string    `json:"carrier_ship_id"`
+	CarrierShipName *string    `json:"carrier_ship_name"`
 	MarchIntent     *string    `json:"march_intent"`
 	ColonyName      *string    `json:"colony_name"`
 }
@@ -215,11 +217,16 @@ func locationStr(u unitRow) string {
 		}
 		return loc
 	case "embarked":
-		cargo := ""
-		if u.CargoUnitID != nil {
-			cargo = " aboard " + (*u.CargoUnitID)[:8] + "…"
+		// An embarked land unit is cargo aboard a ship — name the carrier (the ship
+		// whose cargo_unit_id points back at this unit), so a unit stranded at sea
+		// (assault target vanished) is legible instead of an orphaned "embarked".
+		if u.CarrierShipName != nil && *u.CarrierShipName != "" {
+			return "embarked on " + *u.CarrierShipName
 		}
-		return "embarked" + cargo
+		if u.CarrierShipID != nil {
+			return "embarked on ship " + (*u.CarrierShipID)[:8] + "…"
+		}
+		return "embarked"
 	default:
 		if u.SettlementID != nil {
 			return "settlement " + (*u.SettlementID)[:8] + "…"
