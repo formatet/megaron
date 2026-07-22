@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
 )
 
 // testPool connects to a real Postgres instance — foundColony is pure SQL

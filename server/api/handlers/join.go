@@ -8,13 +8,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/notify"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/world"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/notify"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/world"
 )
 
 // joinStartingPopulation is the population an ordinary join lands with (W1).

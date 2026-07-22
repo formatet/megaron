@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
 )
 
 func TestApplyBattleLoyalty_MovesSettlementLoyalty(t *testing.T) {

@@ -6,7 +6,7 @@ package combat
 import (
 	"math"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // AttackForce describes the attacking side of a battle.

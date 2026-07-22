@@ -18,8 +18,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 )
 
 // Manifest maps a good key to the quantity a transport carries. Silver is a good

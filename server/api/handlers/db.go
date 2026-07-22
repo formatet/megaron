@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/settlement"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/settlement"
 )
 
 // loadTerrainProvince fetches terrain data for a province hex tile.

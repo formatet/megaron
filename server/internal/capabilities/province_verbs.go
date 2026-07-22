@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // canBuild: constructing SOME building is (almost) always possible — most

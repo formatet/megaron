@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/events"
 )
 
 // The founder-phase store drains at a per-TICK rate, while upkeep and consumption

@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/events"
 )
 
 // Silver flow bookkeeping (temenos_silver_cirkulation_plan.md, Del A). Two new

@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/events"
 )
 
 // testPool connects to a real Postgres — the Sitos tick is SQL orchestration

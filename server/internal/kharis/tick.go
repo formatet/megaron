@@ -12,9 +12,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/ai"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/ai"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
 )
 
 // Kharis omdesign (Timothy 2026-07-09, temenos_kharis.md §"KANONISK OMDESIGN"):

@@ -3,7 +3,7 @@ package capabilities
 import (
 	"fmt"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // canMarch requires a garrisoned unit at this settlement. Status is the gate, not

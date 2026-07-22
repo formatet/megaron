@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/poleia/server/internal/auth"
+	"formatet/megaron/server/internal/auth"
 )
 
 // ruralProjectionTypes is the building set projected onto catchment hexes in the

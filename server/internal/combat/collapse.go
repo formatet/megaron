@@ -36,10 +36,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/gossip"
-	"github.com/poleia/server/internal/unit"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/unit"
 )
 
 // CollapseSettlementPayload is the scheduled_events payload for CollapseSettlement.

@@ -10,13 +10,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/ai"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/gossip"
-	"github.com/poleia/server/internal/messenger"
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/ai"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/messenger"
+	"formatet/megaron/server/internal/province"
 )
 
 // KingdomHandler handles HTTP requests for kingdom endpoints.

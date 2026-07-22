@@ -15,8 +15,8 @@ package loyalty
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/tick"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/tick"
 )
 
 // withTickSeconds overrides the package-level tick.TickSeconds for the duration

@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/tick"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/tick"
 )
 
 // loyaltyExecutor is the subset of pgx used to write a loyalty change. Both

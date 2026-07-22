@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/poleia/server/internal/auth"
+	"formatet/megaron/server/internal/auth"
 )
 
 // AuthHandler handles HTTP requests for auth endpoints.

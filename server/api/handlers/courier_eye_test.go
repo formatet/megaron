@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/province"
 )
 
 func TestLoadLiveEyes_CourierSeesAlongRoute(t *testing.T) {

@@ -3,7 +3,7 @@ package capabilities
 import (
 	"fmt"
 
-	"github.com/poleia/server/internal/religion"
+	"formatet/megaron/server/internal/religion"
 )
 
 // canRite checks the temple + kharis gate for this settlement's culture's

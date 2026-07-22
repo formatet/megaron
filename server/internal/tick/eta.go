@@ -3,7 +3,7 @@ package tick
 import (
 	"time"
 
-	"github.com/poleia/server/internal/clock"
+	"formatet/megaron/server/internal/clock"
 )
 
 // RealUntil returns the exact real-time duration remaining until dueTick,

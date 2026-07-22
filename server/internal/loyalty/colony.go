@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/settlement"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/settlement"
 )
 
 // ColonyPenaltyHandler applies daily loyalty drift based on how many colonies

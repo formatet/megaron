@@ -5,8 +5,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/capabilities"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/capabilities"
 )
 
 // Actions handles GET /worlds/:worldID/provinces/:provinceID/actions.

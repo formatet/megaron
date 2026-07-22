@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/poleia/server/internal/tick"
+	"formatet/megaron/server/internal/tick"
 )
 
 // withTickSeconds overrides the package-level tick.TickSeconds for the

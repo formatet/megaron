@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/unit"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
 

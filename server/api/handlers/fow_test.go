@@ -24,7 +24,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // TestFOWGate_CanSeeAdjacentCity verifies that a city 4 hexes away (within the

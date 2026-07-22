@@ -9,7 +9,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // TestCanRecruit_SpearmanRequiresBarracks verifies that a spearman is not

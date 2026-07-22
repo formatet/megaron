@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/events"
 	"github.com/spf13/cobra"
 )
 
