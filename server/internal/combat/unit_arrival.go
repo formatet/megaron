@@ -670,10 +670,15 @@ func (h *UnitArrivalHandler) foundColony(
 			`UPDATE provinces SET territory_state='controlled' WHERE id=$1`, provinceID)
 	}
 
-	// Colony name: chosen, else culture-appropriate default.
-	name := province.SettlementNameForCulture(culture)
+	// Colony name: chosen, else culture-appropriate default. Both go through the
+	// world's taken-name set — march_start already refused a chosen duplicate, but
+	// the name can be claimed while the colonists are on the road, and a founding
+	// must never fail over a name: the generator takes over instead.
+	name := province.UniqueSettlementName(ctx, tx, worldID, culture)
 	if u.colonyName != nil && *u.colonyName != "" {
-		name = *u.colonyName
+		if taken, nErr := province.SettlementNameIsTaken(ctx, tx, worldID, *u.colonyName); nErr != nil || !taken {
+			name = *u.colonyName
+		}
 	}
 
 	// Create the colony. Baseline population (economy.ColonyBaseFoundingPopulation,

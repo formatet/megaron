@@ -350,6 +350,16 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if !capReq.Satisfied {
 			return nil, reject(http.StatusUnprocessableEntity, "%s", capReq.Hint)
 		}
+		// A chosen colony name must be free: names are how Wanaxes address each
+		// other's cities. Caught at dispatch so the Wanax can pick another before
+		// the column marches; the arrival handler falls back to a generated name
+		// if the name is claimed while the colonists are still on the road.
+		if o.Name != "" {
+			if taken, nErr := province.SettlementNameIsTaken(ctx, pool, o.WorldID, o.Name); nErr == nil && taken {
+				return nil, reject(http.StatusConflict,
+					"a settlement named %q already stands in this world — choose another name", o.Name)
+			}
+		}
 	}
 
 	// Mountains are impassable.

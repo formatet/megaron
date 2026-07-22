@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -121,8 +122,16 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		}
 		req.Culture = string(cultures[playerCount%len(cultures)])
 	}
+	// A city's name is how every other Wanax addresses it (messengers, trade
+	// offers, `--to <name>`), so no two may share one: the generator skips names
+	// already spoken for, and a chosen duplicate is refused rather than quietly
+	// altered.
 	if req.ProvinceName == "" {
-		req.ProvinceName = province.SettlementNameForCulture(req.Culture)
+		req.ProvinceName = province.UniqueSettlementName(r.Context(), h.pool, worldID, req.Culture)
+	} else if taken, err := province.SettlementNameIsTaken(r.Context(), h.pool, worldID, req.ProvinceName); err == nil && taken {
+		writeError(w, http.StatusConflict,
+			fmt.Sprintf("a settlement named %q already stands in this world — choose another name", req.ProvinceName))
+		return
 	}
 
 	// Find an unclaimed tile (no province row exists yet for this tile).

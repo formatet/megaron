@@ -293,8 +293,14 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	if req.Culture == "" {
 		req.Culture = string(province.CultureAkhaier)
 	}
+	// Names are the address every other Wanax uses — unique per world. Generated
+	// names skip what is taken; a chosen duplicate is refused, not altered.
 	if req.Name == "" {
-		req.Name = province.SettlementNameForCulture(req.Culture)
+		req.Name = province.UniqueSettlementName(r.Context(), tx, worldID, req.Culture)
+	} else if taken, terr := province.SettlementNameIsTaken(r.Context(), tx, worldID, req.Name); terr == nil && taken {
+		writeError(w, http.StatusConflict,
+			fmt.Sprintf("a settlement named %q already stands in this world — choose another name", req.Name))
+		return
 	}
 
 	founded, err := foundMetropolisFromNomadicHost(

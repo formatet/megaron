@@ -272,10 +272,10 @@ type destCandidate struct{ id, name string }
 // matchDestInMarkers resolves a --to argument against the fog-of-war province
 // markers. It matches an exact settlement_id first (byID — the disambiguation
 // escape hatch), otherwise collects every DISTINCT settlement whose name equals
-// destName (byName). City names are NOT unique (SettlementNameForCulture picks at
-// random with no uniqueness check), so two visible settlements can share a name;
-// the old loops silently kept the last match and mis-routed. Callers treat
-// len(byName) > 1 as ambiguous and demand a settlement id via --to <id>.
+// destName (byName). New foundings take unique names per world
+// (province.UniqueSettlementName), but worlds seeded before that guard still hold
+// collisions, and the old loops silently kept the last match and mis-routed.
+// Callers treat len(byName) > 1 as ambiguous and demand a settlement id via --to <id>.
 func matchDestInMarkers(markers []map[string]any, destName string) (byID *destCandidate, byName []destCandidate) {
 	seen := map[string]bool{}
 	for _, m := range markers {
