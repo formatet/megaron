@@ -29,11 +29,19 @@ const (
 	blessProbability  = 0.15 // 15% chance of divine blessing per maintained day above threshold
 )
 
-// kharisPerCult is the conversion factor from accumulated cult stock to kharis gain per tick.
-// Rescaled 0.01 → 0.0005 for the 0–100 scale: the old rate produced ~16/2000 ≈ 0.8%/day
-// of cap from typical cult production, so the new rate targets the same ~0.8/day of a
-// 0–100 pool. Tunbar — calibrated in W8.
-const kharisPerCult = 0.0005
+// kharisPerTempleDay is what one FULLY DEVOTED temple earns its Wanax per day
+// at tier 1 (mig 094, "kult är ingen vara"). The old model summed a `cult` STOCK
+// to derive a RATE — a fake good with weight 0 that nobody could trade, eat or
+// carry, and whose zero weight divided by zero in the sack loot query (3670805).
+// The tick now reads temple state directly: presence × devotion × whether it was
+// fed.
+//
+// Calibrated against decayBas (1.0/day) to preserve the documented shape rather
+// than the old number: a single temple at full devotion climbs slowly (1.2 − 1.0
+// = +0.2/day), the same temple at the bare 0.15 devotion floor fades, and a
+// Wanax who tends several temples climbs properly. "Skött tempel ≈ långsam
+// klättring, försummelse = fade." Strawman — temenos_balans_spakar.md §9.
+const kharisPerTempleDay = 1.2
 
 // FAS 2 — natural depreciation + imperie-belastning (Timothy 2026-07-09 kharis
 // omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2/3): dailyDecay =
@@ -150,14 +158,18 @@ func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.S
 }
 
 // wanaxSnap holds the per-Wanax state needed for daily temple maintenance.
-// Kharis lives on player_world_records; cultSum aggregates cult good across all
+// Kharis lives on player_world_records; devotionSum aggregates temple staffing across all
 // of the player's settlements in this world.
 type wanaxSnap struct {
-	playerID           uuid.UUID
-	settlementID       uuid.UUID // capital settlement (for event emission and divine effects)
-	kharis             float64
-	kharisCap          float64
-	cultSum            float64
+	playerID     uuid.UUID
+	settlementID uuid.UUID // capital settlement (for event emission and divine effects)
+	kharis       float64
+	kharisCap    float64
+	// devotionSum is Σ over the Wanax's temple cities of that city's devotion
+	// weight (settlement_labor 'cult', 0..1) — "how many temples, and are they
+	// staffed", in one number.
+	devotionSum        float64
+	templeCities       int
 	templelessColonies int // FAS 2: non-capital settlements with no temple building
 }
 
@@ -179,11 +191,20 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		    GREATEST(0, settled(pwr.kharis_amount, pwr.kharis_rate, pwr.kharis_calc_tick)) AS kharis,
 		    pwr.kharis_cap,
 		    COALESCE((
-		        SELECT SUM(GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick)))
-		        FROM settlement_goods sg
-		        JOIN settlements s2 ON s2.id = sg.settlement_id
-		        WHERE s2.owner_id = pwr.player_id AND s2.world_id = pwr.world_id AND sg.good_key = 'cult'
-		    ), 0) AS cult_sum,
+		        SELECT SUM(LEAST(1.0, GREATEST(0, COALESCE(sl.weight, 0))))
+		        FROM settlements s2
+		        JOIN buildings b ON b.settlement_id = s2.id AND b.building_type = 'temple'
+		        LEFT JOIN settlement_labor sl ON sl.settlement_id = s2.id AND sl.good_key = 'cult'
+		        WHERE s2.owner_id = pwr.player_id AND s2.world_id = pwr.world_id
+		          AND s2.state NOT IN ('sunk', 'collapsed', 'razed')
+		    ), 0) AS devotion_sum,
+		    COALESCE((
+		        SELECT COUNT(DISTINCT s2.id)
+		        FROM settlements s2
+		        JOIN buildings b ON b.settlement_id = s2.id AND b.building_type = 'temple'
+		        WHERE s2.owner_id = pwr.player_id AND s2.world_id = pwr.world_id
+		          AND s2.state NOT IN ('sunk', 'collapsed', 'razed')
+		    ), 0) AS temple_cities,
 		    COALESCE((
 		        SELECT COUNT(*)
 		        FROM settlements s3
@@ -208,7 +229,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	for rows.Next() {
 		var w wanaxSnap
 		if err := rows.Scan(&w.playerID, &w.settlementID,
-			&w.kharis, &w.kharisCap, &w.cultSum, &w.templelessColonies); err == nil {
+			&w.kharis, &w.kharisCap, &w.devotionSum, &w.templeCities, &w.templelessColonies); err == nil {
 			snaps = append(snaps, w)
 		}
 	}
@@ -274,7 +295,7 @@ func clampKharis(newKharis, cap float64) float64 {
 
 // computeOfferFraction is the FAS 3 gain-scaling formula: fed/total temples.
 // 0 when there are no temples to feed — defensive only; a maintained day
-// (cultSum > 0) implies at least one temple is already producing cult, so
+// (templeCities > 0) implies at least one temple stands, so
 // total should never be 0 on the only call site that matters. Pure function —
 // unit-testable without a DB.
 func computeOfferFraction(fed, total int) float64 {
@@ -362,7 +383,10 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	// term that differs between the two branches below; bless/punish eligibility
 	// still follows the maintained/missed split (temenos_balans_spakar.md §9: bless
 	// only on a maintained day, punish only on a missed one).
-	maintained := w.cultSum > 0
+	// A day is "maintained" when the Wanax holds at least one standing temple —
+	// the institution, not a stockpile. Devotion and feeding then decide how much
+	// that temple is worth.
+	maintained := w.templeCities > 0
 
 	// FAS 3 — offer-underhåll: a maintained day's cult-gain is scaled by how
 	// many of the Wanax's temples were actually fed a material offer today.
@@ -375,17 +399,28 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	var offerFed, offerTotal int
 	var offerFraction float64
 	if maintained {
-		cultGain := w.cultSum * kharisPerCult
+		// Devotion is the labor share serving the temple — read, never produced
+		// (mig 094). A temple with no one tending it is a building, not a cult.
+		devotionGain := w.devotionSum * kharisPerTempleDay
 		offerFed, offerTotal = h.applyTempleOffering(ctx, w.playerID, worldID)
 		offerFraction = computeOfferFraction(offerFed, offerTotal)
-		gain = cultGain * offerFraction
+
+		// The gods reckon the offering by what the WORLD can spare, not by a
+		// fixed price (Timothy 2026-07-22: "samma sak gäller vid kult och
+		// stående gudstjänster"). Feeding a temple oil during an oil shortage is
+		// a greater gift than feeding it oil in a year of plenty, and earns more.
+		scarcity := h.templeOfferScarcity(ctx, worldID)
+		gain = devotionGain * offerFraction * scarcity
+
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisOffering",
 			map[string]any{
-				"temples_fed":            offerFed,
-				"temples_total":          offerTotal,
-				"offer_fraction":         offerFraction,
-				"cult_gain_before_offer": cultGain,
-				"kharis_gain":            gain,
+				"temples_fed":       offerFed,
+				"temples_total":     offerTotal,
+				"offer_fraction":    offerFraction,
+				"devotion_sum":      w.devotionSum,
+				"scarcity_factor":   scarcity,
+				"gain_before_offer": devotionGain,
+				"kharis_gain":       gain,
 			},
 			worldID, nil)
 	}
@@ -422,7 +457,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// 3. Event + divine effects.
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
 			map[string]any{
-				"cult_consumed":       w.cultSum,
+				"devotion_sum":        w.devotionSum,
 				"kharis_gain":         gain,
 				"daily_decay":         dailyDecay,
 				"net":                 gain - dailyDecay,
@@ -1134,3 +1169,50 @@ func (h *TickHandler) accumulatePrestige(ctx context.Context, worldID uuid.UUID)
 		slog.Error("prestige accumulation failed", "world", worldID, "err", err)
 	}
 }
+
+// templeOfferScarcity values the standing temple offering (oil + wine) at the
+// gods' current reckoning against its plain base value. 1.0 in a year of plenty;
+// above it when the world is short of what the altars burn.
+//
+// This is the same principle the composed prayer offering uses, applied to the
+// standing cult — Timothy 2026-07-22: "samma sak gäller vid kult och stående
+// gudstjänster". Bounded: a shortage may double what devotion earns, never more,
+// so a scarcity spike cannot mint kharis.
+func (h *TickHandler) templeOfferScarcity(ctx context.Context, worldID uuid.UUID) float64 {
+	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
+	if err != nil || len(values) == 0 {
+		return 1.0 // never let a missing price list change the day's outcome
+	}
+	offering := map[string]float64{"oil": OfferOilPerTemple, "wine": OfferWinePerTemple}
+
+	var divine, base float64
+	for good, amount := range offering {
+		divine += amount * values[good]
+		base += amount * baseValues[good]
+	}
+	if base <= 0 || divine <= 0 {
+		return 1.0
+	}
+	return clampTempleScarcity(divine / base)
+}
+
+// clampTempleScarcity bounds what a shortage can be worth to a temple. Pure, so
+// the bound is testable without a rig: abundance never PUNISHES a tended temple
+// (it simply stops paying extra), and a scarcity spike can never mint kharis.
+func clampTempleScarcity(factor float64) float64 {
+	if factor < 1.0 {
+		return 1.0
+	}
+	if factor > templeScarcityCeil {
+		return templeScarcityCeil
+	}
+	return factor
+}
+
+// baseValues mirrors the goods catalogue for the two goods the altars burn.
+// Read from the catalogue would mean a query per Wanax per day for two constants
+// that have not moved since migration 008.
+var baseValues = map[string]float64{"oil": 4, "wine": 5}
+
+// templeScarcityCeil bounds what a shortage can be worth to a temple.
+const templeScarcityCeil = 2.0
