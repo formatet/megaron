@@ -150,11 +150,19 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 			Consumed  map[string]float64 `json:"consumed"`
 		}
 		_ = json.Unmarshal(payload, &p)
-		var from []string
-		for g, q := range p.Consumed {
-			from = append(from, fmt.Sprintf("%.0f %s", q, g))
+		// Sort by good NAME, not by the formatted string — the latter orders on
+		// the leading quantity digit ("3 tin" before "6 copper"), which both
+		// reads wrong and shuffles as quantities change. Map order is random,
+		// so some sort is required for a stable audit line.
+		goods := make([]string, 0, len(p.Consumed))
+		for g := range p.Consumed {
+			goods = append(goods, g)
 		}
-		sort.Strings(from) // map order is random; keep the audit line stable
+		sort.Strings(goods)
+		from := make([]string, 0, len(goods))
+		for _, g := range goods {
+			from = append(from, fmt.Sprintf("%.0f %s", p.Consumed[g], g))
+		}
 		if len(from) > 0 {
 			return fmt.Sprintf("Gjutning: %.0f %s ur %s", p.Produced, p.OutputKey, strings.Join(from, " + "))
 		}

@@ -79,7 +79,10 @@ export function notifText(kind, body) {
       // Payload per ProvinceHandler.Craft: output_key, produced, consumed{good:qty}.
       // Name what went in — casting bronze is the moment the copper/tin chain pays
       // off, and the player should see the trade it made, not just the output.
+      // Sort by good name so the line reads the same every time — Go's
+      // json.Marshal happens to emit map keys sorted, but don't lean on that.
       const from = Object.entries(body.consumed || {})
+        .sort(([a], [b]) => a.localeCompare(b))
         .map(([g, q]) => `${Math.round(q)} ${g}`).join(' + ');
       return `Cast ${Math.round(body.produced || 0)} ${body.output_key || ''}` +
              (from ? ` from ${from}` : '');
