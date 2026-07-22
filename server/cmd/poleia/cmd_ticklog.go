@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -142,6 +143,22 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 		}
 		_ = json.Unmarshal(payload, &p)
 		return fmt.Sprintf("Handel: mottog %.1f %s", p.Quantity, p.GoodKey)
+	case "GoodsCrafted":
+		var p struct {
+			OutputKey string             `json:"output_key"`
+			Produced  float64            `json:"produced"`
+			Consumed  map[string]float64 `json:"consumed"`
+		}
+		_ = json.Unmarshal(payload, &p)
+		var from []string
+		for g, q := range p.Consumed {
+			from = append(from, fmt.Sprintf("%.0f %s", q, g))
+		}
+		sort.Strings(from) // map order is random; keep the audit line stable
+		if len(from) > 0 {
+			return fmt.Sprintf("Gjutning: %.0f %s ur %s", p.Produced, p.OutputKey, strings.Join(from, " + "))
+		}
+		return fmt.Sprintf("Gjutning: %.0f %s", p.Produced, p.OutputKey)
 	case "BuildComplete", "ScheduledBuildComplete":
 		var p struct {
 			BuildingType string `json:"building_type"`

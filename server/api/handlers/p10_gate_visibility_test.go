@@ -52,7 +52,7 @@ func p10TestPool(t *testing.T) *pgxpool.Pool {
 func TestBuildingCatalogue_ExposesTerrainGate(t *testing.T) {
 	pool := p10TestPool(t)
 
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/buildings", nil)
 	rec := httptest.NewRecorder()
@@ -138,7 +138,7 @@ func TestProvinceGet_ExposesBuildQueueMax(t *testing.T) {
 		t.Fatalf("create settlement: %v", err)
 	}
 
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 

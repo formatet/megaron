@@ -252,7 +252,7 @@ func main() {
 	// Game routes (authenticated).
 	wh := handlers.NewWorldHandler(pool, authSvc, gameClock)
 	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
-	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore)
+	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore, hub)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)

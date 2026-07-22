@@ -24,6 +24,7 @@ import (
 	"github.com/poleia/server/internal/events"
 	"github.com/poleia/server/internal/kharis"
 	"github.com/poleia/server/internal/messenger"
+	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/religion"
 	"github.com/poleia/server/internal/tick"
@@ -45,11 +46,12 @@ type ProvinceHandler struct {
 	clk        clock.Clock
 	sitosCfg   economy.SitosConfig
 	eventStore *events.Store // may be nil in tests that don't exercise Recruit's naval path
+	hub        *notify.Hub   // nil-guarded; carries GoodsCrafted to the crafting Wanax
 }
 
 // NewProvinceHandler creates a ProvinceHandler.
-func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig, eventStore *events.Store) *ProvinceHandler {
-	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg, eventStore: eventStore}
+func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig, eventStore *events.Store, hub *notify.Hub) *ProvinceHandler {
+	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg, eventStore: eventStore, hub: hub}
 }
 
 // Get handles GET /worlds/:worldID/provinces/:provinceID.
@@ -2535,6 +2537,33 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
+	}
+
+	// Craft was the one significant resource mutation that left no trace: it
+	// wrote settlement_goods and returned JSON, nothing else. That made casting
+	// bronze — the act the whole #1 gate hangs on — silent to the player, and
+	// unanswerable after the fact, since a stock of 0 cannot distinguish "never
+	// cast" from "cast and spent on an elite unit" (the trap that broke the
+	// "craft-events >0" metric in rapport_bronsmatning_20260722.md).
+	//
+	// Outcome, not intention (Fas 2.3): the quantities below are what happened.
+	// The event is the audit trail; the notification is what the player sees.
+	consumed := make(map[string]float64, len(ingredients))
+	for _, i := range ingredients {
+		consumed[i.key] = i.qty * req.Quantity
+	}
+	craftBody := map[string]any{
+		"settlement_id": settlementID,
+		"output_key":    outputKey,
+		"produced":      produced,
+		"consumed":      consumed,
+	}
+	if h.eventStore != nil {
+		_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamProvince, "GoodsCrafted",
+			craftBody, worldID, nil)
+	}
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(r.Context(), worldID, playerID, "GoodsCrafted", 4, craftBody)
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{

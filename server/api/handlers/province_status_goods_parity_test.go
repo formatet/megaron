@@ -99,7 +99,7 @@ func TestStatusGoodsParity_AmountClampedToCapInBoth(t *testing.T) {
 	}
 
 	clk := clock.NewTestClock(time.Now())
-	ph := NewProvinceHandler(pool, nil, clk, economy.SitosConfig{}, nil)
+	ph := NewProvinceHandler(pool, nil, clk, economy.SitosConfig{}, nil, nil)
 
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)

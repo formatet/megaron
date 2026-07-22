@@ -60,7 +60,7 @@ function coalesce(key, fn, ms = 2000) {
 // WS event kinds that mutate units/province/march/trade/messenger state — an open
 // drawer showing that data should rebuild after them.
 const DATA_KINDS = new Set([
-  'ArmyArrival','BuildComplete','TrainComplete','MessengerArrival',
+  'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
 ]);
 
@@ -103,7 +103,7 @@ export function initWS() {
       firstConnect = false;
     };
     const PERSISTENT_KINDS = new Set([
-      'BuildComplete','TrainComplete','ArmyArrival','ColonyFounded',
+      'BuildComplete','GoodsCrafted','TrainComplete','ArmyArrival','ColonyFounded',
       'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
       'UnitAttrition','UnitDeserted','OfferAccepted','OfferDeclined','OfferExpired',
     ]);
@@ -124,6 +124,11 @@ export function initWS() {
       }
       if (msg.kind === 'BuildComplete') {
         window.addNotifChip('city', '🏛', `Build complete`, 'now');
+      }
+      if (msg.kind === 'GoodsCrafted') {
+        // Refetch goods — the city drawer's stock is now stale.
+        coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; })));
+        window.addNotifChip('city', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
       if (msg.kind === 'MetropolisFounded') {
         window.addNotifChip('city', '👑', notifText('MetropolisFounded', msg.payload || {}), 'now');

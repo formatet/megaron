@@ -51,6 +51,7 @@ function fmtSoon(iso) {
 export function notifIcon(kind) {
   const icons = {
     BuildComplete:      '🏛',
+    GoodsCrafted:       '🔨',
     TrainComplete:      '⚔',
     ArmyArrival:        '⚔',
     ColonyFounded:      '🏛',
@@ -74,6 +75,15 @@ export function notifIcon(kind) {
 export function notifText(kind, body) {
   switch (kind) {
     case 'BuildComplete':      return `Build complete: ${body.building_type || ''}`;
+    case 'GoodsCrafted': {
+      // Payload per ProvinceHandler.Craft: output_key, produced, consumed{good:qty}.
+      // Name what went in — casting bronze is the moment the copper/tin chain pays
+      // off, and the player should see the trade it made, not just the output.
+      const from = Object.entries(body.consumed || {})
+        .map(([g, q]) => `${Math.round(q)} ${g}`).join(' + ');
+      return `Cast ${Math.round(body.produced || 0)} ${body.output_key || ''}` +
+             (from ? ` from ${from}` : '');
+    }
     case 'TrainComplete':      return `Training done: ${body.count || ''} ${body.unit_type || ''}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
     case 'ColonyFounded':      return `Colony founded: ${body.name || ''}`;

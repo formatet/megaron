@@ -136,7 +136,7 @@ func setupRecruitShipFixture(t *testing.T) *recruitShipFixture {
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	eventStore := events.NewStore(pool)
-	ph := NewProvinceHandler(pool, scheduler, clk, economy.SitosConfig{}, eventStore)
+	ph := NewProvinceHandler(pool, scheduler, clk, economy.SitosConfig{}, eventStore, nil)
 	uh := NewUnitHandler(pool, scheduler, eventStore, clk)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, nil)
 
