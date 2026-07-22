@@ -57,8 +57,8 @@ func (e *metropolisError) Unwrap() error { return e.cause }
 func (e *metropolisError) UserMessage() string { return e.userMsg }
 
 // createMetropolis raises a player's capital: province, settlement, opening stores,
-// the Sitos seeds, starter buildings, labor weights, and the first production
-// pass. It runs inside the caller's transaction and does NOT commit.
+// the Sitos seeds, Demeter's conditional starter farm, labor weights, and the first
+// production pass. It runs inside the caller's transaction and does NOT commit.
 //
 // It deliberately does NOT create starter units. Ordering is load-bearing:
 // seedStarterUnits deducts its men from settlements.population AFTER
@@ -185,22 +185,51 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		return out, &metropolisError{"could not record join", err}
 	}
 
-	// Seed the minimal starter building set (farm/lumbermill/temple/market) so the
-	// religion + silver subsystems are alive from t=0. Must precede RecomputeProduction.
-	if err = seedStarterBuildings(ctx, tx, out.SettlementID); err != nil {
-		return out, &metropolisError{"could not seed starter buildings", err}
+	// Demeter's gift: a metropolis founds BUILDING-FREE (like a colony) — the Wanax
+	// raises farm/lumbermill/temple/market themselves. The single exception is a
+	// starter FARM, granted only where the land can grow wheat. Test: if assuming a
+	// farm would raise the catchment's grain potential above its building-free base,
+	// at least one catchment hex carries farm-compatible terrain (plains/
+	// river_valley/river_delta), so Demeter grants the farm. On barren ground she
+	// grants nothing — and the founding grain forecast still reads true there, since
+	// its with-farm assumption equals the building-free base when no farm helps.
+	// Must precede RecomputeProduction so the farm's grain is picked up.
+	// (Poseidon's galley — the coastal gift — is granted by the caller.)
+	catchmentHexes := [][2]int{
+		{p.Q, p.R},
+		{p.Q + 1, p.R}, {p.Q - 1, p.R},
+		{p.Q, p.R + 1}, {p.Q, p.R - 1},
+		{p.Q + 1, p.R - 1}, {p.Q - 1, p.R + 1},
+	}
+	grainNoFarm, err := economy.CatchmentBasePotentialAt(ctx, tx, p.WorldID, catchmentHexes, nil)
+	if err != nil {
+		return out, &metropolisError{"could not read catchment potential", err}
+	}
+	grainWithFarm, err := economy.CatchmentBasePotentialAt(ctx, tx, p.WorldID, catchmentHexes, []string{"farm"})
+	if err != nil {
+		return out, &metropolisError{"could not read catchment potential with farm", err}
+	}
+	if grainWithFarm["grain"] > grainNoFarm["grain"]+1e-9 {
+		if _, err = tx.Exec(ctx,
+			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'farm', 1)
+			 ON CONFLICT (settlement_id, building_type) DO NOTHING`,
+			out.SettlementID,
+		); err != nil {
+			return out, &metropolisError{"could not grant Demeter's farm", err}
+		}
 	}
 
-	// Seed baseline labor weights: grain dominates (85%) so the starter city is
-	// self-sufficient from t=0; cult gets a server-floor (15%) so the temple is
-	// never inert and kharis doesn't decay before the first agent allocation.
-	// These two goods are the only ones seeded explicitly — other goods start at
-	// zero weight and are allocated by the Wanax/agent via LaborAlloc. Together
-	// they satisfy both hard invariants: "grain feeds the city" and "cult always
-	// produces so kharis has a floor."
+	// Seed the opening labor allocation: all of it on grain. The metropolis founds
+	// with no temple (cult now requires the Wanax to build one), so the old cult
+	// floor would be dead weight — its share folds into grain, keeping the city fed
+	// from t=0 wherever the land can feed it. Grain is the only good seeded
+	// explicitly; every other good starts at zero weight, allocated by the
+	// Wanax/agent via LaborAlloc. This is a transient seed the player reallocates
+	// immediately. (100% grain labor still yields nothing on barren ground without
+	// Demeter's farm — self-sufficiency is geography-gated, by design.)
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 VALUES ($1, 'grain', 0.85), ($1, 'cult', 0.15)
+		 VALUES ($1, 'grain', 1.0)
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		out.SettlementID,
 	); err != nil {
@@ -209,7 +238,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 
 	// RecomputeProduction reads catchment tiles and settlement_labor weights, then
 	// writes rates. The equal-weight seeder (len(weights)==0 path) is bypassed since
-	// we already seeded grain + cult above.
+	// we already seeded grain above.
 	if err = economy.RecomputeProduction(ctx, tx, out.SettlementID); err != nil {
 		return out, &metropolisError{"could not init production", err}
 	}

@@ -1,10 +1,14 @@
 package economy
 
-// FoundingGrainLaborWeight is the grain labor weight every founding seeds
-// (createMetropolis + foundColony both seed 'grain' at 0.85). The
-// colonize/settle forecast reuses it so the prognosis tracks the real
-// founding rate. KEEP IN SYNC with the 0.85 literal in create_metropolis.go
-// and unit_arrival.go.
+// FoundingGrainLaborWeight is the grain labor weight the colonize/settle forecast
+// assumes. foundColony seeds 'grain' at exactly this (unit_arrival.go). A
+// metropolis now seeds grain at 1.0 (create_metropolis.go — the old cult floor
+// folded into grain once starter buildings were removed), so the forecast is a
+// deliberately conservative ~15% under-estimate of a metropolis's opening grain
+// rate: the founding labor seed is transient (the Wanax reallocates immediately),
+// so the prognosis does not chase it — and under-predicting grain errs safe. The
+// A13 forecast fix (building-free vs with-farm scenario) is orthogonal to this
+// weight. KEEP IN SYNC with the 0.85 literal in unit_arrival.go.
 const FoundingGrainLaborWeight = 0.85
 
 // FoundingGrainNetPerTick mirrors RecomputeProduction's grain math for a hex
