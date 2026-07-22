@@ -656,7 +656,23 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		settlementID,
 	).Scan(&hasTemple)
 	if !hasTemple {
-		writeError(w, http.StatusBadRequest, "a temple must be built to perform rites")
+		// Distinguish "no temple at all" from "temple finishing" — the latter is
+		// the surprise a Wanax hits performing a rite right after a temple build
+		// shows done: the BuildComplete event (which inserts the buildings row) is
+		// a poll away. Mirror the foundry-422 fix (df3a77b) so the error names the
+		// real cause instead of a bare "temple required".
+		var queued bool
+		_ = tx.QueryRow(r.Context(),
+			`SELECT EXISTS(SELECT 1 FROM build_queue WHERE settlement_id = $1 AND building_type = 'temple')`,
+			settlementID,
+		).Scan(&queued)
+		if queued {
+			writeError(w, http.StatusBadRequest,
+				"temple is still finishing here — it becomes usable within a tick of completion; retry shortly")
+		} else {
+			writeError(w, http.StatusBadRequest,
+				"temple required — build a temple here first (rites are performed at a temple)")
+		}
 		return
 	}
 
