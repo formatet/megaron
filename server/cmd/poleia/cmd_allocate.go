@@ -226,7 +226,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		// city with a temple, and that share is additive by design (the same
 		// citizens serve the temple alongside other duties), so the total reads
 		// above 100 on purpose.
-		fmt.Printf("  (totals %.0f%% — a temple's 15%% cult share is additive, not taken from the others)\n", allocated)
+		fmt.Printf("  (totals %.0f%% — a temple's cult share is additive, not taken from the others)\n", allocated)
 	}
 	fmt.Println()
 	if len(rows) == 0 {
@@ -235,6 +235,14 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	sort.Slice(rows, func(i, j int) bool { return rows[i].pct > rows[j].pct })
 	for _, r := range rows {
 		fmt.Printf("  %-12s %3.0f%%  (%d citizens)\n", r.key, r.pct, r.citizens)
+	}
+	if hasCult {
+		// Devotion is capped by what the temple can employ (15% per level), and
+		// anything above that has no altar to serve at — it would silently pay
+		// nothing. Say so where the number is chosen.
+		fmt.Println("\n  cult = devotion: the share serving the temple. It produces no good — the kharis")
+		fmt.Println("  tick reads it. A temple employs 15% of the city per level, and devotion beyond")
+		fmt.Println("  that is not served: to devote more, raise the temple.")
 	}
 	fmt.Println("\nTo change it, name EVERY good you want worked — `allocate` replaces the whole split,")
 	fmt.Println("it does not adjust one good (e.g. `poleia allocate --grain 80 --oil 20`).")

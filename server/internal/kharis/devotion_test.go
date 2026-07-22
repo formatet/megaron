@@ -15,21 +15,55 @@ func dayNet(devotionSum float64, offerFraction, scarcity float64, templelessColo
 }
 
 func TestDevotionCalibration_TendedClimbsNeglectedFades(t *testing.T) {
-	// One temple, fully devoted, fed, ordinary times: climbs — slowly.
-	if net := dayNet(1.0, 1.0, 1.0, 0); net <= 0 {
-		t.Errorf("a fully devoted, fed temple must climb, got %+.2f/day", net)
-	} else if net > 0.5 {
+	l1 := templeDevotionCapacity(1)
+
+	// A level-1 temple staffed to what it can EMPLOY, fed, in ordinary times:
+	// climbs — slowly. This is the case every existing city is in, and it must
+	// not fade: a fade nobody can escape is not a choice (Timothy 2026-07-23).
+	net := dayNet(l1, 1.0, 1.0, 0)
+	if net <= 0 {
+		t.Errorf("a fully staffed, fed level-1 temple must climb, got %+.2f/day", net)
+	}
+	if net > 0.5 {
 		t.Errorf("the climb must stay SLOW — %+.2f/day is a sprint, not a relationship", net)
 	}
 
-	// The same temple at the bare 0.15 devotion floor the server applies: fades.
-	if net := dayNet(0.15, 1.0, 1.0, 0); net >= 0 {
-		t.Errorf("a temple nobody tends must fade, got %+.2f/day", net)
+	// Unfed, however well staffed: fades.
+	if net := dayNet(l1, 0, 1.0, 0); net >= 0 {
+		t.Errorf("an unfed temple must fade, got %+.2f/day", net)
 	}
 
-	// Tending several temples is the real way up.
-	if net := dayNet(3*0.6, 1.0, 1.0, 0); net <= 0.5 {
-		t.Errorf("three tended temples should climb meaningfully, got %+.2f/day", net)
+	// A larger temple employs more of the city and climbs proportionally faster
+	// — which is the whole reason to raise one.
+	l2 := dayNet(templeDevotionCapacity(2), 1.0, 1.0, 0)
+	if l2 <= net {
+		t.Errorf("a level-2 temple must out-climb a level-1: %+.2f vs %+.2f", l2, net)
+	}
+
+	// Several tended temples are the other way up.
+	if many := dayNet(3*l1, 1.0, 1.0, 0); many <= 0.5 {
+		t.Errorf("three tended temples should climb meaningfully, got %+.2f/day", many)
+	}
+}
+
+// The temple is a workplace: devotion allocated beyond what the building can
+// employ has no altar to serve at, and must not pay. Without this a Wanax could
+// pour 100%% of a city into an L1 shrine and skip temple levels entirely.
+func TestTempleDevotionCapacity_ScalesWithLevelAndFloorsAtOne(t *testing.T) {
+	if got := templeDevotionCapacity(1); got != templeDevotionPerLevel {
+		t.Errorf("level 1 capacity = %.2f, want %.2f", got, templeDevotionPerLevel)
+	}
+	if templeDevotionCapacity(2) <= templeDevotionCapacity(1) {
+		t.Error("a larger temple must employ more")
+	}
+	if got := templeDevotionCapacity(0); got != templeDevotionPerLevel {
+		t.Errorf("a malformed level must fall back to level 1, got %.2f", got)
+	}
+	// Level 1 capacity is exactly the floor LaborAlloc applies, so every existing
+	// city is already staffed to capacity — the design premise for the raise.
+	if templeDevotionCapacity(1) != 0.15 {
+		t.Errorf("level-1 capacity must match the server devotion floor, got %.2f",
+			templeDevotionCapacity(1))
 	}
 }
 

@@ -36,12 +36,36 @@ const (
 // The tick now reads temple state directly: presence × devotion × whether it was
 // fed.
 //
-// Calibrated against decayBas (1.0/day) to preserve the documented shape rather
-// than the old number: a single temple at full devotion climbs slowly (1.2 − 1.0
-// = +0.2/day), the same temple at the bare 0.15 devotion floor fades, and a
-// Wanax who tends several temples climbs properly. "Skött tempel ≈ långsam
-// klättring, försummelse = fade." Strawman — temenos_balans_spakar.md §9.
-const kharisPerTempleDay = 1.2
+// Calibrated against decayBas (1.0/day) and against what a temple can actually
+// EMPLOY (templeDevotionCapacity): a level-1 temple staffed to its capacity and
+// fed climbs slowly (0.15 × 8.0 = 1.2 vs 1.0 decay = +0.2/day), an unfed or
+// unstaffed one fades, and a larger temple — which can employ more of the city —
+// climbs proportionally faster. "Skött tempel ≈ långsam klättring, försummelse =
+// fade." Strawman — temenos_balans_spakar.md §9.
+//
+// Raised 1.2 → 8.0 (Timothy 2026-07-23): at 1.2 even a temple staffed to the
+// full level-1 capacity earned 0.18/day against 1.0 decay, so EVERY Wanax faded
+// no matter what they did — a fade nobody could escape is not a choice.
+const kharisPerTempleDay = 8.0
+
+// templeDevotionCapacity is how much of a city's population a temple of this
+// level can put to work at the altar, as a share (Timothy 2026-07-23: the
+// temple's maximum is "antal som kan sysselsättas i det"). Devotion allocated
+// beyond it is not served by the building and does not count.
+//
+// Level 1 lands exactly on the 0.15 floor LaborAlloc already applies, so every
+// existing city is staffed to capacity from the day this lands — and the only
+// way to devote MORE of a city to the gods is a larger temple. That is what
+// makes temple levels worth having.
+func templeDevotionCapacity(level int) float64 {
+	if level < 1 {
+		level = 1
+	}
+	return templeDevotionPerLevel * float64(level)
+}
+
+// templeDevotionPerLevel is both the level-1 capacity and the step per level.
+const templeDevotionPerLevel = 0.15
 
 // FAS 2 — natural depreciation + imperie-belastning (Timothy 2026-07-09 kharis
 // omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2/3): dailyDecay =
@@ -191,7 +215,10 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		    GREATEST(0, settled(pwr.kharis_amount, pwr.kharis_rate, pwr.kharis_calc_tick)) AS kharis,
 		    pwr.kharis_cap,
 		    COALESCE((
-		        SELECT SUM(LEAST(1.0, GREATEST(0, COALESCE(sl.weight, 0))))
+		        -- Devotion counts only up to what the temple can EMPLOY: a
+		        -- level-1 temple works $2 of the city, level 2 twice that, and
+		        -- anything allocated beyond that has no altar to serve at.
+		        SELECT SUM(LEAST(GREATEST(0, COALESCE(sl.weight, 0)), $2 * GREATEST(1, b.level)))
 		        FROM settlements s2
 		        JOIN buildings b ON b.settlement_id = s2.id AND b.building_type = 'temple'
 		        LEFT JOIN settlement_labor sl ON sl.settlement_id = s2.id AND sl.good_key = 'cult'
@@ -218,7 +245,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 WHERE pwr.world_id = $1`,
-		e.WorldID,
+		e.WorldID, templeDevotionPerLevel,
 	)
 	if err != nil {
 		return fmt.Errorf("query player_world_records for kharis tick: %w", err)
