@@ -474,6 +474,13 @@ func fetchPreviewPath(c *Client, path string) (*colonizePreview, error) {
 // Wanax sees whether a target hex can feed a colony before committing the march.
 func renderColonizePreview(p *colonizePreview, q, r int) {
 	renderCatchmentForecast(fmt.Sprintf("Colonize (%d,%d)", q, r), p)
+	// The march order is one-way for the unit itself: foundColony folds the
+	// colonists into the new city's populace and disbands the unit. Playtesters
+	// twice ordered a colonize expecting the cohort back, then hit "that unit no
+	// longer exists" on the next order — so say it here, where the decision is
+	// still open. Printed before the confirmation prompt AND on the --yes path,
+	// so an agent that skips the prompt still reads it.
+	fmt.Println("OBS: enheten förbrukas — kolonisterna blir kolonins befolkning och enheten upplöses. Den kan inte beordras igen.")
 	fmt.Println("En koloni försörjer inte sig själv automatiskt — bygg farm om terrängen bär, annars ordna grain via intern transfer (poleia transfer --good grain --qty <n> --dest <koloni>).")
 }
 
