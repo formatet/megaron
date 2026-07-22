@@ -618,6 +618,18 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		},
 		"unknown_hexes": unknown,
 	}
+	// The founding gifts a metropolis is owed HERE. Both conditions are already
+	// computed above, and both are geography-gated — Demeter grants a farm only
+	// where a farm would actually feed the city, Poseidon a galley only on the
+	// coast — so a Wanax comparing two sites needs to see them alongside the
+	// grain numbers rather than discover them after the irreversible settle.
+	// Colonies get neither, hence starter_farm only. Read on the KNOWN catchment
+	// like everything else here: unknown_hexes already tells the reader the
+	// forecast is partial.
+	if starterFarm {
+		centre := len(view) > 0 && view[0].Known && view[0].Coastal
+		resp["founding_gifts"] = foundingGifts(goods["grain"], withFarm["grain"], centre)
+	}
 	if isolatedWarning != "" {
 		resp["isolated_warning"] = isolatedWarning
 	}
@@ -627,6 +639,33 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 // isolationWarningText returns the P8 isolated-start message, or "" when the
 // site clears any one of the three checks. Pure — no DB, no HTTP — so the
 // heuristic is unit-testable without a live server or world data.
+// foundingGifts lists the gifts a metropolis founded on this site is owed. Both
+// conditions mirror the founding code exactly — Demeter's farm is granted when a
+// farm would raise the catchment's grain potential above its building-free base
+// (createMetropolis), Poseidon's galley when the founding hex is coastal
+// (foundMetropolisFromNomadicHost) — so the forecast cannot promise what the
+// settle will not deliver. Colonies are owed neither; the caller gates on
+// ?starter_farm=1.
+func foundingGifts(baseGrain, withFarmGrain float64, coastalCentre bool) []map[string]string {
+	gifts := []map[string]string{}
+	if withFarmGrain > baseGrain+1e-9 {
+		gifts = append(gifts, map[string]string{
+			"key":    "demeter_farm",
+			"label":  "Demeter's farm",
+			"detail": "the catchment bears grain, so the city is founded with a farm already standing",
+		})
+	}
+	if coastalCentre {
+		gifts = append(gifts, map[string]string{
+			"key":   "poseidon_galley",
+			"label": "Poseidon's galley",
+			"detail": fmt.Sprintf("a coastal founding is owed one galley, crewed by %d of your citizens",
+				poseidonGalleyCrew),
+		})
+	}
+	return gifts
+}
+
 func isolationWarningText(hasHills, hasMetal, hasNeighbor bool, radius int) string {
 	if hasHills || hasMetal || hasNeighbor {
 		return ""

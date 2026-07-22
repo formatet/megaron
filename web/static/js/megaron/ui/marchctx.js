@@ -128,6 +128,14 @@ export function renderColonizePreviewHTML(p) {
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
 
+  // Founding gifts (metropolis only — the server sends founding_gifts for
+  // ?starter_farm=1). They fall out of the same geography as the numbers above,
+  // so a founder comparing two sites sees them here instead of discovering them
+  // after the irreversible settle.
+  (p.founding_gifts || []).forEach(gift => {
+    html += `<div>🎁 <b>${gift.label}</b> <span style="color:var(--text-dim)">— ${gift.detail}</span></div>`;
+  });
+
   // Per-hex breakdown (DEL C — terräng-luckan): the aggregate above answers
   // "will it feed itself"; this answers "what IS the catchment" hex by hex, so
   // the Host panel lets a founder actually inspect the ground before settling

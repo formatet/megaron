@@ -433,6 +433,14 @@ type colonizePreview struct {
 	} `json:"grain"`
 	UnknownHexes    int    `json:"unknown_hexes"`
 	IsolatedWarning string `json:"isolated_warning,omitempty"`
+	// FoundingGifts is only sent for a metropolis founding (?starter_farm=1) —
+	// the gifts this site earns (Demeter's farm, Poseidon's galley). Empty for
+	// colonies, which are owed nothing.
+	FoundingGifts []struct {
+		Key    string `json:"key"`
+		Label  string `json:"label"`
+		Detail string `json:"detail"`
+	} `json:"founding_gifts,omitempty"`
 }
 
 // fetchColonizePreview GETs the grain/goods forecast for founding a colony at (q,r).
@@ -542,6 +550,13 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	}
 	if len(extras) > 0 {
 		fmt.Printf("  Övrigt: %s\n", strings.Join(extras, ", "))
+	}
+
+	// Gudagåvorna hör till platsen, inte till grundandet: de faller ut ur samma
+	// geografi som siffrorna ovan, så de hör hemma i prognosen — inte som en
+	// överraskning efter det oåterkalleliga settlet.
+	for _, gift := range p.FoundingGifts {
+		fmt.Printf("  Gåva: %s — %s\n", gift.Label, gift.Detail)
 	}
 
 	// P8 (soak 2026-07-18): make an isolated founding site visible BEFORE the
