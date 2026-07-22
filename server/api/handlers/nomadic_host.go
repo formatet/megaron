@@ -101,11 +101,33 @@ func seedNomadicHost(
 	grainAmount := -grainRate * nomadicHostRationTicks
 	silverAmount := -silverRate * nomadicHostRationTicks
 
+	// Upsert, not insert: founder_phase is unique per (world, owner), and a Wanax
+	// who founded once keeps that row forever (active=false, founded_tick set).
+	// A plain INSERT therefore raised 23505 and surfaced as a 500 for anyone who
+	// had lost every settlement — a Wanax whose last city fell could never take
+	// the field again, and the server's answer was an opaque
+	// "could not create nomadic host" (soak 2026-07-22, two sacked daemons).
+	//
+	// Reaching this call already proves the player is landless: Join returns
+	// early both when a settlement exists and when an active phase exists. So the
+	// conflict case is exactly "begin again", and it resets the whole row — new
+	// host, full rations, founded_tick cleared — rather than leaving a half-spent
+	// phase behind.
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO founder_phase
 		   (world_id, owner_id, host_unit_id, population,
 		    grain_amount, grain_rate, silver_amount, silver_rate, calc_tick, active)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, current_world_tick(), true)`,
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, current_world_tick(), true)
+		 ON CONFLICT (world_id, owner_id) DO UPDATE SET
+		   host_unit_id  = EXCLUDED.host_unit_id,
+		   population    = EXCLUDED.population,
+		   grain_amount  = EXCLUDED.grain_amount,
+		   grain_rate    = EXCLUDED.grain_rate,
+		   silver_amount = EXCLUDED.silver_amount,
+		   silver_rate   = EXCLUDED.silver_rate,
+		   calc_tick     = EXCLUDED.calc_tick,
+		   founded_tick  = NULL,
+		   active        = true`,
 		worldID, playerID, hostID, nomadicHostPopulation,
 		grainAmount, grainRate, silverAmount, silverRate,
 	); err != nil {
