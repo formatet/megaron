@@ -285,8 +285,17 @@ func statusCmd() *cobra.Command {
 				if netG, ok := sett["net_grain_per_day_after_upkeep"].(float64); ok {
 					netS, _ := sett["net_silver_per_day_after_upkeep"].(float64)
 					warn := ""
-					if netG < 0 || netS < 0 {
-						warn = "  ⚠ täcker inte arméns upkeep — enheter kan svälta/desertera (se `poleia recruit --list`)"
+					// Name WHICH half is short, and the matching consequence: the old
+					// string fired on either and always said "svälta/desertera", so a
+					// city with 118k grain and a silver deficit read as a famine
+					// (soak 2026-07-22, two playtesters in a row).
+					switch {
+					case netG < 0 && netS < 0:
+						warn = "  ⚠ varken grain eller silver täcker arméns upkeep — enheter svälter OCH deserterar (se `poleia recruit --list`)"
+					case netG < 0:
+						warn = "  ⚠ grain täcker inte arméns upkeep — enheter kan svälta (silvret räcker; se `poleia recruit --list`)"
+					case netS < 0:
+						warn = "  ⚠ silver täcker inte arméns sold — enheter kan desertera (maten räcker; se `poleia recruit --list`)"
 					}
 					fmt.Printf("  %-8s %+.1f grain/dygn, %+.1f silver/dygn (efter arméns upkeep)%s\n",
 						"Netto", netG, netS, warn)

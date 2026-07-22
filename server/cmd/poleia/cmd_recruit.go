@@ -187,10 +187,17 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		sustainable bool
 	}
 	afford := map[string]recruitAffordInfo{}
+	// The city's own net-after-upkeep, so the warning can name WHICH of the two
+	// resources binds and by how much (soak 2026-07-22: two playtesters in a row
+	// read a bare "can't carry this yet" as a pop cap, a unit cap and a stock cap
+	// before giving up — one of them was sitting on 118k grain, short only silver).
+	var netGrain, netSilver float64
 	if sdata, serr := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", worldID, provinceID)); serr == nil {
 		var p map[string]any
 		if json.Unmarshal(sdata, &p) == nil {
 			if sett, ok := p["settlement"].(map[string]any); ok {
+				netGrain, _ = sett["net_grain_per_day_after_upkeep"].(float64)
+				netSilver, _ = sett["net_silver_per_day_after_upkeep"].(float64)
 				if cr, ok := sett["can_recruit"].([]any); ok {
 					for _, it := range cr {
 						m, _ := it.(map[string]any)
@@ -260,7 +267,8 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			if info.upkeepGrain > 0 || info.upkeepSilv > 0 {
 				upkeepStr = fmt.Sprintf("%.1f grain, %.1f silver", info.upkeepGrain, info.upkeepSilv)
 				if !info.sustainable {
-					upkeepStr += "  ⚠ city can't carry this yet"
+					upkeepStr += "  ⚠ " + unsustainableReason(
+						netGrain, netSilver, info.upkeepGrain, info.upkeepSilv)
 				}
 			}
 		}
@@ -278,4 +286,32 @@ func trimFloat(v float64) string {
 	s = strings.TrimRight(s, "0")
 	s = strings.TrimRight(s, ".")
 	return s
+}
+
+// unsustainableReason names the resource that actually blocks a recruit, and by
+// how much. `sustainable` on the server is
+// (netGrain − unitGrain) >= 0 && (netSilver − unitSilver) >= 0, so a bare
+// "city can't carry this yet" leaves the Wanax guessing which half failed —
+// soak 2026-07-22 watched two playtesters in a row guess population caps, unit
+// caps and stock levels, one of them while holding 118k grain and short only
+// silver. Reports the shortfall as a per-day figure because that is the unit the
+// net is expressed in, and both resources when both are short.
+func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver float64) string {
+	grainShort := netGrain - unitGrain
+	silverShort := netSilver - unitSilver
+	switch {
+	case grainShort < 0 && silverShort < 0:
+		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain/day and %.1f more silver/day",
+			-grainShort, -silverShort)
+	case silverShort < 0:
+		return fmt.Sprintf("silver upkeep: net is %+.1f silver/day, needs %.1f more/day",
+			netSilver, -silverShort)
+	case grainShort < 0:
+		return fmt.Sprintf("grain upkeep: net is %+.1f grain/day, needs %.1f more/day",
+			netGrain, -grainShort)
+	default:
+		// sustainable was false but neither margin is negative — the server saw a
+		// state this client's numbers no longer reflect. Say so rather than invent.
+		return "city can't carry this yet"
+	}
 }
