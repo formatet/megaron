@@ -227,7 +227,7 @@ func outboxCmd() *cobra.Command {
 						good, _ := offer["offer_good"].(string)
 						qty, _ := offer["offer_qty"].(float64)
 						silver, _ := offer["want_silver"].(float64)
-						line += fmt.Sprintf("  trade: sell %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatus)
+						line += fmt.Sprintf("  trade: sell %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatusLabel(offerStatus))
 						if offerStatus == "pending" {
 							line += fmt.Sprintf("  (%.0f %s escrowed — cancel with: poleia trade-cancel --id %s)", qty, good, id)
 						}
@@ -235,7 +235,7 @@ func outboxCmd() *cobra.Command {
 						good, _ := offer["want_good"].(string)
 						qty, _ := offer["want_qty"].(float64)
 						silver, _ := offer["offer_silver"].(float64)
-						line += fmt.Sprintf("  trade: want %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatus)
+						line += fmt.Sprintf("  trade: want %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatusLabel(offerStatus))
 						// Pending buy offers have the buyer's silver held in escrow until the
 						// seller accepts/declines or the offer expires (then it's refunded).
 						if offerStatus == "pending" {
@@ -287,6 +287,28 @@ func outboxCmd() *cobra.Command {
 			}
 			return nil
 		},
+	}
+}
+
+// offerStatusLabel turns a raw trade_offer status into a phrase that says what
+// actually happened to the escrow. The raw words mislead in both directions:
+// "returned" reads as a rejection but is the SUCCESS terminal (trade_return.go
+// sets it only after the return caravan credited the goods home), and
+// "expired"/"declined"/"cancelled" gave no hint that the escrow came back.
+func offerStatusLabel(status string) string {
+	switch status {
+	case "returned":
+		return "completed — return caravan home"
+	case "accepted":
+		return "accepted — in transit"
+	case "declined":
+		return "declined — escrow refunded"
+	case "expired":
+		return "expired unanswered — escrow refunded"
+	case "cancelled":
+		return "withdrawn — escrow refunded"
+	default:
+		return status
 	}
 }
 

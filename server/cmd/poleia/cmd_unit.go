@@ -66,8 +66,8 @@ its own when the patrol timer runs out.`,
 		},
 	}
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit id (required)")
-	cmd.Flags().IntVar(&q, "q", 0, "target hex Q (required)")
-	cmd.Flags().IntVar(&r, "r", 0, "target hex R (required)")
+	cmd.Flags().IntVar(&q, "q", 0, "target hex Q — axial coordinate, read it off 'poleia map' (required)")
+	cmd.Flags().IntVar(&r, "r", 0, "target hex R — axial coordinate, read it off 'poleia map' (required)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("q")
 	_ = cmd.MarkFlagRequired("r")
@@ -400,8 +400,8 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	}
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q (required, unless colonizing in place)")
-	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R (required, unless colonizing in place)")
+	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'poleia map' (required, unless colonizing in place)")
+	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'poleia map' (required, unless colonizing in place)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
 	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
@@ -662,7 +662,7 @@ the order messenger physically catches up with it, then turns onto the new cours
 	}
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r (required)")
+	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r — axial coordinates, read them off 'poleia map' (required)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("target")
 	return cmd

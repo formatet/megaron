@@ -144,3 +144,35 @@ func TestDeliveryETALine(t *testing.T) {
 		}
 	})
 }
+
+// TestOfferStatusLabel guards the outbox against the misreading that cost a
+// whole diagnosis round on 2026-07-22: the raw status "returned" reads as a
+// rejection but is the SUCCESS terminal (trade_return.go sets it only after the
+// return caravan has credited the goods home). The resolved statuses must also
+// say that the escrow came back, and "pending" must stay untouched because the
+// outbox appends its own escrow/ETA detail to that line.
+func TestOfferStatusLabel(t *testing.T) {
+	cases := map[string]string{
+		"returned":  "completed",
+		"accepted":  "in transit",
+		"declined":  "refunded",
+		"expired":   "refunded",
+		"cancelled": "refunded",
+	}
+	for status, want := range cases {
+		got := offerStatusLabel(status)
+		if !strings.Contains(got, want) {
+			t.Errorf("offerStatusLabel(%q) = %q, want it to contain %q", status, got, want)
+		}
+		if got == status {
+			t.Errorf("offerStatusLabel(%q) returned the raw status unchanged", status)
+		}
+	}
+
+	if got := offerStatusLabel("pending"); got != "pending" {
+		t.Errorf("offerStatusLabel(\"pending\") = %q, want it passed through unchanged", got)
+	}
+	if got := offerStatusLabel("some_future_status"); got != "some_future_status" {
+		t.Errorf("unknown status should pass through, got %q", got)
+	}
+}

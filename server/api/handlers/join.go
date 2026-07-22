@@ -228,7 +228,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		worldID, halfQ,
 	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &tileCoastal)
 	if err != nil {
-		writeError(w, http.StatusConflict, "no available tiles — try again")
+		writeError(w, http.StatusConflict, "this world is full — every remaining tile is within 4 hexes of an existing settlement or host; retrying will not help. Join another world.")
 		return
 	}
 
