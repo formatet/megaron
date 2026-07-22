@@ -191,6 +191,12 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		return err
 	}
 
+	// Devotion no longer rides on the goods list: mig 094 made cult a labor share
+	// that produces nothing, so its settlement_goods row is gone and with it the
+	// only place the share was visible. A mechanic the player cannot see is a
+	// mechanic they cannot tend — read it from the labor endpoint instead.
+	devotion := fetchDevotionShare(c, provinceID)
+
 	fmt.Println("Current labor allocation:")
 	var pool, idle int
 	allocated := 0.0
@@ -212,6 +218,10 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 				hasCult = true
 			}
 		}
+	}
+	if devotion > 0 {
+		rows = append(rows, row{"cult (devotion)", devotion * 100, int(devotion * float64(pool))})
+		hasCult = true
 	}
 	fmt.Printf("  Population:  %d\n", pool)
 	if pool > 0 {
@@ -247,4 +257,26 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	fmt.Println("\nTo change it, name EVERY good you want worked — `allocate` replaces the whole split,")
 	fmt.Println("it does not adjust one good (e.g. `poleia allocate --grain 80 --oil 20`).")
 	return nil
+}
+
+// fetchDevotionShare reads the settlement's devotion (the share serving the
+// temple) from the province GET. It is not in the goods list: mig 094 made cult
+// a labor weight that produces nothing, so it has no settlement_goods row —
+// which is exactly why it had to be surfaced somewhere else before a Wanax could
+// tend it. Returns 0 on any failure; devotion is worth showing, never worth
+// failing a read-only view over.
+func fetchDevotionShare(c *Client, provinceID string) float64 {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, provinceID))
+	if err != nil {
+		return 0
+	}
+	var p struct {
+		Settlement struct {
+			Devotion float64 `json:"devotion"`
+		} `json:"settlement"`
+	}
+	if json.Unmarshal(data, &p) != nil {
+		return 0
+	}
+	return p.Settlement.Devotion
 }

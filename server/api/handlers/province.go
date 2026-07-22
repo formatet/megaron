@@ -442,6 +442,17 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		// The gods' current reckoning — one read for the whole prayer list.
 		divineValues, _ := religion.LoadDivineValues(r.Context(), h.pool, worldID)
+
+		// Devotion + what this settlement's temple can employ.
+		var devotionWeight, devotionCapacity float64
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COALESCE((SELECT weight FROM settlement_labor
+			                  WHERE settlement_id = $1 AND good_key = 'cult'), 0),
+			        COALESCE((SELECT $2::float8 * GREATEST(1, level) FROM buildings
+			                  WHERE settlement_id = $1 AND building_type = 'temple'
+			                  ORDER BY level DESC LIMIT 1), 0)`,
+			sett.ID, kharis.TempleDevotionPerLevel,
+		).Scan(&devotionWeight, &devotionCapacity)
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
 			spec := religion.PrayerSpecs[pid]
@@ -658,6 +669,15 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"can_afford":                      buildAfford,
 			"can_recruit":                     recruitAfford,
 			"available_prayers":               prayers,
+			// Devotion: the share of the city serving the temple. Mig 094 made cult
+			// a labor weight that produces nothing, which removed it from the goods
+			// list — and with it the only place a Wanax could see or tend it. A
+			// mechanic you cannot see is a mechanic you cannot tend, so it is
+			// reported here with the capacity that bounds it (a temple employs
+			// kharis.TempleDevotionPerLevel of the city per level; beyond that the
+			// devotion has no altar to serve at).
+			"devotion":          devotionWeight,
+			"devotion_capacity": devotionCapacity,
 			"settlement_cap": map[string]any{
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,

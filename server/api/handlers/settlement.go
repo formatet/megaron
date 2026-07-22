@@ -869,6 +869,26 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"prayer":           prayerID,
 		"message":          message,
 	}
+	// What the offering achieved. A playtester tripled a gift (oil 150 → 500)
+	// across three casts and saw the identical failure line every time, because
+	// offerMod was already at its ceiling on the first — 950 oil spent learning
+	// nothing (soak 2026-07-23). The odds themselves stay hidden by design
+	// (Timothy 2026-07-11: "the gods are not machines"), but whether MORE would
+	// help is a fact about the offering, not about the gods, and withholding it
+	// just burns the Wanax's stores.
+	if offeringBaseline > 0 {
+		resp["offering_worth"] = offeringWorth
+		resp["offering_expected"] = offeringBaseline
+		switch {
+		case offerMod >= riteOfferModFat:
+			resp["offering_verdict"] = "as generous as the gods will notice — more would be wasted"
+		case offeringWorth >= offeringBaseline:
+			resp["offering_verdict"] = "worthy — beyond what this god expects"
+		default:
+			resp["offering_verdict"] = fmt.Sprintf("short — worth %.0f of the ~%.0f this god expects",
+				offeringWorth, offeringBaseline)
+		}
+	}
 	if success {
 		resp["effect_type"] = spec.EffectType
 		resp["effect"] = effectPayload

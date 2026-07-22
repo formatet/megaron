@@ -231,6 +231,9 @@ func riteCmd() *cobra.Command {
 				EffectType string         `json:"effect_type"`
 				Effect     map[string]any `json:"effect"`
 				Message    string         `json:"message"`
+				// What the offering achieved — separate from whether the gods
+				// answered. The odds stay hidden; whether MORE would help does not.
+				OfferingVerdict string `json:"offering_verdict"`
 			}
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return fmt.Errorf("parse response: %w", err)
@@ -247,6 +250,9 @@ func riteCmd() *cobra.Command {
 				}
 			} else {
 				fmt.Printf("Failed: %s\n", resp.Message)
+			}
+			if resp.OfferingVerdict != "" {
+				fmt.Printf("Offering: %s\n", resp.OfferingVerdict)
 			}
 			return nil
 		},

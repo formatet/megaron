@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"sort"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -61,11 +62,13 @@ func templeDevotionCapacity(level int) float64 {
 	if level < 1 {
 		level = 1
 	}
-	return templeDevotionPerLevel * float64(level)
+	return TempleDevotionPerLevel * float64(level)
 }
 
-// templeDevotionPerLevel is both the level-1 capacity and the step per level.
-const templeDevotionPerLevel = 0.15
+// TempleDevotionPerLevel is both the level-1 capacity and the step per level.
+// TempleDevotionPerLevel is exported so the status surfaces can show the same
+// capacity the tick enforces, rather than duplicating the number.
+const TempleDevotionPerLevel = 0.15
 
 // FAS 2 — natural depreciation + imperie-belastning (Timothy 2026-07-09 kharis
 // omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2/3): dailyDecay =
@@ -245,7 +248,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 WHERE pwr.world_id = $1`,
-		e.WorldID, templeDevotionPerLevel,
+		e.WorldID, TempleDevotionPerLevel,
 	)
 	if err != nil {
 		return fmt.Errorf("query player_world_records for kharis tick: %w", err)
@@ -373,7 +376,19 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 	for _, t := range temples {
 		total++
 		if t.oil < OfferOilPerTemple || t.wine < OfferWinePerTemple {
-			continue // this temple's city can't afford today's offer — no deduction, not fed.
+			// The traditional offering is out of reach — but an altar takes what
+			// it is given. Timothy 2026-07-22: "samma sak gäller vid kult och
+			// stående gudstjänster", and until now only the SCARCITY half of that
+			// was built: the standing offering still demanded exactly 2 oil +
+			// 1 wine. A Wanax with no access to wine could therefore never feed a
+			// temple, never earn kharis, and stayed pinned at the floor below
+			// every prayer's MinKharis — a permanent lockout with no way out from
+			// inside the game (soak 2026-07-23: Antilokhos, kharis 1.0, 28k oil,
+			// 0 wine, no wine seller within reach).
+			if h.feedTempleBySubstitution(ctx, t.id, worldID) {
+				fed++
+			}
+			continue
 		}
 		if _, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods SET
@@ -1243,3 +1258,93 @@ var baseValues = map[string]float64{"oil": 4, "wine": 5}
 
 // templeScarcityCeil bounds what a shortage can be worth to a temple.
 const templeScarcityCeil = 2.0
+
+// feedTempleBySubstitution feeds a temple that cannot afford the traditional
+// oil+wine with whatever else its city holds, to the same divine worth.
+//
+// The gods are not quartermasters: what matters is that the altar received a gift
+// worth what it is due, not that the gift arrived in the customary jars. Valued
+// with the same reckoning a composed prayer offering uses, so the two halves of
+// the cult cannot disagree about what a thing is worth.
+//
+// Returns true when the temple was fed. Deliberately silent on failure: a city
+// with nothing to spare simply goes unfed, which is the existing behaviour.
+func (h *TickHandler) feedTempleBySubstitution(ctx context.Context, settlementID, worldID uuid.UUID) bool {
+	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
+	if err != nil || len(values) == 0 {
+		return false
+	}
+	due := OfferOilPerTemple*values["oil"] + OfferWinePerTemple*values["wine"]
+	if due <= 0 {
+		return false
+	}
+
+	// What the city can spare, dearest to the gods first — an altar fed with
+	// something precious needs less of it, and the city keeps more of its bulk.
+	rows, err := h.pool.Query(ctx,
+		`SELECT sg.good_key, GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick))
+		 FROM settlement_goods sg
+		 WHERE sg.settlement_id = $1 AND sg.good_key <> 'silver'
+		   AND GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick)) > 0`,
+		settlementID)
+	if err != nil {
+		return false
+	}
+	type stock struct {
+		key    string
+		amount float64
+		value  float64
+	}
+	var available []stock
+	for rows.Next() {
+		var st stock
+		if rows.Scan(&st.key, &st.amount) == nil {
+			st.value = values[st.key]
+			if st.value > 0 {
+				available = append(available, st)
+			}
+		}
+	}
+	rows.Close()
+	if len(available) == 0 {
+		return false
+	}
+	sort.Slice(available, func(i, j int) bool { return available[i].value > available[j].value })
+
+	// Plan the whole gift before touching anything: a half-paid offering would
+	// take goods and feed nothing.
+	paid := 0.0
+	take := map[string]float64{}
+	for _, st := range available {
+		if paid >= due {
+			break
+		}
+		want := (due - paid) / st.value
+		if want > st.amount {
+			want = st.amount
+		}
+		if want <= 0 {
+			continue
+		}
+		take[st.key] = want
+		paid += want * st.value
+	}
+	if paid < due {
+		return false // the city genuinely has nothing worth the altar today
+	}
+
+	for good, amount := range take {
+		if _, err := h.pool.Exec(ctx,
+			`UPDATE settlement_goods SET
+			   amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
+			   calc_tick = current_world_tick()
+			 WHERE settlement_id = $1 AND good_key = $3`,
+			settlementID, amount, good,
+		); err != nil {
+			slog.Error("substituted temple offering deduction failed",
+				"settlement", settlementID, "good", good, "err", err)
+			return false
+		}
+	}
+	return true
+}

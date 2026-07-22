@@ -50,13 +50,13 @@ func TestDevotionCalibration_TendedClimbsNeglectedFades(t *testing.T) {
 // employ has no altar to serve at, and must not pay. Without this a Wanax could
 // pour 100%% of a city into an L1 shrine and skip temple levels entirely.
 func TestTempleDevotionCapacity_ScalesWithLevelAndFloorsAtOne(t *testing.T) {
-	if got := templeDevotionCapacity(1); got != templeDevotionPerLevel {
-		t.Errorf("level 1 capacity = %.2f, want %.2f", got, templeDevotionPerLevel)
+	if got := templeDevotionCapacity(1); got != TempleDevotionPerLevel {
+		t.Errorf("level 1 capacity = %.2f, want %.2f", got, TempleDevotionPerLevel)
 	}
 	if templeDevotionCapacity(2) <= templeDevotionCapacity(1) {
 		t.Error("a larger temple must employ more")
 	}
-	if got := templeDevotionCapacity(0); got != templeDevotionPerLevel {
+	if got := templeDevotionCapacity(0); got != TempleDevotionPerLevel {
 		t.Errorf("a malformed level must fall back to level 1, got %.2f", got)
 	}
 	// Level 1 capacity is exactly the floor LaborAlloc applies, so every existing
