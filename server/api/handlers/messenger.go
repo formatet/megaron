@@ -15,8 +15,14 @@ import (
 	"github.com/poleia/server/internal/messenger"
 	"github.com/poleia/server/internal/notify"
 	"github.com/poleia/server/internal/province"
+	"github.com/poleia/server/internal/tick"
 	"github.com/poleia/server/internal/transport"
 )
+
+// offerExpiryTicks is how long a trade offer stays pending after its messenger
+// arrives: 7 in-game days. Both the scheduled expiry event and the expires_at
+// column must derive from this same number — see the comment at its use site.
+const offerExpiryTicks = 7 * 24
 
 // MessengerHandler handles HTTP requests for messenger endpoints.
 type MessengerHandler struct {
@@ -248,9 +254,16 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	}
 	// Trade offers expire 7 in-game days after arrival (so inactive offers clean up automatically).
 	// Non-trade messages have no expiry.
+	//
+	// The deadline is offerExpiryTicks *ticks* away, so convert through
+	// tick.RealUntil like every other ETA — a literal 7*24*time.Hour here assumed
+	// 1 tick = 1 real hour and was 600× too far out on a TICK_SECONDS=6 cadence.
+	// That fiction is what clients (and agent.py) display, and what the inbox's
+	// `expires_at > now()` filter tests, while the real expiry fires off the
+	// scheduled tick below.
 	var expiresAt *time.Time
 	if req.TradeOffer != nil {
-		exp := arrivesAt.Add(7 * 24 * time.Hour)
+		exp := arrivesAt.Add(tick.RealUntil(offerExpiryTicks, 0))
 		expiresAt = &exp
 	}
 	var messengerID uuid.UUID
@@ -324,9 +337,9 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not schedule arrival")
 			return
 		}
-		// Offer expiry: 7 in-game days (7*24 ticks) after arrival.
+		// Offer expiry: 7 in-game days (offerExpiryTicks) after arrival.
 		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledOfferExpiry,
-			map[string]any{"messenger_id": messengerID.String()}, msgArrivalDueTick+7*24); err != nil {
+			map[string]any{"messenger_id": messengerID.String()}, msgArrivalDueTick+offerExpiryTicks); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule offer expiry")
 			return
 		}
