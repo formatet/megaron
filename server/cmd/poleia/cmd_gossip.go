@@ -184,10 +184,13 @@ func resolveMessengerDest(markers, wanaxes []map[string]any, destName, fromName 
 				}
 			}
 		}
-		if n, _ := m["name"].(string); strings.EqualFold(n, destName) {
-			destID, _ = m["settlement_id"].(string)
-			resolvedName = n
-		}
+	}
+	if byID, byName := matchDestInMarkers(markers, destName); byID != nil {
+		destID, resolvedName = byID.id, byID.name
+	} else if len(byName) == 1 {
+		destID, resolvedName = byName[0].id, byName[0].name
+	} else if len(byName) > 1 {
+		return "", "", "", ambiguousDestErr(destName, byName)
 	}
 	switch {
 	case fromName != "":
@@ -236,11 +239,12 @@ func resolveDestByName(markers, wanaxes []map[string]any, destName string) (dest
 	if strings.TrimSpace(destName) == "" {
 		return "", "", fmt.Errorf("destination name is empty — use --to <settlement name>")
 	}
-	for _, m := range markers {
-		if n, _ := m["name"].(string); strings.EqualFold(n, destName) {
-			destID, _ = m["settlement_id"].(string)
-			resolvedName = n
-		}
+	if byID, byName := matchDestInMarkers(markers, destName); byID != nil {
+		destID, resolvedName = byID.id, byID.name
+	} else if len(byName) == 1 {
+		destID, resolvedName = byName[0].id, byName[0].name
+	} else if len(byName) > 1 {
+		return "", "", ambiguousDestErr(destName, byName)
 	}
 	if destID == "" {
 		for _, w := range wanaxes {
@@ -260,6 +264,46 @@ func resolveDestByName(markers, wanaxes []map[string]any, destName string) (dest
 		return "", "", fmt.Errorf("no settlement named %q in view — wander closer (the host's march sweeps fog) and check 'poleia cities'", destName)
 	}
 	return destID, resolvedName, nil
+}
+
+// destCandidate is one settlement a --to argument could resolve to.
+type destCandidate struct{ id, name string }
+
+// matchDestInMarkers resolves a --to argument against the fog-of-war province
+// markers. It matches an exact settlement_id first (byID — the disambiguation
+// escape hatch), otherwise collects every DISTINCT settlement whose name equals
+// destName (byName). City names are NOT unique (SettlementNameForCulture picks at
+// random with no uniqueness check), so two visible settlements can share a name;
+// the old loops silently kept the last match and mis-routed. Callers treat
+// len(byName) > 1 as ambiguous and demand a settlement id via --to <id>.
+func matchDestInMarkers(markers []map[string]any, destName string) (byID *destCandidate, byName []destCandidate) {
+	seen := map[string]bool{}
+	for _, m := range markers {
+		sid, _ := m["settlement_id"].(string)
+		if sid == "" {
+			continue
+		}
+		mname, _ := m["name"].(string)
+		if sid == destName {
+			byID = &destCandidate{id: sid, name: mname}
+		}
+		if strings.EqualFold(mname, destName) && !seen[sid] {
+			seen[sid] = true
+			byName = append(byName, destCandidate{id: sid, name: mname})
+		}
+	}
+	return byID, byName
+}
+
+// ambiguousDestErr names every colliding settlement so the Wanax can re-issue the
+// order with an unambiguous settlement id (--to accepts an id, matched by byID).
+func ambiguousDestErr(destName string, cands []destCandidate) error {
+	ids := make([]string, len(cands))
+	for i, c := range cands {
+		ids[i] = c.id
+	}
+	return fmt.Errorf("several settlements in view are named %q — re-issue with a settlement id: --to %s",
+		destName, strings.Join(ids, "  |  --to "))
 }
 
 // settlementsRuledBy returns the (sorted, deduplicated) settlement names in
