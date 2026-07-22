@@ -218,7 +218,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		        -- Devotion counts only up to what the temple can EMPLOY: a
 		        -- level-1 temple works $2 of the city, level 2 twice that, and
 		        -- anything allocated beyond that has no altar to serve at.
-		        SELECT SUM(LEAST(GREATEST(0, COALESCE(sl.weight, 0)), $2 * GREATEST(1, b.level)))
+		        SELECT SUM(LEAST(GREATEST(0, COALESCE(sl.weight, 0)), $2::float8 * GREATEST(1, b.level)))
 		        FROM settlements s2
 		        JOIN buildings b ON b.settlement_id = s2.id AND b.building_type = 'temple'
 		        LEFT JOIN settlement_labor sl ON sl.settlement_id = s2.id AND sl.good_key = 'cult'
