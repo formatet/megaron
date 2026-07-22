@@ -1522,3 +1522,49 @@ body:has(.auth-page) main {
   font-size: 0.72rem;
   min-height: 1rem;
 }
+
+/* Offerkomponering i kult-drawern: en Wanax bär fram vad hen bedömer värdigt,
+   i stället för att betala ett fast recept. Hopfälld som default — det
+   traditionella offret förblir ettklicksvägen. */
+.offer-composer {
+  margin: .25rem 0 .6rem 0;
+  padding: .35rem .5rem;
+  border-left: 2px solid var(--border);
+}
+.offer-composer summary {
+  cursor: pointer;
+  font-size: .7rem;
+  color: var(--text-dim);
+}
+.offer-composer summary:hover { color: var(--text); }
+.offer-goods {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  margin: .4rem 0;
+  max-height: 11rem;
+  overflow-y: auto;
+}
+.offer-good {
+  display: grid;
+  grid-template-columns: 1fr 4.5rem auto;
+  align-items: center;
+  gap: .4rem;
+  font-size: .72rem;
+}
+.offer-good input {
+  width: 100%;
+  background: var(--warm-white);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: .1rem .25rem;
+  font-family: var(--mono);
+  font-size: .72rem;
+}
+.offer-have { color: var(--text-dim); font-size: .66rem; }
+.offer-empty { color: var(--text-dim); font-size: .7rem; padding: .3rem 0; }
+.offer-worth {
+  font-size: .72rem;
+  color: var(--text-dim);
+  margin: .25rem 0 .4rem 0;
+}
