@@ -260,6 +260,42 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		return nil
 	}
 
+	// Temple tithe (Timothy 2026-07-22, vägval c): when the silver leg of a sale
+	// of a RELIGIOUSLY CODED good lands, the priests take their tenth before the
+	// seller sees it. Only where a temple stands — no priests, no collection.
+	// The counterpart good rides in ThenReturn (this is the silver leg; the goods
+	// travel back separately), so the pair is known here without another lookup.
+	credited := delivered
+	if p.GoodKey == "silver" && len(p.ThenReturn) > 0 {
+		var counterpart struct {
+			GoodKey string `json:"good_key"`
+		}
+		if json.Unmarshal(p.ThenReturn, &counterpart) == nil && counterpart.GoodKey != "" {
+			var religious, hasTemple bool
+			_ = tx.QueryRow(ctx,
+				`SELECT COALESCE((SELECT g.religious FROM goods g WHERE g.key = $1), false),
+				        EXISTS (SELECT 1 FROM buildings b
+				                WHERE b.settlement_id = $2 AND b.building_type = 'temple')`,
+				counterpart.GoodKey, p.DestinationID,
+			).Scan(&religious, &hasTemple)
+
+			if toTemple, toSeller := Tithe(delivered, religious, hasTemple); toTemple > 0 {
+				credited = toSeller
+				slog.Info("temple tithe", "settlement", p.DestinationID, "good", counterpart.GoodKey,
+					"silver", delivered, "tithe", toTemple)
+				if h.eventStore != nil {
+					_, _ = h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TempleTithe",
+						map[string]any{
+							"good_key":     counterpart.GoodKey,
+							"trade_silver": delivered,
+							"tithe":        toTemple,
+							"to_seller":    toSeller,
+						}, e.WorldID, nil)
+				}
+			}
+		}
+	}
+
 	// Credit goods to destination — silver is now a normal good in settlement_goods.
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
@@ -270,7 +306,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		             + $3,
 		         settlement_goods.cap),
 		     calc_tick = current_world_tick()`,
-		p.DestinationID, p.GoodKey, delivered,
+		p.DestinationID, p.GoodKey, credited,
 	); err != nil {
 		return fmt.Errorf("credit goods: %w", err)
 	}
