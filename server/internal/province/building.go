@@ -26,7 +26,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingFoundry:     "Enables bronze smelting (copper + tin → bronze)",
 	BuildingStable:      "Produces horses and enables war chariots",
 	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
-	BuildingOlivePress:  "Increases oil production from plains and hills",
+	BuildingOlivePress:  "Increases oil production from olive groves, plains and hills",
 	BuildingWinery:      "Increases wine production from hills",
 }
 
