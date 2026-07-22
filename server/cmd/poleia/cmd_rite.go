@@ -22,6 +22,8 @@ type riteAvailablePrayer struct {
 	Effect                string             `json:"effect"`
 	MinKharis             float64            `json:"min_kharis"`
 	Offering              map[string]float64 `json:"offering"`
+	Favours               map[string]float64 `json:"favours"`
+	OfferingBaseline      float64            `json:"offering_baseline"`
 	Affordable            bool               `json:"affordable"`
 	CooldownRemainingMins float64            `json:"cooldown_remaining_minutes"`
 }
@@ -126,6 +128,17 @@ func riteCmd() *cobra.Command {
 					}
 					fmt.Printf("%-28s  %-20s  %-8.0f  %-22s  %-45s  %-12s  %s\n",
 						pr.ID, pr.Name, pr.MinKharis, formatOffering(pr.Offering), pr.Effect, ready, cooldownStr)
+					// The priests' reading: an offering is composed now, and its
+					// worth turns on world scarcity a Wanax cannot see through the
+					// fog. The temple knows — so it says so here, where the choice
+					// is made.
+					if taste := favouredGoods(pr.Favours); taste != "" {
+						fmt.Printf("    %s favours %s", pr.God, taste)
+						if pr.OfferingBaseline > 0 {
+							fmt.Printf("  ·  expects an offering worth ~%.0f (--offer good=amount)", pr.OfferingBaseline)
+						}
+						fmt.Println()
+					}
 				}
 				fmt.Println("\nThe offering is consumed even if the gods stay silent — they are fickle.")
 				return nil
@@ -359,4 +372,32 @@ func parseOffering(raw string) (map[string]float64, error) {
 		return nil, fmt.Errorf("--offer was empty — name at least one good, e.g. --offer wine=20")
 	}
 	return out, nil
+}
+
+// favouredGoods names the goods a god weighs above the neutral 1.0, heaviest
+// first — the short answer to "what should I bring?". Only the top few: the full
+// taste table is noise at the moment of choosing.
+func favouredGoods(favours map[string]float64) string {
+	type pair struct {
+		good   string
+		weight float64
+	}
+	var liked []pair
+	for good, weight := range favours {
+		if weight > 1.0 {
+			liked = append(liked, pair{good, weight})
+		}
+	}
+	if len(liked) == 0 {
+		return ""
+	}
+	sort.Slice(liked, func(i, j int) bool { return liked[i].weight > liked[j].weight })
+	if len(liked) > 4 {
+		liked = liked[:4]
+	}
+	parts := make([]string, 0, len(liked))
+	for _, l := range liked {
+		parts = append(parts, fmt.Sprintf("%s ×%.1f", l.good, l.weight))
+	}
+	return strings.Join(parts, ", ")
 }

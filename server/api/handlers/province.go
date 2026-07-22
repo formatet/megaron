@@ -431,7 +431,17 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Offering              map[string]float64 `json:"offering"`
 			Affordable            bool               `json:"affordable"`
 			CooldownRemainingMins float64            `json:"cooldown_remaining_minutes,omitempty"`
+			// The priests' reading of the gods (temenos_prayers_komposition_plan.md).
+			// An offering is now composed, and its worth depends on world scarcity —
+			// data no Wanax can observe through the fog. The temple is exactly the
+			// institution that would know, so it tells you: what this god favours,
+			// and what the traditional recipe is currently reckoned to be worth.
+			// Without this the composition mechanic is unplayable noise.
+			Favours          map[string]float64 `json:"favours,omitempty"`
+			OfferingBaseline float64            `json:"offering_baseline,omitempty"`
 		}
+		// The gods' current reckoning — one read for the whole prayer list.
+		divineValues, _ := religion.LoadDivineValues(r.Context(), h.pool, worldID)
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
 			spec := religion.PrayerSpecs[pid]
@@ -473,6 +483,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				Effect:    spec.Description,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
 				CooldownRemainingMins: cooldownRemainingMins,
+				Favours:               religion.FavoursFor(spec),
+				OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),
 			})
 		}
 
