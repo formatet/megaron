@@ -44,10 +44,10 @@ const MaxSettlementsPerWanax = 5
 // so there is exactly one source (Fas 3 anti-drift).
 var UnitSpecs = map[string]UnitSpec{
 	"spearman":       {Costs: map[string]float64{"grain": 3, "silver": 0.2}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
-	"war_chariot":    {Costs: map[string]float64{"grain": 3.75, "timber": 0.625, "bronze": 0.375, "silver": 0.5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
+	"war_chariot":    {Costs: map[string]float64{"grain": 3.75, "timber": 0.625, "cedar": 0.5, "bronze": 0.375, "silver": 0.5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
 	// priest borttagen som enhet (mig 060) — präst är ingen enhet längre, kult = tempel-labor.
 	"galley":         {Costs: map[string]float64{"timber": 9, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresHarbour: true},
 	"elite_infantry": {Costs: map[string]float64{"grain": 2.5, "bronze": 0.2, "silver": 0.4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
-	"war_galley":     {Costs: map[string]float64{"cedar": 5, "bronze": 0.33, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresHarbour: true, RequiresFoundry: true},
+	"war_galley":     {Costs: map[string]float64{"cedar": 5, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresHarbour: true, RequiresFoundry: true},
 	"merchantman":    {Costs: map[string]float64{"timber": 8.75, "silver": 0.2}, PopCost: 8, DurationTicks: 4, RequiresHarbour: true},
 }

@@ -113,15 +113,17 @@ func TestShipTaxonomy_GalleyTimber(t *testing.T) {
 	}
 }
 
-// TestShipTaxonomy_WarGalleyBronzeFoundry verifies war_galley kräver brons + gjuteri.
-func TestShipTaxonomy_WarGalleyBronzeFoundry(t *testing.T) {
+// TestShipTaxonomy_WarGalleyCedarFoundry verifies war_galley kräver cedar + gjuteri.
+// Brons ÄR borttaget ur kostnaden: war_galley var dubbelgateat bakom både cedar och
+// brons, och eftersom brons är världens knappaste vara blev cedar aldrig efterfrågad.
+// Gjuteriet står kvar som byggnadsgate; brons bär nu war_chariot + murnivåerna.
+func TestShipTaxonomy_WarGalleyCedarFoundry(t *testing.T) {
 	spec, ok := UnitSpecs["war_galley"]
 	if !ok {
 		t.Fatal("war_galley must exist in UnitSpecs")
 	}
-	bronze, hasBronze := spec.Costs["bronze"]
-	if !hasBronze || bronze <= 0 {
-		t.Errorf("war_galley must cost bronze > 0, got %.1f", bronze)
+	if _, hasBronze := spec.Costs["bronze"]; hasBronze {
+		t.Error("war_galley should not cost bronze — cedar is its strategic material")
 	}
 	cedar, hasCedar := spec.Costs["cedar"]
 	if !hasCedar || cedar <= 0 {

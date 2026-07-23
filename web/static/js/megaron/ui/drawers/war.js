@@ -110,9 +110,9 @@ export async function loadWarDrawer() {
     // Recruit tab
     const UNIT_SPECS = [
       { id:'spearman',       lbl:'Spearmen',    req: buildings.has('barracks') ? null : 'barracks',   cost:'3 grain/man'          },
-      { id:'war_chariot',    lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'3.75 grain + 0.625 timber + 0.375 bronze/man' },
+      { id:'war_chariot',    lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'3.75 grain + 0.625 timber + 0.5 cedar + 0.375 bronze/man' },
       { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour',    cost:'9 timber/man (crew 20)' },
-      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'5 cedar + 0.33 bronze/man (crew 50)' },
+      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'5 cedar/man (crew 50)' },
       { id:'merchantman',    lbl:'Emporos',      req: buildings.has('harbour')  ? null : 'harbour',    cost:'8.75 timber/man (crew 10)' },
       { id:'elite_infantry', lbl:'Elite Infantry',        req: buildings.has('foundry')  ? null : 'foundry',    cost:'2.5 grain + 0.2 bronze/man' },
     ];

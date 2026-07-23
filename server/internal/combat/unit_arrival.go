@@ -724,9 +724,15 @@ func (h *UnitArrivalHandler) foundColony(
 		 SELECT $1, g.key,
 		        CASE g.key WHEN 'grain' THEN $2::int WHEN 'timber' THEN 200 WHEN 'stone' THEN 300 ELSE 0 END,
 		        0,
-		        CASE g.key WHEN 'grain' THEN 1000 WHEN 'timber' THEN 500 WHEN 'cedar' THEN 500
-		                   WHEN 'stone' THEN 1000 WHEN 'copper' THEN 300 WHEN 'tin' THEN 300
-		                   WHEN 'silver' THEN 1000 ELSE 200 END,
+		        1000000, -- non-binding storage ceiling (mirrors economy.goodCap and
+		                 -- create_metropolis.go). The per-good CASE that stood here
+		                 -- predated the 2026-07-05 cap loosening (fc8d424) and was the
+		                 -- one seed site that sweep missed: every colony was founded
+		                 -- with cedar/timber capped at 500, ore at 300 and craft goods
+		                 -- at 200, so a colony on a forest hex pegged its cedar store
+		                 -- within eight ticks and burned the rest of its production
+		                 -- forever. Capitals never had this. Silver's real cap is set
+		                 -- by the Sitos liquid-silver seed below, same as for capitals.
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
