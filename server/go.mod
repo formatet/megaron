@@ -1,4 +1,4 @@
-module github.com/poleia/server
+module formatet/megaron/server
 
 go 1.25.0
 

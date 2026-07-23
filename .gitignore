@@ -7,7 +7,8 @@
 *.test
 *.out
 /server/thalassa-server
-/server/poleia
+/server/temenos
+/server/keryx
 /server/server
 /server/create-world
 /server/mapgen-debug

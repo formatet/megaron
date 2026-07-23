@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
 )
 
 // TrainCompletePayload is the scheduled event payload for finished unit training.

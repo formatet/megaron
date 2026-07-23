@@ -8,18 +8,18 @@ import (
 	"log/slog"
 	"net/http"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/unit"
+	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/unit"
-	"github.com/poleia/server/internal/world"
 )
 
 // poseidonGalleyCrew is the crew of the gift galley, drawn from the new

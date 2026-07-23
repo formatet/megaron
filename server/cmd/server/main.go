@@ -12,6 +12,20 @@ import (
 	"syscall"
 	"time"
 
+	"formatet/megaron/server/api/handlers"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/chronicle"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/kharis"
+	"formatet/megaron/server/internal/loyalty"
+	"formatet/megaron/server/internal/messenger"
+	"formatet/megaron/server/internal/notify"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
+	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/golang-migrate/migrate/v4"
@@ -20,20 +34,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
-	"github.com/poleia/server/api/handlers"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/chronicle"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/combat"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/kharis"
-	"github.com/poleia/server/internal/loyalty"
-	"github.com/poleia/server/internal/messenger"
-	"github.com/poleia/server/internal/notify"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/transport"
-	"github.com/poleia/server/internal/world"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -70,7 +70,6 @@ func main() {
 		slog.Error("run migrations", "err", err)
 		os.Exit(1)
 	}
-
 
 	redisURL := mustEnv("REDIS_URL")
 	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
@@ -373,7 +372,7 @@ func main() {
 	}
 
 	go func() {
-		slog.Info("poleia server starting", "addr", addr)
+		slog.Info("keryx server starting", "addr", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("server error", "err", err)
 			cancel()
@@ -438,7 +437,6 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 	}
 	slog.Info("daily ticks seeded", "worlds", len(worldIDs))
 }
-
 
 func runMigrations(dbURL string) error {
 	m, err := migrate.New("file://db/migrations", dbURL)

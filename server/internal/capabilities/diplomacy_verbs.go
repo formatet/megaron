@@ -24,7 +24,7 @@ func canReply(cc checkContext) Verb {
 		[]Requirement{
 			req("a delivered message awaiting reply", ok,
 				fmt.Sprintf("%d repliable message(s)", n),
-				"wait for a messenger to arrive, or check `poleia inbox`"),
+				"wait for a messenger to arrive, or check `keryx inbox`"),
 		})
 }
 

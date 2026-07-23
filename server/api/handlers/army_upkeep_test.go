@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/poleia/server/internal/auth"
+	"formatet/megaron/server/internal/auth"
 )
 
 func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {

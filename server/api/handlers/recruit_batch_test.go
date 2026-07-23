@@ -8,7 +8,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/unit"
+	"formatet/megaron/server/internal/unit"
 )
 
 // TestRecruitBatch_CountValidationRange documents the handler's count bounds:
@@ -30,7 +30,7 @@ func TestRecruitBatch_CountValidationRange(t *testing.T) {
 		wantOK  bool
 		wantVal int
 	}{
-		{0, true, 1},   // omitted → default 1
+		{0, true, 1}, // omitted → default 1
 		{1, true, 1},
 		{20, true, 20},
 		{21, false, 0}, // over cap

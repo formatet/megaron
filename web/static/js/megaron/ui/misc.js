@@ -188,7 +188,7 @@ export function initCelestial() {
 }
 
 // ── Locked-verb hints — server-authoritative (GET .../actions) ────────────
-// Same source of truth as `poleia actions`: no client-side gate logic here,
+// Same source of truth as `keryx actions`: no client-side gate logic here,
 // just render what the server already decided (temenos_capabilities.md).
 // Shared by every content drawer (city/war/economy/kult/diplomacy) — kept
 // here rather than forced into one drawer's module ("Hellre en ärlig

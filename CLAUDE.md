@@ -53,9 +53,11 @@ each ruling a network of settlements; kingdoms form organically; the world runs 
 Tone: serious, warm, human-scale. Full setting + rationale: `temenos_worldbuilding.md`, `temenos_designprinciper.md`.
 
 **Name:** project = **Megaron** (game + web-GUI). Server = **Temenos**, CLI = **Keryx**, iOS = **Lawagetas**.
-"Poleia" is being **purged as a word** (Timothy 2026-07-03) — see Naming below. Live-infra identifiers
-(`/opt/poleia`, `POLEIA_*`, `cmd/poleia`, `poleia` binary, Go-modul) still read `poleia` until the Lager B
-cutover ([[megaron_todo]] → "Poleia-utrensning Lager B") — commands in this file stay accurate to reality until then.
+"Poleia" is being **purged as a word** (Timothy 2026-07-03) — see Naming below. **Kodsvepet är KÖRT
+2026-07-23:** Go-modulen är `formatet/megaron/server`, CLI:t är `cmd/keryx` och binären heter `keryx`.
+Kvar tills det koordinerade infra-svepet: `POLEIA_*`-env, `poleia_token`-cookien, `~/.config/poleia/`,
+`/var/lib/poleia/`, `/opt/poleia`, `poleia.service` och DB-namnet — **commands in this file stay accurate
+to reality until then.** `~/go/bin/poleia` finns kvar som kopia av `keryx` så agentflottan inte bryts.
 
 Current status & backlog live in `megaron_todo.md` — do not restate them here (they go stale).
 
@@ -143,10 +145,14 @@ Collapse not Season-end · The Thalassa not The Sea.
 Megaron rename (which is about the system/repo name, not the world).
 
 **Namn-utrensning (Timothy 2026-07-03):** "Poleia" ska **bort som ord**. Kanoniskt: **Megaron** (spel + web),
-**Temenos** (server), **Keryx** (CLI), **Lawagetas** (iOS). **Lager A** (ordet i docs/display/CSS) körs nu;
-**Lager B** (live-infra: Go-modul, `cmd/poleia`→`cmd/keryx`, binär, systemd, `/opt/poleia`→`/opt/megaron`,
-`POLEIA_*`-env, alla `poleia <verb>`-CLI-exempel) är ett koordinerat cutover-svep — se
-[[megaron_todo]] → "Poleia-utrensning Lager B". Rör ej "The Thalassa" (= havet, lore-permanent).
+**Temenos** (server), **Keryx** (CLI), **Lawagetas** (iOS). **Lager A** (ordet i docs/display/CSS) KLAR.
+**Lager B kodsvep KLART 2026-07-23:** Go-modul `github.com/poleia/server`→`formatet/megaron/server`
+(123 filer), `cmd/poleia`→`cmd/keryx`, binär `keryx`, alla `keryx <verb>`-exempel, Dockerfile-binären
+→`temenos`, gitea-repot avvecklat (GitHub `formatet/megaron` är enda remote).
+**Lager B infra ÅTERSTÅR** — körs koordinerat med Timothy, bryter annars agentflottan och webbsessioner:
+`POLEIA_*`-env, `poleia_token`-cookie+localStorage, `~/.config/poleia/`, `/var/lib/poleia/chronicles`,
+`/opt/poleia`→`/opt/megaron`, `poleia.service`→`temenos.service`, DB-namn/user `poleia`.
+Se [[megaron_namn_hygien]] §D. Rör ej "The Thalassa" (= havet, lore-permanent).
 **silver framför "gold/guld"** för valutan i UI/API/nya identifierare (Sprint A KLAR — inga gold-kolumner kvar; "gold" är reserverat för framtida lyxvara).
 
 ---

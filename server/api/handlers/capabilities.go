@@ -3,17 +3,17 @@ package handlers
 import (
 	"net/http"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/capabilities"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/capabilities"
 )
 
 // Actions handles GET /worlds/:worldID/provinces/:provinceID/actions.
 // Returns the capabilities surface (temenos_capabilities.md): every mutating
 // verb, whether it is available right now, and for locked verbs exactly what
 // live gap blocks it (detail) and how to close it (hint). Server-authoritative
-// — the same shape keryx's `poleia actions` and (later, Fas 4) agent.py consume,
+// — the same shape keryx's `keryx actions` and (later, Fas 4) agent.py consume,
 // so there is one perceptible truth about what a Wanax can do next.
 func (h *ProvinceHandler) Actions(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))

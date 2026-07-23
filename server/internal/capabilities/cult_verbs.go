@@ -3,7 +3,7 @@ package capabilities
 import (
 	"fmt"
 
-	"github.com/poleia/server/internal/religion"
+	"formatet/megaron/server/internal/religion"
 )
 
 // canRite checks the temple + kharis gate for this settlement's culture's
@@ -26,7 +26,7 @@ func canRite(cc checkContext) Verb {
 		[]Requirement{
 			req("temple built", hasTemple,
 				boolDetail(hasTemple, "temple built", "no temple"),
-				"build a temple (`poleia build --type temple`)"),
+				"build a temple (`keryx build --type temple`)"),
 			req(fmt.Sprintf("kharis >= %.0f (default prayer: %s)", minKharis, prayerID), kharisOK,
 				fmt.Sprintf("kharis %.0f/%.0f", kharis, minKharis),
 				"raise divine standing (feed diverse goods, avoid starvation) before casting"),

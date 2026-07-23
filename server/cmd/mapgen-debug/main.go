@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/poleia/server/internal/world"
+	"formatet/megaron/server/internal/world"
 )
 
 // debugID satisfies GenerateMap's worldID parameter (used only in log lines).

@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
 )
 
 // testPool connects to a real Postgres instance — march recall is pure SQL
@@ -37,11 +37,11 @@ func testPool(t *testing.T) *pgxpool.Pool {
 // Using status='archived' for the world sidesteps the one_active_world unique
 // index (this shared dev DB always has a real active world running).
 type marchRecallFixture struct {
-	worldID    uuid.UUID
-	ownerID    uuid.UUID
-	unitID     uuid.UUID
-	departsAt  time.Time
-	arrivesAt  time.Time
+	worldID   uuid.UUID
+	ownerID   uuid.UUID
+	unitID    uuid.UUID
+	departsAt time.Time
+	arrivesAt time.Time
 }
 
 func newMarchRecallFixture(t *testing.T, pool *pgxpool.Pool) marchRecallFixture {

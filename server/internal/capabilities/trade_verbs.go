@@ -52,7 +52,7 @@ func canTradeOffer(cc checkContext) Verb {
 // canSell covers the "sell" mode of trade-offer: offer a good you hold in
 // exchange for silver. Named "trade-offer" (not "sell") in the actions
 // listing — "sell" isn't a CLI command, it's the sell-mode flag combo
-// (--offer-good/--offer-qty/--want-silver) on `poleia trade-offer`; a
+// (--offer-good/--offer-qty/--want-silver) on `keryx trade-offer`; a
 // distinct verb name that names no real command left agents unable to act
 // on the hint (Fas 1b anti-drift).
 // TODO: Fas 3 unify with handler gate.
@@ -85,7 +85,7 @@ func canTradeAccept(cc checkContext) Verb {
 	reqs := []Requirement{
 		req("a pending inbound trade offer", ok,
 			boolDetail(ok, "an offer is waiting", "no pending inbound offer"),
-			"wait for a Wanax to send a trade offer, or check `poleia inbox`"),
+			"wait for a Wanax to send a trade offer, or check `keryx inbox`"),
 	}
 	if ok {
 		solvent, detail := cc.pendingOfferAffordable()
@@ -150,7 +150,7 @@ func canTradeDecline(cc checkContext) Verb {
 		[]Requirement{
 			req("a pending inbound trade offer", ok,
 				boolDetail(ok, "an offer is waiting", "no pending inbound offer"),
-				"wait for a Wanax to send a trade offer, or check `poleia inbox`"),
+				"wait for a Wanax to send a trade offer, or check `keryx inbox`"),
 		})
 }
 
@@ -161,7 +161,7 @@ func canTradeCancel(cc checkContext) Verb {
 		[]Requirement{
 			req("a pending outgoing trade offer", ok,
 				boolDetail(ok, "an offer is outstanding", "no pending outbound offer"),
-				"send a trade offer first, or check `poleia outbox`"),
+				"send a trade offer first, or check `keryx outbox`"),
 		})
 }
 

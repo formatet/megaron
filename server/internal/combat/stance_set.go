@@ -10,10 +10,10 @@ import (
 	"context"
 	"net/http"
 
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/unit"
 )
 
 // StanceOrder is one stance command against one unit.

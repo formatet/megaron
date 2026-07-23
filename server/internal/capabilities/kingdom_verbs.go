@@ -66,7 +66,7 @@ func canKingdomJoin(cc checkContext) Verb {
 		"Join a kingdom you've been invited to.",
 		[]Requirement{
 			req("a pending kingdom invitation to your capital", ok, detail,
-				"ask a basileus to invite you (kingdom-invite), then check `poleia kingdom-invitations`"),
+				"ask a basileus to invite you (kingdom-invite), then check `keryx kingdom-invitations`"),
 		})
 }
 

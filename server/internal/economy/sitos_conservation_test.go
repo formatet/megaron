@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
 )
 
 // testPool connects to a real Postgres — the Sitos tick is SQL orchestration
@@ -119,7 +119,7 @@ func TestSitosTick_SilverConserved(t *testing.T) {
 
 	const tick = 100
 	// Grain in deep shortage (amount 5, cap 1000 → below reference 300) → fund sells.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000, /*fund*/ 5000, /*silver*/ 2000, /*grain*/ 5, /*rate*/ 0)
+	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 5 /*rate*/, 0)
 
 	before := totalSilver(t, pool, ctx, settlementID)
 
@@ -167,7 +167,7 @@ func TestSitosTick_ReleaseConservesToCapWhenHeadroom(t *testing.T) {
 
 	const tick = 100
 	// fund 5000 (overhang 3500 over cap 1500), liquid 2000 with a roomy cap.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000, /*fund*/ 5000, /*silver*/ 2000, /*grain*/ 300, /*rate*/ 0)
+	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 300 /*rate*/, 0)
 
 	before := totalSilver(t, pool, ctx, settlementID)
 
@@ -208,7 +208,7 @@ func TestSitosTick_ReleaseRespectsLiquidCap(t *testing.T) {
 	cfg.SubsistenceGoods = nil
 
 	const tick = 100
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000, /*fund*/ 5000, /*silver*/ 2000, /*grain*/ 300, /*rate*/ 0)
+	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 300 /*rate*/, 0)
 	// Tighten the liquid silver cap to 3000 → headroom 1000 < overhang 3500.
 	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET cap = 3000 WHERE settlement_id = $1 AND good_key = 'silver'`, settlementID); err != nil {
 		t.Fatalf("tighten silver cap: %v", err)
@@ -258,7 +258,7 @@ func TestSitosTick_NoReleaseWithinCap(t *testing.T) {
 
 	const tick = 100
 	// fund 1000 < cap 1500 → no overhang.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000, /*fund*/ 1000, /*silver*/ 2000, /*grain*/ 300, /*rate*/ 0)
+	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 1000 /*silver*/, 2000 /*grain*/, 300 /*rate*/, 0)
 
 	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
 	grainBase, err := GoodBaseValue(ctx, pool, "grain")
@@ -282,7 +282,7 @@ func TestSitosTick_FundNeverNegative(t *testing.T) {
 
 	const tick = 100
 	// Grain surplus (amount 990 near cap 1000 → above reference) → fund buys and drains.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000, /*fund*/ 50, /*silver*/ 1000, /*grain*/ 990, /*rate*/ 0)
+	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 50 /*silver*/, 1000 /*grain*/, 990 /*rate*/, 0)
 
 	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
 	grainBase, err := GoodBaseValue(ctx, pool, "grain")

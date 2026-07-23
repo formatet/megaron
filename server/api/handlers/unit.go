@@ -13,23 +13,23 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/combat"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/messenger"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/unit"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/messenger"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/unit"
 )
 
 // UnitHandler handles HTTP requests for the unit endpoints (C3).
 type UnitHandler struct {
-	pool      *pgxpool.Pool
-	scheduler *events.Scheduler
+	pool       *pgxpool.Pool
+	scheduler  *events.Scheduler
 	eventStore *events.Store
-	clk       clock.Clock
-	store     *unit.Store
+	clk        clock.Clock
+	store      *unit.Store
 }
 
 // NewUnitHandler creates a UnitHandler.
@@ -73,10 +73,10 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		TargetQ int    `json:"target_q"`
 		TargetR int    `json:"target_r"`
-		Stance  string `json:"stance"`  // optional; fortify|storm|sentry — persisted for C5
-		Intent  string `json:"intent"`  // optional; "" = plain march, "colonize" = found a colony on arrival
-		Name    string `json:"name"`    // optional colony name (only used with intent=colonize)
-		Mode    string `json:"mode"`    // optional; "" = sack (default) | "annex" — conquest choice on arrival (Del 2b)
+		Stance  string `json:"stance"` // optional; fortify|storm|sentry — persisted for C5
+		Intent  string `json:"intent"` // optional; "" = plain march, "colonize" = found a colony on arrival
+		Name    string `json:"name"`   // optional colony name (only used with intent=colonize)
+		Mode    string `json:"mode"`   // optional; "" = sack (default) | "annex" — conquest choice on arrival (Del 2b)
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -849,12 +849,12 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 //   - Ship must have a cargo unit (cargo_unit_id non-null).
 //   - Ship must be either:
 //     (a) garrisoned at a coastal (adjacent to sea) settlement or harbour — the
-//         original path, cargo joins that settlement's garrison; or
+//     original path, cargo joins that settlement's garrison; or
 //     (b) field-positioned (status='positioned', no settlement) at a sea hex
-//         next to unclaimed land — the cargo steps ashore there as a
-//         field-positioned unit of its own, exactly like a unit that marched
-//         there directly, so a normal `march --intent colonize` can found a
-//         colony on it afterwards.
+//     next to unclaimed land — the cargo steps ashore there as a
+//     field-positioned unit of its own, exactly like a unit that marched
+//     there directly, so a normal `march --intent colonize` can found a
+//     colony on it afterwards.
 //
 // Before (b), landing troops from a ship anywhere but an already-friendly
 // harbour was structurally impossible: a ship scouting to genuinely new
@@ -1223,12 +1223,12 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 
 // unitSummary is the JSON shape returned to clients.
 type unitSummary struct {
-	ID           uuid.UUID  `json:"id"`
-	Type         string     `json:"type"`
-	Category     string     `json:"category"`
-	Size         int        `json:"size"`
-	Crew         int        `json:"crew,omitempty"`
-	Status       string     `json:"status"`
+	ID       uuid.UUID `json:"id"`
+	Type     string    `json:"type"`
+	Category string    `json:"category"`
+	Size     int       `json:"size"`
+	Crew     int       `json:"crew,omitempty"`
+	Status   string    `json:"status"`
 	// Deployable is false while a land unit is still "forming": it cannot march,
 	// colonize, or otherwise leave its settlement until it reaches 100 men. JSON
 	// consumers (LLM agents, iOS) must see this in the data — the human `unit list`
@@ -1243,17 +1243,17 @@ type unitSummary struct {
 	// garrisoned, and always nil for land units (whose "forming" is
 	// size-based, not time-based).
 	BuildCompleteAt *time.Time `json:"build_complete_at,omitempty"`
-	Stance       *string    `json:"stance,omitempty"`
-	SettlementID *uuid.UUID `json:"settlement_id,omitempty"`
-	Q            *int       `json:"q,omitempty"`
-	R            *int       `json:"r,omitempty"`
-	TargetQ      *int       `json:"target_q,omitempty"`
-	TargetR      *int       `json:"target_r,omitempty"`
+	Stance          *string    `json:"stance,omitempty"`
+	SettlementID    *uuid.UUID `json:"settlement_id,omitempty"`
+	Q               *int       `json:"q,omitempty"`
+	R               *int       `json:"r,omitempty"`
+	TargetQ         *int       `json:"target_q,omitempty"`
+	TargetR         *int       `json:"target_r,omitempty"`
 	// DepartsAt + ArrivesAt let the map interpolate a marching unit's position
 	// along its route (same as marches/messengers/trades); without departs_at a
 	// per-unit march could not be animated and stayed invisible on the canvas.
-	DepartsAt    *time.Time `json:"departs_at,omitempty"`
-	ArrivesAt    *time.Time `json:"arrives_at,omitempty"`
+	DepartsAt *time.Time `json:"departs_at,omitempty"`
+	ArrivesAt *time.Time `json:"arrives_at,omitempty"`
 	// K4 tick-contract: a marching unit's timing in world ticks (the source of
 	// truth under the tick substrate, mig 067), plus a derived UTC convenience.
 	// ArrivalTick/DurationTicks come straight off the unit row (arrive_tick,
@@ -1267,8 +1267,8 @@ type unitSummary struct {
 	// mountains). The map animates the walker along it instead of a straight line,
 	// so it is drawn where the unit truly is. Empty for non-marching units and when
 	// no route exists (client falls back to the straight line). See marchPathWaypoints.
-	Path         [][2]int   `json:"path,omitempty"`
-	CargoUnitID  *uuid.UUID `json:"cargo_unit_id,omitempty"`
+	Path        [][2]int   `json:"path,omitempty"`
+	CargoUnitID *uuid.UUID `json:"cargo_unit_id,omitempty"`
 	// CarrierShipID/Name identify the ship an embarked land unit is aboard (the
 	// ship whose cargo_unit_id points back at this unit). Without them a `unit
 	// list` row for embarked cargo could not say which vessel carried it, so a
@@ -1347,16 +1347,16 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 			Name:            u.Name,
 			BuildCompleteAt: u.BuildCompleteAt,
 			Stance:          stance,
-			SettlementID: u.SettlementID,
-			Q:            u.Q,
-			R:            u.R,
-			TargetQ:      u.TargetQ,
-			TargetR:      u.TargetR,
-			DepartsAt:    u.DepartsAt,
-			ArrivesAt:    u.ArrivesAt,
-			ArrivalTick:   arrivalTick,
-			DurationTicks: durationTicks,
-			ArrivesAtUTC:  arrivesAtUTC,
+			SettlementID:    u.SettlementID,
+			Q:               u.Q,
+			R:               u.R,
+			TargetQ:         u.TargetQ,
+			TargetR:         u.TargetR,
+			DepartsAt:       u.DepartsAt,
+			ArrivesAt:       u.ArrivesAt,
+			ArrivalTick:     arrivalTick,
+			DurationTicks:   durationTicks,
+			ArrivesAtUTC:    arrivesAtUTC,
 			CargoUnitID:     u.CargoUnitID,
 			CarrierShipID:   carrierShipID,
 			CarrierShipName: carrierShipName,
@@ -1366,4 +1366,3 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 	}
 	return out
 }
-

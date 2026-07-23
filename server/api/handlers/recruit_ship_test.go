@@ -18,14 +18,14 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/combat"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
 )
 
 func recruitShipTestPool(t *testing.T) *pgxpool.Pool {

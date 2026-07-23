@@ -1,4 +1,4 @@
-// Package kharis implements the daily temple maintenance tick for Poleia.
+// Package kharis implements the daily temple maintenance tick for Megaron.
 // Kharis is a reciprocal relationship between a settlement and its gods.
 // Settlements that maintain their temples accumulate divine favour;
 // those that neglect maintenance lose it — and eventually suffer.
@@ -11,12 +11,12 @@ import (
 	"math/rand"
 	"sort"
 
+	"formatet/megaron/server/internal/ai"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/ai"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/religion"
 )
 
 // Kharis omdesign (Timothy 2026-07-09, temenos_kharis.md §"KANONISK OMDESIGN"):

@@ -8,10 +8,10 @@ import (
 	"math"
 	"math/rand"
 
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/gossip"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/gossip"
 )
 
 // OfferExpiryHandler refunds escrowed silver to the buyer when a trade offer

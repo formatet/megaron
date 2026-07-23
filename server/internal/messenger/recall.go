@@ -18,12 +18,12 @@ import (
 	"math"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/tick"
 )
 
 // HoursPerHex is the travel speed of a messenger (hours per hex). Shared by diplomatic

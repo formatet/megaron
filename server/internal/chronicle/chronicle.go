@@ -16,9 +16,9 @@ import (
 	"sync"
 	"time"
 
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
 )
 
 // localTZ is the timezone all chronicle timestamps are rendered in.
@@ -272,7 +272,7 @@ func (c *Chronicler) ensureMDIsToday(t time.Time) error {
 	if c.mdFile != nil {
 		_ = c.mdFile.Close()
 	}
-	fname := fmt.Sprintf("poleia_%s_chronicle_%s.md", c.worldSlug, d)
+	fname := fmt.Sprintf("megaron_%s_chronicle_%s.md", c.worldSlug, d)
 	path := filepath.Join(c.dir, fname)
 	stat, _ := os.Stat(path)
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
@@ -280,7 +280,7 @@ func (c *Chronicler) ensureMDIsToday(t time.Time) error {
 		return fmt.Errorf("open md: %w", err)
 	}
 	if stat == nil {
-		header := fmt.Sprintf("# %s — krönika %s\n\n*Genererad av Poleia chronicle. Tider i lokal tid (Europa/Stockholm).*\n\n", c.worldName, d)
+		header := fmt.Sprintf("# %s — krönika %s\n\n*Genererad av Megaron chronicle. Tider i lokal tid (Europa/Stockholm).*\n\n", c.worldName, d)
 		if _, err := f.WriteString(header); err != nil {
 			_ = f.Close()
 			return err

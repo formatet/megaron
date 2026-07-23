@@ -54,7 +54,7 @@ func TestOtherNavalUnaffected(t *testing.T) {
 
 // TestDisplayName_ConsistentAcrossKnownTypes pins the decided display-name
 // taxonomy (Namn-hygien C / A8, Timothy 2026-07-10): one canonical display
-// string per DB unit type, moved here from cmd/poleia's now-retired local
+// string per DB unit type, moved here from cmd/keryx's now-retired local
 // unitDisplayName so keryx, web/API, and notifications all read the same
 // table. "Hoplites"/"Agema"/"Hiereus" are retired; "priest" (dead unit,
 // mig 060) has no entry and falls back to its raw key.

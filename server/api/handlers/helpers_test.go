@@ -3,7 +3,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // insufficientGoodsError must render a human/agent-readable list of exactly

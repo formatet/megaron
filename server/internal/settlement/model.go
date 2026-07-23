@@ -4,8 +4,8 @@ package settlement
 import (
 	"time"
 
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/province"
 )
 
 // ControlType describes how a settlement controls its province.

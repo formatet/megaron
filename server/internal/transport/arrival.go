@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
 )
 
 // ArrivalHandler credits a transport's manifest to its destination settlement when

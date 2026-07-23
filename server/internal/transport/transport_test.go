@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
 )
 
 func testPool(t *testing.T) *pgxpool.Pool {
@@ -132,14 +132,14 @@ func dispatchGift(t *testing.T, pool *pgxpool.Pool, f fixture, m Manifest) uuid.
 	}
 	now := time.Now()
 	id, err := Dispatch(ctx, tx, sched, DispatchParams{
-		WorldID:       f.worldID,
-		OwnerID:       f.owner,
-		Kind:          "transfer",
-		OriginID:      f.sourceID,
-		DestID:        f.destID,
-		Category:      "land",
-		OriginQ:       0, OriginR: 0,
-		DestQ:         3, DestR: 0,
+		WorldID:  f.worldID,
+		OwnerID:  f.owner,
+		Kind:     "transfer",
+		OriginID: f.sourceID,
+		DestID:   f.destID,
+		Category: "land",
+		OriginQ:  0, OriginR: 0,
+		DestQ: 3, DestR: 0,
 		DepartsAt:     now,
 		ArrivesAt:     now.Add(2 * time.Hour),
 		DueTick:       1,

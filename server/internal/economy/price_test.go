@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/events"
 )
 
 func TestLocalPrice_AtReference(t *testing.T) {

@@ -1,4 +1,4 @@
-// Package ai implements passive AI players and AI governors for Poleia.
+// Package ai implements passive AI players and AI governors for Megaron.
 package ai
 
 import (

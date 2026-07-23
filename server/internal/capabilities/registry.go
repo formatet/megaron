@@ -4,15 +4,15 @@ import (
 	"context"
 	"os"
 
+	"formatet/megaron/server/internal/clock"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
 )
 
 // checkers lists every mutating verb's checker, in the fixed display order
-// used by `poleia actions <category>` and the --json output. Keep this in
+// used by `keryx actions <category>` and the --json output. Keep this in
 // sync with temenos_capabilities.md's verb registry when a new mutating verb
-// is added to cmd/poleia or main.go's routes.
+// is added to cmd/keryx or main.go's routes.
 var checkers = []func(checkContext) Verb{
 	// province
 	canBuild,

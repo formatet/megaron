@@ -8,17 +8,17 @@ import (
 	"math"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/loyalty"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/gossip"
-	"github.com/poleia/server/internal/loyalty"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/unit"
 )
 
 // UnitArrivalHandler processes ScheduledUnitArrival events.
@@ -852,8 +852,9 @@ func (h *UnitArrivalHandler) foundColony(
 // resolveCombat handles the arriving unit attacking an enemy settlement.
 //
 // Dual-read defence:
-//   units at destination (unit.SummaryAtHex / ListBySettlement) +
-//   legacy integer columns on settlement.
+//
+//	units at destination (unit.SummaryAtHex / ListBySettlement) +
+//	legacy integer columns on settlement.
 //
 // Idempotency: u.status == 'marching' was checked at top; all writes are
 // conditional on status or use ON CONFLICT DO NOTHING.
@@ -968,16 +969,16 @@ func (h *UnitArrivalHandler) resolveCombat(
 
 	_, _ = h.eventStore.Append(ctx, dest.provinceID, events.StreamCombat, "UnitCombatResolved",
 		map[string]any{
-			"unit_id":        u.id,
-			"outcome":        string(result.Outcome),
-			"att":            attStr,
-			"fortune":        result.Fortune,
-			"def":            defStr,
-			"att_losses":     result.AttackerLosses,
-			"def_losses":     result.DefenderLosses,
-			"att_routed":     result.AttackerRouted,
-			"def_routed":     result.DefenderRouted,
-			"rounds":         result.Rounds,
+			"unit_id":    u.id,
+			"outcome":    string(result.Outcome),
+			"att":        attStr,
+			"fortune":    result.Fortune,
+			"def":        defStr,
+			"att_losses": result.AttackerLosses,
+			"def_losses": result.DefenderLosses,
+			"att_routed": result.AttackerRouted,
+			"def_routed": result.DefenderRouted,
+			"rounds":     result.Rounds,
 		}, worldID, nil)
 
 	// ── L2 military-outcome loyalty (atomic on this tx) ──────────────────────
@@ -1740,23 +1741,23 @@ func (h *UnitArrivalHandler) evictDefeatedDefenders(
 // ── Internal types ─────────────────────────────────────────────────────────────
 
 type unitRow struct {
-	id          uuid.UUID
-	ownerID     uuid.UUID
-	utype       string
-	category    string
-	size        int
-	crew        int
-	cargoUnitID *uuid.UUID
-	status      string
-	q           int    // origin hex (set by march handler; used for rout routing)
-	r           int
-	targetQ     *int
-	targetR     *int
-	stance      *string // C5: fortify/storm/sentry or nil
-	marchIntent *string // "colonize" | "explore" | "explore_return" | nil (plain march)
-	colonyName  *string // chosen colony name or nil
+	id               uuid.UUID
+	ownerID          uuid.UUID
+	utype            string
+	category         string
+	size             int
+	crew             int
+	cargoUnitID      *uuid.UUID
+	status           string
+	q                int // origin hex (set by march handler; used for rout routing)
+	r                int
+	targetQ          *int
+	targetR          *int
+	stance           *string    // C5: fortify/storm/sentry or nil
+	marchIntent      *string    // "colonize" | "explore" | "explore_return" | nil (plain march)
+	colonyName       *string    // chosen colony name or nil
 	homeSettlementID *uuid.UUID // set for "explore"/"explore_return"; the settlement to return to
-	captureMode string // "sack" (default) | "annex" — set at march dispatch, read on conquest
+	captureMode      string     // "sack" (default) | "annex" — set at march dispatch, read on conquest
 }
 
 type destSettlement struct {
@@ -1790,5 +1791,3 @@ func unitStrength(utype string, size int) float64 {
 		return float64(size) * 1
 	}
 }
-
-

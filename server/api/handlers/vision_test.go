@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 func testPath() []province.MapPosition {

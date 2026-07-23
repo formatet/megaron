@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"strings"
 
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/tick"
 )
 
 // Wave L1 (Timothy 2026-07-11): stads-loyalty välfärdssignaler. Unit/desertion

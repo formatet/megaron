@@ -7,7 +7,7 @@ package handlers
 // (HintTradeAcceptInsolvent). With the offer invisible in inbox, there was no
 // way to ever discover its id to actually decline it — capabilities and
 // Inbox disagreed about what a Wanax could see and act on, exactly the
-// divergence `poleia actions trade` referencing an unfindable offer pointed
+// divergence `keryx actions trade` referencing an unfindable offer pointed
 // at. Fix: affordability is now a DATA column (affordable), not a visibility
 // filter — the offer (and its id) always shows up while pending+unexpired.
 
@@ -20,12 +20,12 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
 )
 
 func inboxInsolventTestPool(t *testing.T) *pgxpool.Pool {

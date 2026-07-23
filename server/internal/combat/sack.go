@@ -7,13 +7,13 @@ import (
 	"math"
 	"time"
 
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/gossip"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/transport"
 )
 
 // sackSettlement is the "sack" conquest choice (Del 2b, Timothy 2026-07-10): instead

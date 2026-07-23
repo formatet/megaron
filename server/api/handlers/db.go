@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/kharis"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/settlement"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/kharis"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/settlement"
 )
 
 // loadTerrainProvince fetches terrain data for a province hex tile.

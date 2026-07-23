@@ -18,10 +18,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/unit"
 )
 
 // fieldDefender is one hostile unit sitting 'positioned' at a settlement-less

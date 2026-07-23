@@ -3,7 +3,7 @@ package economy
 import (
 	"math"
 
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/events"
 )
 
 const (

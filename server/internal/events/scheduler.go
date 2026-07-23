@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
 )
 
 // TicksPerDay is how many world ticks make up one game "day".
@@ -33,24 +33,24 @@ const TicksPerDay = 24
 type ScheduledEventType string
 
 const (
-	ScheduledArmyArrival       ScheduledEventType = "ArmyArrival"
-	ScheduledBuildComplete     ScheduledEventType = "BuildComplete"
-	ScheduledTrainComplete     ScheduledEventType = "TrainComplete"
-	ScheduledCollapseCheck     ScheduledEventType = "CollapseCheck"
-	ScheduledDivineRoll        ScheduledEventType = "DivineRoll"
-	ScheduledLoyaltyDecayTick  ScheduledEventType = "LoyaltyDecayTick"
+	ScheduledArmyArrival      ScheduledEventType = "ArmyArrival"
+	ScheduledBuildComplete    ScheduledEventType = "BuildComplete"
+	ScheduledTrainComplete    ScheduledEventType = "TrainComplete"
+	ScheduledCollapseCheck    ScheduledEventType = "CollapseCheck"
+	ScheduledDivineRoll       ScheduledEventType = "DivineRoll"
+	ScheduledLoyaltyDecayTick ScheduledEventType = "LoyaltyDecayTick"
 	// L1 — daily loyalty welfare signals (kharis favour, feeding, starvation,
 	// diet variety), internal/loyalty/welfare.go.
 	ScheduledLoyaltyWelfareTick ScheduledEventType = "LoyaltyWelfareTick"
-	ScheduledColonyPenaltyTick ScheduledEventType = "ColonyPenaltyTick"
-	ScheduledBorrowedArmyTick  ScheduledEventType = "BorrowedArmyTick"
-	ScheduledMessengerArrival  ScheduledEventType = "MessengerArrival"
-	ScheduledMessengerReturn   ScheduledEventType = "MessengerReturn"
-	ScheduledKharisTick        ScheduledEventType = "KharisTick"
-	ScheduledTradeDelivery     ScheduledEventType = "TradeDelivery"
-	ScheduledTradeReturn       ScheduledEventType = "TradeReturn"
-	ScheduledRecallArrival     ScheduledEventType = "RecallArrival"
-	ScheduledLogisticsArrival  ScheduledEventType = "LogisticsArrival"
+	ScheduledColonyPenaltyTick  ScheduledEventType = "ColonyPenaltyTick"
+	ScheduledBorrowedArmyTick   ScheduledEventType = "BorrowedArmyTick"
+	ScheduledMessengerArrival   ScheduledEventType = "MessengerArrival"
+	ScheduledMessengerReturn    ScheduledEventType = "MessengerReturn"
+	ScheduledKharisTick         ScheduledEventType = "KharisTick"
+	ScheduledTradeDelivery      ScheduledEventType = "TradeDelivery"
+	ScheduledTradeReturn        ScheduledEventType = "TradeReturn"
+	ScheduledRecallArrival      ScheduledEventType = "RecallArrival"
+	ScheduledLogisticsArrival   ScheduledEventType = "LogisticsArrival"
 	// Physical goods transport (movement-motor transport layer) — a caravan/ship
 	// carrying a goods manifest arrives at its destination. Supersedes the abstract
 	// LogisticsArrival for movers that have a map position (see internal/transport).

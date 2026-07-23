@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
+	"formatet/megaron/server/internal/economy"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/economy"
 )
 
 // DB integration test (real Postgres, gated by DATABASE_URL) for the

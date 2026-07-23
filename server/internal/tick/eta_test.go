@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/poleia/server/internal/clock"
+	"formatet/megaron/server/internal/clock"
 )
 
 // withTickSecondsForTest overrides the package-level TickSeconds for the

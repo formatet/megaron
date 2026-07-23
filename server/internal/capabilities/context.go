@@ -3,11 +3,11 @@ package capabilities
 import (
 	"context"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/province"
 )
 
 // checkContext bundles the inputs every checker needs. settlementID is

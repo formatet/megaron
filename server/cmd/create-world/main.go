@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"time"
 
+	"formatet/megaron/server/internal/world"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/world"
 )
 
 func envInt(key string, def int) int {

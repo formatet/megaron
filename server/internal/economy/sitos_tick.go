@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
 )
 
 // SitosTransactionPayload is the outcome recorded for one Sitos action (Fas 2.3:

@@ -13,23 +13,23 @@ import (
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/capabilities"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/kharis"
+	"formatet/megaron/server/internal/messenger"
+	"formatet/megaron/server/internal/notify"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/unit"
+	"formatet/megaron/server/internal/unit/shipnames"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/capabilities"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/combat"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/kharis"
-	"github.com/poleia/server/internal/messenger"
-	"github.com/poleia/server/internal/notify"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/religion"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/unit"
-	"github.com/poleia/server/internal/unit/shipnames"
 )
 
 // maxParallelBuilds caps how many buildings a single settlement may have
@@ -69,7 +69,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	prov, err := loadTerrainProvince(r.Context(), h.pool, provinceID, worldID)
 	if err != nil {
-		// The CLI resolver (poleia --province) now catches this client-side, but direct
+		// The CLI resolver (keryx --province) now catches this client-side, but direct
 		// API callers (iOS client, curl) can still pass a settlement ID where a province
 		// ID is expected — check for that before giving a bare 404.
 		var sName string
@@ -652,7 +652,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Settlement cap: same "how many colonies do I hold vs. the per-Wanax
-		// ceiling" figure `poleia actions` derives for the colonize gate
+		// ceiling" figure `keryx actions` derives for the colonize gate
 		// (capabilities.settlementCapRequirement / province.MaxSettlementsPerWanax),
 		// surfaced here too so status doesn't require a second round-trip to see
 		// it. Scoped by sett.OwnerID (not the requesting player) to match the
@@ -1448,7 +1448,7 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 // Derived from Skalbeslut (2026-06-15): per-man = old UnitSpec cost / old PopCost.
 // Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.
 // recruitPerManCosts delegates to province.UnitSpecs so this handler and the
-// capabilities recruit checker (poleia actions) read the exact same per-man
+// capabilities recruit checker (keryx actions) read the exact same per-man
 // cost table — before Fas 3 they were two separately hand-maintained copies
 // that had already drifted apart (temenos_capabilities.md Fas 3). Note:
 // "priest" is not a recruitable unit (removed mig 060) and is caught earlier
@@ -1608,7 +1608,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		settlementID,
 	).Scan(&population)
 
-	// Coarse precondition — the same checker `poleia actions` uses
+	// Coarse precondition — the same checker `keryx actions` uses
 	// (temenos_capabilities.md Fas 3): population > 0, and at least one unit
 	// type affordable at the 10-man minimum batch. Sound as a full gate here
 	// (not just population): if NO type is affordable even at the smallest
@@ -2000,7 +2000,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			upkeepWarning = fmt.Sprintf(
 				"warning: once this unit garrisons it needs %.1f grain + %.1f silver/day upkeep — "+
 					"this settlement's current net after its existing army's upkeep is %+.1f grain/day, %+.1f silver/day; "+
-					"it may starve/desert without more production or fewer units (`poleia status`)",
+					"it may starve/desert without more production or fewer units (`keryx status`)",
 				newUnitUp.Grain, newUnitUp.Silver, netGrainPerDay, netSilverPerDay)
 		}
 	}
@@ -2601,7 +2601,7 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 	if req.RecipeID == 1 {
 		// The load-bearing bronze recipe has a capabilities checker
 		// (temenos_capabilities.md) — reuse it here so this 422 and
-		// `poleia actions` can never show a different requirement for the
+		// `keryx actions` can never show a different requirement for the
 		// same gate (Fas 3 anti-drift). Covers both the foundry-presence
 		// gate and "you don't hold enough of an ingredient to craft even
 		// one unit" — sound as a precondition for ANY requested quantity,

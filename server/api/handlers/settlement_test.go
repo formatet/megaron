@@ -17,7 +17,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/religion"
+	"formatet/megaron/server/internal/religion"
 )
 
 // TestRiteCultureGate_HattiCannotCastKnaaniPrayer is the 403 scenario:

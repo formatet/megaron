@@ -23,19 +23,19 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/combat"
-	"github.com/poleia/server/internal/events"
 )
 
 // OrderDeliveryPayload is the ScheduledOrderDelivery payload.
 type OrderDeliveryPayload struct {
-	WorldID     uuid.UUID          `json:"world_id"`
-	PlayerID    uuid.UUID          `json:"player_id"`
-	UnitID      uuid.UUID          `json:"unit_id"`
-	MessengerID uuid.UUID          `json:"messenger_id"`
+	WorldID     uuid.UUID           `json:"world_id"`
+	PlayerID    uuid.UUID           `json:"player_id"`
+	UnitID      uuid.UUID           `json:"unit_id"`
+	MessengerID uuid.UUID           `json:"messenger_id"`
 	Verb        string              `json:"verb"` // "march" | "stance"
 	March       *combat.MarchOrder  `json:"march,omitempty"`
 	Stance      *combat.StanceOrder `json:"stance,omitempty"`

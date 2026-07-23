@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/unit"
 )
 
 func TestSentryOrder_PostHoldAutoReturn(t *testing.T) {

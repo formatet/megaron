@@ -1,4 +1,4 @@
-// Package combat implements combat resolution for Poleia.
+// Package combat implements combat resolution for Megaron.
 // Resolve() is a pure deterministic function; callers roll fortune once (in the
 // event handler) and pass it in. Randomness never lives inside Resolve itself.
 package combat
@@ -6,7 +6,7 @@ package combat
 import (
 	"math"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // AttackForce describes the attacking side of a battle.

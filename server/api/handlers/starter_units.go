@@ -19,10 +19,10 @@ import (
 	"context"
 	"fmt"
 
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/unit"
 )
 
 // seedStarterUnits inserts garrison units for the new settlement and adjusts population.

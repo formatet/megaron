@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
 )
 
 // NotificationsHandler serves persistent notification records.
@@ -24,12 +24,12 @@ func NewNotificationsHandler(pool *pgxpool.Pool) *NotificationsHandler {
 }
 
 type notificationRow struct {
-	ID        uuid.UUID        `json:"id"`
-	Kind      string           `json:"kind"`
-	Level     int              `json:"level"`
-	BodyJSON  json.RawMessage  `json:"body"`
-	CreatedAt time.Time        `json:"created_at"`
-	ReadAt    *time.Time       `json:"read_at"`
+	ID        uuid.UUID       `json:"id"`
+	Kind      string          `json:"kind"`
+	Level     int             `json:"level"`
+	BodyJSON  json.RawMessage `json:"body"`
+	CreatedAt time.Time       `json:"created_at"`
+	ReadAt    *time.Time      `json:"read_at"`
 }
 
 // List returns recent notifications for the authenticated player in this world.

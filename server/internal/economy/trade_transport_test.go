@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
 )
 
 func TestTradeDelivery_InterceptedCaravanNotCredited(t *testing.T) {
@@ -148,7 +148,7 @@ func TestTradeDelivery_PhysicalLegDeliversAndChainsReturn(t *testing.T) {
 		"travel_mins":    90.0,
 		"owner_id":       owner.String(),
 		"origin_q":       0, "origin_r": 0,
-		"dest_q":         3, "dest_r": 0,
+		"dest_q": 3, "dest_r": 0,
 	}
 
 	var leg1 uuid.UUID

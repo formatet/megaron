@@ -18,9 +18,9 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/clock"
 )
 
 func testWorkerPool(t *testing.T) *pgxpool.Pool {

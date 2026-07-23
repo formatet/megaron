@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"time"
 
+	"formatet/megaron/server/internal/ai"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/messenger"
+	"formatet/megaron/server/internal/province"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/ai"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/gossip"
-	"github.com/poleia/server/internal/messenger"
-	"github.com/poleia/server/internal/province"
 )
 
 // KingdomHandler handles HTTP requests for kingdom endpoints.
@@ -378,11 +378,11 @@ func (h *KingdomHandler) Invitations(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type inv struct {
-		ID         uuid.UUID `json:"id"`
-		KingdomID  uuid.UUID `json:"kingdom_id"`
-		KingdomName string   `json:"kingdom_name"`
-		InvitedBy  string   `json:"invited_by"`
-		ExpiresAt  time.Time `json:"expires_at"`
+		ID          uuid.UUID `json:"id"`
+		KingdomID   uuid.UUID `json:"kingdom_id"`
+		KingdomName string    `json:"kingdom_name"`
+		InvitedBy   string    `json:"invited_by"`
+		ExpiresAt   time.Time `json:"expires_at"`
 	}
 	var result []inv
 	for rows.Next() {

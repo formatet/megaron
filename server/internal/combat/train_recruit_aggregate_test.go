@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/events"
 )
 
 func TestRecruit_AggregatesToOneDeployableUnit(t *testing.T) {

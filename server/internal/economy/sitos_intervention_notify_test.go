@@ -11,8 +11,8 @@ import (
 	"context"
 	"testing"
 
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/events"
 )
 
 type fakeSitosBroadcaster struct {
@@ -34,7 +34,7 @@ func TestSitosTick_NotifiesOwnerOnRescueSell(t *testing.T) {
 	const tick = 100
 	// Same deep-shortage fixture as TestSitosTick_SilverConserved — forces
 	// action.Kind == "sell" (the rescue case).
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000, /*fund*/ 5000, /*silver*/ 2000, /*grain*/ 5, /*rate*/ 0)
+	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 5 /*rate*/, 0)
 
 	fb := &fakeSitosBroadcaster{}
 	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), fb, cfg)

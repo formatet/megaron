@@ -1,4 +1,4 @@
-// Package economy implements goods, pricing, and production for Poleia settlements.
+// Package economy implements goods, pricing, and production for Megaron settlements.
 package economy
 
 import (

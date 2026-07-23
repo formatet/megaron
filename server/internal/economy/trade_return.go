@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
 )
 
 // TradeReturnHandler delivers goods to the buyer after a trade offer is accepted.

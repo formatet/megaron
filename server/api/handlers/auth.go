@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/poleia/server/internal/auth"
+	"formatet/megaron/server/internal/auth"
 )
 
 // AuthHandler handles HTTP requests for auth endpoints.
@@ -122,10 +122,10 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"id":        p.ID,
-		"username":  p.Username,
-		"email":     p.Email,
-		"era_count": p.EraCount,
+		"id":         p.ID,
+		"username":   p.Username,
+		"email":      p.Email,
+		"era_count":  p.EraCount,
 		"created_at": p.CreatedAt,
 	})
 }

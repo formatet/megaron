@@ -3,7 +3,7 @@ package combat
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 func TestResolve_AttackerWins(t *testing.T) {

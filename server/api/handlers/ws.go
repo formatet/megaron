@@ -4,16 +4,16 @@ import (
 	"net/http"
 	"time"
 
+	"formatet/megaron/server/internal/notify"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/poleia/server/internal/notify"
 )
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  256,
 	WriteBufferSize: 4096,
-	CheckOrigin:    func(r *http.Request) bool { return true },
+	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
 // WSHandler handles WebSocket upgrade requests.

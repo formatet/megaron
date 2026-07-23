@@ -4,11 +4,11 @@ import (
 	"context"
 	"log/slog"
 
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/loyalty"
+	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/loyalty"
-	"github.com/poleia/server/internal/religion"
 )
 
 // metropolisParams describes the capital to raise. Population is a parameter rather

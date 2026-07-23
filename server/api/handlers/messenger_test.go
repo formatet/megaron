@@ -79,10 +79,10 @@ func TestSellOffer_KindNormalization(t *testing.T) {
 		raw      string
 		wantKind string
 	}{
-		{`{}`, "buy"},                   // missing kind → buy
-		{`{"kind":""}`, "buy"},          // empty kind → buy
-		{`{"kind":"buy"}`, "buy"},       // explicit buy
-		{`{"kind":"sell"}`, "sell"},     // explicit sell
+		{`{}`, "buy"},               // missing kind → buy
+		{`{"kind":""}`, "buy"},      // empty kind → buy
+		{`{"kind":"buy"}`, "buy"},   // explicit buy
+		{`{"kind":"sell"}`, "sell"}, // explicit sell
 	}
 	for _, tc := range cases {
 		var offer map[string]any
@@ -137,7 +137,7 @@ func TestSellOffer_AcceptDeductsOnlyBuyerSilver(t *testing.T) {
 	const wantSilver = 120.0 // silver seller wants
 
 	// Initial state (after escrow at send time):
-	sellerGoods := 0.0       // all goods escrowed (or: sellerGoodsStart - offerQty)
+	sellerGoods := 0.0 // all goods escrowed (or: sellerGoodsStart - offerQty)
 	sellerSilver := 80.0
 	buyerGoods := 0.0
 	buyerSilver := 200.0
@@ -200,10 +200,10 @@ func TestSellOffer_ExpiryRefundsGoods(t *testing.T) {
 	// For buy:  refund offer_silver to origin (buyer).
 	// We document the routing contract here.
 	type expiryRefund struct {
-		Kind      string
-		GoodKey   string
-		Quantity  float64
-		ToOrigin  bool // always true — escrow always lives at origin
+		Kind     string
+		GoodKey  string
+		Quantity float64
+		ToOrigin bool // always true — escrow always lives at origin
 	}
 
 	sellRefund := expiryRefund{Kind: "sell", GoodKey: "copper", Quantity: 50, ToOrigin: true}
@@ -223,7 +223,7 @@ func TestSellOffer_ExpiryRefundsGoods(t *testing.T) {
 // TestTradeAccept_DeliveryETAAssignment covers P5 (leverans-ETA): TradeAccept
 // now stamps goods_arrives_at/silver_arrives_at onto trade_offer at accept
 // time (previously these ETAs only ever appeared in the accept response
-// itself, never anywhere a Wanax could look back at later, e.g. `poleia
+// itself, never anywhere a Wanax could look back at later, e.g. `keryx
 // outbox`). The two legs are chained (leg 2 departs only once leg 1 lands),
 // so whichever good moves FIRST determines which ETA equals leg1ArrivesAt and
 // which is leg1ArrivesAt+travelDuration — this is the routing contract for

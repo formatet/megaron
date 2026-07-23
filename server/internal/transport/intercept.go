@@ -6,10 +6,10 @@ import (
 	"log/slog"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/province"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

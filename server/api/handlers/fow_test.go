@@ -24,7 +24,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // TestFOWGate_CanSeeAdjacentCity verifies that a city 4 hexes away (within the
@@ -61,7 +61,8 @@ func TestFOWGate_CannotSeeDistantCity(t *testing.T) {
 // delivered to a city, that city's hex is included in origins and therefore the city
 // remains reachable for subsequent messages.
 // This simulates the messenger-status join in loadVisibleOrigins:
-//   "Settlements this player has contacted by messenger stay visible."
+//
+//	"Settlements this player has contacted by messenger stay visible."
 func TestFOWGate_ContactedCityBecomesVisible(t *testing.T) {
 	// Player capital at (5,5); distant city at (16,16).
 	capital := province.MapPosition{Q: 5, R: 5}
@@ -106,9 +107,9 @@ func TestWanaxesFOWGate_HidesDistantSettlement(t *testing.T) {
 		Name string
 	}
 	all := []wanaxEntry{
-		{Q: 10, R: 10, Name: "Abydos"},   // own city — always visible
-		{Q: 14, R: 10, Name: "Zakros"},   // 4 hexes — visible
-		{Q: 35, R: 20, Name: "Sodom"},    // 30+ hexes — NOT visible
+		{Q: 10, R: 10, Name: "Abydos"}, // own city — always visible
+		{Q: 14, R: 10, Name: "Zakros"}, // 4 hexes — visible
+		{Q: 35, R: 20, Name: "Sodom"},  // 30+ hexes — NOT visible
 	}
 	origins := []province.MapPosition{{Q: 10, R: 10}}
 

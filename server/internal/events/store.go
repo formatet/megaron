@@ -1,4 +1,4 @@
-// Package events implements the event sourcing core for Poleia.
+// Package events implements the event sourcing core for Megaron.
 // All game state changes are recorded as immutable events; projections are derived from the log.
 package events
 

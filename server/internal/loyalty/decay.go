@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/tick"
 )
 
 // loyaltyExecutor is the subset of pgx used to write a loyalty change. Both

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // canBuild: constructing SOME building is (almost) always possible — most
@@ -15,16 +15,16 @@ import (
 // catchment deposit; winery: hills terrain, P10 soak 2026-07-18 — its only
 // production_rules row is terrain-locked with no fallback, so off-hills it
 // silently produces nothing) are already fully surfaced by the existing
-// `poleia build --list` / `GET /buildings` catalogue (requires_coastal /
+// `keryx build --list` / `GET /buildings` catalogue (requires_coastal /
 // requires_deposits / requires_terrain per type), same for the build queue's
-// concurrent-slot cap (`poleia build --queue` / Get's build_queue_max) — the
+// concurrent-slot cap (`keryx build --queue` / Get's build_queue_max) — the
 // anchor this capabilities layer generalizes from. Duplicating that per-type
 // gate here as a single AND-computed `available` would misrepresent reality
 // (build IS usable even when harbour specifically is not), so build is
 // listed trivially, per F3.
 func canBuild(cc checkContext) Verb {
 	return verb("build", CategoryProvince,
-		"Queue construction of a building in this settlement (see `poleia build --list` for per-type costs and gates such as coastal/deposit).",
+		"Queue construction of a building in this settlement (see `keryx build --list` for per-type costs and gates such as coastal/deposit).",
 		nil)
 }
 
@@ -85,7 +85,7 @@ func canCraft(cc checkContext) Verb {
 	reqs := []Requirement{
 		req(fmt.Sprintf("%s built", buildingType), hasFoundry,
 			boolDetail(hasFoundry, buildingType+" built", buildingType+" not built"),
-			fmt.Sprintf("build a %s (`poleia build --type %s`)", buildingType, buildingType)),
+			fmt.Sprintf("build a %s (`keryx build --type %s`)", buildingType, buildingType)),
 	}
 	for _, i := range ingredients {
 		have := cc.goodAmount(i.good)
@@ -94,7 +94,7 @@ func canCraft(cc checkContext) Verb {
 			fmt.Sprintf("%s >= %.0f (per unit crafted)", i.good, i.qty),
 			ok,
 			fmt.Sprintf("%s %.0f/%.0f", i.good, have, i.qty),
-			fmt.Sprintf("acquire %s via a colony/mine, or check `poleia wants` for who's buying/selling it", i.good),
+			fmt.Sprintf("acquire %s via a colony/mine, or check `keryx wants` for who's buying/selling it", i.good),
 		))
 	}
 	return verb("craft", CategoryProvince,

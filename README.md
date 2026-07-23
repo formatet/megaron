@@ -11,7 +11,7 @@ Each player governs a network of settlements: build, recruit armies, form kingdo
 ## Run locally (3 commands)
 
 ```bash
-git clone <this-repo> && cd poleia
+git clone <this-repo> && cd megaron
 cp .env.example .env          # edit JWT_SECRET at minimum
 docker compose up
 ```

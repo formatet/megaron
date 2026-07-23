@@ -5,18 +5,18 @@ import (
 	"net/http"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/capabilities"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/messenger"
+	"formatet/megaron/server/internal/notify"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/capabilities"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/messenger"
-	"github.com/poleia/server/internal/notify"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/transport"
 )
 
 // offerExpiryTicks is how long a trade offer stays pending after its messenger
@@ -129,7 +129,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Coarse precondition for trade offers — the same checker `poleia actions`
+	// Coarse precondition for trade offers — the same checker `keryx actions`
 	// uses (temenos_capabilities.md Fas 3). Sound as an early gate: if NO
 	// foreign settlement is visible at all, the specific destination this
 	// Send targets (itself necessarily a foreign settlement, once the FOW
@@ -900,7 +900,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		if err != nil || tag.RowsAffected() == 0 {
 			// Same hint text as capabilities' trade-accept solvency
 			// requirement (temenos_capabilities.md Fas 3 anti-drift) —
-			// poleia actions and this 422 can never disagree about what
+			// keryx actions and this 422 can never disagree about what
 			// "insolvent" means here.
 			writeError(w, http.StatusUnprocessableEntity, capabilities.HintTradeAcceptInsolvent)
 			return
@@ -909,7 +909,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// P5 (leverans-ETA): leg 1 delivers the goods to the buyer, leg 2 (chained,
 		// same travel duration) returns silver to the seller — compute both ETAs
 		// now, from leg1ArrivesAt, and persist them onto trade_offer itself so a
-		// later `poleia outbox` read (long after this request's response has been
+		// later `keryx outbox` read (long after this request's response has been
 		// forgotten) can still show "delivery expected <time>" instead of nothing.
 		goodsArrivesAt := leg1ArrivesAt
 		silverArrivesAt := leg1ArrivesAt.Add(messenger.TradeTravelDuration(dist))
@@ -948,7 +948,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		}
 		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 			map[string]any{
-				"destination_id":     destID,    // buyer receives goods
+				"destination_id":     destID, // buyer receives goods
 				"good_key":           offerGood,
 				"quantity":           offerQty,
 				"delivered_quantity": offerQty,
@@ -963,7 +963,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 					"travel_mins":    float64(dist) * 30.0,
 					"owner_id":       playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
 					"origin_q":       dQ, "origin_r": dR,
-					"dest_q":         oQ, "dest_r": oR,
+					"dest_q": oQ, "dest_r": oR,
 				},
 			}, tradeAcceptDueTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule goods delivery")
@@ -994,12 +994,12 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		}
 
 		writeJSON(w, http.StatusOK, map[string]any{
-			"good_key":           offerGood,
-			"quantity":           offerQty,
-			"silver_paid":        wantSilver,
-			"goods_arrives_at":   goodsArrivesAt,
-			"silver_arrives_at":  silverArrivesAt,
-			"distance":           dist,
+			"good_key":          offerGood,
+			"quantity":          offerQty,
+			"silver_paid":       wantSilver,
+			"goods_arrives_at":  goodsArrivesAt,
+			"silver_arrives_at": silverArrivesAt,
+			"distance":          dist,
 		})
 	} else {
 		// Buy offer: origin=buyer (escrowed silver at send), destination=seller (acceptor).
@@ -1015,7 +1015,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		if err != nil || tag.RowsAffected() == 0 {
 			// Same hint text as capabilities' trade-accept solvency
 			// requirement (temenos_capabilities.md Fas 3 anti-drift) —
-			// poleia actions and this 422 can never disagree about what
+			// keryx actions and this 422 can never disagree about what
 			// "insolvent" means here.
 			writeError(w, http.StatusUnprocessableEntity, capabilities.HintTradeAcceptInsolvent)
 			return
@@ -1065,7 +1065,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		}
 		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
 			map[string]any{
-				"destination_id":     destID,           // seller receives silver
+				"destination_id":     destID, // seller receives silver
 				"good_key":           "silver",
 				"quantity":           offerSilver,
 				"delivered_quantity": offerSilver,
@@ -1080,7 +1080,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 					"travel_mins":    float64(dist) * 30.0,
 					"owner_id":       playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
 					"origin_q":       dQ, "origin_r": dR,
-					"dest_q":         oQ, "dest_r": oR,
+					"dest_q": oQ, "dest_r": oR,
 				},
 			}, tradeAcceptDueTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not schedule silver delivery")
@@ -1346,7 +1346,7 @@ func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeJSON(w, http.StatusOK, map[string]any{
-			"status":       "cancelled",
+			"status":        "cancelled",
 			"good_refunded": offerGood,
 			"qty_refunded":  offerQty,
 		})

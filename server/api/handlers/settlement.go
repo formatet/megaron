@@ -10,19 +10,19 @@ import (
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/loyalty"
+	"formatet/megaron/server/internal/messenger"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/loyalty"
-	"github.com/poleia/server/internal/messenger"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/religion"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/transport"
 )
 
 // SettlementHandler handles HTTP requests for settlement endpoints.

@@ -9,7 +9,7 @@ package handlers
 import (
 	"testing"
 
-	"github.com/poleia/server/internal/province"
+	"formatet/megaron/server/internal/province"
 )
 
 // TestCanRecruit_SpearmanRequiresBarracks verifies that a spearman is not
@@ -86,8 +86,8 @@ func TestCanRecruit_WarGalleyRequiresHarbourAndFoundry(t *testing.T) {
 	}
 
 	cases := []struct {
-		name      string
-		built     map[string]bool
+		name       string
+		built      map[string]bool
 		wantAfford bool
 	}{
 		{"neither", map[string]bool{}, false},

@@ -10,17 +10,17 @@ import (
 	"strconv"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/poleia/server/internal/auth"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/economy"
-	"github.com/poleia/server/internal/events"
-	"github.com/poleia/server/internal/province"
-	"github.com/poleia/server/internal/tick"
-	"github.com/poleia/server/internal/world"
 )
 
 // WorldHandler handles HTTP requests for world endpoints.
@@ -1415,12 +1415,12 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type messengerMarker struct {
-		ID      uuid.UUID `json:"id"`
-		OriginQ int       `json:"origin_q"`
-		OriginR int       `json:"origin_r"`
-		DestQ   int       `json:"dest_q"`
-		DestR   int       `json:"dest_r"`
-		SentAt  time.Time `json:"sent_at"`
+		ID        uuid.UUID `json:"id"`
+		OriginQ   int       `json:"origin_q"`
+		OriginR   int       `json:"origin_r"`
+		DestQ     int       `json:"dest_q"`
+		DestR     int       `json:"dest_r"`
+		SentAt    time.Time `json:"sent_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
 		// Own marks the requesting player's hemerodromoi — the client draws
 		// them along their WHOLE route (dimmed over fog): a player's own

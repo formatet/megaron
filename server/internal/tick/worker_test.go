@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/poleia/server/internal/clock"
+	"formatet/megaron/server/internal/clock"
 )
 
 // TestTicksDue verifies the pure timing calculation: one tick per TICK_MINUTES,
