@@ -13,6 +13,11 @@ func wantsCmd() *cobra.Command {
 		Short: "Show goods in shortage (wants) and surplus (exports) at known settlements",
 		Long: `Show goods in shortage (wants) and surplus (exports) at known settlements.
 
+Only settlements you have CONTACTED show market data here — the list is fog-of-war
+gated. A settlement appears once your own messenger or caravan has reached it; a
+city you only know by rumour (visible in "keryx settlements") will NOT show its
+wants until you send a "keryx messenger" to it. Discovery is earned by contact.
+
 Prices are always firsthand — observed by your own messenger or caravan
 reaching the settlement (temenos_gossip.md PASS 2b: gossip only ever tells you
 a settlement exists and a coarse industry hint, never its detailed market).`,

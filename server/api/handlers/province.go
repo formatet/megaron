@@ -380,10 +380,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// settlement-level resources.kharis (≈0 since kharis moved to the pool).
 		// The oracle/rite tier-gate (MinKharis) reads this, so the agent must see
 		// it to know which prayers it can actually cast.
-		var kharisNow, kharisRate float64
+		var kharisNow, kharisRate, kharisCap float64
+		var maxTempleLevel int
 		if sett.OwnerID != nil {
 			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
 				kharisNow, kharisRate = k.Amount, k.Rate
+				kharisCap, maxTempleLevel = k.Cap, k.MaxTempleLevel
 			}
 		}
 
@@ -681,6 +683,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis_rate":                     kharisRate,
 			"kharis_mood":                     kharisToMood(kharisNow),
 			"kharis_per_day":                  kharisRate * float64(events.TicksPerDay),
+			"kharis_cap":                      kharisCap,
+			"max_temple_level":                maxTempleLevel,
 			"temple_offers":                   templeOffers,
 			"grain_prod_rate":                 grainProdRate,
 			"grain_consum_rate":               grainConsumRate,

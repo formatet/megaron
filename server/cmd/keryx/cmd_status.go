@@ -325,7 +325,19 @@ func statusCmd() *cobra.Command {
 			kv, _ := sett["kharis"].(float64)
 			mood, _ := sett["kharis_mood"].(string)
 			kpd, _ := sett["kharis_per_day"].(float64)
-			fmt.Printf("  %-8s %6s  (%s) · passiv %+.1f/dygn\n", "Kharis", resource(kv), mood, kpd)
+			kcap, _ := sett["kharis_cap"].(float64)
+			mtl, _ := sett["max_temple_level"].(float64)
+			if kcap > 0 {
+				fmt.Printf("  %-8s %6s  (%s) · tak %.0f · passiv %+.1f/dygn\n", "Kharis", resource(kv), mood, kcap, kpd)
+			} else {
+				fmt.Printf("  %-8s %6s  (%s) · passiv %+.1f/dygn\n", "Kharis", resource(kv), mood, kpd)
+			}
+			// Legibilitet (2026-07-24): ett L1-tempel HÅLLER standing men klättrar inte
+			// förbi sitt tak — utan denna rad läser en spelare "kharis fastnat på 22" som
+			// en bugg (sondrunda 2026-07-24). Taket = 25×(1+nivå): L1=50, L2=75, L3=100.
+			if mtl >= 1 && kcap < 100 {
+				fmt.Printf("  → taket %.0f sätts av ditt största tempel (nivå %.0f). Ett tempel på den nivån HÅLLER din kharis men lyfter den inte vidare — bygg ett större tempel för att höja taket OCH få kharis att klättra.\n", kcap, mtl)
+			}
 
 			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
