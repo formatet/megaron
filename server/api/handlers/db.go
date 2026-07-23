@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/kharis"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/settlement"
 )
@@ -135,18 +136,35 @@ type KharisState struct {
 	Rate      float64
 	Cap       float64
 	CultLevel string
+	// MaxTempleLevel is the level of the Wanax's grandest temple. It BINDS Cap
+	// (kharis.EffectiveKharisCap), so surfaces can explain a ceiling short of 100
+	// instead of leaving a Wanax wondering why devotion stopped paying.
+	MaxTempleLevel int
 }
 
 // loadPlayerKharis reads the current kharis pool for a player in a world.
+// Cap is the EFFECTIVE ceiling: the record's kharis_cap bounded by what the
+// Wanax's grandest temple earns. Reporting the raw column would show 100 while
+// the tick binds them to 50 — the exact confusion this ceiling must not create.
 func loadPlayerKharis(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (KharisState, error) {
 	var k KharisState
 	err := pool.QueryRow(ctx,
 		`SELECT
-		    GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick)),
-		    kharis_rate, kharis_cap, cult_level
-		 FROM player_world_records
-		 WHERE player_id = $1 AND world_id = $2`,
+		    GREATEST(0, settled(pwr.kharis_amount, pwr.kharis_rate, pwr.kharis_calc_tick)),
+		    pwr.kharis_rate, pwr.kharis_cap, pwr.cult_level,
+		    COALESCE((
+		        SELECT MAX(b.level)
+		        FROM settlements s
+		        JOIN buildings b ON b.settlement_id = s.id AND b.building_type = 'temple'
+		        WHERE s.owner_id = pwr.player_id AND s.world_id = pwr.world_id
+		          AND s.state NOT IN ('sunk', 'collapsed', 'razed')
+		    ), 0)
+		 FROM player_world_records pwr
+		 WHERE pwr.player_id = $1 AND pwr.world_id = $2`,
 		playerID, worldID,
-	).Scan(&k.Amount, &k.Rate, &k.Cap, &k.CultLevel)
+	).Scan(&k.Amount, &k.Rate, &k.Cap, &k.CultLevel, &k.MaxTempleLevel)
+	if err == nil {
+		k.Cap = kharis.EffectiveKharisCap(k.Cap, k.MaxTempleLevel)
+	}
 	return k, err
 }

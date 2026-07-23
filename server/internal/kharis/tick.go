@@ -197,6 +197,7 @@ type wanaxSnap struct {
 	// staffed", in one number.
 	devotionSum        float64
 	templeCities       int
+	maxTempleLevel     int // grandest temple's level — sets the kharis ceiling
 	templelessColonies int // FAS 2: non-capital settlements with no temple building
 }
 
@@ -236,6 +237,16 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		          AND s2.state NOT IN ('sunk', 'collapsed', 'razed')
 		    ), 0) AS temple_cities,
 		    COALESCE((
+		        -- The grandest temple sets the Wanax's kharis ceiling (see
+		        -- templeKharisCeiling). MAX, not SUM: ten modest shrines must not
+		        -- add up to what one great temple earns.
+		        SELECT MAX(b.level)
+		        FROM settlements s4
+		        JOIN buildings b ON b.settlement_id = s4.id AND b.building_type = 'temple'
+		        WHERE s4.owner_id = pwr.player_id AND s4.world_id = pwr.world_id
+		          AND s4.state NOT IN ('sunk', 'collapsed', 'razed')
+		    ), 0) AS max_temple_level,
+		    COALESCE((
 		        SELECT COUNT(*)
 		        FROM settlements s3
 		        WHERE s3.owner_id = pwr.player_id AND s3.world_id = pwr.world_id
@@ -259,7 +270,11 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	for rows.Next() {
 		var w wanaxSnap
 		if err := rows.Scan(&w.playerID, &w.settlementID,
-			&w.kharis, &w.kharisCap, &w.devotionSum, &w.templeCities, &w.templelessColonies); err == nil {
+			&w.kharis, &w.kharisCap, &w.devotionSum, &w.templeCities,
+			&w.maxTempleLevel, &w.templelessColonies); err == nil {
+			// The grandest temple binds the ceiling from here on — processMaintenance
+			// and everything downstream sees one already-resolved cap.
+			w.kharisCap = EffectiveKharisCap(w.kharisCap, w.maxTempleLevel)
 			snaps = append(snaps, w)
 		}
 	}
@@ -309,6 +324,48 @@ func computeDailyDecay(templelessColonies int) float64 {
 		over = 0
 	}
 	return decayBas + decayPerKoloni*float64(over)
+}
+
+// kharisCapPerTempleLevel — the grandest temple a Wanax has built sets how close
+// to the gods they can come. Ceiling = kharisCapPerTempleLevel × (1 + max temple
+// level), so L1 = 50, L2 = 75, L3 = 100 (= the record's own kharis_cap).
+//
+// Why this exists (Timothy 2026-07-23, option (c) of three): after
+// kharisPerTempleDay was raised 1.2 → 8.0 to stop the universal fade, and
+// feedTempleBySubstitution made every temple always feedable, the two together
+// let EVERY Wanax climb unobstructed to the cap. Measured after a 5 h soak: 13 of
+// 17 Wanaxes sat at exactly 100, which pins the rite chance at riteCeil — 152
+// rites, 140 successes (92 %). The rite had stopped being a wager and become a
+// fee.
+//
+// Level 1 deliberately lands BELOW blessThreshold (60): a Wanax with only a
+// modest temple keeps their kharis and their rites, but never attracts divine
+// favour. Reaching the gods' notice requires a grander temple. That makes temple
+// levels matter in both directions — capacity (how many may serve) and ceiling
+// (how far devotion can carry you) — instead of only the first.
+//
+// Note this option was unbuildable until 8b85ee2 (same day): temples could not be
+// levelled at all, so a level-based ceiling would have frozen every Wanax under
+// 60 permanently rather than giving them something to climb toward.
+const kharisCapPerTempleLevel = 25.0
+
+// TempleKharisCeiling returns the kharis ceiling earned by a Wanax's grandest
+// temple. Level 0 (no temple) still yields a floor-ish ceiling of 25 — such a
+// Wanax decays toward kharisFloor anyway, since devotion with no altar is 0.
+func TempleKharisCeiling(maxTempleLevel int) float64 {
+	if maxTempleLevel < 0 {
+		maxTempleLevel = 0
+	}
+	return kharisCapPerTempleLevel * float64(1+maxTempleLevel)
+}
+
+// EffectiveKharisCap is the binding ceiling for a Wanax: the lower of the record's
+// own kharis_cap and what their grandest temple earns them.
+func EffectiveKharisCap(recordCap float64, maxTempleLevel int) float64 {
+	if ceiling := TempleKharisCeiling(maxTempleLevel); ceiling < recordCap {
+		return ceiling
+	}
+	return recordCap
 }
 
 // clampKharis bounds newKharis to [kharisFloor, cap] — the "heligt golv" (never
