@@ -508,6 +508,18 @@ const (
 	riteCeil  = 0.98
 )
 
+// riteKharisCost is the standing a single rite draws down on cast — win or lose
+// (Timothy 2026-07-24, "make the rite a wager"). It aligns the kharis tick's stated
+// intent ("rites SPEND standing, they don't add kharis") which the handler had
+// never actually implemented: before this a rite cost only material goods and left
+// kharis untouched, so a Wanax pinned at their ceiling cast indefinitely at a fixed
+// high chance — the rite was a fee, not a wager (soak 2026-07-23: 594/837 = 71 %
+// success, 152 casts in one 5 h window). Now each petition draws down standing
+// (floored at the holy floor so it never zeroes), making rites a depleting resource
+// a modest (L1) temple cannot sustain and a grander, climbing one slowly can.
+// Strawman — temenos_balans_spakar.md §9.
+const riteKharisCost = 4.0
+
 // Offer-multiplier bounds and the offerMod it produces at each end. A "fett
 // offer" (offer_multiplier > 1, more goods than the prayer's baseline) nudges
 // success up; a "snålt offer" (< 1, cheaper than baseline) nudges it down.
@@ -776,9 +788,11 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Affordability check + deduct the material offering, scaled by
 	// offerMultiplier (a "fett offer" costs proportionally more goods; a "snålt
 	// offer" costs less). The gods take the sacrifice regardless of outcome.
-	// Kharis is never part of this — it is standing (gated above); the offering
-	// is in trade goods (wine/oil/silver/…), the deliberate economic sink that
-	// makes religion drive trade.
+	// The offering is in trade goods (wine/oil/silver/…), the deliberate economic
+	// sink that makes religion drive trade. The rite ALSO draws down kharis itself
+	// (riteKharisCost, deducted below after the goods clear) — a rite is a wager on
+	// standing, not just a goods-fee (Timothy 2026-07-24). The MinKharis gate above
+	// still guards eligibility on the pre-cast level.
 	// `offering` was resolved above: either the composed one the Wanax brought or
 	// the prayer's traditional recipe scaled by offer_multiplier.
 	for good, need := range offering {
@@ -805,6 +819,22 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not deduct offering")
 			return
 		}
+	}
+
+	// The petition itself costs divine standing — a rite is a wager, not a fee
+	// (Timothy 2026-07-24). Spent whether or not the god answers (like the material
+	// offering above), floored at the holy floor so it never zeroes out. The row was
+	// locked FOR UPDATE when kharisNow was read, so this settled() reads the same
+	// stored tuple.
+	if _, err = tx.Exec(r.Context(),
+		`UPDATE player_world_records SET
+		    kharis_amount    = GREATEST(1.0, settled(kharis_amount, kharis_rate, kharis_calc_tick) - $1),
+		    kharis_calc_tick = current_world_tick()
+		 WHERE player_id = $2 AND world_id = $3`,
+		riteKharisCost, playerID, worldID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not draw down divine standing")
+		return
 	}
 
 	// Roll outcome once (Fas 2.3 — result goes into the event, not "roll_pending").
@@ -858,6 +888,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"offering_worth":    offeringWorth,
 		"offering_baseline": offeringBaseline,
 		"offer_mod":         offerMod,
+		"kharis_spent":      riteKharisCost,
 	}
 	_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamReligion, "RiteCast",
 		eventPayload, worldID, nil)
@@ -868,6 +899,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"offer_multiplier": offerMultiplier,
 		"prayer":           prayerID,
 		"message":          message,
+		"kharis_spent":     riteKharisCost,
 	}
 	// What the offering achieved. A playtester tripled a gift (oil 150 → 500)
 	// across three casts and saw the identical failure line every time, because

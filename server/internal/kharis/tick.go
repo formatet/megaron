@@ -89,8 +89,19 @@ const TempleDevotionPerLevel = 0.15
 // the exact cult-gain (design target ~0.8/day, live-observed ~2.2 — the climb
 // RATE is uncertain and must be re-measured at the next soak, but the SIGN is
 // right either way). Tunbar. temenos_balans_spakar.md §9 · temenos_kharis.md.
+// decayBas raised 1.0 → 1.8 (Timothy 2026-07-24, "för hög och enkel"): at 1.0 a
+// bare L1 temple staffed only to the 0.15 devotion FLOOR still netted +0.70/day
+// (soak-measured: gain 1.70 − decay 1.00), so EVERY Wanax climbed to their ceiling
+// over a long soak with zero active effort — auto-substitution feeds every temple
+// and an L1 temple can employ only the floor, so nobody could climb faster or
+// slower than anyone else. At 1.8 the floor-staffed L1 temple nets ≈ −0.1/day (a
+// slow fade), and only a temple large enough to employ MORE devotion than the floor
+// (level ≥ 2, which also raises the ceiling) climbs — restoring the documented
+// intent "passiv ≈ neutral/fade, aktivt skött (större tempel) = enda vägen upp"
+// without touching feedTempleBySubstitution (so the wine-lockout stays fixed).
+// Tunbar — temenos_balans_spakar.md §9.
 const (
-	decayBas          = 1.0 // base daily decay ≈ passive kharis_rate → passive nets ~neutral; offering climbs
+	decayBas          = 1.8 // base daily decay: floor-staffed L1 nets ~neutral/slow-fade; L2+ climbs
 	decayPerKoloni    = 1.0 // extra daily decay per templeless colony beyond decayFreeColonies
 	decayFreeColonies = 4   // this many templeless colonies cost nothing extra
 )

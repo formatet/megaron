@@ -63,16 +63,25 @@ func TestComputeDailyDecay_TempleInColonyZeroesItsContribution(t *testing.T) {
 	}
 }
 
-// TestDecayBas_NetNeutralBand guards the net-neutral recalibration (Timothy
-// 2026-07-11, A#4 kharis-rot): decayBas must stay near the passive geographic
-// kharis_rate (~0.6/day) so a bare passive Wanax nets ~neutral and an offering-fed
-// temple climbs — NOT the old 4.0, which made maintained temples net-negative,
-// bled kharis to the floor (bless unreachable), and let a restart's tick catch-up
-// nuke every Wanax to 1 in one burst. If a soak proves the climb too fast/slow,
-// re-tune within this band; a value ≥ ~2 reintroduces the always-sinks bug.
-func TestDecayBas_NetNeutralBand(t *testing.T) {
-	if decayBas <= 0 || decayBas > 1.5 {
-		t.Errorf("decayBas = %v, want (0, 1.5] — near the passive kharis_rate for net-neutral maintenance", decayBas)
+// TestDecayBas_ModestHoldsGrandClimbs guards the 2026-07-24 recalibration (Timothy,
+// "för hög och enkel"): decayBas must sit in [floorGain, l2Gain) — high enough that a
+// floor-staffed level-1 temple (the case EVERY existing city is in, ordinary scarcity
+// 1.0) does NOT climb on its own, low enough that a level-2 temple still can. Below
+// floorGain and the old "everyone drifts to the ceiling for free" bug returns; at or
+// above l2Gain and nothing is worth building. Derived from the constants, not a magic
+// band, so a tuner who moves kharisPerTempleDay sees the window move with it. The band
+// is for ORDINARY times (scarcity 1.0); a severe shortage can still lift even an L1
+// temple, which is intended — feeding a scarce good is a real gift.
+func TestDecayBas_ModestHoldsGrandClimbs(t *testing.T) {
+	floorGain := TempleDevotionPerLevel * kharisPerTempleDay      // L1 staffed to floor, scarcity 1.0
+	l2Gain := templeDevotionCapacity(2) * kharisPerTempleDay      // L2 staffed to capacity, scarcity 1.0
+	if decayBas < floorGain {
+		t.Errorf("decayBas = %v too low: a floor-staffed L1 temple (gain %v) would still climb for free — the 'modest temple holds, does not climb' intent is broken",
+			decayBas, floorGain)
+	}
+	if decayBas >= l2Gain {
+		t.Errorf("decayBas = %v too high: even a level-2 temple (gain %v) cannot climb — nothing is worth building",
+			decayBas, l2Gain)
 	}
 }
 

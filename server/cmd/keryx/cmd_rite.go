@@ -234,6 +234,9 @@ func riteCmd() *cobra.Command {
 				// What the offering achieved — separate from whether the gods
 				// answered. The odds stay hidden; whether MORE would help does not.
 				OfferingVerdict string `json:"offering_verdict"`
+				// The standing the petition itself drew down — a rite is a wager on
+				// kharis, not just a goods-fee (Timothy 2026-07-24).
+				KharisSpent float64 `json:"kharis_spent"`
 			}
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return fmt.Errorf("parse response: %w", err)
@@ -253,6 +256,9 @@ func riteCmd() *cobra.Command {
 			}
 			if resp.OfferingVerdict != "" {
 				fmt.Printf("Offering: %s\n", resp.OfferingVerdict)
+			}
+			if resp.KharisSpent > 0 {
+				fmt.Printf("Kharis spent: %.0f (a rite draws down your standing, win or lose)\n", resp.KharisSpent)
 			}
 			return nil
 		},

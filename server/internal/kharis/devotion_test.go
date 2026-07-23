@@ -14,35 +14,39 @@ func dayNet(devotionSum float64, offerFraction, scarcity float64, templelessColo
 	return gain - computeDailyDecay(templelessColonies)
 }
 
-func TestDevotionCalibration_TendedClimbsNeglectedFades(t *testing.T) {
+func TestDevotionCalibration_GrandTempleClimbsModestHolds(t *testing.T) {
 	l1 := templeDevotionCapacity(1)
 
-	// A level-1 temple staffed to what it can EMPLOY, fed, in ordinary times:
-	// climbs — slowly. This is the case every existing city is in, and it must
-	// not fade: a fade nobody can escape is not a choice (Timothy 2026-07-23).
+	// A level-1 temple staffed to what it can EMPLOY, fed, in ORDINARY times
+	// (scarcity 1.0): must NOT climb on its own (Timothy 2026-07-24, "för hög och
+	// enkel"). Every existing city is in exactly this case; if the modest temple
+	// climbed for free, everyone would drift to their ceiling with zero effort —
+	// the bug this recalibration removes. A modest temple holds your standing at
+	// best; climbing toward the gods requires a GRANDER temple.
 	net := dayNet(l1, 1.0, 1.0, 0)
-	if net <= 0 {
-		t.Errorf("a fully staffed, fed level-1 temple must climb, got %+.2f/day", net)
-	}
-	if net > 0.5 {
-		t.Errorf("the climb must stay SLOW — %+.2f/day is a sprint, not a relationship", net)
+	if net > 0 {
+		t.Errorf("a floor-staffed level-1 temple must NOT climb for free, got %+.2f/day", net)
 	}
 
-	// Unfed, however well staffed: fades.
-	if net := dayNet(l1, 0, 1.0, 0); net >= 0 {
-		t.Errorf("an unfed temple must fade, got %+.2f/day", net)
+	// Unfed, however well staffed: fades harder still.
+	if unfed := dayNet(l1, 0, 1.0, 0); unfed >= net {
+		t.Errorf("an unfed temple must lose more ground than a fed one, got %+.2f/day vs fed %+.2f/day", unfed, net)
 	}
 
-	// A larger temple employs more of the city and climbs proportionally faster
-	// — which is the whole reason to raise one.
+	// A larger temple employs more of the city and is the only way UP: it must
+	// climb outright in ordinary times — the whole reason to raise one.
 	l2 := dayNet(templeDevotionCapacity(2), 1.0, 1.0, 0)
+	if l2 <= 0 {
+		t.Errorf("a level-2 temple must climb in ordinary times, got %+.2f/day", l2)
+	}
 	if l2 <= net {
 		t.Errorf("a level-2 temple must out-climb a level-1: %+.2f vs %+.2f", l2, net)
 	}
 
-	// Several tended temples are the other way up.
-	if many := dayNet(3*l1, 1.0, 1.0, 0); many <= 0.5 {
-		t.Errorf("three tended temples should climb meaningfully, got %+.2f/day", many)
+	// Several tended temples are the other way up: their devotion sums, so enough
+	// modest shrines also climb.
+	if many := dayNet(3*l1, 1.0, 1.0, 0); many <= 0 {
+		t.Errorf("three tended temples' devotion should sum past the decay and climb, got %+.2f/day", many)
 	}
 }
 

@@ -172,15 +172,27 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	}
 	kharisRate := maxPower * 0.05
 
-	// Record in player_world_records (also sets initial kharis_rate from pantheon geography).
+	// Record in player_world_records (also sets initial kharis_rate from pantheon
+	// geography). kharis_amount + kharis_calc_tick MUST be seeded here: join.go
+	// already created this row with the column defaults (amount 0, calc_tick 0),
+	// so this Exec always hits the ON CONFLICT branch on founding. Without seeding
+	// calc_tick, settled(0, kharis_rate>0, 0) accrues the rate across the WHOLE world
+	// history on the first read — a founder on a tick-87k world saw kharis ~350
+	// until the first kharis tick clamped it (soak 2026-07-23, both probes). Seed the
+	// amount at the temple-less ceiling (kharis.TempleKharisCeiling(0) = 25) — the
+	// favour a Wanax with no temple yet can hold — and stamp calc_tick to now so the
+	// meter starts where it is, not inflated. Strawman start — temenos_balans_spakar.md §9.
+	const starterKharis = 25.0
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate)
-		 VALUES ($1, $2, $3, 'active', $4)
+		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate, kharis_amount, kharis_calc_tick)
+		 VALUES ($1, $2, $3, 'active', $4, $5, current_world_tick())
 		 ON CONFLICT (player_id, world_id) DO UPDATE SET
 		     settlement_id = EXCLUDED.settlement_id,
 		     status = 'active',
-		     kharis_rate = EXCLUDED.kharis_rate`,
-		p.PlayerID, p.WorldID, out.SettlementID, kharisRate,
+		     kharis_rate = EXCLUDED.kharis_rate,
+		     kharis_amount = EXCLUDED.kharis_amount,
+		     kharis_calc_tick = current_world_tick()`,
+		p.PlayerID, p.WorldID, out.SettlementID, kharisRate, starterKharis,
 	); err != nil {
 		return out, &metropolisError{"could not record join", err}
 	}
