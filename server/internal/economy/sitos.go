@@ -26,17 +26,33 @@ func FundCap(population int, grainBaseValue float64, cfg SitosConfig) float64 {
 // get proportionally identical treatment. Silver invariant: this seed is a
 // deliberate exception (documented in temenos_sitos.md) — silver otherwise
 // only ever moves fund↔settlement.
+// Bounded via genesisNeed.
 func GenesisFundSeed(population int, grainBaseValue float64, cfg SitosConfig) (seed, cap float64) {
-	need := dailyGrainNeedInSilver(population, grainBaseValue)
+	need := genesisNeed(population, grainBaseValue)
 	return need * cfg.StartingFundDays, need * cfg.FundCapMult
+}
+
+// genesisNeed is dailyGrainNeedInSilver with the population bounded to
+// MaxGenesisPopulation. Genesis is the only place silver is created rather than
+// moved, so it is the only place where a corrupt population turns into minted
+// silver — and on 2026-07-23 it did: a colonising unit whose size had been
+// inflated to 2 976 790 by the unbounded `divine_recruits` blessing founded a
+// colony holding 99.5 % of the world's silver. The seed must never price itself
+// against a caller's population figure without a ceiling.
+func genesisNeed(population int, grainBaseValue float64) float64 {
+	if population > MaxGenesisPopulation {
+		population = MaxGenesisPopulation
+	}
+	return dailyGrainNeedInSilver(population, grainBaseValue)
 }
 
 // GenesisSilverLiquid returns a new settlement's starting LIQUID silver (goods
 // amount) and its silver-good cap, both pop-anchored to grain-need so the ratio
 // to the fund stays pop-invariant. Deliberate genesis silver injection — same
 // documented exception class as GenesisFundSeed (temenos_sitos.md).
+// Bounded via genesisNeed.
 func GenesisSilverLiquid(population int, grainBaseValue float64, cfg SitosConfig) (seed, cap float64) {
-	need := dailyGrainNeedInSilver(population, grainBaseValue)
+	need := genesisNeed(population, grainBaseValue)
 	return need * cfg.SilverStartDays, need * cfg.SilverLiquidCapDays
 }
 

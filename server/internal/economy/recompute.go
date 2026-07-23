@@ -17,6 +17,55 @@ import (
 // assigned gets base_potential as its rate — same as the pre-Fas-2 baseline.
 const REF_LABOR = 100.0
 
+// Workplace capacity (Timothy 2026-07-23). A producing building is a workplace
+// with a finite number of stations; its LEVEL is how many citizens it can put to
+// work. Labor allocated past what the fields and buildings can employ is not
+// served and produces nothing — so the only way to devote MORE of a city to a
+// good is a bigger workplace. This generalises what kharis.templeDevotionCapacity
+// already did for the temple, which until now was the one building whose level
+// meant anything (and which could not actually be levelled — see the
+// `upgradeable` set in api/handlers/province.go).
+//
+// STRAWMAN CALIBRATION, not invariants — tune against soak data. Both numbers
+// are chosen so that NOTHING in the live world regresses on the day this lands:
+// the highest field-good allocation in drift is 0.25 (timber) and the highest
+// building-only allocation is 0.50 (silver). Level 1 therefore already covers
+// every existing city, exactly as Timothy calibrated the temple's level 1 onto
+// the 0.15 LaborAlloc floor. Levels buy headroom nobody is yet using.
+const (
+	// GoodLaborTerrainBase is the share of a city that can work a good straight
+	// off the land, with no building at all. Fields need no stations.
+	GoodLaborTerrainBase = 0.25
+	// BuildingLaborPerLevel is the share of a city each level of a producing
+	// building can additionally employ.
+	BuildingLaborPerLevel = 0.5
+)
+
+// LaborCapacity returns the share of a settlement's population that can actually
+// be employed producing a good, given whether the good has a field (terrain-only)
+// production path in this catchment and the summed level of the settlement's
+// buildings that produce it.
+//
+// Grain is exempt: it is the subsistence good, its consumption is folded into its
+// own net rate, and capping how many citizens may farm would starve cities that
+// have no room to build. Hunger is not a staffing problem.
+func LaborCapacity(goodKey string, hasFieldPath bool, buildingLevels int) float64 {
+	if goodKey == "grain" {
+		return 1.0
+	}
+	var capacity float64
+	if hasFieldPath {
+		capacity += GoodLaborTerrainBase
+	}
+	if buildingLevels > 0 {
+		capacity += BuildingLaborPerLevel * float64(buildingLevels)
+	}
+	if capacity > 1.0 {
+		capacity = 1.0
+	}
+	return capacity
+}
+
 // GrainConsumptionPerCitizenPerDay is the daily grain eaten per citizen,
 // folded into grain's net production rate below. Exported so read-only
 // callers (status endpoint's grain-netto breakdown/break-even hint, DEL C
@@ -127,7 +176,8 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// deposits, and coastal flag. The settlement's buildings gate building-gated
 	// rules. Sea tiles (deep_sea, coastal_sea) are excluded — no land production.
 	rows, err := tx.Query(ctx,
-		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
+		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential,
+		        bool_or(pr.building_type IS NULL) AS has_field_path
 		 FROM map_tiles mt
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
@@ -157,11 +207,12 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	type goodPotential struct {
 		key           string
 		basePotential float64
+		hasFieldPath  bool
 	}
 	var potentials []goodPotential
 	for rows.Next() {
 		var gp goodPotential
-		if err := rows.Scan(&gp.key, &gp.basePotential); err != nil {
+		if err := rows.Scan(&gp.key, &gp.basePotential, &gp.hasFieldPath); err != nil {
 			rows.Close()
 			return fmt.Errorf("recompute: scan potential: %w", err)
 		}
@@ -170,6 +221,40 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	rows.Close()
 	if err := rows.Err(); err != nil {
 		return fmt.Errorf("recompute: rows err: %w", err)
+	}
+
+	// ── 3b. Workplace capacity per good ───────────────────────────────────────
+	// A building is a workplace with a finite number of stations, and its LEVEL
+	// is how many citizens it can put to work (Timothy 2026-07-23, generalising
+	// the temple's templeDevotionCapacity to every producing building). Labor
+	// allocated beyond what the settlement's buildings + fields can employ is not
+	// served and does not produce — so the only way to devote MORE of a city to
+	// a good is a bigger workplace. Levels sum: two buildings that both make oil
+	// (farm + olive press) each contribute their own stations.
+	buildingLevels := make(map[string]int)
+	brows, berr := tx.Query(ctx,
+		`SELECT good_key, SUM(level)::int FROM (
+		     SELECT DISTINCT pr.good_key, b.building_type, b.level
+		     FROM production_rules pr
+		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
+		 ) t GROUP BY good_key`,
+		settlementID,
+	)
+	if berr != nil {
+		return fmt.Errorf("recompute: query workplace levels: %w", berr)
+	}
+	for brows.Next() {
+		var key string
+		var lvl int
+		if err := brows.Scan(&key, &lvl); err != nil {
+			brows.Close()
+			return fmt.Errorf("recompute: scan workplace level: %w", err)
+		}
+		buildingLevels[key] = lvl
+	}
+	brows.Close()
+	if err := brows.Err(); err != nil {
+		return fmt.Errorf("recompute: workplace level rows err: %w", err)
 	}
 
 	if len(potentials) == 0 {
@@ -235,7 +320,11 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	grainSeen := false
 	for _, gp := range potentials {
-		effectiveWorkers := weights[gp.key] * float64(laborPool)
+		staffed := weights[gp.key]
+		if cap := LaborCapacity(gp.key, gp.hasFieldPath, buildingLevels[gp.key]); staffed > cap {
+			staffed = cap
+		}
+		effectiveWorkers := staffed * float64(laborPool)
 		yieldPerWorker := gp.basePotential / REF_LABOR
 		newRate := yieldPerWorker * effectiveWorkers
 		if gp.key == "grain" {

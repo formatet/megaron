@@ -252,14 +252,39 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		silverStock := sett.Resources.Silver.Current(now)
 
-		// can_afford per building: all goods costs covered.
+		// can_afford per building. For a producing building that already stands, the
+		// next build raises its LEVEL, so affordability must be quoted against the
+		// next level's cost (base + cedar) — quoting level 1 would tell a Wanax they
+		// can afford an upgrade they cannot pay for.
+		builtLevels := make(map[string]int, len(buildings))
+		for _, b := range buildings {
+			if b.Level > builtLevels[b.Type] {
+				builtLevels[b.Type] = b.Level
+			}
+		}
 		type buildAffordRow struct {
 			Type      string `json:"type"`
 			CanAfford bool   `json:"can_afford"`
+			NextLevel int    `json:"next_level"`
+			AtMax     bool   `json:"at_max_level,omitempty"`
 		}
 		var buildAfford []buildAffordRow
 		for bType, spec := range province.BuildingSpecs {
-			afford := silverStock >= spec.CostSilver
+			next := builtLevels[string(bType)] + 1
+			atMax := false
+			if province.LevelledBuildings[bType] {
+				if next > province.MaxBuildingLevel {
+					atMax = true
+					next = province.MaxBuildingLevel
+				}
+				if levelled, lok := province.LevelledSpec(bType, next); lok {
+					spec = levelled
+				}
+			} else if next > 1 {
+				atMax = true
+				next = 1
+			}
+			afford := !atMax && silverStock >= spec.CostSilver
 			if afford {
 				for goodKey, needed := range spec.Costs {
 					if goodsStock[goodKey] < needed {
@@ -268,7 +293,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			buildAfford = append(buildAfford, buildAffordRow{Type: string(bType), CanAfford: afford})
+			buildAfford = append(buildAfford, buildAffordRow{
+				Type: string(bType), CanAfford: afford, NextLevel: next, AtMax: atMax,
+			})
 		}
 
 		// Index completed buildings for O(1) lookup in the can_recruit loop below.
@@ -919,9 +946,10 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	//    is a one-instance building (production_rules use UPSERT, duplicates waste resources).
 	// 2. No double-queueing the same building.
 	// 3. Cap concurrent queue at maxParallelBuilds (package-level const above).
-	upgradeable := map[string]bool{"wall": true}
+	bType := province.BuildingType(req.BuildingType)
+	isWall := req.BuildingType == "wall"
 
-	if !upgradeable[req.BuildingType] {
+	if !isWall && !province.LevelledBuildings[bType] {
 		var alreadyBuilt bool
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
@@ -931,6 +959,26 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "building already exists")
 			return
 		}
+	} else if !isWall {
+		// Producing building: repeat-building raises its level, and the level is how
+		// many citizens the workplace can employ (economy.LaborCapacity). Cost for the
+		// NEXT level comes from LevelledSpec — level 1 unchanged, level 2+ adds cedar.
+		var lvl int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
+			settlementID, req.BuildingType,
+		).Scan(&lvl)
+		if lvl >= province.MaxBuildingLevel {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("%s is already at maximum level (%d)", req.BuildingType, province.MaxBuildingLevel))
+			return
+		}
+		nextSpec, specOK := province.LevelledSpec(bType, lvl+1)
+		if !specOK {
+			writeError(w, http.StatusUnprocessableEntity, "this building has no further levels")
+			return
+		}
+		spec = nextSpec
 	} else {
 		var wl int
 		_ = h.pool.QueryRow(r.Context(),
@@ -1102,6 +1150,22 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 			next = 3
 		}
 		spec = province.WallLevelSpecs[next]
+	} else if bt := province.BuildingType(buildingType); province.LevelledBuildings[bt] {
+		// Same reasoning as the wall above: buildings.level is only incremented on
+		// completion, so the queued level is current+1. Refund what was actually
+		// charged — otherwise cancelling a level-2 workplace silently ate its cedar.
+		var lvl int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
+			settlementID, buildingType,
+		).Scan(&lvl)
+		next := lvl + 1
+		if next > province.MaxBuildingLevel {
+			next = province.MaxBuildingLevel
+		}
+		if levelled, lok := province.LevelledSpec(bt, next); lok {
+			spec = levelled
+		}
 	}
 
 	tx, err := h.pool.Begin(r.Context())
@@ -1273,6 +1337,12 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		RequiresDeposits []string           `json:"requires_deposits,omitempty"`
 		RequiresTerrain  []string           `json:"requires_terrain,omitempty"`
 		Purpose          string             `json:"purpose"`
+		// MaxLevel is 1 for one-instance buildings and MaxBuildingLevel for producing
+		// ones, whose level is how many citizens the workplace can employ.
+		MaxLevel int `json:"max_level"`
+		// UpgradeCosts maps level → full cost of taking the building to that level
+		// (level 1 is Costs above). Empty for buildings with no level ladder.
+		UpgradeCosts map[int]map[string]float64 `json:"upgrade_costs,omitempty"`
 	}
 
 	// Stable ordering: sort building types alphabetically.
@@ -1291,6 +1361,16 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 			CostSilver:      spec.CostSilver,
 			DurationMinutes: float64(spec.DurationTicks * tick.TickMinutes),
 			Purpose:         province.BuildingPurposes[province.BuildingType(bt)],
+			MaxLevel:        1,
+		}
+		if province.LevelledBuildings[province.BuildingType(bt)] {
+			entry.MaxLevel = province.MaxBuildingLevel
+			entry.UpgradeCosts = make(map[int]map[string]float64, province.MaxBuildingLevel-1)
+			for level := 2; level <= province.MaxBuildingLevel; level++ {
+				if levelled, lok := province.LevelledSpec(province.BuildingType(bt), level); lok {
+					entry.UpgradeCosts[level] = levelled.Costs
+				}
+			}
 		}
 		if g, ok := gates[bt]; ok {
 			entry.RequiresCoastal = g.requiresCoastal
@@ -1827,8 +1907,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 
 		newSize := existingSize + req.Men
 		unitSize := newSize
-		if unitSize > 100 {
-			unitSize = 100 // cap; the remainder spills into a new forming unit below
+		if unitSize > economy.MaxUnitSize {
+			unitSize = economy.MaxUnitSize // cap; the remainder spills into a new forming unit below
 		}
 
 		var unitID uuid.UUID

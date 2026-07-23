@@ -1107,12 +1107,19 @@ func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, world
 	case "divine_recruits":
 		// Reinforce the strongest garrison spearman unit (min +2); if the
 		// settlement has none, form a fresh small garrison.
+		//
+		// LEAST(economy.MaxUnitSize, …): this grew by 20 % with no ceiling until
+		// 2026-07-23, and because it always picks the LARGEST garrison spearman it
+		// reinforced the same unit every time — compounding. Five units had reached
+		// 1.86–2.13 billion men, saturated against the int32 ceiling, and one of
+		// them founded a colony that minted 99.5 % of the world's silver. A
+		// blessing may fill a unit to the recruitment ceiling; it may not exceed it.
 		tag, err := h.pool.Exec(ctx,
-			`UPDATE units SET size = size + GREATEST(2, size/5), updated_at = now()
+			`UPDATE units SET size = LEAST($2, size + GREATEST(2, size/5)), updated_at = now()
 			 WHERE id = (SELECT id FROM units
 			             WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'
 			             ORDER BY size DESC LIMIT 1)`,
-			settlementID)
+			settlementID, economy.MaxUnitSize)
 		if err != nil {
 			return err
 		}

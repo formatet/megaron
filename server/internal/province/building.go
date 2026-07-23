@@ -62,3 +62,73 @@ var WallLevelSpecs = map[int]BuildingSpec{
 
 // WallLevelNames är tier-namnen för klient-/hjälptext.
 var WallLevelNames = map[int]string{1: "Palisade", 2: "Stone Wall", 3: "Bronze Wall"}
+
+// MaxBuildingLevel är taket för varje nivåbyggnad (murar har sin egen trappa i
+// WallLevelSpecs, samma tak). Kapaciteten mättas ändå mot hela stadens befolkning
+// långt innan nivå 3 för de flesta varor — taket finns för att nivåtrappan ska ha
+// ett slut, inte för att vara bindande.
+const MaxBuildingLevel = 3
+
+// LevelledBuildings är de byggnader som går att uppgradera bortom nivå 1. Det är
+// varje byggnad som PRODUCERAR något: nivån är hur många medborgare arbetsplatsen
+// kan sysselsätta (economy.LaborCapacity), så en nivå är enda sättet att viga mer
+// av staden åt en vara. Templet hör hit fastän kult inte är en vara sedan mig 094 —
+// dess nivå styr templeDevotionCapacity på exakt samma sätt, och innan detta gick
+// det inte att höja (mekaniken Timothy byggde 2026-07-23 var därför inert: alla
+// 189 byggnader i drift stod på nivå 1).
+//
+// DRIFT-GUARD: mängden speglar `SELECT DISTINCT building_type FROM production_rules
+// WHERE building_type IS NOT NULL` + temple. Lägger du en produktionsregel för en ny
+// byggnad — lägg den här också, annars kan dess arbetsplats aldrig växa.
+var LevelledBuildings = map[BuildingType]bool{
+	BuildingFarm:        true,
+	BuildingHarbour:     true,
+	BuildingLumbermill:  true,
+	BuildingMarket:      true,
+	BuildingMine:        true,
+	BuildingSilverMine:  true,
+	BuildingOlivePress:  true,
+	BuildingStable:      true,
+	BuildingStonequarry: true,
+	BuildingWinery:      true,
+	BuildingTemple:      true,
+}
+
+// LevelCedarCost är cedar-påslaget för att bygga en arbetsplats till nivå N.
+// Cedar är den knappa ädelträvaran (deposit-gatead, 5 hex av 2 240) och bär därmed
+// stadens tillväxt bortom det grundläggande: nivå 1 kostar som förut i timber+sten,
+// men att bygga ut en arbetsplats kräver handel eller kolonisering efter cedar.
+// STRAWMAN-kalibrering — siffrorna hör hemma i temenos_balans_spakar.md §8.
+var LevelCedarCost = map[int]float64{
+	2: 25,
+	3: 60,
+}
+
+// LevelledSpec returnerar kostnad/duration för att ta en byggnad till nivå `level`.
+// Nivå 1 är oförändrad grundkostnad; nivå 2+ lägger på cedar enligt LevelCedarCost
+// och tar proportionellt längre tid. Returnerar false om byggnaden inte har någon
+// nivåtrappa eller om nivån ligger över taket.
+func LevelledSpec(bt BuildingType, level int) (BuildingSpec, bool) {
+	base, ok := BuildingSpecs[bt]
+	if !ok || level < 1 || level > MaxBuildingLevel {
+		return BuildingSpec{}, false
+	}
+	if level == 1 {
+		return base, true
+	}
+	if !LevelledBuildings[bt] {
+		return BuildingSpec{}, false
+	}
+	// Kopiera kostnadsmappen — BuildingSpecs är en delad katalog och får aldrig muteras.
+	costs := make(map[string]float64, len(base.Costs)+1)
+	for k, v := range base.Costs {
+		costs[k] = v
+	}
+	if cedar, hasCedar := LevelCedarCost[level]; hasCedar {
+		costs["cedar"] += cedar
+	}
+	out := base
+	out.Costs = costs
+	out.DurationTicks = base.DurationTicks * level
+	return out, true
+}

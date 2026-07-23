@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -53,22 +54,27 @@ func buildCmd() *cobra.Command {
 					return nil
 				}
 				var catalogue []struct {
-					Type             string             `json:"type"`
-					Costs            map[string]float64 `json:"costs"`
-					CostSilver       float64            `json:"cost_silver"`
-					DurationMinutes  float64            `json:"duration_minutes"`
-					RequiresCoastal  bool               `json:"requires_coastal"`
-					RequiresDeposits []string           `json:"requires_deposits"`
-					RequiresTerrain  []string           `json:"requires_terrain"`
-					Purpose          string             `json:"purpose"`
+					Type             string                        `json:"type"`
+					Costs            map[string]float64            `json:"costs"`
+					CostSilver       float64                       `json:"cost_silver"`
+					DurationMinutes  float64                       `json:"duration_minutes"`
+					RequiresCoastal  bool                          `json:"requires_coastal"`
+					RequiresDeposits []string                      `json:"requires_deposits"`
+					RequiresTerrain  []string                      `json:"requires_terrain"`
+					Purpose          string                        `json:"purpose"`
+					MaxLevel         int                           `json:"max_level"`
+					UpgradeCosts     map[string]map[string]float64 `json:"upgrade_costs"`
 				}
 				if err := json.Unmarshal(data, &catalogue); err != nil {
 					return err
 				}
 				fmt.Println("Build queue: `build --queue` shows how many slots your settlement has left.")
+				fmt.Println("Producing buildings level up: build the same one again to raise its level.")
+				fmt.Println("A workplace's level is how many citizens it can employ on that good — labor")
+				fmt.Println("allocated beyond it is not served. Levels beyond 1 cost cedar (see Lvl below).")
 				fmt.Println()
-				fmt.Printf("%-14s  %-28s  %-8s  %-30s  %s\n", "Type", "Costs", "Mins", "Requires", "Purpose")
-				fmt.Println(strings.Repeat("─", 105))
+				fmt.Printf("%-14s  %-28s  %-6s  %-22s  %-26s  %s\n", "Type", "Costs (L1)", "Mins", "Levels", "Requires", "Purpose")
+				fmt.Println(strings.Repeat("─", 126))
 				for _, b := range catalogue {
 					// Format costs: "timber×50 stone×20"
 					costParts := make([]string, 0, len(b.Costs))
@@ -101,8 +107,24 @@ func buildCmd() *cobra.Command {
 						reqStr = "—"
 					}
 
-					fmt.Printf("%-14s  %-28s  %-8.0f  %-30s  %s\n",
-						b.Type, costStr, b.DurationMinutes, reqStr, b.Purpose)
+					// Lvl column: "1" for a one-instance building, "1-3 +cedar" for a
+					// workplace whose level buys employment capacity.
+					lvlStr := "1"
+					if b.MaxLevel > 1 {
+						cedarParts := make([]string, 0, b.MaxLevel-1)
+						for lv := 2; lv <= b.MaxLevel; lv++ {
+							if costs, ok := b.UpgradeCosts[strconv.Itoa(lv)]; ok && costs["cedar"] > 0 {
+								cedarParts = append(cedarParts, fmt.Sprintf("L%d×%.0f", lv, costs["cedar"]))
+							}
+						}
+						lvlStr = fmt.Sprintf("1-%d", b.MaxLevel)
+						if len(cedarParts) > 0 {
+							lvlStr += " cedar " + strings.Join(cedarParts, "/")
+						}
+					}
+
+					fmt.Printf("%-14s  %-28s  %-6.0f  %-22s  %-26s  %s\n",
+						b.Type, costStr, b.DurationMinutes, lvlStr, reqStr, b.Purpose)
 				}
 				return nil
 			}

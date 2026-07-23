@@ -21,6 +21,26 @@ const (
 	ColonyGrainSeed = 300
 )
 
+// MaxUnitSize is the hard ceiling on a single unit's headcount. Recruitment has
+// always enforced it (the remainder spills into a new forming unit), but the
+// `divine_recruits` blessing grew its target by 20 % with no ceiling at all —
+// and it always picks the LARGEST garrison spearman, so the same unit compounded
+// every time the blessing fired. Measured 2026-07-23: five garrison spearmen at
+// 1.86–2.13 BILLION men, i.e. saturated against the int32 ceiling. Any writer
+// that grows a unit must clamp to this.
+const MaxUnitSize = 100
+
+// MaxGenesisPopulation bounds the population a genesis silver seed will price
+// itself against. The seed is pop-scaled by design (a big capital and a small
+// colony get proportionally identical coverage) and it is one of the two
+// documented exceptions to "silver never comes from nothing" — which makes it
+// the one place where a corrupt population becomes minted silver. It did:
+// a colonising unit carrying a blessing-inflated size of 2 976 790 founded
+// Phaistos with 31.2 M silver, 99.5 % of the world's supply (2026-07-23).
+// 30000 is the settlement population soft cap (see kharis/tick.go growth), so
+// this bound never binds a legitimate settlement — it only refuses absurdity.
+const MaxGenesisPopulation = 30000
+
 // CatchmentBasePotentialAt returns the base production potential per good summed
 // over an EXPLICIT set of catchment hexes, gated by an assumed (rather than
 // actual) building set. It exists for the colonize preview, which must estimate a
