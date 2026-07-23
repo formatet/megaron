@@ -145,7 +145,7 @@ Megaron rename (which is about the system/repo name, not the world).
 **Namn-utrensning (Timothy 2026-07-03):** "Poleia" ska **bort som ord**. Kanoniskt: **Megaron** (spel + web),
 **Temenos** (server), **Keryx** (CLI), **Lawagetas** (iOS). **Lager A** (ordet i docs/display/CSS) körs nu;
 **Lager B** (live-infra: Go-modul, `cmd/poleia`→`cmd/keryx`, binär, systemd, `/opt/poleia`→`/opt/megaron`,
-`POLEIA_*`-env, gitea-repo, alla `poleia <verb>`-CLI-exempel) är ett koordinerat cutover-svep — se
+`POLEIA_*`-env, alla `poleia <verb>`-CLI-exempel) är ett koordinerat cutover-svep — se
 [[megaron_todo]] → "Poleia-utrensning Lager B". Rör ej "The Thalassa" (= havet, lore-permanent).
 **silver framför "gold/guld"** för valutan i UI/API/nya identifierare (Sprint A KLAR — inga gold-kolumner kvar; "gold" är reserverat för framtida lyxvara).
 
