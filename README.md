@@ -1,4 +1,4 @@
-# Poleia
+# Megaron
 
 A persistent asynchronous multiplayer strategy game set in the mythic Bronze Age eastern Mediterranean.
 
