@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/poleia/server/internal/economy"
 	"github.com/poleia/server/internal/kharis"
 	"github.com/poleia/server/internal/province"
 	"github.com/poleia/server/internal/settlement"
@@ -140,6 +141,58 @@ type KharisState struct {
 	// (kharis.EffectiveKharisCap), so surfaces can explain a ceiling short of 100
 	// instead of leaving a Wanax wondering why devotion stopped paying.
 	MaxTempleLevel int
+}
+
+// loadLaborCapacities returns, per good, the share of a settlement's population
+// that can actually be employed producing it, plus the summed level of the
+// buildings that produce it. Allocation beyond the capacity produces nothing
+// (economy.LaborCapacity), so every surface that shows or accepts a labor weight
+// needs this to avoid being silently wrong.
+func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (capacities map[string]float64, levels map[string]int) {
+	capacities = make(map[string]float64)
+	levels = make(map[string]int)
+
+	fieldPath := make(map[string]bool)
+	frows, _ := pool.Query(ctx,
+		`SELECT good_key, bool_or(building_type IS NULL) FROM production_rules GROUP BY good_key`)
+	if frows != nil {
+		for frows.Next() {
+			var k string
+			var f bool
+			if frows.Scan(&k, &f) == nil {
+				fieldPath[k] = f
+			}
+		}
+		frows.Close()
+	}
+
+	lrows, _ := pool.Query(ctx,
+		`SELECT good_key, SUM(level)::int FROM (
+		     SELECT DISTINCT pr.good_key, b.building_type, b.level
+		     FROM production_rules pr
+		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
+		 ) t GROUP BY good_key`,
+		settlementID)
+	if lrows != nil {
+		for lrows.Next() {
+			var k string
+			var lvl int
+			if lrows.Scan(&k, &lvl) == nil {
+				levels[k] = lvl
+			}
+		}
+		lrows.Close()
+	}
+
+	for good, field := range fieldPath {
+		capacities[good] = economy.LaborCapacity(good, field, levels[good])
+	}
+	for good, lvl := range levels {
+		if _, seen := capacities[good]; !seen {
+			capacities[good] = economy.LaborCapacity(good, fieldPath[good], lvl)
+		}
+	}
+	return capacities, levels
 }
 
 // loadPlayerKharis reads the current kharis pool for a player in a world.

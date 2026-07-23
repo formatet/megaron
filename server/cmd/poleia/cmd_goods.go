@@ -43,6 +43,7 @@ func goodsCmd() *cobra.Command {
 				fmt.Println("No goods available.")
 				return nil
 			}
+			sawUnserved := false
 			// labor_pool och idle_citizens är identiska på varje rad — visa en gång.
 			if lp, ok := goods[0]["labor_pool"].(float64); ok {
 				idle := 0.0
@@ -51,27 +52,47 @@ func goodsCmd() *cobra.Command {
 				}
 				fmt.Printf("Labor pool: %d workers  ·  Idle: %d workers\n\n", int(lp), int(idle))
 			}
-			fmt.Printf("%-10s  %8s  %8s  %6s  %8s  %8s\n",
-				"Good", "Stock", "Rate/d", "Workers", "Yield/w", "Price")
-			fmt.Println("────────────────────────────────────────────────────────────────")
+			fmt.Printf("%-10s  %8s  %8s  %6s  %10s  %8s  %8s\n",
+				"Good", "Stock", "Rate/d", "Lvl", "Workers", "Yield/w", "Price")
+			fmt.Println("──────────────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)
 				stock, _ := g["amount"].(float64)
 				rateT, _ := g["rate_per_tick"].(float64)
 				price, _ := g["price"].(float64)
-				citizens, _ := g["citizens"].(float64)
 				yieldW, _ := g["yield_per_worker"].(float64)
 				producible, _ := g["producible"].(bool)
+				employed, _ := g["employed_citizens"].(float64)
+				unserved, _ := g["unserved_citizens"].(float64)
+				wpLevel, _ := g["workplace_level"].(float64)
 				rateD := rateT * 24 // per-tick × 24 ticks/day
-				workersStr := fmt.Sprintf("%d", int(citizens))
+				// Workers reads "employed" normally, "employed+N idle" when the
+				// allocation exceeds what the workplace can employ. Before this the
+				// overflow was completely silent — a playtester could allocate 100 % of
+				// the city to fish behind a level-1 harbour and see no difference from a
+				// saturated one (Deiphobos, 2026-07-23).
+				workersStr := fmt.Sprintf("%d", int(employed))
+				if unserved >= 1 {
+					workersStr = fmt.Sprintf("%d+%d!", int(employed), int(unserved))
+					sawUnserved = true
+				}
+				lvlStr := "—"
+				if wpLevel > 0 {
+					lvlStr = fmt.Sprintf("L%d", int(wpLevel))
+				}
 				yieldStr := fmt.Sprintf("%.4f", yieldW)
 				if !producible {
 					// Terrain cannot produce this good — grey it out for the agent.
 					workersStr = "—"
 					yieldStr = "—"
+					lvlStr = "—"
 				}
-				fmt.Printf("%-10s  %8.1f  %8.1f  %6s  %8s  %8.1f\n",
-					key, stock, rateD, workersStr, yieldStr, price)
+				fmt.Printf("%-10s  %8.1f  %8.1f  %6s  %10s  %8s  %8.1f\n",
+					key, stock, rateD, lvlStr, workersStr, yieldStr, price)
+			}
+			if sawUnserved {
+				fmt.Println("\n! = citizens allocated beyond what the workplace can employ. They produce")
+				fmt.Println("    nothing. Raise the building's level (build it again) or move the labor.")
 			}
 			return nil
 		},
@@ -88,8 +109,8 @@ func transferCmd() *cobra.Command {
 	var provinceID string
 
 	cmd := &cobra.Command{
-		Use:     "transfer",
-		Short:   "Send goods to one of your own settlements (internal logistics, no loss)",
+		Use:   "transfer",
+		Short: "Send goods to one of your own settlements (internal logistics, no loss)",
 		Example: `  poleia transfer --good grain --qty 50 --dest Korinth
   poleia transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -198,4 +219,3 @@ func giftCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("dest")
 	return cmd
 }
-

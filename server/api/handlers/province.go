@@ -1690,7 +1690,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 					"foundry is still finishing here — it becomes usable within a tick of completion; retry shortly")
 			} else {
 				writeError(w, http.StatusUnprocessableEntity,
-					"foundry required — build a foundry here first (bronze is smelted at a foundry)")
+					// Do NOT reintroduce "bronze is smelted at a foundry" here: war_galley
+					// stopped costing bronze in bc1bbaa, and the stale parenthetical told a
+					// playtester the two were still related (Antilokhos, 2026-07-23).
+					"foundry required — build a foundry here first (a war galley is fitted out at a foundry)")
 			}
 			return
 		}
@@ -2089,7 +2092,8 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// Load base_potential per good from production_rules using catchment tiles
 	// (same logic as RecomputeProduction — 7 catchment map_tiles: own hex + 6 adjacent).
 	baseRows, _ := h.pool.Query(r.Context(),
-		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
+		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential,
+		        bool_or(pr.building_type IS NULL) AS has_field_path
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
@@ -2115,14 +2119,41 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		settlementID,
 	)
 	basePotential := make(map[string]float64)
+	hasFieldPath := make(map[string]bool)
 	if baseRows != nil {
 		for baseRows.Next() {
 			var k string
 			var v float64
-			_ = baseRows.Scan(&k, &v)
+			var field bool
+			_ = baseRows.Scan(&k, &v, &field)
 			basePotential[k] = v
+			hasFieldPath[k] = field
 		}
 		baseRows.Close()
+	}
+
+	// Workplace levels per good — the level of a producing building is how many
+	// citizens it can employ (economy.LaborCapacity). Without this on the goods
+	// surface, over-allocating is silent: a Wanax cannot tell "producing flat out
+	// from a level-1 harbour" from "half my fishermen have no boat to crew".
+	// (Playtest 2026-07-23, Deiphobos: "ingenting säger om detta är mättat".)
+	workplaceLevels := make(map[string]int)
+	lvlRows, _ := h.pool.Query(r.Context(),
+		`SELECT good_key, SUM(level)::int FROM (
+		     SELECT DISTINCT pr.good_key, b.building_type, b.level
+		     FROM production_rules pr
+		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
+		 ) t GROUP BY good_key`,
+		settlementID,
+	)
+	if lvlRows != nil {
+		for lvlRows.Next() {
+			var k string
+			var lvl int
+			_ = lvlRows.Scan(&k, &lvl)
+			workplaceLevels[k] = lvl
+		}
+		lvlRows.Close()
 	}
 
 	rows, err := h.pool.Query(r.Context(),
@@ -2165,6 +2196,16 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		Producible     bool    `json:"producible"`
 		LaborPool      int     `json:"labor_pool"`
 		IdleCitizens   int     `json:"idle_citizens"`
+		// Workplace capacity (2026-07-23). CapacityPercent is the share of the city
+		// this good's fields + buildings can actually employ; EmployedCitizens is what
+		// is really working it; UnservedCitizens is the allocation that has no
+		// workplace to serve at and therefore produces nothing. Without these three,
+		// over-allocating is completely silent — the goods table shows a rate and no
+		// hint that half your fishermen have no boat to crew.
+		CapacityPercent  float64 `json:"labor_capacity_percent"`
+		EmployedCitizens int     `json:"employed_citizens"`
+		UnservedCitizens int     `json:"unserved_citizens"`
+		WorkplaceLevel   int     `json:"workplace_level"`
 	}
 	var result []goodRow
 	for rows.Next() {
@@ -2181,6 +2222,17 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			current = capV
 		}
 		bp := basePotential[key]
+		capacity := economy.LaborCapacity(key, hasFieldPath[key], workplaceLevels[key])
+		allocated := laborWeights[key]
+		served := allocated
+		if served > capacity {
+			served = capacity
+		}
+		employed := int(math.Round(served * float64(laborPool)))
+		unserved := int(math.Round((allocated - served) * float64(laborPool)))
+		if unserved < 0 {
+			unserved = 0
+		}
 		result = append(result, goodRow{
 			Key:            key,
 			Name:           name,
@@ -2196,6 +2248,11 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Producible:     bp > 0,
 			LaborPool:      laborPool,
 			IdleCitizens:   idleCitizens,
+
+			CapacityPercent:  capacity * 100.0,
+			EmployedCitizens: employed,
+			UnservedCitizens: unserved,
+			WorkplaceLevel:   workplaceLevels[key],
 		})
 	}
 	if result == nil {
@@ -3417,6 +3474,39 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		if grainWeight < *breakevenGrainWeight {
 			warning = fmt.Sprintf("grain-vikt %.2f < break-even ~%.2f för denna catchment → staden kommer svälta vid denna allokering",
 				grainWeight, *breakevenGrainWeight)
+		}
+	}
+
+	// Same guardrail shape for workplace capacity: accept the allocation, but say
+	// so when part of it has no workplace to serve at and will produce nothing.
+	// Silent over-allocation was the top friction finding of the 2026-07-23
+	// playtest — "ingenting säger om detta är mättat".
+	capacities, wpLevels := loadLaborCapacities(r.Context(), h.pool, settlementID)
+	var overflows []string
+	for good, weight := range weights {
+		capacity, known := capacities[good]
+		if !known || weight <= capacity {
+			continue
+		}
+		unserved := int((weight - capacity) * float64(laborPool))
+		if unserved < 1 {
+			continue
+		}
+		hint := "bygg arbetsplatsen"
+		if lvl := wpLevels[good]; lvl > 0 {
+			hint = fmt.Sprintf("höj arbetsplatsen (nivå %d nu)", lvl)
+		}
+		overflows = append(overflows, fmt.Sprintf(
+			"%s: %.0f%% allokerat men arbetsplatserna rymmer bara %.0f%% → %d medborgare producerar inget (%s)",
+			good, weight*100, capacity*100, unserved, hint))
+	}
+	if len(overflows) > 0 {
+		sort.Strings(overflows)
+		over := "överallokering: " + strings.Join(overflows, "; ")
+		if warning == "" {
+			warning = over
+		} else {
+			warning += " | " + over
 		}
 	}
 
