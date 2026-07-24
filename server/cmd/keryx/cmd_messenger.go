@@ -253,6 +253,15 @@ func outboxCmd() *cobra.Command {
 							}
 						}
 					}
+					// Awaiting response (legibility) — the complement of the "arrives
+					// in" case above: once the messenger has actually arrived, the
+					// offer sits in the recipient's inbox awaiting accept/decline.
+					// Without this the line looked identical to "still travelling"
+					// except for the [delivered] tag, so a Wanax couldn't tell "on
+					// the way" from "there, waiting on them" at a glance.
+					if offerStatus == "pending" && status == "delivered" {
+						line += fmt.Sprintf("  väntar på svar från %s", dest)
+					}
 					// Escrow countdown (Fas 2b) — a pending offer's expires_at wasn't
 					// shown anywhere before, so there was no visible deadline for when
 					// the lock releases.
