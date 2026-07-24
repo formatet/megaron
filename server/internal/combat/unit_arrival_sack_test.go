@@ -463,4 +463,21 @@ func TestApplyAttackerWins_AnnexDoesNotDoublePunishAttackerGarrison(t *testing.T
 	if defenderPop != 8970 {
 		t.Errorf("defender population = %d, want 8970 (9000 - 30 men lost at 50%% of the 60-man garrison)", defenderPop)
 	}
+
+	// r6 audit (2026-07-24): this land-march annex path used to have NO
+	// player-facing signal at all — neither the dispossessed defender nor the
+	// conquering attacker learned their city fell/was captured except via a
+	// gossip broadcast to nearby OTHER owners. Both sides must now get a
+	// SettlementCaptured notification (mirrors resolveAmphibiousAssault's
+	// existing notification for the amphibious variant of this same outcome).
+	fb := h.hub.(*fakeBroadcaster)
+	count := 0
+	for _, kind := range fb.notified {
+		if kind == "SettlementCaptured" {
+			count++
+		}
+	}
+	if count != 2 {
+		t.Errorf("expected 2 SettlementCaptured notifications (attacker + defender), got %d in %v", count, fb.notified)
+	}
 }

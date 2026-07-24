@@ -1492,6 +1492,29 @@ func (h *UnitArrivalHandler) applyAttackerWins(
 		}
 	}
 
+	// Capture notification (r6 audit, 2026-07-24): this land-march annex path had
+	// NO player-facing signal at all beyond the gossip broadcast above — which
+	// reaches nearby OTHER settlement owners, not necessarily the dispossessed
+	// defender, and reaches no one when this was their last city. Mirrors the
+	// SettlementCaptured pattern resolveAmphibiousAssault already uses for the
+	// amphibious variant of this same annex outcome (see its comment: "without
+	// this the dispossessed owner gets no signal their city fell").
+	_, _ = h.eventStore.Append(ctx, *dest.settlementID, events.StreamProvince, "SettlementCaptured",
+		map[string]any{
+			"settlement_id": *dest.settlementID, "former_owner": dest.ownerID,
+			"new_owner": u.ownerID,
+		}, worldID, nil)
+	if h.hub != nil {
+		if dest.ownerID != nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, *dest.ownerID, "SettlementCaptured", 2, map[string]any{
+				"settlement_id": *dest.settlementID, "role": "defender",
+			})
+		}
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "SettlementCaptured", 3, map[string]any{
+			"settlement_id": *dest.settlementID, "role": "attacker",
+		})
+	}
+
 	// Update province territory state.
 	if _, err := tx.Exec(ctx,
 		`UPDATE provinces SET territory_state = 'controlled' WHERE id = $1`, dest.provinceID,
@@ -1532,6 +1555,9 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 ) error {
 	// Rout retreat is half the speed of an orderly advance (Timothy 2026-07-01).
 	const routRetreatSlowdown = 2.0
+	// attackerOutcome names WHAT HAPPENED (Fas 2.3 — outcome, not intention) to
+	// the attacking unit, for the SettlementDefended notification below.
+	attackerOutcome := "attacker_destroyed"
 	if attSizeAfter <= 0 {
 		// Unit destroyed: demographic loss, unit disbanded.
 		if _, err := tx.Exec(ctx,
@@ -1541,6 +1567,7 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		}
 		h.disbandCargoIfPresent(ctx, tx, u, worldID)
 	} else if result.AttackerRouted && h.scheduler != nil {
+		attackerOutcome = "attacker_routed"
 		// Rout (W5): unit survives with remaining men, retreats to origin.
 		// origin = (u.q, u.r) — the hex the unit marched FROM (set by march handler).
 		// Route via A* (same passability graph the forward march used) instead of a
@@ -1614,6 +1641,7 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		slog.Info("unit routed, returning to origin", "unit", u.id, "origin_q", u.q, "origin_r", u.r, "size", attSizeAfter)
 	} else {
 		// Beaten (not routed) — unit disbanded, treat as destroyed.
+		attackerOutcome = "attacker_beaten"
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, u.id,
 		); err != nil {
@@ -1639,6 +1667,26 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
 			return err
 		}
+	}
+
+	// Battle-outcome notification (r6 audit, 2026-07-24): this was the one
+	// settlement-siege outcome with NO player-facing signal at all for either
+	// side — attacker's unit vanishes/routs/bleeds and the defender's garrison
+	// takes losses (applyDefenderUnitLosses, above) with nothing connecting either
+	// to "a siege happened here and you won/lost it". Mirrors FieldBattleWon/
+	// FieldBattleLost (unit_arrival_field.go) and SettlementCaptured's
+	// shared-kind-with-role convention.
+	if h.hub != nil {
+		if dest.ownerID != nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, *dest.ownerID, "SettlementDefended", 3, map[string]any{
+				"settlement_id": *dest.settlementID, "role": "defender", "outcome": attackerOutcome,
+			})
+		}
+		payload := map[string]any{"role": "attacker", "outcome": attackerOutcome}
+		if dest.settlementID != nil {
+			payload["settlement_id"] = *dest.settlementID
+		}
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "SettlementDefended", 2, payload)
 	}
 
 	return nil
