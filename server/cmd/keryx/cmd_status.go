@@ -289,13 +289,30 @@ func statusCmd() *cobra.Command {
 					// string fired on either and always said "svälta/desertera", so a
 					// city with 118k grain and a silver deficit read as a famine
 					// (soak 2026-07-22, two playtesters in a row).
+					// Runway: a negative net only bites when the stock runs out. A probe
+					// disbanded 100 spearmen over a −7/day silver warning while holding
+					// 41k silver (~5000 days of runway) — soak 2026-07-24. Name how long
+					// the buffer covers it so the warning isn't read as imminent.
+					runway := func(key string, netPerDay float64) string {
+						if netPerDay >= 0 {
+							return ""
+						}
+						stock := 0.0
+						if rd, ok := res[key].(map[string]any); ok {
+							stock, _ = rd["amount"].(float64)
+						}
+						if stock <= 0 {
+							return ""
+						}
+						return fmt.Sprintf(" — lager %s räcker ~%.0f dygn i denna takt", resource(stock), stock/-netPerDay)
+					}
 					switch {
 					case netG < 0 && netS < 0:
-						warn = "  ⚠ varken grain eller silver täcker arméns upkeep — enheter svälter OCH deserterar (se `keryx recruit --list`)"
+						warn = "  ⚠ varken grain eller silver täcker arméns upkeep — enheter svälter/deserterar när lagren tar slut" + runway("grain", netG) + runway("silver", netS) + " (se `keryx recruit --list`)"
 					case netG < 0:
-						warn = "  ⚠ grain täcker inte arméns upkeep — enheter kan svälta (silvret räcker; se `keryx recruit --list`)"
+						warn = "  ⚠ grain täcker inte arméns upkeep — enheter kan svälta" + runway("grain", netG) + " (silvret räcker; se `keryx recruit --list`)"
 					case netS < 0:
-						warn = "  ⚠ silver täcker inte arméns sold — enheter kan desertera (maten räcker; se `keryx recruit --list`)"
+						warn = "  ⚠ silver täcker inte arméns sold — enheter kan desertera" + runway("silver", netS) + " (maten räcker; se `keryx recruit --list`)"
 					}
 					fmt.Printf("  %-8s %+.1f grain/dygn, %+.1f silver/dygn (efter arméns upkeep)%s\n",
 						"Netto", netG, netS, warn)

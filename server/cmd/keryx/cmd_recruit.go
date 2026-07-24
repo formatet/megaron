@@ -191,13 +191,25 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	// resources binds and by how much (soak 2026-07-22: two playtesters in a row
 	// read a bare "can't carry this yet" as a pop cap, a unit cap and a stock cap
 	// before giving up — one of them was sitting on 118k grain, short only silver).
-	var netGrain, netSilver float64
+	var netGrain, netSilver, grainStock, silverStock float64
 	if sdata, serr := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", worldID, provinceID)); serr == nil {
 		var p map[string]any
 		if json.Unmarshal(sdata, &p) == nil {
 			if sett, ok := p["settlement"].(map[string]any); ok {
 				netGrain, _ = sett["net_grain_per_day_after_upkeep"].(float64)
 				netSilver, _ = sett["net_silver_per_day_after_upkeep"].(float64)
+				// Stocks for the runway clause in unsustainableReason (a negative
+				// net only bites when the buffer runs out — soak 2026-07-24: a probe
+				// disbanded 100 spearmen over a −7/day warning while holding 41k
+				// silver, ~5000 days of runway).
+				if resmap, ok := sett["resources"].(map[string]any); ok {
+					if g, ok := resmap["grain"].(map[string]any); ok {
+						grainStock, _ = g["amount"].(float64)
+					}
+					if s, ok := resmap["silver"].(map[string]any); ok {
+						silverStock, _ = s["amount"].(float64)
+					}
+				}
 				if cr, ok := sett["can_recruit"].([]any); ok {
 					for _, it := range cr {
 						m, _ := it.(map[string]any)
@@ -268,7 +280,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 				upkeepStr = fmt.Sprintf("%.1f grain, %.1f silver", info.upkeepGrain, info.upkeepSilv)
 				if !info.sustainable {
 					upkeepStr += "  ⚠ " + unsustainableReason(
-						netGrain, netSilver, info.upkeepGrain, info.upkeepSilv)
+						netGrain, netSilver, info.upkeepGrain, info.upkeepSilv, grainStock, silverStock)
 				}
 			}
 		}
@@ -296,19 +308,31 @@ func trimFloat(v float64) string {
 // caps and stock levels, one of them while holding 118k grain and short only
 // silver. Reports the shortfall as a per-day figure because that is the unit the
 // net is expressed in, and both resources when both are short.
-func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver float64) string {
+func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock, silverStock float64) string {
 	grainShort := netGrain - unitGrain
 	silverShort := netSilver - unitSilver
+	// Runway: a negative post-recruit net only bites when the stockpile runs out.
+	// A city with 36k silver and −7/day has ~5000 days, but the bare "✗ needs more"
+	// read as an outright block to two playtesters sitting on huge buffers (soak
+	// 2026-07-24). The ✗ stays (upkeep IS negative), but name how long the buffer
+	// covers it so "not sustainable long-term" isn't mistaken for "cannot recruit".
+	runway := func(stock, shortPerDay float64) string {
+		if shortPerDay >= 0 || stock <= 0 {
+			return ""
+		}
+		return fmt.Sprintf(" — current stock %s covers ~%.0f days at that rate",
+			trimFloat(stock), stock/-shortPerDay)
+	}
 	switch {
 	case grainShort < 0 && silverShort < 0:
-		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain/day and %.1f more silver/day",
-			-grainShort, -silverShort)
+		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain/day and %.1f more silver/day%s%s",
+			-grainShort, -silverShort, runway(grainStock, grainShort), runway(silverStock, silverShort))
 	case silverShort < 0:
-		return fmt.Sprintf("silver upkeep: net is %+.1f silver/day, needs %.1f more/day",
-			netSilver, -silverShort)
+		return fmt.Sprintf("silver upkeep: net is %+.1f silver/day, needs %.1f more/day%s",
+			netSilver, -silverShort, runway(silverStock, silverShort))
 	case grainShort < 0:
-		return fmt.Sprintf("grain upkeep: net is %+.1f grain/day, needs %.1f more/day",
-			netGrain, -grainShort)
+		return fmt.Sprintf("grain upkeep: net is %+.1f grain/day, needs %.1f more/day%s",
+			netGrain, -grainShort, runway(grainStock, grainShort))
 	default:
 		// sustainable was false but neither margin is negative — the server saw a
 		// state this client's numbers no longer reflect. Say so rather than invent.
