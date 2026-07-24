@@ -42,7 +42,7 @@ func TestSitosTick_NotifiesOwnerOnRescueSell(t *testing.T) {
 	if err != nil {
 		t.Fatalf("grain base value: %v", err)
 	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, grainBase); err != nil {
+	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
