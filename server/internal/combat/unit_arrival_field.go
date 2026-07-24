@@ -80,6 +80,19 @@ func (h *UnitArrivalHandler) resolveFieldCombat(
 	}
 	defenderOwnerID := defenders[0].ownerID
 
+	// ── Distinct defender owners (mixed-owner stacks): notifications below go
+	// to every owner represented in the defender stack, not just defenders[0]
+	// (which stays the fortune/loyalty representative above). ──
+	defenderOwnerSeen := map[uuid.UUID]struct{}{}
+	var defenderOwners []uuid.UUID
+	for _, d := range defenders {
+		if _, ok := defenderOwnerSeen[d.ownerID]; ok {
+			continue
+		}
+		defenderOwnerSeen[d.ownerID] = struct{}{}
+		defenderOwners = append(defenderOwners, d.ownerID)
+	}
+
 	// ── Fortune (W5): roll once, bias by kharis delta — same as resolveCombat. ──
 	var attackerKharis, defenderKharis float64
 	_ = tx.QueryRow(ctx,
@@ -156,9 +169,11 @@ func (h *UnitArrivalHandler) resolveFieldCombat(
 			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "FieldBattleWon", 3, map[string]any{
 				"unit_id": u.id, "q": destQ, "r": destR,
 			})
-			_ = h.hub.NotifyPlayer(ctx, worldID, defenderOwnerID, "FieldBattleLost", 2, map[string]any{
-				"q": destQ, "r": destR,
-			})
+			for _, ownerID := range defenderOwners {
+				_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "FieldBattleLost", 2, map[string]any{
+					"q": destQ, "r": destR,
+				})
+			}
 		}
 	} else {
 		// No settlement to reference — reuses applyDefenderWins' rout/disband
@@ -172,9 +187,11 @@ func (h *UnitArrivalHandler) resolveFieldCombat(
 			return err
 		}
 		if h.hub != nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, defenderOwnerID, "FieldBattleWon", 3, map[string]any{
-				"q": destQ, "r": destR,
-			})
+			for _, ownerID := range defenderOwners {
+				_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "FieldBattleWon", 3, map[string]any{
+					"q": destQ, "r": destR,
+				})
+			}
 		}
 	}
 
