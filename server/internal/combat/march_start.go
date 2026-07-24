@@ -391,7 +391,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if !pathOK {
 			hint := "a sea crossing needs a ship (embark), and mountains must be routed around"
 			if unit.CategoryOf(u.Type) == unit.CategoryNaval {
-				hint = "no sea route connects your harbour to that hex — land blocks the way"
+				hint = "the sea is blocked by land — no open-water route reaches it from this settlement's shore (building a harbour will not change this)"
 			}
 			return nil, reject(http.StatusUnprocessableEntity,
 				"no passable route to (%d,%d) for this unit — %s", targetQ, targetR, hint)
