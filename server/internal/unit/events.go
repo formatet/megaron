@@ -26,6 +26,7 @@ const (
 	EventUnitMarchRecalled   = "MarchRecalled"      // recall messenger reached a marching unit; it turned home
 	EventUnitMarchRedirected = "MarchRedirected"    // redirect messenger reached a marching unit; new course set
 	EventUnitExploreReturned = "UnitExploreReturned" // explore order reached its target; unit turned for home
+	EventUnitScoutReport     = "ScoutReport"          // explore order revealed its target hex; terrain + deposits found
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -189,6 +190,22 @@ type UnitExploreReturnedPayload struct {
 	R                int       `json:"r"`
 	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
 	ArrivesAt        string    `json:"arrives_at"` // RFC3339
+}
+
+// UnitScoutReportPayload is emitted when an explore-ordered unit reaches its
+// target hex and reveals it. The reveal is a fact at this point (Fas 2.3 —
+// outcome, not intent: "copper found", never "check the hex"), so the payload
+// carries the destination's actual terrain and deposit flags as read at
+// arrival, not a pointer to go look.
+type UnitScoutReportPayload struct {
+	UnitID        uuid.UUID `json:"unit_id"`
+	Q             int       `json:"q"`
+	R             int       `json:"r"`
+	Terrain       string    `json:"terrain"`
+	CopperDeposit bool      `json:"copper_deposit"`
+	TinDeposit    bool      `json:"tin_deposit"`
+	SilverDeposit bool      `json:"silver_deposit"`
+	CedarDeposit  bool      `json:"cedar_deposit"`
 }
 
 // CityCollapsedPayload is emitted when a settlement's population reaches ≤ 100

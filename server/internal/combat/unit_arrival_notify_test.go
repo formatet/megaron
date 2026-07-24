@@ -20,12 +20,14 @@ import (
 // Broadcaster (internal/combat/notifier.go) test double.
 type fakeBroadcaster struct {
 	notified []string // kinds, in call order
+	payloads []any    // payloads, same order as notified
 }
 
 func (f *fakeBroadcaster) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {}
 
 func (f *fakeBroadcaster) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
 	f.notified = append(f.notified, kind)
+	f.payloads = append(f.payloads, payload)
 	return nil
 }
 

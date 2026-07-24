@@ -68,6 +68,7 @@ export function notifIcon(kind) {
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
     OfferExpired:       '⏳',
+    ScoutReport:        '🔭',
   };
   return icons[kind] || '◉';
 }
@@ -150,6 +151,18 @@ export function notifText(kind, body) {
         ? `${body.silver || 0} silver`
         : `${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
       return `Offer ${verb}: ${refund} — escrow refunded immediately`;
+    }
+    case 'ScoutReport': {
+      // Payload per UnitScoutReportPayload: q/r/terrain + four deposit bools.
+      // The common case is "nothing of value" — that must read as a clean
+      // report, not a blank/empty one (temenos_todo.md's own example line).
+      const deposits = [];
+      if (body.copper_deposit) deposits.push('copper');
+      if (body.tin_deposit)    deposits.push('tin');
+      if (body.silver_deposit) deposits.push('silver');
+      if (body.cedar_deposit)  deposits.push('cedar');
+      const found = deposits.length ? deposits.join(', ') : 'nothing of value';
+      return `Explored (${body.q}, ${body.r}) — ${body.terrain || 'unknown terrain'}, ${found}`;
     }
     default:                   return kind;
   }

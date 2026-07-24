@@ -101,6 +101,47 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "ColonyFounded" {
 		printColonyFoundedGrainLine(n)
 	}
+	if n.Kind == "ScoutReport" {
+		printScoutReportLine(n)
+	}
+}
+
+// printScoutReportLine renders the human-readable follow-up to a ScoutReport
+// notification (temenos_todo.md "Explore-order kommer hem utan rapport"): the
+// raw JSON body above already carries q/r/terrain/deposits, but a Wanax
+// shouldn't have to parse JSON to learn what a scout found. "Nothing of
+// value" is the common case and must read as a clean report, not a blank one.
+func printScoutReportLine(n notificationItem) {
+	var body struct {
+		Q             int    `json:"q"`
+		R             int    `json:"r"`
+		Terrain       string `json:"terrain"`
+		CopperDeposit bool   `json:"copper_deposit"`
+		TinDeposit    bool   `json:"tin_deposit"`
+		SilverDeposit bool   `json:"silver_deposit"`
+		CedarDeposit  bool   `json:"cedar_deposit"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	var deposits []string
+	if body.CopperDeposit {
+		deposits = append(deposits, "copper")
+	}
+	if body.TinDeposit {
+		deposits = append(deposits, "tin")
+	}
+	if body.SilverDeposit {
+		deposits = append(deposits, "silver")
+	}
+	if body.CedarDeposit {
+		deposits = append(deposits, "cedar")
+	}
+	found := "nothing of value"
+	if len(deposits) > 0 {
+		found = strings.Join(deposits, ", ")
+	}
+	fmt.Printf("      explored (%d,%d) — %s, %s\n", body.Q, body.R, body.Terrain, found)
 }
 
 // printColonyFoundedGrainLine renders the founding grain balance carried in a
