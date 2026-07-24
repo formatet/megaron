@@ -88,6 +88,10 @@ Categories: province, military, trade, diplomacy, kingdom, cult`,
 
 			if len(args) == 0 {
 				printCategoryOverview(verbs)
+				if hint := noTradeContactsHint(verbs); hint != "" {
+					fmt.Println()
+					fmt.Println(hint)
+				}
 				return nil
 			}
 			category := strings.ToLower(args[0])
@@ -148,6 +152,34 @@ func isKnownCategory(c string) bool {
 		}
 	}
 	return false
+}
+
+// noTradeContactsHint returns a discoverability nudge when this Wanax has
+// zero foreign settlements within vision — the FOW gate that BOTH `message`
+// and `trade-offer` require (internal/capabilities/diplomacy_verbs.go
+// canMessage, trade_verbs.go canTradeOffer/canSell: "a contacted foreign
+// settlement (FOW-visible)"). `message`'s only requirement IS that gate, so
+// verb.Available==false for "message" is an unambiguous "no trade contacts
+// yet" signal — no new server field needed, this reuses the existing
+// /actions response `keryx actions`/`status` already fetch.
+//
+// Playtest gap (sondrundor 2026-07-23/24, megaron_todo.md "cities-
+// discoverability"): a new founder had no trade contacts and nothing in
+// `actions`/`status` pointed toward the EXISTING way to get one — send a
+// unit outward or send a messenger once a neighbour is visible. Returns ""
+// once at least one foreign settlement is visible (message unlocks).
+func noTradeContactsHint(verbs []actionVerb) string {
+	for _, v := range verbs {
+		if v.Name == "message" && v.Category == "diplomacy" {
+			if v.Available {
+				return ""
+			}
+			return "No trade contacts yet — trade needs a foreign settlement within your vision. " +
+				"Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), " +
+				"then `keryx message --to <name>` or `keryx trade-offer` once one is visible."
+		}
+	}
+	return ""
 }
 
 func printCategoryOverview(verbs []actionVerb) {

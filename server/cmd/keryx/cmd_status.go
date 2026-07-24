@@ -163,6 +163,13 @@ func statusCmd() *cobra.Command {
 			printLoyaltyLog(c, cfg.WorldID, sett)
 			fmt.Println()
 
+			// Legibilitet (2026-07-24, playtest sondrundor 2026-07-23/24): a new
+			// founder sat with zero trade contacts and nothing here pointed toward
+			// the existing way to get one. Reuses the /actions endpoint's "message"
+			// verb gate (see noTradeContactsHint in cmd_actions.go) rather than
+			// adding a new field — best-effort, never blocks `status`.
+			printNoTradeContactsHint(c, cfg.WorldID, prov)
+
 			// Sitos-fonden (grain reserve): the automatic last-resort counterparty
 			// for subsistence goods. Always shown so its silver + reference price
 			// are legible every tick.
@@ -527,6 +534,25 @@ func formatLoyaltyLog(entries []loyaltyLogEntry) []string {
 	}
 	lines = append(lines, loyaltyLegend)
 	return lines
+}
+
+// printNoTradeContactsHint fetches this province's /actions capabilities and
+// prints noTradeContactsHint's message (cmd_actions.go) when this Wanax has
+// zero foreign settlements in vision yet — best-effort, mirroring
+// printLoyaltyLog: never blocks `status` if the request or parse fails.
+func printNoTradeContactsHint(c *Client, worldID, prov string) {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/actions", worldID, prov))
+	if err != nil {
+		return
+	}
+	var verbs []actionVerb
+	if err := json.Unmarshal(data, &verbs); err != nil {
+		return
+	}
+	if hint := noTradeContactsHint(verbs); hint != "" {
+		fmt.Println(hint)
+		fmt.Println()
+	}
 }
 
 // printLoyaltyLog fetches and prints this settlement's recent loyalty-changing
