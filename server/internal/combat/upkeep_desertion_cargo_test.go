@@ -93,10 +93,25 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 
 	store := events.NewStore(pool)
 	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
-	h := NewUpkeepHandler(pool, sched, store, nil)
+	fb := &fakeBroadcaster{}
+	h := NewUpkeepHandler(pool, sched, store, fb)
 
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)
+	}
+
+	// r6 audit (2026-07-24): the ship's own UnitDeserted notification reports the
+	// SHIP's men lost (size=1, a flat naval hull count here) — never the embarked
+	// cargo's, which is a separate, often much larger unit (50 spearmen here) that
+	// would otherwise vanish from the owner's roster with zero explanation.
+	foundCargoNotice := false
+	for _, kind := range fb.notified {
+		if kind == "UnitLostAtSea" {
+			foundCargoNotice = true
+		}
+	}
+	if !foundCargoNotice {
+		t.Errorf("expected a UnitLostAtSea notification for the cargo unit, got kinds %v", fb.notified)
 	}
 
 	var shipStatus, cargoStatus string
