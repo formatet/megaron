@@ -297,9 +297,13 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 
 	// Credit goods to destination — silver is now a normal good in settlement_goods.
+	// cap 1_000_000 for a brand-new row matches economy.goodCap (post-00d0722; never
+	// reintroduce the cap-100 bug — this literal was stale until 2026-07-24, silently
+	// truncating a second trade delivery of a good the settlement had never held
+	// before down to 100, see trade_delivery_stale_cap_test.go).
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, $2, $3, 0, 100, current_world_tick())
+		 VALUES ($1, $2, $3, 0, 1000000, current_world_tick())
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = LEAST(
 		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
