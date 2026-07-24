@@ -393,9 +393,10 @@ function renderUnitCard(u) {
 
   // March button: land size==100 garrison (non-priest), or naval garrison
   // Positioned units (out on the map, e.g. a ship that finished a plain march)
-  // must be orderable too — otherwise they're stranded (the map right-click reads
-  // the unit's own hex as the target). The server already allows marching a
-  // positioned unit; this just surfaces the button.
+  // must be orderable too — otherwise they're stranded. The server already
+  // allows marching a positioned unit; this just surfaces the button. (The
+  // map right-click used to read the unit's own hex as the target — fixed by
+  // routing that click to warFocusUnit, landing here, render/map.js contextmenu.)
   const canMarch = (isGarrison || isPositioned) && u.type !== 'priest' && (isNaval || u.size === 100);
   if (canMarch) {
     actions += '<button onclick="unitMarch(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> ';
