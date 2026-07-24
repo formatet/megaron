@@ -294,7 +294,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	}
 
 	for _, w := range snaps {
-		if err := h.processMaintenance(ctx, w, e.WorldID); err != nil {
+		if err := h.processMaintenance(ctx, w, e.WorldID, e.ID); err != nil {
 			slog.Error("kharis maintenance failed", "player", w.playerID, "err", err)
 		}
 	}
@@ -483,7 +483,29 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 	return fed, total
 }
 
-func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID) error {
+func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID, eventID int64) error {
+	// Fas 2.2 exactly-once claim, scoped per (event_id, player_id) — migration 098.
+	// Handle fans ONE ScheduledKharisTick across every Wanax and this function
+	// commits each one separately (offering charge, kharis UPDATE, events), while
+	// the worker only marks the event done AFTER Handle returns. Without the claim
+	// a crash or a 5s G2 timeout part-way through the fan-out replays the whole
+	// pass: the day's decay applied twice and the temple offering charged twice.
+	// Claim-then-mutate rather than one big transaction: this function spans
+	// several independent writes across packages, and wrapping them all would be a
+	// far larger change than the risk warrants. The trade is a claimed-but-crashed
+	// Wanax skipping ONE day's maintenance instead of getting two — for a decay
+	// curve, missing a day is the strictly safer failure. Same pattern CLAUDE.md
+	// lists as accepted (INSERT … ON CONFLICT DO NOTHING for projection writes).
+	claim, err := h.pool.Exec(ctx,
+		`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
+		 ON CONFLICT DO NOTHING`, eventID, w.playerID)
+	if err != nil {
+		return fmt.Errorf("claim kharis tick: %w", err)
+	}
+	if claim.RowsAffected() == 0 {
+		return nil // this event already applied to this Wanax
+	}
+
 	// dailyDecay applies EVERY day, maintained or not (replacing the old
 	// missed-day-only 10%/day decayOnMissed, retired in FAS 2). Post net-neutral
 	// recalibration (Timothy 2026-07-11, see decayBas above) the base term is small
@@ -1013,20 +1035,18 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 	rows.Close()
 
 	for _, s := range list {
-		// Spearmen and chariots each lose 5% (minimum 1) per starving day.
-		if _, err := h.pool.Exec(ctx,
-			`UPDATE units SET size = GREATEST(0, size - GREATEST(1, (size * 0.05)::int)), updated_at = now()
-			 WHERE settlement_id = $1 AND status = 'garrison' AND type IN ('spearman','war_chariot')`,
-			s.id,
-		); err != nil {
-			slog.Error("starvation attrition failed", "settlement", s.id, "err", err)
-			continue
-		}
-		// Disband any unit starved to nothing.
-		_, _ = h.pool.Exec(ctx,
-			`UPDATE units SET status = 'disbanded', updated_at = now()
-			 WHERE settlement_id = $1 AND status = 'garrison' AND size <= 0`, s.id)
-
+		// Grain attrition lives in ONE place: combat/upkeep.go applyAttrition. This
+		// handler used to attrit here too (−5%, min 1) while upkeep took its flat −10
+		// the same day, in the same poll batch, against the same unit — combined
+		// ~14–15%/day, some 50% more than upkeep alone, hitting small garrisons hardest.
+		// Two mechanics written 19 days apart (70199f3 / 203af2c) that were never
+		// cross-checked; nothing anywhere documented the sum as intended. Removed here
+		// rather than in upkeep because upkeep owns the complete lifecycle (disband,
+		// cargo cascade, UnitAttrition event, owner notification) — this copy had only
+		// the size decrement and disbanded silently. Decision: Timothy, 2026-07-25.
+		// starvation_attrition_test.go guards the single-source-of-truth.
+		// StarvationDamage stays: it is the audit/flavour signal, and the owner-facing
+		// warning is applySubsistenceCritical via the notify hub.
 		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "StarvationDamage",
 			map[string]any{"reason": "no_food"}, worldID, nil)
 		// Owner notice is now the critical SubsistenceWarning (applySubsistenceCritical,

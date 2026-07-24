@@ -1,15 +1,23 @@
 package kharis
 
-// Characterization tests for applyStarvation's garrison attrition (r6 audit,
-// git 323b3c6): a dedicated round flagged that this mechanic MAY double-count
-// with combat/upkeep.go's applyAttrition — both can fire against the same
-// garrison spearman/war_chariot unit on the same starving day (settlement
-// grain balance <= 0), one taking a flat upkeepAttritionStep (10, capped to
-// unit size) via the daily UpkeepTick, the other taking 5% (minimum 1) via
-// the daily KharisTick. These tests lock the CURRENT applyStarvation behavior
-// only — they assert nothing about upkeep.go and change no production code.
-// Resolution (keep both / gate one / merge) is a design decision for Timothy,
-// not this test.
+// Single-source-of-truth guard for grain attrition (Timothy's decision,
+// 2026-07-25). These began as characterization tests (r6 audit, git 323b3c6)
+// locking applyStarvation's own −5%-minimum-1 garrison attrition, written to
+// hold the line while the double-count they had just proven awaited a ruling:
+// applyStarvation (KharisTick) and combat/upkeep.go applyAttrition (UpkeepTick)
+// both fired against the same garrison unit on the same starving day, in the
+// same poll batch — a flat −10 plus a further −5%, ~14–15%/day combined, some
+// 50% more than upkeep alone and worst for small garrisons. Two mechanics
+// written 19 days apart (70199f3 / 203af2c), never cross-checked, with nothing
+// documenting the sum as intended.
+//
+// The ruling was to remove the copy here, keeping upkeep as the ONE mechanic:
+// it owns the whole lifecycle (disband, cargo cascade, UnitAttrition event,
+// owner notification), whereas this one only decremented size and disbanded
+// silently. So these tests are now inverted — they assert applyStarvation does
+// NOT touch unit size, and that it still emits StarvationDamage. If a future
+// round reintroduces attrition here, these fail and the double-count is caught
+// at build time instead of in a soak.
 
 import (
 	"context"
@@ -21,7 +29,7 @@ import (
 
 // starvationGarrisonFixture builds on starvationWarningFixture (same file
 // group, starvation_warning_test.go) by adding one garrison spearman unit at
-// the settlement, so applyStarvation has something to attrit.
+// the settlement, so applyStarvation would have something to attrit.
 func starvationGarrisonFixture(t *testing.T, unitSize int) (worldID, settlementID, unitID uuid.UUID) {
 	t.Helper()
 	pool := testPool(t)
@@ -40,10 +48,11 @@ func starvationGarrisonFixture(t *testing.T, unitSize int) (worldID, settlementI
 	return worldID, settlementID, unitID
 }
 
-// TestApplyStarvation_FivePercentOfGarrisonSpearmen locks the documented rate
-// (tick.go:979-980, "infantry and chariots each lose 5% (minimum 1) per day")
-// for a size where 5% is an exact, unambiguous integer — no rounding edge.
-func TestApplyStarvation_FivePercentOfGarrisonSpearmen(t *testing.T) {
+// TestApplyStarvation_LeavesGarrisonSizeToUpkeep is the core guard: a starving
+// settlement's garrison must come through applyStarvation untouched. Size 100
+// is the case the old test pinned at 95 (a clean 5%), so a reintroduced
+// attrition of any shape shows up here first.
+func TestApplyStarvation_LeavesGarrisonSizeToUpkeep(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
@@ -57,39 +66,19 @@ func TestApplyStarvation_FivePercentOfGarrisonSpearmen(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT size, status FROM units WHERE id = $1`, unitID).Scan(&size, &status); err != nil {
 		t.Fatalf("read unit: %v", err)
 	}
-	if size != 95 {
-		t.Errorf("size = %d, want 95 (5%% of 100 lost to one starving day)", size)
+	if size != 100 {
+		t.Errorf("size = %d, want 100 — applyStarvation must not attrit; grain attrition "+
+			"belongs to combat/upkeep.go applyAttrition alone", size)
 	}
 	if status != "garrison" {
-		t.Errorf("status = %q, want garrison (95 men left, not disbanded)", status)
+		t.Errorf("status = %q, want garrison", status)
 	}
 }
 
-// TestApplyStarvation_MinimumOneLostBelowFivePercentFloor locks the "minimum
-// 1" floor: 5% of 5 is 0.25, which truncates to 0 — GREATEST(1, ...) forces a
-// loss of 1 man even though the raw percentage rounds to nothing.
-func TestApplyStarvation_MinimumOneLostBelowFivePercentFloor(t *testing.T) {
-	pool := testPool(t)
-	ctx := context.Background()
-
-	worldID, _, unitID := starvationGarrisonFixture(t, 5)
-
-	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
-	h.applyStarvation(ctx, worldID)
-
-	var size int
-	if err := pool.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, unitID).Scan(&size); err != nil {
-		t.Fatalf("read unit: %v", err)
-	}
-	if size != 4 {
-		t.Errorf("size = %d, want 4 (minimum-1 floor applied to a 0.25-man 5%%)", size)
-	}
-}
-
-// TestApplyStarvation_DisbandsUnitStarvedToZero locks the disband path: a
-// unit reduced to size <= 0 by the day's starvation loss is disbanded, not
-// left at zero.
-func TestApplyStarvation_DisbandsUnitStarvedToZero(t *testing.T) {
+// TestApplyStarvation_DoesNotDisbandSmallGarrison covers the small-unit end,
+// where the old minimum-1 floor bit hardest: a 1-man unit was disbanded outright
+// by a mechanic that never emitted UnitAttrition or notified its owner.
+func TestApplyStarvation_DoesNotDisbandSmallGarrison(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
@@ -103,10 +92,34 @@ func TestApplyStarvation_DisbandsUnitStarvedToZero(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT size, status FROM units WHERE id = $1`, unitID).Scan(&size, &status); err != nil {
 		t.Fatalf("read unit: %v", err)
 	}
-	if size != 0 {
-		t.Errorf("size = %d, want 0", size)
+	if size != 1 || status != "garrison" {
+		t.Errorf("size = %d status = %q, want 1/garrison — a starving 1-man unit must be "+
+			"disbanded by upkeep (with event + notification), never silently here", size, status)
 	}
-	if status != "disbanded" {
-		t.Errorf("status = %q, want disbanded (a 1-man unit loses its last man to starvation)", status)
+}
+
+// TestApplyStarvation_StillEmitsStarvationDamage locks what applyStarvation
+// KEEPS. It is the audit/flavour signal for "this city went hungry today"; the
+// owner-facing warning is applySubsistenceCritical via the notify hub. Removing
+// the attrition must not quietly remove the record that starvation happened.
+func TestApplyStarvation_StillEmitsStarvationDamage(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, settlementID, _ := starvationGarrisonFixture(t, 100)
+
+	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
+	h.applyStarvation(ctx, worldID)
+
+	var n int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events
+		 WHERE stream_id = $1 AND event_type = 'StarvationDamage'`,
+		settlementID,
+	).Scan(&n); err != nil {
+		t.Fatalf("count StarvationDamage: %v", err)
+	}
+	if n != 1 {
+		t.Errorf("StarvationDamage events = %d, want 1", n)
 	}
 }

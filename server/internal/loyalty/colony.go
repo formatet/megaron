@@ -60,7 +60,7 @@ func (h *ColonyPenaltyHandler) Handle(ctx context.Context, e events.ScheduledEve
 		if delta == 0 {
 			continue
 		}
-		if err := h.applyColonyPenalty(ctx, oc.ownerID, e.WorldID, delta); err != nil {
+		if err := h.applyColonyPenalty(ctx, oc.ownerID, e.WorldID, delta, e.ID); err != nil {
 			slog.Error("colony penalty failed", "owner", oc.ownerID, "err", err)
 		}
 	}
@@ -70,7 +70,12 @@ func (h *ColonyPenaltyHandler) Handle(ctx context.Context, e events.ScheduledEve
 }
 
 // applyColonyPenalty writes a loyalty_events row for each colony belonging to owner.
-func (h *ColonyPenaltyHandler) applyColonyPenalty(ctx context.Context, ownerID, worldID uuid.UUID, delta int) error {
+// Claimed per (event_id, settlement_id) — migration 098. Loyalty is the projection
+// that IS replay-derived (settlement/loyalty.go recomputes it from its event stream),
+// so a duplicate colony_penalty row does not merely log twice, it moves the value
+// twice. The claim is per settlement rather than per owner because the loop below
+// appends one row per colony and can fail part-way through.
+func (h *ColonyPenaltyHandler) applyColonyPenalty(ctx context.Context, ownerID, worldID uuid.UUID, delta int, eventID int64) error {
 	rows, err := h.pool.Query(ctx,
 		`SELECT id FROM settlements
 		 WHERE world_id = $1 AND owner_id = $2 AND is_capital = false AND loyalty > 1`,
@@ -90,6 +95,16 @@ func (h *ColonyPenaltyHandler) applyColonyPenalty(ctx context.Context, ownerID, 
 	}
 
 	for _, id := range ids {
+		claim, err := h.pool.Exec(ctx,
+			`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
+			 ON CONFLICT DO NOTHING`, eventID, id)
+		if err != nil {
+			slog.Error("colony penalty claim", "settlement", id, "err", err)
+			continue
+		}
+		if claim.RowsAffected() == 0 {
+			continue // this event already penalised this colony
+		}
 		if err := AppendLoyaltyEvent(ctx, h.pool, h.eventStore, id, worldID,
 			"colony_penalty", delta, "overextension",
 		); err != nil {
