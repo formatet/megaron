@@ -76,6 +76,24 @@ func buildQueueETA(iso string) string {
 	return iso
 }
 
+// multiCityHint (legibility fix, 2026-07-24 — three separate soak rounds):
+// `status` shows exactly ONE settlement — the capital by default, or whichever
+// `--province <id>` names — and that scope was invisible. It was repeatedly
+// misread as the building list wrongly aggregating cities (a probe with two
+// cities saw only the capital's temple level and assumed the other city's
+// buildings were merged in) and as the Army block contradicting `unit list`'s
+// global total (this city's garrison vs. every unit everywhere). Returns ""
+// when the player owns only one settlement (settlement_cap.used <= 1) so the
+// normal case stays free of this line — no aggregation, no new endpoint,
+// purely naming the existing scope.
+func multiCityHint(name string, settlementsUsed float64) string {
+	if settlementsUsed <= 1 {
+		return ""
+	}
+	return fmt.Sprintf("Detta är %s. Du har %.0f städer — `keryx settlements` listar dem, `keryx status --province <id>` visar en annan.",
+		name, settlementsUsed)
+}
+
 func statusCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
@@ -144,13 +162,18 @@ func statusCmd() *cobra.Command {
 				coastalNote = "  [coastal — can build harbour → ships]"
 			}
 			settlementsNote := ""
+			settlementsUsed := 0.0
 			if cap, ok := sett["settlement_cap"].(map[string]any); ok {
 				used, _ := cap["used"].(float64)
 				max, _ := cap["max"].(float64)
 				settlementsNote = fmt.Sprintf("  Settlements: %.0f/%.0f", used, max)
+				settlementsUsed = used
 			}
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty, settlementsNote, coastalNote)
+			if hint := multiCityHint(name, settlementsUsed); hint != "" {
+				fmt.Println(hint)
+			}
 			fmt.Println("  Loyalty 1–4 (1=lägst; revolt kräver även fientlig garnison-majoritet + utlösande händelse)")
 			// P11 (soak 2026-07-18): loyalty had no visible raising lever — colonies
 			// sat at 1–2 with no signal why, or what to do about it. The mechanic
@@ -412,7 +435,7 @@ func statusCmd() *cobra.Command {
 
 			army, _ := sett["army"].(map[string]any)
 			if army != nil {
-				fmt.Println("Army")
+				fmt.Printf("Army (garnison i %s)\n", name)
 				// jsonKey = province.ArmyComposition's Go field name (no JSON tags,
 				// so it serializes verbatim); dbType feeds the shared display map.
 				units := []struct{ jsonKey, dbType string }{
@@ -435,6 +458,9 @@ func statusCmd() *cobra.Command {
 						fmt.Printf("  %-10s %.1f grain, %.1f silver / day\n", "Upkeep", g, s)
 					}
 				}
+				// Legibilitet (2026-07-24): namnge att detta bara är garnisonen HÄR —
+				// `unit list` räknar hela rostret (fält, andra städer, ockuperade ruiner).
+				fmt.Println("  Fältenheter och andra städer syns i `keryx unit list`.")
 			}
 
 			// Completed buildings — so the agent doesn't re-queue what already exists.
