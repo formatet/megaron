@@ -15,6 +15,8 @@ export async function loadWarDrawer() {
   // Preserve recruit-city selection across reloads. Founder phase (no capital
   // yet) has no settlement to recruit at, so this stays null there.
   const prevRecruitCity = capital ? (document.getElementById('war-recruit-city')?.value || capital.id) : null;
+  // Preserve active tab across reloads (recruit-city switch, post-action refresh, etc).
+  const prevTab = body.querySelector('.dtab.active')?.dataset.tab || 'army';
 
   body.innerHTML = `
     <div class="drawer-tabs">
@@ -35,6 +37,13 @@ export async function loadWarDrawer() {
       if (el) el.style.display = '';
     });
   });
+
+  if (prevTab !== 'army') {
+    body.querySelectorAll('.dtab').forEach(t => t.classList.toggle('active', t.dataset.tab === prevTab));
+    body.querySelectorAll('.city-tab').forEach(c => c.style.display = 'none');
+    const el = document.getElementById('wtab-' + prevTab);
+    if (el) el.style.display = '';
+  }
 
   renderWarMovements(capital);
 
