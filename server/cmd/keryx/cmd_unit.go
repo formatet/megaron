@@ -606,15 +606,6 @@ func currentHex(c *Client, worldID, unitID string) (int, int, error) {
 
 // ---- unit recall / redirect ---------------------------------------------------
 
-// recallResponse is the shared JSON shape returned by /recall for both modes.
-type recallResponse struct {
-	UnitID             string    `json:"unit_id"`
-	MessengerID        string    `json:"messenger_id"`
-	MessengerArrivesAt time.Time `json:"messenger_arrives_at"`
-	DueTick            int       `json:"due_tick"`
-	Mode               string    `json:"mode"`
-}
-
 func unitRecallCmd() *cobra.Command {
 	var unitID string
 
@@ -622,8 +613,8 @@ func unitRecallCmd() *cobra.Command {
 		Use:   "recall",
 		Short: "Recall a marching unit — turn it home",
 		Long: `Send a recall order to a marching unit. The order travels as a visible
-messenger; command is never instant — the unit keeps marching on its original
-course until the messenger physically catches up with it, then turns for home
+hemerodromos; command is never instant — the unit keeps marching on its original
+course until the runner physically catches up with it, then turns for home
 (the hex it originally departed from).`,
 		Example: `  keryx unit recall --unit <id>`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -637,10 +628,15 @@ course until the messenger physically catches up with it, then turns for home
 				printRawJSON(data)
 				return nil
 			}
-			var resp recallResponse
-			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("Recall order sent to unit %s — messenger arrives %s (tick %d); the unit turns home once it catches up.\n",
-				unitID[:8], resp.MessengerArrivesAt.Local().Format("15:04 Jan 2"), resp.DueTick)
+			var resp map[string]any
+			json.Unmarshal(data, &resp)
+			fmt.Printf("Recall order sent to unit %s", unitID[:8])
+			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
+				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
+					fmt.Printf(" — hemerodromos arrives %s", t.Local().Format("15:04 Jan 2"))
+				}
+			}
+			fmt.Println("; the unit turns home once it catches up.")
 			return nil
 		},
 	}
@@ -658,7 +654,7 @@ func unitRedirectCmd() *cobra.Command {
 		Short: "Redirect a marching unit to a new hex",
 		Long: `Send a redirect order to a marching unit, giving it a new destination.
 Command is never instant — the unit keeps marching on its original course until
-the order messenger physically catches up with it, then turns onto the new course.`,
+the order's hemerodromos physically catches up with it, then turns onto the new course.`,
 		Example: `  keryx unit redirect --unit <id> --target 5,-3`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			q, r, err := parseQR(target)
@@ -675,10 +671,15 @@ the order messenger physically catches up with it, then turns onto the new cours
 				printRawJSON(data)
 				return nil
 			}
-			var resp recallResponse
-			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("Redirect order sent to unit %s (new course %d,%d) — messenger arrives %s (tick %d).\n",
-				unitID[:8], q, r, resp.MessengerArrivesAt.Local().Format("15:04 Jan 2"), resp.DueTick)
+			var resp map[string]any
+			json.Unmarshal(data, &resp)
+			fmt.Printf("Redirect order sent to unit %s (new course %d,%d)", unitID[:8], q, r)
+			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
+				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
+					fmt.Printf(" — hemerodromos arrives %s", t.Local().Format("15:04 Jan 2"))
+				}
+			}
+			fmt.Println(".")
 			return nil
 		},
 	}

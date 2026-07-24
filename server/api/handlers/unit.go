@@ -370,11 +370,12 @@ func mustJSON(v any) []byte {
 
 // Recall handles POST /worlds/{worldID}/units/{unitID}/recall
 //
-// Sends a physical recall/redirect order to a marching unit (temenos_march_recall.md).
+// Sends a physical recall/redirect order to a marching unit via the order
+// envelope (temenos_orderlopare_plan.md — recall/redirect→kuvert-unifiering).
 // Body (optional): {"target_q":int,"target_r":int} — omitted = recall (turn home to
 // the hex the unit departed from); both given = redirect (new course). The order
-// travels as a visible messenger; the unit keeps marching on its original course
-// until the messenger physically catches up with it — command is never instant.
+// travels as a visible hemerodromos; the unit keeps marching on its original course
+// until the courier physically catches up with it — command is never instant.
 func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
 	if !ok {
@@ -429,13 +430,18 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Guard: an earlier recall/redirect is already in flight for this unit.
+	// Checks the order-envelope's ScheduledOrderDelivery queue (verb recall|redirect)
+	// now that dispatch goes through sendOrderCourier instead of the frozen
+	// ScheduledMarchRecall path — that old event type is no longer written by
+	// fresh dispatches, so checking it here would silently stop firing.
 	var pendingMessengerID uuid.UUID
 	if err := h.pool.QueryRow(ctx,
 		`SELECT (payload->>'messenger_id')::uuid
 		 FROM scheduled_events
 		 WHERE event_type = $1 AND (payload->>'unit_id')::uuid = $2
+		   AND payload->>'verb' = ANY(ARRAY['recall','redirect'])
 		   AND processed_at IS NULL AND failed_at IS NULL`,
-		string(events.ScheduledMarchRecall), unitID,
+		string(events.ScheduledOrderDelivery), unitID,
 	).Scan(&pendingMessengerID); err == nil {
 		var eta time.Time
 		_ = h.pool.QueryRow(ctx, `SELECT arrives_at FROM messengers WHERE id=$1`, pendingMessengerID).Scan(&eta)
@@ -508,115 +514,36 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Resolve who dispatches the order messenger: the settlement at the unit's
-	// march origin if one still stands there, else the owner's capital, else —
-	// founder phase — the wandering host itself (mig 087 lets a messenger have a
-	// unit origin; before founding there is no settlement anywhere to send from,
-	// and reaching/recalling the escort is one of the host's designed uses).
-	var originSettlementID, originUnitID *uuid.UUID
-	var homeQ, homeR int
-	var homeSettlementID uuid.UUID
-	if err := h.pool.QueryRow(ctx,
-		`SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
-		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
-		worldID, origin.Q, origin.R,
-	).Scan(&homeSettlementID, &homeQ, &homeR); err == nil {
-		originSettlementID = &homeSettlementID
-	} else if err := h.pool.QueryRow(ctx,
-		`SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
-		 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.is_capital = true`,
-		worldID, playerID,
-	).Scan(&homeSettlementID, &homeQ, &homeR); err == nil {
-		originSettlementID = &homeSettlementID
-	} else {
-		hostID, pos, ok := hostCurrentPos(ctx, h.pool, h.clk.Now(), worldID, playerID)
-		if !ok {
-			writeError(w, http.StatusInternalServerError, "could not resolve a settlement to dispatch the order from")
-			return
-		}
-		hid := hostID
-		originUnitID, homeQ, homeR = &hid, pos.Q, pos.R
-	}
-
-	now := h.clk.Now()
-	recallTravelTicks, recallTravelDur := messenger.CourierTravel(ctx, h.pool, worldID,
-		province.MapPosition{Q: homeQ, R: homeR}, currentPos)
-	messengerArrivesAt := now.Add(recallTravelDur)
-	var currentTick int
-	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	dueTick := currentTick + recallTravelTicks
-
-	tx, err := h.pool.Begin(ctx)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not begin transaction")
-		return
-	}
-	defer tx.Rollback(ctx)
-
-	// Idempotency / race guard: re-check status FOR UPDATE inside the tx.
-	var lockedStatus string
-	if err := tx.QueryRow(ctx, `SELECT status FROM units WHERE id = $1 FOR UPDATE`, unitID).Scan(&lockedStatus); err != nil {
-		writeError(w, http.StatusNotFound, "unit not found in transaction")
-		return
-	}
-	if unit.Status(lockedStatus) != unit.StatusMarching {
-		writeError(w, http.StatusConflict, "unit status changed; order not sent")
+	// Resolve who dispatches the order: the nearest own active settlement to
+	// the unit's CURRENT position (beslut 4, temenos_orderlopare_plan.md) — the
+	// same resolveOrderOrigin march/stance already use, not the old bespoke
+	// "settlement at march origin → capital → host" chain. currentPos (not the
+	// march-departure hex) is the right distance anchor: a marching unit is
+	// never "in" a city, so this never short-circuits to instant delivery —
+	// sendOrderCourier always dispatches a real hemerodromos here.
+	courierOrigin, ok := h.resolveOrderOrigin(w, ctx, worldID, playerID, currentPos)
+	if !ok {
 		return
 	}
 
-	msgText := "Recall order — return home."
+	msgText := "Hemerodromos — recall order, return home."
 	if mode == "redirect" {
-		msgText = fmt.Sprintf("Redirect order — new course to (%d,%d).", newTargetQ, newTargetR)
+		msgText = fmt.Sprintf("Hemerodromos — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
 	}
 
-	// origin_q/origin_r only ride along on a unit origin (mig 087): the host's
-	// departure point is frozen here; a settlement origin keeps its coords in
-	// the settlement row as before.
-	var originQ, originR *int
-	if originUnitID != nil {
-		originQ, originR = &homeQ, &homeR
-	}
-	var messengerID uuid.UUID
-	if err := tx.QueryRow(ctx,
-		`INSERT INTO messengers
-		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','recall',$8,$9,$10,$11,$12)
-		 RETURNING id`,
-		worldID, playerID, originSettlementID, originUnitID, originQ, originR,
-		msgText, homeQ, homeR, currentPos.Q, currentPos.R, messengerArrivesAt,
-	).Scan(&messengerID); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not dispatch order messenger")
-		return
-	}
-
-	payload := messenger.MarchRecallPayload{
-		WorldID:     worldID,
-		UnitID:      unitID,
-		MessengerID: messengerID,
-		Mode:        mode,
-	}
+	recallOrder := &combat.RecallOrder{WorldID: worldID, UnitID: unitID, Mode: mode}
+	extra := map[string]any{"mode": mode}
 	if mode == "redirect" {
-		payload.NewTargetQ = &newTargetQ
-		payload.NewTargetR = &newTargetR
-	}
-	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMarchRecall, payload, dueTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule order arrival")
-		return
+		recallOrder.NewTargetQ = &newTargetQ
+		recallOrder.NewTargetR = &newTargetR
+		extra["target_q"] = newTargetQ
+		extra["target_r"] = newTargetR
 	}
 
-	if err := tx.Commit(ctx); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not commit order")
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"status":               "recall_order_sent",
-		"unit_id":              unitID,
-		"messenger_id":         messengerID,
-		"messenger_arrives_at": messengerArrivesAt,
-		"due_tick":             dueTick,
-		"mode":                 mode,
-	})
+	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
+		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+		Verb: mode, Recall: recallOrder,
+	}, msgText, courierOrigin, currentPos, extra)
 }
 
 // Load handles POST /worlds/{worldID}/units/{shipID}/load
