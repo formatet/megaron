@@ -12,6 +12,19 @@ const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }
 
+// "Clear all" (Megaron): DELETEs every notification for this Wanax in this world,
+// then empties the drawer and zeroes the badge. Distinct from the read-all that
+// loadNotifDrawer already fires on open — that only marks read; this removes them.
+export async function clearAllNotifs() {
+  const body = document.getElementById('notif-body');
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/notifications`, { method: 'DELETE' });
+    if (!r.ok) return;
+    if (body) body.innerHTML = '<p class="empty-state" style="padding:1rem">No notifications yet.</p>';
+    updateNotifBadge(0);
+  } catch (_) { /* leave the drawer as-is on failure */ }
+}
+
 export async function loadNotifDrawer(kindFilter) {
   const body = document.getElementById('notif-body');
   body.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';

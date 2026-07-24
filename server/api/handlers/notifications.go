@@ -146,3 +146,29 @@ func (h *NotificationsHandler) ReadAll(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// DeleteAll removes all of the player's notifications in this world — the
+// "clear all" button (Megaron). ReadAll only marks read (they linger in the
+// feed styled as read); this empties the feed for good. Scoped to the caller's
+// own rows, so it can never touch another Wanax's notifications.
+func (h *NotificationsHandler) DeleteAll(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	if _, err := h.pool.Exec(r.Context(),
+		`DELETE FROM notifications WHERE world_id = $1 AND player_id = $2`,
+		worldID, playerID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "delete failed")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

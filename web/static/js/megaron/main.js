@@ -46,7 +46,7 @@ import {
   loadDiplomacyDrawer, dipToggleKind, dipToggleThread, dipSendInThread,
   dipCancel, dipAccept, dipDecline, dipReply, dipComposeToggleKind, dipSend,
 } from './ui/drawers/diplomacy.js';
-import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
+import { loadNotifDrawer, notifShowKind, clearAllNotifs } from './ui/drawers/notif.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
 export function toggleDrawer(name) {
@@ -156,6 +156,7 @@ Object.assign(window, {
   loadTransferGoods,
   loadWarDrawer,
   notifShowKind,
+  clearAllNotifs,
   okRite,
   okRiteComposed,
   okOfferWorth,

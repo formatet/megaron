@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"sort"
 	"strconv"
@@ -33,6 +34,7 @@ type riteProvinceStatus struct {
 	Settlement struct {
 		Kharis           float64               `json:"kharis"`
 		KharisMood       string                `json:"kharis_mood"`
+		RiteKharisCost   float64               `json:"rite_kharis_cost"`
 		AvailablePrayers []riteAvailablePrayer `json:"available_prayers"`
 	} `json:"settlement"`
 }
@@ -140,7 +142,12 @@ func riteCmd() *cobra.Command {
 						fmt.Println()
 					}
 				}
-				fmt.Println("\nThe offering is consumed even if the gods stay silent — they are fickle.")
+				if p.Settlement.RiteKharisCost > 0 {
+					fmt.Printf("\nThe offering — and %.0f of your kharis — is consumed even if the gods stay silent: a rite spends standing, win or lose.\n",
+						p.Settlement.RiteKharisCost)
+				} else {
+					fmt.Println("\nThe offering is consumed even if the gods stay silent — they are fickle.")
+				}
 				return nil
 			}
 
@@ -344,7 +351,13 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 			fmt.Printf("Offer multiplier: %.2fx — a stingier offer pleases the gods less.\n", offerMultiplier)
 		}
 	}
-	fmt.Println("The offering is consumed even if the gods stay silent.")
+	if p.Settlement.RiteKharisCost > 0 {
+		fmt.Printf("The offering — and %.0f of your kharis (%.0f → %.0f) — is consumed even if the gods stay silent.\n",
+			p.Settlement.RiteKharisCost, p.Settlement.Kharis,
+			math.Max(1, p.Settlement.Kharis-p.Settlement.RiteKharisCost))
+	} else {
+		fmt.Println("The offering is consumed even if the gods stay silent.")
+	}
 	return askYesNo("Cast?")
 }
 

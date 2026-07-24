@@ -382,10 +382,18 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// it to know which prayers it can actually cast.
 		var kharisNow, kharisRate, kharisCap float64
 		var maxTempleLevel int
+		var kharisNetPerDay float64
+		var kharisNetKnown bool
 		if sett.OwnerID != nil {
 			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
 				kharisNow, kharisRate = k.Amount, k.Rate
 				kharisCap, maxTempleLevel = k.Cap, k.MaxTempleLevel
+			}
+			// Projected daily maintenance net (gain − decay) — the honest answer to
+			// "will my kharis rise or fall", which the passive geographic rate alone
+			// hides (soak 2026-07-24: a fading L1 Wanax saw "+0.1/dygn"). Read-only.
+			if net, has, nerr := kharis.ProjectDailyNet(r.Context(), h.pool, *sett.OwnerID, worldID); nerr == nil {
+				kharisNetPerDay, kharisNetKnown = net, has
 			}
 		}
 
@@ -685,6 +693,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis_per_day":                  kharisRate * float64(events.TicksPerDay),
 			"kharis_cap":                      kharisCap,
 			"max_temple_level":                maxTempleLevel,
+			"rite_kharis_cost":                riteKharisCost,
+			"kharis_net_per_day":              kharisNetPerDay,
+			"kharis_net_known":                kharisNetKnown,
 			"temple_offers":                   templeOffers,
 			"grain_prod_rate":                 grainProdRate,
 			"grain_consum_rate":               grainConsumRate,

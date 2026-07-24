@@ -1173,6 +1173,20 @@ body:has(.auth-page) main {
   font-size: 0.7rem;
 }
 .drawer-close:hover { color: var(--accent); border-color: var(--accent); }
+.notif-clear-all {
+  margin-left: auto;
+  margin-right: 0.4rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.15rem 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.notif-clear-all:hover { color: var(--accent); border-color: var(--accent); }
 
 .drawer-title-group { display: flex; align-items: center; gap: .3rem; }
 .drawer-nav { background: none; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer; padding: 0.05rem 0.4rem; font-family: var(--mono); font-size: 0.85rem; }

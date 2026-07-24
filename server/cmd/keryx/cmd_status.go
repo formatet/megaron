@@ -344,16 +344,29 @@ func statusCmd() *cobra.Command {
 			kpd, _ := sett["kharis_per_day"].(float64)
 			kcap, _ := sett["kharis_cap"].(float64)
 			mtl, _ := sett["max_temple_level"].(float64)
+			knet, _ := sett["kharis_net_per_day"].(float64)
+			netKnown, _ := sett["kharis_net_known"].(bool)
+			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
+			// kharis — the passive geographic rate alone hid a fading L1 Wanax behind
+			// "passiv +0.1/dygn" (sondrunda 2026-07-24). Show the net when we have it.
+			netStr := fmt.Sprintf("passiv %+.1f/dygn", kpd)
+			if netKnown {
+				netStr = fmt.Sprintf("netto %+.1f/dygn (tempel − decay)", knet)
+			}
 			if kcap > 0 {
-				fmt.Printf("  %-8s %6s  (%s) · tak %.0f · passiv %+.1f/dygn\n", "Kharis", resource(kv), mood, kcap, kpd)
+				fmt.Printf("  %-8s %6s  (%s) · tak %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
 			} else {
-				fmt.Printf("  %-8s %6s  (%s) · passiv %+.1f/dygn\n", "Kharis", resource(kv), mood, kpd)
+				fmt.Printf("  %-8s %6s  (%s) · %s\n", "Kharis", resource(kv), mood, netStr)
 			}
 			// Legibilitet (2026-07-24): ett L1-tempel HÅLLER standing men klättrar inte
 			// förbi sitt tak — utan denna rad läser en spelare "kharis fastnat på 22" som
 			// en bugg (sondrunda 2026-07-24). Taket = 25×(1+nivå): L1=50, L2=75, L3=100.
 			if mtl >= 1 && kcap < 100 {
-				fmt.Printf("  → taket %.0f sätts av ditt största tempel (nivå %.0f). Ett tempel på den nivån HÅLLER din kharis men lyfter den inte vidare — bygg ett större tempel för att höja taket OCH få kharis att klättra.\n", kcap, mtl)
+				verb := "HÅLLER din kharis men lyfter den inte vidare"
+				if netKnown && knet < -0.05 {
+					verb = "räcker inte för att bära din kharis — den faller långsamt mot golvet"
+				}
+				fmt.Printf("  → taket %.0f sätts av ditt största tempel (nivå %.0f). Ett tempel på den nivån %s — bygg ett större tempel för att höja taket OCH få kharis att klättra.\n", kcap, mtl, verb)
 			}
 
 			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
