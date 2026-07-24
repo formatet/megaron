@@ -30,10 +30,13 @@ func allocateCmd() *cobra.Command {
 REPLACES the whole split: any good you do not name drops to 0%. Name every good
 you want worked, not just the one you are changing. Run without flags to read the
 current allocation without touching it.
-(One exception: a city with a temple keeps a 15% cult share, re-applied by the
-server and additive — it is not taken from the goods you named.)
+Cult (devotion) is the exception and is ADDITIVE: it sits on top of the goods you
+name and is NOT counted in the ≤100% sum, so devoting more of the city never
+starves production. It is allocatable up to your temple's capacity — 15% per temple
+level (L1=15%, L2=30%, L3=45%) — with a 15% floor a temple city always keeps.
+Raising --cult toward the cap is what makes a bigger temple's kharis climb.
 
-Give a percent per good — the sum must not exceed 100.
+Give a percent per good — the sum (excluding cult) must not exceed 100.
 The share auto-scales with population (pop grows, the worker count grows).
 Non-producible goods are rejected by the server.
 
@@ -41,6 +44,7 @@ Examples:
   keryx allocate                                            (show current split)
   keryx allocate --timber 40 --stone 30 --grain 30
   keryx allocate --grain 50 --fish 20                       (the rest is idle)
+  keryx allocate --grain 45 --timber 25 --oil 10 --cult 30  (fill an L2 temple → kharis climbs)
   keryx allocate --grain 70 --tin 30 --province <prov-id>   (allocate a colony)`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			percent := make(map[string]int)

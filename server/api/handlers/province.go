@@ -3317,6 +3317,19 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 
 	// Determine producible goods for this settlement using catchment tiles
 	// (same logic as RecomputeProduction — 7 catchment map_tiles: own hex + 6 adjacent).
+	var templeLevel int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = 'temple'`,
+		settlementID,
+	).Scan(&templeLevel)
+	// Temple devotion capacity: a temple of level L can employ up to
+	// kharis.TempleDevotionPerLevel x L of the population at the altar (Timothy
+	// 2026-07-24). Cult labor is allocatable up to this cap, ADDITIVE, so devoting
+	// more never starves the producing jobs. Before this, cult was pinned at the
+	// 0.15 floor and unallocatable, so a level-2 temple's extra capacity could never
+	// be filled and its kharis could never climb (sondrunda 2026-07-24).
+	cultCapacity := kharis.TempleDevotionPerLevel * float64(templeLevel)
+
 	producible := make(map[string]bool)
 	prows, err := h.pool.Query(r.Context(),
 		`SELECT DISTINCT pr.good_key
@@ -3362,11 +3375,34 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	// directly so production auto-scales as population grows or shrinks.
 	totalPct := 0.0
 	filtered := make(map[string]float64)
+	cultWeight := -1.0 // sentinel: player did not name cult → keep the floor below
 	for key, pct := range req.Percent {
 		if pct < 0 || pct > 100 {
 			writeError(w, http.StatusUnprocessableEntity,
 				fmt.Sprintf("percent for %s must be between 0 and 100", key))
 			return
+		}
+		if key == "cult" {
+			// Cult (devotion) is allocatable up to the temple's capacity and is
+			// ADDITIVE — it is NOT added to totalPct and NOT gated on producibility,
+			// so devoting more of the city never competes with grain/timber/… .
+			if templeLevel == 0 {
+				writeError(w, http.StatusUnprocessableEntity,
+					"cult (devotion) needs a temple here — build one first")
+				return
+			}
+			cw := pct / 100.0
+			if cw < kharis.TempleDevotionPerLevel {
+				cw = kharis.TempleDevotionPerLevel // never below the holy floor
+			}
+			if cw > cultCapacity {
+				writeError(w, http.StatusUnprocessableEntity,
+					fmt.Sprintf("cult capped at %.0f%% by your level-%d temple — build a higher temple to devote more of the city",
+						cultCapacity*100, templeLevel))
+				return
+			}
+			cultWeight = cw
+			continue
 		}
 		if !producible[key] {
 			hint := ""
@@ -3389,6 +3425,11 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if totalPct == 0 {
+		if cultWeight >= 0 {
+			writeError(w, http.StatusUnprocessableEntity,
+				"cult is additive — also name your producing jobs (allocate replaces the whole distribution: grain/timber/… drop to 0% if omitted)")
+			return
+		}
 		writeError(w, http.StatusUnprocessableEntity, "no valid producible goods in percent")
 		return
 	}
@@ -3452,15 +3493,20 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	// serves the temple alongside other duties), so grain self-sufficiency is
 	// unaffected. Only applied when the settlement has a temple; no-op otherwise
 	// (ON CONFLICT DO NOTHING skips the insert if agent already allocated cult ≥ 0.15).
-	if _, err := tx.Exec(r.Context(),
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 SELECT $1, 'cult', 0.15
-		 WHERE EXISTS (SELECT 1 FROM buildings b WHERE b.settlement_id = $1 AND b.building_type = 'temple')
-		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		settlementID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not apply cult labor floor")
-		return
+	if templeLevel > 0 {
+		cw := cultWeight
+		if cw < 0 {
+			cw = kharis.TempleDevotionPerLevel // player didn't name cult → hold the floor
+		}
+		if _, err := tx.Exec(r.Context(),
+			`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+			 VALUES ($1, 'cult', $2)
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight = $2`,
+			settlementID, cw,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not apply cult labor")
+			return
+		}
 	}
 
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
