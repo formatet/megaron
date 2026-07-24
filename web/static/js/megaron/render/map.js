@@ -1539,6 +1539,16 @@ export function initMap() {
     }
     // Empty hex. Mountains are impassable; sea hexes take ships.
     if (isMountain) { window.closeMarchCtx(); return; }
+    // Moment-22: an own field unit standing right here IS the order target,
+    // not the hex — marching-to-your-own-hex is rejected server-side ("cannot
+    // march to own hex"). Route to the same map→drawer bridge the left-click
+    // "Visa →" button uses (war.js warFocusUnit): the War drawer opens with
+    // that unit's card focused, its March button ready. Same orderable
+    // condition as war.js canMarch (garrison never applies on an empty hex).
+    const ownUnit = (State.unitsData || []).find(u =>
+      u.q === h.q && u.r === h.r && (u.status === 'garrison' || u.status === 'positioned') &&
+      u.type !== 'priest' && (u.category === 'naval' || u.size === 100));
+    if (ownUnit) { window.closeMarchCtx(); window.warFocusUnit(ownUnit.id); return; }
     window.openMarchCtx(destFromHex(h, tile, null), e.clientX, e.clientY);
   });
 
