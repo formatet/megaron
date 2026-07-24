@@ -55,11 +55,14 @@ type CollapseSettlementHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	scheduler  *events.Scheduler
+	hub        Broadcaster
 }
 
-// NewCollapseSettlementHandler creates a CollapseSettlementHandler.
-func NewCollapseSettlementHandler(pool *pgxpool.Pool, store *events.Store, scheduler *events.Scheduler) *CollapseSettlementHandler {
-	return &CollapseSettlementHandler{pool: pool, eventStore: store, scheduler: scheduler}
+// NewCollapseSettlementHandler creates a CollapseSettlementHandler. hub may be
+// nil (tests) — every NotifyPlayer call is nil-guarded, matching the other
+// combat handlers.
+func NewCollapseSettlementHandler(pool *pgxpool.Pool, store *events.Store, scheduler *events.Scheduler, hub Broadcaster) *CollapseSettlementHandler {
+	return &CollapseSettlementHandler{pool: pool, eventStore: store, scheduler: scheduler, hub: hub}
 }
 
 // Handle processes a single CollapseSettlement scheduled event.
@@ -75,7 +78,7 @@ func (h *CollapseSettlementHandler) Handle(ctx context.Context, e events.Schedul
 	}
 	defer tx.Rollback(ctx)
 
-	if err := collapseSettlement(ctx, tx, h.eventStore, h.scheduler,
+	if err := collapseSettlement(ctx, tx, h.eventStore, h.scheduler, h.hub,
 		payload.SettlementID, payload.WorldID, payload.Cause); err != nil {
 		return err
 	}
@@ -92,6 +95,7 @@ func collapseSettlement(
 	tx pgx.Tx,
 	eventStore *events.Store,
 	scheduler *events.Scheduler,
+	hub Broadcaster,
 	settlementID, worldID uuid.UUID,
 	cause string,
 ) error {
@@ -333,6 +337,27 @@ func collapseSettlement(
 			Cause:          cause,
 			LastSettlement: isLastCity,
 		}, worldID, nil)
+
+	// Owner notification (r6 audit, 2026-07-24): before this, a collapse's only
+	// player-reachable signals were the gossip.Broadcast above — which reaches
+	// NEARBY settlement owners, not necessarily the affected Wanax, and reaches
+	// no one at all when this was their last city — and the CityCollapsed event,
+	// which is audit-only (chronicle/province-stream, never surfaced to a
+	// client). A Wanax whose garrison was just disbanded into the warband (step
+	// 3) and whose city vanished (step 6) had no notification connecting either
+	// to this. level 1 (top priority): losing a settlement outranks losing a
+	// single unit (upkeep.go's UnitAttrition/UnitDeserted use level 2/3).
+	if hub != nil && effectiveOwnerID != uuid.Nil {
+		_ = hub.NotifyPlayer(ctx, worldID, effectiveOwnerID, unit.EventCityCollapsed, 1, map[string]any{
+			"settlement_id":   settlementID,
+			"name":            name,
+			"cause":           cause,
+			"warband_unit_id": warbandID,
+			"q":               q,
+			"r":               r,
+			"last_settlement": isLastCity,
+		})
+	}
 
 	// Notify in logs for observability.
 	slog.Info("city collapsed",
