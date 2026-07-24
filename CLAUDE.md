@@ -72,16 +72,20 @@ Go 1.22+ · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/webso
 How to build:
 - **Event sourcing (hybrid — faktiskt kontrakt):** append-only `events`-tabell som audit-/notify-logg. **Endast lojalitet är replay-härledd** (`settlement/loyalty.go` räknar om från events). Resurser, armé, silver, kharis, population muteras med direkta `UPDATE` på projektionstabellerna — `events` är *inte* källa till sanning för dem. Skriv nya events ändå (de driver notiser + audit), men förlita dig inte på att kunna rebuilda settlement-state ur loggen. Mutera atomärt i en TX.
 - **Lazy resource eval:** store `(amount, rate_per_minute, calc_at)`, compute on read.
-- **Timed event queue** in PostgreSQL (SKIP LOCKED, worker polls every 10s). WebSocket hub per world for push.
+- **Timed event queue** in PostgreSQL (SKIP LOCKED, worker polls every `min(10s, TickSeconds)`). WebSocket hub per world for push.
 
 ---
 
 ## Architecture rules (HARD — do not deviate)
 
 ### Time
-- **Never call `time.Now()` directly.** All time goes through `clock.Clock.Now()`.
+- **Never call `time.Now()` directly** in game/tick logic. All game time goes through `clock.Clock.Now()`.
 - Inject `clock.Clock` via constructor. Use `clock.TestClock` in tests.
 - Only `internal/events` and `main.go` may hold a `*clock.WallClock`.
+- **Sanktionerade väggklocks-undantag** (kodsvep 2026-07-24 — icke-spel-tid, medvetet utanför clock.Clock):
+  WS-I/O-deadlines (`internal/notify/hub.go`) · auth-token/cookie-expiry (`internal/auth`,
+  `api/handlers/auth.go`) · `internal/chronicle` (lokal dagbok) · `cmd/create-world`-seed ·
+  CLI-display i `cmd/keryx`. Allt annat: clock.Clock, inga nya undantag utan att listan uppdateras.
 
 ### Event handlers (Fas 2.2 — idempotency)
 Every handler registered with `events.Worker` must be safe to run twice.
@@ -99,24 +103,27 @@ No event may say "check if X happened" — it must say "X happened" or not exist
 Event schemas are **frozen in semantics forever**. Never change how an existing event type is interpreted.
 To evolve: create a new event type (`MessengerArrivedV2`). Old handlers keep reading old types.
 
-### Package dependency order (G1 — strict, no exceptions)
+### Package dependency order (G1 — strict, no exceptions; uppmätt mot koden 2026-07-24)
 ```
-clock, events  ← zero internal deps
+ai, auth, clock, gossip, notify, province, religion, unit, world  ← zero internal deps
   ↑
-economy, religion  ← may use clock, events
+events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
-settlement, province  ← may use economy, religion, clock, events
+economy(→clock,events,gossip) · transport(→clock,events,province) · capabilities(→clock,province,religion)
   ↑
-transport  ← may use province, clock, events
+kharis(→ai,clock,economy,events,religion) · loyalty(→clock,economy,events,settlement,tick)
   ↑
-combat, kingdom  ← may use transport, settlement, province, economy, religion, clock, events
+combat  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events)
   ↑
-messenger, notify  ← may use all above
+messenger  ← may use combat + allt under
   ↑
-api/handlers  ← may use all
+api/handlers, cmd/server  ← may use all (enda som får importera notify — hubben konsumeras
+                            via consumer-interfaces, t.ex. transport.Broadcaster)
 ```
 A package may import **downward only**. Upward communication goes via event emission.
 Consumer interfaces are defined in the **consuming** package, never in the implementing one.
+(`kingdom` är inget paket — kingdoms bor i `api/handlers/kingdom.go` + `capabilities/kingdom_verbs.go`,
+gated bakom `KINGDOMS_ENABLED`.)
 
 ### Handler timeouts (G2)
 `events.Worker` wraps every handler in `context.WithTimeout` (default 5 s).
@@ -166,7 +173,7 @@ Se [[megaron_namn_hygien]] §D. Rör ej "The Thalassa" (= havet, lore-permanent)
 
 - **Province ≠ settlement** — separate tables; outpost = province row, no settlement row. `temenos_settlement.md`
 - **Loyalty** — bounded low-integer projection, never 0–100; event-sourced (range in code). `temenos_settlement.md`
-- **Kharis** is a relationship, not mana; always a floor (never 0); mid-revision → rikes-pool per Wanax. `temenos_kharis.md`
+- **Kharis** is a relationship, not mana; always a floor (never 0); rikes-pool per Wanax (LIVE, mig 029; lazy-tuple på `player_world_records`, tak styrs av tempelnivå). `temenos_kharis.md`
 - **Messengers** are physical, sacred (uninterceptable); reply arrives on return. **Load-bearing pillar:**
   ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
   (recall etc.) also travel by messenger — command is never instant. `temenos_settlement.md`
