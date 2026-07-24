@@ -337,7 +337,64 @@ func (h *UnitArrivalHandler) exploreArrived(
 		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
 	}
 
+	h.reportScoutFindings(ctx, tx, u, destQ, destR, worldID)
+
 	return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID)
+}
+
+// reportScoutFindings tells the owner what their scout found at the far hex it
+// just revealed (temenos_todo.md "Explore-order kommer hem utan rapport" —
+// previously the map updated silently and the only pings were "turning
+// home"/"back in garrison", never what was actually seen). The FOW sweep at
+// the top of resolve() already recorded this hex as permanently scouted; this
+// reads back its terrain + deposit flags (same map_tiles columns foundColony
+// already reads for the identical purpose) so the report states the OUTCOME —
+// "copper found" or "nothing of value" — never "go check the hex" (Fas 2.3).
+// Best-effort: a read failure here must never abort the arrival — the unit
+// still needs to turn for home regardless.
+func (h *UnitArrivalHandler) reportScoutFindings(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) {
+	var terrain string
+	var copperDep, tinDep, silverDep, cedarDep bool
+	if err := tx.QueryRow(ctx,
+		`SELECT terrain, copper_deposit, tin_deposit,
+		        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false)
+		 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+		worldID, destQ, destR,
+	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep); err != nil {
+		slog.Warn("scout report: could not load destination tile, skipping report", "unit", u.id, "q", destQ, "r", destR, "err", err)
+		return
+	}
+
+	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitScoutReport,
+		unit.UnitScoutReportPayload{
+			UnitID:        u.id,
+			Q:             destQ,
+			R:             destR,
+			Terrain:       terrain,
+			CopperDeposit: copperDep,
+			TinDeposit:    tinDep,
+			SilverDeposit: silverDep,
+			CedarDeposit:  cedarDep,
+		}, worldID, nil)
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ScoutReport", 4, map[string]any{
+			"unit_id":        u.id,
+			"q":              destQ,
+			"r":              destR,
+			"terrain":        terrain,
+			"copper_deposit": copperDep,
+			"tin_deposit":    tinDep,
+			"silver_deposit": silverDep,
+			"cedar_deposit":  cedarDep,
+		})
+	}
+
+	slog.Info("scout report filed", "unit", u.id, "q", destQ, "r", destR, "terrain", terrain,
+		"copper", copperDep, "tin", tinDep, "silver", silverDep, "cedar", cedarDep)
 }
 
 // dispatchReturnHome turns a field unit around and marches it back to its home
