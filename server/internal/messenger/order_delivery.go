@@ -36,9 +36,10 @@ type OrderDeliveryPayload struct {
 	PlayerID    uuid.UUID           `json:"player_id"`
 	UnitID      uuid.UUID           `json:"unit_id"`
 	MessengerID uuid.UUID           `json:"messenger_id"`
-	Verb        string              `json:"verb"` // "march" | "stance"
+	Verb        string              `json:"verb"` // "march" | "stance" | "recall" | "redirect"
 	March       *combat.MarchOrder  `json:"march,omitempty"`
 	Stance      *combat.StanceOrder `json:"stance,omitempty"`
+	Recall      *combat.RecallOrder `json:"recall,omitempty"`
 }
 
 // OrderDeliveryHandler processes ScheduledOrderDelivery events.
@@ -109,6 +110,41 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 			return nil
 		}
 		slog.Info("order delivered — stance applied", "unit", p.UnitID, "stance", res.Stance)
+		return nil
+	case "recall", "redirect":
+		if p.Recall == nil {
+			return fmt.Errorf("order delivery %s: %s verb without recall payload", p.MessengerID, p.Verb)
+		}
+		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.Recall)
+		if err != nil {
+			slog.Error("order delivery: recall/redirect execution failed after claim — order dropped",
+				"messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb, "err", err)
+			return nil
+		}
+		if res == nil {
+			// Unit no longer marching by the time the runner arrived — a stale
+			// miss (already arrived, or an earlier order already turned it), not
+			// a game-rule rejection: stays a silent no-op (matches the frozen
+			// MarchRecallHandler's "too late" behaviour), never OrderFailed.
+			slog.Info("order delivered but unit no longer marching — recall/redirect missed",
+				"unit", p.UnitID, "verb", p.Verb)
+			return nil
+		}
+		notifKind := "UnitRecalled"
+		if p.Verb == "redirect" {
+			notifKind = "UnitRedirected"
+		}
+		if h.hub != nil {
+			_ = h.hub.NotifyPlayer(ctx, p.WorldID, res.OwnerID, notifKind, 3, map[string]any{
+				"unit_id":    res.UnitID,
+				"q":          res.FromQ,
+				"r":          res.FromR,
+				"target_q":   res.NewTargetQ,
+				"target_r":   res.NewTargetR,
+				"arrives_at": res.ArrivesAt,
+			})
+		}
+		slog.Info("order delivered — unit turned onto new course", "unit", p.UnitID, "verb", p.Verb, "arrives_at", res.ArrivesAt)
 		return nil
 	default:
 		return fmt.Errorf("order delivery %s: unknown verb %q", p.MessengerID, p.Verb)

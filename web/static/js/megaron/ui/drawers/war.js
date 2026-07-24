@@ -482,7 +482,7 @@ export async function unitRecall(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by messenger — reaches the unit ' + fmtArrival(d.messenger_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by hemerodromos — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Recall failed';
@@ -503,7 +503,7 @@ export async function unitRedirect(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by messenger — reaches the unit ' + fmtArrival(d.messenger_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by hemerodromos — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Redirect failed';
