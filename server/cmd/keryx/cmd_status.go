@@ -362,11 +362,13 @@ func statusCmd() *cobra.Command {
 			// förbi sitt tak — utan denna rad läser en spelare "kharis fastnat på 22" som
 			// en bugg (sondrunda 2026-07-24). Taket = 25×(1+nivå): L1=50, L2=75, L3=100.
 			if mtl >= 1 && kcap < 100 {
-				verb := "HÅLLER din kharis men lyfter den inte vidare"
-				if netKnown && knet < -0.05 {
-					verb = "räcker inte för att bära din kharis — den faller långsamt mot golvet"
+				line := fmt.Sprintf("  → taket %.0f sätts av ditt nivå-%.0f-tempel; din kharis håller men klättrar inte — höj kult-labor (`keryx allocate --cult`) eller bygg ett högre tempel.\n", kcap, mtl)
+				if netKnown && knet > 0.05 {
+					line = fmt.Sprintf("  → din kharis klättrar mot taket %.0f (satt av ditt nivå-%.0f-tempel) — bygg ett högre tempel för att höja taket vidare.\n", kcap, mtl)
+				} else if netKnown && knet < -0.05 {
+					line = fmt.Sprintf("  → taket %.0f sätts av ditt nivå-%.0f-tempel, men din kharis faller mot golvet — höj kult-labor (om templet har plats) eller bygg ett högre tempel.\n", kcap, mtl)
 				}
-				fmt.Printf("  → taket %.0f sätts av ditt största tempel (nivå %.0f). Ett tempel på den nivån %s — bygg ett större tempel för att höja taket OCH få kharis att klättra.\n", kcap, mtl, verb)
+				fmt.Print(line)
 			}
 
 			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
