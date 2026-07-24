@@ -101,9 +101,29 @@ func newFixture(t *testing.T, pool *pgxpool.Pool) fixture {
 	return f
 }
 
+// fakeBroadcaster records NotifyPlayer calls for assertion — a minimal
+// Broadcaster (internal/transport/notifier.go) test double, matching the one
+// in internal/combat/unit_arrival_notify_test.go.
+type fakeBroadcaster struct {
+	notified []string // kinds, in call order
+	lastKind string
+	lastBody map[string]any
+}
+
+func (f *fakeBroadcaster) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {}
+
+func (f *fakeBroadcaster) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
+	f.notified = append(f.notified, kind)
+	f.lastKind = kind
+	if m, ok := payload.(map[string]any); ok {
+		f.lastBody = m
+	}
+	return nil
+}
+
 // fireArrival loads the TransportArrival event the dispatch enqueued and runs the
-// handler, mirroring what the worker does.
-func fireArrival(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID) {
+// handler, mirroring what the worker does. hub may be nil.
+func fireArrival(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, hub Broadcaster) {
 	t.Helper()
 	ctx := context.Background()
 	var id int64
@@ -116,7 +136,7 @@ func fireArrival(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID) {
 	).Scan(&id, &payload); err != nil {
 		t.Fatalf("load enqueued TransportArrival: %v", err)
 	}
-	h := NewArrivalHandler(pool)
+	h := NewArrivalHandler(pool, hub)
 	if err := h.Handle(ctx, events.ScheduledEvent{ID: id, WorldID: worldID, Payload: payload}); err != nil {
 		t.Fatalf("arrival handle: %v", err)
 	}
@@ -171,9 +191,10 @@ func goodAmount(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID, good s
 func TestTransport_DeliversManifestOnArrival(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool)
+	fb := &fakeBroadcaster{}
 
 	dispatchGift(t, pool, f, Manifest{"silver": 100, "grain": 50})
-	fireArrival(t, pool, f.worldID)
+	fireArrival(t, pool, f.worldID, fb)
 
 	if got := goodAmount(t, pool, f.destID, "silver"); got != 100 {
 		t.Errorf("dest silver = %v, want 100", got)
@@ -191,24 +212,39 @@ func TestTransport_DeliversManifestOnArrival(t *testing.T) {
 	if status != "delivered" {
 		t.Errorf("transport status = %q, want delivered", status)
 	}
+
+	// Legibility fix (2026-07-24): a committed delivery must notify the
+	// destination owner exactly once, so a Wanax checking the map doesn't
+	// wonder whether a "success"-reported transfer actually landed.
+	if len(fb.notified) != 1 || fb.notified[0] != "TransferDelivered" {
+		t.Errorf("NotifyPlayer calls = %v, want exactly one \"TransferDelivered\"", fb.notified)
+	}
+	if fb.lastBody["dest_name"] != "Dest" {
+		t.Errorf("notify dest_name = %v, want %q", fb.lastBody["dest_name"], "Dest")
+	}
 }
 
 func TestTransport_ArrivalIsIdempotent(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool)
+	fb := &fakeBroadcaster{}
 
 	dispatchGift(t, pool, f, Manifest{"silver": 100})
-	fireArrival(t, pool, f.worldID)
-	fireArrival(t, pool, f.worldID) // second run must not double-credit
+	fireArrival(t, pool, f.worldID, fb)
+	fireArrival(t, pool, f.worldID, fb) // second run must not double-credit or double-notify
 
 	if got := goodAmount(t, pool, f.destID, "silver"); got != 100 {
 		t.Errorf("dest silver after double arrival = %v, want 100 (no double-credit)", got)
+	}
+	if len(fb.notified) != 1 {
+		t.Errorf("NotifyPlayer calls = %v, want exactly one (no double-notify on replay)", fb.notified)
 	}
 }
 
 func TestTransport_InterceptedIsNotDelivered(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool)
+	fb := &fakeBroadcaster{}
 
 	id := dispatchGift(t, pool, f, Manifest{"silver": 100})
 	// Interception (Del 3-fas-4) flips status before the arrival fires.
@@ -216,7 +252,11 @@ func TestTransport_InterceptedIsNotDelivered(t *testing.T) {
 		`UPDATE transports SET status = 'intercepted' WHERE id = $1`, id); err != nil {
 		t.Fatalf("mark intercepted: %v", err)
 	}
-	fireArrival(t, pool, f.worldID)
+	fireArrival(t, pool, f.worldID, fb)
+
+	if len(fb.notified) != 0 {
+		t.Errorf("NotifyPlayer calls = %v, want none (intercepted delivery must not notify)", fb.notified)
+	}
 
 	if got := goodAmount(t, pool, f.destID, "silver"); got != 0 {
 		t.Errorf("dest silver after intercepted arrival = %v, want 0 (delivery cancelled)", got)

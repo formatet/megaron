@@ -16,14 +16,19 @@ import (
 // Idempotent (CLAUDE.md "Event handlers"): claims the event in processed_deliveries,
 // then re-checks the transport is still in transit under FOR UPDATE — so an
 // interception (Del 3-fas-4) that flipped status to 'intercepted' cancels delivery,
-// and a re-run never double-credits.
+// and a re-run never double-credits. Because the notify call below only ever runs
+// after that claim succeeds and the crediting transaction commits, a re-run of this
+// handler (worker retry, dead-letter replay) can never double-notify either — the
+// second call returns at the "already processed" guard before it reaches notify.
 type ArrivalHandler struct {
 	pool *pgxpool.Pool
+	hub  Broadcaster // nil-guarded; carries TransferDelivered to the destination's owner
 }
 
-// NewArrivalHandler creates an ArrivalHandler.
-func NewArrivalHandler(pool *pgxpool.Pool) *ArrivalHandler {
-	return &ArrivalHandler{pool: pool}
+// NewArrivalHandler creates an ArrivalHandler. hub may be nil (e.g. in tests that
+// don't care about notifications).
+func NewArrivalHandler(pool *pgxpool.Pool, hub Broadcaster) *ArrivalHandler {
+	return &ArrivalHandler{pool: pool, hub: hub}
 }
 
 // Handle delivers the manifest to the destination, or no-ops if the transport was
@@ -116,5 +121,42 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		return fmt.Errorf("mark transport delivered: %w", err)
 	}
 
-	return tx.Commit(ctx)
+	// Load the destination's owner + name for the delivery notification, in the
+	// same transaction as the credit (cheap join, no extra round trip after commit).
+	var destOwnerID uuid.UUID
+	var destName string
+	if err := tx.QueryRow(ctx,
+		`SELECT owner_id, name FROM settlements WHERE id = $1`, *destID,
+	).Scan(&destOwnerID, &destName); err != nil {
+		return fmt.Errorf("load destination owner: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit: %w", err)
+	}
+
+	// Legibility gap (2026-07-24 sondrunda): the CLI already shows a departure ETA
+	// ("arrives in X min", cmd/keryx/cmd_goods.go), but until now arrival credited
+	// the goods completely silently — a Wanax checking too early sees nothing and
+	// assumes the transfer vanished. Notify only on a genuine, committed delivery;
+	// the intercepted/lost/dest-vanished branches above all return before this
+	// point and never fire it. Fired once per transport by construction: this
+	// point is only reached after the processed_deliveries claim succeeded, so a
+	// worker retry of the same event stops at that claim guard, above, and never
+	// re-notifies. Trade legs (economy.DeliveryHandler) already carry their own
+	// TradeDelivery notification — this is TransferDelivered only, so intern
+	// transfer/gift never double-notifies alongside a trade leg.
+	if h.hub != nil && len(manifest) > 0 {
+		goods := make([]map[string]any, 0, len(manifest))
+		for _, it := range manifest {
+			goods = append(goods, map[string]any{"good_key": it.good, "quantity": it.qty})
+		}
+		_ = h.hub.NotifyPlayer(ctx, e.WorldID, destOwnerID, "TransferDelivered", 3, map[string]any{
+			"dest_id":   *destID,
+			"dest_name": destName,
+			"goods":     goods,
+		})
+	}
+
+	return nil
 }
