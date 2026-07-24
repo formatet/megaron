@@ -180,8 +180,8 @@ func statusCmd() *cobra.Command {
 				ref, _ := sitos["ref_price_grain"].(float64)
 				floor, _ := sitos["ref_price_floor"].(float64)
 				ceil, _ := sitos["ref_price_ceiling"].(float64)
-				fmt.Printf("Sitos-fonden (spannmålsreserv): %s silver (+%.1f/tick, cap %s) · Referenspris grain: %.2f silver/enhet (golv %.1f, tak %.1f)\n\n",
-					resource(fund), rt, resource(cap), ref, floor, ceil)
+				fmt.Printf("Sitos-fonden (spannmålsreserv): %s silver / cap %s · reserven drar ~%.1f silver/tick ur stadens likvida silver tills cap (ingen inkomst) · Referenspris grain: %.2f silver/enhet (golv %.1f, tak %.1f)\n\n",
+					resource(fund), resource(cap), rt, ref, floor, ceil)
 			}
 
 			// "Senaste tick"-sammanfattning: summerar journalen (keryx ticklog)
