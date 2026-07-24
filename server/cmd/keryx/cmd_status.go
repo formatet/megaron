@@ -371,6 +371,9 @@ func statusCmd() *cobra.Command {
 
 			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
+			if idle, _ := sett["kharis_devotion_idle"].(bool); idle {
+				fmt.Println("  → ditt tempel kan sysselsätta MER hängivenhet än du allokerat — höj kult-labor (`keryx allocate --cult <%>`) för att fylla det och få kharis att klättra.")
+			}
 			if temples, ok := sett["temple_offers"].([]any); ok {
 				if len(temples) == 0 {
 					fmt.Println("  Tempel: inga — kharis klättrar inte utan tempel + offer.")

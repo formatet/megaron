@@ -383,7 +383,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		var kharisNow, kharisRate, kharisCap float64
 		var maxTempleLevel int
 		var kharisNetPerDay float64
-		var kharisNetKnown bool
+		var kharisNetKnown, kharisDevotionIdle bool
 		if sett.OwnerID != nil {
 			if k, kerr := loadPlayerKharis(r.Context(), h.pool, *sett.OwnerID, worldID); kerr == nil {
 				kharisNow, kharisRate = k.Amount, k.Rate
@@ -392,8 +392,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// Projected daily maintenance net (gain − decay) — the honest answer to
 			// "will my kharis rise or fall", which the passive geographic rate alone
 			// hides (soak 2026-07-24: a fading L1 Wanax saw "+0.1/dygn"). Read-only.
-			if net, has, nerr := kharis.ProjectDailyNet(r.Context(), h.pool, *sett.OwnerID, worldID); nerr == nil {
+			if net, has, devSum, devCap, nerr := kharis.ProjectDailyNet(r.Context(), h.pool, *sett.OwnerID, worldID); nerr == nil {
 				kharisNetPerDay, kharisNetKnown = net, has
+				// Idle temple capacity: the Wanax raised a temple's level but hasn't
+				// allocated the cult labor to fill it, so it can't lift kharis. 0.02 =
+				// a hair above float noise, well under one 0.15 devotion step.
+				kharisDevotionIdle = has && (devCap-devSum) > 0.02
 			}
 		}
 
@@ -696,6 +700,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"rite_kharis_cost":                riteKharisCost,
 			"kharis_net_per_day":              kharisNetPerDay,
 			"kharis_net_known":                kharisNetKnown,
+			"kharis_devotion_idle":            kharisDevotionIdle,
 			"temple_offers":                   templeOffers,
 			"grain_prod_rate":                 grainProdRate,
 			"grain_consum_rate":               grainConsumRate,

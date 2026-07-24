@@ -21,8 +21,7 @@ import (
 //
 // hasTemples is false when the Wanax holds no standing temple: then the day is
 // "missed", gain is 0, and the net is just −dailyDecay.
-func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (net float64, hasTemples bool, err error) {
-	var devotionSum float64
+func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (net float64, hasTemples bool, devotionSum, devotionCapacity float64, err error) {
 	var templeCities, templelessColonies int
 	err = pool.QueryRow(ctx,
 		`SELECT
@@ -33,6 +32,18 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		        LEFT JOIN settlement_labor sl ON sl.settlement_id = s2.id AND sl.good_key = 'cult'
 		        WHERE s2.owner_id = $1 AND s2.world_id = $2
 		          AND s2.state NOT IN ('sunk', 'collapsed', 'razed')
+		    ), 0),
+		    COALESCE((
+		        -- The devotion the Wanax's temples COULD employ if fully staffed —
+		        -- $3 × level per temple. When this exceeds the allocated devotionSum,
+		        -- a bigger temple is standing idle: the Wanax raised its level but
+		        -- never allocated the cult labor to fill it, so kharis does not climb
+		        -- (sondrunda 2026-07-24: built L2, net stayed −0.1, blamed wine).
+		        SELECT SUM($3::float8 * GREATEST(1, b.level))
+		        FROM settlements s5
+		        JOIN buildings b ON b.settlement_id = s5.id AND b.building_type = 'temple'
+		        WHERE s5.owner_id = $1 AND s5.world_id = $2
+		          AND s5.state NOT IN ('sunk', 'collapsed', 'razed')
 		    ), 0),
 		    COALESCE((
 		        SELECT COUNT(DISTINCT s2.id)
@@ -52,15 +63,15 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		          )
 		    ), 0)`,
 		playerID, worldID, TempleDevotionPerLevel,
-	).Scan(&devotionSum, &templeCities, &templelessColonies)
+	).Scan(&devotionSum, &devotionCapacity, &templeCities, &templelessColonies)
 	if err != nil {
-		return 0, false, err
+		return 0, false, 0, 0, err
 	}
 
 	dailyDecay := computeDailyDecay(templelessColonies)
 	if templeCities == 0 {
 		// Missed day: no gain, decay is the whole story.
-		return -dailyDecay, false, nil
+		return -dailyDecay, false, devotionSum, devotionCapacity, nil
 	}
 
 	values, verr := religion.LoadDivineValues(ctx, pool, worldID)
@@ -69,7 +80,7 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	offerFraction := computeOfferFraction(fed, templeCities)
 
 	gain := devotionSum * kharisPerTempleDay * offerFraction * scarcity
-	return gain - dailyDecay, true, nil
+	return gain - dailyDecay, true, devotionSum, devotionCapacity, nil
 }
 
 // scarcityFromValues mirrors templeOfferScarcity without a TickHandler receiver,
