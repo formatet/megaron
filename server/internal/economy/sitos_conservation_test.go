@@ -128,7 +128,7 @@ func TestSitosTick_SilverConserved(t *testing.T) {
 	if err != nil {
 		t.Fatalf("grain base value: %v", err)
 	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, grainBase); err != nil {
+	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
@@ -176,7 +176,7 @@ func TestSitosTick_ReleaseConservesToCapWhenHeadroom(t *testing.T) {
 	if err != nil {
 		t.Fatalf("grain base value: %v", err)
 	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, grainBase); err != nil {
+	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
@@ -221,7 +221,7 @@ func TestSitosTick_ReleaseRespectsLiquidCap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("grain base value: %v", err)
 	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, grainBase); err != nil {
+	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
@@ -265,7 +265,7 @@ func TestSitosTick_NoReleaseWithinCap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("grain base value: %v", err)
 	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, grainBase); err != nil {
+	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 	if moved, _ := releaseEvent(t, pool, ctx, settlementID); moved != -1 {
@@ -291,7 +291,10 @@ func TestSitosTick_FundNeverNegative(t *testing.T) {
 	}
 
 	for i := 0; i < 5; i++ {
-		if err := h.tickSettlement(ctx, settlementID, worldID, grainBase); err != nil {
+		// Distinct event ID per iteration — each represents a DIFFERENT day's
+		// tick, not a replay of the same one (see TestSitosTick_DoubleFireIsIdempotent
+		// for the replay case).
+		if err := h.tickSettlement(ctx, settlementID, worldID, int64(i), grainBase); err != nil {
 			t.Fatalf("tickSettlement iter %d: %v", i, err)
 		}
 		var fund float64
@@ -303,5 +306,74 @@ func TestSitosTick_FundNeverNegative(t *testing.T) {
 		if fund < 0 {
 			t.Fatalf("fund went negative on iter %d: %.6f", i, fund)
 		}
+	}
+}
+
+// TestSitosTick_DoubleFireIsIdempotent is the regression guard for the Fas 2.2
+// idempotency gap (CLAUDE.md "Event handlers"): the events.Worker can redeliver
+// the same ScheduledSitosTick event — a crash between a settlement's commit and
+// the worker's markDone, or a dead-letter replay — and before the
+// processed_sitos_ticks claim (migration 097) this would double-tax and
+// double-release silver for the same day. Firing tickSettlement twice with the
+// SAME event ID must leave fund + liquid silver exactly as they were after the
+// first fire; firing it again with a NEW event ID (the next day's tick) must
+// NOT be a no-op — the claim is scoped per event, not latched forever.
+func TestSitosTick_DoubleFireIsIdempotent(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	cfg := testSitosCfg()
+
+	const tick = 100
+	// Same deep-shortage fixture as TestSitosTick_SilverConserved: guarantees
+	// both the tax leg and the "sell" stabilization leg actually move silver,
+	// so a double-fire bug would be visible in either.
+	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 5 /*rate*/, 0)
+
+	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
+	grainBase, err := GoodBaseValue(ctx, pool, "grain")
+	if err != nil {
+		t.Fatalf("grain base value: %v", err)
+	}
+
+	readState := func() (fund, liquid float64) {
+		t.Helper()
+		if err := pool.QueryRow(ctx, `SELECT sitos_fund_silver FROM settlements WHERE id = $1`, settlementID).Scan(&fund); err != nil {
+			t.Fatalf("read fund: %v", err)
+		}
+		if err := pool.QueryRow(ctx,
+			`SELECT settled(amount, rate, calc_tick) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
+			settlementID,
+		).Scan(&liquid); err != nil {
+			t.Fatalf("read liquid: %v", err)
+		}
+		return
+	}
+
+	const eventID int64 = 424242
+	if err := h.tickSettlement(ctx, settlementID, worldID, eventID, grainBase); err != nil {
+		t.Fatalf("first tickSettlement: %v", err)
+	}
+	fundAfterFirst, liquidAfterFirst := readState()
+
+	// Replay: same event ID, same settlement — must no-op.
+	if err := h.tickSettlement(ctx, settlementID, worldID, eventID, grainBase); err != nil {
+		t.Fatalf("replayed tickSettlement: %v", err)
+	}
+	fundAfterSecond, liquidAfterSecond := readState()
+
+	if math.Abs(fundAfterSecond-fundAfterFirst) > 1e-9 {
+		t.Errorf("fund changed on replay of the same event: first=%.6f second=%.6f", fundAfterFirst, fundAfterSecond)
+	}
+	if math.Abs(liquidAfterSecond-liquidAfterFirst) > 1e-9 {
+		t.Errorf("liquid silver changed on replay of the same event: first=%.6f second=%.6f", liquidAfterFirst, liquidAfterSecond)
+	}
+
+	// A genuinely NEW event id (the next day's tick) must NOT be a no-op.
+	if err := h.tickSettlement(ctx, settlementID, worldID, eventID+1, grainBase); err != nil {
+		t.Fatalf("next-day tickSettlement: %v", err)
+	}
+	fundAfterNextDay, liquidAfterNextDay := readState()
+	if math.Abs(fundAfterNextDay-fundAfterFirst) < 1e-9 && math.Abs(liquidAfterNextDay-liquidAfterFirst) < 1e-9 {
+		t.Errorf("next-day tick with a new event id looked like a no-op — claim may be over-scoped (not per-event)")
 	}
 }

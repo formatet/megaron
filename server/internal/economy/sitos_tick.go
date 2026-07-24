@@ -49,11 +49,14 @@ type SitosFundReleasePayload struct {
 // into its fund and then buying surplus / selling shortage for subsistence goods
 // at a smoothed reference price — always with silver strictly conserved.
 //
-// TODO: idempotent — like the kharis/colony daily ticks this handler applies a
-// tax + stabilization each run and reschedules on its last line; a worker retry
-// between commit and markDone would re-tax. This matches the accepted precedent
-// for the other self-rescheduling ticks in this codebase (see CLAUDE.md Fas 2.2);
-// tightening all of them to strict idempotency is tracked separately.
+// Idempotent (CLAUDE.md "Event handlers"): tickSettlement claims (event_id,
+// settlement_id) in processed_sitos_ticks (migration 097) inside the SAME
+// transaction as its tax/release/stabilize writes, so a worker retry of the
+// same ScheduledSitosTick event (crash between commit and markDone, or a
+// dead-letter replay) resumes rather than re-taxing — settlements already
+// committed for this event short-circuit, any not yet reached proceed
+// normally. The kharis/colony daily ticks this handler was modelled on do NOT
+// yet carry an equivalent guard; that gap is tracked separately, not fixed here.
 type SitosTickHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
@@ -99,7 +102,7 @@ func (h *SitosTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) 
 	}
 
 	for _, id := range ids {
-		if err := h.tickSettlement(ctx, id, e.WorldID, grainBaseValue); err != nil {
+		if err := h.tickSettlement(ctx, id, e.WorldID, e.ID, grainBaseValue); err != nil {
 			slog.Error("sitos tick: settlement failed", "settlement", id, "err", err)
 		}
 	}
@@ -111,12 +114,29 @@ func (h *SitosTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) 
 }
 
 // tickSettlement runs the tax + stabilization for one settlement in a single TX.
-func (h *SitosTickHandler) tickSettlement(ctx context.Context, settlementID, worldID uuid.UUID, grainBaseValue float64) error {
+func (h *SitosTickHandler) tickSettlement(ctx context.Context, settlementID, worldID uuid.UUID, eventID int64, grainBaseValue float64) error {
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback(ctx)
+
+	// Exactly-once claim, scoped to (event_id, settlement_id) rather than
+	// event_id alone: Handle fans ONE ScheduledSitosTick event out across every
+	// settlement, each committing its own transaction here, so a Handle-level
+	// claim would either falsely skip settlements never reached before a crash,
+	// or falsely mark them done before their writes commit. Committing the claim
+	// in the SAME transaction as the tax/release/stabilize writes below means a
+	// worker retry of this event resumes exactly where it left off.
+	claim, err := tx.Exec(ctx,
+		`INSERT INTO processed_sitos_ticks (event_id, settlement_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+		eventID, settlementID)
+	if err != nil {
+		return fmt.Errorf("claim sitos tick: %w", err)
+	}
+	if claim.RowsAffected() == 0 {
+		return nil // already processed this event for this settlement
+	}
 
 	var currentTick, population int
 	var fundSilver float64
