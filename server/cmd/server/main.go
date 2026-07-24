@@ -532,8 +532,10 @@ func absorbStartupDowntime(ctx context.Context, pool *pgxpool.Pool, clk *clock.W
 }
 
 // ensureWorld returns the single world this server hosts. If no world exists it
-// creates one using WORLD_NAME / MAP_WIDTH / MAP_HEIGHT from the environment.
-// The world ID is stable across restarts — it lives in the database.
+// creates one named WORLD_NAME (env; default "The Thalassa") at a fixed 40×30 —
+// MAP_WIDTH / MAP_HEIGHT are honoured only by the standalone cmd/create-world
+// seeding tool, not here. The world ID is stable across restarts — it lives in
+// the database.
 func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) (uuid.UUID, error) {
 	var id uuid.UUID
 	err := pool.QueryRow(ctx, `SELECT id FROM worlds LIMIT 1`).Scan(&id)
