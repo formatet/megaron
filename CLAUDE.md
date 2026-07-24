@@ -14,8 +14,10 @@ If code and this file conflict, trust the code, then fix this file.
 - **Before ending a session:** update `megaron_todo.md` (living status, backlog, "Vägen framåt").
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
 - **When you mark something done in `megaron_todo.md`:** stamp it with the **actual** wall-clock time pulled from
-  `TZ=Europe/Stockholm date` — never a guessed or remembered time. Your internal time-sense drifts; anchor every
-  completion (and "live since"/reseed note) to the real clock. Format `(YYYY-MM-DD HH:MM)`.
+  `date` (plain — the jobblaptop `~/.bashrc` exports `TZ='CET-1CEST,M3.5.0/2,M10.5.0/3'` so plain `date` gives
+  correct Swedish local time; **do NOT use `TZ=Europe/Stockholm date` — this git-bash's CRT-linked `date` ignores
+  Olson names and silently returns UTC**). Never a guessed or remembered time — your internal time-sense drifts;
+  anchor every completion (and "live since"/reseed note) to the real clock. Format `(YYYY-MM-DD HH:MM)`.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** (e.g. `frågor*` files in repo root) are an inbox, not a home: triage every point
   into a todo line, a vault update, or a reasoned rejection — then delete the dump. Never leave it rotting in root.
