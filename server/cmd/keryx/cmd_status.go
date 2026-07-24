@@ -50,6 +50,21 @@ func unusedCatchmentDeposits(catchmentDeposits []any, buildings []any) []string 
 	return unused
 }
 
+// timberBottleneckWarning flags the classic early wall (sondrunda 2026-07-24
+// runda 2): timber gates almost all early building — harbour 140, barracks 80,
+// foundry 80, temple 60 (internal/province/building.go) — yet nothing in the
+// interface named it as the critical early resource. Two probes founded the
+// same day: Polydamas never allocated labor to timber → 0 production → fully
+// blocked from expansion until trade rescued it; Antenor put 25% on timber →
+// ~12k/day → never blocked. Pure so it is unit-testable without a server; rate
+// is the settlement's net timber rate per tick (production − consumption).
+func timberBottleneckWarning(rate float64) string {
+	if rate > 0.01 {
+		return ""
+	}
+	return "⚠ Timber-produktion ~0 — timber gatear hamn (140)/barracks (80)/foundry (80)/temple (60). Allokera labor: `keryx allocate --timber <n>`"
+}
+
 // localDone parses an RFC3339 (UTC) completion timestamp and formats it in the
 // player's local time, matching `unit march`'s ETA display — a raw UTC string
 // like "2026-07-02T04:37:52Z" otherwise forces manual timezone math.
@@ -353,6 +368,19 @@ func statusCmd() *cobra.Command {
 				printRes("Copper", "copper", false)
 				printRes("Tin", "tin", false)
 				printRes("Bronze", "bronze", false)
+
+				// Timber bottleneck (sondrunda 2026-07-24 runda 2): see
+				// timberBottleneckWarning — printRes above only shows the Timber line
+				// at all when amount or rate is non-zero, so a city with true 0%
+				// timber labor got no timber line AND no warning. Check the rate
+				// directly so the wall is named before a Wanax hits it.
+				timberRate := 0.0
+				if td, ok := res["timber"].(map[string]any); ok {
+					timberRate, _ = td["rate"].(float64)
+				}
+				if w := timberBottleneckWarning(timberRate); w != "" {
+					fmt.Printf("  %s\n", w)
+				}
 			}
 			// Obruten deposit i catchmenten (P1a, soak 2026-07-18): se
 			// unusedCatchmentDeposits — flaggar koppar/tenn/silver som ligger i

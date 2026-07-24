@@ -110,3 +110,30 @@ func TestMultiCityHint(t *testing.T) {
 		})
 	}
 }
+
+// TestTimberBottleneckWarning reproduces the sondrunda 2026-07-24 runda 2 gap:
+// Polydamas never allocated labor to timber and got no signal that this would
+// block nearly all early building, while Antenor (25% timber, ~12k/day) hit no
+// wall. The warning must fire on ~0 production and stay silent once a Wanax is
+// actually producing timber, however small the rate.
+func TestTimberBottleneckWarning(t *testing.T) {
+	tests := []struct {
+		name    string
+		rate    float64
+		wantHit bool
+	}{
+		{"zero production", 0, true},
+		{"negligible production (float noise)", 0.001, true},
+		{"negative net (consuming stock, not producing)", -0.5, true},
+		{"small but real production", 0.5, false},
+		{"healthy production (Antenor-like)", 500, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := timberBottleneckWarning(tt.rate)
+			if hit := got != ""; hit != tt.wantHit {
+				t.Errorf("timberBottleneckWarning(%v) = %q, wantHit %v", tt.rate, got, tt.wantHit)
+			}
+		})
+	}
+}
