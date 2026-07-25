@@ -21,6 +21,7 @@ wants until you send a "keryx messenger" to it. Discovery is earned by contact.
 Prices are always firsthand — observed by your own messenger or caravan
 reaching the settlement (temenos_gossip.md PASS 2b: gossip only ever tells you
 a settlement exists and a coarse industry hint, never its detailed market).`,
+		Args: noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/market/wants", cfg.WorldID)

@@ -17,6 +17,7 @@ func godCmd() *cobra.Command {
 		Short: "God-mode view — full world map and all settlements without FOW (admin only)",
 		Example: `  POLEIA_ADMIN_KEY=secret keryx god
   keryx god --key secret --json`,
+		Args: rejectPositionalArgs("key"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if adminKey == "" {
 				adminKey = os.Getenv("POLEIA_ADMIN_KEY")

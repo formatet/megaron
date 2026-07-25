@@ -116,6 +116,7 @@ func statusCmd() *cobra.Command {
 		Short: "Show your province status (defaults to your capital; --province inspects a colony)",
 		Example: `  keryx status
   keryx status --province <province-id>   # inspect a colony`,
+		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			// Default to the capital; --province lets you inspect any province you own

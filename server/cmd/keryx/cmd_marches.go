@@ -12,6 +12,7 @@ func inboxCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "inbox",
 		Short: "Show messenger inbox",
+		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/inbox", cfg.WorldID)

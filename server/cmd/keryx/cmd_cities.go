@@ -20,6 +20,7 @@ and are safe to trade or send a messenger to.
 "rumour" rows were only heard OF through gossip — a fuzzy bearing and a coarse
 industry hint, never exact coordinates. They are NOT contactable yet: explore
 there (march/colonize) to turn a rumour into a real contact.`,
+		Args: noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/cities", cfg.WorldID))

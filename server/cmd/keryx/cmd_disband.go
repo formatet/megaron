@@ -16,6 +16,9 @@ func disbandCmd() *cobra.Command {
   keryx disband --hoplites 10 --chariots 5 --agema 2
   keryx disband --trireme 3 --agema 1
   keryx disband --war-galley 2 --merchantman 1`,
+		// No single flag is the obvious guess — one flag per unit type, so
+		// there is no "the" flag to name the way build has --type.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if hoplites+chariots+hiereus+trireme+agema+warGalley+merchantman == 0 {
 				return fmt.Errorf("specify at least one unit type to disband")

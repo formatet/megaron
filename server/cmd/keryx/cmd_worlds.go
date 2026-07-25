@@ -11,6 +11,7 @@ func worldsCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "worlds",
 		Short: "List available worlds",
+		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			data, err := c.get("/api/v1/worlds")

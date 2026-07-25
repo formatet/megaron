@@ -25,6 +25,7 @@ func buildCmd() *cobra.Command {
   keryx build --type mine --province <province-id>   # build in a colony
   keryx build --type winery           # produces nothing unless a hills tile is in catchment
   keryx build --queue                 # see what's already queued, with cancel-build IDs`,
+		Args: rejectPositionalArgs("type"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 
@@ -215,6 +216,7 @@ func cancelBuildCmd() *cobra.Command {
 		Use:     "cancel-build",
 		Short:   "Cancel a queued building and refund costs",
 		Example: `  keryx cancel-build --id <queue-id>`,
+		Args:    rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build-queue/%s",

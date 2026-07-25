@@ -22,6 +22,9 @@ func ticklogCmd() *cobra.Command {
 		Short:   "Per-tick journal for a city: prod/cons, trade, Sitos, builds (newest first)",
 		Example: `  keryx ticklog --last 10
   keryx ticklog --province <province-id> --last 20 --asc`,
+		// --province and --last are both plausible for a stray positional —
+		// no single one is the obvious guess.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			prov := cfg.ProvinceID

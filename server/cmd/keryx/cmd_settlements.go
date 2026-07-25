@@ -11,6 +11,7 @@ func settlementsCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "settlements",
 		Short: "List visible settlements (use names with trade/messenger)",
+		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
