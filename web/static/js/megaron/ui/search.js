@@ -1,6 +1,7 @@
 import { State } from '../state.js';
 import { hexPx, SCALE, canvas } from '../render/map.js';
 import { arrivalHTML } from './time.js';
+import { isTypingTarget } from './format.js';
 
 // ── Search overlay (Sprint 4) ─────────────────────────────────────────────
 export function toggleSearch() {
@@ -104,7 +105,7 @@ function renderSearch(q) {
 }
 
 document.addEventListener('keydown', e => {
-  if ((e.key === 'f' || e.key === '/') && document.activeElement.tagName !== 'INPUT') {
+  if ((e.key === 'f' || e.key === '/') && !isTypingTarget(document.activeElement)) {
     e.preventDefault();
     toggleSearch();
   }

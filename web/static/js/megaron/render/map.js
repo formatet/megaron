@@ -5,7 +5,9 @@ import { serverNow } from '../clock.js';
 import {
   LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS, LOCAL_ZOOM,
   GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM, ZOOM_MIN, ZOOM_MAX,
+  PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
+import { isTypingTarget } from '../ui/format.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -609,6 +611,42 @@ function drawLumbermill(ctx, x, y) {
 
 const RURAL_SPRITES = { farm: drawFarm, mine: drawMine, lumbermill: drawLumbermill };
 
+// ── Keyboard pan (WASD / arrows) ────────────────────────────────────────────
+// Currently-held direction keys, maintained by the keydown/keyup listeners
+// registered in initMap() below and consumed once per rendered frame inside
+// render(). A Set rather than four booleans mainly so panDelta() below reads
+// as "which of these are down" without four separate branches per key alias.
+const PAN_KEYS = new Set(['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright']);
+const heldKeys = new Set();
+
+// Held-keys + elapsed-ms → screen-space camera delta. Exported standalone
+// (not inlined into render()) so the direction/diagonal math is unit-testable
+// without a canvas: given a key set and a frame's dt, what does the camera
+// move by.
+//
+// Sign convention (easy to get backwards — verified against the existing
+// mouse-drag pan a few lines down in initMap(), which does
+// `camera.x += e.clientX - lastMouse.x`): dragging the map right increases
+// camera.x and moves the *view* west, because camera.x is the translate
+// applied before the world is drawn — moving the content right on screen is
+// the same as the viewpoint sliding west. A direction key reproduces the drag
+// that would visually pan that way: D (east) replays a leftward drag, so it
+// DECREASES camera.x; A (west) replays a rightward drag, so it increases
+// camera.x. Same logic on the vertical axis: S (south) decreases camera.y,
+// W (north) increases it.
+export function panDelta(held, dtMs, speedPxPerSec = PAN_SPEED_PX_PER_SEC) {
+  let dx = 0, dy = 0;
+  if (held.has('w') || held.has('arrowup'))    dy += 1;
+  if (held.has('s') || held.has('arrowdown'))  dy -= 1;
+  if (held.has('a') || held.has('arrowleft'))  dx += 1;
+  if (held.has('d') || held.has('arrowright')) dx -= 1;
+  if (!dx && !dy) return { dx: 0, dy: 0 };
+  // Normalize so a diagonal (W+D) isn't sqrt(2)x faster than a single direction.
+  const norm = Math.hypot(dx, dy);
+  const dist = speedPxPerSec * (dtMs / 1000);
+  return { dx: (dx / norm) * dist, dy: (dy / norm) * dist };
+}
+
 // ── Main renderer ─────────────────────────────────────────────────────────
 
 export function toggleActivityOverlay() {
@@ -631,7 +669,25 @@ window.addEventListener('resize', resizeCanvas);
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
+let lastPanFrameMs = performance.now();
+
 function render() {
+  // Apply held-key panning before the dirty check below — a held key must
+  // keep moving the camera (and re-marking State.dirty) every frame even on
+  // an otherwise-quiet map, or panning freezes as soon as nothing else is
+  // animating (see render()'s early-return a few lines down).
+  const nowMs = performance.now();
+  const dtMs = nowMs - lastPanFrameMs;
+  lastPanFrameMs = nowMs;
+  if (heldKeys.size) {
+    const { dx, dy } = panDelta(heldKeys, dtMs);
+    if (dx || dy) {
+      State.camera.x += dx;
+      State.camera.y += dy;
+      State.dirty = true;
+    }
+  }
+
   State.animFrame++;
   const seaTick = State.animFrame >> 5;
   const seaChanged = seaTick !== State.lastSeaTick;
@@ -1459,6 +1515,28 @@ export async function sendMessengerFromInspect(destSettlementID) {
 // module's entire "starts doing things" surface lives in one place — see
 // the FAS 2 execution report for the full init()-function inventory. ──────
 export function initMap() {
+  // ── Input: keyboard pan (WASD / arrows) ─────────────────────────────────
+  // Listens on document, not canvas, so panning works without clicking the
+  // map first — matching Escape/f//'s existing document-level listeners.
+  document.addEventListener('keydown', e => {
+    // Ctrl/Alt/Meta held: leave browser/OS shortcuts (e.g. Ctrl+F) alone.
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    if (isTypingTarget(document.activeElement)) return;
+    const k = e.key.toLowerCase();
+    if (!PAN_KEYS.has(k)) return;
+    e.preventDefault(); // stop arrow keys from scrolling the page
+    heldKeys.add(k);
+  });
+  document.addEventListener('keyup', e => {
+    heldKeys.delete(e.key.toLowerCase());
+  });
+  // No keyup fires if the window loses focus mid-hold (e.g. alt-tab) — without
+  // this the map would pan forever in whatever direction was held.
+  window.addEventListener('blur', () => heldKeys.clear());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') heldKeys.clear();
+  });
+
   // ── Input: drag + zoom + click ──────────────────────────────────────────
   canvas.addEventListener('mousedown', e => {
     State.dragging = true;
