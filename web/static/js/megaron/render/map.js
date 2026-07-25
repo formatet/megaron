@@ -504,24 +504,34 @@ function drawDepositIcons(ctx, cx, cy, tile) {
   if (tile.silver_deposit) types.push('ag');
   if (!types.length) return;
   ctx.save();
+  // Charcoal outline on every marker. These are game information sitting on
+  // top of terrain that now has its own texture and tone, and an unoutlined
+  // solid loses its silhouette the moment the ground behind it stops being
+  // flat — cedar's dark green triangle disappeared into the canopy outright.
+  // The outline is also what the project's own pixel-art rule asks for
+  // (1px charcoal on solids, temenos_designprinciper.md).
+  ctx.strokeStyle = '#221E18';
+  ctx.lineWidth = 0.8;
+  ctx.lineJoin = 'round';
   types.forEach((t, i) => {
     const ox = cx + 9, oy = cy - 8 + i * 5;
     switch (t) {
       case 'cu':
         ctx.fillStyle = '#C47C20';
-        ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
         break;
       case 'sn':
         ctx.fillStyle = '#909090';
         ctx.fillRect(ox - 2, oy - 1.5, 4, 3);
+        ctx.strokeRect(ox - 2, oy - 1.5, 4, 3);
         break;
       case 'cd':
         ctx.fillStyle = '#2A7010';
-        ctx.beginPath(); ctx.moveTo(ox, oy - 3); ctx.lineTo(ox + 2.5, oy + 1.5); ctx.lineTo(ox - 2.5, oy + 1.5); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(ox, oy - 3); ctx.lineTo(ox + 2.5, oy + 1.5); ctx.lineTo(ox - 2.5, oy + 1.5); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
       case 'ag':
         ctx.fillStyle = '#C0C8D8';
-        ctx.beginPath(); ctx.moveTo(ox, oy - 2.5); ctx.lineTo(ox + 2, oy); ctx.lineTo(ox, oy + 2.5); ctx.lineTo(ox - 2, oy); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(ox, oy - 2.5); ctx.lineTo(ox + 2, oy); ctx.lineTo(ox, oy + 2.5); ctx.lineTo(ox - 2, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
     }
   });
