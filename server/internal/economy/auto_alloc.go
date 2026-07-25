@@ -47,8 +47,24 @@ func AutoAllocateUnlocked(ctx context.Context, tx Tx, settlementID uuid.UUID, un
 	}
 
 	// Compute sumW and grainW.
+	//
+	// GoodCult is excluded from sumW on purpose: the allocate handler's contract
+	// (api/handlers/province.go LaborAlloc, "if key == "cult"") makes cult
+	// (devotion) additive — it has its own temple-capacity cap and is explicitly
+	// NOT added to totalPct there, so devoting more of a city to the temple never
+	// competes with grain/timber/… . settlement_labor still carries a 'cult' row
+	// like any other good, so a naive Σ over all rows silently pulls it back into
+	// the 1.0 labor budget here even though the handler never counts it against
+	// that budget. That mismatch was the bug (2026-07-25): a temple city's idle
+	// capacity looked 0.15 smaller than it actually was, so newly unlocked ores
+	// skimmed from grain instead of from genuinely idle labor. The two sites were
+	// never cross-checked against each other — don't let a future reader repeat
+	// that; if you touch one, check the other.
 	var sumW float64
-	for _, w := range weights {
+	for k, w := range weights {
+		if k == GoodCult {
+			continue
+		}
 		sumW += w
 	}
 	grainW := weights[GoodGrain]
