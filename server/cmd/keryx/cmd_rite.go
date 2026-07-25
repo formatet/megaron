@@ -86,6 +86,7 @@ func riteCmd() *cobra.Command {
   keryx rite --prayer <prayer-id> --offer-multiplier 2.0
   keryx rite --prayer <prayer-id> --yes
   keryx rite --json`,
+		Args: rejectPositionalArgs("prayer"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 

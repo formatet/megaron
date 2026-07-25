@@ -103,6 +103,7 @@ func foundingStatusCmd() *cobra.Command {
 		Short: "Show your wandering host: people, escort stores, position",
 		Example: `  keryx founding status
   keryx founding status --json`,
+		Args: noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			if jsonMode {
@@ -145,6 +146,7 @@ the confirmation. To found somewhere else: march the host there first
 (keryx unit march), then settle.`,
 		Example: `  keryx founding settle
   keryx founding settle --name Thapsos --yes`,
+		Args: rejectPositionalArgs("name"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			fp, err := fetchFoundingStatus(c)

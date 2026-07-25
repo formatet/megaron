@@ -18,6 +18,7 @@ func messageCmd() *cobra.Command {
 		Short: "Send a free-text message to another Wanax (no goods)",
 		Example: `  keryx message --to Korinth --text "Greetings, neighbour"
   keryx message --from-host --to Korinth --text "A people seeks passage"`,
+		Args: rejectPositionalArgs("to"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if fromHost && fromName != "" {
 				return fmt.Errorf("--from och --from-host kan inte kombineras — hostet ÄR avsändaren")
@@ -117,6 +118,7 @@ func tradeOfferCmd() *cobra.Command {
 		Short: "Send a trade offer (bilateral consent, FOW-gated) to another Wanax",
 		Example: `  keryx trade-offer --to Korinth --want-good grain --want-qty 100 --offer-silver 80
   keryx trade-offer --to Athenai --offer-good copper --offer-qty 50 --want-silver 120`,
+		Args: rejectPositionalArgs("to"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			buySet := wantGood != "" && wantQty > 0 && offerSilver > 0
 			sellSet := offerGood != "" && offerQty > 0 && wantSilver > 0

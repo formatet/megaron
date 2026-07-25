@@ -29,6 +29,7 @@ func craftCmd() *cobra.Command {
 		Example: `  keryx craft --recipe bronze --qty 5   # smelt 5 bronze (foundry required)
   keryx craft --recipe luxury --qty 2   # craft 2 luxury (market required)
   keryx craft --recipe 1 --qty 5        # same as bronze (numeric ID still works)`,
+		Args: rejectPositionalArgs("recipe"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			// Resolve recipe name → id if --recipe is a name, not a number.
 			// A bare numeric --recipe (e.g. "1") is used as the id directly —

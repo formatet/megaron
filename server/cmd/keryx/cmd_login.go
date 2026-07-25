@@ -14,6 +14,9 @@ func loginCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "Authenticate and save credentials",
+		// --server and --username are both plausible for a stray positional
+		// (a bare URL or a bare name) — no single one is the obvious guess.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if server == "" {
 				server = "http://localhost:8080"

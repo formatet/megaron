@@ -14,6 +14,9 @@ func replyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "reply",
 		Short: "Reply to an inbox message",
+		// --id and --text are both required and equally plausible for a
+		// stray positional — no single one is the obvious guess.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if msgID == "" || text == "" {
 				return fmt.Errorf("--id and --text required")
@@ -46,6 +49,7 @@ func tradeAcceptCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "trade-accept",
 		Short: "Accept a trade offer from inbox",
+		Args:  rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if msgID == "" {
 				return fmt.Errorf("--id required")
@@ -78,6 +82,7 @@ func tradeDeclineCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "trade-decline",
 		Short: "Decline a trade offer from inbox",
+		Args:  rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if msgID == "" {
 				return fmt.Errorf("--id required")
@@ -106,6 +111,7 @@ func tradeCancelCmd() *cobra.Command {
 		Use:     "trade-cancel",
 		Short:   "Cancel an outgoing pending trade offer and reclaim escrowed silver",
 		Example: `  keryx trade-cancel --id <messenger-id>`,
+		Args:    rejectPositionalArgs("id"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if msgID == "" {
 				return fmt.Errorf("--id required (find the id with: keryx outbox)")
@@ -143,6 +149,7 @@ func outboxCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "outbox",
 		Short: "List sent messengers and their pending trade offers",
+		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			// Resolve own settlement_ids from the province markers (cfg stores province_id, not settlement_id).

@@ -200,6 +200,9 @@ func notificationsCmd() *cobra.Command {
   keryx notifications --kind SitosIntervention
   keryx notifications --exclude SitosIntervention
   keryx notifications --mark-read`,
+		// --kind and --exclude are both plausible for a stray positional —
+		// no single one is the obvious guess.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			if markRead {

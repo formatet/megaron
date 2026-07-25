@@ -46,6 +46,10 @@ Examples:
   keryx allocate --grain 50 --fish 20                       (the rest is idle)
   keryx allocate --grain 45 --timber 25 --oil 10 --cult 30  (fill an L2 temple → kharis climbs)
   keryx allocate --grain 70 --tin 30 --province <prov-id>   (allocate a colony)`,
+		// No single flag is the obvious guess for a stray positional here — the
+		// command takes one flag per good (--timber, --grain, ...), so there is
+		// no "the" flag to name the way build has --type.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			percent := make(map[string]int)
 			for _, key := range knownGoods {

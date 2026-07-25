@@ -11,6 +11,7 @@ func diplomacyCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "diplomacy",
 		Short: "List known and rumour-known Wanaxes (ruler-centric view of `cities`)",
+		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/diplomacy", cfg.WorldID))

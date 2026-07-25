@@ -50,6 +50,7 @@ there on sentry: it watches the approaches (fog-of-war) and intercepts enemy
 caravans passing within reach. There is no recall — the ship turns for home on
 its own when the patrol timer runs out.`,
 		Example: "  keryx unit sentry --unit <id> --q 8 --r -3",
+		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
@@ -82,6 +83,7 @@ func unitListCmd() *cobra.Command {
 		Short: "List your units",
 		Example: `  keryx unit list
   keryx unit list --json`,
+		Args: noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units", cfg.WorldID)
@@ -297,6 +299,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   keryx unit march --unit <id> --q 12 --r -8 --intent explore
   # Attack an enemy settlement and annex it instead of the sack default:
   keryx unit march --unit <id> --q 5 --r -3 --mode annex`,
+		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			qSet, rSet := cmd.Flags().Changed("q"), cmd.Flags().Changed("r")
@@ -617,6 +620,7 @@ hemerodromos; command is never instant — the unit keeps marching on its origin
 course until the runner physically catches up with it, then turns for home
 (the hex it originally departed from).`,
 		Example: `  keryx unit recall --unit <id>`,
+		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
@@ -656,6 +660,7 @@ func unitRedirectCmd() *cobra.Command {
 Command is never instant — the unit keeps marching on its original course until
 the order's hemerodromos physically catches up with it, then turns onto the new course.`,
 		Example: `  keryx unit redirect --unit <id> --target 5,-3`,
+		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			q, r, err := parseQR(target)
 			if err != nil {
@@ -718,6 +723,7 @@ func unitStanceCmd() *cobra.Command {
 		Short: "Set or clear a unit's stance",
 		Example: `  keryx unit stance --unit <id> --stance fortify
   keryx unit stance --unit <id> --stance none`,
+		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/stance", cfg.WorldID, unitID)
@@ -766,6 +772,9 @@ func unitLoadCmd() *cobra.Command {
 		Use:     "load",
 		Short:   "Embark a land unit onto a ship",
 		Example: `  keryx unit load --ship <ship-id> --unit <land-unit-id>`,
+		// --ship and --unit are both required and equally plausible for a
+		// stray positional — no single one is the obvious guess.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/load", cfg.WorldID, shipID)
@@ -798,6 +807,7 @@ func unitUnloadCmd() *cobra.Command {
 		Use:     "unload",
 		Short:   "Disembark the cargo unit from a ship",
 		Example: `  keryx unit unload --ship <ship-id>`,
+		Args:    rejectPositionalArgs("ship"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/unload", cfg.WorldID, shipID)

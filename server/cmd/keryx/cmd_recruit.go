@@ -38,6 +38,7 @@ func recruitCmd() *cobra.Command {
   keryx recruit --unit ship --name Asterion
   keryx recruit --unit war_galley --count 3
   keryx recruit --unit hoplites --men 10 --province <province-id>   # recruit in a colony`,
+		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			// Default to the capital; --province lets you target any province you own

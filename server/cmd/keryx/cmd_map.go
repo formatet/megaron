@@ -54,6 +54,7 @@ func mapCmd() *cobra.Command {
 		Example: `  keryx map
   keryx map --radius 12
   keryx map --province <province-id>   # inspect a colony's surroundings`,
+		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 

@@ -14,6 +14,7 @@ func gossipCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "gossip",
 		Short: "Show recent rumours and events",
+		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/gossip", cfg.WorldID)
@@ -82,6 +83,7 @@ func messengerCmd() *cobra.Command {
 		Short: "Send a messenger to another settlement",
 		Example: `  keryx messenger --to Korinth --message "Need grain urgently"
   keryx messenger --to Korinth --message "Buy grain offer" --want-good grain --want-qty 100 --offer-silver 80`,
+		Args: rejectPositionalArgs("to"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 

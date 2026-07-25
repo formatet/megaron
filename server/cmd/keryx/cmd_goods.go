@@ -15,6 +15,7 @@ func goodsCmd() *cobra.Command {
 		Short: "Show goods inventory and local prices (defaults to capital; --province for a colony)",
 		Example: `  keryx goods
   keryx goods --province <province-id>   # inspect a colony`,
+		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			// Default to the capital; --province lets you inspect any province you own,
@@ -168,6 +169,9 @@ func transferCmd() *cobra.Command {
 		Short: "Send goods to one of your own settlements (internal logistics, no loss)",
 		Example: `  keryx transfer --good grain --qty 50 --dest Korinth
   keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home`,
+		// --good, --qty and --dest are all required — no single one is the
+		// obvious guess for a stray positional.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			destID, err := resolveSettlement(c, cfg.WorldID, destName)
@@ -227,6 +231,9 @@ func giftCmd() *cobra.Command {
 		Short: "Send silver/grain from your capital to one of your own colonies (boosts loyalty at 50+ silver-equivalent)",
 		Example: `  keryx gift --silver 60 --dest Korinth
   keryx gift --grain 100 --silver 20 --dest Korinth`,
+		// --silver/--grain/--dest are all plausible — no single one is the
+		// obvious guess for a stray positional.
+		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if silver <= 0 && grain <= 0 {
 				return fmt.Errorf("gift must include --silver or --grain")
