@@ -85,7 +85,11 @@ const tileAt = (col, row) => {
 tileAt(6, 2).cedar_deposit = true;
 tileAt(7, 1).copper_deposit = true;
 
-State.WORLD_ID = 'showcase-forest-0000-0000-000000000000';
+// Terrängvariationen hashas ur WORLD_ID. ?world=<sträng> byter värld utan att
+// röra fixturen, så man kan kontrollera båda halvorna av kontraktet: samma
+// värld ger identisk bild vid omladdning, olika världar ger olika skog.
+State.WORLD_ID = new URLSearchParams(location.search).get('world')
+  || 'showcase-forest-0000-0000-000000000000';
 State.MY_PLAYER_ID = 'showcase-player';
 State.tileData = tiles;
 
