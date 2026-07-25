@@ -68,19 +68,22 @@
   }
 
   .epitaph-kicker {
-    font-size: .8rem; letter-spacing: .35em; text-transform: uppercase;
+    font-size: var(--fs-sm); letter-spacing: .35em; text-transform: uppercase;
     color: #b7935a; margin-bottom: .6rem;
   }
   .epitaph-name {
+    /* Dramatic display heading for the death-crawl name — deliberately bigger than
+       --fs-xl (28px); this is a one-off cinematic moment, not UI text, so it stays in
+       rem (scales with the base like everything else) rather than forcing an 8th token. */
     font-size: 2.4rem; font-weight: 600; margin: 0; color: #f9e79f;
     text-shadow: 0 0 18px rgba(249,231,159,.25);
   }
   .epitaph-seat {
-    font-size: 1.2rem; color: #cbb079; margin-top: .2rem;
+    font-size: var(--fs-md); color: #cbb079; margin-top: .2rem;
     font-style: italic;
   }
   .epitaph-body {
-    margin-top: 2.4rem; font-size: 1.5rem; line-height: 2.05; color: #efd995;
+    margin-top: 2.4rem; font-size: var(--fs-lg); line-height: 2.05; color: #efd995;
   }
   .epitaph-body p { margin: 0 0 1.1rem; }
 
@@ -93,7 +96,7 @@
     background: transparent; color: #f3d688;
     border: 1px solid rgba(243,214,136,.55);
     padding: .7rem 1.8rem; font-family: 'Cinzel', Georgia, serif;
-    font-size: .95rem; letter-spacing: .18em; text-transform: uppercase;
+    font-size: var(--fs-base); letter-spacing: .18em; text-transform: uppercase;
     cursor: pointer; transition: background .2s, border-color .2s, color .2s;
   }
   .epitaph-btn:hover {
