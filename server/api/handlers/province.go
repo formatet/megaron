@@ -2192,8 +2192,18 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	// Compute idle citizens from unallocated weight fraction.
+	// GoodCult is excluded here for the same reason LaborAlloc below never adds
+	// it to totalPct (see the "cult (devotion) is ... ADDITIVE" comment on the
+	// key == "cult" branch further down in this file): cult has its own
+	// temple-capacity cap and does not compete for the 1.0 labor budget. Counting
+	// it here would under-report idle capacity in every temple city by exactly
+	// its devotion weight (found alongside the matching auto_alloc.go bug,
+	// 2026-07-25 — see economy.AutoAllocateUnlocked for the fuller writeup).
 	var totalWeight float64
-	for _, w := range laborWeights {
+	for k, w := range laborWeights {
+		if k == economy.GoodCult {
+			continue
+		}
 		totalWeight += w
 	}
 	idleCitizens := int(math.Round((1.0 - totalWeight) * float64(laborPool)))

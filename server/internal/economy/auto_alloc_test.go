@@ -16,8 +16,15 @@ func applyAutoAlloc(weights map[string]float64, unlockedGoods []string) (map[str
 	for k, v := range weights {
 		out[k] = v
 	}
+	// GoodCult is excluded from sumW — mirrors the same exclusion in
+	// AutoAllocateUnlocked (see the comment there for why: cult is additive per
+	// the allocate handler's contract and must never be counted against the 1.0
+	// labor budget).
 	var sumW float64
-	for _, w := range out {
+	for k, w := range out {
+		if k == GoodCult {
+			continue
+		}
 		sumW += w
 	}
 	grainW := out[GoodGrain]
@@ -149,5 +156,48 @@ func TestAutoAlloc_SilverMine(t *testing.T) {
 	}
 	if sum > 1.0+1e-9 {
 		t.Errorf("Σ exceeds 1.0: %.6f", sum)
+	}
+}
+
+// TestAutoAlloc_CultNotBudgeted is the regression guard for the 2026-07-25 bug:
+// a temple city with grain=0.85 + cult=0.15 (settlement_labor rows sum to
+// 1.00) has genuine idle capacity of 0.15 once cult is excluded — per the
+// allocate handler's contract (api/handlers/province.go LaborAlloc, "cult ...
+// is ADDITIVE ... NOT added to totalPct"), cult sits outside the 1.0 labor
+// budget entirely, so it never shrinks grain's real 0.85 share. A newly
+// unlocked ore must therefore get its full oreSlice (0.15) out of that idle
+// capacity, WITHOUT skimming grain — even though naively summing all
+// settlement_labor rows (grain 0.85 + cult 0.15 = 1.00) makes it look like
+// there is zero idle room, which is exactly the bug: it would skim the whole
+// slice from grain instead (grain 0.85 → 0.70). Before the fix, sumW counted
+// cult and this test failed; after the fix cult is excluded from sumW and
+// idle capacity is measured correctly.
+//
+// (grain=0.85+cult=0.15 is the live-world shape confirmed 2026-07-25 on CT 126
+// at Asine/Gla/Gournia/Iolkos/Megara/Mykene/Palaikastro — 7 temple cities with
+// no ore allocated yet. The Knossos grain=1.0+cult=0.15 number quoted in the
+// symptom writeup is a saturated edge case: with grain ALONE already at 1.0,
+// true idle is 0 with or without this fix, so the fix makes no observable
+// difference there specifically — it changes behaviour precisely for cities
+// like the seven above, where non-cult labor is below 1.0 but naive summing
+// hides that idle room behind cult's additive weight.)
+func TestAutoAlloc_CultNotBudgeted(t *testing.T) {
+	weights := map[string]float64{GoodGrain: 0.85, GoodCult: 0.15}
+	result, allocated := applyAutoAlloc(weights, []string{GoodCopper})
+
+	if len(allocated) != 1 || allocated[0] != GoodCopper {
+		t.Fatalf("expected copper allocated, got %v", allocated)
+	}
+	if math.Abs(result[GoodCopper]-oreSlice) > 1e-9 {
+		t.Errorf("copper weight: want %.2f (full slice from idle), got %.6f", oreSlice, result[GoodCopper])
+	}
+	// Grain must be untouched — the slice came from idle room outside cult's
+	// additive allocation, not skimmed from grain.
+	if math.Abs(result[GoodGrain]-0.85) > 1e-9 {
+		t.Errorf("grain must be untouched: want 0.85, got %.6f", result[GoodGrain])
+	}
+	// Cult itself must be untouched too.
+	if math.Abs(result[GoodCult]-0.15) > 1e-9 {
+		t.Errorf("cult weight must be untouched: want 0.15, got %.6f", result[GoodCult])
 	}
 }
