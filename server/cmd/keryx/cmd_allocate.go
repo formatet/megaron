@@ -40,6 +40,11 @@ Give a percent per good — the sum (excluding cult) must not exceed 100.
 The share auto-scales with population (pop grows, the worker count grows).
 Non-producible goods are rejected by the server.
 
+Grain has a break-even floor: below it, the city slowly starves. The floor is
+per catchment (it moves as tiles change), so it is not printed here — run
+allocate with no flags first to see the current grain share against it
+before you write a new split.
+
 Examples:
   keryx allocate                                            (show current split)
   keryx allocate --timber 40 --stone 30 --grain 30
@@ -129,10 +134,15 @@ Examples:
 			}
 			// Break-even guardrail (DEL D): the allocation IS applied, but if the
 			// grain share is below break-even the city will slowly starve — surface
-			// it after confirming the change so it isn't missed.
+			// it after confirming the change so it isn't missed. Say plainly that
+			// it is reversible: an LLM playtest probe that only ever saw this
+			// post-hoc line read it as "I already made an irreversible mistake"
+			// (soak 2026-07-25) — it is not one, the split is just another `allocate`
+			// call away from changing, same as `keryx allocate` with no flags shows.
 			if warning, ok := resp["warning"].(string); ok && warning != "" {
 				fmt.Println()
 				fmt.Printf("  ⚠ %s\n", warning)
+				fmt.Println("  This is reversible: run `allocate` again with a higher grain share to fix it.")
 			}
 			return nil
 		},
@@ -205,7 +215,9 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	// that produces nothing, so its settlement_goods row is gone and with it the
 	// only place the share was visible. A mechanic the player cannot see is a
 	// mechanic they cannot tend — read it from the labor endpoint instead.
-	devotion := fetchDevotionShare(c, provinceID)
+	// It also carries the break-even grain weight, so this is a single fetch,
+	// not a third round-trip added on top of the goods call above.
+	extras := fetchSettlementExtras(c, provinceID)
 
 	fmt.Println("Current labor allocation:")
 	var pool, idle int
@@ -218,6 +230,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	}
 	var rows []row
 	hasCult := false
+	grainAllocated := false
 	for _, g := range goods {
 		if g.LaborPool > 0 {
 			pool, idle = g.LaborPool, g.IdleCitizens
@@ -228,11 +241,25 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 			if g.Key == "cult" {
 				hasCult = true
 			}
+			if g.Key == "grain" {
+				grainAllocated = true
+			}
 		}
 	}
-	if devotion > 0 {
-		rows = append(rows, row{"cult (devotion)", devotion * 100, int(devotion * float64(pool)), false})
+	if extras.Devotion > 0 {
+		rows = append(rows, row{"cult (devotion)", extras.Devotion * 100, int(extras.Devotion * float64(pool)), false})
 		hasCult = true
+	}
+	// Break-even preflight (companion to the post-hoc PUT warning below): this
+	// is the read-only view a Wanax checks BEFORE writing, so the threshold
+	// belongs here, next to the grain row, not only echoed back after a write.
+	// A catchment that cannot grow grain at all reports BreakevenWeight == nil
+	// — no weight would help there, so stay silent rather than print a
+	// misleading "0%". If grain sits at 0% but the catchment DOES have a real
+	// floor, that is the most dangerous split of all, so show a grain row
+	// anyway instead of letting "no grain line" silently read as "no problem".
+	if extras.BreakevenWeight != nil && !grainAllocated {
+		rows = append(rows, row{"grain", 0, 0, false})
 	}
 	fmt.Printf("  Population:  %d\n", pool)
 	if pool > 0 {
@@ -255,15 +282,18 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	}
 	sort.Slice(rows, func(i, j int) bool { return rows[i].pct > rows[j].pct })
 	for _, r := range rows {
+		line := fmt.Sprintf("  %-12s %3.0f%%  (%d citizens)", r.key, r.pct, r.citizens)
 		if r.atCap {
 			// Same silent-waste class as the workplace-capacity marker below:
 			// the good's stock is full, so the labor sitting on it produces
 			// nothing. This is the one place a Wanax actually chooses the split,
 			// so say it here, not just in `keryx goods`.
-			fmt.Printf("  %-12s %3.0f%%  (%d citizens)  — at storage ceiling, produces nothing\n", r.key, r.pct, r.citizens)
-		} else {
-			fmt.Printf("  %-12s %3.0f%%  (%d citizens)\n", r.key, r.pct, r.citizens)
+			line += "  — at storage ceiling, produces nothing"
 		}
+		if r.key == "grain" {
+			line += grainBreakevenNote(r.pct, extras.BreakevenWeight)
+		}
+		fmt.Println(line)
 	}
 	if hasCult {
 		// Devotion is capped by what the temple can employ (15% per level), and
@@ -278,24 +308,57 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	return nil
 }
 
-// fetchDevotionShare reads the settlement's devotion (the share serving the
-// temple) from the province GET. It is not in the goods list: mig 094 made cult
-// a labor weight that produces nothing, so it has no settlement_goods row —
-// which is exactly why it had to be surfaced somewhere else before a Wanax could
-// tend it. Returns 0 on any failure; devotion is worth showing, never worth
-// failing a read-only view over.
-func fetchDevotionShare(c *Client, provinceID string) float64 {
+// grainBreakevenNote renders the break-even suffix for the grain row in
+// printCurrentAllocation. Unit trap, the reason this is its own function
+// instead of inline arithmetic: pct is a PERCENT (0..100, the same unit as
+// every other row in this view — it comes straight from the goods list),
+// while breakevenWeight is a WEIGHT (0..1) straight off the province GET —
+// the same number the PUT .../labor handler compares against weights["grain"]
+// (api/handlers/province.go, the LaborAllocated break-even guardrail — named,
+// not line-numbered, because those numbers drift). Mix the two units up and
+// the comparison fires 100x too
+// eagerly or not at all; the *100 scaling happens here, once. Returns "" when
+// there is no threshold to report (nil weight — the catchment cannot grow
+// grain at all, and no grain weight would fix that, so staying silent beats
+// printing a misleading "0%").
+func grainBreakevenNote(pct float64, breakevenWeight *float64) string {
+	if breakevenWeight == nil {
+		return ""
+	}
+	bePct := *breakevenWeight * 100
+	if pct < bePct {
+		return fmt.Sprintf("  — BELOW break-even (≥%.0f%%): this weight slowly starves the city", bePct)
+	}
+	return fmt.Sprintf("  — break-even ≥%.0f%%", bePct)
+}
+
+// settlementExtras holds the two province-GET fields printCurrentAllocation
+// needs beyond the goods list: devotion (cult's share, absent from the goods
+// list since mig 094) and the break-even grain weight (the same number the PUT
+// .../labor warning compares against — nil when the catchment cannot grow
+// grain at all).
+type settlementExtras struct {
+	Devotion        float64
+	BreakevenWeight *float64
+}
+
+// fetchSettlementExtras reads devotion + the break-even grain weight from the
+// province GET in one call — no new route, and no second fetch beyond the one
+// devotion already required. Returns the zero value on any failure; both
+// fields are worth showing, neither is worth failing a read-only view over.
+func fetchSettlementExtras(c *Client, provinceID string) settlementExtras {
 	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, provinceID))
 	if err != nil {
-		return 0
+		return settlementExtras{}
 	}
 	var p struct {
 		Settlement struct {
-			Devotion float64 `json:"devotion"`
+			Devotion        float64  `json:"devotion"`
+			BreakevenWeight *float64 `json:"breakeven_grain_weight"`
 		} `json:"settlement"`
 	}
 	if json.Unmarshal(data, &p) != nil {
-		return 0
+		return settlementExtras{}
 	}
-	return p.Settlement.Devotion
+	return settlementExtras{Devotion: p.Settlement.Devotion, BreakevenWeight: p.Settlement.BreakevenWeight}
 }
