@@ -216,6 +216,36 @@ function hash32(q, r, stream) {
 const rnd = (q, r, stream) => hash32(q, r, stream) / 4294967296;
 const rndInt = (q, r, stream, n) => hash32(q, r, stream) % n;
 
+// ── Tile lookup index ────────────────────────────────────────────────────
+// Terrain that reacts to its neighbours needs six lookups per hex per frame,
+// and State.tileData.find() is O(n) over the whole map (2240 tiles on the
+// current world) — that would be ~400k comparisons a frame for one forest
+// block. State.tileData is only ever REASSIGNED (loadMap/refreshTiles), never
+// mutated in place, so caching on array identity is safe and rebuilds itself
+// exactly when the fog map changes.
+let tileIndex = new Map();
+let tileIndexFor;
+function terrainAt(q, r) {
+  if (tileIndexFor !== State.tileData) {
+    tileIndexFor = State.tileData;
+    tileIndex = new Map(State.tileData.map(t => [`${t.q},${t.r}`, t.terrain]));
+  }
+  return tileIndex.get(`${q},${r}`);
+}
+
+// Directions from this hex where the woodland ends. Fog and off-map count as
+// "unknown", NOT as open ground: the player has not seen those tiles, and
+// letting the treeline thin toward them would leak the neighbour's terrain
+// through the shape of the edge. Unknown neighbours keep the forest dense.
+function openEdges(q, r) {
+  const open = [];
+  for (const [dq, dr] of HEX_DIRS) {
+    const t = terrainAt(q + dq, r + dr);
+    if (t && t !== 'fog' && t !== 'forest_olive_grove') open.push([dq, dr]);
+  }
+  return open;
+}
+
 // ── Forest floor ─────────────────────────────────────────────────────────
 // Woodland is ground first, canopy second. The flat mid-green fill gave the
 // canopy nothing to sit against and made a block of forest hexes read as one
@@ -225,6 +255,7 @@ const rndInt = (q, r, stream, n) => hash32(q, r, stream) % n;
 const FOREST_FLOOR = '#3F6522'; // shaded understory
 const FOREST_EARTH = '#5C4830'; // bare ground glimpsed between the trees
 const FOREST_SCRUB = '#7BA23C'; // low vegetation catching light
+const FOREST_EDGE  = '#86A03A'; // sunlit treeline where the woodland opens up
 function drawForestFloor(ctx, cx, cy, q, r) {
   ctx.save();
   hexPath(ctx, hexPts(cx, cy));
@@ -269,6 +300,37 @@ function drawForestFloor(ctx, cx, cy, q, r) {
     const d = rnd(q, r, 60 + i) * 15;
     ctx.fillRect(Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d), 2, 1);
   }
+
+  // Bryn — where the woodland meets open country the floor lightens toward the
+  // neighbour instead of stopping dead at the hex edge.
+  //
+  // Scattered, not washed: a smooth disc along the edge reads as a halo drawn
+  // AROUND the forest, which is decoration, not terrain. These are seeded
+  // specks whose density falls off inward (the inward offset is raised to a
+  // power, so most sit close to the edge and a few reach deeper), which reads
+  // as a treeline breaking up. Specks that cross the edge are cut by the clip,
+  // so the opening continues into the neighbouring hex.
+  ctx.fillStyle = FOREST_EDGE;
+  const mid = S * Math.sqrt(3) / 2; // centre → edge midpoint
+  openEdges(q, r).forEach(([dq, dr], e) => {
+    const ex = S * 1.5 * dq;
+    const ey = S * Math.sqrt(3) * (dr + dq / 2);
+    const len = Math.hypot(ex, ey) || 1;
+    const ux = ex / len, uy = ey / len;
+    for (let i = 0; i < 7; i++) {
+      const along  = (rnd(q, r, 200 + e * 20 + i) - 0.5) * S * 1.15;
+      const inward = Math.pow(rnd(q, r, 300 + e * 20 + i), 1.7) * S * 0.6;
+      const px = cx + ux * (mid - inward) - uy * along;
+      const py = cy + uy * (mid - inward) + ux * along;
+      // Per-speck coverage: a uniform alpha over many small shapes reads as
+      // film grain. Varying it makes the same specks read as depth instead.
+      ctx.globalAlpha = 0.22 + rnd(q, r, 600 + e * 20 + i) * 0.3;
+      ctx.beginPath();
+      ctx.ellipse(px, py, 1.8 + rnd(q, r, 400 + e * 20 + i) * 2.4,
+                  1.4 + rnd(q, r, 500 + e * 20 + i) * 1.6, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
   ctx.restore();
 }
 
