@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -498,6 +499,36 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
+// minMapWidth and minMapHeight are the smallest dimensions the map generator
+// is actually exercised at (internal/world/mapgen_test.go, TestGenerateMap_*
+// size tables use {30,20} as their smallest case) — below that, GenerateMap's
+// own rejection-sampling has no proven track record of finding a valid map
+// and would just burn maxMapAttempts before panicking. Catching it here turns
+// that panic into a clean boot-time error instead.
+const (
+	minMapWidth  = 30
+	minMapHeight = 20
+)
+
+// envMapDim parses a map-size env var (MAP_WIDTH / MAP_HEIGHT), returning def
+// when unset. Refuses (rather than clamping or defaulting) on a non-integer
+// value or one below min — see the ensureWorld doc comment for why a bad
+// value fails loud instead of quietly falling back.
+func envMapDim(key string, def, min int) (int, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return def, nil
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, fmt.Errorf("%s=%q: not an integer", key, v)
+	}
+	if n < min {
+		return 0, fmt.Errorf("%s=%d is below the minimum map dimension (%d) — refusing to seed an unusably small world", key, n, min)
+	}
+	return n, nil
+}
+
 // requireKingdomsEnabled gates the /kingdoms subtree behind KINGDOMS_ENABLED
 // (default off — kingdoms are post-MVP, Timothy 2026-07-08). Handlers stay
 // registered per temenos_arkitektur Fas 6 (endpoints always exist, they just
@@ -536,10 +567,20 @@ func absorbStartupDowntime(ctx context.Context, pool *pgxpool.Pool, clk *clock.W
 }
 
 // ensureWorld returns the single world this server hosts. If no world exists it
-// creates one named WORLD_NAME (env; default "The Thalassa") at a fixed 40×30 —
-// MAP_WIDTH / MAP_HEIGHT are honoured only by the standalone cmd/create-world
-// seeding tool, not here. The world ID is stable across restarts — it lives in
-// the database.
+// creates one named WORLD_NAME (env; default "The Thalassa") sized MAP_WIDTH ×
+// MAP_HEIGHT (env; default 56×40 — the locked map spec, see megaron_todo.md
+// "Kartstorlek HARD 56×40"). MAP_WIDTH/MAP_HEIGHT are honoured here using the
+// same env names and default-on-unset behaviour as the standalone
+// cmd/create-world seeding tool (cmd/create-world/main.go, envInt) — this is a
+// separate small parser rather than a shared one because create-world lives in
+// its own package and importing across cmd/ packages would tangle two
+// independent entrypoints together for four lines of logic. Unlike
+// create-world, an out-of-range value here is refused with an error instead of
+// silently used or log.Fatal'd: this path runs during normal server boot, and
+// a server that boots an unusably small world (too small to fit the 12 spawn
+// locations, or too small for world.GenerateMap's own invariants) is worse
+// than one that says why it didn't. The world ID is stable across restarts —
+// it lives in the database.
 func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) (uuid.UUID, error) {
 	var id uuid.UUID
 	err := pool.QueryRow(ctx, `SELECT id FROM worlds LIMIT 1`).Scan(&id)
@@ -549,8 +590,14 @@ func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) 
 
 	// No world yet — create one.
 	name := getEnv("WORLD_NAME", "The Thalassa")
-	width := 40
-	height := 30
+	width, err := envMapDim("MAP_WIDTH", 56, minMapWidth)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	height, err := envMapDim("MAP_HEIGHT", 40, minMapHeight)
+	if err != nil {
+		return uuid.Nil, err
+	}
 	seed := clk.Now().UnixNano()
 
 	err = pool.QueryRow(ctx,
