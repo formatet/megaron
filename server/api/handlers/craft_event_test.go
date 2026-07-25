@@ -95,7 +95,7 @@ func setupCraftFixture(t *testing.T) *craftFixture {
 		t.Fatalf("create foundry: %v", err)
 	}
 
-	// Recipe 1 is bronze: 2 copper + 1 tin → 1 bronze.
+	// Recipe 1 is bronze: 9 copper + 1 tin → 1 bronze (mig 099, 2026-07-25).
 	for good, amount := range map[string]float64{"copper": 100, "tin": 100} {
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
@@ -170,10 +170,10 @@ func TestCraft_EmitsGoodsCraftedEventAndNotification(t *testing.T) {
 		t.Fatalf("event says %v %s, want 3 bronze", ev.Produced, ev.OutputKey)
 	}
 	// Outcome, not intention: the ingredients are what was actually deducted
-	// for THIS quantity (2 copper + 1 tin per unit, ×3), not the recipe's
+	// for THIS quantity (9 copper + 1 tin per unit, ×3), not the recipe's
 	// per-unit cost.
-	if ev.Consumed["copper"] != 6 || ev.Consumed["tin"] != 3 {
-		t.Fatalf("consumed = %v, want copper:6 tin:3", ev.Consumed)
+	if ev.Consumed["copper"] != 27 || ev.Consumed["tin"] != 3 {
+		t.Fatalf("consumed = %v, want copper:27 tin:3", ev.Consumed)
 	}
 
 	// The notification the player sees.
@@ -193,11 +193,11 @@ func TestCraft_EmitsGoodsCraftedEventAndNotification(t *testing.T) {
 	if err := json.Unmarshal(body, &nb); err != nil {
 		t.Fatalf("unmarshal notification body: %v", err)
 	}
-	if nb.OutputKey != "bronze" || nb.Consumed["copper"] != 6 {
-		t.Fatalf("notification body = %s, want bronze from 6 copper", string(body))
+	if nb.OutputKey != "bronze" || nb.Consumed["copper"] != 27 {
+		t.Fatalf("notification body = %s, want bronze from 27 copper", string(body))
 	}
 
-	// And the goods actually moved: 100−6 copper, 100−3 tin, 3 bronze.
+	// And the goods actually moved: 100−27 copper, 100−3 tin, 3 bronze.
 	stock := map[string]float64{}
 	rows, err := f.pool.Query(ctx,
 		`SELECT good_key, amount FROM settlement_goods WHERE settlement_id = $1`, f.settlementID)
@@ -212,8 +212,8 @@ func TestCraft_EmitsGoodsCraftedEventAndNotification(t *testing.T) {
 			stock[k] = v
 		}
 	}
-	if stock["copper"] != 94 || stock["tin"] != 97 || stock["bronze"] != 3 {
-		t.Fatalf("stock = %v, want copper:94 tin:97 bronze:3", stock)
+	if stock["copper"] != 73 || stock["tin"] != 97 || stock["bronze"] != 3 {
+		t.Fatalf("stock = %v, want copper:73 tin:97 bronze:3", stock)
 	}
 }
 

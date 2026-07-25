@@ -10,12 +10,14 @@ import (
 )
 
 func TestRenderTickEvent_GoodsCrafted(t *testing.T) {
-	// Verbatim from events.payload after POST /craft {recipe_id:1, quantity:3}.
-	payload := json.RawMessage(`{"consumed": {"tin": 3, "copper": 6}, "produced": 3, ` +
+	// Verbatim from events.payload after POST /craft {recipe_id:1, quantity:3}
+	// under the 9:1 bronze recipe (mig 099, 2026-07-25): 9 copper + 1 tin per
+	// unit, ×3.
+	payload := json.RawMessage(`{"consumed": {"tin": 3, "copper": 27}, "produced": 3, ` +
 		`"output_key": "bronze", "settlement_id": "e7f190ec-7ea1-44e5-a628-84cf9642556e"}`)
 
 	got := renderTickEvent("GoodsCrafted", payload)
-	want := "Gjutning: 3 bronze ur 6 copper + 3 tin"
+	want := "Gjutning: 3 bronze ur 27 copper + 3 tin"
 	if got != want {
 		t.Fatalf("renderTickEvent = %q, want %q", got, want)
 	}
