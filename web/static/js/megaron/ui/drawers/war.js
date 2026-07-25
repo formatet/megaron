@@ -8,6 +8,14 @@ import { renderLockedActions } from '../misc.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
 
+// "ready <eta>" while still building/training, collapsing to a bare "ready"
+// once complete (fmtArrival's doneWord already reads "ready" — this just
+// avoids gluing the hardcoded "ready " prefix onto it a second time).
+function readyWord(iso) {
+  const eta = fmtArrival(iso, undefined, 'ready');
+  return eta === 'ready' ? eta : 'ready ' + eta;
+}
+
 // ── War drawer ────────────────────────────────────────────────────────────
 export async function loadWarDrawer() {
   const body = document.getElementById('war-body');
@@ -274,7 +282,7 @@ export async function warRecruitShip(unitType) {
     if (resEl) {
       const built = (data.names && data.names[0]) ? data.names[0] : unitType;
       resEl.style.color = 'var(--text-dim)';
-      resEl.textContent = 'Building "' + built + '" — ready ' + fmtArrival(data.complete_at);
+      resEl.textContent = 'Building "' + built + '" — ' + readyWord(data.complete_at);
     }
     loadWarDrawer();
   } else if (resEl) {
@@ -362,11 +370,11 @@ function renderUnitCard(u) {
   const dim = (txt) => '<span style="font-size:.65rem;color:var(--text-dim)">' + txt + '</span>';
   let progress = '';
   if (isNaval && isForming) {
-    progress = dim('building — ready ' + fmtArrival(u.build_complete_at));
+    progress = dim('building — ' + readyWord(u.build_complete_at));
   } else if (isForming) {
     progress = bar(u.size) + dim(u.size + '/100 · forming');
   } else if (isTraining) {
-    progress = bar(100) + dim('100/100 · training — ready ' + fmtArrival(u.build_complete_at));
+    progress = bar(100) + dim('100/100 · training — ' + readyWord(u.build_complete_at));
   }
 
   // Pending order (Fas 5): a hemerodromos is running to this unit — the order
