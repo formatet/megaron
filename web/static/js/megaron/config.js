@@ -47,3 +47,18 @@ export const ZOOM_MAX = 5;
 // space. Still a continuous camera, not a third mode — see
 // megaron_lokal_varld.md.
 export const ZOOM_MIN = 0.3;
+
+// ── Keyboard pan speed (WASD / arrows, render/map.js) ──────────────────────
+// Screen-space, not world-space: camera.x/y are screen-pixel translate
+// offsets (render/map.js's render() does ctx.translate(camera.x, camera.y)
+// then ctx.scale(zoom*SCALE, …)), and this rate is deliberately constant in
+// that same screen-pixel space at every zoom. A world-space-constant rate
+// would have to cross the ZOOM_MIN..ZOOM_MAX range above (a ~16x span)
+// unchanged — translated to screen pixels via zoom*SCALE that crawls when
+// zoomed out to the strategic overview and rockets past hexes when zoomed
+// in on one settlement, unusable at either end. Screen-space instead matches
+// exactly what mouse-drag panning already feels like (map.js's mousemove
+// handler moves camera.x/y 1:1 with the pointer, no zoom factor): holding a
+// direction crosses the visible viewport in the same real time regardless of
+// zoom, the same way a drag of the same screen distance always would.
+export const PAN_SPEED_PX_PER_SEC = 700;

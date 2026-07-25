@@ -5,6 +5,17 @@
 import { serverNow } from '../clock.js';
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
+// True when `el` is a live text-entry target — an <input>/<textarea>/<select>
+// or any contenteditable region — and single-letter keyboard shortcuts (map
+// pan, search's f//) must not fire. Takes the element instead of reading
+// document.activeElement itself, keeping this pure per the file header;
+// callers pass document.activeElement.
+export function isTypingTarget(el) {
+  if (!el) return false;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return true;
+  return !!el.isContentEditable;
+}
+
 // NOTE (FAS 2, flagged in the execution report): the original map.html script
 // already defined ITS OWN fmtSilver (this one) in addition to the copy of
 // base.html's fmtSilver that FAS 1 prepended to the classic script per the
