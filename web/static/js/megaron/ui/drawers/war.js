@@ -58,13 +58,27 @@ function trimNum(v) {
   return (Math.round(v * 1000) / 1000).toString();
 }
 function fmtUnitCost(entry, isNaval) {
-  if (!entry) return null;
+  // batch_men is the divisor for every good below, so a missing/zero value
+  // would render "Infinity grain/man" rather than degrade. The server always
+  // sets it (10 for land, unit.CrewFor for naval), so treat absence as a
+  // failed read, not as something to paper over with a guessed batch size.
+  if (!entry || !entry.batch_men) return null;
   const perMan = Object.entries(entry.costs || {})
     .filter(([, v]) => v > 0)
     .map(([k, v]) => trimNum(v / entry.batch_men) + ' ' + k)
     .join(' + ');
   const costStr = (perMan || '0 cost') + '/man';
-  const popStr = entry.pop_cost + ' pop';
+  // pop_cost is an AFFORDABILITY GATE, not a per-man cost and not citizens
+  // consumed: the server's only use of it is `laborPool >= spec.PopCost`
+  // (api/handlers/province.go, the can_recruit loop), and found_metropolis.go
+  // says so in as many words ("an affordability gate and a catalogue figure,
+  // never a population deduction"). What recruiting actually costs in people
+  // is one citizen per man (`population - totalMen` in Recruit). So label it
+  // as the floor it is — "5 pop" beside "3 grain/man" reads as five citizens
+  // per man, which is wrong by an order of magnitude in the scary direction.
+  // (province/training.go's own doc-comment still says "citizens consumed per
+  // unit trained" — that comment is stale; the call sites are the truth.)
+  const popStr = 'needs ' + entry.pop_cost + '+ pop';
   return isNaval ? (costStr + ' · ' + popStr + ' (crew ' + entry.batch_men + ')') : (costStr + ' · ' + popStr);
 }
 
