@@ -14,7 +14,7 @@ const TERRAIN_BASE = {
   plains:             {c0:'#8AAF3A', c1:'#74952C'},
   river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
   river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
-  forest_olive_grove: {c0:'#5A8C30', c1:'#447020'},
+  forest_olive_grove: {c0:'#6B7440', c1:'#565E33'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
   mountain_limestone: {c0:'#E0D4B8', c1:'#C8BCA0'},
   mountain_red:       {c0:'#C8906A', c1:'#B07050'},
@@ -252,10 +252,15 @@ function openEdges(q, r) {
 // undifferentiated green field. This lays a shaded understory, patches of bare
 // warm earth and low vegetation — all clipped to the hex so nothing bleeds
 // into a neighbour's terrain.
-const FOREST_FLOOR = '#3F6522'; // shaded understory
-const FOREST_EARTH = '#5C4830'; // bare ground glimpsed between the trees
-const FOREST_SCRUB = '#7BA23C'; // low vegetation catching light
-const FOREST_EDGE  = '#86A03A'; // sunlit treeline where the woodland opens up
+// An olive grove is dry country, not a northern wood: the ground is stony
+// ochre with sparse sage scrub, and the leaf colour is grey-green — the olive
+// leaf's silvery underside is why a grove reads as dusty rather than lush.
+// Saturated grass green is the single thing that made this look like a modern
+// browser game instead of the Mediterranean.
+const FOREST_FLOOR = '#4C4E2A'; // shaded, dusty understory
+const FOREST_EARTH = '#8A7248'; // dry ochre ground between the trees
+const FOREST_SCRUB = '#8E9460'; // sage scrub catching light
+const FOREST_EDGE  = '#A09A63'; // sun-bleached ground where the grove opens up
 function drawForestFloor(ctx, cx, cy, q, r) {
   ctx.save();
   hexPath(ctx, hexPts(cx, cy));
@@ -358,27 +363,41 @@ function drawForestFloor(ctx, cx, cy, q, r) {
 // Light falls from the upper left, so every sprite runs L → M → D across its
 // width. A crown shaded on one side is what separates a tree from a green
 // counter; the old arcs had a highlight dot but no shaded side at all.
+//
+// Shape matters as much as colour here. A round lollipop crown on a thin stem
+// is a storybook tree — an olive is LOW and WIDE, its crown often split into
+// two lobes, and it stands on a thick gnarled trunk you can actually see. The
+// gaps punched in the canopy are deliberate: an olive crown is open enough to
+// see sky through, and that sparseness is most of what makes a grove read as
+// Mediterranean rather than as a forest of broccoli.
+// The split is kept at the crown's top only. Punching holes through the whole
+// canopy fragmented the silhouette at seven pixels wide and, with the dark
+// outline around every fragment, the tree read as a scribble rather than as a
+// sparse crown. Sparseness has to be suggested at this scale, not literal.
 const TREE_TALL = [
-  '..KKK..',
-  '.KLLMK.',
-  'KLLMMDK',
+  '..KK.KK..',
+  '.KLMMMMDK',
+  'KLMMMMMDK',
+  'KLMMMMMDK',
+  '.KMMMMDK.',
+  '..KKTKK..',
+  '..KTTDK..',
+  '...KTK...',
+];
+const TREE_SQUAT = [
+  '.KK.KK.',
   'KLMMMDK',
   'KLMMMDK',
   '.KMMDK.',
   '..KTK..',
-  '..KTK..',
 ];
-const TREE_SQUAT = [
-  '.KKK.',
-  'KLMDK',
-  'KLMDK',
-  '.KTK.',
-];
-const TREE_PALETTE = { K: '#1B2810', D: '#2B4E14', M: '#3E6E1F', L: '#5FA02C', T: '#463218' };
+// Muted, dusty, low-contrast — the Colonization register. The lit tone is the
+// olive leaf's silvery underside, not a bright highlight.
+const TREE_PALETTE = { K: '#241F12', D: '#4A5229', M: '#77804B', L: '#A7B07F', T: '#4E3F28' };
 
-// Same sprites, shifted toward the sunlit end of the ramp — used for stands at
-// the warm rim of the wood so a forest block keeps an inside and an outside.
-const TREE_PALETTE_WARM = { K: '#22300F', D: '#3A6418', M: '#548C24', L: '#7CBB38', T: '#4E3A1C' };
+// Same sprites at the sun-bleached end of the ramp — used for stands at the
+// rim of the grove so a block of trees keeps an inside and an outside.
+const TREE_PALETTE_WARM = { K: '#2A2415', D: '#586034', M: '#8A9358', L: '#BDC492', T: '#584732' };
 
 // Precompute each sprite as horizontal runs of equal colour: one fillRect per
 // run instead of one per pixel, so a hex of trees costs tens of draw calls
