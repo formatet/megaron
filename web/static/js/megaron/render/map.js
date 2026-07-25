@@ -370,34 +370,60 @@ function drawForestFloor(ctx, cx, cy, q, r) {
 // gaps punched in the canopy are deliberate: an olive crown is open enough to
 // see sky through, and that sparseness is most of what makes a grove read as
 // Mediterranean rather than as a forest of broccoli.
-// The split is kept at the crown's top only. Punching holes through the whole
-// canopy fragmented the silhouette at seven pixels wide and, with the dark
-// outline around every fragment, the tree read as a scribble rather than as a
-// sparse crown. Sparseness has to be suggested at this scale, not literal.
-const TREE_TALL = [
+// Bigger trees, fewer of them. A small tree can only ever be a blob: at seven
+// pixels there is no room for an irregular edge or for shading INSIDE the
+// crown, so the silhouette collapses to an oval and reads as cute. At thirteen
+// there is room for both.
+//
+// S is the fourth tone — shade within the foliage, not at its rim. It runs in
+// short connected strokes, never as single pixels: an isolated dark pixel in a
+// light crown reads as a speck or an eye, while a two-or-three pixel stroke
+// reads as the gap between two boughs. It is what
+// turns a solid lump into a crown of separate boughs, and it does more for the
+// "richness" of a tree than any amount of outline detail. The silhouette is
+// deliberately asymmetric and lumpy: a real olive crown is knotted, never an
+// oval, and symmetry is most of what made these look like storybook trees.
+const TREE_LARGE = [
+  '...KK...KK...',
+  '..KLLK.KLMK..',
+  '.KLLMMKKLMMDK',
+  'KLLMMMMMMMMDK',
+  'KLMMMMMMMSSDK',
+  'KLMMSSMMMSMDK',
+  'KLMMMSSMMMMDK',
+  '.KMMMMSSMMDK.',
+  '.KDMMMMMSSDK.',
+  '..KKDDMMDKK..',
+  '....KKTTK....',
+  '....KTTTK....',
+  '.....KTK.....',
+];
+const TREE_MID = [
   '..KK.KK..',
-  '.KLMMMMDK',
-  'KLMMMMMDK',
-  'KLMMMMMDK',
+  '.KLLKLMDK',
+  'KLLMMMMDK',
+  'KLMMSSMDK',
+  'KLMMMSSDK',
   '.KMMMMDK.',
   '..KKTKK..',
-  '..KTTDK..',
+  '...KTTK..',
   '...KTK...',
 ];
-const TREE_SQUAT = [
+const TREE_SMALL = [
   '.KK.KK.',
-  'KLMMMDK',
-  'KLMMMDK',
+  'KLLMMDK',
+  'KLMSSDK',
   '.KMMDK.',
+  '..KTK..',
   '..KTK..',
 ];
 // Muted, dusty, low-contrast — the Colonization register. The lit tone is the
 // olive leaf's silvery underside, not a bright highlight.
-const TREE_PALETTE = { K: '#241F12', D: '#4A5229', M: '#77804B', L: '#A7B07F', T: '#4E3F28' };
+const TREE_PALETTE = { K: '#241F12', S: '#3A4322', D: '#4A5229', M: '#77804B', L: '#A7B07F', T: '#4E3F28' };
 
 // Same sprites at the sun-bleached end of the ramp — used for stands at the
 // rim of the grove so a block of trees keeps an inside and an outside.
-const TREE_PALETTE_WARM = { K: '#2A2415', D: '#586034', M: '#8A9358', L: '#BDC492', T: '#584732' };
+const TREE_PALETTE_WARM = { K: '#2A2415', S: '#48512A', D: '#586034', M: '#8A9358', L: '#BDC492', T: '#584732' };
 
 // Precompute each sprite as horizontal runs of equal colour: one fillRect per
 // run instead of one per pixel, so a hex of trees costs tens of draw calls
@@ -417,8 +443,9 @@ function spriteRuns(rows) {
   });
   return { runs, w, h: rows.length };
 }
-const SPRITE_TALL = spriteRuns(TREE_TALL);
-const SPRITE_SQUAT = spriteRuns(TREE_SQUAT);
+const SPRITE_LARGE = spriteRuns(TREE_LARGE);
+const SPRITE_MID = spriteRuns(TREE_MID);
+const SPRITE_SMALL = spriteRuns(TREE_SMALL);
 
 // Origin is the trunk's foot, so trees "stand" on their position and a lower
 // tree overlaps a higher one correctly when the stand is drawn back to front.
@@ -449,10 +476,13 @@ function drawCanopy(ctx, cx, cy, q, r) {
   // Colonization): a tree stands on its position, so one further down the hex
   // must overlap one further up, and that only works if they are sorted.
   const stand = [];
-  const clumps = 3 + rndInt(q, r, 2, 3);
+  // Fewer stands than before: the trees are roughly twice the size, and the
+  // old count would close the canopy into a solid mat with no ground showing.
+  // A grove is spaced — the gaps are the point.
+  const clumps = 2 + rndInt(q, r, 2, 2);
   for (let c = 0; c < clumps; c++) {
     const a = rnd(q, r, 700 + c) * Math.PI * 2;
-    const d = Math.sqrt(rnd(q, r, 710 + c)) * 12;
+    const d = Math.sqrt(rnd(q, r, 710 + c)) * 10;
     const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
 
     // 0 deep inside the wood → 1 standing on an open edge.
@@ -463,17 +493,22 @@ function drawCanopy(ctx, cx, cy, q, r) {
     openness = Math.min(1, Math.max(0, openness));
     if (rnd(q, r, 720 + c) < openness * 0.8) continue;
 
-    const trees = 2 + rndInt(q, r, 730 + c, 3);
+    const trees = 1 + rndInt(q, r, 730 + c, 3);
     for (let i = 0; i < trees; i++) {
       const ta = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
-      const td = rnd(q, r, 800 + c * 8 + i) * 5;
-      // Squat trees fill in around the tall ones — a stand of identical
-      // silhouettes reads as a stamp, which is the thing we are getting away from.
-      const tall = rnd(q, r, 860 + c * 8 + i) > 0.38 && openness < 0.6;
+      const td = rnd(q, r, 800 + c * 8 + i) * 6;
+      // Three sizes mixed: a stand of identical silhouettes reads as a repeated
+      // stamp. Out at the bryn the big ones drop away first, so the treeline
+      // thins by losing its mature trees rather than by fading uniformly.
+      const roll = rnd(q, r, 860 + c * 8 + i);
+      const sprite = openness > 0.55 ? SPRITE_SMALL
+                   : roll > 0.55 ? SPRITE_LARGE
+                   : roll > 0.22 ? SPRITE_MID
+                   : SPRITE_SMALL;
       stand.push({
         x: cx + gx + Math.cos(ta) * td,
         y: cy + gy + Math.sin(ta) * td,
-        sprite: tall ? SPRITE_TALL : SPRITE_SQUAT,
+        sprite,
         warm: openness > 0.35 || d > 8.5,
       });
     }
