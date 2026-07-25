@@ -48,10 +48,11 @@ type Msg struct {
 }
 
 type client struct {
-	conn    *websocket.Conn
-	worldID uuid.UUID
-	send    chan []byte
-	hub     *Hub
+	conn     *websocket.Conn
+	worldID  uuid.UUID
+	playerID uuid.UUID
+	send     chan []byte
+	hub      *Hub
 }
 
 // Hub routes broadcast messages to all WebSocket clients subscribed to a world.
@@ -76,9 +77,18 @@ func (h *Hub) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {
 	h.Broadcast(worldID, Msg{Kind: kind, Payload: payload})
 }
 
-// NotifyPlayer persists a notification for a specific player and broadcasts
-// the event to all clients in the world. If playerID is uuid.Nil or no pool
-// is configured, only broadcasts.
+// NotifyPlayer persists a notification for a specific player and delivers the
+// event only to that player's own connections (all of them, if they have
+// several tabs open). If playerID is uuid.Nil, there is no specific player to
+// target — that is the existing "world-wide" contract some callers rely on
+// (e.g. announcements with no single recipient), so the event is broadcast to
+// every client in the world instead, same as before. This is deliberately
+// asymmetric with BroadcastEvent, which always goes to everyone: NotifyPlayer
+// is for events that name a recipient, BroadcastEvent is for events that
+// don't. Mixing the two up here is exactly how the FOW leak happened
+// (2026-07-25) — this function used to call BroadcastEvent unconditionally,
+// so every "personal" notification (trade offers, crafting results, ...) was
+// pushed to every connected client in the world regardless of who it was for.
 func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
 	if h.pool != nil && playerID != uuid.Nil {
 		bodyJSON, err := json.Marshal(payload)
@@ -92,7 +102,11 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 			}
 		}
 	}
-	h.BroadcastEvent(worldID, kind, payload)
+	if playerID == uuid.Nil {
+		h.BroadcastEvent(worldID, kind, payload)
+		return nil
+	}
+	h.sendTo(worldID, playerID, Msg{Kind: kind, Payload: payload})
 	return nil
 }
 
@@ -110,6 +124,34 @@ func (h *Hub) Broadcast(worldID uuid.UUID, msg Msg) {
 	defer h.mu.RUnlock()
 	for c := range h.clients {
 		if c.worldID != worldID {
+			continue
+		}
+		select {
+		case c.send <- raw:
+		default:
+			// Slow client — drop the message, not the connection.
+		}
+	}
+}
+
+// sendTo delivers msg to every client connected to worldID whose playerID
+// matches — a player may have several tabs open, and all of them should get
+// it, not just the first one found. Unauthenticated connections (playerID ==
+// uuid.Nil) never match here; callers that want to reach them use Broadcast.
+// Same non-blocking semantics as Broadcast: a slow client drops the message,
+// not the connection.
+func (h *Hub) sendTo(worldID, playerID uuid.UUID, msg Msg) {
+	msg.WorldID = worldID.String()
+	raw, err := json.Marshal(msg)
+	if err != nil {
+		slog.Error("notify marshal", "err", err)
+		return
+	}
+
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for c := range h.clients {
+		if c.worldID != worldID || c.playerID != playerID {
 			continue
 		}
 		select {
@@ -144,8 +186,13 @@ func (h *Hub) unregister(c *client) {
 // and emits periodic pings + heartbeats. Either pump exiting calls unregister,
 // which closes the connection and so unblocks the other pump — no goroutine
 // leak, no double close, no send on a closed channel.
-func (h *Hub) Register(conn *websocket.Conn, worldID uuid.UUID) {
-	c := &client{conn: conn, worldID: worldID, send: make(chan []byte, 32), hub: h}
+//
+// playerID identifies the connection's owner for NotifyPlayer targeting; pass
+// uuid.Nil for an unauthenticated connection (e.g. a spectator/map view with
+// no valid token) — it still receives world-wide Broadcast/BroadcastEvent
+// traffic, it just never matches a sendTo targeted at a real player.
+func (h *Hub) Register(conn *websocket.Conn, worldID, playerID uuid.UUID) {
+	c := &client{conn: conn, worldID: worldID, playerID: playerID, send: make(chan []byte, 32), hub: h}
 
 	h.mu.Lock()
 	h.clients[c] = struct{}{}

@@ -223,7 +223,10 @@ func main() {
 	}
 
 	wsH := handlers.NewWSHandler(hub)
-	r.Get("/ws/{worldID}", wsH.Connect)
+	// OptionalMiddleware (not Middleware): a client without a valid token must
+	// still connect and receive world-wide broadcasts (map/spectator views),
+	// it just won't be a NotifyPlayer target. See notify.Hub.Register.
+	r.With(auth.OptionalMiddleware(authSvc)).Get("/ws/{worldID}", wsH.Connect)
 
 	// Web (HTML) routes.
 	r.Get("/", webH.Index)

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/notify"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -23,12 +24,18 @@ type WSHandler struct{ hub *notify.Hub }
 func NewWSHandler(hub *notify.Hub) *WSHandler { return &WSHandler{hub: hub} }
 
 // Connect handles GET /ws/:worldID — upgrades to WebSocket and blocks until closed.
+// The route is wrapped in auth.OptionalMiddleware, so an authenticated caller's
+// playerID is threaded onto the hub connection for personal NotifyPlayer
+// targeting; an unauthenticated (or invalid-token) caller still connects fine
+// and gets uuid.Nil, which keeps receiving world-wide broadcasts — the ok flag
+// is intentionally ignored, since Nil is a valid anonymous mode here, not an error.
 func (h *WSHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
 		http.Error(w, "invalid world ID", http.StatusBadRequest)
 		return
 	}
+	playerID, _ := auth.PlayerIDFromContext(r.Context())
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
@@ -42,5 +49,5 @@ func (h *WSHandler) Connect(w http.ResponseWriter, r *http.Request) {
 	if nc := conn.NetConn(); nc != nil {
 		_ = nc.SetDeadline(time.Time{})
 	}
-	h.hub.Register(conn, worldID) // blocks until disconnect
+	h.hub.Register(conn, worldID, playerID) // blocks until disconnect
 }
