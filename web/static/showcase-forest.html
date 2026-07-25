@@ -111,9 +111,13 @@ State.ruralData = [
   Object.assign(ax(4, 3), { building_type: 'lumbermill' }),
 ];
 
-// En stående landenhet mitt i skogen — silhuetten måste hålla mot lövverket.
+// Stående landenheter INNE i skogen — måttstocken för hela skalfrågan. Ett
+// träd som är större än en armé läser som diorama, inte som terräng, och det
+// går bara att bedöma med enheten i samma bild som lövverket.
 State.unitsData = [
   Object.assign(ax(3, 6), { status: 'positioned', category: 'land', id: 'u1' }),
+  Object.assign(ax(5, 2), { status: 'positioned', category: 'land', id: 'u2' }),
+  Object.assign(ax(6, 5), { status: 'positioned', category: 'land', id: 'u3' }),
 ];
 
 // Vald hex (samma tillstånd som ett klick ger).
