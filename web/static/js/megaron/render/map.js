@@ -178,8 +178,102 @@ function fillHex(ctx, pts, c0, c1, seed) {
   ctx.stroke();
 }
 
+// ── Deterministic per-hex variation ──────────────────────────────────────
+// A hex must look identical on every reload and for every player, but must
+// not read as a pattern. The old scheme — seed = (q*137 + r*31) & 0xff, then
+// masked per detail with & 0x1b — could only reach eight offsets with gaps
+// between them, which is why forest read as wallpaper rather than woodland.
+//
+// This is a 32-bit avalanche mix (Murmur3 finalizer) over (worldSalt, q, r,
+// stream): neighbouring hexes share no visible structure, and each `stream`
+// is an independent draw for the same hex.
+//
+// The world component is hashed from State.WORLD_ID, NOT worlds.map_seed —
+// map_seed never leaves the server, and WORLD_ID gives the same guarantee
+// (stable per world, different between worlds) with no server change. This is
+// presentation only: it must never feed mapgen or any rule.
+let worldSalt = 0;
+let worldSaltFor;
+function salt() {
+  if (worldSaltFor !== State.WORLD_ID) {
+    worldSaltFor = State.WORLD_ID;
+    let h = 0x9e3779b9;
+    const s = String(State.WORLD_ID ?? '');
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x85ebca6b) >>> 0;
+    worldSalt = h >>> 0;
+  }
+  return worldSalt;
+}
+
+function hash32(q, r, stream) {
+  let h = (salt() ^ Math.imul(q | 0, 0x27d4eb2d) ^ Math.imul(r | 0, 0x165667b1)
+           ^ Math.imul(stream | 0, 0x9e3779b9)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+// Uniform float in [0,1) / integer in [0,n) from one stream of a hex's variation.
+const rnd = (q, r, stream) => hash32(q, r, stream) / 4294967296;
+const rndInt = (q, r, stream, n) => hash32(q, r, stream) % n;
+
+// ── Forest floor ─────────────────────────────────────────────────────────
+// Woodland is ground first, canopy second. The flat mid-green fill gave the
+// canopy nothing to sit against and made a block of forest hexes read as one
+// undifferentiated green field. This lays a shaded understory, patches of bare
+// warm earth and low vegetation — all clipped to the hex so nothing bleeds
+// into a neighbour's terrain.
+const FOREST_FLOOR = '#3F6522'; // shaded understory
+const FOREST_EARTH = '#5C4830'; // bare ground glimpsed between the trees
+const FOREST_SCRUB = '#7BA23C'; // low vegetation catching light
+function drawForestFloor(ctx, cx, cy, q, r) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = FOREST_FLOOR;
+  ctx.fillRect(cx - S, cy - S, S * 2, S * 2);
+
+  // Bare ground: many small specks, not few large blobs. A big brown ellipse
+  // reads as a mud pool — worse, it competes with the copper deposit marker,
+  // which is a small brown dot. Ground is texture here, never a shape.
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = FOREST_EARTH;
+  for (let i = 0; i < 7; i++) {
+    const a  = rnd(q, r, 10 + i) * Math.PI * 2;
+    const d  = 2 + rnd(q, r, 20 + i) * 13;
+    const rx = 1.5 + rnd(q, r, 30 + i) * 2;
+    const ry = 1 + rnd(q, r, 40 + i) * 1.2;
+    ctx.beginPath();
+    ctx.ellipse(cx + Math.cos(a) * d, cy + Math.sin(a) * d, rx, ry, a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Deeper shade in the hollows — keeps the floor from reading as one tone
+  // without adding another colour family.
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = '#25451A';
+  for (let i = 0; i < 3; i++) {
+    const a = rnd(q, r, 70 + i) * Math.PI * 2;
+    const d = rnd(q, r, 80 + i) * 13;
+    ctx.beginPath();
+    ctx.ellipse(cx + Math.cos(a) * d, cy + Math.sin(a) * d,
+                2 + rnd(q, r, 90 + i) * 2, 1.5 + rnd(q, r, 100 + i) * 1.5, a, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = FOREST_SCRUB;
+  for (let i = 0; i < 6; i++) {
+    const a = rnd(q, r, 50 + i) * Math.PI * 2;
+    const d = rnd(q, r, 60 + i) * 15;
+    ctx.fillRect(Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d), 2, 1);
+  }
+  ctx.restore();
+}
+
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
-function drawDetail(ctx, cx, cy, terrain, seed, frame) {
+function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
   ctx.save();
   const r3 = (seed * 7 + 3) & 0xf;
   const r4 = (seed * 13 + 5) & 0xf;
@@ -203,6 +297,7 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
       break;
     }
     case 'forest_olive_grove': {
+      drawForestFloor(ctx, cx, cy, q, r);
       const dotColor = '#3A6818';
       for (let i = 0; i < 3; i++) {
         const ox = ((seed * (i*11+2)) & 0x1b) - 12;
@@ -660,7 +755,7 @@ export function render() {
     const base = TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog;
     const seed = (t.q*137 + t.r*31) & 0xff;
     fillHex(ctx, pts, base.c0, base.c1, seed);
-    if (t.terrain !== 'fog') drawDetail(ctx, x, y, t.terrain, seed, State.animFrame);
+    if (t.terrain !== 'fog') drawDetail(ctx, x, y, t.terrain, seed, State.animFrame, t.q, t.r);
     if (t.terrain !== 'fog' && State.camera.zoom >= ROAD_DEPOSIT_ZOOM) drawDepositIcons(ctx, x, y, t);
   }
 
