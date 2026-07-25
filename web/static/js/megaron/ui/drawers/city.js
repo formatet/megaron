@@ -402,7 +402,7 @@ async function refreshCityBuildings(provinceID) {
       const tin    = (res.tin    || {}).amount || 0;
       h2 += `
         <div class="dsec-title" style="margin-top:.8rem">Craft — Bronze</div>
-        <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">2 copper + 1 tin → 1 bronze · stock: ${copper.toFixed(0)} copper, ${tin.toFixed(0)} tin</div>
+        <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">9 copper + 1 tin → 1 bronze · stock: ${copper.toFixed(0)} copper, ${tin.toFixed(0)} tin</div>
         <div style="display:flex;gap:.4rem;align-items:center">
           <input type="number" id="city-craft-qty" min="1" value="1" style="width:4rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .3rem;font-family:var(--mono);font-size:.75rem">
           <button class="btn-primary btn-small" onclick="startCraft('${provinceID}')">Craft →</button>
