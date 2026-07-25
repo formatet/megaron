@@ -1464,6 +1464,83 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 	writeJSON(w, http.StatusOK, result)
 }
 
+// RecipeCatalogue handles GET /api/v1/recipes — returns the static catalogue
+// of all crafting recipes: output good + quantity, the building type required
+// to craft it, and the full ingredient list. No world/auth required — static
+// reference data, mirrors BuildingCatalogue/UnitCatalogue.
+//
+// Recipes live in the recipes/recipe_ingredients tables (not a Go map like
+// BuildingSpecs/UnitSpecs), because Craft already reads them generically by
+// id — this handler is a read-only mirror of that same data, not a second
+// source of truth. It exists because the web client used to hardcode recipe
+// strings and broke silently when a recipe changed (bronze's copper:tin
+// ratio, mig 099, 2026-07-25): this lets the client ask the server instead.
+func (h *ProvinceHandler) RecipeCatalogue(w http.ResponseWriter, r *http.Request) {
+	type ingredientEntry struct {
+		GoodKey  string  `json:"good_key"`
+		Quantity float64 `json:"quantity"`
+	}
+	type recipeEntry struct {
+		ID           int                `json:"id"`
+		OutputKey    string             `json:"output_key"`
+		OutputQty    float64            `json:"output_qty"`
+		BuildingType string             `json:"building_type"`
+		Ingredients  []ingredientEntry `json:"ingredients"`
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT id, output_key, output_qty, building_type FROM recipes ORDER BY id`,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load recipes")
+		return
+	}
+	defer rows.Close()
+
+	// Stable ordering: DB id order (mirrors insertion/seed order — recipes
+	// only ever grow via migration, so this is deterministic across requests).
+	order := make([]int, 0, 8)
+	byID := make(map[int]*recipeEntry, 8)
+	for rows.Next() {
+		var e recipeEntry
+		if err := rows.Scan(&e.ID, &e.OutputKey, &e.OutputQty, &e.BuildingType); err != nil {
+			continue
+		}
+		e.Ingredients = []ingredientEntry{}
+		byID[e.ID] = &e
+		order = append(order, e.ID)
+	}
+	if err := rows.Err(); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load recipes")
+		return
+	}
+
+	// One query for all recipes' ingredients, grouped by recipe_id in Go
+	// (mirrors BuildingCatalogue's single-pass gather-by-key over production_rules).
+	ingRows, err := h.pool.Query(r.Context(),
+		`SELECT recipe_id, good_key, quantity FROM recipe_ingredients ORDER BY recipe_id, good_key`,
+	)
+	if err == nil {
+		defer ingRows.Close()
+		for ingRows.Next() {
+			var recipeID int
+			var ing ingredientEntry
+			if err := ingRows.Scan(&recipeID, &ing.GoodKey, &ing.Quantity); err != nil {
+				continue
+			}
+			if e, ok := byID[recipeID]; ok {
+				e.Ingredients = append(e.Ingredients, ing)
+			}
+		}
+	}
+
+	result := make([]recipeEntry, 0, len(order))
+	for _, id := range order {
+		result = append(result, *byID[id])
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 // recruitPerManCosts returns the resource cost per man for a given unit type.
 // Derived from Skalbeslut (2026-06-15): per-man = old UnitSpec cost / old PopCost.
 // Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.

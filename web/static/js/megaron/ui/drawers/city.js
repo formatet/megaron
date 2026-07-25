@@ -309,20 +309,45 @@ export async function startBuild() {
   }
 }
 
-export async function startCraft(provinceID) {
+// Recipe catalogue (GET /api/v1/recipes) — static for a world's lifetime, so
+// fetch once and memoize rather than refetching on every drawer render (same
+// reasoning as the buildings/units catalogues, which nothing in this client
+// consumed yet — this is the first consumer, so the memoization pattern is
+// new here rather than copied). `_recipesPromise` is the memo; concurrent
+// callers before the first fetch resolves share the same in-flight request.
+// On failure the promise is cleared so the next render retries instead of
+// permanently caching a failure.
+let _recipesPromise = null;
+async function getRecipes() {
+  if (!_recipesPromise) {
+    _recipesPromise = fetchAuth('/api/v1/recipes').then(r => {
+      if (!r.ok) throw new Error('recipes fetch failed: ' + r.status);
+      return r.json();
+    }).catch(e => {
+      console.error('getRecipes', e);
+      _recipesPromise = null;
+      return null; // null = fetch failed; [] would mean "server has no recipes"
+    });
+  }
+  return _recipesPromise;
+}
+
+export async function startCraft(provinceID, recipeID) {
   const qtyEl = document.getElementById('city-craft-qty');
   const resultEl = document.getElementById('city-craft-result');
   const qty = qtyEl ? parseInt(qtyEl.value, 10) || 0 : 0;
-  if (!resultEl || qty <= 0) return;
+  if (!resultEl || qty <= 0 || !recipeID) return;
   resultEl.textContent = '';
   const r = await fetchAuth(
     `/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/craft`,
-    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({recipe_id: 1, quantity: qty}) }
+    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({recipe_id: Number(recipeID), quantity: qty}) }
   );
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     resultEl.style.color = 'var(--safe)';
-    resultEl.textContent = `${qty} bronze crafted.`;
+    // Result reads the server's own output_key/produced (Craft's response),
+    // not a client-guessed output — no recipe assumption survives here.
+    resultEl.textContent = `${d.produced ?? qty} ${d.output_key || 'goods'} crafted.`;
     await refreshCityBuildings(provinceID);
   } else {
     resultEl.style.color = 'var(--accent)';
@@ -404,18 +429,34 @@ async function refreshCityBuildings(provinceID) {
         }).join('')
       }</table>`;
     }
+    // Recipes are fetched once regardless of whether a foundry is built —
+    // also needed below for the Construct dropdown's foundry purpose label,
+    // so a recipe change never leaves a stale string there either.
+    const recipes = await getRecipes();
+    const foundryRecipe = recipes ? recipes.find(rc => rc.building_type === 'foundry') : null;
+
     if (blds.some(b => b.type === 'foundry')) {
       const res = pd.resources || {};
-      const copper = (res.copper || {}).amount || 0;
-      const tin    = (res.tin    || {}).amount || 0;
-      h2 += `
-        <div class="dsec-title" style="margin-top:.8rem">Craft — Bronze</div>
-        <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">9 copper + 1 tin → 1 bronze · stock: ${copper.toFixed(0)} copper, ${tin.toFixed(0)} tin</div>
-        <div style="display:flex;gap:.4rem;align-items:center">
-          <input type="number" id="city-craft-qty" min="1" value="1" style="width:4rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .3rem;font-family:var(--mono);font-size:.75rem">
-          <button class="btn-primary btn-small" onclick="startCraft('${provinceID}')">Craft →</button>
-        </div>
-        <div id="city-craft-result" class="action-result"></div>`;
+      if (foundryRecipe) {
+        const outputName = foundryRecipe.output_key.charAt(0).toUpperCase() + foundryRecipe.output_key.slice(1);
+        const ingredientsStr = foundryRecipe.ingredients.map(i => `${i.quantity} ${i.good_key}`).join(' + ');
+        const stockStr = foundryRecipe.ingredients
+          .map(i => `${((res[i.good_key] || {}).amount || 0).toFixed(0)} ${i.good_key}`)
+          .join(', ');
+        h2 += `
+          <div class="dsec-title" style="margin-top:.8rem">Craft — ${outputName}</div>
+          <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">${ingredientsStr} → ${foundryRecipe.output_qty} ${foundryRecipe.output_key} · stock: ${stockStr}</div>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <input type="number" id="city-craft-qty" min="1" value="1" style="width:4rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .3rem;font-family:var(--mono);font-size:.75rem">
+            <button class="btn-primary btn-small" onclick="startCraft('${provinceID}',${foundryRecipe.id})">Craft →</button>
+          </div>
+          <div id="city-craft-result" class="action-result"></div>`;
+      } else {
+        // Degrade honestly: no fabricated ratio, no dead Craft button.
+        h2 += `
+          <div class="dsec-title" style="margin-top:.8rem">Craft</div>
+          <p class="empty-state" style="font-size:.72rem">Recipe data unavailable — try reloading.</p>`;
+      }
     }
     const prevSel = document.getElementById('city-build-select')?.value || '';
     h2 += `
@@ -429,7 +470,7 @@ async function refreshCityBuildings(provinceID) {
         <option value="market">Market — 100 timber 60 stone · +0.5 silver/m</option>
         <option value="wall">Wall — upgrade (Palisade→Stone Wall→Bronze Wall)</option>
         <option value="harbour">Harbour — 140 timber 60 stone · ships</option>
-        <option value="foundry">Foundry — 80 timber 100 stone · craft bronze</option>
+        <option value="foundry">Foundry — 80 timber 100 stone · ${foundryRecipe ? 'craft ' + foundryRecipe.output_key : 'craft goods'}</option>
         <option value="stable">Stable — 60 timber 40 stone · horses</option>
         <option value="temple">Temple — 60 timber 60 stone</option>
         <option value="olive_press">Olive Press — 30 timber 40 stone · +oil/m</option>

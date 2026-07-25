@@ -268,6 +268,7 @@ func main() {
 		// Reference catalogue — no auth, static data.
 		r.Get("/buildings", ph.BuildingCatalogue)
 		r.Get("/units", ph.UnitCatalogue)
+		r.Get("/recipes", ph.RecipeCatalogue)
 
 		// World endpoints — list/get/map are public; create requires auth.
 		r.Get("/worlds", wh.List)
