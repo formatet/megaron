@@ -9,6 +9,7 @@ import (
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -256,6 +257,54 @@ func TestMarchRecall_IdempotentReplay(t *testing.T) {
 
 	if !arrivesAt1.Equal(arrivesAt2) {
 		t.Errorf("replay changed arrives_at: first=%v second=%v — handler is not idempotent", arrivesAt1, arrivesAt2)
+	}
+}
+
+// TestMarchRecall_ArrivesAtMatchesTickSchedule pins the K4 tick-contract for a
+// recalled unit's new leg: arrives_at must be now + travelTicks*TickSeconds
+// (the real tick-scheduled arrival the client's map interpolates against),
+// never moveHours-as-real-hours. The bug this guards: arrivesAtNew was once
+// computed as now.Add(moveHours * time.Hour) — at a sped-up dev cadence
+// (TICK_SECONDS=6) that put the wall-clock ETA hours away while the tick
+// substrate actually completed the leg in a couple of ticks (seconds), so the
+// unit's map position barely crept forward and then snapped to its
+// destination the instant a poll caught the already-finished arrival —
+// "sailed there but teleported home".
+func TestMarchRecall_ArrivesAtMatchesTickSchedule(t *testing.T) {
+	pool := testPool(t)
+	f := newMarchRecallFixture(t, pool)
+	messengerID := insertRecallMessenger(t, pool, f)
+
+	orig := tick.TickSeconds
+	tick.TickSeconds = 6 // mirrors dev's TICK_SECONDS=6 sped-up cadence
+	t.Cleanup(func() { tick.TickSeconds = orig })
+
+	// Catch the unit halfway (at (2,0), see TestMarchRecall_TurnsUnitTowardOrigin)
+	// and recall it home to (0,0): 2 plains hexes @ 0.75h/hex = 1.5h, which
+	// rounds to travelTicks=2. The spearman fixture carries no naval/nomadic
+	// speed multiplier (both are 1.0) and no cargo, so this isolates the
+	// ticks-vs-hours bug from the separate speed-factor fix in
+	// combat.dispatchReturnHome / combat.ExecuteRecall.
+	now := f.departsAt.Add(90 * time.Minute)
+	testClk := clock.NewTestClock(now)
+	h := NewMarchRecallHandler(pool, events.NewScheduler(pool, testClk), events.NewStore(pool), nil, testClk)
+
+	payload := MarchRecallPayload{WorldID: f.worldID, UnitID: f.unitID, MessengerID: messengerID, Mode: "recall"}
+	raw, _ := json.Marshal(payload)
+	if err := h.Handle(context.Background(), events.ScheduledEvent{Payload: raw}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+
+	var arrivesAt time.Time
+	if err := pool.QueryRow(context.Background(), `SELECT arrives_at FROM units WHERE id = $1`, f.unitID).Scan(&arrivesAt); err != nil {
+		t.Fatalf("load unit: %v", err)
+	}
+
+	const wantTravelTicks = 2
+	want := now.Add(time.Duration(wantTravelTicks*tick.TickSeconds) * time.Second)
+	if !arrivesAt.Equal(want) {
+		t.Errorf("arrives_at = %v, want %v (now + %d ticks * %ds) — got a hours-based ETA instead of the tick-scheduled one?",
+			arrivesAt, want, wantTravelTicks, tick.TickSeconds)
 	}
 }
 

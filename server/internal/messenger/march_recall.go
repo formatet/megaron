@@ -20,6 +20,7 @@ import (
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -77,16 +78,17 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 
 	var ownerID uuid.UUID
-	var category, status string
+	var utype, category, status string
 	var q, r int
 	var targetQ, targetR *int // nulled once the unit is no longer marching
 	var departsAt, arrivesAt *time.Time
 	var marchIntent, colonyName *string
+	var cargoUnitID *uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT owner_id, category, status, q, r, target_q, target_r, departs_at, arrives_at, march_intent, colony_name
+		`SELECT owner_id, type, category, status, q, r, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		p.UnitID,
-	).Scan(&ownerID, &category, &status, &q, &r, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName); err != nil {
+	).Scan(&ownerID, &utype, &category, &status, &q, &r, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID); err != nil {
 		return fmt.Errorf("load recalled unit: %w", err)
 	}
 
@@ -137,14 +139,29 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		}
 		moveHours = province.TerrainMoveHours("plains") * float64(dist)
 	}
+	// Mirror the outbound leg's speed multipliers (combat.StartMarch) — a war
+	// galley/merchantman/nomadic host recalled or redirected mid-march must
+	// keep its own speed, not the unmultiplied path cost.
+	moveHours *= combat.NavalSpeedFactor(unit.Type(utype))
+	moveHours *= unit.MarchHoursFactorFor(unit.Type(utype))
+	if cargoUnitID != nil {
+		moveHours *= 1.5
+	}
 
-	arrivesAtNew := now.Add(time.Duration(moveHours * float64(time.Hour)))
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
 	travelTicks := int(math.Round(moveHours))
 	if travelTicks < 1 {
 		travelTicks = 1
 	}
+	// arrivesAtNew mirrors the real tick-scheduled arrival (travelTicks × real
+	// seconds/tick) — NOT moveHours-as-hours. Using moveHours*time.Hour here
+	// (the bug: a several-hour wall-clock ETA for a march the tick substrate
+	// actually completes in a handful of ticks/seconds) made a recalled or
+	// redirected unit's map position crawl almost imperceptibly slowly and
+	// then snap to its destination the moment a poll caught the tick-driven
+	// arrival that had already happened — "sailed there but teleported home".
+	arrivesAtNew := now.Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
 	// Recall clears any lingering colonize intent (heading home, not to found a
 	// colony); redirect keeps it — the unit still tries to fulfil it at the new target.
