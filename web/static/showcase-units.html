@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Megaron — unit readability rig</title>
+<!--
+  Enhetsläsbarhetsrigg. Syskon till showcase-forest.html och byggd på samma
+  frysta-frame-princip: requestAnimationFrame stubbas före modulimporten, så
+  render() ritar exakt en deterministisk bild ur den RIKTIGA renderaren.
+
+  Syftet är att göra enheten till det fasta måttet som terränggrafiken måste
+  underordna sig — inte tvärtom. Samma enhet renderas över varje terräng den
+  ska överleva, och skogsändringar godkänns bara om den håller i alla rutor.
+
+  Kör:  python3 -m http.server 8099 --directory web/
+        http://localhost:8099/static/showcase-units.html
+-->
+<link rel="stylesheet" href="/static/megaron.css">
+<style>
+  body { margin: 0; background: #14100C; color: #E8DCC8;
+         font: 13px/1.5 ui-monospace, monospace; padding: 12px; }
+  #map-root { position: relative; width: 980px; height: 420px; }
+  #hex-canvas { display: block; width: 100%; height: 100%; }
+  #tile-tooltip { position: absolute; display: none; }
+  table { border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+  th, td { border: 1px solid #3A3226; padding: 3px 7px; text-align: left; }
+  th { color: #C8B48A; }
+  .gap { color: #E08A5A; }
+  h1 { font-size: 15px; margin: 0 0 8px; color: #C8B48A; }
+</style>
+<script>
+  window.requestAnimationFrame = function () { return 0; };
+</script>
+</head>
+<body>
+<h1>Enhetsläsbarhet — samma enheter över varje terräng de måste överleva</h1>
+<div id="map-root">
+  <canvas id="hex-canvas"></canvas>
+  <div id="tile-tooltip"></div>
+</div>
+
+<table>
+  <tr><th>Rad</th><th>Vad som renderas</th><th>Status i koden</th></tr>
+  <tr><td>Övre</td><td>Egen stillastående enhet (<code>status: positioned</code>)</td>
+      <td class="gap">Alltid grå #555 — <code>drawWalker</code> färgar bara efter <code>intent</code>, ingen ägarsignal finns</td></tr>
+  <tr><td>Mitten</td><td>Anfallsmarsch (<code>intent: attack</code>)</td>
+      <td>Enda "hotfulla" signalen som existerar: oxblodsröd kropp</td></tr>
+  <tr><td>Nedre</td><td>Egen enhet, hexen vald</td>
+      <td>Gul hexkontur (<code>State.selectedHex</code>) — enda markeringstillståndet</td></tr>
+  <tr><td colspan="3" class="gap">SAKNAS I RENDERAREN: främmande stillastående enhet (<code>/units</code> är
+      ägarskopad via <code>ListByOwner</code> — de ritas aldrig) · hover-tillstånd på enhet (ingen canvas-effekt) ·
+      cederskog (terrängen finns inte än)</td></tr>
+</table>
+
+<script type="module">
+import { State } from '/static/js/megaron/state.js';
+import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
+
+// Kolumn = terräng enheten ska överleva mot. Tre rader av varje, så samma
+// terräng kan bära tre olika enhetstillstånd utan att jämförelsen störs.
+const COLS = [
+  { t: 'plains',             label: 'slätt' },
+  { t: 'forest_olive_grove', label: 'olivlund' },
+  { t: 'hills',              label: 'kullar' },
+  { t: 'coastal_sea',        label: 'kust' },
+  { t: 'mountain_limestone', label: 'berg' },
+  { t: 'plains',             label: 'FOW-kant' },
+  { t: 'fog',                label: 'dimma' },
+];
+
+const ax = (col, row) => ({ q: col, r: row - Math.floor(col / 2) });
+
+const tiles = [];
+COLS.forEach((c, col) => {
+  for (let row = 0; row < 3; row++) tiles.push(Object.assign(ax(col, row), { terrain: c.t }));
+});
+
+State.WORLD_ID = 'showcase-units-0000-0000-000000000000';
+State.MY_PLAYER_ID = 'showcase-player';
+State.tileData = tiles;
+State.provinceData = [];
+State.ruralData = [];
+
+// Rad 0: egen stillastående enhet på varje icke-dimmig terräng.
+// Sjökolumnen får ett skepp — en gångare på vatten vore en lögn om terrängen.
+State.unitsData = [];
+COLS.forEach((c, col) => {
+  if (c.t === 'fog') return;
+  State.unitsData.push(Object.assign(ax(col, 0), {
+    id: `u${col}`, status: 'positioned',
+    category: c.t === 'coastal_sea' ? 'naval' : 'land',
+  }));
+  // Rad 2: samma enhet igen, för markeringsraden.
+  State.unitsData.push(Object.assign(ax(col, 2), {
+    id: `s${col}`, status: 'positioned',
+    category: c.t === 'coastal_sea' ? 'naval' : 'land',
+  }));
+});
+
+// Rad 1: anfallsmarscher. En marsch vars ankomst redan passerat klampas till
+// progress = 1 och ritas exakt på målhexen — det är det enda sättet att få in
+// intent-färgade gångare i en FRYST bild, eftersom marschpositionen annars
+// interpoleras mot väggklockan och skulle göra skärmdumpen icke-deterministisk.
+const PAST = '2020-01-01T00:00:00Z', PAST_END = '2020-01-02T00:00:00Z';
+State.marchData = COLS.map((c, col) => {
+  if (c.t === 'fog') return null;
+  const a = ax(col, 1);
+  return {
+    origin_q: a.q, origin_r: a.r, target_q: a.q, target_r: a.r,
+    departs_at: PAST, arrives_at: PAST_END,
+    intent: 'attack', is_naval: c.t === 'coastal_sea',
+  };
+}).filter(Boolean);
+
+State.messengerData = [];
+State.tradeData = [];
+
+// Markeringen finns bara i ETT exemplar i renderaren (State.selectedHex), så
+// den läggs på olivlunden — terrängen som är under omarbetning.
+State.selectedHex = ax(1, 2);
+
+State.camera.zoom = 2.0;
+const mid = ax(3, 1);
+const c = hexPx(mid.q, mid.r);
+State.camera.x = canvas.width / 2 - c.x * State.camera.zoom * SCALE;
+State.camera.y = canvas.height / 2 - c.y * State.camera.zoom * SCALE;
+
+window.SHOWCASE = {
+  draw(frame = 100) {
+    State.animFrame = frame - 1;
+    State.lastSeaTick = -1;
+    State.dirty = true;
+    render();
+  },
+  ready: true,
+};
+window.SHOWCASE.draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Megaron — forest showcase</title>
+<!--
+  Offline visuell rigg för terrängarbete (skogen först). Ingen server, ingen
+  auth, ingen fetch: sidan fyller State med en fast 9x9-fixtur och ritar EN
+  fryst frame ur den riktiga renderaren (render/map.js), så det som syns här
+  är exakt vad spelaren ser — inte en parallell ritkod.
+
+  Frysningen: requestAnimationFrame stubbas i skriptet nedan, FÖRE modulen
+  importeras, så render() aldrig schemalägger sig själv. Havsshimret och
+  gånganimationen är frame-beroende (State.animFrame), och en fast frame gör
+  därför skärmdumpen pixeldeterministisk — annars blir varje diff brus.
+
+  Kör:  python3 -m http.server 8099 --directory web/
+        http://localhost:8099/static/showcase-forest.html
+  Dump: scratchpad/shot.py <etikett>
+-->
+<link rel="stylesheet" href="/static/megaron.css">
+<style>
+  body { margin: 0; background: #14100C; }
+  #map-root { position: relative; width: 900px; height: 780px; }
+  #hex-canvas { display: block; width: 100%; height: 100%; }
+  #tile-tooltip { position: absolute; display: none; }
+</style>
+<script>
+  // Måste ligga i ett vanligt (icke-module) skript: modulimporter körs efter
+  // att all synkron parse-tid-kod gjort sitt, så stubben hinner före map.js.
+  window.requestAnimationFrame = function () { return 0; };
+</script>
+</head>
+<body>
+<div id="map-root">
+  <canvas id="hex-canvas"></canvas>
+  <div id="tile-tooltip"></div>
+</div>
+
+<script type="module">
+import { State } from '/static/js/megaron/state.js';
+import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
+
+// ── Fixtur ────────────────────────────────────────────────────────────────
+// Nio rader à nio kolumner. Raden är skärmrad; axial r härleds som
+// r = row - floor(q/2) så blocket blir rektangulärt på skärmen i stället för
+// en romb. Tecken:
+//   ~ deep_sea   c coastal_sea   p plains   F forest_olive_grove
+//   h hills      m mountain_limestone       . fog
+const ROWS = [
+  '~~cppFFhh',
+  '~cppFFFhm',
+  '~cpFFFFFh',
+  'cpFFFFFFh',
+  'cpFFFFFFp',
+  'cpFFFFFpp',
+  '~cpFFFpp.',
+  '~~cppFp..',
+  '~~~cpp...',
+];
+
+const TERRAIN = {
+  '~': 'deep_sea', c: 'coastal_sea', p: 'plains',
+  F: 'forest_olive_grove', h: 'hills', m: 'mountain_limestone', '.': 'fog',
+};
+
+// row/col -> axial. Enda stället som känner till offseten.
+const ax = (col, row) => ({ q: col, r: row - Math.floor(col / 2) });
+
+const tiles = [];
+ROWS.forEach((line, row) => {
+  [...line].forEach((ch, col) => {
+    const { q, r } = ax(col, row);
+    tiles.push({ q, r, terrain: TERRAIN[ch] });
+  });
+});
+
+const tileAt = (col, row) => {
+  const { q, r } = ax(col, row);
+  return tiles.find(t => t.q === q && t.r === r);
+};
+
+// Deposits: cedar i skogen (den vara skogen faktiskt bär), koppar i kullen.
+// Båda ritas av drawDepositIcons() och måste förbli läsbara över lövverket.
+tileAt(6, 2).cedar_deposit = true;
+tileAt(7, 1).copper_deposit = true;
+
+// Terrängvariationen hashas ur WORLD_ID. ?world=<sträng> byter värld utan att
+// röra fixturen, så man kan kontrollera båda halvorna av kontraktet: samma
+// värld ger identisk bild vid omladdning, olika världar ger olika skog.
+State.WORLD_ID = new URLSearchParams(location.search).get('world')
+  || 'showcase-forest-0000-0000-000000000000';
+State.MY_PLAYER_ID = 'showcase-player';
+State.tileData = tiles;
+
+// Två egna städer på angränsande hexar -> drawRoad() ritar vägen mellan dem.
+// Den ena står i skogen med flit: stadssiluetten måste läsa mot lövverk, inte
+// bara mot slätt.
+const city = (col, row, name, extra = {}) => Object.assign(
+  ax(col, row),
+  { name, own: true, culture: 'minoan', walls: 2, state: 'active',
+    army_total: 3, is_extra: false, is_outpost: false }, extra,
+);
+State.provinceData = [
+  city(4, 4, 'Kydonia'),
+  city(5, 4, 'Phaistos', { walls: 1, army_total: 0 }),
+];
+
+// Ruralprojektion: en såg på en catchment-hex i skogen (Fas A2-ytan).
+State.ruralData = [
+  Object.assign(ax(4, 3), { building_type: 'lumbermill' }),
+];
+
+// Stående landenheter INNE i skogen — måttstocken för hela skalfrågan. Ett
+// träd som är större än en armé läser som diorama, inte som terräng, och det
+// går bara att bedöma med enheten i samma bild som lövverket.
+State.unitsData = [
+  Object.assign(ax(3, 6), { status: 'positioned', category: 'land', id: 'u1' }),
+  Object.assign(ax(5, 2), { status: 'positioned', category: 'land', id: 'u2' }),
+  Object.assign(ax(6, 5), { status: 'positioned', category: 'land', id: 'u3' }),
+];
+
+// Vald hex (samma tillstånd som ett klick ger).
+State.selectedHex = ax(5, 5);
+
+// ── Kamera ────────────────────────────────────────────────────────────────
+// Zoom över LOCAL_ZOOM (0.55) så det lokala registret är på: catchment-tint
+// och ruralprojektion syns, vilket är precis de lager en skogsändring riskerar
+// att dränka.
+State.camera.zoom = 1.6;
+const mid = ax(4, 4);
+const c = hexPx(mid.q, mid.r);
+State.camera.x = canvas.width / 2 - c.x * State.camera.zoom * SCALE;
+State.camera.y = canvas.height / 2 - c.y * State.camera.zoom * SCALE;
+
+// ── Frysta frames ─────────────────────────────────────────────────────────
+// render() ökar animFrame självt, så vi nollställer före varje ritning: samma
+// anrop ger samma bild, körning efter körning.
+window.SHOWCASE = {
+  draw(frame = 100) {
+    State.animFrame = frame - 1;
+    State.lastSeaTick = -1;
+    State.dirty = true;
+    render();
+  },
+  ready: true,
+};
+window.SHOWCASE.draw();
+</script>
+</body>
+</html>

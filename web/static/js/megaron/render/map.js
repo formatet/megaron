@@ -16,7 +16,7 @@ const TERRAIN_BASE = {
   plains:             {c0:'#8AAF3A', c1:'#74952C'},
   river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
   river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
-  forest_olive_grove: {c0:'#5A8C30', c1:'#447020'},
+  forest_olive_grove: {c0:'#9EA361', c1:'#848A4C'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
   mountain_limestone: {c0:'#E0D4B8', c1:'#C8BCA0'},
   mountain_red:       {c0:'#C8906A', c1:'#B07050'},
@@ -180,8 +180,409 @@ function fillHex(ctx, pts, c0, c1, seed) {
   ctx.stroke();
 }
 
+// ── Deterministic per-hex variation ──────────────────────────────────────
+// A hex must look identical on every reload and for every player, but must
+// not read as a pattern. The old scheme — seed = (q*137 + r*31) & 0xff, then
+// masked per detail with & 0x1b — could only reach eight offsets with gaps
+// between them, which is why forest read as wallpaper rather than woodland.
+//
+// This is a 32-bit avalanche mix (Murmur3 finalizer) over (worldSalt, q, r,
+// stream): neighbouring hexes share no visible structure, and each `stream`
+// is an independent draw for the same hex.
+//
+// The world component is hashed from State.WORLD_ID, NOT worlds.map_seed —
+// map_seed never leaves the server, and WORLD_ID gives the same guarantee
+// (stable per world, different between worlds) with no server change. This is
+// presentation only: it must never feed mapgen or any rule.
+let worldSalt = 0;
+let worldSaltFor;
+function salt() {
+  if (worldSaltFor !== State.WORLD_ID) {
+    worldSaltFor = State.WORLD_ID;
+    let h = 0x9e3779b9;
+    const s = String(State.WORLD_ID ?? '');
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x85ebca6b) >>> 0;
+    worldSalt = h >>> 0;
+  }
+  return worldSalt;
+}
+
+function hash32(q, r, stream) {
+  let h = (salt() ^ Math.imul(q | 0, 0x27d4eb2d) ^ Math.imul(r | 0, 0x165667b1)
+           ^ Math.imul(stream | 0, 0x9e3779b9)) >>> 0;
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+// Uniform float in [0,1) / integer in [0,n) from one stream of a hex's variation.
+const rnd = (q, r, stream) => hash32(q, r, stream) / 4294967296;
+const rndInt = (q, r, stream, n) => hash32(q, r, stream) % n;
+
+// ── Tile lookup index ────────────────────────────────────────────────────
+// Terrain that reacts to its neighbours needs six lookups per hex per frame,
+// and State.tileData.find() is O(n) over the whole map (2240 tiles on the
+// current world) — that would be ~400k comparisons a frame for one forest
+// block. State.tileData is only ever REASSIGNED (loadMap/refreshTiles), never
+// mutated in place, so caching on array identity is safe and rebuilds itself
+// exactly when the fog map changes.
+let tileIndex = new Map();
+let tileIndexFor;
+function terrainAt(q, r) {
+  if (tileIndexFor !== State.tileData) {
+    tileIndexFor = State.tileData;
+    tileIndex = new Map(State.tileData.map(t => [`${t.q},${t.r}`, t.terrain]));
+  }
+  return tileIndex.get(`${q},${r}`);
+}
+
+// Directions from this hex where the woodland ends. Fog and off-map count as
+// "unknown", NOT as open ground: the player has not seen those tiles, and
+// letting the treeline thin toward them would leak the neighbour's terrain
+// through the shape of the edge. Unknown neighbours keep the forest dense.
+function openEdges(q, r) {
+  const open = [];
+  for (const [dq, dr] of HEX_DIRS) {
+    const t = terrainAt(q + dq, r + dr);
+    if (t && t !== 'fog' && t !== 'forest_olive_grove') open.push([dq, dr]);
+  }
+  return open;
+}
+
+// ── World-space value noise ──────────────────────────────────────────────
+// The per-hex hash gives every hex its own independent texture, and clipping
+// that to the hex is what produced the grid: two neighbouring groves met at a
+// hard value step, so the eye read containers rather than terrain. This noise
+// is sampled in WORLD pixel coordinates on a global lattice, so the field is
+// continuous across hex borders — the clip stays (terrain must not bleed onto
+// plains) but between two forest hexes the seam has nothing to reveal.
+const NOISE_CELL = 13;
+function noiseAt(wx, wy) {
+  const gx = Math.floor(wx / NOISE_CELL), gy = Math.floor(wy / NOISE_CELL);
+  const fx = wx / NOISE_CELL - gx, fy = wy / NOISE_CELL - gy;
+  // Smoothstep the interpolation so cells blend into a field instead of
+  // reading as the lattice they are built on.
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+  const c = (ix, iy) => hash32(ix, iy, 7777) / 4294967296;
+  const a = c(gx, gy),     b = c(gx + 1, gy);
+  const d = c(gx, gy + 1), e = c(gx + 1, gy + 1);
+  return (a + (b - a) * sx) * (1 - sy) + (d + (e - d) * sx) * sy;
+}
+
+// ── Forest floor ─────────────────────────────────────────────────────────
+// Woodland is ground first, canopy second. The flat mid-green fill gave the
+// canopy nothing to sit against and made a block of forest hexes read as one
+// undifferentiated green field. This lays a shaded understory, patches of bare
+// warm earth and low vegetation — all clipped to the hex so nothing bleeds
+// into a neighbour's terrain.
+// An olive grove is dry country, not a northern wood: the ground is stony
+// ochre with sparse sage scrub, and the leaf colour is grey-green — the olive
+// leaf's silvery underside is why a grove reads as dusty rather than lush.
+// Saturated grass green is the single thing that made this look like a modern
+// browser game instead of the Mediterranean.
+const FOREST_FLOOR = '#A6AA68'; // shaded, dusty understory
+const FOREST_EARTH = '#BCA872'; // dry ochre ground between the trees
+const FOREST_SCRUB = '#8A9152'; // sage scrub catching light
+const FOREST_EDGE  = '#BDB47C'; // sun-bleached ground where the grove opens up
+function drawForestFloor(ctx, cx, cy, q, r) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  // Everything below is drawn as integer-aligned blocks, never as ellipses.
+  // The trees above are pixel sprites, and a soft anti-aliased smudge under a
+  // hard-edged sprite reads as two different pictures stacked in one hex.
+  //
+  // The ground is now ONE CONTINUOUS FIELD, not per-hex specks. Scattered
+  // independent marks read as decoration at every scale — that was the finding
+  // from both the plains probe and the tree-scale probe. Here the tone of each
+  // block comes from world-space noise, so the field runs unbroken from hex to
+  // hex and the clip between two groves has nothing to show.
+  const STEP = 3;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const n = noiseAt(wx, wy);
+      // Three bands, thresholded rather than blended: dithered pixel ground,
+      // not a gradient. Most of the hex stays in shade; open earth is the
+      // exception the eye reads as a gap in the canopy.
+      if (n < 0.30)      { ctx.globalAlpha = 0.22; ctx.fillStyle = FOREST_SCRUB; }
+      else if (n < 0.66) continue;
+      else if (n < 0.84) { ctx.globalAlpha = 0.20; ctx.fillStyle = FOREST_EARTH; }
+      else               { ctx.globalAlpha = 0.26; ctx.fillStyle = '#CDBB86'; }
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+
+  // Bryn — where the woodland meets open country the floor lightens toward the
+  // neighbour instead of stopping dead at the hex edge.
+  //
+  // Scattered, not washed: a smooth disc along the edge reads as a halo drawn
+  // AROUND the forest, which is decoration, not terrain. These are seeded
+  // specks whose density falls off inward (the inward offset is raised to a
+  // power, so most sit close to the edge and a few reach deeper), which reads
+  // as a treeline breaking up. Specks that cross the edge are cut by the clip,
+  // so the opening continues into the neighbouring hex.
+  ctx.fillStyle = FOREST_EDGE;
+  const mid = S * Math.sqrt(3) / 2; // centre → edge midpoint
+  openEdges(q, r).forEach(([dq, dr], e) => {
+    const ex = S * 1.5 * dq;
+    const ey = S * Math.sqrt(3) * (dr + dq / 2);
+    const len = Math.hypot(ex, ey) || 1;
+    const ux = ex / len, uy = ey / len;
+    for (let i = 0; i < 7; i++) {
+      const along  = (rnd(q, r, 200 + e * 20 + i) - 0.5) * S * 1.15;
+      const inward = Math.pow(rnd(q, r, 300 + e * 20 + i), 1.7) * S * 0.6;
+      const px = cx + ux * (mid - inward) - uy * along;
+      const py = cy + uy * (mid - inward) + ux * along;
+      // Per-speck coverage: a uniform alpha over many small shapes reads as
+      // film grain. Varying it makes the same specks read as depth instead.
+      ctx.globalAlpha = 0.22 + rnd(q, r, 600 + e * 20 + i) * 0.3;
+      ctx.fillRect(Math.round(px), Math.round(py),
+                   2 + rndInt(q, r, 400 + e * 20 + i, 4),
+                   1 + rndInt(q, r, 500 + e * 20 + i, 2));
+    }
+  });
+  ctx.restore();
+}
+
+// ── Canopy ───────────────────────────────────────────────────────────────
+// Trees grow in stands, not in an even scatter. Three lone dots per hex read
+// as a repeating pattern; composed clumps with air between them read as
+// woodland. Two rules carry the look:
+//
+//   Dark core, warm edge — crowns deepen toward the middle of the hex and
+//   warm toward its rim, so a block of forest gets an inside and an outside.
+//   Thinning at the bryn — a clump close to open country is dropped or
+//   shrunk, so the treeline the floor already opens up is not contradicted
+//   by trees standing to attention right at the edge.
+//
+// Everything is seeded per hex and clipped to it, like the floor.
+// Trees are drawn as PIXEL SPRITES, not as arcs. An arc anti-aliases, and the
+// canvas is scaled (zoom × SCALE), so a smooth curve gets resampled into mush
+// at every zoom level — which is what made the old crowns read as flat
+// boardgame counters. fillRect on integer coordinates scales into hard-edged
+// blocks instead, which is the whole point of the pixel-art rule in
+// temenos_designprinciper (1px charcoal outline, no anti-aliasing, no gradients).
+//
+// K charcoal outline · D shadowed side · M body · L sunlit side · T trunk
+// Light falls from the upper left, so every sprite runs L → M → D across its
+// width. A crown shaded on one side is what separates a tree from a green
+// counter; the old arcs had a highlight dot but no shaded side at all.
+//
+// Shape matters as much as colour here. A round lollipop crown on a thin stem
+// is a storybook tree — an olive is LOW and WIDE, its crown often split into
+// two lobes, and it stands on a thick gnarled trunk you can actually see. The
+// gaps punched in the canopy are deliberate: an olive crown is open enough to
+// see sky through, and that sparseness is most of what makes a grove read as
+// Mediterranean rather than as a forest of broccoli.
+// Bigger trees, fewer of them. A small tree can only ever be a blob: at seven
+// pixels there is no room for an irregular edge or for shading INSIDE the
+// crown, so the silhouette collapses to an oval and reads as cute. At thirteen
+// there is room for both.
+//
+// S is the fourth tone — shade within the foliage, not at its rim. It runs in
+// short connected strokes, never as single pixels: an isolated dark pixel in a
+// light crown reads as a speck or an eye, while a two-or-three pixel stroke
+// reads as the gap between two boughs. It is what
+// turns a solid lump into a crown of separate boughs, and it does more for the
+// "richness" of a tree than any amount of outline detail. The silhouette is
+// deliberately asymmetric and lumpy: a real olive crown is knotted, never an
+// oval, and symmetry is most of what made these look like storybook trees.
+const TREE_LARGE = [
+  '.EE.EE.',
+  'ELMMMDE',
+  'ELMMMDE',
+  'ELMSMDE',
+  '.KMMDK.',
+  '..ETE..',
+  '..ETE..',
+];
+const TREE_MID = [
+  '.EEE.',
+  'ELMDE',
+  'ELMDE',
+  '.KMK.',
+  '..T..',
+  '..T..',
+];
+const TREE_SMALL = [
+  '.EE..',
+  'ELMDE',
+  '.KMD.',
+  '..T..',
+];
+const TREE_PALETTE = { K: '#1E2610', E: '#263013', S: '#283315', D: '#33401B', M: '#465428', L: '#5E6E38', T: '#4A3D28' };
+
+// Same sprites at the sun-bleached end of the ramp — used for stands at the
+// rim of the grove so a block of trees keeps an inside and an outside.
+const TREE_PALETTE_WARM = { K: '#283014', E: '#303A18', S: '#323C1A', D: '#3E4C22', M: '#556430', L: '#708044', T: '#544632' };
+
+// Precompute each sprite as horizontal runs of equal colour: one fillRect per
+// run instead of one per pixel, so a hex of trees costs tens of draw calls
+// rather than hundreds.
+function spriteRuns(rows) {
+  const runs = [];
+  const w = Math.max(...rows.map(r => r.length));
+  rows.forEach((row, y) => {
+    let x = 0;
+    while (x < row.length) {
+      const ch = row[x];
+      let n = 1;
+      while (x + n < row.length && row[x + n] === ch) n++;
+      if (ch !== '.') runs.push({ ch, x, y, n });
+      x += n;
+    }
+  });
+  return { runs, w, h: rows.length };
+}
+const SPRITE_LARGE = spriteRuns(TREE_LARGE);
+const SPRITE_MID = spriteRuns(TREE_MID);
+const SPRITE_SMALL = spriteRuns(TREE_SMALL);
+
+// Origin is the trunk's foot, so trees "stand" on their position and a lower
+// tree overlaps a higher one correctly when the stand is drawn back to front.
+function drawTree(ctx, sprite, palette, fx, fy) {
+  const ox = Math.round(fx) - (sprite.w >> 1);
+  const oy = Math.round(fy) - sprite.h;
+  for (const r of sprite.runs) {
+    ctx.fillStyle = palette[r.ch];
+    ctx.fillRect(ox + r.x, oy + r.y, r.n, 1);
+  }
+}
+
+// NOT clipped to the hex, unlike the floor. Once the stand reached the rim, the
+// clip sliced crowns clean off along the hex border — straight cuts through the
+// foliage, which is worse than the bare margin it replaced. A crown that hangs
+// a few pixels over the border interleaves with the neighbouring hex's trees
+// and reads as continuous woodland. That only works because the canopy is a
+// separate pass: inside the tile loop, the next tile's ground would paint over
+// the previous tile's overhanging branches.
+function drawCanopy(ctx, cx, cy, q, r) {
+  ctx.save();
+  const mid = S * Math.sqrt(3) / 2;
+  const edges = openEdges(q, r).map(([dq, dr]) => {
+    const ex = S * 1.5 * dq;
+    const ey = S * Math.sqrt(3) * (dr + dq / 2);
+    const len = Math.hypot(ex, ey) || 1;
+    return { x: (ex / len) * mid, y: (ey / len) * mid };
+  });
+
+  // Collect the stand first, then draw it back to front. The map is seen from
+  // above but the trees are drawn in side elevation (¾, as in Settlers 2 /
+  // Colonization): a tree stands on its position, so one further down the hex
+  // must overlap one further up, and that only works if they are sorted.
+  const stand = [];
+  const masses = [];   // gemensam mörk volym per dunge, ritad före träden
+  // Trees have to reach the hex's rim, not huddle in the middle. The hex is 19
+  // across to an edge and 22 to a corner; when the stand only occupied the
+  // inner ~16 the result read as an ICON placed in the centre to stand for the
+  // hex, with a bare margin all round — a symbol of woodland rather than
+  // woodland. Clump centres now spread to 13 and their trees a further 7, so
+  // the grove runs out to the edges and meets the neighbouring hex's grove.
+  const clumps = 2 + rndInt(q, r, 2, 2);
+  for (let c = 0; c < clumps; c++) {
+    const a = rnd(q, r, 700 + c) * Math.PI * 2;
+    const d = Math.sqrt(rnd(q, r, 710 + c)) * 14;
+    const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
+
+    // 0 deep inside the wood → 1 standing on an open edge.
+    let openness = 0;
+    for (const e of edges) {
+      openness = Math.max(openness, 1 - Math.hypot(gx - e.x, gy - e.y) / (S * 0.9));
+    }
+    openness = Math.min(1, Math.max(0, openness));
+    if (rnd(q, r, 720 + c) < openness * 0.55) continue;
+
+    masses.push({ c, gx, gy, rad: 9 + rnd(q, r, 1580 + c) * 5 });
+    const trees = 1 + rndInt(q, r, 730 + c, 2);
+    for (let i = 0; i < trees; i++) {
+      const ta = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
+      const td = rnd(q, r, 800 + c * 8 + i) * 6;
+      // Three sizes mixed: a stand of identical silhouettes reads as a repeated
+      // stamp. Out at the bryn the big ones drop away first, so the treeline
+      // thins by losing its mature trees rather than by fading uniformly.
+      const roll = rnd(q, r, 860 + c * 8 + i);
+      const sprite = openness > 0.7 ? SPRITE_SMALL
+                   : roll > 0.55 ? SPRITE_LARGE
+                   : roll > 0.22 ? SPRITE_MID
+                   : SPRITE_SMALL;
+      stand.push({
+        x: cx + gx + Math.cos(ta) * td,
+        y: cy + gy + Math.sin(ta) * td,
+        sprite,
+        warm: openness > 0.35 || d > 8.5,
+      });
+    }
+  }
+  // Solitaries. Clumps alone leave wide empty lanes between them, and the eye
+  // reads those lanes as "the hex is mostly bare with some tree groups on it".
+  // A grove has strays: single trees out on their own between the stands, which
+  // is what turns three groups into continuous tree cover without closing the
+  // canopy into a Nordic forest.
+  const strays = 1 + rndInt(q, r, 3, 3);
+  for (let s = 0; s < strays; s++) {
+    const a = rnd(q, r, 900 + s) * Math.PI * 2;
+    const d = Math.sqrt(rnd(q, r, 920 + s)) * 18;
+    const sx = Math.cos(a) * d, sy = Math.sin(a) * d;
+    let openness = 0;
+    for (const e of edges) {
+      openness = Math.max(openness, 1 - Math.hypot(sx - e.x, sy - e.y) / (S * 0.9));
+    }
+    openness = Math.min(1, Math.max(0, openness));
+    if (rnd(q, r, 940 + s) < openness * 0.5) continue;
+    // Strays skew small: a lone mature olive out in the open would read as a
+    // landmark, and every hex would have three of them.
+    const roll = rnd(q, r, 960 + s);
+    stand.push({
+      x: cx + sx,
+      y: cy + sy,
+      sprite: roll > 0.72 && openness < 0.5 ? SPRITE_MID : SPRITE_SMALL,
+      warm: openness > 0.35 || d > 11,
+    });
+  }
+
+  // Shared under-mass, painted BEFORE any tree. A cluster of separate sprites
+  // reads as N objects standing near each other; the same cluster over one dark
+  // volume reads as a single canopy with trees resolving out of it. This is the
+  // difference between "trees on a hex" and "a wood" — and it is why counting
+  // or shrinking sprites alone never produced mass.
+  // Built from many small offset blocks, not a few big ones: five large
+  // axis-aligned rectangles read as exactly that — rectangles. A dozen small
+  // ones at varying offsets dissolve into an irregular volume, and the blocky
+  // edge stays consistent with the pixel idiom instead of fighting it.
+  ctx.globalAlpha = 0.14;
+  ctx.fillStyle = '#2A3318';
+  for (const m of masses) {
+    for (let i = 0; i < 14; i++) {
+      const a = rnd(q, r, 1500 + m.c * 20 + i) * Math.PI * 2;
+      const d = Math.sqrt(rnd(q, r, 1540 + m.c * 20 + i)) * m.rad * 0.8;
+      const w = 3 + rndInt(q, r, 1580 + m.c * 20 + i, 5);
+      const h = 2 + rndInt(q, r, 1620 + m.c * 20 + i, 4);
+      ctx.fillRect(Math.round(cx + m.gx + Math.cos(a) * d - w / 2),
+                   Math.round(cy + m.gy + Math.sin(a) * d - h / 2), w, h);
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  stand.sort((a, b) => a.y - b.y);
+
+  for (const t of stand) {
+    // Ground shadow cast down-right: the light in this world comes from the
+    // upper left (same side the sprites are lit on). It is what makes a tree
+    // read as standing up rather than lying flat on the hex.
+    ctx.globalAlpha = 0.38;
+    ctx.fillStyle = '#1A2A10';
+    ctx.fillRect(Math.round(t.x) - 1, Math.round(t.y) - 1, t.sprite.w - 1, 2);
+    ctx.fillRect(Math.round(t.x) + 1, Math.round(t.y), t.sprite.w - 2, 1);
+    ctx.globalAlpha = 1;
+    drawTree(ctx, t.sprite, t.warm ? TREE_PALETTE_WARM : TREE_PALETTE, t.x, t.y);
+  }
+  ctx.restore();
+}
+
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
-function drawDetail(ctx, cx, cy, terrain, seed, frame) {
+function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
   ctx.save();
   const r3 = (seed * 7 + 3) & 0xf;
   const r4 = (seed * 13 + 5) & 0xf;
@@ -205,19 +606,9 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame) {
       break;
     }
     case 'forest_olive_grove': {
-      const dotColor = '#3A6818';
-      for (let i = 0; i < 3; i++) {
-        const ox = ((seed * (i*11+2)) & 0x1b) - 12;
-        const oy = ((seed * (i*9+4)) & 0x1b) - 12;
-        ctx.fillStyle = dotColor;
-        ctx.beginPath();
-        ctx.arc(cx+ox, cy+oy, 3, 0, Math.PI*2);
-        ctx.fill();
-        ctx.fillStyle = '#5A9028';
-        ctx.beginPath();
-        ctx.arc(cx+ox-1, cy+oy-1, 1.5, 0, Math.PI*2);
-        ctx.fill();
-      }
+      // Floor only. The canopy is a second pass over every tile (see render()),
+      // because a crown has to be allowed to hang over the hex border.
+      drawForestFloor(ctx, cx, cy, q, r);
       break;
     }
     case 'hills': {
@@ -288,24 +679,34 @@ function drawDepositIcons(ctx, cx, cy, tile) {
   if (tile.silver_deposit) types.push('ag');
   if (!types.length) return;
   ctx.save();
+  // Charcoal outline on every marker. These are game information sitting on
+  // top of terrain that now has its own texture and tone, and an unoutlined
+  // solid loses its silhouette the moment the ground behind it stops being
+  // flat — cedar's dark green triangle disappeared into the canopy outright.
+  // The outline is also what the project's own pixel-art rule asks for
+  // (1px charcoal on solids, temenos_designprinciper.md).
+  ctx.strokeStyle = '#221E18';
+  ctx.lineWidth = 0.8;
+  ctx.lineJoin = 'round';
   types.forEach((t, i) => {
     const ox = cx + 9, oy = cy - 8 + i * 5;
     switch (t) {
       case 'cu':
         ctx.fillStyle = '#C47C20';
-        ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
         break;
       case 'sn':
         ctx.fillStyle = '#909090';
         ctx.fillRect(ox - 2, oy - 1.5, 4, 3);
+        ctx.strokeRect(ox - 2, oy - 1.5, 4, 3);
         break;
       case 'cd':
         ctx.fillStyle = '#2A7010';
-        ctx.beginPath(); ctx.moveTo(ox, oy - 3); ctx.lineTo(ox + 2.5, oy + 1.5); ctx.lineTo(ox - 2.5, oy + 1.5); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(ox, oy - 3); ctx.lineTo(ox + 2.5, oy + 1.5); ctx.lineTo(ox - 2.5, oy + 1.5); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
       case 'ag':
         ctx.fillStyle = '#C0C8D8';
-        ctx.beginPath(); ctx.moveTo(ox, oy - 2.5); ctx.lineTo(ox + 2, oy); ctx.lineTo(ox, oy + 2.5); ctx.lineTo(ox - 2, oy); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(ox, oy - 2.5); ctx.lineTo(ox + 2, oy); ctx.lineTo(ox, oy + 2.5); ctx.lineTo(ox - 2, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
     }
   });
@@ -671,7 +1072,12 @@ ctx.imageSmoothingEnabled = false;
 
 let lastPanFrameMs = performance.now();
 
-function render() {
+// Exported for the offline visual harness (web/static/showcase-forest.html),
+// which stubs requestAnimationFrame and drives one frozen frame at a time so
+// terrain screenshots are pixel-deterministic. Game code still enters the loop
+// through initMap() only. The harness never holds a pan key, so the block
+// below is a no-op there and the frozen frame stays deterministic.
+export function render() {
   // Apply held-key panning before the dirty check below — a held key must
   // keep moving the camera (and re-marking State.dirty) every frame even on
   // an otherwise-quiet map, or panning freezes as soon as nothing else is
@@ -705,15 +1111,43 @@ function render() {
   ctx.translate(State.camera.x, State.camera.y);
   ctx.scale(State.camera.zoom * SCALE, State.camera.zoom * SCALE);
 
-  // 1. Terrain tiles with animated detail + deposit icons
+  // 1. Base terrain fill — ALL tiles first, before any ground texture.
+  // fillHex strokes the hex outline with lineWidth 1, which reaches half a
+  // pixel outside the polygon. Filling and texturing in one loop therefore let
+  // each tile's base paint over its ALREADY-TEXTURED neighbour along the shared
+  // edge, leaving a light line on every border — the residual "grid" inside the
+  // forest was this overdraw, not a drawn grid (none exists; the stroke uses
+  // the fill colour). Separating the passes removes it outright.
   for (const t of State.tileData) {
     const {x,y} = hexPx(t.q, t.r);
-    const pts = hexPts(x, y);
     const base = TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog;
     const seed = (t.q*137 + t.r*31) & 0xff;
-    fillHex(ctx, pts, base.c0, base.c1, seed);
-    if (t.terrain !== 'fog') drawDetail(ctx, x, y, t.terrain, seed, State.animFrame);
-    if (t.terrain !== 'fog' && State.camera.zoom >= ROAD_DEPOSIT_ZOOM) drawDepositIcons(ctx, x, y, t);
+    fillHex(ctx, hexPts(x, y), base.c0, base.c1, seed);
+  }
+
+  // 1a. Ground texture pass.
+  for (const t of State.tileData) {
+    if (t.terrain === 'fog') continue;
+    const {x,y} = hexPx(t.q, t.r);
+    const seed = (t.q*137 + t.r*31) & 0xff;
+    drawDetail(ctx, x, y, t.terrain, seed, State.animFrame, t.q, t.r);
+  }
+
+  // 1b. Canopy pass — after every tile's ground is down, so a crown may hang
+  // over the hex border without the next tile's floor painting over it.
+  for (const t of State.tileData) {
+    if (t.terrain !== 'forest_olive_grove') continue;
+    const {x, y} = hexPx(t.q, t.r);
+    drawCanopy(ctx, x, y, t.q, t.r);
+  }
+
+  // 1c. Deposit markers — game information, so above all terrain passes.
+  if (State.camera.zoom >= ROAD_DEPOSIT_ZOOM) {
+    for (const t of State.tileData) {
+      if (t.terrain === 'fog') continue;
+      const {x, y} = hexPx(t.q, t.r);
+      drawDepositIcons(ctx, x, y, t);
+    }
   }
 
   // 2. Roads between adjacent own/allied provinces
