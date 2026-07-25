@@ -27,11 +27,14 @@ export function msUntil(iso, arrivalTick) {
   return new Date(iso).getTime() - serverNow();
 }
 
-// Short relative duration: "3h 18m" / "42m" / "arrived". The compact form for
+// Short relative duration: "3h 18m" / "42m" / doneWord. The compact form for
 // tight cells and expiry countdowns (moved here from ui/format.js fmtEta).
-export function fmtEta(iso, arrivalTick) {
+// `doneWord` names what "the instant has passed" means to THIS caller — a
+// march or messenger has "arrived" (the default), but a finished build has
+// not; it is "ready". Pass it, don't reinterpret the string downstream.
+export function fmtEta(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
-  if (ms <= 0) return 'arrived';
+  if (ms <= 0) return doneWord;
   const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
@@ -59,21 +62,21 @@ export function fmtClock(epochMs) {
 // 3h 18m". The remaining duration is measured against server time, then
 // projected into the player's clock frame for display (Date.now() + ms), so a
 // skewed player clock still reads its own local time correctly.
-export function fmtArrival(iso, arrivalTick) {
+export function fmtArrival(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
-  if (ms <= 0) return 'arrived';
-  return `${fmtClock(Date.now() + ms)} · in ${fmtEta(iso, arrivalTick)}`;
+  if (ms <= 0) return doneWord;
+  return `${fmtClock(Date.now() + ms)} · in ${fmtEta(iso, arrivalTick, doneWord)}`;
 }
 
 // fmtArrival wrapped in a span whose hover title spells out the full instant
 // with an explicit timezone (Fas B rule 1: hover = explicit tidszon). For
 // innerHTML call sites.
-export function arrivalHTML(iso, arrivalTick) {
+export function arrivalHTML(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
-  if (ms <= 0) return 'arrived';
+  if (ms <= 0) return doneWord;
   const full = new Date(Date.now() + ms).toLocaleString([], {
     weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit', timeZoneName: 'short',
   });
-  return `<span title="${esc(full)}">${esc(fmtArrival(iso, arrivalTick))}</span>`;
+  return `<span title="${esc(full)}">${esc(fmtArrival(iso, arrivalTick, doneWord))}</span>`;
 }

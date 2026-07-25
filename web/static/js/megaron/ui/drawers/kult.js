@@ -92,7 +92,10 @@ export async function loadKultDrawer() {
         const onCooldown = p.cooldown_remaining_minutes > 0;
         let statusHtml;
         if (p.effect_type === 'battle_frenzy' && frenzyActive) {
-          statusHtml = `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(sd.battle_frenzy_until)}</span>`;
+          // frenzyActive already guards ms > 0 here, so the doneWord branch
+          // is unreachable — 'expired' is defensive, matching diplomacy's
+          // offer-countdown wording rather than the arrival default.
+          statusHtml = `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(sd.battle_frenzy_until, undefined, 'expired')}</span>`;
         } else if (onCooldown) {
           statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${Math.ceil(p.cooldown_remaining_minutes)}m</span>`;
         } else if (!p.affordable) {

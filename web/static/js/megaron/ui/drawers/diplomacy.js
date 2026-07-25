@@ -5,6 +5,14 @@ import { esc, fmtAgo } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 
+// "expires <eta>" while a trade offer's window is still open, collapsing to a
+// bare "expired" once it's closed — a closed offer isn't an arrival, and
+// "expires expired" is not a state a player recognises.
+function expiryWord(iso) {
+  const eta = fmtEta(iso, undefined, 'expired');
+  return eta === 'expired' ? eta : 'expires ' + eta;
+}
+
 // ── Diplomacy drawer ──────────────────────────────────────────────────────
 export async function loadDiplomacyDrawer() {
   const body = document.getElementById('diplomacy-body');
@@ -169,7 +177,7 @@ async function loadDipThreads() {
           const offer = m.trade_offer;
           let tradeHtml = '';
           if (offer && offer.status === 'pending') {
-            const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim)">expires ' + fmtEta(m.expires_at) + '</div>' : '';
+            const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim)">' + expiryWord(m.expires_at) + '</div>' : '';
             if (offer.kind === 'sell') {
               tradeHtml = '<div id="dip-trade-' + m.id + '" style="background:var(--warm-white);border:1px solid var(--border);padding:.3rem .5rem;margin:.3rem 0;font-size:.78rem">'
                 + '<div>Sells <strong>' + offer.offer_qty + ' ' + esc(offer.offer_good) + '</strong> for <strong>' + offer.want_silver + ' silver</strong></div>' + countdown
@@ -217,7 +225,7 @@ async function loadDipThreads() {
             : '';
           let cancelBtn = '';
           if (m.trade_offer && m.trade_offer.status === 'pending') {
-            const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim);text-align:right">expires ' + fmtEta(m.expires_at) + '</div>' : '';
+            const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim);text-align:right">' + expiryWord(m.expires_at) + '</div>' : '';
             cancelBtn = countdown + '<div style="text-align:right;margin-top:.2rem"><button class="btn-small btn-danger" onclick="dipCancel(\'' + m.id + '\',this)">Cancel offer ✗</button></div>';
           }
           html += '<div class="dip-msg-row dip-msg-row-out">'

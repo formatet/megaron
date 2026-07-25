@@ -387,7 +387,9 @@ async function refreshCityBuildings(provinceID) {
         }</table>`
       : '<p class="empty-state">No buildings yet.</p>';
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
-      bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${arrivalHTML(b.complete_at)}</td>` +
+      // A building finishes, it doesn't arrive — say "ready" (matches the
+      // Training column below and war.js's ship-build phrasing).
+      bq.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>${arrivalHTML(b.complete_at, undefined, 'ready')}</td>` +
         `<td style="text-align:right"><button class="btn-small" onclick="cancelBuild('${provinceID}','${b.id}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">✕</button></td></tr>`).join('')
     }</table>`;
     if (tu.length) {
@@ -396,7 +398,8 @@ async function refreshCityBuildings(provinceID) {
       h2 += `<div class="dsec-title" style="margin-top:.8rem">Training</div><table class="goods-mini">${
         tu.map(u => {
           const name = UNIT_LBL[u.unit] || u.unit;
-          let label, eta = u.ready_at ? arrivalHTML(u.ready_at) : '';
+          // A trained unit is ready, not arrived.
+          let label, eta = u.ready_at ? arrivalHTML(u.ready_at, undefined, 'ready') : '';
           if (u.category === 'naval') label = 'building';
           else if (u.status === 'training') label = `${u.size}/100 · training`;
           else label = `${u.size}/100 · forming`;
