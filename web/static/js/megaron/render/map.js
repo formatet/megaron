@@ -631,7 +631,11 @@ window.addEventListener('resize', resizeCanvas);
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-function render() {
+// Exported for the offline visual harness (web/static/showcase-forest.html),
+// which stubs requestAnimationFrame and drives one frozen frame at a time so
+// terrain screenshots are pixel-deterministic. Game code still enters the loop
+// through initMap() only.
+export function render() {
   State.animFrame++;
   const seaTick = State.animFrame >> 5;
   const seaChanged = seaTick !== State.lastSeaTick;
