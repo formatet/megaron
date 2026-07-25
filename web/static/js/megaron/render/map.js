@@ -489,7 +489,7 @@ function drawCanopy(ctx, cx, cy, q, r) {
   const clumps = 3 + rndInt(q, r, 2, 3);
   for (let c = 0; c < clumps; c++) {
     const a = rnd(q, r, 700 + c) * Math.PI * 2;
-    const d = Math.sqrt(rnd(q, r, 710 + c)) * 13;
+    const d = Math.sqrt(rnd(q, r, 710 + c)) * 14;
     const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
 
     // 0 deep inside the wood → 1 standing on an open edge.
@@ -498,17 +498,17 @@ function drawCanopy(ctx, cx, cy, q, r) {
       openness = Math.max(openness, 1 - Math.hypot(gx - e.x, gy - e.y) / (S * 0.9));
     }
     openness = Math.min(1, Math.max(0, openness));
-    if (rnd(q, r, 720 + c) < openness * 0.8) continue;
+    if (rnd(q, r, 720 + c) < openness * 0.55) continue;
 
     const trees = 2 + rndInt(q, r, 730 + c, 3);
     for (let i = 0; i < trees; i++) {
       const ta = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
-      const td = rnd(q, r, 800 + c * 8 + i) * 7;
+      const td = rnd(q, r, 800 + c * 8 + i) * 6;
       // Three sizes mixed: a stand of identical silhouettes reads as a repeated
       // stamp. Out at the bryn the big ones drop away first, so the treeline
       // thins by losing its mature trees rather than by fading uniformly.
       const roll = rnd(q, r, 860 + c * 8 + i);
-      const sprite = openness > 0.55 ? SPRITE_SMALL
+      const sprite = openness > 0.7 ? SPRITE_SMALL
                    : roll > 0.55 ? SPRITE_LARGE
                    : roll > 0.22 ? SPRITE_MID
                    : SPRITE_SMALL;
@@ -528,14 +528,14 @@ function drawCanopy(ctx, cx, cy, q, r) {
   const strays = 3 + rndInt(q, r, 3, 4);
   for (let s = 0; s < strays; s++) {
     const a = rnd(q, r, 900 + s) * Math.PI * 2;
-    const d = Math.sqrt(rnd(q, r, 920 + s)) * 17;
+    const d = Math.sqrt(rnd(q, r, 920 + s)) * 18;
     const sx = Math.cos(a) * d, sy = Math.sin(a) * d;
     let openness = 0;
     for (const e of edges) {
       openness = Math.max(openness, 1 - Math.hypot(sx - e.x, sy - e.y) / (S * 0.9));
     }
     openness = Math.min(1, Math.max(0, openness));
-    if (rnd(q, r, 940 + s) < openness * 0.8) continue;
+    if (rnd(q, r, 940 + s) < openness * 0.5) continue;
     // Strays skew small: a lone mature olive out in the open would read as a
     // landmark, and every hex would have three of them.
     const roll = rnd(q, r, 960 + s);
