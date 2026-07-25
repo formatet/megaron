@@ -14,7 +14,7 @@ const TERRAIN_BASE = {
   plains:             {c0:'#8AAF3A', c1:'#74952C'},
   river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
   river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
-  forest_olive_grove: {c0:'#6B7440', c1:'#565E33'},
+  forest_olive_grove: {c0:'#9EA361', c1:'#848A4C'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
   mountain_limestone: {c0:'#E0D4B8', c1:'#C8BCA0'},
   mountain_red:       {c0:'#C8906A', c1:'#B07050'},
@@ -277,18 +277,14 @@ function noiseAt(wx, wy) {
 // leaf's silvery underside is why a grove reads as dusty rather than lush.
 // Saturated grass green is the single thing that made this look like a modern
 // browser game instead of the Mediterranean.
-const FOREST_FLOOR = '#4C4E2A'; // shaded, dusty understory
-const FOREST_EARTH = '#8A7248'; // dry ochre ground between the trees
-const FOREST_SCRUB = '#8E9460'; // sage scrub catching light
-const FOREST_EDGE  = '#A09A63'; // sun-bleached ground where the grove opens up
+const FOREST_FLOOR = '#A6AA68'; // shaded, dusty understory
+const FOREST_EARTH = '#BCA872'; // dry ochre ground between the trees
+const FOREST_SCRUB = '#8A9152'; // sage scrub catching light
+const FOREST_EDGE  = '#BDB47C'; // sun-bleached ground where the grove opens up
 function drawForestFloor(ctx, cx, cy, q, r) {
   ctx.save();
   hexPath(ctx, hexPts(cx, cy));
   ctx.clip();
-
-  ctx.globalAlpha = 0.55;
-  ctx.fillStyle = FOREST_FLOOR;
-  ctx.fillRect(cx - S, cy - S, S * 2, S * 2);
 
   // Everything below is drawn as integer-aligned blocks, never as ellipses.
   // The trees above are pixel sprites, and a soft anti-aliased smudge under a
@@ -308,10 +304,10 @@ function drawForestFloor(ctx, cx, cy, q, r) {
       // Three bands, thresholded rather than blended: dithered pixel ground,
       // not a gradient. Most of the hex stays in shade; open earth is the
       // exception the eye reads as a gap in the canopy.
-      if (n < 0.36)      { ctx.globalAlpha = 0.34; ctx.fillStyle = '#25451A'; }
-      else if (n < 0.62) continue;
-      else if (n < 0.78) { ctx.globalAlpha = 0.26; ctx.fillStyle = FOREST_SCRUB; }
-      else               { ctx.globalAlpha = 0.30; ctx.fillStyle = FOREST_EARTH; }
+      if (n < 0.30)      { ctx.globalAlpha = 0.22; ctx.fillStyle = FOREST_SCRUB; }
+      else if (n < 0.66) continue;
+      else if (n < 0.84) { ctx.globalAlpha = 0.20; ctx.fillStyle = FOREST_EARTH; }
+      else               { ctx.globalAlpha = 0.26; ctx.fillStyle = '#CDBB86'; }
       ctx.fillRect(wx, wy, STEP, STEP);
     }
   }
@@ -414,11 +410,11 @@ const TREE_SMALL = [
   '.KMD.',
   '..T..',
 ];
-const TREE_PALETTE = { K: '#2E3418', E: '#38401E', S: '#39421F', D: '#464E26', M: '#6B7442', L: '#87915C', T: '#4A3D28' };
+const TREE_PALETTE = { K: '#1E2610', E: '#263013', S: '#283315', D: '#33401B', M: '#465428', L: '#5E6E38', T: '#4A3D28' };
 
 // Same sprites at the sun-bleached end of the ramp — used for stands at the
 // rim of the grove so a block of trees keeps an inside and an outside.
-const TREE_PALETTE_WARM = { K: '#3A4020', E: '#454C26', S: '#464E28', D: '#525A30', M: '#7C8650', L: '#9BA66C', T: '#544632' };
+const TREE_PALETTE_WARM = { K: '#283014', E: '#303A18', S: '#323C1A', D: '#3E4C22', M: '#556430', L: '#708044', T: '#544632' };
 
 // Precompute each sprite as horizontal runs of equal colour: one fillRect per
 // run instead of one per pixel, so a hex of trees costs tens of draw calls
@@ -482,7 +478,7 @@ function drawCanopy(ctx, cx, cy, q, r) {
   // hex, with a bare margin all round — a symbol of woodland rather than
   // woodland. Clump centres now spread to 13 and their trees a further 7, so
   // the grove runs out to the edges and meets the neighbouring hex's grove.
-  const clumps = 3 + rndInt(q, r, 2, 3);
+  const clumps = 2 + rndInt(q, r, 2, 2);
   for (let c = 0; c < clumps; c++) {
     const a = rnd(q, r, 700 + c) * Math.PI * 2;
     const d = Math.sqrt(rnd(q, r, 710 + c)) * 14;
@@ -497,7 +493,7 @@ function drawCanopy(ctx, cx, cy, q, r) {
     if (rnd(q, r, 720 + c) < openness * 0.55) continue;
 
     masses.push({ c, gx, gy, rad: 9 + rnd(q, r, 1580 + c) * 5 });
-    const trees = 2 + rndInt(q, r, 730 + c, 3);
+    const trees = 1 + rndInt(q, r, 730 + c, 2);
     for (let i = 0; i < trees; i++) {
       const ta = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
       const td = rnd(q, r, 800 + c * 8 + i) * 6;
@@ -522,7 +518,7 @@ function drawCanopy(ctx, cx, cy, q, r) {
   // A grove has strays: single trees out on their own between the stands, which
   // is what turns three groups into continuous tree cover without closing the
   // canopy into a Nordic forest.
-  const strays = 3 + rndInt(q, r, 3, 4);
+  const strays = 1 + rndInt(q, r, 3, 3);
   for (let s = 0; s < strays; s++) {
     const a = rnd(q, r, 900 + s) * Math.PI * 2;
     const d = Math.sqrt(rnd(q, r, 920 + s)) * 18;
@@ -553,7 +549,7 @@ function drawCanopy(ctx, cx, cy, q, r) {
   // axis-aligned rectangles read as exactly that — rectangles. A dozen small
   // ones at varying offsets dissolve into an irregular volume, and the blocky
   // edge stays consistent with the pixel idiom instead of fighting it.
-  ctx.globalAlpha = 0.4;
+  ctx.globalAlpha = 0.14;
   ctx.fillStyle = '#2A3318';
   for (const m of masses) {
     for (let i = 0; i < 14; i++) {
