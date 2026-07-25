@@ -16,6 +16,58 @@ function readyWord(iso) {
   return eta === 'ready' ? eta : 'ready ' + eta;
 }
 
+// Unit catalogue (GET /api/v1/units) — static for a world's lifetime, so fetch
+// once and memoize rather than refetching on every drawer render. Same pattern
+// as getRecipes() in city.js (ui/drawers/city.js): cache the in-flight/resolved
+// promise, clear it on failure so the next render retries instead of
+// permanently caching a miss. Replaces the old hardcoded cost strings and
+// POP_COSTS map, which drifted from the real balance numbers at least twice
+// (cedar appeared in the war_chariot string, bronze vanished from war_galley's)
+// — the same staleness bug the recipe catalogue fixed for crafting (mig 099).
+let _unitCataloguePromise = null;
+async function getUnitCatalogue() {
+  if (!_unitCataloguePromise) {
+    _unitCataloguePromise = fetchAuth('/api/v1/units').then(r => {
+      if (!r.ok) throw new Error('units catalogue fetch failed: ' + r.status);
+      return r.json();
+    }).catch(e => {
+      console.error('getUnitCatalogue', e);
+      _unitCataloguePromise = null;
+      return null; // null = fetch failed; [] would mean "server has no units"
+    });
+  }
+  return _unitCataloguePromise;
+}
+
+// Local recruit-spec ids match the catalogue's `type` key for every unit
+// except 'ship', which the /recruit endpoint still accepts as a legacy alias
+// for 'galley' (unit.Canonical, server/internal/unit) but which the
+// catalogue and can_recruit report only under the canonical 'galley'.
+const CATALOGUE_TYPE = { ship: 'galley' };
+
+// entry.costs from /api/v1/units is the TOTAL for one recruit call — a
+// batch of entry.batch_men (10 for land, the crew size for naval), NOT a
+// per-man rate. Dividing back by batch_men here recovers the same per-man
+// number the server itself stores (province.UnitSpecs costs) — this is a
+// unit conversion of fetched data, not a second hardcoded copy of it — so
+// the label keeps matching the men-count selector next to it exactly like
+// the old hardcoded "/man" strings did (this is the one place a stray ×10
+// would sneak back in, so keep any future edit here dividing, never
+// multiplying, the batch total).
+function trimNum(v) {
+  return (Math.round(v * 1000) / 1000).toString();
+}
+function fmtUnitCost(entry, isNaval) {
+  if (!entry) return null;
+  const perMan = Object.entries(entry.costs || {})
+    .filter(([, v]) => v > 0)
+    .map(([k, v]) => trimNum(v / entry.batch_men) + ' ' + k)
+    .join(' + ');
+  const costStr = (perMan || '0 cost') + '/man';
+  const popStr = entry.pop_cost + ' pop';
+  return isNaval ? (costStr + ' · ' + popStr + ' (crew ' + entry.batch_men + ')') : (costStr + ' · ' + popStr);
+}
+
 // ── War drawer ────────────────────────────────────────────────────────────
 export async function loadWarDrawer() {
   const body = document.getElementById('war-body');
@@ -57,8 +109,12 @@ export async function loadWarDrawer() {
 
   const UNIT_LBL  = { Spearman:'Spearmen', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Emporos',
                       spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot', ship:'Galley', war_galley:'War Galley', merchantman:'Emporos' };
+  // Defense points — NOT in /api/v1/units (checked: UnitCatalogue exposes
+  // type/costs/batch_men/pop_cost/duration_minutes/requires_*, no DP field)
+  // and, as far as this file shows, currently unused/unrendered anywhere
+  // below. Left as-is (out of this fix's scope — nothing to wire it to
+  // server-side; flagging for whoever picks it up next).
   const UNIT_DP   = { Spearman:1, EliteInfantry:3, WarChariot:4, Ship:1, WarGalley:3, Merchantman:0 };
-  const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Ship:10, WarGalley:12, Merchantman:8 };
 
   try {
     if (!capital) {
@@ -80,10 +136,11 @@ export async function loadWarDrawer() {
     }
 
     const needTwo = prevRecruitCity !== capital.id;
-    const [res, recRes, unitsRes] = await Promise.all([
+    const [res, recRes, unitsRes, catalogue] = await Promise.all([
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}`),
       needTwo ? fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${prevRecruitCity}`) : Promise.resolve(null),
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
+      getUnitCatalogue(),
     ]);
     if (!res.ok) throw new Error();
     const pd = (await res.json()).settlement;
@@ -93,6 +150,11 @@ export async function loadWarDrawer() {
     const canRec = {};
     (recPd.can_recruit || []).forEach(r => { canRec[r.unit] = r.can_recruit; });
     const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
+    // catalogue is null on fetch failure (getUnitCatalogue already logged it) —
+    // catByType then stays empty and every row degrades to "cost data
+    // unavailable" below instead of falling back to a guessed number.
+    const catByType = {};
+    (catalogue || []).forEach(u => { catByType[u.type] = u; });
 
     // Army tab — discrete units list
     let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>';
@@ -126,12 +188,12 @@ export async function loadWarDrawer() {
 
     // Recruit tab
     const UNIT_SPECS = [
-      { id:'spearman',       lbl:'Spearmen',    req: buildings.has('barracks') ? null : 'barracks',   cost:'3 grain/man'          },
-      { id:'war_chariot',    lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable',     cost:'3.75 grain + 0.625 timber + 0.5 cedar + 0.375 bronze/man' },
-      { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour',    cost:'9 timber/man (crew 20)' },
-      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null), cost:'5 cedar/man (crew 50)' },
-      { id:'merchantman',    lbl:'Emporos',      req: buildings.has('harbour')  ? null : 'harbour',    cost:'8.75 timber/man (crew 10)' },
-      { id:'elite_infantry', lbl:'Elite Infantry',        req: buildings.has('foundry')  ? null : 'foundry',    cost:'2.5 grain + 0.2 bronze/man' },
+      { id:'spearman',       lbl:'Spearmen',    req: buildings.has('barracks') ? null : 'barracks' },
+      { id:'war_chariot',    lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable' },
+      { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour' },
+      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null) },
+      { id:'merchantman',    lbl:'Emporos',      req: buildings.has('harbour')  ? null : 'harbour' },
+      { id:'elite_infantry', lbl:'Elite Infantry', req: buildings.has('foundry')  ? null : 'foundry' },
     ];
     const mySettlements = State.provinceData.filter(p => p.own && !p.is_outpost);
     let settlementOpts = mySettlements.map(s =>
@@ -150,12 +212,20 @@ export async function loadWarDrawer() {
     recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land units train in batches of 10 men (up to 100). Ships are built one at a time.</div>';
     const NAVAL_SPEC_IDS = ['ship', 'war_galley', 'merchantman'];
     for (const u of UNIT_SPECS) {
+      const isNaval = NAVAL_SPEC_IDS.includes(u.id);
+      // canRec is keyed by the server's canonical unit type (province.UnitSpecs),
+      // which is 'galley' not 'ship' — go through the same alias the catalogue
+      // lookup uses so the affordability check actually matches for the Galley
+      // row (previously always undefined, so "— insufficient" could never show).
+      const catType = CATALOGUE_TYPE[u.id] || u.id;
+      const catEntry = catByType[catType];
       const noBuilding = u.req !== null;
-      const noResources = !noBuilding && canRec[u.id] === false;
+      const noResources = !noBuilding && canRec[catType] === false;
       const disabled = noBuilding || noResources;
-      const costText = noBuilding ? ('requires ' + u.req) : (noResources ? u.cost + ' — insufficient' : u.cost);
+      const costStr = catEntry ? fmtUnitCost(catEntry, isNaval) : 'cost data unavailable';
+      const costText = noBuilding ? ('requires ' + u.req) : (noResources ? costStr + ' — insufficient' : costStr);
       const opStyle = disabled ? 'opacity:.5;' : '';
-      if (NAVAL_SPEC_IDS.includes(u.id)) {
+      if (isNaval) {
         // Ship-build overhaul: one vessel per build, optional name, no men select.
         recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
           + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
@@ -186,7 +256,11 @@ export async function loadWarDrawer() {
         + '<div id="war-abandon-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div></div>';
     }
     document.getElementById('wtab-recruit').innerHTML = recHtml;
-    document.getElementById('wtab-recruit').innerHTML += await renderLockedActions('military');
+    // Scope to the selected recruit city, not the capital fallback misc.js
+    // uses by default — this panel has its own city selector, and the panel
+    // above (buildings/canRec) is already built from prevRecruitCity, so the
+    // Locked hints must describe the same settlement or they contradict it.
+    document.getElementById('wtab-recruit').innerHTML += await renderLockedActions('military', prevRecruitCity);
 
   } catch(e) {
     console.error('war drawer', e);
