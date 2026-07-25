@@ -18,5 +18,32 @@ export const LIVE_RADIUS_MOUNTAIN_BONUS = 2;
 // and local-only signals appear (rural projections, catchment tint) — the
 // answer to "why does THIS place work?". Below it the "strategisk" register
 // keeps the overview and tones those down. This is the register boundary; the
-// other per-signal thresholds in render/map.js are their own calibration.
+// other per-signal thresholds below are their own calibration (formerly
+// scattered as magic numbers through render/map.js's render loop — moved here
+// 2026-07-25, values unchanged, see fix/zoom-registers).
 export const LOCAL_ZOOM = 0.55;
+
+// Below LOCAL_ZOOM (still "strategisk"), these two signals fade in earlier —
+// they read at a distance and don't depend on local-trakt detail.
+export const GARRISON_DOT_ZOOM = 0.45;   // own-city garrison dot
+export const ACTIVITY_BADGE_ZOOM = 0.4;  // own-city activity overlay badge
+
+// Roads between owned/allied provinces and resource-deposit icons: both
+// appear a notch before the local-trakt boundary.
+export const ROAD_DEPOSIT_ZOOM = 0.5;
+
+// ── Zoom bounds ─────────────────────────────────────────────────────────
+// Ceiling: unchanged since the camera was first built — not part of the
+// "zooms out by accident" complaint (Timothy 2026-07-25).
+export const ZOOM_MAX = 5;
+// Floor: raised from 0.2 (Timothy 2026-07-25 — "jag råkar zooma ut hela
+// tiden vilket förstör spelet"). At 0.2 the world (default 56×40 hexes,
+// server/cmd/create-world MAP_WIDTH/MAP_HEIGHT) shrinks to an island inside
+// a much larger empty canvas on any normal viewport — effective scale
+// zoom*SCALE means the full map only needs zoom≈0.25-0.35 to fill a
+// 1024×768-1920×1080 window. 0.3 keeps the whole map roughly filling the
+// screen at max zoom-out (the "strategisk" register's actual job — see
+// whole risk/dependency picture) instead of shrinking past it into dead
+// space. Still a continuous camera, not a third mode — see
+// megaron_lokal_varld.md.
+export const ZOOM_MIN = 0.3;

@@ -2,7 +2,10 @@ import { State, ownCapital } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
 import { serverNow } from '../clock.js';
-import { LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS, LOCAL_ZOOM } from '../config.js';
+import {
+  LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS, LOCAL_ZOOM,
+  GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM, ZOOM_MIN, ZOOM_MAX,
+} from '../config.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -366,7 +369,7 @@ function drawProvince(ctx, cx, cy, p) {
   ctx.closePath();
   ctx.fill();
   // Garrison dot (own cities only) — visible at zoom >= 0.45
-  if (p.own && p.army_total > 0 && State.camera.zoom >= 0.45) {
+  if (p.own && p.army_total > 0 && State.camera.zoom >= GARRISON_DOT_ZOOM) {
     ctx.fillStyle = '#8B1A1A';
     ctx.strokeStyle = '#3A0A0A';
     ctx.lineWidth = 0.5;
@@ -654,11 +657,11 @@ function render() {
     const seed = (t.q*137 + t.r*31) & 0xff;
     fillHex(ctx, pts, base.c0, base.c1, seed);
     if (t.terrain !== 'fog') drawDetail(ctx, x, y, t.terrain, seed, State.animFrame);
-    if (t.terrain !== 'fog' && State.camera.zoom >= 0.5) drawDepositIcons(ctx, x, y, t);
+    if (t.terrain !== 'fog' && State.camera.zoom >= ROAD_DEPOSIT_ZOOM) drawDepositIcons(ctx, x, y, t);
   }
 
   // 2. Roads between adjacent own/allied provinces
-  if (State.camera.zoom >= 0.5) {
+  if (State.camera.zoom >= ROAD_DEPOSIT_ZOOM) {
     const owned = State.provinceData.filter(p => p.own || p.allied);
     for (let i = 0; i < owned.length; i++) {
       for (let j = i+1; j < owned.length; j++) {
@@ -674,7 +677,7 @@ function render() {
 
   // 2.5 Catchment zone — subtle gold tint on the 7 catchment tiles of own cities
   // (the city's own hex + the 6 adjacent). [0,0] = the settlement's own hex.
-  if (State.camera.zoom >= 0.55) {
+  if (State.camera.zoom >= LOCAL_ZOOM) {
     for (const p of State.provinceData) {
       if (!p.own || p.is_outpost) continue;
       for (const [dq, dr] of [[0, 0], ...HEX_DIRS]) {
@@ -807,11 +810,11 @@ function render() {
   for (const p of State.provinceData) {
     const {x,y} = hexPx(p.q, p.r);
     drawProvince(ctx, x, y, p);
-    if (State.camera.zoom >= 0.55) drawLabel(ctx, x, y, p.name, p.own);
+    if (State.camera.zoom >= LOCAL_ZOOM) drawLabel(ctx, x, y, p.name, p.own);
   }
 
-  // 4b. Activity overlay badges (own non-outpost cities, zoom >= 0.4)
-  if (State.activityOverlay && State.camera.zoom >= 0.4) {
+  // 4b. Activity overlay badges (own non-outpost cities, zoom >= ACTIVITY_BADGE_ZOOM)
+  if (State.activityOverlay && State.camera.zoom >= ACTIVITY_BADGE_ZOOM) {
     for (const p of State.provinceData) {
       if (p.is_outpost || !p.own) continue;
       const {x, y} = hexPx(p.q, p.r);
@@ -990,11 +993,19 @@ export function refreshTiles() {
 }
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
+// Single source of truth for the zoom clamp — was previously duplicated
+// between zoom() and the wheel handler in initMap(), which is why raising
+// the floor in only one of them didn't fix Timothy's "zooms out too far"
+// report (2026-07-25). Bounds themselves are named calibration in config.js.
+function clampZoom(z) {
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
+}
+
 export function zoom(factor) {
   const cx = canvas.width/2, cy = canvas.height/2;
   State.camera.x = cx + (State.camera.x - cx) * factor;
   State.camera.y = cy + (State.camera.y - cy) * factor;
-  State.camera.zoom = Math.min(5, Math.max(0.2, State.camera.zoom * factor));
+  State.camera.zoom = clampZoom(State.camera.zoom * factor);
   State.dirty = true;
 }
 export function resetView() {
@@ -1506,7 +1517,7 @@ export function initMap() {
     const factor = e.deltaY < 0 ? 1.1 : 0.91;
     State.camera.x = mx + (State.camera.x - mx) * factor;
     State.camera.y = my + (State.camera.y - my) * factor;
-    State.camera.zoom = Math.min(5, Math.max(0.2, State.camera.zoom * factor));
+    State.camera.zoom = clampZoom(State.camera.zoom * factor);
     State.dirty = true;
   }, {passive:false});
 
