@@ -334,6 +334,79 @@ function drawForestFloor(ctx, cx, cy, q, r) {
   ctx.restore();
 }
 
+// ── Canopy ───────────────────────────────────────────────────────────────
+// Trees grow in stands, not in an even scatter. Three lone dots per hex read
+// as a repeating pattern; composed clumps with air between them read as
+// woodland. Two rules carry the look:
+//
+//   Dark core, warm edge — crowns deepen toward the middle of the hex and
+//   warm toward its rim, so a block of forest gets an inside and an outside.
+//   Thinning at the bryn — a clump close to open country is dropped or
+//   shrunk, so the treeline the floor already opens up is not contradicted
+//   by trees standing to attention right at the edge.
+//
+// Everything is seeded per hex and clipped to it, like the floor.
+const CROWN_DEEP = '#264A12';
+const CROWN_MID  = '#3A6818';
+const CROWN_WARM = '#5A8A24';
+const CROWN_LIT_DEEP = '#3E6E1E';
+const CROWN_LIT_WARM = '#84B23A';
+
+function mixHex(a, b, t) {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+  const ch = (sh) => Math.round((((pa >> sh) & 0xff) * (1 - t)) + (((pb >> sh) & 0xff) * t));
+  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+}
+
+function drawCanopy(ctx, cx, cy, q, r) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  const mid = S * Math.sqrt(3) / 2;
+  const edges = openEdges(q, r).map(([dq, dr]) => {
+    const ex = S * 1.5 * dq;
+    const ey = S * Math.sqrt(3) * (dr + dq / 2);
+    const len = Math.hypot(ex, ey) || 1;
+    return { x: (ex / len) * mid, y: (ey / len) * mid };
+  });
+
+  const clumps = 3 + rndInt(q, r, 2, 3);
+  for (let c = 0; c < clumps; c++) {
+    const a = rnd(q, r, 700 + c) * Math.PI * 2;
+    const d = Math.sqrt(rnd(q, r, 710 + c)) * 13;
+    const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
+
+    // 0 deep inside the wood → 1 standing on an open edge.
+    let openness = 0;
+    for (const e of edges) {
+      openness = Math.max(openness, 1 - Math.hypot(gx - e.x, gy - e.y) / (S * 0.9));
+    }
+    openness = Math.min(1, Math.max(0, openness));
+    if (rnd(q, r, 720 + c) < openness * 0.8) continue;
+
+    const warmth = Math.min(1, d / 13 * 0.7 + openness * 0.5);
+    const body = mixHex(CROWN_DEEP, CROWN_WARM, warmth);
+    const lit  = mixHex(CROWN_LIT_DEEP, CROWN_LIT_WARM, warmth);
+    const scale = 1 - openness * 0.35;
+
+    const crowns = 3 + rndInt(q, r, 730 + c, 3);
+    for (let i = 0; i < crowns; i++) {
+      const ca = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
+      const cd = rnd(q, r, 800 + c * 8 + i) * 4.4;
+      const rad = (2.1 + rnd(q, r, 860 + c * 8 + i) * 1.9) * scale;
+      const x = cx + gx + Math.cos(ca) * cd, y = cy + gy + Math.sin(ca) * cd;
+      ctx.fillStyle = body;
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = lit;
+      ctx.beginPath();
+      ctx.arc(x - rad * 0.3, y - rad * 0.34, rad * 0.48, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
 function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
   ctx.save();
@@ -360,19 +433,7 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
     }
     case 'forest_olive_grove': {
       drawForestFloor(ctx, cx, cy, q, r);
-      const dotColor = '#3A6818';
-      for (let i = 0; i < 3; i++) {
-        const ox = ((seed * (i*11+2)) & 0x1b) - 12;
-        const oy = ((seed * (i*9+4)) & 0x1b) - 12;
-        ctx.fillStyle = dotColor;
-        ctx.beginPath();
-        ctx.arc(cx+ox, cy+oy, 3, 0, Math.PI*2);
-        ctx.fill();
-        ctx.fillStyle = '#5A9028';
-        ctx.beginPath();
-        ctx.arc(cx+ox-1, cy+oy-1, 1.5, 0, Math.PI*2);
-        ctx.fill();
-      }
+      drawCanopy(ctx, cx, cy, q, r);
       break;
     }
     case 'hills': {
