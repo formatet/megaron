@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -472,10 +473,21 @@ func statusCmd() *cobra.Command {
 					{"Ship", "galley"}, {"EliteInfantry", "elite_infantry"},
 					{"WarGalley", "war_galley"}, {"Merchantman", "merchantman"},
 				}
+				// Kohortuppdelning (A16, 2026-07-25): each line above is a SUM across
+				// every garrisoned unit of that type (api/handlers/db.go
+				// loadSettlement) — "Spearman 100" can silently be two separate
+				// 100-cap cohorts, only visible today by cross-referencing `unit
+				// list` by hand (settlement + status). One fetch for the whole Army
+				// block, not per type — see fetchGarrisonCohorts.
+				settlementID, _ := sett["id"].(string)
+				cohortsByType := fetchGarrisonCohorts(c, cfg.WorldID, settlementID)
 				for _, u := range units {
 					v, _ := army[u.jsonKey].(float64)
 					if v > 0 {
 						fmt.Printf("  %-10s %4.0f\n", unit.DisplayName(u.dbType), v)
+						for _, line := range cohortLines(cohortsByType[u.dbType]) {
+							fmt.Println(line)
+						}
 					}
 				}
 				// Upkeep the standing garrison drains each day (grain shortage → attrition,
@@ -633,4 +645,76 @@ func printLoyaltyLog(c *Client, worldID string, sett map[string]any) {
 	for _, line := range formatLoyaltyLog(entries) {
 		fmt.Println(line)
 	}
+}
+
+// fetchGarrisonCohorts reads every unit the player owns (GET
+// /worlds/{worldID}/units — same endpoint `keryx unit list` uses) and groups
+// this settlement's garrison-status units by type. This is the split hidden
+// behind each Army aggregate line: province.go's SUM(size) (api/handlers/
+// db.go loadSettlement) filters on the identical status='garrison', so a
+// correct grouping's per-type Size sum always equals the aggregate number
+// printed above it — if a live server ever disagrees, that is a bug in this
+// function or in the aggregate, not something to paper over.
+//
+// Best-effort like fetchDevotionShare (cmd_allocate.go): returns nil on any
+// failure (empty settlementID, request error, bad JSON). `status` is a
+// read-only view; one extra endpoint failing must never block it — it just
+// loses the cohort breakdown and falls back to the aggregate-only line.
+func fetchGarrisonCohorts(c *Client, worldID, settlementID string) map[string][]unitRow {
+	if settlementID == "" {
+		return nil
+	}
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/units", worldID))
+	if err != nil {
+		return nil
+	}
+	var resp struct {
+		Units []unitRow `json:"units"`
+	}
+	if json.Unmarshal(data, &resp) != nil {
+		return nil
+	}
+	out := make(map[string][]unitRow)
+	for _, u := range resp.Units {
+		if u.Status != "garrison" || u.SettlementID == nil || *u.SettlementID != settlementID {
+			continue
+		}
+		out[u.Type] = append(out[u.Type], u)
+	}
+	return out
+}
+
+// cohortLines formats the per-cohort breakdown shown under an Army aggregate
+// line. Returns nil for 0 or 1 cohorts: a single cohort already equals the
+// aggregate line above it, so a sub-line would repeat that number without
+// saying anything new — only ≥2 cohorts is new information, and only ≥2 is
+// worth the extra noise in the common case.
+//
+// Shows the full unit ID (not truncated) because it is the identifier
+// `keryx unit march --unit <id>` takes — the whole point of naming the split
+// is that a Wanax (or LLM agent) can act on ONE cohort, so the line must be
+// directly pasteable, not just legible. Ships also carry a Name
+// (internal/unit/model.go: Name is set only for naval units); shown after
+// the ID when present, for a human reading at a glance.
+func cohortLines(cohorts []unitRow) []string {
+	if len(cohorts) < 2 {
+		return nil
+	}
+	sorted := make([]unitRow, len(cohorts))
+	copy(sorted, cohorts)
+	sort.Slice(sorted, func(i, j int) bool {
+		if sorted[i].Size != sorted[j].Size {
+			return sorted[i].Size > sorted[j].Size
+		}
+		return sorted[i].ID < sorted[j].ID
+	})
+	lines := make([]string, 0, len(sorted))
+	for _, u := range sorted {
+		line := fmt.Sprintf("      %-36s %4d", u.ID, u.Size)
+		if u.Name != nil && *u.Name != "" {
+			line += "  " + *u.Name
+		}
+		lines = append(lines, line)
+	}
+	return lines
 }
