@@ -458,11 +458,15 @@ function drawTree(ctx, sprite, palette, fx, fy) {
   }
 }
 
+// NOT clipped to the hex, unlike the floor. Once the stand reached the rim, the
+// clip sliced crowns clean off along the hex border — straight cuts through the
+// foliage, which is worse than the bare margin it replaced. A crown that hangs
+// a few pixels over the border interleaves with the neighbouring hex's trees
+// and reads as continuous woodland. That only works because the canopy is a
+// separate pass: inside the tile loop, the next tile's ground would paint over
+// the previous tile's overhanging branches.
 function drawCanopy(ctx, cx, cy, q, r) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
-
   const mid = S * Math.sqrt(3) / 2;
   const edges = openEdges(q, r).map(([dq, dr]) => {
     const ex = S * 1.5 * dq;
@@ -476,13 +480,16 @@ function drawCanopy(ctx, cx, cy, q, r) {
   // Colonization): a tree stands on its position, so one further down the hex
   // must overlap one further up, and that only works if they are sorted.
   const stand = [];
-  // Fewer stands than before: the trees are roughly twice the size, and the
-  // old count would close the canopy into a solid mat with no ground showing.
-  // A grove is spaced — the gaps are the point.
-  const clumps = 2 + rndInt(q, r, 2, 2);
+  // Trees have to reach the hex's rim, not huddle in the middle. The hex is 19
+  // across to an edge and 22 to a corner; when the stand only occupied the
+  // inner ~16 the result read as an ICON placed in the centre to stand for the
+  // hex, with a bare margin all round — a symbol of woodland rather than
+  // woodland. Clump centres now spread to 13 and their trees a further 7, so
+  // the grove runs out to the edges and meets the neighbouring hex's grove.
+  const clumps = 3 + rndInt(q, r, 2, 3);
   for (let c = 0; c < clumps; c++) {
     const a = rnd(q, r, 700 + c) * Math.PI * 2;
-    const d = Math.sqrt(rnd(q, r, 710 + c)) * 10;
+    const d = Math.sqrt(rnd(q, r, 710 + c)) * 13;
     const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
 
     // 0 deep inside the wood → 1 standing on an open edge.
@@ -493,10 +500,10 @@ function drawCanopy(ctx, cx, cy, q, r) {
     openness = Math.min(1, Math.max(0, openness));
     if (rnd(q, r, 720 + c) < openness * 0.8) continue;
 
-    const trees = 1 + rndInt(q, r, 730 + c, 3);
+    const trees = 2 + rndInt(q, r, 730 + c, 3);
     for (let i = 0; i < trees; i++) {
       const ta = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
-      const td = rnd(q, r, 800 + c * 8 + i) * 6;
+      const td = rnd(q, r, 800 + c * 8 + i) * 7;
       // Three sizes mixed: a stand of identical silhouettes reads as a repeated
       // stamp. Out at the bryn the big ones drop away first, so the treeline
       // thins by losing its mature trees rather than by fading uniformly.
@@ -513,6 +520,33 @@ function drawCanopy(ctx, cx, cy, q, r) {
       });
     }
   }
+  // Solitaries. Clumps alone leave wide empty lanes between them, and the eye
+  // reads those lanes as "the hex is mostly bare with some tree groups on it".
+  // A grove has strays: single trees out on their own between the stands, which
+  // is what turns three groups into continuous tree cover without closing the
+  // canopy into a Nordic forest.
+  const strays = 3 + rndInt(q, r, 3, 4);
+  for (let s = 0; s < strays; s++) {
+    const a = rnd(q, r, 900 + s) * Math.PI * 2;
+    const d = Math.sqrt(rnd(q, r, 920 + s)) * 17;
+    const sx = Math.cos(a) * d, sy = Math.sin(a) * d;
+    let openness = 0;
+    for (const e of edges) {
+      openness = Math.max(openness, 1 - Math.hypot(sx - e.x, sy - e.y) / (S * 0.9));
+    }
+    openness = Math.min(1, Math.max(0, openness));
+    if (rnd(q, r, 940 + s) < openness * 0.8) continue;
+    // Strays skew small: a lone mature olive out in the open would read as a
+    // landmark, and every hex would have three of them.
+    const roll = rnd(q, r, 960 + s);
+    stand.push({
+      x: cx + sx,
+      y: cy + sy,
+      sprite: roll > 0.72 && openness < 0.5 ? SPRITE_MID : SPRITE_SMALL,
+      warm: openness > 0.35 || d > 11,
+    });
+  }
+
   stand.sort((a, b) => a.y - b.y);
 
   for (const t of stand) {
@@ -554,8 +588,9 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
       break;
     }
     case 'forest_olive_grove': {
+      // Floor only. The canopy is a second pass over every tile (see render()),
+      // because a crown has to be allowed to hang over the hex border.
       drawForestFloor(ctx, cx, cy, q, r);
-      drawCanopy(ctx, cx, cy, q, r);
       break;
     }
     case 'hills': {
@@ -1012,6 +1047,14 @@ export function render() {
     fillHex(ctx, pts, base.c0, base.c1, seed);
     if (t.terrain !== 'fog') drawDetail(ctx, x, y, t.terrain, seed, State.animFrame, t.q, t.r);
     if (t.terrain !== 'fog' && State.camera.zoom >= ROAD_DEPOSIT_ZOOM) drawDepositIcons(ctx, x, y, t);
+  }
+
+  // 1b. Canopy pass — after every tile's ground is down, so a crown may hang
+  // over the hex border without the next tile's floor painting over it.
+  for (const t of State.tileData) {
+    if (t.terrain !== 'forest_olive_grove') continue;
+    const {x, y} = hexPx(t.q, t.r);
+    drawCanopy(ctx, x, y, t.q, t.r);
   }
 
   // 2. Roads between adjacent own/allied provinces
