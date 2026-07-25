@@ -265,32 +265,34 @@ function drawForestFloor(ctx, cx, cy, q, r) {
   ctx.fillStyle = FOREST_FLOOR;
   ctx.fillRect(cx - S, cy - S, S * 2, S * 2);
 
-  // Bare ground: many small specks, not few large blobs. A big brown ellipse
+  // Everything below is drawn as integer-aligned blocks, never as ellipses.
+  // The trees above are pixel sprites, and a soft anti-aliased smudge under a
+  // hard-edged sprite reads as two different pictures stacked in one hex.
+
+  // Bare ground: many small specks, not few large blobs. A big brown shape
   // reads as a mud pool — worse, it competes with the copper deposit marker,
   // which is a small brown dot. Ground is texture here, never a shape.
-  ctx.globalAlpha = 0.3;
+  ctx.globalAlpha = 0.32;
   ctx.fillStyle = FOREST_EARTH;
-  for (let i = 0; i < 7; i++) {
-    const a  = rnd(q, r, 10 + i) * Math.PI * 2;
-    const d  = 2 + rnd(q, r, 20 + i) * 13;
-    const rx = 1.5 + rnd(q, r, 30 + i) * 2;
-    const ry = 1 + rnd(q, r, 40 + i) * 1.2;
-    ctx.beginPath();
-    ctx.ellipse(cx + Math.cos(a) * d, cy + Math.sin(a) * d, rx, ry, a, 0, Math.PI * 2);
-    ctx.fill();
+  for (let i = 0; i < 9; i++) {
+    const a = rnd(q, r, 10 + i) * Math.PI * 2;
+    const d = 2 + rnd(q, r, 20 + i) * 13;
+    const w = 2 + rndInt(q, r, 30 + i, 3);
+    ctx.fillRect(Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d),
+                 w, 1 + rndInt(q, r, 40 + i, 2));
   }
 
-  // Deeper shade in the hollows — keeps the floor from reading as one tone
-  // without adding another colour family.
-  ctx.globalAlpha = 0.3;
+  // Deeper shade in the hollows, laid down as a two-row stagger so it reads as
+  // dithered ground rather than a blurred patch.
+  ctx.globalAlpha = 0.26;
   ctx.fillStyle = '#25451A';
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     const a = rnd(q, r, 70 + i) * Math.PI * 2;
-    const d = rnd(q, r, 80 + i) * 13;
-    ctx.beginPath();
-    ctx.ellipse(cx + Math.cos(a) * d, cy + Math.sin(a) * d,
-                2 + rnd(q, r, 90 + i) * 2, 1.5 + rnd(q, r, 100 + i) * 1.5, a, 0, Math.PI * 2);
-    ctx.fill();
+    const d = rnd(q, r, 80 + i) * 12;
+    const bx = Math.round(cx + Math.cos(a) * d), by = Math.round(cy + Math.sin(a) * d);
+    const w = 3 + rndInt(q, r, 90 + i, 4);
+    ctx.fillRect(bx, by, w, 1);
+    ctx.fillRect(bx + 1, by + 1, Math.max(1, w - 2), 1);
   }
 
   ctx.globalAlpha = 0.55;
@@ -325,10 +327,9 @@ function drawForestFloor(ctx, cx, cy, q, r) {
       // Per-speck coverage: a uniform alpha over many small shapes reads as
       // film grain. Varying it makes the same specks read as depth instead.
       ctx.globalAlpha = 0.22 + rnd(q, r, 600 + e * 20 + i) * 0.3;
-      ctx.beginPath();
-      ctx.ellipse(px, py, 1.8 + rnd(q, r, 400 + e * 20 + i) * 2.4,
-                  1.4 + rnd(q, r, 500 + e * 20 + i) * 1.6, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillRect(Math.round(px), Math.round(py),
+                   2 + rndInt(q, r, 400 + e * 20 + i, 4),
+                   1 + rndInt(q, r, 500 + e * 20 + i, 2));
     }
   });
   ctx.restore();
@@ -346,16 +347,69 @@ function drawForestFloor(ctx, cx, cy, q, r) {
 //   by trees standing to attention right at the edge.
 //
 // Everything is seeded per hex and clipped to it, like the floor.
-const CROWN_DEEP = '#264A12';
-const CROWN_MID  = '#3A6818';
-const CROWN_WARM = '#5A8A24';
-const CROWN_LIT_DEEP = '#3E6E1E';
-const CROWN_LIT_WARM = '#84B23A';
+// Trees are drawn as PIXEL SPRITES, not as arcs. An arc anti-aliases, and the
+// canvas is scaled (zoom × SCALE), so a smooth curve gets resampled into mush
+// at every zoom level — which is what made the old crowns read as flat
+// boardgame counters. fillRect on integer coordinates scales into hard-edged
+// blocks instead, which is the whole point of the pixel-art rule in
+// temenos_designprinciper (1px charcoal outline, no anti-aliasing, no gradients).
+//
+// K charcoal outline · D shadowed side · M body · L sunlit side · T trunk
+// Light falls from the upper left, so every sprite runs L → M → D across its
+// width. A crown shaded on one side is what separates a tree from a green
+// counter; the old arcs had a highlight dot but no shaded side at all.
+const TREE_TALL = [
+  '..KKK..',
+  '.KLLMK.',
+  'KLLMMDK',
+  'KLMMMDK',
+  'KLMMMDK',
+  '.KMMDK.',
+  '..KTK..',
+  '..KTK..',
+];
+const TREE_SQUAT = [
+  '.KKK.',
+  'KLMDK',
+  'KLMDK',
+  '.KTK.',
+];
+const TREE_PALETTE = { K: '#1B2810', D: '#2B4E14', M: '#3E6E1F', L: '#5FA02C', T: '#463218' };
 
-function mixHex(a, b, t) {
-  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
-  const ch = (sh) => Math.round((((pa >> sh) & 0xff) * (1 - t)) + (((pb >> sh) & 0xff) * t));
-  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+// Same sprites, shifted toward the sunlit end of the ramp — used for stands at
+// the warm rim of the wood so a forest block keeps an inside and an outside.
+const TREE_PALETTE_WARM = { K: '#22300F', D: '#3A6418', M: '#548C24', L: '#7CBB38', T: '#4E3A1C' };
+
+// Precompute each sprite as horizontal runs of equal colour: one fillRect per
+// run instead of one per pixel, so a hex of trees costs tens of draw calls
+// rather than hundreds.
+function spriteRuns(rows) {
+  const runs = [];
+  const w = Math.max(...rows.map(r => r.length));
+  rows.forEach((row, y) => {
+    let x = 0;
+    while (x < row.length) {
+      const ch = row[x];
+      let n = 1;
+      while (x + n < row.length && row[x + n] === ch) n++;
+      if (ch !== '.') runs.push({ ch, x, y, n });
+      x += n;
+    }
+  });
+  return { runs, w, h: rows.length };
+}
+const SPRITE_TALL = spriteRuns(TREE_TALL);
+const SPRITE_SQUAT = spriteRuns(TREE_SQUAT);
+
+// Origin is the trunk's foot, so trees "stand" on their position and a lower
+// tree overlaps a higher one correctly when the stand is drawn back to front.
+function drawTree(ctx, sprite, palette, fx, fy) {
+  const ox = Math.round(fx) - (sprite.w >> 1);
+  const oy = Math.round(fy) - sprite.h;
+  for (const r of sprite.runs) {
+    ctx.fillStyle = palette[r.ch];
+    ctx.fillRect(ox + r.x, oy + r.y, r.n, 1);
+  }
 }
 
 function drawCanopy(ctx, cx, cy, q, r) {
@@ -371,10 +425,15 @@ function drawCanopy(ctx, cx, cy, q, r) {
     return { x: (ex / len) * mid, y: (ey / len) * mid };
   });
 
+  // Collect the stand first, then draw it back to front. The map is seen from
+  // above but the trees are drawn in side elevation (¾, as in Settlers 2 /
+  // Colonization): a tree stands on its position, so one further down the hex
+  // must overlap one further up, and that only works if they are sorted.
+  const stand = [];
   const clumps = 3 + rndInt(q, r, 2, 3);
   for (let c = 0; c < clumps; c++) {
     const a = rnd(q, r, 700 + c) * Math.PI * 2;
-    const d = Math.sqrt(rnd(q, r, 710 + c)) * 13;
+    const d = Math.sqrt(rnd(q, r, 710 + c)) * 12;
     const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
 
     // 0 deep inside the wood → 1 standing on an open edge.
@@ -385,24 +444,33 @@ function drawCanopy(ctx, cx, cy, q, r) {
     openness = Math.min(1, Math.max(0, openness));
     if (rnd(q, r, 720 + c) < openness * 0.8) continue;
 
-    const warmth = Math.min(1, d / 13 * 0.7 + openness * 0.5);
-    const body = mixHex(CROWN_DEEP, CROWN_WARM, warmth);
-    const lit  = mixHex(CROWN_LIT_DEEP, CROWN_LIT_WARM, warmth);
-    const scale = 1 - openness * 0.35;
-
-    const crowns = 3 + rndInt(q, r, 730 + c, 3);
-    for (let i = 0; i < crowns; i++) {
-      const ca = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
-      const cd = rnd(q, r, 800 + c * 8 + i) * 4.4;
-      const rad = (2.1 + rnd(q, r, 860 + c * 8 + i) * 1.9) * scale;
-      const x = cx + gx + Math.cos(ca) * cd, y = cy + gy + Math.sin(ca) * cd;
-      ctx.fillStyle = body;
-      ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = lit;
-      ctx.beginPath();
-      ctx.arc(x - rad * 0.3, y - rad * 0.34, rad * 0.48, 0, Math.PI * 2);
-      ctx.fill();
+    const trees = 2 + rndInt(q, r, 730 + c, 3);
+    for (let i = 0; i < trees; i++) {
+      const ta = rnd(q, r, 740 + c * 8 + i) * Math.PI * 2;
+      const td = rnd(q, r, 800 + c * 8 + i) * 5;
+      // Squat trees fill in around the tall ones — a stand of identical
+      // silhouettes reads as a stamp, which is the thing we are getting away from.
+      const tall = rnd(q, r, 860 + c * 8 + i) > 0.38 && openness < 0.6;
+      stand.push({
+        x: cx + gx + Math.cos(ta) * td,
+        y: cy + gy + Math.sin(ta) * td,
+        sprite: tall ? SPRITE_TALL : SPRITE_SQUAT,
+        warm: openness > 0.35 || d > 8.5,
+      });
     }
+  }
+  stand.sort((a, b) => a.y - b.y);
+
+  for (const t of stand) {
+    // Ground shadow cast down-right: the light in this world comes from the
+    // upper left (same side the sprites are lit on). It is what makes a tree
+    // read as standing up rather than lying flat on the hex.
+    ctx.globalAlpha = 0.38;
+    ctx.fillStyle = '#1A2A10';
+    ctx.fillRect(Math.round(t.x) - 1, Math.round(t.y) - 1, t.sprite.w - 1, 2);
+    ctx.fillRect(Math.round(t.x) + 1, Math.round(t.y), t.sprite.w - 2, 1);
+    ctx.globalAlpha = 1;
+    drawTree(ctx, t.sprite, t.warm ? TREE_PALETTE_WARM : TREE_PALETTE, t.x, t.y);
   }
   ctx.restore();
 }
