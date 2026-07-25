@@ -1315,6 +1315,11 @@ body:has(.auth-page) main {
 .goods-mini td:last-child { text-align: right; font-family: var(--mono); color: var(--accent); }
 .goods-mini tr:last-child td { border-bottom: none; }
 
+/* Good at its storage ceiling: production past the cap is discarded, so the
+   labor-table rate cell reads "full · +0/day" instead of a positive number —
+   dim it instead of --safe's green so a wasted allocation doesn't look like growth. */
+.goods-mini td.goods-atcap { color: var(--text-dim); }
+
 /* Inbox items */
 .inbox-item { border: 1px solid var(--border); padding: 0.5rem 0.6rem; margin-bottom: 0.4rem; background: var(--bg-raised); }
 .inbox-item.unread { border-left: 3px solid var(--gold); }

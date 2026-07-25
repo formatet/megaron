@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -44,6 +45,7 @@ func goodsCmd() *cobra.Command {
 				return nil
 			}
 			sawUnserved := false
+			var capNotes []capNote
 			// labor_pool och idle_citizens är identiska på varje rad — visa en gång.
 			if lp, ok := goods[0]["labor_pool"].(float64); ok {
 				idle := 0.0
@@ -52,12 +54,14 @@ func goodsCmd() *cobra.Command {
 				}
 				fmt.Printf("Labor pool: %d workers  ·  Idle: %d workers\n\n", int(lp), int(idle))
 			}
-			fmt.Printf("%-10s  %8s  %8s  %6s  %10s  %8s  %8s\n",
+			fmt.Printf("%-10s  %9s  %8s  %6s  %10s  %8s  %8s\n",
 				"Good", "Stock", "Rate/d", "Lvl", "Workers", "Yield/w", "Price")
 			fmt.Println("──────────────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)
 				stock, _ := g["amount"].(float64)
+				capV, _ := g["cap"].(float64)
+				percent, _ := g["percent"].(float64)
 				rateT, _ := g["rate_per_tick"].(float64)
 				price, _ := g["price"].(float64)
 				yieldW, _ := g["yield_per_worker"].(float64)
@@ -87,12 +91,26 @@ func goodsCmd() *cobra.Command {
 					yieldStr = "—"
 					lvlStr = "—"
 				}
-				fmt.Printf("%-10s  %8.1f  %8.1f  %6s  %10s  %8s  %8.1f\n",
-					key, stock, rateD, lvlStr, workersStr, yieldStr, price)
+				// Same class of silent waste as the unserved-labor case above, on the
+				// other end of the good's pipe: the workplace is fine, but the stock
+				// is full, so everything produced past the cap is discarded and the
+				// labor sitting on it earns nothing (2026-07-25 DB audit: 38% of the
+				// world's labor was on capped goods with no marker anywhere).
+				stockStr := fmt.Sprintf("%.1f", stock)
+				if atStorageCeiling(stock, capV) {
+					stockStr += "*"
+					capNotes = append(capNotes, capNote{key: key, percent: percent})
+				}
+				fmt.Printf("%-10s  %9s  %8.1f  %6s  %10s  %8s  %8.1f\n",
+					key, stockStr, rateD, lvlStr, workersStr, yieldStr, price)
 			}
 			if sawUnserved {
 				fmt.Println("\n! = citizens allocated beyond what the workplace can employ. They produce")
 				fmt.Println("    nothing. Raise the building's level (build it again) or move the labor.")
+			}
+			if len(capNotes) > 0 {
+				fmt.Println()
+				fmt.Println(capFootnote(capNotes))
 			}
 			return nil
 		},
@@ -100,6 +118,43 @@ func goodsCmd() *cobra.Command {
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to inspect (default: your capital)")
 	return cmd
+}
+
+// atStorageCeiling reports whether a good's stock has effectively filled its
+// cap. >=99% rather than the exact `>= cap`: some rows land slightly over cap
+// via delivery paths that arrive after the server's cap check runs, and a
+// good sitting at 99% is full within the hour regardless — one state to
+// detect, not two.
+func atStorageCeiling(amount, capV float64) bool {
+	return capV > 0 && amount >= capV*0.99
+}
+
+// capNote is one good at its storage ceiling, carried through to the
+// footnote so it can call out the labor share actually being wasted.
+type capNote struct {
+	key     string
+	percent float64
+}
+
+// capFootnote builds the "* = at the storage ceiling" note for `keryx
+// goods`. Goods with labor still allocated to them (percent > 0) get their
+// share called out — that labor is the part actually producing nothing;
+// goods at cap with no labor on them are just named.
+func capFootnote(notes []capNote) string {
+	if len(notes) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(notes))
+	for _, n := range notes {
+		if n.percent > 0 {
+			parts = append(parts, fmt.Sprintf("%s (%.0f%% of your labor)", n.key, n.percent))
+		} else {
+			parts = append(parts, n.key)
+		}
+	}
+	return "* = at the storage ceiling. Everything produced above it is discarded — the citizens\n" +
+		"    working it produce nothing. At the ceiling now: " + strings.Join(parts, ", ") + ".\n" +
+		"    Move that labor to a good with room, or spend the stock (build, craft, trade it away)."
 }
 
 func transferCmd() *cobra.Command {

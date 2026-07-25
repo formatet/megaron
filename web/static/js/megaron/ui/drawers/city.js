@@ -188,6 +188,14 @@ export async function loadCityDrawer() {
       const rows = prodGoods.map(g => {
         const ypw = g.yield_per_worker ? g.yield_per_worker.toFixed(3) : '—';
         const pct = g.percent != null ? Math.round(g.percent) : 0;
+        // Same storage-ceiling check as `keryx goods`/`keryx allocate` (amount
+        // at 99%+ of cap): everything produced past the cap is discarded, so a
+        // green "+N/day" here was lying about labor that earns nothing.
+        const capV = g.cap || 0;
+        const atCap = capV > 0 && (g.amount || 0) >= capV * 0.99;
+        const rateCell = atCap
+          ? `<td class="goods-atcap" style="padding:.2rem .3rem" id="labor-rate-${g.key}">full · +0/day</td>`
+          : `<td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${((g.rate_per_tick||0)*24).toFixed(1)}/day</td>`;
         return `<tr>
           <td style="padding:.2rem .3rem">${g.name||g.key}</td>
           <td style="padding:.2rem .3rem;text-align:right;white-space:nowrap">
@@ -196,7 +204,7 @@ export async function loadCityDrawer() {
               style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
           </td>
           <td style="padding:.2rem .3rem;text-align:right;color:var(--text-dim);font-size:.75rem"><span class="labor-cit" data-good="${g.key}">${g.citizens||0}</span> cit</td>
-          <td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${((g.rate_per_tick||0)*24).toFixed(1)}/day</td>
+          ${rateCell}
         </tr>`;
       }).join('');
       const idlePct = Math.round((goods[0]||{}).idle_citizens!=null ? (100 - prodGoods.reduce((s,g)=>s+(g.percent||0),0)) : 0);

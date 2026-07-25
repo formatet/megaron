@@ -190,6 +190,8 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		LaborPool    int     `json:"labor_pool"`
 		IdleCitizens int     `json:"idle_citizens"`
 		Producible   bool    `json:"producible"`
+		Amount       float64 `json:"amount"`
+		Cap          float64 `json:"cap"`
 	}
 	if err := json.Unmarshal(data, &goods); err != nil {
 		return err
@@ -208,6 +210,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		key      string
 		pct      float64
 		citizens int
+		atCap    bool
 	}
 	var rows []row
 	hasCult := false
@@ -216,7 +219,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 			pool, idle = g.LaborPool, g.IdleCitizens
 		}
 		if g.Percent > 0 {
-			rows = append(rows, row{g.Key, g.Percent, g.Citizens})
+			rows = append(rows, row{g.Key, g.Percent, g.Citizens, atStorageCeiling(g.Amount, g.Cap)})
 			allocated += g.Percent
 			if g.Key == "cult" {
 				hasCult = true
@@ -224,7 +227,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		}
 	}
 	if devotion > 0 {
-		rows = append(rows, row{"cult (devotion)", devotion * 100, int(devotion * float64(pool))})
+		rows = append(rows, row{"cult (devotion)", devotion * 100, int(devotion * float64(pool)), false})
 		hasCult = true
 	}
 	fmt.Printf("  Population:  %d\n", pool)
@@ -248,7 +251,15 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	}
 	sort.Slice(rows, func(i, j int) bool { return rows[i].pct > rows[j].pct })
 	for _, r := range rows {
-		fmt.Printf("  %-12s %3.0f%%  (%d citizens)\n", r.key, r.pct, r.citizens)
+		if r.atCap {
+			// Same silent-waste class as the workplace-capacity marker below:
+			// the good's stock is full, so the labor sitting on it produces
+			// nothing. This is the one place a Wanax actually chooses the split,
+			// so say it here, not just in `keryx goods`.
+			fmt.Printf("  %-12s %3.0f%%  (%d citizens)  — at storage ceiling, produces nothing\n", r.key, r.pct, r.citizens)
+		} else {
+			fmt.Printf("  %-12s %3.0f%%  (%d citizens)\n", r.key, r.pct, r.citizens)
+		}
 	}
 	if hasCult {
 		// Devotion is capped by what the temple can employ (15% per level), and
