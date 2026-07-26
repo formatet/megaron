@@ -16,7 +16,10 @@
 
   Kör:  python3 -m http.server 8099 --directory web/
         http://localhost:8099/static/showcase-forest.html
-  Dump: scratchpad/shot.py <etikett>
+        ?fixture=plains  byter till en slättdominerad fixtur (samma renderare,
+                         samma kamera) — terrängen under arbete ska dominera.
+        ?world=<sträng>  byter världshash utan att röra fixturen.
+  Dump: scratchpad/shot.py <etikett> [query]
 -->
 <link rel="stylesheet" href="/static/megaron.css">
 <style>
@@ -47,21 +50,51 @@ import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
 // en romb. Tecken:
 //   ~ deep_sea   c coastal_sea   p plains   F forest_olive_grove
 //   h hills      m mountain_limestone       . fog
-const ROWS = [
-  '~~cppFFhh',
-  '~cppFFFhm',
-  '~cpFFFFFh',
-  'cpFFFFFFh',
-  'cpFFFFFFp',
-  'cpFFFFFpp',
-  '~cpFFFpp.',
-  '~~cppFp..',
-  '~~~cpp...',
-];
+//
+// Två fixturer, valda med ?fixture=. Terrängen under arbete måste dominera
+// bilden — en remsa på tre hexar räcker inte för att bedöma om ett fält läser
+// som massa, och massa är hela frågan (megaron_terrangrendering princip 1–4).
+// Övriga terränger finns kvar som grannar, för det är i mötet en ändring
+// läcker: mot kust, mot kulle, mot fog, under stad, väg, fyndighet och enhet.
+const FIXTURES = {
+  // Skogen dominerar. Slätten är remsan i väster.
+  forest: [
+    '~~cppFFhh',
+    '~cppFFFhm',
+    '~cpFFFFFh',
+    'cpFFFFFFh',
+    'cpFFFFFFp',
+    'cpFFFFFpp',
+    '~cpFFFpp.',
+    '~~cppFp..',
+    '~~~cpp...',
+  ],
+  // Slätten dominerar. Grannarna är valda efter vad slätten kan KOLLIDERA med,
+  // inte efter vad som är vackert: lunden (`#9EA361`) i öster för att slättens
+  // ton måste gå att skilja från den bleka olivkhakin, och skrub (`#A8B860`) +
+  // halvöken (`#D4B878`) för att de ligger i exakt det pale-varma register en
+  // medelhavsslätt vill flytta in i. Utan dem i bilden går kollisionen inte att
+  // se, och en osynlig kollision är den enda sortens fel riggen inte fångar.
+  plains: [
+    '~~cppppsh',
+    '~cpppppsm',
+    'cppppppsh',
+    'cpppppFph',
+    'cppppFFph',
+    'cppppppdh',
+    '~cpppppd.',
+    '~~cppppp.',
+    '~~~cppp..',
+  ],
+};
+
+const FIXTURE = new URLSearchParams(location.search).get('fixture') || 'forest';
+const ROWS = FIXTURES[FIXTURE] || FIXTURES.forest;
 
 const TERRAIN = {
   '~': 'deep_sea', c: 'coastal_sea', p: 'plains',
-  F: 'forest_olive_grove', h: 'hills', m: 'mountain_limestone', '.': 'fog',
+  F: 'forest_olive_grove', h: 'hills', m: 'mountain_limestone',
+  s: 'scrub_maquis', d: 'semi_desert', '.': 'fog',
 };
 
 // row/col -> axial. Enda stället som känner till offseten.
@@ -80,10 +113,16 @@ const tileAt = (col, row) => {
   return tiles.find(t => t.q === q && t.r === r);
 };
 
-// Deposits: cedar i skogen (den vara skogen faktiskt bär), koppar i kullen.
-// Båda ritas av drawDepositIcons() och måste förbli läsbara över lövverket.
-tileAt(6, 2).cedar_deposit = true;
+// Deposits: koppar i kullen alltid, plus en som ligger PÅ terrängen under
+// arbete — markören ritas av drawDepositIcons() och en ny marktextur under den
+// är precis så cedar-markören en gång drunknade i lövverket.
+// Fyndigheten måste sitta på en hex som terrängen faktiskt har.
+const DEPOSITS = {
+  forest: [[6, 2, 'cedar_deposit']],
+  plains: [[3, 2, 'tin_deposit'], [6, 4, 'cedar_deposit']],
+};
 tileAt(7, 1).copper_deposit = true;
+(DEPOSITS[FIXTURE] || []).forEach(([col, row, kind]) => { tileAt(col, row)[kind] = true; });
 
 // Terrängvariationen hashas ur WORLD_ID. ?world=<sträng> byter värld utan att
 // röra fixturen, så man kan kontrollera båda halvorna av kontraktet: samma
@@ -106,19 +145,27 @@ State.provinceData = [
   city(5, 4, 'Phaistos', { walls: 1, army_total: 0 }),
 ];
 
-// Ruralprojektion: en såg på en catchment-hex i skogen (Fas A2-ytan).
-State.ruralData = [
-  Object.assign(ax(4, 3), { building_type: 'lumbermill' }),
-];
+// Ruralprojektion: byggnaden på en catchment-hex (Fas A2-ytan), av den sort
+// terrängen under arbete faktiskt bär — såg i lunden, gård på slätten.
+const RURAL = {
+  forest: [[4, 3, 'lumbermill']],
+  plains: [[4, 3, 'farm'], [6, 3, 'lumbermill']],
+};
+State.ruralData = (RURAL[FIXTURE] || []).map(
+  ([col, row, type]) => Object.assign(ax(col, row), { building_type: type }),
+);
 
-// Stående landenheter INNE i skogen — måttstocken för hela skalfrågan. Ett
-// träd som är större än en armé läser som diorama, inte som terräng, och det
-// går bara att bedöma med enheten i samma bild som lövverket.
-State.unitsData = [
-  Object.assign(ax(3, 6), { status: 'positioned', category: 'land', id: 'u1' }),
-  Object.assign(ax(5, 2), { status: 'positioned', category: 'land', id: 'u2' }),
-  Object.assign(ax(6, 5), { status: 'positioned', category: 'land', id: 'u3' }),
-];
+// Stående landenheter PÅ terrängen under arbete — måttstocken för hela
+// skalfrågan. Ett träd som är större än en armé läser som diorama, inte som
+// terräng, och det går bara att bedöma med enheten i samma bild som marken.
+const UNITS = {
+  forest: [[3, 6], [5, 2], [6, 5]],
+  plains: [[3, 6], [6, 2], [7, 4]],
+};
+State.unitsData = (UNITS[FIXTURE] || []).map(
+  ([col, row], i) => Object.assign(ax(col, row),
+    { status: 'positioned', category: 'land', id: `u${i + 1}` }),
+);
 
 // Vald hex (samma tillstånd som ett klick ger).
 State.selectedHex = ax(5, 5);
@@ -127,7 +174,10 @@ State.selectedHex = ax(5, 5);
 // Zoom över LOCAL_ZOOM (0.55) så det lokala registret är på: catchment-tint
 // och ruralprojektion syns, vilket är precis de lager en skogsändring riskerar
 // att dränka.
-State.camera.zoom = 1.6;
+// ?zoom= gör zoomen mätbar. Klippkantens kantutjämning ligger i LOGISKA pixlar
+// och skalas därför med zoom × SCALE: en söm som är osynlig vid 1,6 kan vara
+// bred vid 3,0. Terrängen måste hålla över hela spannet, inte bara vid ett läge.
+State.camera.zoom = Number(new URLSearchParams(location.search).get('zoom')) || 1.6;
 const mid = ax(4, 4);
 const c = hexPx(mid.q, mid.r);
 State.camera.x = canvas.width / 2 - c.x * State.camera.zoom * SCALE;
