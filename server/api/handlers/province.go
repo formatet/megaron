@@ -1289,12 +1289,14 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 	// from production_rules. A building may have multiple rules; we collect all
 	// deposit requirements, collapse coastal to a single bool (any rule requiring
 	// coastal → true), and — for requires_terrain — only flag a terrain set when
-	// EVERY rule for that building names a terrain (no NULL/"any terrain" row):
-	// farm, lumbermill etc. have terrain-conditioned BONUS rules alongside a
-	// terrain-free baseline rule, so they still produce something anywhere and
-	// must not be flagged. Winery (P10, soak 2026-07-18) has exactly one rule,
-	// terrain_type='hills', and NO baseline — built off-hills it produces
-	// nothing at all, silently, which is exactly the "hidden gate" this closes.
+	// EVERY rule for that building names a terrain (no NULL/"any terrain" row).
+	// lumbermill och mine har terräng-konditionerade BONUS-rader vid sidan av en
+	// terrängfri basrad, producerar alltså något överallt och flaggas inte.
+	// farm, olive_press, silver_mine och winery har ENBART terrängrader och är
+	// därmed genuint gateade — en farm på kalksten producerar ingenting alls,
+	// tyst, vilket är exakt den dolda gate P10 (soak 2026-07-18) stänger.
+	// (Kommentaren nämnde tidigare farm som exempel på MOTSATSEN. Fel sedan
+	// migration 008 — farm har aldrig haft en NULL-terrängrad. Rättat 2026-07-26.)
 	type gateInfo struct {
 		requiresCoastal  bool
 		requiresDeposits []string
