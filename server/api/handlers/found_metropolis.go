@@ -15,6 +15,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
+	"formatet/megaron/server/internal/unit/shipnames"
 	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -252,14 +253,19 @@ func foundMetropolisFromNomadicHost(
 		if err != nil {
 			return out, fmt.Errorf("poseidon galley ordinal: %w", err)
 		}
+		// Gåvan får ett namn som varje annat skepp. Utan det läste den bara
+		// "Galley — supported by <stad>" i flottan, medan varje rekryterat skepp
+		// bar ett egennamn — och det är just en gudagåva som minst av allt ska
+		// se namnlös ut.
+		galleyName := shipnames.Suggest(culture, nil)
 		var galleyID uuid.UUID
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
-			                    settlement_id, support_settlement_id, ordinal)
-			 VALUES ($1, $2, $3, $4, 1, $5, 'garrison', $6, $6, $7)
+			                    settlement_id, support_settlement_id, ordinal, name)
+			 VALUES ($1, $2, $3, $4, 1, $5, 'garrison', $6, $6, $7, $8)
 			 RETURNING id`,
 			worldID, playerID, string(unit.TypeGalley), string(unit.CategoryNaval),
-			poseidonGalleyCrew, m.SettlementID, galleyOrdinal,
+			poseidonGalleyCrew, m.SettlementID, galleyOrdinal, galleyName,
 		).Scan(&galleyID); err != nil {
 			return out, fmt.Errorf("poseidon galley: %w", err)
 		}

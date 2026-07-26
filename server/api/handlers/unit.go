@@ -1110,7 +1110,12 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 
 	var currentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
-	summaries := unitSummaries(units, currentTick, h.clk, settlementNames(r.Context(), h.pool, worldID, playerID))
+	// Wanaxens namn behövs för Nomadic Host — den hör till en PERSON, inte till
+	// en stad, eftersom den existerar innan någon stad gör det.
+	var wanax string
+	_ = h.pool.QueryRow(r.Context(), `SELECT username FROM players WHERE id = $1`, playerID).Scan(&wanax)
+	summaries := unitSummaries(units, currentTick, h.clk,
+		settlementNames(r.Context(), h.pool, worldID, playerID), wanax)
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -1244,7 +1249,7 @@ type unitSummary struct {
 
 // townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
 // servern inte formatera namnstandarden, och då hamnar grammatiken i klienterna.
-func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string) []unitSummary {
+func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string, wanax string) []unitSummary {
 	// Reverse map: cargo unit id → the ship carrying it, so an embarked unit can
 	// name its carrier. A ship and its cargo are owned by the same Wanax, so both
 	// rows are in us — no extra query needed.
@@ -1296,7 +1301,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		var nm unit.Name
 		switch {
 		case u.Type == unit.TypeNomadicHost:
-			nm = unit.HostName("")
+			nm = unit.HostName(wanax)
 		case u.Category == unit.CategoryNaval:
 			shipName := ""
 			if u.Name != nil {
