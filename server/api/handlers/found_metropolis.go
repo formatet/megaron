@@ -164,13 +164,51 @@ func foundMetropolisFromNomadicHost(
 	// 5. The escort comes home: the cohorts become an ordinary garrison, and
 	// combat.UpkeepHandler takes them over the moment the phase goes inactive
 	// (step 7). From here they draw pay and eat from the city like any other unit.
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET settlement_id = $1, status = 'garrison', q = NULL, r = NULL
+	//
+	// **support_settlement_id måste sättas HÄR.** Eskorten föds i grundarfasen,
+	// innan någon stad finns, så den har ingen försörjande stad — och sedan
+	// mig 100 är den kolumnen den enda betalaren. Utan den här raden skulle
+	// eskorten sluta få sold i samma ögonblick som grundarfasen tar slut och
+	// börja desertera från en fullt solvent metropolis. Metropolisen ÄR staden
+	// som reste dem; det är bara det att den inte fanns när de restes.
+	escortRows, err := tx.Query(ctx,
+		`UPDATE units SET settlement_id = $1, support_settlement_id = $1,
+		                  status = 'garrison', q = NULL, r = NULL
 		 WHERE world_id = $2 AND owner_id = $3 AND id <> $4
-		   AND status = 'positioned' AND q = $5 AND r = $6`,
+		   AND status = 'positioned' AND q = $5 AND r = $6
+		 RETURNING id, type`,
 		m.SettlementID, worldID, playerID, hostID, q, r,
-	); err != nil {
+	)
+	if err != nil {
 		return out, fmt.Errorf("attach escort to metropolis: %w", err)
+	}
+	type escortUnit struct {
+		id  uuid.UUID
+		typ string
+	}
+	var escort []escortUnit
+	for escortRows.Next() {
+		var e escortUnit
+		if err := escortRows.Scan(&e.id, &e.typ); err != nil {
+			escortRows.Close()
+			return out, fmt.Errorf("scan escort: %w", err)
+		}
+		escort = append(escort, e)
+	}
+	escortRows.Close()
+	if err := escortRows.Err(); err != nil {
+		return out, fmt.Errorf("read escort: %w", err)
+	}
+	// Ordinalerna delas ut här, inte i UPDATE:n: räknaren är per (stad, typ) och
+	// måste stega en gång per enhet. Eskorten blir metropolisens 1st och 2nd.
+	for _, e := range escort {
+		n, err := unit.AllocateOrdinal(ctx, tx, m.SettlementID, e.typ)
+		if err != nil {
+			return out, fmt.Errorf("escort ordinal: %w", err)
+		}
+		if _, err := tx.Exec(ctx, `UPDATE units SET ordinal = $1 WHERE id = $2`, n, e.id); err != nil {
+			return out, fmt.Errorf("set escort ordinal: %w", err)
+		}
 	}
 
 	// 6. Pour the remaining rations into the city's stores. ADD rather than set:
