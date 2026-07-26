@@ -12,8 +12,21 @@ import { isTypingTarget } from '../ui/format.js';
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
   deep_sea:           {c0:'#1A5276', c1:'#154360'},
-  coastal_sea:        {c0:'#3A9AD9', c1:'#2E86C1'},
-  plains:             {c0:'#8AAF3A', c1:'#74952C'},
+  // Darkened when the plains landed on #859248 (L 137.9) and left this at
+  // L 138.1: the shoreline had exactly 0.2 luminance contrast, so in greyscale
+  // it did not exist at all. Measured cross-section of the render confirmed it —
+  // a flat 138 straight across land and sea. The value comes from sampling the
+  // reference's sea, which is desaturated slate (deep ~#436881, shallow
+  // ~#5C8C9C), not azure; this sits between them and gives ΔL 24.6 against the
+  // plains, better than the 20.5 that existed before the plains changed.
+  //
+  // This is a REPAIR, not the sea step. The same sampling shows the reference's
+  // own green-plain-to-shallow-water contrast is only ~7 — it does not separate
+  // land from sea by value at all, it draws a BRIGHT SHORE BAND, which is what
+  // the contrast budget (princip 6) asks for anyway. That band is the real fix
+  // and belongs to the hav/kust slice.
+  coastal_sea:        {c0:'#3E7C9E', c1:'#33667F'},
+  plains:             {c0:'#859248', c1:'#6F7B3A'},
   river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
   river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
   forest_olive_grove: {c0:'#9EA361', c1:'#848A4C'},
@@ -255,14 +268,20 @@ function openEdges(q, r) {
 // is sampled in WORLD pixel coordinates on a global lattice, so the field is
 // continuous across hex borders — the clip stays (terrain must not bleed onto
 // plains) but between two forest hexes the seam has nothing to reveal.
+// `cell` and `stream` are parameters so a terrain can pick its own grain
+// without a second copy of the interpolation: the forest floor wants a fine
+// 13 px lattice, the plains a much broader one (a parcel of worked land has to
+// span more than a hex, or the field cannot read as continuous across the
+// clip). Defaults reproduce the forest's original single-purpose version
+// exactly, so the grove stays pixel-identical.
 const NOISE_CELL = 13;
-function noiseAt(wx, wy) {
-  const gx = Math.floor(wx / NOISE_CELL), gy = Math.floor(wy / NOISE_CELL);
-  const fx = wx / NOISE_CELL - gx, fy = wy / NOISE_CELL - gy;
+function noiseAt(wx, wy, cell = NOISE_CELL, stream = 7777) {
+  const gx = Math.floor(wx / cell), gy = Math.floor(wy / cell);
+  const fx = wx / cell - gx, fy = wy / cell - gy;
   // Smoothstep the interpolation so cells blend into a field instead of
   // reading as the lattice they are built on.
   const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
-  const c = (ix, iy) => hash32(ix, iy, 7777) / 4294967296;
+  const c = (ix, iy) => hash32(ix, iy, stream) / 4294967296;
   const a = c(gx, gy),     b = c(gx + 1, gy);
   const d = c(gx, gy + 1), e = c(gx + 1, gy + 1);
   return (a + (b - a) * sx) * (1 - sy) + (d + (e - d) * sx) * sy;
@@ -581,13 +600,96 @@ function drawCanopy(ctx, cx, cy, q, r) {
   ctx.restore();
 }
 
+// ── The plains ───────────────────────────────────────────────────────────
+// The old plains were four wheat stalks scattered on a flat saturated green,
+// and they broke three of the rendering rules at once: isolated marks on flat
+// colour read as decoration at any scale, the stalks were the brightest thing
+// on the whole map (the contrast budget reserves that for coastline, mountain
+// edge, buildings and units), and they were drawn as anti-aliased strokes on
+// fractional coordinates, which the scaled canvas resamples into mush.
+// What replaces them is measured off the reference image, not invented, because
+// eye and measurement disagreed twice here and the measurement was right twice.
+//
+// Tone: clean patches of the reference's green ground cluster at 8A964A, 8D9947,
+// 7D8C47, 8C994A, 818B46, 7F8C46 — mean #859248, DARKER and far less saturated
+// than the old #8AAF3A (green 175→146, blue 58→72). The same sampling settles a
+// question the palette could not: the reference's dry gold ground is LIGHTER
+// than its fertile green, so open country is not the bright part of a
+// Mediterranean map. The grove keeps the pale-khaki slot it took yesterday and
+// the plains sits darker beside it — which is also what pulls scrub_maquis
+// (#A8B860) back out of collision with the plains.
+//
+// Amount: those clean patches run at a standard deviation of only 1–9, while
+// the reference's dry gold ground runs 12–29. The green plain is the map's QUIET
+// surface on purpose — texture belongs to the dry country, the mountains and the
+// coast. So the field below is deliberately faint. The goal is that a block of
+// plains stops being one flat colour, not that it becomes interesting.
+const PLAINS_CELL = 78;    // a parcel of worked land spans several hexes
+const PLAINS_DARK  = '#74813C'; // shaded ground, the hollow of a field
+const PLAINS_LIGHT = '#93A053'; // ground catching the light
+const PLAINS_DRY   = '#A0A159'; // baked-out patch where the crop thins
+
+// Dither, so the bands meet as hard blocks instead of a soft smudge — a soft
+// smudge under hard-edged pixel sprites reads as two different pictures stacked
+// in one hex. PLAINS_CELL has to be this wide for the dither to be visible at
+// all: the ±amplitude only spans several blocks if the field's gradient is
+// gentle.
+//
+// REJECTED on the way here: an ordered 4×4 Bayer matrix, the textbook choice.
+// On a gradient this slow it produces large runs of pure checkerboard, and a
+// literal chessboard weave is the one texture this map must never have. Ordered
+// dither's regularity IS the artefact. A per-block random threshold scatters
+// the crossing instead and reads as ground.
+const PLAINS_DITHER = 0.19;
+// No q,r parameter: unlike the forest floor this field is purely world-space,
+// which is the whole point of it.
+function drawPlainsField(ctx, cx, cy) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  // Blocks on integer coordinates aligned to a GLOBAL lattice (floor to STEP,
+  // not relative to the hex centre): two neighbouring plains hexes must place
+  // their blocks on the same grid, or the field betrays the tile boundary it is
+  // supposed to hide.
+  const STEP = 4;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      // One independent draw per block, indexed on the GLOBAL block lattice so
+      // the scatter is continuous across hex borders like the field itself.
+      const jitter = hash32(Math.floor(wx / STEP), Math.floor(wy / STEP), 5151)
+                     / 4294967296 - 0.5;
+      // The field is ISOTROPIC on purpose. "Weak direction" was in the plan and
+      // was tried here — the noise sampled through a ~23° rotation with one axis
+      // compressed to 0.58 — and it made things worse: parcels stretched so far
+      // that whole regions of screen went uniform, so the map read as LESS
+      // structured, and the lie it implied answered to nothing in the world
+      // (real field orientation follows contour and road, which Temenos does not
+      // model — princip 1, detail must arise from structure).
+      const n = noiseAt(wx, wy, PLAINS_CELL, 3131) + jitter * PLAINS_DITHER;
+      if (n < 0.30)      { ctx.globalAlpha = 0.34; ctx.fillStyle = PLAINS_DARK; }
+      else if (n < 0.63) continue;   // the base tone IS the dominant band
+      else if (n < 0.86) { ctx.globalAlpha = 0.30; ctx.fillStyle = PLAINS_LIGHT; }
+      else               { ctx.globalAlpha = 0.26; ctx.fillStyle = PLAINS_DRY; }
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
 function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
   ctx.save();
   const r3 = (seed * 7 + 3) & 0xf;
   const r4 = (seed * 13 + 5) & 0xf;
   switch (terrain) {
-    case 'plains':
+    case 'plains': {
+      drawPlainsField(ctx, cx, cy);
+      break;
+    }
     case 'river_valley':
     case 'river_delta': {
       // tiny wheat stalks
