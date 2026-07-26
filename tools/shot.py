@@ -28,7 +28,7 @@ OUT = pathlib.Path(os.environ.get("SHOT_DIR", "."))
 # allt-dimma-bilden såg ut som ett renderingsfel men var en viewportbugg).
 RIGS = {
     "forest": ("showcase-forest.html", 940, 820),
-    "units": ("showcase-units.html", 1040, 560),
+    "units": ("showcase-units.html", 1040, 1080),
     "glyphs": ("showcase-glyphs.html", 1180, 900),
 }
 
