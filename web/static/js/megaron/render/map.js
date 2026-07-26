@@ -12,7 +12,20 @@ import { isTypingTarget } from '../ui/format.js';
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
   deep_sea:           {c0:'#1A5276', c1:'#154360'},
-  coastal_sea:        {c0:'#3A9AD9', c1:'#2E86C1'},
+  // Darkened when the plains landed on #859248 (L 137.9) and left this at
+  // L 138.1: the shoreline had exactly 0.2 luminance contrast, so in greyscale
+  // it did not exist at all. Measured cross-section of the render confirmed it —
+  // a flat 138 straight across land and sea. The value comes from sampling the
+  // reference's sea, which is desaturated slate (deep ~#436881, shallow
+  // ~#5C8C9C), not azure; this sits between them and gives ΔL 24.6 against the
+  // plains, better than the 20.5 that existed before the plains changed.
+  //
+  // This is a REPAIR, not the sea step. The same sampling shows the reference's
+  // own green-plain-to-shallow-water contrast is only ~7 — it does not separate
+  // land from sea by value at all, it draws a BRIGHT SHORE BAND, which is what
+  // the contrast budget (princip 6) asks for anyway. That band is the real fix
+  // and belongs to the hav/kust slice.
+  coastal_sea:        {c0:'#3E7C9E', c1:'#33667F'},
   plains:             {c0:'#859248', c1:'#6F7B3A'},
   river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
   river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
