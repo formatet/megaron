@@ -225,7 +225,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
 		return
 	}
-	// Hemerodromos travel: path-based over the courier graph (land at 2×
+	// Runner travel: path-based over the courier graph (land at 2×
 	// spearman speed, sea legs by boat) — temenos_orderlopare_plan.md Fas 4.
 	msgTravelTicks, msgTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
 		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
@@ -787,7 +787,7 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	// Give the return leg its own time window: return_departs_at = now, arrives_at =
 	// the reply's homecoming. sent_at is left untouched (the correspondence log
 	// keys on the original send). Without this the return leg carried the outbound
-	// window and the hemerodromos had no eye on the way home (temenos_orderlopare
+	// window and the runner had no eye on the way home (temenos_orderlopare
 	// §(b)).
 	_, err = h.pool.Exec(r.Context(),
 		`UPDATE messengers SET reply_text = $1, status = 'returning',

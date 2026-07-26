@@ -17,7 +17,7 @@ var unitAliases = map[string]string{
 	"chariot": "war_chariot", "chariots": "war_chariot", "cha": "war_chariot", "war_chariot": "war_chariot",
 	"trireme": "galley", "ship": "galley", "shp": "galley", "galley": "galley",
 	"war_galley": "war_galley", "wargalley": "war_galley", "warship": "war_galley",
-	"merchantman": "merchantman", "merchant": "merchantman", "trader": "merchantman",
+	"emporos": "merchantman", "merchantman": "merchantman", "merchant": "merchantman", "trader": "merchantman",
 	"agema": "elite_infantry", "elite": "elite_infantry", "eli": "elite_infantry", "elite_infantry": "elite_infantry",
 }
 
@@ -63,7 +63,10 @@ func recruitCmd() *cobra.Command {
 
 			apiUnit, ok := unitAliases[unit]
 			if !ok {
-				return fmt.Errorf("unknown unit %q — use: hoplites, chariot, galley, war_galley, merchantman, agema (or `keryx recruit --list`)", unit)
+				// Kanoniska namn bara. De retirerade (hoplites, agema) och de interna
+				// (merchantman) lever kvar som INDATA-alias ovan så äldre agenter inte
+				// bryts — men de får aldrig annonseras tillbaka till spelaren.
+				return fmt.Errorf("unknown unit %q — use: spearman, elite_infantry, war_chariot, galley, war_galley, emporos (or `keryx recruit --list`)", unit)
 			}
 			isNaval := apiUnit == "galley" || apiUnit == "war_galley" || apiUnit == "merchantman"
 			if !isNaval {

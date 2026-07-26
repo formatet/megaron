@@ -70,15 +70,20 @@ func seedStarterUnits(
 
 	for _, sp := range units {
 		cat := unit.CategoryOf(sp.utype)
+		ordinal, err := unit.AllocateOrdinal(ctx, tx, settlementID, string(sp.utype))
+		if err != nil {
+			return fmt.Errorf("starter unit ordinal %s: %w", sp.utype, err)
+		}
 
 		var unitID uuid.UUID
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO units
-			   (world_id, owner_id, type, category, size, crew, status, settlement_id)
-			 VALUES ($1, $2, $3, $4, $5, $6, 'garrison', $7)
+			   (world_id, owner_id, type, category, size, crew, status,
+			    settlement_id, support_settlement_id, ordinal)
+			 VALUES ($1, $2, $3, $4, $5, $6, 'garrison', $7, $7, $8)
 			 RETURNING id`,
 			worldID, ownerID, string(sp.utype), string(cat),
-			sp.size, sp.crew, settlementID,
+			sp.size, sp.crew, settlementID, ordinal,
 		).Scan(&unitID); err != nil {
 			return fmt.Errorf("insert starter unit %s: %w", sp.utype, err)
 		}

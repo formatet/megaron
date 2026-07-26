@@ -1,6 +1,6 @@
 package handlers
 
-// Return-leg hemerodromos eye (temenos_orderlopare_plan.md §(b) returbens-ögat):
+// Return-leg runner eye (temenos_orderlopare_plan.md §(b) returbens-ögat):
 // once a recipient replies, the courier runs HOME, and the sender's own eye must
 // interpolate that homeward leg too — not sit blind until it arrives. Mirrors
 // courier_eye_test.go but for status='returning' with a fresh return window.

@@ -83,12 +83,35 @@ func TestBuildingCatalogue_ExposesTerrainGate(t *testing.T) {
 			`is terrain_type='hills' with no fallback rule, so off-hills it produces nothing at all`, winery)
 	}
 
-	// farm has a terrain-conditioned BONUS rule (hills -> wine) alongside a
-	// terrain-free baseline (plains/river_valley/river_delta -> grain/oil) —
-	// it must NOT be flagged, since it's productive regardless of terrain.
-	if farm, ok := byType["farm"]; ok && len(farm) > 0 {
-		t.Errorf("farm requires_terrain = %v, want none — farm has a terrain-free baseline rule and produces "+
-			"something on any terrain; only an all-terrain-conditioned building like winery should be flagged", farm)
+	// farm ÄR terräng-gatead, tvärtemot vad det här testet ursprungligen
+	// påstod. Kontrollerat mot migration 008 (där reglerna föddes) och mot en
+	// färdigmigrerad DB 2026-07-26: farm har ALDRIG haft en NULL-terrängrad.
+	// Alla fem reglerna namnger en terräng, så en farm på kalksten eller i en
+	// olivlund producerar exakt ingenting. Att katalogen flaggar det är precis
+	// den dolda gaten P10 finns till för att stänga — inte ett fel.
+	wantFarm := []string{"hills", "plains", "river_delta", "river_valley"}
+	farm, ok := byType["farm"]
+	if !ok {
+		t.Fatal("no farm entry in building catalogue")
+	}
+	if len(farm) != len(wantFarm) {
+		t.Errorf("farm requires_terrain = %v, want %v", farm, wantFarm)
+	} else {
+		for i := range wantFarm {
+			if farm[i] != wantFarm[i] {
+				t.Errorf("farm requires_terrain = %v, want %v", farm, wantFarm)
+				break
+			}
+		}
+	}
+
+	// Kontrollen åt andra hållet: lumbermill HAR terrängfria basrader vid sidan
+	// av sin skogsbonus, producerar alltså något överallt, och får därför inte
+	// flaggas. Utan den här raden skulle testet passera även om katalogen
+	// flaggade varenda byggnad.
+	if lm, ok := byType["lumbermill"]; ok && len(lm) > 0 {
+		t.Errorf("lumbermill requires_terrain = %v, want none — den har terrängfria basrader "+
+			"och producerar något på varje terräng", lm)
 	}
 }
 

@@ -15,6 +15,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/religion"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -1232,10 +1233,15 @@ func (h *TickHandler) insertGarrisonUnit(ctx context.Context, settlementID, worl
 	if ownerID == nil {
 		return nil // ownerless settlement — no one to receive the unit
 	}
-	_, err := h.pool.Exec(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-		 VALUES ($1, $2, $3, $4, $5, $6, 'garrison', $7)`,
-		worldID, *ownerID, utype, category, size, crew, settlementID)
+	ordinal, err := unit.AllocateOrdinal(ctx, h.pool, settlementID, utype)
+	if err != nil {
+		return fmt.Errorf("divine recruit ordinal: %w", err)
+	}
+	_, err = h.pool.Exec(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+		                    settlement_id, support_settlement_id, ordinal)
+		 VALUES ($1, $2, $3, $4, $5, $6, 'garrison', $7, $7, $8)`,
+		worldID, *ownerID, utype, category, size, crew, settlementID, ordinal)
 	return err
 }
 

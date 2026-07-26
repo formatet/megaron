@@ -1,7 +1,7 @@
 package handlers
 
 // Regression (Timothys fynd 2026-07-17): ordering a field unit while the
-// founder host is ON THE MOVE dispatched the hemerodromos from where the host
+// founder host is ON THE MOVE dispatched the runner from where the host
 // LAST stood still — a marching unit's stored (q,r) is its origin hex, updated
 // only on arrival. The courier must depart from the host's CURRENT
 // (interpolated) position instead.

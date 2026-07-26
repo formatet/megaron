@@ -157,8 +157,9 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// dispatchMarchCourier sends a march order to a field unit by physical runner —
-// a hemerodromos, the Greek day-runner (Timothy 2026-07-17); DB identifier stays
+// dispatchMarchCourier sends a march order to a field unit by physical Runner
+// (Timothy 2026-07-26; the Greek day-runner, hemerodromos, was the source but
+// the player-facing name is Runner); DB identifier stays
 // kind='order' (temenos_orderlopare_plan.md Fas 2). Cheap pre-flights only
 // (target exists, FOW) — the delivery handler re-validates authoritatively
 // against the unit's state when the courier arrives; an order that can no
@@ -217,7 +218,7 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
 		WorldID: order.WorldID, PlayerID: order.PlayerID, UnitID: order.UnitID,
 		Verb: "march", March: &order,
-	}, fmt.Sprintf("Hemerodromos — march order to (%d,%d).", order.TargetQ, order.TargetR),
+	}, fmt.Sprintf("Runner — march order to (%d,%d).", order.TargetQ, order.TargetR),
 		origin, unitPos, map[string]any{"target_q": order.TargetQ, "target_r": order.TargetR})
 }
 
@@ -292,7 +293,7 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 		hostID, pos, ok := hostCurrentPos(ctx, h.pool, h.clk.Now(), worldID, playerID)
 		if !ok {
 			writeError(w, http.StatusUnprocessableEntity,
-				"you have no city (and no wandering host) to dispatch a hemerodromos from")
+				"you have no city (and no wandering host) to dispatch a Runner from")
 			return o, false
 		}
 		hid := hostID
@@ -301,7 +302,7 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 	return o, true
 }
 
-// sendOrderCourier inserts the kind='order' hemerodromos and schedules its
+// sendOrderCourier inserts the kind='order' runner and schedules its
 // ScheduledOrderDelivery, answering 202 order_dispatched with the courier ETA.
 func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any) {
 	now := h.clk.Now()
@@ -374,7 +375,7 @@ func mustJSON(v any) []byte {
 // envelope (temenos_orderlopare_plan.md — recall/redirect→kuvert-unifiering).
 // Body (optional): {"target_q":int,"target_r":int} — omitted = recall (turn home to
 // the hex the unit departed from); both given = redirect (new course). The order
-// travels as a visible hemerodromos; the unit keeps marching on its original course
+// travels as a visible runner; the unit keeps marching on its original course
 // until the courier physically catches up with it — command is never instant.
 func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
@@ -520,15 +521,15 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// "settlement at march origin → capital → host" chain. currentPos (not the
 	// march-departure hex) is the right distance anchor: a marching unit is
 	// never "in" a city, so this never short-circuits to instant delivery —
-	// sendOrderCourier always dispatches a real hemerodromos here.
+	// sendOrderCourier always dispatches a real runner here.
 	courierOrigin, ok := h.resolveOrderOrigin(w, ctx, worldID, playerID, currentPos)
 	if !ok {
 		return
 	}
 
-	msgText := "Hemerodromos — recall order, return home."
+	msgText := "Runner — recall order, return home."
 	if mode == "redirect" {
-		msgText = fmt.Sprintf("Hemerodromos — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
+		msgText = fmt.Sprintf("Runner — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
 	}
 
 	recallOrder := &combat.RecallOrder{WorldID: worldID, UnitID: unitID, Mode: mode}
@@ -1030,7 +1031,7 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	order := combat.StanceOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID, Stance: req.Stance}
 
 	// Order latency (temenos_orderlopare_plan.md Fas 3): a stance order to a
-	// field unit travels by hemerodromos from the nearest own city and applies
+	// field unit travels by runner from the nearest own city and applies
 	// only on delivery. Garrisoned units are distance 0 — the order originates
 	// in the city the unit sits in — and apply immediately below.
 	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
@@ -1058,7 +1059,7 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 			h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
 				WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 				Verb: "stance", Stance: &order,
-			}, fmt.Sprintf("Hemerodromos — stance order (%s).", req.Stance),
+			}, fmt.Sprintf("Runner — stance order (%s).", req.Stance),
 				origin, unitPos, map[string]any{"stance": req.Stance})
 			return
 		}
@@ -1109,11 +1110,34 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 
 	var currentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
-	summaries := unitSummaries(units, currentTick, h.clk)
+	summaries := unitSummaries(units, currentTick, h.clk, settlementNames(r.Context(), h.pool, worldID, playerID))
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
+}
+
+// settlementNames ger id → namn för spelarens städer, så namnstandarden kan
+// formateras serversidan. En stad som fallit finns inte i kartan — och då faller
+// "of <stad>"-ledet bort av sig självt, vilket är exakt rätt: förbandet har
+// ingen försörjande stad längre.
+func settlementNames(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID) map[uuid.UUID]string {
+	names := make(map[uuid.UUID]string)
+	rows, err := db.Query(ctx,
+		`SELECT id, name FROM settlements WHERE world_id = $1 AND owner_id = $2`,
+		worldID, ownerID)
+	if err != nil {
+		return names
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id uuid.UUID
+		var name string
+		if rows.Scan(&id, &name) == nil {
+			names[id] = name
+		}
+	}
+	return names
 }
 
 // attachUnitPaths fills Path (the real A* route) for every marching unit, loading
@@ -1166,6 +1190,14 @@ type unitSummary struct {
 	// Name is the ship's name (Wanax-chosen or suggested at recruit time);
 	// nil for land units (ship-build overhaul 2026-07-09).
 	Name *string `json:"name,omitempty"`
+	// DisplayName är namnstandardens färdigformaterade namn ("2nd Spearmen of
+	// Knossos"). SERVERN formaterar — annars hamnar grammatiken i webben, keryx
+	// och iOS var för sig och glider isär. Komponenterna följer med så en drawer
+	// kan visa dem separat utan att bygga om grammatiken.
+	DisplayName           string     `json:"display_name"`
+	Ordinal               int        `json:"ordinal,omitempty"`
+	SupportSettlementID   *uuid.UUID `json:"support_settlement_id,omitempty"`
+	SupportSettlementName string     `json:"support_settlement_name,omitempty"`
 	// BuildCompleteAt is the ETA for a still-forming naval unit; nil once
 	// garrisoned, and always nil for land units (whose "forming" is
 	// size-based, not time-based).
@@ -1210,7 +1242,9 @@ type unitSummary struct {
 	ColonyName  *string `json:"colony_name,omitempty"`
 }
 
-func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSummary {
+// townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
+// servern inte formatera namnstandarden, och då hamnar grammatiken i klienterna.
+func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string) []unitSummary {
 	// Reverse map: cargo unit id → the ship carrying it, so an embarked unit can
 	// name its carrier. A ship and its cargo are owned by the same Wanax, so both
 	// rows are in us — no extra query needed.
@@ -1248,6 +1282,31 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 		// unit is deployable once its build completes ("forming" until then, ship-
 		// build overhaul 2026-07-09). men_to_deploy only makes sense for a gathering
 		// land unit; training/naval forming show build_complete_at instead.
+		// Namnstandarden (megaron_aktorer_plan.md §7). Skepp bär egennamn efter
+		// kommat, landförband ordinal före typen. Saknas den försörjande staden
+		// faller ledet bort — namnet blir kortare, aldrig trasigt.
+		town := ""
+		if u.SupportSettlementID != nil {
+			town = townNames[*u.SupportSettlementID]
+		}
+		ordinal := 0
+		if u.Ordinal != nil {
+			ordinal = *u.Ordinal
+		}
+		var nm unit.Name
+		switch {
+		case u.Type == unit.TypeNomadicHost:
+			nm = unit.HostName("")
+		case u.Category == unit.CategoryNaval:
+			shipName := ""
+			if u.Name != nil {
+				shipName = *u.Name
+			}
+			nm = unit.ShipDisplayName(string(u.Type), shipName, town)
+		default:
+			nm = unit.LandUnitName(string(u.Type), ordinal, town)
+		}
+
 		deployable := u.Status != "forming" && u.Status != "training"
 		menToDeploy := 0
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
@@ -1263,32 +1322,36 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 			}
 		}
 		out = append(out, unitSummary{
-			ID:              u.ID,
-			Type:            string(u.Type),
-			Category:        string(u.Category),
-			Size:            u.Size,
-			Crew:            u.Crew,
-			Status:          string(u.Status),
-			Deployable:      deployable,
-			MenToDeploy:     menToDeploy,
-			Name:            u.Name,
-			BuildCompleteAt: u.BuildCompleteAt,
-			Stance:          stance,
-			SettlementID:    u.SettlementID,
-			Q:               u.Q,
-			R:               u.R,
-			TargetQ:         u.TargetQ,
-			TargetR:         u.TargetR,
-			DepartsAt:       u.DepartsAt,
-			ArrivesAt:       u.ArrivesAt,
-			ArrivalTick:     arrivalTick,
-			DurationTicks:   durationTicks,
-			ArrivesAtUTC:    arrivesAtUTC,
-			CargoUnitID:     u.CargoUnitID,
-			CarrierShipID:   carrierShipID,
-			CarrierShipName: carrierShipName,
-			MarchIntent:     u.MarchIntent,
-			ColonyName:      u.ColonyName,
+			ID:                    u.ID,
+			Type:                  string(u.Type),
+			Category:              string(u.Category),
+			Size:                  u.Size,
+			Crew:                  u.Crew,
+			Status:                string(u.Status),
+			Deployable:            deployable,
+			MenToDeploy:           menToDeploy,
+			DisplayName:           nm.DisplayName,
+			Ordinal:               ordinal,
+			SupportSettlementID:   u.SupportSettlementID,
+			SupportSettlementName: town,
+			Name:                  u.Name,
+			BuildCompleteAt:       u.BuildCompleteAt,
+			Stance:                stance,
+			SettlementID:          u.SettlementID,
+			Q:                     u.Q,
+			R:                     u.R,
+			TargetQ:               u.TargetQ,
+			TargetR:               u.TargetR,
+			DepartsAt:             u.DepartsAt,
+			ArrivesAt:             u.ArrivesAt,
+			ArrivalTick:           arrivalTick,
+			DurationTicks:         durationTicks,
+			ArrivesAtUTC:          arrivesAtUTC,
+			CargoUnitID:           u.CargoUnitID,
+			CarrierShipID:         carrierShipID,
+			CarrierShipName:       carrierShipName,
+			MarchIntent:           u.MarchIntent,
+			ColonyName:            u.ColonyName,
 		})
 	}
 	return out

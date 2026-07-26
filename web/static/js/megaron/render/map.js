@@ -8,6 +8,8 @@ import {
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
+import { canonicalUnitType, actorName } from '../ui/actornames.js';
+import { drawActor, spriteRuns } from './actorsprites.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -437,24 +439,9 @@ const TREE_PALETTE = { K: '#1E2610', E: '#263013', S: '#283315', D: '#33401B', M
 // rim of the grove so a block of trees keeps an inside and an outside.
 const TREE_PALETTE_WARM = { K: '#283014', E: '#303A18', S: '#323C1A', D: '#3E4C22', M: '#556430', L: '#708044', T: '#544632' };
 
-// Precompute each sprite as horizontal runs of equal colour: one fillRect per
-// run instead of one per pixel, so a hex of trees costs tens of draw calls
-// rather than hundreds.
-function spriteRuns(rows) {
-  const runs = [];
-  const w = Math.max(...rows.map(r => r.length));
-  rows.forEach((row, y) => {
-    let x = 0;
-    while (x < row.length) {
-      const ch = row[x];
-      let n = 1;
-      while (x + n < row.length && row[x + n] === ch) n++;
-      if (ch !== '.') runs.push({ ch, x, y, n });
-      x += n;
-    }
-  });
-  return { runs, w, h: rows.length };
-}
+// Träden delar sprite-hjälparen med kartaktörerna (render/actorsprites.js):
+// en fillRect per horisontell löpa i stället för en per pixel, så en hex
+// med träd kostar tiotals ritanrop i stället för hundratals.
 const SPRITE_LARGE = spriteRuns(TREE_LARGE);
 const SPRITE_MID = spriteRuns(TREE_MID);
 const SPRITE_SMALL = spriteRuns(TREE_SMALL);
@@ -947,124 +934,39 @@ function drawRoad(ctx, ax, ay, bx, by) {
   ctx.restore();
 }
 
-// ── Trade caravan figure — brown cloak, sack on back ─────────────────────
+// ── Karavan — last och riktning först, ägandet sekundärt ─────────────────
 function drawCaravan(ctx, x, y, walkPhase) {
-  ctx.save();
-  const bob = walkPhase < 2 ? 0 : 1;
-  ctx.fillStyle = '#7B4F28';
-  ctx.fillRect(x-1, y-5+bob, 3, 5);
-  ctx.fillStyle = '#5A3A18';
-  ctx.beginPath();
-  ctx.arc(x+0.5, y-7+bob, 2, 0, Math.PI*2);
-  ctx.fill();
-  ctx.fillStyle = '#9A7050';
-  ctx.fillRect(x+1, y-4+bob, 2, 2);
-  ctx.restore();
+  drawActor(ctx, 'caravan', x, y, '', walkPhase);
 }
 
-// ── Messenger figure — olive cloak, scroll in hand. A hemerodromos (order
-// runner, kind='order') wears a crimson cloak so it reads as command, not
-// diplomacy; own couriers additionally carry a small gold pennant so it is
-// visible WHOSE runner it is (temenos_orderlopare_plan.md Fas 5).
+// ── Runner — order-Runners (kind='order') bär karmosin accent så de läses som
+// befäl, inte diplomati; egna Runners bär dessutom en liten guldvimpel så det
+// syns VEMS Runner det är (temenos_orderlopare_plan.md Fas 5).
 function drawMessenger(ctx, x, y, walkPhase, isOrder, isOwn, delivering) {
   ctx.save();
-  // Delivering: the runner has reached the unit and stopped to hand over the
-  // scroll — freeze the gait so it doesn't jog in place (Timothy 2026-07-17)
-  // during the worker-poll window before the order applies server-side.
-  const bob = (delivering || walkPhase < 2) ? 0 : 1;
-  ctx.fillStyle = isOrder ? '#A03A2A' : '#6B8B4A';
-  ctx.fillRect(x-1, y-5+bob, 3, 5);
-  ctx.fillStyle = isOrder ? '#6E2418' : '#3A5A28';
-  ctx.beginPath();
-  ctx.arc(x+0.5, y-7+bob, 2, 0, Math.PI*2);
-  ctx.fill();
-  ctx.fillStyle = '#F2E8C0';
-  // Scroll: held forward as a handover gesture while delivering, else at the side.
-  if (delivering) ctx.fillRect(x+2, y-5, 3, 2);
-  else            ctx.fillRect(x+1, y-6+bob, 1, 3);
+  // Levererar: Runnern har nått fram och stannat för att lämna över kuvertet —
+  // frys gången så hon inte joggar på stället (Timothy 2026-07-17) under
+  // worker-pollfönstret innan ordern tillämpas serversidan.
+  const phase = delivering ? 0 : walkPhase;
+  drawActor(ctx, 'runner', x, y, '', phase, isOrder ? '#A03A2A' : '#6B8B4A');
+  const bob = (delivering || walkPhase < 2) ? 0 : -1;
   if (isOwn) {
     ctx.fillStyle = '#D8B84A';
-    ctx.fillRect(x-2, y-10+bob, 1, 3);
-    ctx.fillRect(x-1, y-10+bob, 2, 1);
+    ctx.fillRect(x - 4, y - 16 + bob, 1, 4);
+    ctx.fillRect(x - 3, y - 16 + bob, 2, 1);
   }
   if (delivering) {
-    // Faint gold pulse — a deliberate "handing over the order" beat.
+    // Svag guldpuls — ett medvetet "lämnar över ordern"-slag.
     ctx.globalAlpha = 0.3 + 0.25 * Math.sin(State.animFrame * 0.12);
     ctx.strokeStyle = '#D8B84A';
     ctx.lineWidth = 0.6;
     ctx.beginPath();
-    ctx.arc(x+0.5, y-4, 5, 0, Math.PI*2);
+    ctx.arc(x, y - 5, 8, 0, Math.PI * 2);
     ctx.stroke();
   }
   ctx.restore();
 }
 
-// ── Walking settler figure (8×10 px, Settlers-style) ─────────────────────
-function drawWalker(ctx, x, y, intent, walkPhase) {
-  ctx.save();
-  const bob = walkPhase < 2 ? 0 : 1;
-  const bodyColor = {attack:'#922B21', reinforce:'#1A5276', support:'#145A32', scout:'#7D6608'}[intent] || '#555';
-  ctx.fillStyle = bodyColor;
-  ctx.fillRect(x-2, y-5+bob, 4, 5);
-  ctx.fillStyle = '#F4D0A0';
-  ctx.beginPath();
-  ctx.arc(x, y-7+bob, 2.5, 0, Math.PI*2);
-  ctx.fill();
-  ctx.strokeStyle = '#3A2010';
-  ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  if (walkPhase < 2) {
-    ctx.moveTo(x-2, y-3+bob); ctx.lineTo(x-4, y-1+bob);
-    ctx.moveTo(x+2, y-3+bob); ctx.lineTo(x+4, y+0+bob);
-    ctx.moveTo(x-1, y+0+bob); ctx.lineTo(x-2, y+3+bob);
-    ctx.moveTo(x+1, y+0+bob); ctx.lineTo(x+2, y+2+bob);
-  } else {
-    ctx.moveTo(x-2, y-3+bob); ctx.lineTo(x-4, y+0+bob);
-    ctx.moveTo(x+2, y-3+bob); ctx.lineTo(x+4, y-1+bob);
-    ctx.moveTo(x-1, y+0+bob); ctx.lineTo(x-2, y+2+bob);
-    ctx.moveTo(x+1, y+0+bob); ctx.lineTo(x+2, y+3+bob);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
-// ── Naval vessel sprite (12×8 px, pixel boat) ────────────────────────────
-function drawShip(ctx, x, y, intent, walkPhase) {
-  ctx.save();
-  const bob = walkPhase < 2 ? 0 : 1;
-  // Sail color by intent
-  const sailColor = {attack:'#C0392B', reinforce:'#1A5276', support:'#145A32', explore:'#0E7490'}[intent] || '#8B7355';
-  // Hull — dark wood
-  ctx.fillStyle = '#5C3A1E';
-  ctx.fillRect(x - 5, y + 1 + bob, 10, 3);
-  // Prow point (right)
-  ctx.beginPath();
-  ctx.moveTo(x + 5, y + 1 + bob);
-  ctx.lineTo(x + 7, y + 2 + bob);
-  ctx.lineTo(x + 5, y + 4 + bob);
-  ctx.closePath();
-  ctx.fill();
-  // Mast
-  ctx.fillStyle = '#7A5C30';
-  ctx.fillRect(x - 0.5, y - 5 + bob, 1, 6);
-  // Sail
-  ctx.fillStyle = sailColor;
-  ctx.beginPath();
-  ctx.moveTo(x, y - 5 + bob);
-  ctx.lineTo(x + 4, y - 2 + bob);
-  ctx.lineTo(x, y + 1 + bob);
-  ctx.closePath();
-  ctx.fill();
-  // Oar ripple (animated)
-  ctx.strokeStyle = '#7AB8C8';
-  ctx.lineWidth = 0.6;
-  ctx.beginPath();
-  const ripple = walkPhase < 2 ? 1 : 0;
-  ctx.moveTo(x - 3, y + 4 + bob + ripple);
-  ctx.lineTo(x + 3, y + 4 + bob);
-  ctx.stroke();
-  ctx.restore();
-}
 // ── Rural projections (Fas A2, megaron_lokal_varld.md) ───────────────────
 // A rural sprite is NOT a new building — it is a cartographic projection of an
 // existing city building onto a compatible catchment hex, placed server-side
@@ -1425,11 +1327,12 @@ export function render() {
       ? pathPx(m.path, progress)
       : hexPathPx(m.origin_q, m.origin_r, m.target_q, m.target_r, progress);
     if (isTileVisible(pos.q, pos.r)) {
-      if (m.is_naval) {
-        drawShip(ctx, Math.round(pos.x), Math.round(pos.y), m.intent, walkPhase);
-      } else {
-        drawWalker(ctx, Math.round(pos.x), Math.round(pos.y), m.intent, walkPhase);
-      }
+      // Aggregatmarschernas /marches-markör bär bara `is_naval` — sammansätt-
+      // ningen finns inte i svaret, så här går det inte att välja aktörsform.
+      // Det är legacy-lagret (marching_armies skrivs numera bara av recall- och
+      // utpostvägarna); per enhet-lagret nedan har `u.type` och ritas riktigt.
+      const kind = m.is_naval ? 'galley' : 'spearman';
+      drawActor(ctx, kind, pos.x, pos.y, m.intent, walkPhase);
     }
   }
 
@@ -1440,6 +1343,10 @@ export function render() {
   // are not drawn here.
   for (const u of State.unitsData) {
     const naval = u.category === 'naval';
+    // `u.type` har alltid funnits i renderarens data (etiketter, host-detektion)
+    // men skickades aldrig till spriten — det var därför nio aktörer delade
+    // fyra former. Rördragningen är hela skillnaden.
+    const kind = canonicalUnitType(u.type) || (naval ? 'galley' : 'spearman');
     if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
       const now = serverNow();
       const departs = new Date(u.departs_at).getTime();
@@ -1452,18 +1359,16 @@ export function render() {
         // explore/explore_return share the cyan "explore" sail; other legs use
         // the neutral default colour (intent is resolved server-side on arrival).
         const intent = (u.march_intent === 'explore' || u.march_intent === 'explore_return') ? 'explore' : (u.march_intent || '');
-        if (naval) drawShip(ctx, Math.round(pos.x), Math.round(pos.y), intent, walkPhase);
-        else       drawWalker(ctx, Math.round(pos.x), Math.round(pos.y), intent, walkPhase);
+        drawActor(ctx, kind, pos.x, pos.y, intent, walkPhase);
       }
     } else if (u.status === 'positioned' && u.q != null && isTileVisible(u.q, u.r)) {
       const {x, y} = hexPx(u.q, u.r);
-      if (naval) drawShip(ctx, Math.round(x), Math.round(y), '', walkPhase);
-      else       drawWalker(ctx, Math.round(x), Math.round(y), '', walkPhase);
+      drawActor(ctx, kind, x, y, '', walkPhase);
     }
   }
 
   // 6. Animated messengers — OWN couriers are drawn along their whole route,
-  // dimmed over fog (the player's own hemerodromos is information they already
+  // dimmed over fog (the player's own runner is information they already
   // possess — temenos_orderlopare_plan.md Fas 5); foreign messengers only
   // inside live-visible tiles, as before.
   for (const m of State.messengerData) {
@@ -1630,16 +1535,10 @@ function producesText(tile) {
   return base === '—' ? 'fish' : base + ', fish';
 }
 
-const UNIT_LABELS_SHORT = {
-  spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-  ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
-  nomadic_host:'Nomadic Host',
-};
-
 function unitListHTML(units) {
   if (!units.length) return '';
   const rows = units.map(u => {
-    const lbl = UNIT_LABELS_SHORT[u.type] || u.type;
+    const lbl = actorName(u);
     return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
       + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
       + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Visa →</button>'
@@ -2197,7 +2096,7 @@ export function initMap() {
     if (!State.unitsData.some(u => u.status === 'marching') && !courierOut) return;
     refreshTiles();
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
-    // A running hemerodromos needs the same fast cadence: its delivery flips
+    // A Runner en route needs the same fast cadence: its delivery flips
     // the unit to marching (or applies a stance) server-side — poll messengers
     // so the runner vanishes and the unit moves without waiting for the 30s tick.
     if (courierOut) {

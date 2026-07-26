@@ -142,6 +142,21 @@ func TestRiteOffering_DeductedRegardlessOfOutcome(t *testing.T) {
 			}
 		}
 
+		// Kharis fylls på före varje kast. Sedan 2026-07-24 drar en rit
+		// riteKharisCost = 4 standing per kast (win or lose), så 15 kast äter
+		// 60 av seedens 50 och loopen svalt vid kast 12. Det som testas här är
+		// att MATERIALOFFRET debiteras oavsett utfall — kharis-ekonomin är en
+		// annan sak och ska inte kunna få det här testet att falla.
+		// (Att riten alls kostar kharis är en ÖPPEN DESIGNFRÅGA, se
+		// megaron_todo: kharis är en relation, inte en valuta.)
+		if _, err := pool.Exec(ctx,
+			`UPDATE player_world_records SET kharis_amount = 50, kharis_rate = 0
+			  WHERE player_id = $1 AND world_id = $2`,
+			playerID, worldID,
+		); err != nil {
+			t.Fatalf("top up kharis before cast %d: %v", i, err)
+		}
+
 		body, _ := json.Marshal(map[string]string{"prayer": prayer})
 		req := httptest.NewRequest(http.MethodPost,
 			"/worlds/"+worldID.String()+"/settlements/"+settlementID.String()+"/rite", bytes.NewReader(body))

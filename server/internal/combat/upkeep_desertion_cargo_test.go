@@ -84,8 +84,9 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 	// upkeepDesertionPeriods, so desertion (and the cascade) fires immediately.
 	var shipID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id, unpaid_periods, cargo_unit_id)
-		 VALUES ($1, $2, 'galley', 'naval', 1, 0, 'garrison', $3, 2, $4) RETURNING id`,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+		                    settlement_id, support_settlement_id, unpaid_periods, cargo_unit_id)
+		 VALUES ($1, $2, 'galley', 'naval', 1, 0, 'garrison', $3, $3, 2, $4) RETURNING id`,
 		worldID, owner, sid, cargoID,
 	).Scan(&shipID); err != nil {
 		t.Fatalf("create ship: %v", err)

@@ -1,7 +1,7 @@
 package handlers
 
 // Fas 3 (temenos_orderlopare_plan.md): a stance order to a FIELD unit travels
-// by hemerodromos from the nearest own city and applies only on delivery —
+// by runner from the nearest own city and applies only on delivery —
 // full E2E through the HTTP handler: dispatch (202 order_dispatched, messenger
 // kind='order') → deliver the scheduled OrderDelivery → stance applied.
 //
@@ -56,7 +56,7 @@ func TestStance_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	}
 	playerID := claims.PlayerID
 
-	// The nearest own city at (0,0) — the hemerodromos' origin.
+	// The nearest own city at (0,0) — the runner's origin.
 	var capProvID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'plains') RETURNING id`,

@@ -1,6 +1,6 @@
 package handlers
 
-// Hemerodromos live-eye (temenos_orderlopare_plan.md Fas 4, temenos_synlighet.md
+// Runner live-eye (temenos_orderlopare_plan.md Fas 4, temenos_synlighet.md
 // §Nivå 1): the player's own outbound messenger is a tier-1 eye interpolated
 // along its courier route, seeing as a land unit.
 //
@@ -66,12 +66,12 @@ func TestLoadLiveEyes_CourierSeesAlongRoute(t *testing.T) {
 		}
 	}
 
-	// An outbound hemerodromos halfway through its (0,0)→(4,0) run.
+	// An outbound runner halfway through its (0,0)→(4,0) run.
 	now := time.Now()
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO messengers
 		     (world_id, sender_id, origin_id, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, sent_at, arrives_at)
-		 VALUES ($1,$2,$3,NULL,'Hemerodromos — march order.','outbound','order',0,0,4,0,$4,$5)`,
+		 VALUES ($1,$2,$3,NULL,'Runner — march order.','outbound','order',0,0,4,0,$4,$5)`,
 		worldID, playerID, settID, now.Add(-30*time.Minute), now.Add(30*time.Minute),
 	); err != nil {
 		t.Fatalf("create outbound messenger: %v", err)

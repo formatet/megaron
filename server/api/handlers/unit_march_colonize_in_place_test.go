@@ -121,7 +121,7 @@ func TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex(t *testing.T) {
 	}
 
 	// Order latency (temenos_orderlopare_plan.md Fas 2): the colonist stands in
-	// the field, so the order travels by hemerodromos from the nearest own city
+	// the field, so the order travels by runner from the nearest own city
 	// and executes only on delivery. The 202 is a dispatch receipt; deliver the
 	// courier to get the march started.
 	var dispatchResp struct {

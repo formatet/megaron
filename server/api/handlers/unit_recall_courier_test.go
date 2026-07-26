@@ -78,7 +78,7 @@ func setupRecallCourierWorld(t *testing.T) (recallCourierFixture, *chi.Mux) {
 	f.playerID = claims.PlayerID
 	f.accessToken = accessToken
 
-	// Capital at (0,0) — the hemerodromos' origin (nearest own settlement to
+	// Capital at (0,0) — the runner's origin (nearest own settlement to
 	// the unit's CURRENT position, beslut 4) and, at radius 3, the eye that
 	// keeps the redirect target within FOW.
 	var capProvID uuid.UUID

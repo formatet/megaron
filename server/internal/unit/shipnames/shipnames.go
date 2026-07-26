@@ -1,10 +1,15 @@
 // Package shipnames supplies Bronze-Age-appropriate ship name suggestions for
 // the naval recruit flow (ship-build overhaul, Timothy 2026-07-09).
 //
-// The name pool below is Timothy's real Minoan/Cretan ship-name list
-// (minoan_ship_names.csv, 280 names in three styles: English, Greek, Linear B
-// romanization). Only Minoan exists today — every other culture falls back to
-// it (see Suggest's doc comment).
+// Den minoiska poolen är Timothys egen lista (minoan_ship_names.csv, 280 namn i
+// tre stilar). De fem andra kulturerna fick egna pooler 2026-07-26 (Fas 3 i
+// megaron_aktorer_plan.md) — mindre, men skrivna ur namnstandardens sex
+// temafamiljer (§7.6) så att varje kultur täcker dem alla:
+//
+//	hemstad · gudomligt · hav/natur · last/handel · bedrift/minne · oikos
+//
+// Undvik i alla pooler: HMS, serienummer, moderna nationsbeteckningar,
+// "Destroyer", "Victory-class" och annan senare marin konvention.
 //
 // G1 placement: zero internal deps (like clock/events); any package may
 // import this.
@@ -16,7 +21,7 @@ import (
 	"math/rand"
 )
 
-//go:embed minoan_ship_names.csv
+//go:embed *.csv
 var namesFS embed.FS
 
 // Style is a ship-naming convention within a culture's pool.
@@ -28,8 +33,17 @@ const (
 	StyleLinearB Style = "Linear B" // Mycenaean romanization
 )
 
-// minoanPool holds the parsed CSV, keyed by style.
-var minoanPool = mustParsePool("minoan_ship_names.csv")
+// Kulturnyckeln är den som världen använder (se render/map.js CULTURE_ACCENT och
+// worldbuilding-doken). En okänd kultur faller tillbaka på den minoiska poolen —
+// ett saknat namn får aldrig blockera ett skeppsbygge.
+var pools = map[string]map[Style][]string{
+	"minoan":   mustParsePool("minoan_ship_names.csv"),
+	"akhaier":  mustParsePool("akhaier_ship_names.csv"),
+	"khemetiu": mustParsePool("khemetiu_ship_names.csv"),
+	"knaani":   mustParsePool("knaani_ship_names.csv"),
+	"hatti":    mustParsePool("hatti_ship_names.csv"),
+	"thrakes":  mustParsePool("thrakes_ship_names.csv"),
+}
 
 func mustParsePool(filename string) map[Style][]string {
 	f, err := namesFS.Open(filename)
@@ -58,19 +72,27 @@ func mustParsePool(filename string) map[Style][]string {
 // Suggest picks a culture-appropriate ship name, preferring one not already
 // in `taken` (a Wanax's existing fleet names) when that's easy to arrange —
 // a repeat isn't a hard error, just tries a few times before giving up.
-//
-// Only the Minoan pool exists today; any culture falls back to it.
-// TODO: give the other five cultures (akhaier, khemetiu, knaani, hatti,
-// thrakes) their own pools, and consider letting a culture pick a Style
-// (Greek/Linear B) other than English.
 func Suggest(culture string, taken map[string]bool) string {
-	pool := minoanPool[StyleEnglish]
+	return SuggestWith(rand.Intn, culture, taken)
+}
+
+// SuggestWith är samma sak med en injicerad slumpkälla, så tester kan vara
+// reproducerbara. Den globala math/rand-källan gjorde varje namntest till ett
+// lotteri, vilket är precis den sorts icke-determinism riggarnas arbetsregler
+// förbjuder på bildsidan — samma krav gäller här.
+//
+// intn har math/rand.Intn:s kontrakt: returnerar [0, n).
+func SuggestWith(intn func(int) int, culture string, taken map[string]bool) string {
+	pool := pools[culture][StyleEnglish]
+	if len(pool) == 0 {
+		pool = pools["minoan"][StyleEnglish]
+	}
 	if len(pool) == 0 {
 		return "Unnamed Vessel"
 	}
-	name := pool[rand.Intn(len(pool))]
+	name := pool[intn(len(pool))]
 	for i := 0; i < 10 && taken[name]; i++ {
-		name = pool[rand.Intn(len(pool))]
+		name = pool[intn(len(pool))]
 	}
 	return name
 }

@@ -65,6 +65,11 @@ type upkeepUnitRow struct {
 	settlementID  *uuid.UUID
 	unpaidPeriods int
 	cargoUnitID   *uuid.UUID
+	// supportSettlementID är den AUKTORITATIVA betalaren (mig 100,
+	// megaron_aktorer_plan.md §3.1). Den är NULL när staden är borta eller har
+	// bytt ägare — se queryns korrelerade subselect — och det betyder att ingen
+	// sold betalas, inte att någon annan stad tar över.
+	supportSettlementID *uuid.UUID
 }
 
 // UpkeepHandler applies grain + silver upkeep to all active units each day.
@@ -88,14 +93,23 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	//
 	// Units belonging to a player still in the founder phase are skipped: their
 	// keep is already folded into founder_phase's grain/silver drain rate, and
-	// there is no capital for payingSettlement to fall back on yet. Charging them
-	// here would bill the same cohort twice (temenos_nomadic_host_bygg.md B3).
-	// The exclusion lifts by itself at founding, when active flips to false.
+	// they have no settlement at all yet. Charging them here would bill the same
+	// cohort twice (temenos_nomadic_host_bygg.md B3). The exclusion lifts by
+	// itself at founding, when active flips to false.
+	//
+	// Subselecten på support_settlement_id gör TVÅ kontroller i ett svep: att
+	// staden fortfarande finns, och att den fortfarande ägs av enhetens ägare.
+	// Faller staden — förstörd eller erövrad — blir kolumnen NULL här, och
+	// enheten behandlas som obetald. Det är regeln, inte ett fel: det finns
+	// ingen väg att rädda ett förband vars stad fallit (§3.1 punkt 1 och 3).
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, type, category, size, settlement_id, unpaid_periods, cargo_unit_id
+		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.settlement_id,
+		        u.unpaid_periods, u.cargo_unit_id,
+		        (SELECT s.id FROM settlements s
+		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id)
 		 FROM units u
-		 WHERE world_id = $1
-		   AND status IN ('garrison', 'marching', 'positioned')
+		 WHERE u.world_id = $1
+		   AND u.status IN ('garrison', 'marching', 'positioned')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM founder_phase fp
 		       WHERE fp.world_id = u.world_id
@@ -113,7 +127,8 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	for rows.Next() {
 		var u upkeepUnitRow
 		if err := rows.Scan(&u.id, &u.ownerID, &u.unitType, &u.category,
-			&u.size, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID); err != nil {
+			&u.size, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID,
+			&u.supportSettlementID); err != nil {
 			return fmt.Errorf("upkeep: scan unit: %w", err)
 		}
 		units = append(units, u)
@@ -122,27 +137,23 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		return err
 	}
 
-	// 2. Cache capital settlement id per owner to avoid repeated queries.
-	capitalCache := make(map[uuid.UUID]uuid.UUID)
-
+	// 2. Den försörjande staden är den enda betalaren.
+	//
+	// Detta ERSÄTTER en tyst huvudstadsfallback (mig 100). Tidigare returnerade
+	// den här funktionen units.settlement_id om den var satt och annars ägarens
+	// huvudstad — vilket betydde att varje marscherande enhet och varje skepp
+	// till sjöss debiterades huvudstaden av misstag, inte av design. Den
+	// betalande staden var ingen designad sanning; den var en tystnad.
+	//
+	// Nu är den ett stabilt faktum spelaren kan se och planera mot: förbandet
+	// betalas hela sitt liv av staden som reste det, oavsett var det står.
+	// Saknas den staden finns ingen ersättare — vägen nedåt går till
+	// applyAttrition och recordUnpaid, samma maskineri som all annan uteblivning.
 	payingSettlement := func(u upkeepUnitRow) (uuid.UUID, bool) {
-		if u.settlementID != nil {
-			return *u.settlementID, true
+		if u.supportSettlementID != nil {
+			return *u.supportSettlementID, true
 		}
-		if sid, ok := capitalCache[u.ownerID]; ok {
-			return sid, true
-		}
-		var sid uuid.UUID
-		err := h.pool.QueryRow(ctx,
-			`SELECT id FROM settlements
-			 WHERE owner_id = $1 AND world_id = $2 AND is_capital = true`,
-			u.ownerID, e.WorldID,
-		).Scan(&sid)
-		if err != nil {
-			return uuid.UUID{}, false
-		}
-		capitalCache[u.ownerID] = sid
-		return sid, true
+		return uuid.UUID{}, false
 	}
 
 	// Per-settlement silver/grain accounting for the UpkeepSettled audit event

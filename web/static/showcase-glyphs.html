@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Megaron — glyphs readability rig</title>
+<!--
+  Glyfriggen. Syskon till showcase-forest.html och showcase-units.html, byggd på
+  samma frysta-frame-princip: bilden ritas EN gång, deterministiskt.
+
+  Den svarar på den fråga tools/discriminability.py INTE kan svara på. Verktyget
+  mäter form mot form (bakgrundsoberoende); här mäts form mot BAKGRUND — syns
+  märket alls mot kalksten, som är den kända värsta rutan?
+
+  Rastren kommer från tools/discriminability.py --emit-json. De är alltså exakt
+  samma 1-bitars raster som mätningen räknade på — riggen och siffrorna kan inte
+  glida isär.
+
+  Kör:  python3 -m http.server 8099 --directory web/
+        http://localhost:8099/static/showcase-glyphs.html
+        ?set=sigill|flaggor
+-->
+<style>
+  body { margin: 0; background: #14100C; color: #E8DCC8;
+         font: 13px/1.5 ui-monospace, monospace; padding: 12px; }
+  #map-root { position: relative; width: 1140px; }
+  canvas { display: block; image-rendering: pixelated; }
+  h1 { font-size: 15px; margin: 0 0 4px; color: #C8B48A; }
+  p  { margin: 0 0 10px; color: #9C8F76; max-width: 1100px; }
+</style>
+</head>
+<body>
+<h1>Glyfläsbarhet — samma former, fyra skalor, tre bakgrunder</h1>
+<p>Vänster halva i varje ruta = 1:1 (så stort märket faktiskt blir).
+Höger halva = samma raster 4×, för att se VAD som blev kvar.
+Kalksten <code>#E0D4B8</code> är den kända värsta rutan.</p>
+<div id="map-root"><canvas id="glyph-canvas"></canvas></div>
+
+<script type="module">
+// Terrängerna är TERRAIN_BASE-c0 ur render/map.js — inte ungefärliga toner.
+const TERRAINS = [
+  { key: 'plains',             label: 'slätt',     bg: '#859248' },
+  { key: 'forest_olive_grove', label: 'olivlund',  bg: '#9EA361' },
+  { key: 'mountain_limestone', label: 'kalksten',  bg: '#E0D4B8' },
+];
+const INK = '#1C1C1C';          // CHARCOAL — konturfärgen i designprinciperna
+const SIZES = [6, 8, 12, 24];
+const SHOWN = 12;               // former per ruta; fler säger inget nytt
+const ZOOM = 4;
+
+const params = new URLSearchParams(location.search);
+const setName = params.get('set') || 'sigill';
+
+const canvas = document.getElementById('glyph-canvas');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+/** Hex-rader → [x,y]-lista med tända pixlar. Bit 0 längst till vänster. */
+function pixels(rows, size) {
+  const out = [];
+  rows.forEach((hex, y) => {
+    const bits = parseInt(hex, 16).toString(2).padStart(size, '0');
+    for (let x = 0; x < size; x++) if (bits[x] === '1') out.push([x, y]);
+  });
+  return out;
+}
+
+function drawGlyph(px, ox, oy, size, scale) {
+  ctx.fillStyle = INK;
+  for (const [x, y] of px) ctx.fillRect(ox + x * scale, oy + y * scale, scale, scale);
+}
+
+const data = await (await fetch(`/static/glyphdata/${setName}.json`)).json();
+const names = data.names.slice(0, SHOWN);
+
+// Layout: en rad per storlek, en kolumn per terräng, fast kolumnbredd så
+// terrängerna ligger i linje mellan raderna. Inne i rutan: alla former 1:1
+// överst, och så många som ryms förstorade under.
+const PAD = 8, GAP = 4, HEAD = 16;
+const CELL_W = 376;
+canvas.width = TERRAINS.length * (CELL_W + GAP) - GAP;
+document.getElementById('map-root').style.width = canvas.width + 'px';
+
+const layout = SIZES.map(size => {
+  const inner = CELL_W - PAD * 2;
+  const perSmall = Math.floor(inner / (size + GAP));
+  const smallRows = Math.ceil(SHOWN / perSmall);
+  const perBig = Math.max(1, Math.floor(inner / (size * ZOOM + GAP)));
+  const bigRows = Math.ceil(Math.min(SHOWN, perBig * 2) / perBig);
+  const h = HEAD + PAD + smallRows * (size + GAP) + PAD
+          + bigRows * (size * ZOOM + GAP) + PAD;
+  return { size, perSmall, perBig, h };
+});
+canvas.height = layout.reduce((a, l) => a + l.h, 0);
+
+let y = 0;
+for (const { size, perSmall, perBig, h } of layout) {
+  TERRAINS.forEach((t, ti) => {
+    const x = ti * (CELL_W + GAP);
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(x, y, CELL_W, h);
+    ctx.fillStyle = INK;
+    ctx.font = '11px ui-monospace, monospace';
+    ctx.fillText(`${size} px · ${t.label}`, x + PAD, y + 12);
+
+    const rows = data.sizes[String(size)];
+    let yy = y + HEAD + PAD;
+    names.forEach((n, i) => {
+      drawGlyph(pixels(rows[n], size),
+                x + PAD + (i % perSmall) * (size + GAP),
+                yy + Math.floor(i / perSmall) * (size + GAP), size, 1);
+    });
+    yy += Math.ceil(SHOWN / perSmall) * (size + GAP) + PAD;
+    names.slice(0, perBig * 2).forEach((n, i) => {
+      drawGlyph(pixels(rows[n], size),
+                x + PAD + (i % perBig) * (size * ZOOM + GAP),
+                yy + Math.floor(i / perBig) * (size * ZOOM + GAP), size, ZOOM);
+    });
+  });
+  y += h;
+}
+
+window.SHOWCASE = { ready: true };
+</script>
+</body>
+</html>
