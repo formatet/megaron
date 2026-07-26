@@ -69,7 +69,7 @@ func (g TileGraph) FindPath(origin, target MapPosition, category string) (path [
 // axialDirs lists the 6 axial hex neighbours.
 var axialDirs = [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 
-// CategoryCourier routes hemerodromoi — order/message runners
+// CategoryCourier routes Runners — order/message couriers
 // (temenos_orderlopare_plan.md Fas 4, beslut Timothy 2026-07-16): every land
 // hex except mountains at HALF a land unit's terrain hours (2× spearman
 // speed), and sea hexes at the flat boat rate CourierSeaHours (no land route =

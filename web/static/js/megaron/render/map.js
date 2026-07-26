@@ -8,6 +8,7 @@ import {
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
+import { unitTypeLabel } from '../ui/actornames.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -962,7 +963,7 @@ function drawCaravan(ctx, x, y, walkPhase) {
   ctx.restore();
 }
 
-// ── Messenger figure — olive cloak, scroll in hand. A hemerodromos (order
+// ── Messenger figure — olive cloak, scroll in hand. A runner (order
 // runner, kind='order') wears a crimson cloak so it reads as command, not
 // diplomacy; own couriers additionally carry a small gold pennant so it is
 // visible WHOSE runner it is (temenos_orderlopare_plan.md Fas 5).
@@ -1463,7 +1464,7 @@ export function render() {
   }
 
   // 6. Animated messengers — OWN couriers are drawn along their whole route,
-  // dimmed over fog (the player's own hemerodromos is information they already
+  // dimmed over fog (the player's own runner is information they already
   // possess — temenos_orderlopare_plan.md Fas 5); foreign messengers only
   // inside live-visible tiles, as before.
   for (const m of State.messengerData) {
@@ -1630,16 +1631,10 @@ function producesText(tile) {
   return base === '—' ? 'fish' : base + ', fish';
 }
 
-const UNIT_LABELS_SHORT = {
-  spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-  ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
-  nomadic_host:'Nomadic Host',
-};
-
 function unitListHTML(units) {
   if (!units.length) return '';
   const rows = units.map(u => {
-    const lbl = UNIT_LABELS_SHORT[u.type] || u.type;
+    const lbl = unitTypeLabel(u.type);
     return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
       + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
       + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Visa →</button>'
@@ -2197,7 +2192,7 @@ export function initMap() {
     if (!State.unitsData.some(u => u.status === 'marching') && !courierOut) return;
     refreshTiles();
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
-    // A running hemerodromos needs the same fast cadence: its delivery flips
+    // A Runner en route needs the same fast cadence: its delivery flips
     // the unit to marching (or applies a stance) server-side — poll messengers
     // so the runner vanishes and the unit moves without waiting for the 30s tick.
     if (courierOut) {

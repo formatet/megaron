@@ -5,6 +5,7 @@ import { track } from '../../telemetry.js';
 import { esc } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
+import { unitTypeLabel } from '../actornames.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
 
@@ -121,8 +122,6 @@ export async function loadWarDrawer() {
 
   renderWarMovements(capital);
 
-  const UNIT_LBL  = { Spearman:'Spearmen', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot', Ship:'Galley', WarGalley:'War Galley', Merchantman:'Emporos',
-                      spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot', ship:'Galley', war_galley:'War Galley', merchantman:'Emporos' };
   // Defense points — NOT in /api/v1/units (checked: UnitCatalogue exposes
   // type/costs/batch_men/pop_cost/duration_minutes/requires_*, no DP field)
   // and, as far as this file shows, currently unused/unrendered anywhere
@@ -201,13 +200,14 @@ export async function loadWarDrawer() {
     applyUnitFocus();
 
     // Recruit tab
+    // id = intern nyckel; etiketten hämtas ur actornames.js, aldrig skriven här.
     const UNIT_SPECS = [
-      { id:'spearman',       lbl:'Spearmen',    req: buildings.has('barracks') ? null : 'barracks' },
-      { id:'war_chariot',    lbl:'War Chariot',  req: buildings.has('stable')   ? null : 'stable' },
-      { id:'ship',           lbl:'Galley',       req: buildings.has('harbour')  ? null : 'harbour' },
-      { id:'war_galley',     lbl:'War Galley',   req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null) },
-      { id:'merchantman',    lbl:'Emporos',      req: buildings.has('harbour')  ? null : 'harbour' },
-      { id:'elite_infantry', lbl:'Elite Infantry', req: buildings.has('foundry')  ? null : 'foundry' },
+      { id:'spearman',       req: buildings.has('barracks') ? null : 'barracks' },
+      { id:'war_chariot',    req: buildings.has('stable')   ? null : 'stable' },
+      { id:'ship',           req: buildings.has('harbour')  ? null : 'harbour' },
+      { id:'war_galley',     req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null) },
+      { id:'merchantman',    req: buildings.has('harbour')  ? null : 'harbour' },
+      { id:'elite_infantry', req: buildings.has('foundry')  ? null : 'foundry' },
     ];
     const mySettlements = State.provinceData.filter(p => p.own && !p.is_outpost);
     let settlementOpts = mySettlements.map(s =>
@@ -242,14 +242,14 @@ export async function loadWarDrawer() {
       if (isNaval) {
         // Ship-build overhaul: one vessel per build, optional name, no men select.
         recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
-          + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
+          + '<span style="flex:1;font-size:.8rem">' + unitTypeLabel(u.id) + '</span>'
           + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
           + '<input id="wrc-name-' + u.id + '" type="text" placeholder="name (optional)" ' + (disabled ? 'disabled' : '') + ' style="width:100px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.7rem">'
           + '<button onclick="warRecruitShip(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Build 1 Ship</button>'
           + '</div>';
       } else {
         recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
-          + '<span style="flex:1;font-size:.8rem">' + u.lbl + '</span>'
+          + '<span style="flex:1;font-size:.8rem">' + unitTypeLabel(u.id) + '</span>'
           + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
           + '<select id="wrc-' + u.id + '" ' + (disabled ? 'disabled' : '') + ' style="width:54px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">'
           + [10,20,30,40,50,60,70,80,90,100].map(n => '<option value="' + n + '"' + (n===10?' selected':'') + '>' + n + '</option>').join('')
@@ -396,11 +396,6 @@ export async function warDisband(provinceID) {
 }
 
 // ── Discrete unit helpers (C8-web) ───────────────────────────────────────
-const UNIT_LABELS = {
-  spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-  ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
-};
-
 // Map → drawer bridge: clicking a hex with an own positioned/marching unit
 // selects it — the War drawer opens with that unit's card highlighted and
 // scrolled into view, so orders (march, stance, recall) are given from the
@@ -425,7 +420,7 @@ function applyUnitFocus() {
 let _marchUnitID = null;
 
 function renderUnitCard(u) {
-  const lbl = (UNIT_LABELS[u.type] || u.type) + (u.name ? ' "' + esc(u.name) + '"' : '');
+  const lbl = unitTypeLabel(u.type) + (u.name ? ' "' + esc(u.name) + '"' : '');
   const isNaval = u.category === 'naval';
   const isForming = u.status === 'forming';
   const isTraining = u.status === 'training';
@@ -465,7 +460,7 @@ function renderUnitCard(u) {
     progress = bar(100) + dim('100/100 · training — ' + readyWord(u.build_complete_at));
   }
 
-  // Pending order (Fas 5): a hemerodromos is running to this unit — the order
+  // Pending order (Fas 5): a Runner is en route to this unit — the order
   // executes only on delivery; surface the courier ETA on the card.
   const runner = (State.messengerData || []).find(m => m.own && m.kind === 'order' && m.order_unit_id === u.id);
   let pendingOrder = '';
@@ -474,8 +469,8 @@ function renderUnitCard(u) {
     // worker poll away) — say "delivering", not the stale "en route" ETA.
     const arrived = serverNow() >= new Date(runner.arrives_at).getTime();
     pendingOrder = arrived
-      ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Hemerodromos levererar ordern…</div>'
-      : '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Hemerodromos en route — order arrives ' + arrivalHTML(runner.arrives_at) + '</div>';
+      ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Runner levererar ordern…</div>'
+      : '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Runner en route — order arrives ' + arrivalHTML(runner.arrives_at) + '</div>';
   }
 
   // Stance badge
@@ -578,7 +573,7 @@ export async function unitRecall(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by hemerodromos — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by Runner — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Recall failed';
@@ -599,7 +594,7 @@ export async function unitRedirect(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by hemerodromos — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by Runner — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Redirect failed';
@@ -661,13 +656,13 @@ export async function unitStance(unitID) {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    // Field unit: 202 order_dispatched — the stance travels by hemerodromos
+    // Field unit: 202 order_dispatched — the stance travels by runner
     // and applies on delivery (temenos_orderlopare_plan.md Fas 5). Refresh
     // messengers so the runner + the card's pending-order line show at once.
     if (data.status === 'order_dispatched') {
       if (resEl) {
         resEl.style.color = 'var(--text-dim)';
-        resEl.textContent = '🏃 Hemerodromos carries the stance order — applies on delivery';
+        resEl.textContent = '🏃 Runner carries the stance order — applies on delivery';
       }
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     }

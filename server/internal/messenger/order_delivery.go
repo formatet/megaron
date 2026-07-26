@@ -1,7 +1,7 @@
 package messenger
 
-// OrderDelivery: an order courier — a hemerodromos, pl. hemerodromoi (Timothy
-// 2026-07-17) — physically reaching its unit (temenos_orderlopare_plan.md Fas 2). The runner carries the order envelope;
+// OrderDelivery: an order courier — a Runner (Timothy 2026-07-26) —
+// physically reaching its unit (temenos_orderlopare_plan.md Fas 2). The runner carries the order envelope;
 // the order executes only at delivery — command is never instant.
 //
 // Latest-delivered-wins (Timothy 2026-07-16): dispatch never guards on a
@@ -156,7 +156,7 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 // keeps failing (transient DB/load errors — a game-rule OrderReject already
 // notifies via notifyOrderFailed and never reaches dead-lettering) until it is
 // dead-lettered, the owner is told instead of the order silently vanishing —
-// the dispatch's 202 said a hemerodromos was en route, and without this the
+// the dispatch's 202 said a runner was en route, and without this the
 // player would never learn it never arrived.
 func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.ScheduledEvent) error {
 	var p OrderDeliveryPayload
@@ -169,7 +169,7 @@ func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.Sc
 	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 1, map[string]any{
 		"unit_id": p.UnitID,
 		"verb":    p.Verb,
-		"reason":  fmt.Sprintf("your %s order's hemerodromos could not deliver it after repeated attempts (system fault) — the unit never received it; check its status and reissue the order", p.Verb),
+		"reason":  fmt.Sprintf("your %s order's Runner could not deliver it after repeated attempts (system fault) — the unit never received it; check its status and reissue the order", p.Verb),
 	})
 	slog.Warn("dead-letter: notified owner of stalled order delivery", "messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb)
 	return nil

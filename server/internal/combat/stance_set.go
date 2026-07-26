@@ -3,7 +3,7 @@ package combat
 // SetStance: the stance order's validate+execute core, extracted from
 // api/handlers.UnitHandler.SetStance (temenos_orderlopare_plan.md Fas 3) so it
 // can run both at the HTTP layer (garrisoned units — distance 0) and when a
-// hemerodromos delivers the order to a field unit. Verbatim move, no
+// runner delivers the order to a field unit. Verbatim move, no
 // behaviour change.
 
 import (

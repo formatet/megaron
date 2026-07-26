@@ -157,8 +157,9 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// dispatchMarchCourier sends a march order to a field unit by physical runner —
-// a hemerodromos, the Greek day-runner (Timothy 2026-07-17); DB identifier stays
+// dispatchMarchCourier sends a march order to a field unit by physical Runner
+// (Timothy 2026-07-26; the Greek day-runner, hemerodromos, was the source but
+// the player-facing name is Runner); DB identifier stays
 // kind='order' (temenos_orderlopare_plan.md Fas 2). Cheap pre-flights only
 // (target exists, FOW) — the delivery handler re-validates authoritatively
 // against the unit's state when the courier arrives; an order that can no
@@ -217,7 +218,7 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
 		WorldID: order.WorldID, PlayerID: order.PlayerID, UnitID: order.UnitID,
 		Verb: "march", March: &order,
-	}, fmt.Sprintf("Hemerodromos — march order to (%d,%d).", order.TargetQ, order.TargetR),
+	}, fmt.Sprintf("Runner — march order to (%d,%d).", order.TargetQ, order.TargetR),
 		origin, unitPos, map[string]any{"target_q": order.TargetQ, "target_r": order.TargetR})
 }
 
@@ -292,7 +293,7 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 		hostID, pos, ok := hostCurrentPos(ctx, h.pool, h.clk.Now(), worldID, playerID)
 		if !ok {
 			writeError(w, http.StatusUnprocessableEntity,
-				"you have no city (and no wandering host) to dispatch a hemerodromos from")
+				"you have no city (and no wandering host) to dispatch a Runner from")
 			return o, false
 		}
 		hid := hostID
@@ -301,7 +302,7 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 	return o, true
 }
 
-// sendOrderCourier inserts the kind='order' hemerodromos and schedules its
+// sendOrderCourier inserts the kind='order' runner and schedules its
 // ScheduledOrderDelivery, answering 202 order_dispatched with the courier ETA.
 func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any) {
 	now := h.clk.Now()
@@ -374,7 +375,7 @@ func mustJSON(v any) []byte {
 // envelope (temenos_orderlopare_plan.md — recall/redirect→kuvert-unifiering).
 // Body (optional): {"target_q":int,"target_r":int} — omitted = recall (turn home to
 // the hex the unit departed from); both given = redirect (new course). The order
-// travels as a visible hemerodromos; the unit keeps marching on its original course
+// travels as a visible runner; the unit keeps marching on its original course
 // until the courier physically catches up with it — command is never instant.
 func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
@@ -520,15 +521,15 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// "settlement at march origin → capital → host" chain. currentPos (not the
 	// march-departure hex) is the right distance anchor: a marching unit is
 	// never "in" a city, so this never short-circuits to instant delivery —
-	// sendOrderCourier always dispatches a real hemerodromos here.
+	// sendOrderCourier always dispatches a real runner here.
 	courierOrigin, ok := h.resolveOrderOrigin(w, ctx, worldID, playerID, currentPos)
 	if !ok {
 		return
 	}
 
-	msgText := "Hemerodromos — recall order, return home."
+	msgText := "Runner — recall order, return home."
 	if mode == "redirect" {
-		msgText = fmt.Sprintf("Hemerodromos — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
+		msgText = fmt.Sprintf("Runner — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
 	}
 
 	recallOrder := &combat.RecallOrder{WorldID: worldID, UnitID: unitID, Mode: mode}
@@ -1030,7 +1031,7 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	order := combat.StanceOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID, Stance: req.Stance}
 
 	// Order latency (temenos_orderlopare_plan.md Fas 3): a stance order to a
-	// field unit travels by hemerodromos from the nearest own city and applies
+	// field unit travels by runner from the nearest own city and applies
 	// only on delivery. Garrisoned units are distance 0 — the order originates
 	// in the city the unit sits in — and apply immediately below.
 	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
@@ -1058,7 +1059,7 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 			h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
 				WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 				Verb: "stance", Stance: &order,
-			}, fmt.Sprintf("Hemerodromos — stance order (%s).", req.Stance),
+			}, fmt.Sprintf("Runner — stance order (%s).", req.Stance),
 				origin, unitPos, map[string]any{"stance": req.Stance})
 			return
 		}

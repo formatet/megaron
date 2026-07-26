@@ -1027,7 +1027,7 @@ func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uui
 		uRows.Close()
 	}
 
-	// Hemerodromoi — the player's own outbound messengers (orders, diplomatic
+	// Runners — the player's own outbound messengers (orders, diplomatic
 	// letters, recalls) are live eyes along their route, seeing as a land unit
 	// (temenos_synlighet.md §Nivå 1, beslut Timothy 2026-07-16). Position is
 	// interpolated along the courier A*-path (land at 2× spearman speed, sea by
@@ -1422,13 +1422,13 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		DestR     int       `json:"dest_r"`
 		SentAt    time.Time `json:"sent_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
-		// Own marks the requesting player's hemerodromoi — the client draws
+		// Own marks the requesting player's runners — the client draws
 		// them along their WHOLE route (dimmed over fog): a player's own
 		// courier is information they already possess (temenos_orderlopare_
 		// plan.md Fas 5). Foreign messengers keep the tier-1 endpoint gate.
 		Own  bool   `json:"own"`
 		Kind string `json:"kind"`
-		// OrderUnitID ties a kind='order' hemerodromos to the unit it is
+		// OrderUnitID ties a kind='order' runner to the unit it is
 		// running to, so the unit card can show "order på väg" + courier ETA.
 		OrderUnitID *uuid.UUID `json:"order_unit_id,omitempty"`
 	}

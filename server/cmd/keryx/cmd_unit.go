@@ -368,11 +368,11 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			}
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
-			// Field unit: the order travels by hemerodromos and executes on
+			// Field unit: the order travels by runner and executes on
 			// delivery (temenos_orderlopare_plan.md Fas 5) — the 202 is a
 			// dispatch receipt with the COURIER's ETA, not a march start.
 			if status, _ := resp["status"].(string); status == "order_dispatched" {
-				fmt.Printf("A hemerodromos carries your march order to unit %s — target (%d,%d)", unitID[:8], targetQ, targetR)
+				fmt.Printf("A Runner carries your march order to unit %s — target (%d,%d)", unitID[:8], targetQ, targetR)
 				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
 						fmt.Printf("; the runner reaches it %s", t.Local().Format("15:04 Jan 2"))
@@ -616,7 +616,7 @@ func unitRecallCmd() *cobra.Command {
 		Use:   "recall",
 		Short: "Recall a marching unit — turn it home",
 		Long: `Send a recall order to a marching unit. The order travels as a visible
-hemerodromos; command is never instant — the unit keeps marching on its original
+Runner; command is never instant — the unit keeps marching on its original
 course until the runner physically catches up with it, then turns for home
 (the hex it originally departed from).`,
 		Example: `  keryx unit recall --unit <id>`,
@@ -637,7 +637,7 @@ course until the runner physically catches up with it, then turns for home
 			fmt.Printf("Recall order sent to unit %s", unitID[:8])
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-					fmt.Printf(" — hemerodromos arrives %s", t.Local().Format("15:04 Jan 2"))
+					fmt.Printf(" — Runner arrives %s", t.Local().Format("15:04 Jan 2"))
 				}
 			}
 			fmt.Println("; the unit turns home once it catches up.")
@@ -658,7 +658,7 @@ func unitRedirectCmd() *cobra.Command {
 		Short: "Redirect a marching unit to a new hex",
 		Long: `Send a redirect order to a marching unit, giving it a new destination.
 Command is never instant — the unit keeps marching on its original course until
-the order's hemerodromos physically catches up with it, then turns onto the new course.`,
+the order's Runner physically catches up with it, then turns onto the new course.`,
 		Example: `  keryx unit redirect --unit <id> --target 5,-3`,
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -681,7 +681,7 @@ the order's hemerodromos physically catches up with it, then turns onto the new 
 			fmt.Printf("Redirect order sent to unit %s (new course %d,%d)", unitID[:8], q, r)
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-					fmt.Printf(" — hemerodromos arrives %s", t.Local().Format("15:04 Jan 2"))
+					fmt.Printf(" — Runner arrives %s", t.Local().Format("15:04 Jan 2"))
 				}
 			}
 			fmt.Println(".")
@@ -738,7 +738,7 @@ func unitStanceCmd() *cobra.Command {
 			var stanceResp map[string]any
 			json.Unmarshal(data, &stanceResp)
 			if status, _ := stanceResp["status"].(string); status == "order_dispatched" {
-				fmt.Printf("A hemerodromos carries your stance order (%s) to unit %s", stance, unitID[:8])
+				fmt.Printf("A Runner carries your stance order (%s) to unit %s", stance, unitID[:8])
 				if courierAt, _ := stanceResp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
 						fmt.Printf("; the runner reaches it %s", t.Local().Format("15:04 Jan 2"))

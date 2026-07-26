@@ -354,7 +354,7 @@ func MessengerTravelTicks(dist int) int {
 }
 
 // CourierTravel returns the world-tick and wall-clock travel time for a
-// hemerodromos from 'from' to 'to' (temenos_orderlopare_plan.md Fas 4): A*
+// runner from 'from' to 'to' (temenos_orderlopare_plan.md Fas 4): A*
 // over the courier graph — land at half a land unit's terrain hours (2×
 // spearman speed), sea legs at the flat boat rate province.CourierSeaHours,
 // mountains routed around. Falls back to the legacy straight-line rate when no

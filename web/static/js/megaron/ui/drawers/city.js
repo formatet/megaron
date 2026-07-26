@@ -4,6 +4,7 @@ import { track } from '../../telemetry.js';
 import { fmtSilver } from '../format.js';
 import { arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
+import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
@@ -79,12 +80,6 @@ export async function loadCityDrawer() {
   // Capitalized keys match province API's ArmyComposition struct field names.
   const POP_COSTS = { Spearman:5, EliteInfantry:10, WarChariot:8, Ship:10, WarGalley:12, Merchantman:8 };
   const UNIT_DP   = { Spearman:1, EliteInfantry:3,  WarChariot:4, Ship:1,  WarGalley:3,  Merchantman:0 };
-  const UNIT_LBL  = {
-    Spearman:'Spearmen', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot',
-    Ship:'Galley', WarGalley:'War Galley', Merchantman:'Emporos',
-    spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-    ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
-  };
 
   body.innerHTML = `
     <canvas id="city-scene" class="city-scene" width="320" height="110"></canvas>
@@ -248,15 +243,15 @@ export async function loadCityDrawer() {
     // ── Garnison ────────────────────────────────────────────────────────────
     if (pd) {
       const army    = pd.army || {};
-      const present = Object.entries(UNIT_LBL).filter(([k]) => k in POP_COSTS && (army[k]||0) > 0);
+      const present = Object.keys(POP_COSTS).filter(k => (army[k]||0) > 0);
       const totalDP  = Object.entries(UNIT_DP).reduce((s,[k,d])  => s + (army[k]||0)*d, 0);
       const totalPop = Object.entries(POP_COSTS).reduce((s,[k,c]) => s + (army[k]||0)*c, 0);
       document.getElementById('city-gar-sec').innerHTML = present.length
         ? `<table class="goods-mini">
             <tr style="color:var(--text-dim);font-size:.7rem"><td>Unit</td><td style="text-align:right">Count</td><td style="text-align:right">Pop</td><td style="text-align:right">DP</td></tr>
-            ${present.map(([k,lbl]) => {
+            ${present.map(k => {
               const n = army[k]||0;
-              return `<tr><td>${lbl}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:var(--text-dim)">${n*POP_COSTS[k]}</td><td style="text-align:right;color:var(--safe)">${n*UNIT_DP[k]}</td></tr>`;
+              return `<tr><td>${unitTypeLabel(k)}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:var(--text-dim)">${n*POP_COSTS[k]}</td><td style="text-align:right;color:var(--safe)">${n*UNIT_DP[k]}</td></tr>`;
             }).join('')}
             <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe)">${totalDP} DP</td></tr>
           </table>`
@@ -394,12 +389,6 @@ export async function cancelBuild(provinceID, queueID) {
 async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
   if (!bldSec) return;
-  const UNIT_LBL = {
-    Spearman:'Spearmen', EliteInfantry:'Elite Infantry', WarChariot:'War Chariot',
-    Ship:'Galley', WarGalley:'War Galley', Merchantman:'Emporos',
-    spearman:'Spearmen', elite_infantry:'Elite Infantry', war_chariot:'War Chariot',
-    ship:'Galley', galley:'Galley', war_galley:'War Galley', merchantman:'Emporos',
-  };
   try {
     const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}`);
     if (!res.ok) return;
@@ -422,7 +411,7 @@ async function refreshCityBuildings(provinceID) {
       // (100/100, ready ETA), then deploys to garrison; naval builds a vessel.
       h2 += `<div class="dsec-title" style="margin-top:.8rem">Training</div><table class="goods-mini">${
         tu.map(u => {
-          const name = UNIT_LBL[u.unit] || u.unit;
+          const name = unitTypeLabel(u.unit);
           // A trained unit is ready, not arrived.
           let label, eta = u.ready_at ? arrivalHTML(u.ready_at, undefined, 'ready') : '';
           if (u.category === 'naval') label = 'building';

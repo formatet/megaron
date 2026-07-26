@@ -1,6 +1,6 @@
 package province
 
-// CategoryCourier routing (temenos_orderlopare_plan.md Fas 4): hemerodromoi
+// CategoryCourier routing (temenos_orderlopare_plan.md Fas 4): runners
 // run land at half a land unit's terrain hours (2× spearman speed), cross sea
 // at the flat boat rate CourierSeaHours, and route around mountains like land.
 
