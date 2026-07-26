@@ -5,7 +5,7 @@ import { track } from '../../telemetry.js';
 import { esc } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
-import { unitTypeLabel } from '../actornames.js';
+import { unitTypeLabel, actorName } from '../actornames.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
 
@@ -420,7 +420,7 @@ function applyUnitFocus() {
 let _marchUnitID = null;
 
 function renderUnitCard(u) {
-  const lbl = unitTypeLabel(u.type) + (u.name ? ' "' + esc(u.name) + '"' : '');
+  const lbl = esc(actorName(u));
   const isNaval = u.category === 'naval';
   const isForming = u.status === 'forming';
   const isTraining = u.status === 'training';

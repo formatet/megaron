@@ -111,7 +111,7 @@ events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(
   ↑
 economy(→clock,events,gossip) · transport(→clock,events,province) · capabilities(→clock,province,religion)
   ↑
-kharis(→ai,clock,economy,events,religion) · loyalty(→clock,economy,events,settlement,tick)
+kharis(→ai,clock,economy,events,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑
 combat  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events)
   ↑

@@ -214,6 +214,18 @@ type Unit struct {
 
 	SettlementID *uuid.UUID // non-nil when in garrison / forming
 
+	// SupportSettlementID är den stad som RESTE förbandet och betalar dess sold
+	// hela dess liv (mig 100). Permanent: den ändras aldrig av marsch, hemkomst
+	// eller omstationering, och ingen endpoint får skriva den. Skild från både
+	// SettlementID (nuvarande station) och units.home_settlement_id (transient
+	// marschorigo, som nollas vid hemkomst och INTE får återanvändas till detta).
+	// NULL betyder att staden fallit — då betalas ingen sold och förbandet
+	// deserterar via upkeep.go:s vanliga maskineri (megaron_aktorer_plan.md §3.1).
+	SupportSettlementID *uuid.UUID
+	// Ordinal är regementsnumret inom (försörjande stad, typ). Återanvänds
+	// ALDRIG — se AllocateOrdinal.
+	Ordinal *int
+
 	Q *int // map position (non-nil when on the map)
 	R *int
 
@@ -258,7 +270,7 @@ const selectCols = `
 	id, world_id, owner_id,
 	type, category, size, crew, cargo_unit_id,
 	status, stance,
-	settlement_id,
+	settlement_id, support_settlement_id, ordinal,
 	q, r,
 	target_q, target_r, departs_at, arrives_at,
 	depart_tick, arrive_tick,
@@ -277,7 +289,7 @@ func scanUnit(row interface {
 		&u.ID, &u.WorldID, &u.OwnerID,
 		&u.Type, &u.Category, &u.Size, &u.Crew, &u.CargoUnitID,
 		&u.Status, &stance,
-		&u.SettlementID,
+		&u.SettlementID, &u.SupportSettlementID, &u.Ordinal,
 		&u.Q, &u.R,
 		&u.TargetQ, &u.TargetR, &u.DepartsAt, &u.ArrivesAt,
 		&u.DepartTick, &u.ArriveTick,

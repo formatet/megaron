@@ -208,13 +208,20 @@ func foundMetropolisFromNomadicHost(
 	// Built here rather than via seedStarterUnits — that function's coastal branch
 	// also raises a spearman, and this player already marched in with two.
 	if coastal {
+		// Ordinalen delas ut ur den monotona räknaren, aldrig ur MAX(ordinal):
+		// numret återanvänds inte ens när ett förband upplöses (§3.1 punkt 2).
+		galleyOrdinal, err := unit.AllocateOrdinal(ctx, tx, m.SettlementID, string(unit.TypeGalley))
+		if err != nil {
+			return out, fmt.Errorf("poseidon galley ordinal: %w", err)
+		}
 		var galleyID uuid.UUID
 		if err := tx.QueryRow(ctx,
-			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-			 VALUES ($1, $2, $3, $4, 1, $5, 'garrison', $6)
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+			                    settlement_id, support_settlement_id, ordinal)
+			 VALUES ($1, $2, $3, $4, 1, $5, 'garrison', $6, $6, $7)
 			 RETURNING id`,
 			worldID, playerID, string(unit.TypeGalley), string(unit.CategoryNaval),
-			poseidonGalleyCrew, m.SettlementID,
+			poseidonGalleyCrew, m.SettlementID, galleyOrdinal,
 		).Scan(&galleyID); err != nil {
 			return out, fmt.Errorf("poseidon galley: %w", err)
 		}

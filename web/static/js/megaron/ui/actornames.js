@@ -52,3 +52,20 @@ export function unitTypeLabel(type) {
 export function actorLabel(actor) {
   return ACTOR_LABELS[actor] || actor;
 }
+
+/**
+ * Namnstandardens fulla namn för en enhet ur `/units`.
+ *
+ * **Servern formaterar** (`display_name` i unitSummary, `internal/unit/naming.go`).
+ * Klienten bygger aldrig grammatiken själv — ordningstal, genitiv och vilket led
+ * som faller bort när en uppgift saknas skulle glida isär mellan webben, keryx
+ * och iOS. Det här är därför ett uppslag med fallback, inte en formaterare.
+ *
+ * Fallbacken gäller bara mot en server som är äldre än namnstandarden.
+ */
+export function actorName(u) {
+  if (!u) return '';
+  if (u.display_name) return u.display_name;
+  const label = unitTypeLabel(u.type);
+  return u.name ? `${u.name}, ${label}` : label;
+}

@@ -1481,10 +1481,10 @@ func (h *ProvinceHandler) RecipeCatalogue(w http.ResponseWriter, r *http.Request
 		Quantity float64 `json:"quantity"`
 	}
 	type recipeEntry struct {
-		ID           int                `json:"id"`
-		OutputKey    string             `json:"output_key"`
-		OutputQty    float64            `json:"output_qty"`
-		BuildingType string             `json:"building_type"`
+		ID           int               `json:"id"`
+		OutputKey    string            `json:"output_key"`
+		OutputQty    float64           `json:"output_qty"`
+		BuildingType string            `json:"building_type"`
 		Ingredients  []ingredientEntry `json:"ingredients"`
 	}
 
@@ -1935,14 +1935,23 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			completeAt := tick.EtaAt(h.clk, dueTick, trainCurrentTick)
 			lastCompleteAt = completeAt
 
+			// Ordinalen delas ut ur den monotona räknaren. Skepp bär den inte i
+			// sitt namn (de har egennamn) men den finns för fullständighetens
+			// skull och för att räknaren aldrig ska hoppa.
+			shipOrdinal, err := unit.AllocateOrdinal(r.Context(), h.pool, settlementID, string(uType))
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "could not allocate ship ordinal")
+				return
+			}
 			var unitID uuid.UUID
 			if err := h.pool.QueryRow(r.Context(),
 				`INSERT INTO units
-				   (world_id, owner_id, type, category, size, crew, status, settlement_id, name, build_complete_at)
-				 VALUES ($1, $2, $3, $4, 1, $5, 'forming', $6, $7, $8)
+				   (world_id, owner_id, type, category, size, crew, status, settlement_id,
+				    support_settlement_id, ordinal, name, build_complete_at)
+				 VALUES ($1, $2, $3, $4, 1, $5, 'forming', $6, $6, $7, $8, $9)
 				 RETURNING id`,
 				worldID, playerID, string(uType), string(cat),
-				crew, settlementID, chosenName, completeAt,
+				crew, settlementID, shipOrdinal, chosenName, completeAt,
 			).Scan(&unitID); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not create ship")
 				return
@@ -2021,13 +2030,19 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		} else {
+			ordinal, err := unit.AllocateOrdinal(r.Context(), h.pool, settlementID, string(uType))
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "could not allocate unit ordinal")
+				return
+			}
 			if err := h.pool.QueryRow(r.Context(),
 				`INSERT INTO units
-				   (world_id, owner_id, type, category, size, crew, status, settlement_id)
-				 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7)
+				   (world_id, owner_id, type, category, size, crew, status,
+				    settlement_id, support_settlement_id, ordinal)
+				 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8)
 				 RETURNING id`,
 				worldID, playerID, string(uType), string(cat),
-				unitSize, crew, settlementID,
+				unitSize, crew, settlementID, ordinal,
 			).Scan(&unitID); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not create forming unit")
 				return
@@ -2063,10 +2078,16 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			}
 			// Spill the overflow into a new forming unit of the same type.
 			if newSize > 100 {
+				spillOrdinal, err := unit.AllocateOrdinal(r.Context(), h.pool, settlementID, string(uType))
+				if err != nil {
+					writeError(w, http.StatusInternalServerError, "could not allocate spill ordinal")
+					return
+				}
 				if _, err := h.pool.Exec(r.Context(),
-					`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7)`,
-					worldID, playerID, string(uType), string(cat), newSize-100, crew, settlementID,
+					`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+					                    settlement_id, support_settlement_id, ordinal)
+					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8)`,
+					worldID, playerID, string(uType), string(cat), newSize-100, crew, settlementID, spillOrdinal,
 				); err != nil {
 					writeError(w, http.StatusInternalServerError, "could not create spill forming unit")
 					return

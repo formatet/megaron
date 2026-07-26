@@ -87,8 +87,12 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 
 	mkUnit := func(owner, sid uuid.UUID, utype string, size int) {
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-			 VALUES ($1, $2, $3, 'land', $4, 0, 'garrison', $5)`,
+			// support_settlement_id sätts som rekryteringsvägen gör sedan mig 100:
+			// den försörjande staden är den auktoritativa betalaren, och utan den
+			// får enheten ingen sold alls.
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+			                    settlement_id, support_settlement_id)
+			 VALUES ($1, $2, $3, 'land', $4, 0, 'garrison', $5, $5)`,
 			worldID, owner, utype, size, sid,
 		); err != nil {
 			t.Fatalf("create unit %s: %v", utype, err)

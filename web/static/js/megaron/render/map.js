@@ -8,7 +8,7 @@ import {
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
-import { unitTypeLabel, canonicalUnitType } from '../ui/actornames.js';
+import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns } from './actorsprites.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -1538,7 +1538,7 @@ function producesText(tile) {
 function unitListHTML(units) {
   if (!units.length) return '';
   const rows = units.map(u => {
-    const lbl = unitTypeLabel(u.type);
+    const lbl = actorName(u);
     return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
       + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
       + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Visa →</button>'

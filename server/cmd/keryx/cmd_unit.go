@@ -105,12 +105,21 @@ func unitListCmd() *cobra.Command {
 				fmt.Println("No units.")
 				return nil
 			}
-			fmt.Printf("%-36s  %-16s  %-14s  %-8s  %-10s  %-9s  %s\n",
-				"ID", "Type", "Name", "Size", "Status", "Stance", "Location / ETA")
-			fmt.Println(strings.Repeat("─", 125))
+			// Namnkolumnen är namnstandardens display_name från servern
+			// ("2nd Spearmen of Knossos", "White Dolphin, Galley — supported by
+			// Kydonia"). Keryx formaterar den INTE själv: allt i temenos ska vara
+			// synligt och actionabelt i keryx, men grammatiken bor på servern.
+			// Äldre servrar utan fältet faller tillbaka på typ + skeppsnamn.
+			fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
+				"ID", "Name", "Size", "Status", "Stance", "Location / ETA")
+			fmt.Println(strings.Repeat("─", 140))
 			for _, u := range resp.Units {
-				fmt.Printf("%-36s  %-16s  %-14s  %-8s  %-10s  %-9s  %s\n",
-					u.ID, unit.DisplayName(u.Type), shipNameStr(u.Name), formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
+				name := u.DisplayName
+				if name == "" {
+					name = unit.DisplayName(u.Type) + shipNameSuffix(u.Name)
+				}
+				fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
+					u.ID, name, formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
 			}
 			return nil
 		},
@@ -125,6 +134,7 @@ type unitRow struct {
 	Crew            int        `json:"crew"`
 	Status          string     `json:"status"`
 	Name            *string    `json:"name"`
+	DisplayName     string     `json:"display_name"`
 	BuildCompleteAt *time.Time `json:"build_complete_at"`
 	Stance          *string    `json:"stance"`
 	SettlementID    *string    `json:"settlement_id"`
@@ -176,11 +186,12 @@ func formatSize(u unitRow) string {
 	return fmt.Sprintf("%d men", u.Size)
 }
 
-func shipNameStr(name *string) string {
+// Fallback när servern är äldre än namnstandarden och inte skickar display_name.
+func shipNameSuffix(name *string) string {
 	if name == nil || *name == "" {
-		return "—"
+		return ""
 	}
-	return *name
+	return " \"" + *name + "\""
 }
 
 func stanceStr(s *string) string {

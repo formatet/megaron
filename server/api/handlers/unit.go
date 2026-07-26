@@ -1110,11 +1110,34 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 
 	var currentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
-	summaries := unitSummaries(units, currentTick, h.clk)
+	summaries := unitSummaries(units, currentTick, h.clk, settlementNames(r.Context(), h.pool, worldID, playerID))
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
+}
+
+// settlementNames ger id → namn för spelarens städer, så namnstandarden kan
+// formateras serversidan. En stad som fallit finns inte i kartan — och då faller
+// "of <stad>"-ledet bort av sig självt, vilket är exakt rätt: förbandet har
+// ingen försörjande stad längre.
+func settlementNames(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID) map[uuid.UUID]string {
+	names := make(map[uuid.UUID]string)
+	rows, err := db.Query(ctx,
+		`SELECT id, name FROM settlements WHERE world_id = $1 AND owner_id = $2`,
+		worldID, ownerID)
+	if err != nil {
+		return names
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id uuid.UUID
+		var name string
+		if rows.Scan(&id, &name) == nil {
+			names[id] = name
+		}
+	}
+	return names
 }
 
 // attachUnitPaths fills Path (the real A* route) for every marching unit, loading
@@ -1167,6 +1190,14 @@ type unitSummary struct {
 	// Name is the ship's name (Wanax-chosen or suggested at recruit time);
 	// nil for land units (ship-build overhaul 2026-07-09).
 	Name *string `json:"name,omitempty"`
+	// DisplayName är namnstandardens färdigformaterade namn ("2nd Spearmen of
+	// Knossos"). SERVERN formaterar — annars hamnar grammatiken i webben, keryx
+	// och iOS var för sig och glider isär. Komponenterna följer med så en drawer
+	// kan visa dem separat utan att bygga om grammatiken.
+	DisplayName           string     `json:"display_name"`
+	Ordinal               int        `json:"ordinal,omitempty"`
+	SupportSettlementID   *uuid.UUID `json:"support_settlement_id,omitempty"`
+	SupportSettlementName string     `json:"support_settlement_name,omitempty"`
 	// BuildCompleteAt is the ETA for a still-forming naval unit; nil once
 	// garrisoned, and always nil for land units (whose "forming" is
 	// size-based, not time-based).
@@ -1211,7 +1242,9 @@ type unitSummary struct {
 	ColonyName  *string `json:"colony_name,omitempty"`
 }
 
-func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSummary {
+// townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
+// servern inte formatera namnstandarden, och då hamnar grammatiken i klienterna.
+func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string) []unitSummary {
 	// Reverse map: cargo unit id → the ship carrying it, so an embarked unit can
 	// name its carrier. A ship and its cargo are owned by the same Wanax, so both
 	// rows are in us — no extra query needed.
@@ -1249,6 +1282,31 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 		// unit is deployable once its build completes ("forming" until then, ship-
 		// build overhaul 2026-07-09). men_to_deploy only makes sense for a gathering
 		// land unit; training/naval forming show build_complete_at instead.
+		// Namnstandarden (megaron_aktorer_plan.md §7). Skepp bär egennamn efter
+		// kommat, landförband ordinal före typen. Saknas den försörjande staden
+		// faller ledet bort — namnet blir kortare, aldrig trasigt.
+		town := ""
+		if u.SupportSettlementID != nil {
+			town = townNames[*u.SupportSettlementID]
+		}
+		ordinal := 0
+		if u.Ordinal != nil {
+			ordinal = *u.Ordinal
+		}
+		var nm unit.Name
+		switch {
+		case u.Type == unit.TypeNomadicHost:
+			nm = unit.HostName("")
+		case u.Category == unit.CategoryNaval:
+			shipName := ""
+			if u.Name != nil {
+				shipName = *u.Name
+			}
+			nm = unit.ShipDisplayName(string(u.Type), shipName, town)
+		default:
+			nm = unit.LandUnitName(string(u.Type), ordinal, town)
+		}
+
 		deployable := u.Status != "forming" && u.Status != "training"
 		menToDeploy := 0
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
@@ -1264,32 +1322,36 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock) []unitSumm
 			}
 		}
 		out = append(out, unitSummary{
-			ID:              u.ID,
-			Type:            string(u.Type),
-			Category:        string(u.Category),
-			Size:            u.Size,
-			Crew:            u.Crew,
-			Status:          string(u.Status),
-			Deployable:      deployable,
-			MenToDeploy:     menToDeploy,
-			Name:            u.Name,
-			BuildCompleteAt: u.BuildCompleteAt,
-			Stance:          stance,
-			SettlementID:    u.SettlementID,
-			Q:               u.Q,
-			R:               u.R,
-			TargetQ:         u.TargetQ,
-			TargetR:         u.TargetR,
-			DepartsAt:       u.DepartsAt,
-			ArrivesAt:       u.ArrivesAt,
-			ArrivalTick:     arrivalTick,
-			DurationTicks:   durationTicks,
-			ArrivesAtUTC:    arrivesAtUTC,
-			CargoUnitID:     u.CargoUnitID,
-			CarrierShipID:   carrierShipID,
-			CarrierShipName: carrierShipName,
-			MarchIntent:     u.MarchIntent,
-			ColonyName:      u.ColonyName,
+			ID:                    u.ID,
+			Type:                  string(u.Type),
+			Category:              string(u.Category),
+			Size:                  u.Size,
+			Crew:                  u.Crew,
+			Status:                string(u.Status),
+			Deployable:            deployable,
+			MenToDeploy:           menToDeploy,
+			DisplayName:           nm.DisplayName,
+			Ordinal:               ordinal,
+			SupportSettlementID:   u.SupportSettlementID,
+			SupportSettlementName: town,
+			Name:                  u.Name,
+			BuildCompleteAt:       u.BuildCompleteAt,
+			Stance:                stance,
+			SettlementID:          u.SettlementID,
+			Q:                     u.Q,
+			R:                     u.R,
+			TargetQ:               u.TargetQ,
+			TargetR:               u.TargetR,
+			DepartsAt:             u.DepartsAt,
+			ArrivesAt:             u.ArrivesAt,
+			ArrivalTick:           arrivalTick,
+			DurationTicks:         durationTicks,
+			ArrivesAtUTC:          arrivesAtUTC,
+			CargoUnitID:           u.CargoUnitID,
+			CarrierShipID:         carrierShipID,
+			CarrierShipName:       carrierShipName,
+			MarchIntent:           u.MarchIntent,
+			ColonyName:            u.ColonyName,
 		})
 	}
 	return out
