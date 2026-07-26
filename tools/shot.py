@@ -5,6 +5,7 @@
     python3 tools/shot.py plains-base fixture=plains  # terräng, annan fixtur
     python3 tools/shot.py units-base units            # enhetsriggen
     python3 tools/shot.py glyph-base glyphs           # glyfriggen
+    python3 tools/shot.py flaggor glyphs:set=flaggor  # rigg:query
 
 Kräver att riggen serveras:  python3 -m http.server 8099 --directory web/
 
@@ -33,9 +34,11 @@ RIGS = {
 
 
 def main(label, query=""):
-    rig = query if query in RIGS else "forest"
+    # "<rigg>", "<rigg>:<query>", eller en ren query (= terrängriggen).
+    rig, _, qs = query.partition(":")
+    if rig not in RIGS:
+        rig, qs = "forest", query
     page_name, w, h = RIGS[rig]
-    qs = "" if query in RIGS else query
     url = f"{HOST}/static/{page_name}" + (f"?{qs}" if qs else "")
 
     OUT.mkdir(parents=True, exist_ok=True)

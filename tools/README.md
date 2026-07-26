@@ -15,14 +15,14 @@ python3 tools/shot.py <etikett> [query]          # skärmdump → <etikett>.png
 tools/pxdiff.sh före.png efter.png [diff.png]    # antal ändrade pixlar + diffbild
 ```
 
-Riggarna (andra argumentet till `shot.py` väljer rigg, annars är det en query-sträng
-till terrängriggen):
+Andra argumentet till `shot.py` är `<rigg>`, `<rigg>:<query>`, eller en ren query
+(som då går till terrängriggen):
 
-| query | Sida | Vad |
+| argument | Sida | Vad |
 |---|---|---|
 | *(tomt)* / `fixture=plains` / `zoom=1.6` / `world=<sträng>` | `showcase-forest.html` | Terräng |
 | `units` | `showcase-units.html` | Enheter — **acceptansgrind** |
-| `glyphs` | `showcase-glyphs.html` | Sigill/flaggor i flera skalor |
+| `glyphs` · `glyphs:set=flaggor` | `showcase-glyphs.html` | Sigill/flaggor i flera skalor mot tre terränger |
 
 `SHOT_DIR` styr var PNG:erna hamnar (default: nuvarande katalog). Lägg dem utanför repot.
 
