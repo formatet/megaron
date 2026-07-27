@@ -24,16 +24,36 @@
   Nedersta raderna bär grannskapsproven — samma led mot fientlig ägare, mot
   allierad, mot kalksten och i ruinerat tillstånd.
 
+  ── Två scener i samma rigg ───────────────────────────────────────────────
+  `?scene=led` (default) är LEDRUTNÄTET ovan. `?scene=coast` är KUSTSEKTIONEN
+  (E3): sex kustgeometrier × två led × murnivå 0 och 2, alla inne i land utom
+  där havet ska ligga.
+
+  Att kusten är en egen SCEN och inte fler rader i ledrutnätet är arbetsregel 0:
+  rendertiden mäts före och efter med IDENTISK fixtur, och en rigg som fått
+  tjugofyra nya städer sedan förra mätningen ger ett tal som ser ut som en
+  mätning utan att vara det. Default-scenen är därför byte-identisk med den
+  som mätte föregående slice.
+
   Kör:  python3 -m http.server 8099 --directory web/
         http://localhost:8099/static/showcase-cities.html
+        ?scene=coast     kustsektionen (E3) i stället för ledrutnätet
         ?zoom=<tal>      gör zoomen mätbar (chromets placering skalas med den)
         ?world=<sträng>  byter världshash utan att röra fixturen
-  Dump: python3 tools/shot.py <etikett> cities
+  Dump: python3 tools/shot.py <etikett> cities      · ledrutnätet
+        python3 tools/shot.py <etikett> coast       · kustsektionen
+  Tid:  python3 tools/rendertime.py cities
 -->
 <link rel="stylesheet" href="/static/megaron.css">
 <style>
   body { margin: 0; background: #14100C; }
   #map-root { position: relative; width: 980px; height: 820px; }
+  /* Kustsektionen är sex kolumner bred och behöver mer duk. Storleken måste
+     sitta i CSS och klassen sättas FÖRE modulimporten: map.js läser
+     clientWidth vid laddning, och en storlek satt efteråt ger en canvas som
+     inte rymmer #map-root — vilket ser ut som ett renderingsfel men är en
+     viewportbugg (tools/README.md). */
+  html.coast #map-root { width: 1180px; height: 900px; }
   #hex-canvas { display: block; width: 100%; height: 100%; }
   #tile-tooltip { position: absolute; display: none; }
 </style>
@@ -41,6 +61,8 @@
   // Måste ligga i ett vanligt (icke-module) skript: modulimporter körs efter
   // att all synkron parse-tid-kod gjort sitt, så stubben hinner före map.js.
   window.requestAnimationFrame = function () { return 0; };
+  window.__SCENE = new URLSearchParams(location.search).get('scene') || 'led';
+  if (window.__SCENE === 'coast') document.documentElement.className = 'coast';
 </script>
 </head>
 <body>
@@ -51,9 +73,65 @@
 
 <script type="module">
 import { State } from '/static/js/megaron/state.js';
-import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
+import { render, canvas, SCALE, hexPx, renderTimings, spriteGround } from '/static/js/megaron/render/map.js';
+import { citySprite, CITY_BASE_OFFSET } from '/static/js/megaron/render/citysprites.js';
 
-// ── Fixtur ────────────────────────────────────────────────────────────────
+const ax = (col, row) => ({ q: col, r: row - Math.floor(col / 2) });
+const SCENE = window.__SCENE;
+
+// ── Kustsektionen (E3) ────────────────────────────────────────────────────
+// Sex kustgeometrier × två led × murnivå 0 och 2. Geometrierna är valda för
+// att bankens mekanism ska falla ur SAMMA tio rader i alla sex — hittar man
+// en form som kräver ett eget specialfall är mekanismen fel, och det är
+// slicens stoppvillkor.
+//
+// Riktningsindexen är HEX_DIRS i render/map.js:
+//   0 = SÖ · 1 = NV · 2 = S · 3 = N · 4 = NÖ · 5 = SV
+// (Öster och väster är HÖRN på en flat-top-hex, inte kanter — "hav i öster"
+// är därför NÖ+SÖ, och det är just den geometrin där massan sticker ut som
+// längst: 31 px halv bredd mot hörnets 22.)
+const COAST_GEOM = [
+  ['Hav N',      [3]],
+  ['Hav S',      [2]],
+  ['Hav Ö',      [4, 0]],
+  ['Hav V',      [1, 5]],
+  ['Udde',       [0, 2]],
+  ['Nästan-ö',   [0, 1, 2, 4, 5]],
+];
+const COAST_CASE = [   // rad: led + murnivå
+  [0, 0], [0, 2], [1, 0], [1, 2],
+];
+const HEX_DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
+
+function coastScene() {
+  const tiles = new Map();
+  const key = (q, r) => `${q},${r}`;
+  // Land överallt i rutnätet först; havet stansas ut efteråt, så en havsruta
+  // aldrig kan bli överskriven av grannmarkens fyllning.
+  for (let col = -2; col <= 17; col++)
+    for (let row = -2; row <= 11; row++) {
+      const { q, r } = ax(col, row);
+      tiles.set(key(q, r), { q, r, terrain: 'plains' });
+    }
+  const cities = [];
+  COAST_GEOM.forEach(([name, dirs], gi) => {
+    COAST_CASE.forEach(([tier, wl], ci) => {
+      const { q, r } = ax(gi * 3, ci * 3);
+      for (const d of dirs) {
+        const sq = q + HEX_DIRS[d][0], sr = r + HEX_DIRS[d][1];
+        tiles.set(key(sq, sr), { q: sq, r: sr, terrain: 'coastal_sea' });
+      }
+      cities.push({
+        q, r, name: `${name}·${tier ? 'stad' : 'hamlet'}${wl}`, own: true,
+        culture: 'akhaier', walls: wl, size_tier: tier, state: 'active',
+        army_total: 0, is_outpost: false,
+      });
+    });
+  });
+  return { tiles: [...tiles.values()], cities };
+}
+
+// ── Ledrutnätets fixtur ───────────────────────────────────────────────────
 // Terrängerna är valda efter vad staden ska ÖVERLEVA, inte efter vad som är
 // vackert: slätt (kartans största och tystaste yta), lund (närmast stadens
 // egen putston i valör) och kalksten (L 212 mot putsens 228 — den ruta där en
@@ -69,7 +147,6 @@ const ROWS = [
   'FFFpppmm',
 ];
 const TERRAIN = { p: 'plains', F: 'forest_olive_grove', m: 'mountain_limestone' };
-const ax = (col, row) => ({ q: col, r: row - Math.floor(col / 2) });
 
 const tiles = [];
 ROWS.forEach((line, row) => [...line].forEach((ch, col) => {
@@ -107,7 +184,6 @@ cities.push(Object.assign(ax(8, 3),
 cities.push(Object.assign(ax(8, 6),
   { name: 'Raserad', own: false, culture: 'akhaier', walls: 0, size_tier: 1,
     state: 'razed', is_outpost: false }));
-State.provinceData = cities;
 
 // Stående enheter mellan raderna — skalgrinden. En stad måste vara STÖRRE än
 // en armé, och ett led som inte klarar det är fel led, inte fel terräng.
@@ -116,9 +192,28 @@ State.unitsData = [[1, 1], [3, 4], [5, 1], [1, 7]].map(
     { status: 'positioned', category: 'land', id: `u${i + 1}` }),
 );
 
-State.camera.zoom = Number(new URLSearchParams(location.search).get('zoom')) || 1.4;
-const mid = ax(3, 3);
-const c = hexPx(mid.q, mid.r);
+// Kustscenen byter ut hela fixturen. Den ritas vid ZOOM 1,0 som default —
+// kusten ska bedömas vid spelskala, inte vid ledrutnätets 1,4 (som är satt för
+// att kunna jämföra siluetter sida vid sida, alltså felsökningsförstoring).
+if (SCENE === 'coast') {
+  const sc = coastScene();
+  State.tileData = sc.tiles;
+  cities.length = 0;
+  cities.push(...sc.cities);
+  State.unitsData = [];
+}
+
+State.provinceData = cities;
+State.camera.zoom = Number(new URLSearchParams(location.search).get('zoom'))
+  || (SCENE === 'coast' ? 1.0 : 1.4);
+// Kameran centreras på STÄDERNAS omslutande låda, inte på en hex vald på
+// känsla: kustscenen är sex kolumner bred och en kolumn som hamnar utanför
+// duken ser ut som en saknad geometri.
+const cpx = cities.map(p => hexPx(p.q, p.r));
+const c = SCENE === 'coast'
+  ? { x: (Math.min(...cpx.map(p => p.x)) + Math.max(...cpx.map(p => p.x))) / 2,
+      y: (Math.min(...cpx.map(p => p.y)) + Math.max(...cpx.map(p => p.y))) / 2 }
+  : hexPx(ax(3, 3).q, ax(3, 3).r);
 State.camera.x = canvas.width / 2 - c.x * State.camera.zoom * SCALE;
 State.camera.y = canvas.height / 2 - c.y * State.camera.zoom * SCALE;
 
@@ -128,6 +223,44 @@ window.SHOWCASE = {
     State.lastSeaTick = -1;
     State.dirty = true;
     render();
+  },
+  // Samma kontrakt som helvyriggens time() — arbetsregel 0 kräver att
+  // rendertiden mäts på DEN HÄR fixturen också, inte bara på världsfixturen:
+  // stadspassets kostnad drunknar i 2 240 terränghexar.
+  time(n = 60, warmup = 10) {
+    for (let i = 0; i < warmup; i++) this.draw();
+    const total = [], passes = {};
+    for (let i = 0; i < n; i++) {
+      const t0 = performance.now();
+      this.draw();
+      total.push(performance.now() - t0);
+      for (const [k, v] of Object.entries(renderTimings)) (passes[k] ||= []).push(v);
+    }
+    const med = a => a.slice().sort((x, y) => x - y)[a.length >> 1];
+    const out = { n, total: med(total), passes: {} };
+    for (const [k, v] of Object.entries(passes)) out.passes[k] = med(v);
+    return out;
+  },
+  // Stadens FOTLINJE i skärmpixlar — kontraktet tools/footing.py läser. Måttet
+  // är "vad står staden på": ligger det blått strax under en fotpixel har
+  // staden fötterna i vattnet, och det är precis vad E3 finns för att stänga.
+  // Fotlinjen kommer ur renderarens egen `spriteGround`, inte ur en kopia i
+  // riggen — ett mått som räknar om siluetten på egen hand mäter sin egen kopia.
+  cities() {
+    const k = State.camera.zoom * SCALE;
+    return State.provinceData.map(p => {
+      const s = citySprite(p.size_tier || 0, p.walls || 0);
+      const { foot } = spriteGround(s);
+      const { x, y } = hexPx(p.q, p.r);
+      const ox = Math.round(x) - (s.w >> 1);
+      const oy = Math.round(y) + CITY_BASE_OFFSET - s.h;
+      return {
+        name: p.name, k,
+        sx: State.camera.x + ox * k,
+        sy: State.camera.y + oy * k,
+        foot: Array.from(foot),
+      };
+    });
   },
   ready: true,
 };

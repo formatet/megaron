@@ -1632,6 +1632,142 @@ function drawDepositIcons(ctx, cx, cy, tile) {
   ctx.restore();
 }
 
+// ── Kuststadens bank (E3) ────────────────────────────────────────────────
+// Stadsmassan är 62 px mot hexens 44 och terrängblind, så en stad vid kusten
+// lade sin gård och sina hus rakt ut på öppet vatten (Timothy 2026-07-27).
+// Banken är svaret: en fransad strandplatta under massans sjövända fot, i
+// STRANDBANDETS palett (E2), så att udden fortsätter samma sand som ligger
+// längs kusten runt omkring i stället för att bli ett eget föremål.
+//
+// Mekanismen är avsiktligt geometrifri. Den frågar inte "vilken kustform är
+// det här" utan bara två saker per rasterblock: *hur långt är blocket från
+// massans fot* och *ligger det i en havshex*. Därför faller hav i N, i S, mot
+// ett hörn, en udde med två havssidor och en nästan-ö ur samma tio rader —
+// vilket är slicens stoppvillkor: krävs ett specialfall per kustgeometri är
+// mekanismen fel.
+//
+// Havstestet är också FOW-grinden. `terrainAt` svarar `'fog'` för en osedd
+// granne och `undefined` utanför kartan, och ingetdera är hav — en bank kan
+// alltså aldrig avslöja att rutan bakom dimman är vatten (samma regel som
+// skogsbrynet och strandbandet).
+// Banken följer massans SILUETT, inte dess fotlinje. Första ansatsen mätte
+// några pixlar under foten och lade ett band där: resultatet blev en rak tunga
+// ut i vattnet som läste som en brygga, medan gårdens övre halva fortfarande
+// låg direkt på blått. I ¾-elevation lutar marken bort från betraktaren och
+// sträcker sig alltså UPPÅT i bild — banken måste följa den konturen, annars
+// beskriver den en annan mark än den staden står på.
+//
+// Uppåt slutar den vid GÅRDENS översta pixel. Ovanför den är allt tak, murkrön
+// och torn — sand däruppe vore sand i luften, och det är exakt vad hav i norr
+// hade gett.
+// Bankens yttersta räckvidd i logiska pixlar: både loopens gräns och det tak
+// brusbredden nedan klipps mot.
+const BANK_MAX = 7;
+
+/** Massans mått som banken behöver, allt uttryckt PER KOLUMN: gårdens översta
+ *  rad (takets gräns nedåt), massans understa rad (marken den vilar på), och
+ *  vilka kolumner massan över huvud taget har pixlar i.
+ *
+ *  Ett utkast blandade en per-RAD-kontur (siluettens vänster/höger) med den här
+ *  per-kolumn-foten, och de två beskrev olika saker: strax under en kolumns fot
+ *  har raden redan smalnat av, så det vågräta avståndet sköt i höjden och
+ *  banken uteblev precis där staden stod med fötterna i vattnet. Måttet visade
+ *  bara 10 kolumner torrare medan bilden såg löst. **En bas, inte två.**
+ *
+ *  Gårdens övre gräns kommer ur `sprite.yardTop`, som bygget lägger dit — den
+ *  går inte att läsa ur pixlarna, för gårdens bakre rader är övertäckta.
+ *  Räknas en gång per sprite och sparas på den: spritarna är åtta stycken och
+ *  byggs vid modulladdning, så cachen kan aldrig bli inaktuell. */
+export function spriteGround(sprite) {
+  if (sprite.ground) return sprite.ground;
+  const { w, runs } = sprite;
+  const foot = new Int16Array(w).fill(-1);
+  let botMax = 0, yardMin = sprite.h, colL = w, colR = -1;
+  for (const r of runs) {
+    if (r.y > botMax) botMax = r.y;
+    for (let x = r.x; x < r.x + r.n; x++) if (r.y > foot[x]) foot[x] = r.y;
+  }
+  for (let x = 0; x < w; x++) if (foot[x] >= 0) { if (x < colL) colL = x; colR = x; }
+  // Tomma kolumner i kanterna ärver närmaste grannes värde, annars faller
+  // konturen till noll just där siluetten smalnar av. Fyllningen sker i KOPIOR:
+  // `foot` med sina −1 kvar är den enda ärliga uppgiften om var massan faktiskt
+  // har pixlar, och tools/footing.py mäter mot den — ett mått som probar under
+  // en tom kolumn mäter öppet hav och kallar det blöta fötter.
+  const yard = Int16Array.from(sprite.yardTop), footFill = Int16Array.from(foot);
+  for (const a of [footFill, yard]) {
+    let last = -1;
+    for (let x = 0; x < w; x++) { if (a[x] < 0) a[x] = last; else last = a[x]; }
+    last = -1;
+    for (let x = w - 1; x >= 0; x--) { if (a[x] < 0) a[x] = last; else last = a[x]; }
+  }
+  // Markens övre gräns per kolumn. Normalt är den gårdens topp — men i de
+  // yttersta kolumnerna sticker ett hus ut FÖRBI gårdspolygonen, och där ligger
+  // dess fot ovanför gårdens topprad. En gräns som bara läste gården lämnade
+  // just de husen hängande över vattnet (mätt: 6 blöta kolumner som inte
+  // rörde sig när banken lades till). Ett hus står alltid på mark, så gränsen
+  // är den av de två som ligger högst.
+  for (let x = 0; x < w; x++) if (footFill[x] < yard[x]) yard[x] = footFill[x];
+  for (let x = colL; x <= colR; x++) if (yard[x] < yardMin) yardMin = yard[x];
+  sprite.ground = { yard, yardMin, colL, colR, botMax, foot, footFill };
+  return sprite.ground;
+}
+
+function drawCityBank(ctx, cx, cy, sprite) {
+  const STEP = 2;
+  const { yard, yardMin, colL, colR, botMax, footFill } = spriteGround(sprite);
+  const ox = Math.round(cx) - (sprite.w >> 1);
+  const oy = Math.round(cy) + CITY_BASE_OFFSET - sprite.h;
+  const xL = ox + colL, xR = ox + colR;
+  const y1 = oy + botMax + BANK_MAX;
+  // En rad ovanför gården: konturpasset lägger bläck runt hela massan, och en
+  // bank som slutar exakt vid gårdens översta rad lämnar den svarta linjen
+  // liggande i vattnet.
+  for (let wy = Math.floor((oy + yardMin - 1) / STEP) * STEP; wy <= y1; wy += STEP) {
+    for (let wx = Math.floor((xL - BANK_MAX) / STEP) * STEP; wx <= xR + BANK_MAX; wx += STEP) {
+      // Blocket täcker TVÅ kolumner, och längs en diagonal kant skiljer deras
+      // fot två pixlar. Läses bara mittkolumnens fot hamnar bankens överkant
+      // två pixlar för högt för den andra, och kvar blir en enpixels ränna av
+      // vatten längs hela den snedställda kanten — den rännan var de sista sex
+      // blöta kolumnerna i mätningen. Blocket tar därför den LÄGSTA foten och
+      // den HÖGSTA marken av de två: bandet ska rymma båda kolumnerna, inte
+      // den ena.
+      const s0 = Math.min(colR, Math.max(colL, wx - ox));
+      const s1 = Math.min(colR, Math.max(colL, wx + 1 - ox));
+      // Uppåt är gränsen HÅRD, inte ett avstånd: sand får aldrig krypa upp
+      // ovanför marken, oavsett hur nära massan blocket ligger.
+      if (wy + STEP / 2 < oy + Math.min(yard[s0], yard[s1]) - 1) continue;
+      const dx = wx < xL ? xL - wx : Math.max(0, wx - xR);
+      // Utåt och nedåt mäts avståndet. INNANFÖR kolumnens markband är det noll
+      // eller negativt, och då fylls blocket — det havet ligger BAKOM stadens
+      // mark och ska vara mark, annars lyser vatten genom gårdens fransade kant.
+      const d = Math.max(dx, wy + STEP / 2 - (oy + Math.max(footFill[s0], footFill[s1])));
+      if (d > BANK_MAX) continue;
+      // Bredden ur det globala bruset, precis som strandbandets: banken och
+      // bandet den möter måste variera i samma fält, annars läser övergången
+      // vid hexkanten som en söm mellan två olika stränder.
+      const w = 3.5 + 4.0 * noiseAt(wx, wy, 9, 5151);
+      if (d > w) continue;
+      const mx = wx + STEP / 2, my = wy + STEP / 2;
+      let [q, r] = hexAtWorld(mx, my);
+      if (!isSeaTerrain(terrainAt(q, r))) {
+        // Blocket är 2×2 och tilldelas den hex dess MITT ligger i. Vid
+        // kustlinjen straddlar det kanten: mitten hamnar på land medan halva
+        // blocket ligger i havshexen och blir stående blått under stadens fot.
+        // Testa därför även blockets yttersta hörn — det som pekar bort från
+        // landhexens mitt. Bias:et går alltid mot MER bank, och den pixel sand
+        // som då hamnar på landsidan möter strandbandets egen sand. Mätt värde
+        // på egen hand: en enda pixel i hela kustscenen — men det är den pixeln
+        // som skiljer noll från nästan noll.
+        const c = hexPx(q, r);
+        [q, r] = hexAtWorld(mx + (mx >= c.x ? 1 : -1), my + (my >= c.y ? 1 : -1));
+        if (!isSeaTerrain(terrainAt(q, r))) continue;
+      }
+      ctx.fillStyle = d > w * 0.55 ? SHORE_WET : SHORE_SAND;
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+}
+
 // ── Province building sprite + flag ──────────────────────────────────────
 function drawProvince(ctx, cx, cy, p) {
   // Razed (Del 2b sack) or collapsed: an abandoned ruin, not a standing city —
@@ -1675,7 +1811,13 @@ function drawProvince(ctx, cx, cy, p) {
   // Kulturstrimman som låg på den gamla rutan är BORTA — den satt på ett
   // föremål som inte finns längre, och kulturen ska bäras av hela siluetten
   // när de kulturspecifika leden byggs (Timothy 2026-07-27: idag bara akhaier).
-  const sprite = drawCityMass(ctx, p.size_tier || 0, walls, cx, cy);
+  // Banken FÖRE massan: den är mark, massan står på den. Grinden är
+  // grannskapet — en stad utan havsgranne betalar ingenting alls.
+  const tier = p.size_tier || 0;
+  if (neighborDirs(p.q, p.r, isSeaTerrain).length)
+    drawCityBank(ctx, cx, cy, citySprite(tier, walls));
+
+  const sprite = drawCityMass(ctx, tier, walls, cx, cy);
   const top = cy + CITY_BASE_OFFSET - sprite.h;
 
   // Standaret på taknocken — ägarskapets enda färgsignal på kartan. Den reser

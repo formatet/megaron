@@ -36,7 +36,8 @@ def main(target="world", n=60):
     if rig not in RIGS:
         rig, qs = "forest", target
     page_name, w, h = RIGS[rig]
-    url = f"{HOST}/static/{page_name}" + (f"?{qs}" if qs else "")
+    sep = "&" if "?" in page_name else "?"
+    url = f"{HOST}/static/{page_name}" + (f"{sep}{qs}" if qs else "")
 
     with sync_playwright() as p:
         b = p.chromium.launch()
