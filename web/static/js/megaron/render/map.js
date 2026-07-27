@@ -204,7 +204,17 @@ function fillHex(ctx, pts, c0, c1, seed) {
   ctx.fillStyle = c0;
   ctx.fill();
   ctx.strokeStyle = c0;
-  ctx.lineWidth = 1;
+  // Hexpolygonerna tesselerar inte exakt: hörnen rundas till heltal, så varje
+  // delad kant lämnar en springa där ~8 % av bakgrunden lyser igenom. Stroken
+  // finns för att täcka den — men den var 1 LOGISK pixel, och renderaren ritar
+  // genom `ctx.scale(zoom × SCALE)`. Vid minzoom (k = 0,6) blev den 0,6 device-
+  // pixlar, slutade täcka, och ett hexrutnät framträdde över hela kartan —
+  // tydligast på havet där ingen textur döljer det. Uppmätt: 7,7 % av
+  // havspixlarna mörkare än basfärgen vid zoom 0,30, 0 % vid ≥0,50. Princip 13
+  // säger att inget hexrutnät får ritas; det ritades av misstag i tre år.
+  // Stroken hålls nu vid minst ~1,25 device-pixlar. För k ≥ 1,25 (zoom ≥ 0,63)
+  // är uttrycket exakt 1 och bilden pixelidentisk med tidigare.
+  ctx.lineWidth = Math.max(1, 1.25 / (State.camera.zoom * SCALE));
   ctx.stroke();
 }
 
