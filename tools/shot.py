@@ -32,6 +32,7 @@ RIGS = {
     "glyphs": ("showcase-glyphs.html", 1180, 900),
     "cities": ("showcase-cities.html", 1040, 900),
     "cityview": ("showcase-cityview.html", 740, 760),
+    "world": ("showcase-world.html", 1600, 900),
 }
 
 
