@@ -1377,7 +1377,9 @@ function drawProvince(ctx, cx, cy, p) {
     return;
   }
 
-  // Massan: fyra befolkningsled (serverns size_tier) × fyra murnivåer.
+  // Massan: två befolkningsled (serverns size_tier, gräns 800 inv.) × fyra
+  // murnivåer. Leden var fyra; de två största gick inte att få att läsa som
+  // städer och ströks (Timothy 2026-07-27).
   // Kulturstrimman som låg på den gamla rutan är BORTA — den satt på ett
   // föremål som inte finns längre, och kulturen ska bäras av hela siluetten
   // när de kulturspecifika leden byggs (Timothy 2026-07-27: idag bara akhaier).
@@ -1417,11 +1419,15 @@ function drawLabel(ctx, cx, cy, text, own) {
   ctx.textBaseline = 'top';
   ctx.strokeStyle = '#000000aa';
   ctx.lineWidth = 2;
-  // Parad med CITY_BASE_OFFSET: massans fot ligger på cy+11, etiketten börjar
-  // direkt under den. Ändras det ena måste det andra följa med.
-  ctx.strokeText(text, cx, cy + 13);
+  // Parad med CITY_BASE_OFFSET: massans fot ligger på cy+17, etiketten börjar
+  // direkt under den — alltså i praktiken PÅ hexens underkant (halva höjden är
+  // 19), vilket är precis där Timothy vill ha den (2026-07-27). Det är den
+  // flytten som gav massan de sex pixlar som annars låg som tom marginal under
+  // staden och gjorde hexen till en bricka. Ändras det ena måste det andra
+  // följa med.
+  ctx.strokeText(text, cx, cy + 19);
   ctx.fillStyle = own ? '#F9E79F' : '#E8D0A8';
-  ctx.fillText(text, cx, cy + 13);
+  ctx.fillText(text, cx, cy + 19);
   ctx.restore();
 }
 

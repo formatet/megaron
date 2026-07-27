@@ -27,8 +27,16 @@ const bgName = flag('--terrain', 'slätt');
 const bg = TERRAIN[bgName] || TERRAIN['slätt'];
 const ZOOM = Number(flag('--zoom', 5));
 
-const HEX_W = 44, HEX_H = 38, PAD = 6;
-const CELL_W = HEX_W + PAD * 2, CELL_H = HEX_H + PAD * 2;
+const HEX_W = 44, HEX_H = 38;
+// Cellen måste rymma det BREDASTE ledet, inte hexen: sedan städerna blev
+// 100 px (Timothy 2026-07-27) svämmar massan långt utanför sin ruta, och en
+// cell dimensionerad efter hexen lät grannarna skriva över varandra. Då bedömer
+// man artefakter, inte städer.
+const MAXW = Math.max(...CITY_SPRITES.flat().map(s => s.w));
+const MAXH = Math.max(...CITY_SPRITES.flat().map(s => s.h));
+const PAD = Math.max(6, ((MAXW - HEX_W) >> 1) + 4);
+const CELL_W = HEX_W + PAD * 2;
+const CELL_H = Math.max(HEX_H + 12, MAXH + 14);
 const COLS = 4, ROWS = CITY_SPRITES.length;
 
 // Förstorat rutnät + en 1:1-remsa längst till höger.
@@ -52,8 +60,8 @@ function put(x, y, colour, w = 1, h = 1) {
 
 // Hexen ritad som riktig sexhörning (platt topp, S=22) — en rektangulär ram
 // räcker inte, för frågan är just hur mycket massan svämmar över KANTEN.
-function hexEdge(px, py, zoom, colour) {
-  const S = HEX_W / 2, cx = PAD + HEX_W / 2, cy = PAD + HEX_H / 2, pts = [];
+function hexEdge(px, py, zoom, colour, hy) {
+  const S = HEX_W / 2, cx = PAD + HEX_W / 2, cy = hy + HEX_H / 2, pts = [];
   for (let i = 0; i < 6; i++) {
     const a = Math.PI / 3 * i;
     pts.push([cx + S * Math.cos(a), cy + S * Math.sin(a)]);
@@ -78,22 +86,23 @@ const actor = ACTOR_SPRITES.spearman;
 CITY_SPRITES.forEach((byWall, row) => {
   const oy = row * CELL_H * ZOOM;
   byWall.forEach((s, col) => {
+    const hy = (CELL_H - HEX_H) >> 1;
     const bx = PAD + (HEX_W >> 1) - (s.w >> 1);
-    const by = PAD + (HEX_H >> 1) + CITY_BASE_OFFSET - s.h;
-    const abx = PAD + HEX_W - 8 - (actor.w >> 1);
-    const aby = PAD + (HEX_H >> 1) + 8 - actor.h + 2;
+    const by = hy + (HEX_H >> 1) + CITY_BASE_OFFSET - s.h;
+    const abx = PAD + HEX_W + 6;
+    const aby = hy + (HEX_H >> 1) + 8 - actor.h + 2;
 
     const ox = col * CELL_W * ZOOM;
     put(ox, oy, rgb(bg), CELL_W * ZOOM, CELL_H * ZOOM);
-    hexEdge(ox, oy, ZOOM, rgb('#3A3226'));
+    hexEdge(ox, oy, ZOOM, rgb('#3A3226'), (CELL_H - HEX_H) >> 1);
     blit(s, CITY_PALETTE, ox, oy, bx, by, ZOOM);
     blit(actor, ACTOR_PALETTE, ox, oy, abx, aby, ZOOM, NEUTRAL_ACCENT);
 
     // 1:1-remsan — så stort märket faktiskt blir på kartan.
     const sx = COLS * CELL_W * ZOOM + col * CELL_W;
     put(sx, oy, rgb(bg), CELL_W, CELL_H * ZOOM);
-    blit(s, CITY_PALETTE, sx, oy + PAD, bx, by, 1);
-    blit(actor, ACTOR_PALETTE, sx, oy + PAD, abx, aby, 1, NEUTRAL_ACCENT);
+    blit(s, CITY_PALETTE, sx, oy, bx, by, 1);
+    blit(actor, ACTOR_PALETTE, sx, oy, abx, aby, 1, NEUTRAL_ACCENT);
   });
 });
 
