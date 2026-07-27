@@ -23,6 +23,23 @@ export const CITY_PALETTE = {
                  // och tappade kulturen — en akhaisk stad i egeisk sol är inte
                  // grå, och taket är dess största yta.
   r: '#5E4630',  // platt jordtak, skuggat. L≈75
+  M: '#A88355',  // jordtakets OVANSIDA, solbelyst. L≈137. R och r är takets
+                 // lodräta kant (fascian) sedd framifrån; M/m är den vågräta
+                 // ytan ovanpå, och den ser hela himlen. Ger vi dem samma ton
+                 // blir ett hus med djup en enda brun klump — första
+                 // djuputkastet målade takton över halva massan och kalkputsen,
+                 // kartans ljusaste ton, blev en minoritet på sin egen stad.
+                 // Med M emellan går rampen puts 196 → ovansida 137 → fascia
+                 // 111 → skuggad 75, och massan får form i stället för yta
+                 // (princip 22).
+  m: '#7A5C3C',  // jordtakets ovansida, skuggad gavelsida. L≈97
+  E: '#C4A578',  // slagen jord — stadens INRE mark, gården innanför ringmuren.
+                 // L≈166. Det är den här ytan som gör en stad till en PLATS och
+                 // inte till ett föremål: en inhägnad man ser marken i. Vald med
+                 // hue åt jord så den skiljs från både slätten (L 138, grön) och
+                 // kalkstenen (L 212, kall) — mot olivlunden (157) är valören
+                 // svag och separationen bärs av muren, inte av tonen.
+  e: '#A88A5E',  // slagen jord, trampad/skuggad. L≈140
   T: '#B5A992',  // kyklopisk sten, ljus sida (muren, palatsterrassen). L≈170.
                  // Utkastets #8E8474 låg L 133 — en halv enhet från slätten
                  // (134). Muren hade varit OSYNLIG i valör mot kartans största
@@ -79,6 +96,35 @@ export function rect(g, x, y, w, h, ch) {
 // två grannhus åt utan bläck.
 export function cube(g, x, y, w, h, opts = {}) {
   const roofH = opts.roof ?? 2;
+  // ── Djupaxeln ──────────────────────────────────────────────────────────
+  // `depth` skjuter en sned volym bakåt från fasaden: positivt = huset viker
+  // bort upp-HÖGER, negativt upp-VÄNSTER, 0 = rakt framifrån (och då är
+  // stämpeln exakt vad den alltid varit — stadsvyn rör sig inte).
+  //
+  // Utan den axeln är varje hus en frontal rektangel, och en klunga frontala
+  // rektanglar läser som en fasadrad, inte som en stad: "alla hus kan inte vara
+  // vända mot spelaren" (Timothy 2026-07-27). Vridningen får inte fuskas med
+  // ljusriktningen — den är fix uppifrån vänster — utan måste komma ur
+  // GEOMETRIN: takytan är en parallellogram som viker bort, och gaveln som
+  // följer med den är husets verkliga sida.
+  //
+  // Proportionen bär orienteringen och därmed formationen: bred fasad + grunt
+  // djup = ett hus vänt mot oss, smal fasad + stort djup = ett hus vänt på
+  // tvären. Samma stämpel, två läsningar — princip 20, skillnaden sitter i den
+  // stora formen.
+  const d = opts.depth | 0, a = Math.abs(d), s = Math.sign(d);
+  for (let i = 1; i <= a; i++) {
+    // Takets ovansida — den vikande parallellogrammen. Egen, LJUSARE ton än
+    // fascian: se M/m i paletten. Med samma ton blev huset en brun klump.
+    for (let xx = 0; xx < w; xx++)
+      set(g, x + xx + s * i, y - i, xx >= w - 2 ? 'm' : 'M');
+    // Gaveln längs den sida volymen viker bort åt. Höger sida ligger i skugga,
+    // vänster fångar ljuset — det är därför en vridning åt andra hållet också
+    // ger klungan valörvariation, inte bara formvariation.
+    const gx = x + (s > 0 ? w - 1 : 0) + s * i;
+    for (let yy = y - i; yy < y + roofH - i; yy++) set(g, gx, yy, 'r');
+    for (let yy = y + roofH - i; yy < y + h - i; yy++) set(g, gx, yy, s > 0 ? 'd' : 'p');
+  }
   for (let yy = 0; yy < h; yy++) {
     for (let xx = 0; xx < w; xx++) {
       let ch;
@@ -121,7 +167,13 @@ export function outline(g) {
       for (let dy = -1; dy <= 1 && !touches; dy++)
         for (let dx = -1; dx <= 1; dx++) {
           const n = at(g, x + dx, y + dy);
-          if (n !== '.' && n !== 'K' && n !== 'G') { touches = true; break; }
+          // Slagen jord (E/e) drar ingen kontur. Gården är MARK, och en
+          // charcoalkant runt marken gör hela staden till en urklippt bricka
+          // som ligger PÅ terrängen i stället för i den (Timothy 2026-07-27).
+          // Bara det BYGGDA — murar och hus — får silhuett mot bakgrunden.
+          if (n !== '.' && n !== 'K' && n !== 'G' && n !== 'E' && n !== 'e') {
+            touches = true; break;
+          }
         }
       if (touches) add.push([x, y]);
     }
@@ -129,23 +181,43 @@ export function outline(g) {
   for (const [x, y] of add) set(g, x, y, 'K');
 }
 
-/** Markskuggan: EN sammanhängande rad under massans nedersta kant, förskjuten
- *  ett steg åt höger — samma riktning som aktörernas. Första utkastet la skugga
- *  under varje kolumns egen underkant och fick en prickad diagonal ut ur
- *  siluetten: ett kometsvans-spår, inte en skugga. Skuggan hör till marken
- *  massan STÅR på, inte till varje enskild taknock. */
-export function groundShadow(g) {
-  let bottom = -1, left = g.w, right = -1;
-  for (let y = 0; y < g.h; y++)
-    for (let x = 0; x < g.w; x++)
-      if (at(g, x, y) !== '.') {
-        if (y > bottom) bottom = y;
-        if (x < left) left = x;
-        if (x > right) right = x;
-      }
-  if (bottom < 0) return;
-  for (let x = left + 1; x <= right + 1; x++)
-    if (at(g, x, bottom + 1) === '.') set(g, x, bottom + 1, 'G');
+/** Markskuggan, en per FOT. Varje sammanhängande underkant av minst `minRun`
+ *  pixlar får sin egen skugga, förskjuten ett steg åt höger — samma ljusriktning
+ *  som aktörernas.
+ *
+ *  Historik, för den här funktionen har gått ett varv: första utkastet la skugga
+ *  under varje KOLUMNS underkant och fick en prickad diagonal ut ur siluetten,
+ *  ett kometsvans-spår. Rättningen blev EN gemensam rad under massans lägsta
+ *  punkt — rätt så länge massan var ett kompakt block, men på en utspridd stad
+ *  ritar den en genomgående SOCKEL under hus som står långt bakom, och sockeln
+ *  är precis det som gör markören till en bricka på ett bräde.
+ *
+ *  Löpkravet är det som skiljer den här versionen från det första utkastet: ett
+ *  trappsteg där två kuber möts är 1–2 px och får ingen skugga, ett hus är 5+ och
+ *  får en. Skuggan ersätter konturbläcket under foten i stället för att läggas
+ *  under det — två mörka rader hade blivit en list, och en list är en sockel.
+ *
+ *  Fötterna måste läsas av FÖRE `outline()` (konturen fyller ju pixeln under
+ *  varje fot) och målas EFTER den. Därför två steg. */
+export function footSpans(g, minRun = 4) {
+  const spans = [];
+  const solid = (x, y) => { const c = at(g, x, y); return c !== '.' && c !== 'G'; };
+  for (let y = 0; y < g.h; y++) {
+    let x = 0;
+    while (x < g.w) {
+      if (!solid(x, y) || solid(x, y + 1)) { x++; continue; }
+      let n = 0;
+      while (solid(x + n, y) && !solid(x + n, y + 1)) n++;
+      if (n >= minRun) spans.push([x, y, n]);
+      x += n;
+    }
+  }
+  return spans;
+}
+
+export function paintFeet(g, spans) {
+  for (const [x, y, n] of spans)
+    for (let i = 1; i <= n; i++) set(g, x + i, y + 1, 'G');
 }
 
 /** Rutnät → horisontella löpor av samma färg: en fillRect per löpa i stället
@@ -170,5 +242,107 @@ export function blitRuns(ctx, sprite, ox, oy, scale = 1) {
   for (const r of sprite.runs) {
     ctx.fillStyle = CITY_PALETTE[r.ch];
     ctx.fillRect(ox + r.x * scale, oy + r.y * scale, r.n * scale, scale);
+  }
+}
+
+
+// ── Inhägnaden ───────────────────────────────────────────────────────────
+// En stad är inte en byggnadsklump — den är ett OMRÅDE. Referensbilden
+// (`img/f0382384…jpeg`, Timothy 2026-07-27) gör det med en ringmur runt en
+// gård av slagen jord, med husen utspridda inne på den och salen bland dem.
+// Det är hela skillnaden mellan "miljö" och "overlay": ögat läser en plats man
+// kan gå in i, inte ett märke som ligger ovanpå rutan.
+//
+// Tidigare utkast ritade muren som ett vågrätt BAND framför husen. Ett band
+// kan bara skilja fram från bak; det kan inte omsluta något, och därför blev
+// staden en bricka hur mycket massan än varierades.
+
+/** Murmur3-finalizerns avalanche, samma familj som terrängens seed (princip 14). */
+const hash2 = (x, y) => {
+  let h = Math.imul(x, 0x27d4eb2d) ^ Math.imul(y, 0x165667b1);
+  h = Math.imul(h ^ (h >>> 15), 0x2545f491);
+  return (h ^ (h >>> 13)) >>> 0;
+};
+
+/** Vänster/höger kant per rad för en enkel (i praktiken konvex) polygon.
+ *  Returnerar `{ y0, rows: [[xl, xr], …] }`. */
+export function polyRows(pts) {
+  const y0 = Math.min(...pts.map(p => p[1]));
+  const y1 = Math.max(...pts.map(p => p[1]));
+  const rows = [];
+  for (let y = y0; y <= y1; y++) {
+    let lo = Infinity, hi = -Infinity;
+    for (let i = 0; i < pts.length; i++) {
+      const [xa, ya] = pts[i], [xb, yb] = pts[(i + 1) % pts.length];
+      if (ya === yb) {
+        if (ya !== y) continue;
+        lo = Math.min(lo, xa, xb); hi = Math.max(hi, xa, xb);
+        continue;
+      }
+      if (y < Math.min(ya, yb) || y > Math.max(ya, yb)) continue;
+      const x = xa + (xb - xa) * (y - ya) / (yb - ya);
+      lo = Math.min(lo, x); hi = Math.max(hi, x);
+    }
+    rows.push(hi < lo ? null : [Math.round(lo), Math.round(hi)]);
+  }
+  return { y0, rows };
+}
+
+/** Gården: fyller polygonen med slagen jord. Stipplet är ett fast hash-mönster
+ *  — marken får inte vara en jämn platta (princip 16: regelbundenhet är
+ *  artefakten), men den ska heller inte konkurrera med husen.
+ *
+ *  Hashen måste vara en AVALANCHE-hash, inte en linjärkombination. Utkastets
+ *  `(x*73 + y*151) & 7` ritade tydliga diagonala ränder rakt över gården: 73 och
+ *  151 är kongruenta med 1 och −1 modulo 8, så villkoret blev i praktiken
+ *  "x − y jämnt delbart". Samma fälla som princip 14 beskriver för terrängen. */
+export function plateFill(g, poly) {
+  poly.rows.forEach((r, i) => {
+    if (!r) return;
+    const y = poly.y0 + i;
+    for (let x = r[0]; x <= r[1]; x++) {
+      // Kanten FRANSAS. En skarp polygonkant läser som ett klistermärke; de
+      // yttersta pixlarna gallras därför bort med hashen, så marken tunnas ut
+      // och löses upp i terrängen i stället för att sluta i en linje.
+      const edge = Math.min(x - r[0], r[1] - x, i, poly.rows.length - 1 - i);
+      if (edge < 2 && hash2(x, y) % 3 !== 0) continue;
+      set(g, x, y, hash2(x, y) % 9 === 0 ? 'e' : 'E');
+    }
+  });
+}
+
+/** Ringmurens pixlar i markplanet, `wt` tjocka, delade i bakre och främre
+ *  halva. Muren reses sedan ur dem: varje markpixel extruderas UPPÅT, och
+ *  eftersom raderna ritas i växande y skymmer varje närmare bit den bakom sig —
+ *  det är den staplingen som ger krönet sin trappade linje längs kanten. */
+export function ringPixels(poly, wt = 2) {
+  const back = [], front = [];
+  const n = poly.rows.length, mid = poly.y0 + (n >> 1);
+  poly.rows.forEach((r, i) => {
+    if (!r) return;
+    const y = poly.y0 + i;
+    const edgeRow = i < wt || i >= n - wt;
+    for (let x = r[0]; x <= r[1]; x++) {
+      if (!edgeRow && x > r[0] + wt - 1 && x < r[1] - wt + 1) continue;
+      (y < mid ? back : front).push([x, y]);
+    }
+  });
+  return { back, front };
+}
+
+/** Reser muren ur markpixlarna. Höjden är murnivåns, inte en estetisk skala:
+ *  livet växer med nivån och först på nivå 2 kommer tinnar och torn. */
+export function raiseWall(g, pixels, h) {
+  for (const [x, y] of pixels) {
+    for (let k = 0; k < h; k++) {
+      // Ljus krönlist, mellanton i livet, mörk fot: tre valörer, annars läser
+      // muren som en platt yta. Kyklopiska fogar deterministiskt utlagda — ett
+      // regelbundet rutmönster hade lästs som tegel, och skillnaden syns även
+      // vid 5 px.
+      const yy = y - k;
+      let ch = k === h - 1 ? 'T' : (k === 0 ? 't' : 'q');
+      if (k > 0 && k < h - 1 && ((x * 7 + yy * 23) % 11) < 2) ch = 't';
+      set(g, x, yy, ch);
+    }
   }
 }
