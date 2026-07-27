@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Megaron — world showcase</title>
+<!--
+  Offline HELVYRIGG. Systerrigg till showcase-forest.html, men med motsatt
+  ärende: den riggen visar 81 hexar förstorade så EN terräng kan bedömas, den
+  här visar HELA världen i riktig storlek så KOMPOSITIONEN kan bedömas —
+  kustlinjens sammanhang, etiketternas trängsel, dimmans vidder, tomt hav, och
+  vad en frame faktiskt kostar när alla 2 240 tiles ritas.
+
+  Varför en egen fil och inte `?fixture=world` i showcase-forest.html: den
+  riggens bärande egenskap är att den INTE hämtar någonting (fixturen är en
+  literal i filen). En världsfixtur är 287 kB JSON och måste hämtas, alltså
+  asynkront, alltså med en annan uppstartsordning. Att lägga in det hade kostat
+  forest-riggens enklaste och mest värdefulla egenskap.
+
+  Data: web/static/fixtures/world-<fixture>.json, dumpad av
+  tools/worldfixture.py — exakt de payloads loadMap() hämtar, inget härlett.
+
+  Kör:  python3 -m http.server 8099 --directory web/
+        http://localhost:8099/static/showcase-world.html
+        ?fixture=full   (default) hela geografin utan dimma — prestandans
+                        värsta fall och den enda vy där kartan går att bedöma
+                        som EN geografi
+        ?fixture=fow    en spelares verkliga vy: live/remembered/fog
+        ?zoom=0.3       minzoom (hela världen syns) · 0.55 lokalt register på
+                        · 1.0 normal spelzoom. Default 0.55.
+  Dump: tools/shot.py <etikett> world:zoom=0.3
+  Tid:  tools/rendertime.py world:zoom=0.55
+-->
+<link rel="stylesheet" href="/static/megaron.css">
+<style>
+  body { margin: 0; background: #14100C; }
+  /* Riktig kartyta på en vanlig 1080p-skärm: fönstret minus topbar och
+     drawer-marginal. Riggens hela poäng är att inte förstora — hexen är 44 px
+     vid zoom 1,0 här precis som i spelet. */
+  #map-root { position: relative; width: 1600px; height: 900px; }
+  #hex-canvas { display: block; width: 100%; height: 100%; }
+  #tile-tooltip { position: absolute; display: none; }
+</style>
+<script>
+  // Samma frysning som forest-riggen: måste ligga i ett icke-module-skript så
+  // stubben hinner före map.js:s egen loop. Havsshimret hänger på animFrame.
+  window.requestAnimationFrame = function () { return 0; };
+</script>
+</head>
+<body>
+<div id="map-root">
+  <canvas id="hex-canvas"></canvas>
+  <div id="tile-tooltip"></div>
+</div>
+
+<script type="module">
+import { State } from '/static/js/megaron/state.js';
+import { render, canvas, SCALE, hexPx, renderTimings } from '/static/js/megaron/render/map.js';
+
+const params = new URLSearchParams(location.search);
+const FIXTURE = params.get('fixture') || 'full';
+const fx = await (await fetch(`/static/fixtures/world-${FIXTURE}.json`)).json();
+
+State.WORLD_ID = fx.world_id;
+State.MY_PLAYER_ID = fx.player_id;
+State.tileData      = fx.tiles;
+State.provinceData  = fx.provinces;
+State.unitsData     = fx.units;
+State.ruralData     = fx.rural;
+State.marchData     = fx.marches;
+State.messengerData = fx.messengers;
+State.tradeData     = fx.trades;
+
+// ── Kamera ────────────────────────────────────────────────────────────────
+// Centrerad på världens mitt i VÄRLDSRYMD (hexPx av min/max), inte på en
+// spelares stad: fixturen ska visa samma bildutsnitt oavsett vilken spelare
+// den dumpats som, annars är två fixturer inte jämförbara.
+State.camera.zoom = Number(params.get('zoom')) || 0.55;
+const xs = State.tileData.map(t => hexPx(t.q, t.r).x);
+const ys = State.tileData.map(t => hexPx(t.q, t.r).y);
+const mid = { x: (Math.min(...xs) + Math.max(...xs)) / 2,
+              y: (Math.min(...ys) + Math.max(...ys)) / 2 };
+State.camera.x = canvas.width  / 2 - mid.x * State.camera.zoom * SCALE;
+State.camera.y = canvas.height / 2 - mid.y * State.camera.zoom * SCALE;
+
+window.SHOWCASE = {
+  draw(frame = 100) {
+    State.animFrame = frame - 1;
+    State.lastSeaTick = -1;
+    State.dirty = true;
+    render();
+  },
+  // Rendertidsmätning (arbetsregel 0). Returnerar medianen över n frames plus
+  // per-pass-medianer ur renderTimings — median och inte medelvärde, för att
+  // en enda GC-paus annars flyttar talet mer än den ändring som mäts.
+  // Uppvärmning först: första framen betalar JIT och sprite-cacher och är
+  // regelmässigt 3–5× medianen.
+  time(n = 60, warmup = 10) {
+    for (let i = 0; i < warmup; i++) this.draw();
+    const total = [], passes = {};
+    for (let i = 0; i < n; i++) {
+      const t0 = performance.now();
+      this.draw();
+      total.push(performance.now() - t0);
+      for (const [k, v] of Object.entries(renderTimings)) (passes[k] ||= []).push(v);
+    }
+    const med = a => a.slice().sort((x, y) => x - y)[a.length >> 1];
+    const out = { n, total: med(total), passes: {} };
+    for (const [k, v] of Object.entries(passes)) out.passes[k] = med(v);
+    return out;
+  },
+  // Samma kontrakt som forest-riggens tiles(): var varje hex hamnade på
+  // skärmen, för tools/terrainstats.py.
+  tiles() {
+    const k = State.camera.zoom * SCALE;
+    return State.tileData.map(t => {
+      const { x, y } = hexPx(t.q, t.r);
+      return {
+        terrain: t.terrain,
+        sx: State.camera.x + x * k,
+        sy: State.camera.y + y * k,
+        rin: (22 * Math.sqrt(3) / 2) * k,
+      };
+    });
+  },
+  ready: true,
+};
+window.SHOWCASE.draw();
+</script>
+</body>
+</html>

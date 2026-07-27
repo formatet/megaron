@@ -1624,6 +1624,21 @@ ctx.imageSmoothingEnabled = false;
 
 let lastPanFrameMs = performance.now();
 
+// Rendertid per pass i millisekunder, skriven om varje ritad frame. Läses av
+// showcase-world.html och tools/rendertime.py. Arbetsregel 0
+// (megaron_terrangrendering) kräver att rendertiden mäts före och efter varje
+// ändring med identisk fixtur — och en totalsiffra säger inte VILKET pass som
+// blev dyrt, vilket är hela frågan när ett nytt terrängfält läggs till. De
+// dryga tiotalet performance.now()-anropen per frame ligger i mikrosekunder
+// mot en frame som mäts i millisekunder.
+export const renderTimings = {};
+let passT0 = 0;
+function pass(name) {
+  const t = performance.now();
+  renderTimings[name] = t - passT0;
+  passT0 = t;
+}
+
 // Exported for the offline visual harness (web/static/showcase-forest.html),
 // which stubs requestAnimationFrame and drives one frozen frame at a time so
 // terrain screenshots are pixel-deterministic. Game code still enters the loop
@@ -1657,6 +1672,7 @@ export function render() {
     return;
   }
   State.dirty = false;
+  passT0 = performance.now();
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
@@ -1676,6 +1692,7 @@ export function render() {
     const seed = (t.q*137 + t.r*31) & 0xff;
     fillHex(ctx, hexPts(x, y), base.c0, base.c1, seed);
   }
+  pass('base');
 
   // 1a. Ground texture pass.
   for (const t of State.tileData) {
@@ -1684,6 +1701,7 @@ export function render() {
     const seed = (t.q*137 + t.r*31) & 0xff;
     drawDetail(ctx, x, y, t.terrain, seed, State.animFrame, t.q, t.r);
   }
+  pass('ground');
 
   // 1b. Canopy pass — after every tile's ground is down, so a crown may hang
   // over the hex border without the next tile's floor painting over it.
@@ -1692,6 +1710,7 @@ export function render() {
     const {x, y} = hexPx(t.q, t.r);
     drawCanopy(ctx, x, y, t.q, t.r);
   }
+  pass('canopy');
 
   // 1b2. Peak pass — same reasoning as the canopy: a summit has to be allowed
   // to rise above its own hex's border and occlude the hex behind it, which is
@@ -1703,6 +1722,7 @@ export function render() {
     .map(t => ({ t, p: hexPx(t.q, t.r) }))
     .sort((a, b) => a.p.y - b.p.y);
   for (const { t, p } of peakTiles) drawPeaks(ctx, p.x, p.y, t.q, t.r, t.terrain);
+  pass('peaks');
 
   // 1c. Deposit markers — game information, so above all terrain passes.
   if (State.camera.zoom >= ROAD_DEPOSIT_ZOOM) {
@@ -1712,6 +1732,7 @@ export function render() {
       drawDepositIcons(ctx, x, y, t);
     }
   }
+  pass('deposits');
 
   // 2. Roads between adjacent own/allied provinces
   if (State.camera.zoom >= ROAD_DEPOSIT_ZOOM) {
@@ -1727,6 +1748,7 @@ export function render() {
       }
     }
   }
+  pass('roads');
 
   // 2.5 Catchment zone — subtle gold tint on the 7 catchment tiles of own cities
   // (the city's own hex + the 6 adjacent). [0,0] = the settlement's own hex.
@@ -1772,6 +1794,7 @@ export function render() {
       ctx.restore();
     }
   }
+  pass('tint+rural');
 
   // 3. Highlight selected hex
   if (State.selectedHex) {
@@ -1858,6 +1881,7 @@ export function render() {
       ctx.restore();
     }
   }
+  pass('overlays');
 
   // 4. Province buildings + flags
   // Ritas norr→söder. Stadsmassorna är upp till 44×32 px och svämmar över
@@ -1870,6 +1894,7 @@ export function render() {
     drawProvince(ctx, x, y, p);
     if (State.camera.zoom >= LOCAL_ZOOM) drawLabel(ctx, x, y, p.name, p.own);
   }
+  pass('cities');
 
   // 4b. Activity overlay badges (own non-outpost cities, zoom >= ACTIVITY_BADGE_ZOOM)
   if (State.activityOverlay && State.camera.zoom >= ACTIVITY_BADGE_ZOOM) {
@@ -1967,6 +1992,7 @@ export function render() {
       drawCaravan(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase);
     }
   }
+  pass('actors');
 
   ctx.restore();
   requestAnimationFrame(render);

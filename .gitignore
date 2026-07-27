@@ -34,3 +34,4 @@ Thumbs.db
 
 # Concept art (lives in vault, not the repo)
 img/
+tools/__pycache__/
