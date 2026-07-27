@@ -253,28 +253,69 @@ const rndInt = (q, r, stream, n) => hash32(q, r, stream) % n;
 // block. State.tileData is only ever REASSIGNED (loadMap/refreshTiles), never
 // mutated in place, so caching on array identity is safe and rebuilds itself
 // exactly when the fog map changes.
+// Nyckeln är ETT TAL, inte `${q},${r}`. Strängvarianten allokerade en sträng
+// per uppslag, och när dyningens rasterpass började fråga tiotusentals gånger
+// per frame var strängbyggandet ensamt merparten av havspassets kostnad.
+// Offseten rymmer negativa r (r = rad − ⌊q/2⌋ går ned mot −27 på en 56-bred
+// karta) och håller nyckeln långt inom säkra heltal.
+const tileKey = (q, r) => (q + 512) * 4096 + (r + 512);
 let tileIndex = new Map();
 let tileIndexFor;
 function terrainAt(q, r) {
   if (tileIndexFor !== State.tileData) {
     tileIndexFor = State.tileData;
-    tileIndex = new Map(State.tileData.map(t => [`${t.q},${t.r}`, t.terrain]));
+    tileIndex = new Map(State.tileData.map(t => [tileKey(t.q, t.r), t.terrain]));
   }
-  return tileIndex.get(`${q},${r}`);
+  return tileIndex.get(tileKey(q, r));
 }
+
+// Vilka av de sex riktningarna vars granne uppfyller ett villkor. Returnerar
+// INDEX i HEX_DIRS, inte riktningsparen, eftersom varje konsument ändå behöver
+// indexet för att slå upp kantnormalen (DIR_N nedan).
+//
+// Fog och utanför-kartan räknas ALDRIG som "öppet" hos någon konsument: den
+// spelaren har inte sett rutan, och en kant som formar sig efter en osedd
+// granne läcker grannens terräng genom sin egen form. Predikatet får se
+// `undefined` och `'fog'` och ska svara false på båda.
+function neighborDirs(q, r, pred) {
+  const dirs = [];
+  for (let i = 0; i < HEX_DIRS.length; i++) {
+    if (pred(terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]))) dirs.push(i);
+  }
+  return dirs;
+}
+
+const isSeaTerrain = t => t === 'deep_sea' || t === 'coastal_sea';
 
 // Directions from this hex where the woodland ends. Fog and off-map count as
 // "unknown", NOT as open ground: the player has not seen those tiles, and
 // letting the treeline thin toward them would leak the neighbour's terrain
 // through the shape of the edge. Unknown neighbours keep the forest dense.
 function openEdges(q, r) {
-  const open = [];
-  for (const [dq, dr] of HEX_DIRS) {
-    const t = terrainAt(q + dq, r + dr);
-    if (t && t !== 'fog' && t !== 'forest_olive_grove') open.push([dq, dr]);
-  }
-  return open;
+  return neighborDirs(q, r, t => t && t !== 'fog' && t !== 'forest_olive_grove')
+    .map(i => HEX_DIRS[i]);
 }
+
+// Kantnormalerna: enhetsvektorn från hexens mitt mot mitten av den kant som
+// delas med grannen i riktning i. Med dem blir "hur nära den här punkten ligger
+// kanten mot havet" en skalärprodukt, och strand, bränning och dyning kan dela
+// EN mekanism i stället för att var och en få sin egen kustgeometri. Det är
+// också stoppvillkoret för slicen: behöver en kustform ett eget specialfall är
+// mekanismen fel.
+// Två platta arrayer och inte en array av par: de här skalärprodukterna körs
+// tiotusentals gånger per frame i havs- och strandpassen, och en nästlad
+// arrayuppslagning per komponent var mätbart dyrare än allt annat de gör.
+const SQRT3 = Math.sqrt(3);
+const DIR_NX = new Float64Array(6);
+const DIR_NY = new Float64Array(6);
+HEX_DIRS.forEach(([dq, dr], i) => {
+  const x = 1.5 * dq, y = SQRT3 * (dr + dq / 2);
+  const m = Math.hypot(x, y);
+  DIR_NX[i] = x / m; DIR_NY[i] = y / m;
+});
+// Hexens inradie i logiska pixlar — avståndet från mitten till en kant, alltså
+// exakt det värde en skalärprodukt mot DIR_N måste nå för att ligga PÅ kanten.
+const R_IN = S * Math.sqrt(3) / 2;
 
 // ── World-space value noise ──────────────────────────────────────────────
 // The per-hex hash gives every hex its own independent texture, and clipping
@@ -678,6 +719,254 @@ function drawPlainsField(ctx, cx, cy) {
   }
   ctx.globalAlpha = 1;
   ctx.restore();
+}
+
+// ── Havet och kusten ─────────────────────────────────────────────────────
+// Tre pass med samma mekanism (skalärprodukt mot DIR_N) och ett gemensamt
+// ärende: säga vad som är vatten, vad som är land och var de möts.
+//
+// Tonerna är MÄTTA ur referensbilden, inte valda. Snittet tvärs dess kust ger
+// gräs L140 → sand L180 → skum L202 → grunt L143 → mellandjupt L121 → djup L96.
+// Två saker följer av den mätningen. Först: referensen skiljer inte land från
+// hav med VALÖR alls (140 mot 143) — hela separationen bärs av det ljusa
+// sand- och skumbandet, vilket är precis vad kontrastbudgeten (princip 6)
+// reserverar sina ytterligheter åt. Sedan: sanden är ~40 L ljusare än marken
+// den ligger på, alltså inte en nyans utan kartans ljusaste yta.
+// Vilket hörnpar (pts[e] → pts[e+1]) som är kanten mot grannen i riktning i.
+// Uträknad, inte skriven som tabell: en handskriven sexradig avbildning mellan
+// två index är precis den sorts fel som ger ett band längs FEL kant och tar en
+// halvtimme att hitta.
+const EDGE_OF_DIR = HEX_DIRS.map((_, i) => {
+  const e = Math.round(Math.atan2(DIR_NY[i], DIR_NX[i]) / (Math.PI / 3) - 0.5);
+  return ((e % 6) + 6) % 6;
+});
+
+// Blockrutan runt EN kants band, i stället för runt hela hexen. Banden är
+// smala remsor längs högst sex kanter; att skanna hexens hela ruta en gång per
+// kantuppsättning betydde att fem sjättedelar av varje varv förkastades i
+// villkoret. Uppmätt var det slicens dyraste rad.
+function edgeBox(pts, e, inward, outward) {
+  const a = pts[e], b = pts[(e + 1) % 6];
+  const m = Math.max(inward, outward) + 2;
+  return [Math.min(a[0], b[0]) - m, Math.min(a[1], b[1]) - m,
+          Math.max(a[0], b[0]) + m, Math.max(a[1], b[1]) + m];
+}
+
+const SHORE_SAND  = '#D6B264';  // referensens strandband, L 180
+const SHORE_WET   = '#B9924E';  // våt sand närmast vattnet — sandens skugga
+const SURF_FOAM   = '#A8C8D2';  // brytningen, referensens L 202 dämpad mot vårt mörkare hav
+const SWELL_LIGHT = '#5C93B4';  // dyningens rygg
+const SWELL_DARK  = '#164A6B';  // dyningens dal
+
+// Strandbandet. Ritas KLIPPT till landhexen: sanden hör till landet, och en
+// sandpixel på öppet vatten är exakt det fel hela slicen finns för att stänga.
+// Bredden varierar ur världsrymdsbruset, inte ur hexen, så bandet vandrar
+// obrutet vidare in i nästa kusthex i stället för att byta karaktär vid varje
+// hexkant (princip 10/16: blockigt, aldrig en jämn kurva).
+const SHORE_MAX = 6.8;
+function drawShore(ctx, cx, cy, seaDirs) {
+  const STEP = 2;
+  const pts = hexPts(cx, cy);
+  for (const i of seaDirs) {
+    const e = EDGE_OF_DIR[i], nx = DIR_NX[i], ny = DIR_NY[i];
+    const [bx0, by0, bx1, by1] = edgeBox(pts, e, SHORE_MAX, 0);
+    for (let wy = Math.floor(by0 / STEP) * STEP; wy <= by1; wy += STEP) {
+      for (let wx = Math.floor(bx0 / STEP) * STEP; wx <= bx1; wx += STEP) {
+        const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
+        const reach = dx * nx + dy * ny;
+        // Innanför bandets maxbredd, och aldrig utanför hexen: sanden hör till
+        // landet, och en sandpixel på öppet vatten är exakt det fel slicen
+        // finns för att stänga. Sidledsvillkoret håller bandet på SIN kant —
+        // en skalärprodukt mot en normal beskriver en oändlig remsa.
+        if (reach < R_IN - SHORE_MAX || reach > R_IN) continue;
+        if (Math.abs(-dx * ny + dy * nx) > S / 2) continue;
+        // Bredden samplas på det globala rastret i punkten själv — därför är
+        // den kontinuerlig över hexgränsen, och två grannkusthexar möts utan
+        // söm. Cellen är MINDRE än en hexkant (9 mot 22 px) med flit: samplad
+        // grövre blev bredden nästan konstant längs varje kant och bandet
+        // ritade hexagonen med överstrykningspenna.
+        const w = 1.2 + 5.6 * noiseAt(wx, wy, 9, 6161);
+        if (reach < R_IN - w) continue;
+        // Yttersta tredjedelen är våt sand: stranden får en egen inre kant mot
+        // vattnet i stället för att sluta i ett steg.
+        ctx.fillStyle = reach > R_IN - w * 0.35 ? SHORE_WET : SHORE_SAND;
+        ctx.fillRect(wx, wy, STEP, STEP);
+      }
+    }
+  }
+}
+
+// Bränningen. Ritas OKLIPPT UTÅT från LANDhexen, inte inåt från havshexen.
+// Skälet är mätt, inte principiellt: ritad från havssidan lägger två grannhavs-
+// hexar var sitt skum längs samma landkant, och där banden korsas dubblas
+// alfan — resultatet blev vita stjärnkluster i varje kustvik som läste som
+// snö. Från landsidan ritar varje kust sitt skum en gång.
+//
+// Bandet börjar strax innanför kanten och sträcker sig ut i vattnet, alltså
+// STRADDLAR det hexkanten. Tätheten faller utåt, så vågen har en tydlig lipp
+// mot stranden och löser upp sig i vattnet i stället för att sluta i ett steg.
+// Fasen kommer ur seaTick: samma kust bryter på olika ställen över tid, men
+// samma frame ger alltid samma bild.
+function drawSurf(ctx, cx, cy, seaDirs, seaTick) {
+  const STEP = 2;
+  const IN = 2.0, OUT = 6.0;
+  const pts = hexPts(cx, cy);
+  ctx.fillStyle = SURF_FOAM;
+  for (const i of seaDirs) {
+    const e = EDGE_OF_DIR[i], nx = DIR_NX[i], ny = DIR_NY[i];
+    const [bx0, by0, bx1, by1] = edgeBox(pts, e, IN, OUT);
+    for (let wy = Math.floor(by0 / STEP) * STEP; wy <= by1; wy += STEP) {
+      for (let wx = Math.floor(bx0 / STEP) * STEP; wx <= bx1; wx += STEP) {
+        const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
+        const reach = dx * nx + dy * ny;
+        if (reach < R_IN - IN || reach > R_IN + OUT) continue;
+        // Skalärprodukten mot en kantnormal beskriver en OÄNDLIG remsa, inte en
+        // kant. Utan sidledsvillkoret rann skummet vidare längs remsan och
+        // hamnade som blek dis långt inne på grannlandet — den tydligaste
+        // påminnelsen om att "nära kanten" och "nära kantens normal" inte är
+        // samma sak. Marginalen släpper ut vågen runt hörnet där två havskanter
+        // möts.
+        if (Math.abs(-dx * ny + dy * nx) > S / 2 + 3) continue;
+        // Utåt-andel: 0 vid strandkanten, 1 längst ut i vattnet.
+        const out = (reach - (R_IN - IN)) / (IN + OUT);
+        // Vågen är en funktion av AVSTÅNDET till stranden, inte av brus: då blir
+        // skummet linjer parallella med kusten i stället för en jämn dis, och
+        // eftersom fasen dras av seaTick rullar de INÅT mot land. Brustermen
+        // förskjuter krönet olika längs kusten — utan den ligger vågorna som
+        // perfekta hexagonoffset, alltså ritar de om hexen de skulle dölja.
+        const phase = reach * 0.9 - seaTick * 0.55 + noiseAt(wx, wy, 23, 7171) * 5;
+        if (Math.sin(phase) < 0.35 + 0.45 * out) continue;
+        ctx.globalAlpha = 0.62 - 0.42 * out;
+        ctx.fillRect(wx, wy, STEP, STEP);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Dyningen på öppet hav. Ersätter den animerade AA-ellipsen, som bröt princip
+// 10 (ingen kantutjämning) och läste som utspridd lo i helvyn. Märkena ligger
+// på hexen men får svämma över kanten, som lövverkets kronor — det är samma
+// grepp och samma skäl: en yta som bara innehåller marker som slutar vid
+// gränsen ÄR gränsen. Ett märke som skulle hamna på land klams in.
+// Djupbrytet. `coastal_sea` möter `deep_sea` på en hexkant, och när dyningen
+// väl gjort havsytan levande blev DEN kanten kartans tydligaste hexagon —
+// mätningen (en tonskillnad på ~40 L) gör att inget svall kan dölja den. Den
+// löses därför på samma sätt som stranden: grundvattnet blöder ut i djupet med
+// en brusstyrd, blockig gräns, så hyllan får en form i stället för sex raka
+// kanter. Ritas KLIPPT i djuphexen — grundvattnet ska växa utåt, aldrig
+// tvärtom.
+function drawDepthBand(ctx, cx, cy, shelfDirs) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+  const STEP = 2;
+  const x0 = Math.floor((cx - S) / STEP) * STEP;
+  const y0 = Math.floor((cy - S) / STEP) * STEP;
+  ctx.fillStyle = TERRAIN_BASE.coastal_sea.c0;
+  for (let wy = y0; wy <= cy + S; wy += STEP) {
+    for (let wx = x0; wx <= cx + S; wx += STEP) {
+      const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
+      let reach = -1e9;
+      for (const i of shelfDirs) {
+        const p = dx * DIR_NX[i] + dy * DIR_NY[i];
+        if (p > reach) reach = p;
+      }
+      if (reach < R_IN - 10) continue;   // sålla före bruset, se drawShore
+      const w = 1 + 9 * noiseAt(wx, wy, 15, 6262);
+      if (reach < R_IN - w) continue;
+      // Ytterkanten ditheras block för block, annars byter hyllan bara form på
+      // en hexagon i stället för att sluta vara en.
+      ctx.globalAlpha = reach > R_IN - w * 0.4
+        ? 1 : 0.45 + 0.5 * (hash32(wx, wy, 6263) / 4294967296);
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// Världsrymd → axial hex. Samma avrundning som `hexAtScreen`, men utan
+// kamerasteget: dyningens pass går över det globala rastret och behöver fråga
+// "vilken hex ligger den här punkten i?", inte "var klickade någon?".
+function hexAtWorld(wx, wy) {
+  const q = (2 / 3 * wx) / S;
+  const r = (-1 / 3 * wx + SQRT3 / 3 * wy) / S;
+  const s = -q - r;
+  let rq = Math.round(q), rr = Math.round(r);
+  const rs = Math.round(s);
+  const dq = Math.abs(rq - q), dr = Math.abs(rr - r), ds = Math.abs(rs - s);
+  if (dq > dr && dq > ds) rq = -rr - rs;
+  else if (dr > ds) rr = -rq - rs;
+  return [rq, rr];
+}
+
+// Dyningen. ETT pass över hela det globala rastret — inte ett pass per hex.
+// Skillnaden är inte kosmetisk: per hex ritas varje rastercell om av varje
+// granne vars bbox den råkar ligga i, och ägarskapstestet som skulle hindra det
+// kostade sex skalärprodukter per cell och hex. Uppmätt gick havspasset från
+// 44 ms till en bråkdel när loopen vändes ut och in. Rastret är dessutom exakt
+// vad ett kommande viewport-culling behöver: iterera bara de synliga cellerna.
+const SWELL_CELL = 13;
+function drawSwellField(ctx, seaTick) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const t of State.tileData) {
+    if (!isSeaTerrain(t.terrain)) continue;
+    const { x, y } = hexPx(t.q, t.r);
+    if (x < minX) minX = x; if (x > maxX) maxX = x;
+    if (y < minY) minY = y; if (y > maxY) maxY = y;
+  }
+  if (minX === Infinity) return;
+  // Rastret klipps mot det som syns. Det är inte viewport-culling som slice
+  // (den gäller alla pass och mäts för sig) — det är att ett pass som itererar
+  // ett VÄRLDSRASTER inte har någon anledning att besöka celler utanför duken.
+  // Marginalen S släpper in märken vars vänsterkant ligger strax utanför.
+  const k = State.camera.zoom * SCALE;
+  minX = Math.max(minX - S, (-State.camera.x) / k - S);
+  maxX = Math.min(maxX + S, (canvas.width - State.camera.x) / k + S);
+  minY = Math.max(minY - S, (-State.camera.y) / k - S);
+  maxY = Math.min(maxY + S, (canvas.height - State.camera.y) / k + S);
+  const g0x = Math.floor(minX / SWELL_CELL), g1x = Math.ceil(maxX / SWELL_CELL);
+  const g0y = Math.floor(minY / SWELL_CELL), g1y = Math.ceil(maxY / SWELL_CELL);
+  for (let gy = g0y; gy <= g1y; gy++) {
+    for (let gx = g0x; gx <= g1x; gx++) {
+      const h = hash32(gx, gy, 9101);
+      const px = gx * SWELL_CELL + (h & 0x7);
+      const py = gy * SWELL_CELL + ((h >>> 3) & 0x7);
+      const [q, r] = hexAtWorld(px, py);
+      if (!isSeaTerrain(terrainAt(q, r))) continue;
+      // Nära en kant mot land får dyningen inte nå fram — den skulle skölja upp
+      // på stranden, och strandens vatten är bränningens ärende. Punkter långt
+      // in i hexen kan aldrig vara nära en kant: radien avgör det med en
+      // multiplikation i stället för sex skalärprodukter, och de flesta celler
+      // ligger långt in.
+      const c = hexPx(q, r);
+      const dx = px - c.x, dy = py - c.y;
+      if (dx * dx + dy * dy > (R_IN - 5) * (R_IN - 5)) {
+        let toward = 0, best = -1e9;
+        for (let i = 0; i < 6; i++) {
+          const p = dx * DIR_NX[i] + dy * DIR_NY[i];
+          if (p > best) { best = p; toward = i; }
+        }
+        if (best > R_IN - 5
+            && !isSeaTerrain(terrainAt(q + HEX_DIRS[toward][0], r + HEX_DIRS[toward][1]))) continue;
+      }
+      // Var fjärde rad bär en längre kam: en dyning är rader, inte prickar.
+      const crest = ((gy + (h >>> 6)) & 0x3) === 0;
+      const len = crest ? 7 + (h >>> 8 & 0x5) : 3 + (h >>> 8 & 0x3);
+      // Driften följer rastret, inte hexen, så hela fältet vandrar som ett.
+      const x = Math.round(px + (((seaTick + gy) & 0x7) - 4)), y = Math.round(py);
+      if (crest) {
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = SWELL_DARK;
+        ctx.fillRect(x, y + 1, len, 1);
+      }
+      ctx.globalAlpha = crest ? 0.30 : 0.18;
+      ctx.fillStyle = SWELL_LIGHT;
+      ctx.fillRect(x, y, len, 1);
+    }
+  }
+  ctx.globalAlpha = 1;
 }
 
 // ── Relief — hills and mountains ─────────────────────────────────────────
@@ -1224,10 +1513,11 @@ function drawPeaks(ctx, cx, cy, q, r, terrain) {
 }
 
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
-function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
+// `frame` togs bort med havsshimret: efter att dyningen flyttat till sitt eget
+// pass finns ingen animerad MARK kvar, och en frame-parameter som ingen läser
+// antyder att marken kan röra sig.
+function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
   ctx.save();
-  const r3 = (seed * 7 + 3) & 0xf;
-  const r4 = (seed * 13 + 5) & 0xf;
   switch (terrain) {
     case 'plains': {
       drawPlainsField(ctx, cx, cy);
@@ -1275,16 +1565,11 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
       break;
     }
     case 'coastal_sea':
-    case 'deep_sea': {
-      // animated sea shimmer
-      const seaTick = (frame >> 5) & 0x7;
-      const alpha = 0.06 + 0.04 * Math.sin(seaTick * 0.8 + seed * 0.1);
-      ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
-      ctx.beginPath();
-      ctx.ellipse(cx + (r3-7)*0.8, cy + (r4-7)*0.5, 6, 2, 0.4, 0, Math.PI*2);
-      ctx.fill();
+    case 'deep_sea':
+      // Havet ritas inte här. Dyning och bränning är egna OKLIPPTA pass
+      // (render() 1a3) — en havsyta vars enda märken slutar vid hexkanten
+      // ritar hexkanten. Se drawSwell/drawSurf.
       break;
-    }
     case 'semi_desert': {
       ctx.fillStyle = '#C09050';
       for (let i = 0; i < 3; i++) {
@@ -1699,9 +1984,34 @@ export function render() {
     if (t.terrain === 'fog') continue;
     const {x,y} = hexPx(t.q, t.r);
     const seed = (t.q*137 + t.r*31) & 0xff;
-    drawDetail(ctx, x, y, t.terrain, seed, State.animFrame, t.q, t.r);
+    drawDetail(ctx, x, y, t.terrain, seed, t.q, t.r);
   }
   pass('ground');
+
+  // 1a2. Strandbandet — sand på LANDSIDAN längs varje kant mot hav. Klippt.
+  // Egen loop och inte en gren i drawDetail: bandet är en egenskap hos MÖTET
+  // mellan två hexar, inte hos terrängen i en av dem, och samma sand ska ligga
+  // under slätt, lund, kulle och berg utan att var och en får sin egen kopia.
+  // 1a3. Havet — dyning över hela ytan, bränning där den möter land. OKLIPPT.
+  for (const t of State.tileData) {
+    if (t.terrain === 'fog' || isSeaTerrain(t.terrain)) continue;
+    const seaDirs = neighborDirs(t.q, t.r, isSeaTerrain);
+    if (!seaDirs.length) continue;
+    const { x, y } = hexPx(t.q, t.r);
+    drawShore(ctx, x, y, seaDirs);
+    drawSurf(ctx, x, y, seaDirs, State.animFrame >> 5);
+  }
+  pass('shore');
+
+  for (const t of State.tileData) {
+    if (t.terrain !== 'deep_sea') continue;
+    const shelf = neighborDirs(t.q, t.r, n => n === 'coastal_sea');
+    if (!shelf.length) continue;
+    const { x, y } = hexPx(t.q, t.r);
+    drawDepthBand(ctx, x, y, shelf);
+  }
+  drawSwellField(ctx, State.animFrame >> 5);
+  pass('sea');
 
   // 1b. Canopy pass — after every tile's ground is down, so a crown may hang
   // over the hex border without the next tile's floor painting over it.
