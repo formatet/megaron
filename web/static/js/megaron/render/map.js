@@ -884,9 +884,11 @@ function drawLabel(ctx, cx, cy, text, own) {
   ctx.textBaseline = 'top';
   ctx.strokeStyle = '#000000aa';
   ctx.lineWidth = 2;
-  ctx.strokeText(text, cx, cy + 10);
+  // Parad med CITY_BASE_OFFSET: massans fot ligger på cy+11, etiketten börjar
+  // direkt under den. Ändras det ena måste det andra följa med.
+  ctx.strokeText(text, cx, cy + 13);
   ctx.fillStyle = own ? '#F9E79F' : '#E8D0A8';
-  ctx.fillText(text, cx, cy + 10);
+  ctx.fillText(text, cx, cy + 13);
   ctx.restore();
 }
 

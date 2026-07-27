@@ -240,11 +240,19 @@ const PALACE = wl => build(44, 32, g => {
 export const CITY_SPRITES = [HAMLET, TOWN, CITY, PALACE]
   .map(make => [0, 1, 2, 3].map(wl => make(wl)));
 
-// Basen (massans nedersta rad) hamnar så här långt under hexcentrum. Staden
-// står på sin hex som aktörerna står på sin, men tyngre: massan tillåts växa
-// UPPÅT ur hexen, aldrig nedåt — under den ligger namnetiketten, och en stad
-// som hänger ned över sitt eget namn gör namnet oläsligt.
-export const CITY_BASE_OFFSET = 6;
+// Basen (massans nedersta rad) hamnar så här långt under hexcentrum.
+//
+// Staden sitter **inte** centrerad på hexen utan står PÅ dess nedre del, strax
+// ovanför namnetiketten (Timothy 2026-07-27). Centrerad läste massan och namnet
+// som två skilda föremål, och en 32 px hög palatsstad tog hela hexen i anspråk
+// åt båda hållen. Med foten nere pekar massan ut hexen den står på, och namnet
+// blir dess sockel i stället för en lös rad under den.
+//
+// Massan växer alltid UPPÅT ur foten — aldrig nedåt. Under den ligger etiketten,
+// och en stad som hänger ned över sitt eget namn gör namnet oläsligt.
+// Värdet är parat med `drawLabel`-offseten i `render/map.js`: ändras det ena
+// måste det andra följa med, annars äter massan sitt namn.
+export const CITY_BASE_OFFSET = 11;
 
 const clamp3 = n => Math.max(0, Math.min(3, n | 0));
 export const citySprite = (tier, walls) => CITY_SPRITES[clamp3(tier)][clamp3(walls)];
