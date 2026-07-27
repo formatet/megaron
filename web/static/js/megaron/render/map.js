@@ -1377,7 +1377,9 @@ function drawProvince(ctx, cx, cy, p) {
     return;
   }
 
-  // Massan: fyra befolkningsled (serverns size_tier) × fyra murnivåer.
+  // Massan: två befolkningsled (serverns size_tier, gräns 800 inv.) × fyra
+  // murnivåer. Leden var fyra; de två största gick inte att få att läsa som
+  // städer och ströks (Timothy 2026-07-27).
   // Kulturstrimman som låg på den gamla rutan är BORTA — den satt på ett
   // föremål som inte finns längre, och kulturen ska bäras av hela siluetten
   // när de kulturspecifika leden byggs (Timothy 2026-07-27: idag bara akhaier).

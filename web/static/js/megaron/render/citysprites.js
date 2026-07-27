@@ -2,44 +2,61 @@
 //
 // Kartmarkören för en bosättning var en 6–9 px ruta med en vimpel. En nygrundad
 // koloni på 101 invånare och Knossos på 30 000 ritades som **samma** ruta —
-// kartan bar ingen storlekssignal alls. Här får varje led sin egen massa,
-// från ett stenhus till ett palatskomplex som nästan svämmar över hexen.
+// kartan bar ingen storlekssignal alls.
 //
-// **Kulturen är akhaisk, tiden 1400–1300 f.Kr.** Referensbildens italienska
-// takpannestad är fel epok: sadeltak i tegel hör hemma tvåtusen år senare.
-// Ett akhaiskt hus har PLATT jordtak på stensockel och soltorkat tegel, och
-// från ¾-elevation ser man takets ovansida OCH fasaden under. Kalkputsen är
-// kartans ljusaste ton, jordtaket ett av dess mörkaste — den kontrasten är hela
-// den kubiska egeiska stadens läsbarhet, och den är dessutom fysiskt sann.
+// **En stad är ett OMRÅDE, inte en byggnadsklump.** Det var den insikten som
+// löste allt annat: en ringmur runt en gård av slagen jord med husen inne på
+// den. Sex omgångar la om massans FORM — bruten baslinje, porös frans, lutande
+// klunga, djupaxel, färre och större hus — och ingen av dem tog bort känslan av
+// en bricka på ett bräde, för staden saknade ett rum man kunde gå in i. Muren
+// var dessförinnan ett vågrätt band framför husen, och ett band kan bara skilja
+// fram från bak; det kan aldrig omsluta något. (megaron_terrangrendering
+// princip 33. Referens: `img/f0382384-32ad-45b1-8195-b7f2903524ac.jpeg`.)
 //
-// **Palatset är ideologin, inte en byggnad i katalogen.** Palatskulten är
-// spelets dominerande ordning, och därför föds megaron ur STORLEK: från led 2
-// reser sig salen ur massan med pelare i antis, mörk lintel och en rökglugg
-// över härden. (Minoisk-mykensk pelare smalnar NEDÅT — den är bredare upptill.
-// Vid den här skalan är det en enda pixel, och den pixeln är kulturens
-// signatur.) Vid led 3 bär terrassen målade ockrabband.
+// Bieffekten är en spelvinst: med ringen blev **murnivån läsbar för första
+// gången**. Nivå 0 är en öppen bosättning helt utan mur; förut var 0 och 3
+// nästan omöjliga att skilja åt på kartan, och muren är det enda på markören
+// spelaren fattar taktiska beslut om.
+//
+// **TVÅ led, inte fyra** (Timothy 2026-07-27). Serverns `size_tier` hade fyra
+// steg — hamlet, town, city, anaktoron — men de två största siluetterna gick
+// inte att få att läsa som städer: de blev modeller stående på en bricka, utan
+// liv och med muren knappt synlig. Hellre två led som båda fungerar än fyra där
+// hälften ljuger om vad en stad är. Gränsen går vid 800 invånare
+// (`settlement.SizeTierThreshold`). Priset är att megaron inte längre reser sig
+// ur massan på kartan; palatskulten bärs tills vidare av stadsvyn.
+//
+// **Kulturen är akhaisk, tiden 1400–1300 f.Kr.** Båda referensbildernas
+// takpannestäder är fel epok: sadeltak i tegel hör hemma tvåtusen år senare.
+// Det som hämtas ur dem är STRUKTUREN — inhägnaden, myllret, orienteringarna —
+// aldrig taken. Ett akhaiskt hus har PLATT jordtak på stensockel och soltorkat
+// tegel, och från ¾-elevation ser man takets ovansida OCH fasaden under.
+// Kalkputsen är kartans ljusaste ton, jordtaket ett av dess mörkaste — den
+// kontrasten är hela den kubiska egeiska stadens läsbarhet, och den är
+// dessutom fysiskt sann.
 //
 // Idag bara akhaier. Paletten och ledindelningen är gemensamma och tänkta att
 // bära syskon per kultur senare; siluetterna är det inte.
 //
-// ── Varför kuber och inte handritad ASCII ────────────────────────────────
-// Aktörerna är 14–16 px och ritas tecken för tecken. En palatsstad är 42×28 =
-// 1 176 tecken, och den ska itereras om ett tjugotal gånger. Leden byggs därför
-// av **stämplade kuber** — varje hus är (x, y, bredd, höjd) plus taktjocklek —
-// och konturen läggs på i ett efterpass som ritar bläck i de TOMMA pixlarna
-// runt hela massan.
+// ── Varför stämplar och inte handritad ASCII ─────────────────────────────
+// Aktörerna är 14–16 px och ritas tecken för tecken. En stad är tio gånger så
+// många pixlar och ska itereras om ett tjugotal gånger. Husen stämplas därför
+// som kuber — (x, y, bredd, höjd, djup) — och konturen läggs på i ett efterpass
+// som ritar bläck i de TOMMA pixlarna runt massan.
 //
 // Det efterpasset ÄR princip 18 gjord till maskineri: **en kontur runt hela
 // massan, aldrig mellan husen.** Utkastet som outlinade varje hus blev en
 // streckkod på aktörerna och en tegelvägg här. Husen skiljs i stället åt av att
-// varje kub har ljus vänsterkant och skuggad högerkant — två grannar möts som
-// ljus mot mörk utan en enda bläckpixel emellan.
+// varje kub har ljus vänsterkant och skuggad högerkant. Marken får ingen kontur
+// alls (princip 35) — en charcoalkant runt gården gjorde staden till ett
+// klistermärke som låg PÅ terrängen i stället för i den.
 //
 // Samma pixelregler som aktörerna och träden: fillRect på heltal, aldrig arc(),
 // ¾-elevation med ljus uppifrån vänster, ingen gradient, inga rundade hörn.
 //
-// Iterera med `node tools/citysheet.mjs` — hela tabellen förstorad mot tre
-// terränger, med en Spearmen-formation som skalreferens.
+// Iterera med `node tools/citysheet.mjs` — men **avgör storleken mot
+// `tools/shot.py cities`** (princip 37). Arket visar formen; kartan avgör
+// måttet, och de två har redan sagt emot varandra en gång.
 
 // Paletten och stämplarna bor i `pixelgrid.js` — stadsvyn behöver exakt samma
 // bläck, tak och ljusriktning, och två uppsättningar hållna i synk för hand
@@ -50,59 +67,6 @@ import {
 } from './pixelgrid.js';
 export { CITY_PALETTE };
 
-
-// ── Megaron ──────────────────────────────────────────────────────────────
-// Salen är inte ett större hus. Den har tre saker inget hus har: pelare i
-// antis, mörk lintel över porten, och en rökglugg (lanternin) över härden som
-// bryter takets horisontal. Det är de tre som gör att siluetten byter läsning
-// från "hus" till "säte", och därmed hela palatskulten synlig på kartan.
-function megaron(g, x, y, w, h) {
-  // `h` räknar HELA salen inklusive terrassen; själva huskroppen är h − 2.
-  const roofH = 3, bh = h - 2;
-  cube(g, x, y, w, bh, { roof: roofH });
-  // Lanternin över härden — ett upphöjt block med mörk rökglugg som bryter
-  // takets horisontal. BRED och låg: ett utkasts 4×3 stod som ett vattentorn
-  // ovanpå salen. Den ska läsa som en del av taket, inte som en påbyggnad.
-  const lw = Math.max(6, (w >> 1) | 1), lx = x + ((w - lw) >> 1);
-  for (let xx = 0; xx < lw; xx++) {
-    set(g, lx + xx, y - 2, xx >= lw - 2 ? 'r' : 'R');
-    set(g, lx + xx, y - 1, xx <= 1 || xx >= lw - 2 ? 'r' : 'V');
-  }
-  // Portalen i antis. "In antis" betyder bokstavligen TVÅ pelare mellan de
-  // framskjutna väggändarna — inte en kolonnad. Ett utkast satte en pelare var
-  // fjärde pixel över hela salens bredd och fick en röd streckkod som var det
-  // klart starkaste på hela kartan: fem ockrastaplar på 24 px slog ut
-  // kontrastbudgeten (princip 6) och gjorde salen till en reklamskylt.
-  //
-  // Förhallen är dessutom SMAL — ungefär tre åttondelar av salens bredd. Bred
-  // blev den en stor skuggad putsyta, och ett utkast gjorde den helt mörk: salen
-  // läste som en grottmynning och pelarna försvann i mörkret de skulle stå emot.
-  // Djupet ligger i lintelns skugga, inte i hålets storlek.
-  const py = y + roofH + 2;
-  const pw = Math.max(8, (w * 3) >> 3), px0 = x + ((w - pw) >> 1);
-  for (let yy = py; yy < y + bh; yy++)
-    for (let xx = px0; xx < px0 + pw; xx++) set(g, xx, yy, 'd');
-  // Mörk lintel som bär taket över förhallen.
-  for (let xx = px0 - 1; xx <= px0 + pw; xx++) set(g, xx, py - 1, 'V');
-  // Pelarna: ockraskaft som smalnar NEDÅT — kapitälet är en pixel bredare än
-  // skaftet. Det är den minoisk-mykenska ordningens signatur, och vid den här
-  // skalan ryms den i exakt den pixeln.
-  for (const c of [px0 + 1, px0 + pw - 3]) {
-    set(g, c, py, 'O'); set(g, c + 1, py, 'O');
-    for (let yy = py + 1; yy < y + bh; yy++) {
-      set(g, c, yy, 'O'); set(g, c + 1, yy, 'o');
-    }
-  }
-  // Porthålet mellan pelarna — SMALT, i botten.
-  const dw = 3, dx = px0 + ((pw - dw) >> 1);
-  for (let yy = y + bh - 3; yy < y + bh; yy++)
-    for (let xx = dx; xx < dx + dw; xx++) set(g, xx, yy, 'V');
-  // Terrassen. Salen står på en stenplattform som skjuter ut ett par pixlar åt
-  // varje håll — det är den som lyfter megaron ur myllret utan att göra den hög.
-  for (let k = 0; k < 2; k++)
-    for (let xx = -2 + k; xx < w + 2 - k; xx++)
-      set(g, x + xx, y + bh + k, k === 0 ? 'T' : 't');
-}
 
 // ── Kyklopisk ringmur ────────────────────────────────────────────────────
 // Fusk med ett sekel, med Timothys ord: kyklopisk fortifikation hör till
@@ -168,9 +132,8 @@ function build(w, h, pts, wl, place) {
   // Husen sorteras på FOTEN: det som står längre fram ritas sist och skymmer
   // det bakom. Utan sorteringen blir klungan platt oavsett hur volymerna ser ut.
   place(poly).sort((a, b) => a[1] - b[1]).forEach(
-    ([x, foot, bw, bh, depth, opts]) => (opts === 'megaron'
-      ? megaron(g, x, foot - bh, bw, bh)
-      : cube(g, x, foot - bh, bw, bh, { depth, door: true, ...(opts || {}) })));
+    ([x, foot, w2, h2, depth]) =>
+      cube(g, x, foot - h2, w2, h2, { depth, door: true }));
   if (wl) {
     raiseWall(g, ring.front, wallH);
     gate(g, poly, wl, 5 + wl);
@@ -230,116 +193,90 @@ const hash3 = (a, b, c) => {
 
 function packHouses(poly, seed, reserved = []) {
   const out = [], n = poly.rows.length;
-  for (let i = 4, band = 0; i < n - 6; i += 5, band++) {
+  // Banden går ända fram till murens fot — annars samlas bebyggelsen i gårdens
+  // övre halva och den nedre blir en sandbank; referensarkets städer har hus
+  // ända ut i muren och marken syns bara som gränder.
+  //
+  // Men de får inte ligga TÄTARE än var femte rad. Ett utkast på var fjärde lät
+  // varje band svälja bandet bakom sig och hela staden blev en grötig kulle:
+  // det är takraderna som skiljer husen åt, och de måste synas.
+  for (let i = 4, band = 0; i < n - 2; i += 5, band++) {
     const r = poly.rows[i];
     if (!r) continue;
     const y = poly.y0 + i;
     let x = r[0] + 2, k = 0;
     while (x < r[1] - 6) {
       const hs = hash3(seed, band, k++);
-      // Vridningen måste sitta i PROPORTIONEN, inte i en pixels takskevning.
-      // Ett utkast gav alla hus bredd 8–13 och djup 1–2, och då stod förstås
-      // varenda hus vänt mot spelaren — en två pixlar sned takkant syns inte.
-      // Nu dras huset som antingen LÅNGSIDA (bred fasad, grunt djup) eller
-      // GAVEL (smal fasad, stort djup), och det är den skillnaden ögat läser
-      // som två olika orienteringar (princip 20).
-      const sideOn = ((hs >> 2) & 3) === 0;
-      const w = sideOn ? 5 + (hs % 3) : 8 + (hs % 6);
-      const depth = (sideOn ? 5 + ((hs >> 18) % 3) : 1 + ((hs >> 18) % 2))
-        * ((hs >> 15) & 1 ? 1 : -1);
+      // Vridningen kommer ur takytans RIKTNING, inte ur att huset sträcks ut.
+      // Två utkast föll på samma missförstånd: att ett hus vänt på tvären måste
+      // vara smalt och djupt. Ett hus med 5 px fasad och 6 px djup får en takyta
+      // som är 17 px bred och 6 hög — nittio procent tak, alltså en planka som
+      // skjuter tvärs över staden. Referensens hus är i stort sett kubiska; det
+      // ögat läser som orientering är åt vilket håll takrutan viker bort, och
+      // det syns redan vid tre pixlars djup.
+      //
+      // Djupet hålls därför i proportion till bredden och TECKNET bär
+      // vridningen. Höger gavel ligger i skugga och vänster i ljus, så
+      // blandningen ger klungan valörvariation på köpet.
+      const w = 7 + (hs % 6);
+      const depth = (1 + ((hs >> 18) % 2)) * ((hs >> 15) & 1 ? 1 : -1);
       const bh = 7 + ((hs >> 5) % 5);
       const foot = y + (((hs >> 10) % 5) - 2);
       const box = [x, foot - bh, x + w, foot];
       const blocked = reserved.some(q =>
         box[0] < q[2] && box[2] > q[0] && box[1] < q[3] && box[3] > q[1]);
-      if (!blocked) out.push([x, foot, w, bh, depth]);
+      if (!blocked) {
+        out.push([x, foot, w, bh, depth]);
+        // Indragen ÖVERVÅNING. Referensarket (Timothy 2026-07-27) visar en
+        // egeisk lerstad som en stapel: husen har våningar som dras in och
+        // terrasseras, och det är staplingen — inte antalet hus — som ger
+        // massan liv. Den sätts på huset TAK och får därmed en mindre fot, så
+        // sorteringen ritar den före sin egen bas: en indragen våning står
+        // längre BORT från betraktaren, precis som den ska.
+        if (w >= 9 && ((hs >> 25) & 1) === 0)
+          out.push([x + 2, foot - bh + 2, w - 5, 4 + ((hs >> 7) % 3), depth]);
+      }
       x += w + 1 + ((hs >> 20) % 2);
     }
   }
   return out;
 }
 
-// ── De fyra leden ────────────────────────────────────────────────────────
-// Ledens innehåll, inte bara storlek, bär berättelsen: ett hus → en by →
-// ett säte → ett rike. Måtten står mot hexen, som är 44×38 logiska px.
+// ── De två leden ────────────────────────────────────────────────────────
+// Måtten står mot hexen, som är 44×38 logiska px.
 //
 // **Gården är ledets riktiga mått.** Massan växer i UTBREDNING, inte i höjd:
-// anaktoron är 58 px bred mot hexens 44 och kan inte få plats (princip 31), men
-// bara 34 mot dess 38 på höjden. Bergen får torna; städerna ska ligga
+// staden är 62 px bred mot hexens 44 och kan inte få plats (princip 31), men
+// bara 40 mot dess 38 på höjden. Bergen får torna; städerna ska ligga
 // innästlade i landskapet (Timothy 2026-07-27). Behöver ett led mer tyngd —
 // gör gården bredare, aldrig staden högre.
 //
-// Husen anges som [x, FOT, bredd, höjd, djup] och sorteras på foten. `depth`
-// vrider dem (se `cube`): tecknet växlar över klungan, bred fasad + grunt djup
-// är ett hus vänt mot oss och smal fasad + djup ett vänt på tvären. Djupet
-// hålls på 1–2: utkast på 5 gav långa diagonala takband tvärs massan och utkast
-// på 3 gjorde takytan större än väggen, så husen läste som limpor.
+// **Gården ska vara TÄTT bebyggd.** Ett utkast la sju hus på en 93 px bred gård
+// och staden läste som en sandbank med hus på — inhägnaden blev sin egen största
+// yta. Marken ska synas som GRÄNDER mellan hus, inte som ett torg. Ett utkast
+// reserverade dessutom 30×26 px mitt på gården åt en sal, och då stod hela
+// staden som en modell på en platta.
 //
-// **Salen får inte torna.** Ett utkast gav anaktoron en 16×15 megaron mitt i
-// massan. Den blev *"slottet i Agrabah"* och tog bort känslan av liv. Salen står
-// nu bland husen, bara ett par pixlar högre, och bär hierarkin genom att vara
-// den ENDA frontala volymen — pelare och lanternin, inte höjd.
-//
-// **Skalan är beslutad, inte ärvd** (Timothy 2026-07-27). Det fanns ingen regel
-// som höll städerna små — bara min egen försiktighet inför att grannhexars
-// centrum ligger 33 px isär. Referensens stad är ungefär tre hexbredder, och
-// Timothy valde den proportionen: anaktoron är 100 px mot hexens 44. Två städer
-// i grannhexar täcker alltså varandra till stor del, och det är ett medvetet
-// pris för att stadsmiljön ska få plats att FINNAS. Detaljbudgeten var det som
-// stoppade allt annat — på 58 px rymdes gård + mur + sju hus och inte ett hus
-// till.
-//
-// Gården ska vara TÄTT bebyggd. Ett utkast la sju hus på anaktorons 93 px breda
-// gård och staden läste som en sandbank med hus på — inhägnaden blev sin egen
-// största yta. Nu står nitton hus där, och den öppna marken syns bara som
-// gränder emellan dem, en gårdsplan innanför porten och en fri anmarsch
-// framför salen (den senare är dessutom vad en mykensk borggård ÄR).
-//
-// Gårdens FRÄMRE tredjedel lämnas tom. Referensens städer har en öppen
-// gårdsplan innanför porten, och det är den tomma ytan som säger att muren
-// omsluter ett rum. Fyller man den blir inhägnaden en fylld klump igen.
+// Polygonen är gårdens fotavtryck. Den ska vara påtagligt oregelbunden: en jämn
+// sexhörning gör inhägnaden till en förstorad hex, alltså en bricka igen.
 
-// Led 0 — HAMLET (24×20). Nygrundad koloni: tre hus på en liten slagen gård.
-// Samma bläck och samma tak som palatset — det är samma folk, bara färre av dem.
-// Det ENDA ledet som ryms innanför hexen, och det är dess besked: här bor ännu
-// inte tillräckligt många för att marken ska märka det.
+// Led 0 — HAMLET (40 px). Nygrundad koloni: en handfull hus på en liten slagen
+// gård. Samma bläck och samma tak som staden — det är samma folk, bara färre av
+// dem. Det ENDA ledet som ryms innanför hexen, och det är dess besked: här bor
+// ännu inte tillräckligt många för att marken ska märka det.
 const HAMLET = wl => build(40, 30, [
-  [10, 10], [26, 10], [34, 12], [38, 17], [31, 24], [18, 27], [7, 26], [1, 18], [2, 13],
+  [11, 11], [25, 11], [31, 13], [34, 17], [28, 22], [17, 25], [8, 24], [3, 17], [4, 13],
 ], wl, poly => packHouses(poly, 0x481, []));
 
-// Led 1 — TOWN (36×26). En by som vuxit ihop kring sin gård: sex hus, ingen
-// megaron ännu — palatset är inte något man reser, det är vad en plats BLIR.
+// Led 1 — TOWN (62 px). Allt från 800 invånare och uppåt: myllret innanför
+// ringmuren. Det här ledet bär numera hela spannet upp till Knossos, så det får
+// inte läsa som "mellanstor" — det ska läsa som EN STAD.
 const TOWN = wl => build(62, 42, [
-  [15, 12], [38, 12], [50, 15], [60, 23], [53, 33], [34, 39], [15, 38], [2, 27], [3, 18],
+  [17, 13], [37, 13], [47, 16], [54, 22], [47, 30], [32, 35], [16, 34], [5, 25], [6, 18],
 ], wl, poly => packHouses(poly, 0x1d7, []));
 
-// Led 2 — CITY (50×31). Här reser sig MEGARON ur massan och staden byter läsning
-// från "hus" till "säte". Gården är sex pixlar bredare än hexen: staden har
-// börjat ta mark.
-const CITY = wl => build(82, 52, [
-  [20, 14], [50, 14], [66, 18], [80, 29], [72, 42], [47, 49], [21, 48], [3, 35], [5, 22],
-], wl, poly => [
-  [30, 35, 20, 18, 0, 'megaron'],
-  // Salens fotavtryck plus anmarschen framför den — den designade tomheten.
-  ...packHouses(poly, 0x3b9, [[27, 15, 53, 37], [31, 37, 50, 46]]),
-]);
-
-// Led 3 — ANAKTORON (58×34). Palatskomplex på en gård som inte får plats i
-// rutan: 58 px mot hexens 44 på bredden (princip 31), 34 mot dess 38 på höjden.
-// Murad är det här kartans tyngsta föremål, och tyngden kommer ur UTBREDNING.
-const PALACE = wl => build(100, 62, [
-  [24, 16], [60, 16], [80, 21], [97, 34], [88, 50], [58, 59], [26, 58], [4, 43], [6, 27],
-], wl, poly => [
-  // Magasinsflyglarna bar först var sitt ockraband. De blev markörens
-  // STARKASTE färg — på sekundära byggnader, tvärs emot kontrastbudgeten, och
-  // de läste som två röda snedstreck. Ockran hör till salen och ingen
-  // annanstans: en accent som sitter på allt pekar inte på något.
-  [38, 42, 24, 21, 0, 'megaron'],
-  ...packHouses(poly, 0x7c5, [[35, 18, 65, 44], [39, 44, 61, 54]]),
-]);
-
-/** CITY_SPRITES[led][murnivå] — 4×4, genererade en gång vid modulladdning. */
-export const CITY_SPRITES = [HAMLET, TOWN, CITY, PALACE]
+/** CITY_SPRITES[led][murnivå] — 2×4, genererade en gång vid modulladdning. */
+export const CITY_SPRITES = [HAMLET, TOWN]
   .map(make => [0, 1, 2, 3].map(wl => make(wl)));
 
 // Basen (massans nedersta rad) hamnar så här långt under hexcentrum.
@@ -369,8 +306,9 @@ export const CITY_SPRITES = [HAMLET, TOWN, CITY, PALACE]
 // behöver mer tyngd: gör det bredare och lägre, aldrig högre.
 export const CITY_BASE_OFFSET = 17;
 
-const clamp3 = n => Math.max(0, Math.min(3, n | 0));
-export const citySprite = (tier, walls) => CITY_SPRITES[clamp3(tier)][clamp3(walls)];
+const clamp = (n, hi) => Math.max(0, Math.min(hi, n | 0));
+export const citySprite = (tier, walls) =>
+  CITY_SPRITES[clamp(tier, CITY_SPRITES.length - 1)][clamp(walls, 3)];
 
 /** Ritar bosättningens massa centrerad på hexen. */
 export function drawCityMass(ctx, tier, walls, cx, cy) {

@@ -14,25 +14,24 @@ export const CITY_PALETTE = {
                  // kontrastbudgetens mottagare (princip 6).
   p: '#D2C3A0',  // kalkputs, kropp. L≈196
   d: '#A08D71',  // kalkputs, skuggad högerkant och förhallens innervägg. L≈143
-  R: '#8A6A44',  // platt jordtak, solbelyst. L≈111 — MÖRKARE än väggen, för att
-                 // jord är mörkare än kalk. Bandet tak/vägg är hela den kubiska
-                 // stadens rytm, och det som saknades i första utkastet: allt
-                 // låg då i spannet 170–217 och massan läste som en tvål.
-                 // VARM, inte olivgrå: samma valör som utkastets #7C7059 men
-                 // med hue flyttad till jord. Det grå utkastet höll strukturen
-                 // och tappade kulturen — en akhaisk stad i egeisk sol är inte
-                 // grå, och taket är dess största yta.
-  r: '#5E4630',  // platt jordtak, skuggat. L≈75
-  M: '#A88355',  // jordtakets OVANSIDA, solbelyst. L≈137. R och r är takets
-                 // lodräta kant (fascian) sedd framifrån; M/m är den vågräta
-                 // ytan ovanpå, och den ser hela himlen. Ger vi dem samma ton
-                 // blir ett hus med djup en enda brun klump — första
-                 // djuputkastet målade takton över halva massan och kalkputsen,
-                 // kartans ljusaste ton, blev en minoritet på sin egen stad.
-                 // Med M emellan går rampen puts 196 → ovansida 137 → fascia
-                 // 111 → skuggad 75, och massan får form i stället för yta
-                 // (princip 22).
-  m: '#7A5C3C',  // jordtakets ovansida, skuggad gavelsida. L≈97
+  R: '#A88A5E',  // platt jordtak, fascians solbelysta sida. L≈140 — mörkare än
+                 // väggen, för att jord är mörkare än kalk, men i SAMMA
+                 // lerfamilj. Ett utkast la taket på L 111, ett 85-stegs hopp
+                 // från putsen, och staden blev randig: krämvita väggar med
+                 // mörkbruna lock. En egeisk lerstad är EN massa av soltorkad
+                 // lera där tak och vägg skiljs av valör och kant, inte av två
+                 // olika material (Timothys referensark 2026-07-27). Steget är
+                 // nu ~55 — nog för form (princip 22), inte nog för ränder.
+  r: '#6E5838',  // platt jordtak, skuggat. L≈92 — DJUPARE än en ren
+                 // valörinterpolation skulle ge. Det är den här tonen som är
+                 // gränsen mellan två tak som möts, och när hela paletten
+                 // flyttades in i lerfamiljen blev den kanten för svag: husen
+                 // rann ihop till en kulle. Skuggsidan bär separationen.
+  M: '#C0A473',  // jordtakets OVANSIDA, solbelyst. L≈163. R/r är takets lodräta
+                 // kant sedd framifrån; M/m är den vågräta ytan ovanpå, och den
+                 // ser hela himlen. Ger vi dem samma ton blir ett hus med djup
+                 // en enda platt klump.
+  m: '#836A44',  // jordtakets ovansida, skuggad gavelsida. L≈110
   E: '#C4A578',  // slagen jord — stadens INRE mark, gården innanför ringmuren.
                  // L≈166. Det är den här ytan som gör en stad till en PLATS och
                  // inte till ett föremål: en inhägnad man ser marken i. Vald med
@@ -112,18 +111,27 @@ export function cube(g, x, y, w, h, opts = {}) {
   // djup = ett hus vänt mot oss, smal fasad + stort djup = ett hus vänt på
   // tvären. Samma stämpel, två läsningar — princip 20, skillnaden sitter i den
   // stora formen.
+  //
+  // Lutningen är **2:1** — två pixlar i sidled per pixel i höjdled. Det är inte
+  // en smaksak: utkastet sköt volymen 45° (ett steg i sidled per steg uppåt) och
+  // då blev ett smalt djupt hus en lång diagonal KIL, en ramp snarare än ett
+  // tak. 2:1 är den isometriska konventionen just för att 45° läser som en
+  // sluttning i stället för som en låda. Med den kan djupet gå till 5–6 utan att
+  // formen havererar, och först DÅ finns det tillräckligt med sida för att ett
+  // hus ska kunna stå vänt på tvären (princip 36).
   const d = opts.depth | 0, a = Math.abs(d), s = Math.sign(d);
-  for (let i = 1; i <= a; i++) {
+  for (let k = 1; k <= 2 * a; k++) {
+    const dy = Math.ceil(k / 2), dx = s * k;
     // Takets ovansida — den vikande parallellogrammen. Egen, LJUSARE ton än
     // fascian: se M/m i paletten. Med samma ton blev huset en brun klump.
     for (let xx = 0; xx < w; xx++)
-      set(g, x + xx + s * i, y - i, xx >= w - 2 ? 'm' : 'M');
+      set(g, x + xx + dx, y - dy, xx >= w - 2 ? 'm' : 'M');
     // Gaveln längs den sida volymen viker bort åt. Höger sida ligger i skugga,
     // vänster fångar ljuset — det är därför en vridning åt andra hållet också
     // ger klungan valörvariation, inte bara formvariation.
-    const gx = x + (s > 0 ? w - 1 : 0) + s * i;
-    for (let yy = y - i; yy < y + roofH - i; yy++) set(g, gx, yy, 'r');
-    for (let yy = y + roofH - i; yy < y + h - i; yy++) set(g, gx, yy, s > 0 ? 'd' : 'p');
+    const gx = x + (s > 0 ? w - 1 : 0) + dx;
+    for (let yy = y - dy; yy < y + roofH - dy; yy++) set(g, gx, yy, 'r');
+    for (let yy = y + roofH - dy; yy < y + h - dy; yy++) set(g, gx, yy, s > 0 ? 'd' : 'p');
   }
   for (let yy = 0; yy < h; yy++) {
     for (let xx = 0; xx < w; xx++) {

@@ -1,7 +1,7 @@
 package settlement
 
-// SizeTier klassar en bosättnings befolkning i fyra led. Den finns för att
-// kartan ska kunna rita en nygrundad koloni som ett par hus och en palatsstad
+// SizeTier klassar en bosättnings befolkning i två led. Den finns för att
+// kartan ska kunna rita en nygrundad koloni som ett par hus och en riktig stad
 // som en stadsmassa — kartmarkören bar tidigare ingen storlekssignal alls, så
 // en stad på 101 invånare och Knossos på 30 000 ritades som samma lilla ruta.
 //
@@ -14,27 +14,28 @@ package settlement
 //     sanning och kartans bild kunna glida isär (megaron_terrangrendering
 //     princip 9: grafiken får förstärka Temenos sanning, aldrig hitta på).
 //
-// Trösklarna är kalibrering, inte invariant — de bor här i koden och får
-// justeras. Spannet de delar är 101 (grundningsgolvet) till 30 000 (den mjuka
-// befolkningstaket i kharis/tick.go), och delningen är ungefär logaritmisk
-// eftersom skillnaden mellan 200 och 2 000 invånare betyder mer för hur en
-// plats SER UT än skillnaden mellan 20 000 och 30 000.
+// **Två led, inte fyra** (Timothy 2026-07-27). Leden var ursprungligen fyra —
+// hamlet, town, city, anaktoron — men de två största siluetterna gick inte att
+// få att läsa som städer: de blev modeller stående på en bricka, utan liv och
+// med muren knappt synlig. Hellre två led som båda fungerar än fyra där hälften
+// ljuger om vad en stad är. Priset är att megaron inte längre reser sig ur
+// massan på kartan; palatskulten bärs tills vidare av stadsvyn.
+//
+// Tröskeln är kalibrering, inte invariant — den bor här i koden och får
+// justeras. Spannet den delar är 101 (grundningsgolvet) till 30 000 (det mjuka
+// befolkningstaket i kharis/tick.go).
 const (
-	SizeTierHamlet = 0 // koloni / nygrundad metropolis — några hus
-	SizeTierTown   = 1 // ordentlig by med gårdar
-	SizeTierCity   = 2 // stad med megaron — palatskulten syns
-	SizeTierPalace = 3 // anaktoron: palatskomplex och lägre stad
+	SizeTierHamlet = 0 // koloni / nygrundad metropolis — några hus på en gård
+	SizeTierTown   = 1 // stad: myllret innanför ringmuren
 )
 
+// SizeTierThreshold är befolkningen där en bosättning slutar vara en koloni och
+// börjar ritas som en stad (Timothy 2026-07-27).
+const SizeTierThreshold = 800
+
 func SizeTier(population int) int {
-	switch {
-	case population >= 15000:
-		return SizeTierPalace
-	case population >= 5000:
-		return SizeTierCity
-	case population >= 1000:
+	if population >= SizeTierThreshold {
 		return SizeTierTown
-	default:
-		return SizeTierHamlet
 	}
+	return SizeTierHamlet
 }
