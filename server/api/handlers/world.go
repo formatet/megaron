@@ -15,6 +15,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/settlement"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
@@ -760,7 +761,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
-		        s.state, s.wall_level, COALESCE(pl.username, ''), COALESCE(k.name, ''),
+		        s.state, s.wall_level, s.population, COALESCE(pl.username, ''), COALESCE(k.name, ''),
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
 		        EXISTS (SELECT 1 FROM scheduled_events se WHERE se.event_type = 'TrainComplete'
@@ -790,6 +791,10 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		R            int        `json:"r"`
 		State        string     `json:"state"`
 		Walls        int        `json:"walls"`
+		// SizeTier 0–3 (settlement.SizeTier). Skickas för VARJE synlig
+		// bosättning, inte bara egna: en stads omfång syns utifrån, precis
+		// som murnivån redan gör. Exakt befolkning förblir underrättelse.
+		SizeTier int `json:"size_tier"`
 		Owner        string     `json:"owner,omitempty"`
 		Own          bool       `json:"own"`
 		IsCapital    bool       `json:"is_capital"`
@@ -803,9 +808,11 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	var markers []provinceMarker
 	for rows.Next() {
 		var m provinceMarker
-		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
+		var population int
+		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &population, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
 			continue
 		}
+		m.SizeTier = settlement.SizeTier(population)
 		pos := province.MapPosition{Q: m.Q, R: m.R}
 		m.Visible = !authenticated || province.VisibleFrom(pos, origins, 6)
 		if authenticated {

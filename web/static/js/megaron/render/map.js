@@ -10,6 +10,7 @@ import {
 import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns } from './actorsprites.js';
+import { drawCityMass, citySprite, CITY_BASE_OFFSET } from './citysprites.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -40,7 +41,11 @@ const TERRAIN_BASE = {
   fog:                {c0:'#1C1C1C', c1:'#252018'},
 };
 
-// Culture accent colours (banner / flag)
+// Culture accent colours. Låg tidigare som en 1,5 px strimma på stadsrutan;
+// den rutan är ersatt av stadssiluetterna och strimman följde med bort
+// (megaron_stader_20260727). Kulturen ska bäras av HELA siluetten när de
+// kulturspecifika leden byggs — idag är alla akhaiska. Tabellen står kvar
+// oanvänd tills dess; den är sanningen om vilka kulturer som finns.
 const CULTURE_ACCENT = {
   akhaier:  '#CA8A04',
   khemetiu: '#0E7490',
@@ -822,54 +827,51 @@ function drawProvince(ctx, cx, cy, p) {
   }
   const walls = Math.min(3, p.walls || 0);
   const accent = p.own ? '#D4AC0D' : (p.allied ? '#4CAF50' : '#C0392B');
-  const culture = p.culture ? (CULTURE_ACCENT[p.culture] || '#888') : '#888';
   ctx.save();
-  if (walls >= 1) {
-    ctx.strokeStyle = '#9A7A50';
-    ctx.lineWidth = walls >= 2 ? 2 : 1;
-    ctx.beginPath();
-    const r = 7 + walls;
-    for (let i = 0; i < 6; i++) {
-      const a = Math.PI / 3 * i;
-      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.stroke();
+
+  // Outposten är ingen bosättning (province-rad utan settlement-rad) och får
+  // därför ingen stadsmassa — den skulle ljuga om en by som inte finns.
+  // Behåller den gamla lilla rutan tills outposterna rivs ur MVP:n.
+  if (p.is_outpost) {
+    ctx.fillStyle = '#D4B890';
+    ctx.strokeStyle = '#7A5030';
+    ctx.lineWidth = 0.8;
+    ctx.fillRect(cx - 3, cy - 2.5, 6, 5);
+    ctx.strokeRect(cx - 3, cy - 2.5, 6, 5);
+    ctx.fillStyle = accent;
+    ctx.fillRect(cx - 1, cy - 7, 2, 4);
+    ctx.restore();
+    return;
   }
-  const bw = 6 + walls * 1, bh = 5 + walls;
-  ctx.fillStyle = '#D4B890';
-  ctx.strokeStyle = '#7A5030';
-  ctx.lineWidth = 0.8;
-  ctx.fillRect(cx - bw/2, cy - bh/2, bw, bh);
-  ctx.strokeRect(cx - bw/2, cy - bh/2, bw, bh);
-  ctx.fillStyle = '#8A6040';
-  ctx.fillRect(cx - 1.5, cy, 3, bh/2);
-  ctx.fillStyle = culture;
-  ctx.fillRect(cx - bw/2 + 1, cy - bh/2 + 1, bw - 2, 1.5);
-  ctx.strokeStyle = accent;
-  ctx.lineWidth = 0.6;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - bh/2 - 5);
-  ctx.lineTo(cx, cy - bh/2 - 1);
-  ctx.stroke();
+
+  // Massan: fyra befolkningsled (serverns size_tier) × fyra murnivåer.
+  // Kulturstrimman som låg på den gamla rutan är BORTA — den satt på ett
+  // föremål som inte finns längre, och kulturen ska bäras av hela siluetten
+  // när de kulturspecifika leden byggs (Timothy 2026-07-27: idag bara akhaier).
+  const sprite = drawCityMass(ctx, p.size_tier || 0, walls, cx, cy);
+  const top = cy + CITY_BASE_OFFSET - sprite.h;
+
+  // Standaret på taknocken — ägarskapets enda färgsignal på kartan. Den reser
+  // sig UR massan, inte ovanför den: 0,6 px stång i accentfärg svävade löst över
+  // en palatsstad och lästes som skräp. Stången är mörk och stången RÖR taket.
+  ctx.fillStyle = '#1F1A14';
+  ctx.fillRect(cx, top - 5, 1, 6);
   ctx.fillStyle = accent;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - bh/2 - 5);
-  ctx.lineTo(cx + 4, cy - bh/2 - 3);
-  ctx.lineTo(cx, cy - bh/2 - 1);
-  ctx.closePath();
-  ctx.fill();
-  // Garrison dot (own cities only) — visible at zoom >= 0.45
+  ctx.fillRect(cx + 1, top - 5, 4, 1);
+  ctx.fillRect(cx + 1, top - 4, 3, 1);
+  ctx.fillRect(cx + 1, top - 3, 2, 1);
+
+  // Garnisonsprick — hör till PORTEN, inte till taket. Den satt tidigare i
+  // luften till höger om massan där en palatsstad inte har någon bebyggelse.
   if (p.own && p.army_total > 0 && State.camera.zoom >= GARRISON_DOT_ZOOM) {
     ctx.fillStyle = '#8B1A1A';
     ctx.strokeStyle = '#3A0A0A';
     ctx.lineWidth = 0.5;
-    const gx = cx + bw/2 + 1, gy = cy - 1;
-    ctx.fillRect(gx, gy - 2, 3, 3);
-    ctx.strokeRect(gx, gy - 2, 3, 3);
+    const gx = cx + (sprite.w >> 1) - 4, gy = cy + CITY_BASE_OFFSET - 4;
+    ctx.fillRect(gx, gy, 3, 3);
+    ctx.strokeRect(gx, gy, 3, 3);
     ctx.fillStyle = '#E8B0B0';
-    ctx.fillRect(gx + 1, gy - 1, 1, 1);
+    ctx.fillRect(gx + 1, gy + 1, 1, 1);
   }
   ctx.restore();
 }
@@ -891,7 +893,12 @@ function drawLabel(ctx, cx, cy, text, own) {
 // ── Activity overlay badge — build/train/idle indicator ──────────────────
 function drawActivityBadge(ctx, cx, cy, p) {
   ctx.save();
-  const bx = cx - 7, by = cy - 13;
+  // Strax till vänster om standaret, på samma höjd: de två är stadens
+  // statusmärken och ska läsa som EN grupp. Den gamla fasta −13 hamnar mitt
+  // inne i en palatsstads takrader, och ett märke placerat vid massans
+  // vänstra kant svävar i tomrummet ovanför den lägre flygeln.
+  const sprite = citySprite(p.size_tier || 0, p.walls || 0);
+  const bx = cx - 9, by = cy + CITY_BASE_OFFSET - sprite.h - 5;
   if (p.build_active) {
     // Hammer head (orange)
     ctx.fillStyle = '#D4780A';
@@ -1301,7 +1308,12 @@ export function render() {
   }
 
   // 4. Province buildings + flags
-  for (const p of State.provinceData) {
+  // Ritas norr→söder. Stadsmassorna är upp till 44×32 px och svämmar över
+  // hexkanten med flit, så två grannstäder kan överlappa; den sydligare ska då
+  // ligga överst, precis som träden och aktörerna sorteras.
+  const byDepth = State.provinceData.slice()
+    .sort((a, b) => hexPx(a.q, a.r).y - hexPx(b.q, b.r).y);
+  for (const p of byDepth) {
     const {x,y} = hexPx(p.q, p.r);
     drawProvince(ctx, x, y, p);
     if (State.camera.zoom >= LOCAL_ZOOM) drawLabel(ctx, x, y, p.name, p.own);

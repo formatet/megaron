@@ -137,12 +137,15 @@ State.tileData = tiles;
 // bara mot slätt.
 const city = (col, row, name, extra = {}) => Object.assign(
   ax(col, row),
-  { name, own: true, culture: 'minoan', walls: 2, state: 'active',
+  { name, own: true, culture: 'akhaier', walls: 2, size_tier: 3, state: 'active',
     army_total: 3, is_extra: false, is_outpost: false }, extra,
 );
+// Två egna städer i olika LED och olika murnivå: hela poängen med
+// stadssiluetterna är att en palatsstad och en nygrundad koloni inte får se
+// likadana ut, och det går bara att bedöma med båda i samma bild.
 State.provinceData = [
   city(4, 4, 'Kydonia'),
-  city(5, 4, 'Phaistos', { walls: 1, army_total: 0 }),
+  city(5, 4, 'Phaistos', { walls: 0, size_tier: 0, army_total: 0 }),
 ];
 
 // Ruralprojektion: byggnaden på en catchment-hex (Fas A2-ytan), av den sort

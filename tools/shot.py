@@ -30,6 +30,7 @@ RIGS = {
     "forest": ("showcase-forest.html", 940, 820),
     "units": ("showcase-units.html", 1040, 1080),
     "glyphs": ("showcase-glyphs.html", 1180, 900),
+    "cities": ("showcase-cities.html", 1040, 900),
 }
 
 

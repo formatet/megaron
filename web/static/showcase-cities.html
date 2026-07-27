@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Megaron — stadsrigg</title>
+<!--
+  Offline visuell rigg för STADSSILUETTERNA. Samma kontrakt som
+  showcase-forest och showcase-units: ingen server, ingen auth, ingen fetch —
+  sidan fyller State med en fast fixtur och ritar EN fryst frame ur den
+  riktiga renderaren (render/map.js), så det som syns här är exakt vad
+  spelaren ser.
+
+  Varför en egen rigg och inte fler städer i terrängriggen: terrängriggen
+  mäts hex för hex, och varje stad äter en hex ur den mätytan. Stadsarbetet
+  behöver dessutom se ALLA led samtidigt — poängen med leden är att de inte
+  får se likadana ut, och det går bara att bedöma sida vid sida.
+
+  Rutnätet: en RAD per befolkningsled (hamlet → anaktoron), en KOLUMN per
+  murnivå (0–3). Nedersta raden bär grannskapsproven — samma led mot fientlig
+  ägare, mot kalksten, mot lund och i ruinerat tillstånd.
+
+  Kör:  python3 -m http.server 8099 --directory web/
+        http://localhost:8099/static/showcase-cities.html
+        ?zoom=<tal>      gör zoomen mätbar (chromets placering skalas med den)
+        ?world=<sträng>  byter världshash utan att röra fixturen
+  Dump: python3 tools/shot.py <etikett> cities
+-->
+<link rel="stylesheet" href="/static/megaron.css">
+<style>
+  body { margin: 0; background: #14100C; }
+  #map-root { position: relative; width: 980px; height: 820px; }
+  #hex-canvas { display: block; width: 100%; height: 100%; }
+  #tile-tooltip { position: absolute; display: none; }
+</style>
+<script>
+  // Måste ligga i ett vanligt (icke-module) skript: modulimporter körs efter
+  // att all synkron parse-tid-kod gjort sitt, så stubben hinner före map.js.
+  window.requestAnimationFrame = function () { return 0; };
+</script>
+</head>
+<body>
+<div id="map-root">
+  <canvas id="hex-canvas"></canvas>
+  <div id="tile-tooltip"></div>
+</div>
+
+<script type="module">
+import { State } from '/static/js/megaron/state.js';
+import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
+
+// ── Fixtur ────────────────────────────────────────────────────────────────
+// Terrängerna är valda efter vad staden ska ÖVERLEVA, inte efter vad som är
+// vackert: slätt (kartans största och tystaste yta), lund (närmast stadens
+// egen putston i valör) och kalksten (L 212 mot putsens 228 — den ruta där en
+// kalkad fasad riskerar att försvinna, princip 21).
+const ROWS = [
+  'ppppppmm',
+  'ppppppmm',
+  'FFppppmm',
+  'FFppppmm',
+  'ppppppmm',
+  'ppppppmm',
+  'FFFpppmm',
+  'FFFpppmm',
+];
+const TERRAIN = { p: 'plains', F: 'forest_olive_grove', m: 'mountain_limestone' };
+const ax = (col, row) => ({ q: col, r: row - Math.floor(col / 2) });
+
+const tiles = [];
+ROWS.forEach((line, row) => [...line].forEach((ch, col) => {
+  const { q, r } = ax(col, row);
+  tiles.push({ q, r, terrain: TERRAIN[ch] });
+}));
+
+State.WORLD_ID = new URLSearchParams(location.search).get('world')
+  || 'showcase-cities-0000-0000-000000000000';
+State.MY_PLAYER_ID = 'showcase-player';
+State.tileData = tiles;
+
+// Rutnätet: rad = befolkningsled, kolumn = murnivå. Namnet bär båda så en
+// skärmdump går att läsa utan att man räknar rutor.
+const LED = ['Hamlet', 'Town', 'City', 'Anaktoron'];
+const cities = [];
+LED.forEach((name, tier) => {
+  for (let wl = 0; wl < 4; wl++) {
+    cities.push(Object.assign(ax(wl * 2, tier * 2), {
+      name: `${name}·mur${wl}`, own: true, culture: 'akhaier',
+      walls: wl, size_tier: tier, state: 'active',
+      army_total: wl === 3 ? 4 : 0, is_outpost: false,
+    }));
+  }
+});
+// Grannskapsproven i högerkolumnen: främmande ägare (röd standar), allierad
+// (grön), och en raserad stad — tre tillstånd renderaren förgrenar på och som
+// annars bara upptäcks i drift.
+cities.push(Object.assign(ax(6, 1),
+  { name: 'Fiende', own: false, culture: 'akhaier', walls: 2, size_tier: 2,
+    state: 'active', is_outpost: false }));
+cities.push(Object.assign(ax(6, 5),
+  { name: 'Allierad', own: false, allied: true, culture: 'akhaier', walls: 1,
+    size_tier: 3, state: 'active', is_outpost: false }));
+cities.push(Object.assign(ax(6, 7),
+  { name: 'Raserad', own: false, culture: 'akhaier', walls: 0, size_tier: 3,
+    state: 'razed', is_outpost: false }));
+State.provinceData = cities;
+
+// Stående enheter mellan raderna — skalgrinden. En stad måste vara STÖRRE än
+// en armé, och ett led som inte klarar det är fel led, inte fel terräng.
+State.unitsData = [[1, 1], [3, 3], [5, 5], [1, 7]].map(
+  ([col, row], i) => Object.assign(ax(col, row),
+    { status: 'positioned', category: 'land', id: `u${i + 1}` }),
+);
+
+State.camera.zoom = Number(new URLSearchParams(location.search).get('zoom')) || 1.4;
+const mid = ax(3, 3);
+const c = hexPx(mid.q, mid.r);
+State.camera.x = canvas.width / 2 - c.x * State.camera.zoom * SCALE;
+State.camera.y = canvas.height / 2 - c.y * State.camera.zoom * SCALE;
+
+window.SHOWCASE = {
+  draw(frame = 100) {
+    State.animFrame = frame - 1;
+    State.lastSeaTick = -1;
+    State.dirty = true;
+    render();
+  },
+  ready: true,
+};
+window.SHOWCASE.draw();
+</script>
+</body>
+</html>
