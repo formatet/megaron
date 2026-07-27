@@ -867,33 +867,30 @@ function drawSurf(ctx, cx, cy, seaDirs, seaTick) {
 // kanter. Ritas KLIPPT i djuphexen — grundvattnet ska växa utåt, aldrig
 // tvärtom.
 function drawDepthBand(ctx, cx, cy, shelfDirs) {
-  ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
   const STEP = 2;
-  const x0 = Math.floor((cx - S) / STEP) * STEP;
-  const y0 = Math.floor((cy - S) / STEP) * STEP;
+  const MAX = 10;
+  const pts = hexPts(cx, cy);
   ctx.fillStyle = TERRAIN_BASE.coastal_sea.c0;
-  for (let wy = y0; wy <= cy + S; wy += STEP) {
-    for (let wx = x0; wx <= cx + S; wx += STEP) {
-      const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
-      let reach = -1e9;
-      for (const i of shelfDirs) {
-        const p = dx * DIR_NX[i] + dy * DIR_NY[i];
-        if (p > reach) reach = p;
+  for (const i of shelfDirs) {
+    const e = EDGE_OF_DIR[i], nx = DIR_NX[i], ny = DIR_NY[i];
+    const [bx0, by0, bx1, by1] = edgeBox(pts, e, MAX, 0);
+    for (let wy = Math.floor(by0 / STEP) * STEP; wy <= by1; wy += STEP) {
+      for (let wx = Math.floor(bx0 / STEP) * STEP; wx <= bx1; wx += STEP) {
+        const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
+        const reach = dx * nx + dy * ny;
+        if (reach < R_IN - MAX || reach > R_IN) continue;
+        if (Math.abs(-dx * ny + dy * nx) > S / 2) continue;
+        const w = 1 + (MAX - 1) * noiseAt(wx, wy, 15, 6262);
+        if (reach < R_IN - w) continue;
+        // Ytterkanten ditheras block för block — annars byter hyllan bara form
+        // på en hexagon i stället för att sluta vara en. Tröskel och inte alfa:
+        // två grannkanters band överlappar i hörnet, och genomskinliga block
+        // som ritas två gånger blir ljusa fläckar just där.
+        if (reach < R_IN - w * 0.4 && hash32(wx, wy, 6263) > 0x8CCCCCCC) continue;
+        ctx.fillRect(wx, wy, STEP, STEP);
       }
-      if (reach < R_IN - 10) continue;   // sålla före bruset, se drawShore
-      const w = 1 + 9 * noiseAt(wx, wy, 15, 6262);
-      if (reach < R_IN - w) continue;
-      // Ytterkanten ditheras block för block, annars byter hyllan bara form på
-      // en hexagon i stället för att sluta vara en.
-      ctx.globalAlpha = reach > R_IN - w * 0.4
-        ? 1 : 0.45 + 0.5 * (hash32(wx, wy, 6263) / 4294967296);
-      ctx.fillRect(wx, wy, STEP, STEP);
     }
   }
-  ctx.globalAlpha = 1;
-  ctx.restore();
 }
 
 // Världsrymd → axial hex. Samma avrundning som `hexAtScreen`, men utan
