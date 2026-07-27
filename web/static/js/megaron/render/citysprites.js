@@ -146,7 +146,27 @@ function build(w, h, pts, wl, place) {
   const feet = footSpans(trimmed);
   outline(trimmed);
   paintFeet(trimmed, feet);
-  return toRuns(trimmed);
+  const sprite = toRuns(trimmed);
+  sprite.yardTop = yardTop(poly, w, g.h - trimmed.h);
+  return sprite;
+}
+
+/** Gårdens översta rad per kolumn — MARKENS kontur, inte siluettens.
+ *  Kuststadens bank (`render/map.js drawCityBank`) behöver veta var marken
+ *  slutar och taken tar vid: sand ovanför ett tak är sand i luften. Den går
+ *  inte att läsa ur den färdiga spriten, för gårdens övre rader är regelmässigt
+ *  övertäckta av bakre muren och husen — mätt ur pixlarna började marken fyra
+ *  rader för lågt och havet lyste in genom gårdens fransade bakkant.
+ *  Polygonen VET var gården ligger; den är samma `poly` bygget redan använder. */
+function yardTop(poly, w, dy) {
+  const top = new Int16Array(w).fill(-1);
+  poly.rows.forEach((r, i) => {
+    if (!r) return;
+    const y = poly.y0 + i - dy;
+    for (let x = Math.max(0, r[0]); x <= Math.min(w - 1, r[1]); x++)
+      if (top[x] < 0) top[x] = y;
+  });
+  return top;
 }
 
 /** Skalar bort tomma rader överst. `CITY_BASE_OFFSET` räknar från massans FOT,

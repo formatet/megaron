@@ -23,6 +23,18 @@ Andra argumentet till `shot.py` är `<rigg>`, `<rigg>:<query>`, eller en ren que
 | *(tomt)* / `fixture=plains` / `zoom=1.6` / `world=<sträng>` | `showcase-forest.html` | Terräng |
 | `units` | `showcase-units.html` | Enheter — **acceptansgrind** |
 | `glyphs` · `glyphs:set=flaggor` | `showcase-glyphs.html` | Sigill/flaggor i flera skalor mot tre terränger |
+| `cities` | `showcase-cities.html` | Ledrutnätet: två led × fyra murnivåer |
+| `coast` | `showcase-cities.html?scene=coast` | Kustsektionen: sex kustgeometrier × två led × murnivå 0/2 |
+| `world` · `world:zoom=0.3` | `showcase-world.html` | Helvyn ur en världsfixtur |
+
+En riggnyckel får bära en egen query (`coast`), och då fogas ett användarargument
+på med `&`. Det är så en SCEN i en befintlig rigg kan få sin egen viewport —
+scenen är bredare än ledrutnätet, och en scen som inte ryms i sin viewport klipps.
+
+`python3 tools/footing.py [rigg]` mäter **vad staden står på**: blått direkt under
+stadsmassans fotlinje, per kolumn, plus en märkt bild. Noll är kravet på
+kustscenen. Fotlinjen kommer ur renderarens egen `spriteGround` via riggens
+`SHOWCASE.cities()` — måttet räknar inte om siluetten på egen hand.
 
 `SHOT_DIR` styr var PNG:erna hamnar (default: nuvarande katalog). Lägg dem utanför repot.
 

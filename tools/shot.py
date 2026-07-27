@@ -31,6 +31,11 @@ RIGS = {
     "units": ("showcase-units.html", 1040, 1080),
     "glyphs": ("showcase-glyphs.html", 1180, 900),
     "cities": ("showcase-cities.html", 1040, 900),
+    # Kustsektionen är samma sida med en annan scen — och en annan duk. Den bor
+    # som egen riggnyckel så att viewporten följer med scenen automatiskt: en
+    # scen som är bredare än sin viewport klipps, och kameran centreras ur
+    # canvas.width, så halva fixturen hamnar utanför bild.
+    "coast": ("showcase-cities.html?scene=coast", 1220, 940),
     "cityview": ("showcase-cityview.html", 740, 760),
     "world": ("showcase-world.html", 1600, 900),
 }
@@ -42,7 +47,8 @@ def main(label, query=""):
     if rig not in RIGS:
         rig, qs = "forest", query
     page_name, w, h = RIGS[rig]
-    url = f"{HOST}/static/{page_name}" + (f"?{qs}" if qs else "")
+    sep = "&" if "?" in page_name else "?"
+    url = f"{HOST}/static/{page_name}" + (f"{sep}{qs}" if qs else "")
 
     OUT.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as p:
