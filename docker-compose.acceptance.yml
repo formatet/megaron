@@ -1,0 +1,39 @@
+# Acceptansvärlden — en isolerad Megaron att köra hela användarscenariot mot
+# FÖRE merge (megaron_arbetssatt §9). Används som overlay ovanpå
+# docker-compose.yml med ett eget projektnamn, så volymer, nätverk och
+# containernamn är helt skilda från utvecklingsstacken:
+#
+#     tools/acceptance.sh up
+#
+# **Isoleringen är hela poängen.** Den delade dev-servern (CT 126) och den
+# levande världen får aldrig vara första fullständiga integrationstest — en
+# acceptansvärld som råkar dela DB med något annat är inte en acceptansvärld.
+# Därför: eget projektnamn (→ egna volymer), egna värdportar, och en egen
+# JWT_SECRET så tokens härifrån inte råkar duga någon annanstans.
+services:
+  postgres:
+    ports:
+      - "55432:5432"      # egen värdport: dev-stacken äger 5432
+  redis:
+    ports:
+      - "56379:6379"
+  server:
+    ports:
+      - "8097:8080"       # dev äger 8080, den visuella riggen 8099
+    env_file: []          # .env är utvecklarens; acceptansvärlden är sin egen
+    environment:
+      DATABASE_URL: postgres://poleia:poleia@postgres:5432/poleia?sslmode=disable
+      REDIS_URL: redis:6379
+      JWT_SECRET: acceptance-world-only-not-a-secret
+      PORT: 8080
+      # Snabb tick. Ett scenario som ska rymmas i en session kan inte vänta en
+      # timme på produktion, marsch eller bygge. Sex sekunder per tick är samma
+      # värde soaken kör med, alltså ett tempo koden redan bevisligen tål.
+      TICK_SECONDS: "6"
+      # Liten karta: seedningen ska vara klar på sekunder, och scenariot behöver
+      # inte en kontinent. 30x20 är golvet mapgen är övad på — under det vägrar
+      # servern starta, vilket är rätt.
+      MAP_WIDTH: "30"
+      MAP_HEIGHT: "20"
+      WORLD_NAME: Acceptance
+      POLEIA_ADMIN_KEY: acceptance-admin-key
