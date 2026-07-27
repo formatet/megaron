@@ -100,7 +100,12 @@ const FIXTURES = {
   //
   // Massivet rör kustvattnet i nordväst med flit: berg mot hav är klippkust,
   // det möte där en bergskant har mest att bevisa (kontrastbudgeten, princip 6,
-  // reserverar sina ytterligheter åt just kustlinje och bergskant).
+  // reserverar sina ytterligheter åt just kustlinje och bergskant). Sedan
+  // 2026-07-27 ligger DESSUTOM en röd bergshex direkt mot kustvattnet i väster:
+  // `mountain_red` mätte 0,7 L från `coastal_sea` i medelvärde, och den frågan
+  // ska avgöras av ett gråskalesnitt genom den faktiska gränsen — inte av två
+  // medelvärden, eftersom det är skreens ton och inte hexens medel som möter
+  // vattnet vid kanten.
   relief: [
     '~cmmmmmhh',
     'cpmmmMMhh',
@@ -108,7 +113,7 @@ const FIXTURES = {
     'cphhmmhhs',
     'cphhhhhhd',
     'cpFhhhmmd',
-    '~cFhhhmm.',
+    '~cMhhhmm.',
     '~cpshhMh.',
     '~~cpshh..',
   ],
