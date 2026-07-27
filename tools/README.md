@@ -47,6 +47,19 @@ antalet ändrade pixlar var 10 210. Den duger **bara** för frågan "är det exa
 Använd `pxdiff.sh` för allt annat — den separerar och maxar kanalerna före tröskling, så en
 pixel som ändrats i en enda kanal räknas som en hel pixel och inte som en tredjedel.
 
+## Acceptansvärlden — hela spelarflödet före merge
+
+```bash
+tools/acceptance.sh up            # isolerad Megaron på :8097, tick 6 s, karta 30x20
+tools/acceptance.sh player Wanax1 # registrera + anslut, skriv ut Bearer-token
+tools/acceptance.sh reset         # riv världen och seeda om mellan de två körningarna
+tools/acceptance.sh down          # riv stacken och volymerna
+```
+
+Eget compose-projektnamn (`megaron-acc`), egna volymer, eget nätverk, egna portar, egen
+JWT-hemlighet. Den kan inte råka röra dev-servern eller live-DB:n — det är hela poängen.
+Runbook och det verifierade scenariot: `megaron_drift.md` §Acceptansvärlden.
+
 ## Arbetsregler
 
 1. En visuell sak per iteration. Skärmdump före/efter. Behåll bara det som förbättrar.
