@@ -1,285 +1,338 @@
-// ── Sprint 10: Animated pixel city scene ─────────────────────────────────
-// Canvas renderer; exempt from CSS vars (own palette).
+// ── Stadsvyn: staden inifrån ─────────────────────────────────────────────
+//
+// Kartmarkören svarar på "hur stor är den?". Den här scenen svarar på "vad ÄR
+// den?" — vilka byggnader staden faktiskt har, på vilken nivå, och vad som
+// håller på att resa sig just nu.
+//
+// Den gamla scenen hade FYRA fasta sidoslottar sorterade efter en
+// prioritetslista, plus en generisk klassisk tempelfasad i mitten. En stad med
+// sju byggnader visade fyra av dem, och att bygga något nytt syntes ofta inte
+// alls. Den hade dessutom en helt egen palett: kartan och stadsvyn såg ut att
+// komma från två olika spel.
+//
+// Nu: **varje** byggnad ritas, i sin egen akhaiska form, ur samma palett som
+// kartsiluetterna. Citadellet i fonden bär megaron och den kyklopiska muren och
+// skalas av befolkning och murnivå — samma `size_tier` som kartan använder, så
+// de två bilderna aldrig kan säga olika saker om samma stad.
+//
+// Blickpunkten är INIFRÅN staden: muren löper i fonden, bakom citadellet, och
+// gatan med verkstäderna ligger framför. En mur ritad framför hade varit
+// vackrare och hade skymt precis det scenen finns till för att visa.
+
 import { serverNow } from '../clock.js';
+import {
+  CITY_PALETTE, newGrid, set, row, col, rect, cube, outline, toRuns,
+} from './pixelgrid.js';
+import { stampBuilding, stampUnderConstruction, buildingWidth } from './citybuildings.js';
 
-const _CITY_BLD_PRIORITY = [
-  'wall','bronze_wall','tower',
-  'barracks','stable','harbour','foundry',
-  'market','farm','mine','lumbermill','stonequarry',
-  'winery','olive_press',
+// Scenen ritas i LOGISKA pixlar och skalas upp med heltal — samma pixeldisciplin
+// som kartan (princip 10: aldrig arc(), aldrig halva pixlar).
+const SCENE_W = 160, SCENE_H = 76, S = 2;
+export const SCENE_CANVAS = { w: SCENE_W * S, h: SCENE_H * S };
+
+// Tre plan, bakifrån och fram. Djupet ligger i att de tre banden ALDRIG korsar
+// varandra — scenen har ingen enda diagonal, precis som resten av grafiken.
+const CITADEL = 34;         // citadellets fot: megaron och den lägre staden
+const RAMPART = 36;         // murens krön, vid terrassens kant
+const ROW_BACK = 56;        // bortre gatuledet
+const ROW_FRONT = 72;       // främre gatuledet
+
+// Ordningen byggnaderna radas upp i. Den är INTE en prioritering (allt ritas)
+// utan en gruppering: försörjning, hantverk, makt. En stad ska läsa likadant
+// varje gång man öppnar den, annars kan man inte se vad som är nytt.
+const STREET_ORDER = [
+  'farm', 'olive_press', 'winery', 'market', 'harbour',
+  'lumbermill', 'stonequarry', 'mine', 'silver_mine', 'foundry',
+  'barracks', 'stable', 'temple',
 ];
-const _CITY_STRUCTURAL = new Set(['wall','bronze_wall','tower']);
 
-let _cityAnimId = null;
+let _animId = null;
 export function stopCityAnim() {
-  if (_cityAnimId !== null) { cancelAnimationFrame(_cityAnimId); _cityAnimId = null; }
+  if (_animId !== null) { cancelAnimationFrame(_animId); _animId = null; }
 }
 
-export function startCityAnim(canvas, tile, buildings, buildQueue) {
+/**
+ * @param sett  provinsens settlement-payload (population, walls, buildings,
+ *              build_queue). Scenen läser bara serverns sanning — den hittar
+ *              aldrig på en byggnad som inte finns (princip 9).
+ */
+export function startCityAnim(canvas, tile, buildings, buildQueue, sett) {
   stopCityAnim();
   if (!canvas) return;
-  const W = canvas.width, H = canvas.height;
-  const S = 3, ground = H - 8;
+  canvas.width = SCENE_CANVAS.w;
+  canvas.height = SCENE_CANVAS.h;
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  const wr = {x: 60, dir: 1, frame: 0, t: 0};
+  const walker = { x: 20, dir: 1, t: 0, frame: 0 };
   const smoke = [];
   let last = 0;
 
-  const hasfoundry = (buildings||[]).some(b => b.type === 'foundry');
-  const smokeX1 = Math.floor(W/2) + 5*S;
-  const smokeX2 = hasfoundry ? 218 : null;
-
   function tick(ts) {
-    const dt = last ? Math.min((ts - last)/1000, 0.1) : 0.016;
+    const dt = last ? Math.min((ts - last) / 1000, 0.1) : 0.016;
     last = ts;
-    wr.t += dt;
-    if (wr.t > 0.26) { wr.frame ^= 1; wr.t = 0; }
-    wr.x += wr.dir * 20 * S * dt;
-    if (wr.x > W - 28 || wr.x < 18) wr.dir = -wr.dir;
+    walker.t += dt;
+    if (walker.t > 0.28) { walker.frame ^= 1; walker.t = 0; }
+    walker.x += walker.dir * 9 * dt;
+    if (walker.x > SCENE_W - 12 || walker.x < 8) walker.dir = -walker.dir;
     for (let i = smoke.length - 1; i >= 0; i--) {
-      smoke[i].y -= dt * 8; smoke[i].age += dt;
-      if (smoke[i].age > 1.4) smoke.splice(i, 1);
+      smoke[i].y -= dt * 3.5; smoke[i].age += dt;
+      if (smoke[i].age > 2.2) smoke.splice(i, 1);
     }
-    if (Math.random() < dt*2 && smoke.length < 6)
-      smoke.push({x: smokeX1 + (Math.random()*2-1)*S, y: ground - 18*S, age: 0});
-    if (smokeX2 && Math.random() < dt*2.5 && smoke.length < 8)
-      smoke.push({x: smokeX2 + (Math.random()*2-1)*S, y: ground - 13*S, age: 0});
-    _renderCityFrame(ctx, W, H, S, ground, tile, buildings, buildQueue, wr, smoke);
-    _cityAnimId = requestAnimationFrame(tick);
+    drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt);
+    _animId = requestAnimationFrame(tick);
   }
-  _cityAnimId = requestAnimationFrame(tick);
+  _animId = requestAnimationFrame(tick);
 }
 
-function _renderCityFrame(ctx, W, H, S, ground, tile, buildings, buildQueue, wr, smoke) {
-  const OUTLINE = '#2a1a08';
-  const BG = {plains:'#c0b882', river_valley:'#a0c070', river_delta:'#8ccc70', hills:'#b0a268',
-              mountain:'#989690', forest:'#728a60', coast:'#6aa0b0', sea:'#4870a0'};
-  ctx.fillStyle = BG[tile?.terrain] || BG.plains;
-  ctx.fillRect(0, 0, W, H);
+// Bakgrundsmarken tas ur hexens terräng, dämpad. Staden ska sitta i sitt
+// landskap: en hamnstad och en bergsstad får inte ha samma fond.
+const GROUND_BY_TERRAIN = {
+  plains: '#7A8642', river_valley: '#6E8A46', river_delta: '#6E8A46',
+  hills: '#A08A52', mountain_limestone: '#B8AC90', mountain_red: '#A87A5A',
+  forest_olive_grove: '#8A8E55', scrub_maquis: '#93A055', semi_desert: '#B89E66',
+  coastal_sea: '#7A8642', deep_sea: '#7A8642',
+};
 
-  const bldSet = new Set((buildings||[]).map(b => b.type));
-  const mx = Math.floor(W/2 - 48), mw = 96, mh = 14*S;
+const smokeClock = { t: 0 };
 
-  // Wall background
-  if (bldSet.has('wall') || bldSet.has('bronze_wall')) {
-    const isBronze = bldSet.has('bronze_wall');
-    const wallY = ground - 19*S;
-    ctx.fillStyle = isBronze ? '#c8a040' : '#9a9080';
-    ctx.fillRect(0, wallY, W, 3*S);
-    ctx.fillStyle = isBronze ? '#8a6010' : '#706860';
-    for (let cx = 4*S; cx < W - 3*S; cx += 5*S) ctx.fillRect(cx, wallY - 2*S, 3*S, 2*S);
-    ctx.strokeStyle = OUTLINE; ctx.lineWidth = 1;
-    ctx.strokeRect(0, wallY, W, 3*S);
+function drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt) {
+  const terrain = tile?.terrain || 'plains';
+  ctx.fillStyle = '#C6BC9E';                       // dis: himlen bakom citadellet
+  ctx.fillRect(0, 0, SCENE_CANVAS.w, SCENE_CANVAS.h);
+
+  const g = newGrid(SCENE_W, SCENE_H);
+  const pop = sett?.population || 0;
+  const walls = Math.max(0, Math.min(3, sett?.walls || 0));
+
+  citadel(g, pop, walls);
+  const smokeVents = street(g, buildings, buildQueue);
+  outline(g);
+  const sprite = toRuns(g);
+
+  // Marken i tre band, bakifrån och fram: citadellklippan, den bortre gatan,
+  // den främre. Varje band är en nyans mörkare — luftperspektiv utan gradient,
+  // och utan en enda diagonal.
+  const base = GROUND_BY_TERRAIN[terrain] || GROUND_BY_TERRAIN.plains;
+  ctx.fillStyle = base;
+  ctx.fillRect(0, (CITADEL + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
+  ctx.fillStyle = '#9E8E5E';                       // bortre gatans trampade jord
+  ctx.fillRect(0, (ROW_BACK + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
+  ctx.fillStyle = '#8C7C4E';                       // främre gatan
+  ctx.fillRect(0, (ROW_FRONT + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
+  ctx.fillStyle = '#7C6C42';
+  for (let sx = 4; sx < SCENE_W; sx += 9) ctx.fillRect(sx * S, (ROW_BACK + 2) * S, S, S);
+
+  for (const r of sprite.runs) {
+    ctx.fillStyle = CITY_PALETTE[r.ch];
+    ctx.fillRect(r.x * S, r.y * S, r.n * S, S);
   }
 
-  // Tower (back-left, if built)
-  if (bldSet.has('tower')) {
-    const tx = 6*S, ty = ground - 14*S, tw = 5*S, th = 14*S;
-    ctx.fillStyle = '#8a7870';
-    ctx.fillRect(tx, ty, tw, th);
-    ctx.strokeStyle = OUTLINE; ctx.lineWidth = 1; ctx.strokeRect(tx, ty, tw, th);
-    ctx.fillStyle = '#585048';
-    for (let ci = 0; ci < 3; ci++) ctx.fillRect(tx + ci*2*S, ty - S, S, S);
+  drawWalker(ctx, Math.round(walker.x), ROW_FRONT, walker.frame);
+
+  // Röken hör till härden i megaron och till gjuteriets ugn — alltså till
+  // eldar servern faktiskt har. Ingen dekorativ skorsten någonstans.
+  //
+  // Utsläppet är en TIDSACKUMULATOR, inte Math.random(). Slumpen gjorde två
+  // körningar av samma scen olika (64 px i riggen) och därmed varje pixeldiff
+  // oanvändbar — och den bröt mot princip 14: all variation i den här grafiken
+  // är deterministisk. En puff per eld var 0,9 s ser precis lika levande ut.
+  smokeClock.t += dt;
+  if (smokeClock.t >= 0.9) {
+    smokeClock.t = 0;
+    if (smoke.length < 10) smokeVents.forEach(v => smoke.push({ x: v[0], y: v[1], age: 0 }));
   }
-
-  // Ground strip
-  ctx.fillStyle = '#80702a'; ctx.fillRect(0, ground, W, H - ground);
-  ctx.fillStyle = '#6a5c22';
-  [18, 52, 100, 160, 200, 258, 292].forEach(gx => ctx.fillRect(gx, ground+2, S, S));
-
-  // Megaron (center)
-  const my = ground - mh;
-  ctx.fillStyle = '#5a4820'; ctx.fillRect(mx - S, ground, mw + 2*S, S); // shadow
-  ctx.fillStyle = '#d4b87a'; ctx.fillRect(mx, my, mw, mh);
-  // Window slits
-  ctx.fillStyle = OUTLINE;
-  ctx.fillRect(mx + 5*S, my + 3*S, 2*S, 3*S);
-  ctx.fillRect(mx + 25*S, my + 3*S, 2*S, 3*S);
-  ctx.fillRect(mx + 13*S, my + 6*S, 6*S, mh - 6*S); // door
-  // Columns
-  ctx.fillStyle = '#f0e0a8';
-  [3,9,20,26].forEach(col => {
-    ctx.fillRect(mx + col*S, my, 2*S, mh - 2*S);
-    ctx.strokeStyle = '#c8a870'; ctx.lineWidth = 1; ctx.strokeRect(mx + col*S, my, 2*S, mh - 2*S);
-  });
-  // Roof
-  ctx.fillStyle = '#8a5c2a'; ctx.fillRect(mx - 2*S, my - 3*S, mw + 4*S, 3*S);
-  ctx.fillStyle = '#5a3810'; ctx.fillRect(mx + 8*S, my - 4*S, 16*S, S); // ridge
-  // Hearth chimney
-  ctx.fillStyle = '#4a3828'; ctx.fillRect(mx + 14*S, my - 5*S, 4*S, 2*S);
-  ctx.strokeStyle = OUTLINE; ctx.lineWidth = 1;
-  ctx.strokeRect(mx, my, mw, mh);
-  ctx.strokeRect(mx - 2*S, my - 3*S, mw + 4*S, 3*S);
-
-  // Side building slots: 2 left, 2 right
-  const BW = 12*S, BH = 10*S;
-  const SLOTS = [
-    {x: 6*S}, {x: mx - BW - 4*S},
-    {x: mx + mw + 4*S}, {x: mx + mw + 4*S + BW + 4*S},
-  ];
-  const sideBlds = (buildings||[])
-    .map(b => b.type).filter(t => !_CITY_STRUCTURAL.has(t))
-    .sort((a,b) => _CITY_BLD_PRIORITY.indexOf(a) - _CITY_BLD_PRIORITY.indexOf(b))
-    .slice(0, 4);
-  sideBlds.forEach((type, i) => {
-    if (i >= SLOTS.length) return;
-    _drawSideBuilding(ctx, type, SLOTS[i].x, ground - BH, BW, BH, S);
-  });
-
-  // Construction scaffolds
-  const qItems = (buildQueue||[]).slice(0, 4 - sideBlds.length);
-  qItems.forEach((item, i) => {
-    const si = sideBlds.length + i;
-    if (si >= SLOTS.length) return;
-    const phase = _cityPhase(item);
-    _drawScaffold(ctx, SLOTS[si].x, ground - BH, BW, BH, phase, S);
-  });
-
-  // Walking worker
-  _drawWorker(ctx, Math.round(wr.x), ground - 5*S, wr.frame, wr.dir, S);
-
-  // Smoke particles
   for (const p of smoke) {
-    const a = Math.max(0, (1 - p.age/1.4) * 0.55).toFixed(2);
-    const r = Math.max(1, Math.floor(2 + p.age*2.5));
-    ctx.fillStyle = `rgba(160,140,125,${a})`;
-    ctx.fillRect(Math.round(p.x) - r, Math.round(p.y) - r, r*2, r*2);
+    const a = Math.max(0, (1 - p.age / 2.2) * 0.42).toFixed(2);
+    const r = 1 + Math.floor(p.age * 1.4);
+    ctx.fillStyle = `rgba(180,168,150,${a})`;
+    ctx.fillRect(Math.round(p.x - r) * S, Math.round(p.y - r) * S, r * 2 * S, r * 2 * S);
   }
 }
 
-function _cityPhase(item) {
+// ── Citadellet i fonden ──────────────────────────────────────────────────
+// Megaron, den lägre staden och den kyklopiska muren, skalade av samma
+// befolkning och murnivå som kartsiluetten. Öppnar man kartan och stadsvyn
+// bredvid varandra ska de säga samma sak.
+function citadel(g, pop, walls) {
+  const tier = pop >= 15000 ? 3 : pop >= 5000 ? 2 : pop >= 1000 ? 1 : 0;
+
+  // Den lägre staden: takmassa som växer med befolkningen. Den bär ingen
+  // detalj — den är kropp bakom huvudmotivet, och det är hela dess uppgift.
+  const houses = [5, 5, 7, 9][tier];
+  for (let i = 0; i < houses; i++) {
+    const side = i % 2 ? 1 : -1, step = (i >> 1) + 1;
+    const hw = 14 - step, hh = 13 - step * 2;
+    const hx = SCENE_W / 2 + side * (tier ? 16 + step * 12 : step * 13) - (hw >> 1);
+    if (hh < 5) continue;
+    cube(g, Math.round(hx), CITADEL - hh, hw, hh, { door: step < 3 });
+  }
+
+  // **Megaron föds ur STORLEK, precis som på kartan.** En bosättning på 101
+  // invånare har ingen sal, och att rita en åt den vore att ljuga om
+  // palatskulten — den är något en plats VÄXER in i.
+  if (tier >= 1) megaronHall(g, tier);
+
+  // Muren står vid TERRASSENS KANT, mellan citadellet och gatan. Utkastet la
+  // den högst upp i himlen där den hängde som ett staket utan mark under sig.
+  // Här gör den i stället scenens arbete: den skiljer de två planen åt, och
+  // det är precis vad en citadellmur gör sett från den lägre staden.
+  if (walls > 0) rampart(g, walls);
+}
+
+// Terrassen och muren kring citadellet.
+function rampart(g, level) {
+  const h = 4 + level * 2;
+  rect(g, 0, RAMPART, SCENE_W, h, 'q');
+  row(g, 0, RAMPART, SCENE_W, 'T');
+  row(g, 0, RAMPART + h - 1, SCENE_W, 't');
+  // Kyklopiska fogar: KORTA, förskjutna segment. Utkastet drog dem genom hela
+  // murlivet och muren blev en plankstaket-palissad — regelbundna lodräta
+  // linjer från krön till fot är exakt vad kyklopiskt murverk inte har.
+  // Blocken är olika stora och fogarna hamnar aldrig ovanför varandra.
+  for (let bandY = RAMPART + 1; bandY < RAMPART + h - 1; bandY += 3) {
+    const band = bandY - RAMPART;
+    for (let x = (band * 5) % 7; x < SCENE_W; x += 5 + ((x * 3 + band) % 4))
+      col(g, x, bandY, Math.min(3, RAMPART + h - 1 - bandY), 't');
+    row(g, 0, bandY, SCENE_W, 't');                   // horisontell skiftfog
+    row(g, 0, bandY + 1, SCENE_W, 'q');
+  }
+  if (level >= 2)
+    for (let x = 2; x < SCENE_W - 2; x += 7) {        // tinnar
+      col(g, x, RAMPART - 2, 2, 'T');
+      col(g, x + 1, RAMPART - 2, 2, 'q');
+    }
+  // Lejonporten mitt i muren, med avlastningstriangeln över lintelen.
+  // Porten ligger UR centrum. Rakt under megarons egen port bildade de två
+  // mörka öppningarna en enda lodrät svart ränna genom hela scenen — två sanna
+  // detaljer som tillsammans blev en artefakt.
+  const gw = 10, gx = ((SCENE_W - gw) >> 1) - 26;
+  rect(g, gx, RAMPART + h - 9, gw, 9, 'V');
+  if (level >= 2)
+    for (let k = 0; k < 3; k++)
+      row(g, gx + 1 + k, RAMPART + h - 12 + k, gw - 2 - k * 2, 'V');
+  row(g, gx - 1, RAMPART + h - 10, gw + 2, 'T');
+  if (level >= 3)
+    for (const tx of [4, SCENE_W - 18]) {             // flanktorn
+      rect(g, tx, RAMPART - 6, 14, h + 6, 'q');
+      row(g, tx, RAMPART - 6, 14, 'T');
+      for (let x = 0; x < 14; x += 3) col(g, tx + x, RAMPART - 8, 2, 'T');
+    }
+}
+
+// Megaron. Samma tre tecken som på kartan — pelare i antis, mörk lintel,
+// rökglugg över härden — men här stora nog att faktiskt se ut som en sal.
+function megaronHall(g, tier) {
+  const mw = [0, 24, 30, 36][tier], mh = [0, 20, 24, 28][tier];
+  const mx = (SCENE_W - mw) >> 1, my = CITADEL - mh;
+  cube(g, mx, my, mw, mh, { roof: 4 });
+  row(g, mx - 3, CITADEL, mw + 6, 'T');               // terrassen salen står på
+  row(g, mx - 2, CITADEL + 1, mw + 4, 't');
+  const lw = mw >> 1, lx = mx + ((mw - lw) >> 1);
+  rect(g, lx, my - 4, lw, 3, 'R');                    // lanterninen
+  row(g, lx + lw - 2, my - 4, 2, 'r');
+  row(g, lx + 1, my - 2, lw - 2, 'V');                // rökgluggen
+  row(g, mx + 1, my + 4, mw - 2, 'O');                // målat ockraband
+  row(g, mx + 1, my + 5, mw - 2, 'o');
+  const py = my + 9;
+  rect(g, mx + 4, py, mw - 8, CITADEL - py, 'd');     // förhallen
+  row(g, mx + 3, py - 1, mw - 6, 'V');                // lintelen
+  const cols = tier >= 3 ? 4 : tier >= 2 ? 3 : 2;
+  const span = mw - 12;
+  for (let i = 0; i < cols; i++) {
+    const cxp = mx + 5 + Math.round(i * span / (cols - 1));
+    row(g, cxp, py, 3, 'O');                          // kapitälet, en px bredare
+    for (let yy = py + 1; yy < CITADEL; yy++) {
+      set(g, cxp, yy, 'O'); set(g, cxp + 1, yy, 'O'); set(g, cxp + 2, yy, 'o');
+    }
+  }
+  rect(g, mx + (mw >> 1) - 2, CITADEL - 8, 5, 8, 'V');  // porten
+}
+
+// ── Gatan ────────────────────────────────────────────────────────────────
+// Varje byggnad staden har, i fast ordning, med gluggar emellan. Kön ritas
+// sist så det som byggs står längst fram i blicken.
+function street(g, buildings, buildQueue) {
+  const vents = [];
+  const byType = new Map();
+  for (const b of buildings || []) {
+    // Murar är ingen byggnad i gatan — de är citadellets mur och ritas där.
+    if (b.type === 'wall' || b.type === 'bronze_wall' || b.type === 'tower') continue;
+    byType.set(b.type, Math.max(byType.get(b.type) || 0, b.level || 1));
+  }
+  const built = STREET_ORDER.filter(t => byType.has(t));
+
+  const queued = (buildQueue || []).map(item => ({
+    type: item.type, phase: buildPhase(item),
+    level: (byType.get(item.type) || 0) + 1,
+  })).filter(q => q.type);
+
+  const items = [
+    ...built.map(t => ({ type: t, level: byType.get(t), phase: 1 })),
+    ...queued,
+  ];
+  if (items.length === 0) return vents;
+
+  // **Två gatuled.** Ett enda led med tretton byggnader gav elva logiska pixlar
+  // per byggnad — då är en hamn och ett gjuteri samma suddiga klump, och
+  // "enskilda byggnader ska synas" är inte uppfyllt. Bygget som PÅGÅR hamnar
+  // alltid i det främre ledet: det är det spelaren tittar efter.
+  const twoRows = items.length > 5;
+  const back = [], front = [];
+  items.forEach((it, i) => {
+    if (it.phase < 1) front.push(it);
+    else if (!twoRows) front.push(it);
+    else (i % 2 ? front : back).push(it);
+  });
+
+  // Bortre ledet ritas FÖRST så det främre skymmer det — samma djupsortering
+  // som kartans provinser, av samma skäl.
+  layoutRow(g, back, ROW_BACK, vents);
+  layoutRow(g, front, ROW_FRONT, vents);
+  vents.push([SCENE_W / 2 + 2, CITADEL - 30]);        // härden i megaron
+  return vents;
+}
+
+/** Radar upp ett gatuled centrerat, med gluggarna klämda när staden växer.
+ *  Layouten MÄTS före den ritas: en stad med tolv byggnader ska få trängre
+ *  gluggar, inte byggnader som ramlar ut ur bilden. */
+function layoutRow(g, items, base, vents) {
+  if (!items.length) return;
+  const widths = items.map(it => buildingWidth(it.type, it.level));
+  const total = widths.reduce((a, b) => a + b, 0);
+  const gap = items.length < 2 ? 0
+    : Math.max(1, Math.min(6, Math.floor((SCENE_W - 6 - total) / (items.length - 1))));
+  let x = Math.max(2, Math.round((SCENE_W - (total + gap * (items.length - 1))) / 2));
+  items.forEach((it, i) => {
+    if (it.phase >= 1) stampBuilding(g, it.type, x, base, it.level);
+    else stampUnderConstruction(g, it.type, x, base, it.level, it.phase);
+    if (it.type === 'foundry' && it.phase >= 1) vents.push([x + 10, base - 13]);
+    x += widths[i] + gap;
+  });
+}
+
+/** Byggets förlopp 0–1 ur `created_at`/`complete_at`. */
+function buildPhase(item) {
   const now = serverNow();
-  const start = item.created_at ? new Date(item.created_at).getTime() : now - 30000;
-  const end   = new Date(item.complete_at).getTime();
+  const end = new Date(item.complete_at).getTime();
+  if (!(end > 0)) return 1;
   if (end <= now) return 1;
-  if (start >= end) return 0.5;
-  return Math.min(1, Math.max(0, (now - start)/(end - start)));
+  const start = item.created_at ? new Date(item.created_at).getTime() : now - 60000;
+  if (!(start < end)) return 0.5;
+  return Math.min(1, Math.max(0, (now - start) / (end - start)));
 }
 
-function _drawSideBuilding(ctx, type, bx, by, bw, bh, S) {
-  const OUTLINE = '#2a1a08';
-  const COLORS = {
-    barracks:    ['#7a8898','#4a5860'],
-    farm:        ['#c8a850','#7a5c1a'],
-    market:      ['#d09060','#8a4820'],
-    harbour:     ['#5a7890','#2a4858'],
-    foundry:     ['#504038','#282020'],
-    mine:        ['#787068','#4a4038'],
-    lumbermill:  ['#8a6040','#5a3820'],
-    stable:      ['#b09060','#7a5828'],
-    winery:      ['#7a4a6a','#4a2840'],
-    olive_press: ['#8a8050','#4a4828'],
-    stonequarry: ['#9a9088','#686058'],
+// ── Gångaren ─────────────────────────────────────────────────────────────
+// En enda figur på gatan, i aktörernas skala och hudton. Fler skulle göra
+// scenen till en myrstack; en gör den bebodd.
+function drawWalker(ctx, x, base, frame) {
+  const px = (cx, cy, colour, w = 1, h = 1) => {
+    ctx.fillStyle = colour;
+    ctx.fillRect(cx * S, cy * S, w * S, h * S);
   };
-  const [wall, roof] = COLORS[type] || ['#a09080','#706860'];
-
-  ctx.fillStyle = wall; ctx.fillRect(bx, by, bw, bh);
-  ctx.fillStyle = roof; ctx.fillRect(bx - S, by - 2*S, bw + 2*S, 2*S);
-  ctx.strokeStyle = OUTLINE; ctx.lineWidth = 1;
-  ctx.strokeRect(bx, by, bw, bh);
-  ctx.strokeRect(bx - S, by - 2*S, bw + 2*S, 2*S);
-
-  ctx.fillStyle = OUTLINE;
-  switch (type) {
-    case 'barracks':
-      ctx.fillRect(bx + 4*S, by + bh - 4*S, 4*S, 4*S); // door
-      ctx.fillStyle = '#2a3840';
-      ctx.fillRect(bx + 2*S, by + S, S, bh - 2*S); // spear L
-      ctx.fillRect(bx + 9*S, by + S, S, bh - 2*S); // spear R
-      break;
-    case 'farm':
-      // Field rows in front
-      [0,1,2].forEach(fi => {
-        ctx.fillStyle = fi%2===0 ? '#80b840' : '#a89030';
-        ctx.fillRect(bx + fi*4*S, by + bh, 4*S, 2*S);
-      });
-      break;
-    case 'harbour':
-      ctx.fillStyle = '#3a6070';
-      for (let hy = by + 3*S; hy < by + bh - S; hy += 2*S)
-        ctx.fillRect(bx + S, hy, bw - 2*S, S); // plank lines
-      ctx.fillStyle = '#3a2810'; ctx.fillRect(bx + bw - 2*S, by + bh/2, 2*S, bh/2); // post
-      break;
-    case 'foundry':
-      ctx.fillStyle = '#282020'; ctx.fillRect(bx + bw - 3*S, by - 4*S, 3*S, 4*S); // chimney
-      ctx.fillStyle = '#d04810'; ctx.fillRect(bx + 3*S, by + bh - 3*S, 6*S, 3*S); // glow
-      break;
-    case 'mine':
-      ctx.fillStyle = OUTLINE; ctx.fillRect(bx + 3*S, by + bh*0.4, 6*S, bh*0.6);
-      ctx.fillStyle = '#181008'; ctx.fillRect(bx + 4*S, by + bh*0.5, 4*S, bh*0.5);
-      break;
-    case 'market':
-      ctx.fillStyle = '#e0c898';
-      [1,5,9].forEach(col => {
-        ctx.fillRect(bx + col*S, by, S, bh);
-        ctx.strokeStyle = OUTLINE; ctx.strokeRect(bx + col*S, by, S, bh);
-      });
-      break;
-    case 'stable':
-      ctx.fillStyle = OUTLINE; ctx.fillRect(bx + 4*S, by + bh - 3*S, 4*S, 3*S); // door
-      ctx.fillStyle = '#7a5828';
-      [1,8].forEach(vx => ctx.fillRect(bx + vx*S, by + 2*S, S, 2*S)); // vents
-      break;
-    case 'lumbermill':
-      [0,1,2].forEach(li => {
-        ctx.fillStyle = li%2===0 ? '#704820' : '#906030';
-        ctx.fillRect(bx + li*4*S, by + bh, 3*S, 2*S); // log pile
-      });
-      ctx.fillStyle = '#c0c0c0'; ctx.fillRect(bx + 5*S, by + 3*S, 5*S, S); // blade
-      break;
-    case 'winery':
-      ctx.fillStyle = '#5a2040';
-      [1,7].forEach(ax => {
-        ctx.fillRect(bx + ax*S, by + 2*S, 2*S, 4*S);
-        ctx.fillRect(bx + ax*S + S, by + 5*S, S, 2*S); // neck
-      });
-      break;
-    case 'stonequarry':
-      ctx.fillStyle = '#b0a890';
-      ctx.fillRect(bx, by + bh - 2*S, bw, 2*S);
-      ctx.fillRect(bx + 2*S, by + bh - 4*S, bw - 4*S, 2*S);
-      break;
-    case 'olive_press':
-      ctx.fillStyle = '#606030'; ctx.fillRect(bx + 2*S, by + bh - 4*S, 8*S, 4*S);
-      ctx.fillStyle = '#808050'; ctx.fillRect(bx + 4*S, by + bh - 5*S, 4*S, S);
-      break;
-  }
+  px(x, base - 7, CITY_PALETTE.K, 3, 1);
+  px(x, base - 6, '#A87548', 3, 2);                   // aktörernas hudton
+  px(x, base - 4, CITY_PALETTE.P, 3, 3);
+  px(x + (frame ? 0 : 2), base - 1, CITY_PALETTE.K, 1, 1);
+  px(x + (frame ? 2 : 0), base - 1, CITY_PALETTE.G, 1, 1);
 }
-
-function _drawScaffold(ctx, bx, by, bw, bh, phase, S) {
-  const OUTLINE = '#2a1a08';
-  if (phase > 0.6) {
-    ctx.fillStyle = 'rgba(200,165,85,0.4)';
-    ctx.fillRect(bx, by, bw, bh);
-  }
-  ctx.fillStyle = '#c89858';
-  ctx.fillRect(bx - S, by, S, bh + 2*S);
-  ctx.fillRect(bx + bw, by, S, bh + 2*S);
-  if (phase > 0.3) ctx.fillRect(bx - S, by + Math.floor(bh*0.5), bw + 2*S, S);
-  if (phase > 0.6) ctx.fillRect(bx - S, by, bw + 2*S, S);
-  ctx.strokeStyle = '#7a5030'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + bw, by + bh); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(bx + bw, by); ctx.lineTo(bx, by + bh); ctx.stroke();
-  // Construction worker with hammer at scaffold base
-  const wx = bx + Math.floor(bw/2);
-  ctx.fillStyle = '#c8a060'; ctx.fillRect(wx - S, by + bh - 4*S, 2*S, 3*S);
-  ctx.fillStyle = '#a07040'; ctx.fillRect(wx - S, by + bh - 5*S, 2*S, S);
-  ctx.fillStyle = '#888'; ctx.fillRect(wx + S, by + bh - 4*S, S, 3*S);
-  ctx.fillStyle = '#666'; ctx.fillRect(wx + S, by + bh - 4*S, 2*S, S);
-}
-
-function _drawWorker(ctx, wx, wy, frame, dir, S) {
-  ctx.fillStyle = '#c8a070'; ctx.fillRect(wx, wy - 5*S, 2*S, 2*S); // head
-  ctx.fillStyle = '#6a7080'; ctx.fillRect(wx, wy - 3*S, 2*S, 2*S); // body
-  ctx.fillStyle = '#8a6840';
-  if (frame === 0) {
-    ctx.fillRect(wx, wy - S, S, S);
-    ctx.fillRect(wx + S, wy - 2*S, S, S);
-  } else {
-    ctx.fillRect(wx + S, wy - S, S, S);
-    ctx.fillRect(wx, wy - 2*S, S, S);
-  }
-}
-

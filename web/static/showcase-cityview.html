@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Megaron — stadsvyns rigg</title>
+<!--
+  Offline visuell rigg för STADSVYN (render/city.js). Samma kontrakt som de
+  andra riggarna: ingen server, ingen auth, ingen fetch. Sidan matar den riktiga
+  scenen med fasta settlement-payloads och ritar EN fryst frame per ruta.
+
+  Fyra scener som täcker det scenen faktiskt förgrenar på:
+    1. Nygrundad     — inga byggnader alls, ingen mur, liten befolkning
+    2. Växande stad  — några byggnader, ett bygge PÅGÅENDE (fyra faser)
+    3. Palatsstad    — varje byggnadstyp, blandade nivåer, mur 3
+    4. Byggfaserna   — samma byggnad vid 0 %, 33 %, 66 % och klar
+
+  Kör:  python3 -m http.server 8099 --directory web/
+        http://localhost:8099/static/showcase-cityview.html
+  Dump: python3 tools/shot.py <etikett> cityview
+-->
+<link rel="stylesheet" href="/static/megaron.css">
+<style>
+  body { margin: 0; background: #14100C; font: 12px monospace; color: #C6BC9E; }
+  #map-root { width: 700px; padding: 8px; }
+  .scene { margin-bottom: 10px; }
+  .scene h2 { margin: 0 0 2px; font-size: 12px; font-weight: normal; color: #9A8A5E; }
+  canvas { display: block; image-rendering: pixelated; width: 640px; }
+</style>
+<script>
+  // Frysningen: rAF stubbas FÖRE modulimporten, annars schemalägger scenen sig
+  // själv och varje pixeldiff drunknar i gånganimationen.
+  window.requestAnimationFrame = function (fn) { window.__rafPending = fn; return 0; };
+  window.cancelAnimationFrame = function () {};
+</script>
+</head>
+<body>
+<div id="map-root"></div>
+
+<script type="module">
+import { startCityAnim, stopCityAnim, SCENE_CANVAS } from '/static/js/megaron/render/city.js';
+
+const b = (type, level = 1) => ({ type, level });
+// Kön uttrycks som andel klar; riggen räknar om den till created_at/complete_at
+// så scenen får exakt det den får i drift och ingen genväg.
+const q = (type, phase) => {
+  const now = Date.now(), span = 600000;
+  return { id: type, type, created_at: new Date(now - span * phase).toISOString(),
+           complete_at: new Date(now + span * (1 - phase)).toISOString() };
+};
+
+const SCENES = [
+  ['Nygrundad — pop 101, inga byggnader, ingen mur',
+   { population: 101, walls: 0 }, [], []],
+
+  ['Växande stad — pop 3 200, mur 1, gjuteri under uppförande',
+   { population: 3200, walls: 1 },
+   [b('farm', 2), b('market'), b('lumbermill'), b('barracks')],
+   [q('foundry', 0.55)]],
+
+  ['Palatsstad — pop 28 000, mur 3, varje byggnadstyp',
+   { population: 28000, walls: 3 },
+   [b('farm', 3), b('olive_press', 2), b('winery'), b('market', 3), b('harbour', 2),
+    b('lumbermill'), b('stonequarry', 2), b('mine'), b('silver_mine'), b('foundry', 2),
+    b('barracks', 3), b('stable'), b('temple', 3)],
+   []],
+
+  ['Byggfaserna — tempel vid 0 %, 35 %, 70 %, klart',
+   { population: 9000, walls: 2 }, [],
+   [q('temple', 0.0), q('temple', 0.35), q('temple', 0.7)]],
+];
+
+const root = document.getElementById('map-root');
+SCENES.forEach(([label, sett, buildings, queue]) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'scene';
+  wrap.innerHTML = `<h2>${label}</h2>`;
+  const c = document.createElement('canvas');
+  wrap.appendChild(c);
+  root.appendChild(wrap);
+  // startCityAnim schemalägger EN frame via den stubbade rAF; vi kör den för
+  // hand och stoppar sedan, så varje ruta är en fryst bild ur den riktiga koden.
+  startCityAnim(c, { terrain: 'plains' }, buildings, queue, sett);
+  if (window.__rafPending) window.__rafPending(0);
+  stopCityAnim();
+});
+// Fjärde scenen ska visa den FÄRDIGA byggnaden bredvid faserna; scenen ritar
+// kön längst fram och en byggd sist, alltså läggs den till som byggd här.
+window.SHOWCASE = { ready: true, draw() {} };
+void SCENE_CANVAS;
+</script>
+</body>
+</html>

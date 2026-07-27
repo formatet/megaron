@@ -1420,7 +1420,11 @@ body:has(.auth-page) main {
   display: block;
   width: calc(100% + 1.6rem);
   margin: -.8rem -.8rem .4rem;
-  height: 110px;
+  /* Scenen är 160×76 logiska px (render/city.js). Höjden följer proportionen
+     så den uppskalade bilden aldrig sträcks — `image-rendering: pixelated`
+     räddar inte en ojämn skalning, den gör den bara skarpt fel. */
+  aspect-ratio: 160 / 76;
+  height: auto;
   image-rendering: pixelated;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;

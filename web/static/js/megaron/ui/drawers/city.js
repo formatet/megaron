@@ -82,7 +82,7 @@ export async function loadCityDrawer() {
   const UNIT_DP   = { Spearman:1, EliteInfantry:3,  WarChariot:4, Ship:1,  WarGalley:3,  Merchantman:0 };
 
   body.innerHTML = `
-    <canvas id="city-scene" class="city-scene" width="320" height="110"></canvas>
+    <canvas id="city-scene" class="city-scene"></canvas>
     <div class="drawer-tabs">
       <button class="dtab active" data-tab="produktion">Production</button>
       <button class="dtab" data-tab="byggnader">Buildings</button>
@@ -122,8 +122,11 @@ export async function loadCityDrawer() {
     const goods = goodsResp.ok ? await goodsResp.json() : [];
 
     // Canvas — start animated city scene.
+    // `pd` skickas med: scenens citadell skalas av befolkning och murnivå ur
+    // SAMMA sanning som kartans size_tier, så kartan och stadsvyn aldrig kan
+    // säga olika saker om samma stad.
     startCityAnim(document.getElementById('city-scene'), capitalTile2,
-                  pd ? pd.buildings : [], pd ? pd.build_queue : []);
+                  pd ? pd.buildings : [], pd ? pd.build_queue : [], pd);
 
     // ── Produktion ──────────────────────────────────────────────────────────
     if (pd) {
