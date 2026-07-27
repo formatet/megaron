@@ -11,7 +11,11 @@ If code and this file conflict, trust the code, then fix this file.
   an agent refuse to tune it — that is the exact bug this rule prevents).
 
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
-- **Before ending a session:** update `megaron_todo.md` (living status, backlog, "Vägen framåt").
+- **Before ending a session:** update `megaron_todo.md` — four queues with caps: **NU** (≤5, blocks the
+  main gate) · **BESLUT** (≤7, needs Timothy) · **VERIFIERING** (built, not yet proven) · **SENARE**.
+  Not a diary. Group new observations by likely shared root before writing any of them down.
+- **The main gate:** a competent player completes geografi → brist → brons → elit in one session, via web
+  and keryx, with no developer intervention. Mark every piece of work *blocks* / *proves* / *waits for* it.
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
 - **When you mark something done in `megaron_todo.md`:** stamp it with the **actual** wall-clock time pulled from
   plain `date` — it reads Windows' local zone (Stockholm), DST and all, correctly. **Never pass a `TZ=` prefix:**
@@ -21,6 +25,47 @@ If code and this file conflict, trust the code, then fix this file.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** (e.g. `frågor*` files in repo root) are an inbox, not a home: triage every point
   into a todo line, a vault update, or a reasoned rejection — then delete the dump. Never leave it rotting in root.
+
+---
+
+## Working method (MUST — full text: `megaron_arbetssatt.md`, read it before a slice)
+
+Standing instruction from Timothy 2026-07-27. **It takes precedence over local habits where
+those are not explicitly stricter.** The Klafki lens below gates *what* gets built; this gates
+*how*. Always-on core — everything else lives in the vault doc:
+
+- **Contract before code.** Eight lines before touching anything: problem · player truth ·
+  invariant · scope · non-scope · ≤5 acceptance criteria · stop condition · proof plan.
+- **One slice = one of** {domain invariant, data migration, visual family, user flow}. New
+  findings are **booked and triaged, never built in passing.** Two problems share a slice only
+  if they share a root — and the reason gets written down.
+- **Baseline first** (1:1 shot · API payload · DB rows · test result on unchanged master ·
+  commit + migration version). A red baseline is repaired in its own commit or marked a known
+  skip with a reason — **never normalised.**
+- **Judge visuals at 1:1.** Magnification is debugging only. Check 1:1, normal zoom, minimum
+  zoom, colliding terrains, greyscale when value matters, plus determinism and a containment
+  diff. **A detail that only works at 3× is not approved.**
+- **Four gates before merge:** code · visual · semantic (does the client show the same truth
+  the server uses? does it leak past FOW? does the UI promise what the server cannot do?) ·
+  user (a real scenario from the player's entry point, no DB surgery).
+- **Eye-check on the branch, in an isolated world, BEFORE merge** — this replaces
+  merge→deploy→eye-check. **The shared live world is never the first full integration test.**
+- **Deploy is reproduction, not discovery:** verify the running commit, healthz from the *new*
+  process, migration version + `dirty=false`, the served assets, a clean log, and a smoke run
+  that reproduces the pre-merge proof. **Healthz 200 alone is not verification.**
+- **Follow a new data invariant through the whole lifecycle** — every INSERT path *and* every
+  `UPDATE <table> SET <state column>`, backfill, owner change, conquest, collapse, NULL/stale,
+  API, web, keryx, workers, fixtures. **A silent fallback that guesses a value is a bug that
+  does not crash.**
+- **Stop and ask Timothy on canon** (game model, mechanical terminology, FOW leakage, kharis
+  semantics, oikos/kingdoms, support/home, conquest/collapse/desertion, economic gates,
+  persistent event semantics, anything marked post-MVP). Give the conflict, 2–3 options, each
+  consequence, your recommendation, and what can proceed regardless.
+- **Finish with a proof package** — problem, solution, before/after, diff, an API or DB proof,
+  a run-through, tests, known limits, exact commit. **If it doesn't fit on roughly one screen,
+  the slice was too big.**
+- **Document roles stay separate** (normative · process report · todo · backlog · drift).
+  A normative doc **links** to the report; it never retells it.
 
 ---
 
