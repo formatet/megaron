@@ -34,8 +34,16 @@ const TERRAIN_BASE = {
   river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
   forest_olive_grove: {c0:'#9EA361', c1:'#848A4C'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
-  mountain_limestone: {c0:'#E0D4B8', c1:'#C8BCA0'},
-  mountain_red:       {c0:'#C8906A', c1:'#B07050'},
+  // The mountains' scree covers the hex completely, so these two are no longer
+  // a visible surface — they are what shows through the clip's antialiased rim
+  // (princip 13b: a clipped layer only reaches ~75% coverage on the edge pixel,
+  // and the base lights up underneath). With the old pale `#E0D4B8` under dark
+  // scree that rim drew a bright halo around every mountain hex — a hex grid
+  // painted by accident, the exact bug princip 13 exists to prevent. They now
+  // carry the scree's own dominant tone, so there is nothing left to shine
+  // through. Update these whenever MTN_ROCK moves.
+  mountain_limestone: {c0:'#ABA692', c1:'#8E8A78'},
+  mountain_red:       {c0:'#A07A5E', c1:'#82604A'},
   scrub_maquis:       {c0:'#A8B860', c1:'#909A48'},
   semi_desert:        {c0:'#D4B878', c1:'#C0A060'},
   fog:                {c0:'#1C1C1C', c1:'#252018'},
@@ -672,6 +680,356 @@ function drawPlainsField(ctx, cx, cy) {
   ctx.restore();
 }
 
+// ── Relief — hills and mountains ─────────────────────────────────────────
+// The old high ground was three brown ellipses on flat tan (hills) and two
+// pale triangles on the map's brightest fill (mountains). Both broke the same
+// two rules at once: isolated marks on a flat colour read as decoration at any
+// scale (princip 2), and neither said anything about the one thing high ground
+// IS — height. A mountain that is a flat hex with an icon on it is a legend
+// entry, not terrain.
+//
+// The measured state before this slice, which is what made it a priority
+// rather than a polish job: in luminance, `hills` (167.5) and `scrub_maquis`
+// (169.2) sat 1.7 apart, `mountain_red` (156.4) sat 2.4 from the olive grove,
+// and `mountain_limestone` (212.4) was the brightest surface on the whole map
+// by 27 — spending the contrast budget (princip 6) on a field rather than on
+// an edge. Three terrains that are all "high rocky ground" occupied three
+// unrelated slots on the value ladder and shared no identity at all.
+//
+// What replaces them is a HEIGHT FIELD, not a set of sprites. The field is
+// sampled in world pixel coordinates on the global lattice (same machinery as
+// the plains parcel and the forest floor), so a range of hills runs unbroken
+// across hex borders: the clip still keeps rock off the neighbouring plain,
+// but between two hill hexes the seam has nothing to reveal. Relief is the
+// one terrain where this matters most — a ridge that stops at a hex border is
+// not a ridge, it is a tile.
+//
+// The shading is real, not decorative: two samples of the same field taken
+// along the light axis give the slope, and the slope decides the tone. Light
+// falls from the upper left, as it does on every sprite in this renderer
+// (princip 11), so a flank facing upper-left is lit and the flank behind the
+// crest is in shadow. That is why the result reads as ground that rises
+// instead of as mottling — the light is consistent with the trees, the units
+// and the cities standing on it.
+const RELIEF_D = 2; // sample distance along the light axis, in logical px
+
+// REJECTED on the way here: shading straight from the slope, i.e. the field
+// sampled twice along the light axis and banded on the difference. It is the
+// textbook hillshade and it fails here for a reason the plains slice already
+// paid for once — a single directional derivative produces DIAGONAL STREAKS.
+// The map filled with NW–SE smears that read as dunes or as a smudged
+// photograph, never as ground that rises, because a streak has no top and no
+// bottom. Anisotropy that answers to nothing in the world was rejected on the
+// plains for the same reason (princip 1).
+//
+// What replaces it is TERRACING. The height field is quantised into a handful
+// of levels, and the tone is decided by comparing this block's level with its
+// neighbours' along the light axis:
+//
+//   this level > the level below-right  → a crest with ground falling away
+//                                         behind it: rim catches the light
+//   this level < the level above-left   → higher ground stands between this
+//                                         block and the sun: cast shadow
+//
+// Those two tests produce CLOSED contours — a lit rim curving over the top of
+// each swell and a shadow pooling at its foot — instead of stripes, because a
+// contour of a closed hummock is itself closed. It also puts the strongest
+// tones exactly where a landform is legible (its edge) and leaves the interior
+// quiet, which is what princip 15 asks of any large surface.
+function reliefLevel(wx, wy, cell, stream, steps) {
+  return Math.floor(noiseAt(wx, wy, cell, stream) * steps);
+}
+
+// A swell spans about one and a half hexes: hills are ROUNDED and broad, and a
+// cell small enough to fit inside one hex would make every hex its own bump —
+// which is the per-hex-icon failure again, only in shading.
+const HILL_CELL = 20;
+const HILL_SUN   = '#E4C283'; // crest catching the light
+const HILL_LIT   = '#D2AE6E'; // sunlit flank
+const HILL_SHADE = '#A8834A'; // shadow flank beyond the crest
+const HILL_DEEP  = '#8A6A3C'; // the hollow between two swells
+
+// Five terraces over the field. Fewer and the hex holds one lazy step; many
+// more and the rims crowd into hatching, which is texture again rather than
+// form.
+const HILL_STEPS = 5;
+// How far apart the two level samples sit, which is what sets the WIDTH of the
+// lit rim and the shadow at the foot. At the mountains' distance of 2 px the
+// hills came out as thin dark veins — a rim one or two pixels wide reads as a
+// crack in the ground, not as a slope. A slope needs a band.
+const HILL_D = 4;
+
+function drawHills(ctx, cx, cy) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  const STEP = 2;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  const D = HILL_D;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const lv = reliefLevel(wx, wy, HILL_CELL, 4242, HILL_STEPS);
+      const up = reliefLevel(wx - D, wy - D, HILL_CELL, 4242, HILL_STEPS);
+      const dn = reliefLevel(wx + D, wy + D, HILL_CELL, 4242, HILL_STEPS);
+      // Edge first, body second. The rim and the cast shadow are what make the
+      // form legible, but a rim with no body behind it is filigree: the first
+      // attempt tinted only the highest and lowest terrace, faintly, and the
+      // result read as pale veins scratched into flat tan. Each terrace has to
+      // carry a tone of its own so the eye sees high ground and hollow as
+      // AREAS, with the rim sharpening them rather than standing in for them.
+      if (lv > dn)      { ctx.globalAlpha = 0.75; ctx.fillStyle = HILL_SUN; }
+      else if (lv < up) { ctx.globalAlpha = 0.55; ctx.fillStyle = HILL_SHADE; }
+      else if (lv >= 4) { ctx.globalAlpha = 0.46; ctx.fillStyle = HILL_SUN; }
+      else if (lv === 3){ ctx.globalAlpha = 0.40; ctx.fillStyle = HILL_LIT; }
+      else if (lv === 1){ ctx.globalAlpha = 0.34; ctx.fillStyle = HILL_SHADE; }
+      else if (lv === 0){ ctx.globalAlpha = 0.42; ctx.fillStyle = HILL_DEEP; }
+      else continue;    // terrace 2 is the base tone: the hillside itself
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ── Mountains ────────────────────────────────────────────────────────────
+// Same height field, same terracing, same light — a mountain and a hill are
+// the same kind of fact about the ground, and drawing them with two unrelated
+// techniques is what let the old map put one of them at the top of the value
+// ladder and the other in the middle of it. What separates them is the BIG
+// form (princip 20), and it separates them three ways:
+//
+//   RIDGED, not rounded. The field is folded — `1 - |2n-1|` — which turns
+//   every level crossing of the underlying noise into a crease. Rounded swells
+//   become sharp ridge lines with steep faces, which is the difference between
+//   grazing country and rock.
+//   MORE TERRACES over the same distance, so the ground climbs faster.
+//   A WIDER VALUE RANGE, and this is where the contrast budget (princip 6) is
+//   spent on purpose: the deepest shadow and the brightest lit face on the
+//   whole map both belong to the mountain, because "the mountain edge" is one
+//   of the four things the budget is reserved for. The old limestone spent the
+//   same brightness on a FLAT FILL, which bought nothing — brightness on a
+//   field is not an edge.
+const MTN_CELL = 22;
+const MTN_STEPS = 5;
+
+function ridgeAt(wx, wy, cell, stream) {
+  const n = noiseAt(wx, wy, cell, stream);
+  return 1 - Math.abs(2 * n - 1);
+}
+
+// Rock is shaded by FACET, not by contour. Terracing the folded field — the
+// obvious reuse of the hills machinery — was tried twice and failed twice, and
+// the two failures are worth keeping because they are the same mistake at two
+// frequencies: fine, it broke into scattered dark dashes that read as rubble
+// or as printed text; coarse, the nested rings of a folded field turned every
+// summit into a FINGERPRINT. Contours drawn as lines have no body, and a
+// folded field's contours nest so tightly that they are all line and no body.
+//
+// The slope does the work instead. One difference of the folded field along
+// the light axis, banded into four tones with nothing left showing through,
+// fills the hex with broad planes of light and shade. The fold is what makes
+// them angular: across a crease the slope flips sign in one step, so two
+// facets meet at a hard edge — which is the whole visual difference between
+// rock and pasture. On the smooth field of the hills the same technique gave
+// soft diagonal smears, which is why the hills do NOT use it.
+function ridgeSlope(wx, wy, cell, stream) {
+  return ridgeAt(wx + RELIEF_D, wy + RELIEF_D, cell, stream)
+       - ridgeAt(wx - RELIEF_D, wy - RELIEF_D, cell, stream);
+}
+
+// Limestone is the pale rock of the Aegean and red mountain is its iron-stained
+// cousin; they are the SAME landform, so they share every shape parameter and
+// differ only in stone colour. That is the honest reading of princip 20 in the
+// other direction: two things that really are the same kind of object must not
+// be pulled apart by form, or the map lies about what they are. The player's
+// reason to tell them apart is tin, and tin is carried by the deposit marker.
+// Five tones, opaque: the facets cover the hex completely, so the base fill is
+// no longer visible inside a mountain and the rock carries its own value range.
+//
+// The range is deliberately NOT the full one available. A first pass ran the
+// limestone from near-black to near-white and the massif turned into marble
+// camouflage — it read as an abstract pattern, it pulled the eye off every
+// city and unit on the map, and a large dark facet beside a large light one
+// reads as a HOLE rather than a peak. Princip 6 reserves the extremes for the
+// mountain's EDGE, not for its interior: inside the massif the rock is modelled
+// in a middle band, and the hard dark line goes around the outside of the whole
+// range (see the massif outline pass).
+//
+// The scree and the summits carry SEPARATE ramps. Sharing one ramp forced a
+// choice between a mountain that reads as rock and a mountain that keeps its
+// place on the value ladder, and measurement showed it losing both: with one
+// ramp dark enough to let the peaks stand out, limestone's whole hex fell from
+// L 203 to L 143 — it stopped being pale stone, which is the one thing
+// limestone is — and red mountain fell to L 106, three units from the coastal
+// sea it borders, which would have wiped out the shoreline exactly the way the
+// plains once wiped it out (princip 17). Two ramps let the ground sit where the
+// ladder needs it while the summits keep the range they need.
+const MTN_ROCK = {
+  mountain_limestone: {
+    screeLo: '#8E8A78', screeMid: '#ABA692', screeHi: '#C6C0A8',
+    black: '#615D50', deep: '#847F6E', shade: '#B0A992', lit: '#D8D0B6', sun: '#F0EAD6',
+  },
+  mountain_red: {
+    screeLo: '#82604A', screeMid: '#A07A5E', screeHi: '#BE9070',
+    black: '#5E3E2E', deep: '#8A5E46', shade: '#AE7C5C', lit: '#CE9C74', sun: '#E8BC96',
+  },
+};
+
+function drawMountain(ctx, cx, cy, terrain) {
+  const rock = MTN_ROCK[terrain];
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  const STEP = 2;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  // Scree, and only scree. Banding the facets across the FULL tonal range was
+  // tried and produced marble camouflage: soft organic swirls, because the
+  // slope of a smooth field varies smoothly even after folding, so no amount
+  // of tuning turns it into a peak. A peak is defined by its silhouette
+  // against what lies behind it — by occlusion — and a ground texture cannot
+  // occlude anything. The field's job here is therefore the one the forest
+  // floor already does: be the dark shared volume that the silhouettes resolve
+  // OUT of (princip 4 and princip 7 — wildland separates as light objects
+  // against dark mass, the opposite direction from cultivated open country).
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const g = ridgeSlope(wx, wy, MTN_CELL, 7373);
+      if (g > 0.055)       ctx.fillStyle = rock.screeHi;
+      else if (g > -0.030) ctx.fillStyle = rock.screeMid;
+      else                 ctx.fillStyle = rock.screeLo;
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ── Peaks ────────────────────────────────────────────────────────────────
+// NOT clipped to the hex, and drawn in a pass of its own after every tile's
+// ground is down — exactly like the canopy, and for exactly the same reason.
+// A summit that stops dead at the hex border is a tile; a summit allowed to
+// rise a few pixels above it OCCLUDES the hex behind, and occlusion is the
+// only cue a top-down map has for "this is tall". It is also princip 12's rule
+// applied to rock: the foot stays inside its hex, only the peak hangs over, so
+// a plain next to a mountain can never be misread as mountain.
+//
+// Princip 18 governs the inside of the range: ONE mass, no ink between the
+// peaks. The first Spearmen sprite outlined every man separately and read as a
+// barcode; a range with a line around every summit reads as a row of tents.
+// The peaks separate from each other by TONE alone — lit left face, shadowed
+// right face — and from the ground by being the light thing on a dark mass.
+//
+// A profile, not a triangle. A symmetric cone is the storybook shape the trees
+// already had to be talked out of: the apex sits off-centre, the two flanks
+// have different pitch, and one flank carries a shoulder. That asymmetry is
+// most of what separates a mountain from a tent.
+function peakProfile(q, r, i) {
+  // Wider than tall, and few of them. The first pass made 13–22 px summits up
+  // to 17 px high, three to five per hex, and a field of narrow steep cones
+  // reads as shark teeth or as a row of tents — the same trap the trees fell
+  // into before they were made bigger and fewer. A real massif is broad.
+  const w = 17 + rndInt(q, r, 2100 + i * 9, 11);   // 17–27 px across
+  const h = 8 + rndInt(q, r, 2200 + i * 9, 7);     // 8–14 px tall
+  const apex = 2 + Math.floor((w - 4) * (0.22 + rnd(q, r, 2300 + i * 9) * 0.48));
+  // The shoulder: a stretch of one flank that levels off before continuing
+  // down. Which flank, where and how deep are all seeded.
+  const shOn   = rnd(q, r, 2400 + i * 9) > 0.35;
+  const shLeft = rnd(q, r, 2500 + i * 9) > 0.55;
+  const shPos  = 0.45 + rnd(q, r, 2600 + i * 9) * 0.35;
+  const shCut  = 0.18 + rnd(q, r, 2700 + i * 9) * 0.22;
+
+  const prof = new Array(w);
+  for (let x = 0; x < w; x++) {
+    const t = x <= apex ? x / apex : (w - 1 - x) / (w - 1 - apex);
+    let y = h * Math.pow(Math.max(t, 0), 0.72);
+    if (shOn) {
+      const onFlank = shLeft ? x < apex : x > apex;
+      const along = shLeft ? x / apex : (w - 1 - x) / (w - 1 - apex);
+      if (onFlank && Math.abs(along - shPos) < 0.16) y -= h * shCut;
+    }
+    prof[x] = Math.max(1, Math.round(y));
+  }
+
+  // Facets. With one flat tone per flank the summit came out as a PYRAMID: two
+  // uniform planes meeting in a straight vertical seam at the apex, which is a
+  // solid, not a mountain. These are seeded runs two columns wide that step the
+  // face one tone darker — the same device as the shade strokes inside a tree
+  // crown, and for the same reason: an isolated dark pixel is a speck, a short
+  // connected run is the break between two rock faces.
+  const face = new Array(w);
+  for (let x = 0; x < w; x++) face[x] = rnd(q, r, 2800 + i * 40 + (x >> 1)) > 0.56;
+  return { w, h, apex, prof, face };
+}
+
+function drawPeak(ctx, rock, px, py, p) {
+  const x0 = Math.round(px - p.w / 2), y0 = Math.round(py);
+
+  // Contact shadow on the scree, cast down-right like every other shadow in
+  // this renderer. Without it the peak floats instead of standing on ground.
+  ctx.globalAlpha = 0.34;
+  ctx.fillStyle = '#241F18';
+  ctx.fillRect(x0 + 2, y0, p.w - 1, 2);
+  ctx.globalAlpha = 1;
+
+  for (let x = 0; x < p.w; x++) {
+    const hgt = p.prof[x];
+    const top = y0 - hgt;
+    // Light from the upper left: the flank before the apex faces it, the flank
+    // beyond it is turned away. One column of crest highlight sits on the lit
+    // side of the apex, which is what gives the summit an edge instead of a
+    // rounded top.
+    const lit = x < p.apex;
+    ctx.fillStyle = lit ? (p.face[x] ? rock.shade : rock.lit)
+                        : (p.face[x] ? rock.black : rock.deep);
+    ctx.fillRect(x0 + x, top, 1, hgt);
+    // The sunlit rim: the topmost pixel of the lit flank and the apex. Thin and
+    // reserved — this is the brightest rock on the map and princip 6 spends
+    // brightness on an edge, never on a field. A two-pixel version of this rim
+    // put a snowline on every summit and the range read as canvas tents.
+    if (x <= p.apex) {
+      ctx.fillStyle = rock.sun;
+      ctx.fillRect(x0 + x, top, 1, 1);
+    }
+    // The foot darkens into the scree, so the mass sits IN the ground rather
+    // than on top of it.
+    if (hgt > 4) {
+      ctx.fillStyle = rock.black;
+      ctx.fillRect(x0 + x, y0 - 2, 1, 2);
+    }
+  }
+}
+
+function drawPeaks(ctx, cx, cy, q, r, terrain) {
+  const rock = MTN_ROCK[terrain];
+  const peaks = [];
+  // Three to five summits per hex, spread out to the rim rather than huddled
+  // in the middle. A stand held to the inner half reads as an ICON placed on
+  // the hex to stand for "mountain" — the grove learned this the hard way —
+  // and it is the interleaving with the neighbouring hex's peaks that turns a
+  // block of mountain hexes into one range.
+  const n = 2 + rndInt(q, r, 2000, 3);
+  for (let i = 0; i < n; i++) {
+    const a = rnd(q, r, 2010 + i) * Math.PI * 2;
+    const d = Math.sqrt(rnd(q, r, 2050 + i)) * 15;
+    peaks.push({
+      x: cx + Math.cos(a) * d,
+      y: cy + Math.sin(a) * d,
+      p: peakProfile(q, r, i),
+    });
+  }
+  // Back to front: a summit lower down the hex is NEARER, so it must overlap
+  // the one behind it. Sorting is what makes the group read as one mass with
+  // depth rather than as several separate objects (princip 11).
+  peaks.sort((a, b) => a.y - b.y);
+  ctx.save();
+  for (const pk of peaks) drawPeak(ctx, rock, pk.x, pk.y, pk.p);
+  ctx.restore();
+}
+
 // ── Terrain detail — Settlers 2 quality ──────────────────────────────────
 function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
   ctx.save();
@@ -706,30 +1064,12 @@ function drawDetail(ctx, cx, cy, terrain, seed, frame, q, r) {
       break;
     }
     case 'hills': {
-      // rounded pebbles
-      ctx.fillStyle = '#A08050';
-      for (let i = 0; i < 3; i++) {
-        const ox = ((seed * (i*5+1)) & 0x17) - 10;
-        const oy = ((seed * (i*7+2)) & 0x13) - 8;
-        ctx.beginPath(); ctx.ellipse(cx+ox, cy+oy, 3.5, 2, 0.3, 0, Math.PI*2); ctx.fill();
-      }
+      drawHills(ctx, cx, cy);
       break;
     }
     case 'mountain_limestone':
     case 'mountain_red': {
-      // angular shards
-      const mc = terrain === 'mountain_limestone' ? '#B0A888' : '#A06048';
-      ctx.fillStyle = mc;
-      for (let i = 0; i < 2; i++) {
-        const ox = ((seed * (i*9+3)) & 0x13) - 8;
-        const oy = ((seed * (i*6+1)) & 0x0f) - 6;
-        ctx.beginPath();
-        ctx.moveTo(cx+ox, cy+oy-5);
-        ctx.lineTo(cx+ox+4, cy+oy+3);
-        ctx.lineTo(cx+ox-4, cy+oy+3);
-        ctx.closePath();
-        ctx.fill();
-      }
+      drawMountain(ctx, cx, cy, terrain);
       break;
     }
     case 'scrub_maquis': {
@@ -1153,6 +1493,17 @@ export function render() {
     const {x, y} = hexPx(t.q, t.r);
     drawCanopy(ctx, x, y, t.q, t.r);
   }
+
+  // 1b2. Peak pass — same reasoning as the canopy: a summit has to be allowed
+  // to rise above its own hex's border and occlude the hex behind it, which is
+  // the only way a map seen from above can say "tall". Drawn north-to-south
+  // over the whole map, not just within a hex, so a peak in the row below
+  // correctly overlaps the range behind it.
+  const peakTiles = State.tileData
+    .filter(t => t.terrain === 'mountain_limestone' || t.terrain === 'mountain_red')
+    .map(t => ({ t, p: hexPx(t.q, t.r) }))
+    .sort((a, b) => a.p.y - b.p.y);
+  for (const { t, p } of peakTiles) drawPeaks(ctx, p.x, p.y, t.q, t.r, t.terrain);
 
   // 1c. Deposit markers — game information, so above all terrain passes.
   if (State.camera.zoom >= ROAD_DEPOSIT_ZOOM) {

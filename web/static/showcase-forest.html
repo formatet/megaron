@@ -49,9 +49,10 @@ import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
 // r = row - floor(q/2) så blocket blir rektangulärt på skärmen i stället för
 // en romb. Tecken:
 //   ~ deep_sea   c coastal_sea   p plains   F forest_olive_grove
-//   h hills      m mountain_limestone       . fog
+//   h hills      m mountain_limestone       M mountain_red
+//   s scrub_maquis            d semi_desert            . fog
 //
-// Två fixturer, valda med ?fixture=. Terrängen under arbete måste dominera
+// Tre fixturer, valda med ?fixture=. Terrängen under arbete måste dominera
 // bilden — en remsa på tre hexar räcker inte för att bedöma om ett fält läser
 // som massa, och massa är hela frågan (megaron_terrangrendering princip 1–4).
 // Övriga terränger finns kvar som grannar, för det är i mötet en ändring
@@ -86,6 +87,31 @@ const FIXTURES = {
     '~~cppppp.',
     '~~~cppp..',
   ],
+  // Höjdfamiljen dominerar: ett sammanhängande kalkstensmassiv (m) med en röd
+  // rygg (M) i, kullar (h) som skirtar det — vilket också är den sanna
+  // geografin: kullar ligger mellan slätt och berg, inte var som helst.
+  //
+  // Grannarna är valda ur den UPPMÄTTA valörkollisionen, inte ur smak
+  // (princip 17). I luminans ligger idag `hills` 167,5 och `scrub_maquis`
+  // 169,2 — 1,7 isär, alltså samma yta i gråskala; `mountain_red` 156,4 ligger
+  // 2,4 från olivlunden och 11,1 från kullarna. Därför MÅSTE scrub, halvöken
+  // och lund stå i samma bild som de tre höjdterrängerna, annars är
+  // kollisionen osynlig och riggen bevisar ingenting.
+  //
+  // Massivet rör kustvattnet i nordväst med flit: berg mot hav är klippkust,
+  // det möte där en bergskant har mest att bevisa (kontrastbudgeten, princip 6,
+  // reserverar sina ytterligheter åt just kustlinje och bergskant).
+  relief: [
+    '~cmmmmmhh',
+    'cpmmmMMhh',
+    'cpshmMMhh',
+    'cphhmmhhs',
+    'cphhhhhhd',
+    'cpFhhhmmd',
+    '~cFhhhmm.',
+    '~cpshhMh.',
+    '~~cpshh..',
+  ],
 };
 
 const FIXTURE = new URLSearchParams(location.search).get('fixture') || 'forest';
@@ -94,7 +120,7 @@ const ROWS = FIXTURES[FIXTURE] || FIXTURES.forest;
 const TERRAIN = {
   '~': 'deep_sea', c: 'coastal_sea', p: 'plains',
   F: 'forest_olive_grove', h: 'hills', m: 'mountain_limestone',
-  s: 'scrub_maquis', d: 'semi_desert', '.': 'fog',
+  M: 'mountain_red', s: 'scrub_maquis', d: 'semi_desert', '.': 'fog',
 };
 
 // row/col -> axial. Enda stället som känner till offseten.
@@ -117,9 +143,14 @@ const tileAt = (col, row) => {
 // arbete — markören ritas av drawDepositIcons() och en ny marktextur under den
 // är precis så cedar-markören en gång drunknade i lövverket.
 // Fyndigheten måste sitta på en hex som terrängen faktiskt har.
+// Reliefixturens fyndigheter följer mapgens sanning i stället för att spridas
+// jämnt: tenn och silver sitter BARA på mountain_limestone, koppar bara på
+// hills (mapgen.go §P1c). Det är precis den geografin spelaren ska kunna läsa
+// ur höjdterrängen — och därför måste markörerna överleva den nya marken.
 const DEPOSITS = {
   forest: [[6, 2, 'cedar_deposit']],
   plains: [[3, 2, 'tin_deposit'], [6, 4, 'cedar_deposit']],
+  relief: [[4, 1, 'tin_deposit'], [5, 0, 'silver_deposit']],
 };
 tileAt(7, 1).copper_deposit = true;
 (DEPOSITS[FIXTURE] || []).forEach(([col, row, kind]) => { tileAt(col, row)[kind] = true; });
@@ -153,6 +184,7 @@ State.provinceData = [
 const RURAL = {
   forest: [[4, 3, 'lumbermill']],
   plains: [[4, 3, 'farm'], [6, 3, 'lumbermill']],
+  relief: [[3, 3, 'mine']],
 };
 State.ruralData = (RURAL[FIXTURE] || []).map(
   ([col, row, type]) => Object.assign(ax(col, row), { building_type: type }),
@@ -164,6 +196,10 @@ State.ruralData = (RURAL[FIXTURE] || []).map(
 const UNITS = {
   forest: [[3, 6], [5, 2], [6, 5]],
   plains: [[3, 6], [6, 2], [7, 4]],
+  // En aktör på VARDERA höjdterrängen: kalksten, röd bergrygg, kulle.
+  // Kalkstenen är dessutom den ruta som redan är utpekad som enhetens värsta
+  // (princip 21) — den ska stå i bilden, inte i en anteckning.
+  relief: [[4, 2], [6, 2], [3, 4]],
 };
 State.unitsData = (UNITS[FIXTURE] || []).map(
   ([col, row], i) => Object.assign(ax(col, row),
@@ -195,6 +231,29 @@ window.SHOWCASE = {
     State.lastSeaTick = -1;
     State.dirty = true;
     render();
+  },
+  // Var varje hex hamnade på skärmen, i CSS-pixlar relativt #map-root, plus
+  // vilken terräng som ligger där. Finns för att `tools/terrainstats.py` ska
+  // kunna mäta FÄRDIGRENDERAD yta per terräng utan att kopiera fixturen —
+  // princip 17 kräver att hela luminanstabellen vägs om efter varje tonändring,
+  // och nominella basfärger duger inte längre när terrängen bär egen textur:
+  // det är den ritade ytans medelvärde och spridning som ögat läser.
+  tiles() {
+    return State.tileData.map(t => {
+      const { x, y } = hexPx(t.q, t.r);
+      // Canvasens backing store är lika stor som elementet i CSS-pixlar
+      // (`canvas.width === 900` när #map-root är 900 px brett) — SCALE är
+      // renderarens INTERNA ctx.scale, inte en upplösningsfaktor. Att dela med
+      // SCALE här sköt varje provpunkt ur läge och gav mätvärden som såg ut som
+      // en trasig palett; verktyget hade fel, inte koden.
+      const k = State.camera.zoom * SCALE;
+      return {
+        terrain: t.terrain,
+        sx: State.camera.x + x * k,
+        sy: State.camera.y + y * k,
+        rin: (22 * Math.sqrt(3) / 2) * k,   // hexens inradie på skärmen
+      };
+    });
   },
   ready: true,
 };
