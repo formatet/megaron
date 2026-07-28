@@ -1567,6 +1567,149 @@ function drawPeak(ctx, rock, px, py, p) {
   }
 }
 
+// ── Kullarnas kroppar ────────────────────────────────────────────────────
+// Timothy 2026-07-28: *"kullarna ser ut som om att de är ritade ovanifrån med
+// en svag penna."* Det är en exakt diagnos av vad koden faktiskt gjorde, och
+// den namnger princip 26: höjd läses som OCKLUSION, inte som markskuggning.
+// `drawHills` är ett terrasserat höjdfält — en hillshade, ritad i PLAN. Den
+// säger var det är högt. Den säger aldrig att något står i vägen för något
+// annat, och det är det senare ögat läser som höjd. Bergen ritas i PROFIL, och
+// bergen fungerar.
+//
+// Fältet blir kvar. Det är kullens MARK, precis som skreen är bergets, och det
+// är fältet som håller ihop landformen över hexgränserna. Det som saknades var
+// kroppen ovanpå den.
+//
+// Tre saker skiljer kullen från berget, och alla tre är det som gör den till en
+// kulle:
+//   1. **Profilen är en kupol, inte ett tält.** Bergets flanker är raka linjer
+//      mot en spets; en cosinusklocka rundar krönet. Rak flank + låg höjd gav en
+//      pyramid som såg ut som ett berg någon satt sig på.
+//   2. **Låg och bred.** 8–14 px hög mot bergets 15–25, och 46–70 px bred mot
+//      hexens 44. Höjd/bredd-förhållandet ÄR skillnaden — inte storleken.
+//   3. **Inget vitt krön.** Kontrastbudgeten (princip 6) har lagt kartans
+//      ljusaste pixlar på bergstoppen och strandbandet. En kulle som tar samma
+//      valör stjäl bergets läsning; kullens krön får HILL_RIM, som är den ton
+//      fältet redan använder för sina krönkanter.
+//
+// Som bergen får kroppen luta ut över grannhexen och över fog — Timothys
+// stående beslut 2026-07-27: ett massiv som syns resa sig in i dimman är en
+// feature, för dimman ska ge ett löfte. MARKEN förblir klippt till sin hex, så
+// ingen slätt blir kullterräng; bara kroppen lutar.
+const SWELL_TONES = [HILL_RIM, HILL_HIGH, HILL_LIT, HILL_LOW, HILL_HOLLOW];
+
+function swellProfile(q, r, i) {
+  const w = 32 + rndInt(q, r, 3100 + i * 7, 18);   // 32–49 px — hexen är 44
+  const h = 7 + rndInt(q, r, 3200 + i * 7, 7);     // 7–13 px, bergens är 15–25
+  const apex = Math.round(w * (0.34 + rnd(q, r, 3300 + i * 7) * 0.24));
+
+  // En eller två bikrön. Fler gjorde ryggen knölig — en kulle har ett par
+  // svällningar, inte en kam. Bergens 2–3 spurs finns för att bryta tältet;
+  // kupolen behöver inte brytas lika hårt, den är redan rund.
+  const tops = [{ x: apex, h }];
+  const spurs = 1 + rndInt(q, r, 3350 + i * 7, 2);
+  for (let s = 0; s < spurs; s++) {
+    tops.push({
+      x: Math.round(w * (0.12 + rnd(q, r, 3400 + i * 7 + s * 3) * 0.80)),
+      h: h * (0.45 + rnd(q, r, 3450 + i * 7 + s * 3) * 0.40),
+    });
+  }
+
+  const prof = new Array(w);
+  for (let x = 0; x < w; x++) {
+    let y = 0;
+    for (const t of tops) {
+      const dx = x - t.x;
+      // Räckvidden härleds ur BREDDEN, inte ur höjden. Bergen skalar sin reach
+      // på höjden (1,15/0,75 × h) och kan göra det för att de är höga; med en
+      // kulles 7–13 px gav samma grepp en reach på 47 px mot en halvbredd på 35
+      // — kupolen kom aldrig ner inom sin egen bredd, klipptes rakt av och blev
+      // ett brett platt BAND som läste som sanddyn. Det är precis det
+      // peakProfile varnar för ("a flat-topped mesa"), och samma fälla gäller
+      // dubbelt när formen är låg. Solsidan är den flackare, som hos bergen.
+      const reach = w * (dx < 0 ? 0.34 : 0.26);
+      const u = Math.min(1, Math.abs(dx) / reach);
+      // Cosinusklocka: rundat krön OCH mjuk utlöpning i foten. En linjär ramp
+      // (bergens) gav en pyramid; den här ger en kulle.
+      y = Math.max(y, t.h * 0.5 * (1 + Math.cos(Math.PI * u)));
+    }
+    prof[x] = Math.max(0, Math.round(y));
+  }
+  return { w, h, apex, prof };
+}
+
+function drawSwell(ctx, px, py, p) {
+  const x0 = Math.round(px - p.w / 2), y0 = Math.round(py);
+
+  // Kontaktskuggan, nedåt-höger som allt annat i renderaren. Den är vad som
+  // säger att kroppen VILAR på marken i stället för att sväva ovanpå den.
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = '#241F18';
+  for (let x = 0; x < p.w; x++) {
+    if (p.prof[x] < 2) continue;
+    ctx.fillRect(x0 + x + 2, y0, 1, 2);
+  }
+  ctx.globalAlpha = 1;
+
+  for (let x = 0; x < p.w; x++) {
+    const hgt = p.prof[x];
+    if (hgt < 1) continue;
+    const top = y0 - hgt;
+    const lit = x < p.apex;
+    // Tonen väljs på HÖJDEN i kolumnen, inte per ray som hos bergen. Bergens
+    // fan-striering hör till klippa; en gräsklädd kulle har inga ådror, och
+    // strieringen gjorde den fjällig. Här är det en ren höjdramp: krönet
+    // ljusast, foten mörkast, och skuggsidan hela rampen ett steg ned.
+    // Rampen går VERTIKALT i kolumnen: krön ljust, fot mörkt. Första versionen
+    // valde en ton per kolumn ur kolumnens HÖJD — höga kolumner blev ljusa hela
+    // vägen ner, låga mörka — och det är en horisontell gradient, alltså en
+    // mjuk kudde, inte en kropp. Volym kommer av att tonen ändras NEDFÖR
+    // formen; bergen gör samma sak per ray. Skuggsidan är hela rampen ett steg
+    // ned, vilket är vad som ger krönet en kant att skymma bakom.
+    const nT = SWELL_TONES.length;
+    for (let y = 0; y < hgt; y++) {
+      const v = hgt > 1 ? y / (hgt - 1) : 0;      // 0 = krön, 1 = fot
+      const i = Math.min(nT - 1, Math.floor(v * (nT - 1)) + (lit ? 0 : 1));
+      ctx.fillStyle = SWELL_TONES[i];
+      ctx.fillRect(x0 + x, top + y, 1, 1);
+    }
+    // Krönkanten: EN pixel längs solsidans rygg, i fältets egen krönton. Det är
+    // den kant som gör att ögat läser en linje att gå bakom — men den är
+    // HILL_RIM och inte bergens vita, för ljusaste-pixeln är upptagen.
+    if (lit && hgt > 1) {
+      ctx.fillStyle = HILL_RIM;
+      ctx.fillRect(x0 + x, top, 1, 1);
+    }
+  }
+}
+
+// Kullhexens kroppar. En eller två per hex — fler gör en hexagon full av
+// knölar, vilket är den texturläsning princip 1 finns för att stoppa.
+function drawSwells(ctx, cx, cy, q, r) {
+  const n = 1 + rndInt(q, r, 3000, 2);
+  const swells = [];
+  for (let i = 0; i < n; i++) {
+    const a = rnd(q, r, 3010 + i) * Math.PI * 2;
+    // Förskjutningen är HALVERAD mot bergens tolv px. Kroppen får luta ut över
+    // grannen och över fog (Timothy 2026-07-27) — men på en kullhex ensam i
+    // dimman blev en förskjuten låg kupol en tunn kil med hård kant långt ute i
+    // det svarta, och det läser som en trasig sprite, inte som ett massiv som
+    // reser sig in i dimman. Bergen bär samma utstick för att deras siluett är
+    // hög nog att läsas som form på egen hand; en låg kropp är det inte.
+    const d = Math.sqrt(rnd(q, r, 3050 + i)) * 7;
+    swells.push({
+      x: cx + Math.cos(a) * d,
+      // Foten under hexmitten, av samma skäl som bergens: med foten i mitten
+      // blir det ett band bar mark längs nederkanten, och bar mark under en
+      // landform är precis vad som gör hexagonen synlig igen.
+      y: cy + Math.sin(a) * d * 0.6 + 7,
+      p: swellProfile(q, r, i),
+    });
+  }
+  swells.sort((a, b) => a.y - b.y);
+  for (const s of swells) drawSwell(ctx, s.x, s.y, s.p);
+}
+
 function drawPeaks(ctx, cx, cy, q, r, terrain) {
   const rock = MTN_ROCK[terrain];
   const peaks = [];
@@ -2259,6 +2402,24 @@ export function render() {
   }
   drawSwellField(ctx, State.animFrame >> 5);
   pass('sea');
+
+  // 1a4. Kullarnas kroppar — efter all mark, före lövverket. Efter marken av
+  // samma skäl som bergen: en kropp som ska SKYMMA får inte målas över av
+  // grannens grundfyllning. Före lövverket för att träd står PÅ en kulle, inte
+  // bakom den.
+  //
+  // Sorterade N→S över hela kartan, inte bara inom hexen: en sydligare kulle är
+  // NÄRMARE och måste skymma den nordligare, och det avgörs mellan hexar lika
+  // ofta som inom dem. `State.tileData` har ingen ORDER BY från servern, så utan
+  // den här sorteringen vore ritordningen mellan två kullhexar godtycklig —
+  // samma latenta indeterminism som lövverket bär och som E4 ska lösa där.
+  const swellTiles = State.tileData.filter(t => t.terrain === 'hills');
+  swellTiles.sort((a, b) => (2 * a.r + a.q) - (2 * b.r + b.q));
+  for (const t of swellTiles) {
+    const { x, y } = hexPx(t.q, t.r);
+    drawSwells(ctx, x, y, t.q, t.r);
+  }
+  pass('swells');
 
   // 1b. Canopy pass — after every tile's ground is down, so a crown may hang
   // over the hex border without the next tile's floor painting over it.
