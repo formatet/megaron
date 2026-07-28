@@ -18,6 +18,12 @@ det inte basfärgen ögat läser utan den ritade ytans medelvärde — bergens s
 täcker hexen helt, så deras basfärg syns numera bara genom klippkantens
 antialiasing. Den här mätaren läser pixlarna som faktiskt hamnade på skärmen.
 
+TVÅ KOLUMNER, OCH PARNINGEN GÅR PÅ DEN ANDRA. `L` är hexens medelvärde och
+blandar in objekten; `mark` är p75 och är den ton marken faktiskt har. För en
+terräng som bär objekt skiljer de sig kraftigt, och det är `mark` som ska
+jämföras mot grannen — se kommentaren vid parningen nedan för fallet som
+avslöjade det (olivlunden, 2026-07-28).
+
 Vad den INTE mäter (princip 6 gäller): medelluminans är inte mänsklig
 diskriminerbarhet. Två terränger med samma medelvärde kan vara omöjliga att
 förväxla om den ena är platt och den andra modellerad — spridningen i `sd`
@@ -86,18 +92,31 @@ def main(query=""):
             continue
         mean = sum(xs) / len(xs)
         sd = math.sqrt(sum((x - mean) ** 2 for x in xs) / len(xs))
-        stats[terrain] = (mean, sd, len(xs))
+        xs.sort()
+        ground = xs[min(len(xs) - 1, int(len(xs) * 0.75))]
+        stats[terrain] = (mean, sd, len(xs), ground)
 
-    print(f"{'terräng':22} {'L':>7} {'sd':>7} {'px':>7}")
-    for terrain, (mean, sd, n) in sorted(stats.items(), key=lambda kv: -kv[1][0]):
-        print(f"{terrain:22} {mean:7.1f} {sd:7.1f} {n:7d}")
+    print(f"{'terräng':22} {'L':>7} {'mark':>7} {'sd':>7} {'px':>7}")
+    for terrain, (mean, sd, n, g) in sorted(stats.items(), key=lambda kv: -kv[1][3]):
+        print(f"{terrain:22} {mean:7.1f} {g:7.1f} {sd:7.1f} {n:7d}")
 
-    print(f"\nPar närmare än {NEAR:.0f} L (princip 17 — misstänkta, inte dömda):")
+    # PARNING SKER PÅ `mark`, INTE PÅ `L`. Hexmedelvärdet blandar in objekten,
+    # och för varje terräng som bär sådana ljuger det: olivlunden mätte L 133,2
+    # mot slättens 131,7 och rapporterades som en kollision på 1,4 — men det
+    # jämförde lund-MED-TRÄD mot ren slätt. Markerna ligger 20 L isär (154,0 mot
+    # 133,7) och kolliderar inte alls. Kalkstenen har samma spann (p25 105 →
+    # p90 148). Ett falskt par är dyrare än ett missat: det skickar en hel slice
+    # på att laga något som inte är trasigt.
+    #
+    # p75 är markens ton därför att objekten är MÖRKA mot sin mark i det här
+    # bildspråket (kronor, skree, siluetter — princip 11). Vänds det någon gång,
+    # vänds den här percentilen med det.
+    print(f"\nPar närmare än {NEAR:.0f} L i MARKTON (princip 17 — misstänkta, inte dömda):")
     keys = list(stats)
     found = False
     for i in range(len(keys)):
         for j in range(i + 1, len(keys)):
-            d = abs(stats[keys[i]][0] - stats[keys[j]][0])
+            d = abs(stats[keys[i]][3] - stats[keys[j]][3])
             if d < NEAR:
                 found = True
                 print(f"  {d:5.1f}  {keys[i]} ↔ {keys[j]}"
