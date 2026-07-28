@@ -731,6 +731,92 @@ function drawPlainsField(ctx, cx, cy) {
   ctx.restore();
 }
 
+// ── Markövergången ───────────────────────────────────────────────────────
+// Slätten mötte allt utom havet på en rak hexkant. Uppmätt tvärs en och samma
+// bild vid 1:1: mot halvöknen ΔL 48 över TRE pixlar, mot skruben ΔL 15 över
+// EN — medan kusten bär ΔL 28 över TOLV pixlar och fyra mellansteg. Det är
+// därför kartan läser som brickor överallt utom vid vattnet, och varför den
+// enda gräns som läser som landskap är den enda som fick en övergångszon.
+//
+// Att svaret ligger i KANTEN och inte i ytan är mätt, inte antaget: djuphavet
+// mäter sd 7,3 och slätten 4,0 — nästan lika platta, och den ena läser som
+// levande hav. Havet fick aldrig textur i mitten; det fick kanter och rörelse.
+// Därför rör det här passet inte slättens fält, och princip 15 (den största
+// ytan ska vara den tystaste) står orörd: den handlar om ytan, inte om mötet.
+//
+// Greppet är kustens, med en skillnad. Strandbandet har en EGEN ton — sanden
+// är mätt ur referensen och är kartans ljusaste yta. Två marktyper som möts
+// har ingen tredje ton mellan sig; där blöder de in i varandra. Passet ritar
+// alltså GRANNENS baston in i vår kantzon med en täthet som avtar inåt,
+// dithrad per block på det globala rastret (princip 16: ordnad dither ger
+// schackväv, per-block-brus ger mark).
+//
+// Varje hex ritar bara IN I SIG SJÄLV. Grannen gör sin egen sida, så zonen
+// blir tvåsidig utan att en enda pixel målas två gånger — och ingen pixel
+// hamnar utanför den hex passet känner. Det är också vad som gör FOW-regeln
+// gratis: `terrainAt` svarar `'fog'` för en osedd ruta och `undefined` utanför
+// kartan, och ingetdera står i GROUND_BLEND, alltså kan zonen aldrig avslöja
+// en granne spelaren inte sett. Samma regel som skogsbrynet och strandbandet.
+//
+// Bergen står UTANFÖR med flit. Deras massiv är siluetter som redan svämmar
+// över hexkanten och spiller rasbrant nedför — de HAR sin övergång, och en
+// dithrad markzon under en rasbrant vore två bilder staplade i samma hex.
+const GROUND_BLEND = new Set([
+  'plains', 'semi_desert', 'scrub_maquis', 'hills',
+  'forest_olive_grove', 'river_valley', 'river_delta',
+]);
+
+// Zonens djupaste räckvidd in i hexen. Bredare än strandbandets 6,8: en
+// strandlinje ÄR en linje, en marktypsgräns är diffus. Men "lite" är
+// instruktionen (Timothy 2026-07-28) — zonen ska läsa som att marken byter
+// karaktär, inte som en gradient mellan två fält. Det är exponenten nedan som
+// bär den återhållsamheten: kvadraten håller grannens ton till kantens
+// närmaste tredjedel och lämnar resten av zonen åt vår egen mark.
+// Amplituden är ett ÖGONBESLUT, inte ett mätbeslut, och det är värt att veta
+// varför: övergångsbredden mättar. 7/0,60, 9/0,85 och 12/0,95 gav alla 31 px
+// på samma snitt tvärs slätt→halvöken (mot masters 10). Måttet svarar på
+// "finns det en zon?", inte på "hur stark är den" — så det kan grinda att
+// slicen gjorde sitt jobb, men aldrig välja styrkan. Den valdes på bild vid
+// 1:1 (Timothy 2026-07-28): 12/0,95 blandade grönt och gult så brett att
+// gränsen slutade gå att identifiera på ett ögonkast, vilket är en
+// spelbarhetskostnad och inte en smakfråga.
+const BLEND_MAX  = 7.0;
+const BLEND_STEP = 3;
+const BLEND_PEAK = 0.60;   // tätheten VID kanten; aldrig 1, eller blir zonen en rand
+
+function drawGroundBlend(ctx, cx, cy, q, r, terrain) {
+  const pts = hexPts(cx, cy);
+  for (let i = 0; i < HEX_DIRS.length; i++) {
+    const nt = terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]);
+    if (nt === terrain || !GROUND_BLEND.has(nt)) continue;
+    const nx = DIR_NX[i], ny = DIR_NY[i];
+    ctx.fillStyle = TERRAIN_BASE[nt].c0;
+    const [bx0, by0, bx1, by1] = edgeBox(pts, EDGE_OF_DIR[i], BLEND_MAX, 0);
+    for (let wy = Math.floor(by0 / BLEND_STEP) * BLEND_STEP; wy <= by1; wy += BLEND_STEP) {
+      for (let wx = Math.floor(bx0 / BLEND_STEP) * BLEND_STEP; wx <= bx1; wx += BLEND_STEP) {
+        const dx = wx + BLEND_STEP / 2 - cx, dy = wy + BLEND_STEP / 2 - cy;
+        const reach = dx * nx + dy * ny;
+        if (reach < R_IN - BLEND_MAX || reach > R_IN) continue;
+        // Sidledsvillkoret. En skalärprodukt mot en kantnormal beskriver en
+        // OÄNDLIG remsa, inte en kant — utan det här rann zonen vidare längs
+        // remsan och la grannens ton långt inne på fel del av hexen.
+        if (Math.abs(-dx * ny + dy * nx) > S / 2) continue;
+        // Bredden ur världsrymdsbruset i punkten själv, så zonen vandrar
+        // obrutet vidare in i nästa hex längs samma gräns. Cellen är MINDRE
+        // än en hexkant (11 mot 22 px) med flit: samplad grövre blev bredden
+        // nästan konstant längs varje kant och zonen ritade hexagonen.
+        const w = 3.5 + 5.5 * noiseAt(wx, wy, 11, 4242);
+        if (reach < R_IN - w) continue;
+        const t = (reach - (R_IN - w)) / w;
+        const j = hash32(Math.floor(wx / BLEND_STEP), Math.floor(wy / BLEND_STEP), 8383)
+                  / 4294967296;
+        if (j > BLEND_PEAK * t * t) continue;
+        ctx.fillRect(wx, wy, BLEND_STEP, BLEND_STEP);
+      }
+    }
+  }
+}
+
 // ── Havet och kusten ─────────────────────────────────────────────────────
 // Tre pass med samma mekanism (skalärprodukt mot DIR_N) och ett gemensamt
 // ärende: säga vad som är vatten, vad som är land och var de möts.
@@ -2136,6 +2222,18 @@ export function render() {
     drawDetail(ctx, x, y, t.terrain, seed, t.q, t.r);
   }
   pass('ground');
+
+  // 1a1. Markövergången — grannens ton blöder in i vår kantzon där två
+  // marktyper möts. Egen loop av samma skäl som strandbandet nedan: zonen är
+  // en egenskap hos MÖTET mellan två hexar, inte hos terrängen i en av dem.
+  // Före strandbandet, för sanden är kartans ljusaste yta och ska inte dithras
+  // sönder av en markzon ritad ovanpå den.
+  for (const t of State.tileData) {
+    if (!GROUND_BLEND.has(t.terrain)) continue;
+    const { x, y } = hexPx(t.q, t.r);
+    drawGroundBlend(ctx, x, y, t.q, t.r, t.terrain);
+  }
+  pass('blend');
 
   // 1a2. Strandbandet — sand på LANDSIDAN längs varje kant mot hav. Klippt.
   // Egen loop och inte en gren i drawDetail: bandet är en egenskap hos MÖTET
