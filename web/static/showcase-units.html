@@ -25,7 +25,7 @@
 <style>
   body { margin: 0; background: #14100C; color: #E8DCC8;
          font: 13px/1.5 ui-monospace, monospace; padding: 12px; }
-  #map-root { position: relative; width: 980px; height: 1010px; }
+  #map-root { position: relative; width: 1240px; height: 1010px; }
   #hex-canvas { display: block; width: 100%; height: 100%; }
   #tile-tooltip { position: absolute; display: none; }
   h1 { font-size: 15px; margin: 0 0 8px; color: #C8B48A; }
@@ -39,7 +39,7 @@
 <h1>Aktörsläsbarhet — nio aktörer över varje terräng de måste överleva</h1>
 <p>Rad uppifrån: Spearmen · Elite Infantry · War Chariot · Nomadic Host · Karavan ·
    Runner · Galley · War Galley · Emporos.
-   Kolumn: slätt · olivlund · kullar · kust · berg · slätt(anfall) · dimma.</p>
+   Kolumn: slätt · olivlund · kullar · skrub · halvöken · kust · berg · slätt(anfall) · dimma.</p>
 <div id="map-root">
   <canvas id="hex-canvas"></canvas>
   <div id="tile-tooltip"></div>
@@ -57,6 +57,8 @@ const COLS = [
   { t: 'plains',             label: 'slätt' },
   { t: 'forest_olive_grove', label: 'olivlund' },
   { t: 'hills',              label: 'kullar' },
+  { t: 'scrub_maquis',       label: 'skrub' },
+  { t: 'semi_desert',        label: 'halvöken' },
   { t: 'coastal_sea',        label: 'kust' },
   { t: 'mountain_limestone', label: 'berg' },
   { t: 'plains',             label: 'anfall',  intent: 'attack' },
@@ -153,7 +155,10 @@ COLS.forEach((c, col) => {
 State.selectedHex = ax(0, 0);
 
 State.camera.zoom = parseFloat(params.get('zoom') || '1.4');
-const mid = ax(3, 4);
+// Mittkolumnen följer COLS-längden, annars måste kameran hand­justeras varje
+// gång en terräng läggs till — och en kolumn som glider utanför duken ser ut
+// som ett renderingsfel i stället för som en riggbugg.
+const mid = ax((COLS.length - 1) / 2, 4);
 const c = hexPx(mid.q, mid.r);
 State.camera.x = canvas.width / 2 - c.x * State.camera.zoom * SCALE;
 State.camera.y = canvas.height / 2 - c.y * State.camera.zoom * SCALE;

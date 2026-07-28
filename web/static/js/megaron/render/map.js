@@ -44,7 +44,11 @@ const TERRAIN_BASE = {
   // through. Update these whenever MTN_ROCK moves.
   mountain_limestone: {c0:'#ABA692', c1:'#8E8A78'},
   mountain_red:       {c0:'#A07A5E', c1:'#82604A'},
-  scrub_maquis:       {c0:'#A8B860', c1:'#909A48'},
+  // Skruben lämnade det gula registret (`#A8B860`, L 169) och gick ner i
+  // gråsage. Skälet står vid drawScrubField: 169 låg 2,3 L från kullarnas
+  // markton och de delar 35 hexkanter i världsfixturen. Se den kommentaren
+  // för varför 152 är max-min-valet och vad det kostar mot lundens golv.
+  scrub_maquis:       {c0:'#A3AC6A', c1:'#8A9354'},
   semi_desert:        {c0:'#D4B878', c1:'#C0A060'},
   fog:                {c0:'#1C1C1C', c1:'#252018'},
 };
@@ -725,6 +729,157 @@ function drawPlainsField(ctx, cx, cy) {
       else if (n < 0.86) { ctx.globalAlpha = 0.30; ctx.fillStyle = PLAINS_LIGHT; }
       else               { ctx.globalAlpha = 0.26; ctx.fillStyle = PLAINS_DRY; }
       ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ── Torrmarken — halvöknen och skruben ───────────────────────────────────
+// De två sista legacy-markterrängerna, och EN slice därför att de delade rot:
+// båda ritade isolerade märken på platt färg (fem `ctx.arc()` r=1,5 respektive
+// tre 1×1-rutor), båda med kantutjämning som pixelidiomet förbjuder, och båda
+// ur den gamla per-hex-seeden `(q*137+r*31)&0xff` — så texturen började om vid
+// varje hexkant och hexen ritade sig själv (princip 2, 10, 14).
+//
+// VAR TEXTUREN HÖR HEMMA. Princip 15 säger att den största ytan ska vara den
+// tystaste, och slätten är den ytan. Samma mätning ur referensen säger
+// motsatsen om det HÄR registret: den gröna slätten löper på sd 1–9, den torra
+// guldmarken på 12–29. Halvöknen är alltså den terräng där struktur är rätt
+// svar — och den låg på sd 1,7, kartans plattaste yta, plattare än djuphavet.
+//
+// GRANNSKAPET STYR TONVALET, INTE TABELLEN. Räknat på världsfixturen (2 240
+// hexar): skruben gränsar 67 gånger mot slätt, 35 mot kullar, 19 mot halvöken
+// och 13 mot kustvatten. Halvöknen gränsar BARA mot skrub (19) och slätt (7) —
+// noll gånger mot kullarna. Det förklarar mapgens egen tabell (`terrainTable`,
+// mapgen.go): halvöken är bandMid+zoneArid, kullar är bandMid+zoneMoist, och
+// mellan dem ligger zoneDry = skrub. De två kan bara mötas där fuktfältet
+// hoppar två zoner över en hexkant. Det uppmätta paret `hills ↔ semi_desert`
+// 3,9 är alltså sant OCH svarar på en fråga kartan inte ställer; den gräns som
+// finns på riktigt är `hills ↔ scrub` (35 kanter, 2,3 L isär i markton).
+const DRY_STEP = 3;   // samma korn som skogsbottnen — torr mark har finare grus än en åker
+
+// TONVALET, OCH VARFÖR MITTEN INTE VAR SVARET. Skruben låg på 169 i markton,
+// 2,3 från kullarna. Det matematiska max-min-läget mot dess två stora grannar
+// är mitt emellan slätten (137) och kullarna (171), alltså 152 — och det
+// PRÖVADES och föll vid 1:1: markkolumnen låg då mycket riktigt 15 L från
+// båda, men hexens MEDELVÄRDE sjönk till 138,6 mot slättens 132,7, och
+// gränsen skrub/slätt försvann ur bilden. Det är den vanligaste gränsen på
+// kartan (67 kanter). Parningsmåttet är p75 och ögat läser medelvärdet; när
+// en yta bär mörka objekt går de isär, och då är p75 ensamt fel grind.
+//
+// 162 är därför valt: kullarna 9,7 · slätten 24,5 i markton (medelvärden 153,5
+// mot 132,7), halvöknen 28. Kvar som misstänkt par är OLIVLUNDENS GOLV (154,
+// 7,8 ifrån) — medvetet betalt. Lunden är zoneWet och skruben zoneDry, alltså
+// samma två-zoners-hopp som ovan (noll delade kanter i världsfixturen), och en
+// lundhex LÄSER 20 L mörkare än sitt golv därför att kronorna ligger över det.
+// Ingen ton klarar 12 L mot alla fyra — fyra marktoner delar redan spannet
+// 137–190 — så valet står mellan vilken kollision man tar, och den mellan två
+// terränger som aldrig möts är den billiga.
+//
+// Hue bär det som valören inte kan: lundens golv är khaki (varmt gult),
+// skruben är gråsage (blått höjt). Det är också den sanna färgen — maquis är
+// städsegrön hårdbladsvegetation med grå, läderartade blad, inte gräs.
+const SCRUB_CELL  = 26;   // markens fläckighet — ett par snårlängder, inte ett par hexar
+const SCRUB_CLUMP = 7;    // ETT snår: 5–8 px, ungefär ett träd i lunden
+const SCRUB_BUSH  = '#5F6C3C'; // snårets massa
+const SCRUB_CROWN = '#AFB87E'; // 1 px sol på snårets överkant
+
+// Täckningen: `clump` moduleras av det grova fältet så att snåren står tätare
+// i svackorna. Det är princip 1 — detaljen kommer ur en struktur (fukten
+// följer terrängen) i stället för att strös ut för att ytan känns tom.
+//
+// Snårcellen är 7 px och inte 15: vid 15 blev "snåren" fläckar på en tredjedels
+// hex och hela fältet läste som molnskuggor, alltså FORM där princip 3 kräver
+// textur. Skalan är densamma som lundens träd (6–8 px) med flit — ett snår och
+// ett olivträd är samma storleksordning i verkligheten, och kartan får inte
+// säga något annat.
+function scrubBush(wx, wy) {
+  const coarse = noiseAt(wx, wy, SCRUB_CELL, 6161);
+  return noiseAt(wx, wy, SCRUB_CLUMP, 6262) + 0.34 * (1 - coarse) > 0.86;
+}
+
+function drawScrubField(ctx, cx, cy) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  // Globalt raster, aldrig relativt hexmitten: två skrubhexar bredvid varandra
+  // måste lägga sina block på samma rutnät, annars förråder fältet exakt den
+  // brickkant det finns för att dölja.
+  // EN bärande frekvens, och det är snåren. Ett eget markfält låg här och föll
+  // på två mätningar i rad: med kontrast nog att synas konkurrerade det med
+  // snåren och ytan läste som kamouflage (samma fel som bergsstrieringens
+  // jämnt fördelade toner, princip 30), och nedskruvat till knappt synligt
+  // kostade det 9,9 ms av `ground` vid minzoom för en skillnad man får leta
+  // efter i en A/B. Bastonen räcker som mark; snåren gör resten.
+  const x0 = Math.floor((cx - S) / DRY_STEP) * DRY_STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / DRY_STEP) * DRY_STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += DRY_STEP) {
+    for (let wx = x0; wx <= x1; wx += DRY_STEP) {
+      // Snåren. Sammanhängande fläckar ur ett fält, inte N spridda märken —
+      // det är hela skillnaden mot de fem cirklarna som stod här. Överkanten
+      // får 1 px sol: princip 4 säger att massa uppstår ur gemensam undervolym
+      // och gemensamt valörfält, och en fläck utan ljus på sin övre gräns är
+      // en fläck. Kanten följer FLÄCKENS form, inte blockets, eftersom den
+      // läses ur samma villkor en rad upp.
+      if (!scrubBush(wx, wy)) continue;
+      ctx.globalAlpha = 0.66;
+      ctx.fillStyle = SCRUB_BUSH;
+      ctx.fillRect(wx, wy, DRY_STEP, DRY_STEP);
+      if (!scrubBush(wx, wy - DRY_STEP)) {
+        ctx.globalAlpha = 0.70;
+        ctx.fillStyle = SCRUB_CROWN;
+        ctx.fillRect(wx, wy, DRY_STEP, 1);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// Halvöknen: två frekvenser och ingenting annat. Den breda är basängen —
+// bakad skorpa på höjderna, mörkare svacka där det samlas fukt nog för något
+// att gro. Den fina är gruset: hamadan är den yta finkornet blåst bort ifrån,
+// alltså ligger stenen kvar DÄR VINDEN SKALAT AV, och tätheten följer därför
+// det grova fältet i stället för att vara jämn. En jämnt strödd grusmatta är
+// filmkorn; en som följer basängen är mark.
+const DESERT_CELL   = 58;
+const DESERT_HOLLOW = '#B99757'; // skuggad svacka
+const DESERT_CRUST  = '#E4CC94'; // solbakad skorpa
+const DESERT_BLEACH = '#F2E0B4'; // blekt damm i det torraste
+const DESERT_GRIT   = '#A6884E'; // grus som blivit kvar
+const DESERT_DITHER = 0.22;      // per-block-brus, aldrig ordnad dither (princip 16)
+
+function drawDesertField(ctx, cx, cy) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  const x0 = Math.floor((cx - S) / DRY_STEP) * DRY_STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / DRY_STEP) * DRY_STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += DRY_STEP) {
+    for (let wx = x0; wx <= x1; wx += DRY_STEP) {
+      const gx = Math.floor(wx / DRY_STEP), gy = Math.floor(wy / DRY_STEP);
+      const jitter = hash32(gx, gy, 5252) / 4294967296 - 0.5;
+      const n = noiseAt(wx, wy, DESERT_CELL, 2727) + jitter * DESERT_DITHER;
+      // Basbandet är smalt med flit. På slätten ÄR bastonen det dominerande
+      // bandet (princip 15); här är det tvärtom, för referensens torra guldmark
+      // är kartans mest texturerade yta och halvöknen är dess enda representant.
+      if (n < 0.34)      { ctx.globalAlpha = 0.44; ctx.fillStyle = DESERT_HOLLOW; }
+      else if (n < 0.53) { ctx.globalAlpha = 0;    }
+      else if (n < 0.80) { ctx.globalAlpha = 0.40; ctx.fillStyle = DESERT_CRUST; }
+      else               { ctx.globalAlpha = 0.34; ctx.fillStyle = DESERT_BLEACH; }
+      if (ctx.globalAlpha) ctx.fillRect(wx, wy, DRY_STEP, DRY_STEP);
+
+      // Gruset. En enda logisk pixel, satt på en hash-vald plats inne i
+      // blocket — en 3×3-fläck vore en stenhäll, inte grus.
+      const g = hash32(gx, gy, 3939) / 4294967296;
+      if (g > 0.30 * (1 - n)) continue;
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = DESERT_GRIT;
+      ctx.fillRect(wx + (hash32(gx, gy, 4141) % DRY_STEP),
+                   wy + (hash32(gx, gy, 4242) % DRY_STEP), 1, 1);
     }
   }
   ctx.globalAlpha = 1;
@@ -1810,12 +1965,7 @@ function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
       break;
     }
     case 'scrub_maquis': {
-      ctx.fillStyle = '#7A9040';
-      for (let i = 0; i < 5; i++) {
-        const ox = ((seed * (i*3+7)) & 0x1f) - 14;
-        const oy = ((seed * (i*4+2)) & 0x1f) - 14;
-        ctx.beginPath(); ctx.arc(cx+ox, cy+oy, 1.5, 0, Math.PI*2); ctx.fill();
-      }
+      drawScrubField(ctx, cx, cy);
       break;
     }
     case 'coastal_sea':
@@ -1825,11 +1975,7 @@ function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
       // ritar hexkanten. Se drawSwell/drawSurf.
       break;
     case 'semi_desert': {
-      ctx.fillStyle = '#C09050';
-      for (let i = 0; i < 3; i++) {
-        const ox = ((seed*(i*7+2))&0x17)-10, oy = ((seed*(i*5+3))&0x13)-8;
-        ctx.fillRect(cx+ox, cy+oy, 1, 1);
-      }
+      drawDesertField(ctx, cx, cy);
       break;
     }
   }
