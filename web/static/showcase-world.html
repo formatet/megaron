@@ -81,6 +81,13 @@ const mid = { x: (Math.min(...xs) + Math.max(...xs)) / 2,
               y: (Math.min(...ys) + Math.max(...ys)) / 2 };
 State.camera.x = canvas.width  / 2 - mid.x * State.camera.zoom * SCALE;
 State.camera.y = canvas.height / 2 - mid.y * State.camera.zoom * SCALE;
+// ?panx=&pany= förskjuter kameran i SKÄRMPIXLAR från det centrerade läget.
+// Finns för viewport-cullingens grind: culling får inte klippa ett berg, en
+// kulle eller en krona som lutar in i bild från en tile vars mitt ligger
+// utanför duken, och det går bara att pröva genom att flytta kameran så att
+// samma landform hamnar vid kanten i stället för i mitten.
+State.camera.x += Number(params.get('panx')) || 0;
+State.camera.y += Number(params.get('pany')) || 0;
 
 window.SHOWCASE = {
   draw(frame = 100) {
