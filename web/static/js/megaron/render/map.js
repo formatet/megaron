@@ -1000,6 +1000,24 @@ function hexAtWorld(wx, wy) {
 // kostade sex skalärprodukter per cell och hex. Uppmätt gick havspasset från
 // 44 ms till en bråkdel när loopen vändes ut och in. Rastret är dessutom exakt
 // vad ett kommande viewport-culling behöver: iterera bara de synliga cellerna.
+// Vilka tiles som kan påverka bilden: de vars mitt ligger i duken plus en
+// marginal. Se kommentaren vid anropet i render() för varför marginalen finns
+// och varför den är så bred.
+const CULL_MARGIN = 96;
+function visibleTiles() {
+  const z = State.camera.zoom * SCALE;
+  const x0 = (-State.camera.x) / z - CULL_MARGIN;
+  const y0 = (-State.camera.y) / z - CULL_MARGIN;
+  const x1 = (canvas.width - State.camera.x) / z + CULL_MARGIN;
+  const y1 = (canvas.height - State.camera.y) / z + CULL_MARGIN;
+  const out = [];
+  for (const t of State.tileData) {
+    const { x, y } = hexPx(t.q, t.r);
+    if (x >= x0 && x <= x1 && y >= y0 && y <= y1) out.push(t);
+  }
+  return out;
+}
+
 const SWELL_CELL = 13;
 function drawSwellField(ctx, seaTick) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -2342,6 +2360,26 @@ export function render() {
   ctx.translate(State.camera.x, State.camera.y);
   ctx.scale(State.camera.zoom * SCALE, State.camera.zoom * SCALE);
 
+  // 0. Viewport-culling. Renderaren ritade varje tile i `State.tileData` oavsett
+  // om den låg i bild, och terrängpassen har vuxit sedan det var billigt: mätt
+  // på världsfixturen kostade 1:1 fyrtio ms trots att bara en bråkdel av kartan
+  // syns där. Att kostnaden bara var 2,4× minzoomens — som visar hela världen —
+  // är beviset på att den var i stort sett OBEROENDE av synlighet.
+  //
+  // Marginalen finns för att flera pass med flit ritar UTANFÖR sin egen hex:
+  // massivet är upp till 61 px brett med 12 px förskjutning, kullkroppen 49/7,
+  // kronorna hänger över kanten och stadsmassan är bredare än hexen. En tile
+  // vars mitt ligger strax utanför duken måste alltså ändå få rita, annars
+  // saknas dess överlutande del vid kanten — vilket syns som att berg och träd
+  // klipps bort när man panorerar. 96 px är två hexbredder: bekvämt över det
+  // största kända utsticket, och billigt nog att inte vara värt att snåla på.
+  //
+  // `drawSwellField` står UTANFÖR det här och läser fortfarande hela
+  // `tileData`. Den räknar ut dyningsrastrets utsträckning ur havstilarnas
+  // bounding box, så en cullad lista skulle flytta rastrets origin och
+  // förskjuta hela dyningen när man panorerar. Den är redan klippt mot duken.
+  const vis = visibleTiles();
+
   // 1. Base terrain fill — ALL tiles first, before any ground texture.
   // fillHex strokes the hex outline with lineWidth 1, which reaches half a
   // pixel outside the polygon. Filling and texturing in one loop therefore let
@@ -2349,7 +2387,7 @@ export function render() {
   // edge, leaving a light line on every border — the residual "grid" inside the
   // forest was this overdraw, not a drawn grid (none exists; the stroke uses
   // the fill colour). Separating the passes removes it outright.
-  for (const t of State.tileData) {
+  for (const t of vis) {
     const {x,y} = hexPx(t.q, t.r);
     const base = TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog;
     const seed = (t.q*137 + t.r*31) & 0xff;
@@ -2358,7 +2396,7 @@ export function render() {
   pass('base');
 
   // 1a. Ground texture pass.
-  for (const t of State.tileData) {
+  for (const t of vis) {
     if (t.terrain === 'fog') continue;
     const {x,y} = hexPx(t.q, t.r);
     const seed = (t.q*137 + t.r*31) & 0xff;
@@ -2371,7 +2409,7 @@ export function render() {
   // en egenskap hos MÖTET mellan två hexar, inte hos terrängen i en av dem.
   // Före strandbandet, för sanden är kartans ljusaste yta och ska inte dithras
   // sönder av en markzon ritad ovanpå den.
-  for (const t of State.tileData) {
+  for (const t of vis) {
     if (!GROUND_BLEND.has(t.terrain)) continue;
     const { x, y } = hexPx(t.q, t.r);
     drawGroundBlend(ctx, x, y, t.q, t.r, t.terrain);
@@ -2383,7 +2421,7 @@ export function render() {
   // mellan två hexar, inte hos terrängen i en av dem, och samma sand ska ligga
   // under slätt, lund, kulle och berg utan att var och en får sin egen kopia.
   // 1a3. Havet — dyning över hela ytan, bränning där den möter land. OKLIPPT.
-  for (const t of State.tileData) {
+  for (const t of vis) {
     if (t.terrain === 'fog' || isSeaTerrain(t.terrain)) continue;
     const seaDirs = neighborDirs(t.q, t.r, isSeaTerrain);
     if (!seaDirs.length) continue;
@@ -2393,7 +2431,7 @@ export function render() {
   }
   pass('shore');
 
-  for (const t of State.tileData) {
+  for (const t of vis) {
     if (t.terrain !== 'deep_sea') continue;
     const shelf = neighborDirs(t.q, t.r, n => n === 'coastal_sea');
     if (!shelf.length) continue;
@@ -2413,7 +2451,7 @@ export function render() {
   // ofta som inom dem. `State.tileData` har ingen ORDER BY från servern, så utan
   // den här sorteringen vore ritordningen mellan två kullhexar godtycklig —
   // samma latenta indeterminism som lövverket bär och som E4 ska lösa där.
-  const swellTiles = State.tileData.filter(t => t.terrain === 'hills');
+  const swellTiles = vis.filter(t => t.terrain === 'hills');
   swellTiles.sort((a, b) => (2 * a.r + a.q) - (2 * b.r + b.q));
   for (const t of swellTiles) {
     const { x, y } = hexPx(t.q, t.r);
@@ -2423,11 +2461,21 @@ export function render() {
 
   // 1b. Canopy pass — after every tile's ground is down, so a crown may hang
   // over the hex border without the next tile's floor painting over it.
-  for (const t of State.tileData) {
-    if (t.terrain !== 'forest_olive_grove') continue;
-    const {x, y} = hexPx(t.q, t.r);
-    drawCanopy(ctx, x, y, t.q, t.r);
-  }
+  //
+  // Sorterat N→S av samma skäl som bergen och kullarna: en krona som hänger
+  // över hexgränsen överlappar grannen, och VEM som hamnar överst avgjordes
+  // tidigare av arrayordningen. `/map` har ingen `ORDER BY`, så den ordningen
+  // var godtycklig — samma latenta indeterminism som `worldfixture.py` tvingades
+  // sortera bort för att två dumpar av samma värld skulle ge samma pixlar
+  // ([[megaron_helvyrigg_20260727]] metodlärdom 3). Culling gör den dessutom
+  // AKTIV och inte bara latent: den cullade listan är en delmängd vars inbördes
+  // ordning ändras när kameran flyttas, så utan sorteringen kunde två träd byta
+  // överlapp mitt under en panorering.
+  const canopyTiles = vis
+    .filter(t => t.terrain === 'forest_olive_grove')
+    .map(t => ({ t, p: hexPx(t.q, t.r) }))
+    .sort((a, b) => a.p.y - b.p.y);
+  for (const { t, p } of canopyTiles) drawCanopy(ctx, p.x, p.y, t.q, t.r);
   pass('canopy');
 
   // 1b2. Peak pass — same reasoning as the canopy: a summit has to be allowed
@@ -2435,7 +2483,7 @@ export function render() {
   // the only way a map seen from above can say "tall". Drawn north-to-south
   // over the whole map, not just within a hex, so a peak in the row below
   // correctly overlaps the range behind it.
-  const peakTiles = State.tileData
+  const peakTiles = vis
     .filter(t => t.terrain === 'mountain_limestone' || t.terrain === 'mountain_red')
     .map(t => ({ t, p: hexPx(t.q, t.r) }))
     .sort((a, b) => a.p.y - b.p.y);
@@ -2444,7 +2492,7 @@ export function render() {
 
   // 1c. Deposit markers — game information, so above all terrain passes.
   if (State.camera.zoom >= ROAD_DEPOSIT_ZOOM) {
-    for (const t of State.tileData) {
+    for (const t of vis) {
       if (t.terrain === 'fog') continue;
       const {x, y} = hexPx(t.q, t.r);
       drawDepositIcons(ctx, x, y, t);
