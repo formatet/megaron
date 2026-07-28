@@ -16,8 +16,9 @@
 
   Kör:  python3 -m http.server 8099 --directory web/
         http://localhost:8099/static/showcase-forest.html
-        ?fixture=plains  byter till en slättdominerad fixtur (samma renderare,
-                         samma kamera) — terrängen under arbete ska dominera.
+        ?fixture=        plains | relief | dry — byter vilken terräng som
+                         dominerar (samma renderare, samma kamera). Terrängen
+                         under arbete ska dominera bilden.
         ?world=<sträng>  byter världshash utan att röra fixturen.
   Dump: scratchpad/shot.py <etikett> [query]
 -->
@@ -52,7 +53,7 @@ import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
 //   h hills      m mountain_limestone       M mountain_red
 //   s scrub_maquis            d semi_desert            . fog
 //
-// Tre fixturer, valda med ?fixture=. Terrängen under arbete måste dominera
+// Fyra fixturer, valda med ?fixture=. Terrängen under arbete måste dominera
 // bilden — en remsa på tre hexar räcker inte för att bedöma om ett fält läser
 // som massa, och massa är hela frågan (megaron_terrangrendering princip 1–4).
 // Övriga terränger finns kvar som grannar, för det är i mötet en ändring
@@ -117,6 +118,28 @@ const FIXTURES = {
     '~cpshhMh.',
     '~~cpshh..',
   ],
+  // Torrmarken dominerar: skruben (s) i väster, halvöknen (d) i öster, med
+  // gränsen mellan dem tvärs bilden. De två är EN slice och måste därför stå
+  // i samma bild — de delar rot (isolerade märken, gammal seed) och måste
+  // dessutom gå att skilja från VARANDRA, inte bara från grannarna.
+  //
+  // Kullarna (h) ligger mot båda med flit och är inte dekor: den lagade
+  // mätaren (`6abd87b`) hittade `hills ↔ semi_desert` 3,9 och `hills ↔ scrub`
+  // 7,9 i MARKTON — kartans två närmaste landpar. Ligger de inte i samma bild
+  // är slicens svåraste fråga osynlig. Slätten (p) och lunden (F) står med som
+  // tonankare i andra änden av registret (princip 7: torr guldmark är LJUSARE
+  // än bördig grön, och skruben ligger mellan dem).
+  dry: [
+    '~cpsssshh',
+    '~cpsssshd',
+    'cpsssssdd',
+    'cpFsssddd',
+    'cpsssssdd',
+    'cpsssshdd',
+    '~cpssshd.',
+    '~~cpsshd.',
+    '~~~cpsdd.',
+  ],
 };
 
 const FIXTURE = new URLSearchParams(location.search).get('fixture') || 'forest';
@@ -156,6 +179,13 @@ const DEPOSITS = {
   forest: [[6, 2, 'cedar_deposit']],
   plains: [[3, 2, 'tin_deposit'], [6, 4, 'cedar_deposit']],
   relief: [[4, 1, 'tin_deposit'], [5, 0, 'silver_deposit']],
+  // Ingen extra fyndighet på torrmarken, och det är mapgens sanning och inte
+  // en glömska: koppar sitter på hills, tenn och silver på mountain_limestone,
+  // ceder på forest_olive_grove (mapgen.go steg 7). Varken scrub_maquis eller
+  // semi_desert är kandidatterräng för någon av dem. Kopparn i (7,1) ligger på
+  // en kullhex i den här fixturen — alltså sant placerad, och intill båda de
+  // nya markerna där markören ska hålla.
+  dry: [],
 };
 tileAt(7, 1).copper_deposit = true;
 (DEPOSITS[FIXTURE] || []).forEach(([col, row, kind]) => { tileAt(col, row)[kind] = true; });
@@ -190,6 +220,7 @@ const RURAL = {
   forest: [[4, 3, 'lumbermill']],
   plains: [[4, 3, 'farm'], [6, 3, 'lumbermill']],
   relief: [[3, 3, 'mine']],
+  dry: [[4, 3, 'farm'], [7, 2, 'mine']],
 };
 State.ruralData = (RURAL[FIXTURE] || []).map(
   ([col, row, type]) => Object.assign(ax(col, row), { building_type: type }),
@@ -205,6 +236,9 @@ const UNITS = {
   // Kalkstenen är dessutom den ruta som redan är utpekad som enhetens värsta
   // (princip 21) — den ska stå i bilden, inte i en anteckning.
   relief: [[4, 2], [6, 2], [3, 4]],
+  // En aktör på skruben, en på halvöknen, en på kullen mellan dem — de tre
+  // rutor enhetsläsbarheten kan gå förlorad i när marken slutar vara platt.
+  dry: [[3, 6], [7, 4], [6, 5]],
 };
 State.unitsData = (UNITS[FIXTURE] || []).map(
   ([col, row], i) => Object.assign(ax(col, row),

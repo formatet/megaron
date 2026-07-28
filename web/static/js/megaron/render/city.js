@@ -90,7 +90,7 @@ export function startCityAnim(canvas, tile, buildings, buildQueue, sett) {
 const GROUND_BY_TERRAIN = {
   plains: '#7A8642', river_valley: '#6E8A46', river_delta: '#6E8A46',
   hills: '#A08A52', mountain_limestone: '#B8AC90', mountain_red: '#A87A5A',
-  forest_olive_grove: '#8A8E55', scrub_maquis: '#93A055', semi_desert: '#B89E66',
+  forest_olive_grove: '#8A8E55', scrub_maquis: '#8F975D', semi_desert: '#B89E66',
   coastal_sea: '#7A8642', deep_sea: '#7A8642',
 };
 
