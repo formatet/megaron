@@ -30,8 +30,33 @@ const TERRAIN_BASE = {
   // and belongs to the hav/kust slice.
   coastal_sea:        {c0:'#3E7C9E', c1:'#33667F'},
   plains:             {c0:'#859248', c1:'#6F7B3A'},
-  river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
-  river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
+  // ── Flodfamiljen (2026-07-29) ────────────────────────────────────────────
+  // `river` är sedan Timothys beslut 2026-07-29 en egen VATTENterräng: en
+  // seglingsbar kedja, exakt en hex bred, källa → Thalassa. Den upphäver
+  // princip 20:s parkering — mekaniken finns nu, alltså får floden renderas.
+  //
+  // Tonvalet styrs av EN gräns framför alla andra: floden och `river_valley`
+  // delar varje hexkant per konstruktion (dalen ligger på var sida om floden),
+  // så det paret måste separera hårdast på hela kartan. Floden ligger därför
+  // mörkare än kustvattnet, inte ljusare — en smal inlandsflod mellan höga
+  // stränder läser som en MÖRK tråd, och det är samma logik som säger att
+  // strandbandets ljusa ytterlighet hör kustlinjen till (princip 6). Att
+  // floden hamnar 16 L från `coastal_sea` är medvetet betalt: de två bär
+  // samma affordans (vatten, seglingsbart, ogenomträngligt för landenheter),
+  // alltså är paret gratis enligt princip 43 — spelaren har inget beslut som
+  // hänger på att skilja dem åt, och vid mynningen SKA de flyta ihop.
+  river:              {c0:'#39707C', c1:'#2F5F69'},
+  // Dalen: bevattnad flodslätt, spelets bördigaste mark efter deltat. Den
+  // lämnar den mättade 2020-talsgrönan (`#4CAF50`) som slätten just lämnade,
+  // och landar MÖRKARE än slätten — princip 7 mätt ur referensen: bördig grön
+  // är kartans mörka ände, torr guldmark den ljusa. Ligger 17 L från slätten
+  // och 24 från floden.
+  river_valley:       {c0:'#6D8A42', c1:'#5A7436'},
+  // Deltat är inte "mer dal". Det är alluvium — blek silt med bördiga fläckar
+  // i, och det ligger per definition mot vatten på flera kanter. Därför går
+  // det åt ANDRA hållet på valörstegen än dalen: ljust nog att aldrig kunna
+  // förväxlas med havet eller floden det mynnar i.
+  river_delta:        {c0:'#93A05A', c1:'#7C884A'},
   forest_olive_grove: {c0:'#9EA361', c1:'#848A4C'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
   // The mountains' scree covers the hex completely, so these two are no longer
@@ -50,6 +75,12 @@ const TERRAIN_BASE = {
   // för varför 152 är max-min-valet och vad det kostar mot lundens golv.
   scrub_maquis:       {c0:'#A3AC6A', c1:'#8A9354'},
   semi_desert:        {c0:'#D4B878', c1:'#C0A060'},
+  // Cederskogen — princip 8:s "skogen där arméer försvinner". Olivlunden är en
+  // ODLING (blek, gles, framkomlig) och renderas som mörka objekt mot ljus
+  // mark; cedern är VILDMARK och vänder därför separationsriktningen (princip
+  // 7): ljusa kronor som löser ut ur en mörk sluten massa. Basen är den mörka
+  // barrförnan under det slutna taket, inte en markton man ser mycket av.
+  forest_cedar:       {c0:'#4E5C3C', c1:'#3E4A30'},
   fog:                {c0:'#1C1C1C', c1:'#252018'},
 };
 
@@ -300,6 +331,15 @@ function neighborDirs(q, r, pred) {
 }
 
 const isSeaTerrain = t => t === 'deep_sea' || t === 'coastal_sea';
+
+// Havet och floden är båda vatten, men de är INTE utbytbara i renderaren, och
+// skillnaden är kontrastbudgeten (princip 6): strandbandets ljusa sand är
+// reserverad åt kustlinjen. Fick floden samma band skulle varje flodhex rita
+// en strand, och kustlinjen — kartans viktigaste gräns — skulle sluta vara
+// unik. `isSeaTerrain` styr därför strand, bränning, dyning och djupbryt och
+// får ALDRIG innehålla floden; `isWaterTerrain` är den bredare frågan "är det
+// här vatten?" som flodens egen kedja och tooltipen ställer.
+const isWaterTerrain = t => t === 'deep_sea' || t === 'coastal_sea' || t === 'river';
 
 // Directions from this hex where the woodland ends. Fog and off-map count as
 // "unknown", NOT as open ground: the player has not seen those tiles, and
@@ -3026,9 +3066,11 @@ const TERRAIN_GOODS = {
   hills:              'copper (if deposit), wine, oil',
   mountain_limestone: 'stone, tin (if deposit)',
   mountain_red:       'stone, tin (if deposit)',
-  forest_olive_grove: 'cedar (if deposit)',
-  coastal_sea:        '—',
-  deep_sea:           '—',
+  forest_olive_grove: 'oil, timber',
+  forest_cedar:       'cedar, timber',
+  coastal_sea:        'fish',
+  deep_sea:           'fish',
+  river:              'fish',
 };
 
 function producesText(tile) {
@@ -3083,6 +3125,7 @@ const TERRAIN_LABELS = {
   plains: 'Plains', hills: 'Hills', forest_olive_grove: 'Olive Grove',
   scrub_maquis: 'Maquis Scrub', semi_desert: 'Semi-Desert',
   river_valley: 'River Valley', river_delta: 'River Delta',
+  river: 'River', forest_cedar: 'Cedar Forest',
   coastal_sea: 'Coastal Sea', deep_sea: 'Deep Sea',
   mountain_limestone: 'Limestone Mountains', mountain_red: 'Red Mountains',
 };
