@@ -774,7 +774,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 			tiles = append(tiles, MapTile{
 				Q: q, R: r,
 				Terrain:   terrain,
-				Coastal:   !isSea(terrain) && hasCoastalSeaNeighbour(grid, c, width, height),
+				Coastal:   !isSea(terrain) && terrain != TerrainRiver && hasWaterNeighbour(grid, c, width, height),
 				Fertility: 0.2 + rng.Float64()*0.8,
 				Mineral:   0.1 + rng.Float64()*0.7,
 			})
@@ -1944,10 +1944,14 @@ func hasBuildableNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	return false
 }
 
-// hasCoastalSeaNeighbour reports whether a land tile borders any coastal_sea tile.
-func hasCoastalSeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
+// hasWaterNeighbour reports whether a land tile borders any coastal_sea or
+// river tile — full coastal status (megaron_floden_plan.md, Timothy
+// 2026-07-29: a settlement on a river gets harbour/fish/purple/embark same as
+// a sea coast). Renamed from hasCoastalSeaNeighbour: the name is the whole
+// story of what the flag now means.
+func hasWaterNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	for _, n := range hexNeighbours(c, w, h) {
-		if grid[n] == TerrainCoastalSea {
+		if grid[n] == TerrainCoastalSea || grid[n] == TerrainRiver {
 			return true
 		}
 	}

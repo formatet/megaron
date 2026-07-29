@@ -73,7 +73,7 @@ func (h *WorldHandler) RuralProjections(w http.ResponseWriter, r *http.Request) 
 		 JOIN provinces sp ON sp.id = s.province_id
 		 JOIN buildings b ON b.settlement_id = s.id AND b.building_type = ANY($3)
 		 JOIN map_tiles mt ON mt.world_id = $1
-		     AND mt.terrain NOT IN ('deep_sea', 'coastal_sea')
+		     AND mt.terrain NOT IN ('deep_sea', 'coastal_sea', 'river')
 		     AND (
 		         (mt.q = sp.map_q+1 AND mt.r = sp.map_r  ) OR (mt.q = sp.map_q-1 AND mt.r = sp.map_r  ) OR
 		         (mt.q = sp.map_q   AND mt.r = sp.map_r+1) OR (mt.q = sp.map_q   AND mt.r = sp.map_r-1) OR

@@ -119,7 +119,7 @@ func foundMetropolisFromNomadicHost(
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3
 		   AND p.id IS NULL
-		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')`,
+		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','mountain_limestone','mountain_red','semi_desert')`,
 		worldID, q, r,
 	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &coastal)
 	if errors.Is(err, pgx.ErrNoRows) {

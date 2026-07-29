@@ -51,7 +51,8 @@ func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 WHERE mt.world_id = $2
-		   AND mt.terrain NOT IN ('deep_sea', 'coastal_sea')
+		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river')
+		        OR pr.terrain_type = mt.terrain)
 		   AND (
 		       (mt.q = $3   AND mt.r = $4  ) OR
 		       (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR

@@ -1045,7 +1045,7 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		      AND (nb.tin_deposit OR nb.copper_deposit OR COALESCE(nb.silver_deposit, false))
 		     WHERE site.world_id = $1
 		       AND site.terrain NOT IN
-		           ('coastal_sea','deep_sea','mountain_limestone','mountain_red','semi_desert')
+		           ('coastal_sea','deep_sea','river','mountain_limestone','mountain_red','semi_desert')
 		       AND (ABS(site.q - $2) + ABS((site.q - $2) + (site.r - $3)) + ABS(site.r - $3)) / 2 <= $4
 		       -- the revealed site must be COLONISABLE: no active settlement on it
 		       -- (any owner). Revealing a hex someone else already holds is useless —

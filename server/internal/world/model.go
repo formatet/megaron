@@ -48,6 +48,7 @@ const (
 	TerrainMountainRed       Terrain = "mountain_red"
 	TerrainCoastalSea        Terrain = "coastal_sea"
 	TerrainDeepSea           Terrain = "deep_sea"
+	TerrainRiver             Terrain = "river"
 	TerrainRiverValley       Terrain = "river_valley"
 	TerrainRiverDelta        Terrain = "river_delta"
 	TerrainScrubMaquis       Terrain = "scrub_maquis"

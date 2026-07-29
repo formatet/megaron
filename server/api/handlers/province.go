@@ -98,7 +98,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		    CASE WHEN COALESCE(cedar_deposit, false) THEN 'cedar'  END
 		 FROM map_tiles
 		 WHERE world_id = $1
-		   AND terrain NOT IN ('deep_sea','coastal_sea')
+		   AND terrain NOT IN ('deep_sea','coastal_sea','river')
 		   AND (
 		       (q = $2   AND r = $3  ) OR
 		       (q = $2+1 AND r = $3  ) OR (q = $2-1 AND r = $3  ) OR
@@ -912,12 +912,12 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			       ($2,$3+1), ($2,$3-1),
 			       ($2+1,$3-1), ($2-1,$3+1)
 			     )
-			     AND terrain IN ('coastal_sea','deep_sea')
+			     AND terrain IN ('coastal_sea','deep_sea','river')
 			 )`,
 			worldID, pq, pr,
 		).Scan(&coastNeighbour)
 		if !coastNeighbour {
-			writeError(w, http.StatusUnprocessableEntity, "harbour requires a coastal or sea tile on an adjacent hex")
+			writeError(w, http.StatusUnprocessableEntity, "harbour requires a coastal, sea or river tile on an adjacent hex")
 			return
 		}
 	}
@@ -943,7 +943,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			fmt.Sprintf(`SELECT EXISTS(
 			   SELECT 1 FROM map_tiles
 			   WHERE world_id = $1
-			     AND terrain NOT IN ('coastal_sea','deep_sea')
+			     AND terrain NOT IN ('coastal_sea','deep_sea','river')
 			     AND (q, r) IN (
 			       ($2,$3),
 			       ($2+1,$3), ($2-1,$3),
@@ -2217,7 +2217,6 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
-		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
 		     AND (
 		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
@@ -2227,6 +2226,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
+		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river') OR pr.terrain_type = mt.terrain)
 		     AND (pr.building_type IS NULL OR EXISTS (
 		             SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
 		     AND (pr.requires_deposit IS NULL
@@ -3446,7 +3446,6 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
-		     AND mt.terrain NOT IN ('deep_sea','coastal_sea')
 		     AND (
 		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
@@ -3456,6 +3455,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
+		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river') OR pr.terrain_type = mt.terrain)
 		     AND (pr.building_type IS NULL OR EXISTS (
 		             SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
 		     AND (pr.requires_deposit IS NULL
