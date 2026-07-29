@@ -51,7 +51,12 @@ const TERRAIN_BASE = {
   // och landar MÖRKARE än slätten — princip 7 mätt ur referensen: bördig grön
   // är kartans mörka ände, torr guldmark den ljusa. Ligger 17 L från slätten
   // och 24 från floden.
-  river_valley:       {c0:'#6D8A42', c1:'#5A7436'},
+  // Mätt ned från `#6D8A42` efter princip 17: den renderade dalen landade på
+  // markton 127,6 mot slättens 133,7 — 6,1 isär, alltså samma yta i gråskala,
+  // och de två möts längs varje flod på kartan. Basfärgernas nominella avstånd
+  // (17 L) höll inte, för dalens eget fält ljusnar ytan och markövergången
+  // blandar in slättens ton i kantzonen. Bara den renderade ytan räknas.
+  river_valley:       {c0:'#627E3B', c1:'#516A31'},
   // Deltat är inte "mer dal". Det är alluvium — blek silt med bördiga fläckar
   // i, och det ligger per definition mot vatten på flera kanter. Därför går
   // det åt ANDRA hållet på valörstegen än dalen: ljust nog att aldrig kunna
@@ -926,6 +931,166 @@ function drawDesertField(ctx, cx, cy) {
   ctx.restore();
 }
 
+// ── Cederskogen ──────────────────────────────────────────────────────────
+// Princip 8, ordagrant: *"Skogen där arméer försvinner ÄR cederskogen."*
+// Olivlunden är en ODLING — planterad, gles, torr, medvetet framkomlig — och
+// renderas därför som mörka träd mot ljus mark. Cedern är VILDMARK, och
+// princip 7 säger att separationsriktningen då ska vändas: ljusa kronor som
+// löser ut ur en mörk sluten massa. De två är alltså inte ljus och mörk
+// variant av samma skog; de är varandras motsatser i varje parameter, och det
+// är precis vad som gör att de går att skilja åt där de möts (princip 20 —
+// skillnaden bor i den stora formen, aldrig i småpixlar).
+//
+// Formen är cederns SANNA form (princip 19) och inte ett generiskt träd:
+// libanonceder växer i vågräta våningar med en platt bred hjässa och en synlig
+// stam mellan våningarna. En kon hade varit gran, en klump hade varit oliv —
+// och båda hade gjort de två skogarna till samma skog i två toner.
+//
+// Skillnaden mot lunden sitter dessutom i BRYNET. Lunden tunnas ut mot öppen
+// mark: dess `openness` plockar bort träd nära kanten, för en odling fransar
+// ut. Cedern gör tvärtom och står tät ända ut — en cederskog möter slätten som
+// en vägg, och det är den väggen som är hela det spelmässiga löftet om att
+// arméer försvinner här.
+const CEDAR_LARGE = [
+  '...LLL...',
+  '..LMMML..',
+  '.DMMMMMD.',
+  '..DMTMD..',
+  '.LMMMMML.',
+  'DMMMMMMMD',
+  '..DMTMD..',
+  '.LMMMML..',
+  '.DMMMMD..',
+  '....T....',
+  '....T....',
+];
+const CEDAR_MID = [
+  '..LLL..',
+  '.LMMML.',
+  'DMMMMMD',
+  '..DTD..',
+  '.LMMML.',
+  'DMMMMMD',
+  '...T...',
+  '...T...',
+];
+const CEDAR_SMALL = [
+  '.LLL.',
+  'LMMML',
+  '.DTD.',
+  'LMMML',
+  '..T..',
+  '..T..',
+];
+// Stammen är rödbrun med flit: cederträ ÄR rött, och det är den enda pixeln i
+// hela hexen som säger vilken vara skogen bär.
+const CEDAR_PALETTE = { L: '#7A8A52', M: '#485A34', D: '#2C3A22', T: '#4A3A2A' };
+// Brynets träd står i fullt ljus. Samma sprite, ljusare ramp — så ett block
+// cedrar får en insida och en utsida utan att en enda kontur ritas.
+const CEDAR_PALETTE_RIM = { L: '#94A266', M: '#5C6E42', D: '#3A4A2C', T: '#5A4634' };
+
+const SPRITE_CEDAR_LARGE = spriteRuns(CEDAR_LARGE);
+const SPRITE_CEDAR_MID   = spriteRuns(CEDAR_MID);
+const SPRITE_CEDAR_SMALL = spriteRuns(CEDAR_SMALL);
+
+const CEDAR_LITTER = '#3E4C30'; // barrförna i skugga
+const CEDAR_MOSS   = '#5A6A40'; // mossa i en glänta
+const CEDAR_DUFF   = '#6A6A44'; // torr förna där taket öppnar sig
+
+// Marken är EN bärande frekvens (princip 41). Cederskogens golv syns knappt —
+// taket är slutet — så fältet är till för att bastonen inte ska vara platt där
+// den ändå skymtar, ingenting mer.
+function drawCedarFloor(ctx, cx, cy) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+  const STEP = 3;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const n = noiseAt(wx, wy, 21, 8181);
+      if (n < 0.34)      { ctx.globalAlpha = 0.34; ctx.fillStyle = CEDAR_LITTER; }
+      else if (n < 0.72) continue;
+      else if (n < 0.89) { ctx.globalAlpha = 0.24; ctx.fillStyle = CEDAR_MOSS; }
+      else               { ctx.globalAlpha = 0.20; ctx.fillStyle = CEDAR_DUFF; }
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// Kronpasset. Oklippt av samma skäl som lunden: en krona måste få hänga över
+// hexgränsen och fläta ihop sig med grannens, annars läser varje hex som en
+// bricka med skog ritad i (princip 12 + 31).
+function drawCedarCanopy(ctx, cx, cy, q, r) {
+  ctx.save();
+
+  // Var skogen möter något annat — men till skillnad från lunden används det
+  // INTE för att tunna ut beståndet, bara för att ljussätta brynet.
+  const mid = S * Math.sqrt(3) / 2;
+  const rim = neighborDirs(q, r, t => t && t !== 'fog' && t !== 'forest_cedar')
+    .map(i => ({ x: DIR_NX[i] * mid, y: DIR_NY[i] * mid }));
+
+  const stand = [];
+  const masses = [];
+  const clumps = 4 + rndInt(q, r, 2102, 2);
+  for (let c = 0; c < clumps; c++) {
+    const a = rnd(q, r, 2110 + c) * Math.PI * 2;
+    const d = Math.sqrt(rnd(q, r, 2130 + c)) * 15;
+    const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
+    masses.push({ c, gx, gy, rad: 10 + rnd(q, r, 2150 + c) * 6 });
+
+    const trees = 2 + rndInt(q, r, 2170 + c, 3);
+    for (let i = 0; i < trees; i++) {
+      const ta = rnd(q, r, 2200 + c * 8 + i) * Math.PI * 2;
+      const td = rnd(q, r, 2260 + c * 8 + i) * 7;
+      const tx = gx + Math.cos(ta) * td, ty = gy + Math.sin(ta) * td;
+      let lit = 0;
+      for (const e of rim) lit = Math.max(lit, 1 - Math.hypot(tx - e.x, ty - e.y) / (S * 0.85));
+      const roll = rnd(q, r, 2320 + c * 8 + i);
+      stand.push({
+        x: cx + tx, y: cy + ty,
+        sprite: roll > 0.52 ? SPRITE_CEDAR_LARGE : roll > 0.20 ? SPRITE_CEDAR_MID : SPRITE_CEDAR_SMALL,
+        rim: lit > 0.42,
+      });
+    }
+  }
+
+  // Den gemensamma undervolymen — samma grepp som lunden, men mycket tätare
+  // och mörkare, för ett cedertak är SLUTET. Princip 4: massa uppstår av
+  // gemensam undervolym, aldrig av antal eller storlek.
+  // Alpha 0,15 och MÅNGA block, inte 0,30 och få. Vid 0,30 läste varje block
+  // som en egen rektangel — ett rutmönster av mörka fyrkanter bakom träden,
+  // alltså precis princip 29:s fälla i undervolymen i stället för i basen.
+  // Volym byggs av överlappning vid låg opacitet; opacitet per block bygger
+  // bara block.
+  ctx.globalAlpha = 0.15;
+  ctx.fillStyle = '#1E2A18';
+  for (const m of masses) {
+    for (let i = 0; i < 26; i++) {
+      const a = rnd(q, r, 2400 + m.c * 32 + i) * Math.PI * 2;
+      const d = Math.sqrt(rnd(q, r, 2460 + m.c * 32 + i)) * m.rad * 0.9;
+      const w = 3 + rndInt(q, r, 2520 + m.c * 32 + i, 5);
+      const h = 2 + rndInt(q, r, 2580 + m.c * 32 + i, 4);
+      ctx.fillRect(Math.round(cx + m.gx + Math.cos(a) * d - w / 2),
+                   Math.round(cy + m.gy + Math.sin(a) * d - h / 2), w, h);
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  stand.sort((a, b) => a.y - b.y);
+  for (const t of stand) {
+    ctx.globalAlpha = 0.42;
+    ctx.fillStyle = '#141E10';
+    ctx.fillRect(Math.round(t.x) - 1, Math.round(t.y) - 1, t.sprite.w - 1, 2);
+    ctx.globalAlpha = 1;
+    drawTree(ctx, t.sprite, t.rim ? CEDAR_PALETTE_RIM : CEDAR_PALETTE, t.x, t.y);
+  }
+  ctx.restore();
+}
+
 // ── Flodfamiljen ─────────────────────────────────────────────────────────
 // Floden är sedan Timothys beslut 2026-07-29 en egen VATTENterräng: en
 // seglingsbar kedja, exakt en hex bred, källa → Thalassa, ogenomtränglig för
@@ -1093,9 +1258,9 @@ function drawRiver(ctx, cx, cy, q, r) {
 // inte emot: den handlar om kartans STÖRSTA yta, och dalen är ett smalt band,
 // samma undantag som halvöknen fick.
 const VALLEY_CELL  = 46;
-const VALLEY_DARK  = '#5C7636'; // fuktig svacka, tegen närmast vattnet
-const VALLEY_LIGHT = '#7E9A4E'; // gröda som fångar ljuset
-const VALLEY_SILT  = '#93995A'; // slamavlagring, ljusare och gråare
+const VALLEY_DARK  = '#51692F'; // fuktig svacka, tegen närmast vattnet
+const VALLEY_LIGHT = '#728E47'; // gröda som fångar ljuset
+const VALLEY_SILT  = '#858C54'; // slamavlagring, ljusare och gråare
 
 // Deltat är samma maskineri med annan palett och UTAN riktning. Ett delta
 // solfjädrar — det har ingen enda axel — och det är dessutom blek silt snarare
@@ -1177,9 +1342,14 @@ function drawValleyField(ctx, cx, cy, q, r, isDelta) {
 // Bergen står UTANFÖR med flit. Deras massiv är siluetter som redan svämmar
 // över hexkanten och spiller rasbrant nedför — de HAR sin övergång, och en
 // dithrad markzon under en rasbrant vore två bilder staplade i samma hex.
+// `forest_cedar` står MED, till skillnad från bergen: cederskogens golv är
+// kartans mörkaste mark (L ~85 mot lundens 154), så utan zon ritar mötet
+// mellan de två skogarna en hexagon i valör. Floden står UTANFÖR — den har
+// sin egen strand i vassloberna, och en dithrad markzon under en vassbård
+// vore två bilder staplade i samma hex (samma skäl som bergen).
 const GROUND_BLEND = new Set([
   'plains', 'semi_desert', 'scrub_maquis', 'hills',
-  'forest_olive_grove', 'river_valley', 'river_delta',
+  'forest_olive_grove', 'forest_cedar', 'river_valley', 'river_delta',
 ]);
 
 // Zonens djupaste räckvidd in i hexen. Bredare än strandbandets 6,8: en
@@ -2205,6 +2375,11 @@ function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
       drawRiver(ctx, cx, cy, q, r);
       break;
     }
+    case 'forest_cedar': {
+      // Golv bara. Kronorna är ett eget pass, av samma skäl som lunden.
+      drawCedarFloor(ctx, cx, cy);
+      break;
+    }
     case 'forest_olive_grove': {
       // Floor only. The canopy is a second pass over every tile (see render()),
       // because a crown has to be allowed to hang over the hex border.
@@ -2824,7 +2999,14 @@ export function render() {
   // under slätt, lund, kulle och berg utan att var och en får sin egen kopia.
   // 1a3. Havet — dyning över hela ytan, bränning där den möter land. OKLIPPT.
   for (const t of vis) {
-    if (t.terrain === 'fog' || isSeaTerrain(t.terrain)) continue;
+    // Gallringen går på `isWaterTerrain`, inte `isSeaTerrain`. Floden är inte
+    // hav, alltså släpptes en flodhex förbi hit och fick strandband + bränning
+    // mot sina havsgrannar — en sandstrand runt vattnet vid varje mynning.
+    // Enhetsriggen fångade det; ingen tonmätning kunde ha gjort det.
+    // Grannskapstestet nedan står kvar på `isSeaTerrain` med flit: det är LAND
+    // som ska få strand mot HAV, och en landhex vid en flod ska inte få det
+    // (kontrastbudgeten, princip 6 — den ljusa sanden hör kustlinjen till).
+    if (t.terrain === 'fog' || isWaterTerrain(t.terrain)) continue;
     const seaDirs = neighborDirs(t.q, t.r, isSeaTerrain);
     if (!seaDirs.length) continue;
     const { x, y } = hexPx(t.q, t.r);
@@ -2873,11 +3055,19 @@ export function render() {
   // AKTIV och inte bara latent: den cullade listan är en delmängd vars inbördes
   // ordning ändras när kameran flyttas, så utan sorteringen kunde två träd byta
   // överlapp mitt under en panorering.
+  // Båda skogarna i SAMMA sorterade pass, inte i två. En cederhex och en
+  // lundhex som gränsar till varandra har kronor som hänger in över samma
+  // gräns, och vem som hamnar överst måste avgöras av läget i N→S-ordningen —
+  // inte av vilket pass som råkade köra sist. Två pass hade lagt hela
+  // cederskogen ovanpå hela lunden oavsett var träden står.
   const canopyTiles = vis
-    .filter(t => t.terrain === 'forest_olive_grove')
+    .filter(t => t.terrain === 'forest_olive_grove' || t.terrain === 'forest_cedar')
     .map(t => ({ t, p: hexPx(t.q, t.r) }))
     .sort((a, b) => a.p.y - b.p.y);
-  for (const { t, p } of canopyTiles) drawCanopy(ctx, p.x, p.y, t.q, t.r);
+  for (const { t, p } of canopyTiles) {
+    if (t.terrain === 'forest_cedar') drawCedarCanopy(ctx, p.x, p.y, t.q, t.r);
+    else drawCanopy(ctx, p.x, p.y, t.q, t.r);
+  }
   pass('canopy');
 
   // 1b2. Peak pass — same reasoning as the canopy: a summit has to be allowed

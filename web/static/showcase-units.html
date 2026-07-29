@@ -59,7 +59,19 @@ const COLS = [
   { t: 'hills',              label: 'kullar' },
   { t: 'scrub_maquis',       label: 'skrub' },
   { t: 'semi_desert',        label: 'halvöken' },
-  { t: 'coastal_sea',        label: 'kust' },
+  { t: 'coastal_sea',        label: 'kust', water: true },
+  // Flodfamiljen och cederskogen, tillagda 2026-07-29 med sina hexbilder.
+  // Riggen är acceptansgrind (arbetsregel 5), och en terräng som inte står
+  // här kan grinden per definition inte grinda — exakt det som hände skruben
+  // och halvöknen i torrmarksslicen.
+  //
+  // `river` bär `landAlt: 'river_valley'`: floden är sedan Timothys beslut
+  // 2026-07-29 OGENOMTRÄNGLIG för landenheter, så en spjutbärare ritad på en
+  // flodhex vore en lögn om spelreglerna — han ska stå på stranden. Skeppen
+  // står däremot i floden, för alla skepp får segla den.
+  { t: 'river',              label: 'flod', water: true, landAlt: 'river_valley' },
+  { t: 'river_valley',       label: 'flodslätt' },
+  { t: 'forest_cedar',       label: 'cederskog' },
   { t: 'mountain_limestone', label: 'berg' },
   { t: 'plains',             label: 'anfall',  intent: 'attack' },
   { t: 'fog',                label: 'dimma' },
@@ -87,7 +99,12 @@ COLS.forEach((c, col) => {
     // En landaktör ska stå på land även i sjökolumnen och tvärtom — annars
     // mäter riggen fel sak (en gångare på vatten, ett skepp på berg).
     const sea = ROWS[row].naval;
-    const terrain = sea ? 'coastal_sea' : (c.t === 'coastal_sea' ? 'plains' : c.t);
+    // En landaktör ska aldrig stå på vatten och ett skepp aldrig på land.
+    // `water`-flaggan generaliserar den regel som förut var hårdkodad mot
+    // `coastal_sea`, så flodkolumnen kan ge skeppen flod och landaktörerna
+    // sin egen strand (`landAlt`) i stället för en godtycklig slätt.
+    const terrain = sea ? (c.water ? c.t : 'coastal_sea')
+                        : (c.water ? (c.landAlt || 'plains') : c.t);
     tiles.push(Object.assign(ax(col, row), { terrain }));
   }
 });
