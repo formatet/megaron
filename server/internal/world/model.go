@@ -52,6 +52,11 @@ const (
 	TerrainRiverDelta        Terrain = "river_delta"
 	TerrainScrubMaquis       Terrain = "scrub_maquis"
 	TerrainSemiDesert        Terrain = "semi_desert"
+	// TerrainForestCedar is the cedar forest — its own terrain (S2,
+	// megaron_cederskogen_plan.md), not a deposit flag on forest_olive_grove.
+	// All cedar production comes from this terrain; CedarDeposit mirrors it
+	// 1:1 (set once, in mapgen.go's tile-build loop).
+	TerrainForestCedar Terrain = "forest_cedar"
 )
 
 // MapTile is a single hex in the world map.
