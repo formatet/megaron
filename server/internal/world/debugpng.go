@@ -31,6 +31,7 @@ var debugTerrainColor = map[Terrain]color.RGBA{
 	TerrainMountainRed:       {0xA5, 0x67, 0x4C, 0xFF}, // red-brown
 	TerrainMountainLimestone: {0xC9, 0xC6, 0xBC, 0xFF}, // light grey
 	TerrainForestOliveGrove:  {0x4D, 0x6B, 0x35, 0xFF}, // dark green
+	TerrainForestCedar:       {0x1F, 0x3D, 0x1A, 0xFF}, // near-black green — denser, darker forest
 	TerrainRiverValley:       {0x5F, 0xB8, 0xB8, 0xFF}, // cyan
 	TerrainRiverDelta:        {0xA5, 0xDE, 0xDE, 0xFF}, // light cyan
 }
@@ -294,6 +295,15 @@ type MapMetrics struct {
 	Straits         int `json:"straits"`
 	DeltaTiles      int `json:"delta_tiles"`
 
+	// S2 (megaron_cederskogen_plan.md, A2/A4 gates). ForestFraction is forest
+	// tiles (forest_olive_grove + forest_cedar) / LAND tiles. CedarStands is
+	// the connected-component count of forest_cedar terrain — "how many
+	// contiguous cedar forests", not raw hex count (CedarDeposits above).
+	ForestOliveGroveTiles int     `json:"forest_olive_grove_tiles"`
+	ForestCedarTiles      int     `json:"forest_cedar_tiles"`
+	ForestFraction        float64 `json:"forest_fraction"`
+	CedarStands           int     `json:"cedar_stands"`
+
 	// P4 calibration/capacity fields (plan §P4-B).
 	TargetPlayers  int `json:"target_players"`  // playersFor(width, height)
 	PlayerCapacity int `json:"player_capacity"` // greedy packing estimate, see EstimatePlayerCapacity
@@ -357,6 +367,12 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		if t.CedarDeposit {
 			m.CedarDeposits++
 		}
+		if t.Terrain == TerrainForestOliveGrove {
+			m.ForestOliveGroveTiles++
+		}
+		if t.Terrain == TerrainForestCedar {
+			m.ForestCedarTiles++
+		}
 		if t.Terrain == TerrainRiverDelta {
 			m.DeltaTiles++
 		}
@@ -378,6 +394,10 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 	if len(tiles) > 0 {
 		m.LandFraction = float64(land) / float64(len(tiles))
 	}
+	if land > 0 {
+		m.ForestFraction = float64(m.ForestOliveGroveTiles+m.ForestCedarTiles) / float64(land)
+	}
+	m.CedarStands = depositSourceCount(tiles, func(t MapTile) bool { return t.Terrain == TerrainForestCedar })
 	m.LandComponents = len(compSize)
 	largest := 0
 	for _, n := range compSize {

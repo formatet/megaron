@@ -74,8 +74,11 @@ func TestGenerateMap_DepositsOnProductiveTerrain(t *testing.T) {
 			}
 			if tile.CedarDeposit {
 				cedar++
-				if tile.Terrain != TerrainForestOliveGrove {
-					t.Fatalf("seed %d: cedar deposit on %s (want forest_olive_grove)", seed, tile.Terrain)
+				// S2 (megaron_cederskogen_plan.md): CedarDeposit is now a pure
+				// mirror of the forest_cedar terrain, not a flag on
+				// forest_olive_grove.
+				if tile.Terrain != TerrainForestCedar {
+					t.Fatalf("seed %d: cedar deposit on %s (want forest_cedar)", seed, tile.Terrain)
 				}
 			}
 			if tile.SilverDeposit && tile.Terrain != TerrainHills && tile.Terrain != TerrainMountainLimestone {
@@ -88,8 +91,48 @@ func TestGenerateMap_DepositsOnProductiveTerrain(t *testing.T) {
 		if tin < 2 {
 			t.Fatalf("seed %d: only %d tin deposits, want >=2", seed, tin)
 		}
-		if cedar < 2 {
-			t.Fatalf("seed %d: only %d cedar deposits, want >=2", seed, cedar)
+		if cedar < minCedar {
+			t.Fatalf("seed %d: only %d cedar (forest_cedar) tiles, want >=%d", seed, cedar, minCedar)
+		}
+	}
+}
+
+// TestGenerateMap_CedarFormsContiguousStands is the A2 gate
+// (megaron_cederskogen_plan.md): cedar is no longer scattered single hexes —
+// every forest_cedar tile must have at least one forest_cedar neighbour (no
+// stand of size 1), and CedarDeposit must mirror the terrain exactly in both
+// directions (never set on a non-forest_cedar tile, never absent on one).
+func TestGenerateMap_CedarFormsContiguousStands(t *testing.T) {
+	for seed := int64(0); seed < 20; seed++ {
+		tiles := genTiles(seed, 40, 30)
+		terrain := make(map[[2]int]Terrain, len(tiles))
+		for _, t := range tiles {
+			terrain[[2]int{t.Q, t.R}] = t.Terrain
+		}
+		dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+		cedarCount := 0
+		for _, tile := range tiles {
+			if tile.CedarDeposit != (tile.Terrain == TerrainForestCedar) {
+				t.Fatalf("seed %d: (%d,%d) CedarDeposit=%v but terrain=%s — mirror invariant broken",
+					seed, tile.Q, tile.R, tile.CedarDeposit, tile.Terrain)
+			}
+			if tile.Terrain != TerrainForestCedar {
+				continue
+			}
+			cedarCount++
+			hasCedarNeighbour := false
+			for _, d := range dirs6 {
+				if terrain[[2]int{tile.Q + d[0], tile.R + d[1]}] == TerrainForestCedar {
+					hasCedarNeighbour = true
+					break
+				}
+			}
+			if !hasCedarNeighbour {
+				t.Fatalf("seed %d: forest_cedar tile (%d,%d) is isolated (stand size 1)", seed, tile.Q, tile.R)
+			}
+		}
+		if cedarCount < minCedar {
+			t.Fatalf("seed %d: %d forest_cedar tiles, want >= %d", seed, cedarCount, minCedar)
 		}
 	}
 }
