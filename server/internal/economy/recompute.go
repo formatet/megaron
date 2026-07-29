@@ -174,7 +174,11 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// ── 3. Compute base_potential per producible good from catchment ──────────
 	// Each of the 7 catchment map_tiles contributes based on its own terrain,
 	// deposits, and coastal flag. The settlement's buildings gate building-gated
-	// rules. Sea tiles (deep_sea, coastal_sea) are excluded — no land production.
+	// rules. Water tiles (deep_sea, coastal_sea, river) only match rules keyed
+	// to their own terrain — otherwise a water tile would match every
+	// terrain_type IS NULL rule (timber, stone via mine, pottery via market),
+	// which is exactly the silent-fallback production CLAUDE.md forbids
+	// (megaron_floden_plan.md §4, Timothy 2026-07-29).
 	rows, err := tx.Query(ctx,
 		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential,
 		        bool_or(pr.building_type IS NULL) AS has_field_path
@@ -191,7 +195,8 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 WHERE mt.world_id = $2
-		   AND mt.terrain NOT IN ('deep_sea', 'coastal_sea')
+		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river')
+		        OR pr.terrain_type = mt.terrain)
 		   AND (
 		       (mt.q = $3   AND mt.r = $4  ) OR
 		       (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR

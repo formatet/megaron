@@ -88,10 +88,14 @@ export function startCityAnim(canvas, tile, buildings, buildQueue, sett) {
 // Bakgrundsmarken tas ur hexens terräng, dämpad. Staden ska sitta i sitt
 // landskap: en hamnstad och en bergsstad får inte ha samma fond.
 const GROUND_BY_TERRAIN = {
-  plains: '#7A8642', river_valley: '#6E8A46', river_delta: '#6E8A46',
+  plains: '#7A8642', river_valley: '#657E3E', river_delta: '#87934F',
   hills: '#A08A52', mountain_limestone: '#B8AC90', mountain_red: '#A87A5A',
-  forest_olive_grove: '#8A8E55', scrub_maquis: '#8F975D', semi_desert: '#B89E66',
-  coastal_sea: '#7A8642', deep_sea: '#7A8642',
+  forest_olive_grove: '#8A8E55', forest_cedar: '#4A5738',
+  scrub_maquis: '#8F975D', semi_desert: '#B89E66',
+  // Vatten kan aldrig bära en stad, men nyckeln måste finnas: `river` är sedan
+  // 2026-07-29 en terräng en provins kan ligga INTILL, och en saknad nyckel
+  // hade gett stadsvyn en tyst `undefined` som fond.
+  coastal_sea: '#7A8642', deep_sea: '#7A8642', river: '#7A8642',
 };
 
 const smokeClock = { t: 0 };

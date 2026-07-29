@@ -311,6 +311,9 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			return nil, reject(http.StatusUnprocessableEntity,
 				"sentry requires a ship currently in port at a settlement (it needs a home to return to)")
 		}
+		// Deliberately NOT "|| destTerrain == river": sentry is a sea patrol. A
+		// patrol standing in a 1-hex-wide river is not a patrol — there's no
+		// water to project over (megaron_floden_plan.md §3, Timothy 2026-07-29).
 		if destTerrain != "coastal_sea" {
 			return nil, reject(http.StatusUnprocessableEntity,
 				"sentry can only patrol shallow coastal water (coastal_sea)")
@@ -367,8 +370,9 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusUnprocessableEntity, "mountain terrain is impassable")
 	}
 
-	// Land units cannot enter sea hexes.
-	isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea"
+	// Land units cannot enter sea hexes — river is water too, a wall for land units
+	// (megaron_floden_plan.md, Timothy 2026-07-29).
+	isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
 	if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
 		return nil, reject(http.StatusUnprocessableEntity, "land units cannot enter sea terrain")
 	}

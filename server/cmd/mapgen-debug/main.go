@@ -79,13 +79,15 @@ func runSeed(requested int64, w, h int, outDir string) (err error) {
 
 	// One stable summary line per map — grep-friendly key=value pairs.
 	fmt.Printf("map w=%d h=%d requested_seed=%d effective_seed=%d attempts=%d "+
-		"land_fraction=%.3f components=%d largest_component_fraction=%.3f spawn_valid=%d "+
-		"copper=%d tin=%d silver=%d cedar=%d straits=%d delta=%d river_valley=%d "+
-		"target_players=%d player_capacity=%d copper_sources=%d tin_sources=%d silver_sources=%d\n",
+		"land_fraction=%.3f components=%d largest_component_fraction=%.3f largest_landmass_walkable_fraction=%.3f spawn_valid=%d "+
+		"copper=%d tin=%d silver=%d cedar=%d straits=%d delta=%d river=%d river_valley=%d "+
+		"target_players=%d player_capacity=%d copper_sources=%d tin_sources=%d silver_sources=%d "+
+		"forest_olive_grove=%d forest_cedar=%d forest_fraction=%.3f cedar_stands=%d\n",
 		w, h, requested, eff, m.Attempts,
-		m.LandFraction, m.LandComponents, m.LargestComponentFraction, m.SpawnValidTiles,
+		m.LandFraction, m.LandComponents, m.LargestComponentFraction, m.LargestLandmassWalkableFraction, m.SpawnValidTiles,
 		m.CopperDeposits, m.TinDeposits, m.SilverDeposits, m.CedarDeposits, m.Straits, m.DeltaTiles,
-		m.RiverValleyTiles,
-		m.TargetPlayers, m.PlayerCapacity, m.CopperSources, m.TinSources, m.SilverSources)
+		m.RiverTiles, m.RiverValleyTiles,
+		m.TargetPlayers, m.PlayerCapacity, m.CopperSources, m.TinSources, m.SilverSources,
+		m.ForestOliveGroveTiles, m.ForestCedarTiles, m.ForestFraction, m.CedarStands)
 	return nil
 }

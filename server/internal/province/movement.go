@@ -8,10 +8,17 @@ func TerrainMoveHours(terrain string) float64 {
 		return 0.75
 	case "coastal_sea":
 		return 0.4 // fast sailing near land
+	case "river":
+		return 0.5 // tunable: shallow and sheltered but narrow; between coastal_sea (0.4) and deep_sea (0.7)
 	case "deep_sea":
 		return 0.7 // slower open-sea sailing
 	case "forest_olive_grove":
 		return 1.5
+	case "forest_cedar":
+		// S2 (megaron_cederskogen_plan.md step 2): denser, road-less than the
+		// olive grove — this is the forest where armies vanish (princip 8,
+		// megaron_terrangrendering.md).
+		return 2.0
 	case "hills", "scrub_maquis":
 		return 1.25
 	case "mountain_limestone", "mountain_red", "semi_desert":

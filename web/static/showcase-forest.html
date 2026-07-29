@@ -16,7 +16,7 @@
 
   Kör:  python3 -m http.server 8099 --directory web/
         http://localhost:8099/static/showcase-forest.html
-        ?fixture=        plains | relief | dry — byter vilken terräng som
+        ?fixture=        plains | relief | dry | river | cedar — byter vilken terräng som
                          dominerar (samma renderare, samma kamera). Terrängen
                          under arbete ska dominera bilden.
         ?world=<sträng>  byter världshash utan att röra fixturen.
@@ -52,8 +52,9 @@ import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
 //   ~ deep_sea   c coastal_sea   p plains   F forest_olive_grove
 //   h hills      m mountain_limestone       M mountain_red
 //   s scrub_maquis            d semi_desert            . fog
+//   r river      v river_valley   D river_delta   C forest_cedar
 //
-// Fyra fixturer, valda med ?fixture=. Terrängen under arbete måste dominera
+// Sex fixturer, valda med ?fixture=. Terrängen under arbete måste dominera
 // bilden — en remsa på tre hexar räcker inte för att bedöma om ett fält läser
 // som massa, och massa är hela frågan (megaron_terrangrendering princip 1–4).
 // Övriga terränger finns kvar som grannar, för det är i mötet en ändring
@@ -140,6 +141,46 @@ const FIXTURES = {
     '~~cpsshd.',
     '~~~cpsdd.',
   ],
+  // Flodfamiljen: floden (r) som EN sammanhängande kedja från källan i öster
+  // till mynningen i havet i väster, dalen (v) på var sida hela vägen, deltat
+  // (D) vid utflödet. Kedjan slingrar med flit — en rak flod visar bara ett
+  // hexläge, och hela frågan är om bågen håller ihop över hexkanten i rakt
+  // genomlopp, i krök, vid källan och vid mynningen.
+  //
+  // Grannarna är valda ur kollisionsrisken, inte ur skönhet. Tre par måste stå
+  // i samma bild: `river ↔ river_valley` (delar VARJE kant per konstruktion —
+  // kartans hårdaste par), `river ↔ coastal_sea` (mynningen, där två vatten
+  // möts) och `river_valley ↔ plains` (dalen får inte bli en grön slätt).
+  // Kullar och berg står i öster som källans höjd — samma geografi mapgen
+  // faktiskt lägger: floden börjar på en lokal höjdpunkt.
+  river: [
+    '~~pvvpphm',
+    '~cppvvphm',
+    '~ccvvvvhm',
+    'cDvvvvvhm',
+    'crrrrrvhm',
+    'cDvvvrrrv',
+    '~ccvvvvvh',
+    '~~ccppphh',
+    '~~~cppphh',
+  ],
+  // Cederskogen dominerar, och olivlunden (F) ligger som ett obrutet band mot
+  // den. Det bandet ÄR fixturens fråga: två skogar bredvid varandra måste läsa
+  // som två olika sorters skog, inte som ljus och mörk variant av samma. Faller
+  // det paret spelar ingen annan mätning roll. Slätt och kullar står med som
+  // tonankare i ljusa änden, kustvattnet i mörka — cedern är kartans mörkaste
+  // LANDterräng och måste gå att skilja från vatten.
+  cedar: [
+    '~~pFFCChh',
+    '~cpFCCChh',
+    'cpFCCCCCh',
+    'cpFCCCCCh',
+    'cpCCCCCCh',
+    'cpFCCCCCp',
+    '~cpFCCCpp',
+    '~~cpFCCp.',
+    '~~~cpFC..',
+  ],
 };
 
 const FIXTURE = new URLSearchParams(location.search).get('fixture') || 'forest';
@@ -149,6 +190,7 @@ const TERRAIN = {
   '~': 'deep_sea', c: 'coastal_sea', p: 'plains',
   F: 'forest_olive_grove', h: 'hills', m: 'mountain_limestone',
   M: 'mountain_red', s: 'scrub_maquis', d: 'semi_desert', '.': 'fog',
+  r: 'river', v: 'river_valley', D: 'river_delta', C: 'forest_cedar',
 };
 
 // row/col -> axial. Enda stället som känner till offseten.
@@ -186,6 +228,15 @@ const DEPOSITS = {
   // en kullhex i den här fixturen — alltså sant placerad, och intill båda de
   // nya markerna där markören ska hålla.
   dry: [],
+  // Cedern sitter på cederskogen — det är hela poängen med steg 7 i mapgen
+  // efter 2026-07-29: terrängen ÄR fyndigheten. Markören måste därför överleva
+  // den mörkaste marken på kartan, vilket är precis där den en gång drunknade
+  // i lövverket.
+  cedar: [[5, 3, 'cedar_deposit']],
+  // Ingen fyndighet på floden: varken flod, dal eller delta är kandidatterräng
+  // för någon fyndighet i mapgen. Kopparn i (7,1) ligger på en kullhex även
+  // här och står alltså sant placerad intill källans höjd.
+  river: [],
 };
 tileAt(7, 1).copper_deposit = true;
 (DEPOSITS[FIXTURE] || []).forEach(([col, row, kind]) => { tileAt(col, row)[kind] = true; });

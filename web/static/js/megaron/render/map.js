@@ -30,8 +30,38 @@ const TERRAIN_BASE = {
   // and belongs to the hav/kust slice.
   coastal_sea:        {c0:'#3E7C9E', c1:'#33667F'},
   plains:             {c0:'#859248', c1:'#6F7B3A'},
-  river_valley:       {c0:'#4CAF50', c1:'#388E3C'},
-  river_delta:        {c0:'#6BBF59', c1:'#4E9B3E'},
+  // ── Flodfamiljen (2026-07-29) ────────────────────────────────────────────
+  // `river` är sedan Timothys beslut 2026-07-29 en egen VATTENterräng: en
+  // seglingsbar kedja, exakt en hex bred, källa → Thalassa. Den upphäver
+  // princip 20:s parkering — mekaniken finns nu, alltså får floden renderas.
+  //
+  // Tonvalet styrs av EN gräns framför alla andra: floden och `river_valley`
+  // delar varje hexkant per konstruktion (dalen ligger på var sida om floden),
+  // så det paret måste separera hårdast på hela kartan. Floden ligger därför
+  // mörkare än kustvattnet, inte ljusare — en smal inlandsflod mellan höga
+  // stränder läser som en MÖRK tråd, och det är samma logik som säger att
+  // strandbandets ljusa ytterlighet hör kustlinjen till (princip 6). Att
+  // floden hamnar 16 L från `coastal_sea` är medvetet betalt: de två bär
+  // samma affordans (vatten, seglingsbart, ogenomträngligt för landenheter),
+  // alltså är paret gratis enligt princip 43 — spelaren har inget beslut som
+  // hänger på att skilja dem åt, och vid mynningen SKA de flyta ihop.
+  river:              {c0:'#39707C', c1:'#2F5F69'},
+  // Dalen: bevattnad flodslätt, spelets bördigaste mark efter deltat. Den
+  // lämnar den mättade 2020-talsgrönan (`#4CAF50`) som slätten just lämnade,
+  // och landar MÖRKARE än slätten — princip 7 mätt ur referensen: bördig grön
+  // är kartans mörka ände, torr guldmark den ljusa. Ligger 17 L från slätten
+  // och 24 från floden.
+  // Mätt ned från `#6D8A42` efter princip 17: den renderade dalen landade på
+  // markton 127,6 mot slättens 133,7 — 6,1 isär, alltså samma yta i gråskala,
+  // och de två möts längs varje flod på kartan. Basfärgernas nominella avstånd
+  // (17 L) höll inte, för dalens eget fält ljusnar ytan och markövergången
+  // blandar in slättens ton i kantzonen. Bara den renderade ytan räknas.
+  river_valley:       {c0:'#627E3B', c1:'#516A31'},
+  // Deltat är inte "mer dal". Det är alluvium — blek silt med bördiga fläckar
+  // i, och det ligger per definition mot vatten på flera kanter. Därför går
+  // det åt ANDRA hållet på valörstegen än dalen: ljust nog att aldrig kunna
+  // förväxlas med havet eller floden det mynnar i.
+  river_delta:        {c0:'#93A05A', c1:'#7C884A'},
   forest_olive_grove: {c0:'#9EA361', c1:'#848A4C'},
   hills:              {c0:'#C8A464', c1:'#B08C50'},
   // The mountains' scree covers the hex completely, so these two are no longer
@@ -50,6 +80,12 @@ const TERRAIN_BASE = {
   // för varför 152 är max-min-valet och vad det kostar mot lundens golv.
   scrub_maquis:       {c0:'#A3AC6A', c1:'#8A9354'},
   semi_desert:        {c0:'#D4B878', c1:'#C0A060'},
+  // Cederskogen — princip 8:s "skogen där arméer försvinner". Olivlunden är en
+  // ODLING (blek, gles, framkomlig) och renderas som mörka objekt mot ljus
+  // mark; cedern är VILDMARK och vänder därför separationsriktningen (princip
+  // 7): ljusa kronor som löser ut ur en mörk sluten massa. Basen är den mörka
+  // barrförnan under det slutna taket, inte en markton man ser mycket av.
+  forest_cedar:       {c0:'#4E5C3C', c1:'#3E4A30'},
   fog:                {c0:'#1C1C1C', c1:'#252018'},
 };
 
@@ -300,6 +336,15 @@ function neighborDirs(q, r, pred) {
 }
 
 const isSeaTerrain = t => t === 'deep_sea' || t === 'coastal_sea';
+
+// Havet och floden är båda vatten, men de är INTE utbytbara i renderaren, och
+// skillnaden är kontrastbudgeten (princip 6): strandbandets ljusa sand är
+// reserverad åt kustlinjen. Fick floden samma band skulle varje flodhex rita
+// en strand, och kustlinjen — kartans viktigaste gräns — skulle sluta vara
+// unik. `isSeaTerrain` styr därför strand, bränning, dyning och djupbryt och
+// får ALDRIG innehålla floden; `isWaterTerrain` är den bredare frågan "är det
+// här vatten?" som flodens egen kedja och tooltipen ställer.
+const isWaterTerrain = t => t === 'deep_sea' || t === 'coastal_sea' || t === 'river';
 
 // Directions from this hex where the woodland ends. Fog and off-map count as
 // "unknown", NOT as open ground: the player has not seen those tiles, and
@@ -886,6 +931,387 @@ function drawDesertField(ctx, cx, cy) {
   ctx.restore();
 }
 
+// ── Cederskogen ──────────────────────────────────────────────────────────
+// Princip 8, ordagrant: *"Skogen där arméer försvinner ÄR cederskogen."*
+// Olivlunden är en ODLING — planterad, gles, torr, medvetet framkomlig — och
+// renderas därför som mörka träd mot ljus mark. Cedern är VILDMARK, och
+// princip 7 säger att separationsriktningen då ska vändas: ljusa kronor som
+// löser ut ur en mörk sluten massa. De två är alltså inte ljus och mörk
+// variant av samma skog; de är varandras motsatser i varje parameter, och det
+// är precis vad som gör att de går att skilja åt där de möts (princip 20 —
+// skillnaden bor i den stora formen, aldrig i småpixlar).
+//
+// Formen är cederns SANNA form (princip 19) och inte ett generiskt träd:
+// libanonceder växer i vågräta våningar med en platt bred hjässa och en synlig
+// stam mellan våningarna. En kon hade varit gran, en klump hade varit oliv —
+// och båda hade gjort de två skogarna till samma skog i två toner.
+//
+// Skillnaden mot lunden sitter dessutom i BRYNET. Lunden tunnas ut mot öppen
+// mark: dess `openness` plockar bort träd nära kanten, för en odling fransar
+// ut. Cedern gör tvärtom och står tät ända ut — en cederskog möter slätten som
+// en vägg, och det är den väggen som är hela det spelmässiga löftet om att
+// arméer försvinner här.
+const CEDAR_LARGE = [
+  '...LLL...',
+  '..LMMML..',
+  '.DMMMMMD.',
+  '..DMTMD..',
+  '.LMMMMML.',
+  'DMMMMMMMD',
+  '..DMTMD..',
+  '.LMMMML..',
+  '.DMMMMD..',
+  '....T....',
+  '....T....',
+];
+const CEDAR_MID = [
+  '..LLL..',
+  '.LMMML.',
+  'DMMMMMD',
+  '..DTD..',
+  '.LMMML.',
+  'DMMMMMD',
+  '...T...',
+  '...T...',
+];
+const CEDAR_SMALL = [
+  '.LLL.',
+  'LMMML',
+  '.DTD.',
+  'LMMML',
+  '..T..',
+  '..T..',
+];
+// Stammen är rödbrun med flit: cederträ ÄR rött, och det är den enda pixeln i
+// hela hexen som säger vilken vara skogen bär.
+const CEDAR_PALETTE = { L: '#7A8A52', M: '#485A34', D: '#2C3A22', T: '#4A3A2A' };
+// Brynets träd står i fullt ljus. Samma sprite, ljusare ramp — så ett block
+// cedrar får en insida och en utsida utan att en enda kontur ritas.
+const CEDAR_PALETTE_RIM = { L: '#94A266', M: '#5C6E42', D: '#3A4A2C', T: '#5A4634' };
+
+const SPRITE_CEDAR_LARGE = spriteRuns(CEDAR_LARGE);
+const SPRITE_CEDAR_MID   = spriteRuns(CEDAR_MID);
+const SPRITE_CEDAR_SMALL = spriteRuns(CEDAR_SMALL);
+
+const CEDAR_LITTER = '#3E4C30'; // barrförna i skugga
+const CEDAR_MOSS   = '#5A6A40'; // mossa i en glänta
+const CEDAR_DUFF   = '#6A6A44'; // torr förna där taket öppnar sig
+
+// Marken är EN bärande frekvens (princip 41). Cederskogens golv syns knappt —
+// taket är slutet — så fältet är till för att bastonen inte ska vara platt där
+// den ändå skymtar, ingenting mer.
+function drawCedarFloor(ctx, cx, cy) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+  const STEP = 3;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const n = noiseAt(wx, wy, 21, 8181);
+      if (n < 0.34)      { ctx.globalAlpha = 0.34; ctx.fillStyle = CEDAR_LITTER; }
+      else if (n < 0.72) continue;
+      else if (n < 0.89) { ctx.globalAlpha = 0.24; ctx.fillStyle = CEDAR_MOSS; }
+      else               { ctx.globalAlpha = 0.20; ctx.fillStyle = CEDAR_DUFF; }
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// Kronpasset. Oklippt av samma skäl som lunden: en krona måste få hänga över
+// hexgränsen och fläta ihop sig med grannens, annars läser varje hex som en
+// bricka med skog ritad i (princip 12 + 31).
+function drawCedarCanopy(ctx, cx, cy, q, r) {
+  ctx.save();
+
+  // Var skogen möter något annat — men till skillnad från lunden används det
+  // INTE för att tunna ut beståndet, bara för att ljussätta brynet.
+  const mid = S * Math.sqrt(3) / 2;
+  const rim = neighborDirs(q, r, t => t && t !== 'fog' && t !== 'forest_cedar')
+    .map(i => ({ x: DIR_NX[i] * mid, y: DIR_NY[i] * mid }));
+
+  const stand = [];
+  const masses = [];
+  const clumps = 4 + rndInt(q, r, 2102, 2);
+  for (let c = 0; c < clumps; c++) {
+    const a = rnd(q, r, 2110 + c) * Math.PI * 2;
+    const d = Math.sqrt(rnd(q, r, 2130 + c)) * 15;
+    const gx = Math.cos(a) * d, gy = Math.sin(a) * d;
+    masses.push({ c, gx, gy, rad: 10 + rnd(q, r, 2150 + c) * 6 });
+
+    const trees = 2 + rndInt(q, r, 2170 + c, 3);
+    for (let i = 0; i < trees; i++) {
+      const ta = rnd(q, r, 2200 + c * 8 + i) * Math.PI * 2;
+      const td = rnd(q, r, 2260 + c * 8 + i) * 7;
+      const tx = gx + Math.cos(ta) * td, ty = gy + Math.sin(ta) * td;
+      let lit = 0;
+      for (const e of rim) lit = Math.max(lit, 1 - Math.hypot(tx - e.x, ty - e.y) / (S * 0.85));
+      const roll = rnd(q, r, 2320 + c * 8 + i);
+      stand.push({
+        x: cx + tx, y: cy + ty,
+        sprite: roll > 0.52 ? SPRITE_CEDAR_LARGE : roll > 0.20 ? SPRITE_CEDAR_MID : SPRITE_CEDAR_SMALL,
+        rim: lit > 0.42,
+      });
+    }
+  }
+
+  // Den gemensamma undervolymen — samma grepp som lunden, men mycket tätare
+  // och mörkare, för ett cedertak är SLUTET. Princip 4: massa uppstår av
+  // gemensam undervolym, aldrig av antal eller storlek.
+  // Alpha 0,15 och MÅNGA block, inte 0,30 och få. Vid 0,30 läste varje block
+  // som en egen rektangel — ett rutmönster av mörka fyrkanter bakom träden,
+  // alltså precis princip 29:s fälla i undervolymen i stället för i basen.
+  // Volym byggs av överlappning vid låg opacitet; opacitet per block bygger
+  // bara block.
+  ctx.globalAlpha = 0.15;
+  ctx.fillStyle = '#1E2A18';
+  for (const m of masses) {
+    for (let i = 0; i < 26; i++) {
+      const a = rnd(q, r, 2400 + m.c * 32 + i) * Math.PI * 2;
+      const d = Math.sqrt(rnd(q, r, 2460 + m.c * 32 + i)) * m.rad * 0.9;
+      const w = 3 + rndInt(q, r, 2520 + m.c * 32 + i, 5);
+      const h = 2 + rndInt(q, r, 2580 + m.c * 32 + i, 4);
+      ctx.fillRect(Math.round(cx + m.gx + Math.cos(a) * d - w / 2),
+                   Math.round(cy + m.gy + Math.sin(a) * d - h / 2), w, h);
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  stand.sort((a, b) => a.y - b.y);
+  for (const t of stand) {
+    ctx.globalAlpha = 0.42;
+    ctx.fillStyle = '#141E10';
+    ctx.fillRect(Math.round(t.x) - 1, Math.round(t.y) - 1, t.sprite.w - 1, 2);
+    ctx.globalAlpha = 1;
+    drawTree(ctx, t.sprite, t.rim ? CEDAR_PALETTE_RIM : CEDAR_PALETTE, t.x, t.y);
+  }
+  ctx.restore();
+}
+
+// ── Flodfamiljen ─────────────────────────────────────────────────────────
+// Floden är sedan Timothys beslut 2026-07-29 en egen VATTENterräng: en
+// seglingsbar kedja, exakt en hex bred, källa → Thalassa, ogenomtränglig för
+// landenheter. Princip 20 förbjöd att rita henne så länge mekaniken saknades;
+// nu finns mekaniken, alltså gäller förbudet inte längre.
+//
+// Felläget mättes innan något ritades: med bara bastonen läser en flodkedja
+// som EN RAD BLÅ BRICKOR. Roten är geometrisk och inte kolorimetrisk — en hex
+// är en fet hexagon, så en kedja av fyllda hexar blir en kedja av romber, inte
+// en linje. Det är alltså BREDDEN som måste bort, inte tonen.
+//
+// Greppet: en mörk vassbård dras inåt från varje kant mot LAND, och det som
+// blir kvar är en ljusare fåra som med nödvändighet löper längs flödesaxeln —
+// den axel som ges av vilka grannar som är vatten. Bågen uppstår därmed ur
+// KEDJANS STRUKTUR och inte ur en ritad linje (princip 1), och den ändrar form
+// av sig själv i rakt genomlopp, i krök, vid källan och vid mynningen.
+//
+// Varför bården är MÖRK och inte ljus, tvärtemot kustens sand: kontrasten ska
+// sitta i den kant spelaren fattar beslut om, och den kanten är flod↔dal — de
+// två delar varje hexkant per konstruktion. En ljus bård hade lagt flodens
+// ljusaste ton intill dalens ljusa mark (ΔL 6) och suddat just den gränsen; en
+// mörk bård ger ΔL ~36 vid själva mötet. Samma lärdom som röda berget mot
+// kustvattnet: mät VID gränsen, inte mellan två hexmedelvärden.
+//
+// Bården är dessutom textur och aldrig form (princip 3): bredden moduleras av
+// världsrymdsbruset, så kanten fransar i stället för att rita en jämn skiva
+// innanför hexen — en jämn skiva blev en gloria runt skogen när lunden prövade
+// det, och den skulle bli en hexagonkontur här.
+// Bården är VASS OCH VÅT DY, inte vatten — och det är slicens avgörande fynd.
+// Första ansatsen gjorde bården till en mörkare blå: gränsen dal→bård mätte då
+// ΔL 31,6, alltså en helt godkänd siffra, och kedjan läste ÄNDÅ som romber.
+// Roten är geometrisk och inte kolorimetrisk: så länge vattnet når fram till
+// hexkanten ÄR gränsen vatten↔land en hexagon, hur man än tonar insidan. Ingen
+// behandling av ytan kan laga en kontur. Vattnet måste alltså sluta INNAN
+// kanten, och det som ligger emellan kan inte vara vatten.
+//
+// Att bården dessutom är MÖRKARE än fåran är vad som gör att tråden läser som
+// vatten: strömmen blir det ljusa elementet mellan två mörka stränder, i
+// stället för en mörk fläck i ljus mark. Det är också sant — vass och våt dy i
+// skugga är det mörkaste i en flodslätt — och det håller kontrastbudgeten
+// (princip 6): flodens ytterligheter är blygsamma, kustlinjens ljusa sand är
+// fortfarande kartans starkaste ljus.
+const RIVER_REED    = '#47582F'; // vassbrynet ut mot dalen
+const RIVER_MUD     = '#3E4E38'; // våt dy vid själva vattenlinjen
+const RIVER_CURRENT = '#4E8590'; // ljuset som fångas av strömmen i fåran
+// Fårans halvbredd. Hexens inradie är 19, så 12,5 låter vattnet fylla hela
+// kanten där kedjan går vidare och lämnar bara två vasslober vinkelrätt mot
+// flödet. Det är avsiktligt FETT: Timothy 2026-07-29 beskrev floden som
+// *"grunt vatten fast aldrig mer än en hex breda"*, alltså ska hexen läsa som
+// en vattenhex — inte som en tunn linje ritad genom mark, för då hade spelaren
+// inte kunnat se VILKEN hex som är ogenomtränglig. Midjan finns för att döda
+// hexagonen, inte för att göra floden smal.
+const RIVER_CHANNEL_HALF = 12.5;
+const RIVER_CELL    = 17;
+
+// Flödesaxeln ur kedjan. Två vattengrannar (rakt genomlopp eller krök) ger
+// kordan mellan dem; en enda (källa eller mynning) ger riktningen ut genom den
+// kanten. Ingen vattengranne alls ska inte kunna hända — en flod är per
+// definition en kedja — men en isolerad flodhex i en riggfixtur får inte
+// krascha renderaren, så fallet har ett svar.
+function riverAxis(q, r) {
+  const wd = neighborDirs(q, r, isWaterTerrain);
+  let ax, ay;
+  if (wd.length >= 2) { ax = DIR_NX[wd[0]] - DIR_NX[wd[1]]; ay = DIR_NY[wd[0]] - DIR_NY[wd[1]]; }
+  else if (wd.length === 1) { ax = DIR_NX[wd[0]]; ay = DIR_NY[wd[0]]; }
+  else { ax = 1; ay = 0; }
+  const m = Math.hypot(ax, ay) || 1;
+  return [ax / m, ay / m];
+}
+
+function drawRiver(ctx, cx, cy, q, r) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  // Fåran genereras ur KEDJEGRAFEN, inte ur hexkanterna. Varje granne som är
+  // vatten ger ett segment från hexens mitt ut till mitten av den delade
+  // kanten, och fåran är allt som ligger närmare än halvbredden till något av
+  // segmenten. Det är den konstruktionen som gör kedjan sammanhängande: två
+  // flodhexar lägger sin fåra mot SAMMA kantmittpunkt med samma halvbredd, så
+  // vattnet möts exakt över gränsen.
+  //
+  // Första ansatsen räknade i stället in från landkanterna, och den bröt
+  // kedjan: vid en delad kant ligger punkten 9,5 från VARDERA angränsande
+  // landkant, alltså innanför en bård på 11,5 — vattnet ströps just där det
+  // aldrig får strypas. Symptomet var separata blå romber med mörka broar
+  // emellan, och det syntes bara på bild.
+  //
+  // FOW-säkert av samma skäl som skogsbrynet (princip 40): `terrainAt` svarar
+  // `'fog'` för en osedd ruta och `undefined` utanför kartan, och ingetdera är
+  // vatten — en osedd granne ger alltså aldrig något segment, och fårans form
+  // kan inte avslöja terräng spelaren inte sett.
+  const segs = [];
+  for (let i = 0; i < 6; i++) {
+    if (isWaterTerrain(terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]))) {
+      segs.push([DIR_NX[i] * R_IN, DIR_NY[i] * R_IN]);
+    }
+  }
+  // En flodhex utan vattengrannar kan inte finnas — en flod ÄR en kedja — men
+  // en ensam flodhex i en riggfixtur får inte bli en solid vasslapp.
+  if (!segs.length) segs.push([R_IN, 0], [-R_IN, 0]);
+  const [axx, axy] = riverAxis(q, r);
+
+  const STEP = 2;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
+
+      // Avstånd till närmaste kedjesegment. Halvbredden moduleras av bruset på
+      // det globala rastret, så strandlinjen fransar i stället för att bli en
+      // jämn korridor — mark och bryn ska vara textur, aldrig form (princip 3).
+      let dist = Infinity;
+      for (const s of segs) {
+        const L2 = s[0] * s[0] + s[1] * s[1];
+        let t = (dx * s[0] + dy * s[1]) / L2;
+        t = t < 0 ? 0 : t > 1 ? 1 : t;
+        const ex = dx - t * s[0], ey = dy - t * s[1];
+        const d = Math.hypot(ex, ey);
+        if (d < dist) dist = d;
+      }
+      const half = RIVER_CHANNEL_HALF + (noiseAt(wx, wy, RIVER_CELL, 2411) - 0.5) * 5.0;
+      if (dist > half) {
+        // Vasslober vinkelrätt mot flödet. Två steg: våt dy vid vattenlinjen,
+        // vass ut mot dalen. Utan det inre steget möter vassen vattnet i ett
+        // enda hopp och stranden läser som en ritad kontur.
+        ctx.globalAlpha = 0.92;
+        ctx.fillStyle = dist < half + 3.5 ? RIVER_MUD : RIVER_REED;
+        ctx.fillRect(wx, wy, STEP, STEP);
+        continue;
+      }
+
+      // Strömmen i fåran. Bruset samplas i en bas som är KOMPRIMERAD längs
+      // flödesaxeln, så fläckarna sträcks ut till strömdrag i stället för att
+      // bli runda plumpar. Samma teknik som slättens "svaga riktning" — som
+      // förkastades där, av precis det skäl som gör den rätt här: slättens
+      // riktning svarade mot ingenting i världen, flodens svarar mot kedjan
+      // (princip 1). Basen är linjär i världskoordinater, alltså löper
+      // strömdragen obrutet mellan två hexar som delar axel.
+      const u = wx * axx + wy * axy;
+      const v = -wx * axy + wy * axx;
+      const n = noiseAt(u * 0.32, v, RIVER_CELL, 5310);
+      if (n > 0.56) {
+        ctx.globalAlpha = n > 0.78 ? 0.52 : 0.28;
+        ctx.fillStyle = RIVER_CURRENT;
+        ctx.fillRect(wx, wy, STEP, STEP);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ── Flodslätten ──────────────────────────────────────────────────────────
+// Dalen ligger på var sida om floden (Timothy 2026-07-29) och är därmed inte
+// en yta man ser lite av — den är ett band längs varje vattendrag på kartan.
+// Den ärvde slättens gamla veteax: fyra `ctx.strokeStyle`-strån på platt färg,
+// alltså exakt det princip 2 förbjuder, och de revs ur slätten av det skälet.
+// De är borta här också.
+//
+// Vad som ersätter dem kommer ur strukturen: en flodslätt odlas i TEGAR SOM
+// LÖPER LÄNGS VATTNET. Riktningen är alltså inte påhittad — den läses ur
+// vilken granne som är flod, precis som flodens egen axel. Princip 15 gäller
+// inte emot: den handlar om kartans STÖRSTA yta, och dalen är ett smalt band,
+// samma undantag som halvöknen fick.
+const VALLEY_CELL  = 46;
+const VALLEY_DARK  = '#51692F'; // fuktig svacka, tegen närmast vattnet
+const VALLEY_LIGHT = '#728E47'; // gröda som fångar ljuset
+const VALLEY_SILT  = '#858C54'; // slamavlagring, ljusare och gråare
+
+// Deltat är samma maskineri med annan palett och UTAN riktning. Ett delta
+// solfjädrar — det har ingen enda axel — och det är dessutom blek silt snarare
+// än bördig grön, för att aldrig kunna förväxlas med vattnet det mynnar i.
+const DELTA_DARK  = '#7E8A4A';
+const DELTA_LIGHT = '#A3AE68';
+const DELTA_SILT  = '#B5B884';
+
+function drawValleyField(ctx, cx, cy, q, r, isDelta) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  // Tegarnas riktning: LÄNGS vattnet, alltså vinkelrätt mot riktningen till
+  // närmaste flodhex. En dalhex som inte rör vatten (andra ledet, eller en
+  // fixtur som inte speglar mapgen) får ett isotropt fält i stället — hellre
+  // ingen riktning än en påhittad.
+  const wd = neighborDirs(q, r, isWaterTerrain);
+  let ax = 1, ay = 0, anis = 1;
+  if (!isDelta && wd.length) {
+    let nx = 0, ny = 0;
+    for (const i of wd) { nx += DIR_NX[i]; ny += DIR_NY[i]; }
+    const m = Math.hypot(nx, ny);
+    if (m > 0.05) { ax = -ny / m; ay = nx / m; anis = 0.38; }
+  }
+
+  const dark  = isDelta ? DELTA_DARK  : VALLEY_DARK;
+  const light = isDelta ? DELTA_LIGHT : VALLEY_LIGHT;
+  const silt  = isDelta ? DELTA_SILT  : VALLEY_SILT;
+
+  const STEP = 3;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const u = wx * ax + wy * ay;
+      const v = -wx * ay + wy * ax;
+      const jitter = hash32(Math.floor(wx / STEP), Math.floor(wy / STEP), 6262)
+                     / 4294967296 - 0.5;
+      const n = noiseAt(u * anis, v, VALLEY_CELL, 4242) + jitter * 0.17;
+      if (n < 0.34)      { ctx.globalAlpha = 0.42; ctx.fillStyle = dark; }
+      else if (n < 0.60) continue;   // bastonen är det dominerande bandet
+      else if (n < 0.85) { ctx.globalAlpha = 0.36; ctx.fillStyle = light; }
+      else               { ctx.globalAlpha = 0.30; ctx.fillStyle = silt; }
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
 // ── Markövergången ───────────────────────────────────────────────────────
 // Slätten mötte allt utom havet på en rak hexkant. Uppmätt tvärs en och samma
 // bild vid 1:1: mot halvöknen ΔL 48 över TRE pixlar, mot skruben ΔL 15 över
@@ -916,9 +1342,14 @@ function drawDesertField(ctx, cx, cy) {
 // Bergen står UTANFÖR med flit. Deras massiv är siluetter som redan svämmar
 // över hexkanten och spiller rasbrant nedför — de HAR sin övergång, och en
 // dithrad markzon under en rasbrant vore två bilder staplade i samma hex.
+// `forest_cedar` står MED, till skillnad från bergen: cederskogens golv är
+// kartans mörkaste mark (L ~85 mot lundens 154), så utan zon ritar mötet
+// mellan de två skogarna en hexagon i valör. Floden står UTANFÖR — den har
+// sin egen strand i vassloberna, och en dithrad markzon under en vassbård
+// vore två bilder staplade i samma hex (samma skäl som bergen).
 const GROUND_BLEND = new Set([
   'plains', 'semi_desert', 'scrub_maquis', 'hills',
-  'forest_olive_grove', 'river_valley', 'river_delta',
+  'forest_olive_grove', 'forest_cedar', 'river_valley', 'river_delta',
 ]);
 
 // Zonens djupaste räckvidd in i hexen. Bredare än strandbandets 6,8: en
@@ -1932,21 +2363,21 @@ function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
       drawPlainsField(ctx, cx, cy);
       break;
     }
-    case 'river_valley':
+    case 'river_valley': {
+      drawValleyField(ctx, cx, cy, q, r, false);
+      break;
+    }
     case 'river_delta': {
-      // tiny wheat stalks
-      for (let i = 0; i < 4; i++) {
-        const ox = ((seed * (i*7+1)) & 0x1f) - 14;
-        const oy = ((seed * (i*5+3)) & 0x1f) - 14;
-        ctx.strokeStyle = i % 2 === 0 ? '#D4C060' : '#A09030';
-        ctx.lineWidth = 0.7;
-        ctx.beginPath();
-        ctx.moveTo(cx+ox, cy+oy+3);
-        ctx.lineTo(cx+ox, cy+oy-3);
-        ctx.stroke();
-        ctx.fillStyle = '#E8D070';
-        ctx.fillRect(cx+ox-0.5, cy+oy-4, 1, 2);
-      }
+      drawValleyField(ctx, cx, cy, q, r, true);
+      break;
+    }
+    case 'river': {
+      drawRiver(ctx, cx, cy, q, r);
+      break;
+    }
+    case 'forest_cedar': {
+      // Golv bara. Kronorna är ett eget pass, av samma skäl som lunden.
+      drawCedarFloor(ctx, cx, cy);
       break;
     }
     case 'forest_olive_grove': {
@@ -2568,7 +2999,14 @@ export function render() {
   // under slätt, lund, kulle och berg utan att var och en får sin egen kopia.
   // 1a3. Havet — dyning över hela ytan, bränning där den möter land. OKLIPPT.
   for (const t of vis) {
-    if (t.terrain === 'fog' || isSeaTerrain(t.terrain)) continue;
+    // Gallringen går på `isWaterTerrain`, inte `isSeaTerrain`. Floden är inte
+    // hav, alltså släpptes en flodhex förbi hit och fick strandband + bränning
+    // mot sina havsgrannar — en sandstrand runt vattnet vid varje mynning.
+    // Enhetsriggen fångade det; ingen tonmätning kunde ha gjort det.
+    // Grannskapstestet nedan står kvar på `isSeaTerrain` med flit: det är LAND
+    // som ska få strand mot HAV, och en landhex vid en flod ska inte få det
+    // (kontrastbudgeten, princip 6 — den ljusa sanden hör kustlinjen till).
+    if (t.terrain === 'fog' || isWaterTerrain(t.terrain)) continue;
     const seaDirs = neighborDirs(t.q, t.r, isSeaTerrain);
     if (!seaDirs.length) continue;
     const { x, y } = hexPx(t.q, t.r);
@@ -2617,11 +3055,19 @@ export function render() {
   // AKTIV och inte bara latent: den cullade listan är en delmängd vars inbördes
   // ordning ändras när kameran flyttas, så utan sorteringen kunde två träd byta
   // överlapp mitt under en panorering.
+  // Båda skogarna i SAMMA sorterade pass, inte i två. En cederhex och en
+  // lundhex som gränsar till varandra har kronor som hänger in över samma
+  // gräns, och vem som hamnar överst måste avgöras av läget i N→S-ordningen —
+  // inte av vilket pass som råkade köra sist. Två pass hade lagt hela
+  // cederskogen ovanpå hela lunden oavsett var träden står.
   const canopyTiles = vis
-    .filter(t => t.terrain === 'forest_olive_grove')
+    .filter(t => t.terrain === 'forest_olive_grove' || t.terrain === 'forest_cedar')
     .map(t => ({ t, p: hexPx(t.q, t.r) }))
     .sort((a, b) => a.p.y - b.p.y);
-  for (const { t, p } of canopyTiles) drawCanopy(ctx, p.x, p.y, t.q, t.r);
+  for (const { t, p } of canopyTiles) {
+    if (t.terrain === 'forest_cedar') drawCedarCanopy(ctx, p.x, p.y, t.q, t.r);
+    else drawCanopy(ctx, p.x, p.y, t.q, t.r);
+  }
   pass('canopy');
 
   // 1b2. Peak pass — same reasoning as the canopy: a summit has to be allowed
@@ -3026,9 +3472,11 @@ const TERRAIN_GOODS = {
   hills:              'copper (if deposit), wine, oil',
   mountain_limestone: 'stone, tin (if deposit)',
   mountain_red:       'stone, tin (if deposit)',
-  forest_olive_grove: 'cedar (if deposit)',
-  coastal_sea:        '—',
-  deep_sea:           '—',
+  forest_olive_grove: 'oil, timber',
+  forest_cedar:       'cedar, timber',
+  coastal_sea:        'fish',
+  deep_sea:           'fish',
+  river:              'fish',
 };
 
 function producesText(tile) {
@@ -3083,6 +3531,7 @@ const TERRAIN_LABELS = {
   plains: 'Plains', hills: 'Hills', forest_olive_grove: 'Olive Grove',
   scrub_maquis: 'Maquis Scrub', semi_desert: 'Semi-Desert',
   river_valley: 'River Valley', river_delta: 'River Delta',
+  river: 'River', forest_cedar: 'Cedar Forest',
   coastal_sea: 'Coastal Sea', deep_sea: 'Deep Sea',
   mountain_limestone: 'Limestone Mountains', mountain_red: 'Red Mountains',
 };

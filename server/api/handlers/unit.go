@@ -484,7 +484,8 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
 			return
 		}
-		isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea"
+		// River is water too, a wall for land units (megaron_floden_plan.md, Timothy 2026-07-29).
+		isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
 		if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
 			writeError(w, http.StatusUnprocessableEntity, "land units cannot enter sea terrain")
 			return

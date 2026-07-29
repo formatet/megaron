@@ -74,8 +74,11 @@ func TestGenerateMap_DepositsOnProductiveTerrain(t *testing.T) {
 			}
 			if tile.CedarDeposit {
 				cedar++
-				if tile.Terrain != TerrainForestOliveGrove {
-					t.Fatalf("seed %d: cedar deposit on %s (want forest_olive_grove)", seed, tile.Terrain)
+				// S2 (megaron_cederskogen_plan.md): CedarDeposit is now a pure
+				// mirror of the forest_cedar terrain, not a flag on
+				// forest_olive_grove.
+				if tile.Terrain != TerrainForestCedar {
+					t.Fatalf("seed %d: cedar deposit on %s (want forest_cedar)", seed, tile.Terrain)
 				}
 			}
 			if tile.SilverDeposit && tile.Terrain != TerrainHills && tile.Terrain != TerrainMountainLimestone {
@@ -88,8 +91,48 @@ func TestGenerateMap_DepositsOnProductiveTerrain(t *testing.T) {
 		if tin < 2 {
 			t.Fatalf("seed %d: only %d tin deposits, want >=2", seed, tin)
 		}
-		if cedar < 2 {
-			t.Fatalf("seed %d: only %d cedar deposits, want >=2", seed, cedar)
+		if cedar < minCedar {
+			t.Fatalf("seed %d: only %d cedar (forest_cedar) tiles, want >=%d", seed, cedar, minCedar)
+		}
+	}
+}
+
+// TestGenerateMap_CedarFormsContiguousStands is the A2 gate
+// (megaron_cederskogen_plan.md): cedar is no longer scattered single hexes —
+// every forest_cedar tile must have at least one forest_cedar neighbour (no
+// stand of size 1), and CedarDeposit must mirror the terrain exactly in both
+// directions (never set on a non-forest_cedar tile, never absent on one).
+func TestGenerateMap_CedarFormsContiguousStands(t *testing.T) {
+	for seed := int64(0); seed < 20; seed++ {
+		tiles := genTiles(seed, 40, 30)
+		terrain := make(map[[2]int]Terrain, len(tiles))
+		for _, t := range tiles {
+			terrain[[2]int{t.Q, t.R}] = t.Terrain
+		}
+		dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+		cedarCount := 0
+		for _, tile := range tiles {
+			if tile.CedarDeposit != (tile.Terrain == TerrainForestCedar) {
+				t.Fatalf("seed %d: (%d,%d) CedarDeposit=%v but terrain=%s — mirror invariant broken",
+					seed, tile.Q, tile.R, tile.CedarDeposit, tile.Terrain)
+			}
+			if tile.Terrain != TerrainForestCedar {
+				continue
+			}
+			cedarCount++
+			hasCedarNeighbour := false
+			for _, d := range dirs6 {
+				if terrain[[2]int{tile.Q + d[0], tile.R + d[1]}] == TerrainForestCedar {
+					hasCedarNeighbour = true
+					break
+				}
+			}
+			if !hasCedarNeighbour {
+				t.Fatalf("seed %d: forest_cedar tile (%d,%d) is isolated (stand size 1)", seed, tile.Q, tile.R)
+			}
+		}
+		if cedarCount < minCedar {
+			t.Fatalf("seed %d: %d forest_cedar tiles, want >= %d", seed, cedarCount, minCedar)
 		}
 	}
 }
@@ -463,8 +506,12 @@ func TestSpawnOreCatchmentScore_RealMap(t *testing.T) {
 
 // TestGenerateMap_EveryRiverReachesDelta is the black-box counterpart to the
 // panic-based invariant addRiver asserts internally (mapgen.go): every
-// connected clump of river_valley/river_delta tiles must contain at least one
-// river_delta tile. This is the P3 regression for the "Amyklai-class" silent
+// connected clump of river/river_delta tiles must contain at least one
+// river_delta tile. river_valley is now a FLANK alongside the actual water
+// (megaron_floden_plan.md S1, Timothy 2026-07-29) — the continuous path from
+// source to mouth is river+river_delta; river_valley tiles hang off it and
+// are not part of the connectivity check. This is the P3 regression for the
+// "Amyklai-class" silent
 // failure (temenos_mapgen.md §Kända begränsningar) — a river that reached the
 // coast but produced no delta, caught only by reading DB rows by hand. Since
 // the old random-walk river is gone (replaced by steepest-descent + pit-fill
@@ -491,12 +538,14 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 				terrain[cell{t.Q, t.R}] = t.Terrain
 			}
 
-			// Connected components over river_valley + river_delta tiles only
-			// (hex adjacency, same 6 axial directions as landComponents).
+			// Connected components over river + river_delta tiles only (the
+			// actual water path) — hex adjacency, same 6 axial directions as
+			// landComponents. river_valley is a flank hanging off the path,
+			// not part of it, so it is deliberately excluded here.
 			dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
-			isRiver := func(t Terrain) bool { return t == TerrainRiverValley || t == TerrainRiverDelta }
+			isRiver := func(t Terrain) bool { return t == TerrainRiver || t == TerrainRiverDelta }
 			seen := map[cell]bool{}
-			var valleyTiles, deltaTiles int
+			var riverTiles, valleyTiles, deltaTiles int
 			riverComponents := 0
 			for c, terr := range terrain {
 				if !isRiver(terr) || seen[c] {
@@ -529,6 +578,8 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 			}
 			for _, terr := range terrain {
 				switch terr {
+				case TerrainRiver:
+					riverTiles++
 				case TerrainRiverValley:
 					valleyTiles++
 				case TerrainRiverDelta:
@@ -538,8 +589,8 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 			if riverComponents == 0 {
 				t.Fatalf("%dx%d seed %d (eff %d): no river tiles at all", tc.w, tc.h, seed, eff)
 			}
-			t.Logf("%dx%d seed %d (eff %d): %d rivers, %d river_valley tiles, %d river_delta tiles",
-				tc.w, tc.h, seed, eff, riverComponents, valleyTiles, deltaTiles)
+			t.Logf("%dx%d seed %d (eff %d): %d rivers, %d river tiles, %d river_valley tiles, %d river_delta tiles",
+				tc.w, tc.h, seed, eff, riverComponents, riverTiles, valleyTiles, deltaTiles)
 		}
 	}
 }
