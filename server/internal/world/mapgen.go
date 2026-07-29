@@ -115,8 +115,8 @@ const (
 	// Kept modest on purpose: the old provisional terrain deliberately kept a
 	// wet MINORITY on the tin hemisphere (a limestone/forest minority amid
 	// mountain_red majority) because tin ore only sits on mountain_limestone
-	// and cedar only on forest_olive_grove — shift too far and the east loses
-	// its own strategic terrain.
+	// and cedar-forest stands only seed from forest_olive_grove (S2,
+	// megaron_cederskogen_plan.md) — shift too far and the east loses its own strategic terrain.
 	hemisphereMoistureShift = 0.07
 
 	// coastalMoistureBonus keeps the shoreline from reading as bare desert or
@@ -290,8 +290,9 @@ func tinSourceTarget(players int) int {
 //     i.e. on terrain that actually has a production rule (no dead deposits).
 //   - Copper and tin live in disjoint land components — bronze is unreachable
 //     without crossing the sea.
-//   - At least 2 productive copper and 2 productive tin tiles, and ≥3 cedar
-//     forests on the eastern landmass.
+//   - At least 2 productive copper and 2 productive tin tiles, and ≥2
+//     contiguous cedar-forest stands (forest_cedar terrain) on the eastern
+//     landmass (S2, megaron_cederskogen_plan.md).
 //   - Multiple distinct landmasses separated by sea (a real archipelago).
 //
 // The unit-test guarantees are now *enforced at generation time*: GenerateMap
@@ -330,9 +331,61 @@ const maxMapAttempts = 100
 // minProductiveTin and minCedar stay flat consts on purpose: tin must get
 // SCARCER relative to player count as the map grows (plan §P4-A), and cedar
 // is already count-based independent of map size (plan §A, untouched by P4).
+//
+// minCedar (S2, megaron_cederskogen_plan.md step 6): cedar is no longer
+// scattered single hexes, it is CONTIGUOUS STANDS (cedarStandCountMin stands
+// of cedarStandSizeMin+ hexes each, see the S2 const block below) — so the
+// floor is raised from the old flat 2 to "at least two minimum-size stands"
+// (2×3), keeping the same floor SHAPE (a raw hex count validateMap can check
+// without knowing about stands) while matching the new generation contract.
 const (
 	minProductiveTin = 2
-	minCedar         = 2
+	minCedar         = cedarStandCountMin * cedarStandSizeMin
+)
+
+// ── S2 cederskogen calibration (bor i koden, itereras via cmd/mapgen-debug) ─
+// megaron_cederskogen_plan.md step 4-5. Cedar forests are now CONTIGUOUS
+// STANDS grown from the same seed candidates the old scattered-flag code used
+// (forest_olive_grove on the tin-biased landmass) — a Wanax reads "here is a
+// forest", not "here is a resource icon". Grove seeding is a separate,
+// additive pass answering Timothy's "det finns en brist på skog" (2026-07-29)
+// without touching terrainTable (the documented mapgen invariant).
+const (
+	// cedarStandCountMin/Spread: 2-3 seed hexes per map — the same count the
+	// old scattered-cedar code rolled (cedarTarget := 3 + rng.Intn(3) was
+	// 3-5; kept slightly lower here since each "hex" is now a multi-tile
+	// stand, not a single deposit flag).
+	cedarStandCountMin    = 2
+	cedarStandCountSpread = 2 // rng.Intn(2) → 0 or 1, so count is 2 or 3
+
+	// cedarStandSizeMin/Spread: each stand grows to 3-7 contiguous hexes
+	// (plan §4), converting same-landmass forest_olive_grove/hills neighbours.
+	cedarStandSizeMin    = 3
+	cedarStandSizeSpread = 5 // rng.Intn(5) → 0..4, so size is 3..7
+
+	// groveDensityDivisor sets small-olive-grove seed count = landArea /
+	// groveDensityDivisor (same style as riverDensityDivisor). Calibrated
+	// against cmd/mapgen-debug's forest-fraction measurement (A4 gate:
+	// 15.7% → 22-28% of land) — see the process report for the histogram
+	// this was tuned against.
+	groveDensityDivisor = 12
+
+	// groveMoistureMin: grove seeds only land in the moist half of the
+	// moisture field ("fuktfältets våta halva", plan §5) — moistureNorm is
+	// 0..1 after normalisation, so 0.5 is exactly that half.
+	groveMoistureMin = 0.5
+
+	// groveStandSizeMin/Spread: each grove is 2-4 hexes (plan §5).
+	groveStandSizeMin    = 2
+	groveStandSizeSpread = 3 // rng.Intn(3) → 0..2, so size is 2..4
+
+	// forestFractionMin/Max: the A4 target band, enforced as a validateMap
+	// invariant so a map can never host a world with a forest share outside
+	// it (same rejection-sampling mechanism as every other floor here).
+	// "Forest" = forest_olive_grove + forest_cedar, as a fraction of LAND
+	// tiles (not all map tiles) — sea dilutes both sides equally otherwise.
+	forestFractionMin = 0.22
+	forestFractionMax = 0.30
 )
 
 // minProductiveCopperFor scales the copper floor with target players (plan
@@ -400,6 +453,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	minStraits := minStraitsFor(width, height)
 
 	copperProd, tinProd, cedar, deltaCount := 0, 0, 0, 0
+	landTiles, forestTiles := 0, 0
 	comp := landComponents(tiles)
 	copperComps := map[int]bool{}
 	tinComps := map[int]bool{}
@@ -416,6 +470,10 @@ func validateMap(tiles []MapTile, width, height int) error {
 		}
 		if tileIsLand(t.Terrain) {
 			landmassSize[comp[k]]++
+			landTiles++
+		}
+		if t.Terrain == TerrainForestOliveGrove || t.Terrain == TerrainForestCedar {
+			forestTiles++
 		}
 		if t.CopperDeposit && t.Terrain == TerrainHills {
 			copperProd++
@@ -442,6 +500,17 @@ func validateMap(tiles []MapTile, width, height int) error {
 	}
 	if cedar < minCedar {
 		fails = append(fails, fmt.Sprintf("cedar = %d (want >= %d)", cedar, minCedar))
+	}
+	// S2 (megaron_cederskogen_plan.md step 5, A4 gate): forest share of LAND
+	// (not map area — sea dilutes both sides of the fraction equally and
+	// would just shrink the band's meaning as channel width changes).
+	forestFraction := 0.0
+	if landTiles > 0 {
+		forestFraction = float64(forestTiles) / float64(landTiles)
+	}
+	if forestFraction < forestFractionMin || forestFraction > forestFractionMax {
+		fails = append(fails, fmt.Sprintf("forest fraction = %.3f (want %.2f..%.2f)",
+			forestFraction, forestFractionMin, forestFractionMax))
 	}
 	if len(landmassSize) < minLandmasses {
 		fails = append(fails, fmt.Sprintf("landmasses = %d (want >= %d)", len(landmassSize), minLandmasses))
@@ -751,6 +820,123 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		addRiver(grid, landmap, field, rng, src, width, height)
 	}
 
+	// ── 6a. Small groves (S2 plan step 5): "det finns en brist på skog" ────
+	// Additive pass, run AFTER rivers so a river never overwrites a grove it
+	// didn't know about. terrainTable itself (the height×moisture invariant)
+	// is untouched — this sprinkles small forest_olive_grove patches onto
+	// plains hexes in the moist half of the moisture field, deterministically,
+	// growing forest cover without touching the lookup at all. Plains (the
+	// single biggest terrain, ~52% of land pre-S2) bears the cost.
+	landAreaForGroves := 0
+	for _, sz := range compSize {
+		landAreaForGroves += sz
+	}
+	moistureNormAt := func(c cell) float64 {
+		m := 0.0
+		if moistureMax > moistureMin {
+			m = (moisture[c] - moistureMin) / (moistureMax - moistureMin)
+		}
+		for _, n := range hexNeighbours(c, width, height) {
+			if !landSet[n] {
+				m += coastalMoistureBonus
+				break
+			}
+		}
+		return m
+	}
+	groveSeedTarget := landAreaForGroves / groveDensityDivisor
+	var groveSeedCand []cell
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			c := cell{q, r}
+			if grid[c] == TerrainPlains && moistureNormAt(c) >= groveMoistureMin {
+				groveSeedCand = append(groveSeedCand, c)
+			}
+		}
+	}
+	rng.Shuffle(len(groveSeedCand), func(i, j int) { groveSeedCand[i], groveSeedCand[j] = groveSeedCand[j], groveSeedCand[i] })
+	growPatch := func(seed cell, target int, used map[cell]bool, sameTerrain Terrain, extraTerrain Terrain, sameLandmass bool) []cell {
+		patch := []cell{seed}
+		used[seed] = true
+		for len(patch) < target {
+			var frontier []cell
+			for _, s := range patch {
+				for _, n := range hexNeighbours(s, width, height) {
+					if used[n] {
+						continue
+					}
+					if sameLandmass && landmap[n] != landmap[seed] {
+						continue
+					}
+					if grid[n] != sameTerrain && (extraTerrain == "" || grid[n] != extraTerrain) {
+						continue
+					}
+					frontier = append(frontier, n)
+				}
+			}
+			if len(frontier) == 0 {
+				break // ran out of eligible neighbours — smaller patch than target
+			}
+			next := frontier[rng.Intn(len(frontier))]
+			used[next] = true
+			patch = append(patch, next)
+		}
+		return patch
+	}
+	groveUsed := map[cell]bool{}
+	groveBuilt := 0
+	for _, seed := range groveSeedCand {
+		if groveBuilt >= groveSeedTarget {
+			break
+		}
+		if groveUsed[seed] || grid[seed] != TerrainPlains {
+			continue
+		}
+		target := groveStandSizeMin + rng.Intn(groveStandSizeSpread)
+		for _, c := range growPatch(seed, target, groveUsed, TerrainPlains, "", false) {
+			grid[c] = TerrainForestOliveGrove
+		}
+		groveBuilt++
+	}
+
+	// ── 6b. Cedar forest stands (S2 plan step 4) ────────────────────────
+	// forest_cedar is now its own terrain, not a flag on forest_olive_grove:
+	// 2-3 seed hexes (same tin-biased-forest bias the old scattered-flag code
+	// used) each grow into a 3-7 hex CONTIGUOUS stand by converting
+	// same-landmass forest_olive_grove/hills neighbours (including any grove
+	// 6a just grew — harmless, it just means fewer, bigger patches). Run
+	// AFTER 6a and rivers so cedar always gets first claim on the final
+	// terrain, and BEFORE step 7's tile build so CedarDeposit can be derived
+	// as a pure mirror of the terrain in exactly one place.
+	var cedarSeedCand []cell
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			c := cell{q, r}
+			if grid[c] == TerrainForestOliveGrove && compBias[landmap[c]] == biasTin {
+				cedarSeedCand = append(cedarSeedCand, c)
+			}
+		}
+	}
+	rng.Shuffle(len(cedarSeedCand), func(i, j int) { cedarSeedCand[i], cedarSeedCand[j] = cedarSeedCand[j], cedarSeedCand[i] })
+	cedarUsed := map[cell]bool{}
+	cedarStandCount := cedarStandCountMin + rng.Intn(cedarStandCountSpread)
+	cedarBuilt := 0
+	for _, seed := range cedarSeedCand {
+		if cedarBuilt >= cedarStandCount {
+			break
+		}
+		if cedarUsed[seed] {
+			continue
+		}
+		target := cedarStandSizeMin + rng.Intn(cedarStandSizeSpread)
+		for _, c := range growPatch(seed, target, cedarUsed, TerrainForestOliveGrove, TerrainHills, true) {
+			grid[c] = TerrainForestCedar
+		}
+		cedarBuilt++
+	}
+
 	// ── 7. Build tiles + collect deposit candidates by bias & terrain ──
 	tiles := make([]MapTile, 0, width*height)
 	index := map[cell]int{}
@@ -759,7 +945,6 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		copperCand []int // hills on a copper-biased landmass
 		tinCand    []int // mountain_limestone on a tin-biased landmass
 		silverCand []int // any productive metal terrain, no copper/tin
-		cedarCand  []int // forest_olive_grove on a tin-biased landmass
 	)
 
 	for q := 0; q < width; q++ {
@@ -773,10 +958,15 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 			index[c] = idx
 			tiles = append(tiles, MapTile{
 				Q: q, R: r,
-				Terrain:   terrain,
-				Coastal:   !isSea(terrain) && hasCoastalSeaNeighbour(grid, c, width, height),
-				Fertility: 0.2 + rng.Float64()*0.8,
-				Mineral:   0.1 + rng.Float64()*0.7,
+				Terrain: terrain,
+				// CedarDeposit is a pure mirror of the terrain, derived in
+				// exactly this one place (S2, megaron_cederskogen_plan.md
+				// step 4) — no other assignment site may exist, so the flag
+				// and the terrain can never drift apart.
+				CedarDeposit: terrain == TerrainForestCedar,
+				Coastal:      !isSea(terrain) && hasCoastalSeaNeighbour(grid, c, width, height),
+				Fertility:    0.2 + rng.Float64()*0.8,
+				Mineral:      0.1 + rng.Float64()*0.7,
 			})
 
 			switch terrain {
@@ -797,10 +987,6 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 						tinCand = append(tinCand, idx)
 					}
 					silverCand = append(silverCand, idx)
-				}
-			case TerrainForestOliveGrove:
-				if compBias[lm] == biasTin {
-					cedarCand = append(cedarCand, idx)
 				}
 			}
 		}
@@ -835,16 +1021,9 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		silverSourceTarget(players), silverClusterMin, silverClusterMax, width, height,
 		func(t *MapTile) { t.SilverDeposit = true })
 
-	// Cedar: 3–5 eastern forests — unchanged, already count-based (plan §A
-	// "rör ej").
-	rng.Shuffle(len(cedarCand), func(i, j int) { cedarCand[i], cedarCand[j] = cedarCand[j], cedarCand[i] })
-	cedarTarget := 3 + rng.Intn(3)
-	for i, idx := range cedarCand {
-		if i >= cedarTarget {
-			break
-		}
-		tiles[idx].CedarDeposit = true
-	}
+	// Cedar is no longer assigned here — it is now the forest_cedar terrain
+	// grown by step 6b above, and CedarDeposit was already set as a mirror of
+	// that terrain in step 7's tile-build loop.
 
 	// ── 9. Guarantee minimums (productive terrain only) ────────────────
 	// Mechanism unchanged from pre-P4 (plan §A "steg 9 behålls oförändrat i

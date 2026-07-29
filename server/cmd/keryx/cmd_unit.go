@@ -268,8 +268,8 @@ func unitMarchCmd() *cobra.Command {
 
 Terrain passability:
   Impassable (all units):  mountain_limestone, mountain_red
-  Land units only:         plains, hills, forest_olive_grove, scrub_maquis,
-                           semi_desert, river_valley, river_delta
+  Land units only:         plains, hills, forest_olive_grove, forest_cedar,
+                           scrub_maquis, semi_desert, river_valley, river_delta
   Naval units only:        coastal_sea, deep_sea
   (Land units cannot enter sea; naval units cannot enter land.)
 
