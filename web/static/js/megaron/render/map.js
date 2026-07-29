@@ -926,6 +926,227 @@ function drawDesertField(ctx, cx, cy) {
   ctx.restore();
 }
 
+// ── Flodfamiljen ─────────────────────────────────────────────────────────
+// Floden är sedan Timothys beslut 2026-07-29 en egen VATTENterräng: en
+// seglingsbar kedja, exakt en hex bred, källa → Thalassa, ogenomtränglig för
+// landenheter. Princip 20 förbjöd att rita henne så länge mekaniken saknades;
+// nu finns mekaniken, alltså gäller förbudet inte längre.
+//
+// Felläget mättes innan något ritades: med bara bastonen läser en flodkedja
+// som EN RAD BLÅ BRICKOR. Roten är geometrisk och inte kolorimetrisk — en hex
+// är en fet hexagon, så en kedja av fyllda hexar blir en kedja av romber, inte
+// en linje. Det är alltså BREDDEN som måste bort, inte tonen.
+//
+// Greppet: en mörk vassbård dras inåt från varje kant mot LAND, och det som
+// blir kvar är en ljusare fåra som med nödvändighet löper längs flödesaxeln —
+// den axel som ges av vilka grannar som är vatten. Bågen uppstår därmed ur
+// KEDJANS STRUKTUR och inte ur en ritad linje (princip 1), och den ändrar form
+// av sig själv i rakt genomlopp, i krök, vid källan och vid mynningen.
+//
+// Varför bården är MÖRK och inte ljus, tvärtemot kustens sand: kontrasten ska
+// sitta i den kant spelaren fattar beslut om, och den kanten är flod↔dal — de
+// två delar varje hexkant per konstruktion. En ljus bård hade lagt flodens
+// ljusaste ton intill dalens ljusa mark (ΔL 6) och suddat just den gränsen; en
+// mörk bård ger ΔL ~36 vid själva mötet. Samma lärdom som röda berget mot
+// kustvattnet: mät VID gränsen, inte mellan två hexmedelvärden.
+//
+// Bården är dessutom textur och aldrig form (princip 3): bredden moduleras av
+// världsrymdsbruset, så kanten fransar i stället för att rita en jämn skiva
+// innanför hexen — en jämn skiva blev en gloria runt skogen när lunden prövade
+// det, och den skulle bli en hexagonkontur här.
+// Bården är VASS OCH VÅT DY, inte vatten — och det är slicens avgörande fynd.
+// Första ansatsen gjorde bården till en mörkare blå: gränsen dal→bård mätte då
+// ΔL 31,6, alltså en helt godkänd siffra, och kedjan läste ÄNDÅ som romber.
+// Roten är geometrisk och inte kolorimetrisk: så länge vattnet når fram till
+// hexkanten ÄR gränsen vatten↔land en hexagon, hur man än tonar insidan. Ingen
+// behandling av ytan kan laga en kontur. Vattnet måste alltså sluta INNAN
+// kanten, och det som ligger emellan kan inte vara vatten.
+//
+// Att bården dessutom är MÖRKARE än fåran är vad som gör att tråden läser som
+// vatten: strömmen blir det ljusa elementet mellan två mörka stränder, i
+// stället för en mörk fläck i ljus mark. Det är också sant — vass och våt dy i
+// skugga är det mörkaste i en flodslätt — och det håller kontrastbudgeten
+// (princip 6): flodens ytterligheter är blygsamma, kustlinjens ljusa sand är
+// fortfarande kartans starkaste ljus.
+const RIVER_REED    = '#47582F'; // vassbrynet ut mot dalen
+const RIVER_MUD     = '#3E4E38'; // våt dy vid själva vattenlinjen
+const RIVER_CURRENT = '#4E8590'; // ljuset som fångas av strömmen i fåran
+// Fårans halvbredd. Hexens inradie är 19, så 12,5 låter vattnet fylla hela
+// kanten där kedjan går vidare och lämnar bara två vasslober vinkelrätt mot
+// flödet. Det är avsiktligt FETT: Timothy 2026-07-29 beskrev floden som
+// *"grunt vatten fast aldrig mer än en hex breda"*, alltså ska hexen läsa som
+// en vattenhex — inte som en tunn linje ritad genom mark, för då hade spelaren
+// inte kunnat se VILKEN hex som är ogenomtränglig. Midjan finns för att döda
+// hexagonen, inte för att göra floden smal.
+const RIVER_CHANNEL_HALF = 12.5;
+const RIVER_CELL    = 17;
+
+// Flödesaxeln ur kedjan. Två vattengrannar (rakt genomlopp eller krök) ger
+// kordan mellan dem; en enda (källa eller mynning) ger riktningen ut genom den
+// kanten. Ingen vattengranne alls ska inte kunna hända — en flod är per
+// definition en kedja — men en isolerad flodhex i en riggfixtur får inte
+// krascha renderaren, så fallet har ett svar.
+function riverAxis(q, r) {
+  const wd = neighborDirs(q, r, isWaterTerrain);
+  let ax, ay;
+  if (wd.length >= 2) { ax = DIR_NX[wd[0]] - DIR_NX[wd[1]]; ay = DIR_NY[wd[0]] - DIR_NY[wd[1]]; }
+  else if (wd.length === 1) { ax = DIR_NX[wd[0]]; ay = DIR_NY[wd[0]]; }
+  else { ax = 1; ay = 0; }
+  const m = Math.hypot(ax, ay) || 1;
+  return [ax / m, ay / m];
+}
+
+function drawRiver(ctx, cx, cy, q, r) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  // Fåran genereras ur KEDJEGRAFEN, inte ur hexkanterna. Varje granne som är
+  // vatten ger ett segment från hexens mitt ut till mitten av den delade
+  // kanten, och fåran är allt som ligger närmare än halvbredden till något av
+  // segmenten. Det är den konstruktionen som gör kedjan sammanhängande: två
+  // flodhexar lägger sin fåra mot SAMMA kantmittpunkt med samma halvbredd, så
+  // vattnet möts exakt över gränsen.
+  //
+  // Första ansatsen räknade i stället in från landkanterna, och den bröt
+  // kedjan: vid en delad kant ligger punkten 9,5 från VARDERA angränsande
+  // landkant, alltså innanför en bård på 11,5 — vattnet ströps just där det
+  // aldrig får strypas. Symptomet var separata blå romber med mörka broar
+  // emellan, och det syntes bara på bild.
+  //
+  // FOW-säkert av samma skäl som skogsbrynet (princip 40): `terrainAt` svarar
+  // `'fog'` för en osedd ruta och `undefined` utanför kartan, och ingetdera är
+  // vatten — en osedd granne ger alltså aldrig något segment, och fårans form
+  // kan inte avslöja terräng spelaren inte sett.
+  const segs = [];
+  for (let i = 0; i < 6; i++) {
+    if (isWaterTerrain(terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]))) {
+      segs.push([DIR_NX[i] * R_IN, DIR_NY[i] * R_IN]);
+    }
+  }
+  // En flodhex utan vattengrannar kan inte finnas — en flod ÄR en kedja — men
+  // en ensam flodhex i en riggfixtur får inte bli en solid vasslapp.
+  if (!segs.length) segs.push([R_IN, 0], [-R_IN, 0]);
+  const [axx, axy] = riverAxis(q, r);
+
+  const STEP = 2;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
+
+      // Avstånd till närmaste kedjesegment. Halvbredden moduleras av bruset på
+      // det globala rastret, så strandlinjen fransar i stället för att bli en
+      // jämn korridor — mark och bryn ska vara textur, aldrig form (princip 3).
+      let dist = Infinity;
+      for (const s of segs) {
+        const L2 = s[0] * s[0] + s[1] * s[1];
+        let t = (dx * s[0] + dy * s[1]) / L2;
+        t = t < 0 ? 0 : t > 1 ? 1 : t;
+        const ex = dx - t * s[0], ey = dy - t * s[1];
+        const d = Math.hypot(ex, ey);
+        if (d < dist) dist = d;
+      }
+      const half = RIVER_CHANNEL_HALF + (noiseAt(wx, wy, RIVER_CELL, 2411) - 0.5) * 5.0;
+      if (dist > half) {
+        // Vasslober vinkelrätt mot flödet. Två steg: våt dy vid vattenlinjen,
+        // vass ut mot dalen. Utan det inre steget möter vassen vattnet i ett
+        // enda hopp och stranden läser som en ritad kontur.
+        ctx.globalAlpha = 0.92;
+        ctx.fillStyle = dist < half + 3.5 ? RIVER_MUD : RIVER_REED;
+        ctx.fillRect(wx, wy, STEP, STEP);
+        continue;
+      }
+
+      // Strömmen i fåran. Bruset samplas i en bas som är KOMPRIMERAD längs
+      // flödesaxeln, så fläckarna sträcks ut till strömdrag i stället för att
+      // bli runda plumpar. Samma teknik som slättens "svaga riktning" — som
+      // förkastades där, av precis det skäl som gör den rätt här: slättens
+      // riktning svarade mot ingenting i världen, flodens svarar mot kedjan
+      // (princip 1). Basen är linjär i världskoordinater, alltså löper
+      // strömdragen obrutet mellan två hexar som delar axel.
+      const u = wx * axx + wy * axy;
+      const v = -wx * axy + wy * axx;
+      const n = noiseAt(u * 0.32, v, RIVER_CELL, 5310);
+      if (n > 0.56) {
+        ctx.globalAlpha = n > 0.78 ? 0.52 : 0.28;
+        ctx.fillStyle = RIVER_CURRENT;
+        ctx.fillRect(wx, wy, STEP, STEP);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ── Flodslätten ──────────────────────────────────────────────────────────
+// Dalen ligger på var sida om floden (Timothy 2026-07-29) och är därmed inte
+// en yta man ser lite av — den är ett band längs varje vattendrag på kartan.
+// Den ärvde slättens gamla veteax: fyra `ctx.strokeStyle`-strån på platt färg,
+// alltså exakt det princip 2 förbjuder, och de revs ur slätten av det skälet.
+// De är borta här också.
+//
+// Vad som ersätter dem kommer ur strukturen: en flodslätt odlas i TEGAR SOM
+// LÖPER LÄNGS VATTNET. Riktningen är alltså inte påhittad — den läses ur
+// vilken granne som är flod, precis som flodens egen axel. Princip 15 gäller
+// inte emot: den handlar om kartans STÖRSTA yta, och dalen är ett smalt band,
+// samma undantag som halvöknen fick.
+const VALLEY_CELL  = 46;
+const VALLEY_DARK  = '#5C7636'; // fuktig svacka, tegen närmast vattnet
+const VALLEY_LIGHT = '#7E9A4E'; // gröda som fångar ljuset
+const VALLEY_SILT  = '#93995A'; // slamavlagring, ljusare och gråare
+
+// Deltat är samma maskineri med annan palett och UTAN riktning. Ett delta
+// solfjädrar — det har ingen enda axel — och det är dessutom blek silt snarare
+// än bördig grön, för att aldrig kunna förväxlas med vattnet det mynnar i.
+const DELTA_DARK  = '#7E8A4A';
+const DELTA_LIGHT = '#A3AE68';
+const DELTA_SILT  = '#B5B884';
+
+function drawValleyField(ctx, cx, cy, q, r, isDelta) {
+  ctx.save();
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+
+  // Tegarnas riktning: LÄNGS vattnet, alltså vinkelrätt mot riktningen till
+  // närmaste flodhex. En dalhex som inte rör vatten (andra ledet, eller en
+  // fixtur som inte speglar mapgen) får ett isotropt fält i stället — hellre
+  // ingen riktning än en påhittad.
+  const wd = neighborDirs(q, r, isWaterTerrain);
+  let ax = 1, ay = 0, anis = 1;
+  if (!isDelta && wd.length) {
+    let nx = 0, ny = 0;
+    for (const i of wd) { nx += DIR_NX[i]; ny += DIR_NY[i]; }
+    const m = Math.hypot(nx, ny);
+    if (m > 0.05) { ax = -ny / m; ay = nx / m; anis = 0.38; }
+  }
+
+  const dark  = isDelta ? DELTA_DARK  : VALLEY_DARK;
+  const light = isDelta ? DELTA_LIGHT : VALLEY_LIGHT;
+  const silt  = isDelta ? DELTA_SILT  : VALLEY_SILT;
+
+  const STEP = 3;
+  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const u = wx * ax + wy * ay;
+      const v = -wx * ay + wy * ax;
+      const jitter = hash32(Math.floor(wx / STEP), Math.floor(wy / STEP), 6262)
+                     / 4294967296 - 0.5;
+      const n = noiseAt(u * anis, v, VALLEY_CELL, 4242) + jitter * 0.17;
+      if (n < 0.34)      { ctx.globalAlpha = 0.42; ctx.fillStyle = dark; }
+      else if (n < 0.60) continue;   // bastonen är det dominerande bandet
+      else if (n < 0.85) { ctx.globalAlpha = 0.36; ctx.fillStyle = light; }
+      else               { ctx.globalAlpha = 0.30; ctx.fillStyle = silt; }
+      ctx.fillRect(wx, wy, STEP, STEP);
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
 // ── Markövergången ───────────────────────────────────────────────────────
 // Slätten mötte allt utom havet på en rak hexkant. Uppmätt tvärs en och samma
 // bild vid 1:1: mot halvöknen ΔL 48 över TRE pixlar, mot skruben ΔL 15 över
@@ -1972,21 +2193,16 @@ function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
       drawPlainsField(ctx, cx, cy);
       break;
     }
-    case 'river_valley':
+    case 'river_valley': {
+      drawValleyField(ctx, cx, cy, q, r, false);
+      break;
+    }
     case 'river_delta': {
-      // tiny wheat stalks
-      for (let i = 0; i < 4; i++) {
-        const ox = ((seed * (i*7+1)) & 0x1f) - 14;
-        const oy = ((seed * (i*5+3)) & 0x1f) - 14;
-        ctx.strokeStyle = i % 2 === 0 ? '#D4C060' : '#A09030';
-        ctx.lineWidth = 0.7;
-        ctx.beginPath();
-        ctx.moveTo(cx+ox, cy+oy+3);
-        ctx.lineTo(cx+ox, cy+oy-3);
-        ctx.stroke();
-        ctx.fillStyle = '#E8D070';
-        ctx.fillRect(cx+ox-0.5, cy+oy-4, 1, 2);
-      }
+      drawValleyField(ctx, cx, cy, q, r, true);
+      break;
+    }
+    case 'river': {
+      drawRiver(ctx, cx, cy, q, r);
       break;
     }
     case 'forest_olive_grove': {
