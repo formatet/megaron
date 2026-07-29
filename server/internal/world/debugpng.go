@@ -295,6 +295,14 @@ type MapMetrics struct {
 	// the P4 gate ("largest landmass ≤ 15 % of map area") is expressed
 	// against map area.
 	LargestComponentFraction float64 `json:"largest_component_fraction"`
+	// LargestLandmassWalkableFraction: of the SINGLE BIGGEST land component
+	// (LargestComponentFraction's landmass), the fraction still reachable in
+	// one connected patch once river is treated as the wall it is for land
+	// units (megaron_floden_plan.md ögonkoll 2026-07-29 — isWalkableLand).
+	// 1.0 = the river(s) on this landmass never actually split it; well below
+	// 1.0 = a land unit starting on one side can never walk to a large part
+	// of what LOOKS like a single landmass on the surface-area metrics above.
+	LargestLandmassWalkableFraction float64 `json:"largest_landmass_walkable_fraction"`
 
 	SpawnValidTiles int `json:"spawn_valid_tiles"`
 	CopperDeposits  int `json:"copper_deposits"`
@@ -415,16 +423,42 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 	}
 	m.CedarStands = depositSourceCount(tiles, func(t MapTile) bool { return t.Terrain == TerrainForestCedar })
 	m.LandComponents = len(compSize)
-	largest := 0
-	for _, n := range compSize {
+	largest, largestID := 0, -1
+	for id, n := range compSize {
 		if n > largest {
-			largest = n
+			largest, largestID = n, id
 		}
 	}
 	if len(tiles) > 0 {
 		m.LargestComponentFraction = float64(largest) / float64(len(tiles))
 	}
 	m.Straits = countStraits(tiles)
+
+	// LargestLandmassWalkableFraction (ögonkoll 2026-07-29 — see
+	// isWalkableLand's doc comment): how much of the BIGGEST landmass a land
+	// unit can actually reach in one connected patch, river excluded. Distinct
+	// from LargestComponentFraction on purpose — that one is a surface-area
+	// measure where river still counts as land (it isn't sea), so it read
+	// identically with and without river carving and could never see this.
+	if largestID >= 0 {
+		wcomp := walkableComponents(tiles)
+		walkableSize := map[int]int{}
+		for _, t := range tiles {
+			if comp[[2]int{t.Q, t.R}] != largestID {
+				continue
+			}
+			if wid, ok := wcomp[[2]int{t.Q, t.R}]; ok {
+				walkableSize[wid]++
+			}
+		}
+		largestWalkable := 0
+		for _, n := range walkableSize {
+			if n > largestWalkable {
+				largestWalkable = n
+			}
+		}
+		m.LargestLandmassWalkableFraction = float64(largestWalkable) / float64(largest)
+	}
 
 	m.TargetPlayers = playersFor(width, height)
 	m.PlayerCapacity = EstimatePlayerCapacity(tiles, width, height)

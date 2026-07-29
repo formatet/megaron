@@ -164,6 +164,27 @@ const (
 	// STARTING a river) so a river is never rejected by a fragment it created
 	// out of ordinary, playable ground — only genuine slivers.
 	minLandFragment = 12
+
+	// riverMeanderWavelength/riverMeanderJitter (ögonkoll 2026-07-29 fix — see
+	// descentOrder's doc comment): a SPATIALLY SMOOTH low-frequency noise field
+	// (riverMeanderField), not per-step independent randomness, is added to
+	// each candidate's height before steepest-descent comparison. Independent
+	// per-candidate jitter was tried first and rejected: it broke straightness
+	// but produced a dense, jagged zigzag (sharp reversals every 1-2 hexes,
+	// the "maze" a 230×230 eye-check caught) because nothing tied one step's
+	// wobble to the next. Smooth spatial noise instead biases a whole
+	// neighbourhood consistently for several hexes before drifting, which
+	// reads as a gentle curve — the same fBm technique heightField/moistureField
+	// already use for terrain, just applied to path choice instead of terrain
+	// lookup. Wavelength sits between highFreqWavelength (8, terrain scatter)
+	// and moistureWavelength (14, regional streaks) — long enough for one
+	// curve to span several hexes, short enough that a modest river still
+	// bends more than once. Jitter amplitude ~ half the mean adjacent-hex
+	// height difference (measured 0.041 on a 230×230 field): enough to
+	// override a genuine near-tie and turn the river, not enough to make it
+	// climb real hills or ignore a strong downhill signal.
+	riverMeanderWavelength = 10.0
+	riverMeanderJitter     = 0.02
 )
 
 // riverFlankable lists the terrains a river's flank may convert to
@@ -807,6 +828,12 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	moisture := moistureField(rng, width, height)
 	moistureMin, moistureMax := moistureRange(moisture)
 
+	// ── 1c. River meander field (ögonkoll 2026-07-29 fix) ────────────────
+	// Independent field, one more deterministic rng draw after moisture —
+	// see riverMeanderField's doc comment for why this needs to be spatially
+	// smooth noise rather than per-step randomness.
+	riverMeander := riverMeanderField(rng, width, height)
+
 	// ── 2. Carve the two permanent sea channels ─────────────────────────
 	// A single all-sea column fully blocks horizontal hex-adjacency, so land
 	// can never span a channel — every component ends up entirely west of
@@ -1016,7 +1043,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 			before[c] = grid[c]
 		}
 
-		addRiver(grid, landmap, field, mainSea, rng, src, width, height)
+		addRiver(grid, landmap, field, riverMeander, mainSea, rng, src, width, height)
 		thinRiverJunctions(grid, width, height)
 
 		// §7e: a river deliberately walls its landmass in two — that's the
@@ -1610,6 +1637,70 @@ func landComponents(tiles []MapTile) map[[2]int]int {
 	return comp
 }
 
+// isWalkableLand reports whether a land unit can stand on t — land per
+// tileIsLand MINUS river, which is water carved INTO a landmass, not a
+// terrain type of its own kind of sea (megaron_floden_plan.md ögonkoll
+// 2026-07-29, Timothy: "floden är land för ytmått ... men INTE för
+// framkomlighet"). tileIsLand/isSea/landComponents are deliberately left
+// alone: LandFraction, LargestComponentFraction and the copper/tin-share-
+// component check are surface-AREA measures — a river is not open sea, it
+// lies inside the landmass, so it should keep counting as land there. This
+// function exists ONLY for the walkability half: can a land unit actually
+// reach this tile on foot. Used by walkableComponents below.
+func isWalkableLand(t Terrain) bool {
+	return tileIsLand(t) && t != TerrainRiver
+}
+
+// walkableComponents groups contiguous WALKABLE tiles (isWalkableLand, i.e.
+// land minus river) into connected components — the same shape as
+// landComponents, but river is a wall here instead of invisible. Two tiles
+// on the same landComponents id can land in different walkableComponents ids
+// if a river runs between them; that split is the whole point (§7e's
+// fragment guard, and the "how much of the biggest landmass is actually
+// reachable" question an ögonkoll on 230×230 raised: landComponents alone
+// reported identical largest_component_fraction with and without river
+// carving, because isSea(river) is false and tileIsLand(river) is
+// therefore true — a real wall no surface-area invariant could ever see).
+func walkableComponents(tiles []MapTile) map[[2]int]int {
+	terrain := map[[2]int]Terrain{}
+	for _, t := range tiles {
+		terrain[[2]int{t.Q, t.R}] = t.Terrain
+	}
+	comp := map[[2]int]int{}
+	next := 0
+	dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+	for _, t := range tiles {
+		key := [2]int{t.Q, t.R}
+		if !isWalkableLand(t.Terrain) {
+			continue
+		}
+		if _, seen := comp[key]; seen {
+			continue
+		}
+		id := next
+		next++
+		queue := [][2]int{key}
+		comp[key] = id
+		for len(queue) > 0 {
+			c := queue[0]
+			queue = queue[1:]
+			for _, d := range dirs {
+				n := [2]int{c[0] + d[0], c[1] + d[1]}
+				tt, ok := terrain[n]
+				if !ok || !isWalkableLand(tt) {
+					continue
+				}
+				if _, seen := comp[n]; seen {
+					continue
+				}
+				comp[n] = id
+				queue = append(queue, n)
+			}
+		}
+	}
+	return comp
+}
+
 // seaChannels returns the two permanent sea-channel columns (33 %/67 % of
 // width) that split the map into copper (west), neutral (centre) and tin
 // (east) zones. Single source of truth for both heightField's belt weighting
@@ -1733,6 +1824,29 @@ func moistureField(rng *rand.Rand, width, height int) map[cell]float64 {
 		for r := base; r < base+height; r++ {
 			row := float64(r - base)
 			field[cell{q, r}] = noise.Noise2D(float64(q)/moistureWavelength, row/moistureWavelength)
+		}
+	}
+	return field
+}
+
+// riverMeanderField is a spatially smooth ([-1,1]-ish) noise field descentOrder
+// adds to the height field before sorting a river's candidate steps —
+// megaron_floden_plan.md ögonkoll 2026-07-29 fix, see riverMeanderJitter's
+// comment for why this needs to be spatially SMOOTH (a whole neighbourhood
+// biased consistently) rather than independently random per candidate.
+// Same technique and independent seed draw as moistureField; a distinct
+// field (not a reuse of height or moisture) so meander doesn't accidentally
+// correlate with — and so cancel out or double up on — the terrain those
+// already shape.
+func riverMeanderField(rng *rand.Rand, width, height int) map[cell]float64 {
+	noise := perlin.NewPerlin(2, 2, 2, rng.Int63())
+
+	field := make(map[cell]float64, width*height)
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			row := float64(r - base)
+			field[cell{q, r}] = noise.Noise2D(float64(q)/riverMeanderWavelength, row/riverMeanderWavelength)
 		}
 	}
 	return field
@@ -1920,13 +2034,55 @@ func adjacentToExistingRiver(grid map[cell]Terrain, c cell, width, height int) b
 	return false
 }
 
+// adjacentToOwnPath reports whether candidate cand — a prospective next step
+// from cur — is hex-adjacent to any cell this SAME descent has already
+// explored, other than cur itself (cand's would-be legitimate predecessor).
+// Prevention, not cure, for the self-touch half of §7c (adjacentToExistingRiver
+// above is the cross-river half): meander (riverMeanderJitter) makes the walk
+// double back near its own earlier ground far more often than pure steepest
+// descent ever did, and thinRiverJunctions' after-the-fact fix-up can only
+// ever demote ONE of a pinch's cells without risking a different river's
+// delta connectivity elsewhere (megaron_floden_plan.md ögonkoll 2026-07-29 —
+// meander alone, without this, turned a handful of self-touches per map into
+// dozens, overwhelming that backstop at 230×230). visited also holds
+// abandoned dead-end branches (never cleared on backtrack), so this is
+// intentionally conservative — a path that never comes within 1 hex of its
+// own past is guaranteed pinch-free by construction, which is worth some
+// extra backtracking to get.
+func adjacentToOwnPath(visited map[cell]bool, cur, cand cell, width, height int) bool {
+	for _, d := range riverNeighbourOrder {
+		n := cell{cand.q + d[0], cand.r + d[1]}
+		if n == cur {
+			continue // cur is cand's own legitimate predecessor
+		}
+		if visited[n] {
+			return true
+		}
+	}
+	return false
+}
+
 // descentOrder returns c's land neighbours on targetLM (sea and other
 // landmasses excluded — a river only ever steps onto its own component or,
-// via firstSeaNeighbour, straight into its mouth) sorted by height ascending:
-// steepest descent first. Ties are broken by riverNeighbourOrder's fixed
-// direction order (a stable sort over neighbours built in that order), never
-// by map/iteration order, so a seed always carves the same river.
-func descentOrder(field map[cell]float64, landmap map[cell]int, targetLM int, c cell, width, height int) []cell {
+// via firstSeaNeighbour, straight into its mouth) sorted by height-PLUS-MEANDER
+// ascending: steepest descent first, but with riverMeanderField's smooth
+// spatial noise added to each candidate's height before comparing
+// (megaron_floden_plan.md ögonkoll 2026-07-29 — Timothy: "en flod ska
+// meandra"). Pure steepest-descent alone still meanders where the terrain
+// itself undulates, but on a smooth, near-uniform slope the SAME neighbour
+// wins every single step, and a perfectly consistent winner is a straight
+// line — the "circuit board" symptom the eye-check caught once the line
+// became visible water instead of invisible river_valley. meander is a fixed
+// field (computed once per map from the world's rng, fully deterministic per
+// seed), not fresh randomness per call, and is intentionally spatially SMOOTH
+// rather than independently random per candidate — an independent-per-step
+// version was tried first and produced a jagged zigzag (sharp reversals every
+// 1-2 hexes) instead of a curve, because nothing tied one step's wobble to
+// the next. Genuine height differences larger than the jitter amplitude still
+// dominate, so the river still trends downhill overall; it just no longer
+// picks the identical direction every time two neighbours are close in
+// height.
+func descentOrder(field, meander map[cell]float64, landmap map[cell]int, targetLM int, c cell, width, height int) []cell {
 	var out []cell
 	for _, d := range riverNeighbourOrder {
 		n := cell{c.q + d[0], c.r + d[1]}
@@ -1935,7 +2091,11 @@ func descentOrder(field map[cell]float64, landmap map[cell]int, targetLM int, c 
 		}
 		out = append(out, n)
 	}
-	sort.SliceStable(out, func(i, j int) bool { return field[out[i]] < field[out[j]] })
+	biased := make(map[cell]float64, len(out))
+	for _, n := range out {
+		biased[n] = field[n] + meander[n]*riverMeanderJitter
+	}
+	sort.SliceStable(out, func(i, j int) bool { return biased[out[i]] < biased[out[j]] })
 	return out
 }
 
@@ -2043,7 +2203,7 @@ func mainSeaComponent(grid map[cell]Terrain, width, height int) map[cell]bool {
 // (TestGenerateMap_EveryRiverReachesDelta), not by eyeballing PNGs. validateMap
 // keeps its existing minDeltaTiles>=1 floor as the map-level backstop (plan:
 // "Keep minDeltaTiles ≥ 1 as the map-level floor") — untouched.
-func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float64, mainSea map[cell]bool, rng *rand.Rand, source cell, width, height int) {
+func addRiver(grid map[cell]Terrain, landmap map[cell]int, field, meander map[cell]float64, mainSea map[cell]bool, rng *rand.Rand, source cell, width, height int) {
 	targetLM := landmap[source]
 	if targetLM == lmSea {
 		return
@@ -2056,7 +2216,7 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 		c         cell
 		remaining []cell
 	}
-	stack := []frame{{c: source, remaining: descentOrder(field, landmap, targetLM, source, width, height)}}
+	stack := []frame{{c: source, remaining: descentOrder(field, meander, landmap, targetLM, source, width, height)}}
 
 	var mouth cell
 	reached := false
@@ -2080,15 +2240,17 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 		for len(top.remaining) > 0 {
 			cand := top.remaining[0]
 			top.remaining = top.remaining[1:]
-			// Refuse a candidate already touching an EARLIER river (§7c,
-			// prevention rather than cure): grid only holds rivers already
-			// accepted from prior sources at this point (the current walk's
-			// own path isn't written into grid until after it finishes), so
-			// this keeps a 1-hex buffer between different rivers and stops
-			// most cross-river pinches from ever being carved — the
-			// thinRiverJunctions pass afterward only has to catch the rarer
-			// self-touch of a single river's own path.
-			if !visited[cand] && !adjacentToExistingRiver(grid, cand, width, height) {
+			// Refuse a candidate that would pinch the width invariant (§7c),
+			// either against an EARLIER river (grid only holds rivers already
+			// accepted from prior sources at this point — the current walk's
+			// own path isn't written into grid until after it finishes) or
+			// against THIS walk's own past (adjacentToOwnPath — meander makes
+			// self-touch common, not the rare case thinRiverJunctions was
+			// originally sized for). Both are prevention, not cure:
+			// thinRiverJunctions afterward is now a backstop for whatever
+			// slips through, not the primary mechanism.
+			if !visited[cand] && !adjacentToExistingRiver(grid, cand, width, height) &&
+				!adjacentToOwnPath(visited, cur, cand, width, height) {
 				next = cand
 				found = true
 				break
@@ -2105,7 +2267,7 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 
 		visited[next] = true
 		path = append(path, next)
-		stack = append(stack, frame{c: next, remaining: descentOrder(field, landmap, targetLM, next, width, height)})
+		stack = append(stack, frame{c: next, remaining: descentOrder(field, meander, landmap, targetLM, next, width, height)})
 	}
 
 	if !reached {
@@ -2114,20 +2276,28 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 		return
 	}
 
-	// Thin the carve to a line (round-2 fix): the DFS stack path is loop-free
-	// but NOT blob-free — in a flat pit every step finds another unvisited
-	// neighbour, so the walk serpentines across the whole pit floor without
-	// ever dead-ending, and the entire tour stays on the "committed" path
-	// (backtracking only trims true dead-ends). Carving that floods the pit
-	// with river_valley — 15+-tile lake-like patches of the game's
-	// extra-fertile terrain, i.e. a food-inflation hotspot (same scarcity
-	// logic as deltas/tin). So the explored path is treated as a CORRIDOR,
-	// not the river itself: riverLine below re-derives the shortest route
-	// through the visited set from source to the mouth-adjacent cell, which
-	// crosses a pit in a line instead of touring its floor. Only that line
-	// is carved; every other explored tile keeps its terrainFor terrain.
+	// The DFS stack IS the river (ögonkoll 2026-07-29 fix, superseding the
+	// "round-2" comment this replaced): path is exactly the current stack at
+	// every step (backtracking pops both in lockstep — see the !found branch
+	// above), so it is already loop-free and 1-cell-wide as a SEQUENCE, with
+	// no re-derivation needed. The previous version instead re-derived the
+	// SHORTEST path from source to origin through the whole visited corridor
+	// (riverLine, since removed) to avoid "flat pit" runs ballooning into a
+	// wide fertile blob — but a shortest path through a hex grid is by
+	// construction close to a single straight line, which was invisible while
+	// the line became river_valley (fertile ground, no shape to judge) and is
+	// now a glaring "circuit board" of dead-straight water once the line
+	// itself is the terrain (Timothy's eye-check, 230×230). The blob risk
+	// riverLine solved is also gone on its own terms: flanks are now a THIN
+	// band one hex deep along whatever line is carved (§7b), not a fill of
+	// the whole explored area, so a longer, more winding path just means a
+	// longer, still-thin river+valley system — meander is not a starvation
+	// hazard here, only a straight line to nowhere was. descentOrder's random
+	// jitter (added in the same fix) does the actual meandering: pure
+	// steepest-descent alone still picks the identical winner on every step
+	// of a smooth slope.
 	origin := path[len(path)-1]
-	line := riverLine(visited, source, origin, width, height)
+	line := path
 
 	// The line itself is the water (megaron_floden_plan.md S1, Timothy
 	// 2026-07-29: river is its own vatten-terräng, not fertile valley ground).
@@ -2166,49 +2336,6 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 	}
 }
 
-// riverLine returns the shortest path from source to origin walking only
-// cells in the descent's visited set — the thin line addRiver actually
-// carves out of the explored corridor (see the round-2 comment there). Plain
-// BFS with riverNeighbourOrder as the fixed expansion order, so the chosen
-// line is deterministic per seed. origin is always reachable from source
-// within visited (they are endpoints of the same connected DFS walk), so the
-// fallback return is defensive only.
-func riverLine(visited map[cell]bool, source, origin cell, width, height int) []cell {
-	if source == origin {
-		return []cell{origin}
-	}
-	parent := map[cell]cell{source: source}
-	queue := []cell{source}
-	for len(queue) > 0 {
-		cur := queue[0]
-		queue = queue[1:]
-		for _, d := range riverNeighbourOrder {
-			n := cell{cur.q + d[0], cur.r + d[1]}
-			if !inMap(n.q, n.r, width, height) || !visited[n] {
-				continue
-			}
-			if _, seen := parent[n]; seen {
-				continue
-			}
-			parent[n] = cur
-			if n == origin {
-				// Walk parents back to source, then reverse.
-				line := []cell{n}
-				for line[len(line)-1] != source {
-					line = append(line, parent[line[len(line)-1]])
-				}
-				for i, j := 0, len(line)-1; i < j; i, j = i+1, j-1 {
-					line[i], line[j] = line[j], line[i]
-				}
-				return line
-			}
-			queue = append(queue, n)
-		}
-	}
-	// Unreachable by construction — carve at least the mouth cell so the
-	// delta invariant still holds.
-	return []cell{origin}
-}
 
 // placeDelta converts a land tile at the river's mouth into river_delta
 // terrain. Delta tiles are coastal, fertile, and strategically exposed — the
@@ -2319,11 +2446,15 @@ func riverComponentsAllTouchDelta(grid map[cell]Terrain, width, height int) bool
 }
 
 // thinRiverJunctions enforces river width == 1 (megaron_floden_plan.md §7c,
-// Timothy 2026-07-29: "exakt 1 hex bred"). riverLine is a BFS shortest path
-// and therefore already loop-free, but not touch-free: two cells that are NOT
-// consecutive in the path can still end up hex-adjacent (a diagonal pinch
-// where the route passes close to itself, or two different rivers' lines
-// coming near each other), which would locally read as two hexes wide.
+// Timothy 2026-07-29: "exakt 1 hex bred"). The carved line is addRiver's own
+// DFS stack (path) and is therefore already loop-free by construction, but
+// not touch-free: two cells that are NOT consecutive in the path can still
+// end up hex-adjacent (a diagonal pinch where the meandering route passes
+// close to itself, or two different rivers' lines coming near each other),
+// which would locally read as two hexes wide. addRiver's own descent now
+// actively AVOIDS creating these (adjacentToOwnPath, adjacentToExistingRiver)
+// — this pass is the backstop for whatever slips through anyway, not the
+// primary mechanism.
 //
 // A first version demoted the last neighbour found, unconditionally — but a
 // "pinch" cell's extra neighbour is not always redundant: it can be a cell
