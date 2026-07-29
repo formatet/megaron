@@ -510,7 +510,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	// produces ore from turn 1 without needing an oracle or extra colonisation.
 	//
 	// "Buildable" mirrors the terrain exclusion list in join.go capital placement:
-	//   NOT IN (coastal_sea, deep_sea, mountain_limestone, mountain_red, semi_desert)
+	//   NOT IN (coastal_sea, deep_sea, river, mountain_limestone, mountain_red, semi_desert)
 	// "Catchment" = the 6 axial neighbours RecomputeProduction reads (same as production logic).
 	// "West" = q <= maxQ/2; "East" = q > maxQ/2 (east hemisphere, where tin is placed).
 	//
@@ -520,7 +520,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 	isBuildable := func(t MapTile) bool {
 		switch t.Terrain {
-		case TerrainCoastalSea, TerrainDeepSea,
+		case TerrainCoastalSea, TerrainDeepSea, TerrainRiver,
 			TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
 			return false
 		}
@@ -565,10 +565,153 @@ func validateMap(tiles []MapTile, width, height int) error {
 		fails = append(fails, "no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment")
 	}
 
+	fails = append(fails, riverInvariantFailures(tiles, width, height)...)
+
 	if len(fails) > 0 {
 		return fmt.Errorf("invalid map: %s", strings.Join(fails, "; "))
 	}
 	return nil
+}
+
+// riverInvariantFailures asserts §7f's independent, black-box river checks —
+// verified against the flattened []MapTile output, never trusting the carving
+// code's own internal panics (same "fail loud, verify separately" contract as
+// the rest of validateMap). Re-derives its own grid + mainSea rather than
+// threading generation-time state through, exactly like every other check in
+// this function.
+func riverInvariantFailures(tiles []MapTile, width, height int) []string {
+	grid := make(map[cell]Terrain, len(tiles))
+	for _, t := range tiles {
+		grid[cell{t.Q, t.R}] = t.Terrain
+	}
+	if len(grid) == 0 {
+		return nil
+	}
+
+	var fails []string
+
+	// Every river hex has at most 2 river neighbours (§7c: exactly 1 hex wide).
+	for c, t := range grid {
+		if t != TerrainRiver {
+			continue
+		}
+		n := 0
+		for _, d := range riverNeighbourOrder {
+			if grid[cell{c.q + d[0], c.r + d[1]}] == TerrainRiver {
+				n++
+			}
+		}
+		if n > 2 {
+			fails = append(fails, fmt.Sprintf("river hex (%d,%d) has %d river neighbours (want <= 2)", c.q, c.r, n))
+		}
+	}
+
+	// Every connected river+delta group touches at least one river_delta tile
+	// (§7d) AND at least one main-sea tile (§7a: the mouth is always the
+	// Thalassa, never a landlocked lake).
+	mainSea := mainSeaComponent(grid, width, height)
+	seen := map[cell]bool{}
+	for start, t := range grid {
+		if t != TerrainRiver || seen[start] {
+			continue
+		}
+		hasDelta, hasMainSea := false, false
+		queue := []cell{start}
+		seen[start] = true
+		for len(queue) > 0 {
+			cur := queue[0]
+			queue = queue[1:]
+			for _, n := range hexNeighbours(cur, width, height) {
+				nt := grid[n]
+				if nt == TerrainRiverDelta {
+					hasDelta = true
+				}
+				if mainSea[n] {
+					hasMainSea = true
+				}
+				if nt == TerrainRiver && !seen[n] {
+					seen[n] = true
+					queue = append(queue, n)
+				}
+			}
+		}
+		if !hasDelta {
+			fails = append(fails, fmt.Sprintf("river component at (%d,%d) has no river_delta tile", start.q, start.r))
+		}
+		if !hasMainSea {
+			fails = append(fails, fmt.Sprintf("river component at (%d,%d) never reaches the main sea", start.q, start.r))
+		}
+	}
+
+	// Every river hex has ≥1 river_valley neighbour (§7b's promise to the
+	// player), UNLESS every one of its non-water neighbours is mountain — that
+	// is §7b's own named exception (a mountain flank makes the river a ravine,
+	// not a bug), so it cannot also be a violation here.
+	for c, t := range grid {
+		if t != TerrainRiver {
+			continue
+		}
+		hasValley, hasNonMountainLand := false, false
+		for _, d := range riverNeighbourOrder {
+			nt, ok := grid[cell{c.q + d[0], c.r + d[1]}]
+			if !ok {
+				continue
+			}
+			if nt == TerrainRiverValley {
+				hasValley = true
+			}
+			if riverFlankable[nt] {
+				hasNonMountainLand = true
+			}
+		}
+		if !hasValley && hasNonMountainLand {
+			fails = append(fails, fmt.Sprintf("river hex (%d,%d) has no river_valley neighbour", c.q, c.r))
+		}
+	}
+
+	// No RIVER-ADJACENT walkable-land component is smaller than minLandFragment
+	// (§7e) — this is the whole-map backstop for the same guard the generation
+	// loop already applies per-carve. Scoped to components that touch a river
+	// hex, not every walkable component map-wide: a legitimate remote isle
+	// (forceMetal's copperIsle/tinIsle, deliberately as small as 1 tile and
+	// never touched by any river) is not a river-carving defect and must not
+	// trip this check.
+	walkable := func(t Terrain) bool { return !isSea(t) && t != TerrainRiver }
+	seenLand := map[cell]bool{}
+	for start, t := range grid {
+		if !walkable(t) || seenLand[start] {
+			continue
+		}
+		size := 0
+		touchesRiver := false
+		queue := []cell{start}
+		seenLand[start] = true
+		for len(queue) > 0 {
+			cur := queue[0]
+			queue = queue[1:]
+			size++
+			for _, d := range riverNeighbourOrder {
+				n := cell{cur.q + d[0], cur.r + d[1]}
+				nt, ok := grid[n]
+				if !ok {
+					continue
+				}
+				if nt == TerrainRiver {
+					touchesRiver = true
+				}
+				if walkable(nt) && !seenLand[n] {
+					seenLand[n] = true
+					queue = append(queue, n)
+				}
+			}
+		}
+		if touchesRiver && size < minLandFragment {
+			fails = append(fails, fmt.Sprintf("river-adjacent land fragment at (%d,%d) = %d tiles (want >= %d)",
+				start.q, start.r, size, minLandFragment))
+		}
+	}
+
+	return fails
 }
 
 // generateMapOnce produces a single candidate map for a seed. It is wrapped by
@@ -1565,6 +1708,20 @@ func riverSources(field map[cell]float64, landmap map[cell]int, compSize map[int
 	return sources
 }
 
+// adjacentToExistingRiver reports whether any of c's hex neighbours is
+// already TerrainRiver. Used only during descent (§7c prevention, see
+// addRiver's stepping loop) — at that point grid holds exactly the rivers
+// ALREADY accepted from earlier sources, since the current walk's own path is
+// written into grid only after the whole descent finishes.
+func adjacentToExistingRiver(grid map[cell]Terrain, c cell, width, height int) bool {
+	for _, d := range riverNeighbourOrder {
+		if grid[cell{c.q + d[0], c.r + d[1]}] == TerrainRiver {
+			return true
+		}
+	}
+	return false
+}
+
 // descentOrder returns c's land neighbours on targetLM (sea and other
 // landmasses excluded — a river only ever steps onto its own component or,
 // via firstSeaNeighbour, straight into its mouth) sorted by height ascending:
@@ -1725,7 +1882,15 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 		for len(top.remaining) > 0 {
 			cand := top.remaining[0]
 			top.remaining = top.remaining[1:]
-			if !visited[cand] {
+			// Refuse a candidate already touching an EARLIER river (§7c,
+			// prevention rather than cure): grid only holds rivers already
+			// accepted from prior sources at this point (the current walk's
+			// own path isn't written into grid until after it finishes), so
+			// this keeps a 1-hex buffer between different rivers and stops
+			// most cross-river pinches from ever being carved — the
+			// thinRiverJunctions pass afterward only has to catch the rarer
+			// self-touch of a single river's own path.
+			if !visited[cand] && !adjacentToExistingRiver(grid, cand, width, height) {
 				next = cand
 				found = true
 				break
