@@ -16,23 +16,35 @@
 --      fallback-produktionen CLAUDE.md förbjuder.
 --
 --   2. Rangordning grunt hav > flod > djuphav (Timothys ord: djuphavet ska
---      vara magert — öppet hav fiskas inte från stranden). Talen är kalibrerade
---      mot en verklig kuststads fisk/tick i acceptansvärlden så att en typisk
---      kuststad rör sig ≤25 % mot dagens tal (A4 i planen) — se
---      megaron_floden_plan.md §Acceptanskriterier. 2.4/tick var den gamla
---      raten per matchande (hex, regel)-par (0.04/min × 60, mig 071).
---         coastal_sea (bas)      2.4   — samma bas som den gamla landregeln
---         coastal_sea (harbour)  2.4   — samma bas, nu nycklat på själva vattnet
---         river                  1.2   — grunt och skyddat, men smalt: hälften
---         deep_sea               0.4   — magert öppet hav, en sjättedel
+--      vara magert — öppet hav fiskas inte från stranden). Talen är MÄTTA, inte
+--      gissade (A4 i planen, megaron_floden_plan.md §Acceptanskriterier):
+--      2.4/tick var den gamla raten per matchande (land, regel)-par (0.04/min
+--      × 60, mig 071) — en kuststad fick 2.4 för VARJE land-hex i sin
+--      catchment som RÅKADE gränsa till coastal_sea, oavsett hur många
+--      faktiska sjöhexar den gränsade. En första gissning (coastal_sea=2.4,
+--      samma tal) mättes mot alla kustnära bebyggbara hexar i en seedad
+--      acceptansvärld (30×20, engångsanalys — se processrapporten/slutrapporten
+--      för slicen) och gav en median-ratio klart under 1 (typisk kuststad
+--      TAPPAR fisk) — antalet land-hexar som råkar gränsa till hav är så gott
+--      som alltid FLER än antalet faktiska sjöhexar i en 7-hex-catchment.
+--      coastal_sea=3.6 centrerade om ~1,0 och gav flest hexar innanför ±25 %
+--      av åtta testade nivåer (2.4 upp till 12.0). river/deep_sea skalade
+--      proportionellt mot samma bas (0,5× / 1/6×) för att hålla rangordningen:
+--         coastal_sea (bas)      3.6
+--         coastal_sea (harbour)  3.6   — samma bas, nu nycklat på själva vattnet
+--         river                  1.8   — grunt och skyddat, men smalt: hälften
+--         deep_sea               0.6   — magert öppet hav, en sjättedel
+--      Spridningen mellan enskilda hexar är stor (0,08×–6,00× vid bästa
+--      raten) eftersom modellerna räknar helt olika saker — se känd
+--      avgränsning i processrapporten.
 DELETE FROM production_rules
  WHERE good_key = 'fish' AND requires_coastal = TRUE AND terrain_type IS NULL;
 
 INSERT INTO production_rules (terrain_type, building_type, good_key, rate_per_tick, requires_deposit) VALUES
-    ('coastal_sea', NULL,      'fish', 2.4, NULL),
-    ('coastal_sea', 'harbour', 'fish', 2.4, NULL),
-    ('river',       NULL,      'fish', 1.2, NULL),
-    ('deep_sea',    NULL,      'fish', 0.4, NULL);
+    ('coastal_sea', NULL,      'fish', 3.6, NULL),
+    ('coastal_sea', 'harbour', 'fish', 3.6, NULL),
+    ('river',       NULL,      'fish', 1.8, NULL),
+    ('deep_sea',    NULL,      'fish', 0.6, NULL);
 
 -- 3. Backfill map_tiles.coastal / provinces.coastal för flodgrannar. I dag en
 --    NO-OP (ingen värld har river-hexar än — mapgen carvar dem först efter
