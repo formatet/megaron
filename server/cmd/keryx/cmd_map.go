@@ -180,22 +180,29 @@ func mapCmd() *cobra.Command {
 				return nil
 			}
 
-			// Count visible sea and coastal land hexes for the summary line.
+			// Count visible sea, river and coastal land hexes for the summary
+			// line. river is water too (megaron_floden_plan.md S1, Timothy
+			// 2026-07-29) but gets its own glyph below — it is a wall for land
+			// units and a lane for ships, not the open sea.
 			seaCount := 0
+			riverCount := 0
 			coastalLand := 0
 			liveCount := 0
 			for _, t := range out {
 				if t.Tier == "live" {
 					liveCount++
 				}
-				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
+				switch {
+				case t.Terrain == "deep_sea" || t.Terrain == "coastal_sea":
 					seaCount++
-				} else if t.Coastal {
+				case t.Terrain == "river":
+					riverCount++
+				case t.Coastal:
 					coastalLand++
 				}
 			}
-			fmt.Printf("Your hex: (%d,%d) · radius %d · %d known hexes (%d live, %d remembered; %d sea, %d coastal land):\n\n",
-				oq, or, radius, len(out), liveCount, len(out)-liveCount, seaCount, coastalLand)
+			fmt.Printf("Your hex: (%d,%d) · radius %d · %d known hexes (%d live, %d remembered; %d sea, %d river, %d coastal land):\n\n",
+				oq, or, radius, len(out), liveCount, len(out)-liveCount, seaCount, riverCount, coastalLand)
 			for _, t := range out {
 				dim := ""
 				if t.Tier == "remembered" {
@@ -205,6 +212,11 @@ func mapCmd() *cobra.Command {
 				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
 					// Sea hexes: no deposit/occupied tags, just label
 					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[sea]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
+					continue
+				}
+				if t.Terrain == "river" {
+					// River: its own glyph — a wall for land units, a lane for ships.
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[river]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
 					continue
 				}
 				tag := ""

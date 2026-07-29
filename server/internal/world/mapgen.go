@@ -154,7 +154,31 @@ const (
 	// riverSourceSpacing is the minimum hex distance between two river
 	// sources — plan §P3 "no two sources adjacent or near-adjacent".
 	riverSourceSpacing = 6
+
+	// minLandFragment (megaron_floden_plan.md §7e, Timothy 2026-07-29): a river
+	// deliberately WALLS its landmass in two — that is the point (land units
+	// cannot cross it). But a carve that leaves a splinter this small or
+	// smaller is a mapgen bug, not geography: it is undone (the whole carve —
+	// line, flanks, delta — is reverted for that source) rather than kept.
+	// 12 sits comfortably below riverMinComponentTiles (25, the floor for even
+	// STARTING a river) so a river is never rejected by a fragment it created
+	// out of ordinary, playable ground — only genuine slivers.
+	minLandFragment = 12
 )
+
+// riverFlankable lists the terrains a river's flank may convert to
+// river_valley (megaron_floden_plan.md §7b, Timothy 2026-07-29: "as a rule,
+// on either side of the river"). Mountains, sea, delta, another river and any
+// river_valley already placed are deliberately absent — the exception is that
+// a mountain flank makes the river a ravine (no valley on that side), not a
+// bug.
+var riverFlankable = map[Terrain]bool{
+	TerrainPlains:           true,
+	TerrainScrubMaquis:      true,
+	TerrainHills:            true,
+	TerrainForestOliveGrove: true,
+	TerrainSemiDesert:       true,
+}
 
 // ── P4 deposit-cluster + scaled-validation calibration numbers ─────────────
 // temenos_mapgen_arkipelag_plan.md §P4. Replaces the old per-hex-% deposit
@@ -180,7 +204,7 @@ const (
 	// and its source-count target are allowed to scale with players.
 	copperClusterMin    = 2
 	copperClusterMax    = 4
-	copperSourceFloor   = 4  // plan §A literal: "max(4, players/6)"
+	copperSourceFloor   = 4 // plan §A literal: "max(4, players/6)"
 	copperSourceDivisor = 6
 
 	// Silver sits between copper and tin ("mellanting").
@@ -555,7 +579,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	// produces ore from turn 1 without needing an oracle or extra colonisation.
 	//
 	// "Buildable" mirrors the terrain exclusion list in join.go capital placement:
-	//   NOT IN (coastal_sea, deep_sea, mountain_limestone, mountain_red, semi_desert)
+	//   NOT IN (coastal_sea, deep_sea, river, mountain_limestone, mountain_red, semi_desert)
 	// "Catchment" = the 6 axial neighbours RecomputeProduction reads (same as production logic).
 	// "West" = q <= maxQ/2; "East" = q > maxQ/2 (east hemisphere, where tin is placed).
 	//
@@ -565,7 +589,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 	isBuildable := func(t MapTile) bool {
 		switch t.Terrain {
-		case TerrainCoastalSea, TerrainDeepSea,
+		case TerrainCoastalSea, TerrainDeepSea, TerrainRiver,
 			TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
 			return false
 		}
@@ -610,10 +634,153 @@ func validateMap(tiles []MapTile, width, height int) error {
 		fails = append(fails, "no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment")
 	}
 
+	fails = append(fails, riverInvariantFailures(tiles, width, height)...)
+
 	if len(fails) > 0 {
 		return fmt.Errorf("invalid map: %s", strings.Join(fails, "; "))
 	}
 	return nil
+}
+
+// riverInvariantFailures asserts §7f's independent, black-box river checks —
+// verified against the flattened []MapTile output, never trusting the carving
+// code's own internal panics (same "fail loud, verify separately" contract as
+// the rest of validateMap). Re-derives its own grid + mainSea rather than
+// threading generation-time state through, exactly like every other check in
+// this function.
+func riverInvariantFailures(tiles []MapTile, width, height int) []string {
+	grid := make(map[cell]Terrain, len(tiles))
+	for _, t := range tiles {
+		grid[cell{t.Q, t.R}] = t.Terrain
+	}
+	if len(grid) == 0 {
+		return nil
+	}
+
+	var fails []string
+
+	// Every river hex has at most 2 river neighbours (§7c: exactly 1 hex wide).
+	for c, t := range grid {
+		if t != TerrainRiver {
+			continue
+		}
+		n := 0
+		for _, d := range riverNeighbourOrder {
+			if grid[cell{c.q + d[0], c.r + d[1]}] == TerrainRiver {
+				n++
+			}
+		}
+		if n > 2 {
+			fails = append(fails, fmt.Sprintf("river hex (%d,%d) has %d river neighbours (want <= 2)", c.q, c.r, n))
+		}
+	}
+
+	// Every connected river+delta group touches at least one river_delta tile
+	// (§7d) AND at least one main-sea tile (§7a: the mouth is always the
+	// Thalassa, never a landlocked lake).
+	mainSea := mainSeaComponent(grid, width, height)
+	seen := map[cell]bool{}
+	for start, t := range grid {
+		if t != TerrainRiver || seen[start] {
+			continue
+		}
+		hasDelta, hasMainSea := false, false
+		queue := []cell{start}
+		seen[start] = true
+		for len(queue) > 0 {
+			cur := queue[0]
+			queue = queue[1:]
+			for _, n := range hexNeighbours(cur, width, height) {
+				nt := grid[n]
+				if nt == TerrainRiverDelta {
+					hasDelta = true
+				}
+				if mainSea[n] {
+					hasMainSea = true
+				}
+				if nt == TerrainRiver && !seen[n] {
+					seen[n] = true
+					queue = append(queue, n)
+				}
+			}
+		}
+		if !hasDelta {
+			fails = append(fails, fmt.Sprintf("river component at (%d,%d) has no river_delta tile", start.q, start.r))
+		}
+		if !hasMainSea {
+			fails = append(fails, fmt.Sprintf("river component at (%d,%d) never reaches the main sea", start.q, start.r))
+		}
+	}
+
+	// Every river hex has ≥1 river_valley neighbour (§7b's promise to the
+	// player), UNLESS every one of its non-water neighbours is mountain — that
+	// is §7b's own named exception (a mountain flank makes the river a ravine,
+	// not a bug), so it cannot also be a violation here.
+	for c, t := range grid {
+		if t != TerrainRiver {
+			continue
+		}
+		hasValley, hasNonMountainLand := false, false
+		for _, d := range riverNeighbourOrder {
+			nt, ok := grid[cell{c.q + d[0], c.r + d[1]}]
+			if !ok {
+				continue
+			}
+			if nt == TerrainRiverValley {
+				hasValley = true
+			}
+			if riverFlankable[nt] {
+				hasNonMountainLand = true
+			}
+		}
+		if !hasValley && hasNonMountainLand {
+			fails = append(fails, fmt.Sprintf("river hex (%d,%d) has no river_valley neighbour", c.q, c.r))
+		}
+	}
+
+	// No RIVER-ADJACENT walkable-land component is smaller than minLandFragment
+	// (§7e) — this is the whole-map backstop for the same guard the generation
+	// loop already applies per-carve. Scoped to components that touch a river
+	// hex, not every walkable component map-wide: a legitimate remote isle
+	// (forceMetal's copperIsle/tinIsle, deliberately as small as 1 tile and
+	// never touched by any river) is not a river-carving defect and must not
+	// trip this check.
+	walkable := func(t Terrain) bool { return !isSea(t) && t != TerrainRiver }
+	seenLand := map[cell]bool{}
+	for start, t := range grid {
+		if !walkable(t) || seenLand[start] {
+			continue
+		}
+		size := 0
+		touchesRiver := false
+		queue := []cell{start}
+		seenLand[start] = true
+		for len(queue) > 0 {
+			cur := queue[0]
+			queue = queue[1:]
+			size++
+			for _, d := range riverNeighbourOrder {
+				n := cell{cur.q + d[0], cur.r + d[1]}
+				nt, ok := grid[n]
+				if !ok {
+					continue
+				}
+				if nt == TerrainRiver {
+					touchesRiver = true
+				}
+				if walkable(nt) && !seenLand[n] {
+					seenLand[n] = true
+					queue = append(queue, n)
+				}
+			}
+		}
+		if touchesRiver && size < minLandFragment {
+			fails = append(fails, fmt.Sprintf("river-adjacent land fragment at (%d,%d) = %d tiles (want >= %d)",
+				start.q, start.r, size, minLandFragment))
+		}
+	}
+
+	return fails
 }
 
 // generateMapOnce produces a single candidate map for a seed. It is wrapped by
@@ -816,8 +983,51 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	if riverCount < minRivers {
 		riverCount = minRivers
 	}
+	// mainSea (§7a): the sea component touching the map's edge — the only sea
+	// a river's mouth may ever count as reaching. Computed once, before any
+	// carving, from the coastline this step just finished — carving never
+	// creates or removes sea tiles, so it stays valid across every addRiver
+	// call below.
+	mainSea := mainSeaComponent(grid, width, height)
+
+	// landmassCells groups every cell by its landmap id, captured once before
+	// any river touches the map — landmap itself is immutable from step 3
+	// onward, so this doubles as the per-landmass membership §7e's fragment
+	// check needs and the "before" snapshot §7e's revert needs (a river only
+	// ever converts cells within its own landmap[source] component — see
+	// addRiver/placeDelta's landmap[c]==targetLM guards).
+	landmassCells := map[int][]cell{}
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			c := cell{q, r}
+			if lm := landmap[c]; lm != lmSea {
+				landmassCells[lm] = append(landmassCells[lm], c)
+			}
+		}
+	}
+
 	for _, src := range riverSources(field, landmap, compSize, grid, riverCount, width, height) {
-		addRiver(grid, landmap, field, rng, src, width, height)
+		targetLM := landmap[src]
+		cells := landmassCells[targetLM]
+
+		before := make(map[cell]Terrain, len(cells))
+		for _, c := range cells {
+			before[c] = grid[c]
+		}
+
+		addRiver(grid, landmap, field, mainSea, rng, src, width, height)
+		thinRiverJunctions(grid, width, height)
+
+		// §7e: a river deliberately walls its landmass in two — that's the
+		// point — but a splinter smaller than minLandFragment is a mapgen bug,
+		// not geography. Undo the WHOLE carve (line, flanks, delta) rather
+		// than keep a fragment no Wanax could ever found a viable city on.
+		if smallestFragment(grid, cells, width, height) < minLandFragment {
+			for c, t := range before {
+				grid[c] = t
+			}
+		}
 	}
 
 	// ── 6a. Small groves (S2 plan step 5): "det finns en brist på skog" ────
@@ -931,7 +1141,22 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 			continue
 		}
 		target := cedarStandSizeMin + rng.Intn(cedarStandSizeSpread)
-		for _, c := range growPatch(seed, target, cedarUsed, TerrainForestOliveGrove, TerrainHills, true) {
+		patch := growPatch(seed, target, cedarUsed, TerrainForestOliveGrove, TerrainHills, true)
+		// Ett frö som inte når minimistorleken FÖRKASTAS i stället för att bli
+		// ett ensamt cederhex. Skälet är en äkta integrationsdefekt som varken
+		// flod- eller cederslicen kunde se ensam: floderna carvas i steg 6 och
+		// konverterar sina flanker (inklusive olivlund) till river_valley, så
+		// ett cederfrö som hamnat intill en flod kan sakna mark att växa i.
+		// Utan den här kontrollen blev beståndet 1 hex — och "cederskog" som
+		// ett isolerat hex är varken en skog att rendera eller en fyndighet
+		// att hålla. Fröna är redan shufflade, så nästa kandidat prövas.
+		if len(patch) < cedarStandSizeMin {
+			for _, c := range patch {
+				delete(cedarUsed, c)
+			}
+			continue
+		}
+		for _, c := range patch {
 			grid[c] = TerrainForestCedar
 		}
 		cedarBuilt++
@@ -964,9 +1189,13 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 				// step 4) — no other assignment site may exist, so the flag
 				// and the terrain can never drift apart.
 				CedarDeposit: terrain == TerrainForestCedar,
-				Coastal:      !isSea(terrain) && hasCoastalSeaNeighbour(grid, c, width, height),
-				Fertility:    0.2 + rng.Float64()*0.8,
-				Mineral:      0.1 + rng.Float64()*0.7,
+				// Coastal betyder sedan S1 "granne till vatten", inte "granne
+				// till hav" — en flodstad får full kuststatus (Timothy
+				// 2026-07-29). Floden själv är vatten och kan aldrig vara
+				// kust åt sig själv, därav det explicita undantaget.
+				Coastal:   !isSea(terrain) && terrain != TerrainRiver && hasWaterNeighbour(grid, c, width, height),
+				Fertility: 0.2 + rng.Float64()*0.8,
+				Mineral:   0.1 + rng.Float64()*0.7,
 			})
 
 			switch terrain {
@@ -1677,6 +1906,20 @@ func riverSources(field map[cell]float64, landmap map[cell]int, compSize map[int
 	return sources
 }
 
+// adjacentToExistingRiver reports whether any of c's hex neighbours is
+// already TerrainRiver. Used only during descent (§7c prevention, see
+// addRiver's stepping loop) — at that point grid holds exactly the rivers
+// ALREADY accepted from earlier sources, since the current walk's own path is
+// written into grid only after the whole descent finishes.
+func adjacentToExistingRiver(grid map[cell]Terrain, c cell, width, height int) bool {
+	for _, d := range riverNeighbourOrder {
+		if grid[cell{c.q + d[0], c.r + d[1]}] == TerrainRiver {
+			return true
+		}
+	}
+	return false
+}
+
 // descentOrder returns c's land neighbours on targetLM (sea and other
 // landmasses excluded — a river only ever steps onto its own component or,
 // via firstSeaNeighbour, straight into its mouth) sorted by height ascending:
@@ -1696,17 +1939,68 @@ func descentOrder(field map[cell]float64, landmap map[cell]int, targetLM int, c 
 	return out
 }
 
-// firstSeaNeighbour returns c's first sea hex neighbour in riverNeighbourOrder
-// — deterministic mouth selection when a river's current cell borders more
-// than one sea tile.
-func firstSeaNeighbour(grid map[cell]Terrain, c cell, width, height int) (cell, bool) {
+// firstSeaNeighbour returns c's first MAIN-SEA hex neighbour in
+// riverNeighbourOrder — deterministic mouth selection when a river's current
+// cell borders more than one sea tile. Only mainSea counts (megaron_floden_plan.md
+// §7a, Timothy 2026-07-29: "mynningen är alltid Thalassa — aldrig en småsjö").
+// Before mainSea existed, every sea tile shared the single lmSea id regardless
+// of connectivity, so a landlocked lake enclosed by land was indistinguishable
+// from the open sea and could pass as a valid mouth.
+func firstSeaNeighbour(grid map[cell]Terrain, mainSea map[cell]bool, c cell, width, height int) (cell, bool) {
 	for _, d := range riverNeighbourOrder {
 		n := cell{c.q + d[0], c.r + d[1]}
-		if inMap(n.q, n.r, width, height) && isSea(grid[n]) {
+		if inMap(n.q, n.r, width, height) && mainSea[n] {
 			return n, true
 		}
 	}
 	return cell{}, false
+}
+
+// mainSeaComponent flood-fills from every sea tile touching the generation
+// domain's edge and returns the set of sea cells connected to it — "the
+// Thalassa", as opposed to a landlocked lake that happens to be enclosed by
+// land (megaron_floden_plan.md §7a). isSea(t) alone cannot make this
+// distinction: it is purely a terrain-type test, blind to connectivity, and
+// landmap collapses every sea tile onto the single lmSea id for the same
+// reason. Both remain correct for their existing callers — this is a
+// deliberately separate, narrower concept used only to gate valid river
+// mouths.
+func mainSeaComponent(grid map[cell]Terrain, width, height int) map[cell]bool {
+	main := map[cell]bool{}
+	var queue []cell
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			c := cell{q, r}
+			if !isSea(grid[c]) || main[c] {
+				continue
+			}
+			onEdge := false
+			for _, d := range riverNeighbourOrder {
+				n := cell{c.q + d[0], c.r + d[1]}
+				if !inMap(n.q, n.r, width, height) {
+					onEdge = true
+					break
+				}
+			}
+			if onEdge {
+				main[c] = true
+				queue = append(queue, c)
+			}
+		}
+	}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, d := range riverNeighbourOrder {
+			n := cell{cur.q + d[0], cur.r + d[1]}
+			if inMap(n.q, n.r, width, height) && isSea(grid[n]) && !main[n] {
+				main[n] = true
+				queue = append(queue, n)
+			}
+		}
+	}
+	return main
 }
 
 // addRiver carves one river from source to the sea by steepest descent over
@@ -1749,7 +2043,7 @@ func firstSeaNeighbour(grid map[cell]Terrain, c cell, width, height int) (cell, 
 // (TestGenerateMap_EveryRiverReachesDelta), not by eyeballing PNGs. validateMap
 // keeps its existing minDeltaTiles>=1 floor as the map-level backstop (plan:
 // "Keep minDeltaTiles ≥ 1 as the map-level floor") — untouched.
-func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float64, rng *rand.Rand, source cell, width, height int) {
+func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float64, mainSea map[cell]bool, rng *rand.Rand, source cell, width, height int) {
 	targetLM := landmap[source]
 	if targetLM == lmSea {
 		return
@@ -1775,7 +2069,7 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 		top := &stack[len(stack)-1]
 		cur := top.c
 
-		if n, ok := firstSeaNeighbour(grid, cur, width, height); ok {
+		if n, ok := firstSeaNeighbour(grid, mainSea, cur, width, height); ok {
 			mouth = n
 			reached = true
 			break
@@ -1786,7 +2080,15 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 		for len(top.remaining) > 0 {
 			cand := top.remaining[0]
 			top.remaining = top.remaining[1:]
-			if !visited[cand] {
+			// Refuse a candidate already touching an EARLIER river (§7c,
+			// prevention rather than cure): grid only holds rivers already
+			// accepted from prior sources at this point (the current walk's
+			// own path isn't written into grid until after it finishes), so
+			// this keeps a 1-hex buffer between different rivers and stops
+			// most cross-river pinches from ever being carved — the
+			// thinRiverJunctions pass afterward only has to catch the rarer
+			// self-touch of a single river's own path.
+			if !visited[cand] && !adjacentToExistingRiver(grid, cand, width, height) {
 				next = cand
 				found = true
 				break
@@ -1825,12 +2127,42 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float6
 	// crosses a pit in a line instead of touring its floor. Only that line
 	// is carved; every other explored tile keeps its terrainFor terrain.
 	origin := path[len(path)-1]
-	for _, c := range riverLine(visited, source, origin, width, height) {
-		grid[c] = TerrainRiverValley
+	line := riverLine(visited, source, origin, width, height)
+
+	// The line itself is the water (megaron_floden_plan.md S1, Timothy
+	// 2026-07-29: river is its own vatten-terräng, not fertile valley ground).
+	for _, c := range line {
+		grid[c] = TerrainRiver
 	}
-	placeDelta(grid, landmap, rng, mouth, origin, targetLM, width, height)
-	if grid[origin] != TerrainRiverDelta {
-		panic(fmt.Sprintf("mapgen: river ending at %v (mouth %v) produced no delta tile at its own mouth — carving invariant broken", origin, mouth))
+	// Flanks: every land neighbour of every line hex becomes river_valley, but
+	// only when it is currently one of riverFlankable's whitelisted terrains
+	// (§7b). Checked against grid[n] BEFORE any overwrite, so a neighbour that
+	// is mountain, sea, delta, another river or an already-placed river_valley
+	// is left exactly as it is — that is the "ravine" exception, not a bug.
+	for _, c := range line {
+		for _, n := range hexNeighbours(c, width, height) {
+			if riverFlankable[grid[n]] {
+				grid[n] = TerrainRiverValley
+			}
+		}
+	}
+
+	placeDelta(grid, landmap, mainSea, rng, mouth, origin, targetLM, width, height)
+
+	// The per-river invariant (§7d): origin is now WATER itself (the river's
+	// own last hex), so the assertion can no longer be "origin became the
+	// delta" — it is "at least one of origin's neighbours did", i.e. the delta
+	// touches the river's actual mouth instead of landing somewhere merely
+	// near the coast.
+	hasDelta := false
+	for _, n := range hexNeighbours(origin, width, height) {
+		if grid[n] == TerrainRiverDelta {
+			hasDelta = true
+			break
+		}
+	}
+	if !hasDelta {
+		panic(fmt.Sprintf("mapgen: river ending at %v (mouth %v) produced no delta tile bordering its own mouth hex — carving invariant broken", origin, mouth))
 	}
 }
 
@@ -1878,33 +2210,57 @@ func riverLine(visited map[cell]bool, source, origin cell, width, height int) []
 	return []cell{origin}
 }
 
-// placeDelta converts coastal land tiles adjacent to a river mouth into river_delta terrain.
-// Delta tiles are coastal, fertile, and strategically exposed — the geographic "honey trap".
-// We look for land tiles on the targetLM that border any sea tile (coastal_sea counts).
-// origin is the river's own last carved land cell — the reason mouth counts
-// as a mouth in the first place. It is ALWAYS tried first, ahead of the
-// generic "land near mouth" candidates: on a bending coastline, mouth can
-// have several land neighbours, and the fixed hexNeighbours direction order
-// has no reason to reach origin before some unrelated tile that also happens
-// to border the sea. Without this, a river's delta could land next to it
-// geographically but not actually touch its carved river_valley chain — the
-// exact per-river guarantee P3 exists to make airtight (see addRiver's doc
-// comment). origin always passes the eligibility filter below (it borders
-// mouth, which is sea, by construction) and deltaSize is always >= 1, so
-// origin becoming river_delta is guaranteed, not probabilistic.
-func placeDelta(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, mouth, origin cell, targetLM, width, height int) {
+// placeDelta converts a land tile at the river's mouth into river_delta
+// terrain. Delta tiles are coastal, fertile, and strategically exposed — the
+// geographic "honey trap".
+//
+// megaron_floden_plan.md §7d, Timothy 2026-07-29: origin — the river's own
+// last carved cell — is now WATER (addRiver line-carves it to TerrainRiver
+// before calling here), so the old guarantee ("the delta IS origin") no
+// longer parses. The new one: the delta is a LAND hex that borders BOTH
+// origin (the river's last hex) and the main sea. On a hex grid, any two
+// adjacent hexes (origin and mouth are adjacent by construction — that's the
+// definition of "mouth") always share exactly two common neighbours, the
+// "bowtie" corners of their shared edge. Those are tried first — normally at
+// least one is land and, bordering mouth (which is itself in mainSea),
+// automatically fronts the real coast rather than some inland lake. The wider
+// rings around origin and mouth are the same defensive fallback the original
+// code used for a bigger (1-3 tile) delta, now filtered by mainSea instead of
+// any isSea() tile.
+func placeDelta(grid map[cell]Terrain, landmap map[cell]int, mainSea map[cell]bool, rng *rand.Rand, mouth, origin cell, targetLM, width, height int) {
 	deltaSize := 1 + rng.Intn(3) // 1–3 delta tiles
 	placed := 0
 
-	candidates := []cell{origin}
-	// Walk outward from the mouth: prefer land tiles that border sea.
-	candidates = append(candidates, hexNeighbours(mouth, width, height)...)
-	// Also include the mouth's own neighbours' neighbours for larger deltas.
-	for _, n := range hexNeighbours(mouth, width, height) {
-		for _, nn := range hexNeighbours(n, width, height) {
-			candidates = append(candidates, nn)
+	bordersMainSea := func(c cell) bool {
+		for _, n := range hexNeighbours(c, width, height) {
+			if mainSea[n] {
+				return true
+			}
+		}
+		return false
+	}
+
+	var candidates []cell
+	// The two bowtie corners shared by origin and mouth — the natural delta site.
+	originNb := hexNeighbours(origin, width, height)
+	mouthNb := hexNeighbours(mouth, width, height)
+	for _, n := range originNb {
+		for _, m := range mouthNb {
+			if n == m {
+				candidates = append(candidates, n)
+			}
 		}
 	}
+	// Fallback rings for a bigger delta / a corner that didn't qualify:
+	// origin's own neighbours (still touching the river), then mouth's
+	// neighbours and their neighbours (still fronting the real coast, per the
+	// bordersMainSea filter below).
+	candidates = append(candidates, originNb...)
+	candidates = append(candidates, mouthNb...)
+	for _, n := range mouthNb {
+		candidates = append(candidates, hexNeighbours(n, width, height)...)
+	}
+
 	for _, c := range candidates {
 		if placed >= deltaSize {
 			break
@@ -1913,22 +2269,168 @@ func placeDelta(grid map[cell]Terrain, landmap map[cell]int, rng *rand.Rand, mou
 			continue
 		}
 		t := grid[c]
-		// Convert a land tile on our landmass that borders any sea tile.
-		if !isSea(t) && landmap[c] == targetLM && hasAnySeaNeighbour(grid, c, width, height) {
+		// Land (not sea, not the river itself) on our landmass, fronting the
+		// main sea, not already a delta tile from an earlier pass through this
+		// candidate list.
+		if !isSea(t) && t != TerrainRiver && t != TerrainRiverDelta &&
+			landmap[c] == targetLM && bordersMainSea(c) {
 			grid[c] = TerrainRiverDelta
 			placed++
 		}
 	}
 }
 
-// hasAnySeaNeighbour reports whether a land tile borders any sea tile (deep or coastal).
-func hasAnySeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
-	for _, n := range hexNeighbours(c, w, h) {
-		if isSea(grid[n]) {
-			return true
+// riverComponentsAllTouchDelta reports whether every TerrainRiver cell in grid
+// belongs to a connected river+delta group that contains at least one
+// TerrainRiverDelta tile. Used by thinRiverJunctions as the guard rail: a
+// demotion is only ever kept if the map still satisfies this afterward.
+func riverComponentsAllTouchDelta(grid map[cell]Terrain, width, height int) bool {
+	seen := map[cell]bool{}
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			start := cell{q, r}
+			if grid[start] != TerrainRiver || seen[start] {
+				continue
+			}
+			hasDelta := false
+			queue := []cell{start}
+			seen[start] = true
+			for len(queue) > 0 {
+				cur := queue[0]
+				queue = queue[1:]
+				for _, n := range hexNeighbours(cur, width, height) {
+					t := grid[n]
+					if t == TerrainRiverDelta {
+						hasDelta = true
+					}
+					if t == TerrainRiver && !seen[n] {
+						seen[n] = true
+						queue = append(queue, n)
+					}
+				}
+			}
+			if !hasDelta {
+				return false
+			}
 		}
 	}
-	return false
+	return true
+}
+
+// thinRiverJunctions enforces river width == 1 (megaron_floden_plan.md §7c,
+// Timothy 2026-07-29: "exakt 1 hex bred"). riverLine is a BFS shortest path
+// and therefore already loop-free, but not touch-free: two cells that are NOT
+// consecutive in the path can still end up hex-adjacent (a diagonal pinch
+// where the route passes close to itself, or two different rivers' lines
+// coming near each other), which would locally read as two hexes wide.
+//
+// A first version demoted the last neighbour found, unconditionally — but a
+// "pinch" cell's extra neighbour is not always redundant: it can be a cell
+// that is ITSELF load-bearing for a different stretch of the same (or a
+// different) river's connectivity to its own delta. Demoting it unconditionally
+// silently split a river in half, one half left with no delta — the exact
+// Amyklai-class failure P3 exists to prevent (caught by
+// TestGenerateMap_EveryRiverReachesDelta, seed 1 @ 120×84). So every candidate
+// demotion is now tentative: apply it, and keep it only if
+// riverComponentsAllTouchDelta still holds for the WHOLE map afterward;
+// otherwise undo it and try the next excess neighbour. If none of a cell's
+// excess neighbours can be safely demoted, that pinch is left as-is — a rare,
+// locally 2-wide junction is a far smaller defect than a river cut off from
+// its own mouth, and validateMap's width assertion (§7f) will surface it
+// loudly rather than let it hide.
+func thinRiverJunctions(grid map[cell]Terrain, width, height int) {
+	unresolved := map[cell]bool{}
+	for changed := true; changed; {
+		changed = false
+		for q := 0; q < width; q++ {
+			base := rowOrigin(q, width)
+			for r := base; r < base+height; r++ {
+				c := cell{q, r}
+				if grid[c] != TerrainRiver || unresolved[c] {
+					continue
+				}
+				var riverNbrs []cell
+				for _, d := range riverNeighbourOrder {
+					n := cell{c.q + d[0], c.r + d[1]}
+					if inMap(n.q, n.r, width, height) && grid[n] == TerrainRiver {
+						riverNbrs = append(riverNbrs, n)
+					}
+				}
+				if len(riverNbrs) <= 2 {
+					continue
+				}
+				// Try demoting each neighbour in turn — not just the "excess"
+				// tail — since which of them is truly redundant depends on the
+				// wider network, not on riverNeighbourOrder's arbitrary scan
+				// order.
+				fixed := false
+				for i := len(riverNbrs) - 1; i >= 0; i-- {
+					cand := riverNbrs[i]
+					grid[cand] = TerrainRiverValley
+					if riverComponentsAllTouchDelta(grid, width, height) {
+						fixed = true
+						changed = true
+						break
+					}
+					grid[cand] = TerrainRiver // undo, try the next candidate
+				}
+				if !fixed {
+					unresolved[c] = true
+				}
+			}
+		}
+	}
+}
+
+// smallestFragment returns the size of the smallest connected component of
+// WALKABLE land (not sea, not river — a river is exactly the wall a land unit
+// cannot cross) among cells, using hex adjacency restricted to cells that are
+// still walkable. Used by §7e's fragment guard to detect a river carve that
+// split its own landmass into an unplayably small splinter. cells is always
+// landmassCells[targetLM] — the landmass's full, immutable membership from
+// before any river touched it — so this measures exactly what the carve did
+// to THIS landmass, not incidental smallness elsewhere on the map.
+func smallestFragment(grid map[cell]Terrain, cells []cell, width, height int) int {
+	walkable := make(map[cell]bool, len(cells))
+	for _, c := range cells {
+		if t := grid[c]; !isSea(t) && t != TerrainRiver {
+			walkable[c] = true
+		}
+	}
+	visited := map[cell]bool{}
+	smallest := -1 // -1: no walkable component found yet
+	for _, start := range cells {
+		if !walkable[start] || visited[start] {
+			continue
+		}
+		size := 0
+		queue := []cell{start}
+		visited[start] = true
+		for len(queue) > 0 {
+			cur := queue[0]
+			queue = queue[1:]
+			size++
+			for _, d := range riverNeighbourOrder {
+				n := cell{cur.q + d[0], cur.r + d[1]}
+				if walkable[n] && !visited[n] {
+					visited[n] = true
+					queue = append(queue, n)
+				}
+			}
+		}
+		if smallest == -1 || size < smallest {
+			smallest = size
+		}
+	}
+	if smallest == -1 {
+		// Nothing walkable left at all — the worst possible fragment, not "no
+		// problem". Never actually reachable (a single river cannot consume an
+		// entire ≥riverMinComponentTiles landmass), but a real 0 is the
+		// correct answer if it ever were.
+		return 0
+	}
+	return smallest
 }
 
 // tinCopperSeaDistance returns the minimum sea-path distance between any tin-deposit
@@ -2123,10 +2625,14 @@ func hasBuildableNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	return false
 }
 
-// hasCoastalSeaNeighbour reports whether a land tile borders any coastal_sea tile.
-func hasCoastalSeaNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
+// hasWaterNeighbour reports whether a land tile borders any coastal_sea or
+// river tile — full coastal status (megaron_floden_plan.md, Timothy
+// 2026-07-29: a settlement on a river gets harbour/fish/purple/embark same as
+// a sea coast). Renamed from hasCoastalSeaNeighbour: the name is the whole
+// story of what the flag now means.
+func hasWaterNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	for _, n := range hexNeighbours(c, w, h) {
-		if grid[n] == TerrainCoastalSea {
+		if grid[n] == TerrainCoastalSea || grid[n] == TerrainRiver {
 			return true
 		}
 	}

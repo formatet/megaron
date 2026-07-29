@@ -506,8 +506,12 @@ func TestSpawnOreCatchmentScore_RealMap(t *testing.T) {
 
 // TestGenerateMap_EveryRiverReachesDelta is the black-box counterpart to the
 // panic-based invariant addRiver asserts internally (mapgen.go): every
-// connected clump of river_valley/river_delta tiles must contain at least one
-// river_delta tile. This is the P3 regression for the "Amyklai-class" silent
+// connected clump of river/river_delta tiles must contain at least one
+// river_delta tile. river_valley is now a FLANK alongside the actual water
+// (megaron_floden_plan.md S1, Timothy 2026-07-29) — the continuous path from
+// source to mouth is river+river_delta; river_valley tiles hang off it and
+// are not part of the connectivity check. This is the P3 regression for the
+// "Amyklai-class" silent
 // failure (temenos_mapgen.md §Kända begränsningar) — a river that reached the
 // coast but produced no delta, caught only by reading DB rows by hand. Since
 // the old random-walk river is gone (replaced by steepest-descent + pit-fill
@@ -534,12 +538,14 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 				terrain[cell{t.Q, t.R}] = t.Terrain
 			}
 
-			// Connected components over river_valley + river_delta tiles only
-			// (hex adjacency, same 6 axial directions as landComponents).
+			// Connected components over river + river_delta tiles only (the
+			// actual water path) — hex adjacency, same 6 axial directions as
+			// landComponents. river_valley is a flank hanging off the path,
+			// not part of it, so it is deliberately excluded here.
 			dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
-			isRiver := func(t Terrain) bool { return t == TerrainRiverValley || t == TerrainRiverDelta }
+			isRiver := func(t Terrain) bool { return t == TerrainRiver || t == TerrainRiverDelta }
 			seen := map[cell]bool{}
-			var valleyTiles, deltaTiles int
+			var riverTiles, valleyTiles, deltaTiles int
 			riverComponents := 0
 			for c, terr := range terrain {
 				if !isRiver(terr) || seen[c] {
@@ -572,6 +578,8 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 			}
 			for _, terr := range terrain {
 				switch terr {
+				case TerrainRiver:
+					riverTiles++
 				case TerrainRiverValley:
 					valleyTiles++
 				case TerrainRiverDelta:
@@ -581,8 +589,8 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 			if riverComponents == 0 {
 				t.Fatalf("%dx%d seed %d (eff %d): no river tiles at all", tc.w, tc.h, seed, eff)
 			}
-			t.Logf("%dx%d seed %d (eff %d): %d rivers, %d river_valley tiles, %d river_delta tiles",
-				tc.w, tc.h, seed, eff, riverComponents, valleyTiles, deltaTiles)
+			t.Logf("%dx%d seed %d (eff %d): %d rivers, %d river tiles, %d river_valley tiles, %d river_delta tiles",
+				tc.w, tc.h, seed, eff, riverComponents, riverTiles, valleyTiles, deltaTiles)
 		}
 	}
 }

@@ -158,3 +158,67 @@ func TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect(t *testing
 		t.Errorf("expected the 5-hex detour path, got length %d: %v", len(path), path)
 	}
 }
+
+// TestFindPath_RiverBlocksLand is megaron_floden_plan.md's A2: a river is a
+// wall for land units and a lane for ships and couriers (Timothy 2026-07-29).
+//
+// Map layout (axial q,r) — a straight river with no land bridge anywhere in
+// the tile set, so a land unit has no route at all, not merely a longer one:
+//
+//	(0,0) plains ── (1,0) river ── (2,0) river ── (3,0) plains
+func TestFindPath_RiverBlocksLand(t *testing.T) {
+	tiles := map[[2]int]string{
+		{0, 0}: "plains",
+		{1, 0}: "river",
+		{2, 0}: "river",
+		{3, 0}: "plains",
+	}
+	landOrigin := MapPosition{Q: 0, R: 0}
+	landTarget := MapPosition{Q: 3, R: 0}
+
+	if _, _, ok := findPath(tiles, landOrigin, landTarget, "land"); ok {
+		t.Error("expected ok=false: a land unit cannot cross a river, and no route around exists in this tile set")
+	}
+
+	// Naval origin/target must themselves be water — a ship cannot stand on
+	// the plains banks, only sail the river itself.
+	riverOrigin := MapPosition{Q: 1, R: 0}
+	riverTarget := MapPosition{Q: 2, R: 0}
+	if _, _, ok := findPath(tiles, riverOrigin, riverTarget, "naval"); !ok {
+		t.Error("expected a naval path straight up the river")
+	}
+
+	// A courier, unlike land or naval, can start and end on the land banks —
+	// it commandeers a boat to cross the river in between, the same as it
+	// would cross the sea.
+	if _, _, ok := findPath(tiles, landOrigin, landTarget, CategoryCourier); !ok {
+		t.Error("expected a courier path across the river — a runner commandeers a boat over a river same as over the sea")
+	}
+}
+
+// TestFindPath_RiverBlocksLand_DetourAround covers the plan's "or a route
+// around" alternative explicitly: when a land bridge DOES exist elsewhere on
+// the map, a land unit takes it instead of failing outright — the river only
+// blocks the direct crossing, not the whole map.
+func TestFindPath_RiverBlocksLand_DetourAround(t *testing.T) {
+	tiles := map[[2]int]string{
+		{0, 0}: "plains",
+		{1, 0}: "river", // direct crossing — blocked for land
+		{2, 0}: "plains",
+		{0, 1}: "plains",
+		{1, 1}: "plains", // detour around the river's end
+		{2, 1}: "plains",
+	}
+	origin := MapPosition{Q: 0, R: 0}
+	target := MapPosition{Q: 2, R: 0}
+
+	path, _, ok := findPath(tiles, origin, target, "land")
+	if !ok {
+		t.Fatal("expected a land route around the river")
+	}
+	for _, p := range path {
+		if p == (MapPosition{Q: 1, R: 0}) {
+			t.Error("path must not cross the river hex at (1,0)")
+		}
+	}
+}

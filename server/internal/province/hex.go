@@ -64,6 +64,10 @@ func LiveRadius(eyeKind string, targetTerrain string) int {
 	if targetTerrain == "coastal_sea" || targetTerrain == "deep_sea" {
 		return 4
 	}
+	// Deliberately NOT river: the sea's radius 4 comes from an open horizon over
+	// open water. A 1-hex-wide river between tall banks opens no horizon — it
+	// falls through to the ordinary land vantage below (megaron_floden_plan.md
+	// §5, Timothy 2026-07-29).
 	base := 2
 	switch eyeKind {
 	case EyeSettlement:

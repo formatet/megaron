@@ -32,8 +32,17 @@ var debugTerrainColor = map[Terrain]color.RGBA{
 	TerrainMountainLimestone: {0xC9, 0xC6, 0xBC, 0xFF}, // light grey
 	TerrainForestOliveGrove:  {0x4D, 0x6B, 0x35, 0xFF}, // dark green
 	TerrainForestCedar:       {0x1F, 0x3D, 0x1A, 0xFF}, // near-black green — denser, darker forest
-	TerrainRiverValley:       {0x5F, 0xB8, 0xB8, 0xFF}, // cyan
-	TerrainRiverDelta:        {0xA5, 0xDE, 0xDE, 0xFF}, // light cyan
+	// river is its own vatten-terräng (megaron_floden_plan.md S1, Timothy
+	// 2026-07-29) — a saturated blue distinct from both the desaturated seas
+	// above and the land-coloured valley/delta below, since this IS the
+	// water. The client's own render/map.js palette (slice S3) is separate
+	// and unaffected by this debug-only choice.
+	TerrainRiver: {0x2E, 0xA6, 0xC4, 0xFF}, // saturated cyan-blue (water)
+	// Dalen och deltat var cyan så länge de VAR flodlinjen. Nu är de mark på
+	// var sida om vattnet, och en cyan mark hade gjort felsökningsbilden till
+	// en lögn om vad som är segelbart — precis den fråga man öppnar den för.
+	TerrainRiverValley: {0x6F, 0x9E, 0x4A, 0xFF}, // fertile green — LAND
+	TerrainRiverDelta:  {0x9C, 0xB2, 0x63, 0xFF}, // pale alluvial silt — LAND
 }
 
 // Deposit dots — saturated, drawn smaller on top of the terrain fill.
@@ -202,12 +211,12 @@ func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) erro
 
 // spawnBuildable replicates — read-only — the terrain exclusion shared by
 // validateMap's isBuildable and join.go's spawn query
-// (terrain NOT IN coastal_sea, deep_sea, mountain_limestone, mountain_red,
-// semi_desert). Kept here as a copy on purpose: this file must never become
-// an import target for game logic.
+// (terrain NOT IN coastal_sea, deep_sea, river, mountain_limestone,
+// mountain_red, semi_desert). Kept here as a copy on purpose: this file must
+// never become an import target for game logic.
 func spawnBuildable(t Terrain) bool {
 	switch t {
-	case TerrainCoastalSea, TerrainDeepSea,
+	case TerrainCoastalSea, TerrainDeepSea, TerrainRiver,
 		TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
 		return false
 	}
@@ -317,6 +326,10 @@ type MapMetrics struct {
 	// P3 review data: river_valley is extra-fertile, so a bloated footprint
 	// is a food-inflation signal even when every river has its delta.
 	RiverValleyTiles int `json:"river_valley_tiles"`
+	// RiverTiles is the water itself (megaron_floden_plan.md S1) — the actual
+	// impassable-to-land, sailable-to-ships hex count, distinct from its
+	// river_valley flanks.
+	RiverTiles int `json:"river_tiles"`
 
 	CompactnessPerComponent []ComponentCompactness `json:"compactness_per_component"`
 	// Per terrain class: fraction of (tile, in-map neighbour) pairs where the
@@ -378,6 +391,9 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		}
 		if t.Terrain == TerrainRiverValley {
 			m.RiverValleyTiles++
+		}
+		if t.Terrain == TerrainRiver {
+			m.RiverTiles++
 		}
 		for _, d := range dirs6 {
 			nt, ok := terrain[[2]int{t.Q + d[0], t.R + d[1]}]
