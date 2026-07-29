@@ -39,6 +39,11 @@ func unitCmd() *cobra.Command {
 // holds there watching the approaches (fog-of-war + caravan interception) and
 // turns for home on its own when the patrol timer runs out. No recall — the timer
 // is the only control (self-terminating sea order).
+//
+// Deliberately coastal_sea only — river is water too, but not a sea patrol's
+// hex: a patrol standing in a 1-hex-wide river has no water to project over
+// (megaron_floden_plan.md §3, Timothy 2026-07-29; server rejects it in
+// combat/march_start.go's sentry gate).
 func unitSentryCmd() *cobra.Command {
 	var unitID string
 	var q, r int
@@ -270,8 +275,9 @@ Terrain passability:
   Impassable (all units):  mountain_limestone, mountain_red
   Land units only:         plains, hills, forest_olive_grove, scrub_maquis,
                            semi_desert, river_valley, river_delta
-  Naval units only:        coastal_sea, deep_sea
-  (Land units cannot enter sea; naval units cannot enter land.)
+  Naval units only:        coastal_sea, deep_sea, river
+  (Land units cannot enter sea or river; naval units cannot enter land.
+  river is impassable to land units — it is a wall, not a crossing.)
 
 A land unit must reach 100 men (garrison status) before it can march.
 A unit in fortify stance must be cleared (stance none) before marching.
