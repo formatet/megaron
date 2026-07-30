@@ -16,11 +16,19 @@ package province
 // previously said "citizens consumed per unit trained (minimum population
 // floor: 50)", which matches neither the afford-check role of this field nor
 // current recruit/collapse behaviour.
+//
+// DurationTicks is likewise ONE training duration for the whole cohort, not a
+// per-10-men batch: recruitBatchTicks (api/handlers/province.go) returns it
+// unchanged and Recruit schedules a single ScheduledTrainComplete at
+// trainCurrentTick + batchTicks once the unit reaches 100 men — matching
+// internal/combat/train.go's "one scheduled TrainComplete (no per-10-men
+// batches)". The surviving "per-10-men batch duration (looped)" comment at
+// province.go's batchTicks declaration is stale and contradicts both.
 type UnitSpec struct {
 	Costs            map[string]float64 // good_key → quantity deducted from settlement_goods
 	CostKharis       float64
 	PopCost          int // can_recruit afford-check threshold — NOT the amount drafted (see doc comment above)
-	DurationTicks    int // training time per batch-of-10 in world ticks
+	DurationTicks    int // training time for the WHOLE cohort in world ticks — not a per-10-men batch (see doc comment above)
 	RequiresBarracks bool
 	RequiresStable   bool
 	RequiresHarbour  bool
