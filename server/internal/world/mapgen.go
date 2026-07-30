@@ -92,12 +92,29 @@ const (
 	// 8–20 hex window.
 	moistureWavelength = 14.0
 
-	// Height-percentile bands within the land range [cutoff, max] that
-	// terrainFor reads: below lowBandMax → low band (food land / scrub),
-	// below midBandMax → mid band (the full moisture spread), at/above →
-	// high band (bare rock).
-	lowBandMax = 0.35
-	midBandMax = 0.7
+	// Height-percentile bands within the land range that terrainFor reads:
+	// below lowBandMax → low band (food land / scrub), below midBandMax →
+	// mid band (the full moisture spread), at/above → high band (bare rock).
+	//
+	// mapgen/hojdnormalisering: these were min-max thresholds (0.35/0.7)
+	// against a rescaled [cutoff, maxHeight] range, calibrated against a
+	// distribution shape that itself drifted with map size (the exact bug
+	// this slice fixes — see heightPercentile's doc comment). heightNorm is
+	// now a percentile, so a raw port of 0.35/0.7 would mean "35 % of land
+	// is bandLow, 35 % bandMid, 30 % bandHigh" — roughly 30 % mountain, a
+	// ~4x inflation over what the game has shipped and been eyeballed with.
+	// Re-derived instead from the 56×40 baseline (smallest map, least
+	// compressed, the terrain mix Timothy approved): measured directly off
+	// the height field's band membership (bypassing terrainTable, since
+	// bandMid's scrub_maquis output overlaps bandLow's across the arid/dry
+	// moisture split — terrain-tile counts alone can't isolate the height
+	// thresholds) across effective seeds 43/1340/4243 —
+	// low=0.586/0.638/0.677 (avg 0.633), mid=0.332/0.270/0.295 (avg 0.299),
+	// high=0.082/0.093/0.029 (avg 0.068). A percentile field is uniform on
+	// [0,1] by construction, so the cumulative fractions ARE the new
+	// thresholds directly: lowBandMax = 0.63, midBandMax = 0.63+0.30 = 0.93.
+	lowBandMax = 0.63
+	midBandMax = 0.93
 
 	// Moisture zones (0..1 after normalisation, hemisphere shift, and the
 	// coastal bonus below) that terrainFor reads for the mid band's 4-way
@@ -854,13 +871,17 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 
 	// ── 1. Height field + percentile land threshold ────────────────────
 	field := heightField(rng, width, height)
-	cutoff, maxHeight := landCutoff(field, landFraction)
+	cutoff, _ := landCutoff(field, landFraction)
 	landSet := make(map[cell]bool, width*height)
 	for c, v := range field {
 		if v >= cutoff {
 			landSet[c] = true
 		}
 	}
+	// Percentile-normalised (mapgen/hojdnormalisering), same mechanism as
+	// moisturePct below — see heightPercentile's doc comment. landCutoff's
+	// maxHeight return is no longer read: the mid-max rescale it fed is gone.
+	heightPct := heightPercentile(field, landSet)
 
 	// ── 1b. Moisture field (P2) ──────────────────────────────────────────
 	// Independent field, drawn from the SAME map rng one step later than the
@@ -1005,10 +1026,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 				grid[c] = TerrainDeepSea
 				continue
 			}
-			heightNorm := 0.0
-			if maxHeight > cutoff {
-				heightNorm = (field[c] - cutoff) / (maxHeight - cutoff)
-			}
+			heightNorm := heightPct[c]
 			moistureNorm := moisturePct[c]
 			for _, n := range hexNeighbours(c, width, height) {
 				if !landSet[n] {
@@ -1945,6 +1963,53 @@ func riverMeanderField(rng *rand.Rand, width, height int) map[cell]float64 {
 // population would dilute the land distribution with values nobody
 // classifies, and moisture is only computed for land tiles' terrain anyway.
 func moisturePercentile(field map[cell]float64, landSet map[cell]bool) map[cell]float64 {
+	type entry struct {
+		c cell
+		v float64
+	}
+	entries := make([]entry, 0, len(landSet))
+	for c := range landSet {
+		entries = append(entries, entry{c, field[c]})
+	}
+	// Deterministic sort: value first, then (q, r) as a tie-break so equal
+	// float values (rare, but Perlin can repeat) don't depend on Go's
+	// unordered map iteration.
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].v != entries[j].v {
+			return entries[i].v < entries[j].v
+		}
+		if entries[i].c.q != entries[j].c.q {
+			return entries[i].c.q < entries[j].c.q
+		}
+		return entries[i].c.r < entries[j].c.r
+	})
+	norm := make(map[cell]float64, len(entries))
+	n := len(entries)
+	for i, e := range entries {
+		if n > 1 {
+			norm[e.c] = float64(i) / float64(n-1)
+		} else {
+			norm[e.c] = 0
+		}
+	}
+	return norm
+}
+
+// heightPercentile ranks every LAND cell's raw height value and returns its
+// percentile (0..1, rank/(n-1)) instead of a plain min-max rescale
+// (mapgen/hojdnormalisering, replaces the old (field[c]-cutoff)/(maxHeight-
+// cutoff) reading generateMapOnce used). Same mechanism and same reason as
+// moisturePercentile: a min-max denominator grows with sample count, so
+// bigger maps sample more extreme noise and ordinary readings get squeezed
+// toward the middle — measured on this field as bandHigh (mountain) land
+// share going 6.8 % (56×40) → 5.0 % (120×120) → 1.65 % (230×230), the same
+// collapse moisturePercentile already fixed one field over.
+//
+// Body is a duplicate of moisturePercentile's rather than a shared helper —
+// two independent fields with the same shape of fix, kept separate so each
+// can be read (and re-derived) on its own without a shared abstraction
+// standing between them.
+func heightPercentile(field map[cell]float64, landSet map[cell]bool) map[cell]float64 {
 	type entry struct {
 		c cell
 		v float64
