@@ -2,8 +2,8 @@ package handlers
 
 // Tests for /cities (temenos_gossip.md PASS 2b): rumour-known settlements must
 // show up fuzzily (no exact coordinates) and must NOT be contactable — the
-// KNOWN-set gate that messenger Send (and the legacy /wanaxes) use is
-// loadVisibleOrigins, which deliberately does not consult known_settlements.
+// KNOWN-set gate that messenger Send uses is loadVisibleOrigins, which
+// deliberately does not consult known_settlements.
 //
 // These are DB integration tests (real Postgres, gated by DATABASE_URL) since
 // loadCities is pure SQL orchestration across settlements/provinces/
@@ -13,7 +13,9 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -112,7 +114,7 @@ func TestCitiesRumourKnownIsNotContactable(t *testing.T) {
 		t.Fatalf("seed known_settlements: %v", err)
 	}
 
-	h := &WorldHandler{pool: pool}
+	h := &WorldHandler{pool: pool, clk: clock.NewTestClock(time.Now())}
 	cities := h.loadCities(ctx, worldID, viewerID)
 
 	var rumourEntry *cityEntry
@@ -141,9 +143,9 @@ func TestCitiesRumourKnownIsNotContactable(t *testing.T) {
 	}
 
 	// Not contactable: the KNOWN-set gate (loadVisibleOrigins) that messenger
-	// Send/legacy Wanaxes use must NOT include Tinhaven — a rumour never
-	// shortcuts into the known set.
-	origins := h.visibleOrigins(ctx, worldID, viewerID)
+	// Send uses must NOT include Tinhaven — a rumour never shortcuts into the
+	// known set.
+	origins := loadVisibleOrigins(ctx, h.pool, worldID, viewerID)
 	if province.VisibleFrom(province.MapPosition{Q: 40, R: 40}, origins, 6) {
 		t.Errorf("rumour-known settlement must not be in the KNOWN set — Send would incorrectly allow it")
 	}

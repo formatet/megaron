@@ -7,15 +7,20 @@ package handlers
 //
 //   1. The KNOWN set (live ∪ remembered ∪ contacted) — province.VisibleFrom(dest,
 //      origins, N), fed by loadVisibleOrigins. Gates POST .../messengers (Send)
-//      and GET .../wanaxes. This is the CRITICAL invariant from
-//      temenos_synlighet.md: it must NOT collapse to live-eyes-only, or shrinking
-//      live sight to 2-3 hexes would lock players out of cities they already
-//      discovered.
-//   2. The tiered LIVE set (tier 1 only) — province.AnyEyeSees(eyes, target,
-//      terrain), fed by loadLiveEyes, using per-eye-kind × per-target-terrain
-//      radii (province.LiveRadius). Gates map rendering (tier per tile) and all
-//      live-activity markers (Marches, MapTrades, MapMessengers) — a remembered
-//      (tier-2) tile shows frozen terrain but never live activity.
+//      ONLY (reachability — can a courier be dispatched at all). This is the
+//      CRITICAL invariant from temenos_synlighet.md: it must NOT collapse to
+//      live-eyes-only, or shrinking live sight to 2-3 hexes would lock players
+//      out of cities they already discovered.
+//   2. The tiered LIVE+REMEMBERED set — province.AnyEyeSees(eyes, target,
+//      terrain) ∪ remembered tiles, fed by loadLiveEyes/loadRememberedTiles,
+//      using per-eye-kind × per-target-terrain radii (province.LiveRadius).
+//      Gates map rendering (tier per tile), all live-activity markers (Marches,
+//      MapTrades, MapMessengers — live tiles only, remembered tiles show frozen
+//      terrain but never live activity), AND — since fow/provinces-samma-kunskap,
+//      2026-07-30 — /provinces, /wanaxes and /cities marker data (world.go's
+//      knownToPlayer). Those three used to gate on layer 1's flat radius
+//      instead, which let a marker surface for a hex /map still called fog;
+//      see provinces_fow_test.go for that fix's tests.
 //
 // We test both gate functions directly (they are the sole gates; the handlers
 // just wire them to DB-loaded arguments) plus the error message wired into the
@@ -97,10 +102,13 @@ func TestFOWGate_ErrorMessageIsActionable(t *testing.T) {
 	}
 }
 
-// TestWanaxesFOWGate_HidesDistantSettlement verifies the /wanaxes FOW filter:
-// a settlement not within 5 hexes of any origin must be excluded from the result.
-// This is the "Blocker #2: global catalog" fix — after the fix, wanaxes only
-// returns settlements the requesting player can actually see.
+// TestWanaxesFOWGate_HidesDistantSettlement pins province.VisibleFrom's own
+// arithmetic (a settlement not within 5 hexes of any origin is excluded) — this
+// was the "Blocker #2: global catalog" fix. It predates fow/provinces-samma-kunskap
+// (2026-07-30) and no longer describes the live /wanaxes handler, which now gates
+// on knownToPlayer (tier-1 ∪ tier-2, see provinces_fow_test.go), not on
+// VisibleFrom. Kept as a pure-function regression pin for VisibleFrom itself,
+// which messenger Send still relies on.
 func TestWanaxesFOWGate_HidesDistantSettlement(t *testing.T) {
 	type wanaxEntry struct {
 		Q, R int
