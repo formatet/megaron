@@ -11,7 +11,7 @@ import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns } from './actorsprites.js';
 import { drawCityMass, citySprite, CITY_BASE_OFFSET } from './citysprites.js';
-import { clampZoom, zoomStep } from './camera.js';
+import { zoomStep } from './camera.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
