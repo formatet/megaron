@@ -185,6 +185,16 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(30 * time.Second))
 	r.Use(corsMiddleware)
+	// Compress: /map and friends go out uncompressed today (6.8 MB measured on a
+	// 230x230 world, gzip -9 gets it to 18% of that). chi's compressResponseWriter
+	// forwards Hijack() to the underlying ResponseWriter whenever nothing
+	// compressible has been written yet (WriteHeader not yet called ->
+	// compressible defaults false), so gorilla/websocket's Upgrade — which does
+	// its own w.(http.Hijacker) assertion in /ws/{worldID} — still gets a real
+	// Hijacker. Static files' Cache-Control (set below) and conditional 304s are
+	// untouched: this only gates the body encoding, not the header map. See
+	// TestCompressMiddlewareChain in main_test.go, which pins this ordering.
+	r.Use(middleware.Compress(5))
 
 	// Liveness/readiness probe for deploy verification and monitoring. Public,
 	// no auth. Pings the DB with a short deadline so a 200 means the server can
