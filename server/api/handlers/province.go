@@ -25,6 +25,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/unit"
 	"formatet/megaron/server/internal/unit/shipnames"
 	"github.com/go-chi/chi/v5"
@@ -2670,6 +2671,33 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Physical caravan: internal transfer is logistics without consent, but it is
+	// still a mover on the map (CLAUDE.md trade-lagret punkt 3) — CreateShadow, not
+	// Dispatch, because the arrival is already driven by ScheduledTradeDelivery
+	// below; Dispatch would additionally schedule ScheduledTransportArrival and
+	// double-credit the destination.
+	transportID, err := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+		WorldID:       worldID,
+		OwnerID:       playerID,
+		Kind:          "transfer",
+		OriginID:      originID,
+		DestID:        req.DestinationID,
+		Category:      "land",
+		OriginQ:       originQ,
+		OriginR:       originR,
+		DestQ:         destQ,
+		DestR:         destR,
+		DepartsAt:     h.clk.Now(),
+		ArrivesAt:     arrivesAt,
+		DueTick:       tradeCurrentTick + tradeTravelTicks,
+		Manifest:      transport.Manifest{req.GoodKey: req.Quantity},
+		Interceptable: true,
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not dispatch transfer caravan")
+		return
+	}
+
 	// Internal transfer: no loss, no gain — delivered quantity equals what was sent.
 	// Enqueue delivery within the same transaction — atomic with the deduction.
 	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
@@ -2679,6 +2707,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			"good_key":           req.GoodKey,
 			"quantity":           req.Quantity,
 			"delivered_quantity": req.Quantity,
+			"transport_id":       transportID.String(),
 		}, tradeCurrentTick+tradeTravelTicks); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule delivery")
 		return
