@@ -330,6 +330,13 @@ type MapMetrics struct {
 	HillsFraction      float64 `json:"hills_fraction"`
 	ScrubFraction      float64 `json:"scrub_fraction"`
 	SemiDesertFraction float64 `json:"semi_desert_fraction"`
+	// MountainFraction (mapgen/hojdnormalisering): mountain_limestone +
+	// mountain_red as a fraction of land tiles, same denominator as the four
+	// fractions above. Not a validateMap gate — reported only, so the
+	// height-percentile fix can be judged against how much the high band
+	// shifts between map sizes (the same role HillsFraction played for the
+	// moisture fix).
+	MountainFraction float64 `json:"mountain_fraction"`
 
 	// P4 calibration/capacity fields (plan §P4-B).
 	TargetPlayers  int `json:"target_players"`  // playersFor(width, height)
@@ -413,6 +420,8 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 			m.ScrubFraction++
 		case TerrainSemiDesert:
 			m.SemiDesertFraction++
+		case TerrainMountainLimestone, TerrainMountainRed:
+			m.MountainFraction++
 		}
 		if t.Terrain == TerrainRiverDelta {
 			m.DeltaTiles++
@@ -444,6 +453,7 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		m.HillsFraction /= float64(land)
 		m.ScrubFraction /= float64(land)
 		m.SemiDesertFraction /= float64(land)
+		m.MountainFraction /= float64(land)
 	}
 	m.CedarStands = depositSourceCount(tiles, func(t MapTile) bool { return t.Terrain == TerrainForestCedar })
 	m.LandComponents = len(compSize)

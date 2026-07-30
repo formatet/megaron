@@ -83,13 +83,13 @@ func runSeed(requested int64, w, h int, outDir string) (err error) {
 		"copper=%d tin=%d silver=%d cedar=%d straits=%d delta=%d river=%d river_valley=%d "+
 		"target_players=%d player_capacity=%d copper_sources=%d tin_sources=%d silver_sources=%d "+
 		"forest_olive_grove=%d forest_cedar=%d forest_fraction=%.3f cedar_stands=%d "+
-		"plains_fraction=%.3f hills_fraction=%.3f scrub_fraction=%.3f semi_desert_fraction=%.3f\n",
+		"plains_fraction=%.3f hills_fraction=%.3f scrub_fraction=%.3f semi_desert_fraction=%.3f mountain_fraction=%.3f\n",
 		w, h, requested, eff, m.Attempts,
 		m.LandFraction, m.LandComponents, m.LargestComponentFraction, m.LargestLandmassWalkableFraction, m.SpawnValidTiles,
 		m.CopperDeposits, m.TinDeposits, m.SilverDeposits, m.CedarDeposits, m.Straits, m.DeltaTiles,
 		m.RiverTiles, m.RiverValleyTiles,
 		m.TargetPlayers, m.PlayerCapacity, m.CopperSources, m.TinSources, m.SilverSources,
 		m.ForestOliveGroveTiles, m.ForestCedarTiles, m.ForestFraction, m.CedarStands,
-		m.PlainsFraction, m.HillsFraction, m.ScrubFraction, m.SemiDesertFraction)
+		m.PlainsFraction, m.HillsFraction, m.ScrubFraction, m.SemiDesertFraction, m.MountainFraction)
 	return nil
 }
