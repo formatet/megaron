@@ -3,12 +3,32 @@ package province
 // UnitSpec defines the cost and time to train a unit.
 // All material costs are expressed as good_key → amount and deducted from
 // settlement_goods. CostKharis is deducted from the settlements.kharis column.
-// PopCost is the number of citizens consumed per unit trained (minimum population floor: 50).
+// PopCost is NOT the number of citizens actually drafted — it is only a coarse
+// afford-check threshold used by the can_recruit preview
+// (api/handlers/province.go's afford := laborPool >= spec.PopCost, "does this
+// city have at least this many citizens"). The real draft size is the
+// caller-chosen req.Men for land units (10-100, a multiple of 10) or the
+// type's fixed crew via unit.CrewFor for naval, debited straight from
+// settlements.population at recruit time (province.go's Recruit handler).
+// There is no hard population floor at recruit time beyond totalMen <
+// population; draining a settlement to <=100 population schedules its
+// collapse (C-collapse) instead. Corrected 2026-07-30 — this comment
+// previously said "citizens consumed per unit trained (minimum population
+// floor: 50)", which matches neither the afford-check role of this field nor
+// current recruit/collapse behaviour.
+//
+// DurationTicks is likewise ONE training duration for the whole cohort, not a
+// per-10-men batch: recruitBatchTicks (api/handlers/province.go) returns it
+// unchanged and Recruit schedules a single ScheduledTrainComplete at
+// trainCurrentTick + batchTicks once the unit reaches 100 men — matching
+// internal/combat/train.go's "one scheduled TrainComplete (no per-10-men
+// batches)". The surviving "per-10-men batch duration (looped)" comment at
+// province.go's batchTicks declaration is stale and contradicts both.
 type UnitSpec struct {
 	Costs            map[string]float64 // good_key → quantity deducted from settlement_goods
 	CostKharis       float64
-	PopCost          int // citizens consumed per unit trained
-	DurationTicks    int // training time per batch-of-10 in world ticks
+	PopCost          int // can_recruit afford-check threshold — NOT the amount drafted (see doc comment above)
+	DurationTicks    int // training time for the WHOLE cohort in world ticks — not a per-10-men batch (see doc comment above)
 	RequiresBarracks bool
 	RequiresStable   bool
 	RequiresHarbour  bool
