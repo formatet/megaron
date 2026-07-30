@@ -728,14 +728,16 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
-	var origins []province.MapPosition
+	var eyes []province.Eye
+	var remembered map[[2]int]bool
 	var ownProvinceID uuid.UUID
 	var ownKingdomID *uuid.UUID
 
 	// ownSettlements: set of province_ids owned by the player.
 	ownSettlements := map[uuid.UUID]bool{}
 	if authenticated {
-		origins = h.visibleOrigins(r.Context(), worldID, playerID)
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
+		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 		// Capital for kingdom check.
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT s.province_id, s.kingdom_id
@@ -760,7 +762,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r,
+		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r, p.terrain_type,
 		        s.state, s.wall_level, s.population, COALESCE(pl.username, ''), COALESCE(k.name, ''),
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
@@ -809,12 +811,13 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m provinceMarker
 		var population int
-		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &m.State, &m.Walls, &population, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
+		var terrain string
+		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &terrain, &m.State, &m.Walls, &population, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
 			continue
 		}
 		m.SizeTier = settlement.SizeTier(population)
 		pos := province.MapPosition{Q: m.Q, R: m.R}
-		m.Visible = !authenticated || province.VisibleFrom(pos, origins, 6)
+		m.Visible = !authenticated || knownToPlayer(eyes, remembered, pos, terrain)
 		if authenticated {
 			m.Own = ownSettlements[m.ID]
 			m.IsCapital = m.ID == ownProvinceID
@@ -844,7 +847,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	// Also include outpost provinces (controlled by a player but no settlement row).
 	orows, _ := h.pool.Query(r.Context(),
-		`SELECT p.id, p.map_q, p.map_r, p.owner_id, pl.username
+		`SELECT p.id, p.map_q, p.map_r, p.terrain_type, p.owner_id, pl.username
 		 FROM provinces p
 		 JOIN players pl ON pl.id = p.owner_id
 		 WHERE p.world_id = $1 AND p.outpost_feeds IS NOT NULL
@@ -856,13 +859,14 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		for orows.Next() {
 			var m provinceMarker
 			var ownerID uuid.UUID
-			if err := orows.Scan(&m.ID, &m.Q, &m.R, &ownerID, &m.Owner); err != nil {
+			var terrain string
+			if err := orows.Scan(&m.ID, &m.Q, &m.R, &terrain, &ownerID, &m.Owner); err != nil {
 				continue
 			}
 			m.IsOutpost = true
 			m.Name = "Outpost"
 			pos := province.MapPosition{Q: m.Q, R: m.R}
-			m.Visible = !authenticated || province.VisibleFrom(pos, origins, 6)
+			m.Visible = !authenticated || knownToPlayer(eyes, remembered, pos, terrain)
 			if !m.Visible {
 				continue
 			}
@@ -876,21 +880,18 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, markers)
 }
 
-// visibleOrigins loads the map positions of the player's province and all allied
-// kingdom member provinces, plus the origin and target endpoints of the player's
-// unresolved marches. These are the "eyes" used for fog-of-war calculation.
-func (h *WorldHandler) visibleOrigins(ctx context.Context, worldID, playerID uuid.UUID) []province.MapPosition {
-	return loadVisibleOrigins(ctx, h.pool, worldID, playerID)
-}
-
 // loadVisibleOrigins is the package-level implementation of the KNOWN-set query
-// (live ∪ remembered ∪ contacted), shared by WorldHandler and MessengerHandler (and
-// any future handler that needs to gate access by contact/visibility) — NOT the
-// tiered live-vision eyes used for map rendering (see loadLiveEyes). Keeping this
-// generous flat-radius set is the CRITICAL invariant from temenos_synlighet.md:
-// messenger Send and the Wanaxes directory must keep gating on everything a player
-// has ever discovered, not just what their eyes currently see, or shrinking live
-// sight to 2-3 hexes would lock players out of cities they already contacted.
+// (live ∪ remembered ∪ contacted) used by MessengerHandler's Send reachability gate
+// (can this player reach/contact this destination at all) — NOT the tiered
+// live-vision eyes used for map rendering (see loadLiveEyes/loadRememberedTiles).
+// /provinces, /wanaxes and /cities used to gate on this too (a flat radius-6 sweep
+// around every origin), but that let them surface full markers for hexes /map still
+// reported as fog — they now gate on knownToPlayer (loadLiveEyes ∪
+// loadRememberedTiles) instead, same as /map (fow/provinces-samma-kunskap,
+// 2026-07-30). loadVisibleOrigins' own flat-radius reachability check (province.
+// VisibleFrom) remains correct for Send: it is not exposing data, only deciding
+// whether a courier CAN be dispatched, and a player must keep being able to contact
+// a city they've already discovered even outside current live sight.
 // Only h.pool is needed, so extracting to a free function avoids constructing a
 // partial WorldHandler.
 func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) []province.MapPosition {
@@ -1189,6 +1190,21 @@ func loadRememberedTiles(ctx context.Context, pool *pgxpool.Pool, worldID, playe
 		}
 	}
 	return set
+}
+
+// knownToPlayer reports whether pos (of the given terrain) is within the player's
+// actual map knowledge — tier-1 live eyes (AnyEyeSees/LiveRadius) ∪ tier-2 remembered
+// tiles (loadRememberedTiles) — the SAME model /map uses. This replaces the old flat
+// province.VisibleFrom(pos, origins, 6) gate that let /provinces, /wanaxes and
+// /cities surface a full marker for a hex /map itself still reports as fog (Timothy
+// 2026-07-28: "en stad ska aldrig kunna stå på svart"). Because loadRememberedTiles
+// already folds in messenger-contacted destinations as exact points (see its own
+// doc comment), switching to this model does NOT drop the "a Wanax discovers trade
+// partners by contacting them" feature described in loadVisibleOrigins — it only
+// stops a contact (or any other origin) from lighting up a 6-hex halo of neighbours
+// nobody has actually seen, scouted, or been contacted by.
+func knownToPlayer(eyes []province.Eye, remembered map[[2]int]bool, pos province.MapPosition, terrain string) bool {
+	return province.AnyEyeSees(eyes, pos, terrain) || remembered[[2]int{pos.Q, pos.R}]
 }
 
 // Marches handles GET /worlds/:worldID/marches — all unresolved marching armies visible
@@ -1499,9 +1515,11 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 }
 
 // Wanaxes handles GET /worlds/{worldID}/wanaxes — FOW-gated trade-discovery directory
-// for API clients. Returns only settlements the requesting player can currently see
-// (within 6 hexes of their visibleOrigins — same FOW rule as /provinces). Army strength
-// is deliberately NOT exposed. Unauthenticated requests receive an empty list.
+// for API clients. Returns only settlements the requesting player actually knows —
+// tier-1 live eyes ∪ tier-2 remembered tiles, the same knowledge /map uses (this
+// includes messenger-contacted destinations: loadRememberedTiles folds those in as
+// exact points — see its doc comment). Army strength is deliberately NOT exposed.
+// Unauthenticated requests receive an empty list.
 func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -1517,7 +1535,8 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	origins := h.visibleOrigins(r.Context(), worldID, playerID)
+	eyes := loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
+	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
@@ -1574,16 +1593,19 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
 			continue
 		}
-		// FOW gate: skip settlements the player cannot currently see.
-		if !province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 6) {
+		terrainStr := ""
+		if terrain != nil {
+			terrainStr = *terrain
+		}
+		// FOW gate: skip settlements the player doesn't actually know (same
+		// tier-1 ∪ tier-2 knowledge as /map — see knownToPlayer).
+		if !knownToPlayer(eyes, remembered, province.MapPosition{Q: q, R: r}, terrainStr) {
 			continue
 		}
 		if kingdom != nil {
 			e.Kingdom = *kingdom
 		}
-		if terrain != nil {
-			e.Terrain = *terrain
-		}
+		e.Terrain = terrainStr
 		if ownerID != nil && *ownerID == playerID {
 			e.Own = true
 		}
@@ -1623,14 +1645,16 @@ type cityEntry struct {
 }
 
 // loadCities builds the combined known + rumour-known directory for playerID:
-// the "known" tier is exactly the legacy Wanaxes/wanaxes gate (loadVisibleOrigins
-// KNOWN-set: own/allied + contacted + remembered), carrying exact coordinates;
-// the "rumour" tier comes from known_settlements (level='rumour', minus anything
-// already in the known tier) with a fuzzy bearing off the nearest known
-// settlement instead of exact coordinates. Returns nil for an unauthenticated
-// caller (playerID == uuid.Nil is not checked here — callers gate that).
+// the "known" tier is the same tier-1 (live eyes) ∪ tier-2 (remembered tiles)
+// knowledge /map uses — loadRememberedTiles already folds in messenger-contacted
+// destinations as exact points, so contacted trade partners stay in this tier —
+// carrying exact coordinates; the "rumour" tier comes from known_settlements
+// (level='rumour', minus anything already in the known tier) with a fuzzy bearing
+// off the nearest known settlement instead of exact coordinates. Returns nil for an
+// unauthenticated caller (playerID == uuid.Nil is not checked here — callers gate that).
 func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UUID) []cityEntry {
-	origins := h.visibleOrigins(ctx, worldID, playerID)
+	eyes := loadLiveEyes(ctx, h.pool, worldID, playerID, h.clk.Now())
+	remembered := loadRememberedTiles(ctx, h.pool, worldID, playerID)
 
 	rows, err := h.pool.Query(ctx,
 		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
@@ -1672,16 +1696,19 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
 			continue
 		}
-		// FOW gate: skip settlements the player cannot currently see/remember/contact.
-		if !province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 6) {
+		terrainStr := ""
+		if terrain != nil {
+			terrainStr = *terrain
+		}
+		// FOW gate: skip settlements the player doesn't actually know (same
+		// tier-1 ∪ tier-2 knowledge as /map — see knownToPlayer).
+		if !knownToPlayer(eyes, remembered, province.MapPosition{Q: q, R: r}, terrainStr) {
 			continue
 		}
 		if kingdom != nil {
 			e.Kingdom = *kingdom
 		}
-		if terrain != nil {
-			e.Terrain = *terrain
-		}
+		e.Terrain = terrainStr
 		if ownerID != nil {
 			e.OwnerID = ownerID.String()
 			if *ownerID == playerID {

@@ -14,10 +14,17 @@ func HexDistance(a, b MapPosition) int {
 
 // VisibleFrom returns true if target is within radius hexes of any province in origins.
 //
-// This is the KNOWN-set gate (live ∪ remembered ∪ contacted) used by handlers that
-// must not regress access when the tiered live-vision radii (LiveRadius) shrink —
-// messenger Send and the Wanaxes directory gate on this, not on live eyes alone.
-// See temenos_synlighet.md for the tiered-visibility model this sits alongside.
+// This is the KNOWN-set reachability gate (live ∪ remembered ∪ contacted) used by
+// messenger Send to decide whether a player can dispatch a courier to a destination
+// at all — a player must keep being able to contact a city they've already
+// discovered even outside current live sight, so this deliberately does not shrink
+// to the tiered live-vision radii (LiveRadius). It is NOT used for surfacing
+// province/city marker DATA any more (world.go's /provinces, /wanaxes, /cities used
+// to gate on this flat radius too, but that let a marker surface for a hex /map
+// still reported as fog — they now gate on the same tier-1∪tier-2 knowledge /map
+// uses; see api/handlers/world.go's knownToPlayer, fow/provinces-samma-kunskap
+// 2026-07-30). See temenos_synlighet.md for the tiered-visibility model this sits
+// alongside.
 func VisibleFrom(target MapPosition, origins []MapPosition, radius int) bool {
 	for _, o := range origins {
 		if HexDistance(o, target) <= radius {
