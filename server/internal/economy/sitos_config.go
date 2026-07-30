@@ -15,9 +15,16 @@ import (
 // via env + `systemctl restart poleia` on the live server, no redeploy
 // needed (mirrors internal/tick/worker.go's TICK_MINUTES pattern).
 type SitosConfig struct {
-	// TaxRate is the fraction of a settlement's silver taxed into its Sitos
-	// fund per day (spread evenly across TicksPerDay ticks), guarded so it
-	// never taxes more than the settlement actually has.
+	// TaxRate is a per-capita rate, NOT a fraction of the settlement's silver:
+	// applyTax (sitos_tick.go) computes desired = population × TaxRate, spread
+	// evenly across TicksPerDay ticks, and moves that much silver into the
+	// Sitos fund per day — a head tax charged regardless of whether the
+	// settlement earned any silver that day. It is guarded so it never taxes
+	// more than the settlement's current silver stock (and never overflows the
+	// fund's cap), but those are affordability clamps, not the base formula.
+	// Corrected 2026-07-30 — this comment previously described a silver-based
+	// tax; verify the head-tax-vs-income-tax choice is intended before
+	// retuning it (open question, not decided here).
 	TaxRate float64
 	// RefPriceFloor/Ceiling clamp the fund's smoothed shadow price.
 	RefPriceFloor   float64
