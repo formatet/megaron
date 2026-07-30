@@ -262,10 +262,11 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		return fmt.Errorf("recompute: workplace level rows err: %w", err)
 	}
 
-	if len(potentials) == 0 {
-		// No producible goods — nothing to recompute.
-		return nil
-	}
+	// NOTE: no early return when potentials is empty. A settlement that just
+	// lost its last producible good (deposit exhausted, building razed, terrain
+	// changed) must still fall through to step 6 below, which nulls out any
+	// good_key whose production_rule no longer matches — otherwise its old
+	// rate is orphaned forever (the exact bug this function exists to fix).
 
 	// ── 4. Load weight allocations for this settlement ────────────────────────
 	// weight ∈ [0.0,1.0] = fraction of labor_pool dedicated to this good.
@@ -295,11 +296,8 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// Seed equal weights on first call (e.g. at join before explicit allocation).
 	// Existing rows are never auto-adjusted — a new producible good gets weight=0
 	// until the Wanax allocates via LaborAlloc.
-	if len(weights) == 0 {
+	if len(weights) == 0 && len(potentials) > 0 {
 		n := len(potentials)
-		if n == 0 {
-			return nil
-		}
 		w := 1.0 / float64(n)
 		for _, gp := range potentials {
 			weights[gp.key] = w
@@ -368,6 +366,41 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		); err != nil {
 			return fmt.Errorf("recompute: upsert grain consumption: %w", err)
 		}
+	}
+
+	// ── 6. Null out stale rates for goods that fell out of the production set ──
+	// A good_key can carry a rate from an earlier call whose production_rule no
+	// longer matches this catchment/buildings NOW (deposit exhausted, building
+	// razed, terrain changed — empirically hit 2026-07-29: a rate=42 cedar row
+	// survived on a cedar-less city through a later recompute). Every such row
+	// must be zeroed, not left orphaned. touchedKeys is every good_key this call
+	// just wrote a real rate for (steps 5 and the grain-consumption branch
+	// above); anything else with a non-zero rate is stale.
+	//
+	// Settle at the OLD rate before zeroing — same settled()/GREATEST(0)/cap
+	// pattern as every other write in this function — so production between the
+	// last calc_tick and now is neither lost nor fabricated. This covers BOTH
+	// known leaks: the potentials-loop only touching goods still in the query
+	// result, and the (now-removed) early return when potentials was empty,
+	// which used to skip this settlement entirely.
+	touchedKeys := make([]string, 0, len(potentials)+1)
+	for _, gp := range potentials {
+		touchedKeys = append(touchedKeys, gp.key)
+	}
+	if !grainSeen && grainConsumptionPerTick > 0 {
+		touchedKeys = append(touchedKeys, "grain")
+	}
+	if _, err := tx.Exec(ctx,
+		`UPDATE settlement_goods
+		 SET amount    = LEAST(cap, GREATEST(0, settled(amount, rate, calc_tick))),
+		     rate      = 0,
+		     calc_tick = current_world_tick()
+		 WHERE settlement_id = $1
+		   AND rate <> 0
+		   AND good_key <> ALL($2)`,
+		settlementID, touchedKeys,
+	); err != nil {
+		return fmt.Errorf("recompute: null stale rates: %w", err)
 	}
 
 	return nil
