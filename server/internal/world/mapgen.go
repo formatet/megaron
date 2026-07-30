@@ -396,24 +396,65 @@ const (
 // additive pass answering Timothy's "det finns en brist på skog" (2026-07-29)
 // without touching terrainTable (the documented mapgen invariant).
 const (
-	// cedarStandCountMin/Spread: 2-3 seed hexes per map — the same count the
-	// old scattered-cedar code rolled (cedarTarget := 3 + rng.Intn(3) was
-	// 3-5; kept slightly lower here since each "hex" is now a multi-tile
-	// stand, not a single deposit flag).
+	// cedarStandCountMin/Spread: the ABSOLUTE floor on stand count (used by
+	// minCedar below, unchanged so small-map validateMap invariants stay
+	// intact) — the actual count generateMapOnce uses is scaled up from this
+	// floor by land area, see cedarStandAreaDivisor.
 	cedarStandCountMin    = 2
-	cedarStandCountSpread = 2 // rng.Intn(2) → 0 or 1, so count is 2 or 3
+	cedarStandCountSpread = 2 // rng.Intn(2) → 0 or 1, extra variety on top of the scaled base
 
-	// cedarStandSizeMin/Spread: each stand grows to 3-7 contiguous hexes
-	// (plan §4), converting same-landmass forest_olive_grove/hills neighbours.
-	cedarStandSizeMin    = 3
-	cedarStandSizeSpread = 5 // rng.Intn(5) → 0..4, so size is 3..7
+	// cedarStandSizeMin is the REJECTION floor (unchanged — a stand smaller
+	// than this reads as an isolated hex, not a forest; see the rejection
+	// check's integration-defect comment) and feeds minCedar below. It is NOT
+	// the generation target any more — see cedarStandSizeTargetMin/Spread.
+	cedarStandSizeMin = 3
+
+	// cedarFractionTarget (Timothy 2026-07-29, mapgen/fuktnormalisering):
+	// "cederskog kanske kan ligga kring 3%" — and "cederskogarna" in plural,
+	// i.e. a handful of regions a Wanax can sail to and hold, not fifty
+	// single-hex dungar. Cedar's total AREA target is this fraction of land,
+	// scaled like every other density number in this file (grove/river) — NOT
+	// a fixed hex-count literal, so the fraction stays the same shape at every
+	// map size instead of only working out at the one size it was measured
+	// against (a flat 30-50-hex-per-stand literal was tried first and
+	// overshot ~3x on 56×40 — see the process report).
+	cedarFractionTarget = 0.03
+
+	// cedarAreaOvershoot compensates for growPatch truncation: with ~10+
+	// stands growing simultaneously and competing for the same limited
+	// same-landmass tin-biased forest_olive_grove/hills candidates, patches
+	// consistently fell short of their per-stand target — stands run out of
+	// eligible neighbours before reaching the requested size far more often
+	// than the small single-stand case (S2's original 3-7-hex stands) ever
+	// did. Seeding the target above cedarFractionTarget's true intent, rather
+	// than raising cedarFractionTarget itself, keeps that constant an honest
+	// answer to "what fraction should cedar be" separate from "how much to
+	// ask growPatch for to actually get there".
+	cedarAreaOvershoot = 1.65
+
+	// cedarStandAreaDivisor derives the STAND COUNT from land area
+	// (landArea/cedarStandAreaDivisor, floored at cedarStandCountMin) —
+	// calibrated so 230×230 (~13 200 land tiles) lands on Timothy's "tiotal
+	// bestånd" (~10 stands). Each stand's SIZE is then the area target divided
+	// by this count (cedarAreaTarget/cedarStandCount in generateMapOnce), not
+	// a separate literal — so a small map with the same count floor (2-3
+	// stands) automatically gets small stands totalling ~3% of its own
+	// (smaller) land, instead of demanding 230×230-sized regions everywhere.
+	cedarStandAreaDivisor = 1000
 
 	// groveDensityDivisor sets small-olive-grove seed count = landArea /
-	// groveDensityDivisor (same style as riverDensityDivisor). Calibrated
-	// against cmd/mapgen-debug's forest-fraction measurement (A4 gate:
-	// 15.7% → 22-28% of land) — see the process report for the histogram
-	// this was tuned against.
-	groveDensityDivisor = 12
+	// groveDensityDivisor (same style as riverDensityDivisor). Originally
+	// calibrated to 12 against a moisture field that was min-max normalised
+	// (squeezed toward the middle on big maps, so terrainFor alone produced
+	// almost no natural forest_olive_grove on 230×230 — this pass had to
+	// supply nearly the whole forestFraction band by itself). Re-tuned to 20
+	// for mapgen/fuktnormalisering: percentile-normalising the moisture field
+	// (see moisturePercentile) already gives ~7-14% natural forest_olive_grove
+	// at every map size on its own, so the additive top-up only needs to close
+	// the gap to the 22-30% band, not supply the whole thing — the old value
+	// double-counted and pushed forest_fraction to 0.31-0.38, forcing repeated
+	// reseeds.
+	groveDensityDivisor = 17
 
 	// groveMoistureMin: grove seeds only land in the moist half of the
 	// moisture field ("fuktfältets våta halva", plan §5) — moistureNorm is
@@ -825,8 +866,16 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	// Independent field, drawn from the SAME map rng one step later than the
 	// height-field noise generators — still fully determined by the map seed,
 	// no second seed parameter needed for determinism.
+	//
+	// Percentile-normalised (mapgen/fuktnormalisering), same mechanism as
+	// landCutoff for the height field: a plain min-max rescale has a
+	// denominator (max-min) that grows with sample count, so bigger maps
+	// sample more extreme noise values and ordinary readings get squeezed
+	// toward the middle — measured as the 230×230 olive-grove collapse this
+	// slice fixes. moisturePercentile ranks every LAND cell instead, so the
+	// normalised distribution's shape no longer depends on map size.
 	moisture := moistureField(rng, width, height)
-	moistureMin, moistureMax := moistureRange(moisture)
+	moisturePct := moisturePercentile(moisture, landSet)
 
 	// ── 1c. River meander field (ögonkoll 2026-07-29 fix) ────────────────
 	// Independent field, one more deterministic rng draw after moisture —
@@ -960,10 +1009,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 			if maxHeight > cutoff {
 				heightNorm = (field[c] - cutoff) / (maxHeight - cutoff)
 			}
-			moistureNorm := 0.0
-			if moistureMax > moistureMin {
-				moistureNorm = (moisture[c] - moistureMin) / (moistureMax - moistureMin)
-			}
+			moistureNorm := moisturePct[c]
 			for _, n := range hexNeighbours(c, width, height) {
 				if !landSet[n] {
 					moistureNorm += coastalMoistureBonus
@@ -1069,10 +1115,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		landAreaForGroves += sz
 	}
 	moistureNormAt := func(c cell) float64 {
-		m := 0.0
-		if moistureMax > moistureMin {
-			m = (moisture[c] - moistureMin) / (moistureMax - moistureMin)
-		}
+		m := moisturePct[c]
 		for _, n := range hexNeighbours(c, width, height) {
 			if !landSet[n] {
 				m += coastalMoistureBonus
@@ -1137,15 +1180,20 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		groveBuilt++
 	}
 
-	// ── 6b. Cedar forest stands (S2 plan step 4) ────────────────────────
+	// ── 6b. Cedar forest stands (S2 plan step 4; recalibrated
+	// mapgen/fuktnormalisering to hit ~3% of land at EVERY map size) ────────
 	// forest_cedar is now its own terrain, not a flag on forest_olive_grove:
-	// 2-3 seed hexes (same tin-biased-forest bias the old scattered-flag code
-	// used) each grow into a 3-7 hex CONTIGUOUS stand by converting
-	// same-landmass forest_olive_grove/hills neighbours (including any grove
-	// 6a just grew — harmless, it just means fewer, bigger patches). Run
-	// AFTER 6a and rivers so cedar always gets first claim on the final
-	// terrain, and BEFORE step 7's tile build so CedarDeposit can be derived
-	// as a pure mirror of the terrain in exactly one place.
+	// seed hexes (same tin-biased-forest bias the old scattered-flag code
+	// used), area-scaled count (cedarStandAreaDivisor — ~10 stands at
+	// 230×230), each grow toward a CONTIGUOUS REGION sized so all stands
+	// together total cedarFractionTarget of land (not a flat hex-count
+	// literal — see cedarFractionTarget's comment for why a fixed 30-50
+	// overshot small maps ~3x), by converting same-landmass
+	// forest_olive_grove/hills neighbours (including any grove 6a just grew —
+	// harmless, it just means fewer, bigger patches). Run AFTER 6a and rivers
+	// so cedar always gets first claim on the final terrain, and BEFORE step
+	// 7's tile build so CedarDeposit can be derived as a pure mirror of the
+	// terrain in exactly one place.
 	var cedarSeedCand []cell
 	for q := 0; q < width; q++ {
 		base := rowOrigin(q, width)
@@ -1158,7 +1206,32 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	}
 	rng.Shuffle(len(cedarSeedCand), func(i, j int) { cedarSeedCand[i], cedarSeedCand[j] = cedarSeedCand[j], cedarSeedCand[i] })
 	cedarUsed := map[cell]bool{}
-	cedarStandCount := cedarStandCountMin + rng.Intn(cedarStandCountSpread)
+	// Stand count scales with land area (cedarStandAreaDivisor's comment) so
+	// 230×230 gets ~10 regions instead of the old flat 2-3 — the flat count
+	// could never reach the 3%-of-land target no matter how big each stand
+	// grew, since 2-3 stands capped at 3-7 hexes each maxed out around 21
+	// hexes total (0.1-0.2% of land, not 3%).
+	cedarStandCount := landAreaForGroves / cedarStandAreaDivisor
+	if cedarStandCount < cedarStandCountMin {
+		cedarStandCount = cedarStandCountMin
+	}
+	cedarStandCount += rng.Intn(cedarStandCountSpread)
+	// cedarAreaTarget is cedarFractionTarget of THIS map's land, so the
+	// per-stand size (avgCedarStandSize below) automatically shrinks on small
+	// maps instead of always demanding a 230×230-sized region — a fixed
+	// 30-50-hex literal here overshot 56×40 (560 land tiles) by ~3x, since
+	// even 2 stands of 35+ hexes each is already >10% of that map's land.
+	cedarAreaTarget := int(math.Round(cedarFractionTarget * cedarAreaOvershoot * float64(landAreaForGroves)))
+	avgCedarStandSize := cedarAreaTarget / cedarStandCount
+	if avgCedarStandSize < cedarStandSizeMin {
+		avgCedarStandSize = cedarStandSizeMin
+	}
+	// ±1/3 jitter around the average so stands vary in size like every other
+	// per-seed random pick in this file, without losing the area target.
+	cedarSizeSpread := avgCedarStandSize / 3
+	if cedarSizeSpread < 1 {
+		cedarSizeSpread = 1
+	}
 	cedarBuilt := 0
 	for _, seed := range cedarSeedCand {
 		if cedarBuilt >= cedarStandCount {
@@ -1167,7 +1240,10 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		if cedarUsed[seed] {
 			continue
 		}
-		target := cedarStandSizeMin + rng.Intn(cedarStandSizeSpread)
+		target := avgCedarStandSize - cedarSizeSpread + rng.Intn(2*cedarSizeSpread+1)
+		if target < cedarStandSizeMin {
+			target = cedarStandSizeMin
+		}
 		patch := growPatch(seed, target, cedarUsed, TerrainForestOliveGrove, TerrainHills, true)
 		// Ett frö som inte når minimistorleken FÖRKASTAS i stället för att bli
 		// ett ensamt cederhex. Skälet är en äkta integrationsdefekt som varken
@@ -1852,22 +1928,53 @@ func riverMeanderField(rng *rand.Rand, width, height int) map[cell]float64 {
 	return field
 }
 
-// moistureRange returns a field's min and max value so callers can rescale
-// it into [0,1]. Unlike landCutoff (a percentile — land share must be
-// EXACT), moisture has no target split: the raw fBm shape already IS the
-// regional wet/dry streak pattern, so a plain min-max rescale is enough.
-func moistureRange(field map[cell]float64) (min, max float64) {
-	first := true
-	for _, v := range field {
-		if first || v < min {
-			min = v
-		}
-		if first || v > max {
-			max = v
-		}
-		first = false
+// moisturePercentile ranks every LAND cell's moisture value and returns its
+// percentile (0..1, rank/(n-1)) instead of a plain min-max rescale
+// (mapgen/fuktnormalisering, replaces the old moistureRange). The old
+// approach's denominator (max-min) grows with sample count, so bigger maps
+// sample more extreme noise values and ORDINARY readings get squeezed toward
+// the middle — a larger map therefore reads as more uniformly "medium
+// moisture" even though the underlying fBm shape hasn't changed. This is the
+// exact mechanism landCutoff already uses for the height field (a percentile
+// threshold, chosen so land share is IDENTICAL at every map size); here every
+// value is ranked, not just a single cutoff, since terrainFor needs a full
+// [0,1] reading per cell rather than a land/sea split.
+//
+// Scoped to landSet, not the whole field: moistureNorm is only ever read for
+// land cells (terrainFor, grove/cedar seeding) — folding sea noise into the
+// population would dilute the land distribution with values nobody
+// classifies, and moisture is only computed for land tiles' terrain anyway.
+func moisturePercentile(field map[cell]float64, landSet map[cell]bool) map[cell]float64 {
+	type entry struct {
+		c cell
+		v float64
 	}
-	return min, max
+	entries := make([]entry, 0, len(landSet))
+	for c := range landSet {
+		entries = append(entries, entry{c, field[c]})
+	}
+	// Deterministic sort: value first, then (q, r) as a tie-break so equal
+	// float values (rare, but Perlin can repeat) don't depend on Go's
+	// unordered map iteration.
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].v != entries[j].v {
+			return entries[i].v < entries[j].v
+		}
+		if entries[i].c.q != entries[j].c.q {
+			return entries[i].c.q < entries[j].c.q
+		}
+		return entries[i].c.r < entries[j].c.r
+	})
+	norm := make(map[cell]float64, len(entries))
+	n := len(entries)
+	for i, e := range entries {
+		if n > 1 {
+			norm[e.c] = float64(i) / float64(n-1)
+		} else {
+			norm[e.c] = 0
+		}
+	}
+	return norm
 }
 
 // heightBand and moistureZone are terrainFor's two lookup axes.
