@@ -3655,8 +3655,12 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
     // Kolonisera"). March the host here; the founding forecast shows what the
     // ground would feed. Settle itself lives on the Host panel — the server
     // founds where the host stands, nowhere else.
-    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>'
-             +  '<div id="ip-found-preview" style="font-size:.73rem;margin-top:.4rem">Hämtar grundningsprognos…</div>';
+    // The forecast belongs in the scrolling body, not beside the action in the
+    // foot — same reason as the Host panel: it is unbounded and it was pushing
+    // the foot past the panel's bottom edge.
+    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>';
+    document.getElementById('ip-body-extra').innerHTML =
+      '<div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Hämtar grundningsprognos…</div>';
   } else {
     footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>'
              +  '<button id="ip-colonize-btn" style="' + MARCH_BTN_STYLE + '">Kolonisera →</button>';
@@ -3758,8 +3762,14 @@ async function openHostPanel(h, tile) {
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
-  const foot = document.getElementById('ip-foot');
-  foot.innerHTML =
+  // Stores and forecast go in the SCROLLING body; only the action stays in the
+  // foot. Both used to live in the foot, which has no scroll of its own — so a
+  // long forecast (the 7-hex list plus the gifts plus the goods rows) pushed the
+  // founding button below the panel's bottom edge, where it was clipped and
+  // unreachable. Measured before this change at 1280×720: the button sat 71 px
+  // past the panel. The forecast is unbounded by nature; the button must not
+  // share a container with it.
+  document.getElementById('ip-body-extra').innerHTML =
     `<div style="margin-bottom:.5rem;line-height:1.5">
        <div>${(fp.population || 0).toLocaleString('sv-SE')} folk · Kan inte strida · Syn: 1 hex</div>
        <div>${hostStoreLine('Grain', fp.grain, fp.tick_seconds)}</div>
@@ -3767,8 +3777,11 @@ async function openHostPanel(h, tile) {
        <div>${fp.spearmen_in_field || 0} Spearmen-kohort${fp.spearmen_in_field === 1 ? '' : 'er'} i fält</div>
        <div>Budbärare: fria att sända</div>
      </div>
-     <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem;margin-bottom:.3rem">Hämtar grundningsprognos…</div>
-     <button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Grunda huvudstaden här</button>
+     <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Hämtar grundningsprognos…</div>`;
+
+  const foot = document.getElementById('ip-foot');
+  foot.innerHTML =
+    `<button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Grunda huvudstaden här</button>
      <span class="msg-err" id="ip-settle-err"></span>`;
   document.getElementById('inspect-panel').style.display = 'flex';
 
@@ -3819,6 +3832,10 @@ function openHexPanel(h) {
   State.fovPreview = null;
   State.catchmentPreview = null;
   State.dirty = true;
+  // Every panel routes through here, so this is the one place the variable body
+  // region gets reset. Without it the Host panel's stores would still be showing
+  // after the next click on a sea hex.
+  document.getElementById('ip-body-extra').innerHTML = '';
 
   const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
   const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);
