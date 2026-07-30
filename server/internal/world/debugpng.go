@@ -321,6 +321,16 @@ type MapMetrics struct {
 	ForestFraction        float64 `json:"forest_fraction"`
 	CedarStands           int     `json:"cedar_stands"`
 
+	// Per-terrain share of LAND (mapgen/fuktnormalisering — the
+	// scale-invariance measurement AK2 needs): plains/hills/scrub/semi_desert
+	// as a fraction of land tiles, same denominator as ForestFraction. Not a
+	// validateMap gate — reported only, so the moisture-percentile fix can be
+	// judged against how much these zones shift between map sizes.
+	PlainsFraction     float64 `json:"plains_fraction"`
+	HillsFraction      float64 `json:"hills_fraction"`
+	ScrubFraction      float64 `json:"scrub_fraction"`
+	SemiDesertFraction float64 `json:"semi_desert_fraction"`
+
 	// P4 calibration/capacity fields (plan §P4-B).
 	TargetPlayers  int `json:"target_players"`  // playersFor(width, height)
 	PlayerCapacity int `json:"player_capacity"` // greedy packing estimate, see EstimatePlayerCapacity
@@ -394,6 +404,16 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		if t.Terrain == TerrainForestCedar {
 			m.ForestCedarTiles++
 		}
+		switch t.Terrain {
+		case TerrainPlains:
+			m.PlainsFraction++ // tile counts first; divided into fractions below
+		case TerrainHills:
+			m.HillsFraction++
+		case TerrainScrubMaquis:
+			m.ScrubFraction++
+		case TerrainSemiDesert:
+			m.SemiDesertFraction++
+		}
 		if t.Terrain == TerrainRiverDelta {
 			m.DeltaTiles++
 		}
@@ -420,6 +440,10 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 	}
 	if land > 0 {
 		m.ForestFraction = float64(m.ForestOliveGroveTiles+m.ForestCedarTiles) / float64(land)
+		m.PlainsFraction /= float64(land)
+		m.HillsFraction /= float64(land)
+		m.ScrubFraction /= float64(land)
+		m.SemiDesertFraction /= float64(land)
 	}
 	m.CedarStands = depositSourceCount(tiles, func(t MapTile) bool { return t.Terrain == TerrainForestCedar })
 	m.LandComponents = len(compSize)
