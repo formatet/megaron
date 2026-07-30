@@ -214,17 +214,19 @@ export async function openMarchCtx(dest, screenX, screenY) {
   const all = ((await res.json()).units) || [];
 
   // Eligible to march: garrisoned or positioned, non-priest, deployable.
-  // Naval hex → ships; land hex → full-strength land units.
+  // Naval hex → ships; land hex → land units. u.deployable is the server's own
+  // field (status != forming/training, api/handlers/unit.go:1342) — the server
+  // has no size gate on march (march_start.go), so a battle-worn cohort below
+  // 100 men is still orderable. Fortify stance blocks march server-side
+  // (march_start.go:132-135) and must not show as eligible here either.
   const wantNaval = dest.isSea;
   State.marchCtxUnits = all.filter(u => {
     if (u.type === 'priest') return false;
     if (u.status !== 'garrison' && u.status !== 'positioned') return false;
     const naval = u.category === 'naval';
     if (wantNaval !== naval) return false;
-    // size guards land units still forming (recruits trickle in 0→100). The
-    // host is size=1 by construction — one movable marker, never "forming" —
-    // and the server lets it march (Fas 2 rev size-grinden for it).
-    if (!naval && u.size < 100 && u.type !== 'nomadic_host') return false;
+    if (!u.deployable) return false;
+    if (u.stance === 'fortify') return false;
     return true;
   });
 
