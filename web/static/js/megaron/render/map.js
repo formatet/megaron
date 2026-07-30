@@ -4035,11 +4035,15 @@ export function initMap() {
     // not the hex — marching-to-your-own-hex is rejected server-side ("cannot
     // march to own hex"). Route to the same map→drawer bridge the left-click
     // "Visa →" button uses (war.js warFocusUnit): the War drawer opens with
-    // that unit's card focused, its March button ready. Same orderable
-    // condition as war.js canMarch (garrison never applies on an empty hex).
+    // that unit's card focused, its March button ready. This detects "is a
+    // friendly unit standing here" (u.deployable, not u.size — the server has
+    // no size gate); it deliberately does NOT also exclude fortify stance like
+    // war.js canMarch does — a fortified unit still occupies the hex, and
+    // routing to its card (Stance selector to un-fortify) beats falling through
+    // to a march-to-own-hex 422.
     const ownUnit = (State.unitsData || []).find(u =>
       u.q === h.q && u.r === h.r && (u.status === 'garrison' || u.status === 'positioned') &&
-      u.type !== 'priest' && (u.category === 'naval' || u.size === 100));
+      u.type !== 'priest' && u.deployable);
     if (ownUnit) { window.closeMarchCtx(); window.warFocusUnit(ownUnit.id); return; }
     window.openMarchCtx(destFromHex(h, tile, null), e.clientX, e.clientY);
   });
