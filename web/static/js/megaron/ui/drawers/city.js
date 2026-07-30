@@ -419,7 +419,10 @@ async function refreshCityBuildings(provinceID) {
           let label, eta = u.ready_at ? arrivalHTML(u.ready_at, undefined, 'ready') : '';
           if (u.category === 'naval') label = 'building';
           else if (u.status === 'training') label = `${u.size}/100 · training`;
-          else label = `${u.size}/100 · forming`;
+          // Say what's missing, not just the raw count — recruiting more of
+          // the same type into this settlement is what fills it (a
+          // half-formed unit otherwise reads as a stuck pipeline).
+          else label = `${u.size}/100 · forming — ${100 - u.size} more needed`;
           return `<tr><td>${name}</td><td>${label}</td><td>${eta}</td></tr>`;
         }).join('')
       }</table>`;

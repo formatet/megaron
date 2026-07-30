@@ -1921,6 +1921,13 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	var unitNames []string
 	var lastCompleteAt time.Time
 	var finalSize int
+	// trainingStarted/menNeeded carry the forming→training truth into the
+	// response (land only): a Recruit call that leaves a unit under
+	// MaxUnitSize looks identical to a hung pipeline unless the client is told
+	// explicitly what's missing and that nothing trains yet (see forming
+	// legibility, 2026-07-30).
+	var trainingStarted bool
+	var menNeeded int
 
 	for n := 0; n < effectiveCount; n++ {
 		if cat == unit.CategoryNaval {
@@ -2052,6 +2059,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		}
 		unitIDs = append(unitIDs, unitID)
 		finalSize = unitSize
+		trainingStarted = newSize >= 100
+		if !trainingStarted {
+			menNeeded = economy.MaxUnitSize - finalSize
+		}
 
 		if newSize >= 100 {
 			// Full → enter training: one completion event at now + the type's
@@ -2134,6 +2145,17 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		"complete_at":  lastCompleteAt,
 		"forming_size": finalSize,
 		"names":        unitNames,
+	}
+	// Land only: tell the client explicitly whether this unit is still
+	// gathering men or has just entered training, and — if still forming —
+	// exactly how many more men close it. Naval has no such gate (a vessel is
+	// deployable once built, size always 1) so these fields are omitted for it
+	// rather than reporting a meaningless "men_needed".
+	if cat == unit.CategoryLand {
+		resp["training_started"] = trainingStarted
+		if !trainingStarted {
+			resp["men_needed"] = menNeeded
+		}
 	}
 	if upkeepWarning != "" {
 		resp["upkeep_warning"] = upkeepWarning
