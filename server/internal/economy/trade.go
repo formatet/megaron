@@ -11,6 +11,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -145,6 +146,36 @@ const tradeRiskPct = 0.05 // 5% chance a caravan is lost to storm or pirates
 
 var tradeLostReasons = []string{"storm", "pirates", "pirates", "storm", "bandits"}
 
+// isInternalTransfer reports whether a delivery's origin and destination
+// settlements share the same owner — moving goods within your own network,
+// not trading with someone else. Origin is read from trade_routes.origin_id
+// when the route exists (internal /trade transfers), else from
+// transports.origin_id (messenger-negotiated trade legs carry no trade_route_id).
+// If the origin can't be resolved either way, this returns false (external):
+// guessing "internal" when unsure would silently switch off an intended
+// mechanic, which is the wrong direction to fail in.
+func isInternalTransfer(ctx context.Context, tx pgx.Tx, tradeRouteID, transportID, destinationID uuid.UUID) bool {
+	var originID uuid.UUID
+	if tradeRouteID != (uuid.UUID{}) {
+		_ = tx.QueryRow(ctx, `SELECT origin_id FROM trade_routes WHERE id = $1`, tradeRouteID).Scan(&originID)
+	}
+	if originID == (uuid.UUID{}) && transportID != (uuid.UUID{}) {
+		_ = tx.QueryRow(ctx, `SELECT origin_id FROM transports WHERE id = $1`, transportID).Scan(&originID)
+	}
+	if originID == (uuid.UUID{}) {
+		return false
+	}
+
+	var originOwner, destOwner uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, originID).Scan(&originOwner); err != nil {
+		return false
+	}
+	if err := tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, destinationID).Scan(&destOwner); err != nil {
+		return false
+	}
+	return originOwner == destOwner
+}
+
 // DeliveryHandler processes ScheduledTradeDelivery events.
 type DeliveryHandler struct {
 	pool       *pgxpool.Pool
@@ -230,8 +261,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 	}
 
-	// Trade risk: 5% chance caravan is lost to storm or pirates.
-	if rand.Float64() < tradeRiskPct {
+	// Trade risk: 5% chance caravan is lost to storm or pirates — but only when
+	// the goods change owner. Moving grain between two of your own cities is
+	// logistics, not trade (CLAUDE.md trade-lagret punkt 3: "intern överföring
+	// ... fysisk karavan utan förlust"); it must never roll this die.
+	if !isInternalTransfer(ctx, tx, p.TradeRouteID, p.TransportID, p.DestinationID) && rand.Float64() < tradeRiskPct {
 		reason := tradeLostReasons[rand.Intn(len(tradeLostReasons))]
 		if _, err = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID); err != nil {
 			return fmt.Errorf("mark lost route resolved: %w", err)
