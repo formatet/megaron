@@ -120,10 +120,20 @@ func recruitCmd() *cobra.Command {
 						resp.CompleteAt.Local().Format("15:04 Jan 2"))
 				}
 			} else {
+				var resp struct {
+					FormingSize     int  `json:"forming_size"`
+					TrainingStarted bool `json:"training_started"`
+					MenNeeded       int  `json:"men_needed"`
+				}
+				_ = json.Unmarshal(data, &resp)
 				fmt.Printf("Recruiting %d men as %s\n", men, unit)
-				fmt.Println("Note: a land unit must reach 100 men before it can march or colonize. " +
-					"Recruit more of the same type into this settlement, then `keryx unit list` " +
-					"(watch `deployable`/`men_to_deploy`).")
+				if resp.TrainingStarted {
+					fmt.Println("Full at 100/100 — training has started; `keryx unit list` shows the ready ETA.")
+				} else {
+					fmt.Printf("Now %d/100 — not training yet, %d more men needed. "+
+						"Recruit more of the same type into this settlement to fill it.\n",
+						resp.FormingSize, resp.MenNeeded)
+				}
 			}
 			// Upkeep warning (P6, soak 2026-07-18): present on either path when the
 			// server projects this unit will push the settlement into grain/silver

@@ -482,6 +482,57 @@ func TestRecruit_LandLifecycle(t *testing.T) {
 	}
 }
 
+// TestRecruit_FormingResponseCarriesShortfall verifies the forming-legibility
+// fix (2026-07-30): a Recruit call that leaves a land unit under
+// economy.MaxUnitSize must say so explicitly in the response — a Wanax who
+// drafts 10 men and reads "10/100 · forming" forever otherwise has no way to
+// tell a working pipeline from a hung one. The response must carry
+// training_started:false plus the exact shortfall (men_needed), and once the
+// 100th man arrives training_started flips to true and men_needed disappears
+// (nothing left to report). Naval recruits carry neither field — a vessel has
+// no size-based gate, so "men_needed" would be a lie.
+func TestRecruit_FormingResponseCarriesShortfall(t *testing.T) {
+	f := setupRecruitShipFixture(t)
+	recruitPath := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/recruit"
+
+	// 10 men: still forming, 90 short of training.
+	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 10})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("Recruit(spearman, men=10) = %d %q, want 201", rec.Code, rec.Body.String())
+	}
+	if got := resp["training_started"]; got != false {
+		t.Errorf("training_started = %v, want false (10 < 100)", got)
+	}
+	if got := resp["men_needed"]; got != float64(90) {
+		t.Errorf("men_needed = %v, want 90 (100 − 10)", got)
+	}
+
+	// +90 more men: reaches exactly 100 → training starts (unchanged DB
+	// behaviour — see TestRecruit_LandLifecycle — plus the new response truth).
+	rec2, resp2 := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 90})
+	if rec2.Code != http.StatusCreated {
+		t.Fatalf("Recruit(spearman, men=90) = %d %q, want 201", rec2.Code, rec2.Body.String())
+	}
+	if got := resp2["training_started"]; got != true {
+		t.Errorf("training_started = %v, want true (reached 100)", got)
+	}
+	if _, present := resp2["men_needed"]; present {
+		t.Errorf("men_needed present = %v, want omitted once training has started", resp2["men_needed"])
+	}
+
+	// Naval carries neither field — no size-based forming gate to report on.
+	rec3, resp3 := f.post(t, recruitPath, map[string]any{"unit_type": "galley"})
+	if rec3.Code != http.StatusCreated {
+		t.Fatalf("Recruit(galley) = %d %q, want 201", rec3.Code, rec3.Body.String())
+	}
+	if _, present := resp3["training_started"]; present {
+		t.Errorf("training_started present on naval response = %v, want omitted", resp3["training_started"])
+	}
+	if _, present := resp3["men_needed"]; present {
+		t.Errorf("men_needed present on naval response = %v, want omitted", resp3["men_needed"])
+	}
+}
+
 // TestRecruitShip_StanceRejectedOnNaval verifies SetStance 422s for a naval
 // unit (ships carry no stance — Skepp-taxonomi, temenos_enheter.md).
 func TestRecruitShip_StanceRejectedOnNaval(t *testing.T) {

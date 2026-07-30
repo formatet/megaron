@@ -455,7 +455,11 @@ function renderUnitCard(u) {
   if (isNaval && isForming) {
     progress = dim('building — ' + readyWord(u.build_complete_at));
   } else if (isForming) {
-    progress = bar(u.size) + dim(u.size + '/100 · forming');
+    // men_to_deploy is server-computed (100 − size); recruiting more of the
+    // same type into this settlement is what fills it — say so, so a
+    // half-formed unit doesn't read as a stuck pipeline.
+    const needed = u.men_to_deploy != null ? u.men_to_deploy : (100 - u.size);
+    progress = bar(u.size) + dim(u.size + '/100 · forming — ' + needed + ' more men needed before training starts');
   } else if (isTraining) {
     progress = bar(100) + dim('100/100 · training — ' + readyWord(u.build_complete_at));
   }
