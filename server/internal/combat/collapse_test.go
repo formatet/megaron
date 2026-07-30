@@ -22,13 +22,31 @@ func TestCollapseSettlement_NotifiesOwner(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
+	// The fixture world must be ACTIVE (it used to be 'archived'). collapseSettlement
+	// calls economy.RecomputeProduction, which since fix/recompute-stale-rate no longer
+	// returns early for a settlement with zero producible goods — it falls through to
+	// the grain-consumption upsert, and that writes calc_tick = current_world_tick().
+	// That function reads the single globally-active world, so with no active world it
+	// returns NULL, the INSERT trips settlement_goods.calc_tick NOT NULL, and the whole
+	// collapse transaction aborts (25P02) — masked, because collapse.go discards
+	// RecomputeProduction's error. Same reasoning and same leftover-sweep + archive
+	// cleanup as unit_arrival_colonize_test.go; see its comment for why we archive
+	// rather than delete.
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+	); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
 	var worldID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO worlds (name, status) VALUES ($1, 'archived') RETURNING id`,
+		`INSERT INTO worlds (name, status, current_tick) VALUES ($1, 'active', 100) RETURNING id`,
 		"test-world-"+uuid.New().String(),
 	).Scan(&worldID); err != nil {
 		t.Fatalf("create test world: %v", err)
 	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,

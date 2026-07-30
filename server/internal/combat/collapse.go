@@ -301,7 +301,14 @@ func collapseSettlement(
 	}
 
 	// Recompute production (owner changed, rates will be stale).
-	_ = economy.RecomputeProduction(ctx, tx, settlementID)
+	// NOT best-effort despite the discarded error it used to be: this runs inside
+	// the caller's transaction, so a failed statement in here poisons every
+	// statement after it (25P02, "current transaction is aborted") and the real
+	// cause is invisible. Log the cause; the caller still fails, but now it says why.
+	if err := economy.RecomputeProduction(ctx, tx, settlementID); err != nil {
+		slog.Error("collapse: recompute production failed — this transaction is now aborted",
+			"settlement", settlementID, "err", err)
+	}
 
 	// Rumor: a city collapsing is major news — hearsay, several hops
 	// (temenos_gossip.md PASS 2b). Best-effort — never fail the collapse over gossip.
