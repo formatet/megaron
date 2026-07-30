@@ -122,12 +122,19 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 			return nil
 		}
 		if res == nil {
-			// Unit no longer marching by the time the runner arrived — a stale
-			// miss (already arrived, or an earlier order already turned it), not
-			// a game-rule rejection: stays a silent no-op (matches the frozen
-			// MarchRecallHandler's "too late" behaviour), never OrderFailed.
-			slog.Info("order delivered but unit no longer marching — recall/redirect missed",
-				"unit", p.UnitID, "verb", p.Verb)
+			// Unit no longer marching by the time the runner arrived (already
+			// completed its march, or an earlier order already turned it) — a
+			// genuine miss, not a game-rule rejection, but never silent
+			// (temenos_orderlopare_plan.md interception fix, 2026-07-30):
+			// dispatch now aims the Runner at a mathematically honest
+			// interception point along the unit's path (unit.go's Recall
+			// handler + messenger.InterceptCourierTarget), so this should be
+			// a rare residual race rather than the everyday silent tap it
+			// used to be — but "should be rare" is not "never", so the owner
+			// still needs to hear about it.
+			h.notifyOrderFailed(ctx, p, fmt.Sprintf(
+				"your %s Runner reached the unit, but it was no longer marching there — it likely completed its march or was turned by an earlier order before this one caught up; check the unit's current status and reissue the order if it still needs one",
+				p.Verb))
 			return nil
 		}
 		notifKind := "UnitRecalled"

@@ -363,7 +363,21 @@ func MessengerTravelTicks(dist int) int {
 // One speed model for ALL messengers: diplomatic, recall/redirect and order
 // runners alike (trade CARAVANS keep their own TradeHoursPerHex seam below).
 func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration) {
-	if _, hours, ok, err := province.FindPath(ctx, db, worldID, from, to, province.CategoryCourier); err == nil && ok {
+	g, err := province.LoadTileGraph(ctx, db, worldID)
+	if err != nil {
+		dist := province.HexDistance(from, to)
+		return MessengerTravelTicks(dist), MessengerTravelDuration(dist)
+	}
+	return CourierTravelOnGraph(g, from, to)
+}
+
+// CourierTravelOnGraph is CourierTravel over an already-loaded TileGraph —
+// avoids re-querying every map_tile per call. Used by InterceptAlongPath,
+// which evaluates many candidate hexes against the same courier origin within
+// one request; loading the graph once instead of once per candidate is the
+// difference between one DB round-trip and dozens.
+func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (ticks int, dur time.Duration) {
+	if _, hours, ok := g.FindPath(from, to, province.CategoryCourier); ok {
 		t := int(math.Round(hours))
 		if t < 1 {
 			t = 1
@@ -372,6 +386,95 @@ func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, 
 	}
 	dist := province.HexDistance(from, to)
 	return MessengerTravelTicks(dist), MessengerTravelDuration(dist)
+}
+
+// InterceptAlongPath finds the earliest hex along a marching unit's
+// already-validated outbound path (as returned by province.FindPath) where a
+// courier departing courierOrigin at now can reach the unit BEFORE it does —
+// an honest moving-target intercept, rather than aiming at the unit's
+// position at the dispatch instant (temenos_orderlopare_plan.md interception
+// fix, 2026-07-30). Aiming at that instant's snapshot is always stale: the
+// courier takes time to reach even that point, and the unit keeps moving
+// while it travels — precisely the silent "runner arrived, unit long gone"
+// miss this replaces.
+//
+// Scans path indices from the start (skipping every hex the unit has already
+// passed) to the last (the march's own destination). CategoryCourier runs at
+// 2× a land unit's speed (sea legs at the flat CourierSeaHours rate), so an
+// intercept normally exists somewhere along the remaining path — the earlier
+// on the path it is found, the sooner the order is delivered.
+//
+// ok=false means no hex on the remaining path — including the destination
+// itself — is reachable before the unit passes it: courierOrigin is too far
+// (or the remaining march too short) for any physically-honest courier to
+// catch this unit. Callers must treat that as a genuine, visible dispatch
+// failure; queuing a courier anyway would only reproduce the silent miss this
+// function exists to prevent.
+func InterceptAlongPath(
+	g province.TileGraph, courierOrigin province.MapPosition, path []province.MapPosition,
+	departsAt, arrivesAt, now time.Time,
+) (target province.MapPosition, ok bool) {
+	n := len(path)
+	if n < 2 {
+		return province.MapPosition{}, false
+	}
+	total := arrivesAt.Sub(departsAt)
+	for i := 0; i < n; i++ {
+		// unitTime is the instant the unit reaches path[i], on the same
+		// index-fraction-of-total model province.InterpolatePosition uses for
+		// "where is the unit right now" — the last hex is pinned to the exact
+		// stored arrivesAt to avoid float round-trip drift.
+		unitTime := arrivesAt
+		if i < n-1 {
+			frac := float64(i) / float64(n-1)
+			unitTime = departsAt.Add(time.Duration(frac * float64(total)))
+		}
+		if !unitTime.After(now) {
+			continue // the unit has already passed (or is exactly at) this hex
+		}
+		// <= (not strict <): an exact tie — the courier's rounded-to-the-tick
+		// ETA lands on the same instant the unit reaches this hex — is a real
+		// 50/50 race at that tick (whichever scheduled event a poll happens to
+		// process first), not a provable miss. Rejecting ties outright would
+		// wrongly fail the ordinary "recall from the very city the unit
+		// marched out of, right at the march's halfway point" case: a courier
+		// at 2× a land unit's speed departing from the SAME origin always
+		// needs exactly half the march's total duration to reach the
+		// destination, which ties the remaining time exactly at the halfway
+		// mark. Ties are let through; a genuine loss of that race still ends
+		// in a visible OrderFailed (order_delivery.go), never a silent one.
+		_, courierDur := CourierTravelOnGraph(g, courierOrigin, path[i])
+		if !now.Add(courierDur).After(unitTime) {
+			return path[i], true
+		}
+	}
+	return province.MapPosition{}, false
+}
+
+// InterceptCourierTarget loads the marching unit's outbound path and the
+// world's terrain graph, then delegates to InterceptAlongPath. err is
+// non-nil only for DB/scan failures; ok=false (err==nil) covers both "no
+// route exists" (mirrors province.InterpolatePosition's own ok=false) and
+// "a route exists but no courier can catch the unit on it" — see
+// InterceptAlongPath's doc comment for the latter.
+func InterceptCourierTarget(
+	ctx context.Context, db province.Queryer, worldID uuid.UUID,
+	courierOrigin, marchOrigin, marchTarget province.MapPosition, category string,
+	departsAt, arrivesAt, now time.Time,
+) (target province.MapPosition, ok bool, err error) {
+	path, _, pathOK, err := province.FindPath(ctx, db, worldID, marchOrigin, marchTarget, category)
+	if err != nil {
+		return province.MapPosition{}, false, err
+	}
+	if !pathOK {
+		return province.MapPosition{}, false, nil
+	}
+	g, err := province.LoadTileGraph(ctx, db, worldID)
+	if err != nil {
+		return province.MapPosition{}, false, err
+	}
+	t, ok := InterceptAlongPath(g, courierOrigin, path, departsAt, arrivesAt, now)
+	return t, ok, nil
 }
 
 // TradeHoursPerHex is the travel speed of a trade caravan (the silver/goods legs of a messenger trade).

@@ -528,6 +528,32 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Aim the Runner at an honest interception point along the unit's still-
+	// in-progress march, not at the position it happened to occupy this
+	// instant (temenos_orderlopare_plan.md interception fix, 2026-07-30): a
+	// courier always takes time to travel, and the unit keeps marching while
+	// it does, so a snapshot aim is stale the moment the runner sets out —
+	// the exact silent tap this replaces (internal/messenger.ExecuteRecall
+	// only checks the unit is still "marching" when the courier arrives; it
+	// never re-validates against where the runner was actually headed). When
+	// no honest intercept exists — courierOrigin is too far, or too little of
+	// the march remains, for any physically real runner to catch this unit —
+	// fail now, visibly, instead of queuing a courier already certain to
+	// arrive too late.
+	interceptPos, interceptOK, err := messenger.InterceptCourierTarget(ctx, h.pool, worldID,
+		province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
+		*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve runner interception")
+		return
+	}
+	if !interceptOK {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("no Runner can catch this unit before it completes its march (arrives %s) — wait for it to arrive, then issue a fresh order",
+				u.ArrivesAt.Local().Format(time.RFC3339)))
+		return
+	}
+
 	msgText := "Runner — recall order, return home."
 	if mode == "redirect" {
 		msgText = fmt.Sprintf("Runner — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
@@ -545,7 +571,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
 		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 		Verb: mode, Recall: recallOrder,
-	}, msgText, courierOrigin, currentPos, extra)
+	}, msgText, courierOrigin, interceptPos, extra)
 }
 
 // Load handles POST /worlds/{worldID}/units/{shipID}/load
