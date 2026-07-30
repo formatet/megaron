@@ -179,22 +179,7 @@ func main() {
 	go seedDailyTicks(ctx, pool, scheduler)
 
 	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(corsMiddleware)
-	// Compress: /map and friends go out uncompressed today (6.8 MB measured on a
-	// 230x230 world, gzip -9 gets it to 18% of that). chi's compressResponseWriter
-	// forwards Hijack() to the underlying ResponseWriter whenever nothing
-	// compressible has been written yet (WriteHeader not yet called ->
-	// compressible defaults false), so gorilla/websocket's Upgrade — which does
-	// its own w.(http.Hijacker) assertion in /ws/{worldID} — still gets a real
-	// Hijacker. Static files' Cache-Control (set below) and conditional 304s are
-	// untouched: this only gates the body encoding, not the header map. See
-	// TestCompressMiddlewareChain in main_test.go, which pins this ordering.
-	r.Use(middleware.Compress(5))
+	installMiddleware(r)
 
 	// Liveness/readiness probe for deploy verification and monitoring. Public,
 	// no auth. Pings the DB with a short deadline so a 200 means the server can
@@ -476,6 +461,31 @@ func runMigrations(dbURL string) error {
 	}
 	slog.Info("migrations applied")
 	return nil
+}
+
+// installMiddleware wires the root router's middleware chain, in order.
+// Pulled out of main() (which can't run in a test — it needs a live DB/Redis
+// pool and blocks forever) so cmd/server/compress_test.go can build a router
+// via the same function instead of a hand-copied mirror of this list — a
+// mirror can't fail when the real chain changes.
+//
+// Compress: /map and friends go out uncompressed today (6.8 MB measured on a
+// 230x230 world, gzip -9 gets it to 18% of that). chi's compressResponseWriter
+// forwards Hijack() to the underlying ResponseWriter whenever nothing
+// compressible has been written yet (WriteHeader not yet called ->
+// compressible defaults false), so gorilla/websocket's Upgrade — which does
+// its own w.(http.Hijacker) assertion in /ws/{worldID} — still gets a real
+// Hijacker. Static files' Cache-Control (set where /static/* is registered)
+// and conditional 304s are untouched: this only gates the body encoding, not
+// the header map. See compress_test.go, which pins this ordering.
+func installMiddleware(r chi.Router) {
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(corsMiddleware)
+	r.Use(middleware.Compress(5))
 }
 
 // corsMiddleware allows cross-origin requests for the Bearer-auth API.

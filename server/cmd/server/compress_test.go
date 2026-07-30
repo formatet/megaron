@@ -9,28 +9,16 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
 
-// buildTestRouter mirrors the middleware chain in main.go (RequestID, RealIP,
-// Logger, Recoverer, Timeout, corsMiddleware, Compress) in the same order.
-// main() can't be invoked from a test (it needs a live DB/Redis pool and
-// blocks forever), so this rebuilds only the router-construction slice that
-// governs response compression — see CLAUDE.md §Kirurgiska ändringar: no
-// refactor of main.go for testability. If this chain drifts from main.go,
-// update both together.
+// buildTestRouter builds a router through the same installMiddleware(r) that
+// main() calls — not a hand-copied mirror of the chain — so these tests
+// actually fail if the Compress line is removed or moved out of main.go.
 func buildTestRouter() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(corsMiddleware)
-	r.Use(middleware.Compress(5))
+	installMiddleware(r)
 	return r
 }
 
