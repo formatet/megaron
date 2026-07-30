@@ -104,8 +104,7 @@ func setupRecallCourierWorld(t *testing.T) (recallCourierFixture, *chi.Mux) {
 			t.Fatalf("create map_tiles(%d,0): %v", q, err)
 		}
 	}
-	// Redirect target tile, adjacent to the interpolated catch-point (2,0),
-	// inside the capital's live vision.
+	// Redirect target tile, within the capital's live vision (radius 3 from (0,0)).
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 2, 1, 'plains') ON CONFLICT DO NOTHING`,
 		f.worldID,
@@ -113,7 +112,15 @@ func setupRecallCourierWorld(t *testing.T) (recallCourierFixture, *chi.Mux) {
 		t.Fatalf("create redirect target tile: %v", err)
 	}
 
-	f.departsAt = time.Now().Add(-90 * time.Minute) // halfway through a 3h march
+	// 25% through a 3h march (not the exact halfway point — temenos_orderlopare_plan.md
+	// interception fix, 2026-07-30: a courier dispatched from the unit's own
+	// departure city always takes exactly half the march's total duration to
+	// reach its destination — at precisely 50% elapsed that ties the unit's own
+	// remaining time exactly, and CourierTravel's round-to-the-nearest-tick can
+	// tip an exact tie either way (1.5h rounds up to 2 ticks here) depending on
+	// incidental fractions. 25% elapsed leaves real headroom so this fixture
+	// proves ordinary delivery, not a coin flip on rounding.)
+	f.departsAt = time.Now().Add(-45 * time.Minute) // 45 min into a 3h march
 	f.arrivesAt = f.departsAt.Add(3 * time.Hour)    // 4 hexes × 0.75h/hex plains
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r, target_q, target_r, departs_at, arrives_at)
