@@ -102,7 +102,13 @@ export function toggleMusic() {
   document.getElementById('music-btn').textContent = isPaused ? '♪' : '♫';
 }
 
-document.addEventListener('pointerdown', () => MusicPlayer.start(), { once: true });
+// Autoplay policy: browsers require a user gesture before audio may play, so
+// this listener IS the autoplay gate, not a detail — called from main.js as
+// early as possible (see main.js's start() IIFE) to match the timing this
+// used to have as a module-top-level statement, evaluated before bootstrap().
+export function initMusicAutostart() {
+  document.addEventListener('pointerdown', () => MusicPlayer.start(), { once: true });
+}
 
 // ── Celestial clock ───────────────────────────────────────────────────────
 const MONTH_NAMES = [
