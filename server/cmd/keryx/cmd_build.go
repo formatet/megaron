@@ -23,7 +23,7 @@ func buildCmd() *cobra.Command {
   keryx build --type farm
   keryx build --type harbour          # requires coastal (adjacent sea hex)
   keryx build --type mine --province <province-id>   # build in a colony
-  keryx build --type winery           # produces nothing unless a hills tile is in catchment
+  keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
   keryx build --queue                 # see what's already queued, with cancel-build IDs`,
 		Args: rejectPositionalArgs("type"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -98,9 +98,10 @@ func buildCmd() *cobra.Command {
 					}
 					if len(b.RequiresTerrain) > 0 {
 						// P10 (soak 2026-07-18): buildings whose ENTIRE production is
-						// terrain-locked (e.g. winery — hills only, no fallback rule)
-						// produced nothing off that terrain, silently, until you tried
-						// it. Surface the requirement up front.
+						// terrain-locked (e.g. winery — hills/plains/scrub_maquis, no
+						// NULL-terrain fallback rule) produced nothing off those
+						// terrains, silently, until you tried it. Surface the
+						// requirement up front.
 						reqs = append(reqs, strings.Join(b.RequiresTerrain, "/")+" terrain")
 					}
 					reqStr := strings.Join(reqs, ", ")

@@ -3661,7 +3661,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 			case "silver":
 				hint = " (requires silver_mine + catchment tile with silver deposit)"
 			case "wine":
-				hint = " (requires winery + hills catchment tile)"
+				hint = " (requires winery + hills/plains/scrub_maquis catchment tile)"
 			}
 			writeError(w, http.StatusUnprocessableEntity,
 				fmt.Sprintf("%s is not producible at this settlement%s — producible here: %s",
