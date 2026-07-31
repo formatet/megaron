@@ -461,6 +461,17 @@ type colonizePreview struct {
 		Label  string `json:"label"`
 		Detail string `json:"detail"`
 	} `json:"founding_gifts,omitempty"`
+	// CatchmentConflict is set when this site's 7-hex catchment overlaps an
+	// existing settlement's — the delad-catchment-grind invariant (Timothy
+	// 2026-07-27/28). The march/settle call will reject this site with the
+	// same message; showing it here lets the Wanax pick another site before
+	// walking there.
+	CatchmentConflict *struct {
+		Blocked        bool   `json:"blocked"`
+		MinMoveHexes   int    `json:"min_move_hexes"`
+		Message        string `json:"message"`
+		SettlementName string `json:"settlement_name,omitempty"`
+	} `json:"catchment_conflict,omitempty"`
 }
 
 // fetchColonizePreview GETs the grain/goods forecast for founding a colony at (q,r).
@@ -513,6 +524,13 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 
 	fmt.Printf("%s — catchment-prognos (%d/%d hexar kända, %d okända):\n",
 		title, known, len(p.Catchment), p.UnknownHexes)
+
+	// Catchment overlap is checked BEFORE the grain math below (AK3: the
+	// blockage must be visible before the Wanax walks/settles there) — the
+	// march/settle call will refuse this exact site with the same message.
+	if p.CatchmentConflict != nil && p.CatchmentConflict.Blocked {
+		fmt.Printf("  ⛔ BLOCKERAD: %s\n", p.CatchmentConflict.Message)
+	}
 
 	prodPerDay := p.Grain.BasePerTick * td
 	netPerDay := p.Grain.EstNetPerTick * td

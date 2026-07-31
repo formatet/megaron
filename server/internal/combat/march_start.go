@@ -336,6 +336,22 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			return nil, reject(http.StatusUnprocessableEntity,
 				"target hex already has a settlement — colonize requires an empty hex")
 		}
+		// Catchment overlap: no settlement, of ANY owner, may found where its
+		// 7-hex catchment would overlap an existing, alive settlement's — the
+		// delad-catchment-grind invariant (Timothy 2026-07-27/28: "finns delat
+		// catchment kan staden inte grundas"). Best-effort pre-flight, same
+		// reasoning as the exact-hex check above; unit_arrival.go's foundColony
+		// gate is the authoritative fallback if the world changes mid-transit.
+		// Never names the blocking settlement here — FOW-aware naming needs the
+		// api/handlers knownToPlayer model, which this package cannot import
+		// (G1 package order); the generic phrasing is trivially FOW-safe.
+		if conflict, cErr := province.SettlementCatchmentOverlap(ctx, pool, o.WorldID, targetQ, targetR); cErr == nil && conflict != nil {
+			needed := province.CatchmentClearanceHexes(province.HexDistance(
+				province.MapPosition{Q: targetQ, R: targetR}, province.MapPosition{Q: conflict.Q, R: conflict.R}))
+			return nil, reject(http.StatusUnprocessableEntity,
+				"this ground is already farmed by another settlement — its catchment overlaps yours here; move at least %d hex(es) farther away to found a settlement",
+				needed)
+		}
 		// Settlement cap: a Wanax may hold at most maxSettlementsPerWanax active
 		// settlements. Enforced at dispatch so the harness gets immediate feedback
 		// and the colonising army never wastes the march. The arrival handler is the

@@ -37,6 +37,19 @@ var (
 	errHexNotSettlable = errors.New("hex cannot be settled")
 )
 
+// catchmentOverlapError carries the conflicting settlement so the HTTP layer
+// can build a FOW-safe message: only Settle (via h.pool/h.clk) has the
+// knownToPlayer eyes/remembered model this function's transaction does not
+// load, since the check needs to run regardless of what the founding player
+// can see (server-authoritative; the message's WORDING is the only thing FOW
+// gates, never the gate itself).
+type catchmentOverlapError struct {
+	q, r     int
+	conflict *province.CatchmentConflict
+}
+
+func (e *catchmentOverlapError) Error() string { return "catchment overlap" }
+
 // foundedMetropolis reports what the founding produced, for the notice.
 type foundedMetropolis struct {
 	ProvinceID    uuid.UUID
@@ -127,6 +140,19 @@ func foundMetropolisFromNomadicHost(
 	}
 	if err != nil {
 		return out, fmt.Errorf("load founding tile: %w", err)
+	}
+
+	// 2b. Catchment overlap: the delad-catchment-grind invariant (Timothy
+	// 2026-07-27/28: "finns delat catchment kan staden inte grundas") applies to
+	// a metropolis founding exactly like a colony — a Wanax cannot plant their
+	// capital on top of a neighbour's fields any more than a colony could.
+	// Authoritative (runs inside this transaction); the message is built by the
+	// caller (Settle), which owns the FOW knownToPlayer model this function
+	// does not have access to.
+	if conflict, cErr := province.SettlementCatchmentOverlap(ctx, tx, worldID, q, r); cErr != nil {
+		return out, fmt.Errorf("check catchment overlap: %w", cErr)
+	} else if conflict != nil {
+		return out, &catchmentOverlapError{q: q, r: r, conflict: conflict}
 	}
 
 	// 3. Settle the store BEFORE anything else writes: settled() derives from the
@@ -357,6 +383,7 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	founded, err := foundMetropolisFromNomadicHost(
 		r.Context(), tx, h.eventStore, h.sitosCfg, worldID, playerID, req.Name, req.Culture,
 	)
+	var coErr *catchmentOverlapError
 	switch {
 	case errors.Is(err, errNoFounderPhase):
 		writeError(w, http.StatusConflict, "you have no wandering host to settle")
@@ -367,6 +394,10 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, errHexNotSettlable):
 		writeError(w, http.StatusUnprocessableEntity,
 			"this ground cannot be settled — it is taken, or it is sea or mountain")
+		return
+	case errors.As(err, &coErr):
+		writeError(w, http.StatusUnprocessableEntity,
+			describeCatchmentConflict(r.Context(), h.pool, h.clk, playerID, worldID, coErr.q, coErr.r, coErr.conflict))
 		return
 	case err != nil:
 		slog.Error("settle: found metropolis failed", "err", err, "player", playerID, "world", worldID)
@@ -508,6 +539,38 @@ func (h *JoinHandler) FoundingStatus(w http.ResponseWriter, r *http.Request) {
 		"grain":             store(grainAmt, grainRate),
 		"silver":            store(silverAmt, silverRate),
 	})
+}
+
+// catchmentConflictMessage is the FOW-safe founding-blocked message for a
+// province.CatchmentConflict, pure given a precomputed `known` flag: the
+// blocker's name is spoken only when known — otherwise a generic phrase
+// (Timothy 2026-07-30: "en generisk formulering... plus samma minsta-
+// avstånd-råd"). Shared by Settle (via describeCatchmentConflict below, which
+// loads FOW state itself) and ColonizePreview (world.go, which already has
+// eyes/remembered loaded and passes `known` straight through) so the wording
+// never drifts between the two surfaces.
+func catchmentConflictMessage(known bool, q, r int, c *province.CatchmentConflict) string {
+	needed := province.CatchmentClearanceHexes(province.HexDistance(
+		province.MapPosition{Q: q, R: r}, province.MapPosition{Q: c.Q, R: c.R}))
+	who := "another settlement"
+	if known {
+		who = c.Name
+	}
+	return fmt.Sprintf(
+		"this ground is already farmed by %s — its catchment overlaps the one you would found here; move at least %d hex(es) farther away",
+		who, needed)
+}
+
+// describeCatchmentConflict loads the founding player's live+remembered map
+// knowledge (the SAME tiering /map, ColonizePreview and countKnownCatchment
+// use — knownToPlayer) to decide whether the blocking settlement's name may
+// be shown, then builds the message. Used on Settle's (rare) rejection path
+// only, so the couple of extra read-only queries here never run hot.
+func describeCatchmentConflict(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, playerID, worldID uuid.UUID, q, r int, c *province.CatchmentConflict) string {
+	eyes := loadLiveEyes(ctx, pool, worldID, playerID, clk.Now())
+	remembered := loadRememberedTiles(ctx, pool, worldID, playerID)
+	known := knownToPlayer(eyes, remembered, province.MapPosition{Q: c.Q, R: c.R}, c.Terrain)
+	return catchmentConflictMessage(known, q, r, c)
 }
 
 // countKnownCatchment reports how many of a founding hex's 7 catchment tiles the

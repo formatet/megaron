@@ -607,6 +607,32 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		isolatedWarning = isolationWarningText(hasHills, hasMetal, hasNeighbor, isolationNeighborRadius)
 	}
 
+	// Catchment overlap (delad-catchment-grind, Timothy 2026-07-27/28): report
+	// the blockage BEFORE the player marches/settles there, in the same
+	// response as the rest of the forecast (AK3) — the same server-
+	// authoritative check founding itself runs (province.SettlementCatchmentOverlap),
+	// surfaced here as a heads-up rather than a hard stop (this endpoint is
+	// read-only; the actual gate lives on the march/settle write paths). FOW-safe:
+	// the blocker's name is shown only if the player already knows that hex,
+	// via the SAME knownToPlayer model used for the catchment tiles above —
+	// never a new leak. A lookup failure is silently skipped, same policy as
+	// anySettlementWithin above: never block a forecast on a DB hiccup.
+	var catchmentConflict map[string]any
+	if conflict, cErr := province.SettlementCatchmentOverlap(ctx, h.pool, worldID, q, rr); cErr == nil && conflict != nil {
+		known := !authenticated || knownToPlayer(eyes, remembered, province.MapPosition{Q: conflict.Q, R: conflict.R}, conflict.Terrain)
+		needed := province.CatchmentClearanceHexes(province.HexDistance(
+			province.MapPosition{Q: q, R: rr}, province.MapPosition{Q: conflict.Q, R: conflict.R}))
+		cc := map[string]any{
+			"blocked":        true,
+			"min_move_hexes": needed,
+			"message":        catchmentConflictMessage(known, q, rr, conflict),
+		}
+		if known {
+			cc["settlement_name"] = conflict.Name
+		}
+		catchmentConflict = cc
+	}
+
 	resp := map[string]any{
 		"catchment": view,
 		"goods":     goods,
@@ -633,6 +659,9 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	}
 	if isolatedWarning != "" {
 		resp["isolated_warning"] = isolatedWarning
+	}
+	if catchmentConflict != nil {
+		resp["catchment_conflict"] = catchmentConflict
 	}
 	writeJSON(w, http.StatusOK, resp)
 }

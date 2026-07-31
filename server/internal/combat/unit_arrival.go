@@ -214,6 +214,19 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 			slog.Info("colonize blocked at arrival: settlement cap reached", "owner", u.ownerID, "owned", owned)
 			return h.arriveGarrison(ctx, tx, u, destQ, destR, dest.settlementID, worldID)
 		}
+		// Authoritative catchment-overlap check (dispatch's march_start.go
+		// pre-flight enforces it too, but the world can change mid-transit —
+		// another colonist could found first): delad-catchment-grind invariant
+		// (Timothy 2026-07-27/28), gated for every owner alike. Same fallback
+		// shape as the settlement-cap check above — the unit just garrisons the
+		// empty hex instead of founding on top of a neighbour's fields.
+		if conflict, cErr := province.SettlementCatchmentOverlap(ctx, tx, worldID, destQ, destR); cErr == nil && conflict != nil {
+			slog.Info("colonize blocked at arrival: catchment overlap",
+				"owner", u.ownerID, "conflict_settlement", conflict.SettlementID, "q", destQ, "r", destR)
+			return h.arriveGarrison(ctx, tx, u, destQ, destR, dest.settlementID, worldID)
+		} else if cErr != nil {
+			slog.Error("colonize: catchment overlap check failed", "err", cErr, "q", destQ, "r", destR)
+		}
 		return h.foundColony(ctx, tx, u, dest.provinceID, destQ, destR, worldID)
 	}
 
