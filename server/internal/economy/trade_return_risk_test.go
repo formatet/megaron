@@ -9,9 +9,13 @@ package economy
 // outbound leg. AK1 (red baseline): TestTradeReturnHandler_ExternalTradeRollsDice
 // fails on unmodified trade_return.go — 0/200 losses instead of the expected >=1.
 //
-// Statistical tests are seeded (math/rand.Seed) so a run is reproducible, not
-// flaky — CLAUDE.md/bevisplan. Each test seeds independently at its own start,
-// none call t.Parallel(), so seeding one test cannot perturb another's sequence.
+// Statistical tests are seeded via an injected Dice (rand.New(rand.NewSource(…)))
+// so a run is reproducible, not flaky — CLAUDE.md/bevisplan. This is the same
+// seam as clock.Clock (see dice.go); it replaced a former global rand.Seed
+// hack (fix/forlusttarning-injicerbar, 2026-07-31), which mutated shared
+// process-wide state and could leak between test functions in this package.
+// Each test builds its own *rand.Rand — *rand.Rand already satisfies the Dice
+// interface (Float64() float64, Intn(int) int), no wrapper needed.
 // N=200 draws at tradeRiskPct=0.05: P(zero losses by chance) = 0.95^200 ≈ 0.0035%.
 
 import (
@@ -91,7 +95,6 @@ func settlementGoodAmount(t *testing.T, pool *pgxpool.Pool, ctx context.Context,
 func TestTradeReturnHandler_ExternalTradeRollsDice(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-	rand.Seed(1337)
 
 	worldID := mkTradeWorld(t, pool, ctx)
 	ownerSeller := mkTradeOwner(t, pool, ctx)
@@ -101,6 +104,7 @@ func TestTradeReturnHandler_ExternalTradeRollsDice(t *testing.T) {
 
 	fb := &fakeReturnBroadcaster{}
 	h := NewTradeReturnHandler(pool, events.NewStore(pool), fb)
+	h.Dice = rand.New(rand.NewSource(1337))
 
 	const n = 200
 	const qty = 10.0
@@ -172,7 +176,6 @@ func TestTradeReturnHandler_ExternalTradeRollsDice(t *testing.T) {
 func TestTradeReturnHandler_InternalNeverLost(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-	rand.Seed(4242)
 
 	worldID := mkTradeWorld(t, pool, ctx)
 	owner := mkTradeOwner(t, pool, ctx)
@@ -180,6 +183,7 @@ func TestTradeReturnHandler_InternalNeverLost(t *testing.T) {
 	seller := mkTradeSettlement(t, pool, ctx, worldID, owner, "RetInt-Seller", 1)
 
 	h := NewTradeReturnHandler(pool, events.NewStore(pool), nil)
+	h.Dice = rand.New(rand.NewSource(4242))
 
 	const n = 150
 	const qty = 7.0
@@ -215,7 +219,6 @@ func TestTradeReturnHandler_InternalNeverLost(t *testing.T) {
 func TestTradeReturnHandler_UnresolvableOriginDefaultsExternal(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-	rand.Seed(90210)
 
 	worldID := mkTradeWorld(t, pool, ctx)
 	ownerBuyer := mkTradeOwner(t, pool, ctx)
@@ -224,6 +227,7 @@ func TestTradeReturnHandler_UnresolvableOriginDefaultsExternal(t *testing.T) {
 	seller := mkTradeSettlement(t, pool, ctx, worldID, ownerSeller, "RetUnk-Seller", 1)
 
 	h := NewTradeReturnHandler(pool, events.NewStore(pool), nil)
+	h.Dice = rand.New(rand.NewSource(90210))
 
 	const n = 200
 	const qty = 3.0
