@@ -29,7 +29,16 @@ export async function saveLaborAlloc(provinceID) {
   const percent = {};
   document.querySelectorAll('.labor-input').forEach(inp => {
     const v = parseFloat(inp.value||0)||0;
-    if (v > 0) percent[inp.dataset.good] = v;
+    // Cult (devotion) is always named explicitly when its input exists (even
+    // at 0 — the server floors it), never left out like the other goods'
+    // v>0 filter would. PUT .../labor REPLACES the whole allocation and any
+    // good not named drops to 0% — for cult that means dropping to the
+    // server's floor. Omitting it here on a save that only touches e.g.
+    // timber would silently flatten a higher devotion set earlier (by keryx
+    // or an earlier web session) down to the floor. Always echoing back
+    // the value shown (which loadCityDrawer seeds from the live devotion)
+    // keeps an untouched devotion exactly where it was.
+    if (v > 0 || inp.dataset.good === 'cult') percent[inp.dataset.good] = v;
   });
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/labor`, {
     method: 'PUT',
@@ -41,6 +50,31 @@ export async function saveLaborAlloc(provinceID) {
     if (msg) msg.textContent = 'Saved!';
     const idleEl = document.getElementById('labor-idle-disp');
     if (idleEl && data.idle_percent != null) idleEl.textContent = Math.round(data.idle_percent);
+    // Cult (devotion) is additive and deliberately excluded from the response's
+    // percent/citizens/idle_percent (server never counts it in the ≤100% sum —
+    // province.go LaborAlloc, `filtered` never gets a "cult" key). Re-read the
+    // settlement so the shown value is the server's authoritative post-clamp
+    // devotion (what was typed may have been above the temple's cap, or below
+    // the 15%-per-level floor).
+    const cultInp = document.getElementById('labor-input-cult');
+    if (cultInp) {
+      const r2 = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}`);
+      if (r2.ok) {
+        const pd2 = (await r2.json()).settlement;
+        if (pd2) {
+          const devPct2 = Math.round((pd2.devotion || 0) * 100);
+          const devCapPct2 = Math.round((pd2.devotion_capacity || 0) * 100);
+          cultInp.value = devPct2;
+          const cit = document.querySelector('.labor-cit[data-good="cult"]');
+          if (cit) cit.textContent = Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0));
+          const rateCell = document.getElementById('labor-rate-cult');
+          if (rateCell) {
+            const atCap = devPct2 >= devCapPct2;
+            rateCell.textContent = `${devPct2}% of ${devCapPct2}% cap${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}`;
+          }
+        }
+      }
+    }
     setTimeout(() => { if (msg) msg.textContent = ''; }, 2000);
   } else {
     const body = await res.json().catch(() => ({}));
@@ -178,8 +212,47 @@ export async function loadCityDrawer() {
     }
 
     const prodGoods = goods.filter(g => g.producible || g.rate_per_tick > 0);
+    const lp = pd ? (pd.labor_pool || 0) : 0;
+
+    // ── Devotion (cult) ─────────────────────────────────────────────────────
+    // Mig 094 turned cult into a labor weight that produces no good, which
+    // silently dropped it out of /goods — and with it, out of the only
+    // allocation surface the web had (server's own doc-comment on
+    // "devotion"/"devotion_capacity", province.go: "a mechanic you cannot see
+    // is a mechanic you cannot tend"). `pd.devotion`/`pd.devotion_capacity`
+    // are weights (0..1) already on the settlement payload fetched above —
+    // reuses the SAME allocation table rather than a new panel (BESLUT
+    // §Gubbarna: this UI gets rebuilt if the allocation unit ever moves from
+    // good→hex, so keep the addition small). Cult is ADDITIVE server-side —
+    // it is deliberately excluded from prodGoods (not in /goods at all) and
+    // from the idle/total-% math below, exactly like keryx.
+    const devWeight  = pd ? (pd.devotion || 0) : 0;
+    const devCapWt   = pd ? (pd.devotion_capacity || 0) : 0;
+    const devPct     = Math.round(devWeight * 100);
+    const devCapPct  = Math.round(devCapWt * 100);
+    const hasTemple  = (pd && pd.buildings || []).some(b => b.type === 'temple');
+    let devotionRowHTML;
+    if (hasTemple && devCapWt > 0) {
+      const atCap = devPct >= devCapPct;
+      devotionRowHTML = `<tr style="border-top:1px solid var(--border)">
+          <td style="padding:.2rem .3rem">Devotion <span style="color:var(--text-dim);font-size:.65rem">(cult, additive)</span></td>
+          <td style="padding:.2rem .3rem;text-align:right;white-space:nowrap">
+            <input type="number" class="labor-input" id="labor-input-cult" data-good="cult"
+              value="${devPct}" min="0" max="100" step="1"
+              style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
+          </td>
+          <td style="padding:.2rem .3rem;text-align:right;color:var(--text-dim);font-size:.75rem"><span class="labor-cit" data-good="cult">${Math.round(devWeight*lp)}</span> cit</td>
+          <td style="padding:.2rem .3rem;font-size:.72rem;color:var(--text-dim)" id="labor-rate-cult">${devPct}% of ${devCapPct}% cap${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</td>
+        </tr>`;
+    } else {
+      // Mirrors the server's own 422 wording (province.go LaborAlloc, key=="cult"
+      // branch) rather than inventing separate copy — no temple, no control.
+      devotionRowHTML = `<tr style="border-top:1px solid var(--border)">
+          <td colspan="4" style="padding:.3rem" class="empty-state">Devotion (cult): needs a temple here — build one first.</td>
+        </tr>`;
+    }
+
     if (prodGoods.length) {
-      const lp = pd ? (pd.labor_pool || 0) : 0;
       // Each good gets a percent input (share of population). The percent auto-scales
       // with population; the resulting citizen count is shown so the player sees that
       // more citizens produce more even at a lower percent.
@@ -210,7 +283,7 @@ export async function loadCityDrawer() {
         `<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">Share of population to assign (pop: <span id="labor-pool-disp">${lp}</span>, idle: <span id="labor-idle-disp">${Math.max(0,idlePct)}</span>%)</div>
          <table class="goods-mini" style="width:100%">
            <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Share</td><td style="text-align:right">Workers</td><td>Prod/day</td></tr></thead>
-           <tbody>${rows}</tbody>
+           <tbody>${rows}${devotionRowHTML}</tbody>
          </table>
          <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
            <button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
@@ -221,12 +294,16 @@ export async function loadCityDrawer() {
            <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span>
          </div>`;
       // Live preview: recompute resulting citizen counts + idle percent as the user edits.
+      // Cult is excluded from totalPct — it is additive server-side (does not
+      // compete with grain/timber/… for the ≤100% budget), so counting it here
+      // would make idle% lie the moment a temple exists (same bug class the
+      // server-side idle calc already guards against, province.go GoodCult skip).
       document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(inp => {
         inp.addEventListener('input', () => {
           let totalPct = 0;
           document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(i => {
             const p = parseFloat(i.value||0)||0;
-            totalPct += p;
+            if (i.dataset.good !== 'cult') totalPct += p;
             const cit = document.querySelector(`.labor-cit[data-good="${i.dataset.good}"]`);
             if (cit) cit.textContent = Math.round(p/100*lp);
           });
@@ -235,7 +312,21 @@ export async function loadCityDrawer() {
         });
       });
     } else {
-      document.getElementById('city-prod-sec').innerHTML = '<p class="empty-state">No production yet.</p>';
+      // No producible goods yet, but devotion is independent of that — a
+      // freshly founded, temple-having city can still tend its cult even
+      // before any producing job is unlocked.
+      document.getElementById('city-prod-sec').innerHTML =
+        `<p class="empty-state">No production yet.</p>
+         <table class="goods-mini" style="width:100%"><tbody>${devotionRowHTML}</tbody></table>
+         ${hasTemple && devCapWt > 0 ? `<div style="margin-top:.4rem"><button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
+             style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">Assign →</button>
+           <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe)"></span>
+           <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span></div>` : ''}`;
+      const cultInp = document.getElementById('labor-input-cult');
+      if (cultInp) cultInp.addEventListener('input', () => {
+        const cit = document.querySelector('.labor-cit[data-good="cult"]');
+        if (cit) cit.textContent = Math.round((parseFloat(cultInp.value||0)||0)/100*lp);
+      });
     }
 
     // ── Byggnader ───────────────────────────────────────────────────────────
