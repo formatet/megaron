@@ -132,7 +132,7 @@ func main() {
 	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
-	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, gameClock)
+	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, hub, gameClock)
 	marchRecallH := messenger.NewMarchRecallHandler(pool, scheduler, eventStore, hub, gameClock)
 	orderDeliveryH := messenger.NewOrderDeliveryHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)

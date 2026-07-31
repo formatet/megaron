@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
@@ -54,16 +55,20 @@ type RecallMarchPayload struct {
 	EliteInfantry int       `json:"elite_infantry"`
 	WarGalley     int       `json:"war_galley"`
 	Merchantman   int       `json:"merchantman"`
-	// The messenger is sent to the army's target province (the simplest fixed-point target).
-	// Assumption: for an in-flight army the messenger aims for the destination, not the army's
-	// instantaneous mid-march position. The return march is modelled as departing from the target.
-	// This avoids moving-target interpolation and is always physically safe (never faster than physics).
+	// The messenger is aimed at an honestly-computed INTERCEPTION point along
+	// the army's outbound path (InterceptCourierTarget, resolved once at
+	// dispatch — api/handlers.ProvinceHandler.RecallMarch), not the army's
+	// full original destination (megaron_todo.md Aggregatarmé-recall slice,
+	// 2026-07-30 — the old "aims at the destination, always physically safe"
+	// assumption was exactly the silent-miss bug: an army intercepted early
+	// still had its return trip costed from the far destination). The return
+	// march this event's handler creates departs from THIS point.
 	OriginQ  int       `json:"origin_q"`
 	OriginR  int       `json:"origin_r"`
-	TargetQ  int       `json:"target_q"`
+	TargetQ  int       `json:"target_q"` // interception hex, not the army's original target
 	TargetR  int       `json:"target_r"`
 	OriginID uuid.UUID `json:"origin_id"` // province the return march goes back to (home)
-	TargetID uuid.UUID `json:"target_id"` // province the return march departs from
+	TargetID uuid.UUID `json:"target_id"` // province at the interception hex — where the return march departs from
 }
 
 // RecallOutpostPayload is the RecallArrival payload for an outpost recall.
@@ -92,12 +97,14 @@ type RecallOutpostPayload struct {
 type RecallArrivalHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
+	hub       combat.Broadcaster // OrderFailed notice when a recall genuinely loses the race (handleMarch)
 	clk       clock.Clock
 }
 
-// NewRecallArrivalHandler creates a RecallArrivalHandler.
-func NewRecallArrivalHandler(pool *pgxpool.Pool, sched *events.Scheduler, clk clock.Clock) *RecallArrivalHandler {
-	return &RecallArrivalHandler{pool: pool, scheduler: sched, clk: clk}
+// NewRecallArrivalHandler creates a RecallArrivalHandler. hub may be nil in
+// tests that don't need to observe notifications.
+func NewRecallArrivalHandler(pool *pgxpool.Pool, sched *events.Scheduler, hub combat.Broadcaster, clk clock.Clock) *RecallArrivalHandler {
+	return &RecallArrivalHandler{pool: pool, scheduler: sched, hub: hub, clk: clk}
 }
 
 // Handle dispatches to the correct sub-handler based on the Kind field.
@@ -134,10 +141,19 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 	}
 	defer tx.Rollback(ctx)
 
-	// The messenger has physically reached the army — mark it arrived so it stops rendering,
-	// whether or not the recall still catches the army.
+	// The messenger's one-way outbound→arrived flip is the idempotency claim
+	// for this whole event (mirrors OrderDeliveryHandler/MarchRecallHandler):
+	// 0 rows affected means an earlier delivery of this exact event already
+	// ran to completion — whatever it decided (turned the army, or recorded a
+	// miss) already happened and must never be repeated, in particular never
+	// re-notify the owner of a miss that was already reported once.
+	alreadyProcessed := false
 	if p.MessengerID != uuid.Nil {
-		_, _ = tx.Exec(ctx, `UPDATE messengers SET status='arrived' WHERE id=$1`, p.MessengerID)
+		mct, err := tx.Exec(ctx, `UPDATE messengers SET status='arrived' WHERE id=$1 AND status != 'arrived'`, p.MessengerID)
+		if err != nil {
+			return fmt.Errorf("claim recall messenger: %w", err)
+		}
+		alreadyProcessed = mct.RowsAffected() == 0
 	}
 
 	// Atomic claim: only turn the army around if its outbound march is still unresolved.
@@ -147,8 +163,33 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 		return fmt.Errorf("claim outbound march: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
+		if alreadyProcessed {
+			slog.Info("recall arrival event replayed — already processed, no-op", "march_id", p.MarchID)
+			return tx.Commit(ctx)
+		}
+		// First (and only) processing of this event, and the army resolved
+		// (combat, colonization, another order…) before the recall messenger
+		// caught up — a genuine race loss, distinguishable from a replay only
+		// via the messenger claim above. Never silent (megaron_arbetssatt.md:
+		// "a silent fallback that guesses a value is a bug that does not
+		// crash") — the owner is told what happened and why.
+		var ownerID uuid.UUID
+		_ = tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE province_id = $1 AND world_id = $2`,
+			p.OriginID, p.WorldID).Scan(&ownerID)
 		slog.Info("recall messenger arrived but army already resolved — recall missed", "march_id", p.MarchID)
-		return tx.Commit(ctx)
+		if err := tx.Commit(ctx); err != nil {
+			return fmt.Errorf("commit: %w", err)
+		}
+		if h.hub != nil && ownerID != uuid.Nil {
+			_ = h.hub.NotifyPlayer(ctx, p.WorldID, ownerID, "OrderFailed", 2, map[string]any{
+				"march_id": p.MarchID,
+				"verb":     "recall",
+				"reason": "your recall messenger reached the army, but it had already resolved (combat, colonization, " +
+					"or another order) before the messenger arrived — the army was not turned back; check its outcome " +
+					"and issue fresh orders if it still needs them",
+			})
+		}
+		return nil
 	}
 
 	// Return trip = full distance origin↔target × terrain cost (army turns around at the target).
@@ -386,6 +427,23 @@ func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (
 	}
 	dist := province.HexDistance(from, to)
 	return MessengerTravelTicks(dist), MessengerTravelDuration(dist)
+}
+
+// AggregateArmyCategory guesses the province.FindPath category ("land" or
+// "naval") a marching_armies aggregate row moves under, from its unit
+// composition. marching_armies has no "embarked" flag to tell a mixed
+// land+naval force apart, so this is a heuristic, not a certainty: any naval
+// hull present (ship/war_galley/merchantman) means the whole force's motion
+// is bound to water passability — land troops cannot cross open water on
+// their own — so naval wins whenever a hull is present. Callers that need
+// certainty (e.g. RecallMarch, before trusting this for pathfinding) verify
+// with province.FindPath and fall back to the other category if this guess
+// finds no route.
+func AggregateArmyCategory(spearman, warChariot, priest, ship, eliteInfantry, warGalley, merchantman int) string {
+	if ship+warGalley+merchantman > 0 {
+		return "naval"
+	}
+	return "land"
 }
 
 // InterceptAlongPath finds the earliest hex along a marching unit's
