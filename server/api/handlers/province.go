@@ -3043,17 +3043,19 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		Resolved      bool
 		OriginID      uuid.UUID
 		TargetID      uuid.UUID
+		DepartsAt     time.Time
+		ArrivesAt     time.Time
 	}
 	err = tx.QueryRow(r.Context(),
 		`SELECT infantry, chariot, priest, ship, elite_infantry,
-		        war_galley, merchantman, resolved, origin_id, target_id
+		        war_galley, merchantman, resolved, origin_id, target_id, departs_at, arrives_at
 		 FROM marching_armies
 		 WHERE id = $1 AND world_id = $2 AND origin_id = $3
 		 FOR UPDATE`,
 		marchID, worldID, provinceID,
 	).Scan(&march.Spearman, &march.WarChariot, &march.Priest,
 		&march.Ship, &march.EliteInfantry, &march.WarGalley, &march.Merchantman,
-		&march.Resolved, &march.OriginID, &march.TargetID)
+		&march.Resolved, &march.OriginID, &march.TargetID, &march.DepartsAt, &march.ArrivesAt)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "march not found or not yours")
 		return
@@ -3077,18 +3079,102 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 
 	// The army keeps marching — command is not instant. We do NOT resolve the outbound march here;
 	// a recall messenger is dispatched, and only when it reaches the army (ScheduledRecallArrival)
-	// does the army turn around. If the army arrives and fights first, the recall simply misses.
+	// does the army turn around. If the army arrives and fights first, the recall arrives too late —
+	// handled explicitly below (dispatch-time gate) and in RecallArrivalHandler.handleMarch (the
+	// residual delivery-time race), never as a silent miss.
 
 	// Hex positions of origin (home) and target (where the army is heading).
 	var oQ, oR, tQ, tR int
 	_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id = $1`, march.OriginID).Scan(&oQ, &oR)
 	_ = tx.QueryRow(r.Context(), `SELECT map_q, map_r FROM provinces WHERE id = $1`, march.TargetID).Scan(&tQ, &tR)
+	originPos := province.MapPosition{Q: oQ, R: oR}
+	targetPos := province.MapPosition{Q: tQ, R: tR}
 
-	// Dispatch a visible recall messenger toward the army's target province.
-	// Assumption: it aims at the destination, not the army's mid-march position — no interpolation,
-	// always physically safe (never faster than physics).
+	// The army's own movement category (needed to re-walk its outbound path).
+	// marching_armies is an aggregate row — mixed land+naval composition is
+	// possible (a garrison riding its own ships) and there is no "embarked"
+	// flag to disambiguate it, so this is a documented heuristic, not a
+	// certainty: any naval hull present means the whole force's motion is
+	// bound to water passability (land troops cannot cross open water on
+	// their own), so naval wins whenever ship+war_galley+merchantman > 0.
+	category := messenger.AggregateArmyCategory(
+		march.Spearman, march.WarChariot, march.Priest,
+		march.Ship, march.EliteInfantry, march.WarGalley, march.Merchantman)
+
+	// Verify the category actually connects origin→target before trusting it.
+	// Unlike an individual unit's march (validated by FindPath at StartMarch
+	// dispatch), a marching_armies row reaching this handler may itself be a
+	// RETURN march created by an earlier recall (RecallArrivalHandler.handleMarch,
+	// below) — created from a flat hex-distance + terrain-cost estimate, never
+	// path-validated. A composition guess can also simply be wrong for a mixed
+	// force. Try the other category before concluding no route exists at all:
+	// this is what separates a genuine data problem (fall b — the route itself
+	// cannot be verified) from an honest "no courier can catch it in time"
+	// (fall a) — the two must never collapse into the same silent 422.
+	_, _, pathOK, pathErr := province.FindPath(r.Context(), tx, worldID, originPos, targetPos, category)
+	if pathErr != nil {
+		writeError(w, http.StatusInternalServerError, "could not verify the army's route")
+		return
+	}
+	if !pathOK {
+		altCategory := "land"
+		if category == "land" {
+			altCategory = "naval"
+		}
+		_, _, altOK, altErr := province.FindPath(r.Context(), tx, worldID, originPos, targetPos, altCategory)
+		if altErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not verify the army's route")
+			return
+		}
+		if altOK {
+			category, pathOK = altCategory, true
+		}
+	}
+	if !pathOK {
+		slog.Error("recall: no route connects march origin to target under either category — march data may be stale or corrupt",
+			"march_id", marchID, "origin", originPos, "target", targetPos)
+		writeError(w, http.StatusUnprocessableEntity,
+			"could not verify a route for this army between its recorded start and destination under either land or naval movement — this is a data problem, not a timing problem; the recall was not sent")
+		return
+	}
+
+	// Aim the recall messenger at an honest interception point along the
+	// army's route — never blindly at its destination (the old bug this
+	// handler carried: see the doc comment on RecallMarchPayload below).
+	// Command is never instant: the messenger must be physically ABLE to
+	// catch the army before it completes its march, or the order is refused
+	// now, visibly, instead of racing to a silent miss.
+	interceptPos, interceptOK, err := messenger.InterceptCourierTarget(r.Context(), tx, worldID,
+		originPos, originPos, targetPos, category, march.DepartsAt, march.ArrivesAt, h.clk.Now())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve recall interception")
+		return
+	}
+	if !interceptOK {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("no messenger can catch this army before it completes its march (arrives %s) — wait for it to arrive, then issue a fresh order",
+				march.ArrivesAt.Local().Format(time.RFC3339)))
+		return
+	}
+
+	// marching_armies.target_id is a NOT NULL FK to provinces, and every map
+	// hex has a province row — resolve the interception hex's province id so
+	// the return march RecallArrivalHandler.handleMarch creates can use it as
+	// its departure point.
+	var interceptProvinceID uuid.UUID
+	if err := tx.QueryRow(r.Context(),
+		`SELECT id FROM provinces WHERE world_id = $1 AND map_q = $2 AND map_r = $3`,
+		worldID, interceptPos.Q, interceptPos.R,
+	).Scan(&interceptProvinceID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve interception province")
+		return
+	}
+
+	// Dispatch a visible recall messenger toward the interception hex, not the
+	// army's full destination — messenger_travel_ticks below is honestly the
+	// courier's time to THAT point.
 	recallTravelTicks, recallTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
-		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: tQ, R: tR})
+		originPos, interceptPos)
 	messengerArrivesAt := h.clk.Now().Add(recallTravelDur)
 
 	var marchRecallCurrentTick int
@@ -3102,7 +3188,7 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		 VALUES ($1,$2,$3,NULL,$4,'outbound','recall',$5,$6,$7,$8,$9)
 		 RETURNING id`,
 		worldID, playerID, originSettlementID, "Recall order — return home.",
-		oQ, oR, tQ, tR, messengerArrivesAt,
+		oQ, oR, interceptPos.Q, interceptPos.R, messengerArrivesAt,
 	).Scan(&messengerID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch recall messenger")
 		return
@@ -3122,10 +3208,10 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		Merchantman:   march.Merchantman,
 		OriginQ:       oQ,
 		OriginR:       oR,
-		TargetQ:       tQ,
-		TargetR:       tR,
+		TargetQ:       interceptPos.Q,
+		TargetR:       interceptPos.R,
 		OriginID:      march.OriginID,
-		TargetID:      march.TargetID,
+		TargetID:      interceptProvinceID,
 	}
 	// Messenger row + recall-arrival event committed atomically.
 	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledRecallArrival,
