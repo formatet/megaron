@@ -105,7 +105,7 @@ export function initWS() {
     const PERSISTENT_KINDS = new Set([
       'BuildComplete','GoodsCrafted','TrainComplete','ArmyArrival','ColonyFounded',
       'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
-      'UnitAttrition','UnitDeserted','OfferAccepted','OfferDeclined','OfferExpired',
+      'UnitAttrition','UnitDeserted','UpkeepUnpaid','OfferAccepted','OfferDeclined','OfferExpired',
     ]);
     ws.onmessage = e => {
       State.lastWsMsgAt = Date.now();
@@ -151,6 +151,13 @@ export function initWS() {
         // Units bleeding out from grain/silver shortage — previously silent.
         window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
+      }
+      if (msg.kind === 'UpkeepUnpaid') {
+        // Forewarning BEFORE desertion starts (SLICE A) — unlike UnitAttrition/
+        // UnitDeserted above, no unit size/status changed (only unpaid_periods,
+        // not shown in any drawer), so there's nothing to refetch — just the
+        // chip, which is the entire point of this notification existing.
+        window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
       if (['OfferAccepted','OfferDeclined','OfferExpired'].includes(msg.kind)) {
         // Trade offer resolution — the offer's originator (see economy/trade.go,

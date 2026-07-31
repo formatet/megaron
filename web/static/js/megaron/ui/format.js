@@ -75,6 +75,7 @@ export function notifIcon(kind) {
     MessengerArrival:   '✉',
     UnitAttrition:      '💀',
     UnitDeserted:       '🏃',
+    UpkeepUnpaid:       '⚠',
     SubsistenceWarning: '🌾',
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
@@ -123,6 +124,17 @@ export function notifText(kind, body) {
     case 'UnitDeserted':       return body.disbanded
                                  ? `${body.unit_type || 'A unit'} deserted — unpaid, unit lost`
                                  : `${body.unit_type || 'A unit'} deserting — ${body.lost || 0} left (unpaid)`;
+    case 'UpkeepUnpaid': {
+      // Forewarning fired BEFORE desertion starts (SLICE A) — recordUnpaid's
+      // else-branch used to bump unpaid_periods with zero player-facing signal
+      // until desertion itself fired two speldygn later. periods_until_desertion
+      // counts down to the final, urgent period.
+      const left = body.periods_until_desertion;
+      const tail = left === 1
+        ? ' — one more unpaid period and they desert'
+        : ` — ${left} periods left before desertion`;
+      return `${body.unit_type || 'A unit'} unpaid (period ${body.unpaid_periods || 0})${tail}`;
+    }
     case 'SubsistenceWarning': {
       // Payload per kharis.emitSubsistenceWarning: name, tier, net_per_day,
       // days_left, pop_loss. Never a percent — days and grain/day only.
