@@ -555,14 +555,18 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// foundColony in unit_arrival.go). Explicit param rather than inferring
 	// from ?pop= so the semantics are self-documenting.
 	starterFarm := r.URL.Query().Get("starter_farm") == "1"
+	// goods["fish"]/withFarm["fish"] are the same value either way — no fish
+	// production_rule is farm-gated, so assuming a farm never changes fish's
+	// catchment potential (AK5: a hex with water forecasts a higher net than
+	// the same hex without, via economy.FoodConsumptionSplit).
 	basePerTick, estNetPerTick := economy.FoundingGrainNetPerTick(
-		goods["grain"], withFarm["grain"], forecastPop, starterFarm)
+		goods["grain"], withFarm["grain"], goods["fish"], forecastPop, starterFarm)
 	// with_farm_per_tick reports labor-scaled with-farm PRODUCTION (not net) —
 	// the client derives consumption itself as base_per_tick − est_net_per_tick,
 	// so this must stay on the same "production" footing for the colony hint
 	// ("bygg en farm") to read coherently.
 	withFarmProdPerTick, _ := economy.FoundingGrainNetPerTick(
-		withFarm["grain"], withFarm["grain"], forecastPop, true)
+		withFarm["grain"], withFarm["grain"], goods["fish"], forecastPop, true)
 
 	var daysUntilEmpty *float64
 	if estNetPerTick < 0 {

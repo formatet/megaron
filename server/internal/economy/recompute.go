@@ -85,6 +85,49 @@ func GrainConsumptionPerTick(pop int) float64 {
 	return float64(pop) * GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
 }
 
+// FoodConsumptionSplit applies the population's food invariant to a
+// settlement's raw (pre-consumption) grain and fish production: the
+// population has ONE food need, demand, covered by grain first and by fish
+// for whatever grain does not reach — never by anything else, and the army's
+// upkeep path (internal/combat/upkeep.go) never touches fish at all.
+//
+//	grainShare = min(demand, grainProd)
+//	rest       = demand - grainShare
+//	fishShare  = min(rest, fishProd)
+//	grainNet   = grainProd - grainShare - (rest - fishShare)  // any shortfall stays on grain
+//	fishNet    = fishProd  - fishShare
+//
+// Pure and side-effect free (no DB, no clock) on purpose: RecomputeProduction,
+// FoundingGrainNetPerTick, and read-only callers (the status endpoint's
+// grain-netto breakdown, api/handlers/province.go) all share this one
+// implementation instead of three copies that can drift apart.
+//
+// KNOWN LIMIT (Timothy 2026-07-31, confirmed wrong, deliberately deferred —
+// booked in megaron_todo.md, NOT this slice): this is production-based, not
+// stock-based. A settlement with zero grain PRODUCTION but a full grain STOCK
+// never draws down that stock as long as current-tick fish production covers
+// the shortfall — grainNet floors at 0 instead of eating the stockpile.
+// Timothy: "Detta måste ju lösas — har man båda ska båda ätas, inte nu men
+// skriv i todo." Keeping this function pure (demand/grainProd/fishProd in,
+// grainNet/fishNet out) means a future stock-aware version can swap its
+// inputs for (amount,rate,calc_tick) reads without touching
+// RecomputeProduction's SQL, FoundingGrainNetPerTick, or any of this
+// function's callers.
+func FoodConsumptionSplit(demand, grainProd, fishProd float64) (grainNet, fishNet float64) {
+	grainShare := demand
+	if grainProd < grainShare {
+		grainShare = grainProd
+	}
+	rest := demand - grainShare
+	fishShare := rest
+	if fishProd < fishShare {
+		fishShare = fishProd
+	}
+	grainNet = grainProd - grainShare - (rest - fishShare)
+	fishNet = fishProd - fishShare
+	return grainNet, fishNet
+}
+
 // PopCosts mirrors province/training.go:UnitSpecs.PopCost.
 // Defined here so economy stays Go-import-free upward (G1).
 // galley = standardgalär (mig 084 renamed the canonical units.type key from
@@ -318,10 +361,18 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// never exceeds the grain cap and a self-sufficient city sits at a stable
 	// positive stock instead of sawtoothing to zero every day. laborPool is the
 	// non-negative population (Σ eaters). See events.TicksPerDay for calibration.
+	//
+	// Fisk-föder-befolkningen (2026-07-31): the population's food need is covered
+	// by grain FIRST, then by fish for whatever grain does not reach — see
+	// FoodConsumptionSplit. The army's upkeep path never touches fish (it debits
+	// settlement_goods good_key='grain'/'silver' only — internal/combat/upkeep.go).
 	grainConsumptionPerTick := GrainConsumptionPerTick(laborPool)
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
-	grainSeen := false
+	// 5a. Raw (pre-consumption) production per good, from labor allocation alone
+	// — exactly RecomputeProduction's pre-Fas-2 formula, unchanged for every good
+	// except grain/fish, which get the food-invariant split applied below.
+	rawRates := make(map[string]float64, len(potentials))
 	for _, gp := range potentials {
 		staffed := weights[gp.key]
 		if cap := LaborCapacity(gp.key, gp.hasFieldPath, buildingLevels[gp.key]); staffed > cap {
@@ -329,10 +380,25 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 		effectiveWorkers := staffed * float64(laborPool)
 		yieldPerWorker := gp.basePotential / REF_LABOR
-		newRate := yieldPerWorker * effectiveWorkers
-		if gp.key == "grain" {
-			newRate -= grainConsumptionPerTick // net = production − consumption
-			grainSeen = true
+		rawRates[gp.key] = yieldPerWorker * effectiveWorkers
+	}
+	_, grainSeen := rawRates["grain"]
+
+	// 5b. The food invariant: grain first, fish for the rest. grainProd/fishProd
+	// default to 0 via Go's zero value when the catchment has no matching tile
+	// for that good (map lookup on a missing key) — exactly the "no water" /
+	// "no plains" case AK2/AK1 exercise.
+	grainNet, fishNet := FoodConsumptionSplit(grainConsumptionPerTick, rawRates["grain"], rawRates["fish"])
+
+	// 5c. Write every producible good's rate — grain and fish get their
+	// food-invariant net; everything else keeps its raw rate unchanged.
+	for _, gp := range potentials {
+		newRate := rawRates[gp.key]
+		switch gp.key {
+		case "grain":
+			newRate = grainNet
+		case "fish":
+			newRate = fishNet
 		}
 
 		// Settle existing amount at old rate, then overwrite rate + calc_tick.
@@ -351,8 +417,10 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 
 	// A settlement with population but no grain-producing catchment still eats:
-	// write a grain row with a pure-consumption (negative) net rate so neglected
-	// non-farming cities drain and starve as designed.
+	// write a grain row with the food-invariant net rate (fish already deducted
+	// via the split above, so a coastal-but-farmless city still gets fish
+	// relief) so neglected non-farming, non-fishing cities drain and starve as
+	// designed.
 	if !grainSeen && grainConsumptionPerTick > 0 {
 		if _, err := tx.Exec(ctx,
 			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
@@ -362,7 +430,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			                 GREATEST(0, settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick))),
 			     rate    = $2,
 			     calc_tick = current_world_tick()`,
-			settlementID, -grainConsumptionPerTick, goodCap("grain"),
+			settlementID, grainNet, goodCap("grain"),
 		); err != nil {
 			return fmt.Errorf("recompute: upsert grain consumption: %w", err)
 		}

@@ -365,6 +365,11 @@ func statusCmd() *cobra.Command {
 						"Netto", netG, netS, warn)
 				}
 
+				// Fish (fisk-föder-befolkningen, 2026-07-31): a coastal/river
+				// city's fish covers whatever grain does not reach — surfaced
+				// here so a Wanax can see the second half of their food
+				// balance, not just grain's already-netted line above.
+				printRes("Fish", "fish", false)
 				printRes("Timber", "timber", false)
 				printRes("Stone", "stone", false)
 				printRes("Copper", "copper", false)
