@@ -14,7 +14,7 @@ func TestFoundingGrainNetPerTick_Regression(t *testing.T) {
 	// per tick, so an unscaled "base - consumption" netto goes negative. But the
 	// metropolis gets a starter farm (withFarmBase=6.0), and once labor-scaled
 	// by 0.85×4000/REF_LABOR the real production dwarfs consumption.
-	_, netPerTick := FoundingGrainNetPerTick(2.4, 6.0, 4000, true)
+	_, netPerTick := FoundingGrainNetPerTick(2.4, 6.0, 0, 4000, true)
 	if netPerTick <= 0 {
 		t.Fatalf("expected positive labor-scaled net grain rate, got %v", netPerTick)
 	}
@@ -26,7 +26,7 @@ func TestFoundingGrainNetPerTick_Regression(t *testing.T) {
 func TestFoundingGrainNetPerTick_MirrorsRecomputeProduction(t *testing.T) {
 	withFarmBase := 6.0
 	pop := 4000
-	prodPerTick, _ := FoundingGrainNetPerTick(2.4, withFarmBase, pop, true)
+	prodPerTick, _ := FoundingGrainNetPerTick(2.4, withFarmBase, 0, pop, true)
 	want := (withFarmBase / REF_LABOR) * (FoundingGrainLaborWeight * float64(pop))
 	if prodPerTick != want {
 		t.Fatalf("prodPerTick = %v, want %v (RecomputeProduction formula)", prodPerTick, want)
@@ -40,7 +40,7 @@ func TestFoundingGrainNetPerTick_ColonyNoFarm(t *testing.T) {
 	buildingFreeBase := 2.4
 	withFarmBase := 6.0
 	pop := 1500
-	prodPerTick, _ := FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, pop, false)
+	prodPerTick, _ := FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, 0, pop, false)
 	want := (buildingFreeBase / REF_LABOR) * (FoundingGrainLaborWeight * float64(pop))
 	if prodPerTick != want {
 		t.Fatalf("prodPerTick = %v, want %v (should use buildingFreeBase, not withFarmBase)", prodPerTick, want)
@@ -51,9 +51,41 @@ func TestFoundingGrainNetPerTick_ColonyNoFarm(t *testing.T) {
 // using the shared GrainConsumptionPerTick helper.
 func TestFoundingGrainNetPerTick_Consumption(t *testing.T) {
 	pop := 4000
-	prodPerTick, netPerTick := FoundingGrainNetPerTick(2.4, 6.0, pop, true)
+	prodPerTick, netPerTick := FoundingGrainNetPerTick(2.4, 6.0, 0, pop, true)
 	want := prodPerTick - GrainConsumptionPerTick(pop)
 	if netPerTick != want {
 		t.Fatalf("netPerTick = %v, want %v (production - consumption)", netPerTick, want)
+	}
+}
+
+// TestFoundingGrainNetPerTick_FishRaisesNet is AK5's founding-forecast half: a
+// hex with water in the catchment (fishBase > 0) must forecast a HIGHER net
+// than the identical hex without water, because fish covers whatever grain
+// does not reach. Mirrors the AK1 shape (grain alone insufficient) at
+// founding-preview scale.
+func TestFoundingGrainNetPerTick_FishRaisesNet(t *testing.T) {
+	buildingFreeBase := 1.0 // deliberately low: grain alone will not cover demand
+	withFarmBase := 1.0
+	pop := 1500
+
+	_, netNoWater := FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, 0, pop, false)
+	_, netWithWater := FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, 20.0, pop, false)
+
+	if netWithWater <= netNoWater {
+		t.Fatalf("water in the catchment must forecast a higher net: no-water=%v, with-water=%v",
+			netNoWater, netWithWater)
+	}
+}
+
+// TestFoundingGrainNetPerTick_FishNeverAffectsGrainProduction pins that
+// prodPerTick (grain's OWN production) stays on the "production" footing
+// api/handlers/world.go's with_farm_per_tick contract depends on — fish must
+// never leak into the grain production figure, only into the net.
+func TestFoundingGrainNetPerTick_FishNeverAffectsGrainProduction(t *testing.T) {
+	pop := 1500
+	prodNoFish, _ := FoundingGrainNetPerTick(2.4, 6.0, 0, pop, true)
+	prodWithFish, _ := FoundingGrainNetPerTick(2.4, 6.0, 20.0, pop, true)
+	if prodNoFish != prodWithFish {
+		t.Fatalf("fishBase must not affect prodPerTick: no-fish=%v, with-fish=%v", prodNoFish, prodWithFish)
 	}
 }

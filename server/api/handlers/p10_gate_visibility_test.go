@@ -7,10 +7,11 @@ package handlers
 // rite/kharis, war_chariot+elite_infantry/bronze — were already fully
 // visible on inspection, see the soak-fix report):
 //
-//   - winery's ENTIRE production is gated to a hills tile in catchment (its
-//     only production_rules row is terrain_type='hills', no NULL-terrain
-//     fallback) — built off-hills it silently produces nothing. Now exposed
-//     as BuildingCatalogue's requires_terrain field.
+//   - winery's ENTIRE production is gated to a hills/plains/scrub_maquis tile
+//     in catchment (mig 103 — every production_rules row for winery names a
+//     terrain, no NULL-terrain fallback) — built off those terrains it
+//     silently produces nothing. Now exposed as BuildingCatalogue's
+//     requires_terrain field.
 //   - the build queue's concurrent-slot cap (province.go's maxParallelBuilds)
 //     only ever appeared in the 422 refusing a 3rd build. Now exposed as
 //     province Get's build_queue_max field, alongside the existing
@@ -74,13 +75,23 @@ func TestBuildingCatalogue_ExposesTerrainGate(t *testing.T) {
 		byType[b.Type] = b.RequiresTerrain
 	}
 
+	// mig 103 (druvor-utanfor-hills): winery's rows now name hills, plains and
+	// scrub_maquis — still genuinely terrain-gated (no NULL-terrain fallback),
+	// just no longer hills-only. Alphabetical, per BuildingCatalogue's sort.
+	wantWinery := []string{"hills", "plains", "scrub_maquis"}
 	winery, ok := byType["winery"]
 	if !ok {
 		t.Fatal("no winery entry in building catalogue")
 	}
-	if len(winery) != 1 || winery[0] != "hills" {
-		t.Errorf(`winery requires_terrain = %v, want ["hills"] — its only production_rules row `+
-			`is terrain_type='hills' with no fallback rule, so off-hills it produces nothing at all`, winery)
+	if len(winery) != len(wantWinery) {
+		t.Errorf("winery requires_terrain = %v, want %v", winery, wantWinery)
+	} else {
+		for i := range wantWinery {
+			if winery[i] != wantWinery[i] {
+				t.Errorf("winery requires_terrain = %v, want %v", winery, wantWinery)
+				break
+			}
+		}
 	}
 
 	// farm ÄR terräng-gatead, tvärtemot vad det här testet ursprungligen

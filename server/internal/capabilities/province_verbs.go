@@ -12,9 +12,11 @@ import (
 // all, only a resource cost, which capabilities does not check (see craft/
 // recruit for the affordance pattern this DOES apply to). The building types
 // that DO carry a live structural gate (harbour: coastal; mine/silver_mine:
-// catchment deposit; winery: hills terrain, P10 soak 2026-07-18 — its only
-// production_rules row is terrain-locked with no fallback, so off-hills it
-// silently produces nothing) are already fully surfaced by the existing
+// catchment deposit; winery: hills/plains/scrub_maquis terrain (mig 103 —
+// vin odlas i hela Medelhavet, hills behåller övertaget), P10 soak
+// 2026-07-18 — its production_rules rows are all terrain-locked with no
+// NULL-terrain fallback, so off those terrains it silently produces
+// nothing) are already fully surfaced by the existing
 // `keryx build --list` / `GET /buildings` catalogue (requires_coastal /
 // requires_deposits / requires_terrain per type), same for the build queue's
 // concurrent-slot cap (`keryx build --queue` / Get's build_queue_max) — the

@@ -14,7 +14,7 @@ type BuildingSpec struct {
 // BuildingPurposes is a short human-readable description of each building's role,
 // exposed via GET /api/v1/buildings and the CLI `build --list`.
 var BuildingPurposes = map[BuildingType]string{
-	BuildingFarm:        "Raises grain and oil production from plains; wine from hills",
+	BuildingFarm:        "Raises grain and oil production from plains; wine from hills and plains",
 	BuildingBarracks:    "Enables recruiting spearmen and war chariots",
 	BuildingMine:        "Extracts copper or tin from ore deposits in catchment (requires deposit)",
 	BuildingSilverMine:  "Extracts silver from silver deposits in catchment (requires deposit)",
@@ -27,7 +27,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingStable:      "Produces horses and enables war chariots",
 	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
 	BuildingOlivePress:  "Increases oil production from olive groves, plains and hills",
-	BuildingWinery:      "Increases wine production from hills",
+	BuildingWinery:      "Increases wine production from hills, plains and scrub",
 }
 
 // BuildingSpecs is the canonical catalogue of all constructable buildings.
