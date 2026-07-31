@@ -592,13 +592,38 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			float64(grainCalcTick), currentTick, h.sitosCfg)
 		taxRatePerTick := float64(sett.Population) * h.sitosCfg.TaxRate / float64(events.TicksPerDay)
 
+		// Catchment base potentials (actual buildings) — read once, shared by the
+		// grain-netto breakdown below and the break-even weight further down.
+		basePots, basePotsErr := economy.CatchmentBasePotential(r.Context(), h.pool, sett.ID)
+
 		// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md): the
-		// stored grain rate is already NET (production − consumption, folded in
-		// RecomputeProduction) — reconstruct the two components from the same
-		// consumption formula rather than re-running a recompute, so `status` can
-		// show "prod X − konsum Y = netto Z" instead of one unmarked number.
+		// stored grain rate is already NET. Fisk-föder-befolkningen (2026-07-31,
+		// internal/economy/recompute.go, economy.FoodConsumptionSplit) means
+		// grain no longer necessarily absorbs the population's WHOLE food need —
+		// fish covers whatever grain does not reach, so "consumption = full food
+		// need" would falsely show a fish-fed city as grain-self-sufficient (a
+		// city with zero grain production but a fish surplus would otherwise
+		// read "prod D − konsum D = netto 0", implying grain fed everyone).
+		// Reconstruct grain's OWN production (same catchment/weight formula
+		// RecomputeProduction uses — grain's LaborCapacity is exempt, always
+		// 1.0, so no capacity clamp is needed) and derive grain's actual
+		// consumption as the residual against the authoritative stored net rate
+		// — prod − consum = netto stays exact by construction, with netto
+		// always the DB's own number, never re-derived. Falls back to "full
+		// food need" (the pre-fisk-slice formula) if the catchment read fails —
+		// best-effort, never blocks status on a DB hiccup.
 		grainConsumRate := float64(laborPool) * economy.GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
 		grainProdRate := grainRate + grainConsumRate
+		if basePotsErr == nil {
+			var grainWeight float64
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT COALESCE((SELECT weight FROM settlement_labor
+				                  WHERE settlement_id = $1 AND good_key = 'grain'), 0)`,
+				sett.ID,
+			).Scan(&grainWeight)
+			grainProdRate = (basePots["grain"] / economy.REF_LABOR) * grainWeight * float64(laborPool)
+			grainConsumRate = grainProdRate - grainRate
+		}
 
 		// Break-even grain labor-weight for this settlement's catchment
 		// (pop-independent — see DEL C step 4): the minimum grain weight that
@@ -607,7 +632,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// never drifts from the real production formula. nil when the catchment
 		// can't produce grain at all (no plains/farm tile) — no weight helps.
 		var breakevenGrainWeight *float64
-		if basePots, bperr := economy.CatchmentBasePotential(r.Context(), h.pool, sett.ID); bperr == nil {
+		if basePotsErr == nil {
 			if basePotGrain := basePots["grain"]; basePotGrain > 0 {
 				be := economy.GrainConsumptionPerCitizenPerDay * economy.REF_LABOR /
 					(basePotGrain * float64(events.TicksPerDay))
