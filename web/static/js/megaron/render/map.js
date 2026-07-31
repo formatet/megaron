@@ -4,13 +4,14 @@ import { track } from '../telemetry.js';
 import { serverNow } from '../clock.js';
 import {
   LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS, LOCAL_ZOOM,
-  GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM, ZOOM_MIN, ZOOM_MAX,
+  GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM,
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns } from './actorsprites.js';
 import { drawCityMass, citySprite, CITY_BASE_OFFSET } from './citysprites.js';
+import { zoomStep } from './camera.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -3438,19 +3439,16 @@ export function refreshTiles() {
 }
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
-// Single source of truth for the zoom clamp — was previously duplicated
-// between zoom() and the wheel handler in initMap(), which is why raising
-// the floor in only one of them didn't fix Timothy's "zooms out too far"
-// report (2026-07-25). Bounds themselves are named calibration in config.js.
-function clampZoom(z) {
-  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z));
-}
-
+// clampZoom + the translate-with-effective-factor arithmetic live in
+// camera.js (a pure module, importable outside the browser for tests) —
+// see there for why the camera's translation must use the CLAMPED factor,
+// not the requested one.
 export function zoom(factor) {
   const cx = canvas.width/2, cy = canvas.height/2;
-  State.camera.x = cx + (State.camera.x - cx) * factor;
-  State.camera.y = cy + (State.camera.y - cy) * factor;
-  State.camera.zoom = clampZoom(State.camera.zoom * factor);
+  const next = zoomStep(State.camera, factor, cx, cy);
+  State.camera.x = next.x;
+  State.camera.y = next.y;
+  State.camera.zoom = next.zoom;
   State.dirty = true;
 }
 export function resetView() {
@@ -3996,9 +3994,10 @@ export function initMap() {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left, my = e.clientY - rect.top;
     const factor = e.deltaY < 0 ? 1.1 : 0.91;
-    State.camera.x = mx + (State.camera.x - mx) * factor;
-    State.camera.y = my + (State.camera.y - my) * factor;
-    State.camera.zoom = clampZoom(State.camera.zoom * factor);
+    const next = zoomStep(State.camera, factor, mx, my);
+    State.camera.x = next.x;
+    State.camera.y = next.y;
+    State.camera.zoom = next.zoom;
     State.dirty = true;
   }, {passive:false});
 
