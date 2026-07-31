@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math/rand"
 
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
@@ -65,21 +66,71 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		}
 	}
 
+	// Trade risk: exactly the same rule as the outbound leg (isInternalTransfer +
+	// tradeRiskPct, trade.go) — a negotiated trade between two wanaxes is external
+	// on BOTH legs (CLAUDE.md trade-lagret punkt 2/3), so the return leg must not
+	// silently skip the die just because it's the second half of the round trip.
+	// tradeRouteID is always zero here (this leg has no trade_routes row); origin
+	// is resolved from the return caravan's own transports.origin_id — the
+	// settlement that is sending this leg back — via isInternalTransfer's existing
+	// transport-based lookup. No transport (legacy event) ⇒ unresolvable ⇒ external
+	// (fail-external, never guess internal).
+	if !isInternalTransfer(ctx, tx, uuid.UUID{}, p.TransportID, p.DestinationID) && rand.Float64() < tradeRiskPct {
+		reason := tradeLostReasons[rand.Intn(len(tradeLostReasons))]
+		if p.TransportID != (uuid.UUID{}) {
+			if _, err = tx.Exec(ctx,
+				`UPDATE transports SET status = 'lost', updated_at = now() WHERE id = $1`, p.TransportID,
+			); err != nil {
+				return fmt.Errorf("mark lost return transport: %w", err)
+			}
+		}
+		// Mark the offer's round trip concluded so a retry of this event (or the
+		// auto-return path) doesn't re-roll — same terminal flip as the success
+		// path below, just without ever crediting the buyer.
+		if _, err = tx.Exec(ctx,
+			`UPDATE messengers SET trade_offer = trade_offer || '{"status":"returned"}' WHERE id=$1`,
+			p.MessengerID,
+		); err != nil {
+			return fmt.Errorf("mark returned (lost): %w", err)
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return fmt.Errorf("commit loss: %w", err)
+		}
+		_, _ = h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeLost",
+			map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason, "messenger_id": p.MessengerID},
+			e.WorldID, nil, // e.ID is a scheduled_events id, not an events(id) — would break events_causation_fkey.
+		)
+		if h.hub != nil {
+			var ownerID uuid.UUID
+			_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.DestinationID).Scan(&ownerID)
+			_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TradeLost", 3, map[string]any{
+				"destination_id": p.DestinationID,
+				"good_key":       p.GoodKey,
+				"quantity":       p.Quantity,
+				"reason":         reason,
+			})
+		}
+		slog.Info("trade return lost", "messenger", p.MessengerID, "good", p.GoodKey, "reason", reason)
+		return nil
+	}
+
 	// Credit goods to buyer — silver is now a normal good in settlement_goods.
-	// cap 1_000_000 for a brand-new row matches economy.goodCap (post-00d0722; never
-	// reintroduce the cap-100 bug — this literal was stale until 2026-07-24, silently
-	// truncating a second trade delivery of a good the settlement had never held
-	// before down to 100, see trade_delivery_stale_cap_test.go).
+	// cap = goodCap(good), matching every other credit path (arrival.go, trade.go,
+	// province.go Craft). Previously hard-coded 1_000_000 inline here — same value
+	// as goodCap() today, so not presently truncating anything, but a literal that
+	// silently drifts from goodCap() the day that function's return value changes
+	// is exactly the failure class trade_delivery_stale_cap_test.go documents
+	// (cap=100 before 2026-07-24). Routed through the shared function instead.
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, $2, $3, 0, 1000000, current_world_tick())
+		 VALUES ($1, $2, $3, 0, $4, current_world_tick())
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = LEAST(
 		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
 		             + $3,
 		         settlement_goods.cap),
 		     calc_tick = current_world_tick()`,
-		p.DestinationID, p.GoodKey, p.Quantity,
+		p.DestinationID, p.GoodKey, p.Quantity, goodCap(p.GoodKey),
 	); err != nil {
 		return fmt.Errorf("credit goods to buyer: %w", err)
 	}
