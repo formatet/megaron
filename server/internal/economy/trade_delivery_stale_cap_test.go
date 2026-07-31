@@ -39,7 +39,7 @@ func TestTradeDelivery_StaleCapTruncatesSecondDelivery(t *testing.T) {
 	ctx := context.Background()
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-stalecap-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover worlds: %v", err)
 	}
@@ -137,7 +137,7 @@ func TestTradeReturn_StaleCapTruncatesSecondDelivery(t *testing.T) {
 	ctx := context.Background()
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-stalecapret-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover worlds: %v", err)
 	}

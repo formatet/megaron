@@ -17,6 +17,11 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
+	); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
 	var worldID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,

@@ -57,7 +57,7 @@ func TestUnitLoad_RouteParamNameMatchesRouter(t *testing.T) {
 	// active test worlds must be archived first (one_active_world partial
 	// unique index).
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

@@ -64,7 +64,7 @@ func setupMarchRecallWorld(t *testing.T, elapsed time.Duration) (marchRecallFixt
 	// unique index) — RecallMarch's current_world_tick() call needs an
 	// active world, or the whole tx aborts with 25P02.
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

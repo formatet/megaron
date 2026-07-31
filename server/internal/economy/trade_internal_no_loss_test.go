@@ -60,7 +60,7 @@ func mkTradeSettlement(t *testing.T, pool *pgxpool.Pool, ctx context.Context, wo
 func mkTradeWorld(t *testing.T, pool *pgxpool.Pool, ctx context.Context) uuid.UUID {
 	t.Helper()
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-triskloss-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover worlds: %v", err)
 	}

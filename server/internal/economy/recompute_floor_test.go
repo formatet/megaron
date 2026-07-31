@@ -18,7 +18,7 @@ func recomputeFixture(t *testing.T, currentTick, pop int, grainAmount, grainRate
 	ctx := context.Background()
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-recompute-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover test worlds: %v", err)
 	}

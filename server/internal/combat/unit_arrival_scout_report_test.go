@@ -24,7 +24,7 @@ func TestExploreOrder_ScoutReport(t *testing.T) {
 
 	// Single-active-world invariant (same guard as TestExploreOrder_AutoReturn).
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

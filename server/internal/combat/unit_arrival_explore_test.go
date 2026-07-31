@@ -25,7 +25,7 @@ func TestExploreOrder_AutoReturn(t *testing.T) {
 	// current_world_tick() (used by exploreArrived to schedule the return leg)
 	// reads the single active world, enforced by a partial unique index.
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

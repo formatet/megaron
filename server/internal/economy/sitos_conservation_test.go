@@ -35,7 +35,7 @@ func sitosFixture(t *testing.T, pool *pgxpool.Pool, ctx context.Context, current
 	t.Helper()
 	// Free the one_active_world partial unique index from any leftover of ours.
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-sitos-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover test worlds: %v", err)
 	}

@@ -82,7 +82,7 @@ func starvationWarningFixture(t *testing.T, grainAmount, grainRate float64) (wor
 	ctx := context.Background()
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-starvewarn-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover test worlds: %v", err)
 	}
