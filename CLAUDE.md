@@ -2,94 +2,27 @@
 
 Config file, not a knowledge base. **Instructions + pointers only — facts live in the vault and the code.**
 If code and this file conflict, trust the code, then fix this file.
-
-**Three authority levels — keep them un-blurred (this is the rule that keeps this file honest):**
-- **MUST** — invariant constraints; wrong → broken code/build. These earn their always-on space.
-- **PREFER** — directions; genuine instructions but low-frequency → keep as a *pointer*, not prose (`temenos_riktningar.md`).
-- **Calibration numbers** (thresholds, %, ranges, enums) are *not* instructions — they live in code/vault, read on
-  demand. **Never quote a tunable number here as if it were an invariant** (a `≥3` beside the word "invariant" makes
-  an agent refuse to tune it — that is the exact bug this rule prevents).
+**Never quote a tunable number here as if it were an invariant** — thresholds, %, ranges and enums are
+read from code or vault on demand. A `≥3` beside the word "invariant" makes an agent refuse to tune it.
 
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
-- **Before ending a session:** update `megaron_todo.md` — four queues with caps: **NU** (≤5, blocks the
-  main gate) · **BESLUT** (≤7, needs Timothy) · **VERIFIERING** (built, not yet proven) · **SENARE**.
-  Not a diary. Group new observations by likely shared root before writing any of them down.
 - **The main gate:** a competent player completes geografi → brist → brons → elit in one session, via web
   and keryx, with no developer intervention. Mark every piece of work *blocks* / *proves* / *waits for* it.
+- **Before ending a session:** update `megaron_todo.md` — four queues with caps (NU ≤5 · BESLUT ≤7 ·
+  VERIFIERING · SENARE). Not a diary. Group new observations by likely shared root before writing them down.
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
-- **When you mark something done in `megaron_todo.md`:** stamp it with the **actual** wall-clock time pulled from
-  plain `date` — it reads Windows' local zone (Stockholm), DST and all, correctly. **Never pass a `TZ=` prefix:**
-  git-for-Windows ships no zoneinfo DB (`/usr/share/zoneinfo` doesn't exist), so `TZ=Europe/Stockholm date` can't
-  load the zone and silently falls back to UTC (−2h in summer). Never a guessed or remembered time — your internal
-  time-sense drifts; anchor every completion (and "live since"/reseed note) to the real clock. Format `(YYYY-MM-DD HH:MM)`.
+- **Timestamps:** pull the actual wall clock from plain `date`, never a guessed or remembered time.
+  **Never a `TZ=` prefix** — git-for-Windows ships no zoneinfo DB, so it silently falls back to UTC.
+  Format `(YYYY-MM-DD HH:MM)`.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
-- **Loose design dumps** (e.g. `frågor*` files in repo root) are an inbox, not a home: triage every point
-  into a todo line, a vault update, or a reasoned rejection — then delete the dump. Never leave it rotting in root.
+- **Loose design dumps** are an inbox, not a home: triage every point into a todo line, a vault update or a
+  reasoned rejection — then delete the dump.
 
----
-
-## Working method (MUST — full text: `megaron_arbetssatt.md`, read it before a slice)
-
-Standing instruction from Timothy 2026-07-27. **It takes precedence over local habits where
-those are not explicitly stricter.** The Klafki lens below gates *what* gets built; this gates
-*how*. Always-on core — everything else lives in the vault doc:
-
-- **Contract before code.** Eight lines before touching anything: problem · player truth ·
-  invariant · scope · non-scope · ≤5 acceptance criteria · stop condition · proof plan.
-- **One slice = one of** {domain invariant, data migration, visual family, user flow}. New
-  findings are **booked and triaged, never built in passing.** Two problems share a slice only
-  if they share a root — and the reason gets written down.
-- **Baseline first** (1:1 shot · API payload · DB rows · test result on unchanged master ·
-  commit + migration version). A red baseline is repaired in its own commit or marked a known
-  skip with a reason — **never normalised.**
-- **Judge visuals at 1:1.** Magnification is debugging only. Check 1:1, normal zoom, minimum
-  zoom, colliding terrains, greyscale when value matters, plus determinism and a containment
-  diff. **A detail that only works at 3× is not approved.**
-- **Four gates before merge:** code · visual · semantic (does the client show the same truth
-  the server uses? does it leak past FOW? does the UI promise what the server cannot do?) ·
-  user (a real scenario from the player's entry point, no DB surgery).
-- **Eye-check on the branch, in an isolated world, BEFORE merge** — this replaces
-  merge→deploy→eye-check. **The shared live world is never the first full integration test.**
-- **Deploy is reproduction, not discovery:** verify the running commit, healthz from the *new*
-  process, migration version + `dirty=false`, the served assets, a clean log, and a smoke run
-  that reproduces the pre-merge proof. **Healthz 200 alone is not verification.**
-- **Follow a new data invariant through the whole lifecycle** — every INSERT path *and* every
-  `UPDATE <table> SET <state column>`, backfill, owner change, conquest, collapse, NULL/stale,
-  API, web, keryx, workers, fixtures. **A silent fallback that guesses a value is a bug that
-  does not crash.**
-- **Stop and ask Timothy on canon** (game model, mechanical terminology, FOW leakage, kharis
-  semantics, oikos/kingdoms, support/home, conquest/collapse/desertion, economic gates,
-  persistent event semantics, anything marked post-MVP). Give the conflict, 2–3 options, each
-  consequence, your recommendation, and what can proceed regardless.
-- **Finish with a proof package** — problem, solution, before/after, diff, an API or DB proof,
-  a run-through, tests, known limits, exact commit. **If it doesn't fit on roughly one screen,
-  the slice was too big.**
-- **Document roles stay separate** (normative · process report · todo · backlog · drift).
-  A normative doc **links** to the report; it never retells it.
-
----
-
-## Design lens — Klafki (gate before building / triaging a feature)
-
-Klafkis bärande idé (*kategoriale Bildung*): innehåll förtjänar plats bara om det **öppnar världen** —
-en dubbelsidig öppning (*doppelseitige Erschließung*). Översatt: en mekanik förtjänar kod bara om den
-öppnar bronsåldersvärlden för en Wanax — inte om den bara lägger till en siffra att optimera.
-
-Kör varje mekanik — och varje `frågor`-punkt — genom de fem (buggar gateas ej; de fixas):
-1. **Exemplarisk** — exemplifierar den MVP-kärnan (geografi→brist→handel→diplomati→kult→gudar;
-   **kingdom struket ur MVP-kedjan**, Timothy 2026-07-08 — ytor inaktiveras, se `megaron_web_spelbar_plan.md`),
-   eller är den en engångsgrej vid sidan om? *Faller den här → post-MVP, hur lockande den än är.*
-2. **Nuvärde** — vad betyder den för en Wanax som spelar *idag*? Märks den i upplevelsen?
-3. **Framtidsvärde** — öppnar den designrummet (Eras, Sjöfolket, kingdoms) eller är den en återvändsgränd?
-4. **Sakstruktur** — beståndsdelar, vad den **förutsätter att spelaren redan begriper**, vad den beror på
-   och vad som beror på den, samt vad som är den minimala kärnan att bevara (G1-paketordning, event-modellen).
-   *Deferrar du den som post-MVP: är den **substrat** (nedströms-features förutsätter den) eller **syskon**
-   (vill bara ha den)? En billig delslice av ett substrat är ofta en illusion — kollapsar den ärliga versionen
-   tillbaka till hela motorn finns ingen genväg; då sekvenseras den FÖRST.*
-5. **Det konkreta fallet** — genom vilket *konkret fenomen* möter spelaren den först, och hur blir den
-   begriplig+användbar där (UI, keryx/Lawagetas-röst, actionabla felsträngar — för människa *och* LLM-agent)?
-
-(Vill du ha fyra: slå ihop 2+3 till en enda "betydelse"-fråga. De fem är dock Klafkis kanoniska antal.)
+**How work is done → `megaron_arbetssatt.md`** — standing instruction, takes precedence over local habits.
+Read it before a slice. Core: contract before code · one slice = one thing · baseline first · judge visuals
+at 1:1 · four gates (code/visual/**semantic**/**user**) · **eye-check on the branch before merge** · deploy is
+reproduction, not discovery · follow a data invariant through the whole lifecycle · substrate before sibling ·
+name the concrete surface where the player meets it · stop and ask Timothy on canon · finish with a proof package.
 
 ---
 
@@ -97,27 +30,26 @@ Kör varje mekanik — och varje `frågor`-punkt — genom de fem (buggar gateas
 
 Persistent async multiplayer grand strategy, mythic Bronze Age east Mediterranean. 100 **Wanax** per world,
 each ruling a network of settlements; kingdoms form organically; the world runs whether you're online or not.
-Tone: serious, warm, human-scale. Full setting + rationale: `temenos_worldbuilding.md`, `temenos_designprinciper.md`.
+Tone: serious, warm, human-scale. Setting: `temenos_worldbuilding.md`, `temenos_designprinciper.md`.
+Current status and backlog: `megaron_todo.md` — do not restate them here.
 
-**Name:** project = **Megaron** (game + web-GUI). Server = **Temenos**, CLI = **Keryx**, iOS = **Lawagetas**.
-"Poleia" is being **purged as a word** (Timothy 2026-07-03) — see Naming below. **Kodsvepet är KÖRT
-2026-07-23:** Go-modulen är `formatet/megaron/server`, CLI:t är `cmd/keryx` och binären heter `keryx`.
-Kvar tills det koordinerade infra-svepet: `POLEIA_*`-env, `poleia_token`-cookien, `~/.config/poleia/`,
-`/var/lib/poleia/`, `/opt/poleia`, `poleia.service` och DB-namnet — **commands in this file stay accurate
-to reality until then.** `~/go/bin/poleia` finns kvar som kopia av `keryx` så agentflottan inte bryts.
-
-Current status & backlog live in `megaron_todo.md` — do not restate them here (they go stale).
-
----
+**Names:** project = **Megaron** (game + web). Server = **Temenos**, CLI = **Keryx**, iOS = **Lawagetas**.
+The code sweep is done (module `formatet/megaron/server`, binary `keryx`). **The infra sweep is not** —
+`POLEIA_*` env, `poleia_token` cookie, `~/.config/poleia/`, `/var/lib/poleia/`, `/opt/poleia`,
+`poleia.service` and the DB name are still live, so **commands in this file stay accurate to reality**.
+Runs coordinated with Timothy; see `megaron_namn_hygien.md` §D.
 
 ## Stack
 
 Go 1.22+ · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/websocket · golang-migrate · log/slog · HTMX + vanilla JS.
 
-How to build:
-- **Event sourcing (hybrid — faktiskt kontrakt):** append-only `events`-tabell som audit-/notify-logg. **Endast lojalitet är replay-härledd** (`settlement/loyalty.go` räknar om från events). Resurser, armé, silver, kharis, population muteras med direkta `UPDATE` på projektionstabellerna — `events` är *inte* källa till sanning för dem. Skriv nya events ändå (de driver notiser + audit), men förlita dig inte på att kunna rebuilda settlement-state ur loggen. Mutera atomärt i en TX.
+- **Event sourcing is hybrid.** `events` is an append-only audit/notify log. **Only loyalty is replay-derived**
+  (`settlement/loyalty.go`). Resources, army, silver, kharis and population are mutated with direct `UPDATE`
+  on projection tables — **`events` is not the source of truth for them**, so don't plan on rebuilding
+  settlement state from the log. Write the events anyway (notifications + audit). Mutate atomically in a TX.
 - **Lazy resource eval:** store `(amount, rate_per_minute, calc_at)`, compute on read.
-- **Timed event queue** in PostgreSQL (SKIP LOCKED, worker polls every `min(10s, TickSeconds)`). WebSocket hub per world for push.
+- **Timed event queue** in PostgreSQL (SKIP LOCKED, worker polls every `min(10s, TickSeconds)`).
+  WebSocket hub per world for push.
 
 ---
 
@@ -125,30 +57,27 @@ How to build:
 
 ### Time
 - **Never call `time.Now()` directly** in game/tick logic. All game time goes through `clock.Clock.Now()`.
-- Inject `clock.Clock` via constructor. Use `clock.TestClock` in tests.
-- Only `internal/events` and `main.go` may hold a `*clock.WallClock`.
-- **Sanktionerade väggklocks-undantag** (kodsvep 2026-07-24 — icke-spel-tid, medvetet utanför clock.Clock):
-  WS-I/O-deadlines (`internal/notify/hub.go`) · auth-token/cookie-expiry (`internal/auth`,
-  `api/handlers/auth.go`) · `internal/chronicle` (lokal dagbok) · `cmd/create-world`-seed ·
-  CLI-display i `cmd/keryx`. Allt annat: clock.Clock, inga nya undantag utan att listan uppdateras.
+  Inject `clock.Clock` via constructor; use `clock.TestClock` in tests. Only `internal/events` and `main.go`
+  may hold a `*clock.WallClock`.
+- **Sanctioned wall-clock exceptions** (non-game time, deliberately outside `clock.Clock`): WS I/O deadlines
+  (`internal/notify/hub.go`) · auth token/cookie expiry (`internal/auth`, `api/handlers/auth.go`) ·
+  `internal/chronicle` · `cmd/create-world` seed · CLI display in `cmd/keryx`.
+  **No new exceptions without updating this list.**
 
-### Event handlers (Fas 2.2 — idempotency)
-Every handler registered with `events.Worker` must be safe to run twice.
-Accepted patterns:
-1. `SELECT … FOR UPDATE` → do work → `UPDATE processed=true` — all in one transaction.
-2. `INSERT … ON CONFLICT (event_id) DO NOTHING` for projection writes.
-If a handler is not idempotent, mark it with a `// TODO: idempotent` comment and file an issue.
+### Events
+- **Idempotency:** every handler registered with `events.Worker` must be safe to run twice. Either
+  `SELECT … FOR UPDATE` → work → `UPDATE processed=true` in one transaction, or
+  `INSERT … ON CONFLICT (event_id) DO NOTHING` for projection writes. If a handler isn't idempotent, mark it
+  `// TODO: idempotent`.
+- **Events store outcomes, not intentions.** Probabilistic rolls happen **once** in the handler; the result is
+  what goes in the payload. `{"type":"chariot_loss","amount":3}`, never `{"roll_pending":true}`. No event may
+  say "check if X happened" — it says "X happened" or doesn't exist.
+- **Semantics are frozen forever.** Never change how an existing event type is interpreted; create a new type
+  (`MessengerArrivedV2`) instead. Old handlers keep reading old types.
+- **Handler timeouts (G2):** `events.Worker` wraps every handler in `context.WithTimeout` (default 5 s), so
+  handlers **must** pass `ctx` to every DB call. Three consecutive failures → dead-lettered.
 
-### Events store outcomes, not intentions (Fas 2.3)
-Probabilistic rolls happen **once** in the handler; the **result** is what goes in the event payload.
-A `DivinePunishment` event must say `{"type":"chariot_loss","amount":3}`, not `{"roll_pending":true}`.
-No event may say "check if X happened" — it must say "X happened" or not exist.
-
-### Event versioning (Fas 2.4)
-Event schemas are **frozen in semantics forever**. Never change how an existing event type is interpreted.
-To evolve: create a new event type (`MessengerArrivedV2`). Old handlers keep reading old types.
-
-### Package dependency order (G1 — strict, no exceptions; uppmätt mot koden 2026-07-24)
+### Package dependency order (G1 — strict, no exceptions)
 ```
 ai, auth, clock, gossip, notify, province, religion, unit, world  ← zero internal deps
   ↑
@@ -160,106 +89,76 @@ kharis(→ai,clock,economy,events,religion,unit) · loyalty(→clock,economy,eve
   ↑
 combat  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events)
   ↑
-messenger  ← may use combat + allt under
+messenger  ← may use combat + everything below
   ↑
-api/handlers, cmd/server  ← may use all (enda som får importera notify — hubben konsumeras
-                            via consumer-interfaces, t.ex. transport.Broadcaster)
+api/handlers, cmd/server  ← may use all (the only ones that may import notify — the hub is consumed
+                            via consumer interfaces, e.g. transport.Broadcaster)
 ```
 A package may import **downward only**. Upward communication goes via event emission.
 Consumer interfaces are defined in the **consuming** package, never in the implementing one.
-(`kingdom` är inget paket — kingdoms bor i `api/handlers/kingdom.go` + `capabilities/kingdom_verbs.go`,
-gated bakom `KINGDOMS_ENABLED`.)
-
-### Handler timeouts (G2)
-`events.Worker` wraps every handler in `context.WithTimeout` (default 5 s).
-Handlers **must** pass `ctx` to every DB call (`QueryContext`, `ExecContext`).
-Three consecutive failures → dead-lettered (logged as ERROR, `failed_at` set).
+(`kingdom` is not a package — kingdoms live in `api/handlers/kingdom.go` + `capabilities/kingdom_verbs.go`,
+gated behind `KINGDOMS_ENABLED`.)
 
 ### Auth (G3)
-Bearer token in `Authorization` header — not httpOnly cookie. (A `poleia_token` cookie also exists,
-but ONLY for web page navigation through `auth.WebMiddleware`; all API calls use Bearer.)
-Map client wires it in `web/static/js/megaron/api.js` (`fetchAuth`); the HTMX pages via the
-`htmx:configRequest` listener in `web/templates/base.html`.
-iOS client will use Keychain → Bearer directly. No CSRF tokens needed.
+Bearer token in the `Authorization` header. (A `poleia_token` cookie exists too, but ONLY for web page
+navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
+`web/static/js/megaron/api.js` (`fetchAuth`) and via the `htmx:configRequest` listener in
+`web/templates/base.html`. iOS will use Keychain → Bearer. No CSRF tokens.
 
 ---
 
 ## Naming (MUST)
 
-**Columns:**
-- Lazy-tuple-suffix: `*_amount`, `*_rate`, `*_cap`, `*_calc_tick` (t.ex. `kharis_*` på `player_world_records`) — NOT `*_last_calc_at`.
-- **Silver är en good i `settlement_goods`** (mig 057) — inga `silver_*`/`gold_*`-kolumner på settlements (enda undantag: `sitos_fund_silver`).
-- Army: bare names — `infantry`, `chariot`, `ship`, `elite_infantry` (legacy dual-write-kolumner tills SB7/C8). (priest är ingen enhet längre — kult = tempel-labor.)
+- **Lazy-tuple suffixes:** `*_amount`, `*_rate`, `*_cap`, `*_calc_tick` — NOT `*_last_calc_at`.
+- **Silver is a good in `settlement_goods`** (mig 057) — no `silver_*`/`gold_*` columns on settlements
+  (sole exception: `sitos_fund_silver`). Prefer **silver** over "gold" for the currency everywhere;
+  "gold" is reserved for a future luxury good.
+- **Army:** bare names — `infantry`, `chariot`, `ship`, `elite_infantry` (legacy dual-write columns until
+  SB7/C8). **`priest` is not a unit** — cult is temple labor.
+- **Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
+  Settlement not Base · Kingdom not Alliance · Rite not Spell · March not Attack (verb) ·
+  Sea Peoples not Boss · Collapse not Season-end · **The Thalassa** not The Sea.
+- **The Thalassa** is the sea's in-world lore name and is permanent (`terrain = "sea"` in DB).
+  Untouched by the Megaron rename, which is about the system, not the world.
 
-**Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
-Settlement not Base · Kingdom not Alliance · Rite not Spell · March not Attack (verb) · Sea Peoples not Boss ·
-Collapse not Season-end · The Thalassa not The Sea.
+## Design guardrails (respect the SHAPE — numbers live in code/vault)
 
-**The Thalassa** = the sea's in-world lore name. Permanent: `terrain = "sea"` in DB. NOT affected by the
-Megaron rename (which is about the system/repo name, not the world).
+Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 
-**Namn-utrensning (Timothy 2026-07-03):** "Poleia" ska **bort som ord**. Kanoniskt: **Megaron** (spel + web),
-**Temenos** (server), **Keryx** (CLI), **Lawagetas** (iOS). **Lager A** (ordet i docs/display/CSS) KLAR.
-**Lager B kodsvep KLART 2026-07-23:** Go-modul `github.com/poleia/server`→`formatet/megaron/server`
-(123 filer), `cmd/poleia`→`cmd/keryx`, binär `keryx`, alla `keryx <verb>`-exempel, Dockerfile-binären
-→`temenos`, gitea-repot avvecklat (GitHub `formatet/megaron` är enda remote).
-**Lager B infra ÅTERSTÅR** — körs koordinerat med Timothy, bryter annars agentflottan och webbsessioner:
-`POLEIA_*`-env, `poleia_token`-cookie+localStorage, `~/.config/poleia/`, `/var/lib/poleia/chronicles`,
-`/opt/poleia`→`/opt/megaron`, `poleia.service`→`temenos.service`, DB-namn/user `poleia`.
-Se [[megaron_namn_hygien]] §D. Rör ej "The Thalassa" (= havet, lore-permanent).
-**silver framför "gold/guld"** för valutan i UI/API/nya identifierare (Sprint A KLAR — inga gold-kolumner kvar; "gold" är reserverat för framtida lyxvara).
+- **Province ≠ settlement** — separate tables; outpost = province row, no settlement row.
+- **Loyalty** — bounded low-integer projection, never 0–100; event-sourced.
+- **Kharis** is a relationship, not mana; always a floor (never 0); realm pool per Wanax, cap driven by
+  temple level. Cult is produced by population allocated to temples.
+- **Messengers are physical and sacred** (uninterceptable); the reply arrives on return. **Load-bearing
+  pillar:** ALL info-sharing flows through moving units, and orders to your own units travel by messenger —
+  **command is never instant.** Everything else on the map *can* be intercepted.
+- **Catchment is the only production source** — the settlement's own hex + the 6 around it, worked without
+  outposts; dynamic, lazy, deterministic.
+- **Coast is not a terrain** — it's a property (neighbour of sea); `coast_beach` is gone from the enum.
+- **Labor = share of pop** (weight semantics), not absolute citizens, so growing pop follows the percentage.
+- **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
+  and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
+- **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text
+  wanax↔wanax; (2) **trade offer** = structured, bilateral consent, **FOW-gated to cities you have actually
+  contacted** (`visibleOrigins`) — no global trade catalogue; (3) **internal transfer** own→own settlement =
+  logistics, no consent, a physical caravan that does not roll the loss die.
+- **Kingdoms are POST-MVP** (Timothy 2026-07-08): all player surface disabled; server code kept gated.
 
----
+## Visual style (palette lives in code)
 
-## Design guardrails (MUST-respect the SHAPE — concrete numbers live in code/vault)
-
-> Get the *shape* wrong and you write wrong code. **No calibration number is canonical here** — for an exact
-> value (threshold, %, range, enum) read the code or the linked doc. Full design map: `megaron_moc.md`.
-
-- **Province ≠ settlement** — separate tables; outpost = province row, no settlement row. `temenos_settlement.md`
-- **Loyalty** — bounded low-integer projection, never 0–100; event-sourced (range in code). `temenos_settlement.md`
-- **Kharis** is a relationship, not mana; always a floor (never 0); rikes-pool per Wanax (LIVE, mig 029; lazy-tuple på `player_world_records`, tak styrs av tempelnivå). `temenos_kharis.md`
-- **Messengers** are physical, sacred (uninterceptable); reply arrives on return. **Load-bearing pillar:**
-  ALL info-sharing flows through moving units (messengers/merchants/armies); orders to your own units
-  (recall etc.) also travel by messenger — command is never instant. `temenos_settlement.md`
-- **Kingdom** = Basileus + members; activates at a member threshold (value in `kingdom.go`). **POST-MVP
-  (Timothy 2026-07-08): all spelaryta inaktiveras (CLI/capabilities/web); server-koden behålls gated.** `temenos_kingdoms.md`
-- **Combat** = deterministisk effektiv styrka + bounded kharis-biased fortune (RNG rullas EN gång i handlern, utfall i event — Fas 2.3); moral/rout — låg moral → enheten flyr, ej utplåning. `temenos_kharis.md`
-- **Kult** produceras av befolkning allokerad till tempel; **inga prästenheter** (varken byggbara eller starter); rit gateas av tempel + kharis (nivåer + siffror i `internal/kharis` / `temenos_kharis.md`).
-- **Silver** — betalningsmedel, fysiskt transporterbart. Silver-sänka = armé-upkeep (grain + silver), löpande; obetald → desertering/attrition. Präst/kult ingen upkeep.
-- **Kostnad ↔ upkeep** — upkeep = grain+silver ∝ byggkostnad; strategiska metaller (brons/cedar) hör i bygg-gate + recruit + attrition, ALDRIG platt upkeep (bronsupkeep = desertering-spiral). `temenos_ekonomi.md`
-- **Gruv-deposit-gate** — `mine`/`silver_mine` kräver matchande malm-deposit i stadens catchment vid bygge (annars 422); ny malm auto-allokeras en labor-andel (skim grain). `temenos_ekonomi.md`
-- **Catchment = enda produktionskällan** — staden producerar bara från sin catchment: **stadens eget hex + de 6 omgivande** (7 hex totalt), brukade direkt utan outpost; dynamiskt + lazy + deterministiskt. `temenos_terrain.md`
-- **Startstaden: prognos + spelarval, INTE garanti** (ändrat med Nomadic Host, Timothy 2026-07-15) — spelaren väljer själv var metropolis grundas; grundningsprognosen (delad `/colonize-preview`) är guardrailen, ingen spawn-/settle-gate garanterar försörjning. Spelaren SKA granska catchmenten. Handel = för att avancera, ej överleva. `temenos_nomadic_host_plan.md`
-- **Coast är ingen terräng** — egenskap = granne till hav (grannskaps-check); `coast_beach` borttagen ur enum.
-- **Labor = andel av pop** (weight-semantik), ej absoluta citizens → växande pop följer procenten automatiskt.
-- **Soldater = utvunnen pop** med löpande upkeep; övermobilisering tömmer staden (→ Collapse/warband).
-- **Collapse/Eras** — hidden prestige, only survivable. `temenos_worldbuilding.md`
-- **Trade & budbärarlagret — tre skilda saker (håll isär):** (1) **meddelande** = fritext wanax↔wanax;
-  (2) **handelsoffert** = strukturerat erbjudande, bilateralt samtycke, **FOW-gatead — bara mot städer du
-  faktiskt kontaktat** (`visibleOrigins`), ingen global handelskatalog; (3) **intern överföring** egen→egen
-  stad = logistik, inget samtycke, fysisk karavan utan förlust (idag `Gift`, silver+grain, ej i klienter).
-  `temenos_settlement.md`
-
-> Authoritative current intent: `megaron_todo.md` → "Vägen framåt".
-
----
-
-## Visual style (RULES — palette lives in code)
-
-- Colours: use the CSS custom properties in `web/static/megaron.css` `:root`. **Never** hardcode hex in
-  templates/CSS, and never inline `style="color:#..."` — add a class to `megaron.css` instead.
-- Pixel art: 1px CHARCOAL outline on solids; no anti-aliasing, no gradients, no rounded corners;
-  background terrain desaturated, foreground objects saturated.
+- Use the CSS custom properties in `web/static/megaron.css` `:root`. **Never** hardcode hex in
+  templates/CSS and never inline `style="color:#..."` — add a class to `megaron.css`.
+- Pixel art: 1px CHARCOAL outline on solids; no anti-aliasing, gradients or rounded corners; background
+  terrain desaturated, foreground objects saturated.
 - The canvas renderer is exempt from the CSS vars (its own internal palette; culture accents live there).
-- Full spec: `temenos_designprinciper.md`.
-
----
+- Full spec: `temenos_designprinciper.md`. Rendering principles: `megaron_terrangrendering.md`.
 
 ## Running it
 
-- **Local:** `docker compose up` at project root (migrations run on startup; copy `.env.example` → `.env` first).
-- **Dev server** (CT 126, 10.0.1.92:8080): runs `air` (Go hot-reload). After pushing to master:
-  `! ssh root@10.0.1.92 "cd /opt/poleia && git pull && echo done"` — `air` rebuilds. Force restart: append `&& systemctl restart poleia`.
-- **`poleia` binary:** `~/go/bin/poleia` — NOT in PATH, always use the full path.
+- **Local:** `docker compose up` at project root (migrations run on startup; copy `.env.example` → `.env`).
+- **Dev server** (CT 126, 10.0.1.92:8080) runs `air`. After pushing to master:
+  `! ssh root@10.0.1.92 "cd /opt/poleia && git pull && echo done"`. Force restart: append
+  `&& systemctl restart poleia`.
+- **Isolated acceptance world:** `tools/acceptance.sh` — this is where eye-checks happen, before merge.
+- **`keryx` binary:** `~/go/bin/poleia` — NOT in PATH, always use the full path.
 - **LLM playtest agents + live world:** `keryx_playtest.md`.
