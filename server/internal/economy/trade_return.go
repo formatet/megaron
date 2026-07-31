@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"math/rand"
 
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
@@ -17,11 +16,12 @@ type TradeReturnHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	hub        Broadcaster
+	Dice       Dice // exported so tests can override; defaults to wallDice (production behaviour).
 }
 
 // NewTradeReturnHandler creates a TradeReturnHandler.
 func NewTradeReturnHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster) *TradeReturnHandler {
-	return &TradeReturnHandler{pool: pool, eventStore: eventStore, hub: hub}
+	return &TradeReturnHandler{pool: pool, eventStore: eventStore, hub: hub, Dice: wallDice{}}
 }
 
 // Handle credits goods to the buyer settlement when a negotiated trade return arrives.
@@ -75,8 +75,8 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// settlement that is sending this leg back — via isInternalTransfer's existing
 	// transport-based lookup. No transport (legacy event) ⇒ unresolvable ⇒ external
 	// (fail-external, never guess internal).
-	if !isInternalTransfer(ctx, tx, uuid.UUID{}, p.TransportID, p.DestinationID) && rand.Float64() < tradeRiskPct {
-		reason := tradeLostReasons[rand.Intn(len(tradeLostReasons))]
+	if !isInternalTransfer(ctx, tx, uuid.UUID{}, p.TransportID, p.DestinationID) && h.Dice.Float64() < tradeRiskPct {
+		reason := tradeLostReasons[h.Dice.Intn(len(tradeLostReasons))]
 		if p.TransportID != (uuid.UUID{}) {
 			if _, err = tx.Exec(ctx,
 				`UPDATE transports SET status = 'lost', updated_at = now() WHERE id = $1`, p.TransportID,

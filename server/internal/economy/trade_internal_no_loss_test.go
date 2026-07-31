@@ -13,6 +13,7 @@ package economy
 import (
 	"context"
 	"encoding/json"
+	"math/rand"
 	"testing"
 	"time"
 
@@ -246,6 +247,11 @@ func TestDeliveryHandler_ExternalTradeStillRollsDice(t *testing.T) {
 	dest := mkTradeSettlement(t, pool, ctx, worldID, ownerB, "E-Dest", 1)
 
 	h := NewDeliveryHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())))
+	// Seeded via the injected Dice rather than left on the global source: the
+	// test still proves the roll fires for external trade, but deterministically.
+	// Unpinned it carried P(zero losses) = 0.95^120 ~= 0.2% — the same lottery
+	// this seam exists to remove (fix/forlusttarning-injicerbar, 2026-07-31).
+	h.Dice = rand.New(rand.NewSource(1337))
 
 	const n = 120
 	lost := 0

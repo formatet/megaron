@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
-	"math/rand"
 
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
@@ -182,11 +181,12 @@ type DeliveryHandler struct {
 	eventStore *events.Store
 	hub        Broadcaster
 	scheduler  *events.Scheduler
+	Dice       Dice // exported so tests can override; defaults to wallDice (production behaviour).
 }
 
 // NewDeliveryHandler creates a DeliveryHandler.
 func NewDeliveryHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster, sched *events.Scheduler) *DeliveryHandler {
-	return &DeliveryHandler{pool: pool, eventStore: eventStore, hub: hub, scheduler: sched}
+	return &DeliveryHandler{pool: pool, eventStore: eventStore, hub: hub, scheduler: sched, Dice: wallDice{}}
 }
 
 // Handle delivers goods to the destination settlement.
@@ -265,8 +265,8 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// the goods change owner. Moving grain between two of your own cities is
 	// logistics, not trade (CLAUDE.md trade-lagret punkt 3: "intern överföring
 	// ... fysisk karavan utan förlust"); it must never roll this die.
-	if !isInternalTransfer(ctx, tx, p.TradeRouteID, p.TransportID, p.DestinationID) && rand.Float64() < tradeRiskPct {
-		reason := tradeLostReasons[rand.Intn(len(tradeLostReasons))]
+	if !isInternalTransfer(ctx, tx, p.TradeRouteID, p.TransportID, p.DestinationID) && h.Dice.Float64() < tradeRiskPct {
+		reason := tradeLostReasons[h.Dice.Intn(len(tradeLostReasons))]
 		if _, err = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID); err != nil {
 			return fmt.Errorf("mark lost route resolved: %w", err)
 		}
