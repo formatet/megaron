@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
@@ -83,14 +84,30 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	rows.Close()
 
 	for _, t := range fleet {
+		origin := province.MapPosition{Q: t.originQ, R: t.originR}
+		dest := province.MapPosition{Q: t.destQ, R: t.destR}
 		pos, ok, posErr := province.InterpolatePosition(ctx, h.pool, e.WorldID,
-			province.MapPosition{Q: t.originQ, R: t.originR},
-			province.MapPosition{Q: t.destQ, R: t.destR},
-			t.category, t.departs, t.arrives, now)
-		if posErr != nil || !ok {
-			// Route no longer resolvable (e.g. a sea leg under the land-only category
-			// default) — cannot place the caravan, so it cannot be intercepted yet.
+			origin, dest, t.category, t.departs, t.arrives, now)
+		if posErr != nil {
+			// A DB error is not the same as an unpathable route — never guess a
+			// position off the back of one.
 			continue
+		}
+		if !ok {
+			// No traversable route exists for this category (e.g. a land caravan
+			// whose origin/dest are split by sea or, post-flod, a river — the
+			// A* category graph has no path). The caravan's own travel time is
+			// already an abstracted straight hex line, never A* (TradeHoursPerHex,
+			// messenger/recall.go) — so falling back to that same straight line for
+			// its live position keeps it a real, interceptable object instead of
+			// silently making it permanently uninterceptable. Only messengers may
+			// be uninterceptable (Timothy 2026-07-30).
+			pos = straightLineHexPosition(origin, dest, t.departs, t.arrives, now)
+			slog.Warn("intercept scan: no traversable route for category, using straight-line fallback position",
+				"transport", t.id, "category", t.category,
+				"origin_q", t.originQ, "origin_r", t.originR,
+				"dest_q", t.destQ, "dest_r", t.destR,
+				"fallback_q", pos.Q, "fallback_r", pos.R)
 		}
 
 		// An enemy sentry watching within reach of the caravan's current hex.
@@ -179,4 +196,55 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 	}
 	slog.Info("caravan intercepted", "transport", t.id, "by", interceptor, "sentry", sentryID, "q", pos.Q, "r", pos.R)
 	return nil
+}
+
+// straightLineHexPosition returns the caravan's position along a straight cube-
+// coordinate line between origin and dest, at the same elapsed-time fraction
+// InterpolatePosition uses (clamped the same way at both ends). Only used when
+// InterpolatePosition finds no traversable route for the caravan's category —
+// see the call site in Handle for why a straight line is the right fallback here
+// rather than a permanent skip.
+func straightLineHexPosition(origin, dest province.MapPosition, departsAt, arrivesAt, now time.Time) province.MapPosition {
+	total := arrivesAt.Sub(departsAt)
+	if total <= 0 || !now.Before(arrivesAt) {
+		return dest
+	}
+	if !now.After(departsAt) {
+		return origin
+	}
+	frac := float64(now.Sub(departsAt)) / float64(total)
+	return hexLerp(origin, dest, frac)
+}
+
+// hexLerp linearly interpolates between two axial hex coordinates in cube space
+// and rounds the result back to the nearest hex (Red Blob Games hex-lerp +
+// cube-round: https://www.redblobgames.com/grids/hexagons/#line-drawing).
+func hexLerp(a, b province.MapPosition, frac float64) province.MapPosition {
+	ax, az := float64(a.Q), float64(a.R)
+	ay := -ax - az
+	bx, bz := float64(b.Q), float64(b.R)
+	by := -bx - bz
+
+	x := ax + (bx-ax)*frac
+	y := ay + (by-ay)*frac
+	z := az + (bz-az)*frac
+
+	rx := math.Round(x)
+	ry := math.Round(y)
+	rz := math.Round(z)
+
+	dx := math.Abs(rx - x)
+	dy := math.Abs(ry - y)
+	dz := math.Abs(rz - z)
+
+	switch {
+	case dx > dy && dx > dz:
+		rx = -ry - rz
+	case dy > dz:
+		ry = -rx - rz
+	default:
+		rz = -rx - ry
+	}
+
+	return province.MapPosition{Q: int(rx), R: int(rz)}
 }
