@@ -19,6 +19,25 @@
 -- autovacuum kör eller Timothy kör VACUUM FULL manuellt — går inte att göra
 -- i en migrations-transaktion.
 
+-- INDEXET FÖRST, annars blir städningen nedan kvadratisk och blir ALDRIG klar.
+--
+-- events bär en självrefererande FK (events_causation_fkey: causation → events.id) med
+-- NO ACTION, och causation var OINDEXERAT. Varje raderad rad tvingar då Postgres att
+-- seq-scanna hela events för att kontrollera att ingen rad pekar tillbaka: 1 767 139
+-- rader × 1,83 M rader ≈ 3·10^12 jämförelser. Mätt på CT 126 2026-08-02: satsen körde
+-- 20+ minuter utan att ens ha börjat på de sju följande DELETE-satserna, CPU-bunden
+-- utan lås- eller I/O-väntan. Planen för själva urvalet var optimal (hashad anti-join,
+-- worlds har EN rad) — hela kostnaden låg i integritetskontrollen.
+--
+-- Med indexet blir kontrollen en slagning i stället för en scan. Indexet är inte en
+-- engångsknep för den här migrationen: en FK:s refererande kolumn ska alltid vara
+-- indexerad, annars är VARJE radering ur events dyr. Det är latent skuld som funnits
+-- sedan events fick sin causation-kolumn och som ingen mätt förrän nu.
+--
+-- CREATE INDEX (inte CONCURRENTLY) — golang-migrate kör varje migration i en
+-- transaktion, och CONCURRENTLY är förbjudet där.
+CREATE INDEX IF NOT EXISTS idx_events_causation ON events (causation);
+
 -- Städa föräldralösa rader FÖRST — FK kan inte skapas mot data som bryter den.
 DELETE FROM build_queue WHERE world_id NOT IN (SELECT id FROM worlds);
 DELETE FROM events WHERE world_id NOT IN (SELECT id FROM worlds);

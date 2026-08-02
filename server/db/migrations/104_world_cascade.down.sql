@@ -1,5 +1,10 @@
 -- Rader raderade av upp-migrationen kommer inte tillbaka — down tar bara
 -- bort FK-begränsningarna, inte de föräldralösa raderna (de är borta för gott).
+--
+-- idx_events_causation BEHÅLLS medvetet. Det är inget som hör till världskaskaden:
+-- det indexerar en FK som funnits sedan långt före den här migrationen, och utan det
+-- är varje radering ur events kvadratisk. Att släppa det på väg ner vore att återinföra
+-- en prestandabugg som down-migrationen inte äger.
 
 ALTER TABLE trade_routes DROP CONSTRAINT trade_routes_world_id_fkey;
 ALTER TABLE trade_routes
