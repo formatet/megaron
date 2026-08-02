@@ -12,6 +12,7 @@
 //	keryx settlements
 //	keryx goods
 //	keryx transfer --good grain --qty 10 --dest Korinth
+//	keryx cargo
 //	keryx inbox
 //
 // Environment variables:
@@ -83,6 +84,7 @@ func main() {
 		goodsCmd(),
 		ticklogCmd(),
 		transferCmd(),
+		cargoCmd(),
 		giftCmd(),
 		inboxCmd(),
 		outboxCmd(),

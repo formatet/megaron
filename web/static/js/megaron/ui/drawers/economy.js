@@ -1,5 +1,6 @@
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
+import { serverNow } from '../../clock.js';
 import { esc, fmtSilver } from '../format.js';
 import { renderLockedActions } from '../misc.js';
 
@@ -95,10 +96,77 @@ async function loadEconomyTransfer(mySettlements) {
         <button class="btn-primary btn-small" onclick="startTransfer()">Transfer →</button>
         <div id="ec-tr-result" class="action-result"></div>
       </div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-title">Your cargo in transit</div>
+      <div id="ec-tr-cargo" class="loading" style="padding:.4rem 0">Loading…</div>
     </div>`;
   const toSel = document.getElementById('ec-tr-to');
   if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
   loadTransferGoods(document.getElementById('ec-tr-from').value);
+  refreshCargoInTransit();
+}
+
+// formatCargoRows is the pure part of the "your cargo in transit" list — no
+// DOM, no fetch, no Date.now()/serverNow() read internally. `nowMs` is passed
+// in explicitly (the caller supplies serverNow()) so this can be unit-tested
+// the same way render/camera.test.mjs tests zoomStep: canned inputs in,
+// checked output out, no stubbing required. Each `trade` is one row of
+// GET /trades already filtered to `trade.mine` by the caller.
+export function formatCargoRows(trades, nowMs) {
+  return trades.map(t => {
+    const etaMs = new Date(t.arrives_at).getTime() - nowMs;
+    let eta;
+    if (etaMs <= 0) eta = 'arrived';
+    else if (etaMs < 3600000) eta = `${Math.floor(etaMs / 60000)}m`;
+    else eta = `${Math.floor(etaMs / 3600000)}h ${Math.floor((etaMs % 3600000) / 60000)}m`;
+    return {
+      good: t.good_key || '?',
+      qty: Math.floor(t.quantity || 0),
+      from: `(${t.origin_q},${t.origin_r})`,
+      to: `(${t.dest_q},${t.dest_r})`,
+      eta,
+    };
+  });
+}
+
+// renderCargoHTML builds the markup for formatCargoRows' output. Kept pure
+// (string in, string out) for the same testability reason as above — no
+// document access. Reuses the existing goods-mini/empty-state classes
+// (megaron.css is owned elsewhere this round; no new classes here).
+export function renderCargoHTML(trades, nowMs) {
+  if (!trades.length) {
+    return '<p class="empty-state" style="padding:.4rem 0">Nothing of yours in transit.</p>';
+  }
+  const rows = formatCargoRows(trades, nowMs);
+  return '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem">' +
+    '<td>Good</td><td>Qty</td><td>From → To</td><td style="text-align:right">ETA</td></tr>' +
+    rows.map(row =>
+      `<tr><td>${esc(row.good)}</td><td>${row.qty}</td><td>${esc(row.from)} → ${esc(row.to)}</td>` +
+      `<td style="text-align:right">${esc(row.eta)}</td></tr>`
+    ).join('') +
+    '</table>' +
+    '<p style="color:var(--text-dim);font-size:.68rem;margin-top:.3rem">' +
+    'Physical cargo — it can be intercepted and seized while in transit.</p>';
+}
+
+// Fetches GET /trades and renders the caller's own in-transit cargo (the
+// `mine` flag added server-side does the ownership filtering; this only
+// keeps the rows where it's true). Called on tab load and again right after
+// a successful transfer, so a freshly dispatched caravan appears without
+// having to leave and reopen the tab.
+async function refreshCargoInTransit() {
+  const el = document.getElementById('ec-tr-cargo');
+  if (!el) return;
+  el.innerHTML = '<div class="loading" style="padding:.4rem 0">Loading…</div>';
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`);
+    if (!r.ok) { el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>'; return; }
+    const trades = (await r.json()) || [];
+    el.innerHTML = renderCargoHTML(trades.filter(t => t.mine), serverNow());
+  } catch (_) {
+    el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>';
+  }
 }
 
 // Populate the Good dropdown with the From settlement's goods in stock, so the
@@ -132,7 +200,8 @@ export async function startTransfer() {
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     resultEl.style.color = 'var(--safe)';
-    resultEl.textContent = `${qty} ${good} sent.`;
+    resultEl.textContent = `${qty} ${good} sent — physical cargo, can be intercepted en route.`;
+    refreshCargoInTransit();
   } else {
     resultEl.style.color = 'var(--accent)';
     resultEl.textContent = d.error || 'Transfer failed.';
