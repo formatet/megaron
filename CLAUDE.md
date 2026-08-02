@@ -163,8 +163,11 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 - **Local:** `docker compose up` at project root (migrations run on startup; copy `.env.example` → `.env`).
 - **Dev server** (CT 126, 10.0.1.92:8080) runs `air`. After pushing to master:
   `! ssh root@10.0.1.92 "cd /opt/poleia && git pull && echo done"` — `air` rebuilds and applies
-  migrations by itself seconds later. **Don't restart reflexively**; only when `air` is wedged
-  (`base.html` edits still need one).
+  migrations by itself seconds later. **Don't restart reflexively**; only when `air` is wedged.
+  ⚠️ **`air` watches `.go` only** (`include_ext = ["go"]`), so a commit whose only production
+  artefact is a `.sql` migration **never deploys itself** — it needs `systemctl restart poleia`.
+  Same for `base.html` edits. (Found 2026-08-02 with mig 105: pulled, but the process sat unchanged
+  for 35 min and the migration never ran.)
   ⛔ **Never restart, and never kill DB sessions, while a migration is in flight.** On live data a
   migration can run for many minutes and that is normal, not a hang. Interrupting one leaves
   `schema_migrations.dirty` set and the server down. Wait it out; if you must diagnose, read only.
