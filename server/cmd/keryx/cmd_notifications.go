@@ -104,6 +104,37 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "ScoutReport" {
 		printScoutReportLine(n)
 	}
+	if n.Kind == "UpkeepUnpaid" {
+		printUpkeepUnpaidLine(n)
+	}
+}
+
+// printUpkeepUnpaidLine renders the human-readable follow-up to an UpkeepUnpaid
+// notification (SLICE A, megaron_todo.md 2026-07-31): the forewarning fired the
+// period a unit's silver upkeep goes unpaid, before desertion actually starts —
+// previously recordUnpaid's else-branch bumped unpaid_periods with zero signal
+// until desertion itself fired. Without this, the raw JSON body above is all a
+// Wanax would see; this turns it into an actionable line.
+func printUpkeepUnpaidLine(n notificationItem) {
+	var body struct {
+		UnitType              string  `json:"unit_type"`
+		UnpaidPeriods         int     `json:"unpaid_periods"`
+		PeriodsUntilDesertion int     `json:"periods_until_desertion"`
+		SilverUnpaid          float64 `json:"silver_unpaid"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	unitType := body.UnitType
+	if unitType == "" {
+		unitType = "unit"
+	}
+	urgency := fmt.Sprintf("%d periods left before desertion", body.PeriodsUntilDesertion)
+	if body.PeriodsUntilDesertion == 1 {
+		urgency = "ONE more unpaid period and they desert"
+	}
+	fmt.Printf("      %s unpaid (period %d) — %.0f silver short — %s\n",
+		unitType, body.UnpaidPeriods, body.SilverUnpaid, urgency)
 }
 
 // printScoutReportLine renders the human-readable follow-up to a ScoutReport

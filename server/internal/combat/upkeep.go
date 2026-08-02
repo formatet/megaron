@@ -52,6 +52,13 @@ const (
 	upkeepDesertionPeriods = 3  // obetalda silver-perioder före desertering börjar
 )
 
+// upkeepUnpaidWarningKind is the forewarning event type / notification kind fired
+// each period a unit's silver upkeep goes unpaid, before desertion actually starts
+// (SLICE A, 2026-07-31). Matches the codebase's convention (UnitDeserted,
+// UnitAttrition) of using the same string for both the events-log entry and the
+// NotifyPlayer kind.
+const upkeepUnpaidWarningKind = "UpkeepUnpaid"
+
 // upkeepDailyTickPayload is the payload for the recurring upkeep tick.
 type upkeepDailyTickPayload struct{}
 
@@ -221,7 +228,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 		if !hasSid {
 			// No paying settlement — treat as unpaid (unknown loyalty → baseline).
-			h.recordUnpaid(ctx, u, e.WorldID, defaultLoyalty, sid)
+			h.recordUnpaid(ctx, u, e.WorldID, defaultLoyalty, sid, silverNeed)
 			continue
 		}
 
@@ -263,7 +270,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			a := agg(sid)
 			a.unitsUnpaid++
 			a.silverUnpaid += silverNeed
-			h.recordUnpaid(ctx, u, e.WorldID, loyalty, sid)
+			h.recordUnpaid(ctx, u, e.WorldID, loyalty, sid, silverNeed)
 		}
 	}
 
@@ -319,6 +326,55 @@ func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, wor
 		payload["settlement_id"] = sid
 	}
 	_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, kind, level, payload)
+}
+
+// notifyUpkeepUnpaid warns the owner that a unit's silver upkeep went unpaid this
+// period — the forewarning that used to not exist at all (SLICE A): the counter
+// climbed from 1 to 2 with zero player-facing signal until desertion itself fired.
+// level matches the file's existing scale (3 = info, 2 = urgent): the final unpaid
+// period before desertion (periodsUntilDesertion == 1) is urgent, any earlier one
+// is merely informational.
+//
+// Dedupe is keyed on kind+unit_id+unpaid_periods, NOT kind+unit_id alone like
+// notifyUnitLoss above. Each unpaid_periods value is a materially more urgent
+// warning than the last (level drops 3→2 on the final period before desertion),
+// so an unread period-1 warning must never suppress the period-2 "last chance"
+// escalation — that would recreate exactly the silent gap this slice closes. The
+// narrower key only suppresses an exact repeat of the same period position (e.g.
+// a sped-up world's upkeep tick somehow re-processing one period).
+func (h *UpkeepHandler) notifyUpkeepUnpaid(ctx context.Context, u upkeepUnitRow, worldID, sid uuid.UUID, unpaidPeriods, periodsUntilDesertion int, silverNeed float64) {
+	if h.hub == nil {
+		return
+	}
+	level := 3
+	if periodsUntilDesertion == 1 {
+		level = 2
+	}
+
+	var exists bool
+	if err := h.pool.QueryRow(ctx,
+		`SELECT EXISTS (
+		    SELECT 1 FROM notifications
+		    WHERE world_id = $1 AND player_id = $2 AND kind = $3 AND read_at IS NULL
+		      AND body_json->>'unit_id' = $4
+		      AND (body_json->>'unpaid_periods')::int = $5
+		 )`,
+		worldID, u.ownerID, upkeepUnpaidWarningKind, u.id.String(), unpaidPeriods,
+	).Scan(&exists); err == nil && exists {
+		return
+	}
+
+	payload := map[string]any{
+		"unit_id":                 u.id,
+		"unit_type":               u.unitType,
+		"unpaid_periods":          unpaidPeriods,
+		"periods_until_desertion": periodsUntilDesertion,
+		"silver_unpaid":           silverNeed,
+	}
+	if sid != (uuid.UUID{}) {
+		payload["settlement_id"] = sid
+	}
+	_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, upkeepUnpaidWarningKind, level, payload)
 }
 
 // cascadeCargoDisband disbands a ship's embarked cargo unit when the ship itself
@@ -422,7 +478,10 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 // recordUnpaid increments unpaid_periods and applies desertion if the threshold is reached.
 // loyalty is the supplying settlement's loyalty (L2): lower loyalty ⇒ more men desert.
 // sid = the settlement that failed to pay (uuid.Nil if none), for the notification deep-link.
-func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int, sid uuid.UUID) {
+// silverNeed = the silver upkeep that could not be debited this period, for the
+// forewarning payload (SLICE A) — best-effort, always available from the caller's
+// scope since it's the same amount the failed UPDATE just tried to deduct.
+func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int, sid uuid.UUID, silverNeed float64) {
 	np := u.unpaidPeriods + 1
 
 	if np >= upkeepDesertionPeriods {
@@ -466,12 +525,35 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 		slog.Info("upkeep: silver desertion", "unit", u.id, "lost", lost, "disbanded", disbanded)
 		h.notifyUnitLoss(ctx, u, worldID, sid, "UnitDeserted", "silver_shortage", lost, disbanded)
 	} else {
-		// Not yet at threshold — just increment counter.
+		// Not yet at threshold — increment the counter AND warn the player now.
+		// Before SLICE A (megaron_todo.md, 2026-07-31) this branch was entirely
+		// silent: unpaid_periods climbed 1 → 2 with no signal at all, and the
+		// player's first notice was the desertion itself once np reached
+		// upkeepDesertionPeriods. Two full silent speldygn (TicksPerDay=24,
+		// upkeep runs once/speldygn) is exactly the gap this closes.
 		if _, err := h.pool.Exec(ctx,
 			`UPDATE units SET unpaid_periods = $1 WHERE id = $2`,
 			np, u.id,
 		); err != nil {
 			slog.Error("upkeep: increment unpaid_periods failed", "unit", u.id, "err", err)
+			return
 		}
+
+		periodsUntilDesertion := upkeepDesertionPeriods - np
+		payload := map[string]any{
+			"unit_id":                 u.id,
+			"unit_type":               u.unitType,
+			"unpaid_periods":          np,
+			"periods_until_desertion": periodsUntilDesertion,
+			"silver_unpaid":           silverNeed,
+			"reason":                  "silver_shortage",
+		}
+		if sid != (uuid.UUID{}) {
+			payload["settlement_id"] = sid
+		}
+		_, _ = h.store.Append(ctx, u.id, events.StreamCombat, upkeepUnpaidWarningKind,
+			payload, worldID, nil,
+		)
+		h.notifyUpkeepUnpaid(ctx, u, worldID, sid, np, periodsUntilDesertion, silverNeed)
 	}
 }
