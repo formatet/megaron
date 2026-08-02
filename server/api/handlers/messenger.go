@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"formatet/megaron/server/internal/auth"
@@ -37,6 +40,42 @@ type MessengerHandler struct {
 // NewMessengerHandler creates a MessengerHandler.
 func NewMessengerHandler(pool *pgxpool.Pool, sched *events.Scheduler, clk clock.Clock, hub *notify.Hub) *MessengerHandler {
 	return &MessengerHandler{pool: pool, scheduler: sched, clk: clk, hub: hub}
+}
+
+// tradeableGood reports whether key is a real, tradeable good — i.e. it exists
+// in the live `goods` table, excluding silver (payment currency) and cult
+// (temple labor); those two are rejected by their own dedicated checks before
+// this runs. The catalog is read from the DB, not a hardcoded Go list: the
+// `goods` table carries entries (e.g. "livestock", "stone") that
+// internal/economy's Go constants do not enumerate, so a Go-side list would
+// silently reject goods that are actually valid.
+//
+// Without this check, an unknown want_good/offer_good in a trade_offer used to
+// surface far downstream and differently per offer kind: a "sell" offer's
+// escrow UPDATE would match zero rows and misreport as "insufficient goods"
+// (the seller has 0 of a good that was never real), while a "buy" offer's
+// escrow only ever touches silver, so the bad key was never checked at all —
+// the offer was created, silver locked, and the messenger delivered a trade
+// that could never be accepted, tying up the buyer's silver until it expired.
+func (h *MessengerHandler) tradeableGood(ctx context.Context, key string) (string, bool) {
+	rows, err := h.pool.Query(ctx, `SELECT key FROM goods WHERE key NOT IN ('silver', 'cult') ORDER BY key`)
+	if err != nil {
+		return "could not verify good", false
+	}
+	defer rows.Close()
+	var valid []string
+	for rows.Next() {
+		var k string
+		if rows.Scan(&k) == nil {
+			valid = append(valid, k)
+		}
+	}
+	for _, v := range valid {
+		if v == key {
+			return "", true
+		}
+	}
+	return fmt.Sprintf("unknown good %q — valid goods are: %s", key, strings.Join(valid, ", ")), false
 }
 
 // Send handles POST /worlds/:worldID/settlements/:settlementID/messengers.
@@ -103,6 +142,14 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				writeError(w, http.StatusBadRequest, "cannot trade for silver — silver is the payment currency, not a tradeable good")
 				return
 			}
+			if req.TradeOffer.WantGood == "cult" {
+				writeError(w, http.StatusBadRequest, "cannot trade for cult — cult is temple labor, not a tradeable good")
+				return
+			}
+			if msg, ok := h.tradeableGood(r.Context(), req.TradeOffer.WantGood); !ok {
+				writeError(w, http.StatusBadRequest, msg)
+				return
+			}
 		case "sell":
 			if req.TradeOffer.OfferGood == "" || req.TradeOffer.OfferQty <= 0 || req.TradeOffer.WantSilver <= 0 {
 				writeError(w, http.StatusBadRequest, "sell trade_offer requires offer_good, offer_qty > 0, want_silver > 0")
@@ -110,6 +157,14 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			}
 			if req.TradeOffer.OfferGood == "silver" || req.TradeOffer.OfferGood == "gold" {
 				writeError(w, http.StatusBadRequest, "cannot sell silver — silver is the payment currency, not a tradeable good")
+				return
+			}
+			if req.TradeOffer.OfferGood == "cult" {
+				writeError(w, http.StatusBadRequest, "cannot sell cult — cult is temple labor, not a tradeable good")
+				return
+			}
+			if msg, ok := h.tradeableGood(r.Context(), req.TradeOffer.OfferGood); !ok {
+				writeError(w, http.StatusBadRequest, msg)
 				return
 			}
 		default:
