@@ -90,15 +90,36 @@ func TestProductionRules_WineBeyondHills(t *testing.T) {
 	}
 
 	// No wine anywhere else — sea, rivers, deltas, mountains, semi-desert or
-	// either forest. The contract is explicit that only three terrains bear
-	// grapes now; a fourth appearing here would be scope creep nobody asked for.
+	// either forest. The contract was explicit that only three terrains bore
+	// grapes as of migration 103; migration 105 (Timothy 2026-08-02) added a
+	// fourth, river_valley — see TestProductionRules_WineInRiverValley. river
+	// and river_delta stay in this negative list: only the valley itself
+	// bears wine, not the river channel or its delta.
 	for _, terrain := range []string{
 		"semi_desert", "forest_olive_grove", "forest_cedar",
 		"mountain_limestone", "mountain_red", "coastal_sea", "deep_sea",
-		"river", "river_valley", "river_delta", "coast_beach",
+		"river", "river_delta", "coast_beach",
 	} {
 		if rules := wineRulesFor(t, terrain); len(rules) != 0 {
 			t.Errorf("%s must have no wine production_rules row, found %v", terrain, rules)
+		}
+	}
+}
+
+// TestProductionRules_WineInRiverValley is migration 105's core claim:
+// river_valley bears wine at the same level as plains (Timothy 2026-08-02 —
+// hills keeps the overhand, the floodplain sits at the plain's level, not
+// the marginal scrub_maquis level). Exactly three rows, same shape as
+// TestProductionRules_WineBeyondHills's plains assertion.
+func TestProductionRules_WineInRiverValley(t *testing.T) {
+	got := wineRulesFor(t, "river_valley")
+	want := map[string]float64{"": 0.6, "farm": 1.2, "winery": 1.8}
+	if len(got) != len(want) {
+		t.Fatalf("river_valley wine rules = %v, want %v", got, want)
+	}
+	for bt, rate := range want {
+		if got[bt] != rate {
+			t.Errorf("river_valley/%q wine rate = %.4f, want %.4f", bt, got[bt], rate)
 		}
 	}
 }
@@ -168,6 +189,105 @@ func plainsCatchmentFixture(t *testing.T, currentTick, pop int) (settlementID uu
 		t.Fatalf("create settlement: %v", err)
 	}
 	return settlementID
+}
+
+// riverValleyCatchmentFixture mirrors plainsCatchmentFixture exactly but
+// seeds the 7-hex catchment (own hex + 6 neighbours) as river_valley instead
+// of plains — migration 105's "inland city on the floodplain" scenario.
+func riverValleyCatchmentFixture(t *testing.T, currentTick, pop int) (settlementID uuid.UUID) {
+	t.Helper()
+	pool := testPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-wine-%'`,
+	); err != nil {
+		t.Fatalf("archive leftover test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status, current_tick) VALUES ($1, 'active', $2) RETURNING id`,
+		"test-wine-"+uuid.New().String(), currentTick,
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create world: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
+		"wine-"+uuid.New().String(), "wine-"+uuid.New().String()+"@test.invalid",
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create player: %v", err)
+	}
+
+	var provinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'river_valley') RETURNING id`,
+		worldID,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create province: %v", err)
+	}
+
+	// Own hex + 6 neighbours, ALL river_valley — no hills or plains anywhere in reach.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 0, 0, 'river_valley')`,
+		worldID,
+	); err != nil {
+		t.Fatalf("seed own-hex tile: %v", err)
+	}
+	for _, d := range [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}} {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, 'river_valley')`,
+			worldID, d[0], d[1],
+		); err != nil {
+			t.Fatalf("seed catchment tile: %v", err)
+		}
+	}
+
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
+		 VALUES ($1, $2, 'Potamopolis', 'achaean', $3, 'capital', true, $4) RETURNING id`,
+		worldID, provinceID, ownerID, pop,
+	).Scan(&settlementID); err != nil {
+		t.Fatalf("create settlement: %v", err)
+	}
+	return settlementID
+}
+
+// TestRecomputeProduction_WineOnRiverValleyOnlyCatchment is migration 105's
+// end-to-end proof: a city whose entire 7-hex catchment is river_valley —
+// no hills or plains tile anywhere — must produce wine at a positive rate
+// after RecomputeProduction. This proves the chain migration → rule →
+// actual production holds, not just that a production_rules row exists.
+func TestRecomputeProduction_WineOnRiverValleyOnlyCatchment(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	settlementID := riverValleyCatchmentFixture(t, /*tick*/ 100, /*pop*/ 100)
+
+	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatalf("RecomputeProduction: %v", err)
+	}
+
+	var wineRate float64
+	var found bool
+	err := pool.QueryRow(ctx,
+		`SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'wine'`,
+		settlementID,
+	).Scan(&wineRate)
+	if err == nil {
+		found = true
+	}
+	if !found {
+		t.Fatalf("no wine row written for a river_valley-only-catchment settlement after RecomputeProduction " +
+			"— migration 105 should have given river_valley a wine production_rules row")
+	}
+	if wineRate <= 0 {
+		t.Errorf("wine rate for a river_valley-only-catchment settlement = %.6f, want > 0", wineRate)
+	}
 }
 
 // TestRecomputeProduction_WineOnPlainsOnlyCatchment is AK2's core claim: a
