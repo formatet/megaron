@@ -12,12 +12,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// upkeepSoldShare reads UPKEEP_SOLD_SHARE — the fraction of a garrisoned unit's
+// UpkeepSoldShare reads UPKEEP_SOLD_SHARE — the fraction of a garrisoned unit's
 // silver upkeep the soldiers spend back into their garrison town (silver-plan
 // Del C). Default 0.7; 0 = exactly the pre-Del-C behaviour (whole upkeep leaves
 // the world). Clamped to [0,1]. Read once at handler construction (main.go),
 // override via env + systemctl restart — same pattern as the Sitos tunables.
-func upkeepSoldShare() float64 {
+//
+// Exported because the read surfaces (api/handlers) must project the same net
+// drain the tick actually takes; a second copy of the default would drift.
+func UpkeepSoldShare() float64 {
 	s := 0.7
 	if v := os.Getenv("UPKEEP_SOLD_SHARE"); v != "" {
 		if f, err := strconv.ParseFloat(v, 64); err == nil {
@@ -116,7 +119,7 @@ type UpkeepHandler struct {
 // NotifyPlayer call is nil-guarded, matching the other combat handlers. The
 // sold-circulation share is read from env here; tests set h.soldShare directly.
 func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster) *UpkeepHandler {
-	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, soldShare: upkeepSoldShare()}
+	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, soldShare: UpkeepSoldShare()}
 }
 
 // Handle processes a ScheduledUpkeepTick event.

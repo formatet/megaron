@@ -198,7 +198,11 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		canRecruit  bool
 		upkeepGrain float64
 		upkeepSilv  float64
-		sustainable bool
+		// What the city actually loses per day once the unit garrisons here:
+		// the sold share circulates back (Del C). Equal to upkeepSilv on a
+		// server without the field, and whenever UPKEEP_SOLD_SHARE is 0.
+		upkeepSilvNet float64
+		sustainable   bool
 	}
 	afford := map[string]recruitAffordInfo{}
 	// The city's own net-after-upkeep, so the warning can name WHICH of the two
@@ -231,11 +235,16 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 						can, _ := m["can_recruit"].(bool)
 						ug, _ := m["upkeep_grain_per_day"].(float64)
 						us, _ := m["upkeep_silver_per_day"].(float64)
+						usNet, netOK := m["upkeep_silver_net_per_day"].(float64)
+						if !netOK {
+							usNet = us // older server without the field: gross is the drain
+						}
 						sustain, sustainOK := m["sustainable"].(bool)
 						if !sustainOK {
 							sustain = true // older server without the field: don't false-warn
 						}
-						afford[u] = recruitAffordInfo{canRecruit: can, upkeepGrain: ug, upkeepSilv: us, sustainable: sustain}
+						afford[u] = recruitAffordInfo{canRecruit: can, upkeepGrain: ug,
+							upkeepSilv: us, upkeepSilvNet: usNet, sustainable: sustain}
 					}
 				}
 			}
@@ -292,9 +301,16 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			}
 			if info.upkeepGrain > 0 || info.upkeepSilv > 0 {
 				upkeepStr = fmt.Sprintf("%.1f grain, %.1f silver", info.upkeepGrain, info.upkeepSilv)
+				// Del C: the treasury must cover the full sold each day, but the
+				// part the soldiers spend at home comes straight back. Naming both
+				// keeps the ⚠ below (which is judged on the net) readable — without
+				// it the warning and the cost beside it look like they disagree.
+				if info.upkeepSilvNet != info.upkeepSilv {
+					upkeepStr += fmt.Sprintf(" (%.1f netto i garnison)", info.upkeepSilvNet)
+				}
 				if !info.sustainable {
 					upkeepStr += "  ⚠ " + unsustainableReason(
-						netGrain, netSilver, info.upkeepGrain, info.upkeepSilv, grainStock, silverStock)
+						netGrain, netSilver, info.upkeepGrain, info.upkeepSilvNet, grainStock, silverStock)
 				}
 			}
 		}
