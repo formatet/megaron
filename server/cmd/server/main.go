@@ -387,11 +387,24 @@ func main() {
 	_ = srv.Shutdown(shutdownCtx)
 }
 
-// seedDailyTicks ensures each active world has exactly one queued instance of
-// each daily tick type. Safe to call on every startup — INSERT is skipped when
-// a pending (unprocessed) tick already exists.
+// seedDailyTicks ensures each world has exactly one queued instance of each
+// daily tick type. Safe to call on every startup — INSERT is skipped when a
+// pending (unprocessed) tick already exists.
+//
+// 'forming' is included, and that is the whole point. A world is born forming
+// (worlds.state DEFAULT) and only flips to active on the FIRST join
+// (api/handlers/join.go). Seeding ran at startup over active worlds only, so a
+// freshly created world was seeded never: it existed before this ran, it was
+// not active yet when it ran, and nothing re-seeds at the transition. Every
+// daily tick — upkeep, sitos, kharis, loyalty decay and welfare, colony
+// penalty, borrowed army, intercept scan — stayed dead for the world's entire
+// life until someone happened to restart the process. On the dev server `air`
+// restarts constantly and hid it; the acceptance world, which restarts for
+// nothing, exposed it (2026-08-02). Ticking a forming world is harmless: every
+// handler iterates settlements or non-founder units, and a forming world has
+// neither.
 func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Scheduler) {
-	rows, err := pool.Query(ctx, `SELECT id FROM worlds WHERE state = 'active'`)
+	rows, err := pool.Query(ctx, `SELECT id FROM worlds WHERE state IN ('forming', 'active')`)
 	if err != nil {
 		slog.Error("seed daily ticks: query worlds", "err", err)
 		return
