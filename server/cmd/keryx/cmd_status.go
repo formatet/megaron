@@ -495,13 +495,26 @@ func statusCmd() *cobra.Command {
 						}
 					}
 				}
-				// Upkeep the standing garrison drains each day (grain shortage → attrition,
-				// silver shortage → desertion). Same figures the daily upkeep tick debits.
+				// Upkeep this city pays each day — every unit it supports, wherever it
+				// stands (grain shortage → attrition, silver shortage → desertion).
+				// Same figures the daily upkeep tick debits.
 				if up, ok := sett["army_upkeep"].(map[string]any); ok {
 					g, _ := up["grain"].(float64)
 					s, _ := up["silver"].(float64)
 					if g > 0 || s > 0 {
-						fmt.Printf("  %-10s %.1f grain, %.1f silver / day\n", "Upkeep", g, s)
+						// Say what the figure covers. It sits directly under a list of
+						// the units STANDING here, but since mig 100 it is the bill for
+						// everything this city supports — so a Wanax with half the army
+						// in the field reads "100 spearmen, upkeep for 200" and thinks
+						// the number is broken.
+						fmt.Printf("  %-10s %.1f grain, %.1f silver / day  (allt staden betalar — även fältenheter)\n", "Upkeep", g, s)
+						// Del C: soldiers standing in the town that pays them spend
+						// their sold there. Shown as its own line because it is the
+						// only reason the net below is not gross — an invisible flow
+						// is one the Wanax can neither plan for nor exploit.
+						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {
+							fmt.Printf("  %-10s %.1f silver / day tillbaka i staden (garnisonens sold)\n", "", circ)
+						}
 					}
 				}
 				// Legibilitet (2026-07-24): namnge att detta bara är garnisonen HÄR —

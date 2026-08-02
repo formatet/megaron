@@ -18,7 +18,8 @@ func TestUpkeepNetPerDay(t *testing.T) {
 		name          string
 		grainRate     float64 // settlement_goods rate, per tick (citizens already netted)
 		silverRate    float64
-		up            upkeepAmount // existing garrison's daily upkeep
+		up            upkeepAmount // upkeep this city already pays, gross
+		circulated    float64      // Del C: sold spent back into the town, same tick
 		wantGrainNet  float64
 		wantSilverNet float64
 	}{
@@ -46,11 +47,36 @@ func TestUpkeepNetPerDay(t *testing.T) {
 			wantGrainNet:  -0.5*24 - 5,
 			wantSilverNet: 0 - 2,
 		},
+		{
+			// Del C: a city whose whole garrison stands at home loses only
+			// (1−share) of the silver. Before this, the same city read as −2/day
+			// and the recruit surface called it unsustainable while it was in
+			// fact in surplus. Grain is untouched — soldiers eat their rations.
+			name:          "sold circulating back is not drain",
+			grainRate:     0,
+			silverRate:    0.05, // 1.2/day
+			up:            upkeepAmount{Grain: 5, Silver: 2},
+			circulated:    1.4, // share 0.7 of the whole 2
+			wantGrainNet:  0 - 5,
+			wantSilverNet: 1.2 - 0.6,
+		},
+		{
+			// A garrison that marches out keeps billing its home town, but stops
+			// spending there: circulated falls to 0 and the drain is the gross.
+			// Same city, same units — the difference is only where they stand.
+			name:          "field army: nothing circulates, full gross drains",
+			grainRate:     0,
+			silverRate:    0.05,
+			up:            upkeepAmount{Grain: 5, Silver: 2},
+			circulated:    0,
+			wantGrainNet:  0 - 5,
+			wantSilverNet: 1.2 - 2,
+		},
 	}
 	const eps = 1e-9
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotGrain, gotSilver := upkeepNetPerDay(tc.grainRate, tc.silverRate, tc.up)
+			gotGrain, gotSilver := upkeepNetPerDay(tc.grainRate, tc.silverRate, tc.up, tc.circulated)
 			if math.Abs(gotGrain-tc.wantGrainNet) > eps {
 				t.Errorf("grainNetPerDay = %v, want %v", gotGrain, tc.wantGrainNet)
 			}
