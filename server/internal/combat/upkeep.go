@@ -260,9 +260,21 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		// L2: the supplying settlement's loyalty scales desertion severity.
 		loyalty := settlementLoyalty(ctx, h.pool, sid)
 
-		// Del C — sold circulation: a garrisoned unit's soldiers spend soldShare of
-		// their pay back into the town they hold; a field unit (no settlement_id,
-		// paid by the metropolis fallback) is a full sink — campaigns cost for real.
+		// Del C — sold circulation: soldiers standing in the town that pays them
+		// spend soldShare of their pay back into it; a unit anywhere else is a full
+		// sink — campaigns cost for real.
+		//
+		// The discriminator is `unit stands in its own paying settlement`, NOT the
+		// original plan's "settlement_id set vs null". Migration 100 replaced the
+		// silent capital fallback with support_settlement_id as the sole payer, so
+		// settlement_id no longer separates garrison from field: since mig 100 the
+		// recruitment path sets BOTH columns, and a field unit keeps its raising
+		// town as payer while standing elsewhere. Comparing the two columns keeps
+		// payer = recipient, which is what the plan chose for the MVP.
+		// (Crediting a town the unit garrisons but which does NOT pay it would be
+		// the metropolis→colony sold flow — deliberately still deferred; the
+		// circulated_to map already carries that variant without a schema change.)
+		//
 		// The affordability gate stays on the FULL upkeep N (payroll liquidity — the
 		// war-chest), while the net debit is only (1−share)·N. Deduct + credit are a
 		// SINGLE atomic statement, never two loose Execs. Since eff ≤ cap and
@@ -270,7 +282,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		// never clips — the credit is always applied in full (no spill), which is
 		// why silver_circulated below is exactly `credit`.
 		var credit float64
-		if u.settlementID != nil {
+		if u.settlementID != nil && *u.settlementID == sid {
 			credit = h.soldShare * silverNeed
 		}
 

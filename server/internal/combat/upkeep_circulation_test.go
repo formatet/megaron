@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/poleia/server/internal/clock"
-	"github.com/poleia/server/internal/events"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
 )
 
 func TestUpkeepSoldCirculation(t *testing.T) {
@@ -47,7 +47,7 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 		}
 		return id
 	}
-	mkSettlement := func(owner uuid.UUID, name string, q int, silver, silverCap float64) uuid.UUID {
+	mkSettlementAs := func(owner uuid.UUID, name string, q int, silver, silverCap float64, ctype string, isCapital bool) uuid.UUID {
 		var prov uuid.UUID
 		if err := pool.QueryRow(ctx,
 			`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, $2, 0, 'plains') RETURNING id`,
@@ -58,8 +58,8 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 		var id uuid.UUID
 		if err := pool.QueryRow(ctx,
 			`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
-			 VALUES ($1, $2, $3, 'achaean', $4, 'capital', true, 'active', 1000) RETURNING id`,
-			worldID, prov, name, owner,
+			 VALUES ($1, $2, $3, 'achaean', $4, $5, $6, 'active', 1000) RETURNING id`,
+			worldID, prov, name, owner, ctype, isCapital,
 		).Scan(&id); err != nil {
 			t.Fatalf("create settlement %s: %v", name, err)
 		}
@@ -77,20 +77,42 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 		}
 		return id
 	}
+	mkSettlement := func(owner uuid.UUID, name string, q int, silver, silverCap float64) uuid.UUID {
+		return mkSettlementAs(owner, name, q, silver, silverCap, "capital", true)
+	}
+	// Since mig 100 the recruitment path sets BOTH settlement_id and
+	// support_settlement_id, and support_settlement_id is the sole payer (the
+	// silent capital fallback is gone). A home garrison therefore has the two
+	// columns equal — that equality, not "settlement_id is set", is what makes
+	// the sold circulate.
 	mkGarrison := func(owner, sid uuid.UUID, utype string) {
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-			 VALUES ($1, $2, $3, 'land', 100, 0, 'garrison', $4)`,
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id, support_settlement_id)
+			 VALUES ($1, $2, $3, 'land', 100, 0, 'garrison', $4, $4)`,
 			worldID, owner, utype, sid,
 		); err != nil {
 			t.Fatalf("create garrison %s: %v", utype, err)
 		}
 	}
-	mkField := func(owner uuid.UUID, utype string) {
+	// Garrison stationed in a town that does NOT pay it (its metropolis does).
+	// This is the fixture that separates the two discriminators — see the case
+	// comment at pA below.
+	mkGarrisonAway := func(owner, stands, payer uuid.UUID, utype string) {
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
-			 VALUES ($1, $2, $3, 'land', 100, 0, 'positioned', 5, 5)`,
-			worldID, owner, utype,
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id, support_settlement_id)
+			 VALUES ($1, $2, $3, 'land', 100, 0, 'garrison', $4, $5)`,
+			worldID, owner, utype, stands, payer,
+		); err != nil {
+			t.Fatalf("create away garrison %s: %v", utype, err)
+		}
+	}
+	// Field unit: away from home, so settlement_id is NULL while its raising town
+	// keeps paying it. Full sink.
+	mkField := func(owner, support uuid.UUID, utype string) {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, support_settlement_id)
+			 VALUES ($1, $2, $3, 'land', 100, 0, 'positioned', 5, 5, $4)`,
+			worldID, owner, utype, support,
 		); err != nil {
 			t.Fatalf("create field %s: %v", utype, err)
 		}
@@ -102,9 +124,22 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 	sG := mkSettlement(pG, "Garrisontown", 0, 1000, 100000)
 	sF := mkSettlement(pF, "Metropolis", 4, 1000, 100000)
 	sP := mkSettlement(pP, "Poortown", 8, 1, 100000)
-	mkGarrison(pG, sG, "spearman") // N=2, garrison → credit
-	mkField(pF, "war_chariot")     // N=6, field (capital sF pays) → full sink
+	mkGarrison(pG, sG, "spearman") // N=2, garrison at home → credit
+	mkField(pF, sF, "war_chariot") // N=6, field (sF raised and pays it) → full sink
 	mkGarrison(pP, sP, "spearman") // N=2 but only 1 silver → unpaid
+
+	// pA — the discriminating case. This unit garrisons a colony that does NOT
+	// pay it; its metropolis does. Both other garrison fixtures have
+	// settlement_id == support_settlement_id, so they pass under EITHER rule and
+	// prove nothing about which one is in force. Here the two rules disagree:
+	// the plan's original "settlement_id is set" would credit sM — a town the
+	// soldiers are not standing in — while the mig-100 rule (stands in its own
+	// paying town) makes it a full sink. Without this case the discriminator is
+	// untested.
+	pA := mkPlayer()
+	sM := mkSettlement(pA, "Metropolis-A", 12, 1000, 100000)
+	sC := mkSettlementAs(pA, "Colony-A", 16, 500, 100000, "colony", false)
+	mkGarrisonAway(pA, sC, sM, "spearman") // N=2, stands in sC, paid by sM
 
 	silverOf := func(sid uuid.UUID) float64 {
 		var v float64
@@ -176,6 +211,19 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 	if s := readSettled(sP); s.unpaid != 1 || s.paid != 0 || !approx(s.gross, 0) || !approx(s.unpaidSilver, 2) {
 		t.Errorf("poor town UpkeepSettled = %+v, want {unpaid1 paid0 gross0 unpaidSilver2}", s)
 	}
+	// Garrison away from its payer: full sink. The metropolis pays all of N=2
+	// (1000 → 998) and the colony it stands in receives nothing (500 untouched).
+	// Under the plan's original discriminator sM would instead have been credited
+	// 1.4 and read 999.4 — that difference is what this case exists to catch.
+	if got := silverOf(sM); !approx(got, 998) {
+		t.Errorf("metropolis-A silver = %.4f, want 998 (full sink — unit not standing in its payer)", got)
+	}
+	if got := silverOf(sC); !approx(got, 500) {
+		t.Errorf("colony-A silver = %.4f, want 500 (untouched — it does not pay the garrison)", got)
+	}
+	if s := readSettled(sM); s.paid != 1 || !approx(s.gross, 2) || !approx(s.circ, 0) || !approx(s.destroyed, 2) || s.circulatedTo != "{}" {
+		t.Errorf("away-garrison UpkeepSettled = %+v, want {paid1 gross2 circ0 destr2 circulatedTo {}}", s)
+	}
 }
 
 // TestUpkeepSoldShareZeroIdentity: with soldShare=0 a garrisoned unit's whole
@@ -231,8 +279,8 @@ func TestUpkeepSoldShareZeroIdentity(t *testing.T) {
 		}
 	}
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'garrison', $3)`,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id, support_settlement_id)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'garrison', $3, $3)`,
 		worldID, owner, sid,
 	); err != nil {
 		t.Fatalf("create garrison: %v", err)
