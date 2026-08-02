@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -166,7 +167,11 @@ func transferCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "transfer",
-		Short: "Send goods to one of your own settlements (internal logistics, no loss)",
+		// "no loss" here means no storm/pirates dice roll (internal logistics never
+		// rolls it, unlike a negotiated trade) — it is still a physical caravan that
+		// can be intercepted and seized. Don't shorten this back to a bare "no loss";
+		// that reads as risk-free, which it isn't (see `keryx cargo`).
+		Short: "Send goods to one of your own settlements (no consent needed, no storm/pirates roll — but still a physical, seizable caravan)",
 		Example: `  keryx transfer --good grain --qty 50 --dest Korinth
   keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home`,
 		// --good, --qty and --dest are all required — no single one is the
@@ -220,6 +225,72 @@ func transferCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("qty")
 	_ = cmd.MarkFlagRequired("dest")
 	return cmd
+}
+
+// cargoCmd is "last i rörelse" for keryx (web/last-i-rorelse, 2026-08): before
+// this, `keryx transfer` gave a fire-and-forget dispatch confirmation and then
+// the cargo vanished from view — no ETA, no list of what's still moving.
+// GET /trades already carries every physical mover visible to the caller
+// (internal transfers AND trade legs) with a `mine` flag identifying the
+// caller's own; this just filters to `mine` and prints it. No new endpoint,
+// no new flags — the server does the filtering data, this only formats it.
+func cargoCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "cargo",
+		Short: "Show your own goods currently in transit (internal transfers and trade deliveries)",
+		Args:  noPositionalArgs(),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/trades", cfg.WorldID)
+			data, err := c.get(path)
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var markers []map[string]any
+			if err := json.Unmarshal(data, &markers); err != nil {
+				return err
+			}
+			var mine []map[string]any
+			for _, m := range markers {
+				if isMine, _ := m["mine"].(bool); isMine {
+					mine = append(mine, m)
+				}
+			}
+			if len(mine) == 0 {
+				fmt.Println("No cargo of yours currently in transit.")
+				return nil
+			}
+			fmt.Printf("%-10s  %9s  %12s  %12s  %10s\n", "Good", "Qty", "From", "To", "ETA")
+			fmt.Println("──────────────────────────────────────────────────────────────────")
+			for _, m := range mine {
+				good, _ := m["good_key"].(string)
+				qty, _ := m["quantity"].(float64)
+				oq, _ := m["origin_q"].(float64)
+				orr, _ := m["origin_r"].(float64)
+				dq, _ := m["dest_q"].(float64)
+				dr, _ := m["dest_r"].(float64)
+				etaStr := "—"
+				if arrivesStr, ok := m["arrives_at"].(string); ok {
+					if t, err := time.Parse(time.RFC3339, arrivesStr); err == nil {
+						etaStr = countdown(t)
+					}
+				}
+				fmt.Printf("%-10s  %9.0f  %12s  %12s  %10s\n",
+					good, qty,
+					fmt.Sprintf("(%d,%d)", int(oq), int(orr)),
+					fmt.Sprintf("(%d,%d)", int(dq), int(dr)),
+					etaStr)
+			}
+			fmt.Println("\nPhysical cargo, not a promise — it can be intercepted and seized in transit.")
+			fmt.Println("Internal transfers never roll the storm/pirates loss die (that's only for")
+			fmt.Println("negotiated trade deliveries) — but interception is a separate risk.")
+			return nil
+		},
+	}
 }
 
 func giftCmd() *cobra.Command {

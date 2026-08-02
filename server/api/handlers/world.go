@@ -1374,13 +1374,20 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	// Physical caravans in motion (movement-motor transport layer). Every in-transit
 	// row is a real mover — trade legs (delivery + return) AND internal transfers —
 	// so all of them render, and an intercepted caravan (status != 'in_transit')
-	// vanishes from the map the moment it is seized. good_key = the heaviest manifest
-	// good, for display. origin/dest coords come off the transport row itself; the
-	// settlement join only supplies terrain for the fog-of-war gate.
+	// vanishes from the map the moment it is seized. good_key/quantity = the heaviest
+	// manifest good, for display (LATERAL so both columns come off the SAME winning
+	// row — two independent scalar subqueries could each pick a different good on a
+	// tie). origin/dest coords come off the transport row itself; the settlement
+	// join only supplies terrain for the fog-of-war gate.
+	//
+	// t.owner_id is who dispatched this physical mover — for both internal transfers
+	// (province.go Trade) and trade legs (messenger.go accept), that is set to the
+	// ORIGIN settlement's owner (see economy/trade.go isInternalTransfer, messenger.go
+	// originOwner) — so comparing it to the caller IS "do I own the origin
+	// settlement", with no extra settlements join needed.
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT t.id,
-		        COALESCE((SELECT g.good_key FROM transport_goods g
-		                  WHERE g.transport_id = t.id ORDER BY g.quantity DESC LIMIT 1), ''),
+		`SELECT t.id, t.owner_id,
+		        COALESCE(top.good_key, ''), COALESCE(top.quantity, 0),
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
 		        t.departs_at, t.arrives_at
@@ -1389,6 +1396,10 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN provinces op ON op.id = os.province_id
 		 LEFT JOIN settlements ds ON ds.id = t.dest_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 LEFT JOIN LATERAL (
+		     SELECT g.good_key, g.quantity FROM transport_goods g
+		     WHERE g.transport_id = t.id ORDER BY g.quantity DESC LIMIT 1
+		 ) top ON true
 		 WHERE t.world_id = $1 AND t.status = 'in_transit'`,
 		worldID,
 	)
@@ -1401,19 +1412,22 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	type tradeMarker struct {
 		ID        uuid.UUID `json:"id"`
 		GoodKey   string    `json:"good_key"`
+		Quantity  float64   `json:"quantity"`
 		OriginQ   int       `json:"origin_q"`
 		OriginR   int       `json:"origin_r"`
 		DestQ     int       `json:"dest_q"`
 		DestR     int       `json:"dest_r"`
 		DepartsAt time.Time `json:"departs_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
+		Mine      bool      `json:"mine"`
 	}
 
 	var markers []tradeMarker
 	for rows.Next() {
 		var m tradeMarker
+		var ownerID uuid.UUID
 		var originTerrain, destTerrain string
-		if err := rows.Scan(&m.ID, &m.GoodKey, &m.OriginQ, &m.OriginR, &originTerrain,
+		if err := rows.Scan(&m.ID, &ownerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
 			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt); err != nil {
 			continue
 		}
@@ -1422,6 +1436,9 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.DestQ, R: m.DestR}, destTerrain) {
 			continue
 		}
+		// Unauthenticated callers get no ownership info at all — never let an
+		// anonymous request see mine:true on any row.
+		m.Mine = authenticated && ownerID == playerID
 		markers = append(markers, m)
 	}
 	if markers == nil {
