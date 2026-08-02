@@ -502,7 +502,12 @@ func statusCmd() *cobra.Command {
 					g, _ := up["grain"].(float64)
 					s, _ := up["silver"].(float64)
 					if g > 0 || s > 0 {
-						fmt.Printf("  %-10s %.1f grain, %.1f silver / day\n", "Upkeep", g, s)
+						// Say what the figure covers. It sits directly under a list of
+						// the units STANDING here, but since mig 100 it is the bill for
+						// everything this city supports — so a Wanax with half the army
+						// in the field reads "100 spearmen, upkeep for 200" and thinks
+						// the number is broken.
+						fmt.Printf("  %-10s %.1f grain, %.1f silver / day  (allt staden betalar — även fältenheter)\n", "Upkeep", g, s)
 						// Del C: soldiers standing in the town that pays them spend
 						// their sold there. Shown as its own line because it is the
 						// only reason the net below is not gross — an invisible flow
