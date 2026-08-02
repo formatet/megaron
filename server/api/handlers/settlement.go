@@ -981,16 +981,22 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 //
 //	{
 //	  "reveals": [
-//	    { "q": 47, "r": 12, "ore": "tin" },
-//	    { "q": 45, "r": 14, "ore": "copper" }   // optional second result
+//	    { "q": 47, "r": 12, "ore": "tin", "ore_tiles": [{"q": 48, "r": 11}] },
+//	    { "q": 45, "r": 14, "ore": "copper", "ore_tiles": [{"q": 45, "r": 13}] }   // optional second result
 //	  ]
 //	}
+//
+// "q"/"r" stay the colonisable site (unchanged shape — harness/agent.py read these).
+// "ore_tiles" is the new field: the site's neighbour(s) that actually carry the named
+// deposit (the CTE below aggregates BOOL_OR across all 6 neighbours and loses which one
+// it was, so this is looked up separately per reveal).
 //
 // Harness usage: read event payload["effect"]["reveals"][0]["q"/"r"] to get the
 // colonisable tile coordinates, then issue a settle action there. colonize validation
 // (unit.go:179) only requires a buildable unoccupied tile — FOW-visibility is NOT
-// required to colonize it. The reveal is still written to player_scouted_tiles so the
-// coordinate persists as map/FOW memory for the player (movement-motor Pass II).
+// required to colonize it. Both the site and its ore_tiles are written to
+// player_scouted_tiles so the deposit itself (not just the colony site) persists as
+// map/FOW memory and actually renders on /map (movement-motor Pass II).
 //
 // Idempotency: each reveal is INSERT ... ON CONFLICT DO NOTHING against
 // player_scouted_tiles, so re-running (e.g. a retried TX) is safe.
@@ -1111,10 +1117,48 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 	for _, rs := range revealed {
 		ore := oreKey(rs)
 		parts = append(parts, fmt.Sprintf("%s at (%d,%d)", ore, rs.Q, rs.R))
+
+		// The sites CTE aggregates BOOL_OR(nb.*_deposit) across all 6 neighbours to
+		// decide whether a colony site qualifies, so it loses WHICH neighbour actually
+		// carries the deposit (GROUP BY site.q, site.r). Without this lookup only the
+		// colonisable site itself gets written to player_scouted_tiles below — the
+		// deposit hex named in the reveal stays fog forever, no marker ever appears.
+		// Only the neighbour(s) bearing the SAME ore type reported for this site are
+		// fetched, never all deposit-bearing neighbours, so e.g. a tin reveal cannot
+		// leak an unrelated silver hex sitting next door that the rite never named.
+		oreTiles := []map[string]any{}
+		oreRows, oreErr := tx.Query(ctx,
+			`SELECT nb.q, nb.r
+			 FROM map_tiles nb
+			 JOIN LATERAL (VALUES
+			     (1,0),(-1,0),(0,1),(0,-1),(1,-1),(-1,1)
+			 ) AS d(dq, dr) ON true
+			 WHERE nb.world_id = $1
+			   AND nb.q = $2 + d.dq AND nb.r = $3 + d.dr
+			   AND CASE $4::text
+			         WHEN 'tin' THEN nb.tin_deposit
+			         WHEN 'copper' THEN nb.copper_deposit
+			         ELSE COALESCE(nb.silver_deposit, false)
+			       END`,
+			worldID, rs.Q, rs.R, ore,
+		)
+		if oreErr != nil {
+			slog.Warn("oracle: ore-hex lookup failed", "q", rs.Q, "r", rs.R, "err", oreErr)
+		} else {
+			for oreRows.Next() {
+				var oq, orr int
+				if scanErr := oreRows.Scan(&oq, &orr); scanErr == nil {
+					oreTiles = append(oreTiles, map[string]any{"q": oq, "r": orr})
+				}
+			}
+			oreRows.Close()
+		}
+
 		revealsPayload = append(revealsPayload, map[string]any{
-			"q":   rs.Q,
-			"r":   rs.R,
-			"ore": ore,
+			"q":         rs.Q,
+			"r":         rs.R,
+			"ore":       ore,
+			"ore_tiles": oreTiles,
 		})
 		// Persist the reveal as scouted-tile memory (R3): the coordinate stays on the
 		// player's map/FOW after this rite even though colonize itself is not FOW-gated.
@@ -1124,6 +1168,20 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 			worldID, playerID, rs.Q, rs.R,
 		); insErr != nil {
 			slog.Warn("oracle: scouted-tile insert failed", "q", rs.Q, "r", rs.R, "err", insErr)
+		}
+		// Also persist the ore hex(es) themselves. Without this the neighbour tile
+		// bearing the deposit the rite just named never enters player_scouted_tiles,
+		// so it stays fog in /map's tier switch and the marker never renders even
+		// though the coordinate above is now "remembered" terrain.
+		for _, ot := range oreTiles {
+			oq, orr := ot["q"].(int), ot["r"].(int)
+			if _, insErr := tx.Exec(ctx,
+				`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+				 VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
+				worldID, playerID, oq, orr,
+			); insErr != nil {
+				slog.Warn("oracle: ore-hex scouted-tile insert failed", "q", oq, "r", orr, "err", insErr)
+			}
 		}
 		switch ore {
 		case "tin":
