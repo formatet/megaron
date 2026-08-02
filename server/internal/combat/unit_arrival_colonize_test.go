@@ -51,7 +51,7 @@ func TestFoundColony_UnitDisbandsIntoPopulace(t *testing.T) {
 	// index (it only covers status='active') without chasing the web of
 	// settlement-referencing tables that lack ON DELETE CASCADE.
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

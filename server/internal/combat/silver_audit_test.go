@@ -30,7 +30,7 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	const tick = 1000
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-silver-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

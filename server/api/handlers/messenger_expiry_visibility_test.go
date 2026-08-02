@@ -46,7 +46,7 @@ func TestMessengerExpiresAt_VisibleInInboxAndOutbox(t *testing.T) {
 	// partial unique index) — see unit_arrival_colonize_test.go for why
 	// leftovers must be archived first.
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

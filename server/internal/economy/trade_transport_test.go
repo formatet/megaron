@@ -22,7 +22,7 @@ func TestTradeDelivery_InterceptedCaravanNotCredited(t *testing.T) {
 	ctx := context.Background()
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-tradetx-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover worlds: %v", err)
 	}
@@ -104,7 +104,7 @@ func TestTradeDelivery_PhysicalLegDeliversAndChainsReturn(t *testing.T) {
 	ctx := context.Background()
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-tradetx-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover worlds: %v", err)
 	}

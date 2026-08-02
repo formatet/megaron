@@ -40,8 +40,7 @@ func newSupportFixture(t *testing.T, pool *pgxpool.Pool, tag string) supportFixt
 	const tick = 3000
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE $1`,
-		"test-"+tag+"-%",
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}

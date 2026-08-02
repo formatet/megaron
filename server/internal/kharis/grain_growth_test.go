@@ -48,7 +48,7 @@ func newGrowthFixture(t *testing.T, terrains [6]string, pop int) (*pgxpool.Pool,
 	ctx := context.Background()
 
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-graingrowth-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover test worlds: %v", err)
 	}
