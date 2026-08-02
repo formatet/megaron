@@ -21,7 +21,7 @@ import {
 import { stopCityAnim } from './render/city.js';
 import {
   showLawagatasBrief, dismissBrief, MusicPlayer, toggleMusic,
-  initCelestial,
+  initCelestial, initMusicAutostart,
 } from './ui/misc.js';
 import { updateNotifBadge, initNotifications, addNotifChip } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
@@ -287,6 +287,12 @@ async function bootstrap() {
 // that reads State.WORLD_ID fires. Each init corresponds to top-level code
 // that ran unconditionally in the old single <script>.
 (async function start() {
+  // Registered synchronously, before the first await, so the pointerdown
+  // gate is live at the same moment it used to be as a module-top-level
+  // statement in ui/misc.js — a click during bootstrap()'s fetches must
+  // still catch MusicPlayer.start().
+  initMusicAutostart();
+
   if (!(await bootstrap())) return; // 401 → redirected to /
 
   initMap();           // canvas input handlers + loadMap() + render loop + 30s/3s polls
