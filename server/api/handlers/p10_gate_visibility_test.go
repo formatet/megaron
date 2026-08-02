@@ -75,10 +75,14 @@ func TestBuildingCatalogue_ExposesTerrainGate(t *testing.T) {
 		byType[b.Type] = b.RequiresTerrain
 	}
 
-	// mig 103 (druvor-utanfor-hills): winery's rows now name hills, plains and
+	// mig 103 (druvor-utanfor-hills) + mig 105 (vin i floddalen, Timothy
+	// 2026-08-02): winery's rows now name hills, plains, river_valley and
 	// scrub_maquis — still genuinely terrain-gated (no NULL-terrain fallback),
 	// just no longer hills-only. Alphabetical, per BuildingCatalogue's sort.
-	wantWinery := []string{"hills", "plains", "scrub_maquis"}
+	// requires_terrain is DERIVED from production_rules (province.go:1311), so
+	// adding a wine rule for a terrain also makes the winery buildable there —
+	// this list must follow every wine-terrain migration.
+	wantWinery := []string{"hills", "plains", "river_valley", "scrub_maquis"}
 	winery, ok := byType["winery"]
 	if !ok {
 		t.Fatal("no winery entry in building catalogue")
