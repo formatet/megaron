@@ -5,6 +5,7 @@ import { esc } from '../format.js';
 import { fmtEta } from '../time.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
+import { kharisNetView } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
 export async function loadKultDrawer() {
@@ -55,6 +56,10 @@ export async function loadKultDrawer() {
       html += '<div class="stat-row"><span class="sr-label">Passive</span><span class="sr-val">' +
         (pd.kharis_per_day >= 0 ? '+' : '') + pd.kharis_per_day.toFixed(1) + ' kharis/day</span></div>';
     }
+    // Net kharis (temple gain − decay) — the figure that answers "did raising
+    // devotion actually help", never computed client-side. See kult_kharis.js.
+    const { netHtml, idleHtml } = kharisNetView(pd);
+    html += netHtml + idleHtml;
     html += '</div>';
 
     // Cult level — derived from kharis (read-only; set by daily temple tick)

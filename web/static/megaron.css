@@ -1331,6 +1331,9 @@ body:has(.auth-page) main {
 .kharis-bar  { height: 8px; background: var(--bg); border: 1px solid var(--border); margin: 0.3rem 0; }
 .kharis-fill { height: 100%; background: var(--gold); }
 
+/* Kult drawer: unused temple devotion capacity — actionable, not alarming */
+.kult-warn { color: var(--accent); font-size: var(--fs-sm); font-style: italic; margin: 0.3rem 0; }
+
 /* Silver balance card */
 .silver-balance {
   display: flex;
