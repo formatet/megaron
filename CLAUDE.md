@@ -162,8 +162,14 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 
 - **Local:** `docker compose up` at project root (migrations run on startup; copy `.env.example` → `.env`).
 - **Dev server** (CT 126, 10.0.1.92:8080) runs `air`. After pushing to master:
-  `! ssh root@10.0.1.92 "cd /opt/poleia && git pull && echo done"`. Force restart: append
-  `&& systemctl restart poleia`.
+  `! ssh root@10.0.1.92 "cd /opt/poleia && git pull && echo done"` — `air` rebuilds and applies
+  migrations by itself seconds later. **Don't restart reflexively**; only when `air` is wedged
+  (`base.html` edits still need one).
+  ⛔ **Never restart, and never kill DB sessions, while a migration is in flight.** On live data a
+  migration can run for many minutes and that is normal, not a hang. Interrupting one leaves
+  `schema_migrations.dirty` set and the server down. Wait it out; if you must diagnose, read only.
+  Deploy is verified by commit hash + **ground state** + `healthz`, never `schema_migrations` alone.
+  Timings, DB sizes and the retention debt live in `megaron_drift.md`.
 - **Isolated acceptance world:** `tools/acceptance.sh` — this is where eye-checks happen, before merge.
 - **`keryx` binary:** `~/go/bin/poleia` — NOT in PATH, always use the full path.
 - **LLM playtest agents + live world:** `keryx_playtest.md`.
