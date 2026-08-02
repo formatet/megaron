@@ -6,8 +6,13 @@ If code and this file conflict, trust the code, then fix this file.
 read from code or vault on demand. A `≥3` beside the word "invariant" makes an agent refuse to tune it.
 
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
-- **The main gate:** a competent player completes geografi → brist → brons → elit in one session, via web
-  and keryx, with no developer intervention. Mark every piece of work *blocks* / *proves* / *waits for* it.
+- **Two gates** — mark every piece of work *blocks* / *proves* / *waits for* them:
+  **(1) The chain:** a competent player completes geografi → brist → brons → elit via web and keryx, with no
+  developer intervention and **without hitting a surface that doesn't exist**. Progress is measured in **game
+  days, never wall time** ("in one session" was struck 2026-08-02 — at 60 min/tick the chain spans real days).
+  **(2) Asynchronicity:** a Wanax away for nine hours must, on login, learn what happened, see what is heading
+  their way and when it lands — **and have time to answer**. Sharp form: order travel + defender travel <
+  attacker's remaining travel. Orders are physical; command is never instant.
 - **Before ending a session:** update `megaron_todo.md` — four queues with caps (NU ≤5 · BESLUT ≤7 ·
   VERIFIERING · SENARE). Not a diary. Group new observations by likely shared root before writing them down.
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
