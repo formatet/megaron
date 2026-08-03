@@ -57,18 +57,19 @@ func NewMessengerHandler(pool *pgxpool.Pool, sched *events.Scheduler, clk clock.
 // escrow only ever touches silver, so the bad key was never checked at all —
 // the offer was created, silver locked, and the messenger delivered a trade
 // that could never be accepted, tying up the buyer's silver until it expired.
+//
+// The query itself lives in tradeableGoodsCatalog (goods.go) — GoodsHandler's
+// client-facing catalogue reads the exact same helper, so the dropdown a
+// player picks from and this validation can never disagree about what counts
+// as a tradeable good.
 func (h *MessengerHandler) tradeableGood(ctx context.Context, key string) (string, bool) {
-	rows, err := h.pool.Query(ctx, `SELECT key FROM goods WHERE key NOT IN ('silver', 'cult') ORDER BY key`)
+	goods, err := tradeableGoodsCatalog(ctx, h.pool)
 	if err != nil {
 		return "could not verify good", false
 	}
-	defer rows.Close()
-	var valid []string
-	for rows.Next() {
-		var k string
-		if rows.Scan(&k) == nil {
-			valid = append(valid, k)
-		}
+	valid := make([]string, len(goods))
+	for i, g := range goods {
+		valid[i] = g.Key
 	}
 	for _, v := range valid {
 		if v == key {

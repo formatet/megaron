@@ -196,10 +196,10 @@ func tradeOfferCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&destName, "to", "t", "", "destination settlement name (required)")
-	cmd.Flags().StringVar(&wantGood, "want-good", "", "good key to request, e.g. grain, copper, cedar (buy mode)")
+	cmd.Flags().StringVar(&wantGood, "want-good", "", "good key to request — must be a tradeable good (GET /api/v1/goods lists them; an unknown key is rejected with the full list) (buy mode)")
 	cmd.Flags().Float64Var(&wantQty, "want-qty", 0, "quantity of good to request (buy mode)")
 	cmd.Flags().Float64Var(&offerSilver, "offer-silver", 0, "silver to offer in exchange (buy mode)")
-	cmd.Flags().StringVar(&offerGood, "offer-good", "", "good key to sell, e.g. copper, cedar (sell mode)")
+	cmd.Flags().StringVar(&offerGood, "offer-good", "", "good key to sell — must be a tradeable good (GET /api/v1/goods lists them; an unknown key is rejected with the full list) (sell mode)")
 	cmd.Flags().Float64Var(&offerQty, "offer-qty", 0, "quantity of good to sell (sell mode)")
 	cmd.Flags().Float64Var(&wantSilver, "want-silver", 0, "silver to request in exchange (sell mode)")
 	cmd.Flags().StringVar(&fromName, "from", "", "your city to send/pay from (default: capital)")
