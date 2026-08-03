@@ -860,8 +860,15 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 			continue // don't reveal fog tiles
 		}
 		if !m.Own {
-			// Don't expose enemy/neutral garrison or activity — FOW.
-			m.ArmyTotal = 0
+			// Garrison is revealed on the same terms as a unit in the open
+			// (Timothy 2026-08-03): in live tier, never out of memory — tier 2
+			// carries no activity. m.Visible above is knownToPlayer (live ∪
+			// remembered), so it alone would leak a garrison out of a
+			// remembered city; AnyEyeSees narrows this branch to live only.
+			if !province.AnyEyeSees(eyes, pos, terrain) {
+				m.ArmyTotal = 0
+			}
+			// Build/train activity stays hidden from outside regardless of tier.
 			m.BuildActive = false
 			m.TrainActive = false
 		}
