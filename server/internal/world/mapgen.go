@@ -5,11 +5,22 @@ import (
 	"log/slog"
 	"math"
 	"math/rand"
+	"os"
 	"sort"
 	"strings"
 
 	"github.com/aquilax/go-perlin"
 )
+
+// fragDebugLog gates the §7e fragment-revert measurement print (one FRAGDBG
+// line per river carve attempt: landmass, size, smallestFragment, reverted) —
+// off by default, zero cost when unset. This is the instrument that produced
+// riverMinComponentTiles' calibration (megaron_plan_flodbudget_och_
+// vadstalle.md, coordinator correction 2026-08-03): re-run it
+// (MAPGEN_FRAG_DEBUG=1 go run ./cmd/mapgen-debug ...) before ever moving
+// riverMinComponentTiles or minLandFragment again — the failure mode it
+// measures does not announce itself any other way.
+var fragDebugLog = os.Getenv("MAPGEN_FRAG_DEBUG") != ""
 
 type cell struct{ q, r int }
 
@@ -163,21 +174,53 @@ const (
 
 	// riverMinComponentTiles: a land component smaller than this never gets a
 	// river source — rivers on specks read as noise, not geography (plan §P3
-	// "high-elevation tiles ... preferring LARGE components"). Comfortably
-	// above remoteIsleMaxTiles (15) so a forced-metal remote isle never
-	// doubles as a river source too.
-	riverMinComponentTiles = 25
+	// "high-elevation tiles ... preferring LARGE components").
+	//
+	// 70, not 25 (megaron_plan_flodbudget_och_vadstalle.md, coordinator
+	// correction 2026-08-03): §7e's fragment guard (minLandFragment=12) undoes
+	// a WHOLE carve whenever it leaves a splinter under 12 tiles, and a
+	// per-attempt splinter-below-12 outcome is NOT size-dependent — measured
+	// across 665 individual river carves (230×230, seeds 1-10, one FRAGDBG
+	// line per carve): the revert rate sits at a roughly constant 5-15% from
+	// the smallest qualifying landmass up through size 2270+ (a river's own
+	// path can pinch off a small corner on a huge landmass exactly as easily
+	// as on a small one — this is a LOCAL geometric event, not a function of
+	// total landmass area). What size DOES change is how many independent
+	// chances a landmass gets: below riversSecondRiverTiles a landmass has
+	// budget=1 (exactly one shot — any revert leaves it at 0 rivers, tripping
+	// the "1-2" invariant below); at or above it, budget=2 gives two
+	// independent shots, and both failing is rare enough that no such case has
+	// ever been observed (0 occurrences across every measurement this slice
+	// ran). So raising this floor does not make an individual carve safer —
+	// it shrinks the population of single-shot landmasses a valid map depends
+	// on none of failing. Every observed "N rivers (want 1-2)" reseed (11
+	// occurrences across seeds 1-10 at the old floor of 25) landed on a
+	// landmass sized 27-63; 70 sits with a measured margin above that ceiling
+	// and reduces "N rivers" failures to ZERO across 20 seeds (1-20) at
+	// 230×230 — see the slice's proof package for the full FRAGDBG dataset and
+	// the seed-by-seed attempts comparison against master. Comfortably above
+	// remoteIsleMaxTiles (15) so a forced-metal remote isle never doubles as a
+	// river source too.
+	riverMinComponentTiles = 70
 
 	// riversSecondRiverTiles: a landmass gets its SECOND river only once it is
 	// at least this big — "1-2 per landmass" per Timothy's decision, with the
 	// second reserved for landmasses substantial enough to plausibly carry two
-	// separate drainage systems rather than one river and its own echo. Set at
-	// 4× riverMinComponentTiles: comfortably above the 1-river floor (so most
-	// modest qualifying landmasses stop at 1, matching "1-2" reading as
-	// "usually 1, sometimes 2" rather than "always 2"), and measured against
-	// the three-seed 230×230 baseline (megaron_plan_flodbudget_och_vadstalle.md
-	// A1) to land in the 1-2 band with no landmass exceeding 2 — see the
-	// slice's proof package for the measured histogram this number produced.
+	// separate drainage systems rather than one river and its own echo. Left
+	// at 100 (unchanged by the floor-70 correction above): raising it in step
+	// with the new floor (tried 280, a 4× ratio matching the original
+	// 25→100) made things WORSE, not better — it pushed some large
+	// landmasses that safely got 2 independent chances at 100 back down to a
+	// single (riskier) chance, and measurably increased reseed attempts
+	// without shifting the 1-vs-2 split much. 100 keeps every budget=2
+	// landmass's fragment-revert risk at "two independent 5-15% rolls",
+	// which has never once produced a 0-river landmass in any measurement
+	// run for this slice. Genuinely worth a canon note, not a code fix here:
+	// with floor=70, most landmasses that clear the qualifying bar in a
+	// 230×230 map ALSO already clear 100, so a typical run's split skews
+	// toward "mostly 2" rather than "mostly 1, sometimes 2" (e.g. seed 1:
+	// [2 2 2 2 2 2 2 2 1 1 1 1]) — flagged for Timothy, not silently re-tuned
+	// further.
 	riversSecondRiverTiles = 100
 
 	// riverSourceSpacing is the minimum hex distance between two river
@@ -203,9 +246,21 @@ const (
 	// cannot cross it). But a carve that leaves a splinter this small or
 	// smaller is a mapgen bug, not geography: it is undone (the whole carve —
 	// line, flanks, delta — is reverted for that source) rather than kept.
-	// 12 sits comfortably below riverMinComponentTiles (25, the floor for even
-	// STARTING a river) so a river is never rejected by a fragment it created
-	// out of ordinary, playable ground — only genuine slivers.
+	//
+	// Relationship to riverMinComponentTiles (measured 2026-08-03, coordinator
+	// correction): "12 sits below 25" alone is NOT what keeps these two
+	// constants compatible — a revert is a roughly size-INDEPENDENT ~5-15%
+	// per-carve event (see riverMinComponentTiles's comment), so a landmass
+	// only just above minLandFragment can still fail its (single) attempt at
+	// the same rate as a landmass ten times its size. What actually keeps the
+	// generator honest is riverMinComponentTiles being high enough that the
+	// POPULATION of budget=1 (single-shot) landmasses small enough to ever
+	// trip this revert is small — i.e. the two constants are compatible
+	// because of riverMinComponentTiles's floor, not because minLandFragment
+	// is "small enough" on its own. Do not lower riverMinComponentTiles back
+	// toward minLandFragment without re-running the FRAGDBG measurement in
+	// this slice's proof package — the failure mode does not announce itself
+	// through minLandFragment's own value.
 	minLandFragment = 12
 
 	// riverMeanderWavelength/riverMeanderJitter (ögonkoll 2026-07-29 fix — see
@@ -1187,7 +1242,13 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		// point — but a splinter smaller than minLandFragment is a mapgen bug,
 		// not geography. Undo the WHOLE carve (line, flanks, delta) rather
 		// than keep a fragment no Wanax could ever found a viable city on.
-		if smallestFragment(grid, cells, width, height) < minLandFragment {
+		frag := smallestFragment(grid, cells, width, height)
+		reverted := frag < minLandFragment
+		if fragDebugLog {
+			fmt.Fprintf(os.Stderr, "FRAGDBG landmass=%d size=%d smallestFragment=%d reverted=%v\n",
+				targetLM, len(cells), frag, reverted)
+		}
+		if reverted {
 			for c, t := range before {
 				grid[c] = t
 			}
@@ -2614,10 +2675,30 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field, meander map[ce
 	// river_ford hex has exactly 2 river-family neighbours" check — that
 	// assertion alone is sufficient proof no endpoint ever becomes a ford,
 	// which is why there is no separate index-bounds test for it.
+	//
+	// Prevention, not cure, for cross-river ford adjacency (§3's "two fords
+	// never share a hex edge"): spacing guarantees no two fords collide
+	// WITHIN this river's own line, but a DIFFERENT, earlier river's already-
+	// placed ford can still end up hex-adjacent to one of this river's
+	// candidate indices when two rivers' paths run close together (measured:
+	// ~1 in 10 seeds at 230×230). Skipping that one index — leaving the hex
+	// as plain river instead — is the same "check grid before writing"
+	// pattern addRiver's own descent already uses against
+	// adjacentToExistingRiver/adjacentToOwnPath, just applied to fords.
 	fords := len(line) / fordSpacingHexes
 	for k := 0; k < fords; k++ {
 		idx := fordSpacingHexes/2 + k*fordSpacingHexes
 		if idx <= 0 || idx >= len(line)-1 {
+			continue
+		}
+		adjacentToOtherFord := false
+		for _, n := range hexNeighbours(line[idx], width, height) {
+			if grid[n] == TerrainRiverFord {
+				adjacentToOtherFord = true
+				break
+			}
+		}
+		if adjacentToOtherFord {
 			continue
 		}
 		grid[line[idx]] = TerrainRiverFord
