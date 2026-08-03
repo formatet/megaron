@@ -38,6 +38,12 @@ var debugTerrainColor = map[Terrain]color.RGBA{
 	// water. The client's own render/map.js palette (slice S3) is separate
 	// and unaffected by this debug-only choice.
 	TerrainRiver: {0x2E, 0xA6, 0xC4, 0xFF}, // saturated cyan-blue (water)
+	// river_ford (megaron_plan_flodbudget_och_vadstalle.md steg 3): still the
+	// water itself — a lighter tint of the same cyan-blue reads as shallower
+	// water at a glance, distinguishing the port from the rest of the chain
+	// without inventing a whole new hue. Debug-only choice; the client's own
+	// palette (its own slice, non-scope here) is unaffected.
+	TerrainRiverFord: {0x7D, 0xD3, 0xE8, 0xFF}, // pale cyan-blue (shallow water)
 	// Dalen och deltat var cyan så länge de VAR flodlinjen. Nu är de mark på
 	// var sida om vattnet, och en cyan mark hade gjort felsökningsbilden till
 	// en lögn om vad som är segelbart — precis den fråga man öppnar den för.
@@ -211,12 +217,15 @@ func ExportDebugOverlayPNG(tiles []MapTile, width, height int, path string) erro
 
 // spawnBuildable replicates — read-only — the terrain exclusion shared by
 // validateMap's isBuildable and join.go's spawn query
-// (terrain NOT IN coastal_sea, deep_sea, river, mountain_limestone,
-// mountain_red, semi_desert). Kept here as a copy on purpose: this file must
-// never become an import target for game logic.
+// (terrain NOT IN coastal_sea, deep_sea, river, river_ford, mountain_limestone,
+// mountain_red, semi_desert). river_ford joins the exclusion for the same
+// reason river already is one: it is water, not a foundable site — the port
+// through the wall, not ground beside it (megaron_plan_flodbudget_och_vadstalle.md).
+// Kept here as a copy on purpose: this file must never become an import
+// target for game logic.
 func spawnBuildable(t Terrain) bool {
 	switch t {
-	case TerrainCoastalSea, TerrainDeepSea, TerrainRiver,
+	case TerrainCoastalSea, TerrainDeepSea, TerrainRiver, TerrainRiverFord,
 		TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
 		return false
 	}
@@ -355,6 +364,29 @@ type MapMetrics struct {
 	// impassable-to-land, sailable-to-ships hex count, distinct from its
 	// river_valley flanks.
 	RiverTiles int `json:"river_tiles"`
+	// RiverFordTiles is the port terrain (megaron_plan_flodbudget_och_vadstalle.md,
+	// steg 3) — a subset of what generation carves out of RiverTiles above, so
+	// river tile counts and ford counts are not double work, just a different cut.
+	RiverFordTiles int `json:"river_ford_tiles"`
+	// RiverChainLengths: one entry per connected river-family (river ∪
+	// river_ford) component, its own tile count — "how long is each river",
+	// sorted longest-first for a stable, comparable report. A1's per-river
+	// kedjelängd data.
+	RiverChainLengths []int `json:"river_chain_lengths"`
+	// RiversPerLandmass: one entry per land component that actually carries a
+	// river, its river COUNT (not tile count) — A1's "floder per landmassa"
+	// data, sorted descending. A landmass with zero rivers is simply absent
+	// from this list — compare its length against QualifyingLandmasses below
+	// to see how many qualifying landmasses got nothing (the pre-fix bug this
+	// slice measures: len(RiversPerLandmass) < QualifyingLandmasses is only
+	// possible under the OLD global-ranking budget; after the fix every
+	// landmass >= riverMinComponentTiles has a >0 entry here).
+	RiversPerLandmass []int `json:"rivers_per_landmass"`
+	// QualifyingLandmasses: land components >= riverMinComponentTiles — every
+	// one of these is eligible for 1-2 rivers under the per-landmass budget
+	// (megaron_plan_flodbudget_och_vadstalle.md). len(RiversPerLandmass) should
+	// equal this after the fix; a smaller number is a landmass that got zero.
+	QualifyingLandmasses int `json:"qualifying_landmasses"`
 
 	CompactnessPerComponent []ComponentCompactness `json:"compactness_per_component"`
 	// Per terrain class: fraction of (tile, in-map neighbour) pairs where the
@@ -432,6 +464,9 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		if t.Terrain == TerrainRiver {
 			m.RiverTiles++
 		}
+		if t.Terrain == TerrainRiverFord {
+			m.RiverFordTiles++
+		}
 		for _, d := range dirs6 {
 			nt, ok := terrain[[2]int{t.Q + d[0], t.R + d[1]}]
 			if !ok {
@@ -467,6 +502,29 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		m.LargestComponentFraction = float64(largest) / float64(len(tiles))
 	}
 	m.Straits = countStraits(tiles)
+
+	for _, n := range compSize {
+		if n >= riverMinComponentTiles {
+			m.QualifyingLandmasses++
+		}
+	}
+
+	// River budget report (A1, megaron_plan_flodbudget_och_vadstalle.md):
+	// chain lengths and the per-landmass river count, off the same riverChains
+	// BFS riverInvariantFailures uses for its own assertions — see that
+	// function's doc comment for why a river_ford counts as "river" for THIS
+	// traversal.
+	chains := riverChains(tiles, width, height)
+	riversByLandmass := map[int]int{}
+	for _, c := range chains {
+		m.RiverChainLengths = append(m.RiverChainLengths, c.size)
+		riversByLandmass[c.landmass]++
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(m.RiverChainLengths)))
+	for _, n := range riversByLandmass {
+		m.RiversPerLandmass = append(m.RiversPerLandmass, n)
+	}
+	sort.Sort(sort.Reverse(sort.IntSlice(m.RiversPerLandmass)))
 
 	// LargestLandmassWalkableFraction (ögonkoll 2026-07-29 — see
 	// isWalkableLand's doc comment): how much of the BIGGEST landmass a land

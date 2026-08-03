@@ -538,12 +538,18 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 				terrain[cell{t.Q, t.R}] = t.Terrain
 			}
 
-			// Connected components over river + river_delta tiles only (the
-			// actual water path) — hex adjacency, same 6 axial directions as
-			// landComponents. river_valley is a flank hanging off the path,
-			// not part of it, so it is deliberately excluded here.
+			// Connected components over river + river_ford + river_delta tiles
+			// only (the actual water path) — hex adjacency, same 6 axial
+			// directions as landComponents. river_valley is a flank hanging
+			// off the path, not part of it, so it is deliberately excluded
+			// here. river_ford is included (megaron_plan_flodbudget_och_
+			// vadstalle.md): it is still water, mid-chain — without it, a
+			// ford would split its own river's TerrainRiver-only path into
+			// two "components" here, and the segment on the source side
+			// would falsely report no delta, since the delta only ever
+			// touches the mouth-side segment.
 			dirs := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
-			isRiver := func(t Terrain) bool { return t == TerrainRiver || t == TerrainRiverDelta }
+			isRiver := func(t Terrain) bool { return t == TerrainRiver || t == TerrainRiverFord || t == TerrainRiverDelta }
 			seen := map[cell]bool{}
 			var riverTiles, valleyTiles, deltaTiles int
 			riverComponents := 0

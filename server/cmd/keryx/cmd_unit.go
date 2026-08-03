@@ -276,8 +276,12 @@ Terrain passability:
   Land units only:         plains, hills, forest_olive_grove, forest_cedar,
                            scrub_maquis, semi_desert, river_valley, river_delta
   Naval units only:        coastal_sea, deep_sea, river
+  Both land AND naval:     river_ford (the river's port — steep move cost for
+                           either, but the one hex where a land unit can
+                           cross and a ship can still sail through)
   (Land units cannot enter sea or river; naval units cannot enter land.
-  river is impassable to land units — it is a wall, not a crossing.)
+  river is impassable to land units — it is a wall, not a crossing. Every
+  ~10 hexes of a river's length carries one river_ford instead.)
 
 A land unit must reach 100 men (garrison status) before it can march.
 A unit in fortify stance must be cleared (stance none) before marching.

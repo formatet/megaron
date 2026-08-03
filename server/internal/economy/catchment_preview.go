@@ -88,7 +88,7 @@ func CatchmentBasePotentialAt(ctx context.Context, tx Tx, worldID uuid.UUID, hex
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 WHERE mt.world_id = $1
-		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river')
+		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
 		        OR pr.terrain_type = mt.terrain)
 		 GROUP BY pr.good_key`,
 		worldID, qs, rs, assumeBuildings,

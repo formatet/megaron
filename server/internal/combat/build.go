@@ -83,7 +83,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		 JOIN settlements s ON s.id = $1
 		 JOIN provinces prov ON prov.id = s.province_id
 		 JOIN map_tiles mt ON mt.world_id = s.world_id
-		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river') OR pr.terrain_type = mt.terrain)
+		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
 		     AND (
 		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
@@ -169,7 +169,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 				   JOIN settlements s ON s.id = $1
 				   JOIN provinces prov ON prov.id = s.province_id
 				   WHERE mt.world_id = s.world_id
-				     AND mt.terrain NOT IN ('deep_sea','coastal_sea','river')
+				     AND mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
 				     AND (
 				         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
 				         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
