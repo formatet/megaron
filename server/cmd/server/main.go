@@ -92,6 +92,17 @@ func main() {
 	absorbStartupDowntime(ctx, pool, gameClock)
 	go runHeartbeat(ctx, pool)
 
+	// Retention for the three operational tables that grow without bound and
+	// are not cleaned by a reseed (see runRetention's doc comment). Config is
+	// loaded eagerly, like ensureWorld's envMapDim, so a malformed *_RETENTION
+	// value fails the boot instead of silently running with a bad window.
+	retentionCfg, err := loadRetentionConfig()
+	if err != nil {
+		slog.Error("load retention config", "err", err)
+		os.Exit(1)
+	}
+	go runRetention(ctx, pool, retentionCfg)
+
 	serverWorldID, err := ensureWorld(ctx, pool, gameClock)
 	if err != nil {
 		slog.Error("ensure world", "err", err)
@@ -683,5 +694,299 @@ func runHeartbeat(ctx context.Context, pool *pgxpool.Pool) {
 				slog.Warn("heartbeat write failed", "err", err)
 			}
 		}
+	}
+}
+
+// --- Retention: server_heartbeats, processed_sitos_ticks, scheduled_events ---
+//
+// Three tables grow without bound during ordinary play and are NOT cleaned by
+// a reseed:
+//   - server_heartbeats (mig 007): no world_id column at all. One row per 10s,
+//     forever. Measured on CT 126 2026-08-02: 529 053 rows / 56 MB, the
+//     largest table in the DB after the mig-104 orphan cleanup.
+//   - processed_sitos_ticks (mig 097): no world_id column. One row per
+//     (SitosTick event, settlement) — the idempotency claim itself (see the
+//     migration's doc comment). Measured: 556 828 rows / 54 MB, ALL from a
+//     world that no longer exists (its rows outlived it because there is no
+//     world_id to cascade on). Growth resumes, harder, as soon as the current
+//     (empty) world gets settlements — the granary tick (2026-08-03) touches
+//     every settlement every tick, same as the fund it replaced.
+//   - scheduled_events (mig 001) DOES carry a world_id FK with ON DELETE
+//     CASCADE (added in mig 104) — so it IS cleaned the moment a world ROW is
+//     deleted. But mig 104's own comment calls this table out separately:
+//     "tabellen har noll föräldralösa rader idag (bara historiskt kvarhållna
+//     behandlade rader), en annan rot som hör till en egen framtida slice" —
+//     i.e. the cascade doesn't help a world that simply keeps running: a
+//     persistent, long-lived world (the whole point of Megaron) accumulates
+//     processed/failed rows forever with zero time-based pruning. That is the
+//     root this slice actually closes for this table. Measured: 156 306 rows
+//     / 23 MB, ~26 400 rows/day, in what is currently an EMPTY world.
+//
+// Invariant (never violated, whatever the window): no row is deleted that a
+// pending or possible re-run still needs.
+//   - server_heartbeats: the single most recent row is NEVER deleted,
+//     regardless of its age — it's the only thing absorbStartupDowntime reads.
+//   - processed_sitos_ticks: a claim is only deleted once its window has
+//     passed AND NOT EXISTS a scheduled_events row for the same event_id with
+//     processed_at IS NULL — i.e. the event that produced the claim is no
+//     longer capable of being re-run. The window itself only needs to be
+//     bigger than the worker's own retry ceiling (events.Worker: 5s handler
+//     timeout, DeadLetterAttempts=3, poll interval ≤ 10s) — the NOT EXISTS
+//     check is the real safety net, the window is a wide margin on top of it.
+//   - scheduled_events: only processed_at IS NOT NULL or failed_at IS NOT NULL
+//     rows are ever candidates — a row with both NULL (pending, still
+//     claimable by events.Worker per scheduler.go's claim query) is never
+//     touched by either delete statement, at any age.
+//
+// Retention is drift, not game time — cmd/server/main.go holding a wall clock
+// here is a sanctioned exception (CLAUDE.md §Time); this does not use
+// clock.Clock and must not start to.
+
+// retentionConfig is loaded once at boot (loadRetentionConfig) and threaded
+// through runRetention — mirrors economy.LoadSitosConfig's "load once, pass
+// down" convention.
+type retentionConfig struct {
+	interval                    time.Duration
+	heartbeatWindow             time.Duration
+	sitosTickWindow             time.Duration
+	scheduledEventsWindow       time.Duration
+	scheduledEventsFailedWindow time.Duration
+	batchSize                   int
+	maxBatchesPerTable          int
+}
+
+// getEnvDuration parses a duration env var ("1h", "30m", "0" to disable
+// pruning for that window), returning def when the var is unset. Fails loud
+// (mirrors envMapDim) instead of silently falling back on a malformed value —
+// a mistyped retention window either deletes everything or nothing, silently,
+// which is exactly the kind of mistake a quiet fallback would hide.
+func getEnvDuration(key string, def time.Duration) (time.Duration, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return def, nil
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		return 0, fmt.Errorf("%s=%q: not a valid duration (e.g. \"1h\", \"30m\", \"0\" to disable): %w", key, v, err)
+	}
+	return d, nil
+}
+
+// getEnvPositiveInt parses an int env var, returning def when unset. Refuses
+// (rather than clamping) a non-integer or non-positive value.
+func getEnvPositiveInt(key string, def int) (int, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return def, nil
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, fmt.Errorf("%s=%q: not an integer: %w", key, v, err)
+	}
+	if n <= 0 {
+		return 0, fmt.Errorf("%s=%d: must be positive", key, n)
+	}
+	return n, nil
+}
+
+// loadRetentionConfig reads RETENTION_* / *_RETENTION env vars once at boot.
+//
+// Defaults, and why:
+//   - RETENTION_INTERVAL = 1h: how often the job wakes up. Sparse on purpose —
+//     this is housekeeping, not a hot path; <= 0 disables the whole job.
+//   - HEARTBEAT_RETENTION = 168h (7 days): comfortably longer than any outage
+//     we'd actually want absorbStartupDowntime to measure — a server that has
+//     been down for a week has bigger problems than a stale downtime figure.
+//   - SITOS_TICK_RETENTION = 24h: the NOT EXISTS guard is the real safety net
+//     (see doc comment above); 24h is a wide margin over the worker's actual
+//     retry ceiling (seconds), kept long enough to be useful for debugging a
+//     recent tick without becoming a second unbounded table.
+//   - SCHEDULED_EVENTS_RETENTION = 72h: processed rows — long enough to
+//     inspect "what fired yesterday" from the DB directly, short enough that
+//     an idle world's ~26k rows/day doesn't re-accumulate past a few days.
+//   - SCHEDULED_EVENTS_FAILED_RETENTION = 720h (30 days): failed_at rows are
+//     dead-letters — diagnostic evidence of a handler that gave up, and rare
+//     (0 in production today). They get a much longer window than routine
+//     processed rows on purpose: the whole point of keeping them is to look
+//     at them later.
+//   - RETENTION_BATCH_SIZE = 5000, RETENTION_MAX_BATCHES = 200: bounds a
+//     single pass to at most 1,000,000 rows deleted per table — generous
+//     against the measured growth rates above, while keeping every individual
+//     DELETE small enough not to hold a lock on a live table for long (see
+//     the EXPLAIN plans in the proof package: ~5-50ms per 5000-row batch
+//     against 200k-600k row tables).
+func loadRetentionConfig() (retentionConfig, error) {
+	var cfg retentionConfig
+	var err error
+	if cfg.interval, err = getEnvDuration("RETENTION_INTERVAL", time.Hour); err != nil {
+		return cfg, err
+	}
+	if cfg.heartbeatWindow, err = getEnvDuration("HEARTBEAT_RETENTION", 168*time.Hour); err != nil {
+		return cfg, err
+	}
+	if cfg.sitosTickWindow, err = getEnvDuration("SITOS_TICK_RETENTION", 24*time.Hour); err != nil {
+		return cfg, err
+	}
+	if cfg.scheduledEventsWindow, err = getEnvDuration("SCHEDULED_EVENTS_RETENTION", 72*time.Hour); err != nil {
+		return cfg, err
+	}
+	if cfg.scheduledEventsFailedWindow, err = getEnvDuration("SCHEDULED_EVENTS_FAILED_RETENTION", 720*time.Hour); err != nil {
+		return cfg, err
+	}
+	if cfg.batchSize, err = getEnvPositiveInt("RETENTION_BATCH_SIZE", 5000); err != nil {
+		return cfg, err
+	}
+	if cfg.maxBatchesPerTable, err = getEnvPositiveInt("RETENTION_MAX_BATCHES", 200); err != nil {
+		return cfg, err
+	}
+	return cfg, nil
+}
+
+// runRetention is the background job. Follows the runHeartbeat pattern:
+// time.NewTicker + select on ctx.Done(), slog on failure, never a crash.
+func runRetention(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) {
+	if cfg.interval <= 0 {
+		slog.Info("retention job disabled (RETENTION_INTERVAL <= 0)")
+		return
+	}
+	ticker := time.NewTicker(cfg.interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			runRetentionPass(ctx, pool, cfg)
+		}
+	}
+}
+
+// runRetentionPass runs one prune of each of the three tables. Exported (via
+// package-level visibility, not literally exported) for retention_test.go to
+// call directly without waiting on the ticker.
+func runRetentionPass(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) {
+	pruneHeartbeats(ctx, pool, cfg)
+	pruneSitosTicks(ctx, pool, cfg)
+	pruneScheduledEvents(ctx, pool, cfg)
+}
+
+// heartbeatDeleteSQL deletes rows older than the cutoff ($1), EXCEPT the
+// single most recent row (by beat_at) — computed fresh on every batch via the
+// idx_server_heartbeats_beat_at (beat_at DESC) index (mig 007), so the
+// invariant holds even mid-pass and even if beat writes race the prune.
+//
+// The "SELECT ctid ... LIMIT $2" + "DELETE ... USING victims" shape (used by
+// all three prune queries below) batches a DELETE without needing a
+// table-specific composite key: ctid is universal, and wrapping the selector
+// in a CTE materializes the LIMIT before the join so Postgres can't rewrite
+// the LIMIT away. See the EXPLAIN plans in the proof package.
+const heartbeatDeleteSQL = `
+WITH victims AS (
+    SELECT ctid FROM server_heartbeats
+    WHERE beat_at < $1
+      AND id <> (SELECT id FROM server_heartbeats ORDER BY beat_at DESC LIMIT 1)
+    LIMIT $2
+)
+DELETE FROM server_heartbeats t USING victims v WHERE t.ctid = v.ctid
+`
+
+func pruneHeartbeats(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) {
+	if cfg.heartbeatWindow <= 0 {
+		return
+	}
+	cutoff := time.Now().Add(-cfg.heartbeatWindow)
+	pruneBatched(ctx, pool, "server_heartbeats", heartbeatDeleteSQL, cutoff, cfg.batchSize, cfg.maxBatchesPerTable)
+}
+
+// sitosTickDeleteSQL deletes a claim only once its window has passed AND the
+// scheduled_events row that produced it is no longer pending (processed_at
+// IS NULL means "still claimable" per events.Worker's claim query in
+// internal/events/scheduler.go) — see the invariant doc comment above.
+const sitosTickDeleteSQL = `
+WITH victims AS (
+    SELECT p.ctid FROM processed_sitos_ticks p
+    WHERE p.processed_at < $1
+      AND NOT EXISTS (
+          SELECT 1 FROM scheduled_events se
+          WHERE se.id = p.event_id AND se.processed_at IS NULL
+      )
+    LIMIT $2
+)
+DELETE FROM processed_sitos_ticks t USING victims v WHERE t.ctid = v.ctid
+`
+
+func pruneSitosTicks(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) {
+	if cfg.sitosTickWindow <= 0 {
+		return
+	}
+	cutoff := time.Now().Add(-cfg.sitosTickWindow)
+	pruneBatched(ctx, pool, "processed_sitos_ticks", sitosTickDeleteSQL, cutoff, cfg.batchSize, cfg.maxBatchesPerTable)
+}
+
+// scheduledEventsProcessedDeleteSQL / scheduledEventsFailedDeleteSQL are two
+// separate statements, not one OR'd together, because failed_at (dead-letter)
+// rows are diagnostic evidence and get their own, much longer window
+// (SCHEDULED_EVENTS_FAILED_RETENTION) — see loadRetentionConfig's doc comment.
+// Neither statement ever matches a pending row (processed_at IS NULL AND
+// failed_at IS NULL): both conditions require their respective column to be
+// NOT NULL first.
+const scheduledEventsProcessedDeleteSQL = `
+WITH victims AS (
+    SELECT ctid FROM scheduled_events
+    WHERE processed_at IS NOT NULL AND processed_at < $1
+    LIMIT $2
+)
+DELETE FROM scheduled_events t USING victims v WHERE t.ctid = v.ctid
+`
+
+const scheduledEventsFailedDeleteSQL = `
+WITH victims AS (
+    SELECT ctid FROM scheduled_events
+    WHERE failed_at IS NOT NULL AND failed_at < $1
+    LIMIT $2
+)
+DELETE FROM scheduled_events t USING victims v WHERE t.ctid = v.ctid
+`
+
+func pruneScheduledEvents(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) {
+	if cfg.scheduledEventsWindow > 0 {
+		cutoff := time.Now().Add(-cfg.scheduledEventsWindow)
+		pruneBatched(ctx, pool, "scheduled_events(processed)", scheduledEventsProcessedDeleteSQL, cutoff, cfg.batchSize, cfg.maxBatchesPerTable)
+	}
+	if cfg.scheduledEventsFailedWindow > 0 {
+		cutoff := time.Now().Add(-cfg.scheduledEventsFailedWindow)
+		pruneBatched(ctx, pool, "scheduled_events(failed)", scheduledEventsFailedDeleteSQL, cutoff, cfg.batchSize, cfg.maxBatchesPerTable)
+	}
+}
+
+// pruneBatched runs sql (one of the *DeleteSQL statements above, all shaped
+// "... WHERE <col> < $1 ... LIMIT $2") repeatedly in batches of batchSize,
+// stopping as soon as a batch deletes fewer than batchSize rows (nothing left
+// to do) or after maxBatches (a safety cap so one retention pass can never
+// run unbounded — see the "hit max batches" warning below). Each batch is its
+// own statement/transaction, so no single DELETE holds a lock on a live table
+// for longer than one small batch takes.
+func pruneBatched(ctx context.Context, pool *pgxpool.Pool, table, sql string, cutoff time.Time, batchSize, maxBatches int) {
+	start := time.Now()
+	total := 0
+	ranBatches := 0
+	for ranBatches < maxBatches {
+		tag, err := pool.Exec(ctx, sql, cutoff, batchSize)
+		if err != nil {
+			slog.Warn("retention: batch delete failed", "table", table, "err", err, "batches_done", ranBatches, "rows_deleted_so_far", total)
+			return
+		}
+		ranBatches++
+		n := int(tag.RowsAffected())
+		total += n
+		if n < batchSize {
+			break
+		}
+	}
+	if total > 0 {
+		slog.Info("retention pass", "table", table, "rows_deleted", total, "batches", ranBatches, "elapsed", time.Since(start).Round(time.Millisecond))
+	}
+	if ranBatches == maxBatches && total > 0 {
+		slog.Warn("retention: hit max batches per pass — more rows may remain, will continue next pass", "table", table, "max_batches", maxBatches, "batch_size", batchSize)
 	}
 }
