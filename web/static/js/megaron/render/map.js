@@ -274,19 +274,29 @@ function isTileVisible(q, r) {
   return State.tileData.some(t => t.q === q && t.r === r && t.terrain !== 'fog');
 }
 
-// tileTierByPos: "q,r" -> tier ("live"|"remembered"|"fog"), rebuilt (see
-// rebuildTileTierIndex below) every time State.tileData is replaced, instead
-// of scanned per-call like isTileVisible above — isTileVisible is a linear
-// scan over up to 52,900 tiles PER CALL, fine at the call sites it already
-// has, but not something to add a second per-actor, per-frame copy of
+// tileTierByPos: "q,r" -> tier ("live"|"remembered"|"fog"), indexed instead of
+// scanned per-call like isTileVisible above — isTileVisible is a linear scan
+// over up to 52,900 tiles PER CALL, fine at the call sites it already has, but
+// not something to add a second per-actor, per-frame copy of
 // (fow/frammande-enheter, 2026-08-03). isTileVisible's existing callers are
 // untouched; this is a separate, additive index that only foreign units use.
+//
+// The index rebuilds itself whenever State.tileData is a DIFFERENT array than
+// the one it was built from, rather than making every writer remember to call
+// a rebuild hook. Every writer replaces the array wholesale (loadMap,
+// refreshTiles, and the showcase fixtures), so identity is a sound trigger —
+// and a fixture that sets State.tileData directly cannot silently end up with
+// an empty index, which is exactly how showcase-units.html would have drawn
+// zero foreign units while looking like a FOW bug.
 let tileTierByPos = new Map();
-function rebuildTileTierIndex() {
-  tileTierByPos = new Map();
-  for (const t of State.tileData) {
-    tileTierByPos.set(`${t.q},${t.r}`, t.tier);
+let tileTierSource = null;
+function tileTier(q, r) {
+  if (tileTierSource !== State.tileData) {
+    tileTierSource = State.tileData;
+    tileTierByPos = new Map();
+    for (const t of State.tileData) tileTierByPos.set(`${t.q},${t.r}`, t.tier);
   }
+  return tileTierByPos.get(`${q},${r}`);
 }
 
 // isTileLive: strictly tier 1 (live) — unlike isTileVisible, which also
@@ -294,7 +304,7 @@ function rebuildTileTierIndex() {
 // remembered hex: memory carries no activity (temenos_synlighet.md,
 // kanonbeslut Timothy 2026-08-03).
 function isTileLive(q, r) {
-  return tileTierByPos.get(`${q},${r}`) === 'live';
+  return tileTier(q, r) === 'live';
 }
 // ── Hex fill — solid path fill + outline ─────────────────────────────────
 function hexPath(ctx, pts) {
@@ -3469,7 +3479,6 @@ export async function loadMap() {
 
   if (tilesRes.ok) {
     State.tileData = await tilesRes.json();
-    rebuildTileTierIndex();
   }
   if (provRes.ok) {
     // Must land before centreCamera() below — homePosition() reads the
@@ -3537,7 +3546,7 @@ function centreCamera() {
 // otherwise the canvas keeps the fog it had at page load and exploration looks
 // like it did nothing.
 export function refreshTiles() {
-  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json().then(d => { State.tileData = d; rebuildTileTierIndex(); State.dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json().then(d => { State.tileData = d; State.dirty = true; }));
 }
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
