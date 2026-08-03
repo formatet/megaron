@@ -507,6 +507,16 @@ const (
 	// the generation target any more — see cedarStandSizeTargetMin/Spread.
 	cedarStandSizeMin = 3
 
+	// cedarStandGrowthFloor is the GENERATION floor, as a share of the size
+	// this particular stand asked growPatch for — a stunted patch is handed
+	// back and the next shuffled seed is tried instead of being accepted as a
+	// dungle. Separate from cedarStandSizeMin on purpose: that one is the
+	// absolute bottom and what minCedar is built from, this one is what makes
+	// the stand read as a REGION. Calibrated 2026-08-03 against 26 distinct
+	// 230² seeds (see megaron_cedermatning_20260803.md): 0.5 halves the dungar
+	// without needing more seed candidates than the map has.
+	cedarStandGrowthFloor = 0.5
+
 	// cedarFractionTarget (Timothy 2026-07-29, mapgen/fuktnormalisering):
 	// "cederskog kanske kan ligga kring 3%" — and "cederskogarna" in plural,
 	// i.e. a handful of regions a Wanax can sail to and hold, not fifty
@@ -528,7 +538,7 @@ const (
 	// than raising cedarFractionTarget itself, keeps that constant an honest
 	// answer to "what fraction should cedar be" separate from "how much to
 	// ask growPatch for to actually get there".
-	cedarAreaOvershoot = 1.65
+	cedarAreaOvershoot = 1.10
 
 	// cedarStandAreaDivisor derives the STAND COUNT from land area
 	// (landArea/cedarStandAreaDivisor, floored at cedarStandCountMin) —
@@ -1405,7 +1415,20 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		// Utan den här kontrollen blev beståndet 1 hex — och "cederskog" som
 		// ett isolerat hex är varken en skog att rendera eller en fyndighet
 		// att hålla. Fröna är redan shufflade, så nästa kandidat prövas.
-		if len(patch) < cedarStandSizeMin {
+		//
+		// Golvet är RELATIVT målet (cedarStandGrowthFloor), inte den absoluta
+		// trean: mätningen på 230² före reseeden (26 seeds) visade att
+		// treans-golvet släppte igenom i snitt 3,2 bestånd på ≤9 hexar per
+		// karta bredvid ~6 riktiga regioner — exakt den "utspridd dekor" som
+		// formmålet varnar för, och osynlig för ett golv som bara frågar om
+		// beståndet är större än ett ensamt hex. cedarStandSizeMin står kvar
+		// som absolut botten (och som minCedars byggsten) eftersom ett
+		// litet-karta-mål kan ligga under det relativa golvet.
+		growthFloor := int(math.Round(cedarStandGrowthFloor * float64(target)))
+		if growthFloor < cedarStandSizeMin {
+			growthFloor = cedarStandSizeMin
+		}
+		if len(patch) < growthFloor {
 			for _, c := range patch {
 				delete(cedarUsed, c)
 			}
@@ -1792,6 +1815,18 @@ func placeDepositClusters(tiles []MapTile, cand []int, landmap map[cell]int, rng
 // mapgen's determinism contract — this is read-only accounting, not
 // placement.
 func depositSourceCount(tiles []MapTile, has func(MapTile) bool) int {
+	return len(depositSourceSizes(tiles, has))
+}
+
+// depositSourceSizes is depositSourceCount's underlying traversal, returning
+// each component's TILE COUNT instead of only how many there are, sorted
+// largest-first. A count alone cannot answer "ett tiotal bestånd à 30-50
+// hexar läser som regioner, femtio små dungar läser som dekor" (todo
+// §Reseed-grinden) — ten stands averaging 34 hexes and ten stands where one
+// holds 300 and nine hold 4 report the same count. Sorting makes the report
+// stable despite the nondeterministic map ranging below; see
+// depositSourceCount's note on why traversal order is safe here.
+func depositSourceSizes(tiles []MapTile, has func(MapTile) bool) []int {
 	present := map[[2]int]bool{}
 	for _, t := range tiles {
 		if has(t) {
@@ -1800,17 +1835,18 @@ func depositSourceCount(tiles []MapTile, has func(MapTile) bool) int {
 	}
 	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 	seen := map[[2]int]bool{}
-	count := 0
+	var sizes []int
 	for k := range present {
 		if seen[k] {
 			continue
 		}
-		count++
+		size := 0
 		queue := [][2]int{k}
 		seen[k] = true
 		for len(queue) > 0 {
 			cur := queue[0]
 			queue = queue[1:]
+			size++
 			for _, d := range dirs6 {
 				n := [2]int{cur[0] + d[0], cur[1] + d[1]}
 				if present[n] && !seen[n] {
@@ -1819,8 +1855,10 @@ func depositSourceCount(tiles []MapTile, has func(MapTile) bool) int {
 				}
 			}
 		}
+		sizes = append(sizes, size)
 	}
-	return count
+	sort.Sort(sort.Reverse(sort.IntSlice(sizes)))
+	return sizes
 }
 
 // tileIsLand reports whether a terrain is land (not sea).

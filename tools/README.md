@@ -31,6 +31,13 @@ En riggnyckel får bära en egen query (`coast`), och då fogas ett användararg
 på med `&`. Det är så en SCEN i en befintlig rigg kan få sin egen viewport —
 scenen är bredare än ledrutnätet, och en scen som inte ryms i sin viewport klipps.
 
+`python3 tools/mapgenstats.py <katalog>` sammanfattar `cmd/mapgen-debug`s JSON-utdata
+till en kalibreringstabell över flera seeds (cederandel, beståndsstorlekar,
+skogsandel, walkable, flodandel). Det är kartgenereringens mätrigg, inte
+renderarens — men samma arbetsregel gäller: **samma seedsvep före och efter.**
+⚠ Reseedfrekvensen räknas ur `grep -c reseeding` på stderr, aldrig ur JSON:ens
+`attempts` — se verktygets docstring för varför den ljuger.
+
 `python3 tools/footing.py [rigg]` mäter **vad staden står på**: blått direkt under
 stadsmassans fotlinje, per kolumn, plus en märkt bild. Noll är kravet på
 kustscenen. Fotlinjen kommer ur renderarens egen `spriteGround` via riggens

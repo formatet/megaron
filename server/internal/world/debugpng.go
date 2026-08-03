@@ -329,6 +329,20 @@ type MapMetrics struct {
 	ForestCedarTiles      int     `json:"forest_cedar_tiles"`
 	ForestFraction        float64 `json:"forest_fraction"`
 	CedarStands           int     `json:"cedar_stands"`
+	// CedarStandSizes: one entry per cedar stand, its own tile count, sorted
+	// largest-first — the same cut RiverChainLengths gives rivers. The shape
+	// goal the reseed gate calibrates against is about stand SIZE ("ett tiotal
+	// bestånd à 30-50 hexar läser som regioner man kan segla till och hålla;
+	// femtio små dungar läser som utspridd dekor"), and CedarStands plus
+	// ForestCedarTiles can only report the average — they cannot tell a dozen
+	// even regions from one blob and eleven dungar.
+	CedarStandSizes []int `json:"cedar_stand_sizes"`
+	// CedarFraction is forest_cedar / LAND tiles, the denominator the reseed
+	// gate is expressed in. Derived, but reported so the gate can be read off
+	// the JSON without dividing two other fields by hand — the flodomgörning
+	// changed the land denominator, which is exactly the kind of silent shift
+	// a hand-division hides.
+	CedarFraction float64 `json:"cedar_fraction"`
 
 	// Per-terrain share of LAND (mapgen/fuktnormalisering — the
 	// scale-invariance measurement AK2 needs): plains/hills/scrub/semi_desert
@@ -489,8 +503,10 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 		m.ScrubFraction /= float64(land)
 		m.SemiDesertFraction /= float64(land)
 		m.MountainFraction /= float64(land)
+		m.CedarFraction = float64(m.ForestCedarTiles) / float64(land)
 	}
-	m.CedarStands = depositSourceCount(tiles, func(t MapTile) bool { return t.Terrain == TerrainForestCedar })
+	m.CedarStandSizes = depositSourceSizes(tiles, func(t MapTile) bool { return t.Terrain == TerrainForestCedar })
+	m.CedarStands = len(m.CedarStandSizes)
 	m.LandComponents = len(compSize)
 	largest, largestID := 0, -1
 	for id, n := range compSize {
