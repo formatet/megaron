@@ -75,6 +75,13 @@ tools/acceptance.sh reset         # riv världen och seeda om mellan de två kö
 tools/acceptance.sh down          # riv stacken och volymerna
 ```
 
+`python3 tools/acceptance_foreign_units.py <suffix>` kör hela scenariot för främmande
+enheter i ett svep: registrerar tre Wanaxes (spawnregeln balanserar hemisfärer, så nr 3
+hamnar i samma halva som nr 1 — enda sättet att få två spelare på gångavstånd utan
+DB-ingrepp), tar baslinjen, går en spjutbärare i etapper tills ögonen räcker fram och
+skriver ut vad var och en ser. ⚠ Marschgrinden kräver KÄND målhex, så en etapp i taget
+är enda vägen — och ett svar på 202 är en accepterad marsch, inte ett fel.
+
 Eget compose-projektnamn (`megaron-acc`), egna volymer, eget nätverk, egna portar, egen
 JWT-hemlighet. Den kan inte råka röra dev-servern eller live-DB:n — det är hela poängen.
 Runbook och det verifierade scenariot: `megaron_drift.md` §Acceptansvärlden.
