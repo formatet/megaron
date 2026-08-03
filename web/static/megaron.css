@@ -1550,7 +1550,8 @@ body:has(.auth-page) main {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 0.3rem;
 }
-.dip-inline-trade input {
+.dip-inline-trade input,
+.dip-inline-trade select {
   width: 100%;
   background: var(--warm-white);
   border: 1px solid var(--border);

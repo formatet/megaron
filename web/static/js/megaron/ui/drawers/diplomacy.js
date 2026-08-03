@@ -13,6 +13,51 @@ function expiryWord(iso) {
   return eta === 'expired' ? eta : 'expires ' + eta;
 }
 
+// Tradeable-goods catalogue (GET /api/v1/goods) — the same set
+// MessengerHandler.tradeableGood validates a trade offer's want_good/
+// offer_good against (server: api/handlers/goods.go + messenger.go). Static
+// for a world's lifetime, so fetch once and memoize rather than refetching
+// on every drawer render — same pattern as getRecipes() in city.js:421.
+// On failure the promise is cleared so the next render retries instead of
+// permanently caching a failure; null (not []) is returned to distinguish
+// "could not load" from "server has no tradeable goods" — see
+// goodsOptionsHTML below.
+let _tradeableGoodsPromise = null;
+async function getTradeableGoods() {
+  if (!_tradeableGoodsPromise) {
+    _tradeableGoodsPromise = fetchAuth('/api/v1/goods').then(r => {
+      if (!r.ok) throw new Error('goods fetch failed: ' + r.status);
+      return r.json();
+    }).catch(e => {
+      console.error('getTradeableGoods', e);
+      _tradeableGoodsPromise = null;
+      return null;
+    });
+  }
+  return _tradeableGoodsPromise;
+}
+
+// Renders the <option> list for a want_good/offer_good <select> — shared by
+// both composition surfaces (inline thread + Compose tab) and both fields,
+// so the four dropdowns can never drift apart from each other or from what
+// the server actually accepts. `goods === null` means the catalogue fetch
+// failed: an honest "could not load" placeholder, never a silent fallback
+// to free text (the tyst fallback CLAUDE.md forbids) — pair with
+// goodsSelectDisabledAttr so the control can't actually be used in that case.
+export function goodsOptionsHTML(goods) {
+  if (goods === null) return '<option value="">Could not load goods</option>';
+  if (!goods.length) return '<option value="">No tradeable goods</option>';
+  return '<option value="">— choose good —</option>'
+    + goods.map(g => '<option value="' + esc(g.key) + '">' + esc(g.name || g.key) + '</option>').join('');
+}
+
+// A failed catalogue fetch must disable the control, not just show a
+// placeholder option — otherwise a blank selection ships silently as
+// want_good/offer_good (megaron_plan_offertens_varulista.md Steg 3).
+export function goodsSelectDisabledAttr(goods) {
+  return goods === null ? ' disabled' : '';
+}
+
 // ── Diplomacy drawer ──────────────────────────────────────────────────────
 export async function loadDiplomacyDrawer() {
   const body = document.getElementById('diplomacy-body');
@@ -95,6 +140,7 @@ async function loadDipThreads() {
     const gr = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + capital.id + '/goods');
     if (gr.ok) { const list = await gr.json().catch(() => []); list.forEach(g => { myGoods[g.key] = g.amount || 0; }); }
   }
+  const tradeableGoods = await getTradeableGoods();
   try {
     const [inR, outR] = await Promise.all([
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/inbox'),
@@ -251,12 +297,12 @@ async function loadDipThreads() {
           + '<label><input type="radio" name="' + cid + '-kind" value="sell" onchange="dipToggleKind(\'' + cid + '\')"> Sell</label>'
           + '</div>'
           + '<div id="' + cid + '-buy-fields">'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Want good</div><input id="' + cid + '-good" type="text" placeholder="grain"></div>'
+          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Want good</div><select id="' + cid + '-good"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
           + '<div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="' + cid + '-qty" type="number" min="0.1" step="0.1" placeholder="50"></div>'
           + '<div><div style="font-size:.68rem;color:var(--text-dim)">Offer silver</div><input id="' + cid + '-silver" type="number" min="1" step="1" placeholder="60"></div>'
           + '</div>'
           + '<div id="' + cid + '-sell-fields" style="display:none">'
-          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Offer good</div><input id="' + cid + '-offer-good" type="text" placeholder="copper"></div>'
+          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Offer good</div><select id="' + cid + '-offer-good"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
           + '<div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="' + cid + '-offer-qty" type="number" min="0.1" step="0.1" placeholder="20"></div>'
           + '<div><div style="font-size:.68rem;color:var(--text-dim)">Want silver</div><input id="' + cid + '-want-silver" type="number" min="1" step="1" placeholder="80"></div>'
           + '</div>'
@@ -403,7 +449,7 @@ export async function dipReply(id) {
   }
 }
 
-function loadDipCompose() {
+async function loadDipCompose() {
   const el = document.getElementById('dtab-compose');
   if (!el || el.dataset.loaded) return;
   el.dataset.loaded = '1';
@@ -411,6 +457,7 @@ function loadDipCompose() {
   const opts = others.length
     ? '<option value="">— choose settlement —</option>' + others.map(p => '<option value="' + p.settlement_id + '">' + esc(p.name) + ' (' + (p.allied ? 'ally' : 'foreign') + ')</option>').join('')
     : '<option value="">No visible settlements — explore the map</option>';
+  const tradeableGoods = await getTradeableGoods();
   el.innerHTML = '<div class="dsec"><div class="dsec-title">Send Messenger</div>'
     + '<div style="display:flex;flex-direction:column;gap:.5rem">'
     + '<select id="dip-dest" style="background:var(--warm-white);border:1px solid var(--border);padding:.3rem .4rem;font-size:.82rem">' + opts + '</select>'
@@ -421,12 +468,12 @@ function loadDipCompose() {
     + '<label><input type="radio" name="dip-kind" value="sell" onchange="dipComposeToggleKind()"> Sell</label>'
     + '</div>'
     + '<div id="dip-buy-fields" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Want good</div><input id="dip-ogood" type="text" placeholder="grain" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
+    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Want good</div><select id="dip-ogood" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
     + '<div><div style="font-size:.7rem;color:var(--text-dim)">Quantity</div><input id="dip-oqty" type="number" min="0.1" step="0.1" placeholder="50" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
     + '<div><div style="font-size:.7rem;color:var(--text-dim)">Offer silver</div><input id="dip-osilver" type="number" min="1" step="1" placeholder="60" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
     + '</div>'
     + '<div id="dip-sell-fields" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:.4rem">'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Offer good</div><input id="dip-offer-good" type="text" placeholder="copper" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
+    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Offer good</div><select id="dip-offer-good" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
     + '<div><div style="font-size:.7rem;color:var(--text-dim)">Quantity</div><input id="dip-offer-qty" type="number" min="0.1" step="0.1" placeholder="20" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
     + '<div><div style="font-size:.7rem;color:var(--text-dim)">Want silver</div><input id="dip-want-silver" type="number" min="1" step="1" placeholder="80" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
     + '</div>'

@@ -179,7 +179,7 @@ func canTransfer(cc checkContext) Verb {
 		detail = fmt.Sprintf("%s %.0f in stock", good, qty)
 	}
 	return verb("transfer", CategoryTrade,
-		"Send goods to one of your own settlements — no consent needed, no loss.",
+		"Send goods to one of your own settlements (no consent needed, no storm/pirates roll — but still a physical, seizable caravan).",
 		[]Requirement{
 			req("a second own settlement to send to", destOK,
 				fmt.Sprintf("%d/2 own settlements", total),
