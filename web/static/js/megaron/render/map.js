@@ -117,6 +117,38 @@ const CULTURE_ACCENT = {
 const S = 22;    // hex size in logical pixels — Settlers 2 scale
 export const SCALE = 2; // canvas scale factor
 
+// ── LOD: grovkorna markrastret när blocken blir mindre än en pixel värda ──
+//
+// PROBLEMET, mätt. Varje markpass ritar sitt raster på ett lattice angivet i
+// VÄRLDSENHETER (STEP 3-4), aldrig i skärmpixlar. Antalet block per hex är
+// alltså konstant medan hexen krymper — och vid minzoom syns HELA världen, så
+// alla 13 225 hexar kör hela sitt raster samtidigt. Det är därför culling gav
+// −47 % vid 1:1 men −0,6 % vid minzoom (det finns inget att culla när allt
+// syns) och varför `ground` ensamt är 56 % av en 318 ms-frame på 230².
+//
+// LÖSNINGEN. Skala latticet så blocket håller sig över LOD_MIN_BLOCK_PX
+// SKÄRMpixlar. Ett block på 2,4 px bär ingen form — det bidrar bara med ton,
+// och tonen bevaras: samma brusfält, samma trösklar, samma andelar mellan de
+// tre banden, bara färre och större sampel. Kostnaden faller kvadratiskt med
+// faktorn.
+//
+// VIKTIGT: faktorn är 1 vid spelzoom och 1:1, så de zoomarna är
+// BIT-IDENTISKA med före. LOD:en slår in först under ~0,42, alltså bara i det
+// läge där hela världen syns och detaljen ändå inte kan läsas. Grinden mot
+// princip 5 (1:1 är bedömningsskalan) är därmed uppfylld per konstruktion och
+// inte per ögonmått.
+const LOD_MIN_BLOCK_PX = 4;
+
+// lodStep grovkornar ett världsenhets-lattice för aktuell zoom. `base` är
+// passets egen STEP; returvärdet är alltid en heltalsmultipel av den, så
+// `Math.floor(x / step) * step` fortsätter ligga på samma globala lattice och
+// rastret betraktar fortfarande inte hexkanten (princip 2).
+function lodStep(base) {
+  const px = base * State.camera.zoom * SCALE;
+  const k = Math.max(1, Math.round(LOD_MIN_BLOCK_PX / px));
+  return base * k;
+}
+
 export function hexPx(q, r) {
   return {
     x: Math.round(S * 1.5 * q),
@@ -441,7 +473,7 @@ function drawForestFloor(ctx, cx, cy, q, r) {
   // from both the plains probe and the tree-scale probe. Here the tone of each
   // block comes from world-space noise, so the field runs unbroken from hex to
   // hex and the clip between two groves has nothing to show.
-  const STEP = 3;
+  const STEP = lodStep(3);
   const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
   const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
   for (let wy = y0; wy <= y1; wy += STEP) {
@@ -762,7 +794,7 @@ function drawPlainsField(ctx, cx, cy) {
   // not relative to the hex centre): two neighbouring plains hexes must place
   // their blocks on the same grid, or the field betrays the tile boundary it is
   // supposed to hide.
-  const STEP = 4;
+  const STEP = lodStep(4);
   const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
   const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
   for (let wy = y0; wy <= y1; wy += STEP) {
@@ -868,10 +900,11 @@ function drawScrubField(ctx, cx, cy) {
   // jämnt fördelade toner, princip 30), och nedskruvat till knappt synligt
   // kostade det 9,9 ms av `ground` vid minzoom för en skillnad man får leta
   // efter i en A/B. Bastonen räcker som mark; snåren gör resten.
-  const x0 = Math.floor((cx - S) / DRY_STEP) * DRY_STEP, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / DRY_STEP) * DRY_STEP, y1 = cy + S;
-  for (let wy = y0; wy <= y1; wy += DRY_STEP) {
-    for (let wx = x0; wx <= x1; wx += DRY_STEP) {
+  const step = lodStep(DRY_STEP);
+  const x0 = Math.floor((cx - S) / step) * step, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / step) * step, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += step) {
+    for (let wx = x0; wx <= x1; wx += step) {
       // Snåren. Sammanhängande fläckar ur ett fält, inte N spridda märken —
       // det är hela skillnaden mot de fem cirklarna som stod här. Överkanten
       // får 1 px sol: princip 4 säger att massa uppstår ur gemensam undervolym
@@ -881,11 +914,11 @@ function drawScrubField(ctx, cx, cy) {
       if (!scrubBush(wx, wy)) continue;
       ctx.globalAlpha = 0.66;
       ctx.fillStyle = SCRUB_BUSH;
-      ctx.fillRect(wx, wy, DRY_STEP, DRY_STEP);
-      if (!scrubBush(wx, wy - DRY_STEP)) {
+      ctx.fillRect(wx, wy, step, step);
+      if (!scrubBush(wx, wy - step)) {
         ctx.globalAlpha = 0.70;
         ctx.fillStyle = SCRUB_CROWN;
-        ctx.fillRect(wx, wy, DRY_STEP, 1);
+        ctx.fillRect(wx, wy, step, 1);
       }
     }
   }
@@ -911,11 +944,12 @@ function drawDesertField(ctx, cx, cy) {
   hexPath(ctx, hexPts(cx, cy));
   ctx.clip();
 
-  const x0 = Math.floor((cx - S) / DRY_STEP) * DRY_STEP, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / DRY_STEP) * DRY_STEP, y1 = cy + S;
-  for (let wy = y0; wy <= y1; wy += DRY_STEP) {
-    for (let wx = x0; wx <= x1; wx += DRY_STEP) {
-      const gx = Math.floor(wx / DRY_STEP), gy = Math.floor(wy / DRY_STEP);
+  const step = lodStep(DRY_STEP);
+  const x0 = Math.floor((cx - S) / step) * step, x1 = cx + S;
+  const y0 = Math.floor((cy - S) / step) * step, y1 = cy + S;
+  for (let wy = y0; wy <= y1; wy += step) {
+    for (let wx = x0; wx <= x1; wx += step) {
+      const gx = Math.floor(wx / step), gy = Math.floor(wy / step);
       const jitter = hash32(gx, gy, 5252) / 4294967296 - 0.5;
       const n = noiseAt(wx, wy, DESERT_CELL, 2727) + jitter * DESERT_DITHER;
       // Basbandet är smalt med flit. På slätten ÄR bastonen det dominerande
@@ -925,7 +959,7 @@ function drawDesertField(ctx, cx, cy) {
       else if (n < 0.53) { ctx.globalAlpha = 0;    }
       else if (n < 0.80) { ctx.globalAlpha = 0.40; ctx.fillStyle = DESERT_CRUST; }
       else               { ctx.globalAlpha = 0.34; ctx.fillStyle = DESERT_BLEACH; }
-      if (ctx.globalAlpha) ctx.fillRect(wx, wy, DRY_STEP, DRY_STEP);
+      if (ctx.globalAlpha) ctx.fillRect(wx, wy, step, step);
 
       // Gruset. En enda logisk pixel, satt på en hash-vald plats inne i
       // blocket — en 3×3-fläck vore en stenhäll, inte grus.
@@ -933,8 +967,8 @@ function drawDesertField(ctx, cx, cy) {
       if (g > 0.30 * (1 - n)) continue;
       ctx.globalAlpha = 0.5;
       ctx.fillStyle = DESERT_GRIT;
-      ctx.fillRect(wx + (hash32(gx, gy, 4141) % DRY_STEP),
-                   wy + (hash32(gx, gy, 4242) % DRY_STEP), 1, 1);
+      ctx.fillRect(wx + (hash32(gx, gy, 4141) % step),
+                   wy + (hash32(gx, gy, 4242) % step), 1, 1);
     }
   }
   ctx.globalAlpha = 1;
@@ -1014,7 +1048,7 @@ function drawCedarFloor(ctx, cx, cy) {
   ctx.save();
   hexPath(ctx, hexPts(cx, cy));
   ctx.clip();
-  const STEP = 3;
+  const STEP = lodStep(3);
   const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
   const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
   for (let wy = y0; wy <= y1; wy += STEP) {
@@ -1301,7 +1335,7 @@ function drawValleyField(ctx, cx, cy, q, r, isDelta) {
   const light = isDelta ? DELTA_LIGHT : VALLEY_LIGHT;
   const silt  = isDelta ? DELTA_SILT  : VALLEY_SILT;
 
-  const STEP = 3;
+  const STEP = lodStep(3);
   const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
   const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
   for (let wy = y0; wy <= y1; wy += STEP) {
