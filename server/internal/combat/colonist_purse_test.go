@@ -283,3 +283,62 @@ func runColonizeArrival(t *testing.T, pool *pgxpool.Pool, ctx context.Context, w
 		t.Fatalf("commit: %v", err)
 	}
 }
+
+// TestArriveGarrison_ReturnsTheCarriedPurse: an expedition that turns around
+// hands its purse back. Without this the silver is debited at dispatch and
+// never credited anywhere — a recalled colonist would leave its city
+// permanently poorer for a colony that was never founded, and nothing in the
+// game would ever say where the silver went.
+func TestArriveGarrison_ReturnsTheCarriedPurse(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	worldID, motherID, unitID := purseFixture(t, pool, ctx, 3000, 700)
+	before := worldSilver(t, pool, ctx, worldID)
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT owner_id FROM units WHERE id = $1`, unitID).Scan(&ownerID); err != nil {
+		t.Fatalf("load unit owner: %v", err)
+	}
+	u := unitRow{
+		id: unitID, ownerID: ownerID, utype: "spearman", category: "land",
+		size: 50, status: "marching", q: 10, r: 10, carriedSilver: 700,
+	}
+	h := &UnitArrivalHandler{
+		pool: pool, eventStore: events.NewStore(pool),
+		clk: clock.NewTestClock(time.Now()), sitosCfg: economy.LoadSitosConfig(),
+	}
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatalf("begin tx: %v", err)
+	}
+	defer tx.Rollback(ctx)
+	if err := h.arriveGarrison(ctx, tx, u, 0, 0, &motherID, worldID); err != nil {
+		t.Fatalf("arriveGarrison: %v", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		t.Fatalf("commit: %v", err)
+	}
+
+	if after := worldSilver(t, pool, ctx, worldID); math.Abs(after-before) > 1e-6 {
+		t.Errorf("world silver %v → %v on a turn-around: the purse must not evaporate", before, after)
+	}
+	var motherSilver, stillCarried float64
+	if err := pool.QueryRow(ctx,
+		`SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods
+		 WHERE settlement_id = $1 AND good_key = 'silver'`, motherID,
+	).Scan(&motherSilver); err != nil {
+		t.Fatalf("read mother silver: %v", err)
+	}
+	if math.Abs(motherSilver-3700) > 1e-6 {
+		t.Errorf("mother city silver = %v, want 3700 (3000 + the 700 handed back)", motherSilver)
+	}
+	if err := pool.QueryRow(ctx,
+		`SELECT carried_silver FROM units WHERE id = $1`, unitID,
+	).Scan(&stillCarried); err != nil {
+		t.Fatalf("read carried: %v", err)
+	}
+	if stillCarried != 0 {
+		t.Errorf("unit still carries %v after handing the purse over — it would exist twice", stillCarried)
+	}
+}
