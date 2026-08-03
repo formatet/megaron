@@ -16,17 +16,20 @@ package combat
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"math"
 	"net/http"
 	"time"
 
 	"formatet/megaron/server/internal/capabilities"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -68,6 +71,13 @@ type MarchStarted struct {
 	OriginR       int
 	TargetQ       int
 	TargetR       int
+	// CarriedSilver is the colonist purse this column left with, and
+	// PurseShortfall is how much of it the mother city could not afford. Both
+	// belong in the dispatch response rather than only in the colony's balance
+	// later: a Wanax has to learn that the expedition set out broke BEFORE it
+	// arrives, not when the new city cannot pay its garrison.
+	CarriedSilver  float64
+	PurseShortfall float64
 }
 
 // TargetKnownFunc reports whether the ordering player has seen the target hex
@@ -468,6 +478,49 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusConflict, "unit status changed; march not sent")
 	}
 
+	// The colonist purse (B3, mig 107). A founding used to MINT the colony's
+	// starting silver; now the expedition carries it from the city that sent it.
+	// Debited here, inside the same transaction that starts the march, so the
+	// silver is never in two places at once.
+	//
+	// Not a hard gate: a city that cannot afford the full purse sends what it
+	// has, and a colony can be founded with nothing. That is a real and legible
+	// choice — a colony with no silver cannot pay upkeep — and the response
+	// carries the figure so the Wanax learns it BEFORE the column leaves, not
+	// when the city starves.
+	var purse, purseShortfall float64
+	if o.Intent == "colonize" && u.SupportSettlementID != nil {
+		want := colonistPurse(ctx, tx, u.Size)
+		if want > 0 {
+			var have float64
+			if err := tx.QueryRow(ctx,
+				`SELECT GREATEST(0, settled(amount, rate, calc_tick))
+				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver' FOR UPDATE`,
+				*u.SupportSettlementID,
+			).Scan(&have); err == nil {
+				purse = math.Min(want, have)
+				purseShortfall = want - purse
+			}
+		}
+		if purse > 0 {
+			if _, err := tx.Exec(ctx,
+				`UPDATE settlement_goods
+				    SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
+				        calc_tick = current_world_tick()
+				  WHERE settlement_id = $2 AND good_key = 'silver'`,
+				purse, *u.SupportSettlementID,
+			); err != nil {
+				return nil, reject(http.StatusInternalServerError, "could not withdraw the colonist purse")
+			}
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET carried_silver = carried_silver + $2 WHERE id = $1`,
+				o.UnitID, purse,
+			); err != nil {
+				return nil, reject(http.StatusInternalServerError, "could not load the colonist purse")
+			}
+		}
+	}
+
 	// Build stance SET clause only when provided.
 	var stanceArg *string
 	if o.Stance != "" {
@@ -570,7 +623,32 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		OriginR:       originR,
 		TargetQ:       targetQ,
 		TargetR:       targetR,
+
+		CarriedSilver:  purse,
+		PurseShortfall: purseShortfall,
 	}, nil
+}
+
+// colonistPurse is what a colonising expedition tries to take with it: exactly
+// the liquid silver the colony used to be seeded with out of thin air, so the
+// colony's balance sheet is unchanged and only its SOURCE moves — from the
+// world's faucet to the mother city's treasury. Priced against the population
+// the colony will actually have (base + the column's own men), the same figure
+// foundColony computes on arrival.
+//
+// Returns 0 rather than an error if grain's base value can't be read: an
+// expedition that leaves without a purse is a worse outcome than a failed
+// dispatch would be honest about, but silently minting is worse than both, and
+// a colony can legitimately be founded penniless.
+func colonistPurse(ctx context.Context, tx pgx.Tx, unitSize int) float64 {
+	grainBaseValue, err := economy.GoodBaseValue(ctx, tx, "grain")
+	if err != nil {
+		slog.Error("colonist purse: load grain base value", "err", err)
+		return 0
+	}
+	seed, _ := economy.GenesisSilverLiquid(economy.ColonyBaseFoundingPopulation+unitSize,
+		grainBaseValue, economy.LoadSitosConfig())
+	return seed
 }
 
 // nearestOwnedSettlement finds the player's active settlement closest to

@@ -415,6 +415,22 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				fmt.Print(" — it will sail/march home automatically once it arrives")
 			}
 			fmt.Println()
+			// The colonist purse (mig 107): a founding no longer mints the colony's
+			// silver, the column carries it from home. Printed at dispatch because
+			// this is the last moment the Wanax can recall the expedition and fund
+			// it properly — after it lands, the colony is simply poor.
+			if intent == "colonize" {
+				carried, _ := resp["carried_silver"].(float64)
+				short, _ := resp["purse_shortfall"].(float64)
+				switch {
+				case short > 0 && carried > 0:
+					fmt.Printf("  Bär med sig %.0f silver hemifrån — %.0f mindre än kolonin behöver. Den grundas fattig.\n", carried, short)
+				case short > 0:
+					fmt.Printf("  ⚠ Bär INGET silver — moderstaden hade inget att skicka med. Kolonin grundas på 0 och kan inte betala sold.\n")
+				case carried > 0:
+					fmt.Printf("  Bär med sig %.0f silver hemifrån (dras ur moderstadens kassa nu, inte myntat vid grundningen).\n", carried)
+				}
+			}
 			return nil
 		},
 	}

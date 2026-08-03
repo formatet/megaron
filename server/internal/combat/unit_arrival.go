@@ -115,11 +115,13 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	var u unitRow
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
-		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
+		        carried_silver
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode); err != nil {
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
+		&u.carriedSilver); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -286,6 +288,33 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		u.id, newStatus, destQ, destR, settlementID,
 	); err != nil {
 		return fmt.Errorf("unit arrive garrison: %w", err)
+	}
+
+	// An expedition that walks into a settlement hands over whatever purse it is
+	// still carrying (mig 107). Recall, a rerouted march, a colonisation refused
+	// on arrival — all of them funnel through here, so the silver comes home by
+	// one path instead of one per way of turning around. Without this a recalled
+	// colonist would leave its city permanently poorer for a colony never
+	// founded.
+	//
+	// A unit destroyed in the field keeps its purse and it goes with the column.
+	// That is deliberate: the silver was physically on the road, and the road is
+	// interceptable like everything else on the map.
+	if settlementID != nil && u.carriedSilver > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlement_goods
+			    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
+			        calc_tick = current_world_tick()
+			  WHERE settlement_id = $2 AND good_key = 'silver'`,
+			u.carriedSilver, *settlementID,
+		); err != nil {
+			return fmt.Errorf("unit arrive: return carried purse: %w", err)
+		}
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET carried_silver = 0 WHERE id = $1`, u.id,
+		); err != nil {
+			return fmt.Errorf("unit arrive: clear carried purse: %w", err)
+		}
 	}
 
 	// C6: if this ship carried a land unit, move the cargo to the ship's new position.
@@ -675,11 +704,13 @@ func (h *UnitArrivalHandler) HandleSentryReturn(ctx context.Context, e events.Sc
 	var u unitRow
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
-		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
+		        carried_silver
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		payload.UnitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode); err != nil {
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
+		&u.carriedSilver); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil // unit gone (disbanded/destroyed) — nothing to return
 		}
@@ -815,20 +846,37 @@ func (h *UnitArrivalHandler) foundColony(
 		return fmt.Errorf("foundColony: seed goods: %w", err)
 	}
 
-	// Sitos genesis seed: sow LIQUID silver (goods.silver), separate from the fund
-	// seed above — a colony with 0 liquid silver can't pay for buy offers or army
-	// upkeep even with a full fund (temenos_sitos.md). Same exception class as the
-	// fund seed. Runs before RecomputeProduction below.
+	// The colony's starting silver is the purse the colonists CARRIED here
+	// (mig 107), not silver minted at the moment of founding. Until 2026-08-03
+	// this line called GenesisSilverLiquid and created ~10 500 silver per colony
+	// out of nothing, in a world holding 106 678 liquid — expansion was a
+	// printing press, and a Wanax could always found their way out of
+	// insolvency. B3: silver enters only via genesis and mines.
+	//
+	// The cap still comes from GenesisSilverLiquid: a cap is a shape, not silver,
+	// and the colony needs the same headroom a capital gets or it would clip its
+	// own income later. If the expedition arrived empty-handed the colony starts
+	// at 0 — poor, unable to pay upkeep, and that is a real consequence of
+	// sending it out of a treasury that had nothing to give.
 	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
-		slog.Error("sitos genesis: load grain base value for liquid silver", "err", gbErr)
+		slog.Error("colony silver: load grain base value", "err", gbErr)
 	} else {
-		liquidSeed, liquidCap := economy.GenesisSilverLiquid(population, grainBaseValue, h.sitosCfg)
+		_, liquidCap := economy.GenesisSilverLiquid(population, grainBaseValue, h.sitosCfg)
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET amount = $1, cap = $2, calc_tick = current_world_tick()
 			 WHERE settlement_id = $3 AND good_key = 'silver'`,
-			liquidSeed, liquidCap, colonyID,
+			u.carriedSilver, liquidCap, colonyID,
 		); err != nil {
-			slog.Error("sitos genesis: seed liquid silver failed", "err", err, "settlement", colonyID)
+			slog.Error("colony silver: credit carried purse failed", "err", err, "settlement", colonyID)
+		} else if u.carriedSilver > 0 {
+			// The purse is spent the moment it lands. Zeroing it in the same
+			// transaction is what keeps the silver from existing twice if the
+			// unit row outlives the founding for any reason.
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET carried_silver = 0 WHERE id = $1`, u.id,
+			); err != nil {
+				return fmt.Errorf("foundColony: clear carried purse: %w", err)
+			}
 		}
 	}
 
@@ -1880,6 +1928,10 @@ type unitRow struct {
 	colonyName       *string    // chosen colony name or nil
 	homeSettlementID *uuid.UUID // set for "explore"/"explore_return"; the settlement to return to
 	captureMode      string     // "sack" (default) | "annex" — set at march dispatch, read on conquest
+	// carriedSilver is the colonist purse (mig 107): silver debited from the
+	// mother city at dispatch and riding on this unit. Credited to the colony it
+	// founds, or back into whatever settlement it walks into if it turns around.
+	carriedSilver float64
 }
 
 type destSettlement struct {
