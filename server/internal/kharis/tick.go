@@ -1154,7 +1154,7 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 			     AND (t.q, t.r) IN ((p.map_q+1,p.map_r),(p.map_q-1,p.map_r),
 			                        (p.map_q,p.map_r+1),(p.map_q,p.map_r-1),
 			                        (p.map_q+1,p.map_r-1),(p.map_q-1,p.map_r+1))
-			   WHERE s.id = $1 AND t.terrain IN ('coastal_sea','deep_sea','river'))`,
+			   WHERE s.id = $1 AND t.terrain IN ('coastal_sea','deep_sea','river','river_ford'))`,
 			settlementID, worldID,
 		).Scan(&coastal); err != nil || !coastal {
 			for i := range blessings {

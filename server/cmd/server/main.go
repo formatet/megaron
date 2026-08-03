@@ -276,6 +276,11 @@ func main() {
 		r.Get("/buildings", ph.BuildingCatalogue)
 		r.Get("/units", ph.UnitCatalogue)
 		r.Get("/recipes", ph.RecipeCatalogue)
+		// Tradeable goods — the same set messenger.go's offer validation
+		// accepts (silver is the price side, cult is temple labor), read from
+		// one shared helper so the offer form and the offer validator can
+		// never drift apart.
+		r.Get("/goods", handlers.NewGoodsHandler(pool).TradeableCatalogue)
 
 		// World endpoints — list/get/map are public; create requires auth.
 		r.Get("/worlds", wh.List)
