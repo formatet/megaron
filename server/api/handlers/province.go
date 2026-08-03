@@ -2723,12 +2723,14 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var weight float64
-	if err := h.pool.QueryRow(r.Context(),
-		`SELECT COALESCE(weight, 2) FROM goods WHERE key = $1`,
-		req.GoodKey,
-	).Scan(&weight); err != nil {
+	weight, shippable, err := economy.IsShippableGood(r.Context(), h.pool, req.GoodKey)
+	if err != nil {
 		writeError(w, http.StatusBadRequest, "unknown good")
+		return
+	}
+	if !shippable {
+		writeError(w, http.StatusBadRequest,
+			"cannot transfer cult — cult is produced by temple labor and converted to kharis in place, it cannot be shipped")
 		return
 	}
 

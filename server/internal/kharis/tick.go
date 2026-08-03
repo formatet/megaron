@@ -573,21 +573,13 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	}
 
 	if maintained {
-		// 2. Consume cult across all player's settlements (zero it out).
-		if _, err := h.pool.Exec(ctx,
-			`UPDATE settlement_goods sg SET
-			   amount   = 0,
-			   calc_tick = current_world_tick()
-			 FROM settlements s2
-			 WHERE sg.settlement_id = s2.id
-			   AND s2.owner_id = $1 AND s2.world_id = $2
-			   AND sg.good_key = 'cult'`,
-			w.playerID, worldID,
-		); err != nil {
-			return fmt.Errorf("consume cult goods: %w", err)
-		}
-
-		// 3. Event + divine effects.
+		// 2. Event + divine effects. (There used to be a step here that zeroed
+		// settlement_goods good_key='cult' across the player's settlements —
+		// removed 2026-08-03: migration 094 deleted every such row and nothing
+		// recreates one with a positive amount, so the UPDATE had matched zero
+		// rows since 094 landed. Cult is devotion — internal/economy.GoodCult
+		// doc comment and settlement_labor, not a settlement_goods stock to
+		// consume.)
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
 			map[string]any{
 				"devotion_sum":        w.devotionSum,
@@ -621,7 +613,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		}
 	}
 
-	// 4. Derive mood and write back cult_level (drives prestige + display).
+	// 3. Derive mood and write back cult_level (drives prestige + display).
 	derived := deriveMood(newKharis)
 	_, _ = h.pool.Exec(ctx,
 		`UPDATE player_world_records SET cult_level = $1
