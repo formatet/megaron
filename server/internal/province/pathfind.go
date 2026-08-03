@@ -81,14 +81,18 @@ const CategoryCourier = "courier"
 const CourierSeaHours = 0.5
 
 // isPassable reports whether terrain is traversable for the given unit category.
-//   - "naval": only coastal_sea, deep_sea and river are passable.
+//   - "naval": coastal_sea, deep_sea, river and river_ford are passable.
 //   - "courier": everything except mountains (sea and river = boat passage).
 //   - "land" (and any other value): coastal_sea, deep_sea, river, mountain_limestone,
 //     mountain_red are impassable; semi_desert costs 2.0 but is passable.
 //     River is a wall for land units (megaron_floden_plan.md — Timothy 2026-07-29).
+//     river_ford is the one deliberate gap in that wall (megaron_plan_
+//     flodbudget_och_vadstalle.md, Timothy 2026-08-02) — passable for BOTH land
+//     and naval, at a steep TerrainMoveHours cost (movement.go) rather than
+//     being excluded here.
 func isPassable(terrain, category string) bool {
 	if category == "naval" {
-		return terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river"
+		return terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" || terrain == "river_ford"
 	}
 	if category == CategoryCourier {
 		return terrain != "mountain_limestone" && terrain != "mountain_red"
@@ -105,6 +109,12 @@ func isPassable(terrain, category string) bool {
 // temenos_synlighet.md §Nivå 1) and cross sea (and river — a runner commandeers
 // a boat over a river the same as over the sea, megaron_floden_plan.md) at the
 // flat boat rate; every other category pays the plain TerrainMoveHours.
+// river_ford is deliberately ABSENT from the courier-sea-rate branch below: a
+// runner does not commandeer a boat to cross a ford, he wades (megaron_plan_
+// flodbudget_och_vadstalle.md) — it falls through to TerrainMoveHours/2 like
+// any other land terrain, and TerrainMoveHours("river_ford") is itself steep
+// (movement.go), so the runner still pays for the crossing, just not at the
+// flat boat rate.
 func moveHoursFor(terrain, category string) float64 {
 	if category == CategoryCourier {
 		if terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" {
@@ -116,8 +126,10 @@ func moveHoursFor(terrain, category string) float64 {
 }
 
 // NearestSeaNeighbor returns the coordinates of a hex adjacent to (q,r) that is
-// sea or river terrain (coastal_sea, deep_sea or river — a ship in a river town
-// must be able to put out into the river). Naval units garrisoned at a settlement
+// sea or river terrain (coastal_sea, deep_sea, river or river_ford — a ship in
+// a river town must be able to put out into the river, and a ford is just as
+// much the river's own water as any other river hex, megaron_plan_
+// flodbudget_och_vadstalle.md). Naval units garrisoned at a settlement
 // have no position of their own — their origin resolves to the settlement's own
 // (land) province hex, which a naval unit can never legally occupy. Callers use
 // this to resolve the real departure hex (the harbour dock) before pathfinding,
@@ -142,7 +154,7 @@ func NearestSeaNeighbor(ctx context.Context, db Queryer, worldID uuid.UUID, q, r
 			}
 		}
 		rows.Close()
-		if hasRow && (terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river") {
+		if hasRow && (terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" || terrain == "river_ford") {
 			return nq, nr, true, nil
 		}
 	}
@@ -188,7 +200,11 @@ func NearestUnclaimedLandNeighbor(ctx context.Context, db Queryer, worldID uuid.
 			}
 		}
 		rows.Close()
-		isSea := terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river"
+		// river_ford counts as sea here too: it is water (shallow and narrow,
+		// but water), not the dry unclaimed land this helper is looking for —
+		// same reasoning as spawnBuildable's exclusion (megaron_plan_
+		// flodbudget_och_vadstalle.md).
+		isSea := terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" || terrain == "river_ford"
 		isMountain := terrain == "mountain_limestone" || terrain == "mountain_red"
 		if hasRow && !isSea && !isMountain && !settled {
 			return nq, nr, true, nil
@@ -202,9 +218,13 @@ func NearestUnclaimedLandNeighbor(ctx context.Context, db Queryer, worldID uuid.
 // heuristic (HexDistance × minPassableCost) must never overestimate the true
 // remaining cost, and the true cost per hex is never lower than this floor.
 //   - land: plains (0.75) is the cheapest passable terrain.
-//   - naval: coastal_sea (0.4) is the cheapest passable terrain — river (0.5) is
-//     more expensive so the floor stands. If river's rate is ever tuned below
-//     0.4, this floor must be recomputed or the A* heuristic becomes inadmissible.
+//   - naval: coastal_sea (0.4) is the cheapest passable terrain — river (0.5) and
+//     river_ford (2.5, movement.go) are both more expensive so the floor stands;
+//     a ford is deliberately the priciest naval hex there is (deliberate design,
+//     megaron_plan_flodbudget_och_vadstalle.md: "a ford IS shallow and narrow" —
+//     it can only ever push this floor down further from admissible, never up).
+//     If river's rate is ever tuned below 0.4, this floor must be recomputed or
+//     the A* heuristic becomes inadmissible.
 //   - courier: plains at half hours (0.375) is the cheapest passable terrain
 //     (cheaper than the 0.5 sea boat rate).
 func minPassableCost(category string) float64 {

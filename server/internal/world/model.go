@@ -51,8 +51,16 @@ const (
 	TerrainRiver             Terrain = "river"
 	TerrainRiverValley       Terrain = "river_valley"
 	TerrainRiverDelta        Terrain = "river_delta"
-	TerrainScrubMaquis       Terrain = "scrub_maquis"
-	TerrainSemiDesert        Terrain = "semi_desert"
+	// TerrainRiverFord is the river's port (megaron_plan_flodbudget_och_vadstalle.md,
+	// Timothy 2026-08-02): a river hex replaced roughly every 10 hexes of chain
+	// length, both sailable AND crossable on foot — the one gap in the wall a
+	// river otherwise is for land units. It is its own terrain, not a flag on
+	// river, exactly like river itself is its own terrain and not a flag on
+	// river_valley (S1 precedent). Named in the river family — see model.go's
+	// naming convention (river, river_valley, river_delta, river_ford).
+	TerrainRiverFord   Terrain = "river_ford"
+	TerrainScrubMaquis Terrain = "scrub_maquis"
+	TerrainSemiDesert  Terrain = "semi_desert"
 	// TerrainForestCedar is the cedar forest — its own terrain (S2,
 	// megaron_cederskogen_plan.md), not a deposit flag on forest_olive_grove.
 	// All cedar production comes from this terrain; CedarDeposit mirrors it

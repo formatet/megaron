@@ -47,6 +47,15 @@ const TERRAIN_BASE = {
   // alltså är paret gratis enligt princip 43 — spelaren har inget beslut som
   // hänger på att skilja dem åt, och vid mynningen SKA de flyta ihop.
   river:              {c0:'#39707C', c1:'#2F5F69'},
+  // river_ford (megaron_plan_flodbudget_och_vadstalle.md, Timothy 2026-08-02):
+  // the river's port, still water but the shallow kind — lighter than `river`
+  // itself (which is deliberately darker than coastal_sea, see the note
+  // above) so the hex reads as "shallower water" at a glance, distinct within
+  // the same family rather than a whole new hue. TABLE ROW ONLY — this slice
+  // is explicitly non-visual (no new hex art, no rit-switch case, isWaterTerrain
+  // untouched): the ford's actual pixel art is its own slice with an eye-check
+  // at 1:1. Treat this tone as provisional.
+  river_ford:         {c0:'#5E9CA6', c1:'#4E8590'},
   // Dalen: bevattnad flodslätt, spelets bördigaste mark efter deltat. Den
   // lämnar den mättade 2020-talsgrönan (`#4CAF50`) som slätten just lämnade,
   // och landar MÖRKARE än slätten — princip 7 mätt ur referensen: bördig grön
@@ -3476,6 +3485,11 @@ const TERRAIN_GOODS = {
   coastal_sea:        'fish',
   deep_sea:           'fish',
   river:              'fish',
+  // river_ford (megaron_plan_flodbudget_och_vadstalle.md): same fish rate as
+  // river (mig 108 reads it straight out of production_rules, not restated
+  // here) — "crossable" is the one fact this tooltip needs to add, since
+  // that's the whole reason a ford is a different terrain from river.
+  river_ford:         'fish (crossable)',
 };
 
 function producesText(tile) {
@@ -3533,6 +3547,7 @@ const TERRAIN_LABELS = {
   river: 'River', forest_cedar: 'Cedar Forest',
   coastal_sea: 'Coastal Sea', deep_sea: 'Deep Sea',
   mountain_limestone: 'Limestone Mountains', mountain_red: 'Red Mountains',
+  river_ford: 'Ford',
 };
 
 function terrainLabel(t) {

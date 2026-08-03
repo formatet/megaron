@@ -5,11 +5,22 @@ import (
 	"log/slog"
 	"math"
 	"math/rand"
+	"os"
 	"sort"
 	"strings"
 
 	"github.com/aquilax/go-perlin"
 )
+
+// fragDebugLog gates the §7e fragment-revert measurement print (one FRAGDBG
+// line per river carve attempt: landmass, size, smallestFragment, reverted) —
+// off by default, zero cost when unset. This is the instrument that produced
+// riverMinComponentTiles' calibration (megaron_plan_flodbudget_och_
+// vadstalle.md, coordinator correction 2026-08-03): re-run it
+// (MAPGEN_FRAG_DEBUG=1 go run ./cmd/mapgen-debug ...) before ever moving
+// riverMinComponentTiles or minLandFragment again — the failure mode it
+// measures does not announce itself any other way.
+var fragDebugLog = os.Getenv("MAPGEN_FRAG_DEBUG") != ""
 
 type cell struct{ q, r int }
 
@@ -147,39 +158,109 @@ const (
 // ── P3 river calibration numbers (bor i koden, itereras via PNG) ───────────
 // temenos_mapgen_arkipelag_plan.md §P3.
 const (
-	// riverDensityDivisor sets river count = max(minRivers, landTiles /
-	// riverDensityDivisor). The plan's starting number (~1 per 150 land hexes)
-	// produces ~88 rivers on 230×230 — that dilutes the delta honey-trap:
-	// deltas are the HIGHEST-grain tile in the game, so delta inflation is
-	// food inflation, the same scarcity logic already applied to tin. Landed
-	// on 500 after eyeballing the PNG suite (temenos_mapgen_arkipelag_plan.md
-	// §P3 explicitly names the 300–600 window): ~2 rivers at 56×40, ~5 at
-	// 120×84, high-20s at 230×230 — visibly gradient-fed without turning the
-	// coastline into a lattice of cyan. "Scarcity beats abundance" per plan.
-	riverDensityDivisor = 500
-	// minRivers is the map-wide floor regardless of land area — even a small
-	// map gets at least two rivers (plan §P3).
-	minRivers = 2
+	// riverBudget is now PER LANDMASS, not global (megaron_plan_flodbudget_och_
+	// vadstalle.md, Timothy 2026-07-31: "1-2 STÖRRE floder per landmassa, inte
+	// ~26-30 globalt"). The old riverDensityDivisor/minRivers pair (global
+	// count = max(minRivers, landArea/riverDensityDivisor), then riverSources
+	// ranked every candidate on the WHOLE MAP by height) is gone: on a
+	// 230×230 seed a landmass that happened to hold the map's tallest peaks
+	// drew 16 of the 18 rivers generated while two dozen other qualifying
+	// landmasses got zero (measured red baseline, three seeds, before this
+	// slice: rivers_per_landmass [16 1 1] / [10 5 3 1] / [12 6 2 1 1] against
+	// 30/23/31 qualifying landmasses — see the slice's proof package). The
+	// root was the global sort, not the divisor: no divisor tuning can fix
+	// "which landmass" the budget lands on. riverSources now ranks and spaces
+	// candidates WITHIN each landmass against that landmass's own budget.
 
 	// riverMinComponentTiles: a land component smaller than this never gets a
 	// river source — rivers on specks read as noise, not geography (plan §P3
-	// "high-elevation tiles ... preferring LARGE components"). Comfortably
-	// above remoteIsleMaxTiles (15) so a forced-metal remote isle never
-	// doubles as a river source too.
-	riverMinComponentTiles = 25
+	// "high-elevation tiles ... preferring LARGE components").
+	//
+	// 70, not 25 (megaron_plan_flodbudget_och_vadstalle.md, coordinator
+	// correction 2026-08-03): §7e's fragment guard (minLandFragment=12) undoes
+	// a WHOLE carve whenever it leaves a splinter under 12 tiles, and a
+	// per-attempt splinter-below-12 outcome is NOT size-dependent — measured
+	// across 665 individual river carves (230×230, seeds 1-10, one FRAGDBG
+	// line per carve): the revert rate sits at a roughly constant 5-15% from
+	// the smallest qualifying landmass up through size 2270+ (a river's own
+	// path can pinch off a small corner on a huge landmass exactly as easily
+	// as on a small one — this is a LOCAL geometric event, not a function of
+	// total landmass area). What size DOES change is how many independent
+	// chances a landmass gets: below riversSecondRiverTiles a landmass has
+	// budget=1 (exactly one shot — any revert leaves it at 0 rivers, tripping
+	// the "1-2" invariant below); at or above it, budget=2 gives two
+	// independent shots, and both failing is rare enough that no such case has
+	// ever been observed (0 occurrences across every measurement this slice
+	// ran). So raising this floor does not make an individual carve safer —
+	// it shrinks the population of single-shot landmasses a valid map depends
+	// on none of failing. Every observed "N rivers (want 1-2)" reseed (11
+	// occurrences across seeds 1-10 at the old floor of 25) landed on a
+	// landmass sized 27-63; 70 sits with a measured margin above that ceiling
+	// and reduces "N rivers" failures to ZERO across 20 seeds (1-20) at
+	// 230×230 — see the slice's proof package for the full FRAGDBG dataset and
+	// the seed-by-seed attempts comparison against master. Comfortably above
+	// remoteIsleMaxTiles (15) so a forced-metal remote isle never doubles as a
+	// river source too.
+	riverMinComponentTiles = 70
+
+	// riversSecondRiverTiles: a landmass gets its SECOND river only once it is
+	// at least this big — "1-2 per landmass" per Timothy's decision, with the
+	// second reserved for landmasses substantial enough to plausibly carry two
+	// separate drainage systems rather than one river and its own echo. Left
+	// at 100 (unchanged by the floor-70 correction above): raising it in step
+	// with the new floor (tried 280, a 4× ratio matching the original
+	// 25→100) made things WORSE, not better — it pushed some large
+	// landmasses that safely got 2 independent chances at 100 back down to a
+	// single (riskier) chance, and measurably increased reseed attempts
+	// without shifting the 1-vs-2 split much. 100 keeps every budget=2
+	// landmass's fragment-revert risk at "two independent 5-15% rolls",
+	// which has never once produced a 0-river landmass in any measurement
+	// run for this slice. Genuinely worth a canon note, not a code fix here:
+	// with floor=70, most landmasses that clear the qualifying bar in a
+	// 230×230 map ALSO already clear 100, so a typical run's split skews
+	// toward "mostly 2" rather than "mostly 1, sometimes 2" (e.g. seed 1:
+	// [2 2 2 2 2 2 2 2 1 1 1 1]) — flagged for Timothy, not silently re-tuned
+	// further.
+	riversSecondRiverTiles = 100
 
 	// riverSourceSpacing is the minimum hex distance between two river
-	// sources — plan §P3 "no two sources adjacent or near-adjacent".
+	// sources on the SAME landmass — plan §P3 "no two sources adjacent or
+	// near-adjacent". Landmasses are always sea-separated from each other, so
+	// this never needed a cross-landmass check even under the old global
+	// ranking; scoping it explicitly per-landmass (see riverSources) is a
+	// clarity change, not a behaviour change.
 	riverSourceSpacing = 6
+
+	// fordSpacingHexes sets vadställe density: one river_ford per this many
+	// hexes of a river's OWN chain length (megaron_plan_flodbudget_och_
+	// vadstalle.md, Timothy 2026-08-02), measured in the chain itself, never
+	// in map area — a river shorter than this gets zero fords (going around a
+	// short river on foot is still reasonable; the port only matters once the
+	// wall gets long). Placed at addRiver's own ordered path (see addRiver's
+	// doc comment) — that ordering only exists there, before it collapses
+	// into an unordered grid write.
+	fordSpacingHexes = 10
 
 	// minLandFragment (megaron_floden_plan.md §7e, Timothy 2026-07-29): a river
 	// deliberately WALLS its landmass in two — that is the point (land units
 	// cannot cross it). But a carve that leaves a splinter this small or
 	// smaller is a mapgen bug, not geography: it is undone (the whole carve —
 	// line, flanks, delta — is reverted for that source) rather than kept.
-	// 12 sits comfortably below riverMinComponentTiles (25, the floor for even
-	// STARTING a river) so a river is never rejected by a fragment it created
-	// out of ordinary, playable ground — only genuine slivers.
+	//
+	// Relationship to riverMinComponentTiles (measured 2026-08-03, coordinator
+	// correction): "12 sits below 25" alone is NOT what keeps these two
+	// constants compatible — a revert is a roughly size-INDEPENDENT ~5-15%
+	// per-carve event (see riverMinComponentTiles's comment), so a landmass
+	// only just above minLandFragment can still fail its (single) attempt at
+	// the same rate as a landmass ten times its size. What actually keeps the
+	// generator honest is riverMinComponentTiles being high enough that the
+	// POPULATION of budget=1 (single-shot) landmasses small enough to ever
+	// trip this revert is small — i.e. the two constants are compatible
+	// because of riverMinComponentTiles's floor, not because minLandFragment
+	// is "small enough" on its own. Do not lower riverMinComponentTiles back
+	// toward minLandFragment without re-running the FRAGDBG measurement in
+	// this slice's proof package — the failure mode does not announce itself
+	// through minLandFragment's own value.
 	minLandFragment = 12
 
 	// riverMeanderWavelength/riverMeanderJitter (ögonkoll 2026-07-29 fix — see
@@ -460,7 +541,9 @@ const (
 	cedarStandAreaDivisor = 1000
 
 	// groveDensityDivisor sets small-olive-grove seed count = landArea /
-	// groveDensityDivisor (same style as riverDensityDivisor). Originally
+	// groveDensityDivisor (same landArea/divisor style the river budget used
+	// before megaron_plan_flodbudget_och_vadstalle.md moved rivers to a
+	// per-landmass budget — groves stay global, unaffected). Originally
 	// calibrated to 12 against a moisture field that was min-max normalised
 	// (squeezed toward the middle on big maps, so terrainFor alone produced
 	// almost no natural forest_olive_grove on 230×230 — this pass had to
@@ -658,7 +741,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	// produces ore from turn 1 without needing an oracle or extra colonisation.
 	//
 	// "Buildable" mirrors the terrain exclusion list in join.go capital placement:
-	//   NOT IN (coastal_sea, deep_sea, river, mountain_limestone, mountain_red, semi_desert)
+	//   NOT IN (coastal_sea, deep_sea, river, river_ford, mountain_limestone, mountain_red, semi_desert)
 	// "Catchment" = the 6 axial neighbours RecomputeProduction reads (same as production logic).
 	// "West" = q <= maxQ/2; "East" = q > maxQ/2 (east hemisphere, where tin is placed).
 	//
@@ -668,7 +751,7 @@ func validateMap(tiles []MapTile, width, height int) error {
 	dirs6 := [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 	isBuildable := func(t MapTile) bool {
 		switch t.Terrain {
-		case TerrainCoastalSea, TerrainDeepSea, TerrainRiver,
+		case TerrainCoastalSea, TerrainDeepSea, TerrainRiver, TerrainRiverFord,
 			TerrainMountainLimestone, TerrainMountainRed, TerrainSemiDesert:
 			return false
 		}
@@ -754,40 +837,76 @@ func riverInvariantFailures(tiles []MapTile, width, height int) []string {
 		}
 	}
 
-	// Every connected river+delta group touches at least one river_delta tile
-	// (§7d) AND at least one main-sea tile (§7a: the mouth is always the
-	// Thalassa, never a landlocked lake).
-	mainSea := mainSeaComponent(grid, width, height)
-	seen := map[cell]bool{}
-	for start, t := range grid {
-		if t != TerrainRiver || seen[start] {
+	// Every river_ford hex has exactly 2 river-family (river ∪ river_ford)
+	// neighbours (megaron_plan_flodbudget_och_vadstalle.md steg 3/8, Timothy
+	// 2026-08-02: "vadstället ligger i floden") — it sits mid-chain, never at
+	// an endpoint or a branch. This alone also proves a ford never lands on a
+	// chain's source or mouth-adjacent hex: those are a simple path's only
+	// two degree-1 nodes, so an endpoint mistakenly converted would trip this
+	// exact assertion (see addRiver's ford-placement comment).
+	for c, t := range grid {
+		if t != TerrainRiverFord {
 			continue
 		}
-		hasDelta, hasMainSea := false, false
-		queue := []cell{start}
-		seen[start] = true
-		for len(queue) > 0 {
-			cur := queue[0]
-			queue = queue[1:]
-			for _, n := range hexNeighbours(cur, width, height) {
-				nt := grid[n]
-				if nt == TerrainRiverDelta {
-					hasDelta = true
-				}
-				if mainSea[n] {
-					hasMainSea = true
-				}
-				if nt == TerrainRiver && !seen[n] {
-					seen[n] = true
-					queue = append(queue, n)
-				}
+		fam := 0
+		for _, d := range riverNeighbourOrder {
+			nt := grid[cell{c.q + d[0], c.r + d[1]}]
+			if nt == TerrainRiver || nt == TerrainRiverFord {
+				fam++
 			}
 		}
-		if !hasDelta {
-			fails = append(fails, fmt.Sprintf("river component at (%d,%d) has no river_delta tile", start.q, start.r))
+		if fam != 2 {
+			fails = append(fails, fmt.Sprintf("river_ford hex (%d,%d) has %d river-family neighbours (want exactly 2)", c.q, c.r, fam))
 		}
-		if !hasMainSea {
-			fails = append(fails, fmt.Sprintf("river component at (%d,%d) never reaches the main sea", start.q, start.r))
+	}
+
+	// Two river_ford hexes never share an edge (steg 3) — distinct from the
+	// degree-2 check above: two adjacent fords would each still show degree 2
+	// (each other counts as river-family), so this needs its own assertion.
+	for c, t := range grid {
+		if t != TerrainRiverFord {
+			continue
+		}
+		for _, d := range riverNeighbourOrder {
+			if grid[cell{c.q + d[0], c.r + d[1]}] == TerrainRiverFord {
+				fails = append(fails, fmt.Sprintf("two river_ford hexes share an edge at (%d,%d)", c.q, c.r))
+			}
+		}
+	}
+
+	// Per-chain checks (§7a/§7d, unchanged in spirit from before this slice,
+	// plus the two NEW ford invariants steg 8 adds) and the per-landmass
+	// river-count budget (steg 2/8) — all derived from the same riverChains
+	// BFS (see its doc comment for why a river_ford counts as "river" for that
+	// traversal).
+	comp := landComponents(tiles)
+	landmassSize := map[int]int{}
+	for _, t := range tiles {
+		if tileIsLand(t.Terrain) {
+			landmassSize[comp[[2]int{t.Q, t.R}]]++
+		}
+	}
+	riversByLandmass := map[int]int{}
+	for _, ci := range riverChains(tiles, width, height) {
+		if !ci.hasDelta {
+			fails = append(fails, fmt.Sprintf("river chain on landmass %d (size %d) has no river_delta tile", ci.landmass, ci.size))
+		}
+		if !ci.hasMainSea {
+			fails = append(fails, fmt.Sprintf("river chain on landmass %d (size %d) never reaches the main sea", ci.landmass, ci.size))
+		}
+		if ci.size >= fordSpacingHexes && ci.fords < 1 {
+			fails = append(fails, fmt.Sprintf("river chain on landmass %d (size %d) has no river_ford despite being >= %d hexes",
+				ci.landmass, ci.size, fordSpacingHexes))
+		}
+		riversByLandmass[ci.landmass]++
+	}
+	for lm, size := range landmassSize {
+		if size < riverMinComponentTiles {
+			continue
+		}
+		n := riversByLandmass[lm]
+		if n < 1 || n > 2 {
+			fails = append(fails, fmt.Sprintf("landmass %d (%d tiles) has %d rivers (want 1-2)", lm, size, n))
 		}
 	}
 
@@ -1066,13 +1185,22 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	// Amyklai-class silent failure documented in temenos_mapgen.md §Kända
 	// begränsningar). See addRiver for the per-river delta guarantee this
 	// construction makes possible.
-	landArea := 0
-	for _, sz := range compSize {
-		landArea += sz
-	}
-	riverCount := landArea / riverDensityDivisor
-	if riverCount < minRivers {
-		riverCount = minRivers
+	// riverBudget: 1 river for every landmass >= riverMinComponentTiles, 2 for
+	// every one of those also >= riversSecondRiverTiles (megaron_plan_
+	// flodbudget_och_vadstalle.md steg 2 — see the const block's doc comment
+	// for the red-baseline skew this budget shape replaces). A landmass absent
+	// from this map gets budget[lm]==0 via Go's zero value, which riverSources
+	// reads the same as an explicit 0 — no separate "not qualifying" branch
+	// needed.
+	riverBudget := map[int]int{}
+	for lm, sz := range compSize {
+		if lm == lmSea || sz < riverMinComponentTiles {
+			continue
+		}
+		riverBudget[lm] = 1
+		if sz >= riversSecondRiverTiles {
+			riverBudget[lm] = 2
+		}
 	}
 	// mainSea (§7a): the sea component touching the map's edge — the only sea
 	// a river's mouth may ever count as reaching. Computed once, before any
@@ -1098,7 +1226,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 
-	for _, src := range riverSources(field, landmap, compSize, grid, riverCount, width, height) {
+	for _, src := range riverSources(field, landmap, grid, riverBudget, width, height) {
 		targetLM := landmap[src]
 		cells := landmassCells[targetLM]
 
@@ -1114,7 +1242,13 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		// point — but a splinter smaller than minLandFragment is a mapgen bug,
 		// not geography. Undo the WHOLE carve (line, flanks, delta) rather
 		// than keep a fragment no Wanax could ever found a viable city on.
-		if smallestFragment(grid, cells, width, height) < minLandFragment {
+		frag := smallestFragment(grid, cells, width, height)
+		reverted := frag < minLandFragment
+		if fragDebugLog {
+			fmt.Fprintf(os.Stderr, "FRAGDBG landmass=%d size=%d smallestFragment=%d reverted=%v\n",
+				targetLM, len(cells), frag, reverted)
+		}
+		if reverted {
 			for c, t := range before {
 				grid[c] = t
 			}
@@ -1313,8 +1447,13 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 				// Coastal betyder sedan S1 "granne till vatten", inte "granne
 				// till hav" — en flodstad får full kuststatus (Timothy
 				// 2026-07-29). Floden själv är vatten och kan aldrig vara
-				// kust åt sig själv, därav det explicita undantaget.
-				Coastal:   !isSea(terrain) && terrain != TerrainRiver && hasWaterNeighbour(grid, c, width, height),
+				// kust åt sig själv, därav det explicita undantaget. Vadstället
+				// är samma sak (megaron_plan_flodbudget_och_vadstalle.md): det
+				// är också vatten, aldrig kust åt sig själv, men en granne till
+				// ett vadställe får full kuststatus precis som en flodgranne
+				// (se hasWaterNeighbour).
+				Coastal: !isSea(terrain) && terrain != TerrainRiver && terrain != TerrainRiverFord &&
+					hasWaterNeighbour(grid, c, width, height),
 				Fertility: 0.2 + rng.Float64()*0.8,
 				Mineral:   0.1 + rng.Float64()*0.7,
 			})
@@ -2127,16 +2266,22 @@ func terrainFor(heightNorm, moistureNorm float64, hemisphereBias int) Terrain {
 // from elsewhere in the file.
 var riverNeighbourOrder = [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 
-// riverSources picks up to n well-separated local-height-maxima land cells as
-// river start points (plan §P3: "högsta lokala höjdpunkter på stora
-// landkomponenter"). Candidates are restricted to components with at least
-// riverMinComponentTiles tiles (specks read as noise, not geography), sorted
-// by height descending, and accepted greedily as long as they clear
-// riverSourceSpacing hexes from every already-chosen source — so two rivers
-// never start side by side even on a broad plateau. Iteration is in the
-// file's standard column-major (q, then r) order and ties are broken by
-// (q, r) explicitly, so the result is fully deterministic for a given field.
-func riverSources(field map[cell]float64, landmap map[cell]int, compSize map[int]int, grid map[cell]Terrain, n, width, height int) []cell {
+// riverSources picks well-separated local-height-maxima land cells as river
+// start points (plan §P3: "högsta lokala höjdpunkter på stora
+// landkomponenter"), PER LANDMASS (megaron_plan_flodbudget_och_vadstalle.md
+// steg 2): budget[lm] caps how many sources landmass lm may contribute — 0
+// for anything not in the map (a landmass below riverMinComponentTiles, see
+// the caller). Ranking and spacing are unchanged in spirit from the old
+// global version — candidates sorted by height descending, ties broken by
+// (q, r) for full determinism — but accepted greedily WITHIN each landmass
+// against that landmass's own budget and its own already-chosen sources, so
+// the tallest peaks on ONE landmass can no longer starve every other
+// landmass's budget (the red-baseline bug this steg fixes — see the const
+// block's doc comment). "Färre men längre" (Timothy) falls out of this for
+// free: a shrunk per-landmass budget still always picks that landmass's OWN
+// highest point(s), giving the longest possible descent to the sea — verify
+// this in the A1 measurement, don't assume it.
+func riverSources(field map[cell]float64, landmap map[cell]int, grid map[cell]Terrain, budget map[int]int, width, height int) []cell {
 	type candidate struct {
 		c cell
 		h float64
@@ -2147,7 +2292,7 @@ func riverSources(field map[cell]float64, landmap map[cell]int, compSize map[int
 		for r := base; r < base+height; r++ {
 			c := cell{q, r}
 			lm := landmap[c]
-			if lm == lmSea || compSize[lm] < riverMinComponentTiles || isSea(grid[c]) {
+			if budget[lm] <= 0 || isSea(grid[c]) {
 				continue
 			}
 			isMax := true
@@ -2173,21 +2318,27 @@ func riverSources(field map[cell]float64, landmap map[cell]int, compSize map[int
 		return candidates[i].c.r < candidates[j].c.r
 	})
 
+	chosen := map[int]int{}        // landmass id -> sources accepted so far
+	chosenOnLM := map[int][]cell{} // landmass id -> those sources, for spacing
 	var sources []cell
 	for _, cd := range candidates {
-		if len(sources) >= n {
-			break
+		lm := landmap[cd.c]
+		if chosen[lm] >= budget[lm] {
+			continue
 		}
 		tooClose := false
-		for _, s := range sources {
+		for _, s := range chosenOnLM[lm] {
 			if hexDist(cd.c, s) < riverSourceSpacing {
 				tooClose = true
 				break
 			}
 		}
-		if !tooClose {
-			sources = append(sources, cd.c)
+		if tooClose {
+			continue
 		}
+		sources = append(sources, cd.c)
+		chosenOnLM[lm] = append(chosenOnLM[lm], cd.c)
+		chosen[lm]++
 	}
 	return sources
 }
@@ -2506,8 +2657,53 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field, meander map[ce
 	if !hasDelta {
 		panic(fmt.Sprintf("mapgen: river ending at %v (mouth %v) produced no delta tile bordering its own mouth hex — carving invariant broken", origin, mouth))
 	}
-}
 
+	// Vadställen: the river's port (megaron_plan_flodbudget_och_vadstalle.md
+	// steg 3, Timothy 2026-08-02). Placed HERE, on `line` — the DFS's own
+	// ordered path — because that ordering is only available here, before it
+	// scatters into an unordered grid write; validateMap's black-box checks
+	// (riverInvariantFailures) can only re-derive UNORDERED connectivity from
+	// tiles afterward, not "where along the chain" a hex sits.
+	//
+	// Density: floor(len(line)/fordSpacingHexes), evenly spaced at
+	// fordSpacingHexes/2 + k*fordSpacingHexes — a river shorter than
+	// fordSpacingHexes gets zero (going around a short river on foot is still
+	// reasonable). Never index 0 (source) or len(line)-1 (origin, the
+	// mouth-adjacent hex, already asserted above to border the delta): those
+	// are the chain's only two degree-1 nodes in the river-family graph, so
+	// converting either would make it fail riverInvariantFailures' "every
+	// river_ford hex has exactly 2 river-family neighbours" check — that
+	// assertion alone is sufficient proof no endpoint ever becomes a ford,
+	// which is why there is no separate index-bounds test for it.
+	//
+	// Prevention, not cure, for cross-river ford adjacency (§3's "two fords
+	// never share a hex edge"): spacing guarantees no two fords collide
+	// WITHIN this river's own line, but a DIFFERENT, earlier river's already-
+	// placed ford can still end up hex-adjacent to one of this river's
+	// candidate indices when two rivers' paths run close together (measured:
+	// ~1 in 10 seeds at 230×230). Skipping that one index — leaving the hex
+	// as plain river instead — is the same "check grid before writing"
+	// pattern addRiver's own descent already uses against
+	// adjacentToExistingRiver/adjacentToOwnPath, just applied to fords.
+	fords := len(line) / fordSpacingHexes
+	for k := 0; k < fords; k++ {
+		idx := fordSpacingHexes/2 + k*fordSpacingHexes
+		if idx <= 0 || idx >= len(line)-1 {
+			continue
+		}
+		adjacentToOtherFord := false
+		for _, n := range hexNeighbours(line[idx], width, height) {
+			if grid[n] == TerrainRiverFord {
+				adjacentToOtherFord = true
+				break
+			}
+		}
+		if adjacentToOtherFord {
+			continue
+		}
+		grid[line[idx]] = TerrainRiverFord
+	}
+}
 
 // placeDelta converts a land tile at the river's mouth into river_delta
 // terrain. Delta tiles are coastal, fertile, and strategically exposed — the
@@ -2580,9 +2776,18 @@ func placeDelta(grid map[cell]Terrain, landmap map[cell]int, mainSea map[cell]bo
 }
 
 // riverComponentsAllTouchDelta reports whether every TerrainRiver cell in grid
-// belongs to a connected river+delta group that contains at least one
-// TerrainRiverDelta tile. Used by thinRiverJunctions as the guard rail: a
-// demotion is only ever kept if the map still satisfies this afterward.
+// belongs to a connected river-family (river ∪ river_ford) group that contains
+// at least one TerrainRiverDelta tile. Used by thinRiverJunctions as the guard
+// rail: a demotion is only ever kept if the map still satisfies this
+// afterward. A river_ford counts as traversable here (megaron_plan_
+// flodbudget_och_vadstalle.md steg 3/6) — it is called once PER SOURCE, in the
+// SAME outer loop that places fords (see generateMapOnce), so by the time a
+// later river's pinch gets tested, an earlier river may already have a ford
+// mid-chain; without this, that ford would silently cut its own river's
+// TerrainRiver-only BFS into two "components", one of which never reaches a
+// delta — a false failure that would make every subsequent thinRiverJunctions
+// call on the whole map reject every candidate demotion, not just that one
+// river's.
 func riverComponentsAllTouchDelta(grid map[cell]Terrain, width, height int) bool {
 	seen := map[cell]bool{}
 	for q := 0; q < width; q++ {
@@ -2603,7 +2808,7 @@ func riverComponentsAllTouchDelta(grid map[cell]Terrain, width, height int) bool
 					if t == TerrainRiverDelta {
 						hasDelta = true
 					}
-					if t == TerrainRiver && !seen[n] {
+					if (t == TerrainRiver || t == TerrainRiverFord) && !seen[n] {
 						seen[n] = true
 						queue = append(queue, n)
 					}
@@ -2734,6 +2939,81 @@ func smallestFragment(grid map[cell]Terrain, cells []cell, width, height int) in
 		return 0
 	}
 	return smallest
+}
+
+// riverChainInfo is one connected "river family" component — river ∪
+// river_ford tiles, hex-adjacent — the same shape as one addRiver call
+// produced (minus its river_valley flanks and delta, which are not part of
+// the water path itself). Re-derived from the flattened tile list, never
+// threaded through from generation, exactly like every other black-box check
+// in this file (see riverInvariantFailures's doc comment).
+type riverChainInfo struct {
+	landmass   int
+	size       int // river + river_ford tile count — "the chain's own length"
+	fords      int
+	hasDelta   bool
+	hasMainSea bool
+}
+
+// riverChains groups every TerrainRiver/TerrainRiverFord tile into connected
+// river-family components. A river_ford counts as "river" for THIS traversal
+// (it sits mid-chain, still water) but is never itself a BFS start point —
+// every chain's two path endpoints (source and the mouth-adjacent hex) are
+// always plain TerrainRiver by construction (addRiver never places a ford on
+// index 0 or len(line)-1), so starting only from TerrainRiver cells still
+// reaches every chain in full.
+//
+// Used both by riverInvariantFailures (the per-chain §7a/§7d/ford-density
+// assertions) and by ComputeMapMetrics (the "rivers per landmass" + "chain
+// length" A1 report) — one BFS, two consumers, instead of duplicating it.
+func riverChains(tiles []MapTile, width, height int) []riverChainInfo {
+	grid := make(map[cell]Terrain, len(tiles))
+	for _, t := range tiles {
+		grid[cell{t.Q, t.R}] = t.Terrain
+	}
+	if len(grid) == 0 {
+		return nil
+	}
+	comp := landComponents(tiles)
+	mainSea := mainSeaComponent(grid, width, height)
+
+	seen := map[cell]bool{}
+	var chains []riverChainInfo
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			start := cell{q, r}
+			if grid[start] != TerrainRiver || seen[start] {
+				continue
+			}
+			info := riverChainInfo{landmass: comp[[2]int{start.q, start.r}]}
+			queue := []cell{start}
+			seen[start] = true
+			for len(queue) > 0 {
+				cur := queue[0]
+				queue = queue[1:]
+				info.size++
+				if grid[cur] == TerrainRiverFord {
+					info.fords++
+				}
+				for _, n := range hexNeighbours(cur, width, height) {
+					nt := grid[n]
+					if nt == TerrainRiverDelta {
+						info.hasDelta = true
+					}
+					if mainSea[n] {
+						info.hasMainSea = true
+					}
+					if (nt == TerrainRiver || nt == TerrainRiverFord) && !seen[n] {
+						seen[n] = true
+						queue = append(queue, n)
+					}
+				}
+			}
+			chains = append(chains, info)
+		}
+	}
+	return chains
 }
 
 // tinCopperSeaDistance returns the minimum sea-path distance between any tin-deposit
@@ -2928,14 +3208,18 @@ func hasBuildableNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	return false
 }
 
-// hasWaterNeighbour reports whether a land tile borders any coastal_sea or
-// river tile — full coastal status (megaron_floden_plan.md, Timothy
-// 2026-07-29: a settlement on a river gets harbour/fish/purple/embark same as
-// a sea coast). Renamed from hasCoastalSeaNeighbour: the name is the whole
-// story of what the flag now means.
+// hasWaterNeighbour reports whether a land tile borders any coastal_sea,
+// river or river_ford tile — full coastal status (megaron_floden_plan.md,
+// Timothy 2026-07-29: a settlement on a river gets harbour/fish/purple/embark
+// same as a sea coast; megaron_plan_flodbudget_och_vadstalle.md extends the
+// same rule to river_ford — a settlement beside the port is beside water,
+// exactly as beside the river itself, and NOT extending it would carve a
+// donut of missing coastal status into an otherwise-coastal riverbank
+// wherever a ford happens to sit). Renamed from hasCoastalSeaNeighbour: the
+// name is the whole story of what the flag now means.
 func hasWaterNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	for _, n := range hexNeighbours(c, w, h) {
-		if grid[n] == TerrainCoastalSea || grid[n] == TerrainRiver {
+		if grid[n] == TerrainCoastalSea || grid[n] == TerrainRiver || grid[n] == TerrainRiverFord {
 			return true
 		}
 	}

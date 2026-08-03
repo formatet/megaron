@@ -180,12 +180,16 @@ func mapCmd() *cobra.Command {
 				return nil
 			}
 
-			// Count visible sea, river and coastal land hexes for the summary
-			// line. river is water too (megaron_floden_plan.md S1, Timothy
-			// 2026-07-29) but gets its own glyph below — it is a wall for land
-			// units and a lane for ships, not the open sea.
+			// Count visible sea, river, ford and coastal land hexes for the
+			// summary line. river is water too (megaron_floden_plan.md S1,
+			// Timothy 2026-07-29) but gets its own glyph below — it is a wall
+			// for land units and a lane for ships, not the open sea.
+			// river_ford (megaron_plan_flodbudget_och_vadstalle.md, Timothy
+			// 2026-08-02) is the river's port — its own glyph too, since it is
+			// passable for BOTH land and ships, unlike plain river.
 			seaCount := 0
 			riverCount := 0
+			fordCount := 0
 			coastalLand := 0
 			liveCount := 0
 			for _, t := range out {
@@ -197,12 +201,14 @@ func mapCmd() *cobra.Command {
 					seaCount++
 				case t.Terrain == "river":
 					riverCount++
+				case t.Terrain == "river_ford":
+					fordCount++
 				case t.Coastal:
 					coastalLand++
 				}
 			}
-			fmt.Printf("Your hex: (%d,%d) · radius %d · %d known hexes (%d live, %d remembered; %d sea, %d river, %d coastal land):\n\n",
-				oq, or, radius, len(out), liveCount, len(out)-liveCount, seaCount, riverCount, coastalLand)
+			fmt.Printf("Your hex: (%d,%d) · radius %d · %d known hexes (%d live, %d remembered; %d sea, %d river, %d ford, %d coastal land):\n\n",
+				oq, or, radius, len(out), liveCount, len(out)-liveCount, seaCount, riverCount, fordCount, coastalLand)
 			for _, t := range out {
 				dim := ""
 				if t.Tier == "remembered" {
@@ -217,6 +223,12 @@ func mapCmd() *cobra.Command {
 				if t.Terrain == "river" {
 					// River: its own glyph — a wall for land units, a lane for ships.
 					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[river]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
+					continue
+				}
+				if t.Terrain == "river_ford" {
+					// Ford: the river's port — crossable AND sailable, unlike plain
+					// river (megaron_plan_flodbudget_och_vadstalle.md).
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[ford]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
 					continue
 				}
 				tag := ""
