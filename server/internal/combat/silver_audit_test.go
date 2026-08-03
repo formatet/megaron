@@ -56,7 +56,7 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 		return id
 	}
 
-	mkSettlement := func(owner uuid.UUID, name string, q int, fund float64) uuid.UUID {
+	mkSettlement := func(owner uuid.UUID, name string, q int) uuid.UUID {
 		var prov uuid.UUID
 		if err := pool.QueryRow(ctx,
 			`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, $2, 0, 'plains') RETURNING id`,
@@ -66,9 +66,9 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 		}
 		var id uuid.UUID
 		if err := pool.QueryRow(ctx,
-			`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population, sitos_fund_silver)
-			 VALUES ($1, $2, $3, 'achaean', $4, 'capital', true, 'active', 1000, $5) RETURNING id`,
-			worldID, prov, name, owner, fund,
+			`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
+			 VALUES ($1, $2, $3, 'achaean', $4, 'capital', true, 'active', 1000) RETURNING id`,
+			worldID, prov, name, owner,
 		).Scan(&id); err != nil {
 			t.Fatalf("create settlement %s: %v", name, err)
 		}
@@ -102,8 +102,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	p1, p2 := mkPlayer(), mkPlayer()
 	// A mines silver (rate 5); B does not. Both hold plenty of grain + silver so
 	// the units all pay in full — the audit measures a solvent world.
-	sA := mkSettlement(p1, "Argyros", 0, 500) // fund 500
-	sB := mkSettlement(p2, "Bare", 4, 300)    // fund 300
+	sA := mkSettlement(p1, "Argyros", 0)
+	sB := mkSettlement(p2, "Bare", 4)
 	mkGood(sA, "silver", 10000, 5, 100000)
 	mkGood(sA, "grain", 10000, 0, 100000)
 	mkGood(sB, "silver", 10000, 0, 100000)
@@ -166,7 +166,11 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 8, gross: 6, circ: 0, destroyed: 6, unpaidSilver: 0, circulatedTo: "{}"})
 
 	// ── SilverAudit stocks (first audit ⇒ no prev, mined 0, delta 0). ──
-	// A: 10000 − 2 = 9998; B: 10000 − 6 = 9994 → liquid 19992. fund 500+300=800.
+	// A: 10000 − 2 = 9998; B: 10000 − 6 = 9994 → liquid 19992. fund_total is 0
+	// from migration 106 on: the Sitos fund is gone, the granary holds food and
+	// never silver (B3). The field stays in the payload because event semantics
+	// are frozen — an old audit row still means what it meant — so it is asserted
+	// as 0 here rather than dropped from the check.
 	// escrow = the single pending BUY offer = 250.
 	readAudit := func() auditRow {
 		var a auditRow
@@ -183,8 +187,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	}
 	approx := func(got, want float64) bool { return math.Abs(got-want) < 1e-6 }
 	a1 := readAudit()
-	if !approx(a1.liquid, 19992) || !approx(a1.fund, 800) || !approx(a1.escrow, 250) {
-		t.Errorf("audit1 stocks = liquid %.2f fund %.2f escrow %.2f, want 19992/800/250", a1.liquid, a1.fund, a1.escrow)
+	if !approx(a1.liquid, 19992) || !approx(a1.fund, 0) || !approx(a1.escrow, 250) {
+		t.Errorf("audit1 stocks = liquid %.2f fund %.2f escrow %.2f, want 19992/0/250", a1.liquid, a1.fund, a1.escrow)
 	}
 	if !approx(a1.mined, 0) || !approx(a1.delta, 0) {
 		t.Errorf("audit1 mined/delta = %.4f/%.4f, want 0/0 (first audit)", a1.mined, a1.delta)

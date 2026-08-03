@@ -12,51 +12,50 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// SitosTransactionPayload is the outcome recorded for one Sitos action (Fas 2.3:
-// events store outcomes, not intentions). GoodDelta is signed from the
-// settlement's perspective (negative on a buy = grain left the city; positive on
-// a sell = grain arrived). SilverDelta is signed from the fund's perspective
-// (negative = fund paid out, positive = fund took in). "noop" is a documented
-// value but is never actually emitted (no transaction ⇒ no event — see the plan).
-type SitosTransactionPayload struct {
-	Good        string  `json:"good"`
-	Kind        string  `json:"kind"` // "buy" | "sell" | "tax" | "noop"
-	SilverDelta float64 `json:"silver_delta"`
-	GoodDelta   float64 `json:"grain_delta"`
-	RefPrice    float64 `json:"ref_price"`
-	FundSilver  float64 `json:"fund_silver"`
+// Event types. NEW types, not new "kinds" on SitosTransaction/SitosFundRelease —
+// those two carry silver meaning and their semantics are frozen forever
+// (CLAUDE.md "Events"). Old handlers keep reading the old types; the rows
+// already in `events` are untouched and still mean what they meant.
+const (
+	EventSitosGranaryStored   = "SitosGranaryStored"
+	EventSitosGranaryReleased = "SitosGranaryReleased"
+)
+
+// NotifySitosGranaryRelease is the player-facing kind for a release. Under the
+// fund, "intervention" fired constantly and was filtered as noise
+// (noisyNotificationKinds in cmd_notifications.go). A release is the opposite:
+// rare, and the moment the city ate its reserve. It gets a kind of its own so
+// it is NOT swept up by those filters.
+const NotifySitosGranaryRelease = "SitosGranaryRelease"
+
+// SitosGranaryPayload is the outcome of one granary movement (events store
+// outcomes, not intentions). Total and PerGood are FOOD UNITS, always ≥ 0;
+// the event type says which direction. CoverageDays is the coverage that
+// triggered it, recorded so a later reader can see why it fired without having
+// to reconstruct the stock.
+type SitosGranaryPayload struct {
+	Total        float64            `json:"total"`
+	PerGood      map[string]float64 `json:"per_good"`
+	CoverageDays float64            `json:"coverage_days"`
+	GranaryAfter float64            `json:"granary_after"`
+	GranaryCap   float64            `json:"granary_cap"`
 }
 
-// SitosFundReleasePayload is the outcome of releasing a fund's over-cap overhang
-// into the settlement's liquid silver (silver-plan Del B). silver_moved > 0
-// always (no event on noop); fund_after is the fund balance after the move and is
-// always ≥ cap. A distinct event type — NOT a new "kind" on SitosTransaction,
-// whose semantics are frozen (event-versioning rule).
+// SitosTickHandler is the self-rescheduling per-world granary pass. It runs
+// every tick (cadence +1): a city with more than HighDays of food covered puts
+// a tithe of the surplus aside; a city below LowDays eats from what it put
+// aside, if anything is there.
 //
-// Diegetic meaning (recorded here, NOT surfaced in the MVP): the fund is winding
-// down reserve it holds beyond what price stabilization needs — "the grain-watcher
-// repays the city" — so a future keryx/web feedback line has a legible story to
-// tell, not an unexplained silver payout.
-type SitosFundReleasePayload struct {
-	SettlementID uuid.UUID `json:"settlement_id"`
-	SilverMoved  float64   `json:"silver_moved"`
-	FundAfter    float64   `json:"fund_after"`
-	Cap          float64   `json:"cap"`
-}
-
-// SitosTickHandler is the self-rescheduling per-world stabilization pass. It runs
-// every tick (cadence +1, not daily), taxing a slice of each settlement's silver
-// into its fund and then buying surplus / selling shortage for subsistence goods
-// at a smoothed reference price — always with silver strictly conserved.
+// It touches NO SILVER (B3). Before migration 106 this was a silver fund that
+// taxed every settlement per head, and that head tax produced 2132 desertions
+// — all silver_shortage — while stabilising nothing.
 //
 // Idempotent (CLAUDE.md "Event handlers"): tickSettlement claims (event_id,
 // settlement_id) in processed_sitos_ticks (migration 097) inside the SAME
-// transaction as its tax/release/stabilize writes, so a worker retry of the
-// same ScheduledSitosTick event (crash between commit and markDone, or a
-// dead-letter replay) resumes rather than re-taxing — settlements already
-// committed for this event short-circuit, any not yet reached proceed
-// normally. The kharis/colony daily ticks this handler was modelled on do NOT
-// yet carry an equivalent guard; that gap is tracked separately, not fixed here.
+// transaction as its writes, so a worker retry of the same ScheduledSitosTick
+// event (crash between commit and markDone, or a dead-letter replay) resumes
+// rather than double-storing — settlements already committed for this event
+// short-circuit, any not yet reached proceed normally.
 type SitosTickHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
@@ -72,15 +71,6 @@ func NewSitosTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *eve
 
 // Handle processes one ScheduledSitosTick event for a world.
 func (h *SitosTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
-	// Grain's base_value anchors every capacity figure. On error fall back to the
-	// seed-data default (3.0) so a transient hiccup degrades gracefully.
-	grainBaseValue := 3.0
-	if v, err := GoodBaseValue(ctx, h.pool, GoodGrain); err == nil {
-		grainBaseValue = v
-	} else {
-		slog.Warn("sitos tick: grain base value lookup failed, using default", "err", err)
-	}
-
 	rows, err := h.pool.Query(ctx,
 		`SELECT id FROM settlements
 		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state NOT IN ('sunk', 'collapsed')`,
@@ -102,7 +92,7 @@ func (h *SitosTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) 
 	}
 
 	for _, id := range ids {
-		if err := h.tickSettlement(ctx, id, e.WorldID, e.ID, grainBaseValue); err != nil {
+		if err := h.tickSettlement(ctx, id, e.WorldID, e.ID); err != nil {
 			slog.Error("sitos tick: settlement failed", "settlement", id, "err", err)
 		}
 	}
@@ -113,8 +103,15 @@ func (h *SitosTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) 
 		struct{}{}, e.DueTick, 1)
 }
 
-// tickSettlement runs the tax + stabilization for one settlement in a single TX.
-func (h *SitosTickHandler) tickSettlement(ctx context.Context, settlementID, worldID uuid.UUID, eventID int64, grainBaseValue float64) error {
+// foodRow is one subsistence good's state in the city, as the granary sees it.
+type foodRow struct {
+	good  string
+	stock float64 // settled amount, floored at 0
+	cap   float64
+}
+
+// tickSettlement runs the granary evaluation for one settlement in a single TX.
+func (h *SitosTickHandler) tickSettlement(ctx context.Context, settlementID, worldID uuid.UUID, eventID int64) error {
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
@@ -125,9 +122,7 @@ func (h *SitosTickHandler) tickSettlement(ctx context.Context, settlementID, wor
 	// event_id alone: Handle fans ONE ScheduledSitosTick event out across every
 	// settlement, each committing its own transaction here, so a Handle-level
 	// claim would either falsely skip settlements never reached before a crash,
-	// or falsely mark them done before their writes commit. Committing the claim
-	// in the SAME transaction as the tax/release/stabilize writes below means a
-	// worker retry of this event resumes exactly where it left off.
+	// or falsely mark them done before their writes commit.
 	claim, err := tx.Exec(ctx,
 		`INSERT INTO processed_sitos_ticks (event_id, settlement_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
 		eventID, settlementID)
@@ -138,323 +133,238 @@ func (h *SitosTickHandler) tickSettlement(ctx context.Context, settlementID, wor
 		return nil // already processed this event for this settlement
 	}
 
-	var currentTick, population int
-	var fundSilver float64
+	var population int
 	if err := tx.QueryRow(ctx,
-		`SELECT current_world_tick(), population, GREATEST(0, sitos_fund_silver)
-		 FROM settlements WHERE id = $1 FOR UPDATE`,
+		`SELECT population FROM settlements WHERE id = $1 FOR UPDATE`,
 		settlementID,
-	).Scan(&currentTick, &population, &fundSilver); err != nil {
+	).Scan(&population); err != nil {
 		return fmt.Errorf("load settlement: %w", err)
 	}
 
-	fundCap := FundCap(population, grainBaseValue, h.cfg)
-	if fundSilver > fundCap {
-		fundSilver = fundCap // defensive clamp (e.g. after a pop drop shrank the cap)
-	}
-
-	// Tax leg (guarded — never more than the settlement holds, never over cap).
-	fundSilver, err = h.applyTax(ctx, tx, settlementID, worldID, population, fundSilver, fundCap)
+	foods, foodStock, err := h.loadFood(ctx, tx, settlementID)
 	if err != nil {
-		return fmt.Errorf("tax: %w", err)
+		return fmt.Errorf("load food: %w", err)
+	}
+	granary, granaryTotal, err := loadGranary(ctx, tx, settlementID)
+	if err != nil {
+		return fmt.Errorf("load granary: %w", err)
 	}
 
-	// Stabilization leg, per subsistence good. Thread fundSilver sequentially so
-	// each good sees the balance left by the previous one.
-	for _, good := range h.cfg.SubsistenceGoods {
-		fundSilver, err = h.stabilizeGood(ctx, tx, settlementID, worldID, good, currentTick, fundSilver, fundCap)
-		if err != nil {
-			return fmt.Errorf("stabilize %s: %w", good, err)
+	coverage := CoverageDays(foodStock, population)
+	action := EvaluateGranaryAction(foodStock, granaryTotal, population, h.cfg)
+
+	var moved map[string]float64
+	switch action.Kind {
+	case "store":
+		moved, err = h.store_(ctx, tx, settlementID, foods, foodStock, action.Quantity)
+	case "release":
+		moved, err = h.release(ctx, tx, settlementID, foods, granary, granaryTotal, action.Quantity)
+	default:
+		moved = nil
+	}
+	if err != nil {
+		return fmt.Errorf("%s: %w", action.Kind, err)
+	}
+
+	var total float64
+	for _, q := range moved {
+		total += q
+	}
+	if total > 0 {
+		after := granaryTotal + total
+		if action.Kind == "release" {
+			after = granaryTotal - total
 		}
-	}
-
-	// Release leg: push any fund overhang above cap into the settlement's liquid
-	// silver, so the ~89% of M0 dammsuget into funds circulates. Reads the fund
-	// from the DB (locked above) rather than the clamped local — over-cap funds
-	// (e.g. after SITOS_FUND_CAP_MULT was lowered) live only in the DB.
-	if err := h.releaseOverhang(ctx, tx, settlementID, worldID, fundCap); err != nil {
-		return fmt.Errorf("release: %w", err)
+		eventType := EventSitosGranaryStored
+		if action.Kind == "release" {
+			eventType = EventSitosGranaryReleased
+		}
+		_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, eventType,
+			SitosGranaryPayload{
+				Total: total, PerGood: moved, CoverageDays: coverage,
+				GranaryAfter: after, GranaryCap: GranaryCap(population, h.cfg),
+			},
+			worldID, nil)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
 
-	// Low-fund notice (best-effort, outside the tx). Grain-net-negative-3-ticks
-	// notice is intentionally deferred (nice-to-have, needs a counter) — see
-	// temenos_sitos.md.
-	if h.hub != nil && fundCap > 0 && fundSilver < 0.10*fundCap {
+	// A release is the city eating its reserve — the one moment a Wanax needs
+	// to hear about. Storing is routine and stays silent, as the fund's "buy"
+	// leg did. Best-effort, outside the tx.
+	if h.hub != nil && action.Kind == "release" && total > 0 {
 		var ownerID uuid.UUID
 		if err := h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, settlementID).Scan(&ownerID); err == nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "SitosFundLow", 2, map[string]any{
-				"settlement_id": settlementID,
-				"fund_silver":   fundSilver,
-				"fund_cap":      fundCap,
+			_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, NotifySitosGranaryRelease, 2, map[string]any{
+				"settlement_id":  settlementID,
+				"food_released":  total,
+				"coverage_days":  coverage,
+				"granary_after":  granaryTotal - total,
+				"granary_empty":  granaryTotal-total <= 0,
+				"per_good":       moved,
 			})
 		}
 	}
 	return nil
 }
 
-// applyTax moves up to (pop × taxRate / TicksPerDay) silver from the settlement
-// into its fund, gated by both the settlement's silver stock and the fund's cap
-// headroom. Returns the fund balance after the tax.
-func (h *SitosTickHandler) applyTax(ctx context.Context, tx pgx.Tx, settlementID, worldID uuid.UUID, population int, fundSilver, fundCap float64) (float64, error) {
-	headroom := fundCap - fundSilver
-	if headroom <= 0 {
-		return fundSilver, nil
+// loadFood reads the city's subsistence goods and their total settled stock.
+// Goods the city does not track (a landlocked city has no fish row) are simply
+// absent — the granary can only ever hold what the city could hand it.
+func (h *SitosTickHandler) loadFood(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) ([]foodRow, float64, error) {
+	var out []foodRow
+	var total float64
+	for _, good := range h.cfg.SubsistenceGoods {
+		var stock, cap float64
+		err := tx.QueryRow(ctx,
+			`SELECT GREATEST(0, settled(amount, rate, calc_tick)), COALESCE(cap, 0)
+			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+			settlementID, good,
+		).Scan(&stock, &cap)
+		if errors.Is(err, pgx.ErrNoRows) {
+			continue
+		}
+		if err != nil {
+			return nil, 0, err
+		}
+		out = append(out, foodRow{good: good, stock: stock, cap: cap})
+		total += stock
 	}
-
-	var settlementSilver float64
-	err := tx.QueryRow(ctx,
-		`SELECT COALESCE(GREATEST(0, settled(amount, rate, calc_tick)), 0)
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
-		settlementID,
-	).Scan(&settlementSilver)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return fundSilver, nil
-	}
-	if err != nil {
-		return fundSilver, fmt.Errorf("load silver: %w", err)
-	}
-
-	desired := float64(population) * h.cfg.TaxRate / float64(events.TicksPerDay)
-	tax := desired
-	if settlementSilver < tax {
-		tax = settlementSilver
-	}
-	if headroom < tax {
-		tax = headroom
-	}
-	if tax <= 0 {
-		return fundSilver, nil
-	}
-
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlement_goods
-		    SET amount = settled(amount, rate, calc_tick) - $1,
-		        calc_tick = current_world_tick()
-		  WHERE settlement_id = $2 AND good_key = 'silver'`,
-		tax, settlementID,
-	); err != nil {
-		return fundSilver, fmt.Errorf("debit settlement silver: %w", err)
-	}
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlements SET sitos_fund_silver = LEAST($1, GREATEST(0, sitos_fund_silver) + $2) WHERE id = $3`,
-		fundCap, tax, settlementID,
-	); err != nil {
-		return fundSilver, fmt.Errorf("credit fund: %w", err)
-	}
-
-	newFund := fundSilver + tax
-	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "SitosTransaction",
-		SitosTransactionPayload{Good: GoodSilver, Kind: "tax", SilverDelta: tax, GoodDelta: 0, FundSilver: newFund},
-		worldID, nil)
-	return newFund, nil
+	return out, total, nil
 }
 
-// releaseOverhang moves any Sitos fund above cap into the settlement's liquid
-// silver, bounded by the liquid silver cap's headroom. This is the sole
-// conservation-preserving path for over-cap funds: the alternative — letting the
-// cap's LEAST() clamps in the tax/sell legs silently claw the overhang down —
-// would destroy silver outright. The moved amount is computed BEFORE any UPDATE
-// (triple-gate principle: never clip after silver has left a party), so both
-// legs move exactly the same amount and silver stays conserved. Fund_after is
-// always ≥ cap: if liquid headroom can't absorb the whole overhang, the rest is
-// released on later ticks.
-func (h *SitosTickHandler) releaseOverhang(ctx context.Context, tx pgx.Tx, settlementID, worldID uuid.UUID, fundCap float64) error {
-	var fund float64
-	if err := tx.QueryRow(ctx,
-		`SELECT GREATEST(0, sitos_fund_silver) FROM settlements WHERE id = $1`,
-		settlementID,
-	).Scan(&fund); err != nil {
-		return fmt.Errorf("load fund: %w", err)
-	}
-	overhang := fund - fundCap
-	if overhang <= 0 {
-		return nil // fund within cap — noop
-	}
-
-	var liquid, silverCap float64
-	err := tx.QueryRow(ctx,
-		`SELECT COALESCE(GREATEST(0, settled(amount, rate, calc_tick)), 0), COALESCE(cap, 1000)
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
-		settlementID,
-	).Scan(&liquid, &silverCap)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil // no silver row to receive the release — leave the fund as is
-	}
+// loadGranary reads what the granary holds, per good, plus the total.
+func loadGranary(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (map[string]float64, float64, error) {
+	rows, err := tx.Query(ctx,
+		`SELECT good_key, amount FROM settlement_granary WHERE settlement_id = $1`,
+		settlementID)
 	if err != nil {
-		return fmt.Errorf("load silver: %w", err)
+		return nil, 0, err
 	}
-
-	headroom := silverCap - liquid
-	if headroom <= 0 {
-		return nil // liquid already at cap; release the rest next tick
+	defer rows.Close()
+	out := map[string]float64{}
+	var total float64
+	for rows.Next() {
+		var good string
+		var amount float64
+		if err := rows.Scan(&good, &amount); err != nil {
+			return nil, 0, err
+		}
+		out[good] = amount
+		total += amount
 	}
-	moved := overhang
-	if headroom < moved {
-		moved = headroom
-	}
-	if moved <= 0 {
-		return nil
-	}
-
-	// moved ≤ headroom ⇒ liquid+moved ≤ cap, so LEAST never clips (conserved).
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlement_goods
-		    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
-		        calc_tick = current_world_tick()
-		  WHERE settlement_id = $2 AND good_key = 'silver'`,
-		moved, settlementID,
-	); err != nil {
-		return fmt.Errorf("credit settlement silver: %w", err)
-	}
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlements SET sitos_fund_silver = GREATEST(0, sitos_fund_silver - $1) WHERE id = $2`,
-		moved, settlementID,
-	); err != nil {
-		return fmt.Errorf("debit fund: %w", err)
-	}
-
-	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "SitosFundRelease",
-		SitosFundReleasePayload{
-			SettlementID: settlementID,
-			SilverMoved:  moved,
-			FundAfter:    fund - moved,
-			Cap:          fundCap,
-		},
-		worldID, nil)
-	return nil
+	return out, total, rows.Err()
 }
 
-// stabilizeGood evaluates and applies the fund's buy/sell action for one good.
-// Returns the fund balance after the action (unchanged on noop).
-func (h *SitosTickHandler) stabilizeGood(ctx context.Context, tx pgx.Tx, settlementID, worldID uuid.UUID, good string, currentTick int, fundSilver, fundCap float64) (float64, error) {
-	var amount, rate, cap, baseValue float64
-	var calcTick int
-	err := tx.QueryRow(ctx,
-		`SELECT sg.amount, sg.rate, sg.cap, sg.calc_tick, g.base_value
-		 FROM settlement_goods sg JOIN goods g ON g.key = sg.good_key
-		 WHERE sg.settlement_id = $1 AND sg.good_key = $2`,
-		settlementID, good,
-	).Scan(&amount, &rate, &cap, &calcTick, &baseValue)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return fundSilver, nil // good not tracked here (e.g. no fish) — skip
+// store_ moves `quantity` food units from the city into its granary, split
+// across the food goods in proportion to what the city holds of each — a city
+// living on fish contributes fish. Each good's share is at most its own stock
+// (quantity ≤ the surplus ≤ the total stock, by EvaluateGranaryAction), so the
+// GREATEST(0, …) below can never clip and food is conserved exactly.
+//
+// Trailing underscore because `store` is the events.Store field on the handler.
+func (h *SitosTickHandler) store_(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, foods []foodRow, foodStock, quantity float64) (map[string]float64, error) {
+	if foodStock <= 0 || quantity <= 0 {
+		return nil, nil
 	}
-	if err != nil {
-		return fundSilver, fmt.Errorf("load good: %w", err)
-	}
-
-	var settlementSilver, settlementSilverCap float64
-	err = tx.QueryRow(ctx,
-		`SELECT COALESCE(GREATEST(0, settled(amount, rate, calc_tick)), 0), COALESCE(cap, 1000)
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
-		settlementID,
-	).Scan(&settlementSilver, &settlementSilverCap)
-	if errors.Is(err, pgx.ErrNoRows) {
-		settlementSilver, settlementSilverCap = 0, 1000
-	} else if err != nil {
-		return fundSilver, fmt.Errorf("load silver: %w", err)
-	}
-
-	stock := amount + rate*float64(currentTick-calcTick)
-	if stock < 0 {
-		stock = 0
-	}
-	reference := ProductionReference(rate)
-	refPrice := RefPrice(baseValue, amount, rate, float64(calcTick), currentTick, h.cfg)
-	actualPrice := LocalPrice(baseValue, stock, rate)
-
-	action := EvaluateSitosAction(refPrice, actualPrice, stock, reference,
-		fundSilver, fundCap, settlementSilver, settlementSilverCap)
-	if action.Kind == "noop" {
-		return fundSilver, nil
-	}
-
-	var goodDelta, silverDelta, newFund float64
-	switch action.Kind {
-	case "buy":
-		// Fund buys surplus grain: grain leaves the city (destroyed), silver goes
-		// settlement←fund. Grain is the free sink; silver is conserved.
+	moved := map[string]float64{}
+	for _, f := range foods {
+		take := quantity * f.stock / foodStock
+		if take <= 0 {
+			continue
+		}
 		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1), calc_tick = current_world_tick()
+			`UPDATE settlement_goods
+			    SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
+			        calc_tick = current_world_tick()
 			  WHERE settlement_id = $2 AND good_key = $3`,
-			action.Quantity, settlementID, good,
+			take, settlementID, f.good,
 		); err != nil {
-			return fundSilver, fmt.Errorf("debit good: %w", err)
+			return nil, fmt.Errorf("debit %s: %w", f.good, err)
 		}
 		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1), calc_tick = current_world_tick()
-			  WHERE settlement_id = $2 AND good_key = 'silver'`,
-			action.SilverMoved, settlementID,
+			`INSERT INTO settlement_granary (settlement_id, good_key, amount)
+			 VALUES ($1, $2, $3)
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = settlement_granary.amount + $3`,
+			settlementID, f.good, take,
 		); err != nil {
-			return fundSilver, fmt.Errorf("credit settlement silver: %w", err)
+			return nil, fmt.Errorf("credit granary %s: %w", f.good, err)
 		}
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET sitos_fund_silver = GREATEST(0, sitos_fund_silver - $1) WHERE id = $2`,
-			action.SilverMoved, settlementID,
-		); err != nil {
-			return fundSilver, fmt.Errorf("debit fund: %w", err)
-		}
-		goodDelta = -action.Quantity
-		silverDelta = -action.SilverMoved
-		newFund = fundSilver - action.SilverMoved
-
-	case "sell":
-		// Fund sells grain into a shortage: grain arrives (created), silver goes
-		// settlement→fund. Grain is the free source; silver is conserved.
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1), calc_tick = current_world_tick()
-			  WHERE settlement_id = $2 AND good_key = $3`,
-			action.Quantity, settlementID, good,
-		); err != nil {
-			return fundSilver, fmt.Errorf("credit good: %w", err)
-		}
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1), calc_tick = current_world_tick()
-			  WHERE settlement_id = $2 AND good_key = 'silver'`,
-			action.SilverMoved, settlementID,
-		); err != nil {
-			return fundSilver, fmt.Errorf("debit settlement silver: %w", err)
-		}
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET sitos_fund_silver = LEAST($1, GREATEST(0, sitos_fund_silver) + $2) WHERE id = $3`,
-			fundCap, action.SilverMoved, settlementID,
-		); err != nil {
-			return fundSilver, fmt.Errorf("credit fund: %w", err)
-		}
-		goodDelta = action.Quantity
-		silverDelta = action.SilverMoved
-		newFund = fundSilver + action.SilverMoved
+		moved[f.good] = take
 	}
-
-	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "SitosTransaction",
-		SitosTransactionPayload{
-			Good: good, Kind: action.Kind, SilverDelta: silverDelta,
-			GoodDelta: goodDelta, RefPrice: refPrice, FundSilver: newFund,
-		},
-		worldID, nil)
-
-	// Fas 2c: the fund's safety net (selling emergency stock into a shortage)
-	// previously only showed up in `ticklog` — a Wanax had to think to go
-	// looking for it after the fact. The "sell" leg IS the rescue case (the
-	// settlement receives good, paying silver); "buy" is routine surplus
-	// absorption and stays silent as before.
-	if h.hub != nil && action.Kind == "sell" {
-		var ownerID uuid.UUID
-		if err := h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, settlementID).Scan(&ownerID); err == nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "SitosIntervention", 2, map[string]any{
-				"settlement_id": settlementID,
-				"good":          good,
-				"quantity":      action.Quantity,
-				"silver_cost":   action.SilverMoved,
-			})
-		}
-	}
-	return newFund, nil
+	return moved, nil
 }
 
-// TODO: Fas 3 — loyalty coupling (price deviation → loyalty delta via an emitted
-// event, never a direct UPDATE; asymmetric penalty>bonus slope). Deferred — see
-// temenos_sitos.md §Fas 3. Until then the ticklog loyalty row is "—".
+// release moves `quantity` food units from the granary back into the city,
+// split across what the granary holds. Each good's share is gated by the CITY's
+// own cap headroom BEFORE anything moves: crediting past the cap would have the
+// LEAST() clamp swallow the difference, and the food would be gone from both
+// sides. Whatever headroom refuses stays in the granary and goes out on a later
+// tick.
+func (h *SitosTickHandler) release(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, foods []foodRow, granary map[string]float64, granaryTotal, quantity float64) (map[string]float64, error) {
+	if granaryTotal <= 0 || quantity <= 0 {
+		return nil, nil
+	}
+	moved := map[string]float64{}
+	for _, f := range foods {
+		held := granary[f.good]
+		if held <= 0 {
+			continue
+		}
+		give := quantity * held / granaryTotal
+		if give > held {
+			give = held
+		}
+		if headroom := f.cap - f.stock; give > headroom {
+			give = headroom
+		}
+		if give <= 0 {
+			continue
+		}
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlement_goods
+			    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
+			        calc_tick = current_world_tick()
+			  WHERE settlement_id = $2 AND good_key = $3`,
+			give, settlementID, f.good,
+		); err != nil {
+			return nil, fmt.Errorf("credit %s: %w", f.good, err)
+		}
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlement_granary SET amount = GREATEST(0, amount - $1)
+			  WHERE settlement_id = $2 AND good_key = $3`,
+			give, settlementID, f.good,
+		); err != nil {
+			return nil, fmt.Errorf("debit granary %s: %w", f.good, err)
+		}
+		moved[f.good] = give
+	}
+	return moved, nil
+}
+
+// GranaryTotals reads a settlement's granary contents and total for the read
+// surfaces (api/handlers). Exported here rather than duplicated as a query in
+// the handler so the shown reserve can never drift from the stored one.
+func GranaryTotals(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (map[string]float64, float64, error) {
+	rows, err := pool.Query(ctx,
+		`SELECT good_key, amount FROM settlement_granary WHERE settlement_id = $1`,
+		settlementID)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	out := map[string]float64{}
+	var total float64
+	for rows.Next() {
+		var good string
+		var amount float64
+		if err := rows.Scan(&good, &amount); err != nil {
+			return nil, 0, err
+		}
+		out[good] = amount
+		total += amount
+	}
+	return out, total, rows.Err()
+}

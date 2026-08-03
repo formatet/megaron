@@ -11,10 +11,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// testPool connects to a real Postgres — the Sitos tick is SQL orchestration
-// across settlements/settlement_goods that a mock can't stand in for. Skips
-// (not fails) when DATABASE_URL isn't set, so `go test ./...` stays green
-// without a DB. Mirrors combat/unit_arrival_colonize_test.go.
+// The granary's one hard invariant: FOOD IS STRICTLY CONSERVED. It moves
+// city <-> granary and is never created or destroyed. The fund it replaced broke
+// exactly this — stabilizeGood DESTROYED grain on a buy and CONJURED it on a
+// sell, which is the "Victoria 3 conjures goods to fill shortages" failure the
+// plan names. Every test here weighs the two sides before and after.
+//
+// testPool connects to a real Postgres — the tick is SQL orchestration across
+// settlements/settlement_goods/settlement_granary that a mock can't stand in
+// for. Skips (not fails) when DATABASE_URL isn't set.
 func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
@@ -29,9 +34,16 @@ func testPool(t *testing.T) *pgxpool.Pool {
 	return pool
 }
 
-// sitosFixture builds an active world + one settlement with silver + grain rows
-// at calc_tick = current_tick (so settled()==amount) and a seeded fund.
-func sitosFixture(t *testing.T, pool *pgxpool.Pool, ctx context.Context, currentTick int, pop int, fund, silver, grainAmount, grainRate float64) (worldID, settlementID uuid.UUID) {
+// granaryFixture builds an active world + one settlement with grain and fish
+// rows at calc_tick = current_tick (so settled()==amount) and a seeded granary.
+// grainCap/fishCap bound the CITY's rows — the release leg has to respect them.
+type fixtureGood struct {
+	key    string
+	amount float64
+	cap    float64
+}
+
+func granaryFixture(t *testing.T, pool *pgxpool.Pool, ctx context.Context, currentTick, pop int, goods []fixtureGood, granary map[string]float64) (worldID, settlementID uuid.UUID) {
 	t.Helper()
 	// Free the one_active_world partial unique index from any leftover of ours.
 	if _, err := pool.Exec(ctx,
@@ -65,315 +77,260 @@ func sitosFixture(t *testing.T, pool *pgxpool.Pool, ctx context.Context, current
 		t.Fatalf("create province: %v", err)
 	}
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population, sitos_fund_silver)
-		 VALUES ($1, $2, 'Sitosville', 'achaean', $3, 'capital', true, $4, $5) RETURNING id`,
-		worldID, provinceID, ownerID, pop, fund,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
+		 VALUES ($1, $2, 'Sitosville', 'achaean', $3, 'capital', true, $4) RETURNING id`,
+		worldID, provinceID, ownerID, pop,
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement: %v", err)
 	}
 
-	for _, g := range []struct {
-		key    string
-		amount float64
-		rate   float64
-		cap    float64
-	}{
-		{"silver", silver, 0, 100000},
-		{"grain", grainAmount, grainRate, 1000},
-	} {
+	// Silver always exists in a real city; seeded here so a test that asserts
+	// "no silver moved" has something that COULD have moved.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, 'silver', 5000, 0, 100000, $2)`,
+		settlementID, currentTick,
+	); err != nil {
+		t.Fatalf("seed silver: %v", err)
+	}
+	for _, g := range goods {
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-			 VALUES ($1, $2, $3, $4, $5, $6)`,
-			settlementID, g.key, g.amount, g.rate, g.cap, currentTick,
+			 VALUES ($1, $2, $3, 0, $4, $5)`,
+			settlementID, g.key, g.amount, g.cap, currentTick,
 		); err != nil {
 			t.Fatalf("seed good %s: %v", g.key, err)
+		}
+	}
+	for good, amount := range granary {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO settlement_granary (settlement_id, good_key, amount) VALUES ($1, $2, $3)`,
+			settlementID, good, amount,
+		); err != nil {
+			t.Fatalf("seed granary %s: %v", good, err)
 		}
 	}
 	return worldID, settlementID
 }
 
-func totalSilver(t *testing.T, pool *pgxpool.Pool, ctx context.Context, settlementID uuid.UUID) float64 {
+// totalFood weighs both sides: what the city holds plus what the granary holds.
+func totalFood(t *testing.T, pool *pgxpool.Pool, ctx context.Context, settlementID uuid.UUID) (city, granary float64) {
 	t.Helper()
-	var fund, silver float64
 	if err := pool.QueryRow(ctx,
-		`SELECT GREATEST(0, sitos_fund_silver) FROM settlements WHERE id = $1`, settlementID,
-	).Scan(&fund); err != nil {
-		t.Fatalf("read fund: %v", err)
+		`SELECT COALESCE(SUM(GREATEST(0, settled(amount, rate, calc_tick))), 0)
+		 FROM settlement_goods WHERE settlement_id = $1 AND good_key IN ('grain', 'fish')`,
+		settlementID,
+	).Scan(&city); err != nil {
+		t.Fatalf("read city food: %v", err)
 	}
 	if err := pool.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
+		`SELECT COALESCE(SUM(amount), 0) FROM settlement_granary WHERE settlement_id = $1`,
 		settlementID,
-	).Scan(&silver); err != nil {
+	).Scan(&granary); err != nil {
+		t.Fatalf("read granary: %v", err)
+	}
+	return city, granary
+}
+
+func liquidSilver(t *testing.T, pool *pgxpool.Pool, ctx context.Context, settlementID uuid.UUID) float64 {
+	t.Helper()
+	var s float64
+	if err := pool.QueryRow(ctx,
+		`SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods
+		 WHERE settlement_id = $1 AND good_key = 'silver'`,
+		settlementID,
+	).Scan(&s); err != nil {
 		t.Fatalf("read silver: %v", err)
 	}
-	return fund + silver
+	return s
 }
 
-// TestSitosTick_SilverConserved: a shortage-sell + tax leg must leave
-// silver(settlement) + silver(fund) exactly constant — silver only moves
-// fund↔settlement, never created or destroyed.
-func TestSitosTick_SilverConserved(t *testing.T) {
+func newTestHandler(pool *pgxpool.Pool, cfg SitosConfig) *SitosTickHandler {
+	return NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
+}
+
+// TestGranary_StoreConservesFood: a city well above the high threshold puts a
+// tithe aside, and the sum city+granary is unchanged to the last unit. Also the
+// case B6 exists for: the tithe is taken from BOTH grain and fish, in
+// proportion, so a fish-fed city contributes fish.
+func TestGranary_StoreConservesFood(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cfg := testSitosCfg()
 
 	const tick = 100
-	// Grain in deep shortage (amount 5, cap 1000 → below reference 300) → fund sells.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 5 /*rate*/, 0)
+	const pop = 1000 // need 500/day, high threshold 15000, cap 30000
+	// 16000 grain + 8000 fish = 24000 food = 48 days. Surplus 9000, tithe 900,
+	// split 2:1 by stock → 600 grain, 300 fish.
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, pop,
+		[]fixtureGood{{"grain", 16000, 1000000}, {"fish", 8000, 1000000}}, nil)
 
-	before := totalSilver(t, pool, ctx, settlementID)
+	cityBefore, granBefore := totalFood(t, pool, ctx, settlementID)
+	silverBefore := liquidSilver(t, pool, ctx, settlementID)
 
-	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
-	grainBase, err := GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
-	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
+	if err := newTestHandler(pool, cfg).tickSettlement(ctx, settlementID, worldID, 1); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
-	after := totalSilver(t, pool, ctx, settlementID)
-	if math.Abs(after-before) > 1e-6 {
-		t.Errorf("silver not conserved: before=%.6f after=%.6f (Δ=%.6f)", before, after, after-before)
+	cityAfter, granAfter := totalFood(t, pool, ctx, settlementID)
+	if math.Abs((cityAfter+granAfter)-(cityBefore+granBefore)) > 1e-6 {
+		t.Errorf("food not conserved: before=%.6f after=%.6f", cityBefore+granBefore, cityAfter+granAfter)
+	}
+	if math.Abs(granAfter-900) > 1e-6 {
+		t.Errorf("granary = %.6f, want 900 (10%% of the 9000 above the threshold)", granAfter)
+	}
+	// B6: both goods contribute, in proportion to what the city holds.
+	var storedGrain, storedFish float64
+	_ = pool.QueryRow(ctx, `SELECT COALESCE(amount,0) FROM settlement_granary WHERE settlement_id=$1 AND good_key='grain'`, settlementID).Scan(&storedGrain)
+	_ = pool.QueryRow(ctx, `SELECT COALESCE(amount,0) FROM settlement_granary WHERE settlement_id=$1 AND good_key='fish'`, settlementID).Scan(&storedFish)
+	if math.Abs(storedGrain-600) > 1e-6 || math.Abs(storedFish-300) > 1e-6 {
+		t.Errorf("stored grain=%.3f fish=%.3f, want 600/300 (2:1, the city's own mix)", storedGrain, storedFish)
+	}
+	// B3: the granary must not touch silver on ANY path.
+	if s := liquidSilver(t, pool, ctx, settlementID); math.Abs(s-silverBefore) > 1e-9 {
+		t.Errorf("silver moved: %.6f → %.6f — the granary must never touch silver", silverBefore, s)
 	}
 }
 
-// releaseEvent returns the (silver_moved, fund_after) of the latest
-// SitosFundRelease event for a settlement, or moved=-1 if none was emitted.
-func releaseEvent(t *testing.T, pool *pgxpool.Pool, ctx context.Context, settlementID uuid.UUID) (moved, fundAfter float64) {
-	t.Helper()
-	err := pool.QueryRow(ctx,
-		`SELECT (payload->>'silver_moved')::float, (payload->>'fund_after')::float
-		 FROM events WHERE stream_id = $1 AND event_type = 'SitosFundRelease'
-		 ORDER BY id DESC LIMIT 1`,
-		settlementID,
-	).Scan(&moved, &fundAfter)
-	if err != nil {
-		return -1, 0
-	}
-	return moved, fundAfter
-}
-
-// TestSitosTick_ReleaseConservesToCapWhenHeadroom: a fund seeded above cap, with
-// ample liquid headroom, releases the whole overhang into liquid silver — total
-// silver conserved, fund lands exactly on cap. Subsistence goods disabled so only
-// the release leg moves silver (tax noops at cap).
-func TestSitosTick_ReleaseConservesToCapWhenHeadroom(t *testing.T) {
+// TestGranary_ReleasesIntoFamine: the case E1 forbade and B2 struck. A city in a
+// real, stable famine gets food out of its own reserve. Under the fund this was
+// impossible twice over — it was ruled out by policy, and its momentum-detector
+// trigger was silent at a stable equilibrium anyway.
+func TestGranary_ReleasesIntoFamine(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cfg := testSitosCfg()
-	cfg.FundCapMult = 1        // cap = dailyGrainNeedInSilver = 1500 for pop 1000
-	cfg.SubsistenceGoods = nil // isolate the release leg
 
 	const tick = 100
-	// fund 5000 (overhang 3500 over cap 1500), liquid 2000 with a roomy cap.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 300 /*rate*/, 0)
+	const pop = 1000 // need 500/day, low threshold 5000
+	// 1000 grain = 2 days. Granary holds 20000 grain → release the 4000 shortfall.
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, pop,
+		[]fixtureGood{{"grain", 1000, 1000000}}, map[string]float64{"grain": 20000})
 
-	before := totalSilver(t, pool, ctx, settlementID)
+	cityBefore, granBefore := totalFood(t, pool, ctx, settlementID)
 
-	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
-	grainBase, err := GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
-	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
+	if err := newTestHandler(pool, cfg).tickSettlement(ctx, settlementID, worldID, 1); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
-	after := totalSilver(t, pool, ctx, settlementID)
-	if math.Abs(after-before) > 1e-6 {
-		t.Errorf("silver not conserved: before=%.6f after=%.6f (Δ=%.6f)", before, after, after-before)
+	cityAfter, granAfter := totalFood(t, pool, ctx, settlementID)
+	if math.Abs((cityAfter+granAfter)-(cityBefore+granBefore)) > 1e-6 {
+		t.Errorf("food not conserved: before=%.6f after=%.6f", cityBefore+granBefore, cityAfter+granAfter)
 	}
-	var fund float64
-	if err := pool.QueryRow(ctx, `SELECT sitos_fund_silver FROM settlements WHERE id = $1`, settlementID).Scan(&fund); err != nil {
-		t.Fatalf("read fund: %v", err)
+	if math.Abs(cityAfter-5000) > 1e-6 {
+		t.Errorf("city food = %.6f, want 5000 (topped up to the low threshold)", cityAfter)
 	}
-	if math.Abs(fund-1500) > 1e-6 {
-		t.Errorf("fund after release = %.4f, want 1500 (= cap)", fund)
-	}
-	moved, fundAfter := releaseEvent(t, pool, ctx, settlementID)
-	if math.Abs(moved-3500) > 1e-6 || math.Abs(fundAfter-1500) > 1e-6 {
-		t.Errorf("SitosFundRelease = {moved %.4f, fund_after %.4f}, want {3500, 1500}", moved, fundAfter)
+	if math.Abs(granAfter-16000) > 1e-6 {
+		t.Errorf("granary = %.6f, want 16000", granAfter)
 	}
 }
 
-// TestSitosTick_ReleaseRespectsLiquidCap: when liquid headroom can't absorb the
-// whole overhang, only the headroom is released; the fund stays above cap (never
-// below) and silver is still conserved.
-func TestSitosTick_ReleaseRespectsLiquidCap(t *testing.T) {
+// TestGranary_EmptyGranaryCannotSave: the same famine, with nothing set aside.
+// The city gets NOTHING — and no food is conjured to fill the gap. This is the
+// only limit on famine relief (B2), and it is also the property the fund's sell
+// leg violated: it created grain out of nothing.
+func TestGranary_EmptyGranaryCannotSave(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cfg := testSitosCfg()
-	cfg.FundCapMult = 1
-	cfg.SubsistenceGoods = nil
 
 	const tick = 100
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 300 /*rate*/, 0)
-	// Tighten the liquid silver cap to 3000 → headroom 1000 < overhang 3500.
-	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET cap = 3000 WHERE settlement_id = $1 AND good_key = 'silver'`, settlementID); err != nil {
-		t.Fatalf("tighten silver cap: %v", err)
-	}
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, 1000,
+		[]fixtureGood{{"grain", 1000, 1000000}}, nil)
 
-	before := totalSilver(t, pool, ctx, settlementID)
-
-	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
-	grainBase, err := GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
-	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
+	if err := newTestHandler(pool, cfg).tickSettlement(ctx, settlementID, worldID, 1); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
-	after := totalSilver(t, pool, ctx, settlementID)
-	if math.Abs(after-before) > 1e-6 {
-		t.Errorf("silver not conserved: before=%.6f after=%.6f (Δ=%.6f)", before, after, after-before)
+	cityAfter, granAfter := totalFood(t, pool, ctx, settlementID)
+	if math.Abs(cityAfter-1000) > 1e-6 {
+		t.Errorf("city food = %.6f, want 1000 unchanged — an empty granary must not conjure food", cityAfter)
 	}
-	var fund, liquid float64
-	if err := pool.QueryRow(ctx, `SELECT sitos_fund_silver FROM settlements WHERE id = $1`, settlementID).Scan(&fund); err != nil {
-		t.Fatalf("read fund: %v", err)
-	}
-	if err := pool.QueryRow(ctx, `SELECT settled(amount, rate, calc_tick) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`, settlementID).Scan(&liquid); err != nil {
-		t.Fatalf("read liquid: %v", err)
-	}
-	if math.Abs(liquid-3000) > 1e-6 {
-		t.Errorf("liquid after release = %.4f, want 3000 (at cap)", liquid)
-	}
-	if math.Abs(fund-4000) > 1e-6 || fund < 1500 {
-		t.Errorf("fund after partial release = %.4f, want 4000 (still > cap)", fund)
-	}
-	if moved, _ := releaseEvent(t, pool, ctx, settlementID); math.Abs(moved-1000) > 1e-6 {
-		t.Errorf("release moved = %.4f, want 1000 (= liquid headroom)", moved)
+	if granAfter != 0 {
+		t.Errorf("granary = %.6f, want 0", granAfter)
 	}
 }
 
-// TestSitosTick_NoReleaseWithinCap: a fund at or below cap emits no release event
-// and leaves the fund untouched by the release leg.
-func TestSitosTick_NoReleaseWithinCap(t *testing.T) {
+// TestGranary_ReleaseRespectsCityCap: the city's own good cap bounds the
+// release. Crediting past the cap would have LEAST() swallow the difference and
+// the food would vanish from both sides — the triple-gate principle, carried
+// over from the fund's silver legs to the granary's food legs. What the cap
+// refuses stays in the granary for a later tick.
+func TestGranary_ReleaseRespectsCityCap(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cfg := testSitosCfg()
-	cfg.FundCapMult = 1
-	cfg.SubsistenceGoods = nil
 
 	const tick = 100
-	// fund 1000 < cap 1500 → no overhang.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 1000 /*silver*/, 2000 /*grain*/, 300 /*rate*/, 0)
+	const pop = 1000 // low threshold 5000; shortfall from 1000 is 4000
+	// The city's grain cap is 2500, so only 1500 can physically arrive.
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, pop,
+		[]fixtureGood{{"grain", 1000, 2500}}, map[string]float64{"grain": 20000})
 
-	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
-	grainBase, err := GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
-	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
+	cityBefore, granBefore := totalFood(t, pool, ctx, settlementID)
+
+	if err := newTestHandler(pool, cfg).tickSettlement(ctx, settlementID, worldID, 1); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
-	if moved, _ := releaseEvent(t, pool, ctx, settlementID); moved != -1 {
-		t.Errorf("expected no SitosFundRelease event, got moved=%.4f", moved)
+
+	cityAfter, granAfter := totalFood(t, pool, ctx, settlementID)
+	if math.Abs((cityAfter+granAfter)-(cityBefore+granBefore)) > 1e-6 {
+		t.Errorf("food not conserved under a binding cap: before=%.6f after=%.6f (this is where clipping destroys it)",
+			cityBefore+granBefore, cityAfter+granAfter)
+	}
+	if math.Abs(cityAfter-2500) > 1e-6 {
+		t.Errorf("city food = %.6f, want 2500 (its cap)", cityAfter)
+	}
+	if math.Abs(granAfter-18500) > 1e-6 {
+		t.Errorf("granary = %.6f, want 18500 — the rest waits for a later tick", granAfter)
 	}
 }
 
-// TestSitosTick_FundNeverNegative: repeated buy pressure (surplus grain, tiny
-// fund) must never drive sitos_fund_silver below 0 and must not crash.
-func TestSitosTick_FundNeverNegative(t *testing.T) {
+// TestGranary_QuietInsideTheBand: between the thresholds nothing moves at all.
+func TestGranary_QuietInsideTheBand(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cfg := testSitosCfg()
 
 	const tick = 100
-	// Grain surplus (amount 990 near cap 1000 → above reference) → fund buys and drains.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 50 /*silver*/, 1000 /*grain*/, 990 /*rate*/, 0)
+	// 10000 food at need 500/day = 20 days: inside [10, 30].
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, 1000,
+		[]fixtureGood{{"grain", 10000, 1000000}}, map[string]float64{"grain": 5000})
 
-	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
-	grainBase, err := GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
+	cityBefore, granBefore := totalFood(t, pool, ctx, settlementID)
+	if err := newTestHandler(pool, cfg).tickSettlement(ctx, settlementID, worldID, 1); err != nil {
+		t.Fatalf("tickSettlement: %v", err)
 	}
-
-	for i := 0; i < 5; i++ {
-		// Distinct event ID per iteration — each represents a DIFFERENT day's
-		// tick, not a replay of the same one (see TestSitosTick_DoubleFireIsIdempotent
-		// for the replay case).
-		if err := h.tickSettlement(ctx, settlementID, worldID, int64(i), grainBase); err != nil {
-			t.Fatalf("tickSettlement iter %d: %v", i, err)
-		}
-		var fund float64
-		if err := pool.QueryRow(ctx,
-			`SELECT sitos_fund_silver FROM settlements WHERE id = $1`, settlementID,
-		).Scan(&fund); err != nil {
-			t.Fatalf("read fund iter %d: %v", i, err)
-		}
-		if fund < 0 {
-			t.Fatalf("fund went negative on iter %d: %.6f", i, fund)
-		}
+	cityAfter, granAfter := totalFood(t, pool, ctx, settlementID)
+	if cityAfter != cityBefore || granAfter != granBefore {
+		t.Errorf("something moved inside the band: city %.3f→%.3f, granary %.3f→%.3f",
+			cityBefore, cityAfter, granBefore, granAfter)
 	}
 }
 
-// TestSitosTick_DoubleFireIsIdempotent is the regression guard for the Fas 2.2
-// idempotency gap (CLAUDE.md "Event handlers"): the events.Worker can redeliver
-// the same ScheduledSitosTick event — a crash between a settlement's commit and
-// the worker's markDone, or a dead-letter replay — and before the
-// processed_sitos_ticks claim (migration 097) this would double-tax and
-// double-release silver for the same day. Firing tickSettlement twice with the
-// SAME event ID must leave fund + liquid silver exactly as they were after the
-// first fire; firing it again with a NEW event ID (the next day's tick) must
-// NOT be a no-op — the claim is scoped per event, not latched forever.
-func TestSitosTick_DoubleFireIsIdempotent(t *testing.T) {
+// TestGranary_DoubleFireIsIdempotent: replaying the SAME ScheduledSitosTick
+// event must not store the tithe twice. The claim in processed_sitos_ticks
+// commits in the same transaction as the writes, so a retry short-circuits.
+func TestGranary_DoubleFireIsIdempotent(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cfg := testSitosCfg()
 
 	const tick = 100
-	// Same deep-shortage fixture as TestSitosTick_SilverConserved: guarantees
-	// both the tax leg and the "sell" stabilization leg actually move silver,
-	// so a double-fire bug would be visible in either.
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 5 /*rate*/, 0)
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, 1000,
+		[]fixtureGood{{"grain", 20000, 1000000}}, nil)
 
-	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil, cfg)
-	grainBase, err := GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
+	h := newTestHandler(pool, cfg)
+	if err := h.tickSettlement(ctx, settlementID, worldID, 4242); err != nil {
+		t.Fatalf("first tick: %v", err)
 	}
+	_, granOnce := totalFood(t, pool, ctx, settlementID)
+	if err := h.tickSettlement(ctx, settlementID, worldID, 4242); err != nil {
+		t.Fatalf("replay: %v", err)
+	}
+	_, granTwice := totalFood(t, pool, ctx, settlementID)
 
-	readState := func() (fund, liquid float64) {
-		t.Helper()
-		if err := pool.QueryRow(ctx, `SELECT sitos_fund_silver FROM settlements WHERE id = $1`, settlementID).Scan(&fund); err != nil {
-			t.Fatalf("read fund: %v", err)
-		}
-		if err := pool.QueryRow(ctx,
-			`SELECT settled(amount, rate, calc_tick) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
-			settlementID,
-		).Scan(&liquid); err != nil {
-			t.Fatalf("read liquid: %v", err)
-		}
-		return
-	}
-
-	const eventID int64 = 424242
-	if err := h.tickSettlement(ctx, settlementID, worldID, eventID, grainBase); err != nil {
-		t.Fatalf("first tickSettlement: %v", err)
-	}
-	fundAfterFirst, liquidAfterFirst := readState()
-
-	// Replay: same event ID, same settlement — must no-op.
-	if err := h.tickSettlement(ctx, settlementID, worldID, eventID, grainBase); err != nil {
-		t.Fatalf("replayed tickSettlement: %v", err)
-	}
-	fundAfterSecond, liquidAfterSecond := readState()
-
-	if math.Abs(fundAfterSecond-fundAfterFirst) > 1e-9 {
-		t.Errorf("fund changed on replay of the same event: first=%.6f second=%.6f", fundAfterFirst, fundAfterSecond)
-	}
-	if math.Abs(liquidAfterSecond-liquidAfterFirst) > 1e-9 {
-		t.Errorf("liquid silver changed on replay of the same event: first=%.6f second=%.6f", liquidAfterFirst, liquidAfterSecond)
-	}
-
-	// A genuinely NEW event id (the next day's tick) must NOT be a no-op.
-	if err := h.tickSettlement(ctx, settlementID, worldID, eventID+1, grainBase); err != nil {
-		t.Fatalf("next-day tickSettlement: %v", err)
-	}
-	fundAfterNextDay, liquidAfterNextDay := readState()
-	if math.Abs(fundAfterNextDay-fundAfterFirst) < 1e-9 && math.Abs(liquidAfterNextDay-liquidAfterFirst) < 1e-9 {
-		t.Errorf("next-day tick with a new event id looked like a no-op — claim may be over-scoped (not per-event)")
+	if math.Abs(granOnce-granTwice) > 1e-9 {
+		t.Errorf("replaying the same event stored again: %.6f → %.6f", granOnce, granTwice)
 	}
 }

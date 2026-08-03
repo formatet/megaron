@@ -1,11 +1,13 @@
 package economy
 
-// Regression test for Fas 2c: the Sitos fund's safety net (selling emergency
-// stock into a shortage) previously only showed up in `ticklog` — nothing
-// notified the owner when it actually happened, so a Wanax had to think to
-// go looking for it after the fact. This verifies the "sell" (rescue) leg
-// notifies the owner; "buy" (routine surplus absorption) intentionally does
-// not (see the comment in stabilizeGood).
+// The granary eating into its reserve is the one Sitos moment a Wanax must
+// hear about. Storing is routine and stays silent (as the fund's "buy" leg
+// did); releasing is the city living off what it set aside.
+//
+// It uses a kind of its OWN — not the fund's "SitosIntervention", which fired
+// constantly and is on the noise filters in cmd_notifications.go and notif.js.
+// Reusing it would have hidden the rare event behind a filter built for the
+// frequent one.
 
 import (
 	"context"
@@ -26,33 +28,50 @@ func (f *fakeSitosBroadcaster) NotifyPlayer(ctx context.Context, worldID, player
 	return nil
 }
 
-func TestSitosTick_NotifiesOwnerOnRescueSell(t *testing.T) {
+func TestGranary_NotifiesOwnerOnRelease(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	cfg := testSitosCfg()
 
 	const tick = 100
-	// Same deep-shortage fixture as TestSitosTick_SilverConserved — forces
-	// action.Kind == "sell" (the rescue case).
-	worldID, settlementID := sitosFixture(t, pool, ctx, tick, 1000 /*fund*/, 5000 /*silver*/, 2000 /*grain*/, 5 /*rate*/, 0)
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, 1000,
+		[]fixtureGood{{"grain", 1000, 1000000}}, map[string]float64{"grain": 20000})
 
 	fb := &fakeSitosBroadcaster{}
 	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), fb, cfg)
-	grainBase, err := GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
-	}
-	if err := h.tickSettlement(ctx, settlementID, worldID, 1, grainBase); err != nil {
+	if err := h.tickSettlement(ctx, settlementID, worldID, 1); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
 	found := false
 	for _, k := range fb.notified {
-		if k == "SitosIntervention" {
+		if k == NotifySitosGranaryRelease {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("NotifyPlayer calls = %v, want a \"SitosIntervention\" among them (rescue-sell must notify the owner)", fb.notified)
+		t.Errorf("NotifyPlayer calls = %v, want %q among them", fb.notified, NotifySitosGranaryRelease)
+	}
+}
+
+// TestGranary_StoringIsSilent: the routine leg must not notify, or the feed
+// fills with it every tick and buries the release — precisely what happened to
+// the fund's SitosIntervention (~99 % of the notification feed).
+func TestGranary_StoringIsSilent(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	cfg := testSitosCfg()
+
+	const tick = 100
+	worldID, settlementID := granaryFixture(t, pool, ctx, tick, 1000,
+		[]fixtureGood{{"grain", 20000, 1000000}}, nil)
+
+	fb := &fakeSitosBroadcaster{}
+	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), fb, cfg)
+	if err := h.tickSettlement(ctx, settlementID, worldID, 1); err != nil {
+		t.Fatalf("tickSettlement: %v", err)
+	}
+	if len(fb.notified) != 0 {
+		t.Errorf("storing notified %v, want nothing", fb.notified)
 	}
 }

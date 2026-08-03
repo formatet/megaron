@@ -80,22 +80,45 @@ func (h *UnitArrivalHandler) sackSettlement(
 		}
 	}
 
-	// Sitos fund silver is a separate pot (mig 072, not a settlement_goods row) —
-	// same 50% cut, folded into the manifest's silver line.
-	var fundSilver float64
-	if err := tx.QueryRow(ctx,
-		`SELECT floor(GREATEST(0, sitos_fund_silver) * 0.5) FROM settlements WHERE id = $1`,
-		settlementID,
-	).Scan(&fundSilver); err != nil {
-		return fmt.Errorf("sack: load sitos fund: %w", err)
+	// The Sitos granary is a separate pot (mig 106, not a settlement_goods row) —
+	// same 50% cut, per good, folded into the same manifest. A burned city loses
+	// half its food reserve, and the raiders carry it home: it is looted, not
+	// destroyed. Before mig 106 this pot held silver; it holds grain and fish now,
+	// which is why the loot lands on the manifest's food lines instead.
+	grows, gerr := tx.Query(ctx,
+		`SELECT good_key, floor(GREATEST(0, amount) * 0.5)
+		 FROM settlement_granary WHERE settlement_id = $1 AND amount > 0`,
+		settlementID)
+	if gerr != nil {
+		return fmt.Errorf("sack: load granary: %w", gerr)
 	}
-	if fundSilver > 0 {
-		manifest["silver"] += fundSilver
+	type granaryLoot struct {
+		good string
+		qty  float64
+	}
+	var granaryLoots []granaryLoot
+	for grows.Next() {
+		var gl granaryLoot
+		if err := grows.Scan(&gl.good, &gl.qty); err != nil {
+			grows.Close()
+			return fmt.Errorf("sack: scan granary: %w", err)
+		}
+		if gl.qty > 0 {
+			granaryLoots = append(granaryLoots, gl)
+		}
+	}
+	grows.Close()
+	if err := grows.Err(); err != nil {
+		return fmt.Errorf("sack: read granary: %w", err)
+	}
+	for _, gl := range granaryLoots {
+		manifest[gl.good] += gl.qty
 		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET sitos_fund_silver = sitos_fund_silver - $2 WHERE id = $1`,
-			settlementID, fundSilver,
+			`UPDATE settlement_granary SET amount = GREATEST(0, amount - $2)
+			 WHERE settlement_id = $1 AND good_key = $3`,
+			settlementID, gl.qty, gl.good,
 		); err != nil {
-			return fmt.Errorf("sack: deduct sitos fund: %w", err)
+			return fmt.Errorf("sack: deduct granary %s: %w", gl.good, err)
 		}
 	}
 

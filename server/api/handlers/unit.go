@@ -154,6 +154,11 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		"origin_r":       res.OriginR,
 		"target_q":       res.TargetQ,
 		"target_r":       res.TargetR,
+		// The colonist purse the column left with (mig 107) and what the mother
+		// city could not cover. Reported at dispatch because that is the last
+		// moment the Wanax can call the expedition back and fund it properly.
+		"carried_silver":  res.CarriedSilver,
+		"purse_shortfall": res.PurseShortfall,
 	})
 }
 

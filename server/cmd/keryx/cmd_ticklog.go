@@ -118,6 +118,29 @@ func fmtFlows(m map[string]float64) string {
 // renderTickEvent gives a one-line human rendering of a journal event.
 func renderTickEvent(etype string, payload json.RawMessage) string {
 	switch etype {
+	case "SitosGranaryStored", "SitosGranaryReleased":
+		var p struct {
+			Total        float64            `json:"total"`
+			PerGood      map[string]float64 `json:"per_good"`
+			CoverageDays float64            `json:"coverage_days"`
+			GranaryAfter float64            `json:"granary_after"`
+		}
+		_ = json.Unmarshal(payload, &p)
+		goods := make([]string, 0, len(p.PerGood))
+		for g, q := range p.PerGood {
+			goods = append(goods, fmt.Sprintf("%.1f %s", q, g))
+		}
+		sort.Strings(goods)
+		detail := strings.Join(goods, " + ")
+		if etype == "SitosGranaryReleased" {
+			return fmt.Sprintf("Sitos: magasinet gav staden %s (täckning var %.1f dygn, kvar i magasinet %.1f)",
+				detail, p.CoverageDays, p.GranaryAfter)
+		}
+		return fmt.Sprintf("Sitos: la undan %s (täckning %.1f dygn, i magasinet %.1f)",
+			detail, p.CoverageDays, p.GranaryAfter)
+	// SitosTransaction is the FUND's event type, frozen and no longer emitted
+	// (mig 106). Kept so a journal that reaches back past the migration still
+	// reads correctly — the rows mean what they meant.
 	case "SitosTransaction":
 		var p struct {
 			Good        string  `json:"good"`

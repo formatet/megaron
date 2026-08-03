@@ -584,15 +584,17 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			grows.Close()
 		}
 
-		// Sitos-fonden surface (always visible): the fund's silver + smoothed grain
-		// reference price. Rate shown is the tax leg's "up to" amount per tick (the
-		// applied tax is additionally silver-gated).
+		// Sitos granary surface (always visible): what the city has set aside, and
+		// — the figure the whole mechanic turns on — how many days of food it is
+		// standing on right now. Coverage is what triggers both legs (B1), so
+		// showing the reserve without it would show the answer and hide the
+		// question.
 		var currentTick int
 		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
-		var sitosFundSilver float64
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT GREATEST(0, sitos_fund_silver) FROM settlements WHERE id = $1`, sett.ID,
-		).Scan(&sitosFundSilver)
+		granaryPerGood, granaryTotal, granErr := economy.GranaryTotals(r.Context(), h.pool, sett.ID)
+		if granErr != nil {
+			slog.Error("granary read failed", "err", granErr, "settlement", sett.ID)
+		}
 		var grainBaseValue, grainAmount, grainRate, grainCap float64
 		var grainCalcTick int
 		_ = h.pool.QueryRow(r.Context(),
@@ -601,10 +603,31 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			 WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'`,
 			sett.ID,
 		).Scan(&grainBaseValue, &grainAmount, &grainRate, &grainCap, &grainCalcTick)
-		sitosFundCap := economy.FundCap(sett.Population, grainBaseValue, h.sitosCfg)
-		refPriceGrain := economy.RefPrice(grainBaseValue, grainAmount, grainRate,
-			float64(grainCalcTick), currentTick, h.sitosCfg)
-		taxRatePerTick := float64(sett.Population) * h.sitosCfg.TaxRate / float64(events.TicksPerDay)
+		// Coverage is measured on the whole food basket (B6) — grain first, fish
+		// for the remainder, one need (economy.FoodConsumptionSplit). Counting
+		// grain alone would call a fish-fed city starving.
+		var foodStock, foodRatePerTick float64
+		for _, good := range h.sitosCfg.SubsistenceGoods {
+			var s, rate float64
+			if h.pool.QueryRow(r.Context(),
+				`SELECT GREATEST(0, settled(amount, rate, calc_tick)), rate
+				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+				sett.ID, good,
+			).Scan(&s, &rate) == nil {
+				foodStock += s
+				foodRatePerTick += rate
+			}
+		}
+		coverageDays := economy.CoverageDays(foodStock, sett.Population)
+		granaryCap := economy.GranaryCap(sett.Population, h.sitosCfg)
+		// Coverage is a stock figure, so it says nothing about which way the city
+		// is going — and a newly founded city legitimately starts near zero
+		// coverage while producing a large surplus. Reported alone it reads as
+		// famine for the first days of every city's life (eye-check 2026-08-03:
+		// a city with +21 000 grain/day showed "0.1 days, granary empty"). The
+		// net food rate is what separates "lean and climbing" from "starving",
+		// and the surfaces need both to say either honestly.
+		foodNetPerDay := foodRatePerTick * float64(events.TicksPerDay)
 
 		// Catchment base potentials (actual buildings) — read once, shared by the
 		// grain-netto breakdown below and the break-even weight further down.
@@ -667,37 +690,29 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		// DEL A Sitos-delta-itemisering (megaron_ekonomi_legibilitet_plan.md):
-		// beyond the net silver delta, tally the grain-moving legs separately so
-		// `status` can say WHAT Sitos did for this settlement this tick, not just
-		// the silver blob. "sell" = rescue leg (fund sells grain to the city:
-		// GoodDelta positive = grain arrived, SilverDelta positive = city paid
-		// the fund). "buy" = surplus-absorption leg (fund buys the city's excess
-		// grain: GoodDelta negative = grain left, SilverDelta negative = fund
-		// paid the city). "tax" legs have GoodDelta == 0 (silver-only, routine)
-		// and are already folded into lastTickSitosDelta — not itemized here.
-		var lastTickSitosDelta float64
+		// What the granary did for this settlement this tick. There is no silver
+		// leg left to report (B3) — the itemisation is food in and food out.
+		// Reads the NEW event types; the frozen SitosTransaction rows still in the
+		// log belong to the fund and are deliberately not reinterpreted here.
 		var sitosInterventions int
-		var sitosGrainIn, sitosGrainOut, sitosSilverIn, sitosSilverOut float64
+		var sitosFoodIn, sitosFoodOut float64
 		if lrows, lerr := h.pool.Query(r.Context(),
-			`SELECT payload FROM events
-			 WHERE stream_id = $1 AND world_tick = $2 AND event_type = 'SitosTransaction'`,
+			`SELECT event_type, payload FROM events
+			 WHERE stream_id = $1 AND world_tick = $2
+			   AND event_type IN ('SitosGranaryStored', 'SitosGranaryReleased')`,
 			sett.ID, currentTick,
 		); lerr == nil {
 			for lrows.Next() {
+				var etype string
 				var pl []byte
-				if lrows.Scan(&pl) == nil {
-					var p economy.SitosTransactionPayload
+				if lrows.Scan(&etype, &pl) == nil {
+					var p economy.SitosGranaryPayload
 					if json.Unmarshal(pl, &p) == nil {
-						lastTickSitosDelta += p.SilverDelta
-						switch p.Kind {
-						case "sell":
-							sitosInterventions++
-							sitosGrainIn += p.GoodDelta
-							sitosSilverIn += p.SilverDelta
-						case "buy":
-							sitosInterventions++
-							sitosGrainOut += -p.GoodDelta
-							sitosSilverOut += -p.SilverDelta
+						sitosInterventions++
+						if etype == economy.EventSitosGranaryReleased {
+							sitosFoodIn += p.Total
+						} else {
+							sitosFoodOut += p.Total
 						}
 					}
 				}
@@ -720,33 +735,33 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp["settlement"] = map[string]any{
-			"id":                              sett.ID,
-			"name":                            sett.Name,
-			"owner_id":                        sett.OwnerID,
-			"kingdom_id":                      sett.KingdomID,
-			"culture":                         sett.CultureID,
-			"state":                           sett.State,
-			"population":                      sett.Population,
-			"labor_pool":                      laborPool,
-			"walls":                           sett.WallLevel,
-			"loyalty":                         sett.Loyalty,
-			"resources":                       resSnap,
-			"kharis":                          kharisNow,
-			"kharis_rate":                     kharisRate,
-			"kharis_mood":                     kharisToMood(kharisNow),
-			"kharis_per_day":                  kharisRate * float64(events.TicksPerDay),
-			"kharis_cap":                      kharisCap,
-			"max_temple_level":                maxTempleLevel,
-			"rite_kharis_cost":                riteKharisCost,
-			"kharis_net_per_day":              kharisNetPerDay,
-			"kharis_net_known":                kharisNetKnown,
-			"kharis_devotion_idle":            kharisDevotionIdle,
-			"temple_offers":                   templeOffers,
-			"grain_prod_rate":                 grainProdRate,
-			"grain_consum_rate":               grainConsumRate,
-			"breakeven_grain_weight":          breakevenGrainWeight,
-			"army":                            sett.Army,
-			"army_upkeep": armyUp,
+			"id":                     sett.ID,
+			"name":                   sett.Name,
+			"owner_id":               sett.OwnerID,
+			"kingdom_id":             sett.KingdomID,
+			"culture":                sett.CultureID,
+			"state":                  sett.State,
+			"population":             sett.Population,
+			"labor_pool":             laborPool,
+			"walls":                  sett.WallLevel,
+			"loyalty":                sett.Loyalty,
+			"resources":              resSnap,
+			"kharis":                 kharisNow,
+			"kharis_rate":            kharisRate,
+			"kharis_mood":            kharisToMood(kharisNow),
+			"kharis_per_day":         kharisRate * float64(events.TicksPerDay),
+			"kharis_cap":             kharisCap,
+			"max_temple_level":       maxTempleLevel,
+			"rite_kharis_cost":       riteKharisCost,
+			"kharis_net_per_day":     kharisNetPerDay,
+			"kharis_net_known":       kharisNetKnown,
+			"kharis_devotion_idle":   kharisDevotionIdle,
+			"temple_offers":          templeOffers,
+			"grain_prod_rate":        grainProdRate,
+			"grain_consum_rate":      grainConsumRate,
+			"breakeven_grain_weight": breakevenGrainWeight,
+			"army":                   sett.Army,
+			"army_upkeep":            armyUp,
 			// Del C: the sold a garrison spends back into the town it holds. Without
 			// this line the net below cannot be derived from the gross above, and the
 			// mechanic would be invisible — a silver flow the Wanax cannot see or plan
@@ -775,23 +790,21 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"max":  province.MaxSettlementsPerWanax,
 			},
 			"sitos": map[string]any{
-				"fund_silver":        sitosFundSilver,
-				"fund_cap":           sitosFundCap,
-				"fund_rate_per_tick": taxRatePerTick,
-				"ref_price_grain":    refPriceGrain,
-				"ref_price_floor":    h.sitosCfg.RefPriceFloor,
-				"ref_price_ceiling":  h.sitosCfg.RefPriceCeiling,
+				"granary_total":    granaryTotal,
+				"granary_per_good": granaryPerGood,
+				"granary_cap":      granaryCap,
+				"coverage_days":    coverageDays,
+				"food_net_per_day": foodNetPerDay,
+				"low_days":         h.sitosCfg.LowDays,
+				"high_days":        h.sitosCfg.HighDays,
 			},
 			"last_tick": map[string]any{
 				"tick":                currentTick,
 				"production":          lastTickProd,
 				"consumption":         lastTickCons,
-				"sitos_delta":         lastTickSitosDelta,
 				"sitos_interventions": sitosInterventions,
-				"sitos_grain_in":      sitosGrainIn,
-				"sitos_grain_out":     sitosGrainOut,
-				"sitos_silver_in":     sitosSilverIn,
-				"sitos_silver_out":    sitosSilverOut,
+				"sitos_food_in":       sitosFoodIn,
+				"sitos_food_out":      sitosFoodOut,
 			},
 		}
 	}
