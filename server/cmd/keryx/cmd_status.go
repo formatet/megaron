@@ -243,10 +243,18 @@ func statusCmd() *cobra.Command {
 						parts = " (" + parts + ")"
 					}
 				}
+				// Coverage is a STOCK figure and says nothing about direction. A
+				// newly founded city sits near zero coverage while producing a
+				// large surplus, and at 60 min/tick that state lasts real days —
+				// so "empty, no help coming" would cry famine over a city that is
+				// filling up fast. The net food rate is what tells them apart.
+				net, _ := sitos["food_net_per_day"].(float64)
 				state := "lägger undan ett tionde av överskottet"
 				switch {
+				case cov < low && total <= 0 && net > 0:
+					state = "tomt — men lagret växer, täckningen stiger"
 				case cov < low && total <= 0:
-					state = "TOMT — staden får ingen hjälp"
+					state = "TOMT och lagret krymper — staden är utan skydd"
 				case cov < low:
 					state = "släpper mat till staden"
 				case cov <= high:

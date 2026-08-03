@@ -195,7 +195,11 @@ export async function loadCityDrawer() {
       // city, and where an empty granary means nobody will.
       const s = pd.sitos;
       const cov = s.coverage_days || 0;
-      const covColour = cov < (s.low_days || 0) ? 'var(--accent)' : 'var(--safe)';
+      // Low coverage is only an alarm when the stock is also shrinking — a new
+      // city sits near zero coverage while filling up fast, and at 60 min/tick
+      // that lasts real days.
+      const falling = (s.food_net_per_day || 0) <= 0;
+      const covColour = (cov < (s.low_days || 0) && falling) ? 'var(--accent)' : 'var(--safe)';
       const perGood = Object.entries(s.granary_per_good || {})
         .filter(([, v]) => v > 0)
         .sort(([a], [b]) => a.localeCompare(b))

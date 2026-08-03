@@ -606,19 +606,28 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// Coverage is measured on the whole food basket (B6) — grain first, fish
 		// for the remainder, one need (economy.FoodConsumptionSplit). Counting
 		// grain alone would call a fish-fed city starving.
-		var foodStock float64
+		var foodStock, foodRatePerTick float64
 		for _, good := range h.sitosCfg.SubsistenceGoods {
-			var s float64
+			var s, rate float64
 			if h.pool.QueryRow(r.Context(),
-				`SELECT GREATEST(0, settled(amount, rate, calc_tick))
+				`SELECT GREATEST(0, settled(amount, rate, calc_tick)), rate
 				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
 				sett.ID, good,
-			).Scan(&s) == nil {
+			).Scan(&s, &rate) == nil {
 				foodStock += s
+				foodRatePerTick += rate
 			}
 		}
 		coverageDays := economy.CoverageDays(foodStock, sett.Population)
 		granaryCap := economy.GranaryCap(sett.Population, h.sitosCfg)
+		// Coverage is a stock figure, so it says nothing about which way the city
+		// is going — and a newly founded city legitimately starts near zero
+		// coverage while producing a large surplus. Reported alone it reads as
+		// famine for the first days of every city's life (eye-check 2026-08-03:
+		// a city with +21 000 grain/day showed "0.1 days, granary empty"). The
+		// net food rate is what separates "lean and climbing" from "starving",
+		// and the surfaces need both to say either honestly.
+		foodNetPerDay := foodRatePerTick * float64(events.TicksPerDay)
 
 		// Catchment base potentials (actual buildings) — read once, shared by the
 		// grain-netto breakdown below and the break-even weight further down.
@@ -726,33 +735,33 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp["settlement"] = map[string]any{
-			"id":                              sett.ID,
-			"name":                            sett.Name,
-			"owner_id":                        sett.OwnerID,
-			"kingdom_id":                      sett.KingdomID,
-			"culture":                         sett.CultureID,
-			"state":                           sett.State,
-			"population":                      sett.Population,
-			"labor_pool":                      laborPool,
-			"walls":                           sett.WallLevel,
-			"loyalty":                         sett.Loyalty,
-			"resources":                       resSnap,
-			"kharis":                          kharisNow,
-			"kharis_rate":                     kharisRate,
-			"kharis_mood":                     kharisToMood(kharisNow),
-			"kharis_per_day":                  kharisRate * float64(events.TicksPerDay),
-			"kharis_cap":                      kharisCap,
-			"max_temple_level":                maxTempleLevel,
-			"rite_kharis_cost":                riteKharisCost,
-			"kharis_net_per_day":              kharisNetPerDay,
-			"kharis_net_known":                kharisNetKnown,
-			"kharis_devotion_idle":            kharisDevotionIdle,
-			"temple_offers":                   templeOffers,
-			"grain_prod_rate":                 grainProdRate,
-			"grain_consum_rate":               grainConsumRate,
-			"breakeven_grain_weight":          breakevenGrainWeight,
-			"army":                            sett.Army,
-			"army_upkeep": armyUp,
+			"id":                     sett.ID,
+			"name":                   sett.Name,
+			"owner_id":               sett.OwnerID,
+			"kingdom_id":             sett.KingdomID,
+			"culture":                sett.CultureID,
+			"state":                  sett.State,
+			"population":             sett.Population,
+			"labor_pool":             laborPool,
+			"walls":                  sett.WallLevel,
+			"loyalty":                sett.Loyalty,
+			"resources":              resSnap,
+			"kharis":                 kharisNow,
+			"kharis_rate":            kharisRate,
+			"kharis_mood":            kharisToMood(kharisNow),
+			"kharis_per_day":         kharisRate * float64(events.TicksPerDay),
+			"kharis_cap":             kharisCap,
+			"max_temple_level":       maxTempleLevel,
+			"rite_kharis_cost":       riteKharisCost,
+			"kharis_net_per_day":     kharisNetPerDay,
+			"kharis_net_known":       kharisNetKnown,
+			"kharis_devotion_idle":   kharisDevotionIdle,
+			"temple_offers":          templeOffers,
+			"grain_prod_rate":        grainProdRate,
+			"grain_consum_rate":      grainConsumRate,
+			"breakeven_grain_weight": breakevenGrainWeight,
+			"army":                   sett.Army,
+			"army_upkeep":            armyUp,
 			// Del C: the sold a garrison spends back into the town it holds. Without
 			// this line the net below cannot be derived from the gross above, and the
 			// mechanic would be invisible — a silver flow the Wanax cannot see or plan
@@ -785,6 +794,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"granary_per_good": granaryPerGood,
 				"granary_cap":      granaryCap,
 				"coverage_days":    coverageDays,
+				"food_net_per_day": foodNetPerDay,
 				"low_days":         h.sitosCfg.LowDays,
 				"high_days":        h.sitosCfg.HighDays,
 			},
