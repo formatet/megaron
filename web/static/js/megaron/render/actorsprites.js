@@ -278,6 +278,13 @@ export const INTENT_ACCENT = {
 };
 export const NEUTRAL_ACCENT = '#6A6252';
 
+// Foreign (non-owned) unit accent — ockra, megaron_kartaktorer §Relation rad
+// "Neutral/okänd": MVP har ingen krigsförklaring, så varje främmande enhet är
+// neutral/okänd, aldrig fientlig (oxblod hör till Fas 6:s relationsfärg/
+// hotlager, byggs inte här). EXAKT VALÖR EJ FASTSTÄLLD — väntar på Timothys
+// ögonkoll vid 1:1 (fow/frammande-enheter, 2026-08-03).
+export const FOREIGN_ACCENT = '#B08A3E';
+
 /** Aktörens ursprung är dess FOT, som trädens: aktören står på sin position och
  *  en lägre aktör överlappar en högre korrekt när flera ritas i y-ordning. */
 export function drawActor(ctx, kind, x, y, intent, walkPhase, accentOverride) {

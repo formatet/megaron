@@ -9,7 +9,7 @@ import {
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
-import { drawActor, spriteRuns } from './actorsprites.js';
+import { drawActor, spriteRuns, FOREIGN_ACCENT } from './actorsprites.js';
 import { drawCityMass, citySprite, CITY_BASE_OFFSET } from './citysprites.js';
 import { zoomStep } from './camera.js';
 
@@ -272,6 +272,29 @@ function pathPx(waypoints, progress) {
 
 function isTileVisible(q, r) {
   return State.tileData.some(t => t.q === q && t.r === r && t.terrain !== 'fog');
+}
+
+// tileTierByPos: "q,r" -> tier ("live"|"remembered"|"fog"), rebuilt (see
+// rebuildTileTierIndex below) every time State.tileData is replaced, instead
+// of scanned per-call like isTileVisible above — isTileVisible is a linear
+// scan over up to 52,900 tiles PER CALL, fine at the call sites it already
+// has, but not something to add a second per-actor, per-frame copy of
+// (fow/frammande-enheter, 2026-08-03). isTileVisible's existing callers are
+// untouched; this is a separate, additive index that only foreign units use.
+let tileTierByPos = new Map();
+function rebuildTileTierIndex() {
+  tileTierByPos = new Map();
+  for (const t of State.tileData) {
+    tileTierByPos.set(`${t.q},${t.r}`, t.tier);
+  }
+}
+
+// isTileLive: strictly tier 1 (live) — unlike isTileVisible, which also
+// passes tier 2 (remembered). A foreign unit must never be drawn on a
+// remembered hex: memory carries no activity (temenos_synlighet.md,
+// kanonbeslut Timothy 2026-08-03).
+function isTileLive(q, r) {
+  return tileTierByPos.get(`${q},${r}`) === 'live';
 }
 // ── Hex fill — solid path fill + outline ─────────────────────────────────
 function hexPath(ctx, pts) {
@@ -2700,7 +2723,11 @@ function drawProvince(ctx, cx, cy, p) {
 
   // Garnisonsprick — hör till PORTEN, inte till taket. Den satt tidigare i
   // luften till höger om massan där en palatsstad inte har någon bebyggelse.
-  if (p.own && p.army_total > 0 && State.camera.zoom >= GARRISON_DOT_ZOOM) {
+  // p.own dropped (fow/frammande-enheter, 2026-08-03): the server now zeroes
+  // army_total itself for anything not in the viewer's LIVE tier (world.go),
+  // so a positive count here already means "garrison visible right now" —
+  // no separate FOW check needed on this side.
+  if (p.army_total > 0 && State.camera.zoom >= GARRISON_DOT_ZOOM) {
     ctx.fillStyle = '#8B1A1A';
     ctx.strokeStyle = '#3A0A0A';
     ctx.lineWidth = 0.5;
@@ -3358,6 +3385,33 @@ export function render() {
     }
   }
 
+  // 5c. Foreign (non-owned) units — GET /foreign-units, fow/frammande-enheter
+  // 2026-08-03. Same client-side interpolation as 5b for smooth animation
+  // between polls, but the gate is isTileLive, NEVER isTileVisible: a foreign
+  // unit must never be drawn on a remembered (dimmed) hex — remembered tiles
+  // carry no activity by kanonbeslut, and isTileVisible would let one through.
+  // Drawn with FOREIGN_ACCENT (neutral/unknown ockra, not a hostile red — MVP
+  // has no declared war, so every foreign unit reads as neutral/unknown).
+  for (const u of State.foreignUnitData) {
+    const naval = u.category === 'naval';
+    const kind = canonicalUnitType(u.type) || (naval ? 'galley' : 'spearman');
+    if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
+      const now = serverNow();
+      const departs = new Date(u.departs_at).getTime();
+      const arrives = new Date(u.arrives_at).getTime();
+      const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
+      const pos = (u.path && u.path.length > 1)
+        ? pathPx(u.path, progress)
+        : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
+      if (isTileLive(pos.q, pos.r)) {
+        drawActor(ctx, kind, pos.x, pos.y, '', walkPhase, FOREIGN_ACCENT);
+      }
+    } else if (u.status === 'positioned' && u.q != null && isTileLive(u.q, u.r)) {
+      const {x, y} = hexPx(u.q, u.r);
+      drawActor(ctx, kind, x, y, '', walkPhase, FOREIGN_ACCENT);
+    }
+  }
+
   // 6. Animated messengers — OWN couriers are drawn along their whole route,
   // dimmed over fog (the player's own runner is information they already
   // possess — temenos_orderlopare_plan.md Fas 5); foreign messengers only
@@ -3402,7 +3456,7 @@ export function render() {
 
 // ── Data loading ──────────────────────────────────────────────────────────
 export async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes, foreignUnitsRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`),
@@ -3410,10 +3464,12 @@ export async function loadMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`),
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`),
   ]);
 
   if (tilesRes.ok) {
     State.tileData = await tilesRes.json();
+    rebuildTileTierIndex();
   }
   if (provRes.ok) {
     // Must land before centreCamera() below — homePosition() reads the
@@ -3435,6 +3491,9 @@ export async function loadMap() {
   }
   if (ruralRes.ok) {
     State.ruralData = await ruralRes.json();
+  }
+  if (foreignUnitsRes.ok) {
+    State.foreignUnitData = await foreignUnitsRes.json();
   }
   window.MusicPlayer.update();
 }
@@ -3478,7 +3537,7 @@ function centreCamera() {
 // otherwise the canvas keeps the fog it had at page load and exploration looks
 // like it did nothing.
 export function refreshTiles() {
-  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json().then(d => { State.tileData = d; State.dirty = true; }));
+  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`).then(r => r.ok && r.json().then(d => { State.tileData = d; rebuildTileTierIndex(); State.dirty = true; }));
 }
 
 // ── Zoom helpers ──────────────────────────────────────────────────────────
@@ -3532,16 +3591,33 @@ function producesText(tile) {
   return base === '—' ? 'fish' : base + ', fish';
 }
 
-function unitListHTML(units) {
-  if (!units.length) return '';
-  const rows = units.map(u => {
-    const lbl = actorName(u);
-    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
-      + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
-      + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Visa →</button>'
-      + '</div>';
-  }).join('');
-  return '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Units here</div>' + rows + '</div>';
+// foreignUnits (optional): non-owned units on this same hex (GET /foreign-units,
+// fow/frammande-enheter) — listed below the player's own, tagged with the
+// owner's name, and with no "Visa →" button (there is nothing of theirs to
+// act on).
+function unitListHTML(units, foreignUnits) {
+  let html = '';
+  if (units.length) {
+    const rows = units.map(u => {
+      const lbl = actorName(u);
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
+        + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
+        + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Visa →</button>'
+        + '</div>';
+    }).join('');
+    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Units here</div>' + rows + '</div>';
+  }
+  if (foreignUnits && foreignUnits.length) {
+    const rows = foreignUnits.map(u => {
+      const lbl = actorName(u);
+      const owner = u.owner || '—';
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
+        + '<span>' + lbl + ' ×' + u.size + ' <span style="color:var(--text-dim)">(' + owner + ', ' + u.status + ')</span></span>'
+        + '</div>';
+    }).join('');
+    html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Foreign units here</div>' + rows + '</div>';
+  }
+  return html;
 }
 
 function bindUnitButtons(foot) {
@@ -3636,7 +3712,7 @@ function openFogPanel(h) {
 // Foreign/allied settlement — today's openInspect content (Wanax/culture/walls/DP),
 // plus the units-here list and a Marschera button. Own settlements never reach
 // this function — they bypass the panel for the city drawer (see openHexPanel).
-function openCityPanel(h, tile, marker, units) {
+function openCityPanel(h, tile, marker, units, foreignUnits) {
   document.getElementById('ip-name').textContent    = marker.name;
   setCityFieldsVisible(true);
   document.getElementById('ip-culture').textContent = marker.culture;
@@ -3656,7 +3732,7 @@ function openCityPanel(h, tile, marker, units) {
   }).catch(() => { document.getElementById('ip-army').textContent = '—'; });
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = unitListHTML(units);
+  let footHtml = unitListHTML(units, foreignUnits);
   // A settlement OR a wandering host can send — the host's first contact with a
   // met city is one of its designed uses (mig 087; sendMessengerFromInspect
   // picks the endpoint).
@@ -3678,14 +3754,14 @@ function openCityPanel(h, tile, marker, units) {
 
 // Mountain / sea / empty land — no province here. Mountains explain their own
 // absence of affordances; sea gets galleys; empty land gets march + colonize.
-function openTerrainPanel(h, tile, isMountain, isSea, units) {
+function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   document.getElementById('ip-name').textContent =
     isSea ? `Sea (${h.q},${h.r})` : (isMountain ? `Mountains (${h.q},${h.r})` : `Empty hex (${h.q},${h.r})`);
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = unitListHTML(units);
+  let footHtml = unitListHTML(units, foreignUnits);
 
   if (isMountain) {
     footHtml += '<p class="empty-state">Ogenomträngligt — arméer kan inte gå här.</p>';
@@ -3757,14 +3833,14 @@ function openTerrainPanel(h, tile, isMountain, isSea, units) {
 // the units list; marching here is a right-click order, not a panel button.
 const RURAL_LABELS = { farm: 'Farm', mine: 'Mine', lumbermill: 'Lumbermill' };
 
-function openRuralPanel(h, tile, rural, units) {
+function openRuralPanel(h, tile, rural, units, foreignUnits) {
   document.getElementById('ip-name').textContent = RURAL_LABELS[rural.building_type] || rural.building_type;
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
   let footHtml = `<p class="empty-state">Del av ${rural.name}s omland — brukas härifrån.</p>`;
-  footHtml += unitListHTML(units);
+  footHtml += unitListHTML(units, foreignUnits);
   footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Öppna ${rural.name} →</button>`;
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
@@ -3907,8 +3983,13 @@ function openHexPanel(h) {
 
   const units = (State.unitsData || []).filter(u =>
     u.q === h.q && u.r === h.r && (u.status === 'positioned' || u.status === 'marching'));
+  // Foreign (non-owned) units on this same hex (GET /foreign-units,
+  // fow/frammande-enheter) — listed under the player's own, owner-tagged,
+  // no action button (see unitListHTML).
+  const foreignUnits = (State.foreignUnitData || []).filter(u =>
+    u.q === h.q && u.r === h.r && (u.status === 'positioned' || u.status === 'marching'));
 
-  if (prov) { openCityPanel(h, tile, prov, units); return; }
+  if (prov) { openCityPanel(h, tile, prov, units, foreignUnits); return; }
 
   // Rural projection hex — a catchment hex carrying one of the player's own city
   // buildings (Fas A2). The card names it, says whose omland it is, and its
@@ -3916,11 +3997,11 @@ function openHexPanel(h) {
   // rule: the projection is a representation, its card leads to the real
   // building). Marching still works via right-click, so no march button here.
   const rural = (State.ruralData || []).find(rp => rp.q === h.q && rp.r === h.r);
-  if (rural) { openRuralPanel(h, tile, rural, units); return; }
+  if (rural) { openRuralPanel(h, tile, rural, units, foreignUnits); return; }
 
   const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
   const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
-  openTerrainPanel(h, tile, isMountain, isSea, units);
+  openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits);
 }
 
 export function closeInspect() {
@@ -4106,6 +4187,7 @@ export function initMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`).then(r => r.ok && r.json().then(d => { State.ruralData = d; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
   }, 30000);
 
   // While any own unit is marching, refresh units + fog fast so the fog visibly
@@ -4117,6 +4199,7 @@ export function initMap() {
     if (!State.unitsData.some(u => u.status === 'marching') && !courierOut) return;
     refreshTiles();
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
     // A Runner en route needs the same fast cadence: its delivery flips
     // the unit to marching (or applies a stance) server-side — poll messengers
     // so the runner vanishes and the unit moves without waiting for the 30s tick.
