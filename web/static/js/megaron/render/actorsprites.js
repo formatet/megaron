@@ -278,16 +278,37 @@ export const INTENT_ACCENT = {
 };
 export const NEUTRAL_ACCENT = '#6A6252';
 
-// Foreign (non-owned) unit accent — ockra, megaron_kartaktorer §Relation rad
-// "Neutral/okänd": MVP har ingen krigsförklaring, så varje främmande enhet är
-// neutral/okänd, aldrig fientlig (oxblod hör till Fas 6:s relationsfärg/
-// hotlager, byggs inte här). EXAKT VALÖR EJ FASTSTÄLLD — väntar på Timothys
-// ögonkoll vid 1:1 (fow/frammande-enheter, 2026-08-03).
-export const FOREIGN_ACCENT = '#B08A3E';
+// Foreign (non-owned) unit accent — violettgrå, Timothy 2026-08-03 efter
+// ögonkoll vid 1:1 i showcase-units.
+//
+// Den nominerade ockran ur megaron_kartaktorer §Relation ("Neutral/okänd:
+// oblekt linne, askgrå, ockra") FÖLL på mätning: #B08A3E ligger ΔE76 = 6,4
+// från spritens egen brons `M` (#A87C38), alltså slutar accenten vara en
+// accent och blir "lite mer brons". Alla tre nominerade valörer är upptagna
+// inne i spriten — ockra = bronsen, askgrå = NEUTRAL_ACCENT som EGNA enheter
+// bär, linne = tunikan `T`. Neutral/okänd hade ingen ledig valör kvar, vilket
+// är precis varför kanon säger att färg aldrig får bära relationen ensam.
+//
+// #7B5E93 är vald på marginal, inte på smak: min ΔE76 47 mot hela
+// ACTOR_PALETTE, 30 mot terrängbaserna (inklusive havet, där kall skiffer föll
+// på 7,9 och ett främmande skepp hade försvunnit) och 41 mot egna enheters
+// accent. Den redundanta bäraren är FOREIGN_OUTLINE nedan.
+export const FOREIGN_ACCENT = '#7B5E93';
+
+// Konturen runt en främmande enhet — den redundanta bäraren av ägarsignalen,
+// så relationen överlever gråskala, färgblindhet och mörk terräng (kanon:
+// "färg får aldrig bära kritisk information ensam"). Ljus nog att lysa mot
+// både kalksten och cederskog.
+//
+// Den ritas som en 1 LOGISK pixel bred dilatation av siluetten, aldrig som en
+// bråkdelsbred linje: duken skalas zoom × SCALE och husregeln är heltals-
+// fillRect utan kantutjämning, så en 1,5 px kontur hade resamplats till gröt
+// på varje zoomnivå. Vid normal spelzoom landar den på 1,4–2 skärmpixlar.
+export const FOREIGN_OUTLINE = '#D9CBEF';
 
 /** Aktörens ursprung är dess FOT, som trädens: aktören står på sin position och
  *  en lägre aktör överlappar en högre korrekt när flera ritas i y-ordning. */
-export function drawActor(ctx, kind, x, y, intent, walkPhase, accentOverride) {
+export function drawActor(ctx, kind, x, y, intent, walkPhase, accentOverride, outline) {
   const sprite = ACTOR_SPRITES[kind];
   if (!sprite) return false;
   // Gången är ETT pixelsteg upp, inte en andra ritad pose: en extra pose
@@ -296,6 +317,24 @@ export function drawActor(ctx, kind, x, y, intent, walkPhase, accentOverride) {
   const ox = Math.round(x) - (sprite.w >> 1);
   const oy = Math.round(y) - sprite.h + 2;   // fötterna strax under hexcentrum
   const accent = accentOverride || INTENT_ACCENT[intent] || NEUTRAL_ACCENT;
+
+  // Konturen först, kroppen ovanpå: siluetten dilateras 1 px i de fyra
+  // väderstrecken och ritas under, så bara ringen utanför kroppen blir kvar.
+  // Markskuggan `S` är INTE med — den ligger på marken och ska inte få en
+  // lysande kant, annars växer en blob under fötterna i stället för en kontur
+  // runt förbandet. Anroparen släcker konturen genom att skicka null, vilket
+  // är hur blinket klockas (deterministiskt ur State.animFrame, aldrig ur
+  // väggklockan — annars kan riggen inte frysa en bild).
+  if (outline) {
+    ctx.fillStyle = outline;
+    for (const r of sprite.runs) {
+      if (r.ch === 'S') continue;
+      const ry = oy + r.y + bob;
+      ctx.fillRect(ox + r.x - 1, ry, r.n + 2, 1);
+      ctx.fillRect(ox + r.x, ry - 1, r.n, 1);
+      ctx.fillRect(ox + r.x, ry + 1, r.n, 1);
+    }
+  }
   for (const r of sprite.runs) {
     // Markskuggan ligger kvar på marken när kroppen studsar — annars hoppar
     // hela figuren och tappar sin förankring.

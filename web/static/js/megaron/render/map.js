@@ -9,7 +9,7 @@ import {
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
-import { drawActor, spriteRuns, FOREIGN_ACCENT } from './actorsprites.js';
+import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { drawCityMass, citySprite, CITY_BASE_OFFSET } from './citysprites.js';
 import { zoomStep } from './camera.js';
 
@@ -3400,8 +3400,15 @@ export function render() {
   // between polls, but the gate is isTileLive, NEVER isTileVisible: a foreign
   // unit must never be drawn on a remembered (dimmed) hex — remembered tiles
   // carry no activity by kanonbeslut, and isTileVisible would let one through.
-  // Drawn with FOREIGN_ACCENT (neutral/unknown ockra, not a hostile red — MVP
-  // has no declared war, so every foreign unit reads as neutral/unknown).
+  // Drawn with FOREIGN_ACCENT (neutral/unknown, not a hostile red — MVP has no
+  // declared war) plus a blinking 1px FOREIGN_OUTLINE, the redundant carrier of
+  // the owner signal (Timothy 2026-08-03: "helt ok och väldigt tydligt").
+  //
+  // The blink is clocked off State.animFrame, never the wall clock: the frozen-
+  // frame rigs pin animFrame, so a wall-clock blink would make every screenshot
+  // non-deterministic and every pixel diff meaningless. 24 frames ≈ 0,4 s on,
+  // 0,4 s off at rAF cadence.
+  const foreignOutline = Math.floor(State.animFrame / 24) % 2 === 0 ? FOREIGN_OUTLINE : null;
   for (const u of State.foreignUnitData) {
     const naval = u.category === 'naval';
     const kind = canonicalUnitType(u.type) || (naval ? 'galley' : 'spearman');
@@ -3414,11 +3421,11 @@ export function render() {
         ? pathPx(u.path, progress)
         : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
       if (isTileLive(pos.q, pos.r)) {
-        drawActor(ctx, kind, pos.x, pos.y, '', walkPhase, FOREIGN_ACCENT);
+        drawActor(ctx, kind, pos.x, pos.y, '', walkPhase, FOREIGN_ACCENT, foreignOutline);
       }
     } else if (u.status === 'positioned' && u.q != null && isTileLive(u.q, u.r)) {
       const {x, y} = hexPx(u.q, u.r);
-      drawActor(ctx, kind, x, y, '', walkPhase, FOREIGN_ACCENT);
+      drawActor(ctx, kind, x, y, '', walkPhase, FOREIGN_ACCENT, foreignOutline);
     }
   }
 

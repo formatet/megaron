@@ -221,7 +221,10 @@ window.SHOWCASE = {
   },
   ready: true,
 };
-window.SHOWCASE.draw();
+// ?frame=N fryser en annan animationsfas. Behövs sedan den främmande radens
+// kontur blinkar: en rigg som bara kan frysa EN fas kan per definition bara
+// bevisa halva animationen — frame=100 tänder konturen, frame=124 släcker den.
+window.SHOWCASE.draw(parseInt(params.get('frame'), 10) || 100);
 </script>
 </body>
 </html>
