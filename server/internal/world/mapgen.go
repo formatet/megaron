@@ -2318,7 +2318,7 @@ func riverSources(field map[cell]float64, landmap map[cell]int, grid map[cell]Te
 		return candidates[i].c.r < candidates[j].c.r
 	})
 
-	chosen := map[int]int{}       // landmass id -> sources accepted so far
+	chosen := map[int]int{}        // landmass id -> sources accepted so far
 	chosenOnLM := map[int][]cell{} // landmass id -> those sources, for spacing
 	var sources []cell
 	for _, cd := range candidates {
@@ -2704,7 +2704,6 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field, meander map[ce
 		grid[line[idx]] = TerrainRiverFord
 	}
 }
-
 
 // placeDelta converts a land tile at the river's mouth into river_delta
 // terrain. Delta tiles are coastal, fertile, and strategically exposed — the
