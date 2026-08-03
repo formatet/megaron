@@ -1,7 +1,6 @@
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
-import { fmtSilver } from '../format.js';
 import { arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel } from '../actornames.js';
@@ -191,11 +190,19 @@ export async function loadCityDrawer() {
       grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodDay.toFixed(1)} − cons ${consDay.toFixed(1)} = <b style="color:${netDay >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netDay >= 0 ? '+' : ''}${netDay.toFixed(1)}/day</b>${be}</span></div>`;
     }
     if (pd && pd.sitos) {
+      // Coverage is the trigger (mig 106), so it leads. Colour it against the
+      // low threshold — that is the line where the granary starts feeding the
+      // city, and where an empty granary means nobody will.
       const s = pd.sitos;
+      const cov = s.coverage_days || 0;
+      const covColour = cov < (s.low_days || 0) ? 'var(--accent)' : 'var(--safe)';
+      const perGood = Object.entries(s.granary_per_good || {})
+        .filter(([, v]) => v > 0)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => `${v.toFixed(0)} ${k}`).join(', ');
       document.getElementById('city-sitos-sec').innerHTML = grainRow + `
-        <div class="stat-row"><span class="sr-label">Fund</span><span class="sr-val">${fmtSilver(s.fund_silver)} / ${fmtSilver(s.fund_cap)}</span></div>
-        <div class="stat-row"><span class="sr-label">Tax rate</span><span class="sr-val">+${s.fund_rate_per_tick.toFixed(2)}/tick</span></div>
-        <div class="stat-row"><span class="sr-label">Grain ref. price</span><span class="sr-val">${s.ref_price_grain.toFixed(2)} (floor ${s.ref_price_floor} · ceiling ${s.ref_price_ceiling})</span></div>`;
+        <div class="stat-row"><span class="sr-label">Coverage</span><span class="sr-val" style="color:${covColour}"><b>${cov.toFixed(1)} days</b> <span style="color:var(--text-dim);font-size:.7rem">(stores above ${s.high_days} · releases below ${s.low_days})</span></span></div>
+        <div class="stat-row"><span class="sr-label">Granary</span><span class="sr-val">${(s.granary_total||0).toFixed(0)} / ${(s.granary_cap||0).toFixed(0)} food${perGood ? ` <span style="color:var(--text-dim);font-size:.7rem">(${perGood})</span>` : ''}</span></div>`;
     } else {
       document.getElementById('city-sitos-sec').innerHTML = grainRow || '<p class="empty-state">—</p>';
     }
@@ -205,7 +212,7 @@ export async function loadCityDrawer() {
       const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${v.toFixed(2)}</td></tr>`).join('');
       document.getElementById('city-lasttick-sec').innerHTML = `
         <div class="stat-row"><span class="sr-label">Tick</span><span class="sr-val">#${lt.tick}</span></div>
-        <div class="stat-row"><span class="sr-label">Sitos delta</span><span class="sr-val" style="color:${lt.sitos_delta>=0?'var(--safe)':'var(--accent)'}">${lt.sitos_delta>=0?'+':''}${lt.sitos_delta.toFixed(2)}</span></div>
+        ${(lt.sitos_food_in > 0 || lt.sitos_food_out > 0) ? `<div class="stat-row"><span class="sr-label">Sitos</span><span class="sr-val">${lt.sitos_food_in > 0 ? `<span style="color:var(--safe)">+${lt.sitos_food_in.toFixed(0)} food from granary</span>` : ''}${(lt.sitos_food_in > 0 && lt.sitos_food_out > 0) ? ' · ' : ''}${lt.sitos_food_out > 0 ? `<span style="color:var(--text-dim)">${lt.sitos_food_out.toFixed(0)} food stored</span>` : ''}</span></div>` : ''}
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';

@@ -123,15 +123,15 @@ func (h *UpkeepHandler) emitSilverAudit(ctx context.Context, worldID uuid.UUID) 
 		slog.Error("silver audit: liquid sum failed", "world", worldID, "err", err)
 		return
 	}
-	if err := h.pool.QueryRow(ctx,
-		`SELECT COALESCE(SUM(GREATEST(0, sitos_fund_silver)), 0)
-		 FROM settlements
-		 WHERE world_id = $1 AND owner_id IS NOT NULL AND state NOT IN ('sunk', 'collapsed')`,
-		worldID,
-	).Scan(&fund); err != nil {
-		slog.Error("silver audit: fund sum failed", "world", worldID, "err", err)
-		return
-	}
+	// fund_total is HISTORIC as of migration 106 and is always 0 from here on.
+	// The Sitos fund it counted was replaced by a granary that holds food, never
+	// silver (B3), and the balances it did hold were moved into liquid silver by
+	// that migration rather than deleted — so the world total is unchanged and
+	// net_delta has no artificial cliff at the migration. The field stays in the
+	// payload because event semantics are frozen: an old SilverAudit row still
+	// means what it meant, and no reader may reinterpret this term as something
+	// else. Do not repurpose it — add a new field instead.
+	fund = 0
 	// mined_since_last = Σ(rate) over silver rows that mine (rate>0) × elapsed ticks.
 	if err := h.pool.QueryRow(ctx,
 		`SELECT COALESCE(SUM(sg.rate), 0)

@@ -96,18 +96,11 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		return out, &metropolisError{"could not create settlement", err}
 	}
 
-	// Sitos genesis seed: sow the fund's starting silver (a deliberate silver-
-	// invariant exception, like start-grain/pop — see temenos_sitos.md).
-	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
-		slog.Error("sitos genesis: load grain base value", "err", gbErr)
-	} else {
-		seed, _ := economy.GenesisFundSeed(p.Population, grainBaseValue, sitosCfg)
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET sitos_fund_silver = $1 WHERE id = $2`, seed, out.SettlementID,
-		); err != nil {
-			slog.Error("sitos genesis seed failed", "err", err, "settlement", out.SettlementID)
-		}
-	}
+	// No Sitos seed. The fund's genesis silver is gone with migration 106 — the
+	// granary holds food, not silver, and it starts empty: a city has no reserve
+	// before its first surplus. The capital's own starting silver still comes
+	// from GenesisSilverLiquid below, which is one of the two sanctioned faucets
+	// (B3: starting silver and mines).
 
 	// Link province back to its controlling settlement.
 	if _, err = tx.Exec(ctx,

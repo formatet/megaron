@@ -87,17 +87,26 @@ func TestApplyAttackerWins_SackLootsRazesAndDisbandsGarrison(t *testing.T) {
 	}
 	var defSettlement uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population, sitos_fund_silver)
-		 VALUES ($1, $2, 'Doomed City', 'khemetiu', $3, 'capital', true, 'active', 9000, 100) RETURNING id`,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
+		 VALUES ($1, $2, 'Doomed City', 'khemetiu', $3, 'capital', true, 'active', 9000) RETURNING id`,
 		worldID, defProv, defender,
 	).Scan(&defSettlement); err != nil {
 		t.Fatalf("create defender settlement: %v", err)
+	}
+	// 100 grain set aside in the Sitos granary — the pot that used to hold the
+	// fund's silver (mig 106). Half of it is looted with everything else.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_granary (settlement_id, good_key, amount) VALUES ($1, 'grain', 100)`,
+		defSettlement,
+	); err != nil {
+		t.Fatalf("seed granary: %v", err)
 	}
 	// Silver 1000 (flat 50% share) + tin 800 (weight 2 → 0.5/2 = 25% share).
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick) VALUES
 		   ($1, 'silver', 1000, 0, 100000, 0),
-		   ($1, 'tin', 800, 0, 100000, 0)`,
+		   ($1, 'tin', 800, 0, 100000, 0),
+		   ($1, 'grain', 0, 0, 100000, 0)`,
 		defSettlement,
 	); err != nil {
 		t.Fatalf("seed defender goods: %v", err)
@@ -199,14 +208,17 @@ func TestApplyAttackerWins_SackLootsRazesAndDisbandsGarrison(t *testing.T) {
 	if tinLeft != 600 {
 		t.Errorf("remaining tin = %v, want 600 (800 - 25%% looted)", tinLeft)
 	}
-	var fundLeft float64
+	// The granary is a separate pot from settlement_goods (mig 106) and takes the
+	// same 50 % cut — but in FOOD now, not silver. A burned city loses half its
+	// reserve and the raiders carry it home; it is looted, not destroyed.
+	var granaryLeft float64
 	if err := pool.QueryRow(ctx,
-		`SELECT sitos_fund_silver FROM settlements WHERE id = $1`, defSettlement,
-	).Scan(&fundLeft); err != nil {
-		t.Fatalf("read sitos fund: %v", err)
+		`SELECT amount FROM settlement_granary WHERE settlement_id = $1 AND good_key = 'grain'`, defSettlement,
+	).Scan(&granaryLeft); err != nil {
+		t.Fatalf("read granary: %v", err)
 	}
-	if fundLeft != 50 {
-		t.Errorf("remaining sitos fund = %v, want 50 (100 - 50%% looted)", fundLeft)
+	if granaryLeft != 50 {
+		t.Errorf("remaining granary grain = %v, want 50 (100 - 50%% looted)", granaryLeft)
 	}
 
 	// A physical, interceptable plunder caravan was dispatched toward the attacker's capital.
@@ -250,11 +262,17 @@ func TestApplyAttackerWins_SackLootsRazesAndDisbandsGarrison(t *testing.T) {
 		manifest[good] = qty
 	}
 	rows.Close()
-	if manifest["silver"] != 550 {
-		t.Errorf("manifest silver = %v, want 550 (500 settlement + 50 sitos fund)", manifest["silver"])
+	if manifest["silver"] != 500 {
+		t.Errorf("manifest silver = %v, want 500 (the city's own; the Sitos pot holds no silver since mig 106)", manifest["silver"])
 	}
 	if manifest["tin"] != 200 {
 		t.Errorf("manifest tin = %v, want 200", manifest["tin"])
+	}
+	// The looted half of the granary rides home on the same caravan. The city's
+	// own grain row is 0, so all 50 of this comes from the reserve — which is the
+	// point: burning a city takes its food stores, it does not evaporate them.
+	if manifest["grain"] != 50 {
+		t.Errorf("manifest grain = %v, want 50 (half the granary's 100)", manifest["grain"])
 	}
 
 	// The defender's garrison dies with the city.

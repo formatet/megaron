@@ -781,19 +781,12 @@ func (h *UnitArrivalHandler) foundColony(
 		return fmt.Errorf("foundColony: create settlement: %w", err)
 	}
 
-	// Sitos genesis seed: sow the colony's fund (pop-scaled, so a small colony and
-	// a large capital get proportionally identical coverage). Silver-invariant
-	// exception, like the colony's start-grain — see temenos_sitos.md.
-	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
-		slog.Error("sitos genesis: load grain base value", "err", gbErr)
-	} else {
-		seed, _ := economy.GenesisFundSeed(population, grainBaseValue, h.sitosCfg)
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET sitos_fund_silver = $1 WHERE id = $2`, seed, colonyID,
-		); err != nil {
-			slog.Error("sitos genesis seed failed", "err", err, "settlement", colonyID)
-		}
-	}
+	// No Sitos seed. The fund this used to sow was silver minted out of nothing
+	// at every founding — pop × 10.5, so a ~2000-pop colony printed ~21 000 into
+	// a world whose entire liquid supply measured 106 678. Migration 106 replaced
+	// the fund with a granary, and the granary starts EMPTY: a new colony has no
+	// reserve because it has not had a harvest yet. It earns one by having a
+	// surplus.
 
 	// Link province back to its controlling settlement.
 	_, _ = tx.Exec(ctx, `UPDATE provinces SET controller_id=$1 WHERE id=$2`, colonyID, provinceID)

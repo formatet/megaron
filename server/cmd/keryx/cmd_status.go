@@ -210,28 +210,59 @@ func statusCmd() *cobra.Command {
 			// adding a new field — best-effort, never blocks `status`.
 			printNoTradeContactsHint(c, cfg.WorldID, prov)
 
-			// Sitos-fonden (grain reserve): the automatic last-resort counterparty
-			// for subsistence goods. Always shown so its silver + reference price
-			// are legible every tick.
+			// Sitos-magasinet: the food the city has set aside, and the number the
+			// whole mechanic turns on — days of food covered. Coverage is what
+			// triggers both legs, so the reserve is printed WITH it and with the
+			// two thresholds; a reserve alone would show an answer and hide the
+			// question. Always shown, empty granary included: "0 undan" on a city
+			// at 4 days' coverage is exactly the state a Wanax must be able to see.
 			if sitos, ok := sett["sitos"].(map[string]any); ok {
-				fund, _ := sitos["fund_silver"].(float64)
-				cap, _ := sitos["fund_cap"].(float64)
-				rt, _ := sitos["fund_rate_per_tick"].(float64)
-				ref, _ := sitos["ref_price_grain"].(float64)
-				floor, _ := sitos["ref_price_floor"].(float64)
-				ceil, _ := sitos["ref_price_ceiling"].(float64)
-				fmt.Printf("Sitos-fonden (spannmålsreserv): %s silver / cap %s · reserven drar ~%.1f silver/tick ur stadens likvida silver tills cap (ingen inkomst) · Referenspris grain: %.2f silver/enhet (golv %.1f, tak %.1f)\n\n",
-					resource(fund), resource(cap), rt, ref, floor, ceil)
+				total, _ := sitos["granary_total"].(float64)
+				gcap, _ := sitos["granary_cap"].(float64)
+				cov, _ := sitos["coverage_days"].(float64)
+				low, _ := sitos["low_days"].(float64)
+				high, _ := sitos["high_days"].(float64)
+				parts := ""
+				if pg, ok := sitos["granary_per_good"].(map[string]any); ok && len(pg) > 0 {
+					keys := make([]string, 0, len(pg))
+					for k := range pg {
+						keys = append(keys, k)
+					}
+					sort.Strings(keys)
+					for _, k := range keys {
+						v, _ := pg[k].(float64)
+						if v <= 0 {
+							continue
+						}
+						if parts != "" {
+							parts += ", "
+						}
+						parts += fmt.Sprintf("%s %s", resource(v), k)
+					}
+					if parts != "" {
+						parts = " (" + parts + ")"
+					}
+				}
+				state := "lägger undan ett tionde av överskottet"
+				switch {
+				case cov < low && total <= 0:
+					state = "TOMT — staden får ingen hjälp"
+				case cov < low:
+					state = "släpper mat till staden"
+				case cov <= high:
+					state = "vilar — varken undan eller ut"
+				}
+				fmt.Printf("Sitos-magasinet: %s undan%s / tak %s · täckning %.1f dygn (magasinet fyller över %.0f, tömmer under %.0f) · %s\n\n",
+					resource(total), parts, resource(gcap), cov, high, low, state)
 			}
 
 			// "Senaste tick"-sammanfattning: summerar journalen (keryx ticklog)
 			// utan att ersätta den.
 			if lt, ok := sett["last_tick"].(map[string]any); ok {
 				tk, _ := lt["tick"].(float64)
-				sitosDelta, _ := lt["sitos_delta"].(float64)
 				sitosInterventions, _ := lt["sitos_interventions"].(float64)
-				sitosGrainIn, _ := lt["sitos_grain_in"].(float64)
-				sitosGrainOut, _ := lt["sitos_grain_out"].(float64)
+				sitosFoodIn, _ := lt["sitos_food_in"].(float64)
+				sitosFoodOut, _ := lt["sitos_food_out"].(float64)
 				prodN := 0
 				if p, ok := lt["production"].(map[string]any); ok {
 					prodN = len(p)
@@ -240,28 +271,26 @@ func statusCmd() *cobra.Command {
 				if c2, ok := lt["consumption"].(map[string]any); ok {
 					consN = len(c2)
 				}
-				// DEL A Sitos-delta-itemisering (megaron_ekonomi_legibilitet_plan.md):
-				// the net silver delta alone hides WHAT happened — when grain
-				// actually moved (rescue "sell" legs bring grain in, surplus "buy"
-				// legs take grain out), spell it out; when the tick only had
-				// silver-only "tax" legs (or nothing), keep today's short form.
-				sitosNote := fmt.Sprintf("Sitos-delta %+.1f silver", sitosDelta)
+				// Sitos-itemisering: what MOVED, in food. There is no silver leg
+				// left to net out (mig 106), so the short form is "magasinet vilade"
+				// rather than a delta of zero silver — a number that would now
+				// always be 0 and tell the Wanax nothing.
+				sitosNote := "Sitos-magasinet vilade"
 				if sitosInterventions > 0 {
 					detail := ""
-					if sitosGrainIn > 0 {
-						detail = fmt.Sprintf("staden fick %s grain", resource(sitosGrainIn))
+					if sitosFoodIn > 0 {
+						detail = fmt.Sprintf("staden fick %s mat ur magasinet", resource(sitosFoodIn))
 					}
-					if sitosGrainOut > 0 {
+					if sitosFoodOut > 0 {
 						if detail != "" {
 							detail += " / "
 						}
-						detail += fmt.Sprintf("gav %s grain", resource(sitosGrainOut))
+						detail += fmt.Sprintf("la undan %s mat", resource(sitosFoodOut))
 					}
-					word := "ingripande"
-					if int(sitosInterventions) != 1 {
-						word += "n"
+					if detail == "" {
+						detail = "ingen mat flyttades"
 					}
-					sitosNote = fmt.Sprintf("%s (%s via %d %s)", sitosNote, detail, int(sitosInterventions), word)
+					sitosNote = detail
 				}
 				fmt.Printf("Senaste tick (%d): %d varor produceras, %d förbrukas, %s  ·  keryx ticklog för detaljer\n\n",
 					int(tk), prodN, consN, sitosNote)
