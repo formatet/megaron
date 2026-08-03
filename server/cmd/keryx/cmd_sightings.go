@@ -53,17 +53,37 @@ size and stance, never a blur), GET /provinces for garrisons (own=false,
 army_total>0). Remembered (tier 2) tiles never appear here — memory carries no
 activity, only live sight does.
 
-Sorted by hex distance from your capital, nearest first.`,
+Distance and bearing are measured from your NEAREST city or unit, nearest
+sighting first — the question a sighting raises is "how close is this to
+something of mine", not "how far is it from my palace".`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 
-			// Own coordinates, to sort by distance and derive a compass bearing —
-			// same resolution order as `keryx map` (capital province, or the
-			// wandering host during founder phase).
-			oq, or, err := ownCoordinates(c)
-			if err != nil {
-				return err
+			// Every own position on the map: cities and units alike. Measuring from
+			// a single seat (capital, or the host during founder phase) reads as a
+			// lie the moment a scout is out — the acceptance run 2026-08-03 reported
+			// "13 hexar NE" for units a spearman was standing 2 hexes from, because
+			// the host had stayed home. `keryx map` still measures from the seat:
+			// there the question genuinely is "what is near my city".
+			own := ownPositions(c)
+			if len(own) == 0 {
+				// No unit and no city on the map — fall back to the seat so the
+				// command still answers instead of erroring out.
+				oq, or, err := ownCoordinates(c)
+				if err != nil {
+					return err
+				}
+				own = [][2]int{{oq, or}}
+			}
+			nearest := func(q, r int) (int, string) {
+				bd, bq, br := -1, own[0][0], own[0][1]
+				for _, p := range own {
+					if d := hexDist(p[0], p[1], q, r); bd < 0 || d < bd {
+						bd, bq, br = d, p[0], p[1]
+					}
+				}
+				return bd, compassDirection(bq, br, q, r)
 			}
 
 			unitsData, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/foreign-units", cfg.WorldID))
@@ -75,8 +95,7 @@ Sorted by hex distance from your capital, nearest first.`,
 				return err
 			}
 			for i := range rawUnits {
-				rawUnits[i].Distance = hexDist(oq, or, rawUnits[i].Q, rawUnits[i].R)
-				rawUnits[i].Bearing = compassDirection(oq, or, rawUnits[i].Q, rawUnits[i].R)
+				rawUnits[i].Distance, rawUnits[i].Bearing = nearest(rawUnits[i].Q, rawUnits[i].R)
 			}
 			sort.Slice(rawUnits, func(i, j int) bool { return rawUnits[i].Distance < rawUnits[j].Distance })
 
@@ -100,10 +119,10 @@ Sorted by hex distance from your capital, nearest first.`,
 				if m.Own || m.ArmyTotal <= 0 {
 					continue
 				}
+				gd, gb := nearest(m.Q, m.R)
 				garrisons = append(garrisons, sightingGarrison{
 					Name: m.Name, Owner: m.Owner, Q: m.Q, R: m.R, ArmyTotal: m.ArmyTotal,
-					Distance: hexDist(oq, or, m.Q, m.R),
-					Bearing:  compassDirection(oq, or, m.Q, m.R),
+					Distance: gd, Bearing: gb,
 				})
 			}
 			sort.Slice(garrisons, func(i, j int) bool { return garrisons[i].Distance < garrisons[j].Distance })
@@ -160,11 +179,47 @@ Sorted by hex distance from your capital, nearest first.`,
 	}
 }
 
-// ownCoordinates resolves the caller's current map position — their capital
-// province, or (during founder phase, before any settlement exists) the
-// wandering host's position. Same resolution order `keryx map` uses, kept
-// local to this file rather than factored out, since it is the only other
-// command that needs "where am I" outside a specific --province flag.
+// ownPositions returns every hex the player occupies — units on the map plus
+// own city markers. Units that are forming/garrisoned carry no q/r of their own
+// and are represented by their settlement's marker, so they are simply skipped.
+func ownPositions(c *Client) [][2]int {
+	var out [][2]int
+	if data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/units", cfg.WorldID)); err == nil {
+		var d struct {
+			Units []struct {
+				Q *int `json:"q"`
+				R *int `json:"r"`
+			} `json:"units"`
+		}
+		if json.Unmarshal(data, &d) == nil {
+			for _, u := range d.Units {
+				if u.Q != nil && u.R != nil {
+					out = append(out, [2]int{*u.Q, *u.R})
+				}
+			}
+		}
+	}
+	if data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID)); err == nil {
+		var ms []struct {
+			Q   int  `json:"q"`
+			R   int  `json:"r"`
+			Own bool `json:"own"`
+		}
+		if json.Unmarshal(data, &ms) == nil {
+			for _, m := range ms {
+				if m.Own {
+					out = append(out, [2]int{m.Q, m.R})
+				}
+			}
+		}
+	}
+	return out
+}
+
+// ownCoordinates resolves the caller's SEAT — their capital province, or
+// (during founder phase, before any settlement exists) the wandering host's
+// position. Same resolution order `keryx map` uses. Only the fallback for a
+// player with nothing on the map; sightings measure from ownPositions.
 func ownCoordinates(c *Client) (int, int, error) {
 	prov := cfg.ProvinceID
 	if prov == "" {

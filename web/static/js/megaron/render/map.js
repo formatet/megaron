@@ -306,6 +306,12 @@ function tileTier(q, r) {
 function isTileLive(q, r) {
   return tileTier(q, r) === 'live';
 }
+
+// Blinkperioden för främmande enheters kontur, i renderframes: 24 på, 24 av
+// (~0,4 s vardera vid rAF-takt). Ligger här för att BÅDE väckningsvillkoret i
+// render() och ritningen längre ned läser samma tal — två kopior skulle glida
+// isär och ge en blink som väcker loopen i otakt med sig själv.
+const FOREIGN_BLINK_FRAMES = 24;
 // ── Hex fill — solid path fill + outline ─────────────────────────────────
 function hexPath(ctx, pts) {
   ctx.beginPath();
@@ -3005,7 +3011,17 @@ export function render() {
   const seaChanged = seaTick !== State.lastSeaTick;
   if (seaChanged) State.lastSeaTick = seaTick;
 
-  if (!State.dirty && !seaChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
+  // Främmande enheters kontur blinkar, och en blink kräver att duken faktiskt
+  // ritas om. Loopen nedan hoppar över omritning när ingenting "rör sig" — och
+  // en stillastående fiende i din synrand är precis det fallet, så konturen
+  // frös och blinkade aldrig (funnet i acceptanskörningen 2026-08-03, inte av
+  // något test: en fryst bild ser identisk ut med en korrekt bild). Väck
+  // loopen på FASBYTET, som havstakten gör, i stället för varje frame.
+  const blinkTick = (State.animFrame / FOREIGN_BLINK_FRAMES) | 0;
+  const blinkChanged = State.foreignUnitData.length > 0 && blinkTick !== State.lastBlinkTick;
+  if (blinkChanged) State.lastBlinkTick = blinkTick;
+
+  if (!State.dirty && !seaChanged && !blinkChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
       && !State.unitsData.some(u => u.status === 'marching')) {
     requestAnimationFrame(render);
     return;
@@ -3406,9 +3422,9 @@ export function render() {
   //
   // The blink is clocked off State.animFrame, never the wall clock: the frozen-
   // frame rigs pin animFrame, so a wall-clock blink would make every screenshot
-  // non-deterministic and every pixel diff meaningless. 24 frames ≈ 0,4 s on,
-  // 0,4 s off at rAF cadence.
-  const foreignOutline = Math.floor(State.animFrame / 24) % 2 === 0 ? FOREIGN_OUTLINE : null;
+  // non-deterministic and every pixel diff meaningless. blinkTick is computed
+  // before the redraw early-out above, which also wakes the loop on phase change.
+  const foreignOutline = blinkTick % 2 === 0 ? FOREIGN_OUTLINE : null;
   for (const u of State.foreignUnitData) {
     const naval = u.category === 'naval';
     const kind = canonicalUnitType(u.type) || (naval ? 'galley' : 'spearman');

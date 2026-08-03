@@ -48,6 +48,10 @@ export const State = {
   animFrame: 0,
   dirty: true,
   lastSeaTick: -1,
+  // Blinkfasen för främmande enheters kontur. Samma roll som lastSeaTick: den
+  // väcker renderloopen vid fasbytet, så blinket inte tystnar när inget annat
+  // rör sig på kartan (fow/frammande-enheter, funnet i acceptanskörningen).
+  lastBlinkTick: -1,
   activityOverlay: false,
 
   // WebSocket liveness — timestamp (ms) of the last frame received on the WS,
