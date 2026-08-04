@@ -58,6 +58,9 @@ const (
 	// Recurring sweep that intercepts in-transit caravans passing an enemy sentry
 	// (movement-motor Slice C). Messengers are never scanned — sacred/uninterceptable.
 	ScheduledInterceptScan ScheduledEventType = "InterceptScan"
+	// ScheduledMarchSightingScan is the recurring sweep that notifies a Wanax the
+	// first time a foreign march becomes visible to them (asynkronitetsgrinden).
+	ScheduledMarchSightingScan ScheduledEventType = "MarchSightingScan"
 	// C1 — unit model; handler registered in C2+.
 	ScheduledUnitArrival ScheduledEventType = "UnitArrival"
 	// Naval sentry patrol: a ship posted on sentry at a coastal_sea hex auto-returns
