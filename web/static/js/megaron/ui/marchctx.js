@@ -316,6 +316,23 @@ export async function sendMarch() {
   const failed = results.filter(r => !r.ok);
   if (failed.length < results.length) {
     track('march_sent', { intent: colonize ? 'colonize' : State.marchCtxDest.isSea ? 'explore' : (stance || 'march') });
+    // Refetch the units the order just moved. Without this the unit stays
+    // 'garrison' in State until the 30s poll — and worse, map.js's 3s fast
+    // poll is GATED on State.unitsData containing a marching unit, so it can
+    // never start itself: the data that would wake it is the data nobody
+    // fetched. The unit is then invisible for up to 30s and reappears already
+    // arrived, which reads as teleportation (Timothy 2026-08-04). Harmless in
+    // the live world where a tick is 3600s — the poll always beats a multi-hour
+    // march — and glaring in the acceptance world at tick 6s, where 30s is five
+    // game hours and the whole march fits between two samples.
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`)
+      .then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
+    // A field unit's order rides a runner, so nothing is marching yet — the
+    // messenger is what the fast poll must see (its own `courierOut` branch).
+    if (results.some(r => r.ok && r.data.status === 'order_dispatched')) {
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`)
+        .then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+    }
   }
   // Arrival line (Fas B): the march response carries the authoritative
   // arrival_tick + derived arrives_at_utc (K4). Same destination for every
