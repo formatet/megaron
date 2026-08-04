@@ -4230,7 +4230,13 @@ export function initMap() {
   // keeps up). Idle — and cheap — whenever nothing is moving.
   setInterval(() => {
     const courierOut = State.messengerData.some(m => m.own);
-    if (!State.unitsData.some(u => u.status === 'marching') && !courierOut) return;
+    // A foreign march in live vision needs the same fast cadence as our own.
+    // The guard used to ask only "is anything of MINE moving?", so a Wanax
+    // standing still sampled an approaching army every 30s and saw it jump
+    // across the map. That is the surface the incoming-march warning is meant
+    // to make watchable — an alert you cannot then follow is half a warning.
+    const foreignMoving = (State.foreignUnitData || []).some(u => u.status === 'marching');
+    if (!State.unitsData.some(u => u.status === 'marching') && !courierOut && !foreignMoving) return;
     refreshTiles();
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
