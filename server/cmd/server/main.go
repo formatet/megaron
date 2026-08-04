@@ -171,6 +171,8 @@ func main() {
 	worker.Register(events.ScheduledTransportArrival, transportH.Handle)
 	interceptH := transport.NewInterceptScanHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
+	marchSightH := combat.NewMarchSightingHandler(pool, scheduler, hub, gameClock)
+	worker.Register(events.ScheduledMarchSightingScan, marchSightH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	// P3 soak fix (2026-07-19): same reasoning as the order-delivery hook above —
@@ -445,6 +447,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledUpkeepTick,
 		events.ScheduledSitosTick,
 		events.ScheduledInterceptScan,
+		events.ScheduledMarchSightingScan,
 	}
 
 	for _, wid := range worldIDs {

@@ -107,6 +107,57 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "UpkeepUnpaid" {
 		printUpkeepUnpaidLine(n)
 	}
+	if n.Kind == "ForeignMarchSighted" {
+		printForeignMarchSightedLine(n)
+	}
+}
+
+// printForeignMarchSightedLine renders the human-readable follow-up to a
+// ForeignMarchSighted notification — the notice that starts the clock in the
+// asynchronicity gate. The three facts a Wanax must be able to act on are WHO,
+// WHERE IT IS GOING and WHEN IT LANDS, and the landing is given as a TICK because
+// that is the unit the player plans in (speldygn, never wall clock).
+//
+// The threatened-city clause is the whole point of the urgent level: "something is
+// moving out there" and "an army is walking into Pylos" are the two ends of the
+// irreversibility gradient (Timothy 2026-08-03) and must not read alike.
+func printForeignMarchSightedLine(n notificationItem) {
+	var body struct {
+		Owner         string `json:"owner"`
+		UnitType      string `json:"unit_type"`
+		Size          int    `json:"size"`
+		Stance        string `json:"stance"`
+		TargetQ       int    `json:"target_q"`
+		TargetR       int    `json:"target_r"`
+		ArriveTick    int    `json:"arrive_tick"`
+		ThreatensName string `json:"threatens_name"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	owner := body.Owner
+	if owner == "" {
+		owner = "An unknown Wanax"
+	} else {
+		owner += "'"
+		if !strings.HasSuffix(body.Owner, "s") {
+			owner += "s"
+		}
+	}
+	unitType := body.UnitType
+	if unitType == "" {
+		unitType = "force"
+	}
+	stance := ""
+	if body.Stance != "" {
+		stance = ", " + body.Stance
+	}
+	threat := ""
+	if body.ThreatensName != "" {
+		threat = " — YOUR CITY " + body.ThreatensName
+	}
+	fmt.Printf("      %s %s (%d%s) marching to (%d,%d)%s — lands tick %d\n",
+		owner, unitType, body.Size, stance, body.TargetQ, body.TargetR, threat, body.ArriveTick)
 }
 
 // printUpkeepUnpaidLine renders the human-readable follow-up to an UpkeepUnpaid

@@ -105,7 +105,8 @@ export function initWS() {
     const PERSISTENT_KINDS = new Set([
       'BuildComplete','GoodsCrafted','TrainComplete','ArmyArrival','ColonyFounded',
       'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
-      'UnitAttrition','UnitDeserted','UpkeepUnpaid','OfferAccepted','OfferDeclined','OfferExpired',
+      'UnitAttrition','UnitDeserted','UpkeepUnpaid','ForeignMarchSighted',
+      'OfferAccepted','OfferDeclined','OfferExpired',
     ]);
     ws.onmessage = e => {
       State.lastWsMsgAt = Date.now();
@@ -158,6 +159,15 @@ export function initWS() {
         // not shown in any drawer), so there's nothing to refetch — just the
         // chip, which is the entire point of this notification existing.
         window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+      }
+      if (msg.kind === 'ForeignMarchSighted') {
+        // A foreign march just entered this Wanax's live tier. Unlike UpkeepUnpaid
+        // above, the refetch IS warranted: the march is a new map actor, and the
+        // whole value of this notification is the travel time still left to answer
+        // it — waiting for the next 30-second poll spends that time for nothing.
+        window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        coalesce('foreignUnits', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`)
+          .then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; })));
       }
       if (['OfferAccepted','OfferDeclined','OfferExpired'].includes(msg.kind)) {
         // Trade offer resolution — the offer's originator (see economy/trade.go,
