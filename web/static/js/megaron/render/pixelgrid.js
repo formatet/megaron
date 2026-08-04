@@ -131,7 +131,14 @@ export function cube(g, x, y, w, h, opts = {}) {
     // ger klungan valörvariation, inte bara formvariation.
     const gx = x + (s > 0 ? w - 1 : 0) + dx;
     for (let yy = y - dy; yy < y + roofH - dy; yy++) set(g, gx, yy, 'r');
-    for (let yy = y + roofH - dy; yy < y + h - dy; yy++) set(g, gx, yy, s > 0 ? 'd' : 'p');
+    // Vänstergaveln var 'p' — SAMMA ton som fasaden den sitter bredvid (L 196).
+    // Halva klungan hade därmed en osynlig sida, och grannhus som möttes
+    // vänstergavel mot fasad rann ihop till en klump: den enda separationen var
+    // fasadens 1 px 'P'-kant. Ljuset står uppifrån VÄNSTER, så en vänstergavel
+    // är husets solsida och ska bära kartans ljusaste ton. Nu har varje hus tre
+    // valörer i sin egen kropp — takyta M 163, fasad p 196, gavel P 228 eller
+    // d 143 — och två grannhus möts alltid över ett steg på minst 50 enheter.
+    for (let yy = y + roofH - dy; yy < y + h - dy; yy++) set(g, gx, yy, s > 0 ? 'd' : 'P');
   }
   for (let yy = 0; yy < h; yy++) {
     for (let xx = 0; xx < w; xx++) {

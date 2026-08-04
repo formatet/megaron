@@ -119,7 +119,7 @@ function tower(g, x, y, h) {
 //   gård → bakre mur → husen bakifrån och fram → främre mur → port → tinnar.
 // Den bakre muren måste ligga under husen (vi ser den bortom dem) och den
 // främre över (den står framför dem och skymmer deras fötter, princip 23).
-function build(w, h, pts, wl, place) {
+function build(w, h, pts, wl, place, towers = []) {
   const g = newGrid(w, h);
   const poly = polyRows(pts);
   plateFill(g, poly);
@@ -138,16 +138,24 @@ function build(w, h, pts, wl, place) {
     raiseWall(g, ring.front, wallH);
     gate(g, poly, wl, 5 + wl);
     if (wl >= 2) crenels(g, poly, wl);
-    const first = poly.rows.find(Boolean);
-    if (wl >= 2) tower(g, first[1] - 4, poly.y0 + 3, 3 + wl);
-    if (wl >= 3) tower(g, first[0], poly.y0 + 3, 3 + wl);
+    // Tornen satt förut på ÖVERSTA radens två ändar, uträknade ur `poly.rows`.
+    // Med ett långt vågrätt bakre murlöp hamnar båda i samma ände av staden, och
+    // de bröt aldrig siluetten i sidled — de stod mitt inne i husfältet. Nu är
+    // de en handsatt lista per led (princip 34: ett halvdussin element bärs av
+    // en koordinatlista), ankrad i murringens FAKTISKA hörn. `[x, y, minNivå]`.
+    //
+    // De ritas sist, som förut. Det är rätt just därför att de sitter i
+    // ytterhörnen: ingen husrad ligger framför ett hörntorn, så inget behöver
+    // skymma det — och därmed rubbas inte djupordningen på rad 118.
+    for (const [tx, ty, min] of towers)
+      if (wl >= min) tower(g, tx, ty, 3 + wl);
   }
-  const trimmed = trimTop(g);
+  const trimmed = trimBlank(g);
   const feet = footSpans(trimmed);
   outline(trimmed);
   paintFeet(trimmed, feet);
   const sprite = toRuns(trimmed);
-  sprite.yardTop = yardTop(poly, w, g.h - trimmed.h);
+  sprite.yardTop = yardTop(poly, w, trimmed.dy);
   return sprite;
 }
 
@@ -169,20 +177,31 @@ function yardTop(poly, w, dy) {
   return top;
 }
 
-/** Skalar bort tomma rader överst. Ankringen (`cityTop`) räknar ur `sprite.h`,
- *  och allt chrome (standar, aktivitetsmärke) ankras mot samma höjd — en handfull
- *  tomma rader i toppen hade fått vimpeln att sväva långt ovanför taket den ska
- *  röra (princip 25). Bara toppen trimmas: bredden är författad symmetrisk och
- *  botten ÄR foten. */
-function trimTop(g) {
-  let first = g.h;
-  for (let y = 0; y < g.h && first === g.h; y++)
-    for (let x = 0; x < g.w; x++) if (at(g, x, y) !== '.') { first = y; break; }
-  if (first <= 0 || first >= g.h) return g;
-  const out = newGrid(g.w, g.h - first);
-  for (let y = first; y < g.h; y++)
+/** Skalar bort tomma rader i BÅDA ändar. Ankringen (`cityTop`/`cityFoot`) och allt
+ *  chrome (standar, aktivitetsmärke, garnisonsprick) räknar ur `sprite.h` — så
+ *  `h` måste vara massans verkliga höjd, annars ankras allting mot luft.
+ *
+ *  Funktionen trimmade förut bara toppen, med motiveringen "botten ÄR foten".
+ *  Det stämde inte: rutnätet är författat med marginal, och `TOWN` bar fem tomma
+ *  rader under foten (h = 41 för en massa som slutar på rad 35). Vimpeln satt
+ *  därmed rätt — den ankras i toppen — men garnisonspricken pekade fem pixlar ned
+ *  i tomrummet, och centreringen 2026-08-04 centrerade rutnätet i stället för
+ *  staden. Hittat genom att dumpa spriten som ASCII, inte i en skärmdump: fem
+ *  tomma rader syns inte i en bild, bara i datan.
+ *
+ *  Bredden lämnas: den är författad symmetrisk och `ox` räknar ur `w >> 1`.
+ *  Returnerar rutnätet med `dy` = antal bortskalade rader i TOPPEN, som `yardTop`
+ *  behöver för att räkna om gårdens koordinater. */
+function trimBlank(g) {
+  let first = -1, last = -1;
+  for (let y = 0; y < g.h; y++)
+    for (let x = 0; x < g.w; x++)
+      if (at(g, x, y) !== '.') { if (first < 0) first = y; last = y; break; }
+  if (first < 0) return Object.assign(g, { dy: 0 });
+  const out = newGrid(g.w, last - first + 1);
+  for (let y = first; y <= last; y++)
     for (let x = 0; x < g.w; x++) set(out, x, y - first, at(g, x, y));
-  return out;
+  return Object.assign(out, { dy: first });
 }
 
 
@@ -224,8 +243,8 @@ function packHouses(poly, seed, reserved = []) {
     const r = poly.rows[i];
     if (!r) continue;
     const y = poly.y0 + i;
-    let x = r[0] + 2, k = 0;
-    while (x < r[1] - 6) {
+    let x = r[0] + 4, k = 0;
+    while (x < r[1] - 8) {
       const hs = hash3(seed, band, k++);
       // Vridningen kommer ur takytans RIKTNING, inte ur att huset sträcks ut.
       // Två utkast föll på samma missförstånd: att ett hus vänt på tvären måste
@@ -239,6 +258,12 @@ function packHouses(poly, seed, reserved = []) {
       // vridningen. Höger gavel ligger i skugga och vänster i ljus, så
       // blandningen ger klungan valörvariation på köpet.
       const w = 7 + (hs % 6);
+      // Djup 2–3, inte 1–2. Takets OVANSIDA (M/m) är den enda stora ljusa ytan
+      // ett hus har, och dess höjd ÄR djupet: vid djup 1 var den en enda rad och
+      // klungan läste som en fasadrad utan tak. Vid 2–3 blir ytan 2–3 rader och
+      // varje hus får en läsbar takruta att vika bort med. Kubstämpeln bär enligt
+      // sin egen kommentar 5–6 utan att formen havererar; 3 är taket här därför
+      // att gårdens övre band annars trycker upp taken ur rutnätet.
       const depth = (1 + ((hs >> 18) % 2)) * ((hs >> 15) & 1 ? 1 : -1);
       const bh = 7 + ((hs >> 5) % 5);
       const foot = y + (((hs >> 10) % 5) - 2);
@@ -285,15 +310,17 @@ function packHouses(poly, seed, reserved = []) {
 // dem. Det ENDA ledet som ryms innanför hexen, och det är dess besked: här bor
 // ännu inte tillräckligt många för att marken ska märka det.
 const HAMLET = wl => build(40, 30, [
-  [11, 11], [25, 11], [31, 13], [34, 17], [28, 22], [17, 25], [8, 24], [3, 17], [4, 13],
-], wl, poly => packHouses(poly, 0x481, []));
+  [10, 11], [27, 11], [28, 14], [33, 14], [33, 21], [27, 24], [12, 24], [4, 20], [4, 14],
+], wl, poly => packHouses(poly, 0x481, []),
+  [[29, 17, 2], [2, 17, 2], [23, 23, 3], [9, 23, 3]]);
 
 // Led 1 — TOWN (62 px). Allt från 800 invånare och uppåt: myllret innanför
 // ringmuren. Det här ledet bär numera hela spannet upp till Knossos, så det får
 // inte läsa som "mellanstor" — det ska läsa som EN STAD.
 const TOWN = wl => build(62, 42, [
-  [17, 13], [37, 13], [47, 16], [54, 22], [47, 30], [32, 35], [16, 34], [5, 25], [6, 18],
-], wl, poly => packHouses(poly, 0x1d7, []));
+  [13, 13], [40, 13], [41, 17], [56, 17], [56, 30], [48, 35], [20, 35], [8, 29], [7, 18],
+], wl, poly => packHouses(poly, 0x1d7, []),
+  [[52, 21, 2], [5, 22, 2], [44, 33, 3], [14, 33, 3]]);
 
 /** CITY_SPRITES[led][murnivå] — 2×4, genererade en gång vid modulladdning. */
 export const CITY_SPRITES = [HAMLET, TOWN]
