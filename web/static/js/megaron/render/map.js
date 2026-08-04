@@ -10,7 +10,7 @@ import {
 import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
-import { drawCityMass, citySprite, CITY_BASE_OFFSET } from './citysprites.js';
+import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep } from './camera.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -2623,7 +2623,7 @@ function drawCityBank(ctx, cx, cy, sprite) {
   const STEP = 2;
   const { yard, yardMin, colL, colR, botMax, footFill } = spriteGround(sprite);
   const ox = Math.round(cx) - (sprite.w >> 1);
-  const oy = Math.round(cy) + CITY_BASE_OFFSET - sprite.h;
+  const oy = Math.round(cy) + cityTop(sprite);
   const xL = ox + colL, xR = ox + colR;
   const y1 = oy + botMax + BANK_MAX;
   // En rad ovanför gården: konturpasset lägger bläck runt hela massan, och en
@@ -2725,7 +2725,7 @@ function drawProvince(ctx, cx, cy, p) {
     drawCityBank(ctx, cx, cy, citySprite(tier, walls));
 
   const sprite = drawCityMass(ctx, tier, walls, cx, cy);
-  const top = cy + CITY_BASE_OFFSET - sprite.h;
+  const top = cy + cityTop(sprite);
 
   // Standaret på taknocken — ägarskapets enda färgsignal på kartan. Den reser
   // sig UR massan, inte ovanför den: 0,6 px stång i accentfärg svävade löst över
@@ -2747,7 +2747,7 @@ function drawProvince(ctx, cx, cy, p) {
     ctx.fillStyle = '#8B1A1A';
     ctx.strokeStyle = '#3A0A0A';
     ctx.lineWidth = 0.5;
-    const gx = cx + (sprite.w >> 1) - 4, gy = cy + CITY_BASE_OFFSET - 4;
+    const gx = cx + (sprite.w >> 1) - 4, gy = cy + cityFoot(sprite) - 4;
     ctx.fillRect(gx, gy, 3, 3);
     ctx.strokeRect(gx, gy, 3, 3);
     ctx.fillStyle = '#E8B0B0';
@@ -2764,12 +2764,14 @@ function drawLabel(ctx, cx, cy, text, own) {
   ctx.textBaseline = 'top';
   ctx.strokeStyle = '#000000aa';
   ctx.lineWidth = 2;
-  // Parad med CITY_BASE_OFFSET: massans fot ligger på cy+17, etiketten börjar
-  // direkt under den — alltså i praktiken PÅ hexens underkant (halva höjden är
-  // 19), vilket är precis där Timothy vill ha den (2026-07-27). Det är den
-  // flytten som gav massan de sex pixlar som annars låg som tom marginal under
-  // staden och gjorde hexen till en bricka. Ändras det ena måste det andra
-  // följa med.
+  // Etiketten står PÅ hexens underkant (halva höjden är 19), vilket är precis
+  // där Timothy vill ha den (2026-07-27): namnet är massans sockel, inte en lös
+  // rad under den. Sedan centreringen 2026-08-04 (`cityTop`) räcker inte längre
+  // ett fast talpar — `TOWN` är 41 px hög i en 38 px hög hex och når därmed 2 px
+  // NEDANFÖR hexstrecket. Etiketten ligger kvar på 19 och massans fransade
+  // gårdskant får löpa in bakom textens mörka stroke; det är fransen, inte
+  // byggda pixlar, som möter bokstäverna. Ändras ankringen måste den här raden
+  // provas om i `tools/shot.py cities` vid 1:1.
   ctx.strokeText(text, cx, cy + 19);
   ctx.fillStyle = own ? '#F9E79F' : '#E8D0A8';
   ctx.fillText(text, cx, cy + 19);
@@ -2784,7 +2786,7 @@ function drawActivityBadge(ctx, cx, cy, p) {
   // inne i en palatsstads takrader, och ett märke placerat vid massans
   // vänstra kant svävar i tomrummet ovanför den lägre flygeln.
   const sprite = citySprite(p.size_tier || 0, p.walls || 0);
-  const bx = cx - 9, by = cy + CITY_BASE_OFFSET - sprite.h - 5;
+  const bx = cx - 9, by = cy + cityTop(sprite) - 5;
   if (p.build_active) {
     // Hammer head (orange)
     ctx.fillStyle = '#D4780A';

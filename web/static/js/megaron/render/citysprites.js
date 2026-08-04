@@ -169,8 +169,8 @@ function yardTop(poly, w, dy) {
   return top;
 }
 
-/** Skalar bort tomma rader överst. `CITY_BASE_OFFSET` räknar från massans FOT,
- *  och allt chrome (standar, aktivitetsmärke) ankras mot `sprite.h` — en handfull
+/** Skalar bort tomma rader överst. Ankringen (`cityTop`) räknar ur `sprite.h`,
+ *  och allt chrome (standar, aktivitetsmärke) ankras mot samma höjd — en handfull
  *  tomma rader i toppen hade fått vimpeln att sväva långt ovanför taket den ska
  *  röra (princip 25). Bara toppen trimmas: bredden är författad symmetrisk och
  *  botten ÄR foten. */
@@ -299,32 +299,35 @@ const TOWN = wl => build(62, 42, [
 export const CITY_SPRITES = [HAMLET, TOWN]
   .map(make => [0, 1, 2, 3].map(wl => make(wl)));
 
-// Basen (massans nedersta rad) hamnar så här långt under hexcentrum.
+// ── Var massan sitter i hexen ────────────────────────────────────────────
 //
-// Staden sitter **inte** centrerad på hexen utan står PÅ dess nedre del
-// (Timothy 2026-07-27). Centrerad läste massan och namnet som två skilda
-// föremål. Med foten nere pekar massan ut hexen den står på, och namnet blir
-// dess sockel i stället för en lös rad under den.
+// **Staden utgår från hexens CENTRUM** (Timothy 2026-08-04). Den växer symmetriskt
+// uppåt och nedåt ur mittpunkten, så ett led som växer breder ut sig åt båda hållen
+// i stället för att skjuta upp ur sin fot.
 //
-// **17, inte 11** (Timothy 2026-07-27, andra omgången): med 11 stannade massan
-// sex pixlar ovanför hexens underkant och den nedre fjärdedelen läste som TOM —
-// en marginal runt märket, alltså en bricka igen, även när etiketten stod där.
-// Namnet får stå i princip på hexstrecket, och då kan foten gå ned till 17.
-// Hexens halva höjd är 19, så massan når nu marken den står på.
+// Detta ERSÄTTER den fasta `CITY_BASE_OFFSET = 17` (Timothy 2026-07-27, som i sin
+// tur ersatte 11). Den regeln la foten på cy+17 och lät massan växa uppåt därifrån,
+// vilket gjorde att `TOWN` — 41 px hög i en 38 px hög hex — hamnade med sitt spann på
+// −24..+17: fyra pixlar tyngdpunkt ovanför hexens mitt, alltså "övre mitten".
+// Det ursprungliga skälet till 17 (namnet ska vara massans sockel, ingen tom
+// marginal under staden) bärs nu av att massan är HÖGRE än hexen — den når
+// underkanten ändå, utan att behöva ankras i den.
 //
-// Massan växer alltid UPPÅT ur foten — aldrig nedåt. Under den ligger etiketten,
-// och en stad som hänger ned över sitt eget namn gör namnet oläsligt.
-// Värdet är parat med `drawLabel`-offseten i `render/map.js`: ändras det ena
-// måste det andra följa med, annars äter massan sitt namn.
+// Sex ställen räknade förut ut `cy + CITY_BASE_OFFSET - sprite.h` var för sig
+// (massan, banken, standaret, garnisonspricken, riggen ×2). Ankringen bor nu i
+// EN funktion; en offset som beräknas på sex ställen är sex chanser att de glider isär.
 //
-// ── Städer TORNAR inte (Timothy 2026-07-27) ──────────────────────────────
+// ── Städer TORNAR inte (Timothy 2026-07-27, bekräftad 2026-08-04) ────────
 // Bergen får resa sig över allt; staden får inte. En liten stad ska se
 // **innästlad** ut i sin omgivning och en stor ska vara **en del av** den.
-// Därför växer leden i BREDD, inte i höjd: anaktoron är 58 px mot hexens 44 men
-// bara 36 mot dess 38, alltså precis så hög att den fyller sin ruta och inte en
-// pixel högre. Höjd är bergens språk, utbredning är stadens. Den dagen ett led
-// behöver mer tyngd: gör det bredare och lägre, aldrig högre.
-export const CITY_BASE_OFFSET = 17;
+// Därför växer leden i BREDD, inte i höjd. Sedan 2026-08-04 gäller taket åt BÅDA
+// hållen: inget dominant block, varken högre eller bredare än sina grannar —
+// anaktoron syns i stadsvyn, inte i stadsmassan på kartan.
+
+/** Massans överkant relativt hexcentrum. Enda sanningen om ankringen. */
+export const cityTop = sprite => -(sprite.h >> 1);
+/** Massans fot (raden UNDER nedersta pixeln) relativt hexcentrum. */
+export const cityFoot = sprite => sprite.h - (sprite.h >> 1);
 
 const clamp = (n, hi) => Math.max(0, Math.min(hi, n | 0));
 export const citySprite = (tier, walls) =>
@@ -334,7 +337,7 @@ export const citySprite = (tier, walls) =>
 export function drawCityMass(ctx, tier, walls, cx, cy) {
   const sprite = citySprite(tier, walls);
   const ox = Math.round(cx) - (sprite.w >> 1);
-  const oy = Math.round(cy) + CITY_BASE_OFFSET - sprite.h;
+  const oy = Math.round(cy) + cityTop(sprite);
   for (const r of sprite.runs) {
     ctx.fillStyle = CITY_PALETTE[r.ch];
     ctx.fillRect(ox + r.x, oy + r.y, r.n, 1);

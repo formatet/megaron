@@ -74,7 +74,7 @@
 <script type="module">
 import { State } from '/static/js/megaron/state.js';
 import { render, canvas, SCALE, hexPx, renderTimings, spriteGround } from '/static/js/megaron/render/map.js';
-import { citySprite, CITY_BASE_OFFSET } from '/static/js/megaron/render/citysprites.js';
+import { citySprite, cityTop } from '/static/js/megaron/render/citysprites.js';
 
 const ax = (col, row) => ({ q: col, r: row - Math.floor(col / 2) });
 const SCENE = window.__SCENE;
@@ -253,7 +253,7 @@ window.SHOWCASE = {
       const { foot } = spriteGround(s);
       const { x, y } = hexPx(p.q, p.r);
       const ox = Math.round(x) - (s.w >> 1);
-      const oy = Math.round(y) + CITY_BASE_OFFSET - s.h;
+      const oy = Math.round(y) + cityTop(s);
       return {
         name: p.name, k,
         sx: State.camera.x + ox * k,

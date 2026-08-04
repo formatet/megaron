@@ -12,7 +12,7 @@
 // ljuger: fyra iterationer i rad såg bra ut vid 5× och läste som en grå klump på
 // kartan. Det som räknas är hur märket ser ut i den storlek det faktiskt får.
 import { execFileSync } from 'node:child_process';
-import { CITY_PALETTE, CITY_SPRITES, CITY_BASE_OFFSET } from
+import { CITY_PALETTE, CITY_SPRITES, cityTop } from
   '../web/static/js/megaron/render/citysprites.js';
 import { ACTOR_PALETTE, ACTOR_SPRITES, NEUTRAL_ACCENT } from
   '../web/static/js/megaron/render/actorsprites.js';
@@ -88,7 +88,7 @@ CITY_SPRITES.forEach((byWall, row) => {
   byWall.forEach((s, col) => {
     const hy = (CELL_H - HEX_H) >> 1;
     const bx = PAD + (HEX_W >> 1) - (s.w >> 1);
-    const by = hy + (HEX_H >> 1) + CITY_BASE_OFFSET - s.h;
+    const by = hy + (HEX_H >> 1) + cityTop(s);
     const abx = PAD + HEX_W + 6;
     const aby = hy + (HEX_H >> 1) + 8 - actor.h + 2;
 
