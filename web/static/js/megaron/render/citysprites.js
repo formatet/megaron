@@ -133,7 +133,7 @@ function build(w, h, pts, wl, place, towers = []) {
   // det bakom. Utan sorteringen blir klungan platt oavsett hur volymerna ser ut.
   place(poly).sort((a, b) => a[1] - b[1]).forEach(
     ([x, foot, w2, h2, depth]) =>
-      cube(g, x, foot - h2, w2, h2, { depth, door: true }));
+      cube(g, x, foot - h2, w2, h2, { depth, door: true, parapet: true }));
   if (wl) {
     raiseWall(g, ring.front, wallH);
     gate(g, poly, wl, 5 + wl);
@@ -230,62 +230,44 @@ const hash3 = (a, b, c) => {
   return (h ^ (h >>> 13)) >>> 0;
 };
 
-function packHouses(poly, seed, reserved = []) {
-  const out = [], n = poly.rows.length;
-  // Banden går ända fram till murens fot — annars samlas bebyggelsen i gårdens
-  // övre halva och den nedre blir en sandbank; referensarkets städer har hus
-  // ända ut i muren och marken syns bara som gränder.
-  //
-  // Men de får inte ligga TÄTARE än var femte rad. Ett utkast på var fjärde lät
-  // varje band svälja bandet bakom sig och hela staden blev en grötig kulle:
-  // det är takraderna som skiljer husen åt, och de måste synas.
-  for (let i = 4, band = 0; i < n - 2; i += 5, band++) {
-    const r = poly.rows[i];
-    if (!r) continue;
-    const y = poly.y0 + i;
-    let x = r[0] + 4, k = 0;
-    while (x < r[1] - 8) {
-      const hs = hash3(seed, band, k++);
-      // Vridningen kommer ur takytans RIKTNING, inte ur att huset sträcks ut.
-      // Två utkast föll på samma missförstånd: att ett hus vänt på tvären måste
-      // vara smalt och djupt. Ett hus med 5 px fasad och 6 px djup får en takyta
-      // som är 17 px bred och 6 hög — nittio procent tak, alltså en planka som
-      // skjuter tvärs över staden. Referensens hus är i stort sett kubiska; det
-      // ögat läser som orientering är åt vilket håll takrutan viker bort, och
-      // det syns redan vid tre pixlars djup.
-      //
-      // Djupet hålls därför i proportion till bredden och TECKNET bär
-      // vridningen. Höger gavel ligger i skugga och vänster i ljus, så
-      // blandningen ger klungan valörvariation på köpet.
-      const w = 7 + (hs % 6);
-      // Djup 2–3, inte 1–2. Takets OVANSIDA (M/m) är den enda stora ljusa ytan
-      // ett hus har, och dess höjd ÄR djupet: vid djup 1 var den en enda rad och
-      // klungan läste som en fasadrad utan tak. Vid 2–3 blir ytan 2–3 rader och
-      // varje hus får en läsbar takruta att vika bort med. Kubstämpeln bär enligt
-      // sin egen kommentar 5–6 utan att formen havererar; 3 är taket här därför
-      // att gårdens övre band annars trycker upp taken ur rutnätet.
-      const depth = (1 + ((hs >> 18) % 2)) * ((hs >> 15) & 1 ? 1 : -1);
-      const bh = 7 + ((hs >> 5) % 5);
-      const foot = y + (((hs >> 10) % 5) - 2);
-      const box = [x, foot - bh, x + w, foot];
-      const blocked = reserved.some(q =>
-        box[0] < q[2] && box[2] > q[0] && box[1] < q[3] && box[3] > q[1]);
-      if (!blocked) {
-        out.push([x, foot, w, bh, depth]);
-        // Indragen ÖVERVÅNING. Referensarket (Timothy 2026-07-27) visar en
-        // egeisk lerstad som en stapel: husen har våningar som dras in och
-        // terrasseras, och det är staplingen — inte antalet hus — som ger
-        // massan liv. Den sätts på huset TAK och får därmed en mindre fot, så
-        // sorteringen ritar den före sin egen bas: en indragen våning står
-        // längre BORT från betraktaren, precis som den ska.
-        if (w >= 9 && ((hs >> 25) & 1) === 0)
-          out.push([x + 2, foot - bh + 2, w - 5, 4 + ((hs >> 7) % 3), depth]);
-      }
-      x += w + 1 + ((hs >> 20) % 2);
-    }
-  }
-  return out;
-}
+// ── VOLYM OCH ASYMMETRI (Timothy 2026-08-04) ────────────────────────────
+// Kvartersgeneratorn är ersatt av handsatta listor. Skälet är MÄTT, inte tyckt:
+//
+//   · PLATTHET. Kubens takyta är `|depth|` rader mot en fasad på 5–9. Med det
+//     gamla djupet 1–2 blev förhållandet 0,20–0,22. Mätt i förlagan
+//     (`img/Gemini_Generated_Image_ixci5dixci5dixci.png`) är takytan **45 %** av
+//     fasadens höjd. Vi var alltså faktor två för platta. Djupet är nu 3–4.
+//   · ANTALET. Ett hus med 9 px fasad och djup 4 tar 17 px i bredd. Tretton
+//     sådana får inte plats på 62 px utan att taken flyter ihop — vilket är
+//     exakt vad ett tidigare försök med djup 3 gjorde, och som då feltolkades
+//     som att djupet var fel. Det var ANTALET. Sju hus, inte tretton.
+//   · SYMMETRIN. Banden låg var femte rad över en spegelbalanserad polygon, och
+//     resultatet läste som ett mönster. Förlagans byggnader svarar inte mot
+//     varandra: olika djup, blandade vridningar, ingen mittaxel.
+//
+// Princip 34 säger att en handsatt lista bär upp till ett halvdussin element och
+// att fler än så tappar kompositionen. Det gällde NITTON hus. Sju ligger inom
+// det spannet, och det är just därför antalet fick sjunka.
+//
+// [x, fot, bredd, höjd, djup] — djupets TECKEN är vridningen: positivt viker
+// huset bort uppåt-höger, negativt uppåt-vänster.
+
+const TOWN_HOUSES = [
+  [ 9, 22, 10, 11,  3],
+  [24, 20,  8, 13,  4],
+  [38, 23, 11, 10, -3],
+  [49, 21,  7,  9,  3],
+  [11, 29,  9,  9, -3],
+  [26, 31, 12,  8,  3],
+  [44, 28,  8, 10,  2],
+];
+
+const HAMLET_HOUSES = [
+  [ 8, 19,  9, 10,  3],
+  [19, 17,  8, 11, -3],
+  [24, 23, 10,  8,  3],
+  [ 6, 24,  7,  7,  2],
+];
 
 // ── De två leden ────────────────────────────────────────────────────────
 // Måtten står mot hexen, som är 44×38 logiska px.
@@ -310,17 +292,17 @@ function packHouses(poly, seed, reserved = []) {
 // dem. Det ENDA ledet som ryms innanför hexen, och det är dess besked: här bor
 // ännu inte tillräckligt många för att marken ska märka det.
 const HAMLET = wl => build(40, 30, [
-  [10, 11], [27, 11], [28, 14], [33, 14], [33, 21], [27, 24], [12, 24], [4, 20], [4, 14],
-], wl, poly => packHouses(poly, 0x481, []),
-  [[29, 17, 2], [2, 17, 2], [23, 23, 3], [9, 23, 3]]);
+  [11, 11], [28, 11], [31, 15], [33, 22], [26, 26], [10, 25], [5, 21], [4, 14],
+], wl, () => HAMLET_HOUSES,
+  [[29, 18, 2], [2, 20, 2], [22, 25, 3]]);
 
 // Led 1 — TOWN (62 px). Allt från 800 invånare och uppåt: myllret innanför
 // ringmuren. Det här ledet bär numera hela spannet upp till Knossos, så det får
 // inte läsa som "mellanstor" — det ska läsa som EN STAD.
 const TOWN = wl => build(62, 42, [
-  [13, 13], [40, 13], [41, 17], [56, 17], [56, 30], [48, 35], [20, 35], [8, 29], [7, 18],
-], wl, poly => packHouses(poly, 0x1d7, []),
-  [[52, 21, 2], [5, 22, 2], [44, 33, 3], [14, 33, 3]]);
+  [12, 13], [37, 13], [41, 18], [56, 18], [55, 31], [44, 36], [19, 35], [8, 30], [6, 19],
+], wl, () => TOWN_HOUSES,
+  [[52, 23, 2], [4, 24, 2], [41, 34, 3]]);
 
 /** CITY_SPRITES[led][murnivå] — 2×4, genererade en gång vid modulladdning. */
 export const CITY_SPRITES = [HAMLET, TOWN]

@@ -140,6 +140,17 @@ export function cube(g, x, y, w, h, opts = {}) {
     // d 143 — och två grannhus möts alltid över ett steg på minst 50 enheter.
     for (let yy = y + roofH - dy; yy < y + h - dy; yy++) set(g, gx, yy, s > 0 ? 'd' : 'P');
   }
+  // PARAPETEN — den låga muren runt det platta taket. Utan den är takytan en
+  // SKIVA som ligger på en låda; med den blir taket en behållare, och volymen
+  // läser (Timothy 2026-08-04: "anledningen till att de blir fula är platthet").
+  // Den sitter på parallellogrammets BORTRE kant, den enda av takets fyra sidor
+  // som syns mot himlen härifrån — de tre andra döljs av taket självt.
+  // Mätt mot förlagan: takytan ska vara ~45 % av fasadens höjd, och en rand som
+  // saknar sin lip läser som 20 % oavsett hur djup volymen är.
+  if (opts.parapet && a) {
+    for (let xx = 0; xx < w; xx++)
+      set(g, x + xx + s * a, y - a, xx >= w - 2 ? 'd' : 'P');
+  }
   for (let yy = 0; yy < h; yy++) {
     for (let xx = 0; xx < w; xx++) {
       let ch;
