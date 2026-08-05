@@ -18,9 +18,9 @@ func TestUnitUpkeep(t *testing.T) {
 		wantGrain  float64
 		wantSilver float64
 	}{
-		{"land spearman full size", "spearman", "land", 100, 5, 2},
-		{"land spearman 141 scales up", "spearman", "land", 141, 7.05, 2.82},
-		{"land elite half size", "elite_infantry", "land", 50, 3, 2},
+		{"land spearman full size", "spearman", "land", 100, 50, 2},
+		{"land spearman 141 scales up", "spearman", "land", 141, 70.5, 2.82},
+		{"land elite half size", "elite_infantry", "land", 50, 30, 2},
 		{"naval galley flat at size 1", "galley", "naval", 1, 4, 3},
 		{"naval galley flat even if size>1", "galley", "naval", 5, 4, 3},
 		{"naval war_galley flat", "war_galley", "naval", 3, 6, 5},
@@ -30,7 +30,7 @@ func TestUnitUpkeep(t *testing.T) {
 	const eps = 1e-9
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			up := UnitUpkeep(tc.unitType, tc.category, tc.size)
+			up := UnitUpkeep(tc.unitType, tc.category, tc.size, "garrison")
 			if math.Abs(up.Grain-tc.wantGrain) > eps {
 				t.Errorf("Grain = %v, want %v", up.Grain, tc.wantGrain)
 			}

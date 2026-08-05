@@ -93,7 +93,7 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 		standsIn uuid.UUID
 		paidBy   uuid.UUID
 	}{
-		// Home garrison of Mykene: 100 spearmen, grain 5 / silver 2.
+		// Home garrison of Mykene: 100 spearmen, grain 50 / silver 2.
 		// The sold circulates → net silver 0.6 at share 0.7.
 		{"spearman", "land", 100, "garrison", mykene, mykene},
 		// Mykene's field army, marching: still on Mykene's payroll (mig 100),
@@ -127,10 +127,11 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(mykene): %v", err)
 	}
-	// Mykene pays for the spearmen (5 grain / 2 silver) and the chariot
-	// (8 grain / 6 silver). Tiryns' garrison and the forming unit are not its bill.
-	if math.Abs(gross.Grain-13) > eps {
-		t.Errorf("Mykene gross grain = %v, want 13 (5 garrison + 8 marching chariot)", gross.Grain)
+	// Mykene pays for the spearmen (50 garrison grain / 2 silver) and the marching
+	// chariot (80 base ×2 field factor = 160 grain / 6 silver, SLICE A 2026-08-05).
+	// Tiryns' garrison and the forming unit are not its bill.
+	if math.Abs(gross.Grain-210) > eps {
+		t.Errorf("Mykene gross grain = %v, want 210 (50 garrison + 160 marching chariot)", gross.Grain)
 	}
 	if math.Abs(gross.Silver-8) > eps {
 		t.Errorf("Mykene gross silver = %v, want 8 (2 garrison + 6 marching chariot)", gross.Silver)

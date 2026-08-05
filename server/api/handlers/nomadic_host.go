@@ -20,8 +20,8 @@ const (
 	nomadicHostSpearmen     = 2
 	nomadicHostSpearmenSize = 100 // men per cohort
 
-	// nomadicHostRationTicks is how long the escort's pay and rations last:
-	// four game months (2 880 ticks = 120 game days at 24 ticks/day).
+	// nomadicHostRationTicks is how long the escort's pay lasts: four game
+	// months (2 880 ticks = 120 game days at 24 ticks/day).
 	//
 	// The figure is sized in the player's time, not the world's: at the intended
 	// cadence (TICK_MINUTES=2, ~1 game month per real day) this is ~4 real days —
@@ -30,11 +30,23 @@ const (
 	// log off overnight, come back to a starved escort.
 	//
 	// It is affordable only because the host itself eats nothing: 2 880 ticks of
-	// escort keep is ~1 200 grain and ~480 silver, which is modest to carry into
-	// the new metropolis (an ordinary city seeds with 300 grain). Were the 4 000
-	// civilians fed from this store it would be ~241 000 grain and would drown the
-	// opening's scarcity outright. (Decision Timothy 2026-07-15.)
+	// escort silver keep is ~480 silver, which is modest to carry into the new
+	// metropolis (an ordinary city seeds with 300 grain). (Decision Timothy
+	// 2026-07-15.) Grain no longer follows from this constant at all — see
+	// nomadicHostDowryGrain below (SLICE A, 2026-08-05).
 	nomadicHostRationTicks = 2880
+
+	// nomadicHostDowryGrain is the grain the horde carries into the metropolis
+	// at founding — a BALANCE FIGURE, not a derivation. It was originally
+	// derived from the upkeep table (2 spearmen × 5 grain/day ÷ 24 ticks/day ×
+	// 2880 ticks = 1200), but SLICE A (Timothy 2026-08-05) recalibrated soldier
+	// grain upkeep (garrison = a civilian's ration, field = double) for reasons
+	// that have nothing to do with the dowry — re-deriving it from the same
+	// formula would have silently twentyfolded it to 24000. Kanon 2026-08-05:
+	// "horden äter inget" fixed the RATE (grainRate = 0), not the AMOUNT. This
+	// constant is now frozen at the pre-recalibration value and changes only
+	// when someone deliberately changes the dowry itself.
+	nomadicHostDowryGrain = 1200
 )
 
 // seedNomadicHost creates a player's founder phase: the host token, its two
@@ -89,21 +101,23 @@ func seedNomadicHost(
 	// founding as a dowry (Timothy 2026-08-05). Sold IS still paid — it is
 	// owed to men who serve, unlike food to a people feeding itself.
 	//
-	// Rates come from the same functions the settled game uses, never hardcoded,
-	// so a calibration change moves the founder phase with it. UpkeepSpecs is per
-	// DAY (combat/upkeep.go:13, fired every TicksPerDay) and must be divided down
-	// before it can sit beside a per-tick rate.
-	perDay := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize)
-	grainPerTick := float64(nomadicHostSpearmen) * perDay.Grain / float64(events.TicksPerDay)
+	// Silver still comes from the same function the settled game uses, never
+	// hardcoded, so a calibration change moves the founder phase with it.
+	// UpkeepSpecs is per DAY (combat/upkeep.go, fired every TicksPerDay) and
+	// must be divided down before it can sit beside a per-tick rate. Status is
+	// "positioned" — the horde stands on the map before founding — noted here
+	// because silver is statusoberoende (UnitUpkeep never doubles it), so this
+	// choice of status doesn't actually change the figure; it's the honest
+	// status regardless.
+	perDay := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize, "positioned")
 	grainRate := 0.0
 	silverRate := -float64(nomadicHostSpearmen) * perDay.Silver / float64(events.TicksPerDay)
 
-	// grainAmount no longer follows from grainRate (that would be 0): it is the
-	// dowry the escort carries, sized exactly as before so the founding payout
-	// doesn't change — only the drain stops. silverAmount still follows its
-	// rate, so grain and silver can never disagree about how long the escort's
-	// pay lasts.
-	grainAmount := grainPerTick * nomadicHostRationTicks
+	// grainAmount is the named dowry constant (SLICE A, 2026-08-05) — see
+	// nomadicHostDowryGrain's comment: it stopped following the upkeep table
+	// when that table was recalibrated for an unrelated reason. silverAmount
+	// still follows its rate, so silver alone still tracks the upkeep table.
+	grainAmount := float64(nomadicHostDowryGrain)
 	silverAmount := -silverRate * nomadicHostRationTicks
 
 	// Upsert, not insert: founder_phase is unique per (world, owner), and a Wanax

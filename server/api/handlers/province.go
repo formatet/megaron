@@ -375,7 +375,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			if cat != "land" {
 				fullSize = 1 // naval upkeep is flat, independent of size
 			}
-			newUnitUp := combat.UnitUpkeep(unitType, cat, fullSize)
+			newUnitUp := combat.UnitUpkeep(unitType, cat, fullSize, "garrison")
 			// A unit recruited here garrisons here and is paid from here, so both
 			// unit columns point at this city and Del C's sold share circulates
 			// back the same tick. Judging sustainability on the gross would call a
@@ -831,7 +831,7 @@ func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID)
 	total := upkeepAmount{}
 	perType := map[string]upkeepAmount{}
 	rows, err := pool.Query(ctx,
-		`SELECT type, category, size FROM units
+		`SELECT type, category, size, status FROM units
 		 WHERE settlement_id = $1 AND status = 'garrison'`,
 		settlementID,
 	)
@@ -840,12 +840,12 @@ func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID)
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var unitType, category string
+		var unitType, category, status string
 		var size int
-		if err := rows.Scan(&unitType, &category, &size); err != nil {
+		if err := rows.Scan(&unitType, &category, &size, &status); err != nil {
 			return total, perType, err
 		}
-		up := combat.UnitUpkeep(unitType, category, size)
+		up := combat.UnitUpkeep(unitType, category, size, status)
 		if up.Grain == 0 && up.Silver == 0 {
 			continue
 		}
@@ -880,7 +880,7 @@ func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID)
 // show the player an arithmetic they can follow.
 func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, soldShare float64) (gross upkeepAmount, circulatedSilver float64, err error) {
 	rows, qerr := pool.Query(ctx,
-		`SELECT u.type, u.category, u.size,
+		`SELECT u.type, u.category, u.size, u.status,
 		        COALESCE(u.settlement_id = s.id, false) AS at_home
 		 FROM units u
 		 JOIN settlements s ON s.id = u.support_settlement_id AND s.owner_id = u.owner_id
@@ -893,13 +893,13 @@ func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var unitType, category string
+		var unitType, category, status string
 		var size int
 		var atHome bool
-		if serr := rows.Scan(&unitType, &category, &size, &atHome); serr != nil {
+		if serr := rows.Scan(&unitType, &category, &size, &status, &atHome); serr != nil {
 			return gross, 0, serr
 		}
-		up := combat.UnitUpkeep(unitType, category, size)
+		up := combat.UnitUpkeep(unitType, category, size, status)
 		gross.Grain += up.Grain
 		gross.Silver += up.Silver
 		if atHome {
@@ -2240,7 +2240,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		if cat == unit.CategoryNaval {
 			fullSize = 1
 		}
-		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize)
+		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize, "garrison")
 		if (netGrainPerDay-newUnitUp.Grain) < 0 || (netSilverPerDay-newUnitUp.Silver) < 0 {
 			upkeepWarning = fmt.Sprintf(
 				"warning: once this unit garrisons it needs %.1f grain + %.1f silver/day upkeep — "+

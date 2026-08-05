@@ -108,8 +108,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	mkGood(sA, "grain", 10000, 0, 100000)
 	mkGood(sB, "silver", 10000, 0, 100000)
 	mkGood(sB, "grain", 10000, 0, 100000)
-	mkUnit(p1, sA, "spearman", 100)    // grain 5, silver 2
-	mkUnit(p2, sB, "war_chariot", 100) // grain 8, silver 6
+	mkUnit(p1, sA, "spearman", 100)    // garrison: grain 50, silver 2 (SLICE A, 2026-08-05)
+	mkUnit(p2, sB, "war_chariot", 100) // garrison: grain 80, silver 6
 
 	// Escrow: one pending BUY offer holds 250 silver. A SELL offer (escrows goods)
 	// and a non-pending offer must both be ignored by the audit.
@@ -162,8 +162,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 		}
 	}
 	// Both units pay in full → no circulation (no soldShare), no unpaid, empty map.
-	wantSettled("Argyros", readSettled(sA), settled{paid: 1, unpaid: 0, grain: 5, gross: 2, circ: 0, destroyed: 2, unpaidSilver: 0, circulatedTo: "{}"})
-	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 8, gross: 6, circ: 0, destroyed: 6, unpaidSilver: 0, circulatedTo: "{}"})
+	wantSettled("Argyros", readSettled(sA), settled{paid: 1, unpaid: 0, grain: 50, gross: 2, circ: 0, destroyed: 2, unpaidSilver: 0, circulatedTo: "{}"})
+	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 80, gross: 6, circ: 0, destroyed: 6, unpaidSilver: 0, circulatedTo: "{}"})
 
 	// ── SilverAudit stocks (first audit ⇒ no prev, mined 0, delta 0). ──
 	// A: 10000 − 2 = 9998; B: 10000 − 6 = 9994 → liquid 19992. fund_total is 0

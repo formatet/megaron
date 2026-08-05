@@ -44,10 +44,21 @@ type UpkeepSpec struct {
 
 // UpkeepSpecs: landenheter skalas med size/100; navala är flat (size=1).
 // Präst = ingen upkeep (kult kostar inget löpande).
+//
+// Landenheternas grain (SLICE A, Timothy 2026-08-05): kalibrerad så att en
+// garnisonerad full-size (100) enhet äter EXAKT vad en civil äter —
+// pop×0.5/dag (economy/recompute.go:359) — dvs 50 korn/dygn för 100 man.
+// Typvariationen är avsiktligt bevarad (elit äter mer, stridsvagnen har
+// hästar). UnitUpkeep dubblar grain ovanpå detta i fält (marching/positioned).
+//
+// Navala talen är ORÖRDA av samma beslut: naval upkeep är per skrov, skalar
+// inte med size alls, och "dubbelt så mycket som en medborgare" har därför
+// ingen innebörd för en besättning på det sättet landenheternas har för en
+// soldat. UnitUpkeep dubblar därför aldrig navalt grain, oavsett status.
 var UpkeepSpecs = map[string]UpkeepSpec{
-	"spearman":       {Grain: 5, Silver: 2},
-	"elite_infantry": {Grain: 6, Silver: 4},
-	"war_chariot":    {Grain: 8, Silver: 6},
+	"spearman":       {Grain: 50, Silver: 2},
+	"elite_infantry": {Grain: 60, Silver: 4},
+	"war_chariot":    {Grain: 80, Silver: 6},
 	"galley":         {Grain: 4, Silver: 3},
 	"war_galley":     {Grain: 6, Silver: 5},
 	"merchantman":    {Grain: 3, Silver: 2},
@@ -60,22 +71,35 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 // source of truth for the scaling — both the charging loop (Handle) and the army
 // read surface (api/handlers) call it, so shown upkeep can never drift from what
 // is actually debited.
-func UnitUpkeep(unitType, category string, size int) UpkeepSpec {
+//
+// Kanon 2026-08-05: a soldier is a person. Garrisoned, he eats like a civilian
+// (UpkeepSpecs' land grain figures are calibrated to that anchor — see
+// economy/recompute.go:359, pop×0.5/day). In the field — status "marching" or
+// "positioned" — he eats double: mobilising costs, and standing out costs more
+// than standing home. Silver (sold) never changes with status — the pay is the
+// same wherever the man stands. Naval upkeep is per hull, not per person, and
+// is untouched by status entirely (see UpkeepSpecs' comment).
+func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
 	spec, ok := UpkeepSpecs[unitType]
 	if !ok {
 		return UpkeepSpec{}
 	}
-	if category == "land" {
-		f := float64(size) / 100.0
-		return UpkeepSpec{Grain: spec.Grain * f, Silver: spec.Silver * f}
+	if category != "land" {
+		return spec // naval/other: flat, status never changes it
 	}
-	return spec // naval/other: flat
+	f := float64(size) / 100.0
+	grain := spec.Grain * f
+	if status == "marching" || status == "positioned" {
+		grain *= upkeepFieldGrainFactor
+	}
+	return UpkeepSpec{Grain: grain, Silver: spec.Silver * f}
 }
 
 const (
-	upkeepAttritionStep    = 10 // män förlorade per tick vid grain-brist
-	upkeepDesertionStep    = 10 // män förlorade per tick vid silver-brist (efter tröskel)
-	upkeepDesertionPeriods = 3  // obetalda silver-perioder före desertering börjar
+	upkeepFieldGrainFactor = 2.0 // korn i fält (marching/positioned) mot garnison
+	upkeepAttritionStep    = 10  // män förlorade per tick vid grain-brist
+	upkeepDesertionStep    = 10  // män förlorade per tick vid silver-brist (efter tröskel)
+	upkeepDesertionPeriods = 3   // obetalda silver-perioder före desertering börjar
 )
 
 // upkeepUnpaidWarningKind is the forewarning event type / notification kind fired
@@ -98,6 +122,7 @@ type upkeepUnitRow struct {
 	settlementID  *uuid.UUID
 	unpaidPeriods int
 	cargoUnitID   *uuid.UUID
+	status        string
 	// supportSettlementID är den AUKTORITATIVA betalaren (mig 100,
 	// megaron_aktorer_plan.md §3.1). Den är NULL när staden är borta eller har
 	// bytt ägare — se queryns korrelerade subselect — och det betyder att ingen
@@ -141,7 +166,8 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.settlement_id,
 		        u.unpaid_periods, u.cargo_unit_id,
 		        (SELECT s.id FROM settlements s
-		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id)
+		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id),
+		        u.status
 		 FROM units u
 		 WHERE u.world_id = $1
 		   AND u.status IN ('garrison', 'marching', 'positioned')
@@ -163,7 +189,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		var u upkeepUnitRow
 		if err := rows.Scan(&u.id, &u.ownerID, &u.unitType, &u.category,
 			&u.size, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID,
-			&u.supportSettlementID); err != nil {
+			&u.supportSettlementID, &u.status); err != nil {
 			return fmt.Errorf("upkeep: scan unit: %w", err)
 		}
 		units = append(units, u)
@@ -206,7 +232,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	// 3. Process each unit.
 	for _, u := range units {
-		up := UnitUpkeep(u.unitType, u.category, u.size)
+		up := UnitUpkeep(u.unitType, u.category, u.size, u.status)
 		if up.Grain == 0 && up.Silver == 0 {
 			continue // priest or unknown type — no upkeep
 		}
