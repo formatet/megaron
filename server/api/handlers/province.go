@@ -827,6 +827,11 @@ type upkeepAmount struct {
 // support_settlement_id, not settlement_id, and since Del C a garrison's sold
 // partly circulates back. Use settlementUpkeepDrain for anything that projects
 // the city's own silver, or the projection will drift from the debit.
+//
+// The status filter is deliberately narrower than the tick's own billing set
+// (checked 2026-08-05, embarkerad ranson): this is a composition figure for
+// what stands garrisoned HERE, and an embarked unit is aboard a ship, not
+// standing in the settlement — it is correctly excluded, not drifted.
 func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (upkeepAmount, map[string]upkeepAmount, error) {
 	total := upkeepAmount{}
 	perType := map[string]upkeepAmount{}
@@ -873,11 +878,15 @@ func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID)
 //     silver drain is (1−share)·gross. Projecting gross overstates it — a false
 //     negative on the recruit surface, which sits on the chain gate.
 //
-// Mirrors the tick's own filters: the three upkeep-bearing statuses, and the
-// payer must still exist AND still be owned by the unit's owner (a fallen or
-// captured town pays nothing — combat/upkeep.go step 2). Returns the gross
-// grain+silver and, separately, the silver that comes back, so the caller can
-// show the player an arithmetic they can follow.
+// Mirrors the tick's own filters: the four upkeep-bearing statuses (garrison,
+// marching, positioned, embarked — the last added 2026-08-05, embarkerad
+// ranson: an embarked cohort is billed exactly like a marching one, so a read
+// surface that forgot it would show a settlement as solvent while the tick
+// was already charging it in full, or vice versa), and the payer must still
+// exist AND still be owned by the unit's owner (a fallen or captured town
+// pays nothing — combat/upkeep.go step 2). Returns the gross grain+silver
+// and, separately, the silver that comes back, so the caller can show the
+// player an arithmetic they can follow.
 func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, soldShare float64) (gross upkeepAmount, circulatedSilver float64, err error) {
 	rows, qerr := pool.Query(ctx,
 		`SELECT u.type, u.category, u.size, u.status,
@@ -885,7 +894,7 @@ func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID
 		 FROM units u
 		 JOIN settlements s ON s.id = u.support_settlement_id AND s.owner_id = u.owner_id
 		 WHERE u.support_settlement_id = $1
-		   AND u.status IN ('garrison', 'marching', 'positioned')`,
+		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked')`,
 		settlementID,
 	)
 	if qerr != nil {

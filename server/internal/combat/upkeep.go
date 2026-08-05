@@ -96,7 +96,12 @@ func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
 	}
 	f := float64(size) / 100.0
 	grain := spec.Grain * f
-	if status == "marching" || status == "positioned" {
+	// "embarked" (SLICE, 2026-08-05): a cohort aboard a ship is maximally away
+	// from the city's stores — field ration applies exactly like marching/
+	// positioned. It is grouped WITH them here so this stays the single trigger
+	// set for the doubling; Handle's own status filter below must list the same
+	// three-plus-embarked set or a billed status stops being billed.
+	if status == "marching" || status == "positioned" || status == "embarked" {
 		grain *= upkeepFieldGrainFactor
 	}
 	return UpkeepSpec{Grain: grain, Silver: spec.Silver * f}
@@ -169,6 +174,14 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// Faller staden — förstörd eller erövrad — blir kolumnen NULL här, och
 	// enheten behandlas som obetald. Det är regeln, inte ett fel: det finns
 	// ingen väg att rädda ett förband vars stad fallit (§3.1 punkt 1 och 3).
+	// 'embarked' was missing from this filter until 2026-08-05 (embarkerad
+	// ranson): a land unit aboard a ship paid nothing at all, neither grain nor
+	// silver, for as long as it stood embarked. Before slice A's ×10 land-grain
+	// recalibration that was a rounding error (5 grain/day for a full cohort);
+	// after it, 100 grain/day quietly waived — "load the army onto a ship" had
+	// become a way to stop feeding it. UnitUpkeep's own field-ration trigger
+	// set (above) must list the same statuses, or a status stops being billed
+	// without stopping being billable.
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.settlement_id,
 		        u.unpaid_periods, u.cargo_unit_id,
@@ -177,7 +190,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		        u.status
 		 FROM units u
 		 WHERE u.world_id = $1
-		   AND u.status IN ('garrison', 'marching', 'positioned')
+		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM founder_phase fp
 		       WHERE fp.world_id = u.world_id
