@@ -234,6 +234,59 @@ export async function openMarchCtx(dest, screenX, screenY) {
   positionMarchCtx(screenX, screenY);
 }
 
+// Each unit is one vessel (naval) or one 100-man stack (land). Group the
+// fungible ones by type + origin so the player picks a quantity ("send 3 of 5")
+// instead of hunting identical checkboxes — the count expands back into that
+// many discrete /units/{id}/march calls on send.
+//
+// The grouping is worth keeping; what it used to throw away was IDENTITY. The
+// row label was unitTypeLabel(g.type), i.e. the type, and a field unit's only
+// location tag is a raw (q,r) — so telling two spearmen apart meant counting
+// hexes (Timothy 2026-08-04). Groups therefore carry `names` alongside `ids`,
+// in the SAME order, because sendMarch takes the first n of ids.
+export function groupMarchUnits(units, provinceData) {
+  const byKey = new Map();
+  for (const u of units) {
+    const prov = (provinceData || []).find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
+    const loc  = prov ? prov.name : (u.q != null ? '(' + u.q + ',' + u.r + ')' : '');
+    const key  = u.type + '|' + loc;
+    if (!byKey.has(key)) byKey.set(key, { type: u.type, loc, ids: [], names: [] });
+    const g = byKey.get(key);
+    g.ids.push(u.id);
+    // display_name is server-formatted ("First Spearmen of Knossos") and always
+    // present today; the type label is a fallback so a partial payload leaves a
+    // readable row rather than a blank one.
+    g.names.push(u.display_name || unitTypeLabel(u.type));
+  }
+  return Array.from(byKey.values());
+}
+
+// A group of one is fungible with nothing, so it wears its own name. A group of
+// several keeps the type label — the count is the affordance there, and the
+// members are listed by marchGroupNamesHTML below.
+export function marchGroupLabelHTML(g) {
+  const single = g.ids.length === 1;
+  const head   = single ? g.names[0] : unitTypeLabel(g.type);
+  // "First Spearmen of Knossos · Knossos" says Knossos twice: the name's "of X"
+  // is the SUPPORTING town, loc is where the unit stands, and for a garrisoned
+  // unit those coincide. Drop the tag only when it literally repeats the name's
+  // own tail — a field unit's (q,r), or a unit garrisoned away from home, keeps it.
+  const redundant = single && head.endsWith('of ' + g.loc);
+  const locTag = (g.loc && !redundant)
+    ? ' <span class="mctx-loc">· ' + esc(g.loc) + '</span>'
+    : '';
+  return esc(head) + locTag;
+}
+
+// Numbered, because the count sends the first n in this order — the list is the
+// queue, not just a roster.
+export function marchGroupNamesHTML(g) {
+  if (g.ids.length < 2) return '';
+  return '<div class="mctx-names">'
+    + g.names.map((n, k) => (k + 1) + '. ' + esc(n)).join('<br>')
+    + '</div>';
+}
+
 function renderMarchUnitList() {
   const el = document.getElementById('mctx-units');
   const stanceRow = document.getElementById('mctx-stance-row');
@@ -246,28 +299,15 @@ function renderMarchUnitList() {
     stanceRow.style.display = 'none';
     return;
   }
-  // Each unit is one vessel (naval) or one 100-man stack (land). Group the
-  // fungible ones by type + origin so the player picks a quantity ("send 3 of
-  // 5") instead of hunting identical checkboxes — the count expands back into
-  // that many discrete /units/{id}/march calls on send.
-  const byKey = new Map();
-  for (const u of State.marchCtxUnits) {
-    const prov = State.provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
-    const loc  = prov ? prov.name : (u.q != null ? '(' + u.q + ',' + u.r + ')' : '');
-    const key  = u.type + '|' + loc;
-    if (!byKey.has(key)) byKey.set(key, { type: u.type, loc, ids: [] });
-    byKey.get(key).ids.push(u.id);
-  }
-  State.marchCtxGroups = Array.from(byKey.values());
+  State.marchCtxGroups = groupMarchUnits(State.marchCtxUnits, State.provinceData);
   el.innerHTML = State.marchCtxGroups.map((g, i) => {
-    const lbl    = unitTypeLabel(g.type);
-    const max    = g.ids.length;
-    const locTag = g.loc ? ' <span style="color:var(--text-dim)">· ' + esc(g.loc) + '</span>' : '';
+    const max = g.ids.length;
     return '<div class="mctx-row">'
-      + '<span class="mctx-label">' + lbl + locTag + '</span>'
+      + '<span class="mctx-label">' + marchGroupLabelHTML(g) + '</span>'
       + '<input class="mctx-input" type="number" id="mg-' + i + '" min="0" max="' + max + '" value="0">'
       + '<span class="mctx-max">/' + max + '</span>'
-      + '</div>';
+      + '</div>'
+      + marchGroupNamesHTML(g);
   }).join('');
   // Fleets have no stance — only land units take a stance.
   stanceRow.style.display = (State.marchCtxDest && State.marchCtxDest.isSea) ? 'none' : 'block';

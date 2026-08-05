@@ -399,6 +399,11 @@
 .mctx-units { padding: .5rem .6rem; display: flex; flex-direction: column; gap: .3rem; }
 .mctx-row { display: flex; align-items: center; gap: .4rem; }
 .mctx-label { flex: 1; color: var(--text-dim); font-size: .75rem; }
+.mctx-loc { color: var(--text-dim); }
+/* Members of a multi-unit group, listed under their row so the player can see
+   WHO is being ordered instead of counting hexes. Indented to the label column
+   and a step smaller — the count stays the affordance, the names inform it. */
+.mctx-names { margin: -.15rem 0 .15rem .6rem; color: var(--text-dim); font-size: .68rem; line-height: 1.45; }
 .mctx-input {
   width: 44px; padding: .15rem .3rem; border: 1px solid var(--border);
   background: var(--warm-white); font-family: var(--mono); font-size: .78rem;
