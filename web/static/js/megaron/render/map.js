@@ -2515,11 +2515,14 @@ function drawDepositIcons(ctx, cx, cy, tile) {
   ctx.lineWidth = 0.8;
   ctx.lineJoin = 'round';
   types.forEach((t, i) => {
-    const ox = cx + 9, oy = cy - 8 + i * 5;
+    // Ögonkoll 2026-08-05 (Timothy): alla fyra markörerna uppförstorade ca 1,4×.
+    // Radsteget följer med från 5 till 7 px — annars överlappar en hex med
+    // flera fyndigheter sina egna symboler.
+    const ox = cx + 9, oy = cy - 8 + i * 7;
     switch (t) {
       case 'cu':
         ctx.fillStyle = '#C47C20';
-        ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(ox, oy, 3, 0, Math.PI*2); ctx.fill(); ctx.stroke();
         break;
       case 'sn':
         // #909090 was metallic tin — a smelted product, not what sits in the
@@ -2535,17 +2538,27 @@ function drawDepositIcons(ctx, cx, cy, tile) {
         // tenn↔cedar 64.2, tenn↔mountain_red 36.3/26.7, tenn↔hills 53.8/45.0
         // — held against everything tin can sit on or next to, not just
         // silver, since tin sits on height per mapgen (showcase-forest.html).
-        ctx.fillStyle = '#4C2208';
-        ctx.fillRect(ox - 2, oy - 1.5, 4, 3);
-        ctx.strokeRect(ox - 2, oy - 1.5, 4, 3);
+        // Ögonkoll 2026-08-05 (Timothy): markören läste som ett svart klot —
+        // #4C2208 låg bara ΔE76 27,1 från sin EGEN kontur (#221E18), och vid
+        // 4×3 px upptar en 0,8 px-kontur så stor andel av rutan att fyllningen
+        // aldrig hinner synas. Konturen tas inte bort (pixelregeln i
+        // temenos_designprinciper.md); i stället ljusas fyllningen och rutan
+        // växer, så fyllningen dominerar ytan. #6B3410 mätt med
+        // tools/deposit_contrast.py: tenn↔kontur 27,1 → 38,6, tenn↔silver
+        // kvar på 69,7 (separationen ligger fortfarande i ljushet, ΔL* -52,0),
+        // tenn↔koppar 38,9 — långt över de 22,5 som utlöste omarbetningen, och
+        // koppar är en cirkel mot tennets rektangel.
+        ctx.fillStyle = '#6B3410';
+        ctx.fillRect(ox - 4, oy - 2.5, 8, 5);
+        ctx.strokeRect(ox - 4, oy - 2.5, 8, 5);
         break;
       case 'cd':
         ctx.fillStyle = '#2A7010';
-        ctx.beginPath(); ctx.moveTo(ox, oy - 3); ctx.lineTo(ox + 2.5, oy + 1.5); ctx.lineTo(ox - 2.5, oy + 1.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ox, oy - 4); ctx.lineTo(ox + 3.5, oy + 2); ctx.lineTo(ox - 3.5, oy + 2); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
       case 'ag':
         ctx.fillStyle = '#C0C8D8';
-        ctx.beginPath(); ctx.moveTo(ox, oy - 2.5); ctx.lineTo(ox + 2, oy); ctx.lineTo(ox, oy + 2.5); ctx.lineTo(ox - 2, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ox, oy - 3.5); ctx.lineTo(ox + 3, oy); ctx.lineTo(ox, oy + 3.5); ctx.lineTo(ox - 3, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
     }
   });
