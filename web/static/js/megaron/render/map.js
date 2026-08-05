@@ -2522,7 +2522,20 @@ function drawDepositIcons(ctx, cx, cy, tile) {
         ctx.beginPath(); ctx.arc(ox, oy, 2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
         break;
       case 'sn':
-        ctx.fillStyle = '#909090';
+        // #909090 was metallic tin — a smelted product, not what sits in the
+        // ground. A tin deposit is cassiterite, dark reddish-brown to black.
+        // Measured 2026-08-04: at #909090, ΔE76 tenn↔silver was 22.5 against
+        // tenn↔copper 61.0 and silver↔copper 72.7 — three times closer than
+        // any other pair, and the same pair whose SHAPES (rect 4×3, diamond
+        // 4×5) read most alike at 1:1. Both channels were weakest on the same
+        // pair. #4C2208 (tools/deposit_contrast.py) moves the separation into
+        // lightness, the channel that survives small sizes best: ΔE76
+        // tenn↔silver 72.2 (ΔL* -61.7, the separation is almost entirely
+        // lightness), tenn↔contour(#221E18) 27.1, tenn↔copper 51.5,
+        // tenn↔cedar 64.2, tenn↔mountain_red 36.3/26.7, tenn↔hills 53.8/45.0
+        // — held against everything tin can sit on or next to, not just
+        // silver, since tin sits on height per mapgen (showcase-forest.html).
+        ctx.fillStyle = '#4C2208';
         ctx.fillRect(ox - 2, oy - 1.5, 4, 3);
         ctx.strokeRect(ox - 2, oy - 1.5, 4, 3);
         break;
