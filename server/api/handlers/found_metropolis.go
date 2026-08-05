@@ -280,7 +280,7 @@ func foundMetropolisFromNomadicHost(
 			return out, fmt.Errorf("poseidon galley ordinal: %w", err)
 		}
 		// Gåvan får ett namn som varje annat skepp. Utan det läste den bara
-		// "Galley — supported by <stad>" i flottan, medan varje rekryterat skepp
+		// "Galley of <stad>" i flottan, medan varje rekryterat skepp
 		// bar ett egennamn — och det är just en gudagåva som minst av allt ska
 		// se namnlös ut.
 		galleyName := shipnames.Suggest(culture, nil)

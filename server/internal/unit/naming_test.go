@@ -56,14 +56,14 @@ func TestShipDisplayName(t *testing.T) {
 		town, want     string
 	}{
 		{"kanoniskt", "galley", "White Dolphin", "Kydonia",
-			"White Dolphin, Galley — supported by Kydonia"},
+			"White Dolphin, Galley of Kydonia"},
 		{"emporos aldrig merchantman", "merchantman", "Bearer of Cedar", "Byblos",
-			"Bearer of Cedar, Emporos — supported by Byblos"},
+			"Bearer of Cedar, Emporos of Byblos"},
 		{"krigsgalär", "war_galley", "Avenger of Knossos", "Knossos",
-			"Avenger of Knossos, War Galley — supported by Knossos"},
+			"Avenger of Knossos, War Galley of Knossos"},
 		// Ett skepp utan namn är inte ett fel: bygget kan ha lagts utan
 		// namnförslag. Då bär typen namnet.
-		{"namnlöst skepp", "galley", "", "Kydonia", "Galley — supported by Kydonia"},
+		{"namnlöst skepp", "galley", "", "Kydonia", "Galley of Kydonia"},
 		{"utan stad", "galley", "White Dolphin", "", "White Dolphin, Galley"},
 	}
 	for _, tt := range tests {
