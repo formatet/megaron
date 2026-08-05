@@ -1,5 +1,5 @@
 import { State } from '../state.js';
-import { hexPx, SCALE, canvas } from '../render/map.js';
+import { hexPx, SCALE, canvas, clampCamera } from '../render/map.js';
 import { arrivalHTML } from './time.js';
 import { isTypingTarget } from './format.js';
 
@@ -21,6 +21,7 @@ export function centreOn(q, r) {
   const {x, y} = hexPx(q, r);
   State.camera.x = canvas.width/2  - x * SCALE * State.camera.zoom;
   State.camera.y = canvas.height/2 - y * SCALE * State.camera.zoom;
+  clampCamera(); // the seventh camera-mutation site — World-Rim step 1
   State.dirty = true;
 }
 

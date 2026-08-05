@@ -11,7 +11,7 @@ import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
-import { zoomStep } from './camera.js';
+import { zoomStep, clampPan } from './camera.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -163,6 +163,55 @@ function hexPts(cx, cy) {
     pts.push([Math.round(cx + S * Math.cos(a)), Math.round(cy + S * Math.sin(a))]);
   }
   return pts;
+}
+
+// ── World-Rim, step 1: the camera may not leave the world ────────────────
+// How far past the last hex the view may travel, in WORLD UNITS (≈2 hexes
+// wide). Enough to see that the world ENDS; not enough to lose it. Never in
+// screen pixels — that would be a thick frame at min zoom and a hairline at
+// 1:1 (the LOD trap).
+const PAN_MARGIN = S * 3;
+
+// The map's bounding box in world units, memoised on the tileData array's
+// identity — refreshTiles() assigns a fresh array, so a new fog fetch
+// recomputes and nothing else does. Recomputing per frame would walk 52 900
+// hexes on a 230² map on every drag event.
+//
+// Bounds come from the FULL tile list including fog: the world's extent is not
+// a secret (the server returns a tile per hex either way), whereas clamping to
+// the KNOWN tiles would make the pan limit itself leak the shape of what you
+// have explored.
+let panBoundsSrc = null;
+let panBounds = null;
+function worldPanBounds() {
+  if (State.tileData === panBoundsSrc) return panBounds;
+  panBoundsSrc = State.tileData;
+  panBounds = null;
+  if (!State.tileData || !State.tileData.length) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const t of State.tileData) {
+    const p = hexPx(t.q, t.r);
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  panBounds = { minX, minY, maxX, maxY };
+  return panBounds;
+}
+
+// Apply the clamp to the live camera. Called after EVERY camera move — drag,
+// held key, wheel, zoom button, recentre, and search's centreOn (ui/search.js,
+// the one site outside this file) — because a bound enforced at six of seven
+// sites is not a bound.
+export function clampCamera() {
+  const next = clampPan(
+    State.camera, SCALE,
+    { w: canvas.width, h: canvas.height },
+    worldPanBounds(), PAN_MARGIN,
+  );
+  State.camera.x = next.x;
+  State.camera.y = next.y;
 }
 
 // Hit-test: nearest hex to canvas coords
@@ -3004,6 +3053,7 @@ export function render() {
     if (dx || dy) {
       State.camera.x += dx;
       State.camera.y += dy;
+      clampCamera();
       State.dirty = true;
     }
   }
@@ -3551,6 +3601,7 @@ function centreCamera() {
     const { x, y } = hexPx(home.q, home.r);
     State.camera.x = canvas.width/2  - x*SCALE;
     State.camera.y = canvas.height/2 - y*SCALE;
+    clampCamera();
     return;
   }
   // Fallback for a transitional state with neither a capital nor an active
@@ -3562,6 +3613,7 @@ function centreCamera() {
   const sumY = visible.reduce((s,t) => s + hexPx(t.q,t.r).y, 0);
   State.camera.x = canvas.width/2  - (sumX/visible.length)*SCALE;
   State.camera.y = canvas.height/2 - (sumY/visible.length)*SCALE;
+  clampCamera();
 }
 
 // Reload provinces, marches, messengers and trades every 30s
@@ -3585,6 +3637,7 @@ export function zoom(factor) {
   State.camera.x = next.x;
   State.camera.y = next.y;
   State.camera.zoom = next.zoom;
+  clampCamera();
   State.dirty = true;
 }
 export function resetView() {
@@ -4123,6 +4176,7 @@ export function initMap() {
     if (State.dragging && State.lastMouse) {
       State.camera.x += e.clientX - State.lastMouse.x;
       State.camera.y += e.clientY - State.lastMouse.y;
+      clampCamera();
       State.lastMouse = {x: e.clientX, y: e.clientY};
       State.dirty = true;
     }
@@ -4163,6 +4217,7 @@ export function initMap() {
     State.camera.x = next.x;
     State.camera.y = next.y;
     State.camera.zoom = next.zoom;
+    clampCamera();
     State.dirty = true;
   }, {passive:false});
 
