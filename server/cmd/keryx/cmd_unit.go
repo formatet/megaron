@@ -111,7 +111,7 @@ func unitListCmd() *cobra.Command {
 				return nil
 			}
 			// Namnkolumnen är namnstandardens display_name från servern
-			// ("2nd Spearmen of Knossos", "White Dolphin, Galley — supported by
+			// ("2nd Spearmen of Knossos", "White Dolphin, Galley of
 			// Kydonia"). Keryx formaterar den INTE själv: allt i temenos ska vara
 			// synligt och actionabelt i keryx, men grammatiken bor på servern.
 			// Äldre servrar utan fältet faller tillbaka på typ + skeppsnamn.

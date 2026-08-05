@@ -21,7 +21,7 @@ import (
 //	HOST:    Nomadic Host of [Wanax]
 //	RUNNER:  [Wanax]'s Runner from [Origin] to [Destination]
 //	CARAVAN: [Wanax]'s [Good] Caravan from [Origin] to [Destination]
-//	SHIP:    [Ship Name], [Ship Type] — supported by [Support Settlement]
+//	SHIP:    [Ship Name], [Ship Type] of [Support Settlement]
 //
 // Ärotitlar (post-MVP) hakas på landförband som tillhör ett oikos. De byggs
 // inte här förrän kingdoms återkommer.
@@ -81,10 +81,16 @@ func LandUnitName(unitType string, ordinal int, supportTown string) Name {
 	return n
 }
 
-// ShipDisplayName: "White Dolphin, Galley — supported by Kydonia".
+// ShipDisplayName: "White Dolphin, Galley of Kydonia".
 //
 // Ett skepp utan namn är inte ett fel: bygget kan ha lagts utan namnförslag.
 // Då faller namnledet bort och typen bär namnet, precis som för landförband.
+//
+// Stadsledet var " — supported by Kydonia" fram till 2026-08-05. Timothy såg
+// "Galley — supported by Iolkos" i spelet och bad om "Galley of Iolkos": ett
+// tankstreck och en particip där landförbanden klarar sig med ett "of".
+// Skeppet får därför samma grammatik som LandUnitName redan har — samma
+// relation (staden som bär förbandet), samma ord.
 func ShipDisplayName(unitType, shipName, supportTown string) Name {
 	n := Name{Type: unitType, TypeLabel: DisplayName(unitType), ShipName: shipName, SupportTown: supportTown}
 	s := n.TypeLabel
@@ -92,7 +98,7 @@ func ShipDisplayName(unitType, shipName, supportTown string) Name {
 		s = shipName + ", " + n.TypeLabel
 	}
 	if supportTown != "" {
-		s += " — supported by " + supportTown
+		s += " of " + supportTown
 	}
 	n.DisplayName = s
 	return n
