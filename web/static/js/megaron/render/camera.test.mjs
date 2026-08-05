@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clampZoom, zoomStep } from './camera.js';
+import { clampZoom, zoomStep, clampPan } from './camera.js';
 import { ZOOM_MIN, ZOOM_MAX } from '../config.js';
 
 test('AK1: at ZOOM_MIN, a further zoom-out step leaves camera bit-identical', () => {
@@ -51,4 +51,62 @@ test('clampZoom bounds', () => {
   assert.equal(clampZoom(0.01), ZOOM_MIN);
   assert.equal(clampZoom(100), ZOOM_MAX);
   assert.equal(clampZoom(1), 1);
+});
+
+// ── clampPan (World-Rim step 1) ─────────────────────────────────────────────
+// camera.js clamped zoom only, so nothing stopped a drag from carrying the view
+// off the world into empty background. Screen = world·k + camera, k = zoom·scale.
+
+const SCALE = 2;
+const VIEW = { w: 800, h: 600 };
+// A world far bigger than the viewport: 0..2000 world units × k=2 → 4000 px.
+const BIG = { minX: 0, minY: 0, maxX: 2000, maxY: 2000 };
+const M = 66; // margin in world units (map.js uses S*3)
+
+test('PAN1: a camera already inside the world is left exactly where it was', () => {
+  const cam = { x: -1000, y: -900, zoom: 1 };
+  const out = clampPan(cam, SCALE, VIEW, BIG, M);
+  assert.equal(out.x, cam.x);
+  assert.equal(out.y, cam.y);
+});
+
+test('PAN2: panning past the near edge stops at the margin, not at infinity', () => {
+  // camera.x = +5000 would put the world far off to the right of the viewport.
+  const out = clampPan({ x: 5000, y: 5000, zoom: 1 }, SCALE, VIEW, BIG, M);
+  const nearEdge = (BIG.minX - M) * 2; // screen offset of the widened edge
+  assert.equal(out.x, -nearEdge, 'the widened near edge must land exactly on screen 0');
+  assert.ok(out.x < 5000, 'the camera must actually have been pulled back');
+});
+
+test('PAN3: panning past the far edge stops there too', () => {
+  const out = clampPan({ x: -99999, y: -99999, zoom: 1 }, SCALE, VIEW, BIG, M);
+  const farEdge = (BIG.maxX + M) * 2;
+  assert.equal(out.x, VIEW.w - farEdge, 'the widened far edge must land on the viewport edge');
+});
+
+test('PAN4: the margin is in WORLD units — it scales with zoom, it is not a pixel frame', () => {
+  const at1 = clampPan({ x: 5000, y: 5000, zoom: 1 }, SCALE, VIEW, BIG, M);
+  const at2 = clampPan({ x: 5000, y: 5000, zoom: 2 }, SCALE, VIEW, BIG, M);
+  // Twice the zoom → twice as many pixels of margin. A pixel-specified margin
+  // would give the same number at both zooms; that is the trap being pinned.
+  assert.equal(at2.x, at1.x * 2);
+});
+
+test('PAN5: a world smaller than the viewport is centred, not shoved into a corner', () => {
+  const small = { minX: 0, minY: 0, maxX: 100, maxY: 100 }; // 200px + margins ≪ 800
+  const out = clampPan({ x: 12345, y: -777, zoom: 1 }, SCALE, VIEW, small, M);
+  const lo = (small.minX - M) * 2, hi = (small.maxX + M) * 2;
+  assert.equal(lo + out.x, VIEW.w - (hi + out.x), 'equal empty space on both sides');
+});
+
+test('PAN6: an unloaded world (null bounds) leaves the camera untouched', () => {
+  const cam = { x: 42, y: -17, zoom: 1 };
+  const out = clampPan(cam, SCALE, VIEW, null, M);
+  assert.equal(out.x, 42);
+  assert.equal(out.y, -17);
+});
+
+test('PAN7: both axes are clamped — a bound on x only is not a bound', () => {
+  const out = clampPan({ x: 5000, y: 5000, zoom: 1 }, SCALE, VIEW, BIG, M);
+  assert.notEqual(out.y, 5000, 'the vertical axis must be clamped as well');
 });

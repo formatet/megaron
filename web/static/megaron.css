@@ -1048,10 +1048,15 @@ body:has(.auth-page) main {
 }
 
 /* ── Game map area ──────────────────────────────────────────────────────── */
+/* World-Rim step 1 (2026-08-05): the void behind the canvas was `#1B4F72` —
+   a hardcoded hex that IS `--deep-sea`, so everything outside the map was
+   painted in exactly deep water's colour and read as sea you could sail to.
+   It is the page background now: outside the world, not water. The Outer Sea
+   gets its own layer in step 2; this only stops the surface from lying. */
 .game-map {
   flex: 1;
   position: relative;
-  background: #1B4F72;
+  background: var(--bg);
   overflow: hidden;
   cursor: grab;
 }
