@@ -319,6 +319,27 @@ function pathPx(waypoints, progress) {
   };
 }
 
+// Hexen en enhet står på JUST NU — samma gren som ritningen av aktören använder
+// (marching → interpolerad waypoint, positioned → u.q/u.r). Returnerar null för
+// en enhet utan hexposition alls (garnison), som därför måste matchas på sitt
+// settlement i stället. Finns för att tooltipen ska peka på samma hex som
+// spriten; delad kod är hela poängen, en andra kopia av interpolationen skulle
+// glida isär från renderaren.
+function unitHexNow(u) {
+  if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
+    const departs = new Date(u.departs_at).getTime();
+    const arrives = new Date(u.arrives_at).getTime();
+    const progress = Math.min(1, Math.max(0, (serverNow() - departs) / (arrives - departs)));
+    const pos = (u.path && u.path.length > 1)
+      ? pathPx(u.path, progress)
+      : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
+    // hexPathPx faller tillbaka på en ren pixel utan q/r när ingen väg finns —
+    // då är avgångshexen det ärligaste svaret, inte "ingenstans".
+    return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: u.q, r: u.r};
+  }
+  return u.q != null ? {q: u.q, r: u.r} : null;
+}
+
 function isTileVisible(q, r) {
   return State.tileData.some(t => t.q === q && t.r === r && t.terrain !== 'fog');
 }
@@ -4217,6 +4238,18 @@ export function initMap() {
       const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null,
                         tile.silver_deposit ? '⚒ Silver' : null, tile.cedar_deposit ? '⚒ Cedar' : null].filter(Boolean).join(' · ');
       const tl = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
+      // display_name är serverformaterat ("2nd Spearmen of Knossos") — webben
+      // bygger aldrig om den grammatiken (se unit.go:DisplayName). Två fall som
+      // en naiv u.q-jämförelse får fel: garnisonerade förband saknar helt
+      // hexposition (matchas på provinsens settlement_id), och en MARSCHERANDE
+      // enhets u.q/u.r är avgångshexen — gångaren ritas vid pathPx/hexPathPx
+      // interpolerade waypoint, så tooltipen måste läsa samma position som
+      // spriten. Annars pekar namnet på en tom hex enheten lämnat.
+      const names = (State.unitsData || []).filter(u => {
+        const at = unitHexNow(u);
+        if (at) return at.q === h.q && at.r === h.r;
+        return prov && u.settlement_id && u.settlement_id === prov.settlement_id;
+      }).map(u => u.display_name).filter(Boolean);
       if (prov) {
         const parts = [prov.name, tl];
         if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
@@ -4225,10 +4258,13 @@ export function initMap() {
         if (prov.own) parts.push('(you)');
         else if (prov.allied) parts.push('(ally)');
         if (deposits) parts.push(deposits);
+        if (names.length) parts.push(names.join(', '));
         tooltip.textContent = parts.join(' · ');
       } else {
-        const base = `(${h.q},${h.r}) ${tl}`;
-        tooltip.textContent = deposits ? `${base} · ${deposits}` : base;
+        const parts = [`(${h.q},${h.r}) ${tl}`];
+        if (deposits) parts.push(deposits);
+        if (names.length) parts.push(names.join(', '));
+        tooltip.textContent = parts.join(' · ');
       }
     } else {
       tooltip.style.display = 'none';
