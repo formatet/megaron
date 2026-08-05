@@ -85,6 +85,41 @@ export function notifIcon(kind) {
   return icons[kind] || '◉';
 }
 
+// Caps for payloadSummary below: a notif chip is one line, so both a key
+// count and a character count are enforced — either one alone can be beaten
+// (few keys with huge values, or many keys with tiny ones).
+const PAYLOAD_SUMMARY_MAX_KEYS = 6;
+const PAYLOAD_SUMMARY_MAX_CHARS = 120;
+
+// Turns an arbitrary notification payload into a short, readable tail —
+// "key: value, key: value" — for notifText's default arm (below). Keys are
+// sorted so the same notif always reads the same way, never leaning on
+// insertion order or json.Marshal's incidental ordering. null/undefined
+// values are skipped; nested objects/arrays fall back to JSON.stringify
+// rather than printing '[object Object]'. Returns '' for an empty or
+// missing payload so the caller can omit the tail entirely.
+function payloadSummary(body) {
+  if (!body || typeof body !== 'object') return '';
+  const keys = Object.keys(body).sort();
+  const parts = [];
+  let truncated = false;
+  for (const key of keys) {
+    if (parts.length >= PAYLOAD_SUMMARY_MAX_KEYS) { truncated = true; break; }
+    let value = body[key];
+    if (value == null) continue;
+    if (typeof value === 'number') value = Number.isInteger(value) ? value : Math.round(value);
+    else if (typeof value === 'object') value = JSON.stringify(value);
+    parts.push(`${key.replace(/_/g, ' ')}: ${value}`);
+  }
+  if (!parts.length) return '';
+  let out = parts.join(', ');
+  if (out.length > PAYLOAD_SUMMARY_MAX_CHARS) {
+    out = out.slice(0, PAYLOAD_SUMMARY_MAX_CHARS);
+    truncated = true;
+  }
+  return truncated ? out + '…' : out;
+}
+
 export function notifText(kind, body) {
   switch (kind) {
     case 'BuildComplete':      return `Build complete: ${body.building_type || ''}`;
@@ -187,7 +222,20 @@ export function notifText(kind, body) {
       const found = deposits.length ? deposits.join(', ') : 'nothing of value';
       return `Explored (${body.q}, ${body.r}) — ${body.terrain || 'unknown terrain'}, ${found}`;
     }
-    default:                   return kind;
+    // Every kind above is hand-written; every kind NOT above used to fall
+    // through to `return kind`, silently discarding the payload — 17 verified
+    // NotifyPlayer kinds have no case here (2026-08-05 audit). keryx never had
+    // this problem: cmd_notifications.go always prints the whole body as raw
+    // JSON next to the kind, so the web client was structurally quieter than
+    // the terminal for exactly the notifs missing a case. This mirrors
+    // keryx's "print everything" behaviour in one readable line instead of
+    // raw JSON — ugly, but nothing is thrown away. Writing a real case here
+    // is a separate, per-kind slice (megaron_todo.md NU §"Striden har ingen
+    // informationsyta"); this arm is deliberately generic.
+    default: {
+      const summary = payloadSummary(body);
+      return summary ? `${kind} — ${summary}` : kind;
+    }
   }
 }
 
