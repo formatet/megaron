@@ -14,23 +14,15 @@ func TestLiveRadius_LandByEyeKind(t *testing.T) {
 		{EyeShip, 1},
 	}
 	for _, c := range cases {
-		if got := LiveRadius(c.kind, "plains"); got != c.want {
+		if got := LiveRadius(c.kind, false, "plains"); got != c.want {
 			t.Errorf("LiveRadius(%q, plains) = %d, want %d", c.kind, got, c.want)
 		}
 	}
 }
 
-// TestLiveRadius_SeaIsAlwaysFour verifies every eye kind sees 4 hexes over open
-// water (open water hides nothing), regardless of the eye's own vantage.
-func TestLiveRadius_SeaIsAlwaysFour(t *testing.T) {
-	for _, kind := range []string{EyeSettlement, EyeLandUnit, EyeShip} {
-		for _, terrain := range []string{"coastal_sea", "deep_sea"} {
-			if got := LiveRadius(kind, terrain); got != 4 {
-				t.Errorf("LiveRadius(%q, %q) = %d, want 4", kind, terrain, got)
-			}
-		}
-	}
-}
+// The sea radius lives in sea_horizon_test.go from 2026-08-05. What stood here —
+// "sea is always 4, regardless of the eye's own vantage" — was the bug itself:
+// the open horizon now requires the eye to stand at the water.
 
 // TestLiveRadius_MountainAddsTwo verifies mountains are landmarks visible +2 hexes
 // further than the eye's base land radius (settlement 5, land-unit 4, ship 3).
@@ -45,7 +37,7 @@ func TestLiveRadius_MountainAddsTwo(t *testing.T) {
 	}
 	for _, terrain := range []string{"mountain_limestone", "mountain_red"} {
 		for _, c := range cases {
-			if got := LiveRadius(c.kind, terrain); got != c.want {
+			if got := LiveRadius(c.kind, false, terrain); got != c.want {
 				t.Errorf("LiveRadius(%q, %q) = %d, want %d", c.kind, terrain, got, c.want)
 			}
 		}

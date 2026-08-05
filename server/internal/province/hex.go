@@ -60,15 +60,34 @@ const (
 // map position.
 type Eye struct {
 	Pos  MapPosition
-	Kind string // EyeSettlement | EyeLandUnit | EyeShip
+	Kind string // EyeSettlement | EyeLandUnit | EyeNomadicHost | EyeShip
+	// AtWater is true when the eye itself stands at open water: on a sea hex, or
+	// on a land hex with a sea neighbour (a coastal city, a unit on the shore).
+	// Only such an eye gets the open horizon — see LiveRadius. Set by LoadLiveEyes
+	// from the map; the zero value (false = inland) is the fail-closed default, so
+	// a hand-built or unclassified Eye can only ever see LESS, never more.
+	AtWater bool
 }
 
 // LiveRadius returns the live-vision radius for an eye of eyeKind looking at a tile
-// of targetTerrain. Sea hides nothing, so every eye sees 4 hexes over open water.
+// of targetTerrain. Sea hides nothing, but the open horizon belongs to whoever
+// STANDS at the water — a ship, a coastal city, a unit on the shore (eyeAtWater).
+// An eye inland reads the sea at its ordinary land vantage.
 // Land limits vision to the eye's own vantage (settlement 3 / land-unit 2 / ship 1),
 // except mountains, which are landmarks visible +2 hexes further regardless of eye.
-func LiveRadius(eyeKind string, targetTerrain string) int {
-	if targetTerrain == "coastal_sea" || targetTerrain == "deep_sea" {
+//
+// The eyeAtWater condition is new on 2026-08-05. Until then the sea branch returned
+// 4 before the eye was even read, so an army deep inland saw every sea hex within 4
+// (Timothy 2026-08-04: "där har vi ett designfel idag"). temenos_synlighet.md's
+// "sea = 4 for all eyes" is amended, not repealed: it is 4 for all eyes AT the water.
+func LiveRadius(eyeKind string, eyeAtWater bool, targetTerrain string) int {
+	// A naval unit floats on the sea by definition and always carries the open
+	// horizon. This is a domain truth, not a fallback for a missing lookup — a
+	// ship built by hand in a test must not read as inland.
+	if eyeKind == EyeShip {
+		eyeAtWater = true
+	}
+	if eyeAtWater && (targetTerrain == "coastal_sea" || targetTerrain == "deep_sea") {
 		return 4
 	}
 	// Deliberately NOT river: the sea's radius 4 comes from an open horizon over
@@ -85,9 +104,9 @@ func LiveRadius(eyeKind string, targetTerrain string) int {
 		base = 2
 	case EyeNomadicHost:
 		// Half a land unit's reach: a people on the move, not a scout. Only the
-		// BASE is lowered — the host still sees open sea at 4 and reads a mountain
-		// at 1+2 like anyone else (Timothy 2026-07-15). It is short-sighted, not
-		// blind: what it cannot do is peer across ordinary ground.
+		// BASE is lowered — a host ON the coast still reads open sea at 4, and it
+		// reads a mountain at 1+2 like anyone else (Timothy 2026-07-15). It is
+		// short-sighted, not blind: what it cannot do is peer across ordinary ground.
 		base = 1
 	}
 	if targetTerrain == "mountain_limestone" || targetTerrain == "mountain_red" {
@@ -100,7 +119,7 @@ func LiveRadius(eyeKind string, targetTerrain string) int {
 // of the given eyes, using the per-eye-kind × per-target-terrain radius.
 func AnyEyeSees(eyes []Eye, target MapPosition, targetTerrain string) bool {
 	for _, e := range eyes {
-		if HexDistance(e.Pos, target) <= LiveRadius(e.Kind, targetTerrain) {
+		if HexDistance(e.Pos, target) <= LiveRadius(e.Kind, e.AtWater, targetTerrain) {
 			return true
 		}
 	}
