@@ -165,7 +165,78 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		rRows.Close()
 	}
 
+	markEyesAtWater(ctx, db, worldID, eyes)
 	return eyes
+}
+
+// markEyesAtWater sets Eye.AtWater for every eye standing on a sea hex or beside
+// one — the open-horizon condition in LiveRadius. Runs as a post-pass because a
+// marching eye's position is only known after interpolation.
+//
+// Deliberately NOT map_tiles.coastal: migration 101 widened that column to mean
+// "adjacent to any water, river included", and a 1-hex river between banks opens
+// no horizon. This asks the terrain itself for sea, nothing else.
+//
+// One batched query over the eyes' own hexes ∪ their 6 neighbours (≤ 7·len(eyes)
+// hexes), not a full map load — the cost must not grow with map size.
+func markEyesAtWater(ctx context.Context, db Queryer, worldID uuid.UUID, eyes []Eye) {
+	if len(eyes) == 0 {
+		return
+	}
+
+	want := make(map[[2]int]bool, len(eyes)*7)
+	for _, e := range eyes {
+		want[[2]int{e.Pos.Q, e.Pos.R}] = true
+		for _, n := range HexNeighbors(e.Pos) {
+			want[[2]int{n.Q, n.R}] = true
+		}
+	}
+	qs := make([]int32, 0, len(want))
+	rs := make([]int32, 0, len(want))
+	for k := range want {
+		qs = append(qs, int32(k[0]))
+		rs = append(rs, int32(k[1]))
+	}
+
+	rows, err := db.Query(ctx,
+		`SELECT t.q, t.r
+		   FROM map_tiles t
+		   JOIN unnest($2::int[], $3::int[]) AS p(q, r) ON t.q = p.q AND t.r = p.r
+		  WHERE t.world_id = $1 AND t.terrain IN ('coastal_sea', 'deep_sea')`,
+		worldID, qs, rs,
+	)
+	if err != nil {
+		// Fail closed: every eye keeps AtWater=false and reads the sea at its
+		// ordinary land vantage. A failed lookup may hide fog, never reveal it.
+		return
+	}
+	sea := make(map[[2]int]bool)
+	for rows.Next() {
+		var q, r int
+		if rows.Scan(&q, &r) == nil {
+			sea[[2]int{q, r}] = true
+		}
+	}
+	rows.Close()
+
+	markAtWater(eyes, sea)
+}
+
+// markAtWater is the pure half of markEyesAtWater: given the set of sea hexes,
+// flag every eye that stands on one or neighbours one. Mutates eyes in place.
+func markAtWater(eyes []Eye, sea map[[2]int]bool) {
+	for i := range eyes {
+		if sea[[2]int{eyes[i].Pos.Q, eyes[i].Pos.R}] {
+			eyes[i].AtWater = true
+			continue
+		}
+		for _, n := range HexNeighbors(eyes[i].Pos) {
+			if sea[[2]int{n.Q, n.R}] {
+				eyes[i].AtWater = true
+				break
+			}
+		}
+	}
 }
 
 // InterpolateAlongPath returns a marching unit's live-vision position: its location
