@@ -90,7 +90,7 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 	// embarked units carry no position; they move with their ship. Kingdoms are
 	// post-MVP and disabled, so every non-owner row here is treated as foreign.
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT u.id, u.owner_id, COALESCE(pl.username,''), u.type, u.category, u.size, u.crew,
+		`SELECT u.id, u.owner_id, COALESCE(pl.wanax_name, pl.username, ''), u.type, u.category, u.size, u.crew,
 		        u.status, u.stance, u.q, u.r,
 		        u.target_q, u.target_r, u.departs_at, u.arrives_at, u.depart_tick, u.arrive_tick
 		 FROM units u

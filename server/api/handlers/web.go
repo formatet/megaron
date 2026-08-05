@@ -286,7 +286,7 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 
 	var wanax string
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT username FROM players WHERE id = $1`, playerID).Scan(&wanax)
+		`SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, playerID).Scan(&wanax)
 	if wanax == "" {
 		wanax = "en okänd Wanax"
 	}

@@ -243,7 +243,7 @@ the confirmation. To found somewhere else: march the host there first
 	}
 
 	cmd.Flags().StringVar(&name, "name", "", "metropolis name (default: culture-appropriate)")
-	cmd.Flags().StringVar(&culture, "culture", "", "culture (default: akhaier)")
+	cmd.Flags().StringVar(&culture, "culture", "", "culture (MVP: minoan only)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the interactive confirmation (required for non-interactive/agent use); the forecast is still printed")
 	return cmd
 }

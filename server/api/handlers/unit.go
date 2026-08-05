@@ -1145,7 +1145,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	// Wanaxens namn behövs för Nomadic Host — den hör till en PERSON, inte till
 	// en stad, eftersom den existerar innan någon stad gör det.
 	var wanax string
-	_ = h.pool.QueryRow(r.Context(), `SELECT username FROM players WHERE id = $1`, playerID).Scan(&wanax)
+	_ = h.pool.QueryRow(r.Context(), `SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, playerID).Scan(&wanax)
 	summaries := unitSummaries(units, currentTick, h.clk,
 		settlementNames(r.Context(), h.pool, worldID, playerID), wanax)
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)

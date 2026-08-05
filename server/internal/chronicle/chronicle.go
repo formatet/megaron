@@ -229,7 +229,7 @@ func (c *Chronicler) playerName(ctx context.Context, id uuid.UUID) string {
 		return n
 	}
 	var name string
-	_ = c.pool.QueryRow(ctx, `SELECT username FROM players WHERE id = $1`, id).Scan(&name)
+	_ = c.pool.QueryRow(ctx, `SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, id).Scan(&name)
 	if name == "" {
 		name = "okänd Wanax"
 	}
@@ -243,7 +243,7 @@ func (c *Chronicler) settlementOwnerName(ctx context.Context, settlementID uuid.
 	}
 	var name string
 	_ = c.pool.QueryRow(ctx,
-		`SELECT p.username FROM players p JOIN settlements s ON s.owner_id = p.id WHERE s.id = $1`,
+		`SELECT COALESCE(p.wanax_name, p.username) FROM players p JOIN settlements s ON s.owner_id = p.id WHERE s.id = $1`,
 		settlementID).Scan(&name)
 	c.settlementOwners[settlementID] = name
 	return name

@@ -795,7 +795,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r, p.terrain_type,
-		        s.state, s.wall_level, s.population, COALESCE(pl.username, ''), COALESCE(k.name, ''),
+		        s.state, s.wall_level, s.population, COALESCE(pl.wanax_name, pl.username, ''), COALESCE(k.name, ''),
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
 		        EXISTS (SELECT 1 FROM scheduled_events se WHERE se.event_type = 'TrainComplete'
@@ -886,7 +886,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	// Also include outpost provinces (controlled by a player but no settlement row).
 	orows, _ := h.pool.Query(r.Context(),
-		`SELECT p.id, p.map_q, p.map_r, p.terrain_type, p.owner_id, pl.username
+		`SELECT p.id, p.map_q, p.map_r, p.terrain_type, p.owner_id, COALESCE(pl.wanax_name, pl.username)
 		 FROM provinces p
 		 JOIN players pl ON pl.id = p.owner_id
 		 WHERE p.world_id = $1 AND p.outpost_feeds IS NOT NULL
@@ -1416,7 +1416,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
+		`SELECT s.id, s.name, COALESCE(p.wanax_name, p.username), s.culture_id, prov.terrain_type,
 		        (SELECT k.name FROM kingdoms k
 		         JOIN kingdom_members km ON km.kingdom_id = k.id
 		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
@@ -1534,7 +1534,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 	remembered := loadRememberedTiles(ctx, h.pool, worldID, playerID)
 
 	rows, err := h.pool.Query(ctx,
-		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
+		`SELECT s.id, s.name, COALESCE(p.wanax_name, p.username), s.culture_id, prov.terrain_type,
 		        (SELECT k.name FROM kingdoms k
 		         JOIN kingdom_members km ON km.kingdom_id = k.id
 		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),
@@ -1601,7 +1601,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 
 	// Rumour tier: settlements heard of via gossip but never seen/remembered/contacted.
 	rumourRows, err := h.pool.Query(ctx,
-		`SELECT s.id, s.name, p.username, s.culture_id, prov.terrain_type,
+		`SELECT s.id, s.name, COALESCE(p.wanax_name, p.username), s.culture_id, prov.terrain_type,
 		        (SELECT k.name FROM kingdoms k
 		         JOIN kingdom_members km ON km.kingdom_id = k.id
 		         WHERE km.player_id = s.owner_id AND k.world_id = $1 LIMIT 1),

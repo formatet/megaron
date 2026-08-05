@@ -88,7 +88,7 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 	settRows, err := h.pool.Query(r.Context(),
 		`SELECT s.id, s.name, s.state, s.culture_id,
 		        p.map_q, p.map_r, p.terrain_type,
-		        COALESCE(pl.username, ''), s.owner_id,
+		        COALESCE(pl.wanax_name, pl.username, ''), s.owner_id,
 		        s.population, s.wall_level,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        COALESCE(k.name, ''),
