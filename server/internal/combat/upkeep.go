@@ -55,13 +55,20 @@ type UpkeepSpec struct {
 // inte med size alls, och "dubbelt så mycket som en medborgare" har därför
 // ingen innebörd för en besättning på det sättet landenheternas har för en
 // soldat. UnitUpkeep dubblar därför aldrig navalt grain, oavsett status.
+//
+// Silverkolumnen halverad (SLICE B, Timothy 2026-08-05): AG3 = lägre
+// silverupkeep, formen "halvera hela tabellen". Grain rörs inte — slice A
+// satte det. nomadicHostRationTicks (api/handlers/nomadic_host.go) dubblades
+// i SAMMA slice, annars hade halveringen tyst halverat startsilvret också
+// och grinden (480 ska räcka märkbart längre än 48 speldygn) hade landat på
+// exakt samma 48 som innan.
 var UpkeepSpecs = map[string]UpkeepSpec{
-	"spearman":       {Grain: 50, Silver: 2},
-	"elite_infantry": {Grain: 60, Silver: 4},
-	"war_chariot":    {Grain: 80, Silver: 6},
-	"galley":         {Grain: 4, Silver: 3},
-	"war_galley":     {Grain: 6, Silver: 5},
-	"merchantman":    {Grain: 3, Silver: 2},
+	"spearman":       {Grain: 50, Silver: 1},
+	"elite_infantry": {Grain: 60, Silver: 2},
+	"war_chariot":    {Grain: 80, Silver: 3},
+	"galley":         {Grain: 4, Silver: 1.5},
+	"war_galley":     {Grain: 6, Silver: 2.5},
+	"merchantman":    {Grain: 3, Silver: 1},
 	"priest":         {Grain: 0, Silver: 0},
 }
 

@@ -25,15 +25,15 @@ func TestUnitUpkeep_Status(t *testing.T) {
 		wantGrain  float64
 		wantSilver float64
 	}{
-		{"garrison spearman full size", "spearman", "land", 100, "garrison", 50, 2},
-		{"marching spearman full size — silver unchanged", "spearman", "land", 100, "marching", 100, 2},
-		{"positioned spearman half size", "spearman", "land", 50, "positioned", 50, 1},
-		{"garrison galley — naval never doubles", "galley", "naval", 1, "garrison", 4, 3},
-		{"marching galley — naval never doubles", "galley", "naval", 1, "marching", 4, 3},
-		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 60, 4},
-		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 120, 4},
-		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 80, 6},
-		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 160, 6},
+		{"garrison spearman full size", "spearman", "land", 100, "garrison", 50, 1},
+		{"marching spearman full size — silver unchanged", "spearman", "land", 100, "marching", 100, 1},
+		{"positioned spearman half size", "spearman", "land", 50, "positioned", 50, 0.5},
+		{"garrison galley — naval never doubles", "galley", "naval", 1, "garrison", 4, 1.5},
+		{"marching galley — naval never doubles", "galley", "naval", 1, "marching", 4, 1.5},
+		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 60, 2},
+		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 120, 2},
+		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 80, 3},
+		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 160, 3},
 		{"priest costs nothing regardless of status", "priest", "land", 100, "marching", 0, 0},
 		{"unknown type costs nothing regardless of status", "slinger", "land", 100, "marching", 0, 0},
 	}

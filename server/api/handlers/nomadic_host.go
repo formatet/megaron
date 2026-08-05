@@ -20,21 +20,25 @@ const (
 	nomadicHostSpearmen     = 2
 	nomadicHostSpearmenSize = 100 // men per cohort
 
-	// nomadicHostRationTicks is how long the escort's pay lasts: four game
-	// months (2 880 ticks = 120 game days at 24 ticks/day).
+	// nomadicHostRationTicks is how long the escort's pay lasts: eight game
+	// months (5 760 ticks = 240 game days at 24 ticks/day).
 	//
 	// The figure is sized in the player's time, not the world's: at the intended
-	// cadence (TICK_MINUTES=2, ~1 game month per real day) this is ~4 real days —
-	// long enough to sleep on the decision, which an async game must allow. Four
-	// game DAYS, the number the design first named, would have been ~3 real hours:
-	// log off overnight, come back to a starved escort.
+	// cadence (TICK_MINUTES=2, ~1 game month per real day) 2 880 ticks was ~4
+	// real days — long enough to sleep on the decision, which an async game must
+	// allow. Four game DAYS, the number the design first named, would have been
+	// ~3 real hours: log off overnight, come back to a starved escort.
 	//
-	// It is affordable only because the host itself eats nothing: 2 880 ticks of
-	// escort silver keep is ~480 silver, which is modest to carry into the new
-	// metropolis (an ordinary city seeds with 300 grain). (Decision Timothy
-	// 2026-07-15.) Grain no longer follows from this constant at all — see
-	// nomadicHostDowryGrain below (SLICE A, 2026-08-05).
-	nomadicHostRationTicks = 2880
+	// SLICE B (Timothy 2026-08-05) doubled this from 2 880: halving UpkeepSpecs'
+	// silver column on its own would have halved silverAmount below (480→240)
+	// right along with it, leaving 240/(halved drain) = the same 48 game days as
+	// before the slice — zero effect against the grind Timothy set (480 silver
+	// should noticeably outlast 48 game days for two spearmen + two galleys).
+	// Doubling the ticks here is deliberately longer than the escort's own
+	// reckoning — 5 760 ticks = 240 game days for the escort alone — and it is
+	// the whole plaster: silverAmount stays at 480, so every silver-affordability
+	// row in the game doubles in game-days instead of moving by zero.
+	nomadicHostRationTicks = 5760
 
 	// nomadicHostDowryGrain is the grain the horde carries into the metropolis
 	// at founding — a BALANCE FIGURE, not a derivation. It was originally

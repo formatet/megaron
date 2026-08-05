@@ -18,12 +18,12 @@ func TestUnitUpkeep(t *testing.T) {
 		wantGrain  float64
 		wantSilver float64
 	}{
-		{"land spearman full size", "spearman", "land", 100, 50, 2},
-		{"land spearman 141 scales up", "spearman", "land", 141, 70.5, 2.82},
-		{"land elite half size", "elite_infantry", "land", 50, 30, 2},
-		{"naval galley flat at size 1", "galley", "naval", 1, 4, 3},
-		{"naval galley flat even if size>1", "galley", "naval", 5, 4, 3},
-		{"naval war_galley flat", "war_galley", "naval", 3, 6, 5},
+		{"land spearman full size", "spearman", "land", 100, 50, 1},
+		{"land spearman 141 scales up", "spearman", "land", 141, 70.5, 1.41},
+		{"land elite half size", "elite_infantry", "land", 50, 30, 1},
+		{"naval galley flat at size 1", "galley", "naval", 1, 4, 1.5},
+		{"naval galley flat even if size>1", "galley", "naval", 5, 4, 1.5},
+		{"naval war_galley flat", "war_galley", "naval", 3, 6, 2.5},
 		{"priest costs nothing", "priest", "land", 100, 0, 0},
 		{"unknown type costs nothing", "slinger", "land", 100, 0, 0},
 	}

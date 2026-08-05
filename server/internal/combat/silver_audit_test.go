@@ -108,8 +108,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	mkGood(sA, "grain", 10000, 0, 100000)
 	mkGood(sB, "silver", 10000, 0, 100000)
 	mkGood(sB, "grain", 10000, 0, 100000)
-	mkUnit(p1, sA, "spearman", 100)    // garrison: grain 50, silver 2 (SLICE A, 2026-08-05)
-	mkUnit(p2, sB, "war_chariot", 100) // garrison: grain 80, silver 6
+	mkUnit(p1, sA, "spearman", 100)    // garrison: grain 50, silver 1 (SLICE A grain, SLICE B silver, both 2026-08-05)
+	mkUnit(p2, sB, "war_chariot", 100) // garrison: grain 80, silver 3
 
 	// Escrow: one pending BUY offer holds 250 silver. A SELL offer (escrows goods)
 	// and a non-pending offer must both be ignored by the audit.
@@ -162,11 +162,12 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 		}
 	}
 	// Both units pay in full → no circulation (no soldShare), no unpaid, empty map.
-	wantSettled("Argyros", readSettled(sA), settled{paid: 1, unpaid: 0, grain: 50, gross: 2, circ: 0, destroyed: 2, unpaidSilver: 0, circulatedTo: "{}"})
-	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 80, gross: 6, circ: 0, destroyed: 6, unpaidSilver: 0, circulatedTo: "{}"})
+	wantSettled("Argyros", readSettled(sA), settled{paid: 1, unpaid: 0, grain: 50, gross: 1, circ: 0, destroyed: 1, unpaidSilver: 0, circulatedTo: "{}"})
+	wantSettled("Bare", readSettled(sB), settled{paid: 1, unpaid: 0, grain: 80, gross: 3, circ: 0, destroyed: 3, unpaidSilver: 0, circulatedTo: "{}"})
 
 	// ── SilverAudit stocks (first audit ⇒ no prev, mined 0, delta 0). ──
-	// A: 10000 − 2 = 9998; B: 10000 − 6 = 9994 → liquid 19992. fund_total is 0
+	// A: 10000 − 1 = 9999; B: 10000 − 3 = 9997 → liquid 19996 (SLICE B halved
+	// silver, 2026-08-05 — grain is untouched by the audit). fund_total is 0
 	// from migration 106 on: the Sitos fund is gone, the granary holds food and
 	// never silver (B3). The field stays in the payload because event semantics
 	// are frozen — an old audit row still means what it meant — so it is asserted
@@ -187,8 +188,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	}
 	approx := func(got, want float64) bool { return math.Abs(got-want) < 1e-6 }
 	a1 := readAudit()
-	if !approx(a1.liquid, 19992) || !approx(a1.fund, 0) || !approx(a1.escrow, 250) {
-		t.Errorf("audit1 stocks = liquid %.2f fund %.2f escrow %.2f, want 19992/0/250", a1.liquid, a1.fund, a1.escrow)
+	if !approx(a1.liquid, 19996) || !approx(a1.fund, 0) || !approx(a1.escrow, 250) {
+		t.Errorf("audit1 stocks = liquid %.2f fund %.2f escrow %.2f, want 19996/0/250", a1.liquid, a1.fund, a1.escrow)
 	}
 	if !approx(a1.mined, 0) || !approx(a1.delta, 0) {
 		t.Errorf("audit1 mined/delta = %.4f/%.4f, want 0/0 (first audit)", a1.mined, a1.delta)
