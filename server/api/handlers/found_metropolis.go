@@ -188,21 +188,42 @@ func foundMetropolisFromNomadicHost(
 		return out, err
 	}
 
-	// 5. The escort comes home: the cohorts become an ordinary garrison, and
-	// combat.UpkeepHandler takes them over the moment the phase goes inactive
-	// (step 7). From here they draw pay and eat from the city like any other unit.
+	// 5. Adoption is AUTOMATIC and UNCONDITIONAL (Timothy 2026-08-05,
+	// temenos_enheter.md §"Canon 2026-08-05"): every unit the Wanax still owns
+	// in the founder phase gets support_settlement_id set, wherever it stands.
+	// Position must never be a condition on THAT — the founder phase exists so
+	// the horde can wander and scout ground, and a cohort that did exactly
+	// that (marched off the founding hex before the Wanax settled) is playing
+	// the phase correctly, not forfeiting its payer. That was the bug found in
+	// play: a moved cohort never got support_settlement_id, and since mig 100
+	// that column is the sole payer of grain and silver upkeep — it starved
+	// silently from a fully solvent metropolis.
 	//
-	// **support_settlement_id måste sättas HÄR.** Eskorten föds i grundarfasen,
-	// innan någon stad finns, så den har ingen försörjande stad — och sedan
-	// mig 100 är den kolumnen den enda betalaren. Utan den här raden skulle
-	// eskorten sluta få sold i samma ögonblick som grundarfasen tar slut och
-	// börja desertera från en fullt solvent metropolis. Metropolisen ÄR staden
-	// som reste dem; det är bara det att den inte fanns när de restes.
+	// Garrisoning IS still positional, but only as a convenience for whoever
+	// already stands on the founding hex — never a relocation. A cohort
+	// standing elsewhere keeps its status/q/r exactly as they were; it merely
+	// gains a payer. The CASE arms all read the pre-UPDATE row (Postgres
+	// evaluates every SET expression against the OLD row), so they agree with
+	// each other and with the WHERE clause below on the same "is this unit on
+	// the founding hex" test.
+	//
+	// status <> 'disbanded' rather than an allow-list of statuses: an
+	// allow-list that forgets a value (e.g. 'embarked') reintroduces exactly
+	// the silent orphaning this fix exists to close. Status enum: garrison,
+	// marching, positioned, forming, embarked, disbanded.
 	escortRows, err := tx.Query(ctx,
-		`UPDATE units SET settlement_id = $1, support_settlement_id = $1,
-		                  status = 'garrison', q = NULL, r = NULL
+		`UPDATE units SET
+		   support_settlement_id = $1,
+		   settlement_id = CASE WHEN status = 'positioned' AND q = $5 AND r = $6
+		                        THEN $1 ELSE settlement_id END,
+		   status        = CASE WHEN status = 'positioned' AND q = $5 AND r = $6
+		                        THEN 'garrison' ELSE status END,
+		   q             = CASE WHEN status = 'positioned' AND q = $5 AND r = $6
+		                        THEN NULL ELSE q END,
+		   r             = CASE WHEN status = 'positioned' AND q = $5 AND r = $6
+		                        THEN NULL ELSE r END
 		 WHERE world_id = $2 AND owner_id = $3 AND id <> $4
-		   AND status = 'positioned' AND q = $5 AND r = $6
+		   AND status <> 'disbanded'
 		 RETURNING id, type`,
 		m.SettlementID, worldID, playerID, hostID, q, r,
 	)

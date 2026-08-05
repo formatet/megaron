@@ -81,24 +81,29 @@ func seedNomadicHost(
 		spearIDs = append(spearIDs, id)
 	}
 
-	// The store feeds and pays the ESCORT ONLY. The host itself has no upkeep at
-	// all while it wanders (decision Timothy 2026-07-15): a people on the move
-	// forages as it goes, and does not eat like a city of 4 000 sitting still.
-	// That is also what keeps the founding honest — were the 4 000 fed from the
-	// store, four days of city rations would pour into the new metropolis and
-	// drown the geography→scarcity pressure the opening exists to create.
+	// The store pays the ESCORT's sold. Kanon 2026-08-05 (temenos_enheter.md
+	// §"Canon 2026-08-05"): the horde AND its escort live on subsistence up to
+	// founding — a people on the move carries its own rations and does not
+	// draw from a granary that does not exist. Grain is therefore not drained
+	// at all; it is carried: the whole store is poured into the metropolis at
+	// founding as a dowry (Timothy 2026-08-05). Sold IS still paid — it is
+	// owed to men who serve, unlike food to a people feeding itself.
 	//
 	// Rates come from the same functions the settled game uses, never hardcoded,
 	// so a calibration change moves the founder phase with it. UpkeepSpecs is per
 	// DAY (combat/upkeep.go:13, fired every TicksPerDay) and must be divided down
 	// before it can sit beside a per-tick rate.
 	perDay := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize)
-	grainRate := -float64(nomadicHostSpearmen) * perDay.Grain / float64(events.TicksPerDay)
+	grainPerTick := float64(nomadicHostSpearmen) * perDay.Grain / float64(events.TicksPerDay)
+	grainRate := 0.0
 	silverRate := -float64(nomadicHostSpearmen) * perDay.Silver / float64(events.TicksPerDay)
 
-	// Amounts follow from the rates, so the two can never disagree about how long
-	// the escort lasts.
-	grainAmount := -grainRate * nomadicHostRationTicks
+	// grainAmount no longer follows from grainRate (that would be 0): it is the
+	// dowry the escort carries, sized exactly as before so the founding payout
+	// doesn't change — only the drain stops. silverAmount still follows its
+	// rate, so grain and silver can never disagree about how long the escort's
+	// pay lasts.
+	grainAmount := grainPerTick * nomadicHostRationTicks
 	silverAmount := -silverRate * nomadicHostRationTicks
 
 	// Upsert, not insert: founder_phase is unique per (world, owner), and a Wanax
