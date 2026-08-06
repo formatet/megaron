@@ -62,6 +62,16 @@ type inFlightTransport struct {
 func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
 
+	// Terrain for the FOW gate below (§4): AnyEyeSees needs the target hex's terrain
+	// to size the interceptor's vision per eye-kind. Load the graph once for the whole
+	// sweep. Sentry owner → their live eyes is memoised the same way — many caravans
+	// may be caught by the same Wanax, and eyes are fixed for this `now`.
+	graph, err := province.LoadTileGraph(ctx, h.pool, e.WorldID)
+	if err != nil {
+		return fmt.Errorf("intercept scan: load terrain: %w", err)
+	}
+	eyesByOwner := map[uuid.UUID][]province.Eye{}
+
 	rows, err := h.pool.Query(ctx,
 		`SELECT id, owner_id, origin_q, origin_r, dest_q, dest_r, category, departs_at, arrives_at
 		 FROM transports
@@ -122,6 +132,26 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 			e.WorldID, t.owner, pos.Q, pos.R, interceptRadius,
 		).Scan(&sentryID, &interceptor); qErr != nil {
 			continue // no sentry in reach
+		}
+
+		// FOW gate (avsiktslagret §4): a sentry may only seize what its OWNER can
+		// actually SEE right now — reuse the SAME gate /foreign-units uses
+		// (LoadLiveEyes + AnyEyeSees) against the caravan's live interpolated
+		// position, so a sentry is never an all-seeing tripwire ("allvetande
+		// snubbeltråd"). A naval sentry within interceptRadius but beyond its own
+		// short land horizon no longer grabs a caravan blind. Fail closed: no
+		// terrain row for the hex → treat as unseen, never guess.
+		terrain, known := graph[[2]int{pos.Q, pos.R}]
+		if !known {
+			continue
+		}
+		eyes, cached := eyesByOwner[interceptor]
+		if !cached {
+			eyes = province.LoadLiveEyes(ctx, h.pool, e.WorldID, interceptor, now)
+			eyesByOwner[interceptor] = eyes
+		}
+		if !province.AnyEyeSees(eyes, pos, terrain) {
+			continue // the sentry's owner has never laid eyes on this caravan
 		}
 
 		if err := h.seize(ctx, e.WorldID, t, sentryID, interceptor, pos); err != nil {
