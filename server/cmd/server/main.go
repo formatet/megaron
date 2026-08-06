@@ -180,6 +180,8 @@ func main() {
 	// stay silently "marching" forever with no player-facing signal.
 	worker.RegisterDeadLetterHook(events.ScheduledUnitArrival, unitArrivalH.NotifyDeadLetter)
 	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
+	battleTickH := combat.NewBattleTickHandler(pool, eventStore, scheduler)
+	worker.Register(events.ScheduledBattleTick, battleTickH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler, hub)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub)

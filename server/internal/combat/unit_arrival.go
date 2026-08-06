@@ -52,11 +52,18 @@ type UnitArrivalHandler struct {
 	scheduler  *events.Scheduler
 	clk        clock.Clock
 	sitosCfg   economy.SitosConfig
+	// Dice is the KR3 battle-seed source (megaron_plan_kr3_stridssystem.md §3):
+	// initiateOrJoinBattle draws battles.seed from it exactly once, at battle
+	// creation. Exported so tests can override for a deterministic seed —
+	// same pattern as economy.DeliveryHandler.Dice. Defaults to
+	// economy.NewWallDice() (production behaviour); nil-safe (startBattle
+	// falls back to NewWallDice() if left nil).
+	Dice economy.Dice
 }
 
 // NewUnitArrivalHandler creates a UnitArrivalHandler.
 func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig) *UnitArrivalHandler {
-	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg}
+	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg, Dice: economy.NewWallDice()}
 }
 
 // Handle processes one ScheduledUnitArrival scheduled event.

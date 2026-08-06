@@ -7,6 +7,13 @@ package combat
 // unit simply co-located with the enemy, no combat at all. This test drives
 // resolve() (not resolveFieldCombat directly) so it also proves the gate in
 // resolve() itself routes to combat instead of a peaceful arrival.
+//
+// KR3 update (megaron_plan_kr3_stridssystem.md §1): resolve() no longer
+// resolves the fight itself — it only initiates a persistent battles row via
+// initiateOrJoinBattle. This test now asserts that initiation (a battle +
+// both participants exist right after arrival, still at full size), then
+// drives BattleTickHandler to completion to reach the same final outcome the
+// old one-shot test asserted directly.
 
 import (
 	"context"
@@ -117,10 +124,46 @@ func TestResolve_HostileFieldUnitOnSettlementlessHexTriggersCombat(t *testing.T)
 	}
 
 	// The bug: both units ending up 'positioned' at (1,0) with full size and
-	// no loss on either side. The fix: combat resolved — with 100x the
-	// strength, the attacker must win, so the defender's unit is disbanded
-	// (or reduced) and the attacker is positioned there having taken some
-	// losses (not still at its pre-battle size of 1000).
+	// no loss on either side, because no battle was even initiated. The fix:
+	// resolve() no longer no-ops — the arriving unit is immediately positioned
+	// (holding the contested hex) and a battles row now exists for (1,0).
+	var attackerStatus string
+	if err := pool.QueryRow(ctx,
+		`SELECT status FROM units WHERE id = $1`, attackerUnitID,
+	).Scan(&attackerStatus); err != nil {
+		t.Fatalf("read attacker unit: %v", err)
+	}
+	if attackerStatus != "positioned" {
+		t.Errorf("attacker unit status = %q, want \"positioned\" (holding the contested hex while KR3 resolves it) — no combat occurred, the P2 bug is back", attackerStatus)
+	}
+
+	var battleID uuid.UUID
+	var battleStatus string
+	if err := pool.QueryRow(ctx,
+		`SELECT id, status FROM battles WHERE world_id = $1 AND q = 1 AND r = 0`, worldID,
+	).Scan(&battleID, &battleStatus); err != nil {
+		t.Fatalf("read battle: %v (no battles row — initiateOrJoinBattle did not run)", err)
+	}
+	if battleStatus != "active" {
+		t.Fatalf("battle status = %q, want \"active\" immediately after initiation — no dice have been rolled yet", battleStatus)
+	}
+
+	var participantCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM battle_participants WHERE battle_id = $1`, battleID,
+	).Scan(&participantCount); err != nil {
+		t.Fatalf("count battle participants: %v", err)
+	}
+	if participantCount != 2 {
+		t.Errorf("battle_participants count = %d, want 2 (attacker + defender)", participantCount)
+	}
+
+	// Drive the battle to its conclusion (§2's state machine, not resolve()
+	// itself) — with 100x the strength, the attacker must annihilate the
+	// defender within a handful of battle-ticks.
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler)
+	runBattleToEnd(t, pool, battleH, worldID, battleID, 20)
+
 	var defenderStatus string
 	if err := pool.QueryRow(ctx,
 		`SELECT status FROM units WHERE id = $1`, defenderUnitID,
@@ -128,20 +171,18 @@ func TestResolve_HostileFieldUnitOnSettlementlessHexTriggersCombat(t *testing.T)
 		t.Fatalf("read defender unit: %v", err)
 	}
 	if defenderStatus != "disbanded" {
-		t.Errorf("defender unit status = %q, want \"disbanded\" (overwhelmed attacker must destroy it) — no combat occurred, the P2 bug is back", defenderStatus)
+		t.Errorf("defender unit status = %q, want \"disbanded\" (overwhelmed attacker must destroy it within 20 battle-ticks)", defenderStatus)
 	}
 
-	var attackerStatus string
 	var attackerSize int
-	if err := pool.QueryRow(ctx,
-		`SELECT status, size FROM units WHERE id = $1`, attackerUnitID,
-	).Scan(&attackerStatus, &attackerSize); err != nil {
-		t.Fatalf("read attacker unit: %v", err)
+	if err := pool.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, attackerUnitID).Scan(&attackerSize); err != nil {
+		t.Fatalf("read attacker size: %v", err)
 	}
-	if attackerStatus != "positioned" {
-		t.Errorf("attacker unit status = %q, want \"positioned\" (victorious field battle)", attackerStatus)
-	}
-	if attackerSize >= 1000 {
-		t.Errorf("attacker size = %d, want < 1000 (a resolved battle applies at least some losses)", attackerSize)
+	// A resolved KR3 battle rolls discrete T12 dice (§4) rather than a
+	// deterministic %-loss formula — an overwhelming 1000-vs-10 win can
+	// plausibly cost the winner zero men, so this only asserts it never
+	// GAINS men and the battle actually concluded (defender wiped above).
+	if attackerSize > 1000 || attackerSize <= 0 {
+		t.Errorf("attacker size = %d, want in (0, 1000]", attackerSize)
 	}
 }

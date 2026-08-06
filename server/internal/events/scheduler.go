@@ -102,6 +102,14 @@ const (
 	// counterpart of ScheduledInterceptScan, which only ever covers caravans.
 	// Substrate for KR2 (marscherande härar möts).
 	ScheduledUnitInterceptScan ScheduledEventType = "UnitInterceptScan"
+	// ScheduledBattleTick advances one active KR3 battle (megaron_plan_kr3_stridssystem.md
+	// §2) by one battle-tick: sample participation, resolve battleRoundsPerTick
+	// rounds, apply losses, check termination, and — unless the battle just
+	// ended — re-enqueue itself for the next tick. One instance of this event
+	// exists per ACTIVE battle (unlike the world-wide recurring scans above),
+	// created by initiateOrJoinBattle and self-perpetuating via
+	// EnqueueTickRecurring until the battle ends.
+	ScheduledBattleTick ScheduledEventType = "BattleTick"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.
