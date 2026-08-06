@@ -47,10 +47,8 @@ func loadSettlement(ctx context.Context, pool *pgxpool.Pool, id, worldID uuid.UU
 		        -- Army = the units-table garrison (single source of truth since the
 		        -- SB7 drop of the frozen settlements.* army columns). Same source the
 		        -- combat resolver reads, so shown army == army that actually fights.
-		        -- priest is no longer a unit → always 0.
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='spearman'),0)::int,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='war_chariot'),0)::int,
-		        0,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='galley'),0)::int,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='elite_infantry'),0)::int,
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id=settlements.id AND u.status='garrison' AND u.type='war_galley'),0)::int,
@@ -118,7 +116,7 @@ func scanSettlement(row pgx.Row) (*settlement.Settlement, error) {
 		&s.GovernorID, &s.GovernorIsAI,
 		&s.Loyalty, &s.LoyaltyTrend, &s.WallLevel, &s.IsCapital, &s.State, &s.Population,
 		&s.Resources.Silver.Amount, &s.Resources.Silver.RatePerMinute, &s.Resources.Silver.Cap, &silverCalcAt,
-		&s.Army.Spearman, &s.Army.WarChariot, &s.Army.Priest, &s.Army.Ship, &s.Army.EliteInfantry,
+		&s.Army.Spearman, &s.Army.WarChariot, &s.Army.Ship, &s.Army.EliteInfantry,
 		&s.Army.WarGalley, &s.Army.Merchantman,
 		&s.UpdatedAt,
 	)

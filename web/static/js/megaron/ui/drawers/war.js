@@ -495,7 +495,7 @@ function renderUnitCard(u) {
   // Action buttons
   let actions = '';
 
-  // March button: garrison or positioned (non-priest), deployable per the
+  // March button: garrison or positioned, deployable per the
   // server's own march grind (march_start.go:120-136 — status must be garrison
   // or positioned, and fortify stance blocks it). The server has NO size gate:
   // a battle-worn cohort below 100 men can still march, so the client must not
@@ -506,14 +506,14 @@ function renderUnitCard(u) {
   // allows marching a positioned unit; this just surfaces the button. (The
   // map right-click used to read the unit's own hex as the target — fixed by
   // routing that click to warFocusUnit, landing here, render/map.js contextmenu.)
-  const canMarch = (isGarrison || isPositioned) && u.type !== 'priest' && u.deployable && u.stance !== 'fortify';
+  const canMarch = (isGarrison || isPositioned) && u.deployable && u.stance !== 'fortify';
   if (canMarch) {
     actions += '<button onclick="unitMarch(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> ';
   }
 
-  // Stance buttons: garrison or positioned, non-priest, land only — naval
+  // Stance buttons: garrison or positioned, land only — naval
   // units carry no stance (ship-build overhaul 2026-07-09).
-  if ((isGarrison || isPositioned) && u.type !== 'priest' && !isNaval) {
+  if ((isGarrison || isPositioned) && !isNaval) {
     actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
       + '<option value="none">stance…</option>'
       + '<option value="fortify">fortify</option>'
@@ -694,7 +694,7 @@ export function unitLoadPrompt(shipID, settlementID) {
     // says size=100 but the code dropped that gate; same bug, same fix here).
     const candidates = units.filter(u =>
       u.category === 'land' && u.status === 'garrison' && u.deployable &&
-      u.settlement_id === settlementID && u.type !== 'priest'
+      u.settlement_id === settlementID
     );
     if (!candidates.length) {
       if (shipEl) { shipEl.style.color='var(--accent)'; shipEl.textContent='No eligible land unit at this city to load.'; }

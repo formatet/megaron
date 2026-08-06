@@ -109,7 +109,7 @@ export async function loadKultDrawer() {
           statusHtml = `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Perform →</button>`;
         }
 
-        // The priests' reading: an offering is composed now, and its worth turns
+        // The temple's reading: an offering is composed now, and its worth turns
         // on world scarcity a Wanax cannot see through the fog. The temple knows
         // what this god favours and what it expects — say both here, where the
         // choice is made, or composing is guesswork.

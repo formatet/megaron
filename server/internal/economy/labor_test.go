@@ -80,7 +80,6 @@ func TestPopCosts_MirrorTrainingGo(t *testing.T) {
 	expected := map[string]int{
 		"spearman":       5,
 		"war_chariot":    8,
-		"priest":         3,
 		"galley":         10,
 		"elite_infantry": 10,
 		"war_galley":     12,

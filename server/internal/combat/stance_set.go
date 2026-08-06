@@ -55,9 +55,6 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 	if u.WorldID != o.WorldID {
 		return nil, reject(http.StatusForbidden, "unit not in this world")
 	}
-	if u.Type == unit.TypePriest {
-		return nil, reject(http.StatusUnprocessableEntity, "priests cannot take a stance")
-	}
 	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
 		return nil, reject(http.StatusUnprocessableEntity, "naval units cannot take a stance")
 	}

@@ -2,7 +2,7 @@ package combat
 
 // UnitUpkeep is the single source of truth for per-unit upkeep scaling, shared by
 // the charging loop (Handle) and the army read surface. These cases pin the scaling
-// contract: land scales with size/100, naval is flat per vessel, priest/unknown = 0.
+// contract: land scales with size/100, naval is flat per vessel, unknown = 0.
 
 import (
 	"math"
@@ -24,7 +24,6 @@ func TestUnitUpkeep(t *testing.T) {
 		{"naval galley flat at size 1", "galley", "naval", 1, 4, 1.5},
 		{"naval galley flat even if size>1", "galley", "naval", 5, 4, 1.5},
 		{"naval war_galley flat", "war_galley", "naval", 3, 6, 2.5},
-		{"priest costs nothing", "priest", "land", 100, 0, 0},
 		{"unknown type costs nothing", "slinger", "land", 100, 0, 0},
 	}
 	const eps = 1e-9

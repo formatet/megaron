@@ -68,7 +68,7 @@ func TestRiteOffering_DeductedRegardlessOfOutcome(t *testing.T) {
 	})
 
 	authSvc := auth.NewService(pool, "test-secret")
-	username := "priest-" + uuid.New().String()
+	username := "wanax-" + uuid.New().String()
 	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
 	if err != nil {
 		t.Fatalf("register test player: %v", err)

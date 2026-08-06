@@ -510,7 +510,7 @@ func statusCmd() *cobra.Command {
 				// jsonKey = province.ArmyComposition's Go field name (no JSON tags,
 				// so it serializes verbatim); dbType feeds the shared display map.
 				units := []struct{ jsonKey, dbType string }{
-					{"Spearman", "spearman"}, {"WarChariot", "war_chariot"}, {"Priest", "priest"},
+					{"Spearman", "spearman"}, {"WarChariot", "war_chariot"},
 					{"Ship", "galley"}, {"EliteInfantry", "elite_infantry"},
 					{"WarGalley", "war_galley"}, {"Merchantman", "merchantman"},
 				}

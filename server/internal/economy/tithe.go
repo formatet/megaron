@@ -1,7 +1,7 @@
 package economy
 
 // The temple tithe: when a city sells a religiously coded good — wine, oil,
-// purple, luxury — the priests take a share of the silver.
+// purple, luxury — the temple takes a share of the silver.
 //
 // Chosen (Timothy 2026-07-22) over a standing silver upkeep for the cult, and
 // the difference matters. A flat upkeep drains cities that have no income,
@@ -19,7 +19,7 @@ const (
 	titheRate = 0.10
 
 	// titheMinSilver keeps the tithe off trivial exchanges: below this the
-	// priests wave the caravan through rather than count out coppers. Without
+	// temple waves the caravan through rather than count out coppers. Without
 	// it every 2-silver sale spawns an event row for a rounding artefact.
 	titheMinSilver = 10.0
 )
@@ -27,7 +27,7 @@ const (
 // Tithe returns the silver the temple takes from a trade payment, and the
 // silver that reaches the seller.
 //
-// hasTemple gates it: no temple, no priests to collect. That makes the tithe a
+// hasTemple gates it: no temple, no collection. That makes the tithe a
 // cost of holding a cult rather than a tax on everyone, paid against the kharis
 // the temple returns.
 func Tithe(silver float64, goodIsReligious, hasTemple bool) (toTemple, toSeller float64) {

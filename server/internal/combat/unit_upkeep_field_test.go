@@ -8,7 +8,7 @@ package combat
 // status. Naval upkeep is per hull, flat, and status never touches it.
 //
 // These cases pin the status contract on top of unit_upkeep_test.go's existing
-// scaling contract (land size/100, naval flat, priest/unknown = 0).
+// scaling contract (land size/100, naval flat, unknown = 0).
 
 import (
 	"math"
@@ -34,7 +34,6 @@ func TestUnitUpkeep_Status(t *testing.T) {
 		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 120, 2},
 		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 80, 3},
 		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 160, 3},
-		{"priest costs nothing regardless of status", "priest", "land", 100, "marching", 0, 0},
 		{"unknown type costs nothing regardless of status", "slinger", "land", 100, "marching", 0, 0},
 	}
 	const eps = 1e-9

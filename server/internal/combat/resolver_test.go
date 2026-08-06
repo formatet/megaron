@@ -75,13 +75,13 @@ func TestWallModifier(t *testing.T) {
 }
 
 func TestStrength(t *testing.T) {
-	a := province.ArmyComposition{Spearman: 10, EliteInfantry: 5, WarChariot: 4, Priest: 3, Ship: 2}
+	a := province.ArmyComposition{Spearman: 10, EliteInfantry: 5, WarChariot: 4, Ship: 2}
 	want := float64(10*1 + 5*3 + 4*4 + 2*1) // 43
 	if got := Strength(a); got != want {
 		t.Errorf("Strength = %.0f, want %.0f", got, want)
 	}
-	if got := Strength(province.ArmyComposition{Priest: 9, Merchantman: 9}); got != 0 {
-		t.Errorf("priest/merchantman should give 0 combat strength, got %.0f", got)
+	if got := Strength(province.ArmyComposition{Merchantman: 9}); got != 0 {
+		t.Errorf("merchantman should give 0 combat strength, got %.0f", got)
 	}
 }
 

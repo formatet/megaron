@@ -118,11 +118,6 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusForbidden, "unit not in this world")
 	}
 
-	// Priests are stationary by rule.
-	if u.Type == unit.TypePriest {
-		return nil, reject(http.StatusUnprocessableEntity, "priests are stationary and cannot march")
-	}
-
 	// A disbanded unit no longer exists — most often a stale Nomadic Host id used
 	// after founding (the host dissolves into its metropolis), but also a unit lost
 	// in battle or to starvation. Say so plainly instead of the bare "status is

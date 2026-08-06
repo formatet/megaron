@@ -135,8 +135,6 @@ func unitColumn(unitType string) string {
 		return "infantry" // legacy integer army column kept as `infantry`
 	case "war_chariot":
 		return "chariot" // legacy integer army column kept as `chariot`
-	case "priest":
-		return "priest"
 	case "galley":
 		return "ship" // legacy integer army column kept as `ship` (units.type is now "galley")
 	case "elite_infantry":

@@ -26,7 +26,6 @@ const (
 	TypeSpearman      Type = "spearman"
 	TypeEliteInfantry Type = "elite_infantry"
 	TypeWarChariot    Type = "war_chariot"
-	TypePriest        Type = "priest"
 	TypeGalley        Type = "galley"      // kanonisk standardgalär; crew 20
 	TypeWarGalley     Type = "war_galley"  // crew 50
 	TypeMerchantman   Type = "merchantman" // crew 10
@@ -122,12 +121,11 @@ func MarchHoursFactorFor(t Type) float64 {
 // themselves are untouched — this is presentation only.
 //
 // Taxonomy decided 2026-07-10 (Timothy) — clarity first, flavour only where
-// it earns its keep: "Hoplites"/"Agema"/"Hiereus" retired. The legacy
+// it earns its keep: "Hoplites"/"Agema" retired. The legacy
 // "trireme" key collapses to the canonical "galley" display ("ship" is no
 // longer a units.type value after the namn-hygien A rename, mig 084 — see
 // Canonical below for the recruit/disband input alias).
-// "priest" (mig 060, dead unit) has deliberately no entry — unmapped keys
-// fall back to the raw key.
+// Unmapped keys fall back to the raw key.
 var displayNames = map[string]string{
 	string(TypeSpearman):      "Spearmen",
 	string(TypeEliteInfantry): "Elite Infantry",
@@ -141,7 +139,7 @@ var displayNames = map[string]string{
 
 // DisplayName returns the canonical human-readable name for a unit's DB type
 // key, falling back to the raw key for any type not yet in the table (e.g. a
-// future unit, or the retired "priest").
+// future unit not yet mapped).
 func DisplayName(t string) string {
 	if label, ok := displayNames[t]; ok {
 		return label

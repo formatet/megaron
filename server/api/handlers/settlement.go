@@ -439,16 +439,16 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 
 	// Find the borrowed army row for this kingdom with lender = settlement owner.
 	var baID uuid.UUID
-	var inf, cha, pri, ship int
+	var inf, cha, ship int
 	var lenderID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT ba.id, ba.lender_id, ba.infantry, ba.chariot, ba.priest, ba.ship
+		`SELECT ba.id, ba.lender_id, ba.infantry, ba.chariot, ba.ship
 		 FROM borrowed_armies ba
 		 JOIN settlements s ON s.owner_id = ba.lender_id AND s.id = $1
 		 WHERE ba.kingdom_id = $2 AND ba.returned_at IS NULL
 		 LIMIT 1`,
 		settlementID, kingdomID,
-	).Scan(&baID, &lenderID, &inf, &cha, &pri, &ship)
+	).Scan(&baID, &lenderID, &inf, &cha, &ship)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "no borrowed army to return")
 		return
@@ -476,10 +476,9 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 		`UPDATE settlements SET
 		   infantry = infantry + $1,
 		   chariot  = chariot  + $2,
-		   priest   = priest   + $3,
-		   ship     = ship     + $4
-		 WHERE id = $5`,
-		inf, cha, pri, ship, settlementID,
+		   ship     = ship     + $3
+		 WHERE id = $4`,
+		inf, cha, ship, settlementID,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not return army units")
@@ -494,7 +493,7 @@ func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"returned": map[string]int{
 			"spearman": inf, "war_chariot": cha,
-			"priest": pri, "ship": ship,
+			"ship": ship,
 		},
 	})
 }

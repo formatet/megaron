@@ -645,7 +645,7 @@ func deriveMood(kharis float64) string {
 
 // applyDecay applies 1% daily decay to grain and timber stocks, resets
 // invasions_today, and adjusts population. (Rite success is driven by Kharis
-// mood, not a priest-strength stat — there is no priest_strength to regenerate.)
+// mood, not a stored strength stat — there is nothing per-temple to regenerate.)
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	// Decay grain and timber by 1% per day. Population grain-consumption is NOT
 	// applied here anymore: it is folded into grain's net rate in
@@ -1253,7 +1253,7 @@ func (h *TickHandler) generateOmen(ctx context.Context, settlementID, worldID uu
 	omens := []string{
 		"The heart of the offering lay clean and red. The gods are pleased.",
 		"Smoke rose straight toward heaven — a season of calm and steady winds.",
-		"The sacred birds ate freely from the priest's hand. The harvest will be generous.",
+		"The sacred birds ate freely from the offered grain. The harvest will be generous.",
 		"The flame consumed the offering without hesitation. Order holds for now.",
 		"A serpent crossed the temple threshold and departed unharmed. Old powers watch this place.",
 		"Birds flew westward in tight formation. Something stirs beyond your sight.",

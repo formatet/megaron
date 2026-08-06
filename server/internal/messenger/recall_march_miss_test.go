@@ -81,9 +81,9 @@ func TestRecallArrival_MarchAlreadyResolvedNotifiesOrderFailed(t *testing.T) {
 	var marchID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO marching_armies
-		     (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
+		     (world_id, origin_id, target_id, infantry, chariot, ship, elite_infantry,
 		      war_galley, merchantman, intent, departs_at, arrives_at, resolved)
-		 VALUES ($1,$2,$3, 100,0,0,0,0,0,0, 'attack', $4,$5, true) RETURNING id`,
+		 VALUES ($1,$2,$3, 100,0,0,0,0,0, 'attack', $4,$5, true) RETURNING id`,
 		worldID, homeProvinceID, interceptProvinceID, now.Add(-6*time.Hour), now,
 	).Scan(&marchID); err != nil {
 		t.Fatalf("create already-resolved march: %v", err)

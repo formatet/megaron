@@ -487,7 +487,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Offering              map[string]float64 `json:"offering"`
 			Affordable            bool               `json:"affordable"`
 			CooldownRemainingMins float64            `json:"cooldown_remaining_minutes,omitempty"`
-			// The priests' reading of the gods (temenos_prayers_komposition_plan.md).
+			// The temple's reading of the gods (temenos_prayers_komposition_plan.md).
 			// An offering is now composed, and its worth depends on world scarcity —
 			// data no Wanax can observe through the fog. The temple is exactly the
 			// institution that would know, so it tells you: what this god favours,
@@ -1671,9 +1671,7 @@ func (h *ProvinceHandler) RecipeCatalogue(w http.ResponseWriter, r *http.Request
 // recruitPerManCosts delegates to province.UnitSpecs so this handler and the
 // capabilities recruit checker (keryx actions) read the exact same per-man
 // cost table — before Fas 3 they were two separately hand-maintained copies
-// that had already drifted apart (temenos_capabilities.md Fas 3). Note:
-// "priest" is not a recruitable unit (removed mig 060) and is caught earlier
-// by the UnitSpecs lookup in Recruit, so it never reaches this function.
+// that had already drifted apart (temenos_capabilities.md Fas 3).
 func recruitPerManCosts(unitType string) map[string]float64 {
 	spec, ok := province.UnitSpecs[unitType]
 	if !ok {
@@ -3077,7 +3075,7 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, target_id, intent, infantry, chariot, priest, ship, elite_infantry,
+		`SELECT id, target_id, intent, infantry, chariot, ship, elite_infantry,
 		        war_galley, merchantman, resolved, arrives_at, combat_report,
 		        origin_id = $1 AS outgoing
 		 FROM marching_armies
@@ -3098,7 +3096,6 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		Intent        string    `json:"intent"`
 		Spearman      int       `json:"spearman"`
 		WarChariot    int       `json:"war_chariot"`
-		Priest        int       `json:"priest"`
 		Ship          int       `json:"ship"` // galley
 		EliteInfantry int       `json:"elite_infantry"`
 		WarGalley     int       `json:"war_galley"`
@@ -3112,7 +3109,7 @@ func (h *ProvinceHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var m marchItem
 		if err := rows.Scan(&m.ID, &m.TargetID, &m.Intent,
-			&m.Spearman, &m.WarChariot, &m.Priest, &m.Ship, &m.EliteInfantry,
+			&m.Spearman, &m.WarChariot, &m.Ship, &m.EliteInfantry,
 			&m.WarGalley, &m.Merchantman, &m.Resolved, &m.ArrivesAt, &m.CombatReport, &m.Outgoing); err == nil {
 			result = append(result, m)
 		}
@@ -3160,7 +3157,6 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 	var march struct {
 		Spearman      int
 		WarChariot    int
-		Priest        int
 		Ship          int
 		EliteInfantry int
 		WarGalley     int
@@ -3172,13 +3168,13 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		ArrivesAt     time.Time
 	}
 	err = tx.QueryRow(r.Context(),
-		`SELECT infantry, chariot, priest, ship, elite_infantry,
+		`SELECT infantry, chariot, ship, elite_infantry,
 		        war_galley, merchantman, resolved, origin_id, target_id, departs_at, arrives_at
 		 FROM marching_armies
 		 WHERE id = $1 AND world_id = $2 AND origin_id = $3
 		 FOR UPDATE`,
 		marchID, worldID, provinceID,
-	).Scan(&march.Spearman, &march.WarChariot, &march.Priest,
+	).Scan(&march.Spearman, &march.WarChariot,
 		&march.Ship, &march.EliteInfantry, &march.WarGalley, &march.Merchantman,
 		&march.Resolved, &march.OriginID, &march.TargetID, &march.DepartsAt, &march.ArrivesAt)
 	if err != nil {
@@ -3223,7 +3219,7 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 	// bound to water passability (land troops cannot cross open water on
 	// their own), so naval wins whenever ship+war_galley+merchantman > 0.
 	category := messenger.AggregateArmyCategory(
-		march.Spearman, march.WarChariot, march.Priest,
+		march.Spearman, march.WarChariot,
 		march.Ship, march.EliteInfantry, march.WarGalley, march.Merchantman)
 
 	// Verify the category actually connects origin→target before trusting it.
@@ -3326,7 +3322,6 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 		MarchID:       marchID,
 		Spearman:      march.Spearman,
 		WarChariot:    march.WarChariot,
-		Priest:        march.Priest,
 		Ship:          march.Ship,
 		EliteInfantry: march.EliteInfantry,
 		WarGalley:     march.WarGalley,
@@ -3517,7 +3512,6 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Spearman      int `json:"spearman"`
 		WarChariot    int `json:"war_chariot"`
-		Priest        int `json:"priest"`
 		Ship          int `json:"ship"` // galley
 		EliteInfantry int `json:"elite_infantry"`
 		WarGalley     int `json:"war_galley"`
@@ -3550,7 +3544,6 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// priest is no longer a unit (removed mig 060), so it is never disbandable.
 	wanted := []struct {
 		men int
 		typ string
@@ -3564,7 +3557,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		{req.Merchantman, "merchantman", "merchantman"},
 	}
 
-	disbanded := map[string]int{"priest": 0}
+	disbanded := map[string]int{}
 	for _, want := range wanted {
 		disbanded[want.key] = 0
 		if want.men <= 0 {

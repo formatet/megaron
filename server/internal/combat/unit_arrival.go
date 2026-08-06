@@ -1951,7 +1951,7 @@ type destSettlement struct {
 
 // unitStrength computes the combat contribution of one unit row.
 // Multipliers (per man / per vessel): spearman ×1, elite ×3, war_chariot ×4,
-// galley ×1, war_galley ×3, priest/merchantman ×0.
+// galley ×1, war_galley ×3, merchantman ×0.
 func unitStrength(utype string, size int) float64 {
 	switch utype {
 	case "spearman":
@@ -1964,7 +1964,7 @@ func unitStrength(utype string, size int) float64 {
 		return float64(size) * 1
 	case "war_galley":
 		return float64(size) * 3
-	case "priest", "merchantman":
+	case "merchantman":
 		return 0
 	default:
 		return float64(size) * 1

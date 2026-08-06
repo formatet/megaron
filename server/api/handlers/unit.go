@@ -50,7 +50,6 @@ func NewUnitHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore 
 //   - Caller must own the unit
 //   - Unit must be in status='garrison'
 //   - Land units: size must be exactly 100 (forming units cannot march)
-//   - Priests: may never march (stationary)
 //   - Naval: deployable (status='garrison')
 //   - Stance (if provided) is persisted on the unit for C5; no behaviour enforced here
 func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
@@ -585,7 +584,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 //   - Caller must own both units.
 //   - Both units must be in the same settlement (garrison).
 //   - Ship must be naval and have no current cargo (cargo_unit_id IS NULL).
-//   - Land unit must be status='garrison', size=100, and not a priest.
+//   - Land unit must be status='garrison', size=100.
 //   - Origin must be a coastal settlement (adjacent to sea) or have a harbour.
 //
 // Outcome: ship.cargo_unit_id = land_unit_id; land unit status → 'embarked'.
@@ -662,10 +661,6 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 	}
 	if unit.CategoryOf(cargo.Type) != unit.CategoryLand {
 		writeError(w, http.StatusUnprocessableEntity, "only land units can be loaded onto ships")
-		return
-	}
-	if cargo.Type == unit.TypePriest {
-		writeError(w, http.StatusUnprocessableEntity, "priests cannot embark")
 		return
 	}
 	if !unit.CanEmbark(cargo.Type) {
@@ -1029,7 +1024,6 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 // Rules:
 //   - Caller must own the unit.
 //   - Unit must be status='garrison' or status='positioned' (not marching, forming, etc.).
-//   - Priests may not take a stance.
 //   - "none" clears the stance.
 //   - "sentry": sets sentry_q/sentry_r to the unit's current hex.
 //

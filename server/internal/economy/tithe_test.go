@@ -20,7 +20,7 @@ func TestTithe_OnlyOnReligiousTradeWithATemple(t *testing.T) {
 	}{
 		{"wine sold by a temple city — tithed", 100, true, true, 10, 90},
 		{"grain sold by a temple city — untouched", 100, false, true, 0, 100},
-		{"wine sold where no temple stands — no priests to collect", 100, true, false, 0, 100},
+		{"wine sold where no temple stands — nothing to collect", 100, true, false, 0, 100},
 		{"neither religious nor templed", 100, false, false, 0, 100},
 		{"a trivial sale is waved through", 5, true, true, 0, 5},
 	}

@@ -50,7 +50,6 @@ type RecallMarchPayload struct {
 	MarchID       uuid.UUID `json:"march_id"`
 	Spearman      int       `json:"spearman"`
 	WarChariot    int       `json:"war_chariot"`
-	Priest        int       `json:"priest"`
 	Ship          int       `json:"ship"` // galley
 	EliteInfantry int       `json:"elite_infantry"`
 	WarGalley     int       `json:"war_galley"`
@@ -80,7 +79,6 @@ type RecallOutpostPayload struct {
 	HomeID         uuid.UUID `json:"home_id"`     // province the garrison returns to
 	Spearman       int       `json:"spearman"`
 	WarChariot     int       `json:"war_chariot"`
-	Priest         int       `json:"priest"`
 	Ship           int       `json:"ship"` // galley
 	EliteInfantry  int       `json:"elite_infantry"`
 	WarGalley      int       `json:"war_galley"`
@@ -211,12 +209,12 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 	var returnMarchID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO marching_armies
-		 (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
+		 (world_id, origin_id, target_id, infantry, chariot, ship, elite_infantry,
 		  war_galley, merchantman, intent, departs_at, arrives_at, depart_tick, arrive_tick)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12,$13,$14)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11,$12,$13)
 		 RETURNING id`,
 		p.WorldID, p.TargetID, p.OriginID,
-		p.Spearman, p.WarChariot, p.Priest, p.Ship, p.EliteInfantry,
+		p.Spearman, p.WarChariot, p.Ship, p.EliteInfantry,
 		p.WarGalley, p.Merchantman,
 		now, returnsAt, currentTick, dueTick,
 	).Scan(&returnMarchID); err != nil {
@@ -310,7 +308,7 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 	// March the garrison home (if any).
 	var returnMarchID uuid.UUID
 	var returnsAt time.Time
-	if p.Spearman+p.WarChariot+p.Priest+p.Ship+p.EliteInfantry+p.WarGalley+p.Merchantman > 0 {
+	if p.Spearman+p.WarChariot+p.Ship+p.EliteInfantry+p.WarGalley+p.Merchantman > 0 {
 		dist := province.HexDistance(
 			province.MapPosition{Q: p.OutpostQ, R: p.OutpostR},
 			province.MapPosition{Q: p.HomeQ, R: p.HomeR},
@@ -324,12 +322,12 @@ func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.Sched
 
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO marching_armies
-			 (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
+			 (world_id, origin_id, target_id, infantry, chariot, ship, elite_infantry,
 			  war_galley, merchantman, intent, departs_at, arrives_at, depart_tick, arrive_tick)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'return',$11,$12,$13,$14)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11,$12,$13)
 			 RETURNING id`,
 			p.WorldID, p.ProvinceID, p.HomeID,
-			p.Spearman, p.WarChariot, p.Priest, p.Ship, p.EliteInfantry,
+			p.Spearman, p.WarChariot, p.Ship, p.EliteInfantry,
 			p.WarGalley, p.Merchantman,
 			now, returnsAt, currentTick, dueTick,
 		).Scan(&returnMarchID); err != nil {
@@ -439,7 +437,7 @@ func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (
 // certainty (e.g. RecallMarch, before trusting this for pathfinding) verify
 // with province.FindPath and fall back to the other category if this guess
 // finds no route.
-func AggregateArmyCategory(spearman, warChariot, priest, ship, eliteInfantry, warGalley, merchantman int) string {
+func AggregateArmyCategory(spearman, warChariot, ship, eliteInfantry, warGalley, merchantman int) string {
 	if ship+warGalley+merchantman > 0 {
 		return "naval"
 	}

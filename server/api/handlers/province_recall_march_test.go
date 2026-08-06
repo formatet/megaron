@@ -126,9 +126,9 @@ func setupMarchRecallWorld(t *testing.T, elapsed time.Duration) (marchRecallFixt
 	f.arrivesAt = f.departsAt.Add(total)
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO marching_armies
-		     (world_id, origin_id, target_id, infantry, chariot, priest, ship, elite_infantry,
+		     (world_id, origin_id, target_id, infantry, chariot, ship, elite_infantry,
 		      war_galley, merchantman, intent, departs_at, arrives_at, resolved)
-		 VALUES ($1,$2,$3, 100,0,0,0,0,0,0, 'attack', $4,$5, false) RETURNING id`,
+		 VALUES ($1,$2,$3, 100,0,0,0,0,0, 'attack', $4,$5, false) RETURNING id`,
 		f.worldID, f.provinceID, provinceIDs[8], f.departsAt, f.arrivesAt,
 	).Scan(&f.marchID); err != nil {
 		t.Fatalf("create marching army: %v", err)

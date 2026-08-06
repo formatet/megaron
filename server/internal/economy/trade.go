@@ -295,8 +295,8 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 
 	// Temple tithe (Timothy 2026-07-22, vägval c): when the silver leg of a sale
-	// of a RELIGIOUSLY CODED good lands, the priests take their tenth before the
-	// seller sees it. Only where a temple stands — no priests, no collection.
+	// of a RELIGIOUSLY CODED good lands, the temple takes its tenth before the
+	// seller sees it. Only where a temple stands — no temple, no collection.
 	// The counterpart good rides in ThenReturn (this is the silver leg; the goods
 	// travel back separately), so the pair is known here without another lookup.
 	credited := delivered

@@ -27,7 +27,6 @@ func TestUnitUpkeep_SilverHalved(t *testing.T) {
 		{"galley garrison", "galley", "naval", 1, "garrison", 1.5},
 		{"war_galley garrison", "war_galley", "naval", 1, "garrison", 2.5},
 		{"merchantman garrison", "merchantman", "naval", 1, "garrison", 1},
-		{"priest costs nothing", "priest", "land", 100, "garrison", 0},
 	}
 	const eps = 1e-9
 	for _, tc := range cases {

@@ -131,7 +131,7 @@ func riteCmd() *cobra.Command {
 					}
 					fmt.Printf("%-28s  %-20s  %-8.0f  %-22s  %-45s  %-12s  %s\n",
 						pr.ID, pr.Name, pr.MinKharis, formatOffering(pr.Offering), pr.Effect, ready, cooldownStr)
-					// The priests' reading: an offering is composed now, and its
+					// The temple's reading: an offering is composed now, and its
 					// worth turns on world scarcity a Wanax cannot see through the
 					// fog. The temple knows — so it says so here, where the choice
 					// is made.

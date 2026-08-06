@@ -123,7 +123,4 @@ func TestLoadSettlement_ArmyReflectsUnitsGarrison(t *testing.T) {
 	if sett.Army.EliteInfantry != 0 {
 		t.Errorf("EliteInfantry = %d, want 0", sett.Army.EliteInfantry)
 	}
-	if sett.Army.Priest != 0 {
-		t.Errorf("Priest = %d, want 0 (priest is no longer a unit)", sett.Army.Priest)
-	}
 }

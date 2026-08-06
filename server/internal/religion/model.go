@@ -1,5 +1,5 @@
 // Package religion implements the divine intervention system.
-// Gods are probabilistic and lynniga — priest actions shift probability, not guarantee outcomes.
+// Gods are probabilistic and lynniga — temple rites shift probability, not guarantee outcomes.
 package religion
 
 import (
@@ -37,7 +37,6 @@ type Temple struct {
 	PantheonID PantheonID
 	Level      int     // 1-3
 	LocalPower float64 // 0.0-1.0
-	PriestID   *uuid.UUID
 	BuiltAt    time.Time
 }
 
@@ -48,7 +47,7 @@ type DivineIntervention struct {
 	PantheonID  PantheonID
 	Type        InterventionType
 	TargetID    uuid.UUID
-	Probability float64 // shaped by priest actions; resolved probabilistically at trigger time
+	Probability float64 // shaped by temple rites; resolved probabilistically at trigger time
 	TriggeredAt *time.Time
 	CreatedAt   time.Time
 }

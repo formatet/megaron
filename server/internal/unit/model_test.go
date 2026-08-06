@@ -56,8 +56,8 @@ func TestOtherNavalUnaffected(t *testing.T) {
 // taxonomy (Namn-hygien C / A8, Timothy 2026-07-10): one canonical display
 // string per DB unit type, moved here from cmd/keryx's now-retired local
 // unitDisplayName so keryx, web/API, and notifications all read the same
-// table. "Hoplites"/"Agema"/"Hiereus" are retired; "priest" (dead unit,
-// mig 060) has no entry and falls back to its raw key.
+// table. "Hoplites"/"Agema" are retired flavour names that fall back to their
+// raw key rather than resurfacing.
 func TestDisplayName_ConsistentAcrossKnownTypes(t *testing.T) {
 	cases := map[string]string{
 		"spearman":       "Spearmen",
@@ -76,10 +76,10 @@ func TestDisplayName_ConsistentAcrossKnownTypes(t *testing.T) {
 }
 
 // TestDisplayName_UnknownFallsBackToRawKey verifies that an unmapped type
-// (e.g. a future new unit, or the retired "priest") degrades to showing its
+// (e.g. a future new unit not yet in the table) degrades to showing its
 // raw key rather than an empty string or a retired flavour name.
 func TestDisplayName_UnknownFallsBackToRawKey(t *testing.T) {
-	for _, dbType := range []string{"some_future_unit", "priest"} {
+	for _, dbType := range []string{"some_future_unit", "some_retired_unit"} {
 		if got := DisplayName(dbType); got != dbType {
 			t.Errorf("DisplayName(%q) = %q, want fallback to the raw key", dbType, got)
 		}

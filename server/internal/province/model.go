@@ -75,7 +75,6 @@ func (rl ResourceLedger) SnapshotFull(at time.Time) map[string]ResourceDetail {
 type ArmyComposition struct {
 	Spearman      int
 	WarChariot    int
-	Priest        int
 	Ship          int // galley — DB-kolumn: ship
 	EliteInfantry int
 	WarGalley     int // krigsgalär, kräver foundry + bronze

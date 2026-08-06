@@ -217,7 +217,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   if (!res.ok) { document.getElementById('mctx-units').innerHTML = '<span style="color:var(--accent);font-size:.75rem">Could not load units.</span>'; return; }
   const all = ((await res.json()).units) || [];
 
-  // Eligible to march: garrisoned or positioned, non-priest, deployable.
+  // Eligible to march: garrisoned or positioned, deployable.
   // Naval hex → ships; land hex → land units. u.deployable is the server's own
   // field (status != forming/training, api/handlers/unit.go:1342) — the server
   // has no size gate on march (march_start.go), so a battle-worn cohort below
@@ -225,7 +225,6 @@ export async function openMarchCtx(dest, screenX, screenY) {
   // (march_start.go:132-135) and must not show as eligible here either.
   const wantNaval = dest.isSea;
   State.marchCtxUnits = all.filter(u => {
-    if (u.type === 'priest') return false;
     if (u.status !== 'garrison' && u.status !== 'positioned') return false;
     const naval = u.category === 'naval';
     if (wantNaval !== naval) return false;

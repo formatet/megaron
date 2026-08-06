@@ -4328,7 +4328,7 @@ export function initMap() {
     // to a march-to-own-hex 422.
     const ownUnit = (State.unitsData || []).find(u =>
       u.q === h.q && u.r === h.r && (u.status === 'garrison' || u.status === 'positioned') &&
-      u.type !== 'priest' && u.deployable);
+      u.deployable);
     if (ownUnit) { window.closeMarchCtx(); window.warFocusUnit(ownUnit.id); return; }
     window.openMarchCtx(destFromHex(h, tile, null), e.clientX, e.clientY);
   });

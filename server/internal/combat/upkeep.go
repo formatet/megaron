@@ -69,12 +69,11 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 	"galley":         {Grain: 4, Silver: 1.5},
 	"war_galley":     {Grain: 6, Silver: 2.5},
 	"merchantman":    {Grain: 3, Silver: 1},
-	"priest":         {Grain: 0, Silver: 0},
 }
 
 // UnitUpkeep returns the grain + silver one unit costs per upkeep-period (the
 // daily upkeep tick). Land units scale with size/100; naval and everything else
-// are flat (per vessel); priest and unknown types cost nothing. This is the single
+// are flat (per vessel); unknown types cost nothing. This is the single
 // source of truth for the scaling — both the charging loop (Handle) and the army
 // read surface (api/handlers) call it, so shown upkeep can never drift from what
 // is actually debited.
@@ -263,7 +262,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	for _, u := range units {
 		up := UnitUpkeep(u.unitType, u.category, u.size, u.status)
 		if up.Grain == 0 && up.Silver == 0 {
-			continue // priest or unknown type — no upkeep
+			continue // unknown type — no upkeep
 		}
 
 		grainNeed := up.Grain

@@ -8,7 +8,7 @@ import (
 )
 
 func disbandCmd() *cobra.Command {
-	var hoplites, chariots, hiereus, trireme, agema, warGalley, merchantman int
+	var hoplites, chariots, trireme, agema, warGalley, merchantman int
 	cmd := &cobra.Command{
 		Use:   "disband",
 		Short: "Release units back to population (they return to civilian life)",
@@ -20,7 +20,7 @@ func disbandCmd() *cobra.Command {
 		// there is no "the" flag to name the way build has --type.
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if hoplites+chariots+hiereus+trireme+agema+warGalley+merchantman == 0 {
+			if hoplites+chariots+trireme+agema+warGalley+merchantman == 0 {
 				return fmt.Errorf("specify at least one unit type to disband")
 			}
 			c := newClient(cfg)
@@ -28,7 +28,6 @@ func disbandCmd() *cobra.Command {
 			data, err := c.post(path, map[string]any{
 				"spearman":       hoplites,
 				"war_chariot":    chariots,
-				"priest":         hiereus,
 				"ship":           trireme,
 				"elite_infantry": agema,
 				"war_galley":     warGalley,
@@ -52,7 +51,6 @@ func disbandCmd() *cobra.Command {
 	}
 	cmd.Flags().IntVar(&hoplites, "hoplites", 0, "infantry to disband")
 	cmd.Flags().IntVar(&chariots, "chariots", 0, "war chariots to disband")
-	cmd.Flags().IntVar(&hiereus, "hiereus", 0, "priests to disband")
 	cmd.Flags().IntVar(&trireme, "trireme", 0, "galleys to disband")
 	cmd.Flags().IntVar(&agema, "agema", 0, "elite infantry to disband")
 	cmd.Flags().IntVar(&warGalley, "war-galley", 0, "war galleys to disband")
