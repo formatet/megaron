@@ -118,15 +118,18 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 		}
 	}
 
-	// pG: rich garrison town (spearman N=2). pF: metropolis whose field chariot
-	// (N=6) is a full sink. pP: poor garrison town, silver 1 < N=2 → gate fails.
+	// pG: rich garrison town (spearman N=1, SLICE B halved table). pF: metropolis
+	// whose field chariot (N=3) is a full sink. pP: poor garrison town, silver
+	// 0 < N=1 → gate fails. (Before SLICE B, N=2 and this fixture seeded 1 silver
+	// — insufficient under the old table but NOT under the halved one, since the
+	// gate is >=; 0, not 1, is the seed that stays insufficient after halving.)
 	pG, pF, pP := mkPlayer(), mkPlayer(), mkPlayer()
 	sG := mkSettlement(pG, "Garrisontown", 0, 1000, 100000)
 	sF := mkSettlement(pF, "Metropolis", 4, 1000, 100000)
-	sP := mkSettlement(pP, "Poortown", 8, 1, 100000)
-	mkGarrison(pG, sG, "spearman") // N=2, garrison at home → credit
-	mkField(pF, sF, "war_chariot") // N=6, field (sF raised and pays it) → full sink
-	mkGarrison(pP, sP, "spearman") // N=2 but only 1 silver → unpaid
+	sP := mkSettlement(pP, "Poortown", 8, 0, 100000)
+	mkGarrison(pG, sG, "spearman") // N=1, garrison at home → credit
+	mkField(pF, sF, "war_chariot") // N=3, field (sF raised and pays it) → full sink
+	mkGarrison(pP, sP, "spearman") // N=1 but 0 silver → unpaid
 
 	// pA — the discriminating case. This unit garrisons a colony that does NOT
 	// pay it; its metropolis does. Both other garrison fixtures have
@@ -139,7 +142,7 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 	pA := mkPlayer()
 	sM := mkSettlement(pA, "Metropolis-A", 12, 1000, 100000)
 	sC := mkSettlementAs(pA, "Colony-A", 16, 500, 100000, "colony", false)
-	mkGarrisonAway(pA, sC, sM, "spearman") // N=2, stands in sC, paid by sM
+	mkGarrisonAway(pA, sC, sM, "spearman") // N=1, stands in sC, paid by sM
 
 	silverOf := func(sid uuid.UUID) float64 {
 		var v float64
@@ -180,49 +183,49 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 		t.Fatalf("upkeep Handle: %v", err)
 	}
 
-	// Garrison: net debit (1−0.7)·2 = 0.6 → 1000 − 0.6 = 999.4. circ 1.4, destr 0.6.
+	// Garrison: net debit (1−0.7)·1 = 0.3 → 1000 − 0.3 = 999.7. circ 0.7, destr 0.3.
 	// circulated_to records the recipient (= the paying town, MVP payer).
-	if got := silverOf(sG); !approx(got, 999.4) {
-		t.Errorf("garrison town silver = %.4f, want 999.4 (net (1−share)·N)", got)
+	if got := silverOf(sG); !approx(got, 999.7) {
+		t.Errorf("garrison town silver = %.4f, want 999.7 (net (1−share)·N)", got)
 	}
-	if s := readSettled(sG); s.paid != 1 || !approx(s.gross, 2) || !approx(s.circ, 1.4) || !approx(s.destroyed, 0.6) {
-		t.Errorf("garrison UpkeepSettled = %+v, want {paid1 gross2 circ1.4 destr0.6}", s)
+	if s := readSettled(sG); s.paid != 1 || !approx(s.gross, 1) || !approx(s.circ, 0.7) || !approx(s.destroyed, 0.3) {
+		t.Errorf("garrison UpkeepSettled = %+v, want {paid1 gross1 circ0.7 destr0.3}", s)
 	}
 	var circMap float64
 	if err := pool.QueryRow(ctx,
 		`SELECT (payload->'circulated_to'->>$3::text)::float FROM events
 		 WHERE world_id = $1 AND event_type = 'UpkeepSettled' AND stream_id = $2`,
 		worldID, sG, sG.String(),
-	).Scan(&circMap); err != nil || !approx(circMap, 1.4) {
-		t.Errorf("garrison circulated_to[%s] = %.4f (err %v), want 1.4", sG, circMap, err)
+	).Scan(&circMap); err != nil || !approx(circMap, 0.7) {
+		t.Errorf("garrison circulated_to[%s] = %.4f (err %v), want 0.7", sG, circMap, err)
 	}
-	// Field: full sink. sF (capital) pays 6 → 994. circ 0, destroyed 6, empty map.
-	if got := silverOf(sF); !approx(got, 994) {
-		t.Errorf("metropolis silver = %.4f, want 994 (field full sink)", got)
+	// Field: full sink. sF (capital) pays 3 → 997. circ 0, destroyed 3, empty map.
+	if got := silverOf(sF); !approx(got, 997) {
+		t.Errorf("metropolis silver = %.4f, want 997 (field full sink)", got)
 	}
-	if s := readSettled(sF); s.paid != 1 || !approx(s.circ, 0) || !approx(s.destroyed, 6) || s.circulatedTo != "{}" {
-		t.Errorf("field UpkeepSettled = %+v, want {paid1 circ0 destr6 circulatedTo {}}", s)
+	if s := readSettled(sF); s.paid != 1 || !approx(s.circ, 0) || !approx(s.destroyed, 3) || s.circulatedTo != "{}" {
+		t.Errorf("field UpkeepSettled = %+v, want {paid1 circ0 destr3 circulatedTo {}}", s)
 	}
-	// Gate on full N: poor town can't cover N=2 with 1 silver → unpaid, no partial.
+	// Gate on full N: poor town can't cover N=1 with 0 silver → unpaid, no partial.
 	// silver_unpaid records the stopped amount; silver stays untouched.
-	if got := silverOf(sP); !approx(got, 1) {
-		t.Errorf("poor town silver = %.4f, want 1 (untouched — no partial pay)", got)
+	if got := silverOf(sP); !approx(got, 0) {
+		t.Errorf("poor town silver = %.4f, want 0 (untouched — no partial pay)", got)
 	}
-	if s := readSettled(sP); s.unpaid != 1 || s.paid != 0 || !approx(s.gross, 0) || !approx(s.unpaidSilver, 2) {
-		t.Errorf("poor town UpkeepSettled = %+v, want {unpaid1 paid0 gross0 unpaidSilver2}", s)
+	if s := readSettled(sP); s.unpaid != 1 || s.paid != 0 || !approx(s.gross, 0) || !approx(s.unpaidSilver, 1) {
+		t.Errorf("poor town UpkeepSettled = %+v, want {unpaid1 paid0 gross0 unpaidSilver1}", s)
 	}
-	// Garrison away from its payer: full sink. The metropolis pays all of N=2
-	// (1000 → 998) and the colony it stands in receives nothing (500 untouched).
+	// Garrison away from its payer: full sink. The metropolis pays all of N=1
+	// (1000 → 999) and the colony it stands in receives nothing (500 untouched).
 	// Under the plan's original discriminator sM would instead have been credited
-	// 1.4 and read 999.4 — that difference is what this case exists to catch.
-	if got := silverOf(sM); !approx(got, 998) {
-		t.Errorf("metropolis-A silver = %.4f, want 998 (full sink — unit not standing in its payer)", got)
+	// and read a smaller debit — that difference is what this case exists to catch.
+	if got := silverOf(sM); !approx(got, 999) {
+		t.Errorf("metropolis-A silver = %.4f, want 999 (full sink — unit not standing in its payer)", got)
 	}
 	if got := silverOf(sC); !approx(got, 500) {
 		t.Errorf("colony-A silver = %.4f, want 500 (untouched — it does not pay the garrison)", got)
 	}
-	if s := readSettled(sM); s.paid != 1 || !approx(s.gross, 2) || !approx(s.circ, 0) || !approx(s.destroyed, 2) || s.circulatedTo != "{}" {
-		t.Errorf("away-garrison UpkeepSettled = %+v, want {paid1 gross2 circ0 destr2 circulatedTo {}}", s)
+	if s := readSettled(sM); s.paid != 1 || !approx(s.gross, 1) || !approx(s.circ, 0) || !approx(s.destroyed, 1) || s.circulatedTo != "{}" {
+		t.Errorf("away-garrison UpkeepSettled = %+v, want {paid1 gross1 circ0 destr1 circulatedTo {}}", s)
 	}
 }
 
@@ -304,10 +307,10 @@ func TestUpkeepSoldShareZeroIdentity(t *testing.T) {
 	).Scan(&circ, &destroyed); err != nil {
 		t.Fatalf("read UpkeepSettled: %v", err)
 	}
-	if math.Abs(silver-998) > 1e-6 { // 1000 − full N=2, no credit
-		t.Errorf("share=0 silver = %.4f, want 998 (whole upkeep destroyed)", silver)
+	if math.Abs(silver-999) > 1e-6 { // 1000 − full N=1 (SLICE B: spearman silver halved), no credit
+		t.Errorf("share=0 silver = %.4f, want 999 (whole upkeep destroyed)", silver)
 	}
-	if math.Abs(circ) > 1e-6 || math.Abs(destroyed-2) > 1e-6 {
-		t.Errorf("share=0 circ/destroyed = %.4f/%.4f, want 0/2", circ, destroyed)
+	if math.Abs(circ) > 1e-6 || math.Abs(destroyed-1) > 1e-6 {
+		t.Errorf("share=0 circ/destroyed = %.4f/%.4f, want 0/1", circ, destroyed)
 	}
 }

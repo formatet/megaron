@@ -93,15 +93,18 @@ func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {
 	}
 
 	const eps = 1e-9
-	// 141 spearmen: grain 141/100*5 = 7.05, silver 141/100*2 = 2.82; galley flat 4/3.
-	if math.Abs(total.Grain-11.05) > eps {
-		t.Errorf("total grain = %v, want 11.05 (7.05 spearman + 4 galley; forming excluded)", total.Grain)
+	// 141 spearmen: grain 141/100*50 = 70.5, silver 141/100*1 = 1.41; galley flat 4/1.5.
+	// (SLICE A, 2026-08-05: garrison grain is now a civilian's ration ×10 the
+	// pre-slice table, garrison itself carries no field-doubling. SLICE B,
+	// same day: the silver column is halved.)
+	if math.Abs(total.Grain-74.5) > eps {
+		t.Errorf("total grain = %v, want 74.5 (70.5 spearman + 4 galley; forming excluded)", total.Grain)
 	}
-	if math.Abs(total.Silver-5.82) > eps {
-		t.Errorf("total silver = %v, want 5.82 (2.82 spearman + 3 galley)", total.Silver)
+	if math.Abs(total.Silver-2.91) > eps {
+		t.Errorf("total silver = %v, want 2.91 (1.41 spearman + 1.5 galley)", total.Silver)
 	}
-	if math.Abs(perType["spearman"].Grain-7.05) > eps {
-		t.Errorf("spearman grain = %v, want 7.05", perType["spearman"].Grain)
+	if math.Abs(perType["spearman"].Grain-70.5) > eps {
+		t.Errorf("spearman grain = %v, want 70.5", perType["spearman"].Grain)
 	}
 	if math.Abs(perType["galley"].Grain-4) > eps {
 		t.Errorf("galley grain = %v, want 4 (naval flat, independent of size)", perType["galley"].Grain)

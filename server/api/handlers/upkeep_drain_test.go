@@ -93,7 +93,7 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 		standsIn uuid.UUID
 		paidBy   uuid.UUID
 	}{
-		// Home garrison of Mykene: 100 spearmen, grain 5 / silver 2.
+		// Home garrison of Mykene: 100 spearmen, grain 50 / silver 1 (SLICE B halved).
 		// The sold circulates → net silver 0.6 at share 0.7.
 		{"spearman", "land", 100, "garrison", mykene, mykene},
 		// Mykene's field army, marching: still on Mykene's payroll (mig 100),
@@ -127,21 +127,22 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(mykene): %v", err)
 	}
-	// Mykene pays for the spearmen (5 grain / 2 silver) and the chariot
-	// (8 grain / 6 silver). Tiryns' garrison and the forming unit are not its bill.
-	if math.Abs(gross.Grain-13) > eps {
-		t.Errorf("Mykene gross grain = %v, want 13 (5 garrison + 8 marching chariot)", gross.Grain)
+	// Mykene pays for the spearmen (50 garrison grain / 1 silver, SLICE B halved) and
+	// the marching chariot (80 base ×2 field factor = 160 grain / 3 silver, SLICE B
+	// halved from 6). Tiryns' garrison and the forming unit are not its bill.
+	if math.Abs(gross.Grain-210) > eps {
+		t.Errorf("Mykene gross grain = %v, want 210 (50 garrison + 160 marching chariot)", gross.Grain)
 	}
-	if math.Abs(gross.Silver-8) > eps {
-		t.Errorf("Mykene gross silver = %v, want 8 (2 garrison + 6 marching chariot)", gross.Silver)
+	if math.Abs(gross.Silver-4) > eps {
+		t.Errorf("Mykene gross silver = %v, want 4 (1 garrison + 3 marching chariot)", gross.Silver)
 	}
-	// Only the unit standing in the town that pays it circulates: 0.7 × 2.
-	// The marching chariot's 6 does not — that is the whole point of Del C.
-	if math.Abs(circulated-1.4) > eps {
-		t.Errorf("Mykene circulated silver = %v, want 1.4 (0.7 × 2 from the home garrison only)", circulated)
+	// Only the unit standing in the town that pays it circulates: 0.7 × 1.
+	// The marching chariot's 3 does not — that is the whole point of Del C.
+	if math.Abs(circulated-0.7) > eps {
+		t.Errorf("Mykene circulated silver = %v, want 0.7 (0.7 × 1 from the home garrison only)", circulated)
 	}
-	if net := gross.Silver - circulated; math.Abs(net-6.6) > eps {
-		t.Errorf("Mykene net silver drain = %v, want 6.6", net)
+	if net := gross.Silver - circulated; math.Abs(net-3.3) > eps {
+		t.Errorf("Mykene net silver drain = %v, want 3.3", net)
 	}
 
 	// The colony pays only for its own garrison, and all of it comes back.
@@ -149,11 +150,11 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(tiryns): %v", err)
 	}
-	if math.Abs(grossT.Silver-2) > eps {
-		t.Errorf("Tiryns gross silver = %v, want 2 (its own garrison only)", grossT.Silver)
+	if math.Abs(grossT.Silver-1) > eps {
+		t.Errorf("Tiryns gross silver = %v, want 1 (its own garrison only)", grossT.Silver)
 	}
-	if math.Abs(circulatedT-1.4) > eps {
-		t.Errorf("Tiryns circulated silver = %v, want 1.4", circulatedT)
+	if math.Abs(circulatedT-0.7) > eps {
+		t.Errorf("Tiryns circulated silver = %v, want 0.7", circulatedT)
 	}
 
 	// share = 0 must be bit-identical to the pre-Del-C world: nothing circulates.

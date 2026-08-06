@@ -20,27 +20,33 @@ const (
 	nomadicHostSpearmen     = 2
 	nomadicHostSpearmenSize = 100 // men per cohort
 
-	// nomadicHostRationTicks is how long the escort's pay and rations last:
-	// 120 ticks — four months in the world, five real days at 60 min/tick.
+	// nomadicHostRationTicks is how long the escort's pay lasts, in ticks.
 	//
-	// ⚠️ 2880 → 120 (Timothy 2026-08-06, choice (b)). This is NOT the same class
-	// of retune as upkeepDesertionTicks. The ration is denominated in TICKS, so
-	// its real duration was never at risk — 2 880 ticks is 120 real days before
-	// and after. Two other things broke instead:
-	//   1. The fiction. Read under the new canon, 2 880 ticks is 2 880 days in the
-	//      world — a wandering host carrying nearly eight years of provisions.
-	//   2. The AMOUNTS. The store is derived below as rate × ration ticks, and the
-	//      rates are ×24 after mig 109. Left at 2 880 the opening silver would have
-	//      gone 480 → 11 520 and every row of the silver-trap table with it.
-	// 120 keeps the calibrated 480 silver / ~1 200 grain exactly, and reads right:
-	// four months of keep. The cost is deliberate — the escort's clock is now five
-	// real days instead of a hundred and twenty, which is the founder-phase
-	// pressure the design wants. (balans/silverupkeep-halveras doubles it to 240.)
+	// Master retuned 2880 → 120 for tick=day (Timothy 2026-08-06): rates are ×24
+	// after mig 109 and the store derives below as rate × ration_ticks, so 2 880
+	// would have blown the opening silver 480 → 11 520. 120 keeps the calibrated
+	// 480 with the UN-halved silver column. SLICE B (Timothy 2026-08-05) then
+	// halved that column (silver 2 → 1), which on its own drops the store
+	// 480 → 240 — so the ration doubles to 240, exactly as master's own retune
+	// note foresaw ("balans/silverupkeep-halveras doubles it to 240"). Net:
+	// 2 spearmen × 1 silver × 240 ticks = 480, the calibrated opening, restored.
 	//
 	// It is affordable only because the host itself eats nothing. Were the 4 000
 	// civilians fed from this store it would drown the opening's scarcity outright.
 	// (Original decision Timothy 2026-07-15.)
-	nomadicHostRationTicks = 120
+	nomadicHostRationTicks = 240
+
+	// nomadicHostDowryGrain is the grain the horde carries into the metropolis
+	// at founding — a BALANCE FIGURE, not a derivation. It was originally
+	// derived from the upkeep table (2 spearmen × 5 grain ÷ ... = 1200), but
+	// SLICE A (Timothy 2026-08-05) recalibrated soldier grain upkeep (garrison =
+	// a civilian's ration, field = double) for reasons that have nothing to do
+	// with the dowry — re-deriving it from the same formula would have silently
+	// twentyfolded it to 24000. Kanon 2026-08-05: "horden äter inget" fixed the
+	// RATE (grainRate = 0), not the AMOUNT. This constant is now frozen at the
+	// pre-recalibration value and changes only when someone deliberately changes
+	// the dowry itself.
+	nomadicHostDowryGrain = 1200
 )
 
 // seedNomadicHost creates a player's founder phase: the host token, its two
@@ -95,21 +101,21 @@ func seedNomadicHost(
 	// founding as a dowry (Timothy 2026-08-05). Sold IS still paid — it is
 	// owed to men who serve, unlike food to a people feeding itself.
 	//
-	// Rates come from the same functions the settled game uses, never hardcoded,
-	// so a calibration change moves the founder phase with it. UpkeepSpecs is
-	// per tick (combat/upkeep.go:13) — a tick is a day, so this sits beside a
-	// per-tick rate directly.
-	perTick := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize)
-	grainPerTick := float64(nomadicHostSpearmen) * perTick.Grain
+	// Silver comes from the same function the settled game uses, never hardcoded,
+	// so a calibration change moves the founder phase with it. UnitUpkeep is per
+	// tick (combat/upkeep.go — a tick is a day), so it sits beside a per-tick rate
+	// directly. Status is "positioned" — the horde stands on the map before
+	// founding — but silver is statusoberoende (UnitUpkeep never doubles it), so
+	// the status doesn't change the figure; it is just the honest status.
+	perTick := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize, "positioned")
 	grainRate := 0.0
 	silverRate := -float64(nomadicHostSpearmen) * perTick.Silver
 
-	// grainAmount no longer follows from grainRate (that would be 0): it is the
-	// dowry the escort carries, sized exactly as before so the founding payout
-	// doesn't change — only the drain stops. silverAmount still follows its
-	// rate, so grain and silver can never disagree about how long the escort's
-	// pay lasts.
-	grainAmount := grainPerTick * nomadicHostRationTicks
+	// grainAmount is the named dowry constant (SLICE A, 2026-08-05) — see
+	// nomadicHostDowryGrain's comment: it stopped following the upkeep table
+	// when that table was recalibrated for an unrelated reason. silverAmount
+	// still follows its rate, so silver alone still tracks the upkeep table.
+	grainAmount := float64(nomadicHostDowryGrain)
 	silverAmount := -silverRate * nomadicHostRationTicks
 
 	// Upsert, not insert: founder_phase is unique per (world, owner), and a Wanax
