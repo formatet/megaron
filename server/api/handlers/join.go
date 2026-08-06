@@ -258,7 +258,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// A player becomes a Wanax here, at join — so this is where the public
 	// display name is assigned, if the player doesn't already have one
 	// (Timothy 2026-08-05: players must stop showing their login to everyone
-	// else in the game). Existing players keep whatever migration 109
+	// else in the game). Existing players keep whatever migration 111
 	// backfilled; only a still-NULL wanax_name is filled in.
 	if wanaxName, err := province.UniqueWanaxName(r.Context(), tx); err != nil {
 		slog.Error("join: could not pick wanax name", "err", err, "player", playerID)

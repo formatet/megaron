@@ -9,7 +9,7 @@ package handlers
 // that a read surface downstream (foreign_units.go:93, on the asynchronicity
 // grind's path) shows the Wanax name instead of the login once it does.
 //
-// Red-before (against migration 109 applied, join.go unmodified): a joining
+// Red-before (against migration 111 applied, join.go unmodified): a joining
 // player's wanax_name stays NULL — join never touches the column.
 
 import (
