@@ -62,10 +62,10 @@ type inFlightTransport struct {
 func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
 
-	// Terrain for the FOW gate below (§4): AnyEyeSees needs the target hex's terrain
-	// to size the interceptor's vision per eye-kind. Load the graph once for the whole
-	// sweep. Sentry owner → their live eyes is memoised the same way — many caravans
-	// may be caught by the same Wanax, and eyes are fixed for this `now`.
+	// Terrain for the FOW gate below (§4): AnyEyeSees needs the target hex's
+	// terrain to size the interceptor's vision per eye-kind. Loaded once for the
+	// whole sweep. Sentry owner → their live eyes is memoised the same way — many
+	// caravans may be caught by the same Wanax, and eyes are fixed for this `now`.
 	graph, err := province.LoadTileGraph(ctx, h.pool, e.WorldID)
 	if err != nil {
 		return fmt.Errorf("intercept scan: load terrain: %w", err)
@@ -120,18 +120,21 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 				"fallback_q", pos.Q, "fallback_r", pos.R)
 		}
 
-		// An enemy sentry watching within reach of the caravan's current hex.
+		// An enemy sentry watching within reach of the caravan's current hex,
+		// whose reaction policy actually says "intercept" for foreign units
+		// (avsiktslagret §S1/S2 — was implicit/hardcoded before mig 112).
 		var sentryID, interceptor uuid.UUID
 		if qErr := h.pool.QueryRow(ctx,
 			`SELECT id, owner_id FROM units
 			 WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'
 			   AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL
+			   AND (reaction_policy->>'foreign') = 'intercept'
 			   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5
 			 ORDER BY size DESC
 			 LIMIT 1`,
 			e.WorldID, t.owner, pos.Q, pos.R, interceptRadius,
 		).Scan(&sentryID, &interceptor); qErr != nil {
-			continue // no sentry in reach
+			continue // no intercept-policy sentry in reach
 		}
 
 		// FOW gate (avsiktslagret §4): a sentry may only seize what its OWNER can

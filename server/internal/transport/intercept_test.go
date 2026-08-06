@@ -102,20 +102,56 @@ func TestInterceptScan_SeizesCaravanButNeverMessenger(t *testing.T) {
 	}
 }
 
+func TestInterceptScan_NoSentryLeavesCaravanAlone(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	ctx := context.Background()
+
+	clk := clock.NewTestClock(time.Unix(1_000_000, 0))
+	var caravan uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO transports
+		   (world_id, owner_id, kind, origin_id, dest_id, category,
+		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, status, interceptable)
+		 VALUES ($1,$2,'trade',$3,$4,'land',0,0,3,0,$5,$6,1,'in_transit',true)
+		 RETURNING id`,
+		f.worldID, f.owner, f.sourceID, f.destID,
+		clk.Now().Add(-1*time.Hour), clk.Now().Add(1*time.Hour),
+	).Scan(&caravan); err != nil {
+		t.Fatalf("create caravan: %v", err)
+	}
+
+	h := NewInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil, clk)
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 1}); err != nil {
+		t.Fatalf("intercept scan: %v", err)
+	}
+
+	var status string
+	_ = pool.QueryRow(ctx, `SELECT status FROM transports WHERE id=$1`, caravan).Scan(&status)
+	if status != "in_transit" {
+		t.Errorf("caravan status = %q, want in_transit (no sentry → no interception)", status)
+	}
+}
+
 // TestInterceptScan_SentryOwnerBlindToTargetDoesNotSeize is the FOW gate on
-// interception (avsiktslagret §S2/§4): a sentry may only seize a caravan its OWNER
-// can actually see at the interception moment. A naval sentry blockading the coast
-// watches a hex, but a ship's crew reads only 1 hex over land — so a land caravan
-// passing at distance 2 sits inside the ship's interceptRadius yet outside its
-// owner's vision. The all-seeing tripwire ("allvetande snubbeltråd") must NOT fire:
-// the caravan continues untouched. Red before the gate: the old query seizes it on
-// proximity alone; neutralise the AnyEyeSees line to see the leak.
+// interception (avsiktslagret §S2/§4, megaron_plan_avsiktslagret.md): a sentry
+// may only seize a caravan its OWNER can actually see at the interception
+// moment. A naval sentry watches a hex, but a ship's crew reads only 1 hex over
+// land (province.LiveRadius, EyeShip kind) — so a land caravan passing at
+// distance 2 sits inside the ship's interceptRadius (2) yet outside its
+// owner's actual vision. The all-seeing tripwire ("allvetande snubbeltråd")
+// must NOT fire: the caravan continues untouched.
+//
+// RED before the fix: today's query seizes on proximity alone, with no
+// AnyEyeSees check at all — the caravan gets seized even though the raider
+// never laid eyes on it.
 func TestInterceptScan_SentryOwnerBlindToTargetDoesNotSeize(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool) // land strip (0,0)…(3,0); caravan halfway → (1,0)
 	ctx := context.Background()
 
-	// A raider whose ONLY eye is the ship itself — no settlements near the route.
+	// A raider whose ONLY eye near the route is the ship itself — no
+	// settlements anywhere close.
 	var raider uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO players (username, email, password_hash) VALUES ($1,$2,'x') RETURNING id`,
@@ -123,9 +159,10 @@ func TestInterceptScan_SentryOwnerBlindToTargetDoesNotSeize(t *testing.T) {
 		t.Fatalf("create raider: %v", err)
 	}
 
-	// A naval sentry posted at (3,0), watching that hex. Distance to the caravan's
-	// halfway hex (1,0) is 2 = interceptRadius, so the proximity query catches it —
-	// but a ship sees only 1 hex over land, so its owner cannot actually see (1,0).
+	// A naval sentry posted at (3,0), watching that hex. Distance to the
+	// caravan's halfway hex (1,0) is 2 = interceptRadius, so the proximity
+	// query alone catches it — but a ship sees only 1 hex over land, so its
+	// owner cannot actually see (1,0).
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, stance, q, r, sentry_q, sentry_r)
 		 VALUES ($1,$2,'galley','naval',1,40,'positioned','sentry',3,0,3,0)`,
@@ -159,10 +196,24 @@ func TestInterceptScan_SentryOwnerBlindToTargetDoesNotSeize(t *testing.T) {
 	}
 }
 
-func TestInterceptScan_NoSentryLeavesCaravanAlone(t *testing.T) {
+// TestInterceptScan_OwnCaravanNeverIntercepted pins avsiktslagret §6 point 2:
+// a Wanax's own sentry never seizes their own caravan, even sitting right on
+// top of it — today this is already true via owner_id<>$2 in the sentry
+// query, but the reaction_policy encoding (S1/S2) must not accidentally break
+// it (own is never read from the policy column; it stays enforced by the
+// owner comparison). Not a red-before case — this must stay green throughout.
+func TestInterceptScan_OwnCaravanNeverIntercepted(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool)
 	ctx := context.Background()
+
+	// f.owner posts their OWN sentry right on the caravan's halfway hex.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, stance, q, r, sentry_q, sentry_r)
+		 VALUES ($1,$2,'spearman','land',80,0,'positioned','sentry',1,0,1,0)`,
+		f.worldID, f.owner); err != nil {
+		t.Fatalf("create own sentry: %v", err)
+	}
 
 	clk := clock.NewTestClock(time.Unix(1_000_000, 0))
 	var caravan uuid.UUID
@@ -173,7 +224,7 @@ func TestInterceptScan_NoSentryLeavesCaravanAlone(t *testing.T) {
 		 VALUES ($1,$2,'trade',$3,$4,'land',0,0,3,0,$5,$6,1,'in_transit',true)
 		 RETURNING id`,
 		f.worldID, f.owner, f.sourceID, f.destID,
-		clk.Now().Add(-1*time.Hour), clk.Now().Add(1*time.Hour),
+		clk.Now().Add(-1*time.Hour), clk.Now().Add(1*time.Hour), // halfway → (1,0), same hex as the sentry
 	).Scan(&caravan); err != nil {
 		t.Fatalf("create caravan: %v", err)
 	}
@@ -186,6 +237,6 @@ func TestInterceptScan_NoSentryLeavesCaravanAlone(t *testing.T) {
 	var status string
 	_ = pool.QueryRow(ctx, `SELECT status FROM transports WHERE id=$1`, caravan).Scan(&status)
 	if status != "in_transit" {
-		t.Errorf("caravan status = %q, want in_transit (no sentry → no interception)", status)
+		t.Errorf("caravan status = %q, want in_transit (own sentry never intercepts own caravan)", status)
 	}
 }
