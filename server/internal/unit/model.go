@@ -10,6 +10,7 @@ package unit
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -184,6 +185,60 @@ const (
 	StanceSentry  Stance = "sentry"  // patrols sentry_q/r, intercepts enemies within 3 hex
 )
 
+// ---- Reaction policy (avsiktslagret) ------------------------------------------
+//
+// megaron_plan_avsiktslagret.md: a positioned/garrisoned unit reacts to a class
+// of actor entering its reach (today only "who a sentry seizes") with one of
+// four avsikt verbs, per relation class. Encoding decided by Timothy
+// 2026-08-06: a single JSONB column (`units.reaction_policy`), not separate
+// intent_foreign/intent_own columns — SQL-gates as `reaction_policy->>'foreign'
+// = 'intercept'`.
+//
+// Verb scope (Timothy 2026-08-06, delbeslut 2): all four verbs are storable/
+// settable now. Only `intercept` is behaviourally wired in this slice — it
+// gates the caravan-sentry query (transport/intercept.go) and the unit-vs-unit
+// sentry scan (combat/unit_intercept_scan.go). `escort` and `alert` are STUBS:
+// a Wanax can set and read them, but nothing in combat or notifications acts on
+// them yet — see the TODOs at intercept.go/unit_intercept_scan.go's sentry
+// queries (they only ever look for =='intercept'). `own` is enforced by
+// owner_id<>$N in every sentry query, never by reading this field — it is
+// stored anyway so a future policy editor has somewhere to read/write it, and
+// per-relation defaults still document intent. `ally` is parked until kingdoms
+// return (KINGDOMS_ENABLED, post-MVP): stored, never consulted.
+type ReactionVerb string
+
+const (
+	ReactionIntercept ReactionVerb = "intercept" // seize/fight — today's only wired verb
+	ReactionEscort    ReactionVerb = "escort"    // STUB: storable/settable, no behaviour yet
+	ReactionIgnore    ReactionVerb = "ignore"    // never react
+	ReactionAlert     ReactionVerb = "alert"     // STUB: storable/settable, no behaviour yet
+)
+
+// ValidReactionVerb reports whether v is one of the four avsiktslager verbs.
+func ValidReactionVerb(v string) bool {
+	switch ReactionVerb(v) {
+	case ReactionIntercept, ReactionEscort, ReactionIgnore, ReactionAlert:
+		return true
+	}
+	return false
+}
+
+// ReactionPolicy is the two-axis (relation × avsikt) reaction table for one unit.
+type ReactionPolicy struct {
+	Foreign ReactionVerb `json:"foreign"`
+	Own     ReactionVerb `json:"own"`
+	Ally    ReactionVerb `json:"ally"`
+}
+
+// DefaultReactionPolicy reproduces today's hardcoded sentry behaviour
+// (foreign→intercept, own→ignore, ally→ignore) exactly. The migration's column
+// default and SetStance's sentry default both equal this, so introducing the
+// column changes nothing about how an existing sentry behaves
+// (megaron_plan_avsiktslagret.md §3).
+func DefaultReactionPolicy() ReactionPolicy {
+	return ReactionPolicy{Foreign: ReactionIntercept, Own: ReactionIgnore, Ally: ReactionIgnore}
+}
+
 // ---- Domain model ------------------------------------------------------------
 
 // Unit is a single discrete military entity.
@@ -245,6 +300,10 @@ type Unit struct {
 	SentryQ *int // patrol centre when stance = sentry
 	SentryR *int
 
+	// ReactionPolicy is the avsiktslagret relation×avsikt table (see above).
+	// Every row carries one (NOT NULL DEFAULT, mig 112) — never nil.
+	ReactionPolicy ReactionPolicy
+
 	LeaderRole *string // e.g. "dekarchos" — label only, not yet enforced in UI
 
 	CreatedAt time.Time
@@ -273,6 +332,7 @@ const selectCols = `
 	target_q, target_r, departs_at, arrives_at,
 	depart_tick, arrive_tick,
 	sentry_q, sentry_r,
+	reaction_policy,
 	leader_role,
 	march_intent, colony_name,
 	name, build_complete_at,
@@ -283,6 +343,7 @@ func scanUnit(row interface {
 }) (*Unit, error) {
 	var u Unit
 	var stance *string
+	var reactionRaw []byte
 	if err := row.Scan(
 		&u.ID, &u.WorldID, &u.OwnerID,
 		&u.Type, &u.Category, &u.Size, &u.Crew, &u.CargoUnitID,
@@ -292,6 +353,7 @@ func scanUnit(row interface {
 		&u.TargetQ, &u.TargetR, &u.DepartsAt, &u.ArrivesAt,
 		&u.DepartTick, &u.ArriveTick,
 		&u.SentryQ, &u.SentryR,
+		&reactionRaw,
 		&u.LeaderRole,
 		&u.MarchIntent, &u.ColonyName,
 		&u.Name, &u.BuildCompleteAt,
@@ -302,6 +364,10 @@ func scanUnit(row interface {
 	if stance != nil {
 		s := Stance(*stance)
 		u.Stance = &s
+	}
+	u.ReactionPolicy = DefaultReactionPolicy()
+	if len(reactionRaw) > 0 {
+		_ = json.Unmarshal(reactionRaw, &u.ReactionPolicy)
 	}
 	return &u, nil
 }

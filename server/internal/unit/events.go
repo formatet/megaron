@@ -158,6 +158,11 @@ type UnitStanceChangedPayload struct {
 	StanceAfter  string    `json:"stance_after"`  // "" means stance cleared
 	SentryQ      *int      `json:"sentry_q,omitempty"` // set when stance_after == "sentry"
 	SentryR      *int      `json:"sentry_r,omitempty"`
+	// ReactionForeign is the avsiktslagret foreign-relation verb now in effect
+	// (megaron_plan_avsiktslagret.md, added 2026-08-06). Set only when
+	// stance_after == "sentry"; empty for every other transition. Additive field
+	// on an existing frozen event type — old rows simply lack it.
+	ReactionForeign string `json:"reaction_foreign,omitempty"`
 }
 
 // MarchRecalledPayload is emitted when a recall messenger reaches a marching

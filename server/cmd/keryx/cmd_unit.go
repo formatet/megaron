@@ -770,18 +770,23 @@ func parseQR(s string) (int, int, error) {
 // ---- unit stance -------------------------------------------------------------
 
 func unitStanceCmd() *cobra.Command {
-	var unitID, stance string
+	var unitID, stance, reaction string
 
 	cmd := &cobra.Command{
 		Use:   "stance",
 		Short: "Set or clear a unit's stance",
 		Example: `  keryx unit stance --unit <id> --stance fortify
+  keryx unit stance --unit <id> --stance sentry --reaction ignore
   keryx unit stance --unit <id> --stance none`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/stance", cfg.WorldID, unitID)
-			data, err := c.post(path, map[string]any{"stance": stance})
+			body := map[string]any{"stance": stance}
+			if reaction != "" {
+				body["reaction_foreign"] = reaction
+			}
+			data, err := c.post(path, body)
 			if err != nil {
 				return err
 			}
@@ -803,6 +808,8 @@ func unitStanceCmd() *cobra.Command {
 			}
 			if stance == "none" {
 				fmt.Printf("Unit %s stance cleared\n", unitID[:8])
+			} else if reactionApplied, _ := stanceResp["reaction_foreign"].(string); stance == "sentry" && reactionApplied != "" {
+				fmt.Printf("Unit %s stance → %s (reacts to foreign units: %s)\n", unitID[:8], stance, reactionApplied)
 			} else {
 				fmt.Printf("Unit %s stance → %s\n", unitID[:8], stance)
 			}
@@ -812,6 +819,8 @@ func unitStanceCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance: fortify|storm|sentry|none (required)")
+	cmd.Flags().StringVar(&reaction, "reaction", "",
+		"reaction to foreign units when --stance sentry: intercept|escort|ignore|alert (default intercept; escort/alert are not yet behaviourally wired)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("stance")
 	return cmd

@@ -1047,6 +1047,11 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		Stance string `json:"stance"` // fortify|storm|sentry|none
+		// ReactionForeign optionally picks the avsiktslagret foreign-relation verb
+		// when Stance == "sentry" (default: intercept, today's unchanged
+		// behaviour). See unit.ReactionPolicy — escort/alert are settable here but
+		// still stubs (no combat/notification behaviour yet).
+		ReactionForeign string `json:"reaction_foreign,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -1054,7 +1059,10 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	order := combat.StanceOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID, Stance: req.Stance}
+	order := combat.StanceOrder{
+		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+		Stance: req.Stance, ReactionForeign: req.ReactionForeign,
+	}
 
 	// Order latency (temenos_orderlopare_plan.md Fas 3): a stance order to a
 	// field unit travels by runner from the nearest own city and applies
@@ -1107,10 +1115,11 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"unit_id":  res.UnitID,
-		"stance":   res.Stance,
-		"sentry_q": res.SentryQ,
-		"sentry_r": res.SentryR,
+		"unit_id":          res.UnitID,
+		"stance":           res.Stance,
+		"sentry_q":         res.SentryQ,
+		"sentry_r":         res.SentryR,
+		"reaction_foreign": res.ReactionForeign,
 	})
 }
 

@@ -8,6 +8,7 @@ package combat
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"formatet/megaron/server/internal/events"
@@ -22,6 +23,14 @@ type StanceOrder struct {
 	PlayerID uuid.UUID
 	UnitID   uuid.UUID
 	Stance   string // fortify|storm|sentry|none
+
+	// ReactionForeign optionally overrides the foreign-relation avsikt verb
+	// (avsiktslagret) applied when Stance == "sentry". Empty means the default
+	// (unit.ReactionIntercept — today's hardcoded sentry behaviour, unchanged).
+	// Ignored for every other stance value. "escort"/"alert" are settable here
+	// but are STUBS — see unit.ReactionPolicy's doc comment for what is and
+	// isn't wired yet.
+	ReactionForeign string
 }
 
 // StanceApplied describes the applied stance (the handler's 200 body fields).
@@ -30,6 +39,9 @@ type StanceApplied struct {
 	Stance  string // "" = none
 	SentryQ *int
 	SentryR *int
+	// ReactionForeign is set only when Stance == "sentry" — the avsikt verb now
+	// in effect against foreign units (unit.ReactionPolicy.Foreign).
+	ReactionForeign string
 }
 
 // SetStance validates and executes one stance order atomically. Any
@@ -42,6 +54,14 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 		// valid
 	default:
 		return nil, reject(http.StatusBadRequest, `invalid stance: must be "fortify", "storm", "sentry", or "none"`)
+	}
+
+	// Validate the optional avsikt override (avsiktslagret delbeslut 2, 2026-08-06:
+	// all four verbs are settable now even though escort/alert have no combat or
+	// notification behaviour yet — see unit.ReactionPolicy's doc comment).
+	if o.ReactionForeign != "" && !unit.ValidReactionVerb(o.ReactionForeign) {
+		return nil, reject(http.StatusBadRequest,
+			`invalid reaction_foreign: must be "intercept", "escort", "ignore", or "alert"`)
 	}
 
 	store := unit.NewStore(pool)
@@ -66,6 +86,11 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 	// Determine new stance value and sentry coords.
 	var newStance *string
 	var newSentryQ, newSentryR *int
+	// newReactionPolicyRaw is nil unless stance == sentry — COALESCE below then
+	// leaves the unit's existing reaction_policy untouched for every other
+	// stance transition (fortify/storm/none don't touch the avsiktslagret axis).
+	var newReactionPolicyRaw []byte
+	var appliedReactionForeign string
 	if o.Stance != "none" {
 		s := o.Stance
 		newStance = &s
@@ -86,6 +111,20 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 		}
 		newSentryQ = &hexQ
 		newSentryR = &hexR
+
+		// Default reaction policy reproduces today's hardcoded sentry behaviour
+		// (foreign→intercept) exactly; ReactionForeign leaves an explicit path to
+		// choose a different avsikt verb (avsiktslagret §3/S1).
+		policy := unit.DefaultReactionPolicy()
+		if o.ReactionForeign != "" {
+			policy.Foreign = unit.ReactionVerb(o.ReactionForeign)
+		}
+		appliedReactionForeign = string(policy.Foreign)
+		raw, mErr := json.Marshal(policy)
+		if mErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not encode reaction policy")
+		}
+		newReactionPolicyRaw = raw
 	}
 
 	// Atomic update inside transaction with FOR UPDATE idempotency guard.
@@ -108,12 +147,13 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET
-		   stance     = $2,
-		   sentry_q   = $3,
-		   sentry_r   = $4,
-		   updated_at = now()
+		   stance          = $2,
+		   sentry_q        = $3,
+		   sentry_r        = $4,
+		   reaction_policy = COALESCE($5::jsonb, reaction_policy),
+		   updated_at      = now()
 		 WHERE id = $1`,
-		o.UnitID, newStance, newSentryQ, newSentryR,
+		o.UnitID, newStance, newSentryQ, newSentryR, newReactionPolicyRaw,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update stance")
 	}
@@ -133,14 +173,21 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 	}
 	_, _ = eventStore.Append(ctx, o.UnitID, events.StreamType(unit.StreamUnit), unit.EventUnitStanceChanged,
 		unit.UnitStanceChangedPayload{
-			UnitID:       o.UnitID,
-			WorldID:      o.WorldID,
-			StanceBefore: stanceBefore,
-			StanceAfter:  stanceAfter,
-			SentryQ:      newSentryQ,
-			SentryR:      newSentryR,
+			UnitID:          o.UnitID,
+			WorldID:         o.WorldID,
+			StanceBefore:    stanceBefore,
+			StanceAfter:     stanceAfter,
+			SentryQ:         newSentryQ,
+			SentryR:         newSentryR,
+			ReactionForeign: appliedReactionForeign,
 		}, o.WorldID, nil,
 	)
 
-	return &StanceApplied{UnitID: o.UnitID, Stance: stanceAfter, SentryQ: newSentryQ, SentryR: newSentryR}, nil
+	return &StanceApplied{
+		UnitID:          o.UnitID,
+		Stance:          stanceAfter,
+		SentryQ:         newSentryQ,
+		SentryR:         newSentryR,
+		ReactionForeign: appliedReactionForeign,
+	}, nil
 }
