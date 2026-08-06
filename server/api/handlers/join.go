@@ -114,14 +114,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = json.NewDecoder(r.Body).Decode(&req)
 
-	if req.Culture == "" {
-		// Random culture when joining via web (no preference specified).
-		cultures := []province.Culture{
-			province.CultureAkhaier, province.CultureKhemetiu, province.CultureKnaani,
-			province.CultureThrakes, province.CultureMinoan, province.CultureHatti,
-		}
-		req.Culture = string(cultures[playerCount%len(cultures)])
-	}
+	// MVP is minoan (EK1 = B, Timothy 2026-08-05): every culture — absent,
+	// unknown, or one of the five deactivated — normalises silently.
+	req.Culture = province.NormaliseCulture(req.Culture)
 	// A city's name is how every other Wanax addresses it (messengers, trade
 	// offers, `--to <name>`), so no two may share one: the generator skips names
 	// already spoken for, and a chosen duplicate is refused rather than quietly
@@ -258,6 +253,20 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		slog.Error("join: could not seed nomadic host", "err", err, "player", playerID, "world", worldID)
 		writeError(w, http.StatusInternalServerError, "could not create nomadic host")
 		return
+	}
+
+	// A player becomes a Wanax here, at join — so this is where the public
+	// display name is assigned, if the player doesn't already have one
+	// (Timothy 2026-08-05: players must stop showing their login to everyone
+	// else in the game). Existing players keep whatever migration 109
+	// backfilled; only a still-NULL wanax_name is filled in.
+	if wanaxName, err := province.UniqueWanaxName(r.Context(), tx); err != nil {
+		slog.Error("join: could not pick wanax name", "err", err, "player", playerID)
+	} else if _, err := tx.Exec(r.Context(),
+		`UPDATE players SET wanax_name = $1 WHERE id = $2 AND wanax_name IS NULL`,
+		wanaxName, playerID,
+	); err != nil {
+		slog.Error("join: could not set wanax name", "err", err, "player", playerID)
 	}
 
 	// Record the player as active with no settlement yet — settlement_id is

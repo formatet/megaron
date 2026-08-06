@@ -143,7 +143,7 @@ func (h *KingdomHandler) Found(w http.ResponseWriter, r *http.Request) {
 
 	// Notify nearby players of the new kingdom.
 	var founderUsername string
-	_ = h.pool.QueryRow(r.Context(), `SELECT username FROM players WHERE id = $1`, playerID).Scan(&founderUsername)
+	_ = h.pool.QueryRow(r.Context(), `SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, playerID).Scan(&founderUsername)
 	gossipText := "The kingdom of " + req.Name + " has been established. " + founderUsername + " rules as Basileus."
 	go h.broadcastKingdomGossip(context.Background(), settlementID, worldID, "kingdom", gossipText)
 
@@ -282,7 +282,7 @@ func (h *KingdomHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// Notify nearby players of the new alliance member.
 	var kingdomName, joinerName string
 	_ = h.pool.QueryRow(r.Context(), `SELECT name FROM kingdoms WHERE id = $1`, kingdomID).Scan(&kingdomName)
-	_ = h.pool.QueryRow(r.Context(), `SELECT username FROM players WHERE id = $1`, playerID).Scan(&joinerName)
+	_ = h.pool.QueryRow(r.Context(), `SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, playerID).Scan(&joinerName)
 	gossipText := joinerName + " has joined the kingdom of " + kingdomName + "."
 	go h.broadcastKingdomGossip(context.Background(), settlementID, worldID, "kingdom", gossipText)
 
@@ -361,7 +361,7 @@ func (h *KingdomHandler) Invitations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT ki.id, ki.kingdom_id, k.name, p.username, ki.expires_at
+		`SELECT ki.id, ki.kingdom_id, k.name, COALESCE(p.wanax_name, p.username), ki.expires_at
 		 FROM kingdom_invitations ki
 		 JOIN kingdoms k ON k.id = ki.kingdom_id
 		 JOIN players p ON p.id = ki.invited_by
@@ -406,7 +406,7 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT km.player_id, p.username, km.role, km.joined_at,
+		`SELECT km.player_id, COALESCE(p.wanax_name, p.username), km.role, km.joined_at,
 		        COALESCE(s.name,''), COALESCE(s.culture_id,''),
 		        COALESCE(s.infantry,0) + COALESCE(s.elite_infantry,0)*2
 		          + COALESCE(s.chariot,0)*3 AS dp,
@@ -928,7 +928,7 @@ func (h *KingdomHandler) ElectionStatus(w http.ResponseWriter, r *http.Request) 
 	var closesAt time.Time
 	var voteCount, memberCount int
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT ke.id, ke.candidate_id, p.username, ke.called_by, ke.closes_at,
+		`SELECT ke.id, ke.candidate_id, COALESCE(p.wanax_name, p.username), ke.called_by, ke.closes_at,
 		        (SELECT COUNT(*) FROM kingdom_votes WHERE election_id = ke.id),
 		        (SELECT COUNT(*) FROM kingdom_members WHERE kingdom_id = ke.kingdom_id)
 		 FROM kingdom_elections ke
@@ -965,7 +965,7 @@ func (h *KingdomHandler) BorrowedArmiesList(w http.ResponseWriter, r *http.Reque
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT ba.id, ba.lender_id, p.username,
+		`SELECT ba.id, ba.lender_id, COALESCE(p.wanax_name, p.username),
 		        COALESCE(s.id::text, '') AS lender_settlement_id,
 		        ba.infantry, ba.chariot, ba.ship, ba.borrowed_at
 		 FROM borrowed_armies ba

@@ -20,6 +20,19 @@ const (
 	CultureHatti    Culture = "hatti"
 )
 
+// MVPCulture — MVP is minoan (EK1 = B, Timothy 2026-08-05). The other five
+// cultures are DEACTIVATED, not removed: their data, prayers and name pools
+// stay in place and they are reactivated post-MVP.
+const MVPCulture = CultureMinoan
+
+// NormaliseCulture forces every culture to the MVP culture. This is silent
+// coercion, not a client error: an empty, unknown or deactivated culture is
+// not a mistake a player made, and refusing the request would break existing
+// clients days before the test week (Timothy 2026-08-05).
+func NormaliseCulture(c string) string {
+	return string(MVPCulture)
+}
+
 // MapPosition is an axial hex coordinate.
 type MapPosition struct {
 	Q int

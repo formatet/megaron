@@ -387,10 +387,11 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback(r.Context())
 
 	// Culture is fixed at join in the ordinary path; the founder phase has none
-	// stored yet, so a settle without one falls back the same way join does.
-	if req.Culture == "" {
-		req.Culture = string(province.CultureAkhaier)
-	}
+	// stored yet, so Settle normalises independently, the same way Join does
+	// (Timothy 2026-08-05, EK1 = B: MVP is minoan) — this used to default to
+	// akhaier regardless of what Join had picked, a real bug: a player who
+	// joined as minoan could found their metropolis as akhaier.
+	req.Culture = province.NormaliseCulture(req.Culture)
 	// Names are the address every other Wanax uses — unique per world. Generated
 	// names skip what is taken; a chosen duplicate is refused, not altered.
 	if req.Name == "" {
