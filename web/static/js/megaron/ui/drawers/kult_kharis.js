@@ -19,14 +19,14 @@ export function kharisNetView(pd) {
   const out = { netHtml: '', idleHtml: '' };
   if (!pd) return out;
 
-  // Distinct from the existing "Passive" row (pd.kharis_per_day, rendered by
+  // Distinct from the existing "Passive" row (pd.kharis_per_tick, rendered by
   // kult.js) — that is the geographic rate; this is the daily maintenance
   // net (temple gain − decay), the figure that actually answers "did raising
   // devotion help". Same format as the passive row: sign + one decimal.
   if (pd.kharis_net_known === true) {
-    const v = pd.kharis_net_per_day || 0;
+    const v = pd.kharis_net_per_tick || 0;
     out.netHtml = '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val">' +
-      (v >= 0 ? '+' : '') + v.toFixed(1) + ' kharis/day</span></div>';
+      (v >= 0 ? '+' : '') + v.toFixed(1) + ' kharis/tick</span></div>';
   }
 
   if (pd.kharis_devotion_idle === true) {

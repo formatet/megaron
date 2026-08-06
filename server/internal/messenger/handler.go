@@ -34,8 +34,8 @@ type ReturnPayload struct {
 // pending for 168, the offer spent 120 ticks visible to nobody and acceptable by
 // nobody, with the sender's escrow locked the whole time.
 const (
-	ReplyStayTicks   = 48     // 2 in-game days
-	OfferExpiryTicks = 7 * 24 // 7 in-game days
+	ReplyStayTicks   = 48  // 48 ticks
+	OfferExpiryTicks = 168 // 168 ticks
 )
 
 // stayTicks returns how long a messenger waits at its destination.

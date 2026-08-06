@@ -2,6 +2,7 @@ import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { updateNotifBadge } from '../chips.js';
 import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.js';
+import { currentCalendarDate } from '../misc.js';
 
 // ── Notifications drawer ──────────────────────────────────────────────────
 // Mirrors keryx `notifications` (DEL B/D): the default view excludes the noisy
@@ -9,6 +10,15 @@ import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.
 // click to view" drill-down per hidden kind. SubsistenceWarning is never
 // collapsed; its critical tier floats to the very top of the feed.
 const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
+
+// Exact date, top of the drawer — the celestial widget only shows the month
+// name now (Timothy 2026-08-06); this is where the precise day/month/year
+// reading lives, off the same tick-anchor math (currentCalendarDate).
+function notifDateHeader() {
+  const cal = currentCalendarDate();
+  if (!cal) return '';
+  return `<div class="notif-date-header">Day ${cal.day} of ${cal.monthName}, Year ${cal.year}</div>`;
+}
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }
 
@@ -93,7 +103,7 @@ export async function loadNotifDrawer(kindFilter) {
       }
     }
 
-    body.innerHTML = html || '<p class="empty-state" style="padding:1rem">No notifications yet.</p>';
+    body.innerHTML = notifDateHeader() + (html || '<p class="empty-state" style="padding:1rem">No notifications yet.</p>');
   } catch (_) {
     body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
   }

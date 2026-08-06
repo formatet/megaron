@@ -3,17 +3,15 @@ package economy
 import (
 	"math"
 	"testing"
-
-	"formatet/megaron/server/internal/events"
 )
 
 func TestLocalPrice_AtReference(t *testing.T) {
-	// Stock exactly at reference (rate×TicksPerDay×referenceBufferDays) with
-	// that same rate → projected lands exactly on reference → price = baseValue.
+	// Stock exactly at reference (rate×referenceBufferTicks) with that same
+	// rate → projected lands exactly on reference → price = baseValue.
 	baseValue := 1.0
 	rate := 1.0
 	reference := ProductionReference(rate)
-	stock := reference - rate*float64(events.TicksPerDay) // projected = stock + rate*24 = reference
+	stock := reference - rate // projected = stock + rate = reference
 	price := LocalPrice(baseValue, stock, rate)
 	if math.Abs(price-baseValue) > 0.01 {
 		t.Errorf("at reference stock price should equal base: got %.3f want %.3f", price, baseValue)
@@ -59,20 +57,27 @@ func TestLocalPrice_RateProjection(t *testing.T) {
 }
 
 // TestLocalPrice_PerTickLookahead pins the tick-based lookahead so an accidental
-// revert to the old per-minute constant (60×24=1440) is caught. With rate=1/tick
-// the reference anchor is rate-derived (72 = 1×24×3) and the tick-correct
-// projection (24) sits well below it → mild shortage, price above base. A
-// wrongly-reintroduced per-minute lookahead (1440) would sit far above any
-// reasonable reference → deep surplus, price below base. The two constants
-// give opposite price directions, so this stays a decisive regression guard.
+// revert to a stale, much-larger lookahead constant (like the retired
+// per-minute value 60×24=1440) is caught. ⭐ CANON 2026-08-06: a tick IS the
+// day now, so with rate=1/tick the correct lookahead projects 1 unit ahead,
+// while the reference anchor (referenceBufferTicks × rate = 3) sits below
+// referenceFloorUnits (10) and floors there — projected(1) stays well below
+// reference(10) → shortage, price above base. A wrongly-reintroduced large
+// lookahead (e.g. 1440) would blow the projection far past any reasonable
+// reference → deep surplus, price below base. The two constants give
+// opposite price directions, so this stays a decisive regression guard.
 func TestLocalPrice_PerTickLookahead(t *testing.T) {
-	projected := 0.0 + 1.0*float64(events.TicksPerDay)
-	if projected != 24 {
-		t.Fatalf("test premise broke: expected TicksPerDay=24, got projected=%.1f", projected)
+	// Guard the actual behaviour (not a deleted constant): the reference
+	// anchor for rate=1 is referenceBufferTicks×1=3, which floors to
+	// referenceFloorUnits (10) — pin this so the floor/no-floor branch below
+	// doesn't silently change out from under the assertion if
+	// referenceBufferTicks is ever retuned.
+	if got := ProductionReference(1.0); got != referenceFloorUnits {
+		t.Fatalf("test premise broke: ProductionReference(1.0) = %.1f, want the floor %.1f", got, referenceFloorUnits)
 	}
 	price := LocalPrice(1.0, 0, 1.0)
 	if price <= 1.0 {
-		t.Errorf("per-tick lookahead should yield a mild-shortage price above base, got %.3f "+
-			"(a per-minute lookahead would over-project into deep surplus and give a price below base)", price)
+		t.Errorf("per-tick lookahead should yield a shortage price above base, got %.3f "+
+			"(a stale, much-larger lookahead would over-project into deep surplus and give a price below base)", price)
 	}
 }

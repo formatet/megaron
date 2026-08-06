@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -468,7 +467,7 @@ type colonizePreview struct {
 		BasePerTick     float64  `json:"base_per_tick"`
 		EstNetPerTick   float64  `json:"est_net_per_tick"`
 		Seed            float64  `json:"seed"`
-		DaysUntilEmpty  *float64 `json:"days_until_empty"`
+		TicksUntilEmpty *float64 `json:"ticks_until_empty"`
 		WithFarmPerTick float64  `json:"with_farm_per_tick"`
 	} `json:"grain"`
 	UnknownHexes    int    `json:"unknown_hexes"`
@@ -521,7 +520,7 @@ func fetchPreviewPath(c *Client, path string) (*colonizePreview, error) {
 	return &p, nil
 }
 
-// renderColonizePreview prints the founding grain balance per game-day, so a
+// renderColonizePreview prints the founding grain balance per tick, so a
 // Wanax sees whether a target hex can feed a colony before committing the march.
 func renderColonizePreview(p *colonizePreview, q, r int) {
 	renderCatchmentForecast(fmt.Sprintf("Colonize (%d,%d)", q, r), p)
@@ -537,9 +536,9 @@ func renderColonizePreview(p *colonizePreview, q, r int) {
 
 // renderCatchmentForecast is the shared forecast body — colonization and the
 // founder-phase settle print the same numbers under different headers.
-// All rates are per-tick from the server; ×TicksPerDay converts to per-day.
+// All rates are per-tick from the server, so these print directly with no
+// conversion.
 func renderCatchmentForecast(title string, p *colonizePreview) {
-	td := float64(events.TicksPerDay)
 	known := len(p.Catchment) - p.UnknownHexes
 
 	fmt.Printf("%s — catchment-prognos (%d/%d hexar kända, %d okända):\n",
@@ -552,24 +551,24 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		fmt.Printf("  ⛔ BLOCKERAD: %s\n", p.CatchmentConflict.Message)
 	}
 
-	prodPerDay := p.Grain.BasePerTick * td
-	netPerDay := p.Grain.EstNetPerTick * td
-	consPerDay := prodPerDay - netPerDay
-	fmt.Printf("  Grain: produktion ~%.0f/dygn − konsumtion ~%.0f/dygn = NETTO %+.0f/dygn\n",
-		prodPerDay, consPerDay, netPerDay)
+	prodPerTick := p.Grain.BasePerTick
+	netPerTick := p.Grain.EstNetPerTick
+	consPerTick := prodPerTick - netPerTick
+	fmt.Printf("  Grain: produktion ~%.0f/tick − konsumtion ~%.0f/tick = NETTO %+.0f/tick\n",
+		prodPerTick, consPerTick, netPerTick)
 
-	if netPerDay < 0 {
+	if netPerTick < 0 {
 		reach := ""
-		if p.Grain.DaysUntilEmpty != nil {
-			reach = fmt.Sprintf(" → räcker ~%.0f speldygn", *p.Grain.DaysUntilEmpty)
+		if p.Grain.TicksUntilEmpty != nil {
+			reach = fmt.Sprintf(" → räcker ~%.0f tick", *p.Grain.TicksUntilEmpty)
 		}
-		farmNetPerDay := p.Grain.WithFarmPerTick*td - consPerDay
+		farmNetPerTick := p.Grain.WithFarmPerTick - consPerTick
 		farmNote := ""
 		if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
 			farmNote = " (ingen jordbruksterräng i känd catchment — en farm hjälper inte här)"
 		}
-		fmt.Printf("  Startlager %.0f grain%s. Med farm: ~%+.0f/dygn%s\n",
-			p.Grain.Seed, reach, farmNetPerDay, farmNote)
+		fmt.Printf("  Startlager %.0f grain%s. Med farm: ~%+.0f/tick%s\n",
+			p.Grain.Seed, reach, farmNetPerTick, farmNote)
 	} else {
 		fmt.Printf("  Startlager %.0f grain — staden är självförsörjande.\n", p.Grain.Seed)
 	}
@@ -609,8 +608,8 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		if g == "grain" {
 			continue
 		}
-		if rate := p.Goods[g] * td; rate > 0 {
-			extras = append(extras, fmt.Sprintf("%s ~%.0f/dygn", g, rate))
+		if rate := p.Goods[g]; rate > 0 {
+			extras = append(extras, fmt.Sprintf("%s ~%.0f/tick", g, rate))
 		}
 	}
 	if len(extras) > 0 {

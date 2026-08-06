@@ -70,7 +70,7 @@ func TestFindPath_Naval(t *testing.T) {
 		t.Errorf("expected path end (2,0), got %v", path[len(path)-1])
 	}
 	// Cost: entering (1,0) + entering (2,0) = 0.4 + 0.4 = 0.8
-	expected := 2 * TerrainMoveHours("coastal_sea")
+	expected := 2 * TerrainMoveTicks("coastal_sea")
 	if math.Abs(cost-expected) > 1e-9 {
 		t.Errorf("expected cost %f, got %f", expected, cost)
 	}
@@ -95,7 +95,7 @@ func TestFindPath_LandBlockedBySea(t *testing.T) {
 }
 
 // TestFindPath_StraightLandCost verifies that the returned cost equals the sum of
-// TerrainMoveHours for each tile entered on a clear straight-line path.
+// TerrainMoveTicks for each tile entered on a clear straight-line path.
 func TestFindPath_StraightLandCost(t *testing.T) {
 	tiles := map[[2]int]string{
 		{0, 0}: "plains",
@@ -108,7 +108,7 @@ func TestFindPath_StraightLandCost(t *testing.T) {
 		t.Fatal("expected straight land path to be found")
 	}
 	// Entering (1,0) and (2,0): 2 × 0.75 = 1.5
-	expected := 2 * TerrainMoveHours("plains")
+	expected := 2 * TerrainMoveTicks("plains")
 	if math.Abs(cost-expected) > 1e-9 {
 		t.Errorf("expected cost %f, got %f", expected, cost)
 	}

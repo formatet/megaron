@@ -80,13 +80,19 @@ func TestClassifyWelfare_VariedDietAlone(t *testing.T) {
 	}
 }
 
+// ⭐ CANON 2026-08-06: a tick IS the day now, so welfareWindowSeconds() =
+// TickSeconds collapses to exactly one tick's worth of seconds — at 60
+// min/tick that's 3600 s, at TICK_SECONDS=6 (dev cadence) that's 6 s. The
+// window still follows the tick substrate exactly, which is what this test
+// guards; the multiplier that used to make it 24 ticks wide is gone because
+// a "game-day" and a tick are now the same span.
 func TestWelfareWindowSeconds_MatchesTickSubstrate(t *testing.T) {
 	withTickSeconds(t, 3600)
-	if got, want := welfareWindowSeconds(), 24*3600; got != want {
-		t.Errorf("welfareWindowSeconds() at 60 min/tick = %d, want %d (1 game-day)", got, want)
+	if got, want := welfareWindowSeconds(), 3600; got != want {
+		t.Errorf("welfareWindowSeconds() at 60 min/tick = %d, want %d (1 tick == 1 game-day)", got, want)
 	}
 	withTickSeconds(t, 6)
-	if got, want := welfareWindowSeconds(), 24*6; got != want {
-		t.Errorf("welfareWindowSeconds() at TICK_SECONDS=6 = %d, want %d (1 game-day)", got, want)
+	if got, want := welfareWindowSeconds(), 6; got != want {
+		t.Errorf("welfareWindowSeconds() at TICK_SECONDS=6 = %d, want %d (1 tick == 1 game-day)", got, want)
 	}
 }

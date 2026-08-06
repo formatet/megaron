@@ -14,22 +14,25 @@
 
   <!-- ── Game top bar ─────────────────────────────────────────────────── -->
   <div class="game-topbar">
-    <div class="gt-logo">ΜΕΓΑΡΟΝ</div>
-    <div class="gt-devtempo" id="gt-devtempo" style="display:none"></div>
     <div class="gt-netstatus" id="net-status">återansluter…</div>
-    <div class="gt-notif-strip" id="gt-notif-strip"></div>
+    <div class="gt-notif-strip" id="gt-notif-strip">
+      <div class="gt-devtempo" id="gt-devtempo" style="display:none"></div>
+    </div>
     <div class="gt-celestial">
       <div class="cel-arc-wrap">
-        <svg id="cel-svg" viewBox="0 0 80 40">
+        <svg id="cel-svg" viewBox="-5 -7 90 56">
           <line x1="2" y1="38" x2="78" y2="38" stroke="#333322" stroke-width="1"/>
           <path d="M 6 38 A 34 34 0 0 1 74 38" fill="none" stroke="#2a2a1a" stroke-width="1" stroke-dasharray="3,4"/>
-          <circle id="cel-body" cx="40" cy="4" r="5" fill="#F9E79F"/>
+          <defs>
+            <clipPath id="cel-body-clip"><circle id="cel-body-clip-c" cx="40" cy="4" r="8.5"/></clipPath>
+          </defs>
+          <circle id="cel-body" cx="40" cy="4" r="8.5" fill="#F9E79F"/>
+          <circle id="cel-shadow" cx="40" cy="4" r="8.5" clip-path="url(#cel-body-clip)" display="none"/>
           <text id="cel-night-txt" x="30" y="22" font-size="8" fill="rgba(200,200,255,0.15)" font-family="serif" display="none">☽</text>
         </svg>
       </div>
       <div class="cel-info">
         <div class="cel-date" id="cel-date"></div>
-        <div class="cel-phase" id="cel-phase">☀</div>
       </div>
       <button class="gt-notif-btn" id="gt-notif-btn" onclick="toggleDrawer('notif')" title="Notifications">
         ☍<span class="gt-notif-badge" id="gt-notif-badge" style="display:none">0</span>

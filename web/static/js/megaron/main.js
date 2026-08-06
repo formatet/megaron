@@ -1,8 +1,8 @@
 // main.js — the map client's only entry point (loaded by web/static/map.html
 // as <script type="module">). Responsibilities, in order:
 //   1. bootstrap(): fetch what the old Go-template used to inline
-//      (WORLD_ID, MY_PLAYER_ID, MY_SETTLEMENT_ID, WORLD_CREATED_AT,
-//      TIME_SCALE, world name, diplomacy badge) into State.
+//      (WORLD_ID, MY_PLAYER_ID, MY_SETTLEMENT_ID, world name,
+//      diplomacy badge) into State.
 //   2. Window exposures: every identifier referenced from an inline
 //      on*="..." handler (in the static shell or in module template
 //      literals), plus the window-bridge functions lower layers call to
@@ -212,7 +212,6 @@ async function bootstrap() {
   }
 
   State.WORLD_ID = worldID;
-  State.TIME_SCALE = 1; // MapView hårdkodar 1 (web.go) — följ servern om det ändras
 
   let me;
   try {
@@ -228,7 +227,6 @@ async function bootstrap() {
       get('/api/v1/worlds/' + worldID),
       get('/api/v1/worlds/' + worldID + '/provinces'),
     ]);
-    State.WORLD_CREATED_AT = world.created_at;
     document.title = 'MEGARON — ' + world.name;
 
     // Tick anchor for local ETA math (ui/time.js, K4 contract). serverNow()
@@ -240,8 +238,8 @@ async function bootstrap() {
       State.TICK_SECONDS   = world.tick_seconds;
       State.TICK_ANCHOR_MS = serverNow();
       // Dev tempo label: at production cadence 1 tick = 1 game hour takes a
-      // real hour; anything under a real minute per tick is a test world.
-      if (world.tick_seconds < 60) {
+      // real hour (3600 s); anything faster than that is a test world.
+      if (world.tick_seconds < 3600) {
         const el = document.getElementById('gt-devtempo');
         if (el) {
           el.textContent = 'Test world — time runs ' + Math.round(3600 / world.tick_seconds) + '× faster';
@@ -254,7 +252,6 @@ async function bootstrap() {
     State.MY_SETTLEMENT_ID = capital ? capital.settlement_id : '';
   } catch (e) {
     console.error('bootstrap: world/provinces fetch failed', e);
-    State.WORLD_CREATED_AT = '';
     State.MY_SETTLEMENT_ID = '';
   }
 
@@ -297,6 +294,6 @@ async function bootstrap() {
 
   initMap();           // canvas input handlers + loadMap() + render loop + 30s/3s polls
   initWS();            // websocket connect + reconnect loop
-  initCelestial();     // celestial clock + its 3 s interval
+  initCelestial();     // celestial clock + its tick-scaled repaint interval
   initNotifications(); // initial unread-badge fetch
 })();

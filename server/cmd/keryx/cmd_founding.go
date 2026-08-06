@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"formatet/megaron/server/internal/events"
 	"github.com/spf13/cobra"
 )
 
@@ -42,20 +41,20 @@ func fetchFoundingStatus(c *Client) (*foundingStatusResp, error) {
 	return &fp, nil
 }
 
-// foundingStoreLine renders one escort-store line: game-days left + a real-time
+// foundingStoreLine renders one escort-store line: ticks left + a real-time
 // ETA, BOTH derived from ticks_left at render time (B2: never a stored wall
 // clock). Mirrors the web Host panel's hostStoreLine (render/map.js).
 func foundingStoreLine(label string, s foundingStore, tickSeconds float64) string {
 	if s.TicksLeft == nil {
 		return fmt.Sprintf("%s: %.0f — räcker tills vidare", label, s.Amount)
 	}
-	gameDays := float64(*s.TicksLeft) / float64(events.TicksPerDay)
+	ticksLeft := float64(*s.TicksLeft)
 	realH := float64(*s.TicksLeft) * tickSeconds / 3600
 	real := fmt.Sprintf("≈ %.0f h", realH)
 	if realH >= 48 {
 		real = fmt.Sprintf("≈ %.0f dygn", realH/24)
 	}
-	return fmt.Sprintf("%s: %.0f kvar — %.0f speldygn (%s verklig tid)", label, s.Amount, gameDays, real)
+	return fmt.Sprintf("%s: %.0f kvar — %.0f tick (%s verklig tid)", label, s.Amount, ticksLeft, real)
 }
 
 // printFoundingStatus renders the wandering host's status block — shared by

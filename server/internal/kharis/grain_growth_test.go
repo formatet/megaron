@@ -148,15 +148,15 @@ func snapshot(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (pop int
 	return pop, grain
 }
 
-// advanceOneDay simulates one game-day passing: bumps worlds.current_tick by
-// TicksPerDay (so settled() sees the elapsed production/decay), then runs the
-// same decay step the real KharisTick handler runs.
+// advanceOneDay simulates one tick (a game-day) passing: bumps
+// worlds.current_tick by 1 (so settled() sees the elapsed production/decay),
+// then runs the same decay step the real KharisTick handler runs.
 func advanceOneDay(t *testing.T, h *TickHandler, pool *pgxpool.Pool, worldID uuid.UUID) {
 	t.Helper()
 	ctx := context.Background()
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET current_tick = current_tick + $1 WHERE id = $2`,
-		events.TicksPerDay, worldID,
+		`UPDATE worlds SET current_tick = current_tick + 1 WHERE id = $1`,
+		worldID,
 	); err != nil {
 		t.Fatalf("advance tick: %v", err)
 	}
@@ -234,7 +234,7 @@ func rawGrainRow(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (amou
 // consistency guarantee (pop-added always equals grain-drawn/grainPerCitizen)
 // rather than a heuristic bound.
 func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, newGrain float64) {
-	grainNow := (prevAmount + prevRate*float64(events.TicksPerDay)) * 0.99
+	grainNow := (prevAmount + prevRate) * 0.99
 	if grainNow < 0 {
 		grainNow = 0
 	}

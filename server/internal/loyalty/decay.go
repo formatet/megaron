@@ -22,32 +22,38 @@ type loyaltyExecutor interface {
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 }
 
-// DailyTickPayload is the payload for recurring daily world tick events.
-type DailyTickPayload struct{}
+// MacroTickPayload is the payload for recurring macro-tick world events.
+type MacroTickPayload struct{}
 
-// loyaltyDecayGraceDays is how many game-days a colony may go without a
+// loyaltyDecayGraceTicks is how many ticks a colony may go without a
 // loyalty-raising event (gift/governor_visit/victory_nearby) before decay
-// applies. Expressed in game-days — NOT wall-clock — because the decay tick
-// itself is tick-scheduled (fires once per game-day). The window is converted
-// to real time via tick.TickSeconds at query time. A hard-coded "48 hours"
-// silently became ~120 game-days at TICK_MINUTES=1, disabling decay in sped-up
-// worlds (the "loyalty 2 uniformly" soak finding).
-const loyaltyDecayGraceDays = 2
+// applies. Expressed in ticks — NOT wall-clock — because the decay tick
+// itself is tick-scheduled (fires once per tick, per MacroTickInterval). The
+// window is converted to real time via tick.TickSeconds at query time. A
+// hard-coded "48 hours" silently became ~120 game-days at TICK_MINUTES=1,
+// disabling decay in sped-up worlds (the "loyalty 2 uniformly" soak finding).
+// 2 → 48 (2026-08-06), invariant-preserving for the same reason as
+// upkeepDesertionTicks: this is a RAW DURATION, not a rate, so nothing
+// compensates it when the tick became the day. 2 × 24 ticks = 48 ticks before;
+// 48 × 1 tick = the same 48 ticks after (48 h at 60 min/tick). Left at 2 a
+// colony would sulk after 2 real hours without a gift — an alarm-clock game,
+// and a direct breach of the asynchronicity gate.
+const loyaltyDecayGraceTicks = 48
 
 // decayGraceSeconds converts the grace window to real SECONDS at the current
-// tick cadence: graceDays × ticks/day × seconds/tick. Uses tick.TickSeconds,
-// NOT tick.TickMinutes — the latter floors to 1 minute and on a sub-minute
+// tick cadence: graceTicks × seconds/tick. Uses tick.TickSeconds, NOT
+// tick.TickMinutes — the latter floors to 1 minute and on a sub-minute
 // cadence (TICK_SECONDS=6) inflated the window ~10× (2 game-days read as 48 min
 // instead of the real 4.8), leaving decay effectively disabled. At the default
 // 60 min/tick this is 172800 (48 h, unchanged); at TICK_MINUTES=1, 2880 (48 min);
 // at TICK_SECONDS=6, 288 (a true 2 game-days). Same fix class as eta.go.
 func decayGraceSeconds() int {
-	return loyaltyDecayGraceDays * events.TicksPerDay * tick.TickSeconds
+	return loyaltyDecayGraceTicks * tick.TickSeconds
 }
 
 // DecayHandler applies loyalty decay for neglected colonies.
 // A colony (is_capital=false) that received no gift in the last
-// loyaltyDecayGraceDays game-days loses 1 loyalty point (minimum 1).
+// loyaltyDecayGraceTicks ticks loses 1 loyalty point (minimum 1).
 type DecayHandler struct {
 	pool       *pgxpool.Pool
 	scheduler  *events.Scheduler
@@ -98,7 +104,7 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 	}
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledLoyaltyDecayTick,
-		DailyTickPayload{}, e.DueTick, events.TicksPerDay)
+		MacroTickPayload{}, e.DueTick, events.MacroTickInterval)
 }
 
 func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uuid.UUID) error {

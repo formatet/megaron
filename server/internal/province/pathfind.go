@@ -18,7 +18,7 @@ type Queryer interface {
 // worldID into memory once, then delegates to the pure findPath logic.
 //
 // path includes both origin (first element) and target (last element).
-// cost is the sum of TerrainMoveHours for each tile entered (path[1:]).
+// cost is the sum of TerrainMoveTicks for each tile entered (path[1:]).
 // ok is false when the origin or target tile is absent or impassable, or when no
 // traversable route exists. err is non-nil only for DB or scan failures.
 func FindPath(ctx context.Context, db Queryer, worldID uuid.UUID, origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool, err error) {
@@ -71,14 +71,14 @@ var axialDirs = [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 
 // CategoryCourier routes Runners — order/message couriers
 // (temenos_orderlopare_plan.md Fas 4, beslut Timothy 2026-07-16): every land
-// hex except mountains at HALF a land unit's terrain hours (2× spearman
-// speed), and sea hexes at the flat boat rate CourierSeaHours (no land route =
+// hex except mountains at HALF a land unit's terrain ticks (2× spearman
+// speed), and sea hexes at the flat boat rate CourierSeaTicks (no land route =
 // the runner commandeers a boat). Mountains are routed around like for land.
 const CategoryCourier = "courier"
 
-// CourierSeaHours is a courier's hours per sea hex — the abstracted boat
+// CourierSeaTicks is a courier's ticks per sea hex — the abstracted boat
 // passage. Replaced by real ships/trade-route legs when that mechanic exists.
-const CourierSeaHours = 0.5
+const CourierSeaTicks = 0.5
 
 // isPassable reports whether terrain is traversable for the given unit category.
 //   - "naval": coastal_sea, deep_sea, river and river_ford are passable.
@@ -88,7 +88,7 @@ const CourierSeaHours = 0.5
 //     River is a wall for land units (megaron_floden_plan.md — Timothy 2026-07-29).
 //     river_ford is the one deliberate gap in that wall (megaron_plan_
 //     flodbudget_och_vadstalle.md, Timothy 2026-08-02) — passable for BOTH land
-//     and naval, at a steep TerrainMoveHours cost (movement.go) rather than
+//     and naval, at a steep TerrainMoveTicks cost (movement.go) rather than
 //     being excluded here.
 func isPassable(terrain, category string) bool {
 	if category == "naval" {
@@ -108,21 +108,21 @@ func isPassable(terrain, category string) bool {
 // Couriers run land at half a land unit's terrain hours (2× spearman speed —
 // temenos_synlighet.md §Nivå 1) and cross sea (and river — a runner commandeers
 // a boat over a river the same as over the sea, megaron_floden_plan.md) at the
-// flat boat rate; every other category pays the plain TerrainMoveHours.
+// flat boat rate; every other category pays the plain TerrainMoveTicks.
 // river_ford is deliberately ABSENT from the courier-sea-rate branch below: a
 // runner does not commandeer a boat to cross a ford, he wades (megaron_plan_
-// flodbudget_och_vadstalle.md) — it falls through to TerrainMoveHours/2 like
-// any other land terrain, and TerrainMoveHours("river_ford") is itself steep
+// flodbudget_och_vadstalle.md) — it falls through to TerrainMoveTicks/2 like
+// any other land terrain, and TerrainMoveTicks("river_ford") is itself steep
 // (movement.go), so the runner still pays for the crossing, just not at the
 // flat boat rate.
 func moveHoursFor(terrain, category string) float64 {
 	if category == CategoryCourier {
 		if terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" {
-			return CourierSeaHours
+			return CourierSeaTicks
 		}
-		return TerrainMoveHours(terrain) / 2
+		return TerrainMoveTicks(terrain) / 2
 	}
-	return TerrainMoveHours(terrain)
+	return TerrainMoveTicks(terrain)
 }
 
 // NearestSeaNeighbor returns the coordinates of a hex adjacent to (q,r) that is
@@ -213,7 +213,7 @@ func NearestUnclaimedLandNeighbor(ctx context.Context, db Queryer, worldID uuid.
 	return 0, 0, false, nil
 }
 
-// minPassableCost returns the cheapest TerrainMoveHours among terrains passable
+// minPassableCost returns the cheapest TerrainMoveTicks among terrains passable
 // for the given category. It is the admissible A* heuristic multiplier: the
 // heuristic (HexDistance × minPassableCost) must never overestimate the true
 // remaining cost, and the true cost per hex is never lower than this floor.
@@ -229,12 +229,12 @@ func NearestUnclaimedLandNeighbor(ctx context.Context, db Queryer, worldID uuid.
 //     (cheaper than the 0.5 sea boat rate).
 func minPassableCost(category string) float64 {
 	if category == "naval" {
-		return TerrainMoveHours("coastal_sea") // 0.4
+		return TerrainMoveTicks("coastal_sea") // 0.4
 	}
 	if category == CategoryCourier {
-		return TerrainMoveHours("plains") / 2 // 0.375
+		return TerrainMoveTicks("plains") / 2 // 0.375
 	}
-	return TerrainMoveHours("plains") // 0.75
+	return TerrainMoveTicks("plains") // 0.75
 }
 
 // findPath is the pure A* implementation over an in-memory tile map.

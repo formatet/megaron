@@ -27,9 +27,10 @@ services:
       JWT_SECRET: acceptance-world-only-not-a-secret
       PORT: 8080
       # Snabb tick. Ett scenario som ska rymmas i en session kan inte vänta en
-      # timme på produktion, marsch eller bygge. Sex sekunder per tick är samma
-      # värde soaken kör med, alltså ett tempo koden redan bevisligen tål.
-      TICK_SECONDS: "6"
+      # timme på produktion, marsch eller bygge. 60 s/tick är en tiondel av
+      # produktionens 3600 s (Timothy 2026-08-06, ner från 6 s — 600× kändes
+      # för snabbt för att ögonkolla soluret).
+      TICK_SECONDS: "60"
       # Liten karta: seedningen ska vara klar på sekunder, och scenariot behöver
       # inte en kontinent. 30x20 är golvet mapgen är övad på — under det vägrar
       # servern starta, vilket är rätt.

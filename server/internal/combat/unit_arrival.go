@@ -468,14 +468,14 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	}
 
 	// Route home via A* — the same passability graph the outbound leg proved.
-	_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+	_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 		province.MapPosition{Q: fromQ, R: fromR},
 		province.MapPosition{Q: homeQ, R: homeR},
 		u.category,
 	)
-	var moveHours float64
+	var moveTicks float64
 	if pathErr == nil && pathOK {
-		moveHours = pathHours
+		moveTicks = pathTicks
 	} else {
 		// Defensive fallback: the outbound march already proved passability
 		// between these regions, so this should not happen.
@@ -492,7 +492,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		if fromTerrain == "" {
 			fromTerrain = "plains"
 		}
-		moveHours = province.TerrainMoveHours(fromTerrain) * float64(dist)
+		moveTicks = province.TerrainMoveTicks(fromTerrain) * float64(dist)
 	}
 	// Mirror the outbound leg's speed multipliers (march_start.go StartMarch) —
 	// without these a war galley/merchantman's return trip silently used the
@@ -500,19 +500,19 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	// merchantman, much shorter) duration than the outbound one for the exact
 	// same distance: it looked like the ship sailed out at its true speed but
 	// teleported home.
-	moveHours *= NavalSpeedFactor(unit.Type(u.utype))
-	moveHours *= unit.MarchHoursFactorFor(unit.Type(u.utype))
+	moveTicks *= NavalSpeedFactor(unit.Type(u.utype))
+	moveTicks *= unit.MarchHoursFactorFor(unit.Type(u.utype))
 	if u.cargoUnitID != nil {
-		moveHours *= 1.5
+		moveTicks *= 1.5
 	}
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	travelTicks := int(math.Round(moveHours))
+	travelTicks := int(math.Round(moveTicks))
 	if travelTicks < 1 {
 		travelTicks = 1
 	}
 	// arrives_at mirrors the real tick-scheduled return (travelTicks × real
-	// seconds/tick), not moveHours-as-hours — same reason as the outbound leg in
+	// seconds/tick), not moveTicks-as-hours — same reason as the outbound leg in
 	// unit.go March: the map animates the ship against this window.
 	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
@@ -624,9 +624,9 @@ func (h *UnitArrivalHandler) exploreReturned(
 }
 
 // SentryPatrolTicks is how long a naval sentry holds its patrol hex before the
-// auto-return timer turns it home. Tunable (game-hours of patrol); 24 ticks =
-// one game-day. No recall verb exists — this timer is the only control, so a
-// sentry order can never strand a ship ("self-terminating sea orders").
+// auto-return timer turns it home. Tunable (ticks of patrol). No recall verb
+// exists — this timer is the only control, so a sentry order can never strand
+// a ship ("self-terminating sea orders").
 const SentryPatrolTicks = 24
 
 // sentryArrived posts a naval unit on patrol: it reached its coastal_sea target
@@ -956,11 +956,16 @@ func (h *UnitArrivalHandler) foundColony(
 			"grain_amount":       grainAmount,
 			"grain_net_per_tick": grainNet,
 		}
-		// grain_days: how long the seed lasts at the current deficit; null (omitted)
-		// when the colony is self-sustaining (net ≥ 0).
+		// grain_ticks: how long the seed lasts at the current deficit; null
+		// (omitted) when the colony is self-sustaining (net ≥ 0). This payload is
+		// persisted (NotifyPlayer writes to `notifications`), so grain_days is
+		// kept alongside it with the same value — old rows already carry
+		// grain_days and readers fall back to it. Don't remove grain_days.
 		if grainNet < 0 {
-			if dailyDrain := -grainNet * float64(events.TicksPerDay); dailyDrain > 0 {
-				payload["grain_days"] = grainAmount / dailyDrain
+			if tickDrain := -grainNet; tickDrain > 0 {
+				ticksLeft := grainAmount / tickDrain
+				payload["grain_ticks"] = ticksLeft
+				payload["grain_days"] = ticksLeft
 			}
 		}
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, payload)
@@ -1696,14 +1701,14 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 		// straight line, so a routing unit cannot teleport across impassable terrain.
 		// A routing unit falls back in disorder: retreat is half the speed of an
 		// orderly advance (Timothy 2026-07-01), i.e. 2× the forward path time.
-		_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+		_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 			province.MapPosition{Q: destQ, R: destR},
 			province.MapPosition{Q: u.q, R: u.r},
 			u.category,
 		)
-		var moveHours float64
+		var moveTicks float64
 		if pathErr == nil && pathOK {
-			moveHours = pathHours
+			moveTicks = pathTicks
 		} else {
 			// Defensive fallback: the forward march already proved a route exists,
 			// so this should not happen. Straight-line estimate keeps the rout from
@@ -1725,14 +1730,14 @@ func (h *UnitArrivalHandler) applyDefenderWins(
 			if originTerrain == "" {
 				originTerrain = "plains"
 			}
-			moveHours = province.TerrainMoveHours(originTerrain) * float64(dist)
+			moveTicks = province.TerrainMoveTicks(originTerrain) * float64(dist)
 		}
-		moveHours *= routRetreatSlowdown
-		arrivesAt := h.clk.Now().Add(time.Duration(moveHours * float64(time.Hour)))
+		moveTicks *= routRetreatSlowdown
+		arrivesAt := h.clk.Now().Add(time.Duration(moveTicks * float64(time.Hour)))
 
 		var currentTick int
 		_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-		travelTicks := int(math.Round(moveHours))
+		travelTicks := int(math.Round(moveTicks))
 		if travelTicks < 1 {
 			travelTicks = 1
 		}

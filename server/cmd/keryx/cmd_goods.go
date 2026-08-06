@@ -57,7 +57,7 @@ func goodsCmd() *cobra.Command {
 				fmt.Printf("Labor pool: %d workers  ·  Idle: %d workers\n\n", int(lp), int(idle))
 			}
 			fmt.Printf("%-10s  %9s  %8s  %6s  %10s  %8s  %8s\n",
-				"Good", "Stock", "Rate/d", "Lvl", "Workers", "Yield/w", "Price")
+				"Good", "Stock", "Rate/t", "Lvl", "Workers", "Yield/w", "Price")
 			fmt.Println("──────────────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)
@@ -71,7 +71,6 @@ func goodsCmd() *cobra.Command {
 				employed, _ := g["employed_citizens"].(float64)
 				unserved, _ := g["unserved_citizens"].(float64)
 				wpLevel, _ := g["workplace_level"].(float64)
-				rateD := rateT * 24 // per-tick × 24 ticks/day
 				// Workers reads "employed" normally, "employed+N idle" when the
 				// allocation exceeds what the workplace can employ. Before this the
 				// overflow was completely silent — a playtester could allocate 100 % of
@@ -104,7 +103,7 @@ func goodsCmd() *cobra.Command {
 					capNotes = append(capNotes, capNote{key: key, percent: percent})
 				}
 				fmt.Printf("%-10s  %9s  %8.1f  %6s  %10s  %8s  %8.1f\n",
-					key, stockStr, rateD, lvlStr, workersStr, yieldStr, price)
+					key, stockStr, rateT, lvlStr, workersStr, yieldStr, price)
 			}
 			if sawUnserved {
 				fmt.Println("\n! = citizens allocated beyond what the workplace can employ. They produce")

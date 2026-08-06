@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 // megaron_plan_offertens_varulista.md: the trade-offer form's four good
 // fields (want_good/offer_good, inline-thread compose + Compose tab) used to
 // be free text — a stray letter produced a dead offer with escrowed silver
-// locked for OfferExpiryTicks (7 in-game days) before anyone noticed.
+// locked for OfferExpiryTicks (168 ticks) before anyone noticed.
 // goodsOptionsHTML/goodsSelectDisabledAttr (diplomacy.js) are the pure half
 // of the fix: given the /api/v1/goods catalogue response, build the <select>
 // markup and its disabled state, with no DOM or network touched — following

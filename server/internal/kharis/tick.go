@@ -145,7 +145,7 @@ const kharisFloor = 1.0
 // numbers): a naive read of "consume 50–70% of surplus" against the good's
 // storage CAP (1000) doesn't hold up once measured — the decay step above
 // writes an uncapped settled() value, so any self-sufficient catchment's raw
-// daily accrual (rate × TicksPerDay) is many multiples of the 1000 cap
+// daily accrual (rate, per tick) is many multiples of the 1000 cap
 // (≈5450 for the minimal one-plains-tile guaranteed floor, ≈13000+ for a
 // two-plains-tile catchment at start pop 5000). A modest draw against that
 // (25 × desired_new, ≈500/day) vanishes into the overshoot and
@@ -173,14 +173,15 @@ const kharisFloor = 1.0
 // catchment shape, lower it.
 const grainPerCitizen = 300.0
 
-// starvationDailyPopLossRate is the fraction of population a starving city loses
-// per day (−0.5%/day). Single source of truth for BOTH sides: applyDecay's SQL
-// binds it as a parameter — ROUND(pop * (1 - $3)::numeric) — to write the real
-// pop mutation, and applyStarvationWarning multiplies by it to report the
-// modelled pop_loss in the critical SubsistenceWarning payload. Retune here and
-// both move together. (Reported loss stays an estimate: the SQL rounds survivors
-// and floors at 101, the warning truncates the loss — same rate, not same delta.)
-const starvationDailyPopLossRate = 0.005
+// starvationPopLossRatePerTick is the fraction of population a starving city
+// loses per tick (−0.5%/tick). Single source of truth for BOTH sides:
+// applyDecay's SQL binds it as a parameter — ROUND(pop * (1 - $3)::numeric) —
+// to write the real pop mutation, and applyStarvationWarning multiplies by it
+// to report the modelled pop_loss in the critical SubsistenceWarning payload.
+// Retune here and both move together. (Reported loss stays an estimate: the
+// SQL rounds survivors and floors at 101, the warning truncates the loss —
+// same rate, not same delta.)
+const starvationPopLossRatePerTick = 0.005
 
 // TickHandler applies daily temple maintenance to all active settlements in a world.
 type TickHandler struct {
@@ -324,7 +325,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.accumulatePrestige(ctx, e.WorldID)
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledKharisTick,
-		struct{}{}, e.DueTick, events.TicksPerDay)
+		struct{}{}, e.DueTick, events.MacroTickInterval)
 }
 
 // computeDailyDecay is the FAS 2 imperie-belastning formula: dailyDecay =
@@ -741,7 +742,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		     SELECT
 		         id, grain_now,
 		         GREATEST(101, LEAST(30000,
-		             -- Starvation: retain (1 - starvationDailyPopLossRate) of pop. The
+		             -- Starvation: retain (1 - starvationPopLossRatePerTick) of pop. The
 		             -- ::numeric cast keeps this exact numeric ROUND (half away from
 		             -- zero) — a bare float8 product would round half-to-even and drift
 		             -- by ±1 at pop ≡ 100 (mod 200); verified over pop 101..30000.
@@ -767,7 +768,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		     RETURNING sg.settlement_id
 		 )
 		 SELECT count(*) FROM pop_upd`,
-		worldID, grainPerCitizen, starvationDailyPopLossRate,
+		worldID, grainPerCitizen, starvationPopLossRatePerTick,
 	); err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
 	}
@@ -857,7 +858,7 @@ const (
 // through the notify hub (NotifyPlayer → persistent notifications feed) in two
 // escalating tiers while grain is still positive:
 //   - yellow: grain net rate < 0 (regardless of buffer) — "grain is falling".
-//   - red:    net < 0 AND it empties within the next game-day (TicksPerDay).
+//   - red:    net < 0 AND it empties within the next tick.
 //
 // The grain-empty case (population already dropping) is the critical tier and is
 // emitted from applySubsistenceCritical below, so it fires EVERY starving day.
@@ -902,14 +903,14 @@ func (h *TickHandler) applyStarvationWarning(ctx context.Context, worldID uuid.U
 
 	for _, wr := range list {
 		ticksToEmpty := wr.grainNow / -wr.grainRate // grainRate < 0 by the WHERE clause
-		netPerDay := wr.grainRate * float64(events.TicksPerDay)
-		daysLeft := ticksToEmpty / float64(events.TicksPerDay)
+		netPerTick := wr.grainRate
+		ticksLeft := ticksToEmpty
 
 		tier, level := tierYellow, levelYellow
-		if ticksToEmpty <= float64(events.TicksPerDay) {
+		if ticksToEmpty <= 1 {
 			tier, level = tierRed, levelRed
 		}
-		h.emitSubsistenceWarning(ctx, worldID, wr.ownerID, wr.id, wr.name, tier, level, netPerDay, daysLeft, 0)
+		h.emitSubsistenceWarning(ctx, worldID, wr.ownerID, wr.id, wr.name, tier, level, netPerTick, ticksLeft, 0)
 	}
 }
 
@@ -918,7 +919,7 @@ func (h *TickHandler) applyStarvationWarning(ctx context.Context, worldID uuid.U
 // the case that used to be entirely silent (grain 0 → the old warning's
 // `> 0` gate suppressed it while pop was actually collapsing). It runs after
 // applyDecay/applyStarvation so the population figure is post-reduction; the
-// reported pop_loss is the modelled daily draw (starvationDailyPopLossRate),
+// reported pop_loss is the modelled daily draw (starvationPopLossRatePerTick),
 // not a re-read of the write. Fires every starving day (dedupe still applies).
 func (h *TickHandler) applySubsistenceCritical(ctx context.Context, worldID uuid.UUID) {
 	if h.hub == nil {
@@ -954,17 +955,17 @@ func (h *TickHandler) applySubsistenceCritical(ctx context.Context, worldID uuid
 	rows.Close()
 
 	for _, c := range list {
-		netPerDay := c.grainRate * float64(events.TicksPerDay)
-		popLoss := int(float64(c.population) * starvationDailyPopLossRate)
-		h.emitSubsistenceWarning(ctx, worldID, c.ownerID, c.id, c.name, tierCritical, levelCritical, netPerDay, 0, popLoss)
+		netPerTick := c.grainRate
+		popLoss := int(float64(c.population) * starvationPopLossRatePerTick)
+		h.emitSubsistenceWarning(ctx, worldID, c.ownerID, c.id, c.name, tierCritical, levelCritical, netPerTick, 0, popLoss)
 	}
 }
 
 // emitSubsistenceWarning inserts one SubsistenceWarning notification for the
 // settlement owner via the hub, unless an unread one of the same settlement+tier
 // already exists (dedupe). Payload matches the plan: settlement_id, name, tier,
-// net_per_day, days_left, pop_loss.
-func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, ownerID, settlementID uuid.UUID, name, tier string, level int, netPerDay, daysLeft float64, popLoss int) {
+// net_per_tick, ticks_left, pop_loss.
+func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, ownerID, settlementID uuid.UUID, name, tier string, level int, netPerTick, ticksLeft float64, popLoss int) {
 	var exists bool
 	if err := h.pool.QueryRow(ctx,
 		`SELECT EXISTS (
@@ -984,9 +985,18 @@ func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, owner
 		"settlement_id": settlementID,
 		"name":          name,
 		"tier":          tier,
-		"net_per_day":   netPerDay,
-		"days_left":     daysLeft,
-		"pop_loss":      popLoss,
+		// net_per_tick/ticks_left are the current names (tick == day now, mig 109).
+		// net_per_day/days_left are kept alongside with the SAME value — this
+		// payload is persisted to `notifications`, and old rows already carry
+		// the day-named keys with that meaning. Semantics are frozen (CLAUDE.md
+		// "Events"): don't remove the old keys, they'd make old notifications
+		// unreadable. Readers prefer *_per_tick/*_ticks and fall back to
+		// *_per_day/*_days.
+		"net_per_tick": netPerTick,
+		"ticks_left":   ticksLeft,
+		"net_per_day":  netPerTick,
+		"days_left":    ticksLeft,
+		"pop_loss":     popLoss,
 	}
 	_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, subsistenceKind, level, payload)
 }

@@ -190,7 +190,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 
 	// Affordability against the target settlement — reuse can_recruit from the
 	// province GET (already mirrors the real Recruit handler's gates).
-	// upkeep_grain_per_day/upkeep_silver_per_day + sustainable (P6, soak
+	// upkeep_grain_per_tick/upkeep_silver_per_tick + sustainable (P6, soak
 	// 2026-07-18) project what this unit costs once it garrisons against the
 	// settlement's current net-after-upkeep capacity — the warning `recruit`
 	// itself gives at the moment of the POST, surfaced here BEFORE committing.
@@ -198,7 +198,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		canRecruit  bool
 		upkeepGrain float64
 		upkeepSilv  float64
-		// What the city actually loses per day once the unit garrisons here:
+		// What the city actually loses per tick once the unit garrisons here:
 		// the sold share circulates back (Del C). Equal to upkeepSilv on a
 		// server without the field, and whenever UPKEEP_SOLD_SHARE is 0.
 		upkeepSilvNet float64
@@ -214,12 +214,12 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		var p map[string]any
 		if json.Unmarshal(sdata, &p) == nil {
 			if sett, ok := p["settlement"].(map[string]any); ok {
-				netGrain, _ = sett["net_grain_per_day_after_upkeep"].(float64)
-				netSilver, _ = sett["net_silver_per_day_after_upkeep"].(float64)
+				netGrain, _ = sett["net_grain_per_tick_after_upkeep"].(float64)
+				netSilver, _ = sett["net_silver_per_tick_after_upkeep"].(float64)
 				// Stocks for the runway clause in unsustainableReason (a negative
 				// net only bites when the buffer runs out — soak 2026-07-24: a probe
-				// disbanded 100 spearmen over a −7/day warning while holding 41k
-				// silver, ~5000 days of runway).
+				// disbanded 100 spearmen over a −7/tick warning while holding 41k
+				// silver, ~5000 ticks of runway).
 				if resmap, ok := sett["resources"].(map[string]any); ok {
 					if g, ok := resmap["grain"].(map[string]any); ok {
 						grainStock, _ = g["amount"].(float64)
@@ -233,9 +233,9 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 						m, _ := it.(map[string]any)
 						u, _ := m["unit"].(string)
 						can, _ := m["can_recruit"].(bool)
-						ug, _ := m["upkeep_grain_per_day"].(float64)
-						us, _ := m["upkeep_silver_per_day"].(float64)
-						usNet, netOK := m["upkeep_silver_net_per_day"].(float64)
+						ug, _ := m["upkeep_grain_per_tick"].(float64)
+						us, _ := m["upkeep_silver_per_tick"].(float64)
+						usNet, netOK := m["upkeep_silver_net_per_tick"].(float64)
 						if !netOK {
 							usNet = us // older server without the field: gross is the drain
 						}
@@ -252,7 +252,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	}
 
 	fmt.Printf("%-24s  %-14s  %-28s  %-6s  %-5s  %-16s  %-6s  %s\n",
-		"Type (--unit)", "Batch", "Cost", "Mins", "Pop", "Requires", "Afford", "Upkeep/day (once garrisoned)")
+		"Type (--unit)", "Batch", "Cost", "Mins", "Pop", "Requires", "Afford", "Upkeep/tick (once garrisoned)")
 	fmt.Println(strings.Repeat("─", 110))
 	for _, u := range catalogue {
 		label := u.Type
@@ -301,7 +301,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			}
 			if info.upkeepGrain > 0 || info.upkeepSilv > 0 {
 				upkeepStr = fmt.Sprintf("%.1f grain, %.1f silver", info.upkeepGrain, info.upkeepSilv)
-				// Del C: the treasury must cover the full sold each day, but the
+				// Del C: the treasury must cover the full sold each tick, but the
 				// part the soldiers spend at home comes straight back. Naming both
 				// keeps the ⚠ below (which is judged on the net) readable — without
 				// it the warning and the cost beside it look like they disagree.
@@ -336,32 +336,32 @@ func trimFloat(v float64) string {
 // "city can't carry this yet" leaves the Wanax guessing which half failed —
 // soak 2026-07-22 watched two playtesters in a row guess population caps, unit
 // caps and stock levels, one of them while holding 118k grain and short only
-// silver. Reports the shortfall as a per-day figure because that is the unit the
+// silver. Reports the shortfall as a per-tick figure because that is the unit the
 // net is expressed in, and both resources when both are short.
 func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock, silverStock float64) string {
 	grainShort := netGrain - unitGrain
 	silverShort := netSilver - unitSilver
 	// Runway: a negative post-recruit net only bites when the stockpile runs out.
-	// A city with 36k silver and −7/day has ~5000 days, but the bare "✗ needs more"
+	// A city with 36k silver and −7/tick has ~5000 ticks, but the bare "✗ needs more"
 	// read as an outright block to two playtesters sitting on huge buffers (soak
 	// 2026-07-24). The ✗ stays (upkeep IS negative), but name how long the buffer
 	// covers it so "not sustainable long-term" isn't mistaken for "cannot recruit".
-	runway := func(stock, shortPerDay float64) string {
-		if shortPerDay >= 0 || stock <= 0 {
+	runway := func(stock, shortPerTick float64) string {
+		if shortPerTick >= 0 || stock <= 0 {
 			return ""
 		}
-		return fmt.Sprintf(" — current stock %s covers ~%.0f days at that rate",
-			trimFloat(stock), stock/-shortPerDay)
+		return fmt.Sprintf(" — current stock %s covers ~%.0f ticks at that rate",
+			trimFloat(stock), stock/-shortPerTick)
 	}
 	switch {
 	case grainShort < 0 && silverShort < 0:
-		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain/day and %.1f more silver/day%s%s",
+		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain/tick and %.1f more silver/tick%s%s",
 			-grainShort, -silverShort, runway(grainStock, grainShort), runway(silverStock, silverShort))
 	case silverShort < 0:
-		return fmt.Sprintf("silver upkeep: net is %+.1f silver/day, needs %.1f more/day%s",
+		return fmt.Sprintf("silver upkeep: net is %+.1f silver/tick, needs %.1f more/tick%s",
 			netSilver, -silverShort, runway(silverStock, silverShort))
 	case grainShort < 0:
-		return fmt.Sprintf("grain upkeep: net is %+.1f grain/day, needs %.1f more/day%s",
+		return fmt.Sprintf("grain upkeep: net is %+.1f grain/tick, needs %.1f more/tick%s",
 			netGrain, -grainShort, runway(grainStock, grainShort))
 	default:
 		// sustainable was false but neither margin is negative — the server saw a

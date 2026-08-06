@@ -133,10 +133,10 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 		sort.Strings(goods)
 		detail := strings.Join(goods, " + ")
 		if etype == "SitosGranaryReleased" {
-			return fmt.Sprintf("Sitos: magasinet gav staden %s (täckning var %.1f dygn, kvar i magasinet %.1f)",
+			return fmt.Sprintf("Sitos: magasinet gav staden %s (täckning var %.1f tick, kvar i magasinet %.1f)",
 				detail, p.CoverageDays, p.GranaryAfter)
 		}
-		return fmt.Sprintf("Sitos: la undan %s (täckning %.1f dygn, i magasinet %.1f)",
+		return fmt.Sprintf("Sitos: la undan %s (täckning %.1f tick, i magasinet %.1f)",
 			detail, p.CoverageDays, p.GranaryAfter)
 	// SitosTransaction is the FUND's event type, frozen and no longer emitted
 	// (mig 106). Kept so a journal that reaches back past the migration still

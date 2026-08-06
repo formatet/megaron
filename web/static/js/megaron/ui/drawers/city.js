@@ -177,35 +177,39 @@ export async function loadCityDrawer() {
     }
 
     // ── Sitos + senaste tick ──────────────────────────────────────────────
-    // Grain itemized as prod − cons = net per day (keryx `status` parity,
+    // Grain itemized as prod − cons = net per tick (keryx `status` parity,
     // DEL C): the stored rate is already net, so a lone negative number
     // reads as an alarm when it is often just normal balance.
     let grainRow = '';
     if (pd && pd.grain_prod_rate != null) {
-      const prodDay = (pd.grain_prod_rate || 0) * 24;
-      const consDay = (pd.grain_consum_rate || 0) * 24;
-      const netDay  = prodDay - consDay;
+      // grain_prod_rate/grain_consum_rate are already per-tick (economy.
+      // GrainConsumptionPerCitizenPerTick) — no ×24 here now that tick == day
+      // (mig 109); that used to convert an hourly tick rate to a daily one and
+      // is the same class of stale scaling as cmd_goods.go's Rate/d bug.
+      const prodTick = pd.grain_prod_rate || 0;
+      const consTick = pd.grain_consum_rate || 0;
+      const netTick  = prodTick - consTick;
       const be = pd.breakeven_grain_weight != null
         ? ` <span style="color:var(--text-dim);font-size:.7rem">(break-even ≥${Math.round(pd.breakeven_grain_weight * 100)}% grain share)</span>` : '';
-      grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodDay.toFixed(1)} − cons ${consDay.toFixed(1)} = <b style="color:${netDay >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netDay >= 0 ? '+' : ''}${netDay.toFixed(1)}/day</b>${be}</span></div>`;
+      grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodTick.toFixed(1)} − cons ${consTick.toFixed(1)} = <b style="color:${netTick >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)}/tick</b>${be}</span></div>`;
     }
     if (pd && pd.sitos) {
       // Coverage is the trigger (mig 106), so it leads. Colour it against the
       // low threshold — that is the line where the granary starts feeding the
       // city, and where an empty granary means nobody will.
       const s = pd.sitos;
-      const cov = s.coverage_days || 0;
+      const cov = s.coverage_ticks || 0;
       // Low coverage is only an alarm when the stock is also shrinking — a new
       // city sits near zero coverage while filling up fast, and at 60 min/tick
       // that lasts real days.
-      const falling = (s.food_net_per_day || 0) <= 0;
-      const covColour = (cov < (s.low_days || 0) && falling) ? 'var(--accent)' : 'var(--safe)';
+      const falling = (s.food_net_per_tick || 0) <= 0;
+      const covColour = (cov < (s.low_ticks || 0) && falling) ? 'var(--accent)' : 'var(--safe)';
       const perGood = Object.entries(s.granary_per_good || {})
         .filter(([, v]) => v > 0)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([k, v]) => `${v.toFixed(0)} ${k}`).join(', ');
       document.getElementById('city-sitos-sec').innerHTML = grainRow + `
-        <div class="stat-row"><span class="sr-label">Coverage</span><span class="sr-val" style="color:${covColour}"><b>${cov.toFixed(1)} days</b> <span style="color:var(--text-dim);font-size:.7rem">(stores above ${s.high_days} · releases below ${s.low_days})</span></span></div>
+        <div class="stat-row"><span class="sr-label">Coverage</span><span class="sr-val" style="color:${covColour}"><b>${cov.toFixed(1)} ticks</b> <span style="color:var(--text-dim);font-size:.7rem">(stores above ${s.high_ticks} · releases below ${s.low_ticks})</span></span></div>
         <div class="stat-row"><span class="sr-label">Granary</span><span class="sr-val">${(s.granary_total||0).toFixed(0)} / ${(s.granary_cap||0).toFixed(0)} food${perGood ? ` <span style="color:var(--text-dim);font-size:.7rem">(${perGood})</span>` : ''}</span></div>`;
     } else {
       document.getElementById('city-sitos-sec').innerHTML = grainRow || '<p class="empty-state">—</p>';
@@ -272,12 +276,14 @@ export async function loadCityDrawer() {
         const pct = g.percent != null ? Math.round(g.percent) : 0;
         // Same storage-ceiling check as `keryx goods`/`keryx allocate` (amount
         // at 99%+ of cap): everything produced past the cap is discarded, so a
-        // green "+N/day" here was lying about labor that earns nothing.
+        // green "+N/tick" here was lying about labor that earns nothing.
+        // rate_per_tick is already per-tick — no ×24 now that tick == day
+        // (mig 109); same class of stale scaling as cmd_goods.go's Rate/d bug.
         const capV = g.cap || 0;
         const atCap = capV > 0 && (g.amount || 0) >= capV * 0.99;
         const rateCell = atCap
-          ? `<td class="goods-atcap" style="padding:.2rem .3rem" id="labor-rate-${g.key}">full · +0/day</td>`
-          : `<td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${((g.rate_per_tick||0)*24).toFixed(1)}/day</td>`;
+          ? `<td class="goods-atcap" style="padding:.2rem .3rem" id="labor-rate-${g.key}">full · +0/tick</td>`
+          : `<td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${(g.rate_per_tick||0).toFixed(1)}/tick</td>`;
         return `<tr>
           <td style="padding:.2rem .3rem">${g.name||g.key}</td>
           <td style="padding:.2rem .3rem;text-align:right;white-space:nowrap">
@@ -293,7 +299,7 @@ export async function loadCityDrawer() {
       document.getElementById('city-prod-sec').innerHTML =
         `<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">Share of population to assign (pop: <span id="labor-pool-disp">${lp}</span>, idle: <span id="labor-idle-disp">${Math.max(0,idlePct)}</span>%)</div>
          <table class="goods-mini" style="width:100%">
-           <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Share</td><td style="text-align:right">Workers</td><td>Prod/day</td></tr></thead>
+           <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Share</td><td style="text-align:right">Workers</td><td>Prod/tick</td></tr></thead>
            <tbody>${rows}${devotionRowHTML}</tbody>
          </table>
          <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">

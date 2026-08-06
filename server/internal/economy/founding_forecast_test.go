@@ -10,11 +10,17 @@ import "testing"
 // ColonizePreview reported the raw unscaled netto (negative); the real
 // settlement ends up net-positive.
 func TestFoundingGrainNetPerTick_Regression(t *testing.T) {
-	// buildingFreeBase alone (2.4) is far below what a 4000-pop metropolis eats
+	// buildingFreeBase alone (57.6) is far below what a 4000-pop metropolis eats
 	// per tick, so an unscaled "base - consumption" netto goes negative. But the
-	// metropolis gets a starter farm (withFarmBase=6.0), and once labor-scaled
+	// metropolis gets a starter farm (withFarmBase=144.0), and once labor-scaled
 	// by 0.85×4000/REF_LABOR the real production dwarfs consumption.
-	_, netPerTick := FoundingGrainNetPerTick(2.4, 6.0, 0, 4000, true)
+	// ⭐ CANON 2026-08-06: a tick is the day now, so
+	// GrainConsumptionPerTick(pop) went from pop*0.5/24 to
+	// pop*0.5 — a 24× jump in consumption. production_rules base potentials
+	// (mig 109) scaled ×24 too, so these literals are the pre-canon 2.4/6.0 ×24
+	// — matching real base_potential magnitudes read by world.go, not an
+	// arbitrary rescale to make the assertion pass.
+	_, netPerTick := FoundingGrainNetPerTick(57.6, 144.0, 0, 4000, true)
 	if netPerTick <= 0 {
 		t.Fatalf("expected positive labor-scaled net grain rate, got %v", netPerTick)
 	}

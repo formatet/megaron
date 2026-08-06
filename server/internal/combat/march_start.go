@@ -408,7 +408,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// the only route crosses water) and routes around mountains correctly.
 	// Skipped for colonize-in-place: origin == target, so there is no route to
 	// find and no distance to travel — the colony settles on the next tick.
-	var moveHours float64
+	var moveTicks float64
 	if !colonizeInPlace {
 		_, pathCost, pathOK, pathErr := province.FindPath(ctx, pool, o.WorldID,
 			province.MapPosition{Q: originQ, R: originR},
@@ -435,26 +435,26 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if dist == 0 {
 			return nil, reject(http.StatusBadRequest, "target is the same hex as origin")
 		}
-		moveHours = pathCost
+		moveTicks = pathCost
 	}
 	// Ship types vary in speed (Timothy 2026-07-09): war galley fastest,
 	// merchantman slowest, galley between. Factor scales travel time (lower =
 	// faster); tunable, lives in NavalSpeedFactor.
-	moveHours *= NavalSpeedFactor(u.Type)
+	moveTicks *= NavalSpeedFactor(u.Type)
 	// The nomadic host is the slowest thing on the map: half a spearman's speed,
 	// i.e. DOUBLE its hours. Every other type is unaffected (factor 1.0).
-	moveHours *= unit.MarchHoursFactorFor(u.Type)
+	moveTicks *= unit.MarchHoursFactorFor(u.Type)
 	// Loaded ships move 1.5× slower.
 	if u.CargoUnitID != nil {
-		moveHours *= 1.5
+		moveTicks *= 1.5
 	}
 
 	now := clk.Now()
 	var currentTick int
 	_ = pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	travelTicks := max(1, int(math.Round(moveHours)))
+	travelTicks := max(1, int(math.Round(moveTicks)))
 	// arrives_at must mirror the real tick-scheduled arrival (travelTicks
-	// ticks × real seconds/tick), NOT moveHours-as-hours: the map interpolates
+	// ticks × real seconds/tick), NOT moveTicks-as-hours: the map interpolates
 	// the marching unit's position against this window, so a wall-clock value
 	// (~24 min for a short hop) leaves the unit frozen at its origin until the
 	// real tick arrival (6 s at TICK_SECONDS=6) teleports it home.

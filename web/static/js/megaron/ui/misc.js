@@ -111,86 +111,134 @@ export function initMusicAutostart() {
 }
 
 // ── Celestial clock ───────────────────────────────────────────────────────
+// Minoan calendar (Timothy 2026-08-06): month is 0..12, where 0 is the
+// special case — the 5 intercalary Shadow Days of the Goddess outside any
+// month. 1..12 are the ordinary 30-tick months; names are a pure lookup
+// table (the "culture"), swappable without touching the month arithmetic.
+// No Roman numerals, no real-world date — every figure here comes from
+// world.current_tick, never the wall clock (only the animation frame
+// between two ticks does).
 const MONTH_NAMES = [
-  'Posideon','Gamelion','Anthesterion','Elaphebolion',
-  'Mounichion','Thargelion','Skirophorion','Hekatombaion',
-  'Metageitnion','Boedromion','Pyanepsion','Maimakterion'
+  'the Shadow Days of the Goddess', // month 0 — always the special case
+  'the Pithoi', 'the Labyrinth', 'the Olive',
+  'the Crocus', 'the Bull', 'the Labrys',
+  'the Grain', 'the Ships', 'the Vine',
+  'the Murex', 'the Depths', 'the Mists',
 ];
-const MOON_PHASES = ['🌑','🌒','🌒','🌓','🌔','🌔','🌕','🌖','🌖','🌗','🌘','🌘'];
-const REF_NEW_MOON = new Date('2025-01-29T12:35:00Z').getTime();
-const LUNAR_CYCLE  = 29.53058867 * 24 * 3600 * 1000;
+const DAYS_PER_MONTH        = 30;
+const MONTHS_PER_YEAR       = 12;
+const REGULAR_DAYS_PER_YEAR = DAYS_PER_MONTH * MONTHS_PER_YEAR; // 360
+const DAYS_PER_YEAR         = REGULAR_DAYS_PER_YEAR + 5;        // 365, +5 Shadow Days
 
-function moonPhase() {
-  const age = ((Date.now() - REF_NEW_MOON) % LUNAR_CYCLE + LUNAR_CYCLE) % LUNAR_CYCLE;
-  return MOON_PHASES[Math.floor(age / LUNAR_CYCLE * 12) % 12];
+function monthOfYear(dayOfYear) {  // 0..12 — 0 = intercalary Shadow Days
+  return dayOfYear < REGULAR_DAYS_PER_YEAR ? Math.floor(dayOfYear / DAYS_PER_MONTH) + 1 : 0;
+}
+function dayOfMonth(dayOfYear, month) {  // 1..30, or 1..5 during month 0
+  return month === 0 ? dayOfYear - REGULAR_DAYS_PER_YEAR + 1 : (dayOfYear % DAYS_PER_MONTH) + 1;
 }
 
-function toRoman(n) {
-  const vals = [10,9,5,4,1], syms = ['X','IX','V','IV','I'];
-  let r = '';
-  for (let i = 0; i < vals.length; i++) { while (n >= vals[i]) { r += syms[i]; n -= vals[i]; } }
-  return r;
+// K4 tick anchor (State.CURRENT_TICK/TICK_SECONDS/TICK_ANCHOR_MS, re-anchored
+// on WS reconnect — see state.js), continuous: null while unanchored.
+function currentAbsoluteTick() {
+  if (State.CURRENT_TICK == null || !State.TICK_SECONDS || State.TICK_ANCHOR_MS == null) return null;
+  const elapsedTicks = (Date.now() - State.TICK_ANCHOR_MS) / (State.TICK_SECONDS * 1000);
+  return State.CURRENT_TICK + elapsedTicks;
 }
+
+// Exact calendar reading (day/month/year) off the current tick — used by the
+// Notifications drawer as well as the celestial widget below, so both read
+// the same clock instead of two independent derivations drifting apart.
+export function currentCalendarDate() {
+  const absoluteTick = currentAbsoluteTick();
+  if (absoluteTick == null) return null;
+  const tick      = Math.floor(absoluteTick);
+  const dayOfYear = tick % DAYS_PER_YEAR;
+  const year      = Math.floor(tick / DAYS_PER_YEAR) + 1;
+  const month     = monthOfYear(dayOfYear);
+  const day       = dayOfMonth(dayOfYear, month);
+  return { day, month, monthName: MONTH_NAMES[month], year };
+}
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+const SUN_R  = 8.5; // 70% bigger than the original 5/6 (Timothy 2026-08-06)
+const MOON_R = 10.2;
 
 function updateCelestial() {
-  const now   = new Date();
-  const epoch = State.WORLD_CREATED_AT ? new Date(State.WORLD_CREATED_AT) : new Date('2026-06-01T00:00:00Z');
+  const absoluteTick = currentAbsoluteTick();
+  if (absoluteTick == null) return;
+  const tick        = Math.floor(absoluteTick);
+  const phaseInTick = absoluteTick - tick; // 0..1 across the tick — one sun+moon lap
 
-  // Scaled game time: State.TIME_SCALE ms of game time pass per 1 ms of real time.
-  // gameElapsedMs = wall-clock elapsed × State.TIME_SCALE
-  const gameElapsedMs = (now - epoch) * State.TIME_SCALE;
+  const isDay = phaseInTick < 0.5;
+  const localT = isDay ? phaseInTick / 0.5 : (phaseInTick - 0.5) / 0.5; // 0..1 within this half
+  // Both halves sweep the same arc in the same direction — sun and moon rise
+  // on the same side and set on the same side, like the real sky, instead of
+  // the moon retracing the sun's path backwards.
+  const angle = Math.PI - localT * Math.PI;
 
-  // Position within the current scaled game-day (24 game-hours)
-  const msPerDay   = 24 * 3600 * 1000;
-  const dayFrac    = (gameElapsedMs % msPerDay) / msPerDay; // 0..1 across one game day
-  const gameHour   = dayFrac * 24; // 0..24 hours within game-day
-
-  const isDay = gameHour >= 6 && gameHour < 18;
-
-  const celBody  = document.getElementById('cel-body');
-  const nightTxt = document.getElementById('cel-night-txt');
+  const celBody   = document.getElementById('cel-body');
+  const clipCirc  = document.getElementById('cel-body-clip-c');
+  const shadow    = document.getElementById('cel-shadow');
+  const nightTxt  = document.getElementById('cel-night-txt');
   const cx = 40, cy = 38, r = 34;
-
-  let bodyX, bodyY;
-  if (isDay) {
-    const t = (gameHour - 6) / 12;          // 0..1 across day arc
-    const angle = Math.PI - t * Math.PI;
-    bodyX = cx + r * Math.cos(angle);
-    bodyY = cy - r * Math.sin(angle);
-    celBody.setAttribute('r', '5');
-    celBody.setAttribute('fill', '#F9E79F');
-    nightTxt.setAttribute('display', 'none');
-  } else {
-    const hn = gameHour >= 18 ? gameHour - 18 : gameHour + 6;
-    const t  = hn / 12;                     // 0..1 across night arc
-    const angle = t * Math.PI;
-    bodyX = cx + r * Math.cos(angle);
-    bodyY = cy - r * Math.sin(angle);
-    celBody.setAttribute('r', '4');
-    celBody.setAttribute('fill', '#D0D8F0');
-    nightTxt.setAttribute('display', '');
-  }
-
+  const bodyX = cx + r * Math.cos(angle);
+  const bodyY = cy - r * Math.sin(angle);
   celBody.setAttribute('cx', bodyX.toFixed(1));
   celBody.setAttribute('cy', bodyY.toFixed(1));
-  document.getElementById('cel-phase').textContent = isDay ? '☀' : moonPhase();
+  clipCirc.setAttribute('cx', bodyX.toFixed(1));
+  clipCirc.setAttribute('cy', bodyY.toFixed(1));
 
-  // Game date derived from scaled elapsed time
-  const gameDaysSinceEpoch = Math.max(0, Math.floor(gameElapsedMs / msPerDay));
-  const dayOfMonth = (gameDaysSinceEpoch % 30) + 1;
-  const monthIdx   = Math.floor(gameDaysSinceEpoch / 30) % 12;
-  const year       = Math.floor(gameDaysSinceEpoch / 360) + 1;
+  const cal = currentCalendarDate(); // same tick, same math — see above
 
-  document.getElementById('cel-date').innerHTML =
-    `<strong>${toRoman(dayOfMonth)}</strong> ${MONTH_NAMES[monthIdx]}<br>Year ${toRoman(year)}`;
+  if (isDay) {
+    celBody.setAttribute('r', String(SUN_R));
+    celBody.setAttribute('fill', cssVar('--gold'));
+    clipCirc.setAttribute('r', String(SUN_R));
+    shadow.setAttribute('display', 'none');
+    nightTxt.setAttribute('display', 'none');
+  } else {
+    celBody.setAttribute('r', String(MOON_R));
+    celBody.setAttribute('fill', cssVar('--moonlight'));
+    clipCirc.setAttribute('r', String(MOON_R));
+    nightTxt.setAttribute('display', '');
+
+    // The moon's own disk carries its phase — a shadow circle of the same
+    // radius, clipped to the disk, slid across it. Slide = 0 at new moon
+    // (shadow fully covers the disk) and 2×MOON_R at full moon (shadow
+    // clears the disk entirely). Continuous per-day, not a stepped lookup —
+    // one true value per day of the month, not a handful of emoji buckets.
+    // Shadow Days have no month position, so they're rendered as new moon.
+    const monthPos    = cal.month === 0 ? 0 : (cal.day - 1) / DAYS_PER_MONTH; // 0..~0.97
+    const litFraction = cal.month === 0 ? 0 : 1 - Math.abs(2 * monthPos - 1); // 0 new, 1 full
+    const side        = monthPos < 0.5 ? 1 : -1; // waxing slides one way, waning the other
+    const slide       = litFraction * 2 * MOON_R * side;
+    shadow.setAttribute('cx', (bodyX + slide).toFixed(1));
+    shadow.setAttribute('cy', bodyY.toFixed(1));
+    shadow.setAttribute('r', String(MOON_R));
+    shadow.setAttribute('fill', cssVar('--bg'));
+    shadow.setAttribute('display', '');
+  }
+
+  // Just the month name (or the Shadow Days phrase for month 0, already
+  // phrased whole in MONTH_NAMES[0]) — day and year moved to the
+  // Notifications drawer's exact date line (currentCalendarDate() above).
+  document.getElementById('cel-date').innerHTML = `<strong>${cal.monthName}</strong>`;
 }
 
-// Needs State.WORLD_CREATED_AT / State.TIME_SCALE, so main.js calls this only
-// after bootstrap() has populated State (see main.js init order).
+// Needs the K4 tick anchor (State.CURRENT_TICK/TICK_SECONDS/TICK_ANCHOR_MS),
+// so main.js calls this only after bootstrap() has populated State.
 export function initCelestial() {
   updateCelestial();
-  // Update every 3 seconds so movement is visible at State.TIME_SCALE=100 (day = 14.4 min IRL)
-  setInterval(updateCelestial, 3 * 1000);
+  // Repaint often enough for the arc to look continuous within one tick,
+  // capped at the old 3 s cadence — a fixed 3 s would be half a game-day per
+  // frame on a 6 s acceptance-world tick.
+  const intervalMs = State.TICK_SECONDS
+    ? Math.min(3000, State.TICK_SECONDS * 1000 / 20)
+    : 3000;
+  setInterval(updateCelestial, intervalMs);
 }
 
 // ── Locked-verb hints — server-authoritative (GET .../actions) ────────────

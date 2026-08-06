@@ -112,10 +112,10 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	// fallback should not trigger in practice: for recall, currentPos lies on
 	// the very path that proved origin↔target traversable; for redirect, the
 	// new target was validated at dispatch time.
-	_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, o.WorldID, currentPos, newTarget, category)
-	var moveHours float64
+	_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, o.WorldID, currentPos, newTarget, category)
+	var moveTicks float64
 	if pathErr == nil && pathOK {
-		moveHours = pathHours
+		moveTicks = pathTicks
 	} else {
 		if pathErr != nil {
 			slog.Warn("recall/redirect: FindPath error, falling back to straight line", "unit", o.UnitID, "err", pathErr)
@@ -126,25 +126,25 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		if dist < 1 {
 			dist = 1
 		}
-		moveHours = province.TerrainMoveHours("plains") * float64(dist)
+		moveTicks = province.TerrainMoveTicks("plains") * float64(dist)
 	}
 	// Mirror the outbound leg's speed multipliers (march_start.go StartMarch) —
 	// a war galley/merchantman/nomadic host recalled or redirected mid-march
 	// must keep its own speed, not the unmultiplied path cost.
-	moveHours *= NavalSpeedFactor(unit.Type(utype))
-	moveHours *= unit.MarchHoursFactorFor(unit.Type(utype))
+	moveTicks *= NavalSpeedFactor(unit.Type(utype))
+	moveTicks *= unit.MarchHoursFactorFor(unit.Type(utype))
 	if cargoUnitID != nil {
-		moveHours *= 1.5
+		moveTicks *= 1.5
 	}
 
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	travelTicks := int(math.Round(moveHours))
+	travelTicks := int(math.Round(moveTicks))
 	if travelTicks < 1 {
 		travelTicks = 1
 	}
 	// arrivesAtNew mirrors the real tick-scheduled arrival (travelTicks × real
-	// seconds/tick) — NOT moveHours-as-hours. Using moveHours*time.Hour here
+	// seconds/tick) — NOT moveTicks-as-hours. Using moveTicks*time.Hour here
 	// (the bug: a several-hour wall-clock ETA for a march that the tick
 	// substrate actually completes in a handful of ticks/seconds) made a
 	// recalled or redirected unit's map position crawl almost imperceptibly

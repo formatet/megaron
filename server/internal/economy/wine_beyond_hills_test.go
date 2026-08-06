@@ -2,10 +2,19 @@ package economy
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"github.com/google/uuid"
 )
+
+// wineRateEps tolerates the float64 non-associativity between migration 071's
+// ×60 and migration 109's ×24 rescale: 0.02*60*24 and the decimal literal 28.8
+// round to adjacent float64 values (≈3.5e-15 apart here), not identically —
+// two sequential runtime multiplications don't associate bit-for-bit with a
+// single decimal-literal conversion. Far tighter than any real rate mistake
+// (wrong terrain/building) would produce.
+const wineRateEps = 1e-9
 
 // Regression + proof suite for migration 103 (server/druvor-utanfor-hills,
 // Timothy 2026-07-28: "vi får nog acceptera att det går att odla druvor
@@ -44,16 +53,20 @@ func wineRulesFor(t *testing.T, terrain string) map[string]float64 {
 }
 
 // TestProductionRules_HillsWineRatesUnchanged is AK3: hills keeps the
-// overhand exactly as it was — migration 103 must not touch the three rows
-// migrations 008 and 019 wrote. Values per the contract's kodverifierade tal.
+// overhand exactly as it was RELATIVE TO THE OTHER TERRAINS — migration 103
+// must not touch the three rows migrations 008 and 019 wrote (unchanged by
+// the *wine* slice). Migration 109 (2026-08-06, tick-is-the-day) later
+// scaled every production_rules.rate_per_tick ×24 uniformly, so the absolute
+// values below are the mig-008/019 originals ×24; the ratios between hills'
+// three building rows are exactly what "unchanged" still asserts.
 func TestProductionRules_HillsWineRatesUnchanged(t *testing.T) {
 	got := wineRulesFor(t, "hills")
-	want := map[string]float64{"": 1.2, "farm": 2.4, "winery": 3.0}
+	want := map[string]float64{"": 28.8, "farm": 57.6, "winery": 72.0}
 	if len(got) != len(want) {
 		t.Fatalf("hills wine rules = %v, want %v", got, want)
 	}
 	for bt, rate := range want {
-		if got[bt] != rate {
+		if math.Abs(got[bt]-rate) > wineRateEps {
 			t.Errorf("hills/%q wine rate = %.4f, want %.4f", bt, got[bt], rate)
 		}
 	}
@@ -68,23 +81,23 @@ func TestProductionRules_HillsWineRatesUnchanged(t *testing.T) {
 // failing run's captured output.
 func TestProductionRules_WineBeyondHills(t *testing.T) {
 	plains := wineRulesFor(t, "plains")
-	wantPlains := map[string]float64{"": 0.6, "farm": 1.2, "winery": 1.8}
+	wantPlains := map[string]float64{"": 14.4, "farm": 28.8, "winery": 43.2}
 	if len(plains) != len(wantPlains) {
 		t.Fatalf("plains wine rules = %v, want %v", plains, wantPlains)
 	}
 	for bt, rate := range wantPlains {
-		if plains[bt] != rate {
+		if math.Abs(plains[bt]-rate) > wineRateEps {
 			t.Errorf("plains/%q wine rate = %.4f, want %.4f", bt, plains[bt], rate)
 		}
 	}
 
 	scrub := wineRulesFor(t, "scrub_maquis")
-	wantScrub := map[string]float64{"": 0.4, "winery": 1.0}
+	wantScrub := map[string]float64{"": 9.6, "winery": 24.0}
 	if len(scrub) != len(wantScrub) {
 		t.Fatalf("scrub_maquis wine rules = %v, want %v", scrub, wantScrub)
 	}
 	for bt, rate := range wantScrub {
-		if scrub[bt] != rate {
+		if math.Abs(scrub[bt]-rate) > wineRateEps {
 			t.Errorf("scrub_maquis/%q wine rate = %.4f, want %.4f", bt, scrub[bt], rate)
 		}
 	}
@@ -113,12 +126,12 @@ func TestProductionRules_WineBeyondHills(t *testing.T) {
 // TestProductionRules_WineBeyondHills's plains assertion.
 func TestProductionRules_WineInRiverValley(t *testing.T) {
 	got := wineRulesFor(t, "river_valley")
-	want := map[string]float64{"": 0.6, "farm": 1.2, "winery": 1.8}
+	want := map[string]float64{"": 14.4, "farm": 28.8, "winery": 43.2}
 	if len(got) != len(want) {
 		t.Fatalf("river_valley wine rules = %v, want %v", got, want)
 	}
 	for bt, rate := range want {
-		if got[bt] != rate {
+		if math.Abs(got[bt]-rate) > wineRateEps {
 			t.Errorf("river_valley/%q wine rate = %.4f, want %.4f", bt, got[bt], rate)
 		}
 	}

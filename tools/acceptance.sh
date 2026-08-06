@@ -64,7 +64,7 @@ cmd_up() {
   värld     $w
   commit    $(git -C "$ROOT" rev-parse --short HEAD) ($(git -C "$ROOT" rev-parse --abbrev-ref HEAD))
   migration $(cmd_psql "SELECT version || CASE WHEN dirty THEN ' DIRTY' ELSE '' END FROM schema_migrations" | tr -d ' ')
-  tick      6 s      karta 30x20
+  tick      60 s     karta 30x20
 
   nästa:    tools/acceptance.sh player Wanax1
 EOF

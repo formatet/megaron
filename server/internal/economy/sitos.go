@@ -10,7 +10,7 @@ func DailyFoodNeed(population int) float64 {
 	if population < 0 {
 		population = 0
 	}
-	return float64(population) * GrainConsumptionPerCitizenPerDay
+	return float64(population) * GrainConsumptionPerCitizenPerTick
 }
 
 // CoverageDays is how many days the food on hand would feed the city. This is

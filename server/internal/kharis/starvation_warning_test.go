@@ -127,19 +127,22 @@ func starvationWarningFixture(t *testing.T, grainAmount, grainRate float64) (wor
 	return worldID, settlementID, ownerID
 }
 
-func TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinADay(t *testing.T) {
+func TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	// amount=100, rate=-10/tick → empty in 10 ticks, well within TicksPerDay (24).
-	worldID, _, ownerID := starvationWarningFixture(t, 100, -10)
+	// ⭐ CANON 2026-08-06: a tick IS the day now, so "empties within one
+	// game-day" (tick.go, ticksToEmpty <= 1) now means empties within the
+	// CURRENT tick, not within the next 24.
+	// amount=5, rate=-10/tick → empty in 0.5 ticks, at/under 1 tick.
+	worldID, _, ownerID := starvationWarningFixture(t, 5, -10)
 
 	rec := newNotifyRecorder(pool)
 	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)
 	h.applyStarvationWarning(ctx, worldID)
 
 	if n := rec.countTier(ownerID, tierRed); n != 1 {
-		t.Errorf("red warning count = %d, want 1 (grain empties within a day)", n)
+		t.Errorf("red warning count = %d, want 1 (grain empties within a tick)", n)
 	}
 }
 
@@ -214,7 +217,10 @@ func TestEmitSubsistenceWarning_DedupesUnreadSameTier(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	worldID, _, ownerID := starvationWarningFixture(t, 100, -10)
+	// Same red-tier fixture as TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick
+	// (amount=5, rate=-10/tick → empties within 1 tick) — the dedupe
+	// check needs both passes to land on the same tier.
+	worldID, _, ownerID := starvationWarningFixture(t, 5, -10)
 
 	rec := newNotifyRecorder(pool)
 	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), rec)

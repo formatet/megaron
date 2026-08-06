@@ -171,14 +171,19 @@ export function notifText(kind, body) {
       return `${body.unit_type || 'A unit'} unpaid (period ${body.unpaid_periods || 0})${tail}`;
     }
     case 'SubsistenceWarning': {
-      // Payload per kharis.emitSubsistenceWarning: name, tier, net_per_day,
-      // days_left, pop_loss. Never a percent — days and grain/day only.
+      // Payload per kharis.emitSubsistenceWarning: name, tier, net_per_tick,
+      // ticks_left, pop_loss. net_per_day/days_left are the pre-rename keys
+      // (2026-08-06) — the server keeps writing them alongside the new ones so
+      // old persisted notifications stay readable; prefer the new keys and
+      // fall back to the old. Never a percent — ticks and grain/tick only.
       const name = body.name || 'A settlement';
+      const netPerTick = body.net_per_tick ?? body.net_per_day;
+      const ticksLeft = body.ticks_left ?? body.days_left;
       if (body.tier === 'critical') {
-        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain ${(body.net_per_day || 0).toFixed(0)}/day.`;
+        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain ${(netPerTick || 0).toFixed(0)}/tick.`;
       }
-      const days = body.days_left ? ` — grain lasts ~${Math.round(body.days_left)} days` : '';
-      return `${name}: grain net ${(body.net_per_day || 0).toFixed(0)}/day${days}`;
+      const ticks = ticksLeft ? ` — grain lasts ~${Math.round(ticksLeft)} ticks` : '';
+      return `${name}: grain net ${(netPerTick || 0).toFixed(0)}/tick${ticks}`;
     }
     case 'OfferAccepted': {
       // Payload per TradeAccept (messenger.go): good_key/quantity/silver are
@@ -244,13 +249,19 @@ export function notifText(kind, body) {
 // does NOT feed itself automatically, so a founding deficit is surfaced
 // immediately, with how long the seed lasts and the two remedies. Returns ''
 // for older bodies without grain_net_per_tick (back-compatible).
+// grain_ticks/grain_days: grain_days is the pre-rename key (2026-08-06) — the
+// server keeps writing it alongside grain_ticks so old persisted
+// notifications stay readable; prefer grain_ticks and fall back to grain_days.
 export function colonyFoundedGrainLine(body) {
   if (!body || body.grain_net_per_tick == null) return '';
   const name = body.name || 'The colony';
-  const perDay = body.grain_net_per_tick * 24;
-  if (perDay < 0) {
-    const days = body.grain_days != null ? ` — grain lasts ~${Math.round(body.grain_days)} days` : '';
-    return `${name} does not feed itself (~${Math.round(-perDay)} grain/day deficit)${days}. Build a farm if the land bears it, or send grain by internal transfer.`;
+  // grain_net_per_tick IS the per-tick rate now (tick == day, mig 109) — do
+  // not scale it, that was the ×24 error found alongside cmd_goods.go's.
+  const perTick = body.grain_net_per_tick;
+  const ticksLeft = body.grain_ticks ?? body.grain_days;
+  if (perTick < 0) {
+    const ticks = ticksLeft != null ? ` — grain lasts ~${Math.round(ticksLeft)} ticks` : '';
+    return `${name} does not feed itself (~${Math.round(-perTick)} grain/tick deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
-  return `${name} feeds itself (~+${Math.round(perDay)} grain/day).`;
+  return `${name} feeds itself (~+${Math.round(perTick)} grain/tick).`;
 }
