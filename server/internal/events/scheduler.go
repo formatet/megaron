@@ -96,6 +96,12 @@ const (
 	// ScheduledOrderDelivery: an order courier reaching its unit — the carried
 	// order (march etc.) executes on delivery (temenos_orderlopare_plan.md Fas 2).
 	ScheduledOrderDelivery ScheduledEventType = "OrderDelivery"
+	// ScheduledUnitInterceptScan is the recurring sweep that resolves combat
+	// between a marching unit and a FOW-visible enemy sentry within reach
+	// (avsiktslagret §S3, megaron_plan_avsiktslagret.md) — the unit-vs-unit
+	// counterpart of ScheduledInterceptScan, which only ever covers caravans.
+	// Substrate for KR2 (marscherande härar möts).
+	ScheduledUnitInterceptScan ScheduledEventType = "UnitInterceptScan"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

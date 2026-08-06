@@ -411,6 +411,11 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 	case "UnitStanceChanged":
 		return fmt.Sprintf("En styrka ändrade hållning till %s", str(p, "stance"))
 	case "UnitCombatResolved", "UnitIntercepted":
+		// Deliberately minimal (avsiktslagret §S3/§S4, megaron_plan_avsiktslagret.md):
+		// a real interception narrative belongs to the stridsrapport plan
+		// (megaron_plan_stridsrapport.md), which isn't built yet — this stub only
+		// needs to not crash on the new UnitIntercepted event's payload shape
+		// (unit.UnitInterceptedPayload has q/r, unlike some other combat payloads).
 		return fmt.Sprintf("Strid avgjordes för en styrka vid (%v,%v)", p["q"], p["r"])
 	case "CityCollapsed":
 		return fmt.Sprintf("%s kollapsade (%s) — en warband reser sig ur ruinerna", s, str(p, "cause"))
