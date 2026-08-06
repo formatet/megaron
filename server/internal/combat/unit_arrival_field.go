@@ -61,11 +61,10 @@ func loadFieldDefenders(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, q, r 
 // §1) replaces that one-shot model: this now only INITIATES (or joins) a
 // persistent battles row and hands the arriving unit's outcome to
 // ScheduledBattleTick, resolved over one or more subsequent battle-ticks.
-// The old fortune/strength/wall math above this function (rollFortune,
-// ResolveStrengthsWithRout, applyFieldDefenderLosses) stays in this package —
-// it is still live for the three entry points not yet rewired to
-// initiateOrJoinBattle (settlement resolveCombat, amphibious assault,
-// avsiktslagret's unit_intercept_scan.go).
+// The old fortune/strength/wall math (rollFortune, ResolveStrengthsWithRout)
+// stays in this package — it is still live for the three entry points not
+// yet rewired to initiateOrJoinBattle (settlement resolveCombat, amphibious
+// assault, avsiktslagret's unit_intercept_scan.go).
 func (h *UnitArrivalHandler) resolveFieldCombat(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, defenders []fieldDefender, destQ, destR int, worldID uuid.UUID,
@@ -105,48 +104,5 @@ func (h *UnitArrivalHandler) resolveFieldCombat(
 		return fmt.Errorf("field combat: position arriving unit: %w", err)
 	}
 
-	return nil
-}
-
-// applyFieldDefenderLosses reduces the size of hostile field units per the
-// resolved loss rate; wiped-out ones are disbanded. Mirrors
-// applyDefenderUnitLosses (unit_arrival.go) but keys on the hex-positioned
-// unit rows already loaded by loadFieldDefenders rather than a settlement_id.
-func (h *UnitArrivalHandler) applyFieldDefenderLosses(
-	ctx context.Context, tx pgx.Tx, defenders []fieldDefender, lossRate float64, worldID uuid.UUID,
-) error {
-	totalsByOwner := map[uuid.UUID]int{}
-	for _, d := range defenders {
-		newSize := int(float64(d.size) * (1 - lossRate))
-		lost := d.size - newSize
-		totalsByOwner[d.ownerID] += lost
-
-		if newSize <= 0 {
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET status = 'disbanded', size = 0, updated_at = now() WHERE id = $1`, d.id,
-			); err != nil {
-				slog.Warn("could not disband field defender", "unit", d.id, "err", err)
-			}
-		} else {
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET size = $2, updated_at = now() WHERE id = $1`, d.id, newSize,
-			); err != nil {
-				slog.Warn("could not reduce field defender size", "unit", d.id, "err", err)
-			}
-		}
-	}
-
-	for ownerID, lost := range totalsByOwner {
-		if lost <= 0 {
-			continue
-		}
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET population = GREATEST(50, population - $2)
-			 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
-			ownerID, lost, worldID,
-		); err != nil {
-			slog.Warn("could not apply field defender pop loss", "owner", ownerID, "err", err)
-		}
-	}
 	return nil
 }
