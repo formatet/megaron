@@ -14,8 +14,6 @@ export const State = {
   WORLD_ID: null,
   MY_SETTLEMENT_ID: null,
   MY_PLAYER_ID: null,
-  WORLD_CREATED_AT: null,
-  TIME_SCALE: 1,
 
   // Tick anchor (Tid & kalender Fas B): the world's current_tick as of the
   // instant TICK_ANCHOR_MS (serverNow-frame), advancing at TICK_SECONDS real

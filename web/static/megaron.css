@@ -22,6 +22,7 @@
   --blood:     #922B21;   /* BLOOD_RED  — combat banners */
   --sea:       #2E86C1;   /* AEGEAN     — sea, join-button */
   --deep-sea:  #1B4F72;   /* DEEP_SEA   — sea text, deep water */
+  --moonlight: #D0D8F0;   /* MOONLIGHT  — night celestial body */
 
   /* Domain accent colours — semantic game UI */
   --accent-war:        #A23A32;
@@ -849,30 +850,16 @@ body:has(.auth-page) main {
 .game-topbar {
   display: flex;
   align-items: stretch;
-  height: 34px;
+  height: 44px;
   background: var(--bg-panel);
+  border-top: 2px solid var(--border);
   border-bottom: 2px solid var(--border);
   flex-shrink: 0;
   z-index: 50;
   overflow: hidden;
 }
 
-.gt-logo {
-  padding: 0 1rem;
-  font-family: 'Cinzel', 'Georgia', serif;
-  font-size: var(--fs-base);
-  letter-spacing: 0.22em;
-  color: var(--accent);
-  border-right: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  white-space: nowrap;
-  text-decoration: none;
-  text-shadow: 0 0 12px rgba(192,57,43,0.3);
-}
-
-/* Dev tempo label (Tid & kalender Fas B): shown when TICK_SECONDS < 60.
+/* Dev tempo label (Tid & kalender Fas B): shown when TICK_SECONDS < 3600.
    text-dim, not gold — the topbar face is light plaster where gold vanishes. */
 .gt-devtempo {
   padding: 0 0.7rem;
@@ -990,17 +977,16 @@ body:has(.auth-page) main {
   border-left: 1px solid var(--border);
   flex-shrink: 0;
 }
-.cel-arc-wrap { position: relative; width: 56px; height: 28px; flex-shrink: 0; }
-.cel-arc-wrap #cel-svg { width: 56px; height: 28px; }
+.cel-arc-wrap { position: relative; width: 63px; height: 39px; flex-shrink: 0; }
+.cel-arc-wrap #cel-svg { width: 63px; height: 39px; }
 #cel-svg { position: absolute; top: 0; left: 0; }
 .cel-info { display: flex; flex-direction: row; align-items: center; gap: 6px; }
-.cel-phase { font-size: var(--fs-base); line-height: 1; }
 .cel-date  {
   font-family: 'Cinzel', 'Georgia', serif;
   font-size: var(--fs-xs); color: var(--text-dim);
   white-space: nowrap; letter-spacing: 0.05em;
 }
-.cel-date strong { color: var(--gold); font-weight: 600; }
+.cel-date strong { color: var(--accent); font-weight: 600; }
 
 .gt-search-btn {
   background: none;
@@ -1354,6 +1340,15 @@ body:has(.auth-page) main {
 .sb-rate  { font-size: var(--fs-sm); color: var(--safe); font-family: var(--mono); }
 
 /* ── Notification list items ─────────────────────────────────────────────── */
+.notif-date-header {
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.4rem;
+}
 .notif-list-item {
   display: grid;
   grid-template-columns: 1.4rem 1fr auto;
