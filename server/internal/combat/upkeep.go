@@ -75,7 +75,14 @@ func UnitUpkeep(unitType, category string, size int) UpkeepSpec {
 const (
 	upkeepAttritionStep    = 10 // män förlorade per tick vid grain-brist
 	upkeepDesertionStep    = 10 // män förlorade per tick vid silver-brist (efter tröskel)
-	upkeepDesertionPeriods = 3  // obetalda silver-perioder före desertering börjar
+	// 3 → 72 (Timothy 2026-08-06), an INVARIANT-PRESERVING retune, not a balance
+	// change: this counts macro-tick FIRINGS, and those went from every 24 ticks
+	// to every tick when the tick became the day. 3 firings × 24 ticks = 72 ticks
+	// before; 72 firings × 1 tick = the same 72 ticks after — identical real-time
+	// behaviour (72 h at 60 min/tick), so the asynchronicity gate is untouched.
+	// Left at 3 it would have deserted an army after 3 real hours, i.e. while its
+	// Wanax slept. Fiction reads right too: 72 ticks unpaid before a cohort melts.
+	upkeepDesertionPeriods = 72 // obetalda silver-ticks före desertering börjar
 )
 
 // upkeepUnpaidWarningKind is the forewarning event type / notification kind fired

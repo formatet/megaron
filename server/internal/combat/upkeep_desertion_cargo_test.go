@@ -80,14 +80,17 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 		t.Fatalf("create cargo unit: %v", err)
 	}
 
-	// unpaid_periods = 2: this tick's failed payment pushes it to 3 =
-	// upkeepDesertionPeriods, so desertion (and the cascade) fires immediately.
+	// unpaid_periods = upkeepDesertionPeriods-1: this tick's failed payment
+	// pushes it to upkeepDesertionPeriods, so desertion (and the cascade) fires
+	// immediately. Driven off the constant (72 as of 2026-08-06, was 3) rather
+	// than hardcoded, so a future recalibration can't silently desync this seed
+	// from the threshold it's meant to sit one below.
 	var shipID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 		                    settlement_id, support_settlement_id, unpaid_periods, cargo_unit_id)
-		 VALUES ($1, $2, 'galley', 'naval', 1, 0, 'garrison', $3, $3, 2, $4) RETURNING id`,
-		worldID, owner, sid, cargoID,
+		 VALUES ($1, $2, 'galley', 'naval', 1, 0, 'garrison', $3, $3, $5, $4) RETURNING id`,
+		worldID, owner, sid, cargoID, upkeepDesertionPeriods-1,
 	).Scan(&shipID); err != nil {
 		t.Fatalf("create ship: %v", err)
 	}

@@ -32,7 +32,13 @@ type DailyTickPayload struct{}
 // to real time via tick.TickSeconds at query time. A hard-coded "48 hours"
 // silently became ~120 game-days at TICK_MINUTES=1, disabling decay in sped-up
 // worlds (the "loyalty 2 uniformly" soak finding).
-const loyaltyDecayGraceDays = 2
+// 2 → 48 (2026-08-06), invariant-preserving for the same reason as
+// upkeepDesertionPeriods: this is a RAW DURATION, not a rate, so nothing
+// compensates it when the tick became the day. 2 × 24 ticks = 48 ticks before;
+// 48 × 1 tick = the same 48 ticks after (48 h at 60 min/tick). Left at 2 a
+// colony would sulk after 2 real hours without a gift — an alarm-clock game,
+// and a direct breach of the asynchronicity gate.
+const loyaltyDecayGraceDays = 48
 
 // decayGraceSeconds converts the grace window to real SECONDS at the current
 // tick cadence: graceDays × ticks/day × seconds/tick. Uses tick.TickSeconds,

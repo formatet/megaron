@@ -7,13 +7,18 @@ package handlers
 // continuous rate. upkeepNetPerDay is the pure function that nets the two
 // together so `status`/`recruit --list`/the Recruit response can warn BEFORE
 // a build/recruit pushes a settlement into upkeep deficit. Pure — no DB.
+//
+// ⭐ CANON 2026-08-06: a tick IS the day now (events.TicksPerDay = 1), so
+// upkeepNetPerDay's `* TicksPerDay` conversion is a no-op — its return value
+// is the per-tick net, identical to the per-day net. Expectations below are
+// per tick with no ×24 scaling.
 
 import (
 	"math"
 	"testing"
 )
 
-func TestUpkeepNetPerDay(t *testing.T) {
+func TestUpkeepNetPerTick(t *testing.T) {
 	cases := []struct {
 		name          string
 		grainRate     float64 // settlement_goods rate, per tick (citizens already netted)
@@ -25,40 +30,40 @@ func TestUpkeepNetPerDay(t *testing.T) {
 	}{
 		{
 			name:          "healthy grain rate still net negative once army upkeep is counted",
-			grainRate:     0.2, // 4.8/day at TicksPerDay=24 — looks fine in isolation
+			grainRate:     0.2, // looks fine in isolation
 			silverRate:    0.1,
 			up:            upkeepAmount{Grain: 11.05, Silver: 5.82}, // matches TestArmyUpkeep_SumsGarrisonViaUnitUpkeep
-			wantGrainNet:  0.2*24 - 11.05,
-			wantSilverNet: 0.1*24 - 5.82,
+			wantGrainNet:  0.2 - 11.05,
+			wantSilverNet: 0.1 - 5.82,
 		},
 		{
 			name:          "no garrison — net equals raw production",
 			grainRate:     1.0,
 			silverRate:    0.5,
 			up:            upkeepAmount{},
-			wantGrainNet:  1.0 * 24,
-			wantSilverNet: 0.5 * 24,
+			wantGrainNet:  1.0,
+			wantSilverNet: 0.5,
 		},
 		{
 			name:          "negative production compounds with upkeep, doesn't cancel it",
 			grainRate:     -0.5,
 			silverRate:    0,
 			up:            upkeepAmount{Grain: 5, Silver: 2},
-			wantGrainNet:  -0.5*24 - 5,
+			wantGrainNet:  -0.5 - 5,
 			wantSilverNet: 0 - 2,
 		},
 		{
 			// Del C: a city whose whole garrison stands at home loses only
-			// (1−share) of the silver. Before this, the same city read as −2/day
+			// (1−share) of the silver. Before this, the same city read as −2/tick
 			// and the recruit surface called it unsustainable while it was in
 			// fact in surplus. Grain is untouched — soldiers eat their rations.
 			name:          "sold circulating back is not drain",
 			grainRate:     0,
-			silverRate:    0.05, // 1.2/day
+			silverRate:    0.05,
 			up:            upkeepAmount{Grain: 5, Silver: 2},
 			circulated:    1.4, // share 0.7 of the whole 2
 			wantGrainNet:  0 - 5,
-			wantSilverNet: 1.2 - 0.6,
+			wantSilverNet: 0.05 - 0.6,
 		},
 		{
 			// A garrison that marches out keeps billing its home town, but stops
@@ -70,7 +75,7 @@ func TestUpkeepNetPerDay(t *testing.T) {
 			up:            upkeepAmount{Grain: 5, Silver: 2},
 			circulated:    0,
 			wantGrainNet:  0 - 5,
-			wantSilverNet: 1.2 - 2,
+			wantSilverNet: 0.05 - 2,
 		},
 	}
 	const eps = 1e-9
@@ -78,10 +83,10 @@ func TestUpkeepNetPerDay(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			gotGrain, gotSilver := upkeepNetPerDay(tc.grainRate, tc.silverRate, tc.up, tc.circulated)
 			if math.Abs(gotGrain-tc.wantGrainNet) > eps {
-				t.Errorf("grainNetPerDay = %v, want %v", gotGrain, tc.wantGrainNet)
+				t.Errorf("grainNetPerTick = %v, want %v", gotGrain, tc.wantGrainNet)
 			}
 			if math.Abs(gotSilver-tc.wantSilverNet) > eps {
-				t.Errorf("silverNetPerDay = %v, want %v", gotSilver, tc.wantSilverNet)
+				t.Errorf("silverNetPerTick = %v, want %v", gotSilver, tc.wantSilverNet)
 			}
 		})
 	}

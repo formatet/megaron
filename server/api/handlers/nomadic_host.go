@@ -21,20 +21,26 @@ const (
 	nomadicHostSpearmenSize = 100 // men per cohort
 
 	// nomadicHostRationTicks is how long the escort's pay and rations last:
-	// four game months (2 880 ticks = 120 game days at 24 ticks/day).
+	// 120 ticks — four months in the world, five real days at 60 min/tick.
 	//
-	// The figure is sized in the player's time, not the world's: at the intended
-	// cadence (TICK_MINUTES=2, ~1 game month per real day) this is ~4 real days —
-	// long enough to sleep on the decision, which an async game must allow. Four
-	// game DAYS, the number the design first named, would have been ~3 real hours:
-	// log off overnight, come back to a starved escort.
+	// ⚠️ 2880 → 120 (Timothy 2026-08-06, choice (b)). This is NOT the same class
+	// of retune as upkeepDesertionPeriods. The ration is denominated in TICKS, so
+	// its real duration was never at risk — 2 880 ticks is 120 real days before
+	// and after. Two other things broke instead:
+	//   1. The fiction. Read under the new canon, 2 880 ticks is 2 880 days in the
+	//      world — a wandering host carrying nearly eight years of provisions.
+	//   2. The AMOUNTS. The store is derived below as rate × ration ticks, and the
+	//      rates are ×24 after mig 109. Left at 2 880 the opening silver would have
+	//      gone 480 → 11 520 and every row of the silver-trap table with it.
+	// 120 keeps the calibrated 480 silver / ~1 200 grain exactly, and reads right:
+	// four months of keep. The cost is deliberate — the escort's clock is now five
+	// real days instead of a hundred and twenty, which is the founder-phase
+	// pressure the design wants. (balans/silverupkeep-halveras doubles it to 240.)
 	//
-	// It is affordable only because the host itself eats nothing: 2 880 ticks of
-	// escort keep is ~1 200 grain and ~480 silver, which is modest to carry into
-	// the new metropolis (an ordinary city seeds with 300 grain). Were the 4 000
-	// civilians fed from this store it would be ~241 000 grain and would drown the
-	// opening's scarcity outright. (Decision Timothy 2026-07-15.)
-	nomadicHostRationTicks = 2880
+	// It is affordable only because the host itself eats nothing. Were the 4 000
+	// civilians fed from this store it would drown the opening's scarcity outright.
+	// (Original decision Timothy 2026-07-15.)
+	nomadicHostRationTicks = 120
 )
 
 // seedNomadicHost creates a player's founder phase: the host token, its two

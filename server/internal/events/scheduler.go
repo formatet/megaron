@@ -27,7 +27,22 @@ import (
 // axis (TICK_MINUTES in internal/tick — e.g. 2 min/tick ≈ one game-month per
 // real day) and does not live here. The broader economy re-balance is tracked
 // separately — see temenos_ekonomi.md.
-const TicksPerDay = 24
+// ⭐ CANON 2026-08-06 (Timothy): a tick IS a day in the world — the world's
+// indivisible unit of time. This constant was 24 (a tick was a game-HOUR) until
+// the day/tick ambiguity was traced as a root cause: "day" meant both 24 ticks
+// and a wall-clock day, and nothing in a name said which. That ambiguity already
+// cost one production bug (mig 071, universal starvation) and had left
+// temenos_varutaxonomi_sol.md 24× out of phase with the code for weeks — both
+// documents writing the same numbers under different clocks.
+//
+// It survives at 1 (not deleted) purely so the ~30 `× TicksPerDay` conversion
+// sites keep compiling and stay mathematically correct while step 3 sweeps them
+// out. DO NOT reintroduce a ticks-per-day concept — the calendar derives from
+// 365 ticks/year (temenos_tid_kalender_plan.md, Låst regel 2), never from this.
+//
+// NEVER write "day" as a UNIT of game time again — in code, JSON, or prose.
+// Only "tick". "Day" unqualified always means wall clock.
+const TicksPerDay = 1
 
 // ScheduledEventType identifies what should happen when the event fires.
 type ScheduledEventType string

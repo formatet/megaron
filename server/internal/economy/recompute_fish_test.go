@@ -9,6 +9,7 @@ package economy
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"github.com/google/uuid"
@@ -197,7 +198,14 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 	wantGrainRate := wantGrainProd - wantDemand
 
 	_, grainRate := readGood(t, settlementID, "grain")
-	if diff := grainRate - wantGrainRate; diff > 1e-6 || diff < -1e-6 {
+	// Relative, not absolute, tolerance: migration 109 (2026-08-06, tick-is-the-
+	// day) scaled production_rules ×24, so these figures now run ~24× larger
+	// than when the 1e-6 absolute epsilon here was calibrated, and the DB-side
+	// float8 aggregation (SUM/multiply across several rows) accumulates rounding
+	// proportional to magnitude, not a fixed absolute amount. A fixed absolute
+	// epsilon that held at the old scale spuriously fails at the new one even
+	// though the relative precision is unchanged.
+	if diff := math.Abs(grainRate - wantGrainRate); diff > 1e-6*math.Abs(wantGrainRate) {
 		t.Errorf("AK2: grain rate = %v, want %v (pre-slice formula: grainProd - demand)", grainRate, wantGrainRate)
 	}
 

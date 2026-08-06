@@ -7,27 +7,27 @@ import (
 	"formatet/megaron/server/internal/events"
 )
 
-// The founder-phase store drains at a per-TICK rate, while upkeep and consumption
-// are authored per DAY. Getting that conversion wrong is silent: the host would
-// starve 24× too fast or last 24× too long, and only a playtest would notice.
-// These pin the unit.
-func TestGrainConsumptionPerTick_IsPerTickNotPerDay(t *testing.T) {
+// ⭐ CANON 2026-08-06: a tick IS the day now (events.TicksPerDay = 1). This
+// test used to guard the per-tick/per-day DISTINCTION — a founder-phase
+// store draining at the daily figure instead of the tick-divided one would
+// starve 24× too fast. That distinction is gone on purpose: with
+// TicksPerDay=1, "per tick" and "per day" are the same number by definition.
+// What still needs guarding is that GrainConsumptionPerTick keeps deriving
+// from pop*GrainConsumptionPerCitizenPerDay/events.TicksPerDay (not a
+// separately hardcoded pop*0.5) — so if TicksPerDay is ever recalibrated
+// away from 1 again, this test starts failing immediately instead of
+// silently reading the wrong figure forever, the way it did before.
+func TestGrainConsumptionPerTick_EqualsDailyFigureNow(t *testing.T) {
 	const pop = 4000
 
-	got := GrainConsumptionPerTick(pop)
-	wantPerDay := float64(pop) * GrainConsumptionPerCitizenPerDay // 2000/day
-	want := wantPerDay / float64(events.TicksPerDay)              // ≈83.33/tick
+	if events.TicksPerDay != 1 {
+		t.Fatalf("test premise broke: expected TicksPerDay=1, got %d", events.TicksPerDay)
+	}
 
+	got := GrainConsumptionPerTick(pop)
+	want := float64(pop) * GrainConsumptionPerCitizenPerDay // pop*0.5 == 2000, exactly — a tick IS a day
 	if math.Abs(got-want) > 1e-9 {
-		t.Fatalf("GrainConsumptionPerTick(%d) = %v, want %v", pop, got, want)
-	}
-	if math.Abs(got-wantPerDay) < 1e-9 {
-		t.Fatalf("GrainConsumptionPerTick(%d) returned the DAILY figure (%v) — "+
-			"the TicksPerDay division is missing", pop, got)
-	}
-	// A day's worth of ticks must add back up to a day's consumption.
-	if roundTrip := got * float64(events.TicksPerDay); math.Abs(roundTrip-wantPerDay) > 1e-9 {
-		t.Fatalf("%d ticks of consumption = %v, want one day = %v", events.TicksPerDay, roundTrip, wantPerDay)
+		t.Fatalf("GrainConsumptionPerTick(%d) = %v, want %v (pop*0.5, since TicksPerDay=1)", pop, got, want)
 	}
 }
 
