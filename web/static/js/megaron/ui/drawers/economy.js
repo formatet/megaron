@@ -58,12 +58,12 @@ async function loadEconomyGoods(mySettlements) {
             <div class="sb-label">Silver</div>
             <div class="sb-val">${fmtSilver(silver.amount)}</div>
           </div>
-          ${silver.rate_per_tick ? `<div class="sb-rate">+${(silver.rate_per_tick*24).toFixed(1)}/day</div>` : ''}
+          ${silver.rate_per_tick ? `<div class="sb-rate">+${silver.rate_per_tick.toFixed(1)}/tick</div>` : ''}
         </div>`;
       }
       if (others.length) {
         html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td><td style="text-align:right">Price</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${g.rate_per_tick > 0 ? `<td style="color:var(--safe)">+${(g.rate_per_tick*24).toFixed(1)}/day</td>` : '<td></td>'}<td style="text-align:right;color:var(--text-dim)">${(g.price||0).toFixed(2)}</td></tr>`
+          `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${g.rate_per_tick > 0 ? `<td style="color:var(--safe)">+${g.rate_per_tick.toFixed(1)}/tick</td>` : '<td></td>'}<td style="text-align:right;color:var(--text-dim)">${(g.price||0).toFixed(2)}</td></tr>`
         ).join('')}</table>`;
       }
     }

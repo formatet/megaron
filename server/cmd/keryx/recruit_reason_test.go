@@ -20,14 +20,14 @@ func TestUnsustainableReason_NamesTheBindingResource(t *testing.T) {
 	}{
 		{
 			// A big buffer must show its runway: a probe disbanded 100 spearmen over
-			// a −7/day warning while sitting on 36k silver (soak 2026-07-24). The ✗
-			// stays, but the days-of-runway keeps it from reading as imminent.
+			// a −7/tick warning while sitting on 36k silver (soak 2026-07-24). The ✗
+			// stays, but the ticks-of-runway keeps it from reading as imminent.
 			name:     "silver binds but a huge buffer covers it for years",
 			netGrain: 28434, netSilver: -7,
 			unitGrain: 5, unitSilver: 2,
 			grainStock: 100000, silverStock: 36000,
-			// shortfall after this unit = 9/day; 36000/9 = 4000 days.
-			wantSubstrings:   []string{"silver", "-7.0", "9.0", "covers", "4000", "days"},
+			// shortfall after this unit = 9/tick; 36000/9 = 4000 ticks.
+			wantSubstrings:   []string{"silver", "-7.0", "9.0", "covers", "4000", "ticks"},
 			wantNotSubstring: []string{"grain upkeep"},
 		},
 		{
@@ -35,8 +35,8 @@ func TestUnsustainableReason_NamesTheBindingResource(t *testing.T) {
 			netGrain: -3, netSilver: 500,
 			unitGrain: 5, unitSilver: 2,
 			grainStock: 800, silverStock: 5000,
-			// shortfall after this unit = 8/day; 800/8 = 100 days.
-			wantSubstrings:   []string{"grain", "-3.0", "8.0", "covers", "100", "days"},
+			// shortfall after this unit = 8/tick; 800/8 = 100 ticks.
+			wantSubstrings:   []string{"grain", "-3.0", "8.0", "covers", "100", "ticks"},
 			wantNotSubstring: []string{"silver"},
 		},
 		{

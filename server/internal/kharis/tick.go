@@ -964,7 +964,7 @@ func (h *TickHandler) applySubsistenceCritical(ctx context.Context, worldID uuid
 // emitSubsistenceWarning inserts one SubsistenceWarning notification for the
 // settlement owner via the hub, unless an unread one of the same settlement+tier
 // already exists (dedupe). Payload matches the plan: settlement_id, name, tier,
-// net_per_day, days_left, pop_loss.
+// net_per_tick, ticks_left, pop_loss.
 func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, ownerID, settlementID uuid.UUID, name, tier string, level int, netPerTick, ticksLeft float64, popLoss int) {
 	var exists bool
 	if err := h.pool.QueryRow(ctx,
@@ -985,9 +985,18 @@ func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, owner
 		"settlement_id": settlementID,
 		"name":          name,
 		"tier":          tier,
-		"net_per_day":   netPerTick,
-		"days_left":     ticksLeft,
-		"pop_loss":      popLoss,
+		// net_per_tick/ticks_left are the current names (tick == day now, mig 109).
+		// net_per_day/days_left are kept alongside with the SAME value — this
+		// payload is persisted to `notifications`, and old rows already carry
+		// the day-named keys with that meaning. Semantics are frozen (CLAUDE.md
+		// "Events"): don't remove the old keys, they'd make old notifications
+		// unreadable. Readers prefer *_per_tick/*_ticks and fall back to
+		// *_per_day/*_days.
+		"net_per_tick": netPerTick,
+		"ticks_left":   ticksLeft,
+		"net_per_day":  netPerTick,
+		"days_left":    ticksLeft,
+		"pop_loss":     popLoss,
 	}
 	_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, subsistenceKind, level, payload)
 }

@@ -624,9 +624,9 @@ func (h *UnitArrivalHandler) exploreReturned(
 }
 
 // SentryPatrolTicks is how long a naval sentry holds its patrol hex before the
-// auto-return timer turns it home. Tunable (game-hours of patrol); 24 ticks =
-// one game-day. No recall verb exists — this timer is the only control, so a
-// sentry order can never strand a ship ("self-terminating sea orders").
+// auto-return timer turns it home. Tunable (ticks of patrol). No recall verb
+// exists — this timer is the only control, so a sentry order can never strand
+// a ship ("self-terminating sea orders").
 const SentryPatrolTicks = 24
 
 // sentryArrived posts a naval unit on patrol: it reached its coastal_sea target
@@ -956,11 +956,16 @@ func (h *UnitArrivalHandler) foundColony(
 			"grain_amount":       grainAmount,
 			"grain_net_per_tick": grainNet,
 		}
-		// grain_days: how long the seed lasts at the current deficit; null (omitted)
-		// when the colony is self-sustaining (net ≥ 0).
+		// grain_ticks: how long the seed lasts at the current deficit; null
+		// (omitted) when the colony is self-sustaining (net ≥ 0). This payload is
+		// persisted (NotifyPlayer writes to `notifications`), so grain_days is
+		// kept alongside it with the same value — old rows already carry
+		// grain_days and readers fall back to it. Don't remove grain_days.
 		if grainNet < 0 {
 			if tickDrain := -grainNet; tickDrain > 0 {
-				payload["grain_days"] = grainAmount / tickDrain
+				ticksLeft := grainAmount / tickDrain
+				payload["grain_ticks"] = ticksLeft
+				payload["grain_days"] = ticksLeft
 			}
 		}
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, payload)

@@ -330,7 +330,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 		// can_recruit per unit: goods + labor pool + building requirements (for 1 unit).
 		// Mirrors the actual Recruit handler gates so can_recruit:false is trustworthy.
-		// upkeep_grain_per_day/upkeep_silver_per_day + sustainable project what this
+		// upkeep_grain_per_tick/upkeep_silver_per_tick + sustainable project what this
 		// unit costs once it FINISHES TRAINING AND GARRISONS (forming/training units
 		// draw no upkeep yet) against the city's current net-after-upkeep capacity —
 		// answering "can this city carry one more of these" before the Wanax commits.
@@ -339,12 +339,12 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			CanRecruit bool   `json:"can_recruit"`
 			// Gross is the unit's own upkeep — what the affordability gate needs
 			// liquid at debit time (the war-chest is still charged in full).
-			UpkeepGrainPerDay  float64 `json:"upkeep_grain_per_day"`
-			UpkeepSilverPerDay float64 `json:"upkeep_silver_per_day"`
-			// Net is what the city actually loses per day while the unit garrisons
+			UpkeepGrainPerDay  float64 `json:"upkeep_grain_per_tick"`
+			UpkeepSilverPerDay float64 `json:"upkeep_silver_per_tick"`
+			// Net is what the city actually loses per tick while the unit garrisons
 			// at home: the sold share circulates back (Del C). March it out and the
 			// cost is the gross figure again.
-			UpkeepSilverNetPerDay float64 `json:"upkeep_silver_net_per_day"`
+			UpkeepSilverNetPerDay float64 `json:"upkeep_silver_net_per_tick"`
 			Sustainable           bool    `json:"sustainable"`
 		}
 		var recruitAfford []recruitAffordRow
@@ -748,11 +748,11 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis":                 kharisNow,
 			"kharis_rate":            kharisRate,
 			"kharis_mood":            kharisToMood(kharisNow),
-			"kharis_per_day":         kharisRate,
+			"kharis_per_tick":        kharisRate,
 			"kharis_cap":             kharisCap,
 			"max_temple_level":       maxTempleLevel,
 			"rite_kharis_cost":       riteKharisCost,
-			"kharis_net_per_day":     kharisNetPerDay,
+			"kharis_net_per_tick":    kharisNetPerDay,
 			"kharis_net_known":       kharisNetKnown,
 			"kharis_devotion_idle":   kharisDevotionIdle,
 			"temple_offers":          templeOffers,
@@ -765,16 +765,16 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// this line the net below cannot be derived from the gross above, and the
 			// mechanic would be invisible — a silver flow the Wanax cannot see or plan
 			// against. Grain has no equivalent: soldiers eat their rations.
-			"army_upkeep_circulated_silver":   circulatedSilver,
-			"net_grain_per_day_after_upkeep":  netGrainPerDay,
-			"net_silver_per_day_after_upkeep": netSilverPerDay,
-			"build_queue":                     buildQueue,
-			"build_queue_max":                 maxParallelBuilds,
-			"training_units":                  trainingUnits,
-			"buildings":                       buildings,
-			"can_afford":                      buildAfford,
-			"can_recruit":                     recruitAfford,
-			"available_prayers":               prayers,
+			"army_upkeep_circulated_silver":    circulatedSilver,
+			"net_grain_per_tick_after_upkeep":  netGrainPerDay,
+			"net_silver_per_tick_after_upkeep": netSilverPerDay,
+			"build_queue":                      buildQueue,
+			"build_queue_max":                  maxParallelBuilds,
+			"training_units":                   trainingUnits,
+			"buildings":                        buildings,
+			"can_afford":                       buildAfford,
+			"can_recruit":                      recruitAfford,
+			"available_prayers":                prayers,
 			// Devotion: the share of the city serving the temple. Mig 094 made cult
 			// a labor weight that produces nothing, which removed it from the goods
 			// list — and with it the only place a Wanax could see or tend it. A
@@ -789,13 +789,13 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"max":  province.MaxSettlementsPerWanax,
 			},
 			"sitos": map[string]any{
-				"granary_total":    granaryTotal,
-				"granary_per_good": granaryPerGood,
-				"granary_cap":      granaryCap,
-				"coverage_days":    coverageDays,
-				"food_net_per_day": foodNetPerDay,
-				"low_days":         h.sitosCfg.LowDays,
-				"high_days":        h.sitosCfg.HighDays,
+				"granary_total":     granaryTotal,
+				"granary_per_good":  granaryPerGood,
+				"granary_cap":       granaryCap,
+				"coverage_ticks":    coverageDays,
+				"food_net_per_tick": foodNetPerDay,
+				"low_ticks":         h.sitosCfg.LowDays,
+				"high_ticks":        h.sitosCfg.HighDays,
 			},
 			"last_tick": map[string]any{
 				"tick":                currentTick,
@@ -2242,8 +2242,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize)
 		if (netGrainPerDay-newUnitUp.Grain) < 0 || (netSilverPerDay-newUnitUp.Silver) < 0 {
 			upkeepWarning = fmt.Sprintf(
-				"warning: once this unit garrisons it needs %.1f grain + %.1f silver/day upkeep — "+
-					"this settlement's current net after its existing army's upkeep is %+.1f grain/day, %+.1f silver/day; "+
+				"warning: once this unit garrisons it needs %.1f grain + %.1f silver/tick upkeep — "+
+					"this settlement's current net after its existing army's upkeep is %+.1f grain/tick, %+.1f silver/tick; "+
 					"it may starve/desert without more production or fewer units (`keryx status`)",
 				newUnitUp.Grain, newUnitUp.Silver, netGrainPerDay, netSilverPerDay)
 		}

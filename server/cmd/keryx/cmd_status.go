@@ -210,17 +210,17 @@ func statusCmd() *cobra.Command {
 			printNoTradeContactsHint(c, cfg.WorldID, prov)
 
 			// Sitos-magasinet: the food the city has set aside, and the number the
-			// whole mechanic turns on — days of food covered. Coverage is what
+			// whole mechanic turns on — ticks of food covered. Coverage is what
 			// triggers both legs, so the reserve is printed WITH it and with the
 			// two thresholds; a reserve alone would show an answer and hide the
 			// question. Always shown, empty granary included: "0 undan" on a city
-			// at 4 days' coverage is exactly the state a Wanax must be able to see.
+			// at 4 ticks' coverage is exactly the state a Wanax must be able to see.
 			if sitos, ok := sett["sitos"].(map[string]any); ok {
 				total, _ := sitos["granary_total"].(float64)
 				gcap, _ := sitos["granary_cap"].(float64)
-				cov, _ := sitos["coverage_days"].(float64)
-				low, _ := sitos["low_days"].(float64)
-				high, _ := sitos["high_days"].(float64)
+				cov, _ := sitos["coverage_ticks"].(float64)
+				low, _ := sitos["low_ticks"].(float64)
+				high, _ := sitos["high_ticks"].(float64)
 				parts := ""
 				if pg, ok := sitos["granary_per_good"].(map[string]any); ok && len(pg) > 0 {
 					keys := make([]string, 0, len(pg))
@@ -247,7 +247,7 @@ func statusCmd() *cobra.Command {
 				// large surplus, and at 60 min/tick that state lasts real days —
 				// so "empty, no help coming" would cry famine over a city that is
 				// filling up fast. The net food rate is what tells them apart.
-				net, _ := sitos["food_net_per_day"].(float64)
+				net, _ := sitos["food_net_per_tick"].(float64)
 				state := "lägger undan ett tionde av överskottet"
 				switch {
 				case cov < low && total <= 0 && net > 0:
@@ -259,7 +259,7 @@ func statusCmd() *cobra.Command {
 				case cov <= high:
 					state = "vilar — varken undan eller ut"
 				}
-				fmt.Printf("Sitos-magasinet: %s undan%s / tak %s · täckning %.1f dygn (magasinet fyller över %.0f, tömmer under %.0f) · %s\n\n",
+				fmt.Printf("Sitos-magasinet: %s undan%s / tak %s · täckning %.1f tick (magasinet fyller över %.0f, tömmer under %.0f) · %s\n\n",
 					resource(total), parts, resource(gcap), cov, high, low, state)
 			}
 
@@ -327,7 +327,7 @@ func statusCmd() *cobra.Command {
 							// balance a stock buffer absorbs, not an emergency (DEL C
 							// grain-netto-märkning: don't cry wolf).
 							if amt/-rt < 1 {
-								line += "  ⚠ tar slut inom ett dygn"
+								line += "  ⚠ tar slut inom en tick"
 							}
 						}
 						fmt.Println(line)
@@ -335,7 +335,7 @@ func statusCmd() *cobra.Command {
 				}
 				printRes("Silver", "silver", true)
 
-				// Grain: itemized prod/konsum/netto per DYGN (DEL C fuller fix,
+				// Grain: itemized prod/konsum/netto per TICK (DEL C fuller fix,
 				// GREENLIT 2026-07-12) instead of one unmarked netto rate — the stored
 				// rate is already net, so a negative number alone reads as an alarm
 				// when it's often just normal balance. Components are additive fields
@@ -347,11 +347,11 @@ func statusCmd() *cobra.Command {
 					gProdRate, _ := sett["grain_prod_rate"].(float64)
 					gConsumRate, _ := sett["grain_consum_rate"].(float64)
 					if gAmt > 0 || gProdRate != 0 || gConsumRate != 0 {
-						prodDay := gProdRate
-						consumDay := gConsumRate
-						netDay := prodDay - consumDay
-						line := fmt.Sprintf("  %-8s %6s  prod %.1f − konsum %.1f = netto %+.1f /dygn",
-							"Grain", resource(gAmt), prodDay, consumDay, netDay)
+						prodTick := gProdRate
+						consumTick := gConsumRate
+						netTick := prodTick - consumTick
+						line := fmt.Sprintf("  %-8s %6s  prod %.1f − konsum %.1f = netto %+.1f /tick",
+							"Grain", resource(gAmt), prodTick, consumTick, netTick)
 						if be, ok := sett["breakeven_grain_weight"].(float64); ok {
 							line += fmt.Sprintf("  (break-even grain-vikt ≥%.0f%%)", be*100)
 						}
@@ -365,16 +365,16 @@ func statusCmd() *cobra.Command {
 				// instant it garrisoned in a city whose grain netto looked healthy. This
 				// line is the number to check BEFORE `recruit`/building another ship —
 				// `recruit --list` shows the same math per unit type.
-				if netG, ok := sett["net_grain_per_day_after_upkeep"].(float64); ok {
-					netS, _ := sett["net_silver_per_day_after_upkeep"].(float64)
+				if netG, ok := sett["net_grain_per_tick_after_upkeep"].(float64); ok {
+					netS, _ := sett["net_silver_per_tick_after_upkeep"].(float64)
 					warn := ""
 					// Name WHICH half is short, and the matching consequence: the old
 					// string fired on either and always said "svälta/desertera", so a
 					// city with 118k grain and a silver deficit read as a famine
 					// (soak 2026-07-22, two playtesters in a row).
 					// Runway: a negative net only bites when the stock runs out. A probe
-					// disbanded 100 spearmen over a −7/day silver warning while holding
-					// 41k silver (~5000 days of runway) — soak 2026-07-24. Name how long
+					// disbanded 100 spearmen over a −7/tick silver warning while holding
+					// 41k silver (~5000 ticks of runway) — soak 2026-07-24. Name how long
 					// the buffer covers it so the warning isn't read as imminent.
 					runway := func(key string, netPerDay float64) string {
 						if netPerDay >= 0 {
@@ -387,7 +387,7 @@ func statusCmd() *cobra.Command {
 						if stock <= 0 {
 							return ""
 						}
-						return fmt.Sprintf(" — lager %s räcker ~%.0f dygn i denna takt", resource(stock), stock/-netPerDay)
+						return fmt.Sprintf(" — lager %s räcker ~%.0f tick i denna takt", resource(stock), stock/-netPerDay)
 					}
 					switch {
 					case netG < 0 && netS < 0:
@@ -397,7 +397,7 @@ func statusCmd() *cobra.Command {
 					case netS < 0:
 						warn = "  ⚠ silver täcker inte arméns sold — enheter kan desertera" + runway("silver", netS) + " (maten räcker; se `keryx recruit --list`)"
 					}
-					fmt.Printf("  %-8s %+.1f grain/dygn, %+.1f silver/dygn (efter arméns upkeep)%s\n",
+					fmt.Printf("  %-8s %+.1f grain/tick, %+.1f silver/tick (efter arméns upkeep)%s\n",
 						"Netto", netG, netS, warn)
 				}
 
@@ -439,20 +439,20 @@ func statusCmd() *cobra.Command {
 			// DAILY-maintenance-driven, not per-tick — a per-tick rate rendered
 			// "+0.0/tick" for any typical passive value (A4a-buggen). Show the mood
 			// (gynnsamhets-signal, never a computed odds — see `rite --list`) and the
-			// passive geographic rate per DYGN instead.
+			// passive geographic rate per TICK instead.
 			kv, _ := sett["kharis"].(float64)
 			mood, _ := sett["kharis_mood"].(string)
-			kpd, _ := sett["kharis_per_day"].(float64)
+			kpd, _ := sett["kharis_per_tick"].(float64)
 			kcap, _ := sett["kharis_cap"].(float64)
 			mtl, _ := sett["max_temple_level"].(float64)
-			knet, _ := sett["kharis_net_per_day"].(float64)
+			knet, _ := sett["kharis_net_per_tick"].(float64)
 			netKnown, _ := sett["kharis_net_known"].(bool)
 			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
 			// kharis — the passive geographic rate alone hid a fading L1 Wanax behind
-			// "passiv +0.1/dygn" (sondrunda 2026-07-24). Show the net when we have it.
-			netStr := fmt.Sprintf("passiv %+.1f/dygn", kpd)
+			// "passiv +0.1/tick" (sondrunda 2026-07-24). Show the net when we have it.
+			netStr := fmt.Sprintf("passiv %+.1f/tick", kpd)
 			if netKnown {
-				netStr = fmt.Sprintf("netto %+.1f/dygn (tempel − decay)", knet)
+				netStr = fmt.Sprintf("netto %+.1f/tick (tempel − decay)", knet)
 			}
 			if kcap > 0 {
 				fmt.Printf("  %-8s %6s  (%s) · tak %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
@@ -495,7 +495,7 @@ func statusCmd() *cobra.Command {
 						mark = "✗"
 						anyUnfed = true
 					}
-					fmt.Printf("  Tempel i %s: kräver %.0f olja + %.0f vin/dygn — lager: olja %s, vin %s  %s\n",
+					fmt.Printf("  Tempel i %s: kräver %.0f olja + %.0f vin/tick — lager: olja %s, vin %s  %s\n",
 						name, oilNeeded, wineNeeded, resource(oil), resource(wine), mark)
 				}
 				if mood == "Suspicious" || mood == "Wrathful" || anyUnfed {
@@ -531,9 +531,9 @@ func statusCmd() *cobra.Command {
 						}
 					}
 				}
-				// Upkeep this city pays each day — every unit it supports, wherever it
+				// Upkeep this city pays each tick — every unit it supports, wherever it
 				// stands (grain shortage → attrition, silver shortage → desertion).
-				// Same figures the daily upkeep tick debits.
+				// Same figures the upkeep tick debits.
 				if up, ok := sett["army_upkeep"].(map[string]any); ok {
 					g, _ := up["grain"].(float64)
 					s, _ := up["silver"].(float64)
@@ -543,13 +543,13 @@ func statusCmd() *cobra.Command {
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %.1f grain, %.1f silver / day  (allt staden betalar — även fältenheter)\n", "Upkeep", g, s)
+						fmt.Printf("  %-10s %.1f grain, %.1f silver / tick  (allt staden betalar — även fältenheter)\n", "Upkeep", g, s)
 						// Del C: soldiers standing in the town that pays them spend
 						// their sold there. Shown as its own line because it is the
 						// only reason the net below is not gross — an invisible flow
 						// is one the Wanax can neither plan for nor exploit.
 						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {
-							fmt.Printf("  %-10s %.1f silver / day tillbaka i staden (garnisonens sold)\n", "", circ)
+							fmt.Printf("  %-10s %.1f silver / tick tillbaka i staden (garnisonens sold)\n", "", circ)
 						}
 					}
 				}

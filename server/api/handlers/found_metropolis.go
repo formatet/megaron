@@ -469,11 +469,16 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		if founded.GalleyID != nil {
 			payload["poseidon_gift"] = *founded.GalleyID
 		}
-		// grain_days: how long the stock lasts at the current deficit; omitted
-		// when the metropolis is self-sustaining (net ≥ 0).
+		// grain_ticks: how long the stock lasts at the current deficit; omitted
+		// when the metropolis is self-sustaining (net ≥ 0). This payload is
+		// persisted (NotifyPlayer writes to `notifications`), so grain_days is
+		// kept alongside it with the same value — old rows already carry
+		// grain_days and readers fall back to it. Don't remove grain_days.
 		if grainNet < 0 {
 			if tickDrain := -grainNet; tickDrain > 0 {
-				payload["grain_days"] = grainAmount / tickDrain
+				ticksLeft := grainAmount / tickDrain
+				payload["grain_ticks"] = ticksLeft
+				payload["grain_days"] = ticksLeft
 			}
 		}
 		_ = h.hub.NotifyPlayer(r.Context(), worldID, playerID, "MetropolisFounded", 2, payload)

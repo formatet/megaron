@@ -79,29 +79,33 @@ export async function onColonizeToggle() {
 }
 
 // Mirrors keryx's renderColonizePreview (cmd_unit.go): grain prod − cons = net
-// per game-day (rates are per-tick from the server, ×24), seed reach, farm
-// note, plus known deposits/goods. FOW-safe — only known:true catchment hexes
+// per tick (tick == day, mig 109 — the server's rates are already per-tick,
+// no ×24), seed reach, farm note, plus known deposits/goods. FOW-safe — only
+// known:true catchment hexes
 // contribute to the deposit list; unknown hexes are counted, not guessed at.
 // Exported for the founder-phase Host panel (render/map.js via the window
 // bridge) — the founding forecast is the SAME surface with ?pop=&seed=.
 export function renderColonizePreviewHTML(p) {
-  const td = 24;
   const g = p.grain || {};
   const total = (p.catchment || []).length;
   const known = total - (p.unknown_hexes || 0);
-  const prodDay = (g.base_per_tick || 0) * td;
-  const netDay  = (g.est_net_per_tick || 0) * td;
-  const consDay = prodDay - netDay;
+  // base_per_tick/est_net_per_tick/with_farm_per_tick are already per-tick —
+  // no ×24 here now that tick == day (mig 109); that used to convert an
+  // hourly tick rate to a daily one and is the same class of stale scaling
+  // as cmd_goods.go's Rate/d bug.
+  const prodTick = g.base_per_tick || 0;
+  const netTick  = g.est_net_per_tick || 0;
+  const consTick = prodTick - netTick;
 
   let html = `<div style="color:var(--text-dim)">Catchment forecast — ${known}/${total} hexes known</div>`;
-  html += `<div>Grain: prod ~${prodDay.toFixed(0)} − cons ~${consDay.toFixed(0)} = ` +
-    `<b style="color:${netDay < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netDay >= 0 ? '+' : ''}${netDay.toFixed(0)}/day</b></div>`;
-  if (netDay < 0) {
-    const reach = g.days_until_empty != null ? ` → lasts ~${g.days_until_empty.toFixed(0)} days` : '';
-    const farmNetDay = (g.with_farm_per_tick || 0) * td - consDay;
+  html += `<div>Grain: prod ~${prodTick.toFixed(0)} − cons ~${consTick.toFixed(0)} = ` +
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${netTick.toFixed(0)}/tick</b></div>`;
+  if (netTick < 0) {
+    const reach = g.ticks_until_empty != null ? ` → lasts ~${g.ticks_until_empty.toFixed(0)} ticks` : '';
+    const farmNetTick = (g.with_farm_per_tick || 0) - consTick;
     const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
       ? ' (no farmland in known catchment — a farm will not help here)' : '';
-    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain${reach}. With farm: ${farmNetDay >= 0 ? '+' : ''}${farmNetDay.toFixed(0)}/day${farmNote}</div>`;
+    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain${reach}. With farm: ${farmNetTick >= 0 ? '+' : ''}${farmNetTick.toFixed(0)}/tick${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
     html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain — the colony feeds itself.</div>`;
@@ -118,8 +122,8 @@ export function renderColonizePreviewHTML(p) {
   const extras = ['copper', 'tin', 'silver', 'cedar'].filter(d => dep[d]).map(d => d + '-deposit ✓');
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
-    const rate = (p.goods[gk] || 0) * td;
-    if (rate > 0) extras.push(`${gk} ~${rate.toFixed(0)}/day`);
+    const rate = p.goods[gk] || 0;
+    if (rate > 0) extras.push(`${gk} ~${rate.toFixed(0)}/tick`);
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
 

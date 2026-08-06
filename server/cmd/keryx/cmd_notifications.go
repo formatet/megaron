@@ -177,7 +177,7 @@ func printScoutReportLine(n notificationItem) {
 // printColonyFoundedGrainLine renders the founding grain balance carried in a
 // ColonyFounded notification (DEL B, megaron_koloni_legibilitet_plan.md). A colony
 // does NOT feed itself automatically, so a negative net grain rate at founding is
-// surfaced immediately — in the Lawagetas voice, per game-day — with how long the
+// surfaced immediately — in the Lawagetas voice, per tick — with how long the
 // seed lasts and the two remedies (build a farm if the catchment bears it, else
 // send grain by internal transfer). A self-sustaining colony gets one short
 // positive line. Additive/back-compatible: an older ColonyFounded body without the
@@ -187,7 +187,11 @@ func printColonyFoundedGrainLine(n notificationItem) {
 		Name            string   `json:"name"`
 		GrainAmount     *float64 `json:"grain_amount"`
 		GrainNetPerTick *float64 `json:"grain_net_per_tick"`
-		GrainDays       *float64 `json:"grain_days"`
+		GrainTicks      *float64 `json:"grain_ticks"`
+		// GrainDays is the pre-rename key (2026-08-06): the server keeps writing
+		// it alongside grain_ticks so old persisted notifications stay readable.
+		// Fall back to it only when grain_ticks is absent.
+		GrainDays *float64 `json:"grain_days"`
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil || body.GrainNetPerTick == nil {
 		return
@@ -196,16 +200,20 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	if name == "" {
 		name = "Kolonin"
 	}
+	grainTicks := body.GrainTicks
+	if grainTicks == nil {
+		grainTicks = body.GrainDays
+	}
 	perTick := *body.GrainNetPerTick
 	if perTick < 0 {
-		days := ""
-		if body.GrainDays != nil {
-			days = fmt.Sprintf(" — grain räcker ~%.0f speldygn", *body.GrainDays)
+		ticks := ""
+		if grainTicks != nil {
+			ticks = fmt.Sprintf(" — grain räcker ~%.0f tick", *grainTicks)
 		}
-		fmt.Printf("      %s föder inte sig själv (~%.0f grain/dygn i underskott)%s. Bygg farm om catchment bär det, annars sänd grain: keryx transfer --good grain --qty <n> --dest %s\n",
-			name, -perTick, days, name)
+		fmt.Printf("      %s föder inte sig själv (~%.0f grain/tick i underskott)%s. Bygg farm om catchment bär det, annars sänd grain: keryx transfer --good grain --qty <n> --dest %s\n",
+			name, -perTick, ticks, name)
 	} else {
-		fmt.Printf("      %s försörjer sig själv (~%+.0f grain/dygn).\n", name, perTick)
+		fmt.Printf("      %s försörjer sig själv (~%+.0f grain/tick).\n", name, perTick)
 	}
 }
 

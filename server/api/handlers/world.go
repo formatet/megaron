@@ -642,7 +642,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"base_per_tick":      basePerTick,
 			"est_net_per_tick":   estNetPerTick,
 			"seed":               seed,
-			"days_until_empty":   daysUntilEmpty,
+			"ticks_until_empty":  daysUntilEmpty,
 			"with_farm_per_tick": withFarmProdPerTick,
 		},
 		"unknown_hexes": unknown,

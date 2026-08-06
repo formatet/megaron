@@ -3994,14 +3994,18 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
 // never its own), and the irreversible Settle. Disappears entirely the moment
 // founder_phase.active goes false.
 
-// One store line: "X speldygn kvar (≈ Y verklig tid)" — both derived from
+// One store line: "X tick kvar (≈ Y verklig tid)" — both derived from
 // ticks_left at render time (B2: never a stored wall clock).
+// ticks_left IS the tick count (tick == day, mig 109) — no ÷24 here; that
+// used to convert an hourly tick count into game-days and is the same class
+// of stale scaling as cmd_goods.go's Rate/d bug (mirrors keryx's already-
+// correct foundingStoreLine, cmd_founding.go).
 function hostStoreLine(label, s, tickSeconds) {
   if (!s || s.ticks_left == null) return `${label}: räcker tills vidare`;
-  const gameDays = (s.ticks_left / 24).toFixed(0);
+  const ticksLeft = s.ticks_left;
   const realH = Math.round(s.ticks_left * tickSeconds / 3600);
   const real = realH >= 48 ? `≈ ${Math.round(realH / 24)} dygn` : `≈ ${realH} h`;
-  return `${label}: ${gameDays} speldygn kvar (${real} verklig tid)`;
+  return `${label}: ${ticksLeft} tick kvar (${real} verklig tid)`;
 }
 
 async function openHostPanel(h, tile) {
