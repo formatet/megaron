@@ -13,21 +13,23 @@ import (
 
 // Good key constants — match the goods table.
 const (
-	GoodGrain   = "grain"
-	GoodFish    = "fish"
-	GoodTimber  = "timber"
-	GoodCedar   = "cedar"
-	GoodCopper  = "copper"
-	GoodTin     = "tin"
-	GoodSilver  = "silver"
-	GoodWine    = "wine"
-	GoodOil     = "oil"
-	GoodHorses  = "horses"
-	GoodBronze  = "bronze"
-	GoodPurple  = "purple"
-	GoodPottery = "pottery"
-	GoodLuxury  = "luxury"
-	GoodCult    = "cult" // internal sacred good produced by temple labor → converted to kharis daily
+	GoodGrain     = "grain"
+	GoodFish      = "fish"
+	GoodTimber    = "timber"
+	GoodStone     = "stone"
+	GoodCedar     = "cedar"
+	GoodCopper    = "copper"
+	GoodTin       = "tin"
+	GoodSilver    = "silver"
+	GoodWine      = "wine"
+	GoodOil       = "oil"
+	GoodLivestock = "livestock"
+	GoodHorses    = "horses"
+	GoodBronze    = "bronze"
+	GoodPurple    = "purple"
+	GoodPottery   = "pottery"
+	GoodLuxury    = "luxury"
+	GoodCult      = "cult" // internal sacred good produced by temple labor → converted to kharis daily
 )
 
 // FoodGoods är de varor som räknas som mat för kost-variation (Timothy 2026-07-11: bred palett).
@@ -68,10 +70,10 @@ var ErrUnknownGood = errors.New("unknown good")
 // IsShippableGood reports whether a good may be physically moved between
 // settlements — internal transfer (api/handlers/province.go Trade), trade
 // offer, or any other caravan. Answers by reading the catalog's weight
-// column, never a hardcoded Go list: the goods table holds 17 keys today,
-// while the Good* constants above cover only 15 (stone and livestock are
-// missing) — an allowlist built from those constants would wrongly refuse
-// two real goods. Weight 0 marks a good produced and consumed in place,
+// column, never a hardcoded Go list — the goods table remains the source of
+// truth even though the Good* constants above now cover every key, so a
+// future addition to the table never silently falls out of shippability
+// again. Weight 0 marks a good produced and consumed in place,
 // never carried — today that is cult alone (migration 055, weight=0):
 // cult is devotion, produced by temple labor and converted to kharis in
 // place (internal/kharis/tick.go), never a stock that accrues in

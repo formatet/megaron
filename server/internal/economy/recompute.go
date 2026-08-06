@@ -219,7 +219,10 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// every terrain_type IS NULL rule (timber, stone via mine, pottery via
 	// market), which is exactly the silent-fallback production CLAUDE.md
 	// forbids (megaron_floden_plan.md §4, Timothy 2026-07-29; river_ford added
-	// megaron_plan_flodbudget_och_vadstalle.md, same reasoning).
+	// megaron_plan_flodbudget_och_vadstalle.md, same reasoning). The
+	// `g.status = 'active'` join excludes parked goods (purple/pottery/horses,
+	// mig 114, Temenos_varutaxonomi_sol.md §4.2) from base_potential entirely —
+	// step 6 below then nulls any stale rate a parked good already carried.
 	rows, err := tx.Query(ctx,
 		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential,
 		        bool_or(pr.building_type IS NULL) AS has_field_path
@@ -235,6 +238,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE mt.world_id = $2
 		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
 		        OR pr.terrain_type = mt.terrain)
