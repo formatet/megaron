@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -537,9 +536,9 @@ func renderColonizePreview(p *colonizePreview, q, r int) {
 
 // renderCatchmentForecast is the shared forecast body — colonization and the
 // founder-phase settle print the same numbers under different headers.
-// All rates are per-tick from the server; ×TicksPerDay converts to per-day.
+// All rates are per-tick from the server, and a tick is a day, so these
+// print directly as per-day figures with no conversion.
 func renderCatchmentForecast(title string, p *colonizePreview) {
-	td := float64(events.TicksPerDay)
 	known := len(p.Catchment) - p.UnknownHexes
 
 	fmt.Printf("%s — catchment-prognos (%d/%d hexar kända, %d okända):\n",
@@ -552,18 +551,18 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		fmt.Printf("  ⛔ BLOCKERAD: %s\n", p.CatchmentConflict.Message)
 	}
 
-	prodPerDay := p.Grain.BasePerTick * td
-	netPerDay := p.Grain.EstNetPerTick * td
-	consPerDay := prodPerDay - netPerDay
+	prodPerDay := p.Grain.BasePerTick
+	netPerTick := p.Grain.EstNetPerTick
+	consPerDay := prodPerDay - netPerTick
 	fmt.Printf("  Grain: produktion ~%.0f/dygn − konsumtion ~%.0f/dygn = NETTO %+.0f/dygn\n",
-		prodPerDay, consPerDay, netPerDay)
+		prodPerDay, consPerDay, netPerTick)
 
-	if netPerDay < 0 {
+	if netPerTick < 0 {
 		reach := ""
 		if p.Grain.DaysUntilEmpty != nil {
 			reach = fmt.Sprintf(" → räcker ~%.0f speldygn", *p.Grain.DaysUntilEmpty)
 		}
-		farmNetPerDay := p.Grain.WithFarmPerTick*td - consPerDay
+		farmNetPerDay := p.Grain.WithFarmPerTick - consPerDay
 		farmNote := ""
 		if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
 			farmNote = " (ingen jordbruksterräng i känd catchment — en farm hjälper inte här)"
@@ -609,7 +608,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		if g == "grain" {
 			continue
 		}
-		if rate := p.Goods[g] * td; rate > 0 {
+		if rate := p.Goods[g]; rate > 0 {
 			extras = append(extras, fmt.Sprintf("%s ~%.0f/dygn", g, rate))
 		}
 	}

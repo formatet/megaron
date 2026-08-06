@@ -62,7 +62,7 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 		t.Fatalf("create settlement: %v", err)
 	}
 	// Plenty of grain (ship's grain upkeep is paid), zero silver (silver upkeep
-	// fails every tick → desertion after upkeepDesertionPeriods).
+	// fails every tick → desertion after upkeepDesertionTicks).
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 VALUES ($1, 'grain', 10000, 0, 100000, $2), ($1, 'silver', 0, 0, 100000, $2)`,
@@ -80,8 +80,8 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 		t.Fatalf("create cargo unit: %v", err)
 	}
 
-	// unpaid_periods = upkeepDesertionPeriods-1: this tick's failed payment
-	// pushes it to upkeepDesertionPeriods, so desertion (and the cascade) fires
+	// unpaid_periods = upkeepDesertionTicks-1: this tick's failed payment
+	// pushes it to upkeepDesertionTicks, so desertion (and the cascade) fires
 	// immediately. Driven off the constant (72 as of 2026-08-06, was 3) rather
 	// than hardcoded, so a future recalibration can't silently desync this seed
 	// from the threshold it's meant to sit one below.
@@ -90,7 +90,7 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 		                    settlement_id, support_settlement_id, unpaid_periods, cargo_unit_id)
 		 VALUES ($1, $2, 'galley', 'naval', 1, 0, 'garrison', $3, $3, $5, $4) RETURNING id`,
-		worldID, owner, sid, cargoID, upkeepDesertionPeriods-1,
+		worldID, owner, sid, cargoID, upkeepDesertionTicks-1,
 	).Scan(&shipID); err != nil {
 		t.Fatalf("create ship: %v", err)
 	}

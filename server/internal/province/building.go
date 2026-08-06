@@ -34,7 +34,13 @@ var BuildingPurposes = map[BuildingType]string{
 // Rate bonuses for goods (grain, cedar, stone, etc.) are registered as
 // production_rules rows and applied by BuildCompleteHandler via the UPSERT
 // on settlement_goods — they are NOT in BuildingSpec.
-// DurationTicks values: ≤30 min→2, ≤60 min→3, ≤90 min→4, larger→5-6 (calibrated against 720-tick world).
+// DurationTicks values are ticks — days in the world, since a tick IS a day
+// (2026-08-06 canon): a farm takes 2, a barracks/mine/market/temple-tier
+// building 3-4, a temple 4, an L3 wall 9 (WallLevelSpecs below). These are
+// calibrated as a count of DAYS the build occupies, never against wall-clock
+// minutes — the old "≤30 min→2, ≤60 min→3" framing described real-minute
+// pacing at the (now-retired) 1-tick=1-hour cadence, which is exactly the
+// day/tick conflation this canon change exists to remove.
 var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingFarm:        {Costs: map[string]float64{"timber": 50, "stone": 20}, DurationTicks: 2},
 	BuildingBarracks:    {Costs: map[string]float64{"timber": 80, "stone": 80}, DurationTicks: 3},

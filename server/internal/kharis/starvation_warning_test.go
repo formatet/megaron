@@ -131,10 +131,10 @@ func TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	// ⭐ CANON 2026-08-06: a tick IS the day now (events.TicksPerDay = 1), so
-	// "empties within one game-day" (tick.go, ticksToEmpty <= TicksPerDay) now
-	// means empties within the CURRENT tick, not within the next 24.
-	// amount=5, rate=-10/tick → empty in 0.5 ticks, at/under TicksPerDay (1).
+	// ⭐ CANON 2026-08-06: a tick IS the day now, so "empties within one
+	// game-day" (tick.go, ticksToEmpty <= 1) now means empties within the
+	// CURRENT tick, not within the next 24.
+	// amount=5, rate=-10/tick → empty in 0.5 ticks, at/under 1 tick.
 	worldID, _, ownerID := starvationWarningFixture(t, 5, -10)
 
 	rec := newNotifyRecorder(pool)
@@ -218,7 +218,7 @@ func TestEmitSubsistenceWarning_DedupesUnreadSameTier(t *testing.T) {
 	ctx := context.Background()
 
 	// Same red-tier fixture as TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick
-	// (amount=5, rate=-10/tick → empties within TicksPerDay=1) — the dedupe
+	// (amount=5, rate=-10/tick → empties within 1 tick) — the dedupe
 	// check needs both passes to land on the same tier.
 	worldID, _, ownerID := starvationWarningFixture(t, 5, -10)
 

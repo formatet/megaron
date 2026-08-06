@@ -9,13 +9,12 @@ package loyalty
 // first fix scaled through tick.TickMinutes — but TickMinutes FLOORS to 1 minute,
 // so on the CT 126 sub-minute cadence (TICK_SECONDS=6) 2 game-days (= 48 ticks =
 // 288 real seconds = 4.8 min) still read as 2×24×1 = 48 minutes — ~10× too long,
-// leaving decay effectively disabled again. The window is now graceDays ×
-// TicksPerDay × TickSeconds SECONDS, scaling exactly like tick/eta.go.
+// leaving decay effectively disabled again. The window is now graceTicks ×
+// TickSeconds SECONDS, scaling exactly like tick/eta.go.
 
 import (
 	"testing"
 
-	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/tick"
 )
 
@@ -34,7 +33,7 @@ func withTickSeconds(t *testing.T, seconds int) {
 // still be 172800 s (48 h), so the fix does not change behaviour for the common case.
 func TestDecayGraceSeconds_DefaultCadence(t *testing.T) {
 	withTickSeconds(t, 3600)
-	want := loyaltyDecayGraceDays * events.TicksPerDay * 3600 // 2 × 24 × 3600 = 172800 (48 h)
+	want := loyaltyDecayGraceTicks * 3600 // 48 × 3600 = 172800 (48 h)
 	if got := decayGraceSeconds(); got != want {
 		t.Errorf("decayGraceSeconds() at default cadence = %d, want %d (== 48 h)", got, want)
 	}
@@ -46,7 +45,7 @@ func TestDecayGraceSeconds_DefaultCadence(t *testing.T) {
 // produced. This is the exact case the earlier TickMinutes fix still got wrong.
 func TestDecayGraceSeconds_SubMinuteCadence(t *testing.T) {
 	withTickSeconds(t, 6)
-	want := loyaltyDecayGraceDays * events.TicksPerDay * 6 // 2 × 24 × 6 = 288 s = 4.8 min
+	want := loyaltyDecayGraceTicks * 6 // 48 × 6 = 288 s = 4.8 min
 	if got := decayGraceSeconds(); got != want {
 		t.Errorf("decayGraceSeconds() at TICK_SECONDS=6 = %d, want %d (== 2 game-days)", got, want)
 	}
@@ -59,7 +58,7 @@ func TestDecayGraceSeconds_SubMinuteCadence(t *testing.T) {
 // cadence (120 s/tick → 2 game-days = 5760 s = 96 real minutes).
 func TestDecayGraceSeconds_ScalesWithCadence(t *testing.T) {
 	withTickSeconds(t, 120)
-	want := loyaltyDecayGraceDays * events.TicksPerDay * 120 // 2 × 24 × 120 = 5760 s = 96 min
+	want := loyaltyDecayGraceTicks * 120 // 48 × 120 = 5760 s = 96 min
 	if got := decayGraceSeconds(); got != want {
 		t.Errorf("decayGraceSeconds() at 120 s/tick = %d, want %d", got, want)
 	}

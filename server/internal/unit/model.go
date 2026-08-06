@@ -100,13 +100,13 @@ func CanEmbark(t Type) bool {
 }
 
 // MarchHoursFactorFor returns the multiplier to apply to
-// province.TerrainMoveHours for this unit type.
+// province.TerrainMoveTicks for this unit type.
 //
 // It scales HOURS, not speed — a larger number is a SLOWER unit. Naming it for
 // speed invites the opposite reading and would make the host twice as fast as an
 // army instead of half: the ladder the design fixes is host = ½ spearman's speed
 // = double a spearman's hours. Spearmen are the baseline an army marches at
-// (messengers already halve it themselves, see TerrainMoveHours' own comment).
+// (messengers already halve it themselves, see TerrainMoveTicks' own comment).
 func MarchHoursFactorFor(t Type) float64 {
 	if t == TypeNomadicHost {
 		return 2.0

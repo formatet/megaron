@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -323,11 +322,11 @@ func statusCmd() *cobra.Command {
 						line := fmt.Sprintf("  %-8s %6s  %s", label, resource(amt), rate(rt))
 						if rt < 0 {
 							line += " netto"
-							// Real shortage risk: current stock runs out inside a day
-							// (events.TicksPerDay ticks) at this net rate — most negative
-							// nettos are a stable balance a stock buffer absorbs, not an
-							// emergency (DEL C grain-netto-märkning: don't cry wolf).
-							if amt/-rt < float64(events.TicksPerDay) {
+							// Real shortage risk: current stock runs out within the next
+							// tick at this net rate — most negative nettos are a stable
+							// balance a stock buffer absorbs, not an emergency (DEL C
+							// grain-netto-märkning: don't cry wolf).
+							if amt/-rt < 1 {
 								line += "  ⚠ tar slut inom ett dygn"
 							}
 						}
@@ -342,14 +341,14 @@ func statusCmd() *cobra.Command {
 				// when it's often just normal balance. Components are additive fields
 				// the status endpoint derives from the same consumption formula
 				// RecomputeProduction folds into grain's rate (economy.
-				// GrainConsumptionPerCitizenPerDay), not a re-derivation of the mechanic.
+				// GrainConsumptionPerCitizenPerTick), not a re-derivation of the mechanic.
 				if gRd, ok := res["grain"].(map[string]any); ok {
 					gAmt, _ := gRd["amount"].(float64)
 					gProdRate, _ := sett["grain_prod_rate"].(float64)
 					gConsumRate, _ := sett["grain_consum_rate"].(float64)
 					if gAmt > 0 || gProdRate != 0 || gConsumRate != 0 {
-						prodDay := gProdRate * float64(events.TicksPerDay)
-						consumDay := gConsumRate * float64(events.TicksPerDay)
+						prodDay := gProdRate
+						consumDay := gConsumRate
 						netDay := prodDay - consumDay
 						line := fmt.Sprintf("  %-8s %6s  prod %.1f − konsum %.1f = netto %+.1f /dygn",
 							"Grain", resource(gAmt), prodDay, consumDay, netDay)

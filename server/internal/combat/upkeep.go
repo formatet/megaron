@@ -82,7 +82,7 @@ const (
 	// behaviour (72 h at 60 min/tick), so the asynchronicity gate is untouched.
 	// Left at 3 it would have deserted an army after 3 real hours, i.e. while its
 	// Wanax slept. Fiction reads right too: 72 ticks unpaid before a cohort melts.
-	upkeepDesertionPeriods = 72 // obetalda silver-ticks före desertering börjar
+	upkeepDesertionTicks = 72 // obetalda silver-ticks före desertering börjar
 )
 
 // upkeepUnpaidWarningKind is the forewarning event type / notification kind fired
@@ -92,8 +92,8 @@ const (
 // NotifyPlayer kind.
 const upkeepUnpaidWarningKind = "UpkeepUnpaid"
 
-// upkeepDailyTickPayload is the payload for the recurring upkeep tick.
-type upkeepDailyTickPayload struct{}
+// upkeepMacroTickPayload is the payload for the recurring upkeep tick.
+type upkeepMacroTickPayload struct{}
 
 // upkeepUnitRow holds the columns we need per unit during the upkeep loop.
 type upkeepUnitRow struct {
@@ -112,8 +112,8 @@ type upkeepUnitRow struct {
 	supportSettlementID *uuid.UUID
 }
 
-// UpkeepHandler applies grain + silver upkeep to all active units each day.
-// Grain-brist → attrition; silver-brist → desertering after upkeepDesertionPeriods.
+// UpkeepHandler applies grain + silver upkeep to all active units each tick.
+// Grain-brist → attrition; silver-brist → desertering after upkeepDesertionTicks.
 type UpkeepHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
@@ -341,9 +341,9 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	h.emitUpkeepSettled(ctx, e.WorldID, aggs)
 	h.emitSilverAudit(ctx, e.WorldID)
 
-	// 4. Re-enqueue for the next daily cycle.
+	// 4. Re-enqueue for the next macro-tick cycle.
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUpkeepTick,
-		upkeepDailyTickPayload{}, e.DueTick, events.TicksPerDay)
+		upkeepMacroTickPayload{}, e.DueTick, events.MacroTickInterval)
 }
 
 // notifyUnitLoss pushes a player-facing notification for grain attrition or
@@ -546,7 +546,7 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int, sid uuid.UUID, silverNeed float64) {
 	np := u.unpaidPeriods + 1
 
-	if np >= upkeepDesertionPeriods {
+	if np >= upkeepDesertionTicks {
 		// Desertion — severity scales with the supplying settlement's loyalty.
 		lost := desertionStepForLoyalty(loyalty)
 		if lost > u.size {
@@ -591,8 +591,8 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 		// Before SLICE A (megaron_todo.md, 2026-07-31) this branch was entirely
 		// silent: unpaid_periods climbed 1 → 2 with no signal at all, and the
 		// player's first notice was the desertion itself once np reached
-		// upkeepDesertionPeriods. Two full silent speldygn (TicksPerDay=24,
-		// upkeep runs once/speldygn) is exactly the gap this closes.
+		// upkeepDesertionTicks. Two full silent days of unpaid upkeep (72 ticks,
+		// upkeep runs every tick) is exactly the gap this closes.
 		if _, err := h.pool.Exec(ctx,
 			`UPDATE units SET unpaid_periods = $1 WHERE id = $2`,
 			np, u.id,
@@ -601,7 +601,7 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 			return
 		}
 
-		periodsUntilDesertion := upkeepDesertionPeriods - np
+		periodsUntilDesertion := upkeepDesertionTicks - np
 		payload := map[string]any{
 			"unit_id":                 u.id,
 			"unit_type":               u.unitType,

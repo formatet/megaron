@@ -52,14 +52,14 @@ const (
 	welfareEventVariedDiet   = "varied_diet"
 )
 
-// welfareWindowSeconds is one game-day expressed in wall-clock SECONDS at the
+// welfareWindowSeconds is one tick expressed in wall-clock SECONDS at the
 // current tick cadence — the same tick-substrate-derived conversion decay.go
-// uses for its (2-game-day) grace window (see decayGraceSeconds), applied here
-// to a single game-day so the idempotency guard below tracks the tick substrate
+// uses for its (48-tick) grace window (see decayGraceSeconds), applied here
+// to a single tick so the idempotency guard below tracks the tick substrate
 // rather than a raw wall-clock constant. Uses tick.TickSeconds (not TickMinutes,
 // which floors to 1 minute and inflates the window ~10× on a sub-minute cadence).
 func welfareWindowSeconds() int {
-	return events.TicksPerDay * tick.TickSeconds
+	return tick.TickSeconds
 }
 
 // WelfareHandler applies daily loyalty welfare signals (kharis favour, feeding,
@@ -137,7 +137,7 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	}
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledLoyaltyWelfareTick,
-		DailyTickPayload{}, e.DueTick, events.TicksPerDay)
+		MacroTickPayload{}, e.DueTick, events.MacroTickInterval)
 }
 
 func (h *WelfareHandler) applyWelfare(ctx context.Context, w welfareRow, worldID uuid.UUID) error {

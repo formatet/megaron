@@ -13,36 +13,34 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// TicksPerDay is how many world ticks make up one game "day".
+// MacroTickInterval is how often the macro handlers (upkeep, loyalty decay,
+// welfare, colony penalty, borrowed army, kharis) fire, in ticks. A tick is a
+// day in the world, and day-scale consequences (starvation, desertion,
+// loyalty drift) land once per day — so this is 1.
 //
-// One tick = one game-hour, so a day is 24 ticks. The "daily" handlers (kharis
-// maintenance, unit upkeep, loyalty decay/colony/borrowed-army) fire once every
-// TicksPerDay ticks — NOT every tick — the discrete "midnight tick" where day-
-// scale consequences (starvation, desertion, loyalty drift) land. Grain
-// population-consumption is per day, folded into grain's net rate as pop*0.5 /
-// TicksPerDay per tick (continuous, lazy — never a lump).
+// It replaces TicksPerDay, which was deleted 2026-08-06 (Timothy): that
+// constant conflated two different questions — "how often do macro
+// consequences land" and "how many ticks make up a day" — and the second
+// question no longer exists now that a tick IS a day, the world's indivisible
+// unit of time. TicksPerDay was 24 (a tick was a game-HOUR) until the
+// day/tick ambiguity was traced as a root cause: "day" meant both 24 ticks
+// and a wall-clock day, and nothing in a name said which. That ambiguity
+// already cost one production bug (mig 071, universal starvation) and had
+// left temenos_varutaxonomi_sol.md 24× out of phase with the code for weeks —
+// both documents writing the same numbers under different clocks.
 //
 // Production rates are per-tick (production_rules.rate_per_tick, mig 071); the
 // per-minute unit has been retired. Real-time pacing is a SEPARATE, unlocked
 // axis (TICK_MINUTES in internal/tick — e.g. 2 min/tick ≈ one game-month per
 // real day) and does not live here. The broader economy re-balance is tracked
 // separately — see temenos_ekonomi.md.
-// ⭐ CANON 2026-08-06 (Timothy): a tick IS a day in the world — the world's
-// indivisible unit of time. This constant was 24 (a tick was a game-HOUR) until
-// the day/tick ambiguity was traced as a root cause: "day" meant both 24 ticks
-// and a wall-clock day, and nothing in a name said which. That ambiguity already
-// cost one production bug (mig 071, universal starvation) and had left
-// temenos_varutaxonomi_sol.md 24× out of phase with the code for weeks — both
-// documents writing the same numbers under different clocks.
 //
-// It survives at 1 (not deleted) purely so the ~30 `× TicksPerDay` conversion
-// sites keep compiling and stay mathematically correct while step 3 sweeps them
-// out. DO NOT reintroduce a ticks-per-day concept — the calendar derives from
+// DO NOT reintroduce a ticks-per-day concept — the calendar derives from
 // 365 ticks/year (temenos_tid_kalender_plan.md, Låst regel 2), never from this.
 //
 // NEVER write "day" as a UNIT of game time again — in code, JSON, or prose.
 // Only "tick". "Day" unqualified always means wall clock.
-const TicksPerDay = 1
+const MacroTickInterval = 1
 
 // ScheduledEventType identifies what should happen when the event fires.
 type ScheduledEventType string

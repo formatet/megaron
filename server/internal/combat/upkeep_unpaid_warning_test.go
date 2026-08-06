@@ -63,12 +63,12 @@ func (r *unpaidWarningRecorder) NotifyPlayer(ctx context.Context, worldID, playe
 
 // TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion drives the real
 // Handle loop across consecutive daily upkeep ticks for one silver-starved
-// unit, mirroring how the recurring tick actually calls this (events.TicksPerDay,
-// upkeep.go:283) once per speldygn. Covers AK1–AK3.
+// unit, mirroring how the recurring tick actually calls this (events.MacroTickInterval,
+// upkeep.go:283) once per tick. Covers AK1–AK3.
 //
-// ⭐ CANON 2026-08-06: upkeepDesertionPeriods went 3 → 72 (invariant-preserving
+// ⭐ CANON 2026-08-06: upkeepDesertionTicks went 3 → 72 (invariant-preserving
 // retune — tick.go comment above the constant), so this now drives
-// upkeepDesertionPeriods periods, not a hardcoded 3. The loop bound reads the
+// upkeepDesertionTicks periods, not a hardcoded 3. The loop bound reads the
 // constant directly so a future recalibration doesn't silently desync the test
 // from the code it's supposed to pin.
 func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
@@ -133,8 +133,8 @@ func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
 	if call.level != 3 {
 		t.Errorf("AK1: level = %d, want 3 (info)", call.level)
 	}
-	if got := call.payload["periods_until_desertion"]; got != upkeepDesertionPeriods-1 {
-		t.Errorf("AK1: periods_until_desertion = %v, want %d", got, upkeepDesertionPeriods-1)
+	if got := call.payload["periods_until_desertion"]; got != upkeepDesertionTicks-1 {
+		t.Errorf("AK1: periods_until_desertion = %v, want %d", got, upkeepDesertionTicks-1)
 	}
 	if got := call.payload["unpaid_periods"]; got != 1 {
 		t.Errorf("AK1: payload unpaid_periods = %v, want 1", got)
@@ -160,14 +160,14 @@ func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
 		t.Errorf("AK1: DB row level = %d, want 3", dbLevel)
 	}
 
-	// ── Periods 2 .. upkeepDesertionPeriods-1: keep accruing until one period
+	// ── Periods 2 .. upkeepDesertionTicks-1: keep accruing until one period
 	// before desertion. Only level-3 (info) notifications fire in this range —
 	// notifyUpkeepUnpaid only escalates to level 2 when periods_until_desertion
 	// == 1, i.e. exactly the LAST period before desertion (upkeep.go:411-414).
 	// Loop bound reads the constant, not a hardcoded 72, so a future
 	// recalibration doesn't silently desync this test from the code.
-	for period := 2; period < upkeepDesertionPeriods; period++ {
-		runOneDay(f.tick + (period-1)*events.TicksPerDay)
+	for period := 2; period < upkeepDesertionTicks; period++ {
+		runOneDay(f.tick + (period - 1))
 		if got := unpaidPeriods(); got != period {
 			t.Fatalf("unpaid_periods after period %d = %d, want %d", period, got, period)
 		}
@@ -184,23 +184,23 @@ func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
 	if got := call.payload["periods_until_desertion"]; got != 1 {
 		t.Errorf("AK2: periods_until_desertion = %v, want 1", got)
 	}
-	if got := call.payload["unpaid_periods"]; got != upkeepDesertionPeriods-1 {
-		t.Errorf("AK2: payload unpaid_periods = %v, want %d", got, upkeepDesertionPeriods-1)
+	if got := call.payload["unpaid_periods"]; got != upkeepDesertionTicks-1 {
+		t.Errorf("AK2: payload unpaid_periods = %v, want %d", got, upkeepDesertionTicks-1)
 	}
 
 	// ── AK3: the desertion period — fires exactly as before ─────────────────
 	sizeBefore := 100
-	runOneDay(f.tick + (upkeepDesertionPeriods-1)*events.TicksPerDay)
-	if got := unpaidPeriods(); got != upkeepDesertionPeriods {
-		t.Fatalf("AK3: unpaid_periods after the desertion period = %d, want %d", got, upkeepDesertionPeriods)
+	runOneDay(f.tick + (upkeepDesertionTicks - 1))
+	if got := unpaidPeriods(); got != upkeepDesertionTicks {
+		t.Fatalf("AK3: unpaid_periods after the desertion period = %d, want %d", got, upkeepDesertionTicks)
 	}
 	if _, ok := lastCallOfKind("UnitDeserted"); !ok {
 		t.Errorf("AK3: no UnitDeserted notification recorded on the desertion tick")
 	}
 	// The desertion tick must NOT also fire a fresh UpkeepUnpaid — recordUnpaid's
-	// np >= upkeepDesertionPeriods branch is untouched by this slice.
+	// np >= upkeepDesertionTicks branch is untouched by this slice.
 	for _, c := range rec.calls {
-		if c.kind == upkeepUnpaidWarningKind && c.payload["unpaid_periods"] == upkeepDesertionPeriods {
+		if c.kind == upkeepUnpaidWarningKind && c.payload["unpaid_periods"] == upkeepDesertionTicks {
 			t.Errorf("AK3: got an UpkeepUnpaid notification for the desertion period — the desertion branch must not also warn")
 		}
 	}

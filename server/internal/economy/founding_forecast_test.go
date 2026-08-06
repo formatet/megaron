@@ -14,8 +14,8 @@ func TestFoundingGrainNetPerTick_Regression(t *testing.T) {
 	// per tick, so an unscaled "base - consumption" netto goes negative. But the
 	// metropolis gets a starter farm (withFarmBase=144.0), and once labor-scaled
 	// by 0.85×4000/REF_LABOR the real production dwarfs consumption.
-	// ⭐ CANON 2026-08-06: a tick is the day now (events.TicksPerDay=1), so
-	// GrainConsumptionPerTick(pop) = pop*0.5/TicksPerDay went from pop*0.5/24 to
+	// ⭐ CANON 2026-08-06: a tick is the day now, so
+	// GrainConsumptionPerTick(pop) went from pop*0.5/24 to
 	// pop*0.5 — a 24× jump in consumption. production_rules base potentials
 	// (mig 109) scaled ×24 too, so these literals are the pre-canon 2.4/6.0 ×24
 	// — matching real base_potential magnitudes read by world.go, not an

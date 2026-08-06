@@ -135,14 +135,14 @@ func (h *UnitArrivalHandler) sackSettlement(
 			// just marched from somewhere — but never fail the sack over it).
 			slog.Warn("sack: attacker has no capital, loot lost", "owner", attackerOwnerID, "err", err)
 		} else {
-			_, pathHours, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+			_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 				province.MapPosition{Q: destQ, R: destR},
 				province.MapPosition{Q: capQ, R: capR},
 				"land",
 			)
-			var moveHours float64
+			var moveTicks float64
 			if pathErr == nil && pathOK {
-				moveHours = pathHours
+				moveTicks = pathTicks
 			} else {
 				// Island-raid degradation (decision-locked, accepted for MVP): a sacked
 				// island has no land route home, so the caravan cannot be positioned
@@ -155,9 +155,9 @@ func (h *UnitArrivalHandler) sackSettlement(
 				if dist < 1 {
 					dist = 1
 				}
-				moveHours = province.TerrainMoveHours(dest.terrain) * float64(dist)
+				moveTicks = province.TerrainMoveTicks(dest.terrain) * float64(dist)
 			}
-			travelTicks := int(math.Round(moveHours))
+			travelTicks := int(math.Round(moveTicks))
 			if travelTicks < 1 {
 				travelTicks = 1
 			}

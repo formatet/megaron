@@ -12,7 +12,6 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
-	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/settlement"
 	"formatet/megaron/server/internal/tick"
@@ -569,9 +568,9 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 
 	var daysUntilEmpty *float64
 	if estNetPerTick < 0 {
-		dailyDrain := -estNetPerTick * float64(events.TicksPerDay)
-		if dailyDrain > 0 {
-			d := seed / dailyDrain
+		tickDrain := -estNetPerTick
+		if tickDrain > 0 {
+			d := seed / tickDrain
 			daysUntilEmpty = &d
 		}
 	}

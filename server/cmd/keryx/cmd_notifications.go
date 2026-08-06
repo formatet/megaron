@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"formatet/megaron/server/internal/events"
 	"github.com/spf13/cobra"
 )
 
@@ -197,16 +196,16 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	if name == "" {
 		name = "Kolonin"
 	}
-	perDay := *body.GrainNetPerTick * float64(events.TicksPerDay)
-	if perDay < 0 {
+	perTick := *body.GrainNetPerTick
+	if perTick < 0 {
 		days := ""
 		if body.GrainDays != nil {
 			days = fmt.Sprintf(" — grain räcker ~%.0f speldygn", *body.GrainDays)
 		}
 		fmt.Printf("      %s föder inte sig själv (~%.0f grain/dygn i underskott)%s. Bygg farm om catchment bär det, annars sänd grain: keryx transfer --good grain --qty <n> --dest %s\n",
-			name, -perDay, days, name)
+			name, -perTick, days, name)
 	} else {
-		fmt.Printf("      %s försörjer sig själv (~%+.0f grain/dygn).\n", name, perDay)
+		fmt.Printf("      %s försörjer sig själv (~%+.0f grain/dygn).\n", name, perTick)
 	}
 }
 

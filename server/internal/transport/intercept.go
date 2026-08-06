@@ -97,7 +97,7 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 			// No traversable route exists for this category (e.g. a land caravan
 			// whose origin/dest are split by sea or, post-flod, a river — the
 			// A* category graph has no path). The caravan's own travel time is
-			// already an abstracted straight hex line, never A* (TradeHoursPerHex,
+			// already an abstracted straight hex line, never A* (TradeTicksPerHex,
 			// messenger/recall.go) — so falling back to that same straight line for
 			// its live position keeps it a real, interceptable object instead of
 			// silently making it permanently uninterceptable. Only messengers may

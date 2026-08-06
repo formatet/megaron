@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"formatet/megaron/server/internal/events"
 	"github.com/spf13/cobra"
 )
 
@@ -49,7 +48,7 @@ func foundingStoreLine(label string, s foundingStore, tickSeconds float64) strin
 	if s.TicksLeft == nil {
 		return fmt.Sprintf("%s: %.0f — räcker tills vidare", label, s.Amount)
 	}
-	gameDays := float64(*s.TicksLeft) / float64(events.TicksPerDay)
+	gameDays := float64(*s.TicksLeft)
 	realH := float64(*s.TicksLeft) * tickSeconds / 3600
 	real := fmt.Sprintf("≈ %.0f h", realH)
 	if realH >= 48 {

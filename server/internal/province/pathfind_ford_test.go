@@ -10,7 +10,7 @@ import (
 // port. Without a ford the river is a total wall for land units (as
 // TestFindPath_RiverBlocksLand already covers); with exactly one river_ford
 // hex added to the same wall, a land unit gets a route THROUGH that one hex,
-// paying its steep TerrainMoveHours cost, and a naval unit still gets a route
+// paying its steep TerrainMoveTicks cost, and a naval unit still gets a route
 // through both the plain river hexes and the ford (a ford is water too — a
 // ship does not need the ford, but must not be blocked by it either).
 //
@@ -40,7 +40,7 @@ func TestFindPath_RiverFordIsTheOnlyLandCrossing(t *testing.T) {
 	}
 
 	// With the ford: land gets a route, and it goes THROUGH the ford hex,
-	// paying TerrainMoveHours("river_ford") for it.
+	// paying TerrainMoveTicks("river_ford") for it.
 	origin := MapPosition{Q: 0, R: 1}
 	target := MapPosition{Q: 2, R: 1}
 	path, cost, ok := findPath(tiles, origin, target, "land")
@@ -59,10 +59,10 @@ func TestFindPath_RiverFordIsTheOnlyLandCrossing(t *testing.T) {
 	if !crossedFord {
 		t.Errorf("expected the route to pass through the ford at (1,0), got path %v", path)
 	}
-	fordCost := TerrainMoveHours("river_ford")
-	if fordCost <= TerrainMoveHours("hills") {
+	fordCost := TerrainMoveTicks("river_ford")
+	if fordCost <= TerrainMoveTicks("hills") {
 		t.Errorf("river_ford (%.2f) must cost at least as much as hills/scrub (%.2f) — the port is a chokepoint, not a shortcut",
-			fordCost, TerrainMoveHours("hills"))
+			fordCost, TerrainMoveTicks("hills"))
 	}
 	// The path must actually pay the ford's cost somewhere in its total —
 	// a path shorter than "detour to the ford and back" would mean the
@@ -93,17 +93,17 @@ func TestFindPath_RiverFordShipPaysSameCostAsLand(t *testing.T) {
 }
 
 // TestFindPath_RiverFordCourierWadesNotSails: a courier crossing a ford falls
-// through to ordinary TerrainMoveHours/2 (land rate), NOT the flat
-// CourierSeaHours boat rate — a runner wades a ford, he does not commandeer a
+// through to ordinary TerrainMoveTicks/2 (land rate), NOT the flat
+// CourierSeaTicks boat rate — a runner wades a ford, he does not commandeer a
 // boat for it (pathfind.go's moveHoursFor doc comment).
 func TestFindPath_RiverFordCourierWadesNotSails(t *testing.T) {
 	got := moveHoursFor("river_ford", CategoryCourier)
-	want := TerrainMoveHours("river_ford") / 2
+	want := TerrainMoveTicks("river_ford") / 2
 	if math.Abs(got-want) > 1e-9 {
-		t.Errorf("expected courier river_ford cost = TerrainMoveHours/2 = %.3f (wading), got %.3f (looks like the flat boat rate %.3f was used instead)",
-			want, got, CourierSeaHours)
+		t.Errorf("expected courier river_ford cost = TerrainMoveTicks/2 = %.3f (wading), got %.3f (looks like the flat boat rate %.3f was used instead)",
+			want, got, CourierSeaTicks)
 	}
-	if math.Abs(got-CourierSeaHours) < 1e-9 {
+	if math.Abs(got-CourierSeaTicks) < 1e-9 {
 		t.Error("courier paid the flat sea-boat rate for a ford crossing — it should wade, not sail")
 	}
 }

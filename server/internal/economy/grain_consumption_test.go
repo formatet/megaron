@@ -3,31 +3,26 @@ package economy
 import (
 	"math"
 	"testing"
-
-	"formatet/megaron/server/internal/events"
 )
 
-// ⭐ CANON 2026-08-06: a tick IS the day now (events.TicksPerDay = 1). This
-// test used to guard the per-tick/per-day DISTINCTION — a founder-phase
-// store draining at the daily figure instead of the tick-divided one would
-// starve 24× too fast. That distinction is gone on purpose: with
-// TicksPerDay=1, "per tick" and "per day" are the same number by definition.
-// What still needs guarding is that GrainConsumptionPerTick keeps deriving
-// from pop*GrainConsumptionPerCitizenPerDay/events.TicksPerDay (not a
-// separately hardcoded pop*0.5) — so if TicksPerDay is ever recalibrated
-// away from 1 again, this test starts failing immediately instead of
-// silently reading the wrong figure forever, the way it did before.
+// ⭐ CANON 2026-08-06: a tick IS the day now. This test used to guard the
+// per-tick/per-day DISTINCTION — a founder-phase store draining at the daily
+// figure instead of the tick-divided one would starve 24× too fast. That
+// distinction is gone on purpose: a tick and a game-day are now the same
+// unit by definition, so events.TicksPerDay was deleted 2026-08-06 (see
+// internal/events.MacroTickInterval). What this now guards is the actual
+// BEHAVIOUR — GrainConsumptionPerTick must keep costing exactly pop*0.5 per
+// tick — rather than a constant that no longer exists, so a future change to
+// the per-citizen figure can't silently drift out of sync with the founder
+// phase's own hardcoded expectations.
 func TestGrainConsumptionPerTick_EqualsDailyFigureNow(t *testing.T) {
 	const pop = 4000
-
-	if events.TicksPerDay != 1 {
-		t.Fatalf("test premise broke: expected TicksPerDay=1, got %d", events.TicksPerDay)
-	}
+	const wantPerCitizen = 0.5
 
 	got := GrainConsumptionPerTick(pop)
-	want := float64(pop) * GrainConsumptionPerCitizenPerDay // pop*0.5 == 2000, exactly — a tick IS a day
+	want := float64(pop) * wantPerCitizen // pop*0.5 == 2000, exactly — a tick IS a day
 	if math.Abs(got-want) > 1e-9 {
-		t.Fatalf("GrainConsumptionPerTick(%d) = %v, want %v (pop*0.5, since TicksPerDay=1)", pop, got, want)
+		t.Fatalf("GrainConsumptionPerTick(%d) = %v, want %v (pop*0.5)", pop, got, want)
 	}
 }
 

@@ -1,8 +1,8 @@
 package province
 
-// TerrainMoveHours returns hours per hex for an army marching through the given terrain.
+// TerrainMoveTicks returns ticks per hex for an army marching through the given terrain.
 // Messengers travel at 0.5×, trade caravans at 1.5×.
-func TerrainMoveHours(terrain string) float64 {
+func TerrainMoveTicks(terrain string) float64 {
 	switch terrain {
 	case "plains", "river_valley", "river_delta":
 		return 0.75

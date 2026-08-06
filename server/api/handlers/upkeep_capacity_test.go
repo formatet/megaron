@@ -8,10 +8,11 @@ package handlers
 // together so `status`/`recruit --list`/the Recruit response can warn BEFORE
 // a build/recruit pushes a settlement into upkeep deficit. Pure — no DB.
 //
-// ⭐ CANON 2026-08-06: a tick IS the day now (events.TicksPerDay = 1), so
-// upkeepNetPerDay's `* TicksPerDay` conversion is a no-op — its return value
-// is the per-tick net, identical to the per-day net. Expectations below are
-// per tick with no ×24 scaling.
+// ⭐ CANON 2026-08-06: a tick IS the day now, so upkeepNetPerDay's old
+// `* TicksPerDay` conversion was a no-op and has been deleted (see
+// internal/events.MacroTickInterval) — its return value is the per-tick net,
+// identical to the per-day net. Expectations below are per tick with no ×24
+// scaling.
 
 import (
 	"math"

@@ -627,7 +627,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// a city with +21 000 grain/day showed "0.1 days, granary empty"). The
 		// net food rate is what separates "lean and climbing" from "starving",
 		// and the surfaces need both to say either honestly.
-		foodNetPerDay := foodRatePerTick * float64(events.TicksPerDay)
+		foodNetPerDay := foodRatePerTick
 
 		// Catchment base potentials (actual buildings) — read once, shared by the
 		// grain-netto breakdown below and the break-even weight further down.
@@ -649,7 +649,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// always the DB's own number, never re-derived. Falls back to "full
 		// food need" (the pre-fisk-slice formula) if the catchment read fails —
 		// best-effort, never blocks status on a DB hiccup.
-		grainConsumRate := float64(laborPool) * economy.GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
+		grainConsumRate := float64(laborPool) * economy.GrainConsumptionPerCitizenPerTick
 		grainProdRate := grainRate + grainConsumRate
 		if basePotsErr == nil {
 			var grainWeight float64
@@ -671,8 +671,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		var breakevenGrainWeight *float64
 		if basePotsErr == nil {
 			if basePotGrain := basePots["grain"]; basePotGrain > 0 {
-				be := economy.GrainConsumptionPerCitizenPerDay * economy.REF_LABOR /
-					(basePotGrain * float64(events.TicksPerDay))
+				be := economy.GrainConsumptionPerCitizenPerTick * economy.REF_LABOR / basePotGrain
 				breakevenGrainWeight = &be
 			}
 		}
@@ -749,7 +748,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kharis":                 kharisNow,
 			"kharis_rate":            kharisRate,
 			"kharis_mood":            kharisToMood(kharisNow),
-			"kharis_per_day":         kharisRate * float64(events.TicksPerDay),
+			"kharis_per_day":         kharisRate,
 			"kharis_cap":             kharisCap,
 			"max_temple_level":       maxTempleLevel,
 			"rite_kharis_cost":       riteKharisCost,
@@ -920,8 +919,8 @@ func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID
 // to the town the same tick — it never leaves, so it must not count as drain.
 // Pure function — no DB — so it's unit-testable without a database.
 func upkeepNetPerDay(grainRatePerTick, silverRatePerTick float64, up upkeepAmount, circulatedSilver float64) (grainNetPerDay, silverNetPerDay float64) {
-	grainNetPerDay = grainRatePerTick*float64(events.TicksPerDay) - up.Grain
-	silverNetPerDay = silverRatePerTick*float64(events.TicksPerDay) - (up.Silver - circulatedSilver)
+	grainNetPerDay = grainRatePerTick - up.Grain
+	silverNetPerDay = silverRatePerTick - (up.Silver - circulatedSilver)
 	return grainNetPerDay, silverNetPerDay
 }
 
@@ -3819,8 +3818,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	var breakevenGrainWeight *float64
 	if basePots, bperr := economy.CatchmentBasePotential(r.Context(), h.pool, settlementID); bperr == nil {
 		if basePotGrain := basePots["grain"]; basePotGrain > 0 {
-			be := economy.GrainConsumptionPerCitizenPerDay * economy.REF_LABOR /
-				(basePotGrain * float64(events.TicksPerDay))
+			be := economy.GrainConsumptionPerCitizenPerTick * economy.REF_LABOR / basePotGrain
 			breakevenGrainWeight = &be
 		}
 	}

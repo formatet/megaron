@@ -472,8 +472,8 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		// grain_days: how long the stock lasts at the current deficit; omitted
 		// when the metropolis is self-sustaining (net ≥ 0).
 		if grainNet < 0 {
-			if dailyDrain := -grainNet * float64(events.TicksPerDay); dailyDrain > 0 {
-				payload["grain_days"] = grainAmount / dailyDrain
+			if tickDrain := -grainNet; tickDrain > 0 {
+				payload["grain_days"] = grainAmount / tickDrain
 			}
 		}
 		_ = h.hub.NotifyPlayer(r.Context(), worldID, playerID, "MetropolisFounded", 2, payload)

@@ -2,7 +2,7 @@ package province
 
 // CategoryCourier routing (temenos_orderlopare_plan.md Fas 4): runners
 // run land at half a land unit's terrain hours (2× spearman speed), cross sea
-// at the flat boat rate CourierSeaHours, and route around mountains like land.
+// at the flat boat rate CourierSeaTicks, and route around mountains like land.
 
 import "testing"
 
@@ -24,7 +24,7 @@ func TestFindPath_CourierCrossesSeaByBoat(t *testing.T) {
 		t.Fatalf("courier path length = %d, want 3 (origin, sea, target)", len(path))
 	}
 	// Cost: enter sea (boat, 0.5) + enter plains at half land hours (0.75/2).
-	want := CourierSeaHours + TerrainMoveHours("plains")/2
+	want := CourierSeaTicks + TerrainMoveTicks("plains")/2
 	if diff := cost - want; diff > 1e-9 || diff < -1e-9 {
 		t.Errorf("courier cost = %v, want %v (sea boat rate + half plains hours)", cost, want)
 	}

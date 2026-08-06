@@ -2,17 +2,16 @@ package economy
 
 import (
 	"math"
-
-	"formatet/megaron/server/internal/events"
 )
 
 const (
-	// referenceBufferDays: "comfortable stock" = N days of net per-tick flow at
-	// the good's current rate — replaces the old cap×0.3 anchor (2026-07-05:
-	// storage caps stopped being a meaningful ceiling, see temenos_ekonomi.md
-	// §Lagringstak). Population/production-driven, so a small colony and a
-	// giant capital both feel "comfortable" at the same number of days.
-	referenceBufferDays = 3.0
+	// referenceBufferTicks: "comfortable stock" = N ticks (days) of net
+	// per-tick flow at the good's current rate — replaces the old cap×0.3
+	// anchor (2026-07-05: storage caps stopped being a meaningful ceiling, see
+	// temenos_ekonomi.md §Lagringstak). Population/production-driven, so a
+	// small colony and a giant capital both feel "comfortable" at the same
+	// number of days.
+	referenceBufferTicks = 3.0
 	// referenceFloorUnits: fallback anchor for a good with zero/negative
 	// current rate (e.g. production paused, or grain's net rate went negative
 	// from consumption). Without a floor, ProductionReference would be 0 or
@@ -29,7 +28,7 @@ const (
 // ProductionReference returns the "comfortable stock" anchor for a good given
 // its current net per-tick rate.
 func ProductionReference(ratePerTick float64) float64 {
-	r := ratePerTick * float64(events.TicksPerDay) * referenceBufferDays
+	r := ratePerTick * referenceBufferTicks
 	if r < referenceFloorUnits {
 		return referenceFloorUnits
 	}
@@ -49,10 +48,9 @@ func ProductionReference(ratePerTick float64) float64 {
 // producer (mild downward pressure on price); negative = net consumer (shortage
 // builds faster; grain's net rate folds population consumption, so it can be < 0).
 func LocalPrice(baseValue, stock, ratePerTick float64) float64 {
-	// Project stock one day (TicksPerDay ticks) ahead using the net per-tick rate
+	// Project stock one tick (a day) ahead using the net per-tick rate
 	// (captures whether we're filling or draining).
-	lookaheadTicks := float64(events.TicksPerDay)
-	projected := stock + ratePerTick*lookaheadTicks
+	projected := stock + ratePerTick
 	if projected < 0 {
 		projected = 0
 	}

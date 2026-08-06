@@ -27,10 +27,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// HoursPerHex is the travel speed of a messenger (hours per hex). Shared by diplomatic
+// TicksPerHex is the travel speed of a messenger (ticks per hex). Shared by diplomatic
 // messengers (api/handlers messenger send) and recall messengers so the rate lives in one place.
 // A future "blessed messengers" rite would turn this into a multiplier-driven value (see thalassa_todo).
-const HoursPerHex = 0.5
+const TicksPerHex = 0.5
 
 // armyArrivalPayload is the ScheduledArmyArrival payload for a legacy return march.
 // The legacy aggregate-army combat handler that consumed this event was retired with
@@ -367,7 +367,7 @@ func returnDuration(dist int, terrain string) time.Duration {
 
 // returnTicks converts a terrain-weighted march distance to world ticks (1 tick = 1 game hour).
 func returnTicks(dist int, terrain string) int {
-	hours := float64(dist) * province.TerrainMoveHours(terrain)
+	hours := float64(dist) * province.TerrainMoveTicks(terrain)
 	t := int(math.Round(hours))
 	if t < 1 {
 		return 1
@@ -387,7 +387,7 @@ func MessengerTravelDuration(dist int) time.Duration {
 
 // MessengerTravelTicks returns the world-tick travel time for a messenger over dist hexes.
 func MessengerTravelTicks(dist int) int {
-	t := int(math.Round(float64(dist) * HoursPerHex))
+	t := int(math.Round(float64(dist) * TicksPerHex))
 	if t < 1 {
 		return 1
 	}
@@ -396,13 +396,13 @@ func MessengerTravelTicks(dist int) int {
 
 // CourierTravel returns the world-tick and wall-clock travel time for a
 // runner from 'from' to 'to' (temenos_orderlopare_plan.md Fas 4): A*
-// over the courier graph — land at half a land unit's terrain hours (2×
-// spearman speed), sea legs at the flat boat rate province.CourierSeaHours,
+// over the courier graph — land at half a land unit's terrain ticks (2×
+// spearman speed), sea legs at the flat boat rate province.CourierSeaTicks,
 // mountains routed around. Falls back to the legacy straight-line rate when no
 // route exists (should be unreachable with sea passable — e.g. a target walled
 // in by mountains) so an order is never stranded by the pathfinder.
 // One speed model for ALL messengers: diplomatic, recall/redirect and order
-// runners alike (trade CARAVANS keep their own TradeHoursPerHex seam below).
+// runners alike (trade CARAVANS keep their own TradeTicksPerHex seam below).
 func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration) {
 	g, err := province.LoadTileGraph(ctx, db, worldID)
 	if err != nil {
@@ -458,7 +458,7 @@ func AggregateArmyCategory(spearman, warChariot, priest, ship, eliteInfantry, wa
 //
 // Scans path indices from the start (skipping every hex the unit has already
 // passed) to the last (the march's own destination). CategoryCourier runs at
-// 2× a land unit's speed (sea legs at the flat CourierSeaHours rate), so an
+// 2× a land unit's speed (sea legs at the flat CourierSeaTicks rate), so an
 // intercept normally exists somewhere along the remaining path — the earlier
 // on the path it is found, the sooner the order is delivered.
 //
@@ -535,10 +535,10 @@ func InterceptCourierTarget(
 	return t, ok, nil
 }
 
-// TradeHoursPerHex is the travel speed of a trade caravan (the silver/goods legs of a messenger trade).
+// TradeTicksPerHex is the travel speed of a trade caravan (the silver/goods legs of a messenger trade).
 // Kept as a separate seam from messengers so caravans can later be tuned slower than runners
 // without affecting messenger/recall speed.
-const TradeHoursPerHex = 0.5
+const TradeTicksPerHex = 0.5
 
 // TradeTravelDuration returns the wall-clock travel time for a trade caravan over dist hexes,
 // for display columns only (scheduling uses TradeTravelTicks) — same tick.RealUntil conversion
@@ -549,7 +549,7 @@ func TradeTravelDuration(dist int) time.Duration {
 
 // TradeTravelTicks returns the world-tick travel time for a trade caravan over dist hexes.
 func TradeTravelTicks(dist int) int {
-	t := int(math.Round(float64(dist) * TradeHoursPerHex))
+	t := int(math.Round(float64(dist) * TradeTicksPerHex))
 	if t < 1 {
 		return 1
 	}

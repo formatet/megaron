@@ -7,8 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-
-	"formatet/megaron/server/internal/events"
 )
 
 // REF_LABOR is the reference population for the production formula.
@@ -66,12 +64,12 @@ func LaborCapacity(goodKey string, hasFieldPath bool, buildingLevels int) float6
 	return capacity
 }
 
-// GrainConsumptionPerCitizenPerDay is the daily grain eaten per citizen,
-// folded into grain's net production rate below. Exported so read-only
-// callers (status endpoint's grain-netto breakdown/break-even hint, DEL C
-// of megaron_ekonomi_legibilitet_plan.md) can re-derive prod/consum from the
-// stored net rate instead of duplicating this number.
-const GrainConsumptionPerCitizenPerDay = 0.5
+// GrainConsumptionPerCitizenPerTick is the grain eaten per citizen each tick
+// (a tick is a day), folded into grain's net production rate below. Exported
+// so read-only callers (status endpoint's grain-netto breakdown/break-even
+// hint, DEL C of megaron_ekonomi_legibilitet_plan.md) can re-derive
+// prod/consum from the stored net rate instead of duplicating this number.
+const GrainConsumptionPerCitizenPerTick = 0.5
 
 // GrainConsumptionPerTick is the grain a population of pop eats each tick.
 // It depends on head-count alone — not on labor weights, terrain or buildings —
@@ -82,7 +80,7 @@ func GrainConsumptionPerTick(pop int) float64 {
 	if pop < 0 {
 		pop = 0
 	}
-	return float64(pop) * GrainConsumptionPerCitizenPerDay / float64(events.TicksPerDay)
+	return float64(pop) * GrainConsumptionPerCitizenPerTick
 }
 
 // FoodConsumptionSplit applies the population's food invariant to a
@@ -357,11 +355,11 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 
 	// Grain carries a population-consumption term folded into its NET rate:
-	// pop × 0.5 per day ÷ TicksPerDay = consumption per tick. Folding it (rather
-	// than subtracting a daily lump elsewhere) keeps consumption continuous, so it
-	// never exceeds the grain cap and a self-sufficient city sits at a stable
-	// positive stock instead of sawtoothing to zero every day. laborPool is the
-	// non-negative population (Σ eaters). See events.TicksPerDay for calibration.
+	// pop × 0.5 per tick = consumption per tick (a tick is a day). Folding it
+	// (rather than subtracting a daily lump elsewhere) keeps consumption
+	// continuous, so it never exceeds the grain cap and a self-sufficient city
+	// sits at a stable positive stock instead of sawtoothing to zero every day.
+	// laborPool is the non-negative population (Σ eaters).
 	//
 	// Fisk-föder-befolkningen (2026-07-31): the population's food need is covered
 	// by grain FIRST, then by fish for whatever grain does not reach — see

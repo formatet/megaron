@@ -24,7 +24,7 @@ const (
 	// 120 ticks — four months in the world, five real days at 60 min/tick.
 	//
 	// ⚠️ 2880 → 120 (Timothy 2026-08-06, choice (b)). This is NOT the same class
-	// of retune as upkeepDesertionPeriods. The ration is denominated in TICKS, so
+	// of retune as upkeepDesertionTicks. The ration is denominated in TICKS, so
 	// its real duration was never at risk — 2 880 ticks is 120 real days before
 	// and after. Two other things broke instead:
 	//   1. The fiction. Read under the new canon, 2 880 ticks is 2 880 days in the
@@ -96,13 +96,13 @@ func seedNomadicHost(
 	// owed to men who serve, unlike food to a people feeding itself.
 	//
 	// Rates come from the same functions the settled game uses, never hardcoded,
-	// so a calibration change moves the founder phase with it. UpkeepSpecs is per
-	// DAY (combat/upkeep.go:13, fired every TicksPerDay) and must be divided down
-	// before it can sit beside a per-tick rate.
-	perDay := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize)
-	grainPerTick := float64(nomadicHostSpearmen) * perDay.Grain / float64(events.TicksPerDay)
+	// so a calibration change moves the founder phase with it. UpkeepSpecs is
+	// per tick (combat/upkeep.go:13) — a tick is a day, so this sits beside a
+	// per-tick rate directly.
+	perTick := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize)
+	grainPerTick := float64(nomadicHostSpearmen) * perTick.Grain
 	grainRate := 0.0
-	silverRate := -float64(nomadicHostSpearmen) * perDay.Silver / float64(events.TicksPerDay)
+	silverRate := -float64(nomadicHostSpearmen) * perTick.Silver
 
 	// grainAmount no longer follows from grainRate (that would be 0): it is the
 	// dowry the escort carries, sized exactly as before so the founding payout

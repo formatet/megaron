@@ -263,8 +263,8 @@ func TestMarchRecall_IdempotentReplay(t *testing.T) {
 // TestMarchRecall_ArrivesAtMatchesTickSchedule pins the K4 tick-contract for a
 // recalled unit's new leg: arrives_at must be now + travelTicks*TickSeconds
 // (the real tick-scheduled arrival the client's map interpolates against),
-// never moveHours-as-real-hours. The bug this guards: arrivesAtNew was once
-// computed as now.Add(moveHours * time.Hour) — at a sped-up dev cadence
+// never moveTicks-as-real-hours. The bug this guards: arrivesAtNew was once
+// computed as now.Add(moveTicks * time.Hour) — at a sped-up dev cadence
 // (TICK_SECONDS=6) that put the wall-clock ETA hours away while the tick
 // substrate actually completed the leg in a couple of ticks (seconds), so the
 // unit's map position barely crept forward and then snapped to its
