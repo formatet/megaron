@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -57,155 +55,55 @@ func loadFieldDefenders(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, q, r 
 	return out, rows.Err()
 }
 
-// resolveFieldCombat resolves an arriving unit against hostile field
-// defenders already loaded by the caller (resolve() in unit_arrival.go).
+// resolveFieldCombat used to resolve an arriving unit against hostile field
+// defenders (already loaded by the caller, resolve() in unit_arrival.go) as a
+// single immediate strength/fortune roll. KR3 (megaron_plan_kr3_stridssystem.md
+// §1) replaces that one-shot model: this now only INITIATES (or joins) a
+// persistent battles row and hands the arriving unit's outcome to
+// ScheduledBattleTick, resolved over one or more subsequent battle-ticks.
+// The old fortune/strength/wall math above this function (rollFortune,
+// ResolveStrengthsWithRout, applyFieldDefenderLosses) stays in this package —
+// it is still live for the three entry points not yet rewired to
+// initiateOrJoinBattle (settlement resolveCombat, amphibious assault,
+// avsiktslagret's unit_intercept_scan.go).
 func (h *UnitArrivalHandler) resolveFieldCombat(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, defenders []fieldDefender, destQ, destR int, worldID uuid.UUID,
 ) error {
-	attStr := unitStrength(u.utype, u.size)
-
-	// ── Defence strength: sum of every hostile unit on the hex. Mixed-owner
-	// stacks on one open hex are not otherwise modelled elsewhere in the
-	// codebase; the first defender's owner is used as the representative side
-	// below for the kharis/loyalty bias. ──
-	const fortifyBonus = 1.5
-	var defStr float64
+	arriving := battleParticipant{unitID: u.id, ownerID: u.ownerID, utype: u.utype, side: "attacker", currentSize: u.size}
+	var defParticipants []battleParticipant
 	for _, d := range defenders {
-		str := unitStrength(d.utype, d.size)
-		if d.stance != nil && *d.stance == "fortify" {
-			str *= fortifyBonus
-		}
-		defStr += str
-	}
-	defenderOwnerID := defenders[0].ownerID
-
-	// ── Distinct defender owners (mixed-owner stacks): notifications below go
-	// to every owner represented in the defender stack, not just defenders[0]
-	// (which stays the fortune/loyalty representative above). ──
-	defenderOwnerSeen := map[uuid.UUID]struct{}{}
-	var defenderOwners []uuid.UUID
-	for _, d := range defenders {
-		if _, ok := defenderOwnerSeen[d.ownerID]; ok {
-			continue
-		}
-		defenderOwnerSeen[d.ownerID] = struct{}{}
-		defenderOwners = append(defenderOwners, d.ownerID)
+		defParticipants = append(defParticipants, battleParticipant{unitID: d.id, ownerID: d.ownerID, utype: d.utype, side: "defender", currentSize: d.size})
 	}
 
-	// ── Fortune (W5): roll once, bias by kharis delta — same as resolveCombat. ──
-	var attackerKharis, defenderKharis float64
-	_ = tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-		u.ownerID, worldID,
-	).Scan(&attackerKharis)
-	_ = tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-		defenderOwnerID, worldID,
-	).Scan(&defenderKharis)
-	fortune := rollFortune(attackerKharis, defenderKharis)
-	attStrWithFortune := attStr * (1 + fortune)
-
-	// ── L2 unit-loyalty rout bias. ──
-	attSettleID, attLoyalty, attHasSettle := supplyingSettlement(ctx, tx, u.ownerID, nil, worldID)
-	_, defLoyalty, _ := supplyingSettlement(ctx, tx, defenderOwnerID, nil, worldID)
-
-	result := ResolveStrengthsWithRout(attStrWithFortune, defStr, fortune,
-		routFractionForLoyalty(attLoyalty), routFractionForLoyalty(defLoyalty))
-
-	slog.Info("field combat resolved",
-		"unit", u.id, "q", destQ, "r", destR,
-		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome,
-		"rounds", result.Rounds, "defenders", len(defenders))
-
-	attSizeBefore := u.size
-	attSizeAfter := int(float64(u.size) * (1 - result.AttackerLosses))
-	attPopLost := attSizeBefore - attSizeAfter
-
-	if result.Outcome == OutcomeAttackerWins {
-		if err := h.applyFieldDefenderLosses(ctx, tx, defenders, result.DefenderLosses, worldID); err != nil {
-			return err
-		}
-		if attSizeAfter <= 0 {
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, u.id,
-			); err != nil {
-				return fmt.Errorf("field combat: disband zeroed attacker: %w", err)
-			}
-			h.disbandCargoIfPresent(ctx, tx, u, worldID)
-		} else {
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET
-				   size          = $2,
-				   status        = 'positioned',
-				   q             = $3,
-				   r             = $4,
-				   settlement_id = NULL,
-				   target_q      = NULL,
-				   target_r      = NULL,
-				   departs_at    = NULL,
-				   arrives_at    = NULL,
-				   depart_tick   = NULL,
-				   arrive_tick   = NULL,
-				   updated_at    = now()
-				 WHERE id = $1`,
-				u.id, attSizeAfter, destQ, destR,
-			); err != nil {
-				return fmt.Errorf("field combat: position victorious attacker: %w", err)
-			}
-		}
-		if attPopLost > 0 {
-			if _, err := tx.Exec(ctx,
-				`UPDATE settlements SET population = GREATEST(50, population - $2)
-				 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
-				u.ownerID, attPopLost, worldID,
-			); err != nil {
-				slog.Warn("field combat: could not apply attacker pop loss", "unit", u.id, "err", err)
-			}
-		}
-		if h.hub != nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "FieldBattleWon", 3, map[string]any{
-				"unit_id": u.id, "q": destQ, "r": destR,
-			})
-			for _, ownerID := range defenderOwners {
-				_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "FieldBattleLost", 2, map[string]any{
-					"q": destQ, "r": destR,
-				})
-			}
-		}
-	} else {
-		// No settlement to reference — reuses applyDefenderWins' rout/disband
-		// logic (it only touches dest.settlementID at the very end, guarded by
-		// a nil check, to apply settlement-garrison losses; field defender
-		// losses below cover that instead).
-		if err := h.applyDefenderWins(ctx, tx, u, destSettlement{}, attSizeAfter, attPopLost, result, destQ, destR, worldID); err != nil {
-			return err
-		}
-		if err := h.applyFieldDefenderLosses(ctx, tx, defenders, result.DefenderLosses, worldID); err != nil {
-			return err
-		}
-		if h.hub != nil {
-			for _, ownerID := range defenderOwners {
-				_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "FieldBattleWon", 3, map[string]any{
-					"q": destQ, "r": destR,
-				})
-			}
-		}
+	if err := h.initiateOrJoinBattle(ctx, tx, worldID, destQ, destR, arriving, defParticipants); err != nil {
+		return fmt.Errorf("field combat: initiate/join battle: %w", err)
 	}
 
-	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitCombatResolved,
-		unit.UnitCombatResolvedPayload{
-			UnitID:     u.id,
-			Role:       "attacker",
-			SizeBefore: attSizeBefore,
-			SizeAfter:  attSizeAfter,
-			Outcome:    string(result.Outcome),
-			PopLost:    attPopLost,
-		}, worldID, nil)
+	slog.Info("field combat: battle initiated/joined", "unit", u.id, "q", destQ, "r", destR, "defenders", len(defenders))
 
-	h.applyBattleLoyalty(ctx, tx, result.Outcome, attSettleID, attHasSettle, nil, worldID)
+	// The arriving unit now holds the contested hex while the battle resolves
+	// over subsequent battle-ticks — no immediate outcome, no win/lose branch
+	// here anymore. It keeps its current size; ScheduledBattleTick applies
+	// losses as rounds are resolved.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status        = 'positioned',
+		   q             = $2,
+		   r             = $3,
+		   settlement_id = NULL,
+		   target_q      = NULL,
+		   target_r      = NULL,
+		   departs_at    = NULL,
+		   arrives_at    = NULL,
+		   depart_tick   = NULL,
+		   arrive_tick   = NULL,
+		   updated_at    = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR,
+	); err != nil {
+		return fmt.Errorf("field combat: position arriving unit: %w", err)
+	}
 
 	return nil
 }

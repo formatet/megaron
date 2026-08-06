@@ -5,9 +5,18 @@ package combat
 // stacks — applyFieldDefenderLosses already applies pop-loss per distinct
 // owner via totalsByOwner — but the battle NOTIFICATIONS only ever went to
 // defenders[0].ownerID, so a hex held by two different Wanax's field units
-// left the second owner with no FieldBattleLost/FieldBattleWon at all. This
-// drives resolve() with two defenders from two different owners and asserts
-// BOTH owners get notified.
+// left the second owner with no FieldBattleLost/FieldBattleWon at all.
+//
+// KR3 update (megaron_plan_kr3_stridssystem.md §1/§8): resolveFieldCombat no
+// longer sends FieldBattleWon/Lost notifications at all — like the sibling
+// avsiktslagret §S3 scan (unit_intercept_scan.go), a notification kind with
+// no renderer on the other end is a known anti-pattern here, and the KR3
+// stridsrapport payload (megaron_plan_stridsrapport.md) is explicitly a later
+// slice. So the "was owner B silently dropped" question this test guards now
+// has a structural analogue instead of a notification one: both distinct
+// defender owners must be registered as their own battle_participants row
+// (not merged into/shadowed by defenders[0]), and both units must actually
+// take the battle's outcome once BattleTickHandler resolves it.
 
 import (
 	"context"
@@ -146,8 +155,41 @@ func TestResolveFieldCombat_NotifiesAllDistinctDefenderOwners(t *testing.T) {
 		t.Fatalf("commit: %v", err)
 	}
 
-	// Sanity: with 100x combined strength, the attacker must win — both
-	// defenders should be disbanded (or at least reduced), not untouched.
+	// Both owners must be registered as their OWN battle_participants row —
+	// the structural equivalent of "not silently merged into defenders[0]".
+	var battleID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`SELECT id FROM battles WHERE world_id = $1 AND q = 1 AND r = 0`, worldID,
+	).Scan(&battleID); err != nil {
+		t.Fatalf("read battle: %v", err)
+	}
+	var registeredOwners []uuid.UUID
+	rows, err := pool.Query(ctx,
+		`SELECT owner_id FROM battle_participants WHERE battle_id = $1 AND side = 'defender'`, battleID,
+	)
+	if err != nil {
+		t.Fatalf("query defender participants: %v", err)
+	}
+	for rows.Next() {
+		var owner uuid.UUID
+		if scanErr := rows.Scan(&owner); scanErr == nil {
+			registeredOwners = append(registeredOwners, owner)
+		}
+	}
+	rows.Close()
+	seen := map[uuid.UUID]bool{}
+	for _, o := range registeredOwners {
+		seen[o] = true
+	}
+	if !seen[defenderA] || !seen[defenderB] {
+		t.Fatalf("defender battle_participants owners = %v, want both %s and %s registered", registeredOwners, defenderA, defenderB)
+	}
+
+	// Drive the battle to its conclusion — with 100x combined strength, the
+	// attacker must annihilate BOTH defenders, not just the first one loaded.
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler)
+	runBattleToEnd(t, pool, battleH, worldID, battleID, 20)
+
 	var defenderAStatus, defenderBStatus string
 	if err := pool.QueryRow(ctx,
 		`SELECT status FROM units WHERE id = $1`, defenderAUnitID,
@@ -160,19 +202,6 @@ func TestResolveFieldCombat_NotifiesAllDistinctDefenderOwners(t *testing.T) {
 		t.Fatalf("read defender-b unit: %v", err)
 	}
 	if defenderAStatus != "disbanded" || defenderBStatus != "disbanded" {
-		t.Fatalf("defender statuses = (%q, %q), want both disbanded (overwhelming attacker) — outcome wasn't the expected attacker-wins branch, test fixture no longer deterministic", defenderAStatus, defenderBStatus)
-	}
-
-	notifiedFieldBattleLost := map[uuid.UUID]bool{}
-	for _, n := range fb.notified {
-		if n.kind == "FieldBattleLost" {
-			notifiedFieldBattleLost[n.playerID] = true
-		}
-	}
-	if !notifiedFieldBattleLost[defenderA] {
-		t.Errorf("defender-a (%s) did not receive FieldBattleLost — notified: %+v", defenderA, fb.notified)
-	}
-	if !notifiedFieldBattleLost[defenderB] {
-		t.Errorf("defender-b (%s) did not receive FieldBattleLost — notified: %+v", defenderB, fb.notified)
+		t.Fatalf("defender statuses = (%q, %q), want both disbanded (overwhelming attacker annihilates both, not just defenders[0])", defenderAStatus, defenderBStatus)
 	}
 }
