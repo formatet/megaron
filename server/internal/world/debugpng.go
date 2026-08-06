@@ -402,6 +402,36 @@ type MapMetrics struct {
 	// equal this after the fix; a smaller number is a landmass that got zero.
 	QualifyingLandmasses int `json:"qualifying_landmasses"`
 
+	// BranchedDeltas/DeltaSizesPerRiver/DeltaIslandSizes (megaron_plan_
+	// deltat_grenar.md steg 6) — without these the delta-fork slice has no way
+	// to prove itself: the old delta_tiles field is one global sum with no
+	// per-river breakdown at all.
+	//
+	// BranchedDeltas: number of river chains (riverChains, same BFS as
+	// RiverChainLengths) that carry a delta-fork node — a TerrainRiver cell
+	// with 3 (not <=2) TerrainRiver neighbours, riverInvariantFailures' own
+	// named §7c exception. Re-derived geometrically, never threaded through
+	// from generation.
+	BranchedDeltas int `json:"branched_deltas"`
+	// DeltaSizesPerRiver: one entry per chain, the count of DISTINCT
+	// river_delta tiles hex-adjacent to that chain — index-aligned with
+	// RiverChainLengths (both built from the same chains, sorted once by
+	// chain length descending), so index i's delta size and chain length
+	// belong to the SAME river. That alignment is the whole point: it is what
+	// lets "the longest river's delta is bigger than the median's" (plan
+	// §Klart när) be read off a single index comparison instead of needing a
+	// second correlation pass.
+	DeltaSizesPerRiver []int `json:"delta_sizes_per_river"`
+	// DeltaIslandSizes: hex counts of river_delta connected components (hex
+	// adjacency, same-terrain flood fill) at or above minLandFragment (12).
+	// A branch-enclosed island is committed only when it clears that floor
+	// (attemptDeltaFork), while an ordinary placeDelta mouth patch is capped
+	// at 1-3 tiles (deltaSize := 1+rng.Intn(3)) and can never reach it on its
+	// own — so this threshold is a safe, tile-list-only way to tell "this
+	// blob of river_delta is a branch-enclosed island" from "this is just a
+	// river mouth", without threading a generation-time flag through.
+	DeltaIslandSizes []int `json:"delta_island_sizes"`
+
 	CompactnessPerComponent []ComponentCompactness `json:"compactness_per_component"`
 	// Per terrain class: fraction of (tile, in-map neighbour) pairs where the
 	// neighbour has the same terrain — captures leftover ring structure.
@@ -531,16 +561,61 @@ func ComputeMapMetrics(tiles []MapTile, width, height int) MapMetrics {
 	// function's doc comment for why a river_ford counts as "river" for THIS
 	// traversal.
 	chains := riverChains(tiles, width, height)
+	// Sorted ONCE, by chain length descending, before either
+	// RiverChainLengths or DeltaSizesPerRiver is derived from it — that is
+	// what keeps the two index-aligned (megaron_plan_deltat_grenar.md steg 6:
+	// DeltaSizesPerRiver's doc comment on MapMetrics explains why the
+	// alignment itself is the point, not just a convenience).
+	sort.Slice(chains, func(i, j int) bool { return chains[i].size > chains[j].size })
 	riversByLandmass := map[int]int{}
 	for _, c := range chains {
 		m.RiverChainLengths = append(m.RiverChainLengths, c.size)
+		m.DeltaSizesPerRiver = append(m.DeltaSizesPerRiver, c.deltaTiles)
+		if c.forkNodes > 0 {
+			m.BranchedDeltas++
+		}
 		riversByLandmass[c.landmass]++
 	}
-	sort.Sort(sort.Reverse(sort.IntSlice(m.RiverChainLengths)))
 	for _, n := range riversByLandmass {
 		m.RiversPerLandmass = append(m.RiversPerLandmass, n)
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(m.RiversPerLandmass)))
+
+	// DeltaIslandSizes (steg 6): connected components of TerrainRiverDelta
+	// tiles (hex adjacency) at or above minLandFragment — see the field's own
+	// doc comment on MapMetrics for why that threshold safely separates a
+	// branch-enclosed island from an ordinary 1-3 tile river mouth.
+	{
+		terr := make(map[cell]Terrain, len(tiles))
+		for _, t := range tiles {
+			terr[cell{t.Q, t.R}] = t.Terrain
+		}
+		seenDelta := map[cell]bool{}
+		for _, t := range tiles {
+			c := cell{t.Q, t.R}
+			if terr[c] != TerrainRiverDelta || seenDelta[c] {
+				continue
+			}
+			size := 0
+			queue := []cell{c}
+			seenDelta[c] = true
+			for len(queue) > 0 {
+				cur := queue[0]
+				queue = queue[1:]
+				size++
+				for _, n := range hexNeighbours(cur, width, height) {
+					if terr[n] == TerrainRiverDelta && !seenDelta[n] {
+						seenDelta[n] = true
+						queue = append(queue, n)
+					}
+				}
+			}
+			if size >= minLandFragment {
+				m.DeltaIslandSizes = append(m.DeltaIslandSizes, size)
+			}
+		}
+		sort.Sort(sort.Reverse(sort.IntSlice(m.DeltaIslandSizes)))
+	}
 
 	// LargestLandmassWalkableFraction (ögonkoll 2026-07-29 — see
 	// isWalkableLand's doc comment): how much of the BIGGEST landmass a land

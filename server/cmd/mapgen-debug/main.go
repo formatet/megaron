@@ -84,7 +84,8 @@ func runSeed(requested int64, w, h int, outDir string) (err error) {
 		"target_players=%d player_capacity=%d copper_sources=%d tin_sources=%d silver_sources=%d "+
 		"forest_olive_grove=%d forest_cedar=%d forest_fraction=%.3f cedar_fraction=%.3f cedar_stands=%d cedar_stand_sizes=%v "+
 		"plains_fraction=%.3f hills_fraction=%.3f scrub_fraction=%.3f semi_desert_fraction=%.3f mountain_fraction=%.3f "+
-		"qualifying_landmasses=%d rivers_per_landmass=%v river_chain_lengths=%v\n",
+		"qualifying_landmasses=%d rivers_per_landmass=%v river_chain_lengths=%v "+
+		"branched_deltas=%d delta_sizes_per_river=%v delta_island_sizes=%v\n",
 		w, h, requested, eff, m.Attempts,
 		m.LandFraction, m.LandComponents, m.LargestComponentFraction, m.LargestLandmassWalkableFraction, m.SpawnValidTiles,
 		m.CopperDeposits, m.TinDeposits, m.SilverDeposits, m.CedarDeposits, m.Straits, m.DeltaTiles,
@@ -92,6 +93,7 @@ func runSeed(requested int64, w, h int, outDir string) (err error) {
 		m.TargetPlayers, m.PlayerCapacity, m.CopperSources, m.TinSources, m.SilverSources,
 		m.ForestOliveGroveTiles, m.ForestCedarTiles, m.ForestFraction, m.CedarFraction, m.CedarStands, m.CedarStandSizes,
 		m.PlainsFraction, m.HillsFraction, m.ScrubFraction, m.SemiDesertFraction, m.MountainFraction,
-		m.QualifyingLandmasses, m.RiversPerLandmass, m.RiverChainLengths)
+		m.QualifyingLandmasses, m.RiversPerLandmass, m.RiverChainLengths,
+		m.BranchedDeltas, m.DeltaSizesPerRiver, m.DeltaIslandSizes)
 	return nil
 }

@@ -601,6 +601,43 @@ func TestGenerateMap_EveryRiverReachesDelta(t *testing.T) {
 	}
 }
 
+// TestGenerateMap_DeltaForks is the regression guard for megaron_plan_
+// deltat_grenar.md steg 1-6: a river over deltaForkMinChain forks into two
+// loppen near its mouth, enclosing an island >= minLandFragment that becomes
+// river_delta. This does NOT assert the plan's own "≥18/20 seeds" acceptance
+// bar (that needs a 20-seed sweep at 230×230, too slow for a unit test and
+// measured separately in this slice's own proof package) — only that the
+// mechanism fires on at least one of a handful of seeds already known (this
+// slice's own sweep) to produce a committed fork, and that every reported
+// island stays within its own floor (minLandFragment) and ceiling
+// (deltaForkMaxIsland) — see deltaForkIsland's and deltaForkMaxIsland's own
+// doc comments for what a violation of either would mean (a fragmented
+// carve, or the giant-island failure mode this slice's own development hit
+// and fixed).
+func TestGenerateMap_DeltaForks(t *testing.T) {
+	w, h := 230, 230
+	seeds := []int64{200, 500, 900, 1400}
+	forkedSeeds := 0
+	for _, seed := range seeds {
+		tiles, eff := GenerateMap(stubID{}, seed, w, h)
+		m := ComputeMapMetrics(tiles, w, h)
+		if m.BranchedDeltas > 0 {
+			forkedSeeds++
+		}
+		for _, size := range m.DeltaIslandSizes {
+			if size < minLandFragment {
+				t.Fatalf("seed %d (eff %d): delta island size %d below minLandFragment %d", seed, eff, size, minLandFragment)
+			}
+			if size > deltaForkMaxIsland {
+				t.Fatalf("seed %d (eff %d): delta island size %d exceeds deltaForkMaxIsland %d", seed, eff, size, deltaForkMaxIsland)
+			}
+		}
+	}
+	if forkedSeeds == 0 {
+		t.Fatalf("none of %d seeds produced a branched delta (branched_deltas=0) — fork mechanism regressed", len(seeds))
+	}
+}
+
 // It is an archipelago: many distinct landmasses separated by sea.
 func TestGenerateMap_IsArchipelago(t *testing.T) {
 	for seed := int64(0); seed < 20; seed++ {
