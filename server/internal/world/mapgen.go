@@ -283,6 +283,71 @@ const (
 	// climb real hills or ignore a strong downhill signal.
 	riverMeanderWavelength = 10.0
 	riverMeanderJitter     = 0.02
+
+	// deltaForkMinChain/deltaForkRadius (megaron_plan_deltat_grenar.md steg 1,
+	// Timothy 2026-08-03: "floden delar sig nära havet"): a river's own chain
+	// length must clear deltaForkMinChain before addRiver even tries a second
+	// lopp — both measured in the river's own CHAIN LENGTH, never map area,
+	// same convention as fordSpacingHexes above. 25 was chosen because the red
+	// baseline (megaron_plan_deltat_grenar.md §Mätt utgångsläge, five seeds at
+	// 230×230) already has 3-5 chains >= 25 hexes per map out of ~20-27 total
+	// rivers — a threshold any lower would fork short, noise-length rivers;
+	// any higher would leave too few candidates to ever clear the fork's own
+	// minLandFragment (12) island floor. deltaForkRadius bounds how far from
+	// the mouth the fork node may sit: too close and the two loppen have no
+	// room to diverge before hitting the sea (an island under minLandFragment,
+	// reverted every time); too far and the branch reads as a second,
+	// unrelated river rather than a mynning. The plan's own starting value (4)
+	// measured empirically at under 40% of seeds ever clearing the
+	// minLandFragment floor (far short of the "≥18/20 seeds" acceptance bar,
+	// §Klart när) — most candidate forks simply had nowhere to enclose 12
+	// hexes in only 4 hexes of divergence. 8 raised that to 14/20 in this
+	// slice's own sweep — better, but STILL short of the bar; pushing further
+	// (12 was tried) made it WORSE (more forks land near an existing
+	// river_ford, tripping that invariant's own separate "exactly 2
+	// neighbours" check — see megaron_plan_deltat_grenar.md steg 4's own
+	// warning about this collision — which costs more reseeds than the wider
+	// radius gains in successful forks). 8/24 is the best point found in this
+	// slice's own sweep, not a value that clears the bar; left as an open
+	// finding for the next tuning pass rather than pushed further blindly.
+	deltaForkMinChain = 25
+	deltaForkRadius   = 8
+
+	// deltaForkMaxBranch bounds how many hexes the branch walk (carveDeltaFork/
+	// attemptDeltaFork) may carve before it must have reached the sea. Without
+	// this cap, a branch whose direct route to a nearby sea point is blocked
+	// (adjacentToExistingRiverExcept rejecting every candidate near the stem's
+	// own long body) backtracks and wanders to find SOME other unblocked sea
+	// access — measured during this slice's own development, that detour can
+	// cross 100+ hexes of the landmass interior before finding one, which then
+	// breaks §3's "island enclosed near the mouth" premise: deltaForkIsland's
+	// enclosure test would then see a branch that touches huge stretches of
+	// the landmass, not just the small pocket next to the fork. 24 (3x
+	// deltaForkRadius) gives the branch room to route around a headland or two
+	// on its way to a DIFFERENT nearby coastal point while still keeping it
+	// "nära havet" (plan's own phrase) rather than letting it become a second
+	// unrelated river. A branch that hits this cap without reaching the sea is
+	// abandoned (attemptDeltaFork returns false) exactly like one that never
+	// reaches the sea at all.
+	deltaForkMaxBranch = 24
+
+	// deltaForkMaxIsland is minLandFragment's counterpart ceiling — the plan
+	// only names a FLOOR ("Öns storlekskrav sätter deltats storlek… ingen ny
+	// konstant uppfinns för det", §Invariant), on the assumption that a short
+	// branch near the coast naturally encloses a modest pocket. Measured
+	// empirically once deltaForkRadius/deltaForkMaxBranch were widened enough
+	// to clear the seed-success bar above: most committed islands land in the
+	// 13-90 hex range (a believable "honey trap" delta), but a minority
+	// occasionally enclose 200-800+ hexes — the branch and stem tail happening
+	// to bracket most of a headland or peninsula, not a mynning. That is
+	// exactly the giant-island failure mode this slice already fixed once
+	// (deltaForkIsland's doc comment) recurring in a milder form: correct
+	// enclosure math, implausible geography. 150 sits comfortably above every
+	// observed legitimate delta in the sweep and well below the observed
+	// degenerate ones — an island past it is treated exactly like one under
+	// the floor: this candidate fork is rejected, carveDeltaFork tries the
+	// next one back.
+	deltaForkMaxIsland = 150
 )
 
 // riverFlankable lists the terrains a river's flank may convert to
@@ -831,7 +896,26 @@ func riverInvariantFailures(tiles []MapTile, width, height int) []string {
 
 	var fails []string
 
-	// Every river hex has at most 2 river neighbours (§7c: exactly 1 hex wide).
+	// deltaHexes: every river_delta tile on the map, collected once — the
+	// delta-fork exception just below needs to test proximity to ANY of them
+	// (megaron_plan_deltat_grenar.md steg 4), and re-deriving this per
+	// candidate hex instead would be quadratic for no reason.
+	var deltaHexes []cell
+	for c, t := range grid {
+		if t == TerrainRiverDelta {
+			deltaHexes = append(deltaHexes, c)
+		}
+	}
+
+	// Every river hex has at most 2 river neighbours (§7c: exactly 1 hex
+	// wide) — UNLESS it is a delta-fork node: the ONE hex where a river
+	// deliberately splits into two loppen (megaron_plan_deltat_grenar.md steg
+	// 1/4, Timothy 2026-08-03). That node has exactly 3 by construction (its
+	// two stem neighbours plus the branch's first hex) and is recognised
+	// geometrically — within deltaForkRadius hexes of a river_delta tile —
+	// rather than by any generation-time flag, the same "re-derive from the
+	// flattened tile list" contract every other check in this function
+	// follows. 4+ neighbours is never legitimate, fork or not.
 	for c, t := range grid {
 		if t != TerrainRiver {
 			continue
@@ -842,8 +926,11 @@ func riverInvariantFailures(tiles []MapTile, width, height int) []string {
 				n++
 			}
 		}
+		if n == 3 && nearRiverDelta(deltaHexes, c, deltaForkRadius) {
+			continue
+		}
 		if n > 2 {
-			fails = append(fails, fmt.Sprintf("river hex (%d,%d) has %d river neighbours (want <= 2)", c.q, c.r, n))
+			fails = append(fails, fmt.Sprintf("river hex (%d,%d) has %d river neighbours (want <= 2, or ==3 within %d hexes of a river_delta tile)", c.q, c.r, n, deltaForkRadius))
 		}
 	}
 
@@ -2395,6 +2482,28 @@ func adjacentToExistingRiver(grid map[cell]Terrain, c cell, width, height int) b
 	return false
 }
 
+// adjacentToExistingRiverExcept is adjacentToExistingRiver but does not count
+// the single cell `except` as a river neighbour even if it is one. Used only
+// by the delta-fork branch walk (megaron_plan_deltat_grenar.md steg 2): the
+// branch's own candidates are, by construction, adjacent to the fork node on
+// the stem (that adjacency IS the fork), so the ordinary check would refuse
+// every candidate near it. The branch's own adjacentToOwnPath (seeded with
+// the fork node in its visited set) still catches a genuine loop back onto
+// the fork node later in the same walk — this exemption only ever needs to
+// cover the fork node itself, nothing else.
+func adjacentToExistingRiverExcept(grid map[cell]Terrain, c, except cell, width, height int) bool {
+	for _, d := range riverNeighbourOrder {
+		n := cell{c.q + d[0], c.r + d[1]}
+		if n == except {
+			continue
+		}
+		if grid[n] == TerrainRiver {
+			return true
+		}
+	}
+	return false
+}
+
 // adjacentToOwnPath reports whether candidate cand — a prospective next step
 // from cur — is hex-adjacent to any cell this SAME descent has already
 // explored, other than cur itself (cand's would-be legitimate predecessor).
@@ -2741,6 +2850,254 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field, meander map[ce
 		}
 		grid[line[idx]] = TerrainRiverFord
 	}
+
+	// Delta fork (megaron_plan_deltat_grenar.md steg 1-3, Timothy 2026-08-03:
+	// "floden delar sig nära havet"). Only a river over deltaForkMinChain's
+	// own chain length is eligible — a short rännil branching is a bug, not a
+	// delta. `line` still holds the DFS's own ordered path (fords above read
+	// it the same way), which is what lets the fork pick "near the mouth" at
+	// all — riverInvariantFailures can only re-derive UNORDERED connectivity
+	// afterward.
+	if len(line) >= deltaForkMinChain {
+		carveDeltaFork(grid, landmap, field, meander, mainSea, rng, targetLM, line, width, height)
+	}
+}
+
+// carveDeltaFork tries to grow a second lopp off the stem's own last
+// deltaForkRadius hexes before its mouth, turning a single-mouth river into a
+// branched delta (megaron_plan_deltat_grenar.md steg 2-3). Candidates are
+// tried farthest-from-mouth first: a fork close to the coast leaves the
+// second lopp no room to diverge before it too reaches the sea, which — measured
+// during this slice's own development — almost always encloses an island
+// under minLandFragment and gets reverted; a fork with more of the stem's own
+// tail behind it gives the two loppen room to separate into a real island.
+// Stops at the first candidate that produces an island >= minLandFragment —
+// "exactly two lopp" (plan §Härlett 2), not a search for the biggest.
+func carveDeltaFork(grid map[cell]Terrain, landmap map[cell]int, field, meander map[cell]float64, mainSea map[cell]bool, rng *rand.Rand, targetLM int, line []cell, width, height int) {
+	// outside: a walkable neighbour of the stem's own SOURCE (line[0], its
+	// first, highest, farthest-from-the-coast hex) — the reference point
+	// deltaForkIsland's enclosure test floods from. "Touches both the stem and
+	// the branch" was tried first and rejected (megaron_plan_deltat_grenar.md
+	// worked example): the stem's own line runs the length of the landmass, so
+	// almost every walkable component borders it SOMEWHERE, and the "island"
+	// it found was the landmass's entire main body — thousands of tiles,
+	// wholesale-converted to river_delta. Flooding from a point guaranteed to
+	// be on the mainland side (the source sits on a local height MAXIMUM,
+	// topologically about as far from a coastal pocket the fork/branch can
+	// enclose within their own small radii as this landmass gets) correctly
+	// separates "the small pocket the two loppen cut off" from "everything
+	// else", regardless of their relative sizes — see deltaForkIsland's doc
+	// comment for the actual test. The source cell itself is water (line[0] is
+	// carved into the line like every other cell); the flood needs a walkable
+	// cell, which is why this looks at the source's own flank instead.
+	var outside cell
+	haveOutside := false
+	for _, n := range hexNeighbours(line[0], width, height) {
+		if t := grid[n]; !isSea(t) && t != TerrainRiver {
+			outside = n
+			haveOutside = true
+			break
+		}
+	}
+	if !haveOutside {
+		// Defensive only: addRiver's own flank pass (riverFlankable) runs on
+		// every line cell, including the source, before carveDeltaFork is ever
+		// called, so this should be unreachable. Without a safe "outside"
+		// point the enclosure test cannot run, so skip forking this river
+		// rather than guess.
+		return
+	}
+
+	last := len(line) - 1
+	for back := deltaForkRadius; back >= 1; back-- {
+		fork := line[last-back]
+		if attemptDeltaFork(grid, landmap, field, meander, mainSea, rng, targetLM, outside, fork, width, height) {
+			return
+		}
+	}
+}
+
+// attemptDeltaFork carves one candidate branch from `fork` — a hex already on
+// the stem's own line — to the sea, using the SAME descentOrder steepest-
+// descent-plus-meander machinery the stem used (megaron_plan_deltat_grenar.md
+// steg 2: "samma descentOrder-maskineri"). Returns false, with the grid left
+// exactly as it found it, if the branch never reaches the sea or the island
+// it encloses with the stem is under minLandFragment — §3's "återställ grenen
+// (bara grenen … huvudfloden står kvar)": only this function's own writes are
+// ever touched, never the stem's.
+func attemptDeltaFork(grid map[cell]Terrain, landmap map[cell]int, field, meander map[cell]float64, mainSea map[cell]bool, rng *rand.Rand, targetLM int, outside, fork cell, width, height int) bool {
+	branchVisited := map[cell]bool{fork: true}
+
+	type frame struct {
+		c         cell
+		remaining []cell
+	}
+	stack := []frame{{c: fork, remaining: descentOrder(field, meander, landmap, targetLM, fork, width, height)}}
+
+	var branchLine []cell
+	var branchMouth cell
+	reached := false
+
+	// The len(branchLine) <= deltaForkMaxBranch clause is what actually bounds
+	// the walk (see that constant's doc comment) — checked at the TOP of each
+	// iteration, so the newest cell always gets its firstSeaNeighbour check
+	// before the cap can cut the walk off mid-step; a branch that reaches the
+	// sea in exactly deltaForkMaxBranch hexes is still accepted, one hex more
+	// is not.
+	maxIter := width*height + 10
+	for iter := 0; iter < maxIter && len(stack) > 0 && len(branchLine) <= deltaForkMaxBranch; iter++ {
+		top := &stack[len(stack)-1]
+		cur := top.c
+
+		if n, ok := firstSeaNeighbour(grid, mainSea, cur, width, height); ok {
+			branchMouth = n
+			reached = true
+			break
+		}
+
+		var next cell
+		found := false
+		for len(top.remaining) > 0 {
+			cand := top.remaining[0]
+			top.remaining = top.remaining[1:]
+			// The stem's own delta-fork exception (adjacentToExistingRiverExcept
+			// with except=fork): the branch's first hexes are, by construction,
+			// adjacent to the fork node — that adjacency IS the fork, not a
+			// pinch. adjacentToOwnPath (branchVisited seeded with fork) still
+			// catches a real loop back onto the fork node, or onto the branch's
+			// own earlier ground, later in the same walk. grid[cand] itself must
+			// not already be water — the stem's own line, another river, or an
+			// earlier delta-fork attempt this same call reverted but a sea tile
+			// could still be adjacent through descentOrder's landmap filter.
+			if grid[cand] != TerrainRiver && !branchVisited[cand] &&
+				!adjacentToExistingRiverExcept(grid, cand, fork, width, height) &&
+				!adjacentToOwnPath(branchVisited, cur, cand, width, height) {
+				next = cand
+				found = true
+				break
+			}
+		}
+		if !found {
+			stack = stack[:len(stack)-1]
+			if len(branchLine) > 0 {
+				branchLine = branchLine[:len(branchLine)-1]
+			}
+			continue
+		}
+
+		branchVisited[next] = true
+		branchLine = append(branchLine, next)
+		stack = append(stack, frame{c: next, remaining: descentOrder(field, meander, landmap, targetLM, next, width, height)})
+	}
+
+	if !reached || len(branchLine) == 0 {
+		return false
+	}
+	branchOrigin := branchLine[len(branchLine)-1]
+
+	// Tentatively commit the branch's water line only (no flanks, no delta
+	// yet) so the island BFS below sees the true post-fork walkability —
+	// river_valley flanks are still walkable (§7b), so they cannot affect
+	// which fragment is enclosed, and staying out of grid until the island
+	// clears the floor keeps this revert a single, cheap terrain-map restore.
+	before := make(map[cell]Terrain, len(branchLine))
+	for _, c := range branchLine {
+		before[c] = grid[c]
+		grid[c] = TerrainRiver
+	}
+
+	island := deltaForkIsland(grid, landmap, targetLM, outside, width, height)
+	// Floor (minLandFragment, plan §Invariant) and ceiling (deltaForkMaxIsland
+	// — see its own doc comment) both gate commitment: too small isn't a
+	// delta, implausibly large is a fork that happened to bracket most of a
+	// headland rather than a mynning.
+	committed := len(island) >= minLandFragment && len(island) <= deltaForkMaxIsland
+	if fragDebugLog {
+		fmt.Fprintf(os.Stderr, "FORKDBG landmass=%d fork=%v branchLen=%d islandSize=%d committed=%v\n",
+			targetLM, fork, len(branchLine), len(island), committed)
+	}
+	if !committed {
+		for c, t := range before {
+			grid[c] = t
+		}
+		return false
+	}
+
+	// Flanks, same whitelist and "check-before-overwrite" rule the stem used.
+	for _, c := range branchLine {
+		for _, n := range hexNeighbours(c, width, height) {
+			if riverFlankable[grid[n]] {
+				grid[n] = TerrainRiverValley
+			}
+		}
+	}
+	// The island itself becomes the delta (§3) — this is what makes the
+	// branched mouth read as a delta rather than two unrelated rivers.
+	for _, c := range island {
+		grid[c] = TerrainRiverDelta
+	}
+	// Plus the branch's own mynningsnära hexar, same mechanism placeDelta
+	// already gives the stem — the branch's mouth deserves the same coastal
+	// dressing, not just the enclosed island.
+	placeDelta(grid, landmap, mainSea, rng, branchMouth, branchOrigin, targetLM, width, height)
+
+	// Vadställen on the branch: deliberately not placed (megaron_plan_
+	// deltat_grenar.md §Öppen fråga — "får deltaön vadställen?" is still open
+	// with Timothy; building one here would be a silent answer, not a
+	// härledning).
+	return true
+}
+
+// deltaForkIsland returns the walkable land (from targetLM's own membership,
+// via landmap) that is UNREACHABLE from `outside` without crossing water —
+// the land the two loppen and the sea enclose between them (megaron_plan_
+// deltat_grenar.md steg 3). nil if nothing is enclosed (the branch ran
+// alongside the stem without pinching anything off) — attemptDeltaFork treats
+// that exactly like an under-minLandFragment island: not committed.
+//
+// An earlier version tested "is this walkable component hex-adjacent to BOTH
+// the stem and the branch" instead, and it was wrong: the stem's own line
+// runs the length of the landmass (that's what deltaForkMinChain=25 selects
+// for), so the landmass's entire main body borders it SOMEWHERE — and, it
+// turns out, borders a short branch near the coast too, at the branch's
+// outward-facing side. "Touches both" doesn't distinguish a small enclosed
+// pocket from the landmass's main body brushing past the fork on its way
+// through the same coastal stretch; measured empirically, that version
+// converted 2000-4000-tile landmass interiors into river_delta wholesale.
+// Reachability from a point KNOWN to be on the mainland side (outside — see
+// carveDeltaFork's doc comment for why the stem's own source qualifies) does
+// not have that ambiguity: it does not matter how big the unenclosed side is,
+// only whether a given cell can reach it without crossing the stem, the
+// branch, or the sea.
+func deltaForkIsland(grid map[cell]Terrain, landmap map[cell]int, targetLM int, outside cell, width, height int) []cell {
+	walkable := func(c cell) bool {
+		t := grid[c]
+		return !isSea(t) && t != TerrainRiver
+	}
+	if !walkable(outside) {
+		return nil // defensive — see carveDeltaFork's own guard on this
+	}
+
+	reached := map[cell]bool{outside: true}
+	queue := []cell{outside}
+	for len(queue) > 0 {
+		cur := queue[0]
+		queue = queue[1:]
+		for _, n := range hexNeighbours(cur, width, height) {
+			if landmap[n] == targetLM && walkable(n) && !reached[n] {
+				reached[n] = true
+				queue = append(queue, n)
+			}
+		}
+	}
+
+	var island []cell
+	for c, lm := range landmap {
+		if lm == targetLM && walkable(c) && !reached[c] {
+			island = append(island, c)
+		}
+	}
+	return island
 }
 
 // placeDelta converts a land tile at the river's mouth into river_delta
@@ -2886,6 +3243,27 @@ func riverComponentsAllTouchDelta(grid map[cell]Terrain, width, height int) bool
 // its own mouth, and validateMap's width assertion (§7f) will surface it
 // loudly rather than let it hide.
 func thinRiverJunctions(grid map[cell]Terrain, width, height int) {
+	// deltaHexes: river_delta tiles never change under this pass (only
+	// TerrainRiver→TerrainRiverValley demotions happen below), so collecting
+	// them once up front stays valid for every iteration. Used to recognise a
+	// delta-fork node (megaron_plan_deltat_grenar.md steg 1/4) — its 3rd
+	// neighbour is the branch's first hex, and demoting it would sever the
+	// branch from the stem. riverComponentsAllTouchDelta's guard rail does
+	// NOT catch this on its own: the severed branch remnant still carries its
+	// OWN mouth-adjacent delta (placeDelta is called unconditionally for a
+	// committed fork), so the check below would see "still touches a delta"
+	// and happily keep the demotion — the fork node must never even be
+	// offered to the ordinary demotion attempt.
+	var deltaHexes []cell
+	for q := 0; q < width; q++ {
+		base := rowOrigin(q, width)
+		for r := base; r < base+height; r++ {
+			if grid[cell{q, r}] == TerrainRiverDelta {
+				deltaHexes = append(deltaHexes, cell{q, r})
+			}
+		}
+	}
+
 	unresolved := map[cell]bool{}
 	for changed := true; changed; {
 		changed = false
@@ -2904,6 +3282,10 @@ func thinRiverJunctions(grid map[cell]Terrain, width, height int) {
 					}
 				}
 				if len(riverNbrs) <= 2 {
+					continue
+				}
+				if len(riverNbrs) == 3 && nearRiverDelta(deltaHexes, c, deltaForkRadius) {
+					unresolved[c] = true
 					continue
 				}
 				// Try demoting each neighbour in turn — not just the "excess"
@@ -2991,6 +3373,18 @@ type riverChainInfo struct {
 	fords      int
 	hasDelta   bool
 	hasMainSea bool
+	// forkNodes/deltaTiles (megaron_plan_deltat_grenar.md steg 6): a branched
+	// chain has exactly one TerrainRiver cell with 3 (not <=2) TerrainRiver
+	// neighbours — the fork node §4 carves — so forkNodes > 0 identifies a
+	// branched delta without threading any generation-time flag through, same
+	// contract as everything else in this function. deltaTiles is the DISTINCT
+	// count of river_delta tiles hex-adjacent to any cell in this chain (a set,
+	// not a running tally — several chain cells can border the same delta
+	// tile) — this is what makes delta_sizes_per_river show a branched river's
+	// island-plus-two-mouths delta as visibly bigger than an unbranched
+	// river's 1-3 tile mouth.
+	forkNodes  int
+	deltaTiles int
 }
 
 // riverChains groups every TerrainRiver/TerrainRiverFord tile into connected
@@ -3025,6 +3419,7 @@ func riverChains(tiles []MapTile, width, height int) []riverChainInfo {
 				continue
 			}
 			info := riverChainInfo{landmass: comp[[2]int{start.q, start.r}]}
+			deltaSeen := map[cell]bool{}
 			queue := []cell{start}
 			seen[start] = true
 			for len(queue) > 0 {
@@ -3034,10 +3429,25 @@ func riverChains(tiles []MapTile, width, height int) []riverChainInfo {
 				if grid[cur] == TerrainRiverFord {
 					info.fords++
 				}
+				if grid[cur] == TerrainRiver {
+					riverNbrs := 0
+					for _, n := range hexNeighbours(cur, width, height) {
+						if grid[n] == TerrainRiver {
+							riverNbrs++
+						}
+					}
+					if riverNbrs == 3 {
+						info.forkNodes++
+					}
+				}
 				for _, n := range hexNeighbours(cur, width, height) {
 					nt := grid[n]
 					if nt == TerrainRiverDelta {
 						info.hasDelta = true
+						if !deltaSeen[n] {
+							deltaSeen[n] = true
+							info.deltaTiles++
+						}
 					}
 					if mainSea[n] {
 						info.hasMainSea = true
@@ -3175,6 +3585,23 @@ func hexDist(a, b cell) int {
 	dq := a.q - b.q
 	dr := a.r - b.r
 	return (iAbs(dq) + iAbs(dq+dr) + iAbs(dr)) / 2
+}
+
+// nearRiverDelta reports whether c is within radius hexes (true hex distance
+// — deltaForkMinChain/deltaForkRadius are chosen in the river's own CHAIN
+// length, but this re-derives geometrically from the flattened tile list like
+// every other riverInvariantFailures/thinRiverJunctions check, and chain
+// distance is always >= hex distance so a real fork node always clears this)
+// of any hex in deltas. Recognises a legitimate delta-fork node
+// (megaron_plan_deltat_grenar.md steg 4) without threading generation-time
+// state through either caller.
+func nearRiverDelta(deltas []cell, c cell, radius int) bool {
+	for _, d := range deltas {
+		if hexDist(c, d) <= radius {
+			return true
+		}
+	}
+	return false
 }
 
 // rowOrigin is the per-column r-origin that turns the axial generation domain
