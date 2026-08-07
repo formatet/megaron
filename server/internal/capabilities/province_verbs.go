@@ -50,9 +50,9 @@ func CanCraft(cc checkContext) Verb { return canCraft(cc) }
 func CanRecruit(cc checkContext) Verb { return canRecruit(cc) }
 
 // canCraft checks the load-bearing bronze recipe (recipe_id=1: copper+tin →
-// bronze @ foundry) — the MVP-chain's craft step. Luxury (recipe 2) is a
-// second recipe the same endpoint serves but is not part of the MVP chain
-// this spec calls out, so it is not separately modeled here.
+// bronze @ foundry) — the MVP-chain's craft step, and (after S4,
+// megaron_plan_varukatalogen.md — luxury removed) the only recipe the
+// catalog serves.
 // Fas 3: api/handlers.ProvinceHandler.Craft calls CanCraft directly for
 // recipe_id=1 and 422s with FirstUnsatisfied, so this and the handler's own
 // gate cannot drift apart.

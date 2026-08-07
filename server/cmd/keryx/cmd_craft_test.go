@@ -22,7 +22,7 @@ func TestResolveRecipeID_FallsBackToServerCatalogue(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`[
 			{"id":1,"output_key":"bronze","ingredients":[{"good_key":"copper","quantity":9}]},
-			{"id":2,"output_key":"luxury","ingredients":[]},
+			{"id":2,"output_key":"electrum","ingredients":[]},
 			{"id":7,"output_key":"faience","ingredients":[]}
 		]`))
 	}))
@@ -56,7 +56,7 @@ func TestResolveRecipeID_KnownNameSkipsTheServer(t *testing.T) {
 	defer ts.Close()
 	c := newClient(&Config{Server: ts.URL})
 
-	for name, want := range map[string]int{"bronze": 1, "LUXURY": 2, " bronze ": 1} {
+	for name, want := range map[string]int{"bronze": 1, "BRONZE": 1, " bronze ": 1} {
 		got, err := resolveRecipeID(c, name)
 		if err != nil {
 			t.Errorf("%q: unexpected error: %v", name, err)
@@ -108,7 +108,7 @@ func TestResolveRecipeID_ServerDownStillNamesKnownRecipes(t *testing.T) {
 		t.Fatal("expected an error when the catalogue is unreachable")
 	}
 	msg := err.Error()
-	for _, want := range []string{`"faience"`, "bronze", "luxury", "could not reach the server"} {
+	for _, want := range []string{`"faience"`, "bronze", "could not reach the server"} {
 		if !strings.Contains(msg, want) {
 			t.Errorf("error %q missing %q", msg, want)
 		}
@@ -117,7 +117,7 @@ func TestResolveRecipeID_ServerDownStillNamesKnownRecipes(t *testing.T) {
 
 func TestKnownRecipeNames_Sorted(t *testing.T) {
 	got := knownRecipeNames()
-	want := []string{"bronze", "luxury"}
+	want := []string{"bronze"}
 	if len(got) != len(want) {
 		t.Fatalf("got %v, want %v", got, want)
 	}

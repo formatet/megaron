@@ -1,7 +1,7 @@
 package economy
 
-// The temple tithe: when a city sells a religiously coded good — wine, oil,
-// purple, luxury — the temple takes a share of the silver.
+// The temple tithe: when a city sells a religiously coded good (goods.religious
+// in the catalog — e.g. wine, oil, purple) the temple takes a share of the silver.
 //
 // Chosen (Timothy 2026-07-22) over a standing silver upkeep for the cult, and
 // the difference matters. A flat upkeep drains cities that have no income,

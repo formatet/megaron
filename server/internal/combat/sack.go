@@ -24,7 +24,7 @@ import (
 // row at all) before calling this.
 //
 // Loot formula (decision-locked): silver 50%; every other good 0.5/goods.weight —
-// lighter goods travel better (luxury/purple w1 → 50%, silver/grain/copper/tin w2 →
+// lighter goods travel better (purple w1 → 50%, silver/grain/copper/tin w2 →
 // 25%, stone/cedar/timber w3 → 17%, horses w5 → 10%). The loot is dispatched home as
 // a physical, interceptable transport (kind="plunder") — not credited directly —
 // so a sentry can seize it in transit like any other caravan.

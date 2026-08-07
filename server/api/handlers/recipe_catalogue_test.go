@@ -138,3 +138,39 @@ func TestRecipeCatalogue_MatchesDB(t *testing.T) {
 		t.Errorf("bronze recipe ingredients = %v, want copper and tin present", bronze.Ingredients)
 	}
 }
+
+// TestRecipeCatalogue_LuxuryRemoved: mig 118 (megaron_plan_varukatalogen.md
+// S4) removed luxury entirely, not parked it — the catalogue must return
+// ONLY the bronze recipe, and no goods row should exist for luxury either.
+func TestRecipeCatalogue_LuxuryRemoved(t *testing.T) {
+	pool := p10TestPool(t)
+	ctx := context.Background()
+
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/recipes", nil)
+	rec := httptest.NewRecorder()
+	ph.RecipeCatalogue(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("RecipeCatalogue = %d: %s", rec.Code, rec.Body.String())
+	}
+
+	type recipe struct {
+		OutputKey string `json:"output_key"`
+	}
+	var got []recipe
+	if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+		t.Fatalf("parse RecipeCatalogue response: %v", err)
+	}
+	if len(got) != 1 || got[0].OutputKey != "bronze" {
+		t.Errorf("RecipeCatalogue = %v, want exactly one recipe (bronze)", got)
+	}
+
+	var luxuryGoodExists bool
+	if err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM goods WHERE key = 'luxury')`).Scan(&luxuryGoodExists); err != nil {
+		t.Fatalf("query goods for luxury: %v", err)
+	}
+	if luxuryGoodExists {
+		t.Error("goods table still has a row for luxury after S4")
+	}
+}

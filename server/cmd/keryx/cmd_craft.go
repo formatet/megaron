@@ -14,16 +14,14 @@ import (
 // that exist today, resolved without a round-trip so the common invocation
 // stays as cheap as the numeric form.
 // ID 1 = bronze (copper + tin → bronze, requires foundry)
-// ID 2 = luxury (prestige goods, requires market)
 //
 // A miss here is NOT an error — resolveRecipeID falls through to the server's
 // /api/v1/recipes catalogue, so a recipe added by a future migration is
-// reachable by name without touching this map. Keeping the map means the two
-// names players actually type never pay for a request; keeping the fallback
+// reachable by name without touching this map. Keeping the map means the
+// name players actually type never pays for a request; keeping the fallback
 // means this map going stale degrades to "one extra GET", not "unknown recipe".
 var recipeNameToID = map[string]int{
 	"bronze": 1,
-	"luxury": 2,
 }
 
 // recipeCatalogueEntry is the subset of GET /api/v1/recipes this command needs.
@@ -40,8 +38,8 @@ type recipeCatalogueEntry struct {
 //
 // Error strings name what the SERVER actually has whenever it could be
 // reached, because a frozen list in an error message is the same staleness
-// bug one layer down — a player (or an agent) told "use one of: bronze,
-// luxury" has no way to discover a third recipe that already exists.
+// bug one layer down — a player (or an agent) told "use one of: bronze" has
+// no way to discover a second recipe that already exists.
 func resolveRecipeID(c *Client, name string) (int, error) {
 	key := strings.ToLower(strings.TrimSpace(name))
 	if id, ok := recipeNameToID[key]; ok {
@@ -93,9 +91,8 @@ func craftCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "craft",
-		Short: "Craft a recipe at your settlement (bronze@foundry, luxury@market)",
+		Short: "Craft a recipe at your settlement (bronze@foundry)",
 		Example: `  keryx craft --recipe bronze --qty 5   # smelt 5 bronze (foundry required)
-  keryx craft --recipe luxury --qty 2   # craft 2 luxury (market required)
   keryx craft --recipe 1 --qty 5        # same as bronze (numeric ID still works)`,
 		Args: rejectPositionalArgs("recipe"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -149,7 +146,7 @@ func craftCmd() *cobra.Command {
 	}
 
 	cmd.Flags().Float64VarP(&qty, "qty", "q", 1, "quantity to craft")
-	cmd.Flags().StringVarP(&recipeName, "recipe", "r", "", "recipe name (bronze, luxury, or any the server publishes) or numeric id")
+	cmd.Flags().StringVarP(&recipeName, "recipe", "r", "", "recipe name (bronze, or any the server publishes) or numeric id")
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to craft in (default: your capital)")
 	return cmd
 }

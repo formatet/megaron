@@ -2918,8 +2918,8 @@ func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		// Other recipes (e.g. luxury goods) have no capabilities checker yet —
-		// fall back to the generic building-presence gate.
+		// Other recipes have no capabilities checker yet — fall back to the
+		// generic building-presence gate.
 		var hasBuilding bool
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT EXISTS (SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
