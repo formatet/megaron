@@ -137,17 +137,19 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 - **Messengers are physical and sacred** (uninterceptable); the reply arrives on return. **Load-bearing
   pillar:** ALL info-sharing flows through moving units, and orders to your own units travel by messenger —
   **command is never instant.** Everything else on the map *can* be intercepted.
-- **Catchment is the only production source** — the settlement's own hex + the 6 around it, worked without
-  outposts; dynamic, lazy, deterministic.
+- **Catchment is the only production source** — the settlement's own hex + a radius-2 ring around it
+  (19 hexes, 18 worked; P1, 2026-08-07 — was radius-1/7 hexes before), worked without outposts; dynamic,
+  lazy, deterministic. Radius lives in `internal/hexgrid.CatchmentRadius`.
 - **Coast is not a terrain** — it's a property (neighbour of sea); `coast_beach` is gone from the enum.
-- ⚠️ **Labor = share of pop — REPEALED 2026-08-07 (Timothy), still true in code until the placement
-  model lands.** The rule *was*: share of pop (weight semantics), not absolute citizens, so growing pop
-  follows the percentage — that is what `economy.LaborCapacity` still does today (0.25 terrain + 0.5 per
-  building level). **The decision (DE2=B) is that labour is counted in whole gubbar placed on specific
-  places** — a hex or a building slot — because placing them is how the player is activated. An
-  unplaced gubbe produces nothing and starves first. `LaborCapacity`'s share model gets **replaced**
-  by workplace slots + hex capacity, not kept as a hidden cap on top. **Do not build new share-based
-  labour logic.** Rewrite this bullet when the slots phase lands; plan and phases:
+- ⚠️ **Labor = share of pop — REPEALED 2026-08-07 (Timothy), buildings fixed (P2), terrain still
+  share-based (P3 not built).** The rule *was*: share of pop (weight semantics), not absolute citizens,
+  so growing pop follows the percentage. **P2 (2026-08-07) replaced the building term**:
+  `economy.LaborCapacity`'s building contribution is now `economy.WorkplaceSlots(buildingType, level)`,
+  an ABSOLUTE headcount per building/level, converted to an effective share via `slots/laborPool` so it
+  no longer scales with population. The terrain term (`GoodLaborTerrainBase = 0.25`, no building
+  required) is **still** a share of pop — P3 (hex capacity) is what replaces that one, not built yet.
+  **Do not build new share-based labour logic for BUILDINGS** — use `WorkplaceSlots`. Terrain-only goods
+  are still fair game to leave share-based until P3. Rewrite this bullet when P3 lands; plan and phases:
   `megaron_plan_fysisk_gubbemodell.md` (vault), design in `Temenos_varutaxonomi_sol.md` §1.1, §8.
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).

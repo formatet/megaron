@@ -143,10 +143,11 @@ type KharisState struct {
 
 // loadLaborCapacities returns, per good, the share of a settlement's population
 // that can actually be employed producing it, plus the summed level of the
-// buildings that produce it. Allocation beyond the capacity produces nothing
-// (economy.LaborCapacity), so every surface that shows or accepts a labor weight
-// needs this to avoid being silently wrong.
-func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (capacities map[string]float64, levels map[string]int) {
+// buildings that produce it (levels is informational display only — capacity
+// itself is now driven by economy.WorkplaceSlots' absolute headcount, P2). Allocation
+// beyond the capacity produces nothing (economy.LaborCapacity), so every surface
+// that shows or accepts a labor weight needs this to avoid being silently wrong.
+func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, laborPool int) (capacities map[string]float64, levels map[string]int) {
 	capacities = make(map[string]float64)
 	levels = make(map[string]int)
 
@@ -182,12 +183,14 @@ func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID u
 		lrows.Close()
 	}
 
+	slots, _ := economy.LoadWorkplaceSlots(ctx, pool, settlementID)
+
 	for good, field := range fieldPath {
-		capacities[good] = economy.LaborCapacity(good, field, levels[good])
+		capacities[good] = economy.LaborCapacity(good, field, slots[good], laborPool)
 	}
-	for good, lvl := range levels {
+	for good := range levels {
 		if _, seen := capacities[good]; !seen {
-			capacities[good] = economy.LaborCapacity(good, fieldPath[good], lvl)
+			capacities[good] = economy.LaborCapacity(good, fieldPath[good], slots[good], laborPool)
 		}
 	}
 	return capacities, levels

@@ -29,39 +29,122 @@ const REF_LABOR = 100.0
 // potential sum, so there is no double-count.
 const NearjordGrainPerTick = 50.0
 
-// Workplace capacity (Timothy 2026-07-23). A producing building is a workplace
-// with a finite number of stations; its LEVEL is how many citizens it can put to
-// work. Labor allocated past what the fields and buildings can employ is not
-// served and produces nothing — so the only way to devote MORE of a city to a
-// good is a bigger workplace. This generalises what kharis.templeDevotionCapacity
-// already did for the temple, which until now was the one building whose level
-// meant anything (and which could not actually be levelled — see the
-// `upgradeable` set in api/handlers/province.go).
+// Workplace capacity (Timothy 2026-07-23, absolute headcount since P2
+// 2026-08-07 — megaron_plan_fysisk_gubbemodell.md). A producing building is a
+// workplace with a finite number of STATIONS; its LEVEL sets how many citizens
+// it can put to work, as a hard count of people, not a share of the city. Labor
+// allocated past what the fields and buildings can employ is not served and
+// produces nothing — so the only way to devote MORE of a city to a good is a
+// bigger workplace. This generalises what kharis.templeDevotionCapacity already
+// did for the temple (which is NOT in this table — cult labor is a separate
+// path, megaron_cult_ar_ingen_vara_plan.md, deliberately untouched here).
 //
-// STRAWMAN CALIBRATION, not invariants — tune against soak data. Both numbers
-// are chosen so that NOTHING in the live world regresses on the day this lands:
-// the highest field-good allocation in drift is 0.25 (timber) and the highest
-// building-only allocation is 0.50 (silver). Level 1 therefore already covers
-// every existing city, exactly as Timothy calibrated the temple's level 1 onto
-// the 0.15 LaborAlloc floor. Levels buy headroom nobody is yet using.
+// P2 replaces the old share-based BuildingLaborPerLevel (0.5 of the city per
+// level — DE2=B, Timothy 2026-08-07: "arbetskraft räknas hädanefter i hela
+// gubbar på bestämda platser"). That formula scaled a building's output with
+// POPULATION: after P1's catchment 7→19, a single level-1 building granted the
+// same 50%-of-the-city cap in a 50-pop hamlet and a 5000-pop metropolis, which
+// is exactly the missing brake the P1 postmortem measured ("P1 gav 3x men inte
+// bromsen"). An absolute slot count does not scale with population — a level-1
+// Foundry employs a handful of smiths whether the city has 50 citizens or 5000.
+//
+// STRAWMAN CALIBRATION, not invariants — tune against soak data (arbetssätt
+// §13: a balance number is not a slice until there's a soak/test that can
+// falsify it). Two tiers, chosen by production role rather than measured
+// against live drift (P2 is deliberately allowed to cut existing over-
+// allocation — that IS the fix): bulk/extraction-at-volume buildings (grain,
+// stone, timber, cedar, fish — worked by many hands at once) get 2/4/6;
+// specialised or deposit-gated buildings (presses, mines, market, stable —
+// skilled or ore-scarce work) get 1/2/4. Farm and Olive Press match the two
+// anchor values megaron_plan_fysisk_gubbemodell.md P2 gives explicitly;
+// the rest extrapolate the same two tiers.
+// Array length 4 mirrors province.MaxBuildingLevel(3)+1 — economy may not
+// import province (G1: economy(→clock,events,gossip,hexgrid) only), so the
+// bound is a plain literal. If MaxBuildingLevel ever changes, update this
+// array's length too (WorkplaceSlots silently returns 0 for any level past it,
+// rather than crashing — but a raised level cap would then grant no extra
+// slots until this table is widened).
+var workplaceSlotTable = map[string][4]int{
+	// index 0 unused (level is always ≥1); index = level.
+	"farm":        {0, 2, 4, 6},
+	"stonequarry": {0, 2, 4, 6},
+	"lumbermill":  {0, 2, 4, 6},
+	"harbour":     {0, 2, 4, 6},
+	"olive_press": {0, 1, 2, 4},
+	"winery":      {0, 1, 2, 4},
+	"mine":        {0, 1, 2, 4},
+	"silver_mine": {0, 1, 2, 4},
+	"market":      {0, 1, 2, 4},
+	"stable":      {0, 1, 2, 4},
+}
+
+// WorkplaceSlots returns how many citizens a building of the given type and
+// level can employ, as an absolute headcount. Building types missing from
+// workplaceSlotTable (temple — cult labor, a separate path) or an unrecognised
+// level return 0: an unrecognised building grants no slots rather than a
+// silent guess (arbetssätt §7: no fallback that invents a value).
+func WorkplaceSlots(buildingType string, level int) int {
+	tiers, ok := workplaceSlotTable[buildingType]
+	if !ok || level < 1 || level >= len(tiers) {
+		return 0
+	}
+	return tiers[level]
+}
+
+// LoadWorkplaceSlots returns, per good_key, the summed absolute worker slots
+// across every building in the settlement that produces it (a good made by two
+// buildings, e.g. wine from both Farm and Winery, sums both buildings' slots).
+// Shared by RecomputeProduction and every read surface that needs to explain a
+// capacity (province.go's goods table, db.go's loadLaborCapacities) so the
+// building→slots conversion lives in exactly one place — P1's postmortem found
+// the same catchment-hex query duplicated at 13 call sites from not doing this
+// the first time.
+func LoadWorkplaceSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]int, error) {
+	rows, err := tx.Query(ctx,
+		`SELECT DISTINCT pr.good_key, b.building_type, b.level
+		 FROM production_rules pr
+		 JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type`,
+		settlementID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("load workplace slots: %w", err)
+	}
+	defer rows.Close()
+	slots := make(map[string]int)
+	for rows.Next() {
+		var key, buildingType string
+		var level int
+		if err := rows.Scan(&key, &buildingType, &level); err != nil {
+			return nil, fmt.Errorf("load workplace slots: scan: %w", err)
+		}
+		slots[key] += WorkplaceSlots(buildingType, level)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("load workplace slots: rows: %w", err)
+	}
+	return slots, nil
+}
+
 const (
 	// GoodLaborTerrainBase is the share of a city that can work a good straight
 	// off the land, with no building at all. Fields need no stations.
+	// ⚠️ Still share-based (P3, hex capacity, replaces this — not built yet).
 	GoodLaborTerrainBase = 0.25
-	// BuildingLaborPerLevel is the share of a city each level of a producing
-	// building can additionally employ.
-	BuildingLaborPerLevel = 0.5
 )
 
 // LaborCapacity returns the share of a settlement's population that can actually
 // be employed producing a good, given whether the good has a field (terrain-only)
-// production path in this catchment and the summed level of the settlement's
-// buildings that produce it.
+// production path in this catchment, the ABSOLUTE worker slots the settlement's
+// buildings that produce it can employ (see WorkplaceSlots), and the settlement's
+// current labor pool (population) needed to express that absolute count as a
+// share — multiplying the returned capacity back by laborPool reproduces
+// buildingSlots exactly (up to the terrain-share addition and the 1.0 cap),
+// which is what keeps a building's employment from scaling with population.
 //
 // Grain is exempt: it is the subsistence good, its consumption is folded into its
 // own net rate, and capping how many citizens may farm would starve cities that
 // have no room to build. Hunger is not a staffing problem.
-func LaborCapacity(goodKey string, hasFieldPath bool, buildingLevels int) float64 {
+func LaborCapacity(goodKey string, hasFieldPath bool, buildingSlots int, laborPool int) float64 {
 	if goodKey == "grain" {
 		return 1.0
 	}
@@ -69,8 +152,8 @@ func LaborCapacity(goodKey string, hasFieldPath bool, buildingLevels int) float6
 	if hasFieldPath {
 		capacity += GoodLaborTerrainBase
 	}
-	if buildingLevels > 0 {
-		capacity += BuildingLaborPerLevel * float64(buildingLevels)
+	if buildingSlots > 0 && laborPool > 0 {
+		capacity += float64(buildingSlots) / float64(laborPool)
 	}
 	if capacity > 1.0 {
 		capacity = 1.0
@@ -315,37 +398,16 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 
 	// ── 3b. Workplace capacity per good ───────────────────────────────────────
-	// A building is a workplace with a finite number of stations, and its LEVEL
-	// is how many citizens it can put to work (Timothy 2026-07-23, generalising
-	// the temple's templeDevotionCapacity to every producing building). Labor
-	// allocated beyond what the settlement's buildings + fields can employ is not
-	// served and does not produce — so the only way to devote MORE of a city to
-	// a good is a bigger workplace. Levels sum: two buildings that both make oil
-	// (farm + olive press) each contribute their own stations.
-	buildingLevels := make(map[string]int)
-	brows, berr := tx.Query(ctx,
-		`SELECT good_key, SUM(level)::int FROM (
-		     SELECT DISTINCT pr.good_key, b.building_type, b.level
-		     FROM production_rules pr
-		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
-		 ) t GROUP BY good_key`,
-		settlementID,
-	)
-	if berr != nil {
-		return fmt.Errorf("recompute: query workplace levels: %w", berr)
-	}
-	for brows.Next() {
-		var key string
-		var lvl int
-		if err := brows.Scan(&key, &lvl); err != nil {
-			brows.Close()
-			return fmt.Errorf("recompute: scan workplace level: %w", err)
-		}
-		buildingLevels[key] = lvl
-	}
-	brows.Close()
-	if err := brows.Err(); err != nil {
-		return fmt.Errorf("recompute: workplace level rows err: %w", err)
+	// A building is a workplace with a finite number of stations — an ABSOLUTE
+	// headcount (P2, megaron_plan_fysisk_gubbemodell.md), not a share of the
+	// city. Labor allocated beyond what the settlement's buildings + fields can
+	// employ is not served and does not produce — so the only way to devote
+	// MORE of a city to a good is a bigger workplace. Slots sum: two buildings
+	// that both make oil (farm + olive press) each contribute their own
+	// stations. See LoadWorkplaceSlots for why this query lives in one place.
+	buildingSlots, err := LoadWorkplaceSlots(ctx, tx, settlementID)
+	if err != nil {
+		return fmt.Errorf("recompute: %w", err)
 	}
 
 	// NOTE: no early return when potentials is empty. A settlement that just
@@ -418,7 +480,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	rawRates := make(map[string]float64, len(potentials))
 	for _, gp := range potentials {
 		staffed := weights[gp.key]
-		if cap := LaborCapacity(gp.key, gp.hasFieldPath, buildingLevels[gp.key]); staffed > cap {
+		if cap := LaborCapacity(gp.key, gp.hasFieldPath, buildingSlots[gp.key], laborPool); staffed > cap {
 			staffed = cap
 		}
 		effectiveWorkers := staffed * float64(laborPool)
