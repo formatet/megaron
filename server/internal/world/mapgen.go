@@ -274,15 +274,28 @@ const (
 	// neighbourhood consistently for several hexes before drifting, which
 	// reads as a gentle curve — the same fBm technique heightField/moistureField
 	// already use for terrain, just applied to path choice instead of terrain
-	// lookup. Wavelength sits between highFreqWavelength (8, terrain scatter)
-	// and moistureWavelength (14, regional streaks) — long enough for one
-	// curve to span several hexes, short enough that a modest river still
-	// bends more than once. Jitter amplitude ~ half the mean adjacent-hex
-	// height difference (measured 0.041 on a 230×230 field): enough to
-	// override a genuine near-tie and turn the river, not enough to make it
-	// climb real hills or ignore a strong downhill signal.
-	riverMeanderWavelength = 10.0
-	riverMeanderJitter     = 0.02
+	// lookup.
+	//
+	// megaron_plan_deltat_grenar.md steg 7 (Timothy 2026-08-03: "lite rakare
+	// floder kanske? eller större ringlingar" — fewer bends, but WIDER ones,
+	// not a straighter line): wavelength 10 → 14 biases a wider neighbourhood
+	// the same way for longer, which is "one wide sweep instead of several
+	// small ones". The plan's own starting point (17, deliberately past
+	// moistureWavelength) was tried first and rendered a visible tight
+	// self-coiling "knot" on a 230×230 river (this slice's own eye-check,
+	// megaron_plan_deltat_grenar.md steg 6's PNG-render step) — a worse
+	// artifact than the tight zigzag it was meant to fix. 14 (moistureWavelength's
+	// own value, not past it) still visibly widened the same test river's
+	// sweeps without producing a knot on the seeds checked. Jitter 0.02 →
+	// 0.018 is the "rakare" half — a smaller nudge than the plan's own 0.015,
+	// chosen alongside the wavelength pullback for the same reason: closer to
+	// the original amplitude keeps a genuine downhill signal winning slightly
+	// more often, and both changes together are what avoided the knot. Do NOT
+	// raise the jitter to compensate for anything — see the paragraph above:
+	// independent-per-step jitter already tried and rejected once (the
+	// "maze"), and this field must stay spatially smooth.
+	riverMeanderWavelength = 14.0
+	riverMeanderJitter     = 0.018
 
 	// deltaForkMinChain/deltaForkRadius (megaron_plan_deltat_grenar.md steg 1,
 	// Timothy 2026-08-03: "floden delar sig nära havet"): a river's own chain
@@ -348,6 +361,20 @@ const (
 	// the floor: this candidate fork is rejected, carveDeltaFork tries the
 	// next one back.
 	deltaForkMaxIsland = 150
+
+	// sourceLakeMaxTiles (megaron_plan_deltat_grenar.md steg 8, Timothy
+	// 2026-08-03: "källsjöarna liiite större" — a premise that measured false:
+	// 0 of 73 river hexes on the 2026-08-03 acceptance world bordered any of
+	// its 6 inland lakes. riverSources picks a local HEIGHT PEAK (field's
+	// isMax check) as every river's start, so a river never began in a lake in
+	// the first place — the lakes on the map are unrelated sinks the height
+	// field happened to leave below the land threshold. Timothy chose (b): the
+	// river starts in a lake, so placeSourceLake builds one at generation
+	// time instead of relying on one already being there. "liiite större" is
+	// a tarn, not a real lake — 4 gives source + up to 3 of its lowest
+	// non-river land neighbours, i.e. a body just larger than the source hex
+	// itself, nowhere near insjöarna's own 2-30 hex range.
+	sourceLakeMaxTiles = 4
 )
 
 // riverFlankable lists the terrains a river's flank may convert to
@@ -1348,6 +1375,27 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		if reverted {
 			for c, t := range before {
 				grid[c] = t
+			}
+			continue
+		}
+
+		// Steg 8 (megaron_plan_deltat_grenar.md): the river survived its own
+		// fragment check — now try giving it a source lake. Scoped revert: if
+		// the lake alone (river already accepted) drops the smallest fragment
+		// under minLandFragment, undo just the lake hexes and keep the river,
+		// per the plan's "återställ sjön, inte floden".
+		lakeCells := placeSourceLake(grid, landmap, field, src, targetLM, width, height)
+		if lakeCells != nil {
+			lakeFrag := smallestFragment(grid, cells, width, height)
+			lakeReverted := lakeFrag < minLandFragment
+			if fragDebugLog {
+				fmt.Fprintf(os.Stderr, "LAKEDBG landmass=%d source=%v tiles=%d smallestFragment=%d reverted=%v\n",
+					targetLM, src, len(lakeCells), lakeFrag, lakeReverted)
+			}
+			if lakeReverted {
+				for _, c := range lakeCells {
+					grid[c] = before[c]
+				}
 			}
 		}
 	}
@@ -2861,6 +2909,76 @@ func addRiver(grid map[cell]Terrain, landmap map[cell]int, field, meander map[ce
 	if len(line) >= deltaForkMinChain {
 		carveDeltaFork(grid, landmap, field, meander, mainSea, rng, targetLM, line, width, height)
 	}
+}
+
+// placeSourceLake turns a river's source hex, plus up to sourceLakeMaxTiles-1
+// of its lowest still-land neighbours, into a small TerrainCoastalSea body
+// (megaron_plan_deltat_grenar.md steg 8) — "floden ska börja i en sjö"
+// (Timothy 2026-08-03). Called from the river loop AFTER addRiver has already
+// carved the whole line, flanks and delta and the §7e fragment check on the
+// river itself has passed: the lake is deliberately the LAST thing tried, so
+// a landmass too fragile to carry it can still keep the river without it,
+// rather than losing both to one over-eager conversion.
+//
+// source is always line[0] and is TerrainRiver on entry (addRiver just set
+// it) — this call overwrites just that hex and its chosen neighbours to
+// TerrainCoastalSea. mainSea is NOT touched or extended: it was snapshotted
+// once, before any river carved anything (GenerateMap's own comment on that
+// call), so a lake added here can never retroactively become part of it — the
+// steg 8 invariant "sjön får aldrig bli huvudhavet" holds by construction, not
+// by a check added after the fact.
+//
+// Returns the hexes it changed (nil if it changed nothing, e.g. a one-hex
+// river whose only neighbours are already river/sea) — the caller diffs that
+// against a snapshot and reverts on its own if the lake alone drops the
+// landmass's smallest fragment under minLandFragment, exactly the same
+// mechanism the caller already uses for the river as a whole, just scoped to
+// these hexes only ("återställ sjön, inte floden", plan §Steg 8 point 3).
+func placeSourceLake(grid map[cell]Terrain, landmap map[cell]int, field map[cell]float64, source cell, targetLM int, width, height int) []cell {
+	if grid[source] != TerrainRiver {
+		return nil // defensive: only ever called right after addRiver set it
+	}
+
+	type cand struct {
+		c cell
+		h float64
+	}
+	var candidates []cand
+	for _, n := range hexNeighbours(source, width, height) {
+		if landmap[n] != targetLM {
+			continue // stay within this landmass — never submerge a neighbour's shore
+		}
+		switch grid[n] {
+		case TerrainRiver, TerrainRiverFord, TerrainRiverDelta, TerrainRiverValley:
+			continue // never eat the river (or its flank) this same call just carved
+		}
+		if isSea(grid[n]) {
+			continue // already water (an existing insjö, or coast) — nothing to add
+		}
+		candidates = append(candidates, cand{n, field[n]})
+	}
+	sort.Slice(candidates, func(i, j int) bool {
+		if candidates[i].h != candidates[j].h {
+			return candidates[i].h < candidates[j].h // lowest ground first ("dess lägsta grannar")
+		}
+		if candidates[i].c.q != candidates[j].c.q {
+			return candidates[i].c.q < candidates[j].c.q
+		}
+		return candidates[i].c.r < candidates[j].c.r
+	})
+
+	lake := []cell{source}
+	for _, cd := range candidates {
+		if len(lake) >= sourceLakeMaxTiles {
+			break
+		}
+		lake = append(lake, cd.c)
+	}
+
+	for _, c := range lake {
+		grid[c] = TerrainCoastalSea
+	}
+	return lake
 }
 
 // carveDeltaFork tries to grow a second lopp off the stem's own last
