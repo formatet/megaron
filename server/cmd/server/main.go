@@ -276,10 +276,12 @@ func main() {
 	nh := handlers.NewNotificationsHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 	godH := handlers.NewGodHandler(pool)
+	rh := handlers.NewReportsHandler(pool)
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// Admin routes — no JWT, keyed by X-Admin-Key header.
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
+		r.Get("/admin/worlds/{worldID}/reports", rh.List)
 		// Reference catalogue — no auth, static data.
 		r.Get("/buildings", ph.BuildingCatalogue)
 		r.Get("/units", ph.UnitCatalogue)
@@ -387,6 +389,8 @@ func main() {
 			r.Get("/worlds/{worldID}/notifications", nh.List)
 			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)
 			r.Delete("/worlds/{worldID}/notifications", nh.DeleteAll)
+
+			r.Post("/worlds/{worldID}/reports", rh.Create)
 		})
 	})
 

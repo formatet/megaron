@@ -47,6 +47,7 @@ import {
   dipCancel, dipAccept, dipDecline, dipReply, dipComposeToggleKind, dipSend,
 } from './ui/drawers/diplomacy.js';
 import { loadNotifDrawer, notifShowKind, clearAllNotifs } from './ui/drawers/notif.js';
+import { submitReport } from './ui/drawers/report.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
 export function toggleDrawer(name) {
@@ -75,6 +76,7 @@ export function closeDrawer(name) {
   if (tr) tr.classList.remove('active');
   document.getElementById('map-dim').classList.remove('visible');
   State.activeDrawer = null;
+  State.previousDrawer = name;
   if (name === 'city') stopCityAnim();
 }
 
@@ -168,6 +170,7 @@ Object.assign(window, {
   startBuild,
   startCraft,
   startTransfer,
+  submitReport,
   toggleActivityOverlay,
   toggleDrawer,
   toggleMusic,

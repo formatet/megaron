@@ -60,6 +60,9 @@ export const State = {
   // City drawer + generic drawer system.
   cityViewID: null, // province ID of the settlement the City drawer currently shows
   activeDrawer: null,
+  previousDrawer: null, // name of the drawer closeDrawer() last closed — lets
+                        // the Report drawer (ui/drawers/report.js) say what the
+                        // player was looking at when something confused them.
 
   // March context menu (ui/marchctx.js).
   marchCtxDest: null,   // { q, r, terrain, isSea, name, isSettlement, allied }

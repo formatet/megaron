@@ -100,6 +100,9 @@
     <div class="win-trigger" id="trig-kult"       onclick="toggleDrawer('kult')">
       <span class="wt-glyph">⛩</span>Kult
     </div>
+    <div class="win-trigger" id="trig-report"     onclick="toggleDrawer('report')">
+      <span class="wt-glyph">✎</span>Report
+    </div>
   </nav>
 
 </div><!-- .map-shell -->
@@ -172,6 +175,33 @@
   </div>
   <div class="drawer-body" id="notif-body">
     <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<!-- ── REPORT DRAWER ────────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-report">
+  <div class="drawer-header">
+    <span class="drawer-title">Report</span>
+    <button class="drawer-close" onclick="closeDrawer('report')">✕</button>
+  </div>
+  <div class="drawer-body" id="report-body">
+    <div style="padding:.6rem .7rem">
+      <div style="font-size:.78rem;color:var(--text-dim);margin-bottom:.5rem">
+        Something broken, something that feels wrong, or something that confused you —
+        your position and the current tick are attached automatically.
+      </div>
+      <select id="report-kind" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.3rem .4rem;font-size:.82rem;margin-bottom:.4rem;box-sizing:border-box">
+        <option value="bug">Bug — something is broken</option>
+        <option value="design">Design — this feels wrong</option>
+        <option value="confused">Confused — I don't understand this</option>
+      </select>
+      <textarea id="report-text" maxlength="2000" placeholder="What happened?"
+        style="resize:vertical;min-height:6rem;width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.4rem .5rem;font-size:.82rem;font-family:var(--font);box-sizing:border-box"></textarea>
+      <div style="text-align:right;margin-top:.4rem">
+        <button class="btn-small btn-primary" onclick="submitReport()">Send</button>
+      </div>
+      <div id="report-status" style="font-size:.78rem;color:var(--text-dim);margin-top:.4rem"></div>
+    </div>
   </div>
 </div>
 

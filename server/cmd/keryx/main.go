@@ -107,6 +107,8 @@ func main() {
 		riteCmd(),
 		abandonCmd(),
 		godCmd(),
+		reportCmd(),
+		reportsCmd(),
 		actionsCmd(),
 		notificationsCmd(),
 	)
