@@ -81,6 +81,8 @@ export function notifIcon(kind) {
     OfferDeclined:      '🚫',
     OfferExpired:       '⏳',
     ScoutReport:        '🔭',
+    BattleWon:          '⚔',
+    BattleLost:         '⚔',
   };
   return icons[kind] || '◉';
 }
@@ -226,6 +228,28 @@ export function notifText(kind, body) {
       if (body.cedar_deposit)  deposits.push('cedar');
       const found = deposits.length ? deposits.join(', ') : 'nothing of value';
       return `Explored (${body.q}, ${body.r}) — ${body.terrain || 'unknown terrain'}, ${found}`;
+    }
+    case 'BattleWon':
+    case 'BattleLost': {
+      // Payload per BattleTickHandler.notifyBattleEnded (megaron_plan_stridsrapport.md
+      // §4/S5) — the KR3 battle-end notification, sent to EVERY owner on both
+      // sides (a field battle used to be totally silent; a defender got nothing
+      // at all). own_unit/enemy_unit are aggregated across every unit that owner
+      // had in the battle, not a single unit — a battle can hold several units
+      // per side once the other entry points are cut over (plan §8).
+      const own = body.own_unit || {};
+      const enemy = body.enemy_unit || {};
+      const place = body.place || `(${body.q}, ${body.r})`;
+      const outcomeWord = kind === 'BattleWon' ? 'Victory' : 'Defeat';
+      let trailer = '';
+      if (body.outcome === 'mutual_wipe') trailer = ' No survivors on either side.';
+      else if (body.outcome === 'attacker_wins' && body.role === 'attacker') trailer = ' The field was taken.';
+      else if (body.outcome === 'attacker_wins' && body.role === 'defender') trailer = ' The field was lost.';
+      else if (body.outcome === 'defender_holds' && body.role === 'defender') trailer = ' The field held.';
+      else if (body.outcome === 'defender_holds' && body.role === 'attacker') trailer = ' The attack was repelled.';
+      return `${outcomeWord} at ${place} — your ${own.type || 'unit'} (${own.size_before ?? '?'}→${own.size_after ?? '?'}, ` +
+             `−${own.pop_lost ?? 0} dead) vs ${body.opponent_name || 'an enemy'}'s ${enemy.type || 'unit'} ` +
+             `(${enemy.size_before ?? '?'}→${enemy.size_after ?? '?'}).${trailer}`;
     }
     // Every kind above is hand-written; every kind NOT above used to fall
     // through to `return kind`, silently discarding the payload — 17 verified

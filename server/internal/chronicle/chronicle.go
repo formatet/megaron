@@ -354,15 +354,6 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 		return fmt.Sprintf("%s färdigställde bygge av %s i %s", a, str(p, "building_type"), s)
 	case "TrainComplete":
 		return fmt.Sprintf("%s rekryterade %v %s i %s", a, p["count"], str(p, "unit_type"), s)
-	case "CombatResolved":
-		switch str(p, "outcome") {
-		case "attacker_victory":
-			return fmt.Sprintf("Strid avgjord i %s — anfallaren segrade", s)
-		case "defender_victory":
-			return fmt.Sprintf("Strid avgjord i %s — försvararen segrade", s)
-		default:
-			return fmt.Sprintf("Strid avgjord i %s — %s", s, str(p, "outcome"))
-		}
 	case "TradeDelivery":
 		return fmt.Sprintf("Handelsleverans till %s: %v %s", s, p["quantity"], str(p, "good_key"))
 	case "TradeLost":
@@ -411,12 +402,36 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 	case "UnitStanceChanged":
 		return fmt.Sprintf("En styrka ändrade hållning till %s", str(p, "stance"))
 	case "UnitCombatResolved", "UnitIntercepted":
-		// Deliberately minimal (avsiktslagret §S3/§S4, megaron_plan_avsiktslagret.md):
-		// a real interception narrative belongs to the stridsrapport plan
-		// (megaron_plan_stridsrapport.md), which isn't built yet — this stub only
-		// needs to not crash on the new UnitIntercepted event's payload shape
-		// (unit.UnitInterceptedPayload has q/r, unlike some other combat payloads).
+		// Stridsrapport (megaron_plan_stridsrapport.md) fills the PLAYER-facing
+		// notification (BattleTickHandler.notifyBattleEnded) for the KR3 path —
+		// this event type is the OLD one-shot model, still emitted by the three
+		// entry points not yet cut over to initiateOrJoinBattle (§8: settlement
+		// resolveCombat, amphibious assault, avsiktslagret's
+		// unit_intercept_scan.go). unit.UnitCombatResolvedPayload has no q/r
+		// (only unit.UnitInterceptedPayload does), so this stays a minimal stub
+		// for that path rather than growing the same opponent-naming logic twice —
+		// §8's cutover retires this event type's combat use, at which point this
+		// case can be deleted rather than fixed.
 		return fmt.Sprintf("Strid avgjordes för en styrka vid (%v,%v)", p["q"], p["r"])
+	case "BattleStarted":
+		return fmt.Sprintf("Strid utbröt vid (%v,%v)", p["q"], p["r"])
+	case "UnitJoinedBattle":
+		return fmt.Sprintf("Förstärkningar (%s) anslöt till striden vid (%v,%v)", str(p, "side"), p["q"], p["r"])
+	case "BattleEnded":
+		q, r := p["q"], p["r"]
+		switch str(p, "termination_reason") {
+		case "annihilation":
+			switch str(p, "winner") {
+			case "attacker":
+				return fmt.Sprintf("Striden vid (%v,%v) avgjordes — anfallaren segrade, försvararen utplånad", q, r)
+			case "defender":
+				return fmt.Sprintf("Striden vid (%v,%v) avgjordes — försvararen höll fältet, anfallaren utplånad", q, r)
+			default:
+				return fmt.Sprintf("Striden vid (%v,%v) slutade i ömsesidig utplåning", q, r)
+			}
+		default:
+			return fmt.Sprintf("Striden vid (%v,%v) tog slut (%s)", q, r, str(p, "termination_reason"))
+		}
 	case "CityCollapsed":
 		return fmt.Sprintf("%s kollapsade (%s) — en warband reser sig ur ruinerna", s, str(p, "cause"))
 	case "OutpostEstablished":

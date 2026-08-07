@@ -106,6 +106,63 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "UpkeepUnpaid" {
 		printUpkeepUnpaidLine(n)
 	}
+	if n.Kind == "BattleWon" || n.Kind == "BattleLost" {
+		printBattleReportLine(n)
+	}
+}
+
+// printBattleReportLine renders the human-readable follow-up to a
+// BattleWon/BattleLost notification (megaron_plan_stridsrapport.md §4/S4) —
+// BattleTickHandler.notifyBattleEnded's payload. Both sides of a KR3 battle
+// get one of these; before this slice the defender got nothing at all and
+// the attacker only got raw {q,r}.
+func printBattleReportLine(n notificationItem) {
+	var body struct {
+		Role     string `json:"role"`
+		Outcome  string `json:"outcome"`
+		Opponent string `json:"opponent_name"`
+		OwnUnit  struct {
+			Type       string `json:"type"`
+			SizeBefore int    `json:"size_before"`
+			SizeAfter  int    `json:"size_after"`
+			PopLost    int    `json:"pop_lost"`
+		} `json:"own_unit"`
+		EnemyUnit struct {
+			Type       string `json:"type"`
+			SizeBefore int    `json:"size_before"`
+			SizeAfter  int    `json:"size_after"`
+		} `json:"enemy_unit"`
+		Q     int     `json:"q"`
+		R     int     `json:"r"`
+		Place *string `json:"place"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	place := fmt.Sprintf("(%d,%d)", body.Q, body.R)
+	if body.Place != nil && *body.Place != "" {
+		place = *body.Place
+	}
+	outcomeWord := "Seger"
+	if n.Kind == "BattleLost" {
+		outcomeWord = "Förlust"
+	}
+	trailer := ""
+	switch {
+	case body.Outcome == "mutual_wipe":
+		trailer = " Inga överlevande på endera sidan."
+	case body.Outcome == "attacker_wins" && body.Role == "attacker":
+		trailer = " Fältet togs."
+	case body.Outcome == "attacker_wins" && body.Role == "defender":
+		trailer = " Fältet föll."
+	case body.Outcome == "defender_holds" && body.Role == "defender":
+		trailer = " Fältet höll."
+	case body.Outcome == "defender_holds" && body.Role == "attacker":
+		trailer = " Anfallet slogs tillbaka."
+	}
+	fmt.Printf("      %s vid %s — din %s (%d→%d, −%d döda) mot %s's %s (%d→%d).%s\n",
+		outcomeWord, place, body.OwnUnit.Type, body.OwnUnit.SizeBefore, body.OwnUnit.SizeAfter, body.OwnUnit.PopLost,
+		body.Opponent, body.EnemyUnit.Type, body.EnemyUnit.SizeBefore, body.EnemyUnit.SizeAfter, trailer)
 }
 
 // printUpkeepUnpaidLine renders the human-readable follow-up to an UpkeepUnpaid

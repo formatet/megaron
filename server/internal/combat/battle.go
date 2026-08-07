@@ -296,11 +296,14 @@ type BattleTickHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	scheduler  *events.Scheduler
+	hub        Broadcaster
 }
 
-// NewBattleTickHandler creates a BattleTickHandler.
-func NewBattleTickHandler(pool *pgxpool.Pool, store *events.Store, scheduler *events.Scheduler) *BattleTickHandler {
-	return &BattleTickHandler{pool: pool, eventStore: store, scheduler: scheduler}
+// NewBattleTickHandler creates a BattleTickHandler. hub may be nil in tests
+// (every NotifyPlayer call below is nil-guarded, matching the other combat
+// handlers — see collapse.go).
+func NewBattleTickHandler(pool *pgxpool.Pool, store *events.Store, scheduler *events.Scheduler, hub Broadcaster) *BattleTickHandler {
+	return &BattleTickHandler{pool: pool, eventStore: store, scheduler: scheduler, hub: hub}
 }
 
 // Handle processes one ScheduledBattleTick event.
@@ -569,7 +572,208 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		}
 	}
 
+	h.notifyBattleEnded(ctx, tx, battleID, worldID, q, r, tickIndex, winner)
+
 	return true, nil
+}
+
+// battleReportUnit is one side's aggregated own_unit/enemy_unit shape in the
+// stridsrapport notification payload (megaron_plan_stridsrapport.md §4,
+// adapted to KR3's persistent battle: aggregated over ALL participants that
+// were ever on that side, not a single unit — a battle can hold several
+// units per side once other entry points are cut over, plan §8).
+type battleReportUnit struct {
+	Type       string `json:"type"`
+	SizeBefore int    `json:"size_before"`
+	SizeAfter  int    `json:"size_after"`
+	PopLost    int    `json:"pop_lost,omitempty"`
+}
+
+type battleParticipantSummary struct {
+	ownerID     uuid.UUID
+	side        string
+	utype       string
+	initialSize int
+	currentSize int
+}
+
+// notifyBattleEnded is stridsrapport's S1 (megaron_plan_stridsrapport.md),
+// adapted: the plan's skeleton targeted the old one-shot
+// unit_arrival_field.go NotifyPlayer calls, but KR3 removed those entirely —
+// a field battle now resolves silently here, in BattleTickHandler, which is
+// why the todo calls it urgent ("strider tysta live"). Every owner on BOTH
+// sides gets a notification naming a representative opponent, their own
+// aggregated losses and the opposing side's aggregated size — full symmetry
+// per the plan's §3 default (no Timothy override on file). Kind is
+// "BattleWon"/"BattleLost" rather than the plan's field-specific
+// "FieldBattleWon"/"FieldBattleLost": this handler is shared by every
+// initiateOrJoinBattle entry point, including the three not yet cut over
+// (plan §8) — naming it generically avoids a rename once they are.
+// Best-effort: a query failure here must never fail the battle-tick tx.
+func (h *BattleTickHandler) notifyBattleEnded(ctx context.Context, tx pgx.Tx, battleID, worldID uuid.UUID, q, r, tickIndex int, winner string) {
+	if h.hub == nil {
+		return
+	}
+
+	rows, err := tx.Query(ctx,
+		`SELECT bp.owner_id, bp.side, u.type, bp.initial_size, bp.current_size
+		 FROM battle_participants bp JOIN units u ON u.id = bp.unit_id
+		 WHERE bp.battle_id = $1
+		 ORDER BY bp.joined_tick, bp.unit_id`,
+		battleID,
+	)
+	if err != nil {
+		slog.Warn("notify battle ended: load participants", "battle", battleID, "err", err)
+		return
+	}
+	var summaries []battleParticipantSummary
+	for rows.Next() {
+		var s battleParticipantSummary
+		if scanErr := rows.Scan(&s.ownerID, &s.side, &s.utype, &s.initialSize, &s.currentSize); scanErr == nil {
+			summaries = append(summaries, s)
+		}
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil || len(summaries) == 0 {
+		return
+	}
+
+	type ownerAgg struct {
+		types      map[string]bool
+		sizeBefore int
+		sizeAfter  int
+	}
+	type sideAgg struct {
+		ownerOrder []uuid.UUID
+		byOwner    map[uuid.UUID]*ownerAgg
+		types      map[string]bool
+		sizeBefore int
+		sizeAfter  int
+	}
+	sides := map[string]*sideAgg{
+		"attacker": {byOwner: map[uuid.UUID]*ownerAgg{}, types: map[string]bool{}},
+		"defender": {byOwner: map[uuid.UUID]*ownerAgg{}, types: map[string]bool{}},
+	}
+	for _, s := range summaries {
+		side := sides[s.side]
+		if side == nil {
+			continue
+		}
+		side.sizeBefore += s.initialSize
+		side.sizeAfter += s.currentSize
+		side.types[s.utype] = true
+		agg, ok := side.byOwner[s.ownerID]
+		if !ok {
+			agg = &ownerAgg{types: map[string]bool{}}
+			side.byOwner[s.ownerID] = agg
+			side.ownerOrder = append(side.ownerOrder, s.ownerID)
+		}
+		agg.sizeBefore += s.initialSize
+		agg.sizeAfter += s.currentSize
+		agg.types[s.utype] = true
+	}
+
+	typeLabel := func(types map[string]bool) string {
+		if len(types) == 1 {
+			for t := range types {
+				return t
+			}
+		}
+		return "mixed"
+	}
+
+	var place *string
+	if name, ok := settlementNameAt(ctx, tx, worldID, q, r); ok {
+		place = &name
+	}
+
+	nameByOwner := loadOwnerNames(ctx, tx, summaries)
+
+	for side, agg := range sides {
+		opposing := "defender"
+		if side == "defender" {
+			opposing = "attacker"
+		}
+		oppSide := sides[opposing]
+		if len(agg.ownerOrder) == 0 || len(oppSide.ownerOrder) == 0 {
+			continue // one side had no participants at all — nothing to report to/about
+		}
+		opponentName := nameByOwner[oppSide.ownerOrder[0]]
+		enemyUnit := battleReportUnit{Type: typeLabel(oppSide.types), SizeBefore: oppSide.sizeBefore, SizeAfter: oppSide.sizeAfter}
+
+		outcome := "mutual_wipe"
+		if winner != "" {
+			outcome = "attacker_wins"
+			if winner == "defender" {
+				outcome = "defender_holds"
+			}
+		}
+		kind, level := "BattleLost", 2
+		if winner == side {
+			kind, level = "BattleWon", 3
+		}
+
+		for _, ownerID := range agg.ownerOrder {
+			own := agg.byOwner[ownerID]
+			payload := map[string]any{
+				"role":          side,
+				"outcome":       outcome,
+				"opponent_name": opponentName,
+				"own_unit":      battleReportUnit{Type: typeLabel(own.types), SizeBefore: own.sizeBefore, SizeAfter: own.sizeAfter, PopLost: own.sizeBefore - own.sizeAfter},
+				"enemy_unit":    enemyUnit,
+				"q":             q,
+				"r":             r,
+			}
+			if place != nil {
+				payload["place"] = *place
+			}
+			if err := h.hub.NotifyPlayer(ctx, worldID, ownerID, kind, level, payload); err != nil {
+				slog.Warn("notify battle ended", "battle", battleID, "owner", ownerID, "err", err)
+			}
+		}
+	}
+}
+
+// settlementNameAt best-effort resolves a hex to its settlement's name — a
+// battle can also happen on open ground (unit_arrival_field.go), where there
+// is none; ok=false then and the caller falls back to bare q/r.
+func settlementNameAt(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, q, r int) (string, bool) {
+	var name string
+	err := tx.QueryRow(ctx,
+		`SELECT s.name FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
+		worldID, q, r,
+	).Scan(&name)
+	return name, err == nil
+}
+
+// loadOwnerNames resolves every distinct owner_id in summaries to
+// COALESCE(wanax_name, username) — same pattern as kingdom.go.
+func loadOwnerNames(ctx context.Context, tx pgx.Tx, summaries []battleParticipantSummary) map[uuid.UUID]string {
+	seen := map[uuid.UUID]bool{}
+	var ids []uuid.UUID
+	for _, s := range summaries {
+		if !seen[s.ownerID] {
+			seen[s.ownerID] = true
+			ids = append(ids, s.ownerID)
+		}
+	}
+	out := map[uuid.UUID]string{}
+	rows, err := tx.Query(ctx,
+		`SELECT id, COALESCE(wanax_name, username) FROM players WHERE id = ANY($1)`, ids,
+	)
+	if err != nil {
+		return out
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id uuid.UUID
+		var name string
+		if scanErr := rows.Scan(&id, &name); scanErr == nil {
+			out[id] = name
+		}
+	}
+	return out
 }
 
 // rollSide rolls one side's dice for one round: each side's PARTICIPATION-sampled
