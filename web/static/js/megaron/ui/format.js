@@ -76,6 +76,7 @@ export function notifIcon(kind) {
     UnitAttrition:      '💀',
     UnitDeserted:       '🏃',
     UpkeepUnpaid:       '⚠',
+    ForeignMarchSighted: '🛡',
     SubsistenceWarning: '🌾',
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
@@ -171,6 +172,23 @@ export function notifText(kind, body) {
         ? ' — one more unpaid period and they desert'
         : ` — ${left} periods left before desertion`;
       return `${body.unit_type || 'A unit'} unpaid (period ${body.unpaid_periods || 0})${tail}`;
+    }
+    case 'ForeignMarchSighted': {
+      // The notice that starts the clock in the asynchronicity gate: a foreign
+      // march entered this Wanax's live tier. Says WHO, WHERE IT IS GOING and
+      // WHICH TICK IT LANDS — the tick because that is what the player plans in
+      // (speldygn, never wall clock), and because the whole point is that there
+      // is still travel time left to answer it.
+      const owner = body.owner ? `${body.owner}'s` : 'An unknown';
+      const force = body.unit_type || 'force';
+      const size = body.size ? ` (${body.size})` : '';
+      const lands = body.arrive_tick ? ` — lands tick ${body.arrive_tick}` : '';
+      // The threatened city is the urgent end of the irreversibility gradient
+      // and must not read like a march merely passing through.
+      if (body.threatens_name) {
+        return `${owner} ${force}${size} is marching on ${body.threatens_name}${lands}`;
+      }
+      return `${owner} ${force}${size} sighted marching to (${body.target_q},${body.target_r})${lands}`;
     }
     case 'SubsistenceWarning': {
       // Payload per kharis.emitSubsistenceWarning: name, tier, net_per_tick,

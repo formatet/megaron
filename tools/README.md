@@ -82,6 +82,17 @@ DB-ingrepp), tar baslinjen, går en spjutbärare i etapper tills ögonen räcker
 skriver ut vad var och en ser. ⚠ Marschgrinden kräver KÄND målhex, så en etapp i taget
 är enda vägen — och ett svar på 202 är en accepterad marsch, inte ett fel.
 
+`python3 tools/acceptance_incoming_march.py <suffix>` kör användargrinden för
+`ForeignMarchSighted` — notisen som startar klockan i asynkronitetsgrinden. Samma
+treWanax-uppställning, men bara försvararen grundar sin stad (grundandet ställer
+förbanden i garnison utan hexposition, så angriparen måste stå kvar som vandrande folk
+för att ha något som kan marschera). Bevisar level 2 med stadsnamn och `arrive_tick`
+medan hären fortfarande är i rörelse, noll notiser till åskådaren och till angriparen
+själv, och att dedupen håller över flera skanningstick.
+⚠ Vänta på att enhetens POSITION ändras mellan etapperna, aldrig på att `status` slutar
+säga `marching` — enheten står kvar som `positioned` på sin gamla hex en stund efter
+ordern, och läser man av läget då beställer man nästa etapp från en föråldrad position.
+
 Eget compose-projektnamn (`megaron-acc`), egna volymer, eget nätverk, egna portar, egen
 JWT-hemlighet. Den kan inte råka röra dev-servern eller live-DB:n — det är hela poängen.
 Runbook och det verifierade scenariot: `megaron_drift.md` §Acceptansvärlden.
