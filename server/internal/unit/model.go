@@ -195,12 +195,14 @@ const (
 // = 'intercept'`.
 //
 // Verb scope (Timothy 2026-08-06, delbeslut 2): all four verbs are storable/
-// settable now. Only `intercept` is behaviourally wired in this slice — it
-// gates the caravan-sentry query (transport/intercept.go) and the unit-vs-unit
-// sentry scan (combat/unit_intercept_scan.go). `escort` and `alert` are STUBS:
-// a Wanax can set and read them, but nothing in combat or notifications acts on
-// them yet — see the TODOs at intercept.go/unit_intercept_scan.go's sentry
-// queries (they only ever look for =='intercept'). `own` is enforced by
+// settable now. `combat/unit_intercept_scan.go`'s unit-vs-unit sentry scan
+// (KR3 §7, 2026-08-07) reads all three: `intercept` fights (initiateOrJoinBattle
+// — the intercepted march HALTS and joins a persistent battle), `alert`
+// notifies without fighting, `escort` never triggers the scan at all.
+// `transport/intercept.go`'s caravan-sentry query still only gates on
+// `intercept` — `escort`/`alert` remain STUBS there (a Wanax can set and read
+// them, but nothing acts on them for caravans yet; a deliberately separate
+// mechanic from unit-vs-unit combat, not extended by the KR3 §7 slice). `own` is enforced by
 // owner_id<>$N in every sentry query, never by reading this field — it is
 // stored anyway so a future policy editor has somewhere to read/write it, and
 // per-relation defaults still document intent. `ally` is parked until kingdoms
@@ -208,10 +210,10 @@ const (
 type ReactionVerb string
 
 const (
-	ReactionIntercept ReactionVerb = "intercept" // seize/fight — today's only wired verb
-	ReactionEscort    ReactionVerb = "escort"    // STUB: storable/settable, no behaviour yet
+	ReactionIntercept ReactionVerb = "intercept" // seize/fight
+	ReactionEscort    ReactionVerb = "escort"    // never triggers the unit-vs-unit sentry scan (KR3 §7); still a STUB for caravans (transport/intercept.go)
 	ReactionIgnore    ReactionVerb = "ignore"    // never react
-	ReactionAlert     ReactionVerb = "alert"     // STUB: storable/settable, no behaviour yet
+	ReactionAlert     ReactionVerb = "alert"     // notifies without fighting on the unit-vs-unit sentry scan (KR3 §7); still a STUB for caravans
 )
 
 // ValidReactionVerb reports whether v is one of the four avsiktslager verbs.

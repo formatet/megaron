@@ -821,7 +821,7 @@ func unitStanceCmd() *cobra.Command {
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance: fortify|storm|sentry|none (required)")
 	cmd.Flags().StringVar(&reaction, "reaction", "",
-		"reaction to foreign units when --stance sentry: intercept|escort|ignore|alert (default intercept; escort/alert are not yet behaviourally wired)")
+		"reaction to foreign units when --stance sentry: intercept|escort|ignore|alert (default intercept; all four wired for unit-vs-unit, escort/alert still stubs against caravans)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("stance")
 	return cmd

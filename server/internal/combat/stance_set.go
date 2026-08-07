@@ -27,9 +27,10 @@ type StanceOrder struct {
 	// ReactionForeign optionally overrides the foreign-relation avsikt verb
 	// (avsiktslagret) applied when Stance == "sentry". Empty means the default
 	// (unit.ReactionIntercept — today's hardcoded sentry behaviour, unchanged).
-	// Ignored for every other stance value. "escort"/"alert" are settable here
-	// but are STUBS — see unit.ReactionPolicy's doc comment for what is and
-	// isn't wired yet.
+	// Ignored for every other stance value — see unit.ReactionPolicy's doc
+	// comment for exactly what each verb does (KR3 §7: intercept/alert/escort
+	// are all behaviourally wired for unit-vs-unit; caravans still only read
+	// intercept).
 	ReactionForeign string
 }
 

@@ -1049,8 +1049,8 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 		Stance string `json:"stance"` // fortify|storm|sentry|none
 		// ReactionForeign optionally picks the avsiktslagret foreign-relation verb
 		// when Stance == "sentry" (default: intercept, today's unchanged
-		// behaviour). See unit.ReactionPolicy — escort/alert are settable here but
-		// still stubs (no combat/notification behaviour yet).
+		// behaviour). See unit.ReactionPolicy — all four verbs are behaviourally
+		// wired for unit-vs-unit (KR3 §7); escort/alert remain stubs for caravans.
 		ReactionForeign string `json:"reaction_foreign,omitempty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
