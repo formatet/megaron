@@ -985,10 +985,19 @@ func (h *UnitArrivalHandler) foundColony(
 
 // resolveCombat handles the arriving unit attacking an enemy settlement.
 //
-// Dual-read defence:
-//
-//	units at destination (unit.SummaryAtHex / ListBySettlement) +
-//	legacy integer columns on settlement.
+// KR3 cutover (megaron_plan_kr3_stridssystem.md §8, mirrors resolveFieldCombat
+// in unit_arrival_field.go — the pattern this was cut over to match): this no
+// longer resolves the fight itself with a one-shot strength/fortune roll. It
+// only creates/joins a persistent battles row via initiateOrJoinBattle, with
+// EVERY garrison unit sent in as its own defender participant (multi-garrison
+// was never a blocker — battle.go already carries N participants per side).
+// Actual dice rolling, wall absorption (§8 beslut 7) and loss application
+// happen later, in BattleTickHandler. The old strength/fortune/wall math
+// (unitStrength, rollFortune, ResolveStrengthsWithRout, WallModifier) and the
+// win/lose branches (applyAttackerWins/applyDefenderWins, including capture)
+// stay in this package for old data and their own direct-call unit tests, but
+// are no longer reachable from this entry point — see battle.go's header
+// comment for the resulting capture gap.
 //
 // Idempotency: u.status == 'marching' was checked at top; all writes are
 // conditional on status or use ON CONFLICT DO NOTHING.
@@ -996,127 +1005,58 @@ func (h *UnitArrivalHandler) resolveCombat(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, dest destSettlement, destQ, destR int, worldID uuid.UUID,
 ) error {
-	// ── Attack strength ────────────────────────────────────────────────────────
-	attStr := unitStrength(u.utype, u.size)
+	arriving := battleParticipant{unitID: u.id, ownerID: u.ownerID, utype: u.utype, side: "attacker", currentSize: u.size, stance: u.stance}
 
-	// ── Defence strength: dual-read ────────────────────────────────────────────
-	// 1. Units-table garrison at destination.
-	// C5: units in fortify stance receive a +50% defensive multiplier (tunable).
-	// Rationale: fortify represents dug-in defensive positions. Applied per-unit so
-	// a mixed garrison gets partial benefit. Constant: fortifyBonus = 1.5.
-	const fortifyBonus = 1.5
-	var defUnitStr float64
 	garrisonRows, err := tx.Query(ctx,
-		`SELECT type, size, stance FROM units
+		`SELECT id, owner_id, type, size FROM units
 		 WHERE settlement_id = $1 AND status = 'garrison' AND status != 'disbanded'`,
 		*dest.settlementID,
 	)
-	if err == nil {
-		for garrisonRows.Next() {
-			var utype string
-			var usize int
-			var ustance *string
-			if scanErr := garrisonRows.Scan(&utype, &usize, &ustance); scanErr == nil {
-				str := unitStrength(utype, usize)
-				// C5: fortify stance grants +50% defence.
-				if ustance != nil && *ustance == "fortify" {
-					str *= fortifyBonus
-				}
-				defUnitStr += str
-			}
+	if err != nil {
+		return fmt.Errorf("settlement combat: load garrison: %w", err)
+	}
+	var defenders []battleParticipant
+	for garrisonRows.Next() {
+		var d battleParticipant
+		d.side = "defender"
+		if scanErr := garrisonRows.Scan(&d.unitID, &d.ownerID, &d.utype, &d.currentSize); scanErr != nil {
+			garrisonRows.Close()
+			return fmt.Errorf("settlement combat: scan garrison: %w", scanErr)
 		}
-		garrisonRows.Close()
+		defenders = append(defenders, d)
+	}
+	garrisonRows.Close()
+	if err := garrisonRows.Err(); err != nil {
+		return fmt.Errorf("settlement combat: garrison rows: %w", err)
 	}
 
-	// C5: storm stance halves the wall bonus for the attacker.
-	// Normal wall multiplier: 1 + level×0.25.
-	// Storm effective wall:   1 + level×0.25/2  (tunable; stormWallDivisor = 2.0).
-	// Rationale: the attacking unit is carrying siege equipment and focusing on
-	// breaching rather than holding field position. The bonus only reduces the wall
-	// multiplier, not base unit-vs-unit strength.
-	const stormWallDivisor = 2.0
-	wallMod := WallModifier(dest.wallLevel)
-	if u.stance != nil && *u.stance == "storm" {
-		// Halve the extra bonus (the +0.25×level part); the base 1.0 is unchanged.
-		extra := float64(dest.wallLevel) * 0.25
-		wallMod = 1.0 + extra/stormWallDivisor
-	}
-	defStr := defUnitStr * wallMod
-
-	// ── Fortune (W5): roll once, bias by kharis delta ─────────────────────────
-	var attackerKharis, defenderKharis float64
-	_ = tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-		u.ownerID, worldID,
-	).Scan(&attackerKharis)
-	if dest.ownerID != nil {
-		_ = tx.QueryRow(ctx,
-			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-			*dest.ownerID, worldID,
-		).Scan(&defenderKharis)
-	}
-	fortune := rollFortune(attackerKharis, defenderKharis)
-	attStrWithFortune := attStr * (1 + fortune)
-
-	// ── L2 unit-loyalty: bias each side's rout threshold by the loyalty of the
-	// settlement supplying it (attacker's capital; defender's own settlement). ──
-	attSettleID, attLoyalty, attHasSettle := supplyingSettlement(ctx, tx, u.ownerID, nil, worldID)
-	defLoyalty := settlementLoyalty(ctx, tx, *dest.settlementID)
-
-	// ── Resolve ───────────────────────────────────────────────────────────────
-	result := ResolveStrengthsWithRout(attStrWithFortune, defStr, fortune,
-		routFractionForLoyalty(attLoyalty), routFractionForLoyalty(defLoyalty))
-
-	slog.Info("unit combat resolved",
-		"unit", u.id, "q", destQ, "r", destR,
-		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome,
-		"rounds", result.Rounds, "att_routed", result.AttackerRouted,
-		"att_loyalty", attLoyalty, "def_loyalty", defLoyalty)
-
-	// ── Apply losses ──────────────────────────────────────────────────────────
-	attSizeBefore := u.size
-	attSizeAfter := int(float64(u.size) * (1 - result.AttackerLosses))
-	attPopLost := attSizeBefore - attSizeAfter
-
-	if result.Outcome == OutcomeAttackerWins {
-		if err := h.applyAttackerWins(ctx, tx, u, dest, attSizeAfter, attPopLost, result, destQ, destR, worldID); err != nil {
-			return err
-		}
-	} else {
-		if err := h.applyDefenderWins(ctx, tx, u, dest, attSizeAfter, attPopLost, result, destQ, destR, worldID); err != nil {
-			return err
-		}
+	if err := h.initiateOrJoinBattle(ctx, tx, worldID, destQ, destR, arriving, defenders); err != nil {
+		return fmt.Errorf("settlement combat: initiate/join battle: %w", err)
 	}
 
-	// Append combat events for both sides.
-	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitCombatResolved,
-		unit.UnitCombatResolvedPayload{
-			UnitID:     u.id,
-			Role:       "attacker",
-			SizeBefore: attSizeBefore,
-			SizeAfter:  attSizeAfter,
-			Outcome:    string(result.Outcome),
-			PopLost:    attPopLost,
-		}, worldID, nil)
+	slog.Info("settlement combat: battle initiated/joined", "unit", u.id, "settlement", *dest.settlementID, "q", destQ, "r", destR, "defenders", len(defenders))
 
-	_, _ = h.eventStore.Append(ctx, dest.provinceID, events.StreamCombat, "UnitCombatResolved",
-		map[string]any{
-			"unit_id":    u.id,
-			"outcome":    string(result.Outcome),
-			"att":        attStr,
-			"fortune":    result.Fortune,
-			"def":        defStr,
-			"att_losses": result.AttackerLosses,
-			"def_losses": result.DefenderLosses,
-			"att_routed": result.AttackerRouted,
-			"def_routed": result.DefenderRouted,
-			"rounds":     result.Rounds,
-		}, worldID, nil)
-
-	// ── L2 military-outcome loyalty (atomic on this tx) ──────────────────────
-	h.applyBattleLoyalty(ctx, tx, result.Outcome, attSettleID, attHasSettle, dest.settlementID, worldID)
+	// The besieging unit holds the contested hex outside the settlement while
+	// the battle resolves over subsequent battle-ticks — mirrors
+	// resolveFieldCombat: no immediate win/lose branch here anymore.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status        = 'positioned',
+		   q             = $2,
+		   r             = $3,
+		   settlement_id = NULL,
+		   target_q      = NULL,
+		   target_r      = NULL,
+		   departs_at    = NULL,
+		   arrives_at    = NULL,
+		   depart_tick   = NULL,
+		   arrive_tick   = NULL,
+		   updated_at    = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR,
+	); err != nil {
+		return fmt.Errorf("settlement combat: position besieging unit: %w", err)
+	}
 
 	return nil
 }
@@ -1192,13 +1132,21 @@ func (h *UnitArrivalHandler) disbandCargoIfPresent(ctx context.Context, tx pgx.T
 	slog.Info("C6: cargo unit disbanded after ship destruction", "ship", ship.id, "cargo", cargoID, "men_lost", cargoSize)
 }
 
-// resolveAmphibiousAssault handles a laden galley arriving at the sea hex next to
-// an enemy coastal settlement. The ship cannot enter land, so the CARGO land unit
-// does the fighting (not the galley): its strength storms the garrison, and on a
-// win it disembarks as the settlement's new garrison — capturing the settlement and
-// everything in its stores (goods follow settlement_id, so the tin is taken with it).
-// The galley itself is emptied and left positioned at the sea hex. Mirrors
-// resolveCombat's strength + fortune math (see there for the canonical version).
+// resolveAmphibiousAssault handles a laden galley arriving at the sea hex next
+// to an enemy coastal settlement. The ship cannot enter land, so the CARGO
+// land unit does the fighting (not the galley) — it disembarks immediately
+// and holds the settlement's hex.
+//
+// KR3 cutover (megaron_plan_kr3_stridssystem.md §8, mirrors resolveCombat/
+// resolveFieldCombat): this no longer resolves the fight itself. It creates/
+// joins a persistent battles row via initiateOrJoinBattle — the cargo as the
+// attacker participant, every garrison unit as its own defender participant
+// — then lets ScheduledBattleTick resolve it. Ship/cargo handling (disembark,
+// empty the galley) is kept exactly as before; only the COMBAT OUTCOME moved.
+// storm is read from the SHIP's stance (u.stance), same source the old model
+// used here, even though the cargo is the one that fights (see
+// battleParticipant.stance's doc comment). No capture on a win — see
+// battle.go's header comment for that gap, shared with resolveCombat.
 func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 	ctx context.Context, tx pgx.Tx, u unitRow, seaQ, seaR int, worldID uuid.UUID,
 ) error {
@@ -1240,238 +1188,63 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 		return fmt.Errorf("amphibious assault: load cargo: %w", err)
 	}
 
-	// ── Attack strength: the disembarking land unit. ──
-	attStr := unitStrength(cargoType, cargoSize)
+	arriving := battleParticipant{unitID: cargoID, ownerID: u.ownerID, utype: cargoType, side: "attacker", currentSize: cargoSize, stance: u.stance}
 
-	// ── Defence strength (mirrors resolveCombat: garrison units + wall modifier). ──
-	const fortifyBonus = 1.5
-	var defUnitStr float64
-	if garrisonRows, gErr := tx.Query(ctx,
-		`SELECT type, size, stance FROM units
+	garrisonRows, err := tx.Query(ctx,
+		`SELECT id, owner_id, type, size FROM units
 		 WHERE settlement_id = $1 AND status = 'garrison' AND status != 'disbanded'`,
 		*dest.settlementID,
-	); gErr == nil {
-		for garrisonRows.Next() {
-			var gtype string
-			var gsize int
-			var gstance *string
-			if scanErr := garrisonRows.Scan(&gtype, &gsize, &gstance); scanErr == nil {
-				str := unitStrength(gtype, gsize)
-				if gstance != nil && *gstance == "fortify" {
-					str *= fortifyBonus
-				}
-				defUnitStr += str
-			}
-		}
-		garrisonRows.Close()
+	)
+	if err != nil {
+		return fmt.Errorf("amphibious assault: load garrison: %w", err)
 	}
-	const stormWallDivisor = 2.0
-	wallMod := WallModifier(dest.wallLevel)
-	if u.stance != nil && *u.stance == "storm" {
-		extra := float64(dest.wallLevel) * 0.25
-		wallMod = 1.0 + extra/stormWallDivisor
+	var defenders []battleParticipant
+	for garrisonRows.Next() {
+		var d battleParticipant
+		d.side = "defender"
+		if scanErr := garrisonRows.Scan(&d.unitID, &d.ownerID, &d.utype, &d.currentSize); scanErr != nil {
+			garrisonRows.Close()
+			return fmt.Errorf("amphibious assault: scan garrison: %w", scanErr)
+		}
+		defenders = append(defenders, d)
 	}
-	defStr := defUnitStr * wallMod
-
-	// ── Fortune (kharis-biased, rolled once). ──
-	var attackerKharis, defenderKharis float64
-	_ = tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-		u.ownerID, worldID,
-	).Scan(&attackerKharis)
-	if dest.ownerID != nil {
-		_ = tx.QueryRow(ctx,
-			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-			*dest.ownerID, worldID,
-		).Scan(&defenderKharis)
-	}
-	fortune := rollFortune(attackerKharis, defenderKharis)
-
-	// ── L2 unit-loyalty rout bias (attacker's capital supplies the cargo; the
-	// defender is supplied by its own settlement). ──
-	attSettleID, attLoyalty, attHasSettle := supplyingSettlement(ctx, tx, u.ownerID, nil, worldID)
-	defLoyalty := settlementLoyalty(ctx, tx, *dest.settlementID)
-	result := ResolveStrengthsWithRout(attStr*(1+fortune), defStr, fortune,
-		routFractionForLoyalty(attLoyalty), routFractionForLoyalty(defLoyalty))
-
-	slog.Info("amphibious assault resolved",
-		"ship", u.id, "cargo", cargoID, "settlement", *dest.settlementID,
-		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome,
-		"att_loyalty", attLoyalty, "def_loyalty", defLoyalty)
-
-	cargoSizeAfter := int(float64(cargoSize) * (1 - result.AttackerLosses))
-	cargoPopLost := cargoSize - cargoSizeAfter
-
-	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 && u.captureMode != "annex" {
-		// Del 2b sack: the cargo storms ashore but does not garrison — it stands
-		// positioned at the settlement's hex, and sackSettlement razes the city
-		// instead of it being occupied.
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET
-			   size = $2, status = 'positioned', settlement_id = NULL,
-			   q = $3, r = $4, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
-			 WHERE id = $1`,
-			cargoID, cargoSizeAfter, settleQ, settleR,
-		); err != nil {
-			return fmt.Errorf("amphibious sack: position cargo: %w", err)
-		}
-		if err := h.sackSettlement(ctx, tx, u.ownerID, dest, settleQ, settleR, worldID); err != nil {
-			return fmt.Errorf("amphibious sack: %w", err)
-		}
-		// Empty the galley; it rests positioned at the landing hex.
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
-			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
-			 WHERE id = $1`,
-			u.id, seaQ, seaR,
-		); err != nil {
-			return fmt.Errorf("amphibious sack: empty galley: %w", err)
-		}
-	} else if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 {
-		// Defender garrison units take their losses BEFORE the cargo lands as
-		// garrison below — same double-punish bug and fix as applyAttackerWins'
-		// annex branch (applyDefenderUnitLosses has no owner filter, so it would
-		// otherwise also strike the cargo's own just-placed garrison row).
-		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
-			return err
-		}
-		// Cargo storms ashore and becomes the captured settlement's garrison.
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET
-			   size = $2, status = 'garrison', settlement_id = $3,
-			   q = $4, r = $5, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
-			 WHERE id = $1`,
-			cargoID, cargoSizeAfter, *dest.settlementID, settleQ, settleR,
-		); err != nil {
-			return fmt.Errorf("amphibious assault: land cargo garrison: %w", err)
-		}
-		// Transfer ownership — goods follow settlement_id, so the tin is captured.
-		// is_capital is cleared: a captured metropolis becomes an ordinary colony
-		// under the conqueror (no Wanax may hold two capitals). If it WAS the
-		// defender's capital, handleOwnerCityLoss below promotes a survivor.
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET owner_id = $2, control_type = 'occupied',
-			   is_capital = false, kingdom_id = NULL, updated_at = now() WHERE id = $1`,
-			*dest.settlementID, u.ownerID,
-		); err != nil {
-			return fmt.Errorf("amphibious assault: transfer ownership: %w", err)
-		}
-		// Evict the defeated defender's surviving garrison so they don't linger as
-		// the conqueror's troops (the ghost-garrison bug).
-		if err := h.evictDefeatedDefenders(ctx, tx, *dest.settlementID, u.ownerID); err != nil {
-			return err
-		}
-		// Succession / game-over for the dispossessed defender (mirrors the land
-		// conquest path, which the amphibious path previously skipped). Ownership
-		// was just transferred, so the fallen city no longer counts as theirs.
-		if dest.ownerID != nil {
-			if _, err := handleOwnerCityLoss(ctx, tx, *dest.ownerID, worldID, *dest.settlementID); err != nil {
-				return fmt.Errorf("amphibious assault: handle defender city loss: %w", err)
-			}
-		}
-		// Empty the galley; it rests positioned at the landing hex.
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
-			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
-			 WHERE id = $1`,
-			u.id, seaQ, seaR,
-		); err != nil {
-			return fmt.Errorf("amphibious assault: empty galley: %w", err)
-		}
-	} else {
-		// Landing repelled. Defender takes its losses; the cargo is spent or thrown back.
-		if err := h.applyDefenderUnitLosses(ctx, tx, *dest.settlementID, result.DefenderLosses, worldID); err != nil {
-			return err
-		}
-		if cargoSizeAfter <= 0 {
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1`, cargoID,
-			); err != nil {
-				return fmt.Errorf("amphibious assault: disband spent cargo: %w", err)
-			}
-		} else {
-			// Cargo survives, still aboard.
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET size = $2, updated_at = now() WHERE id = $1`,
-				cargoID, cargoSizeAfter,
-			); err != nil {
-				return fmt.Errorf("amphibious assault: apply cargo losses: %w", err)
-			}
-		}
-		// The galley withdraws to the sea hex (keeps surviving cargo aboard).
-		cargoClause := ""
-		if cargoSizeAfter <= 0 {
-			cargoClause = "cargo_unit_id = NULL, "
-		}
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET `+cargoClause+`status = 'positioned',
-			   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
-			   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
-			 WHERE id = $1`,
-			u.id, seaQ, seaR,
-		); err != nil {
-			return fmt.Errorf("amphibious assault: withdraw galley: %w", err)
-		}
+	garrisonRows.Close()
+	if err := garrisonRows.Err(); err != nil {
+		return fmt.Errorf("amphibious assault: garrison rows: %w", err)
 	}
 
-	// Attacker demographic loss → cargo owner's capital.
-	if cargoPopLost > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET population = GREATEST(50, population - $2)
-			 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
-			u.ownerID, cargoPopLost, worldID,
-		); err != nil {
-			slog.Warn("amphibious assault: could not apply attacker pop loss", "cargo", cargoID, "err", err)
-		}
+	if err := h.initiateOrJoinBattle(ctx, tx, worldID, settleQ, settleR, arriving, defenders); err != nil {
+		return fmt.Errorf("amphibious assault: initiate/join battle: %w", err)
 	}
 
-	// Combat events (outcome, not intention).
-	_, _ = h.eventStore.Append(ctx, cargoID, events.StreamType(unit.StreamUnit), unit.EventUnitCombatResolved,
-		unit.UnitCombatResolvedPayload{
-			UnitID: cargoID, Role: "attacker",
-			SizeBefore: cargoSize, SizeAfter: cargoSizeAfter,
-			Outcome: string(result.Outcome), PopLost: cargoPopLost,
-		}, worldID, nil)
-	_, _ = h.eventStore.Append(ctx, dest.provinceID, events.StreamCombat, "UnitCombatResolved",
-		map[string]any{
-			"unit_id": cargoID, "ship_id": u.id, "amphibious": true,
-			"outcome": string(result.Outcome), "att": attStr, "fortune": result.Fortune,
-			"def": defStr, "att_losses": result.AttackerLosses, "def_losses": result.DefenderLosses,
-		}, worldID, nil)
+	slog.Info("amphibious assault: battle initiated/joined", "ship", u.id, "cargo", cargoID, "settlement", *dest.settlementID, "defenders", len(defenders))
 
-	// Capture notification (annex only — sack emits its own SettlementSacked
-	// notification inside sackSettlement above). The amphibious path otherwise
-	// emits only unit/combat-stream events, so without this the dispossessed owner
-	// gets no signal their city fell — and in async play they are typically offline
-	// when the raid lands. Mirror the land-march paths that already notify on
-	// OutpostCaptured/ArmyArrival. Same guard as the ownership transfer above (win
-	// AND cargo survived to storm ashore).
-	if result.Outcome == OutcomeAttackerWins && cargoSizeAfter > 0 && u.captureMode == "annex" {
-		_, _ = h.eventStore.Append(ctx, *dest.settlementID, events.StreamProvince, "SettlementCaptured",
-			map[string]any{
-				"settlement_id": *dest.settlementID, "former_owner": dest.ownerID,
-				"new_owner": u.ownerID, "amphibious": true,
-			}, worldID, nil)
-		if h.hub != nil {
-			if dest.ownerID != nil {
-				_ = h.hub.NotifyPlayer(ctx, worldID, *dest.ownerID, "SettlementCaptured", 2, map[string]any{
-					"settlement_id": *dest.settlementID, "role": "defender", "amphibious": true,
-				})
-			}
-			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "SettlementCaptured", 3, map[string]any{
-				"settlement_id": *dest.settlementID, "role": "attacker", "amphibious": true,
-			})
-		}
+	// The cargo storms ashore and holds the settlement's hex while the battle
+	// resolves over subsequent battle-ticks — no immediate win/lose branch
+	// here anymore.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status = 'positioned', settlement_id = NULL,
+		   q = $2, r = $3, target_q = NULL, target_r = NULL,
+		   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
+		 WHERE id = $1`,
+		cargoID, settleQ, settleR,
+	); err != nil {
+		return fmt.Errorf("amphibious assault: position landed cargo: %w", err)
 	}
 
-	// ── L2 military-outcome loyalty (atomic on this tx) ──────────────────────
-	h.applyBattleLoyalty(ctx, tx, result.Outcome, attSettleID, attHasSettle, dest.settlementID, worldID)
+	// The galley's part is done the instant its cargo lands — it empties and
+	// rests at the sea hex regardless of how the fight ashore eventually goes
+	// (ship/cargo handling kept from the old model; only the outcome moved).
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
+		   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
+		   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
+		 WHERE id = $1`,
+		u.id, seaQ, seaR,
+	); err != nil {
+		return fmt.Errorf("amphibious assault: empty galley: %w", err)
+	}
 
 	return nil
 }

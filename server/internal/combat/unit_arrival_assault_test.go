@@ -2,9 +2,19 @@ package combat
 
 // Amphibious assault (opposed landing). A laden galley reaches the sea hex next
 // to an enemy coastal settlement it does not own; its cargo storms the beach.
-// On a win the cargo becomes the settlement's garrison, ownership flips, and the
-// settlement's stores (its tin) are captured with it. This drives the real
-// resolve() dispatcher through the intent=assault branch.
+// This drives the real resolve() dispatcher through the intent=assault branch.
+//
+// KR3 cutover (megaron_plan_kr3_stridssystem.md §8): resolveAmphibiousAssault
+// no longer resolves the fight itself — it only initiates a persistent
+// battles row (cargo as attacker, garrison as defender) via
+// initiateOrJoinBattle, same as resolveFieldCombat/resolveCombat. This test
+// now asserts that initiation (a battle + both participants exist right after
+// resolve(), cargo already landed/positioned, galley already emptied at sea),
+// then drives BattleTickHandler to completion to reach the fight's outcome.
+// It no longer asserts settlement capture/ownership/tin/is_capital/garrison
+// eviction — resolveAmphibiousAssault does not perform those anymore (see
+// battle.go's header comment: capture-on-win is a deliberate, still-open gap,
+// same as the land-march siege cutover).
 
 import (
 	"context"
@@ -16,7 +26,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
+func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
@@ -107,11 +117,12 @@ func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
 		t.Fatalf("seed defender tin: %v", err)
 	}
 	// Defender garrison: a modest force the raider's cargo should overwhelm.
-	if _, err := pool.Exec(ctx,
+	var garrisonID uuid.UUID
+	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
-		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'garrison', $3)`,
+		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'garrison', $3) RETURNING id`,
 		worldID, defender, defSettlement,
-	); err != nil {
+	).Scan(&garrisonID); err != nil {
 		t.Fatalf("create defender garrison: %v", err)
 	}
 
@@ -125,8 +136,6 @@ func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
 		t.Fatalf("create cargo unit: %v", err)
 	}
 	// The laden galley, arriving at the landing hex (2,0) with intent=assault.
-	// capture_mode='annex' (Del 2b default is 'sack') — this test exercises the
-	// take-and-hold path; see unit_arrival_sack_test.go for the sack assertions.
 	var galleyID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units
@@ -161,98 +170,97 @@ func TestAmphibiousAssault_CapturesCoastalSettlementAndTin(t *testing.T) {
 		t.Fatalf("commit: %v", err)
 	}
 
-	// Settlement now belongs to the raider.
-	var newOwner uuid.UUID
-	var controlType string
-	if err := pool.QueryRow(ctx,
-		`SELECT owner_id, control_type FROM settlements WHERE id = $1`, defSettlement,
-	).Scan(&newOwner, &controlType); err != nil {
-		t.Fatalf("read captured settlement: %v", err)
-	}
-	if newOwner != attacker {
-		t.Errorf("settlement owner = %s, want attacker %s", newOwner, attacker)
-	}
-	if controlType != "occupied" {
-		t.Errorf("control_type = %q, want \"occupied\"", controlType)
-	}
+	// ── Phase 1: initiation only, right after resolve() — no dice rolled yet. ──
 
-	// Both sides must be notified the settlement changed hands — the dispossessed
-	// owner especially (async play → offline when the raid lands). Regression guard
-	// for the amphibious notification gap (was silent: only unit/combat-stream events).
-	var captures int
-	for _, k := range fb.notified {
-		if k == "SettlementCaptured" {
-			captures++
-		}
-	}
-	if captures != 2 {
-		t.Errorf("SettlementCaptured notifications = %d, want 2 (defender + attacker); got %v", captures, fb.notified)
-	}
-
-	// The tin came with it.
-	var tin float64
-	if err := pool.QueryRow(ctx,
-		`SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'tin'`, defSettlement,
-	).Scan(&tin); err != nil {
-		t.Fatalf("read captured tin: %v", err)
-	}
-	if tin != 5000 {
-		t.Errorf("captured tin = %v, want 5000", tin)
-	}
-
-	// The cargo disembarked as the new garrison of the captured settlement.
+	// The cargo already disembarked onto the settlement's own hex (3,0), not
+	// the sea landing hex — it is the cargo that fights, not the ship.
 	var cargoStatus string
 	var cargoSettlement *uuid.UUID
-	var cargoSize int
+	var cargoQ, cargoR, cargoSize int
 	if err := pool.QueryRow(ctx,
-		`SELECT status, settlement_id, size FROM units WHERE id = $1`, cargoID,
-	).Scan(&cargoStatus, &cargoSettlement, &cargoSize); err != nil {
-		t.Fatalf("read cargo after assault: %v", err)
+		`SELECT status, settlement_id, q, r, size FROM units WHERE id = $1`, cargoID,
+	).Scan(&cargoStatus, &cargoSettlement, &cargoQ, &cargoR, &cargoSize); err != nil {
+		t.Fatalf("read cargo after assault initiation: %v", err)
 	}
-	if cargoStatus != "garrison" || cargoSettlement == nil || *cargoSettlement != defSettlement {
-		t.Errorf("cargo status=%q settlement=%v, want garrison at %s", cargoStatus, cargoSettlement, defSettlement)
+	if cargoStatus != "positioned" || cargoSettlement != nil || cargoQ != 3 || cargoR != 0 {
+		t.Errorf("cargo status=%q settlement=%v pos=(%d,%d), want positioned/nil at (3,0) — holding the contested hex while KR3 resolves it",
+			cargoStatus, cargoSettlement, cargoQ, cargoR)
 	}
-	if cargoSize <= 0 {
-		t.Errorf("cargo size after win = %d, want > 0", cargoSize)
+	if cargoSize != 1500 {
+		t.Errorf("cargo size = %d, want 1500 (full — no dice rolled yet)", cargoSize)
 	}
 
-	// The captured metropolis is demoted to an ordinary colony — no Wanax may hold
-	// two capitals (regression: is_capital stayed true under the conqueror).
-	var stillCapital bool
-	if err := pool.QueryRow(ctx,
-		`SELECT is_capital FROM settlements WHERE id = $1`, defSettlement,
-	).Scan(&stillCapital); err != nil {
-		t.Fatalf("read is_capital after capture: %v", err)
-	}
-	if stillCapital {
-		t.Errorf("captured settlement is_capital = true, want false (conqueror must not gain a second capital)")
-	}
-
-	// No ghost garrison: the defeated defender's surviving units are evicted, not
-	// left as the conqueror's troops (regression for the ghost-garrison bug).
-	var ghostGarrison int
-	if err := pool.QueryRow(ctx,
-		`SELECT count(*) FROM units
-		 WHERE settlement_id = $1 AND status = 'garrison' AND owner_id = $2`,
-		defSettlement, defender,
-	).Scan(&ghostGarrison); err != nil {
-		t.Fatalf("count ghost garrison: %v", err)
-	}
-	if ghostGarrison != 0 {
-		t.Errorf("defender ghost garrison units = %d, want 0 (evicted on capture)", ghostGarrison)
-	}
-
-	// The galley is empty and positioned at the landing hex.
+	// The galley is already empty and positioned at the landing sea hex,
+	// regardless of how the fight on shore eventually goes.
 	var galleyStatus string
 	var galleyCargo *uuid.UUID
 	var galleyQ, galleyR int
 	if err := pool.QueryRow(ctx,
 		`SELECT status, cargo_unit_id, q, r FROM units WHERE id = $1`, galleyID,
 	).Scan(&galleyStatus, &galleyCargo, &galleyQ, &galleyR); err != nil {
-		t.Fatalf("read galley after assault: %v", err)
+		t.Fatalf("read galley after assault initiation: %v", err)
 	}
 	if galleyStatus != "positioned" || galleyCargo != nil || galleyQ != 2 || galleyR != 0 {
 		t.Errorf("galley status=%q cargo=%v pos=(%d,%d), want positioned/empty at (2,0)",
 			galleyStatus, galleyCargo, galleyQ, galleyR)
+	}
+
+	var battleID uuid.UUID
+	var battleStatus string
+	if err := pool.QueryRow(ctx,
+		`SELECT id, status FROM battles WHERE world_id = $1 AND q = 3 AND r = 0`, worldID,
+	).Scan(&battleID, &battleStatus); err != nil {
+		t.Fatalf("read battle: %v (no battles row — initiateOrJoinBattle did not run)", err)
+	}
+	if battleStatus != "active" {
+		t.Fatalf("battle status = %q, want active immediately after initiation", battleStatus)
+	}
+	var participantCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM battle_participants WHERE battle_id = $1`, battleID,
+	).Scan(&participantCount); err != nil {
+		t.Fatalf("count battle participants: %v", err)
+	}
+	if participantCount != 2 {
+		t.Errorf("battle_participants count = %d, want 2 (cargo attacker + garrison defender)", participantCount)
+	}
+
+	// ── Phase 2: drive the battle to its conclusion (§2's state machine). ──
+
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	runBattleToEnd(t, pool, battleH, worldID, battleID, 20)
+
+	var garrisonStatus string
+	if err := pool.QueryRow(ctx,
+		`SELECT status FROM units WHERE id = $1`, garrisonID,
+	).Scan(&garrisonStatus); err != nil {
+		t.Fatalf("read garrison unit: %v", err)
+	}
+	if garrisonStatus != "disbanded" {
+		t.Errorf("garrison unit status = %q, want disbanded (1500 cargo vs 100 garrison must annihilate it within 20 battle-ticks)", garrisonStatus)
+	}
+
+	var finalCargoSize int
+	if err := pool.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, cargoID).Scan(&finalCargoSize); err != nil {
+		t.Fatalf("read cargo size: %v", err)
+	}
+	// KR3 rolls discrete T12 dice (§4) rather than a deterministic %-loss
+	// formula — an overwhelming 1500-vs-100 win can plausibly cost the winner
+	// zero men, so this only asserts it never GAINS men and the battle
+	// actually concluded (garrison wiped above).
+	if finalCargoSize > 1500 || finalCargoSize <= 0 {
+		t.Errorf("cargo size = %d, want in (0, 1500]", finalCargoSize)
+	}
+
+	// The settlement itself is untouched by this slice's cutover — no
+	// capture, no ownership transfer (see battle.go's header comment).
+	var stillOwner uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`SELECT owner_id FROM settlements WHERE id = $1`, defSettlement,
+	).Scan(&stillOwner); err != nil {
+		t.Fatalf("read settlement owner: %v", err)
+	}
+	if stillOwner != defender {
+		t.Errorf("settlement owner = %s, want unchanged defender %s (capture-on-win is not implemented by this cutover)", stillOwner, defender)
 	}
 }
