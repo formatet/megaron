@@ -22,13 +22,13 @@ package combat
 // march around. Full march-interruption semantics (does the column retreat?
 // does it have to re-path?) are KR2's job, not this substrate's.
 //
-// §S4 is explicitly NOT built here: the outcome is written to the events log
-// (EventUnitIntercepted) for the audit trail and for chronicle/stridsrapport to
-// read later, but no NotifyPlayer call fires for it — a notification kind with
-// no renderer on the other end is a known anti-pattern in this codebase
-// (webbens notifText har default: return kind och kastar payloaden). The
-// player still learns the outcome from the unit's own changed
-// size/status (GET /units, `keryx unit list`).
+// §S4 (2026-08-07, megaron_plan_avsiktslagret.md): both owners now get a
+// notification, reusing the stridsrapport payload shape (BattleTickHandler.
+// notifyBattleEnded's kind/fields) even though this handler resolves combat
+// synchronously in one roll, not via initiateOrJoinBattle/ScheduledBattleTick
+// — see notifyInterceptionResolved below for why cutting this entry point
+// over to the KR3 substrate is deliberately NOT done here (scope note in that
+// function's doc comment).
 
 import (
 	"context"
@@ -61,11 +61,14 @@ type UnitInterceptScanHandler struct {
 	scheduler  *events.Scheduler
 	eventStore *events.Store
 	clk        clock.Clock
+	hub        Broadcaster
 }
 
-// NewUnitInterceptScanHandler creates a UnitInterceptScanHandler.
-func NewUnitInterceptScanHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, clk clock.Clock) *UnitInterceptScanHandler {
-	return &UnitInterceptScanHandler{pool: pool, scheduler: sched, eventStore: store, clk: clk}
+// NewUnitInterceptScanHandler creates a UnitInterceptScanHandler. hub may be
+// nil in tests (every NotifyPlayer call below is nil-guarded, matching the
+// other combat handlers — see collapse.go).
+func NewUnitInterceptScanHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, clk clock.Clock, hub Broadcaster) *UnitInterceptScanHandler {
+	return &UnitInterceptScanHandler{pool: pool, scheduler: sched, eventStore: store, clk: clk, hub: hub}
 }
 
 type marchingUnit struct {
@@ -344,9 +347,7 @@ func (h *UnitInterceptScanHandler) intercept(
 		return fmt.Errorf("commit: %w", err)
 	}
 
-	// Outcome, not intent (CLAUDE.md events rule) — the roll already happened
-	// above. §S4 (chronicle text, player notification) is deliberately NOT built
-	// here — see file doc comment.
+	// Outcome, not intent (CLAUDE.md events rule) — the roll already happened above.
 	_, _ = h.eventStore.Append(ctx, m.id, events.StreamType(unit.StreamUnit), unit.EventUnitIntercepted,
 		unit.UnitInterceptedPayload{
 			SentryUnitID:      sentryID,
@@ -365,5 +366,80 @@ func (h *UnitInterceptScanHandler) intercept(
 			PopLost:    attPopLost,
 		}, worldID, nil)
 
+	h.notifyInterceptionResolved(ctx, worldID, pos.Q, pos.R,
+		m.owner, m.utype, attSizeBefore, attSizeAfter,
+		interceptorID, sentryType, defSizeBefore, defSizeAfter,
+		result.Outcome)
+
 	return nil
+}
+
+// notifyInterceptionResolved is avsiktslagret's §S4 (megaron_plan_avsiktslagret.md):
+// "Notis till båda parter (återanvänd stridsrapportens payload)". Reuses
+// BattleTickHandler.notifyBattleEnded's exact payload shape/kind
+// (BattleWon/BattleLost, role/outcome/opponent_name/own_unit/enemy_unit/q/r/
+// place) so keryx's printBattleReportLine and the web's notifText case render
+// this identically to a KR3 battle report — a Wanax should not be able to
+// tell "this notification came from a different code path" from the text.
+//
+// Deliberately NOT cut over to initiateOrJoinBattle (plan §8's "the other
+// three entry points"): this handler resolves in one immediate roll, and a
+// SURVIVING marching unit keeps marching unchanged on its existing course
+// (this file's own header comment, "full march-interruption is KR2's job").
+// Routing this through KR3 would mean the intercepted unit instead halts in
+// place (status='positioned') for however many battle-ticks the fight takes,
+// same as a field arrival — a real behaviour change to the march mechanic,
+// not a pure refactor, and not specified by the locked plan. Left as a
+// flagged gap for whoever picks up §8/KR2's march-interruption question,
+// rather than decided here.
+func (h *UnitInterceptScanHandler) notifyInterceptionResolved(
+	ctx context.Context, worldID uuid.UUID, q, r int,
+	attOwner uuid.UUID, attType string, attSizeBefore, attSizeAfter int,
+	defOwner uuid.UUID, defType string, defSizeBefore, defSizeAfter int,
+	outcome Outcome,
+) {
+	if h.hub == nil {
+		return
+	}
+	attName := ownerNameOf(ctx, h.pool, attOwner)
+	defName := ownerNameOf(ctx, h.pool, defOwner)
+	var place *string
+	if name, ok := settlementNameAt(ctx, h.pool, worldID, q, r); ok {
+		place = &name
+	}
+
+	// outcomeStr maps resolver.go's Outcome ("attacker_wins"/"defender_wins")
+	// onto the KR3 notification's own vocabulary ("attacker_wins"/
+	// "defender_holds"/"mutual_wipe" — BattleTickHandler.notifyBattleEnded),
+	// which keryx's printBattleReportLine and the web's notifText case switch
+	// on for the trailer sentence. string(outcome) directly would silently
+	// mismatch ("defender_wins" ≠ "defender_holds") and the trailer would
+	// just fall through empty — not a crash, but a quietly worse message.
+	outcomeStr := "attacker_wins"
+	if outcome == OutcomeDefenderWins {
+		outcomeStr = "defender_holds"
+	}
+
+	notify := func(recipient uuid.UUID, role, opponentName string, own, enemy battleReportUnit) {
+		kind, level := "BattleLost", 2
+		won := (role == "attacker" && outcome == OutcomeAttackerWins) || (role == "defender" && outcome == OutcomeDefenderWins)
+		if won {
+			kind, level = "BattleWon", 3
+		}
+		payload := map[string]any{
+			"role": role, "outcome": outcomeStr, "opponent_name": opponentName,
+			"own_unit": own, "enemy_unit": enemy, "q": q, "r": r,
+		}
+		if place != nil {
+			payload["place"] = *place
+		}
+		if err := h.hub.NotifyPlayer(ctx, worldID, recipient, kind, level, payload); err != nil {
+			slog.Warn("notify interception resolved", "recipient", recipient, "err", err)
+		}
+	}
+
+	attUnit := battleReportUnit{Type: attType, SizeBefore: attSizeBefore, SizeAfter: attSizeAfter, PopLost: attSizeBefore - attSizeAfter}
+	defUnit := battleReportUnit{Type: defType, SizeBefore: defSizeBefore, SizeAfter: defSizeAfter, PopLost: defSizeBefore - defSizeAfter}
+	notify(attOwner, "attacker", defName, attUnit, defUnit)
+	notify(defOwner, "defender", attName, defUnit, attUnit)
 }

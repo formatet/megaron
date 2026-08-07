@@ -145,7 +145,7 @@ func TestUnitInterceptScan_VisibleSentryEngagesMarchingUnit(t *testing.T) {
 	attackerUnit := mkMarchingUnit(t, pool, f, clk, 1000)
 	sentryUnit := mkSentry(t, pool, f, 1, 0, 10)
 
-	h := NewUnitInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk)
+	h := NewUnitInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk, nil)
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 1}); err != nil {
 		t.Fatalf("unit intercept scan: %v", err)
 	}
@@ -195,7 +195,7 @@ func TestUnitInterceptScan_DoubleAvskarningGuardPreventsRefight(t *testing.T) {
 	attackerUnit := mkMarchingUnit(t, pool, f, clk, 200)
 	mkSentry(t, pool, f, 1, 0, 10)
 
-	h := NewUnitInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk)
+	h := NewUnitInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk, nil)
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 1}); err != nil {
 		t.Fatalf("unit intercept scan (1st sweep): %v", err)
 	}
@@ -249,7 +249,7 @@ func TestUnitInterceptScan_BlindSentryDoesNotEngage(t *testing.T) {
 		t.Fatalf("create ship sentry: %v", err)
 	}
 
-	h := NewUnitInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk)
+	h := NewUnitInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk, nil)
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 1}); err != nil {
 		t.Fatalf("unit intercept scan: %v", err)
 	}
@@ -270,5 +270,72 @@ func TestUnitInterceptScan_BlindSentryDoesNotEngage(t *testing.T) {
 	}
 	if eventCount != 0 {
 		t.Errorf("UnitIntercepted event count = %d, want 0 (blind sentry never fired)", eventCount)
+	}
+}
+
+// TestUnitInterceptScan_NotifiesBothSides is avsiktslagret §S4
+// (megaron_plan_avsiktslagret.md): before this slice, no NotifyPlayer call
+// fired at all for an interception (file header comment used to say so
+// explicitly) — a Wanax only learned their unit fought from its changed
+// size/status. RED before: fakeBroadcaster would record zero notifications.
+func TestUnitInterceptScan_NotifiesBothSides(t *testing.T) {
+	pool := testPool(t)
+	f := newUnitInterceptFixture(t, pool)
+	ctx := context.Background()
+
+	clk := clock.NewTestClock(time.Unix(1_000_000, 0))
+	attackerUnit := mkMarchingUnit(t, pool, f, clk, 1000)
+	mkSentry(t, pool, f, 1, 0, 10)
+
+	fb := &fakeBroadcaster{}
+	h := NewUnitInterceptScanHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk, fb)
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 1}); err != nil {
+		t.Fatalf("unit intercept scan: %v", err)
+	}
+
+	if len(fb.notified) != 2 {
+		t.Fatalf("notified %d times, want 2 (both attacker and defender owners) — kinds: %v", len(fb.notified), fb.notified)
+	}
+	var attackerPayload, defenderPayload map[string]any
+	for i, k := range fb.notified {
+		if k != "BattleWon" && k != "BattleLost" {
+			t.Fatalf("unexpected notification kind %q", k)
+		}
+		payload, ok := fb.payloads[i].(map[string]any)
+		if !ok {
+			t.Fatalf("payload %d is not map[string]any: %T", i, fb.payloads[i])
+		}
+		switch payload["role"] {
+		case "attacker":
+			attackerPayload = payload
+		case "defender":
+			defenderPayload = payload
+		}
+	}
+	if attackerPayload == nil {
+		t.Fatal("attacker owner never notified")
+	}
+	if defenderPayload == nil {
+		t.Fatal("defender owner never notified")
+	}
+	if attackerPayload["opponent_name"] == "" || attackerPayload["opponent_name"] == nil {
+		t.Error("attacker's opponent_name is empty")
+	}
+	if defenderPayload["opponent_name"] == "" || defenderPayload["opponent_name"] == nil {
+		t.Error("defender's opponent_name is empty")
+	}
+	// Overwhelming attacker (1000 vs 10) — the attacker's own BattleWon.
+	if fb.notified[0] != "BattleWon" && fb.notified[1] != "BattleWon" {
+		t.Error("neither notification is BattleWon — a 1000-vs-10 fight must produce a winner")
+	}
+
+	var eventCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'UnitIntercepted'`, attackerUnit,
+	).Scan(&eventCount); err != nil {
+		t.Fatalf("count UnitIntercepted events: %v", err)
+	}
+	if eventCount != 1 {
+		t.Errorf("UnitIntercepted event count = %d, want 1", eventCount)
 	}
 }

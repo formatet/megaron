@@ -171,7 +171,7 @@ func main() {
 	worker.Register(events.ScheduledTransportArrival, transportH.Handle)
 	interceptH := transport.NewInterceptScanHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
-	unitInterceptH := combat.NewUnitInterceptScanHandler(pool, scheduler, eventStore, gameClock)
+	unitInterceptH := combat.NewUnitInterceptScanHandler(pool, scheduler, eventStore, gameClock, hub)
 	worker.Register(events.ScheduledUnitInterceptScan, unitInterceptH.Handle)
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)

@@ -806,17 +806,37 @@ func (h *BattleTickHandler) notifyBattleEnded(ctx context.Context, tx pgx.Tx, ba
 	}
 }
 
+// queryer is satisfied by both pgx.Tx and *pgxpool.Pool — settlementNameAt is
+// called from within an open battle-tick tx (battle.go) and, for avsiktslagret
+// S4's interception notification (unit_intercept_scan.go), after that
+// handler's own tx has already committed, so it needs to work with either.
+type queryer interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
 // settlementNameAt best-effort resolves a hex to its settlement's name — a
 // battle can also happen on open ground (unit_arrival_field.go), where there
 // is none; ok=false then and the caller falls back to bare q/r.
-func settlementNameAt(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, q, r int) (string, bool) {
+func settlementNameAt(ctx context.Context, q queryer, worldID uuid.UUID, hq, hr int) (string, bool) {
 	var name string
-	err := tx.QueryRow(ctx,
+	err := q.QueryRow(ctx,
 		`SELECT s.name FROM settlements s JOIN provinces p ON p.id = s.province_id
 		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
-		worldID, q, r,
+		worldID, hq, hr,
 	).Scan(&name)
 	return name, err == nil
+}
+
+// ownerNameOf resolves one player's public display name — COALESCE(wanax_name,
+// username), same pattern as kingdom.go and loadOwnerNames below.
+func ownerNameOf(ctx context.Context, q queryer, ownerID uuid.UUID) string {
+	var name string
+	if err := q.QueryRow(ctx,
+		`SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, ownerID,
+	).Scan(&name); err != nil {
+		return ""
+	}
+	return name
 }
 
 // loadOwnerNames resolves every distinct owner_id in summaries to
