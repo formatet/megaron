@@ -144,25 +144,34 @@ type KharisState struct {
 // loadLaborCapacities returns, per good, the share of a settlement's population
 // that can actually be employed producing it, plus the summed level of the
 // buildings that produce it (levels is informational display only — capacity
-// itself is now driven by economy.WorkplaceSlots' absolute headcount, P2). Allocation
-// beyond the capacity produces nothing (economy.LaborCapacity), so every surface
-// that shows or accepts a labor weight needs this to avoid being silently wrong.
+// itself is driven by economy.WorkplaceSlots' (P2) and economy.LoadHexCapacity's
+// (P3) absolute headcounts). Allocation beyond the capacity produces nothing
+// (economy.LaborCapacity), so every surface that shows or accepts a labor
+// weight needs this to avoid being silently wrong.
 func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, laborPool int) (capacities map[string]float64, levels map[string]int) {
 	capacities = make(map[string]float64)
 	levels = make(map[string]int)
 
+	// The universe of goods to report a capacity for — every good with ANY
+	// production_rule, not just ones this settlement's catchment currently
+	// matches (a Wanax can still see "0% capacity" for a good their city
+	// cannot yet work) — plus, per good, whether ANY terrain-only rule exists
+	// at all. hasFieldPath only feeds economy.GoodLaborTerrainBase's fallback
+	// for goods §8.3 doesn't cover yet (oil/wine/stone) — see LaborCapacity.
+	allGoods := make(map[string]bool)
 	fieldPath := make(map[string]bool)
-	frows, _ := pool.Query(ctx,
+	grows, _ := pool.Query(ctx,
 		`SELECT good_key, bool_or(building_type IS NULL) FROM production_rules GROUP BY good_key`)
-	if frows != nil {
-		for frows.Next() {
+	if grows != nil {
+		for grows.Next() {
 			var k string
 			var f bool
-			if frows.Scan(&k, &f) == nil {
+			if grows.Scan(&k, &f) == nil {
+				allGoods[k] = true
 				fieldPath[k] = f
 			}
 		}
-		frows.Close()
+		grows.Close()
 	}
 
 	lrows, _ := pool.Query(ctx,
@@ -183,15 +192,11 @@ func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID u
 		lrows.Close()
 	}
 
-	slots, _ := economy.LoadWorkplaceSlots(ctx, pool, settlementID)
+	buildingSlots, _ := economy.LoadWorkplaceSlots(ctx, pool, settlementID)
+	hexSlots, _ := economy.LoadHexCapacity(ctx, pool, settlementID)
 
-	for good, field := range fieldPath {
-		capacities[good] = economy.LaborCapacity(good, field, slots[good], laborPool)
-	}
-	for good := range levels {
-		if _, seen := capacities[good]; !seen {
-			capacities[good] = economy.LaborCapacity(good, fieldPath[good], slots[good], laborPool)
-		}
+	for good := range allGoods {
+		capacities[good] = economy.LaborCapacity(good, fieldPath[good], hexSlots[good], buildingSlots[good], laborPool)
 	}
 	return capacities, levels
 }

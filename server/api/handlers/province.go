@@ -2425,6 +2425,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		lvlRows.Close()
 	}
 	workplaceSlots, _ := economy.LoadWorkplaceSlots(r.Context(), h.pool, settlementID)
+	hexSlots, _ := economy.LoadHexCapacity(r.Context(), h.pool, settlementID)
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT sg.good_key, settled(sg.amount, sg.rate, sg.calc_tick), sg.rate, sg.cap,
@@ -2487,6 +2488,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		UnservedCitizens int     `json:"unserved_citizens"`
 		WorkplaceLevel   int     `json:"workplace_level"`
 		WorkplaceSlots   int     `json:"workplace_slots"`
+		HexSlots         int     `json:"hex_slots"`
 	}
 	var result []goodRow
 	for rows.Next() {
@@ -2503,7 +2505,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			current = capV
 		}
 		bp := basePotential[key]
-		capacity := economy.LaborCapacity(key, hasFieldPath[key], workplaceSlots[key], laborPool)
+		capacity := economy.LaborCapacity(key, hasFieldPath[key], hexSlots[key], workplaceSlots[key], laborPool)
 		allocated := laborWeights[key]
 		served := allocated
 		if served > capacity {
@@ -2535,6 +2537,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			UnservedCitizens: unserved,
 			WorkplaceLevel:   workplaceLevels[key],
 			WorkplaceSlots:   workplaceSlots[key],
+			HexSlots:         hexSlots[key],
 		})
 	}
 	if result == nil {
