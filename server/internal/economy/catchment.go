@@ -50,6 +50,7 @@ func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE mt.world_id = $2
 		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
 		        OR pr.terrain_type = mt.terrain)

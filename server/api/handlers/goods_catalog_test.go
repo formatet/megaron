@@ -50,8 +50,10 @@ func TestGoodsCatalogue_MatchesValidator(t *testing.T) {
 	}
 
 	// Anchor to the DB directly, independent of both handlers: the catalogue's
-	// row count and key set must equal `goods` minus silver/cult, full stop.
-	rows, err := pool.Query(ctx, `SELECT key FROM goods WHERE key NOT IN ('silver', 'cult') ORDER BY key`)
+	// row count and key set must equal `goods` minus silver/cult minus any
+	// parked good (mig 114 — purple/pottery/horses are kept in the catalog/
+	// lore but withdrawn from trade, Temenos_varutaxonomi_sol.md §4.2).
+	rows, err := pool.Query(ctx, `SELECT key FROM goods WHERE key NOT IN ('silver', 'cult') AND status = 'active' ORDER BY key`)
 	if err != nil {
 		t.Fatalf("query goods: %v", err)
 	}
@@ -78,8 +80,10 @@ func TestGoodsCatalogue_MatchesValidator(t *testing.T) {
 
 	// silver and cult must be absent from the catalogue — they are currency
 	// and temple labor respectively, never a tradeable good (see
-	// MessengerHandler.tradeableGood's doc comment, messenger.go).
-	for _, forbidden := range []string{"silver", "cult"} {
+	// MessengerHandler.tradeableGood's doc comment, messenger.go). purple,
+	// pottery and horses are parked (mig 114): still real rows in `goods`,
+	// but withdrawn from trade until their return conditions are met.
+	for _, forbidden := range []string{"silver", "cult", "purple", "pottery", "horses"} {
 		for _, g := range got {
 			if g.Key == forbidden {
 				t.Errorf("TradeableCatalogue must never list %q", forbidden)
@@ -98,7 +102,7 @@ func TestGoodsCatalogue_MatchesValidator(t *testing.T) {
 			t.Errorf("tradeableGood(%q) = false, want true — catalogue lists it but the validator rejects it", g.Key)
 		}
 	}
-	for _, forbidden := range []string{"silver", "cult", "not-a-real-good-xyz"} {
+	for _, forbidden := range []string{"silver", "cult", "purple", "pottery", "horses", "not-a-real-good-xyz"} {
 		if _, ok := mh.tradeableGood(ctx, forbidden); ok {
 			t.Errorf("tradeableGood(%q) = true, want false", forbidden)
 		}

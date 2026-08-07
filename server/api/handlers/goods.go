@@ -29,9 +29,13 @@ type TradeableGood struct {
 // tradeable good — migration 094_cult_is_not_a_good) — see
 // MessengerHandler.tradeableGood's doc comment for why those two are
 // carved out there instead of here; this helper only owns the query.
+// Also excludes status='parked' goods (mig 114, purple/pottery/horses —
+// Temenos_varutaxonomi_sol.md §4.2): kept in the catalog/lore but not
+// currently produced, so offering them in trade would promise a good a
+// Wanax has no way to restock.
 func tradeableGoodsCatalog(ctx context.Context, pool *pgxpool.Pool) ([]TradeableGood, error) {
 	rows, err := pool.Query(ctx,
-		`SELECT key, name, tier, category FROM goods WHERE key NOT IN ('silver', 'cult') ORDER BY key`)
+		`SELECT key, name, tier, category FROM goods WHERE key NOT IN ('silver', 'cult') AND status = 'active' ORDER BY key`)
 	if err != nil {
 		return nil, err
 	}

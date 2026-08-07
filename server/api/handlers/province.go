@@ -2378,6 +2378,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit,false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE s.id = $1
 		 GROUP BY pr.good_key`,
 		settlementID,
@@ -3718,6 +3719,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit,  false)))
+		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE s.id = $1`,
 		settlementID,
 	)

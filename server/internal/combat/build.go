@@ -90,6 +90,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
 		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
 		     )
+		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE pr.building_type = $2
 		   AND (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		   AND (NOT pr.requires_coastal OR mt.coastal)
