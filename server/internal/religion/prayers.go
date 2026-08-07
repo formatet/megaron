@@ -60,6 +60,26 @@ var favoursByEffect = map[string]map[string]float64{
 	},
 }
 
+// Sea gods prize fish above all else (Timothy 2026-08-07,
+// megaron_plan_varukatalogen.md §S5: "fish → favoritoffer hos vissa gudar
+// (Havsdaimonerna/Potnia Theron); mer kharis per enhet, aldrig ett krav").
+// A tabellutvidgning, not a new mechanic — fish becomes worth more in
+// OfferingWorth for these two prayers specifically, never required.
+//
+// Per-prayer Favours REPLACES the archetype's whole taste map (FavoursFor
+// never merges), so each override restates its archetype's other weights
+// unchanged and raises only fish above the archetype's previous top weight.
+var (
+	potniaTheronOracleFavours = map[string]float64{
+		"purple": 2.0, "oil": 1.5, "silver": 1.4, "bronze": 1.3, "pottery": 1.1,
+		"grain": 0.6, "fish": 2.2, "stone": 0.4,
+	}
+	havsdaimonernaBattleFrenzyFavours = map[string]float64{
+		"livestock": 2.0, "wine": 1.7, "horses": 1.6, "bronze": 1.5, "grain": 1.0,
+		"pottery": 0.5, "stone": 0.4, "fish": 2.2,
+	}
+)
+
 // Offerings are material sacrifices (wine/oil/grain) — the gods take them
 // whether or not they answer. This is the deliberate economic sink that makes the
 // grandest prayers demand trade goods you must acquire: religion drives trade.
@@ -179,6 +199,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		CooldownTicks: 24, TargetKind: "",
 		God: "Potnia", Name: "Potnia's Vision",
 		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+		Favours:     potniaTheronOracleFavours,
 	},
 	"minoan_harvest_blessing": {
 		ID: "minoan_harvest_blessing", EffectType: EffectHarvestBlessing,
@@ -193,6 +214,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		CooldownTicks: 6, TargetKind: "",
 		God: "Poseidon", Name: "Poseidon's Storm",
 		Description: "Grants your garrison battle frenzy — a temporary combat-strength boost.",
+		Favours:     havsdaimonernaBattleFrenzyFavours,
 	},
 
 	// ── Hatti (Hittite) ──────────────────────────────────────────────────
