@@ -17,7 +17,7 @@ func TestFoodConsumptionSplit_AK1_FishFullyCoversZeroGrain(t *testing.T) {
 	demand := 5.0
 	grainProd := 0.0
 	fishProd := 8.0
-	grainNet, fishNet := FoodConsumptionSplit(demand, grainProd, fishProd)
+	grainNet, fishNet, _ := FoodConsumptionSplit(demand, grainProd, fishProd, 0)
 	if grainNet != 0 {
 		t.Errorf("grainNet = %v, want exactly 0 (not negative)", grainNet)
 	}
@@ -42,7 +42,7 @@ func TestFoodConsumptionSplit_AK2_NoFishIsUnchanged(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			grainNet, fishNet := FoodConsumptionSplit(c.demand, c.grainProd, 0)
+			grainNet, fishNet, _ := FoodConsumptionSplit(c.demand, c.grainProd, 0, 0)
 			wantGrainNet := c.grainProd - c.demand
 			if diff := grainNet - wantGrainNet; diff > splitEps || diff < -splitEps {
 				t.Errorf("grainNet = %v, want %v (grainProd - demand, pre-slice formula)", grainNet, wantGrainNet)
@@ -62,7 +62,7 @@ func TestFoodConsumptionSplit_AK3_PartialFishCoverage(t *testing.T) {
 	demand := 5.0
 	grainProd := 0.0
 	fishProd := 2.0
-	grainNet, fishNet := FoodConsumptionSplit(demand, grainProd, fishProd)
+	grainNet, fishNet, _ := FoodConsumptionSplit(demand, grainProd, fishProd, 0)
 	if fishNet != 0 {
 		t.Errorf("fishNet = %v, want exactly 0 (fish fully consumed, no surplus)", fishNet)
 	}
@@ -89,7 +89,7 @@ func TestFoodConsumptionSplit_TotalDrainAlwaysEqualsDemand(t *testing.T) {
 		{0, 3, 3},     // no population, no demand
 	}
 	for _, c := range cases {
-		grainNet, fishNet := FoodConsumptionSplit(c.demand, c.grainProd, c.fishProd)
+		grainNet, fishNet, _ := FoodConsumptionSplit(c.demand, c.grainProd, c.fishProd, 0)
 		grainDrawn := c.grainProd - grainNet
 		fishDrawn := c.fishProd - fishNet
 		totalDrawn := grainDrawn + fishDrawn
@@ -101,5 +101,68 @@ func TestFoodConsumptionSplit_TotalDrainAlwaysEqualsDemand(t *testing.T) {
 			t.Errorf("demand=%v grainProd=%v fishProd=%v: fishNet = %v, must never be negative (fish is never the sink)",
 				c.demand, c.grainProd, c.fishProd, fishNet)
 		}
+	}
+}
+
+// TestFoodConsumptionSplit_AK4_LivestockCoversTheRest: a settlement with a
+// grain shortfall, zero fish, and a herd falls back to slaughtering the herd
+// instead of starving — grainNet lands at exactly 0 (the shortfall is paid
+// by livestock, not by draining grain further) and the herd shrinks by
+// exactly enough whole animals to cover the demand.
+func TestFoodConsumptionSplit_AK4_LivestockCoversTheRest(t *testing.T) {
+	demand := 5.0
+	grainProd := 0.0
+	fishProd := 0.0
+	livestockStock := 3.0 // 3 whole animals, 600 food available
+	grainNet, fishNet, livestockConsumed := FoodConsumptionSplit(demand, grainProd, fishProd, livestockStock)
+	if grainNet != 0 {
+		t.Errorf("grainNet = %v, want exactly 0 (livestock covers the shortfall, city does not starve)", grainNet)
+	}
+	if fishNet != 0 {
+		t.Errorf("fishNet = %v, want 0 (no fish production)", fishNet)
+	}
+	if livestockConsumed != 1 {
+		t.Errorf("livestockConsumed = %v, want 1 (ceil(5/200) = 1 whole animal)", livestockConsumed)
+	}
+}
+
+// TestFoodConsumptionSplit_LivestockSlaughteredInWholeUnits: a herd of 2.7
+// (settled() can produce a fractional stock even though livestock only
+// arrives/leaves in whole animals) may only be slaughtered in whole units —
+// the fractional 0.7 is never itself treated as edible.
+func TestFoodConsumptionSplit_LivestockSlaughteredInWholeUnits(t *testing.T) {
+	demand := 1000.0 // far more than the herd could ever cover
+	livestockStock := 2.7
+	_, _, livestockConsumed := FoodConsumptionSplit(demand, 0, 0, livestockStock)
+	if livestockConsumed != 2 {
+		t.Errorf("livestockConsumed = %v, want 2 (floor(2.7), the 0.7 is not a slaughterable animal)", livestockConsumed)
+	}
+}
+
+// TestFoodConsumptionSplit_LivestockUntouchedWhenGrainSuffices: a
+// self-sufficient settlement (grain alone covers demand) never touches its
+// herd — the fallback chain only engages once grain AND fish are both
+// exhausted.
+func TestFoodConsumptionSplit_LivestockUntouchedWhenGrainSuffices(t *testing.T) {
+	_, _, livestockConsumed := FoodConsumptionSplit(5.0, 12.0, 0, 10.0)
+	if livestockConsumed != 0 {
+		t.Errorf("livestockConsumed = %v, want 0 (grain alone covers demand, herd must stay untouched)", livestockConsumed)
+	}
+}
+
+// TestFoodConsumptionSplit_LivestockPartialCoverageStillStarves: a herd too
+// small to cover the whole shortfall is fully spent, and the STILL-unmet
+// remainder keeps draining grain — the herd delays starvation, it does not
+// make it impossible.
+func TestFoodConsumptionSplit_LivestockPartialCoverageStillStarves(t *testing.T) {
+	demand := 1000.0
+	livestockStock := 1.0 // covers only 200 of the 1000 shortfall
+	grainNet, _, livestockConsumed := FoodConsumptionSplit(demand, 0, 0, livestockStock)
+	if livestockConsumed != 1 {
+		t.Errorf("livestockConsumed = %v, want 1 (the whole herd, still insufficient)", livestockConsumed)
+	}
+	wantGrainNet := -(demand - livestockFoodValue)
+	if diff := grainNet - wantGrainNet; diff > splitEps || diff < -splitEps {
+		t.Errorf("grainNet = %v, want %v (unmet demand after the herd is spent still drains grain)", grainNet, wantGrainNet)
 	}
 }

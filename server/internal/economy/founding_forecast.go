@@ -47,6 +47,9 @@ func FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, fishBase float64, p
 	effectiveWorkers := FoundingGrainLaborWeight * float64(pop)
 	grainProd := (prodBase / REF_LABOR) * effectiveWorkers
 	fishProd := (fishBase / REF_LABOR) * effectiveWorkers
-	grainNet, _ := FoodConsumptionSplit(GrainConsumptionPerTick(pop), grainProd, fishProd)
+	// No settlement exists yet at forecast time, so there is no herd to fall
+	// back on — livestockStock=0 (S1d, seeding a founding herd, is a separate
+	// slice; this forecast stays a pure grain/fish preview until it lands).
+	grainNet, _, _ := FoodConsumptionSplit(GrainConsumptionPerTick(pop), grainProd, fishProd, 0)
 	return grainProd, grainNet
 }

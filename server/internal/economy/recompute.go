@@ -3,6 +3,7 @@ package economy
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -83,16 +84,30 @@ func GrainConsumptionPerTick(pop int) float64 {
 	return float64(pop) * GrainConsumptionPerCitizenPerTick
 }
 
-// FoodConsumptionSplit applies the population's food invariant to a
-// settlement's raw (pre-consumption) grain and fish production: the
-// population has ONE food need, demand, covered by grain first and by fish
-// for whatever grain does not reach — never by anything else, and the army's
-// upkeep path (internal/combat/upkeep.go) never touches fish at all.
+// livestockFoodValue is the food value of one slaughtered animal — Timothy
+// 2026-08-07: "jag tycker nästan att ett kreatur kan få leverera 200 mat om
+// det dödas." Explicitly a ratt, not a lock (megaron_plan_foda_konsistens.md
+// §Grind) — tune against soak data, not an invariant.
+const livestockFoodValue = 200.0
+
+// FoodConsumptionSplit applies the population's food fallback chain to a
+// settlement's raw (pre-consumption) grain/fish production and its livestock
+// STOCK: the population has ONE food need, demand, covered by grain first,
+// then by fish for whatever grain does not reach, and — only once both are
+// exhausted — by slaughtering whole animals from the herd (Timothy
+// 2026-08-07, megaron_plan_foda_konsistens.md: "när det finns en brist på
+// basvaror som vete och fisk så äter befolkningen boskapen"). Livestock is a
+// discrete stock, not a rate, so livestockConsumed is a whole-animal count
+// for the caller to debit directly from settlement_goods — this function
+// itself makes no DB write.
 //
 //	grainShare = min(demand, grainProd)
 //	rest       = demand - grainShare
 //	fishShare  = min(rest, fishProd)
-//	grainNet   = grainProd - grainShare - (rest - fishShare)  // any shortfall stays on grain
+//	unmet      = rest - fishShare
+//	livestockConsumed = min(floor(livestockStock), ceil(unmet / 200))  // whole animals only
+//	unmet      = max(0, unmet - livestockConsumed*200)
+//	grainNet   = grainProd - grainShare - unmet  // any shortfall still standing stays on grain
 //	fishNet    = fishProd  - fishShare
 //
 // Pure and side-effect free (no DB, no clock) on purpose: RecomputeProduction,
@@ -102,16 +117,14 @@ func GrainConsumptionPerTick(pop int) float64 {
 //
 // KNOWN LIMIT (Timothy 2026-07-31, confirmed wrong, deliberately deferred —
 // booked in megaron_todo.md, NOT this slice): this is production-based, not
-// stock-based. A settlement with zero grain PRODUCTION but a full grain STOCK
-// never draws down that stock as long as current-tick fish production covers
-// the shortfall — grainNet floors at 0 instead of eating the stockpile.
-// Timothy: "Detta måste ju lösas — har man båda ska båda ätas, inte nu men
-// skriv i todo." Keeping this function pure (demand/grainProd/fishProd in,
-// grainNet/fishNet out) means a future stock-aware version can swap its
-// inputs for (amount,rate,calc_tick) reads without touching
-// RecomputeProduction's SQL, FoundingGrainNetPerTick, or any of this
-// function's callers.
-func FoodConsumptionSplit(demand, grainProd, fishProd float64) (grainNet, fishNet float64) {
+// stock-based, for grain/fish. A settlement with zero grain PRODUCTION but a
+// full grain STOCK never draws down that stock as long as current-tick fish
+// production covers the shortfall — grainNet floors at 0 instead of eating
+// the stockpile. Timothy: "Detta måste ju lösas — har man båda ska båda ätas,
+// inte nu men skriv i todo." Livestock does not share this limit — its
+// livestockStock argument IS the settlement's actual current stock, read by
+// the caller, so the herd fallback already draws down the real stockpile.
+func FoodConsumptionSplit(demand, grainProd, fishProd, livestockStock float64) (grainNet, fishNet float64, livestockConsumed int) {
 	grainShare := demand
 	if grainProd < grainShare {
 		grainShare = grainProd
@@ -121,9 +134,25 @@ func FoodConsumptionSplit(demand, grainProd, fishProd float64) (grainNet, fishNe
 	if fishProd < fishShare {
 		fishShare = fishProd
 	}
-	grainNet = grainProd - grainShare - (rest - fishShare)
+	unmet := rest - fishShare
+
+	if unmet > 0 && livestockStock >= 1 {
+		needed := math.Ceil(unmet / livestockFoodValue)
+		available := math.Floor(livestockStock)
+		slaughtered := needed
+		if available < slaughtered {
+			slaughtered = available
+		}
+		livestockConsumed = int(slaughtered)
+		unmet -= slaughtered * livestockFoodValue
+		if unmet < 0 {
+			unmet = 0
+		}
+	}
+
+	grainNet = grainProd - grainShare - unmet
 	fishNet = fishProd - fishShare
-	return grainNet, fishNet
+	return grainNet, fishNet, livestockConsumed
 }
 
 // PopCosts mirrors province/training.go:UnitSpecs.PopCost.
@@ -386,11 +415,48 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 	_, grainSeen := rawRates["grain"]
 
-	// 5b. The food invariant: grain first, fish for the rest. grainProd/fishProd
-	// default to 0 via Go's zero value when the catchment has no matching tile
-	// for that good (map lookup on a missing key) — exactly the "no water" /
-	// "no plains" case AK2/AK1 exercise.
-	grainNet, fishNet := FoodConsumptionSplit(grainConsumptionPerTick, rawRates["grain"], rawRates["fish"])
+	// 5b. The food invariant: grain first, fish for the rest, livestock (whole
+	// animals) as the last resort. grainProd/fishProd default to 0 via Go's
+	// zero value when the catchment has no matching tile for that good (map
+	// lookup on a missing key) — exactly the "no water" / "no plains" case
+	// AK2/AK1 exercise.
+	//
+	// Livestock is a discrete stock, not a catchment rate, so it is read here
+	// directly rather than coming from rawRates. The `calc_tick =
+	// current_world_tick()` guard stops a settlement whose herd was already
+	// settled THIS tick (an earlier slaughter this same tick, or an
+	// same-tick founding write) from being offered to a second
+	// RecomputeProduction call within the same tick — RecomputeProduction is
+	// called many times a day (build/train/colonize/collapse), not once, and
+	// without the guard each call would independently re-decide to slaughter
+	// against the SAME unmet demand.
+	var livestockStock float64
+	var livestockSettledThisTick bool
+	if err := tx.QueryRow(ctx,
+		`SELECT settled(amount, rate, calc_tick), calc_tick = current_world_tick()
+		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'livestock'`,
+		settlementID,
+	).Scan(&livestockStock, &livestockSettledThisTick); err != nil && err != pgx.ErrNoRows {
+		return fmt.Errorf("recompute: load livestock stock: %w", err)
+	}
+	if livestockSettledThisTick {
+		livestockStock = 0
+	}
+
+	grainNet, fishNet, livestockConsumed := FoodConsumptionSplit(
+		grainConsumptionPerTick, rawRates["grain"], rawRates["fish"], livestockStock)
+
+	if livestockConsumed > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlement_goods
+			 SET amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
+			     calc_tick = current_world_tick()
+			 WHERE settlement_id = $1 AND good_key = 'livestock'`,
+			settlementID, float64(livestockConsumed),
+		); err != nil {
+			return fmt.Errorf("recompute: slaughter livestock for food: %w", err)
+		}
+	}
 
 	// 5c. Write every producible good's rate — grain and fish get their
 	// food-invariant net; everything else keeps its raw rate unchanged.

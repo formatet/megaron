@@ -670,9 +670,11 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	//
 	// Growth model (daily tick):
 	//   pop ≥ 100  → proportional: 0.5% base × food-variety multiplier × soft-cap factor
-	//                gives a DESIRED new-citizen count; food_variety = 1.0 (grain) +
-	//                0.1 per extra food type (fish/oil/wine/livestock) → max 1.4,
-	//                soft_cap = max(0, 1 − pop/30000) → growth → 0 near 30000.
+	//                gives a DESIRED new-citizen count; food_variety = 1.0 (base,
+	//                first economy.FoodGoods item present — normally grain) +
+	//                0.1 per additional distinct FoodGoods item present, capped
+	//                at 4 extras (max 1.4), soft_cap = max(0, 1 − pop/30000) →
+	//                growth → 0 near 30000.
 	//                That desired growth then costs desired_new × grainPerCitizen
 	//                grain: if the settled grain stock affords it in full, all of
 	//                it is applied and the cost is deducted; if not, growth is
@@ -711,12 +713,24 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		              FROM settlement_goods sg
 		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0
 		         ) AS grain_now,
-		         (1.0 + 0.1 * (
-		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'fish'),0)      > 0 THEN 1 ELSE 0 END) +
-		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'),0)       > 0 THEN 1 ELSE 0 END) +
-		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'),0)      > 0 THEN 1 ELSE 0 END) +
-		             (CASE WHEN COALESCE((SELECT sg.amount FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'livestock'),0) > 0 THEN 1 ELSE 0 END)
-		         )) AS variety,
+		         -- Variety reads economy.FoodGoods — the SAME list
+		         -- loyalty/welfare.go's diet-variety threshold reads (S2,
+		         -- megaron_plan_foda_konsistens.md: "en lista som båda läser").
+		         -- Before S2 this counted fish/oil/wine/livestock but not grain
+		         -- (a flat 1.0 base regardless of whether grain was present),
+		         -- while welfare.go counted grain but not livestock — the same
+		         -- good meant different things depending on who asked. The
+		         -- unified count-of-distinct-foods-present minus one (floored at
+		         -- 0) reproduces the exact old numbers for every settlement that
+		         -- HAS grain (base 1.0 + 0.1 per additional food type, capped at
+		         -- the same four extras) — growth only ever applies when
+		         -- grain_now > 0 (see the growing flag below), so this is not a
+		         -- balance change, only a shared source of truth.
+		         (1.0 + 0.1 * GREATEST(0, (
+		             SELECT COUNT(*) FROM settlement_goods sg
+		             WHERE sg.settlement_id = s.id AND sg.good_key = ANY($4)
+		               AND COALESCE(sg.amount, 0) > 0
+		         ) - 1)) AS variety,
 		         GREATEST(0, 1.0 - s.population::float / 30000.0) AS softcap
 		     FROM settlements s
 		     WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk', 'collapsed')
@@ -768,7 +782,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		     RETURNING sg.settlement_id
 		 )
 		 SELECT count(*) FROM pop_upd`,
-		worldID, grainPerCitizen, starvationPopLossRatePerTick,
+		worldID, grainPerCitizen, starvationPopLossRatePerTick, economy.FoodGoods,
 	); err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
 	}
