@@ -19,6 +19,7 @@ import (
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
@@ -88,25 +89,23 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Collect deposit types present in the 7 catchment tiles (own hex + 6 adjacent)
-	// so clients/agents can decide whether building a mine is worthwhile.
+	// Collect deposit types present in the productive catchment ring
+	// (hexgrid.CatchmentRadius around the settlement's own hex, P1 — the own
+	// hex is excluded, same as every production query) so clients/agents can
+	// decide whether building a mine is worthwhile.
 	var catchmentDeposits []string
+	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: prov.MapTile.Q, R: prov.MapTile.R}, hexgrid.CatchmentRadius))
 	cdrows, _ := h.pool.Query(r.Context(),
 		`SELECT DISTINCT
 		    CASE WHEN copper_deposit THEN 'copper' END,
 		    CASE WHEN tin_deposit    THEN 'tin'    END,
 		    CASE WHEN COALESCE(silver_deposit,false) THEN 'silver' END,
 		    CASE WHEN COALESCE(cedar_deposit, false) THEN 'cedar'  END
-		 FROM map_tiles
-		 WHERE world_id = $1
-		   AND terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-		   AND (
-		       (q = $2   AND r = $3  ) OR
-		       (q = $2+1 AND r = $3  ) OR (q = $2-1 AND r = $3  ) OR
-		       (q = $2   AND r = $3+1) OR (q = $2   AND r = $3-1) OR
-		       (q = $2+1 AND r = $3-1) OR (q = $2-1 AND r = $3+1)
-		   )`,
-		worldID, prov.MapTile.Q, prov.MapTile.R,
+		 FROM map_tiles mt
+		 JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
+		 WHERE mt.world_id = $1
+		   AND mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')`,
+		worldID, catchQ, catchR,
 	)
 	if cdrows != nil {
 		seen := make(map[string]bool)
@@ -2354,19 +2353,22 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load base_potential per good from production_rules using catchment tiles
-	// (same logic as RecomputeProduction — 7 catchment map_tiles: own hex + 6 adjacent).
+	// (same logic as RecomputeProduction — the productive ring around the
+	// settlement's own hex, hexgrid.CatchmentRadius, P1; the settlement's own
+	// hex itself is excluded — not a production tile, economy/catchment.go).
+	var provQ, provR int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT prov.map_q, prov.map_r FROM settlements s
+		 JOIN provinces prov ON prov.id = s.province_id WHERE s.id = $1`,
+		settlementID,
+	).Scan(&provQ, &provR)
+	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: provQ, R: provR}, hexgrid.CatchmentRadius))
 	baseRows, _ := h.pool.Query(r.Context(),
 		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential,
 		        bool_or(pr.building_type IS NULL) AS has_field_path
 		 FROM settlements s
-		 JOIN provinces prov ON prov.id = s.province_id
-		 JOIN map_tiles mt ON mt.world_id = s.world_id
-		     AND (
-		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
-		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
-		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
-		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
-		     )
+		 JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON true
+		 JOIN map_tiles mt ON mt.world_id = s.world_id AND mt.q = catchment.q AND mt.r = catchment.r
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
@@ -2381,7 +2383,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE s.id = $1
 		 GROUP BY pr.good_key`,
-		settlementID,
+		settlementID, catchQ, catchR,
 	)
 	basePotential := make(map[string]float64)
 	hasFieldPath := make(map[string]bool)
@@ -3682,7 +3684,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Determine producible goods for this settlement using catchment tiles
-	// (same logic as RecomputeProduction — 7 catchment map_tiles: own hex + 6 adjacent).
+	// (same logic as RecomputeProduction — the productive ring, P1: own hex excluded).
 	var templeLevel int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = 'temple'`,
@@ -3696,18 +3698,20 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	// be filled and its kharis could never climb (sondrunda 2026-07-24).
 	cultCapacity := kharis.TempleDevotionPerLevel * float64(templeLevel)
 
+	var producibleQ, producibleR int
+	_ = h.pool.QueryRow(r.Context(),
+		`SELECT prov.map_q, prov.map_r FROM settlements s
+		 JOIN provinces prov ON prov.id = s.province_id WHERE s.id = $1`,
+		settlementID,
+	).Scan(&producibleQ, &producibleR)
+	prodCatchQ, prodCatchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: producibleQ, R: producibleR}, hexgrid.CatchmentRadius))
+
 	producible := make(map[string]bool)
 	prows, err := h.pool.Query(r.Context(),
 		`SELECT DISTINCT pr.good_key
 		 FROM settlements s
-		 JOIN provinces prov ON prov.id = s.province_id
-		 JOIN map_tiles mt ON mt.world_id = s.world_id
-		     AND (
-		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
-		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
-		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
-		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
-		     )
+		 JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON true
+		 JOIN map_tiles mt ON mt.world_id = s.world_id AND mt.q = catchment.q AND mt.r = catchment.r
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
@@ -3721,7 +3725,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit,  false)))
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE s.id = $1`,
-		settlementID,
+		settlementID, prodCatchQ, prodCatchR,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load producible goods")

@@ -134,21 +134,42 @@ func TestSettlementCatchmentOverlap_Distance2Blocked(t *testing.T) {
 	}
 }
 
-// TestSettlementCatchmentOverlap_Distance3Allowed: centre-distance 3 is the
-// first distance at which two radius-1 catchments (7 hexes each) stop
+// TestSettlementCatchmentOverlap_Distance4StillBlocked: P1 doubled the
+// catchment radius to 2 (megaron_plan_fysisk_gubbemodell.md) — distance 3,
+// the old radius-1 clearance boundary, must now still conflict.
+func TestSettlementCatchmentOverlap_Distance4StillBlocked(t *testing.T) {
+	pool := testPool(t)
+	worldID := testWorld(t, pool)
+	owner := testOwner(t, pool, "owner")
+	existing := seedSettlement(t, pool, worldID, owner, 0, 0, "Mykene", "active")
+
+	conflict, err := SettlementCatchmentOverlap(context.Background(), pool, worldID, 4, 0)
+	if err != nil {
+		t.Fatalf("SettlementCatchmentOverlap: %v", err)
+	}
+	if conflict == nil {
+		t.Fatal("expected a conflict at hex distance 4 — radius-2 catchments still touch there")
+	}
+	if conflict.SettlementID != existing {
+		t.Errorf("expected conflict to name Mykene (%s), got %s", existing, conflict.SettlementID)
+	}
+}
+
+// TestSettlementCatchmentOverlap_Distance5Allowed: centre-distance 5 is the
+// first distance at which two radius-2 catchments (P1, 19 hexes each) stop
 // touching — the site must be clear.
-func TestSettlementCatchmentOverlap_Distance3Allowed(t *testing.T) {
+func TestSettlementCatchmentOverlap_Distance5Allowed(t *testing.T) {
 	pool := testPool(t)
 	worldID := testWorld(t, pool)
 	owner := testOwner(t, pool, "owner")
 	seedSettlement(t, pool, worldID, owner, 0, 0, "Mykene", "active")
 
-	conflict, err := SettlementCatchmentOverlap(context.Background(), pool, worldID, 3, 0)
+	conflict, err := SettlementCatchmentOverlap(context.Background(), pool, worldID, 5, 0)
 	if err != nil {
 		t.Fatalf("SettlementCatchmentOverlap: %v", err)
 	}
 	if conflict != nil {
-		t.Fatalf("expected no conflict at hex distance 3, got conflict with settlement %s", conflict.SettlementID)
+		t.Fatalf("expected no conflict at hex distance 5, got conflict with settlement %s", conflict.SettlementID)
 	}
 }
 
@@ -245,8 +266,9 @@ func TestSettlementCatchmentOverlap_ExistingOverlapNeverRetroactivelyFlagged(t *
 // TestCatchmentClearanceHexes is the pure "how far to move" arithmetic the
 // founding error/preview messages use.
 func TestCatchmentClearanceHexes(t *testing.T) {
+	// safeCentreDistance = 2*CatchmentRadius+1 = 5 (P1, radius 2).
 	cases := []struct{ dist, want int }{
-		{0, 3}, {1, 2}, {2, 1}, {3, 0}, {5, 0},
+		{0, 5}, {1, 4}, {2, 3}, {3, 2}, {4, 1}, {5, 0}, {7, 0},
 	}
 	for _, tc := range cases {
 		if got := CatchmentClearanceHexes(tc.dist); got != tc.want {

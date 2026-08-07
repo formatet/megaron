@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
@@ -200,12 +201,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	// its with-farm assumption equals the building-free base when no farm helps.
 	// Must precede RecomputeProduction so the farm's grain is picked up.
 	// (Poseidon's galley — the coastal gift — is granted by the caller.)
-	catchmentHexes := [][2]int{
-		{p.Q, p.R},
-		{p.Q + 1, p.R}, {p.Q - 1, p.R},
-		{p.Q, p.R + 1}, {p.Q, p.R - 1},
-		{p.Q + 1, p.R - 1}, {p.Q - 1, p.R + 1},
-	}
+	catchmentHexes := hexgrid.Ring(hexgrid.Coord{Q: p.Q, R: p.R}, hexgrid.CatchmentRadius)
 	grainNoFarm, err := economy.CatchmentBasePotentialAt(ctx, tx, p.WorldID, catchmentHexes, nil)
 	if err != nil {
 		return out, &metropolisError{"could not read catchment potential", err}

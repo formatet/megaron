@@ -77,8 +77,11 @@ func TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex(t *testing.T) {
 	}
 
 	// The empty hex the colonist stands on. March queries map_tiles for the
-	// target's terrain, so the tile must exist and be passable land.
-	const hexQ, hexR = 3, -1
+	// target's terrain, so the tile must exist and be passable land. Distance
+	// from the capital at (0,0) must clear the catchment-overlap gate —
+	// hexgrid.CatchmentRadius 2 (P1) needs centre-distance >= 5, not the old
+	// radius-1 threshold of 3.
+	const hexQ, hexR = 5, -1
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, 'plains')`,
 		worldID, hexQ, hexR,

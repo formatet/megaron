@@ -14,6 +14,7 @@ import (
 	"formatet/megaron/server/internal/ai"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
@@ -1168,18 +1169,24 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 	// 2026-07-13) and could never depart — the march handler 422s on "no
 	// adjacent sea hex".
 	if b.name == "sea_blessing" {
+		// Coastal adjacency, NOT catchment — this checks the settlement's
+		// immediate 6 neighbours regardless of hexgrid.CatchmentRadius (P1
+		// doubled the catchment ring, but "does the coast touch this city"
+		// stays a radius-1 question). Offsets sourced from hexgrid.Neighbors
+		// (relative to Coord{}, i.e. the raw offsets) instead of a hardcoded
+		// tuple list.
+		neighbors := hexgrid.Neighbors(hexgrid.Coord{})
+		offQ, offR := hexgrid.QRArrays(neighbors[:])
 		var coastal bool
 		if err := h.pool.QueryRow(ctx,
 			`SELECT EXISTS (
 			   SELECT 1
 			   FROM settlements s
 			   JOIN provinces p ON p.id = s.province_id
-			   JOIN map_tiles t ON t.world_id = $2
-			     AND (t.q, t.r) IN ((p.map_q+1,p.map_r),(p.map_q-1,p.map_r),
-			                        (p.map_q,p.map_r+1),(p.map_q,p.map_r-1),
-			                        (p.map_q+1,p.map_r-1),(p.map_q-1,p.map_r+1))
+			   JOIN unnest($3::int[], $4::int[]) AS off(dq, dr) ON true
+			   JOIN map_tiles t ON t.world_id = $2 AND t.q = p.map_q + off.dq AND t.r = p.map_r + off.dr
 			   WHERE s.id = $1 AND t.terrain IN ('coastal_sea','deep_sea','river','river_ford'))`,
-			settlementID, worldID,
+			settlementID, worldID, offQ, offR,
 		).Scan(&coastal); err != nil || !coastal {
 			for i := range blessings {
 				if blessings[i].name == "divine_recruits" {

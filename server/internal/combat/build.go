@@ -10,6 +10,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -74,22 +75,25 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	// Determine goods this building just unlocked that are present in the
-	// catchment but have no labor assigned yet. We do this BEFORE RecomputeProduction
-	// so auto-allocation is reflected in the rates written by that call.
+	// catchment ring but have no labor assigned yet (the settlement's own hex
+	// is excluded — not a production tile, P1, economy/catchment.go). We do
+	// this BEFORE RecomputeProduction so auto-allocation is reflected in the
+	// rates written by that call.
+	var buildQ, buildR int
+	_ = tx.QueryRow(ctx,
+		`SELECT prov.map_q, prov.map_r FROM settlements s
+		 JOIN provinces prov ON prov.id = s.province_id WHERE s.id = $1`,
+		p.SettlementID,
+	).Scan(&buildQ, &buildR)
+	unlockCatchQ, unlockCatchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: buildQ, R: buildR}, hexgrid.CatchmentRadius))
 	var unlockedGoods []string
 	urows, uerr := tx.Query(ctx,
 		`SELECT DISTINCT pr.good_key
 		 FROM production_rules pr
 		 JOIN settlements s ON s.id = $1
-		 JOIN provinces prov ON prov.id = s.province_id
-		 JOIN map_tiles mt ON mt.world_id = s.world_id
+		 JOIN unnest($3::int[], $4::int[]) AS catchment(q, r) ON true
+		 JOIN map_tiles mt ON mt.world_id = s.world_id AND mt.q = catchment.q AND mt.r = catchment.r
 		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
-		     AND (
-		         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
-		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
-		         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
-		         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
-		     )
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE pr.building_type = $2
 		   AND (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
@@ -102,7 +106,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		   AND NOT EXISTS (
 		        SELECT 1 FROM settlement_labor sl
 		        WHERE sl.settlement_id = s.id AND sl.good_key = pr.good_key AND sl.weight > 0)`,
-		p.SettlementID, p.BuildingType,
+		p.SettlementID, p.BuildingType, unlockCatchQ, unlockCatchR,
 	)
 	if uerr == nil {
 		for urows.Next() {
@@ -167,18 +171,11 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			if err := tx.QueryRow(ctx,
 				`SELECT EXISTS(
 				   SELECT 1 FROM map_tiles mt
-				   JOIN settlements s ON s.id = $1
-				   JOIN provinces prov ON prov.id = s.province_id
-				   WHERE mt.world_id = s.world_id
+				   JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
+				   WHERE mt.world_id = (SELECT world_id FROM settlements WHERE id = $1)
 				     AND mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-				     AND (
-				         (mt.q = prov.map_q   AND mt.r = prov.map_r  ) OR
-				         (mt.q = prov.map_q+1 AND mt.r = prov.map_r  ) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r  ) OR
-				         (mt.q = prov.map_q   AND mt.r = prov.map_r+1) OR (mt.q = prov.map_q   AND mt.r = prov.map_r-1) OR
-				         (mt.q = prov.map_q+1 AND mt.r = prov.map_r-1) OR (mt.q = prov.map_q-1 AND mt.r = prov.map_r+1)
-				     )
 				     AND mt.copper_deposit)`,
-				p.SettlementID,
+				p.SettlementID, unlockCatchQ, unlockCatchR,
 			).Scan(&hasCopper); err == nil && hasCopper {
 				ore = "copper"
 			}

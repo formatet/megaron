@@ -42,16 +42,20 @@ func readLivestockAmount(t *testing.T, settlementID uuid.UUID) float64 {
 
 // TestRecomputeProduction_LivestockFallback_CoversShortfallAndDoesNotStarve:
 // a settlement with a grain shortfall (mountain catchment, no grain/fish
-// production), zero fish, and a herd of 3 must slaughter exactly one animal
-// (ceil(5/200)) to cover the day's 5-unit demand — grain lands at net 0
-// (does not starve) instead of draining further negative.
+// production beyond the flat nearjord trickle), zero fish, and a herd of 3
+// must slaughter exactly one animal (ceil(200/200)) to cover what nearjord
+// doesn't — grain lands at net 0 (does not starve) instead of draining
+// further negative.
 func TestRecomputeProduction_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
 	const tick = 100
-	// pop=10 → demand = 10*0.5 = 5/tick. Mountain catchment: no grain/fish rule matches.
-	settlementID := recomputeFixture(t, tick, /*pop*/ 10, /*grainAmount*/ 0, /*grainRate*/ 0)
+	// pop=500 → demand = 500*0.5 = 250/tick. Mountain catchment: no grain/fish
+	// rule matches, so grainProd is JUST NearjordGrainPerTick (50, P1) —
+	// demand must exceed that flat trickle for a shortfall to exist at all,
+	// and by enough to need exactly one animal: unmet = 250-50 = 200 = ceil(200/200).
+	settlementID := recomputeFixture(t, tick, /*pop*/ 500, /*grainAmount*/ 0, /*grainRate*/ 0)
 	seedLivestock(t, settlementID, 3, tick-1)
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
@@ -60,7 +64,7 @@ func TestRecomputeProduction_LivestockFallback_CoversShortfallAndDoesNotStarve(t
 
 	gotLivestock := readLivestockAmount(t, settlementID)
 	if gotLivestock != 2 {
-		t.Errorf("livestock amount = %v, want 2 (one whole animal slaughtered to cover the 5-unit shortfall)", gotLivestock)
+		t.Errorf("livestock amount = %v, want 2 (one whole animal slaughtered to cover the 200-unit shortfall left after nearjord)", gotLivestock)
 	}
 
 	var grainRate float64
@@ -84,7 +88,7 @@ func TestRecomputeProduction_LivestockFallback_IdempotentWithinSameTick(t *testi
 	ctx := context.Background()
 
 	const tick = 100
-	settlementID := recomputeFixture(t, tick, /*pop*/ 10, /*grainAmount*/ 0, /*grainRate*/ 0)
+	settlementID := recomputeFixture(t, tick, /*pop*/ 500, /*grainAmount*/ 0, /*grainRate*/ 0)
 	seedLivestock(t, settlementID, 3, tick-1)
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {

@@ -84,15 +84,15 @@ Go 1.22+ · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/webso
 
 ### Package dependency order (G1 — strict, no exceptions)
 ```
-ai, auth, clock, gossip, notify, province, religion, unit, world  ← zero internal deps
+ai, auth, clock, gossip, hexgrid, notify, province, religion, unit, world  ← zero internal deps
   ↑
 events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
-economy(→clock,events,gossip) · transport(→clock,events,province) · capabilities(→clock,province,religion)
+economy(→clock,events,gossip,hexgrid) · transport(→clock,events,province) · capabilities(→clock,province,religion)
   ↑
-kharis(→ai,clock,economy,events,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
+kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑
-combat  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events)
+combat(→…,hexgrid)  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events)
   ↑
 messenger  ← may use combat + everything below
   ↑

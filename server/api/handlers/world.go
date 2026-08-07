@@ -12,6 +12,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/settlement"
 	"formatet/megaron/server/internal/tick"
@@ -425,13 +426,15 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	playerID, authenticated := auth.PlayerIDFromContext(ctx)
 
-	// Catchment = centre + 6 neighbours. SAME axial offsets as
-	// economy.RecomputeProduction (recompute.go step 2) — keep them identical.
-	catchment := [][2]int{
-		{q, rr},
-		{q + 1, rr}, {q - 1, rr},
-		{q, rr + 1}, {q, rr - 1},
-		{q + 1, rr - 1}, {q - 1, rr + 1},
+	// Catchment = centre + hexgrid.CatchmentRadius around it (P1). The centre
+	// hex is shown in the view (terrain/deposits) like every other hex, but is
+	// excluded from the goods-potential call below — it is not a production
+	// tile (economy.RecomputeProduction's Ring, not Disk; see catchment.go).
+	center := hexgrid.Coord{Q: q, R: rr}
+	catchmentCoords := hexgrid.Disk(center, hexgrid.CatchmentRadius)
+	catchment := make([][2]int, len(catchmentCoords))
+	for i, c := range catchmentCoords {
+		catchment[i] = [2]int{c.Q, c.R}
 	}
 
 	// Live vision + remembered memory, exactly as Map computes them.
@@ -488,7 +491,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
 	}
 	view := make([]catchmentEntry, 0, len(catchment))
-	var knownHexes [][2]int
+	var knownHexes []hexgrid.Coord
 	unknown := 0
 	for _, c := range catchment {
 		key := [2]int{c[0], c[1]}
@@ -514,7 +517,11 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			e.TinDeposit = ct.tin
 			e.SilverDeposit = ct.sil
 			e.CedarDeposit = ct.cedar
-			knownHexes = append(knownHexes, key)
+			// The centre hex is not a production tile (see comment above) —
+			// exclude it from the potential call even though it is shown here.
+			if key != [2]int{center.Q, center.R} {
+				knownHexes = append(knownHexes, hexgrid.Coord{Q: c[0], R: c[1]})
+			}
 		} else {
 			unknown++
 		}

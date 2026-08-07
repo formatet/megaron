@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
 
@@ -51,25 +52,22 @@ const MaxGenesisPopulation = 30000
 // functions — RecomputeProduction (recompute.go steps 2+3, the source of truth
 // that writes live rates) and CatchmentBasePotential (catchment.go, settlement-
 // scoped, gated by ACTUAL buildings). Same joins / deposit / coastal logic; the
-// only differences are (1) the caller supplies the hex set explicitly (the fixed
-// 7-hex axial offsets live in the caller — see the colonize-preview handler,
-// which reuses RecomputeProduction's offsets), and (2) the building gate is
-// `pr.building_type IS NULL OR pr.building_type = ANY(assumeBuildings)` instead of
-// an EXISTS against the buildings table (empty list = building-free potential).
-// If any of the three drift, RecomputeProduction wins — keep this in sync with it.
+// only differences are (1) the caller supplies the hex set explicitly — pass
+// hexgrid.Ring(center, hexgrid.CatchmentRadius) to match the other two exactly
+// (the settlement's own hex is not a production tile, see catchment.go) — and
+// (2) the building gate is `pr.building_type IS NULL OR pr.building_type =
+// ANY(assumeBuildings)` instead of an EXISTS against the buildings table
+// (empty list = building-free potential). If any of the three drift,
+// RecomputeProduction wins — keep this in sync with it.
 //
 // Passing only known catchment hexes keeps the preview fog-of-war-safe: an
 // unknown (fog) hex contributes nothing, so its terrain/deposits never leak into
 // the aggregate.
-func CatchmentBasePotentialAt(ctx context.Context, tx Tx, worldID uuid.UUID, hexes [][2]int, assumeBuildings []string) (map[string]float64, error) {
+func CatchmentBasePotentialAt(ctx context.Context, tx Tx, worldID uuid.UUID, hexes []hexgrid.Coord, assumeBuildings []string) (map[string]float64, error) {
 	if len(hexes) == 0 {
 		return map[string]float64{}, nil
 	}
-	qs := make([]int32, len(hexes))
-	rs := make([]int32, len(hexes))
-	for i, h := range hexes {
-		qs[i], rs[i] = int32(h[0]), int32(h[1])
-	}
+	qs, rs := hexgrid.QRArrays(hexes)
 	if assumeBuildings == nil {
 		assumeBuildings = []string{}
 	}

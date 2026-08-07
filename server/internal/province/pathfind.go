@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"context"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -66,8 +67,16 @@ func (g TileGraph) FindPath(origin, target MapPosition, category string) (path [
 	return findPath(g, origin, target, category)
 }
 
-// axialDirs lists the 6 axial hex neighbours.
-var axialDirs = [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
+// axialDirs lists the 6 axial hex neighbours, sourced from hexgrid (the
+// single source of truth — megaron_todo.md "7-hex-catchmentlistan är
+// duplicerad") rather than a second local literal duplicating hex.go's.
+var axialDirs = func() [6][2]int {
+	var out [6][2]int
+	for i, c := range hexgrid.Neighbors(hexgrid.Coord{}) {
+		out[i] = [2]int{c.Q, c.R}
+	}
+	return out
+}()
 
 // CategoryCourier routes Runners — order/message couriers
 // (temenos_orderlopare_plan.md Fas 4, beslut Timothy 2026-07-16): every land

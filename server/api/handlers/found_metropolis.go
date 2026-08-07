@@ -12,6 +12,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -600,18 +601,18 @@ func describeCatchmentConflict(ctx context.Context, pool *pgxpool.Pool, clk cloc
 	return catchmentConflictMessage(known, q, r, c)
 }
 
-// countKnownCatchment reports how many of a founding hex's 7 catchment tiles the
-// player has actually seen (live vision ∪ remembered memory — the same tiering as
-// Map and ColonizePreview), for the founding notice. FOW-safe by construction: it
-// returns counts only, never a fogged tile's contents.
+// countKnownCatchment reports how many of a founding hex's catchment tiles
+// (centre + hexgrid.CatchmentRadius, P1) the player has actually seen (live
+// vision ∪ remembered memory — the same tiering as Map and ColonizePreview),
+// for the founding notice. This is a VISIBILITY count over the whole area
+// (unlike the production queries, it includes the centre hex — a Wanax can
+// obviously see the ground they are about to found on). FOW-safe by
+// construction: it returns counts only, never a fogged tile's contents.
 func countKnownCatchment(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, worldID, playerID uuid.UUID, q, r int) (known, unknown int) {
-	// Centre + 6 neighbours — SAME axial offsets as economy.RecomputeProduction
-	// and ColonizePreview; keep them identical.
-	catchment := [][2]int{
-		{q, r},
-		{q + 1, r}, {q - 1, r},
-		{q, r + 1}, {q, r - 1},
-		{q + 1, r - 1}, {q - 1, r + 1},
+	catchmentCoords := hexgrid.Disk(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius)
+	catchment := make([][2]int, len(catchmentCoords))
+	for i, c := range catchmentCoords {
+		catchment[i] = [2]int{c.Q, c.R}
 	}
 	eyes := loadLiveEyes(ctx, pool, worldID, playerID, clk.Now())
 	remembered := loadRememberedTiles(ctx, pool, worldID, playerID)

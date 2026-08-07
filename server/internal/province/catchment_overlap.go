@@ -3,29 +3,17 @@ package province
 import (
 	"context"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
 
-// catchmentNeighborOffsets are the 6 axial neighbour offsets a settlement's
-// catchment reaches beyond its own hex — the same fixed offsets duplicated
-// across economy.CatchmentBasePotential, economy.CatchmentBasePotentialAt,
-// api/handlers/create_metropolis.go's Demeter check and api/handlers/world.go's
-// ColonizePreview. Catchment radius is 1 hex (own hex + 6 neighbours = 7
-// total) and is NOT touched by this slice (server/delad-catchment-grind,
-// 2026-07-30) — if it ever changes, every one of these sibling lists,
-// including this one, must move together.
-var catchmentNeighborOffsets = [6][2]int{
-	{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1},
-}
-
-// catchmentHexes returns the 7 hexes of a catchment centred at (q, r).
-func catchmentHexes(q, r int) [7][2]int {
-	var out [7][2]int
-	out[0] = [2]int{q, r}
-	for i, o := range catchmentNeighborOffsets {
-		out[i+1] = [2]int{q + o[0], r + o[1]}
-	}
-	return out
+// catchmentHexes returns the hexgrid.CatchmentRadius+1-hex catchment (P1,
+// megaron_plan_fysisk_gubbemodell.md) centred at (q, r), INCLUDING the centre
+// itself — this is a spatial overlap check (does a candidate site's ground
+// already belong to a neighbour?), not a production query, so unlike
+// economy's Ring-based catchment queries the centre hex belongs in the set.
+func catchmentHexes(q, r int) []hexgrid.Coord {
+	return hexgrid.Disk(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius)
 }
 
 // CatchmentConflict identifies an existing settlement whose catchment
@@ -50,24 +38,25 @@ type CatchmentConflict struct {
 const settlementDeadStatesSQL = `'collapsed', 'razed', 'sunk', 'abandoned'`
 
 // SettlementCatchmentOverlap reports the nearest existing, alive settlement
-// (any owner) in worldID whose 7-hex catchment overlaps the 7-hex catchment a
-// NEW settlement founded at (q, r) would claim — the delad-catchment-grind
-// invariant (Timothy 2026-07-27 "JA", precised 2026-07-28): "finns delat
-// catchment kan staden inte grundas." The rule holds for every owner alike —
-// a Wanax cannot reach a neighbour's ore by planting a second city on top of
-// it; the settlement cap and conquest are the only sanctioned ways in.
+// (any owner) in worldID whose catchment overlaps the catchment a NEW
+// settlement founded at (q, r) would claim (hexgrid.CatchmentRadius, P1) —
+// the delad-catchment-grind invariant (Timothy 2026-07-27 "JA", precised
+// 2026-07-28): "finns delat catchment kan staden inte grundas." The rule
+// holds for every owner alike — a Wanax cannot reach a neighbour's ore by
+// planting a second city on top of it; the settlement cap and conquest are
+// the only sanctioned ways in.
 //
-// Checked as an actual SET overlap between the two 7-hex catchments, never as
-// a hardcoded hex-distance number, so the rule keeps holding automatically if
-// the catchment radius (currently 1, untouched by this slice) ever changes —
-// only catchmentNeighborOffsets above would need to move.
+// Checked as an actual SET overlap between the two catchments, never as a
+// hardcoded hex-distance number, so the rule keeps holding automatically if
+// the catchment radius ever changes again — only hexgrid.CatchmentRadius
+// would need to move.
 //
 // Returns (nil, nil) when the site is clear. An existing overlapping PAIR of
 // settlements is never re-examined here — this is only ever called at
 // founding time against a NEW candidate site, so an already-standing pair
 // can never be retroactively flagged (grandfather clause, Timothy 2026-07-28).
 func SettlementCatchmentOverlap(ctx context.Context, db Queryer, worldID uuid.UUID, q, r int) (*CatchmentConflict, error) {
-	candidate := map[[2]int]bool{}
+	candidate := map[hexgrid.Coord]bool{}
 	for _, hex := range catchmentHexes(q, r) {
 		candidate[hex] = true
 	}
@@ -127,12 +116,14 @@ func SettlementCatchmentOverlap(ctx context.Context, db Queryer, worldID uuid.UU
 // catchment — the number the founding error/preview reports to the player.
 //
 // Unlike SettlementCatchmentOverlap's actual set-overlap test, this IS tied to
-// the current catchment radius via the literal 3 below: this is explanatory
+// hexgrid.CatchmentRadius via the formula below: this is explanatory
 // arithmetic for a human/agent-readable message, not the gate itself (the
-// gate is radius-proof; this convenience number is not). If the catchment
-// radius ever changes, update the 3 here alongside catchmentNeighborOffsets.
+// gate is radius-proof; this convenience number is not).
 func CatchmentClearanceHexes(dist int) int {
-	const safeCentreDistance = 3 // two radius-1 catchments stop touching at centre-distance 3
+	// Two radius-R catchments (disks) stop touching once their centres are
+	// more than 2R hexes apart — safeCentreDistance is the first distance at
+	// which they are guaranteed disjoint.
+	safeCentreDistance := 2*hexgrid.CatchmentRadius + 1
 	if dist >= safeCentreDistance {
 		return 0
 	}

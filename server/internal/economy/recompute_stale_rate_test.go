@@ -56,7 +56,10 @@ func TestRecomputeProduction_NullsStaleGoodKeepsLiveGood(t *testing.T) {
 	ctx := context.Background()
 
 	const tick = 100
-	settlementID := recomputeFixture(t, tick, /*pop*/ 100, /*grainAmount*/ 50, /*grainRate*/ 0)
+	// pop=400 (not 100): demand (200) must exceed NearjordGrainPerTick (50, P1)
+	// for AK4 below to still hold — at pop=100 the flat home-hex trickle alone
+	// would exactly cover demand and grainRate would land on 0, not negative.
+	settlementID := recomputeFixture(t, tick, /*pop*/ 400, /*grainAmount*/ 50, /*grainRate*/ 0)
 
 	// Stale cedar: settled at rate 42 for 5 ticks before this recompute call.
 	seedStaleGood(t, settlementID, "cedar", /*amount*/ 10, /*rate*/ 42, /*calcTick*/ tick-5)
@@ -116,7 +119,9 @@ func TestRecomputeProduction_NullsAllRatesWhenSettlementHasNoProducibleGoods(t *
 	ctx := context.Background()
 
 	const tick = 100
-	settlementID := recomputeFixture(t, tick, /*pop*/ 100, /*grainAmount*/ 5, /*grainRate*/ 0)
+	// pop=400 (not 100): see the sibling test above — demand must exceed
+	// NearjordGrainPerTick (50, P1) for the AK4 "still negative" assertion.
+	settlementID := recomputeFixture(t, tick, /*pop*/ 400, /*grainAmount*/ 5, /*grainRate*/ 0)
 
 	// Strip the catchment bare: no map_tiles at all for this world means the
 	// production_rules JOIN in RecomputeProduction returns zero rows.

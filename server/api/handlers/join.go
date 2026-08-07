@@ -10,6 +10,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/notify"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/world"
@@ -198,22 +199,24 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		     ELSE (mt.q > $2)::int
 		   END DESC,
 		   -- 2. Ore-catchment bias (tiebreak within the winning hemisphere):
-		   --    west tiles that have a copper-deposit neighbour rank ahead of those
-		   --    that do not; east tiles prefer tin-deposit neighbours. This ensures
-		   --    the first joiners land on ore-catchment tiles so they mine from
-		   --    turn 1 — the self-sufficiency invariant is preserved because the
-		   --    viability filters above still gate every candidate tile.
+		   --    west tiles that have a copper deposit within the future catchment
+		   --    ring rank ahead of those that do not; east tiles prefer tin. This
+		   --    ensures the first joiners land on ore-catchment tiles so they mine
+		   --    from turn 1 — the self-sufficiency invariant is preserved because
+		   --    the viability filters above still gate every candidate tile.
 		   --    When no ore-catchment tile is eligible the bias is 0 for all and
-		   --    we fall back to RANDOM() as before.
+		   --    we fall back to RANDOM() as before. Distance uses the same sum/2
+		   --    axial hex-distance formula as the clearance checks above
+		   --    (equivalent to hexgrid.Distance's max() formula); radius is
+		   --    hexgrid.CatchmentRadius ($3, P1), excludes the tile itself (dist 0).
 		   CASE
 		     WHEN mt.q <= $2 THEN (
 		       EXISTS (
 		         SELECT 1 FROM map_tiles nb
 		         WHERE nb.world_id = mt.world_id
 		           AND nb.copper_deposit = true
-		           AND ((nb.q = mt.q+1 AND nb.r = mt.r  ) OR (nb.q = mt.q-1 AND nb.r = mt.r  ) OR
-		                (nb.q = mt.q   AND nb.r = mt.r+1) OR (nb.q = mt.q   AND nb.r = mt.r-1) OR
-		                (nb.q = mt.q+1 AND nb.r = mt.r-1) OR (nb.q = mt.q-1 AND nb.r = mt.r+1))
+		           AND (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))
+		               BETWEEN 2 AND 2 * $3::int
 		       )::int
 		     )
 		     ELSE (
@@ -221,15 +224,14 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		         SELECT 1 FROM map_tiles nb
 		         WHERE nb.world_id = mt.world_id
 		           AND nb.tin_deposit = true
-		           AND ((nb.q = mt.q+1 AND nb.r = mt.r  ) OR (nb.q = mt.q-1 AND nb.r = mt.r  ) OR
-		                (nb.q = mt.q   AND nb.r = mt.r+1) OR (nb.q = mt.q   AND nb.r = mt.r-1) OR
-		                (nb.q = mt.q+1 AND nb.r = mt.r-1) OR (nb.q = mt.q-1 AND nb.r = mt.r+1))
+		           AND (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))
+		               BETWEEN 2 AND 2 * $3::int
 		       )::int
 		     )
 		   END DESC,
 		   RANDOM()
 		 LIMIT 1`,
-		worldID, halfQ,
+		worldID, halfQ, hexgrid.CatchmentRadius,
 	).Scan(&q, &r2, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &tileCoastal)
 	if err != nil {
 		writeError(w, http.StatusConflict, "this world is full — every remaining tile is within 4 hexes of an existing settlement or host; retrying will not help. Join another world.")

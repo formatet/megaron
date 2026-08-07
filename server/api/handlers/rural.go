@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/hexgrid"
 )
 
 // ruralProjectionTypes is the building set projected onto catchment hexes in the
@@ -40,7 +41,7 @@ type ruralProjection struct {
 // inherently within their FOW; no extra fog gating is needed.
 //
 // Deterministic placement (megaron_lokal_varld.md §Deterministisk platsregel):
-// among the 6 ring hexes (the centre IS the city), keep those compatible with
+// among the ring hexes (the centre IS the city), keep those compatible with
 // the building type, prefer a TERRAIN/DEPOSIT-specific match over a generic
 // anywhere-rule (so a mine settles at the mountain when one is in the ring,
 // not on plains via its stone rule), then break ties with a stable hash of
@@ -66,6 +67,14 @@ func (h *WorldHandler) RuralProjections(w http.ResponseWriter, r *http.Request) 
 	// terrain_type IS NULL / requires_deposit IS NULL anywhere-rule). Ring hexes
 	// only — the centre hex holds the city itself. Hexes occupied by any other
 	// province are excluded so a projection never lands on a neighbour's city.
+	//
+	// This joins many settlements per query (one owner's whole holdings), so a
+	// per-settlement hexgrid.Ring() array (the unnest($n::int[]) pattern the
+	// single-settlement catchment queries use) doesn't fit — each row needs
+	// its OWN center. The inline axial hex-distance sum below is
+	// hexgrid.Distance's exact formula, compared against 2*radius instead of
+	// dividing by 2 (integer-division-safe, same result); keep the formula in
+	// sync with hexgrid.Distance if it ever changes.
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT s.id, s.province_id, s.name, b.building_type, mt.q, mt.r,
 		        bool_or(pr.terrain_type IS NOT NULL OR pr.requires_deposit IS NOT NULL) AS specific
@@ -74,11 +83,9 @@ func (h *WorldHandler) RuralProjections(w http.ResponseWriter, r *http.Request) 
 		 JOIN buildings b ON b.settlement_id = s.id AND b.building_type = ANY($3)
 		 JOIN map_tiles mt ON mt.world_id = $1
 		     AND mt.terrain NOT IN ('deep_sea', 'coastal_sea', 'river', 'river_ford')
-		     AND (
-		         (mt.q = sp.map_q+1 AND mt.r = sp.map_r  ) OR (mt.q = sp.map_q-1 AND mt.r = sp.map_r  ) OR
-		         (mt.q = sp.map_q   AND mt.r = sp.map_r+1) OR (mt.q = sp.map_q   AND mt.r = sp.map_r-1) OR
-		         (mt.q = sp.map_q+1 AND mt.r = sp.map_r-1) OR (mt.q = sp.map_q-1 AND mt.r = sp.map_r+1)
-		     )
+		     AND NOT (mt.q = sp.map_q AND mt.r = sp.map_r)
+		     AND (abs(mt.q - sp.map_q) + abs((mt.q - sp.map_q) + (mt.r - sp.map_r)) + abs(mt.r - sp.map_r))
+		         <= 2 * $4::int
 		 JOIN production_rules pr ON pr.building_type = b.building_type
 		     AND (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
@@ -90,7 +97,7 @@ func (h *WorldHandler) RuralProjections(w http.ResponseWriter, r *http.Request) 
 		 WHERE s.world_id = $1 AND s.owner_id = $2
 		   AND NOT EXISTS (SELECT 1 FROM provinces p2 WHERE p2.world_id = $1 AND p2.map_q = mt.q AND p2.map_r = mt.r)
 		 GROUP BY s.id, s.province_id, s.name, b.building_type, mt.q, mt.r`,
-		worldID, playerID, ruralProjectionTypes,
+		worldID, playerID, ruralProjectionTypes, hexgrid.CatchmentRadius,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load rural projections")

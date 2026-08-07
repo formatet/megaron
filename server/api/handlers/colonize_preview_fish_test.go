@@ -26,6 +26,7 @@ import (
 	"github.com/google/uuid"
 
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/hexgrid"
 )
 
 func TestColonizePreview_AK5_WaterInCatchmentRaisesForecastNet(t *testing.T) {
@@ -49,22 +50,29 @@ func TestColonizePreview_AK5_WaterInCatchmentRaisesForecastNet(t *testing.T) {
 	})
 
 	// Two candidate founding sites, far enough apart not to share a catchment.
-	// Both have the SAME single plains centre (identical grain potential —
-	// deliberately too little alone to cover demand at forecastPop, so a
-	// shortfall exists for fish to fill) and 5 inert mountain_limestone filler
-	// neighbours. The ONLY difference is the 6th neighbour: mountain_limestone
-	// (no water) for site A, coastal_sea (water) for site B — isolating the
-	// fish contribution exactly as AK5 asks ("samma hex" with vs without
-	// water), instead of trading away a grain tile for a water tile.
-	seedSite := func(centerQ int, sixthNeighborTerrain string) [][2]int {
+	// Both have the SAME single plains centre — seeded for realism (a real
+	// founding preview shows it) but excluded from the potential call below
+	// (P1: the centre hex is not a production tile), so grain potential is 0
+	// at both sites and any shortfall falls entirely on fish. The ONLY
+	// difference is the 6th ring tile: mountain_limestone (no water) for site
+	// A, coastal_sea (water) for site B — isolating the fish contribution
+	// exactly as AK5 asks ("samma hex" with vs without water), instead of
+	// trading away a grain tile for a water tile.
+	// The centre tile is seeded (world.go's real endpoint reads it for
+	// display) but deliberately NOT included in the returned hex list: P1
+	// (megaron_plan_fysisk_gubbemodell.md §3.2) excludes the settlement's own
+	// hex from production potential — hexgrid.Ring, not Disk — so a plains
+	// centre must contribute NOTHING to grain here, matching what
+	// RecomputeProduction will actually do once this site is founded.
+	seedSite := func(centerQ int, sixthNeighborTerrain string) []hexgrid.Coord {
 		centerR := 0
-		hexes := [][2]int{{centerQ, centerR}}
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal) VALUES ($1, $2, $3, 'plains', false)`,
 			worldID, centerQ, centerR,
 		); err != nil {
 			t.Fatalf("seed center tile: %v", err)
 		}
+		var hexes []hexgrid.Coord
 		neighborOffsets := [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
 		for i, d := range neighborOffsets {
 			terrain := "mountain_limestone"
@@ -78,7 +86,7 @@ func TestColonizePreview_AK5_WaterInCatchmentRaisesForecastNet(t *testing.T) {
 			); err != nil {
 				t.Fatalf("seed ring tile: %v", err)
 			}
-			hexes = append(hexes, [2]int{q, r})
+			hexes = append(hexes, hexgrid.Coord{Q: q, R: r})
 		}
 		return hexes
 	}

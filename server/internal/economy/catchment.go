@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
 
 // CatchmentBasePotential returns the base production potential per good for a
-// settlement's catchment (its own hex + the 6 adjacent), gated by the
-// settlement's ACTUAL buildings. Mirrors the catchment query
+// settlement's catchment (hexgrid.CatchmentRadius around its own hex), gated
+// by the settlement's ACTUAL buildings. Mirrors the catchment query
 // RecomputeProduction runs internally (recompute.go steps 2+3) — kept as a
 // separate exported function rather than folded into RecomputeProduction so
 // read-only callers (status endpoint's grain break-even hint — DEL C of
@@ -36,9 +37,16 @@ func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 		return nil, fmt.Errorf("catchment base potential: load province coords: %w", err)
 	}
 
+	// Ring, not Disk: the settlement's own hex is not a normal production tile
+	// (megaron_plan_fysisk_gubbemodell.md §3.2) — it gets NearjordGrainPerTick
+	// separately (RecomputeProduction adds it; this base-potential mirror
+	// intentionally does not, matching its existing "potential from the
+	// worked land" contract — see the doc comment above).
+	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
 	rows, err := tx.Query(ctx,
 		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
-		 FROM map_tiles mt
+		 FROM unnest($3::int[], $4::int[]) AS catchment(q, r)
+		 JOIN map_tiles mt ON mt.world_id = $2 AND mt.q = catchment.q AND mt.r = catchment.r
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
@@ -51,17 +59,10 @@ func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE mt.world_id = $2
-		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-		        OR pr.terrain_type = mt.terrain)
-		   AND (
-		       (mt.q = $3   AND mt.r = $4  ) OR
-		       (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR
-		       (mt.q = $3   AND mt.r = $4+1) OR (mt.q = $3   AND mt.r = $4-1) OR
-		       (mt.q = $3+1 AND mt.r = $4-1) OR (mt.q = $3-1 AND mt.r = $4+1)
-		   )
+		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
+		        OR pr.terrain_type = mt.terrain
 		 GROUP BY pr.good_key`,
-		settlementID, worldID, q, r,
+		settlementID, worldID, catchQ, catchR,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("catchment base potential: query production rules: %w", err)

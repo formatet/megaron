@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -15,6 +16,18 @@ import (
 // A good produced by a settlement at REF_LABOR workers with all citizens
 // assigned gets base_potential as its rate — same as the pre-Fas-2 baseline.
 const REF_LABOR = 100.0
+
+// NearjordGrainPerTick is the settlement's own hex's flat, unconditional
+// grain trickle — Timothy 2026-08-07 answered the taxonomy's §3.2/§16
+// divergence (§3.2 recommended +15 as a starting point, §16 later settled it
+// FAST at "~50 grain"): "Ska stadshexens lilla grainbidrag vara fast eller
+// bero på terräng? FAST - SÄG 50 grain." The settlement's own hex is not a
+// normal production tile (no farm workplace, not upgradeable, "ingen gubbe
+// krävs") — this is why it is added directly to grain's rate here rather
+// than flowing through the labor-weighted catchment potential like every
+// other good; hexgrid.Ring (not Disk) already excludes this hex from that
+// potential sum, so there is no double-count.
+const NearjordGrainPerTick = 50.0
 
 // Workplace capacity (Timothy 2026-07-23). A producing building is a workplace
 // with a finite number of stations; its LEVEL is how many citizens it can put to
@@ -226,7 +239,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 
 	// ── 2. Gather catchment coordinates for this settlement ──────────────────
-	// Catchment = the 7 tiles the city works: its own hex + the 6 adjacent.
+	// Catchment = the settlement's own hex plus hexgrid.CatchmentRadius around
+	// it (P1, megaron_plan_fysisk_gubbemodell.md — 19 hexes total, 18 worked;
+	// own hex handled separately in step 3b below, not a normal production tile).
 	var worldID uuid.UUID
 	var q, r int
 	err = tx.QueryRow(ctx,
@@ -241,21 +256,25 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 
 	// ── 3. Compute base_potential per producible good from catchment ──────────
-	// Each of the 7 catchment map_tiles contributes based on its own terrain,
-	// deposits, and coastal flag. The settlement's buildings gate building-gated
-	// rules. Water tiles (deep_sea, coastal_sea, river, river_ford) only match
-	// rules keyed to their own terrain — otherwise a water tile would match
-	// every terrain_type IS NULL rule (timber, stone via mine, pottery via
-	// market), which is exactly the silent-fallback production CLAUDE.md
-	// forbids (megaron_floden_plan.md §4, Timothy 2026-07-29; river_ford added
-	// megaron_plan_flodbudget_och_vadstalle.md, same reasoning). The
-	// `g.status = 'active'` join excludes parked goods (purple/pottery/horses,
-	// mig 114, Temenos_varutaxonomi_sol.md §4.2) from base_potential entirely —
-	// step 6 below then nulls any stale rate a parked good already carried.
+	// Each of the 18 productive catchment map_tiles (the ring, NOT the
+	// settlement's own hex — see step 3b) contributes based on its own
+	// terrain, deposits, and coastal flag. The settlement's buildings gate
+	// building-gated rules. Water tiles (deep_sea, coastal_sea, river,
+	// river_ford) only match rules keyed to their own terrain — otherwise a
+	// water tile would match every terrain_type IS NULL rule (timber, stone
+	// via mine, pottery via market), which is exactly the silent-fallback
+	// production CLAUDE.md forbids (megaron_floden_plan.md §4, Timothy
+	// 2026-07-29; river_ford added megaron_plan_flodbudget_och_vadstalle.md,
+	// same reasoning). The `g.status = 'active'` join excludes parked goods
+	// (purple/pottery/horses, mig 114, Temenos_varutaxonomi_sol.md §4.2) from
+	// base_potential entirely — step 6 below then nulls any stale rate a
+	// parked good already carried.
+	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
 	rows, err := tx.Query(ctx,
 		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential,
 		        bool_or(pr.building_type IS NULL) AS has_field_path
-		 FROM map_tiles mt
+		 FROM unnest($3::int[], $4::int[]) AS catchment(q, r)
+		 JOIN map_tiles mt ON mt.world_id = $2 AND mt.q = catchment.q AND mt.r = catchment.r
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
@@ -268,17 +287,10 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE mt.world_id = $2
-		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-		        OR pr.terrain_type = mt.terrain)
-		   AND (
-		       (mt.q = $3   AND mt.r = $4  ) OR
-		       (mt.q = $3+1 AND mt.r = $4  ) OR (mt.q = $3-1 AND mt.r = $4  ) OR
-		       (mt.q = $3   AND mt.r = $4+1) OR (mt.q = $3   AND mt.r = $4-1) OR
-		       (mt.q = $3+1 AND mt.r = $4-1) OR (mt.q = $3-1 AND mt.r = $4+1)
-		   )
+		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
+		        OR pr.terrain_type = mt.terrain
 		 GROUP BY pr.good_key`,
-		settlementID, worldID, q, r,
+		settlementID, worldID, catchQ, catchR,
 	)
 	if err != nil {
 		return fmt.Errorf("recompute: query production rules: %w", err)
@@ -413,7 +425,21 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		yieldPerWorker := gp.basePotential / REF_LABOR
 		rawRates[gp.key] = yieldPerWorker * effectiveWorkers
 	}
+	// grainSeen reflects the CATCHMENT TERRAIN'S own grain capability (was
+	// "grain" among the potentials this settlement's ring actually produced),
+	// captured BEFORE NearjordGrainPerTick is folded in below — it gates
+	// whether step 5's potentials-loop already writes a grain row (below) vs.
+	// the "!grainSeen" fallback branch needs to (a farmless/waterless city
+	// still gets nearjord's flat trickle, but has no potentials-loop entry to
+	// carry it).
 	_, grainSeen := rawRates["grain"]
+
+	// Stadshexens närjord (P1, megaron_plan_fysisk_gubbemodell.md §3.2): a
+	// flat, unconditional grain trickle from the settlement's own hex, which
+	// is not a normal production tile (no gubbe, not upgradeable — excluded
+	// from the catchment ring above). Added directly to the rate here, not
+	// routed through LaborCapacity/weight scaling like every other good.
+	rawRates["grain"] += NearjordGrainPerTick
 
 	// 5b. The food invariant: grain first, fish for the rest, livestock (whole
 	// animals) as the last resort. grainProd/fishProd default to 0 via Go's

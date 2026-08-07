@@ -3,6 +3,8 @@ package province
 import (
 	"fmt"
 	"math"
+
+	"formatet/megaron/server/internal/hexgrid"
 )
 
 // HexDistance returns the distance between two axial hex coordinates.
@@ -34,15 +36,13 @@ func VisibleFrom(target MapPosition, origins []MapPosition, radius int) bool {
 	return false
 }
 
-// axialNeighborDirs lists the 6 axial hex neighbour offsets (shared with pathfind.go's
-// axialDirs; kept local to avoid import-order coupling within the same package).
-var axialNeighborDirs = [6][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, -1}, {-1, 1}}
-
-// HexNeighbors returns the 6 axial neighbours of pos.
+// HexNeighbors returns the 6 axial neighbours of pos, via hexgrid.Neighbors
+// (the single source of truth for this offset set — megaron_todo.md
+// "7-hex-catchmentlistan är duplicerad").
 func HexNeighbors(pos MapPosition) [6]MapPosition {
 	var out [6]MapPosition
-	for i, d := range axialNeighborDirs {
-		out[i] = MapPosition{Q: pos.Q + d[0], R: pos.R + d[1]}
+	for i, c := range hexgrid.Neighbors(hexgrid.Coord{Q: pos.Q, R: pos.R}) {
+		out[i] = MapPosition{Q: c.Q, R: c.R}
 	}
 	return out
 }

@@ -193,7 +193,10 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 	).Scan(&grainWeight); err != nil {
 		t.Fatalf("read seeded grain weight: %v", err)
 	}
-	wantGrainProd := (grainBase / REF_LABOR) * grainWeight * float64(pop)
+	// + NearjordGrainPerTick: P1 (megaron_plan_fysisk_gubbemodell.md §3.2) adds
+	// the settlement's own-hex flat grain trickle on top of the catchment-ring
+	// potential — unconditional, not scaled by weight/labor.
+	wantGrainProd := (grainBase/REF_LABOR)*grainWeight*float64(pop) + NearjordGrainPerTick
 	wantDemand := GrainConsumptionPerTick(pop)
 	wantGrainRate := wantGrainProd - wantDemand
 
@@ -288,7 +291,9 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 			fishProd, GrainConsumptionPerTick(pop))
 	}
 
-	wantGrainRate := -(GrainConsumptionPerTick(pop) - fishProd)
+	// - NearjordGrainPerTick: the settlement's own-hex flat grain trickle (P1)
+	// also goes toward covering demand before the residual drains grain negative.
+	wantGrainRate := -(GrainConsumptionPerTick(pop) - fishProd - NearjordGrainPerTick)
 	if diff := grainRate - wantGrainRate; diff > 1e-6 || diff < -1e-6 {
 		t.Errorf("AK3: grainRate = %v, want %v (-(demand - fishProd))", grainRate, wantGrainRate)
 	}
