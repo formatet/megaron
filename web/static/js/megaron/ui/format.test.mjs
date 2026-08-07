@@ -100,3 +100,82 @@ test('mutual_wipe trailer reads as neither side holding', () => {
   });
   assert.match(line, /No survivors on either side\.$/);
 });
+
+// A7 (megaron_mvp_mandag.md §A7): 16 NotifyPlayer kinds fell through to the
+// raw-payload default before this slice — real server payloads (grepped from
+// each call site, not invented) now get real text. Red-before: every one of
+// these produced "<Kind> — key: value, …" via the default arm.
+test('A7: the sixteen previously-uncased kinds get real text, not the default arm', () => {
+  assert.equal(
+    notifText('SettlementCaptured', { settlement_id: 'x', role: 'defender' }),
+    'One of your settlements has fallen to conquest',
+  );
+  assert.equal(
+    notifText('SettlementCaptured', { settlement_id: 'x', role: 'attacker' }),
+    'Your army has taken an enemy settlement',
+  );
+  assert.equal(
+    notifText('SettlementDefended', { role: 'defender', outcome: 'attacker_routed' }),
+    'Your settlement held — the attacking army was routed',
+  );
+  assert.equal(
+    notifText('SettlementSacked', { role: 'attacker', looted: { copper: 12, grain: 300 } }),
+    'You sacked and razed a settlement — looted 12 copper, 300 grain',
+  );
+  assert.equal(
+    notifText('SettlementSacked', { role: 'defender' }),
+    'Your settlement was sacked and razed',
+  );
+  assert.equal(
+    notifText('CityCollapsed', { name: 'PolisCm4', last_settlement: true }),
+    'PolisCm4 has collapsed — that was your last settlement',
+  );
+  assert.equal(
+    notifText('UnitLostAtSea', { unit_type: 'infantry', lost: 40, reason: 'grain_shortage' }),
+    'infantry lost at sea — the ship starved, 40 men gone',
+  );
+  assert.equal(
+    notifText('CaravanSeized', { transport_id: 'x', q: 3, r: 4 }),
+    'You seized an enemy caravan at (3, 4)',
+  );
+  assert.equal(
+    notifText('CaravanRaided', { transport_id: 'x', q: 3, r: 4 }),
+    'Your caravan was raided at (3, 4)',
+  );
+  assert.equal(
+    notifText('MarchStalled', { unit_id: 'x', reason: 'system fault, reissue the order' }),
+    'system fault, reissue the order',
+  );
+  assert.equal(
+    notifText('UnitArrived', { unit_id: 'x', type: 'ship', q: 5, r: 6, status: 'positioned', stance: 'sentry' }),
+    'ship arrived at (5, 6) — positioned, standing sentry',
+  );
+  assert.equal(
+    notifText('UnitExploreReturned', { unit_id: 'x', q: 1, r: 1 }),
+    'Scout returning home',
+  );
+  assert.equal(
+    notifText('OrderFailed', { verb: 'recall', reason: 'the army had already resolved' }),
+    'Order failed (recall): the army had already resolved',
+  );
+  assert.equal(
+    notifText('UnitRecalled', { unit_id: 'x', target_q: 2, target_r: 3 }),
+    'Unit recalled — new course to (2, 3)',
+  );
+  assert.equal(
+    notifText('UnitRedirected', { unit_id: 'x', target_q: 2, target_r: 3 }),
+    'Unit redirected — new course to (2, 3)',
+  );
+  assert.equal(
+    notifText('SitosGranaryRelease', { food_released: 450, coverage_days: 3, granary_empty: true }),
+    "Granary released 450 grain (3 days' coverage) — granary now empty",
+  );
+  assert.equal(
+    notifText('TransferDelivered', { dest_name: 'PolisCm4', goods: [{ good_key: 'grain', quantity: 200 }] }),
+    'Transfer delivered to PolisCm4: 200 grain',
+  );
+  assert.equal(
+    notifText('SentryAlerted', { foreign_owner: 'Wanax3', foreign_type: 'chariot', q: 9, r: 9 }),
+    "Sentry spotted Wanax3's chariot at (9, 9)",
+  );
+});

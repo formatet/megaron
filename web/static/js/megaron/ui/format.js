@@ -298,16 +298,78 @@ export function notifText(kind, body) {
       if (body.role === 'attacker') return `${body.name || 'The city'} was sacked and burned — the loot is on its way home; the ruin cannot be recolonized for a time.`;
       return `${body.name || 'Your city'} was sacked and burned — it is a ruin now.`;
     }
-    // Every kind above is hand-written; every kind NOT above used to fall
-    // through to `return kind`, silently discarding the payload — 17 verified
-    // NotifyPlayer kinds have no case here (2026-08-05 audit). keryx never had
-    // this problem: cmd_notifications.go always prints the whole body as raw
-    // JSON next to the kind, so the web client was structurally quieter than
-    // the terminal for exactly the notifs missing a case. This mirrors
-    // keryx's "print everything" behaviour in one readable line instead of
-    // raw JSON — ugly, but nothing is thrown away. Writing a real case here
-    // is a separate, per-kind slice (megaron_todo.md NU §"Striden har ingen
-    // informationsyta"); this arm is deliberately generic.
+    case 'SettlementCaptured':
+      // Payload (occupation.go's annex path, unit_arrival.go's land-march annex)
+      // carries only settlement_id + role — no name survives to either side.
+      return body.role === 'attacker'
+        ? 'Your army has taken an enemy settlement'
+        : 'One of your settlements has fallen to conquest';
+    case 'SettlementDefended': {
+      const outcomes = {
+        attacker_destroyed: 'the attacking army was destroyed',
+        attacker_routed:    'the attacking army was routed',
+        attacker_beaten:    'the attacking army was beaten back',
+      };
+      const line = outcomes[body.outcome] || 'the attack was repelled';
+      return body.role === 'attacker'
+        ? `Your assault failed — ${line}`
+        : `Your settlement held — ${line}`;
+    }
+    case 'SettlementSacked': {
+      if (body.role === 'attacker') {
+        const looted = Object.entries(body.looted || {})
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([g, q]) => `${Math.round(q)} ${g}`).join(', ');
+        return `You sacked and razed a settlement${looted ? ` — looted ${looted}` : ''}`;
+      }
+      return 'Your settlement was sacked and razed';
+    }
+    case 'CityCollapsed': {
+      const name = body.name || 'A settlement';
+      return body.last_settlement
+        ? `${name} has collapsed — that was your last settlement`
+        : `${name} has collapsed`;
+    }
+    case 'UnitLostAtSea': {
+      const cause = body.reason === 'silver_shortage' ? 'the ship went unpaid' : 'the ship starved';
+      return `${body.unit_type || 'A unit'} lost at sea — ${cause}, ${body.lost || 0} men gone`;
+    }
+    case 'CaravanSeized':   return `You seized an enemy caravan at (${body.q}, ${body.r})`;
+    case 'CaravanRaided':   return `Your caravan was raided at (${body.q}, ${body.r})`;
+    case 'MarchStalled':    return body.reason || 'A march could not be processed';
+    case 'UnitArrived': {
+      const type = body.type ? `${body.type} ` : 'A unit ';
+      const stance = body.stance ? `, standing ${body.stance}` : '';
+      return `${type}arrived at (${body.q}, ${body.r}) — ${body.status || 'positioned'}${stance}`;
+    }
+    case 'UnitExploreReturned': {
+      const eta = fmtSoon(body.arrives_at);
+      return `Scout returning home${eta ? ` — arrives ${eta}` : ''}`;
+    }
+    case 'OrderFailed':
+      return body.reason ? `Order failed (${body.verb || '?'}): ${body.reason}` : `Order failed (${body.verb || '?'})`;
+    case 'UnitRecalled':
+    case 'UnitRedirected': {
+      const eta = fmtSoon(body.arrives_at);
+      const verb = kind === 'UnitRecalled' ? 'recalled' : 'redirected';
+      return `Unit ${verb} — new course to (${body.target_q}, ${body.target_r})${eta ? `, arrives ${eta}` : ''}`;
+    }
+    case 'SitosGranaryRelease': {
+      const empty = body.granary_empty ? ' — granary now empty' : '';
+      return `Granary released ${Math.round(body.food_released || 0)} grain (${body.coverage_days || 0} days' coverage)${empty}`;
+    }
+    case 'TransferDelivered': {
+      const goods = (body.goods || [])
+        .map(g => `${Math.round(g.quantity || 0)} ${g.good_key}`).join(', ');
+      return `Transfer delivered to ${body.dest_name || 'destination'}${goods ? `: ${goods}` : ''}`;
+    }
+    case 'SentryAlerted':
+      return `Sentry spotted ${body.foreign_owner || 'an unknown'}'s ${body.foreign_type || 'unit'} at (${body.q}, ${body.r})`;
+    // Every kind above is hand-written. This arm stays as a generic fallback
+    // for any future NotifyPlayer kind added without a case here — the 2026-08-05
+    // audit found 17 such kinds; all now have real text (A7, megaron_mvp_mandag.md
+    // §A7). keryx never had this problem: cmd_notifications.go always prints the
+    // whole body as raw JSON next to the kind.
     default: {
       const summary = payloadSummary(body);
       return summary ? `${kind} — ${summary}` : kind;
