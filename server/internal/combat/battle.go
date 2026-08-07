@@ -104,7 +104,7 @@ const (
 	// term instead of a strength multiplier (there is no strength to
 	// multiply in the dice model). Both wall_level and storm are snapshotted
 	// once at startBattle, same stability guarantee as seed.
-	wallAbsorbPerLevel          = 5
+	wallAbsorbPerLevel          = 20
 	stormWallAbsorbDivisor      = 2
 	stormAttackerLossMultiplier = 1.5
 )
