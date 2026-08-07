@@ -36,10 +36,16 @@ type OrderDeliveryPayload struct {
 	PlayerID    uuid.UUID           `json:"player_id"`
 	UnitID      uuid.UUID           `json:"unit_id"`
 	MessengerID uuid.UUID           `json:"messenger_id"`
-	Verb        string              `json:"verb"` // "march" | "stance" | "recall" | "redirect"
+	Verb        string              `json:"verb"` // "march" | "stance" | "recall" | "redirect" | "occupy_action"
 	March       *combat.MarchOrder  `json:"march,omitempty"`
 	Stance      *combat.StanceOrder `json:"stance,omitempty"`
 	Recall      *combat.RecallOrder `json:"recall,omitempty"`
+	// Occupy carries the S3 erövring choice (megaron_plan_erovring.md) — sack/
+	// burn/annex an occupied city. Targets a SETTLEMENT, not a unit (UnitID is
+	// left zero-value for this verb); the runner is dispatched to the city's
+	// hex the same way as any other order (command is never instant, even for
+	// an army already standing there).
+	Occupy *combat.OccupyActionOrder `json:"occupy,omitempty"`
 }
 
 // OrderDeliveryHandler processes ScheduledOrderDelivery events.
@@ -152,6 +158,24 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 			})
 		}
 		slog.Info("order delivered — unit turned onto new course", "unit", p.UnitID, "verb", p.Verb, "arrives_at", res.ArrivesAt)
+		return nil
+	case "occupy_action":
+		if p.Occupy == nil {
+			return fmt.Errorf("order delivery %s: occupy_action verb without occupy payload", p.MessengerID)
+		}
+		res, err := combat.ExecuteOccupyAction(ctx, h.pool, h.scheduler, h.eventStore, h.clk, h.hub, *p.Occupy)
+		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				h.notifyOrderFailed(ctx, p, rej.Reason)
+				return nil
+			}
+			slog.Error("order delivery: occupy action execution failed after claim — order dropped",
+				"messenger", p.MessengerID, "settlement", p.Occupy.SettlementID, "action", p.Occupy.Action, "err", err)
+			return nil
+		}
+		slog.Info("order delivered — occupation choice executed",
+			"settlement", res.SettlementID, "action", res.Action)
 		return nil
 	default:
 		return fmt.Errorf("order delivery %s: unknown verb %q", p.MessengerID, p.Verb)

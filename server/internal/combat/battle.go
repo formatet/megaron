@@ -21,9 +21,29 @@ package combat
 //     comment. The reträttorder-mid-battle-via-messenger half of §5 (a NEW
 //     order arriving mid-fight, as opposed to a pre-set standing order) is
 //     NOT implemented — termination_reason "retreat_order" stays unused, same
-//     as "attacker_reached_city"/"no_enemy_left". Stood reträttorder's
-//     avsiktslagret reaction_policy verbs (escort/alert) — plan §6/§7 — are
-//     also still open.
+//     as "no_enemy_left". Stood reträttorder's avsiktslagret reaction_policy
+//     verbs (escort/alert) — plan §6/§7 — are also still open.
+//   - 2026-08-07 (§8 cutover): the settlement siege (unit_arrival.go
+//     resolveCombat) and amphibious assault (unit_arrival.go
+//     resolveAmphibiousAssault) entry points are now wired to
+//     initiateOrJoinBattle too, mirroring resolveFieldCombat — ALL garrison
+//     units are sent in as separate defender participants (multi-garrison
+//     was never a blocker, see battleParticipant). avsiktslagret's
+//     unit_intercept_scan.go (S3/S4) is deliberately NOT cut over — it
+//     resolves synchronously by design, see its own file comment.
+//     ⚠️ KNOWN GAP, deliberately left open by this slice: neither entry point
+//     performs settlement CAPTURE on an attacker win anymore — the old
+//     one-shot applyAttackerWins/applyDefenderWins/sackSettlement (still in
+//     unit_arrival.go, still covered by their own direct-call unit tests)
+//     are no longer reachable from any production code path. A besieging or
+//     landing force can now only annihilate/rout a garrison; taking the city
+//     itself is exactly the still-unused "attacker_reached_city" termination
+//     reason below — hooking that up is unbuilt, unscoped follow-up work,
+//     not a bug in this slice.
+//   - 2026-08-07 (§8 mur-modellen, beslut 7): the wall is a SHIELD —
+//     wallAbsorbBudget below absorbs the first N hits/battle-tick on the
+//     defending side before losses are applied. wall_level and storm are
+//     snapshotted onto the battles row at startBattle (migration 116).
 
 import (
 	"context"
@@ -69,6 +89,24 @@ const (
 	// Only checked for the defending side's participants (fortify is a
 	// garrison/positioned stance, not something an attacking march holds).
 	fortifyParticipationBonus = 0.10
+
+	// wallAbsorbPerLevel/stormWallAbsorbDivisor/stormAttackerLossMultiplier —
+	// §8 mur-modellen (megaron_kr3_stridsutvardering.md beslut 7, Timothy
+	// 2026-08-07). The wall is a SHIELD, not a strength multiplier: each
+	// battle-tick it absorbs the first N = wallAbsorbPerLevel × wall_level
+	// incoming hits on the defending side before losses are applied —
+	// strawman 5/10/15 for level 1/2/3 (ratt, kalibreras vid speltest, §10).
+	// A besieging force that lands more hits than N in a tick breaks the
+	// wall anyway — intentional (a resolute siege can crack any wall).
+	// storm halves N (stormWallAbsorbDivisor) but raises the storming
+	// attacker's own losses (stormAttackerLossMultiplier) — same spirit as
+	// the old one-shot model's stormWallDivisor, now expressed as a shield
+	// term instead of a strength multiplier (there is no strength to
+	// multiply in the dice model). Both wall_level and storm are snapshotted
+	// once at startBattle, same stability guarantee as seed.
+	wallAbsorbPerLevel          = 20
+	stormWallAbsorbDivisor      = 2
+	stormAttackerLossMultiplier = 1.5
 )
 
 // loyaltyParticipationBase is the loyalty_base term (§4 strawman 65/80/90/100%).
@@ -167,6 +205,17 @@ type battleParticipant struct {
 	utype       string
 	side        string // "attacker" | "defender"
 	currentSize int
+	// stance is optional (nil for callers that don't care — field arrival and
+	// interception never set it, so storm below is always false for them,
+	// same as before this field existed). Read only by startBattle, only off
+	// the ARRIVING participant, to snapshot §8's storm flag onto the new
+	// battles row: settlement siege sets it from the marching attacker's own
+	// stance; amphibious assault sets it from the SHIP's stance (the cargo
+	// does the fighting but the ship is what a player marks "storm" on) —
+	// same source each used before this cutover. Defenders' stance is never
+	// read from here; participation's fortify check reads units.stance LIVE
+	// every battle-tick instead.
+	stance *string
 }
 
 // initiateOrJoinBattle is the KR3 replacement for the old one-shot combat
@@ -213,11 +262,26 @@ func (h *UnitArrivalHandler) startBattle(
 	}
 	seed := randomSeed(dice)
 
+	// §8 mur-modellen: wall_level is a per-battle SNAPSHOT, same stability
+	// guarantee as seed — a besieged settlement's wall level must not drift
+	// mid-battle. Looked up directly from the hex rather than threaded through
+	// every initiateOrJoinBattle caller: field arrival and interception never
+	// have a settlement at (q,r), so this best-effort lookup naturally yields
+	// 0 for them (no settlements row matches) — the absorption term becomes a
+	// no-op without either of those entry points needing to know walls exist.
+	var wallLevel int
+	_ = tx.QueryRow(ctx,
+		`SELECT s.wall_level FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
+		worldID, q, r,
+	).Scan(&wallLevel)
+	storm := arriving.stance != nil && *arriving.stance == "storm"
+
 	var battleID uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`INSERT INTO battles (world_id, q, r, started_tick, current_tick, status, seed)
-		 VALUES ($1, $2, $3, $4, $4, 'active', $5) RETURNING id`,
-		worldID, q, r, currentTick, seed,
+		`INSERT INTO battles (world_id, q, r, started_tick, current_tick, status, seed, wall_level, storm)
+		 VALUES ($1, $2, $3, $4, $4, 'active', $5, $6, $7) RETURNING id`,
+		worldID, q, r, currentTick, seed, wallLevel, storm,
 	).Scan(&battleID); err != nil {
 		return fmt.Errorf("start battle: insert battles row: %w", err)
 	}
@@ -244,6 +308,7 @@ func (h *UnitArrivalHandler) startBattle(
 		BattleStartedPayload{
 			BattleID: battleID, WorldID: worldID, Q: q, R: r,
 			StartedTick: currentTick, Seed: seed,
+			WallLevel: wallLevel, Storm: storm,
 			Attackers: attackerRefs, Defenders: defenderRefs,
 		}, worldID, nil,
 	); err != nil {
@@ -347,9 +412,11 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	var status string
 	var q, r int
 	var seed int64
+	var wallLevel int
+	var storm bool
 	if err := tx.QueryRow(ctx,
-		`SELECT status, q, r, seed FROM battles WHERE id = $1 FOR UPDATE`, battleID,
-	).Scan(&status, &q, &r, &seed); err != nil {
+		`SELECT status, q, r, seed, wall_level, storm FROM battles WHERE id = $1 FOR UPDATE`, battleID,
+	).Scan(&status, &q, &r, &seed, &wallLevel, &storm); err != nil {
 		return false, fmt.Errorf("battle tick: load battle: %w", err)
 	}
 	if status != "active" {
@@ -434,14 +501,52 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		participationBySide[side] = participation(loyaltyLevel, kharis, fortify)
 	}
 
+	// §8 mur-modellen: the wall's absorption budget is per BATTLE-TICK, not
+	// per round — it is drawn down across this tick's battleRoundsPerTick
+	// rounds and not refilled until the next tick. wallLevel=0 (field
+	// battles, interception, or an unwalled settlement) makes this an
+	// unconditional no-op. storm only ever matters together with an actual
+	// wall (wallLevel>0) — gating on both keeps a field battle's attacking
+	// unit holding storm stance (a general stance, not settlement-specific)
+	// completely unaffected, same behaviour as before this slice.
+	wallAbsorbBudget := wallAbsorbPerLevel * wallLevel
+	stormActive := storm && wallLevel > 0
+	if stormActive {
+		wallAbsorbBudget /= stormWallAbsorbDivisor
+	}
+
 	for round := 1; round <= battleRoundsPerTick; round++ {
 		dice := economy.NewSeededDice(battleRoundSeed(seed, tickIndex, round))
 
 		attActive, attDice, attHits := rollSide(participants, sizes, bySide["attacker"], participationBySide["attacker"], dice)
 		defActive, defDice, defHits := rollSide(participants, sizes, bySide["defender"], participationBySide["defender"], dice)
 
-		defLosses := distributeLosses(sizes, bySide["defender"], attHits)
-		attLosses := distributeLosses(sizes, bySide["attacker"], defHits)
+		// Wall absorption: the wall soaks the first wallAbsorbBudget of this
+		// tick's remaining budget out of attHits before they become defender
+		// losses — a shield, not a strength multiplier (beslut 7). HitsCaused
+		// below still reports the RAW dice outcome (attHits); LossesReceived
+		// reflects what the wall let through, so the log itself shows the
+		// wall's effect rather than hiding it.
+		effectiveAttHits := attHits
+		if wallAbsorbBudget > 0 {
+			absorbed := attHits
+			if absorbed > wallAbsorbBudget {
+				absorbed = wallAbsorbBudget
+			}
+			effectiveAttHits -= absorbed
+			wallAbsorbBudget -= absorbed
+		}
+		// Storm bleeds the storming attacker harder in exchange for the
+		// halved wall budget above — applied to the defender's hits against
+		// the attacker, never the other direction (behåll andemeningen i
+		// gamla stormWallDivisor + att storm blöder mer).
+		effectiveDefHits := defHits
+		if stormActive {
+			effectiveDefHits = int(math.Round(float64(defHits) * stormAttackerLossMultiplier))
+		}
+
+		defLosses := distributeLosses(sizes, bySide["defender"], effectiveAttHits)
+		attLosses := distributeLosses(sizes, bySide["attacker"], effectiveDefHits)
 
 		for idx, loss := range attLosses {
 			sizes[idx] -= loss
@@ -599,6 +704,22 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		}
 	}
 
+	// §8 erövring (megaron_plan_erovring.md S1/S2): a battle against a
+	// SETTLEMENT that ends with the attacker winning does not just
+	// annihilate/rout the garrison — the city falls under occupation. This is
+	// the cutover-mur gap flagged in this file's header comment. Looked up
+	// here (not earlier) because it only matters once winner is final; field
+	// battles and interception have no settlement at (q,r) and cityAtHex is
+	// nil for them, leaving terminationReason/winner exactly as computed
+	// above, unchanged from before this slice.
+	cityAtHex, cityErr := loadCitySettlementForUpdate(ctx, tx, worldID, q, r)
+	if cityErr != nil {
+		return false, fmt.Errorf("battle tick: load city at hex: %w", cityErr)
+	}
+	if cityAtHex != nil && winner == "attacker" && (cityAtHex.state == "active" || cityAtHex.state == "occupied") {
+		terminationReason = "attacker_reached_city"
+	}
+
 	if _, err := tx.Exec(ctx,
 		`UPDATE battles SET status = 'ended', termination_reason = $2, current_tick = $3 WHERE id = $1`,
 		battleID, terminationReason, tickIndex,
@@ -614,6 +735,33 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		}, worldID, nil,
 	); err != nil {
 		slog.Warn("battle tick: append BattleEnded failed", "battle", battleID, "err", err)
+	}
+
+	// §8 erövring S1/S2 continued: attacker took the city → occupy it under
+	// the winning side's owner. defender held an ALREADY-occupied city →
+	// reset the annex countdown (the contestable async window). Neither
+	// branch fires for a plain field/interception battle (cityAtHex nil) or
+	// for a normal (non-occupied) settlement defence that simply held
+	// (cityAtHex.state == "active" and winner == "defender" — nothing new to
+	// do, same as before this slice).
+	if cityAtHex != nil {
+		switch {
+		case terminationReason == "attacker_reached_city":
+			var survivingAttackers []uuid.UUID
+			for _, i := range bySide["attacker"] {
+				if sizes[i] > 0 {
+					survivingAttackers = append(survivingAttackers, participants[i].unitID)
+				}
+			}
+			occupantOwnerID := repOwnerBySide["attacker"]
+			if err := h.occupySettlement(ctx, tx, worldID, q, r, tickIndex, cityAtHex, occupantOwnerID, survivingAttackers); err != nil {
+				return false, fmt.Errorf("battle tick: occupy settlement: %w", err)
+			}
+		case winner == "defender" && cityAtHex.state == "occupied":
+			if err := h.resetOccupationDefense(ctx, tx, worldID, tickIndex, cityAtHex); err != nil {
+				return false, fmt.Errorf("battle tick: reset occupation defense: %w", err)
+			}
+		}
 	}
 
 	// L2 battle loyalty, once, at battle end (mirrors the old

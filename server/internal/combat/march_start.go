@@ -331,11 +331,19 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		// The target province must be unclaimed (no settlement). Best-effort pre-flight;
 		// the arrival handler re-checks under lock and returns the unit home on a race.
+		// Exception (megaron_plan_erovring.md S5): a settlement razed by
+		// sack-and-burn is EXCLUDED here once its burnRecolonizeKaren has
+		// elapsed (recolonizable_after_tick <= current tick) — the karens
+		// replaces what used to be a PERMANENT block for every razed row.
+		// Every other dead state (old sackSettlement's razed rows with no
+		// karens set, collapsed rows) still blocks forever, unchanged.
 		var existing int
 		if err := pool.QueryRow(ctx,
 			`SELECT count(*) FROM settlements s
 			 JOIN provinces p ON p.id = s.province_id
-			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
+			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3
+			   AND NOT (s.state = 'razed' AND s.recolonizable_after_tick IS NOT NULL
+			            AND s.recolonizable_after_tick <= current_world_tick())`,
 			o.WorldID, targetQ, targetR,
 		).Scan(&existing); err == nil && existing > 0 {
 			return nil, reject(http.StatusUnprocessableEntity,

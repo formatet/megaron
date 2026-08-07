@@ -5,10 +5,13 @@ import "github.com/google/uuid"
 // KR3 event family (megaron_plan_kr3_stridssystem.md §8) — a NEW, frozen set
 // of event types for the persistent multi-tick battle model. The old
 // UnitCombatResolved / FieldBattleWon|Lost one-shot events are left exactly
-// as they are for old data and for the three entry points not yet rewired to
-// initiateOrJoinBattle in this slice (settlement resolveCombat, amphibious
-// assault, avsiktslagret's unit_intercept_scan.go). Semantics here are frozen
-// forever per CLAUDE.md: never reinterpret a field, add a V2 type instead.
+// as they are for old data and for avsiktslagret's unit_intercept_scan.go,
+// which is deliberately NOT rewired to initiateOrJoinBattle (it resolves
+// synchronously by design — see its own file comment). Settlement siege and
+// amphibious assault were the last two entry points still on the old
+// one-shot events; both now go through this family too (2026-08-07).
+// Semantics here are frozen forever per CLAUDE.md: never reinterpret a field,
+// add a V2 type instead.
 //
 // Stream: events.StreamCombat, stream ID = battles.id (one stream per battle,
 // distinct from the per-unit unit.StreamUnit streams the old events use).
@@ -36,14 +39,20 @@ type BattleParticipantRef struct {
 // new battles row (as opposed to an arrival joining an already-active one —
 // that emits UnitJoinedBattlePayload instead).
 type BattleStartedPayload struct {
-	BattleID    uuid.UUID              `json:"battle_id"`
-	WorldID     uuid.UUID              `json:"world_id"`
-	Q           int                    `json:"q"`
-	R           int                    `json:"r"`
-	StartedTick int                    `json:"started_tick"`
-	Seed        int64                  `json:"seed"`
-	Attackers   []BattleParticipantRef `json:"attackers"`
-	Defenders   []BattleParticipantRef `json:"defenders"`
+	BattleID    uuid.UUID `json:"battle_id"`
+	WorldID     uuid.UUID `json:"world_id"`
+	Q           int       `json:"q"`
+	R           int       `json:"r"`
+	StartedTick int       `json:"started_tick"`
+	Seed        int64     `json:"seed"`
+	// WallLevel/Storm (migration 116, §8 mur-modellen): snapshotted once here,
+	// same stability guarantee as Seed. WallLevel is 0 for field battles and
+	// interception (no settlement at their hex) — additive fields, old
+	// BattleStarted rows simply decode them as the zero value.
+	WallLevel int                    `json:"wall_level"`
+	Storm     bool                   `json:"storm"`
+	Attackers []BattleParticipantRef `json:"attackers"`
+	Defenders []BattleParticipantRef `json:"defenders"`
 }
 
 // UnitJoinedBattlePayload is emitted when a unit joins an ALREADY ACTIVE
