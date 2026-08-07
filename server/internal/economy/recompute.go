@@ -126,35 +126,187 @@ func LoadWorkplaceSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) (map
 	return slots, nil
 }
 
-const (
-	// GoodLaborTerrainBase is the share of a city that can work a good straight
-	// off the land, with no building at all. Fields need no stations.
-	// ⚠️ Still share-based (P3, hex capacity, replaces this — not built yet).
-	GoodLaborTerrainBase = 0.25
-)
-
-// LaborCapacity returns the share of a settlement's population that can actually
-// be employed producing a good, given whether the good has a field (terrain-only)
-// production path in this catchment, the ABSOLUTE worker slots the settlement's
-// buildings that produce it can employ (see WorkplaceSlots), and the settlement's
-// current labor pool (population) needed to express that absolute count as a
-// share — multiplying the returned capacity back by laborPool reproduces
-// buildingSlots exactly (up to the terrain-share addition and the 1.0 cap),
-// which is what keeps a building's employment from scaling with population.
+// hexCapacityRule pairs a catchment condition (a terrain type, or a deposit
+// flag) with the good it lets a citizen work there, and the per-hex worker cap
+// with and without the relevant production building — Temenos_varutaxonomi_sol.md
+// §8.3 (P3, megaron_plan_fysisk_gubbemodell.md). Every value here picks the LOW
+// end of §8.3's range (its ranges are explicitly "kalibreringsratt, inte lås" —
+// verify against how many gubbar a normal 8–17-gubbe city can place): headroom
+// is cheap to raise, expensive to walk back once a Wanax has built around it.
 //
-// Grain is exempt: it is the subsistence good, its consumption is folded into its
-// own net rate, and capping how many citizens may farm would starve cities that
-// have no room to build. Hunger is not a staffing problem.
-func LaborCapacity(goodKey string, hasFieldPath bool, buildingSlots int, laborPool int) float64 {
+// A hex can carry more than one rule — a plains hex is both "slätt" (grain) and
+// "betesmark" (livestock; no distinct pasture terrain exists), and a hills hex
+// with a copper deposit is both "mager åker" (grain) and "fyndighet" (copper).
+// This is a deliberate simplification of the aggregate (pre-P4) model: the
+// catchment can support up to N grain-workers AND up to M copper-workers as
+// independent ceilings, not "this specific hex is EITHER a farm OR a mine" —
+// that exclusivity is P4's job, once a hex holds one placed gubbe at a time.
+type hexCapacityRule struct {
+	goodKey          string
+	capNoBuilding    int
+	capWithBuilding  int
+	relevantBuilding string // "" = no building in the game boosts this hex's cap
+}
+
+// terrainCapacityTable is keyed by map_tiles.terrain. Slätt (plains) carries
+// two independent rules (grain AND livestock) so it is handled as a slice,
+// like the deposit table below, rather than forced into this single-rule map.
+var terrainCapacityTable = map[string]hexCapacityRule{
+	"hills":              {"grain", 1, 2, "farm"},        // mager åker (mig 043 hills_grain)
+	"river_valley":       {"grain", 2, 5, "farm"},        // floddal
+	"river_delta":        {"grain", 3, 6, "farm"},        // delta
+	"forest_olive_grove": {"timber", 1, 2, "lumbermill"}, // skog (no separate "forest" terrain exists)
+	"forest_cedar":       {"cedar", 1, 2, "lumbermill"},  // cederskog
+	"coastal_sea":        {"fish", 1, 2, "harbour"},      // kustfiske
+	"river":              {"fish", 1, 2, ""},             // flodfiske
+	"river_ford":         {"fish", 1, 2, ""},             // flodfiske
+	"deep_sea":           {"fish", 1, 2, ""},             // flodfiske, unenhanced tier
+}
+
+// plainsCapacityRules: plains carries grain (slätt) AND livestock (betesmark)
+// simultaneously — no distinct pasture terrain exists in the enum.
+var plainsCapacityRules = []hexCapacityRule{
+	{"grain", 2, 4, "farm"},
+	{"livestock", 1, 3, ""}, // no pasture-boosting building exists in the game yet
+}
+
+// depositCapacityTable is keyed by the map_tiles deposit-flag column name
+// (copper_deposit/tin_deposit/silver_deposit) — fyndighet, independent of the
+// hex's terrain. cedar has no deposit flag (it is terrain-gated via
+// forest_cedar, already in terrainCapacityTable), so it is not here.
+var depositCapacityTable = map[string]hexCapacityRule{
+	"copper": {"copper", 1, 3, "mine"},
+	"tin":    {"tin", 1, 3, "mine"},
+	"silver": {"silver", 1, 3, "silver_mine"},
+}
+
+// LoadHexCapacity returns, per good_key, the summed absolute worker slots the
+// settlement's catchment hexes can hold for that good — hexCapacityRule's
+// per-hex cap (with or without the relevant building, checked once for the
+// whole settlement) times how many catchment hexes match. Mirrors
+// LoadWorkplaceSlots' shape (P2) applied to hexes instead of buildings.
+func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]int, error) {
+	var worldID uuid.UUID
+	var q, r int
+	if err := tx.QueryRow(ctx,
+		`SELECT prov.world_id, prov.map_q, prov.map_r
+		 FROM settlements s JOIN provinces prov ON prov.id = s.province_id
+		 WHERE s.id = $1`,
+		settlementID,
+	).Scan(&worldID, &q, &r); err != nil {
+		return nil, fmt.Errorf("load hex capacity: settlement coords: %w", err)
+	}
+
+	builtTypes := make(map[string]bool)
+	brows, err := tx.Query(ctx, `SELECT DISTINCT building_type FROM buildings WHERE settlement_id = $1`, settlementID)
+	if err != nil {
+		return nil, fmt.Errorf("load hex capacity: buildings: %w", err)
+	}
+	for brows.Next() {
+		var bt string
+		if err := brows.Scan(&bt); err != nil {
+			brows.Close()
+			return nil, fmt.Errorf("load hex capacity: scan building: %w", err)
+		}
+		builtTypes[bt] = true
+	}
+	brows.Close()
+	if err := brows.Err(); err != nil {
+		return nil, fmt.Errorf("load hex capacity: building rows: %w", err)
+	}
+	hasBuilding := func(rule hexCapacityRule) bool {
+		return rule.relevantBuilding != "" && builtTypes[rule.relevantBuilding]
+	}
+	capOf := func(rule hexCapacityRule) int {
+		if hasBuilding(rule) {
+			return rule.capWithBuilding
+		}
+		return rule.capNoBuilding
+	}
+
+	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
+	rows, err := tx.Query(ctx,
+		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false),
+		        COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+		 FROM unnest($2::int[], $3::int[]) AS catchment(q, r)
+		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r`,
+		worldID, catchQ, catchR,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("load hex capacity: catchment tiles: %w", err)
+	}
+	defer rows.Close()
+
+	slots := make(map[string]int)
+	for rows.Next() {
+		var terrain string
+		var copperDep, tinDep, silverDep bool
+		if err := rows.Scan(&terrain, &copperDep, &tinDep, &silverDep); err != nil {
+			return nil, fmt.Errorf("load hex capacity: scan tile: %w", err)
+		}
+		if terrain == "plains" {
+			for _, rule := range plainsCapacityRules {
+				slots[rule.goodKey] += capOf(rule)
+			}
+		} else if rule, ok := terrainCapacityTable[terrain]; ok {
+			slots[rule.goodKey] += capOf(rule)
+		}
+		if copperDep {
+			rule := depositCapacityTable["copper"]
+			slots[rule.goodKey] += capOf(rule)
+		}
+		if tinDep {
+			rule := depositCapacityTable["tin"]
+			slots[rule.goodKey] += capOf(rule)
+		}
+		if silverDep {
+			rule := depositCapacityTable["silver"]
+			slots[rule.goodKey] += capOf(rule)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("load hex capacity: tile rows: %w", err)
+	}
+	return slots, nil
+}
+
+// GoodLaborTerrainBase is the FALLBACK share of a city that can work a good
+// straight off the land, for goods §8.3 does not cover yet (oil, wine, stone —
+// Temenos_varutaxonomi_sol.md §8.3 lists ten terrain/verksamhet rows and none
+// of the three is one of them). Without a fallback, a good with a real
+// terrain-only production_rule but no hexCapacityRule entry would silently
+// drop to ZERO capacity the moment P3 landed — caught live by
+// TestRecomputeProduction_WineOn{RiverValley,Plains}OnlyCatchment going from a
+// positive rate to exactly 0. Kept only for the gap; do not add new goods to
+// this fallback path — add them to terrainCapacityTable/plainsCapacityRules
+// instead, the way P3 covers grain/timber/cedar/livestock/copper/tin/silver/fish.
+const GoodLaborTerrainBase = 0.25
+
+// LaborCapacity returns the share of a settlement's population that can
+// actually be employed producing a good, given whether it has ANY terrain-only
+// production path in this catchment (hasFieldPath — used only for the
+// GoodLaborTerrainBase fallback above), the ABSOLUTE worker slots its
+// catchment hexes can hold for goods §8.3 covers (see LoadHexCapacity, P3),
+// and the ABSOLUTE worker slots its buildings can hold (see WorkplaceSlots,
+// P2) — all expressed relative to the settlement's current labor pool
+// (population), so multiplying the returned capacity back by laborPool
+// reproduces hexSlots+buildingSlots exactly (up to the 1.0 cap), which is what
+// keeps a covered good's employment from scaling with population.
+//
+// Grain is exempt: it is the subsistence good, its consumption is folded into
+// its own net rate, and capping how many citizens may farm would starve cities
+// that have no room to build. Hunger is not a staffing problem.
+func LaborCapacity(goodKey string, hasFieldPath bool, hexSlots int, buildingSlots int, laborPool int) float64 {
 	if goodKey == "grain" {
 		return 1.0
 	}
 	var capacity float64
-	if hasFieldPath {
-		capacity += GoodLaborTerrainBase
-	}
-	if buildingSlots > 0 && laborPool > 0 {
+	if laborPool > 0 {
+		capacity += float64(hexSlots) / float64(laborPool)
 		capacity += float64(buildingSlots) / float64(laborPool)
+	}
+	if hexSlots == 0 && hasFieldPath {
+		capacity += GoodLaborTerrainBase
 	}
 	if capacity > 1.0 {
 		capacity = 1.0
@@ -411,6 +563,16 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		return fmt.Errorf("recompute: %w", err)
 	}
 
+	// ── 3c. Hex capacity per good ──────────────────────────────────────────────
+	// A catchment hex also has a finite number of stations — an ABSOLUTE
+	// headcount (P3, megaron_plan_fysisk_gubbemodell.md §8.3), replacing the old
+	// flat GoodLaborTerrainBase share. See LoadHexCapacity for the per-terrain
+	// table and why a hex can count toward more than one good.
+	hexSlots, err := LoadHexCapacity(ctx, tx, settlementID)
+	if err != nil {
+		return fmt.Errorf("recompute: %w", err)
+	}
+
 	// NOTE: no early return when potentials is empty. A settlement that just
 	// lost its last producible good (deposit exhausted, building razed, terrain
 	// changed) must still fall through to step 6 below, which nulls out any
@@ -481,7 +643,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	rawRates := make(map[string]float64, len(potentials))
 	for _, gp := range potentials {
 		staffed := weights[gp.key]
-		if cap := LaborCapacity(gp.key, gp.hasFieldPath, buildingSlots[gp.key], laborPool); staffed > cap {
+		if cap := LaborCapacity(gp.key, gp.hasFieldPath, hexSlots[gp.key], buildingSlots[gp.key], laborPool); staffed > cap {
 			staffed = cap
 		}
 		effectiveWorkers := staffed * float64(laborPool)

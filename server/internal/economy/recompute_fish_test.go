@@ -100,12 +100,27 @@ func recomputeWaterFixture(t *testing.T, currentTick, pop, grainTiles, fishTiles
 // (never negative — rate=0 is the proof the stock can never be drawn down by
 // this settlement, whatever the elapsed ticks), and fish's net rate must be
 // its own production minus demand.
+//
+// pop sized for P3 (megaron_plan_fysisk_gubbemodell.md §8.3): 6 UNENHANCED
+// coastal_sea hexes (no harbour built) cap at hexSlots=6 workers regardless of
+// population — kustfiske "1 utan byggnad" — so fishProd plateaus at ~31/tick
+// no matter how big pop gets. pop=1000 (this test's pre-P3 value) demanded 500
+// grain-equivalent, which 31 fish/tick cannot cover "far above" — that isn't a
+// bug, it's the exact overproduction P3 exists to remove.
+//
+// pop must still exceed NearjordGrainPerTick's demand-equivalent (100, since
+// demand = pop×0.5 and nearjord is a flat +50/tick regardless of catchment —
+// P1, the settlement's own hex) or grain nets POSITIVE instead of the 0 this
+// test asserts (nearjord alone would outrun a too-small demand). 120 keeps
+// demand (60) just past nearjord (50) — grain nets exactly 0 — while the
+// residual (10) is comfortably below fishProd's ~31 hex-capped ceiling, so
+// fish still nets clearly positive ("far above" its own residual share).
 func TestRecomputeProduction_AK1_PureFishCatchment_ZeroGrainNotNegative(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
 	const tick = 200
-	const pop = 1000
+	const pop = 120
 	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 0, /*fishTiles*/ 6)
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
@@ -280,7 +295,11 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 	).Scan(&weight); err != nil {
 		t.Fatalf("read seeded fish weight: %v", err)
 	}
-	cap := LaborCapacity("fish", true, 0, pop)
+	hexSlots, err := LoadHexCapacity(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatalf("LoadHexCapacity: %v", err)
+	}
+	cap := LaborCapacity("fish", true, hexSlots["fish"], 0, pop)
 	staffed := weight
 	if staffed > cap {
 		staffed = cap
