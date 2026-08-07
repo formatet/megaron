@@ -172,6 +172,26 @@ const kharisFloor = 1.0
 // same-tick firing is a safe no-op (draw=0 when nothing is affordable). If
 // this ever measures as breaking the never-starve invariant for some other
 // catchment shape, lower it.
+//
+// REVIEWED AGAINST P1 (catchment 7→19, megaron_plan_fysisk_gubbemodell.md,
+// 2026-08-07) — left unchanged. The "minimal one-plains-tile" floor this
+// number is calibrated against is a TERRAIN LUCK case (does a founding site
+// have any grain-producing tile at all), not a catchment-SIZE case — a
+// minimal catchment can still be "1 plains tile among 18" exactly as it was
+// "1 plains tile among 6", so its raw accrual barely moves: ~5450/day
+// pre-P1 → ~5500/day post-P1 (+NearjordGrainPerTick, economy/recompute.go,
+// the only genuinely new floor contribution). A RICH catchment's ceiling
+// triples (TestP1_ProductionMultiplierVsPreP1Catchment,
+// internal/economy/catchment_p1_balance_test.go — 18 vs 6 ring hexes at
+// identical density), but that never raises how fast a city can grow: growth
+// is capped at desired_new (population/soft-cap only, economy-accrual-
+// independent above the affordability floor) — surplus beyond what a day's
+// growth can spend just re-saturates the grain stock, exactly as documented
+// above. A bigger catchment gives a Wanax more OPTIONS (more terrain variety
+// to allocate labor across via LaborCapacity's existing caps), not an
+// automatic multiply-by-three in actual production — allocation is still
+// player-chosen. Left as a strawman for soak-testing, per this constant's
+// existing calibration story, not re-derived from first principles.
 const grainPerCitizen = 300.0
 
 // starvationPopLossRatePerTick is the fraction of population a starving city
