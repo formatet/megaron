@@ -35,3 +35,6 @@ Thumbs.db
 # Concept art (lives in vault, not the repo)
 img/
 tools/__pycache__/
+web/static/fixtures/world-acc88.json
+web/static/fixtures/world-ogonkoll.json
+web/static/fixtures/world-stor230b.json
