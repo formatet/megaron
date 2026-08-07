@@ -7,16 +7,23 @@ package combat
 //   - initiateOrJoinBattle, the replacement for the old one-shot resolve
 //   - BattleTickHandler, the ScheduledBattleTick state machine (§2)
 //
-// Scope of THIS slice (megaron_todo.md ⚔ BYGGORDNING, 2026-08-06): only the
-// field-arrival entry point (unit_arrival_field.go:resolveFieldCombat) is
-// wired to initiateOrJoinBattle. The settlement resolveCombat, amphibious
-// assault and avsiktslagret's unit_intercept_scan.go entry points still use
-// their old one-shot resolve — rewired in a later slice (§2's own list).
-// Rout, stood reträttorder and the avsiktslagret reaction_policy verbs
-// (escort/alert) — plan §5/§6/§7 — are NOT implemented here either; the only
-// termination this handler ever produces is "annihilation" (one side's
-// participants reach 0 combined size). The other termination_reason enum
-// values are reserved in the schema (migration 114) for those later slices.
+// Scope, updated across two slices (megaron_todo.md ⚔ BYGGORDNING):
+//   - 2026-08-06: only the field-arrival entry point
+//     (unit_arrival_field.go:resolveFieldCombat) is wired to
+//     initiateOrJoinBattle. The settlement resolveCombat, amphibious assault
+//     and avsiktslagret's unit_intercept_scan.go entry points still use their
+//     old one-shot resolve — rewired in a later slice (§8's own list).
+//   - 2026-08-07: §5 rout is implemented (sideRouts/markSideRouted below) —
+//     a side at/below its rout threshold breaks and leaves the battle WITH
+//     its survivors (termination_reason "rout", not "annihilation"). The
+//     per-unit standing_orders override (battle_participants.standing_orders)
+//     is READ but has no player-facing SET path yet — see sideRouts' doc
+//     comment. The reträttorder-mid-battle-via-messenger half of §5 (a NEW
+//     order arriving mid-fight, as opposed to a pre-set standing order) is
+//     NOT implemented — termination_reason "retreat_order" stays unused, same
+//     as "attacker_reached_city"/"no_enemy_left". Stood reträttorder's
+//     avsiktslagret reaction_policy verbs (escort/alert) — plan §6/§7 — are
+//     also still open.
 
 import (
 	"context"
@@ -350,7 +357,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	}
 
 	rows, err := tx.Query(ctx,
-		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, u.type, u.stance
+		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.stance
 		 FROM battle_participants bp JOIN units u ON u.id = bp.unit_id
 		 WHERE bp.battle_id = $1 AND bp.left_tick IS NULL
 		 FOR UPDATE OF bp`,
@@ -360,13 +367,15 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		return false, fmt.Errorf("battle tick: load participants: %w", err)
 	}
 	type row struct {
-		p      battleParticipant
-		stance *string
+		p              battleParticipant
+		initialSize    int
+		standingOrders []byte
+		stance         *string
 	}
 	var loaded []row
 	for rows.Next() {
 		var rr row
-		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.p.utype, &rr.stance); scanErr != nil {
+		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.stance); scanErr != nil {
 			rows.Close()
 			return false, fmt.Errorf("battle tick: scan participant: %w", scanErr)
 		}
@@ -379,10 +388,14 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 
 	participants := make([]battleParticipant, len(loaded))
 	sizes := make([]int, len(loaded))
+	initialSizes := make([]int, len(loaded))
+	standingOrders := make([][]byte, len(loaded))
 	bySide := map[string][]int{"attacker": nil, "defender": nil}
 	for i, rr := range loaded {
 		participants[i] = rr.p
 		sizes[i] = rr.p.currentSize
+		initialSizes[i] = rr.initialSize
+		standingOrders[i] = rr.standingOrders
 		bySide[rr.p.side] = append(bySide[rr.p.side], i)
 	}
 
@@ -392,6 +405,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	// for the fortune/loyalty bias).
 	participationBySide := map[string]float64{}
 	repOwnerBySide := map[string]uuid.UUID{}
+	loyaltyBySide := map[string]int{}
 	for _, side := range []string{"attacker", "defender"} {
 		idx := bySide[side]
 		if len(idx) == 0 {
@@ -401,6 +415,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		repOwnerBySide[side] = ownerID
 
 		_, loyaltyLevel, _ := supplyingSettlement(ctx, tx, ownerID, nil, worldID)
+		loyaltyBySide[side] = loyaltyLevel
 
 		var kharis float64
 		_ = tx.QueryRow(ctx,
@@ -514,7 +529,32 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 
 	attTotal := sumSizes(sizes, bySide["attacker"])
 	defTotal := sumSizes(sizes, bySide["defender"])
-	ended := attTotal <= 0 || defTotal <= 0
+	wiped := attTotal <= 0 || defTotal <= 0
+
+	// §5 rout (LOCKED mechanic): a side that has fallen to/below its rout
+	// threshold breaks and leaves the battle WITH its survivors — the whole
+	// point of rout is that it is NOT annihilation. Only checked when neither
+	// side is already wiped (a wipe is unambiguously annihilation, not a
+	// retreat). Threshold is per-unit standing_orders (battle_participants.
+	// standing_orders, migration 114 — read via the side's representative
+	// participant, same "defenders[0]" convention this file already uses for
+	// loyalty/kharis) when set, else the loyalty-derived default this
+	// codebase has used since the one-shot resolver (resolver.go's
+	// routFractionForLoyalty) — same numbers, same bias, now checked per
+	// battle-tick instead of per one-shot resolve. hold_to_last_man disables
+	// rout for that side entirely (fight to actual annihilation).
+	//
+	// Scope note: standing_orders has no player-facing SET path yet (no API/UI
+	// wired this slice) — every battle today reads the column's DB default
+	// ('{}'), so in practice every rout check currently falls through to the
+	// loyalty default. The override is read here so a later slice can add the
+	// write path without touching this mechanic again.
+	attRouted, defRouted := false, false
+	if !wiped {
+		attRouted = sideRouts(bySide["attacker"], initialSizes, sizes, standingOrders, loyaltyBySide["attacker"])
+		defRouted = sideRouts(bySide["defender"], initialSizes, sizes, standingOrders, loyaltyBySide["defender"])
+	}
+	ended := wiped || attRouted || defRouted
 
 	if !ended {
 		if _, err := tx.Exec(ctx, `UPDATE battles SET current_tick = $2 WHERE id = $1`, battleID, tickIndex); err != nil {
@@ -523,15 +563,45 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		return false, nil
 	}
 
+	terminationReason := "annihilation"
 	winner := ""
-	if attTotal > 0 {
-		winner = "attacker"
-	} else if defTotal > 0 {
-		winner = "defender"
+	if wiped {
+		if attTotal > 0 {
+			winner = "attacker"
+		} else if defTotal > 0 {
+			winner = "defender"
+		}
+	} else {
+		terminationReason = "rout"
+		switch {
+		case attRouted && !defRouted:
+			winner = "defender"
+		case defRouted && !attRouted:
+			winner = "attacker"
+		default:
+			winner = "" // both routed the same tick — mutual retreat, no winner
+		}
+		// Mark the routed side's still-active participants as having left the
+		// battle WITHOUT zeroing them — they keep this tick's sizes[i] (already
+		// persisted to units.size/battle_participants.current_size above). A
+		// participant that hit 0 THIS tick was a casualty, not a retreat —
+		// its left_tick is already set by the apply-final-sizes loop, so
+		// markSideRouted skips anyone with sizes[i] <= 0.
+		if attRouted {
+			if err := markSideRouted(ctx, tx, battleID, tickIndex, participants, sizes, bySide["attacker"]); err != nil {
+				return false, fmt.Errorf("battle tick: mark attacker routed: %w", err)
+			}
+		}
+		if defRouted {
+			if err := markSideRouted(ctx, tx, battleID, tickIndex, participants, sizes, bySide["defender"]); err != nil {
+				return false, fmt.Errorf("battle tick: mark defender routed: %w", err)
+			}
+		}
 	}
+
 	if _, err := tx.Exec(ctx,
-		`UPDATE battles SET status = 'ended', termination_reason = 'annihilation', current_tick = $2 WHERE id = $1`,
-		battleID, tickIndex,
+		`UPDATE battles SET status = 'ended', termination_reason = $2, current_tick = $3 WHERE id = $1`,
+		battleID, terminationReason, tickIndex,
 	); err != nil {
 		return false, fmt.Errorf("battle tick: end battle: %w", err)
 	}
@@ -539,7 +609,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	if _, err := h.eventStore.Append(ctx, battleID, events.StreamCombat, EventBattleEnded,
 		BattleEndedPayload{
 			BattleID: battleID, WorldID: worldID, Q: q, R: r, EndedTick: tickIndex,
-			TerminationReason: "annihilation", Winner: winner,
+			TerminationReason: terminationReason, Winner: winner,
 			AttackerSurvivors: attTotal, DefenderSurvivors: defTotal,
 		}, worldID, nil,
 	); err != nil {
@@ -549,12 +619,14 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	// L2 battle loyalty, once, at battle end (mirrors the old
 	// resolveFieldCombat's single applyBattleLoyalty call) — one representative
 	// settlement per side, same "won_battle/lost_battle/defended_settlement"
-	// vocabulary as the rest of L2.
-	attackerWon := winner == "attacker"
+	// vocabulary as the rest of L2. Keyed directly on winner (not
+	// !attackerWon, which pre-existing code used and which double-credited
+	// the defender with "defended_settlement" even when winner=="" — mutual
+	// annihilation before this slice, now also reachable via mutual rout).
 	if ownerID, ok := repOwnerBySide["attacker"]; ok {
 		if settleID, _, hasSettle := supplyingSettlement(ctx, tx, ownerID, nil, worldID); hasSettle {
 			delta, evType, reason := -1, "battle_lost", "lost_battle"
-			if attackerWon {
+			if winner == "attacker" {
 				delta, evType, reason = +1, "shared_victory", "won_battle"
 			}
 			if err := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, settleID, worldID, evType, delta, reason); err != nil {
@@ -562,7 +634,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 			}
 		}
 	}
-	if !attackerWon {
+	if winner == "defender" {
 		if ownerID, ok := repOwnerBySide["defender"]; ok {
 			if settleID, _, hasSettle := supplyingSettlement(ctx, tx, ownerID, nil, worldID); hasSettle {
 				if err := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, settleID, worldID, "shared_victory", +1, "defended_settlement"); err != nil {
@@ -774,6 +846,78 @@ func loadOwnerNames(ctx context.Context, tx pgx.Tx, summaries []battleParticipan
 		}
 	}
 	return out
+}
+
+// standingOrders is one participant's battle_participants.standing_orders
+// (§5/§7, migration 114) parsed. Both fields are optional — an empty/missing
+// JSONB object ('{}', the column's DB default) means "no override, use the
+// loyalty-derived default and never hold to the last man".
+type standingOrdersFields struct {
+	RetreatAtLoss *float64 `json:"retreat_at_loss"`
+	HoldToLastMan bool     `json:"hold_to_last_man"`
+}
+
+func parseStandingOrders(raw []byte) standingOrdersFields {
+	var so standingOrdersFields
+	if len(raw) == 0 {
+		return so
+	}
+	_ = json.Unmarshal(raw, &so) // malformed/empty → zero value, same as "no override"
+	return so
+}
+
+// sideRouts is the §5 rout check for one side, run once per battle-tick after
+// this tick's losses are applied (never on an already-wiped side — that's
+// annihilation, not rout, see resolveTick). The threshold is read from the
+// side's REPRESENTATIVE participant's standing order (idx[0] — same
+// "defenders[0]" convention this file already uses for loyalty/kharis in the
+// participation loop above), falling back to the loyalty-derived default
+// (resolver.go's routFractionForLoyalty) when no override is set.
+// hold_to_last_man on the representative disables rout for the WHOLE side —
+// a side either has a standing order to break, or it doesn't; this is not a
+// per-unit partial-secession model.
+func sideRouts(idx []int, initialSizes, sizes []int, standingOrders [][]byte, loyaltyLevel int) bool {
+	if len(idx) == 0 {
+		return false
+	}
+	orders := parseStandingOrders(standingOrders[idx[0]])
+	if orders.HoldToLastMan {
+		return false
+	}
+	threshold := routFractionForLoyalty(loyaltyLevel)
+	if orders.RetreatAtLoss != nil {
+		threshold = *orders.RetreatAtLoss
+	}
+	startTotal, curTotal := 0, 0
+	for _, i := range idx {
+		startTotal += initialSizes[i]
+		curTotal += sizes[i]
+	}
+	if startTotal <= 0 || curTotal <= 0 {
+		return false // curTotal<=0 is a wipe, handled separately — not a rout
+	}
+	return float64(curTotal)/float64(startTotal) <= threshold
+}
+
+// markSideRouted takes every still-active (sizes[i] > 0) participant of idx
+// out of the battle — left_tick set, size UNCHANGED (they survive and are no
+// longer part of this battle; §5 "reträtt med överlevande, inte förintelse").
+// A participant with sizes[i] <= 0 is skipped: it hit zero as a casualty this
+// same tick (apply-final-sizes above already disbanded it and set its
+// left_tick), not as part of the rout.
+func markSideRouted(ctx context.Context, tx pgx.Tx, battleID uuid.UUID, tickIndex int, participants []battleParticipant, sizes []int, idx []int) error {
+	for _, i := range idx {
+		if sizes[i] <= 0 {
+			continue
+		}
+		if _, err := tx.Exec(ctx,
+			`UPDATE battle_participants SET left_tick = $3 WHERE battle_id = $1 AND unit_id = $2 AND left_tick IS NULL`,
+			battleID, participants[i].unitID, tickIndex,
+		); err != nil {
+			return fmt.Errorf("mark %s routed: %w", participants[i].unitID, err)
+		}
+	}
+	return nil
 }
 
 // rollSide rolls one side's dice for one round: each side's PARTICIPATION-sampled

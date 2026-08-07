@@ -356,8 +356,15 @@ func TestBattleTick_SpansMultipleTicksForAnEvenFight(t *testing.T) {
 	).Scan(&status, &reason); err != nil {
 		t.Fatalf("read battle: %v", err)
 	}
-	if status != "ended" || reason != "annihilation" {
-		t.Errorf("battle status/reason = %q/%q, want ended/annihilation", status, reason)
+	// §5 rout (built after this test was first written): an evenly matched
+	// fight bleeding down over several ticks is exactly the case rout exists
+	// for — the losing side breaks and retreats with survivors once it falls
+	// to/below the loyalty-derived rout threshold, instead of fighting on to
+	// literal zero. This fixture/seed pair is deterministic (fixed initial
+	// seed draw + battle.seed-derived per-round dice), so it reliably routs
+	// rather than annihilates — that IS the fixture this test now exercises.
+	if status != "ended" || reason != "rout" {
+		t.Errorf("battle status/reason = %q/%q, want ended/rout", status, reason)
 	}
 
 	var eventCount int
@@ -438,5 +445,128 @@ func TestBattleRoundSeed_DeterministicPerTriple(t *testing.T) {
 	}
 	if battleRoundSeed(42, 4, 1) == s1 {
 		t.Errorf("battleRoundSeed must differ across tick_index (got same value for tick 3 and 4)")
+	}
+}
+
+// ── §5: rout — same fixture/seed as TestBattleTick_SpansMultipleTicksForAnEvenFight,
+// which already established this exact pair routs the defender at ~10% strength.
+
+// TestBattleTick_RoutLeavesSurvivorsNotAnnihilation is §5's core claim: a side
+// that falls to/below the loyalty-derived rout threshold breaks and leaves the
+// battle WITH its remaining men, rather than fighting to literal zero. Before
+// this slice, termination_reason had exactly one possible value
+// ("annihilation" — see battle.go's original header comment), so this
+// scenario could not even be represented: RED before, because
+// termination_reason='rout' never occurred and a routed unit's own row (with
+// left_tick set but current_size > 0) had no code path that produced it.
+func TestBattleTick_RoutLeavesSurvivorsNotAnnihilation(t *testing.T) {
+	pool := testPool(t)
+	f := newBattleFixture(t, pool)
+
+	defenderUnitID := mkFieldDefender(t, pool, f, 60)
+	attackerUnitID := mkFieldAttacker(t, pool, f, 62)
+
+	h := newArrivalHandler(pool, &sequenceDice{ints: []int{424243, 909091}})
+	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
+	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
+
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 200)
+
+	var reason string
+	if err := pool.QueryRow(context.Background(),
+		`SELECT termination_reason FROM battles WHERE id = $1`, battleID,
+	).Scan(&reason); err != nil {
+		t.Fatalf("read battle: %v", err)
+	}
+	if reason != "rout" {
+		t.Fatalf("termination_reason = %q, want \"rout\" for this fixture/seed pair", reason)
+	}
+
+	var defSize int
+	var defLeftTick *int
+	if err := pool.QueryRow(context.Background(),
+		`SELECT current_size, left_tick FROM battle_participants WHERE battle_id = $1 AND unit_id = $2`,
+		battleID, defenderUnitID,
+	).Scan(&defSize, &defLeftTick); err != nil {
+		t.Fatalf("read routed participant: %v", err)
+	}
+	if defLeftTick == nil {
+		t.Error("routed defender's left_tick is nil — it never left the battle")
+	}
+	if defSize <= 0 {
+		t.Errorf("routed defender's current_size = %d, want > 0 — rout must leave survivors, not annihilate", defSize)
+	}
+
+	var unitStatus string
+	var unitSize int
+	if err := pool.QueryRow(context.Background(),
+		`SELECT status, size FROM units WHERE id = $1`, defenderUnitID,
+	).Scan(&unitStatus, &unitSize); err != nil {
+		t.Fatalf("read routed unit: %v", err)
+	}
+	if unitStatus == "disbanded" {
+		t.Error("routed defender's unit status = disbanded — rout must not disband the unit")
+	}
+	if unitSize != defSize {
+		t.Errorf("unit.size = %d, battle_participants.current_size = %d — must match", unitSize, defSize)
+	}
+
+	var eventCount int
+	if err := pool.QueryRow(context.Background(),
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'BattleEnded'`, battleID,
+	).Scan(&eventCount); err != nil {
+		t.Fatalf("count BattleEnded events: %v", err)
+	}
+	if eventCount != 1 {
+		t.Errorf("BattleEnded event count = %d, want 1", eventCount)
+	}
+}
+
+// TestBattleTick_HoldToLastManDisablesRout proves standing_orders is actually
+// READ (not just shaped in the schema, migration 114's original comment) —
+// the same fixture/seed pair that routs the defender at ~10% strength must
+// instead fight on to full annihilation when hold_to_last_man is set on its
+// participant row before the first battle-tick runs.
+func TestBattleTick_HoldToLastManDisablesRout(t *testing.T) {
+	pool := testPool(t)
+	f := newBattleFixture(t, pool)
+
+	defenderUnitID := mkFieldDefender(t, pool, f, 60)
+	attackerUnitID := mkFieldAttacker(t, pool, f, 62)
+
+	h := newArrivalHandler(pool, &sequenceDice{ints: []int{424243, 909091}})
+	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
+	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
+
+	if _, err := pool.Exec(context.Background(),
+		`UPDATE battle_participants SET standing_orders = '{"hold_to_last_man": true}'::jsonb
+		 WHERE battle_id = $1 AND unit_id = $2`,
+		battleID, defenderUnitID,
+	); err != nil {
+		t.Fatalf("set hold_to_last_man: %v", err)
+	}
+
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 200)
+
+	var reason string
+	if err := pool.QueryRow(context.Background(),
+		`SELECT termination_reason FROM battles WHERE id = $1`, battleID,
+	).Scan(&reason); err != nil {
+		t.Fatalf("read battle: %v", err)
+	}
+	if reason != "annihilation" {
+		t.Errorf("termination_reason = %q, want \"annihilation\" — hold_to_last_man must disable this side's rout entirely", reason)
+	}
+
+	var unitStatus string
+	if err := pool.QueryRow(context.Background(),
+		`SELECT status FROM units WHERE id = $1`, defenderUnitID,
+	).Scan(&unitStatus); err != nil {
+		t.Fatalf("read defender unit: %v", err)
+	}
+	if unitStatus != "disbanded" {
+		t.Errorf("defender unit status = %q, want \"disbanded\" — held to the last man, fought to actual wipe", unitStatus)
 	}
 }
