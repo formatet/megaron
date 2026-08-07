@@ -140,7 +140,15 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 - **Catchment is the only production source** — the settlement's own hex + the 6 around it, worked without
   outposts; dynamic, lazy, deterministic.
 - **Coast is not a terrain** — it's a property (neighbour of sea); `coast_beach` is gone from the enum.
-- **Labor = share of pop** (weight semantics), not absolute citizens, so growing pop follows the percentage.
+- ⚠️ **Labor = share of pop — REPEALED 2026-08-07 (Timothy), still true in code until the placement
+  model lands.** The rule *was*: share of pop (weight semantics), not absolute citizens, so growing pop
+  follows the percentage — that is what `economy.LaborCapacity` still does today (0.25 terrain + 0.5 per
+  building level). **The decision (DE2=B) is that labour is counted in whole gubbar placed on specific
+  places** — a hex or a building slot — because placing them is how the player is activated. An
+  unplaced gubbe produces nothing and starves first. `LaborCapacity`'s share model gets **replaced**
+  by workplace slots + hex capacity, not kept as a hidden cap on top. **Do not build new share-based
+  labour logic.** Rewrite this bullet when the slots phase lands; plan and phases:
+  `megaron_plan_fysisk_gubbemodell.md` (vault), design in `Temenos_varutaxonomi_sol.md` §1.1, §8.
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
 - **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text
