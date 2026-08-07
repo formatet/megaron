@@ -2399,11 +2399,13 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		baseRows.Close()
 	}
 
-	// Workplace levels per good — the level of a producing building is how many
-	// citizens it can employ (economy.LaborCapacity). Without this on the goods
-	// surface, over-allocating is silent: a Wanax cannot tell "producing flat out
-	// from a level-1 harbour" from "half my fishermen have no boat to crew".
-	// (Playtest 2026-07-23, Deiphobos: "ingenting säger om detta är mättat".)
+	// Workplace levels per good — displayed as-is (informational: "how many
+	// levels of building"). Actual employment capacity is now driven by
+	// economy.WorkplaceSlots' absolute headcount (P2), loaded separately below.
+	// Without either of these on the goods surface, over-allocating is silent: a
+	// Wanax cannot tell "producing flat out from a level-1 harbour" from "half my
+	// fishermen have no boat to crew". (Playtest 2026-07-23, Deiphobos:
+	// "ingenting säger om detta är mättat".)
 	workplaceLevels := make(map[string]int)
 	lvlRows, _ := h.pool.Query(r.Context(),
 		`SELECT good_key, SUM(level)::int FROM (
@@ -2422,6 +2424,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		}
 		lvlRows.Close()
 	}
+	workplaceSlots, _ := economy.LoadWorkplaceSlots(r.Context(), h.pool, settlementID)
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT sg.good_key, settled(sg.amount, sg.rate, sg.calc_tick), sg.rate, sg.cap,
@@ -2483,6 +2486,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		EmployedCitizens int     `json:"employed_citizens"`
 		UnservedCitizens int     `json:"unserved_citizens"`
 		WorkplaceLevel   int     `json:"workplace_level"`
+		WorkplaceSlots   int     `json:"workplace_slots"`
 	}
 	var result []goodRow
 	for rows.Next() {
@@ -2499,7 +2503,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			current = capV
 		}
 		bp := basePotential[key]
-		capacity := economy.LaborCapacity(key, hasFieldPath[key], workplaceLevels[key])
+		capacity := economy.LaborCapacity(key, hasFieldPath[key], workplaceSlots[key], laborPool)
 		allocated := laborWeights[key]
 		served := allocated
 		if served > capacity {
@@ -2530,6 +2534,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			EmployedCitizens: employed,
 			UnservedCitizens: unserved,
 			WorkplaceLevel:   workplaceLevels[key],
+			WorkplaceSlots:   workplaceSlots[key],
 		})
 	}
 	if result == nil {
@@ -3919,7 +3924,7 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	// so when part of it has no workplace to serve at and will produce nothing.
 	// Silent over-allocation was the top friction finding of the 2026-07-23
 	// playtest — "ingenting säger om detta är mättat".
-	capacities, wpLevels := loadLaborCapacities(r.Context(), h.pool, settlementID)
+	capacities, wpLevels := loadLaborCapacities(r.Context(), h.pool, settlementID, laborPool)
 	var overflows []string
 	for good, weight := range weights {
 		capacity, known := capacities[good]

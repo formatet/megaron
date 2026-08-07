@@ -280,7 +280,7 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 	).Scan(&weight); err != nil {
 		t.Fatalf("read seeded fish weight: %v", err)
 	}
-	cap := LaborCapacity("fish", true, 0)
+	cap := LaborCapacity("fish", true, 0, pop)
 	staffed := weight
 	if staffed > cap {
 		staffed = cap
