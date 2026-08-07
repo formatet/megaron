@@ -251,6 +251,35 @@ export function notifText(kind, body) {
              `−${own.pop_lost ?? 0} dead) vs ${body.opponent_name || 'an enemy'}'s ${enemy.type || 'unit'} ` +
              `(${enemy.size_before ?? '?'}→${enemy.size_after ?? '?'}).${trailer}`;
     }
+    case 'CityOccupied': {
+      // Payload per occupation.go's occupySettlement (megaron_plan_erovring.md
+      // S1/S6) — the erövring victory notification. role distinguishes the
+      // occupying attacker (offered the sack/burn/occupy choice — annex comes
+      // later, once occupation_ticks_to_annex have passed unchallenged) from
+      // the dispossessed defender (the city is not lost yet — a relief force
+      // can still reset the occupant's counter).
+      const ticks = body.occupation_ticks_to_annex;
+      if (body.role === 'attacker') {
+        return `${body.name || 'The city'} has fallen — your army holds it under occupation. ` +
+               `Doing nothing leaves it occupied; annex becomes possible after ${ticks ?? '?'} unchallenged ticks.`;
+      }
+      return `${body.name || 'Your city'} has fallen under occupation — not lost yet. ` +
+             `A relief force within ${ticks ?? '?'} ticks resets the enemy's countdown.`;
+    }
+    case 'OccupationDefended':
+      return `The occupation of ${body.name || 'the city'} held off an attack — the annex countdown reset ` +
+             `(${body.occupation_ticks_to_annex ?? '?'} ticks needed again).`;
+    case 'CityAnnexReady':
+      return `${body.name || 'The city'} has stood unchallenged long enough — you may annex it now.`;
+    case 'SettlementLooted': {
+      if (body.role === 'attacker') return `${body.name || 'The city'} was sacked — the loot is on its way home as a caravan (it can be intercepted).`;
+      const hit = body.building_hit ? `, its ${body.building_hit} knocked down a level` : '';
+      return `${body.name || 'Your city'} was sacked — population −⅓${hit}. It stands, weakened.`;
+    }
+    case 'SettlementBurned': {
+      if (body.role === 'attacker') return `${body.name || 'The city'} was sacked and burned — the loot is on its way home; the ruin cannot be recolonized for a time.`;
+      return `${body.name || 'Your city'} was sacked and burned — it is a ruin now.`;
+    }
     // Every kind above is hand-written; every kind NOT above used to fall
     // through to `return kind`, silently discarding the payload — 17 verified
     // NotifyPlayer kinds have no case here (2026-08-05 audit). keryx never had

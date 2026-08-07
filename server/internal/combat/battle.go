@@ -704,6 +704,22 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		}
 	}
 
+	// §8 erövring (megaron_plan_erovring.md S1/S2): a battle against a
+	// SETTLEMENT that ends with the attacker winning does not just
+	// annihilate/rout the garrison — the city falls under occupation. This is
+	// the cutover-mur gap flagged in this file's header comment. Looked up
+	// here (not earlier) because it only matters once winner is final; field
+	// battles and interception have no settlement at (q,r) and cityAtHex is
+	// nil for them, leaving terminationReason/winner exactly as computed
+	// above, unchanged from before this slice.
+	cityAtHex, cityErr := loadCitySettlementForUpdate(ctx, tx, worldID, q, r)
+	if cityErr != nil {
+		return false, fmt.Errorf("battle tick: load city at hex: %w", cityErr)
+	}
+	if cityAtHex != nil && winner == "attacker" && (cityAtHex.state == "active" || cityAtHex.state == "occupied") {
+		terminationReason = "attacker_reached_city"
+	}
+
 	if _, err := tx.Exec(ctx,
 		`UPDATE battles SET status = 'ended', termination_reason = $2, current_tick = $3 WHERE id = $1`,
 		battleID, terminationReason, tickIndex,
@@ -719,6 +735,33 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		}, worldID, nil,
 	); err != nil {
 		slog.Warn("battle tick: append BattleEnded failed", "battle", battleID, "err", err)
+	}
+
+	// §8 erövring S1/S2 continued: attacker took the city → occupy it under
+	// the winning side's owner. defender held an ALREADY-occupied city →
+	// reset the annex countdown (the contestable async window). Neither
+	// branch fires for a plain field/interception battle (cityAtHex nil) or
+	// for a normal (non-occupied) settlement defence that simply held
+	// (cityAtHex.state == "active" and winner == "defender" — nothing new to
+	// do, same as before this slice).
+	if cityAtHex != nil {
+		switch {
+		case terminationReason == "attacker_reached_city":
+			var survivingAttackers []uuid.UUID
+			for _, i := range bySide["attacker"] {
+				if sizes[i] > 0 {
+					survivingAttackers = append(survivingAttackers, participants[i].unitID)
+				}
+			}
+			occupantOwnerID := repOwnerBySide["attacker"]
+			if err := h.occupySettlement(ctx, tx, worldID, q, r, tickIndex, cityAtHex, occupantOwnerID, survivingAttackers); err != nil {
+				return false, fmt.Errorf("battle tick: occupy settlement: %w", err)
+			}
+		case winner == "defender" && cityAtHex.state == "occupied":
+			if err := h.resetOccupationDefense(ctx, tx, worldID, tickIndex, cityAtHex); err != nil {
+				return false, fmt.Errorf("battle tick: reset occupation defense: %w", err)
+			}
+		}
 	}
 
 	// L2 battle loyalty, once, at battle end (mirrors the old

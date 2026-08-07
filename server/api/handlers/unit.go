@@ -1123,6 +1123,90 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// OccupationOrder handles POST /worlds/{worldID}/settlements/{settlementID}/occupation-order
+// — the S3 erövring choice (megaron_plan_erovring.md): sack, sack-and-burn, or
+// annex a city the player currently holds under occupation. Doing nothing
+// leaves the city occupied (the default) — this endpoint is only reached when
+// the Wanax actively chooses one of the other three. Always dispatched as a
+// Runner order (megaron_plan_erovring.md's "command is never instant" — no
+// distance-0 fast path here, unlike SetStance's garrisoned-unit case: the
+// occupied city is never among the player's OWN active settlements, so
+// resolveOrderOrigin always finds a real travel distance to it).
+func (h *UnitHandler) OccupationOrder(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	settlementID, err := uuid.Parse(chi.URLParam(r, "settlementID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid settlement ID")
+		return
+	}
+
+	var req struct {
+		Action string   `json:"action"` // "sack" | "burn" | "annex"
+		Goods  []string `json:"goods,omitempty"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	switch req.Action {
+	case "sack", "burn", "annex":
+	default:
+		writeError(w, http.StatusBadRequest, `invalid action: must be "sack", "burn", or "annex"`)
+		return
+	}
+
+	ctx := r.Context()
+
+	// Pre-flight: settlement must exist, be in this world, and currently held
+	// by this player under occupation. The runner-delivered execution
+	// (combat.ExecuteOccupyAction) re-validates authoritatively at delivery
+	// time — state can change while the courier travels — this is only so an
+	// obviously bad order fails now, not by notice.
+	var settleWorldID uuid.UUID
+	var state string
+	var occupantID *uuid.UUID
+	var settleQ, settleR int
+	if err := h.pool.QueryRow(ctx,
+		`SELECT s.world_id, s.state, s.occupant_id, p.map_q, p.map_r
+		 FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE s.id = $1`, settlementID,
+	).Scan(&settleWorldID, &state, &occupantID, &settleQ, &settleR); err != nil {
+		writeError(w, http.StatusNotFound, "settlement not found")
+		return
+	}
+	if settleWorldID != worldID {
+		writeError(w, http.StatusForbidden, "settlement not in this world")
+		return
+	}
+	if state != "occupied" || occupantID == nil || *occupantID != playerID {
+		writeError(w, http.StatusUnprocessableEntity, "you do not currently hold this city under occupation")
+		return
+	}
+
+	unitPos := province.MapPosition{Q: settleQ, R: settleR}
+	origin, originOK := h.resolveOrderOrigin(w, ctx, worldID, playerID, unitPos)
+	if !originOK {
+		return
+	}
+	order := combat.OccupyActionOrder{
+		WorldID: worldID, PlayerID: playerID, SettlementID: settlementID,
+		Action: req.Action, Goods: req.Goods,
+	}
+	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
+		WorldID: worldID, PlayerID: playerID, Verb: "occupy_action", Occupy: &order,
+	}, fmt.Sprintf("Runner — occupation order (%s).", req.Action),
+		origin, unitPos, map[string]any{"action": req.Action})
+}
+
 // ListUnits handles GET /worlds/{worldID}/units — returns all non-disbanded units
 // owned by the authenticated player in this world.
 func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {

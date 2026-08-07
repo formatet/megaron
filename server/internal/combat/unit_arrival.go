@@ -196,12 +196,19 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		return h.resolveAmphibiousAssault(ctx, tx, u, destQ, destR, worldID)
 	}
 
-	// Find settlement at destination (if any).
+	// Find settlement at destination (if any). The JOIN condition's karens
+	// exclusion mirrors march_start.go's pre-flight (megaron_plan_erovring.md
+	// S5): a burned settlement past its recolonizable_after_tick is treated
+	// as absent here too, so a colonize intent that slipped past the
+	// pre-flight (or was dispatched before the karens elapsed) sees the hex
+	// as empty at arrival, same as the pre-flight now does.
 	var dest destSettlement
 	err := tx.QueryRow(ctx,
 		`SELECT s.id, s.owner_id, s.wall_level, p.id, p.terrain_type
 		 FROM provinces p
 		 LEFT JOIN settlements s ON s.province_id = p.id
+		   AND NOT (s.state = 'razed' AND s.recolonizable_after_tick IS NOT NULL
+		            AND s.recolonizable_after_tick <= current_world_tick())
 		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3`,
 		worldID, destQ, destR,
 	).Scan(&dest.settlementID, &dest.ownerID, &dest.wallLevel,

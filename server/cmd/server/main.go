@@ -182,6 +182,8 @@ func main() {
 	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
 	battleTickH := combat.NewBattleTickHandler(pool, eventStore, scheduler, hub)
 	worker.Register(events.ScheduledBattleTick, battleTickH.Handle)
+	occupationCheckH := combat.NewOccupationCheckHandler(pool, scheduler, hub)
+	worker.Register(events.ScheduledOccupationCheck, occupationCheckH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler, hub)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub)
@@ -363,6 +365,7 @@ func main() {
 
 			r.Get("/worlds/{worldID}/settlements", sh.List)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)
+			r.Post("/worlds/{worldID}/settlements/{settlementID}/occupation-order", uh.OccupationOrder)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}/loyalty-log", sh.LoyaltyLog)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/return-army", sh.ReturnArmy)

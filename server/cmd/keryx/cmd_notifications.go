@@ -109,6 +109,65 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "BattleWon" || n.Kind == "BattleLost" {
 		printBattleReportLine(n)
 	}
+	switch n.Kind {
+	case "CityOccupied", "OccupationDefended", "CityAnnexReady", "SettlementLooted", "SettlementBurned":
+		printOccupationLine(n)
+	}
+}
+
+// printOccupationLine renders the erövring notification family
+// (megaron_plan_erovring.md S6): a city falling under occupation, its
+// annex countdown maturing or resetting, or the outcome of a sack/burn
+// choice — the raw JSON body above turned into an actionable line, same
+// pattern as printBattleReportLine.
+func printOccupationLine(n notificationItem) {
+	var body struct {
+		SettlementID           string `json:"settlement_id"`
+		Name                   string `json:"name"`
+		Role                   string `json:"role"`
+		OccupationTicksToAnnex int    `json:"occupation_ticks_to_annex"`
+		PopLost                int    `json:"pop_lost"`
+		BuildingHit            string `json:"building_hit"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	name := body.Name
+	if name == "" {
+		name = body.SettlementID
+	}
+	switch n.Kind {
+	case "CityOccupied":
+		if body.Role == "attacker" {
+			fmt.Printf("      %s föll — din här håller den under ockupation. Väljer du inget stannar den ockuperad; annektera erbjuds efter %d obestridda tick. `keryx occupation order --settlement %s --action sack|burn|annex`\n",
+				name, body.OccupationTicksToAnnex, body.SettlementID)
+		} else {
+			fmt.Printf("      %s har fallit under ockupation — inte förlorad än. Undsättning inom %d tick nollar fiendens räknare.\n",
+				name, body.OccupationTicksToAnnex)
+		}
+	case "OccupationDefended":
+		fmt.Printf("      Ockupationen av %s höll mot ett angrepp — annekteringsräknaren har nollställts, %d nya tick krävs.\n",
+			name, body.OccupationTicksToAnnex)
+	case "CityAnnexReady":
+		fmt.Printf("      %s har varit obestridd länge nog — annektera med `keryx occupation order --settlement %s --action annex`\n",
+			name, body.SettlementID)
+	case "SettlementLooted":
+		if body.Role == "attacker" {
+			fmt.Printf("      %s sackad — bytet är på väg hem som en karavan (kan avskäras).\n", name)
+		} else {
+			extra := ""
+			if body.BuildingHit != "" {
+				extra = fmt.Sprintf(", %s nedslagen en nivå", body.BuildingHit)
+			}
+			fmt.Printf("      %s sackad — befolkning −⅓%s. Staden är kvar, men länsad.\n", name, extra)
+		}
+	case "SettlementBurned":
+		if body.Role == "attacker" {
+			fmt.Printf("      %s sackad och bränd — bytet är på väg hem, ruinen kan inte återkoloniseras på en tid.\n", name)
+		} else {
+			fmt.Printf("      %s sackad och bränd — staden är en ruin.\n", name)
+		}
+	}
 }
 
 // printBattleReportLine renders the human-readable follow-up to a

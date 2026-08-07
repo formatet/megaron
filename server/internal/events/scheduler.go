@@ -110,6 +110,14 @@ const (
 	// created by initiateOrJoinBattle and self-perpetuating via
 	// EnqueueTickRecurring until the battle ends.
 	ScheduledBattleTick ScheduledEventType = "BattleTick"
+	// ScheduledOccupationCheck watches ONE occupied settlement's annex counter
+	// (megaron_plan_erovring.md S2, combat/occupation_check.go): fires at the
+	// tick the occupation is due to mature, re-reads the live counter (an
+	// attack resets it), and either notifies the occupant they may annex or
+	// re-enqueues itself for the (possibly pushed-back) new deadline. One
+	// instance per occupied settlement, created by occupySettlement/
+	// resetOccupationDefense, same self-correcting shape as ScheduledBattleTick.
+	ScheduledOccupationCheck ScheduledEventType = "OccupationCheck"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.
