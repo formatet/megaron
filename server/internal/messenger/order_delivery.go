@@ -36,10 +36,13 @@ type OrderDeliveryPayload struct {
 	PlayerID    uuid.UUID           `json:"player_id"`
 	UnitID      uuid.UUID           `json:"unit_id"`
 	MessengerID uuid.UUID           `json:"messenger_id"`
-	Verb        string              `json:"verb"` // "march" | "stance" | "recall" | "redirect" | "occupy_action"
+	Verb        string              `json:"verb"` // "march" | "stance" | "recall" | "redirect" | "occupy_action" | "standing_orders"
 	March       *combat.MarchOrder  `json:"march,omitempty"`
 	Stance      *combat.StanceOrder `json:"stance,omitempty"`
 	Recall      *combat.RecallOrder `json:"recall,omitempty"`
+	// StandingOrders carries the KR3 §5 mid-battle retreat order — see
+	// combat.SetStandingOrders.
+	StandingOrders *combat.StandingOrdersOrder `json:"standing_orders,omitempty"`
 	// Occupy carries the S3 erövring choice (megaron_plan_erovring.md) — sack/
 	// burn/annex an occupied city. Targets a SETTLEMENT, not a unit (UnitID is
 	// left zero-value for this verb); the runner is dispatched to the city's
@@ -158,6 +161,27 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 			})
 		}
 		slog.Info("order delivered — unit turned onto new course", "unit", p.UnitID, "verb", p.Verb, "arrives_at", res.ArrivesAt)
+		return nil
+	case "standing_orders":
+		if p.StandingOrders == nil {
+			return fmt.Errorf("order delivery %s: standing_orders verb without standing_orders payload", p.MessengerID)
+		}
+		res, err := combat.SetStandingOrders(ctx, h.pool, h.eventStore, *p.StandingOrders)
+		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				// Most common case: the battle ended before the Runner arrived —
+				// the order has nothing left to apply to, and the owner should
+				// hear that rather than wonder why nothing changed.
+				h.notifyOrderFailed(ctx, p, rej.Reason)
+				return nil
+			}
+			slog.Error("order delivery: standing orders execution failed after claim — order dropped",
+				"messenger", p.MessengerID, "unit", p.UnitID, "err", err)
+			return nil
+		}
+		slog.Info("order delivered — standing orders applied",
+			"unit", p.UnitID, "battle", res.BattleID, "hold_to_last_man", res.HoldToLastMan)
 		return nil
 	case "occupy_action":
 		if p.Occupy == nil {

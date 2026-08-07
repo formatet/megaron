@@ -1123,6 +1123,94 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// SetStandingOrders handles POST /worlds/{worldID}/units/{unitID}/standing-orders
+//
+// KR3 §5: change a unit's mid-battle rout threshold. Body:
+// {"retreat_at_loss": 0.5} and/or {"hold_to_last_man": true} — either field
+// may be omitted to leave it unchanged.
+//
+// The unit must currently be a participant in an active battle —
+// standing_orders lives on battle_participants (migration 114), not on the
+// unit; there is no pre-battle preset surface (out of scope, megaron_todo.md
+// KR3 loose end (c) names only this mid-battle change as the remaining gap).
+//
+// Order latency, same rule as SetStance: a field unit's commander only hears
+// the new order when a Runner physically arrives from the nearest own
+// settlement (command is never instant). A besieged garrison unit is
+// distance 0 — the Wanax is already in that city — and applies immediately.
+func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	unitID, err := uuid.Parse(chi.URLParam(r, "unitID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid unit ID")
+		return
+	}
+
+	var req struct {
+		RetreatAtLoss *float64 `json:"retreat_at_loss,omitempty"`
+		HoldToLastMan *bool    `json:"hold_to_last_man,omitempty"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+
+	ctx := r.Context()
+	order := combat.StandingOrdersOrder{
+		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+		RetreatAtLoss: req.RetreatAtLoss, HoldToLastMan: req.HoldToLastMan,
+	}
+
+	// Same distance-0-vs-courier split as SetStance: a field unit (no
+	// settlement, has a map position) dispatches a Runner; a garrison unit
+	// skips straight to the direct-apply path below.
+	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
+		u.OwnerID == playerID && u.WorldID == worldID &&
+		u.SettlementID == nil && u.Q != nil && u.R != nil {
+		unitPos := province.MapPosition{Q: *u.Q, R: *u.R}
+		origin, originOK := h.resolveOrderOrigin(w, ctx, worldID, playerID, unitPos)
+		if !originOK {
+			return
+		}
+		if origin.dist > 0 {
+			h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
+				WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+				Verb: "standing_orders", StandingOrders: &order,
+			}, "Runner — retreat order.", origin, unitPos, map[string]any{})
+			return
+		}
+	}
+
+	res, err := combat.SetStandingOrders(ctx, h.pool, h.eventStore, order)
+	if err != nil {
+		var rej *combat.OrderReject
+		if errors.As(err, &rej) {
+			writeError(w, rej.Status, rej.Reason)
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "standing orders change failed")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"unit_id":          res.UnitID,
+		"battle_id":        res.BattleID,
+		"retreat_at_loss":  res.RetreatAtLoss,
+		"hold_to_last_man": res.HoldToLastMan,
+	})
+}
+
 // OccupationOrder handles POST /worlds/{worldID}/settlements/{settlementID}/occupation-order
 // — the S3 erövring choice (megaron_plan_erovring.md): sack, sack-and-burn, or
 // annex a city the player currently holds under occupation. Doing nothing

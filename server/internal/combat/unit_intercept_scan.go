@@ -1,12 +1,10 @@
 package combat
 
 // UnitInterceptScanHandler is the unit-vs-unit counterpart of
-// transport.InterceptScanHandler (megaron_plan_avsiktslagret.md §S3). Nothing
-// currently makes two marching columns fight before one of them arrives at a
-// settlement — this is the substrate KR2 ("marscherande härar möts") builds on:
-// a periodic sweep that finds every marching unit's live interpolated position,
-// and for each FOW-visible enemy sentry within reach whose reaction policy says
-// "intercept", resolves combat between them.
+// transport.InterceptScanHandler (megaron_plan_avsiktslagret.md §S3). A
+// periodic sweep that finds every marching unit's live interpolated position,
+// and for each FOW-visible enemy sentry within reach whose reaction policy
+// says "intercept" or "alert", acts on it (KR3 §7, megaron_plan_kr3_stridssystem.md).
 //
 // G1 placement: this lives in `combat`, not `transport` or `unit` — it calls
 // resolveCombat's sibling math (unitStrength, rollFortune,
@@ -16,19 +14,35 @@ package combat
 // province (CLAUDE.md G1). transport/unit must never import combat, so this
 // scan cannot live there.
 //
-// Scope note (deliberately minimal, avsiktslagret §S3): a marching unit that
-// SURVIVES an interception keeps marching on its existing course — this scan
-// only applies losses to both sides, it never redirects, halts or turns a
-// march around. Full march-interruption semantics (does the column retreat?
-// does it have to re-path?) are KR2's job, not this substrate's.
+// §7 cutover (2026-08-07, Timothy's march-interruption decision): an
+// "intercept"-policy sentry now calls initiateOrJoinBattle instead of
+// resolving one immediate roll — the marching unit HALTS at its interpolated
+// position (status flips to 'positioned', same as a field arrival) and fights
+// the persistent multi-tick battle there. A surviving unit does NOT resume
+// its march on its own; the player must re-issue a march order once the
+// battle ends. This retires the old one-shot resolve for this entry point —
+// it was the last of the four named in plan §8, so unitStrength/rollFortune/
+// ResolveStrengthsWithRout's direct callers for the interception path are
+// gone (those functions remain — resolver.go, still used inside battle.go's
+// own math and by any not-yet-audited one-shot code elsewhere).
 //
-// §S4 (2026-08-07, megaron_plan_avsiktslagret.md): both owners now get a
-// notification, reusing the stridsrapport payload shape (BattleTickHandler.
-// notifyBattleEnded's kind/fields) even though this handler resolves combat
-// synchronously in one roll, not via initiateOrJoinBattle/ScheduledBattleTick
-// — see notifyInterceptionResolved below for why cutting this entry point
-// over to the KR3 substrate is deliberately NOT done here (scope note in that
-// function's doc comment).
+// avsiktslagret §7 verbs, read off the SENTRY's reaction_policy.foreign:
+//   - "intercept": fight (initiateOrJoinBattle, as above).
+//   - "alert": no combat — the sentry's owner is notified a foreign unit
+//     passed within reach, nothing else happens. "larma bara."
+//   - "escort"/"ignore": excluded from the query entirely below — a sentry
+//     posted to escort or ignore never triggers this scan at all.
+//
+// The scan itself is still the substrate KR2 ("marscherande härar möts")
+// builds on — this file only makes a MARCHING unit vs a STATIONARY sentry
+// fight; two marching columns meeting each other is still unbuilt (own
+// contract round, per megaron_todo.md).
+//
+// §S4 (2026-08-07, megaron_plan_avsiktslagret.md): the "intercept" branch's
+// notification is now BattleTickHandler.notifyBattleEnded's own (fired when
+// the battle concludes, possibly several ticks later) — no separate
+// notification is sent at the moment of interception itself, matching every
+// other initiateOrJoinBattle entry point.
 
 import (
 	"context"
@@ -38,9 +52,7 @@ import (
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/province"
-	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -85,9 +97,10 @@ type marchingUnit struct {
 	departTick *int
 }
 
-// Handle scans every marching unit once, resolving combat against the
-// strongest FOW-visible enemy sentry within reach that hasn't already fought
-// this exact march instance, then re-enqueues itself.
+// Handle scans every marching unit once, acting against the strongest
+// FOW-visible enemy sentry within reach (intercept or alert policy) that
+// hasn't already been resolved against this exact march instance, then
+// re-enqueues itself.
 func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
 
@@ -142,20 +155,22 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 			continue
 		}
 
-		// An enemy sentry watching within reach whose policy says intercept.
+		// The strongest enemy sentry watching within reach whose policy is
+		// "intercept" or "alert" — "escort"/"ignore" never match, so a sentry
+		// posted that way never triggers this scan at all (§7).
 		var sentryID, interceptorID uuid.UUID
-		var sentryType string
+		var sentryType, verb string
 		if qErr := h.pool.QueryRow(ctx,
-			`SELECT id, owner_id, type FROM units
+			`SELECT id, owner_id, type, reaction_policy->>'foreign' FROM units
 			 WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'
 			   AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL
-			   AND (reaction_policy->>'foreign') = 'intercept'
+			   AND (reaction_policy->>'foreign') IN ('intercept', 'alert')
 			   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5
 			 ORDER BY size DESC
 			 LIMIT 1`,
 			e.WorldID, m.owner, pos.Q, pos.R, UnitInterceptRadius,
-		).Scan(&sentryID, &interceptorID, &sentryType); qErr != nil {
-			continue // no intercept-policy sentry in reach
+		).Scan(&sentryID, &interceptorID, &sentryType, &verb); qErr != nil {
+			continue // no intercept/alert-policy sentry in reach
 		}
 
 		// FOW gate (avsiktslagret §4): the sentry's owner must actually SEE the
@@ -174,7 +189,7 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 			continue // the sentry's owner has never laid eyes on this march
 		}
 
-		if err := h.intercept(ctx, e.WorldID, m, sentryID, sentryType, interceptorID, pos); err != nil {
+		if err := h.intercept(ctx, e.WorldID, m, sentryID, sentryType, interceptorID, verb, pos); err != nil {
 			slog.Error("unit intercept scan: intercept failed", "unit", m.id, "sentry", sentryID, "err", err)
 		}
 	}
@@ -183,10 +198,12 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 		struct{}{}, e.DueTick, UnitInterceptScanIntervalTicks)
 }
 
-// intercept resolves one (marching unit, sentry) pair's combat, guarded so the
-// same march instance can only be fought once by the same sentry.
+// intercept acts on one (marching unit, sentry) pair, guarded so the same
+// march instance can only be resolved once by the same sentry — regardless
+// of whether that resolution was a fight (verb "intercept") or a sighting
+// (verb "alert").
 func (h *UnitInterceptScanHandler) intercept(
-	ctx context.Context, worldID uuid.UUID, m marchingUnit, sentryID uuid.UUID, sentryType string, interceptorID uuid.UUID, pos province.MapPosition,
+	ctx context.Context, worldID uuid.UUID, m marchingUnit, sentryID uuid.UUID, sentryType string, interceptorID uuid.UUID, verb string, pos province.MapPosition,
 ) error {
 	if m.departTick == nil {
 		// Should not happen — march dispatch always sets depart_tick alongside
@@ -203,10 +220,9 @@ func (h *UnitInterceptScanHandler) intercept(
 
 	// Idempotency / double-avskärning guard (G2 + avsiktslagret §S3 design,
 	// unit_arrival.go's original TODO): this exact (marching unit, sentry) pair
-	// for THIS march instance (depart_tick) may only fight once. A surviving
-	// march keeps its size reduced but otherwise keeps marching unchanged, so
-	// without this guard the same static sentry would re-fight it on every
-	// subsequent scan tick it remains in range.
+	// for THIS march instance (depart_tick) may only be resolved once. Without
+	// this guard the same static sentry would re-trigger on every subsequent
+	// scan tick the marching unit remains in range.
 	tag, err := tx.Exec(ctx,
 		`INSERT INTO unit_interceptions (unit_id, sentry_unit_id, depart_tick, world_id)
 		 VALUES ($1, $2, $3, $4)
@@ -217,12 +233,13 @@ func (h *UnitInterceptScanHandler) intercept(
 		return fmt.Errorf("intercept guard insert: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
-		return nil // already fought this sentry on this march instance
+		return nil // already resolved against this sentry on this march instance
 	}
 
-	// Load both units FOR UPDATE — fresh state at combat time; either may have
-	// changed since the outer scan read them (idempotency: a handler re-run
-	// after a crash finds the guard row above already inserted and stops there).
+	// Load both units FOR UPDATE — fresh state at resolution time; either may
+	// have changed since the outer scan read them (idempotency: a handler
+	// re-run after a crash finds the guard row above already inserted and
+	// stops there).
 	var attSize int
 	var attStatus string
 	if err := tx.QueryRow(ctx,
@@ -246,200 +263,71 @@ func (h *UnitInterceptScanHandler) intercept(
 		return nil // sentry moved/disbanded/changed stance since the scan read it
 	}
 
-	// ── Strength + fortune (mirrors resolveFieldCombat's math). ──
-	attStr := unitStrength(m.utype, attSize)
-	defStr := unitStrength(sentryType, defSize)
-
-	var attackerKharis, defenderKharis float64
-	_ = tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-		m.owner, worldID,
-	).Scan(&attackerKharis)
-	_ = tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-		 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-		interceptorID, worldID,
-	).Scan(&defenderKharis)
-	fortune := rollFortune(attackerKharis, defenderKharis)
-	attStrWithFortune := attStr * (1 + fortune)
-
-	attSettleID, attLoyalty, attHasSettle := supplyingSettlement(ctx, tx, m.owner, nil, worldID)
-	defSettleID, defLoyalty, defHasSettle := supplyingSettlement(ctx, tx, interceptorID, nil, worldID)
-
-	result := ResolveStrengthsWithRout(attStrWithFortune, defStr, fortune,
-		routFractionForLoyalty(attLoyalty), routFractionForLoyalty(defLoyalty))
-
-	slog.Info("unit intercepted", "unit", m.id, "sentry", sentryID, "q", pos.Q, "r", pos.R,
-		"att", attStr, "fortune", fortune, "def", defStr, "outcome", result.Outcome, "rounds", result.Rounds)
-
-	attSizeBefore := attSize
-	attSizeAfter := int(float64(attSize) * (1 - result.AttackerLosses))
-	attPopLost := attSizeBefore - attSizeAfter
-	defSizeBefore := defSize
-	defSizeAfter := int(float64(defSize) * (1 - result.DefenderLosses))
-	defPopLost := defSizeBefore - defSizeAfter
-
-	// Apply losses to the marching (attacker) unit. A survivor keeps marching
-	// unchanged (see file doc comment — full march-interruption is KR2's job).
-	if attSizeAfter <= 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET status = 'disbanded', size = 0, updated_at = now() WHERE id = $1`, m.id,
-		); err != nil {
-			return fmt.Errorf("disband intercepted unit: %w", err)
+	if verb == "alert" {
+		if err := tx.Commit(ctx); err != nil {
+			return fmt.Errorf("commit alert guard: %w", err)
 		}
-	} else if _, err := tx.Exec(ctx,
-		`UPDATE units SET size = $2, updated_at = now() WHERE id = $1`, m.id, attSizeAfter,
+		slog.Info("unit intercept scan: sentry alerted (no combat)", "unit", m.id, "sentry", sentryID, "q", pos.Q, "r", pos.R)
+		if h.hub != nil {
+			marchOwnerName := ownerNameOf(ctx, h.pool, m.owner)
+			if err := h.hub.NotifyPlayer(ctx, worldID, interceptorID, "SentryAlerted", 1, map[string]any{
+				"sentry_unit_id": sentryID,
+				"foreign_type":   m.utype,
+				"foreign_owner":  marchOwnerName,
+				"q":              pos.Q,
+				"r":              pos.R,
+			}); err != nil {
+				slog.Warn("notify sentry alerted", "recipient", interceptorID, "err", err)
+			}
+		}
+		return nil
+	}
+
+	// verb == "intercept": KR3 §7 cutover — halt the marching unit at its
+	// interpolated position and initiate/join a persistent battle there,
+	// exactly like resolveFieldCombat (unit_arrival_field.go). No immediate
+	// win/lose roll here anymore; ScheduledBattleTick resolves it over
+	// subsequent ticks and its own notifyBattleEnded tells both owners.
+	arriving := battleParticipant{unitID: m.id, ownerID: m.owner, utype: m.utype, side: "attacker", currentSize: attSize}
+	defender := battleParticipant{unitID: sentryID, ownerID: interceptorID, utype: sentryType, side: "defender", currentSize: defSize}
+
+	// initiateOrJoinBattle is a UnitArrivalHandler method; built inline rather
+	// than threading a shared instance through NewUnitInterceptScanHandler's
+	// constructor (and its 5 call sites) — sitosCfg/Dice are the only fields
+	// that differ from this zero-value build, and neither is read by
+	// initiateOrJoinBattle/startBattle/joinBattle (sitosCfg: unit_arrival.go's
+	// genesis-silver path only; Dice: nil-safe, falls back to
+	// economy.NewWallDice(), the same production default).
+	uah := &UnitArrivalHandler{pool: h.pool, eventStore: h.eventStore, scheduler: h.scheduler, hub: h.hub, clk: h.clk}
+	if err := uah.initiateOrJoinBattle(ctx, tx, worldID, pos.Q, pos.R, arriving, []battleParticipant{defender}); err != nil {
+		return fmt.Errorf("intercept: initiate/join battle: %w", err)
+	}
+
+	// The marching unit halts at the interception point — a Timothy decision
+	// (2026-08-07): it does NOT keep marching. A survivor must be given a new
+	// march order once the battle ends; nothing resumes it automatically.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status        = 'positioned',
+		   q             = $2,
+		   r             = $3,
+		   target_q      = NULL,
+		   target_r      = NULL,
+		   departs_at    = NULL,
+		   arrives_at    = NULL,
+		   depart_tick   = NULL,
+		   arrive_tick   = NULL,
+		   updated_at    = now()
+		 WHERE id = $1`,
+		m.id, pos.Q, pos.R,
 	); err != nil {
-		return fmt.Errorf("apply intercepted unit losses: %w", err)
-	}
-	if attPopLost > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET population = GREATEST(50, population - $2)
-			 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
-			m.owner, attPopLost, worldID,
-		); err != nil {
-			slog.Warn("unit intercept scan: could not apply attacker pop loss", "unit", m.id, "err", err)
-		}
-	}
-
-	// Apply losses to the sentry (defender).
-	if defSizeAfter <= 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET status = 'disbanded', size = 0, stance = NULL, sentry_q = NULL, sentry_r = NULL, updated_at = now()
-			 WHERE id = $1`, sentryID,
-		); err != nil {
-			return fmt.Errorf("disband defeated sentry: %w", err)
-		}
-	} else if _, err := tx.Exec(ctx,
-		`UPDATE units SET size = $2, updated_at = now() WHERE id = $1`, sentryID, defSizeAfter,
-	); err != nil {
-		return fmt.Errorf("apply sentry losses: %w", err)
-	}
-	if defPopLost > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET population = GREATEST(50, population - $2)
-			 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
-			interceptorID, defPopLost, worldID,
-		); err != nil {
-			slog.Warn("unit intercept scan: could not apply sentry pop loss", "sentry", sentryID, "err", err)
-		}
-	}
-
-	// ── L2 battle loyalty (mirrors UnitArrivalHandler.applyBattleLoyalty). ──
-	attackerWon := result.Outcome == OutcomeAttackerWins
-	if attHasSettle {
-		delta, evType, reason := -1, "battle_lost", "lost_battle"
-		if attackerWon {
-			delta, evType, reason = +1, "shared_victory", "won_battle"
-		}
-		if lErr := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, attSettleID, worldID, evType, delta, reason); lErr != nil {
-			slog.Warn("unit intercept scan: attacker battle loyalty failed", "settlement", attSettleID, "err", lErr)
-		}
-	}
-	if !attackerWon && defHasSettle {
-		if lErr := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, defSettleID, worldID, "shared_victory", +1, "defended_settlement"); lErr != nil {
-			slog.Warn("unit intercept scan: defender battle loyalty failed", "settlement", defSettleID, "err", lErr)
-		}
+		return fmt.Errorf("intercept: halt marching unit: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
 
-	// Outcome, not intent (CLAUDE.md events rule) — the roll already happened above.
-	_, _ = h.eventStore.Append(ctx, m.id, events.StreamType(unit.StreamUnit), unit.EventUnitIntercepted,
-		unit.UnitInterceptedPayload{
-			SentryUnitID:      sentryID,
-			InterceptedUnitID: m.id,
-			Q:                 pos.Q,
-			R:                 pos.R,
-			Outcome:           string(result.Outcome),
-		}, worldID, nil)
-	_, _ = h.eventStore.Append(ctx, m.id, events.StreamType(unit.StreamUnit), unit.EventUnitCombatResolved,
-		unit.UnitCombatResolvedPayload{
-			UnitID:     m.id,
-			Role:       "attacker",
-			SizeBefore: attSizeBefore,
-			SizeAfter:  attSizeAfter,
-			Outcome:    string(result.Outcome),
-			PopLost:    attPopLost,
-		}, worldID, nil)
-
-	h.notifyInterceptionResolved(ctx, worldID, pos.Q, pos.R,
-		m.owner, m.utype, attSizeBefore, attSizeAfter,
-		interceptorID, sentryType, defSizeBefore, defSizeAfter,
-		result.Outcome)
-
+	slog.Info("unit intercepted — battle initiated/joined", "unit", m.id, "sentry", sentryID, "q", pos.Q, "r", pos.R)
 	return nil
-}
-
-// notifyInterceptionResolved is avsiktslagret's §S4 (megaron_plan_avsiktslagret.md):
-// "Notis till båda parter (återanvänd stridsrapportens payload)". Reuses
-// BattleTickHandler.notifyBattleEnded's exact payload shape/kind
-// (BattleWon/BattleLost, role/outcome/opponent_name/own_unit/enemy_unit/q/r/
-// place) so keryx's printBattleReportLine and the web's notifText case render
-// this identically to a KR3 battle report — a Wanax should not be able to
-// tell "this notification came from a different code path" from the text.
-//
-// Deliberately NOT cut over to initiateOrJoinBattle (plan §8's "the other
-// three entry points"): this handler resolves in one immediate roll, and a
-// SURVIVING marching unit keeps marching unchanged on its existing course
-// (this file's own header comment, "full march-interruption is KR2's job").
-// Routing this through KR3 would mean the intercepted unit instead halts in
-// place (status='positioned') for however many battle-ticks the fight takes,
-// same as a field arrival — a real behaviour change to the march mechanic,
-// not a pure refactor, and not specified by the locked plan. Left as a
-// flagged gap for whoever picks up §8/KR2's march-interruption question,
-// rather than decided here.
-func (h *UnitInterceptScanHandler) notifyInterceptionResolved(
-	ctx context.Context, worldID uuid.UUID, q, r int,
-	attOwner uuid.UUID, attType string, attSizeBefore, attSizeAfter int,
-	defOwner uuid.UUID, defType string, defSizeBefore, defSizeAfter int,
-	outcome Outcome,
-) {
-	if h.hub == nil {
-		return
-	}
-	attName := ownerNameOf(ctx, h.pool, attOwner)
-	defName := ownerNameOf(ctx, h.pool, defOwner)
-	var place *string
-	if name, ok := settlementNameAt(ctx, h.pool, worldID, q, r); ok {
-		place = &name
-	}
-
-	// outcomeStr maps resolver.go's Outcome ("attacker_wins"/"defender_wins")
-	// onto the KR3 notification's own vocabulary ("attacker_wins"/
-	// "defender_holds"/"mutual_wipe" — BattleTickHandler.notifyBattleEnded),
-	// which keryx's printBattleReportLine and the web's notifText case switch
-	// on for the trailer sentence. string(outcome) directly would silently
-	// mismatch ("defender_wins" ≠ "defender_holds") and the trailer would
-	// just fall through empty — not a crash, but a quietly worse message.
-	outcomeStr := "attacker_wins"
-	if outcome == OutcomeDefenderWins {
-		outcomeStr = "defender_holds"
-	}
-
-	notify := func(recipient uuid.UUID, role, opponentName string, own, enemy battleReportUnit) {
-		kind, level := "BattleLost", 2
-		won := (role == "attacker" && outcome == OutcomeAttackerWins) || (role == "defender" && outcome == OutcomeDefenderWins)
-		if won {
-			kind, level = "BattleWon", 3
-		}
-		payload := map[string]any{
-			"role": role, "outcome": outcomeStr, "opponent_name": opponentName,
-			"own_unit": own, "enemy_unit": enemy, "q": q, "r": r,
-		}
-		if place != nil {
-			payload["place"] = *place
-		}
-		if err := h.hub.NotifyPlayer(ctx, worldID, recipient, kind, level, payload); err != nil {
-			slog.Warn("notify interception resolved", "recipient", recipient, "err", err)
-		}
-	}
-
-	attUnit := battleReportUnit{Type: attType, SizeBefore: attSizeBefore, SizeAfter: attSizeAfter, PopLost: attSizeBefore - attSizeAfter}
-	defUnit := battleReportUnit{Type: defType, SizeBefore: defSizeBefore, SizeAfter: defSizeAfter, PopLost: defSizeBefore - defSizeAfter}
-	notify(attOwner, "attacker", defName, attUnit, defUnit)
-	notify(defOwner, "defender", attName, defUnit, attUnit)
 }

@@ -25,6 +25,7 @@ func unitCmd() *cobra.Command {
 		unitRecallCmd(),
 		unitRedirectCmd(),
 		unitStanceCmd(),
+		unitStandingOrdersCmd(),
 		unitLoadCmd(),
 		unitUnloadCmd(),
 	)
@@ -823,6 +824,71 @@ func unitStanceCmd() *cobra.Command {
 		"reaction to foreign units when --stance sentry: intercept|escort|ignore|alert (default intercept; escort/alert are not yet behaviourally wired)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("stance")
+	return cmd
+}
+
+// ---- unit retreat-order -------------------------------------------------------
+
+// unitRetreatOrderCmd sends KR3 §5's mid-battle retreat order: change the
+// rout threshold (or hold-to-last-man) of a unit that is CURRENTLY fighting
+// in an active battle. There is no pre-battle preset — the unit must already
+// be a battle participant, same as the server-side scope (megaron_todo.md
+// KR3 loose end (c)).
+func unitStandingOrdersCmd() *cobra.Command {
+	var unitID string
+	var retreatAtLoss float64
+	var holdToLastMan bool
+
+	cmd := &cobra.Command{
+		Use:   "retreat-order",
+		Short: "Change a unit's mid-battle retreat threshold",
+		Example: `  keryx unit retreat-order --unit <id> --retreat-at-loss 0.5
+  keryx unit retreat-order --unit <id> --hold-to-last-man`,
+		Args: rejectPositionalArgs("unit"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if !cmd.Flags().Changed("retreat-at-loss") && !cmd.Flags().Changed("hold-to-last-man") {
+				return fmt.Errorf("set at least one of --retreat-at-loss or --hold-to-last-man")
+			}
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/standing-orders", cfg.WorldID, unitID)
+			body := map[string]any{}
+			if cmd.Flags().Changed("retreat-at-loss") {
+				body["retreat_at_loss"] = retreatAtLoss
+			}
+			if cmd.Flags().Changed("hold-to-last-man") {
+				body["hold_to_last_man"] = holdToLastMan
+			}
+			data, err := c.post(path, body)
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp map[string]any
+			json.Unmarshal(data, &resp)
+			if status, _ := resp["status"].(string); status == "order_dispatched" {
+				fmt.Printf("A Runner carries your retreat order to unit %s", unitID[:8])
+				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
+					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
+						fmt.Printf("; the runner reaches it %s", t.Local().Format("15:04 Jan 2"))
+					}
+				}
+				fmt.Println(" — it applies on delivery.")
+				return nil
+			}
+			fmt.Printf("Unit %s standing orders updated (retreat_at_loss=%v, hold_to_last_man=%v)\n",
+				unitID[:8], resp["retreat_at_loss"], resp["hold_to_last_man"])
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	cmd.Flags().Float64Var(&retreatAtLoss, "retreat-at-loss", 0,
+		"fraction of starting strength (0-1) at which this unit's side breaks and retreats")
+	cmd.Flags().BoolVar(&holdToLastMan, "hold-to-last-man", false, "disable rout for this unit's side — fight to annihilation")
+	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
 

@@ -360,6 +360,7 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
 			r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
+			r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
 

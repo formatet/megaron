@@ -17,20 +17,32 @@ package combat
 //     a side at/below its rout threshold breaks and leaves the battle WITH
 //     its survivors (termination_reason "rout", not "annihilation"). The
 //     per-unit standing_orders override (battle_participants.standing_orders)
-//     is READ but has no player-facing SET path yet — see sideRouts' doc
-//     comment. The reträttorder-mid-battle-via-messenger half of §5 (a NEW
-//     order arriving mid-fight, as opposed to a pre-set standing order) is
-//     NOT implemented — termination_reason "retreat_order" stays unused, same
-//     as "no_enemy_left". Stood reträttorder's avsiktslagret reaction_policy
-//     verbs (escort/alert) — plan §6/§7 — are also still open.
+//     is READ — see sideRouts' doc comment.
+//   - 2026-08-07: §5's reträttorder-mid-battle-via-messenger half (a NEW order
+//     arriving mid-fight, as opposed to a pre-set standing order) is now built
+//     — SetStandingOrders (standing_orders_set.go), courier-delivered exactly
+//     like SetStance for a field unit, instant for a besieged garrison.
+//     termination_reason "retreat_order" is still unused (sideRouts always
+//     labels a threshold breach "rout" regardless of whether the threshold
+//     was the loyalty default or a player override — not touched by this
+//     slice, see sideRouts' own comment) — same as "no_enemy_left".
 //   - 2026-08-07 (§8 cutover): the settlement siege (unit_arrival.go
 //     resolveCombat) and amphibious assault (unit_arrival.go
 //     resolveAmphibiousAssault) entry points are now wired to
 //     initiateOrJoinBattle too, mirroring resolveFieldCombat — ALL garrison
 //     units are sent in as separate defender participants (multi-garrison
-//     was never a blocker, see battleParticipant). avsiktslagret's
-//     unit_intercept_scan.go (S3/S4) is deliberately NOT cut over — it
-//     resolves synchronously by design, see its own file comment.
+//     was never a blocker, see battleParticipant).
+//   - 2026-08-07 (§7 cutover, Timothy's march-interruption decision): the last
+//     remaining entry point, avsiktslagret's unit_intercept_scan.go (S3), is
+//     now also wired to initiateOrJoinBattle for reaction_policy.foreign=
+//     "intercept" — the intercepted marching unit HALTS (status='positioned')
+//     at its interpolated position instead of fighting one immediate roll and
+//     continuing on its course; see that file's own header comment.
+//     "alert" is notify-only (no battle); "escort" never triggers the scan.
+//     All four §8 entry points now go through this substrate — the old
+//     one-shot resolve (unitStrength/rollFortune/ResolveStrengthsWithRout)
+//     has no more live combat-resolution callers, only battle.go's own
+//     internal use of the same primitives (participation, rout threshold).
 //     ⚠️ KNOWN GAP, deliberately left open by this slice: neither entry point
 //     performs settlement CAPTURE on an attacker win anymore — the old
 //     one-shot applyAttackerWins/applyDefenderWins/sackSettlement (still in
@@ -649,11 +661,11 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	// battle-tick instead of per one-shot resolve. hold_to_last_man disables
 	// rout for that side entirely (fight to actual annihilation).
 	//
-	// Scope note: standing_orders has no player-facing SET path yet (no API/UI
-	// wired this slice) — every battle today reads the column's DB default
-	// ('{}'), so in practice every rout check currently falls through to the
-	// loyalty default. The override is read here so a later slice can add the
-	// write path without touching this mechanic again.
+	// Write path: SetStandingOrders (standing_orders_set.go) — a mid-battle
+	// retreat order via the HTTP handler/keryx/courier, same shape as
+	// SetStance. Only reachable while the unit is an active participant;
+	// battles a unit joined before any order was set still fall through to
+	// the loyalty default exactly as before that slice landed.
 	attRouted, defRouted := false, false
 	if !wiped {
 		attRouted = sideRouts(bySide["attacker"], initialSizes, sizes, standingOrders, loyaltyBySide["attacker"])

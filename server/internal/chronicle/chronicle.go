@@ -401,18 +401,6 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 		return "En styrka upplöstes — männen återvände till befolkningen"
 	case "UnitStanceChanged":
 		return fmt.Sprintf("En styrka ändrade hållning till %s", str(p, "stance"))
-	case "UnitCombatResolved", "UnitIntercepted":
-		// Stridsrapport (megaron_plan_stridsrapport.md) fills the PLAYER-facing
-		// notification (BattleTickHandler.notifyBattleEnded) for the KR3 path —
-		// this event type is the OLD one-shot model, still emitted by the three
-		// entry points not yet cut over to initiateOrJoinBattle (§8: settlement
-		// resolveCombat, amphibious assault, avsiktslagret's
-		// unit_intercept_scan.go). unit.UnitCombatResolvedPayload has no q/r
-		// (only unit.UnitInterceptedPayload does), so this stays a minimal stub
-		// for that path rather than growing the same opponent-naming logic twice —
-		// §8's cutover retires this event type's combat use, at which point this
-		// case can be deleted rather than fixed.
-		return fmt.Sprintf("Strid avgjordes för en styrka vid (%v,%v)", p["q"], p["r"])
 	case "BattleStarted":
 		return fmt.Sprintf("Strid utbröt vid (%v,%v)", p["q"], p["r"])
 	case "UnitJoinedBattle":

@@ -18,10 +18,11 @@ import "github.com/google/uuid"
 // All payloads record OUTCOMES of an already-happened dice roll, never a
 // pending check (CLAUDE.md events rule).
 const (
-	EventBattleStarted       = "BattleStarted"
-	EventUnitJoinedBattle    = "UnitJoinedBattle"
-	EventBattleRoundResolved = "BattleRoundResolved"
-	EventBattleEnded         = "BattleEnded"
+	EventBattleStarted         = "BattleStarted"
+	EventUnitJoinedBattle      = "UnitJoinedBattle"
+	EventBattleRoundResolved   = "BattleRoundResolved"
+	EventBattleEnded           = "BattleEnded"
+	EventStandingOrdersChanged = "StandingOrdersChanged"
 )
 
 // BattleParticipantRef identifies one unit's contribution at the moment it
@@ -102,4 +103,18 @@ type BattleEndedPayload struct {
 	Winner            string    `json:"winner"` // "attacker" | "defender" | "" (no survivors on either side)
 	AttackerSurvivors int       `json:"attacker_survivors"`
 	DefenderSurvivors int       `json:"defender_survivors"`
+}
+
+// StandingOrdersChangedPayload is emitted whenever a unit's mid-battle
+// standing order changes (§5) — either applied instantly (garrison/distance-0)
+// or on Runner delivery. Records the OUTCOME (the values now in effect), not
+// the request: RetreatAtLoss nil means "no override, use the loyalty-derived
+// default" (battle.go's routFractionForLoyalty), same meaning as an empty
+// standing_orders JSONB object.
+type StandingOrdersChangedPayload struct {
+	BattleID      uuid.UUID `json:"battle_id"`
+	UnitID        uuid.UUID `json:"unit_id"`
+	WorldID       uuid.UUID `json:"world_id"`
+	RetreatAtLoss *float64  `json:"retreat_at_loss"`
+	HoldToLastMan bool      `json:"hold_to_last_man"`
 }
