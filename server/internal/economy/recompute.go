@@ -48,16 +48,17 @@ const NearjordGrainPerTick = 50.0
 // bromsen"). An absolute slot count does not scale with population — a level-1
 // Foundry employs a handful of smiths whether the city has 50 citizens or 5000.
 //
-// STRAWMAN CALIBRATION, not invariants — tune against soak data (arbetssätt
-// §13: a balance number is not a slice until there's a soak/test that can
-// falsify it). Two tiers, chosen by production role rather than measured
-// against live drift (P2 is deliberately allowed to cut existing over-
-// allocation — that IS the fix): bulk/extraction-at-volume buildings (grain,
-// stone, timber, cedar, fish — worked by many hands at once) get 2/4/6;
-// specialised or deposit-gated buildings (presses, mines, market, stable —
-// skilled or ore-scarce work) get 1/2/4. Farm and Olive Press match the two
-// anchor values megaron_plan_fysisk_gubbemodell.md P2 gives explicitly;
-// the rest extrapolate the same two tiers.
+// Canon table, Temenos_varutaxonomi_sol.md §8.2 — NOT invented here (an
+// earlier version of this table extrapolated its own two tiers instead of
+// reading §8.2 first, and got Mine/Silver mine wrong as a result; corrected
+// 2026-08-08). §8.2 also lists Fishing place, Pasture, Foundry, Shipyard,
+// Barracks, Temple and Megaron — omitted below because they have no
+// RecomputeProduction path today: Fishing place/Pasture/Shipyard don't exist
+// as buildable types yet, Foundry's bronze smelting runs through recipe.go
+// craft-events (P6), Barracks trains units rather than producing a good,
+// Temple is cult labor (megaron_cult_ar_ingen_vara_plan.md, a separate path),
+// and Megaron is explicitly "Öppet" (uncapped) in the table. Add a building
+// here when it gets a production_rules row that needs the cap.
 // Array length 4 mirrors province.MaxBuildingLevel(3)+1 — economy may not
 // import province (G1: economy(→clock,events,gossip,hexgrid) only), so the
 // bound is a plain literal. If MaxBuildingLevel ever changes, update this
@@ -70,10 +71,10 @@ var workplaceSlotTable = map[string][4]int{
 	"stonequarry": {0, 2, 4, 6},
 	"lumbermill":  {0, 2, 4, 6},
 	"harbour":     {0, 2, 4, 6},
+	"mine":        {0, 2, 4, 6},
+	"silver_mine": {0, 2, 4, 6},
 	"olive_press": {0, 1, 2, 4},
 	"winery":      {0, 1, 2, 4},
-	"mine":        {0, 1, 2, 4},
-	"silver_mine": {0, 1, 2, 4},
 	"market":      {0, 1, 2, 4},
 	"stable":      {0, 1, 2, 4},
 }
