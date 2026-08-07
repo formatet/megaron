@@ -161,6 +161,19 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 east_count AS (
 		     SELECT (SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q > $2)
 		          + (SELECT count(*) FROM hosts WHERE q > $2) AS count
+		 ),
+		 -- Ore tiles materialised once (a few dozen rows on a 230² map) instead
+		 -- of re-scanning all of map_tiles per candidate below — the EXISTS
+		 -- against map_tiles nb was a nested-loop re-scan of ~53k rows for each
+		 -- of ~11k eligible candidates (~49s on a fresh 230² world, blowing the
+		 -- 30s request timeout). Found 2026-08-07 the first time a join ran
+		 -- against a truly empty full-size world. MATERIALIZED is required —
+		 -- Postgres 12+ inlines plain CTEs, which silently undoes this fix.
+		 copper_tiles AS MATERIALIZED (
+		     SELECT q, r FROM map_tiles WHERE world_id = $1 AND copper_deposit
+		 ),
+		 tin_tiles AS MATERIALIZED (
+		     SELECT q, r FROM map_tiles WHERE world_id = $1 AND tin_deposit
 		 )
 		 SELECT mt.q, mt.r, mt.terrain,
 		        mt.copper_deposit, mt.tin_deposit,
@@ -212,19 +225,15 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		   CASE
 		     WHEN mt.q <= $2 THEN (
 		       EXISTS (
-		         SELECT 1 FROM map_tiles nb
-		         WHERE nb.world_id = mt.world_id
-		           AND nb.copper_deposit = true
-		           AND (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))
+		         SELECT 1 FROM copper_tiles nb
+		         WHERE (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))
 		               BETWEEN 2 AND 2 * $3::int
 		       )::int
 		     )
 		     ELSE (
 		       EXISTS (
-		         SELECT 1 FROM map_tiles nb
-		         WHERE nb.world_id = mt.world_id
-		           AND nb.tin_deposit = true
-		           AND (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))
+		         SELECT 1 FROM tin_tiles nb
+		         WHERE (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))
 		               BETWEEN 2 AND 2 * $3::int
 		       )::int
 		     )
