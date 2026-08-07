@@ -98,13 +98,22 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// Count current players via DISTINCT owners — not settlement rows. A Wanax holds
 	// many settlements (colonies), so COUNT(*) would falsely report "full" once colonies
 	// outnumber max_provinces even with few actual players.
+	// A player in the founder phase (wandering host, no settlement yet) holds a
+	// place too — counting only settlements let the cap be filled past max_provinces
+	// entirely by hosts still looking for a site.
 	var playerCount int
 	_ = h.pool.QueryRow(r.Context(),
-		`SELECT COUNT(DISTINCT owner_id) FROM settlements WHERE world_id = $1 AND owner_id IS NOT NULL`,
+		`SELECT COUNT(DISTINCT owner_id) FROM (
+		     SELECT owner_id FROM settlements WHERE world_id = $1 AND owner_id IS NOT NULL
+		     UNION
+		     SELECT owner_id FROM founder_phase WHERE world_id = $1 AND active
+		 ) occupied`,
 		worldID,
 	).Scan(&playerCount)
 	if playerCount >= maxProvinces {
-		writeError(w, http.StatusConflict, "world is full — you are queued")
+		// No real queue exists yet (that's D2, post-MVP) — say so rather than
+		// promising a callback that will never come.
+		writeError(w, http.StatusConflict, "world is full — try again later")
 		return
 	}
 
