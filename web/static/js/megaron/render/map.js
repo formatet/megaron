@@ -2855,7 +2855,7 @@ function drawProvince(ctx, cx, cy, p) {
   // visible (m.Visible upstream), so no separate check is needed here. Drawn
   // last, above the standard: a besieged city reads "threatened" before it
   // reads "whose flag flies here".
-  if (p.besieged) drawSiegeCloud(ctx, cx, top, sprite);
+  if (p.besieged) drawSiegeCloud(ctx, cx, top);
   ctx.restore();
 }
 
@@ -2865,9 +2865,14 @@ function drawProvince(ctx, cx, cy, p) {
 // muren rörs aldrig), so nothing about the BUILDING should look damaged; the
 // threat sits in the sky over it, exactly like the real thing (an enemy
 // holding the road in, not a breach in the stone).
-function drawSiegeCloud(ctx, cx, top, sprite) {
+//
+// Centred on the STANDARD, not the city mass: the flag is anchored at a
+// fixed cx (pole at cx, cloth cx+1..cx+5 above), independent of the mass's
+// own width — sprite.w/2 landed the cloud off-centre from the flag it was
+// meant to hover over (Timothy 2026-08-08, caught in the same eye-check).
+function drawSiegeCloud(ctx, flagX, top) {
   ctx.save();
-  const ccx = cx + (sprite.w >> 1), ccy = top - 15;
+  const ccx = flagX + 2, ccy = top - 13;
   ctx.fillStyle = '#2E2A28';
   ctx.strokeStyle = '#14100E';
   ctx.lineWidth = 0.6;
