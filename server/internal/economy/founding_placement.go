@@ -43,7 +43,7 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID, totalGu
 	}
 	center := hexgrid.Coord{Q: q, R: r}
 
-	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID)
+	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID, nil) // founding/growth placement previews the full catchment, siege denial does not apply
 	if err != nil {
 		return nil, center, fmt.Errorf("ranked food slots: %w", err)
 	}
@@ -121,7 +121,7 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 
 	// Guaranteed food regardless of placement (RecomputeProduction step 4b):
 	// nearjord's flat trickle + the population remainder auto-farming grain.
-	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID)
+	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID, nil) // founding/growth placement previews the full catchment, siege denial does not apply
 	if err != nil {
 		return 0, false, fmt.Errorf("place starting workforce: %w", err)
 	}

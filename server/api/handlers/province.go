@@ -732,6 +732,31 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			).Scan(&settlementsOwned)
 		}
 
+		// Belägring S1+S2 (megaron_plan_belagring.md): who's holding the
+		// chokepoint, named for the client — ONLY queried when the settlement
+		// is already besieged (the flag itself isn't FOW-gated; naming its
+		// cause follows the same "you feel it, you're told what's doing it"
+		// principle, Timothy 2026-08-08).
+		var besiegedBy []map[string]any
+		if sett.Besieged && sett.OwnerID != nil {
+			besiegers, err := economy.LoadBesiegers(r.Context(), h.pool, worldID, *sett.OwnerID,
+				hexgrid.Coord{Q: prov.MapTile.Q, R: prov.MapTile.R})
+			if err == nil {
+				for _, b := range besiegers {
+					besiegedBy = append(besiegedBy, map[string]any{
+						"owner_name": b.OwnerName,
+						"unit_type":  b.UnitType,
+						"size":       b.Size,
+						"q":          b.Q,
+						"r":          b.R,
+					})
+				}
+			}
+		}
+		if besiegedBy == nil {
+			besiegedBy = []map[string]any{}
+		}
+
 		resp["settlement"] = map[string]any{
 			"id":                     sett.ID,
 			"name":                   sett.Name,
@@ -739,6 +764,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kingdom_id":             sett.KingdomID,
 			"culture":                sett.CultureID,
 			"state":                  sett.State,
+			"besieged":               sett.Besieged,
+			"besieged_by":            besiegedBy,
 			"population":             sett.Population,
 			"labor_pool":             laborPool,
 			"walls":                  sett.WallLevel,

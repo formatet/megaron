@@ -114,6 +114,7 @@ export async function loadCityDrawer() {
 
   body.innerHTML = `
     <canvas id="city-scene" class="city-scene"></canvas>
+    <div id="city-siege-banner"></div>
     <div class="drawer-tabs">
       <button class="dtab active" data-tab="produktion">Production</button>
       <button class="dtab" data-tab="byggnader">Buildings</button>
@@ -158,6 +159,22 @@ export async function loadCityDrawer() {
     // säga olika saker om samma stad.
     startCityAnim(document.getElementById('city-scene'), capitalTile2,
                   pd ? pd.buildings : [], pd ? pd.build_queue : [], pd);
+
+    // Belägring S1+S2 (megaron_plan_belagring.md): NOT FOW-gated — a besieged
+    // Wanax learns this from the flag + falling production, not from sight,
+    // so it always shows when the server says besieged, regardless of what
+    // the client can otherwise see on the map.
+    const siegeBanner = document.getElementById('city-siege-banner');
+    if (siegeBanner) {
+      if (pd && pd.besieged) {
+        const who = (pd.besieged_by || [])
+          .map(b => `${b.size} ${b.unit_type} (${b.owner_name || 'unknown'})`)
+          .join(', ') || 'an unseen enemy';
+        siegeBanner.innerHTML = `<div class="attack-warn">⚔ BESIEGED — a chokepoint is held by ${who}. Catchment production is cut off.</div>`;
+      } else {
+        siegeBanner.innerHTML = '';
+      }
+    }
 
     // ── Produktion ──────────────────────────────────────────────────────────
     if (pd) {

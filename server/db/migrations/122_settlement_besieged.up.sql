@@ -1,0 +1,19 @@
+-- Migration 122: belägring S1+S2 — catchment-denial + besieged flag
+-- (megaron_plan_belagring.md §Implementeringskontrakt)
+--
+-- Deliberately a SEPARATE column, not settlements.state = 'besieged' (the
+-- existing StateBesieged enum value the plan text names): state = 'active' is
+-- read as a general "is this settlement functioning normally" gate across the
+-- codebase (capital lookup in capabilities/context.go, colony-count in
+-- ownSettlements, loyalty welfare, religion/kharis world-stock indexing,
+-- march_start's assault-landing check, succession ordering). Reusing state
+-- would silently drop a besieged settlement out of ALL of those — a besieged
+-- capital would stop counting as your active capital and disable
+-- capability-gated actions at it, loyalty/kharis would freeze instead of
+-- reacting to starvation, and so on. besieged is a production-limiting
+-- CONDITION layered on top of the active lifecycle, not a replacement state
+-- for it (Timothy 2026-08-08, decided when this collision was raised —
+-- confirmed here rather than in the plan doc since the plan predates the
+-- discovery). state's own StateBesieged constant (internal/settlement/model.go)
+-- is left in place but superseded — not wired to anything.
+ALTER TABLE settlements ADD COLUMN besieged BOOLEAN NOT NULL DEFAULT false;

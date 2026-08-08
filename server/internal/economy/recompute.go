@@ -483,10 +483,15 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// Part B: labor_pool = population. Soldiers are extracted from population at
 	// recruit time (population -= men), so the army columns are no longer a drain here.
 	var population int
+	var ownerID uuid.UUID
+	var worldID uuid.UUID
+	var settlementQ, settlementR int
 	err := tx.QueryRow(ctx,
-		`SELECT population FROM settlements WHERE id = $1`,
+		`SELECT s.population, s.owner_id, prov.world_id, prov.map_q, prov.map_r
+		 FROM settlements s JOIN provinces prov ON prov.id = s.province_id
+		 WHERE s.id = $1`,
 		settlementID,
-	).Scan(&population)
+	).Scan(&population, &ownerID, &worldID, &settlementQ, &settlementR)
 	if err != nil {
 		return fmt.Errorf("recompute: load settlement: %w", err)
 	}
@@ -496,13 +501,37 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		laborPool = 0
 	}
 
+	// ── 1b. Belägring S1+S2 (megaron_plan_belagring.md): which of the
+	// catchment ring's hexes the settlement still has physical access to,
+	// and whether it counts as besieged at all. Computed once here (not
+	// inside LoadHexProductionOptions/CatchmentBasePotential separately) so
+	// the expensive graph walk runs at most once per RecomputeProduction call
+	// — the "billig förkoll" inside ReachableCatchmentHexes already skips it
+	// entirely for the common case of no enemy nearby.
+	center := hexgrid.Coord{Q: settlementQ, R: settlementR}
+	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
+	reachable, besieged, err := ReachableCatchmentHexes(ctx, tx, worldID, ownerID, center, ring)
+	if err != nil {
+		return fmt.Errorf("recompute: %w", err)
+	}
+	if _, err := tx.Exec(ctx,
+		`UPDATE settlements SET besieged = $2 WHERE id = $1 AND besieged <> $2`,
+		settlementID, besieged,
+	); err != nil {
+		return fmt.Errorf("recompute: write besieged flag: %w", err)
+	}
+
 	// ── 2. Load this settlement's placement-eligible production menu ─────────
 	// Every catchment ring hex's own production menu, every built workplace
 	// building's terrain-free menu, and the flat unconditional trickle — see
 	// LoadHexProductionOptions/LoadBuildingProductionOptions/
 	// UnconditionalPotential doc comments (placement_yield.go) for exactly
-	// what each covers and why they're split three ways.
-	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID)
+	// what each covers and why they're split three ways. reachable is nil
+	// (unfiltered) for an unbesieged settlement — ReachableCatchmentHexes
+	// returns the full ring map in that case, not nil, so pass it through
+	// unconditionally; LoadHexProductionOptions treats a full map the same as
+	// no filtering, just with one extra map lookup per hex.
+	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID, reachable)
 	if err != nil {
 		return fmt.Errorf("recompute: %w", err)
 	}
