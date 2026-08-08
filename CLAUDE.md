@@ -141,16 +141,26 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   (19 hexes, 18 worked; P1, 2026-08-07 — was radius-1/7 hexes before), worked without outposts; dynamic,
   lazy, deterministic. Radius lives in `internal/hexgrid.CatchmentRadius`.
 - **Coast is not a terrain** — it's a property (neighbour of sea); `coast_beach` is gone from the enum.
-- ⚠️ **Labor = share of pop — REPEALED 2026-08-07 (Timothy), buildings fixed (P2), terrain still
-  share-based (P3 not built).** The rule *was*: share of pop (weight semantics), not absolute citizens,
-  so growing pop follows the percentage. **P2 (2026-08-07) replaced the building term**:
-  `economy.LaborCapacity`'s building contribution is now `economy.WorkplaceSlots(buildingType, level)`,
-  an ABSOLUTE headcount per building/level, converted to an effective share via `slots/laborPool` so it
-  no longer scales with population. The terrain term (`GoodLaborTerrainBase = 0.25`, no building
-  required) is **still** a share of pop — P3 (hex capacity) is what replaces that one, not built yet.
-  **Do not build new share-based labour logic for BUILDINGS** — use `WorkplaceSlots`. Terrain-only goods
-  are still fair game to leave share-based until P3. Rewrite this bullet when P3 lands; plan and phases:
-  `megaron_plan_fysisk_gubbemodell.md` (vault), design in `Temenos_varutaxonomi_sol.md` §1.1, §8.
+- **Labor = individual placement (P4, 2026-08-08), NOT a weight/share of pop.** `settlement_labor`
+  (good_key weight) is **repealed for every good except `cult`** (temple devotion — its own path,
+  `megaron_cult_ar_ingen_vara_plan.md`, untouched). Production is derived from `settlement_placement`:
+  one row = one gubbe (`Temenos_varutaxonomi_sol.md` §1.1, 1 gubbe = 100 invånare) bound to ONE hex or
+  building slot doing ONE good. `economy.RecomputeProduction` sums `placementYield` per placed gubbe —
+  `rate_per_tick / cap` for every good **except grain**, which stays capacity-exempt (`placementYield`'s
+  doc comment: production_rules' grain rates were never calibrated for a real physical cap — removing
+  the exemption starves every city, caught against a hard pre-P4 invariant test). P2/P3's slot numbers
+  (`WorkplaceSlots`, `hexCapacityRule`) are **gubbe-scale**, not citizen-scale (Timothy 2026-08-08) —
+  "Farm level 3 → 6 slots" means 6 *gubbar* (600 citizens), not 6 citizens.
+  **Do not build new weight/share-based labour logic** — use `settlement_placement` +
+  `economy.LoadHexProductionOptions`/`LoadBuildingProductionOptions`. Founding
+  (`create_metropolis.go`, `unit_arrival.go foundColony`) auto-places starting gubbar on best food
+  hexes via `economy.PlaceStartingWorkforce` (greedy-until-self-sufficient, Timothy's algorithm);
+  population growth crossing a new hundred auto-places via `economy.PlaceNextGubbeOnBestFoodHex`
+  (kharis/tick.go `applyDecay`). HTTP surface: `POST/DELETE/GET .../placements`
+  (`api/handlers/settlement_placement.go`). Plan: `megaron_plan_fysisk_gubbemodell.md` (vault) §P4;
+  design `Temenos_varutaxonomi_sol.md` §1.1, §8. P5 (stadsvyn UI, keryx) not built — the old
+  percent-allocation endpoint (`LaborAlloc`) and web economy drawer still exist but are now inert
+  no-ops for non-cult goods (harmless dead writes to `settlement_labor`) until P5 replaces them.
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
 - **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text

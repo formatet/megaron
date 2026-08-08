@@ -122,6 +122,23 @@ func QRArrays(coords []Coord) (qs, rs []int32) {
 	return qs, rs
 }
 
+// RingOrdinal returns c's 1-based position in Ring(center, radius)'s
+// deterministic order, and whether c is in the ring at all. Ring's own order
+// (q ascending, then r ascending within q) is exactly the address space P0-UI
+// locked for the catchment raster and keryx (megaron_plan_fysisk_gubbemodell.md
+// P0-UI answer 7: "adressrymden är hex-ordinal 1–18... samma ordning rastret
+// numrerar") — a stored ordinal would drift the moment Ring's iteration order
+// changed, so callers derive it on demand from the same function that
+// produces the ring, rather than persisting a second copy of the numbering.
+func RingOrdinal(center Coord, radius int, c Coord) (ordinal int, ok bool) {
+	for i, rc := range Ring(center, radius) {
+		if rc == c {
+			return i + 1, true
+		}
+	}
+	return 0, false
+}
+
 func absInt(n int) int {
 	if n < 0 {
 		return -n

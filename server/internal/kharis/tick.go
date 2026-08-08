@@ -724,7 +724,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	// daily accrual can fall short of desired growth's cost (throttling it)
 	// while a rich catchment's larger accrual doesn't — see
 	// TestApplyDecay_GrainFundedGrowth_GeographyDifferentiates.
-	if _, err := h.pool.Exec(ctx,
+	growthRows, err := h.pool.Query(ctx,
 		`WITH growth_calc AS (
 		     SELECT
 		         s.id,
@@ -775,7 +775,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		 ),
 		 final AS (
 		     SELECT
-		         id, grain_now,
+		         id, grain_now, pop AS old_pop,
 		         GREATEST(101, LEAST(30000,
 		             -- Starvation: retain (1 - starvationPopLossRatePerTick) of pop. The
 		             -- ::numeric cast keeps this exact numeric ROUND (half away from
@@ -792,7 +792,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		         population = f.new_pop
 		     FROM final f
 		     WHERE f.id = s.id
-		     RETURNING s.id
+		     RETURNING s.id, f.old_pop, f.new_pop
 		 ),
 		 grain_upd AS (
 		     UPDATE settlement_goods sg SET
@@ -802,10 +802,41 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		     WHERE f.grain_draw > 0 AND sg.settlement_id = f.id AND sg.good_key = 'grain'
 		     RETURNING sg.settlement_id
 		 )
-		 SELECT count(*) FROM pop_upd`,
+		 SELECT id, old_pop, new_pop FROM pop_upd`,
 		worldID, grainPerCitizen, starvationPopLossRatePerTick, economy.FoodGoods,
-	); err != nil {
+	)
+	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
+	} else {
+		// P4 (megaron_plan_fysisk_gubbemodell.md, P0-UI answer 5): a settlement
+		// that just crossed one or more new full hundreds gets each new gubbe
+		// auto-placed on its best available food hex — the fix for "a 1-gubbe
+		// city crossing 199→200 loses its 99 invisible auto-farmers." Must run
+		// BEFORE the RecomputeProduction loop below so the placement is
+		// reflected in this same tick's rates, not next tick's.
+		type popCrossing struct {
+			id             uuid.UUID
+			oldPop, newPop int
+		}
+		var crossings []popCrossing
+		for growthRows.Next() {
+			var c popCrossing
+			if err := growthRows.Scan(&c.id, &c.oldPop, &c.newPop); err != nil {
+				slog.Warn("daily decay: scan growth row", "err", err)
+				continue
+			}
+			crossings = append(crossings, c)
+		}
+		growthRows.Close()
+		for _, c := range crossings {
+			oldGubbar := c.oldPop / 100
+			newGubbar := c.newPop / 100
+			for ordinal := oldGubbar + 1; ordinal <= newGubbar; ordinal++ {
+				if _, err := economy.PlaceNextGubbeOnBestFoodHex(ctx, h.pool, c.id, ordinal); err != nil {
+					slog.Warn("spawn-to-food default failed", "settlement", c.id, "gubbe", ordinal, "err", err)
+				}
+			}
+		}
 	}
 
 	// C-collapse: schedule CollapseSettlement for any settlement that has already

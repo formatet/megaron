@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
 
@@ -63,6 +64,10 @@ func TestRecomputeProduction_NullsStaleGoodKeepsLiveGood(t *testing.T) {
 
 	// Stale cedar: settled at rate 42 for 5 ticks before this recompute call.
 	seedStaleGood(t, settlementID, "cedar", /*amount*/ 10, /*rate*/ 42, /*calcTick*/ tick-5)
+	// P4: stone-on-mountain_limestone has no P3 hexCapacityRule entry (falls
+	// back to HexFallbackCap), so it needs an explicit placement to produce
+	// anything — place one gubbe on one of the fixture's 6 seeded hexes.
+	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, "stone")
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)

@@ -12,8 +12,15 @@ import (
 	"math"
 	"testing"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
+
+// fishHexOffsets/grainHexOffsets are recomputeWaterFixture's own neighbour
+// order (offsets[:fishTiles]/offsets[:grainTiles]) — pulled out so the P4
+// placement tests below can address the exact hexes the fixture actually
+// seeded, instead of re-deriving them.
+var recomputeWaterFixtureOffsets = []hexgrid.Coord{{Q: 1, R: 0}, {Q: -1, R: 0}, {Q: 0, R: 1}, {Q: 0, R: -1}, {Q: 1, R: -1}, {Q: -1, R: 1}}
 
 // recomputeWaterFixture builds an active world + one settlement whose 7-hex
 // catchment mixes terrains freely for the grain/fish invariant tests:
@@ -122,6 +129,11 @@ func TestRecomputeProduction_AK1_PureFishCatchment_ZeroGrainNotNegative(t *testi
 	const tick = 200
 	const pop = 120
 	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 0, /*fishTiles*/ 6)
+	// P4: staff every coastal_sea hex to its P3 cap (1, no harbour) — the
+	// placement-era equivalent of "weight=1.0, capacity-clamped" pre-P4.
+	for i, hex := range recomputeWaterFixtureOffsets {
+		placeHexGubbe(t, pool, settlementID, i+1, hex, "fish")
+	}
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
@@ -172,6 +184,14 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 	const tick = 200
 	const pop = 500
 	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 3, /*fishTiles*/ 0)
+	// P4: grain is exempt from the physical hex cap (placementYield, mirroring
+	// the pre-P4 LaborCapacity special case) — ONE gubbe per plains hex already
+	// yields that hex's FULL rate_per_tick, uncapped. pop=500 is an exact
+	// multiple of 100 so the population-remainder term (§1.1) is 0 and doesn't
+	// need accounting for below.
+	for i, hex := range recomputeWaterFixtureOffsets[:3] {
+		placeHexGubbe(t, pool, settlementID, i+1, hex, "grain")
+	}
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
@@ -193,25 +213,13 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 		t.Fatalf("read grain base potential: %v", err)
 	}
 
-	// Weight auto-seeds to 1/n across whatever potentials this catchment
-	// matches — plains alone also unlocks oil/livestock unconditionally and
-	// mountain_limestone unlocks stone/tin unconditionally (plus the
-	// universal timber trickle), so n is NOT simply {grain, timber}. Read the
-	// actual seeded weight rather than assuming n, so this test only pins the
-	// AK2 claim (grain rate = grainProd - demand, exactly like pre-slice) and
-	// not an unrelated assumption about the production_rules catalog's shape.
-	// LaborCapacity for grain is exempt (always 1.0) so weight is unclamped.
-	var grainWeight float64
-	if err := pool.QueryRow(ctx,
-		`SELECT weight FROM settlement_labor WHERE settlement_id = $1 AND good_key = 'grain'`,
-		settlementID,
-	).Scan(&grainWeight); err != nil {
-		t.Fatalf("read seeded grain weight: %v", err)
-	}
-	// + NearjordGrainPerTick: P1 (megaron_plan_fysisk_gubbemodell.md §3.2) adds
-	// the settlement's own-hex flat grain trickle on top of the catchment-ring
-	// potential — unconditional, not scaled by weight/labor.
-	wantGrainProd := (grainBase/REF_LABOR)*grainWeight*float64(pop) + NearjordGrainPerTick
+	// P4: every plains hex is staffed to EXACTLY its cap (2/hex, 3 hexes), so
+	// each hex's own yield_per_worker (rate/cap) × cap reproduces that hex's
+	// full rate_per_tick — summed across the 3 hexes, that's exactly grainBase
+	// (queried above). + NearjordGrainPerTick: P1 (megaron_plan_fysisk_gubbemodell.md
+	// §3.2) adds the settlement's own-hex flat grain trickle on top of the
+	// catchment-ring potential — unconditional, not scaled by placement.
+	wantGrainProd := grainBase + NearjordGrainPerTick
 	wantDemand := GrainConsumptionPerTick(pop)
 	wantGrainRate := wantGrainProd - wantDemand
 
@@ -257,6 +265,10 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 	// picked with a large pop so demand outstrips it either way.
 	const pop = 20000
 	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 0, /*fishTiles*/ 1)
+	// P4: staff the one coastal_sea hex to its P3 cap (1, no harbour) — fully
+	// staffed regardless of pop is the whole point (P3's population-invariant
+	// cap), so a huge pop is still fed by exactly this one hex's yield.
+	placeHexGubbe(t, pool, settlementID, 1, recomputeWaterFixtureOffsets[0], "fish")
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
@@ -288,23 +300,10 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 	).Scan(&fishBase); err != nil {
 		t.Fatalf("read fish base potential: %v", err)
 	}
-	var weight float64
-	if err := pool.QueryRow(ctx,
-		`SELECT weight FROM settlement_labor WHERE settlement_id = $1 AND good_key = 'fish'`,
-		settlementID,
-	).Scan(&weight); err != nil {
-		t.Fatalf("read seeded fish weight: %v", err)
-	}
-	hexSlots, err := LoadHexCapacity(ctx, pool, settlementID)
-	if err != nil {
-		t.Fatalf("LoadHexCapacity: %v", err)
-	}
-	cap := LaborCapacity("fish", true, hexSlots["fish"], 0, pop)
-	staffed := weight
-	if staffed > cap {
-		staffed = cap
-	}
-	fishProd := (fishBase / REF_LABOR) * staffed * float64(pop)
+	// P4: the one fish hex is staffed to EXACTLY its cap (1), so its
+	// yield_per_worker (rate/cap) × cap reproduces the hex's full
+	// rate_per_tick — i.e. fishProd == fishBase, regardless of pop.
+	fishProd := fishBase
 	if fishProd >= GrainConsumptionPerTick(pop) {
 		t.Fatalf("test fixture invariant broken: fishProd (%v) must be BELOW demand (%v) for this scenario",
 			fishProd, GrainConsumptionPerTick(pop))

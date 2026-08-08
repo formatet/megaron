@@ -1,0 +1,242 @@
+package handlers
+
+// HTTP-level tests for P4's placement endpoints (megaron_plan_fysisk_gubbemodell.md):
+// place/unplace/list. DB integration tests (real Postgres, gated by DATABASE_URL,
+// same pattern as craft_event_test.go/recruit_ship_test.go).
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
+	"testing"
+	"time"
+
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/notify"
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+)
+
+type placementFixture struct {
+	worldID      uuid.UUID
+	provinceID   uuid.UUID
+	settlementID uuid.UUID
+	accessToken  string
+	router       *chi.Mux
+}
+
+func setupPlacementFixture(t *testing.T, catchmentTerrains map[[2]int]string) *placementFixture {
+	t.Helper()
+	pool := p10TestPool(t) // reuses the shared DATABASE_URL-gated pool helper (p10_gate_visibility_test.go)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-placement-%'`,
+	); err != nil {
+		t.Fatalf("archive leftover test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status, current_tick) VALUES ($1, 'active', 100) RETURNING id`,
+		"test-placement-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID) })
+
+	authSvc := auth.NewService(pool, "test-secret")
+	username := "placement-" + uuid.New().String()
+	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	if err != nil {
+		t.Fatalf("register test player: %v", err)
+	}
+	claims, err := authSvc.ValidateAccessToken(accessToken)
+	if err != nil {
+		t.Fatalf("validate token: %v", err)
+	}
+	playerID := claims.PlayerID
+
+	var provinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'plains') RETURNING id`,
+		worldID,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create province: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 0, 0, 'plains')`,
+		worldID,
+	); err != nil {
+		t.Fatalf("seed centre tile: %v", err)
+	}
+	for xy, terrain := range catchmentTerrains {
+		coastal := terrain == "coastal_sea"
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal) VALUES ($1, $2, $3, $4, $5)`,
+			worldID, xy[0], xy[1], terrain, coastal,
+		); err != nil {
+			t.Fatalf("seed catchment tile (%d,%d): %v", xy[0], xy[1], err)
+		}
+	}
+
+	var settlementID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
+		 VALUES ($1, $2, 'Gubbeville', 'achaean', $3, 'capital', true, 500) RETURNING id`,
+		worldID, provinceID, playerID,
+	).Scan(&settlementID); err != nil {
+		t.Fatalf("create settlement: %v", err)
+	}
+	if err := economy.RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatalf("initial RecomputeProduction: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	scheduler := events.NewScheduler(pool, clk)
+	eventStore := events.NewStore(pool)
+	hub := notify.New()
+	hub.SetPool(pool)
+	ph := NewProvinceHandler(pool, scheduler, clk, economy.SitosConfig{}, eventStore, hub)
+
+	r := chi.NewRouter()
+	r.Use(auth.Middleware(authSvc))
+	r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
+	r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
+	r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
+
+	return &placementFixture{worldID: worldID, provinceID: provinceID, settlementID: settlementID, accessToken: accessToken, router: r}
+}
+
+func (f *placementFixture) do(t *testing.T, method, path string, body any) (int, map[string]any) {
+	t.Helper()
+	var buf bytes.Buffer
+	if body != nil {
+		if err := json.NewEncoder(&buf).Encode(body); err != nil {
+			t.Fatalf("encode body: %v", err)
+		}
+	}
+	req := httptest.NewRequest(method, path, &buf)
+	req.Header.Set("Authorization", "Bearer "+f.accessToken)
+	rec := httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	var resp map[string]any
+	_ = json.Unmarshal(rec.Body.Bytes(), &resp)
+	return rec.Code, resp
+}
+
+func (f *placementFixture) placementsPath() string {
+	return "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/placements"
+}
+
+// TestPlaceGubbe_GrainHexUncappedMultiplePlacements: two gubbar can both work
+// the SAME grain hex (placementYield's grain exemption) — neither placement
+// is rejected for capacity, and both raise the settlement's grain rate.
+func TestPlaceGubbe_GrainHexUncappedMultiplePlacements(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+
+	code1, resp1 := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
+	if code1 != http.StatusCreated {
+		t.Fatalf("first grain placement = %d: %v", code1, resp1)
+	}
+	code2, resp2 := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
+	if code2 != http.StatusCreated {
+		t.Fatalf("second grain placement on the SAME hex = %d: %v (grain must not be capacity-limited)", code2, resp2)
+	}
+	if resp1["gubbe_ordinal"] == resp2["gubbe_ordinal"] {
+		t.Errorf("two placements got the same gubbe_ordinal: %v", resp1["gubbe_ordinal"])
+	}
+
+	code, listResp := f.do(t, http.MethodGet, f.placementsPath(), nil)
+	if code != http.StatusOK {
+		t.Fatalf("list placements = %d: %v", code, listResp)
+	}
+	placements, _ := listResp["placements"].([]any)
+	if len(placements) != 2 {
+		t.Errorf("expected 2 placements listed, got %d (%v)", len(placements), listResp)
+	}
+	if int(listResp["pool_size"].(float64)) != 3 { // 500 pop / 100 = 5 gubbar total, 2 placed
+		t.Errorf("pool_size = %v, want 3", listResp["pool_size"])
+	}
+}
+
+// TestPlaceGubbe_FishHexRejectsOverCapacity: coastal_sea's P3 cap (1, no
+// harbour) means a SECOND gubbe on the same fish hex must be rejected —
+// fish (unlike grain) is a real, physically capped placement.
+func TestPlaceGubbe_FishHexRejectsOverCapacity(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "coastal_sea"})
+
+	code1, resp1 := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "fish"})
+	if code1 != http.StatusCreated {
+		t.Fatalf("first fish placement = %d: %v", code1, resp1)
+	}
+	code2, resp2 := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "fish"})
+	if code2 != http.StatusConflict {
+		t.Fatalf("second fish placement (over cap=1) = %d: %v, want 409", code2, resp2)
+	}
+}
+
+// TestUnplaceGubbe_ReturnsToPoolAndDropsRate: unplacing removes the row and
+// the settlement's rate for that good drops back to what it was before
+// (grain: exactly the flat/remainder floor, no hex contribution).
+func TestUnplaceGubbe_ReturnsToPoolAndDropsRate(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+
+	code, resp := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
+	if code != http.StatusCreated {
+		t.Fatalf("place: %d: %v", code, resp)
+	}
+	ordinal := int(resp["gubbe_ordinal"].(float64))
+
+	code, resp = f.do(t, http.MethodDelete, f.placementsPath()+"/"+strconv.Itoa(ordinal), nil)
+	if code != http.StatusOK {
+		t.Fatalf("unplace: %d: %v", code, resp)
+	}
+
+	code, listResp := f.do(t, http.MethodGet, f.placementsPath(), nil)
+	if code != http.StatusOK {
+		t.Fatalf("list after unplace: %d: %v", code, listResp)
+	}
+	placements, _ := listResp["placements"].([]any)
+	if len(placements) != 0 {
+		t.Errorf("expected 0 placements after unplace, got %d", len(placements))
+	}
+	if int(listResp["pool_size"].(float64)) != 5 {
+		t.Errorf("pool_size after unplace = %v, want 5 (all gubbar back in the pool)", listResp["pool_size"])
+	}
+
+	// Re-unplacing the same (now-gone) ordinal must 404, not silently succeed.
+	code, resp = f.do(t, http.MethodDelete, f.placementsPath()+"/"+strconv.Itoa(ordinal), nil)
+	if code != http.StatusNotFound {
+		t.Errorf("re-unplace of an already-unplaced gubbe = %d, want 404", code)
+	}
+}
+
+// TestPlaceGubbe_RejectsWhenPoolIsEmpty: a settlement with 0 population
+// (0 gubbar) has nothing to place — every attempt must fail cleanly, not
+// place a phantom gubbe with an invalid ordinal.
+func TestPlaceGubbe_RejectsWhenPoolIsEmpty(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+	ctx := context.Background()
+	pool := p10TestPool(t)
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET population = 0 WHERE id = $1`, f.settlementID); err != nil {
+		t.Fatalf("zero population: %v", err)
+	}
+
+	code, resp := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
+	if code != http.StatusConflict {
+		t.Errorf("placement with 0 gubbar available = %d: %v, want 409", code, resp)
+	}
+}
+

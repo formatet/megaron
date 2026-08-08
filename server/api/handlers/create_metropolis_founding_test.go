@@ -123,6 +123,22 @@ func foundingLaborWeight(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUI
 	return w, true
 }
 
+// foundingPlacementCount counts settlement_placement rows for one good — P4's
+// replacement for foundingLaborWeight's settlement_labor read, now that
+// createMetropolis seeds opening production via economy.PlaceStartingWorkforce
+// instead of a weight.
+func foundingPlacementCount(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID, good string) int {
+	t.Helper()
+	var n int
+	if err := pool.QueryRow(context.Background(),
+		`SELECT COUNT(*) FROM settlement_placement WHERE settlement_id=$1 AND good_key=$2`,
+		settlementID, good,
+	).Scan(&n); err != nil {
+		t.Fatalf("count placements for %s: %v", good, err)
+	}
+	return n
+}
+
 // TestFounding_WheatCatchment_GrantsDemeterFarmOnly: a metropolis founded on
 // wheat-friendly ground (a plains catchment) founds building-free EXCEPT for
 // Demeter's farm, with all opening labor on grain and no cult floor.
@@ -138,8 +154,13 @@ func TestFounding_WheatCatchment_GrantsDemeterFarmOnly(t *testing.T) {
 			t.Errorf("wheat catchment: metropolis should found building-free but has a %s", bt)
 		}
 	}
-	if w, ok := foundingLaborWeight(t, pool, sid, "grain"); !ok || w != 1.0 {
-		t.Errorf("grain labor weight = %v (present=%v), want 1.0", w, ok)
+	// P4: opening production comes from economy.PlaceStartingWorkforce, which
+	// auto-places gubbar on the best food hexes — a wheat catchment with
+	// Demeter's farm must place at least one grain gubbe (replaces the old
+	// "grain labor weight == 1.0" check, settlement_labor no longer drives
+	// non-cult production).
+	if n := foundingPlacementCount(t, pool, sid, "grain"); n == 0 {
+		t.Error("wheat catchment: expected at least one grain placement, got none")
 	}
 	if _, ok := foundingLaborWeight(t, pool, sid, "cult"); ok {
 		t.Error("cult labor weight should not be seeded (no starter temple)")
@@ -158,7 +179,10 @@ func TestFounding_BarrenCatchment_GrantsNoFarm(t *testing.T) {
 			t.Errorf("barren catchment: metropolis should found building-free but has a %s", bt)
 		}
 	}
-	if w, ok := foundingLaborWeight(t, pool, sid, "grain"); !ok || w != 1.0 {
-		t.Errorf("grain labor weight = %v (present=%v), want 1.0", w, ok)
+	// P4: a barren catchment (no plains/river_valley/river_delta anywhere) has
+	// no grain-capable hex to place a gubbe on at all — PlaceStartingWorkforce
+	// leaves every starting gubbe in the pool.
+	if n := foundingPlacementCount(t, pool, sid, "grain"); n != 0 {
+		t.Errorf("barren catchment: expected zero grain placements (no grain-capable hex), got %d", n)
 	}
 }

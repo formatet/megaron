@@ -12,6 +12,8 @@ package economy
 import (
 	"context"
 	"testing"
+
+	"formatet/megaron/server/internal/hexgrid"
 )
 
 // TestRecomputeProduction_HexSlotCapIsPopulationInvariant mirrors
@@ -26,12 +28,9 @@ func TestRecomputeProduction_HexSlotCapIsPopulationInvariant(t *testing.T) {
 
 	rateAt := func(pop int) float64 {
 		settlementID := seedFullRingFixture(t, tick, pop, "forest_cedar")
-		if _, err := pool.Exec(ctx,
-			`INSERT INTO settlement_labor (settlement_id, good_key, weight) VALUES ($1, 'cedar', 1.0)`,
-			settlementID,
-		); err != nil {
-			t.Fatalf("seed full cedar weight: %v", err)
-		}
+		// Full staffing under P4 = one gubbe per hex-slot, not a weight — the
+		// no-lumbermill cap is capNoBuilding=1 (hexCapacityRule{"cedar",1,2,...}).
+		placeFullRing(t, pool, settlementID, hexgrid.Coord{Q: 0, R: 0}, "cedar", 1, 1)
 		tx, err := pool.Begin(ctx)
 		if err != nil {
 			t.Fatalf("begin tx: %v", err)
