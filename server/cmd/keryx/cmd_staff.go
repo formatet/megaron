@@ -56,6 +56,10 @@ see current occupancy.`,
 				return fmt.Errorf("%s has no producible good yet", buildingType)
 			}
 			if len(args) == 1 {
+				if jsonMode {
+					printJSON(building)
+					return nil
+				}
 				for _, g := range building.Goods {
 					fmt.Printf("%-14s L%-2d %s\n", buildingType, building.Level, goodCell(g))
 				}
@@ -72,52 +76,89 @@ see current occupancy.`,
 			}
 
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/placements", cfg.WorldID, prov)
+			applied := 0
+			var stopErr error
 			if delta > 0 {
-				placed := 0
-				for ; placed < delta; placed++ {
+				for ; applied < delta; applied++ {
 					if _, err := c.post(path, map[string]any{"target_kind": "building", "building_type": buildingType, "good_key": good.GoodKey}); err != nil {
-						if placed == 0 {
+						if applied == 0 && !jsonMode {
 							return err
 						}
-						fmt.Printf("Placed %d of %d requested (stopped: %v).\n", placed, delta, err)
+						stopErr = err
 						break
 					}
 				}
-				if placed == delta {
-					fmt.Printf("Placed %d gubbe(s) on %s.\n", placed, buildingType)
+				if !jsonMode {
+					if applied == delta {
+						fmt.Printf("Placed %d gubbe(s) on %s.\n", applied, buildingType)
+					} else {
+						fmt.Printf("Placed %d of %d requested (stopped: %v).\n", applied, delta, stopErr)
+					}
 				}
 			} else {
 				want := -delta
 				if want > len(good.PlacedOrdinals) {
 					want = len(good.PlacedOrdinals)
 				}
-				removed := 0
-				for ; removed < want; removed++ {
-					ordinal := good.PlacedOrdinals[removed]
+				for ; applied < want; applied++ {
+					ordinal := good.PlacedOrdinals[applied]
 					if _, err := c.delete(fmt.Sprintf("%s/%d", path, ordinal)); err != nil {
-						fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, err)
+						stopErr = err
 						break
 					}
 				}
-				if removed == want {
-					if want < -delta {
-						fmt.Printf("Removed %d gubbe(s) — only %d were staffed there.\n", removed, want)
+				applied = -applied // report removals as a negative delta, symmetric with the request
+				if !jsonMode {
+					removed := -applied
+					if removed == want {
+						if want < -delta {
+							fmt.Printf("Removed %d gubbe(s) — only %d were staffed there.\n", removed, want)
+						} else {
+							fmt.Printf("Removed %d gubbe(s) from %s.\n", removed, buildingType)
+						}
 					} else {
-						fmt.Printf("Removed %d gubbe(s) from %s.\n", removed, buildingType)
+						fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, stopErr)
 					}
 				}
 			}
 
-			if opts2, oerr := fetchPlacementOptions(c, cfg.WorldID, prov); oerr == nil {
-				for _, b := range opts2.Buildings {
-					if b.BuildingType != buildingType {
-						continue
-					}
-					for _, g := range b.Goods {
-						fmt.Printf("  %s\n", goodCell(g))
+			opts2, oerr := fetchPlacementOptions(c, cfg.WorldID, prov)
+			if oerr != nil {
+				if applied == 0 && stopErr != nil {
+					return stopErr
+				}
+				return oerr
+			}
+			var after *placementGood
+			for _, b := range opts2.Buildings {
+				if b.BuildingType != buildingType {
+					continue
+				}
+				for i := range b.Goods {
+					if b.Goods[i].GoodKey == good.GoodKey {
+						after = &b.Goods[i]
 					}
 				}
-				fmt.Printf("  %d idle gubbar left.\n", opts2.PoolSize)
+			}
+			if jsonMode {
+				printJSON(map[string]any{
+					"building_type": buildingType,
+					"requested":     delta,
+					"applied":       applied,
+					"good":          after,
+					"idle_after":    opts2.PoolSize,
+				})
+				if applied == 0 && stopErr != nil {
+					return stopErr
+				}
+				return nil
+			}
+			if after != nil {
+				fmt.Printf("  %s\n", goodCell(*after))
+			}
+			fmt.Printf("  %d idle gubbar left.\n", opts2.PoolSize)
+			if applied == 0 && stopErr != nil {
+				return stopErr
 			}
 			return nil
 		},
