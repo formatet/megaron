@@ -32,6 +32,10 @@ const siegeCheckRadius = hexgrid.CatchmentRadius + siegeInterceptRadius
 // blockade starves the city whether the defender has SEEN the blockader or
 // not — the notice comes from the besieged flag + falling stock, not sight.
 //
+// Only an enemy unit in SENTRY stance denies a hex (revised 2026-08-08,
+// Timothy — see §S1.3 below): merely marching somewhere and stopping is not
+// a blockade, an attacker must commit to holding the chokepoint.
+//
 // Land ring hexes are reachable when a land-passable path from the
 // settlement's own hex (center) reaches them without entering an enemy-held
 // hex — BFS over the world's tile graph, blocked nodes = enemy-positioned
@@ -47,8 +51,8 @@ func ReachableCatchmentHexes(ctx context.Context, tx Tx, worldID uuid.UUID, sett
 		full[c] = true
 	}
 
-	// §S1.2 billig förkoll: no enemy positioned unit within reach of the ring
-	// at all → skip the graph walk entirely, full production. This is the
+	// §S1.2 billig förkoll: no enemy SENTRY unit within reach of the ring at
+	// all → skip the graph walk entirely, full production. This is the
 	// condition that lets RecomputeProduction (a hot path, run for every
 	// settlement many times a day) pay for the BFS below only for the rare
 	// besieged city.
@@ -56,9 +60,9 @@ func ReachableCatchmentHexes(ctx context.Context, tx Tx, worldID uuid.UUID, sett
 	if err := tx.QueryRow(ctx,
 		`SELECT EXISTS(
 		   SELECT 1 FROM units
-		   WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned'
-		     AND q IS NOT NULL AND r IS NOT NULL
-		     AND (ABS(q - $3) + ABS(r - $4) + ABS((q + r) - ($3 + $4))) / 2 <= $5
+		   WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'
+		     AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL
+		     AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5
 		 )`,
 		worldID, settlementOwner, center.Q, center.R, siegeCheckRadius,
 	).Scan(&enemyNearby); err != nil {
@@ -68,14 +72,22 @@ func ReachableCatchmentHexes(ctx context.Context, tx Tx, worldID uuid.UUID, sett
 		return full, false, nil
 	}
 
-	// §S1.3: every enemy-positioned hex within reach — STÅ räcker (Beslutade
-	// delbeslut 1), no stance/reaction_policy gate, no FOW gate — becomes a
-	// blocked node in the graph walk below.
+	// §S1.3 REVIDERAT 2026-08-08 (Timothy, ersätter "STÅ räcker"): merely
+	// marching-then-stopping is not a blockade — "man kan inte bara ställa sig
+	// där, den måste in i belägrings-stance. Annars blir det lite för enkelt."
+	// Reuses the EXISTING sentry stance rather than inventing a new one:
+	// sentry already means "holding this position with intent" for both land
+	// (SetStance) and naval (sentryArrived's self-renewing patrol) units, and
+	// the plan's own sea-denial case already described it as "en galär i
+	// sentry" before this revision made it load-bearing everywhere. Same
+	// sentry_q/sentry_r reference point transport/intercept.go uses, not raw
+	// q/r — the declared hold centre, not merely wherever the unit happens to
+	// stand. No reaction_policy/FOW gate (§S1.6 stands: physical fact).
 	rows, err := tx.Query(ctx,
-		`SELECT q, r FROM units
-		 WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned'
-		   AND q IS NOT NULL AND r IS NOT NULL
-		   AND (ABS(q - $3) + ABS(r - $4) + ABS((q + r) - ($3 + $4))) / 2 <= $5`,
+		`SELECT sentry_q, sentry_r FROM units
+		 WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'
+		   AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL
+		   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5`,
 		worldID, settlementOwner, center.Q, center.R, siegeCheckRadius,
 	)
 	if err != nil {
@@ -152,6 +164,53 @@ func ReachableCatchmentHexes(ctx context.Context, tx Tx, worldID uuid.UUID, sett
 
 	besieged = len(reachable) < len(ring)
 	return reachable, besieged, nil
+}
+
+// BesiegerInfo names one enemy unit holding a chokepoint near a besieged
+// settlement. The denial itself is not FOW-gated (§S1.6) — the defender
+// learns about it from the besieged flag and falling stock, not from sight —
+// and naming what's causing it follows the same principle (Timothy
+// 2026-08-08: a besieged Wanax needs to see WHAT and WHOM, not just a
+// boolean). Callers should only surface this when Besieged is already true.
+type BesiegerInfo struct {
+	OwnerID   uuid.UUID
+	OwnerName string
+	UnitType  string
+	Size      int
+	Q, R      int
+}
+
+// LoadBesiegers returns every enemy SENTRY unit within siegeCheckRadius of
+// center — the same set ReachableCatchmentHexes treats as potential
+// chokepoint holders, named for display instead of folded into a
+// reachability map.
+func LoadBesiegers(ctx context.Context, tx Tx, worldID, settlementOwner uuid.UUID, center hexgrid.Coord) ([]BesiegerInfo, error) {
+	rows, err := tx.Query(ctx,
+		`SELECT u.owner_id, COALESCE(pl.wanax_name, pl.username, ''), u.type, u.size, u.sentry_q, u.sentry_r
+		 FROM units u
+		 LEFT JOIN players pl ON pl.id = u.owner_id
+		 WHERE u.world_id = $1 AND u.owner_id <> $2 AND u.status = 'positioned' AND u.stance = 'sentry'
+		   AND u.sentry_q IS NOT NULL AND u.sentry_r IS NOT NULL
+		   AND (ABS(u.sentry_q - $3) + ABS(u.sentry_r - $4) + ABS((u.sentry_q + u.sentry_r) - ($3 + $4))) / 2 <= $5
+		 ORDER BY u.size DESC`,
+		worldID, settlementOwner, center.Q, center.R, siegeCheckRadius,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("load besiegers: %w", err)
+	}
+	defer rows.Close()
+	var out []BesiegerInfo
+	for rows.Next() {
+		var b BesiegerInfo
+		if err := rows.Scan(&b.OwnerID, &b.OwnerName, &b.UnitType, &b.Size, &b.Q, &b.R); err != nil {
+			return nil, fmt.Errorf("load besiegers: scan: %w", err)
+		}
+		out = append(out, b)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("load besiegers: rows: %w", err)
+	}
+	return out, nil
 }
 
 // isSeaCatchmentTerrain matches the water terrains LoadHexProductionOptions'

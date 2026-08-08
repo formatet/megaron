@@ -2849,6 +2849,39 @@ function drawProvince(ctx, cx, cy, p) {
     ctx.fillStyle = '#E8B0B0';
     ctx.fillRect(gx + 1, gy + 1, 1, 1);
   }
+  // Belägring (megaron_plan_belagring.md): NOT FOW-gated on the server — the
+  // owner learns it from the flag + falling stock, not from sight — but the
+  // marker itself only ever reaches the client when the tile is already
+  // visible (m.Visible upstream), so no separate check is needed here. Drawn
+  // last, above the standard: a besieged city reads "threatened" before it
+  // reads "whose flag flies here".
+  if (p.besieged) drawSiegeCloud(ctx, cx, top, sprite);
+  ctx.restore();
+}
+
+// ── Siege cloud — a besieged city's chokepoint is held, not its wall ──────
+// Timothy 2026-08-08: "a threatening cloud above the city." Hovers over the
+// standard, not the mass itself — the wall never falls (megaron_plan_belagring.md:
+// muren rörs aldrig), so nothing about the BUILDING should look damaged; the
+// threat sits in the sky over it, exactly like the real thing (an enemy
+// holding the road in, not a breach in the stone).
+function drawSiegeCloud(ctx, cx, top, sprite) {
+  ctx.save();
+  const ccx = cx + (sprite.w >> 1), ccy = top - 15;
+  ctx.fillStyle = '#2E2A28';
+  ctx.strokeStyle = '#14100E';
+  ctx.lineWidth = 0.6;
+  // Fyra överlappande loher — ett stormmoln, inte en enstaka rund fläck.
+  for (const [dx, dy, r] of [[-4, 1, 3.2], [0, -1.5, 4], [4, 1, 3.2], [-0.5, 2.4, 3]]) {
+    ctx.beginPath();
+    ctx.arc(ccx + dx, ccy + dy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  // Blodröd glöd i underkanten — det HOTFULLA, inte bara mulet väder.
+  ctx.fillStyle = '#922B21';
+  ctx.fillRect(ccx - 2, ccy + 3, 1, 1);
+  ctx.fillRect(ccx + 3, ccy + 4, 1, 1);
   ctx.restore();
 }
 

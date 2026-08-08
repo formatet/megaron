@@ -97,7 +97,29 @@ func placeGubbe(t *testing.T, settlementID uuid.UUID, ordinal, hexQ, hexR int, g
 	}
 }
 
+// placeEnemyUnit plants an enemy unit in SENTRY stance — the only posture
+// that denies a chokepoint since the 2026-08-08 revision (Timothy: "man kan
+// inte bara ställa sig där, den måste in i belägrings-stance"). sentry_q/r
+// mirrors what SetStance itself writes (unit's current hex as its hold
+// centre).
 func placeEnemyUnit(t *testing.T, worldID, enemyOwner uuid.UUID, q, r int) uuid.UUID {
+	t.Helper()
+	pool := testPool(t)
+	var id uuid.UUID
+	if err := pool.QueryRow(context.Background(),
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r, stance, sentry_q, sentry_r)
+		 VALUES ($1, $2, 'spearman', 'land', 40, 'positioned', $3, $4, 'sentry', $3, $4) RETURNING id`,
+		worldID, enemyOwner, q, r,
+	).Scan(&id); err != nil {
+		t.Fatalf("place enemy unit at (%d,%d): %v", q, r, err)
+	}
+	return id
+}
+
+// placeEnemyUnitNoStance plants an enemy unit merely marched-then-stopped —
+// status='positioned', no stance at all. The exact case the 2026-08-08
+// revision says must NOT besiege.
+func placeEnemyUnitNoStance(t *testing.T, worldID, enemyOwner uuid.UUID, q, r int) uuid.UUID {
 	t.Helper()
 	pool := testPool(t)
 	var id uuid.UUID
@@ -106,7 +128,7 @@ func placeEnemyUnit(t *testing.T, worldID, enemyOwner uuid.UUID, q, r int) uuid.
 		 VALUES ($1, $2, 'spearman', 'land', 40, 'positioned', $3, $4) RETURNING id`,
 		worldID, enemyOwner, q, r,
 	).Scan(&id); err != nil {
-		t.Fatalf("place enemy unit at (%d,%d): %v", q, r, err)
+		t.Fatalf("place enemy unit (no stance) at (%d,%d): %v", q, r, err)
 	}
 	return id
 }
@@ -325,5 +347,63 @@ func TestSiege_NoEnemyNearby_SkipsGraphWalkEntirely(t *testing.T) {
 	}
 	if len(reachable) != len(ring) {
 		t.Fatalf("reachable has %d hexes, want all %d ring hexes (fast path grants full access unconditionally)", len(reachable), len(ring))
+	}
+}
+
+// TestSiege_MerelyPositionedWithoutSentryDoesNotBesiege is the 2026-08-08
+// revision's own röd-först-test (Timothy: "man kan inte bara ställa sig där,
+// den måste in i belägrings-stance. Annars blir det lite för enkelt"). A
+// unit that marched to a chokepoint and simply stopped — status='positioned',
+// no stance — must NOT deny anything, even standing exactly on the corridor
+// hex a sentried unit would block in the test above.
+func TestSiege_MerelyPositionedWithoutSentryDoesNotBesiege(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	const tick = 100
+
+	settlementID, worldID, ownerID := seedSiegeFixture(t, tick, /*pop*/ 100)
+	seedTile(t, worldID, 1, 0, "hills")
+	seedTile(t, worldID, 2, 0, "hills")
+	seedTile(t, worldID, 1, 1, "mountain_limestone")
+	seedTile(t, worldID, 2, -1, "mountain_limestone")
+	placeGubbe(t, settlementID, 1, 2, 0, GoodGrain)
+
+	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatalf("RecomputeProduction (no enemy): %v", err)
+	}
+	rateBefore := readGrainRate(t, settlementID)
+
+	enemyOwner := uuid.New()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO players (id, username, email, password_hash) VALUES ($1, $2, $3, 'x')`,
+		enemyOwner, "siege-nostance-"+enemyOwner.String(), "siege-nostance-"+enemyOwner.String()+"@test.invalid",
+	); err != nil {
+		t.Fatalf("create enemy player: %v", err)
+	}
+	// Sits exactly where TestSiege_LandChokepointDeniesHexBehindIt_AndProductionDrops's
+	// sentried enemy denies (2,0) — the ONLY difference here is the missing stance.
+	placeEnemyUnitNoStance(t, worldID, enemyOwner, 1, 0)
+
+	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatalf("RecomputeProduction (unstanced enemy present): %v", err)
+	}
+	if besieged := readBesieged(t, settlementID); besieged {
+		t.Fatalf("besieged = true from a merely-positioned enemy with no stance, want false — standing there is not a blockade")
+	}
+	rateAfter := readGrainRate(t, settlementID)
+	if diff := rateAfter - rateBefore; diff > 1e-6 || diff < -1e-6 {
+		t.Errorf("grain rate = %v with an unstanced enemy on the corridor, want unchanged from %v", rateAfter, rateBefore)
+	}
+
+	reachable, besieged, err := ReachableCatchmentHexes(ctx, pool, worldID, ownerID,
+		hexgrid.Coord{Q: 0, R: 0}, hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius))
+	if err != nil {
+		t.Fatalf("ReachableCatchmentHexes: %v", err)
+	}
+	if besieged {
+		t.Fatalf("ReachableCatchmentHexes besieged = true, want false")
+	}
+	if !reachable[hexgrid.Coord{Q: 2, R: 0}] {
+		t.Fatalf("(2,0) reported unreachable — an unstanced enemy must not propagate a block through the graph walk")
 	}
 }

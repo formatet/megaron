@@ -801,7 +801,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT p.id, s.id, s.name, s.culture_id, s.kingdom_id, p.map_q, p.map_r, p.terrain_type,
-		        s.state, s.wall_level, s.population, COALESCE(pl.wanax_name, pl.username, ''), COALESCE(k.name, ''),
+		        s.state, s.besieged, s.wall_level, s.population, COALESCE(pl.wanax_name, pl.username, ''), COALESCE(k.name, ''),
 		        COALESCE((SELECT SUM(size) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison'), 0)::int AS army_total,
 		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
 		        EXISTS (SELECT 1 FROM scheduled_events se WHERE se.event_type = 'TrainComplete'
@@ -830,6 +830,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		Q            int        `json:"q"`
 		R            int        `json:"r"`
 		State        string     `json:"state"`
+		Besieged     bool       `json:"besieged,omitempty"`
 		Walls        int        `json:"walls"`
 		// SizeTier 0–3 (settlement.SizeTier). Skickas för VARJE synlig
 		// bosättning, inte bara egna: en stads omfång syns utifrån, precis
@@ -850,7 +851,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		var m provinceMarker
 		var population int
 		var terrain string
-		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &terrain, &m.State, &m.Walls, &population, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
+		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &terrain, &m.State, &m.Besieged, &m.Walls, &population, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
 			continue
 		}
 		m.SizeTier = settlement.SizeTier(population)
