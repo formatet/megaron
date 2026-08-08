@@ -440,20 +440,39 @@ func GoodBaseValue(ctx context.Context, tx Tx, key string) (float64, error) {
 }
 
 // RecomputeProduction settles and rewrites settlement_goods.rate for every
-// producible good of the given settlement, using the citizen-allocation formula:
+// producible good of the given settlement, using the P4 placement formula
+// (megaron_plan_fysisk_gubbemodell.md — replaces the pre-P4 weight×laborPool
+// aggregate for every good a gubbe can be individually placed on):
 //
-//	labor_pool        = population (Part B: soldiers are drawn from population at recruit time,
-//	                    so the integer army columns no longer represent a labor drain)
-//	base_potential(g) = SUM(production_rules matching terrain/deposits/buildings)
-//	yield_per_worker(g) = base_potential(g) / REF_LABOR
-//	rate(g)           = yield_per_worker(g) × citizens(g)
+//	yield_per_worker(hex, g)      = hex's OWN production_rules.rate_per_tick(g) / hex's OWN P3 cap(g)
+//	yield_per_worker(building, g) = building's rate_per_tick(g) / WorkplaceSlots(building, level)
+//	rate(g) = Σ over every settlement_placement row assigned to g of that row's target's yield_per_worker(g)
 //
-// Σ citizens ≤ labor_pool is validated at the allocation endpoint; here we
-// only recompute rates from whatever citizens are stored.
+// Timothy 2026-08-08: "ja varje placering ska ge sitt eget utbyte, varje hex
+// har sitt eget utbyte" — a gubbe on hex H doing role g contributes ONLY what
+// H itself yields for g, not a catchment-wide average (a plains farmer and a
+// river-delta farmer produce different amounts even in the same city). A
+// fully staffed hex (placed == cap) reproduces exactly the hex's flat
+// rate_per_tick; an understaffed or empty catchment produces proportionally
+// less — this (not the old REF_LABOR=100 aggregate) is the brake P1's
+// postmortem found missing ("P1 gav inflationen men inte bromsen").
 //
-// The unconditional timber trickle (NULL terrain, NULL building rule) is
-// included in base_potential so the anti-deadlock property is preserved for
-// any non-zero population and citizen allocation.
+// Two additions outside the placement sum, both flat and NOT placeable roles:
+//   - NearjordGrainPerTick — the settlement's own hex (§3.2, added below).
+//   - UnconditionalPotential — production_rules rows with neither a terrain
+//     nor a building gate (today: timber's anti-deadlock trickle, migration
+//     033). Its whole purpose is "some output exists even with zero placed
+//     workers of the right kind"; turning it into a placeable role would
+//     defeat that, so it stays an unconditional constant like nearjord.
+//   - The population REMAINDER (pop mod 100, Temenos_varutaxonomi_sol.md
+//     §1.1 — only whole hundreds become placeable gubbar) "arbetar alltid
+//     automatiskt i jordbruket": it contributes to GRAIN ONLY, via the OLD
+//     aggregate formula (catchment-wide basePotential/REF_LABOR × remainder
+//     headcount) scoped to just that leftover headcount — see step 5b.
+//
+// settlement_labor is UNTOUCHED by this function — cult labor (temple
+// devotion, good_key='cult') is a separate path (megaron_cult_ar_ingen_vara_plan.md)
+// that was never part of this formula even before P4.
 //
 // Must be called inside an existing transaction. Passes ctx to every DB call.
 func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {
@@ -474,154 +493,106 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		laborPool = 0
 	}
 
-	// ── 2. Gather catchment coordinates for this settlement ──────────────────
-	// Catchment = the settlement's own hex plus hexgrid.CatchmentRadius around
-	// it (P1, megaron_plan_fysisk_gubbemodell.md — 19 hexes total, 18 worked;
-	// own hex handled separately in step 3b below, not a normal production tile).
-	var worldID uuid.UUID
-	var q, r int
-	err = tx.QueryRow(ctx,
-		`SELECT prov.world_id, prov.map_q, prov.map_r
-		 FROM settlements s
-		 JOIN provinces prov ON prov.id = s.province_id
-		 WHERE s.id = $1`,
-		settlementID,
-	).Scan(&worldID, &q, &r)
+	// ── 2. Load this settlement's placement-eligible production menu ─────────
+	// Every catchment ring hex's own production menu, every built workplace
+	// building's terrain-free menu, and the flat unconditional trickle — see
+	// LoadHexProductionOptions/LoadBuildingProductionOptions/
+	// UnconditionalPotential doc comments (placement_yield.go) for exactly
+	// what each covers and why they're split three ways.
+	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID)
 	if err != nil {
-		return fmt.Errorf("recompute: load province coords: %w", err)
+		return fmt.Errorf("recompute: %w", err)
 	}
-
-	// ── 3. Compute base_potential per producible good from catchment ──────────
-	// Each of the 18 productive catchment map_tiles (the ring, NOT the
-	// settlement's own hex — see step 3b) contributes based on its own
-	// terrain, deposits, and coastal flag. The settlement's buildings gate
-	// building-gated rules. Water tiles (deep_sea, coastal_sea, river,
-	// river_ford) only match rules keyed to their own terrain — otherwise a
-	// water tile would match every terrain_type IS NULL rule (timber, stone
-	// via mine, pottery via market), which is exactly the silent-fallback
-	// production CLAUDE.md forbids (megaron_floden_plan.md §4, Timothy
-	// 2026-07-29; river_ford added megaron_plan_flodbudget_och_vadstalle.md,
-	// same reasoning). The `g.status = 'active'` join excludes parked goods
-	// (purple/pottery/horses, mig 114, Temenos_varutaxonomi_sol.md §4.2) from
-	// base_potential entirely — step 6 below then nulls any stale rate a
-	// parked good already carried.
-	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
-	rows, err := tx.Query(ctx,
-		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential,
-		        bool_or(pr.building_type IS NULL) AS has_field_path
-		 FROM unnest($3::int[], $4::int[]) AS catchment(q, r)
-		 JOIN map_tiles mt ON mt.world_id = $2 AND mt.q = catchment.q AND mt.r = catchment.r
-		 JOIN production_rules pr ON
-		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
-		     AND (NOT pr.requires_coastal OR mt.coastal)
-		     AND (pr.building_type IS NULL OR EXISTS (
-		             SELECT 1 FROM buildings b
-		             WHERE b.settlement_id = $1 AND b.building_type = pr.building_type))
-		     AND (pr.requires_deposit IS NULL
-		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
-		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
-		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
-		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
-		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-		        OR pr.terrain_type = mt.terrain
-		 GROUP BY pr.good_key`,
-		settlementID, worldID, catchQ, catchR,
-	)
+	buildingOptions, err := LoadBuildingProductionOptions(ctx, tx, settlementID)
 	if err != nil {
-		return fmt.Errorf("recompute: query production rules: %w", err)
+		return fmt.Errorf("recompute: %w", err)
 	}
-	type goodPotential struct {
-		key           string
-		basePotential float64
-		hasFieldPath  bool
-	}
-	var potentials []goodPotential
-	for rows.Next() {
-		var gp goodPotential
-		if err := rows.Scan(&gp.key, &gp.basePotential, &gp.hasFieldPath); err != nil {
-			rows.Close()
-			return fmt.Errorf("recompute: scan potential: %w", err)
-		}
-		potentials = append(potentials, gp)
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
-		return fmt.Errorf("recompute: rows err: %w", err)
-	}
-
-	// ── 3b. Workplace capacity per good ───────────────────────────────────────
-	// A building is a workplace with a finite number of stations — an ABSOLUTE
-	// headcount (P2, megaron_plan_fysisk_gubbemodell.md), not a share of the
-	// city. Labor allocated beyond what the settlement's buildings + fields can
-	// employ is not served and does not produce — so the only way to devote
-	// MORE of a city to a good is a bigger workplace. Slots sum: two buildings
-	// that both make oil (farm + olive press) each contribute their own
-	// stations. See LoadWorkplaceSlots for why this query lives in one place.
-	buildingSlots, err := LoadWorkplaceSlots(ctx, tx, settlementID)
+	unconditional, err := UnconditionalPotential(ctx, tx)
 	if err != nil {
 		return fmt.Errorf("recompute: %w", err)
 	}
 
-	// ── 3c. Hex capacity per good ──────────────────────────────────────────────
-	// A catchment hex also has a finite number of stations — an ABSOLUTE
-	// headcount (P3, megaron_plan_fysisk_gubbemodell.md §8.3), replacing the old
-	// flat GoodLaborTerrainBase share. See LoadHexCapacity for the per-terrain
-	// table and why a hex can count toward more than one good.
-	hexSlots, err := LoadHexCapacity(ctx, tx, settlementID)
+	// ── 3. Load actual placements ─────────────────────────────────────────────
+	// Who is standing where doing what, right now (P4) — this, not a weight,
+	// is what determines rate below.
+	placements, err := LoadPlacementCounts(ctx, tx, settlementID)
 	if err != nil {
 		return fmt.Errorf("recompute: %w", err)
 	}
 
-	// NOTE: no early return when potentials is empty. A settlement that just
-	// lost its last producible good (deposit exhausted, building razed, terrain
-	// changed) must still fall through to step 6 below, which nulls out any
-	// good_key whose production_rule no longer matches — otherwise its old
-	// rate is orphaned forever (the exact bug this function exists to fix).
+	// NOTE: no early return when the catchment has no matching hexes/buildings.
+	// A settlement that just lost its last producible good (deposit exhausted,
+	// building razed, terrain changed) must still fall through to step 6 below,
+	// which nulls out any good_key whose production_rule no longer matches —
+	// otherwise its old rate is orphaned forever (the exact bug this function
+	// exists to fix).
 
-	// ── 4. Load weight allocations for this settlement ────────────────────────
-	// weight ∈ [0.0,1.0] = fraction of labor_pool dedicated to this good.
-	// effective_workers = weight × labor_pool; rate = (base_potential/REF_LABOR) × effective_workers.
-	crows, err := tx.Query(ctx,
-		`SELECT good_key, weight FROM settlement_labor WHERE settlement_id = $1`,
-		settlementID,
-	)
-	if err != nil {
-		return fmt.Errorf("recompute: load weights: %w", err)
-	}
-	weights := make(map[string]float64)
-	for crows.Next() {
-		var key string
-		var w float64
-		if err := crows.Scan(&key, &w); err != nil {
-			crows.Close()
-			return fmt.Errorf("recompute: scan weight: %w", err)
+	// ── 4. Sum each placement's OWN target's yield into that good's rate ─────
+	// producible mirrors the pre-P4 "potentials" list — every good_key this
+	// catchment could ever produce, staffed or not — so a good with zero
+	// placed workers still gets an explicit rate=0 row (below) instead of
+	// silently vanishing, and step 6 still catches a good that lost its LAST
+	// hex/building entirely.
+	rawRates := make(map[string]float64)
+	producible := make(map[string]bool)
+	for _, opt := range hexOptions {
+		for good := range opt.RatePerGood {
+			producible[good] = true
 		}
-		weights[key] = w
 	}
-	crows.Close()
-	if err := crows.Err(); err != nil {
-		return fmt.Errorf("recompute: weight rows err: %w", err)
+	for _, opt := range buildingOptions {
+		for good := range opt.RatePerGood {
+			producible[good] = true
+		}
+	}
+	for good := range unconditional {
+		producible[good] = true
+	}
+	for good := range producible {
+		rawRates[good] = 0
 	}
 
-	// Seed equal weights on first call (e.g. at join before explicit allocation).
-	// Existing rows are never auto-adjusted — a new producible good gets weight=0
-	// until the Wanax allocates via LaborAlloc.
-	if len(weights) == 0 && len(potentials) > 0 {
-		n := len(potentials)
-		w := 1.0 / float64(n)
-		for _, gp := range potentials {
-			weights[gp.key] = w
-			if _, err := tx.Exec(ctx,
-				`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-				 VALUES ($1, $2, $3)
-				 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-				settlementID, gp.key, w,
-			); err != nil {
-				return fmt.Errorf("recompute: seed weight %s: %w", gp.key, err)
+	for _, opt := range hexOptions {
+		placedHere := placements.Hex[opt.Coord]
+		for good, rate := range opt.RatePerGood {
+			placed := placedHere[good]
+			if placed <= 0 {
+				continue
 			}
+			rawRates[good] += placementYield(good, rate, opt.CapPerGood[good], placed)
 		}
 	}
+	for _, opt := range buildingOptions {
+		placedHere := placements.Building[opt.BuildingType]
+		for good, rate := range opt.RatePerGood {
+			placed := placedHere[good]
+			if placed <= 0 {
+				continue
+			}
+			rawRates[good] += placementYield(good, rate, opt.CapPerGood[good], placed)
+		}
+	}
+	for good, rate := range unconditional {
+		rawRates[good] += rate
+	}
+
+	// ── 4b. The population REMAINDER auto-farms grain ─────────────────────────
+	// Temenos_varutaxonomi_sol.md §1.1: only whole hundreds become a placeable
+	// gubbe (floor(population/100)); "den ofullständiga befolkningsresten
+	// arbetar alltid automatiskt i jordbruket" — the leftover heads (population
+	// mod 100) are NOT a placement, they use the OLD pre-P4 aggregate formula
+	// (catchment-wide basePotential/REF_LABOR), scoped to just their own
+	// headcount, and GRAIN ONLY ("jordbruket", not fish/oil/wine/…). This is
+	// deliberately the one place REF_LABOR still governs output after P4 — it
+	// is what makes population growth feel continuous between hundreds instead
+	// of a nothing-then-a-gubbe step function.
+	grainBasePotential := 0.0
+	for _, opt := range hexOptions {
+		grainBasePotential += opt.RatePerGood[GoodGrain]
+	}
+	remainderCitizens := laborPool % 100
+	rawRates[GoodGrain] += (grainBasePotential / REF_LABOR) * float64(remainderCitizens)
+	producible[GoodGrain] = true
 
 	// Grain carries a population-consumption term folded into its NET rate:
 	// pop × 0.5 per tick = consumption per tick (a tick is a day). Folding it
@@ -637,28 +608,13 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	grainConsumptionPerTick := GrainConsumptionPerTick(laborPool)
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
-	// 5a. Raw (pre-consumption) production per good, from labor allocation alone
-	// — exactly RecomputeProduction's pre-Fas-2 formula, unchanged for every good
-	// except grain/fish, which get the food-invariant split applied below.
-	rawRates := make(map[string]float64, len(potentials))
-	for _, gp := range potentials {
-		staffed := weights[gp.key]
-		if cap := LaborCapacity(gp.key, gp.hasFieldPath, hexSlots[gp.key], buildingSlots[gp.key], laborPool); staffed > cap {
-			staffed = cap
-		}
-		effectiveWorkers := staffed * float64(laborPool)
-		yieldPerWorker := gp.basePotential / REF_LABOR
-		rawRates[gp.key] = yieldPerWorker * effectiveWorkers
+	// 5a. rawRates is already fully populated (step 4/4b) — nothing left to
+	// compute here; producibleKeys (derived from the `producible` set) drives
+	// the write loop (5c) and step 6's stale cleanup below.
+	producibleKeys := make([]string, 0, len(producible))
+	for good := range producible {
+		producibleKeys = append(producibleKeys, good)
 	}
-	// grainSeen reflects the CATCHMENT TERRAIN'S own grain capability (was
-	// "grain" among the potentials this settlement's ring actually produced),
-	// captured BEFORE NearjordGrainPerTick is folded in below — it gates
-	// whether step 5's potentials-loop already writes a grain row (below) vs.
-	// the "!grainSeen" fallback branch needs to (a farmless/waterless city
-	// still gets nearjord's flat trickle, but has no potentials-loop entry to
-	// carry it).
-	_, grainSeen := rawRates["grain"]
-
 	// Stadshexens närjord (P1, megaron_plan_fysisk_gubbemodell.md §3.2): a
 	// flat, unconditional grain trickle from the settlement's own hex, which
 	// is not a normal production tile (no gubbe, not upgradeable — excluded
@@ -711,9 +667,14 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 
 	// 5c. Write every producible good's rate — grain and fish get their
 	// food-invariant net; everything else keeps its raw rate unchanged.
-	for _, gp := range potentials {
-		newRate := rawRates[gp.key]
-		switch gp.key {
+	// grainSeen is unused past this point: step 4b unconditionally forces
+	// "grain" into producible (nearjord + the population remainder apply to
+	// EVERY settlement with a settlements row, farmland or not), so grain
+	// always goes through this same loop — the pre-P4 fallback write for a
+	// "grain never appeared in potentials" case no longer exists to need one.
+	for _, key := range producibleKeys {
+		newRate := rawRates[key]
+		switch key {
 		case "grain":
 			newRate = grainNet
 		case "fish":
@@ -729,29 +690,9 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			                 GREATEST(0, settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick))),
 			     rate    = $3,
 			     calc_tick = current_world_tick()`,
-			settlementID, gp.key, newRate, goodCap(gp.key),
+			settlementID, key, newRate, goodCap(key),
 		); err != nil {
-			return fmt.Errorf("recompute: upsert good %s: %w", gp.key, err)
-		}
-	}
-
-	// A settlement with population but no grain-producing catchment still eats:
-	// write a grain row with the food-invariant net rate (fish already deducted
-	// via the split above, so a coastal-but-farmless city still gets fish
-	// relief) so neglected non-farming, non-fishing cities drain and starve as
-	// designed.
-	if !grainSeen && grainConsumptionPerTick > 0 {
-		if _, err := tx.Exec(ctx,
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-			 VALUES ($1, 'grain', 0, $2, $3, current_world_tick())
-			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-			     amount  = LEAST(settlement_goods.cap,
-			                 GREATEST(0, settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick))),
-			     rate    = $2,
-			     calc_tick = current_world_tick()`,
-			settlementID, grainNet, goodCap("grain"),
-		); err != nil {
-			return fmt.Errorf("recompute: upsert grain consumption: %w", err)
+			return fmt.Errorf("recompute: upsert good %s: %w", key, err)
 		}
 	}
 
@@ -761,22 +702,13 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// razed, terrain changed — empirically hit 2026-07-29: a rate=42 cedar row
 	// survived on a cedar-less city through a later recompute). Every such row
 	// must be zeroed, not left orphaned. touchedKeys is every good_key this call
-	// just wrote a real rate for (steps 5 and the grain-consumption branch
-	// above); anything else with a non-zero rate is stale.
+	// just wrote a real rate for (step 5 above); anything else with a non-zero
+	// rate is stale.
 	//
 	// Settle at the OLD rate before zeroing — same settled()/GREATEST(0)/cap
 	// pattern as every other write in this function — so production between the
-	// last calc_tick and now is neither lost nor fabricated. This covers BOTH
-	// known leaks: the potentials-loop only touching goods still in the query
-	// result, and the (now-removed) early return when potentials was empty,
-	// which used to skip this settlement entirely.
-	touchedKeys := make([]string, 0, len(potentials)+1)
-	for _, gp := range potentials {
-		touchedKeys = append(touchedKeys, gp.key)
-	}
-	if !grainSeen && grainConsumptionPerTick > 0 {
-		touchedKeys = append(touchedKeys, "grain")
-	}
+	// last calc_tick and now is neither lost nor fabricated.
+	touchedKeys := producibleKeys
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlement_goods
 		 SET amount    = LEAST(cap, GREATEST(0, settled(amount, rate, calc_tick))),

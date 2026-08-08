@@ -220,26 +220,22 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		}
 	}
 
-	// Seed the opening labor allocation: all of it on grain. The metropolis founds
-	// with no temple (cult now requires the Wanax to build one), so the old cult
-	// floor would be dead weight — its share folds into grain, keeping the city fed
-	// from t=0 wherever the land can feed it. Grain is the only good seeded
-	// explicitly; every other good starts at zero weight, allocated by the
-	// Wanax/agent via LaborAlloc. This is a transient seed the player reallocates
-	// immediately. (100% grain labor still yields nothing on barren ground without
-	// Demeter's farm — self-sufficiency is geography-gated, by design.)
-	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 VALUES ($1, 'grain', 1.0)
-		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		out.SettlementID,
-	); err != nil {
-		return out, &metropolisError{"could not seed labor weights", err}
+	// P4 (megaron_plan_fysisk_gubbemodell.md): auto-place the starting gubbar on
+	// the best available food hexes, greedily, stopping once the city is
+	// self-sufficient — not placing every gubbe on food by default. Whatever
+	// gubbar aren't needed for food stay unplaced, ready for the Wanax to
+	// assign via the (not-yet-built) stadsvy. Founds on barren ground without
+	// Demeter's farm still yields nothing — self-sufficiency is
+	// geography-gated, by design; PlaceStartingWorkforce's sufficient=false
+	// return is not separately surfaced here because the grain_ticks warning
+	// below (read from the real post-RecomputeProduction rate) already covers
+	// exactly this case.
+	if _, _, err = economy.PlaceStartingWorkforce(ctx, tx, out.SettlementID); err != nil {
+		return out, &metropolisError{"could not place starting workforce", err}
 	}
 
-	// RecomputeProduction reads catchment tiles and settlement_labor weights, then
-	// writes rates. The equal-weight seeder (len(weights)==0 path) is bypassed since
-	// we already seeded grain above.
+	// RecomputeProduction reads catchment tiles and settlement_placement rows,
+	// then writes rates.
 	if err = economy.RecomputeProduction(ctx, tx, out.SettlementID); err != nil {
 		return out, &metropolisError{"could not init production", err}
 	}

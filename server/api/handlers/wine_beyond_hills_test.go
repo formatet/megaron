@@ -83,10 +83,20 @@ func TestGoods_WineProducibleOnPlainsOnlyCatchment(t *testing.T) {
 		t.Fatalf("create settlement: %v", err)
 	}
 
+	// P4: production follows PLACEMENT, not an auto-seeded weight — place a
+	// gubbe on one of the seeded plains neighbour hexes before recomputing.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key)
+		 VALUES ($1, 1, 'hex', 1, 0, 'wine')`,
+		settlementID,
+	); err != nil {
+		t.Fatalf("place wine gubbe: %v", err)
+	}
+
 	// RecomputeProduction is what actually writes the settlement_goods row
-	// (and seeds settlement_labor weights) that the Goods handler reads —
-	// exactly what every real call site (build, train, allocate, tick, ...)
-	// triggers before a Wanax ever looks at GET .../goods.
+	// that the Goods handler reads — exactly what every real call site
+	// (build, train, allocate, tick, ...) triggers before a Wanax ever looks
+	// at GET .../goods.
 	if err := economy.RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}

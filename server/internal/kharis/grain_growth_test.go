@@ -106,13 +106,21 @@ func newGrowthFixture(t *testing.T, terrains [6]string, pop int) (*pgxpool.Pool,
 		t.Fatalf("seed starter buildings: %v", err)
 	}
 
-	// Genesis labor weights (mirrors api/handlers/join.go): grain dominates so
-	// the starter city is self-sufficient; cult gets a floor.
+	// Genesis cult floor (mirrors api/handlers/join.go / foundColony) — cult
+	// labor is a separate path from P4's placement model, untouched here.
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO settlement_labor (settlement_id, good_key, weight) VALUES ($1, 'grain', 0.85), ($1, 'cult', 0.15)`,
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight) VALUES ($1, 'cult', 0.15)`,
 		settlementID,
 	); err != nil {
 		t.Fatalf("seed labor weights: %v", err)
+	}
+
+	// P4: auto-place the starting gubbar on the best food hexes, greedily,
+	// stopping once self-sufficient — exactly what founding now does
+	// (economy.PlaceStartingWorkforce, wired into create_metropolis.go and
+	// unit_arrival.go foundColony). This fixture mirrors that same sequence.
+	if _, _, err := economy.PlaceStartingWorkforce(ctx, pool, settlementID); err != nil {
+		t.Fatalf("place starting workforce: %v", err)
 	}
 
 	// Seed a zero grain row at tick 0, then let RecomputeProduction derive the

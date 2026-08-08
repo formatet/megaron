@@ -33,12 +33,10 @@ func TestRecomputeProduction_BuildingSlotCapIsPopulationInvariant(t *testing.T) 
 		); err != nil {
 			t.Fatalf("seed stonequarry: %v", err)
 		}
-		if _, err := pool.Exec(ctx,
-			`INSERT INTO settlement_labor (settlement_id, good_key, weight) VALUES ($1, 'stone', 1.0)`,
-			settlementID,
-		); err != nil {
-			t.Fatalf("seed full stone weight: %v", err)
-		}
+		// Full staffing under P4 = one gubbe per building slot, not a weight —
+		// stonequarry level 1's cap is WorkplaceSlots("stonequarry",1) = 2.
+		placeBuildingGubbe(t, pool, settlementID, 1, "stonequarry", "stone")
+		placeBuildingGubbe(t, pool, settlementID, 2, "stonequarry", "stone")
 		tx, err := pool.Begin(ctx)
 		if err != nil {
 			t.Fatalf("begin tx: %v", err)

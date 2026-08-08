@@ -894,16 +894,25 @@ func (h *UnitArrivalHandler) foundColony(
 		}
 	}
 
-	// Baseline labor: grain dominates so the colony feeds itself; cult floor keeps a
-	// temple (once built) non-inert. Same seed as the capital — the agent reallocates
-	// toward ore via LaborAlloc once it builds a mine on the deposit it colonized for.
+	// Cult floor keeps a temple (once built) non-inert — cult labor is a
+	// separate path from P4's placement model (megaron_cult_ar_ingen_vara_plan.md),
+	// untouched by the grain seed it used to sit alongside.
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-		 VALUES ($1,'grain',0.85), ($1,'cult',0.15)
+		 VALUES ($1,'cult',0.15)
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
 		colonyID,
 	); err != nil {
 		return fmt.Errorf("foundColony: seed labor: %w", err)
+	}
+
+	// P4 (megaron_plan_fysisk_gubbemodell.md): auto-place the starting gubbar on
+	// the best available food hexes, greedily, stopping once the colony is
+	// self-sufficient — see economy.PlaceStartingWorkforce's doc comment.
+	// Whatever gubbar aren't needed for food stay unplaced for the Wanax to
+	// assign, e.g. toward ore once a mine is built on the deposit colonized for.
+	if _, _, err := economy.PlaceStartingWorkforce(ctx, tx, colonyID); err != nil {
+		return fmt.Errorf("foundColony: place starting workforce: %w", err)
 	}
 
 	if err := economy.RecomputeProduction(ctx, tx, colonyID); err != nil {

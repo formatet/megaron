@@ -282,6 +282,7 @@ func main() {
 		// Admin routes — no JWT, keyed by X-Admin-Key header.
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
 		r.Get("/admin/worlds/{worldID}/reports", rh.List)
+		r.Post("/admin/worlds/{worldID}/backfill-placements", ph.BackfillPlacements)
 		// Reference catalogue — no auth, static data.
 		r.Get("/buildings", ph.BuildingCatalogue)
 		r.Get("/units", ph.UnitCatalogue)
@@ -330,6 +331,9 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
 			r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
+			r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
+			r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
 
 			r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)
 
