@@ -5,6 +5,7 @@ import { arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
+import { renderGubbeGrid } from '../citygrid.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
 // prev/next arrows. Defaults to the capital (activeCitySettlement, state.js).
@@ -45,10 +46,7 @@ export async function saveLaborAlloc(provinceID) {
     body: JSON.stringify({percent}),
   });
   if (res.ok) {
-    const data = await res.json();
     if (msg) msg.textContent = 'Saved!';
-    const idleEl = document.getElementById('labor-idle-disp');
-    if (idleEl && data.idle_percent != null) idleEl.textContent = Math.round(data.idle_percent);
     // Cult (devotion) is additive and deliberately excluded from the response's
     // percent/citizens/idle_percent (server never counts it in the ≤100% sum —
     // province.go LaborAlloc, `filtered` never gets a "cult" key). Re-read the
@@ -226,125 +224,62 @@ export async function loadCityDrawer() {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
     }
 
-    const prodGoods = goods.filter(g => g.producible || g.rate_per_tick > 0);
     const lp = pd ? (pd.labor_pool || 0) : 0;
 
     // ── Devotion (cult) ─────────────────────────────────────────────────────
-    // Mig 094 turned cult into a labor weight that produces no good, which
-    // silently dropped it out of /goods — and with it, out of the only
-    // allocation surface the web had (server's own doc-comment on
-    // "devotion"/"devotion_capacity", province.go: "a mechanic you cannot see
-    // is a mechanic you cannot tend"). `pd.devotion`/`pd.devotion_capacity`
-    // are weights (0..1) already on the settlement payload fetched above —
-    // reuses the SAME allocation table rather than a new panel (BESLUT
-    // §Gubbarna: this UI gets rebuilt if the allocation unit ever moves from
-    // good→hex, so keep the addition small). Cult is ADDITIVE server-side —
-    // it is deliberately excluded from prodGoods (not in /goods at all) and
-    // from the idle/total-% math below, exactly like keryx.
+    // Untouched by P5 (megaron_plan_fysisk_gubbemodell.md, explicit non-scope):
+    // cult is temple labor, its own path (megaron_cult_ar_ingen_vara_plan.md),
+    // never part of the gubbe-placement model. `pd.devotion`/
+    // `pd.devotion_capacity` are weights (0..1) already on the settlement
+    // payload fetched above. This used to share a table with the per-good
+    // percent allocation rows P5 removes (DE2=B, 2026-08-07) — now its own
+    // small block, logic unchanged.
     const devWeight  = pd ? (pd.devotion || 0) : 0;
     const devCapWt   = pd ? (pd.devotion_capacity || 0) : 0;
     const devPct     = Math.round(devWeight * 100);
     const devCapPct  = Math.round(devCapWt * 100);
     const hasTemple  = (pd && pd.buildings || []).some(b => b.type === 'temple');
-    let devotionRowHTML;
+    let devotionHTML;
     if (hasTemple && devCapWt > 0) {
       const atCap = devPct >= devCapPct;
-      devotionRowHTML = `<tr style="border-top:1px solid var(--border)">
-          <td style="padding:.2rem .3rem">Devotion <span style="color:var(--text-dim);font-size:.65rem">(cult, additive)</span></td>
-          <td style="padding:.2rem .3rem;text-align:right;white-space:nowrap">
+      devotionHTML = `
+        <div class="stat-row">
+          <span class="sr-label">Devotion <span style="color:var(--text-dim);font-size:.65rem">(cult, additive)</span></span>
+          <span class="sr-val">
             <input type="number" class="labor-input" id="labor-input-cult" data-good="cult"
               value="${devPct}" min="0" max="100" step="1"
               style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
-          </td>
-          <td style="padding:.2rem .3rem;text-align:right;color:var(--text-dim);font-size:.75rem"><span class="labor-cit" data-good="cult">${Math.round(devWeight*lp)}</span> cit</td>
-          <td style="padding:.2rem .3rem;font-size:.72rem;color:var(--text-dim)" id="labor-rate-cult">${devPct}% of ${devCapPct}% cap${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</td>
-        </tr>`;
+          </span>
+        </div>
+        <div style="font-size:.72rem;color:var(--text-dim)"><span class="labor-cit" data-good="cult">${Math.round(devWeight*lp)}</span> cit · <span id="labor-rate-cult">${devPct}% of ${devCapPct}% cap${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</span></div>
+        <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
+          <button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
+            style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">
+            Assign →
+          </button>
+          <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe)"></span>
+          <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span>
+        </div>`;
     } else {
       // Mirrors the server's own 422 wording (province.go LaborAlloc, key=="cult"
       // branch) rather than inventing separate copy — no temple, no control.
-      devotionRowHTML = `<tr style="border-top:1px solid var(--border)">
-          <td colspan="4" style="padding:.3rem" class="empty-state">Devotion (cult): needs a temple here — build one first.</td>
-        </tr>`;
+      devotionHTML = `<p class="empty-state">Devotion (cult): needs a temple here — build one first.</p>`;
     }
 
-    if (prodGoods.length) {
-      // Each good gets a percent input (share of population). The percent auto-scales
-      // with population; the resulting citizen count is shown so the player sees that
-      // more citizens produce more even at a lower percent.
-      const rows = prodGoods.map(g => {
-        const ypw = g.yield_per_worker ? g.yield_per_worker.toFixed(3) : '—';
-        const pct = g.percent != null ? Math.round(g.percent) : 0;
-        // Same storage-ceiling check as `keryx goods`/`keryx allocate` (amount
-        // at 99%+ of cap): everything produced past the cap is discarded, so a
-        // green "+N/tick" here was lying about labor that earns nothing.
-        // rate_per_tick is already per-tick — no ×24 now that tick == day
-        // (mig 109); same class of stale scaling as cmd_goods.go's Rate/d bug.
-        const capV = g.cap || 0;
-        const atCap = capV > 0 && (g.amount || 0) >= capV * 0.99;
-        const rateCell = atCap
-          ? `<td class="goods-atcap" style="padding:.2rem .3rem" id="labor-rate-${g.key}">full · +0/tick</td>`
-          : `<td style="padding:.2rem .3rem;color:var(--safe)" id="labor-rate-${g.key}">+${(g.rate_per_tick||0).toFixed(1)}/tick</td>`;
-        return `<tr>
-          <td style="padding:.2rem .3rem">${g.name||g.key}</td>
-          <td style="padding:.2rem .3rem;text-align:right;white-space:nowrap">
-            <input type="number" class="labor-input" data-good="${g.key}"
-              value="${pct}" min="0" max="100" step="1"
-              style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
-          </td>
-          <td style="padding:.2rem .3rem;text-align:right;color:var(--text-dim);font-size:.75rem"><span class="labor-cit" data-good="${g.key}">${g.citizens||0}</span> cit</td>
-          ${rateCell}
-        </tr>`;
-      }).join('');
-      const idlePct = Math.round((goods[0]||{}).idle_citizens!=null ? (100 - prodGoods.reduce((s,g)=>s+(g.percent||0),0)) : 0);
-      document.getElementById('city-prod-sec').innerHTML =
-        `<div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">Share of population to assign (pop: <span id="labor-pool-disp">${lp}</span>, idle: <span id="labor-idle-disp">${Math.max(0,idlePct)}</span>%)</div>
-         <table class="goods-mini" style="width:100%">
-           <thead><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td style="text-align:right">Share</td><td style="text-align:right">Workers</td><td>Prod/tick</td></tr></thead>
-           <tbody>${rows}${devotionRowHTML}</tbody>
-         </table>
-         <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
-           <button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
-             style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">
-             Assign →
-           </button>
-           <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe)"></span>
-           <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span>
-         </div>`;
-      // Live preview: recompute resulting citizen counts + idle percent as the user edits.
-      // Cult is excluded from totalPct — it is additive server-side (does not
-      // compete with grain/timber/… for the ≤100% budget), so counting it here
-      // would make idle% lie the moment a temple exists (same bug class the
-      // server-side idle calc already guards against, province.go GoodCult skip).
-      document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(inp => {
-        inp.addEventListener('input', () => {
-          let totalPct = 0;
-          document.getElementById('city-prod-sec').querySelectorAll('.labor-input').forEach(i => {
-            const p = parseFloat(i.value||0)||0;
-            if (i.dataset.good !== 'cult') totalPct += p;
-            const cit = document.querySelector(`.labor-cit[data-good="${i.dataset.good}"]`);
-            if (cit) cit.textContent = Math.round(p/100*lp);
-          });
-          const idleEl = document.getElementById('labor-idle-disp');
-          if (idleEl) idleEl.textContent = Math.max(0, Math.round(100 - totalPct));
-        });
-      });
-    } else {
-      // No producible goods yet, but devotion is independent of that — a
-      // freshly founded, temple-having city can still tend its cult even
-      // before any producing job is unlocked.
-      document.getElementById('city-prod-sec').innerHTML =
-        `<p class="empty-state">No production yet.</p>
-         <table class="goods-mini" style="width:100%"><tbody>${devotionRowHTML}</tbody></table>
-         ${hasTemple && devCapWt > 0 ? `<div style="margin-top:.4rem"><button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
-             style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">Assign →</button>
-           <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe)"></span>
-           <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span></div>` : ''}`;
-      const cultInp = document.getElementById('labor-input-cult');
-      if (cultInp) cultInp.addEventListener('input', () => {
-        const cit = document.querySelector('.labor-cit[data-good="cult"]');
-        if (cit) cit.textContent = Math.round((parseFloat(cultInp.value||0)||0)/100*lp);
-      });
-    }
+    document.getElementById('city-prod-sec').innerHTML = `
+      <div class="dsec-title">Devotion</div>
+      ${devotionHTML}
+      <div class="dsec-title" style="margin-top:.6rem">Catchment &amp; workplaces</div>
+      <div id="city-gubbe-grid"><div class="loading" style="font-size:.8rem">Loading…</div></div>`;
+    const cultInp = document.getElementById('labor-input-cult');
+    if (cultInp) cultInp.addEventListener('input', () => {
+      const cit = document.querySelector('.labor-cit[data-good="cult"]');
+      if (cit) cit.textContent = Math.round((parseFloat(cultInp.value||0)||0)/100*lp);
+    });
+
+    // ── Gubbe placement (P5) ────────────────────────────────────────────────
+    const gridEl = document.getElementById('city-gubbe-grid');
+    if (gridEl) renderGubbeGrid(gridEl, capital.id, capital.q, capital.r);
 
     // ── Byggnader ───────────────────────────────────────────────────────────
     // Delegate to refreshCityBuildings so startBuild() can call it too
