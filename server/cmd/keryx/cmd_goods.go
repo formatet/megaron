@@ -155,7 +155,7 @@ func capFootnote(notes []capNote) string {
 	}
 	return "* = at the storage ceiling. Everything produced above it is discarded — the citizens\n" +
 		"    working it produce nothing. At the ceiling now: " + strings.Join(parts, ", ") + ".\n" +
-		"    Move that labor to a good with room, or spend the stock (build, craft, trade it away)."
+		"    Move that labor to a good with room, or spend the stock (build, staff a foundry/press, trade it away)."
 }
 
 func transferCmd() *cobra.Command {

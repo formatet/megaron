@@ -79,8 +79,8 @@ func localDone(iso string) string {
 // queue whose complete_at has already passed is not usable yet — the
 // BuildComplete event (which inserts the buildings row and removes the queue
 // entry) hasn't fired. Show "finishing…" rather than a past timestamp that reads
-// as done, so `craft` answering "foundry required" moments after the build no
-// longer surprises. Once the event fires the entry is gone from the queue.
+// as done, so `staff foundry` answering "no such building" moments after the
+// build no longer surprises. Once the event fires the entry is gone from the queue.
 func buildQueueETA(iso string) string {
 	if t, err := time.Parse(time.RFC3339, iso); err == nil {
 		if !t.After(time.Now()) {

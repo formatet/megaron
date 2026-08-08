@@ -19,6 +19,30 @@ type HexOption struct {
 	Terrain     string
 	RatePerGood map[string]float64 // production_rules rate_per_tick, gated by settlement's actual buildings
 	CapPerGood  map[string]int     // P3 worker cap (hexCapacityRule), gated the same way
+
+	// BoostRatePerGood holds the SAME extraction gubbe's terrain+building
+	// combined rows for weakestLinkRefiningBuilding's goods (oil, wine — P6,
+	// megaron_plan_fysisk_gubbemodell.md §P6) — e.g. forest_olive_grove +
+	// olive_press → 72.0 oil/tick. Before P6 this flowed straight into
+	// RatePerGood the moment the building merely EXISTED, no second worker
+	// required. Now it is "potential" only: RecomputeProduction realizes it as
+	// min(boostPotential, refiningCapacity), where refiningCapacity comes from
+	// a SEPARATE gubbe placed IN the building (LoadBuildingProductionOptions).
+	BoostRatePerGood map[string]float64
+}
+
+// weakestLinkRefiningBuilding maps a good to the ONE building type whose
+// terrain+building combined production_rules row is P6's weakest-link boost
+// tier — keyed by BUILDING, not just good, because wine also carries a
+// farm-boost row (mig 008/103: tilled land also grows grapes, unrelated to
+// §10.2's press/winery pair) that must keep flowing straight into
+// RatePerGood, ungated — only the row naming THIS specific building routes
+// into BoostRatePerGood. Every other good's building-boosted rows
+// (grain+farm, timber/cedar+lumbermill, stone+mine/stonequarry, copper/tin+
+// mine, silver+silver_mine, fish+harbour, livestock+pasture) are unaffected.
+var weakestLinkRefiningBuilding = map[string]string{
+	GoodOil:  "olive_press",
+	GoodWine: "winery",
 }
 
 // LoadHexProductionOptions returns every catchment ring hex's own production
@@ -51,11 +75,22 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 	rows, err := tx.Query(ctx,
 		`SELECT mt.q, mt.r, mt.terrain,
 		        COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false),
-		        pr.good_key, pr.rate_per_tick
+		        pr.good_key, pr.rate_per_tick, pr.building_type
 		 FROM unnest($2::int[], $3::int[]) AS catchment(q, r)
 		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r
 		 JOIN production_rules pr ON
 		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
+		     -- A row with terrain_type IS NULL AND building_type IS NOT NULL is
+		     -- a pure building workplace (P6's refining-capacity rows —
+		     -- olive_press/winery/foundry) — LoadBuildingProductionOptions'
+		     -- exclusive territory, never a hex's own production. Without this
+		     -- exclusion such a row matches EVERY hex in the catchment (NULL
+		     -- terrain = "any terrain") and double-counts against
+		     -- BoostRatePerGood on top of the genuine per-hex boost row.
+		     -- terrain_type IS NULL AND building_type IS NULL (the timber
+		     -- anti-deadlock trickle, mig 033) is unaffected — it still matches
+		     -- every hex, same as before P6.
+		     AND NOT (pr.terrain_type IS NULL AND pr.building_type IS NOT NULL)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
 		     AND (pr.building_type IS NULL OR EXISTS (
 		             SELECT 1 FROM buildings b
@@ -82,22 +117,28 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		var terrain, goodKey string
 		var copperDep, tinDep, silverDep bool
 		var rate float64
-		if err := rows.Scan(&qq, &rr, &terrain, &copperDep, &tinDep, &silverDep, &goodKey, &rate); err != nil {
+		var buildingType *string
+		if err := rows.Scan(&qq, &rr, &terrain, &copperDep, &tinDep, &silverDep, &goodKey, &rate, &buildingType); err != nil {
 			return nil, fmt.Errorf("load hex production options: scan: %w", err)
 		}
 		c := hexgrid.Coord{Q: qq, R: rr}
 		opt, ok := byCoord[c]
 		if !ok {
 			opt = &HexOption{
-				Coord:       c,
-				Terrain:     terrain,
-				RatePerGood: make(map[string]float64),
-				CapPerGood:  hexGoodCaps(terrain, copperDep, tinDep, silverDep, buildingLevels),
+				Coord:            c,
+				Terrain:          terrain,
+				RatePerGood:      make(map[string]float64),
+				BoostRatePerGood: make(map[string]float64),
+				CapPerGood:       hexGoodCaps(terrain, copperDep, tinDep, silverDep, buildingLevels),
 			}
 			byCoord[c] = opt
 			order = append(order, c)
 		}
-		opt.RatePerGood[goodKey] += rate
+		if refiningBuilding, ok := weakestLinkRefiningBuilding[goodKey]; ok && buildingType != nil && *buildingType == refiningBuilding {
+			opt.BoostRatePerGood[goodKey] += rate
+		} else {
+			opt.RatePerGood[goodKey] += rate
+		}
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("load hex production options: rows: %w", err)
@@ -120,6 +161,11 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		// excludes it from RatePerGood entirely, so every key seen here is
 		// legitimately placeable.
 		for good := range opt.RatePerGood {
+			if _, covered := opt.CapPerGood[good]; !covered {
+				opt.CapPerGood[good] = HexFallbackCap
+			}
+		}
+		for good := range opt.BoostRatePerGood {
 			if _, covered := opt.CapPerGood[good]; !covered {
 				opt.CapPerGood[good] = HexFallbackCap
 			}
@@ -226,11 +272,13 @@ func hexGoodCaps(terrain string, copperDep, tinDep, silverDep bool, buildingLeve
 // "STADENS ARBETSPLATSER"). Only production_rules rows with NO terrain gate
 // (pr.terrain_type IS NULL) qualify: a rule that also needs a terrain (e.g.
 // today's farm+plains→grain) is catchment-hex production with a building
-// REQUIREMENT, not a pure building workplace — that stays a HexOption. No
-// currently-active good has a terrain-free building rule yet (bronze via
-// foundry runs through recipe.go/craft-events, not RecomputeProduction;
-// market/stable's goods are parked) — this exists so P5/P6 don't need a
-// second migration when one lands.
+// REQUIREMENT, not a pure building workplace — that stays a HexOption. Since
+// P6 (megaron_plan_fysisk_gubbemodell.md §P6, 2026-08-08) this is where a
+// pressarbetare/vinmakare/gjutare's refining capacity lives — olive_press,
+// winery and foundry each carry one terrain-free row; RecomputeProduction
+// combines it with the matching HexOption via the weakest-link formula (oil/
+// wine: min(boost potential, refining capacity)) or a stock drain (bronze —
+// see the bronze stock-drain step). market/stable's goods are still parked.
 type BuildingOption struct {
 	BuildingType string
 	Level        int

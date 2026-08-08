@@ -51,14 +51,16 @@ const NearjordGrainPerTick = 50.0
 // Canon table, Temenos_varutaxonomi_sol.md §8.2 — NOT invented here (an
 // earlier version of this table extrapolated its own two tiers instead of
 // reading §8.2 first, and got Mine/Silver mine wrong as a result; corrected
-// 2026-08-08). §8.2 also lists Fishing place, Pasture, Foundry, Shipyard,
-// Barracks, Temple and Megaron — omitted below because they have no
-// RecomputeProduction path today: Fishing place/Pasture/Shipyard don't exist
-// as buildable types yet, Foundry's bronze smelting runs through recipe.go
-// craft-events (P6), Barracks trains units rather than producing a good,
-// Temple is cult labor (megaron_cult_ar_ingen_vara_plan.md, a separate path),
-// and Megaron is explicitly "Öppet" (uncapped) in the table. Add a building
-// here when it gets a production_rules row that needs the cap.
+// 2026-08-08). §8.2 also lists Fishing place, Pasture, Shipyard, Barracks,
+// Temple and Megaron — omitted below because they have no RecomputeProduction
+// path today: Fishing place/Pasture/Shipyard don't exist as buildable types
+// yet, Barracks trains units rather than producing a good, Temple is cult
+// labor (megaron_cult_ar_ingen_vara_plan.md, a separate path), and Megaron is
+// explicitly "Öppet" (uncapped) in the table. Foundry WAS omitted here
+// (bronze ran through recipe.go craft-events, gated only on "foundry built")
+// until P6 (2026-08-08) converted it to the same placed-gjutare model as
+// every other good — see the bronze stock-drain step in RecomputeProduction.
+// Add a building here when it gets a production_rules row that needs the cap.
 // Array length 4 mirrors province.MaxBuildingLevel(3)+1 — economy may not
 // import province (G1: economy(→clock,events,gossip,hexgrid) only), so the
 // bound is a plain literal. If MaxBuildingLevel ever changes, update this
@@ -77,6 +79,7 @@ var workplaceSlotTable = map[string][4]int{
 	"winery":      {0, 1, 2, 4},
 	"market":      {0, 1, 2, 4},
 	"stable":      {0, 1, 2, 4},
+	"foundry":     {0, 1, 2, 4},
 }
 
 // WorkplaceSlots returns how many citizens a building of the given type and
@@ -565,6 +568,16 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	for _, opt := range buildingOptions {
 		placedHere := placements.Building[opt.BuildingType]
 		for good, rate := range opt.RatePerGood {
+			// weakestLinkRefiningBuilding's goods (oil, wine) and bronze are
+			// refining-only rows here (P6) — a pressarbetare/vinmakare/
+			// gjutare's yield is NOT added directly; oil/wine go through step
+			// 4c's min(boost, refining) below, bronze through step 5d's stock
+			// drain. Adding it here too would double-count it AND bypass the
+			// weakest-link gate entirely (a refining gubbe with zero
+			// extraction upstream would otherwise produce for free).
+			if _, ok := weakestLinkRefiningBuilding[good]; ok || good == GoodBronze {
+				continue
+			}
 			placed := placedHere[good]
 			if placed <= 0 {
 				continue
@@ -574,6 +587,45 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	}
 	for good, rate := range unconditional {
 		rawRates[good] += rate
+	}
+
+	// ── 4c. Weakest link: oil/wine's boost tier requires a SEPARATE refining
+	// gubbe (P6, megaron_plan_fysisk_gubbemodell.md §P6; Timothy 2026-08-08 —
+	// strict, an unstaffed press gives no boost). boostPotential is the SAME
+	// extraction gubbar's terrain+building combined rows (opt.BoostRatePerGood
+	// — the old "boost from building existing" rate, reinterpreted as a
+	// ceiling); refiningCapacity is a genuinely separate placement (a
+	// pressarbetare/vinmakare standing IN the building). The realized boost is
+	// the smaller of the two — never negative, never more than either side
+	// alone could support.
+	for good := range weakestLinkRefiningBuilding {
+		boostPotential := 0.0
+		for _, opt := range hexOptions {
+			rate, ok := opt.BoostRatePerGood[good]
+			if !ok {
+				continue
+			}
+			placed := placements.Hex[opt.Coord][good]
+			if placed <= 0 {
+				continue
+			}
+			boostPotential += placementYield(good, rate, opt.CapPerGood[good], placed)
+		}
+		refiningCapacity := 0.0
+		for _, opt := range buildingOptions {
+			rate, ok := opt.RatePerGood[good]
+			if !ok {
+				continue
+			}
+			placed := placements.Building[opt.BuildingType][good]
+			if placed <= 0 {
+				continue
+			}
+			refiningCapacity += placementYield(good, rate, opt.CapPerGood[good], placed)
+		}
+		if boostPotential > 0 && refiningCapacity > 0 {
+			rawRates[good] += math.Min(boostPotential, refiningCapacity)
+		}
 	}
 
 	// ── 4b. The population REMAINDER auto-farms grain ─────────────────────────
@@ -693,6 +745,100 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			settlementID, key, newRate, goodCap(key),
 		); err != nil {
 			return fmt.Errorf("recompute: upsert good %s: %w", key, err)
+		}
+	}
+
+	// ── 5d. Bronze: a stock drain, not a rate (P6, megaron_plan_fysisk_gubbemodell.md
+	// §P6, Timothy 2026-08-08 — foundry converted from manual craft to the same
+	// placed-gubbe model as everything else). Copper and tin are real,
+	// tradeable goods (§3.3) — diverting their RATE into bronze would make
+	// every unit vanish before it ever reached the settlement's sellable
+	// stock. Bronze is instead smelted FROM the already-settled stock each
+	// time RecomputeProduction runs, capped by whichever ingredient runs out
+	// first AND by the foundry's refining capacity (a gjutare placed there —
+	// same weakest-link shape as step 4c, minus the "boost on top of a
+	// baseline" part: bronze has no unrefined baseline, only recipe.go's
+	// existing 9:1 ratio (mig 099), read live so this never drifts from the
+	// same number `GET /api/v1/recipes` shows). Mirrors the livestock
+	// slaughter above: a discrete stock mutation, not a lazy-eval rate —
+	// bronze's own settlement_goods.rate stays 0 (written by the loop above);
+	// its amount jumps once per RecomputeProduction call instead of accruing
+	// smoothly between calls.
+	bronzeRefiningCapacity := 0.0
+	for _, opt := range buildingOptions {
+		rate, ok := opt.RatePerGood[GoodBronze]
+		if !ok {
+			continue
+		}
+		placed := placements.Building[opt.BuildingType][GoodBronze]
+		if placed <= 0 {
+			continue
+		}
+		bronzeRefiningCapacity += placementYield(GoodBronze, rate, opt.CapPerGood[GoodBronze], placed)
+	}
+	if bronzeRefiningCapacity > 0 {
+		type bronzeIngredient struct {
+			good string
+			qty  float64
+		}
+		ingredientRows, err := tx.Query(ctx,
+			`SELECT ri.good_key, ri.quantity
+			 FROM recipes r JOIN recipe_ingredients ri ON ri.recipe_id = r.id
+			 WHERE r.output_key = $1`,
+			GoodBronze,
+		)
+		if err != nil {
+			return fmt.Errorf("recompute: load bronze recipe: %w", err)
+		}
+		var ingredients []bronzeIngredient
+		for ingredientRows.Next() {
+			var ing bronzeIngredient
+			if err := ingredientRows.Scan(&ing.good, &ing.qty); err != nil {
+				ingredientRows.Close()
+				return fmt.Errorf("recompute: scan bronze recipe: %w", err)
+			}
+			ingredients = append(ingredients, ing)
+		}
+		ingredientRows.Close()
+		if err := ingredientRows.Err(); err != nil {
+			return fmt.Errorf("recompute: bronze recipe rows: %w", err)
+		}
+
+		bronzeProduced := bronzeRefiningCapacity
+		for _, ing := range ingredients {
+			var stock float64
+			if err := tx.QueryRow(ctx,
+				`SELECT settled(amount, rate, calc_tick)
+				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+				settlementID, ing.good,
+			).Scan(&stock); err != nil && err != pgx.ErrNoRows {
+				return fmt.Errorf("recompute: load %s stock for bronze: %w", ing.good, err)
+			}
+			if ing.qty > 0 {
+				bronzeProduced = math.Min(bronzeProduced, stock/ing.qty)
+			}
+		}
+		if bronzeProduced > 0 {
+			for _, ing := range ingredients {
+				if _, err := tx.Exec(ctx,
+					`UPDATE settlement_goods
+					 SET amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
+					     calc_tick = current_world_tick()
+					 WHERE settlement_id = $1 AND good_key = $3`,
+					settlementID, bronzeProduced*ing.qty, ing.good,
+				); err != nil {
+					return fmt.Errorf("recompute: consume %s for bronze: %w", ing.good, err)
+				}
+			}
+			if _, err := tx.Exec(ctx,
+				`UPDATE settlement_goods
+				 SET amount    = LEAST(cap, settled(amount, rate, calc_tick) + $2),
+				     calc_tick = current_world_tick()
+				 WHERE settlement_id = $1 AND good_key = 'bronze'`,
+				settlementID, bronzeProduced,
+			); err != nil {
+				return fmt.Errorf("recompute: credit bronze: %w", err)
+			}
 		}
 	}
 

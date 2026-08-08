@@ -48,7 +48,7 @@ type ProvinceHandler struct {
 	clk        clock.Clock
 	sitosCfg   economy.SitosConfig
 	eventStore *events.Store // may be nil in tests that don't exercise Recruit's naval path
-	hub        *notify.Hub   // nil-guarded; carries GoodsCrafted to the crafting Wanax
+	hub        *notify.Hub   // nil-guarded; carries player-facing notifications (trade, arrivals, ...)
 }
 
 // NewProvinceHandler creates a ProvinceHandler.
@@ -1429,7 +1429,18 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT building_type, terrain_type, requires_coastal, requires_deposit
 		 FROM production_rules
-		 WHERE building_type IS NOT NULL`,
+		 WHERE building_type IS NOT NULL
+		   -- P6's terrain-free refining rows (olive_press/winery/foundry — a
+		   -- pressarbetare/vinmakare/gjutare's OWN capacity) are NOT the same
+		   -- "produces regardless of terrain" shape lumbermill/mine's
+		   -- unconditional trickle rows are: they still yield zero without a
+		   -- terrain-side extraction gubbe elsewhere in the catchment
+		   -- (economy.RecomputeProduction's weakest-link/stock-drain steps).
+		   -- Counting them here would silently drop the winery/olive_press
+		   -- terrain warning P10 exists for. Exclude by good_key, not building
+		   -- type, so a future terrain-free good on the SAME building type
+		   -- doesn't need this list touched.
+		   AND NOT (terrain_type IS NULL AND good_key IN ('oil', 'wine', 'bronze'))`,
 	)
 	if err == nil {
 		defer rows.Close()
@@ -1588,15 +1599,16 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 }
 
 // RecipeCatalogue handles GET /api/v1/recipes — returns the static catalogue
-// of all crafting recipes: output good + quantity, the building type required
-// to craft it, and the full ingredient list. No world/auth required — static
+// of all refining recipes: output good + quantity, the building type that
+// refines it, and the full ingredient list. No world/auth required — static
 // reference data, mirrors BuildingCatalogue/UnitCatalogue.
 //
 // Recipes live in the recipes/recipe_ingredients tables (not a Go map like
-// BuildingSpecs/UnitSpecs), because Craft already reads them generically by
-// id — this handler is a read-only mirror of that same data, not a second
-// source of truth. It exists because the web client used to hardcode recipe
-// strings and broke silently when a recipe changed (bronze's copper:tin
+// BuildingSpecs/UnitSpecs) — economy.RecomputeProduction's bronze stock-drain
+// step (P6, megaron_plan_fysisk_gubbemodell.md §P6) reads them generically by
+// output_key at tick time, so this handler is a read-only mirror of that same
+// data, not a second source of truth. It exists because the web client used
+// to hardcode recipe strings and broke silently when a recipe changed (bronze's copper:tin
 // ratio, mig 099, 2026-07-25): this lets the client ask the server instead.
 func (h *ProvinceHandler) RecipeCatalogue(w http.ResponseWriter, r *http.Request) {
 	type ingredientEntry struct {
@@ -2858,201 +2870,6 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		"distance":      dist,
 		"travel_min":    travelMins,
 		"delivered_qty": req.Quantity,
-	})
-}
-
-// Craft handles POST /worlds/:worldID/provinces/:provinceID/craft.
-// Body: { "recipe_id": 1, "quantity": 1.0 }
-func (h *ProvinceHandler) Craft(w http.ResponseWriter, r *http.Request) {
-	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid world ID")
-		return
-	}
-	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid province ID")
-		return
-	}
-	playerID, ok := auth.PlayerIDFromContext(r.Context())
-	if !ok {
-		writeError(w, http.StatusUnauthorized, "not authenticated")
-		return
-	}
-
-	var req struct {
-		RecipeID int     `json:"recipe_id"`
-		Quantity float64 `json:"quantity"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Quantity <= 0 {
-		writeError(w, http.StatusBadRequest, "recipe_id and quantity > 0 required")
-		return
-	}
-
-	// Find settlement and verify ownership.
-	var settlementID uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT s.id FROM settlements s
-		 WHERE s.province_id = $1 AND s.world_id = $2 AND s.owner_id = $3`,
-		provinceID, worldID, playerID,
-	).Scan(&settlementID)
-	if err != nil {
-		writeError(w, http.StatusForbidden, "not your settlement")
-		return
-	}
-
-	// Load recipe.
-	var outputKey, buildingType string
-	var outputQty float64
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT output_key, output_qty, building_type FROM recipes WHERE id = $1`,
-		req.RecipeID,
-	).Scan(&outputKey, &outputQty, &buildingType)
-	if err != nil {
-		writeError(w, http.StatusNotFound, "recipe not found")
-		return
-	}
-
-	if req.RecipeID == 1 {
-		// The load-bearing bronze recipe has a capabilities checker
-		// (temenos_capabilities.md) — reuse it here so this 422 and
-		// `keryx actions` can never show a different requirement for the
-		// same gate (Fas 3 anti-drift). Covers both the foundry-presence
-		// gate and "you don't hold enough of an ingredient to craft even
-		// one unit" — sound as a precondition for ANY requested quantity,
-		// since a smaller stock than one unit's worth cannot satisfy a
-		// larger batch either.
-		cc := capabilities.NewContext(r.Context(), h.pool, h.clk, worldID, provinceID, playerID, settlementID)
-		if v := capabilities.CanCraft(cc); !v.Available {
-			writeError(w, http.StatusUnprocessableEntity, capabilities.FirstUnsatisfied(v))
-			return
-		}
-	} else {
-		// Other recipes have no capabilities checker yet — fall back to the
-		// generic building-presence gate.
-		var hasBuilding bool
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT EXISTS (SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
-			settlementID, buildingType,
-		).Scan(&hasBuilding)
-		if !hasBuilding {
-			writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s required", buildingType))
-			return
-		}
-	}
-
-	// Load recipe ingredients.
-	ingRows, err := h.pool.Query(r.Context(),
-		`SELECT good_key, quantity FROM recipe_ingredients WHERE recipe_id = $1`,
-		req.RecipeID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load recipe")
-		return
-	}
-	defer ingRows.Close()
-
-	type ing struct {
-		key string
-		qty float64
-	}
-	var ingredients []ing
-	for ingRows.Next() {
-		var i ing
-		if err := ingRows.Scan(&i.key, &i.qty); err == nil {
-			ingredients = append(ingredients, i)
-		}
-	}
-
-	tx, err := h.pool.Begin(r.Context())
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
-		return
-	}
-	defer tx.Rollback(r.Context())
-
-	// Deduct each ingredient.
-	for _, i := range ingredients {
-		needed := i.qty * req.Quantity
-		tag, err := tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount = settled(amount, rate, calc_tick) - $1,
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $2 AND good_key = $3
-			   AND settled(amount, rate, calc_tick) >= $1`,
-			needed, settlementID, i.key,
-		)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not deduct ingredient")
-			return
-		}
-		if tag.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("insufficient %s", i.key))
-			return
-		}
-	}
-
-	// Credit output. cap = 1_000_000: the non-binding technical ceiling shared
-	// by all goods rows since the 2026-07-05 cap loosening (mirrors
-	// economy.goodCap / combat.goodCap — each package hard-mirrors the value).
-	// The old hard-coded 100 here, plus the genesis seed's ELSE=200 cap in
-	// join.go, pinned every craft output (bronze, luxury, pottery, purple) at a
-	// binding low ceiling — bronze could never be stored >200. Set cap via
-	// EXCLUDED so an existing genesis-placeholder row is lifted on first craft,
-	// and clamp to that same ceiling (pattern mirrors combat/arrival.go).
-	produced := outputQty * req.Quantity
-	_, err = tx.Exec(r.Context(),
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, $2, $3, 0, 1000000, current_world_tick())
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-		     amount = LEAST(
-		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
-		             + $3,
-		         EXCLUDED.cap),
-		     cap = EXCLUDED.cap,
-		     calc_tick = current_world_tick()`,
-		settlementID, outputKey, produced,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not credit output")
-		return
-	}
-
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
-		return
-	}
-
-	// Craft was the one significant resource mutation that left no trace: it
-	// wrote settlement_goods and returned JSON, nothing else. That made casting
-	// bronze — the act the whole #1 gate hangs on — silent to the player, and
-	// unanswerable after the fact, since a stock of 0 cannot distinguish "never
-	// cast" from "cast and spent on an elite unit" (the trap that broke the
-	// "craft-events >0" metric in rapport_bronsmatning_20260722.md).
-	//
-	// Outcome, not intention (Fas 2.3): the quantities below are what happened.
-	// The event is the audit trail; the notification is what the player sees.
-	consumed := make(map[string]float64, len(ingredients))
-	for _, i := range ingredients {
-		consumed[i.key] = i.qty * req.Quantity
-	}
-	craftBody := map[string]any{
-		"settlement_id": settlementID,
-		"output_key":    outputKey,
-		"produced":      produced,
-		"consumed":      consumed,
-	}
-	if h.eventStore != nil {
-		_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamProvince, "GoodsCrafted",
-			craftBody, worldID, nil)
-	}
-	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(r.Context(), worldID, playerID, "GoodsCrafted", 4, craftBody)
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"output_key": outputKey,
-		"produced":   produced,
 	})
 }
 

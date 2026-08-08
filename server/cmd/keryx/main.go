@@ -6,7 +6,7 @@
 //	keryx status
 //	keryx recruit --unit hoplites --count 20
 //	keryx build --type farm
-//	keryx craft --qty 5
+//	keryx staff foundry +1
 //	keryx worlds
 //	keryx kingdoms
 //	keryx settlements
@@ -64,7 +64,6 @@ func main() {
 		disbandCmd(),
 		buildCmd(),
 		cancelBuildCmd(),
-		craftCmd(),
 		worldsCmd(),
 		// MVP-disabled 2026-07-08: kingdoms är post-MVP — stubs print why instead
 		// of cobra's raw "unknown command" (see cmd_kingdoms_stub.go).

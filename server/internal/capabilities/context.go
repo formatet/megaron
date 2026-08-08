@@ -48,7 +48,7 @@ func (cc checkContext) hasSettlement() bool {
 }
 
 // hasBuilding mirrors the `SELECT EXISTS(... FROM buildings ...)` check used
-// throughout api/handlers (Craft, Recruit, Rite, Build).
+// throughout api/handlers (Recruit, Rite, Build).
 // TODO: Fas 3 unify with handler gate.
 func (cc checkContext) hasBuilding(buildingType string) bool {
 	if !cc.hasSettlement() {

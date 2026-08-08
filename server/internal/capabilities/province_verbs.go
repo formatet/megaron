@@ -40,68 +40,9 @@ func canAllocate(cc checkContext) Verb {
 		"Set the share of population working each producible good.", nil)
 }
 
-// CanCraft exposes canCraft to api/handlers.ProvinceHandler.Craft, which
-// calls it for recipe_id=1 (bronze) as its own precondition check (Fas 3
-// anti-drift) — see the TODO this replaces below.
-func CanCraft(cc checkContext) Verb { return canCraft(cc) }
-
 // CanRecruit exposes canRecruit to api/handlers.ProvinceHandler.Recruit,
 // which calls it as its own precondition check (Fas 3 anti-drift).
 func CanRecruit(cc checkContext) Verb { return canRecruit(cc) }
-
-// canCraft checks the load-bearing bronze recipe (recipe_id=1: copper+tin →
-// bronze @ foundry) — the MVP-chain's craft step, and (after S4,
-// megaron_plan_varukatalogen.md — luxury removed) the only recipe the
-// catalog serves.
-// Fas 3: api/handlers.ProvinceHandler.Craft calls CanCraft directly for
-// recipe_id=1 and 422s with FirstUnsatisfied, so this and the handler's own
-// gate cannot drift apart.
-func canCraft(cc checkContext) Verb {
-	const recipeID = 1
-	type ingredient struct {
-		good string
-		qty  float64
-	}
-	var buildingType, outputKey string
-	_ = cc.pool.QueryRow(cc.ctx,
-		`SELECT building_type, output_key FROM recipes WHERE id = $1`, recipeID,
-	).Scan(&buildingType, &outputKey)
-	if buildingType == "" {
-		buildingType, outputKey = "foundry", "bronze"
-	}
-
-	rows, err := cc.pool.Query(cc.ctx,
-		`SELECT good_key, quantity FROM recipe_ingredients WHERE recipe_id = $1 ORDER BY good_key`, recipeID)
-	var ingredients []ingredient
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var i ingredient
-			if rows.Scan(&i.good, &i.qty) == nil {
-				ingredients = append(ingredients, i)
-			}
-		}
-	}
-
-	hasFoundry := cc.hasBuilding(buildingType)
-	reqs := []Requirement{
-		req(fmt.Sprintf("%s built", buildingType), hasFoundry,
-			boolDetail(hasFoundry, buildingType+" built", buildingType+" not built"),
-			fmt.Sprintf("build a %s (`keryx build --type %s`)", buildingType, buildingType)),
-	}
-	for _, i := range ingredients {
-		have := cc.goodAmount(i.good)
-		ok := have >= i.qty
-		reqs = append(reqs, req(
-			fmt.Sprintf("%s >= %.0f (per unit crafted)", i.good, i.qty),
-			ok,
-			fmt.Sprintf("%s %.0f/%.0f", i.good, have, i.qty),
-			fmt.Sprintf("acquire %s via a colony/mine, or check `keryx wants` for who's buying/selling it", i.good),
-		))
-	}
-	return verb("craft", CategoryProvince,
-		fmt.Sprintf("Smelt %s at your %s from the recipe's ingredients.", outputKey, buildingType), reqs)
-}
 
 // PopulationRequirement exposes populationRequirement to api/handlers'
 // Recruit, whose own "settlement has already collapsed" 422 is the same

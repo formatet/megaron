@@ -1,0 +1,54 @@
+-- Migration 121: förädling som svagaste länken (P6, megaron_plan_fysisk_gubbemodell.md §P6)
+--
+-- Today a single extraction gubbe standing on an olive-grove/vineyard hex gets
+-- the FULL boosted rate the moment the settlement has BUILT olive_press/winery
+-- — no second worker required. Temenos_varutaxonomi_sol.md §10.2 wants two
+-- separate roles: an extraction gubbe (terrain) AND a refining gubbe
+-- (building), output limited by the weaker of the two ("svagaste länken").
+-- Timothy 2026-08-08: strict — an unstaffed press gives NO boost, matching
+-- P4's activation philosophy ("en oplacerad gubbe producerar ingenting").
+--
+-- MECHANISM (economy.RecomputeProduction, Go side):
+--   total(good) = baselineExtraction(good)                         -- terrain-only rows, UNCHANGED below
+--               + min(boostPotential(good), refiningCapacity(good)) -- NEW
+-- boostPotential reuses the OLD terrain+building combined rows (kept, not
+-- deleted) — same extraction gubbe, same hex cap, reinterpreted as "how much
+-- MORE this hex could yield if there were refining capacity to receive it".
+-- refiningCapacity is a NEW terrain-free (building-only) production_rules row:
+-- a pressarbetare/vinmakare placed IN the building (P4/P5's already-generic
+-- target_kind='building' placement), capped by WorkplaceSlots.
+--
+-- So THIS migration only ADDS rows — it does not touch the existing
+-- terrain-only baseline rows or the existing terrain+building boost rows for
+-- oil/wine. Wine's farm-boost tier (mig 008/103: farmed land also grows
+-- grapes) is explicitly OUT of scope — §10.2 names olive_press and winery
+-- only, not farm; inventing a farm-worker-for-wine gate is scope creep.
+--
+-- Bronze: foundry gets the same terrain-free refining row. Its weakest link
+-- is a STOCK drain (copper/tin remain real, tradeable goods per §3.3 — a
+-- rate-based diversion would make them unsellable), computed in Go from the
+-- 9:1 ratio already in recipes/recipe_ingredients (mig 099) — no new schema
+-- needed for the ratio itself.
+--
+-- Calibration (kalibreringsratt, inte lås — matches P2/P3's own framing):
+-- olive_press/winery refining rate set to 72.0/tick, the ceiling of TODAY'S
+-- LIVE best-terrain boost (grove oil 72.0, hills wine 72.0) — read out of the
+-- production_rules TABLE, not out of migration 092/008's original comments
+-- (1.8/3.0): migration 109 (2026-08-06, tick-is-the-day) rescaled every
+-- existing rate_per_tick ×24 AFTER those landed, so the boost tier is now
+-- 24× the number those migrations' own prose still shows. This is exactly
+-- the trap megaron_arbetssatt.md §6 names ("en kalibreringssiffra läses ur
+-- tabellen, aldrig ur migrationen som införde den") — caught by a test
+-- comparing against the live DB, not by re-deriving from the old comment.
+-- A fully-staffed level-1 press/winery (1 worker, WorkplaceSlots=1) can
+-- realize the SAME peak boost the building alone used to grant; weaker
+-- terrain hexes were already below that ceiling and stay bottlenecked by
+-- their own boostPotential, not by refining. Foundry refining set to
+-- 1.0 bronze/tick per level-1 slot — a placeholder throughput number with no
+-- pre-P6 rate to anchor against (bronze never had a production_rules row
+-- before); unverified against any sink, recalibrate once the chain is played.
+
+INSERT INTO production_rules (terrain_type, building_type, good_key, rate_per_tick, requires_deposit) VALUES
+    (NULL, 'olive_press', 'oil',    72.0, NULL),
+    (NULL, 'winery',      'wine',   72.0, NULL),
+    (NULL, 'foundry',     'bronze', 1.0,  NULL);

@@ -148,33 +148,6 @@ func TestCanColonize_UnlockedWithBattleWornUnit(t *testing.T) {
 	}
 }
 
-// ---- craft (bronze: foundry + copper/tin) ------------------------------------
-
-func TestCanCraft_LockedWithoutFoundry(t *testing.T) {
-	pool := testPool(t)
-	f := newFixture(t, pool)
-	v := canCraft(f.cc(fakeClock(time.Now())))
-	if v.Available {
-		t.Fatal("craft must be locked without a foundry")
-	}
-	if v.Requirements[0].Satisfied {
-		t.Fatal("foundry requirement must be unsatisfied")
-	}
-}
-
-func TestCanCraft_UnlockedWithFoundryAndIngredients(t *testing.T) {
-	pool := testPool(t)
-	f := newFixture(t, pool)
-	f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'foundry')`, f.settlementID)
-	f.exec(t, `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-	           VALUES ($1, 'copper', 100, 0, 1000, 0), ($1, 'tin', 100, 0, 1000, 0)`, f.settlementID)
-
-	v := canCraft(f.cc(fakeClock(time.Now())))
-	if !v.Available {
-		t.Fatalf("craft must be unlocked with foundry + copper/tin: %+v", v.Requirements)
-	}
-}
-
 // ---- recruit (population + affordability) ------------------------------------
 
 func TestCanRecruit_LockedWithoutPopulation(t *testing.T) {

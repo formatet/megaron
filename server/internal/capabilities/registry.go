@@ -18,7 +18,6 @@ var checkers = []func(checkContext) Verb{
 	canBuild,
 	canCancelBuild,
 	canAllocate,
-	canCraft,
 	canRecruit,
 	canAbandon,
 	// military
