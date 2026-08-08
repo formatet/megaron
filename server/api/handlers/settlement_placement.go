@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -113,6 +114,187 @@ func (h *ProvinceHandler) Placements(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// PlacementOptions handles GET
+// /worlds/:worldID/provinces/:provinceID/placement-options — the per-hex and
+// per-building production menu (P4's LoadHexProductionOptions /
+// LoadBuildingProductionOptions), merged with current occupancy so a client
+// never has to duplicate placementYield's math. This is the data source for
+// P5's stadsvy grid AND `keryx city` — hex math (Ring/RingOrdinal) stays
+// server-side; a client only ever sees hex_ordinal 1..18, matching the
+// address space P0-UI answer 7 locked in. FOW-gated: an unrevealed catchment
+// hex is simply absent from the response (P0-UI §Tvärgående lås: "FOW-hex =
+// svart = icke-placerbar, även i rastret") — the grid always has 18 fixed
+// ordinal slots, so a client renders any missing ordinal as fog.
+func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	settlementID, population, center, ok := h.placementSettlement(r, worldID, provinceID, playerID)
+	if !ok {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	placed, err := economy.LoadPlacementCounts(r.Context(), h.pool, settlementID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load placements")
+		return
+	}
+	placedOrdinals, err := loadPlacedOrdinals(r.Context(), h.pool, settlementID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load placements")
+		return
+	}
+
+	hexOptions, err := economy.LoadHexProductionOptions(r.Context(), h.pool, settlementID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load catchment")
+		return
+	}
+	eyes := loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
+	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+
+	type goodOut struct {
+		GoodKey        string  `json:"good_key"`
+		RatePerTick    float64 `json:"rate_per_tick"`
+		Cap            *int    `json:"cap,omitempty"` // absent/null = uncapped (grain — placementYield)
+		Placed         int     `json:"placed"`
+		PlacedOrdinals []int   `json:"placed_ordinals,omitempty"`
+		MarginalYield  float64 `json:"marginal_yield"`
+	}
+	buildGoods := func(rate map[string]float64, cap map[string]int, placedGoods map[string]int, ordinalsGoods map[string][]int) []goodOut {
+		out := make([]goodOut, 0, len(rate))
+		for good, rate := range rate {
+			g := goodOut{
+				GoodKey:        good,
+				RatePerTick:    rate,
+				Placed:         placedGoods[good],
+				PlacedOrdinals: ordinalsGoods[good],
+			}
+			if good == economy.GoodGrain {
+				g.MarginalYield = rate
+			} else if c := cap[good]; c > 0 {
+				g.Cap = &c
+				g.MarginalYield = rate / float64(c)
+			}
+			out = append(out, g)
+		}
+		return out
+	}
+
+	type hexOut struct {
+		HexQ       int       `json:"hex_q"`
+		HexR       int       `json:"hex_r"`
+		HexOrdinal int       `json:"hex_ordinal"`
+		Terrain    string    `json:"terrain"`
+		Goods      []goodOut `json:"goods"`
+	}
+	hexes := make([]hexOut, 0, len(hexOptions))
+	for _, opt := range hexOptions {
+		if !knownToPlayer(eyes, remembered, province.MapPosition{Q: opt.Coord.Q, R: opt.Coord.R}, opt.Terrain) {
+			continue
+		}
+		ordinal, found := hexgrid.RingOrdinal(center, hexgrid.CatchmentRadius, opt.Coord)
+		if !found {
+			continue
+		}
+		hexes = append(hexes, hexOut{
+			HexQ:       opt.Coord.Q,
+			HexR:       opt.Coord.R,
+			HexOrdinal: ordinal,
+			Terrain:    opt.Terrain,
+			Goods:      buildGoods(opt.RatePerGood, opt.CapPerGood, placed.Hex[opt.Coord], placedOrdinals.Hex[opt.Coord]),
+		})
+	}
+
+	buildingOptions, err := economy.LoadBuildingProductionOptions(r.Context(), h.pool, settlementID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load buildings")
+		return
+	}
+	type buildingOut struct {
+		BuildingType string    `json:"building_type"`
+		Level        int       `json:"level"`
+		Goods        []goodOut `json:"goods"`
+	}
+	buildings := make([]buildingOut, 0, len(buildingOptions))
+	for _, opt := range buildingOptions {
+		buildings = append(buildings, buildingOut{
+			BuildingType: opt.BuildingType,
+			Level:        opt.Level,
+			Goods:        buildGoods(opt.RatePerGood, opt.CapPerGood, placed.Building[opt.BuildingType], placedOrdinals.Building[opt.BuildingType]),
+		})
+	}
+
+	totalGubbar := population / 100
+	writeJSON(w, http.StatusOK, map[string]any{
+		"hexes":        hexes,
+		"buildings":    buildings,
+		"total_gubbar": totalGubbar,
+		"pool_size":    totalGubbar - placed.Total,
+	})
+}
+
+// placedOrdinals mirrors economy.PlacementCounts but keeps the actual gubbe
+// ordinals (not just a count) — a client needs a concrete ordinal to issue
+// DELETE .../placements/{ordinal} when it removes one gubbe from a specific
+// hex/good or building/good.
+type placedOrdinals struct {
+	Hex      map[hexgrid.Coord]map[string][]int
+	Building map[string]map[string][]int
+}
+
+func loadPlacedOrdinals(ctx context.Context, tx economy.Tx, settlementID uuid.UUID) (placedOrdinals, error) {
+	out := placedOrdinals{
+		Hex:      make(map[hexgrid.Coord]map[string][]int),
+		Building: make(map[string]map[string][]int),
+	}
+	rows, err := tx.Query(ctx,
+		`SELECT gubbe_ordinal, target_kind, hex_q, hex_r, building_type, good_key
+		 FROM settlement_placement WHERE settlement_id = $1`,
+		settlementID,
+	)
+	if err != nil {
+		return out, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var gubbeOrdinal int
+		var kind, goodKey string
+		var hexQ, hexR *int
+		var buildingType *string
+		if err := rows.Scan(&gubbeOrdinal, &kind, &hexQ, &hexR, &buildingType, &goodKey); err != nil {
+			return out, err
+		}
+		switch kind {
+		case "hex":
+			c := hexgrid.Coord{Q: *hexQ, R: *hexR}
+			if out.Hex[c] == nil {
+				out.Hex[c] = make(map[string][]int)
+			}
+			out.Hex[c][goodKey] = append(out.Hex[c][goodKey], gubbeOrdinal)
+		case "building":
+			if out.Building[*buildingType] == nil {
+				out.Building[*buildingType] = make(map[string][]int)
+			}
+			out.Building[*buildingType][goodKey] = append(out.Building[*buildingType][goodKey], gubbeOrdinal)
+		}
+	}
+	return out, rows.Err()
+}
+
 // PlaceGubbe handles POST /worlds/:worldID/provinces/:provinceID/placements —
 // place the next free gubbe (server-assigned ordinal, lowest available; P0-UI
 // answer 2: the Wanax picks WHERE, not which numbered gubbe) on a hex or
@@ -120,7 +302,9 @@ func (h *ProvinceHandler) Placements(w http.ResponseWriter, r *http.Request) {
 // lås: a fog hex is never placeable), that the target/good combination is a
 // real production option, and capacity (grain exempt — placementYield/
 // economy.PlaceStartingWorkforce's doc comments). Recomputes production
-// immediately (P0-UI: "Placering slår igenom omedelbart").
+// immediately (P0-UI: "Placering slår igenom omedelbart"). Accepts either
+// hex_q/hex_r or hex_ordinal (1..18, P0-UI answer 7's address space) — the
+// latter keeps Ring() math server-side so keryx/web never duplicate it.
 func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -142,11 +326,12 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		TargetKind   string `json:"target_kind"` // "hex" | "building"
 		HexQ         *int   `json:"hex_q"`
 		HexR         *int   `json:"hex_r"`
+		HexOrdinal   *int   `json:"hex_ordinal"` // alternative to hex_q/hex_r — 1..18, resolved via Ring() below
 		BuildingType string `json:"building_type"`
 		GoodKey      string `json:"good_key"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.GoodKey == "" {
-		writeError(w, http.StatusBadRequest, `invalid JSON — expected {"target_kind":"hex","hex_q":1,"hex_r":0,"good_key":"grain"} or {"target_kind":"building","building_type":"stonequarry","good_key":"stone"}`)
+		writeError(w, http.StatusBadRequest, `invalid JSON — expected {"target_kind":"hex","hex_ordinal":5,"good_key":"grain"} (or "hex_q"/"hex_r" instead of "hex_ordinal") or {"target_kind":"building","building_type":"stonequarry","good_key":"stone"}`)
 		return
 	}
 
@@ -201,13 +386,23 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 
 	switch req.TargetKind {
 	case "hex":
-		if req.HexQ == nil || req.HexR == nil {
-			writeError(w, http.StatusBadRequest, "hex placement requires hex_q and hex_r")
-			return
-		}
-		hex := hexgrid.Coord{Q: *req.HexQ, R: *req.HexR}
-		if _, found := hexgrid.RingOrdinal(center, hexgrid.CatchmentRadius, hex); !found {
-			writeError(w, http.StatusBadRequest, "that hex is not in this settlement's catchment")
+		var hex hexgrid.Coord
+		switch {
+		case req.HexOrdinal != nil:
+			ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
+			if *req.HexOrdinal < 1 || *req.HexOrdinal > len(ring) {
+				writeError(w, http.StatusBadRequest, "hex_ordinal out of range (1..18)")
+				return
+			}
+			hex = ring[*req.HexOrdinal-1]
+		case req.HexQ != nil && req.HexR != nil:
+			hex = hexgrid.Coord{Q: *req.HexQ, R: *req.HexR}
+			if _, found := hexgrid.RingOrdinal(center, hexgrid.CatchmentRadius, hex); !found {
+				writeError(w, http.StatusBadRequest, "that hex is not in this settlement's catchment")
+				return
+			}
+		default:
+			writeError(w, http.StatusBadRequest, "hex placement requires hex_ordinal, or hex_q and hex_r")
 			return
 		}
 

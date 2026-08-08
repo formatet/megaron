@@ -106,11 +106,16 @@ func setupPlacementFixture(t *testing.T, catchmentTerrains map[[2]int]string) *p
 
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))
+	r.Get("/worlds/{worldID}/provinces/{provinceID}/placement-options", ph.PlacementOptions)
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 	r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
 
 	return &placementFixture{worldID: worldID, provinceID: provinceID, settlementID: settlementID, accessToken: accessToken, router: r}
+}
+
+func (f *placementFixture) placementOptionsPath() string {
+	return "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/placement-options"
 }
 
 func (f *placementFixture) do(t *testing.T, method, path string, body any) (int, map[string]any) {
@@ -240,3 +245,158 @@ func TestPlaceGubbe_RejectsWhenPoolIsEmpty(t *testing.T) {
 	}
 }
 
+// TestPlacementOptions_GrainUncappedFishCapped: P5's data source. Grain must
+// report cap=null (omitted) with marginal_yield = the hex's flat rate
+// (placementYield's grain exemption — no cap denominator); fish must report
+// a real numeric cap and marginal_yield = rate/cap. Both hexes' ordinals must
+// be present and match hexgrid.RingOrdinal's own numbering.
+func TestPlacementOptions_GrainUncappedFishCapped(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains", {0, 1}: "coastal_sea"})
+
+	code, resp := f.do(t, http.MethodGet, f.placementOptionsPath(), nil)
+	if code != http.StatusOK {
+		t.Fatalf("placement-options = %d: %v", code, resp)
+	}
+	hexes, _ := resp["hexes"].([]any)
+	if len(hexes) != 2 {
+		t.Fatalf("expected 2 catchment hexes in options, got %d (%v)", len(hexes), resp)
+	}
+
+	var grainHex, fishHex map[string]any
+	for _, h := range hexes {
+		hm := h.(map[string]any)
+		if hm["terrain"] == "plains" {
+			grainHex = hm
+		}
+		if hm["terrain"] == "coastal_sea" {
+			fishHex = hm
+		}
+		if hm["hex_ordinal"] == nil {
+			t.Errorf("hex %v missing hex_ordinal", hm)
+		}
+	}
+	if grainHex == nil || fishHex == nil {
+		t.Fatalf("expected both a plains and a coastal_sea hex in options, got %v", hexes)
+	}
+
+	findGood := func(hex map[string]any, good string) map[string]any {
+		for _, g := range hex["goods"].([]any) {
+			gm := g.(map[string]any)
+			if gm["good_key"] == good {
+				return gm
+			}
+		}
+		return nil
+	}
+
+	grain := findGood(grainHex, "grain")
+	if grain == nil {
+		t.Fatalf("plains hex has no grain option: %v", grainHex)
+	}
+	if _, hasCap := grain["cap"]; hasCap {
+		t.Errorf("grain must have no cap (uncapped), got cap=%v", grain["cap"])
+	}
+	if grain["marginal_yield"] != grain["rate_per_tick"] {
+		t.Errorf("grain marginal_yield (%v) must equal rate_per_tick (%v) — no cap denominator", grain["marginal_yield"], grain["rate_per_tick"])
+	}
+
+	fish := findGood(fishHex, "fish")
+	if fish == nil {
+		t.Fatalf("coastal_sea hex has no fish option: %v", fishHex)
+	}
+	cap, hasCap := fish["cap"]
+	if !hasCap || cap.(float64) != 1 {
+		t.Errorf("fish cap = %v (hasCap=%v), want 1 (coastal_sea, no harbour, P3)", cap, hasCap)
+	}
+	wantMarginal := fish["rate_per_tick"].(float64) / cap.(float64)
+	if fish["marginal_yield"].(float64) != wantMarginal {
+		t.Errorf("fish marginal_yield = %v, want rate/cap = %v", fish["marginal_yield"], wantMarginal)
+	}
+
+	// Place one gubbe on the fish hex, then re-fetch: occupancy must show up.
+	code, placeResp := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 0, "hex_r": 1, "good_key": "fish"})
+	if code != http.StatusCreated {
+		t.Fatalf("place fish gubbe: %d: %v", code, placeResp)
+	}
+	placedOrdinal := int(placeResp["gubbe_ordinal"].(float64))
+
+	code, resp2 := f.do(t, http.MethodGet, f.placementOptionsPath(), nil)
+	if code != http.StatusOK {
+		t.Fatalf("placement-options after placing = %d: %v", code, resp2)
+	}
+	for _, h := range resp2["hexes"].([]any) {
+		hm := h.(map[string]any)
+		if hm["terrain"] != "coastal_sea" {
+			continue
+		}
+		fish2 := findGood(hm, "fish")
+		if int(fish2["placed"].(float64)) != 1 {
+			t.Errorf("fish placed count = %v, want 1", fish2["placed"])
+		}
+		ordinals, _ := fish2["placed_ordinals"].([]any)
+		if len(ordinals) != 1 || int(ordinals[0].(float64)) != placedOrdinal {
+			t.Errorf("fish placed_ordinals = %v, want [%d]", ordinals, placedOrdinal)
+		}
+	}
+
+	if int(resp2["pool_size"].(float64)) != int(resp["pool_size"].(float64))-1 {
+		t.Errorf("pool_size after placing = %v, want %v", resp2["pool_size"], int(resp["pool_size"].(float64))-1)
+	}
+}
+
+// TestPlaceGubbe_ByHexOrdinal: keryx/web address hexes as 1..18 (P0-UI
+// answer 7) — POST must accept hex_ordinal as an alternative to hex_q/hex_r
+// and place on the exact same coordinate placement-options reported that
+// ordinal at.
+func TestPlaceGubbe_ByHexOrdinal(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+
+	code, optResp := f.do(t, http.MethodGet, f.placementOptionsPath(), nil)
+	if code != http.StatusOK {
+		t.Fatalf("placement-options = %d: %v", code, optResp)
+	}
+	hexes, _ := optResp["hexes"].([]any)
+	if len(hexes) != 1 {
+		t.Fatalf("expected 1 catchment hex, got %d", len(hexes))
+	}
+	hex := hexes[0].(map[string]any)
+	ordinal := int(hex["hex_ordinal"].(float64))
+	if int(hex["hex_q"].(float64)) != 1 || int(hex["hex_r"].(float64)) != 0 {
+		t.Fatalf("unexpected hex coord in options: %v", hex)
+	}
+
+	code, resp := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_ordinal": ordinal, "good_key": "grain"})
+	if code != http.StatusCreated {
+		t.Fatalf("place by hex_ordinal = %d: %v", code, resp)
+	}
+
+	code, listResp := f.do(t, http.MethodGet, f.placementsPath(), nil)
+	if code != http.StatusOK {
+		t.Fatalf("list placements = %d: %v", code, listResp)
+	}
+	placements, _ := listResp["placements"].([]any)
+	if len(placements) != 1 {
+		t.Fatalf("expected 1 placement, got %d", len(placements))
+	}
+	p := placements[0].(map[string]any)
+	if int(p["hex_q"].(float64)) != 1 || int(p["hex_r"].(float64)) != 0 {
+		t.Errorf("placement by hex_ordinal landed on wrong coord: %v (want q=1,r=0)", p)
+	}
+	if int(p["hex_ordinal"].(float64)) != ordinal {
+		t.Errorf("placement hex_ordinal = %v, want %d", p["hex_ordinal"], ordinal)
+	}
+}
+
+// TestPlaceGubbe_HexOrdinalOutOfRangeRejected: bounds-checks the resolved
+// index against the actual ring length rather than trusting client input.
+func TestPlaceGubbe_HexOrdinalOutOfRangeRejected(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+
+	code, resp := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_ordinal": 99, "good_key": "grain"})
+	if code != http.StatusBadRequest {
+		t.Errorf("hex_ordinal=99 (out of range) = %d: %v, want 400", code, resp)
+	}
+}

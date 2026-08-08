@@ -331,6 +331,7 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/craft", ph.Craft)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
 			r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/placement-options", ph.PlacementOptions)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 			r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
