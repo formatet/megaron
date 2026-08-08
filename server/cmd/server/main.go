@@ -186,6 +186,8 @@ func main() {
 	worker.Register(events.ScheduledBattleTick, battleTickH.Handle)
 	occupationCheckH := combat.NewOccupationCheckHandler(pool, scheduler, hub)
 	worker.Register(events.ScheduledOccupationCheck, occupationCheckH.Handle)
+	siegeCapitulationH := combat.NewSiegeCapitulationHandler(pool, eventStore, scheduler, hub)
+	worker.Register(events.ScheduledSiegeCapitulation, siegeCapitulationH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler, hub)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub)

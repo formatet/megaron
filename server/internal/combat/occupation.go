@@ -173,24 +173,38 @@ func loadCitySettlementForUpdate(ctx context.Context, tx pgx.Tx, worldID uuid.UU
 //
 // survivingAttackerUnitIDs are the winning side's participants with
 // sizes[i] > 0 at battle end — they become the occupying garrison.
+// evictStaleGarrison disbands any unit still marked 'garrison' at
+// settlementID that isn't owned by the new occupant. Shared by
+// occupySettlement (battle-won occupation) and capitulateSettlement
+// (siege-starvation occupation, siege_capitulation.go) — both hand a city to
+// a new occupant without necessarily moving any of the occupant's own units
+// in, and either way a stale defender garrison cannot be left standing.
+//
+// For occupySettlement specifically: the straightforward case (defender
+// wiped) already disbanded every defender unit in resolveTick's
+// apply-final-sizes loop, so this is a no-op there. It only bites when the
+// defender ROUTED instead: §5's markSideRouted (battle.go) deliberately
+// leaves a routed side's survivors' status/settlement_id untouched (their
+// own doc comment) — a pre-existing gap in the rout mechanic, not this
+// slice's to fix, but an occupied city cannot be left showing a live enemy
+// garrison.
+func evictStaleGarrison(ctx context.Context, tx pgx.Tx, settlementID, occupantOwnerID uuid.UUID) error {
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET status = 'disbanded', size = 0, updated_at = now()
+		 WHERE settlement_id = $1 AND status = 'garrison' AND owner_id IS DISTINCT FROM $2`,
+		settlementID, occupantOwnerID,
+	); err != nil {
+		return fmt.Errorf("evict stale garrison: %w", err)
+	}
+	return nil
+}
+
 func (h *BattleTickHandler) occupySettlement(
 	ctx context.Context, tx pgx.Tx, worldID uuid.UUID, q, r, tickIndex int,
 	city *citySettlement, occupantOwnerID uuid.UUID, survivingAttackerUnitIDs []uuid.UUID,
 ) error {
-	// Evict any unit still marked 'garrison' here that isn't the new occupant.
-	// The straightforward case (defender wiped) already disbanded every
-	// defender unit in resolveTick's apply-final-sizes loop above, so this is
-	// a no-op there. It only bites when the defender ROUTED instead: §5's
-	// markSideRouted (battle.go) deliberately leaves a routed side's
-	// survivors' status/settlement_id untouched (their own doc comment) — a
-	// pre-existing gap in the rout mechanic, not this slice's to fix, but an
-	// occupied city cannot be left showing a live enemy garrison.
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET status = 'disbanded', size = 0, updated_at = now()
-		 WHERE settlement_id = $1 AND status = 'garrison' AND owner_id IS DISTINCT FROM $2`,
-		city.id, occupantOwnerID,
-	); err != nil {
-		return fmt.Errorf("occupy: evict stale garrison: %w", err)
+	if err := evictStaleGarrison(ctx, tx, city.id, occupantOwnerID); err != nil {
+		return err
 	}
 
 	if len(survivingAttackerUnitIDs) > 0 {
