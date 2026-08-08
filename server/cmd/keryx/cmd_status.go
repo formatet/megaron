@@ -187,6 +187,9 @@ func statusCmd() *cobra.Command {
 			}
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty, settlementsNote, coastalNote)
+			if besieged, _ := sett["besieged"].(bool); besieged {
+				fmt.Println("  ⚔ BELÄGRAD — en fiende håller en infartsväg, catchment-produktion strypt")
+			}
 			if hint := multiCityHint(name, settlementsUsed); hint != "" {
 				fmt.Println(hint)
 			}

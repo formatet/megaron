@@ -739,6 +739,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"kingdom_id":             sett.KingdomID,
 			"culture":                sett.CultureID,
 			"state":                  sett.State,
+			"besieged":               sett.Besieged,
 			"population":             sett.Population,
 			"labor_pool":             laborPool,
 			"walls":                  sett.WallLevel,

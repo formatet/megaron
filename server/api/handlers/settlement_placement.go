@@ -158,7 +158,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	hexOptions, err := economy.LoadHexProductionOptions(r.Context(), h.pool, settlementID)
+	hexOptions, err := economy.LoadHexProductionOptions(r.Context(), h.pool, settlementID, nil) // menu listing — siege denial gates YIELD, not the placement UI
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load catchment")
 		return
@@ -423,7 +423,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		hexOptions, err := economy.LoadHexProductionOptions(r.Context(), tx, settlementID)
+		hexOptions, err := economy.LoadHexProductionOptions(r.Context(), tx, settlementID, nil) // validation menu — siege denial gates YIELD, not the placement UI
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not load catchment")
 			return

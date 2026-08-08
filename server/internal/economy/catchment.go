@@ -23,16 +23,25 @@ import (
 // Sibling: CatchmentBasePotentialAt (catchment_preview.go) is the hex-scoped,
 // pre-settlement variant used by the colonize preview (assumed buildings instead
 // of actual ones). Same joins — keep all three in sync.
+//
+// Belägring S1 (megaron_plan_belagring.md §Implementeringskontrakt step 4):
+// mirrors LoadHexProductionOptions' siege-denial filtering, so a besieged
+// settlement's break-even hint/status endpoint doesn't show potential the
+// blockade has actually cut off. Computed independently here (its own
+// ReachableCatchmentHexes call) rather than threaded in from
+// RecomputeProduction — this is a read-only display path, not the hot
+// production-write path S1's "billig förkoll" is written to protect.
 func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]float64, error) {
 	var worldID uuid.UUID
+	var ownerID uuid.UUID
 	var q, r int
 	err := tx.QueryRow(ctx,
-		`SELECT prov.world_id, prov.map_q, prov.map_r
+		`SELECT prov.world_id, s.owner_id, prov.map_q, prov.map_r
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.id = $1`,
 		settlementID,
-	).Scan(&worldID, &q, &r)
+	).Scan(&worldID, &ownerID, &q, &r)
 	if err != nil {
 		return nil, fmt.Errorf("catchment base potential: load province coords: %w", err)
 	}
@@ -42,7 +51,19 @@ func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	// separately (RecomputeProduction adds it; this base-potential mirror
 	// intentionally does not, matching its existing "potential from the
 	// worked land" contract — see the doc comment above).
-	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
+	center := hexgrid.Coord{Q: q, R: r}
+	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
+	reachable, _, err := ReachableCatchmentHexes(ctx, tx, worldID, ownerID, center, ring)
+	if err != nil {
+		return nil, fmt.Errorf("catchment base potential: %w", err)
+	}
+	filteredRing := ring[:0:0]
+	for _, c := range ring {
+		if reachable[c] {
+			filteredRing = append(filteredRing, c)
+		}
+	}
+	catchQ, catchR := hexgrid.QRArrays(filteredRing)
 	rows, err := tx.Query(ctx,
 		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
 		 FROM unnest($3::int[], $4::int[]) AS catchment(q, r)

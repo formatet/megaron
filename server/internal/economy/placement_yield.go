@@ -54,7 +54,16 @@ var weakestLinkRefiningBuilding = map[string]string{
 // RecomputeProduction's old aggregate query, treat this one as source of
 // truth for PLACED production (recompute.go no longer uses the aggregate for
 // placeable goods after P4).
-func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]HexOption, error) {
+//
+// reachable implements belägring S1 (megaron_plan_belagring.md
+// §Implementeringskontrakt step 4): when non-nil, a ring hex is included ONLY
+// if reachable[hex] is true — a denied hex is dropped before the catchment
+// SQL runs at all, so it contributes zero to every placement's yield
+// (RecomputeProduction's placements.Hex lookup simply finds no HexOption for
+// that coord). Pass nil for the ordinary unfiltered catchment (every caller
+// except RecomputeProduction — a settlement isn't besieged while a Wanax is
+// merely previewing where to place a founding gubbe).
+func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID, reachable map[hexgrid.Coord]bool) ([]HexOption, error) {
 	var worldID uuid.UUID
 	var q, r int
 	if err := tx.QueryRow(ctx,
@@ -71,7 +80,17 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		return nil, fmt.Errorf("load hex production options: %w", err)
 	}
 
-	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
+	ring := hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius)
+	if reachable != nil {
+		filtered := ring[:0:0]
+		for _, c := range ring {
+			if reachable[c] {
+				filtered = append(filtered, c)
+			}
+		}
+		ring = filtered
+	}
+	catchQ, catchR := hexgrid.QRArrays(ring)
 	rows, err := tx.Query(ctx,
 		`SELECT mt.q, mt.r, mt.terrain,
 		        COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false),

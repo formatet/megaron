@@ -152,6 +152,7 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"wall_level":          sett.WallLevel,
 		"is_capital":          sett.IsCapital,
 		"state":               sett.State,
+		"besieged":            sett.Besieged,
 		"population":          sett.Population,
 		"resources":           sett.Resources.Snapshot(now),
 		"army":                sett.Army,
