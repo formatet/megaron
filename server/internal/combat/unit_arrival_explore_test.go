@@ -199,3 +199,143 @@ func TestExploreOrder_AutoReturn(t *testing.T) {
 		t.Errorf("after return arrival: home_settlement_id = %v, want nil (cleared)", *homeSettlementID)
 	}
 }
+
+// TestExploreOrder_RevealsRadiusAroundTarget is the regression test for
+// temenos_buggrapporter.md "FOW lyfter inte runt en nyutforskad hex"
+// (2026-08-08 bug reports on hex 5,60 and 4,61): before the fix, resolve()'s
+// FOW sweep only recorded the literal path hexes walked, never the
+// live-vision radius (province.LiveRadius) a ship standing at the target
+// would actually reveal — and because an explore unit turns for home in the
+// same transaction it arrives, no later /map read ever caught that radius
+// either. This drives the real target-arrival resolve() and asserts
+// player_scouted_tiles contains the target's sea neighbour (within a ship's
+// radius-4 open-sea vision) and its land neighbour (within radius 1), but NOT
+// a land tile two steps out (outside radius 1).
+func TestExploreOrder_RevealsRadiusAroundTarget(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
+	); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
+		"explorer-"+uuid.New().String(), "explorer-"+uuid.New().String()+"@test.invalid",
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create test player: %v", err)
+	}
+
+	// Same harbour-at-(1,0)-to-(3,0) sea lane as the auto-return test above,
+	// plus three extra tiles around the explore TARGET (3,0) to probe the
+	// radius: (4,0) sea (a ship's neighbour, well within sea radius 4),
+	// (3,1) plains (a ship's neighbour, within land radius 1), and (3,2)
+	// plains (two steps from the target, outside land radius 1).
+	tiles := []struct {
+		q, r    int
+		terrain string
+	}{
+		{0, 0, "plains"},
+		{1, 0, "coastal_sea"},
+		{2, 0, "coastal_sea"},
+		{3, 0, "coastal_sea"},
+		{4, 0, "coastal_sea"},
+		{3, 1, "plains"},
+		{3, 2, "plains"},
+	}
+	for _, tl := range tiles {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, tl.q, tl.r, tl.terrain,
+		); err != nil {
+			t.Fatalf("insert map tile (%d,%d): %v", tl.q, tl.r, err)
+		}
+	}
+
+	var capitalProvinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'plains') RETURNING id`,
+		worldID,
+	).Scan(&capitalProvinceID); err != nil {
+		t.Fatalf("create capital province: %v", err)
+	}
+	var capitalID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Capital City', 'achaean', $3, 'capital', true) RETURNING id`,
+		worldID, capitalProvinceID, ownerID,
+	).Scan(&capitalID); err != nil {
+		t.Fatalf("create capital settlement: %v", err)
+	}
+
+	var unitID uuid.UUID
+	arrivesAt := time.Now()
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units
+		   (world_id, owner_id, type, category, size, crew, status, q, r,
+		    target_q, target_r, departs_at, arrives_at, march_intent, home_settlement_id)
+		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'marching', 1, 0,
+		         3, 0, now(), $3, 'explore', $4)
+		 RETURNING id`,
+		worldID, ownerID, arrivesAt, capitalID,
+	).Scan(&unitID); err != nil {
+		t.Fatalf("create exploring unit: %v", err)
+	}
+
+	h := &UnitArrivalHandler{
+		pool:       pool,
+		eventStore: events.NewStore(pool),
+		hub:        nil,
+		scheduler:  events.NewScheduler(pool, clock.NewTestClock(time.Now())),
+		clk:        clock.NewTestClock(time.Now()),
+	}
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatalf("begin tx: %v", err)
+	}
+	if err := h.resolve(ctx, tx, unitID, worldID); err != nil {
+		tx.Rollback(ctx)
+		t.Fatalf("resolve (target arrival): %v", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		t.Fatalf("commit tx: %v", err)
+	}
+
+	scouted := func(q, r int) bool {
+		var n int
+		if err := pool.QueryRow(ctx,
+			`SELECT count(*) FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2 AND q = $3 AND r = $4`,
+			worldID, ownerID, q, r,
+		).Scan(&n); err != nil {
+			t.Fatalf("query player_scouted_tiles (%d,%d): %v", q, r, err)
+		}
+		return n > 0
+	}
+
+	if !scouted(3, 0) {
+		t.Errorf("target hex (3,0) not in player_scouted_tiles — the bare path sweep should have covered this at minimum")
+	}
+	if !scouted(4, 0) {
+		t.Errorf("sea neighbour (4,0) not in player_scouted_tiles — a ship at (3,0) sees open sea to radius 4, this is the reported bug (FOW does not lift around the explored hex)")
+	}
+	if !scouted(3, 1) {
+		t.Errorf("land neighbour (3,1) not in player_scouted_tiles — a ship at (3,0) sees land to radius 1")
+	}
+	if scouted(3, 2) {
+		t.Errorf("land tile (3,2), two steps from the target, IS in player_scouted_tiles — a ship's land vision radius is 1, this over-reveals")
+	}
+}

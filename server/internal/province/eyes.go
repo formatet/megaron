@@ -5,7 +5,9 @@ import (
 	"math"
 	"time"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // LoadLiveEyes returns the player's tier-1 (live) vision sources: own and allied
@@ -237,6 +239,79 @@ func markAtWater(eyes []Eye, sea map[[2]int]bool) {
 			}
 		}
 	}
+}
+
+// SweepLiveRadius force-records into player_scouted_tiles every tile that a live
+// eye of eyeKind standing at pos would currently reveal, using the same
+// per-target-terrain radius (LiveRadius) the ordinary /map read applies via
+// AnyEyeSees. /map normally does this memory-write itself on every read (see
+// api/handlers/world.go), so it self-heals for any unit that stays put — but a
+// unit whose live-vision window closes within the same transaction it opened
+// (combat/unit_arrival.go's exploreArrived: the ship turns for home immediately
+// on arrival) may never sit still long enough for a player's /map poll to catch
+// it, leaving the radius around the explored hex permanently fogged even though
+// the hex itself was swept. Call this once, at the moment the eye is known to
+// stand at pos, to force the same memory-write /map would have done had the
+// player happened to read the map at that exact instant.
+//
+// db must support both Query and Exec — pgx.Tx and *pgxpool.Pool both do.
+// radius is capped at 4 (the highest LiveRadius ever returns: EyeShip at open
+// sea, or a land eye at a mountain), so the candidate disk never needs to be
+// larger regardless of eyeKind.
+func SweepLiveRadius(ctx context.Context, db interface {
+	Queryer
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+}, worldID, playerID uuid.UUID, pos MapPosition, eyeKind string) error {
+	eyes := []Eye{{Pos: pos, Kind: eyeKind}}
+	markEyesAtWater(ctx, db, worldID, eyes)
+	eye := eyes[0]
+
+	const maxRadius = 4
+	disk := hexgrid.Disk(hexgrid.Coord{Q: pos.Q, R: pos.R}, maxRadius)
+	qs := make([]int32, len(disk))
+	rs := make([]int32, len(disk))
+	for i, c := range disk {
+		qs[i] = int32(c.Q)
+		rs[i] = int32(c.R)
+	}
+
+	rows, err := db.Query(ctx,
+		`SELECT t.q, t.r, t.terrain
+		   FROM map_tiles t
+		   JOIN unnest($2::int[], $3::int[]) AS p(q, r) ON t.q = p.q AND t.r = p.r
+		  WHERE t.world_id = $1`,
+		worldID, qs, rs,
+	)
+	if err != nil {
+		return err
+	}
+	type tile struct {
+		q, r    int
+		terrain string
+	}
+	var tiles []tile
+	for rows.Next() {
+		var t tile
+		if rows.Scan(&t.q, &t.r, &t.terrain) == nil {
+			tiles = append(tiles, t)
+		}
+	}
+	rows.Close()
+
+	for _, t := range tiles {
+		target := MapPosition{Q: t.q, R: t.r}
+		if HexDistance(eye.Pos, target) > LiveRadius(eye.Kind, eye.AtWater, t.terrain) {
+			continue
+		}
+		if _, err := db.Exec(ctx,
+			`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+			 VALUES ($1, $2, $3, $4) ON CONFLICT (world_id, player_id, q, r) DO NOTHING`,
+			worldID, playerID, t.q, t.r,
+		); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // InterpolateAlongPath returns a marching unit's live-vision position: its location

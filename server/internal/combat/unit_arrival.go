@@ -395,6 +395,23 @@ func (h *UnitArrivalHandler) exploreArrived(
 
 	h.reportScoutFindings(ctx, tx, u, destQ, destR, worldID)
 
+	// The generic FOW sweep at the top of resolve() only recorded the literal
+	// path hexes walked, not the live-vision radius a real eye standing at
+	// destQ,destR would reveal (temenos_buggrapporter.md "FOW lyfter inte runt
+	// en nyutforskad hex", 2026-08-08). An explore unit turns for home in this
+	// same transaction, so — unlike a garrisoning unit, which sits still until
+	// the player's next /map read captures its radius — it may never get a
+	// live-vision window an ordinary poll can catch. Force that same
+	// radius-write once, here, while the eye is known to stand at destQ,destR.
+	eyeKind := province.EyeLandUnit
+	if u.category == "naval" {
+		eyeKind = province.EyeShip
+	}
+	if err := province.SweepLiveRadius(ctx, tx, worldID, u.ownerID,
+		province.MapPosition{Q: destQ, R: destR}, eyeKind); err != nil {
+		slog.Warn("explore arrival: live-radius FOW sweep failed", "unit", u.id, "err", err)
+	}
+
 	return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID)
 }
 
