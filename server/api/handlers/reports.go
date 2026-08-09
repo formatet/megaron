@@ -45,11 +45,12 @@ func (h *ReportsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		Kind string `json:"kind"`
-		Body string `json:"body"`
-		Q    *int   `json:"q"`
-		R    *int   `json:"r"`
-		View string `json:"view"`
+		Kind    string          `json:"kind"`
+		Body    string          `json:"body"`
+		Q       *int            `json:"q"`
+		R       *int            `json:"r"`
+		View    string          `json:"view"`
+		Context json.RawMessage `json:"context"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -65,13 +66,18 @@ func (h *ReportsHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var reportContext []byte
+	if len(req.Context) > 0 && string(req.Context) != "null" {
+		reportContext = req.Context
+	}
+
 	var id uuid.UUID
 	var tick int
 	err = h.pool.QueryRow(r.Context(),
-		`INSERT INTO player_reports (world_id, player_id, kind, body, q, r, view, tick)
-		 VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, ''), current_world_tick())
+		`INSERT INTO player_reports (world_id, player_id, kind, body, q, r, view, context, tick)
+		 VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, ''), $8, current_world_tick())
 		 RETURNING id, tick`,
-		worldID, playerID, req.Kind, req.Body, req.Q, req.R, req.View,
+		worldID, playerID, req.Kind, req.Body, req.Q, req.R, req.View, reportContext,
 	).Scan(&id, &tick)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "insert failed")
@@ -96,7 +102,7 @@ func (h *ReportsHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT pr.id, COALESCE(pl.wanax_name, pl.username, ''), pr.kind, pr.body,
-		        pr.q, pr.r, pr.view, pr.tick, pr.created_at
+		        pr.q, pr.r, pr.view, pr.context, pr.tick, pr.created_at
 		 FROM player_reports pr
 		 JOIN players pl ON pl.id = pr.player_id
 		 WHERE pr.world_id = $1
@@ -110,20 +116,21 @@ func (h *ReportsHandler) List(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type reportRow struct {
-		ID        uuid.UUID `json:"id"`
-		Player    string    `json:"player"`
-		Kind      string    `json:"kind"`
-		Body      string    `json:"body"`
-		Q         *int      `json:"q"`
-		R         *int      `json:"r"`
-		View      *string   `json:"view"`
-		Tick      int       `json:"tick"`
-		CreatedAt time.Time `json:"created_at"`
+		ID        uuid.UUID       `json:"id"`
+		Player    string          `json:"player"`
+		Kind      string          `json:"kind"`
+		Body      string          `json:"body"`
+		Q         *int            `json:"q"`
+		R         *int            `json:"r"`
+		View      *string         `json:"view"`
+		Context   json.RawMessage `json:"context,omitempty"`
+		Tick      int             `json:"tick"`
+		CreatedAt time.Time       `json:"created_at"`
 	}
 	var items []reportRow
 	for rows.Next() {
 		var rr reportRow
-		if err := rows.Scan(&rr.ID, &rr.Player, &rr.Kind, &rr.Body, &rr.Q, &rr.R, &rr.View, &rr.Tick, &rr.CreatedAt); err != nil {
+		if err := rows.Scan(&rr.ID, &rr.Player, &rr.Kind, &rr.Body, &rr.Q, &rr.R, &rr.View, &rr.Context, &rr.Tick, &rr.CreatedAt); err != nil {
 			continue
 		}
 		items = append(items, rr)

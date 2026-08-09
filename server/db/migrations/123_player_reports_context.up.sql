@@ -1,0 +1,13 @@
+-- Migration 123: player_reports.context (B1 follow-up, temenos_buggrapporter.md).
+--
+-- q/r/view name WHERE the player was and WHICH drawer was open, but not which
+-- entity they were looking at within it — debugging a report meant reverse-
+-- engineering a unit/settlement id from timing and position alone (see
+-- temenos_buggrapporter.md's 2026-08-08 FOW finding, done the hard way).
+-- context is free-form and client-populated (whatever State.* the report
+-- drawer happens to have on hand for the currently-open panel — march-ctx
+-- unit ids, the city drawer's province id, ...) rather than one column per
+-- entity kind: the drawer set keeps growing and a fixed column list would
+-- need a migration for every new one. Nullable — a report from an empty view
+-- (or an old client) has nothing to attach.
+ALTER TABLE player_reports ADD COLUMN context JSONB;

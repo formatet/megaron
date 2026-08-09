@@ -97,14 +97,15 @@ func reportsCmd() *cobra.Command {
 
 			var resp struct {
 				Reports []struct {
-					Player    string  `json:"player"`
-					Kind      string  `json:"kind"`
-					Body      string  `json:"body"`
-					Q         *int    `json:"q"`
-					R         *int    `json:"r"`
-					View      *string `json:"view"`
-					Tick      int     `json:"tick"`
-					CreatedAt string  `json:"created_at"`
+					Player    string          `json:"player"`
+					Kind      string          `json:"kind"`
+					Body      string          `json:"body"`
+					Q         *int            `json:"q"`
+					R         *int            `json:"r"`
+					View      *string         `json:"view"`
+					Context   json.RawMessage `json:"context"`
+					Tick      int             `json:"tick"`
+					CreatedAt string          `json:"created_at"`
 				} `json:"reports"`
 			}
 			if err := json.Unmarshal(data, &resp); err != nil {
@@ -123,8 +124,12 @@ func reportsCmd() *cobra.Command {
 				if rr.View != nil && *rr.View != "" {
 					view = " [" + *rr.View + "]"
 				}
-				fmt.Printf("[tick %d] %-9s %-16s%s%s — %s\n",
-					rr.Tick, rr.Kind, rr.Player, pos, view, rr.Body)
+				ctx := ""
+				if len(rr.Context) > 0 && string(rr.Context) != "null" {
+					ctx = " " + string(rr.Context)
+				}
+				fmt.Printf("[tick %d] %-9s %-16s%s%s — %s%s\n",
+					rr.Tick, rr.Kind, rr.Player, pos, view, rr.Body, ctx)
 			}
 			fmt.Printf("\n%d report(s)\n", len(resp.Reports))
 			return nil
