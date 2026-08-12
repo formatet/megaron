@@ -355,6 +355,15 @@ const livestockFoodValue = 200.0
 // A ratt, not a lock, like livestockFoodValue above — tune against soak data.
 const LivestockSlaughterPopGain = 10
 
+// FoundingHerdLivestock is the starting livestock stock a settlement founds
+// with — the Nomadic Host's carried herd (S1d, megaron_plan_foda_konsistens.md
+// §S1d; Timothy 2026-08-07: "om det är något nomader har så är det boskap").
+// The taxonomy (Temenos_varutaxonomi_sol.md §13.1b) gives a ~8–12 range
+// "kalibreras, inte lås"; 10 is the range's midpoint and matches §13.4's own
+// worked example (ten animals ≈ half the founding grain reserve). A ratt, not
+// a lock, like the other founding/slaughter constants above — tune freely.
+const FoundingHerdLivestock = 10
+
 // FoodConsumptionSplit applies the population's food fallback chain to a
 // settlement's raw (pre-consumption) grain/fish production and its livestock
 // STOCK: the population has ONE food need, demand, covered by grain first,

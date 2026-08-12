@@ -858,7 +858,13 @@ func (h *UnitArrivalHandler) foundColony(
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
-		        CASE g.key WHEN 'grain' THEN $2::int WHEN 'timber' THEN 200 WHEN 'stone' THEN 300 ELSE 0 END,
+		        CASE g.key
+		            WHEN 'grain'     THEN $2::int
+		            WHEN 'timber'    THEN 200
+		            WHEN 'stone'     THEN 300
+		            WHEN 'livestock' THEN $3::int
+		            ELSE 0
+		        END,
 		        0,
 		        1000000, -- non-binding storage ceiling (mirrors economy.goodCap and
 		                 -- create_metropolis.go). The per-good CASE that stood here
@@ -872,7 +878,7 @@ func (h *UnitArrivalHandler) foundColony(
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		colonyID, economy.ColonyGrainSeed,
+		colonyID, economy.ColonyGrainSeed, economy.FoundingHerdLivestock,
 	); err != nil {
 		return fmt.Errorf("foundColony: seed goods: %w", err)
 	}
