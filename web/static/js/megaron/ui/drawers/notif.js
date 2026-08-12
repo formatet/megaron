@@ -2,7 +2,7 @@ import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { updateNotifBadge } from '../chips.js';
 import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.js';
-import { currentCalendarDate } from '../misc.js';
+import { currentCalendarDate, monthLabel } from '../misc.js';
 
 // ── Notifications drawer ──────────────────────────────────────────────────
 // Mirrors keryx `notifications` (DEL B/D): the default view excludes the noisy
@@ -13,11 +13,13 @@ const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
 
 // Exact date, top of the drawer — the celestial widget only shows the month
 // name now (Timothy 2026-08-06); this is where the precise day/month/year
-// reading lives, off the same tick-anchor math (currentCalendarDate).
+// reading lives, off the same tick-anchor math (currentCalendarDate). The
+// month carries its 1..12 ordinal (monthLabel) so a Wanax can count days
+// between two notifications without a name-only calendar lookup.
 function notifDateHeader() {
   const cal = currentCalendarDate();
   if (!cal) return '';
-  return `<div class="notif-date-header">Day ${cal.day} of ${cal.monthName}, Year ${cal.year}</div>`;
+  return `<div class="notif-date-header">Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}</div>`;
 }
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }

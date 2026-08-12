@@ -159,6 +159,15 @@ export function currentCalendarDate() {
   return { day, month, monthName: MONTH_NAMES[month], year };
 }
 
+// "MonthName (N)" for the 12 ordinary months, so a Wanax can count days
+// between two notifications without cross-referencing a name-only calendar
+// (asynchronicity gate, megaron_arbetssatt.md). The intercalary Shadow Days
+// (month 0) sit outside the numbered 1..12 cycle, so they keep just the name
+// — a "(0)" would read as an ordinal that doesn't exist.
+export function monthLabel(cal) {
+  return cal.month === 0 ? cal.monthName : `${cal.monthName} (${cal.month})`;
+}
+
 function cssVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
