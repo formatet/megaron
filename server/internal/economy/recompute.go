@@ -342,6 +342,14 @@ func GrainConsumptionPerTick(pop int) float64 {
 // §Grind) — tune against soak data, not an invariant.
 const livestockFoodValue = 200.0
 
+// LivestockSlaughterPopGain is the immediate population gain from a
+// player-chosen slaughter of one animal — S1c, the herd's strongest sink
+// (megaron_plan_foda_konsistens.md, Timothy 2026-08-07: "En livestock kan
+// kompensera för de sista tio popsen när en ny gubbe ska skapas, alltså BLI
+// tio nya pops. Det har en omedelbar och stark push mot befolkningstillväxt.").
+// A ratt, not a lock, like livestockFoodValue above — tune against soak data.
+const LivestockSlaughterPopGain = 10
+
 // FoodConsumptionSplit applies the population's food fallback chain to a
 // settlement's raw (pre-consumption) grain/fish production and its livestock
 // STOCK: the population has ONE food need, demand, covered by grain first,

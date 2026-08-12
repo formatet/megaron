@@ -101,6 +101,7 @@ func main() {
 		cityCmd(),
 		placeCmd(),
 		staffCmd(),
+		slaughterCmd(),
 		idleCmd(),
 		briefCmd(),
 		unitCmd(),

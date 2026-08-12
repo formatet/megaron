@@ -571,6 +571,134 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"unplaced": ordinal})
 }
 
+// SlaughterLivestock handles POST
+// /worlds/:worldID/provinces/:provinceID/slaughter-livestock — a Wanax's
+// deliberate choice to trade one animal for population, the herd's
+// strongest sink (S1c, megaron_plan_foda_konsistens.md, Timothy 2026-08-07:
+// "En livestock kan kompensera för de sista tio popsen när en ny gubbe ska
+// skapas, alltså BLI tio nya pops"). Player-initiated only, never automatic
+// — an automatic slaughter would silently eat a herd a Wanax was saving as
+// a svältreserv or a temple offering, and tacit decisions are exactly what
+// the plan's fallback chain (S1) already avoids by never doing this on its
+// own. Rejected with 422 if the settlement holds no livestock; livestock is
+// a whole-animal stock, so exactly one animal is removed, never a fraction.
+//
+// If the +10 crosses a new full hundred, the newly-born gubbe is auto-placed
+// through the SAME hook population growth already uses
+// (economy.PlaceNextGubbeOnBestFoodHex, called identically from kharis/
+// tick.go applyDecay's own oldGubbar/newGubbar crossing loop) — not a
+// second, parallel placement path. Population is capped at
+// economy.MaxGenesisPopulation (30000, "the settlement population soft cap"
+// per that constant's own doc comment) — the same ceiling growth's tick
+// query enforces (kharis/tick.go: GREATEST(101, LEAST(30000, ...))).
+// Slaughter is just another population add and must not open a way past an
+// invariant the rest of the game already holds.
+func (h *ProvinceHandler) SlaughterLivestock(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	provinceID, err := uuid.Parse(chi.URLParam(r, "provinceID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid province ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	settlementID, _, _, ok := h.placementSettlement(r, worldID, provinceID, playerID)
+	if !ok {
+		writeError(w, http.StatusForbidden, "not your settlement")
+		return
+	}
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Whole-animal deduction: only proceeds if the settled stock is >= 1 —
+	// mirrors Gift's atomic "UPDATE ... WHERE settled(...) >= amount" idiom
+	// so the check and the deduction can't race apart.
+	tag, err := tx.Exec(r.Context(),
+		`UPDATE settlement_goods
+		   SET amount    = settled(amount, rate, calc_tick) - 1,
+		       calc_tick = current_world_tick()
+		 WHERE settlement_id = $1 AND good_key = $2
+		   AND settled(amount, rate, calc_tick) >= 1`,
+		settlementID, economy.GoodLivestock,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not slaughter livestock")
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		writeError(w, http.StatusUnprocessableEntity, "no livestock to slaughter")
+		return
+	}
+
+	var oldPop int
+	if err := tx.QueryRow(r.Context(),
+		`SELECT population FROM settlements WHERE id = $1 FOR UPDATE`,
+		settlementID,
+	).Scan(&oldPop); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read population")
+		return
+	}
+	newPop := oldPop + economy.LivestockSlaughterPopGain
+	if newPop > economy.MaxGenesisPopulation {
+		newPop = economy.MaxGenesisPopulation
+	}
+	if _, err := tx.Exec(r.Context(),
+		`UPDATE settlements SET population = $2 WHERE id = $1`,
+		settlementID, newPop,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not update population")
+		return
+	}
+
+	// Crossing a new full hundred → auto-place the new gubbe on the best
+	// food hex, the exact oldGubbar/newGubbar loop kharis/tick.go applyDecay
+	// runs after ordinary grain-funded growth — reused verbatim, not
+	// reinvented, so growth and slaughter place gubbar identically.
+	oldGubbar := oldPop / 100
+	newGubbar := newPop / 100
+	gubbarPlaced := 0
+	for ordinal := oldGubbar + 1; ordinal <= newGubbar; ordinal++ {
+		placed, perr := economy.PlaceNextGubbeOnBestFoodHex(r.Context(), tx, settlementID, ordinal)
+		if perr != nil {
+			writeError(w, http.StatusInternalServerError, "could not place new gubbe")
+			return
+		}
+		if placed {
+			gubbarPlaced++
+		}
+	}
+
+	// Population changed → grain consumption changed; keep rates in sync
+	// immediately, matching PlaceGubbe's own "placering slår igenom
+	// omedelbart" norm rather than leaving it for the next tick.
+	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
+		writeError(w, http.StatusInternalServerError, "recompute production failed")
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"population":    newPop,
+		"gubbar_placed": gubbarPlaced,
+	})
+}
+
 // BackfillPlacements handles POST /admin/worlds/:worldID/backfill-placements —
 // X-Admin-Key gated (same pattern as god.go/reports.go), operator-triggered,
 // NOT run automatically on boot. Runs economy.BackfillPlacements for every
