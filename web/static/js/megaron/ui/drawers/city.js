@@ -182,11 +182,26 @@ export async function loadCityDrawer() {
       const armyPop = Object.entries(POP_COSTS).reduce((s,[k,c]) => s + (army[k]||0)*c, 0);
       const lp      = pd.labor_pool || 0;
       const idle    = goods[0] ? (goods[0].idle_citizens || 0) : 0;
+      // S1c (megaron_plan_foda_konsistens.md): livestock's strongest sink is a
+      // deliberate Wanax choice, never automatic — trade one animal for +10
+      // population right now. Button disabled at 0 rather than hidden, so the
+      // herd's role as a growth lever stays visible even when empty.
+      const livestockGood = goods.find(g => g.key === 'livestock');
+      const livestock = livestockGood ? livestockGood.amount : 0;
       document.getElementById('city-pop-sec').innerHTML = `
         <div class="stat-row"><span class="sr-label">Population</span><span class="sr-val">${pd.population}</span></div>
         <div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${armyPop}</span></div>
         <div class="stat-row stat-row-strong"><span class="sr-label">Labor pool</span><span class="sr-val">${lp}</span></div>
-        <div class="stat-row"><span class="sr-label">Idle</span><span class="sr-val">${idle}</span></div>`;
+        <div class="stat-row"><span class="sr-label">Idle</span><span class="sr-val">${idle}</span></div>
+        <div class="stat-row">
+          <span class="sr-label">Livestock</span>
+          <span class="sr-val">${Math.floor(livestock)}
+            <button class="btn-small" onclick="slaughterLivestock('${capital.id}')" ${livestock < 1 ? 'disabled' : ''}
+              style="margin-left:.4rem;padding:.05rem .3rem;font-size:.65rem;cursor:pointer"
+              title="Trade one animal for +10 population, right now">Slaughter → +10 pop</button>
+          </span>
+        </div>
+        <div id="city-slaughter-result" class="action-result"></div>`;
     } else {
       document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
     }
@@ -332,6 +347,25 @@ export async function loadCityDrawer() {
     document.getElementById('city-gar-sec').innerHTML += await renderLockedActions('province', capital.id);
 
   } catch(e) { console.error('city drawer', e); }
+}
+
+// S1c (megaron_plan_foda_konsistens.md): player-initiated livestock slaughter
+// for +10 population right now — never automatic. On success the whole
+// drawer is reloaded (population, the herd's stock, and — if the +10 crossed
+// a new full hundred — the newly auto-placed gubbe in the catchment grid all
+// change together, so a narrower refresh would risk showing stale numbers).
+export async function slaughterLivestock(provinceID) {
+  const resultEl = document.getElementById('city-slaughter-result');
+  if (resultEl) resultEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/slaughter-livestock`, { method: 'POST' });
+  const d = await res.json().catch(() => ({}));
+  if (res.ok) {
+    track('livestock_slaughtered', { gubbar_placed: d.gubbar_placed || 0 });
+    await loadCityDrawer();
+  } else if (resultEl) {
+    resultEl.style.color = 'var(--accent)';
+    resultEl.textContent = d.error || 'Slaughter failed.';
+  }
 }
 
 // ── City build action ─────────────────────────────────────────────────────

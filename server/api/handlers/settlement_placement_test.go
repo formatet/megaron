@@ -110,6 +110,7 @@ func setupPlacementFixture(t *testing.T, catchmentTerrains map[[2]int]string) *p
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 	r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
+	r.Post("/worlds/{worldID}/provinces/{provinceID}/slaughter-livestock", ph.SlaughterLivestock)
 
 	return &placementFixture{worldID: worldID, provinceID: provinceID, settlementID: settlementID, accessToken: accessToken, router: r}
 }
@@ -137,6 +138,10 @@ func (f *placementFixture) do(t *testing.T, method, path string, body any) (int,
 
 func (f *placementFixture) placementsPath() string {
 	return "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/placements"
+}
+
+func (f *placementFixture) slaughterPath() string {
+	return "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/slaughter-livestock"
 }
 
 // TestPlaceGubbe_GrainHexUncappedMultiplePlacements: two gubbar can both work
