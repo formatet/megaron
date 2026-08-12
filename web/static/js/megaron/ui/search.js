@@ -17,6 +17,17 @@ export function closeSearch(e) {
   document.getElementById('search-overlay').classList.remove('open');
 }
 
+// Which result Enter acts on. With an explicit arrow-selection, that row; with
+// nothing selected (searchFocusIdx = -1, the state right after typing), the
+// first hit — a search box that ignores Enter reads as broken, and Enter-to-go
+// is the only way to navigate to something you can't see (Timothy). Pure half,
+// unit-tested; returns -1 when there is nothing to act on.
+export function enterTargetIndex(focusIdx, count) {
+  if (count <= 0) return -1;
+  if (focusIdx >= 0 && focusIdx < count) return focusIdx;
+  return 0;
+}
+
 export function centreOn(q, r) {
   const {x, y} = hexPx(q, r);
   State.camera.x = canvas.width/2  - x * SCALE * State.camera.zoom;
@@ -44,9 +55,9 @@ document.getElementById('search-input').addEventListener('keydown', function(e) 
     items.forEach((el, i) => el.classList.toggle('focused', i === State.searchFocusIdx));
     items[State.searchFocusIdx].scrollIntoView({block: 'nearest'});
   } else if (e.key === 'Enter') {
-    if (State.searchFocusIdx >= 0 && State.searchFocusIdx < items.length) {
-      items[State.searchFocusIdx].click();
-    }
+    e.preventDefault();
+    const idx = enterTargetIndex(State.searchFocusIdx, items.length);
+    if (idx >= 0) items[idx].click();
   }
 });
 

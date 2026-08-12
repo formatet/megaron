@@ -41,12 +41,20 @@ wait_healthy() {
   die "healthz svarade inte inom $((tries * 2)) s — kör 'tools/acceptance.sh logs'"
 }
 
+# Deterministiskt val: nyaste världen efter created_at (den som up/reset just
+# seedade), inte "vilken /worlds råkar returnera först". Servern sorterar redan
+# created_at DESC, men vi litar inte på den implicita ordningen här — och om mer
+# än en värld existerar (t.ex. en gammal körning som inte revs) skriver vi det på
+# stderr så kommandon inte tyst pekar på någon annans värld.
 world_id() {
   curl -fsS -m 8 "$API/worlds" | python3 -c '
 import json, sys
 d = json.load(sys.stdin)
 ws = d if isinstance(d, list) else d.get("worlds", [])
 if not ws: sys.exit("ingen värld seedad")
+ws.sort(key=lambda w: (w.get("created_at", ""), w["id"]), reverse=True)
+if len(ws) > 1:
+    sys.stderr.write("acceptance: %d världar finns — väljer nyaste (%s)\n" % (len(ws), ws[0]["id"]))
 print(ws[0]["id"])'
 }
 

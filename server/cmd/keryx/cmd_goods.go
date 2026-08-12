@@ -165,7 +165,7 @@ func transferCmd() *cobra.Command {
 	var provinceID string
 
 	cmd := &cobra.Command{
-		Use:   "transfer",
+		Use: "transfer",
 		// "no loss" here means no storm/pirates dice roll (internal logistics never
 		// rolls it, unlike a negotiated trade) — it is still a physical caravan that
 		// can be intercepted and seized. Don't shorten this back to a bare "no loss";
