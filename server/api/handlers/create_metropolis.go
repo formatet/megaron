@@ -118,9 +118,10 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
 		        CASE g.key
-		            WHEN 'grain'  THEN 300
-		            WHEN 'timber' THEN 200
-		            WHEN 'stone'  THEN 300
+		            WHEN 'grain'     THEN 300
+		            WHEN 'timber'    THEN 200
+		            WHEN 'stone'     THEN 300
+		            WHEN 'livestock' THEN $2::int
 		            ELSE 0
 		        END,
 		        0,
@@ -132,7 +133,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		out.SettlementID,
+		out.SettlementID, economy.FoundingHerdLivestock,
 	); err != nil {
 		return out, &metropolisError{"could not seed goods", err}
 	}
