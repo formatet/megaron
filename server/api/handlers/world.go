@@ -1088,19 +1088,22 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
+	now := h.clk.Now()
 	var eyes []province.Eye
 	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, now)
 	}
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT ma.id, ma.intent,
 		        op.map_q, op.map_r, op.terrain_type, tp.map_q, tp.map_r, tp.terrain_type,
 		        ma.departs_at, ma.arrives_at, ma.depart_tick, ma.arrive_tick,
-		        (COALESCE(ma.ship,0) + COALESCE(ma.war_galley,0) + COALESCE(ma.merchantman,0)) > 0 AS is_naval
+		        (COALESCE(ma.ship,0) + COALESCE(ma.war_galley,0) + COALESCE(ma.merchantman,0)) > 0 AS is_naval,
+		        os.owner_id
 		 FROM marching_armies ma
 		 JOIN provinces op ON op.id = ma.origin_id
 		 JOIN provinces tp ON tp.id = ma.target_id
+		 LEFT JOIN settlements os ON os.province_id = ma.origin_id
 		 WHERE ma.world_id = $1 AND ma.resolved = false`,
 		worldID,
 	)
@@ -1133,41 +1136,60 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 		Path [][2]int `json:"path,omitempty"`
 	}
 
-	visible := func(q, r int, terrain string) bool {
-		if !authenticated {
-			return false
-		}
-		return province.AnyEyeSees(eyes, province.MapPosition{Q: q, R: r}, terrain)
-	}
+	// The tile graph gates FOREIGN marches on the walker's CURRENT interpolated
+	// position (not its endpoints) and supplies the A* route the map draws — the
+	// same endpoint-OR leak, and the same FindPath+interpolatedEyePos fix, that
+	// foreign_units.go already carries. Load it once; a nil graph (DB error) falls
+	// the gate back to the pre-fix endpoint check rather than blanking the map.
+	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
 
 	var markers []marchMarker
 	for rows.Next() {
 		var m marchMarker
 		var originTerrain, targetTerrain string
+		var ownerID *uuid.UUID
 		if err := rows.Scan(&m.ID, &m.Intent,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.TargetQ, &m.TargetR, &targetTerrain,
-			&m.DepartsAt, &m.ArrivesAt, &m.DepartTick, &m.ArrivalTick, &m.IsNaval); err != nil {
+			&m.DepartsAt, &m.ArrivesAt, &m.DepartTick, &m.ArrivalTick, &m.IsNaval, &ownerID); err != nil {
 			continue
 		}
-		if !visible(m.OriginQ, m.OriginR, originTerrain) && !visible(m.TargetQ, m.TargetR, targetTerrain) {
-			continue
+		// A player's own march is knowledge they already hold — always drawn, in
+		// full, even where it crosses fog (mirrors MapMessengers' m.Own rule). Every
+		// other march is gated on where its walker actually is right now.
+		own := authenticated && ownerID != nil && *ownerID == playerID
+		if !own {
+			if !authenticated {
+				continue
+			}
+			cat := "land"
+			if m.IsNaval {
+				cat = "naval"
+			}
+			from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
+			to := province.MapPosition{Q: m.TargetQ, R: m.TargetR}
+			var seen bool
+			if gerr == nil {
+				seen = seesInterpolatedActor(g, eyes, from, to, cat, m.DepartsAt, m.ArrivesAt, now)
+			} else {
+				seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, targetTerrain)
+			}
+			if !seen {
+				continue
+			}
 		}
 		markers = append(markers, m)
 	}
 	if markers == nil {
 		markers = []marchMarker{}
 	}
-	// Attach the real A* route to each march. Load the tile graph once, then path
-	// every marker against it — per-marker FindPath would reload all tiles each time.
-	if len(markers) > 0 {
-		if g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID); gerr == nil {
-			for i := range markers {
-				cat := "land"
-				if markers[i].IsNaval {
-					cat = "naval"
-				}
-				markers[i].Path = marchPathWaypoints(g, markers[i].OriginQ, markers[i].OriginR, markers[i].TargetQ, markers[i].TargetR, cat)
+	// Attach the real A* route to each march, reusing the graph loaded above.
+	if gerr == nil {
+		for i := range markers {
+			cat := "land"
+			if markers[i].IsNaval {
+				cat = "naval"
 			}
+			markers[i].Path = marchPathWaypoints(g, markers[i].OriginQ, markers[i].OriginR, markers[i].TargetQ, markers[i].TargetR, cat)
 		}
 	}
 	writeJSON(w, http.StatusOK, markers)
@@ -1186,6 +1208,24 @@ func marchPathWaypoints(g province.TileGraph, oq, or, tq, tr int, category strin
 		out[i] = [2]int{p.Q, p.R}
 	}
 	return out
+}
+
+// seesInterpolatedActor reports whether any of the caller's eyes see a moving
+// actor at its CURRENT interpolated position along its route — the gate that
+// closes the endpoint-OR FOW leak (a march/messenger between two seen hexes was
+// streamed in full while its body crossed fog). One FindPath + interpolatedEyePos,
+// then AnyEyeSees the single current hex, exactly as foreign_units.go does. Fails
+// closed when the route or the current tile is unknown.
+func seesInterpolatedActor(g province.TileGraph, eyes []province.Eye, from, to province.MapPosition, category string, departsAt, arrivesAt, now time.Time) bool {
+	pos := from
+	if p, _, ok := g.FindPath(from, to, category); ok && len(p) > 0 {
+		pos = interpolatedEyePos(now, departsAt, arrivesAt, p)
+	}
+	terrain, ok := g[[2]int{pos.Q, pos.R}]
+	if !ok {
+		return false
+	}
+	return province.AnyEyeSees(eyes, pos, terrain)
 }
 
 // MapTrades handles GET /worlds/:worldID/trades — active trade caravans visible to the
@@ -1293,10 +1333,17 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
+	now := h.clk.Now()
 	var eyes []province.Eye
 	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, now)
 	}
+
+	// Same interpolated-position gate as Marches/foreign_units: a foreign runner is
+	// shown only where its courier actually is right now, never streamed whole
+	// through fog because an endpoint is seen. Loaded once; a nil graph (DB error)
+	// falls the gate back to the pre-fix endpoint check.
+	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT m.id, m.sender_id, m.kind, m.order_payload->>'unit_id',
@@ -1353,6 +1400,12 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt); err != nil {
 			continue
 		}
+		// The current leg's travel window. Outbound: sent_at → arrives_at. Return:
+		// the courier runs the same route home, departing return_departs_at for the
+		// same duration (there is no return_arrives_at column). Captured before the
+		// swap overwrites m.SentAt.
+		legStart, legEnd := m.SentAt, m.ArrivesAt
+		outboundDur := m.ArrivesAt.Sub(m.SentAt)
 		// Return leg: the courier runs home, so the client must draw it
 		// destination→origin over the fresh return window. Swap the endpoints
 		// (and their terrain) and use return_departs_at as the leg's start; the
@@ -1363,6 +1416,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			originTerrain, destTerrain = destTerrain, originTerrain
 			if returnDepartsAt != nil {
 				m.SentAt = *returnDepartsAt
+				legStart, legEnd = *returnDepartsAt, returnDepartsAt.Add(outboundDur)
 			}
 		}
 		m.Own = authenticated && senderID == playerID
@@ -1371,10 +1425,21 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 				m.OrderUnitID = &uid
 			}
 		}
-		if !m.Own && authenticated &&
-			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.OriginQ, R: m.OriginR}, originTerrain) &&
-			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.DestQ, R: m.DestR}, destTerrain) {
-			continue
+		// A player's own runner is drawn in full (info they already hold); every
+		// other runner is gated on the courier's CURRENT interpolated position, so a
+		// runner between two seen cities no longer leaks its whole route through fog.
+		if !m.Own && authenticated {
+			from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
+			to := province.MapPosition{Q: m.DestQ, R: m.DestR}
+			var seen bool
+			if gerr == nil {
+				seen = seesInterpolatedActor(g, eyes, from, to, province.CategoryCourier, legStart, legEnd, now)
+			} else {
+				seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, destTerrain)
+			}
+			if !seen {
+				continue
+			}
 		}
 		markers = append(markers, m)
 	}
