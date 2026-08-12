@@ -87,6 +87,9 @@ func canRecruit(cc checkContext) Verb {
 		if spec.RequiresHarbour && !cc.hasBuilding("harbour") {
 			continue
 		}
+		if spec.RequiresShipyard && !cc.hasBuilding("shipyard") {
+			continue
+		}
 		if spec.RequiresFoundry && !cc.hasBuilding("foundry") {
 			continue
 		}
@@ -107,7 +110,7 @@ func canRecruit(cc checkContext) Verb {
 		detail = "affordable now: " + joinComma(affordable)
 	}
 	reqs = append(reqs, req("at least one unit type affordable (building + goods) for a 10-man batch",
-		afforded, detail, "build the required building (barracks/stable/harbour/foundry) and stock the per-man goods cost"))
+		afforded, detail, "build the required building (barracks/stable/harbour/shipyard/foundry) and stock the per-man goods cost"))
 
 	return verb("recruit", CategoryProvince,
 		"Draft population into a military unit (land units grow to 100 men before they can deploy).", reqs)

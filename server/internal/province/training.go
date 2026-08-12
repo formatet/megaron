@@ -32,6 +32,7 @@ type UnitSpec struct {
 	RequiresBarracks bool
 	RequiresStable   bool
 	RequiresHarbour  bool
+	RequiresShipyard bool
 	RequiresFoundry  bool
 }
 
@@ -39,10 +40,14 @@ type UnitSpec struct {
 //
 // Skepp-taxonomi (migration 039; units.type-nyckel bytt "ship"→"galley" av
 // namn-hygien A, migration 084):
-//   - "galley"      = standardskepp, byggs med timber, kräver hamn.
+//   - "galley"      = standardskepp, byggs med timber, kräver varv.
 //     DB:s legacy integer-armékolumn heter fortf. `ship` (SB7/C8 byter den).
-//   - "war_galley"  = krigsgalär, elit. Kräver hamn + gjuteri + brons.
-//   - "merchantman" = handelsskepp, svag strid, byggs med timber, kräver hamn.
+//   - "war_galley"  = krigsgalär, elit. Kräver varv + gjuteri + brons.
+//   - "merchantman" = handelsskepp, svag strid, byggs med timber, kräver varv.
+//
+// Varv, inte hamn (megaron_plan_skeppsreparation.md Slice A, §Beslut B1,
+// 2026-08-08): skeppsbygge och -reparation flyttades till en egen `shipyard`-
+// byggnad. Hamnen behåller fisket och sin roll som sjöhandelsnav.
 //
 // Enhetskorrektur (migration 042):
 //   - "war_chariot" = stridsvagn, kräver stable + brons (men INTE foundry — en stad
@@ -65,8 +70,8 @@ const MaxSettlementsPerWanax = 5
 var UnitSpecs = map[string]UnitSpec{
 	"spearman":       {Costs: map[string]float64{"grain": 3, "silver": 0.2}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
 	"war_chariot":    {Costs: map[string]float64{"grain": 3.75, "timber": 0.625, "cedar": 0.5, "bronze": 0.375, "silver": 0.5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
-	"galley":         {Costs: map[string]float64{"timber": 9, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresHarbour: true},
+	"galley":         {Costs: map[string]float64{"timber": 9, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresShipyard: true},
 	"elite_infantry": {Costs: map[string]float64{"grain": 2.5, "bronze": 0.2, "silver": 0.4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
-	"war_galley":     {Costs: map[string]float64{"cedar": 5, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresHarbour: true, RequiresFoundry: true},
-	"merchantman":    {Costs: map[string]float64{"timber": 8.75, "silver": 0.2}, PopCost: 8, DurationTicks: 4, RequiresHarbour: true},
+	"war_galley":     {Costs: map[string]float64{"cedar": 5, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresShipyard: true, RequiresFoundry: true},
+	"merchantman":    {Costs: map[string]float64{"timber": 8.75, "silver": 0.2}, PopCost: 8, DurationTicks: 4, RequiresShipyard: true},
 }

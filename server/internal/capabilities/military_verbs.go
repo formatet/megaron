@@ -77,7 +77,7 @@ func canLoad(cc checkContext) Verb {
 		[]Requirement{
 			req("an idle ship garrisoned here (no cargo)", shipOK,
 				fmt.Sprintf("%d idle ship(s) here", ships),
-				"build/recruit a ship here (requires harbour)"),
+				"build/recruit a ship here (requires shipyard)"),
 			req("a full-strength land unit garrisoned here (>=100 men)", landOK,
 				fmt.Sprintf("%d/1 deployable land unit(s) here", landUnits),
 				"recruit 100 men of one land type in this settlement"),

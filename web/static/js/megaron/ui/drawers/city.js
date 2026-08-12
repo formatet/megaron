@@ -338,7 +338,7 @@ export async function loadCityDrawer() {
 const _BLD_LBL = {
   farm:'Farm', barracks:'Barracks', mine:'Mine', lumbermill:'Lumbermill',
   stonequarry:'Stone Quarry', market:'Agora', wall:'Wall', tower:'Tower',
-  harbour:'Harbour', foundry:'Foundry', stable:'Stable',
+  harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
 };
 
@@ -527,7 +527,8 @@ async function refreshCityBuildings(provinceID) {
         <option value="barracks">Barracks — 80 timber 80 stone · recruits</option>
         <option value="market">Market — 100 timber 60 stone · +0.5 silver/m</option>
         <option value="wall">Wall — upgrade (Palisade→Stone Wall→Bronze Wall)</option>
-        <option value="harbour">Harbour — 140 timber 60 stone · ships</option>
+        <option value="harbour">Harbour — 140 timber 60 stone · fish, sea trade</option>
+        <option value="shipyard">Shipyard — 140 timber 60 stone · builds/repairs ships</option>
         <option value="foundry">Foundry — 80 timber 100 stone · ${foundryRecipe ? 'craft ' + foundryRecipe.output_key : 'craft goods'}</option>
         <option value="stable">Stable — 60 timber 40 stone · horses</option>
         <option value="temple">Temple — 60 timber 60 stone</option>

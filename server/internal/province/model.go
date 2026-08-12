@@ -116,6 +116,7 @@ const (
 	BuildingMarket      BuildingType = "market"
 	BuildingWall        BuildingType = "wall"
 	BuildingHarbour     BuildingType = "harbour"
+	BuildingShipyard    BuildingType = "shipyard"
 	BuildingFoundry     BuildingType = "foundry"
 	BuildingStable      BuildingType = "stable"
 	BuildingTemple      BuildingType = "temple"

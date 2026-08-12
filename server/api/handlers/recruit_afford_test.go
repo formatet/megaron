@@ -77,12 +77,12 @@ func TestCanRecruit_SpearmanAffordableWithBarracks(t *testing.T) {
 	}
 }
 
-// TestCanRecruit_WarGalleyRequiresHarbourAndFoundry verifies that war_galley
-// (harbour + foundry required) is blocked when either building is missing.
-func TestCanRecruit_WarGalleyRequiresHarbourAndFoundry(t *testing.T) {
+// TestCanRecruit_WarGalleyRequiresShipyardAndFoundry verifies that war_galley
+// (shipyard + foundry required) is blocked when either building is missing.
+func TestCanRecruit_WarGalleyRequiresShipyardAndFoundry(t *testing.T) {
 	spec := province.UnitSpecs["war_galley"]
-	if !spec.RequiresHarbour || !spec.RequiresFoundry {
-		t.Fatal("war_galley must require harbour + foundry (test premise invalid)")
+	if !spec.RequiresShipyard || !spec.RequiresFoundry {
+		t.Fatal("war_galley must require shipyard + foundry (test premise invalid)")
 	}
 
 	cases := []struct {
@@ -91,9 +91,9 @@ func TestCanRecruit_WarGalleyRequiresHarbourAndFoundry(t *testing.T) {
 		wantAfford bool
 	}{
 		{"neither", map[string]bool{}, false},
-		{"harbour only", map[string]bool{"harbour": true}, false},
+		{"shipyard only", map[string]bool{"shipyard": true}, false},
 		{"foundry only", map[string]bool{"foundry": true}, false},
-		{"both", map[string]bool{"harbour": true, "foundry": true}, true},
+		{"both", map[string]bool{"shipyard": true, "foundry": true}, true},
 	}
 
 	goodsStock := map[string]float64{"cedar": 1000, "bronze": 1000, "silver": 1000}
@@ -108,7 +108,7 @@ func TestCanRecruit_WarGalleyRequiresHarbourAndFoundry(t *testing.T) {
 			if afford && spec.RequiresStable && !tc.built["stable"] {
 				afford = false
 			}
-			if afford && spec.RequiresHarbour && !tc.built["harbour"] {
+			if afford && spec.RequiresShipyard && !tc.built["shipyard"] {
 				afford = false
 			}
 			if afford && spec.RequiresFoundry && !tc.built["foundry"] {

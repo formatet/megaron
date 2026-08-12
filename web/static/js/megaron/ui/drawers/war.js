@@ -204,9 +204,9 @@ export async function loadWarDrawer() {
     const UNIT_SPECS = [
       { id:'spearman',       req: buildings.has('barracks') ? null : 'barracks' },
       { id:'war_chariot',    req: buildings.has('stable')   ? null : 'stable' },
-      { id:'ship',           req: buildings.has('harbour')  ? null : 'harbour' },
-      { id:'war_galley',     req: !buildings.has('harbour') ? 'harbour' : (!buildings.has('foundry') ? 'foundry' : null) },
-      { id:'merchantman',    req: buildings.has('harbour')  ? null : 'harbour' },
+      { id:'ship',           req: buildings.has('shipyard')  ? null : 'shipyard' },
+      { id:'war_galley',     req: !buildings.has('shipyard') ? 'shipyard' : (!buildings.has('foundry') ? 'foundry' : null) },
+      { id:'merchantman',    req: buildings.has('shipyard')  ? null : 'shipyard' },
       { id:'elite_infantry', req: buildings.has('foundry')  ? null : 'foundry' },
     ];
     const mySettlements = State.provinceData.filter(p => p.own && !p.is_outpost);

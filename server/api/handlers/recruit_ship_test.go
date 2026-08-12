@@ -106,8 +106,11 @@ func setupRecruitShipFixture(t *testing.T) *recruitShipFixture {
 		t.Fatalf("create settlement: %v", err)
 	}
 
-	// Buildings: harbour (ship) + barracks (spearman).
-	for _, bt := range []string{"harbour", "barracks"} {
+	// Buildings: shipyard (ship, per Slice A's harbour/shipyard split) +
+	// harbour (kept — this fixture's ship tests only care about shipyard, but
+	// harbour stays present so nothing here silently starts depending on its
+	// absence) + barracks (spearman).
+	for _, bt := range []string{"harbour", "shipyard", "barracks"} {
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, $2, 1)`,
 			settlementID, bt,
