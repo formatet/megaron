@@ -358,6 +358,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			if afford && spec.RequiresHarbour && !builtTypes["harbour"] {
 				afford = false
 			}
+			if afford && spec.RequiresShipyard && !builtTypes["shipyard"] {
+				afford = false
+			}
 			if afford && spec.RequiresFoundry && !builtTypes["foundry"] {
 				afford = false
 			}
@@ -1044,8 +1047,11 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Harbour requires the settlement to be adjacent to a sea hex (coast is a property, not a terrain).
-	if req.BuildingType == "harbour" {
+	// Harbour and shipyard both require the settlement to be adjacent to a sea
+	// hex (coast is a property, not a terrain) — shipyard split off from
+	// harbour (megaron_plan_skeppsreparation.md Slice A, §Beslut B1) and
+	// carries the same coastal gate BuildingPurposes promises for it.
+	if req.BuildingType == "harbour" || req.BuildingType == "shipyard" {
 		var pq, pr int
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT p.map_q, p.map_r FROM provinces p WHERE p.id = $1`, provinceID,
@@ -1065,7 +1071,8 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			worldID, pq, pr,
 		).Scan(&coastNeighbour)
 		if !coastNeighbour {
-			writeError(w, http.StatusUnprocessableEntity, "harbour requires a coastal, sea, river or river ford tile on an adjacent hex")
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("%s requires a coastal, sea, river or river ford tile on an adjacent hex", req.BuildingType))
 			return
 		}
 	}
@@ -1589,6 +1596,7 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 		RequiresBarracks bool               `json:"requires_barracks,omitempty"`
 		RequiresStable   bool               `json:"requires_stable,omitempty"`
 		RequiresHarbour  bool               `json:"requires_harbour,omitempty"`
+		RequiresShipyard bool               `json:"requires_shipyard,omitempty"`
 		RequiresFoundry  bool               `json:"requires_foundry,omitempty"`
 	}
 
@@ -1619,6 +1627,7 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 			RequiresBarracks: spec.RequiresBarracks,
 			RequiresStable:   spec.RequiresStable,
 			RequiresHarbour:  spec.RequiresHarbour,
+			RequiresShipyard: spec.RequiresShipyard,
 			RequiresFoundry:  spec.RequiresFoundry,
 		})
 	}
@@ -1923,6 +1932,17 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		).Scan(&exists)
 		if !exists {
 			writeError(w, http.StatusUnprocessableEntity, "harbour required")
+			return
+		}
+	}
+	if spec.RequiresShipyard {
+		var exists bool
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'shipyard')`,
+			settlementID,
+		).Scan(&exists)
+		if !exists {
+			writeError(w, http.StatusUnprocessableEntity, "shipyard required")
 			return
 		}
 	}

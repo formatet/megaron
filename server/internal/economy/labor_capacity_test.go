@@ -129,6 +129,20 @@ func TestWorkplaceSlots_MineAndSilverMineMatchTaxonomy(t *testing.T) {
 	}
 }
 
+// TestWorkplaceSlots_ShipyardMatchesTaxonomy — same regression class as
+// TestWorkplaceSlots_MineAndSilverMineMatchTaxonomy: pin shipyard's slots to
+// Temenos_varutaxonomi_sol.md §8.2/§11.2's own 3/6/10 rather than an
+// extrapolated tier (megaron_plan_skeppsreparation.md Slice A explicitly
+// flags this as the exact trap mine/silver_mine fell into).
+func TestWorkplaceSlots_ShipyardMatchesTaxonomy(t *testing.T) {
+	want := [3]int{3, 6, 10}
+	for level := 1; level <= 3; level++ {
+		if got := WorkplaceSlots("shipyard", level); got != want[level-1] {
+			t.Errorf("shipyard level %d: taxonomy §8.2/§11.2 says %d, got %d", level, want[level-1], got)
+		}
+	}
+}
+
 // TestHexCapacity_UnknownTerrainGrantsNothing — arbetssätt §7: a terrain with
 // no matching rule (e.g. mountain_red, semi_desert — in the enum but not in
 // §8.3's coverage) must contribute nothing, not a guessed default.

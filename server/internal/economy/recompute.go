@@ -51,15 +51,19 @@ const NearjordGrainPerTick = 50.0
 // Canon table, Temenos_varutaxonomi_sol.md §8.2 — NOT invented here (an
 // earlier version of this table extrapolated its own two tiers instead of
 // reading §8.2 first, and got Mine/Silver mine wrong as a result; corrected
-// 2026-08-08). §8.2 also lists Fishing place, Pasture, Shipyard, Barracks,
-// Temple and Megaron — omitted below because they have no RecomputeProduction
-// path today: Fishing place/Pasture/Shipyard don't exist as buildable types
-// yet, Barracks trains units rather than producing a good, Temple is cult
-// labor (megaron_cult_ar_ingen_vara_plan.md, a separate path), and Megaron is
-// explicitly "Öppet" (uncapped) in the table. Foundry WAS omitted here
-// (bronze ran through recipe.go craft-events, gated only on "foundry built")
-// until P6 (2026-08-08) converted it to the same placed-gjutare model as
-// every other good — see the bronze stock-drain step in RecomputeProduction.
+// 2026-08-08). §8.2 also lists Fishing place, Pasture, Barracks, Temple and
+// Megaron — omitted below because they have no RecomputeProduction path
+// today: Fishing place/Pasture don't exist as buildable types yet, Barracks
+// trains units rather than producing a good, Temple is cult labor
+// (megaron_cult_ar_ingen_vara_plan.md, a separate path), and Megaron is
+// explicitly "Öppet" (uncapped) in the table. Shipyard (3/6/10, §8.2/§11.2,
+// megaron_plan_skeppsreparation.md Slice A) IS listed below despite also
+// having no production_rules row — it produces no good, but its slots gate
+// shipbuilding/repair capacity the same way Temple's gate cult devotion.
+// Foundry WAS omitted here (bronze ran through recipe.go craft-events, gated
+// only on "foundry built") until P6 (2026-08-08) converted it to the same
+// placed-gjutare model as every other good — see the bronze stock-drain step
+// in RecomputeProduction.
 // Add a building here when it gets a production_rules row that needs the cap.
 // Array length 4 mirrors province.MaxBuildingLevel(3)+1 — economy may not
 // import province (G1: economy(→clock,events,gossip,hexgrid) only), so the
@@ -73,6 +77,7 @@ var workplaceSlotTable = map[string][4]int{
 	"stonequarry": {0, 2, 4, 6},
 	"lumbermill":  {0, 2, 4, 6},
 	"harbour":     {0, 2, 4, 6},
+	"shipyard":    {0, 3, 6, 10},
 	"mine":        {0, 2, 4, 6},
 	"silver_mine": {0, 2, 4, 6},
 	"olive_press": {0, 1, 2, 4},

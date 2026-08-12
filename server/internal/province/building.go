@@ -22,7 +22,8 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingStonequarry: "Increases stone production from hills and mountain catchment",
 	BuildingMarket:      "Enables trade offers and updates market price snapshots",
 	BuildingWall:        "Adds a wall tier (Palisade → Stone Wall → Bronze Wall) for combat defence",
-	BuildingHarbour:     "Enables ships and fish production (requires coastal — adjacent sea hex)",
+	BuildingHarbour:     "Enables fish production and efficient sea trade (requires coastal — adjacent sea hex)",
+	BuildingShipyard:    "Builds and repairs ships (requires coastal — adjacent sea hex)",
 	BuildingFoundry:     "Enables bronze smelting (copper + tin → bronze)",
 	BuildingStable:      "Produces horses and enables war chariots",
 	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
@@ -51,11 +52,17 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingMarket:      {Costs: map[string]float64{"timber": 100, "stone": 60}, DurationTicks: 2},
 	BuildingWall:        {Costs: map[string]float64{"timber": 50, "stone": 60}, DurationTicks: 3, WallsBonus: 1},
 	BuildingHarbour:     {Costs: map[string]float64{"timber": 140, "stone": 60}, DurationTicks: 3},
-	BuildingFoundry:     {Costs: map[string]float64{"timber": 80, "stone": 100}, DurationTicks: 4},
-	BuildingStable:      {Costs: map[string]float64{"timber": 60, "stone": 40}, DurationTicks: 3},
-	BuildingTemple:      {Costs: map[string]float64{"timber": 60, "stone": 60}, DurationTicks: 4},
-	BuildingOlivePress:  {Costs: map[string]float64{"stone": 40, "timber": 30}, DurationTicks: 3},
-	BuildingWinery:      {Costs: map[string]float64{"stone": 30, "timber": 40}, DurationTicks: 3},
+	// Strawman, same order of magnitude as the harbour it splits off from —
+	// megaron_plan_skeppsreparation.md Slice A step 2 explicitly defers real
+	// calibration (temenos_balans_spakar.md) rather than porting the
+	// taxonomy's §9.2 gubbetick figures (500/300/25 cedar/180), which use a
+	// labor-ticks build model this catalogue doesn't have.
+	BuildingShipyard:   {Costs: map[string]float64{"timber": 140, "stone": 60}, DurationTicks: 3},
+	BuildingFoundry:    {Costs: map[string]float64{"timber": 80, "stone": 100}, DurationTicks: 4},
+	BuildingStable:     {Costs: map[string]float64{"timber": 60, "stone": 40}, DurationTicks: 3},
+	BuildingTemple:     {Costs: map[string]float64{"timber": 60, "stone": 60}, DurationTicks: 4},
+	BuildingOlivePress: {Costs: map[string]float64{"stone": 40, "timber": 30}, DurationTicks: 3},
+	BuildingWinery:     {Costs: map[string]float64{"stone": 30, "timber": 40}, DurationTicks: 3},
 }
 
 // WallLevelSpecs ger kostnad/duration för nästa murnivå (1=Palisade, 2=Stone Wall,
@@ -84,11 +91,16 @@ const MaxBuildingLevel = 3
 // 189 byggnader i drift stod på nivå 1).
 //
 // DRIFT-GUARD: mängden speglar `SELECT DISTINCT building_type FROM production_rules
-// WHERE building_type IS NOT NULL` + temple. Lägger du en produktionsregel för en ny
-// byggnad — lägg den här också, annars kan dess arbetsplats aldrig växa.
+// WHERE building_type IS NOT NULL` + temple + shipyard. Lägger du en produktionsregel
+// för en ny byggnad — lägg den här också, annars kan dess arbetsplats aldrig växa.
+// Shipyard hör hit av samma skäl som temple: ingen production_rules-rad (den
+// producerar ingen vara), men nivån styr ändå en arbetsplatskapacitet —
+// economy.WorkplaceSlots("shipyard", level), 3/6/10 (Temenos_varutaxonomi_sol.md
+// §8.2/§11.2) — för skeppsbygge och -reparation (megaron_plan_skeppsreparation.md).
 var LevelledBuildings = map[BuildingType]bool{
 	BuildingFarm:        true,
 	BuildingHarbour:     true,
+	BuildingShipyard:    true,
 	BuildingLumbermill:  true,
 	BuildingMarket:      true,
 	BuildingMine:        true,

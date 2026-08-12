@@ -108,8 +108,8 @@ func TestShipTaxonomy_GalleyTimber(t *testing.T) {
 	if !ok || timber <= 0 {
 		t.Errorf("galley must cost timber > 0, got %.1f", timber)
 	}
-	if !spec.RequiresHarbour {
-		t.Error("galley (ship) must require harbour")
+	if !spec.RequiresShipyard {
+		t.Error("galley (ship) must require shipyard")
 	}
 }
 
@@ -129,8 +129,8 @@ func TestShipTaxonomy_WarGalleyCedarFoundry(t *testing.T) {
 	if !hasCedar || cedar <= 0 {
 		t.Errorf("war_galley must cost cedar > 0, got %.1f", cedar)
 	}
-	if !spec.RequiresHarbour {
-		t.Error("war_galley must require harbour")
+	if !spec.RequiresShipyard {
+		t.Error("war_galley must require shipyard")
 	}
 	if !spec.RequiresFoundry {
 		t.Error("war_galley must require foundry (bronskedja-gate)")
@@ -153,8 +153,8 @@ func TestShipTaxonomy_MerchantmanTimberNoFoundry(t *testing.T) {
 	if spec.RequiresFoundry {
 		t.Error("merchantman should not require foundry")
 	}
-	if !spec.RequiresHarbour {
-		t.Error("merchantman must require harbour")
+	if !spec.RequiresShipyard {
+		t.Error("merchantman must require shipyard")
 	}
 }
 

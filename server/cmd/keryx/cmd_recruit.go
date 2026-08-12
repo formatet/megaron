@@ -178,6 +178,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		RequiresBarracks bool               `json:"requires_barracks"`
 		RequiresStable   bool               `json:"requires_stable"`
 		RequiresHarbour  bool               `json:"requires_harbour"`
+		RequiresShipyard bool               `json:"requires_shipyard"`
 		RequiresFoundry  bool               `json:"requires_foundry"`
 	}
 	if jsonMode {
@@ -282,6 +283,9 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		}
 		if u.RequiresHarbour {
 			reqs = append(reqs, "harbour")
+		}
+		if u.RequiresShipyard {
+			reqs = append(reqs, "shipyard")
 		}
 		if u.RequiresFoundry {
 			reqs = append(reqs, "foundry")
