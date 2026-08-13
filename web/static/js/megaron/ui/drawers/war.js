@@ -122,13 +122,6 @@ export async function loadWarDrawer() {
 
   renderWarMovements(capital);
 
-  // Defense points — NOT in /api/v1/units (checked: UnitCatalogue exposes
-  // type/costs/batch_men/pop_cost/duration_minutes/requires_*, no DP field)
-  // and, as far as this file shows, currently unused/unrendered anywhere
-  // below. Left as-is (out of this fix's scope — nothing to wire it to
-  // server-side; flagging for whoever picks it up next).
-  const UNIT_DP   = { Spearman:1, EliteInfantry:3, WarChariot:4, Ship:1, WarGalley:3, Merchantman:0 };
-
   try {
     if (!capital) {
       // Founder phase: no settlement yet, but /units is settlement-independent
