@@ -62,9 +62,12 @@ func loadFieldDefenders(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, q, r 
 // persistent battles row and hands the arriving unit's outcome to
 // ScheduledBattleTick, resolved over one or more subsequent battle-ticks.
 // The old fortune/strength/wall math (rollFortune, ResolveStrengthsWithRout)
-// stays in this package — it is still live for the three entry points not
-// yet rewired to initiateOrJoinBattle (settlement resolveCombat, amphibious
-// assault, avsiktslagret's unit_intercept_scan.go).
+// stays in this package for old data and its own direct-call unit tests, but
+// is no longer reachable from any production entry point — all four (settlement
+// resolveCombat, resolveFieldCombat, amphibious resolveAmphibiousAssault, and
+// avsiktslagret's unit_intercept_scan.go) now go through initiateOrJoinBattle.
+// The live field-battle balance is battle.go's seeded T12 dice model, which is
+// already an economy.Dice consumer and reproducible per (seed, tick, round).
 func (h *UnitArrivalHandler) resolveFieldCombat(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, defenders []fieldDefender, destQ, destR int, worldID uuid.UUID,
