@@ -62,7 +62,7 @@ func (e *metropolisError) UserMessage() string { return e.userMsg }
 // production pass. It runs inside the caller's transaction and does NOT commit.
 //
 // It deliberately does NOT create starter units. Ordering is load-bearing:
-// seedStarterUnits deducts its men from settlements.population AFTER
+// starter-unit seeding deducts its men from settlements.population AFTER
 // RecomputeProduction has already read that population, so the opening rates are
 // computed on the undrafted figure. Callers therefore keep unit seeding — and
 // the founding path wants entirely different units from the join path anyway

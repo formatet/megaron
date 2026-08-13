@@ -292,8 +292,8 @@ func foundMetropolisFromNomadicHost(
 	}
 
 	// 8. Poseidon's gift: a coastal founding is owed exactly one galley, once.
-	// Built here rather than via seedStarterUnits — that function's coastal branch
-	// also raises a spearman, and this player already marched in with two.
+	// Built inline here (not via a shared starter-unit path): the founder already
+	// marched in with two spearmen, so only the galley is owed.
 	if coastal {
 		// Ordinalen delas ut ur den monotona räknaren, aldrig ur MAX(ordinal):
 		// numret återanvänds inte ens när ett förband upplöses (§3.1 punkt 2).

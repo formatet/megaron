@@ -90,9 +90,3 @@ func PlayerIDFromContext(ctx context.Context) (uuid.UUID, bool) {
 	id, ok := ctx.Value(contextKeyPlayerID).(uuid.UUID)
 	return id, ok
 }
-
-// UsernameFromContext extracts the authenticated username from a request context.
-func UsernameFromContext(ctx context.Context) (string, bool) {
-	name, ok := ctx.Value(contextKeyUsername).(string)
-	return name, ok
-}

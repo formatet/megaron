@@ -108,10 +108,6 @@ func canDisband(cc checkContext) Verb {
 		})
 }
 
-// CanColonize exposes canColonize to api/handlers.UnitHandler.March, whose
-// colonize-intent precondition uses it (Fas 3 anti-drift).
-func CanColonize(cc checkContext) Verb { return canColonize(cc) }
-
 // SettlementCapRequirement exposes settlementCapRequirement to
 // UnitHandler.March. March already validates, per the SPECIFIC unit being
 // dispatched, that it is a deployable (>=100 men, garrison-or-positioned)

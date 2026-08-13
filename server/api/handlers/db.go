@@ -76,22 +76,6 @@ func loadSettlementByProvince(ctx context.Context, pool *pgxpool.Pool, provinceI
 	return loadSettlement(ctx, pool, id, worldID)
 }
 
-// loadPlayerCapital finds the player's capital settlement in a world.
-func loadPlayerCapital(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (*settlement.Settlement, error) {
-	var id uuid.UUID
-	err := pool.QueryRow(ctx,
-		`SELECT id FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
-		worldID, playerID,
-	).Scan(&id)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, fmt.Errorf("no capital")
-	}
-	if err != nil {
-		return nil, err
-	}
-	return loadSettlement(ctx, pool, id, worldID)
-}
-
 // resolveSettlementID returns the settlement UUID for a given province tile.
 func resolveSettlementID(ctx context.Context, pool *pgxpool.Pool, provinceID, worldID uuid.UUID) (uuid.UUID, error) {
 	var id uuid.UUID

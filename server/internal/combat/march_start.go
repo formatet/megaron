@@ -372,7 +372,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		//
 		// Reuses capabilities' colonize checker's settlement-cap requirement
 		// directly (temenos_capabilities.md Fas 3 anti-drift) — not the whole
-		// CanColonize verb, because its OTHER requirement ("a deployable land
+		// canColonize verb, because its OTHER requirement ("a deployable land
 		// unit garrisoned here") is aggregate-per-settlement and would wrongly
 		// reject a "positioned" unit (already off any settlement, mid-journey)
 		// that this handler has already validated is deployable by other means

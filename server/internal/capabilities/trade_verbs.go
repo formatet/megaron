@@ -20,11 +20,6 @@ func CanTradeOffer(cc checkContext) Verb { return canTradeOffer(cc) }
 // trade_offer (kind="sell") precondition uses it (Fas 3 anti-drift).
 func CanSell(cc checkContext) Verb { return canSell(cc) }
 
-// CanTradeAccept exposes canTradeAccept for symmetry with the other exported
-// checkers; MessengerHandler.TradeAccept reuses HintTradeAcceptInsolvent
-// directly rather than the whole verb (see that constant's doc).
-func CanTradeAccept(cc checkContext) Verb { return canTradeAccept(cc) }
-
 // canTradeOffer covers the "buy" mode of trade-offer: request a good from a
 // contacted Wanax in exchange for silver you hold.
 // Fas 3: api/handlers.MessengerHandler.Send calls CanTradeOffer/CanSell as an
