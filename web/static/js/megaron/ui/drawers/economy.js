@@ -4,6 +4,31 @@ import { serverNow } from '../../clock.js';
 import { esc, fmtSilver } from '../format.js';
 import { renderLockedActions } from '../misc.js';
 
+// A good at its storage ceiling is a silent off-switch: everything produced
+// past the cap is discarded, so labour sitting on it earns nothing. Mirror
+// keryx's atStorageCeiling (cmd_goods.go) exactly — >=99% of cap, since a
+// delivery can land a hair over cap and 99% is full within the hour anyway.
+export function atStorageCeiling(amount, cap) {
+  return cap > 0 && amount >= cap * 0.99;
+}
+
+// The Rate cell for one goods-mini row. Normally green + growth, but a good at
+// its storage ceiling reads "full" (dimmed via .goods-atcap) instead — a
+// positive rate there looks like growth when every unit past the cap is being
+// discarded (the spill the storage-ceiling decision makes visible; keryx shows
+// the same via its `*` footnote). The wasted rate rides along so the player
+// sees exactly how much labour is earning nothing.
+export function goodsRateCell(g) {
+  const rate = g.rate_per_tick || 0;
+  if (atStorageCeiling(g.amount || 0, g.cap || 0)) {
+    const lost = rate > 0 ? ` · +${rate.toFixed(1)} lost` : '';
+    const title = `Storage full (${Math.floor(g.amount || 0)}/${Math.floor(g.cap || 0)}). `
+      + 'Everything produced past the cap is discarded — move this labour or trade it away.';
+    return `<td class="goods-atcap" title="${esc(title)}">full${lost}</td>`;
+  }
+  return rate > 0 ? `<td style="color:var(--safe)">+${rate.toFixed(1)}/tick</td>` : '<td></td>';
+}
+
 // ── Economy drawer ────────────────────────────────────────────────────────
 export async function loadEconomyDrawer() {
   const body = document.getElementById('economy-body');
@@ -63,7 +88,7 @@ async function loadEconomyGoods(mySettlements) {
       }
       if (others.length) {
         html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td><td style="text-align:right">Price</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${g.rate_per_tick > 0 ? `<td style="color:var(--safe)">+${g.rate_per_tick.toFixed(1)}/tick</td>` : '<td></td>'}<td style="text-align:right;color:var(--text-dim)">${(g.price||0).toFixed(2)}</td></tr>`
+          `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${goodsRateCell(g)}<td style="text-align:right;color:var(--text-dim)">${(g.price||0).toFixed(2)}</td></tr>`
         ).join('')}</table>`;
       }
     }
