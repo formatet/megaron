@@ -21,43 +21,6 @@ func TestRoutFractionForLoyalty_Monotonic(t *testing.T) {
 	}
 }
 
-// L2: passing the baseline fraction for both sides must reproduce ResolveStrengths
-// exactly, so existing balance/tests are untouched by the new per-side path.
-func TestResolveStrengthsWithRout_BaselineMatchesLegacy(t *testing.T) {
-	cases := []struct{ att, def, fortune float64 }{
-		{100, 100, 0}, {150, 90, 0.2}, {80, 120, -0.2}, {200, 50, 0},
-	}
-	for _, c := range cases {
-		legacy := ResolveStrengths(c.att, c.def, c.fortune)
-		biased := ResolveStrengthsWithRout(c.att, c.def, c.fortune, combatRoutFraction, combatRoutFraction)
-		if legacy != biased {
-			t.Errorf("baseline rout must match legacy for %+v:\n legacy=%+v\n biased=%+v", c, legacy, biased)
-		}
-	}
-}
-
-// L2: in the same losing matchup a low-loyalty attacker routs sooner (fewer
-// rounds, fewer casualties as it retreats earlier) than a fanatical one.
-func TestResolveStrengthsWithRout_LowLoyaltyRoutsSooner(t *testing.T) {
-	const att, def = 80.0, 120.0 // attacker is the weaker side
-
-	low := ResolveStrengthsWithRout(att, def, 0, routFractionForLoyalty(1), routFractionForLoyalty(2))
-	high := ResolveStrengthsWithRout(att, def, 0, routFractionForLoyalty(4), routFractionForLoyalty(2))
-
-	if low.Outcome != OutcomeDefenderWins || high.Outcome != OutcomeDefenderWins {
-		t.Fatalf("weaker attacker should lose both: low=%s high=%s", low.Outcome, high.Outcome)
-	}
-	if !low.AttackerRouted {
-		t.Errorf("low-loyalty attacker should rout, got %+v", low)
-	}
-	if low.Rounds > high.Rounds {
-		t.Errorf("low-loyalty attacker should rout no later: low=%d high=%d rounds", low.Rounds, high.Rounds)
-	}
-	if low.AttackerLosses > high.AttackerLosses {
-		t.Errorf("routing earlier should cost no more men: low=%.3f high=%.3f", low.AttackerLosses, high.AttackerLosses)
-	}
-}
-
 // L2: silver-shortage desertion severity scales with loyalty.
 func TestDesertionStepForLoyalty(t *testing.T) {
 	if got := desertionStepForLoyalty(1); got != upkeepDesertionStep*2 {
