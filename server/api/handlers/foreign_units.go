@@ -31,6 +31,16 @@ type foreignUnit struct {
 	Stance   string    `json:"stance,omitempty"`
 	Q        int       `json:"q"`
 	R        int       `json:"r"`
+	// Cargo surfaces a naval unit's embarked land cohort (units.cargo_unit_id,
+	// mig 047) as a market signal — a wanax who already sees this ship also
+	// sees what it carries, exactly like seeing a laden cart in port. It adds
+	// no new visibility: the carrier row above already passed the FOW gate,
+	// this is only an extra column on a row that would be returned anyway.
+	// Nil for an empty or non-naval unit. Goods-cargo (trade caravans, which
+	// carry quantities in transport_goods, not units.cargo_unit_id) is a
+	// separate system and out of scope for this field — flagged as a
+	// follow-up, not built here.
+	Cargo *foreignCargo `json:"cargo,omitempty"`
 	// TargetQ/TargetR/DepartsAt/ArrivesAt/DepartTick/ArrivalTick/Path describe the
 	// march itself (kanonbeslut 3, 2026-08-03): full disclosure of what the unit is
 	// doing, since that is knowledge about the UNIT, not the map. They never cause
@@ -43,6 +53,15 @@ type foreignUnit struct {
 	DepartTick  *int       `json:"depart_tick,omitempty"`
 	ArrivalTick *int       `json:"arrival_tick,omitempty"`
 	Path        [][2]int   `json:"path,omitempty"`
+}
+
+// foreignCargo is the embarked cohort a foreign naval unit carries (type +
+// size only — same minimal shape unitSummary already exposes to the OWNING
+// wanax via CargoUnitID, but here resolved server-side since the watcher has
+// no other way to look the cargo unit's id up).
+type foreignCargo struct {
+	Type string `json:"type"`
+	Size int    `json:"size"`
 }
 
 // ForeignUnits handles GET /worlds/{worldID}/foreign-units — every unit NOT owned
@@ -92,9 +111,11 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT u.id, u.owner_id, COALESCE(pl.wanax_name, pl.username, ''), u.type, u.category, u.size, u.crew,
 		        u.status, u.stance, u.q, u.r,
-		        u.target_q, u.target_r, u.departs_at, u.arrives_at, u.depart_tick, u.arrive_tick
+		        u.target_q, u.target_r, u.departs_at, u.arrives_at, u.depart_tick, u.arrive_tick,
+		        cu.type, cu.size
 		 FROM units u
 		 LEFT JOIN players pl ON pl.id = u.owner_id
+		 LEFT JOIN units cu ON cu.id = u.cargo_unit_id
 		 WHERE u.world_id = $1 AND u.owner_id IS DISTINCT FROM $2
 		   AND u.status IN ('positioned','marching')
 		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
@@ -113,13 +134,19 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		var storedQ, storedR int
 		var targetQ, targetR, departTick, arriveTick *int
 		var departsAt, arrivesAt *time.Time
+		var cargoType *string
+		var cargoSize *int
 		if err := rows.Scan(&fu.ID, &fu.OwnerID, &fu.Owner, &fu.Type, &fu.Category, &fu.Size, &fu.Crew,
 			&fu.Status, &stance, &storedQ, &storedR,
-			&targetQ, &targetR, &departsAt, &arrivesAt, &departTick, &arriveTick); err != nil {
+			&targetQ, &targetR, &departsAt, &arrivesAt, &departTick, &arriveTick,
+			&cargoType, &cargoSize); err != nil {
 			continue
 		}
 		if stance != nil {
 			fu.Stance = *stance
+		}
+		if cargoType != nil && cargoSize != nil {
+			fu.Cargo = &foreignCargo{Type: *cargoType, Size: *cargoSize}
 		}
 
 		// Current position: interpolate a marching unit exactly like loadLiveEyes
