@@ -118,6 +118,13 @@ const (
 	// instance per occupied settlement, created by occupySettlement/
 	// resetOccupationDefense, same self-correcting shape as ScheduledBattleTick.
 	ScheduledOccupationCheck ScheduledEventType = "OccupationCheck"
+	// ScheduledShipRepairComplete (megaron_plan_skeppsreparation.md Slice C)
+	// fires when a hull repair job started at a shipyard finishes — same
+	// forming→garrison timer shape as ScheduledTrainComplete (train.go:89-100),
+	// but flips 'repairing'→'garrison' at hull=HullMax instead of creating a
+	// new unit. One instance per ship currently under repair, created by
+	// api/handlers UnitHandler.Repair.
+	ScheduledShipRepairComplete ScheduledEventType = "ShipRepairComplete"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

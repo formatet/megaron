@@ -174,6 +174,13 @@ const (
 	StatusPositioned Status = "positioned" // on the map, not moving (sentry/fortify/storm)
 	StatusDisbanded  Status = "disbanded"  // dissolved; men returned to population
 	StatusEmbarked   Status = "embarked"   // land unit aboard a naval vessel; moves with the ship
+	// StatusRepairing (megaron_plan_skeppsreparation.md Slice C): a naval unit
+	// docked at a shipyard with an active hull-repair job — build_complete_at
+	// holds the job's ETA (same column naval StatusForming uses for its build
+	// ETA). Not deployable (cannot march/load/embark) while in this status;
+	// flips back to StatusGarrison at hull=HullMax when the job completes
+	// (ShipRepairCompleteHandler). Land units never carry this status.
+	StatusRepairing Status = "repairing"
 )
 
 // Stance is the tactical posture of a stationary unit.
@@ -263,8 +270,11 @@ type Unit struct {
 	// time, ship-build overhaul 2026-07-09); nil for land units.
 	Name *string
 	// BuildCompleteAt is set while a naval unit is status='forming' (its
-	// TrainComplete ETA); cleared (nil) once it flips to garrison. Land units
-	// never set it — their forming progress is size-based, not time-based.
+	// TrainComplete ETA) or status='repairing' (its ShipRepairComplete ETA,
+	// megaron_plan_skeppsreparation.md Slice C — same column, same "job
+	// finishes at this time" meaning, different job); cleared (nil) once it
+	// flips back to garrison. Land units never set it — their forming
+	// progress is size-based, not time-based.
 	BuildCompleteAt *time.Time
 
 	CargoUnitID *uuid.UUID // naval: land unit being transported

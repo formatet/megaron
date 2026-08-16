@@ -28,6 +28,7 @@ func unitCmd() *cobra.Command {
 		unitStandingOrdersCmd(),
 		unitLoadCmd(),
 		unitUnloadCmd(),
+		unitRepairCmd(),
 	)
 	return cmd
 }
@@ -753,6 +754,56 @@ the order's Runner physically catches up with it, then turns onto the new course
 	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r — axial coordinates, read them off 'keryx map' (required)")
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("target")
+	return cmd
+}
+
+// unitRepairCmd starts a hull repair job (megaron_plan_skeppsreparation.md
+// Slice C) on a damaged ship standing in garrison at an own shipyard city.
+func unitRepairCmd() *cobra.Command {
+	var unitID string
+
+	cmd := &cobra.Command{
+		Use:   "repair",
+		Short: "Repair a damaged ship's hull at a shipyard",
+		Long: `Start a hull repair job on a naval unit whose hull is below full strength.
+The ship must be in garrison at one of your own settlements with a shipyard.
+Timber (cedar for war galleys) is deducted up front, in proportion to the
+hull points being restored; the ship is unavailable to march until the
+repair completes and its hull returns to full.`,
+		Example: `  keryx unit repair --unit <id>`,
+		Args:    rejectPositionalArgs("unit"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/repair", cfg.WorldID, unitID)
+			data, err := c.post(path, map[string]any{})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp struct {
+				HullBefore    int     `json:"hull_before"`
+				HullTarget    int     `json:"hull_target"`
+				Good          string  `json:"good"`
+				Amount        float64 `json:"amount"`
+				DurationTicks int     `json:"duration_ticks"`
+				CompleteAt    string  `json:"complete_at"`
+			}
+			_ = json.Unmarshal(data, &resp)
+			fmt.Printf("Repair started on unit %s (hull %d→%d), costing %.1f %s over %d ticks",
+				unitID[:8], resp.HullBefore, resp.HullTarget, resp.Amount, resp.Good, resp.DurationTicks)
+			if t, err := time.Parse(time.RFC3339, resp.CompleteAt); err == nil {
+				fmt.Printf(" — ready %s", t.Local().Format("15:04 Jan 2"))
+			}
+			fmt.Println(".")
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
+	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
 

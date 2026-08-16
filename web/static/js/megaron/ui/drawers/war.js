@@ -534,6 +534,14 @@ function renderUnitCard(u) {
     actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
   }
 
+  // Repair button (megaron_plan_skeppsreparation.md Slice C): naval garrison
+  // with hull < 5. The server rejects it if the settlement has no shipyard
+  // or the yard is full — this button only knows the ship is damaged and
+  // docked, same "let the server be the judge" posture as Load/Unload.
+  if (isNaval && isGarrison && u.hull != null && u.hull < 5) {
+    actions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
+  }
+
   // Recall/redirect: marching units only. The order travels by messenger —
   // it does not apply instantly (temenos_settlement.md load-bearing pillar).
   let redirectRow = '';
@@ -737,5 +745,25 @@ export async function unitUnload(shipID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = data.error || 'Unload failed';
+  }
+}
+
+// unitRepair starts a hull repair job (megaron_plan_skeppsreparation.md
+// Slice C) on a damaged ship in garrison — same fire-and-refresh shape as
+// unitUnload above. The server is the sole judge of whether a shipyard
+// exists and has an open berth; this button does not pre-check either, same
+// posture as Load/Unload not pre-checking building requirements.
+export async function unitRepair(shipID) {
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${shipID}/repair`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = data.error || 'Repair failed';
   }
 }

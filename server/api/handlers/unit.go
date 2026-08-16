@@ -1523,7 +1523,9 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			nm = unit.LandUnitName(string(u.Type), ordinal, town)
 		}
 
-		deployable := u.Status != "forming" && u.Status != "training"
+		// 'repairing' (megaron_plan_skeppsreparation.md Slice C): a ship
+		// mid-repair cannot march any more than a still-forming one can.
+		deployable := u.Status != "forming" && u.Status != "training" && u.Status != "repairing"
 		menToDeploy := 0
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size
