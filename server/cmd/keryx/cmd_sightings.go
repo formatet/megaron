@@ -22,12 +22,23 @@ type sightingUnit struct {
 	Q        int    `json:"q"`
 	R        int    `json:"r"`
 
+	// Cargo mirrors foreignUnit.Cargo (server/api/handlers/foreign_units.go) —
+	// the embarked land cohort a foreign ship carries, a market signal ("tenn
+	// rör sig från Knossos"). Nil unless the unit has cargo aboard.
+	Cargo *sightingCargo `json:"cargo,omitempty"`
+
 	TargetQ   *int       `json:"target_q,omitempty"`
 	TargetR   *int       `json:"target_r,omitempty"`
 	ArrivesAt *time.Time `json:"arrives_at,omitempty"`
 
 	Distance int    `json:"distance"`
 	Bearing  string `json:"bearing"`
+}
+
+// sightingCargo mirrors foreignCargo (server/api/handlers/foreign_units.go).
+type sightingCargo struct {
+	Type string `json:"type"`
+	Size int    `json:"size"`
 }
 
 // sightingGarrison mirrors the fields of a /provinces marker relevant to a
@@ -161,6 +172,10 @@ something of mine", not "how far is it from my palace".`,
 					}
 					fmt.Printf("  %d hexar %-2s   %-13s %-13s ×%-5d %s\n",
 						u.Distance, u.Bearing, owner, u.Type, u.Size, detail)
+					if u.Cargo != nil {
+						fmt.Printf("                                                   bär: %s ×%d\n",
+							u.Cargo.Type, u.Cargo.Size)
+					}
 				}
 			}
 			if len(garrisons) > 0 {
