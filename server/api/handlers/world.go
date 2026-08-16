@@ -1450,13 +1450,21 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles []world.MapTile) error {
+	// landmass_id (migration 124, megaron_plan_spawn_landmassa.md Slice 1):
+	// computed once per world, not per row — world.LandComponents runs a BFS
+	// over all tiles. Sea tiles are absent from the map, so they insert NULL.
+	comp := world.LandComponents(tiles)
 	batch := &pgx.Batch{}
 	for _, t := range tiles {
+		var landmassID *int
+		if id, ok := comp[[2]int{t.Q, t.R}]; ok {
+			landmassID = &id
+		}
 		batch.Queue(
-			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, landmass_id)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 			 ON CONFLICT (world_id, q, r) DO NOTHING`,
-			worldID, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit,
+			worldID, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, landmassID,
 		)
 	}
 	br := h.pool.SendBatch(ctx, batch)

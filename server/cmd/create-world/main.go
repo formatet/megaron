@@ -83,12 +83,19 @@ func main() {
 	}
 
 	// Store tiles (outside transaction)
+	// landmass_id (migration 124, megaron_plan_spawn_landmassa.md Slice 1):
+	// computed once for the whole world; sea tiles insert NULL.
+	comp := world.LandComponents(tiles)
 	batch := &pgx.Batch{}
 	for _, t := range tiles {
+		var landmassID *int
+		if lid, ok := comp[[2]int{t.Q, t.R}]; ok {
+			landmassID = &lid
+		}
 		batch.Queue(
-			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-			id, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit,
+			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, landmass_id)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+			id, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, landmassID,
 		)
 	}
 	br := pool.SendBatch(ctx, batch)
