@@ -2043,6 +2043,15 @@ func landComponents(tiles []MapTile) map[[2]int]int {
 	return comp
 }
 
+// LandComponents is the exported form of landComponents for callers outside
+// package world (api/handlers, cmd/create-world, cmd/server) that persist the
+// component id as map_tiles.landmass_id at insert time (migration
+// 124_map_tiles_landmass, megaron_plan_spawn_landmassa.md Slice 1). Sea tiles
+// are absent from the returned map — callers must NULL those.
+func LandComponents(tiles []MapTile) map[[2]int]int {
+	return landComponents(tiles)
+}
+
 // isWalkableLand reports whether a land unit can stand on t — land per
 // tileIsLand MINUS river, which is water carved INTO a landmass, not a
 // terrain type of its own kind of sea (megaron_floden_plan.md ögonkoll

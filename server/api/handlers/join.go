@@ -144,7 +144,10 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// - not already a province
 	// - eligible terrain
 	// - at least 4 hexes from any existing settlement (no clustering)
-	// - prefer the landmass with fewer settlements to balance east/west
+	// - prefer the persisted landmass (map_tiles.landmass_id, migration 124,
+	//   megaron_plan_spawn_landmassa.md) with fewer settlements+hosts, so
+	//   neighbours land on the same continent instead of on opposite
+	//   hemispheres of a landmass that straddles halfQ
 	// - tiebreak: prefer tiles whose 6-hex catchment contains the hemisphere's
 	//   ore (copper for west q<=halfQ, tin for east q>halfQ) so early joiners
 	//   land on ore-catchment tiles and produce ore from turn 1.
@@ -163,13 +166,23 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		     JOIN founder_phase fp ON fp.host_unit_id = hu.id AND fp.active
 		     WHERE hu.world_id = $1 AND hu.q IS NOT NULL AND hu.r IS NOT NULL
 		 ),
-		 west_count AS (
-		     SELECT (SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q <= $2)
-		          + (SELECT count(*) FROM hosts WHERE q <= $2) AS count
-		 ),
-		 east_count AS (
-		     SELECT (SELECT count(*) FROM provinces WHERE world_id = $1 AND map_q > $2)
-		          + (SELECT count(*) FROM hosts WHERE q > $2) AS count
+		 -- Per-landmass load: every occupied tile (settled province or active
+		 -- host) resolved to its map_tiles.landmass_id and counted. Tiles on a
+		 -- world generated before migration 124 (or the sea rows themselves)
+		 -- have landmass_id NULL, so they are excluded here on purpose — an
+		 -- old world simply gets no rows in this CTE and every candidate below
+		 -- falls through tier-1 with COALESCE(...,0), i.e. no landmass signal,
+		 -- deferring to the ore bias / RANDOM() tiers exactly as before Slice 2.
+		 landmass_load AS (
+		     SELECT lt.landmass_id, count(*) AS count
+		     FROM (
+		         SELECT map_q AS q, map_r AS r FROM provinces WHERE world_id = $1
+		         UNION ALL
+		         SELECT q, r FROM hosts
+		     ) occ
+		     JOIN map_tiles lt ON lt.world_id = $1 AND lt.q = occ.q AND lt.r = occ.r
+		     WHERE lt.landmass_id IS NOT NULL
+		     GROUP BY lt.landmass_id
 		 ),
 		 -- Ore tiles materialised once (a few dozen rows on a 230² map) instead
 		 -- of re-scanning all of map_tiles per candidate below — the EXISTS
@@ -190,6 +203,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(mt.coastal, false)
 		 FROM map_tiles mt
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
+		 LEFT JOIN landmass_load ll ON ll.landmass_id = mt.landmass_id
 		 WHERE mt.world_id = $1
 		   AND p.id IS NULL
 		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')
@@ -214,13 +228,14 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		   -- lives in the founding forecast instead
 		   -- (temenos_nomadic_host_plan.md §Spawn, §Platsprognos).
 		 ORDER BY
-		   -- 1. Hemisphere balance: fill the side with fewer settlements first.
-		   CASE
-		     WHEN (SELECT count FROM west_count) <= (SELECT count FROM east_count)
-		       THEN (mt.q <= $2)::int
-		     ELSE (mt.q > $2)::int
-		   END DESC,
-		   -- 2. Ore-catchment bias (tiebreak within the winning hemisphere):
+		   -- 1. Landmass balance: candidates on a landmass_id sort ahead of NULL
+		   --    ones (old world, no migration-124 data), then by ascending load
+		   --    (fewest settlements+hosts on that landmass first) so the next
+		   --    joiner fills the emptiest continent instead of the emptiest
+		   --    hemisphere.
+		   (mt.landmass_id IS NULL) ASC,
+		   COALESCE(ll.count, 0) ASC,
+		   -- 2. Ore-catchment bias (tiebreak within the winning landmass):
 		   --    west tiles that have a copper deposit within the future catchment
 		   --    ring rank ahead of those that do not; east tiles prefer tin. This
 		   --    ensures the first joiners land on ore-catchment tiles so they mine
