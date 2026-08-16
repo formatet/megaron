@@ -1339,6 +1339,13 @@ body:has(.auth-page) main {
 .ii-body { font-size: var(--fs-sm); color: var(--text); font-style: italic; margin-bottom: 0.3rem; }
 .ii-actions { display: flex; gap: 0.3rem; }
 
+/* Gossip drawer rows — reuse .inbox-item/.ii-from/.ii-body (rumour reads the
+   same as a message: a from-line + body text); .gossip-major mirrors
+   .inbox-item.unread's left-border treatment for keryx's "!" major marker
+   (cmd_gossip.go). .gossip-hops is the small "(N hops away)" qualifier. */
+.gossip-row.gossip-major { border-left: 3px solid var(--accent); }
+.gossip-hops { color: var(--text-dim); font-style: normal; }
+
 /* Kharis meter */
 .kharis-bar  { height: 8px; background: var(--bg); border: 1px solid var(--border); margin: 0.3rem 0; }
 .kharis-fill { height: 100%; background: var(--gold); }
