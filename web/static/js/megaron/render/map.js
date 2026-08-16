@@ -99,6 +99,16 @@ const TERRAIN_BASE = {
   fog:                {c0:'#1C1C1C', c1:'#252018'},
 };
 
+// World-Rim, step 2: the Outer Sea's own tone — deliberately NOT a row in
+// TERRAIN_BASE, because it must never become a terrain type (kanon,
+// megaron_plan_worldrim_steg2.md): it is cosmos beyond the tile grid, not a
+// hex `terrainAt` can ever return. Near-black indigo, chosen to sit apart
+// from both `fog` (#1C1C1C, warm neutral — unexplored but INSIDE the world)
+// and `deep_sea` (#1A5276, blue but far lighter) — it must read as neither
+// "unseen" nor "sea you could sail to".
+const OUTER_SEA = '#10142B';
+const OUTER_SEA_RGB = '16,20,43';
+
 // Culture accent colours. Låg tidigare som en 1,5 px strimma på stadsrutan;
 // den rutan är ersatt av stadssiluetterna och strimman följde med bort
 // (megaron_stader_20260727). Kulturen ska bäras av HELA siluetten när de
@@ -212,6 +222,81 @@ export function clampCamera() {
   );
   State.camera.x = next.x;
   State.camera.y = next.y;
+}
+
+// ── World-Rim, step 2: the Outer Sea ──────────────────────────────────────
+// Pure overlay, drawn AFTER every terrain pass and BEFORE any UI/unit/FOW
+// overlay (called from render() right after the tint+rural pass) — it is
+// cosmos, not a playable surface, and must never intercept input (it isn't
+// hit-tested anywhere; nothing below reads mouse/touch state).
+//
+// Reuses worldPanBounds() — the exact bounding box the pan clamp already
+// computes from the full tile list (step 1, line ~186) — rather than a
+// second world-bounds calculation. Everything here is expressed in WORLD
+// UNITS, never screen pixels, so both the edge and the haze hold their
+// apparent size at every zoom level (same reasoning as PAN_MARGIN above).
+//
+// How far the haze band reaches in from the world edge before fading to
+// fully transparent. Wide enough to read as "rolling in", narrow enough to
+// leave the play area itself untouched.
+const OUTER_SEA_HAZE = S * 5;
+
+// One edge's haze: a linear gradient from OUTER_SEA at the world boundary to
+// transparent `h` world units inside it, laid on top of the already-painted
+// terrain so the edge tiles darken toward the void instead of stopping dead.
+function drawHazeEdge(ctx, minX, minY, maxX, maxY, side, h) {
+  let grad, rx, ry, rw, rh;
+  if (side === 'top') {
+    grad = ctx.createLinearGradient(0, minY, 0, minY + h);
+    rx = minX; ry = minY; rw = maxX - minX; rh = h;
+  } else if (side === 'bottom') {
+    grad = ctx.createLinearGradient(0, maxY, 0, maxY - h);
+    rx = minX; ry = maxY - h; rw = maxX - minX; rh = h;
+  } else if (side === 'left') {
+    grad = ctx.createLinearGradient(minX, 0, minX + h, 0);
+    rx = minX; ry = minY; rw = h; rh = maxY - minY;
+  } else {
+    grad = ctx.createLinearGradient(maxX, 0, maxX - h, 0);
+    rx = maxX - h; ry = minY; rw = h; rh = maxY - minY;
+  }
+  grad.addColorStop(0, `rgba(${OUTER_SEA_RGB},0.85)`);
+  grad.addColorStop(1, `rgba(${OUTER_SEA_RGB},0)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(rx, ry, rw, rh);
+}
+
+// drawOuterSea fills everything outside the world's bounding box — the last
+// land (or fog) row — with solid Outer Sea, then lays the haze band just
+// inside that edge. The solid fill is computed from the CURRENT visible
+// world-space rect (inverse of the camera transform), not a fixed margin, so
+// it always reaches the canvas edge: at min zoom the visible rect is far
+// wider than PAN_MARGIN, and a fixed-margin fill would leave a ring of the
+// old flat `.game-map` background showing at the corners.
+function drawOuterSea(ctx, camera, worldBounds) {
+  if (!worldBounds) return;
+  const { minX, minY, maxX, maxY } = worldBounds;
+  const k = camera.zoom * SCALE;
+  const vLeft = -camera.x / k;
+  const vTop = -camera.y / k;
+  const vRight = (canvas.width - camera.x) / k;
+  const vBottom = (canvas.height - camera.y) / k;
+
+  ctx.save();
+  ctx.fillStyle = OUTER_SEA;
+  // Frame: top/bottom span the full visible width (including corners); left/
+  // right are trimmed to the inner height so the four rects tile without a
+  // gap and without double-counting a corner as anything but the same colour.
+  if (vTop < minY) ctx.fillRect(vLeft, vTop, vRight - vLeft, minY - vTop);
+  if (vBottom > maxY) ctx.fillRect(vLeft, maxY, vRight - vLeft, vBottom - maxY);
+  if (vLeft < minX) ctx.fillRect(vLeft, minY, minX - vLeft, maxY - minY);
+  if (vRight > maxX) ctx.fillRect(maxX, minY, vRight - maxX, maxY - minY);
+
+  const h = OUTER_SEA_HAZE;
+  drawHazeEdge(ctx, minX, minY, maxX, maxY, 'top', h);
+  drawHazeEdge(ctx, minX, minY, maxX, maxY, 'bottom', h);
+  drawHazeEdge(ctx, minX, minY, maxX, maxY, 'left', h);
+  drawHazeEdge(ctx, minX, minY, maxX, maxY, 'right', h);
+  ctx.restore();
 }
 
 // Hit-test: nearest hex to canvas coords
@@ -3387,6 +3472,12 @@ export function render() {
     }
   }
   pass('tint+rural');
+
+  // 2.7 Outer Sea (World-Rim, step 2) — last terrain-adjacent pass. After all
+  // terrain and the catchment/rural pass, before any UI/unit/FOW overlay
+  // below (selection, FOV preview, buildings, units, messengers, caravans).
+  drawOuterSea(ctx, State.camera, worldPanBounds());
+  pass('outer_sea');
 
   // 3. Highlight selected hex
   if (State.selectedHex) {
