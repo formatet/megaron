@@ -289,7 +289,7 @@ func TestBattleReproducibility_SameSeedProducesIdenticalRounds(t *testing.T) {
 		runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 		battleID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-		battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+		battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 		runBattleToEnd(t, pool, battleH, f.worldID, battleID, 50)
 
 		return loadBattleRounds(t, pool, battleID)
@@ -336,7 +336,7 @@ func TestBattleTick_SpansMultipleTicksForAnEvenFight(t *testing.T) {
 	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 200)
 
 	rounds := loadBattleRounds(t, pool, battleID)
@@ -470,7 +470,7 @@ func TestBattleTick_RoutLeavesSurvivorsNotAnnihilation(t *testing.T) {
 	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 200)
 
 	var reason string
@@ -547,7 +547,7 @@ func TestBattleTick_HoldToLastManDisablesRout(t *testing.T) {
 		t.Fatalf("set hold_to_last_man: %v", err)
 	}
 
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 200)
 
 	var reason string

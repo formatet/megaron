@@ -137,6 +137,7 @@ type unitRow struct {
 	Category        string     `json:"category"`
 	Size            int        `json:"size"`
 	Crew            int        `json:"crew"`
+	Hull            int        `json:"hull"`
 	Status          string     `json:"status"`
 	Name            *string    `json:"name"`
 	DisplayName     string     `json:"display_name"`
@@ -186,7 +187,11 @@ func formatSize(u unitRow) string {
 		return fmt.Sprintf("100/100 (training — ready %s)", eta)
 	}
 	if u.Category == "naval" {
-		return fmt.Sprintf("1 vessel (crew %d)", u.Crew)
+		hull := ""
+		if u.Hull < 5 {
+			hull = fmt.Sprintf(", hull %d/5 damaged", u.Hull)
+		}
+		return fmt.Sprintf("1 vessel (crew %d%s)", u.Crew, hull)
 	}
 	return fmt.Sprintf("%d men", u.Size)
 }

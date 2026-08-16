@@ -184,7 +184,7 @@ func TestSiegeBattle_WallAbsorbsFirstNHitsReducingDefenderLosses(t *testing.T) {
 		runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 		bID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-		battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+		battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 		runOneBattleTick(t, pool, battleH, f.worldID, bID, 1)
 		return bID, f.worldID
 	}
@@ -225,7 +225,7 @@ func TestSiegeBattle_LargeAttackerBreaksWallAnyway(t *testing.T) {
 	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 30)
 
 	var status string
@@ -256,7 +256,7 @@ func TestSiegeBattle_StormHalvesWallAbsorbAndRaisesAttackerLosses(t *testing.T) 
 		runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 		bID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-		battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+		battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 		runOneBattleTick(t, pool, battleH, f.worldID, bID, 1)
 		return bID
 	}

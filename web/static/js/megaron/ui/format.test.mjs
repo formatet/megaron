@@ -101,6 +101,24 @@ test('mutual_wipe trailer reads as neither side holding', () => {
   assert.match(line, /No survivors on either side\.$/);
 });
 
+// megaron_plan_skeppsreparation.md Slice B point 6 — BattleTickHandler.
+// notifyShipDamaged's payload. Red-before this slice: ShipDamaged had no
+// case, so it fell to the raw-payload default.
+test('ShipDamaged: sunk reads as a loss, not a hull number', () => {
+  const line = notifText('ShipDamaged', { unit_type: 'galley', hull: 0, hull_max: 5, sunk: true, returning_home: false });
+  assert.equal(line, 'Your galley was sunk in battle');
+});
+
+test('ShipDamaged: routed survivor is limping home for repair', () => {
+  const line = notifText('ShipDamaged', { unit_type: 'war_galley', hull: 3, hull_max: 5, sunk: false, returning_home: true });
+  assert.equal(line, 'Your war_galley took damage (hull 3/5) and is limping home for repair');
+});
+
+test('ShipDamaged: winning side keeps its orders', () => {
+  const line = notifText('ShipDamaged', { unit_type: 'merchantman', hull: 4, hull_max: 5, sunk: false, returning_home: false });
+  assert.equal(line, 'Your merchantman took damage (hull 4/5) but holds its orders');
+});
+
 // A7 (megaron_mvp_mandag.md §A7): 16 NotifyPlayer kinds fell through to the
 // raw-payload default before this slice — real server payloads (grepped from
 // each call site, not invented) now get real text. Red-before: every one of

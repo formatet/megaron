@@ -161,7 +161,7 @@ func TestResolve_HostileFieldUnitOnSettlementlessHexTriggersCombat(t *testing.T)
 	// Drive the battle to its conclusion (§2's state machine, not resolve()
 	// itself) — with 100x the strength, the attacker must annihilate the
 	// defender within a handful of battle-ticks.
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, worldID, battleID, 20)
 
 	var defenderStatus string

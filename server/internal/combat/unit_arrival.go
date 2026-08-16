@@ -189,6 +189,15 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		return h.sentryArrived(ctx, tx, u, destQ, destR, worldID)
 	}
 
+	// Damaged-return intent (megaron_plan_skeppsreparation.md Slice B point 3):
+	// a routed ship's hull-drawn home march, dispatched by
+	// combat.BattleTickHandler.sendDamagedShipHome (ship_hull.go) at battle end.
+	// Same "bypass the hex→settlement lookup" reason as explore_return above —
+	// the target is the sea hex adjacent to home, which has no settlement row.
+	if u.marchIntent != nil && *u.marchIntent == "damaged_return" {
+		return h.damagedShipReturned(ctx, tx, u, destQ, destR, worldID)
+	}
+
 	// Assault intent: a laden galley has reached the sea hex next to an enemy
 	// coastal settlement. The ship cannot enter land, so its cargo storms the
 	// beach — the landing is resolved with the cargo's strength, not the ship's.
@@ -651,6 +660,64 @@ func (h *UnitArrivalHandler) exploreReturned(
 	}
 
 	slog.Info("unit returned home from explore", "unit", u.id, "settlement", *u.homeSettlementID)
+	return nil
+}
+
+// damagedShipReturned re-garrisons a ship that finished the damaged-return
+// leg dispatched by combat.BattleTickHandler.sendDamagedShipHome
+// (megaron_plan_skeppsreparation.md Slice B point 3). Same shape as
+// exploreReturned above and for the identical reason (the return target is
+// the sea hex adjacent to home, which has no settlement row of its own) —
+// the only difference is the notification: this is a damaged ship coming
+// home to repair, not a scout, so it gets the plain "UnitArrived" kind
+// instead of exploreReturned's scout-specific wording. hull is untouched
+// here; the ship arrives exactly as damaged as it left the battle, and stays
+// that way until Slice C's repair mechanic (not yet built) restores it.
+func (h *UnitArrivalHandler) damagedShipReturned(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if u.homeSettlementID == nil {
+		// Defensive: sendDamagedShipHome always resolves and persists one
+		// before dispatching. Should not happen.
+		slog.Warn("damaged return: unit has no home_settlement_id, garrisoning in place instead", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status             = 'garrison',
+		   q                  = $2,
+		   r                  = $3,
+		   settlement_id      = $4,
+		   home_settlement_id = NULL,
+		   target_q           = NULL,
+		   target_r           = NULL,
+		   departs_at         = NULL,
+		   arrives_at         = NULL,
+		   depart_tick        = NULL,
+		   arrive_tick        = NULL,
+		   march_intent       = NULL,
+		   updated_at         = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR, *u.homeSettlementID,
+	); err != nil {
+		return fmt.Errorf("damagedShipReturned: re-garrison: %w", err)
+	}
+
+	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
+		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "garrison"}, worldID, nil)
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+			"unit_id": u.id,
+			"q":       destQ,
+			"r":       destR,
+			"status":  "garrison",
+		})
+	}
+
+	slog.Info("damaged ship returned home", "unit", u.id, "settlement", *u.homeSettlementID)
 	return nil
 }
 

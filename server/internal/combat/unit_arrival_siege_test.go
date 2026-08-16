@@ -176,7 +176,7 @@ func TestResolveCombat_SettlementSiege_AllGarrisonUnitsJoinAsDefenders(t *testin
 
 	// ── Phase 2: drive the battle to its conclusion. ──
 
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, worldID, battleID, 30)
 
 	for name, id := range map[string]uuid.UUID{"garrison A": garrisonA, "garrison B": garrisonB} {

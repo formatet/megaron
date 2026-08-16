@@ -227,7 +227,7 @@ func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 
 	// ── Phase 2: drive the battle to its conclusion (§2's state machine). ──
 
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, worldID, battleID, 20)
 
 	var garrisonStatus string

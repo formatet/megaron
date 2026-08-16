@@ -187,7 +187,7 @@ func TestResolveFieldCombat_NotifiesAllDistinctDefenderOwners(t *testing.T) {
 
 	// Drive the battle to its conclusion — with 100x combined strength, the
 	// attacker must annihilate BOTH defenders, not just the first one loaded.
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, nil, h.clk)
 	runBattleToEnd(t, pool, battleH, worldID, battleID, 20)
 
 	var defenderAStatus, defenderBStatus string

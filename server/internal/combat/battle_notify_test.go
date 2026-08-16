@@ -120,7 +120,7 @@ func TestBattleTickHandler_NotifiesBothSidesOnBattleEnd(t *testing.T) {
 	}
 
 	battleFB := &fakeBroadcaster{}
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, battleFB)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, battleFB, h.clk)
 	runBattleToEnd(t, pool, battleH, worldID, battleID, 20)
 
 	var attackerNotified, defenderNotified map[string]any
