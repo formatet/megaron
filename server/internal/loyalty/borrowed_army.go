@@ -82,7 +82,15 @@ func (h *BorrowedArmyPenaltyHandler) Handle(ctx context.Context, e events.Schedu
 		MacroTickPayload{}, e.DueTick, events.MacroTickInterval)
 }
 
-// penaliseKingKharis drains 5 kharis from the king's capital settlement.
+// penaliseKingKharis drains 5 kharis from the king's realm pool. Kharis is a
+// per-Wanax pool (migration 029 moved kharis_amount/rate/calc_tick off
+// settlements onto player_world_records), so the drain targets the king's
+// player_world_records row; the capital settlement is only the anchor for the
+// audit/notify event. The member role is 'basileus' (migration 007/046 renamed
+// 'king' → 'basileus' and the CHECK constraint now rejects 'king'), so the
+// lookup must query that — the old 'king' literal matched no row and the whole
+// penalty silently failed (megaron_todo §Drift, borrowed-army bug).
+//
 // Claimed per (event_id, scope) — migration 098's processed_tick_claims, the
 // same guard colony.go's applyColonyPenalty uses for this exact class of bug
 // (Handle fans one scheduled event across every overdue borrow and mutates
@@ -105,26 +113,26 @@ func (h *BorrowedArmyPenaltyHandler) penaliseKingKharis(ctx context.Context, bor
 		return nil // this event already penalised this borrow's king
 	}
 
-	// Find king's capital settlement.
-	var kingSettlementID uuid.UUID
+	// Find the king (basileus) and their capital settlement.
+	var kingPlayerID, kingSettlementID uuid.UUID
 	err = h.pool.QueryRow(ctx,
-		`SELECT s.id
+		`SELECT s.owner_id, s.id
 		 FROM settlements s
 		 JOIN kingdom_members km ON km.player_id = s.owner_id
-		 WHERE km.kingdom_id = $1 AND km.role = 'king'
+		 WHERE km.kingdom_id = $1 AND km.role = 'basileus'
 		   AND s.world_id = $2 AND s.is_capital = true`,
 		kingdomID, worldID,
-	).Scan(&kingSettlementID)
+	).Scan(&kingPlayerID, &kingSettlementID)
 	if err != nil {
 		return fmt.Errorf("find king settlement: %w", err)
 	}
 
 	_, err = h.pool.Exec(ctx,
-		`UPDATE settlements SET
-		   kharis_amount = GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick) - 5),
+		`UPDATE player_world_records SET
+		   kharis_amount    = GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick) - 5),
 		   kharis_calc_tick = current_world_tick()
-		 WHERE id = $1`,
-		kingSettlementID,
+		 WHERE player_id = $1 AND world_id = $2`,
+		kingPlayerID, worldID,
 	)
 	if err != nil {
 		return fmt.Errorf("drain king kharis: %w", err)

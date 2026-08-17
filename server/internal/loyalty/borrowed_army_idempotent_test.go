@@ -15,21 +15,19 @@ package loyalty
 // the second borrow's claim collide with the first's and silently skip a penalty
 // that should fire.
 //
-// NOTE on coverage: penaliseKingKharis currently fails before it can mutate
-// anything, for two reasons unrelated to idempotency and pre-dating this fix —
-// (1) it queries kingdom_members.role = 'king', but the role check constraint only
-// allows 'basileus'/'member'/'lochagos'/'navarchos' (renamed in 75e02ac, this file
-// never updated), so the king-settlement lookup returns pgx.ErrNoRows every time;
-// (2) even past that, its UPDATE targets settlements.kharis_amount/kharis_rate/
-// kharis_calc_tick, which migration 029 moved to player_world_records — those
-// columns no longer exist on settlements. Both are latent, pre-existing bugs
-// (kingdoms are POST-MVP and gated off, so this path does not run live) flagged
-// separately, not fixed here per this task's scope. Since the king-kharis mutation
-// never succeeds either before or after this fix, there is nothing to observe on
-// that side beyond the claim row itself — this test proves that in isolation
-// (TestBorrowedArmyPenaltyHandler_KingKharisClaimIsIdempotentEvenWhenWorkFails).
-// The lender-loyalty path has no such schema drift and is fully exercised end to
-// end (TestBorrowedArmyPenaltyHandler_ReplayIsIdempotent).
+// Both branches — king-kharis and lender-loyalty — are now exercised end to end.
+// penaliseKingKharis previously failed silently before it could mutate anything,
+// for two reasons unrelated to idempotency: (1) it queried kingdom_members.role =
+// 'king', but the role check constraint only allows 'basileus'/'member'/'lochagos'/
+// 'navarchos' (renamed in 75e02ac/migration 007+046), so the king lookup returned
+// pgx.ErrNoRows every time; (2) even past that, its UPDATE targeted
+// settlements.kharis_amount/rate/calc_tick, columns migration 029 moved to
+// player_world_records. Both are fixed (role → 'basileus', drain the per-Wanax
+// player_world_records pool). Kingdoms are POST-MVP and gated off, so this path
+// does not run live, but the handler is now correct for when they return.
+// TestBorrowedArmyPenaltyHandler_KingKharisDrainsAndIsIdempotent proves the drain
+// fires exactly once across a replay; TestBorrowedArmyPenaltyHandler_ReplayIsIdempotent
+// covers the lender-loyalty path.
 
 import (
 	"context"
@@ -52,6 +50,11 @@ type borrowedArmyFixture struct {
 	borrowID     uuid.UUID
 	tick         int
 }
+
+// kingKharisStart is the king's seeded realm-pool kharis in the fixture. The
+// penalty drains 5 (see penaliseKingKharis), so a single fired penalty leaves
+// kingKharisStart - 5.
+const kingKharisStart = 50.0
 
 // newBorrowedArmyFixture creates one active world, a kingdom with a basileus and
 // one member, both players' capitals, and one borrowed_armies row 20 days
@@ -131,6 +134,20 @@ func newBorrowedArmyFixture(t *testing.T, pool *pgxpool.Pool, tag string) borrow
 	}
 	f.kingCapital = mkCapital(0, "King-Capital", f.kingPlayer)
 	f.lenderCap = mkCapital(1, "Lender-Capital", f.lenderPlayer)
+
+	// Seed the per-Wanax kharis pool (player_world_records, migration 029) for
+	// both players. rate = 0 so settled() == kharis_amount regardless of tick.
+	// The king starts at kingKharisStart so penaliseKingKharis has something to
+	// drain and the drain is observable.
+	for _, p := range []uuid.UUID{f.kingPlayer, f.lenderPlayer} {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO player_world_records (player_id, world_id, kharis_amount, kharis_rate, kharis_calc_tick)
+			 VALUES ($1, $2, $3, 0, 0)`,
+			p, f.worldID, kingKharisStart,
+		); err != nil {
+			t.Fatalf("seed player_world_records: %v", err)
+		}
+	}
 
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO borrowed_armies (kingdom_id, lender_id, infantry, chariot, ship, borrowed_at)
@@ -213,10 +230,10 @@ func TestBorrowedArmyPenaltyHandler_ReplayIsIdempotent(t *testing.T) {
 // downstream mutation succeeds. See the file-level NOTE: penaliseKingKharis's
 // own work currently always errors (pre-existing, unrelated schema drift — role
 // 'king' vs 'basileus', and settlements no longer has kharis_amount), so this is
-// the only observable proof available for that branch today, but it is exactly
-// the mechanism that would prevent a double-drain once the downstream bugs are
-// fixed and the mutation starts succeeding.
-func TestBorrowedArmyPenaltyHandler_KingKharisClaimIsIdempotentEvenWhenWorkFails(t *testing.T) {
+// the mechanism that prevents a double-drain: the penalty fires exactly once
+// across a replay of the same event, both in the claim row AND in the observable
+// kharis drain.
+func TestBorrowedArmyPenaltyHandler_KingKharisDrainsAndIsIdempotent(t *testing.T) {
 	pool := loyaltyTestPool(t)
 	ctx := context.Background()
 	f := newBorrowedArmyFixture(t, pool, "ba-kharis-claim")
@@ -236,6 +253,17 @@ func TestBorrowedArmyPenaltyHandler_KingKharisClaimIsIdempotentEvenWhenWorkFails
 		}
 		return n
 	}
+	kingKharis := func() float64 {
+		var v float64
+		if err := pool.QueryRow(ctx,
+			`SELECT settled(kharis_amount, kharis_rate, kharis_calc_tick)
+			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
+			f.kingPlayer, f.worldID,
+		).Scan(&v); err != nil {
+			t.Fatalf("read king kharis: %v", err)
+		}
+		return v
+	}
 
 	if err := h.Handle(ctx, evt); err != nil {
 		t.Fatalf("Handle (first run): %v", err)
@@ -243,11 +271,19 @@ func TestBorrowedArmyPenaltyHandler_KingKharisClaimIsIdempotentEvenWhenWorkFails
 	if n := claimCount(); n != 1 {
 		t.Fatalf("expected exactly 1 king_kharis claim row after the first run, got %d — fixture does not exercise the branch as intended", n)
 	}
+	// The drain must actually have fired (proves the role + column fix, not just
+	// the claim). 20-day-overdue borrow is past the day-7 king-kharis threshold.
+	if got, want := kingKharis(), kingKharisStart-5; got != want {
+		t.Fatalf("king kharis after first run = %.4f, want %.4f (start %.0f − 5) — penaliseKingKharis did not drain; role/column fix regressed", got, want, kingKharisStart)
+	}
 
 	if err := h.Handle(ctx, evt); err != nil {
 		t.Fatalf("Handle (replay): %v", err)
 	}
 	if n := claimCount(); n != 1 {
 		t.Errorf("king_kharis claim rows after replay = %d, want unchanged 1 (event_id %d replayed — without the guard, Handle would attempt the work twice)", n, fixedEventID)
+	}
+	if got, want := kingKharis(), kingKharisStart-5; got != want {
+		t.Errorf("king kharis after replay = %.4f, want unchanged %.4f (event %d replayed — a non-idempotent penalty would drain a second 5 to %.0f)", got, want, fixedEventID, kingKharisStart-10)
 	}
 }
