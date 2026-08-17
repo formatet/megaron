@@ -339,7 +339,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		}
 	}
 
-	h.applyDecay(ctx, e.WorldID)
+	h.applyDecay(ctx, e.WorldID, e.ID)
 	h.applyStarvationWarning(ctx, e.WorldID)
 	h.applyStarvation(ctx, e.WorldID)
 	h.applySubsistenceCritical(ctx, e.WorldID)
@@ -667,7 +667,22 @@ func deriveMood(kharis float64) string {
 // applyDecay applies 1% daily decay to grain and timber stocks, resets
 // invasions_today, and adjusts population. (Rite success is driven by Kharis
 // mood, not a stored strength stat — there is nothing per-temple to regenerate.)
-func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
+//
+// eventID (G2, migration 098's processed_tick_claims) scopes an exactly-once
+// claim per settlement over the growth/grain-draw effect below — same idea as
+// processMaintenance's per-player claim, applied here per-settlement because
+// this is the accumulator half of applyDecay: the CTE both GROWS population
+// and DRAWS grain, so a worker retry of the SAME ScheduledKharisTick event
+// (crash/G2-timeout between commit and markDone, events.Worker re-running
+// Handle from the top) would otherwise grow and draw twice. Handle was
+// previously calling this unguarded — found in the G2 idempotency sweep,
+// alongside the already-fixed processMaintenance and ColonyPenaltyHandler
+// (migration 098 comment). The grain/timber ×0.99 decay above and the
+// recompute/collapse steps below are NOT claimed here — they are read-driven
+// off already-committed state (or, for the ×0.99 decay, a separate known gap
+// outside this fix's scope) rather than the growth accumulator this claim
+// guards.
+func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID int64) {
 	// Decay grain and timber by 1% per day. Population grain-consumption is NOT
 	// applied here anymore: it is folded into grain's net rate in
 	// economy.RecomputeProduction (continuous per-tick draw), so it never exceeds
@@ -725,7 +740,20 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 	// while a rich catchment's larger accrual doesn't — see
 	// TestApplyDecay_GrainFundedGrowth_GeographyDifferentiates.
 	growthRows, err := h.pool.Query(ctx,
-		`WITH growth_calc AS (
+		`WITH claim AS (
+		     -- G2 exactly-once claim (migration 098): one row per (event_id,
+		     -- settlement_id). A replay of the same event finds every eligible
+		     -- settlement already claimed, ON CONFLICT DO NOTHING returns nothing
+		     -- for it, and growth_calc's JOIN below excludes it — a no-op, not a
+		     -- second growth/grain-draw. A later day's tick carries a different
+		     -- event_id and claims fresh.
+		     INSERT INTO processed_tick_claims (event_id, scope_id)
+		     SELECT $5::bigint, s.id FROM settlements s
+		     WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk', 'collapsed')
+		     ON CONFLICT DO NOTHING
+		     RETURNING scope_id
+		 ),
+		 growth_calc AS (
 		     SELECT
 		         s.id,
 		         s.population AS pop,
@@ -754,7 +782,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		         ) - 1)) AS variety,
 		         GREATEST(0, 1.0 - s.population::float / 30000.0) AS softcap
 		     FROM settlements s
-		     WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk', 'collapsed')
+		     JOIN claim c ON c.scope_id = s.id
 		 ),
 		 resolved AS (
 		     SELECT
@@ -803,7 +831,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID) {
 		     RETURNING sg.settlement_id
 		 )
 		 SELECT id, old_pop, new_pop FROM pop_upd`,
-		worldID, grainPerCitizen, starvationPopLossRatePerTick, economy.FoodGoods,
+		worldID, grainPerCitizen, starvationPopLossRatePerTick, economy.FoodGoods, eventID,
 	)
 	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
