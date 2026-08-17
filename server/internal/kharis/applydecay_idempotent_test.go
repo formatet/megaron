@@ -21,6 +21,9 @@ package kharis
 import (
 	"context"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestApplyDecay_ReplayIsIdempotent(t *testing.T) {
@@ -96,20 +99,16 @@ func TestApplyDecay_ReplayIsIdempotent(t *testing.T) {
 		t.Errorf("population after replay = %d, want unchanged %d (event %d replayed — a non-idempotent applyDecay would grow it twice)",
 			replayPop, firstPop, fixedEventID)
 	}
-	// Grain is NOT expected to be bit-for-bit unchanged: the flat ×0.99
-	// grain/timber decay a few lines above the claimed growth CTE is its own,
-	// separate, pre-existing gap (undocumented before this fix, still
-	// unclaimed after it — see the eventID doc comment on applyDecay) and
-	// runs every call regardless of replay, so a SINGLE extra ×0.99 pass is
-	// expected here. What must NOT happen is a SECOND grain-draw from growth
-	// re-firing (~desired_new × grainPerCitizen, hundreds/thousands of
-	// grain) stacked on top of that decay. Assert the observed replay grain
-	// matches "one more ×0.99 decay pass and nothing else" to a tight
-	// tolerance — a re-fired growth draw would blow far past it.
-	wantReplayGrain := firstGrain * 0.99
-	if diff := replayGrain - wantReplayGrain; diff > 0.5 || diff < -0.5 {
-		t.Errorf("grain after replay = %.4f, want %.4f (= firstGrain × 0.99, the known unclaimed decay pass ONLY — event %d replayed, a non-idempotent growth CTE would additionally draw ~desired_new×%.0f grain on top)",
-			replayGrain, wantReplayGrain, fixedEventID, grainPerCitizen)
+	// Grain must now be bit-for-bit unchanged on replay: BOTH the growth CTE
+	// (per-settlement claim) AND the flat ×0.99 grain/timber decay (world-scoped
+	// claim, closed alongside this test) are guarded, so a replay of the same
+	// event moves nothing. Before the decay claim landed, replay left grain at
+	// firstGrain × 0.99 (one extra shave); a non-idempotent growth CTE would
+	// additionally draw ~desired_new × grainPerCitizen on top. Either regression
+	// blows past this tolerance.
+	if diff := replayGrain - firstGrain; diff > 0.5 || diff < -0.5 {
+		t.Errorf("grain after replay = %.4f, want unchanged %.4f (event %d replayed — a re-shaved ×0.99 decay would leave %.4f, a re-fired growth CTE would draw ~desired_new×%.0f grain further)",
+			replayGrain, firstGrain, fixedEventID, firstGrain*0.99, grainPerCitizen)
 	}
 
 	var claimsAfterReplay int
@@ -153,5 +152,70 @@ func TestApplyDecay_DistinctEventsBothApply(t *testing.T) {
 	if dayTwoPop <= dayOnePop {
 		t.Errorf("a distinct event (1002) after event 1001 grew pop %d -> %d, want further growth — the claim must not skip legitimate distinct events",
 			dayOnePop, dayTwoPop)
+	}
+}
+
+// readTimber reads the settled timber stock for a settlement.
+func readTimber(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) float64 {
+	t.Helper()
+	var amount float64
+	if err := pool.QueryRow(context.Background(),
+		`SELECT COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
+		                  FROM settlement_goods sg
+		                  WHERE sg.settlement_id = $1 AND sg.good_key = 'timber'), 0)`,
+		settlementID,
+	).Scan(&amount); err != nil {
+		t.Fatalf("read timber: %v", err)
+	}
+	return amount
+}
+
+// TestApplyDecay_GoodsDecayReplayIsIdempotent isolates the flat ×0.99
+// grain/timber decay from the growth CTE. Timber has no growth interaction, so
+// it is a clean probe of the decay claim alone: a replay of the SAME event must
+// shave ×0.99 exactly ONCE (leaving amount×0.99), never twice (amount×0.99²).
+func TestApplyDecay_GoodsDecayReplayIsIdempotent(t *testing.T) {
+	terrains := [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}
+	pool, worldID, settlementID := newGrowthFixture(t, terrains, 5000)
+	h := newTestTickHandler(pool)
+	ctx := context.Background()
+
+	// Seed a fixed timber stock with rate 0 so settled() == amount (no accrual
+	// muddies the decay reading). calc_tick = current so settled() is stable.
+	const startTimber = 500.0
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, 'timber', $2, 0, 1000, current_world_tick())
+		 ON CONFLICT (settlement_id, good_key)
+		 DO UPDATE SET amount = $2, rate = 0, calc_tick = current_world_tick()`,
+		settlementID, startTimber,
+	); err != nil {
+		t.Fatalf("seed timber row: %v", err)
+	}
+
+	const fixedEventID int64 = 515151
+
+	h.applyDecay(ctx, worldID, fixedEventID)
+	afterFirst := readTimber(t, pool, settlementID)
+	wantFirst := startTimber * 0.99
+	if diff := afterFirst - wantFirst; diff > 0.01 || diff < -0.01 {
+		t.Fatalf("timber after first run = %.4f, want %.4f (= 500 × 0.99) — fixture does not exercise the decay path as intended", afterFirst, wantFirst)
+	}
+
+	// Replay the SAME event: the decay claim must make this a no-op.
+	h.applyDecay(ctx, worldID, fixedEventID)
+	afterReplay := readTimber(t, pool, settlementID)
+	if diff := afterReplay - afterFirst; diff > 0.01 || diff < -0.01 {
+		t.Errorf("timber after replay = %.4f, want unchanged %.4f (event %d replayed — an unclaimed decay would shave it to %.4f)",
+			afterReplay, afterFirst, fixedEventID, afterFirst*0.99)
+	}
+
+	// The converse: a DISTINCT event must shave again (the claim must not turn
+	// decay into a run-once-ever no-op).
+	h.applyDecay(ctx, worldID, fixedEventID+1)
+	afterDistinct := readTimber(t, pool, settlementID)
+	wantDistinct := afterFirst * 0.99
+	if diff := afterDistinct - wantDistinct; diff > 0.01 || diff < -0.01 {
+		t.Errorf("timber after distinct event = %.4f, want %.4f (= previous × 0.99) — the world-scoped claim must not block a legitimately new event", afterDistinct, wantDistinct)
 	}
 }
