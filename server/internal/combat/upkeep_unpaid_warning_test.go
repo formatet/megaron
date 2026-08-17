@@ -100,7 +100,15 @@ func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
 
 	runOneDay := func(tick int) {
 		t.Helper()
-		if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: tick}); err != nil {
+		// Distinct event ID per simulated day (tick is unique per call here),
+		// mirroring production: EnqueueTickRecurring always inserts a FRESH
+		// scheduled_events row for the next day, never reuses the previous
+		// day's id. Handle's G2 per-unit claim (event_id, unit_id) — added to
+		// close a real double-charge bug — treats two calls with the SAME
+		// event ID as a replay of one event, so reusing a zero-value ID across
+		// all 72 simulated days would wrongly collapse them into a single
+		// claimed day instead of 72 distinct ones.
+		if err := h.Handle(ctx, events.ScheduledEvent{ID: int64(tick), WorldID: f.worldID, DueTick: tick}); err != nil {
 			t.Fatalf("upkeep Handle at tick %d: %v", tick, err)
 		}
 	}
