@@ -668,35 +668,58 @@ func deriveMood(kharis float64) string {
 // invasions_today, and adjusts population. (Rite success is driven by Kharis
 // mood, not a stored strength stat — there is nothing per-temple to regenerate.)
 //
-// eventID (G2, migration 098's processed_tick_claims) scopes an exactly-once
-// claim per settlement over the growth/grain-draw effect below — same idea as
-// processMaintenance's per-player claim, applied here per-settlement because
-// this is the accumulator half of applyDecay: the CTE both GROWS population
-// and DRAWS grain, so a worker retry of the SAME ScheduledKharisTick event
-// (crash/G2-timeout between commit and markDone, events.Worker re-running
-// Handle from the top) would otherwise grow and draw twice. Handle was
-// previously calling this unguarded — found in the G2 idempotency sweep,
-// alongside the already-fixed processMaintenance and ColonyPenaltyHandler
-// (migration 098 comment). The grain/timber ×0.99 decay above and the
-// recompute/collapse steps below are NOT claimed here — they are read-driven
-// off already-committed state (or, for the ×0.99 decay, a separate known gap
-// outside this fix's scope) rather than the growth accumulator this claim
-// guards.
+// eventID (G2, migration 098's processed_tick_claims) scopes exactly-once
+// claims over the two accumulator effects here — same idea as
+// processMaintenance's per-player claim:
+//
+//   - the flat ×0.99 grain/timber decay below, claimed WORLD-scoped
+//     (hash(worldID, "goods_decay")); and
+//   - the growth/grain-draw CTE further down, claimed per SETTLEMENT.
+//
+// Both move state on every call, so a worker retry of the SAME
+// ScheduledKharisTick event (crash/G2-timeout between commit and markDone,
+// events.Worker re-running Handle from the top) would otherwise shave the
+// decay twice and grow/draw twice for a day that never happened. The two
+// claims use different scope keys and so never collide, letting a partial
+// replay (crash after the decay commits, before growth) redo exactly the
+// half that didn't land. Both were found in the G2 idempotency sweep; the
+// decay half was left unclaimed then and closed here (the growth half and the
+// sibling processMaintenance/ColonyPenaltyHandler were fixed under migration
+// 098). The recompute/collapse steps below are NOT claimed — they are
+// read-driven off already-committed state, not accumulators.
 func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID int64) {
 	// Decay grain and timber by 1% per day. Population grain-consumption is NOT
 	// applied here anymore: it is folded into grain's net rate in
 	// economy.RecomputeProduction (continuous per-tick draw), so it never exceeds
 	// the grain cap and a self-sufficient city holds a stable positive stock.
 	// Cedar is a luxury store-of-value (ädelträ) and does not rot.
+	//
+	// G2 exactly-once: fold a world-scoped claim into the decay statement so a
+	// worker replay of the SAME ScheduledKharisTick event cannot shave the ×0.99
+	// twice. Scope is a hash of the world id, NOT a settlement id, so this claim
+	// can never collide with the per-settlement growth claim below — the same
+	// derived-scope convention upkeep.go's silver_audit and borrowed_army.go use
+	// when one event needs more than one independent claim. On a replay the INSERT
+	// hits ON CONFLICT, `claim` returns no row, the EXISTS guard is false, and the
+	// UPDATE matches zero rows — a no-op, not a second 1% shave. Data-modifying
+	// WITH clauses run exactly once regardless of the main query, so the claim is
+	// always attempted; the UPDATE only follows on the run that wins the claim.
+	decayScope := uuid.NewSHA1(worldID, []byte("goods_decay"))
 	if _, err := h.pool.Exec(ctx,
-		`UPDATE settlement_goods sg SET
+		`WITH claim AS (
+		     INSERT INTO processed_tick_claims (event_id, scope_id)
+		     VALUES ($2, $3) ON CONFLICT DO NOTHING
+		     RETURNING scope_id
+		 )
+		 UPDATE settlement_goods sg SET
 		   amount = GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick) * 0.99),
 		   calc_tick = current_world_tick()
 		 FROM settlements s
 		 WHERE sg.settlement_id = s.id
 		   AND s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
-		   AND sg.good_key IN ('grain', 'timber')`,
-		worldID,
+		   AND sg.good_key IN ('grain', 'timber')
+		   AND EXISTS (SELECT 1 FROM claim)`,
+		worldID, eventID, decayScope,
 	); err != nil {
 		slog.Error("goods decay failed", "world", worldID, "err", err)
 	}
