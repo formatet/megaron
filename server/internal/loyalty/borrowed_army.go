@@ -67,12 +67,12 @@ func (h *BorrowedArmyPenaltyHandler) Handle(ctx context.Context, e events.Schedu
 		daysHeld := int(now.Sub(b.borrowedAt).Hours() / 24)
 
 		if daysHeld >= 7 {
-			if err := h.penaliseKingKharis(ctx, b.kingdomID, e.WorldID); err != nil {
+			if err := h.penaliseKingKharis(ctx, b.id, b.kingdomID, e.WorldID, e.ID); err != nil {
 				slog.Error("king kharis penalty", "kingdom", b.kingdomID, "err", err)
 			}
 		}
 		if daysHeld >= 14 {
-			if err := h.penaliseLenderLoyalty(ctx, b.lenderID, e.WorldID); err != nil {
+			if err := h.penaliseLenderLoyalty(ctx, b.id, b.lenderID, e.WorldID, e.ID); err != nil {
 				slog.Error("lender loyalty penalty", "lender", b.lenderID, "err", err)
 			}
 		}
@@ -83,10 +83,31 @@ func (h *BorrowedArmyPenaltyHandler) Handle(ctx context.Context, e events.Schedu
 }
 
 // penaliseKingKharis drains 5 kharis from the king's capital settlement.
-func (h *BorrowedArmyPenaltyHandler) penaliseKingKharis(ctx context.Context, kingdomID, worldID uuid.UUID) error {
+// Claimed per (event_id, scope) — migration 098's processed_tick_claims, the
+// same guard colony.go's applyColonyPenalty uses for this exact class of bug
+// (Handle fans one scheduled event across every overdue borrow and mutates
+// directly; a G2 handler timeout or crash mid-fan-out leaves the event
+// unprocessed and events.Worker re-runs it from the top). scope is derived
+// from the borrowed_armies row (borrowID), not the king's settlement id
+// directly: one king can hold several overdue borrows in the same event
+// pass, all resolving to the SAME capital settlement, and a claim keyed on
+// settlement_id alone would let the second borrow's claim collide with the
+// first's and silently skip a penalty that should fire.
+func (h *BorrowedArmyPenaltyHandler) penaliseKingKharis(ctx context.Context, borrowID, kingdomID, worldID uuid.UUID, eventID int64) error {
+	scope := uuid.NewSHA1(borrowID, []byte("king_kharis"))
+	claim, err := h.pool.Exec(ctx,
+		`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
+		 ON CONFLICT DO NOTHING`, eventID, scope)
+	if err != nil {
+		return fmt.Errorf("claim king kharis penalty: %w", err)
+	}
+	if claim.RowsAffected() == 0 {
+		return nil // this event already penalised this borrow's king
+	}
+
 	// Find king's capital settlement.
 	var kingSettlementID uuid.UUID
-	err := h.pool.QueryRow(ctx,
+	err = h.pool.QueryRow(ctx,
 		`SELECT s.id
 		 FROM settlements s
 		 JOIN kingdom_members km ON km.player_id = s.owner_id
@@ -115,9 +136,25 @@ func (h *BorrowedArmyPenaltyHandler) penaliseKingKharis(ctx context.Context, kin
 }
 
 // penaliseLenderLoyalty applies -1 loyalty to the lender's capital.
-func (h *BorrowedArmyPenaltyHandler) penaliseLenderLoyalty(ctx context.Context, lenderID, worldID uuid.UUID) error {
+// Claimed per (event_id, scope) for the same reason as penaliseKingKharis:
+// scope is derived from the borrowed_armies row rather than the lender's
+// settlement id directly, because the same lender can have multiple overdue
+// loans outstanding (nothing in BorrowArmy prevents lending more than once),
+// all resolving to the SAME lender capital settlement within one event pass.
+func (h *BorrowedArmyPenaltyHandler) penaliseLenderLoyalty(ctx context.Context, borrowID, lenderID, worldID uuid.UUID, eventID int64) error {
+	scope := uuid.NewSHA1(borrowID, []byte("lender_loyalty"))
+	claim, err := h.pool.Exec(ctx,
+		`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
+		 ON CONFLICT DO NOTHING`, eventID, scope)
+	if err != nil {
+		return fmt.Errorf("claim lender loyalty penalty: %w", err)
+	}
+	if claim.RowsAffected() == 0 {
+		return nil // this event already penalised this borrow's lender
+	}
+
 	var settlementID uuid.UUID
-	err := h.pool.QueryRow(ctx,
+	err = h.pool.QueryRow(ctx,
 		`SELECT id FROM settlements
 		 WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
 		worldID, lenderID,
