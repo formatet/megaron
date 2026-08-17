@@ -98,7 +98,7 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 	}
 
 	for _, id := range ids {
-		if err := h.applyDecay(ctx, id, e.WorldID); err != nil {
+		if err := h.applyDecay(ctx, id, e.WorldID, e.ID); err != nil {
 			slog.Error("loyalty decay failed", "settlement", id, "err", err)
 		}
 	}
@@ -107,7 +107,24 @@ func (h *DecayHandler) Handle(ctx context.Context, e events.ScheduledEvent) erro
 		MacroTickPayload{}, e.DueTick, events.MacroTickInterval)
 }
 
-func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uuid.UUID) error {
+// applyDecay mutates one neglected settlement's loyalty. Claimed per
+// (event_id, settlement_id) in processed_tick_claims (migration 098, shared
+// with ColonyPenaltyHandler — see colony.go) so a replay of the SAME
+// scheduled event (G2 handler timeout / crash between commit and markDone)
+// is a no-op per settlement, while the NEXT recurring decay tick (a
+// different event_id, enqueued by Handle above) still fires normally. The
+// neglect query itself is untouched — only the mutation gets the claim.
+func (h *DecayHandler) applyDecay(ctx context.Context, settlementID, worldID uuid.UUID, eventID int64) error {
+	claim, err := h.pool.Exec(ctx,
+		`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
+		 ON CONFLICT DO NOTHING`, eventID, settlementID)
+	if err != nil {
+		return fmt.Errorf("claim decay tick: %w", err)
+	}
+	if claim.RowsAffected() == 0 {
+		return nil // this event already decayed this settlement
+	}
+
 	// Neglect erodes loyalty_points (a -1 intent, scaled by the loss factor); the
 	// integer loyalty is re-derived. The query already filtered to loyalty > 1, so
 	// this only bites colonies with headroom above near-revolt.
