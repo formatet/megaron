@@ -3,6 +3,7 @@ package kharis
 import (
 	"context"
 	"os"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -156,6 +157,15 @@ func snapshot(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (pop int
 	return pop, grain
 }
 
+// advanceOneDayEventID hands out a fresh event ID per advanceOneDay call —
+// each simulated day is a DIFFERENT ScheduledKharisTick occurrence (matching
+// production, where EnqueueTickRecurring rows a new event per due tick), never
+// a replay of the same one. That keeps applyDecay's G2 exactly-once claim
+// (processed_tick_claims, event_id+settlement_id) from blocking day 2+ growth
+// in every test that loops advanceOneDay. Genuine same-event replays are
+// exercised separately in applydecay_idempotent_test.go with a fixed ID.
+var advanceOneDayEventID int64
+
 // advanceOneDay simulates one tick (a game-day) passing: bumps
 // worlds.current_tick by 1 (so settled() sees the elapsed production/decay),
 // then runs the same decay step the real KharisTick handler runs.
@@ -168,7 +178,8 @@ func advanceOneDay(t *testing.T, h *TickHandler, pool *pgxpool.Pool, worldID uui
 	); err != nil {
 		t.Fatalf("advance tick: %v", err)
 	}
-	h.applyDecay(ctx, worldID)
+	eventID := atomic.AddInt64(&advanceOneDayEventID, 1)
+	h.applyDecay(ctx, worldID, eventID)
 }
 
 func newTestTickHandler(pool *pgxpool.Pool) *TickHandler {
