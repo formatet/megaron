@@ -3512,7 +3512,9 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 // Body: {"percent":{"timber":40,"grain":30,"silver":20}}
 // Each value is the share of the population assigned to that good (0–100).
 // Σ percent must not exceed 100; non-producible goods are rejected with a 422.
-// Stored as weight = percent/100, so production auto-scales with population.
+// P4/P5: for every good EXCEPT cult the stored weight is now an inert dead write —
+// production derives from settlement_placement, not these shares. Only the 'cult'
+// row is still live (temple devotion), which is why KH1 below preserves it.
 func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -3614,8 +3616,9 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	sort.Strings(producibleKeys)
 
 	// Validate: only producible goods, percent ∈ [0,100]; Σ ≤ 100.
-	// Each value is a share of the population; weight = percent/100 is stored
-	// directly so production auto-scales as population grows or shrinks.
+	// Each value is stored as weight = percent/100. Post-P4 these weights are inert
+	// for every good except cult (see the header comment); the validation is kept so
+	// the endpoint stays honest about what it accepts.
 	totalPct := 0.0
 	filtered := make(map[string]float64)
 	cultWeight := -1.0 // sentinel: player did not name cult → keep the floor below
@@ -3703,6 +3706,30 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// KH1 (decision A, locked 2026-08-07): when the client omits cult, the server
+	// PRESERVES the settlement's current devotion instead of resetting it to the
+	// floor. The DELETE below wipes every settlement_labor row, cult included, and
+	// the re-insert further down would otherwise pin cult back to the bare floor —
+	// so a level-3 temple at 45% would silently drop to 15% just because a
+	// re-allocation named only its producing jobs. Keryx/agents that don't resend
+	// cult must behave identically to a web client that does. Read the live value
+	// now and carry it forward, clamped to the temple's capacity (in case the
+	// temple was downgraded since the value was set).
+	if cultWeight < 0 && templeLevel > 0 {
+		var existing float64
+		if err := h.pool.QueryRow(r.Context(),
+			`SELECT weight FROM settlement_labor WHERE settlement_id = $1 AND good_key = 'cult'`,
+			settlementID,
+		).Scan(&existing); err == nil {
+			if existing > cultCapacity {
+				existing = cultCapacity
+			}
+			if existing > kharis.TempleDevotionPerLevel {
+				cultWeight = existing // above the floor → worth preserving
+			}
+		}
+	}
+
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -3710,8 +3737,8 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Clear existing allocations then upsert new ones as weights.
-	// weight = percent/100 = fraction of population; production auto-scales with pop.
+	// Clear existing allocations then upsert new ones as weights (percent/100).
+	// Inert for non-cult goods post-P4; the cult row is restored/preserved below.
 	if _, err := tx.Exec(r.Context(),
 		`DELETE FROM settlement_labor WHERE settlement_id = $1`, settlementID,
 	); err != nil {
