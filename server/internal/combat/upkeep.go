@@ -265,6 +265,33 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			continue // unknown type — no upkeep
 		}
 
+		// G2 idempotency (migration 098's processed_tick_claims — same guard
+		// colony.go's applyColonyPenalty and borrowed_army.go use for this exact
+		// class of bug): Handle fans ONE scheduled event across every active unit
+		// and mutates settlement_goods/units directly with plain UPDATEs, no
+		// FOR UPDATE, no per-event transaction. A G2 handler timeout or a crash
+		// mid-loop leaves the scheduled event unprocessed, so events.Worker
+		// re-claims and re-runs Handle from the top — which, before this guard,
+		// re-deducted grain/silver, re-incremented unpaid_periods and re-emitted
+		// UnitAttrition/UnitDeserted/UpkeepUnpaid for every unit already charged.
+		//
+		// Scope is the unit id: the query above returns each active unit at most
+		// once per Handle call, so (event_id, unit_id) is exactly the grain a
+		// single event legitimately touches once. A genuinely NEW recurring tick
+		// never reuses e.ID — EnqueueTickRecurring always inserts a fresh
+		// scheduled_events row — so this only ever suppresses a true replay of
+		// the SAME event, never a later day's charge.
+		claim, err := h.pool.Exec(ctx,
+			`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
+			 ON CONFLICT DO NOTHING`, e.ID, u.id)
+		if err != nil {
+			slog.Error("upkeep: claim failed", "unit", u.id, "err", err)
+			continue
+		}
+		if claim.RowsAffected() == 0 {
+			continue // this event already charged this unit's upkeep
+		}
+
 		grainNeed := up.Grain
 		silverNeed := up.Silver
 
@@ -385,8 +412,26 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	// Silver flow bookkeeping (Del A): one UpkeepSettled per paying settlement,
 	// one SilverAudit for the world — both best-effort, after the loop.
+	//
+	// UpkeepSettled needs no separate claim: aggs is built ONLY from units that
+	// passed the per-unit claim above, so on a pure replay of an already fully
+	// processed event aggs is empty and the loop below emits nothing. SilverAudit
+	// is different — it snapshots the world's CURRENT silver stock unconditionally,
+	// independent of aggs, so without its own claim a replay would append a
+	// second (redundant) snapshot event even though no unit was re-charged. Scope
+	// is a hash of the world id, not the world id itself, so this claim can never
+	// collide with a per-unit claim above — the same derived-scope convention
+	// borrowed_army.go uses when one event needs more than one independent claim.
 	h.emitUpkeepSettled(ctx, e.WorldID, aggs)
-	h.emitSilverAudit(ctx, e.WorldID)
+	auditScope := uuid.NewSHA1(e.WorldID, []byte("silver_audit"))
+	auditClaim, err := h.pool.Exec(ctx,
+		`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2)
+		 ON CONFLICT DO NOTHING`, e.ID, auditScope)
+	if err != nil {
+		slog.Error("upkeep: silver audit claim failed", "world", e.WorldID, "err", err)
+	} else if auditClaim.RowsAffected() > 0 {
+		h.emitSilverAudit(ctx, e.WorldID)
+	}
 
 	// 4. Re-enqueue for the next macro-tick cycle.
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUpkeepTick,
