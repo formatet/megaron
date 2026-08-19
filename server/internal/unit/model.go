@@ -281,6 +281,24 @@ type Unit struct {
 	// ALDRIG — se AllocateOrdinal.
 	Ordinal *int
 
+	// OriginSettlementID (mig 126, megaron_plan_rekryteringsmodell.md) is the
+	// land cohort's home city for the manskaps-underhåll ("reinforce")
+	// mechanic: reinforce only fires while SettlementID == OriginSettlementID
+	// AND Status == garrison. Set once at Recruit, changed by NOTHING else —
+	// not march, not garrison-change, not a future kingdom loan. Deliberately
+	// its OWN column rather than a reuse of SupportSettlementID (which already
+	// carries a similar "permanent recruiting city" meaning for upkeep) or
+	// home_settlement_id (mig 074, which unit_arrival.go nulls out on
+	// explore-return — the 07-26b fella this plan explicitly avoided). Nil for
+	// naval units and for any unit recruited before mig 126 with no
+	// settlement_id at backfill time.
+	OriginSettlementID *uuid.UUID
+	// Reinforcing is true while this cohort is awaiting men from
+	// OriginSettlementID's population growth (mig 126). Set by POST
+	// .../units/{id}/reinforce; cleared by the tick worker at size=100 or when
+	// the cohort leaves origin garrison (kharis/tick.go applyReinforcement).
+	Reinforcing bool
+
 	Q *int // map position (non-nil when on the map)
 	R *int
 
@@ -338,6 +356,7 @@ const selectCols = `
 	leader_role,
 	march_intent, colony_name,
 	name, build_complete_at,
+	origin_settlement_id, reinforcing,
 	created_at, updated_at`
 
 func scanUnit(row interface {
@@ -359,6 +378,7 @@ func scanUnit(row interface {
 		&u.LeaderRole,
 		&u.MarchIntent, &u.ColonyName,
 		&u.Name, &u.BuildCompleteAt,
+		&u.OriginSettlementID, &u.Reinforcing,
 		&u.CreatedAt, &u.UpdatedAt,
 	); err != nil {
 		return nil, err

@@ -48,7 +48,7 @@ func CanRecruit(cc checkContext) Verb { return canRecruit(cc) }
 // Recruit, whose own "settlement has already collapsed" 422 is the same
 // population>0 gate (Fas 3 anti-drift) — split out from canRecruit's other
 // (aggregate, listing-only) requirement so the handler isn't forced to also
-// evaluate the 10-man-batch affordability scan for an unrelated check.
+// evaluate the full-cohort affordability scan for an unrelated check.
 func PopulationRequirement(cc checkContext) Requirement { return cc.populationRequirement() }
 
 // populationRequirement is recruit's coarse "any population at all" gate.
@@ -60,16 +60,26 @@ func (cc checkContext) populationRequirement() Requirement {
 		"grow population (idle labor, or wait for grain surplus) before recruiting")
 }
 
-// canRecruit checks population and, for a representative minimal batch (10
-// men), building requirements + affordability per unit type — mirroring
-// api/handlers/province.go Recruit's own gates. Fas 3: Recruit calls CanRecruit
-// directly as its full precondition (sound because a settlement that cannot
-// afford even the cheapest type at the 10-man minimum batch cannot afford
-// ANY valid recruit request, which must be >=10 men of some type).
+// recruitCohortMen mirrors economy.MaxUnitSize — a land recruit call always
+// drafts a whole 100-man cohort (kohort-rekrytering,
+// megaron_plan_rekryteringsmodell.md), never a caller-chosen smaller batch.
+// Duplicated as a local constant, not an import: capabilities and economy
+// are PEER tiers in G1 (neither imports the other), so this package cannot
+// reach economy.MaxUnitSize directly. Keep this in sync with that constant
+// by hand if it ever changes.
+const recruitCohortMen = 100
+
+// canRecruit checks population and, for the full 100-man cohort every land
+// recruit call now drafts, building requirements + affordability per unit
+// type — mirroring api/handlers/province.go Recruit's own gates. Fas 3:
+// Recruit calls CanRecruit directly as its full precondition (sound because
+// a settlement that cannot afford even the cheapest type at the one valid
+// batch size — the whole cohort — cannot afford ANY recruit request, since
+// there is no smaller one anymore).
 func canRecruit(cc checkContext) Verb {
 	reqs := []Requirement{cc.populationRequirement()}
 
-	// Affordability per type for a 10-man batch — enumerate deterministically.
+	// Affordability per type for a full 100-man cohort — enumerate deterministically.
 	types := make([]string, 0, len(province.UnitSpecs))
 	for t := range province.UnitSpecs {
 		types = append(types, t)
@@ -95,7 +105,7 @@ func canRecruit(cc checkContext) Verb {
 		}
 		afford := true
 		for good, perMan := range spec.Costs {
-			if cc.goodAmount(good) < perMan*10 {
+			if cc.goodAmount(good) < perMan*recruitCohortMen {
 				afford = false
 				break
 			}
@@ -105,15 +115,15 @@ func canRecruit(cc checkContext) Verb {
 		}
 	}
 	afforded := len(affordable) > 0
-	detail := "none affordable for a 10-man batch right now"
+	detail := "none affordable for a full cohort right now"
 	if afforded {
 		detail = "affordable now: " + joinComma(affordable)
 	}
-	reqs = append(reqs, req("at least one unit type affordable (building + goods) for a 10-man batch",
+	reqs = append(reqs, req("at least one unit type affordable (building + goods) for a full 100-man cohort",
 		afforded, detail, "build the required building (barracks/stable/harbour/shipyard/foundry) and stock the per-man goods cost"))
 
 	return verb("recruit", CategoryProvince,
-		"Draft population into a military unit (land units grow to 100 men before they can deploy).", reqs)
+		"Draft population into a military unit (land units draft a full 100-man cohort and train before they can deploy).", reqs)
 }
 
 // canAbandon checks whether the player has any non-capital active settlement

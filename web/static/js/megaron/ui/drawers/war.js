@@ -216,7 +216,7 @@ export async function loadWarDrawer() {
       recHtml += '<input type="hidden" id="war-recruit-city" value="' + capital.id + '">';
     }
     recHtml += '<div class="dsec-title">Train Units</div>';
-    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land units train in batches of 10 men (up to 100). Ships are built one at a time.</div>';
+    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land units train as a full 100-man cohort. A cohort worn down in battle regenerates over time in its home city — garrison it there and use Reinforce (Army tab). Ships are built one at a time.</div>';
     const NAVAL_SPEC_IDS = ['ship', 'war_galley', 'merchantman'];
     for (const u of UNIT_SPECS) {
       const isNaval = NAVAL_SPEC_IDS.includes(u.id);
@@ -241,13 +241,12 @@ export async function loadWarDrawer() {
           + '<button onclick="warRecruitShip(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Build 1 Ship</button>'
           + '</div>';
       } else {
+        // Kohort-rekrytering: one Train call always drafts a whole 100-man
+        // cohort — no men selector anymore (was 10..100 in steps of 10).
         recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
           + '<span style="flex:1;font-size:.8rem">' + unitTypeLabel(u.id) + '</span>'
           + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
-          + '<select id="wrc-' + u.id + '" ' + (disabled ? 'disabled' : '') + ' style="width:54px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">'
-          + [10,20,30,40,50,60,70,80,90,100].map(n => '<option value="' + n + '"' + (n===10?' selected':'') + '>' + n + '</option>').join('')
-          + '</select>'
-          + '<button onclick="warRecruitFromUI(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train</button>'
+          + '<button onclick="warRecruitFromUI(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train 100</button>'
           + '</div>';
       }
     }
@@ -326,10 +325,10 @@ export function warRecruitFromUI(unitType) {
 }
 
 async function warRecruit(provinceID, unitType) {
-  const el = document.getElementById('wrc-' + unitType);
-  const men = el ? (parseInt(el.value, 10) || 10) : 10;
+  // Kohort-rekrytering: the server always drafts a whole 100-man cohort for
+  // land units now (men is ignored server-side) — nothing left to read here.
   const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + provinceID + '/recruit', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ unit_type: unitType, men }),
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ unit_type: unitType }),
   });
   const data = await res.json().catch(() => ({}));
   const resEl = document.getElementById('war-recruit-res');
@@ -455,6 +454,13 @@ function renderUnitCard(u) {
     progress = bar(u.size) + dim(u.size + '/100 · forming — ' + needed + ' more men needed before training starts');
   } else if (isTraining) {
     progress = bar(100) + dim('100/100 · training — ' + readyWord(u.build_complete_at));
+  } else if (isGarrison && u.reinforcing) {
+    // Manskaps-underhåll (megaron_plan_rekryteringsmodell.md): a decimated
+    // cohort trickles back to 100 out of its home city's population growth,
+    // a few men per game-day — not a stuck pipeline, just slow by design.
+    // (No separate origin-city name field on the wire — the server exposes
+    // origin_settlement_id, not a name, so this stays generic.)
+    progress = bar(u.size) + dim(u.size + '/100 · reinforcing — refilling from home-city growth');
   }
 
   // Pending order (Fas 5): a Runner is en route to this unit — the order
@@ -515,6 +521,16 @@ function renderUnitCard(u) {
       + (u.stance ? '<option value="none">— clear</option>' : '')
       + '</select> '
       + '<button onclick="unitStance(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
+  }
+
+  // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the
+  // server says this cohort can actually receive it — garrisoned in its own
+  // origin city and under 100 men (can_reinforce mirrors the endpoint's own
+  // gate exactly, api/handlers/unit.go Reinforce). Hidden once reinforcing is
+  // already true — the progress bar above says the same thing, a second
+  // button to press would just re-flip a flag that's already set.
+  if (isGarrison && u.can_reinforce && !u.reinforcing) {
+    actions += '<button onclick="unitReinforce(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Reinforce</button> ';
   }
 
   // Load button: naval garrison without cargo — pick from co-located garrison land units
@@ -672,6 +688,27 @@ export async function unitStance(unitID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = data.error || 'Stance change failed';
+  }
+}
+
+// unitReinforce marks a decimated cohort as awaiting refill (POST
+// .../units/{id}/reinforce, megaron_plan_rekryteringsmodell.md). No
+// immediate effect on size — the tick worker trickles men in over time out
+// of the origin city's population growth; this just flips the flag. Applies
+// at once (no Runner/courier order here — the button only shows for a
+// cohort already sitting in its own home-city garrison, distance 0).
+export async function unitReinforce(unitID) {
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/reinforce`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = data.error || 'Reinforce failed';
   }
 }
 

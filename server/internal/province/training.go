@@ -6,10 +6,12 @@ package province
 // PopCost is NOT the number of citizens actually drafted — it is only a coarse
 // afford-check threshold used by the can_recruit preview
 // (api/handlers/province.go's afford := laborPool >= spec.PopCost, "does this
-// city have at least this many citizens"). The real draft size is the
-// caller-chosen req.Men for land units (10-100, a multiple of 10) or the
-// type's fixed crew via unit.CrewFor for naval, debited straight from
-// settlements.population at recruit time (province.go's Recruit handler).
+// city have at least this many citizens"). The real draft size is a fixed
+// economy.MaxUnitSize (100) for land units — kohort-rekrytering,
+// megaron_plan_rekryteringsmodell.md, was a caller-chosen 10–100-men batch
+// before — or the type's fixed crew via unit.CrewFor for naval, debited
+// straight from settlements.population at recruit time (province.go's
+// Recruit handler).
 // There is no hard population floor at recruit time beyond totalMen <
 // population; draining a settlement to <=100 population schedules its
 // collapse (C-collapse) instead. Corrected 2026-07-30 — this comment

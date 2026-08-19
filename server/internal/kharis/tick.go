@@ -865,10 +865,6 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		// city crossing 199→200 loses its 99 invisible auto-farmers." Must run
 		// BEFORE the RecomputeProduction loop below so the placement is
 		// reflected in this same tick's rates, not next tick's.
-		type popCrossing struct {
-			id             uuid.UUID
-			oldPop, newPop int
-		}
 		var crossings []popCrossing
 		for growthRows.Next() {
 			var c popCrossing
@@ -888,6 +884,15 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 				}
 			}
 		}
+
+		// Manskaps-underhåll (megaron_plan_rekryteringsmodell.md, Timothy
+		// 2026-08-19): trickle men into any reinforcing cohort sitting in its
+		// origin city, cannibalizing THIS tick's growth (crossings' new_pop −
+		// old_pop, already written above), never the settlement's standing
+		// population. Must run AFTER the growth UPDATE has committed (it has —
+		// growthRows already scanned) so there is a real growth figure to divide
+		// between "stays as city growth" and "goes to the cohort".
+		h.applyReinforcement(ctx, worldID, eventID, crossings)
 	}
 
 	// C-collapse: schedule CollapseSettlement for any settlement that has already
@@ -951,6 +956,222 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 			}
 		}
 	}
+}
+
+// popCrossing is one settlement's population before/after the daily growth
+// step inside applyDecay — the same figure both the P4 gubbe-placement loop
+// and the manskaps-underhåll reinforce trickle (applyReinforcement) key off:
+// newPop − oldPop is exactly how many citizens this settlement grew by THIS
+// tick, i.e. the only pool a reinforcing cohort is allowed to draw from.
+type popCrossing struct {
+	id             uuid.UUID
+	oldPop, newPop int
+}
+
+// applyReinforcement trickles decimated land cohorts back toward 100 men,
+// economy.ReinforceMenPerTick men at a time per cohort, per tick
+// (megaron_plan_rekryteringsmodell.md, Timothy 2026-08-19). It runs after
+// applyDecay's own growth UPDATE has already committed settlements.population
+// = old_pop + actual_new (crossings carries both), so every man this step
+// hands to a cohort is given BACK out of that same increment — population
+// after this step is old_pop + (actual_new − refillSpent), which is always
+// ≥ old_pop. The city's standing population is never touched: a refill can
+// only slow this tick's growth, never reverse it.
+//
+// Eligibility mirrors the Reinforce handler exactly: status='garrison',
+// settlement_id = origin_settlement_id, reinforcing = true, size < 100. A
+// cohort that marched out of its origin (or out of garrison at all) is
+// caught by the unconditional cleanup below and stops trickling, holding
+// whatever size it had reached — no claim needed for that part, it is a
+// state fixup, not an accumulator (same "recompute/collapse steps are not
+// claimed" rule this file already documents above).
+//
+// G2 idempotency: the actual increment+charge+give-back is claimed per
+// (eventID, unit.id) via processed_tick_claims — a THIRD, practically-disjoint
+// scope namespace under this same eventID, alongside the goods-decay hash
+// scope and the per-settlement growth scope above. Migration 098's own
+// comment already accepts this pattern ("the key includes event_id ... they
+// cannot collide") for two scope kinds under one event; a unit id is simply
+// a third UUID space that will not collide with either.
+func (h *TickHandler) applyReinforcement(ctx context.Context, worldID uuid.UUID, eventID int64, crossings []popCrossing) {
+	// Unconditional: a cohort that is no longer garrisoned at its own origin
+	// stops reinforcing right away, regardless of whether this settlement grew
+	// this tick. Runs every call — idempotent by construction (an UPDATE that
+	// matches zero rows on replay is a no-op, not a second effect).
+	if _, err := h.pool.Exec(ctx,
+		`UPDATE units SET reinforcing = false, updated_at = now()
+		 WHERE world_id = $1 AND reinforcing = true
+		   AND NOT (status = 'garrison' AND settlement_id = origin_settlement_id)`,
+		worldID,
+	); err != nil {
+		slog.Error("reinforcement: clear stale reinforcing flag failed", "world", worldID, "err", err)
+	}
+
+	for _, c := range crossings {
+		budget := c.newPop - c.oldPop // men this settlement actually grew by this tick
+		if budget <= 0 {
+			continue
+		}
+
+		rows, err := h.pool.Query(ctx,
+			`SELECT id, owner_id, type, size FROM units
+			 WHERE settlement_id = $1 AND origin_settlement_id = $1
+			   AND status = 'garrison' AND reinforcing = true
+			 ORDER BY created_at`,
+			c.id,
+		)
+		if err != nil {
+			slog.Warn("reinforcement: list candidates failed", "settlement", c.id, "err", err)
+			continue
+		}
+		type candidate struct {
+			id      uuid.UUID
+			ownerID uuid.UUID
+			utype   string
+			size    int
+		}
+		var candidates []candidate
+		for rows.Next() {
+			var cd candidate
+			if err := rows.Scan(&cd.id, &cd.ownerID, &cd.utype, &cd.size); err == nil {
+				candidates = append(candidates, cd)
+			}
+		}
+		rows.Close()
+
+		// Deterministic order (created_at, i.e. oldest cohort first) — several
+		// reinforcing cohorts in the same city split one shared growth budget,
+		// so SOME order is needed; oldest-first is the least surprising.
+		for _, cd := range candidates {
+			if budget <= 0 {
+				break
+			}
+			refill := economy.ReinforceMenPerTick
+			if budget < refill {
+				refill = budget
+			}
+			if room := economy.MaxUnitSize - cd.size; room < refill {
+				refill = room
+			}
+			if refill <= 0 {
+				continue
+			}
+
+			// Pro-rata resource cost, same per-man table Recruit charges at full
+			// price. Throttle down to whatever the city can actually afford this
+			// tick (the simpler of the two options the plan allows — no partial
+			// good-by-good partial fill, no deferral to a future tick with a
+			// reserved claim).
+			perMan := economy.RecruitCostPerMan(cd.utype)
+			if len(perMan) > 0 {
+				affordable, err := h.affordableRefill(ctx, c.id, perMan, refill)
+				if err != nil {
+					slog.Warn("reinforcement: affordability check failed",
+						"settlement", c.id, "unit", cd.id, "err", err)
+					continue
+				}
+				refill = affordable
+			}
+			if refill <= 0 {
+				continue
+			}
+
+			// G2 claim: only the run that wins (event_id, unit_id) may apply the
+			// increment/charge/give-back below. A worker replay of the same
+			// ScheduledKharisTick event finds this row already claimed and moves on.
+			claimTag, err := h.pool.Exec(ctx,
+				`INSERT INTO processed_tick_claims (event_id, scope_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+				eventID, cd.id,
+			)
+			if err != nil {
+				slog.Warn("reinforcement: claim failed", "unit", cd.id, "err", err)
+				continue
+			}
+			if claimTag.RowsAffected() == 0 {
+				continue // already processed this event for this unit
+			}
+
+			newSize := cd.size + refill
+			stillReinforcing := newSize < economy.MaxUnitSize
+			if _, err := h.pool.Exec(ctx,
+				`UPDATE units SET size = $1, reinforcing = $2, updated_at = now() WHERE id = $3`,
+				newSize, stillReinforcing, cd.id,
+			); err != nil {
+				slog.Error("reinforcement: grow unit failed", "unit", cd.id, "err", err)
+				continue
+			}
+			for good, perManCost := range perMan {
+				if perManCost <= 0 {
+					continue
+				}
+				if _, err := h.pool.Exec(ctx,
+					`UPDATE settlement_goods SET
+					   amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
+					   calc_tick = current_world_tick()
+					 WHERE settlement_id = $2 AND good_key = $3`,
+					perManCost*float64(refill), c.id, good,
+				); err != nil {
+					slog.Warn("reinforcement: charge goods failed",
+						"settlement", c.id, "good", good, "err", err)
+				}
+			}
+			// Give back only the men actually diverted to this cohort — the rest
+			// of `budget` stays as this tick's city growth (already written by the
+			// growth UPDATE above; this only ever subtracts, never adds beyond it).
+			if _, err := h.pool.Exec(ctx,
+				`UPDATE settlements SET population = population - $1 WHERE id = $2`,
+				refill, c.id,
+			); err != nil {
+				slog.Error("reinforcement: debit population growth failed", "settlement", c.id, "err", err)
+				continue
+			}
+			budget -= refill
+
+			if h.store != nil {
+				_, _ = h.store.Append(ctx, cd.id, events.StreamType(unit.StreamUnit), unit.EventUnitReinforced,
+					unit.UnitReinforcedPayload{
+						UnitID:       cd.id,
+						SettlementID: c.id,
+						SizeBefore:   cd.size,
+						SizeAfter:    newSize,
+						PopDrawn:     refill,
+					}, worldID, nil)
+			}
+		}
+	}
+}
+
+// affordableRefill throttles a proposed refill count down to whatever
+// settlementID can actually pay for at perMan cost per good — the same
+// "grow only as far as resources allow" rule applyDecay's own grain-funded
+// growth already applies to citizens, extended here across every good in the
+// unit type's per-man cost table (not just grain). Reads a fresh snapshot per
+// good; a mid-tick recruit spending the same stock between this read and the
+// later UPDATE is priced against a stale snapshot — acceptable for a value
+// this small (at most ReinforceMenPerTick men) against the brute-force-simple
+// alternative of locking every settlement_goods row here too.
+func (h *TickHandler) affordableRefill(ctx context.Context, settlementID uuid.UUID, perMan map[string]float64, want int) (int, error) {
+	affordable := want
+	for good, cost := range perMan {
+		if cost <= 0 {
+			continue
+		}
+		var have float64
+		if err := h.pool.QueryRow(ctx,
+			`SELECT COALESCE((SELECT settled(amount, rate, calc_tick) FROM settlement_goods
+			                   WHERE settlement_id = $1 AND good_key = $2), 0)`,
+			settlementID, good,
+		).Scan(&have); err != nil {
+			return 0, err
+		}
+		if maxByGood := int(have / cost); maxByGood < affordable {
+			affordable = maxByGood
+		}
+	}
+	if affordable < 0 {
+		affordable = 0
+	}
+	return affordable, nil
 }
 
 // SubsistenceWarning tiers. Numeric notification levels follow the codebase's

@@ -372,6 +372,7 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
+			r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
 
 			r.Get("/worlds/{worldID}/settlements", sh.List)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)

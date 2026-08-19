@@ -16,6 +16,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
@@ -1123,6 +1124,81 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Reinforce handles POST /worlds/{worldID}/units/{unitID}/reinforce
+//
+// Manskaps-underhåll (megaron_plan_rekryteringsmodell.md, Timothy
+// 2026-08-19): marks a decimated land cohort as awaiting refill from its
+// origin city's population growth. This call has NO immediate effect on
+// size — it only flips units.reinforcing to true. The tick worker
+// (kharis/tick.go applyReinforcement) trickles men in over time, at most
+// economy.ReinforceMenPerTick per day, capped by however much the city
+// actually grew that day — diverted from that growth, never from the city's
+// standing population, so the origin city can never shrink from a refill.
+//
+// Only fires while the cohort stays garrisoned in its own origin city
+// (SettlementID == OriginSettlementID, Status == garrison) — march it out
+// and the tick worker stops the trickle and holds the size it had reached.
+// There is no distance/courier order here (unlike March/SetStance for a
+// field unit): the cohort is, by definition, sitting in a city its Wanax
+// already governs, so the order applies at once — command latency only
+// exists for units away from a settlement.
+func (h *UnitHandler) Reinforce(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	unitID, err := uuid.Parse(chi.URLParam(r, "unitID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid unit ID")
+		return
+	}
+
+	u, err := h.store.Get(r.Context(), unitID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "unit not found")
+		return
+	}
+	if u.OwnerID != playerID || u.WorldID != worldID {
+		writeError(w, http.StatusForbidden, "not your unit")
+		return
+	}
+	if unit.CategoryOf(u.Type) != unit.CategoryLand {
+		writeError(w, http.StatusUnprocessableEntity, "only land cohorts can be reinforced")
+		return
+	}
+	if u.Status != unit.StatusGarrison || u.SettlementID == nil ||
+		u.OriginSettlementID == nil || *u.SettlementID != *u.OriginSettlementID {
+		writeError(w, http.StatusUnprocessableEntity,
+			"reinforce only works in the cohort's home city — march it back to its origin settlement first")
+		return
+	}
+	if u.Size >= economy.MaxUnitSize {
+		writeError(w, http.StatusUnprocessableEntity, "already at full strength")
+		return
+	}
+
+	if _, err := h.pool.Exec(r.Context(),
+		`UPDATE units SET reinforcing = true, updated_at = now() WHERE id = $1`, unitID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not start reinforcement")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"unit_id":     unitID,
+		"reinforcing": true,
+		"size":        u.Size,
+	})
+}
+
 // SetStandingOrders handles POST /worlds/{worldID}/units/{unitID}/standing-orders
 //
 // KR3 §5: change a unit's mid-battle rout threshold. Body:
@@ -1452,6 +1528,17 @@ type unitSummary struct {
 	// was the only place its chosen name was visible at all.
 	MarchIntent *string `json:"march_intent,omitempty"`
 	ColonyName  *string `json:"colony_name,omitempty"`
+	// OriginSettlementID/Reinforcing/CanReinforce (mig 126,
+	// megaron_plan_rekryteringsmodell.md) surface the manskaps-underhåll
+	// state: the cohort's permanent home city, whether the tick worker is
+	// currently trickling men into it, and whether the reinforce button
+	// should even show — true only while status=garrison AND
+	// settlement_id == origin_settlement_id AND size < 100. Nil/false for
+	// naval units and for land units recruited before mig 126 with no
+	// settlement_id at backfill time.
+	OriginSettlementID *uuid.UUID `json:"origin_settlement_id,omitempty"`
+	Reinforcing        bool       `json:"reinforcing,omitempty"`
+	CanReinforce       bool       `json:"can_reinforce,omitempty"`
 }
 
 // townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
@@ -1524,6 +1611,13 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size
 		}
+		// canReinforce mirrors the Reinforce handler's own gate exactly (mig 126):
+		// garrison, in origin, under full strength. Computed here so the client
+		// never has to re-derive it from settlement_id/origin_settlement_id
+		// itself (see war.js's stale "batches of 10" hint this replaces).
+		canReinforce := u.Status == unit.StatusGarrison && u.SettlementID != nil &&
+			u.OriginSettlementID != nil && *u.SettlementID == *u.OriginSettlementID &&
+			u.Size < economy.MaxUnitSize
 		var carrierShipID *uuid.UUID
 		var carrierShipName *string
 		if u.Status == "embarked" {
@@ -1564,6 +1658,9 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			CarrierShipName:       carrierShipName,
 			MarchIntent:           u.MarchIntent,
 			ColonyName:            u.ColonyName,
+			OriginSettlementID:    u.OriginSettlementID,
+			Reinforcing:           u.Reinforcing,
+			CanReinforce:          canReinforce,
 		})
 	}
 	return out
