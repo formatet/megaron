@@ -13,13 +13,12 @@ import (
 // Upserts all goods for the settlement atomically (single observed_at).
 func RecordMarketSnapshot(ctx context.Context, pool *pgxpool.Pool, playerID, settlementID uuid.UUID) error {
 	rows, err := pool.Query(ctx,
-		`SELECT sg.good_key, g.base_value,
+		`SELECT sg.good_key,
 		        GREATEST(0, LEAST(sg.cap,
 		            settled(sg.amount, sg.rate, sg.calc_tick))),
 		        sg.rate,
 		        sg.cap
 		 FROM settlement_goods sg
-		 JOIN goods g ON g.key = sg.good_key
 		 WHERE sg.settlement_id = $1`,
 		settlementID,
 	)
@@ -31,16 +30,16 @@ func RecordMarketSnapshot(ctx context.Context, pool *pgxpool.Pool, playerID, set
 	type snap struct {
 		goodKey string
 		stock   float64
-		price   float64
+		rate    float64
 	}
 	var snaps []snap
 	for rows.Next() {
 		var goodKey string
-		var baseValue, stock, rate, cap float64
-		if err := rows.Scan(&goodKey, &baseValue, &stock, &rate, &cap); err != nil {
+		var stock, rate, cap float64
+		if err := rows.Scan(&goodKey, &stock, &rate, &cap); err != nil {
 			continue
 		}
-		snaps = append(snaps, snap{goodKey: goodKey, stock: stock, price: LocalPrice(baseValue, stock, rate)})
+		snaps = append(snaps, snap{goodKey: goodKey, stock: stock, rate: rate})
 	}
 	if err := rows.Err(); err != nil {
 		return err
@@ -57,11 +56,11 @@ func RecordMarketSnapshot(ctx context.Context, pool *pgxpool.Pool, playerID, set
 
 	for _, s := range snaps {
 		if _, err := tx.Exec(ctx,
-			`INSERT INTO market_snapshots (player_id, settlement_id, good_key, stock, price, observed_at)
+			`INSERT INTO market_snapshots (player_id, settlement_id, good_key, stock, rate, observed_at)
 			 VALUES ($1, $2, $3, $4, $5, now())
 			 ON CONFLICT (player_id, settlement_id, good_key) DO UPDATE SET
-			     stock = EXCLUDED.stock, price = EXCLUDED.price, observed_at = EXCLUDED.observed_at`,
-			playerID, settlementID, s.goodKey, s.stock, s.price,
+			     stock = EXCLUDED.stock, rate = EXCLUDED.rate, observed_at = EXCLUDED.observed_at`,
+			playerID, settlementID, s.goodKey, s.stock, s.rate,
 		); err != nil {
 			slog.Error("market snapshot upsert", "err", err)
 		}

@@ -143,8 +143,8 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 func (h *WelfareHandler) applyWelfare(ctx context.Context, w welfareRow, worldID uuid.UUID) error {
 	// "Mätt vs svält" = kan staden föda sig? Grain flödar genom varje tick
 	// (grain-cap-pegging borttagen) så en självförsörjande stad håller bara
-	// ~1 ticks buffert — DÄRFÖR duger inte ProductionReference (~3-dygns-ankare)
-	// som tröskel; den kallade friska huvudstäder "svält". Rätt diskriminator är
+	// ~1 ticks buffert — DÄRFÖR duger inte en fast dygns-ankrad stock-tröskel;
+	// den kallade friska huvudstäder "svält". Rätt diskriminator är
 	// grain-NETTOT: rate ≥ 0 (självförsörjande/överskott) = mätt; rate < 0 eller
 	// tomt/negativt lager (redan i underskott) = svält. Verifierat mot rådata
 	// (c3c289e5 2026-07-11): friska huvudstäder rate +300…+2300, svältande −6…−15.

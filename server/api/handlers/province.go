@@ -2529,7 +2529,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		Amount         float64 `json:"amount"`
 		Rate           float64 `json:"rate_per_tick"`
 		Cap            float64 `json:"cap"`
-		Price          float64 `json:"price"`
+		BaseValue      float64 `json:"base_value"`
 		Citizens       int     `json:"citizens"`
 		Percent        float64 `json:"percent"`
 		YieldPerWorker float64 `json:"yield_per_worker"`
@@ -2583,7 +2583,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Amount:         current,
 			Rate:           rate,
 			Cap:            capV,
-			Price:          economy.LocalPrice(baseValue, current, rate),
+			BaseValue:      baseValue,
 			Citizens:       int(math.Round(laborWeights[key] * float64(laborPool))),
 			Percent:        laborWeights[key] * 100.0,
 			YieldPerWorker: bp / economy.REF_LABOR,
@@ -3872,9 +3872,14 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 }
 
 // MarketWants handles GET /worlds/{worldID}/market/wants.
-// Returns, per settlement the player has price-knowledge of (market_snapshots),
-// the goods that settlement WANTS to buy — goods in shortage (price > base × 1.1).
-// Demand signal for traders and LLM agents. FOW-gated: only known settlements.
+// Returns, per settlement the player has FOW-knowledge of (market_snapshots),
+// the goods that settlement WANTS to buy (draining or empty, see
+// economy.WantsDaysCover) and the goods it has a sellable SURPLUS of (built up
+// past economy.ExportsDaysCover). PR1 (system-computed local price) was
+// repealed 2026-08-19 — this discovery signal survives, rerooted from price
+// onto the observed stock+rate market_snapshots already carries (never live
+// settlement_goods — that would leak present-tense state through FOW).
+// Demand/supply signal for traders and LLM agents. FOW-gated: only known settlements.
 func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -3888,16 +3893,16 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at, ms.secondhand
+		`SELECT ms.settlement_id, s.name, ms.good_key, ms.stock, ms.rate, ms.observed_at, ms.secondhand
 		 FROM market_snapshots ms
 		 JOIN goods g ON g.key = ms.good_key
 		 JOIN settlements s ON s.id = ms.settlement_id
 		 WHERE ms.player_id = $1 AND s.world_id = $2
-		   AND ms.price > g.base_value * 1.1
+		   AND ms.rate <= 0 AND ms.stock < $3 * GREATEST(-ms.rate, $4)
 		   AND g.category <> 'sacred'
 		   AND ms.good_key <> 'silver'
-		 ORDER BY ms.settlement_id, (ms.price / g.base_value) DESC`,
-		playerID, worldID,
+		 ORDER BY ms.settlement_id, ms.stock / GREATEST(-ms.rate, $4) ASC`,
+		playerID, worldID, economy.WantsDaysCover, economy.MinFlowForCover,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "query failed")
@@ -3906,12 +3911,9 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type wantItem struct {
-		Good          string  `json:"good"`
-		Price         float64 `json:"price"`
-		BaseValue     float64 `json:"base_value"`
-		ShortageRatio float64 `json:"shortage_ratio"`
-		WantLevel     string  `json:"want_level"`
-		Stock         float64 `json:"stock"`
+		Good  string  `json:"good"`
+		Stock float64 `json:"stock"`
+		Rate  float64 `json:"rate"`
 	}
 	type settlementWants struct {
 		SettlementID uuid.UUID  `json:"settlement_id"`
@@ -3926,13 +3928,13 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var (
-			settlementID            uuid.UUID
-			name, goodKey           string
-			price, stock, baseValue float64
-			observedAt              time.Time
-			secondhand              bool
+			settlementID  uuid.UUID
+			name, goodKey string
+			stock, rate   float64
+			observedAt    time.Time
+			secondhand    bool
 		)
-		if err := rows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt, &secondhand); err != nil {
+		if err := rows.Scan(&settlementID, &name, &goodKey, &stock, &rate, &observedAt, &secondhand); err != nil {
 			continue
 		}
 		if _, seen := byID[settlementID]; !seen {
@@ -3945,20 +3947,10 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 			}
 			order = append(order, settlementID)
 		}
-		ratio := price / baseValue
-		level := "low"
-		if ratio >= 2.0 {
-			level = "high"
-		} else if ratio >= 1.5 {
-			level = "medium"
-		}
 		byID[settlementID].Goods = append(byID[settlementID].Goods, wantItem{
-			Good:          goodKey,
-			Price:         price,
-			BaseValue:     baseValue,
-			ShortageRatio: ratio,
-			WantLevel:     level,
-			Stock:         stock,
+			Good:  goodKey,
+			Stock: stock,
+			Rate:  rate,
 		})
 	}
 	if rows.Err() != nil {
@@ -3971,26 +3963,24 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 		wants = append(wants, *byID[id])
 	}
 
-	// Surplus: goods with price < base_value * 0.9 (export candidates).
+	// Surplus: producing goods with a built-up sellable stock (export candidates).
 	surplusRows, err := h.pool.Query(r.Context(),
-		`SELECT ms.settlement_id, s.name, ms.good_key, ms.price, ms.stock, g.base_value, ms.observed_at, ms.secondhand
+		`SELECT ms.settlement_id, s.name, ms.good_key, ms.stock, ms.rate, ms.observed_at, ms.secondhand
 		 FROM market_snapshots ms
 		 JOIN goods g ON g.key = ms.good_key
 		 JOIN settlements s ON s.id = ms.settlement_id
 		 WHERE ms.player_id = $1 AND s.world_id = $2
-		   AND ms.price < g.base_value * 0.9
+		   AND ms.rate > 0 AND ms.stock > $3 * ms.rate
 		   AND g.category <> 'sacred'
 		   AND ms.good_key <> 'silver'
-		 ORDER BY ms.settlement_id, ms.price / g.base_value ASC`,
-		playerID, worldID,
+		 ORDER BY ms.settlement_id, ms.stock / GREATEST(ms.rate, $4) DESC`,
+		playerID, worldID, economy.ExportsDaysCover, economy.MinFlowForCover,
 	)
 
 	type surplusItem struct {
-		Good         string  `json:"good"`
-		Price        float64 `json:"price"`
-		BaseValue    float64 `json:"base_value"`
-		SurplusRatio float64 `json:"surplus_ratio"`
-		Stock        float64 `json:"stock"`
+		Good  string  `json:"good"`
+		Stock float64 `json:"stock"`
+		Rate  float64 `json:"rate"`
 	}
 	type settlementSurplus struct {
 		SettlementID uuid.UUID     `json:"settlement_id"`
@@ -4007,13 +3997,13 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 		surplusByID := map[uuid.UUID]*settlementSurplus{}
 		for surplusRows.Next() {
 			var (
-				settlementID            uuid.UUID
-				name, goodKey           string
-				price, stock, baseValue float64
-				observedAt              time.Time
-				secondhand              bool
+				settlementID  uuid.UUID
+				name, goodKey string
+				stock, rate   float64
+				observedAt    time.Time
+				secondhand    bool
 			)
-			if err := surplusRows.Scan(&settlementID, &name, &goodKey, &price, &stock, &baseValue, &observedAt, &secondhand); err != nil {
+			if err := surplusRows.Scan(&settlementID, &name, &goodKey, &stock, &rate, &observedAt, &secondhand); err != nil {
 				continue
 			}
 			if _, seen := surplusByID[settlementID]; !seen {
@@ -4027,11 +4017,9 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 				surplusOrder = append(surplusOrder, settlementID)
 			}
 			surplusByID[settlementID].Goods = append(surplusByID[settlementID].Goods, surplusItem{
-				Good:         goodKey,
-				Price:        price,
-				BaseValue:    baseValue,
-				SurplusRatio: price / baseValue,
-				Stock:        stock,
+				Good:  goodKey,
+				Stock: stock,
+				Rate:  rate,
 			})
 		}
 		surplusList = make([]settlementSurplus, 0, len(surplusOrder))

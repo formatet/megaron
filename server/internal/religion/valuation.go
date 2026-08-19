@@ -8,9 +8,9 @@ import "math"
 // the same function serve both consumers (a one-off prayer's odds, and the
 // standing cult's kharis flow).
 //
-// The economy already has a scarcity measure — economy.LocalPrice — but it is
-// LOCAL: a settlement's stock against its own production reference. The gods
-// judge differently. Mortals price by their own need; gods price by the world's.
+// A settlement's own local scarcity (its stock against its own production)
+// is not what matters here. The gods judge differently. Mortals would price
+// by their own need; gods price by the world's.
 
 const (
 	// Weights over the two scarcities. Spread leads: it is the one that forces
