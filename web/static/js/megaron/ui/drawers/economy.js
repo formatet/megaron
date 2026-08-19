@@ -87,8 +87,8 @@ async function loadEconomyGoods(mySettlements) {
         </div>`;
       }
       if (others.length) {
-        html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td><td style="text-align:right">Price</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${goodsRateCell(g)}<td style="text-align:right;color:var(--text-dim)">${(g.price||0).toFixed(2)}</td></tr>`
+        html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr>${others.map(g =>
+          `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${goodsRateCell(g)}</tr>`
         ).join('')}</table>`;
       }
     }
@@ -242,14 +242,16 @@ async function loadEconomyWants() {
     const data = await r.json();
     const wants = data.wants || [], surplus = data.surplus || [];
     if (!wants.length && !surplus.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known market intel yet — visit settlements to learn their market.</p>'; return; }
-    const LEVEL_COLOR = { high: 'var(--danger)', medium: 'var(--border)', low: 'var(--text-dim)' };
+    const rateCell = g => g.rate < 0
+      ? `<span style="color:var(--danger)">▼ ${g.rate.toFixed(1)}/tick</span>`
+      : `<span style="color:var(--safe)">▲ +${g.rate.toFixed(1)}/tick</span>`;
     let html = '';
     if (wants.length) {
       html += '<div class="dsec-title">Wants — buy here at a premium</div>' + wants.map(sw => `
         <div class="dsec">
           <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
           <table class="goods-mini">${sw.goods.map(g =>
-            `<tr><td>${g.good}</td><td style="color:${LEVEL_COLOR[g.want_level]||'inherit'}">${g.want_level}</td><td style="text-align:right">${g.price.toFixed(2)} <span style="color:var(--text-dim)">(base ${g.base_value.toFixed(2)})</span></td></tr>`
+            `<tr><td>${g.good}</td><td>${Math.floor(g.stock)}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
           ).join('')}</table>
         </div>`).join('');
     }
@@ -258,7 +260,7 @@ async function loadEconomyWants() {
         <div class="dsec">
           <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
           <table class="goods-mini">${sw.goods.map(g =>
-            `<tr><td>${g.good}</td><td style="text-align:right">${g.price.toFixed(2)} <span style="color:var(--text-dim)">(base ${g.base_value.toFixed(2)})</span></td></tr>`
+            `<tr><td>${g.good}</td><td>${Math.floor(g.stock)}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
           ).join('')}</table>
         </div>`).join('');
     }

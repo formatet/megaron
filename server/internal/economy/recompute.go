@@ -928,10 +928,10 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 // what population-scaled production reaches within a single day, so every
 // growing settlement pegged at cap regardless of terrain — masking the
 // geography-driven scarcity/surplus differentiation temenos_ekonomi.md is
-// built on. Pricing no longer derives its reference from cap (see
-// ProductionReference in price.go), so this value is now purely a technical
-// storage ceiling, not a gameplay lever — kept finite for SQL/float safety,
-// not calibrated as a balance number.
+// built on. There is no system-computed price to anchor anymore (repealed
+// PR1, 2026-08-19), so this value is purely a technical storage ceiling, not
+// a gameplay lever — kept finite for SQL/float safety, not calibrated as a
+// balance number.
 func goodCap(key string) float64 {
 	return 1_000_000
 }

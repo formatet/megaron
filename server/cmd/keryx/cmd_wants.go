@@ -18,7 +18,7 @@ gated. A settlement appears once your own messenger or caravan has reached it; a
 city you only know by rumour (visible in "keryx settlements") will NOT show its
 wants until you send a "keryx messenger" to it. Discovery is earned by contact.
 
-Prices are always firsthand — observed by your own messenger or caravan
+Stock and rate are always firsthand — observed by your own messenger or caravan
 reaching the settlement (temenos_gossip.md PASS 2b: gossip only ever tells you
 a settlement exists and a coarse industry hint, never its detailed market).`,
 		Args: noPositionalArgs(), // no flags at all — nothing to guess
@@ -38,19 +38,17 @@ a settlement exists and a coarse industry hint, never its detailed market).`,
 					Name       string `json:"name"`
 					ObservedAt string `json:"observed_at"`
 					Goods      []struct {
-						Good      string  `json:"good"`
-						WantLevel string  `json:"want_level"`
-						Price     float64 `json:"price"`
-						BaseValue float64 `json:"base_value"`
+						Good  string  `json:"good"`
+						Stock float64 `json:"stock"`
+						Rate  float64 `json:"rate"`
 					} `json:"goods"`
 				} `json:"wants"`
 				Surplus []struct {
 					Name  string `json:"name"`
 					Goods []struct {
-						Good      string  `json:"good"`
-						Price     float64 `json:"price"`
-						BaseValue float64 `json:"base_value"`
-						Stock     float64 `json:"stock"`
+						Good  string  `json:"good"`
+						Stock float64 `json:"stock"`
+						Rate  float64 `json:"rate"`
 					} `json:"goods"`
 				} `json:"surplus"`
 			}
@@ -58,7 +56,7 @@ a settlement exists and a coarse industry hint, never its detailed market).`,
 				return err
 			}
 			if len(resp.Wants) == 0 && len(resp.Surplus) == 0 {
-				fmt.Println("No price data yet — send a messenger or trade offer to observe markets.")
+				fmt.Println("No market data yet — send a messenger or trade offer to observe markets.")
 				return nil
 			}
 			if len(resp.Wants) > 0 {
@@ -66,8 +64,7 @@ a settlement exists and a coarse industry hint, never its detailed market).`,
 				for _, s := range resp.Wants {
 					fmt.Printf("  %s:\n", s.Name)
 					for _, g := range s.Goods {
-						fmt.Printf("    %s (%s) — price %.0f (base %.0f)\n",
-							g.Good, g.WantLevel, g.Price, g.BaseValue)
+						fmt.Printf("    %s: %.0f (%s)\n", g.Good, g.Stock, rateStr(g.Rate))
 					}
 				}
 			}
@@ -76,12 +73,21 @@ a settlement exists and a coarse industry hint, never its detailed market).`,
 				for _, s := range resp.Surplus {
 					fmt.Printf("  %s:\n", s.Name)
 					for _, g := range s.Goods {
-						fmt.Printf("    %s — price %.0f (base %.0f) stock %.0f\n",
-							g.Good, g.Price, g.BaseValue, g.Stock)
+						fmt.Printf("    %s: %.0f (%s)\n", g.Good, g.Stock, rateStr(g.Rate))
 					}
 				}
 			}
 			return nil
 		},
 	}
+}
+
+// rateStr renders a per-tick rate with a direction arrow, e.g. "▼ -2.0/tick"
+// for a draining good or "▲ +8.0/tick" for a producing one.
+func rateStr(rate float64) string {
+	arrow := "▲"
+	if rate < 0 {
+		arrow = "▼"
+	}
+	return fmt.Sprintf("%s %+.1f/tick", arrow, rate)
 }

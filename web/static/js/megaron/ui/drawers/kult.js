@@ -183,14 +183,14 @@ function offerGoodRows(prayer, goods) {
   const favours = prayer.favours || {};
   const usable = goods
     .filter(g => g.key !== 'silver' && (g.amount || 0) >= 1)
-    .map(g => ({ key: g.key, amount: g.amount || 0, price: g.price || 0, affinity: favours[g.key] || 1 }))
+    .map(g => ({ key: g.key, amount: g.amount || 0, baseValue: g.base_value || 0, affinity: favours[g.key] || 1 }))
     .sort((a, b) => (b.affinity - a.affinity) || (b.amount - a.amount));
   if (!usable.length) return '<div class="offer-empty">Nothing in store to offer.</div>';
   return usable.map(g => `
     <label class="offer-good">
       <span>${g.key}${g.affinity > 1 ? ` <b>×${g.affinity.toFixed(1)}</b>` : ''}</span>
       <input type="number" min="0" max="${Math.floor(g.amount)}" step="1" value="0"
-             data-good="${g.key}" data-unit="${(g.price * g.affinity).toFixed(3)}"
+             data-good="${g.key}" data-unit="${(g.baseValue * g.affinity).toFixed(3)}"
              oninput="okOfferWorth('${prayer.id}', ${prayer.offering_baseline || 0})">
       <span class="offer-have">of ${Math.floor(g.amount)}</span>
     </label>`).join('');
