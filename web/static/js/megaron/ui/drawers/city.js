@@ -374,7 +374,7 @@ const _BLD_LBL = {
   stonequarry:'Stone Quarry', market:'Agora', wall:'Wall', tower:'Tower',
   harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
-  temple:'Temple',
+  temple:'Temple', silver_mine:'Silver Mine',
 };
 
 export async function startBuild() {
