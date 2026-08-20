@@ -374,6 +374,7 @@ const _BLD_LBL = {
   stonequarry:'Stone Quarry', market:'Agora', wall:'Wall', tower:'Tower',
   harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
+  temple:'Temple',
 };
 
 export async function startBuild() {
@@ -554,20 +555,20 @@ async function refreshCityBuildings(provinceID) {
     h2 += `
       <div class="dsec-title" style="margin-top:.8rem">Construct</div>
       <select id="city-build-select" class="build-select">
-        <option value="farm">Farm — 50 timber 20 stone · +grain/m</option>
-        <option value="lumbermill">Lumbermill — 40 timber 40 stone · +timber/m</option>
-        <option value="stonequarry">Stone Quarry — 50 timber 20 stone · +stone/m</option>
-        <option value="mine">Mine — 60 timber 40 stone · +ore/m</option>
+        <option value="market">Agora — 100 timber 60 stone · +0.5 silver/tick</option>
         <option value="barracks">Barracks — 80 timber 80 stone · recruits</option>
-        <option value="market">Market — 100 timber 60 stone · +0.5 silver/m</option>
-        <option value="wall">Wall — upgrade (Palisade→Stone Wall→Bronze Wall)</option>
-        <option value="harbour">Harbour — 140 timber 60 stone · fish, sea trade</option>
-        <option value="shipyard">Shipyard — 140 timber 60 stone · builds/repairs ships</option>
+        <option value="farm">Farm — 50 timber 20 stone · +grain/tick</option>
         <option value="foundry">Foundry — 80 timber 100 stone · ${foundryRecipe ? 'craft ' + foundryRecipe.output_key : 'craft goods'}</option>
+        <option value="harbour">Harbour — 140 timber 60 stone · fish, sea trade</option>
+        <option value="lumbermill">Lumbermill — 40 timber 40 stone · +timber/tick</option>
+        <option value="mine">Mine — 60 timber 40 stone · +ore/tick</option>
+        <option value="olive_press">Olive Press — 30 timber 40 stone · +oil/tick</option>
+        <option value="shipyard">Shipyard — 140 timber 60 stone · builds/repairs ships</option>
         <option value="stable">Stable — 60 timber 40 stone · horses</option>
+        <option value="stonequarry">Stone Quarry — 50 timber 20 stone · +stone/tick</option>
         <option value="temple">Temple — 60 timber 60 stone</option>
-        <option value="olive_press">Olive Press — 30 timber 40 stone · +oil/m</option>
-        <option value="winery">Winery — 40 timber 30 stone · +wine/m</option>
+        <option value="wall">Wall — upgrade (Palisade→Stone Wall→Bronze Wall)</option>
+        <option value="winery">Winery — 40 timber 30 stone · +wine/tick</option>
       </select>
       <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
       <div id="city-build-result" class="action-result"></div>`;
