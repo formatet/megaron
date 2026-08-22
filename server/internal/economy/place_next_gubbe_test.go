@@ -52,11 +52,13 @@ func TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool(t *testing
 	}
 }
 
-// TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity: with BOTH a
-// grain hex and a fish hex available, grain's uncapped placementYield
-// (placementYield's grain exemption) means an unbounded run of gubbe
-// placements never falls to the pool via the grain hex — this is the fix for
-// "a 1-gubbe city crossing 199→200 loses its 99 invisible auto-farmers."
+// TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity: grain now has a
+// real per-hex cap like every other good (megaron_plan_grain_cap.md,
+// 2026-08-22), but a rich 18-plains-hex catchment has ample room (4 gubbar/hex
+// × 18 = 72, no farm built) — placing 10 gubbar never comes close to that
+// ceiling, so growth still never falls to the pool here. This is the fix for
+// "a 1-gubbe city crossing 199→200 loses its 99 invisible auto-farmers,"
+// exercised at a scale small enough that the new cap simply doesn't bind.
 func TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
@@ -68,7 +70,7 @@ func TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity(t *testing.T) {
 			t.Fatalf("PlaceNextGubbeOnBestFoodHex(%d): %v", ordinal, err)
 		}
 		if !placed {
-			t.Fatalf("gubbe %d fell to the pool despite an uncapped grain catchment (18 plains hexes)", ordinal)
+			t.Fatalf("gubbe %d fell to the pool despite an ample grain catchment (18 plains hexes × cap 4)", ordinal)
 		}
 	}
 	var count int
@@ -76,6 +78,6 @@ func TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity(t *testing.T) {
 		t.Fatalf("count grain placements: %v", err)
 	}
 	if count != 10 {
-		t.Errorf("grain placements = %d, want 10 (every gubbe went to grain, uncapped)", count)
+		t.Errorf("grain placements = %d, want 10 (every gubbe went to grain, capacity was never the constraint)", count)
 	}
 }

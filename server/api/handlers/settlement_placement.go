@@ -169,7 +169,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	type goodOut struct {
 		GoodKey        string  `json:"good_key"`
 		RatePerTick    float64 `json:"rate_per_tick"`
-		Cap            *int    `json:"cap,omitempty"` // absent/null = uncapped (grain — placementYield)
+		Cap            *int    `json:"cap,omitempty"` // absent/null = no P3 hexCapacityRule/WorkplaceSlots entry for this good at all
 		Placed         int     `json:"placed"`
 		PlacedOrdinals []int   `json:"placed_ordinals,omitempty"`
 		MarginalYield  float64 `json:"marginal_yield"`
@@ -183,11 +183,17 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 				Placed:         placedGoods[good],
 				PlacedOrdinals: ordinalsGoods[good],
 			}
-			if good == economy.GoodGrain {
-				g.MarginalYield = rate
-			} else if c := cap[good]; c > 0 {
+			if c := cap[good]; c > 0 {
 				g.Cap = &c
-				g.MarginalYield = rate / float64(c)
+				// Grain keeps placementYield's rate × placed shape (not
+				// rate/cap × placed like every other good) — see
+				// megaron_plan_grain_cap.md and placementYield's doc comment.
+				// It IS capped now, just not capacity-divided.
+				if good == economy.GoodGrain {
+					g.MarginalYield = rate
+				} else {
+					g.MarginalYield = rate / float64(c)
+				}
 			}
 			out = append(out, g)
 		}
@@ -300,8 +306,9 @@ func loadPlacedOrdinals(ctx context.Context, tx economy.Tx, settlementID uuid.UU
 // answer 2: the Wanax picks WHERE, not which numbered gubbe) on a hex or
 // building slot. Validates ownership, FOW ("avslöjad" — P0-UI answer 5/§Tvärgående
 // lås: a fog hex is never placeable), that the target/good combination is a
-// real production option, and capacity (grain exempt — placementYield/
-// economy.PlaceStartingWorkforce's doc comments). Recomputes production
+// real production option, and capacity — grain included, since
+// megaron_plan_grain_cap.md (2026-08-22): a hard per-hex cap on EVERY good,
+// grain no longer exempt. Recomputes production
 // immediately (P0-UI: "Placering slår igenom omedelbart"). Accepts either
 // hex_q/hex_r or hex_ordinal (1..18, P0-UI answer 7's address space) — the
 // latter keeps Ring() math server-side so keryx/web never duplicate it.
@@ -439,12 +446,10 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "this hex has no production option for that good")
 			return
 		}
-		if req.GoodKey != economy.GoodGrain {
-			cap := opt.CapPerGood[req.GoodKey]
-			if cap <= 0 || placed.Hex[hex][req.GoodKey] >= cap {
-				writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
-				return
-			}
+		cap := opt.CapPerGood[req.GoodKey]
+		if cap <= 0 || placed.Hex[hex][req.GoodKey] >= cap {
+			writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
+			return
 		}
 		if _, err := tx.Exec(r.Context(),
 			`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key)

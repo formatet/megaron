@@ -173,8 +173,24 @@ var terrainCapacityTable = map[string]hexCapacityRule{
 
 // plainsCapacityRules: plains carries grain (slätt) AND livestock (betesmark)
 // simultaneously — no distinct pasture terrain exists in the enum.
+//
+// grain's numbers are LOCKED (megaron_plan_grain_cap.md, Timothy 2026-08-22,
+// "helt omöjligt att ha 32 gubbar på en hex"): capNoBuilding=4, capWithBuilding=6.
+// capOf() (below) then ADDS the farm's own WorkplaceSlots(level) on top of
+// capWithBuilding, so the real per-hex ceiling is a bigger staircase than
+// these two numbers alone suggest:
+//
+//	no farm   → 4
+//	farm L1   → 6 + WorkplaceSlots("farm",1)=2  = 8  gubbar/hex
+//	farm L2   → 6 + WorkplaceSlots("farm",2)=4  = 10 gubbar/hex
+//	farm L3   → 6 + WorkplaceSlots("farm",3)=6  = 12 gubbar/hex
+//
+// capWithBuilding is deliberately only 2 over capNoBuilding — the rest of the
+// staircase comes from WorkplaceSlots, keeping this entry the same SHAPE as
+// silver/copper/tin (a hex rule plus a building-slots top-up), not a special
+// case for grain.
 var plainsCapacityRules = []hexCapacityRule{
-	{"grain", 2, 4, "farm"},
+	{"grain", 4, 6, "farm"},
 	{"livestock", 1, 3, ""}, // no pasture-boosting building exists in the game yet
 }
 

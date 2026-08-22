@@ -25,13 +25,16 @@ type foodSlot struct {
 // rankedFoodSlots returns every grain/fish placement option in settlementID's
 // catchment, highest marginal yield first (lowest hex-ordinal breaks ties —
 // the same determinism P0-UI locked for the [unbuilt] spawn-to-food UI
-// preview). Grain's cap is placementYield's uncapped-formula equivalent
-// (yield = rate directly, cap = totalGubbar — i.e. "don't place more grain
-// gubbar than exist," not a real physical limit); fish keeps its real P3 hex
-// cap. totalGubbar bounds grain's effective cap only — callers that don't
-// have a meaningful totalGubbar (e.g. one gubbe at a time) may pass a large
-// number.
-func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID, totalGubbar int) ([]foodSlot, hexgrid.Coord, error) {
+// preview). Grain and fish now share the SAME real P3 hex cap
+// (megaron_plan_grain_cap.md, 2026-08-22 — grain is no longer capacity-exempt);
+// grain keeps its own yield SHAPE (marginal yield = rate, not rate/cap — see
+// placementYield's doc comment), but the slot's cap field (how many gubbar it
+// can hold before the greedy loop must move to the next-best hex) is the real
+// physical ceiling, exactly like fish. Without this, greedy placement would
+// stack every food-needing gubbe onto the single best-ranked grain hex before
+// ever trying a second one — the founding-time version of the "32 gubbar on
+// one hex" bug this whole plan exists to close.
+func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]foodSlot, hexgrid.Coord, error) {
 	var q, r int
 	if err := tx.QueryRow(ctx,
 		`SELECT prov.map_q, prov.map_r
@@ -56,15 +59,12 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID, totalGu
 				continue
 			}
 			cap := opt.CapPerGood[good]
-			yield := 0.0
+			if cap <= 0 {
+				continue
+			}
+			yield := rate / float64(cap)
 			if good == GoodGrain {
-				yield = rate
-				cap = totalGubbar
-			} else {
-				if cap <= 0 {
-					continue
-				}
-				yield = rate / float64(cap)
+				yield = rate // grain's yield shape stays rate × placed, not rate/cap × placed (placementYield)
 			}
 			ordinal, _ := hexgrid.RingOrdinal(center, hexgrid.CatchmentRadius, opt.Coord)
 			slots = append(slots, foodSlot{opt.Coord, good, yield, cap, ordinal})
@@ -114,7 +114,7 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	}
 	totalGubbar := population / 100
 
-	slots, _, err := rankedFoodSlots(ctx, tx, settlementID, totalGubbar)
+	slots, _, err := rankedFoodSlots(ctx, tx, settlementID)
 	if err != nil {
 		return 0, false, err
 	}
@@ -182,11 +182,7 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 // Falls through to the pool (no row inserted, placed=false) if every food
 // slot is already at capacity — not an error.
 func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.UUID, gubbeOrdinal int) (placed bool, err error) {
-	// Large sentinel, not a real population read: this is a single gubbe, and
-	// grain's cap-as-totalGubbar convention (rankedFoodSlots) only needs to be
-	// "large enough to never bind" here, not an exact count.
-	const singleGubbeSentinel = 1 << 30
-	slots, _, err := rankedFoodSlots(ctx, tx, settlementID, singleGubbeSentinel)
+	slots, _, err := rankedFoodSlots(ctx, tx, settlementID)
 	if err != nil {
 		return false, err
 	}
@@ -199,7 +195,7 @@ func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.U
 	for _, slot := range slots {
 		occupied := placedCounts.Hex[slot.hex][slot.good]
 		if occupied >= slot.cap {
-			continue // full — grain's cap is the totalGubbar sentinel, so this only ever binds for fish
+			continue // full — grain's real P3 cap now binds here too, same as fish (megaron_plan_grain_cap.md)
 		}
 		if _, err := tx.Exec(ctx,
 			`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key)
