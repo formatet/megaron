@@ -629,7 +629,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			if placed <= 0 {
 				continue
 			}
-			rawRates[good] += placementYield(good, rate, opt.CapPerGood[good], placed)
+			rawRates[good] += placementYield(good, rate, opt.CapL1PerGood[good], opt.CapPerGood[good], placed)
 		}
 	}
 	for _, opt := range buildingOptions {
@@ -649,7 +649,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			if placed <= 0 {
 				continue
 			}
-			rawRates[good] += placementYield(good, rate, opt.CapPerGood[good], placed)
+			rawRates[good] += placementYield(good, rate, opt.CapL1PerGood[good], opt.CapPerGood[good], placed)
 		}
 	}
 	for good, rate := range unconditional {
@@ -676,7 +676,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			if placed <= 0 {
 				continue
 			}
-			boostPotential += placementYield(good, rate, opt.CapPerGood[good], placed)
+			boostPotential += placementYield(good, rate, opt.CapL1PerGood[good], opt.CapPerGood[good], placed)
 		}
 		refiningCapacity := 0.0
 		for _, opt := range buildingOptions {
@@ -688,7 +688,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			if placed <= 0 {
 				continue
 			}
-			refiningCapacity += placementYield(good, rate, opt.CapPerGood[good], placed)
+			refiningCapacity += placementYield(good, rate, opt.CapL1PerGood[good], opt.CapPerGood[good], placed)
 		}
 		if boostPotential > 0 && refiningCapacity > 0 {
 			rawRates[good] += math.Min(boostPotential, refiningCapacity)
@@ -841,7 +841,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		if placed <= 0 {
 			continue
 		}
-		bronzeRefiningCapacity += placementYield(GoodBronze, rate, opt.CapPerGood[GoodBronze], placed)
+		bronzeRefiningCapacity += placementYield(GoodBronze, rate, opt.CapL1PerGood[GoodBronze], opt.CapPerGood[GoodBronze], placed)
 	}
 	if bronzeRefiningCapacity > 0 {
 		type bronzeIngredient struct {
