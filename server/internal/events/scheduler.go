@@ -172,6 +172,17 @@ func (s *Scheduler) EnqueueTick(ctx context.Context, worldID uuid.UUID, eventTyp
 // the KharisTick treadmill (2026-07-13, six sea_blessing ships in six
 // minutes). Missed intervals are skipped, not replayed: rates are lazy and
 // continuous, so only the discrete consequence check is periodic.
+//
+// G2 tick-dedup (megaron_plan_tickdedup.md, mig 127): this line sits as the
+// LAST statement of every self-rescheduling handler, so a worker retry of
+// that handler (timeout/error, up to DeadLetterAttempts times) calls it
+// twice with identical arguments. ON CONFLICT DO NOTHING relies on the
+// partial unique index idx_scheduled_recurring_dedup on
+// (world_id, event_type, due_tick, payload) WHERE processed_at IS NULL — a
+// partial index requires the conflict target AND its WHERE clause to be
+// repeated here, or Postgres won't match it. payload is part of both: two
+// legitimate concurrent rows (e.g. two active BattleTicks) differ only in
+// payload and must both survive.
 func (s *Scheduler) EnqueueTickRecurring(ctx context.Context, worldID uuid.UUID, eventType ScheduledEventType, payload any, lastDue, intervalTicks int) error {
 	raw, err := json.Marshal(payload)
 	if err != nil {
@@ -180,7 +191,8 @@ func (s *Scheduler) EnqueueTickRecurring(ctx context.Context, worldID uuid.UUID,
 	_, err = s.pool.Exec(ctx,
 		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick)
 		 VALUES ($1, $2, $3, now(),
-		         GREATEST($4::int, (SELECT current_tick FROM worlds WHERE id = $1) + $5::int))`,
+		         GREATEST($4::int, (SELECT current_tick FROM worlds WHERE id = $1) + $5::int))
+		 ON CONFLICT (world_id, event_type, due_tick, payload) WHERE processed_at IS NULL DO NOTHING`,
 		worldID, string(eventType), raw, lastDue+intervalTicks, intervalTicks,
 	)
 	return err
