@@ -50,6 +50,10 @@ def main():
     ap.add_argument("--landmass", default="auto", help="landmass_id, eller auto = störst")
     ap.add_argument("--min-dist", type=int, default=8,
                     help="minsta godtagbara hexavstånd mellan två hostar. 8 är golvet, inte målet: catchment är radie 2, så under ~6 hexar börjar två städer slåss om samma mark. En 60x60-karta ger i praktiken 9-17 hexar för fyra hostar (uppmätt 2026-08-23)")
+    ap.add_argument("--min-land", type=int, default=13,
+                    help="minsta antal LAND-hexar i platsens catchment (19 hexar totalt). "
+                         "Under ~13 blir staden en halvöspets som svälter — uppmätt 2026-08-23: "
+                         "verktyget valde (24,64) med 1 landgranne av 6 och agenten satt fast direkt")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -59,6 +63,18 @@ def main():
         f"WHERE u.world_id='{world}' AND u.type='nomadic_host' ORDER BY pl.username")]
     if not hosts:
         sys.exit("inga hostar i världen — kör tools/acceptance.sh player NAMN först")
+
+    # Catchmenten är hexen själv + ringen på radie 2 (19 hexar, hexgrid.CatchmentRadius).
+    # En plats bedöms på hur mycket LAND den ringen håller: en stad på en halvöspets
+    # har 5 av 6 grannar i havet och svälter oavsett hur långt den ligger från alla andra.
+    land = {tuple(int(x) for x in r.split("|"))
+            for r in psql(f"SELECT q, r FROM map_tiles WHERE world_id='{world}' "
+                          f"AND terrain NOT IN ('coastal_sea','deep_sea')")}
+    RING = [(dq, dr) for dq in range(-2, 3) for dr in range(-2, 3)
+            if max(abs(dq), abs(dr), abs(dq + dr)) <= 2]
+
+    def land_in_catchment(t):
+        return sum(1 for dq, dr in RING if (t[0] + dq, t[1] + dr) in land)
 
     def sites_on(lm):
         """Girigt urval på EN landmassa: börja i den hex som ligger längst från
@@ -71,15 +87,32 @@ def main():
             f"AND terrain NOT IN ({bad}) ORDER BY q, r")]
         if len(tiles) < len(hosts):
             return None, tiles
-        cq = sum(t[0] for t in tiles) / len(tiles)
-        cr = sum(t[1] for t in tiles) / len(tiles)
-        picked = [max(tiles, key=lambda t: abs(t[0] - cq) + abs(t[1] - cr))]
-        while len(picked) < len(hosts):
-            nxt = max(tiles, key=lambda t: min(dist(t, c) for c in picked))
-            if nxt in picked:
-                break
-            picked.append(nxt)
-        return picked, tiles
+        # Först: bara platser vars catchment håller tillräckligt med land. Kusten är
+        # eftertraktad (fisk, hamn, sjöhandel) så havshexar är tillåtna — men en spets
+        # med 5 hav av 6 grannar är inte en stad, den är en fälla.
+        good = [t for t in tiles if land_in_catchment(t) >= args.min_land]
+        if len(good) < len(hosts):
+            return None, tiles
+        # Sedan sprids de. Girigt-från-EN-startpunkt ger olika resultat beroende på var
+        # man börjar, så pröva flera startplatser och behåll den layout vars TÄTASTE par
+        # är störst — det är luckan hela körningen vilar på.
+        def spread_from(seed):
+            picked = [seed]
+            while len(picked) < len(hosts):
+                nxt = max(good, key=lambda t: (min(dist(t, c) for c in picked),
+                                               land_in_catchment(t)))
+                if nxt in picked:
+                    break
+                picked.append(nxt)
+            return picked
+
+        def tightest_of(ps):
+            return min((dist(ps[a], ps[b]) for a in range(len(ps))
+                        for b in range(a + 1, len(ps))), default=0)
+
+        seeds = sorted(good, key=land_in_catchment, reverse=True)[:12]
+        best_here = max((spread_from(sd) for sd in seeds), key=tightest_of)
+        return best_here, tiles
 
     # Den STÖRSTA landmassan är inte alltid den rymligaste: en lång smal ö med
     # 200 hexar kan tvinga ihop fyra hostar tätare än en rund med 150. Mät i
@@ -100,7 +133,8 @@ def main():
         tightest = min(dist(picked[a], picked[b])
                        for a in range(len(picked)) for b in range(a + 1, len(picked))) \
             if len(picked) > 1 else 0
-        print(f"  landmassa {lm}: {len(tiles)} dugliga hexar → tätaste par {tightest}")
+        print(f"  landmassa {lm}: {len(tiles)} dugliga hexar → tätaste par {tightest}, "
+              f"land i catchment {[land_in_catchment(t) for t in picked]}")
         if tightest > best[2]:
             best = (lm, picked, tightest)
 
@@ -115,7 +149,7 @@ def main():
 
     print(f"\nvärld {world}  ·  vald landmassa {lm} ({len(tiles)} dugliga hexar)")
     for (name, _), site in zip(hosts, chosen):
-        print(f"  {name:<12} → ({site[0]},{site[1]})")
+        print(f"  {name:<12} → ({site[0]},{site[1]})  land i catchment {land_in_catchment(site)}/19")
     print("  avstånd:", "  ".join(f"{hosts[a][0][:3]}–{hosts[b][0][:3]} {d}" for a, b, d in pairs))
     if tight < args.min_dist:
         print(f"  ⚠ tätaste paret {tight} hexar < --min-dist {args.min_dist} "
