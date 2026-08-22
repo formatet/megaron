@@ -31,9 +31,17 @@ export async function initNotifications() {
 const MIN_W = 26;
 const GAP   = 3;
 
+// Below this many chips, dismissing one by one is not a chore and the extra
+// control is just noise on the top bar. Tunable, not a rule.
+const DISMISS_ALL_FROM = 3;
+
 function recomputeChips() {
   const strip = document.getElementById('gt-notif-strip');
   const chips = [...strip.querySelectorAll('.notif-chip:not(.dismissing)')];
+  // Toggled BEFORE the empty-strip early return below — otherwise the button
+  // would survive the dismissal of the last chip it belongs to.
+  const allBtn = document.getElementById('nc-dismiss-all');
+  if (allBtn) allBtn.style.display = chips.length >= DISMISS_ALL_FROM ? '' : 'none';
   if (!chips.length) return;
   const n         = chips.length;
   const available = strip.clientWidth - 12 - (n - 1) * GAP;
@@ -59,6 +67,17 @@ function dismissChip(chip) {
   if (chip.classList.contains('dismissing')) return;
   chip.classList.add('dismissing');
   chip.addEventListener('animationend', () => { chip.remove(); recomputeChips(); }, { once: true });
+}
+
+// Dismiss every chip currently on the strip. Timothy 2026-08-22: "'ta bort allt'
+// är mer motiverat för den andra notislistan, där de ramlar in högerifrån."
+// This is the transient stream, so clearing it destroys nothing — every chip is
+// also a row in the notifications drawer, which is the permanent archive (see
+// ui/drawers/notif.js). The strip is empty on reload regardless.
+export function dismissAllChips() {
+  const strip = document.getElementById('gt-notif-strip');
+  if (!strip) return;
+  strip.querySelectorAll('.notif-chip:not(.dismissing)').forEach(dismissChip);
 }
 
 const DOMAIN_DRAWER = {
