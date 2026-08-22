@@ -4003,7 +4003,10 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
 // projection is a representation, so its card leads to the real building
 // (megaron_lokal_varld.md). Any unit standing on the hex stays reachable via
 // the units list; marching here is a right-click order, not a panel button.
-const RURAL_LABELS = { farm: 'Farm', mine: 'Mine', lumbermill: 'Lumbermill' };
+const RURAL_LABELS = {
+  farm: 'Farm', mine: 'Mine', lumbermill: 'Lumbermill', stonequarry: 'Stone Quarry',
+  silver_mine: 'Silver Mine', olive_press: 'Olive Press', winery: 'Winery',
+};
 
 function openRuralPanel(h, tile, rural, units, foreignUnits) {
   document.getElementById('ip-name').textContent = RURAL_LABELS[rural.building_type] || rural.building_type;
