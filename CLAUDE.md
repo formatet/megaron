@@ -158,9 +158,16 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   population growth crossing a new hundred auto-places via `economy.PlaceNextGubbeOnBestFoodHex`
   (kharis/tick.go `applyDecay`). HTTP surface: `POST/DELETE/GET .../placements`
   (`api/handlers/settlement_placement.go`). Plan: `megaron_plan_fysisk_gubbemodell.md` (vault) §P4;
-  design `Temenos_varutaxonomi_sol.md` §1.1, §8. P5 (stadsvyn UI, keryx) not built — the old
-  percent-allocation endpoint (`LaborAlloc`) and web economy drawer still exist but are now inert
-  no-ops for non-cult goods (harmless dead writes to `settlement_labor`) until P5 replaces them.
+  design `Temenos_varutaxonomi_sol.md` §1.1, §8. **P1–P6 are ALL built and deployed** — including
+  **P5, the web placement surface** (`web/static/js/megaron/ui/citygrid.js`, commit `c8197f0`,
+  imported by `ui/drawers/city.js`; keryx `place`/`staff`). *(This line said "P5 not built" until
+  2026-08-22 — it had been stale since 2026-08-08.)* The old percent-allocation endpoint
+  (`LaborAlloc`) and its web drawer still exist beside it and are inert no-ops for non-cult goods
+  (harmless dead writes to `settlement_labor`) — **removing them is the open work, not building P5.**
+  ⚠️ Two known shape problems in this model, both written up, neither built:
+  **building LEVEL does not raise production** (`rate` has no level term while `cap` grows — an
+  upgraded mine yields the same total from more gubbar; `megaron_byggnadsniva_produktion.md`) and
+  **grain is the one uncapped good** (`megaron_plan_grain_cap.md`, number locked, dispatchable).
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
 - **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text
