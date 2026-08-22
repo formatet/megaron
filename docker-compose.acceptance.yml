@@ -30,11 +30,16 @@ services:
       # timme på produktion, marsch eller bygge. 60 s/tick är en tiondel av
       # produktionens 3600 s (Timothy 2026-08-06, ner från 6 s — 600× kändes
       # för snabbt för att ögonkolla soluret).
-      TICK_SECONDS: "60"
+      # Överridebar utan att röra defaulten (2026-08-22): speldygnstestet
+      # (megaron_plan_speldygnstest.md) kräver 120 s/tick och 60x60 för att två
+      # agenter ska hamna på samma landmassa och hinna mötas. En vanlig
+      # ögonkollskörning ska däremot INTE ändras — därav interpolation med de
+      # gamla värdena som default. Sätt ACC_* i skalet före `acceptance.sh up`.
+      TICK_SECONDS: "${ACC_TICK_SECONDS:-60}"
       # Liten karta: seedningen ska vara klar på sekunder, och scenariot behöver
       # inte en kontinent. 30x20 är golvet mapgen är övad på — under det vägrar
       # servern starta, vilket är rätt.
-      MAP_WIDTH: "30"
-      MAP_HEIGHT: "20"
+      MAP_WIDTH: "${ACC_MAP_WIDTH:-30}"
+      MAP_HEIGHT: "${ACC_MAP_HEIGHT:-20}"
       WORLD_NAME: Acceptance
       POLEIA_ADMIN_KEY: acceptance-admin-key

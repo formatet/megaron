@@ -115,9 +115,11 @@ navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
 ## Naming (MUST)
 
 - **Lazy-tuple suffixes:** `*_amount`, `*_rate`, `*_cap`, `*_calc_tick` — NOT `*_last_calc_at`.
-- **Silver is a good in `settlement_goods`** (mig 057) — no `silver_*`/`gold_*` columns on settlements
-  (sole exception: `sitos_fund_silver`). Prefer **silver** over "gold" for the currency everywhere;
-  "gold" is reserved for a future luxury good.
+- **Silver is a good in `settlement_goods`** (mig 057) — **no `silver_*`/`gold_*` columns on
+  settlements, no exceptions.** *(This line named `sitos_fund_silver` as a sole exception until
+  2026-08-22. That column was DROPPED by mig 106 line 59 when the Sitos fund became a granary —
+  verified absent from the live DB. Silver never passes through the granary; it holds grain+fish.)*
+  Prefer **silver** over "gold" for the currency everywhere; "gold" is reserved for a future luxury good.
 - **Army:** bare names — `infantry`, `chariot`, `ship`, `elite_infantry` (legacy dual-write columns until
   SB7/C8). **`priest` is not a unit** — cult is temple labor.
 - **Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
@@ -166,8 +168,9 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   (harmless dead writes to `settlement_labor`) — **removing them is the open work, not building P5.**
   ⚠️ Two known shape problems in this model, both written up, neither built:
   **building LEVEL does not raise production** (`rate` has no level term while `cap` grows — an
-  upgraded mine yields the same total from more gubbar; `megaron_byggnadsniva_produktion.md`) and
-  **grain is the one uncapped good** (`megaron_plan_grain_cap.md`, number locked, dispatchable).
+  upgraded mine yields the same total from more gubbar; `megaron_byggnadsniva_produktion.md`).
+  *(The second one — "grain is the one uncapped good" — was CLOSED 2026-08-22: grain now caps at
+  4/8/10/12 gubbar per plains hex by farm level, `megaron_plan_grain_cap.md`.)*
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
 - **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text
