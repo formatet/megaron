@@ -12,7 +12,7 @@ import (
 // All payloads record OUTCOMES, not intentions (e.g. actual men drawn, not a pending roll).
 const (
 	EventUnitFormed         = "UnitFormed"         // a new unit row created (forming)
-	EventUnitReinforced     = "UnitReinforced"      // men added to an existing unit
+	EventUnitReinforced     = "UnitReinforced"      // men added to an existing unit (recruit top-up or the mig 126 tick trickle)
 	EventUnitDeployed       = "UnitDeployed"        // unit transitions forming → garrison
 	EventUnitMarchOrdered   = "UnitMarchOrdered"    // unit begins moving; departure logged
 	EventUnitArrived        = "UnitArrived"         // unit reached its destination
@@ -56,7 +56,14 @@ type UnitFormedPayload struct {
 	Name string `json:"name,omitempty"`
 }
 
-// UnitReinforcedPayload is emitted when men are added to an existing forming unit.
+// UnitReinforcedPayload is emitted when men are added to an existing unit:
+// either a still-forming land unit topped up by a second Recruit call, or —
+// since mig 126 (megaron_plan_rekryteringsmodell.md) — a garrisoned cohort
+// refilled by the daily reinforce trickle (kharis/tick.go
+// applyReinforcement). PopDrawn is the men actually added THIS event; for the
+// trickle that is refill (≤ economy.ReinforceMenPerTick), drawn from the
+// origin settlement's population growth that tick, never its standing
+// population.
 type UnitReinforcedPayload struct {
 	UnitID      uuid.UUID `json:"unit_id"`
 	SettlementID uuid.UUID `json:"settlement_id"`

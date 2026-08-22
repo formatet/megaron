@@ -1572,11 +1572,11 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 }
 
 // UnitCatalogue handles GET /api/v1/units — returns the static catalogue of all
-// recruitable unit types: the resource cost for one recruit action (a 10-man
-// batch for land units, one vessel for naval — the same quantities `recruitPerManCosts`
-// scales up to deduct), the population-pool gate, training duration, and the
-// building requirement. No world/auth required — static reference data,
-// mirrors BuildingCatalogue.
+// recruitable unit types: the resource cost for one recruit action (a whole
+// 100-man cohort for land units, one vessel for naval — the same quantities
+// `recruitPerManCosts` scales up to deduct), the population-pool gate,
+// training duration, and the building requirement. No world/auth required —
+// static reference data, mirrors BuildingCatalogue.
 func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) {
 	type unitEntry struct {
 		Type             string             `json:"type"`
@@ -1601,7 +1601,9 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 	result := make([]unitEntry, 0, len(order))
 	for _, ut := range order {
 		spec := province.UnitSpecs[ut]
-		batchMen := 10
+		// Kohort-rekrytering: one land recruit call always drafts the full
+		// 100-man cohort (economy.MaxUnitSize), not a 10-man batch.
+		batchMen := economy.MaxUnitSize
 		if unit.CategoryOf(unit.Type(ut)) == unit.CategoryNaval {
 			batchMen = unit.CrewFor(unit.Type(ut))
 		}
@@ -1705,11 +1707,15 @@ func (h *ProvinceHandler) RecipeCatalogue(w http.ResponseWriter, r *http.Request
 
 // recruitPerManCosts returns the resource cost per man for a given unit type.
 // Derived from Skalbeslut (2026-06-15): per-man = old UnitSpec cost / old PopCost.
-// Batch = 10 men → total cost = per-man × 10. All siffror are tunable at reseed.
-// recruitPerManCosts delegates to province.UnitSpecs so this handler and the
-// capabilities recruit checker (keryx actions) read the exact same per-man
-// cost table — before Fas 3 they were two separately hand-maintained copies
-// that had already drifted apart (temenos_capabilities.md Fas 3).
+// A land cohort = 100 men → total cost = per-man × 100 (kohort-rekrytering,
+// megaron_plan_rekryteringsmodell.md — was a caller-chosen 10-man batch
+// before). All siffror are tunable at reseed. recruitPerManCosts delegates to
+// province.UnitSpecs so this handler and the capabilities recruit checker
+// (keryx actions) read the exact same per-man cost table — before Fas 3 they
+// were two separately hand-maintained copies that had already drifted apart
+// (temenos_capabilities.md Fas 3). The same table is also what
+// economy.RecruitCostPerMan exposes to kharis/tick.go's reinforce trickle,
+// which prices a partial refill pro-rata against these same per-man numbers.
 func recruitPerManCosts(unitType string) map[string]float64 {
 	spec, ok := province.UnitSpecs[unitType]
 	if !ok {
@@ -1718,7 +1724,7 @@ func recruitPerManCosts(unitType string) map[string]float64 {
 	return spec.Costs
 }
 
-// recruitBatchTicks returns the training ticks for one batch of 10 men.
+// recruitBatchTicks returns the training ticks for one 100-man cohort.
 func recruitBatchTicks(unitType string) int {
 	spec, ok := province.UnitSpecs[unitType]
 	if !ok {
@@ -1729,13 +1735,18 @@ func recruitBatchTicks(unitType string) int {
 
 // Recruit handles POST /worlds/:worldID/provinces/:provinceID/recruit.
 //
-// C2 semantics: soldiers are drafted from the population in batches of 10 men.
-// Request: {"unit_type": "spearman", "men": 30}  (men must be a multiple of 10, max 100).
+// Kohort-rekrytering: soldiers are drafted from the population a whole
+// 100-man cohort at a time (1 gubbe) — `men` is ignored for land requests
+// (forced to economy.MaxUnitSize above). Request: {"unit_type": "spearman"}.
 // Population is decremented immediately; resources are deducted up-front.
-// A forming unit is created (or grown) in the units table; one TrainComplete is
-// scheduled per batch-of-10. At size == 100 the unit becomes deployable (garrison).
-// Naval units (galley/war_galley/merchantman) skip the 100-forming gate: they are
-// deployable as soon as their crew is drafted (one vessel = one unit, size always 1).
+// A forming unit is created (or grown, for a legacy partial straggler) in the
+// units table; one TrainComplete is scheduled once it reaches 100. At
+// size == 100 the unit becomes deployable (garrison). A cohort later
+// decimated in battle regenerates over time via the reinforce trickle
+// (POST .../units/{id}/reinforce, kharis/tick.go applyReinforcement) instead
+// of a fresh partial recruit. Naval units (galley/war_galley/merchantman)
+// skip the 100-forming gate: they are deployable as soon as their crew is
+// drafted (one vessel = one unit, size always 1).
 //
 // DUAL-WRITE: the old integer army column is also incremented so existing
 // combat/display code continues to work until C4/C8.
@@ -1791,20 +1802,19 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	// Skepp-taxonomi (temenos_enheter.md "Flottdesign", Timothy 2026-07-02):
 	// naval units are built ONE VESSEL AT A TIME with a fixed crew per type
 	// (unit.CrewFor) — `men` never applies to them and is ignored if sent.
-	// Land units keep the existing 10–100-men batch gate. `count` (1–20) still
-	// lets a Wanax queue several vessels in one call, but the default (count
-	// omitted) and the Web UI both build exactly one ship.
+	//
+	// Kohort-rekrytering (megaron_plan_rekryteringsmodell.md, Timothy
+	// 2026-08-19): land recruitment is no longer a caller-chosen 10–100-men
+	// batch — one Recruit call always drafts a whole 100-man cohort (1 gubbe).
+	// Any `men` the client sends is ignored for land, exactly like naval
+	// already ignores it for crew — ships and men both draft a fixed size per
+	// call now, just different fixed sizes. A decimated cohort is topped back
+	// up over time by the reinforce trickle (kharis/tick.go
+	// applyReinforcement), not by recruiting partial batches.
 	uType := unit.Type(req.UnitType)
 	cat := unit.CategoryOf(uType)
 	if cat == unit.CategoryLand {
-		if req.Men <= 0 || req.Men > 100 {
-			writeError(w, http.StatusBadRequest, "men must be 1–100")
-			return
-		}
-		if req.Men%10 != 0 {
-			writeError(w, http.StatusBadRequest, "men must be a multiple of 10")
-			return
-		}
+		req.Men = economy.MaxUnitSize
 	}
 	if req.Count == 0 {
 		req.Count = 1
@@ -2216,8 +2226,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			if err := h.pool.QueryRow(r.Context(),
 				`INSERT INTO units
 				   (world_id, owner_id, type, category, size, crew, status,
-				    settlement_id, support_settlement_id, ordinal)
-				 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8)
+				    settlement_id, support_settlement_id, ordinal, origin_settlement_id)
+				 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8, $7)
 				 RETURNING id`,
 				worldID, playerID, string(uType), string(cat),
 				unitSize, crew, settlementID, ordinal,
@@ -2267,8 +2277,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				}
 				if _, err := h.pool.Exec(r.Context(),
 					`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
-					                    settlement_id, support_settlement_id, ordinal)
-					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8)`,
+					                    settlement_id, support_settlement_id, ordinal, origin_settlement_id)
+					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8, $7)`,
 					worldID, playerID, string(uType), string(cat), newSize-100, crew, settlementID, spillOrdinal,
 				); err != nil {
 					writeError(w, http.StatusInternalServerError, "could not create spill forming unit")

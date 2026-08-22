@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 )
 
@@ -30,6 +31,33 @@ const (
 // 1.86–2.13 BILLION men, i.e. saturated against the int32 ceiling. Any writer
 // that grows a unit must clamp to this.
 const MaxUnitSize = 100
+
+// ReinforceMenPerTick caps how many men a decimated land cohort's home city
+// can pour into it in a single tick, via the reinforce trickle
+// (kharis/tick.go applyReinforcement, megaron_plan_rekryteringsmodell.md).
+// The refill is diverted from the settlement's population GROWTH that same
+// tick (never the standing population — the city must never shrink from a
+// refill), so this is also throttled by min(ReinforceMenPerTick,
+// growth-this-tick, MaxUnitSize-size). Default 4/tick → a full 100-man
+// refill takes ~25 ticks (~1 IRL day at the game's usual TicksPerDay=24) for
+// a healthy, growing city; a poor one is throttled further by its own
+// growth. Tunable — no balance data yet.
+const ReinforceMenPerTick = 4
+
+// RecruitCostPerMan returns the per-man resource cost for a unit type
+// (good_key → quantity), the same table province.UnitSpecs[type].Costs
+// exposes to api/handlers/province.go's Recruit. Thin wrapper so
+// kharis/tick.go's reinforce trickle — which may not import province
+// directly per G1's dependency list for the kharis package — can reach the
+// same cost table through economy, which already imports province (see
+// siege.go's LoadTileGraph). Returns nil for an unknown type.
+func RecruitCostPerMan(unitType string) map[string]float64 {
+	spec, ok := province.UnitSpecs[unitType]
+	if !ok {
+		return nil
+	}
+	return spec.Costs
+}
 
 // MaxGenesisPopulation bounds the population a genesis silver seed will price
 // itself against. The seed is pop-scaled by design (a big capital and a small

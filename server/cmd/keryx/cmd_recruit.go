@@ -31,13 +31,13 @@ func recruitCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "recruit",
-		Short: "Recruit men into a land unit, or build a ship (--list to see all recruitable units)",
+		Short: "Recruit a 100-man land cohort, or build a ship (--list to see all recruitable units)",
 		Example: `  keryx recruit --list
-  keryx recruit --unit hoplites --men 10
-  keryx recruit --unit chariot --men 50
+  keryx recruit --unit hoplites
+  keryx recruit --unit chariot
   keryx recruit --unit ship --name Asterion
   keryx recruit --unit war_galley --count 3
-  keryx recruit --unit hoplites --men 10 --province <province-id>   # recruit in a colony`,
+  keryx recruit --unit hoplites --province <province-id>   # recruit in a colony`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -69,13 +69,13 @@ func recruitCmd() *cobra.Command {
 				return fmt.Errorf("unknown unit %q — use: spearman, elite_infantry, war_chariot, galley, war_galley, emporos (or `keryx recruit --list`)", unit)
 			}
 			isNaval := apiUnit == "galley" || apiUnit == "war_galley" || apiUnit == "merchantman"
+			// Kohort-rekrytering (megaron_plan_rekryteringsmodell.md): a land
+			// recruit call always drafts a full 100-man cohort now — the server
+			// ignores --men for land (forces it to economy.MaxUnitSize), the same
+			// way it has always ignored it for naval. --men stays as a flag only
+			// so old scripts don't fail to parse; it no longer does anything.
 			if !isNaval {
-				if men <= 0 || men%10 != 0 {
-					return fmt.Errorf("--men must be a positive multiple of 10 (e.g. 10, 20, … 100)")
-				}
-				if men > 100 {
-					return fmt.Errorf("--men cannot exceed 100 per recruit call")
-				}
+				men = 100
 			}
 			if count > 1 && !isNaval {
 				return fmt.Errorf("count gäller bara skepp; landenheter växer via --men")
@@ -151,7 +151,7 @@ func recruitCmd() *cobra.Command {
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province to recruit in (default: your capital)")
 	cmd.Flags().StringVarP(&unit, "unit", "u", "", "unit type (required unless --list)")
-	cmd.Flags().IntVarP(&men, "men", "n", 10, "men to recruit (multiple of 10, max 100; ignored for ships)")
+	cmd.Flags().IntVarP(&men, "men", "n", 100, "deprecated, no effect — land recruits always draft a full 100-man cohort now; ignored for ships")
 	cmd.Flags().IntVarP(&count, "count", "c", 1, "number of vessels to build in one call (ships only, 1–20)")
 	cmd.Flags().StringVar(&name, "name", "", "ship name (ships only; omit for a suggested name)")
 	cmd.Flags().BoolVar(&list, "list", false, "show the recruitable-unit catalogue and exit")

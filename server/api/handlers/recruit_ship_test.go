@@ -148,6 +148,7 @@ func setupRecruitShipFixture(t *testing.T) *recruitShipFixture {
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
 	r.Get("/worlds/{worldID}/units", uh.ListUnits)
 	r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
+	r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
 
 	return &recruitShipFixture{
 		pool: pool, worldID: worldID, provinceID: provinceID, settlementID: settlementID,
@@ -301,22 +302,27 @@ func TestRecruitShip_NavalBuildsOneFormingVesselWithNameAndETA(t *testing.T) {
 	}
 }
 
-// TestRecruitShip_LandRecruitUnchanged verifies land recruiting still batches
-// via men (10–100, multiple of 10) and is unaffected by the naval overhaul —
-// no name, no build_complete_at, size grows to req.Men, still 'forming'
-// until 100.
-func TestRecruitShip_LandRecruitUnchanged(t *testing.T) {
+// TestRecruit_LandAlwaysDraftsFullCohort verifies kohort-rekrytering
+// (megaron_plan_rekryteringsmodell.md, Timothy 2026-08-19): a land recruit
+// call ignores whatever `men` the caller sends and always drafts the full
+// 100-man cohort in one shot, entering `training` immediately (not staying
+// `forming` — there is no partial-batch gathering left on the happy path).
+// origin_settlement_id is set to the recruiting settlement and support_settlement_id
+// still matches it too. Was named TestRecruitShip_LandRecruitUnchanged before
+// this plan; land recruiting is very much changed now, hence the rename.
+func TestRecruit_LandAlwaysDraftsFullCohort(t *testing.T) {
 	f := setupRecruitShipFixture(t)
 	ctx := context.Background()
 
 	recruitPath := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/recruit"
+	// men:30 is sent but must be ignored — one call always drafts 100.
 	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 30})
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("Recruit(spearman, men=30) = %d %q, want 201", rec.Code, rec.Body.String())
 	}
 	unitIDs, _ := resp["unit_ids"].([]any)
 	if len(unitIDs) != 1 {
-		t.Fatalf("unit_ids = %v, want exactly 1 forming unit", unitIDs)
+		t.Fatalf("unit_ids = %v, want exactly 1 unit", unitIDs)
 	}
 	unitIDStr, _ := unitIDs[0].(string)
 	unitID, err := uuid.Parse(unitIDStr)
@@ -327,31 +333,38 @@ func TestRecruitShip_LandRecruitUnchanged(t *testing.T) {
 	var status, dbName *string
 	var size int
 	var buildCompleteAt *time.Time
+	var originID *uuid.UUID
 	if err := f.pool.QueryRow(ctx,
-		`SELECT status, size, name, build_complete_at FROM units WHERE id = $1`, unitID,
-	).Scan(&status, &size, &dbName, &buildCompleteAt); err != nil {
+		`SELECT status, size, name, build_complete_at, origin_settlement_id FROM units WHERE id = $1`, unitID,
+	).Scan(&status, &size, &dbName, &buildCompleteAt, &originID); err != nil {
 		t.Fatalf("load recruited spearman: %v", err)
 	}
-	if status == nil || *status != "forming" {
-		t.Errorf("status = %v, want forming (30 < 100)", status)
+	if size != 100 {
+		t.Errorf("size = %d, want 100 (men=30 must be ignored — every call drafts a full cohort)", size)
 	}
-	if size != 30 {
-		t.Errorf("size = %d, want 30", size)
+	if status == nil || *status != "training" {
+		t.Errorf("status = %v, want training (100/100 enters training immediately, no gathering phase left)", status)
 	}
 	if dbName != nil {
 		t.Errorf("name = %q, want NULL for land units", *dbName)
 	}
-	if buildCompleteAt != nil {
-		t.Errorf("build_complete_at = %v, want nil for land units", buildCompleteAt)
+	if buildCompleteAt == nil {
+		t.Error("build_complete_at = nil, want a ready ETA — training started at recruit time")
+	}
+	if originID == nil || *originID != f.settlementID {
+		t.Errorf("origin_settlement_id = %v, want %v (set once at recruit)", originID, f.settlementID)
 	}
 
-	// A bogus --count on a land recruit must not multiply anything (ignored).
+	// A bogus --count on a land recruit must not multiply anything (still
+	// ignored, unchanged from before) — and a second call is a fresh,
+	// independent 100-man cohort, not a top-up of the first (which is
+	// already in training, not forming).
 	rec2, resp2 := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 10, "count": 5})
 	if rec2.Code != http.StatusCreated {
 		t.Fatalf("Recruit(spearman, men=10, count=5) = %d %q, want 201", rec2.Code, rec2.Body.String())
 	}
-	if got := resp2["forming_size"]; got != float64(40) {
-		t.Errorf("forming_size after +10 men with count=5 = %v, want 40 (count ignored for land, single reinforcement)", got)
+	if got := resp2["forming_size"]; got != float64(100) {
+		t.Errorf("forming_size on second cohort = %v, want 100 (count ignored for land; a fresh full cohort)", got)
 	}
 }
 
@@ -444,83 +457,117 @@ func TestRecruit_LandLifecycle(t *testing.T) {
 		t.Errorf("build_complete_at after flip = %v, want nil (cleared)", bca)
 	}
 
-	// (2) Spill: a fresh forming unit at 80, then +40 caps it at 100 (training)
-	// and spills 20 into a new forming unit.
-	if r, _ := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 80}); r.Code != http.StatusCreated {
-		t.Fatalf("Recruit(spearman, men=80) = %d, want 201", r.Code)
-	}
-	var formingSize int
-	if err := f.pool.QueryRow(ctx,
-		`SELECT size FROM units WHERE settlement_id=$1 AND type='spearman' AND status='forming'`,
-		f.settlementID,
-	).Scan(&formingSize); err != nil {
-		t.Fatalf("load forming after 80: %v", err)
-	}
-	if formingSize != 80 {
-		t.Errorf("forming size after recruit 80 = %d, want 80", formingSize)
-	}
-
-	if r, _ := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 40}); r.Code != http.StatusCreated {
-		t.Fatalf("Recruit(spearman, men=40) = %d, want 201", r.Code)
-	}
-	var trainingCount, trainingSz int
-	if err := f.pool.QueryRow(ctx,
-		`SELECT count(*), COALESCE(max(size),0) FROM units
-		 WHERE settlement_id=$1 AND type='spearman' AND status='training'`, f.settlementID,
-	).Scan(&trainingCount, &trainingSz); err != nil {
-		t.Fatalf("load training after spill: %v", err)
-	}
-	if trainingCount != 1 || trainingSz != 100 {
-		t.Errorf("training units = %d (max size %d), want 1 at 100", trainingCount, trainingSz)
-	}
-	var spillSize int
-	if err := f.pool.QueryRow(ctx,
-		`SELECT size FROM units WHERE settlement_id=$1 AND type='spearman' AND status='forming'`,
-		f.settlementID,
-	).Scan(&spillSize); err != nil {
-		t.Fatalf("load spill forming: %v", err)
-	}
-	if spillSize != 20 {
-		t.Errorf("spill forming size = %d, want 20 (120 − 100)", spillSize)
+	// (2) Kohort-rekrytering (megaron_plan_rekryteringsmodell.md): a second
+	// recruit call of the same type at the same settlement is an INDEPENDENT
+	// fresh 100-man cohort, not accumulation into the first — the first
+	// cohort is already in `training` (not `forming`), so there is nothing
+	// left to top up on the normal happy path. (The old "recruit 80, then +40
+	// spills 20 into a new forming unit" scenario is gone: no call can ever
+	// leave a *fresh* cohort under 100 anymore. The top-up/spill CODE PATH
+	// itself is still live for a legacy pre-mig-126 forming straggler — see
+	// TestRecruit_LegacyFormingStragglerToppedUpAndSpills below.)
+	if r, resp2 := f.post(t, recruitPath, map[string]any{"unit_type": "spearman"}); r.Code != http.StatusCreated {
+		t.Fatalf("Recruit(spearman) second cohort = %d, want 201", r.Code)
+	} else {
+		unitIDs2, _ := resp2["unit_ids"].([]any)
+		secondID, err := uuid.Parse(unitIDs2[0].(string))
+		if err != nil {
+			t.Fatalf("parse second unit id: %v", err)
+		}
+		if secondID == trainingID {
+			t.Fatal("second recruit reused the first cohort's id — expected an independent cohort")
+		}
+		var status2 string
+		var size2 int
+		if err := f.pool.QueryRow(ctx,
+			`SELECT status, size FROM units WHERE id=$1`, secondID,
+		).Scan(&status2, &size2); err != nil {
+			t.Fatalf("load second cohort: %v", err)
+		}
+		if status2 != "training" || size2 != 100 {
+			t.Errorf("second cohort = (%s, %d), want (training, 100)", status2, size2)
+		}
 	}
 }
 
-// TestRecruit_FormingResponseCarriesShortfall verifies the forming-legibility
-// fix (2026-07-30): a Recruit call that leaves a land unit under
-// economy.MaxUnitSize must say so explicitly in the response — a Wanax who
-// drafts 10 men and reads "10/100 · forming" forever otherwise has no way to
-// tell a working pipeline from a hung one. The response must carry
-// training_started:false plus the exact shortfall (men_needed), and once the
-// 100th man arrives training_started flips to true and men_needed disappears
-// (nothing left to report). Naval recruits carry neither field — a vessel has
-// no size-based gate, so "men_needed" would be a lie.
-func TestRecruit_FormingResponseCarriesShortfall(t *testing.T) {
+// TestRecruit_LegacyFormingStragglerToppedUpAndSpills locks in that the
+// pre-kohort top-up + spill branch in province.go Recruit (the existingUnitID
+// path) still works correctly for a straggler 'forming' unit under 100 men —
+// the kind mig 126's backfill would have left behind from before
+// kohort-rekrytering. No live code path can create such a straggler anymore
+// (every fresh recruit already delivers exactly 100), so this seeds one
+// directly and proves the still-present branch doesn't silently rot: an
+// 80-man straggler + a 100-man cohort's worth of new men caps at 100
+// (training) and spills the remaining 80 into a fresh forming unit — the
+// exact arithmetic the old batch-model test used to cover at the API surface.
+func TestRecruit_LegacyFormingStragglerToppedUpAndSpills(t *testing.T) {
+	f := setupRecruitShipFixture(t)
+	ctx := context.Background()
+	recruitPath := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/recruit"
+
+	var strayID uuid.UUID
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+		                    settlement_id, support_settlement_id, origin_settlement_id)
+		 VALUES ($1, $2, 'spearman', 'land', 80, 0, 'forming', $3, $3, $3)
+		 RETURNING id`,
+		f.worldID, f.playerID, f.settlementID,
+	).Scan(&strayID); err != nil {
+		t.Fatalf("seed legacy straggler forming unit: %v", err)
+	}
+
+	if r, _ := f.post(t, recruitPath, map[string]any{"unit_type": "spearman"}); r.Code != http.StatusCreated {
+		t.Fatalf("Recruit(spearman) on top of straggler = %d, want 201", r.Code)
+	}
+
+	var toppedStatus string
+	var toppedSize int
+	if err := f.pool.QueryRow(ctx,
+		`SELECT status, size FROM units WHERE id=$1`, strayID,
+	).Scan(&toppedStatus, &toppedSize); err != nil {
+		t.Fatalf("load topped-up straggler: %v", err)
+	}
+	if toppedStatus != "training" || toppedSize != 100 {
+		t.Errorf("topped-up straggler = (%s, %d), want (training, 100) — 80+100 caps at 100", toppedStatus, toppedSize)
+	}
+
+	var spillSize int
+	if err := f.pool.QueryRow(ctx,
+		`SELECT size FROM units WHERE settlement_id=$1 AND type='spearman' AND status='forming' AND id != $2`,
+		f.settlementID, strayID,
+	).Scan(&spillSize); err != nil {
+		t.Fatalf("load spill forming unit: %v", err)
+	}
+	if spillSize != 80 {
+		t.Errorf("spill forming size = %d, want 80 (80+100−100)", spillSize)
+	}
+}
+
+// TestRecruit_TrainingStartedAlwaysTrueForLand verifies the forming-
+// legibility response fields' truth AFTER kohort-rekrytering
+// (megaron_plan_rekryteringsmodell.md): training_started/men_needed
+// (2026-07-30) still exist on the response struct (province.go keeps the
+// field-population code — it is exercised by the still-live legacy top-up
+// branch, see TestRecruit_LegacyFormingStragglerToppedUpAndSpills), but on
+// every reachable LAND recruit call today — fresh or on a legacy straggler —
+// req.Men is forced to economy.MaxUnitSize, so newSize is always >= 100 and
+// training_started is always true with men_needed always omitted. There is
+// no more API-reachable path that returns training_started:false; this test
+// documents that as the current truth rather than asserting the impossible
+// old "still gathering" case. Naval still carries neither field.
+func TestRecruit_TrainingStartedAlwaysTrueForLand(t *testing.T) {
 	f := setupRecruitShipFixture(t)
 	recruitPath := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/recruit"
 
-	// 10 men: still forming, 90 short of training.
-	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 10})
+	rec, resp := f.post(t, recruitPath, map[string]any{"unit_type": "spearman"})
 	if rec.Code != http.StatusCreated {
-		t.Fatalf("Recruit(spearman, men=10) = %d %q, want 201", rec.Code, rec.Body.String())
+		t.Fatalf("Recruit(spearman) = %d %q, want 201", rec.Code, rec.Body.String())
 	}
-	if got := resp["training_started"]; got != false {
-		t.Errorf("training_started = %v, want false (10 < 100)", got)
+	if got := resp["training_started"]; got != true {
+		t.Errorf("training_started = %v, want true (one call always drafts the full 100)", got)
 	}
-	if got := resp["men_needed"]; got != float64(90) {
-		t.Errorf("men_needed = %v, want 90 (100 − 10)", got)
-	}
-
-	// +90 more men: reaches exactly 100 → training starts (unchanged DB
-	// behaviour — see TestRecruit_LandLifecycle — plus the new response truth).
-	rec2, resp2 := f.post(t, recruitPath, map[string]any{"unit_type": "spearman", "men": 90})
-	if rec2.Code != http.StatusCreated {
-		t.Fatalf("Recruit(spearman, men=90) = %d %q, want 201", rec2.Code, rec2.Body.String())
-	}
-	if got := resp2["training_started"]; got != true {
-		t.Errorf("training_started = %v, want true (reached 100)", got)
-	}
-	if _, present := resp2["men_needed"]; present {
-		t.Errorf("men_needed present = %v, want omitted once training has started", resp2["men_needed"])
+	if _, present := resp["men_needed"]; present {
+		t.Errorf("men_needed present = %v, want omitted (nothing left to report)", resp["men_needed"])
 	}
 
 	// Naval carries neither field — no size-based forming gate to report on.
