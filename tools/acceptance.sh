@@ -7,7 +7,8 @@
 #
 #   tools/acceptance.sh up          bygg + starta + vänta tills healthz svarar
 #   tools/acceptance.sh reset       riv världen och seeda om (steg 6 i §9)
-#   tools/acceptance.sh player NAMN registrera + anslut, skriv ut token
+#   tools/acceptance.sh player NAMN [CONFIG]  registrera + anslut, skriv ut token
+#                                   (CONFIG: skriv även en keryx-config dit)
 #   tools/acceptance.sh world       världens id
 #   tools/acceptance.sh psql [SQL]  DB-bevis (utan SQL: interaktiv shell)
 #   tools/acceptance.sh logs [N]    serverlogg
@@ -72,7 +73,7 @@ cmd_up() {
   värld     $w
   commit    $(git -C "$ROOT" rev-parse --short HEAD) ($(git -C "$ROOT" rev-parse --abbrev-ref HEAD))
   migration $(cmd_psql "SELECT version || CASE WHEN dirty THEN ' DIRTY' ELSE '' END FROM schema_migrations" | tr -d ' ')
-  tick      60 s     karta 30x20
+  tick      $(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${PROJECT}-server-1" 2>/dev/null | sed -n 's/^TICK_SECONDS=//p') s     karta $(cmd_psql "SELECT map_width || 'x' || map_height FROM worlds ORDER BY created_at DESC LIMIT 1" | tr -d ' ')
 
   nästa:    tools/acceptance.sh player Wanax1
 EOF
@@ -81,18 +82,32 @@ EOF
 # Registrera + anslut till världen. BÅDA stegen behövs: registrering ensam ger
 # ett tomt konto utan värld, och en ny spelare ser då noll enheter — det ser ut
 # som att spelet är trasigt (funnet i ögonkollen 2026-07-26).
+# `keryx login` skickar TOMT lösenord (cmd_login.go) och kan därför inte logga
+# in en spelare som registrerats här. Andra argumentet skriver keryx-configen
+# direkt i stället — det är den enda vägen in för en spelande agent, och utan
+# den fastnar varje körning på samma fälla (funnet 2026-08-23 under
+# förberedelsen av speldygnstestet).
 cmd_player() {
-  local name="${1:?ange ett namn}" w; w=$(world_id)
+  local name="${1:?ange ett namn}" cfgpath="${2:-}" w; w=$(world_id)
   local tok
   tok=$(curl -fsS -m 10 -X POST "$API/auth/register" \
         -H 'Content-Type: application/json' \
         -d "{\"username\":\"$name\",\"email\":\"$name@acceptance.local\",\"password\":\"acceptance-pw-123\"}" \
       | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("access_token") or d["token"])')
   curl -fsS -m 20 -X POST "$API/worlds/$w/join" -H "Authorization: Bearer $tok" >/dev/null
+  if [ -n "$cfgpath" ]; then
+    mkdir -p "$(dirname "$cfgpath")"
+    local pid
+    pid=$(curl -fsS -m 10 "$API/auth/me" -H "Authorization: Bearer $tok" \
+        | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("id") or d.get("player_id") or "")' 2>/dev/null || echo "")
+    python3 -c "import json,sys; json.dump({'server':'$BASE','token':'$tok','world_id':'$w','player_id':'$pid','username':'$name'}, open('$cfgpath','w'), indent=2)"
+    chmod 600 "$cfgpath"
+  fi
   cat <<EOF
   spelare   $name
   värld     $w
   token     $tok
+  config    ${cfgpath:-—}
 
   export ACC_TOKEN=$tok ACC_WORLD=$w
   curl -s -H "Authorization: Bearer \$ACC_TOKEN" $API/worlds/\$ACC_WORLD/units | python3 -m json.tool
