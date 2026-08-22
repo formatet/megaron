@@ -12,7 +12,8 @@ import (
 
 // allocateCmd sends a PUT .../labor request to set labor allocations per good.
 // Allocations are provided as --<good> <percent> flags (0–100, share of population).
-// Σ percent must not exceed 100; the stored weight auto-scales with population.
+// Σ percent must not exceed 100. Post-P4 only the cult share is live; the other
+// goods' weights are inert (production derives from gubbe placement, not weights).
 func allocateCmd() *cobra.Command {
 	knownGoods := []string{
 		"grain", "timber", "cedar", "stone", "copper", "tin",
@@ -37,8 +38,9 @@ level (L1=15%, L2=30%, L3=45%) — with a 15% floor a temple city always keeps.
 Raising --cult toward the cap is what makes a bigger temple's kharis climb.
 
 Give a percent per good — the sum (excluding cult) must not exceed 100.
-The share auto-scales with population (pop grows, the worker count grows).
-Non-producible goods are rejected by the server.
+NOTE (post-P4): for every good EXCEPT cult these shares are currently INERT —
+production is set by placing gubbar on hexes/buildings, not by these weights.
+Only cult (devotion) is live here. Non-producible goods are rejected by the server.
 
 Grain has a break-even floor: below it, the city slowly starves. The floor is
 per catchment (it moves as tiles change), so it is not printed here — run

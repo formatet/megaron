@@ -636,33 +636,24 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		basePots, basePotsErr := economy.CatchmentBasePotential(r.Context(), h.pool, sett.ID)
 
 		// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md): the
-		// stored grain rate is already NET. Fisk-föder-befolkningen (2026-07-31,
-		// internal/economy/recompute.go, economy.FoodConsumptionSplit) means
-		// grain no longer necessarily absorbs the population's WHOLE food need —
-		// fish covers whatever grain does not reach, so "consumption = full food
-		// need" would falsely show a fish-fed city as grain-self-sufficient (a
-		// city with zero grain production but a fish surplus would otherwise
-		// read "prod D − konsum D = netto 0", implying grain fed everyone).
-		// Reconstruct grain's OWN production (same catchment/weight formula
-		// RecomputeProduction uses — grain's LaborCapacity is exempt, always
-		// 1.0, so no capacity clamp is needed) and derive grain's actual
-		// consumption as the residual against the authoritative stored net rate
-		// — prod − consum = netto stays exact by construction, with netto
-		// always the DB's own number, never re-derived. Falls back to "full
-		// food need" (the pre-fisk-slice formula) if the catchment read fails —
-		// best-effort, never blocks status on a DB hiccup.
+		// stored grain rate is already NET (gross production − the grain the
+		// population eats). Show it as prod − consum = netto, with netto ALWAYS
+		// the DB's own authoritative number.
+		//
+		// P4 (fysiska gubbe-placeringsmodellen) repealed weight-driven grain
+		// production — grain now derives from settlement_placement, not
+		// settlement_labor.weight. The old reconstruction here read that (now
+		// inert) weight, so grainWeight ≈ 0 gave grainProdRate = 0 and a NEGATIVE
+		// consumption (0 − net), rendering the unreadable "prod 0.0 − cons −N =
+		// +N" a Wanax reported (2026-08). Use grain's full food demand as
+		// consumption and derive gross production as net + demand: both components
+		// are sensible positives (or a real deficit shows red) and netto stays
+		// exact. This slightly overstates grain's share when fish covers part of
+		// the food need (a cosmetic simplification — netto is authoritative); a
+		// P4-aware placement-based gross-production reconstruction is a separate
+		// slice, not this legibility fix.
 		grainConsumRate := float64(laborPool) * economy.GrainConsumptionPerCitizenPerTick
 		grainProdRate := grainRate + grainConsumRate
-		if basePotsErr == nil {
-			var grainWeight float64
-			_ = h.pool.QueryRow(r.Context(),
-				`SELECT COALESCE((SELECT weight FROM settlement_labor
-				                  WHERE settlement_id = $1 AND good_key = 'grain'), 0)`,
-				sett.ID,
-			).Scan(&grainWeight)
-			grainProdRate = (basePots["grain"] / economy.REF_LABOR) * grainWeight * float64(laborPool)
-			grainConsumRate = grainProdRate - grainRate
-		}
 
 		// Break-even grain labor-weight for this settlement's catchment
 		// (pop-independent — see DEL C step 4): the minimum grain weight that
