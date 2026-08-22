@@ -51,7 +51,9 @@ func HexNeighbors(pos MapPosition) [6]MapPosition {
 const (
 	EyeSettlement = "settlement"
 	EyeLandUnit   = "land-unit"
-	// EyeNomadicHost is the founder-phase host: a people on the move, not a scout.
+	// EyeNomadicHost is the founder-phase host. Its live radius is the ordinary
+	// land-unit radius (2) — see LiveRadius. The kind is kept distinct because
+	// other surfaces identify a host by it, not because it sees differently.
 	EyeNomadicHost = "nomadic-host"
 	EyeShip       = "ship"
 )
@@ -103,11 +105,13 @@ func LiveRadius(eyeKind string, eyeAtWater bool, targetTerrain string) int {
 	case EyeLandUnit:
 		base = 2
 	case EyeNomadicHost:
-		// Half a land unit's reach: a people on the move, not a scout. Only the
-		// BASE is lowered — a host ON the coast still reads open sea at 4, and it
-		// reads a mountain at 1+2 like anyone else (Timothy 2026-07-15). It is
-		// short-sighted, not blind: what it cannot do is peer across ordinary ground.
-		base = 1
+		// 1 → 2, Timothy 2026-08-22: "synradie för alla landenheter är två".
+		// This reverses the 2026-07-15 decision that halved the host's reach
+		// ("a people on the move, not a scout"). The rule is now uniform — every
+		// eye on land reads ordinary ground at 2; the only departures from that
+		// are the settlement's vantage (3), the ship's blindness inland (1), the
+		// mountain landmark bonus and the open horizon at the water, all below.
+		base = 2
 	}
 	if targetTerrain == "mountain_limestone" || targetTerrain == "mountain_red" {
 		base += 2

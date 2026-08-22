@@ -17,7 +17,7 @@ func TestLiveRadius_InlandEyeReadsSeaAtItsLandVantage(t *testing.T) {
 	}{
 		{EyeSettlement, 3},
 		{EyeLandUnit, 2},
-		{EyeNomadicHost, 1},
+		{EyeNomadicHost, 2}, // 1 → 2, Timothy 2026-08-22: uniform land radius
 	}
 	for _, c := range cases {
 		for _, terrain := range []string{"coastal_sea", "deep_sea"} {
