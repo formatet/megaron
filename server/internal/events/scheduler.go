@@ -118,6 +118,16 @@ const (
 	// instance per occupied settlement, created by occupySettlement/
 	// resetOccupationDefense, same self-correcting shape as ScheduledBattleTick.
 	ScheduledOccupationCheck ScheduledEventType = "OccupationCheck"
+	// ScheduledMarchEncounterScan is the recurring sweep that detects two
+	// FIENTLIGA marching units sharing the same hex right now (KR2,
+	// megaron_plan_kr2_motet.md — "samma hex" is a GROUP BY on interpolated
+	// position, not a proximity radius). Before this, two crossing marches
+	// passed straight through each other: combat only ever triggered at
+	// ARRIVAL (ScheduledUnitArrival) or against a STATIONARY sentry
+	// (ScheduledUnitInterceptScan) — never between two columns both still
+	// mid-route. Same substrate as ScheduledUnitInterceptScan (preloaded
+	// TileGraph, avsiktslagret reaction_policy), combat/march_encounter.go.
+	ScheduledMarchEncounterScan ScheduledEventType = "MarchEncounterScan"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.
