@@ -10,9 +10,11 @@ import (
 )
 
 func TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe(t *testing.T) {
-	// A rich catchment (all plains — grain is capacity-exempt, so growth is
-	// never throttled by hex slots) with a starting population just below a
-	// hundred boundary, so ONE day's growth is virtually certain to cross it.
+	// A rich catchment (all plains, 6 hexes × cap 4 = 24 grain slots) with a
+	// starting population just below a hundred boundary, so ONE day's growth
+	// is virtually certain to cross it — the tiny headcount here (1-2 gubbar)
+	// is nowhere near grain's real per-hex cap (megaron_plan_grain_cap.md),
+	// so this test isn't exercising the cap at all, just the growth hook.
 	terrains := [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}
 	pool, worldID, settlementID := newGrowthFixture(t, terrains, 199)
 	h := newTestTickHandler(pool)

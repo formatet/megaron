@@ -145,10 +145,12 @@ func (f *placementFixture) slaughterPath() string {
 	return "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceID.String() + "/slaughter-livestock"
 }
 
-// TestPlaceGubbe_GrainHexUncappedMultiplePlacements: two gubbar can both work
-// the SAME grain hex (placementYield's grain exemption) — neither placement
+// TestPlaceGubbe_GrainHexCappedLikeOtherGoods: two gubbar can both work the
+// SAME plains grain hex (capNoBuilding=4, well above 2) — neither placement
 // is rejected for capacity, and both raise the settlement's grain rate.
-func TestPlaceGubbe_GrainHexUncappedMultiplePlacements(t *testing.T) {
+// Grain is no longer capacity-exempt (megaron_plan_grain_cap.md, Timothy
+// 2026-08-19) — it is capped like every other good, just with a generous cap.
+func TestPlaceGubbe_GrainHexCappedLikeOtherGoods(t *testing.T) {
 	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
 
 	code1, resp1 := f.do(t, http.MethodPost, f.placementsPath(),
@@ -159,7 +161,7 @@ func TestPlaceGubbe_GrainHexUncappedMultiplePlacements(t *testing.T) {
 	code2, resp2 := f.do(t, http.MethodPost, f.placementsPath(),
 		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
 	if code2 != http.StatusCreated {
-		t.Fatalf("second grain placement on the SAME hex = %d: %v (grain must not be capacity-limited)", code2, resp2)
+		t.Fatalf("second grain placement on the SAME hex = %d: %v (cap is 4, well above 2)", code2, resp2)
 	}
 	if resp1["gubbe_ordinal"] == resp2["gubbe_ordinal"] {
 		t.Errorf("two placements got the same gubbe_ordinal: %v", resp1["gubbe_ordinal"])
@@ -175,6 +177,37 @@ func TestPlaceGubbe_GrainHexUncappedMultiplePlacements(t *testing.T) {
 	}
 	if int(listResp["pool_size"].(float64)) != 3 { // 500 pop / 100 = 5 gubbar total, 2 placed
 		t.Errorf("pool_size = %v, want 3", listResp["pool_size"])
+	}
+}
+
+// TestPlaceGubbe_GrainHexRejectsOverCapacity is the plan's own required proof
+// (megaron_plan_grain_cap.md §Säkerhet, Timothy 2026-08-19: "helt omöjligt att
+// ha 32 gubbar på en hex") — a bare plains hex (no farm) caps at 4 gubbar; the
+// 5th grain placement on the SAME hex must be rejected with 409, exactly like
+// fish's existing cap behaviour (TestPlaceGubbe_FishHexRejectsOverCapacity
+// below). The fixture's pool (500 pop = 5 gubbar) is deliberately ONE more
+// than the cap so the 5th attempt is a real over-cap rejection, not just
+// running out of gubbar — the same shape of proof as Timothy's "32 gubbar" is
+// after, just at the smallest fixture size that exercises it.
+func TestPlaceGubbe_GrainHexRejectsOverCapacity(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+
+	var lastCode int
+	var lastResp map[string]any
+	placed := 0
+	for i := 0; i < 5; i++ {
+		lastCode, lastResp = f.do(t, http.MethodPost, f.placementsPath(),
+			map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
+		if lastCode != http.StatusCreated {
+			break
+		}
+		placed++
+	}
+	if placed != 4 {
+		t.Fatalf("placed %d grain gubbar on a bare plains hex before rejection, want exactly 4 (capNoBuilding)", placed)
+	}
+	if lastCode != http.StatusConflict {
+		t.Fatalf("the 5th grain placement on the same hex = %d: %v, want 409 (this hex is fully staffed)", lastCode, lastResp)
 	}
 }
 
@@ -251,12 +284,13 @@ func TestPlaceGubbe_RejectsWhenPoolIsEmpty(t *testing.T) {
 	}
 }
 
-// TestPlacementOptions_GrainUncappedFishCapped: P5's data source. Grain must
-// report cap=null (omitted) with marginal_yield = the hex's flat rate
-// (placementYield's grain exemption — no cap denominator); fish must report
-// a real numeric cap and marginal_yield = rate/cap. Both hexes' ordinals must
-// be present and match hexgrid.RingOrdinal's own numbering.
-func TestPlacementOptions_GrainUncappedFishCapped(t *testing.T) {
+// TestPlacementOptions_GrainCappedFishCapped: P5's data source. Grain must
+// now report a real numeric cap (like every other good — megaron_plan_grain_cap.md,
+// 2026-08-22) but KEEPS its own marginal_yield shape: rate directly, no cap
+// denominator (placementYield's rate × placed, not rate/cap × placed). Fish
+// reports a real numeric cap AND marginal_yield = rate/cap. Both hexes'
+// ordinals must be present and match hexgrid.RingOrdinal's own numbering.
+func TestPlacementOptions_GrainCappedFishCapped(t *testing.T) {
 	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains", {0, 1}: "coastal_sea"})
 
 	code, resp := f.do(t, http.MethodGet, f.placementOptionsPath(), nil)
@@ -299,11 +333,12 @@ func TestPlacementOptions_GrainUncappedFishCapped(t *testing.T) {
 	if grain == nil {
 		t.Fatalf("plains hex has no grain option: %v", grainHex)
 	}
-	if _, hasCap := grain["cap"]; hasCap {
-		t.Errorf("grain must have no cap (uncapped), got cap=%v", grain["cap"])
+	grainCap, hasGrainCap := grain["cap"]
+	if !hasGrainCap || grainCap.(float64) != 4 {
+		t.Errorf("grain cap = %v (hasCap=%v), want 4 (plains, no farm, capNoBuilding)", grainCap, hasGrainCap)
 	}
 	if grain["marginal_yield"] != grain["rate_per_tick"] {
-		t.Errorf("grain marginal_yield (%v) must equal rate_per_tick (%v) — no cap denominator", grain["marginal_yield"], grain["rate_per_tick"])
+		t.Errorf("grain marginal_yield (%v) must equal rate_per_tick (%v) — no cap denominator (placementYield keeps rate × placed)", grain["marginal_yield"], grain["rate_per_tick"])
 	}
 
 	fish := findGood(fishHex, "fish")

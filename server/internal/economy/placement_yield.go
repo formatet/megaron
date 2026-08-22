@@ -201,36 +201,31 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 const HexFallbackCap = 2
 
 // placementYield is the rate a target contributes for one good, given how
-// many gubbar are placed there. Every good except grain is capacity-clamped
-// (yield_per_worker = rate/cap, placed clamped to cap — a physically full
-// hex/building produces no more no matter how many more gubbar queue up).
+// many gubbar are placed there. Every good is capacity-clamped (placed is
+// never allowed above cap — a physically full hex/building produces no more
+// no matter how many more gubbar queue up).
 //
-// Grain is exempt — carried over from the pre-P4 LaborCapacity's identical
-// special case ("Grain is exempt: it is the subsistence good... capping how
-// many citizens may farm would starve cities that have no room to build.
-// Hunger is not a staffing problem"). This is not cosmetic: production_rules'
-// grain rates were calibrated against an UNCAPPED effective-workers term
-// (weight × population, historically up to thousands) — the P3 hex caps
-// (e.g. plains+farm = 6 gubbar) were never meant to gate grain too, and doing
-// so starves every city, caught live by
-// TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient going from a
-// thin-but-positive minimum grain (16.6) to hard 0 the moment grain's yield
-// used the same rate/cap division as every other good.
-// yield = rate × placed, uncapped: since REF_LABOR (100) is exactly one
-// gubbe's citizen-count (Temenos_varutaxonomi_sol.md §1.1), a single placed
-// grain-gubbe reproduces the OLD model's per-100-citizens contribution
-// exactly, and stacking more gubbar on the same grain hex is deliberately
-// allowed — the hex's PHYSICAL capacity was never the food constraint,
-// population's total food NEED is.
+// Grain used to be the one exception (carried over from the pre-P4
+// LaborCapacity's "hunger is not a staffing problem" special case) — a hard
+// per-hex cap on grain is now deliberate policy instead
+// (megaron_plan_grain_cap.md, Timothy 2026-08-19: "helt omöjligt att ha 32
+// gubbar på en hex", ingen grundnings-garanti — a city whose land can't feed
+// its host may starve). Grain KEEPS its own yield shape though: rate × placed
+// (not rate/cap × placed like every other good) — since REF_LABOR (100) is
+// exactly one gubbe's citizen-count (Temenos_varutaxonomi_sol.md §1.1), a
+// single placed grain-gubbe reproduces the OLD uncapped model's
+// per-100-citizens contribution exactly; production_rules' grain rates were
+// calibrated per-gubbe, not per-full-hex, so dividing by cap here would
+// silently halve/third every farm's output on top of the new headcount cap.
 func placementYield(good string, rate float64, cap int, placed int) float64 {
-	if good == GoodGrain {
-		return rate * float64(placed)
-	}
 	if cap <= 0 {
 		return 0
 	}
 	if placed > cap {
 		placed = cap // defensive — Place() enforces the cap at write time, never trust a stale read
+	}
+	if good == GoodGrain {
+		return rate * float64(placed)
 	}
 	return (rate / float64(cap)) * float64(placed)
 }

@@ -184,11 +184,12 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 	const tick = 200
 	const pop = 500
 	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 3, /*fishTiles*/ 0)
-	// P4: grain is exempt from the physical hex cap (placementYield, mirroring
-	// the pre-P4 LaborCapacity special case) — ONE gubbe per plains hex already
-	// yields that hex's FULL rate_per_tick, uncapped. pop=500 is an exact
-	// multiple of 100 so the population-remainder term (§1.1) is 0 and doesn't
-	// need accounting for below.
+	// P4: grain's yield shape is rate × placed, not rate/cap × placed like
+	// every other good (placementYield, megaron_plan_grain_cap.md) — so ONE
+	// gubbe per plains hex (well within the real per-hex cap of 4, no farm
+	// built) already yields that hex's FULL rate_per_tick. pop=500 is an
+	// exact multiple of 100 so the population-remainder term (§1.1) is 0 and
+	// doesn't need accounting for below.
 	for i, hex := range recomputeWaterFixtureOffsets[:3] {
 		placeHexGubbe(t, pool, settlementID, i+1, hex, "grain")
 	}

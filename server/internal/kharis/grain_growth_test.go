@@ -192,14 +192,29 @@ func newTestTickHandler(pool *pgxpool.Pool) *TickHandler {
 // invariant gate (success criterion #1): a start city with the minimal
 // guaranteed genesis catchment (exactly one plains tile — the self-sufficiency
 // invariant in api/handlers/join.go requires at least one plains/river_valley
-// catchment tile, no more), default labor weights, and start population 5000,
-// left completely neglected (no Wanax action, no additional buildings), must
-// never starve: grain must stay > 0 and population must never shrink below its
-// start value over many days. If grainPerCitizen is calibrated too high, this
-// test fails and the constant must be lowered.
+// catchment tile, no more), default labor weights, and a start population
+// that fits inside what that ONE hex's grain cap can feed, left completely
+// neglected (no Wanax action, no additional buildings), must never starve:
+// grain must stay > 0 and population must never shrink below its start value
+// over many days.
+//
+// Population UPDATED 2026-08-22 (megaron_plan_grain_cap.md, Timothy
+// 2026-08-19): grain is no longer capacity-exempt — a hard per-hex cap now
+// applies to it like every other good (plainsCapacityRules: capNoBuilding=4,
+// capWithBuilding=6, +farm's own WorkplaceSlots — 8 gubbar/hex with the
+// genesis starter farm at L1). This invariant's ORIGINAL philosophy ("a
+// neglected city can NEVER starve, at ANY population") is explicitly
+// superseded — a Wanax who founds a huge host on a single-plains-tile site
+// now CAN starve it (bad land placement is a real, intended consequence).
+// What survives is the narrower, still-true claim: a NORMAL population for
+// this minimal catchment (i.e. one that the capped hex can actually feed)
+// stays self-sufficient forever. Start pop 1500 (15 gubbar, well under the
+// ~8-gubbe cap this hex's farm allows) proves exactly that — pop 5000 (50
+// gubbar) now legitimately starves the same fixture and is exercised
+// separately in TestApplyDecay_GrainFundedGrowth_OverCapPopulationStarves.
 func TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient(t *testing.T) {
 	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
-	pool, worldID, settlementID := newGrowthFixture(t, terrains, 5000)
+	pool, worldID, settlementID := newGrowthFixture(t, terrains, 1500)
 	h := newTestTickHandler(pool)
 
 	startPop, startGrain := snapshot(t, pool, settlementID)
@@ -228,6 +243,42 @@ func TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient(t *testing.T) {
 
 	if prevPop <= startPop {
 		t.Errorf("expected some net growth over %d days for a grain-positive city, pop stayed at %d", days, prevPop)
+	}
+}
+
+// TestApplyDecay_GrainFundedGrowth_OverCapPopulationStarves is the flip side
+// of MinimalCitySelfSufficient above, proving the new (2026-08-19) policy
+// explicitly rather than leaving it as an absence of a test: a host too big
+// for its land IS allowed to starve. Same minimal one-plains-tile catchment,
+// but start pop 5000 (50 gubbar) — far more than the ~8 gubbar the single
+// hex's farm can ever put to work on grain — must hit zero grain and start
+// losing population. This is bad-land-placement risk, not a bug.
+func TestApplyDecay_GrainFundedGrowth_OverCapPopulationStarves(t *testing.T) {
+	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
+	pool, worldID, settlementID := newGrowthFixture(t, terrains, 5000)
+	h := newTestTickHandler(pool)
+
+	sawZeroGrain := false
+	sawPopLoss := false
+	prevPop, _ := snapshot(t, pool, settlementID)
+	const days = 5
+	for day := 1; day <= days; day++ {
+		advanceOneDay(t, h, pool, worldID)
+		pop, grain := snapshot(t, pool, settlementID)
+		t.Logf("day %d: pop=%d grain=%.2f", day, pop, grain)
+		if grain <= 0 {
+			sawZeroGrain = true
+		}
+		if pop < prevPop {
+			sawPopLoss = true
+		}
+		prevPop = pop
+	}
+	if !sawZeroGrain {
+		t.Error("expected a 50-gubbe host on a single cap-limited grain hex to hit zero grain within 5 days, it never did")
+	}
+	if !sawPopLoss {
+		t.Error("expected population to shrink once grain hit zero (starvation attrition), it never did")
 	}
 }
 
@@ -313,8 +364,14 @@ func TestApplyDecay_GrainFundedGrowth_CapUnpinnedAndConsistent(t *testing.T) {
 	// where grainPerCitizen (300) is calibrated to bind: growth is throttled
 	// below the desired amount, so the remainder visibly sits under the 1000
 	// cap every day instead of re-saturating.
+	//
+	// Population 1500, not 5000 (megaron_plan_grain_cap.md, 2026-08-22 — same
+	// root cause and same fix as MinimalCitySelfSufficient above: pop 5000 now
+	// exceeds what this single capped hex can feed at all, which would make
+	// this test measure starvation, not the cap-unpinning/consistency
+	// guarantee it exists to prove).
 	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
-	pool, worldID, settlementID := newGrowthFixture(t, terrains, 5000)
+	pool, worldID, settlementID := newGrowthFixture(t, terrains, 1500)
 	h := newTestTickHandler(pool)
 
 	sawBelowCap := false

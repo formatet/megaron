@@ -188,10 +188,11 @@ func TestSiege_LandChokepointDeniesHexBehindIt_AndProductionDrops(t *testing.T) 
 	seedTile(t, worldID, 1, 1, "mountain_limestone")
 	seedTile(t, worldID, 2, -1, "mountain_limestone")
 
-	// One gubbe farming (2,0) — grain is placementYield's uncapped good, so
-	// its whole contribution shows up directly in the settled rate once
-	// nearjord's flat 50/tick already covers the population's own demand
-	// (pop 100 × 0.5/tick = 50 demand — see GrainConsumptionPerTick).
+	// One gubbe farming (2,0) — well within hills' grain cap (1 without a
+	// farm, megaron_plan_grain_cap.md), so its whole contribution shows up
+	// directly in the settled rate once nearjord's flat 50/tick already
+	// covers the population's own demand (pop 100 × 0.5/tick = 50 demand —
+	// see GrainConsumptionPerTick).
 	placeGubbe(t, settlementID, 1, 2, 0, GoodGrain)
 
 	// ── No enemy: full access, hex behind the corridor contributes. ────────
