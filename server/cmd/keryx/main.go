@@ -107,6 +107,7 @@ func main() {
 		unitCmd(),
 		armyAliasCmd(),
 		marchAliasCmd(),
+		reinforceAliasCmd(),
 		foundingCmd(),
 		wantsCmd(),
 		riteCmd(),

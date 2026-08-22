@@ -31,3 +31,11 @@ func marchAliasCmd() *cobra.Command {
 	c.Short = "Order a unit to march to a hex (alias for `unit march`)"
 	return c
 }
+
+// reinforceAliasCmd is `reinforce` — an alias for `unit reinforce`.
+// unitReinforceCmd's Use is already "reinforce", so only the Short changes.
+func reinforceAliasCmd() *cobra.Command {
+	c := unitReinforceCmd()
+	c.Short = "Refill a thinned land cohort (alias for `unit reinforce`)"
+	return c
+}

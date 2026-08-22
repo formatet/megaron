@@ -25,6 +25,7 @@ func unitCmd() *cobra.Command {
 		unitRecallCmd(),
 		unitRedirectCmd(),
 		unitStanceCmd(),
+		unitReinforceCmd(),
 		unitStandingOrdersCmd(),
 		unitLoadCmd(),
 		unitUnloadCmd(),
@@ -153,6 +154,8 @@ type unitRow struct {
 	CarrierShipName *string    `json:"carrier_ship_name"`
 	MarchIntent     *string    `json:"march_intent"`
 	ColonyName      *string    `json:"colony_name"`
+	Reinforcing     bool       `json:"reinforcing"`
+	CanReinforce    bool       `json:"can_reinforce"`
 }
 
 func formatSize(u unitRow) string {
@@ -187,6 +190,14 @@ func formatSize(u unitRow) string {
 	}
 	if u.Category == "naval" {
 		return fmt.Sprintf("1 vessel (crew %d)", u.Crew)
+	}
+	// A thinned cohort is only legible if the row says how to fix it — the
+	// server already computes can_reinforce (home city, garrison, size<100).
+	if u.Reinforcing {
+		return fmt.Sprintf("%d men (refilling)", u.Size)
+	}
+	if u.CanReinforce {
+		return fmt.Sprintf("%d men (keryx reinforce --unit %s)", u.Size, u.ID)
 	}
 	return fmt.Sprintf("%d men", u.Size)
 }
@@ -766,6 +777,54 @@ func parseQR(s string) (int, int, error) {
 		return 0, 0, fmt.Errorf("invalid --target %q: r is not an integer", s)
 	}
 	return q, r, nil
+}
+
+// ---- unit reinforce ----------------------------------------------------------
+
+// unitReinforceCmd flags a decimated land cohort for refill from its home
+// city's growth (manskaps-underhåll, mig 126). The server does not add men
+// here — it flips units.reinforcing and the tick worker trickles them in, so
+// the message says "over the coming days", not "done".
+//
+// The endpoint has existed since 2026-08-22 with no CLI verb at all: a
+// keryx-only Wanax could recruit a cohort, lose half of it, and had no way to
+// refill it. Found while checking the playtest briefing against the real CLI
+// (megaron_plan_speldygnstest.md).
+func unitReinforceCmd() *cobra.Command {
+	var unitID string
+	cmd := &cobra.Command{
+		Use:   "reinforce",
+		Short: "Refill a thinned land cohort from its home city's growth",
+		Long: `Mark a decimated cohort as awaiting reinforcement. No men arrive at once:
+the city trickles them in out of its own growth over the following days, and it
+never shrinks to do so.
+
+The cohort must be garrisoned in the city that raised it — march it home first.`,
+		Example: "  keryx unit reinforce --unit <id>",
+		Args:    rejectPositionalArgs("unit"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/reinforce", cfg.WorldID, unitID)
+			data, err := c.post(path, map[string]any{})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp struct {
+				Size int `json:"size"`
+			}
+			_ = json.Unmarshal(data, &resp)
+			fmt.Printf("Cohort %s (%d/100) is refilling from its home city's growth over the coming days.\n",
+				unitID, resp.Size)
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit id (required)")
+	_ = cmd.MarkFlagRequired("unit")
+	return cmd
 }
 
 // ---- unit stance -------------------------------------------------------------
