@@ -140,6 +140,92 @@ func TestTimberBottleneckWarning(t *testing.T) {
 	}
 }
 
+// TestArmyUpkeepWarning reproduces the "silver warning cries wolf" gap
+// (megaron_plan_cli_sanning §A; soak 2026-07-24 + 2026-08-23, two independent
+// agents): the old code chose the ⚠ line on the SIGN of the net rate alone,
+// so "silver 30.5k, ~29027 tick of runway" and "silver 200, same runway
+// exhausted in a handful of ticks" printed the identical warning. Talos
+// grounded a colony over "stop the silver bleed" while holding 30 474 silver.
+// The fix grinds on runway (stock / -net vs netUpkeepWarningRunwayTicks), not
+// on sign — these are exactly the plan's acceptance pair (30k silver silent,
+// 200 silver warns) plus the symmetric grain case and the stock=0 edge the
+// old runway() silently dropped.
+func TestArmyUpkeepWarning(t *testing.T) {
+	const weakNegRate = -7.0 // soak 2026-07-24: a probe disbanded units over exactly this rate
+
+	tests := []struct {
+		name                    string
+		netG, netS              float64
+		grainStock, silverStock float64
+		wantWarn                bool
+		wantContains            []string
+	}{
+		{
+			name: "plan's acceptance pair: 30k silver, weak negative net — silent",
+			netG: 100, netS: weakNegRate, grainStock: 5000, silverStock: 30000,
+			wantWarn: false,
+		},
+		{
+			name: "plan's acceptance pair: 200 silver, same weak negative net — warns",
+			netG: 100, netS: weakNegRate, grainStock: 5000, silverStock: 200,
+			wantWarn:     true,
+			wantContains: []string{"silver täcker inte", "desertera", "maten räcker"},
+		},
+		{
+			name: "grain graded symmetrically: 30k grain, weak negative net — silent",
+			netG: weakNegRate, netS: 100, grainStock: 30000, silverStock: 5000,
+			wantWarn: false,
+		},
+		{
+			name: "grain graded symmetrically: 200 grain, same weak negative net — warns",
+			netG: weakNegRate, netS: 100, grainStock: 200, silverStock: 5000,
+			wantWarn:     true,
+			wantContains: []string{"grain täcker inte", "svälta", "silvret räcker"},
+		},
+		{
+			name: "both critical — combined warning, not two separate lies",
+			netG: weakNegRate, netS: weakNegRate, grainStock: 200, silverStock: 200,
+			wantWarn:     true,
+			wantContains: []string{"varken grain eller silver"},
+		},
+		{
+			name: "positive net never warns regardless of stock",
+			netG: 10, netS: 10, grainStock: 0, silverStock: 0,
+			wantWarn: false,
+		},
+		{
+			name: "already empty and falling is critical, not silently dropped (old runway() bug)",
+			netG: 100, netS: weakNegRate, grainStock: 5000, silverStock: 0,
+			wantWarn:     true,
+			wantContains: []string{"lager 0 räcker ~0 tick"},
+		},
+		{
+			name: "just above the threshold stays silent",
+			netG: 100, netS: -1, grainStock: 5000, silverStock: netUpkeepWarningRunwayTicks + 1,
+			wantWarn: false,
+		},
+		{
+			name: "just below the threshold warns",
+			netG: 100, netS: -1, grainStock: 5000, silverStock: netUpkeepWarningRunwayTicks - 1,
+			wantWarn: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := armyUpkeepWarning(tt.netG, tt.netS, tt.grainStock, tt.silverStock)
+			if hit := got != ""; hit != tt.wantWarn {
+				t.Fatalf("armyUpkeepWarning(...) = %q, wantWarn=%v", got, tt.wantWarn)
+			}
+			for _, want := range tt.wantContains {
+				if !strings.Contains(got, want) {
+					t.Errorf("armyUpkeepWarning(...) = %q, want it to contain %q", got, want)
+				}
+			}
+		})
+	}
+}
+
 func strp(s string) *string { return &s }
 
 // TestCohortLines reproduces the A16 gap: `status` printed one aggregate

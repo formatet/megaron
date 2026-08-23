@@ -91,6 +91,55 @@ func buildQueueETA(iso string) string {
 	return iso
 }
 
+// netUpkeepWarningRunwayTicks names how many ticks of stock buffer counts as
+// urgent enough to interrupt a Wanax with a ⚠. Below it, the buffer cannot
+// outlast a full messenger round-trip's worth of corrective action (raise
+// labor, recruit less, trade) before running dry — above it, a negative net
+// is normal balance, not an emergency. One tick is one game day ("Ticket ÄR
+// dygnet", canon 2026-08-06) regardless of a world's wall-clock tick pace, so
+// this is a game-day figure, not a wall-clock one.
+const netUpkeepWarningRunwayTicks = 30
+
+// armyUpkeepWarning grinds the ⚠ line under the post-upkeep Netto row on
+// STOCK RUNWAY, not on the sign of the net rate alone (megaron_plan_cli_sanning
+// §A; soak 2026-07-24 + 2026-08-23 confirmed independently by two agents):
+// `status` said, in the same breath, "⚠ silver täcker inte arméns sold" and
+// "lager 30.5k räcker ~29027 tick" (~120 world-years) — Talos motivated a
+// grounding with "stop the silver bleed" while holding 30 474 silver. A
+// negative net with decades of buffer is an upplysning, not a varning. Grain
+// and silver are graded symmetrically. Pure — unit-testable without a server.
+func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
+	// runway reports how many ticks the stock covers at this net rate (0 when
+	// already empty — the most urgent case, not a silently-dropped one) and
+	// whether that counts as critical. net >= 0 is never critical regardless
+	// of stock — a rate that isn't shrinking the buffer is not an emergency.
+	runway := func(net, stock float64) (note string, critical bool) {
+		if net >= 0 {
+			return "", false
+		}
+		ticks := 0.0
+		if stock > 0 {
+			ticks = stock / -net
+		}
+		note = fmt.Sprintf(" — lager %s räcker ~%.0f tick i denna takt", resource(stock), ticks)
+		return note, ticks < netUpkeepWarningRunwayTicks
+	}
+	gNote, gCritical := runway(netG, grainStock)
+	sNote, sCritical := runway(netS, silverStock)
+	// Name WHICH half is short, and the matching consequence — a city with
+	// healthy grain and a critical silver runway should never read as a
+	// famine (soak 2026-07-22, two playtesters in a row).
+	switch {
+	case gCritical && sCritical:
+		return "  ⚠ varken grain eller silver täcker arméns upkeep — enheter svälter/deserterar när lagren tar slut" + gNote + sNote + " (se `keryx recruit --list`)"
+	case gCritical:
+		return "  ⚠ grain täcker inte arméns upkeep — enheter kan svälta" + gNote + " (silvret räcker; se `keryx recruit --list`)"
+	case sCritical:
+		return "  ⚠ silver täcker inte arméns sold — enheter kan desertera" + sNote + " (maten räcker; se `keryx recruit --list`)"
+	}
+	return ""
+}
+
 // multiCityHint (legibility fix, 2026-07-24 — three separate soak rounds):
 // `status` shows exactly ONE settlement — the capital by default, or whichever
 // `--province <id>` names — and that scope was invisible. It was repeatedly
@@ -370,36 +419,15 @@ func statusCmd() *cobra.Command {
 				// `recruit --list` shows the same math per unit type.
 				if netG, ok := sett["net_grain_per_tick_after_upkeep"].(float64); ok {
 					netS, _ := sett["net_silver_per_tick_after_upkeep"].(float64)
-					warn := ""
-					// Name WHICH half is short, and the matching consequence: the old
-					// string fired on either and always said "svälta/desertera", so a
-					// city with 118k grain and a silver deficit read as a famine
-					// (soak 2026-07-22, two playtesters in a row).
-					// Runway: a negative net only bites when the stock runs out. A probe
-					// disbanded 100 spearmen over a −7/tick silver warning while holding
-					// 41k silver (~5000 ticks of runway) — soak 2026-07-24. Name how long
-					// the buffer covers it so the warning isn't read as imminent.
-					runway := func(key string, netPerDay float64) string {
-						if netPerDay >= 0 {
-							return ""
-						}
-						stock := 0.0
-						if rd, ok := res[key].(map[string]any); ok {
-							stock, _ = rd["amount"].(float64)
-						}
-						if stock <= 0 {
-							return ""
-						}
-						return fmt.Sprintf(" — lager %s räcker ~%.0f tick i denna takt", resource(stock), stock/-netPerDay)
+					grainStock := 0.0
+					if rd, ok := res["grain"].(map[string]any); ok {
+						grainStock, _ = rd["amount"].(float64)
 					}
-					switch {
-					case netG < 0 && netS < 0:
-						warn = "  ⚠ varken grain eller silver täcker arméns upkeep — enheter svälter/deserterar när lagren tar slut" + runway("grain", netG) + runway("silver", netS) + " (se `keryx recruit --list`)"
-					case netG < 0:
-						warn = "  ⚠ grain täcker inte arméns upkeep — enheter kan svälta" + runway("grain", netG) + " (silvret räcker; se `keryx recruit --list`)"
-					case netS < 0:
-						warn = "  ⚠ silver täcker inte arméns sold — enheter kan desertera" + runway("silver", netS) + " (maten räcker; se `keryx recruit --list`)"
+					silverStock := 0.0
+					if rd, ok := res["silver"].(map[string]any); ok {
+						silverStock, _ = rd["amount"].(float64)
 					}
+					warn := armyUpkeepWarning(netG, netS, grainStock, silverStock)
 					fmt.Printf("  %-8s %+.1f grain/tick, %+.1f silver/tick (efter arméns upkeep)%s\n",
 						"Netto", netG, netS, warn)
 				}
