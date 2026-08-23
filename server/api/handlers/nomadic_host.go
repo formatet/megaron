@@ -12,11 +12,15 @@ import (
 )
 
 // The founder phase's opening figures (temenos_nomadic_host_plan.md §Grundregler).
-// The two spearmen cohorts sit ON TOP of these civilians — 4 200 people leave the
-// starting line, and only the 4 000 become the metropolis's population at founding
-// (decision Timothy 2026-07-15). Soldiers are separate from population throughout.
+// The two spearmen cohorts sit ON TOP of these civilians — 1 200 people leave the
+// starting line, and only the 1 000 become the metropolis's population at founding
+// (decision Timothy 2026-08-23, replacing the original 4 000 set Timothy 2026-07-15:
+// 4 000 = 40 gubbar, and no catchment — 18 workable hexes, grain caps 4/8/10/12 per
+// hex by farm level — can absorb 40 while the city still eats for all 4 000; 1 000 =
+// 10 gubbar fits under the caps with room to spare, so a fresh metropolis can
+// actually feed itself). Soldiers are separate from population throughout.
 const (
-	nomadicHostPopulation   = 4000
+	nomadicHostPopulation   = 1000
 	nomadicHostSpearmen     = 2
 	nomadicHostSpearmenSize = 100 // men per cohort
 
@@ -31,9 +35,13 @@ const (
 	// note foresaw ("balans/silverupkeep-halveras doubles it to 240"). Net:
 	// 2 spearmen × 1 silver × 240 ticks = 480, the calibrated opening, restored.
 	//
-	// It is affordable only because the host itself eats nothing. Were the 4 000
+	// It is affordable only because the host itself eats nothing. Were the 1 000
 	// civilians fed from this store it would drown the opening's scarcity outright.
 	// (Original decision Timothy 2026-07-15.)
+	//
+	// Left UNCHANGED by the 2026-08-23 population cut (4 000 → 1 000): this is the
+	// escort's own sold, paid for the two spearmen cohorts only — it does not
+	// scale with civilian headcount and nothing above derives it from population.
 	nomadicHostRationTicks = 240
 
 	// nomadicHostDowryGrain is the grain the horde carries into the metropolis
@@ -46,6 +54,13 @@ const (
 	// RATE (grainRate = 0), not the AMOUNT. This constant is now frozen at the
 	// pre-recalibration value and changes only when someone deliberately changes
 	// the dowry itself.
+	//
+	// Left UNCHANGED by the 2026-08-23 population cut (4 000 → 1 000): a fixed
+	// dowry against a quarter of the old population is relatively four times more
+	// generous per capita, which is a real balance effect — but it's a SEPARATE
+	// spak from the population number, and Timothy has not decided on it.
+	// Touching both in one slice would make the population change impossible to
+	// measure on its own. Flagged, not silently absorbed.
 	nomadicHostDowryGrain = 1200
 )
 
@@ -64,7 +79,7 @@ func seedNomadicHost(
 	worldID, playerID uuid.UUID,
 	q, r int,
 ) (uuid.UUID, error) {
-	// The host token: one movable marker. Its 4 000 people live in
+	// The host token: one movable marker. Its 1 000 people live in
 	// founder_phase.population — units.size is 0–100 for land and means men.
 	var hostID uuid.UUID
 	if err := tx.QueryRow(ctx,
@@ -153,7 +168,7 @@ func seedNomadicHost(
 
 	// UnitFormed for each unit, on its own stream: these units have no settlement
 	// to be an aggregate of yet. PopDrawn is 0 — the host's people were never in a
-	// city's population to draw from (the cohorts ride on top of the 4 000).
+	// city's population to draw from (the cohorts ride on top of the 1 000).
 	formed := append([]uuid.UUID{hostID}, spearIDs...)
 	types := append([]unit.Type{unit.TypeNomadicHost},
 		make([]unit.Type, nomadicHostSpearmen)...)

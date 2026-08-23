@@ -32,7 +32,7 @@ const (
 	TypeMerchantman   Type = "merchantman" // crew 10
 
 	// TypeNomadicHost is the founder-phase token: the player's people before they
-	// have a capital. It is a single movable marker (size 1) — the 4 000 people it
+	// have a capital. It is a single movable marker (size 1) — the 1 000 people it
 	// represents live in founder_phase.population, never in units.size. It dissolves
 	// permanently when the metropolis is founded.
 	TypeNomadicHost Type = "nomadic_host"

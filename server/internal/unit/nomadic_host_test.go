@@ -4,7 +4,7 @@ import "testing"
 
 // The host is defined as much by what it cannot do as by what it is: it carries a
 // people, it cannot fight, and it may found the one metropolis. These gates are the
-// only thing standing between "founder phase" and "an unkillable 4 000-man army".
+// only thing standing between "founder phase" and "an unkillable 1 000-man army".
 func TestNomadicHost_CannotFight(t *testing.T) {
 	if CombatCapable(TypeNomadicHost) {
 		t.Fatal("the nomadic host must never be combat-capable")
@@ -44,7 +44,7 @@ func TestNomadicHost_MovesAtHalfSpeed(t *testing.T) {
 	}
 }
 
-// The host is one movable marker; its 4 000 people live in founder_phase.population.
+// The host is one movable marker; its 1 000 people live in founder_phase.population.
 // If it ever routes through the naval branch it could board a ship — which the
 // design forbids outright.
 func TestNomadicHost_IsALandUnit(t *testing.T) {

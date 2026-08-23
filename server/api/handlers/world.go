@@ -544,7 +544,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// Founding grain balance. Consumption at the founding population, per tick,
 	// re-using the exported calibration constants (never duplicated here).
 	// ?pop= and ?seed= let the founder phase reuse this exact forecast for the
-	// metropolis (4 000 people, the host's carried grain as stock) instead of
+	// metropolis (1 000 people, the host's carried grain as stock) instead of
 	// growing its own endpoint — temenos_nomadic_host_fas4_plan.md 4.3. Defaults
 	// are the colony's, so every existing caller is untouched.
 	forecastPop := economy.ColonyBaseFoundingPopulation

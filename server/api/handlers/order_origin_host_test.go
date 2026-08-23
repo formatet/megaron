@@ -91,7 +91,7 @@ func TestMarchCourier_OriginIsMarchingHostsCurrentPos(t *testing.T) {
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO founder_phase (world_id, owner_id, host_unit_id, population,
 		                            grain_amount, grain_rate, silver_amount, silver_rate)
-		 VALUES ($1, $2, $3, 4000, 100, 0, 100, 0)`,
+		 VALUES ($1, $2, $3, 1000, 100, 0, 100, 0)`,
 		worldID, playerID, hostID,
 	); err != nil {
 		t.Fatalf("create founder_phase: %v", err)

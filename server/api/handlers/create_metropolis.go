@@ -14,7 +14,7 @@ import (
 
 // metropolisParams describes the capital to raise. Population is a parameter rather
 // than a constant because the two callers disagree: an ordinary join lands 5 000
-// people (W1), while a Nomadic Host founds with the 4 000 civilians it carried
+// people (W1), while a Nomadic Host founds with the 1 000 civilians it carried
 // (temenos_nomadic_host_plan.md). Everything downstream — the Sitos seeds, grain
 // consumption, labor — derives from it.
 type metropolisParams struct {
