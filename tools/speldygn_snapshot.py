@@ -138,6 +138,20 @@ SELECT 'trade', 'routes_' || CASE WHEN resolved THEN 'resolved' ELSE 'in_transit
 
 FLOW_HEADER = ["wall", "tick", "source", "key", "count_since_last"]
 
+# Dödmansgrepp (2026-08-23, se session_2026_08_23_speldygnsrigg.md): en körning
+# där ingen spelar ser IDENTISK ut på ytan som en stabil värld — tick, kharis
+# och lojalitet fortsätter av sig själva. Bara händelser ett spelardrag
+# UTLÖSER kan skilja dem åt. Listan nedan är en TILLÅTELSELISTA över ren
+# automatik (körs varje tick utan att någon Wanax rör något) — allt annat
+# räknas som spelardrivet, även en händelsetyp som inte fanns när listan
+# skrevs. Källa: `select event_type, count(*) from events group by 1` mot en
+# avslutad körning, korsad mot var i koden respektive typ emitteras.
+AUTOMATIC_EVENT_TYPES = {
+    "WorldTick", "SilverAudit", "UpkeepSettled", "KharisMaintained",
+    "KharisOffering", "KharisMissedMaintenance", "LoyaltyChanged",
+    "DivinePunishment", "UnitAttrition", "StarvationDamage",
+}
+
 # Servern bokför redan silvret själv, en rad per tick (SilverAudit). Spak 1
 # frågar "var biter deflationen" — den frågan besvaras av den här serien, inte
 # av en stadsvis ögonblicksbild: liquid + fund + escrow är hela stocken, och
@@ -175,12 +189,36 @@ def snapshot(out_dir, state):
     since = state.get("tick", -1)
     secs = max(int((time.time() - state.get("wall", time.time())) + 5), 5)
     flow = psql(FLOW_SQL.format(since=since, secs=secs))
+    flow_rows = [r for r in flow if len(r) > 1]
+
+    # Dödmansgrepp: summan av spelardrivna händelser sedan förra snapshotet.
+    # Samma delta-fönster som resten av flow.csv (since=förra tickens tick) —
+    # ingen egen mekanism, bara en filtrering av raderna vi redan hämtat.
+    player_events = sum(
+        int(r[2]) for r in flow_rows
+        if r[0] == "event" and r[1] not in AUTOMATIC_EVENT_TYPES
+    )
+    flow_rows.append(["player_signal", "player_events_since_last", str(player_events)])
+
     append(os.path.join(out_dir, "flow.csv"), FLOW_HEADER,
-           [[wall, tick] + r for r in flow if len(r) > 1])
+           [[wall, tick] + r for r in flow_rows])
 
     state["tick"], state["wall"] = tick, time.time()
     print(f"  {wall}  tick {tick}  ·  {len(rows)} bosättningar, "
-          f"{len(founders)} vandrande, {len(flow)} flödesrader")
+          f"{len(founders)} vandrande, {len(flow_rows)} flödesrader, "
+          f"{player_events} spelarhändelser")
+
+    if player_events == 0:
+        state["dead_streak"] = state.get("dead_streak", 0) + 1
+        if state["dead_streak"] >= 2:
+            print(f"  ⚠⚠ NOLL spelarhändelser i {state['dead_streak']} snapshots i rad "
+                  f"(tick {tick}) — något är troligen TRASIGT, inte lugnt. Kolla att "
+                  f"agenterna/kadensen faktiskt lever.")
+        else:
+            print(f"  ⚠ Noll spelarhändelser sedan förra snapshotet (tick {tick}).")
+    else:
+        state["dead_streak"] = 0
+
     return tick
 
 
