@@ -42,6 +42,46 @@ echo "  kontroll — alla hostar på samma landmassa:"
 
 echo
 "$ROOT/tools/speldygn_snapshot.py"
+
+# ⛔ Grind mot tyst förgrundning (funnet 2026-08-23: ~/.config/poleia/*.json delas
+# med en HELT ANNAN, stående process — isladan/playtest's autonoma agentflotta
+# (agent-watchdog.timer, var 10:e minut). Den upptäcker "agenter" genom att bara
+# lista filer i samma config-katalog och startar om varje döda process den hittar
+# — och tre av fyra spelarnamn här (Ariadne, Daedalos, Sarpedon) råkade redan
+# finnas i flottans register. Config-filen den här sviten just skrev pekade
+# plötsligt om flottans agent mot ACCEPTANSVÄRLDEN, och flottans founder-fas-kod
+# grundar direkt utan att fråga LLM:en — tre spelare stod med färdiga städer
+# innan en enda avsedd agent hade spelat sitt första drag. Utan den här kontrollen
+# syns det inte förrän någon råkar läsa founders.csv timmar senare.
+echo
+echo "  kontroll — ingen spelare redan grundad (annan process kan ha kapat configen):"
+in_list=""
+for n in "${NAMES[@]}"; do
+  esc="${n//\'/\'\'}"
+  in_list+="${in_list:+,}'$esc'"
+done
+grounded="$("$ROOT/tools/acceptance.sh" psql \
+  "WITH w AS (SELECT id FROM worlds ORDER BY created_at DESC LIMIT 1)
+   SELECT pl.username FROM players pl, w
+   WHERE pl.username IN ($in_list)
+   AND EXISTS (SELECT 1 FROM settlements s WHERE s.owner_id = pl.id AND s.world_id = w.id)
+   ORDER BY 1;")"
+if [ -n "$grounded" ]; then
+  echo "  ✗ redan grundad: $(echo "$grounded" | tr '\n' ' ')" >&2
+  cat >&2 <<ERR
+
+  ✗✗✗ AVBRUTET — minst en spelare hade redan en stad innan agenterna fick spela.
+  Körningen mäter INTE grundningsvalet om det här händer; se megaron_todo.md /
+  session 2026-08-23 för hur det upptäcktes. Vanligaste orsaken: en annan process
+  som delar ~/.config/poleia/*.json (t.ex. isladan/playtest's agent-watchdog)
+  körde en egen grundning mot den här configen mellan registrering och nu.
+  Riv och kör om (tools/acceptance.sh reset), och kontrollera att inget annat
+  läser/skriver samma config-filer under tiden.
+ERR
+  exit 1
+fi
+echo "  ✓ alla ogrundade — ingen kapning"
+
 cat <<TXT
 
   igång. Två saker kvar att starta för hand:
