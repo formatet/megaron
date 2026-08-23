@@ -32,7 +32,7 @@ and immediate. To move a gubbe from a hex into a building:
   keryx place grain 5 -1
   keryx staff olive_press +1`,
 		Example: `  keryx place grain 5
-  keryx place livestock 5 --province <prov-id>
+  keryx place --province <prov-id> livestock 5
   keryx place grain 5 +2
   keryx place grain 5 -1`,
 		Args: cobra.RangeArgs(2, 3),
