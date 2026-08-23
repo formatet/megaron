@@ -163,8 +163,29 @@ func statusCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "status",
 		Short: "Show your province status (defaults to your capital; --province inspects a colony)",
+		// --json documentation (megaron_plan_cli_sanning §B): reproduced against
+		// the live acceptance world 2026-08-24, the raw payload always HAD
+		// grain/silver — nested, not at the top level a script naturally
+		// guesses. An agent transcript (speldygnstest, friktion_ariadne_sarpedon.md)
+		// read `settlement.grain`/`settlement.silver` (no such keys exist) and
+		// reported them as "null" — that's a .get()-on-a-missing-key default,
+		// not a server bug. This is a documentation gap, not a data gap; name
+		// the real path so the next parser doesn't repeat the guess.
+		Long: `--json returns the server's raw province payload unmodified. Per-good stock,
+rate and cap live NESTED under settlement.resources, not at the settlement
+top level:
+
+  settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)
+  settlement.resources.<good>.rate     net per tick (production − consumption)
+  settlement.resources.<good>.cap      storage cap
+
+There is no top-level settlement.grain / settlement.silver / settlement.storage_cap
+field — looking one up there returns nothing, not a real null from the server.
+Some derived figures DO live at the settlement top level: grain_prod_rate,
+grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep.`,
 		Example: `  keryx status
-  keryx status --province <province-id>   # inspect a colony`,
+  keryx status --province <province-id>   # inspect a colony
+  keryx status --json | jq '.settlement.resources.silver.amount'`,
 		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
