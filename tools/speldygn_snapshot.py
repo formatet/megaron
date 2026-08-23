@@ -81,8 +81,12 @@ SELECT w.current_tick, pl.username, s.name, s.population, s.loyalty,
        COALESCE((SELECT max_unpaid FROM army a WHERE a.settlement_id=s.id),0),
        COALESCE((SELECT refilling FROM army a WHERE a.settlement_id=s.id),0),
        round((pwr.kharis_amount + pwr.kharis_rate * (w.current_tick - pwr.kharis_calc_tick))::numeric, 2),
-       round(pwr.kharis_cap::numeric, 1), pwr.cult_level,
-       COALESCE((SELECT max(level) FROM temples t WHERE t.settlement_id=s.id),0),
+       round(pwr.kharis_cap::numeric, 1),
+       pwr.cult_level,  -- OBS: bär humörsträngen ur deriveMood(), ej en kultnivå
+       -- Tempelnivån bor i `buildings` (kolumn building_type), inte i `temples`:
+       -- den tabellen finns kvar från mig 001 men skrivs aldrig (0 rader).
+       COALESCE((SELECT max(b.level) FROM buildings b
+                  WHERE b.settlement_id=s.id AND b.building_type='temple'),0),
        (SELECT count(*) FROM known_settlements ks WHERE ks.player_id=pl.id),
        (SELECT count(DISTINCT settlement_id) FROM market_snapshots ms WHERE ms.player_id=pl.id)
 FROM settlements s
@@ -98,7 +102,7 @@ SETTLEMENT_HEADER = [
     "silver", "grain", "grain_rate", "fish", "bronze", "goods_at_cap",
     "granary_stored", "gubbar_placed", "buildings",
     "cohorts", "men", "max_unpaid_periods", "refilling",
-    "kharis", "kharis_cap", "cult_level", "temple_level",
+    "kharis", "kharis_cap", "kharis_mood", "temple_level",
     "known_settlements", "contacted_markets",
 ]
 
