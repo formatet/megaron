@@ -45,7 +45,7 @@ type Chronicler struct {
 	mdFile *os.File
 
 	settlementNames  map[uuid.UUID]string
-	settlementOwners map[uuid.UUID]string // settlement_id → player username
+	settlementOwners map[uuid.UUID]string // settlement_id → player wanax_name (fallback username)
 	playerNames      map[uuid.UUID]string
 }
 

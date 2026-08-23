@@ -366,3 +366,49 @@ func TestMarchSighting_BystanderGetsInfoLevelAndOwnerGetsNothing(t *testing.T) {
 		t.Errorf("owner_id = %v, want %v", got, f.attacker)
 	}
 }
+
+// T5 — RED BEFORE the fix (megaron_plan_namnlager.md). The payload's "owner"
+// field must carry the Wanax's PUBLIC name (wanax_name), never the login
+// (username). Before the fix, loadMarches' query read only
+// COALESCE(pl.username, empty-string-fallback) — the lone holdout among every other player-name
+// read in the server (foreign_units.go, reports.go, god.go, world.go,
+// kingdom.go, battle.go, chronicle.go all already read
+// COALESCE(wanax_name, username)). A defender told "Mikharios is heading your
+// way" could not `message --to Mikharios` back — the CLI's own "'X' is a Wanax
+// name, try --to Y" hint matches only wanax_name, so username never triggers
+// it and the player fell through to "no settlement named X in view".
+func TestMarchSighting_PayloadCarriesWanaxNameNotUsername(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	t0 := time.Date(2026, 8, 4, 12, 0, 0, 0, time.UTC)
+	f := newMarchSightFixture(t, pool, t0)
+
+	// The attacker owns the marching unit, so it is the attacker's name that
+	// ends up as payload["owner"]. Give the attacker a wanax_name that differs
+	// from its (randomly generated) username — exactly the case migration 111
+	// backfilled for every existing player and province.UniqueWanaxName assigns
+	// for every new one. Suffixed with a fresh uuid: wanax_name is UNIQUE and
+	// poleia_test accumulates players across runs, so a fixed literal collides.
+	attackerWanaxName := "Mikharios-" + uuid.New().String()
+	if _, err := pool.Exec(ctx,
+		`UPDATE players SET wanax_name = $1 WHERE id = $2`,
+		attackerWanaxName, f.attacker,
+	); err != nil {
+		t.Fatalf("set attacker wanax_name: %v", err)
+	}
+
+	// Same clock position as T1: hour 28, inside Pylos's live tier.
+	clk := clock.NewTestClock(t0.Add(28 * time.Hour))
+	h, rec := newSightingHandler(pool, clk)
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+
+	if len(rec.calls) != 1 {
+		t.Fatalf("NotifyPlayer calls = %d, want 1", len(rec.calls))
+	}
+	if got := rec.calls[0].payload["owner"]; got != attackerWanaxName {
+		t.Errorf("payload[owner] = %v, want %q (wanax_name) — the defender must be able to "+
+			"`message --to` this exact string back", got, attackerWanaxName)
+	}
+}
