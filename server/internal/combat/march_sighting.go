@@ -121,7 +121,7 @@ func (h *MarchSightingHandler) Handle(ctx context.Context, e events.ScheduledEve
 // occupies right now, exactly as /foreign-units does.
 func (h *MarchSightingHandler) loadMarches(ctx context.Context, worldID uuid.UUID, now time.Time) ([]sightedMarch, error) {
 	rows, err := h.pool.Query(ctx,
-		`SELECT u.id, u.owner_id, COALESCE(pl.username,''), u.type, u.category, u.size,
+		`SELECT u.id, u.owner_id, COALESCE(pl.wanax_name, pl.username, ''), u.type, u.category, u.size,
 		        COALESCE(u.stance,''), u.q, u.r, u.target_q, u.target_r,
 		        u.departs_at, u.arrives_at, u.arrive_tick
 		 FROM units u

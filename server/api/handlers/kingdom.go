@@ -426,7 +426,12 @@ func (h *KingdomHandler) Council(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type member struct {
-		PlayerID       uuid.UUID `json:"player_id"`
+		PlayerID uuid.UUID `json:"player_id"`
+		// Username holds COALESCE(wanax_name, username) — a Wanax's public name,
+		// not the login — but the JSON key is still "username" (megaron_plan_namnlager.md
+		// §Steg 4). Left as-is deliberately: Kingdoms is post-MVP/gated and a key
+		// rename is an API break Timothy has not signed off on. Tracked in
+		// megaron_todo.md §SENARE — do not "fix" this without asking first.
 		Username       string    `json:"username"`
 		Role           string    `json:"role"`
 		JoinedAt       time.Time `json:"joined_at"`

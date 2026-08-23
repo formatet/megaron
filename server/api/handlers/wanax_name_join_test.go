@@ -15,8 +15,13 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -195,5 +200,100 @@ func TestForeignUnits_ShowsWanaxNameNotLogin(t *testing.T) {
 	}
 	if units[0].Owner != wantName {
 		t.Errorf("foreign unit owner: got %q, want %q (the Wanax name, not the login)", units[0].Owner, wantName)
+	}
+}
+
+// TestUsernameCoalesceSweep_NoBareUsernameReads is the anti-regression sweep
+// megaron_plan_namnlager.md §Steg 6 asks for — cheaper than the bug it
+// guards, and worth more than the one-line fix it sits beside
+// (march_sighting.go:124, fixed by this same slice). It is a pure source
+// scan, not a DB test: it needs no DATABASE_URL and runs on every `go test`.
+//
+// The rule: walk every non-test .go file under server/, and for every raw
+// (backtick) string literal that is a SQL SELECT touching the players
+// table and reading "username", fail unless "wanax_name" also appears in
+// that same literal. That is exactly the shape of the bug this plan closes
+// — loadMarches read COALESCE(pl.username, empty-string-fallback) alone, the lone
+// holdout among every other player-name read in the server. Simulated
+// against that pre-fix line, this sweep reports exactly one violation;
+// against the fixed tree, zero.
+//
+// Excluded on purpose: internal/auth (token/session code needs the login,
+// never the public name), cmd/keryx (CLI login/display, not a game-world
+// read surface) and api/handlers/auth.go (register/login handlers) —
+// megaron_plan_namnlager.md §Kodläget scopes the invariant to player-name
+// READS on spelarvända ytor, not the login mechanism itself.
+func TestUsernameCoalesceSweep_NoBareUsernameReads(t *testing.T) {
+	root, err := filepath.Abs("../..") // server/api/handlers -> server
+	if err != nil {
+		t.Fatalf("resolve server root: %v", err)
+	}
+
+	const (
+		excludedAuthDir  = "/internal/auth/"
+		excludedKeryxDir = "/cmd/keryx/"
+		excludedAuthFile = "api/handlers/auth.go"
+	)
+
+	litRe := regexp.MustCompile(`(?s)` + "`" + `([^` + "`" + `]*)` + "`")
+	usernameRe := regexp.MustCompile(`\busername\b`)
+
+	var violations []string
+	walkErr := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			if d.Name() == ".git" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+			return nil
+		}
+		rel, relErr := filepath.Rel(root, path)
+		if relErr != nil {
+			return relErr
+		}
+		relSlash := filepath.ToSlash(rel)
+		if relSlash == excludedAuthFile {
+			return nil
+		}
+		slashPath := "/" + relSlash
+		if strings.Contains(slashPath, excludedAuthDir) || strings.Contains(slashPath, excludedKeryxDir) {
+			return nil
+		}
+
+		data, readErr := os.ReadFile(path)
+		if readErr != nil {
+			return readErr
+		}
+		text := string(data)
+		for _, m := range litRe.FindAllStringSubmatchIndex(text, -1) {
+			lit := text[m[2]:m[3]]
+			low := strings.ToLower(lit)
+			if !strings.Contains(low, "select") || !strings.Contains(low, "players") {
+				continue
+			}
+			if !usernameRe.MatchString(low) {
+				continue
+			}
+			if strings.Contains(low, "wanax_name") {
+				continue
+			}
+			line := strings.Count(text[:m[0]], "\n") + 1
+			violations = append(violations,
+				relSlash+":"+strconv.Itoa(line)+": "+strings.TrimSpace(lit))
+		}
+		return nil
+	})
+	if walkErr != nil {
+		t.Fatalf("walk server tree: %v", walkErr)
+	}
+	if len(violations) > 0 {
+		t.Fatalf("query reads players.username without wanax_name — megaron_plan_namnlager.md invariant "+
+			"(\"wanax_name är det enda namn som når en spelarvänd yta\"):\n%s",
+			strings.Join(violations, "\n"))
 	}
 }
