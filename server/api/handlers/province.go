@@ -2324,6 +2324,15 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		"complete_at":  lastCompleteAt,
 		"forming_size": finalSize,
 		"names":        unitNames,
+		// Hål 3 (megaron_plan_tysta_forluster.md): totalMen/population/popAfter
+		// were already computed above (the insufficient-population check at
+		// ~line 1898 uses them) — a successful recruit just never told the
+		// client. pop_drawn is the actual head-count the settlement lost,
+		// population_before/after let the client confirm the delta itself
+		// (same "verify against resulting state" pattern place/allocate use).
+		"pop_drawn":         totalMen,
+		"population_before": population,
+		"population_after":  popAfter,
 	}
 	// Land only: tell the client explicitly whether this unit is still
 	// gathering men or has just entered training, and — if still forming —

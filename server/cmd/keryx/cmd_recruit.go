@@ -104,8 +104,11 @@ func recruitCmd() *cobra.Command {
 			}
 			if isNaval {
 				var resp struct {
-					Names      []string  `json:"names"`
-					CompleteAt time.Time `json:"complete_at"`
+					Names            []string  `json:"names"`
+					CompleteAt       time.Time `json:"complete_at"`
+					PopDrawn         int       `json:"pop_drawn"`
+					PopulationBefore int       `json:"population_before"`
+					PopulationAfter  int       `json:"population_after"`
 				}
 				_ = json.Unmarshal(data, &resp)
 				if count > 1 {
@@ -119,11 +122,19 @@ func recruitCmd() *cobra.Command {
 					fmt.Printf("Ready %s — not deployable until then (`keryx unit list` shows the ETA).\n",
 						resp.CompleteAt.Local().Format("15:04 Jan 2"))
 				}
+				// Hål 3 (megaron_plan_tysta_forluster.md): the crew drawn from the
+				// settlement's population used to vanish — a new ship appeared,
+				// nothing said the city shrank to man it.
+				fmt.Printf("Drafted %d citizens as crew — population %d → %d.\n",
+					resp.PopDrawn, resp.PopulationBefore, resp.PopulationAfter)
 			} else {
 				var resp struct {
-					FormingSize     int  `json:"forming_size"`
-					TrainingStarted bool `json:"training_started"`
-					MenNeeded       int  `json:"men_needed"`
+					FormingSize      int  `json:"forming_size"`
+					TrainingStarted  bool `json:"training_started"`
+					MenNeeded        int  `json:"men_needed"`
+					PopDrawn         int  `json:"pop_drawn"`
+					PopulationBefore int  `json:"population_before"`
+					PopulationAfter  int  `json:"population_after"`
 				}
 				_ = json.Unmarshal(data, &resp)
 				fmt.Printf("Recruiting %d men as %s\n", men, unit)
@@ -134,6 +145,10 @@ func recruitCmd() *cobra.Command {
 						"Recruit more of the same type into this settlement to fill it.\n",
 						resp.FormingSize, resp.MenNeeded)
 				}
+				// Hål 3 (megaron_plan_tysta_forluster.md): same population-cost
+				// visibility as the naval branch above.
+				fmt.Printf("Drafted %d citizens — population %d → %d.\n",
+					resp.PopDrawn, resp.PopulationBefore, resp.PopulationAfter)
 			}
 			// Upkeep warning (P6, soak 2026-07-18): present on either path when the
 			// server projects this unit will push the settlement into grain/silver
