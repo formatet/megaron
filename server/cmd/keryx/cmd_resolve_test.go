@@ -82,3 +82,89 @@ func TestResolveProvince_NoMatch(t *testing.T) {
 		}
 	})
 }
+
+// TestResolveUnitID exercises Rad H (megaron_plan_cli_sanning.md): every
+// dispatch confirmation in cmd_unit.go echoes an 8-char unitID[:8], and
+// pasting that fragment back into --unit used to fail with an opaque
+// "invalid unit ID" (HTTP 400) instead of resolving like `place`/`staff`'s
+// name-or-id flags already do. resolveUnitID closes that gap by treating
+// anything shorter than a full UUID as a prefix against GET .../units.
+func TestResolveUnitID(t *testing.T) {
+	const fullID = "8afb6a29-2c62-4c63-82db-893ddb14a479"
+	const otherID = "8afb6a29-dddd-dddd-dddd-dddddddddddd" // shares the same 8-char prefix
+
+	unitsJSON := `{"units":[
+		{"id":"` + fullID + `","type":"spearman","display_name":"1st Spearmen of Gournia"},
+		{"id":"9c845d8b-7b78-437b-8cf4-fedeef26a6c7","type":"galley","display_name":"White Dolphin"}
+	]}`
+	ambiguousJSON := `{"units":[
+		{"id":"` + fullID + `","type":"spearman","display_name":"1st Spearmen of Gournia"},
+		{"id":"` + otherID + `","type":"spearman","display_name":"2nd Spearmen of Gournia"}
+	]}`
+
+	newServer := func(t *testing.T, body string) *Client {
+		t.Helper()
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !strings.HasSuffix(r.URL.Path, "/units") {
+				t.Fatalf("unexpected request path %q", r.URL.Path)
+			}
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(body))
+		}))
+		t.Cleanup(ts.Close)
+		return newClient(&Config{Server: ts.URL})
+	}
+
+	t.Run("exact UUID is trusted without a network call", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			t.Fatalf("resolveUnitID made an HTTP call for an exact UUID: %s", r.URL.Path)
+		}))
+		defer ts.Close()
+		c := newClient(&Config{Server: ts.URL})
+
+		got, err := resolveUnitID(c, "world-1", fullID)
+		if err != nil || got != fullID {
+			t.Fatalf("got (%q, %v), want (%q, nil)", got, err, fullID)
+		}
+	})
+
+	t.Run("unique prefix resolves, matching unit list's own truncated echo", func(t *testing.T) {
+		c := newServer(t, unitsJSON)
+		got, err := resolveUnitID(c, "world-1", "8afb6a29") // the exact unitID[:8] form dispatch confirmations print
+		if err != nil || got != fullID {
+			t.Fatalf("got (%q, %v), want (%q, nil)", got, err, fullID)
+		}
+	})
+
+	t.Run("prefix match is case-insensitive", func(t *testing.T) {
+		c := newServer(t, unitsJSON)
+		got, err := resolveUnitID(c, "world-1", "8AFB6A29")
+		if err != nil || got != fullID {
+			t.Fatalf("got (%q, %v), want (%q, nil)", got, err, fullID)
+		}
+	})
+
+	t.Run("no match names the input and points at unit list", func(t *testing.T) {
+		c := newServer(t, unitsJSON)
+		_, err := resolveUnitID(c, "world-1", "zzzzzzzz")
+		if err == nil {
+			t.Fatal("expected error for unmatched prefix, got nil")
+		}
+		if !strings.Contains(err.Error(), "zzzzzzzz") || !strings.Contains(err.Error(), "keryx unit list") {
+			t.Errorf("expected error naming the input and pointing at `keryx unit list`, got: %v", err)
+		}
+	})
+
+	t.Run("ambiguous prefix lists every candidate instead of guessing", func(t *testing.T) {
+		c := newServer(t, ambiguousJSON)
+		_, err := resolveUnitID(c, "world-1", "8afb6a29")
+		if err == nil {
+			t.Fatal("expected error for ambiguous prefix, got nil")
+		}
+		for _, want := range []string{fullID, otherID} {
+			if !strings.Contains(err.Error(), want) {
+				t.Errorf("expected both candidates listed, missing %q in: %v", want, err)
+			}
+		}
+	})
+}

@@ -88,3 +88,57 @@ func resolveProvince(c *Client, worldID, nameOrID string) (string, error) {
 	}
 	return "", fmt.Errorf("no visible province named %q", nameOrID)
 }
+
+// resolveUnitID resolves a --unit/--ship value to a full unit UUID. An
+// exact UUID-shaped string is trusted outright — the server checks
+// existence and ownership itself, same as resolveSettlement above.
+// Anything shorter is treated as a prefix and matched case-insensitively
+// against the player's own units (GET .../units — the same list `keryx
+// unit list` reads): zero matches names what to run for the full id, more
+// than one lists every candidate instead of guessing at which one was meant.
+//
+// Rad H, megaron_plan_cli_sanning.md: every dispatch confirmation in
+// cmd_unit.go echoes an 8-char unitID[:8] for brevity ("Unit 8afb6a29
+// marching to..."), with no marker that it's only a fragment — pasting that
+// straight back into --unit used to fail with an opaque "invalid unit ID"
+// (HTTP 400). Applied to every --unit/--ship flag in cmd_unit.go: they are
+// the identical defect (one flag pattern, one root), not eight different
+// ones needing eight different fixes.
+func resolveUnitID(c *Client, worldID, idOrPrefix string) (string, error) {
+	if len(idOrPrefix) == 36 && strings.Count(idOrPrefix, "-") == 4 {
+		return idOrPrefix, nil
+	}
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/units", worldID))
+	if err != nil {
+		return "", err
+	}
+	var resp struct {
+		Units []unitRow `json:"units"`
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return "", err
+	}
+	needle := strings.ToLower(idOrPrefix)
+	var matches []unitRow
+	for _, u := range resp.Units {
+		if strings.HasPrefix(strings.ToLower(u.ID), needle) {
+			matches = append(matches, u)
+		}
+	}
+	switch len(matches) {
+	case 0:
+		return "", fmt.Errorf("no unit of yours starts with %q — run `keryx unit list` for the full id", idOrPrefix)
+	case 1:
+		return matches[0].ID, nil
+	default:
+		lines := make([]string, 0, len(matches))
+		for _, u := range matches {
+			name := u.DisplayName
+			if name == "" {
+				name = u.Type
+			}
+			lines = append(lines, fmt.Sprintf("  %s  %s", u.ID, name))
+		}
+		return "", fmt.Errorf("%q matches %d of your units — be more specific:\n%s", idOrPrefix, len(matches), strings.Join(lines, "\n"))
+	}
+}

@@ -59,6 +59,11 @@ its own when the patrol timer runs out.`,
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			data, err := c.post(path, map[string]any{"q": q, "r": r, "intent": "sentry"})
 			if err != nil {
@@ -336,6 +341,11 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedUnitID, uerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if uerr != nil {
+				return uerr
+			}
+			unitID = resolvedUnitID
 			resolvedQ, resolvedR, given, terr := resolveTargetHex(cmd, target, targetQ, targetR)
 			if terr != nil {
 				return terr
@@ -697,6 +707,11 @@ course until the runner physically catches up with it, then turns for home
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
@@ -746,6 +761,11 @@ the order's Runner physically catches up with it, then turns onto the new course
 				return fmt.Errorf("--target q,r or --q/--r are required")
 			}
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
 			data, err := c.post(path, map[string]any{"target_q": newQ, "target_r": newR})
 			if err != nil {
@@ -847,6 +867,11 @@ The cohort must be garrisoned in the city that raised it — march it home first
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/reinforce", cfg.WorldID, unitID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
@@ -884,6 +909,11 @@ func unitStanceCmd() *cobra.Command {
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/stance", cfg.WorldID, unitID)
 			body := map[string]any{"stance": stance}
 			if reaction != "" {
@@ -952,6 +982,11 @@ func unitStandingOrdersCmd() *cobra.Command {
 				return fmt.Errorf("set at least one of --retreat-at-loss or --hold-to-last-man")
 			}
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/standing-orders", cfg.WorldID, unitID)
 			body := map[string]any{}
 			if cmd.Flags().Changed("retreat-at-loss") {
@@ -1008,6 +1043,16 @@ func unitLoadCmd() *cobra.Command {
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedShip, serr := resolveUnitID(c, cfg.WorldID, shipID)
+			if serr != nil {
+				return serr
+			}
+			shipID = resolvedShip
+			resolvedLand, lerr := resolveUnitID(c, cfg.WorldID, landUnitID)
+			if lerr != nil {
+				return lerr
+			}
+			landUnitID = resolvedLand
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/load", cfg.WorldID, shipID)
 			data, err := c.post(path, map[string]any{"unit_id": landUnitID})
 			if err != nil {
@@ -1041,6 +1086,11 @@ func unitUnloadCmd() *cobra.Command {
 		Args:    rejectPositionalArgs("ship"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedShip, serr := resolveUnitID(c, cfg.WorldID, shipID)
+			if serr != nil {
+				return serr
+			}
+			shipID = resolvedShip
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/unload", cfg.WorldID, shipID)
 			data, err := c.post(path, nil)
 			if err != nil {
