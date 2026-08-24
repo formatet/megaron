@@ -345,7 +345,7 @@ func giftCmd() *cobra.Command {
 				return err
 			}
 			fmt.Printf("Gift dispatched to %s: silver %.0f, grain %.0f · arrives %s\n",
-				destName, resp.SilverSent, resp.GrainSent, resp.ArrivesAt)
+				destName, resp.SilverSent, resp.GrainSent, arrivalETA(resp.ArrivesAt))
 			if resp.LoyaltyDelta > 0 {
 				fmt.Printf("Loyalty +%d on arrival.\n", resp.LoyaltyDelta)
 			} else {

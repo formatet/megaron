@@ -63,7 +63,7 @@ func messageCmd() *cobra.Command {
 				var resp map[string]any
 				json.Unmarshal(data, &resp)
 				arrivesAt, _ := resp["arrives_at"].(string)
-				fmt.Printf("Messenger dispatched from the host to %s · arrives %s\n", resolvedName, arrivesAt)
+				fmt.Printf("Messenger dispatched from the host to %s · arrives %s\n", resolvedName, arrivalETA(arrivesAt))
 				return nil
 			}
 
@@ -88,7 +88,7 @@ func messageCmd() *cobra.Command {
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
 			arrivesAt, _ := resp["arrives_at"].(string)
-			fmt.Printf("Message dispatched to %s · arrives %s\n", destName, arrivesAt)
+			fmt.Printf("Message dispatched to %s · arrives %s\n", destName, arrivalETA(arrivesAt))
 			return nil
 		},
 	}
@@ -187,10 +187,10 @@ func tradeOfferCmd() *cobra.Command {
 			arrivesAt, _ := resp["arrives_at"].(string)
 			if buySet {
 				fmt.Printf("Trade offer dispatched to %s (want %.0f %s, offer %.0f silver) · arrives %s\n",
-					resolvedName, wantQty, wantGood, offerSilver, arrivesAt)
+					resolvedName, wantQty, wantGood, offerSilver, arrivalETA(arrivesAt))
 			} else {
 				fmt.Printf("Sell offer dispatched to %s (selling %.0f %s for %.0f silver) · arrives %s\n",
-					resolvedName, offerQty, offerGood, wantSilver, arrivesAt)
+					resolvedName, offerQty, offerGood, wantSilver, arrivalETA(arrivesAt))
 			}
 			return nil
 		},

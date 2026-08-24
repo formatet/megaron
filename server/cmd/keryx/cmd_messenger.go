@@ -35,7 +35,8 @@ func replyCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Printf("Messenger returning · arrives %v\n", resp["returns_at"])
+			returnsAt, _ := resp["returns_at"].(string)
+			fmt.Printf("Messenger returning · arrives %s\n", arrivalETA(returnsAt))
 			return nil
 		},
 	}
@@ -68,8 +69,9 @@ func tradeAcceptCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Printf("Trade accepted · %.0f %s incoming · silver paid: %.0f · goods arrive %v\n",
-				resp["quantity"], resp["good_key"], resp["silver_paid"], resp["goods_arrives_at"])
+			goodsAt, _ := resp["goods_arrives_at"].(string)
+			fmt.Printf("Trade accepted · %.0f %s incoming · silver paid: %.0f · goods arrive %s\n",
+				resp["quantity"], resp["good_key"], resp["silver_paid"], arrivalETA(goodsAt))
 			return nil
 		},
 	}

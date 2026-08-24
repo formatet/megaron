@@ -63,3 +63,16 @@ func countdown(t time.Time) string {
 	}
 	return fmt.Sprintf("%dd %dh", int(remaining.Hours()/24), int(remaining.Hours())%24)
 }
+
+// arrivalETA renders a server RFC3339 arrival timestamp as a legible relative
+// countdown ("in 3h 20m") for a dispatch confirmation. Megaron measures time in
+// game-days, so a raw UTC-nanosecond timestamp is noise to a player — this is the
+// same convention the inbox/cargo/sightings views already use. Falls back to the
+// raw string if it can't be parsed, so an upstream format change degrades to the
+// old behaviour rather than dropping the ETA entirely.
+func arrivalETA(iso string) string {
+	if t, err := time.Parse(time.RFC3339, iso); err == nil {
+		return "in " + countdown(t)
+	}
+	return iso
+}

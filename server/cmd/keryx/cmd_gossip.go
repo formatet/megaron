@@ -134,9 +134,9 @@ func messengerCmd() *cobra.Command {
 			arrivesAt, _ := resp["arrives_at"].(string)
 			if wantGood != "" {
 				fmt.Printf("Trade offer dispatched to %s (want %.0f %s, offer %.0f silver) · arrives %s\n",
-					destSettleName, wantQty, wantGood, offerSilver, arrivesAt)
+					destSettleName, wantQty, wantGood, offerSilver, arrivalETA(arrivesAt))
 			} else {
-				fmt.Printf("Messenger dispatched to %s · arrives %s\n", destSettleName, arrivesAt)
+				fmt.Printf("Messenger dispatched to %s · arrives %s\n", destSettleName, arrivalETA(arrivesAt))
 			}
 			return nil
 		},
