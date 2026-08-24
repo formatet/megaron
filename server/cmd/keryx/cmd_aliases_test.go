@@ -28,6 +28,19 @@ func TestAliasCommandsRegistered(t *testing.T) {
 		}
 	})
 
+	t.Run("recall aliases unit recall with identical flags", func(t *testing.T) {
+		recall := recallAliasCmd()
+		if recall.Use != "recall" {
+			t.Fatalf("recallAliasCmd().Use = %q, want %q", recall.Use, "recall")
+		}
+		if recall.RunE == nil {
+			t.Fatal("recallAliasCmd() has no RunE")
+		}
+		if recall.Flags().Lookup("unit") == nil {
+			t.Error("recallAliasCmd() missing --unit flag (must match `unit recall`)")
+		}
+	})
+
 	t.Run("canonical unit subcommands untouched", func(t *testing.T) {
 		u := unitCmd()
 		names := map[string]bool{}

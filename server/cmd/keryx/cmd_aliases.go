@@ -39,3 +39,17 @@ func reinforceAliasCmd() *cobra.Command {
 	c.Short = "Refill a thinned land cohort (alias for `unit reinforce`)"
 	return c
 }
+
+// recallAliasCmd is `recall` — an alias for `unit recall`. unitRecallCmd's
+// Use is already "recall", so only the Short changes (megaron_plan_cli_sanning
+// §J). `keryx actions military` lists "recall" as a bare verb name in the
+// same flat list as "march" and "disband" — both real top-level commands —
+// with no textual claim either way about which verbs are top-level; a Wanax
+// (or agent) who has just used `keryx march`/`keryx army`/`keryx reinforce`
+// at the top level has no way to tell "recall" apart and reasonably guesses
+// `keryx recall` next. Same guessability gap the other aliases exist for.
+func recallAliasCmd() *cobra.Command {
+	c := unitRecallCmd()
+	c.Short = "Recall a marching unit — turn it home (alias for `unit recall`)"
+	return c
+}
