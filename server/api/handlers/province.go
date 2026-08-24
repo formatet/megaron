@@ -2324,6 +2324,15 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		"complete_at":  lastCompleteAt,
 		"forming_size": finalSize,
 		"names":        unitNames,
+		// Hål 3 (megaron_plan_tysta_forluster.md): totalMen/population/popAfter
+		// were already computed above (the insufficient-population check at
+		// ~line 1898 uses them) — a successful recruit just never told the
+		// client. pop_drawn is the actual head-count the settlement lost,
+		// population_before/after let the client confirm the delta itself
+		// (same "verify against resulting state" pattern place/allocate use).
+		"pop_drawn":         totalMen,
+		"population_before": population,
+		"population_after":  popAfter,
 	}
 	// Land only: tell the client explicitly whether this unit is still
 	// gathering men or has just entered training, and — if still forming —
@@ -2654,8 +2663,22 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 	// Derive per-tick flows from current settlement_goods rates (per-tick).
 	// Rate is assumed constant across the window (true between RecomputeProduction
 	// calls). Positive rate = production; negative = consumption (shown positive).
+	//
+	// grain is a special case (Hål 2, megaron_plan_tysta_forluster.md): its rate
+	// is already NET — gross production minus the population's own consumption
+	// (province.go's Sitos-box derivation above, ~line 655, established this for
+	// the same reason). A city producing 2768 grain/tick and eating 1500 has
+	// rate = +1268 and would land only in `production`, leaving `consumption`
+	// empty ("Kons: —") while the granary drains. Reuse that exact honest
+	// fallback here instead of inventing a second one: cons = full food demand,
+	// prod = netto + demand → both positive, netto stays the DB's own
+	// authoritative number. This slightly overstates grain's share when fish
+	// covers part of the food need — same known, cosmetic limitation as the
+	// Sitos box, not fixed here either.
 	production := map[string]float64{}
 	consumption := map[string]float64{}
+	var grainRate float64
+	grainRateKnown := false
 	if grows, gerr := h.pool.Query(r.Context(),
 		`SELECT good_key, rate FROM settlement_goods WHERE settlement_id = $1`, sett.ID,
 	); gerr == nil {
@@ -2663,6 +2686,11 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 			var k string
 			var rt float64
 			if grows.Scan(&k, &rt) == nil {
+				if k == "grain" {
+					grainRate = rt
+					grainRateKnown = true
+					continue
+				}
 				if rt > 0 {
 					production[k] = rt
 				} else if rt < 0 {
@@ -2671,6 +2699,15 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		grows.Close()
+	}
+	if grainRateKnown {
+		grainLaborPool := sett.Population
+		if grainLaborPool < 0 {
+			grainLaborPool = 0
+		}
+		grainConsumRate := float64(grainLaborPool) * economy.GrainConsumptionPerCitizenPerTick
+		production["grain"] = grainRate + grainConsumRate
+		consumption["grain"] = grainConsumRate
 	}
 
 	// Bucket discrete events by tick.

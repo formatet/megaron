@@ -18,6 +18,7 @@ import (
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -615,7 +616,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 			},
 			worldID, nil)
 		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
-			h.applyDivineBlessing(ctx, w.settlementID, worldID)
+			h.applyDivineBlessing(ctx, w.settlementID, worldID, w.playerID)
 		}
 		if rand.Float64() < 0.20 {
 			h.generateOmen(ctx, w.settlementID, worldID)
@@ -631,7 +632,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 			},
 			worldID, nil)
 		if newKharis < punishThreshold && rand.Float64() < punishProbability {
-			h.applyDivinePunishment(ctx, w.settlementID, worldID)
+			h.applyDivinePunishment(ctx, w.settlementID, worldID, w.playerID)
 		}
 	}
 
@@ -1399,7 +1400,18 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 }
 
 // applyDivinePunishment randomly selects and applies one divine punishment.
-func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, worldID uuid.UUID) {
+//
+// Each punishment's UPDATE now runs through RETURNING (wrapped in a CTE that
+// keeps the pre-update value alongside the post-update one, same pattern as
+// applyDecay's pop_upd/grain_upd above) so the actual amount taken is known,
+// not just which of the four punishments fired. This is a HARD-rule fix
+// (CLAUDE.md §Events: "events store outcomes, not intentions" —
+// {"type":"chariot_loss","amount":3}, never a bare roll-pending marker): the
+// old code ran the mutation through h.pool.Exec and threw the result away,
+// so the DivinePunishment event carried "type" only and no notification was
+// ever sent at all. "type" and its four values are UNCHANGED below — this
+// only ADDS "amount" beside it; old event rows and old readers keep working.
+func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, worldID, ownerID uuid.UUID) {
 	type punishment struct {
 		name string
 		text string
@@ -1410,33 +1422,64 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		{
 			"chariot_loss",
 			"The gods have scattered your war chariots in the night. Chariots have perished.",
-			`UPDATE units SET size = GREATEST(0, size - GREATEST(1, size/5)), updated_at = now()
-			 WHERE settlement_id = $1 AND status = 'garrison' AND type = 'war_chariot'`,
+			`WITH victims AS (
+			     SELECT id, size FROM units
+			     WHERE settlement_id = $1 AND status = 'garrison' AND type = 'war_chariot'
+			 ), upd AS (
+			     UPDATE units u SET size = GREATEST(0, v.size - GREATEST(1, v.size/5)), updated_at = now()
+			     FROM victims v WHERE u.id = v.id
+			     RETURNING v.size - u.size AS lost
+			 )
+			 SELECT COALESCE(SUM(lost), 0)::float8 FROM upd`,
 		},
 		{
 			"ship_loss",
 			"A divine storm has claimed a vessel from your harbour.",
-			`UPDATE units SET status = 'disbanded', updated_at = now()
-			 WHERE id = (SELECT id FROM units WHERE settlement_id = $1 AND status = 'garrison' AND type = 'galley' ORDER BY size LIMIT 1)`,
+			`WITH victim AS (
+			     SELECT id FROM units
+			     WHERE settlement_id = $1 AND status = 'garrison' AND type = 'galley'
+			     ORDER BY size LIMIT 1
+			 ), upd AS (
+			     UPDATE units u SET status = 'disbanded', updated_at = now()
+			     FROM victim v WHERE u.id = v.id
+			     RETURNING 1
+			 )
+			 SELECT COUNT(*)::float8 FROM upd`,
 		},
 		{
 			"harvest_failure",
 			"The fields lie fallow by divine will. Half your grain stores have rotted.",
-			`UPDATE settlement_goods SET
-			   amount  = GREATEST(0, settled(amount, rate, calc_tick) * 0.5),
-			   calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = 'grain'`,
+			`WITH old AS (
+			     SELECT settled(amount, rate, calc_tick) AS grain_now
+			     FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'
+			 ), upd AS (
+			     UPDATE settlement_goods sg SET
+			        amount    = GREATEST(0, o.grain_now * 0.5),
+			        calc_tick = current_world_tick()
+			     FROM old o
+			     WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'
+			     RETURNING o.grain_now - sg.amount AS lost
+			 )
+			 SELECT COALESCE(SUM(lost), 0)::float8 FROM upd`,
 		},
 		{
 			"garrison_plague",
 			"A dark pestilence has moved through the barracks. Many hoplites have fallen.",
-			`UPDATE units SET size = GREATEST(0, size - GREATEST(1, size/5)), updated_at = now()
-			 WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'`,
+			`WITH victims AS (
+			     SELECT id, size FROM units
+			     WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'
+			 ), upd AS (
+			     UPDATE units u SET size = GREATEST(0, v.size - GREATEST(1, v.size/5)), updated_at = now()
+			     FROM victims v WHERE u.id = v.id
+			     RETURNING v.size - u.size AS lost
+			 )
+			 SELECT COALESCE(SUM(lost), 0)::float8 FROM upd`,
 		},
 	}
 
 	p := punishments[rand.Intn(len(punishments))]
-	if _, err := h.pool.Exec(ctx, p.sql, settlementID); err != nil {
+	var amount float64
+	if err := h.pool.QueryRow(ctx, p.sql, settlementID).Scan(&amount); err != nil {
 		slog.Error("divine punishment failed", "settlement", settlementID, "type", p.name, "err", err)
 		return
 	}
@@ -1447,14 +1490,29 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		 WHERE settlement_id = $1 AND status = 'garrison' AND size <= 0`, settlementID)
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
-		map[string]any{"type": p.name}, worldID, nil)
+		map[string]any{"type": p.name, "amount": amount}, worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_wrath", p.text)
-	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name)
+	// Fel A (plan §Hål 1): NotifyPlayer was never called at all — the same
+	// nil-guarded hub already used elsewhere in this file (e.g. line ~1339's
+	// emitSubsistenceWarning). Level 2 (urgent) matches other involuntary
+	// losses (UnitLostAtSea, upkeep desertion) rather than routine info.
+	if h.hub != nil && ownerID != uuid.Nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivinePunishment", 2, map[string]any{
+			"settlement_id": settlementID,
+			"type":          p.name,
+			"amount":        amount,
+		})
+	}
+	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name, "amount", amount)
 }
 
 // applyDivineBlessing randomly selects and applies one divine blessing for settlements
-// that maintain high kharis. Mirror of applyDivinePunishment.
-func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, worldID uuid.UUID) {
+// that maintain high kharis. Mirror of applyDivinePunishment — verified to carry the
+// SAME two bugs (no notification, no captured outcome) and fixed the same way: each
+// branch's mutation is now scanned via RETURNING (or, for the army branches, via
+// applyArmyBlessing's own RETURNING/insert), and the amount rides alongside "type"
+// (unchanged) in both the event payload and a new NotifyPlayer call.
+func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, worldID, ownerID uuid.UUID) {
 	type blessing struct {
 		name string
 		text string
@@ -1465,10 +1523,18 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 		{
 			"harvest_blessing",
 			"The gods smile upon your fields. An abundant harvest fills your granaries.",
-			`UPDATE settlement_goods SET
-			   amount  = LEAST(cap, settled(amount, rate, calc_tick) * 1.25),
-			   calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = 'grain'`,
+			`WITH old AS (
+			     SELECT settled(amount, rate, calc_tick) AS grain_now, cap
+			     FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'
+			 ), upd AS (
+			     UPDATE settlement_goods sg SET
+			        amount    = LEAST(o.cap, o.grain_now * 1.25),
+			        calc_tick = current_world_tick()
+			     FROM old o
+			     WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'
+			     RETURNING sg.amount - o.grain_now AS gained
+			 )
+			 SELECT COALESCE(SUM(gained), 0)::float8 FROM upd`,
 		},
 		{
 			// Army lives in the units table (SB7) — handled by applyArmyBlessing,
@@ -1519,25 +1585,42 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 			}
 		}
 	}
+	var amount float64
 	if b.sql != "" {
-		if _, err := h.pool.Exec(ctx, b.sql, settlementID); err != nil {
+		if err := h.pool.QueryRow(ctx, b.sql, settlementID).Scan(&amount); err != nil {
 			slog.Error("divine blessing failed", "settlement", settlementID, "type", b.name, "err", err)
 			return
 		}
-	} else if err := h.applyArmyBlessing(ctx, settlementID, worldID, b.name); err != nil {
-		slog.Error("divine army blessing failed", "settlement", settlementID, "type", b.name, "err", err)
-		return
+	} else {
+		gained, err := h.applyArmyBlessing(ctx, settlementID, worldID, b.name)
+		if err != nil {
+			slog.Error("divine army blessing failed", "settlement", settlementID, "type", b.name, "err", err)
+			return
+		}
+		amount = float64(gained)
 	}
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivineBlessing",
-		map[string]any{"type": b.name}, worldID, nil)
+		map[string]any{"type": b.name, "amount": amount}, worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_favour", b.text)
-	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name)
+	// Fel A/B fix, mirroring applyDivinePunishment above. Level 3 (info) —
+	// good news, same tier as ColonyFounded/TrainComplete, not urgent.
+	if h.hub != nil && ownerID != uuid.Nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivineBlessing", 3, map[string]any{
+			"settlement_id": settlementID,
+			"type":          b.name,
+			"amount":        amount,
+		})
+	}
+	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name, "amount", amount)
 }
 
 // applyArmyBlessing grants the army-boosting divine blessings against the units
 // table (SB7: the army lives in units, not the retired settlements.* columns).
-func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, worldID uuid.UUID, name string) error {
+// Returns the amount gained (men for divine_recruits, ships for sea_blessing) so
+// the caller can report it — previously discarded (plan §Hål 1 Fel B, same bug
+// as applyDivinePunishment's SQL).
+func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, worldID uuid.UUID, name string) (int, error) {
 	switch name {
 	case "divine_recruits":
 		// Reinforce the strongest garrison spearman unit (min +2); if the
@@ -1549,23 +1632,45 @@ func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, world
 		// 1.86–2.13 billion men, saturated against the int32 ceiling, and one of
 		// them founded a colony that minted 99.5 % of the world's silver. A
 		// blessing may fill a unit to the recruitment ceiling; it may not exceed it.
-		tag, err := h.pool.Exec(ctx,
-			`UPDATE units SET size = LEAST($2, size + GREATEST(2, size/5)), updated_at = now()
-			 WHERE id = (SELECT id FROM units
-			             WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'
-			             ORDER BY size DESC LIMIT 1)`,
-			settlementID, economy.MaxUnitSize)
+		//
+		// RETURNING the pre/post size delta (same CTE pattern as
+		// applyDivinePunishment above) doubles as the RowsAffected==0 check the
+		// old h.pool.Exec used: no matching spearman garrison unit → the "victim"
+		// CTE is empty → "upd" is empty → the final SELECT returns zero rows →
+		// pgx.ErrNoRows, exactly the old tag.RowsAffected()==0 branch.
+		const formedSize = 2
+		var gained int
+		err := h.pool.QueryRow(ctx,
+			`WITH victim AS (
+			     SELECT id, size FROM units
+			     WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'
+			     ORDER BY size DESC LIMIT 1
+			 ), upd AS (
+			     UPDATE units u SET size = LEAST($2, v.size + GREATEST(2, v.size/5)), updated_at = now()
+			     FROM victim v WHERE u.id = v.id
+			     RETURNING u.size - v.size AS gained
+			 )
+			 SELECT gained FROM upd`,
+			settlementID, economy.MaxUnitSize,
+		).Scan(&gained)
 		if err != nil {
-			return err
+			if err == pgx.ErrNoRows {
+				if err := h.insertGarrisonUnit(ctx, settlementID, worldID, "spearman", "land", formedSize, 0); err != nil {
+					return 0, err
+				}
+				return formedSize, nil
+			}
+			return 0, err
 		}
-		if tag.RowsAffected() == 0 {
-			return h.insertGarrisonUnit(ctx, settlementID, worldID, "spearman", "land", 2, 0)
-		}
-		return nil
+		return gained, nil
 	case "sea_blessing":
-		return h.insertGarrisonUnit(ctx, settlementID, worldID, "galley", "naval", 1, 20)
+		const formedShips = 1
+		if err := h.insertGarrisonUnit(ctx, settlementID, worldID, "galley", "naval", formedShips, 20); err != nil {
+			return 0, err
+		}
+		return formedShips, nil
 	}
-	return nil
+	return 0, nil
 }
 
 // insertGarrisonUnit forms a new garrison unit for the settlement's owner.
