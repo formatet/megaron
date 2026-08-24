@@ -65,6 +65,44 @@ func timberBottleneckWarning(rate float64) string {
 	return "⚠ Timber-produktion ~0 — timber gatear hamn (140)/barracks (80)/foundry (80)/temple (60). Allokera labor: `keryx allocate --timber <n>`"
 }
 
+// resourceAtStorageCeiling reports whether a good sitting at (amount, rate,
+// cap) means the labour producing it is being wasted: at or within 5% of its
+// storage cap with positive throughput still flowing in. Generalizes the
+// house rule "resurs vid tak = balansfel att gräva i, aldrig hälsosignal"
+// (feedback_cap_is_not_success.md) to every good — deliberately NOT a
+// stone specialer (megaron_plan_sten_stock.md §5): stone was the good that
+// surfaced the problem, but wine/oil/cedar/etc. waste labour the same way.
+func resourceAtStorageCeiling(amount, rate, cap float64) bool {
+	return cap > 0 && rate > 0 && amount >= cap*0.95
+}
+
+// stockCeilingWarning names one good producing "rakt ned i marken" — at its
+// storage ceiling with positive rate — and how many placed gubbar are
+// working it, so a Wanax knows exactly what to move. gubbar can legitimately
+// be 0 (some production is unconditional trickle, not placed labour); the
+// warning still fires since the overflow itself is real either way.
+func stockCeilingWarning(label string, amount, rateVal, cap float64, gubbar int) string {
+	if !resourceAtStorageCeiling(amount, rateVal, cap) {
+		return ""
+	}
+	who := fmt.Sprintf("%d gubbar", gubbar)
+	if gubbar == 1 {
+		who = "1 gubbe"
+	}
+	return fmt.Sprintf("⚠ %-8s %6s  %s  vid lagertaket — %s producerar rakt ned i marken (`keryx place`)",
+		label, resource(amount), rate(rateVal), who)
+}
+
+// capitalize upper-cases a good_key's first letter for display ("stone" →
+// "Stone"). good_key values are single-word ASCII (production_rules.good_key),
+// so byte slicing is safe.
+func capitalize(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
 // localDone parses an RFC3339 (UTC) completion timestamp and formats it in the
 // player's local time, matching `unit march`'s ETA display — a raw UTC string
 // like "2026-07-02T04:37:52Z" otherwise forces manual timezone math.
@@ -476,6 +514,45 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if w := timberBottleneckWarning(timberRate); w != "" {
 					fmt.Printf("  %s\n", w)
 				}
+
+				// "Produktion rakt ned i marken" (megaron_plan_sten_stock.md §5):
+				// ANY good at/near its storage cap with positive rate means the
+				// gubbar producing it are wasted, not just stone. Iterates every
+				// good_key res actually holds — province.go's resSnap is built
+				// "for every good the settlement holds, not a hard-coded subset"
+				// (see its own comment above resSnap), so wine/oil/cedar/etc. are
+				// covered the same way as stone, with no per-good special-casing
+				// here either.
+				ceilingGoods := make([]string, 0, len(res))
+				for k := range res {
+					ceilingGoods = append(ceilingGoods, k)
+				}
+				sort.Strings(ceilingGoods)
+				var atCeiling []string
+				for _, k := range ceilingGoods {
+					rd, ok := res[k].(map[string]any)
+					if !ok {
+						continue
+					}
+					amt, _ := rd["amount"].(float64)
+					rt, _ := rd["rate"].(float64)
+					cp, _ := rd["cap"].(float64)
+					if resourceAtStorageCeiling(amt, rt, cp) {
+						atCeiling = append(atCeiling, k)
+					}
+				}
+				if len(atCeiling) > 0 {
+					gubbeCounts := fetchGubbeCountsByGood(c, cfg.WorldID, prov)
+					for _, k := range atCeiling {
+						rd, _ := res[k].(map[string]any)
+						amt, _ := rd["amount"].(float64)
+						rt, _ := rd["rate"].(float64)
+						cp, _ := rd["cap"].(float64)
+						if line := stockCeilingWarning(capitalize(k), amt, rt, cp, gubbeCounts[k]); line != "" {
+							fmt.Printf("  %s\n", line)
+						}
+					}
+				}
 			}
 			// Obruten deposit i catchmenten (P1a, soak 2026-07-18): se
 			// unusedCatchmentDeposits — flaggar koppar/tenn/silver som ligger i
@@ -788,6 +865,39 @@ func fetchGarrisonCohorts(c *Client, worldID, settlementID string) map[string][]
 		out[u.Type] = append(out[u.Type], u)
 	}
 	return out
+}
+
+// fetchGubbeCountsByGood tallies settlement_placement rows by good_key, via
+// GET .../placements — the same endpoint `keryx place`/`staff` already write
+// through (api/handlers/settlement_placement.go Placements). Reused as-is
+// rather than adding a new query: P1's postmortem found the same catchment
+// query duplicated at 13 call sites from not checking first
+// (megaron_plan_sten_stock.md §5).
+//
+// Best-effort like fetchGarrisonCohorts above: returns nil on any failure, so
+// a transient error degrades the ceiling warning to "gubbe count unknown"
+// (prints 0) rather than blocking the read-only status view.
+func fetchGubbeCountsByGood(c *Client, worldID, provinceID string) map[string]int {
+	if provinceID == "" {
+		return nil
+	}
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/placements", worldID, provinceID))
+	if err != nil {
+		return nil
+	}
+	var resp struct {
+		Placements []struct {
+			GoodKey string `json:"good_key"`
+		} `json:"placements"`
+	}
+	if json.Unmarshal(data, &resp) != nil {
+		return nil
+	}
+	counts := make(map[string]int)
+	for _, pl := range resp.Placements {
+		counts[pl.GoodKey]++
+	}
+	return counts
 }
 
 // cohortLines formats the per-cohort breakdown shown under an Army aggregate

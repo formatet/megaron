@@ -1,0 +1,54 @@
+-- Migration 129: match stone's production rate to its own sink, not to grain.
+--
+-- Stone's ONLY sink is one-time build costs (megaron_plan_sten_stock.md §1):
+-- the whole building catalogue (BuildingSpecs, excluding wall levels) sums to
+-- 750 stone, and there is no upkeep, no recipe, no recurring drain — verified
+-- against internal/combat/upkeep.go and internal/economy/recipe.go (zero
+-- hits). At today's rate a single FULLY STAFFED level-1 stonequarry (capL1=2,
+-- rate_per_tick=576) covers the entire 750-stone catalogue in ~1.3 ticks.
+-- That isn't abundance, it's a non-decision: any labour spent on stone
+-- instantly outproduces every sink the game has for it forever.
+--
+-- Migration 079 already rebalanced this ONCE (mine 60->12, stonequarry
+-- 120->24), but measured against OTHER production (~2x/4x grain), not
+-- against stone's own sink -- the axis that actually matters here. Migration
+-- 109 then multiplied every production_rules.rate_per_tick by 24 when the
+-- tick became the day, carrying 079's placement forward in new units
+-- (24->288, 24->576) without revisiting whether it still fit stone's sink.
+--
+-- This migration rebalances against the sink directly. Held to the
+-- behavioural bar in megaron_plan_sten_stock.md §6.1: a fully staffed level-1
+-- stonequarry must clear the 750-stone catalogue in 12-20 ticks, not 1-2 --
+-- proven by TestFullyStaffedStonequarry_ClearsBuildingCatalogueInPlannedWindow
+-- (internal/economy/stone_sink_test.go), which sums BuildingSpecs' stone
+-- costs in code (not a literal 750) so the bound moves if the catalogue does.
+--
+-- Same 2:1 mine:stonequarry ratio 079 chose, held constant:
+--   stonequarry  576 -> 48   (750/48 = 15.625 ticks, mid-band)
+--   mine         288 -> 24
+--
+-- Terrain baselines (mountain_limestone 28.8, hills 14.4) are untouched,
+-- exactly as 079 left them -- they were never the problem; the BUILDING
+-- multiplier over them was (was 20x mountain_limestone, now ~1.67x, in line
+-- with the only other bulk raw good: lumbermill's 360/216 = 1.67x over
+-- forest's timber baseline).
+--
+-- No settlement_goods rewrite, for the same reason 079 gave: RecomputeProduction
+-- (internal/economy/recompute.go) SETTLES settlement_goods at the OLD rate
+-- (`settled(amount, rate, calc_tick)`) before writing the new rate, every time
+-- it runs for a settlement -- which is on essentially every relevant mutation
+-- (placement change, building complete, population crossing a new gubbe,
+-- tick advance via kharis/tick.go). That settle-then-overwrite happens in
+-- application code, per settlement, on its own trigger.
+--
+-- Migration 109 was different in kind, not just degree: it rescaled EVERY
+-- settlement's rate in ONE bulk statement, outside any RecomputeProduction
+-- call, with no natural trigger before the next tick's read -- so it had to
+-- replicate the settle-then-rescale logic by hand in raw SQL to avoid
+-- re-evaluating the whole elapsed span at the new rate. This migration only
+-- touches production_rules (the read-only rule table), so that hand-rolled
+-- step is unneeded here: the next RecomputeProduction per settlement does it
+-- for free, exactly as 079 already established.
+
+UPDATE production_rules SET rate_per_tick = 24 WHERE building_type = 'mine'        AND good_key = 'stone';
+UPDATE production_rules SET rate_per_tick = 48 WHERE building_type = 'stonequarry' AND good_key = 'stone';
