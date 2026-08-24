@@ -59,6 +59,11 @@ its own when the patrol timer runs out.`,
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			data, err := c.post(path, map[string]any{"q": q, "r": r, "intent": "sentry"})
 			if err != nil {
@@ -272,6 +277,7 @@ func locationStr(u unitRow) string {
 func unitMarchCmd() *cobra.Command {
 	var unitID string
 	var targetQ, targetR int
+	var target string
 	var stance string
 	var intent, name string
 	var mode string
@@ -321,6 +327,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
     physical, interceptable caravan. annex — keep today's behaviour: take
     the settlement outright (a captured capital becomes an ordinary colony).`,
 		Example: `  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
   keryx unit march --unit <id> --q 5 --r -3 --stance fortify
   keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
   # Colonize the hex the unit already stands on (no coords needed):
@@ -334,18 +341,28 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			qSet, rSet := cmd.Flags().Changed("q"), cmd.Flags().Changed("r")
-			// Fas 2f: colonize the hex you already stand on. Omit --q/--r together
-			// with --intent colonize and we resolve the unit's current field
-			// position, so you never have to look the coordinates up.
-			if intent == "colonize" && !qSet && !rSet {
+			resolvedUnitID, uerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if uerr != nil {
+				return uerr
+			}
+			unitID = resolvedUnitID
+			resolvedQ, resolvedR, given, terr := resolveTargetHex(cmd, target, targetQ, targetR)
+			if terr != nil {
+				return terr
+			}
+			targetQ, targetR = resolvedQ, resolvedR
+			// Fas 2f: colonize the hex you already stand on. Omit --q/--r (and
+			// --target) together with --intent colonize and we resolve the
+			// unit's current field position, so you never have to look the
+			// coordinates up.
+			if intent == "colonize" && !given {
 				cq, cr, err := currentHex(c, cfg.WorldID, unitID)
 				if err != nil {
 					return err
 				}
 				targetQ, targetR = cq, cr
-			} else if !qSet || !rSet {
-				return fmt.Errorf("--q and --r are required (or use --intent colonize alone to found a colony on the hex your unit already occupies)")
+			} else if !given {
+				return fmt.Errorf("--q/--r or --target q,r are required (or use --intent colonize alone to found a colony on the hex your unit already occupies)")
 			}
 
 			// Colonize catchment forecast (DEL A, megaron_koloni_legibilitet_plan.md):
@@ -451,8 +468,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	}
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place)")
-	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place)")
+	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
+	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
+	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
 	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
@@ -689,6 +707,11 @@ course until the runner physically catches up with it, then turns for home
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
@@ -718,6 +741,7 @@ course until the runner physically catches up with it, then turns for home
 
 func unitRedirectCmd() *cobra.Command {
 	var unitID, target string
+	var q, r int
 
 	cmd := &cobra.Command{
 		Use:   "redirect",
@@ -725,16 +749,25 @@ func unitRedirectCmd() *cobra.Command {
 		Long: `Send a redirect order to a marching unit, giving it a new destination.
 Command is never instant — the unit keeps marching on its original course until
 the order's Runner physically catches up with it, then turns onto the new course.`,
-		Example: `  keryx unit redirect --unit <id> --target 5,-3`,
-		Args:    rejectPositionalArgs("unit"),
+		Example: `  keryx unit redirect --unit <id> --target 5,-3
+  keryx unit redirect --unit <id> --q 5 --r -3`,
+		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			q, r, err := parseQR(target)
+			newQ, newR, given, err := resolveTargetHex(cmd, target, q, r)
 			if err != nil {
 				return err
 			}
+			if !given {
+				return fmt.Errorf("--target q,r or --q/--r are required")
+			}
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
-			data, err := c.post(path, map[string]any{"target_q": q, "target_r": r})
+			data, err := c.post(path, map[string]any{"target_q": newQ, "target_r": newR})
 			if err != nil {
 				return err
 			}
@@ -744,7 +777,7 @@ the order's Runner physically catches up with it, then turns onto the new course
 			}
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
-			fmt.Printf("Redirect order sent to unit %s (new course %d,%d)", unitID[:8], q, r)
+			fmt.Printf("Redirect order sent to unit %s (new course %d,%d)", unitID[:8], newQ, newR)
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
 					fmt.Printf(" — Runner arrives %s", t.Local().Format("15:04 Jan 2"))
@@ -756,9 +789,10 @@ the order's Runner physically catches up with it, then turns onto the new course
 	}
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r — axial coordinates, read them off 'keryx map' (required)")
+	cmd.Flags().StringVar(&target, "target", "", "new target hex as q,r — axial coordinates, read them off 'keryx map' (alternative to --q/--r)")
+	cmd.Flags().IntVar(&q, "q", 0, "new target hex Q — axial coordinate, alternative to --target")
+	cmd.Flags().IntVar(&r, "r", 0, "new target hex R — axial coordinate, alternative to --target")
 	_ = cmd.MarkFlagRequired("unit")
-	_ = cmd.MarkFlagRequired("target")
 	return cmd
 }
 
@@ -777,6 +811,35 @@ func parseQR(s string) (int, int, error) {
 		return 0, 0, fmt.Errorf("invalid --target %q: r is not an integer", s)
 	}
 	return q, r, nil
+}
+
+// resolveTargetHex accepts a target hex as either --target "q,r" or --q/--r
+// and resolves whichever was given — Rad I, megaron_plan_cli_sanning.md:
+// `march` only took --q/--r, `redirect` only took --target, and the surface
+// `unit list`/agent configs already use varies. Both forms now work on both
+// commands; neither existing form is removed. given=false, err=nil means
+// neither was supplied — callers decide what that means for them (march
+// falls back to the unit's current hex for --intent colonize; redirect
+// treats it as a hard requirement).
+func resolveTargetHex(cmd *cobra.Command, target string, q, r int) (targetQ, targetR int, given bool, err error) {
+	targetSet := cmd.Flags().Changed("target")
+	qSet, rSet := cmd.Flags().Changed("q"), cmd.Flags().Changed("r")
+	switch {
+	case targetSet && (qSet || rSet):
+		return 0, 0, false, fmt.Errorf("give the target as either --target q,r or --q/--r, not both")
+	case targetSet:
+		tq, tr, perr := parseQR(target)
+		if perr != nil {
+			return 0, 0, false, perr
+		}
+		return tq, tr, true, nil
+	case qSet && rSet:
+		return q, r, true, nil
+	case qSet || rSet:
+		return 0, 0, false, fmt.Errorf("--q and --r must both be given (or use --target q,r)")
+	default:
+		return 0, 0, false, nil
+	}
 }
 
 // ---- unit reinforce ----------------------------------------------------------
@@ -804,6 +867,11 @@ The cohort must be garrisoned in the city that raised it — march it home first
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/reinforce", cfg.WorldID, unitID)
 			data, err := c.post(path, map[string]any{})
 			if err != nil {
@@ -841,6 +909,11 @@ func unitStanceCmd() *cobra.Command {
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/stance", cfg.WorldID, unitID)
 			body := map[string]any{"stance": stance}
 			if reaction != "" {
@@ -909,6 +982,11 @@ func unitStandingOrdersCmd() *cobra.Command {
 				return fmt.Errorf("set at least one of --retreat-at-loss or --hold-to-last-man")
 			}
 			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/standing-orders", cfg.WorldID, unitID)
 			body := map[string]any{}
 			if cmd.Flags().Changed("retreat-at-loss") {
@@ -965,6 +1043,16 @@ func unitLoadCmd() *cobra.Command {
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedShip, serr := resolveUnitID(c, cfg.WorldID, shipID)
+			if serr != nil {
+				return serr
+			}
+			shipID = resolvedShip
+			resolvedLand, lerr := resolveUnitID(c, cfg.WorldID, landUnitID)
+			if lerr != nil {
+				return lerr
+			}
+			landUnitID = resolvedLand
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/load", cfg.WorldID, shipID)
 			data, err := c.post(path, map[string]any{"unit_id": landUnitID})
 			if err != nil {
@@ -998,6 +1086,11 @@ func unitUnloadCmd() *cobra.Command {
 		Args:    rejectPositionalArgs("ship"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			resolvedShip, serr := resolveUnitID(c, cfg.WorldID, shipID)
+			if serr != nil {
+				return serr
+			}
+			shipID = resolvedShip
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/unload", cfg.WorldID, shipID)
 			data, err := c.post(path, nil)
 			if err != nil {

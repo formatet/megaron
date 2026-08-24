@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -50,6 +51,19 @@ see current occupancy.`,
 				}
 			}
 			if building == nil {
+				// temple never appears in placement-options: it has no
+				// production_rules row (economy.LoadBuildingProductionOptions
+				// only lists buildings that do). cult is the one good still
+				// staffed via settlement_labor, not settlement_placement
+				// (CLAUDE.md §Labor) — so a built temple is invisible to
+				// `staff` by design, not by bug. Without this check the
+				// error below reads as "no temple here" even when one
+				// stands — check the real buildings list before saying that.
+				if buildingType == "temple" {
+					if lvl, built := fetchBuiltBuildingLevel(c, cfg.WorldID, prov, "temple"); built {
+						return fmt.Errorf("temple (L%d) is built, but cult isn't a placed gubbe — it's devotion, set with `keryx allocate --cult <pct>`, not `keryx staff`", lvl)
+					}
+				}
 				return fmt.Errorf("no built workplace %q here (see `keryx city` for what's built)", buildingType)
 			}
 			if len(building.Goods) == 0 {
@@ -172,4 +186,29 @@ see current occupancy.`,
 	// signed-number positional.
 	cmd.Flags().SetInterspersed(false)
 	return cmd
+}
+
+// fetchBuiltBuildingLevel checks the settlement's real building list (GET
+// .../buildings — every built row, unlike placement-options which only lists
+// buildings with a production_rules row) for buildingType. Best-effort: any
+// transport or decode error reads as "not built" rather than surfacing a
+// second error on top of the one staffCmd is already constructing.
+func fetchBuiltBuildingLevel(c *Client, worldID, provinceID, buildingType string) (level int, built bool) {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/buildings", worldID, provinceID))
+	if err != nil {
+		return 0, false
+	}
+	var rows []struct {
+		Type  string `json:"type"`
+		Level int    `json:"level"`
+	}
+	if err := json.Unmarshal(data, &rows); err != nil {
+		return 0, false
+	}
+	for _, r := range rows {
+		if r.Type == buildingType {
+			return r.Level, true
+		}
+	}
+	return 0, false
 }

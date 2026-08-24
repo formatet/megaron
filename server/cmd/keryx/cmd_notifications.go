@@ -103,6 +103,9 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "ScoutReport" {
 		printScoutReportLine(n)
 	}
+	if n.Kind == "UnitExploreReturned" {
+		printExploreReturnedLine(n)
+	}
 	if n.Kind == "UpkeepUnpaid" {
 		printUpkeepUnpaidLine(n)
 	}
@@ -339,6 +342,32 @@ func printScoutReportLine(n notificationItem) {
 		found = strings.Join(deposits, ", ")
 	}
 	fmt.Printf("      explored (%d,%d) — %s, %s\n", body.Q, body.R, body.Terrain, found)
+}
+
+// printExploreReturnedLine renders the human-readable follow-up to a
+// UnitExploreReturned notification (Rad G, megaron_plan_cli_sanning.md). The
+// bare kind name printNotificationRow already prints reads as "the scout
+// is home" — it isn't: EventUnitExploreReturned fires the moment the unit
+// reaches its explore target and TURNS for home (internal/unit/events.go's
+// doc comment on the const; dispatchReturnHome in unit_arrival.go). The
+// event type and its payload are untouched — arrives_at was always the
+// return leg's ETA, this only makes that legible. Mirrors web's notifText
+// 'UnitExploreReturned' case (web/static/js/megaron/ui/format.js) so both
+// surfaces say the same thing.
+func printExploreReturnedLine(n notificationItem) {
+	var body struct {
+		Q         int    `json:"q"`
+		R         int    `json:"r"`
+		ArrivesAt string `json:"arrives_at"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	eta := ""
+	if t, err := time.Parse(time.RFC3339, body.ArrivesAt); err == nil {
+		eta = ", home in " + countdown(t)
+	}
+	fmt.Printf("      scout reached (%d,%d) and turned for home%s\n", body.Q, body.R, eta)
 }
 
 // printColonyFoundedGrainLine renders the founding grain balance carried in a
