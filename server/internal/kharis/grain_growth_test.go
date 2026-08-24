@@ -328,14 +328,21 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 		return p, prevAmount // grain untouched on starvation path
 	}
 
+	// Growth spends only what stands above growthGrainReserve — mirrors the
+	// GREATEST(0, grain_now - $6) in tick.go's priced CTE.
+	spendable := grainNow - growthGrainReserve
+	if spendable < 0 {
+		spendable = 0
+	}
+
 	var actualNew int
 	var draw float64
 	cost := float64(desiredNew) * grainPerCitizen
-	if grainNow >= cost {
+	if spendable >= cost {
 		actualNew = desiredNew
 		draw = cost
 	} else {
-		actualNew = int(grainNow / grainPerCitizen)
+		actualNew = int(spendable / grainPerCitizen)
 		draw = float64(actualNew) * grainPerCitizen
 	}
 

@@ -133,6 +133,27 @@ func TestApplyDecay_DistinctEventsBothApply(t *testing.T) {
 	h := newTestTickHandler(pool)
 	ctx := context.Background()
 
+	// This test's subject is the CLAIM, not the economy: it asks whether a
+	// distinct event is allowed to do work, and reads population growth as the
+	// observable. So growth has to be unambiguously affordable, or the test
+	// measures grain balance instead.
+	//
+	// Bare, this fixture is on a razor's edge: six plains at pop 5000 nets only
+	// ~170 grain/tick (production minus 2 500/tick of citizen consumption), so
+	// the stock creeps 169 → 336 → 502 and growth fires only on the days the
+	// remainder happens to clear one citizen's price. It passed for exactly
+	// that reason before growthGrainReserve landed, and stopped the day growth
+	// was told to leave a cohort's levy untouched — a false red about a
+	// mechanism the test does not test. Seeding a real stock removes the
+	// coincidence in both directions.
+	if _, err := pool.Exec(ctx,
+		`UPDATE settlement_goods SET amount = 10000, calc_tick = (SELECT current_tick FROM worlds WHERE id = $2)
+		 WHERE settlement_id = $1 AND good_key = 'grain'`,
+		settlementID, worldID,
+	); err != nil {
+		t.Fatalf("seed grain stock: %v", err)
+	}
+
 	if _, err := pool.Exec(ctx,
 		`UPDATE worlds SET current_tick = current_tick + 1 WHERE id = $1`, worldID,
 	); err != nil {

@@ -195,6 +195,34 @@ const kharisFloor = 1.0
 // existing calibration story, not re-derived from first principles.
 const grainPerCitizen = 300.0
 
+// growthGrainReserve is the grain a settlement's growth may never eat into.
+//
+// Without it, growth is the stock's unbounded first claimant: it buys as many
+// citizens as the stock affords and leaves a remainder in [0, grainPerCitizen).
+// Measured in world e7923ca8, that held for 2 511 of 2 511 samples across 141
+// ticks and three cities — the stored grain amount was ALWAYS a two- or
+// three-digit remainder, whatever the city's production rate. The consequence
+// is not cosmetic: a spearman cohort is levied at 300 grain, so the levy was
+// affordable only in the narrow window where settled() had folded in a fresh
+// tick of production but applyDecay had not yet spent it — 8,4 % of readings.
+// A Wanax could not reliably raise troops from a city with a large surplus,
+// because the surplus never existed as a STOCK, only as a rate.
+//
+// The reserve is deliberately equal to one land cohort's grain levy (spearman,
+// 300 — see the recruit catalogue in internal/province/training.go). That is
+// the whole point: a city always holds back exactly enough to raise the men it
+// can feed. Growth then spends only what stands ABOVE that line, which is what
+// "surplus feeds growth" was always supposed to mean (2026-08-19: surplus →
+// growth, not storage — the reserve does not store, it keeps growth from
+// spending the seed corn).
+//
+// This changes how FAST a city grows only while its stock sits between the
+// reserve and the reserve plus one citizen's price; above that the draw is
+// unchanged. It cannot make a city starve: a settlement below the reserve
+// simply does not grow that tick (actual_new = 0), it does not take the
+// starvation branch — that branch is still gated on grain_now > 0 alone.
+const growthGrainReserve = 300.0
+
 // starvationPopLossRatePerTick is the fraction of population a starving city
 // loses per tick (−0.5%/tick). Single source of truth for BOTH sides:
 // applyDecay's SQL binds it as a parameter — ROUND(pop * (1 - $3)::numeric) —
@@ -816,12 +844,19 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		     FROM growth_calc
 		 ),
 		 priced AS (
+		     -- Growth spends only what stands ABOVE growthGrainReserve ($6), never
+		     -- the reserve itself. Both branches read the same spendable amount, so
+		     -- the "affords it in full" case and the throttled floor-division case
+		     -- stay consistent with each other. GREATEST(0, …) keeps a city whose
+		     -- stock is below the reserve at actual_new = 0 — it does not grow this
+		     -- tick, and it does NOT take the starvation branch, which is gated on
+		     -- growing (grain_now > 0) alone.
 		     SELECT
 		         id, pop, grain_now, growing,
 		         CASE
 		             WHEN NOT growing THEN 0
-		             WHEN grain_now >= desired_new * $2::float THEN desired_new
-		             ELSE FLOOR(grain_now / $2::float)
+		             WHEN GREATEST(0, grain_now - $6::float) >= desired_new * $2::float THEN desired_new
+		             ELSE FLOOR(GREATEST(0, grain_now - $6::float) / $2::float)
 		         END AS actual_new
 		     FROM resolved
 		 ),
@@ -855,7 +890,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		     RETURNING sg.settlement_id
 		 )
 		 SELECT id, old_pop, new_pop FROM pop_upd`,
-		worldID, grainPerCitizen, starvationPopLossRatePerTick, economy.FoodGoods, eventID,
+		worldID, grainPerCitizen, starvationPopLossRatePerTick, economy.FoodGoods, eventID, growthGrainReserve,
 	)
 	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
