@@ -835,16 +835,16 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		// SizeTier 0–3 (settlement.SizeTier). Skickas för VARJE synlig
 		// bosättning, inte bara egna: en stads omfång syns utifrån, precis
 		// som murnivån redan gör. Exakt befolkning förblir underrättelse.
-		SizeTier int `json:"size_tier"`
-		Owner        string     `json:"owner,omitempty"`
-		Own          bool       `json:"own"`
-		IsCapital    bool       `json:"is_capital"`
-		Allied       bool       `json:"allied"`
-		Visible      bool       `json:"visible"`
-		IsOutpost    bool       `json:"is_outpost,omitempty"`
-		ArmyTotal    int        `json:"army_total,omitempty"`
-		BuildActive  bool       `json:"build_active,omitempty"`
-		TrainActive  bool       `json:"train_active,omitempty"`
+		SizeTier    int    `json:"size_tier"`
+		Owner       string `json:"owner,omitempty"`
+		Own         bool   `json:"own"`
+		IsCapital   bool   `json:"is_capital"`
+		Allied      bool   `json:"allied"`
+		Visible     bool   `json:"visible"`
+		IsOutpost   bool   `json:"is_outpost,omitempty"`
+		ArmyTotal   int    `json:"army_total,omitempty"`
+		BuildActive bool   `json:"build_active,omitempty"`
+		TrainActive bool   `json:"train_active,omitempty"`
 	}
 	var markers []provinceMarker
 	for rows.Next() {
@@ -1260,7 +1260,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	// originOwner) — so comparing it to the caller IS "do I own the origin
 	// settlement", with no extra settlements join needed.
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT t.id, t.owner_id,
+		`SELECT t.id, t.owner_id, ds.owner_id,
 		        COALESCE(top.good_key, ''), COALESCE(top.quantity, 0),
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
@@ -1294,14 +1294,29 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		DepartsAt time.Time `json:"departs_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
 		Mine      bool      `json:"mine"`
+		// Role says which side of this shipment the caller is on:
+		// "sender", "recipient", or "" for a third party's caravan seen in
+		// passing. It is ADDITIVE and Mine is untouched — Mine has always
+		// meant "I dispatched this" and clients filter on it, so widening it
+		// to "I am party to this" would silently change what every existing
+		// reader draws, with no way to tell the two apart.
+		//
+		// The recipient's row was already in this payload: the fog gate below
+		// passes a marker when the caller sees EITHER endpoint, and a
+		// recipient always sees their own destination city. What was missing
+		// was any way to tell "this cargo is coming to me" from "a stranger's
+		// caravan is passing my walls" — the buyer paid for a shipment and
+		// then could not see it move.
+		Role string `json:"role"`
 	}
 
 	var markers []tradeMarker
 	for rows.Next() {
 		var m tradeMarker
 		var ownerID uuid.UUID
+		var destOwnerID *uuid.UUID
 		var originTerrain, destTerrain string
-		if err := rows.Scan(&m.ID, &ownerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
+		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
 			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt); err != nil {
 			continue
 		}
@@ -1313,6 +1328,14 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// Unauthenticated callers get no ownership info at all — never let an
 		// anonymous request see mine:true on any row.
 		m.Mine = authenticated && ownerID == playerID
+		switch {
+		case !authenticated:
+			m.Role = ""
+		case m.Mine:
+			m.Role = "sender"
+		case destOwnerID != nil && *destOwnerID == playerID:
+			m.Role = "recipient"
+		}
 		markers = append(markers, m)
 	}
 	if markers == nil {

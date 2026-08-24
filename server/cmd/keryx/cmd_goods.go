@@ -229,14 +229,19 @@ func transferCmd() *cobra.Command {
 // cargoCmd is "last i rörelse" for keryx (web/last-i-rorelse, 2026-08): before
 // this, `keryx transfer` gave a fire-and-forget dispatch confirmation and then
 // the cargo vanished from view — no ETA, no list of what's still moving.
-// GET /trades already carries every physical mover visible to the caller
-// (internal transfers AND trade legs) with a `mine` flag identifying the
-// caller's own; this just filters to `mine` and prints it. No new endpoint,
-// no new flags — the server does the filtering data, this only formats it.
+// GET /trades carries every physical mover visible to the caller (internal
+// transfers AND trade legs); this filters to the caller's own and prints it.
+//
+// It filters on `role`, not `mine` (2026-08-24). `mine` is true only for the
+// side that DISPATCHED the shipment, so a Wanax who accepted a trade offer,
+// paid escrow, and was waiting on the goods saw "No cargo of yours currently
+// in transit" for the whole voyage — the one row that mattered to them was in
+// the payload the entire time, marked as someone else's. The buyer could not
+// watch the thing they had already paid for.
 func cargoCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "cargo",
-		Short: "Show your own goods currently in transit (internal transfers and trade deliveries)",
+		Short: "Show goods in transit to or from you (internal transfers and trade deliveries)",
 		Args:  noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -255,7 +260,8 @@ func cargoCmd() *cobra.Command {
 			}
 			var mine []map[string]any
 			for _, m := range markers {
-				if isMine, _ := m["mine"].(bool); isMine {
+				switch role, _ := m["role"].(string); role {
+				case "sender", "recipient":
 					mine = append(mine, m)
 				}
 			}
@@ -263,8 +269,8 @@ func cargoCmd() *cobra.Command {
 				fmt.Println("No cargo of yours currently in transit.")
 				return nil
 			}
-			fmt.Printf("%-10s  %9s  %12s  %12s  %10s\n", "Good", "Qty", "From", "To", "ETA")
-			fmt.Println("──────────────────────────────────────────────────────────────────")
+			fmt.Printf("%-10s  %9s  %12s  %12s  %10s  %s\n", "Good", "Qty", "From", "To", "ETA", "Direction")
+			fmt.Println("─────────────────────────────────────────────────────────────────────────────")
 			for _, m := range mine {
 				good, _ := m["good_key"].(string)
 				qty, _ := m["quantity"].(float64)
@@ -278,11 +284,15 @@ func cargoCmd() *cobra.Command {
 						etaStr = countdown(t)
 					}
 				}
-				fmt.Printf("%-10s  %9.0f  %12s  %12s  %10s\n",
+				direction := "outgoing"
+				if role, _ := m["role"].(string); role == "recipient" {
+					direction = "incoming"
+				}
+				fmt.Printf("%-10s  %9.0f  %12s  %12s  %10s  %s\n",
 					good, qty,
 					fmt.Sprintf("(%d,%d)", int(oq), int(orr)),
 					fmt.Sprintf("(%d,%d)", int(dq), int(dr)),
-					etaStr)
+					etaStr, direction)
 			}
 			fmt.Println("\nPhysical cargo, not a promise — it can be intercepted and seized in transit.")
 			fmt.Println("Internal transfers never roll the storm/pirates loss die (that's only for")

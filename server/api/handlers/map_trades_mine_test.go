@@ -241,3 +241,47 @@ func TestMapTrades_UnauthenticatedNeverSeesMine(t *testing.T) {
 		}
 	}
 }
+
+// TestMapTrades_RoleNamesTheSideTheCallerIsOn closes the recipient hole
+// (2026-08-24). The row was never missing: FOWGateUnchangedFromOwnership above
+// already proves that a B-owned transport landing on A's settlement reaches A
+// with mine=false. What was missing was any way for A to tell it apart from a
+// stranger's caravan passing their walls — so `keryx cargo` and the web's
+// Transfer tab, both filtering on `mine`, showed a buyer nothing at all while
+// the goods they had paid escrow for crossed the map.
+//
+// `mine` keeps its exact old meaning ("I dispatched this") and is asserted
+// unchanged here, because widening it would have silently changed what every
+// existing reader draws.
+func TestMapTrades_RoleNamesTheSideTheCallerIsOn(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	markers := f.get(t, f.tokenA)
+
+	own := findByGood(t, markers, "grain")
+	if role, _ := own["role"].(string); role != "sender" {
+		t.Errorf("transport A dispatched: role = %q, want \"sender\"", own["role"])
+	}
+	if mine, _ := own["mine"].(bool); !mine {
+		t.Errorf("role must not disturb mine: own transport mine = %v, want true", own["mine"])
+	}
+
+	incoming := findByGood(t, markers, "copper")
+	if role, _ := incoming["role"].(string); role != "recipient" {
+		t.Errorf("transport landing on A's own settlement: role = %q, want \"recipient\" — "+
+			"without this a buyer cannot see the cargo they already paid for", incoming["role"])
+	}
+	if mine, _ := incoming["mine"].(bool); mine {
+		t.Errorf("mine must stay false for a shipment A did not dispatch, got %v", incoming["mine"])
+	}
+}
+
+// TestMapTrades_UnauthenticatedNeverSeesRole mirrors the mine rule: an
+// anonymous caller is told nothing about who is party to what.
+func TestMapTrades_UnauthenticatedNeverSeesRole(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	for _, m := range f.get(t, "") {
+		if role, _ := m["role"].(string); role != "" {
+			t.Errorf("unauthenticated caller got role=%q on %v", role, m)
+		}
+	}
+}

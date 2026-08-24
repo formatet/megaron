@@ -137,7 +137,7 @@ async function loadEconomyTransfer(mySettlements) {
 // in explicitly (the caller supplies serverNow()) so this can be unit-tested
 // the same way render/camera.test.mjs tests zoomStep: canned inputs in,
 // checked output out, no stubbing required. Each `trade` is one row of
-// GET /trades already filtered to `trade.mine` by the caller.
+// GET /trades already filtered to the caller's own by the caller.
 export function formatCargoRows(trades, nowMs) {
   return trades.map(t => {
     const etaMs = new Date(t.arrives_at).getTime() - nowMs;
@@ -151,6 +151,7 @@ export function formatCargoRows(trades, nowMs) {
       from: `(${t.origin_q},${t.origin_r})`,
       to: `(${t.dest_q},${t.dest_r})`,
       eta,
+      direction: t.role === 'recipient' ? 'incoming' : 'outgoing',
     };
   });
 }
@@ -165,21 +166,22 @@ export function renderCargoHTML(trades, nowMs) {
   }
   const rows = formatCargoRows(trades, nowMs);
   return '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem">' +
-    '<td>Good</td><td>Qty</td><td>From → To</td><td style="text-align:right">ETA</td></tr>' +
+    '<td>Good</td><td>Qty</td><td>From → To</td><td>Dir</td><td style="text-align:right">ETA</td></tr>' +
     rows.map(row =>
       `<tr><td>${esc(row.good)}</td><td>${row.qty}</td><td>${esc(row.from)} → ${esc(row.to)}</td>` +
-      `<td style="text-align:right">${esc(row.eta)}</td></tr>`
+      `<td>${esc(row.direction)}</td><td style="text-align:right">${esc(row.eta)}</td></tr>`
     ).join('') +
     '</table>' +
     '<p style="color:var(--text-dim);font-size:.68rem;margin-top:.3rem">' +
     'Physical cargo — it can be intercepted and seized while in transit.</p>';
 }
 
-// Fetches GET /trades and renders the caller's own in-transit cargo (the
-// `mine` flag added server-side does the ownership filtering; this only
-// keeps the rows where it's true). Called on tab load and again right after
-// a successful transfer, so a freshly dispatched caravan appears without
-// having to leave and reopen the tab.
+// Fetches GET /trades and renders the in-transit cargo the caller is party to.
+// Filters on `role` rather than `mine` (2026-08-24): `mine` marks only the side
+// that DISPATCHED a shipment, so a Wanax who accepted a trade offer and paid
+// escrow saw an empty list while the goods they had bought crossed the map.
+// Called on tab load and again right after a successful transfer, so a freshly
+// dispatched caravan appears without having to leave and reopen the tab.
 async function refreshCargoInTransit() {
   const el = document.getElementById('ec-tr-cargo');
   if (!el) return;
@@ -188,7 +190,8 @@ async function refreshCargoInTransit() {
     const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`);
     if (!r.ok) { el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>'; return; }
     const trades = (await r.json()) || [];
-    el.innerHTML = renderCargoHTML(trades.filter(t => t.mine), serverNow());
+    el.innerHTML = renderCargoHTML(
+      trades.filter(t => t.role === 'sender' || t.role === 'recipient'), serverNow());
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>';
   }

@@ -73,3 +73,24 @@ test('AK7: renderCargoHTML escapes good_key so a hostile good name cannot inject
   const html = renderCargoHTML([{ ...BASE_TRADE, good_key: '<img src=x onerror=alert(1)>' }], NOW);
   assert.doesNotMatch(html, /<img/);
 });
+
+// The recipient hole (2026-08-24). GET /trades marks `mine` only on the side
+// that DISPATCHED a shipment, so filtering on it hid the buyer's own goods for
+// the whole voyage — they had paid escrow and could see nothing move. The fix
+// is an additive `role`; these pin that the pure layer reads it and that the
+// direction reaches the rendered markup, where a player can actually see it.
+test('AK7: a shipment the caller is receiving is labelled incoming', () => {
+  const rows = formatCargoRows([{ ...BASE_TRADE, role: 'recipient' }], NOW);
+  assert.equal(rows[0].direction, 'incoming');
+});
+
+test('AK8: a shipment the caller dispatched is labelled outgoing', () => {
+  const rows = formatCargoRows([{ ...BASE_TRADE, role: 'sender' }], NOW);
+  assert.equal(rows[0].direction, 'outgoing');
+});
+
+test('AK9: the direction reaches the markup, not just the row object', () => {
+  const html = renderCargoHTML([{ ...BASE_TRADE, role: 'recipient' }], NOW);
+  assert.ok(html.includes('incoming'),
+    'a buyer watching their own purchase must be able to tell it apart from a caravan they sent');
+});
