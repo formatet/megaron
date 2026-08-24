@@ -115,6 +115,9 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "ForeignMarchSighted" {
 		printForeignMarchSightedLine(n)
 	}
+	if n.Kind == "DivinePunishment" {
+		printDivinePunishmentLine(n)
+	}
 	switch n.Kind {
 	case "CityOccupied", "OccupationDefended", "CityAnnexReady", "SettlementLooted", "SettlementBurned":
 		printOccupationLine(n)
@@ -573,4 +576,45 @@ func notificationsCmd() *cobra.Command {
 	cmd.Flags().StringVar(&kindFilter, "kind", "", "only show these notification kinds (comma-separated, e.g. SitosIntervention)")
 	cmd.Flags().StringVar(&excludeFilter, "exclude", "", "hide these notification kinds (comma-separated)")
 	return cmd
+}
+
+// printDivinePunishmentLine renders what the gods actually took.
+//
+// P4 (megaron_plan_tysta_forluster hål 1) gave the event and the notification a
+// real `amount` — before that the mutation ran through Exec and the result was
+// thrown away, so no notification was sent at all. But the notification landed
+// here as bare JSON, so what a Wanax saw for an involuntary loss of a fifth of
+// their garrison was {"type":"garrison_plague","amount":20,...} (acceptance
+// sweep 2026-08-24). The plan's own acceptance criterion was a notice that
+// NAMES what was taken and how much; this is that notice.
+//
+// Unknown types fall through to the raw JSON above rather than inventing a
+// sentence — a new punishment must be added here deliberately, not described
+// wrongly by a default.
+func printDivinePunishmentLine(n notificationItem) {
+	var body struct {
+		Type   string  `json:"type"`
+		Amount float64 `json:"amount"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	amount := body.Amount
+	if amount <= 0 {
+		return
+	}
+	var line string
+	switch body.Type {
+	case "chariot_loss":
+		line = fmt.Sprintf("Gudarna skingrade dina stridsvagnar i natten — %.0f man borta.", amount)
+	case "ship_loss":
+		line = fmt.Sprintf("En gudasänd storm tog %.0f fartyg ur din hamn.", amount)
+	case "harvest_failure":
+		line = fmt.Sprintf("Fälten låg i träda på gudarnas vilja — %s spannmål ruttnade.", resource(amount))
+	case "garrison_plague":
+		line = fmt.Sprintf("En pest gick genom baracken — %.0f man föll.", amount)
+	default:
+		return
+	}
+	fmt.Printf("      %s\n", line)
 }

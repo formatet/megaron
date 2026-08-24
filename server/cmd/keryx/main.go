@@ -4,7 +4,7 @@
 //
 //	keryx login --server http://10.0.1.88:8080 --username alice
 //	keryx status
-//	keryx recruit --unit hoplites --count 20
+//	keryx recruit --unit spearman --count 20
 //	keryx build --type farm
 //	keryx staff foundry +1
 //	keryx worlds

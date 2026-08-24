@@ -1524,6 +1524,25 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		`UPDATE units SET status = 'disbanded', updated_at = now()
 		 WHERE settlement_id = $1 AND status = 'garrison' AND size <= 0`, settlementID)
 
+	// Nothing to take, nothing to announce (acceptance sweep 2026-08-24). The
+	// roll picks one of four punishments blind, so a Wanax with no chariots and
+	// no ships draws chariot_loss/ship_loss half the time — and before this
+	// guard that still emitted a DivinePunishment event, divine gossip, and a
+	// LEVEL 2 (urgent) notification reading {"type":"ship_loss","amount":0}:
+	// "a divine storm has claimed a vessel from your harbour" to a player who
+	// owns no vessels. Observed twice in the first six ticks of a fresh world.
+	//
+	// This is the same rule the fix that introduced `amount` was written to
+	// serve (CLAUDE.md §Events, "events store outcomes, not intentions"): an
+	// outcome of nothing is not an outcome to report. No balance changes — the
+	// roll and what it takes are untouched, only what is said about it. The
+	// gods reached for something that was not there.
+	if amount <= 0 {
+		slog.Info("divine punishment rolled but found nothing to take",
+			"settlement", settlementID, "type", p.name)
+		return
+	}
+
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
 		map[string]any{"type": p.name, "amount": amount}, worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_wrath", p.text)

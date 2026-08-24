@@ -675,10 +675,29 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		lastTickProd := map[string]float64{}
 		lastTickCons := map[string]float64{}
 		for k, rd := range resSnap {
+			if k == "grain" {
+				continue // handled below — its stored rate is already net
+			}
 			if rd.Rate > 0 {
 				lastTickProd[k] = rd.Rate
 			} else if rd.Rate < 0 {
 				lastTickCons[k] = -rd.Rate
+			}
+		}
+		// Grain is the one good whose stored rate is already NET of what the
+		// population eats, so the loop above would file a self-sufficient city's
+		// +111/tick entirely under "produced" and leave consumption empty. The
+		// keryx one-liner then reported "2 varor produceras, 0 förbrukas" for a
+		// city eating 500 grain a tick — the same lie P4 hål 2 removed from
+		// `keryx ticklog`, one surface over (found in the acceptance sweep
+		// 2026-08-24). Reuses grainProdRate/grainConsumRate derived above, so the
+		// two surfaces cannot drift apart again.
+		if _, hasGrain := resSnap["grain"]; hasGrain {
+			if grainProdRate > 0 {
+				lastTickProd["grain"] = grainProdRate
+			}
+			if grainConsumRate > 0 {
+				lastTickCons["grain"] = grainConsumRate
 			}
 		}
 		// DEL A Sitos-delta-itemisering (megaron_ekonomi_legibilitet_plan.md):

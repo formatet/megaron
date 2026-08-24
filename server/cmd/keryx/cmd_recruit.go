@@ -32,12 +32,18 @@ func recruitCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "recruit",
 		Short: "Recruit a 100-man land cohort, or build a ship (--list to see all recruitable units)",
+		// Exemplen visar de KANONISKA namnen — samma strängar `recruit --list`
+		// skriver ut. Aliasen (hoplites, chariot, ship …) fungerar fortfarande och
+		// löses i unitAliases ovan, men de stod i exempelblocket, som är det
+		// första en ny Wanax kopierar — så CLI:t lärde ut ett pensionerat ordförråd
+		// som --list aldrig visar (funnet i acceptanssvepet 2026-08-24). Samma
+		// kanonisering som P5 gjorde på `disband`.
 		Example: `  keryx recruit --list
-  keryx recruit --unit hoplites
-  keryx recruit --unit chariot
-  keryx recruit --unit ship --name Asterion
+  keryx recruit --unit spearman
+  keryx recruit --unit war_chariot
+  keryx recruit --unit galley --name Asterion
   keryx recruit --unit war_galley --count 3
-  keryx recruit --unit hoplites --province <province-id>   # recruit in a colony`,
+  keryx recruit --unit spearman --province <province-id>   # recruit in a colony`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
