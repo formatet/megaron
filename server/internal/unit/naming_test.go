@@ -111,3 +111,32 @@ func TestRetiredNamesNeverSurface(t *testing.T) {
 		t.Errorf("merchantman ska visas som Emporos, fick %q", DisplayName("merchantman"))
 	}
 }
+
+// TestRetiredIdentifiersStayRetired låser den delade listan (RetiredIdentifiers)
+// mot den hårdkodade ordlistan ovan — svepet 2026-08-23 (megaron_plan_cli_sanning
+// §E) missade `keryx disband`s FLAGGNAMN helt eftersom DisplayName()-testet
+// bara kollar visningstext, aldrig identifierare på andra ytor. Ordlistan
+// exporteras nu (internal/unit.RetiredIdentifiers) just så att cmd/keryx —
+// som ligger nedströms om denna paketet i G1-ordningen och alltså inte kan
+// testas härifrån — har EN gemensam källa att greppa mot i stället för en
+// egen kopia som kan glida isär från den här (se cmd/keryx/cmd_disband_test.go).
+func TestRetiredIdentifiersStayRetired(t *testing.T) {
+	want := map[string]bool{"hoplites": true, "agema": true, "trireme": true, "hiereus": true}
+	got := map[string]bool{}
+	for _, id := range RetiredIdentifiers {
+		got[id] = true
+	}
+	if len(got) != len(RetiredIdentifiers) {
+		t.Errorf("RetiredIdentifiers har dubbletter: %v", RetiredIdentifiers)
+	}
+	for id := range want {
+		if !got[id] {
+			t.Errorf("RetiredIdentifiers saknar %q", id)
+		}
+	}
+	for id := range got {
+		if !want[id] {
+			t.Errorf("RetiredIdentifiers innehåller oväntat %q — uppdatera testet om detta är avsiktligt", id)
+		}
+	}
+}

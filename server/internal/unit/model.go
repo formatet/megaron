@@ -138,6 +138,15 @@ var displayNames = map[string]string{
 	string(TypeMerchantman):   "Emporos",
 }
 
+// RetiredIdentifiers lists unit-taxonomy words retired 2026-07-10 (Timothy)
+// that must never reach a player-facing surface — not as DisplayName()
+// output (TestRetiredNamesNeverSurface, this package) and not as a CLI flag
+// name either. The namn-hygien sweep only ever checked DisplayName(); it
+// missed `keryx disband`'s flags entirely (megaron_plan_cli_sanning §E) —
+// this is the single shared list so a future surface can check itself
+// against the same vocabulary instead of hand-copying it.
+var RetiredIdentifiers = []string{"hoplites", "agema", "trireme", "hiereus"}
+
 // DisplayName returns the canonical human-readable name for a unit's DB type
 // key, falling back to the raw key for any type not yet in the table (e.g. a
 // future unit not yet mapped).
