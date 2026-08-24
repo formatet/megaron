@@ -56,9 +56,39 @@ a settlement exists and a coarse industry hint, never its detailed market).`,
 				return err
 			}
 			if len(resp.Wants) == 0 && len(resp.Surplus) == 0 {
-				fmt.Println("No market data yet — send a messenger or trade offer to observe markets.")
+				// Rad L, megaron_plan_cli_sanning.md: `wants` only ever covers
+				// settlements you've actually contacted (temenos_gossip.md PASS
+				// 2b) — an empty response is often TRUE, not broken: either you
+				// haven't reached anyone yet, or everyone you HAVE reached
+				// currently shows no shortage/surplus (market_snapshots only
+				// updates on contact, so a balanced city stays silent here too).
+				// The old single message ("send a messenger... to observe
+				// markets") presumed the first case and told a Wanax who had
+				// already contacted several cities to do something he'd already
+				// done. Both real causes point at the same next action — reach
+				// a NEW settlement — so naming both here doesn't need a count
+				// this endpoint can't give: an exact "N contacted, 0 shown"
+				// split needs a field on GET .../market/wants that doesn't
+				// exist yet (province.go, out of scope for this row).
+				fmt.Println("No shortages or surplus to show right now.")
+				fmt.Println("This can mean two different things: you haven't sent a messenger or trade")
+				fmt.Println("offer to any settlement yet, OR the settlements you HAVE reached simply show")
+				fmt.Println("no shortage/surplus at the moment (a balanced city stays silent here too).")
+				fmt.Println("`keryx settlements` lists what you already know; `keryx messenger` reaches a new one.")
 				return nil
 			}
+			// How many settlements this response actually covers — the plan's
+			// "say how many cities are included" so the surface's FOW-gated
+			// reach is visible, not implied. A settlement can carry both a want
+			// and a surplus at once, so count distinct names, not list lengths.
+			contacted := map[string]bool{}
+			for _, s := range resp.Wants {
+				contacted[s.Name] = true
+			}
+			for _, s := range resp.Surplus {
+				contacted[s.Name] = true
+			}
+			fmt.Printf("Market signal from %d contacted settlement(s):\n\n", len(contacted))
 			if len(resp.Wants) > 0 {
 				fmt.Println("SHORTAGES (good to sell here):")
 				for _, s := range resp.Wants {
