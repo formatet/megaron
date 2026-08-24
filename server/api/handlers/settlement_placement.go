@@ -174,7 +174,18 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		PlacedOrdinals []int   `json:"placed_ordinals,omitempty"`
 		MarginalYield  float64 `json:"marginal_yield"`
 	}
-	buildGoods := func(rate map[string]float64, cap map[string]int, placedGoods map[string]int, ordinalsGoods map[string][]int) []goodOut {
+	// buildGoods reports Form B's FILLABLE cap (megaron_plan_byggnadsniva_takt.md,
+	// 2026-08-24): PlaceCapPerGood, not the level-grown CapPerGood. Place() now
+	// enforces PlaceCapPerGood as the real write-time ceiling (below), so
+	// showing CapPerGood here would promise the player slots that a placement
+	// request would reject. PlaceCapPerGood is capL1 for every good except
+	// grain, which keeps the real level-actual cap (megaron_plan_grain_cap.md)
+	// — see economy.HexOption.PlaceCapPerGood's doc comment for why grain is
+	// the exception. mult folds the building level's multiplier into
+	// marginal_yield so a levelled-up building still reads as more productive
+	// per slot, even though the slot COUNT no longer grows with level for
+	// non-grain goods.
+	buildGoods := func(rate map[string]float64, capL1 map[string]int, placeCap map[string]int, mult map[string]float64, placedGoods map[string]int, ordinalsGoods map[string][]int) []goodOut {
 		out := make([]goodOut, 0, len(rate))
 		for good, rate := range rate {
 			g := goodOut{
@@ -183,16 +194,16 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 				Placed:         placedGoods[good],
 				PlacedOrdinals: ordinalsGoods[good],
 			}
-			if c := cap[good]; c > 0 {
+			if c := placeCap[good]; c > 0 {
 				g.Cap = &c
 				// Grain keeps placementYield's rate × placed shape (not
-				// rate/cap × placed like every other good) — see
+				// rate/capL1×mult × placed like every other good) — see
 				// megaron_plan_grain_cap.md and placementYield's doc comment.
 				// It IS capped now, just not capacity-divided.
 				if good == economy.GoodGrain {
 					g.MarginalYield = rate
 				} else {
-					g.MarginalYield = rate / float64(c)
+					g.MarginalYield = (rate / float64(capL1[good])) * mult[good]
 				}
 			}
 			out = append(out, g)
@@ -221,7 +232,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			HexR:       opt.Coord.R,
 			HexOrdinal: ordinal,
 			Terrain:    opt.Terrain,
-			Goods:      buildGoods(opt.RatePerGood, opt.CapPerGood, placed.Hex[opt.Coord], placedOrdinals.Hex[opt.Coord]),
+			Goods:      buildGoods(opt.RatePerGood, opt.CapL1PerGood, opt.PlaceCapPerGood, opt.MultPerGood, placed.Hex[opt.Coord], placedOrdinals.Hex[opt.Coord]),
 		})
 	}
 
@@ -240,7 +251,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		buildings = append(buildings, buildingOut{
 			BuildingType: opt.BuildingType,
 			Level:        opt.Level,
-			Goods:        buildGoods(opt.RatePerGood, opt.CapPerGood, placed.Building[opt.BuildingType], placedOrdinals.Building[opt.BuildingType]),
+			Goods:        buildGoods(opt.RatePerGood, opt.CapL1PerGood, opt.PlaceCapPerGood, opt.MultPerGood, placed.Building[opt.BuildingType], placedOrdinals.Building[opt.BuildingType]),
 		})
 	}
 
@@ -446,7 +457,13 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "this hex has no production option for that good")
 			return
 		}
-		cap := opt.CapPerGood[req.GoodKey]
+		// Form B (megaron_plan_byggnadsniva_takt.md, 2026-08-24): the write-time
+		// ceiling is PlaceCapPerGood, not the level-grown CapPerGood — a
+		// levelled-up building now raises the RATE (MultPerGood), not the
+		// headcount, so a gubbe placed past PlaceCapPerGood would sit there
+		// producing nothing. Grain's PlaceCapPerGood stays the real
+		// level-actual cap (megaron_plan_grain_cap.md), unaffected.
+		cap := opt.PlaceCapPerGood[req.GoodKey]
 		if cap <= 0 || placed.Hex[hex][req.GoodKey] >= cap {
 			writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
 			return
@@ -481,7 +498,8 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity, "this building has no production option for that good")
 			return
 		}
-		cap := opt.CapPerGood[req.GoodKey]
+		// Form B: write-time ceiling is PlaceCapPerGood — see the hex branch above.
+		cap := opt.PlaceCapPerGood[req.GoodKey]
 		if cap <= 0 || placed.Building[req.BuildingType][req.GoodKey] >= cap {
 			writeError(w, http.StatusConflict, "this building is fully staffed for that good")
 			return
