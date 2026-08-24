@@ -23,11 +23,35 @@ type HexOption struct {
 	// CapL1PerGood is CapPerGood's Form A sibling (megaron_byggnadsniva_produktion.md,
 	// Timothy 2026-08-22): the SAME cap frozen at building level 1
 	// (capWithBuilding + WorkplaceSlots(b, 1), or capNoBuilding when no
-	// relevant building exists at all). placementYield divides rate by THIS,
-	// not by CapPerGood — so upgrading the gating building raises the
-	// ceiling (CapPerGood) without changing the per-gubbe rate, instead of
-	// raising the denominator too and cancelling the upgrade out.
+	// relevant building exists at all). Form B (megaron_plan_byggnadsniva_takt.md,
+	// Timothy 2026-08-24) keeps this as placementYield's RATE denominator —
+	// unchanged role from Form A. What moved is the CLIP ceiling: see
+	// PlaceCapPerGood below.
 	CapL1PerGood map[string]int
+
+	// MultPerGood is Form B's per-good multiplier: cap(actualLevel)/capL1,
+	// i.e. the SAME ratio Form A used to apply to headcount, now applied to
+	// the per-gubbe rate instead. At building level 1 (or no gating building
+	// at all) cap==capL1 so this is 1.0 — unchanged from Form A/pre-Form-A.
+	// A higher level raises this above 1.0, so the SAME capL1 gubbar produce
+	// more. grain's entry is pinned to 1.0 unconditionally (see hexGoodCaps)
+	// — the grain-cap plan's numbers must not move because of this slice.
+	MultPerGood map[string]float64
+
+	// PlaceCapPerGood is the number of gubbar that may actually be PLACED for
+	// this good here — what placementYield clips against, and what Place()
+	// enforces at write time. For every good EXCEPT grain this is CapL1PerGood
+	// (Form B's whole point: headcount frozen at level 1, the level's effect
+	// moved to MultPerGood instead). Grain is the one deliberate exception
+	// (hexGoodCaps): its capL1 is a purely mathematical trick (pinned to 1 so
+	// rate/capL1 reproduces rate×placed) that was NEVER a real headcount
+	// limit, so grain's PlaceCapPerGood stays CapPerGood — the REAL,
+	// level-actual cap from megaron_plan_grain_cap.md (4/8/10/12 per plains
+	// hex by farm level), completely untouched by this slice. Blindly using
+	// CapL1PerGood as the clip for grain too would silently cut every grain
+	// hex down to ONE placeable gubbe — caught by
+	// TestPlaceGubbe_GrainHexRejectsOverCapacity during this slice's build.
+	PlaceCapPerGood map[string]int
 
 	// BoostRatePerGood holds the SAME extraction gubbe's terrain+building
 	// combined rows for weakestLinkRefiningBuilding's goods (oil, wine — P6,
@@ -152,7 +176,7 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		c := hexgrid.Coord{Q: qq, R: rr}
 		opt, ok := byCoord[c]
 		if !ok {
-			caps, capsL1 := hexGoodCaps(terrain, copperDep, tinDep, silverDep, buildingLevels)
+			caps, capsL1, mult, placeCap := hexGoodCaps(terrain, copperDep, tinDep, silverDep, buildingLevels)
 			opt = &HexOption{
 				Coord:            c,
 				Terrain:          terrain,
@@ -160,6 +184,8 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 				BoostRatePerGood: make(map[string]float64),
 				CapPerGood:       caps,
 				CapL1PerGood:     capsL1,
+				MultPerGood:      mult,
+				PlaceCapPerGood:  placeCap,
 			}
 			byCoord[c] = opt
 			order = append(order, c)
@@ -200,6 +226,15 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 				// flat constant — no scaling to freeze, nothing changes here.
 				opt.CapL1PerGood[good] = HexFallbackCap
 			}
+			if _, covered := opt.MultPerGood[good]; !covered {
+				// cap == capL1 above, so the multiplier is trivially 1.0.
+				opt.MultPerGood[good] = 1.0
+			}
+			if _, covered := opt.PlaceCapPerGood[good]; !covered {
+				// None of oil/wine/stone is grain, so the clip ceiling is the
+				// same flat constant too — no grain exception applies here.
+				opt.PlaceCapPerGood[good] = HexFallbackCap
+			}
 		}
 		for good := range opt.BoostRatePerGood {
 			if _, covered := opt.CapPerGood[good]; !covered {
@@ -207,6 +242,12 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 			}
 			if _, covered := opt.CapL1PerGood[good]; !covered {
 				opt.CapL1PerGood[good] = HexFallbackCap
+			}
+			if _, covered := opt.MultPerGood[good]; !covered {
+				opt.MultPerGood[good] = 1.0
+			}
+			if _, covered := opt.PlaceCapPerGood[good]; !covered {
+				opt.PlaceCapPerGood[good] = HexFallbackCap
 			}
 		}
 		out = append(out, *opt)
@@ -222,48 +263,51 @@ const HexFallbackCap = 2
 
 // placementYield is the rate a target contributes for one good, given how
 // many gubbar are placed there. Every good is capacity-clamped (placed is
-// never allowed above cap — a physically full hex/building produces no more
-// no matter how many more gubbar queue up).
+// never allowed above placeCap — a physically full hex/building produces no
+// more no matter how many more gubbar queue up).
 //
-// Form A (megaron_byggnadsniva_produktion.md, Timothy 2026-08-22): the
-// per-gubbe rate divides by capL1 (the cap FROZEN at building level 1), not
-// by cap (the cap at the ACTUAL level) — cap only gates how many gubbar may
-// be placed. Before this, cap was both the denominator AND the ceiling, so
-// upgrading a building's level grew cap on both sides of the formula at once
-// and cancelled itself out: a level-3 silver mine produced the exact same
-// max output as level 1, just spread over more gubbar. With capL1 fixed at
-// the level-1 value, a higher level raises the ceiling (more gubbar fit)
-// without changing what each gubbe already there was worth — the game
-// reads as "the mine now holds more workers", not "the same workers dig
-// less each".
+// Form B (megaron_plan_byggnadsniva_takt.md, Timothy 2026-08-24) moved the
+// building level's effect from the CEILING to the RATE for every good except
+// grain. Form A (2026-08-22) divided by capL1 but still let placed climb to
+// the actual (level-grown) cap — so a level raised how many gubbar fit, at
+// the same per-gubbe rate. Form B instead freezes headcount at capL1 on
+// EVERY level and multiplies the per-gubbe rate by mult = cap(actualLevel)/
+// capL1 (hexGoodCaps) — placeCap==capL1 for these goods. Both forms share
+// the same max output (rate/capL1 × cap), proven by:
 //
-// Grain used to be a special-cased exception here (rate × placed, no
-// division at all) — the pre-P4 LaborCapacity's "hunger is not a staffing
-// problem" case, later formalised as a hard per-hex cap
-// (megaron_plan_grain_cap.md, Timothy 2026-08-19). Grain's rates were
-// calibrated per-gubbe, not per-full-hex, so dividing by the REAL cap would
-// silently halve/third every farm's output. Form A folds that into this same
-// formula instead of keeping a second code path: callers pass capL1=1 for
-// grain (hexGoodCaps pins it there, unconditionally, regardless of farm
-// level), so rate/1 = rate reproduces the old grain shape exactly while cap
-// still gates headcount per the grain-cap plan.
-func placementYield(good string, rate float64, capL1 int, cap int, placed int) float64 {
-	if cap <= 0 || capL1 <= 0 {
+//	Form A max  = (rate/capL1) × cap
+//	Form B max  = (rate/capL1) × mult × capL1 = (rate/capL1) × (cap/capL1) × capL1 = (rate/capL1) × cap
+//
+// — identical. What changes is how many gubbar reach that max: Form A needed
+// `cap` (grows with level); Form B needs only `capL1` (fixed) at every
+// level, because the SAME gubbar now carry more each. This is the whole
+// point: an upgrade lowers the population cost of the same ceiling instead
+// of raising it.
+//
+// Grain is the deliberate exception to the paragraph above: hexGoodCaps pins
+// mult=1 for grain unconditionally, AND passes placeCap=cap (the REAL,
+// level-actual physical cap from megaron_plan_grain_cap.md), not capL1 (a
+// pure division trick, pinned to 1, that was never a real headcount limit).
+// So grain's formula reduces to exactly its pre-Form-B shape: rate × placed,
+// clamped at the real per-hex cap that still grows 4/8/10/12 with farm
+// level — untouched by this slice, on purpose (§4 of the plan: a naive mult
+// applied to grain would multiply the whole world's food supply 4-12×).
+func placementYield(good string, rate float64, capL1 int, placeCap int, mult float64, placed int) float64 {
+	if capL1 <= 0 || placeCap <= 0 {
 		return 0
 	}
-	if placed > cap {
-		placed = cap // defensive — Place() enforces the cap at write time, never trust a stale read
+	if placed > placeCap {
+		placed = placeCap // defensive — Place() enforces the cap at write time, never trust a stale read
 	}
-	return (rate / float64(capL1)) * float64(placed)
+	return (rate / float64(capL1)) * mult * float64(placed)
 }
 
 // hexGoodCaps returns every good_key a single hex (given its terrain and
 // deposit flags) can cap, and that good's worker cap — the per-hex sibling of
 // LoadHexCapacity's aggregate sum (P3) — TWICE: once at the building's ACTUAL
-// level (caps, unchanged from pre-Form-A) and once frozen at level 1 (capL1,
-// Form A's denominator — megaron_byggnadsniva_produktion.md). A hex can
-// independently cap MULTIPLE goods (a plains hex is both "slätt" (grain) and
-// "betesmark" (livestock)).
+// level (caps, unchanged since P3) and once frozen at level 1 (capL1). A hex
+// can independently cap MULTIPLE goods (a plains hex is both "slätt" (grain)
+// and "betesmark" (livestock)).
 //
 // capOf adds the gating building's OWN P2 workplace slots (WorkplaceSlots) on
 // top of P3's capWithBuilding tier when that building is present. Restores a
@@ -280,9 +324,30 @@ func placementYield(good string, rate float64, capL1 int, cap int, placed int) f
 //
 // Grain is the one goodKey whose capL1 is forced to 1 regardless of the rule
 // above (see placementYield's doc comment) — its rate was never calibrated
-// per-cap, so it must keep the old rate×placed shape, not join the
-// rate/capAtLevel1×placed shape every other good gets from Form A.
-func hexGoodCaps(terrain string, copperDep, tinDep, silverDep bool, buildingLevels map[string]int) (caps map[string]int, capsL1 map[string]int) {
+// per-cap, so it must keep the old rate×placed shape.
+//
+// mult is Form B's third map (megaron_plan_byggnadsniva_takt.md §5 step 1):
+// good → cap/capL1, i.e. how much bigger the ACTUAL cap is than the frozen
+// level-1 one. Deliberately computed AFTER the apply loop, from the SUMMED
+// caps/capsL1 per good — NOT inside apply from each individual rule's own
+// (cap, capL1) pair. A hex can carry more than one rule for the SAME good
+// (mager åker + a copper deposit both feed "grain" is not a real case today,
+// but plains' two rules already prove a hex can accumulate one good's caps
+// across multiple apply() calls in principle); taking the ratio of the
+// PER-RULE pair and overwriting mult[good] on a second apply would silently
+// drop the first rule's contribution. Ratio-of-sums is exact for the actual
+// game data (today, no good is fed by two building-gated rules on the same
+// hex) and never needs a weighted average to stay correct if that changes.
+//
+// placeCap is the fourth map: the number of gubbar that may actually be
+// PLACED (placementYield's clip ceiling, and Place()'s write-time ceiling).
+// For every good except grain this equals capL1 — Form B's whole point,
+// headcount frozen at level 1. Grain keeps placeCap=cap (the real,
+// level-actual cap) because its capL1 is a pure division trick (pinned to 1
+// two lines above), never a real headcount limit — see PlaceCapPerGood's and
+// placementYield's doc comments for why conflating the two would silently
+// cut every grain hex down to one placeable gubbe.
+func hexGoodCaps(terrain string, copperDep, tinDep, silverDep bool, buildingLevels map[string]int) (caps map[string]int, capsL1 map[string]int, mult map[string]float64, placeCap map[string]int) {
 	capOf := func(rule hexCapacityRule) (cap, capL1 int) {
 		if rule.relevantBuilding == "" {
 			return rule.capNoBuilding, rule.capNoBuilding
@@ -321,7 +386,25 @@ func hexGoodCaps(terrain string, copperDep, tinDep, silverDep bool, buildingLeve
 	if silverDep {
 		apply(depositCapacityTable["silver"])
 	}
-	return caps, capsL1
+
+	mult = make(map[string]float64)
+	placeCap = make(map[string]int)
+	for good, cap := range caps {
+		if capL1 := capsL1[good]; capL1 > 0 {
+			mult[good] = float64(cap) / float64(capL1)
+			placeCap[good] = capL1
+		} else {
+			mult[good] = 1.0
+			placeCap[good] = cap
+		}
+	}
+	// Pinned last, unconditionally, in the SAME function that already forces
+	// grain's capL1 to 1 — so the three can never drift apart (§4 of the
+	// plan: a naive mult would multiply the whole world's food supply 4-12×,
+	// and a naive placeCap=capL1 would cut every grain hex to ONE gubbe).
+	mult[GoodGrain] = 1.0
+	placeCap[GoodGrain] = caps[GoodGrain] // the real, level-actual grain cap — untouched by Form B
+	return caps, capsL1, mult, placeCap
 }
 
 // BuildingOption is one settlement-wide workplace building's production menu
@@ -347,6 +430,19 @@ type BuildingOption struct {
 	// this is the same idea for the pure-building workplaces (mine/stonequarry/
 	// olive_press/winery/foundry/…).
 	CapL1PerGood map[string]int
+
+	// MultPerGood is HexOption.MultPerGood's sibling for pure-building
+	// workplaces: CapPerGood/CapL1PerGood, i.e. WorkplaceSlots(BuildingType,
+	// Level)/WorkplaceSlots(BuildingType, 1). No good reaching this map is
+	// grain (grain is always HexOption/farm-gated), so there is no pinned
+	// exception to carry here.
+	MultPerGood map[string]float64
+
+	// PlaceCapPerGood is HexOption.PlaceCapPerGood's sibling — always equal
+	// to CapL1PerGood here, since grain never reaches a BuildingOption (it is
+	// always terrain-gated, HexOption's territory), so the grain exception
+	// that field carries never applies.
+	PlaceCapPerGood map[string]int
 }
 
 // LoadBuildingProductionOptions returns every built (level >= 1) workplace
@@ -377,18 +473,27 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 		opt, ok := byType[buildingType]
 		if !ok {
 			opt = &BuildingOption{
-				BuildingType: buildingType,
-				Level:        level,
-				RatePerGood:  make(map[string]float64),
-				CapPerGood:   make(map[string]int),
-				CapL1PerGood: make(map[string]int),
+				BuildingType:    buildingType,
+				Level:           level,
+				RatePerGood:     make(map[string]float64),
+				CapPerGood:      make(map[string]int),
+				CapL1PerGood:    make(map[string]int),
+				MultPerGood:     make(map[string]float64),
+				PlaceCapPerGood: make(map[string]int),
 			}
 			byType[buildingType] = opt
 			order = append(order, buildingType)
 		}
 		opt.RatePerGood[goodKey] += rate
 		opt.CapPerGood[goodKey] = WorkplaceSlots(buildingType, level)
-		opt.CapL1PerGood[goodKey] = WorkplaceSlots(buildingType, 1)
+		capL1 := WorkplaceSlots(buildingType, 1)
+		opt.CapL1PerGood[goodKey] = capL1
+		opt.PlaceCapPerGood[goodKey] = capL1
+		if capL1 > 0 {
+			opt.MultPerGood[goodKey] = float64(opt.CapPerGood[goodKey]) / float64(capL1)
+		} else {
+			opt.MultPerGood[goodKey] = 1.0
+		}
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("load building production options: rows: %w", err)

@@ -18,7 +18,7 @@ type foodSlot struct {
 	hex     hexgrid.Coord
 	good    string
 	yield   float64
-	cap     int // how many gubbar this slot can hold in this placement pass
+	cap     int // PlaceCapPerGood — capL1 for fish, the real level-actual cap for grain (see placement_yield.go)
 	ordinal int
 }
 
@@ -27,13 +27,20 @@ type foodSlot struct {
 // the same determinism P0-UI locked for the [unbuilt] spawn-to-food UI
 // preview). Grain and fish now share the SAME real P3 hex cap
 // (megaron_plan_grain_cap.md, 2026-08-22 — grain is no longer capacity-exempt);
-// grain keeps its own yield SHAPE (marginal yield = rate, not rate/cap — see
-// placementYield's doc comment), but the slot's cap field (how many gubbar it
-// can hold before the greedy loop must move to the next-best hex) is the real
-// physical ceiling, exactly like fish. Without this, greedy placement would
-// stack every food-needing gubbe onto the single best-ranked grain hex before
-// ever trying a second one — the founding-time version of the "32 gubbar on
-// one hex" bug this whole plan exists to close.
+// grain keeps its own yield SHAPE (marginal yield = rate, not rate/capL1×mult —
+// see placementYield's doc comment), but the slot's cap field (how many
+// gubbar it can hold before the greedy loop must move to the next-best hex)
+// is the real physical ceiling, exactly like fish. Without this, greedy
+// placement would stack every food-needing gubbe onto the single best-ranked
+// grain hex before ever trying a second one — the founding-time version of
+// the "32 gubbar on one hex" bug this whole plan exists to close.
+//
+// Form B (megaron_plan_byggnadsniva_takt.md, 2026-08-24): the slot's cap is
+// now PlaceCapPerGood, not CapPerGood — Place() enforces PlaceCapPerGood at
+// write time (settlement_placement.go), so this greedy pass must stop
+// filling a hex at the same number or it would try to insert rows Place()
+// would reject. Grain's PlaceCapPerGood stays the real level-actual cap
+// (unaffected by Form B); fish's becomes capL1 (frozen).
 func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]foodSlot, hexgrid.Coord, error) {
 	var q, r int
 	if err := tx.QueryRow(ctx,
@@ -58,13 +65,14 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]food
 			if rate <= 0 {
 				continue
 			}
-			cap := opt.CapPerGood[good]
-			if cap <= 0 {
+			capL1 := opt.CapL1PerGood[good]
+			cap := opt.PlaceCapPerGood[good]
+			if capL1 <= 0 || cap <= 0 {
 				continue
 			}
-			yield := rate / float64(cap)
+			yield := (rate / float64(capL1)) * opt.MultPerGood[good]
 			if good == GoodGrain {
-				yield = rate // grain's yield shape stays rate × placed, not rate/cap × placed (placementYield)
+				yield = rate // grain's yield shape stays rate × placed, not rate/capL1×mult × placed (placementYield)
 			}
 			ordinal, _ := hexgrid.RingOrdinal(center, hexgrid.CatchmentRadius, opt.Coord)
 			slots = append(slots, foodSlot{opt.Coord, good, yield, cap, ordinal})
