@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"sort"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
@@ -141,6 +142,10 @@ type ScheduledEvent struct {
 	FailedAt     *time.Time
 	Attempts     int
 	DueTick      int
+	// Priority is where in the game day this event runs; lower runs first.
+	// Written at enqueue time from TickPriority — see priority.go for the
+	// ladder and why it exists.
+	Priority int
 }
 
 // Scheduler enqueues timed game events.
@@ -167,9 +172,9 @@ func (s *Scheduler) EnqueueTick(ctx context.Context, worldID uuid.UUID, eventTyp
 		return fmt.Errorf("marshal scheduled payload: %w", err)
 	}
 	_, err = s.pool.Exec(ctx,
-		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick)
-		 VALUES ($1, $2, $3, now(), $4)`,
-		worldID, string(eventType), raw, dueTick,
+		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick, priority)
+		 VALUES ($1, $2, $3, now(), $4, $5)`,
+		worldID, string(eventType), raw, dueTick, TickPriority(eventType),
 	)
 	return err
 }
@@ -199,11 +204,11 @@ func (s *Scheduler) EnqueueTickRecurring(ctx context.Context, worldID uuid.UUID,
 		return fmt.Errorf("marshal scheduled payload: %w", err)
 	}
 	_, err = s.pool.Exec(ctx,
-		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick)
+		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick, priority)
 		 VALUES ($1, $2, $3, now(),
-		         GREATEST($4::int, (SELECT current_tick FROM worlds WHERE id = $1) + $5::int))
+		         GREATEST($4::int, (SELECT current_tick FROM worlds WHERE id = $1) + $5::int), $6)
 		 ON CONFLICT (world_id, event_type, due_tick, payload) WHERE processed_at IS NULL DO NOTHING`,
-		worldID, string(eventType), raw, lastDue+intervalTicks, intervalTicks,
+		worldID, string(eventType), raw, lastDue+intervalTicks, intervalTicks, TickPriority(eventType),
 	)
 	return err
 }
@@ -215,9 +220,9 @@ func (s *Scheduler) EnqueueTickTx(ctx context.Context, tx pgx.Tx, worldID uuid.U
 		return fmt.Errorf("marshal scheduled payload: %w", err)
 	}
 	_, err = tx.Exec(ctx,
-		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick)
-		 VALUES ($1, $2, $3, now(), $4)`,
-		worldID, string(eventType), raw, dueTick,
+		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick, priority)
+		 VALUES ($1, $2, $3, now(), $4, $5)`,
+		worldID, string(eventType), raw, dueTick, TickPriority(eventType),
 	)
 	return err
 }
@@ -319,6 +324,18 @@ func (w *Worker) Run(ctx context.Context) {
 }
 
 func (w *Worker) processBatch(ctx context.Context) error {
+	// Två sorteringar, inte en — de gör olika saker och båda behövs.
+	//
+	// Subqueryns ORDER BY avgör VILKA rader som claimas. Med priority i den
+	// håller ordningen även ÖVER batchgränsen: LIMIT 20 betyder att ett tick i
+	// en levande värld spänner över många batchar, och utan priority i
+	// subqueryn kunde stad A:s KharisTick claimas i batch 1 medan dess
+	// UpkeepTick låg kvar till batch 3.
+	//
+	// Go-sorteringen nedan avgör i vilken ordning de claimade raderna
+	// DISPATCHAS. Postgres garanterar ingen ordning för RETURNING — subqueryns
+	// ORDER BY läcker inte ut hit, hur den än ser ut. Mätt 48,2/51,8 % över
+	// 438 tick innan den här sorteringen fanns.
 	rows, err := w.pool.Query(ctx,
 		`UPDATE scheduled_events
 		 SET attempts = attempts + 1
@@ -329,11 +346,11 @@ func (w *Worker) processBatch(ctx context.Context) error {
 		       AND world_id IN (SELECT id FROM worlds WHERE status = 'active')
 		       AND due_tick IS NOT NULL
 		       AND due_tick <= (SELECT current_tick FROM worlds w2 WHERE w2.id = scheduled_events.world_id)
-		     ORDER BY due_tick, id
+		     ORDER BY due_tick, priority, id
 		     LIMIT 20
 		     FOR UPDATE SKIP LOCKED
 		 )
-		 RETURNING id, world_id, event_type, payload, process_after, processed_at, failed_at, attempts, due_tick`,
+		 RETURNING id, world_id, event_type, payload, process_after, processed_at, failed_at, attempts, due_tick, priority`,
 	)
 	if err != nil {
 		return fmt.Errorf("claim events: %w", err)
@@ -343,7 +360,7 @@ func (w *Worker) processBatch(ctx context.Context) error {
 	var batch []ScheduledEvent
 	for rows.Next() {
 		var e ScheduledEvent
-		if err := rows.Scan(&e.ID, &e.WorldID, &e.EventType, &e.Payload, &e.ProcessAfter, &e.ProcessedAt, &e.FailedAt, &e.Attempts, &e.DueTick); err != nil {
+		if err := rows.Scan(&e.ID, &e.WorldID, &e.EventType, &e.Payload, &e.ProcessAfter, &e.ProcessedAt, &e.FailedAt, &e.Attempts, &e.DueTick, &e.Priority); err != nil {
 			return fmt.Errorf("scan scheduled event: %w", err)
 		}
 		batch = append(batch, e)
@@ -351,6 +368,17 @@ func (w *Worker) processBatch(ctx context.Context) error {
 	if err := rows.Err(); err != nil {
 		return err
 	}
+
+	sort.Slice(batch, func(i, j int) bool {
+		a, b := batch[i], batch[j]
+		if a.DueTick != b.DueTick {
+			return a.DueTick < b.DueTick
+		}
+		if a.Priority != b.Priority {
+			return a.Priority < b.Priority
+		}
+		return a.ID < b.ID
+	})
 
 	for _, e := range batch {
 		w.dispatch(ctx, e)
