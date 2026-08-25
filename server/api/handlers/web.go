@@ -13,6 +13,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -20,17 +21,18 @@ import (
 )
 
 // kharisToMood maps the 0-100 kharis level to its English display mood.
-// Same canonical thresholds as internal/kharis.deriveMood (60/30/10, strawman —
-// temenos_balans_spakar.md §9) — kept as two functions (Go/Swedish label sets,
-// different packages per the G1 dependency order) but ONE threshold table, per
-// the 2026-07-09 kharis omdesign's "Ta bort ev. dubbel skala" instruction.
+// Same canonical thresholds as internal/kharis.deriveMood (religion.MoodFavorable/
+// MoodIndifferent/MoodSuspicious, 60/30/5) — kept as two functions (Go/Swedish
+// label sets, different packages per the G1 dependency order) but ONE
+// threshold table, per the 2026-07-09 kharis omdesign's "Ta bort ev. dubbel
+// skala" instruction.
 func kharisToMood(k float64) string {
 	switch {
-	case k >= 60:
+	case k >= religion.MoodFavorable:
 		return "Favorable"
-	case k >= 30:
+	case k >= religion.MoodIndifferent:
 		return "Indifferent"
-	case k >= 10:
+	case k >= religion.MoodSuspicious:
 		return "Suspicious"
 	default:
 		return "Wrathful"
