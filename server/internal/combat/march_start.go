@@ -98,6 +98,49 @@ func NavalSpeedFactor(t unit.Type) float64 {
 	}
 }
 
+// crewSpeedMax is CrewSpeedFactor's ceiling: an empty-benches hull sails at
+// this multiple of a fully crewed one's time. STRAWMAN tal, same status as
+// NavalSpeedFactor's 0.6/1.4 — kalibreras i soak, inte här
+// (megaron_plan_skeppsfart_besattning.md §4).
+const crewSpeedMax = 2.0
+
+// CrewSpeedFactor: a shorthanded hull rows slower. 1.0 at full crew, rising
+// continuously toward crewSpeedMax as the benches empty — no threshold, no
+// minimum-crew hard stop. A ship with crew 1 still sails, just slowly
+// (Timothy's decision, §4: a hard stranding gate would lock an absent
+// Wanax's ship on the map forever, which is exactly what the asynchronicity
+// gate forbids). Land units (CrewFor == 0) are exempt regardless of the crew
+// column's value.
+func CrewSpeedFactor(t unit.Type, crew int) float64 {
+	full := unit.CrewFor(t)
+	if full <= 0 {
+		return 1.0 // land unit
+	}
+	if crew >= full {
+		return 1.0
+	}
+	if crew < 0 {
+		crew = 0
+	}
+	short := 1 - float64(crew)/float64(full)
+	return 1 + short*(crewSpeedMax-1)
+}
+
+// TravelFactor is the complete multiplier applied to a path's raw tick cost:
+// hull speed by ship type, the host's halved march hours, the crew's
+// manning level, and the laden penalty. ONE home for all five legs (dispatch,
+// arrival, recall, redirect, damaged return) — they diverged once already
+// (unit_arrival.go's missing mirror, see its doc comment) — so a future term
+// (e.g. hull) is added here once instead of in five places that will drift
+// again.
+func TravelFactor(t unit.Type, crew int, laden bool) float64 {
+	f := NavalSpeedFactor(t) * unit.MarchHoursFactorFor(t) * CrewSpeedFactor(t, crew)
+	if laden {
+		f *= 1.5
+	}
+	return f
+}
+
 // StartMarch validates and executes one march order atomically. On success the
 // unit is marching and its UnitArrival is scheduled. Any *OrderReject return
 // carries the HTTP status + reason exactly as the March handler answered.
@@ -441,16 +484,11 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		moveTicks = pathCost
 	}
 	// Ship types vary in speed (Timothy 2026-07-09): war galley fastest,
-	// merchantman slowest, galley between. Factor scales travel time (lower =
-	// faster); tunable, lives in NavalSpeedFactor.
-	moveTicks *= NavalSpeedFactor(u.Type)
-	// The nomadic host is the slowest thing on the map: half a spearman's speed,
-	// i.e. DOUBLE its hours. Every other type is unaffected (factor 1.0).
-	moveTicks *= unit.MarchHoursFactorFor(u.Type)
-	// Loaded ships move 1.5× slower.
-	if u.CargoUnitID != nil {
-		moveTicks *= 1.5
-	}
+	// merchantman slowest, galley between. The nomadic host is the slowest
+	// thing on the map: half a spearman's speed. A shorthanded crew rows
+	// slower still (Slice B). Loaded ships move 1.5× slower. All four live
+	// in TravelFactor — the one home for every leg.
+	moveTicks *= TravelFactor(u.Type, u.Crew, u.CargoUnitID != nil)
 
 	now := clk.Now()
 	var currentTick int
