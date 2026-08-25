@@ -675,18 +675,22 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 }
 
 // deriveMood maps the 0–100 kharis level to a mood label (replaces player-set
-// cult_level). This is the SINGLE canonical threshold table — mood, rite success
-// (settlement.go), and api/handlers.kharisToMood (web.go) all read the same four
-// tiers (60/30/10, strawman — temenos_balans_spakar.md §9) so there is no longer a
-// dual scale. Swedish labels for the two lower tiers ("tveksam"/"vredgad") are new
-// strawman coinages — the design doc only names the English mood words for those.
+// cult_level). The four tiers are religion.MoodFavorable/MoodIndifferent/
+// MoodSuspicious (60/30/5) — the single canonical threshold table, shared with
+// api/handlers.kharisToMood (web.go) and religion.PrayerSpec.MinKharis
+// (megaron_plan_kultbrunnen.md §6, 2026-08-25 — the lowest tier was 10 here
+// while the lowest prayer gate was 5; both now read the same constant). Rite
+// success (settlement.go riteSuccessChance) does NOT read this table — it has
+// been a continuous kharis/100 formula since FAS 1, no tier lookup. Swedish
+// labels for the two lower tiers ("tveksam"/"vredgad") are strawman coinages —
+// the design doc only names the English mood words for those.
 func deriveMood(kharis float64) string {
 	switch {
-	case kharis >= 60:
+	case kharis >= religion.MoodFavorable:
 		return "overdadig" // Favorable
-	case kharis >= 30:
+	case kharis >= religion.MoodIndifferent:
 		return "vardig" // Indifferent
-	case kharis >= 10:
+	case kharis >= religion.MoodSuspicious:
 		return "tveksam" // Suspicious
 	default:
 		return "vredgad" // Wrathful
