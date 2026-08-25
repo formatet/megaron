@@ -118,6 +118,7 @@ func main() {
 		reportsCmd(),
 		actionsCmd(),
 		notificationsCmd(),
+		watchCmd(),
 	)
 
 	if err := root.Execute(); err != nil {

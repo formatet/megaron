@@ -97,6 +97,17 @@ func printNotificationRow(n notificationItem) {
 		kind = n.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
 	fmt.Printf("%s[%s]  %-20s  %s\n", marker, notificationAge(n.CreatedAt), kind, string(n.Body))
+	printNotificationDetail(n)
+}
+
+// printNotificationDetail prints the kind-specific actionable follow-up
+// line(s) for a notification's body — broken out of printNotificationRow so
+// `keryx watch` (cmd_watch.go) can render the exact same detail line for a
+// live push message, which carries a kind+payload but none of the
+// listing-only fields (id, created_at, read_at). Two renderers of the same
+// notification kind is exactly the fifth-copy fate megaron_plan_keryx_strom.md
+// §3 point 3 calls out — this is the single shared function both call.
+func printNotificationDetail(n notificationItem) {
 	if n.Kind == "ColonyFounded" {
 		printColonyFoundedGrainLine(n)
 	}
