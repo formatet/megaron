@@ -33,6 +33,47 @@ const (
 	blessProbability  = 0.15 // 15% chance of divine blessing per maintained day above threshold
 )
 
+// foundingGraceTicks — hur många dygn en nygrundad Wanax går fri från
+// straffrullningen (Timothy 2026-08-25, alternativ A).
+//
+// Problemet det löser är inte en kalibrering utan en INVERSION: TempleKharisCeiling(0)
+// är 25 och punishThreshold är 30, alltså kan en tempellös Wanax inte nå över
+// straffgränsen ens i sitt bästa möjliga tillstånd. Ovanpå det sitter rullningen
+// uteslutande på missed-grenen (processMaintenance nedan), och `maintained` är
+// definierad som "håller minst ett stående tempel" — så utan tempel är hon på den
+// grenen varje dygn per definition. Mätt i acceptansvärlden: Wanax1 förlorade 68 man
+// till pest på sjutton tick av 200 startande, utan att ha gjort något fel.
+// temple_ceiling_test.go hävdar redan invarianten för nivå 1 ("must still keep a
+// Wanax clear of divine punishment"); motsvarande assertion för nivå 0 skrevs aldrig,
+// och nivå 0 bryter den med fem poäng.
+//
+// Talet 24 är INTE kalibrerat mot hur lång tid templet tar. Den mekaniska
+// minimivägen är ~5 dygn: templet kostar 60 timmer + 60 sten ur ett startlager på
+// 200/300, alltså är det gratis från dygn ett, och bygget tar 4 tick
+// (province.BuildingSpecs). 24 är kalibrerat mot INLOGGNINGSKADENSEN. Ett tick är
+// ett dygn och den kanoniska takten är 60 min/tick, så 24 tick är ett verkligt
+// dygn — en Wanax som loggar in en gång om dagen får exakt ett inlogg på sig att
+// reagera innan gudarna börjar rulla. Det är asynkronitetsgrinden, inte byggtiden.
+//
+// ⚠️ Fristen stänger inte brunnen, den ger tid att ta sig ur den. En Wanax som
+// SENARE förlorar sitt tempel faller tillbaka i samma inversion utan frist — se
+// megaron_todo.md §NU. Decay rörs inte: hon tynar fortfarande mot golvet, vilket är
+// den tempellösas ärliga konsekvens enligt takets egen kommentar.
+const foundingGraceTicks = 24
+
+// shouldRollPunishment avgör om missed-grenen ska rulla för gudastraff alls.
+// Ren funktion med flit: utfallet beror på ett tärningskast, så själva BESLUTET
+// måste gå att bevisa utan att slå tärningen (samma grepp som armyUpkeepWarning
+// i cmd/keryx). Ett negativt ticksSinceFounding — bakåtfylld rad, skev klocka —
+// läses som "inom fristen", eftersom den säkra riktningen vid trasig data är att
+// låta bli att straffa.
+func shouldRollPunishment(kharis float64, ticksSinceFounding int) bool {
+	if ticksSinceFounding < foundingGraceTicks {
+		return false
+	}
+	return kharis < punishThreshold
+}
+
 // kharisPerTempleDay is what one FULLY DEVOTED temple earns its Wanax per day
 // at tier 1 (mig 094, "kult är ingen vara"). The old model summed a `cult` STOCK
 // to derive a RATE — a fake good with weight 0 that nobody could trade, eat or
@@ -262,6 +303,9 @@ type wanaxSnap struct {
 	templeCities       int
 	maxTempleLevel     int // grandest temple's level — sets the kharis ceiling
 	templelessColonies int // FAS 2: non-capital settlements with no temple building
+	// ticksSinceFounding är dygn sedan metropolen restes (mig 132). Styr
+	// nådefristen — se foundingGraceTicks.
+	ticksSinceFounding int
 }
 
 // Handle processes a KharisTick scheduled event.
@@ -318,7 +362,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		              SELECT 1 FROM buildings b
 		              WHERE b.settlement_id = s3.id AND b.building_type = 'temple'
 		          )
-		    ), 0) AS templeless_colonies
+		    ), 0) AS templeless_colonies,
+		    current_world_tick() - pwr.founded_tick AS ticks_since_founding
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 WHERE pwr.world_id = $1`,
@@ -334,7 +379,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		var w wanaxSnap
 		if err := rows.Scan(&w.playerID, &w.settlementID,
 			&w.kharis, &w.kharisCap, &w.devotionSum, &w.templeCities,
-			&w.maxTempleLevel, &w.templelessColonies); err == nil {
+			&w.maxTempleLevel, &w.templelessColonies,
+			&w.ticksSinceFounding); err == nil {
 			// The grandest temple binds the ceiling from here on — processMaintenance
 			// and everything downstream sees one already-resolved cap.
 			w.kharisCap = EffectiveKharisCap(w.kharisCap, w.maxTempleLevel)
@@ -652,14 +698,20 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	} else {
 		// No temple production this day — dailyDecay above is the only kharis
 		// change (gain=0). Punish roll only fires on this (missed) branch.
+		inGrace := w.ticksSinceFounding < foundingGraceTicks
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
 			map[string]any{
 				"reason":              "no_cult_production",
 				"daily_decay":         dailyDecay,
 				"templeless_colonies": w.templelessColonies,
+				// Utfall, inte avsikt (CLAUDE.md §Events): raden säger att fristen
+				// höll straffet borta den här dagen, så en tyst dag går att skilja
+				// från en dag då tärningen bara föll väl.
+				"founding_grace":       inGrace,
+				"ticks_since_founding": w.ticksSinceFounding,
 			},
 			worldID, nil)
-		if newKharis < punishThreshold && rand.Float64() < punishProbability {
+		if shouldRollPunishment(newKharis, w.ticksSinceFounding) && rand.Float64() < punishProbability {
 			h.applyDivinePunishment(ctx, w.settlementID, worldID, w.playerID)
 		}
 	}

@@ -179,14 +179,20 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	// meter starts where it is, not inflated. Strawman start — temenos_balans_spakar.md §9.
 	const starterKharis = 25.0
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate, kharis_amount, kharis_calc_tick)
-		 VALUES ($1, $2, $3, 'active', $4, $5, current_world_tick())
+		// founded_tick stämplas i BÅDA grenarna med flit. Den normala vägen är
+		// join.go → hit: join skapar redan raden (status 'active', ingen
+		// settlement), så grundningen tar ALLTID DO UPDATE-grenen. Stod talet
+		// bara i VALUES vore founded_tick kvar på kolumnens DEFAULT 0 för varje
+		// riktig spelare, och nådefristen hade aldrig gällt någon.
+		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate, kharis_amount, kharis_calc_tick, founded_tick)
+		 VALUES ($1, $2, $3, 'active', $4, $5, current_world_tick(), current_world_tick())
 		 ON CONFLICT (player_id, world_id) DO UPDATE SET
 		     settlement_id = EXCLUDED.settlement_id,
 		     status = 'active',
 		     kharis_rate = EXCLUDED.kharis_rate,
 		     kharis_amount = EXCLUDED.kharis_amount,
-		     kharis_calc_tick = current_world_tick()`,
+		     kharis_calc_tick = current_world_tick(),
+		     founded_tick = current_world_tick()`,
 		p.PlayerID, p.WorldID, out.SettlementID, kharisRate, starterKharis,
 	); err != nil {
 		return out, &metropolisError{"could not record join", err}
