@@ -2397,6 +2397,28 @@ func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlemen
 
 // Goods handles GET /worlds/:worldID/provinces/:provinceID/goods.
 // Returns the settlement's goods inventory with lazy-eval amounts and local prices.
+// placedCitizensByGood collapses a settlement's PlacementCounts into citizens
+// employed per good — one placed gubbe = 100 citizens (Temenos_varutaxonomi_sol
+// §1.1). This is the honest post-P4 replacement for the pre-P4 settlement_labor
+// weights the goods surface used to read: production is driven by
+// settlement_placement, so the worker counts shown beside it must be too. Cult
+// is NOT here — it stays on its settlement_labor devotion path (the one good P4
+// left on weights).
+func placedCitizensByGood(pc economy.PlacementCounts) map[string]int {
+	out := make(map[string]int)
+	for _, byGood := range pc.Hex {
+		for good, n := range byGood {
+			out[good] += n * 100
+		}
+	}
+	for _, byGood := range pc.Building {
+		for good, n := range byGood {
+			out[good] += n * 100
+		}
+	}
+	return out
+}
+
 func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -2530,22 +2552,21 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	// Compute idle citizens from unallocated weight fraction.
-	// GoodCult is excluded here for the same reason LaborAlloc below never adds
-	// it to totalPct (see the "cult (devotion) is ... ADDITIVE" comment on the
-	// key == "cult" branch further down in this file): cult has its own
-	// temple-capacity cap and does not compete for the 1.0 labor budget. Counting
-	// it here would under-report idle capacity in every temple city by exactly
-	// its devotion weight (found alongside the matching auto_alloc.go bug,
-	// 2026-07-25 — see economy.AutoAllocateUnlocked for the fuller writeup).
-	var totalWeight float64
-	for k, w := range laborWeights {
-		if k == economy.GoodCult {
-			continue
-		}
-		totalWeight += w
-	}
-	idleCitizens := int(math.Round((1.0 - totalWeight) * float64(laborPool)))
+	// Post-P4 truth: worker headcounts come from settlement_placement (the source
+	// that actually drives production), NOT the pre-P4 settlement_labor weights —
+	// those are inert dead writes for every good except cult, so reading them here
+	// made every non-cult Workers count a lie (stone agent, 2026-08-24). One
+	// placed gubbe = 100 citizens.
+	placed, _ := economy.LoadPlacementCounts(r.Context(), h.pool, settlementID)
+	employedByGood := placedCitizensByGood(placed)
+	// Cult is the one good still staffed by settlement_labor devotion weight
+	// (temple labor, untouched by P4) — keep its live path here.
+	cultCitizens := int(math.Round(laborWeights[economy.GoodCult] * float64(laborPool)))
+
+	// Idle = population neither placed on a good nor devoted to the temple.
+	// placed.Total counts only non-cult gubbar (cult never enters
+	// settlement_placement), so cult citizens are subtracted separately.
+	idleCitizens := laborPool - placed.Total*100 - cultCitizens
 	if idleCitizens < 0 {
 		idleCitizens = 0
 	}
@@ -2594,15 +2615,30 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		}
 		bp := basePotential[key]
 		capacity := economy.LaborCapacity(key, hasFieldPath[key], hexSlots[key], workplaceSlots[key], laborPool)
-		allocated := laborWeights[key]
-		served := allocated
-		if served > capacity {
-			served = capacity
-		}
-		employed := int(math.Round(served * float64(laborPool)))
-		unserved := int(math.Round((allocated - served) * float64(laborPool)))
-		if unserved < 0 {
+		var employed, unserved int
+		if key == economy.GoodCult {
+			// Cult is unchanged from the pre-P4 path: devotion weight clamped to
+			// temple capacity, with any over-allocation reported as unserved.
+			// It is the one good still driven by settlement_labor.
+			allocated := laborWeights[key]
+			served := allocated
+			if served > capacity {
+				served = capacity
+			}
+			employed = int(math.Round(served * float64(laborPool)))
+			unserved = int(math.Round((allocated - served) * float64(laborPool)))
+			if unserved < 0 {
+				unserved = 0
+			}
+		} else {
+			// Every other good is staffed by real placements. Placement enforces
+			// caps at write time, so there is no "unserved" over-allocation state.
+			employed = employedByGood[key]
 			unserved = 0
+		}
+		percent := 0.0
+		if laborPool > 0 {
+			percent = float64(employed) / float64(laborPool) * 100.0
 		}
 		result = append(result, goodRow{
 			Key:            key,
@@ -2613,8 +2649,8 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Rate:           rate,
 			Cap:            capV,
 			BaseValue:      baseValue,
-			Citizens:       int(math.Round(laborWeights[key] * float64(laborPool))),
-			Percent:        laborWeights[key] * 100.0,
+			Citizens:       employed,
+			Percent:        percent,
 			YieldPerWorker: bp / economy.REF_LABOR,
 			Producible:     bp > 0,
 			LaborPool:      laborPool,
