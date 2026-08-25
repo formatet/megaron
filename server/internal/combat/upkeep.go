@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"math"
 	"os"
 	"strconv"
 
@@ -108,8 +109,22 @@ func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
 
 const (
 	upkeepFieldGrainFactor = 2.0 // korn i fält (marching/positioned/embarked) mot garnison
-	upkeepAttritionStep    = 10  // män förlorade per tick vid grain-brist
-	upkeepDesertionStep    = 10  // män förlorade per tick vid silver-brist (efter tröskel)
+	// upkeepAttritionStepPercent är en ANDEL av size, inte ett mantal (fram
+	// till 2026-08-25 var detta ett FLAT mantal — 10 — vilket utplånade en
+	// redan decimerad kohort nästan helt på en enda tick: en 12-mannarest
+	// tappade lika många man som en fräsch 100-kohort. Talet 10 är oförändrat,
+	// bara tolkningen: en 100-kohort tappar fortfarande 10, en 12-rest tappar
+	// nu 2. Se megaron_plan_upkeep_attrition.md §Form.
+	upkeepAttritionStepPercent = 10.0
+	// navalAttritionCrewStep är ett STRAWMAN-tal — flottans besättningsförlust
+	// per tick vid grain-brist är ännu okalibrerad mot en levande värld (spärren
+	// på kalibrering lyftes 2026-08-24 i och med körordningsfixen, men ingen
+	// mätning har körts). Formen (träffa crew, inte size/hull) är låst; TALET
+	// är inte. En galley (crew 20) håller ~10 tick, en war_galley (crew 50)
+	// ~25, en merchantman (crew 10) ~5. Kalibrera via speldygnstest/soak, inte
+	// härifrån. megaron_plan_upkeep_attrition.md §Form, §Steg.
+	navalAttritionCrewStep = 2
+	upkeepDesertionStep    = 10 // män förlorade per tick vid silver-brist (efter tröskel)
 	// 3 → 72 (Timothy 2026-08-06), an INVARIANT-PRESERVING retune, not a balance
 	// change: this counts macro-tick FIRINGS, and those went from every 24 ticks
 	// to every tick when the tick became the day. 3 firings × 24 ticks = 72 ticks
@@ -139,6 +154,7 @@ type upkeepUnitRow struct {
 	unitType      string
 	category      string
 	size          int
+	crew          int
 	settlementID  *uuid.UUID
 	unpaidPeriods int
 	cargoUnitID   *uuid.UUID
@@ -191,7 +207,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// set (above) must list the same statuses, or a status stops being billed
 	// without stopping being billable.
 	rows, err := h.pool.Query(ctx,
-		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.settlement_id,
+		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.crew, u.settlement_id,
 		        u.unpaid_periods, u.cargo_unit_id,
 		        (SELECT s.id FROM settlements s
 		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id),
@@ -216,7 +232,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	for rows.Next() {
 		var u upkeepUnitRow
 		if err := rows.Scan(&u.id, &u.ownerID, &u.unitType, &u.category,
-			&u.size, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID,
+			&u.size, &u.crew, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID,
 			&u.supportSettlementID, &u.status); err != nil {
 			return fmt.Errorf("upkeep: scan unit: %w", err)
 		}
@@ -584,29 +600,58 @@ func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, worldID, shipID
 	}
 }
 
-// applyAttrition removes upkeepAttritionStep men from the unit due to grain shortage.
+// applyAttrition removes men (land) or crew (naval) from the unit due to grain
+// shortage. Land loses upkeepAttritionStepPercent of its SIZE, proportionally —
+// a fresh 100-man cohort bleeds more men in absolute terms than an already-thin
+// 12-man remnant, and neither is wiped on a single tick. Naval loses CREW, not
+// size: a ship's size is its hull count (always 1, pre-Slice-B skeppsreparation)
+// so draining it like a land cohort killed the ship outright on the very first
+// missed ration. The hull (size) is untouched; the unit is only lost once crew
+// reaches 0. See megaron_plan_upkeep_attrition.md.
+//
 // Returns true if the unit was disbanded. sid = the settlement that failed to feed
 // it (uuid.Nil if none), passed through to the notification for deep-linking.
 func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ float64, worldID, sid uuid.UUID) bool {
-	lost := upkeepAttritionStep
-	if lost > u.size {
-		lost = u.size
-	}
-	newSize := u.size - lost
-
+	var lost int
 	var disbanded bool
 	var updateErr error
-	if newSize <= 0 {
-		_, updateErr = h.pool.Exec(ctx,
-			`UPDATE units SET status = 'disbanded', size = 0, updated_at = now() WHERE id = $1`,
-			u.id,
-		)
-		disbanded = true
+
+	if u.category == "naval" {
+		lost = navalAttritionCrewStep
+		if lost > u.crew {
+			lost = u.crew
+		}
+		newCrew := u.crew - lost
+		if newCrew <= 0 {
+			_, updateErr = h.pool.Exec(ctx,
+				`UPDATE units SET status = 'disbanded', crew = 0, updated_at = now() WHERE id = $1`,
+				u.id,
+			)
+			disbanded = true
+		} else {
+			_, updateErr = h.pool.Exec(ctx,
+				`UPDATE units SET crew = $1, updated_at = now() WHERE id = $2`,
+				newCrew, u.id,
+			)
+		}
 	} else {
-		_, updateErr = h.pool.Exec(ctx,
-			`UPDATE units SET size = $1, updated_at = now() WHERE id = $2`,
-			newSize, u.id,
-		)
+		lost = int(math.Ceil(float64(u.size) * upkeepAttritionStepPercent / 100))
+		if lost > u.size {
+			lost = u.size
+		}
+		newSize := u.size - lost
+		if newSize <= 0 {
+			_, updateErr = h.pool.Exec(ctx,
+				`UPDATE units SET status = 'disbanded', size = 0, updated_at = now() WHERE id = $1`,
+				u.id,
+			)
+			disbanded = true
+		} else {
+			_, updateErr = h.pool.Exec(ctx,
+				`UPDATE units SET size = $1, updated_at = now() WHERE id = $2`,
+				newSize, u.id,
+			)
+		}
 	}
 	if updateErr != nil {
 		slog.Error("upkeep: attrition update failed", "unit", u.id, "err", updateErr)
