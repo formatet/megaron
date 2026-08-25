@@ -184,11 +184,18 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 // ring hex is the residual risk, not yet closed. The HTTP placement path
 // (task 4/5, player-initiated) DOES check FOW, at the handler layer.
 //
-// gubbeOrdinal must not collide with any existing placement (settlement_
-// placement's UNIQUE(settlement_id, gubbe_ordinal)) — callers pass
-// floor(population/100) at call time (the newly created gubbe's own ordinal).
-// Falls through to the pool (no row inserted, placed=false) if every food
-// slot is already at capacity — not an error.
+// gubbeOrdinal is caller-supplied (callers pass floor(population/100) at
+// call time) and is NOT guaranteed free: PrunePlacementsToPopulation
+// (megaron_plan_placeringsbeskarning.md) can strand a surviving placement's
+// ordinal below a settlement's current gubbar count when population later
+// regrows through it, since the raw oldGubbar+1..newGubbar loop
+// (kharis/tick.go, settlement_placement.go SlaughterLivestock) doesn't check
+// which ordinals a prune left occupied. The INSERT is therefore ON CONFLICT
+// DO NOTHING on settlement_placement's UNIQUE(settlement_id, gubbe_ordinal) —
+// a collision is treated exactly like "every food slot full": placed=false,
+// not an error, the gubbe falls to the pool for the Wanax to place by hand.
+// Falls through to the pool the same way if every food slot is already at
+// capacity.
 func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.UUID, gubbeOrdinal int) (placed bool, err error) {
 	slots, _, err := rankedFoodSlots(ctx, tx, settlementID)
 	if err != nil {
@@ -205,16 +212,62 @@ func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.U
 		if occupied >= slot.cap {
 			continue // full — grain's real P3 cap now binds here too, same as fish (megaron_plan_grain_cap.md)
 		}
-		if _, err := tx.Exec(ctx,
+		tag, err := tx.Exec(ctx,
 			`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key)
-			 VALUES ($1, $2, 'hex', $3, $4, $5)`,
+			 VALUES ($1, $2, 'hex', $3, $4, $5)
+			 ON CONFLICT (settlement_id, gubbe_ordinal) DO NOTHING`,
 			settlementID, gubbeOrdinal, slot.hex.Q, slot.hex.R, slot.good,
-		); err != nil {
+		)
+		if err != nil {
 			return false, fmt.Errorf("place next gubbe %d: %w", gubbeOrdinal, err)
 		}
-		return true, nil
+		return tag.RowsAffected() > 0, nil
 	}
 	return false, nil // no room anywhere — falls to the pool
+}
+
+// PrunePlacementsToPopulation enforces Föda S1b's invariant
+// count(settlement_placement) ≤ floor(population/100). Placement tracks UP
+// on growth (PlaceNextGubbeOnBestFoodHex) but nothing tracked it DOWN, so a
+// settlement that grew large and later shrank (starvation, battle loss,
+// occupation) kept phantom placements — measured 2026-08-25 on CT126: up to
+// 300 placements at 3999 population (target 39). Removes rows in S1b's
+// LOCKED order — förädling first, then övrig icke-mat, then tempel, food
+// LAST. row_number() ranks every row ascending by (tier, gubbe_ordinal), so
+// food sits at the LOWEST rn (survives even when the target is tiny) and
+// förädling sits at the HIGHEST rn (the first to fall once rn exceeds the
+// target); within a tier the lowest gubbe_ordinal survives longest, so the
+// most recently placed gubbe of that tier goes first. `rn > target` then
+// deletes exactly that tail in ONE DELETE — converges in a single pass, not
+// one row per tick, so an already-broken city self-heals the next time this
+// runs instead of needing hundreds of ticks. Idempotent when already within
+// the cap (returns 0, no-op). Never touches settlement_labor (cult
+// devotion, KH1) — this DELETE only ever targets settlement_placement.
+// Caller must run RecomputeProduction afterwards in the same tick.
+func PrunePlacementsToPopulation(ctx context.Context, tx Tx, settlementID uuid.UUID) (pruned int, err error) {
+	tag, err := tx.Exec(ctx,
+		`DELETE FROM settlement_placement
+		 WHERE id IN (
+		     SELECT id FROM (
+		         SELECT id, row_number() OVER (
+		             ORDER BY CASE good_key
+		                 WHEN $2 THEN 1 WHEN $3 THEN 1 WHEN $4 THEN 1  -- grain/fish/livestock: mat SIST → survives longest
+		                 WHEN $5 THEN 2                                -- cult: tempel (never a real row today)
+		                 WHEN $6 THEN 4 WHEN $7 THEN 4 WHEN $8 THEN 4  -- bronze/oil/wine: hantverk/förädling → removed first
+		                 ELSE 3                                        -- övrig icke-mat (stone/timber/cedar/silver/copper/tin/…)
+		             END,
+		             gubbe_ordinal  -- within a tier, lowest ordinal survives longest
+		         ) AS rn
+		         FROM settlement_placement WHERE settlement_id = $1
+		     ) ranked
+		     WHERE ranked.rn > (SELECT population / 100 FROM settlements WHERE id = $1)
+		 )`,
+		settlementID, GoodGrain, GoodFish, GoodLivestock, GoodCult, GoodBronze, GoodOil, GoodWine,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("prune placements to population: %w", err)
+	}
+	return int(tag.RowsAffected()), nil
 }
 
 // BackfillPlacements auto-places workforce for every settlement in a world

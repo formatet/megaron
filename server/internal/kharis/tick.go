@@ -987,6 +987,15 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		}
 		sidRows.Close()
 		for _, sid := range ids {
+			// Prune BEFORE recompute (megaron_plan_placeringsbeskarning.md,
+			// Föda S1b's ≤floor(pop/100) invariant) so a population drop from
+			// ANY source this tick — starvation above, but also battle loss,
+			// occupation, desertion that landed between ticks — is caught here,
+			// not just the starvation branch, and this tick's rate already
+			// reflects the pruned placement set instead of a tick-stale one.
+			if _, err := economy.PrunePlacementsToPopulation(ctx, h.pool, sid); err != nil {
+				slog.Warn("prune placements to population failed", "settlement", sid, "err", err)
+			}
 			if err := economy.RecomputeProduction(ctx, h.pool, sid); err != nil {
 				slog.Warn("recompute after pop tick failed", "settlement", sid, "err", err)
 			}
