@@ -206,6 +206,11 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// become a way to stop feeding it. UnitUpkeep's own field-ration trigger
 	// set (above) must list the same statuses, or a status stops being billed
 	// without stopping being billable.
+	// 'repairing' added for the same reason (megaron_plan_skeppsreparation.md
+	// Slice C, 2026-08-16): naval upkeep is flat-per-hull and "untouched by
+	// status entirely" (UnitUpkeep's own doc comment) — leaving a ship parked
+	// in a shipyard queue out of this filter would have made permanent repair
+	// a free way to dodge silver upkeep.
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.crew, u.settlement_id,
 		        u.unpaid_periods, u.cargo_unit_id,
@@ -214,7 +219,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		        u.status
 		 FROM units u
 		 WHERE u.world_id = $1
-		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked')
+		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM founder_phase fp
 		       WHERE fp.world_id = u.world_id

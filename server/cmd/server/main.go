@@ -132,6 +132,7 @@ func main() {
 	}
 	buildH := combat.NewBuildCompleteHandler(pool, eventStore, hub)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, hub)
+	shipRepairH := combat.NewShipRepairCompleteHandler(pool, eventStore, hub)
 	decayH := loyalty.NewDecayHandler(pool, scheduler, eventStore)
 	welfareH := loyalty.NewWelfareHandler(pool, scheduler, eventStore)
 	colonyH := loyalty.NewColonyPenaltyHandler(pool, scheduler, eventStore)
@@ -148,6 +149,7 @@ func main() {
 	orderDeliveryH := messenger.NewOrderDeliveryHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
+	worker.Register(events.ScheduledShipRepairComplete, shipRepairH.Handle)
 	worker.Register(events.ScheduledLoyaltyDecayTick, decayH.Handle)
 	worker.Register(events.ScheduledLoyaltyWelfareTick, welfareH.Handle)
 	worker.Register(events.ScheduledColonyPenaltyTick, colonyH.Handle)
@@ -375,6 +377,7 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
 			r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
+			r.Post("/worlds/{worldID}/units/{unitID}/repair", uh.Repair)
 
 			r.Get("/worlds/{worldID}/settlements", sh.List)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)

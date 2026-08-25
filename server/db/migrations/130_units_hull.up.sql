@@ -1,4 +1,4 @@
--- Migration 125: skeppsreparation Slice B — graderad skrovskada
+-- Migration 130: skeppsreparation Slice B — graderad skrovskada
 -- (megaron_plan_skeppsreparation.md §Beslut B2/B3, §Slice B).
 --
 -- hull replaces the earlier "damaged status" idea (B2, Timothy 2026-08-08):

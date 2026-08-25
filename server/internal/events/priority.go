@@ -73,6 +73,11 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledTradeReturn:      tickPriorityArrival,
 	ScheduledBuildComplete:    tickPriorityArrival,
 	ScheduledTrainComplete:    tickPriorityArrival,
+	// Reparationen är en färdigtimer av exakt TrainCompletes form (Slice C
+	// bygger på train.go:89-100) — den flippar 'repairing'→'garrison' i stället
+	// för att skapa en enhet. Skeppet ska vara helt och närvarande innan dagens
+	// blick, strid och plikt räknar med det.
+	ScheduledShipRepairComplete: tickPriorityArrival,
 
 	// 20 — vad ögonen ser när rörelsen är gjord.
 	ScheduledInterceptScan:      tickPrioritySight,

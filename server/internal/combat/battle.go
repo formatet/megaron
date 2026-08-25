@@ -94,6 +94,10 @@ const (
 	// point 4, "hull skalar stridsstyrkan") and as the denominator of the
 	// casualty-fraction → hull-point mapping (applyNavalHullDamage).
 	hullMax = 5
+	// HullMax is hullMax's exported alias — Slice C's repair handler
+	// (api/handlers, outside this package) needs the same ceiling to report
+	// a repair job's target hull. Same value, never diverge.
+	HullMax = hullMax
 
 	participationMin = 0.40
 	participationMax = 1.00

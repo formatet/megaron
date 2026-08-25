@@ -115,6 +115,9 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "ShipDamaged" {
 		printShipDamagedLine(n)
 	}
+	if n.Kind == "ShipRepaired" {
+		printShipRepairedLine(n)
+	}
 	if n.Kind == "ForeignMarchSighted" {
 		printForeignMarchSightedLine(n)
 	}
@@ -308,6 +311,20 @@ func printShipDamagedLine(n notificationItem) {
 		fmt.Printf("      Din %s tog skada (skrov %d/%d) men behåller sina order.\n",
 			body.UnitType, body.Hull, body.HullMax)
 	}
+}
+
+// printShipRepairedLine renders the human-readable follow-up to a
+// ShipRepaired notification (megaron_plan_skeppsreparation.md Slice C point
+// 4) — ShipRepairCompleteHandler's payload.
+func printShipRepairedLine(n notificationItem) {
+	var body struct {
+		UnitType string `json:"unit_type"`
+		Hull     int    `json:"hull"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	fmt.Printf("      Din %s är reparerad (skrov %d/5) och redo att segla igen.\n", body.UnitType, body.Hull)
 }
 
 // printUpkeepUnpaidLine renders the human-readable follow-up to an UpkeepUnpaid
