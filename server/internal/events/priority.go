@@ -109,6 +109,12 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledOfferExpiry:        tickPriorityHousekeep,
 	ScheduledCollapseCheck:      tickPriorityHousekeep,
 	ScheduledCollapseSettlement: tickPriorityHousekeep,
+	// Kapitulationen är en kollaps av samma slag som CollapseSettlement och hör
+	// därför hit, inte till följdsteget: den byter ÄGARE på staden. Låg man den
+	// på 70 skulle lojalitet, kolonistraff och lånad armé räknas på en stad som
+	// redan bytt hand mitt i dygnet. Dygnet bokförs på den som höll staden under
+	// det; först när allt annat är sagt faller den.
+	ScheduledSiegeCapitulation: tickPriorityHousekeep,
 }
 
 // TickPriority returns where in the game day an event type runs. Lower runs

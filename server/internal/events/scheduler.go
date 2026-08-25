@@ -136,6 +136,16 @@ const (
 	// new unit. One instance per ship currently under repair, created by
 	// api/handlers UnitHandler.Repair.
 	ScheduledShipRepairComplete ScheduledEventType = "ShipRepairComplete"
+	// ScheduledSiegeCapitulation fires once a besieged settlement's
+	// consecutive starvation clock reaches economy.SiegeCapitulationTicks
+	// (megaron_plan_belagring.md §S3): the city falls to its strongest
+	// besieger via the same occupied-state transition a battle win uses
+	// (internal/combat/siege_capitulation.go). Enqueued from
+	// internal/kharis/tick.go's daily decay, which owns the counter but
+	// cannot itself perform the transition — combat is not a downward
+	// dependency of kharis (G1) — so, like ScheduledCollapseSettlement, this
+	// crosses the layer boundary via event emission instead.
+	ScheduledSiegeCapitulation ScheduledEventType = "SiegeCapitulation"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

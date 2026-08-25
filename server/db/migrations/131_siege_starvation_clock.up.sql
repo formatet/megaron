@@ -1,0 +1,14 @@
+-- Migration 131: belägring S3 — svält-klockan → kapitulation
+-- (megaron_plan_belagring.md §S3, §Beslutade delbeslut 3)
+--
+-- siege_starvation_ticks is the CONSECUTIVE count of daily ticks a besieged
+-- settlement's food need has gone uncovered even after FoodConsumptionSplit's
+-- grain→fish→livestock fallback chain (internal/kharis/tick.go's daily
+-- decay, right after the RecomputeProduction loop that refreshes both
+-- `besieged` and grain's net rate). Any tick the blockade lifts OR the food
+-- need is covered resets it to 0 — it is NOT a lifetime/cumulative counter.
+-- At economy.SiegeCapitulationTicks (~30 = one month-phase) the city falls
+-- to its strongest besieger via the SAME occupied-state mechanic a battle
+-- win uses (internal/combat/siege_capitulation.go) — muren rörs aldrig,
+-- magen ger upp.
+ALTER TABLE settlements ADD COLUMN siege_starvation_ticks INT NOT NULL DEFAULT 0;
