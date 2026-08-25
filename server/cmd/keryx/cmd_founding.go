@@ -140,8 +140,11 @@ the hex it currently occupies. The host dissolves permanently in the act; its
 remaining grain and silver are carried into the city's stores, and a coastal
 founding is gifted Poseidon's galley.
 
-The founding forecast (same surface as colonization) is ALWAYS shown before
-the confirmation. To found somewhere else: march the host there first
+The founding forecast (same surface as colonization) is shown before the
+confirmation in interactive mode. In --json mode (machine caller) the
+forecast is skipped, same convention as 'unit march --intent colonize' —
+query GET /worlds/:id/colonize-preview yourself first if you need it before
+settling. To found somewhere else: march the host there first
 (keryx unit march), then settle.`,
 		Example: `  keryx founding settle
   keryx founding settle --name Thapsos --yes`,
@@ -243,6 +246,6 @@ the confirmation. To found somewhere else: march the host there first
 
 	cmd.Flags().StringVar(&name, "name", "", "metropolis name (default: culture-appropriate)")
 	cmd.Flags().StringVar(&culture, "culture", "", "culture (MVP: minoan only)")
-	cmd.Flags().BoolVar(&yes, "yes", false, "skip the interactive confirmation (required for non-interactive/agent use); the forecast is still printed")
+	cmd.Flags().BoolVar(&yes, "yes", false, "skip the interactive confirmation (required for non-interactive/agent use); the forecast is only printed in non-json mode")
 	return cmd
 }
