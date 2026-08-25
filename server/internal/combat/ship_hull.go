@@ -267,11 +267,11 @@ func (h *BattleTickHandler) sendDamagedShipHome(
 	ctx context.Context, tx pgx.Tx,
 	worldID, unitID, ownerID uuid.UUID, utype string, tickIndex int,
 ) error {
-	var fromQ, fromR int
+	var fromQ, fromR, crew int
 	var cargoUnitID *uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT q, r, cargo_unit_id FROM units WHERE id = $1`, unitID,
-	).Scan(&fromQ, &fromR, &cargoUnitID); err != nil {
+		`SELECT q, r, crew, cargo_unit_id FROM units WHERE id = $1`, unitID,
+	).Scan(&fromQ, &fromR, &crew, &cargoUnitID); err != nil {
 		return fmt.Errorf("send damaged ship home: load position: %w", err)
 	}
 
@@ -310,7 +310,7 @@ func (h *BattleTickHandler) sendDamagedShipHome(
 		moveTicks = province.TerrainMoveTicks("coastal_sea") * float64(dist)
 	}
 	// Mirrors march_start.go's TravelFactor — the one home for every leg.
-	moveTicks *= TravelFactor(unit.Type(utype), cargoUnitID != nil)
+	moveTicks *= TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)
 	travelTicks := int(math.Round(moveTicks))
 	if travelTicks < 1 {
 		travelTicks = 1

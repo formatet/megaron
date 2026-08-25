@@ -79,16 +79,16 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 
 	var ownerID uuid.UUID
 	var utype, category, status string
-	var q, r int
+	var q, r, crew int
 	var targetQ, targetR *int // nulled once the unit is no longer marching
 	var departsAt, arrivesAt *time.Time
 	var marchIntent, colonyName *string
 	var cargoUnitID *uuid.UUID
 	if err := tx.QueryRow(ctx,
-		`SELECT owner_id, type, category, status, q, r, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id
+		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		p.UnitID,
-	).Scan(&ownerID, &utype, &category, &status, &q, &r, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID); err != nil {
+	).Scan(&ownerID, &utype, &category, &status, &q, &r, &crew, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID); err != nil {
 		return fmt.Errorf("load recalled unit: %w", err)
 	}
 
@@ -142,7 +142,7 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// Mirror the outbound leg's speed multipliers (combat.TravelFactor) — a
 	// war galley/merchantman/nomadic host recalled or redirected mid-march
 	// must keep its own speed, not the unmultiplied path cost.
-	moveTicks *= combat.TravelFactor(unit.Type(utype), cargoUnitID != nil)
+	moveTicks *= combat.TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)
 
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)

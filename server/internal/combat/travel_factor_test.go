@@ -8,6 +8,12 @@ package combat
 // 2.0 nomadic host, ×1.5 laden) — never against NavalSpeedFactor/
 // MarchHoursFactorFor themselves, so a bug that crept into both the
 // production code and this test at once would still be caught.
+//
+// Slice B (§4) added the crew term to TravelFactor's signature. Every case
+// here passes crew = unit.CrewFor(utype) — a FULLY crewed unit — so this
+// table doubles as Slice B's AC2 ("fullbemannat är oförändrat"): the literal
+// products above must still hold once CrewSpeedFactor is in the multiply
+// chain, because a full crew must always resolve to a 1.0 factor.
 
 import (
 	"math"
@@ -38,11 +44,12 @@ func TestTravelFactor_MatchesLiteralProducts(t *testing.T) {
 
 	const epsilon = 1e-9
 	for _, c := range cases {
-		if got := TravelFactor(c.utype, false); math.Abs(got-c.notLaden) > epsilon {
-			t.Errorf("TravelFactor(%s, laden=false) = %v, want %v", c.utype, got, c.notLaden)
+		fullCrew := unit.CrewFor(c.utype)
+		if got := TravelFactor(c.utype, fullCrew, false); math.Abs(got-c.notLaden) > epsilon {
+			t.Errorf("TravelFactor(%s, crew=%d (full), laden=false) = %v, want %v", c.utype, fullCrew, got, c.notLaden)
 		}
-		if got := TravelFactor(c.utype, true); math.Abs(got-c.laden) > epsilon {
-			t.Errorf("TravelFactor(%s, laden=true) = %v, want %v", c.utype, got, c.laden)
+		if got := TravelFactor(c.utype, fullCrew, true); math.Abs(got-c.laden) > epsilon {
+			t.Errorf("TravelFactor(%s, crew=%d (full), laden=true) = %v, want %v", c.utype, fullCrew, got, c.laden)
 		}
 	}
 }

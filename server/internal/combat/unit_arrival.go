@@ -540,7 +540,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	// different (and for a merchantman, much shorter) duration than the
 	// outbound one for the exact same distance: it looked like the ship
 	// sailed out at its true speed but teleported home.
-	moveTicks *= TravelFactor(unit.Type(u.utype), u.cargoUnitID != nil)
+	moveTicks *= TravelFactor(unit.Type(u.utype), u.crew, u.cargoUnitID != nil)
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
 	travelTicks := int(math.Round(moveTicks))
