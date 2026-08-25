@@ -1001,6 +1001,90 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 			}
 		}
 	}
+
+	h.applySiegeStarvationClock(ctx, worldID)
+}
+
+// applySiegeStarvationClock is belägring S3 (megaron_plan_belagring.md §S3,
+// §Beslutade delbeslut 3): a besieged settlement whose food need is NOT
+// fully covered — grain's net rate, just rewritten by the
+// RecomputeProduction loop above, went negative, which per
+// economy.FoodConsumptionSplit's formula (grainNet = grainProd - grainShare
+// - unmet) only happens when demand still exceeds grain+fish+livestock
+// after the WHOLE fallback chain — accrues one CONSECUTIVE day on
+// settlements.siege_starvation_ticks (mig 123). Food covered, or the
+// blockade lifted (besieged flips false), resets it to 0. Must run AFTER
+// the RecomputeProduction loop above so `besieged` and grain's rate are
+// this tick's fresh values, not yesterday's.
+//
+// Runs as a single CTE-chained statement (same shape as the growth query
+// above) so the read (old counter) and write (new counter) come from the
+// same snapshot: `capitulating` is computed from siege_state's old_ticks,
+// BEFORE `updated` applies the write — a settlement can only ever cross the
+// threshold once per starvation episode, because the same UPDATE resets its
+// own counter back to 0 the instant it crosses (defensive: if the
+// capitulation handler is ever delayed, tomorrow's tick won't re-enqueue a
+// second SiegeCapitulation for the same episode; a fresh 30-day siege after
+// a failed capitulation is a new episode and correctly counts again).
+//
+// kharis owns the counter but not the transition: combat (which performs
+// the actual occupied-state change) is not a downward dependency of kharis
+// (G1 — package dependency order), so crossing the threshold only ENQUEUES
+// ScheduledSiegeCapitulation, exactly like the CollapseSettlement scheduling
+// above crosses the same boundary for starvation-collapse.
+func (h *TickHandler) applySiegeStarvationClock(ctx context.Context, worldID uuid.UUID) {
+	rows, err := h.pool.Query(ctx,
+		`WITH siege_state AS (
+		     SELECT s.id, s.siege_starvation_ticks AS old_ticks, s.besieged, sg.rate AS grain_rate
+		     FROM settlements s
+		     JOIN settlement_goods sg ON sg.settlement_id = s.id AND sg.good_key = 'grain'
+		     WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state = 'active'
+		 ),
+		 capitulating AS (
+		     SELECT id FROM siege_state
+		     WHERE besieged AND grain_rate < 0 AND old_ticks + 1 >= $2
+		 ),
+		 updated AS (
+		     UPDATE settlements s SET siege_starvation_ticks = CASE
+		             WHEN ss.besieged AND ss.grain_rate < 0 THEN
+		                 CASE WHEN ss.old_ticks + 1 >= $2 THEN 0 ELSE ss.old_ticks + 1 END
+		             ELSE 0
+		         END
+		     FROM siege_state ss
+		     WHERE ss.id = s.id AND (ss.besieged OR ss.old_ticks <> 0)
+		     RETURNING s.id
+		 )
+		 SELECT id FROM capitulating`,
+		worldID, economy.SiegeCapitulationTicks,
+	)
+	if err != nil {
+		slog.Error("siege starvation clock tick failed", "world", worldID, "err", err)
+		return
+	}
+	var capitulatedIDs []uuid.UUID
+	for rows.Next() {
+		var sid uuid.UUID
+		if rows.Scan(&sid) == nil {
+			capitulatedIDs = append(capitulatedIDs, sid)
+		}
+	}
+	rows.Close()
+	if len(capitulatedIDs) == 0 {
+		return
+	}
+	var currentTick int
+	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	for _, sid := range capitulatedIDs {
+		if err := h.scheduler.EnqueueTick(ctx, worldID, events.ScheduledSiegeCapitulation,
+			struct {
+				SettlementID uuid.UUID `json:"settlement_id"`
+				WorldID      uuid.UUID `json:"world_id"`
+			}{SettlementID: sid, WorldID: worldID},
+			currentTick,
+		); err != nil {
+			slog.Warn("siege capitulation: could not schedule event", "settlement", sid, "err", err)
+		}
+	}
 }
 
 // popCrossing is one settlement's population before/after the daily growth

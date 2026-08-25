@@ -1,0 +1,11 @@
+-- Migration 130: skeppsreparation Slice B — graderad skrovskada
+-- (megaron_plan_skeppsreparation.md §Beslut B2/B3, §Slice B).
+--
+-- hull replaces the earlier "damaged status" idea (B2, Timothy 2026-08-08):
+-- 5 = untouched, 0 = sunk (equivalent to the existing annihilation/disbanded
+-- outcome). A naval battle draws hull on BOTH sides proportional to the
+-- naval losses actually taken (internal/combat/battle.go); land units carry
+-- the column too (table-wide, default 5) but never read it — every hull
+-- consumer gates on unit.CategoryOf(...) == unit.CategoryNaval first, so a
+-- land unit's hull is simply always 5 and inert.
+ALTER TABLE units ADD COLUMN hull INT NOT NULL DEFAULT 5 CHECK (hull BETWEEN 0 AND 5);

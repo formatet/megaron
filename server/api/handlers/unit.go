@@ -1467,7 +1467,11 @@ type unitSummary struct {
 	Category string    `json:"category"`
 	Size     int       `json:"size"`
 	Crew     int       `json:"crew,omitempty"`
-	Status   string    `json:"status"`
+	// Hull is the graded damage track (megaron_plan_skeppsreparation.md §B2,
+	// 5=untouched/0=sunk) — omitted for land units (always the DB default 5,
+	// meaningless for them; see unit.Unit.Hull's own doc comment).
+	Hull   int    `json:"hull,omitempty"`
+	Status string `json:"status"`
 	// Deployable is false while a land unit is still "forming": it cannot march,
 	// colonize, or otherwise leave its settlement until it reaches 100 men. JSON
 	// consumers (LLM agents, iOS) must see this in the data — the human `unit list`
@@ -1606,7 +1610,9 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			nm = unit.LandUnitName(string(u.Type), ordinal, town)
 		}
 
-		deployable := u.Status != "forming" && u.Status != "training"
+		// 'repairing' (megaron_plan_skeppsreparation.md Slice C): a ship
+		// mid-repair cannot march any more than a still-forming one can.
+		deployable := u.Status != "forming" && u.Status != "training" && u.Status != "repairing"
 		menToDeploy := 0
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size
@@ -1627,12 +1633,17 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 				carrierShipName = ship.Name
 			}
 		}
+		hull := 0
+		if u.Category == unit.CategoryNaval {
+			hull = u.Hull
+		}
 		out = append(out, unitSummary{
 			ID:                    u.ID,
 			Type:                  string(u.Type),
 			Category:              string(u.Category),
 			Size:                  u.Size,
 			Crew:                  u.Crew,
+			Hull:                  hull,
 			Status:                string(u.Status),
 			Deployable:            deployable,
 			MenToDeploy:           menToDeploy,

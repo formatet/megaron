@@ -23,6 +23,14 @@ const (
 	EventBattleRoundResolved   = "BattleRoundResolved"
 	EventBattleEnded           = "BattleEnded"
 	EventStandingOrdersChanged = "StandingOrdersChanged"
+	// EventShipDamaged (megaron_plan_skeppsreparation.md Slice B) is appended
+	// once per naval participant that survives a battle-ending hull draw —
+	// including the case where the draw sinks it (hull reaches 0). Stream is
+	// the SHIP's own unit.StreamUnit stream (not the battle's), matching every
+	// other per-unit outcome event in this codebase (UnitArrived etc.) — a
+	// ship's damage history belongs on the ship, not buried in a battle
+	// stream a Wanax has no reason to ever look up directly.
+	EventShipDamaged = "ShipDamaged"
 )
 
 // BattleParticipantRef identifies one unit's contribution at the moment it
@@ -117,4 +125,21 @@ type StandingOrdersChangedPayload struct {
 	WorldID       uuid.UUID `json:"world_id"`
 	RetreatAtLoss *float64  `json:"retreat_at_loss"`
 	HoldToLastMan bool      `json:"hold_to_last_man"`
+}
+
+// ShipDamagedPayload is emitted once per naval participant a battle-ending
+// hull draw touches (megaron_plan_skeppsreparation.md Slice B point 2/6).
+// Hull is the OUTCOME value after the draw (0 means Sunk is also true).
+// ReturningHome is only ever true for a routed side's survivor (B3) — the
+// winning side's damaged ships keep their orders and this is always false
+// for them, even though they took the same proportional hull loss.
+type ShipDamagedPayload struct {
+	BattleID      uuid.UUID `json:"battle_id"`
+	UnitID        uuid.UUID `json:"unit_id"`
+	WorldID       uuid.UUID `json:"world_id"`
+	UnitType      string    `json:"unit_type"`
+	Hull          int       `json:"hull"`
+	HullMax       int       `json:"hull_max"`
+	Sunk          bool      `json:"sunk"`
+	ReturningHome bool      `json:"returning_home"`
 }

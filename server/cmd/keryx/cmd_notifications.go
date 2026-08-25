@@ -112,6 +112,12 @@ func printNotificationRow(n notificationItem) {
 	if n.Kind == "BattleWon" || n.Kind == "BattleLost" {
 		printBattleReportLine(n)
 	}
+	if n.Kind == "ShipDamaged" {
+		printShipDamagedLine(n)
+	}
+	if n.Kind == "ShipRepaired" {
+		printShipRepairedLine(n)
+	}
 	if n.Kind == "ForeignMarchSighted" {
 		printForeignMarchSightedLine(n)
 	}
@@ -279,6 +285,46 @@ func printBattleReportLine(n notificationItem) {
 	fmt.Printf("      %s vid %s — din %s (%d→%d, −%d döda) mot %s's %s (%d→%d).%s\n",
 		outcomeWord, place, body.OwnUnit.Type, body.OwnUnit.SizeBefore, body.OwnUnit.SizeAfter, body.OwnUnit.PopLost,
 		body.Opponent, body.EnemyUnit.Type, body.EnemyUnit.SizeBefore, body.EnemyUnit.SizeAfter, trailer)
+}
+
+// printShipDamagedLine renders the human-readable follow-up to a ShipDamaged
+// notification (megaron_plan_skeppsreparation.md Slice B point 6) —
+// BattleTickHandler.notifyShipDamaged's payload.
+func printShipDamagedLine(n notificationItem) {
+	var body struct {
+		UnitType      string `json:"unit_type"`
+		Hull          int    `json:"hull"`
+		HullMax       int    `json:"hull_max"`
+		Sunk          bool   `json:"sunk"`
+		ReturningHome bool   `json:"returning_home"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	switch {
+	case body.Sunk:
+		fmt.Printf("      Din %s sänktes i striden.\n", body.UnitType)
+	case body.ReturningHome:
+		fmt.Printf("      Din %s tog skada (skrov %d/%d) och linkar hem för reparation.\n",
+			body.UnitType, body.Hull, body.HullMax)
+	default:
+		fmt.Printf("      Din %s tog skada (skrov %d/%d) men behåller sina order.\n",
+			body.UnitType, body.Hull, body.HullMax)
+	}
+}
+
+// printShipRepairedLine renders the human-readable follow-up to a
+// ShipRepaired notification (megaron_plan_skeppsreparation.md Slice C point
+// 4) — ShipRepairCompleteHandler's payload.
+func printShipRepairedLine(n notificationItem) {
+	var body struct {
+		UnitType string `json:"unit_type"`
+		Hull     int    `json:"hull"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	fmt.Printf("      Din %s är reparerad (skrov %d/5) och redo att segla igen.\n", body.UnitType, body.Hull)
 }
 
 // printUpkeepUnpaidLine renders the human-readable follow-up to an UpkeepUnpaid

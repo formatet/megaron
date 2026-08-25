@@ -486,6 +486,13 @@ function renderUnitCard(u) {
     ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + u.crew + '</span>'
     : '';
 
+  // Hull badge (megaron_plan_skeppsreparation.md §B2) — only shown while
+  // damaged (hull < 5); a pristine ship (hull omitted or 5) shows nothing,
+  // same "don't clutter the common case" posture as crewBadge above.
+  const hullBadge = isNaval && u.hull != null && u.hull < 5
+    ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + u.hull + '/5</span>'
+    : '';
+
   // Cargo badge
   const cargoBadge = u.cargo_unit_id
     ? '<span style="font-size:.6rem;color:var(--accent-city);margin-left:.3rem">carrying unit</span>'
@@ -543,6 +550,14 @@ function renderUnitCard(u) {
     actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
   }
 
+  // Repair button (megaron_plan_skeppsreparation.md Slice C): naval garrison
+  // with hull < 5. The server rejects it if the settlement has no shipyard
+  // or the yard is full — this button only knows the ship is damaged and
+  // docked, same "let the server be the judge" posture as Load/Unload.
+  if (isNaval && isGarrison && u.hull != null && u.hull < 5) {
+    actions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
+  }
+
   // Recall/redirect: marching units only. The order travels by messenger —
   // it does not apply instantly (temenos_settlement.md load-bearing pillar).
   let redirectRow = '';
@@ -560,7 +575,7 @@ function renderUnitCard(u) {
   return '<div id="ucard-' + u.id + '" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
     + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
-    + stanceBadge + crewBadge + cargoBadge
+    + stanceBadge + crewBadge + hullBadge + cargoBadge
     + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + u.status + '</span>'
     + '</div>'
     + progress
@@ -767,5 +782,25 @@ export async function unitUnload(shipID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = data.error || 'Unload failed';
+  }
+}
+
+// unitRepair starts a hull repair job (megaron_plan_skeppsreparation.md
+// Slice C) on a damaged ship in garrison — same fire-and-refresh shape as
+// unitUnload above. The server is the sole judge of whether a shipyard
+// exists and has an open berth; this button does not pre-check either, same
+// posture as Load/Unload not pre-checking building requirements.
+export async function unitRepair(shipID) {
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${shipID}/repair`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = data.error || 'Repair failed';
   }
 }

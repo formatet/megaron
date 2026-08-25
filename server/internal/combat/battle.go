@@ -65,9 +65,11 @@ import (
 	"math"
 	"sort"
 
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/loyalty"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -85,6 +87,17 @@ const (
 	// CLAUDE.md tick/day rule — so this is the "how many ticks between battle-ticks"
 	// cadence, always 1, same shape as events.MacroTickInterval).
 	battleTickIntervalTicks = 1
+
+	// hullMax is the ceiling of a naval vessel's graded damage track
+	// (megaron_plan_skeppsreparation.md §B2): 5 = untouched, 0 = sunk. Used
+	// both to scale a damaged ship's combat output (rollSide, below — B3
+	// point 4, "hull skalar stridsstyrkan") and as the denominator of the
+	// casualty-fraction → hull-point mapping (applyNavalHullDamage).
+	hullMax = 5
+	// HullMax is hullMax's exported alias — Slice C's repair handler
+	// (api/handlers, outside this package) needs the same ceiling to report
+	// a repair job's target hull. Same value, never diverge.
+	HullMax = hullMax
 
 	participationMin = 0.40
 	participationMax = 1.00
@@ -228,6 +241,17 @@ type battleParticipant struct {
 	// read from here; participation's fortify check reads units.stance LIVE
 	// every battle-tick instead.
 	stance *string
+	// hull (megaron_plan_skeppsreparation.md Slice B) is only meaningful for a
+	// naval participant — loaded fresh each battle-tick in resolveTick's own
+	// query (below), NOT populated by initiateOrJoinBattle's callers (they
+	// only ever create battle_participants rows, never roll dice, so they
+	// have no need of it). Zero for every battleParticipant built anywhere
+	// else in this file.
+	hull int
+	// cargoUnitID mirrors units.cargo_unit_id for a naval participant — the
+	// land unit riding it, if any. Same "only resolveTick's own query
+	// populates this" scope as hull above.
+	cargoUnitID *uuid.UUID
 }
 
 // initiateOrJoinBattle is the KR3 replacement for the old one-shot combat
@@ -381,13 +405,19 @@ type BattleTickHandler struct {
 	eventStore *events.Store
 	scheduler  *events.Scheduler
 	hub        Broadcaster
+	// clk (megaron_plan_skeppsreparation.md Slice B) is only needed for the
+	// routed side's damaged-ship home march (sendDamagedShipHome's arrives_at
+	// display stamp — the authoritative depart_tick/arrive_tick pair is
+	// tick-native and needs no clock at all, same K4 split as every other
+	// march dispatch in this codebase). Never call time.Now() directly here.
+	clk clock.Clock
 }
 
 // NewBattleTickHandler creates a BattleTickHandler. hub may be nil in tests
 // (every NotifyPlayer call below is nil-guarded, matching the other combat
 // handlers — see collapse.go).
-func NewBattleTickHandler(pool *pgxpool.Pool, store *events.Store, scheduler *events.Scheduler, hub Broadcaster) *BattleTickHandler {
-	return &BattleTickHandler{pool: pool, eventStore: store, scheduler: scheduler, hub: hub}
+func NewBattleTickHandler(pool *pgxpool.Pool, store *events.Store, scheduler *events.Scheduler, hub Broadcaster, clk clock.Clock) *BattleTickHandler {
+	return &BattleTickHandler{pool: pool, eventStore: store, scheduler: scheduler, hub: hub, clk: clk}
 }
 
 // Handle processes one ScheduledBattleTick event.
@@ -436,7 +466,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	}
 
 	rows, err := tx.Query(ctx,
-		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.stance
+		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.stance, u.hull, u.cargo_unit_id
 		 FROM battle_participants bp JOIN units u ON u.id = bp.unit_id
 		 WHERE bp.battle_id = $1 AND bp.left_tick IS NULL
 		 FOR UPDATE OF bp`,
@@ -454,7 +484,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	var loaded []row
 	for rows.Next() {
 		var rr row
-		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.stance); scanErr != nil {
+		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.stance, &rr.p.hull, &rr.p.cargoUnitID); scanErr != nil {
 			rows.Close()
 			return false, fmt.Errorf("battle tick: scan participant: %w", scanErr)
 		}
@@ -804,6 +834,16 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		}
 	}
 
+	// megaron_plan_skeppsreparation.md Slice B point 2/3: drawn exactly once,
+	// here, only on the branch that just flipped the battle to 'ended' (the
+	// early `if !ended { return false, nil }` above already sent every
+	// re-poll of a still-active battle home without reaching this line, and
+	// the very top of resolveTick short-circuits a re-run of an
+	// already-ended battle before it gets this far either — same "one
+	// battle-end, one draw" idempotency guarantee as notifyBattleEnded below,
+	// and for the same reason: this whole tx only commits once.
+	h.applyNavalHullDamage(ctx, tx, battleID, worldID, tickIndex, participants, initialSizes, sizes, bySide, attRouted, defRouted)
+
 	h.notifyBattleEnded(ctx, tx, battleID, worldID, q, r, tickIndex, winner)
 
 	return true, nil
@@ -1102,6 +1142,14 @@ func markSideRouted(ctx context.Context, tx pgx.Tx, battleID uuid.UUID, tickInde
 
 // rollSide rolls one side's dice for one round: each side's PARTICIPATION-sampled
 // active combatants roll battleDiceMultiplier(utype) T12 each; a 12 (p=1/12) is a hit.
+//
+// A naval combatant's dice are additionally scaled by hull/hullMax
+// (megaron_plan_skeppsreparation.md §Slice B point 4, "hull skalar
+// stridsstyrkan") — a ship carrying damage into a fight hits proportionally
+// softer, which is what makes the repair sink (Slice C) worth spending
+// timber on. activeCombatants itself is NOT scaled (it still reflects hulls
+// present, not damage — sideRouts and the participation formula both read
+// sizes/initialSizes directly, never this return value's dice count).
 func rollSide(participants []battleParticipant, sizes []int, idx []int, part float64, dice economy.Dice) (activeCombatants, diceTotal, hits int) {
 	for _, i := range idx {
 		active := int(math.Round(float64(sizes[i]) * part))
@@ -1113,6 +1161,9 @@ func rollSide(participants []battleParticipant, sizes []int, idx []int, part flo
 		}
 		activeCombatants += active
 		diceCount := active * battleDiceMultiplier(participants[i].utype)
+		if unit.CategoryOf(unit.Type(participants[i].utype)) == unit.CategoryNaval {
+			diceCount = int(math.Round(float64(diceCount) * float64(participants[i].hull) / float64(hullMax)))
+		}
 		diceTotal += diceCount
 		for d := 0; d < diceCount; d++ {
 			if dice.Intn(battleDiceSides) == battleDiceSides-1 { // rolled a 12

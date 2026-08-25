@@ -25,6 +25,18 @@ const siegeInterceptRadius = 2
 // production with a single cheap EXISTS query.
 const siegeCheckRadius = hexgrid.CatchmentRadius + siegeInterceptRadius
 
+// SiegeCapitulationTicks is how many CONSECUTIVE daily ticks a besieged
+// settlement's food need must go uncovered (§S3, megaron_plan_belagring.md
+// §Beslutade delbeslut 3) before it falls to its besieger — "en månfas",
+// same 30-tick figure as the conquest flow's occupationTicksToAnnex
+// (combat/occupation.go), kept as its own named ratt since the two are
+// conceptually distinct windows that merely share a value today. Read by
+// internal/kharis/tick.go's daily decay, which owns the counter
+// (settlements.siege_starvation_ticks, mig 123) — kharis may import economy
+// (G1) but combat may not be imported by kharis, so the constant lives here
+// rather than beside occupationTicksToAnnex.
+const SiegeCapitulationTicks = 30
+
 // ReachableCatchmentHexes returns, for every hex in ring, whether
 // settlementOwner still has physical access to it (§S1+§S2,
 // megaron_plan_belagring.md), and whether the settlement counts as besieged

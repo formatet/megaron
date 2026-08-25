@@ -407,7 +407,7 @@ func TestUnitInterceptScan_InterceptThenBattleNotifiesBothSides(t *testing.T) {
 
 	battleID := loadBattleIDForIntercept(t, pool, f.worldID, 1, 0)
 	battleFB := &fakeBroadcaster{}
-	battleH := NewBattleTickHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clk), battleFB)
+	battleH := NewBattleTickHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clk), battleFB, clk)
 	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 20)
 
 	var attackerNotified, defenderNotified map[string]any

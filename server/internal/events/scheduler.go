@@ -129,6 +129,23 @@ const (
 	// mid-route. Same substrate as ScheduledUnitInterceptScan (preloaded
 	// TileGraph, avsiktslagret reaction_policy), combat/march_encounter.go.
 	ScheduledMarchEncounterScan ScheduledEventType = "MarchEncounterScan"
+	// ScheduledShipRepairComplete (megaron_plan_skeppsreparation.md Slice C)
+	// fires when a hull repair job started at a shipyard finishes — same
+	// forming→garrison timer shape as ScheduledTrainComplete (train.go:89-100),
+	// but flips 'repairing'→'garrison' at hull=HullMax instead of creating a
+	// new unit. One instance per ship currently under repair, created by
+	// api/handlers UnitHandler.Repair.
+	ScheduledShipRepairComplete ScheduledEventType = "ShipRepairComplete"
+	// ScheduledSiegeCapitulation fires once a besieged settlement's
+	// consecutive starvation clock reaches economy.SiegeCapitulationTicks
+	// (megaron_plan_belagring.md §S3): the city falls to its strongest
+	// besieger via the same occupied-state transition a battle win uses
+	// (internal/combat/siege_capitulation.go). Enqueued from
+	// internal/kharis/tick.go's daily decay, which owns the counter but
+	// cannot itself perform the transition — combat is not a downward
+	// dependency of kharis (G1) — so, like ScheduledCollapseSettlement, this
+	// crosses the layer boundary via event emission instead.
+	ScheduledSiegeCapitulation ScheduledEventType = "SiegeCapitulation"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.
