@@ -98,6 +98,20 @@ func NavalSpeedFactor(t unit.Type) float64 {
 	}
 }
 
+// TravelFactor is the complete multiplier applied to a path's raw tick cost:
+// hull speed by ship type, the host's halved march hours, and the laden
+// penalty. ONE home for all five legs (dispatch, arrival, recall, redirect,
+// damaged return) — they diverged once already (unit_arrival.go's missing
+// mirror, see its doc comment) — so a future term (e.g. crew, hull) is added
+// here once instead of in five places that will drift again.
+func TravelFactor(t unit.Type, laden bool) float64 {
+	f := NavalSpeedFactor(t) * unit.MarchHoursFactorFor(t)
+	if laden {
+		f *= 1.5
+	}
+	return f
+}
+
 // StartMarch validates and executes one march order atomically. On success the
 // unit is marching and its UnitArrival is scheduled. Any *OrderReject return
 // carries the HTTP status + reason exactly as the March handler answered.
@@ -441,16 +455,10 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		moveTicks = pathCost
 	}
 	// Ship types vary in speed (Timothy 2026-07-09): war galley fastest,
-	// merchantman slowest, galley between. Factor scales travel time (lower =
-	// faster); tunable, lives in NavalSpeedFactor.
-	moveTicks *= NavalSpeedFactor(u.Type)
-	// The nomadic host is the slowest thing on the map: half a spearman's speed,
-	// i.e. DOUBLE its hours. Every other type is unaffected (factor 1.0).
-	moveTicks *= unit.MarchHoursFactorFor(u.Type)
-	// Loaded ships move 1.5× slower.
-	if u.CargoUnitID != nil {
-		moveTicks *= 1.5
-	}
+	// merchantman slowest, galley between. The nomadic host is the slowest
+	// thing on the map: half a spearman's speed. Loaded ships move 1.5×
+	// slower. All three live in TravelFactor — the one home for every leg.
+	moveTicks *= TravelFactor(u.Type, u.CargoUnitID != nil)
 
 	now := clk.Now()
 	var currentTick int

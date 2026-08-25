@@ -534,17 +534,13 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		}
 		moveTicks = province.TerrainMoveTicks(fromTerrain) * float64(dist)
 	}
-	// Mirror the outbound leg's speed multipliers (march_start.go StartMarch) —
-	// without these a war galley/merchantman's return trip silently used the
-	// unmultiplied path cost, making the return leg a different (and for a
-	// merchantman, much shorter) duration than the outbound one for the exact
-	// same distance: it looked like the ship sailed out at its true speed but
-	// teleported home.
-	moveTicks *= NavalSpeedFactor(unit.Type(u.utype))
-	moveTicks *= unit.MarchHoursFactorFor(unit.Type(u.utype))
-	if u.cargoUnitID != nil {
-		moveTicks *= 1.5
-	}
+	// Mirror the outbound leg's speed multipliers (march_start.go's
+	// TravelFactor) — without these a war galley/merchantman's return trip
+	// silently used the unmultiplied path cost, making the return leg a
+	// different (and for a merchantman, much shorter) duration than the
+	// outbound one for the exact same distance: it looked like the ship
+	// sailed out at its true speed but teleported home.
+	moveTicks *= TravelFactor(unit.Type(u.utype), u.cargoUnitID != nil)
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
 	travelTicks := int(math.Round(moveTicks))

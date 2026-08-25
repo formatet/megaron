@@ -309,11 +309,8 @@ func (h *BattleTickHandler) sendDamagedShipHome(
 		}
 		moveTicks = province.TerrainMoveTicks("coastal_sea") * float64(dist)
 	}
-	moveTicks *= NavalSpeedFactor(unit.Type(utype))
-	moveTicks *= unit.MarchHoursFactorFor(unit.Type(utype))
-	if cargoUnitID != nil {
-		moveTicks *= 1.5 // mirrors march_start.go/dispatchReturnHome's laden-hull penalty
-	}
+	// Mirrors march_start.go's TravelFactor — the one home for every leg.
+	moveTicks *= TravelFactor(unit.Type(utype), cargoUnitID != nil)
 	travelTicks := int(math.Round(moveTicks))
 	if travelTicks < 1 {
 		travelTicks = 1

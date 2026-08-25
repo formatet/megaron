@@ -139,14 +139,10 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		}
 		moveTicks = province.TerrainMoveTicks("plains") * float64(dist)
 	}
-	// Mirror the outbound leg's speed multipliers (combat.StartMarch) — a war
-	// galley/merchantman/nomadic host recalled or redirected mid-march must
-	// keep its own speed, not the unmultiplied path cost.
-	moveTicks *= combat.NavalSpeedFactor(unit.Type(utype))
-	moveTicks *= unit.MarchHoursFactorFor(unit.Type(utype))
-	if cargoUnitID != nil {
-		moveTicks *= 1.5
-	}
+	// Mirror the outbound leg's speed multipliers (combat.TravelFactor) — a
+	// war galley/merchantman/nomadic host recalled or redirected mid-march
+	// must keep its own speed, not the unmultiplied path cost.
+	moveTicks *= combat.TravelFactor(unit.Type(utype), cargoUnitID != nil)
 
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
