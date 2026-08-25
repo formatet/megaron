@@ -262,6 +262,11 @@ type Unit struct {
 	Category Category
 	Size     int // land: men (0–100); naval: always 1 vessel
 	Crew     int // naval: men from population; 0 for land
+	// Hull is the graded damage track for a naval vessel (megaron_plan_
+	// skeppsreparation.md §B2): 5 = untouched, 0 = sunk. A land unit carries
+	// the column too (table-wide default 5) but never reads it — every
+	// consumer gates on Category == CategoryNaval first.
+	Hull int
 
 	// Name is set for naval units (Wanax-chosen or game-suggested at recruit
 	// time, ship-build overhaul 2026-07-09); nil for land units.
@@ -354,7 +359,7 @@ func NewStore(pool *pgxpool.Pool) *Store {
 
 const selectCols = `
 	id, world_id, owner_id,
-	type, category, size, crew, cargo_unit_id,
+	type, category, size, crew, hull, cargo_unit_id,
 	status, stance,
 	settlement_id, support_settlement_id, ordinal,
 	q, r,
@@ -376,7 +381,7 @@ func scanUnit(row interface {
 	var reactionRaw []byte
 	if err := row.Scan(
 		&u.ID, &u.WorldID, &u.OwnerID,
-		&u.Type, &u.Category, &u.Size, &u.Crew, &u.CargoUnitID,
+		&u.Type, &u.Category, &u.Size, &u.Crew, &u.Hull, &u.CargoUnitID,
 		&u.Status, &stance,
 		&u.SettlementID, &u.SupportSettlementID, &u.Ordinal,
 		&u.Q, &u.R,

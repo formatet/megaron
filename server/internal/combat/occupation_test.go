@@ -45,7 +45,7 @@ func TestSiegeBattle_AttackerWinsOccupiesCity(t *testing.T) {
 	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
 
 	fb := &fakeBroadcaster{}
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, fb)
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, fb, h.clk)
 	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 30)
 
 	var garrisonStatus string
@@ -150,7 +150,7 @@ func TestBattle_RelievedOccupationResetsCounter(t *testing.T) {
 	runFieldArrival(t, pool, h, f.worldID, reliefUnitID)
 	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, &fakeBroadcaster{})
+	battleH := NewBattleTickHandler(pool, h.eventStore, h.scheduler, &fakeBroadcaster{}, h.clk)
 	runBattleToEnd(t, pool, battleH, f.worldID, battleID, 30)
 
 	var reason string

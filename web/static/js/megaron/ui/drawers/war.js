@@ -486,6 +486,13 @@ function renderUnitCard(u) {
     ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + u.crew + '</span>'
     : '';
 
+  // Hull badge (megaron_plan_skeppsreparation.md §B2) — only shown while
+  // damaged (hull < 5); a pristine ship (hull omitted or 5) shows nothing,
+  // same "don't clutter the common case" posture as crewBadge above.
+  const hullBadge = isNaval && u.hull != null && u.hull < 5
+    ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + u.hull + '/5</span>'
+    : '';
+
   // Cargo badge
   const cargoBadge = u.cargo_unit_id
     ? '<span style="font-size:.6rem;color:var(--accent-city);margin-left:.3rem">carrying unit</span>'
@@ -560,7 +567,7 @@ function renderUnitCard(u) {
   return '<div id="ucard-' + u.id + '" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
     + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
-    + stanceBadge + crewBadge + cargoBadge
+    + stanceBadge + crewBadge + hullBadge + cargoBadge
     + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + u.status + '</span>'
     + '</div>'
     + progress

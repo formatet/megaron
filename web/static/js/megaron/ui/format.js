@@ -84,6 +84,7 @@ export function notifIcon(kind) {
     ScoutReport:        '🔭',
     BattleWon:          '⚔',
     BattleLost:         '⚔',
+    ShipDamaged:        '⛵',
   };
   return icons[kind] || '◉';
 }
@@ -268,6 +269,18 @@ export function notifText(kind, body) {
       return `${outcomeWord} at ${place} — your ${own.type || 'unit'} (${own.size_before ?? '?'}→${own.size_after ?? '?'}, ` +
              `−${own.pop_lost ?? 0} dead) vs ${body.opponent_name || 'an enemy'}'s ${enemy.type || 'unit'} ` +
              `(${enemy.size_before ?? '?'}→${enemy.size_after ?? '?'}).${trailer}`;
+    }
+    case 'ShipDamaged': {
+      // Payload per BattleTickHandler.notifyShipDamaged (megaron_plan_
+      // skeppsreparation.md Slice B point 6): hull is the OUTCOME value after
+      // the draw (0 ⇒ sunk is also true). returning_home is only ever true
+      // for a routed side's survivor — the winning side's damaged ships keep
+      // their orders and never carry this flag, even at the same hull loss.
+      if (body.sunk) return `Your ${body.unit_type || 'ship'} was sunk in battle`;
+      const hull = `hull ${body.hull ?? '?'}/${body.hull_max ?? 5}`;
+      return body.returning_home
+        ? `Your ${body.unit_type || 'ship'} took damage (${hull}) and is limping home for repair`
+        : `Your ${body.unit_type || 'ship'} took damage (${hull}) but holds its orders`;
     }
     case 'CityOccupied': {
       // Payload per occupation.go's occupySettlement (megaron_plan_erovring.md

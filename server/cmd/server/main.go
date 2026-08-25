@@ -184,7 +184,7 @@ func main() {
 	// stay silently "marching" forever with no player-facing signal.
 	worker.RegisterDeadLetterHook(events.ScheduledUnitArrival, unitArrivalH.NotifyDeadLetter)
 	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
-	battleTickH := combat.NewBattleTickHandler(pool, eventStore, scheduler, hub)
+	battleTickH := combat.NewBattleTickHandler(pool, eventStore, scheduler, hub, gameClock)
 	worker.Register(events.ScheduledBattleTick, battleTickH.Handle)
 	occupationCheckH := combat.NewOccupationCheckHandler(pool, scheduler, hub)
 	worker.Register(events.ScheduledOccupationCheck, occupationCheckH.Handle)
