@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -590,22 +591,30 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	prodPerTick := p.Grain.BasePerTick
 	netPerTick := p.Grain.EstNetPerTick
 	consPerTick := prodPerTick - netPerTick
-	fmt.Printf("  Grain: produktion ~%.0f/tick − konsumtion ~%.0f/tick = NETTO %+.0f/tick\n",
-		prodPerTick, consPerTick, netPerTick)
+	fmt.Printf("  Grain: produktion ~%.0f/tick − konsumtion ~%.0f/tick = NETTO %s/tick\n",
+		prodPerTick, consPerTick, formatNetPerTick(netPerTick))
 
-	if netPerTick < 0 {
+	// Tre lägen, inte två (megaron_plan_grundningsprognosen.md §4): ett netto på
+	// t.ex. +0,4/tick är en stad en missad hex från svält, inte "självförsörjande".
+	farmNetPerTick := p.Grain.WithFarmPerTick - consPerTick
+	farmNote := ""
+	if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
+		farmNote = " (ingen jordbruksterräng i känd catchment — en farm hjälper inte här)"
+	}
+	marginalCeiling := consPerTick * 0.10
+
+	switch {
+	case netPerTick < 0:
 		reach := ""
 		if p.Grain.TicksUntilEmpty != nil {
 			reach = fmt.Sprintf(" → räcker ~%.0f tick", *p.Grain.TicksUntilEmpty)
 		}
-		farmNetPerTick := p.Grain.WithFarmPerTick - consPerTick
-		farmNote := ""
-		if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
-			farmNote = " (ingen jordbruksterräng i känd catchment — en farm hjälper inte här)"
-		}
-		fmt.Printf("  Startlager %.0f grain%s. Med farm: ~%+.0f/tick%s\n",
-			p.Grain.Seed, reach, farmNetPerTick, farmNote)
-	} else {
+		fmt.Printf("  Startlager %.0f grain%s — staden svälter. Med farm: ~%s/tick%s\n",
+			p.Grain.Seed, reach, formatNetPerTick(farmNetPerTick), farmNote)
+	case netPerTick < marginalCeiling:
+		fmt.Printf("  Startlager %.0f grain — på marginalen (NETTO %s/tick). En farm ger ~%s/tick.%s\n",
+			p.Grain.Seed, formatNetPerTick(netPerTick), formatNetPerTick(farmNetPerTick), farmNote)
+	default:
 		fmt.Printf("  Startlager %.0f grain — staden är självförsörjande.\n", p.Grain.Seed)
 	}
 
@@ -666,6 +675,18 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	if p.IsolatedWarning != "" {
 		fmt.Printf("  ⚠ %s\n", p.IsolatedWarning)
 	}
+}
+
+// formatNetPerTick fixes the "+0" lie: %+.0f rounds anything in (-0.5, 0.5)
+// to zero, so a city sitting at +0.4/tick — one missed hex from starving —
+// printed as a perfectly flat "NETTO +0/tick". Below 10 the sign and the
+// tenths both matter more than they do at three-digit scale, so show one
+// decimal there; above it, round to the nearest whole tick as before.
+func formatNetPerTick(v float64) string {
+	if math.Abs(v) < 10 {
+		return fmt.Sprintf("%+.1f", v)
+	}
+	return fmt.Sprintf("%+.0f", v)
 }
 
 // currentHex resolves a field-positioned unit's current (q,r) so the
