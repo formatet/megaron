@@ -6,6 +6,7 @@ import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid } from '../citygrid.js';
+import { sitosStateHtml } from './sitos_view.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
 // prev/next arrows. Defaults to the capital (activeCitySettlement, state.js).
@@ -240,7 +241,8 @@ export async function loadCityDrawer() {
         .map(([k, v]) => `${v.toFixed(0)} ${k}`).join(', ');
       document.getElementById('city-sitos-sec').innerHTML = grainRow + `
         <div class="stat-row"><span class="sr-label">Coverage</span><span class="sr-val" style="color:${covColour}"><b>${cov.toFixed(1)} ticks</b> <span style="color:var(--text-dim);font-size:.7rem">(stores above ${s.high_ticks} · releases below ${s.low_ticks})</span></span></div>
-        <div class="stat-row"><span class="sr-label">Granary</span><span class="sr-val">${(s.granary_total||0).toFixed(0)} / ${(s.granary_cap||0).toFixed(0)} food${perGood ? ` <span style="color:var(--text-dim);font-size:.7rem">(${perGood})</span>` : ''}</span></div>`;
+        <div class="stat-row"><span class="sr-label">Granary</span><span class="sr-val">${(s.granary_total||0).toFixed(0)} / ${(s.granary_cap||0).toFixed(0)} food${perGood ? ` <span style="color:var(--text-dim);font-size:.7rem">(${perGood})</span>` : ''}</span></div>
+        ${sitosStateHtml(s)}`;
     } else {
       document.getElementById('city-sitos-sec').innerHTML = grainRow || '<p class="empty-state">—</p>';
     }

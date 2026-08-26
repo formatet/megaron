@@ -1457,6 +1457,15 @@ body:has(.auth-page) main {
 .stat-row-strong .sr-label { color: var(--text); font-weight: bold; }
 .stat-row-strong .sr-val   { color: var(--accent); font-size: var(--fs-sm); }
 
+/* Sitos-magasinet — tillståndstext (webb/magasinet-i-stadsvyn). Mirrors the
+   severity keryx's Coverage colouring already implies (city.js's covColour:
+   red only when falling AND under low), so the two rarely disagree. */
+.sitos-state-store          { color: var(--safe); }
+.sitos-state-rest           { color: var(--text-dim); }
+.sitos-state-release        { color: var(--accent); }
+.sitos-state-empty-growing  { color: var(--safe); }
+.sitos-state-empty-shrinking{ color: var(--danger); }
+
 .sr-category {
   padding: 0.25rem 0.8rem; font-size: var(--fs-xs);
   text-transform: uppercase; letter-spacing: 0.12em;
