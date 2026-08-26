@@ -168,10 +168,11 @@ func TestRecomputeProduction_NullsAllRatesWhenSettlementHasNoProducibleGoods(t *
 	}
 
 	// AK4: a populated settlement with literally no catchment tiles still
-	// eats — grain's negative consumption rate must survive the same call
-	// that zeroed cedar and stone.
+	// carries grain's flat nearjord trickle (P1, unconditional — added outside
+	// the catchment/potentials set) — since D1 that RAW rate must survive the
+	// same call that zeroed cedar and stone, exactly like the sibling test.
 	_, grainRate := readGood(t, settlementID, "grain")
-	if grainRate >= 0 {
-		t.Errorf("grain consumption rate must stay negative even with zero producible goods, got %.4f", grainRate)
+	if grainRate != NearjordGrainPerTick {
+		t.Errorf("grain rate with zero producible goods must equal the flat nearjord trickle (%.4f), got %.4f", NearjordGrainPerTick, grainRate)
 	}
 }

@@ -1,15 +1,19 @@
 package handlers
 
 // Proof test for megaron_plan_tysta_forluster.md §Hål 2: Ticklog's flow
-// derivation treated settlement_goods.rate as gross, so a settlement with a
-// positive NET grain rate (the stored rate is already netted against the
-// population's own consumption — province.go's Sitos-box comment, ~line 655)
-// landed entirely in `production`, leaving `consumption["grain"]` absent.
-// fmtFlows then printed "Kons: —" (cmd/keryx/cmd_ticklog.go) while the city's
-// granary was actually draining relative to gross production — `consumption`
-// can only ever hold net-negative goods, which is an underskott row, not a
-// consumption row. Fixed by reusing the same honest cons=full-demand,
-// prod=netto+demand reconstruction already established for the Sitos box.
+// derivation treated settlement_goods.rate as gross while grain's stored rate
+// was actually NET (netted against the population's own consumption), so a
+// settlement with a positive net grain rate landed entirely in `production`,
+// leaving `consumption["grain"]` absent. fmtFlows then printed "Kons: —"
+// (cmd/keryx/cmd_ticklog.go) while the city's granary was actually draining
+// relative to gross production — `consumption` can only ever hold
+// net-negative goods, which is an underskott row, not a consumption row.
+//
+// Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
+// 2026-08-26) settlement_goods.rate for grain really IS gross now (the
+// population's food is debited once a day from STOCK by FoodTick, not folded
+// into this rate) — so the fixture seeds the RAW rate directly, and Ticklog's
+// fix (economy.GrainBalance, D6) supplies consumption/production from it.
 
 import (
 	"context"
@@ -79,8 +83,9 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 
 	// Population 3000 → grain demand = 3000 * 0.5/tick = 1500/tick
 	// (economy.GrainConsumptionPerCitizenPerTick). Plan's own worked example
-	// ("producerar 2768 grain brutto och äter 1500" → rate=+1268): gross
-	// production here is netGrainRate(1268) + demand(1500) = 2768.
+	// ("producerar 2768 grain brutto och äter 1500" → netto +1268): since D1
+	// the stored rate really IS that 2768 gross figure directly — no more
+	// reconstruction needed to recover it.
 	const population = 3000
 	var settlementID uuid.UUID
 	if err := pool.QueryRow(ctx,
@@ -90,11 +95,12 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement: %v", err)
 	}
-	const netGrainRate = 1268.0
+	const grossGrainRate = 2768.0
+	const wantNetGrainRate = 1268.0
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 VALUES ($1, 'grain', 50000, $2, 1000000, 0)`,
-		settlementID, netGrainRate,
+		settlementID, grossGrainRate,
 	); err != nil {
 		t.Fatalf("seed grain settlement_goods row: %v", err)
 	}
@@ -106,8 +112,11 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/ticklog", ph.Ticklog)
 
-	// keryx status's own net rate — the "two surfaces, one truth" half of the
-	// plan's acceptance criterion.
+	// keryx status's own net rate (grain_prod_rate - grain_consum_rate, the
+	// economy.GrainBalance-D6 split) — the "two surfaces, one truth" half of
+	// the plan's acceptance criterion. resources.grain.rate is the RAW stored
+	// rate since D1, so it is NOT the net figure any more — that lives in
+	// these two dedicated fields instead.
 	getReq := httptest.NewRequest(http.MethodGet,
 		"/worlds/"+worldID.String()+"/provinces/"+provinceID.String(), nil)
 	getRec := httptest.NewRecorder()
@@ -120,14 +129,20 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 			Resources map[string]struct {
 				Rate float64 `json:"rate"`
 			} `json:"resources"`
+			GrainProdRate   float64 `json:"grain_prod_rate"`
+			GrainConsumRate float64 `json:"grain_consum_rate"`
 		} `json:"settlement"`
 	}
 	if err := json.Unmarshal(getRec.Body.Bytes(), &getResp); err != nil {
 		t.Fatalf("parse Get response: %v", err)
 	}
-	statusNet := getResp.Settlement.Resources["grain"].Rate
-	if statusNet != netGrainRate {
-		t.Fatalf("status grain rate = %v, want %v (fixture didn't seed what the test assumes)", statusNet, netGrainRate)
+	if got := getResp.Settlement.Resources["grain"].Rate; got != grossGrainRate {
+		t.Fatalf("status resources.grain.rate = %v, want %v (raw stored rate, D1 — fixture didn't seed what the test assumes)", got, grossGrainRate)
+	}
+	statusNet := getResp.Settlement.GrainProdRate - getResp.Settlement.GrainConsumRate
+	if statusNet != wantNetGrainRate {
+		t.Fatalf("status grain_prod_rate(%v) - grain_consum_rate(%v) = %v, want %v",
+			getResp.Settlement.GrainProdRate, getResp.Settlement.GrainConsumRate, statusNet, wantNetGrainRate)
 	}
 
 	tickReq := httptest.NewRequest(http.MethodGet,
@@ -159,8 +174,8 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 	if !hasProd || prod <= 0 {
 		t.Fatalf("ticklog Prod for grain = %v (present=%v), want > 0", prod, hasProd)
 	}
-	if got := prod - cons; got != netGrainRate {
-		t.Errorf("Prod(%v) - Kons(%v) = %v, want %v (netto must stay exact)", prod, cons, got, netGrainRate)
+	if got := prod - cons; got != wantNetGrainRate {
+		t.Errorf("Prod(%v) - Kons(%v) = %v, want %v (netto must stay exact)", prod, cons, got, wantNetGrainRate)
 	}
 	if got := prod - cons; got != statusNet {
 		t.Errorf("Prod - Kons (%v) != keryx status's own net rate (%v) — two surfaces must show the same truth", got, statusNet)

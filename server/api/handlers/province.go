@@ -325,7 +325,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
 			return
 		}
-		netGrainPerDay, netSilverPerDay := upkeepNetPerDay(upkeepGrainRate, upkeepSilverRate, armyUp, circulatedSilver)
+		// Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
+		// 2026-08-26) upkeepGrainRate is grain's RAW rate — the population's own
+		// food is no longer netted into it, FoodTick debits that separately from
+		// stock. Net it here via economy.GrainBalance (D6) BEFORE subtracting the
+		// army's upkeep, or this chain-gate figure (can_recruit/sustainable below)
+		// would silently stop accounting for the population's food at all.
+		_, upkeepGrainNetOfPopulation := economy.GrainBalance(upkeepGrainRate, laborPool)
+		netGrainPerDay, netSilverPerDay := upkeepNetPerDay(upkeepGrainNetOfPopulation, upkeepSilverRate, armyUp, circulatedSilver)
 
 		// can_recruit per unit: goods + labor pool + building requirements (for 1 unit).
 		// Mirrors the actual Recruit handler gates so can_recruit:false is trustworthy.
@@ -635,25 +642,17 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// grain-netto breakdown below and the break-even weight further down.
 		basePots, basePotsErr := economy.CatchmentBasePotential(r.Context(), h.pool, sett.ID)
 
-		// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md): the
-		// stored grain rate is already NET (gross production − the grain the
-		// population eats). Show it as prod − consum = netto, with netto ALWAYS
-		// the DB's own authoritative number.
+		// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md).
 		//
-		// P4 (fysiska gubbe-placeringsmodellen) repealed weight-driven grain
-		// production — grain now derives from settlement_placement, not
-		// settlement_labor.weight. The old reconstruction here read that (now
-		// inert) weight, so grainWeight ≈ 0 gave grainProdRate = 0 and a NEGATIVE
-		// consumption (0 − net), rendering the unreadable "prod 0.0 − cons −N =
-		// +N" a Wanax reported (2026-08). Use grain's full food demand as
-		// consumption and derive gross production as net + demand: both components
-		// are sensible positives (or a real deficit shows red) and netto stays
-		// exact. This slightly overstates grain's share when fish covers part of
-		// the food need (a cosmetic simplification — netto is authoritative); a
-		// P4-aware placement-based gross-production reconstruction is a separate
-		// slice, not this legibility fix.
-		grainConsumRate := float64(laborPool) * economy.GrainConsumptionPerCitizenPerTick
-		grainProdRate := grainRate + grainConsumRate
+		// Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
+		// 2026-08-26) the stored grain rate is RAW production — the population's
+		// food is debited once a day from STOCK by FoodTick, not folded into this
+		// rate — so grainProdRate is grain's rate as-is, and grainConsumRate comes
+		// from economy.GrainBalance (D6, the one shared reader every surface uses
+		// instead of re-deriving laborPool × GrainConsumptionPerCitizenPerTick
+		// itself — province.go used to do exactly that twice).
+		grainConsumRate, _ := economy.GrainBalance(grainRate, laborPool)
+		grainProdRate := grainRate
 
 		// Break-even grain labor-weight for this settlement's catchment
 		// (pop-independent — see DEL C step 4): the minimum grain weight that
@@ -676,7 +675,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		lastTickCons := map[string]float64{}
 		for k, rd := range resSnap {
 			if k == "grain" {
-				continue // handled below — its stored rate is already net
+				continue // handled below — grain's consumption isn't in its rate (D1)
 			}
 			if rd.Rate > 0 {
 				lastTickProd[k] = rd.Rate
@@ -684,11 +683,11 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				lastTickCons[k] = -rd.Rate
 			}
 		}
-		// Grain is the one good whose stored rate is already NET of what the
-		// population eats, so the loop above would file a self-sufficient city's
-		// +111/tick entirely under "produced" and leave consumption empty. The
-		// keryx one-liner then reported "2 varor produceras, 0 förbrukas" for a
-		// city eating 500 grain a tick — the same lie P4 hål 2 removed from
+		// Grain is the one good whose rate carries no consumption term at all
+		// since D1, so the loop above would file a self-sufficient city's whole
+		// gross rate under "produced" and leave consumption empty. The keryx
+		// one-liner then reported "2 varor produceras, 0 förbrukas" for a city
+		// eating 500 grain a tick — the same lie P4 hål 2 removed from
 		// `keryx ticklog`, one surface over (found in the acceptance sweep
 		// 2026-08-24). Reuses grainProdRate/grainConsumRate derived above, so the
 		// two surfaces cannot drift apart again.
@@ -2384,19 +2383,31 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 // can never disagree about the same city.
 func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (grainNetPerDay, silverNetPerDay float64, err error) {
 	var grainRate, silverRate float64
+	var population int
 	if err = pool.QueryRow(ctx,
 		`SELECT
 		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'), 0),
-		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0)`,
+		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0),
+		    (SELECT population FROM settlements WHERE id = $1)`,
 		settlementID,
-	).Scan(&grainRate, &silverRate); err != nil {
+	).Scan(&grainRate, &silverRate, &population); err != nil {
 		return 0, 0, err
 	}
 	up, circulatedSilver, upErr := settlementUpkeepDrain(ctx, pool, settlementID, combat.UpkeepSoldShare())
 	if upErr != nil {
 		return 0, 0, upErr
 	}
-	grainNetPerDay, silverNetPerDay = upkeepNetPerDay(grainRate, silverRate, up, circulatedSilver)
+	laborPool := population
+	if laborPool < 0 {
+		laborPool = 0
+	}
+	// grainRate is raw production since D1 — see the identical note at the
+	// GetStatus call site above. Net the population's own food out via
+	// economy.GrainBalance (D6) before subtracting the army's upkeep, so this
+	// figure (Recruit's own sustainability gate) doesn't silently start
+	// ignoring the population's food the moment D1 landed.
+	_, grainNetOfPopulation := economy.GrainBalance(grainRate, laborPool)
+	grainNetPerDay, silverNetPerDay = upkeepNetPerDay(grainNetOfPopulation, silverRate, up, circulatedSilver)
 	return grainNetPerDay, silverNetPerDay, nil
 }
 
@@ -2724,17 +2735,15 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 	// Rate is assumed constant across the window (true between RecomputeProduction
 	// calls). Positive rate = production; negative = consumption (shown positive).
 	//
-	// grain is a special case (Hål 2, megaron_plan_tysta_forluster.md): its rate
-	// is already NET — gross production minus the population's own consumption
-	// (province.go's Sitos-box derivation above, ~line 655, established this for
-	// the same reason). A city producing 2768 grain/tick and eating 1500 has
-	// rate = +1268 and would land only in `production`, leaving `consumption`
-	// empty ("Kons: —") while the granary drains. Reuse that exact honest
-	// fallback here instead of inventing a second one: cons = full food demand,
-	// prod = netto + demand → both positive, netto stays the DB's own
-	// authoritative number. This slightly overstates grain's share when fish
-	// covers part of the food need — same known, cosmetic limitation as the
-	// Sitos box, not fixed here either.
+	// grain is a special case: since Utfodringsordningen D1
+	// (megaron_plan_utfodringsordningen.md, 2026-08-26) its rate is RAW, un-netted
+	// production — the population's food is debited once a day from STOCK by
+	// FoodTick, not folded into this rate. Filing it through the same
+	// positive/negative-rate loop as every other good would show the full gross
+	// rate as `production` and nothing at all under `consumption`, hiding the
+	// population's food demand entirely. economy.GrainBalance (D6, the one
+	// shared reader every surface uses instead of re-deriving
+	// laborPool × GrainConsumptionPerCitizenPerTick itself) supplies it here.
 	production := map[string]float64{}
 	consumption := map[string]float64{}
 	var grainRate float64
@@ -2765,8 +2774,8 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 		if grainLaborPool < 0 {
 			grainLaborPool = 0
 		}
-		grainConsumRate := float64(grainLaborPool) * economy.GrainConsumptionPerCitizenPerTick
-		production["grain"] = grainRate + grainConsumRate
+		grainConsumRate, _ := economy.GrainBalance(grainRate, grainLaborPool)
+		production["grain"] = grainRate // already raw production since D1 — no add-back needed
 		consumption["grain"] = grainConsumRate
 	}
 

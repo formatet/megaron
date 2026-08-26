@@ -1071,16 +1071,24 @@ func (h *UnitArrivalHandler) foundColony(
 		// DEL B (megaron_koloni_legibilitet_plan.md): carry the colony's founding
 		// grain balance additively in the payload so the notification can warn that
 		// the colony starts draining its seed THIS tick if net < 0. RecomputeProduction
-		// above already wrote the real net grain rate into settlement_goods (same TX),
-		// so read it back here rather than re-deriving it. Best-effort: a missing row
-		// just leaves the fields at zero. Old payload fields are unchanged (web stays
-		// back-compatible — see the plan's web note).
-		var grainAmount, grainNet float64
+		// above already wrote the real production rate into settlement_goods (same
+		// TX), so read it back here rather than re-deriving it. Best-effort: a
+		// missing row just leaves the fields at zero. Old payload fields are
+		// unchanged (web stays back-compatible — see the plan's web note).
+		//
+		// Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
+		// 2026-08-26) the stored rate is RAW production, not net — economy.
+		// GrainBalance (D6) turns it back into a net figure using the colony's own
+		// population, which was already loaded above. Reading `rate` straight as
+		// "net" would report gross production and never warn of a deficit, since
+		// D1 means this rate can no longer go negative on its own.
+		var grainAmount, grainRate float64
 		_ = tx.QueryRow(ctx,
 			`SELECT amount, rate FROM settlement_goods
 			 WHERE settlement_id = $1 AND good_key = 'grain'`,
 			colonyID,
-		).Scan(&grainAmount, &grainNet)
+		).Scan(&grainAmount, &grainRate)
+		_, grainNet := economy.GrainBalance(grainRate, population)
 
 		payload := map[string]any{
 			"settlement_id":      colonyID,

@@ -2,106 +2,85 @@ package economy
 
 // End-to-end (real DB) coverage for the livestock fallback tier
 // (megaron_plan_foda_konsistens.md S1): the pure-function shape is proven in
-// food_consumption_split_test.go, this file proves RecomputeProduction's
-// actual DB write — the discrete slaughter debit and its same-tick
-// idempotency guard, neither of which the pure function touches.
+// food_consumption_split_test.go, this file proves the actual DB write — the
+// discrete slaughter debit and its idempotency guard.
+//
+// Utfodringsordningen D1/D3 (megaron_plan_utfodringsordningen.md, 2026-08-26)
+// moved this whole fallback chain (grain → fish → livestock) OUT of
+// RecomputeProduction and into FoodTickHandler (food_tick.go), operating on
+// STOCK instead of production rate — these tests moved with it. The
+// same-tick idempotency guard RecomputeProduction used to need (it runs many
+// times a day) is no longer the relevant one; FoodTick runs once a day and
+// idempotency is now about REPLAYING THE SAME SCHEDULED EVENT (G2,
+// food_tick_test.go's TestFoodTick_ReplayIsIdempotent covers the general
+// case — this file keeps the livestock-specific regression named).
 
 import (
 	"context"
 	"testing"
 
-	"github.com/google/uuid"
+	"formatet/megaron/server/internal/events"
 )
 
-func seedLivestock(t *testing.T, settlementID uuid.UUID, amount float64, calcTick int) {
-	t.Helper()
+// TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve: a
+// settlement with a grain shortfall (50 in stock — the flat nearjord trickle
+// a mountain catchment would raw-produce, per D1), zero fish, and a herd of 3
+// must slaughter exactly one animal (ceil(200/200)) to cover what grain
+// doesn't — food_unmet_amount lands at 0 (does not starve) instead of
+// carrying the residual.
+func TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T) {
 	pool := testPool(t)
-	ctx := context.Background()
-	if _, err := pool.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, 'livestock', $2, 0, 1000000, $3)`,
-		settlementID, amount, calcTick,
-	); err != nil {
-		t.Fatalf("seed livestock row: %v", err)
+
+	// pop=500 -> demand = 500*0.5 = 250/tick. grainStock=50 (nearjord-only,
+	// D1's raw production for a plains/fish-less catchment) leaves a 200-unit
+	// shortfall after grain alone — exactly one animal (ceil(200/200)) closes it.
+	const population = 500
+	f := newFoodFixture(t, pool, "livestock-covers", population)
+	seedFoodStock(t, pool, f, /*grain*/ 50, /*fish*/ 0, /*livestock*/ 3)
+
+	h := newFoodTickHandler(pool)
+	if err := h.Handle(context.Background(), events.ScheduledEvent{
+		ID: 900101, WorldID: f.worldID, DueTick: f.tick,
+	}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+
+	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 2 {
+		t.Errorf("livestock amount = %v, want 2 (one whole animal slaughtered to cover the 200-unit shortfall left after grain)", got)
+	}
+	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); got != 0 {
+		t.Errorf("grain stock = %v, want exactly 0 (grain alone covered only part of demand)", got)
+	}
+	if got := foodUnmetOf(t, pool, f.settlementID); got != 0 {
+		t.Errorf("food_unmet_amount = %v, want 0 (livestock covered the shortfall, city does not starve)", got)
 	}
 }
 
-func readLivestockAmount(t *testing.T, settlementID uuid.UUID) float64 {
-	t.Helper()
+// TestFoodTick_LivestockFallback_IdempotentOnReplay: a worker replay of the
+// SAME ScheduledFoodTick event (crash/timeout between commit and markDone,
+// CLAUDE.md "Events") must not slaughter a second animal for the same day's
+// already-covered shortfall.
+func TestFoodTick_LivestockFallback_IdempotentOnReplay(t *testing.T) {
 	pool := testPool(t)
-	ctx := context.Background()
-	var amount float64
-	if err := pool.QueryRow(ctx,
-		`SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'livestock'`,
-		settlementID,
-	).Scan(&amount); err != nil {
-		t.Fatalf("read livestock amount: %v", err)
+
+	const population = 500
+	f := newFoodFixture(t, pool, "livestock-idempotent", population)
+	seedFoodStock(t, pool, f, /*grain*/ 50, /*fish*/ 0, /*livestock*/ 3)
+
+	h := newFoodTickHandler(pool)
+	evt := events.ScheduledEvent{ID: 900102, WorldID: f.worldID, DueTick: f.tick}
+
+	if err := h.Handle(context.Background(), evt); err != nil {
+		t.Fatalf("Handle (first run): %v", err)
 	}
-	return amount
-}
-
-// TestRecomputeProduction_LivestockFallback_CoversShortfallAndDoesNotStarve:
-// a settlement with a grain shortfall (mountain catchment, no grain/fish
-// production beyond the flat nearjord trickle), zero fish, and a herd of 3
-// must slaughter exactly one animal (ceil(200/200)) to cover what nearjord
-// doesn't — grain lands at net 0 (does not starve) instead of draining
-// further negative.
-func TestRecomputeProduction_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T) {
-	pool := testPool(t)
-	ctx := context.Background()
-
-	const tick = 100
-	// pop=500 → demand = 500*0.5 = 250/tick. Mountain catchment: no grain/fish
-	// rule matches, so grainProd is JUST NearjordGrainPerTick (50, P1) —
-	// demand must exceed that flat trickle for a shortfall to exist at all,
-	// and by enough to need exactly one animal: unmet = 250-50 = 200 = ceil(200/200).
-	settlementID := recomputeFixture(t, tick, /*pop*/ 500, /*grainAmount*/ 0, /*grainRate*/ 0)
-	seedLivestock(t, settlementID, 3, tick-1)
-
-	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
-		t.Fatalf("RecomputeProduction: %v", err)
+	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 2 {
+		t.Fatalf("after first run: livestock = %v, want 2", got)
 	}
 
-	gotLivestock := readLivestockAmount(t, settlementID)
-	if gotLivestock != 2 {
-		t.Errorf("livestock amount = %v, want 2 (one whole animal slaughtered to cover the 200-unit shortfall left after nearjord)", gotLivestock)
+	if err := h.Handle(context.Background(), evt); err != nil {
+		t.Fatalf("Handle (replay): %v", err)
 	}
-
-	var grainRate float64
-	if err := pool.QueryRow(ctx,
-		`SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'`,
-		settlementID,
-	).Scan(&grainRate); err != nil {
-		t.Fatalf("read grain rate: %v", err)
-	}
-	if grainRate != 0 {
-		t.Errorf("grain rate = %v, want exactly 0 (livestock covered the shortfall, city does not starve)", grainRate)
-	}
-}
-
-// TestRecomputeProduction_LivestockFallback_IdempotentWithinSameTick:
-// RecomputeProduction is called many times a day (build/train/colonize), not
-// once. A second call within the SAME tick must not slaughter a second
-// animal for the same day's already-covered shortfall.
-func TestRecomputeProduction_LivestockFallback_IdempotentWithinSameTick(t *testing.T) {
-	pool := testPool(t)
-	ctx := context.Background()
-
-	const tick = 100
-	settlementID := recomputeFixture(t, tick, /*pop*/ 500, /*grainAmount*/ 0, /*grainRate*/ 0)
-	seedLivestock(t, settlementID, 3, tick-1)
-
-	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
-		t.Fatalf("RecomputeProduction (first call): %v", err)
-	}
-	if got := readLivestockAmount(t, settlementID); got != 2 {
-		t.Fatalf("after first call: livestock = %v, want 2", got)
-	}
-
-	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
-		t.Fatalf("RecomputeProduction (second call): %v", err)
-	}
-	if got := readLivestockAmount(t, settlementID); got != 2 {
-		t.Errorf("after second same-tick call: livestock = %v, want still 2 (no double slaughter)", got)
+	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 2 {
+		t.Errorf("after replay: livestock = %v, want still 2 (no double slaughter)", got)
 	}
 }

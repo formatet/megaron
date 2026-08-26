@@ -209,8 +209,12 @@ export async function loadCityDrawer() {
 
     // ── Sitos + senaste tick ──────────────────────────────────────────────
     // Grain itemized as prod − cons = net per tick (keryx `status` parity,
-    // DEL C): the stored rate is already net, so a lone negative number
-    // reads as an alarm when it is often just normal balance.
+    // DEL C): a lone negative number reads as an alarm when it is often just
+    // normal balance. Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
+    // 2026-08-26) the stored rate itself is raw production — the population's
+    // food is debited once a day from STOCK by FoodTick, not folded into this
+    // rate — so grain_prod_rate/grain_consum_rate below are the server's own
+    // economy.GrainBalance (D6) split, not the raw rate re-labelled.
     let grainRow = '';
     if (pd && pd.grain_prod_rate != null) {
       // grain_prod_rate/grain_consum_rate are already per-tick (economy.
