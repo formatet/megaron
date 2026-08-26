@@ -23,7 +23,7 @@ func unitCmd() *cobra.Command {
 		unitListCmd(),
 		unitMarchCmd(),
 		unitSentryCmd(),
-		unitWatchCmd(),
+		unitPostCmd(),
 		unitRecallCmd(),
 		unitRedirectCmd(),
 		unitStanceCmd(),
@@ -89,9 +89,9 @@ its own when the patrol timer runs out.`,
 	return cmd
 }
 
-// ---- unit watch --------------------------------------------------------------
+// ---- unit post ---------------------------------------------------------------
 
-// unitWatchCmd posts a LAND unit as a forward watch: it marches to the hex and
+// unitPostCmd posts a LAND unit as a forward watch: it marches to the hex and
 // stands there indefinitely. Thin convenience over `unit march --stance sentry`,
 // the same shape unitSentryCmd is over `unit march --intent sentry` for ships.
 //
@@ -105,7 +105,7 @@ its own when the patrol timer runs out.`,
 // The two are genuinely different orders and must not be conflated:
 //   - `unit sentry` (naval, --intent sentry): sails, holds, and turns for home
 //     by itself when the patrol timer runs out. Self-terminating.
-//   - `unit watch` (land, --stance sentry): marches, and STAYS. No timer, no
+//   - `unit post` (land, --stance sentry): marches, and STAYS. No timer, no
 //     auto-return; it holds until you march or recall it.
 //
 // Vision is not what sentry buys. Any unit standing on the map is a tier-1 eye
@@ -118,12 +118,12 @@ its own when the patrol timer runs out.`,
 // embarked), and there is no foraging to offset it. That is a real strategic
 // cost, and the help text says so rather than letting the player discover it by
 // starving.
-func unitWatchCmd() *cobra.Command {
+func unitPostCmd() *cobra.Command {
 	var unitID string
 	var q, r int
 	var target string
 	cmd := &cobra.Command{
-		Use:   "watch",
+		Use:   "post",
 		Short: "March a land unit to a hex and hold it there as a forward watch (no auto-return)",
 		Long: `Send a land unit to a hex you have seen and post it there on watch. It marches,
 arrives, and STAYS — there is no patrol timer and no auto-return, unlike a ship's
@@ -136,8 +136,8 @@ explore' reveals a target and then brings the unit straight home again.
 
 Cost: a unit in the field eats DOUBLE the grain it would in garrison, for as
 long as it stands out there. A watch is a standing expense, not a free eye.`,
-		Example: `  keryx unit watch --unit <id> --q 8 --r -3
-  keryx unit watch --unit <id> --target 8,-3`,
+		Example: `  keryx unit post --unit <id> --q 8 --r -3
+  keryx unit post --unit <id> --target 8,-3`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			// Samma delade parser som march och redirect (rad I, cli_sanning) —
@@ -147,7 +147,7 @@ long as it stands out there. A watch is a standing expense, not a free eye.`,
 				return terr
 			}
 			if !given {
-				return fmt.Errorf("give the hex to watch: --q/--r or --target q,r")
+				return fmt.Errorf("give the hex to post at: --q/--r or --target q,r")
 			}
 			q, r = tq, tr
 			c := newClient(cfg)

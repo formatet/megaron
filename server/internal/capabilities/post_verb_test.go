@@ -49,37 +49,37 @@ func TestStancePurpose_SaysWhatSentryDoes(t *testing.T) {
 // landenhet med `watch` (står kvar). Kravet måste därför vara LAND — annars
 // erbjuds watch till en spelare vars enda enhet är en galär, och hen får en
 // helt annan order än ytan lovade.
-func TestWatchVerb_IsGatedOnLandNotJustAnyUnit(t *testing.T) {
+func TestPostVerb_IsGatedOnLandNotJustAnyUnit(t *testing.T) {
 	// Att verbet finns i registret är en egen sak från vad det säger — utan
 	// registrering syns det aldrig i `keryx actions`.
 	var registered bool
 	for _, check := range checkers {
-		if fnName(check) == fnName(canWatch) {
+		if fnName(check) == fnName(canPost) {
 			registered = true
 			break
 		}
 	}
 	if !registered {
-		t.Fatal("watch finns inte i checkers-registret — då syns den aldrig i `keryx actions`")
+		t.Fatal("post finns inte i checkers-registret — då syns den aldrig i `keryx actions`")
 	}
 
 	{
-		v := canWatch(checkContext{})
+		v := canPost(checkContext{})
 		if v.Category != CategoryMilitary {
-			t.Errorf("watch ligger i kategori %q, vill ha %q", v.Category, CategoryMilitary)
+			t.Errorf("post ligger i kategori %q, vill ha %q", v.Category, CategoryMilitary)
 		}
 		if len(v.Requirements) == 0 {
-			t.Fatal("watch bär inga krav alls")
+			t.Fatal("post bär inga krav alls")
 		}
 		req := v.Requirements[0]
 		if !strings.Contains(strings.ToLower(req.Text), "land") {
-			t.Errorf("watchs krav lyder %q — det måste säga LAND, ett skepp postas med `unit sentry`", req.Text)
+			t.Errorf("postens krav lyder %q — det måste säga LAND, ett skepp postas med `unit sentry`", req.Text)
 		}
 		if !strings.Contains(strings.ToLower(req.Hint), "sentry") {
-			t.Error("watchs hint pekar inte den som bara har skepp mot `unit sentry`")
+			t.Error("postens hint pekar inte den som bara har skepp mot `unit sentry`")
 		}
 		if !strings.Contains(strings.ToLower(v.Purpose), "double") {
-			t.Error("watchs purpose nämner inte den dubbla fältransonen — en stående " +
+			t.Error("postens purpose nämner inte den dubbla fältransonen — en stående " +
 				"utgift ska stå i erbjudandet, inte upptäckas efteråt")
 		}
 	}
@@ -100,7 +100,7 @@ func purposeOf(t *testing.T, name string) string {
 	byName := map[string]func(checkContext) Verb{
 		"march":  canMarch,
 		"stance": canStance,
-		"watch":  canWatch,
+		"post":   canPost,
 	}
 	check, ok := byName[name]
 	if !ok {

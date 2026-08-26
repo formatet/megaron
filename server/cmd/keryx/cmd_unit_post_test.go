@@ -14,11 +14,11 @@ import (
 // Blandar man ihop dem får spelaren tillbaka precis det beteende hela raden
 // existerar för att komma ifrån: en enhet som åker ut och kommer hem igen.
 // Testet spikar därför fältnamnet, inte bara att kommandot finns.
-func TestUnitWatch_SendsStanceNotIntent(t *testing.T) {
-	cmd := unitWatchCmd()
+func TestUnitPost_SendsStanceNotIntent(t *testing.T) {
+	cmd := unitPostCmd()
 
-	if got := cmd.Name(); got != "watch" {
-		t.Fatalf("kommandot heter %q, vill ha \"watch\"", got)
+	if got := cmd.Name(); got != "post" {
+		t.Fatalf("kommandot heter %q, vill ha \"post\"", got)
 	}
 
 	// Marschvägen är delad med `march` — watch får inte uppfinna en egen
@@ -46,8 +46,8 @@ func TestUnitWatch_SendsStanceNotIntent(t *testing.T) {
 
 // Målformen ska vara samma som march/redirect, inte en tredje egen. Rad I i
 // cli_sanning städade bort exakt den sortens drift; det här hindrar återfall.
-func TestUnitWatch_UsesTheSharedTargetForm(t *testing.T) {
-	cmd := unitWatchCmd()
+func TestUnitPost_UsesTheSharedTargetForm(t *testing.T) {
+	cmd := unitPostCmd()
 	if err := cmd.ParseFlags([]string{"--unit", "abc", "--target", "8,-3"}); err != nil {
 		t.Fatalf("parse --target: %v", err)
 	}

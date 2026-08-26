@@ -27,7 +27,7 @@ func canMarch(cc checkContext) Verb {
 	return verb("march", CategoryMilitary,
 		"Order a garrisoned unit to march to a hex you have seen (live or remembered). "+
 			"A plain march leaves the unit standing where it arrives — that is how you gain "+
-			"ground you keep seeing; add stance \"sentry\" (or use `keryx unit watch`) to post "+
+			"ground you keep seeing; add stance \"sentry\" (or use `keryx unit post`) to post "+
 			"it as a forward watch. Intent \"explore\" is the opposite order: it may push into "+
 			"unseen land, but the unit turns for home the moment it arrives.",
 		[]Requirement{
@@ -37,18 +37,18 @@ func canMarch(cc checkContext) Verb {
 		})
 }
 
-// canWatch — den framskjutna posten som egen, namngiven yta. Mekaniskt är den
-// `march` med stance sentry (keryx unit watch är en tunn wrapper, precis som
+// canPost — den framskjutna posten som egen, namngiven yta. Mekaniskt är den
+// `march` med stance sentry (keryx unit post är en tunn wrapper, precis som
 // unit sentry är över --intent sentry för skepp), och den listas ändå för sig:
 // vägen har funnits sedan sentry byggdes och ingenting pekade någonsin på den,
 // vilket är hela roten under att utforskning aldrig blev en front.
 //
 // Kravet är LAND, inte bara "en enhet": ett skepp postas med `unit sentry` och
 // har en patrulltimer som tar det hem igen — en helt annan order.
-func canWatch(cc checkContext) Verb {
+func canPost(cc checkContext) Verb {
 	n := cc.deployableLandUnits()
 	ok := n > 0
-	return verb("watch", CategoryMilitary,
+	return verb("post", CategoryMilitary,
 		"March a land unit to a hex and hold it there as a forward watch — it stays "+
 			"(no patrol timer, no auto-return), extends your fog-of-war from where it stands, "+
 			"and intercepts enemy caravans within reach. It eats double grain in the field for "+
