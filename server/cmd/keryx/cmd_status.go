@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -65,32 +67,133 @@ func timberBottleneckWarning(rate float64) string {
 	return "⚠ Timber-produktion ~0 — timber gatear hamn (140)/barracks (80)/foundry (80)/temple (60). Allokera labor: `keryx allocate --timber <n>`"
 }
 
-// resourceAtStorageCeiling reports whether a good sitting at (amount, rate,
-// cap) means the labour producing it is being wasted: at or within 5% of its
-// storage cap with positive throughput still flowing in. Generalizes the
-// house rule "resurs vid tak = balansfel att gräva i, aldrig hälsosignal"
-// (feedback_cap_is_not_success.md) to every good — deliberately NOT a
-// stone specialer (megaron_plan_sten_stock.md §5): stone was the good that
-// surfaced the problem, but wine/oil/cedar/etc. waste labour the same way.
-func resourceAtStorageCeiling(amount, rate, cap float64) bool {
-	return cap > 0 && rate > 0 && amount >= cap*0.95
+// staticKnownSinkGoods returns every good_key with a real, code-defined
+// consumer — no server round trip, so it is unit-testable and cheap to call
+// from `status` every time. Replaces resourceAtStorageCeiling/
+// stockCeilingWarning (megaron_plan_sten_stock.md §5): economy.goodCap is
+// deliberately loosened to 1_000_000 for this dev phase (internal/economy/
+// recompute.go:951-953), so a ceiling-anchored signal can never fire — 0 of
+// 2 511 samples ever reached it (megaron_plan_omfordelningsmatningen.md §2).
+// The new anchor is sink presence, not tank fullness (same plan, §3
+// recommendation 1).
+//
+// Four sources, inventoried the same way megaron_plan_varukatalogen.md did
+// once — grepped, not hand-copied, so a newly added cost/spec/offering is
+// picked up automatically:
+//   - province.BuildingSpecs (+ every level's LevelledSpec, which folds in
+//     LevelCedarCost) and province.WallLevelSpecs — build/upgrade cost.
+//   - combat.UpkeepSpecs' UpkeepSpec struct has exactly two fields, Grain and
+//     Silver — no other good can ever be an upkeep sink without a struct
+//     change, so this is a structural fact, not a guess, named here without
+//     importing the (heavy, DB-facing) combat package into a CLI binary.
+//   - religion.PrayerSpecs' Offering maps — the traditional recipe a temple
+//     actually draws on cast (TraditionalBaseline); kharis's own daily
+//     oil/wine temple-maintenance draw (kharis.OfferOilPerTemple/
+//     OfferWinePerTemple, internal/kharis/tick.go) touches only oil and wine,
+//     both already members of this set, so it adds no good this list would
+//     otherwise miss. Composed offerings can technically carry any good with
+//     a divine valuation, but nothing steers a Wanax toward using one they
+//     have never seen requested — the traditional recipe is the honest floor.
+//
+// Refining recipes (internal/economy/recipe.go) are seeded in the DB, not a
+// Go map, so they are NOT in this static set — knownSinkGoods below adds them
+// via the existing GET /api/v1/recipes endpoint.
+func staticKnownSinkGoods() map[string]bool {
+	sinks := map[string]bool{"grain": true, "silver": true} // combat.UpkeepSpec{Grain,Silver}
+
+	for bt, spec := range province.BuildingSpecs {
+		for good := range spec.Costs {
+			sinks[good] = true
+		}
+		if province.LevelledBuildings[bt] {
+			for level := 2; level <= province.MaxBuildingLevel; level++ {
+				if levelled, ok := province.LevelledSpec(bt, level); ok {
+					for good := range levelled.Costs {
+						sinks[good] = true
+					}
+				}
+			}
+		}
+	}
+	for _, spec := range province.WallLevelSpecs {
+		for good := range spec.Costs {
+			sinks[good] = true
+		}
+	}
+	for _, spec := range religion.PrayerSpecs {
+		for good := range spec.Offering {
+			sinks[good] = true
+		}
+	}
+	return sinks
 }
 
-// stockCeilingWarning names one good producing "rakt ned i marken" — at its
-// storage ceiling with positive rate — and how many placed gubbar are
-// working it, so a Wanax knows exactly what to move. gubbar can legitimately
-// be 0 (some production is unconditional trickle, not placed labour); the
-// warning still fires since the overflow itself is real either way.
-func stockCeilingWarning(label string, amount, rateVal, cap float64, gubbar int) string {
-	if !resourceAtStorageCeiling(amount, rateVal, cap) {
+// knownSinkGoods is staticKnownSinkGoods plus refining-recipe ingredients,
+// read via GET /api/v1/recipes — the same static-reference endpoint
+// RecipeCatalogue already exposes for exactly this reason ("the web client
+// used to hardcode recipe strings and broke silently when a recipe changed",
+// api/handlers/province.go). Best-effort like fetchGubbeCountsByGood: a
+// failed or unparsable response just means recipe ingredients are missing
+// from the set, never a blocked `status`.
+func knownSinkGoods(c *Client) map[string]bool {
+	sinks := staticKnownSinkGoods()
+	data, err := c.get("/api/v1/recipes")
+	if err != nil {
+		return sinks
+	}
+	var recipes []struct {
+		Ingredients []struct {
+			GoodKey string `json:"good_key"`
+		} `json:"ingredients"`
+	}
+	if json.Unmarshal(data, &recipes) != nil {
+		return sinks
+	}
+	for _, r := range recipes {
+		for _, ing := range r.Ingredients {
+			sinks[ing.GoodKey] = true
+		}
+	}
+	return sinks
+}
+
+// surplusWithoutSinkWarning names a good producing "rakt ned i marken" under
+// the NEW anchor (megaron_plan_omfordelningsmatningen.md §3-4): positive
+// rate, no known consumer anywhere in the game (hasKnownSink=false, from
+// knownSinkGoods), and at least one gubbe actually placed on it — otherwise
+// there is nothing to move (some production is unconditional trickle, not
+// placed labour, and telling a Wanax to `place` a gubbe that doesn't exist
+// would be an actionable-looking lie).
+//
+// runway = amount/rate reuses the exact form armyUpkeepWarning's runway()
+// closure uses for the silver/grain shortage warning, just read the other
+// way: there it is ticks until an emptying stock hits zero, here it is ticks
+// this stock represents at the current (purely accumulating) rate — a fresh
+// production line hasn't had time to prove itself wasted yet, so a low
+// runway must stay silent even with zero known sink.
+//
+// The persistence bar reuses netUpkeepWarningRunwayTicks rather than
+// inventing a second magic number: that constant already encodes "a full
+// messenger round-trip's worth of time to react" (its own doc comment) — the
+// same reasoning applies symmetrically here. A shortage inside that window
+// isn't yet an emergency because there's no time to act on it; a surplus
+// that has SURVIVED at least that long without being redirected is no
+// longer a fresh production line ramping up, it is a settled state a Wanax
+// could already have acted on.
+func surplusWithoutSinkWarning(label string, amount, rateVal float64, hasKnownSink bool, gubbar int) string {
+	if rateVal <= 0 || hasKnownSink || gubbar <= 0 {
+		return ""
+	}
+	runway := amount / rateVal
+	if runway < netUpkeepWarningRunwayTicks {
 		return ""
 	}
 	who := fmt.Sprintf("%d gubbar", gubbar)
 	if gubbar == 1 {
 		who = "1 gubbe"
 	}
-	return fmt.Sprintf("⚠ %-8s %6s  %s  vid lagertaket — %s producerar rakt ned i marken (`keryx place`)",
-		label, resource(amount), rate(rateVal), who)
+	return fmt.Sprintf("⚠ %-8s %6s  %s  — ingen känd sänka; lagret räcker längre än världen har levt (~%.0f tick). %s producerar utan mottagare (`keryx place`)",
+		label, resource(amount), rate(rateVal), runway, who)
 }
 
 // capitalize upper-cases a good_key's first letter for display ("stone" →
@@ -530,40 +633,36 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					fmt.Printf("  %s\n", w)
 				}
 
-				// "Produktion rakt ned i marken" (megaron_plan_sten_stock.md §5):
-				// ANY good at/near its storage cap with positive rate means the
-				// gubbar producing it are wasted, not just stone. Iterates every
-				// good_key res actually holds — province.go's resSnap is built
-				// "for every good the settlement holds, not a hard-coded subset"
-				// (see its own comment above resSnap), so wine/oil/cedar/etc. are
-				// covered the same way as stone, with no per-good special-casing
-				// here either.
-				ceilingGoods := make([]string, 0, len(res))
+				// "Produktion utan mottagare" (megaron_plan_omfordelningsmatningen.md
+				// §3-4) — replaces the inert storage-ceiling warning (see
+				// surplusWithoutSinkWarning's doc comment for why). Iterates every
+				// good_key res actually holds, same as the ceiling version did, so
+				// wine/oil/cedar/etc. get the same treatment as any other good, no
+				// per-good special-casing here either.
+				surplusGoods := make([]string, 0, len(res))
 				for k := range res {
-					ceilingGoods = append(ceilingGoods, k)
+					surplusGoods = append(surplusGoods, k)
 				}
-				sort.Strings(ceilingGoods)
-				var atCeiling []string
-				for _, k := range ceilingGoods {
+				sort.Strings(surplusGoods)
+				sinkGoods := knownSinkGoods(c)
+				var candidates []string
+				for _, k := range surplusGoods {
 					rd, ok := res[k].(map[string]any)
 					if !ok {
 						continue
 					}
-					amt, _ := rd["amount"].(float64)
 					rt, _ := rd["rate"].(float64)
-					cp, _ := rd["cap"].(float64)
-					if resourceAtStorageCeiling(amt, rt, cp) {
-						atCeiling = append(atCeiling, k)
+					if rt > 0 && !sinkGoods[k] {
+						candidates = append(candidates, k)
 					}
 				}
-				if len(atCeiling) > 0 {
+				if len(candidates) > 0 {
 					gubbeCounts := fetchGubbeCountsByGood(c, cfg.WorldID, prov)
-					for _, k := range atCeiling {
+					for _, k := range candidates {
 						rd, _ := res[k].(map[string]any)
 						amt, _ := rd["amount"].(float64)
 						rt, _ := rd["rate"].(float64)
-						cp, _ := rd["cap"].(float64)
-						if line := stockCeilingWarning(capitalize(k), amt, rt, cp, gubbeCounts[k]); line != "" {
+						if line := surplusWithoutSinkWarning(capitalize(k), amt, rt, sinkGoods[k], gubbeCounts[k]); line != "" {
 							fmt.Printf("  %s\n", line)
 						}
 					}
