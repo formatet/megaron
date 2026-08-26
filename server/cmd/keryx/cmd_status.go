@@ -160,8 +160,11 @@ func remainingBuildingCosts(buildingLevels map[string]int, wallLevel int) map[st
 
 // sinkCapacities is the corrected form of the first pass's boolean
 // knownSinkGoods (megaron_plan_omfordelningsmatningen.md §3-4; corrected
-// 2026-08-26 after Timothy MEASURED staticKnownSinkGoods against the live
-// catalogue rather than reasoning about it): a present/absent check cannot
+// 2026-08-26 during review, after the first version's sink set was MEASURED
+// against the live goods catalogue rather than reasoned about — the measurement
+// showed it warned on fish/livestock and stayed silent on timber, exactly
+// inverting the intent. Not a Timothy decision; a review finding):
+// a present/absent check cannot
 // distinguish a real-but-tiny sink from one that actually matters, and it
 // silenced fish/livestock outright even though the population eating them
 // is the single biggest sink in the game. Every good gets a SIZE instead —
