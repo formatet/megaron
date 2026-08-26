@@ -261,7 +261,8 @@ const grainPerCitizen = 300.0
 // reserve and the reserve plus one citizen's price; above that the draw is
 // unchanged. It cannot make a city starve: a settlement below the reserve
 // simply does not grow that tick (actual_new = 0), it does not take the
-// starvation branch — that branch is still gated on grain_now > 0 alone.
+// starvation branch — that branch is gated on food_unmet_amount (D4,
+// megaron_plan_utfodringsordningen.md), not on this reserve or on grain_now.
 const growthGrainReserve = 300.0
 
 // starvationPopLossRatePerTick is the fraction of population a starving city
@@ -870,6 +871,16 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		              FROM settlement_goods sg
 		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0
 		         ) AS grain_now,
+		         -- Utfodringsordningen D4 (megaron_plan_utfodringsordningen.md,
+		         -- 2026-08-26): whether the population actually ate today, written
+		         -- by FoodTick (priority 55, runs before this at 60). Replaces
+		         -- grain_now > 0, which since D1 (grain's rate is raw production,
+		         -- never netted against consumption) says nothing about whether
+		         -- the population was fed — a fish-fed city with grain_now == 0
+		         -- and unmet == 0 must still grow, and a city whose grain+fish+
+		         -- livestock ALL ran dry must starve even if some stray grain
+		         -- production briefly ticks grain_now positive again.
+		         s.food_unmet_amount AS unmet,
 		         -- Variety reads economy.FoodGoods — the SAME list
 		         -- loyalty/welfare.go's diet-variety threshold reads (S2,
 		         -- megaron_plan_foda_konsistens.md: "en lista som båda läser").
@@ -881,8 +892,8 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		         -- 0) reproduces the exact old numbers for every settlement that
 		         -- HAS grain (base 1.0 + 0.1 per additional food type, capped at
 		         -- the same four extras) — growth only ever applies when
-		         -- grain_now > 0 (see the growing flag below), so this is not a
-		         -- balance change, only a shared source of truth.
+		         -- food_unmet_amount <= 0 (see the growing flag below), so this
+		         -- is not a balance change, only a shared source of truth.
 		         (1.0 + 0.1 * GREATEST(0, (
 		             SELECT COUNT(*) FROM settlement_goods sg
 		             WHERE sg.settlement_id = s.id AND sg.good_key = ANY($4)
@@ -895,7 +906,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		 resolved AS (
 		     SELECT
 		         id, pop, grain_now,
-		         (grain_now > 0) AS growing,
+		         (unmet <= 0) AS growing,
 		         GREATEST(1, ROUND(pop * 0.005 * variety * softcap)) AS desired_new
 		     FROM growth_calc
 		 ),
@@ -1063,15 +1074,21 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 
 // applySiegeStarvationClock is belägring S3 (megaron_plan_belagring.md §S3,
 // §Beslutade delbeslut 3): a besieged settlement whose food need is NOT
-// fully covered — grain's net rate, just rewritten by the
-// RecomputeProduction loop above, went negative, which per
-// economy.FoodConsumptionSplit's formula (grainNet = grainProd - grainShare
-// - unmet) only happens when demand still exceeds grain+fish+livestock
-// after the WHOLE fallback chain — accrues one CONSECUTIVE day on
+// fully covered — settlements.food_unmet_amount > 0, written earlier this
+// same tick by FoodTick (priority 55, Utfodringsordningen D4,
+// megaron_plan_utfodringsordningen.md) after the WHOLE grain→fish→livestock
+// fallback chain came up short — accrues one CONSECUTIVE day on
 // settlements.siege_starvation_ticks (mig 123). Food covered, or the
 // blockade lifted (besieged flips false), resets it to 0. Must run AFTER
-// the RecomputeProduction loop above so `besieged` and grain's rate are
-// this tick's fresh values, not yesterday's.
+// the RecomputeProduction loop above so `besieged` is this tick's fresh
+// value, not yesterday's.
+//
+// Anchor swapped from grain's rate < 0 to food_unmet_amount (2026-08-26):
+// grain's rate can no longer go negative since D1 (RecomputeProduction
+// writes raw, un-netted production) — the old predicate would have gone
+// permanently, silently dead the moment D1 landed. Byt inte det ena utan
+// det andra (megaron_plan_utfodringsordningen.md §5) — both are fixed here,
+// in the same commit.
 //
 // Runs as a single CTE-chained statement (same shape as the growth query
 // above) so the read (old counter) and write (new counter) come from the
@@ -1091,18 +1108,17 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 func (h *TickHandler) applySiegeStarvationClock(ctx context.Context, worldID uuid.UUID) {
 	rows, err := h.pool.Query(ctx,
 		`WITH siege_state AS (
-		     SELECT s.id, s.siege_starvation_ticks AS old_ticks, s.besieged, sg.rate AS grain_rate
+		     SELECT s.id, s.siege_starvation_ticks AS old_ticks, s.besieged, s.food_unmet_amount AS unmet
 		     FROM settlements s
-		     JOIN settlement_goods sg ON sg.settlement_id = s.id AND sg.good_key = 'grain'
 		     WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state = 'active'
 		 ),
 		 capitulating AS (
 		     SELECT id FROM siege_state
-		     WHERE besieged AND grain_rate < 0 AND old_ticks + 1 >= $2
+		     WHERE besieged AND unmet > 0 AND old_ticks + 1 >= $2
 		 ),
 		 updated AS (
 		     UPDATE settlements s SET siege_starvation_ticks = CASE
-		             WHEN ss.besieged AND ss.grain_rate < 0 THEN
+		             WHEN ss.besieged AND ss.unmet > 0 THEN
 		                 CASE WHEN ss.old_ticks + 1 >= $2 THEN 0 ELSE ss.old_ticks + 1 END
 		             ELSE 0
 		         END

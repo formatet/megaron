@@ -85,6 +85,13 @@ const (
 	ScheduledCollapseSettlement ScheduledEventType = "CollapseSettlement"
 	// W4e — daily grain+silver upkeep for all active units.
 	ScheduledUpkeepTick ScheduledEventType = "UpkeepTick"
+	// ScheduledFoodTick is Föda (priority 55, between Plikt/UpkeepTick and
+	// Tillväxt/KharisTick): the population's daily food need, debited from
+	// STOCK in kanon fallback order grain → fish → livestock
+	// (megaron_plan_utfodringsordningen.md D2/D3, internal/economy/food_tick.go).
+	// Supersedes the consumption that used to be folded continuously into
+	// grain's rate by RecomputeProduction.
+	ScheduledFoodTick ScheduledEventType = "FoodTick"
 	// Escrow expiry: refund buyer silver if a trade offer expires without being accepted.
 	ScheduledOfferExpiry ScheduledEventType = "OfferExpiry"
 	// Sitos-fonden: self-rescheduling stabilization pass, cadence +1 tick (every

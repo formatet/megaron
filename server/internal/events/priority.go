@@ -29,6 +29,11 @@ package events
 //	                  arméns behov.
 //	50 plikt        — armén äter och får sold. En stående förpliktelse betalas
 //	                  före allt som är frivilligt.
+//	55 föda         — befolkningen äter, ur LAGRET, kanonordning grain → fisk
+//	                  → boskap (megaron_plan_utfodringsordningen.md). Efter
+//	                  plikten och före tillväxten: allt staden försörjer äter
+//	                  före befolkningen (Timothy 2026-08-25), och tillväxten
+//	                  (60) får bara se vad dagen har kvar när BÅDA är betalda.
 //	60 tillväxt     — kharis, det gudomliga och det som ÖVERSKOTTET föder.
 //	                  Tillväxt är per definition det dagen har kvar när
 //	                  plikterna är betalda. En stad får inte föda sig själv in
@@ -46,6 +51,7 @@ const (
 	tickPriorityBattle      = 30
 	tickPriorityReserve     = 40
 	tickPriorityUpkeep      = 50
+	tickPriorityFood        = 55
 	tickPriorityGrowth      = 60
 	tickPriorityConsequence = 70
 	tickPriorityHousekeep   = 80
@@ -94,6 +100,9 @@ var tickPriorities = map[ScheduledEventType]int{
 
 	// 50 — plikten.
 	ScheduledUpkeepTick: tickPriorityUpkeep,
+
+	// 55 — befolkningen äter.
+	ScheduledFoodTick: tickPriorityFood,
 
 	// 60 — tillväxt och det gudomliga.
 	ScheduledKharisTick: tickPriorityGrowth,

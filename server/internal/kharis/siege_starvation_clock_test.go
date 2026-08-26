@@ -3,9 +3,15 @@ package kharis
 // Röd-först-test för belägring S3 (megaron_plan_belagring.md §S3): the
 // starvation clock bookkeeping applySiegeStarvationClock owns. Tested
 // directly (not through the whole applyDecay pipeline) so the fixture can
-// set settlements.besieged and settlement_goods.rate('grain') by hand
-// instead of engineering a real catchment/production scenario —
-// RecomputeProduction is not involved here at all.
+// set settlements.besieged and settlements.food_unmet_amount by hand instead
+// of engineering a real catchment/production scenario — RecomputeProduction
+// and FoodTick are not involved here at all.
+//
+// Anchor swapped from grain's rate to food_unmet_amount (Utfodringsordningen
+// D4, megaron_plan_utfodringsordningen.md, 2026-08-26): grain's rate can no
+// longer go negative since D1 (RecomputeProduction writes raw, un-netted
+// production), so applySiegeStarvationClock now reads the outcome FoodTick
+// (priority 55) writes each day instead.
 
 import (
 	"context"
@@ -16,9 +22,10 @@ import (
 )
 
 // siegeClockFixture builds an active world + one active, owned settlement
-// with a controllable grain rate — no catchment, no population growth, just
-// the two inputs applySiegeStarvationClock reads: besieged and grain's rate.
-func siegeClockFixture(t *testing.T, besieged bool, grainRate float64) (worldID, settlementID uuid.UUID) {
+// with a controllable food_unmet_amount — no catchment, no population
+// growth, just the two inputs applySiegeStarvationClock reads: besieged and
+// the settlement's unmet food outcome for the day.
+func siegeClockFixture(t *testing.T, besieged bool, unmet float64) (worldID, settlementID uuid.UUID) {
 	t.Helper()
 	pool := testPool(t)
 	ctx := context.Background()
@@ -52,18 +59,11 @@ func siegeClockFixture(t *testing.T, besieged bool, grainRate float64) (worldID,
 		t.Fatalf("create province: %v", err)
 	}
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, besieged)
-		 VALUES ($1, $2, 'Starveburg', 'achaean', $3, 'capital', true, 'active', $4) RETURNING id`,
-		worldID, provinceID, ownerID, besieged,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, besieged, food_unmet_amount)
+		 VALUES ($1, $2, 'Starveburg', 'achaean', $3, 'capital', true, 'active', $4, $5) RETURNING id`,
+		worldID, provinceID, ownerID, besieged, unmet,
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement: %v", err)
-	}
-	if _, err := pool.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, 'grain', 0, $2, 1000, 0)`,
-		settlementID, grainRate,
-	); err != nil {
-		t.Fatalf("seed grain row: %v", err)
 	}
 	return worldID, settlementID
 }
@@ -96,12 +96,13 @@ func countScheduledSiegeCapitulations(t *testing.T, worldID, settlementID uuid.U
 }
 
 // TestApplySiegeStarvationClock_IncrementsWhileBesiegedAndStarving is the
-// core proof: besieged + grain net rate < 0 (food need uncovered even after
-// FoodConsumptionSplit's grain→fish→livestock fallback — the invariant that
-// makes grainNet negative, recompute.go) accrues the clock by exactly one
-// per call, and does NOT enqueue capitulation before the threshold.
+// core proof: besieged + food_unmet_amount > 0 (food need uncovered even
+// after FoodTick's grain→fish→livestock fallback — the invariant that makes
+// FoodConsumptionSplit's grainNet negative, food_tick.go) accrues the clock
+// by exactly one per call, and does NOT enqueue capitulation before the
+// threshold.
 func TestApplySiegeStarvationClock_IncrementsWhileBesiegedAndStarving(t *testing.T) {
-	worldID, settlementID := siegeClockFixture(t, true, -5)
+	worldID, settlementID := siegeClockFixture(t, true, 5)
 	h := newTestTickHandler(testPool(t))
 
 	for day := 1; day <= 3; day++ {
@@ -116,12 +117,12 @@ func TestApplySiegeStarvationClock_IncrementsWhileBesiegedAndStarving(t *testing
 	}
 }
 
-// TestApplySiegeStarvationClock_ResetsWhenFoodCovered: the moment grain's
-// net rate is no longer negative (food need covered), the clock must reset
-// to 0 even though the settlement is still besieged — this is a
+// TestApplySiegeStarvationClock_ResetsWhenFoodCovered: the moment
+// food_unmet_amount is no longer positive (food need covered), the clock
+// must reset to 0 even though the settlement is still besieged — this is a
 // consecutive-days counter, not cumulative.
 func TestApplySiegeStarvationClock_ResetsWhenFoodCovered(t *testing.T) {
-	worldID, settlementID := siegeClockFixture(t, true, -5)
+	worldID, settlementID := siegeClockFixture(t, true, 5)
 	h := newTestTickHandler(testPool(t))
 	pool := testPool(t)
 
@@ -132,7 +133,7 @@ func TestApplySiegeStarvationClock_ResetsWhenFoodCovered(t *testing.T) {
 	}
 
 	if _, err := pool.Exec(context.Background(),
-		`UPDATE settlement_goods SET rate = 3 WHERE settlement_id = $1 AND good_key = 'grain'`, settlementID,
+		`UPDATE settlements SET food_unmet_amount = 0 WHERE id = $1`, settlementID,
 	); err != nil {
 		t.Fatalf("cover food: %v", err)
 	}
@@ -144,10 +145,10 @@ func TestApplySiegeStarvationClock_ResetsWhenFoodCovered(t *testing.T) {
 
 // TestApplySiegeStarvationClock_ResetsWhenBlockadeLifted: besieged flipping
 // false (the blockade lifted — S1/S2's own daily RecomputeProduction call
-// already writes this) resets the clock even if grain's rate is still
-// negative for some unrelated reason.
+// already writes this) resets the clock even if food_unmet_amount is still
+// positive for some unrelated reason.
 func TestApplySiegeStarvationClock_ResetsWhenBlockadeLifted(t *testing.T) {
-	worldID, settlementID := siegeClockFixture(t, true, -5)
+	worldID, settlementID := siegeClockFixture(t, true, 5)
 	h := newTestTickHandler(testPool(t))
 	pool := testPool(t)
 
@@ -173,7 +174,7 @@ func TestApplySiegeStarvationClock_ResetsWhenBlockadeLifted(t *testing.T) {
 // AND resets the clock in the same call (defensive against a delayed
 // handler re-triggering the same episode tomorrow).
 func TestApplySiegeStarvationClock_CapitulatesAtThreshold(t *testing.T) {
-	worldID, settlementID := siegeClockFixture(t, true, -5)
+	worldID, settlementID := siegeClockFixture(t, true, 5)
 	pool := testPool(t)
 	h := newTestTickHandler(pool)
 
@@ -202,11 +203,11 @@ func TestApplySiegeStarvationClock_CapitulatesAtThreshold(t *testing.T) {
 }
 
 // TestApplySiegeStarvationClock_NeverIncrementsWhenNotBesieged: an
-// unbesieged settlement whose grain rate happens to be negative for some
-// other reason (an ordinary starving city — a pre-existing, unrelated case)
-// must never accrue the siege clock at all.
+// unbesieged settlement whose food_unmet_amount happens to be positive for
+// some other reason (an ordinary starving city — a pre-existing, unrelated
+// case) must never accrue the siege clock at all.
 func TestApplySiegeStarvationClock_NeverIncrementsWhenNotBesieged(t *testing.T) {
-	worldID, settlementID := siegeClockFixture(t, false, -5)
+	worldID, settlementID := siegeClockFixture(t, false, 5)
 	h := newTestTickHandler(testPool(t))
 
 	for day := 1; day <= 3; day++ {

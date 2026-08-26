@@ -142,6 +142,7 @@ func main() {
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore, hub)
 	sitosCfg := economy.LoadSitosConfig()
 	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
+	foodTickH := economy.NewFoodTickHandler(pool, scheduler, eventStore, hub)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
 	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, hub, gameClock)
@@ -196,6 +197,7 @@ func main() {
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
+	worker.Register(events.ScheduledFoodTick, foodTickH.Handle)
 	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler, hub)
 	worker.Register(events.ScheduledOfferExpiry, offerExpiryH.Handle)
 	go worker.Run(ctx)
@@ -470,6 +472,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledBorrowedArmyTick,
 		events.ScheduledKharisTick,
 		events.ScheduledUpkeepTick,
+		events.ScheduledFoodTick,
 		events.ScheduledSitosTick,
 		events.ScheduledInterceptScan,
 		events.ScheduledUnitInterceptScan,
