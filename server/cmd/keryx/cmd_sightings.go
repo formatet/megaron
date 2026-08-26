@@ -158,13 +158,14 @@ something of mine", not "how far is it from my palace".`,
 					}
 					var detail string
 					if u.Status == "marching" && u.TargetQ != nil && u.TargetR != nil {
-						eta := "okänt"
+						eta := "unknown"
 						if u.ArrivesAt != nil {
 							eta = gameETA(c, *u.ArrivesAt)
 						}
-						// gameETA already supplies its own connector ("om N speldygn" /
-						// "in Xh Ym") — don't double it up with a second "om" here.
-						detail = fmt.Sprintf("marching → (%d,%d), landar %s", *u.TargetQ, *u.TargetR, eta)
+						// gameETA already supplies its own connector ("in N game-days" /
+						// "any moment") in English — "arrives", not Swedish "landar",
+						// to match (this line was mixed-language before rad K too).
+						detail = fmt.Sprintf("marching → (%d,%d), arrives %s", *u.TargetQ, *u.TargetR, eta)
 					} else {
 						stance := u.Stance
 						if stance == "" {

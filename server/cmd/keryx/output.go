@@ -79,11 +79,19 @@ var keryxTZ = func() *time.Location {
 // gameETA renders the time remaining until t as game-days-first — Megaron's
 // actual time unit, one tick = one game-day ("Ticket ÄR dygnet",
 // megaron_plan_ticket_ar_dygnet) — with the Europe/Stockholm wall clock as
-// secondary support in parens, e.g. "om 3 speldygn (19:04 Aug 24)" (rad K,
+// secondary support in parens, e.g. "in 3 game-days (19:04 Aug 24)" (rad K,
 // megaron_plan_cli_sanning.md: a game measured in speldygn was showing raw
-// wall-clock countdowns instead). Days are rounded UP: a Wanax plans in
-// whole speldygn, and "0 speldygn left" would read as "already here" when
-// it isn't.
+// wall-clock countdowns instead). English throughout, including the unit —
+// "game-days" not "days": every call site around this reads as English
+// ("arrives", "the runner reaches it", "ready"), and at a slow tick pace
+// (e.g. 60 min/tick) a bare "in 3 days" would contradict its own wall-clock
+// parenthetical (which might say "tonight"). Naming the unit removes the
+// contradiction and teaches the tick/wall-clock exchange rate for free.
+//
+// Days are rounded UP: a Wanax plans in whole game-days, and "0 game-days
+// left" would read as "already here" when it isn't — except when it
+// genuinely IS here or past due, where "any moment" (countdown's own word
+// for the same state) is used instead of a false "days" figure.
 //
 // Degrades to the old wall-clock-relative countdown ("in 3h 20m (...)") when
 // c can't report the server's tick cadence (TickSeconds' second return is
@@ -97,9 +105,9 @@ func gameETA(c *Client, t time.Time) string {
 	}
 	days := time.Until(t).Seconds() / tickSeconds
 	if days <= 0 {
-		return fmt.Sprintf("om mindre än 1 speldygn (%s)", wall)
+		return fmt.Sprintf("any moment (%s)", wall)
 	}
-	return fmt.Sprintf("om %d speldygn (%s)", int(math.Ceil(days)), wall)
+	return fmt.Sprintf("in %d game-days (%s)", int(math.Ceil(days)), wall)
 }
 
 // arrivalETA parses a server RFC3339 arrival timestamp and renders it via

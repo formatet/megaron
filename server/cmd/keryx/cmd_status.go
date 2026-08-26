@@ -737,8 +737,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					ready := ""
 					if ra, ok := m["ready_at"].(string); ok && ra != "" {
 						// arrivalETA (game-days-first), not localDone — this is an
-						// ETA, not history like the loyalty log below.
-						ready = " — klar " + arrivalETA(c, ra)
+						// ETA, not history like the loyalty log below. English,
+						// matching every other ETA surface in keryx (rad K).
+						ready = " — ready " + arrivalETA(c, ra)
 					}
 					switch {
 					case cat == "naval":

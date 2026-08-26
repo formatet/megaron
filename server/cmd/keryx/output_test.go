@@ -8,20 +8,21 @@ import (
 
 // TestArrivalETA_KnownTickSeconds_RendersGameDaysFirst is rad K's core
 // acceptance case (megaron_plan_cli_sanning.md): with a known tick cadence,
-// an arrival must show speldygn FIRST, wall clock only as parenthetical
-// support — never a raw UTC/nanosecond stamp. Before this slice, arrivalETA
-// had no concept of a tick cadence at all and always rendered a wall-clock
+// an arrival must show game-days FIRST, wall clock only as parenthetical
+// support — never a raw UTC/nanosecond stamp, and never a bare "days" that
+// could be misread as real days. Before this slice, arrivalETA had no
+// concept of a tick cadence at all and always rendered a wall-clock
 // countdown (see TestArrivalETA_UnknownTickSeconds_DegradesToWallClockCountdown,
 // which pins that old contract as the explicit degrade path).
 func TestArrivalETA_KnownTickSeconds_RendersGameDaysFirst(t *testing.T) {
 	c := &Client{tickSeconds: 21600, tickSecondsFetched: true} // 6h/tick
 	iso := time.Now().Add(3 * 24 * time.Hour).UTC().Format(time.RFC3339)
 	got := arrivalETA(c, iso)
-	if !strings.HasPrefix(got, "om ") || !strings.Contains(got, "speldygn") {
-		t.Fatalf("arrivalETA(%q) = %q, want a game-day-first \"om N speldygn (...)\" string", iso, got)
+	if !strings.HasPrefix(got, "in ") || !strings.Contains(got, "game-days") {
+		t.Fatalf("arrivalETA(%q) = %q, want a game-day-first \"in N game-days (...)\" string", iso, got)
 	}
-	if !strings.Contains(got, "om 12 speldygn") {
-		t.Errorf("arrivalETA(%q) = %q, want 12 speldygn (3 days / 6h-per-tick = 12 ticks)", iso, got)
+	if !strings.Contains(got, "in 12 game-days") {
+		t.Errorf("arrivalETA(%q) = %q, want 12 game-days (3 days / 6h-per-tick = 12 ticks)", iso, got)
 	}
 	if strings.Contains(got, "T") || strings.Contains(got, "Z") {
 		t.Fatalf("arrivalETA(%q) = %q leaked the raw RFC3339 string", iso, got)
@@ -61,13 +62,34 @@ func TestArrivalETA_UnparseableFallsBackToRaw(t *testing.T) {
 	}
 }
 
-// TestGameETA_RoundsDaysUp: a Wanax plans in whole speldygn, and "0 speldygn
-// left" would misread as "already here" — a few hours left must still show
-// as 1 speldygn away, not 0.
+// TestGameETA_RoundsDaysUp: a Wanax plans in whole game-days, and "0
+// game-days left" would misread as "already here" — a few hours left must
+// still show as 1 game-day away, not 0.
 func TestGameETA_RoundsDaysUp(t *testing.T) {
 	c := &Client{tickSeconds: 21600, tickSecondsFetched: true} // 6h/tick
 	got := gameETA(c, time.Now().Add(2*time.Hour))
-	if !strings.Contains(got, "om 1 speldygn") {
-		t.Errorf("gameETA(2h out, 6h/tick) = %q, want \"om 1 speldygn\" (rounded up)", got)
+	if !strings.Contains(got, "in 1 game-days") {
+		t.Errorf("gameETA(2h out, 6h/tick) = %q, want \"in 1 game-days\" (rounded up)", got)
+	}
+}
+
+// TestGameETA_ArrivedOrPast_SaysAnyMoment: math.Ceil already guarantees
+// every remaining-time>0 case renders as at least 1 game-day, so the days<=0
+// branch only ever fires for an arrival that is NOW or already PAST. "in 0
+// game-days" or "less than 1 game-day" would both read as future — wrong for
+// something that has already landed. countdown's own word for this state
+// ("any moment") already exists in this file and means exactly this.
+func TestGameETA_ArrivedOrPast_SaysAnyMoment(t *testing.T) {
+	c := &Client{tickSeconds: 21600, tickSecondsFetched: true} // 6h/tick
+	for _, got := range []string{
+		gameETA(c, time.Now()),
+		gameETA(c, time.Now().Add(-time.Hour)),
+	} {
+		if !strings.Contains(got, "any moment") {
+			t.Errorf("gameETA(now-or-past) = %q, want \"any moment\", not a days figure", got)
+		}
+		if strings.Contains(got, "game-days") {
+			t.Errorf("gameETA(now-or-past) = %q, must not claim a future game-days count", got)
+		}
 	}
 }

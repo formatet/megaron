@@ -148,7 +148,11 @@ func TestRunWatch_SkipsHeartbeats(t *testing.T) {
 	conn := dialTestServer(t, srv)
 	defer conn.Close()
 
-	shown, _ := runWatch(conn, watchOptions{count: 0}) // unbounded: runs until the server closes
+	// &Client{tickSecondsFetched: true} is the degrade-path stub (rad K):
+	// "fetched" but no cadence recorded, so any game-day rendering these
+	// tests happen to trigger falls back to the wall-clock countdown rather
+	// than making a real HTTP call.
+	shown, _ := runWatch(&Client{tickSecondsFetched: true}, conn, watchOptions{count: 0}) // unbounded: runs until the server closes
 	if shown != 2 {
 		t.Fatalf("runWatch shown = %d, want 2 (heartbeats must never count)", shown)
 	}
@@ -168,7 +172,7 @@ func TestRunWatch_CountStopsAtN(t *testing.T) {
 	conn := dialTestServer(t, srv)
 	defer conn.Close()
 
-	shown, err := runWatch(conn, watchOptions{count: 1})
+	shown, err := runWatch(&Client{tickSecondsFetched: true}, conn, watchOptions{count: 1})
 	if err != nil {
 		t.Fatalf("runWatch: unexpected error: %v", err)
 	}
@@ -186,7 +190,7 @@ func TestRunWatch_KindFilter(t *testing.T) {
 	conn := dialTestServer(t, srv)
 	defer conn.Close()
 
-	shown, err := runWatch(conn, watchOptions{kinds: map[string]bool{"ForeignMarchSighted": true}, count: 1})
+	shown, err := runWatch(&Client{tickSecondsFetched: true}, conn, watchOptions{kinds: map[string]bool{"ForeignMarchSighted": true}, count: 1})
 	if err != nil {
 		t.Fatalf("runWatch: unexpected error: %v", err)
 	}
