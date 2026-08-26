@@ -1,0 +1,18 @@
+-- Migration 135: drop the dead `temples` table (Timothy 2026-08-22).
+--
+-- The LIVE temple mechanic is `buildings` with building_type = 'temple' —
+-- build-gate, kharis cap, cult devotion (capabilities/cult_verbs.go,
+-- kharis/project.go, kharis/tick.go). That is untouched by this migration.
+--
+-- `temples` is a parallel substrate from 001_initial that no production code
+-- reads or writes. Verified 2026-08-26 against master 871e683: no `FROM
+-- temples` / `INTO temples` / `UPDATE temples` / `JOIN temples` anywhere in
+-- Go, SQL, web JS or keryx outside the migrations that created/touched it
+-- (001_initial, 005_province_settlement_split, 110_drop_priest_columns). No
+-- other table holds a foreign key into temples(id). Dropping it changes
+-- nothing for a player.
+--
+-- Migration 134 is reserved by another in-flight branch
+-- (ekonomi/utfodringsordningen, not yet on master) — this takes 135 to avoid
+-- a number collision at merge.
+DROP TABLE IF EXISTS temples;
