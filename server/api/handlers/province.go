@@ -1087,9 +1087,17 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Mines require the matching ore deposit in the 7-tile catchment (own hex + 6
-	// adjacent) — production reads only the catchment, so a mine without a matching
-	// deposit in reach would produce nothing. Gate it at build time.
+	// Mines require the matching ore deposit in the settlement's production
+	// catchment (own hex + hexgrid.CatchmentRadius ring, same set
+	// LoadHexProductionOptions reads — a mine without a matching deposit in
+	// reach would produce nothing). Gate it at build time.
+	//
+	// Was a hand-copied "own hex + 6 neighbours" (radius 1) list — stale since
+	// P1 (megaron_plan_fysisk_gubbemodell.md, 2026-08-07) doubled the
+	// catchment to radius 2 for production and megaron_plan_gruvgrinden.md's
+	// keryx-visible catchment_deposits field, but this write gate never
+	// followed. Now reads hexgrid.Disk (own hex included, matching that a
+	// mine may still be built directly on the ore, as before).
 	if req.BuildingType == "mine" || req.BuildingType == "silver_mine" {
 		var pq, pr int
 		_ = h.pool.QueryRow(r.Context(),
@@ -1103,25 +1111,22 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			depositCond = "(copper_deposit OR tin_deposit)"
 			oreName = "copper or tin"
 		}
+		catchQ, catchR := hexgrid.QRArrays(hexgrid.Disk(hexgrid.Coord{Q: pq, R: pr}, hexgrid.CatchmentRadius))
 		var hasDeposit bool
 		_ = h.pool.QueryRow(r.Context(),
 			fmt.Sprintf(`SELECT EXISTS(
-			   SELECT 1 FROM map_tiles
-			   WHERE world_id = $1
-			     AND terrain NOT IN ('coastal_sea','deep_sea','river','river_ford')
-			     AND (q, r) IN (
-			       ($2,$3),
-			       ($2+1,$3), ($2-1,$3),
-			       ($2,$3+1), ($2,$3-1),
-			       ($2+1,$3-1), ($2-1,$3+1)
-			     )
+			   SELECT 1 FROM map_tiles mt
+			   JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
+			   WHERE mt.world_id = $1
+			     AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford')
 			     AND %s
 			 )`, depositCond),
-			worldID, pq, pr,
+			worldID, catchQ, catchR,
 		).Scan(&hasDeposit)
 		if !hasDeposit {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("a %s here would produce nothing — no %s deposit in this settlement's catchment (its own hex or the 6 surrounding hexes). Build it on or next to the ore.", req.BuildingType, oreName))
+				fmt.Sprintf("a %s here would produce nothing — no %s deposit within this settlement's production catchment (its own hex plus every hex within %d steps). Build it on or in reach of the ore.",
+					req.BuildingType, oreName, hexgrid.CatchmentRadius))
 			return
 		}
 	}

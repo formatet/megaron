@@ -1791,13 +1791,16 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	// minProductiveTin/eastTinCatchment floors then naturally trigger a
 	// reseed if too few genuinely-mineable tin tiles remain, instead of
 	// silently serving a phantom deposit no settlement can ever catch.
+	//
+	// Reads mineableRadius via buildableWithinMineableRadius (same walk
+	// hasBuildableNeighbour uses, megaron_plan_gruvgrinden.md Slice B) — this
+	// used to be its own hand-copied radius-1 version, which would have
+	// clawed back every ring-2-only deposit that fix was letting through.
 	currentlyBuildable := func(c cell) bool {
-		for _, n := range hexNeighbours(c, width, height) {
-			if idx, ok := index[n]; ok && spawnBuildable(tiles[idx].Terrain) {
-				return true
-			}
-		}
-		return false
+		return buildableWithinMineableRadius(c, width, height, func(n cell) bool {
+			idx, ok := index[n]
+			return ok && spawnBuildable(tiles[idx].Terrain)
+		})
 	}
 	for i := range tiles {
 		if tiles[i].Terrain != TerrainMountainLimestone {
@@ -3775,27 +3778,79 @@ func hasLandNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
 	return false
 }
 
-// hasBuildableNeighbour reports whether c has at least one hex-adjacent
-// neighbour on colonisable terrain (spawnBuildable, the same exclusion list
-// join.go's capital placement uses).
+// mineableRadius MUST mirror hexgrid.CatchmentRadius (internal/hexgrid/
+// hexgrid.go) — duplicated, not imported: internal/world sits at the same
+// zero-internal-deps tier as hexgrid (CLAUDE.md G1, "package dependency
+// order"), so it cannot import hexgrid's Ring/Disk any more than it can
+// import province or economy. dirs6 elsewhere in this file is the same
+// pattern for the same reason — hexgrid.go's own doc comment says the
+// hand-copied neighbour offsets were consolidated at "13+ live call sites
+// (SQL WHERE clauses and Go literals across economy/combat/handlers/
+// province/kharis)"; world was never on that list. If hexgrid.CatchmentRadius
+// changes, this constant must change with it in the same pass
+// (megaron_plan_gruvgrinden.md Slice B).
+const mineableRadius = 2
+
+// hasBuildableNeighbour reports whether c has at least one colonisable
+// (spawnBuildable, the same exclusion list join.go's capital placement uses)
+// hex within mineableRadius steps — i.e. whether SOME settlement founded on a
+// buildable hex near c could ever carry c inside its production catchment.
 //
 // P1c (soak 2026-07-18): mountain_limestone — tin's and (one branch of)
 // silver's deposit terrain — is ITSELF excluded from spawnBuildable, unlike
 // hills (copper, self-buildable: a colony can found directly on the deposit
 // tile, trivially landing it in that settlement's own catchment hex). A tin
-// tile with no buildable neighbour can never fall inside ANY settlement's
-// 7-hex catchment (own hex + 6 neighbours) — it is placed but permanently
-// unmineable, independent of how many tin tiles exist in total. Empirically
-// (230×230, seeds 0-29) up to 4 of a map's 4-11 tin tiles landed this way —
-// a placement-candidate bug, orthogonal to and NOT a relaxation of the
-// tinSourceCap scarcity design invariant (Timothy 2026-07-16, plan §A):
-// filtering candidates here doesn't change how many clusters get placed,
-// only which candidate tiles are eligible to receive one.
+// tile with no buildable hex in reach can never fall inside ANY settlement's
+// catchment — it is placed but permanently unmineable, independent of how
+// many tin tiles exist in total. Empirically (230×230, seeds 0-29) up to 4 of
+// a map's 4-11 tin tiles landed this way — a placement-candidate bug,
+// orthogonal to and NOT a relaxation of the tinSourceCap scarcity design
+// invariant (Timothy 2026-07-16, plan §A): filtering candidates here doesn't
+// change how many clusters get placed, only which candidate tiles are
+// eligible to receive one.
+//
+// Was radius 1 (immediate hex-adjacent neighbours only) — stale since P1
+// (megaron_plan_fysisk_gubbemodell.md, 2026-08-07) doubled the production
+// catchment to radius 2: a tin tile with no buildable IMMEDIATE neighbour but
+// a buildable hex two steps away was wrongly discarded as unmineable even
+// though it sits inside that hex's real catchment ring
+// (megaron_plan_gruvgrinden.md Slice B). BFS out to mineableRadius steps
+// (bounded by hexNeighbours/inMap at every step, same as the old adjacency
+// walk) instead of checking only the immediate ring — see
+// buildableWithinMineableRadius, the shared walk.
 func hasBuildableNeighbour(grid map[cell]Terrain, c cell, w, h int) bool {
-	for _, n := range hexNeighbours(c, w, h) {
-		if spawnBuildable(grid[n]) {
-			return true
+	return buildableWithinMineableRadius(c, w, h, func(n cell) bool { return spawnBuildable(grid[n]) })
+}
+
+// buildableWithinMineableRadius BFS-walks out to mineableRadius steps from c
+// (bounded by hexNeighbours/inMap at every step) and reports whether any
+// visited hex OTHER THAN c itself satisfies buildableAt. Factored out because
+// two call sites need the identical radius-N walk over two different terrain
+// sources: hasBuildableNeighbour reads the immutable step-4 `grid` snapshot,
+// while step 11's reachability sweep (below) must read `tiles`' CURRENT
+// (possibly forceMetal-mutated) terrain — before this factoring, step 11 hand
+// -copied its own radius-1-only version (`currentlyBuildable`) that would
+// have silently undone this fix: it strips any tin/silver deposit that fails
+// its own reachability check, so leaving it at radius 1 would have deleted
+// every ring-2-only deposit this slice exists to keep.
+func buildableWithinMineableRadius(c cell, w, h int, buildableAt func(cell) bool) bool {
+	visited := map[cell]bool{c: true}
+	frontier := []cell{c}
+	for step := 0; step < mineableRadius; step++ {
+		var next []cell
+		for _, cur := range frontier {
+			for _, n := range hexNeighbours(cur, w, h) {
+				if visited[n] {
+					continue
+				}
+				visited[n] = true
+				if buildableAt(n) {
+					return true
+				}
+				next = append(next, n)
+			}
 		}
+		frontier = next
 	}
 	return false
 }
