@@ -1,8 +1,9 @@
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
-import { arrivalHTML } from '../time.js';
+import { arrivalHTML, fmtClock } from '../time.js';
 import { renderLockedActions } from '../misc.js';
+import { esc } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid } from '../citygrid.js';
@@ -18,6 +19,27 @@ export function cycleCityView(dir) {
   idx = (idx + dir + mine.length) % mine.length;
   State.cityViewID = mine[idx].id;
   loadCityDrawer();
+}
+
+// ── Loyalty log ────────────────────────────────────────────────────────────
+// Pure string builder (same pattern as economy.js's goodsRateCell) so it can
+// be unit-tested without a DOM. entries: [{loyalty_delta, reason, created_at}],
+// server already orders them newest-first (settlement.go LoyaltyLog, LIMIT 50).
+export function loyaltyLogRowsHTML(entries) {
+  if (!entries.length) return '<p class="empty-state">No loyalty changes yet.</p>';
+  return `<table class="goods-mini">
+    <tr style="color:var(--text-dim);font-size:.7rem"><td>Δ</td><td>Reason</td><td>When</td></tr>
+    ${entries.map(e => {
+      const delta = e.loyalty_delta || 0;
+      const sign  = delta > 0 ? '+' : '';
+      const color = delta > 0 ? 'var(--safe)' : (delta < 0 ? 'var(--accent)' : 'var(--text-dim)');
+      return `<tr>
+        <td style="color:${color};font-weight:bold">${sign}${delta}</td>
+        <td>${esc(e.reason || '')}</td>
+        <td style="color:var(--text-dim);font-size:.7rem;white-space:nowrap">${esc(fmtClock(new Date(e.created_at).getTime()))}</td>
+      </tr>`;
+    }).join('')}
+  </table>`;
 }
 
 export async function saveLaborAlloc(provinceID) {
@@ -126,6 +148,7 @@ export async function loadCityDrawer() {
       <div class="dsec"><div class="dsec-title">Produktion</div><div id="city-prod-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       <div class="dsec"><div class="dsec-title">Sitos</div><div id="city-sitos-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       <div class="dsec"><div class="dsec-title">Senaste tick</div><div id="city-lasttick-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+      <div class="dsec"><div class="dsec-title">Lojalitetslogg</div><div id="city-loyalty-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       <div class="dsec">
         <div class="dsec-title">Ticklog <button class="btn-small" onclick="loadTicklog()" style="margin-left:.4rem;padding:.05rem .3rem;font-size:.65rem;cursor:pointer">Show recent ticks</button></div>
         <div id="city-ticklog-sec"></div>
@@ -256,6 +279,29 @@ export async function loadCityDrawer() {
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
+    }
+
+    // ── Lojalitetslogg ──────────────────────────────────────────────────────
+    // `pd.id` is the SETTLEMENT id (province ≠ settlement, CLAUDE.md) — the
+    // loyalty-log endpoint is settlement-scoped, unlike the /provinces/{id}
+    // calls above, so `capital.id` (a province id) would be the wrong id here.
+    // Ownership-checked server-side (403 if not your city); loadCityDrawer
+    // only ever shows the Wanax's own settlements, so a 403 here would mean
+    // something else went stale — fail quietly, no raw response logged.
+    const loyaltySec = document.getElementById('city-loyalty-sec');
+    if (loyaltySec) {
+      if (pd) {
+        try {
+          const logResp = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/${pd.id}/loyalty-log`);
+          loyaltySec.innerHTML = logResp.ok
+            ? loyaltyLogRowsHTML(await logResp.json())
+            : '<p class="empty-state">Could not load.</p>';
+        } catch (_) {
+          loyaltySec.innerHTML = '<p class="empty-state">Could not load.</p>';
+        }
+      } else {
+        loyaltySec.innerHTML = '<p class="empty-state">—</p>';
+      }
     }
 
     const lp = pd ? (pd.labor_pool || 0) : 0;
