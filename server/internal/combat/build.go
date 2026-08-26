@@ -104,8 +104,15 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		        OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
 		        OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit,  false)))
 		   AND NOT EXISTS (
-		        SELECT 1 FROM settlement_labor sl
-		        WHERE sl.settlement_id = s.id AND sl.good_key = pr.good_key AND sl.weight > 0)`,
+		        -- P4: whether this good is already worked is a fact about
+		        -- settlement_placement (a gubbe standing on a hex/slot doing
+		        -- it), not settlement_labor — that table's weight is dead for
+		        -- every good except cult (CLAUDE.md "Labor = individual
+		        -- placement"). Checking the old table here would make this
+		        -- guard fire forever post-P4, since nothing writes weight>0
+		        -- for these goods anymore.
+		        SELECT 1 FROM settlement_placement sp
+		        WHERE sp.settlement_id = s.id AND sp.good_key = pr.good_key)`,
 		p.SettlementID, p.BuildingType, unlockCatchQ, unlockCatchR,
 	)
 	if uerr == nil {
@@ -116,15 +123,6 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			}
 		}
 		urows.Close()
-	}
-
-	// Auto-allocate a starting labor slice to newly unlocked goods (skims grain if needed).
-	// This runs before RecomputeProduction so the new weights are reflected in the rates.
-	autoAllocated, autoErr := economy.AutoAllocateUnlocked(ctx, tx, p.SettlementID, unlockedGoods)
-	if autoErr != nil {
-		slog.Warn("auto-allocate labor after build", "settlement", p.SettlementID, "building", p.BuildingType, "err", autoErr)
-		// Non-fatal: fall through so the build still completes.
-		autoAllocated = nil
 	}
 
 	// Update settlement_goods production rates via the central labor-allocation helper.
@@ -208,16 +206,15 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			"settlement_id": p.SettlementID,
 			"building_type": p.BuildingType,
 		}
-		if len(autoAllocated) > 0 {
-			body["unlocked_goods"] = autoAllocated
-			body["hint"] = fmt.Sprintf(
-				"%s is built — 15%% labor auto-allocated to %s to start production. Adjust with /labor if you want more.",
-				p.BuildingType, strings.Join(autoAllocated, ", "))
-		} else if len(unlockedGoods) > 0 {
-			// Auto-alloc failed (no capacity) — give the old manual hint.
+		if len(unlockedGoods) > 0 {
+			// Post-P4 there is no auto-allocation: production comes from a
+			// gubbe physically placed on a hex or building slot
+			// (settlement_placement), never from a labor percentage. Point
+			// at the real surface instead of a spak that no longer does
+			// anything (CLAUDE.md "Labor = individual placement").
 			body["unlocked_goods"] = unlockedGoods
 			body["hint"] = fmt.Sprintf(
-				"%s is built but idle. How large a share of the population should work it? Set a labor percent for %s to begin production.",
+				"%s is built but produces nothing until staffed — place a gubbe to work %s (`keryx place`/`staff`, or the city's placement grid) to start production.",
 				p.BuildingType, strings.Join(unlockedGoods, ", "))
 		}
 		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "BuildComplete", 4, body)
