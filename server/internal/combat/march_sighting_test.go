@@ -412,3 +412,102 @@ func TestMarchSighting_PayloadCarriesWanaxNameNotUsername(t *testing.T) {
 			"`message --to` this exact string back", got, attackerWanaxName)
 	}
 }
+
+// T6 — KR2 = B ("detection is unconditional, reaction is stance-gated",
+// megaron_todo.md, sharpened 2026-08-04). march_encounter.go's SQL candidate
+// filter (loadCandidates) only loads units whose reaction_policy.foreign is
+// 'intercept' — a unit set to 'ignore' or 'alert' never becomes a
+// crossingUnit there and so never triggers a battle. That file's own header
+// comment (march_encounter.go:34-45) claims this is harmless because THIS
+// handler already tells a Wanax the moment a foreign march becomes visible,
+// independently of whether it ever collides with anything.
+//
+// This test proves that claim rather than trusting it: LoadLiveEyes
+// (internal/province/eyes.go:53-84) never reads reaction_policy at all, so a
+// marching unit is one of its own owner's eyes regardless of its policy. Two
+// hostile marches crossing the SAME hex are, by construction, within any live
+// eye's radius of each other — so BOTH owners get notified even with ZERO
+// settlements or other units anywhere in the world, and even when the
+// crossing unit's own policy is 'ignore'. The gap march_encounter.go's SQL
+// filter creates is real for COMBAT (by design — "escort"/"ignore"/"alert"
+// units must not fight), but not for DETECTION: this sweep already delivers
+// it, unconditionally, through a wholly separate code path.
+func TestMarchSighting_IgnorePolicyMarchStillNotifiesBothOwnersOnCrossing(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE status = 'active'`); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+		"kr2-detection-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create world: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
+
+	mkPlayer := func(tag string) uuid.UUID {
+		var id uuid.UUID
+		if err := pool.QueryRow(ctx,
+			`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
+			tag+"-"+uuid.New().String(), tag+"-"+uuid.New().String()+"@test.invalid",
+		).Scan(&id); err != nil {
+			t.Fatalf("create player %s: %v", tag, err)
+		}
+		return id
+	}
+	ownerA := mkPlayer("kr2-a")
+	ownerB := mkPlayer("kr2-b")
+
+	// A bare 3-hex strip, no settlements anywhere — the ONLY possible eyes in
+	// this world are the two marching units themselves.
+	for q := 0; q <= 2; q++ {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'plains')`,
+			worldID, q,
+		); err != nil {
+			t.Fatalf("insert map tile (%d,0): %v", q, err)
+		}
+	}
+
+	clk := clock.NewTestClock(time.Unix(1_000_000, 0))
+	mkCrossing := func(owner uuid.UUID, originQ, targetQ, size int) uuid.UUID {
+		var id uuid.UUID
+		if err := pool.QueryRow(ctx,
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+			                     q, r, target_q, target_r, departs_at, arrives_at, depart_tick, arrive_tick)
+			 VALUES ($1,$2,'spearman','land',$3,0,'marching',$4,0,$5,0,$6,$7,1,NULL)
+			 RETURNING id`,
+			worldID, owner, size, originQ, targetQ,
+			clk.Now().Add(-1*time.Hour), clk.Now().Add(1*time.Hour),
+		).Scan(&id); err != nil {
+			t.Fatalf("create crossing unit: %v", err)
+		}
+		return id
+	}
+	mkCrossing(ownerA, 0, 2, 1000) // default reaction_policy.foreign = 'intercept'
+	unitB := mkCrossing(ownerB, 2, 0, 500)
+	if _, err := pool.Exec(ctx,
+		`UPDATE units SET reaction_policy = jsonb_set(reaction_policy, '{foreign}', to_jsonb('ignore'::text)) WHERE id = $1`,
+		unitB,
+	); err != nil {
+		t.Fatalf("set reaction_policy.foreign=ignore: %v", err)
+	}
+
+	h, _ := newSightingHandler(pool, clk)
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: 0}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+
+	if got := notifCount(t, pool, worldID, ownerA); got == 0 {
+		t.Errorf("ownerA notifications = 0, want ≥1 — owner A's own marching unit is an eye that saw B's march at the shared hex")
+	}
+	if got := notifCount(t, pool, worldID, ownerB); got == 0 {
+		t.Errorf("ownerB (reaction_policy.foreign=ignore) notifications = 0, want ≥1 — detection must be unconditional (KR2 = B): "+
+			"B's own marching unit is still one of B's eyes regardless of its reaction policy")
+	}
+}
