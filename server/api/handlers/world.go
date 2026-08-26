@@ -560,18 +560,39 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// foundColony in unit_arrival.go). Explicit param rather than inferring
 	// from ?pop= so the semantics are self-documenting.
 	starterFarm := r.URL.Query().Get("starter_farm") == "1"
-	// goods["fish"]/withFarm["fish"] are the same value either way — no fish
-	// production_rule is farm-gated, so assuming a farm never changes fish's
-	// catchment potential (AK5: a hex with water forecasts a higher net than
-	// the same hex without, via economy.FoodConsumptionSplit).
-	basePerTick, estNetPerTick := economy.FoundingGrainNetPerTick(
-		goods["grain"], withFarm["grain"], goods["fish"], forecastPop, starterFarm)
-	// with_farm_per_tick reports labor-scaled with-farm PRODUCTION (not net) —
-	// the client derives consumption itself as base_per_tick − est_net_per_tick,
-	// so this must stay on the same "production" footing for the colony hint
-	// ("bygg en farm") to read coherently.
-	withFarmProdPerTick, _ := economy.FoundingGrainNetPerTick(
-		withFarm["grain"], withFarm["grain"], goods["fish"], forecastPop, true)
+	// FOW gate for the forecast (LoadHexProductionOptionsAt's reachable param,
+	// megaron_plan_grundningsprognosen.md §3): only hexes this Wanax actually
+	// knows may feed the grain math — same knownHexes list "goods"/"withFarm"
+	// already used above, just as a lookup set instead of a slice.
+	reachable := make(map[hexgrid.Coord]bool, len(knownHexes))
+	for _, hx := range knownHexes {
+		reachable[hx] = true
+	}
+	// "en formel, två anrop": the SAME founding placement formula
+	// (FoundingGrainNetPerTick), once with the buildings the founding would
+	// actually seed (starterFarm), once assuming a farm regardless — the
+	// with-farm call answers "would a farm help here" for the colony hint
+	// ("bygg en farm") without inventing a second formula for it.
+	buildingLevels := map[string]int{}
+	if starterFarm {
+		buildingLevels["farm"] = 1
+	}
+	basePerTick, estNetPerTick, err := economy.FoundingGrainNetPerTick(
+		ctx, h.pool, worldID, center, buildingLevels, reachable, forecastPop)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
+		return
+	}
+	// with_farm_per_tick reports with-farm PRODUCTION (not net) — the client
+	// derives consumption itself as base_per_tick − est_net_per_tick, so this
+	// must stay on the same "production" footing for the colony hint ("bygg
+	// en farm") to read coherently.
+	withFarmProdPerTick, _, err := economy.FoundingGrainNetPerTick(
+		ctx, h.pool, worldID, center, map[string]int{"farm": 1}, reachable, forecastPop)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
+		return
+	}
 
 	var daysUntilEmpty *float64
 	if estNetPerTick < 0 {

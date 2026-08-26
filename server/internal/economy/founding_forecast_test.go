@@ -1,97 +1,194 @@
 package economy
 
-import "testing"
+// FoundingGrainNetPerTick used to run its own pre-P4 linear estimate
+// (0,85×pop / REF_LABOR, uncapped, no per-hex tak) instead of the SAME
+// placement formula a real founding uses — megaron_plan_grundningsprognosen.md
+// §3 ("en formel, två anrop"). These tests cover the two layers that changed:
+// placeGreedyOnFoodSlots (the pure placement decision, extracted out of
+// PlaceStartingWorkforce so the forecast can run it too) and
+// FoundingGrainNetPerTick itself against a real catchment. The end-to-end
+// "prognos = utfall" acceptance test (three catchments, a real founding, ≤1%)
+// lives at api/handlers/founding_forecast_parity_test.go — it needs the full
+// createMetropolis path (Demeter's farm gift) that this package cannot reach.
 
-// TestFoundingGrainNetPerTick_Regression reproduces the colonize-preview
-// sign-flip bug: a building-free base that is negative once labor-scaled
-// down (raw base − consumption < 0) but strongly positive once the real
-// founding labor formula (base/REF_LABOR × 0.85×pop) is applied — the
-// formula the actual founding uses via RecomputeProduction. Before the fix,
-// ColonizePreview reported the raw unscaled netto (negative); the real
-// settlement ends up net-positive.
-func TestFoundingGrainNetPerTick_Regression(t *testing.T) {
-	// buildingFreeBase alone (57.6) is far below what a 4000-pop metropolis eats
-	// per tick, so an unscaled "base - consumption" netto goes negative. But the
-	// metropolis gets a starter farm (withFarmBase=144.0), and once labor-scaled
-	// by 0.85×4000/REF_LABOR the real production dwarfs consumption.
-	// ⭐ CANON 2026-08-06: a tick is the day now, so
-	// GrainConsumptionPerTick(pop) went from pop*0.5/24 to
-	// pop*0.5 — a 24× jump in consumption. production_rules base potentials
-	// (mig 109) scaled ×24 too, so these literals are the pre-canon 2.4/6.0 ×24
-	// — matching real base_potential magnitudes read by world.go, not an
-	// arbitrary rescale to make the assertion pass.
-	_, netPerTick := FoundingGrainNetPerTick(57.6, 144.0, 0, 4000, true)
-	if netPerTick <= 0 {
-		t.Fatalf("expected positive labor-scaled net grain rate, got %v", netPerTick)
+import (
+	"context"
+	"math"
+	"testing"
+
+	"formatet/megaron/server/internal/hexgrid"
+	"github.com/google/uuid"
+)
+
+// TestPlaceGreedyOnFoodSlots_StopsAtSelfSufficiency: the loop must stop the
+// MOMENT cumulative reaches demand, leaving later (lower-yield) slots and
+// remaining gubbar untouched — Timothy 2026-08-08's "om det kräver 5/10
+// placeras de" rule (PlaceStartingWorkforce's doc comment).
+func TestPlaceGreedyOnFoodSlots_StopsAtSelfSufficiency(t *testing.T) {
+	slots := []foodSlot{
+		{hex: hexgrid.Coord{Q: 0, R: 0}, good: GoodGrain, yield: 10, cap: 4, ordinal: 1},
+		{hex: hexgrid.Coord{Q: 1, R: 0}, good: GoodGrain, yield: 5, cap: 4, ordinal: 2},
+	}
+	placements, sufficient := placeGreedyOnFoodSlots(slots, 0, 25, 10)
+	if !sufficient {
+		t.Fatalf("expected self-sufficient, got sufficient=false with placements=%v", placements)
+	}
+	// 0 -> +10 -> +20 -> +30 (>=25): three gubbar on the first (higher-yield)
+	// slot, none on the second.
+	if len(placements) != 3 {
+		t.Fatalf("expected 3 placements (stops once cumulative>=25), got %d: %v", len(placements), placements)
+	}
+	for _, p := range placements {
+		if p.hex != slots[0].hex {
+			t.Errorf("expected every placement on the higher-yield slot %v, got one on %v", slots[0].hex, p.hex)
+		}
 	}
 }
 
-// TestFoundingGrainNetPerTick_MirrorsRecomputeProduction asserts the
-// production term uses exactly the same formula as
-// RecomputeProduction: (base/REF_LABOR) * (weight * pop).
-func TestFoundingGrainNetPerTick_MirrorsRecomputeProduction(t *testing.T) {
-	withFarmBase := 6.0
-	pop := 4000
-	prodPerTick, _ := FoundingGrainNetPerTick(2.4, withFarmBase, 0, pop, true)
-	want := (withFarmBase / REF_LABOR) * (FoundingGrainLaborWeight * float64(pop))
-	if prodPerTick != want {
-		t.Fatalf("prodPerTick = %v, want %v (RecomputeProduction formula)", prodPerTick, want)
+// TestPlaceGreedyOnFoodSlots_ExhaustsWorkforceWithoutSufficiency: when even
+// every gubbe on food isn't enough, ALL totalGubbar are placed anyway
+// (best effort) and sufficient=false tells the caller to warn — the OTHER
+// half of Timothy's rule ("om staden behöver 10/10 och ändå inte försörjer
+// sig ska de placeras men spelare måste varnas").
+func TestPlaceGreedyOnFoodSlots_ExhaustsWorkforceWithoutSufficiency(t *testing.T) {
+	slots := []foodSlot{
+		{hex: hexgrid.Coord{Q: 0, R: 0}, good: GoodGrain, yield: 1, cap: 10, ordinal: 1},
+	}
+	placements, sufficient := placeGreedyOnFoodSlots(slots, 0, 1000, 5)
+	if sufficient {
+		t.Fatalf("expected NOT self-sufficient (demand 1000 way above 5×1), got sufficient=true")
+	}
+	if len(placements) != 5 {
+		t.Fatalf("expected all 5 gubbar placed (best effort), got %d", len(placements))
 	}
 }
 
-// TestFoundingGrainNetPerTick_ColonyNoFarm asserts starterFarm=false uses
-// the building-free base, not the with-farm base — a colony builds its own
-// farm later and gets no starter farm.
-func TestFoundingGrainNetPerTick_ColonyNoFarm(t *testing.T) {
-	buildingFreeBase := 2.4
-	withFarmBase := 6.0
-	pop := 1500
-	prodPerTick, _ := FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, 0, pop, false)
-	want := (buildingFreeBase / REF_LABOR) * (FoundingGrainLaborWeight * float64(pop))
-	if prodPerTick != want {
-		t.Fatalf("prodPerTick = %v, want %v (should use buildingFreeBase, not withFarmBase)", prodPerTick, want)
+// TestPlaceGreedyOnFoodSlots_GuaranteedFoodAloneCanAlreadySuffice: a city
+// whose nearjord+remainder term already covers demand places ZERO gubbar on
+// food and reports sufficient — the P0-UI answer that makes most founding
+// sites read "netto ≈ 0" without any placement at all.
+func TestPlaceGreedyOnFoodSlots_GuaranteedFoodAloneCanAlreadySuffice(t *testing.T) {
+	slots := []foodSlot{
+		{hex: hexgrid.Coord{Q: 0, R: 0}, good: GoodGrain, yield: 10, cap: 4, ordinal: 1},
+	}
+	placements, sufficient := placeGreedyOnFoodSlots(slots, 100, 50, 10)
+	if !sufficient {
+		t.Fatalf("expected sufficient (guaranteedFood 100 already exceeds demand 50)")
+	}
+	if len(placements) != 0 {
+		t.Fatalf("expected zero placements, got %d", len(placements))
 	}
 }
 
-// TestFoundingGrainNetPerTick_Consumption asserts net = production − consumption,
-// using the shared GrainConsumptionPerTick helper.
-func TestFoundingGrainNetPerTick_Consumption(t *testing.T) {
-	pop := 4000
-	prodPerTick, netPerTick := FoundingGrainNetPerTick(2.4, 6.0, 0, pop, true)
-	want := prodPerTick - GrainConsumptionPerTick(pop)
-	if netPerTick != want {
-		t.Fatalf("netPerTick = %v, want %v (production - consumption)", netPerTick, want)
+// foundingForecastFixture seeds a world + settlement whose FULL 18-hex ring
+// carries `terrain` — settlementID exists (rankedFoodSlotsAt/
+// LoadHexProductionOptionsAt need worldID+center, not a settlement, but
+// PlaceStartingWorkforce and RecomputeProduction — the "real founding" side
+// of the comparison — need one). No settlement_placement rows yet: the
+// caller places starting workforce itself, AFTER calling the forecast, to
+// prove the forecast needs no placement to already exist.
+func foundingForecastFixture(t *testing.T, pop int, terrain string) (worldID uuid.UUID, center hexgrid.Coord, settlementID uuid.UUID) {
+	t.Helper()
+	pool := testPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
+	); err != nil {
+		t.Fatalf("archive leftover test worlds: %v", err)
 	}
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status, current_tick) VALUES ($1, 'active', 0) RETURNING id`,
+		"test-founding-forecast-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create world: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
+		"founding-forecast-"+uuid.New().String(), "founding-forecast-"+uuid.New().String()+"@test.invalid",
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create player: %v", err)
+	}
+
+	center = hexgrid.Coord{Q: 0, R: 0}
+	var provinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, $2, $3, $4) RETURNING id`,
+		worldID, center.Q, center.R, terrain,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create province: %v", err)
+	}
+	for _, hex := range hexgrid.Ring(center, hexgrid.CatchmentRadius) {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, hex.Q, hex.R, terrain,
+		); err != nil {
+			t.Fatalf("seed ring tile (%d,%d): %v", hex.Q, hex.R, err)
+		}
+	}
+
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
+		 VALUES ($1, $2, 'Forecastville', 'achaean', $3, 'capital', true, $4) RETURNING id`,
+		worldID, provinceID, ownerID, pop,
+	).Scan(&settlementID); err != nil {
+		t.Fatalf("create settlement: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, 'grain', 0, 0, 1000000, 0)`,
+		settlementID,
+	); err != nil {
+		t.Fatalf("seed grain row: %v", err)
+	}
+
+	return worldID, center, settlementID
 }
 
-// TestFoundingGrainNetPerTick_FishRaisesNet is AK5's founding-forecast half: a
-// hex with water in the catchment (fishBase > 0) must forecast a HIGHER net
-// than the identical hex without water, because fish covers whatever grain
-// does not reach. Mirrors the AK1 shape (grain alone insufficient) at
-// founding-preview scale.
-func TestFoundingGrainNetPerTick_FishRaisesNet(t *testing.T) {
-	buildingFreeBase := 1.0 // deliberately low: grain alone will not cover demand
-	withFarmBase := 1.0
-	pop := 1500
+// TestFoundingGrainNetPerTick_MatchesPlaceStartingWorkforce is the "en
+// formel" half of the acceptance criterion, at the package level where both
+// sides of the comparison are directly reachable: forecast a plains
+// catchment BEFORE any settlement_placement row exists, then run the SAME
+// catchment through PlaceStartingWorkforce + RecomputeProduction and read
+// settlement_goods.rate. No Demeter farm-gift logic in the way (that lives in
+// api/handlers/create_metropolis.go and is covered by
+// TestFoundingGrainForecast_MatchesRealFounding instead) — buildingLevels is
+// nil on both sides here, by construction.
+func TestFoundingGrainNetPerTick_MatchesPlaceStartingWorkforce(t *testing.T) {
+	const pop = 4000
+	worldID, center, settlementID := foundingForecastFixture(t, pop, "plains")
+	pool := testPool(t)
+	ctx := context.Background()
 
-	_, netNoWater := FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, 0, pop, false)
-	_, netWithWater := FoundingGrainNetPerTick(buildingFreeBase, withFarmBase, 20.0, pop, false)
-
-	if netWithWater <= netNoWater {
-		t.Fatalf("water in the catchment must forecast a higher net: no-water=%v, with-water=%v",
-			netNoWater, netWithWater)
+	forecastProd, forecastNet, err := FoundingGrainNetPerTick(ctx, pool, worldID, center, nil, nil, pop)
+	if err != nil {
+		t.Fatalf("FoundingGrainNetPerTick: %v", err)
 	}
-}
 
-// TestFoundingGrainNetPerTick_FishNeverAffectsGrainProduction pins that
-// prodPerTick (grain's OWN production) stays on the "production" footing
-// api/handlers/world.go's with_farm_per_tick contract depends on — fish must
-// never leak into the grain production figure, only into the net.
-func TestFoundingGrainNetPerTick_FishNeverAffectsGrainProduction(t *testing.T) {
-	pop := 1500
-	prodNoFish, _ := FoundingGrainNetPerTick(2.4, 6.0, 0, pop, true)
-	prodWithFish, _ := FoundingGrainNetPerTick(2.4, 6.0, 20.0, pop, true)
-	if prodNoFish != prodWithFish {
-		t.Fatalf("fishBase must not affect prodPerTick: no-fish=%v, with-fish=%v", prodNoFish, prodWithFish)
+	if _, _, err := PlaceStartingWorkforce(ctx, pool, settlementID); err != nil {
+		t.Fatalf("PlaceStartingWorkforce: %v", err)
+	}
+	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatalf("RecomputeProduction: %v", err)
+	}
+
+	var actualRate float64
+	if err := pool.QueryRow(ctx,
+		`SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'`, settlementID,
+	).Scan(&actualRate); err != nil {
+		t.Fatalf("load actual grain rate: %v", err)
+	}
+
+	// Tiny epsilon, not exact equality: the forecast and RecomputeProduction
+	// sum the same placement yields in different orders (Go slice vs SQL
+	// aggregation), so floating-point rounding can differ in the last bit.
+	if diff := math.Abs(forecastNet - actualRate); diff > 1e-6 {
+		t.Errorf("forecast net %.9f != actual rate %.9f (diff %.2e, prod=%.6f) — same formula must give the same number",
+			forecastNet, actualRate, diff, forecastProd)
 	}
 }
