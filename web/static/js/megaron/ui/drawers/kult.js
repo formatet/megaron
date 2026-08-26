@@ -39,8 +39,6 @@ export async function loadKultDrawer() {
     // closest a client can get to the server's reckoning).
     const goods = gr && gr.ok ? await gr.json() : [];
 
-    const CULT_LEVELS = ['forsummad','enkel','vardig','praktfull','overdadig'];
-    const CULT_LABELS = { forsummad:'Neglected', enkel:'Simple', vardig:'Worthy', praktfull:'Magnificent', overdadig:'Lavish' };
     const MOOD_LABELS = { Favorable:'Favorable', Indifferent:'Indifferent', Suspicious:'Suspicious', Wrathful:'Wrathful' };
     const MOOD_COLORS = { Favorable:'var(--safe)', Indifferent:'var(--text-dim)', Suspicious:'var(--border)', Wrathful:'var(--danger)' };
 
@@ -65,7 +63,7 @@ export async function loadKultDrawer() {
     // Cult level — derived from kharis (read-only; set by daily temple tick)
     html += '<div class="dsec"><div class="dsec-title">Cult level</div>' +
       '<div class="stat-row"><span class="sr-label">Level</span>' +
-      '<span class="sr-val">' + (CULT_LABELS[cultLevel] || cultLevel) + '</span></div></div>';
+      '<span class="sr-val">' + cultLevelLabel(cultLevel) + '</span></div></div>';
 
     // Temple offerings — read-only mirror of the daily offer gate (keryx
     // `status` parity): answers "will my kharis climb this tick" per temple city.
@@ -151,6 +149,25 @@ export async function loadKultDrawer() {
   } catch(_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
   }
+}
+
+// sd.cult_level is NOT a five-tier cult-level progression — the server never
+// runs one. internal/kharis/tick.go's deriveMood "replaces player-set
+// cult_level" and writes ONE of the same four kharis-mood tiers as
+// sd.divine_mood into this column instead, just spelled in Swedish:
+// tveksam/vardig/overdadig/vredgad (religion.MoodSuspicious/Indifferent/
+// Favorable thresholds). 'enkel' is settlement.go's fallback for a player
+// whose first daily tick hasn't run yet (no mood derived at all) — also not
+// a tier. 'forsummad'/'praktfull' were the old five-tier model's labels and
+// the server can never send them (2026-08-26 audit, megaron_arbetssatt.md
+// semantic gate — this table was leaking 'tveksam'/'vredgad' straight to the
+// screen as raw Swedish).
+const CULT_LABELS = { enkel:'Not yet assessed', tveksam:'Suspicious', vardig:'Indifferent', overdadig:'Favorable', vredgad:'Wrathful' };
+
+// cultLevelLabel translates sd.cult_level for display. Pure — no DOM/State —
+// so it can be unit-tested directly (economy.js/cargo.js pattern).
+export function cultLevelLabel(cultLevel) {
+  return CULT_LABELS[cultLevel] || cultLevel;
 }
 
 export async function okRite(prayerID) {
