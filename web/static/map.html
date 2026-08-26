@@ -94,6 +94,9 @@
       <span class="wt-glyph">✉</span>Diplomacy
       <span class="wt-badge" id="diplo-badge" style="display:none"></span>
     </div>
+    <div class="win-trigger" id="trig-gossip"     onclick="toggleDrawer('gossip')">
+      <span class="wt-glyph">🗣</span>Gossip
+    </div>
     <div class="win-trigger" id="trig-economy"    onclick="toggleDrawer('economy')">
       <span class="wt-glyph">⚖</span>Economy
     </div>
@@ -140,6 +143,17 @@
     <button class="drawer-close" onclick="closeDrawer('diplomacy')">✕</button>
   </div>
   <div class="drawer-body" id="diplomacy-body">
+    <div class="loading">Loading…</div>
+  </div>
+</div>
+
+<!-- ── GOSSIP DRAWER ────────────────────────────────────────────────────── -->
+<div class="drawer" id="drawer-gossip">
+  <div class="drawer-header">
+    <span class="drawer-title">Gossip</span>
+    <button class="drawer-close" onclick="closeDrawer('gossip')">✕</button>
+  </div>
+  <div class="drawer-body" id="gossip-body">
     <div class="loading">Loading…</div>
   </div>
 </div>

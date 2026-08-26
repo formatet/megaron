@@ -49,6 +49,7 @@ import {
 } from './ui/drawers/diplomacy.js';
 import { loadNotifDrawer, notifShowKind, clearAllNotifs } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
+import { loadGossipDrawer } from './ui/drawers/gossip.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
 export function toggleDrawer(name) {
@@ -103,6 +104,8 @@ async function loadDrawerContent(name) {
     await loadKultDrawer();
   } else if (name === 'notif') {
     await loadNotifDrawer();
+  } else if (name === 'gossip') {
+    await loadGossipDrawer();
   }
 }
 
