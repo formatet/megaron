@@ -114,10 +114,21 @@ func TestColonizePreview_AK5_WaterInCatchmentRaisesForecastNet(t *testing.T) {
 			noWaterGoods["fish"])
 	}
 
-	_, netNoWater := economy.FoundingGrainNetPerTick(
-		noWaterGoods["grain"], noWaterGoods["grain"], noWaterGoods["fish"], forecastPop, false)
-	_, netWithWater := economy.FoundingGrainNetPerTick(
-		withWaterGoods["grain"], withWaterGoods["grain"], withWaterGoods["fish"], forecastPop, false)
+	// A colony (starterFarm=false) gets no building assumption — see
+	// unit_arrival.go foundColony, which builds its own farm later.
+	// reachable=nil: full visibility, no FOW concern for this internal test.
+	noWaterCenter := hexgrid.Coord{Q: 0, R: 0}
+	withWaterCenter := hexgrid.Coord{Q: 100, R: 0}
+	_, netNoWater, err := economy.FoundingGrainNetPerTick(
+		ctx, pool, worldID, noWaterCenter, nil, nil, forecastPop)
+	if err != nil {
+		t.Fatalf("FoundingGrainNetPerTick (no water): %v", err)
+	}
+	_, netWithWater, err := economy.FoundingGrainNetPerTick(
+		ctx, pool, worldID, withWaterCenter, nil, nil, forecastPop)
+	if err != nil {
+		t.Fatalf("FoundingGrainNetPerTick (with water): %v", err)
+	}
 
 	if netWithWater <= netNoWater {
 		t.Errorf("AK5: hex with water must forecast a higher net than the identical hex without — "+

@@ -57,7 +57,29 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]food
 	if err != nil {
 		return nil, center, fmt.Errorf("ranked food slots: %w", err)
 	}
+	return rankSlotsFromOptions(hexOptions, center), center, nil
+}
 
+// rankedFoodSlotsAt is rankedFoodSlots' settlement-free sibling — the same
+// ranking over an explicit (worldID, center, buildingLevels) triple instead
+// of a settlementID, so FoundingGrainNetPerTick can rank a hypothetical
+// catchment before any settlement row exists
+// (megaron_plan_grundningsprognosen.md §3). reachable is the FOW gate (see
+// LoadHexProductionOptionsAt) — nil for the ordinary unfiltered catchment.
+func rankedFoodSlotsAt(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, buildingLevels map[string]int, reachable map[hexgrid.Coord]bool) ([]foodSlot, error) {
+	hexOptions, err := LoadHexProductionOptionsAt(ctx, tx, worldID, center, buildingLevels, reachable)
+	if err != nil {
+		return nil, fmt.Errorf("ranked food slots at: %w", err)
+	}
+	return rankSlotsFromOptions(hexOptions, center), nil
+}
+
+// rankSlotsFromOptions turns a catchment's per-hex production menu into the
+// ranked (highest marginal yield first, lowest ring-ordinal breaks ties)
+// grain/fish placement list — shared by rankedFoodSlots (settlement-scoped)
+// and rankedFoodSlotsAt (forecast-scoped), so both rank the SAME way off the
+// SAME HexOption shape.
+func rankSlotsFromOptions(hexOptions []HexOption, center hexgrid.Coord) []foodSlot {
 	var slots []foodSlot
 	for _, opt := range hexOptions {
 		for _, good := range []string{GoodGrain, "fish"} {
@@ -84,7 +106,7 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]food
 		}
 		return slots[i].ordinal < slots[j].ordinal
 	})
-	return slots, center, nil
+	return slots
 }
 
 // PlaceStartingWorkforce auto-places a newly founded settlement's starting
@@ -143,30 +165,56 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	guaranteedFood := NearjordGrainPerTick + (grainBasePotential/REF_LABOR)*float64(remainderCitizens)
 	demand := GrainConsumptionPerTick(population)
 
-	cumulative := guaranteedFood
+	placements, sufficient := placeGreedyOnFoodSlots(slots, guaranteedFood, demand, totalGubbar)
+
 	gubbeOrdinal := 1
+	for _, p := range placements {
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key)
+			 VALUES ($1, $2, 'hex', $3, $4, $5)`,
+			settlementID, gubbeOrdinal, p.hex.Q, p.hex.R, p.good,
+		); err != nil {
+			return gubbeOrdinal - 1, false, fmt.Errorf("place starting workforce: insert gubbe %d: %w", gubbeOrdinal, err)
+		}
+		gubbeOrdinal++
+	}
+
+	return len(placements), sufficient, nil
+}
+
+// gubbePlacement is one greedy-placed gubbe's target and yield — the return
+// shape of placeGreedyOnFoodSlots.
+type gubbePlacement struct {
+	hex   hexgrid.Coord
+	good  string
+	yield float64
+}
+
+// placeGreedyOnFoodSlots is PlaceStartingWorkforce's placement DECISION as a
+// pure function, with no DB access — the same greedy-until-sufficient
+// algorithm, extracted so FoundingGrainNetPerTick can run it against a
+// hypothetical catchment (no settlement, nothing to write) and get the exact
+// list a real founding would produce (megaron_plan_grundningsprognosen.md
+// §3: "en formel, två anrop" — PlaceStartingWorkforce INSERTs this list,
+// FoundingGrainNetPerTick sums it). Stops the moment either the city is
+// self-sufficient (cumulative >= demand) or the workforce runs out (placed
+// >= totalGubbar) — see PlaceStartingWorkforce's doc comment for the full
+// rationale (Timothy 2026-08-08).
+func placeGreedyOnFoodSlots(slots []foodSlot, guaranteedFood, demand float64, totalGubbar int) (placements []gubbePlacement, sufficient bool) {
+	cumulative := guaranteedFood
 	for _, slot := range slots {
-		if placed >= totalGubbar || cumulative >= demand {
+		if len(placements) >= totalGubbar || cumulative >= demand {
 			break
 		}
 		for i := 0; i < slot.cap; i++ {
-			if placed >= totalGubbar || cumulative >= demand {
+			if len(placements) >= totalGubbar || cumulative >= demand {
 				break
 			}
-			if _, err := tx.Exec(ctx,
-				`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key)
-				 VALUES ($1, $2, 'hex', $3, $4, $5)`,
-				settlementID, gubbeOrdinal, slot.hex.Q, slot.hex.R, slot.good,
-			); err != nil {
-				return placed, false, fmt.Errorf("place starting workforce: insert gubbe %d: %w", gubbeOrdinal, err)
-			}
-			gubbeOrdinal++
-			placed++
+			placements = append(placements, gubbePlacement{slot.hex, slot.good, slot.yield})
 			cumulative += slot.yield
 		}
 	}
-
-	return placed, cumulative >= demand, nil
+	return placements, cumulative >= demand
 }
 
 // PlaceNextGubbeOnBestFoodHex auto-places ONE newly born gubbe (population

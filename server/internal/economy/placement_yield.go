@@ -95,7 +95,10 @@ var weakestLinkRefiningBuilding = map[string]string{
 // (RecomputeProduction's placements.Hex lookup simply finds no HexOption for
 // that coord). Pass nil for the ordinary unfiltered catchment (every caller
 // except RecomputeProduction — a settlement isn't besieged while a Wanax is
-// merely previewing where to place a founding gubbe).
+// merely previewing where to place a founding gubbe). The SAME parameter
+// doubles as a FOW gate for the colonize/settle forecast (api/handlers/world.go
+// ColonizePreview), which has no settlement yet to be besieged: pass a set of
+// the hexes the requesting Wanax actually knows.
 func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID, reachable map[hexgrid.Coord]bool) ([]HexOption, error) {
 	var worldID uuid.UUID
 	var q, r int
@@ -113,7 +116,27 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		return nil, fmt.Errorf("load hex production options: %w", err)
 	}
 
-	ring := hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius)
+	return LoadHexProductionOptionsAt(ctx, tx, worldID, hexgrid.Coord{Q: q, R: r}, buildingLevels, reachable)
+}
+
+// LoadHexProductionOptionsAt is LoadHexProductionOptions' settlement-free
+// core: it needs (worldID, centre hex, building levels) and nothing else —
+// LoadHexProductionOptions is a thin wrapper that looks those three up from a
+// settlementID and calls straight through
+// (megaron_plan_grundningsprognosen.md §3: "en formel, två anrop"). This is
+// what lets the colonize/settle forecast (FoundingGrainNetPerTick) run the
+// EXACT SAME catchment math a real founding does, before any settlement row
+// exists to hang a settlementID off of.
+//
+// buildingLevels is an ASSUMED set here, not a live lookup — for a real
+// settlement it is whatever loadBuildingLevels found; for a forecast it is
+// the hypothetical building the founding would seed (e.g. {"farm": 1} for a
+// metropolis, empty for a colony, which builds its own farm later). A
+// building's mere PRESENCE as a map key is enough to satisfy the gate below,
+// mirroring the settlement path's `EXISTS (SELECT 1 FROM buildings ...)`
+// check exactly (that check never looked at level either).
+func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, buildingLevels map[string]int, reachable map[hexgrid.Coord]bool) ([]HexOption, error) {
+	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
 	if reachable != nil {
 		filtered := ring[:0:0]
 		for _, c := range ring {
@@ -124,6 +147,12 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		ring = filtered
 	}
 	catchQ, catchR := hexgrid.QRArrays(ring)
+
+	builtTypes := make([]string, 0, len(buildingLevels))
+	for bt := range buildingLevels {
+		builtTypes = append(builtTypes, bt)
+	}
+
 	rows, err := tx.Query(ctx,
 		`SELECT mt.q, mt.r, mt.terrain,
 		        COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false),
@@ -144,9 +173,7 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		     -- every hex, same as before P6.
 		     AND NOT (pr.terrain_type IS NULL AND pr.building_type IS NOT NULL)
 		     AND (NOT pr.requires_coastal OR mt.coastal)
-		     AND (pr.building_type IS NULL OR EXISTS (
-		             SELECT 1 FROM buildings b
-		             WHERE b.settlement_id = $4 AND b.building_type = pr.building_type))
+		     AND (pr.building_type IS NULL OR pr.building_type = ANY($4::text[]))
 		     AND (pr.requires_deposit IS NULL
 		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
 		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
@@ -155,7 +182,7 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
 		        OR pr.terrain_type = mt.terrain`,
-		worldID, catchQ, catchR, settlementID,
+		worldID, catchQ, catchR, builtTypes,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("load hex production options: query: %w", err)
