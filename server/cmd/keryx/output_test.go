@@ -68,8 +68,20 @@ func TestArrivalETA_UnparseableFallsBackToRaw(t *testing.T) {
 func TestGameETA_RoundsDaysUp(t *testing.T) {
 	c := &Client{tickSeconds: 21600, tickSecondsFetched: true} // 6h/tick
 	got := gameETA(c, time.Now().Add(2*time.Hour))
-	if !strings.Contains(got, "in 1 game-days") {
-		t.Errorf("gameETA(2h out, 6h/tick) = %q, want \"in 1 game-days\" (rounded up)", got)
+	// Singular at exactly one: "in 1 game-days" is the plural bug this test
+	// would otherwise have pinned into place.
+	if !strings.Contains(got, "in 1 game-day (") {
+		t.Errorf("gameETA(2h out, 6h/tick) = %q, want \"in 1 game-day (…)\" (rounded up, singular)", got)
+	}
+}
+
+// TestGameETA_PluralAboveOne guards the other side of the singular branch:
+// two or more game-days must NOT lose the plural s.
+func TestGameETA_PluralAboveOne(t *testing.T) {
+	c := &Client{tickSeconds: 21600, tickSecondsFetched: true} // 6h/tick
+	got := gameETA(c, time.Now().Add(13*time.Hour))
+	if !strings.Contains(got, "in 3 game-days (") {
+		t.Errorf("gameETA(13h out, 6h/tick) = %q, want \"in 3 game-days (…)\"", got)
 	}
 }
 

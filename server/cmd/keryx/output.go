@@ -107,7 +107,11 @@ func gameETA(c *Client, t time.Time) string {
 	if days <= 0 {
 		return fmt.Sprintf("any moment (%s)", wall)
 	}
-	return fmt.Sprintf("in %d game-days (%s)", int(math.Ceil(days)), wall)
+	whole := int(math.Ceil(days))
+	if whole == 1 {
+		return fmt.Sprintf("in 1 game-day (%s)", wall)
+	}
+	return fmt.Sprintf("in %d game-days (%s)", whole, wall)
 }
 
 // arrivalETA parses a server RFC3339 arrival timestamp and renders it via
