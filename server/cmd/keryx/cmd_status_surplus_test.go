@@ -1,66 +1,129 @@
 package main
 
-// megaron_plan_omfordelningsmatningen.md §3-4: the storage-ceiling signal
-// (resourceAtStorageCeiling/stockCeilingWarning, megaron_plan_sten_stock.md
-// §5) is INERT — economy.goodCap is loosened to 1_000_000 for this dev phase
-// (internal/economy/recompute.go:951-953), and 0 of 2 511 samples ever
-// reached it. This file replaces those tests with the new anchor: sink
-// presence (staticKnownSinkGoods/knownSinkGoods) and reach
-// (surplusWithoutSinkWarning). Rött-före per test: each neutralizes the
-// condition under test and checks the warning does NOT fire, then checks it
-// DOES fire once the condition holds.
+// megaron_plan_omfordelningsmatningen.md §3-4, corrected 2026-08-26: the
+// first pass at this slice used a present/absent sink check
+// (staticKnownSinkGoods/knownSinkGoods) that Timothy MEASURED against the
+// live building/upkeep/prayer catalogue and found broken two ways at once —
+// timber has a real sink (buildings) that is real but numerically tiny next
+// to its production rate, so presence alone could never fire on the plan's
+// own motivating example; fish and livestock had NO listed sink at all even
+// though the population eating them is the single biggest sink in the game.
+// This file replaces the boolean tests with sized ones
+// (remainingBuildingCosts/sinkCapacities) and adds the two rött-före cases
+// the coordinator named as the slice's actual reason to exist: (d) fish with
+// a normal population must stay silent, (e) timber with a stock far beyond
+// every remaining building cost must warn.
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"formatet/megaron/server/internal/province"
 )
 
-// TestStaticKnownSinkGoods pins down the four code-derived sources
-// (buildings + upgrades, walls, upkeep, prayer offerings) without a server —
-// and, just as importantly, that goods with NO code-defined consumer today
-// (fish, pottery, purple, livestock) are correctly absent. Timothy's own
-// 2026-08-23 question ("why doesn't the AI stop producing fish it already
-// has in excess?") is exactly the "fish has no known sink" case reproduced
-// here.
-func TestStaticKnownSinkGoods(t *testing.T) {
-	sinks := staticKnownSinkGoods()
-
-	for _, good := range []string{
-		"timber", "stone", // base BuildingSpecs.Costs
-		"cedar",  // LevelCedarCost, via LevelledSpec level 2/3
-		"bronze", // WallLevelSpecs level 3
-		"grain", "silver", // combat.UpkeepSpec{Grain,Silver}
-		"oil", "wine", // religion.PrayerSpecs' Offering maps
-	} {
-		if !sinks[good] {
-			t.Errorf("staticKnownSinkGoods()[%q] = false, want true", good)
+// allBuildingsMaxed is a test fixture: every building at its maximum level
+// (BuildingWall excluded — it is priced through WallLevelSpecs, not
+// BuildingSpecs, see remainingBuildingCosts' own doc comment).
+func allBuildingsMaxed() map[string]int {
+	maxed := map[string]int{}
+	for bt := range province.BuildingSpecs {
+		if bt == province.BuildingWall {
+			continue
 		}
-	}
-
-	// Rött-före: goods with genuinely no building/wall/upkeep/prayer consumer
-	// today must NOT be flagged as sunk, or the invariant (never silence a
-	// good with a real sink) would be trivially satisfied by marking
-	// everything as sunk.
-	for _, good := range []string{"fish", "pottery", "purple", "livestock"} {
-		if sinks[good] {
-			t.Errorf("staticKnownSinkGoods()[%q] = true, want false (no code-defined consumer)", good)
+		lvl := 1
+		if province.LevelledBuildings[bt] {
+			lvl = province.MaxBuildingLevel
 		}
+		maxed[string(bt)] = lvl
 	}
-
-	// copper/tin are ONLY consumed via the DB-seeded bronze recipe
-	// (internal/economy/recipe.go) — staticKnownSinkGoods never calls the
-	// server, so it must not see them. knownSinkGoods (below) adds them.
-	for _, good := range []string{"copper", "tin"} {
-		if sinks[good] {
-			t.Errorf("staticKnownSinkGoods()[%q] = true, want false (recipe ingredients need the server)", good)
-		}
-	}
+	return maxed
 }
 
-func TestKnownSinkGoods(t *testing.T) {
-	t.Run("adds recipe ingredients from the server on top of the static set", func(t *testing.T) {
+func TestRemainingBuildingCosts(t *testing.T) {
+	t.Run("nothing built yet — full cost for everything, wall included", func(t *testing.T) {
+		got := remainingBuildingCosts(map[string]int{}, 0)
+		if got["timber"] <= 0 {
+			t.Errorf("remainingBuildingCosts()[timber] = %v, want > 0 (nothing built)", got["timber"])
+		}
+		if got["bronze"] <= 0 {
+			t.Errorf("remainingBuildingCosts()[bronze] = %v, want > 0 (wall level 3 costs bronze)", got["bronze"])
+		}
+	})
+
+	t.Run("everything already at max level — nothing left to build", func(t *testing.T) {
+		got := remainingBuildingCosts(allBuildingsMaxed(), 3)
+		for good, amt := range got {
+			if amt != 0 {
+				t.Errorf("remainingBuildingCosts(maxed, wall=3)[%s] = %v, want 0", good, amt)
+			}
+		}
+	})
+
+	t.Run("wall priced only through WallLevelSpecs — not double-counted via BuildingSpecs[wall]", func(t *testing.T) {
+		got := remainingBuildingCosts(allBuildingsMaxed(), 0)
+		want := map[string]float64{}
+		for _, spec := range province.WallLevelSpecs {
+			for good, amt := range spec.Costs {
+				want[good] += amt
+			}
+		}
+		for good, wantAmt := range want {
+			if got[good] != wantAmt {
+				t.Errorf("remainingBuildingCosts(maxed, wall=0)[%s] = %v, want exactly WallLevelSpecs' %v (a BuildingSpecs[wall] double count would inflate this)",
+					good, got[good], wantAmt)
+			}
+		}
+	})
+}
+
+func TestSinkCapacities(t *testing.T) {
+	t.Run("food demand scales with population and covers grain/fish/livestock", func(t *testing.T) {
+		got := sinkCapacities(sinkContext{population: 1000, buildingLevels: allBuildingsMaxed(), wallLevel: 3})
+		wantDemand := 1000.0 * grainConsumptionPerCitizenPerTick * productionHorizonTicks
+		if got["fish"] != wantDemand {
+			t.Errorf("sinkCapacities()[fish] = %v, want the population food pool %v (nothing built costs fish)", got["fish"], wantDemand)
+		}
+		if got["grain"] != wantDemand {
+			t.Errorf("sinkCapacities()[grain] = %v, want %v (no army upkeep in this case)", got["grain"], wantDemand)
+		}
+		wantLivestock := wantDemand / livestockFoodValue
+		if got["livestock"] != wantLivestock {
+			t.Errorf("sinkCapacities()[livestock] = %v, want %v (food pool converted to animal-equivalent)", got["livestock"], wantLivestock)
+		}
+	})
+
+	t.Run("army upkeep adds to grain/silver over the horizon", func(t *testing.T) {
+		got := sinkCapacities(sinkContext{buildingLevels: allBuildingsMaxed(), wallLevel: 3, armyUpkeepGrain: 10, armyUpkeepSilver: 5})
+		if want := 10.0 * productionHorizonTicks; got["grain"] != want {
+			t.Errorf("sinkCapacities()[grain] = %v, want %v (upkeep × horizon, zero population)", got["grain"], want)
+		}
+		if want := 5.0 * productionHorizonTicks; got["silver"] != want {
+			t.Errorf("sinkCapacities()[silver] = %v, want %v (upkeep × horizon)", got["silver"], want)
+		}
+	})
+
+	t.Run("temple maintenance adds to oil/wine over the horizon", func(t *testing.T) {
+		got := sinkCapacities(sinkContext{buildingLevels: allBuildingsMaxed(), wallLevel: 3, templeOilPerTick: 2, templeWinePerTick: 1})
+		if want := 2.0 * productionHorizonTicks; got["oil"] != want {
+			t.Errorf("sinkCapacities()[oil] = %v, want %v (kharis oil/wine finding, sized)", got["oil"], want)
+		}
+		if want := 1.0 * productionHorizonTicks; got["wine"] != want {
+			t.Errorf("sinkCapacities()[wine] = %v, want %v", got["wine"], want)
+		}
+	})
+
+	t.Run("a good with no building/upkeep/food/temple source has zero capacity", func(t *testing.T) {
+		got := sinkCapacities(sinkContext{population: 1000, buildingLevels: allBuildingsMaxed(), wallLevel: 3})
+		if got["purple"] != 0 {
+			t.Errorf("sinkCapacities()[purple] = %v, want 0 (no known consumer at all)", got["purple"])
+		}
+	})
+}
+
+func TestOpenEndedSinkGoods(t *testing.T) {
+	t.Run("marks recipe ingredients as open-ended", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`[{"id":1,"output_key":"bronze","output_qty":1,"building_type":"foundry",
@@ -70,15 +133,13 @@ func TestKnownSinkGoods(t *testing.T) {
 		cfg := &Config{Server: ts.URL, WorldID: "world-1"}
 		c := newClient(cfg)
 
-		got := knownSinkGoods(c)
-		for _, good := range []string{"copper", "tin", "grain", "silver"} {
-			if !got[good] {
-				t.Errorf("knownSinkGoods()[%q] = false, want true", good)
-			}
+		got := openEndedSinkGoods(c)
+		if !got["copper"] || !got["tin"] {
+			t.Errorf("openEndedSinkGoods() = %v, want copper and tin", got)
 		}
 	})
 
-	t.Run("server error degrades to the static set, never blocks status", func(t *testing.T) {
+	t.Run("server error degrades to empty, never blocks status", func(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
@@ -86,75 +147,86 @@ func TestKnownSinkGoods(t *testing.T) {
 		cfg := &Config{Server: ts.URL, WorldID: "world-1"}
 		c := newClient(cfg)
 
-		got := knownSinkGoods(c)
-		if !got["grain"] || !got["silver"] {
-			t.Errorf("knownSinkGoods() on server error = %v, want the static set preserved", got)
-		}
-		if got["copper"] {
-			t.Error("knownSinkGoods() on server error should not have recipe-derived goods")
+		if got := openEndedSinkGoods(c); len(got) != 0 {
+			t.Errorf("openEndedSinkGoods() on server error = %v, want empty", got)
 		}
 	})
 }
 
-// TestSurplusWithoutSinkWarning is the slice's rött-före: the three
-// constructed cases from the brief's acceptance criteria, plus the boundary
-// and wording checks the old stockCeilingWarning test carried.
+// TestSurplusWithoutSinkWarning is the slice's rött-före. (a)-(c) are the
+// original three acceptance cases, now expressed as capacity rather than a
+// boolean; (d) and (e) are the two the coordinator added after measuring —
+// the actual reason this slice exists.
 func TestSurplusWithoutSinkWarning(t *testing.T) {
-	t.Run("(a) real sink, short reach — silent (invariant: never fires with a real sink)", func(t *testing.T) {
-		// hasKnownSink=true alone must silence it even though rate and gubbar
-		// would otherwise qualify — this is the hard invariant from the brief.
-		got := surplusWithoutSinkWarning("Grain", 50, 10, true, 3)
+	t.Run("(a) real sink, stock within capacity — silent (invariant: never fires within a real sink's reach)", func(t *testing.T) {
+		got := surplusWithoutSinkWarning("Grain", 50, 10, 600, 3) // capacity 600 > stock 50
 		if got != "" {
-			t.Errorf("surplusWithoutSinkWarning(known sink, short reach) = %q, want \"\"", got)
+			t.Errorf("surplusWithoutSinkWarning(within capacity) = %q, want \"\"", got)
 		}
 	})
 
-	t.Run("(b) no sink, long reach, gubbar placed — warns with gubbe count", func(t *testing.T) {
-		got := surplusWithoutSinkWarning("Timber", 54_900, 720, false, 3)
+	t.Run("(b) zero capacity, large stock, gubbar placed — warns with gubbe count", func(t *testing.T) {
+		got := surplusWithoutSinkWarning("Purple", 10_000, 5, 0, 3)
 		if got == "" {
-			t.Fatal("surplusWithoutSinkWarning(no sink, long reach, 3 gubbar) = \"\", want a warning")
+			t.Fatal("surplusWithoutSinkWarning(zero capacity, stock 10000) = \"\", want a warning")
 		}
-		for _, want := range []string{"Timber", "3 gubbar", "ingen känd sänka", "keryx place"} {
+		for _, want := range []string{"Purple", "3 gubbar", "kända sänkor", "keryx place"} {
 			if !strings.Contains(got, want) {
 				t.Errorf("surplusWithoutSinkWarning() = %q, want it to contain %q", got, want)
 			}
 		}
 	})
 
-	t.Run("(c) no sink, long reach, zero gubbar — silent (nothing to move)", func(t *testing.T) {
-		got := surplusWithoutSinkWarning("Fish", 54_900, 720, false, 0)
+	t.Run("(c) zero capacity, large stock, zero gubbar — silent (nothing to move)", func(t *testing.T) {
+		got := surplusWithoutSinkWarning("Purple", 10_000, 5, 0, 0)
 		if got != "" {
-			t.Errorf("surplusWithoutSinkWarning(no sink, long reach, 0 gubbar) = %q, want \"\"", got)
+			t.Errorf("surplusWithoutSinkWarning(zero gubbar) = %q, want \"\"", got)
 		}
 	})
 
-	t.Run("silent with rate <= 0 regardless of sink/gubbar", func(t *testing.T) {
-		if got := surplusWithoutSinkWarning("Fish", 54_900, 0, false, 3); got != "" {
+	t.Run("(d) fish, large stock but a normal population — silent (Timothy 2026-08-23's fish question)", func(t *testing.T) {
+		pop := 2000.0
+		capacities := sinkCapacities(sinkContext{population: pop, buildingLevels: allBuildingsMaxed(), wallLevel: 3})
+		fishStock := capacities["fish"] * 0.5 // comfortably inside what the population could eat
+		got := surplusWithoutSinkWarning("Fish", fishStock, 50, capacities["fish"], 3)
+		if got != "" {
+			t.Errorf("surplusWithoutSinkWarning(fish, normal population) = %q, want \"\" — this is exactly the case a boolean sink check got wrong", got)
+		}
+	})
+
+	t.Run("(e) timber stock far beyond every remaining building cost — warns (the plan's own motivating example)", func(t *testing.T) {
+		// Nothing built is the WORST case for capacity (maximum possible
+		// remaining cost — see TestRemainingBuildingCosts) and the real
+		// example (54 900 timber, +720/tick) still dwarfs it.
+		capacities := sinkCapacities(sinkContext{buildingLevels: map[string]int{}, wallLevel: 0})
+		got := surplusWithoutSinkWarning("Timber", 54_900, 720, capacities["timber"], 3)
+		if got == "" {
+			t.Fatal("surplusWithoutSinkWarning(timber, 54900, capacity from an empty settlement) = \"\", want a warning — a boolean sink check could never fire here")
+		}
+	})
+
+	t.Run("silent with rate <= 0 regardless of capacity/gubbar", func(t *testing.T) {
+		if got := surplusWithoutSinkWarning("Fish", 54_900, 0, 0, 3); got != "" {
 			t.Errorf("surplusWithoutSinkWarning(rate=0) = %q, want \"\"", got)
 		}
-		if got := surplusWithoutSinkWarning("Fish", 54_900, -5, false, 3); got != "" {
+		if got := surplusWithoutSinkWarning("Fish", 54_900, -5, 0, 3); got != "" {
 			t.Errorf("surplusWithoutSinkWarning(rate<0) = %q, want \"\"", got)
 		}
 	})
 
 	t.Run("singular gubbe wording", func(t *testing.T) {
-		got := surplusWithoutSinkWarning("Fish", 1000, 10, false, 1)
+		got := surplusWithoutSinkWarning("Fish", 1000, 10, 0, 1)
 		if !strings.Contains(got, "1 gubbe") || strings.Contains(got, "1 gubbar") {
 			t.Errorf("surplusWithoutSinkWarning() = %q, want singular \"1 gubbe\"", got)
 		}
 	})
 
-	t.Run("just above the runway threshold stays silent — fresh production line, not yet settled", func(t *testing.T) {
-		amount := float64(netUpkeepWarningRunwayTicks - 1) // ticks < threshold
-		if got := surplusWithoutSinkWarning("Fish", amount, 1, false, 2); got != "" {
-			t.Errorf("surplusWithoutSinkWarning(runway just under threshold) = %q, want \"\"", got)
+	t.Run("boundary: exactly at capacity stays silent, one over warns", func(t *testing.T) {
+		if got := surplusWithoutSinkWarning("Fish", 100, 5, 100, 2); got != "" {
+			t.Errorf("surplusWithoutSinkWarning(amount == capacity) = %q, want \"\" (capacity can still absorb it)", got)
 		}
-	})
-
-	t.Run("just below the runway threshold warns", func(t *testing.T) {
-		amount := float64(netUpkeepWarningRunwayTicks + 1)
-		if got := surplusWithoutSinkWarning("Fish", amount, 1, false, 2); got == "" {
-			t.Error("surplusWithoutSinkWarning(runway just over threshold) = \"\", want a warning")
+		if got := surplusWithoutSinkWarning("Fish", 101, 5, 100, 2); got == "" {
+			t.Error("surplusWithoutSinkWarning(amount just over capacity) = \"\", want a warning")
 		}
 	})
 }
