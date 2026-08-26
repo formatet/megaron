@@ -68,7 +68,7 @@ choice; it executes only when the Runner arrives, not instantly.
 			fmt.Printf("A Runner carries your occupation order (%s) to %s", action, settlementID[:8])
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-					fmt.Printf("; the runner reaches it %s", t.Local().Format("15:04 Jan 2"))
+					fmt.Printf("; the runner reaches it %s", gameETA(c, t))
 				}
 			}
 			fmt.Println(" — it executes on delivery.")

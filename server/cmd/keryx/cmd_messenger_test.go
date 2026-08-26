@@ -103,8 +103,14 @@ func TestDeliveryETALine(t *testing.T) {
 	future := func(d time.Duration) string { return time.Now().Add(d).Format(time.RFC3339) }
 	past := func(d time.Duration) string { return time.Now().Add(-d).Format(time.RFC3339) }
 
+	// Unknown tick cadence (fetched, but no usable value) — exercises the
+	// degrade path so this test doesn't depend on a live server for
+	// TickSeconds(). The wall-clock-relative wording ("in Xh") is what these
+	// assertions key on either way.
+	c := &Client{tickSecondsFetched: true}
+
 	t.Run("no ETA fields present (older offer, or non-accepted) returns empty", func(t *testing.T) {
-		if got := deliveryETALine(map[string]any{"status": "accepted"}); got != "" {
+		if got := deliveryETALine(c, map[string]any{"status": "accepted"}); got != "" {
 			t.Fatalf("expected empty line with no ETA fields, got %q", got)
 		}
 	})
@@ -114,7 +120,7 @@ func TestDeliveryETALine(t *testing.T) {
 			"goods_arrives_at":  future(2 * time.Hour),
 			"silver_arrives_at": future(4 * time.Hour),
 		}
-		got := deliveryETALine(offer)
+		got := deliveryETALine(c, offer)
 		if !strings.Contains(got, "goods in") {
 			t.Errorf("expected a goods countdown, got %q", got)
 		}
@@ -128,7 +134,7 @@ func TestDeliveryETALine(t *testing.T) {
 			"goods_arrives_at":  past(time.Hour), // leg 1 already landed
 			"silver_arrives_at": future(time.Hour),
 		}
-		got := deliveryETALine(offer)
+		got := deliveryETALine(c, offer)
 		if !strings.Contains(got, "goods delivered") {
 			t.Errorf("expected past leg to read 'goods delivered', got %q", got)
 		}
@@ -139,7 +145,7 @@ func TestDeliveryETALine(t *testing.T) {
 
 	t.Run("malformed timestamp is ignored, not a crash", func(t *testing.T) {
 		offer := map[string]any{"goods_arrives_at": "not-a-timestamp"}
-		if got := deliveryETALine(offer); got != "" {
+		if got := deliveryETALine(c, offer); got != "" {
 			t.Errorf("expected empty line for malformed timestamp, got %q", got)
 		}
 	})

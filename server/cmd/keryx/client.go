@@ -16,6 +16,17 @@ type Client struct {
 	http         *http.Client
 	cfg          *Config // for province self-heal after a respawn relocates the capital
 	extraHeaders map[string]string
+
+	// tickSeconds/tickSecondsFetched cache the world's runtime tick cadence
+	// (rad K, megaron_plan_cli_sanning.md) — fetched at most once per Client,
+	// i.e. once per CLI invocation, since a fresh Client is created inside
+	// every command's RunE (see newClient). Deliberately NOT persisted to
+	// disk/config: a world's tick cadence can change between deploys, and a
+	// stale cached value would silently mis-render every game-day ETA for
+	// the rest of that world's life. One extra GET per process is the price
+	// of always being current.
+	tickSeconds        float64
+	tickSecondsFetched bool
 }
 
 func newClient(cfg *Config) *Client {
@@ -112,6 +123,38 @@ func (c *Client) resolveCapital() string {
 		}
 	}
 	return ""
+}
+
+// TickSeconds returns the world's runtime tick cadence in real seconds — one
+// tick is one game-day ("Ticket ÄR dygnet", megaron_plan_ticket_ar_dygnet),
+// so this is what lets an arrival timestamp be rendered as game-days instead
+// of a wall-clock countdown (rad K, megaron_plan_cli_sanning.md). Reads the
+// existing GET /worlds/:worldID (api/handlers/world.go), which already
+// returns tick_seconds — no new server surface needed. The second return is
+// false when the cadence couldn't be established (no world configured, the
+// request failed, or the field was missing/zero), so callers degrade to a
+// wall-clock-only display rather than showing a wrong or zero game-day
+// count.
+func (c *Client) TickSeconds() (float64, bool) {
+	if c.tickSecondsFetched {
+		return c.tickSeconds, c.tickSeconds > 0
+	}
+	c.tickSecondsFetched = true
+	if c.cfg == nil || c.cfg.WorldID == "" {
+		return 0, false
+	}
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s", c.cfg.WorldID))
+	if err != nil {
+		return 0, false
+	}
+	var w struct {
+		TickSeconds float64 `json:"tick_seconds"`
+	}
+	if json.Unmarshal(data, &w) != nil || w.TickSeconds <= 0 {
+		return 0, false
+	}
+	c.tickSeconds = w.TickSeconds
+	return c.tickSeconds, true
 }
 
 func (c *Client) get(path string) ([]byte, error) {

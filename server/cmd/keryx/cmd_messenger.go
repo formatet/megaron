@@ -36,7 +36,7 @@ func replyCmd() *cobra.Command {
 				return err
 			}
 			returnsAt, _ := resp["returns_at"].(string)
-			fmt.Printf("Messenger returning · arrives %s\n", arrivalETA(returnsAt))
+			fmt.Printf("Messenger returning · arrives %s\n", arrivalETA(c, returnsAt))
 			return nil
 		},
 	}
@@ -71,7 +71,7 @@ func tradeAcceptCmd() *cobra.Command {
 			}
 			goodsAt, _ := resp["goods_arrives_at"].(string)
 			fmt.Printf("Trade accepted · %.0f %s incoming · silver paid: %.0f · goods arrive %s\n",
-				resp["quantity"], resp["good_key"], resp["silver_paid"], arrivalETA(goodsAt))
+				resp["quantity"], resp["good_key"], resp["silver_paid"], arrivalETA(c, goodsAt))
 			return nil
 		},
 	}
@@ -258,7 +258,7 @@ func outboxCmd() *cobra.Command {
 					if offerStatus == "pending" && status != "delivered" {
 						if arrStr, ok := m["arrives_at"].(string); ok {
 							if arrT, err := time.Parse(time.RFC3339, arrStr); err == nil {
-								line += fmt.Sprintf("  arrives in %s", countdown(arrT))
+								line += fmt.Sprintf("  arrives %s", gameETA(c, arrT))
 							}
 						}
 					}
@@ -277,7 +277,7 @@ func outboxCmd() *cobra.Command {
 					if offerStatus == "pending" {
 						if expStr, ok := m["expires_at"].(string); ok {
 							if expT, err := time.Parse(time.RFC3339, expStr); err == nil {
-								line += fmt.Sprintf("  expires in %s", countdown(expT))
+								line += fmt.Sprintf("  expires %s", gameETA(c, expT))
 							}
 						}
 					}
@@ -288,7 +288,7 @@ func outboxCmd() *cobra.Command {
 					// The handler now stamps both ETAs onto trade_offer itself at accept
 					// time (api/handlers/messenger.go TradeAccept) so this can read them back.
 					if offerStatus == "accepted" {
-						if eta := deliveryETALine(offer); eta != "" {
+						if eta := deliveryETALine(c, offer); eta != "" {
 							line += eta
 						}
 					}
@@ -335,7 +335,7 @@ func offerStatusLabel(status string) string {
 // silver_arrives_at). Returns "" if neither timestamp is present (e.g. an
 // older offer accepted before this field existed). Uses whichever of the two
 // legs is still in the future; a leg already in the past reads "delivered".
-func deliveryETALine(offer map[string]any) string {
+func deliveryETALine(c *Client, offer map[string]any) string {
 	fmtLeg := func(label, raw string) string {
 		if raw == "" {
 			return ""
@@ -347,7 +347,7 @@ func deliveryETALine(offer map[string]any) string {
 		if t.Before(time.Now()) {
 			return fmt.Sprintf("%s delivered", label)
 		}
-		return fmt.Sprintf("%s in %s", label, countdown(t))
+		return fmt.Sprintf("%s %s", label, gameETA(c, t))
 	}
 	goodsAt, _ := offer["goods_arrives_at"].(string)
 	silverAt, _ := offer["silver_arrives_at"].(string)

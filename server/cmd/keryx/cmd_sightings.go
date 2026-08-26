@@ -160,9 +160,11 @@ something of mine", not "how far is it from my palace".`,
 					if u.Status == "marching" && u.TargetQ != nil && u.TargetR != nil {
 						eta := "okänt"
 						if u.ArrivesAt != nil {
-							eta = countdown(*u.ArrivesAt)
+							eta = gameETA(c, *u.ArrivesAt)
 						}
-						detail = fmt.Sprintf("marching → (%d,%d), landar om %s", *u.TargetQ, *u.TargetR, eta)
+						// gameETA already supplies its own connector ("om N speldygn" /
+						// "in Xh Ym") — don't double it up with a second "om" here.
+						detail = fmt.Sprintf("marching → (%d,%d), landar %s", *u.TargetQ, *u.TargetR, eta)
 					} else {
 						stance := u.Stance
 						if stance == "" {
