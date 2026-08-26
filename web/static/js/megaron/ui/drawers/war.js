@@ -493,6 +493,22 @@ function renderUnitCard(u) {
     ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + u.hull + '/5</span>'
     : '';
 
+  // Matmätaren (megaron_plan_skeppsproviant.md §7, Timothy 2026-08-26). Dygn,
+  // inte råa korn — resten av spelet mäts i speldygn.
+  //
+  // Döljs i hamn med flit: där äter skeppet ur stadens magasin, så ett lager
+  // ombord säger ingenting. Till sjöss visas den ALLTID, inte bara när den är
+  // låg — till skillnad från hull-bricka ovan. Skälet är att det här är talet
+  // som avgör om du kan ge en order alls, och ett skepp som tyst närmar sig
+  // noll är precis det mekaniken finns för att göra synligt.
+  const atSea = isNaval && u.status !== 'garrison' && u.status !== 'repairing';
+  const days = u.provision_days || 0;
+  const foodBadge = atSea
+    ? '<span style="font-size:.6rem;margin-left:.3rem;color:' +
+      (days <= 0 ? 'var(--accent-war)' : days < 3 ? 'var(--accent-war)' : 'var(--text-dim)') + '">' +
+      (days <= 0 ? 'out of food' : 'food ' + days + 'd') + '</span>'
+    : '';
+
   // Cargo badge
   const cargoBadge = u.cargo_unit_id
     ? '<span style="font-size:.6rem;color:var(--accent-city);margin-left:.3rem">carrying unit</span>'
@@ -575,7 +591,7 @@ function renderUnitCard(u) {
   return '<div id="ucard-' + u.id + '" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)">'
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
     + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
-    + stanceBadge + crewBadge + hullBadge + cargoBadge
+    + stanceBadge + crewBadge + hullBadge + foodBadge + cargoBadge
     + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + u.status + '</span>'
     + '</div>'
     + progress

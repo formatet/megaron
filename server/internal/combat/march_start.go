@@ -562,6 +562,83 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 	}
 
+	// Skeppets proviant (megaron_plan_skeppsproviant.md §4, Timothy 2026-08-26).
+	// Samma form som kolonistbörsen ovan — dras ur staden inne i den transaktion
+	// som startar resan, så maten aldrig finns på två ställen samtidigt — men med
+	// EN avgörande skillnad: börsen är mjuk (skicka det du har), provianten är
+	// HÅRD. En koloni utan silver är ett legitimt, magert val; ett skepp utan mat
+	// är ett skepp som dör till sjöss utan att spelaren kan svara, vilket är just
+	// det asynkronitetsbrott mekaniken finns för att stänga.
+	//
+	// Landenheter rörs inte: proviantering är sjö, furagering är land.
+	// ⚠️ Grinden är "ligger i hamn", INTE "har en hemstad". Två skäl, båda
+	// funna av testsviten:
+	//
+	//  1. Ett skepp som redan står till sjöss har ofta ingen support_settlement
+	//     (TestStartMarch_ExploreFromFieldPositionResolvesNearestOwnedHome). Ett
+	//     hårt krav där STRANDAR skeppet permanent — det kan aldrig få en ny
+	//     order. Det vore ett värre fel än det provianteringen lagar.
+	//  2. Ett skepp till sjöss som HAR en support_settlement får inte proviantera
+	//     ur den heller — då tar man ombord last från en hamn tjugo hexar bort,
+	//     vilket är exakt den teleporterande logistik mekaniken finns för att ta
+	//     bort, tillbaka genom en bakdörr.
+	//
+	// Man provianterar i hamn. Ett skepp som får en ny order till sjöss seglar på
+	// det det har; tar det slut gäller undantagsgrenen i upkeep.
+	var provisions float64
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval && !colonizeInPlace &&
+		unit.Status(currentStatus) == unit.StatusGarrison && u.SupportSettlementID != nil {
+		var cargoType string
+		var cargoSize int
+		if u.CargoUnitID != nil {
+			// Kohorten ombord äter ur skeppets lager — därför provianteras den
+			// med. En tom last ger nollvärden och VoyageRation hoppar över den.
+			_ = tx.QueryRow(ctx,
+				`SELECT type, size FROM units WHERE id = $1`, *u.CargoUnitID,
+			).Scan(&cargoType, &cargoSize)
+		}
+		stationTicks := 0
+		if o.Intent == "sentry" {
+			stationTicks = SentryPatrolTicks
+		}
+		ration := VoyageRation(string(u.Type), u.Size, cargoType, cargoSize)
+		provisions = VoyageProvisions(ration, travelTicks, stationTicks)
+
+		if provisions > 0 {
+			var have float64
+			if err := tx.QueryRow(ctx,
+				`SELECT GREATEST(0, settled(amount, rate, calc_tick))
+				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain' FOR UPDATE`,
+				*u.SupportSettlementID,
+			).Scan(&have); err != nil {
+				return nil, reject(http.StatusInternalServerError, "could not read the home port's granary")
+			}
+			if have < provisions {
+				// Båda talen med flit: en ärlig brist säger hur stor den är, så
+				// spelaren vet om hon ska vänta en dag eller bygga en åker.
+				return nil, reject(http.StatusUnprocessableEntity,
+					"not enough grain to provision the voyage — the home port holds %.0f, "+
+						"the voyage needs %.0f (%.1f/day for %d days out, on station and home again)",
+					have, provisions, ration, 2*travelTicks+stationTicks)
+			}
+			if _, err := tx.Exec(ctx,
+				`UPDATE settlement_goods
+				    SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
+				        calc_tick = current_world_tick()
+				  WHERE settlement_id = $2 AND good_key = 'grain'`,
+				provisions, *u.SupportSettlementID,
+			); err != nil {
+				return nil, reject(http.StatusInternalServerError, "could not load the ship's provisions")
+			}
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET provisions = provisions + $2 WHERE id = $1`,
+				o.UnitID, provisions,
+			); err != nil {
+				return nil, reject(http.StatusInternalServerError, "could not stow the ship's provisions")
+			}
+		}
+	}
+
 	// Build stance SET clause only when provided.
 	var stanceArg *string
 	if o.Stance != "" {

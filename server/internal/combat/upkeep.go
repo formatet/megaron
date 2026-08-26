@@ -107,6 +107,61 @@ func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
 	return UpkeepSpec{Grain: grain, Silver: spec.Silver * f}
 }
 
+// VoyageRation är vad ett skepp äter per dygn till sjöss, inklusive en eventuell
+// embarkerad kohort — alltså exakt det tal provianteringen ska täcka.
+//
+// Den bor HÄR, bredvid UnitUpkeep, med flit: provianten och dragningen måste
+// räknas ur samma källa, annars provianterar man för ett tal och debiterar ett
+// annat, och skillnaden syns först som ett skepp som svälter mitt i en resa det
+// betalade fullt för.
+//
+// Kohorten ombord äter FÄLTRANSON (upkeepFieldGrainFactor): en embarkerad
+// soldat är maximalt borta från stadens förråd, vilket är precis den motivering
+// 'embarked' lades till i fältmängden för (2026-08-05, embarkerad ranson).
+// cargoType/cargoSize är nollvärden när skeppet går tomt.
+func VoyageRation(shipType string, shipSize int, cargoType string, cargoSize int) float64 {
+	ration := UnitUpkeep(shipType, "naval", shipSize, "positioned").Grain
+	if cargoType != "" && cargoSize > 0 {
+		ration += UnitUpkeep(cargoType, "land", cargoSize, "embarked").Grain
+	}
+	return ration
+}
+
+// VoyageProvisions är vad som ska dras ur hemstaden vid avfärd:
+// dygnsranson × (ut + station + hem).
+//
+// Hemresan approximeras som SYMMETRISK med utresan. Den exakta hemvägen är inte
+// känd vid utskick (skeppet kan bli omdirigerat, och A* körs mot ett annat
+// startläge), och de två felen är inte lika dyra: överproviantering kommer hem
+// igen och lastas av, underproviantering strandar ett skepp. Approximationen
+// ska därför alltid luta uppåt.
+//
+// stationTicks är 0 för en vanlig marsch och SentryPatrolTicks för en
+// sjösentry, som per definition ligger stilla hela sin patrull.
+func VoyageProvisions(ration float64, travelTicks, stationTicks int) float64 {
+	if travelTicks < 1 {
+		travelTicks = 1
+	}
+	if stationTicks < 0 {
+		stationTicks = 0
+	}
+	return ration * float64(2*travelTicks+stationTicks)
+}
+
+// ProvisionDaysLeft är matmätarens tal (Timothy 2026-08-26: "någon slags
+// matmätare som spelaren kan se"). DYGN, inte råa korn — världen mäts i
+// speldygn, och "14 dygn" är något en spelare kan handla på. Golvdivision:
+// mätaren får aldrig visa en dag skeppet inte har mat för hela.
+func ProvisionDaysLeft(provisions, ration float64) int {
+	if ration <= 0 {
+		return 0
+	}
+	if provisions <= 0 {
+		return 0
+	}
+	return int(provisions / ration)
+}
+
 const (
 	upkeepFieldGrainFactor = 2.0 // korn i fält (marching/positioned/embarked) mot garnison
 	// upkeepAttritionStepPercent är en ANDEL av size, inte ett mantal (fram
@@ -149,12 +204,15 @@ type upkeepMacroTickPayload struct{}
 
 // upkeepUnitRow holds the columns we need per unit during the upkeep loop.
 type upkeepUnitRow struct {
-	id            uuid.UUID
-	ownerID       uuid.UUID
-	unitType      string
-	category      string
-	size          int
-	crew          int
+	id       uuid.UUID
+	ownerID  uuid.UUID
+	unitType string
+	category string
+	size     int
+	crew     int
+	// carrierID är skeppet som bär den här enheten (bara satt för 'embarked'):
+	// kohorten ombord äter ur skeppets proviant, inte ur staden.
+	carrierID     *uuid.UUID
 	settlementID  *uuid.UUID
 	unpaidPeriods int
 	cargoUnitID   *uuid.UUID
@@ -214,6 +272,8 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.crew, u.settlement_id,
 		        u.unpaid_periods, u.cargo_unit_id,
+		        (SELECT c.id FROM units c
+		          WHERE c.cargo_unit_id = u.id AND c.world_id = u.world_id),
 		        (SELECT s.id FROM settlements s
 		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id),
 		        u.status
@@ -237,7 +297,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	for rows.Next() {
 		var u upkeepUnitRow
 		if err := rows.Scan(&u.id, &u.ownerID, &u.unitType, &u.category,
-			&u.size, &u.crew, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID,
+			&u.size, &u.crew, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID, &u.carrierID,
 			&u.supportSettlementID, &u.status); err != nil {
 			return fmt.Errorf("upkeep: scan unit: %w", err)
 		}
@@ -322,6 +382,42 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		disbanded := false
 
 		// ── Grain upkeep ─────────────────────────────────────────────────────
+		//
+		// Sjövägen äter ur SKEPPETS lager, inte ur staden
+		// (megaron_plan_skeppsproviant.md §5). Fram till 2026-08-26 läste den här
+		// grenen support_settlement_id utan någon distansterm, så en galär tjugo
+		// hexar ut åt ur hemstadens magasin varje tick, omedelbart — maten
+		// struntade i den regel allt annat i spelet lyder.
+		//
+		// En embarkerad kohort äter ur det BÄRANDE skeppets lager, av samma skäl
+		// som den betalar fältranson: den är ombord, inte hemma.
+		//
+		// Faller dragningen ur provianten går den INTE vidare till staden om
+		// enheten är ute — det vore teleporteringen tillbaka genom en bakdörr.
+		// Ett skepp i hamn (garrison/repairing) har normalt tom proviant, den
+		// lastades av vid hemkomsten, och faller därför rätt ner i stadsgrenen.
+		provisionSource := provisionSourceFor(u)
+		if grainNeed > 0 && provisionSource != nil {
+			tag, perr := h.pool.Exec(ctx,
+				`UPDATE units SET provisions = provisions - $1, updated_at = now()
+				 WHERE id = $2 AND provisions >= $1`,
+				grainNeed, *provisionSource,
+			)
+			switch {
+			case perr != nil:
+				slog.Error("upkeep: provision draw failed", "unit", u.id, "err", perr)
+			case tag.RowsAffected() == 1:
+				grainNeed = 0 // fed from the ship's own stores
+			case atHomePort(u):
+				// Docked with empty stores — the town feeds it, as before.
+			default:
+				// At sea with nothing left. This is the exception the
+				// provisioning exists to make rare; today it bites as attrition.
+				disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
+				grainNeed = 0
+			}
+		}
+
 		if grainNeed > 0 {
 			if !hasSid {
 				// No paying settlement — treat as grain shortage.
@@ -603,6 +699,35 @@ func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, worldID, shipID
 			"ship_id":   shipID,
 		})
 	}
+}
+
+// provisionSourceFor returns the unit whose `provisions` should feed this unit
+// this tick, or nil when the unit eats from a settlement as it always has.
+//
+// Two cases, one rule — "you eat from where you are":
+//   - a naval unit eats its own stores;
+//   - an embarked cohort eats the stores of the ship carrying it (carrierID),
+//     which is why the SELECT resolves the carrier.
+//
+// Land units on land are never a provision case: they can be reached by runner
+// and resupplied, and the right answer there is foraging, not stores
+// (megaron_plan_skeppsproviant.md §2 punkt 5).
+func provisionSourceFor(u upkeepUnitRow) *uuid.UUID {
+	if u.category == "naval" {
+		id := u.id
+		return &id
+	}
+	if u.status == "embarked" && u.carrierID != nil {
+		return u.carrierID
+	}
+	return nil
+}
+
+// atHomePort reports whether the unit is sitting at a settlement rather than out
+// in the world — the only case where falling back to the town's granary is not
+// the teleporting logistics this mechanic removes.
+func atHomePort(u upkeepUnitRow) bool {
+	return u.status == "garrison" || u.status == "repairing"
 }
 
 // applyAttrition removes men (land) or crew (naval) from the unit due to grain

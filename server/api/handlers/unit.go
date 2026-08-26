@@ -1470,8 +1470,13 @@ type unitSummary struct {
 	// Hull is the graded damage track (megaron_plan_skeppsreparation.md §B2,
 	// 5=untouched/0=sunk) — omitted for land units (always the DB default 5,
 	// meaningless for them; see unit.Unit.Hull's own doc comment).
-	Hull   int    `json:"hull,omitempty"`
-	Status string `json:"status"`
+	Hull int `json:"hull,omitempty"`
+	// ProvisionDays är matmätaren (Timothy 2026-08-26): hur många DYGN skeppets
+	// lager räcker vid nuvarande ranson. Dygn, inte råa korn — världen mäts i
+	// speldygn och "14 dygn" är ett tal en spelare kan handla på. Utelämnas för
+	// landenheter, som aldrig provianteras.
+	ProvisionDays int    `json:"provision_days,omitempty"`
+	Status        string `json:"status"`
 	// Deployable is false while a land unit is still "forming": it cannot march,
 	// colonize, or otherwise leave its settlement until it reaches 100 men. JSON
 	// consumers (LLM agents, iOS) must see this in the data — the human `unit list`
@@ -1552,7 +1557,11 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 	// name its carrier. A ship and its cargo are owned by the same Wanax, so both
 	// rows are in us — no extra query needed.
 	carrierByCargo := make(map[uuid.UUID]*unit.Unit)
+	// Framåtuppslag id → enhet, så ett skepp kan läsa sin lasts typ och storlek
+	// när matmätarens ranson räknas (ett lastat skepp äter mer).
+	unitByID := make(map[uuid.UUID]*unit.Unit, len(us))
 	for _, u := range us {
+		unitByID[u.ID] = u
 		if u.CargoUnitID != nil {
 			carrierByCargo[*u.CargoUnitID] = u
 		}
@@ -1634,8 +1643,21 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			}
 		}
 		hull := 0
+		provisionDays := 0
 		if u.Category == unit.CategoryNaval {
 			hull = u.Hull
+			// Ransonen måste räknas med lasten ombord — ett lastat skepp äter
+			// mer, så samma proviant räcker färre dygn. Räknas ur combat, samma
+			// funktion som provianteringen och dragningen använder, annars
+			// visar mätaren ett annat tal än det som faktiskt äts.
+			cargoType, cargoSize := "", 0
+			if u.CargoUnitID != nil {
+				if c, ok := unitByID[*u.CargoUnitID]; ok {
+					cargoType, cargoSize = string(c.Type), c.Size
+				}
+			}
+			provisionDays = combat.ProvisionDaysLeft(u.Provisions,
+				combat.VoyageRation(string(u.Type), u.Size, cargoType, cargoSize))
 		}
 		out = append(out, unitSummary{
 			ID:                    u.ID,
@@ -1644,6 +1666,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			Size:                  u.Size,
 			Crew:                  u.Crew,
 			Hull:                  hull,
+			ProvisionDays:         provisionDays,
 			Status:                string(u.Status),
 			Deployable:            deployable,
 			MenToDeploy:           menToDeploy,

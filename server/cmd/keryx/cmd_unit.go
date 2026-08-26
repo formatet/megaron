@@ -236,6 +236,7 @@ type unitRow struct {
 	Size            int        `json:"size"`
 	Crew            int        `json:"crew"`
 	Hull            int        `json:"hull"`
+	ProvisionDays   int        `json:"provision_days"`
 	Status          string     `json:"status"`
 	Name            *string    `json:"name"`
 	DisplayName     string     `json:"display_name"`
@@ -291,7 +292,22 @@ func formatSize(u unitRow) string {
 		if u.Hull < 5 {
 			hull = fmt.Sprintf(", hull %d/5 damaged", u.Hull)
 		}
-		return fmt.Sprintf("1 vessel (crew %d%s)", u.Crew, hull)
+		// Matmätaren (Timothy 2026-08-26). Dygn, inte korn — resten av spelet
+		// mäts i speldygn. Under provisionsLowDays markeras den: det är sista
+		// fönstret där en Wanax hinner göra något åt saken, och hela poängen med
+		// mätaren är att hon inte ska upptäcka lagret genom att förlora skeppet.
+		food := ""
+		switch {
+		case u.Status == "garrison":
+			// I hamn äter skeppet ur staden; ett lager ombord säger ingenting.
+		case u.ProvisionDays <= 0:
+			food = ", OUT OF FOOD"
+		case u.ProvisionDays < provisionsLowDays:
+			food = fmt.Sprintf(", food %d days LOW", u.ProvisionDays)
+		default:
+			food = fmt.Sprintf(", food %d days", u.ProvisionDays)
+		}
+		return fmt.Sprintf("1 vessel (crew %d%s%s)", u.Crew, hull, food)
 	}
 	// A thinned cohort is only legible if the row says how to fix it — the
 	// server already computes can_reinforce (home city, garrison, size<100).
@@ -1276,3 +1292,9 @@ func unitUnloadCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("ship")
 	return cmd
 }
+
+// provisionsLowDays är när matmätaren börjar varna. Tre speldygn är valt som
+// det kortaste fönster där en Wanax som loggar in en gång om dygnet fortfarande
+// hinner ge en order och få den utförd — samma resonemang som nådefristen på 24
+// tick, en tredjedel av skalan. Strawman: kalibrera mot en soak, inte mot smak.
+const provisionsLowDays = 3

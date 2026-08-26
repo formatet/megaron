@@ -123,12 +123,12 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
-		        carried_silver
+		        carried_silver, provisions
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
 		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
-		&u.carriedSilver); err != nil {
+		&u.carriedSilver, &u.provisions); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -337,6 +337,32 @@ func (h *UnitArrivalHandler) arriveGarrison(
 			`UPDATE units SET carried_silver = 0 WHERE id = $1`, u.id,
 		); err != nil {
 			return fmt.Errorf("unit arrive: clear carried purse: %w", err)
+		}
+	}
+
+	// A ship that reaches port unloads whatever provisions the voyage did not eat
+	// (megaron_plan_skeppsproviant.md §5). Same shape as the purse above, and for
+	// the same reason: the food was physically aboard, and it comes back.
+	//
+	// Load-bearing, not tidiness. Provisioning deliberately over-estimates the
+	// return leg (VoyageProvisions assumes it is symmetric with the outbound one),
+	// so without this every voyage would burn a full round trip's rations however
+	// short it actually was, and the safety margin would quietly become a tax on
+	// sailing at all.
+	if settlementID != nil && u.provisions > 0 {
+		if _, err := tx.Exec(ctx,
+			`UPDATE settlement_goods
+			    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
+			        calc_tick = current_world_tick()
+			  WHERE settlement_id = $2 AND good_key = 'grain'`,
+			u.provisions, *settlementID,
+		); err != nil {
+			return fmt.Errorf("unit arrive: unload provisions: %w", err)
+		}
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET provisions = 0 WHERE id = $1`, u.id,
+		); err != nil {
+			return fmt.Errorf("unit arrive: clear provisions: %w", err)
 		}
 	}
 
@@ -799,12 +825,12 @@ func (h *UnitArrivalHandler) HandleSentryReturn(ctx context.Context, e events.Sc
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
-		        carried_silver
+		        carried_silver, provisions
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		payload.UnitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
 		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
-		&u.carriedSilver); err != nil {
+		&u.carriedSilver, &u.provisions); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil // unit gone (disbanded/destroyed) — nothing to return
 		}
@@ -1303,6 +1329,9 @@ type unitRow struct {
 	// mother city at dispatch and riding on this unit. Credited to the colony it
 	// founds, or back into whatever settlement it walks into if it turns around.
 	carriedSilver float64
+	// provisions är skeppets matlager (mig 133): korn draget ur hemstaden vid
+	// avfärd, ätet under resan, och avlastat igen när skeppet når hamn.
+	provisions float64
 }
 
 type destSettlement struct {
