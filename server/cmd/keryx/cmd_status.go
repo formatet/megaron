@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -65,32 +67,206 @@ func timberBottleneckWarning(rate float64) string {
 	return "⚠ Timber-produktion ~0 — timber gatear hamn (140)/barracks (80)/foundry (80)/temple (60). Allokera labor: `keryx allocate --timber <n>`"
 }
 
-// resourceAtStorageCeiling reports whether a good sitting at (amount, rate,
-// cap) means the labour producing it is being wasted: at or within 5% of its
-// storage cap with positive throughput still flowing in. Generalizes the
-// house rule "resurs vid tak = balansfel att gräva i, aldrig hälsosignal"
-// (feedback_cap_is_not_success.md) to every good — deliberately NOT a
-// stone specialer (megaron_plan_sten_stock.md §5): stone was the good that
-// surfaced the problem, but wine/oil/cedar/etc. waste labour the same way.
-func resourceAtStorageCeiling(amount, rate, cap float64) bool {
-	return cap > 0 && rate > 0 && amount >= cap*0.95
+// productionHorizonTicks is how far ahead a Wanax is expected to plan
+// PRODUCTION — a different question from netUpkeepWarningRunwayTicks, which
+// is how urgently a SHORTAGE demands reacting to. Deliberately NOT the same
+// constant (Timothy 2026-08-26, correcting the first pass at this slice,
+// which reused netUpkeepWarningRunwayTicks here): a future retune of the
+// shortage window must not silently move the surplus one, and the two
+// questions have different answers — a shortage inside a messenger
+// round-trip isn't yet an emergency because there's no time to react, while
+// a production surplus is judged against how much a settlement could ever
+// plausibly use, a longer view. 60 echoes economy.SitosConfig's own
+// GranaryCapDays default (internal/economy/sitos_config.go) — this codebase
+// already treats 60 game days as "how much surplus is worth planning
+// around" for food; applied here to production sinks generally. A plain
+// literal, not a reference to that config (which is env-tunable and lives
+// in a package too heavy to import into a CLI, see grainConsumptionPerCitizenPerTick
+// below) — so this and the granary's own number can drift apart on purpose,
+// never silently in lockstep.
+const productionHorizonTicks = 60
+
+// grainConsumptionPerCitizenPerTick mirrors economy.GrainConsumptionPerCitizenPerTick
+// (internal/economy/recompute.go) as a literal rather than an import: economy
+// pulls clock/events/gossip/hexgrid into what is otherwise a small,
+// dependency-free CLI binary, for one float that only ever changes with a
+// design conversation, not a code change here.
+const grainConsumptionPerCitizenPerTick = 0.5
+
+// livestockFoodValue mirrors economy's own (unexported, so unimportable
+// regardless of package weight) constant of the same name
+// (internal/economy/recompute.go — Timothy 2026-08-07: "jag tycker nästan
+// att ett kreatur kan få leverera 200 mat om det dödas").
+const livestockFoodValue = 200.0
+
+// sinkContext bundles what sinkCapacities needs about ONE settlement — all
+// of it already present in the /provinces payload `status` already parses,
+// so gathering it costs no extra server round trip.
+type sinkContext struct {
+	population        float64
+	buildingLevels    map[string]int // building_type → current level; absent/0 = not built
+	wallLevel         int            // 0-3
+	armyUpkeepGrain   float64        // this settlement's own current per-tick draw
+	armyUpkeepSilver  float64
+	templeOilPerTick  float64 // sum of temple_offers[].oil_needed for this settlement
+	templeWinePerTick float64 // sum of temple_offers[].wine_needed
 }
 
-// stockCeilingWarning names one good producing "rakt ned i marken" — at its
-// storage ceiling with positive rate — and how many placed gubbar are
-// working it, so a Wanax knows exactly what to move. gubbar can legitimately
-// be 0 (some production is unconditional trickle, not placed labour); the
-// warning still fires since the overflow itself is real either way.
-func stockCeilingWarning(label string, amount, rateVal, cap float64, gubbar int) string {
-	if !resourceAtStorageCeiling(amount, rateVal, cap) {
+// remainingBuildingCosts sums the material (+ silver) cost of every building
+// level this settlement could still build or upgrade to, FROM ITS CURRENT
+// LEVEL — "allt du fortfarande kan bygga här", a flat one-shot number, not a
+// rate, so it is not scaled by any horizon.
+//
+// province.BuildingWall's own BuildingSpecs entry is skipped on purpose: a
+// wall is priced exclusively through WallLevelSpecs
+// (api/handlers/province.go's BuildHandler branches on
+// `req.BuildingType == "wall"` and never charges BuildingSpecs[BuildingWall]),
+// and a wall never gets a `buildings` table row either — so without this
+// skip, BuildingSpecs' own "not built yet" branch would see a wall as
+// eternally unbuilt and double its material cost on top of WallLevelSpecs'
+// real one, forever.
+func remainingBuildingCosts(buildingLevels map[string]int, wallLevel int) map[string]float64 {
+	total := map[string]float64{}
+	for bt := range province.BuildingSpecs {
+		if bt == province.BuildingWall {
+			continue
+		}
+		maxLvl := 1
+		if province.LevelledBuildings[bt] {
+			maxLvl = province.MaxBuildingLevel
+		}
+		cur := buildingLevels[string(bt)]
+		for level := cur + 1; level <= maxLvl; level++ {
+			spec, ok := province.LevelledSpec(bt, level)
+			if !ok {
+				continue
+			}
+			for good, amt := range spec.Costs {
+				total[good] += amt
+			}
+			total["silver"] += spec.CostSilver
+		}
+	}
+	for level := wallLevel + 1; level <= 3; level++ {
+		if spec, ok := province.WallLevelSpecs[level]; ok {
+			for good, amt := range spec.Costs {
+				total[good] += amt
+			}
+			total["silver"] += spec.CostSilver
+		}
+	}
+	return total
+}
+
+// sinkCapacities is the corrected form of the first pass's boolean
+// knownSinkGoods (megaron_plan_omfordelningsmatningen.md §3-4; corrected
+// 2026-08-26 during review, after the first version's sink set was MEASURED
+// against the live goods catalogue rather than reasoned about — the measurement
+// showed it warned on fish/livestock and stayed silent on timber, exactly
+// inverting the intent. Not a Timothy decision; a review finding):
+// a present/absent check cannot
+// distinguish a real-but-tiny sink from one that actually matters, and it
+// silenced fish/livestock outright even though the population eating them
+// is the single biggest sink in the game. Every good gets a SIZE instead —
+// `status` then compares that size against the actual stock.
+//
+// Four sources, added together because they behave differently over time:
+//   - Bygge: remainingBuildingCosts above — flat, not scaled by the horizon.
+//   - Upkeep: this settlement's OWN current army_upkeep grain/silver draw
+//     (server-computed — the same figures `status`'s own Army/Upkeep line
+//     shows), × productionHorizonTicks.
+//   - Tempel: the "kharis oil/wine" finding kept from the first pass, now
+//     sized instead of boolean — oil/wine temple maintenance
+//     (kharis.OfferOilPerTemple/OfferWinePerTemple, internal/kharis/tick.go)
+//     is a real, deterministic per-tick draw. Read off temple_offers' own
+//     oil_needed/wine_needed (already served to `status`) rather than
+//     importing kharis, which would pull ai/economy/events/hexgrid/
+//     religion/unit into a CLI binary for two floats.
+//   - Mat: economy.FoodConsumptionSplit's fallback chain (grain → fish →
+//     livestock, internal/economy/recompute.go:417-446) shares ONE demand
+//     pool — the population's food need over the horizon
+//     (pop × grainConsumptionPerCitizenPerTick × horizon). Each of the
+//     three is measured against that SAME total independently rather than
+//     a strict running remainder — a documented simplification: modelling
+//     the joint chain precisely would need every settlement's grain/fish/
+//     livestock STOCK threaded through this function too, for a warning
+//     heuristic that does not need that precision. No single one of the
+//     three could ever be worth more than the whole population's need, and
+//     the case this exists to catch — is the pile absurd relative to what
+//     the population could ever eat (Timothy 2026-08-23's fish question) —
+//     is answered correctly either way. Livestock is converted to
+//     animal-equivalent via livestockFoodValue.
+//
+// Refining recipes (internal/economy/recipe.go) are NOT sized here — a
+// recipe ingredient's real constraint is scarcity of the OTHER input, not
+// overproduction, so `status` treats it as an open/unlimited sink instead
+// (see the recipe-fetching code at the call site).
+func sinkCapacities(ctx sinkContext) map[string]float64 {
+	cap := remainingBuildingCosts(ctx.buildingLevels, ctx.wallLevel)
+
+	cap["grain"] += ctx.armyUpkeepGrain * productionHorizonTicks
+	cap["silver"] += ctx.armyUpkeepSilver * productionHorizonTicks
+
+	cap["oil"] += ctx.templeOilPerTick * productionHorizonTicks
+	cap["wine"] += ctx.templeWinePerTick * productionHorizonTicks
+
+	foodDemand := ctx.population * grainConsumptionPerCitizenPerTick * productionHorizonTicks
+	cap["grain"] += foodDemand
+	cap["fish"] += foodDemand
+	cap["livestock"] += foodDemand / livestockFoodValue
+
+	return cap
+}
+
+// openEndedSinkGoods returns the good_keys with an UNBOUNDED sink — today,
+// exactly the ingredients of refining recipes (internal/economy/recipe.go,
+// DB-seeded, not a Go map), read via the existing GET /api/v1/recipes
+// endpoint (RecipeCatalogue) rather than a new one. A recipe ingredient's
+// capacity is treated as infinite by the caller: its scarcity comes from the
+// OTHER input running out, never from having "too much" of it, so it never
+// belongs in the surplus warning regardless of stock size. Best-effort like
+// fetchGubbeCountsByGood: a failed or unparsable response just means no
+// goods are marked open-ended, never a blocked `status`.
+func openEndedSinkGoods(c *Client) map[string]bool {
+	open := map[string]bool{}
+	data, err := c.get("/api/v1/recipes")
+	if err != nil {
+		return open
+	}
+	var recipes []struct {
+		Ingredients []struct {
+			GoodKey string `json:"good_key"`
+		} `json:"ingredients"`
+	}
+	if json.Unmarshal(data, &recipes) != nil {
+		return open
+	}
+	for _, r := range recipes {
+		for _, ing := range r.Ingredients {
+			open[ing.GoodKey] = true
+		}
+	}
+	return open
+}
+
+// surplusWithoutSinkWarning names a good producing "rakt ned i marken":
+// positive rate, at least one gubbe actually placed on it (otherwise there
+// is nothing to move — some production is unconditional trickle, not
+// placed labour, and telling a Wanax to `place` a gubbe that doesn't exist
+// would be an actionable-looking lie), and a stock that EXCEEDS what every
+// known sink (capacity, from sinkCapacities — pass math.Inf(1) for a good
+// with an open-ended sink such as a recipe ingredient, which then never
+// fires) could plausibly absorb.
+func surplusWithoutSinkWarning(label string, amount, rateVal, capacity float64, gubbar int) string {
+	if rateVal <= 0 || gubbar <= 0 || amount <= capacity {
 		return ""
 	}
 	who := fmt.Sprintf("%d gubbar", gubbar)
 	if gubbar == 1 {
 		who = "1 gubbe"
 	}
-	return fmt.Sprintf("⚠ %-8s %6s  %s  vid lagertaket — %s producerar rakt ned i marken (`keryx place`)",
-		label, resource(amount), rate(rateVal), who)
+	return fmt.Sprintf("⚠ %-8s %6s  %s  — kända sänkor tar emot högst %s inom %d tick; %s producerar utan mottagare (`keryx place`)",
+		label, resource(amount), rate(rateVal), resource(capacity), productionHorizonTicks, who)
 }
 
 // capitalize upper-cases a good_key's first letter for display ("stone" →
@@ -530,40 +706,78 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					fmt.Printf("  %s\n", w)
 				}
 
-				// "Produktion rakt ned i marken" (megaron_plan_sten_stock.md §5):
-				// ANY good at/near its storage cap with positive rate means the
-				// gubbar producing it are wasted, not just stone. Iterates every
-				// good_key res actually holds — province.go's resSnap is built
-				// "for every good the settlement holds, not a hard-coded subset"
-				// (see its own comment above resSnap), so wine/oil/cedar/etc. are
-				// covered the same way as stone, with no per-good special-casing
-				// here either.
-				ceilingGoods := make([]string, 0, len(res))
-				for k := range res {
-					ceilingGoods = append(ceilingGoods, k)
+				// "Produktion utan mottagare" (megaron_plan_omfordelningsmatningen.md
+				// §3-4, corrected 2026-08-26 — see sinkCapacities' doc comment for
+				// why a present/absent check was replaced by a sized one). Iterates
+				// every good_key res actually holds, so wine/oil/cedar/etc. get the
+				// same treatment as any other good, no per-good special-casing here.
+				buildingLevels := map[string]int{}
+				if bs, ok := sett["buildings"].([]any); ok {
+					for _, it := range bs {
+						m, _ := it.(map[string]any)
+						t, _ := m["type"].(string)
+						lvl, _ := m["level"].(float64)
+						if t != "" {
+							buildingLevels[t] = int(lvl)
+						}
+					}
 				}
-				sort.Strings(ceilingGoods)
-				var atCeiling []string
-				for _, k := range ceilingGoods {
+				armyUpkeepGrain, armyUpkeepSilver := 0.0, 0.0
+				if up, ok := sett["army_upkeep"].(map[string]any); ok {
+					armyUpkeepGrain, _ = up["grain"].(float64)
+					armyUpkeepSilver, _ = up["silver"].(float64)
+				}
+				templeOil, templeWine := 0.0, 0.0
+				if temples, ok := sett["temple_offers"].([]any); ok {
+					for _, it := range temples {
+						m, _ := it.(map[string]any)
+						oilN, _ := m["oil_needed"].(float64)
+						wineN, _ := m["wine_needed"].(float64)
+						templeOil += oilN
+						templeWine += wineN
+					}
+				}
+				capacities := sinkCapacities(sinkContext{
+					population:        pop,
+					buildingLevels:    buildingLevels,
+					wallLevel:         int(walls),
+					armyUpkeepGrain:   armyUpkeepGrain,
+					armyUpkeepSilver:  armyUpkeepSilver,
+					templeOilPerTick:  templeOil,
+					templeWinePerTick: templeWine,
+				})
+				openSinks := openEndedSinkGoods(c)
+				capacityFor := func(k string) float64 {
+					if openSinks[k] {
+						return math.Inf(1)
+					}
+					return capacities[k]
+				}
+
+				surplusGoods := make([]string, 0, len(res))
+				for k := range res {
+					surplusGoods = append(surplusGoods, k)
+				}
+				sort.Strings(surplusGoods)
+				var candidates []string
+				for _, k := range surplusGoods {
 					rd, ok := res[k].(map[string]any)
 					if !ok {
 						continue
 					}
 					amt, _ := rd["amount"].(float64)
 					rt, _ := rd["rate"].(float64)
-					cp, _ := rd["cap"].(float64)
-					if resourceAtStorageCeiling(amt, rt, cp) {
-						atCeiling = append(atCeiling, k)
+					if rt > 0 && amt > capacityFor(k) {
+						candidates = append(candidates, k)
 					}
 				}
-				if len(atCeiling) > 0 {
+				if len(candidates) > 0 {
 					gubbeCounts := fetchGubbeCountsByGood(c, cfg.WorldID, prov)
-					for _, k := range atCeiling {
+					for _, k := range candidates {
 						rd, _ := res[k].(map[string]any)
 						amt, _ := rd["amount"].(float64)
 						rt, _ := rd["rate"].(float64)
-						cp, _ := rd["cap"].(float64)
-						if line := stockCeilingWarning(capitalize(k), amt, rt, cp, gubbeCounts[k]); line != "" {
+						if line := surplusWithoutSinkWarning(capitalize(k), amt, rt, capacityFor(k), gubbeCounts[k]); line != "" {
 							fmt.Printf("  %s\n", line)
 						}
 					}

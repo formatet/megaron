@@ -343,6 +343,13 @@ func LaborCapacity(goodKey string, hasFieldPath bool, hexSlots int, buildingSlot
 // so read-only callers (status endpoint's grain-netto breakdown/break-even
 // hint, DEL C of megaron_ekonomi_legibilitet_plan.md) can re-derive
 // prod/consum from the stored net rate instead of duplicating this number.
+//
+// ⚠️ MIRRORED, and the mirror cannot import this package: cmd/keryx holds its
+// own `grainConsumptionPerCitizenPerTick` literal (2026-08-26, the surplus
+// signal's food-sink size) because pulling economy into the CLI drags
+// clock/events/gossip/hexgrid with it. Change this number and that one drifts
+// silently — update both. Same applies to the unexported livestockFoodValue
+// below.
 const GrainConsumptionPerCitizenPerTick = 0.5
 
 // GrainConsumptionPerTick is the grain a population of pop eats each tick.
