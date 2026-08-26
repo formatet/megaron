@@ -22,7 +22,7 @@ func unitCmd() *cobra.Command {
 	cmd.AddCommand(
 		unitListCmd(),
 		unitMarchCmd(),
-		unitSentryCmd(),
+		unitPatrolCmd(),
 		unitPostCmd(),
 		unitRecallCmd(),
 		unitRedirectCmd(),
@@ -36,29 +36,36 @@ func unitCmd() *cobra.Command {
 	return cmd
 }
 
-// ---- unit sentry -------------------------------------------------------------
+// ---- unit patrol -------------------------------------------------------------
 
-// unitSentryCmd posts a naval unit on sentry patrol at a coastal_sea hex. It is a
-// thin convenience over `unit march --intent sentry`: the ship sails to the hex,
+// unitPatrolCmd posts a naval unit on patrol at a coastal_sea hex. It is a
+// thin convenience over `unit march --intent patrol`: the ship sails to the hex,
 // holds there watching the approaches (fog-of-war + caravan interception) and
 // turns for home on its own when the patrol timer runs out. No recall — the timer
 // is the only control (self-terminating sea order).
 //
+// Named "patrol", not "sentry" (renamed 2026-08-26, megaron_plan_cli_sanning):
+// "sentry" was one word doing two jobs — this ENDING naval intent, and the
+// land STANCE you hold in place (unit.StanceSentry, unchanged) — so the same
+// word meant different orders depending which flag carried it. "sentry"
+// stays wired as a hidden alias so existing scripts/agents keep working.
+//
 // Deliberately coastal_sea only — river is water too, but not a sea patrol's
 // hex: a patrol standing in a 1-hex-wide river has no water to project over
 // (megaron_floden_plan.md §3, Timothy 2026-07-29; server rejects it in
-// combat/march_start.go's sentry gate).
-func unitSentryCmd() *cobra.Command {
+// combat/march_start.go's patrol gate).
+func unitPatrolCmd() *cobra.Command {
 	var unitID string
 	var q, r int
 	cmd := &cobra.Command{
-		Use:   "sentry",
-		Short: "Post a ship on sentry patrol at a coastal-sea hex (auto-returns after its patrol)",
+		Use:     "patrol",
+		Aliases: []string{"sentry"}, // pre-rename name, kept working — see doc comment above
+		Short:   "Post a ship on patrol at a coastal-sea hex (auto-returns after its patrol)",
 		Long: `Send a naval unit to a shallow-water (coastal_sea) hex you have seen and hold it
-there on sentry: it watches the approaches (fog-of-war) and intercepts enemy
+there on patrol: it watches the approaches (fog-of-war) and intercepts enemy
 caravans passing within reach. There is no recall — the ship turns for home on
 its own when the patrol timer runs out.`,
-		Example: "  keryx unit sentry --unit <id> --q 8 --r -3",
+		Example: "  keryx unit patrol --unit <id> --q 8 --r -3",
 		Args:    rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -68,7 +75,7 @@ its own when the patrol timer runs out.`,
 			}
 			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
-			data, err := c.post(path, map[string]any{"q": q, "r": r, "intent": "sentry"})
+			data, err := c.post(path, map[string]any{"q": q, "r": r, "intent": "patrol"})
 			if err != nil {
 				return err
 			}
@@ -76,7 +83,7 @@ its own when the patrol timer runs out.`,
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Sentry order dispatched: ship %s → (%d,%d). It will patrol, then sail home on its own.\n", unitID, q, r)
+			fmt.Printf("Patrol order dispatched: ship %s → (%d,%d). It will patrol, then sail home on its own.\n", unitID, q, r)
 			return nil
 		},
 	}
@@ -93,7 +100,7 @@ its own when the patrol timer runs out.`,
 
 // unitPostCmd posts a LAND unit as a forward watch: it marches to the hex and
 // stands there indefinitely. Thin convenience over `unit march --stance sentry`,
-// the same shape unitSentryCmd is over `unit march --intent sentry` for ships.
+// the same shape unitPatrolCmd is over `unit march --intent patrol` for ships.
 //
 // Why it exists (megaron_todo.md, discovery-legibiliteten): the forward post has
 // worked since sentry was built, and nothing ever pointed at it. Every surface
@@ -103,7 +110,7 @@ its own when the patrol timer runs out.`,
 // and nobody found a neighbour.
 //
 // The two are genuinely different orders and must not be conflated:
-//   - `unit sentry` (naval, --intent sentry): sails, holds, and turns for home
+//   - `unit patrol` (naval, --intent patrol): sails, holds, and turns for home
 //     by itself when the patrol timer runs out. Self-terminating.
 //   - `unit post` (land, --stance sentry): marches, and STAYS. No timer, no
 //     auto-return; it holds until you march or recall it.
@@ -127,7 +134,7 @@ func unitPostCmd() *cobra.Command {
 		Short: "March a land unit to a hex and hold it there as a forward watch (no auto-return)",
 		Long: `Send a land unit to a hex you have seen and post it there on watch. It marches,
 arrives, and STAYS — there is no patrol timer and no auto-return, unlike a ship's
-'unit sentry'. It holds until you march or recall it.
+'unit patrol'. It holds until you march or recall it.
 
 A posted watch extends your fog-of-war from where it stands, spots foreign
 marches passing nearby, and intercepts enemy caravans within reach. This is how

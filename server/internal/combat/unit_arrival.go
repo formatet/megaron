@@ -181,11 +181,14 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		return h.exploreReturned(ctx, tx, u, destQ, destR, worldID)
 	}
 
-	// Sentry intent: a ship reaches its patrol hex and HOLDS there (positioned +
+	// Patrol intent: a ship reaches its patrol hex and HOLDS there (positioned +
 	// sentry stance) rather than turning home immediately like explore — a patrol
 	// timer (ScheduledSentryReturn) turns it home later. The return leg itself
-	// reuses the explore_return machinery.
-	if u.marchIntent != nil && *u.marchIntent == "sentry" {
+	// reuses the explore_return machinery. "sentry" is the pre-rename value
+	// (megaron_plan_cli_sanning, "sentry" collided with the land stance of the
+	// same name) — still matched here so a unit already in flight when this
+	// deployed, with march_intent written under the old name, still lands.
+	if u.marchIntent != nil && (*u.marchIntent == "patrol" || *u.marchIntent == "sentry") {
 		return h.sentryArrived(ctx, tx, u, destQ, destR, worldID)
 	}
 

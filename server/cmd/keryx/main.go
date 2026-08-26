@@ -99,6 +99,7 @@ func main() {
 		tradeOfferCmd(),
 		allocateCmd(),
 		cityCmd(),
+		placementsAliasCmd(),
 		placeCmd(),
 		staffCmd(),
 		slaughterCmd(),

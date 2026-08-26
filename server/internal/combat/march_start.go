@@ -283,12 +283,25 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusBadRequest, "cannot march to own hex")
 	}
 
-	// Intent validation: colonize and explore are the only supported intents.
-	// Validate up front so the agent gets an actionable error instead of a
-	// silent return-home at arrival.
-	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "sentry" {
+	// "sentry" is a deprecated alias for "patrol" (megaron_plan_cli_sanning):
+	// the same word used to name two different orders — a land STANCE you
+	// hold (unit.StanceSentry, untouched by this rename) and this naval march
+	// INTENT, which patrols and then returns home on its own. Normalise the
+	// alias here, once, before anything below reads o.Intent, so old
+	// scripts/agents sending "sentry" keep working and every march dispatched
+	// from here on is persisted (march_intent) under the one, unambiguous
+	// name. unit_arrival.go still accepts the literal "sentry" too, for
+	// in-flight units whose march_intent was written before this change.
+	if o.Intent == "sentry" {
+		o.Intent = "patrol"
+	}
+
+	// Intent validation: colonize, explore and patrol are the only supported
+	// intents. Validate up front so the agent gets an actionable error
+	// instead of a silent return-home at arrival.
+	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "patrol" {
 		return nil, reject(http.StatusBadRequest,
-			"unknown march intent %q (must be \"colonize\", \"explore\" or \"sentry\")", o.Intent)
+			"unknown march intent %q (must be \"colonize\", \"explore\" or \"patrol\")", o.Intent)
 	}
 	// Del 2b: conquest choice. Empty defaults to "sack" (loot + raze); "annex" keeps
 	// the settlement (capital→colony takeover). Validated up front, same reasoning
@@ -344,27 +357,28 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			exploreHomeID = &nearest
 		}
 	}
-	// Sentry: a naval sea order — a ship posts on a coastal_sea hex, holds there
-	// (projecting FOW + intercepting passing enemy caravans via the sentry stance)
-	// and auto-returns home when its patrol timer fires. Like explore it needs a
-	// home port to return to; unlike explore the target must be a SEEN shallow-water
-	// hex (the FOW rule above already applies — sentry is not in the explore
-	// exemption). Land units hold position with the stance verb in place instead.
-	if o.Intent == "sentry" {
+	// Patrol: a naval sea order — a ship posts on a coastal_sea hex, holds there
+	// (projecting FOW + intercepting passing enemy caravans via the sentry stance,
+	// the physical posture — unchanged) and auto-returns home when its patrol
+	// timer fires. Like explore it needs a home port to return to; unlike
+	// explore the target must be a SEEN shallow-water hex (the FOW rule above
+	// already applies — patrol is not in the explore exemption). Land units
+	// hold position with the stance verb in place instead.
+	if o.Intent == "patrol" {
 		if unit.CategoryOf(u.Type) != unit.CategoryNaval {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"only naval units can sentry-patrol a sea hex (land units hold position with the fortify/storm/sentry stance in place)")
+				"only naval units can patrol a sea hex (land units hold position with the fortify/storm/sentry stance in place)")
 		}
 		if u.SettlementID == nil {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"sentry requires a ship currently in port at a settlement (it needs a home to return to)")
+				"patrol requires a ship currently in port at a settlement (it needs a home to return to)")
 		}
-		// Deliberately NOT "|| destTerrain == river": sentry is a sea patrol. A
+		// Deliberately NOT "|| destTerrain == river": patrol is a sea patrol. A
 		// patrol standing in a 1-hex-wide river is not a patrol — there's no
 		// water to project over (megaron_floden_plan.md §3, Timothy 2026-07-29).
 		if destTerrain != "coastal_sea" {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"sentry can only patrol shallow coastal water (coastal_sea)")
+				"patrol can only cover shallow coastal water (coastal_sea)")
 		}
 	}
 	if o.Intent == "colonize" {
@@ -598,7 +612,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			).Scan(&cargoType, &cargoSize)
 		}
 		stationTicks := 0
-		if o.Intent == "sentry" {
+		if o.Intent == "patrol" {
 			stationTicks = SentryPatrolTicks
 		}
 		ration := VoyageRation(string(u.Type), u.Size, cargoType, cargoSize)
@@ -665,7 +679,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			// (P7 fix) the nearest owned settlement when it was already field-positioned.
 			homeSettlementArg = exploreHomeID
 		}
-		if o.Intent == "sentry" {
+		if o.Intent == "patrol" {
 			// Capture the home port (about to be nulled below) so
 			// sentryArrived's patrol timer can turn the ship for home.
 			homeSettlementArg = u.SettlementID
