@@ -126,7 +126,7 @@ func recruitCmd() *cobra.Command {
 				}
 				if !resp.CompleteAt.IsZero() {
 					fmt.Printf("Ready %s — not deployable until then (`keryx unit list` shows the ETA).\n",
-						resp.CompleteAt.Local().Format("15:04 Jan 2"))
+						gameETA(c, resp.CompleteAt))
 				}
 				// Hål 3 (megaron_plan_tysta_forluster.md): the crew drawn from the
 				// settlement's population used to vanish — a new ship appeared,

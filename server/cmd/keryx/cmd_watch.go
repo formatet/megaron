@@ -122,7 +122,7 @@ func watchCatchup(c *Client, worldID string, kinds map[string]bool) error {
 			printJSONLine(n)
 			continue
 		}
-		printNotificationRow(n)
+		printNotificationRow(c, n)
 	}
 	return nil
 }
@@ -133,7 +133,7 @@ func watchCatchup(c *Client, worldID string, kinds map[string]bool) error {
 // receipt time in place of created_at/read-state, which a push message
 // doesn't carry — then shares printNotificationDetail for the actionable
 // follow-up line, so the same event reads identically in the feed and live.
-func printWatchMessage(m wsMsg) {
+func printWatchMessage(c *Client, m wsMsg) {
 	if jsonMode {
 		printJSONLine(m)
 		return
@@ -144,7 +144,7 @@ func printWatchMessage(m wsMsg) {
 		kind = m.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
 	fmt.Printf(" [%s]  %-20s  %s\n", time.Now().Format("15:04:05"), kind, string(m.Payload))
-	printNotificationDetail(n)
+	printNotificationDetail(c, n)
 }
 
 // watchOptions configures one runWatch pass over a live connection.
@@ -158,7 +158,7 @@ type watchOptions struct {
 // Returns how many messages it displayed and the read error (nil only when
 // opts.count was reached), so the caller can decide whether to reconnect and
 // how many are still owed toward the original --count.
-func runWatch(conn *websocket.Conn, opts watchOptions) (int, error) {
+func runWatch(c *Client, conn *websocket.Conn, opts watchOptions) (int, error) {
 	shown := 0
 	for {
 		_, raw, err := conn.ReadMessage()
@@ -175,7 +175,7 @@ func runWatch(conn *websocket.Conn, opts watchOptions) (int, error) {
 		if !watchAllowed(opts.kinds, m.Kind) {
 			continue
 		}
-		printWatchMessage(m)
+		printWatchMessage(c, m)
 		shown++
 		if opts.count > 0 && shown >= opts.count {
 			return shown, nil
@@ -255,7 +255,7 @@ nothing that happened before the connection opened is missed.`,
 				if count > 0 {
 					remaining = count - shownTotal
 				}
-				shown, _ := runWatch(conn, watchOptions{kinds: kinds, count: remaining})
+				shown, _ := runWatch(c, conn, watchOptions{kinds: kinds, count: remaining})
 				conn.Close()
 				shownTotal += shown
 

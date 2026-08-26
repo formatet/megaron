@@ -87,7 +87,7 @@ func notificationAge(createdAt string) string {
 	}
 }
 
-func printNotificationRow(n notificationItem) {
+func printNotificationRow(c *Client, n notificationItem) {
 	marker := " "
 	if n.ReadAt == nil {
 		marker = "*"
@@ -97,7 +97,7 @@ func printNotificationRow(n notificationItem) {
 		kind = n.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
 	fmt.Printf("%s[%s]  %-20s  %s\n", marker, notificationAge(n.CreatedAt), kind, string(n.Body))
-	printNotificationDetail(n)
+	printNotificationDetail(c, n)
 }
 
 // printNotificationDetail prints the kind-specific actionable follow-up
@@ -107,7 +107,9 @@ func printNotificationRow(n notificationItem) {
 // listing-only fields (id, created_at, read_at). Two renderers of the same
 // notification kind is exactly the fifth-copy fate megaron_plan_keryx_strom.md
 // §3 point 3 calls out — this is the single shared function both call.
-func printNotificationDetail(n notificationItem) {
+// Takes c only to hand to printExploreReturnedLine's game-day ETA (rad K) —
+// every other line below is pure formatting of the notification body.
+func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "ColonyFounded" {
 		printColonyFoundedGrainLine(n)
 	}
@@ -115,7 +117,7 @@ func printNotificationDetail(n notificationItem) {
 		printScoutReportLine(n)
 	}
 	if n.Kind == "UnitExploreReturned" {
-		printExploreReturnedLine(n)
+		printExploreReturnedLine(c, n)
 	}
 	if n.Kind == "UpkeepUnpaid" {
 		printUpkeepUnpaidLine(n)
@@ -414,7 +416,7 @@ func printScoutReportLine(n notificationItem) {
 // return leg's ETA, this only makes that legible. Mirrors web's notifText
 // 'UnitExploreReturned' case (web/static/js/megaron/ui/format.js) so both
 // surfaces say the same thing.
-func printExploreReturnedLine(n notificationItem) {
+func printExploreReturnedLine(c *Client, n notificationItem) {
 	var body struct {
 		Q         int    `json:"q"`
 		R         int    `json:"r"`
@@ -425,7 +427,7 @@ func printExploreReturnedLine(n notificationItem) {
 	}
 	eta := ""
 	if t, err := time.Parse(time.RFC3339, body.ArrivesAt); err == nil {
-		eta = ", home in " + countdown(t)
+		eta = ", home " + gameETA(c, t)
 	}
 	fmt.Printf("      scout reached (%d,%d) and turned for home%s\n", body.Q, body.R, eta)
 }
@@ -583,7 +585,7 @@ func notificationsCmd() *cobra.Command {
 			// Sparta-forensiken): a starving capital must never scroll past.
 			for _, n := range resp.Notifications {
 				if n.Kind == subsistenceWarningKind && subsistenceTier(n) == "critical" {
-					printNotificationRow(n)
+					printNotificationRow(c, n)
 				}
 			}
 
@@ -597,7 +599,7 @@ func notificationsCmd() *cobra.Command {
 				if n.Kind == subsistenceWarningKind && subsistenceTier(n) == "critical" {
 					continue // already printed at the very top
 				}
-				printNotificationRow(n)
+				printNotificationRow(c, n)
 			}
 
 			// Noisy kinds present in this response (e.g. explicit --kind

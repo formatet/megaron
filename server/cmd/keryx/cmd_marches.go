@@ -83,7 +83,7 @@ func inboxCmd() *cobra.Command {
 					if offerStatus, _ := offer["status"].(string); offerStatus == "pending" {
 						if expStr, ok := m["expires_at"].(string); ok {
 							if expT, err := time.Parse(time.RFC3339, expStr); err == nil {
-								fmt.Printf("    expires in %s (escrow refunds if left unanswered)\n", countdown(expT))
+								fmt.Printf("    expires %s (escrow refunds if left unanswered)\n", gameETA(c, expT))
 							}
 						}
 					}

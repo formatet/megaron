@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"time"
 )
@@ -64,15 +65,63 @@ func countdown(t time.Time) string {
 	return fmt.Sprintf("%dd %dh", int(remaining.Hours()/24), int(remaining.Hours())%24)
 }
 
-// arrivalETA renders a server RFC3339 arrival timestamp as a legible relative
-// countdown ("in 3h 20m") for a dispatch confirmation. Megaron measures time in
-// game-days, so a raw UTC-nanosecond timestamp is noise to a player — this is the
-// same convention the inbox/cargo/sightings views already use. Falls back to the
-// raw string if it can't be parsed, so an upstream format change degrades to the
-// old behaviour rather than dropping the ETA entirely.
-func arrivalETA(iso string) string {
-	if t, err := time.Parse(time.RFC3339, iso); err == nil {
-		return "in " + countdown(t)
+// keryxTZ is the timezone every keryx ETA's wall-clock support renders in —
+// Sweden, never the machine's local zone and never UTC (feedback_timezone:
+// a session never shows UTC). Mirrors internal/chronicle's localTZ. Falls
+// back to time.Local if tzdata is missing.
+var keryxTZ = func() *time.Location {
+	if loc, err := time.LoadLocation("Europe/Stockholm"); err == nil {
+		return loc
 	}
-	return iso
+	return time.Local
+}()
+
+// gameETA renders the time remaining until t as game-days-first — Megaron's
+// actual time unit, one tick = one game-day ("Ticket ÄR dygnet",
+// megaron_plan_ticket_ar_dygnet) — with the Europe/Stockholm wall clock as
+// secondary support in parens, e.g. "in 3 game-days (19:04 Aug 24)" (rad K,
+// megaron_plan_cli_sanning.md: a game measured in speldygn was showing raw
+// wall-clock countdowns instead). English throughout, including the unit —
+// "game-days" not "days": every call site around this reads as English
+// ("arrives", "the runner reaches it", "ready"), and at a slow tick pace
+// (e.g. 60 min/tick) a bare "in 3 days" would contradict its own wall-clock
+// parenthetical (which might say "tonight"). Naming the unit removes the
+// contradiction and teaches the tick/wall-clock exchange rate for free.
+//
+// Days are rounded UP: a Wanax plans in whole game-days, and "0 game-days
+// left" would read as "already here" when it isn't — except when it
+// genuinely IS here or past due, where "any moment" (countdown's own word
+// for the same state) is used instead of a false "days" figure.
+//
+// Degrades to the old wall-clock-relative countdown ("in 3h 20m (...)") when
+// c can't report the server's tick cadence (TickSeconds' second return is
+// false) — never drop the ETA, same discipline arrivalETA already had for an
+// unparseable timestamp.
+func gameETA(c *Client, t time.Time) string {
+	wall := t.In(keryxTZ).Format("15:04 Jan 2")
+	tickSeconds, ok := c.TickSeconds()
+	if !ok {
+		return fmt.Sprintf("in %s (%s)", countdown(t), wall)
+	}
+	days := time.Until(t).Seconds() / tickSeconds
+	if days <= 0 {
+		return fmt.Sprintf("any moment (%s)", wall)
+	}
+	whole := int(math.Ceil(days))
+	if whole == 1 {
+		return fmt.Sprintf("in 1 game-day (%s)", wall)
+	}
+	return fmt.Sprintf("in %d game-days (%s)", whole, wall)
+}
+
+// arrivalETA parses a server RFC3339 arrival timestamp and renders it via
+// gameETA. Falls back to the raw string if it can't be parsed, so an
+// upstream format change degrades to the old behaviour rather than dropping
+// the ETA entirely.
+func arrivalETA(c *Client, iso string) string {
+	t, err := time.Parse(time.RFC3339, iso)
+	if err != nil {
+		return iso
+	}
+	return gameETA(c, t)
 }

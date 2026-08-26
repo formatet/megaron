@@ -281,7 +281,7 @@ func cargoCmd() *cobra.Command {
 				etaStr := "—"
 				if arrivesStr, ok := m["arrives_at"].(string); ok {
 					if t, err := time.Parse(time.RFC3339, arrivesStr); err == nil {
-						etaStr = countdown(t)
+						etaStr = gameETA(c, t)
 					}
 				}
 				direction := "outgoing"
@@ -345,7 +345,7 @@ func giftCmd() *cobra.Command {
 				return err
 			}
 			fmt.Printf("Gift dispatched to %s: silver %.0f, grain %.0f · arrives %s\n",
-				destName, resp.SilverSent, resp.GrainSent, arrivalETA(resp.ArrivesAt))
+				destName, resp.SilverSent, resp.GrainSent, arrivalETA(c, resp.ArrivesAt))
 			if resp.LoyaltyDelta > 0 {
 				fmt.Printf("Loyalty +%d on arrival.\n", resp.LoyaltyDelta)
 			} else {

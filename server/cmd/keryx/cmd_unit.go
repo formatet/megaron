@@ -222,7 +222,7 @@ func unitListCmd() *cobra.Command {
 					name = unit.DisplayName(u.Type) + shipNameSuffix(u.Name)
 				}
 				fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
-					u.ID, name, formatSize(u), u.Status, stanceStr(u.Stance), locationStr(u))
+					u.ID, name, formatSize(c, u), u.Status, stanceStr(u.Stance), locationStr(c, u))
 			}
 			return nil
 		},
@@ -257,7 +257,7 @@ type unitRow struct {
 	CanReinforce    bool       `json:"can_reinforce"`
 }
 
-func formatSize(u unitRow) string {
+func formatSize(c *Client, u unitRow) string {
 	// The host is a size-1 map token; the people it represents live in
 	// founder_phase.population, never in units.size — "1 men" would be a lie
 	// (4.5 displayfällan). The real numbers live in `keryx founding status`.
@@ -271,7 +271,7 @@ func formatSize(u unitRow) string {
 			// overhaul 2026-07-09) — not size-based like land, so show the ETA.
 			eta := "unknown"
 			if u.BuildCompleteAt != nil {
-				eta = u.BuildCompleteAt.Local().Format("15:04 Jan 2")
+				eta = gameETA(c, *u.BuildCompleteAt)
 			}
 			return fmt.Sprintf("building (crew %d) — ready %s", u.Crew, eta)
 		}
@@ -283,7 +283,7 @@ func formatSize(u unitRow) string {
 		// Land: full at 100, maturing to a deployable garrison at the ready ETA.
 		eta := "unknown"
 		if u.BuildCompleteAt != nil {
-			eta = u.BuildCompleteAt.Local().Format("15:04 Jan 2")
+			eta = gameETA(c, *u.BuildCompleteAt)
 		}
 		return fmt.Sprintf("100/100 (training — ready %s)", eta)
 	}
@@ -335,7 +335,7 @@ func stanceStr(s *string) string {
 	return *s
 }
 
-func locationStr(u unitRow) string {
+func locationStr(c *Client, u unitRow) string {
 	switch u.Status {
 	case "marching":
 		loc := ""
@@ -360,7 +360,7 @@ func locationStr(u unitRow) string {
 			loc += fmt.Sprintf("(%d,%d)", *u.TargetQ, *u.TargetR)
 		}
 		if u.ArrivesAt != nil {
-			loc += " ETA " + u.ArrivesAt.Local().Format("15:04 Jan 2")
+			loc += " ETA " + gameETA(c, *u.ArrivesAt)
 		}
 		return loc
 	case "embarked":
@@ -537,7 +537,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				fmt.Printf("A Runner carries your march order to unit %s — target (%d,%d)", unitID[:8], targetQ, targetR)
 				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-						fmt.Printf("; the runner reaches it %s", t.Local().Format("15:04 Jan 2"))
+						fmt.Printf("; the runner reaches it %s", gameETA(c, t))
 					}
 				}
 				fmt.Println(" — the march begins on delivery.")
@@ -553,7 +553,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			fmt.Printf("Unit %s %s (%d,%d)", unitID[:8], verb, targetQ, targetR)
 			if arrivesAt != "" {
 				if t, err := time.Parse(time.RFC3339, arrivesAt); err == nil {
-					fmt.Printf(" — arrives %s", t.Local().Format("15:04 Jan 2"))
+					fmt.Printf(" — arrives %s", gameETA(c, t))
 				}
 			}
 			if intent == "explore" {
@@ -859,7 +859,7 @@ course until the runner physically catches up with it, then turns for home
 			fmt.Printf("Recall order sent to unit %s", unitID[:8])
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-					fmt.Printf(" — Runner arrives %s", t.Local().Format("15:04 Jan 2"))
+					fmt.Printf(" — Runner arrives %s", gameETA(c, t))
 				}
 			}
 			fmt.Println("; the unit turns home once it catches up.")
@@ -913,7 +913,7 @@ the order's Runner physically catches up with it, then turns onto the new course
 			fmt.Printf("Redirect order sent to unit %s (new course %d,%d)", unitID[:8], newQ, newR)
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-					fmt.Printf(" — Runner arrives %s", t.Local().Format("15:04 Jan 2"))
+					fmt.Printf(" — Runner arrives %s", gameETA(c, t))
 				}
 			}
 			fmt.Println(".")
@@ -967,7 +967,7 @@ repair completes and its hull returns to full.`,
 			fmt.Printf("Repair started on unit %s (hull %d→%d), costing %.1f %s over %d ticks",
 				unitID[:8], resp.HullBefore, resp.HullTarget, resp.Amount, resp.Good, resp.DurationTicks)
 			if t, err := time.Parse(time.RFC3339, resp.CompleteAt); err == nil {
-				fmt.Printf(" — ready %s", t.Local().Format("15:04 Jan 2"))
+				fmt.Printf(" — ready %s", gameETA(c, t))
 			}
 			fmt.Println(".")
 			return nil
@@ -1116,7 +1116,7 @@ func unitStanceCmd() *cobra.Command {
 				fmt.Printf("A Runner carries your stance order (%s) to unit %s", stance, unitID[:8])
 				if courierAt, _ := stanceResp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-						fmt.Printf("; the runner reaches it %s", t.Local().Format("15:04 Jan 2"))
+						fmt.Printf("; the runner reaches it %s", gameETA(c, t))
 					}
 				}
 				fmt.Println(" — it applies on delivery.")
@@ -1192,7 +1192,7 @@ func unitStandingOrdersCmd() *cobra.Command {
 				fmt.Printf("A Runner carries your retreat order to unit %s", unitID[:8])
 				if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-						fmt.Printf("; the runner reaches it %s", t.Local().Format("15:04 Jan 2"))
+						fmt.Printf("; the runner reaches it %s", gameETA(c, t))
 					}
 				}
 				fmt.Println(" — it applies on delivery.")

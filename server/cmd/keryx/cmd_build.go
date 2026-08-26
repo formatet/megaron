@@ -205,7 +205,7 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 		t, _ := m["type"].(string)
 		id, _ := m["id"].(string)
 		ca, _ := m["complete_at"].(string)
-		fmt.Printf("%-14s  %-38s  %s\n", t, id, buildQueueETA(ca))
+		fmt.Printf("%-14s  %-38s  %s\n", t, id, buildQueueETA(c, ca))
 	}
 	return nil
 }

@@ -119,12 +119,12 @@ func localDone(iso string) string {
 // entry) hasn't fired. Show "finishing…" rather than a past timestamp that reads
 // as done, so `staff foundry` answering "no such building" moments after the
 // build no longer surprises. Once the event fires the entry is gone from the queue.
-func buildQueueETA(iso string) string {
+func buildQueueETA(c *Client, iso string) string {
 	if t, err := time.Parse(time.RFC3339, iso); err == nil {
 		if !t.After(time.Now()) {
 			return "finishing…"
 		}
-		return t.Local().Format("15:04 Jan 2")
+		return gameETA(c, t)
 	}
 	return iso
 }
@@ -719,7 +719,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					m, _ := it.(map[string]any)
 					t, _ := m["type"].(string)
 					ca, _ := m["complete_at"].(string)
-					fmt.Printf("  %-12s %s\n", t, buildQueueETA(ca))
+					fmt.Printf("  %-12s %s\n", t, buildQueueETA(c, ca))
 				}
 			}
 
@@ -736,7 +736,10 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					name := unit.DisplayName(u)
 					ready := ""
 					if ra, ok := m["ready_at"].(string); ok && ra != "" {
-						ready = " — klar " + localDone(ra)
+						// arrivalETA (game-days-first), not localDone — this is an
+						// ETA, not history like the loyalty log below. English,
+						// matching every other ETA surface in keryx (rad K).
+						ready = " — ready " + arrivalETA(c, ra)
 					}
 					switch {
 					case cat == "naval":
