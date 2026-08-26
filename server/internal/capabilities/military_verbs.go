@@ -39,11 +39,11 @@ func canMarch(cc checkContext) Verb {
 
 // canPost — den framskjutna posten som egen, namngiven yta. Mekaniskt är den
 // `march` med stance sentry (keryx unit post är en tunn wrapper, precis som
-// unit sentry är över --intent sentry för skepp), och den listas ändå för sig:
+// unit patrol är över --intent patrol för skepp), och den listas ändå för sig:
 // vägen har funnits sedan sentry byggdes och ingenting pekade någonsin på den,
 // vilket är hela roten under att utforskning aldrig blev en front.
 //
-// Kravet är LAND, inte bara "en enhet": ett skepp postas med `unit sentry` och
+// Kravet är LAND, inte bara "en enhet": ett skepp postas med `unit patrol` och
 // har en patrulltimer som tar det hem igen — en helt annan order.
 func canPost(cc checkContext) Verb {
 	n := cc.deployableLandUnits()
@@ -56,7 +56,7 @@ func canPost(cc checkContext) Verb {
 		[]Requirement{
 			req("a garrisoned land unit here", ok,
 				fmt.Sprintf("%d deployable land unit(s) here", n),
-				"recruit a land unit here first — a ship is posted with `unit sentry` instead, "+
+				"recruit a land unit here first — a ship is posted with `unit patrol` instead, "+
 					"which patrols and sails home on its own"),
 		})
 }

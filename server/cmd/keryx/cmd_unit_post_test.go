@@ -5,11 +5,15 @@ import (
 	"testing"
 )
 
-// `unit watch` och `unit sentry` är TVÅ ORDER, inte två namn på samma sak, och
+// `unit post` och `unit patrol` är TVÅ ORDER, inte två namn på samma sak, och
 // den enda skillnaden i anropet är ett fältnamn:
 //
-//	sentry (sjö):  {"intent": "sentry"}  → seglar, patrullerar, vänder HEM själv
-//	watch  (land): {"stance": "sentry"}  → marscherar och STÅR KVAR
+//	patrol (sjö):  {"intent": "patrol"}  → seglar, patrullerar, vänder HEM själv
+//	post   (land): {"stance": "sentry"}  → marscherar och STÅR KVAR
+//
+// ("patrol" hette "sentry" fram till 2026-08-26 — samma ord som land-hållningen
+// ovan, två olika order, se megaron_plan_cli_sanning. "sentry" lever kvar som
+// dold alias för `unit patrol`.)
 //
 // Blandar man ihop dem får spelaren tillbaka precis det beteende hela raden
 // existerar för att komma ifrån: en enhet som åker ut och kommer hem igen.
@@ -34,7 +38,7 @@ func TestUnitPost_SendsStanceNotIntent(t *testing.T) {
 	// priset genom svält).
 	long := strings.ToLower(cmd.Long)
 	if !strings.Contains(long, "stays") && !strings.Contains(long, "no auto-return") {
-		t.Error("Long säger inte att enheten står kvar — det är hela skillnaden mot 'unit sentry'")
+		t.Error("Long säger inte att enheten står kvar — det är hela skillnaden mot 'unit patrol'")
 	}
 	if !strings.Contains(long, "double") {
 		t.Error("Long nämner inte att fältransonen är dubbel; priset ska stå i hjälpen, inte upptäckas genom svält")

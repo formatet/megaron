@@ -53,3 +53,16 @@ func recallAliasCmd() *cobra.Command {
 	c.Short = "Recall a marching unit — turn it home (alias for `unit recall`)"
 	return c
 }
+
+// placementsAliasCmd is `placements` — an alias for `city`. The verbs that
+// actually change placements are named `place`/`staff`, so an agent that
+// wants to SEE them reasonably guesses the plural noun rather than either
+// verb (megaron_plan_cli_sanning). cityCmd's Use is already "city [stad]", so
+// this only needs a distinct Use/Short; the rest (Long, Example, RunE)
+// carries over unchanged.
+func placementsAliasCmd() *cobra.Command {
+	c := cityCmd()
+	c.Use = "placements [stad]"
+	c.Short = "Show a settlement's catchment hexes, building slots and idle pool (alias for `city`)"
+	return c
+}

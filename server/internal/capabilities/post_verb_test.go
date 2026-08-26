@@ -45,7 +45,7 @@ func TestStancePurpose_SaysWhatSentryDoes(t *testing.T) {
 	}
 }
 
-// Ett skepp postas med `unit sentry` (patrulltimer, seglar hem själv), en
+// Ett skepp postas med `unit patrol` (patrulltimer, seglar hem själv), en
 // landenhet med `watch` (står kvar). Kravet måste därför vara LAND — annars
 // erbjuds watch till en spelare vars enda enhet är en galär, och hen får en
 // helt annan order än ytan lovade.
@@ -73,10 +73,10 @@ func TestPostVerb_IsGatedOnLandNotJustAnyUnit(t *testing.T) {
 		}
 		req := v.Requirements[0]
 		if !strings.Contains(strings.ToLower(req.Text), "land") {
-			t.Errorf("postens krav lyder %q — det måste säga LAND, ett skepp postas med `unit sentry`", req.Text)
+			t.Errorf("postens krav lyder %q — det måste säga LAND, ett skepp postas med `unit patrol`", req.Text)
 		}
-		if !strings.Contains(strings.ToLower(req.Hint), "sentry") {
-			t.Error("postens hint pekar inte den som bara har skepp mot `unit sentry`")
+		if !strings.Contains(strings.ToLower(req.Hint), "patrol") {
+			t.Error("postens hint pekar inte den som bara har skepp mot `unit patrol`")
 		}
 		if !strings.Contains(strings.ToLower(v.Purpose), "double") {
 			t.Error("postens purpose nämner inte den dubbla fältransonen — en stående " +
