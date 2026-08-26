@@ -22,6 +22,7 @@ var checkers = []func(checkContext) Verb{
 	canAbandon,
 	// military
 	canMarch,
+	canWatch,
 	canRecall,
 	canRedirect,
 	canStance,

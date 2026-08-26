@@ -23,6 +23,7 @@ func unitCmd() *cobra.Command {
 		unitListCmd(),
 		unitMarchCmd(),
 		unitSentryCmd(),
+		unitWatchCmd(),
 		unitRecallCmd(),
 		unitRedirectCmd(),
 		unitStanceCmd(),
@@ -85,6 +86,95 @@ its own when the patrol timer runs out.`,
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("q")
 	_ = cmd.MarkFlagRequired("r")
+	return cmd
+}
+
+// ---- unit watch --------------------------------------------------------------
+
+// unitWatchCmd posts a LAND unit as a forward watch: it marches to the hex and
+// stands there indefinitely. Thin convenience over `unit march --stance sentry`,
+// the same shape unitSentryCmd is over `unit march --intent sentry` for ships.
+//
+// Why it exists (megaron_todo.md, discovery-legibiliteten): the forward post has
+// worked since sentry was built, and nothing ever pointed at it. Every surface
+// that mentioned unseen land named `explore` — the ONE intent that turns around
+// and comes home (unit_arrival.go:171) — so scouting never accumulated into a
+// front. Measured over two runs: no scout got further than ~6 hexes from home,
+// and nobody found a neighbour.
+//
+// The two are genuinely different orders and must not be conflated:
+//   - `unit sentry` (naval, --intent sentry): sails, holds, and turns for home
+//     by itself when the patrol timer runs out. Self-terminating.
+//   - `unit watch` (land, --stance sentry): marches, and STAYS. No timer, no
+//     auto-return; it holds until you march or recall it.
+//
+// Vision is not what sentry buys. Any unit standing on the map is a tier-1 eye
+// (province.LoadLiveEyes reads status/position and never reads stance) — a plain
+// march already sees. Sentry adds the watch: it detects passing enemies and
+// intercepts caravans within reach (combat/march_start.go:348).
+//
+// ⚠️ A watch is NOT cheap: a land unit in the field pays DOUBLE grain
+// (combat/upkeep.go upkeepFieldGrainFactor = 2.0, applied to marching/positioned/
+// embarked), and there is no foraging to offset it. That is a real strategic
+// cost, and the help text says so rather than letting the player discover it by
+// starving.
+func unitWatchCmd() *cobra.Command {
+	var unitID string
+	var q, r int
+	var target string
+	cmd := &cobra.Command{
+		Use:   "watch",
+		Short: "March a land unit to a hex and hold it there as a forward watch (no auto-return)",
+		Long: `Send a land unit to a hex you have seen and post it there on watch. It marches,
+arrives, and STAYS — there is no patrol timer and no auto-return, unlike a ship's
+'unit sentry'. It holds until you march or recall it.
+
+A posted watch extends your fog-of-war from where it stands, spots foreign
+marches passing nearby, and intercepts enemy caravans within reach. This is how
+scouting accumulates into a front instead of a round trip: 'march --intent
+explore' reveals a target and then brings the unit straight home again.
+
+Cost: a unit in the field eats DOUBLE the grain it would in garrison, for as
+long as it stands out there. A watch is a standing expense, not a free eye.`,
+		Example: `  keryx unit watch --unit <id> --q 8 --r -3
+  keryx unit watch --unit <id> --target 8,-3`,
+		Args: rejectPositionalArgs("unit"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			// Samma delade parser som march och redirect (rad I, cli_sanning) —
+			// en tredje egen målform vore precis den drift den raden städade bort.
+			tq, tr, given, terr := resolveTargetHex(cmd, target, q, r)
+			if terr != nil {
+				return terr
+			}
+			if !given {
+				return fmt.Errorf("give the hex to watch: --q/--r or --target q,r")
+			}
+			q, r = tq, tr
+			c := newClient(cfg)
+			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
+			if rerr != nil {
+				return rerr
+			}
+			unitID = resolvedID
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
+			data, err := c.post(path, map[string]any{"q": q, "r": r, "stance": "sentry"})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			fmt.Printf("Watch order dispatched: %s → (%d,%d). It will hold there until you march or recall it.\n", unitID, q, r)
+			fmt.Println("It eats double rations in the field.")
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit id (required)")
+	cmd.Flags().IntVar(&q, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map'")
+	cmd.Flags().IntVar(&r, "r", 0, "target hex R — axial coordinate, read it off 'keryx map'")
+	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
+	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }
 
