@@ -226,6 +226,48 @@ func TestArmyUpkeepWarning(t *testing.T) {
 	}
 }
 
+// TestSitosGranaryState reproduces §5 of megaron_plan_sitos_utlosning.md: the
+// granary's state text (printed under the "Sitos-magasinet" line in `status`)
+// was inline in statusCmd's RunE, reachable only through a live server round
+// trip. sitosGranaryState pulls out the pure decision — three coverage bands
+// relative to the SAME cfg.LowDays/HighDays thresholds economy.
+// EvaluateGranaryAction uses — so the three bands are unit-testable without a
+// DB or HTTP server.
+func TestSitosGranaryState(t *testing.T) {
+	const low, high = 10.0, 30.0
+
+	tests := []struct {
+		name                 string
+		coverage, total, net float64
+		want                 string
+	}{
+		{
+			name:     "under LowDays, not empty — releasing to the city",
+			coverage: 5, total: 500, net: -3,
+			want: "släpper mat till staden",
+		},
+		{
+			name:     "between LowDays and HighDays — resting",
+			coverage: 20, total: 500, net: 1,
+			want: "vilar — varken undan eller ut",
+		},
+		{
+			name:     "over HighDays — tithing the surplus",
+			coverage: 40, total: 500, net: 1,
+			want: "lägger undan ett tionde av överskottet",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := sitosGranaryState(tt.coverage, low, high, tt.total, tt.net)
+			if got != tt.want {
+				t.Errorf("sitosGranaryState(%v, %v, %v, %v, %v) = %q, want %q",
+					tt.coverage, low, high, tt.total, tt.net, got, tt.want)
+			}
+		})
+	}
+}
+
 func strp(s string) *string { return &s }
 
 // TestCohortLines reproduces the A16 gap: `status` printed one aggregate

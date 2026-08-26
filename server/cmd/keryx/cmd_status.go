@@ -178,6 +178,31 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 	return ""
 }
 
+// sitosGranaryState names why the granary is doing what it's doing this tick
+// (megaron_plan_sitos_utlosning.md §5) — coverage, low and high are the same
+// figures `status` already reads off the settlement payload (server-computed
+// via economy.CoverageDays/GranaryCap/cfg.LowDays/cfg.HighDays; nothing here
+// re-derives a threshold). total is the granary's current stock, net the
+// city's food_net_per_tick — needed only to tell an empty-but-filling granary
+// apart from an empty-and-draining one; coverage alone is a stock figure and
+// says nothing about direction (a newly founded city sits near zero coverage
+// while producing a large surplus, and at 60 min/tick that state lasts real
+// days). Pure — unit-testable without a server.
+func sitosGranaryState(coverage, low, high, total, net float64) string {
+	switch {
+	case coverage < low && total <= 0 && net > 0:
+		return "tomt — men lagret växer, täckningen stiger"
+	case coverage < low && total <= 0:
+		return "TOMT och lagret krymper — staden är utan skydd"
+	case coverage < low:
+		return "släpper mat till staden"
+	case coverage <= high:
+		return "vilar — varken undan eller ut"
+	default:
+		return "lägger undan ett tionde av överskottet"
+	}
+}
+
 // multiCityHint (legibility fix, 2026-07-24 — three separate soak rounds):
 // `status` shows exactly ONE settlement — the capital by default, or whichever
 // `--province <id>` names — and that scope was invisible. It was repeatedly
@@ -359,17 +384,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// so "empty, no help coming" would cry famine over a city that is
 				// filling up fast. The net food rate is what tells them apart.
 				net, _ := sitos["food_net_per_tick"].(float64)
-				state := "lägger undan ett tionde av överskottet"
-				switch {
-				case cov < low && total <= 0 && net > 0:
-					state = "tomt — men lagret växer, täckningen stiger"
-				case cov < low && total <= 0:
-					state = "TOMT och lagret krymper — staden är utan skydd"
-				case cov < low:
-					state = "släpper mat till staden"
-				case cov <= high:
-					state = "vilar — varken undan eller ut"
-				}
+				state := sitosGranaryState(cov, low, high, total, net)
 				fmt.Printf("Sitos-magasinet: %s undan%s / tak %s · täckning %.1f tick (magasinet fyller över %.0f, tömmer under %.0f) · %s\n\n",
 					resource(total), parts, resource(gcap), cov, high, low, state)
 			}
