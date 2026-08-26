@@ -189,10 +189,10 @@ func TestSiege_LandChokepointDeniesHexBehindIt_AndProductionDrops(t *testing.T) 
 	seedTile(t, worldID, 2, -1, "mountain_limestone")
 
 	// One gubbe farming (2,0) — well within hills' grain cap (1 without a
-	// farm, megaron_plan_grain_cap.md), so its whole contribution shows up
-	// directly in the settled rate once nearjord's flat 50/tick already
-	// covers the population's own demand (pop 100 × 0.5/tick = 50 demand —
-	// see GrainConsumptionPerTick).
+	// farm, megaron_plan_grain_cap.md), so its whole contribution is additive
+	// on top of nearjord's flat trickle (P1) in the settled RAW rate
+	// (Utfodringsordningen D1, 2026-08-26 — grain's rate no longer nets
+	// against the population's demand at all).
 	placeGubbe(t, settlementID, 1, 2, 0, GoodGrain)
 
 	// ── No enemy: full access, hex behind the corridor contributes. ────────
@@ -203,8 +203,8 @@ func TestSiege_LandChokepointDeniesHexBehindIt_AndProductionDrops(t *testing.T) 
 		t.Fatalf("besieged = true with no enemy nearby, want false")
 	}
 	rateBefore := readGrainRate(t, settlementID)
-	if rateBefore <= 0 {
-		t.Fatalf("grain rate = %v with no enemy, want > 0 (nearjord matches demand exactly — the placed gubbe on (2,0) is what must push it positive)", rateBefore)
+	if rateBefore <= NearjordGrainPerTick {
+		t.Fatalf("grain rate = %v with no enemy, want > nearjord alone (%v) — the placed gubbe on (2,0) is what must push it above the flat trickle", rateBefore, NearjordGrainPerTick)
 	}
 
 	// ── Enemy sits on the CORRIDOR (1,0), not on the target hex (2,0). ─────
@@ -227,8 +227,8 @@ func TestSiege_LandChokepointDeniesHexBehindIt_AndProductionDrops(t *testing.T) 
 	if rateBesieged >= rateBefore {
 		t.Fatalf("grain rate = %v while besieged, want it to fall below the unbesieged rate %v — the corridor hex being enemy-held must cut off (2,0) even though the enemy never stood ON (2,0)", rateBesieged, rateBefore)
 	}
-	if rateBesieged > 1e-9 {
-		t.Errorf("grain rate = %v while besieged, want ~0 (nearjord exactly covers demand; the placed gubbe's whole contribution should be denied)", rateBesieged)
+	if rateBesieged != NearjordGrainPerTick {
+		t.Errorf("grain rate = %v while besieged, want exactly the flat nearjord trickle (%v) — the placed gubbe's whole contribution should be denied, leaving only the unconditional floor", rateBesieged, NearjordGrainPerTick)
 	}
 
 	// Sanity: the fixture itself is a real chokepoint, not an accident of

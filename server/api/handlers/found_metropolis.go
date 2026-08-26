@@ -434,15 +434,23 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The real opening grain balance, read back inside the TX: RecomputeProduction
-	// already wrote the net rate, and the host's carried grain is poured in — this
-	// is what the notice reports, never a re-derivation. (Same pattern as
-	// ColonyFounded, internal/combat/unit_arrival.go.)
-	var grainAmount, grainNet float64
+	// already wrote the (raw, since Utfodringsordningen D1 — grain's rate no
+	// longer has the population's consumption folded in) production rate, and
+	// the host's carried grain is poured in — this is what the notice reports,
+	// never a re-derivation. (Same pattern as ColonyFounded,
+	// internal/combat/unit_arrival.go.) economy.GrainBalance (D6) turns the raw
+	// rate back into a net figure for the notice — reading `rate` straight as
+	// "net" would report the metropolis's gross production and never warn of a
+	// deficit, since D1 means this rate can no longer go negative on its own.
+	var grainAmount, grainRate float64
+	var openingPopulation int
 	_ = tx.QueryRow(r.Context(),
-		`SELECT amount, rate FROM settlement_goods
-		 WHERE settlement_id = $1 AND good_key = 'grain'`,
+		`SELECT sg.amount, sg.rate, s.population
+		 FROM settlement_goods sg JOIN settlements s ON s.id = sg.settlement_id
+		 WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'`,
 		founded.SettlementID,
-	).Scan(&grainAmount, &grainNet)
+	).Scan(&grainAmount, &grainRate, &openingPopulation)
+	_, grainNet := economy.GrainBalance(grainRate, openingPopulation)
 
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")

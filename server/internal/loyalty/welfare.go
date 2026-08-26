@@ -81,6 +81,7 @@ type welfareRow struct {
 	kharis       float64
 	grainStock   float64
 	grainRate    float64
+	population   int
 	foodVariety  int
 }
 
@@ -95,6 +96,7 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) AS grain_stock,
 		    COALESCE((SELECT sg.rate FROM settlement_goods sg
 		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) AS grain_rate,
+		    s.population,
 		    (SELECT COUNT(*) FROM settlement_goods sg
 		     WHERE sg.settlement_id = s.id
 		       AND sg.good_key = ANY($2)
@@ -120,7 +122,7 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	var due []welfareRow
 	for rows.Next() {
 		var w welfareRow
-		if err := rows.Scan(&w.settlementID, &w.kharis, &w.grainStock, &w.grainRate, &w.foodVariety); err == nil {
+		if err := rows.Scan(&w.settlementID, &w.kharis, &w.grainStock, &w.grainRate, &w.population, &w.foodVariety); err == nil {
 			due = append(due, w)
 		}
 	}
@@ -145,11 +147,19 @@ func (h *WelfareHandler) applyWelfare(ctx context.Context, w welfareRow, worldID
 	// (grain-cap-pegging borttagen) så en självförsörjande stad håller bara
 	// ~1 ticks buffert — DÄRFÖR duger inte en fast dygns-ankrad stock-tröskel;
 	// den kallade friska huvudstäder "svält". Rätt diskriminator är
-	// grain-NETTOT: rate ≥ 0 (självförsörjande/överskott) = mätt; rate < 0 eller
-	// tomt/negativt lager (redan i underskott) = svält. Verifierat mot rådata
-	// (c3c289e5 2026-07-11): friska huvudstäder rate +300…+2300, svältande −6…−15.
+	// grain-NETTOT: netto ≥ 0 (självförsörjande/överskott) = mätt; netto < 0
+	// eller tomt lager (redan i underskott) = svält.
+	//
+	// Utfodringsordningen D6 (megaron_plan_utfodringsordningen.md, 2026-08-26):
+	// w.grainRate is RAW production since D1 (RecomputeProduction no longer
+	// nets it against consumption) — economy.GrainBalance is the single shared
+	// place that turns a gross rate + population back into netto, so this stays
+	// the same discriminator it always was (verified against raw data,
+	// c3c289e5 2026-07-11: healthy capitals netto +300…+2300, starving −6…−15)
+	// instead of silently comparing a now-gross rate against 0.
 	kharisGood := w.kharis >= kharisBlessThresholdRef
-	starving := w.grainStock <= 0 || w.grainRate < 0
+	_, grainNet := economy.GrainBalance(w.grainRate, w.population)
+	starving := w.grainStock <= 0 || grainNet < 0
 	fed := !starving
 	varied := w.foodVariety >= varietyThreshold
 

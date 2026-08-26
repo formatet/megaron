@@ -11,10 +11,17 @@ package economy
 // weight. KEEP IN SYNC with the 0.85 literal in unit_arrival.go.
 const FoundingGrainLaborWeight = 0.85
 
-// FoundingGrainNetPerTick mirrors RecomputeProduction's food-invariant math
-// (grain first, fish for the remainder — FoodConsumptionSplit) for a hex that
-// has NOT been settled yet, so the colonize/settle preview can forecast the
-// real net grain rate a founding would get. buildingFreeBase and withFarmBase
+// FoundingGrainNetPerTick forecasts the food invariant (grain first, fish for
+// the remainder — FoodConsumptionSplit) for a hex that has NOT been settled
+// yet, so the colonize/settle preview can forecast the real net grain rate a
+// founding would get. Since Utfodringsordningen D1
+// (megaron_plan_utfodringsordningen.md, 2026-08-26) the engine itself no
+// longer runs this math in RecomputeProduction — the population's actual
+// daily meal is FoodTick's job (food_tick.go), against STOCK, once the
+// settlement exists. This forecast is the one deliberate exception: there is
+// no settlement, and so no stock, yet to draw down — see FoodConsumptionSplit's
+// own doc comment (recompute.go) for why it stays a prognosis-only caller.
+// buildingFreeBase and withFarmBase
 // are the catchment grain base_potential without/with a farm (from
 // CatchmentBasePotentialAt). fishBase is the catchment's fish base_potential
 // (same source, fish is never building-gated for this purpose — every fish

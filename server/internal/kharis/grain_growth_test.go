@@ -168,7 +168,13 @@ var advanceOneDayEventID int64
 
 // advanceOneDay simulates one tick (a game-day) passing: bumps
 // worlds.current_tick by 1 (so settled() sees the elapsed production/decay),
-// then runs the same decay step the real KharisTick handler runs.
+// then runs Föda (FoodTick, priority 55) followed by the same decay step the
+// real KharisTick handler runs (Tillväxt, priority 60) — the real tick order
+// (megaron_tickordning.md, Utfodringsordningen D2). Since D1 the population's
+// consumption is no longer folded into grain's rate by RecomputeProduction —
+// skipping FoodTick here would let grain accumulate its raw production
+// forever with nothing ever eating it, which made every self-sufficiency/
+// starvation assertion in this file vacuously true instead of proven.
 func advanceOneDay(t *testing.T, h *TickHandler, pool *pgxpool.Pool, worldID uuid.UUID) {
 	t.Helper()
 	ctx := context.Background()
@@ -178,14 +184,27 @@ func advanceOneDay(t *testing.T, h *TickHandler, pool *pgxpool.Pool, worldID uui
 	); err != nil {
 		t.Fatalf("advance tick: %v", err)
 	}
-	eventID := atomic.AddInt64(&advanceOneDayEventID, 1)
-	h.applyDecay(ctx, worldID, eventID)
+
+	foodEventID := atomic.AddInt64(&advanceOneDayEventID, 1)
+	foodH := newTestFoodTickHandler(pool)
+	if err := foodH.Handle(ctx, events.ScheduledEvent{ID: foodEventID, WorldID: worldID, DueTick: 0}); err != nil {
+		t.Fatalf("food tick: %v", err)
+	}
+
+	kharisEventID := atomic.AddInt64(&advanceOneDayEventID, 1)
+	h.applyDecay(ctx, worldID, kharisEventID)
 }
 
 func newTestTickHandler(pool *pgxpool.Pool) *TickHandler {
 	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
 	store := events.NewStore(pool)
 	return NewTickHandler(pool, sched, store, nil)
+}
+
+func newTestFoodTickHandler(pool *pgxpool.Pool) *economy.FoodTickHandler {
+	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
+	store := events.NewStore(pool)
+	return economy.NewFoodTickHandler(pool, sched, store, nil)
 }
 
 // TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient is the hard
@@ -297,14 +316,29 @@ func rawGrainRow(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (amou
 	return amount, rate
 }
 
-// expectedDayResult mirrors tick.go's applyDecay formula exactly (decay ×0.99,
-// then desired-growth pricing against grainPerCitizen, throttled by
-// affordability) so the test can cross-check the SQL's actual output against
-// an independent Go computation — a rigorous proof of the atomicity/
-// consistency guarantee (pop-added always equals grain-drawn/grainPerCitizen)
-// rather than a heuristic bound.
+// expectedDayResult mirrors ONE simulated day exactly — FoodTick's stock debit
+// (Utfodringsordningen D2/D3, runs first, priority 55) then tick.go's
+// applyDecay (decay ×0.99, then desired-growth pricing against
+// grainPerCitizen, throttled by affordability) — so the test can cross-check
+// the SQL's actual output against an independent Go computation: a rigorous
+// proof of the atomicity/consistency guarantee (pop-added always equals
+// grain-drawn/grainPerCitizen) rather than a heuristic bound.
 func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, newGrain float64) {
-	grainNow := (prevAmount + prevRate) * 0.99
+	rawGrainNow := prevAmount + prevRate // one tick elapsed since prev calc_tick
+
+	// FoodTick debits today's demand from stock before Kharis ever runs —
+	// grain first, no fish/livestock in these fixtures, so postFood < 0 IS
+	// exactly settlements.food_unmet_amount > 0 (D4): the population went
+	// hungry today, and growth takes the starvation branch below regardless
+	// of what decay does to the stock afterward.
+	demand := economy.GrainConsumptionPerTick(prevPop)
+	postFood := rawGrainNow - demand
+	growing := postFood >= 0
+	if postFood < 0 {
+		postFood = 0
+	}
+
+	grainNow := postFood * 0.99
 	if grainNow < 0 {
 		grainNow = 0
 	}
@@ -319,13 +353,13 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 		desiredNew = 1
 	}
 
-	if grainNow <= 0 {
-		// starvation path — not exercised by these fixtures (grain stays positive).
+	if !growing {
+		// starvation path — not exercised by these fixtures (food stays covered).
 		p := int(float64(prevPop)*0.995 + 0.5)
 		if p < 101 {
 			p = 101
 		}
-		return p, prevAmount // grain untouched on starvation path
+		return p, grainNow // grain untouched past FoodTick+decay on the starvation path
 	}
 
 	// Growth spends only what stands above growthGrainReserve — mirrors the

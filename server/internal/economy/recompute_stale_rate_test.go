@@ -105,11 +105,13 @@ func TestRecomputeProduction_NullsStaleGoodKeepsLiveGood(t *testing.T) {
 	}
 
 	// AK4 (also true in this fixture): mountain_limestone has no grain rule,
-	// so a populated settlement must still carry a negative grain
-	// consumption rate — not zeroed by the new stale-nulling step.
+	// so grain's only source is the flat nearjord trickle (P1) — since D1
+	// (Utfodringsordningen) that RAW rate is what settlement_goods carries,
+	// un-netted against consumption, and it must survive the stale-nulling
+	// step exactly like stone did.
 	_, grainRate := readGood(t, settlementID, "grain")
-	if grainRate >= 0 {
-		t.Errorf("grain consumption rate must stay negative for a non-farming city, got %.4f", grainRate)
+	if grainRate != NearjordGrainPerTick {
+		t.Errorf("grain rate for a non-farming city must equal the flat nearjord trickle (%.4f), got %.4f", NearjordGrainPerTick, grainRate)
 	}
 }
 
@@ -166,10 +168,11 @@ func TestRecomputeProduction_NullsAllRatesWhenSettlementHasNoProducibleGoods(t *
 	}
 
 	// AK4: a populated settlement with literally no catchment tiles still
-	// eats — grain's negative consumption rate must survive the same call
-	// that zeroed cedar and stone.
+	// carries grain's flat nearjord trickle (P1, unconditional — added outside
+	// the catchment/potentials set) — since D1 that RAW rate must survive the
+	// same call that zeroed cedar and stone, exactly like the sibling test.
 	_, grainRate := readGood(t, settlementID, "grain")
-	if grainRate >= 0 {
-		t.Errorf("grain consumption rate must stay negative even with zero producible goods, got %.4f", grainRate)
+	if grainRate != NearjordGrainPerTick {
+		t.Errorf("grain rate with zero producible goods must equal the flat nearjord trickle (%.4f), got %.4f", NearjordGrainPerTick, grainRate)
 	}
 }

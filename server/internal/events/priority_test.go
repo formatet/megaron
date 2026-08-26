@@ -86,11 +86,20 @@ func TestEveryScheduledTypeHasAPriority(t *testing.T) {
 func TestObligationsRunBeforeGrowth(t *testing.T) {
 	reserve := TickPriority(ScheduledSitosTick)
 	upkeep := TickPriority(ScheduledUpkeepTick)
+	food := TickPriority(ScheduledFoodTick)
 	growth := TickPriority(ScheduledKharisTick)
 
 	if !(reserve < upkeep && upkeep < growth) {
 		t.Fatalf("the day's economic order must be reserve → obligation → growth, got "+
 			"Sitos=%d Upkeep=%d Kharis=%d", reserve, upkeep, growth)
+	}
+	// Utfodringsordningen (megaron_plan_utfodringsordningen.md, 2026-08-26):
+	// the population eats AFTER the army's own upkeep (Timothy 2026-08-25 —
+	// "ALLT SOM STADEN FÖRSÖRJER ÄTER FÖRE BEFOLKNINGEN") and BEFORE growth,
+	// which must only ever see what both obligations left behind.
+	if !(upkeep < food && food < growth) {
+		t.Fatalf("the day's food order must be plikt → föda → tillväxt, got "+
+			"Upkeep=%d Food=%d Kharis=%d", upkeep, food, growth)
 	}
 	if TickPriority(ScheduledUnitArrival) >= TickPriority(ScheduledMarchSightingScan) {
 		t.Errorf("the eyes must read the map after the marches have moved: UnitArrival=%d MarchSightingScan=%d",

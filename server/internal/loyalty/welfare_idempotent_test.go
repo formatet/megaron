@@ -71,12 +71,18 @@ func TestWelfareHandler_ReplayIsIdempotent(t *testing.T) {
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement: %v", err)
 	}
-	// Fed (rate >= 0, stock > 0), no kharis favour, no diet variety — welfareDelta
-	// = +1 ("well_fed"), the smallest nonzero case, matching colony_idempotent_test's
-	// choice of the smallest nonzero band.
+	// Fed (netto >= 0, stock > 0), no kharis favour, no diet variety —
+	// welfareDelta = +1 ("well_fed"), the smallest nonzero case, matching
+	// colony_idempotent_test's choice of the smallest nonzero band.
+	//
+	// rate=510 is GROSS production (Utfodringsordningen D1, 2026-08-26 —
+	// settlement_goods.rate is no longer netted against consumption).
+	// population=1000 -> demand 500 (economy.GrainConsumptionPerCitizenPerTick),
+	// so netto via economy.GrainBalance(510, 1000) = +10 — the same small
+	// positive surplus this fixture always intended, now expressed as gross.
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, 'grain', 500, 10, 1000000, $2)`,
+		 VALUES ($1, 'grain', 500, 510, 1000000, $2)`,
 		settlementID, worldTick,
 	); err != nil {
 		t.Fatalf("seed grain: %v", err)

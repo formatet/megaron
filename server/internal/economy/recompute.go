@@ -339,10 +339,12 @@ func LaborCapacity(goodKey string, hasFieldPath bool, hexSlots int, buildingSlot
 }
 
 // GrainConsumptionPerCitizenPerTick is the grain eaten per citizen each tick
-// (a tick is a day), folded into grain's net production rate below. Exported
-// so read-only callers (status endpoint's grain-netto breakdown/break-even
-// hint, DEL C of megaron_ekonomi_legibilitet_plan.md) can re-derive
-// prod/consum from the stored net rate instead of duplicating this number.
+// (a tick is a day). Until Utfodringsordningen (megaron_plan_utfodringsordningen.md
+// D1, 2026-08-26) this was folded into grain's stored rate by RecomputeProduction;
+// it no longer is — the population's need is debited once a day, from the STOCK,
+// by FoodTick (food_tick.go). Exported so read-only callers (status endpoint's
+// grain-netto breakdown/break-even hint, DEL C of megaron_ekonomi_legibilitet_plan.md)
+// and GrainBalance below share this one number instead of duplicating it.
 //
 // ⚠️ MIRRORED, and the mirror cannot import this package: cmd/keryx holds its
 // own `grainConsumptionPerCitizenPerTick` literal (2026-08-26, the surplus
@@ -355,13 +357,34 @@ const GrainConsumptionPerCitizenPerTick = 0.5
 // GrainConsumptionPerTick is the grain a population of pop eats each tick.
 // It depends on head-count alone — not on labor weights, terrain or buildings —
 // so callers outside a settlement (the founder-phase host, which has people but
-// no city yet) can use it without a settlements row. RecomputeProduction folds
-// the same call into grain's net rate, so the number lives in exactly one place.
+// no city yet) can use it without a settlements row. FoodTick debits this amount
+// from the settlement's food stock once a day (grain first, then fish, then
+// livestock — FoodConsumptionSplit); it is no longer folded into grain's rate.
 func GrainConsumptionPerTick(pop int) float64 {
 	if pop < 0 {
 		pop = 0
 	}
 	return float64(pop) * GrainConsumptionPerCitizenPerTick
+}
+
+// GrainBalance splits a settlement's grain rate into gross production, the
+// population's daily consumption, and their difference (net) — the single
+// shared implementation D6 (megaron_plan_utfodringsordningen.md) requires
+// every read-only surface to go through instead of recomputing
+// laborPool × GrainConsumptionPerCitizenPerTick itself. api/handlers/province.go
+// used to do that multiplication twice (the Sitos-box breakdown and the
+// ticklog reconstruction), and internal/loyalty/welfare.go re-derived netto
+// from what used to be an already-netted rate — both now go through here.
+//
+// Since D1, settlement_goods.rate for grain is raw, un-netted production: the
+// population's food is debited once a day from the STOCK by FoodTick, not
+// folded into this rate. "net" here is therefore a PROJECTION for read-only
+// surfaces (what the city's grain balance looks like once today's meal is
+// paid), not a mechanic — the real debit happens in FoodTick, in kanonordning
+// with fish and livestock, which this function does not model.
+func GrainBalance(grossRate float64, population int) (consumption, net float64) {
+	consumption = GrainConsumptionPerTick(population)
+	return consumption, grossRate - consumption
 }
 
 // livestockFoodValue is the food value of one slaughtered animal — Timothy
@@ -407,20 +430,25 @@ const FoundingHerdLivestock = 10
 //	grainNet   = grainProd - grainShare - unmet  // any shortfall still standing stays on grain
 //	fishNet    = fishProd  - fishShare
 //
-// Pure and side-effect free (no DB, no clock) on purpose: RecomputeProduction,
-// FoundingGrainNetPerTick, and read-only callers (the status endpoint's
-// grain-netto breakdown, api/handlers/province.go) all share this one
-// implementation instead of three copies that can drift apart.
+// Pure and side-effect free (no DB, no clock) on purpose.
 //
-// KNOWN LIMIT (Timothy 2026-07-31, confirmed wrong, deliberately deferred —
-// booked in megaron_todo.md, NOT this slice): this is production-based, not
-// stock-based, for grain/fish. A settlement with zero grain PRODUCTION but a
-// full grain STOCK never draws down that stock as long as current-tick fish
-// production covers the shortfall — grainNet floors at 0 instead of eating
-// the stockpile. Timothy: "Detta måste ju lösas — har man båda ska båda ätas,
-// inte nu men skriv i todo." Livestock does not share this limit — its
-// livestockStock argument IS the settlement's actual current stock, read by
-// the caller, so the herd fallback already draws down the real stockpile.
+// PROGNOSIS FUNCTION, NOT A MOTOR FUNCTION (Utfodringsordningen D1,
+// megaron_plan_utfodringsordningen.md, 2026-08-26): RecomputeProduction no
+// longer calls this — grain/fish production-based netting was the KNOWN LIMIT
+// below given a permanent home, not the missing feature it looked like.
+// FoodTick (food_tick.go) is now the sole caller that debits a REAL day
+// against STOCK (grainProd/fishProd below are STOCK there, not rate — the
+// function is agnostic to which). The one surviving production-based caller
+// is FoundingGrainNetPerTick, a pre-founding forecast with no settlement (and
+// so no stock) to draw down yet — a deliberate, documented exception, not a
+// second motor path.
+//
+// FORMER KNOWN LIMIT, NOW THE WHOLE POINT (Timothy 2026-07-31 confirmed it was
+// wrong; FoodTick is the fix): called with STOCK instead of rate, a settlement
+// with zero grain production but a full grain stock now DOES draw down that
+// stock once fish is exhausted, instead of floating a phantom net-rate that
+// never touched the stockpile. Livestock's contract is unchanged — its
+// livestockStock argument is always the settlement's actual current stock.
 func FoodConsumptionSplit(demand, grainProd, fishProd, livestockStock float64) (grainNet, fishNet float64, livestockConsumed int) {
 	grainShare := demand
 	if grainProd < grainShare {
@@ -720,23 +748,10 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	rawRates[GoodGrain] += (grainBasePotential / REF_LABOR) * float64(remainderCitizens)
 	producible[GoodGrain] = true
 
-	// Grain carries a population-consumption term folded into its NET rate:
-	// pop × 0.5 per tick = consumption per tick (a tick is a day). Folding it
-	// (rather than subtracting a daily lump elsewhere) keeps consumption
-	// continuous, so it never exceeds the grain cap and a self-sufficient city
-	// sits at a stable positive stock instead of sawtoothing to zero every day.
-	// laborPool is the non-negative population (Σ eaters).
-	//
-	// Fisk-föder-befolkningen (2026-07-31): the population's food need is covered
-	// by grain FIRST, then by fish for whatever grain does not reach — see
-	// FoodConsumptionSplit. The army's upkeep path never touches fish (it debits
-	// settlement_goods good_key='grain'/'silver' only — internal/combat/upkeep.go).
-	grainConsumptionPerTick := GrainConsumptionPerTick(laborPool)
-
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	// 5a. rawRates is already fully populated (step 4/4b) — nothing left to
 	// compute here; producibleKeys (derived from the `producible` set) drives
-	// the write loop (5c) and step 6's stale cleanup below.
+	// the write loop (5b) and step 6's stale cleanup below.
 	producibleKeys := make([]string, 0, len(producible))
 	for good := range producible {
 		producibleKeys = append(producibleKeys, good)
@@ -748,64 +763,23 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// routed through LaborCapacity/weight scaling like every other good.
 	rawRates["grain"] += NearjordGrainPerTick
 
-	// 5b. The food invariant: grain first, fish for the rest, livestock (whole
-	// animals) as the last resort. grainProd/fishProd default to 0 via Go's
-	// zero value when the catchment has no matching tile for that good (map
-	// lookup on a missing key) — exactly the "no water" / "no plains" case
-	// AK2/AK1 exercise.
+	// 5b. Write every producible good's rate — RAW, un-netted production.
 	//
-	// Livestock is a discrete stock, not a catchment rate, so it is read here
-	// directly rather than coming from rawRates. The `calc_tick =
-	// current_world_tick()` guard stops a settlement whose herd was already
-	// settled THIS tick (an earlier slaughter this same tick, or an
-	// same-tick founding write) from being offered to a second
-	// RecomputeProduction call within the same tick — RecomputeProduction is
-	// called many times a day (build/train/colonize/collapse), not once, and
-	// without the guard each call would independently re-decide to slaughter
-	// against the SAME unmet demand.
-	var livestockStock float64
-	var livestockSettledThisTick bool
-	if err := tx.QueryRow(ctx,
-		`SELECT settled(amount, rate, calc_tick), calc_tick = current_world_tick()
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'livestock'`,
-		settlementID,
-	).Scan(&livestockStock, &livestockSettledThisTick); err != nil && err != pgx.ErrNoRows {
-		return fmt.Errorf("recompute: load livestock stock: %w", err)
-	}
-	if livestockSettledThisTick {
-		livestockStock = 0
-	}
-
-	grainNet, fishNet, livestockConsumed := FoodConsumptionSplit(
-		grainConsumptionPerTick, rawRates["grain"], rawRates["fish"], livestockStock)
-
-	if livestockConsumed > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			 SET amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = 'livestock'`,
-			settlementID, float64(livestockConsumed),
-		); err != nil {
-			return fmt.Errorf("recompute: slaughter livestock for food: %w", err)
-		}
-	}
-
-	// 5c. Write every producible good's rate — grain and fish get their
-	// food-invariant net; everything else keeps its raw rate unchanged.
-	// grainSeen is unused past this point: step 4b unconditionally forces
-	// "grain" into producible (nearjord + the population remainder apply to
-	// EVERY settlement with a settlements row, farmland or not), so grain
-	// always goes through this same loop — the pre-P4 fallback write for a
-	// "grain never appeared in potentials" case no longer exists to need one.
+	// Until Utfodringsordningen (megaron_plan_utfodringsordningen.md D1,
+	// 2026-08-26) grain and fish got a food-invariant NET rate here
+	// (FoodConsumptionSplit against production-rate, livestock slaughtered
+	// against the same call) — the population's consumption was folded
+	// CONTINUOUSLY into the rate, ahead of every discrete daily step
+	// including the army's upkeep (Plikt, priority 50), and applied against
+	// whichever good happened to still be PRODUCING that tick rather than
+	// against the STOCK actually on hand. Both were wrong (Timothy
+	// 2026-08-25: "ALLT SOM STADEN FÖRSÖRJER ÄTER FÖRE BEFOLKNINGEN"). The
+	// population's food need is now debited once a day, from settled STOCK,
+	// grain → fish → livestock, by FoodTick (food_tick.go, priority 55 —
+	// between Plikt and Tillväxt) — so every good, grain and fish included,
+	// keeps exactly its raw production rate here.
 	for _, key := range producibleKeys {
 		newRate := rawRates[key]
-		switch key {
-		case "grain":
-			newRate = grainNet
-		case "fish":
-			newRate = fishNet
-		}
 
 		// Settle existing amount at old rate, then overwrite rate + calc_tick.
 		if _, err := tx.Exec(ctx,

@@ -638,12 +638,14 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				printRes("Silver", "silver", true)
 
 				// Grain: itemized prod/konsum/netto per TICK (DEL C fuller fix,
-				// GREENLIT 2026-07-12) instead of one unmarked netto rate — the stored
-				// rate is already net, so a negative number alone reads as an alarm
-				// when it's often just normal balance. Components are additive fields
-				// the status endpoint derives from the same consumption formula
-				// RecomputeProduction folds into grain's rate (economy.
-				// GrainConsumptionPerCitizenPerTick), not a re-derivation of the mechanic.
+				// GREENLIT 2026-07-12) instead of one unmarked netto rate — a lone
+				// negative number reads as an alarm when it's often just normal
+				// balance. Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
+				// 2026-08-26) the stored rate itself is raw, un-netted production —
+				// the population's food is debited once a day from STOCK by FoodTick,
+				// not folded into this rate — so grain_prod_rate/grain_consum_rate are
+				// the status endpoint's own economy.GrainBalance (D6) split, not a
+				// re-derivation of the mechanic here.
 				if gRd, ok := res["grain"].(map[string]any); ok {
 					gAmt, _ := gRd["amount"].(float64)
 					gProdRate, _ := sett["grain_prod_rate"].(float64)

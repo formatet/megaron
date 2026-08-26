@@ -107,8 +107,10 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]food
 // even every gubbe on food isn't enough, all are placed anyway (best effort)
 // and sufficient=false tells the caller to warn — both founding call sites
 // (found_metropolis.go, unit_arrival.go foundColony) already read the grain
-// rate PlaceStartingWorkforce leaves behind and fire a "grain running out"
-// notification when it's negative, so no new warning channel is needed here.
+// rate PlaceStartingWorkforce leaves behind, net it against population via
+// economy.GrainBalance (D6, Utfodringsordningen — the raw rate itself can no
+// longer go negative since D1), and fire a "grain running out" notification
+// when THAT nets negative, so no new warning channel is needed here.
 //
 // Must run BEFORE RecomputeProduction (which derives rates from whatever
 // this function placed) and inside the same transaction as founding, so a

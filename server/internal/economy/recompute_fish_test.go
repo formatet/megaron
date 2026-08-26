@@ -101,28 +101,23 @@ func recomputeWaterFixture(t *testing.T, currentTick, pop, grainTiles, fishTiles
 	return settlementID
 }
 
-// TestRecomputeProduction_AK1_PureFishCatchment_ZeroGrainNotNegative: a
+// TestRecomputeProduction_AK1_PureFishCatchment_GrainIsRawNeverNegative: a
 // catchment that is ENTIRELY water (no plains at all) gives fish production
-// far above the population's food need. Grain must settle at rate EXACTLY 0
-// (never negative — rate=0 is the proof the stock can never be drawn down by
-// this settlement, whatever the elapsed ticks), and fish's net rate must be
-// its own production minus demand.
+// far above the population's food need. Since Utfodringsordningen D1
+// (megaron_plan_utfodringsordningen.md, 2026-08-26) RecomputeProduction no
+// longer nets EITHER good against consumption — grain must settle at its RAW
+// production (the flat nearjord trickle, P1 — never negative, since it has no
+// consumption term to go negative FROM any more), and fish must settle at its
+// own raw production too, not "production minus demand". The population's
+// actual daily meal — grain first, then fish, then livestock — is FoodTick's
+// job now (food_tick.go; proved directly in food_tick_test.go), not
+// RecomputeProduction's.
 //
 // pop sized for P3 (megaron_plan_fysisk_gubbemodell.md §8.3): 6 UNENHANCED
 // coastal_sea hexes (no harbour built) cap at hexSlots=6 workers regardless of
 // population — kustfiske "1 utan byggnad" — so fishProd plateaus at ~31/tick
-// no matter how big pop gets. pop=1000 (this test's pre-P3 value) demanded 500
-// grain-equivalent, which 31 fish/tick cannot cover "far above" — that isn't a
-// bug, it's the exact overproduction P3 exists to remove.
-//
-// pop must still exceed NearjordGrainPerTick's demand-equivalent (100, since
-// demand = pop×0.5 and nearjord is a flat +50/tick regardless of catchment —
-// P1, the settlement's own hex) or grain nets POSITIVE instead of the 0 this
-// test asserts (nearjord alone would outrun a too-small demand). 120 keeps
-// demand (60) just past nearjord (50) — grain nets exactly 0 — while the
-// residual (10) is comfortably below fishProd's ~31 hex-capped ceiling, so
-// fish still nets clearly positive ("far above" its own residual share).
-func TestRecomputeProduction_AK1_PureFishCatchment_ZeroGrainNotNegative(t *testing.T) {
+// no matter how big pop gets.
+func TestRecomputeProduction_AK1_PureFishCatchment_GrainIsRawNeverNegative(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
@@ -140,8 +135,8 @@ func TestRecomputeProduction_AK1_PureFishCatchment_ZeroGrainNotNegative(t *testi
 	}
 
 	grainAmount, grainRate := readGood(t, settlementID, "grain")
-	if grainRate != 0 {
-		t.Errorf("AK1: grain rate must be exactly 0 with zero grain production, got %v", grainRate)
+	if grainRate != NearjordGrainPerTick {
+		t.Errorf("AK1: grain rate must equal the raw nearjord trickle (%v) with zero grain production, got %v", NearjordGrainPerTick, grainRate)
 	}
 	if grainAmount != 0 {
 		t.Errorf("AK1: grain amount should still be 0 (none was ever produced or seeded), got %v", grainAmount)
@@ -149,13 +144,15 @@ func TestRecomputeProduction_AK1_PureFishCatchment_ZeroGrainNotNegative(t *testi
 
 	fishAmount, fishRate := readGood(t, settlementID, "fish")
 	if fishRate <= 0 {
-		t.Fatalf("AK1: fish must net-produce (production exceeds demand), got rate=%v", fishRate)
+		t.Fatalf("AK1: fish must produce its own raw rate, got rate=%v", fishRate)
 	}
 	_ = fishAmount
 
-	// "Grain-lagret sjunker inte": advance the world clock and confirm the
-	// grain row's PROJECTED stock (settled(), the same function every read
-	// path uses) is unchanged — rate=0 makes this true for any elapsed ticks.
+	// Grain's rate can never go negative any more — it has no consumption term
+	// left to subtract (D1). Advancing the clock now correctly shows the stock
+	// ACCRUING at the nearjord rate (the sawtooth D7 says is the truth, not a
+	// regression) — FoodTick, not RecomputeProduction, is what draws it back
+	// down once a day (food_tick_test.go).
 	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick = $1 WHERE id = (
 		SELECT world_id FROM settlements WHERE id = $2)`, tick+500, settlementID); err != nil {
 		t.Fatalf("advance world tick: %v", err)
@@ -167,8 +164,8 @@ func TestRecomputeProduction_AK1_PureFishCatchment_ZeroGrainNotNegative(t *testi
 	).Scan(&projected); err != nil {
 		t.Fatalf("read projected grain: %v", err)
 	}
-	if projected != 0 {
-		t.Errorf("AK1: grain stock must not sink after 500 ticks elapse, got %v", projected)
+	if wantProjected := NearjordGrainPerTick * 500; projected != wantProjected {
+		t.Errorf("AK1: grain stock after 500 elapsed ticks = %v, want %v (raw nearjord accrual, never negative)", projected, wantProjected)
 	}
 }
 
@@ -220,9 +217,12 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 	// (queried above). + NearjordGrainPerTick: P1 (megaron_plan_fysisk_gubbemodell.md
 	// §3.2) adds the settlement's own-hex flat grain trickle on top of the
 	// catchment-ring potential — unconditional, not scaled by placement.
-	wantGrainProd := grainBase + NearjordGrainPerTick
-	wantDemand := GrainConsumptionPerTick(pop)
-	wantGrainRate := wantGrainProd - wantDemand
+	//
+	// Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md, 2026-08-26):
+	// grain's rate is RAW production now — no demand subtracted. pop is still
+	// what this fixture needs to size the population-remainder term (§1.1),
+	// but the population's food no longer shows up in this rate at all.
+	wantGrainRate := grainBase + NearjordGrainPerTick
 
 	_, grainRate := readGood(t, settlementID, "grain")
 	// Relative, not absolute, tolerance: migration 109 (2026-08-06, tick-is-the-
@@ -233,7 +233,7 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 	// epsilon that held at the old scale spuriously fails at the new one even
 	// though the relative precision is unchanged.
 	if diff := math.Abs(grainRate - wantGrainRate); diff > 1e-6*math.Abs(wantGrainRate) {
-		t.Errorf("AK2: grain rate = %v, want %v (pre-slice formula: grainProd - demand)", grainRate, wantGrainRate)
+		t.Errorf("AK2: grain rate = %v, want %v (raw production, D1 — no demand term)", grainRate, wantGrainRate)
 	}
 
 	var fishRowExists bool
@@ -248,12 +248,17 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 	}
 }
 
-// TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand: a
-// catchment with water but no plains, sized so fish production is BELOW
-// demand: fish nets exactly 0 (fully consumed, no surplus) and grain nets
-// exactly -(demand - fishProd) — and the total drawn from both goods equals
-// demand exactly, never more or less.
-func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testing.T) {
+// TestRecomputeProduction_AK3_FishAndGrainRatesAreIndependentOfDemand: a
+// catchment with water but no plains, sized so fish production is far BELOW
+// the population's food need. Before Utfodringsordningen D1
+// (megaron_plan_utfodringsordningen.md, 2026-08-26) RecomputeProduction ran
+// the grain→fish fallback against these PRODUCTION rates and clamped fish to
+// 0 / drained grain negative for the residual — that fallback now runs once a
+// day, against STOCK, in FoodTick (food_tick_test.go). RecomputeProduction
+// itself must write each good's RAW rate, with no reference to demand at all:
+// fish keeps its own full production regardless of how far short it falls,
+// and grain keeps its flat nearjord trickle (P1) regardless of population size.
+func TestRecomputeProduction_AK3_FishAndGrainRatesAreIndependentOfDemand(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
@@ -263,7 +268,8 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 	// limestone also unlocks stone/tin unconditionally, plus the universal
 	// timber trickle), and fish is capacity-clamped to LaborCapacity's 0.25
 	// terrain-base floor regardless of the exact seeded weight — deliberately
-	// picked with a large pop so demand outstrips it either way.
+	// picked with a large pop so demand outstrips it either way (proving the
+	// rate does NOT react to that at all any more).
 	const pop = 20000
 	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 0, /*fishTiles*/ 1)
 	// P4: staff the one coastal_sea hex to its P3 cap (1, no harbour) — fully
@@ -275,18 +281,8 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	_, fishRate := readGood(t, settlementID, "fish")
-	if fishRate != 0 {
-		t.Fatalf("AK3: fish must be fully consumed (rate exactly 0) when it falls short of demand, got %v", fishRate)
-	}
-
-	_, grainRate := readGood(t, settlementID, "grain")
-	if grainRate >= 0 {
-		t.Fatalf("AK3: grain must carry the residual shortfall as a negative rate, got %v", grainRate)
-	}
-
 	// Recover fishProd independently (same catchment/weight/capacity formula)
-	// to check the exact identity grainRate == -(demand - fishProd).
+	// to check the exact identity fishRate == fishProd (no demand term at all).
 	var fishBase float64
 	if err := pool.QueryRow(ctx,
 		`SELECT COALESCE(SUM(pr.rate_per_tick), 0) FROM map_tiles mt
@@ -310,10 +306,13 @@ func TestRecomputeProduction_AK3_PartialFishCoverage_SumIsExactlyDemand(t *testi
 			fishProd, GrainConsumptionPerTick(pop))
 	}
 
-	// - NearjordGrainPerTick: the settlement's own-hex flat grain trickle (P1)
-	// also goes toward covering demand before the residual drains grain negative.
-	wantGrainRate := -(GrainConsumptionPerTick(pop) - fishProd - NearjordGrainPerTick)
-	if diff := grainRate - wantGrainRate; diff > 1e-6 || diff < -1e-6 {
-		t.Errorf("AK3: grainRate = %v, want %v (-(demand - fishProd))", grainRate, wantGrainRate)
+	_, fishRate := readGood(t, settlementID, "fish")
+	if fishRate != fishProd {
+		t.Errorf("AK3: fish rate = %v, want %v (raw production — falling short of demand no longer clamps it to 0)", fishRate, fishProd)
+	}
+
+	_, grainRate := readGood(t, settlementID, "grain")
+	if grainRate != NearjordGrainPerTick {
+		t.Errorf("AK3: grain rate = %v, want %v (flat nearjord trickle — a huge population's demand leaves no mark on it)", grainRate, NearjordGrainPerTick)
 	}
 }
