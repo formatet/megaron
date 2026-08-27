@@ -270,7 +270,12 @@ func TestRepair_RequiresShipyard(t *testing.T) {
 // refused outright, no partial charge, no status flip (Röd-före C, second
 // clause).
 func TestRepair_InsufficientGoodsRejectsStart(t *testing.T) {
-	f := newShipRepairFixture(t, true, map[string]float64{"timber": 1, "silver": 1000})
+	// timber: 1 → 0.01 (mig 136, timber ÷216): the galley's 3-hull-point repair
+	// now costs ~0.2002 (combat.RepairCost("galley", combat.HullMax-2), see
+	// TestRepair_StartsJobDeductsGoodsAndCompletesToFullHull's own live-computed
+	// figure) — seeding 1 no longer leaves the fixture insufficient, so this
+	// must seed something below the real cost instead.
+	f := newShipRepairFixture(t, true, map[string]float64{"timber": 0.01, "silver": 1000})
 	ctx := context.Background()
 
 	rec := f.postRepair(t)
@@ -290,7 +295,7 @@ func TestRepair_InsufficientGoodsRejectsStart(t *testing.T) {
 		f.settlementID).Scan(&timberLeft); err != nil {
 		t.Fatalf("read timber: %v", err)
 	}
-	if timberLeft != 1 {
-		t.Errorf("timber = %v after a rejected repair start, want 1 (untouched)", timberLeft)
+	if timberLeft != 0.01 {
+		t.Errorf("timber = %v after a rejected repair start, want 0.01 (untouched)", timberLeft)
 	}
 }

@@ -105,9 +105,10 @@ func TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation(t *testing.T) {
 		t.Fatalf("read silver: %v", err)
 	}
 
-	// spearman size 100, embarked = field ration: grain 50 base ×2 = 100/day.
-	// Silver never doubles with status: 1/day (SLICE B halved table).
-	wantGrain, wantSilver := 10000.0-100, 10000.0-1
+	// spearman size 100, embarked = field ration: grain 0.5 base ×2 = 1.0/day
+	// (100 → 1.0, mig 136, UpkeepSpecs grain ÷100 — see upkeep.go's comment).
+	// Silver never doubles with status: 1/day (SLICE B halved table, untouched).
+	wantGrain, wantSilver := 10000.0-1.0, 10000.0-1
 	if math.Abs(grain-wantGrain) > 1e-9 {
 		t.Errorf("settlement grain after upkeep tick = %v, want %v (10000 − 100 field-ration grain for the embarked cohort)", grain, wantGrain)
 	}
@@ -122,16 +123,18 @@ func TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation(t *testing.T) {
 // marching/positioned, and silver never changes with status.
 func TestUnitUpkeep_EmbarkedDoublesGrainLikeMarching(t *testing.T) {
 	up := UnitUpkeep("spearman", "land", 100, "embarked")
-	if up.Grain != 100 {
-		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Grain = %v, want 100 (field ration, same as marching/positioned)`, up.Grain)
+	// 100 → 1.0 (mig 136, UpkeepSpecs grain ÷100).
+	if up.Grain != 1.0 {
+		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Grain = %v, want 1.0 (field ration, same as marching/positioned)`, up.Grain)
 	}
 	if up.Silver != 1 {
 		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Silver = %v, want 1 (status never changes silver)`, up.Silver)
 	}
 	// Naval never doubles regardless of status, including embarked (the ship
 	// itself, not its cargo — included for completeness of the status contract).
+	// 4 → 0.04 (mig 136, UpkeepSpecs grain ÷100).
 	upShip := UnitUpkeep("galley", "naval", 1, "embarked")
-	if upShip.Grain != 4 {
-		t.Errorf(`UnitUpkeep("galley","naval",1,"embarked").Grain = %v, want 4 (naval never doubles)`, upShip.Grain)
+	if upShip.Grain != 0.04 {
+		t.Errorf(`UnitUpkeep("galley","naval",1,"embarked").Grain = %v, want 0.04 (naval never doubles)`, upShip.Grain)
 	}
 }

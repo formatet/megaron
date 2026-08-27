@@ -48,10 +48,11 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 	f := newSupportFixture(t, pool, "upkeep-idem")
 
 	// Capital: plenty of grain, and EXACTLY 10x the silver a single garrisoned
-	// full-size spearman needs (UnitUpkeep: grain 50, silver 1 at size 100,
-	// status garrison — no field multiplier). 10, not 1, so a double deduction
-	// is observable as a real balance change rather than being masked by the
-	// affordability gate rejecting an overdraft.
+	// full-size spearman needs (UnitUpkeep: grain 0.5 [50→0.5, mig 136,
+	// UpkeepSpecs grain ÷100], silver 1 at size 100, status garrison — no field
+	// multiplier). 10, not 1, so a double deduction is observable as a real
+	// balance change rather than being masked by the affordability gate
+	// rejecting an overdraft.
 	seedGoods(t, pool, f.capitalID, f.tick, 100000, 10)
 	// Town: plenty of grain but ZERO silver — this unit's silver upkeep is
 	// guaranteed to go unpaid, exercising the recordUnpaid/unpaid_periods path.
@@ -103,8 +104,8 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 
 	// Sanity: the first run must have done its full, legitimate work, or this
 	// test would trivially pass even with a broken (or absent) guard.
-	if grainAfterFirst != 100000-50 {
-		t.Fatalf("capital grain after first run = %v, want %v — fixture does not exercise the handler", grainAfterFirst, 100000-50)
+	if grainAfterFirst != 100000-0.5 {
+		t.Fatalf("capital grain after first run = %v, want %v — fixture does not exercise the handler", grainAfterFirst, 100000-0.5)
 	}
 	if silverAfterFirst != 9 {
 		t.Fatalf("capital silver after first run = %v, want 9 (10 seeded - 1 upkeep) — fixture does not exercise the handler", silverAfterFirst)

@@ -60,14 +60,14 @@ func TestGenesisSilverLiquid_PopInvariant(t *testing.T) {
 // would then release a reserve it did not need. The population has a single
 // food need covered grain-first, fish-for-the-rest (FoodConsumptionSplit).
 func TestCoverageDays_CountsTheWholeBasket(t *testing.T) {
-	const pop = 1000                    // need = 500/day
-	grainOnly := CoverageDays(2000, pop) // 4 days on grain alone
+	const pop = 1000                  // need = 5/day (mig 136, GrainConsumptionPerCitizenPerTick ÷100, not ÷43.2: 500→5)
+	grainOnly := CoverageDays(20, pop) // 2000 → 20 (mig 136, same ÷100); 4 days on grain alone
 	if math.Abs(grainOnly-4) > 1e-9 {
 		t.Fatalf("grain-only coverage = %v, want 4", grainOnly)
 	}
-	// Same city, plus 8000 fish: 10000 food = 20 days. Anything that counted
-	// only grain would still say 4 and trigger a release.
-	withFish := CoverageDays(2000+8000, pop)
+	// Same city, plus 80 fish (8000 → 80, mig 136 ÷100): 100 food = 20 days.
+	// Anything that counted only grain would still say 4 and trigger a release.
+	withFish := CoverageDays(20+80, pop)
 	if math.Abs(withFish-20) > 1e-9 {
 		t.Errorf("basket coverage = %v, want 20 (grain+fish over one food need)", withFish)
 	}
@@ -91,22 +91,22 @@ func TestCoverageDays_NoPeopleNoNeed(t *testing.T) {
 // needed, and a city exactly at the threshold is left alone.
 func TestEvaluateGranaryAction_TitheOnlyTakesAboveTheThreshold(t *testing.T) {
 	cfg := testSitosCfg()
-	const pop = 1000 // need 500/day; HighDays 30 → threshold 15000
+	const pop = 1000 // need 5/day (mig 136, ÷100: 500→5); HighDays 30 → threshold 150 (15000→150)
 
 	// Exactly at the threshold: nothing.
-	if a := EvaluateGranaryAction(15000, 0, pop, cfg); a.Kind != "noop" {
+	if a := EvaluateGranaryAction(150, 0, pop, cfg); a.Kind != "noop" {
 		t.Errorf("at threshold: %q, want noop", a.Kind)
 	}
-	// 20000 food = 40 days: surplus 5000, tithe 10% = 500. NOT 10% of 20000.
-	a := EvaluateGranaryAction(20000, 0, pop, cfg)
+	// 200 food (20000→200, mig 136 ÷100) = 40 days: surplus 50, tithe 10% = 5. NOT 10% of 200.
+	a := EvaluateGranaryAction(200, 0, pop, cfg)
 	if a.Kind != "store" {
 		t.Fatalf("above threshold: %q, want store", a.Kind)
 	}
-	if math.Abs(a.Quantity-500) > 1e-9 {
-		t.Errorf("tithe = %v, want 500 (10%% of the 5000 above the threshold, not of the whole stock)", a.Quantity)
+	if math.Abs(a.Quantity-5) > 1e-9 {
+		t.Errorf("tithe = %v, want 5 (10%% of the 50 above the threshold, not of the whole stock)", a.Quantity)
 	}
 	// The tithe can never push the city below the threshold: quantity ≤ surplus.
-	if a.Quantity > 20000-15000 {
+	if a.Quantity > 200-150 {
 		t.Errorf("tithe %v exceeds the surplus — would bite into covered food", a.Quantity)
 	}
 }
@@ -117,15 +117,15 @@ func TestEvaluateGranaryAction_TitheOnlyTakesAboveTheThreshold(t *testing.T) {
 // class of bug the fund's triple-gating existed to prevent.
 func TestEvaluateGranaryAction_TitheStopsAtCap(t *testing.T) {
 	cfg := testSitosCfg()
-	const pop = 1000 // cap = 500 × 60 = 30000
+	const pop = 1000 // cap = 5 × 60 = 300 (mig 136, ÷100: need 500→5, cap 30000→300)
 
-	if a := EvaluateGranaryAction(100000, 30000, pop, cfg); a.Kind != "noop" {
+	if a := EvaluateGranaryAction(1000, 300, pop, cfg); a.Kind != "noop" {
 		t.Errorf("full granary: %q, want noop", a.Kind)
 	}
-	// 200 units of headroom against a tithe that would otherwise be 8500.
-	a := EvaluateGranaryAction(100000, 29800, pop, cfg)
-	if a.Kind != "store" || math.Abs(a.Quantity-200) > 1e-9 {
-		t.Errorf("near-full granary: %s %v, want store 200 (headroom-bound)", a.Kind, a.Quantity)
+	// 2 units of headroom (200→2) against a tithe that would otherwise be 85 (8500→85).
+	a := EvaluateGranaryAction(1000, 298, pop, cfg)
+	if a.Kind != "store" || math.Abs(a.Quantity-2) > 1e-9 {
+		t.Errorf("near-full granary: %s %v, want store 2 (headroom-bound)", a.Kind, a.Quantity)
 	}
 }
 
@@ -135,16 +135,17 @@ func TestEvaluateGranaryAction_TitheStopsAtCap(t *testing.T) {
 // trigger was silent in a stable famine anyway.
 func TestEvaluateGranaryAction_FamineRelief(t *testing.T) {
 	cfg := testSitosCfg()
-	const pop = 1000 // need 500/day; LowDays 10 → 5000 food
+	const pop = 1000 // need 5/day (mig 136, ÷100: 500→5); LowDays 10 → 50 food (5000→50)
 
-	// 2 days of food, plenty in the granary: release the 4000 shortfall.
-	a := EvaluateGranaryAction(1000, 20000, pop, cfg)
-	if a.Kind != "release" || math.Abs(a.Quantity-4000) > 1e-9 {
-		t.Errorf("famine with a full granary: %s %v, want release 4000", a.Kind, a.Quantity)
+	// 2 days of food (1000→10), plenty in the granary (20000→200): release the
+	// 40 shortfall (4000→40).
+	a := EvaluateGranaryAction(10, 200, pop, cfg)
+	if a.Kind != "release" || math.Abs(a.Quantity-40) > 1e-9 {
+		t.Errorf("famine with a full granary: %s %v, want release 40", a.Kind, a.Quantity)
 	}
 	// Never more than the shortfall, even with a huge granary — the granary
 	// tops the city up to LowDays, it does not empty itself into it.
-	if a.Quantity > 5000-1000 {
+	if a.Quantity > 50-10 {
 		t.Errorf("released %v, more than the shortfall", a.Quantity)
 	}
 }
@@ -155,13 +156,15 @@ func TestEvaluateGranaryAction_FamineRelief(t *testing.T) {
 // or the reserve is not a reserve.
 func TestEvaluateGranaryAction_EmptyGranaryCannotHelp(t *testing.T) {
 	cfg := testSitosCfg()
-	if a := EvaluateGranaryAction(100, 0, 1000, cfg); a.Kind != "noop" {
+	// 100 → 1 (mig 136, ÷100 — same food-unit scale as DailyFoodNeed).
+	if a := EvaluateGranaryAction(1, 0, 1000, cfg); a.Kind != "noop" {
 		t.Errorf("famine with an empty granary: %q, want noop", a.Kind)
 	}
 	// A granary with less than the shortfall gives exactly what it has.
-	a := EvaluateGranaryAction(1000, 300, 1000, cfg)
-	if a.Kind != "release" || math.Abs(a.Quantity-300) > 1e-9 {
-		t.Errorf("partial granary: %s %v, want release 300 (all it holds)", a.Kind, a.Quantity)
+	// 1000→10, 300→3 (mig 136, ÷100).
+	a := EvaluateGranaryAction(10, 3, 1000, cfg)
+	if a.Kind != "release" || math.Abs(a.Quantity-3) > 1e-9 {
+		t.Errorf("partial granary: %s %v, want release 3 (all it holds)", a.Kind, a.Quantity)
 	}
 }
 

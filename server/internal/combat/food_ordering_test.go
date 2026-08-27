@@ -28,13 +28,16 @@ import (
 func TestFoodOrdering_GarrisonFedInFullBeforePopulationTakesShortfall(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
-	f := newSupportFixture(t, pool, "food-ordering") // capitalID: population 1000, demand 500/tick
+	f := newSupportFixture(t, pool, "food-ordering") // capitalID: population 1000, demand 5/tick (500 → 5, mig 136, GrainConsumptionPerCitizenPerTick ÷100)
 
-	// Exactly enough grain for the garrison's own upkeep (50, see
-	// upkeep_idempotent_test.go's UnitUpkeep(spearman, land, 100, garrison) = 50
-	// grain) plus a partial serving for the population — NOT enough for both in
-	// full. 200 = 50 (army) + 150 (leaves the population 350 short of its 500).
-	const seededGrain = 200
+	// Exactly enough grain for the garrison's own upkeep (0.5, see
+	// upkeep_idempotent_test.go's UnitUpkeep(spearman, land, 100, garrison) = 0.5
+	// grain — 50 → 0.5, mig 136, UpkeepSpecs grain ÷100) plus a partial serving
+	// for the population — NOT enough for both in full. 2.0 = 0.5 (army) + 1.5
+	// (leaves the population 3.5 short of its 5). 200/50/150/350/500 all → ÷100
+	// (mig 136 — both the army's and the population's grain figures share the
+	// same ÷100 calibration, so the whole scenario scales uniformly).
+	const seededGrain = 2.0
 	seedGoods(t, pool, f.capitalID, f.tick, seededGrain, 100000)
 
 	var unitID uuid.UUID
@@ -65,8 +68,8 @@ func TestFoodOrdering_GarrisonFedInFullBeforePopulationTakesShortfall(t *testing
 		t.Fatalf("garrison size after UpkeepTick = %d, want 100 — fixture does not exercise the handler (grain stock should cover the garrison alone)", sizeAfterUpkeep)
 	}
 	grainAfterUpkeep := settledAmount(t, pool, f.capitalID, "grain")
-	if grainAfterUpkeep != seededGrain-50 {
-		t.Fatalf("grain after UpkeepTick = %.1f, want %.1f", grainAfterUpkeep, float64(seededGrain-50))
+	if grainAfterUpkeep != seededGrain-0.5 {
+		t.Fatalf("grain after UpkeepTick = %.1f, want %.1f", grainAfterUpkeep, seededGrain-0.5)
 	}
 
 	// Föda (55) second — reads whatever Plikt left behind.
@@ -89,7 +92,7 @@ func TestFoodOrdering_GarrisonFedInFullBeforePopulationTakesShortfall(t *testing
 	if err := pool.QueryRow(ctx, `SELECT food_unmet_amount FROM settlements WHERE id = $1`, f.capitalID).Scan(&unmet); err != nil {
 		t.Fatalf("read food_unmet_amount: %v", err)
 	}
-	if want := 350.0; unmet != want {
+	if want := 3.5; unmet != want { // 350.0 → 3.5 (mig 136, ÷100)
 		t.Errorf("food_unmet_amount = %.1f, want %.1f — the population, not the garrison, must carry the shortfall", unmet, want)
 	}
 

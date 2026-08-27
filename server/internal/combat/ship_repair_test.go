@@ -19,14 +19,17 @@ func TestRepairCost(t *testing.T) {
 		wantGood   string
 		wantAmount float64
 	}{
-		// galley: training.go Costs{timber:9} per crew member, CrewFor=20 →
-		// full-ship build cost = 180 timber. 8%/point × 1 point = 14.4.
-		{"galley, one hull point", "galley", 1, "timber", 180 * repairCostFractionPerHullPoint},
-		// war_galley: Costs{cedar:5} per crew, CrewFor=50 → 250 cedar full build.
-		// A full 5-point repair costs 5×8% = 40% of that.
-		{"war_galley, full repair", "war_galley", hullMax, "cedar", 250 * repairCostFractionPerHullPoint * float64(hullMax)},
-		// merchantman: Costs{timber:8.75} per crew, CrewFor=10 → 87.5 timber build.
-		{"merchantman, three hull points", "merchantman", 3, "timber", 87.5 * repairCostFractionPerHullPoint * 3},
+		// galley: training.go Costs{timber:0.0417} per crew member (9→0.0417, mig
+		// 136, timber ÷216), CrewFor=20 → full-ship build cost = 0.834 timber.
+		// 8%/point × 1 point = 0.0667.
+		{"galley, one hull point", "galley", 1, "timber", 0.834 * repairCostFractionPerHullPoint},
+		// war_galley: Costs{cedar:0.0694} per crew (5→0.0694, mig 136, cedar ÷72),
+		// CrewFor=50 → 3.47 cedar full build. A full 5-point repair costs 5×8% =
+		// 40% of that.
+		{"war_galley, full repair", "war_galley", hullMax, "cedar", 3.47 * repairCostFractionPerHullPoint * float64(hullMax)},
+		// merchantman: Costs{timber:0.0405} per crew (8.75→0.0405, mig 136, timber
+		// ÷216), CrewFor=10 → 0.405 timber build.
+		{"merchantman, three hull points", "merchantman", 3, "timber", 0.405 * repairCostFractionPerHullPoint * 3},
 		{"zero hull points costs nothing", "galley", 0, "timber", 0},
 		{"unknown unit type", "spearman", 2, "", 0},
 	}

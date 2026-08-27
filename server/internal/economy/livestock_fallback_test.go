@@ -23,20 +23,22 @@ import (
 )
 
 // TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve: a
-// settlement with a grain shortfall (50 in stock — the flat nearjord trickle
+// settlement with a grain shortfall (0.5 in stock — the flat nearjord trickle
 // a mountain catchment would raw-produce, per D1), zero fish, and a herd of 3
-// must slaughter exactly one animal (ceil(200/200)) to cover what grain
+// must slaughter exactly one animal (ceil(2.0/166.67)) to cover what grain
 // doesn't — food_unmet_amount lands at 0 (does not starve) instead of
 // carrying the residual.
 func TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T) {
 	pool := testPool(t)
 
-	// pop=500 -> demand = 500*0.5 = 250/tick. grainStock=50 (nearjord-only,
-	// D1's raw production for a plains/fish-less catchment) leaves a 200-unit
-	// shortfall after grain alone — exactly one animal (ceil(200/200)) closes it.
+	// pop=500 -> demand = 500*0.005 = 2.5/tick (mig 136, GrainConsumptionPerCitizenPerTick
+	// 0.5→0.005). grainStock=0.5 (mig 136, NearjordGrainPerTick 50→0.5 — its own
+	// ÷100 calibration, not grain's ÷43.2) leaves a 2.0-unit shortfall after grain
+	// alone — well inside one animal's 166.67 grain-equivalent (mig 136,
+	// livestockFoodValue 200→166.67), so ceil(2.0/166.67)=1 closes it.
 	const population = 500
 	f := newFoodFixture(t, pool, "livestock-covers", population)
-	seedFoodStock(t, pool, f, /*grain*/ 50, /*fish*/ 0, /*livestock*/ 3)
+	seedFoodStock(t, pool, f, /*grain*/ 0.5, /*fish*/ 0, /*livestock*/ 3)
 
 	h := newFoodTickHandler(pool)
 	if err := h.Handle(context.Background(), events.ScheduledEvent{
@@ -46,7 +48,7 @@ func TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T
 	}
 
 	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 2 {
-		t.Errorf("livestock amount = %v, want 2 (one whole animal slaughtered to cover the 200-unit shortfall left after grain)", got)
+		t.Errorf("livestock amount = %v, want 2 (one whole animal slaughtered to cover the 2.0-unit shortfall left after grain)", got)
 	}
 	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); got != 0 {
 		t.Errorf("grain stock = %v, want exactly 0 (grain alone covered only part of demand)", got)
@@ -65,7 +67,7 @@ func TestFoodTick_LivestockFallback_IdempotentOnReplay(t *testing.T) {
 
 	const population = 500
 	f := newFoodFixture(t, pool, "livestock-idempotent", population)
-	seedFoodStock(t, pool, f, /*grain*/ 50, /*fish*/ 0, /*livestock*/ 3)
+	seedFoodStock(t, pool, f, /*grain*/ 0.5, /*fish*/ 0, /*livestock*/ 3) // 50 → 0.5 (mig 136, NearjordGrainPerTick)
 
 	h := newFoodTickHandler(pool)
 	evt := events.ScheduledEvent{ID: 900102, WorldID: f.worldID, DueTick: f.tick}

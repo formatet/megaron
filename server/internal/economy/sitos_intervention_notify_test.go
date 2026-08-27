@@ -34,8 +34,10 @@ func TestGranary_NotifiesOwnerOnRelease(t *testing.T) {
 	cfg := testSitosCfg()
 
 	const tick = 100
+	// 1000 → 10, 20000 → 200 (mig 136, ÷100 — same food-unit scale as DailyFoodNeed;
+	// pop=1000 now needs 5/day, so this must stay under the LowDays=10 threshold (50)).
 	worldID, settlementID := granaryFixture(t, pool, ctx, tick, 1000,
-		[]fixtureGood{{"grain", 1000, 1000000}}, map[string]float64{"grain": 20000})
+		[]fixtureGood{{"grain", 10, 1000000}}, map[string]float64{"grain": 200})
 
 	fb := &fakeSitosBroadcaster{}
 	h := NewSitosTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), fb, cfg)

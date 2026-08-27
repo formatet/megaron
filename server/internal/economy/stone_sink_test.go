@@ -22,6 +22,7 @@ package economy
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"formatet/megaron/server/internal/province"
@@ -46,10 +47,17 @@ func buildingCatalogueStoneCost() float64 {
 // drift in BuildingSpecs is caught here rather than only showing up as a
 // changed tick count in the test below.
 func TestBuildingCatalogueStoneCost_MatchesPlannedFigure(t *testing.T) {
+	// 750 → 104.168 (mig 136, stone ÷7.2 — province.BuildingSpecs' own costs
+	// were rescaled directly in code, read live above, not re-derived here).
+	// Tolerance, not the old strict ==: buildingCatalogueStoneCost sums a Go
+	// map in nondeterministic iteration order, and these costs are no longer
+	// exact multiples that add up bit-identically regardless of order —
+	// verified to vary by ~1e-13 across orderings, well inside this bound.
+	const want = 104.168
 	got := buildingCatalogueStoneCost()
-	if got != 750 {
-		t.Fatalf("building catalogue stone cost = %v, want 750 (megaron_plan_sten_stock.md §1); "+
-			"if a building's cost changed on purpose, update the plan's derivation too", got)
+	if math.Abs(got-want) > 1e-6 {
+		t.Fatalf("building catalogue stone cost = %v, want %v (megaron_plan_sten_stock.md §1); "+
+			"if a building's cost changed on purpose, update the plan's derivation too", got, want)
 	}
 }
 
@@ -92,8 +100,8 @@ func TestStoneTerrainBaselines_Unchanged(t *testing.T) {
 		terrain string
 		want    float64
 	}{
-		{"hills", 14.4},
-		{"mountain_limestone", 28.8},
+		{"hills", 2.0},               // 14.4 → 2.0 (mig 136, stone ÷7.2)
+		{"mountain_limestone", 4.0}, // 28.8 → 4.0 (mig 136, stone ÷7.2)
 	}
 	for _, c := range cases {
 		var got float64
