@@ -418,11 +418,35 @@ const (
 	copperSourceFloor   = 4 // plan §A literal: "max(4, players/6)"
 	copperSourceDivisor = 6
 
-	// Silver sits between copper and tin ("mellanting").
+	// Silver is the WIDESPREAD-but-thin metal. Its target is not a quantity
+	// but a share of the world's cities: megaron_plan_dagsverkesskalan.md §5
+	// asks for "cirka 25-40 % av spelbara städer har lokal silvertillgång".
+	// A settlement's catchment is 19 hexes and settlements sit >=5 hexes
+	// apart (join.go's clustering guard), so one silver SOURCE serves at most
+	// one city — the share of cities with local silver can therefore never
+	// exceed sources/players. players/10 capped it at 10 % on a 100-player
+	// map before it ever met a settler. players/3 is that share expressed
+	// directly (megaron_silvergeografin.md, 2026-08-27).
+	//
+	// Quantity is held down at the other end instead: a silver source is ONE
+	// hex, never a district. At 100 players that is ~33 single-hex workings
+	// against copper's ~16 sources x 2-4 hexes — silver stays the thinnest
+	// metal per site (a trickle a city cannot live off) while being the most
+	// widely distributed. Copper remains the generous BULK metal, tin the
+	// capped chokepoint; the hierarchy is unchanged, only its axis is named.
 	silverClusterMin    = 1
-	silverClusterMax    = 3
-	silverSourceFloor   = 3 // plan §A literal: "max(3, players/10)"
-	silverSourceDivisor = 10
+	silverClusterMax    = 1
+	silverSourceFloor   = 4 // 4 sources against the 10-player floor = 40 %
+	silverSourceDivisor = 3
+
+	// silverSourceSpacing keeps two silver sources out of the SAME city's
+	// catchment: at 2*mineableRadius the two are still reachable from one
+	// settlement founded between them, which spends two sources on one city
+	// and leaves a second city with none. One more hex than that guarantees
+	// every source is a distinct potential silver city. Copper and tin pass
+	// 0 here (unchanged behaviour) — a copper district is deliberately
+	// allowed to be one big neighbourhood.
+	silverSourceSpacing = 2*mineableRadius + 1
 
 	// Tin is the opposite of copper: capped, not scaled. tinSourceCap is a
 	// DESIGN INVARIANT (Timothy 2026-07-16, plan §A) — tin must get SCARCER
@@ -1649,10 +1673,10 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 	players := playersFor(width, height)
 
 	placeDepositClusters(tiles, copperCand, landmap, rng,
-		copperSourceTarget(players), copperClusterMin, copperClusterMax, width, height,
+		copperSourceTarget(players), copperClusterMin, copperClusterMax, 0, width, height,
 		func(t *MapTile) { t.CopperDeposit = true })
 	placeDepositClusters(tiles, tinCand, landmap, rng,
-		tinSourceTarget(players), tinClusterMin, tinClusterMax, width, height,
+		tinSourceTarget(players), tinClusterMin, tinClusterMax, 0, width, height,
 		func(t *MapTile) { t.TinDeposit = true })
 
 	// Silver candidates exclude anything copper/tin already claimed just
@@ -1665,7 +1689,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 	placeDepositClusters(tiles, silverCandFree, landmap, rng,
-		silverSourceTarget(players), silverClusterMin, silverClusterMax, width, height,
+		silverSourceTarget(players), silverClusterMin, silverClusterMax, silverSourceSpacing, width, height,
 		func(t *MapTile) { t.SilverDeposit = true })
 
 	// Cedar is no longer assigned here — it is now the forest_cedar terrain
@@ -1863,7 +1887,12 @@ func growCluster(seed cell, avail map[cell]bool, targetSize int) []cell {
 // picked within a component is randomised once via the map's own rng
 // (shuffled per component); map-range iteration order never leaks into the
 // result, only rng draws do.
-func depositSources(cand []int, tiles []MapTile, landmap map[cell]int, rng *rand.Rand, targetSources int) []cell {
+//
+// minSpacing additionally rejects a candidate lying within that hex distance
+// of an ALREADY-PICKED seed (any component). Silver passes
+// silverSourceSpacing so no two silver sources can fall inside one
+// settlement's catchment; copper and tin pass 0, which rejects nothing.
+func depositSources(cand []int, tiles []MapTile, landmap map[cell]int, rng *rand.Rand, targetSources, minSpacing int) []cell {
 	byComp := map[int][]int{}
 	var compIDs []int
 	for _, idx := range cand {
@@ -1888,8 +1917,16 @@ func depositSources(cand []int, tiles []MapTile, landmap map[cell]int, rng *rand
 				break
 			}
 			g := byComp[lm]
+			// Scan past candidates that sit closer than minSpacing to a seed
+			// already taken — advancing pos over them so a later round never
+			// reconsiders them. minSpacing 0 (copper, tin) rejects nothing:
+			// hexDist to a distinct candidate is always >= 1.
 			p := pos[lm]
+			for p < len(g) && !farEnough(cell{tiles[g[p]].Q, tiles[g[p]].R}, seeds, minSpacing) {
+				p++
+			}
 			if p >= len(g) {
+				pos[lm] = p
 				continue
 			}
 			idx := g[p]
@@ -1904,6 +1941,20 @@ func depositSources(cand []int, tiles []MapTile, landmap map[cell]int, rng *rand
 	return seeds
 }
 
+// farEnough reports whether c sits at least minSpacing hexes from every cell
+// in taken. minSpacing <= 0 always passes.
+func farEnough(c cell, taken []cell, minSpacing int) bool {
+	if minSpacing <= 0 {
+		return true
+	}
+	for _, t := range taken {
+		if hexDist(c, t) < minSpacing {
+			return false
+		}
+	}
+	return true
+}
+
 // placeDepositClusters is step 8's shared engine for copper/tin/silver: pick
 // up to targetSources seeds spread across land components (depositSources),
 // grow each into a cluster of clusterMin..clusterMax cells (growCluster),
@@ -1912,11 +1963,11 @@ func depositSources(cand []int, tiles []MapTile, landmap map[cell]int, rng *rand
 // achieved source count can land under target on a crowded landmass, which
 // is fine: GenerateMap's rejection-sampling loop (reseed until validateMap
 // passes) is the backstop for "not enough", not a retry loop in here.
-func placeDepositClusters(tiles []MapTile, cand []int, landmap map[cell]int, rng *rand.Rand, targetSources, clusterMin, clusterMax, width, height int, set func(*MapTile)) {
+func placeDepositClusters(tiles []MapTile, cand []int, landmap map[cell]int, rng *rand.Rand, targetSources, clusterMin, clusterMax, minSourceSpacing, width, height int, set func(*MapTile)) {
 	if targetSources <= 0 || len(cand) == 0 {
 		return
 	}
-	seeds := depositSources(cand, tiles, landmap, rng, targetSources)
+	seeds := depositSources(cand, tiles, landmap, rng, targetSources, minSourceSpacing)
 
 	avail := make(map[cell]bool, len(cand))
 	index := make(map[cell]int, len(cand))
