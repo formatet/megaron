@@ -42,35 +42,45 @@ var BuildingPurposes = map[BuildingType]string{
 // minutes — the old "≤30 min→2, ≤60 min→3" framing described real-minute
 // pacing at the (now-retired) 1-tick=1-hour cadence, which is exactly the
 // day/tick conflation this canon change exists to remove.
+// Materialkostnaderna omskalade med varje varas divisor
+// (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27): timmer ÷216 ·
+// sten ÷7,2 · brons orört (divisor 1). Ren division, förhållandena står still.
+//
+// ⚠️ Läs dessa som DAGSVERKEN från och med nu — det är hela poängen med
+// omskalningen. En farm kostar 0,23 dagsverken timmer och 2,78 sten, alltså
+// ~3 dagsverken totalt. Ett varv 9,0. En galär 0,83. Timothys riktmärke är
+// 30 dagsverken för galären, så hela katalogen ska sättas om — men i S4, inte
+// här. Mig 136 byter enhet; den sätter inte priser.
 var BuildingSpecs = map[BuildingType]BuildingSpec{
-	BuildingFarm:        {Costs: map[string]float64{"timber": 50, "stone": 20}, DurationTicks: 2},
-	BuildingBarracks:    {Costs: map[string]float64{"timber": 80, "stone": 80}, DurationTicks: 3},
-	BuildingMine:        {Costs: map[string]float64{"timber": 60, "stone": 40}, DurationTicks: 3},
-	BuildingSilverMine:  {Costs: map[string]float64{"timber": 60, "stone": 40}, DurationTicks: 3},
-	BuildingLumbermill:  {Costs: map[string]float64{"timber": 40, "stone": 40}, DurationTicks: 2},
-	BuildingStonequarry: {Costs: map[string]float64{"timber": 50, "stone": 20}, DurationTicks: 2},
-	BuildingMarket:      {Costs: map[string]float64{"timber": 100, "stone": 60}, DurationTicks: 2},
-	BuildingWall:        {Costs: map[string]float64{"timber": 50, "stone": 60}, DurationTicks: 3, WallsBonus: 1},
-	BuildingHarbour:     {Costs: map[string]float64{"timber": 140, "stone": 60}, DurationTicks: 3},
+	BuildingFarm:        {Costs: map[string]float64{"timber": 0.2315, "stone": 2.778}, DurationTicks: 2},
+	BuildingBarracks:    {Costs: map[string]float64{"timber": 0.3704, "stone": 11.111}, DurationTicks: 3},
+	BuildingMine:        {Costs: map[string]float64{"timber": 0.2778, "stone": 5.556}, DurationTicks: 3},
+	BuildingSilverMine:  {Costs: map[string]float64{"timber": 0.2778, "stone": 5.556}, DurationTicks: 3},
+	BuildingLumbermill:  {Costs: map[string]float64{"timber": 0.1852, "stone": 5.556}, DurationTicks: 2},
+	BuildingStonequarry: {Costs: map[string]float64{"timber": 0.2315, "stone": 2.778}, DurationTicks: 2},
+	BuildingMarket:      {Costs: map[string]float64{"timber": 0.463, "stone": 8.333}, DurationTicks: 2},
+	BuildingWall:        {Costs: map[string]float64{"timber": 0.2315, "stone": 8.333}, DurationTicks: 3, WallsBonus: 1},
+	BuildingHarbour:     {Costs: map[string]float64{"timber": 0.6481, "stone": 8.333}, DurationTicks: 3},
 	// Strawman, same order of magnitude as the harbour it splits off from —
 	// megaron_plan_skeppsreparation.md Slice A step 2 explicitly defers real
 	// calibration (temenos_balans_spakar.md) rather than porting the
 	// taxonomy's §9.2 gubbetick figures (500/300/25 cedar/180), which use a
 	// labor-ticks build model this catalogue doesn't have.
-	BuildingShipyard:   {Costs: map[string]float64{"timber": 140, "stone": 60}, DurationTicks: 3},
-	BuildingFoundry:    {Costs: map[string]float64{"timber": 80, "stone": 100}, DurationTicks: 4},
-	BuildingStable:     {Costs: map[string]float64{"timber": 60, "stone": 40}, DurationTicks: 3},
-	BuildingTemple:     {Costs: map[string]float64{"timber": 60, "stone": 60}, DurationTicks: 4},
-	BuildingOlivePress: {Costs: map[string]float64{"stone": 40, "timber": 30}, DurationTicks: 3},
-	BuildingWinery:     {Costs: map[string]float64{"stone": 30, "timber": 40}, DurationTicks: 3},
+	BuildingShipyard:   {Costs: map[string]float64{"timber": 0.6481, "stone": 8.333}, DurationTicks: 3},
+	BuildingFoundry:    {Costs: map[string]float64{"timber": 0.3704, "stone": 13.889}, DurationTicks: 4},
+	BuildingStable:     {Costs: map[string]float64{"timber": 0.2778, "stone": 5.556}, DurationTicks: 3},
+	BuildingTemple:     {Costs: map[string]float64{"timber": 0.2778, "stone": 8.333}, DurationTicks: 4},
+	BuildingOlivePress: {Costs: map[string]float64{"stone": 5.556, "timber": 0.1389}, DurationTicks: 3},
+	BuildingWinery:     {Costs: map[string]float64{"stone": 4.167, "timber": 0.1852}, DurationTicks: 3},
 }
 
 // WallLevelSpecs ger kostnad/duration för nästa murnivå (1=Palisade, 2=Stone Wall,
 // 3=Bronze Wall). wall byggs upprepat; build-handlern väljer specen för wall_level+1.
+// Omskalade som BuildingSpecs (mig 136): timmer ÷216, sten ÷7,2, brons orört.
 var WallLevelSpecs = map[int]BuildingSpec{
-	1: {Costs: map[string]float64{"timber": 50, "stone": 60}, DurationTicks: 3, WallsBonus: 1},
-	2: {Costs: map[string]float64{"timber": 40, "stone": 160}, DurationTicks: 6, WallsBonus: 1},
-	3: {Costs: map[string]float64{"stone": 100, "bronze": 10}, DurationTicks: 9, WallsBonus: 1},
+	1: {Costs: map[string]float64{"timber": 0.2315, "stone": 8.333}, DurationTicks: 3, WallsBonus: 1},
+	2: {Costs: map[string]float64{"timber": 0.1852, "stone": 22.222}, DurationTicks: 6, WallsBonus: 1},
+	3: {Costs: map[string]float64{"stone": 13.889, "bronze": 10}, DurationTicks: 9, WallsBonus: 1},
 }
 
 // WallLevelNames är tier-namnen för klient-/hjälptext.
@@ -117,9 +127,17 @@ var LevelledBuildings = map[BuildingType]bool{
 // stadens tillväxt bortom det grundläggande: nivå 1 kostar som förut i timber+sten,
 // men att bygga ut en arbetsplats kräver handel eller kolonisering efter cedar.
 // STRAWMAN-kalibrering — siffrorna hör hemma i temenos_balans_spakar.md §8.
+//
+// ⚠️ Omskalad ÷72 (mig 136), MEN mätningen 2026-08-27 visade att den här spärren
+// är hårdare än någon avsett: ceder finns på 31 av världens hexar och NOLL av
+// dem ligger i någon stads upptagningsområde. Det är därför samtliga byggnader
+// i drift står på nivå 1 sedan 2026-07-23 — inte spelarslöhet, utan en spärr
+// ingen kan passera. Att frikoppla cedern från den generella progressionen och
+// flytta den till maritim/monumental/militär specialisering är S2 i
+// megaron_plan_dagsverkesskalan; den ändringen görs INTE här.
 var LevelCedarCost = map[int]float64{
-	2: 25,
-	3: 60,
+	2: 0.347,
+	3: 0.833,
 }
 
 // LevelledSpec returnerar kostnad/duration för att ta en byggnad till nivå `level`.

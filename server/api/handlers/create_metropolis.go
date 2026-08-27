@@ -117,11 +117,15 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
+		        -- Startlagret omskalat med varje varas divisor (mig 136,
+		        -- dagsverkesskalan): grain ÷43,2 · timmer ÷216 · sten ÷7,2.
+		        -- Livestock kommer från economy.FoundingHerdLivestock, som är
+		        -- ett ANTAL DJUR och inte en matmängd — den skalas därför inte.
 		        CASE g.key
-		            WHEN 'grain'     THEN 300
-		            WHEN 'timber'    THEN 200
-		            WHEN 'stone'     THEN 300
-		            WHEN 'livestock' THEN $2::int
+		            WHEN 'grain'     THEN 6.94
+		            WHEN 'timber'    THEN 0.926
+		            WHEN 'stone'     THEN 41.67
+		            WHEN 'livestock' THEN $2::numeric
 		            ELSE 0
 		        END,
 		        0,

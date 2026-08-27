@@ -234,7 +234,21 @@ const kharisFloor = 1.0
 // automatic multiply-by-three in actual production — allocation is still
 // player-chosen. Left as a strawman for soak-testing, per this constant's
 // existing calibration story, not re-derived from first principles.
-const grainPerCitizen = 300.0
+// ⚠️ 300 → 2,0 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27). Detta är
+// INTE en ren omskalning (÷43,2 hade gett 6,94) utan Timothys kalibreringsval:
+// **200 spannmål per ny GUBBE**, alltså 2,0 per invånare.
+//
+// Talet avgör om maten är bromsen på tillväxten eller inte. Mätt på Mochlos
+// (+56,7 grain/tick i överskott, vill växa 0,56 gubbar/dygn): under ~100 per
+// gubbe växer staden i full takt och priset blir kosmetiskt; vid 200 halveras
+// tillväxten mot vad staden vill; vid ~700 (dagens 300/invånare omräknat)
+// stryps den till en sjundedel. 200 valt 2026-08-27 för snabbare spel och
+// fortfarande märkbar geografisk skillnad — flodstäder växer synligt fortare
+// än slättstäder.
+//
+// De mätta talen i kalibreringsberättelsen nedan är PRE-OMSKALNING; dividera
+// med 43,2 för nuvarande skala. Rationa och slutsatserna står oförändrade.
+const grainPerCitizen = 2.0
 
 // growthGrainReserve is the grain a settlement's growth may never eat into.
 //
@@ -263,7 +277,18 @@ const grainPerCitizen = 300.0
 // simply does not grow that tick (actual_new = 0), it does not take the
 // starvation branch — that branch is gated on food_unmet_amount (D4,
 // megaron_plan_utfodringsordningen.md), not on this reserve or on grain_now.
-const growthGrainReserve = 300.0
+// 300 → 6,94 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27): grain-enhet,
+// ren division med 43,2. Ankaret som kommentaren ovan kräver hålls: en full
+// spjutkohort kostar 100 man × province.UnitSpecs["spearman"].Costs["grain"],
+// och den posten divideras med samma 43,2 i training.go — de två förblir
+// exakt lika, precis som före omskalningen.
+//
+// ⚠️ Reserven är INTE längre lika med grainPerCitizen, som den råkade vara när
+// båda stod på 300. Det var alltid en sammanträffning mellan två oberoende tal
+// (en kohorts spannmålsavgift respektive priset på en ny invånare), och mig 136
+// skiljer dem åt: reserven följer kohorten (÷43,2), tillväxtpriset är ett eget
+// kalibreringsval (2,0). Läs aldrig det ena ur det andra.
+const growthGrainReserve = 6.94
 
 // starvationPopLossRatePerTick is the fraction of population a starving city
 // loses per tick (−0.5%/tick). Single source of truth for BOTH sides:
