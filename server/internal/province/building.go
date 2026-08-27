@@ -128,22 +128,49 @@ var LevelledBuildings = map[BuildingType]bool{
 // men att bygga ut en arbetsplats kräver handel eller kolonisering efter cedar.
 // STRAWMAN-kalibrering — siffrorna hör hemma i temenos_balans_spakar.md §8.
 //
-// ⚠️ Omskalad ÷72 (mig 136), MEN mätningen 2026-08-27 visade att den här spärren
-// är hårdare än någon avsett: ceder finns på 31 av världens hexar och NOLL av
-// dem ligger i någon stads upptagningsområde. Det är därför samtliga byggnader
-// i drift står på nivå 1 sedan 2026-07-23 — inte spelarslöhet, utan en spärr
-// ingen kan passera. Att frikoppla cedern från den generella progressionen och
-// flytta den till maritim/monumental/militär specialisering är S2 i
-// megaron_plan_dagsverkesskalan; den ändringen görs INTE här.
+// ⚠️ Omskalad ÷72 (mig 136). Gäller sedan S2 (megaron_plan_dagsverkesskalan,
+// 2026-08-27) ENDAST byggnaderna i LevelCedarBuildings — se den för varför.
 var LevelCedarCost = map[int]float64{
 	2: 0.347,
 	3: 0.833,
 }
 
+// LevelCedarBuildings är de byggnader vars nivåtrappa kostar ädelträ.
+//
+// Före 2026-08-27 gällde LevelCedarCost varje nivåbyggnad, och det gjorde
+// cedern till ett krav för all tillväxt. Mätningen samma dag visade vad det
+// betydde i drift: ceder finns på 31 av världens 2 240 hexar och **noll av dem
+// ligger i någon stads upptagningsområde**. Samtliga 70 byggnader i drift stod
+// därför på nivå 1 sedan 2026-07-23 — inte spelarslöhet, utan en spärr ingen
+// kunde passera. En jordbruksstad kunde aldrig få sin andra produktivitetsnivå.
+//
+// Knappheten flyttas, den upphävs inte: cedern är kvar lika sällsynt, men bär
+// nu det maritima och monumentala i stället för den vardagliga
+// jordbruksintensifieringen. Hamn och varv är fönstret mot havet; templet är
+// palatsbygget. Krigsgalären kräver ceder redan i sin egen rekryteringspost
+// (UnitSpecs), oberoende av den här mappen.
+//
+// Basbyggnaderna — farm, gruva, sågverk, stenbrott, marknad, stall, olivpress,
+// vineri, silvergruva — betalar i stället sin nivåtrappa i timmer och sten,
+// skalat med nivån (se LevelledSpec). Lokala material, nåbara för varje stad
+// som har en hex att bruka.
+var LevelCedarBuildings = map[BuildingType]bool{
+	BuildingHarbour:  true,
+	BuildingShipyard: true,
+	BuildingTemple:   true,
+}
+
 // LevelledSpec returnerar kostnad/duration för att ta en byggnad till nivå `level`.
-// Nivå 1 är oförändrad grundkostnad; nivå 2+ lägger på cedar enligt LevelCedarCost
-// och tar proportionellt längre tid. Returnerar false om byggnaden inte har någon
-// nivåtrappa eller om nivån ligger över taket.
+//
+// Nivå 1 är oförändrad grundkostnad — nivåtrappan får aldrig fördyra grundbygget.
+// Nivå 2+ skalar basmaterialet med nivån (nivå 2 kostar dubbelt, nivå 3 tredubbelt)
+// och tar proportionellt längre tid. Byggnaderna i LevelCedarBuildings betalar
+// dessutom ädelträ enligt LevelCedarCost.
+//
+// Materialtrappan infördes 2026-08-27 (S2) när cedern lyftes ur den generella
+// progressionen: utan den hade nivå 2 och 3 kostat exakt samma material som nivå 1
+// för nio av tolv nivåbyggnader, alltså ingen kostnadstrappa alls. Skalningen är
+// läsbar i dagsverken — en farm nivå 3 kostar tre gånger en farm nivå 1.
 func LevelledSpec(bt BuildingType, level int) (BuildingSpec, bool) {
 	base, ok := BuildingSpecs[bt]
 	if !ok || level < 1 || level > MaxBuildingLevel {
@@ -158,9 +185,9 @@ func LevelledSpec(bt BuildingType, level int) (BuildingSpec, bool) {
 	// Kopiera kostnadsmappen — BuildingSpecs är en delad katalog och får aldrig muteras.
 	costs := make(map[string]float64, len(base.Costs)+1)
 	for k, v := range base.Costs {
-		costs[k] = v
+		costs[k] = v * float64(level)
 	}
-	if cedar, hasCedar := LevelCedarCost[level]; hasCedar {
+	if cedar, hasCedar := LevelCedarCost[level]; hasCedar && LevelCedarBuildings[bt] {
 		costs["cedar"] += cedar
 	}
 	out := base
