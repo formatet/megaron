@@ -51,36 +51,67 @@ var BuildingPurposes = map[BuildingType]string{
 // ~3 dagsverken totalt. Ett varv 9,0. En galär 0,83. Timothys riktmärke är
 // 30 dagsverken för galären, så hela katalogen ska sättas om — men i S4, inte
 // här. Mig 136 byter enhet; den sätter inte priser.
+// ── S4, dagsverkeskalibreringen (megaron_plan_dagsverkesskalan, 2026-08-27) ──
+//
+// Talen är nu ANTAL DAGSVERKEN: en gubbe på varans standardterräng producerar
+// 1 enhet per tick (mig 136), så summan av en byggnads kostnader är hur många
+// gubbtick den kräver. Det är hela poängen med omskalningen — priserna går att
+// resonera om utan att slå upp en produktionstabell.
+//
+// Måltotaler satta mot Timothys måttstock ("ett skepp eller en byggnad ska vara
+// en investering; inte orimligt att behöva spara några verkliga dygn") med
+// galären som ankare på 30 dagsverken. Ett tick är en väggklockstimme, så 30
+// dagsverken är en natt för tre-fyra gubbar och drygt ett dygn för en ensam.
+//
+//	farm, stenbrott ......... 10      hamn, varv, tempel ..... 40
+//	sågverk, press, vineri .. 24      gjuteri ................ 48
+//	kasern, stall, gruva,             mur 1/2/3 ......... 20/48/90+brons
+//	  silvergruva, marknad .. 30
+//
+// ⭐ Fördelningen MELLAN varor är oförändrad — varje byggnads gamla kvot mellan
+// timmer och sten är bevarad och bara skalad till sin nya total. Det är ett
+// medvetet minimalt designval: S4 sätter vad en sak KOSTAR, inte vad den byggs
+// AV. Att sten dominerar nästan varje byggnad är alltså ärvt, inte nytt, och
+// är en egen fråga (sten är också den vara en gubbe producerar minst av — 7,2
+// per tick före omskalningen mot timrets 216).
+//
+// ⚠️ Samtliga tal är KANDIDATER för soak-testet (planens S5), inte lås. Mät dem
+// mot en färsk värld — en befintlig värld bär 65 000 sten i arv och skulle inte
+// känna av någon prisändring alls.
 var BuildingSpecs = map[BuildingType]BuildingSpec{
-	BuildingFarm:        {Costs: map[string]float64{"timber": 0.2315, "stone": 2.778}, DurationTicks: 2},
-	BuildingBarracks:    {Costs: map[string]float64{"timber": 0.3704, "stone": 11.111}, DurationTicks: 3},
-	BuildingMine:        {Costs: map[string]float64{"timber": 0.2778, "stone": 5.556}, DurationTicks: 3},
-	BuildingSilverMine:  {Costs: map[string]float64{"timber": 0.2778, "stone": 5.556}, DurationTicks: 3},
-	BuildingLumbermill:  {Costs: map[string]float64{"timber": 0.1852, "stone": 5.556}, DurationTicks: 2},
-	BuildingStonequarry: {Costs: map[string]float64{"timber": 0.2315, "stone": 2.778}, DurationTicks: 2},
-	BuildingMarket:      {Costs: map[string]float64{"timber": 0.463, "stone": 8.333}, DurationTicks: 2},
-	BuildingWall:        {Costs: map[string]float64{"timber": 0.2315, "stone": 8.333}, DurationTicks: 3, WallsBonus: 1},
-	BuildingHarbour:     {Costs: map[string]float64{"timber": 0.6481, "stone": 8.333}, DurationTicks: 3},
+	BuildingFarm:        {Costs: map[string]float64{"timber": 0.769, "stone": 9.231}, DurationTicks: 6},
+	BuildingBarracks:    {Costs: map[string]float64{"timber": 0.968, "stone": 29.032}, DurationTicks: 16},
+	BuildingMine:        {Costs: map[string]float64{"timber": 1.429, "stone": 28.571}, DurationTicks: 16},
+	BuildingSilverMine:  {Costs: map[string]float64{"timber": 1.429, "stone": 28.571}, DurationTicks: 16},
+	BuildingLumbermill:  {Costs: map[string]float64{"timber": 0.774, "stone": 23.226}, DurationTicks: 12},
+	BuildingStonequarry: {Costs: map[string]float64{"timber": 0.769, "stone": 9.231}, DurationTicks: 6},
+	BuildingMarket:      {Costs: map[string]float64{"timber": 1.579, "stone": 28.421}, DurationTicks: 16},
+	BuildingWall:        {Costs: map[string]float64{"timber": 0.541, "stone": 19.459}, DurationTicks: 12, WallsBonus: 1},
+	BuildingHarbour:     {Costs: map[string]float64{"timber": 2.887, "stone": 37.113}, DurationTicks: 24},
 	// Strawman, same order of magnitude as the harbour it splits off from —
 	// megaron_plan_skeppsreparation.md Slice A step 2 explicitly defers real
 	// calibration (temenos_balans_spakar.md) rather than porting the
 	// taxonomy's §9.2 gubbetick figures (500/300/25 cedar/180), which use a
 	// labor-ticks build model this catalogue doesn't have.
-	BuildingShipyard:   {Costs: map[string]float64{"timber": 0.6481, "stone": 8.333}, DurationTicks: 3},
-	BuildingFoundry:    {Costs: map[string]float64{"timber": 0.3704, "stone": 13.889}, DurationTicks: 4},
-	BuildingStable:     {Costs: map[string]float64{"timber": 0.2778, "stone": 5.556}, DurationTicks: 3},
-	BuildingTemple:     {Costs: map[string]float64{"timber": 0.2778, "stone": 8.333}, DurationTicks: 4},
-	BuildingOlivePress: {Costs: map[string]float64{"stone": 5.556, "timber": 0.1389}, DurationTicks: 3},
-	BuildingWinery:     {Costs: map[string]float64{"stone": 4.167, "timber": 0.1852}, DurationTicks: 3},
+	BuildingShipyard:   {Costs: map[string]float64{"timber": 2.887, "stone": 37.113}, DurationTicks: 24},
+	BuildingFoundry:    {Costs: map[string]float64{"timber": 1.247, "stone": 46.753}, DurationTicks: 30},
+	BuildingStable:     {Costs: map[string]float64{"timber": 1.429, "stone": 28.571}, DurationTicks: 16},
+	BuildingTemple:     {Costs: map[string]float64{"timber": 1.290, "stone": 38.710}, DurationTicks: 24},
+	BuildingOlivePress: {Costs: map[string]float64{"stone": 23.415, "timber": 0.585}, DurationTicks: 12},
+	BuildingWinery:     {Costs: map[string]float64{"stone": 22.979, "timber": 1.021}, DurationTicks: 12},
 }
 
 // WallLevelSpecs ger kostnad/duration för nästa murnivå (1=Palisade, 2=Stone Wall,
 // 3=Bronze Wall). wall byggs upprepat; build-handlern väljer specen för wall_level+1.
-// Omskalade som BuildingSpecs (mig 136): timmer ÷216, sten ÷7,2, brons orört.
+// Kalibrerade i dagsverken som BuildingSpecs (S4): 20 · 48 · 90 sten + 10 brons.
+// Murtrappan är avsiktligt brantare än någon arbetsplats — palissaden är billig
+// nog att resa tidigt, bronsmuren är ett projekt. De 10 bronsen bär dessutom sin
+// egen kedja (9 koppar + 1 tenn + smältning per enhet), så bronsmuren kostar
+// långt mer i verklig arbetsbörda än de 100 dagsverkena i sten antyder.
 var WallLevelSpecs = map[int]BuildingSpec{
-	1: {Costs: map[string]float64{"timber": 0.2315, "stone": 8.333}, DurationTicks: 3, WallsBonus: 1},
-	2: {Costs: map[string]float64{"timber": 0.1852, "stone": 22.222}, DurationTicks: 6, WallsBonus: 1},
-	3: {Costs: map[string]float64{"stone": 13.889, "bronze": 10}, DurationTicks: 9, WallsBonus: 1},
+	1: {Costs: map[string]float64{"timber": 0.541, "stone": 19.459}, DurationTicks: 12, WallsBonus: 1},
+	2: {Costs: map[string]float64{"timber": 0.397, "stone": 47.603}, DurationTicks: 24, WallsBonus: 1},
+	3: {Costs: map[string]float64{"stone": 90, "bronze": 10}, DurationTicks: 48, WallsBonus: 1},
 }
 
 // WallLevelNames är tier-namnen för klient-/hjälptext.
