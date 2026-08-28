@@ -15,6 +15,7 @@ package handlers
 // For DB-dependent paths (oracle insert, event emission), see integration tests.
 
 import (
+	"strings"
 	"testing"
 
 	"formatet/megaron/server/internal/religion"
@@ -59,6 +60,25 @@ func TestRiteTierGate_HarvestBlessingRequires30Kharis(t *testing.T) {
 				t.Errorf("prayer %q: harvest_blessing MinKharis = %.0f, want >= 30", id, spec.MinKharis)
 			}
 		}
+	}
+}
+
+// TestInsufficientKharisMessage_ShowsFractionalDifference is Rad D,
+// megaron_plan_cli_sanning.md: a Wanax at 4.6 kharis against a 5.0
+// requirement must NOT be able to read the refusal as "requires 5 (you have
+// 5)" — the message must show enough precision that the two numbers differ,
+// and must name the shortfall outright rather than making the reader
+// subtract two rounded integers themselves.
+func TestInsufficientKharisMessage_ShowsFractionalDifference(t *testing.T) {
+	msg := insufficientKharisMessage("harvest_blessing", 5.0, 4.6)
+	if strings.Contains(msg, "you have 5") {
+		t.Errorf("message still rounds current kharis to match the requirement: %q", msg)
+	}
+	if !strings.Contains(msg, "4.6") {
+		t.Errorf("message hides the fractional current value: %q", msg)
+	}
+	if !strings.Contains(msg, "0.4 short") {
+		t.Errorf("message does not name the shortfall: %q", msg)
 	}
 }
 

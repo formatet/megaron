@@ -579,6 +579,18 @@ func riteSuccessChance(kharisNow, offerMod float64) float64 {
 	return c
 }
 
+// insufficientKharisMessage formats the kharis-tier-gate refusal for Rite.
+// Rad D, megaron_plan_cli_sanning.md: the old format (%.0f on both numbers)
+// let a Wanax at 4.6 kharis against a 5.0 requirement read "requires 5 (you
+// have 5)" and not understand why the rite was refused. Tiers
+// (religion.MoodSuspicious etc.) are whole numbers, but current kharis is
+// not — show it at one-decimal precision and name the shortfall explicitly
+// instead of making the reader subtract two rounded numbers.
+func insufficientKharisMessage(prayerID string, required, current float64) string {
+	return fmt.Sprintf("insufficient divine favour: prayer %q requires %.0f kharis (you have %.1f, %.1f short)",
+		prayerID, required, current, required-current)
+}
+
 // Rite handles POST /worlds/:worldID/settlements/:settlementID/rite.
 // Performs a cultural prayer — requires a temple, costs a material offering.
 // Body: {"prayer":"<prayer_id>","target":"<optional uuid>","offer_multiplier":<optional float>}.
@@ -702,9 +714,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 	// Kharis tier gate.
 	if kharisNow < spec.MinKharis {
-		writeError(w, http.StatusBadRequest,
-			fmt.Sprintf("insufficient divine favour: prayer %q requires %.0f kharis (you have %.0f)",
-				prayerID, spec.MinKharis, kharisNow))
+		writeError(w, http.StatusBadRequest, insufficientKharisMessage(prayerID, spec.MinKharis, kharisNow))
 		return
 	}
 
