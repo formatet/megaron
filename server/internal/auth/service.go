@@ -21,7 +21,7 @@ import (
 var (
 	ErrUserNotFound    = errors.New("user not found")
 	ErrInvalidPassword = errors.New("invalid password")
-	ErrUserExists      = errors.New("username or email already registered")
+	ErrUserExists      = errors.New("username already registered")
 	ErrInvalidToken    = errors.New("invalid or expired token")
 )
 
@@ -29,7 +29,6 @@ var (
 type Player struct {
 	ID           uuid.UUID
 	Username     string
-	Email        string
 	PasswordHash string
 	EraCount     int
 	CreatedAt    time.Time
@@ -62,16 +61,16 @@ func NewService(pool *pgxpool.Pool, jwtSecret string) *Service {
 
 // Register creates a new player and returns access + refresh tokens.
 // Password is not required in this stage — column kept for future use.
-func (s *Service) Register(ctx context.Context, username, email, _ string) (accessToken, refreshToken string, err error) {
+func (s *Service) Register(ctx context.Context, username, _ string) (accessToken, refreshToken string, err error) {
 	// Store a placeholder hash so the column constraint is satisfied.
 	hash, _ := bcrypt.GenerateFromPassword([]byte(username), bcrypt.MinCost)
 
 	var id uuid.UUID
 	err = s.pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash)
-		 VALUES ($1, $2, $3)
+		`INSERT INTO players (username, password_hash)
+		 VALUES ($1, $2)
 		 RETURNING id`,
-		username, email, string(hash),
+		username, string(hash),
 	).Scan(&id)
 	if err != nil {
 		return "", "", ErrUserExists
@@ -85,10 +84,10 @@ func (s *Service) Register(ctx context.Context, username, email, _ string) (acce
 func (s *Service) Login(ctx context.Context, usernameOrEmail, _ string) (accessToken, refreshToken string, err error) {
 	var p Player
 	err = s.pool.QueryRow(ctx,
-		`SELECT id, username, email, password_hash, era_count, created_at
-		 FROM players WHERE username = $1 OR email = $1`,
+		`SELECT id, username, password_hash, era_count, created_at
+		 FROM players WHERE username = $1`,
 		usernameOrEmail,
-	).Scan(&p.ID, &p.Username, &p.Email, &p.PasswordHash, &p.EraCount, &p.CreatedAt)
+	).Scan(&p.ID, &p.Username, &p.PasswordHash, &p.EraCount, &p.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "", "", ErrUserNotFound
 	}
@@ -155,10 +154,10 @@ func (s *Service) ValidateAccessToken(tokenStr string) (*Claims, error) {
 func (s *Service) Me(ctx context.Context, playerID uuid.UUID) (*Player, error) {
 	var p Player
 	err := s.pool.QueryRow(ctx,
-		`SELECT id, username, email, password_hash, era_count, created_at
+		`SELECT id, username, password_hash, era_count, created_at
 		 FROM players WHERE id = $1`,
 		playerID,
-	).Scan(&p.ID, &p.Username, &p.Email, &p.PasswordHash, &p.EraCount, &p.CreatedAt)
+	).Scan(&p.ID, &p.Username, &p.PasswordHash, &p.EraCount, &p.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrUserNotFound
 	}
