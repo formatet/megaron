@@ -148,9 +148,11 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	//   megaron_plan_spawn_landmassa.md) with fewer settlements+hosts, so
 	//   neighbours land on the same continent instead of on opposite
 	//   hemispheres of a landmass that straddles halfQ
-	// - tiebreak: prefer tiles whose 6-hex catchment contains the hemisphere's
-	//   ore (copper for west q<=halfQ, tin for east q>halfQ) so early joiners
-	//   land on ore-catchment tiles and produce ore from turn 1.
+	// - tiebreak: prefer tiles whose catchment contains the hemisphere's ore
+	//   (copper for west q<=halfQ, tin for east q>halfQ) so early joiners
+	//   land on ore-catchment tiles and produce ore from turn 1; a silver
+	//   deposit in catchment ranks below the hemisphere's own ore but above
+	//   no metal at all (megaron_silvergeografin.md).
 	var q, r2 int
 	var terrainType string
 	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal bool
@@ -196,6 +198,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 ),
 		 tin_tiles AS MATERIALIZED (
 		     SELECT q, r FROM map_tiles WHERE world_id = $1 AND tin_deposit
+		 ),
+		 silver_tiles AS MATERIALIZED (
+		     SELECT q, r FROM map_tiles WHERE world_id = $1 AND COALESCE(silver_deposit, false)
 		 )
 		 SELECT mt.q, mt.r, mt.terrain,
 		        mt.copper_deposit, mt.tin_deposit,
@@ -235,7 +240,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		   --    hemisphere.
 		   (mt.landmass_id IS NULL) ASC,
 		   COALESCE(ll.count, 0) ASC,
-		   -- 2. Ore-catchment bias (tiebreak within the winning landmass):
+		   -- 2. Metal-catchment bias (tiebreak within the winning landmass):
 		   --    west tiles that have a copper deposit within the future catchment
 		   --    ring rank ahead of those that do not; east tiles prefer tin. This
 		   --    ensures the first joiners land on ore-catchment tiles so they mine
@@ -246,7 +251,20 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		   --    axial hex-distance formula as the clearance checks above
 		   --    (equivalent to hexgrid.Distance's max() formula); radius is
 		   --    hexgrid.CatchmentRadius ($3, P1), excludes the tile itself (dist 0).
-		   CASE
+		   --
+		   --    Silver scores 1 against the hemisphere ore's 2, so ore still wins
+		   --    a straight fight and a silver tile only wins over ground with no
+		   --    metal at all. Before this term nothing steered a settler towards
+		   --    silver at all, and the drift world shows what that costs: 8
+		   --    copper hexes reached 4 of 8 cities' catchments, 4 silver hexes
+		   --    reached 1. Measured on fresh 60x60 worlds (10 joiners, four
+		   --    runs) the term moves silver from 3-4 hosts to a steady 4
+		   --    (megaron_silvergeografin.md, 2026-08-27) — small here because
+		   --    tier 1 above already scatters joiners across landmasses, and
+		   --    a 60x60 landmass rarely holds more than one metal. It matters
+		   --    where landmasses are large enough for this tiebreak to actually
+		   --    choose between many candidate tiles.
+		   (CASE
 		     WHEN mt.q <= $2 THEN (
 		       EXISTS (
 		         SELECT 1 FROM copper_tiles nb
@@ -261,7 +279,11 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		               BETWEEN 2 AND 2 * $3::int
 		       )::int
 		     )
-		   END DESC,
+		   END * 2 + EXISTS (
+		     SELECT 1 FROM silver_tiles nb
+		     WHERE (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))
+		           BETWEEN 2 AND 2 * $3::int
+		   )::int) DESC,
 		   RANDOM()
 		 LIMIT 1`,
 		worldID, halfQ, hexgrid.CatchmentRadius,
