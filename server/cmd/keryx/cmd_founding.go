@@ -70,7 +70,16 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 		hostID = *fp.HostUnitID
 	}
 	fmt.Println("Nomadic Host — ditt folk på vandring")
-	fmt.Printf("  %d folk · kan inte strida · syn 1 hex · position %s\n", fp.Population, pos)
+	// Synradien är 2 sedan Timothy 2026-08-22 ("synradie för alla landenheter är
+	// två"), med hostets två gamla undantag kvar: vid vatten 4, på berg 2+2
+	// (province.LiveRadius, nomadic_host_vision_test.go). Raden sa "syn 1 hex"
+	// ända till 2026-08-28 — en siffra som gjorde hostet blindare än det är, och
+	// som just här kostar: 2 är exakt hexgrid.CatchmentRadius, alltså SER hostet
+	// hela det upptagningsområde det skulle få om det grundade där det står.
+	// Grundningsprognosen visar bara KÄNDA hexar, så den skillnaden är hela
+	// skälet till att prognosens fyndighetsrad ("Övrigt: silver-deposit ✓") är
+	// ifylld i stället för tom.
+	fmt.Printf("  %d folk · kan inte strida · syn 2 hexar (4 vid vatten eller på berg) · position %s\n", fp.Population, pos)
 	fmt.Printf("  %s\n", foundingStoreLine("Grain (eskortens ranson)", fp.Grain, fp.TickSeconds))
 	fmt.Printf("  %s\n", foundingStoreLine("Silver (eskortens sold)", fp.Silver, fp.TickSeconds))
 	kohort := "kohorter"
