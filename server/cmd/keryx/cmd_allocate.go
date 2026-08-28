@@ -4,67 +4,38 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-// allocateCmd sends a PUT .../labor request to set labor allocations per good.
-// Allocations are provided as --<good> <percent> flags (0–100, share of population).
-// Σ percent must not exceed 100. Post-P4 only the cult share is live; the other
-// goods' weights are inert (production derives from gubbe placement, not weights).
+// allocateCmd sends a PUT .../labor request to set temple devotion (cult).
+// Production goods moved to gubbe placement in P4 (2026-08-08) — the old
+// per-good percent split is a dead write for everything except cult, so this
+// command only exposes --cult (megaron_plan_riv_procentallokeringen.md).
 func allocateCmd() *cobra.Command {
-	knownGoods := []string{
-		"grain", "timber", "cedar", "stone", "copper", "tin",
-		"fish", "wine", "oil", "horses", "bronze", "livestock", "silver",
-		"purple", "pottery", "cult",
-	}
-	rawPercent := make(map[string]*int, len(knownGoods))
-
+	var cultPercent int
 	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "allocate",
-		Short: "Set population labor allocation per good (%, defaults to capital; --province for a colony)",
-		Long: `Allocate a share (%) of your settlement's population to producible goods.
+		Short: "Set temple devotion (cult %, defaults to capital; --province for a colony)",
+		Long: `Set the share (%) of your settlement's population devoted to the temple (cult).
 
-REPLACES the whole split: any good you do not name drops to 0%. Name every good
-you want worked, not just the one you are changing. Run without flags to read the
-current allocation without touching it.
-Cult (devotion) is the exception and is ADDITIVE: it sits on top of the goods you
-name and is NOT counted in the ≤100% sum, so devoting more of the city never
-starves production. It is allocatable up to your temple's capacity — 15% per temple
-level (L1=15%, L2=30%, L3=45%) — with a 15% floor a temple city always keeps.
-Raising --cult toward the cap is what makes a bigger temple's kharis climb.
+Production is set by placing gubbar on hexes/buildings — see 'keryx place',
+'keryx staff', 'keryx city'. This command is only for cult (temple devotion),
+which is ADDITIVE (it does not compete with placed workers). It is allocatable
+up to your temple's capacity — 15% per temple level (L1=15%, L2=30%, L3=45%) —
+with a 15% floor a temple city always keeps. Raising --cult toward the cap is
+what makes a bigger temple's kharis climb.
 
-Give a percent per good — the sum (excluding cult) must not exceed 100.
-NOTE (post-P4): for every good EXCEPT cult these shares are currently INERT —
-production is set by placing gubbar on hexes/buildings, not by these weights.
-Only cult (devotion) is live here. Non-producible goods are rejected by the server.
-
-Grain has a break-even floor: below it, the city slowly starves. The floor is
-per catchment (it moves as tiles change), so it is not printed here — run
-allocate with no flags first to see the current grain share against it
-before you write a new split.
+Run without flags to read the current production split and devotion without
+touching either.
 
 Examples:
-  keryx allocate                                            (show current split)
-  keryx allocate --timber 40 --stone 30 --grain 30
-  keryx allocate --grain 50 --fish 20                       (the rest is idle)
-  keryx allocate --grain 45 --timber 25 --oil 10 --cult 30  (fill an L2 temple → kharis climbs)
-  keryx allocate --grain 70 --tin 30 --province <prov-id>   (allocate a colony)`,
-		// No single flag is the obvious guess for a stray positional here — the
-		// command takes one flag per good (--timber, --grain, ...), so there is
-		// no "the" flag to name the way build has --type.
+  keryx allocate                                  (show current split + devotion)
+  keryx allocate --cult 30                         (devote 30% of the city to the temple)
+  keryx allocate --cult 30 --province <prov-id>    (allocate a colony's temple)`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			percent := make(map[string]int)
-			for _, key := range knownGoods {
-				ptr := rawPercent[key]
-				if ptr != nil && *ptr > 0 {
-					percent[key] = *ptr
-				}
-			}
 			c := newClient(cfg)
 			// Default to the capital; --province lets you allocate any province you own
 			// (the server ownership-gates it), mirroring `build`/`status --province`.
@@ -80,13 +51,12 @@ Examples:
 			// No flags = read-only view. Checking the current split before changing
 			// it is the natural first move, and erroring out on it pushed a
 			// playtester into issuing a WRITE just to see the state (soak
-			// 2026-07-22) — with replace-all semantics that is the expensive way to
-			// look at something.
-			if len(percent) == 0 {
+			// 2026-07-22).
+			if cultPercent == 0 {
 				return printCurrentAllocation(c, prov)
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/labor", cfg.WorldID, prov)
-			data, err := c.put(path, map[string]any{"percent": percent})
+			data, err := c.put(path, map[string]any{"percent": map[string]int{"cult": cultPercent}})
 			if err != nil {
 				return err
 			}
@@ -98,98 +68,25 @@ Examples:
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			// Say it plainly: this call REPLACED the whole split. A playtester ran
-			// `allocate --pottery 15` meaning "add pottery", zeroed grain, and spent
-			// the next turns hunting a phantom bug while the city starved (soak
-			// 2026-07-22) — the break-even warning had fired correctly, but the
-			// mental model was "adjust one good", so it read as nonsense.
-			fmt.Println("Labor allocation REPLACED (goods you did not name drop to 0%; a temple's 15% cult floor is restored automatically):")
-			if lp, ok := resp["labor_pool"].(float64); ok {
-				fmt.Printf("  Population:  %d\n", int(lp))
+			if cp, ok := resp["cult_percent"].(float64); ok {
+				fmt.Printf("Cult devotion set to %.0f%%.\n", cp)
 			}
-			if idle, ok := resp["idle_percent"].(float64); ok {
-				idleC, _ := resp["idle_citizens"].(float64)
-				fmt.Printf("  Idle:        %.0f%% (%d citizens)\n", idle, int(idleC))
-			}
-			fmt.Println()
-			pm, _ := resp["percent"].(map[string]any)
-			cm, _ := resp["citizens"].(map[string]any)
-			if pm != nil {
-				order := []string{"grain", "timber", "cedar", "stone", "copper", "tin", "fish", "wine", "oil", "silver"}
-				printed := make(map[string]bool)
-				printRow := func(key string) {
-					pct, _ := pm[key].(float64)
-					cit, _ := cm[key].(float64)
-					fmt.Printf("  %-12s %3.0f%%  (%d citizens)\n", key, pct, int(cit))
-				}
-				for _, key := range order {
-					if _, ok := pm[key].(float64); ok {
-						printRow(key)
-						printed[key] = true
-					}
-				}
-				for k := range pm {
-					if !printed[k] {
-						printRow(k)
-					}
-				}
-			}
-			// Break-even guardrail (DEL D): the allocation IS applied, but if the
-			// grain share is below break-even the city will slowly starve — surface
-			// it after confirming the change so it isn't missed. Say plainly that
-			// it is reversible: an LLM playtest probe that only ever saw this
-			// post-hoc line read it as "I already made an irreversible mistake"
-			// (soak 2026-07-25) — it is not one, the split is just another `allocate`
-			// call away from changing, same as `keryx allocate` with no flags shows.
-			if warning, ok := resp["warning"].(string); ok && warning != "" {
-				fmt.Println()
-				fmt.Printf("  ⚠ %s\n", warning)
-				fmt.Println("  This is reversible: run `allocate` again with a higher grain share to fix it.")
+			if msg, ok := resp["message"].(string); ok && msg != "" {
+				fmt.Println(msg)
 			}
 			return nil
 		},
 	}
 
-	for _, key := range knownGoods {
-		var v int
-		rawPercent[key] = &v
-		cmd.Flags().IntVar(&v, key, 0, fmt.Sprintf("share (%%) of population to %s", key))
-	}
+	cmd.Flags().IntVar(&cultPercent, "cult", 0, "share (%) of population devoted to the temple")
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to allocate (default: your capital)")
-
-	// --raw "timber=40,stone=30" for programmatic use.
-	var raw string
-	cmd.Flags().StringVar(&raw, "raw", "", "comma-separated key=value in percent (e.g. timber=40,grain=30)")
-	cmd.PreRunE = func(cmd *cobra.Command, _ []string) error {
-		if raw == "" {
-			return nil
-		}
-		for _, pair := range strings.Split(raw, ",") {
-			parts := strings.SplitN(pair, "=", 2)
-			if len(parts) != 2 {
-				continue
-			}
-			v, err := strconv.Atoi(strings.TrimSpace(parts[1]))
-			if err != nil || v <= 0 {
-				continue
-			}
-			key := strings.TrimSpace(parts[0])
-			for _, k := range knownGoods {
-				if k == key {
-					*rawPercent[k] = v
-					break
-				}
-			}
-		}
-		return nil
-	}
 	return cmd
 }
 
 // printCurrentAllocation implements bare `keryx allocate`: the settlement's
-// current labor split, read-only. Built from the province goods endpoint, which
-// already carries percent/citizens/idle_citizens per good — no new route, and
-// the same numbers a PUT would echo back.
+// current production split (real, placement-driven) plus cult devotion,
+// read-only. Built from the province goods endpoint, which already carries
+// percent/citizens/idle_citizens per good — no new route needed.
 func printCurrentAllocation(c *Client, provinceID string) error {
 	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/goods", cfg.WorldID, provinceID))
 	if err != nil {
@@ -287,8 +184,8 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		fmt.Println("  tick reads it. A temple employs 15% of the city per level, and devotion beyond")
 		fmt.Println("  that is not served: to devote more, raise the temple.")
 	}
-	fmt.Println("\nTo change it, name EVERY good you want worked — `allocate` replaces the whole split,")
-	fmt.Println("it does not adjust one good (e.g. `keryx allocate --grain 80 --oil 20`).")
+	fmt.Println("\nProduction is set by placing gubbar on hexes/buildings — see `keryx place`,")
+	fmt.Println("`keryx staff`, `keryx city`. `allocate` only sets cult (temple devotion): `keryx allocate --cult 30`.")
 	return nil
 }
 

@@ -3633,12 +3633,16 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 }
 
 // LaborAlloc handles PUT /worlds/:worldID/provinces/:provinceID/labor.
-// Body: {"percent":{"timber":40,"grain":30,"silver":20}}
-// Each value is the share of the population assigned to that good (0–100).
-// Σ percent must not exceed 100; non-producible goods are rejected with a 422.
-// P4/P5: for every good EXCEPT cult the stored weight is now an inert dead write —
-// production derives from settlement_placement, not these shares. Only the 'cult'
-// row is still live (temple devotion), which is why KH1 below preserves it.
+// Body: {"percent":{"cult":30}}
+//
+// This is a CULT-DEVOTION endpoint, not a production lever. Production goods
+// were moved to gubbe placement in P4 (2026-08-08, settlement_placement) —
+// every other good's settlement_labor weight has been a dead write since
+// then. This handler used to accept a percent per good; it now accepts and
+// persists only "cult" and explicitly reports every other key as ignored,
+// rather than silently no-opping them (megaron_plan_riv_procentallokeringen.md).
+// `settlement_labor` itself is not going anywhere: cult (temple devotion)
+// still lives there and is the one row still read live (kharis/tick.go).
 func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -3660,29 +3664,20 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		Percent map[string]float64 `json:"percent"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Percent) == 0 {
-		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"percent\":{\"silver\":25,...}} (each value = % of population, Σ ≤ 100)")
+		writeError(w, http.StatusBadRequest, "invalid JSON — expected {\"percent\":{\"cult\":25}} (temple devotion, % of population; production is set with placements — see `keryx place`)")
 		return
 	}
 
-	// Verify ownership and load labor_pool.
-	// Part B: labor_pool = population (soldiers drawn from pop at recruit time).
+	// Verify ownership.
 	var settlementID uuid.UUID
-	var population int
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT s.id, s.population FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
+		`SELECT s.id FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
 		provinceID, worldID, playerID,
-	).Scan(&settlementID, &population); err != nil {
+	).Scan(&settlementID); err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
 
-	laborPool := population
-	if laborPool < 0 {
-		laborPool = 0
-	}
-
-	// Determine producible goods for this settlement using catchment tiles
-	// (same logic as RecomputeProduction — the productive ring, P1: own hex excluded).
 	var templeLevel int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = 'temple'`,
@@ -3696,142 +3691,48 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	// be filled and its kharis could never climb (sondrunda 2026-07-24).
 	cultCapacity := kharis.TempleDevotionPerLevel * float64(templeLevel)
 
-	var producibleQ, producibleR int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT prov.map_q, prov.map_r FROM settlements s
-		 JOIN provinces prov ON prov.id = s.province_id WHERE s.id = $1`,
-		settlementID,
-	).Scan(&producibleQ, &producibleR)
-	prodCatchQ, prodCatchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: producibleQ, R: producibleR}, hexgrid.CatchmentRadius))
-
-	producible := make(map[string]bool)
-	prows, err := h.pool.Query(r.Context(),
-		`SELECT DISTINCT pr.good_key
-		 FROM settlements s
-		 JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON true
-		 JOIN map_tiles mt ON mt.world_id = s.world_id AND mt.q = catchment.q AND mt.r = catchment.r
-		 JOIN production_rules pr ON
-		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
-		     AND (NOT pr.requires_coastal OR mt.coastal)
-		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
-		     AND (pr.building_type IS NULL OR EXISTS (
-		             SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = pr.building_type))
-		     AND (pr.requires_deposit IS NULL
-		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
-		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
-		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
-		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit,  false)))
-		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE s.id = $1`,
-		settlementID, prodCatchQ, prodCatchR,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load producible goods")
-		return
+	// Accept only "cult"; every other key is reported back as ignored rather
+	// than silently dropped — the whole point of this slice is that a Wanax
+	// who names grain/timber/… gets told plainly that it does nothing here.
+	cultWeight := -1.0 // sentinel: player did not name cult → KH1 preserves existing devotion below
+	pct, named := req.Percent["cult"]
+	var ignoredKeys []string
+	for key := range req.Percent {
+		if key != "cult" {
+			ignoredKeys = append(ignoredKeys, key)
+		}
 	}
-	var producibleKeys []string
-	for prows.Next() {
-		var key string
-		_ = prows.Scan(&key)
-		producible[key] = true
-		producibleKeys = append(producibleKeys, key)
-	}
-	prows.Close()
-	sort.Strings(producibleKeys)
+	sort.Strings(ignoredKeys)
 
-	// Validate: only producible goods, percent ∈ [0,100]; Σ ≤ 100.
-	// Each value is stored as weight = percent/100. Post-P4 these weights are inert
-	// for every good except cult (see the header comment); the validation is kept so
-	// the endpoint stays honest about what it accepts.
-	totalPct := 0.0
-	filtered := make(map[string]float64)
-	cultWeight := -1.0 // sentinel: player did not name cult → keep the floor below
-	for key, pct := range req.Percent {
+	if named {
 		if pct < 0 || pct > 100 {
-			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("percent for %s must be between 0 and 100", key))
+			writeError(w, http.StatusUnprocessableEntity, "percent for cult must be between 0 and 100")
 			return
 		}
-		if key == "cult" {
-			// Cult (devotion) is allocatable up to the temple's capacity and is
-			// ADDITIVE — it is NOT added to totalPct and NOT gated on producibility,
-			// so devoting more of the city never competes with grain/timber/… .
-			if templeLevel == 0 {
-				writeError(w, http.StatusUnprocessableEntity,
-					"cult (devotion) needs a temple here — build one first")
-				return
-			}
-			cw := pct / 100.0
-			if cw < kharis.TempleDevotionPerLevel {
-				cw = kharis.TempleDevotionPerLevel // never below the holy floor
-			}
-			if cw > cultCapacity {
-				writeError(w, http.StatusUnprocessableEntity,
-					fmt.Sprintf("cult capped at %.0f%% by your level-%d temple — build a higher temple to devote more of the city",
-						cultCapacity*100, templeLevel))
-				return
-			}
-			cultWeight = cw
-			continue
-		}
-		if !producible[key] {
-			hint := ""
-			switch key {
-			case "copper":
-				hint = " (requires mine + hills catchment tile with copper deposit)"
-			case "tin":
-				hint = " (requires mine + mountain_limestone catchment tile with tin deposit)"
-			case "silver":
-				hint = " (requires silver_mine + catchment tile with silver deposit)"
-			case "wine":
-				hint = " (requires winery + hills/plains/scrub_maquis catchment tile)"
-			}
+		if templeLevel == 0 {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("%s is not producible at this settlement%s — producible here: %s",
-					key, hint, strings.Join(producibleKeys, ", ")))
+				"cult (devotion) needs a temple here — build one first")
 			return
 		}
-		if pct > 0 {
-			filtered[key] = pct
-			totalPct += pct
+		cw := pct / 100.0
+		if cw < kharis.TempleDevotionPerLevel {
+			cw = kharis.TempleDevotionPerLevel // never below the holy floor
 		}
-	}
-	if totalPct == 0 {
-		if cultWeight >= 0 {
+		if cw > cultCapacity {
 			writeError(w, http.StatusUnprocessableEntity,
-				"cult is additive — also name your producing jobs (allocate replaces the whole distribution: grain/timber/… drop to 0% if omitted)")
+				fmt.Sprintf("cult capped at %.0f%% by your level-%d temple — build a higher temple to devote more of the city",
+					cultCapacity*100, templeLevel))
 			return
 		}
-		writeError(w, http.StatusUnprocessableEntity, "no valid producible goods in percent")
-		return
-	}
-	if totalPct > 100.0001 {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("labor over-allocated: percentages sum to %.1f%% but must not exceed 100%% — lower one or more shares",
-				totalPct))
-		return
-	}
-
-	// Weight map for the audit event below — P4-arvet i province.go removed the
-	// break-even guardrail this used to feed (megaron_plan_p4_arvet_i_province.md
-	// §1 yta 2: it warned about a starvation this weight-based lever cannot
-	// actually cause post-P4 — production comes from settlement_placement now,
-	// not these weights). weights themselves stay: LaborAllocated's audit
-	// payload is unchanged, frozen event semantics.
-	weights := make(map[string]float64, len(filtered))
-	for key, pct := range filtered {
-		weights[key] = pct / 100.0
+		cultWeight = cw
 	}
 
 	// KH1 (decision A, locked 2026-08-07): when the client omits cult, the server
 	// PRESERVES the settlement's current devotion instead of resetting it to the
-	// floor. The DELETE below wipes every settlement_labor row, cult included, and
-	// the re-insert further down would otherwise pin cult back to the bare floor —
-	// so a level-3 temple at 45% would silently drop to 15% just because a
-	// re-allocation named only its producing jobs. Keryx/agents that don't resend
-	// cult must behave identically to a web client that does. Read the live value
-	// now and carry it forward, clamped to the temple's capacity (in case the
-	// temple was downgraded since the value was set).
+	// floor. Keryx/agents that don't resend cult must behave identically to a
+	// web client that does. Read the live value now and carry it forward,
+	// clamped to the temple's capacity (in case the temple was downgraded
+	// since the value was set).
 	if cultWeight < 0 && templeLevel > 0 {
 		var existing float64
 		if err := h.pool.QueryRow(r.Context(),
@@ -3847,6 +3748,24 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	explainer := "labor percentages only apply to cult (temple devotion); production is set with placements — see `keryx place`"
+	if len(ignoredKeys) > 0 {
+		explainer = fmt.Sprintf("%s (ignored: %s)", explainer, strings.Join(ignoredKeys, ", "))
+	}
+
+	if templeLevel == 0 {
+		// No temple → no devotion lever at all; nothing to persist.
+		writeJSON(w, http.StatusOK, map[string]any{
+			"message": "this settlement has no temple — " + explainer,
+		})
+		return
+	}
+
+	cw := cultWeight
+	if cw < 0 {
+		cw = kharis.TempleDevotionPerLevel // player didn't name cult → hold the floor
+	}
+
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -3854,47 +3773,18 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Clear existing allocations then upsert new ones as weights (percent/100).
-	// Inert for non-cult goods post-P4; the cult row is restored/preserved below.
+	// Targeted UPSERT on the cult row only. This replaces the old
+	// DELETE-all-then-reinsert, which is what made KH1's preservation logic
+	// necessary in the first place — touching only the cult row means there
+	// is no other row to lose.
 	if _, err := tx.Exec(r.Context(),
-		`DELETE FROM settlement_labor WHERE settlement_id = $1`, settlementID,
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight)
+		 VALUES ($1, 'cult', $2)
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight = $2`,
+		settlementID, cw,
 	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not clear labor")
+		writeError(w, http.StatusInternalServerError, "could not apply cult labor")
 		return
-	}
-	for key, pct := range filtered {
-		wt := pct / 100.0
-		if _, err := tx.Exec(r.Context(),
-			`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-			 VALUES ($1,$2,$3) ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight=$3`,
-			settlementID, key, wt,
-		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not save labor weight")
-			return
-		}
-	}
-
-	// Server-floor: always ensure a baseline cult weight (0.15) so temples are
-	// never inert regardless of agent/Wanax allocation choices. This satisfies
-	// the "starter city self-sufficient" and "kharis 5% floor always" invariants.
-	// Cult weight is additive (does not compete with grain workers — 15% of pop
-	// serves the temple alongside other duties), so grain self-sufficiency is
-	// unaffected. Only applied when the settlement has a temple; no-op otherwise
-	// (ON CONFLICT DO NOTHING skips the insert if agent already allocated cult ≥ 0.15).
-	if templeLevel > 0 {
-		cw := cultWeight
-		if cw < 0 {
-			cw = kharis.TempleDevotionPerLevel // player didn't name cult → hold the floor
-		}
-		if _, err := tx.Exec(r.Context(),
-			`INSERT INTO settlement_labor (settlement_id, good_key, weight)
-			 VALUES ($1, 'cult', $2)
-			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight = $2`,
-			settlementID, cw,
-		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not apply cult labor")
-			return
-		}
 	}
 
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
@@ -3907,73 +3797,23 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Audit the (previously silent) re-allocation so a future forensic can
-	// attribute a starvation collapse to the labour lever that caused it.
-	// stream = settlement (StreamProvince, keyed by settlementID — the
-	// settlement's own stream). No break-even in the payload any more — see
-	// the weights comment above.
+	// Audit the devotion change. LaborAllocated's semantics ("the labour
+	// weights changed") are unchanged and frozen forever (CLAUDE.md §Events) —
+	// only the payload shrank to the one weight that is still real.
 	if h.eventStore != nil {
-		auditPayload := map[string]any{"weights": weights}
+		auditPayload := map[string]any{"weights": map[string]float64{"cult": cw}}
 		_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamProvince, "LaborAllocated",
 			auditPayload, worldID, nil)
 	}
 
-	// Workplace-capacity guardrail: accept the allocation regardless (the
-	// Wanax's freedom), but say so when part of it has no workplace to serve
-	// at and will produce nothing. Silent over-allocation was the top
-	// friction finding of the 2026-07-23 playtest — "ingenting säger om detta
-	// är mättat". (The grain break-even guardrail that used to sit here is
-	// gone — megaron_plan_p4_arvet_i_province.md §1 yta 2 — this is the ONE
-	// guardrail left in LaborAlloc, left untouched per the plan's scope.)
-	var warning string
-	capacities, wpLevels := loadLaborCapacities(r.Context(), h.pool, settlementID, laborPool)
-	var overflows []string
-	for good, weight := range weights {
-		capacity, known := capacities[good]
-		if !known || weight <= capacity {
-			continue
-		}
-		unserved := int((weight - capacity) * float64(laborPool))
-		if unserved < 1 {
-			continue
-		}
-		hint := "bygg arbetsplatsen"
-		if lvl := wpLevels[good]; lvl > 0 {
-			hint = fmt.Sprintf("höj arbetsplatsen (nivå %d nu)", lvl)
-		}
-		overflows = append(overflows, fmt.Sprintf(
-			"%s: %.0f%% allokerat men arbetsplatserna rymmer bara %.0f%% → %d medborgare producerar inget (%s)",
-			good, weight*100, capacity*100, unserved, hint))
+	message := "cult devotion updated and production recomputed"
+	if len(ignoredKeys) > 0 {
+		message += "; " + explainer
 	}
-	if len(overflows) > 0 {
-		sort.Strings(overflows)
-		over := "överallokering: " + strings.Join(overflows, "; ")
-		if warning == "" {
-			warning = over
-		} else {
-			warning += " | " + over
-		}
-	}
-
-	// Echo both the percent levers and the resulting citizen counts: the share
-	// auto-scales with population, but real output depends on the absolute number
-	// of citizens (more citizens produce more, even at a lower percent).
-	citizens := make(map[string]int, len(filtered))
-	for key, pct := range filtered {
-		citizens[key] = int(pct / 100.0 * float64(laborPool))
-	}
-	resp := map[string]any{
-		"percent":       filtered,
-		"citizens":      citizens,
-		"idle_percent":  100.0 - totalPct,
-		"idle_citizens": int((100.0 - totalPct) / 100.0 * float64(laborPool)),
-		"labor_pool":    laborPool,
-		"message":       "labor allocation updated and production recomputed",
-	}
-	if warning != "" {
-		resp["warning"] = warning
-	}
-	writeJSON(w, http.StatusOK, resp)
+	writeJSON(w, http.StatusOK, map[string]any{
+		"cult_percent": cw * 100.0,
+		"message":      message,
+	})
 }
 
 // MarketWants handles GET /worlds/{worldID}/market/wants.

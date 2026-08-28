@@ -52,15 +52,10 @@ export async function saveLaborAlloc(provinceID) {
   const percent = {};
   document.querySelectorAll('.labor-input').forEach(inp => {
     const v = parseFloat(inp.value||0)||0;
-    // Cult (devotion) is always named explicitly when its input exists (even
-    // at 0 — the server floors it), never left out like the other goods'
-    // v>0 filter would. PUT .../labor REPLACES the whole allocation and any
-    // good not named drops to 0% — for cult that means dropping to the
-    // server's floor. Omitting it here on a save that only touches e.g.
-    // timber would silently flatten a higher devotion set earlier (by keryx
-    // or an earlier web session) down to the floor. Always echoing back
-    // the value shown (which loadCityDrawer seeds from the live devotion)
-    // keeps an untouched devotion exactly where it was.
+    // PUT .../labor is cult-only now (megaron_plan_riv_procentallokeringen.md
+    // — production is set via placements, see citygrid.js). This is the only
+    // .labor-input in the DOM (data-good="cult"); always name it explicitly,
+    // even at 0, so an untouched devotion is echoed back rather than omitted.
     if (v > 0 || inp.dataset.good === 'cult') percent[inp.dataset.good] = v;
   });
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/labor`, {
@@ -70,9 +65,8 @@ export async function saveLaborAlloc(provinceID) {
   });
   if (res.ok) {
     if (msg) msg.textContent = 'Saved!';
-    // Cult (devotion) is additive and deliberately excluded from the response's
-    // percent/citizens/idle_percent (server never counts it in the ≤100% sum —
-    // province.go LaborAlloc, `filtered` never gets a "cult" key). Re-read the
+    // The PUT response only carries cult_percent/message now (server-side
+    // narrowing, megaron_plan_riv_procentallokeringen.md). Re-read the
     // settlement so the shown value is the server's authoritative post-clamp
     // devotion (what was typed may have been above the temple's cap, or below
     // the 15%-per-level floor).
