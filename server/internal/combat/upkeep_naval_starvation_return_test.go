@@ -373,3 +373,157 @@ func TestUpkeep_NavalStarvationReturn_Idempotent(t *testing.T) {
 		t.Errorf("UnitReturnedStarving notifications = %d, want exactly 1", notifiedCount)
 	}
 }
+
+// 5. Land unit not touched (plan §5 criterion 4): maybeStarvationReturn is
+// only ever called from applyAttrition's NAVAL branch (upkeep.go:805) — a
+// land cohort's own starvation path loses SIZE, not crew, and never reaches
+// the call at all. That makes this true by construction today, but a call
+// site is not a contract: the day someone moves or duplicates that call,
+// this stops being true silently. This test exercises the real path — a
+// spearman cohort starved for enough ticks to fall under half its starting
+// size — and proves no scheduled return-arrival and no UnitReturnedStarving
+// event are ever produced for it, and its status is left exactly as it was.
+func TestUpkeep_NavalStarvationReturn_LandUnitNotTouched(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	f := newStarvationFixture(t, pool, "starve-land")
+	seedGoods(t, pool, f.capitalID, 0, 0, 100000) // no grain at all
+
+	var unitID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+		                    q, r, settlement_id, support_settlement_id, home_settlement_id)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'positioned', 0, 0, $3, $3, $3)
+		 RETURNING id`,
+		f.worldID, f.ownerID, f.capitalID,
+	).Scan(&unitID); err != nil {
+		t.Fatalf("create starving land unit: %v", err)
+	}
+
+	broadcaster := &fakeBroadcaster{}
+	h := newStarvationUpkeepHandler(pool, broadcaster)
+
+	// 10%/tick ceil-rounded loss on size 100 crosses below half (50) by tick 7
+	// (100→90→81→72→64→57→51→45); nine ticks leaves margin.
+	for i := int64(1); i <= 9; i++ {
+		if err := h.Handle(ctx, events.ScheduledEvent{ID: 99000 + i, WorldID: f.worldID}); err != nil {
+			t.Fatalf("upkeep Handle tick %d: %v", i, err)
+		}
+	}
+
+	var status string
+	var size int
+	if err := pool.QueryRow(ctx, `SELECT status, size FROM units WHERE id = $1`, unitID).Scan(&status, &size); err != nil {
+		t.Fatalf("read land unit: %v", err)
+	}
+	if size >= 50 {
+		t.Fatalf("test setup: size = %d after 9 starved ticks, want <50 (else the below-half case was never exercised)", size)
+	}
+	if status != "positioned" {
+		t.Errorf("land unit status = %q after starving to size %d, want positioned unchanged — naval starvation return must never touch a land unit", status, size)
+	}
+
+	var scheduledCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM scheduled_events
+		 WHERE world_id = $1 AND event_type = 'UnitArrival' AND (payload->>'unit_id')::uuid = $2`,
+		f.worldID, unitID,
+	).Scan(&scheduledCount); err != nil {
+		t.Fatalf("count scheduled return arrivals: %v", err)
+	}
+	if scheduledCount != 0 {
+		t.Errorf("scheduled return-arrival events for land unit = %d, want 0", scheduledCount)
+	}
+
+	var starvingEvents int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'UnitReturnedStarving'`, unitID,
+	).Scan(&starvingEvents); err != nil {
+		t.Fatalf("count UnitReturnedStarving events: %v", err)
+	}
+	if starvingEvents != 0 {
+		t.Errorf("UnitReturnedStarving events for land unit = %d, want 0", starvingEvents)
+	}
+}
+
+// 6. Already marching, not redispatched (plan §5 criterion 5): a galley whose
+// status is already 'marching' when its starved crew crosses the threshold
+// must not be sent through dispatchReturnHome a second time.
+// maybeStarvationReturn's own `u.status != "positioned"` guard (upkeep.go:866)
+// is exactly the same idempotency guard the cross-tick test above exercises
+// for the marching-after-dispatch case — this test covers the OTHER way a
+// ship can already be marching: it was already under sail (e.g. given an
+// explicit order, or mid an earlier return) before this tick's attrition
+// ever ran. Same guard, different starting condition, worth its own proof.
+func TestUpkeep_NavalStarvationReturn_AlreadyMarchingNotRedispatched(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	f := newStarvationFixture(t, pool, "starve-already-marching")
+	seedGoods(t, pool, f.capitalID, 0, 100000, 100000)
+
+	// Galley (full crew 20 per unit.CrewFor), crew already at exactly half
+	// (10), status 'marching' from the very start — never 'positioned' at
+	// any point this test observes.
+	var shipID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
+		                    q, r, support_settlement_id, home_settlement_id, provisions)
+		 VALUES ($1, $2, 'galley', 'naval', 1, 10, 'marching', 3, 0, $3, $4, 0)
+		 RETURNING id`,
+		f.worldID, f.ownerID, f.capitalID, f.capitalID,
+	).Scan(&shipID); err != nil {
+		t.Fatalf("create already-marching starving galley: %v", err)
+	}
+
+	broadcaster := &fakeBroadcaster{}
+	h := newStarvationUpkeepHandler(pool, broadcaster)
+
+	// Three ticks (crew 10→8→6→4, navalAttritionCrewStep=2) — well clear of
+	// disbanding at 0, so the marching status is never overwritten by that
+	// unrelated path either.
+	for i := int64(1); i <= 3; i++ {
+		if err := h.Handle(ctx, events.ScheduledEvent{ID: 99500 + i, WorldID: f.worldID}); err != nil {
+			t.Fatalf("upkeep Handle tick %d: %v", i, err)
+		}
+	}
+
+	var status string
+	var crew int
+	if err := pool.QueryRow(ctx, `SELECT status, crew FROM units WHERE id = $1`, shipID).Scan(&status, &crew); err != nil {
+		t.Fatalf("read ship: %v", err)
+	}
+	if crew >= 10 {
+		t.Fatalf("test setup: crew = %d after 3 starved ticks while marching, want <10 (else the already-marching attrition path was never exercised)", crew)
+	}
+	if status != "marching" {
+		t.Errorf("ship status = %q after starving further while already marching, want marching unchanged", status)
+	}
+
+	var scheduledCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM scheduled_events
+		 WHERE world_id = $1 AND event_type = 'UnitArrival' AND (payload->>'unit_id')::uuid = $2`,
+		f.worldID, shipID,
+	).Scan(&scheduledCount); err != nil {
+		t.Fatalf("count scheduled return arrivals: %v", err)
+	}
+	if scheduledCount != 0 {
+		t.Errorf("scheduled return-arrival events for already-marching ship = %d, want 0 — no second dispatch", scheduledCount)
+	}
+
+	var starvingEvents int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'UnitReturnedStarving'`, shipID,
+	).Scan(&starvingEvents); err != nil {
+		t.Fatalf("count UnitReturnedStarving events: %v", err)
+	}
+	if starvingEvents != 0 {
+		t.Errorf("UnitReturnedStarving events for already-marching ship = %d, want 0", starvingEvents)
+	}
+
+	for _, k := range broadcaster.notified {
+		if k == "UnitReturnedStarving" {
+			t.Errorf("owner was notified with kind UnitReturnedStarving for a ship that was already marching — no second dispatch means no second notification")
+		}
+	}
+}
