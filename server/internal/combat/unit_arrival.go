@@ -450,7 +450,7 @@ func (h *UnitArrivalHandler) exploreArrived(
 		slog.Warn("explore arrival: live-radius FOW sweep failed", "unit", u.id, "err", err)
 	}
 
-	return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID)
+	return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonExplore)
 }
 
 // reportScoutFindings tells the owner what their scout found at the far hex it
@@ -508,16 +508,36 @@ func (h *UnitArrivalHandler) reportScoutFindings(
 		"copper", copperDep, "tin", tinDep, "silver", silverDep, "cedar", cedarDep)
 }
 
+// returnReason selects which event type and notification dispatchReturnHome
+// emits at the end of the dance. Eventsemantik is frozen forever (CLAUDE.md
+// §Events) — a new caller motive gets a new returnReason + a new event type,
+// never a reinterpretation of an existing one. The route/scheduling logic
+// itself never branches on this; only the tail (event + notify) does.
+type returnReason int
+
+const (
+	// returnReasonExplore covers both existing callers of dispatchReturnHome
+	// (exploreArrived's target-reached auto-return and HandleSentryReturn's
+	// patrol timer) — today's exact behaviour, unchanged.
+	returnReasonExplore returnReason = iota
+	// returnReasonStarvation: a positioned naval unit's crew fell to
+	// navalStarvationReturnCrewFraction of its full crew (upkeep.go
+	// applyAttrition) and it turns for home on its own.
+	returnReasonStarvation
+)
+
 // dispatchReturnHome turns a field unit around and marches it back to its home
 // settlement's departure hex (the settlement's own province hex for land units,
 // its nearest sea neighbour for naval). Shared by the explore auto-return
-// (exploreArrived) and the naval sentry patrol timer (HandleSentryReturn): both
-// need the identical "route home via A*, mark marching intent=explore_return,
-// schedule the return arrival" dance. fromQ/fromR is the hex the unit turns home
-// FROM. Assumes u.homeSettlementID != nil (callers guard it).
+// (exploreArrived), the naval sentry patrol timer (HandleSentryReturn), and the
+// naval starvation auto-return (upkeep.go's applyAttrition): all three need the
+// identical "route home via A*, mark marching intent=explore_return, schedule
+// the return arrival" dance — only the reason for turning differs, and only the
+// tail event/notification reflects that. fromQ/fromR is the hex the unit turns
+// home FROM. Assumes u.homeSettlementID != nil (callers guard it).
 func (h *UnitArrivalHandler) dispatchReturnHome(
 	ctx context.Context, tx pgx.Tx,
-	u unitRow, fromQ, fromR int, worldID uuid.UUID,
+	u unitRow, fromQ, fromR int, worldID uuid.UUID, reason returnReason,
 ) error {
 	var homeQ, homeR int
 	if err := tx.QueryRow(ctx,
@@ -611,6 +631,32 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
 		return fmt.Errorf("dispatchReturnHome: schedule return arrival: %w", err)
+	}
+
+	// Tail: reason picks the event type + notification kind. The route/dispatch
+	// above is identical for every reason — only what the Wanax is told differs.
+	if reason == returnReasonStarvation {
+		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitReturnedStarving,
+			unit.UnitReturnedStarvingPayload{
+				UnitID:           u.id,
+				Q:                fromQ,
+				R:                fromR,
+				HomeSettlementID: *u.homeSettlementID,
+				ArrivesAt:        arrivesAt.Format(time.RFC3339),
+				CrewAfter:        u.crew,
+			}, worldID, nil)
+
+		if h.hub != nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitReturnedStarving", 3, map[string]any{
+				"unit_id":    u.id,
+				"q":          fromQ,
+				"r":          fromR,
+				"arrives_at": arrivesAt,
+				"crew_after": u.crew,
+			})
+		}
+		slog.Info("field unit turning for home (starving)", "unit", u.id, "from_q", fromQ, "from_r", fromR, "home_q", homeQ, "home_r", homeR, "crew_after", u.crew)
+		return nil
 	}
 
 	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitExploreReturned,
@@ -845,7 +891,7 @@ func (h *UnitArrivalHandler) HandleSentryReturn(ctx context.Context, e events.Sc
 		return tx.Commit(ctx)
 	}
 
-	if err := h.dispatchReturnHome(ctx, tx, u, u.q, u.r, payload.WorldID); err != nil {
+	if err := h.dispatchReturnHome(ctx, tx, u, u.q, u.r, payload.WorldID, returnReasonExplore); err != nil {
 		return err
 	}
 	return tx.Commit(ctx)

@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -189,7 +190,16 @@ const (
 	// ~25, en merchantman (crew 10) ~5. Kalibrera via speldygnstest/soak, inte
 	// härifrån. megaron_plan_upkeep_attrition.md §Form, §Steg.
 	navalAttritionCrewStep = 2
-	upkeepDesertionStep    = 10 // män förlorade per tick vid silver-brist (efter tröskel)
+	// navalStarvationReturnCrewFraction: vid vilken andel av full besättning en
+	// svältande sjöenhet vänder hem av sig själv. HALVA är ett resonerat
+	// startvärde, inte ett mätt: legibelt i världen ("halva besättningen är
+	// borta, kaptenen vänder"), tål en enstaka spannmålssvacka utan att avbryta
+	// varje patrull, och lämnar ~10 tick marginal för en galär (crew 20,
+	// förlust 2/tick) att faktiskt hinna hem. ⚠️ Kalibreras mot en levande
+	// värld, inte härifrån — samma spärr som navalAttritionCrewStep bär.
+	// megaron_plan_svaltretur_till_sjoss.md §3.
+	navalStarvationReturnCrewFraction = 0.5
+	upkeepDesertionStep               = 10 // män förlorade per tick vid silver-brist (efter tröskel)
 	// 3 → 72 (Timothy 2026-08-06), an INVARIANT-PRESERVING retune, not a balance
 	// change: this counts macro-tick FIRINGS, and those went from every 24 ticks
 	// to every tick when the tick became the day. 3 firings × 24 ticks = 72 ticks
@@ -232,6 +242,14 @@ type upkeepUnitRow struct {
 	// bytt ägare — se queryns korrelerade subselect — och det betyder att ingen
 	// sold betalas, inte att någon annan stad tar över.
 	supportSettlementID *uuid.UUID
+	// q, r, homeSettlementID: bara lästa för den svältande sjöretur-triggern
+	// (maybeStarvationReturn, megaron_plan_svaltretur_till_sjoss.md §4 steg C3)
+	// — utökade på den befintliga SELECT:en i stället för en extra rundtur per
+	// svältande skepp per tick. NULL:bara: en garnisonerad enhet har ingen
+	// karthex (units.q/r har ingen NOT NULL).
+	q                *int
+	r                *int
+	homeSettlementID *uuid.UUID
 }
 
 // UpkeepHandler applies grain + silver upkeep to all active units each tick.
@@ -242,13 +260,23 @@ type UpkeepHandler struct {
 	store     *events.Store
 	hub       Broadcaster
 	soldShare float64 // Del C: garrison sold spent back into its town
+	// arrivals shares dispatchReturnHome with the explore auto-return and the
+	// naval sentry patrol timer (megaron_plan_svaltretur_till_sjoss.md §2) — a
+	// starving ship turns home via the exact same route/scheduling mechanics,
+	// so UpkeepHandler borrows the already-constructed *UnitArrivalHandler
+	// instead of duplicating it or injecting a second clock. May be nil (older
+	// tests that only exercise upkeep's non-naval-return paths); every use is
+	// nil-guarded in maybeStarvationReturn.
+	arrivals *UnitArrivalHandler
 }
 
 // NewUpkeepHandler creates an UpkeepHandler. hub may be nil (tests) — every
 // NotifyPlayer call is nil-guarded, matching the other combat handlers. The
 // sold-circulation share is read from env here; tests set h.soldShare directly.
-func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster) *UpkeepHandler {
-	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, soldShare: UpkeepSoldShare()}
+// arrivals may be nil (see the field doc) — main.go passes the *UnitArrivalHandler
+// it already constructs (it must be built first; main.go does this).
+func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster, arrivals *UnitArrivalHandler) *UpkeepHandler {
+	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, soldShare: UpkeepSoldShare(), arrivals: arrivals}
 }
 
 // Handle processes a ScheduledUpkeepTick event.
@@ -286,7 +314,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		          WHERE c.cargo_unit_id = u.id AND c.world_id = u.world_id),
 		        (SELECT s.id FROM settlements s
 		          WHERE s.id = u.support_settlement_id AND s.owner_id = u.owner_id),
-		        u.status
+		        u.status, u.q, u.r, u.home_settlement_id
 		 FROM units u
 		 WHERE u.world_id = $1
 		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing')
@@ -308,7 +336,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		var u upkeepUnitRow
 		if err := rows.Scan(&u.id, &u.ownerID, &u.unitType, &u.category,
 			&u.size, &u.crew, &u.settlementID, &u.unpaidPeriods, &u.cargoUnitID, &u.carrierID,
-			&u.supportSettlementID, &u.status); err != nil {
+			&u.supportSettlementID, &u.status, &u.q, &u.r, &u.homeSettlementID); err != nil {
 			return fmt.Errorf("upkeep: scan unit: %w", err)
 		}
 		units = append(units, u)
@@ -773,6 +801,9 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 				`UPDATE units SET crew = $1, updated_at = now() WHERE id = $2`,
 				newCrew, u.id,
 			)
+			if updateErr == nil {
+				h.maybeStarvationReturn(ctx, u, newCrew, worldID)
+			}
 		}
 	} else {
 		lost = int(math.Ceil(float64(u.size) * upkeepAttritionStepPercent / 100))
@@ -812,6 +843,69 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 	slog.Info("upkeep: grain attrition", "unit", u.id, "lost", lost, "disbanded", disbanded)
 	h.notifyUnitLoss(ctx, u, worldID, sid, "UnitAttrition", "grain_shortage", lost, disbanded)
 	return disbanded
+}
+
+// maybeStarvationReturn sends a positioned naval unit home under its own
+// command once grain attrition has cut its crew to
+// navalStarvationReturnCrewFraction or below of its type's full crew
+// (megaron_plan_svaltretur_till_sjoss.md). A ship at sea receives no orders —
+// messengers reach positioned land units and marching units, never a ship
+// standing sentry out on the water — so a Wanax who is away has no channel to
+// recall it before it starves. The decision has to live in the unit itself.
+// Called only from applyAttrition's naval branch, after the crew column has
+// already been written to newCrew.
+//
+// Scope (contract §3): naval only (guaranteed by the caller), status must
+// still be 'positioned' (a unit already turning home this tick for any other
+// reason, or already marching, is left alone — this doubles as the
+// cross-tick idempotency guard: dispatchReturnHome flips status to
+// 'marching', so a later tick's fresh read of this unit no longer matches),
+// and home_settlement_id must be set (a homeless ship has nowhere to return
+// to — no dispatch, no error, just a debug log).
+func (h *UpkeepHandler) maybeStarvationReturn(ctx context.Context, u upkeepUnitRow, newCrew int, worldID uuid.UUID) {
+	if h.arrivals == nil || u.status != "positioned" {
+		return
+	}
+	full := unit.CrewFor(unit.Type(u.unitType))
+	if full <= 0 {
+		return
+	}
+	if float64(newCrew) > float64(full)*navalStarvationReturnCrewFraction {
+		return
+	}
+	if u.homeSettlementID == nil {
+		slog.Debug("upkeep: starving ship has no home settlement, staying put", "unit", u.id)
+		return
+	}
+	if u.q == nil || u.r == nil {
+		// Defensive: a 'positioned' unit should always carry a map hex.
+		slog.Warn("upkeep: starving ship is positioned but has no q/r, cannot turn home", "unit", u.id)
+		return
+	}
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		slog.Error("upkeep: starvation return: begin tx", "unit", u.id, "err", err)
+		return
+	}
+	defer tx.Rollback(ctx)
+
+	ar := unitRow{
+		id:               u.id,
+		ownerID:          u.ownerID,
+		utype:            u.unitType,
+		category:         u.category,
+		crew:             newCrew,
+		cargoUnitID:      u.cargoUnitID,
+		homeSettlementID: u.homeSettlementID,
+	}
+	if err := h.arrivals.dispatchReturnHome(ctx, tx, ar, *u.q, *u.r, worldID, returnReasonStarvation); err != nil {
+		slog.Error("upkeep: starvation return: dispatch", "unit", u.id, "err", err)
+		return
+	}
+	if err := tx.Commit(ctx); err != nil {
+		slog.Error("upkeep: starvation return: commit", "unit", u.id, "err", err)
+	}
 }
 
 // recordUnpaid increments unpaid_periods and applies desertion if the threshold is reached.

@@ -62,6 +62,7 @@ function coalesce(key, fn, ms = 2000) {
 const DATA_KINDS = new Set([
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
+  'UnitReturnedStarving',
 ]);
 
 // fullResync refetches exactly what a fresh page load would — provinces, units,
@@ -176,7 +177,7 @@ export function initWS() {
         // via DOMAIN_DRAWER, where the offer thread actually lives.
         window.addNotifChip('trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
-      if (['UnitArrived','UnitExploreReturned','ArmyArrival'].includes(msg.kind)) {
+      if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its
         // position changed. Refresh the fog map and the unit layer immediately
         // rather than waiting for the 30 s poll.

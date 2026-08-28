@@ -176,7 +176,7 @@ func TestUpkeepSoldCirculation(t *testing.T) {
 
 	store := events.NewStore(pool)
 	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
-	h := NewUpkeepHandler(pool, sched, store, nil)
+	h := NewUpkeepHandler(pool, sched, store, nil, nil)
 	h.soldShare = 0.7
 
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
@@ -289,7 +289,7 @@ func TestUpkeepSoldShareZeroIdentity(t *testing.T) {
 		t.Fatalf("create garrison: %v", err)
 	}
 
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil, nil)
 	h.soldShare = 0
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)

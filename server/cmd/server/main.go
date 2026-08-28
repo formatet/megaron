@@ -195,7 +195,7 @@ func main() {
 	worker.Register(events.ScheduledSiegeCapitulation, siegeCapitulationH.Handle)
 	collapseH := combat.NewCollapseSettlementHandler(pool, eventStore, scheduler, hub)
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
-	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub)
+	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub, unitArrivalH)
 	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
 	worker.Register(events.ScheduledFoodTick, foodTickH.Handle)
 	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler, hub)

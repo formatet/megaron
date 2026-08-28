@@ -27,6 +27,15 @@ const (
 	EventUnitMarchRedirected = "MarchRedirected"    // redirect messenger reached a marching unit; new course set
 	EventUnitExploreReturned = "UnitExploreReturned" // explore order reached its target; unit turned for home
 	EventUnitScoutReport     = "ScoutReport"          // explore order revealed its target hex; terrain + deposits found
+	// EventUnitReturnedStarving: a positioned naval unit's crew fell to
+	// navalStarvationReturnCrewFraction (combat/upkeep.go) of its type's full
+	// crew and it turned for home on its own — a ship at sea receives no
+	// orders, so a Wanax away from the game has no channel to recall it before
+	// it starves (megaron_plan_svaltretur_till_sjoss.md). A DELIBERATELY NEW
+	// type, never a reinterpretation of EventUnitExploreReturned — same
+	// dispatchReturnHome mechanics, different cause, and eventsemantik is
+	// frozen forever (CLAUDE.md §Events).
+	EventUnitReturnedStarving = "UnitReturnedStarving"
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -202,6 +211,19 @@ type UnitExploreReturnedPayload struct {
 	R                int       `json:"r"`
 	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
 	ArrivesAt        string    `json:"arrives_at"` // RFC3339
+}
+
+// UnitReturnedStarvingPayload is emitted when a starving naval unit turns for
+// home on its own (EventUnitReturnedStarving). CrewAfter is the crew count
+// AFTER the attrition step that triggered the return — the outcome that
+// caused the turn, not a pending threshold check.
+type UnitReturnedStarvingPayload struct {
+	UnitID           uuid.UUID `json:"unit_id"`
+	Q                int       `json:"q"`
+	R                int       `json:"r"`
+	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
+	ArrivesAt        string    `json:"arrives_at"` // RFC3339
+	CrewAfter        int       `json:"crew_after"`
 }
 
 // UnitScoutReportPayload is emitted when an explore-ordered unit reaches its

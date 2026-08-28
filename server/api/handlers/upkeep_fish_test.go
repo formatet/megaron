@@ -98,7 +98,7 @@ func TestUpkeep_AK4_EmptyGrainLargeFish_StillAttrits_FishUntouched(t *testing.T)
 	sizeBefore := 100
 
 	h := combat.NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())),
-		events.NewStore(pool), nil)
+		events.NewStore(pool), nil, nil)
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)
 	}

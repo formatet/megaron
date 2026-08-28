@@ -98,7 +98,7 @@ func TestUpkeepDesertion_CascadesEmbarkedCargo(t *testing.T) {
 	store := events.NewStore(pool)
 	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
 	fb := &fakeBroadcaster{}
-	h := NewUpkeepHandler(pool, sched, store, fb)
+	h := NewUpkeepHandler(pool, sched, store, fb, nil)
 
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)

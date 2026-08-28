@@ -168,6 +168,28 @@ func TestExploreOrder_AutoReturn(t *testing.T) {
 		t.Errorf("scheduled return-arrival events = %d, want 1", scheduledCount)
 	}
 
+	// Regression pin (megaron_plan_svaltretur_till_sjoss.md §4 steg A): the
+	// explore auto-return must keep emitting EXACTLY the event type it always
+	// has, never the new starvation-return type dispatchReturnHome's reason
+	// parameter introduced.
+	var exploreEvents, starvingEvents int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'UnitExploreReturned'`, unitID,
+	).Scan(&exploreEvents); err != nil {
+		t.Fatalf("count UnitExploreReturned events: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'UnitReturnedStarving'`, unitID,
+	).Scan(&starvingEvents); err != nil {
+		t.Fatalf("count UnitReturnedStarving events: %v", err)
+	}
+	if exploreEvents != 1 {
+		t.Errorf("UnitExploreReturned events = %d, want 1 — the explore auto-return's event type must be unchanged", exploreEvents)
+	}
+	if starvingEvents != 0 {
+		t.Errorf("UnitReturnedStarving events = %d, want 0 — the explore auto-return must never emit the starvation-return type", starvingEvents)
+	}
+
 	// ── Arrival 2: the return leg completes — re-garrison at home ──────────
 	tx2, err := pool.Begin(ctx)
 	if err != nil {

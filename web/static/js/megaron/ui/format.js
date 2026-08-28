@@ -365,6 +365,16 @@ export function notifText(kind, body) {
       const eta = fmtSoon(body.arrives_at);
       return `Scout returning home${eta ? ` — arrives ${eta}` : ''}`;
     }
+    case 'UnitReturnedStarving': {
+      // Payload per dispatchReturnHome's returnReasonStarvation branch
+      // (megaron_plan_svaltretur_till_sjoss.md) — a ship at sea receives no
+      // orders, so this turn-for-home is the unit's own decision, not one the
+      // Wanax gave. Text must say why (crew starved to half strength) and what
+      // it costs (a thinned crew sails slower), never reuse the scout's text.
+      const eta = fmtSoon(body.arrives_at);
+      const crew = body.crew_after != null ? ` (crew down to ${body.crew_after})` : '';
+      return `Ship's crew starved to half strength${crew} — turning home on its own, sailing slower${eta ? `, arrives ${eta}` : ''}`;
+    }
     case 'OrderFailed':
       return body.reason ? `Order failed (${body.verb || '?'}): ${body.reason}` : `Order failed (${body.verb || '?'})`;
     case 'UnitRecalled':

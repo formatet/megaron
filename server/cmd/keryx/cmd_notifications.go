@@ -119,6 +119,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "UnitExploreReturned" {
 		printExploreReturnedLine(c, n)
 	}
+	if n.Kind == "UnitReturnedStarving" {
+		printStarvingReturnLine(c, n)
+	}
 	if n.Kind == "UpkeepUnpaid" {
 		printUpkeepUnpaidLine(n)
 	}
@@ -430,6 +433,33 @@ func printExploreReturnedLine(c *Client, n notificationItem) {
 		eta = ", home " + gameETA(c, t)
 	}
 	fmt.Printf("      scout reached (%d,%d) and turned for home%s\n", body.Q, body.R, eta)
+}
+
+// printStarvingReturnLine renders the human-readable follow-up to a
+// UnitReturnedStarving notification (megaron_plan_svaltretur_till_sjoss.md).
+// A ship at sea receives no orders, so this turn-for-home is the unit's OWN
+// decision when its crew starved to half strength — not something the Wanax
+// ordered. Deliberately never reuses printExploreReturnedLine's text: the
+// event type is a DIFFERENT, newly created one (eventsemantik frozen forever,
+// CLAUDE.md §Events), so the human-readable line must say why (starvation)
+// too. Mirrors web's notifText 'UnitReturnedStarving' case
+// (web/static/js/megaron/ui/format.js) so both surfaces say the same thing.
+func printStarvingReturnLine(c *Client, n notificationItem) {
+	var body struct {
+		Q         int    `json:"q"`
+		R         int    `json:"r"`
+		ArrivesAt string `json:"arrives_at"`
+		CrewAfter int    `json:"crew_after"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	eta := ""
+	if t, err := time.Parse(time.RFC3339, body.ArrivesAt); err == nil {
+		eta = ", home " + gameETA(c, t)
+	}
+	fmt.Printf("      crew starved to half strength (%d) at (%d,%d) — turning home on its own, sailing slower%s\n",
+		body.CrewAfter, body.Q, body.R, eta)
 }
 
 // printColonyFoundedGrainLine renders the founding grain balance carried in a

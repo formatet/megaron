@@ -87,7 +87,7 @@ func TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation(t *testing.T) {
 		t.Fatalf("create embarked cohort: %v", err)
 	}
 
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), nil, nil)
 	h.soldShare = 0 // isolate the gross debit; circulation is not this test's concern
 	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: worldID, DueTick: tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)
