@@ -638,10 +638,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// and the surfaces need both to say either honestly.
 		foodNetPerDay := foodRatePerTick
 
-		// Catchment base potentials (actual buildings) — read once, shared by the
-		// grain-netto breakdown below and the break-even weight further down.
-		basePots, basePotsErr := economy.CatchmentBasePotential(r.Context(), h.pool, sett.ID)
-
 		// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md).
 		//
 		// Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
@@ -654,19 +650,29 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		grainConsumRate, _ := economy.GrainBalance(grainRate, laborPool)
 		grainProdRate := grainRate
 
-		// Break-even grain labor-weight for this settlement's catchment
-		// (pop-independent — see DEL C step 4): the minimum grain weight that
-		// keeps a citizen fed. basePot_grain comes from the same catchment-query
-		// path RecomputeProduction uses (economy.CatchmentBasePotential) so it
-		// never drifts from the real production formula. nil when the catchment
-		// can't produce grain at all (no plains/farm tile) — no weight helps.
-		var breakevenGrainWeight *float64
-		if basePotsErr == nil {
-			if basePotGrain := basePots["grain"]; basePotGrain > 0 {
-				be := economy.GrainConsumptionPerCitizenPerTick * economy.REF_LABOR / basePotGrain
-				breakevenGrainWeight = &be
-			}
+		// Gubbar krävda för föda (P4-arvet i province.go, replaces the old
+		// pre-P4 weight-based figure — megaron_plan_p4_arvet_i_province.md
+		// §2): how many gubbar the catchment's food (grain/fish) slots need for
+		// the settlement's OWN production to cover the population's daily
+		// ration, run through the SAME greedy loop founding/growth placement
+		// use (economy.FoodGubbarRequired) — never a second formula.
+		// foodSelfSufficient=false is not silent (arbetssätt §7): a catchment
+		// that cannot feed its population even with every gubbe placed on food
+		// (Gournia/Zakros in drift) must say so, not just drop the field.
+		foodGubbarRequired, foodSelfSufficient, foodReqErr := economy.FoodGubbarRequired(r.Context(), h.pool, sett.ID)
+		if foodReqErr != nil {
+			slog.Error("food gubbar required failed", "err", foodReqErr, "settlement", sett.ID)
 		}
+		// food_gubbar_placed counts ONLY grain/fish rows — the exact good set
+		// rankSlotsFromOptions greedily places on (economy/founding_placement.go).
+		// Never settlement_labor (the dead table) and never economy.FoodGoods
+		// (a WIDER set used for diet-variety scoring elsewhere — livestock/
+		// wine/oil included — that would compare two different quantities).
+		var foodGubbarPlaced int
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT count(*) FROM settlement_placement WHERE settlement_id = $1 AND good_key IN ($2, $3)`,
+			sett.ID, economy.GoodGrain, economy.GoodFish,
+		).Scan(&foodGubbarPlaced)
 
 		// "Senaste tick" summary (Fas 2 point 8): derive prod/cons from the same
 		// per-tick rates already in resSnap, and sum this tick's Sitos silver delta
@@ -770,35 +776,37 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		resp["settlement"] = map[string]any{
-			"id":                     sett.ID,
-			"name":                   sett.Name,
-			"owner_id":               sett.OwnerID,
-			"kingdom_id":             sett.KingdomID,
-			"culture":                sett.CultureID,
-			"state":                  sett.State,
-			"besieged":               sett.Besieged,
-			"besieged_by":            besiegedBy,
-			"population":             sett.Population,
-			"labor_pool":             laborPool,
-			"walls":                  sett.WallLevel,
-			"loyalty":                sett.Loyalty,
-			"resources":              resSnap,
-			"kharis":                 kharisNow,
-			"kharis_rate":            kharisRate,
-			"kharis_mood":            kharisToMood(kharisNow),
-			"kharis_per_tick":        kharisRate,
-			"kharis_cap":             kharisCap,
-			"max_temple_level":       maxTempleLevel,
-			"rite_kharis_cost":       riteKharisCost,
-			"kharis_net_per_tick":    kharisNetPerDay,
-			"kharis_net_known":       kharisNetKnown,
-			"kharis_devotion_idle":   kharisDevotionIdle,
-			"temple_offers":          templeOffers,
-			"grain_prod_rate":        grainProdRate,
-			"grain_consum_rate":      grainConsumRate,
-			"breakeven_grain_weight": breakevenGrainWeight,
-			"army":                   sett.Army,
-			"army_upkeep":            armyUp,
+			"id":                   sett.ID,
+			"name":                 sett.Name,
+			"owner_id":             sett.OwnerID,
+			"kingdom_id":           sett.KingdomID,
+			"culture":              sett.CultureID,
+			"state":                sett.State,
+			"besieged":             sett.Besieged,
+			"besieged_by":          besiegedBy,
+			"population":           sett.Population,
+			"labor_pool":           laborPool,
+			"walls":                sett.WallLevel,
+			"loyalty":              sett.Loyalty,
+			"resources":            resSnap,
+			"kharis":               kharisNow,
+			"kharis_rate":          kharisRate,
+			"kharis_mood":          kharisToMood(kharisNow),
+			"kharis_per_tick":      kharisRate,
+			"kharis_cap":           kharisCap,
+			"max_temple_level":     maxTempleLevel,
+			"rite_kharis_cost":     riteKharisCost,
+			"kharis_net_per_tick":  kharisNetPerDay,
+			"kharis_net_known":     kharisNetKnown,
+			"kharis_devotion_idle": kharisDevotionIdle,
+			"temple_offers":        templeOffers,
+			"grain_prod_rate":      grainProdRate,
+			"grain_consum_rate":    grainConsumRate,
+			"food_gubbar_required": foodGubbarRequired,
+			"food_gubbar_placed":   foodGubbarPlaced,
+			"food_self_sufficient": foodSelfSufficient,
+			"army":                 sett.Army,
+			"army_upkeep":          armyUp,
 			// Del C: the sold a garrison spends back into the town it holds. Without
 			// this line the net below cannot be derived from the gross above, and the
 			// mechanic would be invisible — a silver flow the Wanax cannot see or plan
@@ -2579,6 +2587,15 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// (temple labor, untouched by P4) — keep its live path here.
 	cultCitizens := int(math.Round(laborWeights[economy.GoodCult] * float64(laborPool)))
 
+	// marginal_yield (P4-arvet, replaces the old catchment-aggregate figure):
+	// "what does my NEXT gubbe on this good give" — the same shared formula
+	// PlacementOptions itemises per hex/building (economy.MarginalYieldForSlot),
+	// aggregated here to the best available slot per good so /goods keeps its
+	// one-row-per-good shape. Never a second formula.
+	hexOptionsForYield, _ := economy.LoadHexProductionOptions(r.Context(), h.pool, settlementID, nil)
+	buildingOptionsForYield, _ := economy.LoadBuildingProductionOptions(r.Context(), h.pool, settlementID)
+	marginalYields := economy.MarginalYieldPerGood(hexOptionsForYield, buildingOptionsForYield, placed)
+
 	// Idle = population neither placed on a good nor devoted to the temple.
 	// placed.Total counts only non-cult gubbar (cult never enters
 	// settlement_placement), so cult citizens are subtracted separately.
@@ -2588,20 +2605,20 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type goodRow struct {
-		Key            string  `json:"key"`
-		Name           string  `json:"name"`
-		Tier           string  `json:"tier"`
-		Category       string  `json:"category"`
-		Amount         float64 `json:"amount"`
-		Rate           float64 `json:"rate_per_tick"`
-		Cap            float64 `json:"cap"`
-		BaseValue      float64 `json:"base_value"`
-		Citizens       int     `json:"citizens"`
-		Percent        float64 `json:"percent"`
-		YieldPerWorker float64 `json:"yield_per_worker"`
-		Producible     bool    `json:"producible"`
-		LaborPool      int     `json:"labor_pool"`
-		IdleCitizens   int     `json:"idle_citizens"`
+		Key           string  `json:"key"`
+		Name          string  `json:"name"`
+		Tier          string  `json:"tier"`
+		Category      string  `json:"category"`
+		Amount        float64 `json:"amount"`
+		Rate          float64 `json:"rate_per_tick"`
+		Cap           float64 `json:"cap"`
+		BaseValue     float64 `json:"base_value"`
+		Citizens      int     `json:"citizens"`
+		Percent       float64 `json:"percent"`
+		MarginalYield float64 `json:"marginal_yield"`
+		Producible    bool    `json:"producible"`
+		LaborPool     int     `json:"labor_pool"`
+		IdleCitizens  int     `json:"idle_citizens"`
 		// Workplace capacity (2026-07-23). CapacityPercent is the share of the city
 		// this good's fields + buildings can actually employ; EmployedCitizens is what
 		// is really working it; UnservedCitizens is the allocation that has no
@@ -2657,20 +2674,20 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			percent = float64(employed) / float64(laborPool) * 100.0
 		}
 		result = append(result, goodRow{
-			Key:            key,
-			Name:           name,
-			Tier:           tier,
-			Category:       category,
-			Amount:         current,
-			Rate:           rate,
-			Cap:            capV,
-			BaseValue:      baseValue,
-			Citizens:       employed,
-			Percent:        percent,
-			YieldPerWorker: bp / economy.REF_LABOR,
-			Producible:     bp > 0,
-			LaborPool:      laborPool,
-			IdleCitizens:   idleCitizens,
+			Key:           key,
+			Name:          name,
+			Tier:          tier,
+			Category:      category,
+			Amount:        current,
+			Rate:          rate,
+			Cap:           capV,
+			BaseValue:     baseValue,
+			Citizens:      employed,
+			Percent:       percent,
+			MarginalYield: marginalYields[key],
+			Producible:    bp > 0,
+			LaborPool:     laborPool,
+			IdleCitizens:  idleCitizens,
 
 			CapacityPercent:  capacity * 100.0,
 			EmployedCitizens: employed,
@@ -3795,22 +3812,15 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Break-even grain labor-weight guardrail (DEL D, megaron_ekonomi_legibilitet_plan.md).
-	// Sparta-forensiken 2026-07-12: a re-allocation dropping grain below its break-even
-	// weight silently starved the capital, and this DELETE+INSERT was entirely unaudited.
-	// Build the weight map now, and compute the pop-independent break-even from the SAME
-	// settlement-scoped catchment helper the status endpoint uses (economy.CatchmentBasePotential
-	// — never a second formula), so the audit event and the warning read identical values.
+	// Weight map for the audit event below — P4-arvet i province.go removed the
+	// break-even guardrail this used to feed (megaron_plan_p4_arvet_i_province.md
+	// §1 yta 2: it warned about a starvation this weight-based lever cannot
+	// actually cause post-P4 — production comes from settlement_placement now,
+	// not these weights). weights themselves stay: LaborAllocated's audit
+	// payload is unchanged, frozen event semantics.
 	weights := make(map[string]float64, len(filtered))
 	for key, pct := range filtered {
 		weights[key] = pct / 100.0
-	}
-	var breakevenGrainWeight *float64
-	if basePots, bperr := economy.CatchmentBasePotential(r.Context(), h.pool, settlementID); bperr == nil {
-		if basePotGrain := basePots["grain"]; basePotGrain > 0 {
-			be := economy.GrainConsumptionPerCitizenPerTick * economy.REF_LABOR / basePotGrain
-			breakevenGrainWeight = &be
-		}
 	}
 
 	// KH1 (decision A, locked 2026-08-07): when the client omits cult, the server
@@ -3897,34 +3907,25 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Audit the (previously silent) re-allocation + break-even so a future forensic
-	// can attribute a starvation collapse to the labour lever that caused it. stream =
-	// settlement (StreamProvince, keyed by settlementID — the settlement's own stream).
+	// Audit the (previously silent) re-allocation so a future forensic can
+	// attribute a starvation collapse to the labour lever that caused it.
+	// stream = settlement (StreamProvince, keyed by settlementID — the
+	// settlement's own stream). No break-even in the payload any more — see
+	// the weights comment above.
 	if h.eventStore != nil {
 		auditPayload := map[string]any{"weights": weights}
-		if breakevenGrainWeight != nil {
-			auditPayload["breakeven_grain_weight"] = *breakevenGrainWeight
-		}
 		_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamProvince, "LaborAllocated",
 			auditPayload, worldID, nil)
 	}
 
-	// Guardrail: accept the allocation regardless (the Wanax's freedom), but if the
-	// grain weight is below break-even, return a warning — the city will slowly starve
-	// at this weight. Keryx renders it AFTER confirming the allocation.
+	// Workplace-capacity guardrail: accept the allocation regardless (the
+	// Wanax's freedom), but say so when part of it has no workplace to serve
+	// at and will produce nothing. Silent over-allocation was the top
+	// friction finding of the 2026-07-23 playtest — "ingenting säger om detta
+	// är mättat". (The grain break-even guardrail that used to sit here is
+	// gone — megaron_plan_p4_arvet_i_province.md §1 yta 2 — this is the ONE
+	// guardrail left in LaborAlloc, left untouched per the plan's scope.)
 	var warning string
-	if breakevenGrainWeight != nil {
-		grainWeight := weights["grain"] // 0 if grain not allocated at all
-		if grainWeight < *breakevenGrainWeight {
-			warning = fmt.Sprintf("grain-vikt %.2f < break-even ~%.2f för denna catchment → staden kommer svälta vid denna allokering",
-				grainWeight, *breakevenGrainWeight)
-		}
-	}
-
-	// Same guardrail shape for workplace capacity: accept the allocation, but say
-	// so when part of it has no workplace to serve at and will produce nothing.
-	// Silent over-allocation was the top friction finding of the 2026-07-23
-	// playtest — "ingenting säger om detta är mättat".
 	capacities, wpLevels := loadLaborCapacities(r.Context(), h.pool, settlementID, laborPool)
 	var overflows []string
 	for good, weight := range weights {
@@ -3968,9 +3969,6 @@ func (h *ProvinceHandler) LaborAlloc(w http.ResponseWriter, r *http.Request) {
 		"idle_citizens": int((100.0 - totalPct) / 100.0 * float64(laborPool)),
 		"labor_pool":    laborPool,
 		"message":       "labor allocation updated and production recomputed",
-	}
-	if breakevenGrainWeight != nil {
-		resp["breakeven_grain_weight"] = *breakevenGrainWeight
 	}
 	if warning != "" {
 		resp["warning"] = warning

@@ -247,9 +247,17 @@ export async function loadCityDrawer() {
       const prodTick = pd.grain_prod_rate || 0;
       const consTick = pd.grain_consum_rate || 0;
       const netTick  = prodTick - consTick;
-      const be = pd.breakeven_grain_weight != null
-        ? ` <span style="color:var(--text-dim);font-size:.7rem">(break-even ≥${Math.round(pd.breakeven_grain_weight * 100)}% grain share)</span>` : '';
-      grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodTick.toFixed(1)} − cons ${consTick.toFixed(1)} = <b style="color:${netTick >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)}/tick</b>${be}</span></div>`;
+      // food_gubbar_required/placed/self_sufficient (P4-arvet i province.go,
+      // megaron_plan_p4_arvet_i_province.md §2) replace the old weight-based
+      // figure: how many gubbar the catchment's food slots need, out of the
+      // SAME greedy loop founding/growth placement use.
+      let foodNote = '';
+      if (pd.food_gubbar_required != null) {
+        foodNote = pd.food_self_sufficient === false
+          ? ` <span class="stat-warn">(⚠ catchmentet mättar inte befolkningen ens med alla ${pd.food_gubbar_required} gubbar)</span>`
+          : ` <span style="color:var(--text-dim);font-size:.7rem">(${pd.food_gubbar_required} gubbar krävs för föda · ${pd.food_gubbar_placed} placerade)</span>`;
+      }
+      grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodTick.toFixed(1)} − cons ${consTick.toFixed(1)} = <b style="color:${netTick >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)}/tick</b>${foodNote}</span></div>`;
     }
     if (pd && pd.sitos) {
       // Coverage is the trigger (mig 106), so it leads. Colour it against the

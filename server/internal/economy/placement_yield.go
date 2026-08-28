@@ -645,3 +645,59 @@ func LoadPlacementCounts(ctx context.Context, tx Tx, settlementID uuid.UUID) (Pl
 	}
 	return out, nil
 }
+
+// MarginalYieldForSlot is the ONE per-slot marginal-yield formula — grain
+// keeps placementYield's rate × placed shape (no capacity division, see
+// placementYield's doc comment); every other good divides by capL1 and
+// multiplies by the building-level mult (megaron_plan_byggnadsniva_takt.md).
+// Shared by PlacementOptions' buildGoods (api/handlers/settlement_placement.go,
+// itemised per hex/building — a client needs a DIFFERENT number per hex to
+// choose where to place) and MarginalYieldPerGood below (aggregated per
+// good, whole-catchment) — one formula, two shapes, never a second formula
+// (megaron_plan_p4_arvet_i_province.md §3 step C: the same class of bug as
+// the /goods-lögnen and the grundningsprognosen's "en formel, två anrop").
+func MarginalYieldForSlot(good string, rate float64, capL1 int, mult float64) float64 {
+	if good == GoodGrain {
+		return rate
+	}
+	return (rate / float64(capL1)) * mult
+}
+
+// MarginalYieldPerGood returns, for each good, the yield the NEXT gubbe
+// placed on it would produce — the best (highest) MarginalYieldForSlot
+// among every hex/building option for that good that still has room
+// (occupied < PlaceCapPerGood). A good with no available slot anywhere
+// (every hex/building for it already full, or the catchment cannot produce
+// it at all) is simply absent from the map: there IS no next gubbe to
+// place, and a stale non-zero number would claim otherwise — exactly what
+// the old province.go bp/REF_LABOR did (it never went to zero at capacity).
+// This is the shared computation the plan's finding calls for — the old
+// per-good aggregate figure was a worse duplicate of PlacementOptions'
+// marginal_yield: /goods calls this directly for its one number per good;
+// PlacementOptions keeps its own per-slot MarginalYieldForSlot calls for
+// the itemised grid (see buildGoods) — both ultimately the same formula.
+func MarginalYieldPerGood(hexOptions []HexOption, buildingOptions []BuildingOption, placed PlacementCounts) map[string]float64 {
+	best := make(map[string]float64)
+	consider := func(good string, rate float64, capL1, placeCap int, mult float64, occupied int) {
+		if capL1 <= 0 || placeCap <= 0 || occupied >= placeCap {
+			return
+		}
+		yield := MarginalYieldForSlot(good, rate, capL1, mult)
+		if cur, ok := best[good]; !ok || yield > cur {
+			best[good] = yield
+		}
+	}
+	for _, opt := range hexOptions {
+		occ := placed.Hex[opt.Coord]
+		for good, rate := range opt.RatePerGood {
+			consider(good, rate, opt.CapL1PerGood[good], opt.PlaceCapPerGood[good], opt.MultPerGood[good], occ[good])
+		}
+	}
+	for _, opt := range buildingOptions {
+		occ := placed.Building[opt.BuildingType]
+		for good, rate := range opt.RatePerGood {
+			consider(good, rate, opt.CapL1PerGood[good], opt.PlaceCapPerGood[good], opt.MultPerGood[good], occ[good])
+		}
+	}
+	return best
+}
