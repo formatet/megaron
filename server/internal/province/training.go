@@ -55,6 +55,7 @@ type UnitSpec struct {
 //   - "war_chariot" = stridsvagn, kräver stable + brons (men INTE foundry — en stad
 //     som KÖPER brons ska kunna bygga den vid sitt stall). Ersätter "cavalry"/"chariot".
 //     Katapulten (catapult) saknar historisk förankring i bronsåldern och tas bort.
+//
 // MaxSettlementsPerWanax caps how many active settlements a single Wanax may hold.
 // Stops runaway colony-spam from drowning the MVP signal; tune as the metagame settles.
 // Lives here (province pkg) so both the dispatch handler and the arrival handler can

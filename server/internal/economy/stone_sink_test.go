@@ -47,13 +47,15 @@ func buildingCatalogueStoneCost() float64 {
 // drift in BuildingSpecs is caught here rather than only showing up as a
 // changed tick count in the test below.
 func TestBuildingCatalogueStoneCost_MatchesPlannedFigure(t *testing.T) {
-	// 750 → 104.168 (mig 136, stone ÷7.2 — province.BuildingSpecs' own costs
-	// were rescaled directly in code, read live above, not re-derived here).
-	// Tolerance, not the old strict ==: buildingCatalogueStoneCost sums a Go
-	// map in nondeterministic iteration order, and these costs are no longer
-	// exact multiples that add up bit-identically regardless of order —
-	// verified to vary by ~1e-13 across orderings, well inside this bound.
-	const want = 104.168
+	// 750 → 104,168 (mig 136, sten ÷7,2) → 410,396 (S4, dagsverkeskalibreringen
+	// 2026-08-27: byggnadskatalogen satt mot galärankaret på 30 dagsverken, se
+	// province.BuildingSpecs). Läses live ur katalogen ovan, inte härledd här.
+	//
+	// Tolerans i stället för det gamla strikta ==: buildingCatalogueStoneCost
+	// summerar en Go-map i icke-deterministisk iterationsordning, och
+	// kostnaderna är sedan mig 136 inte längre exakta multiplar som adderas
+	// bit-identiskt oavsett ordning — mätt drift ~1e-13, väl inom gränsen.
+	const want = 410.396
 	got := buildingCatalogueStoneCost()
 	if math.Abs(got-want) > 1e-6 {
 		t.Fatalf("building catalogue stone cost = %v, want %v (megaron_plan_sten_stock.md §1); "+
@@ -82,7 +84,24 @@ func TestFullyStaffedStonequarry_ClearsBuildingCatalogueInPlannedWindow(t *testi
 	catalogue := buildingCatalogueStoneCost()
 	ticks := catalogue / rate
 
-	const minTicks, maxTicks = 12.0, 20.0
+	// [12,20] → [45,80] (S4, 2026-08-27, Timothys beslut).
+	//
+	// Invariantens SYFTE står oförändrat: sten ska vara en meningsfull kostnad,
+	// inte gratis. Före mig 129 klarade ett stenbrott hela katalogen på 1,3 tick
+	// och stenen var därmed ingen sänka alls; det var därför bandet skrevs.
+	//
+	// Men [12,20] kalibrerades 2026-08-24 mot en katalog som var fyra gånger
+	// billigare än dagens. S4 satte byggnadspriserna mot galärankaret (30
+	// dagsverken) och katalogen gick 104,2 → 410,4 sten, vilket flyttade
+	// utfallet till 61,6 tick. Timothys kalibreringsdata vid beslutet: **de
+	// flesta städer har 5–24 gubbar, inte hundra.** Ett ensamt stenbrott är
+	// därför fortfarande den rimliga referensen för en normalstad — och 61,6
+	// tick är knappt 2,5 verkliga dygn för HELA byggnadskatalogen, vilket
+	// träffar måttstocken "en byggnad ska vara en investering; inte orimligt
+	// att spara några väggklocke-irl-dagar".
+	//
+	// Bandets relativa bredd är bevarad från [12,20] runt 15,6 (−23 %/+28 %).
+	const minTicks, maxTicks = 45.0, 80.0
 	if ticks < minTicks || ticks > maxTicks {
 		t.Errorf("a fully staffed level-1 stonequarry clears the %v-stone catalogue in %.2f ticks "+
 			"(rate=%v/tick), want [%v,%v] per megaron_plan_sten_stock.md §6.1 criterion 1",
@@ -100,7 +119,7 @@ func TestStoneTerrainBaselines_Unchanged(t *testing.T) {
 		terrain string
 		want    float64
 	}{
-		{"hills", 2.0},               // 14.4 → 2.0 (mig 136, stone ÷7.2)
+		{"hills", 2.0},              // 14.4 → 2.0 (mig 136, stone ÷7.2)
 		{"mountain_limestone", 4.0}, // 28.8 → 4.0 (mig 136, stone ÷7.2)
 	}
 	for _, c := range cases {
