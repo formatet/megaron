@@ -72,8 +72,8 @@ func newUnderThresholdFixture(t *testing.T) *underThresholdFixture {
 
 	var lenderID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"lender-underthreshold-"+uuid.New().String(), "lender-underthreshold-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"lender-underthreshold-"+uuid.New().String(),
 	).Scan(&lenderID); err != nil {
 		t.Fatalf("create lender player: %v", err)
 	}

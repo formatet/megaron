@@ -56,8 +56,8 @@ func testOwner(t *testing.T, pool *pgxpool.Pool, tag string) uuid.UUID {
 	ctx := context.Background()
 	var id uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		tag+"-"+uuid.New().String(), tag+"-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		tag+"-"+uuid.New().String(),
 	).Scan(&id); err != nil {
 		t.Fatalf("create test player %s: %v", tag, err)
 	}

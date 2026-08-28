@@ -85,8 +85,8 @@ func newBorrowedArmyFixture(t *testing.T, pool *pgxpool.Pool, tag string) borrow
 	mkPlayer := func(role string) uuid.UUID {
 		var id uuid.UUID
 		if err := pool.QueryRow(ctx,
-			`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-			tag+"-"+role+"-"+uuid.New().String(), tag+"-"+role+"-"+uuid.New().String()+"@test.invalid",
+			`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+			tag+"-"+role+"-"+uuid.New().String(),
 		).Scan(&id); err != nil {
 			t.Fatalf("create player (%s): %v", role, err)
 		}

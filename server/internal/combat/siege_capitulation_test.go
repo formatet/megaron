@@ -79,8 +79,8 @@ func TestSiegeCapitulation_CityFallsToStrongestBesieger(t *testing.T) {
 
 	var rivalID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"rival-"+uuid.New().String(), "rival-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"rival-"+uuid.New().String(),
 	).Scan(&rivalID); err != nil {
 		t.Fatalf("create rival player: %v", err)
 	}

@@ -86,7 +86,7 @@ func goodValidationFixture(t *testing.T, pool *pgxpool.Pool) (worldID, originID,
 
 	authSvc := auth.NewService(pool, "test-secret")
 	callerName := "goodval-caller-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, callerName, callerName+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, callerName, "x")
 	if err != nil {
 		t.Fatalf("register test caller: %v", err)
 	}
@@ -97,7 +97,7 @@ func goodValidationFixture(t *testing.T, pool *pgxpool.Pool) (worldID, originID,
 	callerID := claims.PlayerID
 
 	counterName := "goodval-counter-" + uuid.New().String()
-	counterToken, _, err := authSvc.Register(ctx, counterName, counterName+"@test.invalid", "x")
+	counterToken, _, err := authSvc.Register(ctx, counterName, "x")
 	if err != nil {
 		t.Fatalf("register test counterparty: %v", err)
 	}

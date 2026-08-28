@@ -43,8 +43,8 @@ func seedSiegeFixture(t *testing.T, currentTick, pop int) (settlementID, worldID
 	})
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"siege-"+uuid.New().String(), "siege-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"siege-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}
@@ -210,8 +210,8 @@ func TestSiege_LandChokepointDeniesHexBehindIt_AndProductionDrops(t *testing.T) 
 	// ── Enemy sits on the CORRIDOR (1,0), not on the target hex (2,0). ─────
 	enemyOwner := uuid.New()
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO players (id, username, email, password_hash) VALUES ($1, $2, $3, 'x')`,
-		enemyOwner, "siege-enemy-"+enemyOwner.String(), "siege-enemy-"+enemyOwner.String()+"@test.invalid",
+		`INSERT INTO players (id, username, password_hash) VALUES ($1, $2, 'x')`,
+		enemyOwner, "siege-enemy-"+enemyOwner.String(),
 	); err != nil {
 		t.Fatalf("create enemy player: %v", err)
 	}
@@ -296,8 +296,8 @@ func TestSiege_EnemyGalleyAtHarbourDeniesAllSeaCatchmentAtOnce(t *testing.T) {
 
 	enemyOwner := uuid.New()
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO players (id, username, email, password_hash) VALUES ($1, $2, $3, 'x')`,
-		enemyOwner, "siege-galley-"+enemyOwner.String(), "siege-galley-"+enemyOwner.String()+"@test.invalid",
+		`INSERT INTO players (id, username, password_hash) VALUES ($1, $2, 'x')`,
+		enemyOwner, "siege-galley-"+enemyOwner.String(),
 	); err != nil {
 		t.Fatalf("create enemy player: %v", err)
 	}
@@ -376,8 +376,8 @@ func TestSiege_MerelyPositionedWithoutSentryDoesNotBesiege(t *testing.T) {
 
 	enemyOwner := uuid.New()
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO players (id, username, email, password_hash) VALUES ($1, $2, $3, 'x')`,
-		enemyOwner, "siege-nostance-"+enemyOwner.String(), "siege-nostance-"+enemyOwner.String()+"@test.invalid",
+		`INSERT INTO players (id, username, password_hash) VALUES ($1, $2, 'x')`,
+		enemyOwner, "siege-nostance-"+enemyOwner.String(),
 	); err != nil {
 		t.Fatalf("create enemy player: %v", err)
 	}

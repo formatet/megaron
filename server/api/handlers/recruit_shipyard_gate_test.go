@@ -55,7 +55,7 @@ func TestRecruit_GalleyRequiresShipyardNotJustHarbour(t *testing.T) {
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "shipyardgate-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register test player: %v", err)
 	}

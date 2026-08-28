@@ -37,8 +37,8 @@ func TestTradeDelivery_InterceptedCaravanNotCredited(t *testing.T) {
 
 	var owner uuid.UUID
 	_ = pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"ttx-"+uuid.New().String(), "ttx-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"ttx-"+uuid.New().String(),
 	).Scan(&owner)
 
 	var prov, dest uuid.UUID
@@ -119,8 +119,8 @@ func TestTradeDelivery_PhysicalLegDeliversAndChainsReturn(t *testing.T) {
 
 	var owner uuid.UUID
 	_ = pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"ttx-"+uuid.New().String(), "ttx-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"ttx-"+uuid.New().String(),
 	).Scan(&owner)
 
 	mkSettlement := func(name string, q int) uuid.UUID {

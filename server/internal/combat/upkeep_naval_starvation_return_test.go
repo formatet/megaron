@@ -51,8 +51,8 @@ func newStarvationFixture(t *testing.T, pool *pgxpool.Pool, tag string) starvati
 	t.Cleanup(func() { _, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, f.worldID) })
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		tag+"-"+uuid.New().String(), tag+"-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		tag+"-"+uuid.New().String(),
 	).Scan(&f.ownerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

@@ -132,8 +132,8 @@ func TestForeignUnits_ShowsWanaxNameNotLogin(t *testing.T) {
 
 	var enemyID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-enemy-wanax-"+uuid.New().String(), "fu-enemy-wanax-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-enemy-wanax-"+uuid.New().String(),
 	).Scan(&enemyID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}

@@ -49,7 +49,7 @@ func TestOracleRevealDeposits_PersistsOreNeighbourHex(t *testing.T) {
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "oracle-ore-hex-" + uuid.New().String()
-	_, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	_, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register test player: %v", err)
 	}

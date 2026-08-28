@@ -44,8 +44,8 @@ func seedFullRingFixture(t *testing.T, currentTick, pop int, terrain string) (se
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"p1balance-"+uuid.New().String(), "p1balance-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"p1balance-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

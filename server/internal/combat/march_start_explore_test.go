@@ -43,8 +43,8 @@ func TestStartMarch_ExploreFromFieldPositionResolvesNearestOwnedHome(t *testing.
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"far-explorer-"+uuid.New().String(), "far-explorer-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"far-explorer-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create test player: %v", err)
 	}
@@ -154,8 +154,8 @@ func TestStartMarch_ExploreFromFieldPositionRejectedWithNoSettlement(t *testing.
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"homeless-"+uuid.New().String(), "homeless-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"homeless-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create test player: %v", err)
 	}

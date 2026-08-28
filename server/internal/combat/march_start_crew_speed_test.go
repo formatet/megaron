@@ -40,8 +40,8 @@ func TestStartMarch_ShorthandedGalleyIsSlower(t *testing.T) {
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"crew-tester-"+uuid.New().String(), "crew-tester-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"crew-tester-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create test player: %v", err)
 	}

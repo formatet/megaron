@@ -69,7 +69,7 @@ func TestProvincesFOW_HidesCityWithinOldFlatRadiusButOutsideRealKnowledge(t *tes
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "provfow-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register viewer: %v", err)
 	}
@@ -81,8 +81,8 @@ func TestProvincesFOW_HidesCityWithinOldFlatRadiusButOutsideRealKnowledge(t *tes
 
 	var subjectOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"subject-"+uuid.New().String(), "subject-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"subject-"+uuid.New().String(),
 	).Scan(&subjectOwnerID); err != nil {
 		t.Fatalf("create subject owner: %v", err)
 	}
@@ -196,7 +196,7 @@ func TestProvincesFOW_SubsetOfMapKnowledge(t *testing.T) {
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "provsub-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register viewer: %v", err)
 	}
@@ -208,8 +208,8 @@ func TestProvincesFOW_SubsetOfMapKnowledge(t *testing.T) {
 
 	var otherOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"other-"+uuid.New().String(), "other-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"other-"+uuid.New().String(),
 	).Scan(&otherOwnerID); err != nil {
 		t.Fatalf("create other owner: %v", err)
 	}
@@ -357,8 +357,8 @@ func TestProvincesFOW_UnauthenticatedSeesEverything(t *testing.T) {
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"guestowner-"+uuid.New().String(), "guestowner-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"guestowner-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create owner: %v", err)
 	}

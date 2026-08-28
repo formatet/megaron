@@ -49,8 +49,8 @@ func newBuildNotifyFixture(t *testing.T, pool *pgxpool.Pool) (worldID, ownerID, 
 	})
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"buildnotify-"+uuid.New().String(), "buildnotify-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"buildnotify-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

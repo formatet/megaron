@@ -54,14 +54,14 @@ func TestCitiesRumourKnownIsNotContactable(t *testing.T) {
 
 	var viewerID, subjectOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"viewer-"+uuid.New().String(), "viewer-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"viewer-"+uuid.New().String(),
 	).Scan(&viewerID); err != nil {
 		t.Fatalf("create viewer: %v", err)
 	}
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"subject-owner-"+uuid.New().String(), "subject-owner-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"subject-owner-"+uuid.New().String(),
 	).Scan(&subjectOwnerID); err != nil {
 		t.Fatalf("create subject owner: %v", err)
 	}

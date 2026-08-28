@@ -62,8 +62,8 @@ func newFixture(t *testing.T, pool *pgxpool.Pool) fixture {
 	})
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"carter-"+uuid.New().String(), "carter-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"carter-"+uuid.New().String(),
 	).Scan(&f.owner); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

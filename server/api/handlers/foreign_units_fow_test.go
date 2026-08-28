@@ -52,7 +52,7 @@ type foreignUnitView struct {
 func registerViewer(t *testing.T, ctx context.Context, authSvc *auth.Service, prefix string) (uuid.UUID, string) {
 	t.Helper()
 	username := prefix + "-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register %s: %v", prefix, err)
 	}
@@ -87,8 +87,8 @@ func TestForeignUnits_LiveTierRevealsNearbyPositionedUnit(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-enemy-"+uuid.New().String(), "fu-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}
@@ -188,8 +188,8 @@ func TestForeignUnits_RememberedTileDoesNotRevealUnit(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-enemy-"+uuid.New().String(), "fu-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}
@@ -279,8 +279,8 @@ func TestForeignUnits_MarchingUnitRevealedByInterpolatedPosition(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-march-enemy-"+uuid.New().String(), "fu-march-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-march-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}
@@ -381,8 +381,8 @@ func TestForeignUnits_UnauthenticatedReturnsEmptyList(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-anon-enemy-"+uuid.New().String(), "fu-anon-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-anon-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}
@@ -452,8 +452,8 @@ func TestForeignUnits_MarchDoesNotLeakMapKnowledge(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-leak-enemy-"+uuid.New().String(), "fu-leak-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-leak-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}
@@ -594,8 +594,8 @@ func TestForeignUnits_GarrisonRevealedLiveHiddenRemembered(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-garrison-enemy-"+uuid.New().String(), "fu-garrison-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-garrison-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}

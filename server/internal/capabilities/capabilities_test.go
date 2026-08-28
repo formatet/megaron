@@ -55,8 +55,8 @@ func newFixture(t *testing.T, pool *pgxpool.Pool) fixture {
 
 	var playerID uuid.UUID
 	must(t, pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"cap-test-"+uuid.NewString(), uuid.NewString()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"cap-test-"+uuid.NewString(),
 	).Scan(&playerID))
 
 	var provinceID uuid.UUID
@@ -225,8 +225,8 @@ func TestCanTradeOfferAndSell_UnlockedWithVisibleForeignCity(t *testing.T) {
 	// A second Wanax's capital one hex away — inside the FOW radius (6).
 	var otherPlayer uuid.UUID
 	must(t, pool.QueryRow(context.Background(),
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"cap-test-neighbour-"+uuid.NewString(), uuid.NewString()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"cap-test-neighbour-"+uuid.NewString(),
 	).Scan(&otherPlayer))
 	var otherProvince uuid.UUID
 	must(t, pool.QueryRow(context.Background(),
@@ -272,8 +272,8 @@ func (f fixture) insertPendingBuyOffer(t *testing.T, wantGood string, wantQty fl
 	t.Helper()
 	var senderID, originID uuid.UUID
 	must(t, f.pool.QueryRow(context.Background(),
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"cap-test-buyer-"+uuid.NewString(), uuid.NewString()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"cap-test-buyer-"+uuid.NewString(),
 	).Scan(&senderID))
 	var otherProvince uuid.UUID
 	must(t, f.pool.QueryRow(context.Background(),

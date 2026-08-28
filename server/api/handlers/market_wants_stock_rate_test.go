@@ -83,8 +83,8 @@ func TestMarketWants_StockRateSemantics(t *testing.T) {
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"wants-owner-"+uuid.New().String(), "wants-owner-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"wants-owner-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create settlement owner: %v", err)
 	}

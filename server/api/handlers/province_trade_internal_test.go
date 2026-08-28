@@ -69,7 +69,7 @@ func setupTradeInternalFixture(t *testing.T) *tradeInternalFixture {
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "trader-" + uuid.New().String()
-	token, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	token, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register test player: %v", err)
 	}

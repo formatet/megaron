@@ -132,8 +132,8 @@ func TestBattle_RelievedOccupationResetsCounter(t *testing.T) {
 	// A third party's relief force, too small to break the occupant's garrison.
 	var reliefOwner uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"relief-"+uuid.New().String(), "relief-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"relief-"+uuid.New().String(),
 	).Scan(&reliefOwner); err != nil {
 		t.Fatalf("create relief player: %v", err)
 	}

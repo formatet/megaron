@@ -65,8 +65,8 @@ func TestForeignUnits_CargoSurfacesEmbarkedCohort(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-cargo-enemy-"+uuid.New().String(), "fu-cargo-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-cargo-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}
@@ -189,8 +189,8 @@ func TestForeignUnits_CargoOmittedWhenEmpty(t *testing.T) {
 
 	var enemyOwnerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"fu-nocargo-enemy-"+uuid.New().String(), "fu-nocargo-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"fu-nocargo-enemy-"+uuid.New().String(),
 	).Scan(&enemyOwnerID); err != nil {
 		t.Fatalf("create enemy owner: %v", err)
 	}

@@ -67,8 +67,8 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"ticklog-grain-"+uuid.New().String(), "ticklog-grain-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"ticklog-grain-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create test player: %v", err)
 	}

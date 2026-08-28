@@ -32,7 +32,7 @@ func TestLoadLiveEyes_CourierSeesOnReturnLeg(t *testing.T) {
 
 	authSvc := auth.NewService(pool, "test-secret")
 	sender := "ret-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, sender, sender+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, sender, "x")
 	if err != nil {
 		t.Fatalf("register sender: %v", err)
 	}
@@ -43,7 +43,7 @@ func TestLoadLiveEyes_CourierSeesOnReturnLeg(t *testing.T) {
 	senderID := claims.PlayerID
 
 	other := "dst-" + uuid.New().String()
-	_, _, err = authSvc.Register(ctx, other, other+"@test.invalid", "x")
+	_, _, err = authSvc.Register(ctx, other, "x")
 	if err != nil {
 		t.Fatalf("register recipient: %v", err)
 	}

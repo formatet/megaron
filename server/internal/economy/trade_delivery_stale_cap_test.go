@@ -54,8 +54,8 @@ func TestTradeDelivery_StaleCapTruncatesSecondDelivery(t *testing.T) {
 
 	var owner uuid.UUID
 	_ = pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"stalecap-"+uuid.New().String(), "stalecap-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"stalecap-"+uuid.New().String(),
 	).Scan(&owner)
 
 	var prov, buyer uuid.UUID
@@ -156,8 +156,8 @@ func TestTradeReturn_StaleCapTruncatesSecondDelivery(t *testing.T) {
 
 	var owner uuid.UUID
 	_ = pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"stalecapret-"+uuid.New().String(), "stalecapret-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"stalecapret-"+uuid.New().String(),
 	).Scan(&owner)
 
 	var provSeller, provBuyer, seller, buyer uuid.UUID

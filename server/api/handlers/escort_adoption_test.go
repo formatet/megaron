@@ -72,8 +72,8 @@ func seedEscortWorld(t *testing.T, pool *pgxpool.Pool) (worldID, playerID uuid.U
 	t.Cleanup(func() { _, _ = pool.Exec(ctx, `UPDATE worlds SET status='archived' WHERE id=$1`, worldID) })
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"escort-"+uuid.New().String(), "escort-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"escort-"+uuid.New().String(),
 	).Scan(&playerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}
