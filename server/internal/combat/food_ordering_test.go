@@ -52,7 +52,7 @@ func TestFoodOrdering_GarrisonFedInFullBeforePopulationTakesShortfall(t *testing
 	}
 
 	upkeepH := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())),
-		events.NewStore(pool), &fakeBroadcaster{})
+		events.NewStore(pool), &fakeBroadcaster{}, nil)
 	upkeepH.soldShare = 0
 
 	// Plikt (50) first — the day's order this test exists to pin.

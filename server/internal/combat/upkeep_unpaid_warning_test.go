@@ -96,7 +96,7 @@ func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
 	rec := &unpaidWarningRecorder{pool: pool}
 	sched := events.NewScheduler(pool, clock.NewTestClock(time.Now()))
 	store := events.NewStore(pool)
-	h := NewUpkeepHandler(pool, sched, store, rec)
+	h := NewUpkeepHandler(pool, sched, store, rec, nil)
 
 	runOneDay := func(tick int) {
 		t.Helper()
@@ -233,7 +233,7 @@ func TestUpkeepUnpaidWarning_EscalationNotSuppressedByUnreadFirstPeriod(t *testi
 
 	u := upkeepUnitRow{id: uuid.New(), ownerID: f.owner, unitType: "spearman"}
 	rec := &unpaidWarningRecorder{pool: pool}
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), rec)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), rec, nil)
 
 	// Period 1: informational, left unread (the player never opened the feed).
 	h.notifyUpkeepUnpaid(ctx, u, f.worldID, f.townID, 1, 2, 4.0)
@@ -273,7 +273,7 @@ func TestUpkeepUnpaidWarning_DedupeExactRepeat_Suppressed(t *testing.T) {
 
 	u := upkeepUnitRow{id: uuid.New(), ownerID: f.owner, unitType: "spearman"}
 	rec := &unpaidWarningRecorder{pool: pool}
-	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), rec)
+	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())), events.NewStore(pool), rec, nil)
 
 	h.notifyUpkeepUnpaid(ctx, u, f.worldID, f.townID, 1, 2, 4.0)
 	h.notifyUpkeepUnpaid(ctx, u, f.worldID, f.townID, 1, 2, 4.0) // exact repeat, same period

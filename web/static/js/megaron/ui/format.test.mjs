@@ -173,6 +173,10 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
     'Scout returning home',
   );
   assert.equal(
+    notifText('UnitReturnedStarving', { unit_id: 'x', q: 1, r: 1, crew_after: 10 }),
+    "Ship's crew starved to half strength (crew down to 10) — turning home on its own, sailing slower",
+  );
+  assert.equal(
     notifText('OrderFailed', { verb: 'recall', reason: 'the army had already resolved' }),
     'Order failed (recall): the army had already resolved',
   );

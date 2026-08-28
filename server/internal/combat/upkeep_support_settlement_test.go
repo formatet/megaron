@@ -114,7 +114,7 @@ func settledAmount(t *testing.T, pool *pgxpool.Pool, sid uuid.UUID, good string)
 func runUpkeep(t *testing.T, pool *pgxpool.Pool, f supportFixture) {
 	t.Helper()
 	h := NewUpkeepHandler(pool, events.NewScheduler(pool, clock.NewTestClock(time.Now())),
-		events.NewStore(pool), &fakeBroadcaster{})
+		events.NewStore(pool), &fakeBroadcaster{}, nil)
 	if err := h.Handle(context.Background(),
 		events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick}); err != nil {
 		t.Fatalf("upkeep Handle: %v", err)

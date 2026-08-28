@@ -176,6 +176,28 @@ func TestSentryOrder_PostHoldAutoReturn(t *testing.T) {
 		t.Errorf("after timer: return target = (%d,%d), want (1,0) — the home departure hex", targetQ, targetR)
 	}
 
+	// Regression pin (megaron_plan_svaltretur_till_sjoss.md §4 steg A): the
+	// sentry patrol timer's return must keep emitting EXACTLY the event type
+	// it always has, never the new starvation-return type dispatchReturnHome's
+	// reason parameter introduced.
+	var exploreEvents, starvingEvents int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'UnitExploreReturned'`, unitID,
+	).Scan(&exploreEvents); err != nil {
+		t.Fatalf("count UnitExploreReturned events: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'UnitReturnedStarving'`, unitID,
+	).Scan(&starvingEvents); err != nil {
+		t.Fatalf("count UnitReturnedStarving events: %v", err)
+	}
+	if exploreEvents != 1 {
+		t.Errorf("UnitExploreReturned events = %d, want 1 — the sentry patrol timer's event type must be unchanged", exploreEvents)
+	}
+	if starvingEvents != 0 {
+		t.Errorf("UnitReturnedStarving events = %d, want 0 — the sentry patrol return must never emit the starvation-return type", starvingEvents)
+	}
+
 	// Idempotent: firing the timer again is a no-op (unit already marching home).
 	if err := h.HandleSentryReturn(ctx, evt); err != nil {
 		t.Fatalf("HandleSentryReturn (2nd, idempotent): %v", err)
