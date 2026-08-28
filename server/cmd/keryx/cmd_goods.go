@@ -57,7 +57,7 @@ func goodsCmd() *cobra.Command {
 				fmt.Printf("Labor pool: %d workers  ·  Idle: %d workers\n\n", int(lp), int(idle))
 			}
 			fmt.Printf("%-10s  %9s  %8s  %6s  %10s  %8s  %8s\n",
-				"Good", "Stock", "Rate/t", "Lvl", "Workers", "Yield/w", "Value")
+				"Good", "Stock", "Rate/t", "Lvl", "Workers", "Marg/g", "Value")
 			fmt.Println("──────────────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)
@@ -66,7 +66,11 @@ func goodsCmd() *cobra.Command {
 				percent, _ := g["percent"].(float64)
 				rateT, _ := g["rate_per_tick"].(float64)
 				baseValue, _ := g["base_value"].(float64)
-				yieldW, _ := g["yield_per_worker"].(float64)
+				// marginal_yield (P4-arvet, megaron_plan_p4_arvet_i_province.md §3 yta 3):
+				// what the NEXT gubbe placed on this good would produce — the same
+				// number `keryx city`/`placement-options` show per hex, not the old
+				// pre-P4 catchment-aggregate figure.
+				yieldW, _ := g["marginal_yield"].(float64)
 				producible, _ := g["producible"].(bool)
 				employed, _ := g["employed_citizens"].(float64)
 				unserved, _ := g["unserved_citizens"].(float64)

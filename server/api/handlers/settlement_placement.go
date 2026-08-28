@@ -196,15 +196,11 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			}
 			if c := placeCap[good]; c > 0 {
 				g.Cap = &c
-				// Grain keeps placementYield's rate × placed shape (not
-				// rate/capL1×mult × placed like every other good) — see
-				// megaron_plan_grain_cap.md and placementYield's doc comment.
-				// It IS capped now, just not capacity-divided.
-				if good == economy.GoodGrain {
-					g.MarginalYield = rate
-				} else {
-					g.MarginalYield = (rate / float64(capL1[good])) * mult[good]
-				}
+				// economy.MarginalYieldForSlot is the ONE marginal-yield
+				// formula, shared with economy.MarginalYieldPerGood
+				// (/goods' aggregate) — no second copy of the grain-vs-other
+				// split here (megaron_plan_p4_arvet_i_province.md §3 step C).
+				g.MarginalYield = economy.MarginalYieldForSlot(good, rate, capL1[good], mult[good])
 			}
 			out = append(out, g)
 		}

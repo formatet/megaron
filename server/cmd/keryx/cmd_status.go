@@ -659,8 +659,17 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						netTick := prodTick - consumTick
 						line := fmt.Sprintf("  %-8s %6s  prod %.1f − konsum %.1f = netto %+.1f /tick",
 							"Grain", resource(gAmt), prodTick, consumTick, netTick)
-						if be, ok := sett["breakeven_grain_weight"].(float64); ok {
-							line += fmt.Sprintf("  (break-even grain-vikt ≥%.0f%%)", be*100)
+						// food_gubbar_required/placed/self_sufficient (P4-arvet,
+						// megaron_plan_p4_arvet_i_province.md §2) replace the old
+						// weight-based break-even hint: how many gubbar the catchment's
+						// food slots need, out of SAME greedy loop founding/growth use.
+						if req, ok := sett["food_gubbar_required"].(float64); ok {
+							if suff, ok2 := sett["food_self_sufficient"].(bool); ok2 && !suff {
+								line += fmt.Sprintf("  ⚠ catchmentet mättar inte befolkningen ens med alla %d gubbar", int(req))
+							} else {
+								placed, _ := sett["food_gubbar_placed"].(float64)
+								line += fmt.Sprintf("  (%d gubbar krävs för föda · %d placerade)", int(req), int(placed))
+							}
 						}
 						fmt.Println(line)
 					}

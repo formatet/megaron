@@ -42,6 +42,17 @@ type foodSlot struct {
 // would reject. Grain's PlaceCapPerGood stays the real level-actual cap
 // (unaffected by Form B); fish's becomes capL1 (frozen).
 func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]foodSlot, hexgrid.Coord, error) {
+	slots, center, _, err := rankedFoodSlotsWithOptions(ctx, tx, settlementID)
+	return slots, center, err
+}
+
+// rankedFoodSlotsWithOptions is rankedFoodSlots' fuller sibling: the same
+// ranked food-slot list PLUS the raw hexOptions it was built from — grain's
+// base potential (the population-remainder term, see FoodGubbarRequired)
+// lives there and nowhere else. rankedFoodSlots is now a thin wrapper around
+// this; its two existing callers (PlaceStartingWorkforce,
+// PlaceNextGubbeOnBestFoodHex) are unchanged.
+func rankedFoodSlotsWithOptions(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]foodSlot, hexgrid.Coord, []HexOption, error) {
 	var q, r int
 	if err := tx.QueryRow(ctx,
 		`SELECT prov.map_q, prov.map_r
@@ -49,15 +60,15 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]food
 		 WHERE s.id = $1`,
 		settlementID,
 	).Scan(&q, &r); err != nil {
-		return nil, hexgrid.Coord{}, fmt.Errorf("ranked food slots: load settlement coords: %w", err)
+		return nil, hexgrid.Coord{}, nil, fmt.Errorf("ranked food slots: load settlement coords: %w", err)
 	}
 	center := hexgrid.Coord{Q: q, R: r}
 
 	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID, nil) // founding/growth placement previews the full catchment, siege denial does not apply
 	if err != nil {
-		return nil, center, fmt.Errorf("ranked food slots: %w", err)
+		return nil, center, nil, fmt.Errorf("ranked food slots: %w", err)
 	}
-	return rankSlotsFromOptions(hexOptions, center), center, nil
+	return rankSlotsFromOptions(hexOptions, center), center, hexOptions, nil
 }
 
 // rankedFoodSlotsAt is rankedFoodSlots' settlement-free sibling — the same
@@ -215,6 +226,58 @@ func placeGreedyOnFoodSlots(slots []foodSlot, guaranteedFood, demand float64, to
 		}
 	}
 	return placements, cumulative >= demand
+}
+
+// FoodGubbarRequired answers P4's version of break-even: how many gubbar
+// must stand on the catchment's food (grain/fish) slots for the settlement's
+// OWN production to cover the population's daily ration — the same question
+// the old pre-P4 weight-based figure tried to answer in a weight
+// settlement_labor no longer reads (megaron_plan_p4_arvet_i_province.md §2). Runs EXACTLY the
+// same two calls PlaceStartingWorkforce and FoundingGrainNetPerTick already
+// share (rankedFoodSlots + placeGreedyOnFoodSlots) — a formula, three
+// callers, never a second one.
+//
+// achievable=false means the catchment cannot feed the population even with
+// EVERY gubbe placed on food (Gournia/Zakros in drift: no grain or fish
+// terrain at all). placeGreedyOnFoodSlots alone does not guarantee
+// len(placements)==totalGubbar in that exact case (an empty slot list simply
+// never enters its loop, leaving placements at 0) — so required is forced to
+// totalGubbar (pop/100) whenever achievable is false, per §2's contract and
+// the "matdöd stad" acceptance test (§4.4): the caller must be told the WHOLE
+// workforce is needed (and still not enough), never left with a silent 0.
+func FoodGubbarRequired(ctx context.Context, tx Tx, settlementID uuid.UUID) (required int, achievable bool, err error) {
+	slots, _, hexOptions, err := rankedFoodSlotsWithOptions(ctx, tx, settlementID)
+	if err != nil {
+		return 0, false, err
+	}
+
+	var population int
+	if err := tx.QueryRow(ctx,
+		`SELECT population FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&population); err != nil {
+		return 0, false, fmt.Errorf("food gubbar required: load population: %w", err)
+	}
+	totalGubbar := population / 100
+	remainderCitizens := population % 100
+
+	grainBasePotential := 0.0
+	for _, opt := range hexOptions {
+		grainBasePotential += opt.RatePerGood[GoodGrain]
+	}
+	// ⚠️ The ONE place outside recompute.go step 4b (and FoundingGrainNetPerTick,
+	// its forecast-time twin) where REF_LABOR still governs output after P4 —
+	// the population remainder's old aggregate term, the SAME expression, not
+	// a second one.
+	guaranteedFood := NearjordGrainPerTick + (grainBasePotential/REF_LABOR)*float64(remainderCitizens)
+	demand := GrainConsumptionPerTick(population)
+
+	placements, sufficient := placeGreedyOnFoodSlots(slots, guaranteedFood, demand, totalGubbar)
+
+	required = len(placements)
+	if !sufficient {
+		required = totalGubbar
+	}
+	return required, sufficient, nil
 }
 
 // PlaceNextGubbeOnBestFoodHex auto-places ONE newly born gubbe (population
