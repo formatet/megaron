@@ -1,9 +1,9 @@
 package economy
 
 // Tests for FoodGubbarRequired (megaron_plan_p4_arvet_i_province.md), P4's
-// replacement for province.go's pre-P4 breakevenGrainWeight/YieldPerWorker
-// surfaces. DB integration tests (real Postgres, DATABASE_URL-gated, same
-// pattern as the rest of this package).
+// replacement for province.go's two pre-P4 weight/aggregate-based figures.
+// DB integration tests (real Postgres, DATABASE_URL-gated, same pattern as
+// the rest of this package).
 
 import (
 	"context"
@@ -88,8 +88,8 @@ func TestFoodGubbarRequired_ParityWithEngine(t *testing.T) {
 // fish — Gournia/Zakros in drift) can never feed its population no matter
 // how many gubbar stand on it. FoodGubbarRequired must SAY so
 // (achievable=false, required=pop/100 — the whole workforce), never fall
-// silent the way the old breakevenGrainWeight did (nil when basePotGrain==0,
-// and the JSON key simply vanished from the response).
+// silent the way the old pre-P4 weight figure did (nil when the catchment's
+// base grain potential was 0, and the JSON key simply vanished from the response).
 func TestFoodGubbarRequired_MatdodStad(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
