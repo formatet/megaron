@@ -17,12 +17,12 @@ import (
 // phase's own hardcoded expectations.
 func TestGrainConsumptionPerTick_EqualsDailyFigureNow(t *testing.T) {
 	const pop = 4000
-	const wantPerCitizen = 0.5
+	const wantPerCitizen = 0.005 // 0.5 → 0.005 (mig 136, calibration choice ÷100, not ÷43.2)
 
 	got := GrainConsumptionPerTick(pop)
-	want := float64(pop) * wantPerCitizen // pop*0.5 == 2000, exactly — a tick IS a day
+	want := float64(pop) * wantPerCitizen // pop*0.005 == 20, exactly — a tick IS a day
 	if math.Abs(got-want) > 1e-9 {
-		t.Fatalf("GrainConsumptionPerTick(%d) = %v, want %v (pop*0.5)", pop, got, want)
+		t.Fatalf("GrainConsumptionPerTick(%d) = %v, want %v (pop*0.005)", pop, got, want)
 	}
 }
 

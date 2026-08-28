@@ -25,15 +25,17 @@ func TestUnitUpkeep_Status(t *testing.T) {
 		wantGrain  float64
 		wantSilver float64
 	}{
-		{"garrison spearman full size", "spearman", "land", 100, "garrison", 50, 1},
-		{"marching spearman full size — silver unchanged", "spearman", "land", 100, "marching", 100, 1},
-		{"positioned spearman half size", "spearman", "land", 50, "positioned", 50, 0.5},
-		{"garrison galley — naval never doubles", "galley", "naval", 1, "garrison", 4, 1.5},
-		{"marching galley — naval never doubles", "galley", "naval", 1, "marching", 4, 1.5},
-		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 60, 2},
-		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 120, 2},
-		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 80, 3},
-		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 160, 3},
+		// Grain ÷100 (mig 136, UpkeepSpecs' own ÷100 calibration): 50→0.5,
+		// 100→1.0, 4→0.04, 60→0.6, 120→1.2, 80→0.8, 160→1.6. Silver untouched.
+		{"garrison spearman full size", "spearman", "land", 100, "garrison", 0.5, 1},
+		{"marching spearman full size — silver unchanged", "spearman", "land", 100, "marching", 1.0, 1},
+		{"positioned spearman half size", "spearman", "land", 50, "positioned", 0.5, 0.5},
+		{"garrison galley — naval never doubles", "galley", "naval", 1, "garrison", 0.04, 1.5},
+		{"marching galley — naval never doubles", "galley", "naval", 1, "marching", 0.04, 1.5},
+		{"garrison elite_infantry full size", "elite_infantry", "land", 100, "garrison", 0.6, 2},
+		{"marching elite_infantry full size", "elite_infantry", "land", 100, "marching", 1.2, 2},
+		{"garrison war_chariot full size", "war_chariot", "land", 100, "garrison", 0.8, 3},
+		{"marching war_chariot full size", "war_chariot", "land", 100, "marching", 1.6, 3},
 		{"unknown type costs nothing regardless of status", "slinger", "land", 100, "marching", 0, 0},
 	}
 	const eps = 1e-9

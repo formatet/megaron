@@ -81,11 +81,13 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 		t.Fatalf("create province: %v", err)
 	}
 
-	// Population 3000 → grain demand = 3000 * 0.5/tick = 1500/tick
-	// (economy.GrainConsumptionPerCitizenPerTick). Plan's own worked example
-	// ("producerar 2768 grain brutto och äter 1500" → netto +1268): since D1
-	// the stored rate really IS that 2768 gross figure directly — no more
-	// reconstruction needed to recover it.
+	// Population 3000 → grain demand = 3000 * 0.005/tick = 15/tick (0.5→0.005,
+	// mig 136, GrainConsumptionPerCitizenPerTick ÷100, not grain's ÷43.2 —
+	// see economy/recompute.go). Plan's own worked example ("producerar 2768
+	// grain brutto och äter 1500" → netto +1268) carried forward at the same
+	// ÷100 scale as demand (2768→27.68, 1268→12.68): since D1 the stored rate
+	// really IS the gross figure directly — no more reconstruction needed to
+	// recover it.
 	const population = 3000
 	var settlementID uuid.UUID
 	if err := pool.QueryRow(ctx,
@@ -95,8 +97,8 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement: %v", err)
 	}
-	const grossGrainRate = 2768.0
-	const wantNetGrainRate = 1268.0
+	const grossGrainRate = 27.68
+	const wantNetGrainRate = 12.68
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 VALUES ($1, 'grain', 50000, $2, 1000000, 0)`,

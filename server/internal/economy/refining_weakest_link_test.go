@@ -123,8 +123,10 @@ func TestRecomputeProduction_OilBaselineWithoutPress(t *testing.T) {
 	}
 
 	// baseline rate 43.2 (mig 092's 1.8, ×24 by mig 109 — read live, not from
-	// 092's own comment), HexFallbackCap 2, 1 placed -> 21.6
-	want := 21.6
+	// 092's own comment), HexFallbackCap 2, 1 placed -> 21.6.
+	// 21.6 → 1.0 (mig 136, oil ÷21.6): baseline rate is now 2.0 (43.2/21.6),
+	// (2.0/2)*1 = 1.0.
+	want := 1.0
 	if got := goodRate(t, settlementID, GoodOil); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("oil rate without any press = %.6f, want %.6f (baseline only)", got, want)
 	}
@@ -150,7 +152,7 @@ func TestRecomputeProduction_OilBoostRequiresPlacedPressWorker(t *testing.T) {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	want := 21.6 // same baseline as the no-press case — an unstaffed press adds zero
+	want := 1.0 // 21.6 → 1.0 (mig 136, oil ÷21.6) — same baseline as the no-press case, an unstaffed press adds zero
 	if got := goodRate(t, settlementID, GoodOil); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("oil rate with an UNSTAFFED press = %.6f, want %.6f — a built-but-empty press "+
 			"must not boost production (Timothy 2026-08-08: strict weakest link)", got, want)
@@ -183,7 +185,11 @@ func TestRecomputeProduction_OilBoostExtractionLimited(t *testing.T) {
 	// baseline (43.2/2)*1=21.6 ; boostPotential (72.0/2)*1=36.0 ;
 	// refiningCapacity (72.0/2)*2=72.0 ; realized boost = min(36.0,72.0)=36.0
 	// -> total 57.6.
-	want := 57.6
+	// 57.6 → 2.6666666666666665 (mig 136, oil ÷21.6): baseline (2.0/2)*1=1.0 ;
+	// boostPotential (3.3333.../2)*1=1.6666... ; refiningCapacity
+	// (3.3333.../2)*2=3.3333... ; realized boost = min(1.6666...,3.3333...)=1.6666...
+	// -> total 2.6666666666666665.
+	want := 57.6 / 21.6
 	if got := goodRate(t, settlementID, GoodOil); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("oil rate with over-provisioned refining = %.6f, want %.6f "+
 			"(boost must be capped by the WEAKER extraction side, not the refining side)", got, want)
@@ -214,7 +220,7 @@ func TestRecomputeProduction_OilFullyStaffedMatchesPreP6Ceiling(t *testing.T) {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	want := 115.2
+	want := 115.2 / 21.6 // 115.2 → 5.333333333333333 (mig 136, oil ÷21.6)
 	if got := goodRate(t, settlementID, GoodOil); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("fully staffed oil rate = %.6f, want %.6f (migration 092's pre-P6 ceiling)", got, want)
 	}
@@ -246,7 +252,8 @@ func TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker(t *testing.T) {
 	// terrain+building rows, UNGATED — only winery is in weakestLinkGoods),
 	// cap=HexFallbackCap=2, 1 placed: baseline (14.4/2)*1=7.2, farm-boost
 	// (28.8/2)*1=14.4. winery-boost is 0 (unstaffed) -> total 21.6.
-	want := 21.6
+	// 21.6 → 1.5 (mig 136, wine ÷14.4): baseline+farm-boost = 1.0+0.5 = 1.5.
+	want := 21.6 / 14.4
 	if got := goodRate(t, settlementID, GoodWine); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("wine rate with unstaffed winery = %.6f, want %.6f "+
 			"(farm's own wine bonus must still apply; winery's must not)", got, want)
@@ -275,7 +282,8 @@ func TestRecomputeProduction_WineWineryBoostRealizedWhenStaffed(t *testing.T) {
 	// baseline+farm = 21.6 (as above). winery-boostPotential (43.2/2)*1=21.6;
 	// refiningCapacity (72.0/1)*1=72.0 (level 1, 1 slot);
 	// realized = min(21.6,72.0)=21.6 -> total 43.2.
-	want := 43.2
+	// 43.2 → 3.0 (mig 136, wine ÷14.4): baseline+farm 1.5 + winery-boost 1.5 = 3.0.
+	want := 43.2 / 14.4
 	if got := goodRate(t, settlementID, GoodWine); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("wine rate with staffed winery = %.6f, want %.6f", got, want)
 	}

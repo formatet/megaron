@@ -63,13 +63,23 @@ type UpkeepSpec struct {
 // i SAMMA slice, annars hade halveringen tyst halverat startsilvret också
 // och grinden (480 ska räcka märkbart längre än 48 speldygn) hade landat på
 // exakt samma 48 som innan.
+// Grain-kolumnen ÷100 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27) —
+// SAMMA faktor som GrainConsumptionPerCitizenPerTick (0,5 → 0,005), inte
+// grain-varans divisor 43,2. Skälet är en likhet som måste överleva
+// omskalningen: en landkohort är 100 man och åt före exakt vad en gubbe
+// (100 invånare) åt, 50 mot 50. Efter migrationen äter båda 0,50. Hade upkeep
+// följt varudivisorn i stället hade soldaten plötsligt ätit dubbelt mot
+// civilbefolkningen utan att någon beslutat det.
+//
+// Silver rörs INTE — det är en valuta och skalas inte i mig 136 (se
+// migrationens huvudkommentar: kollapsmekaniken är en egen systemfråga).
 var UpkeepSpecs = map[string]UpkeepSpec{
-	"spearman":       {Grain: 50, Silver: 1},
-	"elite_infantry": {Grain: 60, Silver: 2},
-	"war_chariot":    {Grain: 80, Silver: 3},
-	"galley":         {Grain: 4, Silver: 1.5},
-	"war_galley":     {Grain: 6, Silver: 2.5},
-	"merchantman":    {Grain: 3, Silver: 1},
+	"spearman":       {Grain: 0.50, Silver: 1},
+	"elite_infantry": {Grain: 0.60, Silver: 2},
+	"war_chariot":    {Grain: 0.80, Silver: 3},
+	"galley":         {Grain: 0.04, Silver: 1.5},
+	"war_galley":     {Grain: 0.06, Silver: 2.5},
+	"merchantman":    {Grain: 0.03, Silver: 1},
 }
 
 // UnitUpkeep returns the grain + silver one unit costs per upkeep-period (the

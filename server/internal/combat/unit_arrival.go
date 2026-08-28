@@ -950,11 +950,17 @@ func (h *UnitArrivalHandler) foundColony(
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
+		        -- Omskalat med varje varas divisor (mig 136, dagsverkesskalan):
+		        -- timmer ÷216 · sten ÷7,2. Grain kommer från
+		        -- economy.ColonyGrainSeed (redan omskalad) och MÅSTE castas till
+		        -- numeric, inte int — ::int trunkerade 6,94 till 6, en tyst
+		        -- 14-procentig förlust av varje kolonis startförråd.
+		        -- Livestock är ett antal djur, inte en matmängd, och skalas inte.
 		        CASE g.key
-		            WHEN 'grain'     THEN $2::int
-		            WHEN 'timber'    THEN 200
-		            WHEN 'stone'     THEN 300
-		            WHEN 'livestock' THEN $3::int
+		            WHEN 'grain'     THEN $2::numeric
+		            WHEN 'timber'    THEN 0.926
+		            WHEN 'stone'     THEN 41.67
+		            WHEN 'livestock' THEN $3::numeric
 		            ELSE 0
 		        END,
 		        0,

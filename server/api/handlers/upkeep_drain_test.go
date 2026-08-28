@@ -127,11 +127,12 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(mykene): %v", err)
 	}
-	// Mykene pays for the spearmen (50 garrison grain / 1 silver, SLICE B halved) and
-	// the marching chariot (80 base ×2 field factor = 160 grain / 3 silver, SLICE B
+	// Mykene pays for the spearmen (0.5 garrison grain / 1 silver, SLICE B halved) and
+	// the marching chariot (0.8 base ×2 field factor = 1.6 grain / 3 silver, SLICE B
 	// halved from 6). Tiryns' garrison and the forming unit are not its bill.
-	if math.Abs(gross.Grain-210) > eps {
-		t.Errorf("Mykene gross grain = %v, want 210 (50 garrison + 160 marching chariot)", gross.Grain)
+	// Grain further ÷100 by mig 136 (UpkeepSpecs' own calibration): 50→0.5, 160→1.6.
+	if math.Abs(gross.Grain-2.1) > eps {
+		t.Errorf("Mykene gross grain = %v, want 2.1 (0.5 garrison + 1.6 marching chariot)", gross.Grain)
 	}
 	if math.Abs(gross.Silver-4) > eps {
 		t.Errorf("Mykene gross silver = %v, want 4 (1 garrison + 3 marching chariot)", gross.Silver)

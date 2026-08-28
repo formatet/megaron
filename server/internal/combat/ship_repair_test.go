@@ -19,14 +19,15 @@ func TestRepairCost(t *testing.T) {
 		wantGood   string
 		wantAmount float64
 	}{
-		// galley: training.go Costs{timber:9} per crew member, CrewFor=20 →
-		// full-ship build cost = 180 timber. 8%/point × 1 point = 14.4.
-		{"galley, one hull point", "galley", 1, "timber", 180 * repairCostFractionPerHullPoint},
-		// war_galley: Costs{cedar:5} per crew, CrewFor=50 → 250 cedar full build.
+		// galley: training.go Costs{timber:1.5} per crew member, CrewFor=20 →
+		// full-ship build cost = 30 timber, alltså 30 dagsverken (S4-ankaret,
+		// Timothy 2026-08-27). 8%/point × 1 point = 2,4.
+		{"galley, one hull point", "galley", 1, "timber", 30.0 * repairCostFractionPerHullPoint},
+		// war_galley: Costs{cedar:1.6} per crew, CrewFor=50 → 80 ceder full build.
 		// A full 5-point repair costs 5×8% = 40% of that.
-		{"war_galley, full repair", "war_galley", hullMax, "cedar", 250 * repairCostFractionPerHullPoint * float64(hullMax)},
-		// merchantman: Costs{timber:8.75} per crew, CrewFor=10 → 87.5 timber build.
-		{"merchantman, three hull points", "merchantman", 3, "timber", 87.5 * repairCostFractionPerHullPoint * 3},
+		{"war_galley, full repair", "war_galley", hullMax, "cedar", 80.0 * repairCostFractionPerHullPoint * float64(hullMax)},
+		// merchantman: Costs{timber:1.6} per crew, CrewFor=10 → 16 timmer full build.
+		{"merchantman, three hull points", "merchantman", 3, "timber", 16.0 * repairCostFractionPerHullPoint * 3},
 		{"zero hull points costs nothing", "galley", 0, "timber", 0},
 		{"unknown unit type", "spearman", 2, "", 0},
 	}

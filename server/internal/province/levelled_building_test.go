@@ -18,22 +18,71 @@ func TestLevelledSpec_Level1IsUnchanged(t *testing.T) {
 	}
 }
 
-// TestLevelledSpec_HigherLevelsCostCedar — själva mekaniken: att bygga ut en
-// arbetsplats kräver ädelträ, alltså handel eller kolonisering.
-func TestLevelledSpec_HigherLevelsCostCedar(t *testing.T) {
-	for level := 2; level <= MaxBuildingLevel; level++ {
-		spec, ok := LevelledSpec(BuildingLumbermill, level)
-		if !ok {
-			t.Fatalf("lumbermill level %d must resolve", level)
+// TestLevelledSpec_CedarBuildingsCostCedar — ädelträmekaniken finns kvar, men
+// bara för det maritima och monumentala (S2, 2026-08-27). Hamnen och varvet är
+// fönstret mot havet; templet är palatsbygget.
+func TestLevelledSpec_CedarBuildingsCostCedar(t *testing.T) {
+	for bt := range LevelCedarBuildings {
+		for level := 2; level <= MaxBuildingLevel; level++ {
+			spec, ok := LevelledSpec(bt, level)
+			if !ok {
+				t.Fatalf("%s level %d must resolve", bt, level)
+			}
+			if spec.Costs["cedar"] <= 0 {
+				t.Errorf("%s level %d must cost cedar, got %.3f", bt, level, spec.Costs["cedar"])
+			}
 		}
-		if spec.Costs["cedar"] <= 0 {
-			t.Errorf("level %d must cost cedar, got %.1f", level, spec.Costs["cedar"])
+		l2, _ := LevelledSpec(bt, 2)
+		l3, _ := LevelledSpec(bt, 3)
+		if l3.Costs["cedar"] <= l2.Costs["cedar"] {
+			t.Errorf("%s: each level must cost more cedar than the one below it", bt)
 		}
 	}
+}
+
+// TestLevelledSpec_BaseBuildingsNeedNoCedar är S2:s hela poäng
+// (megaron_plan_dagsverkesskalan, 2026-08-27).
+//
+// Mätt 2026-08-27: ceder finns på 31 av världens 2 240 hexar och NOLL av dem
+// ligger i någon stads upptagningsområde. När LevelCedarCost gällde varje
+// nivåbyggnad var därför hela nivåtrappan låst för alla åtta städer i drift —
+// samtliga 70 byggnader stod på nivå 1 sedan 2026-07-23, och det lästes länge
+// som spelarslöhet snarare än som en spärr ingen kunde passera.
+//
+// En jordbruksstad måste kunna intensifiera sin mark med lokala material.
+func TestLevelledSpec_BaseBuildingsNeedNoCedar(t *testing.T) {
+	for bt := range LevelledBuildings {
+		if LevelCedarBuildings[bt] {
+			continue
+		}
+		for level := 2; level <= MaxBuildingLevel; level++ {
+			spec, ok := LevelledSpec(bt, level)
+			if !ok {
+				t.Fatalf("%s level %d must resolve", bt, level)
+			}
+			if spec.Costs["cedar"] > 0 {
+				t.Errorf("%s level %d costs %.3f cedar — base progression must be buildable "+
+					"from local materials, or the whole level staircase locks again", bt, level, spec.Costs["cedar"])
+			}
+		}
+	}
+}
+
+// TestLevelledSpec_MaterialsRiseWithLevel — utan ceder måste något annat bära
+// trappan, annars kostar nivå 2 och 3 exakt samma material som nivå 1 och
+// uppgraderingen blir gratis i allt utom tid.
+func TestLevelledSpec_MaterialsRiseWithLevel(t *testing.T) {
+	l1, _ := LevelledSpec(BuildingLumbermill, 1)
 	l2, _ := LevelledSpec(BuildingLumbermill, 2)
 	l3, _ := LevelledSpec(BuildingLumbermill, 3)
-	if l3.Costs["cedar"] <= l2.Costs["cedar"] {
-		t.Error("each level must cost more cedar than the one below it")
+
+	for _, good := range []string{"timber", "stone"} {
+		if l2.Costs[good] <= l1.Costs[good] {
+			t.Errorf("%s: level 2 (%.3f) must cost more than level 1 (%.3f)", good, l2.Costs[good], l1.Costs[good])
+		}
+		if l3.Costs[good] <= l2.Costs[good] {
+			t.Errorf("%s: level 3 (%.3f) must cost more than level 2 (%.3f)", good, l3.Costs[good], l2.Costs[good])
+		}
 	}
 	if l3.DurationTicks <= l2.DurationTicks {
 		t.Error("each level must take longer to build than the one below it")

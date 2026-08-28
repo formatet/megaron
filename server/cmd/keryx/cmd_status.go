@@ -91,13 +91,16 @@ const productionHorizonTicks = 60
 // pulls clock/events/gossip/hexgrid into what is otherwise a small,
 // dependency-free CLI binary, for one float that only ever changes with a
 // design conversation, not a code change here.
-const grainConsumptionPerCitizenPerTick = 0.5
+// 0,5 → 0,005 (mig 136, dagsverkesskalan) — hålls i lås med sin motpart i
+// internal/economy/recompute.go enligt dess egen varningskommentar.
+const grainConsumptionPerCitizenPerTick = 0.005
 
 // livestockFoodValue mirrors economy's own (unexported, so unimportable
 // regardless of package weight) constant of the same name
 // (internal/economy/recompute.go — Timothy 2026-08-07: "jag tycker nästan
 // att ett kreatur kan få leverera 200 mat om det dödas").
-const livestockFoodValue = 200.0
+// 200 → 166,67 (mig 136, dagsverkesskalan) — hålls i lås med sin motpart.
+const livestockFoodValue = 166.67
 
 // sinkContext bundles what sinkCapacities needs about ONE settlement — all
 // of it already present in the /provinces payload `status` already parses,

@@ -159,11 +159,11 @@ func TestGranary_StoreConservesFood(t *testing.T) {
 	cfg := testSitosCfg()
 
 	const tick = 100
-	const pop = 1000 // need 500/day, high threshold 15000, cap 30000
-	// 16000 grain + 8000 fish = 24000 food = 48 days. Surplus 9000, tithe 900,
-	// split 2:1 by stock → 600 grain, 300 fish.
+	const pop = 1000 // need 5/day, high threshold 150, cap 300 (mig 136, ÷100: 500→5, 15000→150, 30000→300)
+	// 160 grain + 80 fish (16000/8000 → ÷100) = 240 food = 48 days. Surplus 90,
+	// tithe 9, split 2:1 by stock → 6 grain, 3 fish.
 	worldID, settlementID := granaryFixture(t, pool, ctx, tick, pop,
-		[]fixtureGood{{"grain", 16000, 1000000}, {"fish", 8000, 1000000}}, nil)
+		[]fixtureGood{{"grain", 160, 1000000}, {"fish", 80, 1000000}}, nil)
 
 	cityBefore, granBefore := totalFood(t, pool, ctx, settlementID)
 	silverBefore := liquidSilver(t, pool, ctx, settlementID)
@@ -176,15 +176,15 @@ func TestGranary_StoreConservesFood(t *testing.T) {
 	if math.Abs((cityAfter+granAfter)-(cityBefore+granBefore)) > 1e-6 {
 		t.Errorf("food not conserved: before=%.6f after=%.6f", cityBefore+granBefore, cityAfter+granAfter)
 	}
-	if math.Abs(granAfter-900) > 1e-6 {
-		t.Errorf("granary = %.6f, want 900 (10%% of the 9000 above the threshold)", granAfter)
+	if math.Abs(granAfter-9) > 1e-6 {
+		t.Errorf("granary = %.6f, want 9 (10%% of the 90 above the threshold)", granAfter)
 	}
 	// B6: both goods contribute, in proportion to what the city holds.
 	var storedGrain, storedFish float64
 	_ = pool.QueryRow(ctx, `SELECT COALESCE(amount,0) FROM settlement_granary WHERE settlement_id=$1 AND good_key='grain'`, settlementID).Scan(&storedGrain)
 	_ = pool.QueryRow(ctx, `SELECT COALESCE(amount,0) FROM settlement_granary WHERE settlement_id=$1 AND good_key='fish'`, settlementID).Scan(&storedFish)
-	if math.Abs(storedGrain-600) > 1e-6 || math.Abs(storedFish-300) > 1e-6 {
-		t.Errorf("stored grain=%.3f fish=%.3f, want 600/300 (2:1, the city's own mix)", storedGrain, storedFish)
+	if math.Abs(storedGrain-6) > 1e-6 || math.Abs(storedFish-3) > 1e-6 {
+		t.Errorf("stored grain=%.3f fish=%.3f, want 6/3 (2:1, the city's own mix)", storedGrain, storedFish)
 	}
 	// B3: the granary must not touch silver on ANY path.
 	if s := liquidSilver(t, pool, ctx, settlementID); math.Abs(s-silverBefore) > 1e-9 {
@@ -202,10 +202,11 @@ func TestGranary_ReleasesIntoFamine(t *testing.T) {
 	cfg := testSitosCfg()
 
 	const tick = 100
-	const pop = 1000 // need 500/day, low threshold 5000
-	// 1000 grain = 2 days. Granary holds 20000 grain → release the 4000 shortfall.
+	const pop = 1000 // need 5/day, low threshold 50 (mig 136, ÷100: 500→5, 5000→50)
+	// 10 grain (1000→10) = 2 days. Granary holds 200 grain (20000→200) →
+	// release the 40 shortfall (4000→40).
 	worldID, settlementID := granaryFixture(t, pool, ctx, tick, pop,
-		[]fixtureGood{{"grain", 1000, 1000000}}, map[string]float64{"grain": 20000})
+		[]fixtureGood{{"grain", 10, 1000000}}, map[string]float64{"grain": 200})
 
 	cityBefore, granBefore := totalFood(t, pool, ctx, settlementID)
 
@@ -217,11 +218,11 @@ func TestGranary_ReleasesIntoFamine(t *testing.T) {
 	if math.Abs((cityAfter+granAfter)-(cityBefore+granBefore)) > 1e-6 {
 		t.Errorf("food not conserved: before=%.6f after=%.6f", cityBefore+granBefore, cityAfter+granAfter)
 	}
-	if math.Abs(cityAfter-5000) > 1e-6 {
-		t.Errorf("city food = %.6f, want 5000 (topped up to the low threshold)", cityAfter)
+	if math.Abs(cityAfter-50) > 1e-6 {
+		t.Errorf("city food = %.6f, want 50 (topped up to the low threshold)", cityAfter)
 	}
-	if math.Abs(granAfter-16000) > 1e-6 {
-		t.Errorf("granary = %.6f, want 16000", granAfter)
+	if math.Abs(granAfter-160) > 1e-6 {
+		t.Errorf("granary = %.6f, want 160", granAfter)
 	}
 }
 
@@ -235,16 +236,17 @@ func TestGranary_EmptyGranaryCannotSave(t *testing.T) {
 	cfg := testSitosCfg()
 
 	const tick = 100
+	// 1000 → 10 (mig 136, ÷100).
 	worldID, settlementID := granaryFixture(t, pool, ctx, tick, 1000,
-		[]fixtureGood{{"grain", 1000, 1000000}}, nil)
+		[]fixtureGood{{"grain", 10, 1000000}}, nil)
 
 	if err := newTestHandler(pool, cfg).tickSettlement(ctx, settlementID, worldID, 1); err != nil {
 		t.Fatalf("tickSettlement: %v", err)
 	}
 
 	cityAfter, granAfter := totalFood(t, pool, ctx, settlementID)
-	if math.Abs(cityAfter-1000) > 1e-6 {
-		t.Errorf("city food = %.6f, want 1000 unchanged — an empty granary must not conjure food", cityAfter)
+	if math.Abs(cityAfter-10) > 1e-6 {
+		t.Errorf("city food = %.6f, want 10 unchanged — an empty granary must not conjure food", cityAfter)
 	}
 	if granAfter != 0 {
 		t.Errorf("granary = %.6f, want 0", granAfter)
@@ -262,10 +264,10 @@ func TestGranary_ReleaseRespectsCityCap(t *testing.T) {
 	cfg := testSitosCfg()
 
 	const tick = 100
-	const pop = 1000 // low threshold 5000; shortfall from 1000 is 4000
-	// The city's grain cap is 2500, so only 1500 can physically arrive.
+	const pop = 1000 // low threshold 50 (mig 136, ÷100: 5000→50); shortfall from 10 is 40
+	// The city's grain cap is 25 (2500→25, mig 136 ÷100), so only 15 can physically arrive.
 	worldID, settlementID := granaryFixture(t, pool, ctx, tick, pop,
-		[]fixtureGood{{"grain", 1000, 2500}}, map[string]float64{"grain": 20000})
+		[]fixtureGood{{"grain", 10, 25}}, map[string]float64{"grain": 200})
 
 	cityBefore, granBefore := totalFood(t, pool, ctx, settlementID)
 
@@ -278,11 +280,11 @@ func TestGranary_ReleaseRespectsCityCap(t *testing.T) {
 		t.Errorf("food not conserved under a binding cap: before=%.6f after=%.6f (this is where clipping destroys it)",
 			cityBefore+granBefore, cityAfter+granAfter)
 	}
-	if math.Abs(cityAfter-2500) > 1e-6 {
-		t.Errorf("city food = %.6f, want 2500 (its cap)", cityAfter)
+	if math.Abs(cityAfter-25) > 1e-6 {
+		t.Errorf("city food = %.6f, want 25 (its cap)", cityAfter)
 	}
-	if math.Abs(granAfter-18500) > 1e-6 {
-		t.Errorf("granary = %.6f, want 18500 — the rest waits for a later tick", granAfter)
+	if math.Abs(granAfter-185) > 1e-6 {
+		t.Errorf("granary = %.6f, want 185 — the rest waits for a later tick", granAfter)
 	}
 }
 

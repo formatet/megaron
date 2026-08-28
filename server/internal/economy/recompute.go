@@ -27,7 +27,18 @@ const REF_LABOR = 100.0
 // than flowing through the labor-weighted catchment potential like every
 // other good; hexgrid.Ring (not Disk) already excludes this hex from that
 // potential sum, so there is no double-count.
-const NearjordGrainPerTick = 50.0
+// 50 → 0,5 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27): stadshexens
+// ranson ska vara EXAKT vad en gubbe äter på ett tick, "varken mer eller
+// mindre" (Timothy). Med GrainConsumptionPerCitizenPerTick = 0,005 och 100
+// invånare per gubbe är det 0,5 — samma likhet som gällde före omskalningen
+// (50 mot 0,5 × 100), nu i dagsverkesskalan.
+//
+// ⚠️ Detta är det ENDA gratisflödet som överlever mig 136. Timmertrickeln
+// (144/tick) och purpurflödet (21,6/tick) raderas ur production_rules i samma
+// migration — de gav varje stad 0,67 respektive 1,0 dagsverken per tick utan
+// att en enda gubbe arbetade, och var därför hela förklaringen till lager på
+// 14 000–58 000 i varor ingen producerade.
+const NearjordGrainPerTick = 0.5
 
 // Workplace capacity (Timothy 2026-07-23, absolute headcount since P2
 // 2026-08-07 — megaron_plan_fysisk_gubbemodell.md). A producing building is a
@@ -352,7 +363,18 @@ func LaborCapacity(goodKey string, hasFieldPath bool, hexSlots int, buildingSlot
 // clock/events/gossip/hexgrid with it. Change this number and that one drifts
 // silently — update both. Same applies to the unexported livestockFoodValue
 // below.
-const GrainConsumptionPerCitizenPerTick = 0.5
+// 0,5 → 0,005 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27).
+//
+// Detta är INTE en ren omskalning, utan kalibreringsvalet i planens §3 — och
+// det viktigaste talet i hela migrationen. Före: en gubbe på slätt producerade
+// 43,2 och åt 50, alltså föddes han inte ens av sitt eget arbete. Därför stod
+// 346 av 351 placerade gubbar i drift på spannmål: det fanns inget val, bara
+// ett lagligt drag. Efter: han producerar 1,00 och äter 0,50 — en gubbe föder
+// två. Först då finns det arbetskraft över att lägga på något annat, och först
+// då betyder ett pris i dagsverken någonting.
+//
+// 0,005 per invånare × 100 invånare = 0,50 per gubbe.
+const GrainConsumptionPerCitizenPerTick = 0.005
 
 // GrainConsumptionPerTick is the grain a population of pop eats each tick.
 // It depends on head-count alone — not on labor weights, terrain or buildings —
@@ -391,7 +413,16 @@ func GrainBalance(grossRate float64, population int) (consumption, net float64) 
 // 2026-08-07: "jag tycker nästan att ett kreatur kan få leverera 200 mat om
 // det dödas." Explicitly a ratt, not a lock (megaron_plan_foda_konsistens.md
 // §Grind) — tune against soak data, not an invariant.
-const livestockFoodValue = 200.0
+// 200 → 166,67 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27). Talet
+// växlar en LIVESTOCK-enhet till GRAIN-enheter, så det bär BÅDA varornas
+// divisorer och kan inte bara divideras med en av dem:
+//
+//	1 ny livestock = 36 gamla livestock = 36 × 200 = 7 200 gamla grain
+//	7 200 / 43,2 = 166,67 nya grain
+//
+// Kvoten mellan ett slaktat djur och en gubbes dagsranson står därmed exakt
+// still. ⚠️ SPEGLAD i cmd/keryx/cmd_status.go — uppdatera båda.
+const livestockFoodValue = 166.67
 
 // LivestockSlaughterPopGain is the immediate population gain from a
 // player-chosen slaughter of one animal — S1c, the herd's strongest sink

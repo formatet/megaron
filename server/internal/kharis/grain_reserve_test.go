@@ -8,7 +8,10 @@ import "testing"
 // a Wanax raise a cohort from this city?"), so it must not be written in terms
 // of growthGrainReserve — a test that measures a constant against itself passes
 // no matter what the constant is, and this one silently did until 2026-08-24.
-const spearmanGrainLevy = 300.0
+// 300.0 → 6.94 (mig 136, grain ÷43.2): UnitSpecs["spearman"].Costs["grain"] is
+// now 0.0694 per man (training.go), × 100 men = 6.94 — read live off the game's
+// own rounded per-man figure, not the unrounded 300/43.2.
+const spearmanGrainLevy = 6.94
 
 // TestApplyDecay_GrowthNeverEatsTheReserve is the behavioural half of
 // growthGrainReserve. The measurable claim is not "growth is slower" — it is
