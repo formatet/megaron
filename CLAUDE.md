@@ -25,7 +25,11 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 
 **How work is done → `megaron_arbetssatt.md`** — standing instruction, takes precedence over local habits.
 Read it before a slice. Core: contract before code · one slice = one thing · baseline first · judge visuals
-at 1:1 · four gates (code/visual/**semantic**/**user**) · **eye-check on the branch before merge** · deploy is
+at 1:1 · four gates (code/visual/**semantic**/**user**) · **BILD before merge, TEXT in playtest**
+(rewritten 2026-08-28 — sort the check first: a picture needs Timothy's eye on the branch and blocks
+merge; a text line is judged by someone who does NOT already know what it should say, i.e. a
+playtester; a function is a test and is never judged by eye. `megaron_ogonkoll` is split §A/§B/§C
+accordingly — never file a row there without saying which sort it is) · deploy is
 reproduction, not discovery · follow a data invariant through the whole lifecycle · substrate before sibling ·
 name the concrete surface where the player meets it · stop and ask Timothy on canon · finish with a proof package.
 
