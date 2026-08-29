@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -225,11 +227,39 @@ func apiError(body []byte, status int) error {
 		if len(e.Missing) > 0 {
 			parts := make([]string, len(e.Missing))
 			for i, m := range e.Missing {
-				parts[i] = fmt.Sprintf("%s (need %.0f, have %.0f)", m.Good, m.Need, m.Have)
+				// Mirrors api/handlers/helpers.go shortfall() — the server sends
+				// need/have as raw numbers in `missing`, so keryx renders the
+				// pair itself and must not reintroduce the rounding lie the
+				// server side just removed (cli-sanning §D's bug class).
+				parts[i] = fmt.Sprintf("%s (%s)", m.Good, shortfall(m.Need, m.Have))
 			}
 			return fmt.Errorf("%s: %s (HTTP %d)", e.Error, strings.Join(parts, ", "), status)
 		}
 		return fmt.Errorf("%s (HTTP %d)", e.Error, status)
 	}
 	return fmt.Errorf("HTTP %d", status)
+}
+
+// shortfall mirrors api/handlers/helpers.go shortfall(): the server sends
+// need/have as raw numbers in `missing`, so keryx renders the pair itself and
+// must not reintroduce the rounding lie the server side removed (cli-sanning
+// §D's bug class). Precision is driven by the GAP, never by the stock figure —
+// 4,97 against a required 5 must not render as "have 5.0".
+// Duplicated rather than shared because cmd/keryx is a separate binary that
+// cannot import the handlers package; the two are pinned to the same output by
+// client_shortfall_test.go.
+func shortfall(need, have float64) string {
+	diff := need - have
+	prec := 1
+	if diff < 0.1 {
+		prec = 2
+	}
+	if have == math.Trunc(have) && diff == math.Trunc(diff) {
+		prec = 0
+	}
+	needStr := strconv.FormatFloat(need, 'f', 0, 64)
+	if need != math.Trunc(need) {
+		needStr = strconv.FormatFloat(need, 'f', 1, 64)
+	}
+	return fmt.Sprintf("need %s, have %.*f, %.*f short", needStr, prec, have, prec, diff)
 }
