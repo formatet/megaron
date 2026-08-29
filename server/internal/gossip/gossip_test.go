@@ -42,8 +42,8 @@ func testWorld(t *testing.T, pool *pgxpool.Pool, playerNames ...string) (worldID
 	for _, name := range playerNames {
 		var pid uuid.UUID
 		if err := pool.QueryRow(ctx,
-			`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-			name+"-"+uuid.New().String(), name+"-"+uuid.New().String()+"@test.invalid",
+			`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+			name+"-"+uuid.New().String(),
 		).Scan(&pid); err != nil {
 			t.Fatalf("create test player %s: %v", name, err)
 		}

@@ -67,8 +67,8 @@ func TestMarches_ForeignMarchHiddenWhenCurrentPositionInFog(t *testing.T) {
 
 	var enemyID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"marches-enemy-"+uuid.New().String(), "marches-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"marches-enemy-"+uuid.New().String(),
 	).Scan(&enemyID); err != nil {
 		t.Fatalf("create enemy: %v", err)
 	}
@@ -176,8 +176,8 @@ func TestMapMessengers_ForeignMessengerHiddenWhenCurrentPositionInFog(t *testing
 
 	var enemyID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"msg-enemy-"+uuid.New().String(), "msg-enemy-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"msg-enemy-"+uuid.New().String(),
 	).Scan(&enemyID); err != nil {
 		t.Fatalf("create enemy: %v", err)
 	}

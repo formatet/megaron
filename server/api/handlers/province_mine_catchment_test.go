@@ -70,7 +70,7 @@ func setupMineGateFixture(t *testing.T, depositAt *hexgrid.Coord) *mineGateFixtu
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "minegate-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register test player: %v", err)
 	}

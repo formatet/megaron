@@ -97,8 +97,8 @@ func starvationWarningFixture(t *testing.T, grainAmount, grainRate float64) (wor
 	})
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"starvewarn-"+uuid.New().String(), "starvewarn-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"starvewarn-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

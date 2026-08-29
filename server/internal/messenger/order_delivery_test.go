@@ -36,8 +36,8 @@ func TestOrderDelivery_MarchExecutesOnArrival(t *testing.T) {
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"order-owner-"+uuid.New().String(), "order-owner-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"order-owner-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create test player: %v", err)
 	}

@@ -72,7 +72,7 @@ func setupMapTradesMineFixture(t *testing.T) *mapTradesMineFixture {
 
 	registerPlayer := func(prefix string) (uuid.UUID, string) {
 		username := prefix + "-" + uuid.New().String()
-		token, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+		token, _, err := authSvc.Register(ctx, username, "x")
 		if err != nil {
 			t.Fatalf("register %s: %v", prefix, err)
 		}

@@ -66,8 +66,8 @@ func newGrowthFixture(t *testing.T, terrains [6]string, pop int) (*pgxpool.Pool,
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"graingrowth-"+uuid.New().String(), "graingrowth-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"graingrowth-"+uuid.New().String(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

@@ -29,8 +29,8 @@ func mkTradeOwner(t *testing.T, pool *pgxpool.Pool, ctx context.Context) uuid.UU
 	var owner uuid.UUID
 	name := "trisk-" + uuid.New().String()
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		name, name+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		name,
 	).Scan(&owner); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

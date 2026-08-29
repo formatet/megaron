@@ -68,16 +68,14 @@ func TestMarchEncounterHandler_PerfManyMarches(t *testing.T) {
 
 	owners := make([]uuid.UUID, numOwners)
 	usernames := make([]string, numOwners)
-	emails := make([]string, numOwners)
 	for i := range owners {
 		owners[i] = uuid.New()
 		usernames[i] = fmt.Sprintf("perf-%d-%s", i, owners[i])
-		emails[i] = fmt.Sprintf("perf-%d-%s@test.invalid", i, owners[i])
 	}
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO players (id, username, email, password_hash)
-		 SELECT t.id, t.u, t.e, 'x' FROM unnest($1::uuid[], $2::text[], $3::text[]) AS t(id, u, e)`,
-		owners, usernames, emails,
+		`INSERT INTO players (id, username, password_hash)
+		 SELECT t.id, t.u, 'x' FROM unnest($1::uuid[], $2::text[]) AS t(id, u)`,
+		owners, usernames,
 	); err != nil {
 		t.Fatalf("seed owners: %v", err)
 	}

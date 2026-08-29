@@ -61,8 +61,8 @@ func newMarchRecallFixture(t *testing.T, pool *pgxpool.Pool) marchRecallFixture 
 	})
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"recall-owner-"+uuid.New().String(), "recall-owner-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"recall-owner-"+uuid.New().String(),
 	).Scan(&f.ownerID); err != nil {
 		t.Fatalf("create test player: %v", err)
 	}

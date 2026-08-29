@@ -52,8 +52,8 @@ func newTestPlayer(t *testing.T, pool *pgxpool.Pool) uuid.UUID {
 	ctx := context.Background()
 	var id uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"p-"+uuid.New().String(), "p-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"p-"+uuid.New().String(),
 	).Scan(&id); err != nil {
 		t.Fatalf("create test player: %v", err)
 	}

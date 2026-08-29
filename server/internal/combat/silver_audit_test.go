@@ -48,8 +48,8 @@ func TestUpkeepSilverBookkeeping(t *testing.T) {
 	mkPlayer := func() uuid.UUID {
 		var id uuid.UUID
 		if err := pool.QueryRow(ctx,
-			`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-			"silver-"+uuid.New().String(), "silver-"+uuid.New().String()+"@test.invalid",
+			`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+			"silver-"+uuid.New().String(),
 		).Scan(&id); err != nil {
 			t.Fatalf("create player: %v", err)
 		}

@@ -42,8 +42,8 @@ func TestBattleTickHandler_NotifiesBothSidesOnBattleEnd(t *testing.T) {
 		var id uuid.UUID
 		wanaxName := tag + "Wanax-" + uuid.New().String()
 		if err := pool.QueryRow(ctx,
-			`INSERT INTO players (username, wanax_name, email, password_hash) VALUES ($1, $2, $3, 'x') RETURNING id`,
-			tag+"-"+uuid.New().String(), wanaxName, tag+"-"+uuid.New().String()+"@test.invalid",
+			`INSERT INTO players (username, wanax_name, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
+			tag+"-"+uuid.New().String(), wanaxName,
 		).Scan(&id); err != nil {
 			t.Fatalf("create player %s: %v", tag, err)
 		}

@@ -57,8 +57,8 @@ seed_fixture() {
 INSERT INTO worlds (id, name, map_seed, map_width, map_height, status, state)
 VALUES ('${world}', 'proof-world-${world}', 1, 10, 10, 'active', 'active');
 
-INSERT INTO players (id, username, email, password_hash)
-VALUES ('22222222-2222-2222-2222-222222222222', 'proof-player-${world}', 'proof-${world}@example.com', 'x')
+INSERT INTO players (id, username, password_hash)
+VALUES ('22222222-2222-2222-2222-222222222222', 'proof-player-${world}', 'x')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO provinces (id, world_id, map_q, map_r, terrain_type)

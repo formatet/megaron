@@ -42,8 +42,8 @@ func TestCreateMetropolis_StampsFoundedTickOnTheJoinUpsertPath(t *testing.T) {
 
 	var playerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"foundedtick-"+uuid.New().String(), "foundedtick-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"foundedtick-"+uuid.New().String(),
 	).Scan(&playerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

@@ -47,8 +47,8 @@ func TestUnitArrivalHandler_ReplayIsIdempotent(t *testing.T) {
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"unit-arrival-owner-"+uuid.NewString(), uuid.NewString()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"unit-arrival-owner-"+uuid.NewString(),
 	).Scan(&ownerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

@@ -49,7 +49,7 @@ func TestMarch_FOWRule(t *testing.T) {
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "fow-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register test player: %v", err)
 	}
@@ -166,7 +166,7 @@ func TestRecall_FOW_RedirectNeverSeenRejected(t *testing.T) {
 
 	authSvc := auth.NewService(pool, "test-secret")
 	username := "fow-redir-" + uuid.New().String()
-	accessToken, _, err := authSvc.Register(ctx, username, username+"@test.invalid", "x")
+	accessToken, _, err := authSvc.Register(ctx, username, "x")
 	if err != nil {
 		t.Fatalf("register test player: %v", err)
 	}

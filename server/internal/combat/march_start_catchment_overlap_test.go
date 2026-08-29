@@ -46,15 +46,15 @@ func TestStartMarch_ColonizeRejectedByCatchmentOverlap(t *testing.T) {
 
 	var founderID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"founder-"+uuid.New().String(), "founder-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"founder-"+uuid.New().String(),
 	).Scan(&founderID); err != nil {
 		t.Fatalf("create founder player: %v", err)
 	}
 	var neighborID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"neighbor-"+uuid.New().String(), "neighbor-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"neighbor-"+uuid.New().String(),
 	).Scan(&neighborID); err != nil {
 		t.Fatalf("create neighbor player: %v", err)
 	}

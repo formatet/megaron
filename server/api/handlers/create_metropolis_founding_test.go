@@ -59,8 +59,8 @@ func foundMetropolisFixture(t *testing.T, terrains [7]string) (*pgxpool.Pool, uu
 
 	var playerID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"founding-"+uuid.New().String(), "founding-"+uuid.New().String()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"founding-"+uuid.New().String(),
 	).Scan(&playerID); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

@@ -21,7 +21,6 @@ func NewAuthHandler(svc *auth.Service) *AuthHandler {
 
 type registerRequest struct {
 	Username string `json:"username"`
-	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -48,13 +47,13 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
-	if req.Username == "" || req.Email == "" {
-		writeError(w, http.StatusBadRequest, "username and email required")
+	if req.Username == "" {
+		writeError(w, http.StatusBadRequest, "username required")
 		return
 	}
-	access, refresh, err := h.svc.Register(r.Context(), req.Username, req.Email, req.Password)
+	access, refresh, err := h.svc.Register(r.Context(), req.Username, req.Password)
 	if errors.Is(err, auth.ErrUserExists) {
-		writeError(w, http.StatusConflict, "username or email already registered")
+		writeError(w, http.StatusConflict, "username already registered")
 		return
 	}
 	if err != nil {
@@ -124,7 +123,6 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":         p.ID,
 		"username":   p.Username,
-		"email":      p.Email,
 		"era_count":  p.EraCount,
 		"created_at": p.CreatedAt,
 	})

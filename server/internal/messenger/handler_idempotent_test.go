@@ -69,8 +69,8 @@ func newHandlerIdemFixture(t *testing.T, pool *pgxpool.Pool, tag string) handler
 	})
 
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"handler-idem-"+tag+"-"+uuid.NewString(), tag+"-"+uuid.NewString()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"handler-idem-"+tag+"-"+uuid.NewString(),
 	).Scan(&f.sender); err != nil {
 		t.Fatalf("create player: %v", err)
 	}

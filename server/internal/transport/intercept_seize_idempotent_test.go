@@ -42,14 +42,14 @@ func TestInterceptScanHandler_SeizeReplayIsIdempotent(t *testing.T) {
 
 	var victim, raider uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"intercept-victim-"+uuid.NewString(), uuid.NewString()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"intercept-victim-"+uuid.NewString(),
 	).Scan(&victim); err != nil {
 		t.Fatalf("create victim player: %v", err)
 	}
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-		"intercept-raider-"+uuid.NewString(), uuid.NewString()+"@test.invalid",
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"intercept-raider-"+uuid.NewString(),
 	).Scan(&raider); err != nil {
 		t.Fatalf("create raider player: %v", err)
 	}

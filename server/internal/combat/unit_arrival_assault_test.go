@@ -49,8 +49,8 @@ func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 	mkPlayer := func(tag string) uuid.UUID {
 		var id uuid.UUID
 		if err := pool.QueryRow(ctx,
-			`INSERT INTO players (username, email, password_hash) VALUES ($1, $2, 'x') RETURNING id`,
-			tag+"-"+uuid.New().String(), tag+"-"+uuid.New().String()+"@test.invalid",
+			`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+			tag+"-"+uuid.New().String(),
 		).Scan(&id); err != nil {
 			t.Fatalf("create player %s: %v", tag, err)
 		}

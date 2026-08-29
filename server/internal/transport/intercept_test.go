@@ -23,8 +23,8 @@ func TestInterceptScan_SeizesCaravanButNeverMessenger(t *testing.T) {
 	// Raider (interceptor) with a capital to receive the loot.
 	var raider, raiderProv, raiderCapital uuid.UUID
 	_ = pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1,$2,'x') RETURNING id`,
-		"raider-"+uuid.New().String(), "raider-"+uuid.New().String()+"@test.invalid").Scan(&raider)
+		`INSERT INTO players (username, password_hash) VALUES ($1,'x') RETURNING id`,
+		"raider-"+uuid.New().String()).Scan(&raider)
 	_ = pool.QueryRow(ctx,
 		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 9, 9, 'plains') RETURNING id`,
 		f.worldID).Scan(&raiderProv)
@@ -154,8 +154,8 @@ func TestInterceptScan_SentryOwnerBlindToTargetDoesNotSeize(t *testing.T) {
 	// settlements anywhere close.
 	var raider uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO players (username, email, password_hash) VALUES ($1,$2,'x') RETURNING id`,
-		"raider-"+uuid.New().String(), "raider-"+uuid.New().String()+"@test.invalid").Scan(&raider); err != nil {
+		`INSERT INTO players (username, password_hash) VALUES ($1,'x') RETURNING id`,
+		"raider-"+uuid.New().String()).Scan(&raider); err != nil {
 		t.Fatalf("create raider: %v", err)
 	}
 

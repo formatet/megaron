@@ -54,9 +54,9 @@ func loadConfig() (*Config, error) {
 //
 // Config models only the six fields the CLI itself needs, but the file is
 // written by other tools too: the playtest fleet's register-agents.sh stores
-// password, email, refresh_token, culture and host_unit_id in the same JSON,
-// and refresh-tokens.sh needs password+email as its login fallback when a
-// refresh_token has expired. A plain Marshal of Config silently DELETED every
+// password, refresh_token, culture and host_unit_id in the same JSON
+// (email was dropped from the schema — username is the only login
+// identifier now). A plain Marshal of Config silently DELETED every
 // one of those the first time the CLI saved — which it does routinely, e.g.
 // when founding sets province_id. The account then had no way back once its
 // access token expired: no refresh_token to refresh with, no credentials to
