@@ -1,6 +1,7 @@
 package tick
 
 import (
+	"strconv"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
@@ -22,6 +23,43 @@ func RealUntil(dueTick, currentTick int) time.Duration {
 		remaining = 0
 	}
 	return time.Duration(remaining) * time.Duration(TickSeconds) * time.Second
+}
+
+// GameDaysLeft converts a remaining real-time duration back into the unit the
+// player actually counts in: whole game-days, one per tick
+// (megaron_plan_ticket_ar_dygnet — "ett tick ÄR dygnet").
+//
+// ⭐ Rounds UP, and that is the point: a wait with any time left on it must
+// never render as "0". The rite cooldown printed
+// "on cooldown for another 0 minutes" while still refusing the rite — a refusal
+// that contradicts its own reason, the same class as cli-sanning row D.
+//
+// ⚠️ This is the inverse of RealUntil and exists because several player-facing
+// surfaces hold only a duration, not a tick count. Where a tick count IS
+// available, use it directly rather than round-tripping through wall time.
+func GameDaysLeft(d time.Duration) int {
+	if d <= 0 {
+		return 0
+	}
+	perTick := time.Duration(TickSeconds) * time.Second
+	if perTick <= 0 {
+		return 0
+	}
+	days := int(d / perTick)
+	if d%perTick > 0 {
+		days++
+	}
+	return days
+}
+
+// FormatGameDays renders a whole game-day count with the right number.
+// Singular matters: keryx shipped "arrives in 1 game-days" until it was caught
+// (rad K, cli-sanning), and a plural on 1 reads as a bug to the player.
+func FormatGameDays(days int) string {
+	if days == 1 {
+		return "1 game-day"
+	}
+	return strconv.Itoa(days) + " game-days"
 }
 
 // EtaAt returns the wall-clock instant dueTick is expected to fire, given the
