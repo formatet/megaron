@@ -927,8 +927,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		case offeringWorth >= offeringBaseline:
 			resp["offering_verdict"] = "worthy — beyond what this god expects"
 		default:
-			resp["offering_verdict"] = fmt.Sprintf("short — worth %.0f of the ~%.0f this god expects",
-				offeringWorth, offeringBaseline)
+			// Same rounding lie as row D and the need/have pairs (helpers.go
+			// shortfall): with %.0f on both figures an offering worth 4,6
+			// against an expected 5,0 read "worth 5 of the ~5" and the verdict
+			// "short" looked like a bug. Name the gap.
+			resp["offering_verdict"] = fmt.Sprintf("short — worth %.1f of the ~%.0f this god expects, %.1f short",
+				offeringWorth, offeringBaseline, offeringBaseline-offeringWorth)
 		}
 	}
 	if success {

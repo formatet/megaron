@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
 	"formatet/megaron/server/internal/province"
@@ -58,10 +60,50 @@ type insufficientGoodsError struct {
 	Short []goodShortfall
 }
 
+// shortfall renders a "need X, have Y" pair without hiding its own difference.
+//
+// Same lie as cli-sanning row D (megaron_plan_cli_sanning.md §D, fixed
+// 2026-08-28 in insufficientKharisMessage): with %.0f on BOTH numbers a Wanax
+// holding 11,7 of a required 12 reads "need 12, have 12" and cannot see why the
+// gate refused him. The requirement keeps %.0f — build and recruit costs are
+// whole numbers by construction — while the stock, which is a lazily evaluated
+// float, gets one decimal plus the shortfall named outright, so the reader never
+// has to subtract two rounded numbers to learn what is missing.
+//
+// Decimals appear only where they carry information: a whole 50 prints as "50",
+// not "50.0". Sub-0,1 shortfalls fall back to two decimals rather than the
+// self-contradictory "have 12.0, 0.0 short" — at that distance the exact figure
+// IS the information.
+// ⚠️ The precision is driven by the GAP, never by the stock figure on its own.
+// The first version of this helper picked one decimal per value and promptly
+// reintroduced the very lie it exists to remove: 4,97 against a required 5
+// rendered as "have 5.0" and read as equal again. Its own test caught it.
+func shortfall(need, have float64) string {
+	diff := need - have
+	prec := 1
+	if diff < 0.1 {
+		prec = 2 // the gap itself would round away to "0.0"
+	}
+	if have == math.Trunc(have) && diff == math.Trunc(diff) {
+		prec = 0 // nothing fractional to show — "50" beats "50.0"
+	}
+	return fmt.Sprintf("need %s, have %.*f, %.*f short", trimNum(need), prec, have, prec, diff)
+}
+
+// trimNum prints a whole float bare and anything else at one decimal. Used for
+// the requirement, which is a whole number by construction in every current
+// caller; the stock and the gap get their precision from shortfall instead.
+func trimNum(v float64) string {
+	if v == math.Trunc(v) {
+		return strconv.FormatFloat(v, 'f', 0, 64)
+	}
+	return strconv.FormatFloat(v, 'f', 1, 64)
+}
+
 func (e *insufficientGoodsError) Error() string {
 	parts := make([]string, len(e.Short))
 	for i, s := range e.Short {
-		parts[i] = fmt.Sprintf("%s (need %.0f, have %.0f)", s.Good, s.Need, s.Have)
+		parts[i] = fmt.Sprintf("%s (%s)", s.Good, shortfall(s.Need, s.Have))
 	}
 	return "insufficient resources: " + strings.Join(parts, ", ")
 }
@@ -72,7 +114,7 @@ func (e *insufficientGoodsError) Error() string {
 // retrying the same blind 422 forever (633 trade offers fired in playtest, most
 // dying on a bare "seller has insufficient goods").
 func insufficientTradeMsg(party, good string, need, have float64) string {
-	return fmt.Sprintf("%s has insufficient %s (need %.0f, have %.0f)", party, good, need, have)
+	return fmt.Sprintf("%s has insufficient %s (%s)", party, good, shortfall(need, have))
 }
 
 // insufficientUnitsMsg compares the army a caller tried to send (want) against

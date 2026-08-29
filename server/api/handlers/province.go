@@ -1246,7 +1246,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 				  WHERE settlement_id = $1 AND good_key = 'silver'`,
 				settlementID).Scan(&have)
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("insufficient silver (need %.0f, have %.0f)", spec.CostSilver, have))
+				fmt.Sprintf("insufficient silver (%s)", shortfall(spec.CostSilver, have)))
 			return
 		}
 	}

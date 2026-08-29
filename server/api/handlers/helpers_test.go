@@ -15,7 +15,7 @@ func TestInsufficientGoodsErrorMessage(t *testing.T) {
 		{Good: "timber", Need: 100, Have: 0},
 	}}
 	got := err.Error()
-	want := "insufficient resources: stone (need 200, have 50), timber (need 100, have 0)"
+	want := "insufficient resources: stone (need 200, have 50, 150 short), timber (need 100, have 0, 100 short)"
 	if got != want {
 		t.Errorf("Error() = %q, want %q", got, want)
 	}
@@ -25,7 +25,7 @@ func TestInsufficientGoodsErrorSingle(t *testing.T) {
 	err := &insufficientGoodsError{Short: []goodShortfall{
 		{Good: "cedar", Need: 80, Have: 12},
 	}}
-	want := "insufficient resources: cedar (need 80, have 12)"
+	want := "insufficient resources: cedar (need 80, have 12, 68 short)"
 	if got := err.Error(); got != want {
 		t.Errorf("Error() = %q, want %q", got, want)
 	}
@@ -67,10 +67,10 @@ func TestInsufficientUnitsMsgNoShortfall(t *testing.T) {
 // A failed messenger trade must name the party, the good, and how much it holds
 // so the agent can decline/restock/counter instead of re-accepting forever.
 func TestInsufficientTradeMsg(t *testing.T) {
-	if got := insufficientTradeMsg("seller", "cedar", 100, 0); got != "seller has insufficient cedar (need 100, have 0)" {
+	if got := insufficientTradeMsg("seller", "cedar", 100, 0); got != "seller has insufficient cedar (need 100, have 0, 100 short)" {
 		t.Errorf("seller msg = %q", got)
 	}
-	if got := insufficientTradeMsg("buyer", "silver", 80, 12); got != "buyer has insufficient silver (need 80, have 12)" {
+	if got := insufficientTradeMsg("buyer", "silver", 80, 12); got != "buyer has insufficient silver (need 80, have 12, 68 short)" {
 		t.Errorf("buyer msg = %q", got)
 	}
 }
