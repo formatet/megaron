@@ -26,7 +26,7 @@ type riteAvailablePrayer struct {
 	Favours               map[string]float64 `json:"favours"`
 	OfferingBaseline      float64            `json:"offering_baseline"`
 	Affordable            bool               `json:"affordable"`
-	CooldownRemainingMins float64            `json:"cooldown_remaining_minutes"`
+	CooldownRemainingDays int                `json:"cooldown_remaining_game_days"`
 }
 
 // riteProvinceStatus is the slice of the province status response this file needs.
@@ -118,14 +118,14 @@ func riteCmd() *cobra.Command {
 				for _, pr := range p.Settlement.AvailablePrayers {
 					ready := "yes"
 					cooldownStr := "—"
-					if pr.CooldownRemainingMins > 0 {
+					if pr.CooldownRemainingDays > 0 {
 						ready = "cooldown"
-						mins := pr.CooldownRemainingMins
-						if mins < 60 {
-							cooldownStr = fmt.Sprintf("%.0fm remaining", mins)
-						} else {
-							cooldownStr = fmt.Sprintf("%.1fh remaining", mins/60)
-						}
+						// Game-days, the unit the player counts in — the old
+						// "%.0fm remaining"/"%.1fh remaining" pair rendered a
+						// 24-tick cooldown as "24.0h", which at 60 min/tick is
+						// arithmetically right and reads as a wall-clock wait
+						// the Wanax has no way to relate to a prayer's cadence.
+						cooldownStr = gameDaysRemaining(pr.CooldownRemainingDays)
 					} else if !pr.Affordable {
 						ready = "no"
 					}
@@ -426,4 +426,14 @@ func favouredGoods(favours map[string]float64) string {
 		parts = append(parts, fmt.Sprintf("%s ×%.1f", l.good, l.weight))
 	}
 	return strings.Join(parts, ", ")
+}
+
+// gameDaysRemaining mirrors internal/tick.FormatGameDays. Duplicated because
+// cmd/keryx is a separate binary; singular is load-bearing — keryx shipped
+// "arrives in 1 game-days" until rad K caught it.
+func gameDaysRemaining(days int) string {
+	if days == 1 {
+		return "1 game-day remaining"
+	}
+	return fmt.Sprintf("%d game-days remaining", days)
 }

@@ -746,8 +746,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 			remaining := tick.RealUntil(spec.CooldownTicks, 0) - elapsed
 			if remaining > 0 {
 				writeError(w, http.StatusConflict,
-					fmt.Sprintf("prayer %q is on cooldown for another %.0f minutes",
-						prayerID, remaining.Minutes()))
+					// Game-days, not wall-clock minutes: PrayerSpec.CooldownTicks is
+					// a TICK count and one tick IS one day, so "another 1440
+					// minutes" was both unreadable and hid the unit the player
+					// counts in. Same class as cli-sanning row K's ETA fix, one
+					// surface that round missed.
+					fmt.Sprintf("prayer %q is on cooldown for another %s",
+						prayerID, tick.FormatGameDays(tick.GameDaysLeft(remaining))))
 				return
 			}
 		}

@@ -480,22 +480,28 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// available_prayers: the settlement culture's prayers with full affordability:
 		// material offering costs + kharis tier gate + temple presence.
 		// All three gates mirror the real Rite handler so affordable:true is trustworthy.
-		// cooldown_remaining_minutes is >0 when the prayer is on cooldown.
+		// cooldown_remaining_game_days is >0 when the prayer is on cooldown (game-days,
+		// not wall clock — one tick IS one day).
 		// Effect (Plan A / A7, megaron_kult_legibilitet_plan.md) surfaces spec.Description
 		// so a Wanax knows what a prayer does before casting it. DESIGN INVARIANT
 		// (Timothy 2026-07-11, HARD): never add a success_chance/odds field here — the
 		// gods are not machines. Gynnsamhet is read via the settlement's kharis_mood
 		// sibling field (kharisToMood, web.go), not a computed percentage.
 		type prayerRow struct {
-			ID                    string             `json:"id"`
-			Name                  string             `json:"name"`
-			God                   string             `json:"god"`
-			EffectType            string             `json:"effect_type"`
-			Effect                string             `json:"effect"`
-			MinKharis             float64            `json:"min_kharis"`
-			Offering              map[string]float64 `json:"offering"`
-			Affordable            bool               `json:"affordable"`
-			CooldownRemainingMins float64            `json:"cooldown_remaining_minutes,omitempty"`
+			ID         string             `json:"id"`
+			Name       string             `json:"name"`
+			God        string             `json:"god"`
+			EffectType string             `json:"effect_type"`
+			Effect     string             `json:"effect"`
+			MinKharis  float64            `json:"min_kharis"`
+			Offering   map[string]float64 `json:"offering"`
+			Affordable bool               `json:"affordable"`
+			// Game-days, not wall-clock minutes: CooldownTicks is a TICK count
+			// and one tick IS one day (megaron_plan_ticket_ar_dygnet). The old
+			// cooldown_remaining_minutes reported 1440 for a 24-tick cooldown —
+			// true, unreadable, and in the wrong unit. Rounds UP, so a cooldown
+			// with any time left never reports 0.
+			CooldownRemainingDays int `json:"cooldown_remaining_game_days,omitempty"`
 			// The temple's reading of the gods (temenos_prayers_komposition_plan.md).
 			// An offering is now composed, and its worth depends on world scarcity —
 			// data no Wanax can observe through the fog. The temple is exactly the
@@ -532,7 +538,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			// Check cooldown: same query as the Rite handler.
 			// Use sett.OwnerID (not request auth) so spectators see the owner's cooldown.
-			var cooldownRemainingMins float64
+			var cooldownRemainingDays int
 			if spec.CooldownTicks > 0 && sett.OwnerID != nil {
 				var lastCast time.Time
 				if cdErr := h.pool.QueryRow(r.Context(),
@@ -549,7 +555,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					elapsed := h.clk.Now().Sub(lastCast)
 					remaining := tick.RealUntil(spec.CooldownTicks, 0) - elapsed
 					if remaining > 0 {
-						cooldownRemainingMins = remaining.Minutes()
+						cooldownRemainingDays = tick.GameDaysLeft(remaining)
 						afford = false
 					}
 				}
@@ -558,7 +564,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
 				Effect:    spec.Description,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
-				CooldownRemainingMins: cooldownRemainingMins,
+				CooldownRemainingDays: cooldownRemainingDays,
 				Favours:               religion.FavoursFor(spec),
 				OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),
 			})
