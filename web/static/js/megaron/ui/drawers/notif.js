@@ -24,18 +24,13 @@ function notifDateHeader() {
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }
 
-// "Clear all" (Megaron): DELETEs every notification for this Wanax in this world,
-// then empties the drawer and zeroes the badge. Distinct from the read-all that
-// loadNotifDrawer already fires on open — that only marks read; this removes them.
-export async function clearAllNotifs() {
-  const body = document.getElementById('notif-body');
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/notifications`, { method: 'DELETE' });
-    if (!r.ok) return;
-    if (body) body.innerHTML = '<p class="empty-state" style="padding:1rem">No notifications yet.</p>';
-    updateNotifBadge(0);
-  } catch (_) { /* leave the drawer as-is on failure */ }
-}
+// "Clear all" was REMOVED here 2026-08-22 (Timothy): "notislistan ska vara ett
+// arkiv, allt ska finnas där." This drawer is the permanent record a Wanax
+// returning after nine hours reads to learn what happened — a control whose only
+// effect is to destroy that record has no place on it. The DELETE endpoint is
+// left standing server-side (nothing calls it from the client any more).
+// Dismissing belongs to the TRANSIENT list instead: the chips that slide in from
+// the right (ui/chips.js dismissAllChips) — those are a stream, not an archive.
 
 export async function loadNotifDrawer(kindFilter) {
   const body = document.getElementById('notif-body');

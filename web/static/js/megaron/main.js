@@ -23,7 +23,7 @@ import {
   showLawagatasBrief, dismissBrief, MusicPlayer, toggleMusic,
   initCelestial, initMusicAutostart,
 } from './ui/misc.js';
-import { updateNotifBadge, initNotifications, addNotifChip } from './ui/chips.js';
+import { updateNotifBadge, initNotifications, addNotifChip, dismissAllChips } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
 import {
   closeMarchCtx, onColonizeToggle, openMarchCtx, sendMarch,
@@ -47,7 +47,7 @@ import {
   loadDiplomacyDrawer, dipToggleKind, dipToggleThread, dipSendInThread,
   dipCancel, dipAccept, dipDecline, dipReply, dipComposeToggleKind, dipSend,
 } from './ui/drawers/diplomacy.js';
-import { loadNotifDrawer, notifShowKind, clearAllNotifs } from './ui/drawers/notif.js';
+import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
 import { loadGossipDrawer } from './ui/drawers/gossip.js';
 
@@ -62,6 +62,13 @@ export function openDrawer(name) {
   const el = document.getElementById('drawer-' + name);
   const tr = document.getElementById('trig-' + name);
   if (!el) return;
+  // A drawer (.drawer, z-index 200, anchored right) visually covers the
+  // right-anchored .inspect-panel (z-index 15). Until now closeInspect() was
+  // never called, so the panel stayed in the DOM with State.selectedHex alive —
+  // it was hidden, not closed, and reappeared when the drawer shut. Timothy
+  // 2026-08-22 ("testa att stänga den"): close it explicitly, so what is on
+  // screen matches what the client thinks is selected.
+  closeInspect();
   el.classList.add('open');
   if (tr) tr.classList.add('active');
   document.getElementById('map-dim').classList.add('visible');
@@ -157,12 +164,12 @@ Object.assign(window, {
   dipSendInThread,
   dipToggleKind,
   dipToggleThread,
+  dismissAllChips,
   dismissBrief,
   loadTicklog,
   loadTransferGoods,
   loadWarDrawer,
   notifShowKind,
-  clearAllNotifs,
   okRite,
   okRiteComposed,
   okOfferWorth,
