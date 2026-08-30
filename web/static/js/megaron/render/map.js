@@ -232,6 +232,24 @@ function hexAtScreen(sx, sy) {
 // Six axial directions in cube space.
 const HEX_DIRS = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
 
+// The economic catchment: the settlement's own hex plus every hex within
+// CATCHMENT_RADIUS. Mirrors server/internal/hexgrid.CatchmentRadius (=2):
+// 19 hexes (1 + 6 + 12), 18 worked. P1 (2026-08-07) raised the radius 1→2 but
+// only the DATA moved — the map's catchment highlight stayed on the old 7-hex
+// (radius-1) shape, showing a player 7 of their 19 worked hexes, until this was
+// fixed 2026-08-30. Full axial disc (|dq|+|dr|+|dq+dr| ≤ 2·radius), same
+// convention as HEX_DIRS; radius 1 reproduces [[0,0], ...HEX_DIRS] exactly.
+export const CATCHMENT_RADIUS = 2;
+export const CATCHMENT_OFFSETS = (() => {
+  const out = [];
+  for (let dq = -CATCHMENT_RADIUS; dq <= CATCHMENT_RADIUS; dq++) {
+    const lo = Math.max(-CATCHMENT_RADIUS, -dq - CATCHMENT_RADIUS);
+    const hi = Math.min(CATCHMENT_RADIUS, -dq + CATCHMENT_RADIUS);
+    for (let dr = lo; dr <= hi; dr++) out.push([dq, dr]);
+  }
+  return out;
+})();
+
 // Hex distance in axial coords (cube formula).
 function hexDist(q1, r1, q2, r2) {
   return (Math.abs(q1-q2) + Math.abs(q1+r1-q2-r2) + Math.abs(r1-r2)) / 2;
@@ -3342,12 +3360,13 @@ export function render() {
   }
   pass('roads');
 
-  // 2.5 Catchment zone — subtle gold tint on the 7 catchment tiles of own cities
-  // (the city's own hex + the 6 adjacent). [0,0] = the settlement's own hex.
+  // 2.5 Catchment zone — subtle gold tint on the 19 catchment tiles of own
+  // cities (the city's own hex + the radius-2 disc). [0,0] = the settlement's
+  // own hex. See CATCHMENT_OFFSETS.
   if (State.camera.zoom >= LOCAL_ZOOM) {
     for (const p of State.provinceData) {
       if (!p.own || p.is_outpost) continue;
-      for (const [dq, dr] of [[0, 0], ...HEX_DIRS]) {
+      for (const [dq, dr] of CATCHMENT_OFFSETS) {
         const nq = p.q + dq, nr = p.r + dr;
         if (dq !== 0 || dr !== 0) {
           if (State.provinceData.find(x => x.q === nq && x.r === nr)) continue;
@@ -3424,15 +3443,15 @@ export function render() {
     }
   }
 
-  // 3.6 Catchment preview — the 7 catchment hexes (target + 6 neighbours) of a
+  // 3.6 Catchment preview — the 19 catchment hexes (target + radius-2 disc) of a
   // hovered/armed colonize affordance. This is deliberately NOT the FOV band
-  // above: colonize's true footprint is the fixed 7-hex catchment (same shape
-  // as 2.5's own-city tint), not the per-tile live-visibility radius, which
-  // reads as a much bigger and irregular area than what the colony will
-  // actually work (Bugg 3).
+  // above: colonize's true footprint is the fixed catchment (same shape as
+  // 2.5's own-city tint, CATCHMENT_OFFSETS), not the per-tile live-visibility
+  // radius, which reads as a much bigger and irregular area than what the colony
+  // will actually work (Bugg 3).
   if (State.catchmentPreview) {
     const { q: cq, r: cr } = State.catchmentPreview;
-    for (const [dq, dr] of [[0, 0], ...HEX_DIRS]) {
+    for (const [dq, dr] of CATCHMENT_OFFSETS) {
       const nq = cq + dq, nr = cr + dr;
       const t = State.tileData.find(t => t.q === nq && t.r === nr);
       if (!t || t.terrain === 'fog') continue;
