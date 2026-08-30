@@ -195,7 +195,11 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		Costs            map[string]float64 `json:"costs"`
 		BatchMen         int                `json:"batch_men"`
 		PopCost          int                `json:"pop_cost"`
-		DurationMinutes  float64            `json:"duration_minutes"`
+		// Game-days, not wall-clock minutes — mirrors the server's
+		// duration_game_days rename (province.go UnitCatalogue). One tick is
+		// one game-day; the old duration_minutes field floored to a 1-minute
+		// granularity and gave wrong figures at a sub-minute TICK_SECONDS.
+		DurationGameDays int                `json:"duration_game_days"`
 		RequiresBarracks bool               `json:"requires_barracks"`
 		RequiresStable   bool               `json:"requires_stable"`
 		RequiresHarbour  bool               `json:"requires_harbour"`
@@ -274,7 +278,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	}
 
 	fmt.Printf("%-24s  %-14s  %-28s  %-6s  %-5s  %-16s  %-6s  %s\n",
-		"Type (--unit)", "Batch", "Cost", "Mins", "Pop", "Requires", "Afford", "Upkeep/tick (once garrisoned)")
+		"Type (--unit)", "Batch", "Cost", "Days", "Pop", "Requires", "Afford", "Upkeep/tick (once garrisoned)")
 	fmt.Println(strings.Repeat("─", 110))
 	for _, u := range catalogue {
 		label := u.Type
@@ -340,8 +344,8 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			}
 		}
 
-		fmt.Printf("%-24s  %-14s  %-28s  %-6.0f  %-5d  %-16s  %-6s  %s\n",
-			label, batch, costStr, u.DurationMinutes, u.PopCost, reqStr, affordStr, upkeepStr)
+		fmt.Printf("%-24s  %-14s  %-28s  %-6d  %-5d  %-16s  %-6s  %s\n",
+			label, batch, costStr, u.DurationGameDays, u.PopCost, reqStr, affordStr, upkeepStr)
 	}
 	return nil
 }
