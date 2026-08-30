@@ -84,11 +84,35 @@ func TestSmoothDivineValue_DriftsNotJumps(t *testing.T) {
 	}
 }
 
+// Post-mig-136 the floor must be judged in EACH good's own stored scale, not a
+// flat 1.0 — grain's divisor is 43.2, so 0.5 stored grain is ~21.6 raw units
+// (a real stock, must count) while 0.01/43.2 stored is genuine rounding dust.
 func TestCountsAsHolder_IgnoresDust(t *testing.T) {
-	if CountsAsHolder(0.01) {
+	// A good mig 136 never touched (divisor 1, e.g. silver): behaves exactly
+	// like the pre-136 flat floor.
+	if CountsAsHolder("silver", 0.01) {
 		t.Error("rounding dust must not count as holding a good")
 	}
-	if !CountsAsHolder(50) {
+	if !CountsAsHolder("silver", 50) {
 		t.Error("a real stock must count")
+	}
+
+	// Grain, divisor 43.2: a stored stock equivalent to LESS than 1 pre-136 raw
+	// unit (0.01 raw = 0.01/43.2 stored) must still be ignored as dust...
+	if CountsAsHolder("grain", 0.01/43.2) {
+		t.Error("dust below one pre-136 raw unit must not count, even rescaled")
+	}
+	// ...while a stock that is MORE than 1 raw unit in pre-136 terms (10 raw =
+	// 10/43.2 ≈ 0.231 stored) but LESS than the old flat 1.0 threshold must now
+	// count as holding — this is the bug mig 136 introduced: a flat 1.0 floor
+	// silently dropped this stock to "no holding" even though nothing about the
+	// world changed. The raw value must sit in (1, 43.2) so the stored figure
+	// lands in (1/43.2, 1.0) — the exact window the old flat floor mis-read.
+	smallButReal := 10.0 / 43.2
+	if smallButReal >= 1.0 {
+		t.Fatalf("test setup: expected smallButReal < 1.0 to prove the old flat floor missed it, got %.4f", smallButReal)
+	}
+	if !CountsAsHolder("grain", smallButReal) {
+		t.Errorf("a stock equivalent to 10 pre-136 raw units must count as holding, got stored=%.4f", smallButReal)
 	}
 }

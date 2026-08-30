@@ -31,6 +31,20 @@ type Execer interface {
 // caller-supplied number, so the price list can never be stamped with a clock
 // the world does not share.
 func RecomputeDivineValuations(ctx context.Context, db Execer, worldID uuid.UUID) error {
+	// Holder threshold is per-good (goodDivisors, see valuation.go) since mig 136
+	// rescaled each good's stored amount by a different factor — a flat
+	// holderMinStock would silently miscount small-but-real stocks as "no
+	// holding" for every good mig 136 touched. Sent down as two parallel arrays
+	// and unnested into a per-good threshold table so the SQL never hand-copies
+	// the divisor numbers; goodDivisors stays the one source. Goods absent from
+	// the arrays (silver, bronze) fall back to holderMinStock via COALESCE.
+	goodKeys := make([]string, 0, len(goodDivisors))
+	goodThresholds := make([]float64, 0, len(goodDivisors))
+	for key, divisor := range goodDivisors {
+		goodKeys = append(goodKeys, key)
+		goodThresholds = append(goodThresholds, holderMinStock/divisor)
+	}
+
 	// One pass: per good, how many distinct owners hold a real stock of it, and
 	// how much of it exists in the world. settled() projects the lazy tuple so a
 	// good that has been accruing since its last write is counted honestly.
@@ -42,15 +56,21 @@ func RecomputeDivineValuations(ctx context.Context, db Execer, worldID uuid.UUID
 		     FROM settlement_goods sg
 		     JOIN settlements s ON s.id = sg.settlement_id
 		     WHERE s.world_id = $1 AND s.state = 'active' AND s.owner_id IS NOT NULL
+		 ),
+		 threshold AS (
+		     SELECT * FROM unnest($3::text[], $4::float8[]) AS t(good_key, min_stock)
 		 )
 		 SELECT g.key,
 		        g.base_value,
-		        COALESCE(COUNT(DISTINCT stock.owner_id) FILTER (WHERE stock.amount >= $2), 0) AS holders,
+		        COALESCE(COUNT(DISTINCT stock.owner_id) FILTER (
+		            WHERE stock.amount >= COALESCE(threshold.min_stock, $2)
+		        ), 0) AS holders,
 		        COALESCE(SUM(stock.amount), 0) AS world_stock
 		 FROM goods g
 		 LEFT JOIN stock ON stock.good_key = g.key
+		 LEFT JOIN threshold ON threshold.good_key = g.key
 		 GROUP BY g.key, g.base_value`,
-		worldID, holderMinStock)
+		worldID, holderMinStock, goodKeys, goodThresholds)
 	if err != nil {
 		return fmt.Errorf("load world stock: %w", err)
 	}
