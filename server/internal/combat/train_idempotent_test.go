@@ -24,15 +24,17 @@ func TestTrainCompleteHandler_ReplayIsIdempotent(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	// Mirrors TestRecruit_AggregatesToOneDeployableUnit's fixture: world
-	// state='forming'/status='archived' is fine because TrainCompleteHandler's
-	// forming→garrison flip does not depend on current_world_tick(); its one
-	// active-world-dependent step (RecomputeProduction) is best-effort and its
-	// failure is only logged, never returned (train.go).
+	// status='active': the world must be active so current_world_tick() resolves
+	// (it returns the active world's tick), because both the TrainComplete audit
+	// event (events.world_tick default) and RecomputeProduction (settlement_goods
+	// .calc_tick) depend on it. The earlier fixture used status='archived', which
+	// was fine only while this test ignored the event write — the event Append
+	// silently failed on the NOT NULL world_tick and was merely logged. Now that
+	// we assert the event is written exactly once, the world has to be active.
 	var worldID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO worlds (name, state, status, map_width, map_height)
-		 VALUES ($1, 'forming', 'archived', 10, 10) RETURNING id`,
+		 VALUES ($1, 'forming', 'active', 10, 10) RETURNING id`,
 		"train-idem-"+uuid.NewString(),
 	).Scan(&worldID); err != nil {
 		t.Fatalf("create world: %v", err)
@@ -112,6 +114,17 @@ func TestTrainCompleteHandler_ReplayIsIdempotent(t *testing.T) {
 		t.Fatalf("read updated_at after first run: %v", err)
 	}
 
+	// The audit event must be written exactly once for the completion.
+	var eventsAfterFirst int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'TrainComplete'`, settlementID,
+	).Scan(&eventsAfterFirst); err != nil {
+		t.Fatalf("count TrainComplete after first run: %v", err)
+	}
+	if eventsAfterFirst != 1 {
+		t.Fatalf("TrainComplete events after first run = %d, want 1", eventsAfterFirst)
+	}
+
 	// Replay the SAME event: unit is already 'garrison', so the status guard
 	// (`WHERE status IN ('training','forming')`) must make this a no-op.
 	if err := h.Handle(ctx, evt); err != nil {
@@ -137,5 +150,18 @@ func TestTrainCompleteHandler_ReplayIsIdempotent(t *testing.T) {
 	}
 	if updatedAtReplay != updatedAtFirst {
 		t.Errorf("units.updated_at changed on replay (%s → %s) — the status guard should have skipped the UPDATE entirely", updatedAtFirst, updatedAtReplay)
+	}
+
+	// The gap this fix closed: the status flip was idempotent but the audit
+	// event was not, so a retry appended a second TrainComplete. The event count
+	// must stay at 1 across the replay.
+	var eventsAfterReplay int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM events WHERE stream_id = $1 AND event_type = 'TrainComplete'`, settlementID,
+	).Scan(&eventsAfterReplay); err != nil {
+		t.Fatalf("count TrainComplete after replay: %v", err)
+	}
+	if eventsAfterReplay != 1 {
+		t.Errorf("TrainComplete events after replay = %d, want still 1 — the audit event double-fired on retry (G2 gap in the event/notify path)", eventsAfterReplay)
 	}
 }

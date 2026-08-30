@@ -49,8 +49,11 @@ func NewTrainCompleteHandler(pool *pgxpool.Pool, eventStore *events.Store, hub B
 //
 // Legacy path (p.UnitID zero): behaves as before — increments the column by Count.
 //
-// Idempotent: the units UPDATEs use a conditional status check so re-running
-// a completed batch is a safe no-op.
+// Idempotent (G2): the units UPDATEs use a conditional status check so
+// re-running a completed batch is a safe no-op, AND the TrainComplete audit
+// event + player notification are gated on the flip actually happening this
+// call (see `flipped` below) — so a retry after a completed batch re-fires
+// neither, matching ship_repair.go.
 func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var p TrainCompletePayload
 	if err := json.Unmarshal(e.Payload, &p); err != nil {
@@ -67,6 +70,13 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	// ── C2 units table: check forming→garrison transition ──────────────────────
 	var newSize int
 	unitNotZero := p.UnitID != uuid.Nil
+	// flipped records whether THIS call actually performed the
+	// training/forming→garrison transition. It gates the event+notify below so
+	// a G2 retry of an already-completed batch cannot re-fire TrainComplete a
+	// second time — the same guard ship_repair.go uses (RowsAffected()==1), and
+	// the half train.go was missing: the status flip was already idempotent, the
+	// audit event and player notification were not.
+	flipped := false
 	if unitNotZero && !isNaval {
 		// Land: the unit was filled to 100 and set to `training` at recruit time;
 		// flip it to garrison (deployable) and clear the ready ETA. The size>=100
@@ -77,12 +87,14 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		).Scan(&newSize); scanErr != nil {
 			slog.Warn("C2 unit size check failed", "unit", p.UnitID, "err", scanErr)
 		} else if newSize >= 100 {
-			if _, flipErr := h.pool.Exec(ctx,
+			if res, flipErr := h.pool.Exec(ctx,
 				`UPDATE units SET status = 'garrison', build_complete_at = NULL, updated_at = now()
 				 WHERE id = $1 AND status IN ('training', 'forming')`,
 				p.UnitID,
 			); flipErr != nil {
 				slog.Warn("C2 training→garrison flip failed", "unit", p.UnitID, "err", flipErr)
+			} else if res.RowsAffected() == 1 {
+				flipped = true
 			}
 		}
 	}
@@ -92,12 +104,14 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	// like land. Flip forming→garrison and clear the ETA. Idempotent: only
 	// flips if still forming, same guard as the land path.
 	if unitNotZero && isNaval {
-		if _, flipErr := h.pool.Exec(ctx,
+		if res, flipErr := h.pool.Exec(ctx,
 			`UPDATE units SET status = 'garrison', build_complete_at = NULL, updated_at = now()
 			 WHERE id = $1 AND status = 'forming'`,
 			p.UnitID,
 		); flipErr != nil {
 			slog.Warn("naval forming→garrison flip failed", "unit", p.UnitID, "err", flipErr)
+		} else if res.RowsAffected() == 1 {
+			flipped = true
 		}
 	}
 
@@ -106,24 +120,34 @@ func (h *TrainCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		slog.Warn("recompute production after training", "settlement", p.SettlementID, "err", err)
 	}
 
-	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "TrainComplete", map[string]any{
-		"unit_type":  p.UnitType,
-		"count":      p.Count,
-		"unit_id":    p.UnitID,
-		"size_after": newSize,
-	}, e.WorldID, nil); err != nil {
-		slog.Error("record TrainComplete event", "err", err)
-	}
+	// Only emit the completion event/notify when a real unit actually flipped
+	// this call. The non-flippable cases (legacy nil-UnitID payloads, and the
+	// <100 partial-row defence in the land path) have no idempotent guard to
+	// gate on, so they keep their prior unconditional emit — behaviour there is
+	// unchanged. The flippable case is the one a retry doubled: on replay the
+	// unit is already 'garrison', RowsAffected()==0, flipped stays false, and
+	// the event+notify are correctly skipped.
+	flippable := unitNotZero && (isNaval || newSize >= 100)
+	if !flippable || flipped {
+		if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "TrainComplete", map[string]any{
+			"unit_type":  p.UnitType,
+			"count":      p.Count,
+			"unit_id":    p.UnitID,
+			"size_after": newSize,
+		}, e.WorldID, nil); err != nil {
+			slog.Error("record TrainComplete event", "err", err)
+		}
 
-	if h.hub != nil {
-		var ownerID uuid.UUID
-		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID)
-		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TrainComplete", 4, map[string]any{
-			"settlement_id": p.SettlementID,
-			"unit_type":     p.UnitType,
-			"count":         p.Count,
-			"unit_id":       p.UnitID,
-		})
+		if h.hub != nil {
+			var ownerID uuid.UUID
+			_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.SettlementID).Scan(&ownerID)
+			_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TrainComplete", 4, map[string]any{
+				"settlement_id": p.SettlementID,
+				"unit_type":     p.UnitType,
+				"count":         p.Count,
+				"unit_id":       p.UnitID,
+			})
+		}
 	}
 	slog.Info("training complete", "settlement", p.SettlementID, "unit", p.UnitType, "count", p.Count)
 	return nil
