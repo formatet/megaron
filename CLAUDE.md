@@ -170,10 +170,11 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   2026-08-22 — it had been stale since 2026-08-08.)* The old percent-allocation endpoint
   (`LaborAlloc`) and its web drawer still exist beside it and are inert no-ops for non-cult goods
   (harmless dead writes to `settlement_labor`) — **removing them is the open work, not building P5.**
-  ⚠️ Two known shape problems in this model, both written up, neither built:
-  **building LEVEL does not raise production** (`rate` has no level term while `cap` grows — an
-  upgraded mine yields the same total from more gubbar; `megaron_byggnadsniva_produktion.md`).
-  *(The second one — "grain is the one uncapped good" — was CLOSED 2026-08-22: grain now caps at
+  *(Both former "known shape problems" are now CLOSED — verified against master 2026-08-30.
+  **"building LEVEL does not raise production"** was fixed by Form B, `megaron_plan_byggnadsniva_takt.md`
+  (`aec63ad`, 2026-08-24): `economy.placement_yield.go`'s `MultPerGood = cap(actualLevel)/capL1`
+  multiplies the per-gubbe `rate`, so the same level-1 headcount produces more at a higher level —
+  grain excepted by design. **"grain is the one uncapped good"** was closed 2026-08-22, grain caps at
   4/8/10/12 gubbar per plains hex by farm level, `megaron_plan_grain_cap.md`.)*
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
