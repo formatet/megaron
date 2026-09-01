@@ -3495,8 +3495,11 @@ func disbandPlan(sizes []int, men int) []int {
 
 // Disband handles POST /worlds/:worldID/provinces/:provinceID/disband.
 // Releases garrison units of the requested types back into civilian life,
-// consuming them from the units table (the SB7 source of truth). Variant B:
-// disband does not restore population directly; labor rises as army pop-cost falls.
+// consuming them from the units table (the SB7 source of truth). Disband is
+// recruitment's mirror: C2 (52fa1c5, 2026-06-15) made recruitment draw men
+// out of settlements.population physically, so disband restores them the
+// same way — land units by their size-delta, naval units by their crew
+// (megaron_plan_disband_returnerar_folket.md §1).
 func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -3537,11 +3540,11 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Variant B: disband does NOT restore population.
 	// The army lives in the units table (single source of truth since the SB7
 	// drop of the settlements.* army columns). Disbanding consumes garrison units
-	// of the requested type; labor_pool rises automatically because the army's
-	// pop-cost decreases. RecomputeProduction updates the rates.
+	// of the requested type and restores the men they held to
+	// settlements.population; labor_pool rises to match because
+	// RecomputeProduction sets labor_pool = population.
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
@@ -3563,6 +3566,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	}
 
 	disbanded := map[string]int{}
+	popRestored := 0
 	for _, want := range wanted {
 		disbanded[want.key] = 0
 		if want.men <= 0 {
@@ -3570,10 +3574,13 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		}
 		// Load the garrison units of this type, smallest first, so a disband
 		// clears leftover fragments before biting into full-strength units.
+		// `id` breaks ties on equal size so which unit gets shrunk is
+		// deterministic — doesn't change how many men are disbanded, only
+		// which unit loses them.
 		rows, err := tx.Query(r.Context(),
-			`SELECT id, size FROM units
+			`SELECT id, size, COALESCE(crew, 0) FROM units
 			 WHERE settlement_id = $1 AND status = 'garrison' AND type = $2
-			 ORDER BY size ASC`,
+			 ORDER BY size ASC, id`,
 			settlementID, want.typ,
 		)
 		if err != nil {
@@ -3582,21 +3589,25 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		}
 		var ids []uuid.UUID
 		var sizes []int
+		var crews []int
 		for rows.Next() {
 			var id uuid.UUID
-			var size int
-			if scanErr := rows.Scan(&id, &size); scanErr != nil {
+			var size, crew int
+			if scanErr := rows.Scan(&id, &size, &crew); scanErr != nil {
 				rows.Close()
 				writeError(w, http.StatusInternalServerError, "disband failed")
 				return
 			}
 			ids = append(ids, id)
 			sizes = append(sizes, size)
+			crews = append(crews, crew)
 		}
 		rows.Close()
 
 		// Decide the per-unit consumption, then apply it: a unit consumed in full
-		// is disbanded, a partially-consumed one is shrunk.
+		// is disbanded, a partially-consumed one is shrunk. Naval units are
+		// always consumed in full (size is always 1, one vessel — never
+		// shrunk), so the disbanded branch below is the only one they take.
 		plan := disbandPlan(sizes, want.men)
 		for i, take := range plan {
 			if take <= 0 {
@@ -3609,6 +3620,13 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 					writeError(w, http.StatusInternalServerError, "disband failed")
 					return
 				}
+				// A naval unit's men left population as `crew`, not `size`
+				// (size is always 1 — one vessel); crew is 0 for land units.
+				if crews[i] > 0 {
+					popRestored += crews[i]
+				} else {
+					popRestored += take
+				}
 			} else {
 				if _, err := tx.Exec(r.Context(),
 					`UPDATE units SET size = size - $1, updated_at = now() WHERE id = $2`, take, ids[i],
@@ -3616,9 +3634,26 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 					writeError(w, http.StatusInternalServerError, "disband failed")
 					return
 				}
+				popRestored += take
 			}
 			disbanded[want.key] += take
 		}
+	}
+
+	var popAfter int
+	if popRestored > 0 {
+		if err := tx.QueryRow(r.Context(),
+			`UPDATE settlements SET population = population + $1 WHERE id = $2 RETURNING population`,
+			popRestored, settlementID,
+		).Scan(&popAfter); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not restore population")
+			return
+		}
+	} else if err := tx.QueryRow(r.Context(),
+		`SELECT population FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&popAfter); err != nil {
+		writeError(w, http.StatusInternalServerError, "disband failed")
+		return
 	}
 
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
@@ -3632,9 +3667,12 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Report what was actually disbanded (may be less than requested if the
-	// garrison held fewer men of a type than asked).
+	// garrison held fewer men of a type than asked) and how many men returned
+	// to civilian life.
 	writeJSON(w, http.StatusOK, map[string]any{
-		"disbanded": disbanded,
+		"disbanded":    disbanded,
+		"pop_restored": popRestored,
+		"population":   popAfter,
 	})
 }
 

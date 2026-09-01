@@ -92,10 +92,15 @@ func containsToken(s, tok string) bool {
 // a local httptest server captures the request body.
 func TestDisbandOldFlagsMapToCanonicalJSONKeys(t *testing.T) {
 	var gotBody map[string]any
+	// The server's real disband response shape (megaron_plan_disband_returnerar_
+	// folket.md §5.2) — a fixture that invents a key ("pop_restored":0 with
+	// nothing else) is how the "+0 population" bug survived undetected for
+	// three months, so this one echoes the same "disbanded" object the
+	// production handler actually sends.
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewDecoder(r.Body).Decode(&gotBody)
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"pop_restored":0}`))
+		_, _ = w.Write([]byte(`{"disbanded":{"spearman":5},"pop_restored":5,"population":105}`))
 	}))
 	defer ts.Close()
 
@@ -127,6 +132,51 @@ func TestDisbandOldFlagsMapToCanonicalJSONKeys(t *testing.T) {
 			v, _ := gotBody[tt.wantKey].(float64)
 			if v != 5 {
 				t.Errorf("body[%q] = %v, want 5 (request body: %+v)", tt.wantKey, gotBody[tt.wantKey], gotBody)
+			}
+		})
+	}
+}
+
+// TestFormatDisbandResult locks the printed line against the server's real
+// response shape (megaron_plan_disband_returnerar_folket.md §5.2): it must
+// show the actual pop_restored figure, never a fabricated "+0" when the
+// field is simply absent (an old server).
+func TestFormatDisbandResult(t *testing.T) {
+	tests := []struct {
+		name string
+		resp map[string]any
+		want string
+	}{
+		{
+			name: "full response shows disbanded units and population change",
+			resp: map[string]any{
+				"disbanded":    map[string]any{"spearman": 200.0, "war_chariot": 0.0},
+				"pop_restored": 200.0,
+				"population":   1200.0,
+			},
+			want: "Disbanded 200 Spearmen · +200 population (now 1200)",
+		},
+		{
+			name: "ship wire key displays as Galley",
+			resp: map[string]any{
+				"disbanded":    map[string]any{"ship": 2.0},
+				"pop_restored": 60.0,
+				"population":   1060.0,
+			},
+			want: "Disbanded 2 Galley · +60 population (now 1060)",
+		},
+		{
+			name: "missing pop_restored omits the population clause instead of guessing +0",
+			resp: map[string]any{
+				"disbanded": map[string]any{"spearman": 5.0},
+			},
+			want: "Disbanded 5 Spearmen",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := formatDisbandResult(tt.resp); got != tt.want {
+				t.Errorf("formatDisbandResult(%+v) = %q, want %q", tt.resp, got, tt.want)
 			}
 		})
 	}
