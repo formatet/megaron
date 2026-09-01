@@ -60,61 +60,83 @@ func NewArrivalHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *event
 
 // Handle marks the messenger as delivered and schedules an auto-return after 48 hours
 // in case the recipient never replies.
+//
+// The flip (outbound→delivered) and the return-scheduling live in ONE
+// transaction (megaron_plan_budbararens_ankomst_tx.md): a crash between the
+// two used to leave status='delivered' committed with no
+// ScheduledMessengerReturn ever enqueued — a permanently stranded messenger
+// that a retry silently no-ops on (status != "outbound" trips the replay
+// guard and returns nil). The row is locked FOR UPDATE before the status
+// check, closing the same race the package's other five claim-sites already
+// guard against (order_delivery.go, march_recall.go, recall.go ×2).
 func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var payload ArrivalPayload
 	if err := json.Unmarshal(e.Payload, &payload); err != nil {
 		return fmt.Errorf("unmarshal messenger arrival: %w", err)
 	}
 
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin messenger arrival: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	var status string
-	var destinationID uuid.UUID
+	var destinationID, senderID uuid.UUID
 	var carriesOffer bool
-	err := h.pool.QueryRow(ctx,
-		`SELECT status, destination_id, trade_offer IS NOT NULL FROM messengers WHERE id = $1`,
+	err = tx.QueryRow(ctx,
+		`SELECT status, destination_id, sender_id, trade_offer IS NOT NULL
+		   FROM messengers WHERE id = $1 FOR UPDATE`,
 		payload.MessengerID,
-	).Scan(&status, &destinationID, &carriesOffer)
+	).Scan(&status, &destinationID, &senderID, &carriesOffer)
 	if err != nil {
 		return nil // deleted or not found — silently skip
 	}
 	if status != "outbound" {
-		return nil
+		return nil // idempotent replay: already delivered (or further along)
 	}
 
-	_, err = h.pool.Exec(ctx,
-		`UPDATE messengers SET status = 'delivered' WHERE id = $1`,
+	if _, err := tx.Exec(ctx,
+		`UPDATE messengers SET status = 'delivered' WHERE id = $1 AND status = 'outbound'`,
 		payload.MessengerID,
-	)
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf("mark messenger delivered: %w", err)
 	}
 
-	_, _ = h.store.Append(ctx, destinationID, events.StreamProvince, "MessengerArrived",
-		map[string]any{"messenger_id": payload.MessengerID}, e.WorldID, nil)
-
-	// Record market snapshot: the sender now knows the destination's prices.
-	var senderID uuid.UUID
-	if err := h.pool.QueryRow(ctx,
-		`SELECT sender_id FROM messengers WHERE id = $1`, payload.MessengerID,
-	).Scan(&senderID); err == nil {
-		if snapErr := economy.RecordMarketSnapshot(ctx, h.pool, senderID, destinationID); snapErr != nil {
-			slog.Error("market snapshot on messenger arrival", "err", snapErr)
-		}
-
-		// Gossip mechanism: contact spreads any rumors the destination's owner is
-		// carrying (temenos_gossip.md PASS 2b — detailed market knowledge stays
-		// firsthand only; see RecordMarketSnapshot above). Best-effort — never fail
-		// the arrival over this.
-		if err := gossip.PropagateOnContact(ctx, h.pool, senderID, destinationID, e.WorldID); err != nil {
-			slog.Error("propagate gossip on messenger arrival", "err", err)
-		}
+	// Gossip mechanism: contact spreads any rumors the destination's owner is
+	// carrying (temenos_gossip.md PASS 2b — detailed market knowledge stays
+	// firsthand only; see the market snapshot below). Best-effort — never fail
+	// the arrival over this. Runs in the SAME tx (gossip.Tx accepts pgx.Tx).
+	if err := gossip.PropagateOnContact(ctx, tx, senderID, destinationID, e.WorldID); err != nil {
+		slog.Error("propagate gossip on messenger arrival", "err", err)
 	}
-
-	slog.Info("messenger delivered", "id", payload.MessengerID, "destination", destinationID)
 
 	// Auto-return once the stay is up, if the recipient does not reply sooner.
 	// An offer-bearing messenger stays as long as its offer lives — see stayTicks.
-	return h.scheduler.EnqueueTick(ctx, e.WorldID, events.ScheduledMessengerReturn,
-		ReturnPayload{MessengerID: payload.MessengerID}, e.DueTick+stayTicks(carriesOffer))
+	// This MUST commit atomically with the flip above — see the doc comment.
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledMessengerReturn,
+		ReturnPayload{MessengerID: payload.MessengerID}, e.DueTick+stayTicks(carriesOffer),
+	); err != nil {
+		return fmt.Errorf("schedule messenger return: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit messenger arrival: %w", err)
+	}
+
+	// Best-effort, after commit — events.Store holds a *pgxpool.Pool (no AppendTx,
+	// greppverifierat 2026-09-01) and RecordMarketSnapshot takes a *pgxpool.Pool
+	// (called from several other sites; widening its signature is its own,
+	// larger change — non-scope). Both are revision/notice, not mechanics: losing
+	// either to a post-commit crash costs the player nothing structural.
+	_, _ = h.store.Append(ctx, destinationID, events.StreamProvince, "MessengerArrived",
+		map[string]any{"messenger_id": payload.MessengerID}, e.WorldID, nil)
+	if snapErr := economy.RecordMarketSnapshot(ctx, h.pool, senderID, destinationID); snapErr != nil {
+		slog.Error("market snapshot on messenger arrival", "err", snapErr)
+	}
+
+	slog.Info("messenger delivered", "id", payload.MessengerID, "destination", destinationID)
+	return nil
 }
 
 // ReturnHandler handles MessengerReturn events.
@@ -130,33 +152,47 @@ func NewReturnHandler(pool *pgxpool.Pool, store *events.Store) *ReturnHandler {
 
 // Handle marks the messenger as arrived (back home) and notifies the origin settlement.
 // Idempotent: if the messenger is already 'arrived', does nothing.
+//
+// Shares its root with ArrivalHandler.Handle (megaron_plan_budbararens_ankomst_tx.md)
+// but not its crash window: nothing is scheduled after this flip, so a plain
+// atomic claim (FOR UPDATE + conditional UPDATE) is enough — no transaction
+// needed. A crash here loses at most the MessengerReturned event, not a
+// stranded unit.
 func (h *ReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var payload ReturnPayload
 	if err := json.Unmarshal(e.Payload, &payload); err != nil {
 		return fmt.Errorf("unmarshal messenger return: %w", err)
 	}
 
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin messenger return: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	var status string
 	var originID uuid.UUID
 	// origin_id is NULL for a host-sent messenger (mig 087); the origin unit is
 	// then the stream the MessengerReturned event belongs to.
-	err := h.pool.QueryRow(ctx,
-		`SELECT status, COALESCE(origin_id, origin_unit_id) FROM messengers WHERE id = $1`,
+	err = tx.QueryRow(ctx,
+		`SELECT status, COALESCE(origin_id, origin_unit_id) FROM messengers WHERE id = $1 FOR UPDATE`,
 		payload.MessengerID,
 	).Scan(&status, &originID)
 	if err != nil {
 		return nil
 	}
 	if status == "arrived" {
-		return nil
+		return nil // idempotent replay
 	}
 
-	_, err = h.pool.Exec(ctx,
-		`UPDATE messengers SET status = 'arrived' WHERE id = $1`,
+	if _, err := tx.Exec(ctx,
+		`UPDATE messengers SET status = 'arrived' WHERE id = $1 AND status != 'arrived'`,
 		payload.MessengerID,
-	)
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf("mark messenger arrived: %w", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit messenger return: %w", err)
 	}
 
 	_, _ = h.store.Append(ctx, originID, events.StreamProvince, "MessengerReturned",
