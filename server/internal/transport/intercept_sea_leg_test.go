@@ -21,16 +21,29 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// newActiveTestWorld archives any leftover active test-world (the DB enforces at
+// newActiveTestWorld archives any leftover active world (the DB enforces at
 // most one active world at a time, migration 063 one_active_world) and creates a
 // fresh one, cleaned up (archived) at the end of the test. Mirrors the convention
 // in transport_test.go's newFixture — kept local to this file per the slice's
 // non-scope rule (transport_test.go is owned by a parallel branch).
+//
+// The archiving sweep is deliberately unfiltered, like every other fixture in
+// the repo (transport_test.go:49, intercept_seize_idempotent_test.go:29,
+// combat/battle_test.go's newBattleFixture). Until 2026-09-01 it carried an
+// extra `AND name LIKE 'test-world-%'` — the only such narrowing in the
+// codebase, and directly contrary to the convention the comment above claims
+// to mirror. An earlier package in a `go test ./...` run leaves behind an
+// active world under some other name, so both tests in this file died on
+// `duplicate key value violates unique constraint "one_active_world"` whenever
+// the suite ran end-to-end against a FRESH database. They passed in isolation,
+// and passed again on a re-run of an already-populated DB, which is why the
+// breakage stayed invisible: the suite only told the truth on a clean rig, and
+// that is the one case nobody re-ran.
 func newActiveTestWorld(t *testing.T, pool *pgxpool.Pool) uuid.UUID {
 	t.Helper()
 	ctx := context.Background()
 	if _, err := pool.Exec(ctx,
-		`UPDATE worlds SET status = 'archived' WHERE status = 'active' AND name LIKE 'test-world-%'`,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
 	); err != nil {
 		t.Fatalf("archive leftover active test worlds: %v", err)
 	}
