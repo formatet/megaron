@@ -1545,11 +1545,21 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 	}
 
 	type buildingEntry struct {
-		Type             string             `json:"type"`
-		Costs            map[string]float64 `json:"costs"`
-		CostSilver       float64            `json:"cost_silver,omitempty"`
-		DurationMinutes  float64            `json:"duration_minutes"`
-		RequiresCoastal  bool               `json:"requires_coastal,omitempty"`
+		Type       string             `json:"type"`
+		Costs      map[string]float64 `json:"costs"`
+		CostSilver float64            `json:"cost_silver,omitempty"`
+		// Game-days, not wall-clock minutes: DurationTicks is a TICK count and
+		// one tick IS one game-day (megaron_plan_ticket_ar_dygnet). The old
+		// duration_minutes field reported spec.DurationTicks*TickMinutes,
+		// which floors to a 1-minute-per-tick granularity and silently gave
+		// wrong figures at a sub-minute TICK_SECONDS dev cadence — same class
+		// as the rite-cooldown fix (cli-sanning row K / commit 2769042).
+		// Routed through tick.GameDaysLeft/RealUntil rather than assigned as
+		// a bare int so the unit stays explicit and consistent with the
+		// cooldown sibling; the round trip is exact here since DurationTicks
+		// is already a whole tick count (no fractional remainder to round).
+		DurationGameDays int  `json:"duration_game_days"`
+		RequiresCoastal  bool `json:"requires_coastal,omitempty"`
 		RequiresDeposits []string           `json:"requires_deposits,omitempty"`
 		RequiresTerrain  []string           `json:"requires_terrain,omitempty"`
 		Purpose          string             `json:"purpose"`
@@ -1572,11 +1582,11 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 	for _, bt := range order {
 		spec := province.BuildingSpecs[province.BuildingType(bt)]
 		entry := buildingEntry{
-			Type:            bt,
-			Costs:           spec.Costs,
-			CostSilver:      spec.CostSilver,
-			DurationMinutes: float64(spec.DurationTicks * tick.TickMinutes),
-			Purpose:         province.BuildingPurposes[province.BuildingType(bt)],
+			Type:             bt,
+			Costs:            spec.Costs,
+			CostSilver:       spec.CostSilver,
+			DurationGameDays: tick.GameDaysLeft(tick.RealUntil(spec.DurationTicks, 0)),
+			Purpose:          province.BuildingPurposes[province.BuildingType(bt)],
 			MaxLevel:        1,
 		}
 		if province.LevelledBuildings[province.BuildingType(bt)] {
@@ -1620,8 +1630,10 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 		Costs            map[string]float64 `json:"costs"`
 		BatchMen         int                `json:"batch_men"` // men (land) or crew (naval) the Costs above pay for in one recruit call
 		PopCost          int                `json:"pop_cost"`
-		DurationMinutes  float64            `json:"duration_minutes"`
-		RequiresBarracks bool               `json:"requires_barracks,omitempty"`
+		// Game-days, not wall-clock minutes — see buildingEntry.DurationGameDays
+		// above for the full rationale (same fix, same class of bug).
+		DurationGameDays int  `json:"duration_game_days"`
+		RequiresBarracks bool `json:"requires_barracks,omitempty"`
 		RequiresStable   bool               `json:"requires_stable,omitempty"`
 		RequiresHarbour  bool               `json:"requires_harbour,omitempty"`
 		RequiresShipyard bool               `json:"requires_shipyard,omitempty"`
@@ -1653,7 +1665,7 @@ func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) 
 			Costs:            costs,
 			BatchMen:         batchMen,
 			PopCost:          spec.PopCost,
-			DurationMinutes:  float64(spec.DurationTicks * tick.TickMinutes),
+			DurationGameDays: tick.GameDaysLeft(tick.RealUntil(spec.DurationTicks, 0)),
 			RequiresBarracks: spec.RequiresBarracks,
 			RequiresStable:   spec.RequiresStable,
 			RequiresHarbour:  spec.RequiresHarbour,

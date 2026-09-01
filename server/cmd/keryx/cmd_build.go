@@ -58,7 +58,7 @@ func buildCmd() *cobra.Command {
 					Type             string                        `json:"type"`
 					Costs            map[string]float64            `json:"costs"`
 					CostSilver       float64                       `json:"cost_silver"`
-					DurationMinutes  float64                       `json:"duration_minutes"`
+					DurationGameDays int                           `json:"duration_game_days"`
 					RequiresCoastal  bool                          `json:"requires_coastal"`
 					RequiresDeposits []string                      `json:"requires_deposits"`
 					RequiresTerrain  []string                      `json:"requires_terrain"`
@@ -74,7 +74,7 @@ func buildCmd() *cobra.Command {
 				fmt.Println("A workplace's level is how many citizens it can employ on that good — labor")
 				fmt.Println("allocated beyond it is not served. Levels beyond 1 cost cedar (see Lvl below).")
 				fmt.Println()
-				fmt.Printf("%-14s  %-28s  %-6s  %-22s  %-26s  %s\n", "Type", "Costs (L1)", "Mins", "Levels", "Requires", "Purpose")
+				fmt.Printf("%-14s  %-28s  %-6s  %-22s  %-26s  %s\n", "Type", "Costs (L1)", "Days", "Levels", "Requires", "Purpose")
 				fmt.Println(strings.Repeat("─", 126))
 				for _, b := range catalogue {
 					// Format costs: "timber×50 stone×20"
@@ -125,8 +125,8 @@ func buildCmd() *cobra.Command {
 						}
 					}
 
-					fmt.Printf("%-14s  %-28s  %-6.0f  %-22s  %-26s  %s\n",
-						b.Type, costStr, b.DurationMinutes, lvlStr, reqStr, b.Purpose)
+					fmt.Printf("%-14s  %-28s  %-6d  %-22s  %-26s  %s\n",
+						b.Type, costStr, b.DurationGameDays, lvlStr, reqStr, b.Purpose)
 				}
 				return nil
 			}
