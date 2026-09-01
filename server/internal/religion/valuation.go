@@ -31,10 +31,57 @@ const (
 	smoothing = 0.34
 
 	// holderMinStock is the stock above which a settlement counts as "holding"
-	// a good for the spread measure. Without a floor, a rounding dust of 0.01
-	// grain would count as a holder and flatten spread to zero everywhere.
+	// a good for the spread measure, EXPRESSED IN THE PRE-mig-136 SCALE: one raw
+	// unit of the good. Without a floor, a rounding dust of 0.01 grain would
+	// count as a holder and flatten spread to zero everywhere.
+	//
+	// Migration 136 (db/migrations/136_dagsverkesskalan.up.sql) divided every
+	// good's stored amount by a different per-good divisor, so "1 raw unit" is
+	// no longer the same number of stored units for every good. A flat 1.0
+	// silently miscounted small-but-real stocks as "no holding" for every good
+	// mig 136 rescaled (timber's old 1 unit is now 1/216 stored; the OLD 1.0
+	// floor put it under the floor even though nothing about the world changed).
+	// The equivalent floor per good is holderMinStock/goodDivisor(key) — see
+	// CountsAsHolder, which is what actually applies this floor.
 	holderMinStock = 1.0
 )
+
+// goodDivisors mirrors migration 136 (db/migrations/136_dagsverkesskalan.up.sql
+// §5/§6): the per-good factor that migration divided settlement_goods amounts
+// (and rate_per_tick, base_value) by, so "one gubbe on standard terrain"
+// produces 1/tick. The migration itself is a one-time historical transform, not
+// a live table — this map is the ONE place these numbers live going forward.
+// Do not hand-copy them elsewhere; call goodDivisor or CountsAsHolder instead.
+//
+// A good absent here (silver, bronze) has an implicit divisor of 1 — mig 136
+// deliberately left both at the pre-136 scale ("SILVER OCH BRONS RÖRS INTE":
+// bronze was already 1.0 per-gubbe via the foundry, and silver is a currency
+// calibrated against itself, not a production good — see the migration's
+// header comment for the full reasoning).
+var goodDivisors = map[string]float64{
+	"timber":    216,
+	"fish":      86.4,
+	"cedar":     72,
+	"grain":     43.2,
+	"livestock": 36,
+	"copper":    28.8,
+	"oil":       21.6,
+	"tin":       14.4,
+	"wine":      14.4,
+	"stone":     7.2,
+	"pottery":   43.2,
+	"horses":    28.8,
+	"purple":    21.6,
+}
+
+// goodDivisor returns migration 136's rescale factor for a good, defaulting to
+// 1 (unscaled) for goods mig 136 did not touch — silver and bronze.
+func goodDivisor(goodKey string) float64 {
+	if d, ok := goodDivisors[goodKey]; ok {
+		return d
+	}
+	return 1.0
+}
 
 // GoodRarity is the world-wide scarcity of a single good, both halves separate
 // so the two can be inspected (and tuned) independently.
@@ -92,5 +139,9 @@ func SmoothDivineValue(previous, computed float64) float64 {
 }
 
 // CountsAsHolder reports whether a stock level makes a settlement a holder of
-// the good for spread purposes.
-func CountsAsHolder(stock float64) bool { return stock >= holderMinStock }
+// goodKey for spread purposes. The floor is holderMinStock (one pre-mig-136 raw
+// unit) expressed in the good's OWN post-136 scale — see holderMinStock and
+// goodDivisors for why a flat threshold cannot be reused across every good.
+func CountsAsHolder(goodKey string, stock float64) bool {
+	return stock >= holderMinStock/goodDivisor(goodKey)
+}
