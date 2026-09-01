@@ -37,6 +37,15 @@ func divineNotification(t *testing.T, kind string, amount float64) notificationI
 	return notificationItem{Kind: "DivinePunishment", Level: 2, Body: raw}
 }
 
+func divineNotificationNamed(t *testing.T, jsonKind, typ string, amount float64, name string) notificationItem {
+	t.Helper()
+	raw, err := json.Marshal(map[string]any{"type": typ, "amount": amount, "name": name})
+	if err != nil {
+		t.Fatalf("marshal body: %v", err)
+	}
+	return notificationItem{Kind: jsonKind, Level: 2, Body: raw}
+}
+
 // A Wanax who loses a fifth of their garrison to divine wrath was shown
 // {"type":"garrison_plague","amount":20,...} and nothing else — P4 hål 1 gave
 // the notification a real amount but never a sentence, and the plan's own
@@ -90,6 +99,100 @@ func TestDivinePunishmentLine_UnknownTypeInventsNothing(t *testing.T) {
 	})
 	if strings.TrimSpace(out) != "" {
 		t.Errorf("unknown punishment type printed %q, want silence", strings.TrimSpace(out))
+	}
+}
+
+// megaron_plan_tre_tysta_notiserna.md's actual point: a Wanax with several
+// cities only learns that ONE was struck, never which, unless the line names
+// it. This is the field that plan adds.
+func TestDivinePunishmentLine_NamesTheSettlement(t *testing.T) {
+	out := capturePrint(t, func() {
+		printDivinePunishmentLine(divineNotificationNamed(t, "DivinePunishment", "garrison_plague", 20, "Phaistos"))
+	})
+	if !strings.Contains(out, "Phaistos") {
+		t.Errorf("line %q does not name the settlement", strings.TrimSpace(out))
+	}
+}
+
+// An older persisted notification predates the "name" field (additive per
+// CLAUDE.md §Events) — must degrade to the pre-name wording, not print an
+// empty "i ".
+func TestDivinePunishmentLine_MissingNameDegradesGracefully(t *testing.T) {
+	out := capturePrint(t, func() {
+		printDivinePunishmentLine(divineNotification(t, "ship_loss", 1))
+	})
+	if strings.Contains(out, " i  ") || strings.HasSuffix(strings.TrimSpace(out), "i") {
+		t.Errorf("line %q reads as if a name were expected but missing", strings.TrimSpace(out))
+	}
+	if strings.TrimSpace(out) == "" {
+		t.Fatal("printed nothing")
+	}
+}
+
+// TestDivineBlessingLine_UnitFollowsType is the fällan plan §4 names: the
+// SAME amount field means grain/men/ships depending on type. A generic "+N"
+// line would be wrong for two of the three.
+func TestDivineBlessingLine_UnitFollowsType(t *testing.T) {
+	cases := []struct {
+		typ  string
+		want []string
+	}{
+		{"harvest_blessing", []string{"spannmål"}},
+		{"divine_recruits", []string{"man"}},
+		{"sea_blessing", []string{"skepp"}},
+	}
+	for _, tc := range cases {
+		out := capturePrint(t, func() {
+			printDivineBlessingLine(divineNotificationNamed(t, "DivineBlessing", tc.typ, 40, "Phaistos"))
+		})
+		if !strings.Contains(out, "Phaistos") {
+			t.Errorf("%s: line %q does not name the settlement", tc.typ, out)
+		}
+		for _, want := range tc.want {
+			if !strings.Contains(out, want) {
+				t.Errorf("%s: line %q does not mention %q", tc.typ, strings.TrimSpace(out), want)
+			}
+		}
+	}
+}
+
+func TestDivineBlessingLine_UnknownTypeInventsNothing(t *testing.T) {
+	out := capturePrint(t, func() {
+		printDivineBlessingLine(divineNotificationNamed(t, "DivineBlessing", "unknown_favour", 40, "Phaistos"))
+	})
+	if strings.TrimSpace(out) != "" {
+		t.Errorf("unknown blessing type printed %q, want silence", strings.TrimSpace(out))
+	}
+}
+
+func TestFoodShortfallLine_NamesSettlementAndAmount(t *testing.T) {
+	raw, err := json.Marshal(map[string]any{"unmet": 312.0, "name": "Phaistos"})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	out := capturePrint(t, func() {
+		printFoodShortfallLine(notificationItem{Kind: "FoodShortfall", Level: 2, Body: raw})
+	})
+	if !strings.Contains(out, "Phaistos") {
+		t.Errorf("line %q does not name the settlement", strings.TrimSpace(out))
+	}
+	if !strings.Contains(out, "312") {
+		t.Errorf("line %q does not mention the unmet amount", strings.TrimSpace(out))
+	}
+	// unmet is a ration, not population lost — must not read like the
+	// SubsistenceWarning mechanic (pop_loss).
+	if strings.Contains(out, "svalt") || strings.Contains(out, "dog") {
+		t.Errorf("line %q reads as population loss, but unmet is a ration shortfall, not deaths", out)
+	}
+}
+
+func TestFoodShortfallLine_ZeroUnmetIsSilent(t *testing.T) {
+	raw, _ := json.Marshal(map[string]any{"unmet": 0.0, "name": "Phaistos"})
+	out := capturePrint(t, func() {
+		printFoodShortfallLine(notificationItem{Kind: "FoodShortfall", Level: 2, Body: raw})
+	})
+	if strings.TrimSpace(out) != "" {
+		t.Errorf("unmet=0 printed %q, want silence", strings.TrimSpace(out))
 	}
 }
 

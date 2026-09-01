@@ -86,6 +86,9 @@ export function notifIcon(kind) {
     BattleLost:         '⚔',
     ShipDamaged:        '⛵',
     ShipRepaired:       '🔨',
+    DivinePunishment:   '⚡',
+    DivineBlessing:     '✨',
+    FoodShortfall:      '🍽',
   };
   return icons[kind] || '◉';
 }
@@ -394,6 +397,37 @@ export function notifText(kind, body) {
     }
     case 'SentryAlerted':
       return `Sentry spotted ${body.foreign_owner || 'an unknown'}'s ${body.foreign_type || 'unit'} at (${body.q}, ${body.r})`;
+    case 'DivinePunishment': {
+      // Payload: type/amount/name (megaron_plan_tre_tysta_notiserna.md — name
+      // is additive, older persisted notifications may lack it). amount's UNIT
+      // depends on type — a generic "+N" would be wrong for harvest_failure
+      // (grain) vs the three man/ship-counting types.
+      const place = body.name ? ` at ${body.name}` : '';
+      const amount = body.amount || 0;
+      switch (body.type) {
+        case 'chariot_loss':    return `The gods scattered your war chariots in the night${place} — ${amount} lost`;
+        case 'ship_loss':       return `A divine storm claimed a vessel from your harbour${place}`;
+        case 'harvest_failure': return `The fields lay fallow by divine will${place} — ${Math.round(amount)} grain rotted`;
+        case 'garrison_plague': return `A pestilence swept the barracks${place} — ${amount} fell`;
+        default:                return `${kind} — ${payloadSummary(body)}`;
+      }
+    }
+    case 'DivineBlessing': {
+      const place = body.name ? ` at ${body.name}` : '';
+      const amount = body.amount || 0;
+      switch (body.type) {
+        case 'harvest_blessing': return `The gods fill your granaries${place} — +${Math.round(amount)} grain`;
+        case 'divine_recruits':  return `Warriors answer a divine call${place} — +${amount} men`;
+        case 'sea_blessing':     return `Poseidon guides a vessel to your harbour${place} — +${amount} galley`;
+        default:                 return `${kind} — ${payloadSummary(body)}`;
+      }
+    }
+    case 'FoodShortfall': {
+      // unmet is the day's UNFULFILLED ration, not population lost (that is
+      // SubsistenceWarning's pop_loss — a different mechanic, don't conflate).
+      const place = body.name || 'A settlement';
+      return `${place} went hungry today — ${Math.round(body.unmet || 0)} grain unmet`;
+    }
     // Every kind above is hand-written. This arm stays as a generic fallback
     // for any future NotifyPlayer kind added without a case here — the 2026-08-05
     // audit found 17 such kinds; all now have real text (A7, megaron_mvp_mandag.md

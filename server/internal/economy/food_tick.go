@@ -29,6 +29,10 @@ type FoodShortfallPayload struct {
 	GrainUsed     float64 `json:"grain_used"`
 	FishUsed      float64 `json:"fish_used"`
 	LivestockUsed int     `json:"livestock_used"`
+	// Name is the settlement's name (megaron_plan_tre_tysta_notiserna.md):
+	// without it a Wanax with several cities only learns that ONE of them
+	// starved, never which. New field, old ones unchanged (CLAUDE.md §Events).
+	Name string `json:"name"`
 }
 
 // FoodTickHandler is Föda, priority 55 (between Plikt/UpkeepTick at 50 and
@@ -220,18 +224,21 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 	// "storing" leg — only the day the population actually went hungry is
 	// worth an event and a notification.
 	if unmet > 0 {
+		var ownerID uuid.UUID
+		var settlementName string
+		_ = h.pool.QueryRow(ctx, `SELECT owner_id, name FROM settlements WHERE id = $1`, settlementID).Scan(&ownerID, &settlementName)
+
 		payload := FoodShortfallPayload{
 			Unmet: unmet, GrainUsed: grainUsed, FishUsed: fishUsed, LivestockUsed: livestockConsumed,
+			Name: settlementName,
 		}
 		_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, EventFoodShortfall, payload, worldID, nil)
-		if h.hub != nil {
-			var ownerID uuid.UUID
-			if err := h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, settlementID).Scan(&ownerID); err == nil {
-				_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, EventFoodShortfall, 2, map[string]any{
-					"settlement_id": settlementID,
-					"unmet":         unmet,
-				})
-			}
+		if h.hub != nil && ownerID != uuid.Nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, EventFoodShortfall, 2, map[string]any{
+				"settlement_id": settlementID,
+				"unmet":         unmet,
+				"name":          settlementName,
+			})
 		}
 	}
 
