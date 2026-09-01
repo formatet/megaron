@@ -1,6 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { notifText } from './format.js';
+import { notifText, fmtSilver } from './format.js';
+
+// Decimal-silver formatter (Timothy 2026-08-13: sexagesimal shekel/mina/talang
+// retired). One decimal, trailing ".0" dropped, always suffixed " silver".
+test('fmtSilver: whole amounts render as plain integers', () => {
+  assert.equal(fmtSilver(0), '0 silver');
+  assert.equal(fmtSilver(42), '42 silver');
+  assert.equal(fmtSilver(3600), '3600 silver');
+});
+
+test('fmtSilver: fractional amounts keep one decimal', () => {
+  assert.equal(fmtSilver(3.24), '3.2 silver');
+  assert.equal(fmtSilver(142.05), '142.1 silver');
+});
+
+test('fmtSilver: a value that rounds to a whole number drops the decimal', () => {
+  assert.equal(fmtSilver(9.99), '10 silver');
+});
+
+test('fmtSilver: missing/invalid input is treated as zero, never NaN', () => {
+  assert.equal(fmtSilver(undefined), '0 silver');
+  assert.equal(fmtSilver(null), '0 silver');
+});
 
 // Plan B — default arm stops throwing away the payload for notification kinds
 // notifText has no case for. See format.js's PAYLOAD_SUMMARY_MAX_* comment

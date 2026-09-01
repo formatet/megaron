@@ -585,7 +585,8 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 //   - Caller must own both units.
 //   - Both units must be in the same settlement (garrison).
 //   - Ship must be naval and have no current cargo (cargo_unit_id IS NULL).
-//   - Land unit must be status='garrison', size=100.
+//   - Land unit must be status='garrison' (no size gate — a battle-worn
+//     cohort of size < 100 is a real unit that can still embark).
 //   - Origin must be a coastal settlement (adjacent to sea) or have a harbour.
 //
 // Outcome: ship.cargo_unit_id = land_unit_id; land unit status → 'embarked'.

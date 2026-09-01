@@ -98,29 +98,17 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		"now": func() string {
 			return clk.Now().UTC().Format(time.RFC3339)
 		},
-		// fmtSilver formats a silver amount as shekel / mina / talang
-		// (1 mina = 60 shekel, 1 talang = 60 mina = 3600 shekel)
+		// fmtSilver formats a silver amount as DECIMAL silver (Timothy
+		// 2026-08-13: sexagesimal shekel/mina/talang retired — count in silver
+		// and decimal fractions). Matches the client's ui/format.js fmtSilver:
+		// one decimal, trailing ".0" dropped. Presentation only — the model was
+		// always plain float64 silver.
 		"fmtSilver": func(v float64) string {
-			n := int(math.Round(v))
-			if n <= 0 {
-				return "0 shekel"
+			r := math.Round(v*10) / 10
+			if r == math.Trunc(r) {
+				return fmt.Sprintf("%d silver", int64(r))
 			}
-			if n < 60 {
-				return fmt.Sprintf("%d shekel", n)
-			}
-			if n < 3600 {
-				mina, shekel := n/60, n%60
-				if shekel == 0 {
-					return fmt.Sprintf("%d mina", mina)
-				}
-				return fmt.Sprintf("%d mina %d shekel", mina, shekel)
-			}
-			talang, rest := n/3600, n%3600
-			mina := rest / 60
-			if mina == 0 {
-				return fmt.Sprintf("%d talang", talang)
-			}
-			return fmt.Sprintf("%d talang %d mina", talang, mina)
+			return fmt.Sprintf("%.1f silver", r)
 		},
 	}
 	// Parse base into the base set. Page templates are parsed per-request via

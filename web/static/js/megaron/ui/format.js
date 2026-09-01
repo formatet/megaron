@@ -16,21 +16,19 @@ export function isTypingTarget(el) {
   return !!el.isContentEditable;
 }
 
-// NOTE (FAS 2, flagged in the execution report): the original map.html script
-// already defined ITS OWN fmtSilver (this one) in addition to the copy of
-// base.html's fmtSilver that FAS 1 prepended to the classic script per the
-// exekveringsplan. Two `function fmtSilver` declarations in one classic
-// <script> are legal — the later one silently wins — so base.html's version
-// was already dead/shadowed on the map page before this split (and still was
-// after FAS 1). ES modules make duplicate top-level declarations a hard
-// SyntaxError, so only the one that was actually live is kept here; the
-// shadowed base.html copy is dropped as unreachable code, not a behaviour
-// change.
+// The single JS home for silver formatting. The currency is DECIMAL silver now
+// (Timothy 2026-08-13: "sexagesimalt shekel/mina/talang är för krångligt —
+// räkna i silver och decimala fraktioner"). The old sexagesimal ladder
+// (shekel/mina/talang) is retired; the data model was always plain float64
+// silver, so this is a presentation change only, no migration. base.html used
+// to carry a second, dead copy of this function for its classic pages — dropped
+// in the same slice, so this is the ONLY fmtSilver on the client. The Go
+// template funcmap keeps a matching decimal formatter server-side (web.go).
 export function fmtSilver(amount) {
-  const a = Math.floor(amount || 0);
-  if (a >= 3600) return (a / 3600).toFixed(1) + ' talent';
-  if (a >= 60)   return (a / 60).toFixed(1) + ' mina';
-  return a + ' shekel';
+  const v = Number(amount) || 0;
+  const r = Math.round(v * 10) / 10; // one decimal
+  const s = Number.isInteger(r) ? String(r) : r.toFixed(1);
+  return s + ' silver';
 }
 
 // fmtEta moved to ui/time.js (Tid & kalender Fas B) — the whole ETA family
