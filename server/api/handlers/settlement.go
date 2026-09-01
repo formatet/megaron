@@ -960,19 +960,40 @@ func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, se
 }
 
 // applyHarvestBlessing boosts the settlement's grain by 25% (one-shot abundance).
-// Mirrors the tick-level applyDivineBlessing harvest_blessing SQL.
+// Shares its form with the tick-level applyDivineBlessing harvest_blessing branch
+// (internal/kharis/tick.go) — both read the actual RETURNING delta rather than
+// reporting the 1.25 multiplier as if it were the outcome (megaron_plan_ritens_
+// utfall.md: events store outcomes, not intentions, CLAUDE.md §Events).
 func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, spec religion.PrayerSpec) (map[string]any, string, error) {
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlement_goods SET
-		    amount  = LEAST(cap, settled(amount, rate, calc_tick) * 1.25),
-		    calc_tick = current_world_tick()
-		 WHERE settlement_id = $1 AND good_key = 'grain'`,
+	var gained, grainNow float64
+	if err := tx.QueryRow(ctx,
+		`WITH old AS (
+		     SELECT settled(amount, rate, calc_tick) AS grain_now, cap
+		     FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'
+		 ), upd AS (
+		     UPDATE settlement_goods sg SET
+		        amount    = LEAST(o.cap, o.grain_now * 1.25),
+		        calc_tick = current_world_tick()
+		     FROM old o
+		     WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'
+		     RETURNING sg.amount - o.grain_now AS gained, o.grain_now AS grain_now
+		 )
+		 SELECT COALESCE(SUM(gained), 0)::float8, COALESCE(MAX(grain_now), 0)::float8 FROM upd`,
 		settlementID,
-	); err != nil {
+	).Scan(&gained, &grainNow); err != nil {
 		return nil, "", err
 	}
-	msg := fmt.Sprintf("%s smiles upon your fields — grain stocks swell by a quarter.", spec.God)
-	return map[string]any{"good": "grain", "multiplier": 1.25}, msg, nil
+
+	var msg string
+	switch {
+	case gained > 0:
+		msg = fmt.Sprintf("%s smiles upon your fields — grain stocks swell by a quarter (+%.0f grain).", spec.God, gained)
+	case grainNow <= 0:
+		msg = fmt.Sprintf("%s smiles upon your fields — but your granaries stand empty, and a quarter of nothing is nothing.", spec.God)
+	default:
+		msg = fmt.Sprintf("%s smiles upon your fields — but your granaries are already full; there is nowhere to put the abundance.", spec.God)
+	}
+	return map[string]any{"good": "grain", "multiplier": 1.25, "gained": gained}, msg, nil
 }
 
 // applyOracleRevealDeposits reveals the nearest uncolonised tile(s) within
