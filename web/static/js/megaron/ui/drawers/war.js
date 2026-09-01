@@ -380,7 +380,14 @@ export async function warDisband(provinceID) {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
+    // loadCityDrawer() re-renders #war-disband-res from scratch (city.js),
+    // so the result line is set on the fresh element afterwards, not before.
     await loadCityDrawer();
+    const resEl = document.getElementById('war-disband-res');
+    if (resEl && typeof data.pop_restored === 'number') {
+      resEl.style.color = 'var(--text-dim)';
+      resEl.textContent = '+' + data.pop_restored + ' population (now ' + data.population + ')';
+    }
   } else {
     const resEl = document.getElementById('war-disband-res');
     if (resEl) resEl.textContent = data.error || 'failed';

@@ -3,15 +3,69 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
 
+	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
+
+// disbandWireToType maps the disband endpoint's request/response JSON keys to
+// the unit.DisplayName DB-type key they name — "ship" is the endpoint's wire
+// key for the canonical "galley" type (see the post() call below), so it's
+// the one entry that doesn't match its own DB type.
+var disbandWireToType = map[string]string{
+	"spearman":       string(unit.TypeSpearman),
+	"war_chariot":    string(unit.TypeWarChariot),
+	"ship":           string(unit.TypeGalley),
+	"elite_infantry": string(unit.TypeEliteInfantry),
+	"war_galley":     string(unit.TypeWarGalley),
+	"merchantman":    string(unit.TypeMerchantman),
+}
+
+// formatDisbandResult renders the server's {"disbanded":{...},"pop_restored":
+// N,"population":N} response as one line. A tyst fallback that guesses a
+// population figure is worse than omitting it — pop_restored missing (old
+// server) prints only what was disbanded, never a fabricated "+0".
+func formatDisbandResult(resp map[string]any) string {
+	var parts []string
+	if disbanded, ok := resp["disbanded"].(map[string]any); ok {
+		var keys []string
+		for k, v := range disbanded {
+			if n, _ := v.(float64); n > 0 {
+				keys = append(keys, k)
+			}
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			n := int(disbanded[k].(float64))
+			typ := disbandWireToType[k]
+			if typ == "" {
+				typ = k
+			}
+			parts = append(parts, fmt.Sprintf("%d %s", n, unit.DisplayName(typ)))
+		}
+	}
+	line := "Disbanded"
+	if len(parts) > 0 {
+		line += " " + strings.Join(parts, ", ")
+	}
+	if popRestored, ok := resp["pop_restored"].(float64); ok {
+		population, hasPop := resp["population"].(float64)
+		if hasPop {
+			line += fmt.Sprintf(" · +%d population (now %d)", int(popRestored), int(population))
+		} else {
+			line += fmt.Sprintf(" · +%d population", int(popRestored))
+		}
+	}
+	return line
+}
 
 func disbandCmd() *cobra.Command {
 	var spearman, warChariot, galley, eliteInfantry, warGalley, merchantman int
 	cmd := &cobra.Command{
 		Use:   "disband",
-		Short: "Release units back to population (they return to civilian life)",
+		Short: "Disband units — their men return to civilian life",
 		Example: `  keryx disband --spearman 20
   keryx disband --spearman 10 --war-chariot 5 --elite-infantry 2
   keryx disband --galley 3 --elite-infantry 1
@@ -44,8 +98,7 @@ func disbandCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			pop, _ := resp["pop_restored"].(float64)
-			fmt.Printf("Disbanded · +%d population\n", int(pop))
+			fmt.Println(formatDisbandResult(resp))
 			return nil
 		},
 	}
