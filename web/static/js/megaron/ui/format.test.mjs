@@ -201,3 +201,73 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
     "Sentry spotted Wanax3's chariot at (9, 9)",
   );
 });
+
+// megaron_plan_tre_tysta_notiserna.md: DivinePunishment/DivineBlessing/
+// FoodShortfall used to fall to the raw-JSON default arm and none of them
+// named the settlement. amount's UNIT depends on `type` for both divine
+// kinds — a generic "+N" line would be wrong for two of three branches.
+test('DivinePunishment names the settlement and the right unit per type', () => {
+  assert.equal(
+    notifText('DivinePunishment', { type: 'chariot_loss', amount: 18, name: 'Phaistos' }),
+    'The gods scattered your war chariots in the night at Phaistos — 18 lost',
+  );
+  assert.equal(
+    notifText('DivinePunishment', { type: 'ship_loss', amount: 1, name: 'Phaistos' }),
+    'A divine storm claimed a vessel from your harbour at Phaistos',
+  );
+  assert.equal(
+    notifText('DivinePunishment', { type: 'harvest_failure', amount: 1200, name: 'Phaistos' }),
+    'The fields lay fallow by divine will at Phaistos — 1200 grain rotted',
+  );
+  assert.equal(
+    notifText('DivinePunishment', { type: 'garrison_plague', amount: 20, name: 'Phaistos' }),
+    'A pestilence swept the barracks at Phaistos — 20 fell',
+  );
+});
+
+test('DivinePunishment without a name (older persisted notification) omits the place clause, not an empty one', () => {
+  const line = notifText('DivinePunishment', { type: 'ship_loss', amount: 1 });
+  assert.equal(line, 'A divine storm claimed a vessel from your harbour');
+  assert.doesNotMatch(line, / at $/);
+});
+
+test('DivinePunishment unknown type falls to the raw-payload default, invents nothing', () => {
+  const line = notifText('DivinePunishment', { type: 'locust_swarm', amount: 40, name: 'Phaistos' });
+  assert.match(line, /^DivinePunishment/);
+  assert.match(line, /locust_swarm/);
+});
+
+test('DivineBlessing names the settlement and the right unit per type', () => {
+  assert.equal(
+    notifText('DivineBlessing', { type: 'harvest_blessing', amount: 100, name: 'Phaistos' }),
+    'The gods fill your granaries at Phaistos — +100 grain',
+  );
+  assert.equal(
+    notifText('DivineBlessing', { type: 'divine_recruits', amount: 4, name: 'Phaistos' }),
+    'Warriors answer a divine call at Phaistos — +4 men',
+  );
+  assert.equal(
+    notifText('DivineBlessing', { type: 'sea_blessing', amount: 1, name: 'Phaistos' }),
+    'Poseidon guides a vessel to your harbour at Phaistos — +1 galley',
+  );
+});
+
+test('DivineBlessing unknown type falls to the raw-payload default, invents nothing', () => {
+  const line = notifText('DivineBlessing', { type: 'unknown_favour', amount: 40, name: 'Phaistos' });
+  assert.match(line, /^DivineBlessing/);
+  assert.match(line, /unknown_favour/);
+});
+
+test('FoodShortfall names the settlement and the unmet ration', () => {
+  assert.equal(
+    notifText('FoodShortfall', { unmet: 312, name: 'Phaistos' }),
+    'Phaistos went hungry today — 312 grain unmet',
+  );
+});
+
+test('FoodShortfall without a name falls back to a generic settlement label', () => {
+  assert.equal(
+    notifText('FoodShortfall', { unmet: 312 }),
+    'A settlement went hungry today — 312 grain unmet',
+  );
+});

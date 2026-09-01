@@ -1702,6 +1702,13 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		},
 	}
 
+	var settlementName string
+	if err := h.pool.QueryRow(ctx,
+		`SELECT name FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&settlementName); err != nil {
+		slog.Error("divine punishment: load settlement name", "settlement", settlementID, "err", err)
+	}
+
 	p := punishments[rand.Intn(len(punishments))]
 	var amount float64
 	if err := h.pool.QueryRow(ctx, p.sql, settlementID).Scan(&amount); err != nil {
@@ -1734,17 +1741,22 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	}
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
-		map[string]any{"type": p.name, "amount": amount}, worldID, nil)
+		map[string]any{"type": p.name, "amount": amount, "name": settlementName}, worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_wrath", p.text)
 	// Fel A (plan §Hål 1): NotifyPlayer was never called at all — the same
 	// nil-guarded hub already used elsewhere in this file (e.g. line ~1339's
 	// emitSubsistenceWarning). Level 2 (urgent) matches other involuntary
 	// losses (UnitLostAtSea, upkeep desertion) rather than routine info.
+	// "name" (megaron_plan_tre_tysta_notiserna.md): a Wanax with several cities
+	// otherwise only learns that ONE of them was struck, never which — not
+	// actionable, and exactly what grind 2 forbids. New field, old ones unchanged
+	// (CLAUDE.md §Events: semantics are frozen, additive is fine).
 	if h.hub != nil && ownerID != uuid.Nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivinePunishment", 2, map[string]any{
 			"settlement_id": settlementID,
 			"type":          p.name,
 			"amount":        amount,
+			"name":          settlementName,
 		})
 	}
 	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name, "amount", amount)
@@ -1829,6 +1841,13 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 			}
 		}
 	}
+	var settlementName string
+	if err := h.pool.QueryRow(ctx,
+		`SELECT name FROM settlements WHERE id = $1`, settlementID,
+	).Scan(&settlementName); err != nil {
+		slog.Error("divine blessing: load settlement name", "settlement", settlementID, "err", err)
+	}
+
 	var amount float64
 	if b.sql != "" {
 		if err := h.pool.QueryRow(ctx, b.sql, settlementID).Scan(&amount); err != nil {
@@ -1845,15 +1864,18 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 	}
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivineBlessing",
-		map[string]any{"type": b.name, "amount": amount}, worldID, nil)
+		map[string]any{"type": b.name, "amount": amount, "name": settlementName}, worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_favour", b.text)
 	// Fel A/B fix, mirroring applyDivinePunishment above. Level 3 (info) —
 	// good news, same tier as ColonyFounded/TrainComplete, not urgent.
+	// "name": see applyDivinePunishment's comment on the same field — additive,
+	// old fields unchanged.
 	if h.hub != nil && ownerID != uuid.Nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivineBlessing", 3, map[string]any{
 			"settlement_id": settlementID,
 			"type":          b.name,
 			"amount":        amount,
+			"name":          settlementName,
 		})
 	}
 	slog.Info("divine blessing applied", "settlement", settlementID, "type", b.name, "amount", amount)

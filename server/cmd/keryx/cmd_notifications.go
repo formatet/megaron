@@ -140,6 +140,12 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "DivinePunishment" {
 		printDivinePunishmentLine(n)
 	}
+	if n.Kind == "DivineBlessing" {
+		printDivineBlessingLine(n)
+	}
+	if n.Kind == "FoodShortfall" {
+		printFoodShortfallLine(n)
+	}
 	switch n.Kind {
 	case "CityOccupied", "OccupationDefended", "CityAnnexReady", "SettlementLooted", "SettlementBurned":
 		printOccupationLine(n)
@@ -684,6 +690,7 @@ func printDivinePunishmentLine(n notificationItem) {
 	var body struct {
 		Type   string  `json:"type"`
 		Amount float64 `json:"amount"`
+		Name   string  `json:"name"`
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
@@ -692,18 +699,84 @@ func printDivinePunishmentLine(n notificationItem) {
 	if amount <= 0 {
 		return
 	}
+	// "i <stad>" sidesteps Swedish possessive-s on city names ending in a
+	// vowel (Phaistos, Amnissos) — older persisted notifications lack "name"
+	// (megaron_plan_tre_tysta_notiserna.md: additive field), so this falls
+	// back to the pre-name wording rather than printing "i ".
+	where := ""
+	if body.Name != "" {
+		where = " i " + body.Name
+	}
 	var line string
 	switch body.Type {
 	case "chariot_loss":
-		line = fmt.Sprintf("Gudarna skingrade dina stridsvagnar i natten — %.0f man borta.", amount)
+		line = fmt.Sprintf("Gudarna skingrade stridsvagnarna%s i natten — %.0f man borta.", where, amount)
 	case "ship_loss":
-		line = fmt.Sprintf("En gudasänd storm tog %.0f fartyg ur din hamn.", amount)
+		line = fmt.Sprintf("En gudasänd storm tog %.0f fartyg ur hamnen%s.", amount, where)
 	case "harvest_failure":
-		line = fmt.Sprintf("Fälten låg i träda på gudarnas vilja — %s spannmål ruttnade.", resource(amount))
+		line = fmt.Sprintf("Fälten%s låg i träda på gudarnas vilja — %s spannmål ruttnade.", where, resource(amount))
 	case "garrison_plague":
-		line = fmt.Sprintf("En pest gick genom baracken — %.0f man föll.", amount)
+		line = fmt.Sprintf("En pest gick genom baracken%s — %.0f man föll.", where, amount)
 	default:
 		return
 	}
 	fmt.Printf("      %s\n", line)
+}
+
+// printDivineBlessingLine mirrors printDivinePunishmentLine — same payload
+// shape (type/amount/name), good side of the same DivineTick roll. amount's
+// UNIT depends on type (megaron_plan_tre_tysta_notiserna.md §4): grain for
+// harvest_blessing, men for divine_recruits, ships for sea_blessing. A
+// generic "+N" line would be wrong for two of the three.
+func printDivineBlessingLine(n notificationItem) {
+	var body struct {
+		Type   string  `json:"type"`
+		Amount float64 `json:"amount"`
+		Name   string  `json:"name"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	amount := body.Amount
+	if amount <= 0 {
+		return
+	}
+	where := ""
+	if body.Name != "" {
+		where = " i " + body.Name
+	}
+	var line string
+	switch body.Type {
+	case "harvest_blessing":
+		line = fmt.Sprintf("Gudarna fyller magasinen%s — +%s spannmål.", where, resource(amount))
+	case "divine_recruits":
+		line = fmt.Sprintf("Krigare svarar på en gudomlig kallelse%s — +%.0f man.", where, amount)
+	case "sea_blessing":
+		line = fmt.Sprintf("Poseidon för ett fartyg till hamnen%s — +%.0f skepp.", where, amount)
+	default:
+		return
+	}
+	fmt.Printf("      %s\n", line)
+}
+
+// printFoodShortfallLine renders FoodShortfall's payload (unmet/name) —
+// unmet is the day's UNFULFILLED grain ration, not population lost (that is
+// SubsistenceWarning's pop_loss, a different mechanic — do not conflate them
+// in the text, megaron_plan_tre_tysta_notiserna.md §4).
+func printFoodShortfallLine(n notificationItem) {
+	var body struct {
+		Unmet float64 `json:"unmet"`
+		Name  string  `json:"name"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	if body.Unmet <= 0 {
+		return
+	}
+	where := "Staden"
+	if body.Name != "" {
+		where = body.Name
+	}
+	fmt.Printf("      %s gick hungrig idag — %s spannmål saknades.\n", where, resource(body.Unmet))
 }
