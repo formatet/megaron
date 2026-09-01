@@ -31,7 +31,21 @@ globalThis.window ??= {
 };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { panDelta } = await import('./map.js');
+const { panDelta, CATCHMENT_OFFSETS, CATCHMENT_RADIUS } = await import('./map.js');
+
+// The catchment highlight must cover the settlement's radius-2 disc (19 hexes,
+// mirroring server hexgrid.CatchmentRadius), not the pre-P1 7-hex radius-1
+// shape it regressed to. Guards against anyone reverting to [[0,0],...HEX_DIRS].
+test('catchment offsets cover the full radius-2 disc (19 hexes), not 7', () => {
+  const dist = (q, r) => (Math.abs(q) + Math.abs(q + r) + Math.abs(r)) / 2;
+  assert.equal(CATCHMENT_RADIUS, 2);
+  assert.equal(CATCHMENT_OFFSETS.length, 19, 'radius-2 disc is 1+6+12 = 19 hexes');
+  assert.ok(CATCHMENT_OFFSETS.every(([q, r]) => dist(q, r) <= CATCHMENT_RADIUS), 'every offset within radius');
+  assert.ok(CATCHMENT_OFFSETS.some(([q, r]) => q === 0 && r === 0), 'includes the settlement hex');
+  assert.equal(CATCHMENT_OFFSETS.filter(([q, r]) => dist(q, r) === 2).length, 12, 'outer ring has 12 hexes');
+  // No duplicates.
+  assert.equal(new Set(CATCHMENT_OFFSETS.map(([q, r]) => `${q},${r}`)).size, 19);
+});
 
 test('AK1: import does not touch DOM/window before this point (proven by reaching here)', () => {
   assert.ok(true);
