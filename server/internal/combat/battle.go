@@ -628,7 +628,6 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		if sizes[i] == p.currentSize {
 			continue
 		}
-		popLost := p.currentSize - sizes[i]
 		if sizes[i] <= 0 {
 			if _, err := tx.Exec(ctx,
 				`UPDATE units SET status = 'disbanded', size = 0, updated_at = now() WHERE id = $1`, p.unitID,
@@ -654,15 +653,32 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 				return false, fmt.Errorf("battle tick: update participant size %s: %w", p.unitID, err)
 			}
 		}
-		if popLost > 0 {
-			if _, err := tx.Exec(ctx,
-				`UPDATE settlements SET population = GREATEST(50, population - $2)
-				 WHERE owner_id = $1 AND world_id = $3 AND is_capital = true`,
-				p.ownerID, popLost, worldID,
-			); err != nil {
-				slog.Warn("battle tick: could not apply pop loss", "unit", p.unitID, "err", err)
-			}
-		}
+		// No settlement population is deducted here, deliberately. A soldier
+		// leaves settlements.population at recruitment (C2, 52fa1c5,
+		// 2026-06-15) and returns to it at disband (6e65b0a, 2026-09-01);
+		// between those two moments he is counted in units.size/crew and
+		// nowhere else. Dying means he simply never returns — the settlement
+		// column must not move.
+		//
+		// Until 2026-09-01 this loop ran `UPDATE settlements SET population =
+		// GREATEST(50, population - popLost) WHERE owner_id = $1 AND
+		// is_capital = true`. That was Variant B's leftover (c618974,
+		// 2026-06-05), written when recruitment did NOT cost population and
+		// the demographic price of war therefore had to be charged at death
+		// instead. C2 made the draft physical ten days later and this half was
+		// never revisited, so every battle round billed the loss twice — the
+		// second time against the owner's CAPITAL regardless of which
+		// settlement raised the unit or where the fight was, and for a naval
+		// participant against `size` (hulls) rather than `crew` (men).
+		// Same root as the disband bug, opposite sign
+		// (megaron_plan_disband_returnerar_folket.md §6).
+		//
+		// War's cost in civilians is not dropped, it is charged where it is
+		// modelled: the sack (occupation.go's sackPopLossFraction) takes a
+		// fraction of the SACKED city's population. Losses stay legible to the
+		// player through the stridsrapport's pop_lost, which is
+		// size_before - size_after (battleReportUnit below) — men lost from
+		// the unit, which is what actually happened.
 	}
 	for side, part := range participationBySide {
 		if _, err := tx.Exec(ctx,
