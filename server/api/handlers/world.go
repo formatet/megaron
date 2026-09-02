@@ -862,7 +862,6 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		IsCapital   bool   `json:"is_capital"`
 		Allied      bool   `json:"allied"`
 		Visible     bool   `json:"visible"`
-		IsOutpost   bool   `json:"is_outpost,omitempty"`
 		ArmyTotal   int    `json:"army_total,omitempty"`
 		BuildActive bool   `json:"build_active,omitempty"`
 		TrainActive bool   `json:"train_active,omitempty"`
@@ -910,38 +909,6 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 	}
 	if markers == nil {
 		markers = []provinceMarker{}
-	}
-
-	// Also include outpost provinces (controlled by a player but no settlement row).
-	orows, _ := h.pool.Query(r.Context(),
-		`SELECT p.id, p.map_q, p.map_r, p.terrain_type, p.owner_id, COALESCE(pl.wanax_name, pl.username)
-		 FROM provinces p
-		 JOIN players pl ON pl.id = p.owner_id
-		 WHERE p.world_id = $1 AND p.outpost_feeds IS NOT NULL
-		   AND NOT EXISTS (SELECT 1 FROM settlements s WHERE s.province_id = p.id)`,
-		worldID,
-	)
-	if orows != nil {
-		defer orows.Close()
-		for orows.Next() {
-			var m provinceMarker
-			var ownerID uuid.UUID
-			var terrain string
-			if err := orows.Scan(&m.ID, &m.Q, &m.R, &terrain, &ownerID, &m.Owner); err != nil {
-				continue
-			}
-			m.IsOutpost = true
-			m.Name = "Outpost"
-			pos := province.MapPosition{Q: m.Q, R: m.R}
-			m.Visible = !authenticated || knownToPlayer(eyes, remembered, pos, terrain)
-			if !m.Visible {
-				continue
-			}
-			if authenticated {
-				m.Own = ownerID == playerID
-			}
-			markers = append(markers, m)
-		}
 	}
 
 	writeJSON(w, http.StatusOK, markers)

@@ -53,14 +53,10 @@ func settlementsCmd() *cobra.Command {
 				// is set server-side only for own rows).
 				role := "—"
 				if own {
-					isOutpost, _ := m["is_outpost"].(bool)
 					isCapital, _ := m["is_capital"].(bool)
-					switch {
-					case isOutpost:
-						role = "outpost"
-					case isCapital:
+					if isCapital {
 						role = "capital"
-					default:
+					} else {
 						role = "colony"
 					}
 				}

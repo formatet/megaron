@@ -422,8 +422,6 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 		}
 	case "CityCollapsed":
 		return fmt.Sprintf("%s collapsed (%s) — a warband rises from the ruins", s, str(p, "cause"))
-	case "OutpostEstablished":
-		return fmt.Sprintf("%s established an outpost", a)
 	default:
 		return fmt.Sprintf("[%s] %s (%s)", e.EventType, s, compactPayload(e.Payload))
 	}

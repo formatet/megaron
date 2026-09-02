@@ -1162,9 +1162,9 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 // Abandon handles POST /worlds/:worldID/settlements/:settlementID/abandon.
 //
 // Voluntarily gives up a colony: the garrison is disbanded, the settlement's own
-// province and any outpost provinces it fed are freed, and the row is marked
-// state='abandoned'. This is the consolidation valve that pairs with the
-// MaxSettlementsPerWanax cap — abandoning frees a slot (the cap counts state='active').
+// province is freed, and the row is marked state='abandoned'. This is the
+// consolidation valve that pairs with the MaxSettlementsPerWanax cap —
+// abandoning frees a slot (the cap counts state='active').
 //
 // Distinct from collapse: abandonment is peaceful (no warband spawns) and lighter
 // (the owner keeps their capital and any kingdom membership). The capital itself
@@ -1250,27 +1250,9 @@ func (h *SettlementHandler) Abandon(w http.ResponseWriter, r *http.Request) {
 			`UPDATE units SET status = 'disbanded', updated_at = now() WHERE id = $1 AND status = 'embarked'`, cid)
 	}
 
-	// Free any outpost provinces this settlement fed, then drop the flows.
-	if _, err := tx.Exec(r.Context(),
-		`UPDATE provinces SET territory_state = 'free', owner_id = NULL,
-		     outpost_feeds = NULL, garrison_strength = 0
-		 WHERE id IN (SELECT province_id FROM outpost_flows WHERE settlement_id = $1)`,
-		settlementID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not free outpost provinces")
-		return
-	}
-	if _, err := tx.Exec(r.Context(),
-		`DELETE FROM outpost_flows WHERE settlement_id = $1`, settlementID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not clear outpost flows")
-		return
-	}
-
 	// Free the settlement's own province so the hex is colonisable again.
 	if _, err := tx.Exec(r.Context(),
-		`UPDATE provinces SET territory_state = 'free', owner_id = NULL,
-		     outpost_feeds = NULL, garrison_strength = 0
+		`UPDATE provinces SET territory_state = 'free'
 		 WHERE id = $1`,
 		provinceID,
 	); err != nil {

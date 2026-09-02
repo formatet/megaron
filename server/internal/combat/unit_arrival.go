@@ -262,8 +262,9 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// already holds this hex without a settlement (P2 fix, 2026-07-18 soak:
 	// "Dole mot Eastern Outpost"). Before this fix, marching onto a hex where
 	// only an enemy's field-positioned unit sat (no settlements row there —
-	// province.owner_id-style outposts are not currently establishable by any
-	// code path, so the soak-observed "Outpost" was in fact a hostile unit
+	// province.owner_id-style outposts were never establishable by any code
+	// path — the model was dropped outright in migration 138, 2026-09-02 —
+	// so the soak-observed "Outpost" was in fact a hostile unit
 	// sitting status='positioned' on an empty hex) fell straight through to
 	// arriveGarrison: the arriving unit simply co-located with the enemy — no
 	// combat, no capture, no notification. Settlements are still resolved via
