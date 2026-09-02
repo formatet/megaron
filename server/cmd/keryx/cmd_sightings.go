@@ -144,13 +144,13 @@ something of mine", not "how far is it from my palace".`,
 			}
 
 			if len(rawUnits) == 0 && len(garrisons) == 0 {
-				fmt.Println("Inga främmande enheter i sikte.")
+				fmt.Println("No foreign units in sight.")
 				return nil
 			}
 
-			fmt.Println("Sightings — vad dina ögon ser just nu")
+			fmt.Println("Sightings — what your eyes see right now")
 			if len(rawUnits) > 0 {
-				fmt.Println("\n  ENHETER")
+				fmt.Println("\n  UNITS")
 				for _, u := range rawUnits {
 					owner := u.Owner
 					if owner == "" {
@@ -173,25 +173,25 @@ something of mine", not "how far is it from my palace".`,
 						}
 						detail = fmt.Sprintf("%-8s (%d,%d)", stance, u.Q, u.R)
 					}
-					fmt.Printf("  %d hexar %-2s   %-13s %-13s ×%-5d %s\n",
+					fmt.Printf("  %d hexes %-2s   %-13s %-13s ×%-5d %s\n",
 						u.Distance, u.Bearing, owner, u.Type, u.Size, detail)
 					if u.Cargo != nil {
-						fmt.Printf("                                                   bär: %s ×%d\n",
+						fmt.Printf("                                                   carrying: %s ×%d\n",
 							u.Cargo.Type, u.Cargo.Size)
 					}
 				}
 			}
 			if len(garrisons) > 0 {
-				fmt.Println("\n  GARNISONER")
+				fmt.Println("\n  GARRISONS")
 				for _, g := range garrisons {
 					owner := g.Owner
 					if owner == "" {
 						owner = "—"
 					}
-					fmt.Printf("  %d hexar %-2s   %s (%s)   %d man\n", g.Distance, g.Bearing, g.Name, owner, g.ArmyTotal)
+					fmt.Printf("  %d hexes %-2s   %s (%s)   %d men\n", g.Distance, g.Bearing, g.Name, owner, g.ArmyTotal)
 				}
 			}
-			fmt.Print("\nMarschera dit: keryx unit march --unit <id> --q <q> --r <r>   (dina enheter: keryx unit list)\n")
+			fmt.Print("\nMarch there: keryx unit march --unit <id> --q <q> --r <r>   (your units: keryx unit list)\n")
 			return nil
 		},
 	}

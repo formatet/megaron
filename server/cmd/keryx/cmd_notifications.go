@@ -43,11 +43,11 @@ func subsistenceTier(n notificationItem) string {
 func subsistenceTierLabel(tier string) string {
 	switch tier {
 	case "critical":
-		return "KRITISK"
+		return "CRITICAL"
 	case "red":
-		return "röd"
+		return "red"
 	case "yellow":
-		return "gul"
+		return "yellow"
 	default:
 		return tier
 	}
@@ -224,33 +224,33 @@ func printOccupationLine(n notificationItem) {
 	switch n.Kind {
 	case "CityOccupied":
 		if body.Role == "attacker" {
-			fmt.Printf("      %s föll — din här håller den under ockupation. Väljer du inget stannar den ockuperad; annektera erbjuds efter %d obestridda tick. `keryx occupation order --settlement %s --action sack|burn|annex`\n",
+			fmt.Printf("      %s fell — your army holds it under occupation. Choosing nothing leaves it occupied; annexation is offered after %d uncontested tick. `keryx occupation order --settlement %s --action sack|burn|annex`\n",
 				name, body.OccupationTicksToAnnex, body.SettlementID)
 		} else {
-			fmt.Printf("      %s har fallit under ockupation — inte förlorad än. Undsättning inom %d tick nollar fiendens räknare.\n",
+			fmt.Printf("      %s has fallen under occupation — not lost yet. Relief within %d tick resets the enemy's counter.\n",
 				name, body.OccupationTicksToAnnex)
 		}
 	case "OccupationDefended":
-		fmt.Printf("      Ockupationen av %s höll mot ett angrepp — annekteringsräknaren har nollställts, %d nya tick krävs.\n",
+		fmt.Printf("      The occupation of %s held against an attack — the annexation counter has been reset, %d new tick required.\n",
 			name, body.OccupationTicksToAnnex)
 	case "CityAnnexReady":
-		fmt.Printf("      %s har varit obestridd länge nog — annektera med `keryx occupation order --settlement %s --action annex`\n",
+		fmt.Printf("      %s has been uncontested long enough — annex with `keryx occupation order --settlement %s --action annex`\n",
 			name, body.SettlementID)
 	case "SettlementLooted":
 		if body.Role == "attacker" {
-			fmt.Printf("      %s sackad — bytet är på väg hem som en karavan (kan avskäras).\n", name)
+			fmt.Printf("      %s sacked — the loot is on its way home as a caravan (can be intercepted).\n", name)
 		} else {
 			extra := ""
 			if body.BuildingHit != "" {
-				extra = fmt.Sprintf(", %s nedslagen en nivå", body.BuildingHit)
+				extra = fmt.Sprintf(", %s knocked down a level", body.BuildingHit)
 			}
-			fmt.Printf("      %s sackad — befolkning −⅓%s. Staden är kvar, men länsad.\n", name, extra)
+			fmt.Printf("      %s sacked — population −⅓%s. The city remains, but plundered.\n", name, extra)
 		}
 	case "SettlementBurned":
 		if body.Role == "attacker" {
-			fmt.Printf("      %s sackad och bränd — bytet är på väg hem, ruinen kan inte återkoloniseras på en tid.\n", name)
+			fmt.Printf("      %s sacked and burned — the loot is on its way home, the ruin cannot be recolonized for a while.\n", name)
 		} else {
-			fmt.Printf("      %s sackad och bränd — staden är en ruin.\n", name)
+			fmt.Printf("      %s sacked and burned — the city is a ruin.\n", name)
 		}
 	}
 }
@@ -287,24 +287,24 @@ func printBattleReportLine(n notificationItem) {
 	if body.Place != nil && *body.Place != "" {
 		place = *body.Place
 	}
-	outcomeWord := "Seger"
+	outcomeWord := "Victory"
 	if n.Kind == "BattleLost" {
-		outcomeWord = "Förlust"
+		outcomeWord = "Loss"
 	}
 	trailer := ""
 	switch {
 	case body.Outcome == "mutual_wipe":
-		trailer = " Inga överlevande på endera sidan."
+		trailer = " No survivors on either side."
 	case body.Outcome == "attacker_wins" && body.Role == "attacker":
-		trailer = " Fältet togs."
+		trailer = " The field was taken."
 	case body.Outcome == "attacker_wins" && body.Role == "defender":
-		trailer = " Fältet föll."
+		trailer = " The field fell."
 	case body.Outcome == "defender_holds" && body.Role == "defender":
-		trailer = " Fältet höll."
+		trailer = " The field held."
 	case body.Outcome == "defender_holds" && body.Role == "attacker":
-		trailer = " Anfallet slogs tillbaka."
+		trailer = " The attack was repelled."
 	}
-	fmt.Printf("      %s vid %s — din %s (%d→%d, −%d döda) mot %s's %s (%d→%d).%s\n",
+	fmt.Printf("      %s at %s — your %s (%d→%d, −%d dead) vs %s's %s (%d→%d).%s\n",
 		outcomeWord, place, body.OwnUnit.Type, body.OwnUnit.SizeBefore, body.OwnUnit.SizeAfter, body.OwnUnit.PopLost,
 		body.Opponent, body.EnemyUnit.Type, body.EnemyUnit.SizeBefore, body.EnemyUnit.SizeAfter, trailer)
 }
@@ -325,12 +325,12 @@ func printShipDamagedLine(n notificationItem) {
 	}
 	switch {
 	case body.Sunk:
-		fmt.Printf("      Din %s sänktes i striden.\n", body.UnitType)
+		fmt.Printf("      Your %s was sunk in the battle.\n", body.UnitType)
 	case body.ReturningHome:
-		fmt.Printf("      Din %s tog skada (skrov %d/%d) och linkar hem för reparation.\n",
+		fmt.Printf("      Your %s took damage (hull %d/%d) and limps home for repair.\n",
 			body.UnitType, body.Hull, body.HullMax)
 	default:
-		fmt.Printf("      Din %s tog skada (skrov %d/%d) men behåller sina order.\n",
+		fmt.Printf("      Your %s took damage (hull %d/%d) but keeps its orders.\n",
 			body.UnitType, body.Hull, body.HullMax)
 	}
 }
@@ -346,7 +346,7 @@ func printShipRepairedLine(n notificationItem) {
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
 	}
-	fmt.Printf("      Din %s är reparerad (skrov %d/5) och redo att segla igen.\n", body.UnitType, body.Hull)
+	fmt.Printf("      Your %s is repaired (hull %d/5) and ready to sail again.\n", body.UnitType, body.Hull)
 }
 
 // printUpkeepUnpaidLine renders the human-readable follow-up to an UpkeepUnpaid
@@ -492,7 +492,7 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	}
 	name := body.Name
 	if name == "" {
-		name = "Kolonin"
+		name = "The colony"
 	}
 	grainTicks := body.GrainTicks
 	if grainTicks == nil {
@@ -502,12 +502,12 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	if perTick < 0 {
 		ticks := ""
 		if grainTicks != nil {
-			ticks = fmt.Sprintf(" — grain räcker ~%.0f tick", *grainTicks)
+			ticks = fmt.Sprintf(" — grain lasts ~%.0f tick", *grainTicks)
 		}
-		fmt.Printf("      %s föder inte sig själv (~%.0f grain/tick i underskott)%s. Bygg farm om catchment bär det, annars sänd grain: keryx transfer --good grain --qty <n> --dest %s\n",
+		fmt.Printf("      %s doesn't feed itself (~%.0f grain/tick short)%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
 			name, -perTick, ticks, name)
 	} else {
-		fmt.Printf("      %s försörjer sig själv (~%+.0f grain/tick).\n", name, perTick)
+		fmt.Printf("      %s is self-sufficient (~%+.0f grain/tick).\n", name, perTick)
 	}
 }
 
@@ -654,13 +654,13 @@ func notificationsCmd() *cobra.Command {
 						break
 					}
 				}
-				fmt.Printf("%s[%s]  %-20s  ×%d (senaste: %s)\n", marker, notificationAge(latest.CreatedAt), kind, len(occ), string(latest.Body))
+				fmt.Printf("%s[%s]  %-20s  ×%d (latest: %s)\n", marker, notificationAge(latest.CreatedAt), kind, len(occ), string(latest.Body))
 			}
 
 			// Default-view summary for kinds excluded from the fetch entirely.
 			for _, kind := range noisyNotificationKinds {
 				if n := hiddenCounts[kind]; n > 0 {
-					fmt.Printf("+%d %s — `keryx notifications --kind %s` för alla\n", n, kind, kind)
+					fmt.Printf("+%d %s — `keryx notifications --kind %s` for all\n", n, kind, kind)
 				}
 			}
 			return nil
@@ -699,24 +699,24 @@ func printDivinePunishmentLine(n notificationItem) {
 	if amount <= 0 {
 		return
 	}
-	// "i <stad>" sidesteps Swedish possessive-s on city names ending in a
+	// "in <city>" sidesteps Swedish possessive-s on city names ending in a
 	// vowel (Phaistos, Amnissos) — older persisted notifications lack "name"
 	// (megaron_plan_tre_tysta_notiserna.md: additive field), so this falls
-	// back to the pre-name wording rather than printing "i ".
+	// back to the pre-name wording rather than printing "in ".
 	where := ""
 	if body.Name != "" {
-		where = " i " + body.Name
+		where = " in " + body.Name
 	}
 	var line string
 	switch body.Type {
 	case "chariot_loss":
-		line = fmt.Sprintf("Gudarna skingrade stridsvagnarna%s i natten — %.0f man borta.", where, amount)
+		line = fmt.Sprintf("The gods scattered the chariots%s in the night — %.0f men lost.", where, amount)
 	case "ship_loss":
-		line = fmt.Sprintf("En gudasänd storm tog %.0f fartyg ur hamnen%s.", amount, where)
+		line = fmt.Sprintf("A god-sent storm took %.0f ships from the harbor%s.", amount, where)
 	case "harvest_failure":
-		line = fmt.Sprintf("Fälten%s låg i träda på gudarnas vilja — %s spannmål ruttnade.", where, resource(amount))
+		line = fmt.Sprintf("The fields%s lay fallow at the gods' will — %s grain rotted.", where, resource(amount))
 	case "garrison_plague":
-		line = fmt.Sprintf("En pest gick genom baracken%s — %.0f man föll.", where, amount)
+		line = fmt.Sprintf("A plague swept through the barracks%s — %.0f men fell.", where, amount)
 	default:
 		return
 	}
@@ -743,16 +743,16 @@ func printDivineBlessingLine(n notificationItem) {
 	}
 	where := ""
 	if body.Name != "" {
-		where = " i " + body.Name
+		where = " in " + body.Name
 	}
 	var line string
 	switch body.Type {
 	case "harvest_blessing":
-		line = fmt.Sprintf("Gudarna fyller magasinen%s — +%s spannmål.", where, resource(amount))
+		line = fmt.Sprintf("The gods fill the granaries%s — +%s grain.", where, resource(amount))
 	case "divine_recruits":
-		line = fmt.Sprintf("Krigare svarar på en gudomlig kallelse%s — +%.0f man.", where, amount)
+		line = fmt.Sprintf("Warriors answer a divine calling%s — +%.0f men.", where, amount)
 	case "sea_blessing":
-		line = fmt.Sprintf("Poseidon för ett fartyg till hamnen%s — +%.0f skepp.", where, amount)
+		line = fmt.Sprintf("Poseidon brings a ship to the harbor%s — +%.0f ships.", where, amount)
 	default:
 		return
 	}
@@ -774,9 +774,9 @@ func printFoodShortfallLine(n notificationItem) {
 	if body.Unmet <= 0 {
 		return
 	}
-	where := "Staden"
+	where := "The city"
 	if body.Name != "" {
 		where = body.Name
 	}
-	fmt.Printf("      %s gick hungrig idag — %s spannmål saknades.\n", where, resource(body.Unmet))
+	fmt.Printf("      %s went hungry today — %s grain was missing.\n", where, resource(body.Unmet))
 }

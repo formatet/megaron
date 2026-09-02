@@ -72,9 +72,9 @@ func ticklogCmd() *cobra.Command {
 			for _, t := range resp.Ticks {
 				fmt.Printf("── Tick %d ──\n", t.Tick)
 				fmt.Printf("  Prod:  %s\n", fmtFlows(t.Production))
-				fmt.Printf("  Kons:  %s\n", fmtFlows(t.Consumption))
+				fmt.Printf("  Cons:  %s\n", fmtFlows(t.Consumption))
 				if len(t.Events) == 0 {
-					fmt.Printf("  Händelser: —\n")
+					fmt.Printf("  Events: —\n")
 				} else {
 					for _, e := range t.Events {
 						fmt.Printf("  %s\n", renderTickEvent(e.Type, e.Payload))
@@ -84,7 +84,7 @@ func ticklogCmd() *cobra.Command {
 				if loy == "" {
 					loy = "—"
 				}
-				fmt.Printf("  Lojalitet: %s\n\n", loy)
+				fmt.Printf("  Loyalty: %s\n\n", loy)
 			}
 			return nil
 		},
@@ -133,10 +133,10 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 		sort.Strings(goods)
 		detail := strings.Join(goods, " + ")
 		if etype == "SitosGranaryReleased" {
-			return fmt.Sprintf("Sitos: magasinet gav staden %s (täckning var %.1f tick, kvar i magasinet %.1f)",
+			return fmt.Sprintf("Sitos: the granary gave the city %s (coverage was %.1f tick, left in the granary %.1f)",
 				detail, p.CoverageDays, p.GranaryAfter)
 		}
-		return fmt.Sprintf("Sitos: la undan %s (täckning %.1f tick, i magasinet %.1f)",
+		return fmt.Sprintf("Sitos: stored away %s (coverage %.1f tick, in the granary %.1f)",
 			detail, p.CoverageDays, p.GranaryAfter)
 	// SitosTransaction is the FUND's event type, frozen and no longer emitted
 	// (mig 106). Kept so a journal that reaches back past the migration still
@@ -152,12 +152,12 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 		_ = json.Unmarshal(payload, &p)
 		switch p.Kind {
 		case "tax":
-			return fmt.Sprintf("Sitos: skatt +%.1f silver → fonden", p.SilverDelta)
+			return fmt.Sprintf("Sitos: tax +%.1f silver → the fund", p.SilverDelta)
 		case "buy":
-			return fmt.Sprintf("Sitos: köpte %.1f %s (ref %.2f), staden +%.1f silver",
+			return fmt.Sprintf("Sitos: bought %.1f %s (ref %.2f), city +%.1f silver",
 				-p.GoodDelta, p.Good, p.RefPrice, -p.SilverDelta)
 		case "sell":
-			return fmt.Sprintf("Sitos: sålde %.1f %s (ref %.2f), staden −%.1f silver",
+			return fmt.Sprintf("Sitos: sold %.1f %s (ref %.2f), city −%.1f silver",
 				p.GoodDelta, p.Good, p.RefPrice, p.SilverDelta)
 		default:
 			return "Sitos: " + p.Kind
@@ -168,7 +168,7 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 			Quantity float64 `json:"quantity"`
 		}
 		_ = json.Unmarshal(payload, &p)
-		return fmt.Sprintf("Handel: mottog %.1f %s", p.Quantity, p.GoodKey)
+		return fmt.Sprintf("Trade: received %.1f %s", p.Quantity, p.GoodKey)
 	case "GoodsCrafted":
 		var p struct {
 			OutputKey string             `json:"output_key"`
@@ -190,18 +190,18 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 			from = append(from, fmt.Sprintf("%.0f %s", p.Consumed[g], g))
 		}
 		if len(from) > 0 {
-			return fmt.Sprintf("Gjutning: %.0f %s ur %s", p.Produced, p.OutputKey, strings.Join(from, " + "))
+			return fmt.Sprintf("Casting: %.0f %s from %s", p.Produced, p.OutputKey, strings.Join(from, " + "))
 		}
-		return fmt.Sprintf("Gjutning: %.0f %s", p.Produced, p.OutputKey)
+		return fmt.Sprintf("Casting: %.0f %s", p.Produced, p.OutputKey)
 	case "BuildComplete", "ScheduledBuildComplete":
 		var p struct {
 			BuildingType string `json:"building_type"`
 		}
 		_ = json.Unmarshal(payload, &p)
 		if p.BuildingType != "" {
-			return "Bygg: " + p.BuildingType + " klar"
+			return "Build: " + p.BuildingType + " complete"
 		}
-		return "Bygg: klar"
+		return "Build: complete"
 	default:
 		return etype
 	}

@@ -11,7 +11,7 @@ import (
 // were struck from the MVP chain (Timothy 2026-07-08, see megaron_web_spelbar_plan.md):
 // the server capability/CLI surface is disabled while the server-side code stays
 // gated for a future reactivation.
-const kingdomsDisabledMsg = "Rikesytan är avstängd i denna värld (kingdoms är post-MVP, beslut 2026-07-08)."
+const kingdomsDisabledMsg = "The kingdoms surface is disabled in this world (kingdoms are post-MVP, decision 2026-07-08)."
 
 // kingdomStubCmd builds a disabled placeholder command for a kingdom verb, so
 // `keryx <verb>` prints a clear reason instead of cobra's raw "unknown command".

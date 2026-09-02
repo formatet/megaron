@@ -268,7 +268,7 @@ func surplusWithoutSinkWarning(label string, amount, rateVal, capacity float64, 
 	if gubbar == 1 {
 		who = "1 gubbe"
 	}
-	return fmt.Sprintf("⚠ %-8s %6s  %s  — kända sänkor tar emot högst %s inom %d tick; %s producerar utan mottagare (`keryx place`)",
+	return fmt.Sprintf("⚠ %-8s %6s  %s  — known sinks absorb at most %s within %d tick; %s produces with no receiver (`keryx place`)",
 		label, resource(amount), rate(rateVal), resource(capacity), productionHorizonTicks, who)
 }
 
@@ -338,7 +338,7 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 		if stock > 0 {
 			ticks = stock / -net
 		}
-		note = fmt.Sprintf(" — lager %s räcker ~%.0f tick i denna takt", resource(stock), ticks)
+		note = fmt.Sprintf(" — stock %s lasts ~%.0f tick at this rate", resource(stock), ticks)
 		return note, ticks < netUpkeepWarningRunwayTicks
 	}
 	gNote, gCritical := runway(netG, grainStock)
@@ -348,11 +348,11 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 	// famine (soak 2026-07-22, two playtesters in a row).
 	switch {
 	case gCritical && sCritical:
-		return "  ⚠ varken grain eller silver täcker arméns upkeep — enheter svälter/deserterar när lagren tar slut" + gNote + sNote + " (se `keryx recruit --list`)"
+		return "  ⚠ neither grain nor silver covers the army's upkeep — units starve/desert once the stock runs out" + gNote + sNote + " (see `keryx recruit --list`)"
 	case gCritical:
-		return "  ⚠ grain täcker inte arméns upkeep — enheter kan svälta" + gNote + " (silvret räcker; se `keryx recruit --list`)"
+		return "  ⚠ grain doesn't cover the army's upkeep — units can starve" + gNote + " (silver is fine; see `keryx recruit --list`)"
 	case sCritical:
-		return "  ⚠ silver täcker inte arméns sold — enheter kan desertera" + sNote + " (maten räcker; se `keryx recruit --list`)"
+		return "  ⚠ silver doesn't cover the army's pay — units can desert" + sNote + " (food is fine; see `keryx recruit --list`)"
 	}
 	return ""
 }
@@ -370,15 +370,15 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 func sitosGranaryState(coverage, low, high, total, net float64) string {
 	switch {
 	case coverage < low && total <= 0 && net > 0:
-		return "tomt — men lagret växer, täckningen stiger"
+		return "empty — but the stock is growing, coverage is rising"
 	case coverage < low && total <= 0:
-		return "TOMT och lagret krymper — staden är utan skydd"
+		return "EMPTY and the stock is shrinking — the city is unprotected"
 	case coverage < low:
-		return "släpper mat till staden"
+		return "releasing food to the city"
 	case coverage <= high:
-		return "vilar — varken undan eller ut"
+		return "resting — neither storing nor releasing"
 	default:
-		return "lägger undan ett tionde av överskottet"
+		return "storing away a tenth of the surplus"
 	}
 }
 
@@ -396,7 +396,7 @@ func multiCityHint(name string, settlementsUsed float64) string {
 	if settlementsUsed <= 1 {
 		return ""
 	}
-	return fmt.Sprintf("Detta är %s. Du har %.0f städer — `keryx settlements` listar dem, `keryx status --province <id>` visar en annan.",
+	return fmt.Sprintf("This is %s. You have %.0f cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.",
 		name, settlementsUsed)
 }
 
@@ -500,12 +500,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty, settlementsNote, coastalNote)
 			if besieged, _ := sett["besieged"].(bool); besieged {
-				fmt.Println("  ⚔ BELÄGRAD — en fiende håller en infartsväg, catchment-produktion strypt")
+				fmt.Println("  ⚔ BESIEGED — an enemy holds an access road, catchment production is choked")
 			}
 			if hint := multiCityHint(name, settlementsUsed); hint != "" {
 				fmt.Println(hint)
 			}
-			fmt.Println("  Loyalty 1–4 (1=lägst; revolt kräver även fientlig garnison-majoritet + utlösande händelse)")
+			fmt.Println("  Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)")
 			// P11 (soak 2026-07-18): loyalty had no visible raising lever — colonies
 			// sat at 1–2 with no signal why, or what to do about it. The mechanic
 			// already exists server-side (internal/loyalty: welfare.go daily
@@ -564,12 +564,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// filling up fast. The net food rate is what tells them apart.
 				net, _ := sitos["food_net_per_tick"].(float64)
 				state := sitosGranaryState(cov, low, high, total, net)
-				fmt.Printf("Sitos-magasinet: %s undan%s / tak %s · täckning %.1f tick (magasinet fyller över %.0f, tömmer under %.0f) · %s\n\n",
+				fmt.Printf("Sitos granary: %s stored%s / cap %s · coverage %.1f tick (granary fills above %.0f, drains below %.0f) · %s\n\n",
 					resource(total), parts, resource(gcap), cov, high, low, state)
 			}
 
-			// "Senaste tick"-sammanfattning: summerar journalen (keryx ticklog)
-			// utan att ersätta den.
+			// "Last tick" summary: summarizes the journal (keryx ticklog)
+			// without replacing it.
 			if lt, ok := sett["last_tick"].(map[string]any); ok {
 				tk, _ := lt["tick"].(float64)
 				sitosInterventions, _ := lt["sitos_interventions"].(float64)
@@ -583,28 +583,28 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if c2, ok := lt["consumption"].(map[string]any); ok {
 					consN = len(c2)
 				}
-				// Sitos-itemisering: what MOVED, in food. There is no silver leg
-				// left to net out (mig 106), so the short form is "magasinet vilade"
+				// Sitos itemization: what MOVED, in food. There is no silver leg
+				// left to net out (mig 106), so the short form is "granary was idle"
 				// rather than a delta of zero silver — a number that would now
 				// always be 0 and tell the Wanax nothing.
-				sitosNote := "Sitos-magasinet vilade"
+				sitosNote := "Sitos granary was idle"
 				if sitosInterventions > 0 {
 					detail := ""
 					if sitosFoodIn > 0 {
-						detail = fmt.Sprintf("staden fick %s mat ur magasinet", resource(sitosFoodIn))
+						detail = fmt.Sprintf("city received %s food from the granary", resource(sitosFoodIn))
 					}
 					if sitosFoodOut > 0 {
 						if detail != "" {
 							detail += " / "
 						}
-						detail += fmt.Sprintf("la undan %s mat", resource(sitosFoodOut))
+						detail += fmt.Sprintf("stored away %s food", resource(sitosFoodOut))
 					}
 					if detail == "" {
-						detail = "ingen mat flyttades"
+						detail = "no food moved"
 					}
 					sitosNote = detail
 				}
-				fmt.Printf("Senaste tick (%d): %d varor produceras, %d förbrukas, %s  ·  keryx ticklog för detaljer\n\n",
+				fmt.Printf("Last tick (%d): %d goods produced, %d consumed, %s  ·  keryx ticklog for details\n\n",
 					int(tk), prodN, consN, sitosNote)
 			}
 
@@ -614,7 +614,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
-			fmt.Println("  (rate = netto: produktion − konsumtion, per tick)")
+			fmt.Println("  (rate = net: production − consumption, per tick)")
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)
@@ -626,13 +626,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					if always || amt > 0 || rt != 0 {
 						line := fmt.Sprintf("  %-8s %6s  %s", label, resource(amt), rate(rt))
 						if rt < 0 {
-							line += " netto"
+							line += " net"
 							// Real shortage risk: current stock runs out within the next
 							// tick at this net rate — most negative nettos are a stable
 							// balance a stock buffer absorbs, not an emergency (DEL C
 							// grain-netto-märkning: don't cry wolf).
 							if amt/-rt < 1 {
-								line += "  ⚠ tar slut inom en tick"
+								line += "  ⚠ runs out within one tick"
 							}
 						}
 						fmt.Println(line)
@@ -657,7 +657,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						prodTick := gProdRate
 						consumTick := gConsumRate
 						netTick := prodTick - consumTick
-						line := fmt.Sprintf("  %-8s %6s  prod %.1f − konsum %.1f = netto %+.1f /tick",
+						line := fmt.Sprintf("  %-8s %6s  prod %.1f − consum %.1f = net %+.1f /tick",
 							"Grain", resource(gAmt), prodTick, consumTick, netTick)
 						// food_gubbar_required/placed/self_sufficient (P4-arvet,
 						// megaron_plan_p4_arvet_i_province.md §2) replace the old
@@ -665,10 +665,10 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// food slots need, out of SAME greedy loop founding/growth use.
 						if req, ok := sett["food_gubbar_required"].(float64); ok {
 							if suff, ok2 := sett["food_self_sufficient"].(bool); ok2 && !suff {
-								line += fmt.Sprintf("  ⚠ catchmentet mättar inte befolkningen ens med alla %d gubbar", int(req))
+								line += fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d gubbar", int(req))
 							} else {
 								placed, _ := sett["food_gubbar_placed"].(float64)
-								line += fmt.Sprintf("  (%d gubbar krävs för föda · %d placerade)", int(req), int(placed))
+								line += fmt.Sprintf("  (%d gubbar needed for food · %d placed)", int(req), int(placed))
 							}
 						}
 						fmt.Println(line)
@@ -692,8 +692,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						silverStock, _ = rd["amount"].(float64)
 					}
 					warn := armyUpkeepWarning(netG, netS, grainStock, silverStock)
-					fmt.Printf("  %-8s %+.1f grain/tick, %+.1f silver/tick (efter arméns upkeep)%s\n",
-						"Netto", netG, netS, warn)
+					fmt.Printf("  %-8s %+.1f grain/tick, %+.1f silver/tick (after the army's upkeep)%s\n",
+						"Net", netG, netS, warn)
 				}
 
 				// Fish (fisk-föder-befolkningen, 2026-07-31): a coastal/river
@@ -803,7 +803,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if cd, ok := p["catchment_deposits"].([]any); ok {
 				buildings, _ := sett["buildings"].([]any)
 				if unused := unusedCatchmentDeposits(cd, buildings); len(unused) > 0 {
-					fmt.Printf("  ⚠ Obruten deposit i catchmenten: %s — bygg mine/silver_mine här för att utvinna\n",
+					fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine/silver_mine here to extract it\n",
 						strings.Join(unused, ", "))
 				}
 			}
@@ -822,12 +822,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
 			// kharis — the passive geographic rate alone hid a fading L1 Wanax behind
 			// "passiv +0.1/tick" (sondrunda 2026-07-24). Show the net when we have it.
-			netStr := fmt.Sprintf("passiv %+.1f/tick", kpd)
+			netStr := fmt.Sprintf("passive %+.1f/tick", kpd)
 			if netKnown {
-				netStr = fmt.Sprintf("netto %+.1f/tick (tempel − decay)", knet)
+				netStr = fmt.Sprintf("net %+.1f/tick (temple − decay)", knet)
 			}
 			if kcap > 0 {
-				fmt.Printf("  %-8s %6s  (%s) · tak %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
+				fmt.Printf("  %-8s %6s  (%s) · cap %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
 			} else {
 				fmt.Printf("  %-8s %6s  (%s) · %s\n", "Kharis", resource(kv), mood, netStr)
 			}
@@ -835,11 +835,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// förbi sitt tak — utan denna rad läser en spelare "kharis fastnat på 22" som
 			// en bugg (sondrunda 2026-07-24). Taket = 25×(1+nivå): L1=50, L2=75, L3=100.
 			if mtl >= 1 && kcap < 100 {
-				line := fmt.Sprintf("  → taket %.0f sätts av ditt nivå-%.0f-tempel; din kharis håller men klättrar inte — höj kult-labor (`keryx allocate --cult`) eller bygg ett högre tempel.\n", kcap, mtl)
+				line := fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — raise cult labor (`keryx allocate --cult`) or build a higher temple.\n", kcap, mtl)
 				if netKnown && knet > 0.05 {
-					line = fmt.Sprintf("  → din kharis klättrar mot taket %.0f (satt av ditt nivå-%.0f-tempel) — bygg ett högre tempel för att höja taket vidare.\n", kcap, mtl)
+					line = fmt.Sprintf("  → your kharis is climbing toward the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
 				} else if netKnown && knet < -0.05 {
-					line = fmt.Sprintf("  → taket %.0f sätts av ditt nivå-%.0f-tempel, men din kharis faller mot golvet — höj kult-labor (om templet har plats) eller bygg ett högre tempel.\n", kcap, mtl)
+					line = fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — raise cult labor (if the temple has room) or build a higher temple.\n", kcap, mtl)
 				}
 				fmt.Print(line)
 			}
@@ -847,11 +847,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
 			if idle, _ := sett["kharis_devotion_idle"].(bool); idle {
-				fmt.Println("  → ditt tempel kan sysselsätta MER hängivenhet än du allokerat — höj kult-labor (`keryx allocate --cult <%>`) för att fylla det och få kharis att klättra.")
+				fmt.Println("  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.")
 			}
 			if temples, ok := sett["temple_offers"].([]any); ok {
 				if len(temples) == 0 {
-					fmt.Println("  Tempel: inga — kharis klättrar inte utan tempel + offer.")
+					fmt.Println("  Temples: none — kharis doesn't climb without a temple + offerings.")
 				}
 				anyUnfed := false
 				for _, it := range temples {
@@ -867,18 +867,18 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						mark = "✗"
 						anyUnfed = true
 					}
-					fmt.Printf("  Tempel i %s: kräver %.0f olja + %.0f vin/tick — lager: olja %s, vin %s  %s\n",
+					fmt.Printf("  Temple in %s: needs %.0f oil + %.0f wine/tick — stock: oil %s, wine %s  %s\n",
 						name, oilNeeded, wineNeeded, resource(oil), resource(wine), mark)
 				}
 				if mood == "Suspicious" || mood == "Wrathful" || anyUnfed {
-					fmt.Println("  → mata templen (bygg upp olja/vin) eller kasta rit — se `keryx rite --list`.")
+					fmt.Println("  → feed the temples (build up oil/wine) or cast a rite — see `keryx rite --list`.")
 				}
 			}
 			fmt.Println()
 
 			army, _ := sett["army"].(map[string]any)
 			if army != nil {
-				fmt.Printf("Army (garnison i %s)\n", name)
+				fmt.Printf("Army (garrison in %s)\n", name)
 				// jsonKey = province.ArmyComposition's Go field name (no JSON tags,
 				// so it serializes verbatim); dbType feeds the shared display map.
 				units := []struct{ jsonKey, dbType string }{
@@ -915,19 +915,19 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %.1f grain, %.1f silver / tick  (allt staden betalar — även fältenheter)\n", "Upkeep", g, s)
+						fmt.Printf("  %-10s %.1f grain, %.1f silver / tick  (everything the city pays — including field units)\n", "Upkeep", g, s)
 						// Del C: soldiers standing in the town that pays them spend
 						// their sold there. Shown as its own line because it is the
 						// only reason the net below is not gross — an invisible flow
 						// is one the Wanax can neither plan for nor exploit.
 						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {
-							fmt.Printf("  %-10s %.1f silver / tick tillbaka i staden (garnisonens sold)\n", "", circ)
+							fmt.Printf("  %-10s %.1f silver / tick back into the city (garrison's pay)\n", "", circ)
 						}
 					}
 				}
 				// Legibilitet (2026-07-24): namnge att detta bara är garnisonen HÄR —
 				// `unit list` räknar hela rostret (fält, andra städer, ockuperade ruiner).
-				fmt.Println("  Fältenheter och andra städer syns i `keryx unit list`.")
+				fmt.Println("  Field units and other cities are shown in `keryx unit list`.")
 			}
 
 			// Completed buildings — so the agent doesn't re-queue what already exists.
@@ -971,11 +971,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					}
 					switch {
 					case cat == "naval":
-						fmt.Printf("  %-10s bygger%s\n", name, ready)
+						fmt.Printf("  %-10s building%s\n", name, ready)
 					case status == "training":
-						fmt.Printf("  %-10s %.0f/100 · tränar%s\n", name, sz, ready)
+						fmt.Printf("  %-10s %.0f/100 · training%s\n", name, sz, ready)
 					default: // forming
-						fmt.Printf("  %-10s %.0f/100 · formerar (%.0f kvar att rekrytera)\n", name, sz, 100-sz)
+						fmt.Printf("  %-10s %.0f/100 · forming (%.0f left to recruit)\n", name, sz, 100-sz)
 					}
 				}
 			}
@@ -1006,10 +1006,10 @@ type loyaltyLogEntry struct {
 // and battle deltas (internal/combat/unit_arrival.go applyBattleLoyalty) — it
 // was just never surfaced to a Wanax. This legend names the actual levers so
 // `status` teaches the mechanic instead of just showing a stuck number.
-const loyaltyLegend = "  Höjs av: kharis ≥ favör-tröskel, mätt/varierad kost (dagliga welfare-tick), " +
-	"gåvor ≥50 silver-motsvarande (`keryx transfer`), vunna/försvarade strider.\n" +
-	"  Sänks av: svält, för många kolonier (överexpansion), försummelse (>2 dygn utan gåva), " +
-	"förlorade strider, lånad armé kvar för länge."
+const loyaltyLegend = "  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare tick), " +
+	"gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.\n" +
+	"  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), " +
+	"lost battles, a borrowed army kept too long."
 
 // formatLoyaltyLog turns a settlement's loyalty-log entries into the lines
 // `status` prints under the Loyalty line — most recent first, capped at 5,
@@ -1018,9 +1018,9 @@ const loyaltyLegend = "  Höjs av: kharis ≥ favör-tröskel, mätt/varierad ko
 // unit-testable without a live server.
 func formatLoyaltyLog(entries []loyaltyLogEntry) []string {
 	if len(entries) == 0 {
-		return []string{"  Inga lojalitetshändelser ännu.", loyaltyLegend}
+		return []string{"  No loyalty events yet.", loyaltyLegend}
 	}
-	lines := []string{"  Senaste lojalitetshändelser:"}
+	lines := []string{"  Recent loyalty events:"}
 	n := 5
 	if len(entries) < n {
 		n = len(entries)

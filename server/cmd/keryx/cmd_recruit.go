@@ -84,13 +84,13 @@ func recruitCmd() *cobra.Command {
 				men = 100
 			}
 			if count > 1 && !isNaval {
-				return fmt.Errorf("count gäller bara skepp; landenheter växer via --men")
+				return fmt.Errorf("count only applies to ships; land units grow via --men")
 			}
 			if count < 1 || count > 20 {
 				return fmt.Errorf("--count must be 1–20")
 			}
 			if name != "" && !isNaval {
-				return fmt.Errorf("--name gäller bara skepp")
+				return fmt.Errorf("--name only applies to ships")
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/recruit", cfg.WorldID, prov)
 			body := map[string]any{"unit_type": apiUnit, "count": count}

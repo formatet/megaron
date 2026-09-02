@@ -17,7 +17,7 @@ func TestRenderTickEvent_GoodsCrafted(t *testing.T) {
 		`"output_key": "bronze", "settlement_id": "e7f190ec-7ea1-44e5-a628-84cf9642556e"}`)
 
 	got := renderTickEvent("GoodsCrafted", payload)
-	want := "Gjutning: 3 bronze ur 27 copper + 3 tin"
+	want := "Casting: 3 bronze from 27 copper + 3 tin"
 	if got != want {
 		t.Fatalf("renderTickEvent = %q, want %q", got, want)
 	}
@@ -40,7 +40,7 @@ func TestRenderTickEvent_GoodsCraftedIngredientOrderIsStable(t *testing.T) {
 // An older or malformed payload must not produce a broken line.
 func TestRenderTickEvent_GoodsCraftedWithoutIngredients(t *testing.T) {
 	got := renderTickEvent("GoodsCrafted", json.RawMessage(`{"produced": 1, "output_key": "bronze"}`))
-	if want := "Gjutning: 1 bronze"; got != want {
+	if want := "Casting: 1 bronze"; got != want {
 		t.Fatalf("renderTickEvent = %q, want %q", got, want)
 	}
 }

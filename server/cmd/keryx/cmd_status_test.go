@@ -169,7 +169,7 @@ func TestArmyUpkeepWarning(t *testing.T) {
 			name: "plan's acceptance pair: 200 silver, same weak negative net — warns",
 			netG: 100, netS: weakNegRate, grainStock: 5000, silverStock: 200,
 			wantWarn:     true,
-			wantContains: []string{"silver täcker inte", "desertera", "maten räcker"},
+			wantContains: []string{"silver doesn't cover", "desert", "food is fine"},
 		},
 		{
 			name: "grain graded symmetrically: 30k grain, weak negative net — silent",
@@ -180,13 +180,13 @@ func TestArmyUpkeepWarning(t *testing.T) {
 			name: "grain graded symmetrically: 200 grain, same weak negative net — warns",
 			netG: weakNegRate, netS: 100, grainStock: 200, silverStock: 5000,
 			wantWarn:     true,
-			wantContains: []string{"grain täcker inte", "svälta", "silvret räcker"},
+			wantContains: []string{"grain doesn't cover", "starve", "silver is fine"},
 		},
 		{
 			name: "both critical — combined warning, not two separate lies",
 			netG: weakNegRate, netS: weakNegRate, grainStock: 200, silverStock: 200,
 			wantWarn:     true,
-			wantContains: []string{"varken grain eller silver"},
+			wantContains: []string{"neither grain nor silver"},
 		},
 		{
 			name: "positive net never warns regardless of stock",
@@ -197,7 +197,7 @@ func TestArmyUpkeepWarning(t *testing.T) {
 			name: "already empty and falling is critical, not silently dropped (old runway() bug)",
 			netG: 100, netS: weakNegRate, grainStock: 5000, silverStock: 0,
 			wantWarn:     true,
-			wantContains: []string{"lager 0 räcker ~0 tick"},
+			wantContains: []string{"stock 0 lasts ~0 tick"},
 		},
 		{
 			name: "just above the threshold stays silent",
@@ -244,17 +244,17 @@ func TestSitosGranaryState(t *testing.T) {
 		{
 			name:     "under LowDays, not empty — releasing to the city",
 			coverage: 5, total: 500, net: -3,
-			want: "släpper mat till staden",
+			want: "releasing food to the city",
 		},
 		{
 			name:     "between LowDays and HighDays — resting",
 			coverage: 20, total: 500, net: 1,
-			want: "vilar — varken undan eller ut",
+			want: "resting — neither storing nor releasing",
 		},
 		{
 			name:     "over HighDays — tithing the surplus",
 			coverage: 40, total: 500, net: 1,
-			want: "lägger undan ett tionde av överskottet",
+			want: "storing away a tenth of the surplus",
 		},
 	}
 	for _, tt := range tests {

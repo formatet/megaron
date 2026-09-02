@@ -494,16 +494,16 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				preview, perr := fetchColonizePreview(c, cfg.WorldID, targetQ, targetR)
 				if perr != nil {
 					// Never block colonization on a forecast failure — warn and proceed.
-					fmt.Printf("(kunde inte hämta catchment-prognos: %v)\n", perr)
+					fmt.Printf("(could not fetch catchment forecast: %v)\n", perr)
 				} else {
 					renderColonizePreview(preview, targetQ, targetR)
 					if !yes && stdinIsTerminal() {
-						ok, aerr := askYesNo("Grunda kolonin?")
+						ok, aerr := askYesNo("Found the colony?")
 						if aerr != nil {
 							return aerr
 						}
 						if !ok {
-							fmt.Println("Avbröt — ingen koloni grundad.")
+							fmt.Println("Aborted — no colony founded.")
 							return nil
 						}
 					}
@@ -576,11 +576,11 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				short, _ := resp["purse_shortfall"].(float64)
 				switch {
 				case short > 0 && carried > 0:
-					fmt.Printf("  Bär med sig %.0f silver hemifrån — %.0f mindre än kolonin behöver. Den grundas fattig.\n", carried, short)
+					fmt.Printf("  Carries %.0f silver from home — %.0f less than the colony needs. It will be founded poor.\n", carried, short)
 				case short > 0:
-					fmt.Printf("  ⚠ Bär INGET silver — moderstaden hade inget att skicka med. Kolonin grundas på 0 och kan inte betala sold.\n")
+					fmt.Printf("  ⚠ Carries NO silver — the mother city had nothing to send. The colony is founded at 0 and cannot pay its troops.\n")
 				case carried > 0:
-					fmt.Printf("  Bär med sig %.0f silver hemifrån (dras ur moderstadens kassa nu, inte myntat vid grundningen).\n", carried)
+					fmt.Printf("  Carries %.0f silver from home (drawn from the mother city's coffers now, not minted at founding).\n", carried)
 				}
 			}
 			return nil
@@ -680,8 +680,8 @@ func renderColonizePreview(p *colonizePreview, q, r int) {
 	// longer exists" on the next order — so say it here, where the decision is
 	// still open. Printed before the confirmation prompt AND on the --yes path,
 	// so an agent that skips the prompt still reads it.
-	fmt.Println("OBS: enheten förbrukas — kolonisterna blir kolonins befolkning och enheten upplöses. Den kan inte beordras igen.")
-	fmt.Println("En koloni försörjer inte sig själv automatiskt — bygg farm om terrängen bär, annars ordna grain via intern transfer (keryx transfer --good grain --qty <n> --dest <koloni>).")
+	fmt.Println("NOTE: the unit is consumed — the colonists become the colony's population and the unit is disbanded. It cannot be ordered again.")
+	fmt.Println("A colony does not feed itself automatically — build a farm if the terrain supports it, otherwise arrange grain via an internal transfer (keryx transfer --good grain --qty <n> --dest <colony>).")
 }
 
 // renderCatchmentForecast is the shared forecast body — colonization and the
@@ -691,20 +691,20 @@ func renderColonizePreview(p *colonizePreview, q, r int) {
 func renderCatchmentForecast(title string, p *colonizePreview) {
 	known := len(p.Catchment) - p.UnknownHexes
 
-	fmt.Printf("%s — catchment-prognos (%d/%d hexar kända, %d okända):\n",
+	fmt.Printf("%s — catchment forecast (%d/%d hexes known, %d unknown):\n",
 		title, known, len(p.Catchment), p.UnknownHexes)
 
 	// Catchment overlap is checked BEFORE the grain math below (AK3: the
 	// blockage must be visible before the Wanax walks/settles there) — the
 	// march/settle call will refuse this exact site with the same message.
 	if p.CatchmentConflict != nil && p.CatchmentConflict.Blocked {
-		fmt.Printf("  ⛔ BLOCKERAD: %s\n", p.CatchmentConflict.Message)
+		fmt.Printf("  ⛔ BLOCKED: %s\n", p.CatchmentConflict.Message)
 	}
 
 	prodPerTick := p.Grain.BasePerTick
 	netPerTick := p.Grain.EstNetPerTick
 	consPerTick := prodPerTick - netPerTick
-	fmt.Printf("  Grain: produktion ~%.0f/tick − konsumtion ~%.0f/tick = NETTO %s/tick\n",
+	fmt.Printf("  Grain: production ~%.0f/tick − consumption ~%.0f/tick = NET %s/tick\n",
 		prodPerTick, consPerTick, formatNetPerTick(netPerTick))
 
 	// Tre lägen, inte två (megaron_plan_grundningsprognosen.md §4): ett netto på
@@ -712,7 +712,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	farmNetPerTick := p.Grain.WithFarmPerTick - consPerTick
 	farmNote := ""
 	if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
-		farmNote = " (ingen jordbruksterräng i känd catchment — en farm hjälper inte här)"
+		farmNote = " (no farmable terrain in known catchment — a farm won't help here)"
 	}
 	marginalCeiling := consPerTick * 0.10
 
@@ -720,15 +720,15 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	case netPerTick < 0:
 		reach := ""
 		if p.Grain.TicksUntilEmpty != nil {
-			reach = fmt.Sprintf(" → räcker ~%.0f tick", *p.Grain.TicksUntilEmpty)
+			reach = fmt.Sprintf(" → lasts ~%.0f tick", *p.Grain.TicksUntilEmpty)
 		}
-		fmt.Printf("  Startlager %.0f grain%s — staden svälter. Med farm: ~%s/tick%s\n",
+		fmt.Printf("  Starting stock %.0f grain%s — the city starves. With a farm: ~%s/tick%s\n",
 			p.Grain.Seed, reach, formatNetPerTick(farmNetPerTick), farmNote)
 	case netPerTick < marginalCeiling:
-		fmt.Printf("  Startlager %.0f grain — på marginalen (NETTO %s/tick). En farm ger ~%s/tick.%s\n",
+		fmt.Printf("  Starting stock %.0f grain — marginal (NET %s/tick). A farm gives ~%s/tick.%s\n",
 			p.Grain.Seed, formatNetPerTick(netPerTick), formatNetPerTick(farmNetPerTick), farmNote)
 	default:
-		fmt.Printf("  Startlager %.0f grain — staden är självförsörjande.\n", p.Grain.Seed)
+		fmt.Printf("  Starting stock %.0f grain — the city is self-sufficient.\n", p.Grain.Seed)
 	}
 
 	// "Övrigt": deposits present in the known catchment + any building-free
@@ -771,14 +771,14 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		}
 	}
 	if len(extras) > 0 {
-		fmt.Printf("  Övrigt: %s\n", strings.Join(extras, ", "))
+		fmt.Printf("  Other: %s\n", strings.Join(extras, ", "))
 	}
 
 	// Gudagåvorna hör till platsen, inte till grundandet: de faller ut ur samma
 	// geografi som siffrorna ovan, så de hör hemma i prognosen — inte som en
 	// överraskning efter det oåterkalleliga settlet.
 	for _, gift := range p.FoundingGifts {
-		fmt.Printf("  Gåva: %s — %s\n", gift.Label, gift.Detail)
+		fmt.Printf("  Gift: %s — %s\n", gift.Label, gift.Detail)
 	}
 
 	// P8 (soak 2026-07-18): make an isolated founding site visible BEFORE the

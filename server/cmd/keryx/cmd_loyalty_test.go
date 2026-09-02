@@ -14,13 +14,13 @@ func TestFormatLoyaltyLog_EmptyShowsLegend(t *testing.T) {
 	if len(lines) != 2 {
 		t.Fatalf("expected 2 lines (empty notice + legend), got %d: %v", len(lines), lines)
 	}
-	if !contains(lines[0], "Inga lojalitetshändelser") {
+	if !contains(lines[0], "No loyalty events") {
 		t.Errorf("expected empty-state notice, got %q", lines[0])
 	}
 	if lines[1] != loyaltyLegend {
 		t.Errorf("expected legend as final line, got %q", lines[1])
 	}
-	if !contains(loyaltyLegend, "Höjs av") || !contains(loyaltyLegend, "Sänks av") {
+	if !contains(loyaltyLegend, "Raised by") || !contains(loyaltyLegend, "Lowered by") {
 		t.Fatalf("legend must name both raising and lowering levers, got %q", loyaltyLegend)
 	}
 }
@@ -32,7 +32,7 @@ func TestFormatLoyaltyLog_ShowsRecentEventsThenLegend(t *testing.T) {
 	}
 	lines := formatLoyaltyLog(entries)
 
-	if lines[0] != "  Senaste lojalitetshändelser:" {
+	if lines[0] != "  Recent loyalty events:" {
 		t.Errorf("expected header line, got %q", lines[0])
 	}
 	if !contains(lines[1], "+1") || !contains(lines[1], "well_favoured") {

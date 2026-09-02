@@ -115,7 +115,7 @@ func printFounderActions(c *Client) error {
 		return err
 	}
 	if !fp.Active {
-		return fmt.Errorf("ingen provins i config och ingen aktiv founder-fas — kör 'keryx login' igen")
+		return fmt.Errorf("no province in config and no active founder phase — run 'keryx login' again")
 	}
 	hostID := "<host-id>"
 	if fp.HostUnitID != nil {
@@ -123,25 +123,25 @@ func printFounderActions(c *Client) error {
 	}
 	verbs := []actionVerb{
 		{Name: "march", Category: "military", Available: true,
-			Purpose: fmt.Sprintf("Vandra: keryx unit march --unit %s --q <q> --r <r>", hostID)},
+			Purpose: fmt.Sprintf("Travel: keryx unit march --unit %s --q <q> --r <r>", hostID)},
 		{Name: "settle", Category: "province", Available: true,
-			Purpose: "Grunda huvudstaden där hostet står (oåterkalleligt): keryx founding settle"},
+			Purpose: "Found the metropolis where the host stands (irreversible): keryx founding settle"},
 		{Name: "message", Category: "diplomacy", Available: true,
-			Purpose: "Budbärare från hostet (gratis, FOW-gatead): keryx message --from-host --to <stad> --text \"...\""},
+			Purpose: "Messenger from the host (free, FOW-gated): keryx message --from-host --to <city> --text \"...\""},
 		{Name: "founding-status", Category: "province", Available: true,
-			Purpose: "Folket, eskortens förråd, position: keryx founding status"},
+			Purpose: "The people, escort stores, position: keryx founding status"},
 	}
 	if jsonMode {
 		printJSON(verbs)
 		return nil
 	}
-	fmt.Println("Founder-fas — ditt folk vandrar ännu; inga stadsverb förrän huvudstaden är grundad.")
+	fmt.Println("Founder phase — your people are still traveling; no city verbs until the metropolis is founded.")
 	fmt.Println(strings.Repeat("─", 60))
 	fmt.Println("\nAvailable now")
 	for _, v := range verbs {
 		fmt.Printf("  %-16s %s\n", v.Name, v.Purpose)
 	}
-	fmt.Println("\nLocked — allt stadsbundet (build, recruit, trade, rite …) låses upp av: keryx founding settle")
+	fmt.Println("\nLocked — everything city-bound (build, recruit, trade, rite …) unlocks with: keryx founding settle")
 	return nil
 }
 
