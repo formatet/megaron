@@ -13,6 +13,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
@@ -1061,7 +1062,27 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 
 	// Find buildable tiles (colony candidates) in map_tiles:
 	//   - terrain is eligible for settlement (not sea, impassable mountains, or semi_desert)
-	//   - at least one of their 6 axial neighbours carries a deposit
+	//   - at least one hex of their CATCHMENT carries a deposit
+	//
+	// "Catchment" here means hexgrid.CatchmentRadius, passed into the SQL rather
+	// than spelled out as an offset list, so the radius keeps exactly one source
+	// in the codebase. Until 2026-09-02 both queries below hardcoded the six
+	// axial neighbours — the pre-P1 radius-1 catchment. P1 (2026-08-07) raised
+	// it to 2 (19 hexes, 18 worked) and the DATA moved, but this rite kept
+	// asking the old question, so a colony site with ore two hexes out — fully
+	// workable once founded — was answered with "no ore deposits lie within
+	// reach to reveal". The oracle is the only discovery surface for deposits
+	// outside a settlement's own catchment, so the lie landed squarely on the
+	// chain gate's measured bottleneck (CLAUDE.md §Gate 1: bronze). The map's
+	// catchment highlight was the other P1 straggler, fixed 2026-09-01; these
+	// two queries were the last.
+	//
+	// Distance 0 is excluded on purpose: a settlement's own hex is part of the
+	// 19 but is NOT worked (CLAUDE.md §Design guardrails — "19 hexes, 18
+	// worked"), so ore directly under the town square does not make the site
+	// worth naming. The q/r BETWEEN bounds are redundant with the cube-distance
+	// test but keep the (world_id, q, r) primary key usable instead of forcing a
+	// scan of the whole world per candidate site.
 	//   - not already owned by this player (no province row with owner = playerID)
 	//   - within oracleRadius hex-distance from origin
 	//
@@ -1081,13 +1102,12 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		            BOOL_OR(COALESCE(nb.silver_deposit, false))  AS has_silver,
 		            (ABS(site.q - $2) + ABS((site.q - $2) + (site.r - $3)) + ABS(site.r - $3)) / 2 AS dist
 		     FROM map_tiles site
-		     JOIN LATERAL (VALUES
-		         (1,0),(-1,0),(0,1),(0,-1),(1,-1),(-1,1)
-		     ) AS d(dq, dr) ON true
 		     JOIN map_tiles nb
 		       ON nb.world_id = site.world_id
-		      AND nb.q = site.q + d.dq
-		      AND nb.r = site.r + d.dr
+		      AND nb.q BETWEEN site.q - $5 AND site.q + $5
+		      AND nb.r BETWEEN site.r - $5 AND site.r + $5
+		      AND (ABS(nb.q - site.q) + ABS((nb.q - site.q) + (nb.r - site.r)) + ABS(nb.r - site.r)) / 2
+		          BETWEEN 1 AND $5
 		      AND (nb.tin_deposit OR nb.copper_deposit OR COALESCE(nb.silver_deposit, false))
 		     WHERE site.world_id = $1
 		       AND site.terrain NOT IN
@@ -1112,7 +1132,7 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_copper AND NOT has_tin ORDER BY dist LIMIT 1)
 		 UNION ALL
 		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_silver AND NOT has_tin AND NOT has_copper ORDER BY dist LIMIT 1)`,
-		worldID, originQ, originR, oracleRadius,
+		worldID, originQ, originR, oracleRadius, hexgrid.CatchmentRadius,
 	)
 	if err != nil {
 		return nil, "", fmt.Errorf("oracle: query deposits: %w", err)
@@ -1158,29 +1178,33 @@ func (h *SettlementHandler) applyOracleRevealDeposits(
 		ore := oreKey(rs)
 		parts = append(parts, fmt.Sprintf("%s at (%d,%d)", ore, rs.Q, rs.R))
 
-		// The sites CTE aggregates BOOL_OR(nb.*_deposit) across all 6 neighbours to
-		// decide whether a colony site qualifies, so it loses WHICH neighbour actually
+		// The sites CTE aggregates BOOL_OR(nb.*_deposit) across the whole catchment
+		// to decide whether a colony site qualifies, so it loses WHICH hex actually
 		// carries the deposit (GROUP BY site.q, site.r). Without this lookup only the
 		// colonisable site itself gets written to player_scouted_tiles below — the
 		// deposit hex named in the reveal stays fog forever, no marker ever appears.
-		// Only the neighbour(s) bearing the SAME ore type reported for this site are
-		// fetched, never all deposit-bearing neighbours, so e.g. a tin reveal cannot
+		// Only the hex(es) bearing the SAME ore type reported for this site are
+		// fetched, never all deposit-bearing hexes, so e.g. a tin reveal cannot
 		// leak an unrelated silver hex sitting next door that the rite never named.
+		// The radius MUST match the CTE's above — a wider CTE with a narrower
+		// lookup would name a site and then reveal none of the ore that justified
+		// it, which is how this bug reads to a player.
 		oreTiles := []map[string]any{}
 		oreRows, oreErr := tx.Query(ctx,
 			`SELECT nb.q, nb.r
 			 FROM map_tiles nb
-			 JOIN LATERAL (VALUES
-			     (1,0),(-1,0),(0,1),(0,-1),(1,-1),(-1,1)
-			 ) AS d(dq, dr) ON true
 			 WHERE nb.world_id = $1
-			   AND nb.q = $2 + d.dq AND nb.r = $3 + d.dr
+			   AND nb.q BETWEEN $2::int - $5::int AND $2::int + $5::int
+			   AND nb.r BETWEEN $3::int - $5::int AND $3::int + $5::int
+			   AND (ABS(nb.q - $2::int) + ABS((nb.q - $2::int) + (nb.r - $3::int)) + ABS(nb.r - $3::int)) / 2
+			       BETWEEN 1 AND $5::int
 			   AND CASE $4::text
 			         WHEN 'tin' THEN nb.tin_deposit
 			         WHEN 'copper' THEN nb.copper_deposit
 			         ELSE COALESCE(nb.silver_deposit, false)
-			       END`,
-			worldID, rs.Q, rs.R, ore,
+			       END
+			 ORDER BY nb.q, nb.r`,
+			worldID, rs.Q, rs.R, ore, hexgrid.CatchmentRadius,
 		)
 		if oreErr != nil {
 			slog.Warn("oracle: ore-hex lookup failed", "q", rs.Q, "r", rs.R, "err", oreErr)
