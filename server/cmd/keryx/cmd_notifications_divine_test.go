@@ -57,10 +57,10 @@ func TestDivinePunishmentLine_NamesWhatWasTakenAndHowMuch(t *testing.T) {
 		amount float64
 		want   []string
 	}{
-		{"garrison_plague", 20, []string{"pest", "20"}},
-		{"chariot_loss", 18, []string{"stridsvagnar", "18"}},
+		{"garrison_plague", 20, []string{"plague", "20"}},
+		{"chariot_loss", 18, []string{"chariots", "18"}},
 		{"ship_loss", 1, []string{"storm", "1"}},
-		{"harvest_failure", 1200, []string{"spannmål"}},
+		{"harvest_failure", 1200, []string{"grain"}},
 	}
 	for _, tc := range cases {
 		out := capturePrint(t, func() {
@@ -121,7 +121,7 @@ func TestDivinePunishmentLine_MissingNameDegradesGracefully(t *testing.T) {
 	out := capturePrint(t, func() {
 		printDivinePunishmentLine(divineNotification(t, "ship_loss", 1))
 	})
-	if strings.Contains(out, " i  ") || strings.HasSuffix(strings.TrimSpace(out), "i") {
+	if strings.Contains(out, " in  ") || strings.HasSuffix(strings.TrimSpace(out), "in") {
 		t.Errorf("line %q reads as if a name were expected but missing", strings.TrimSpace(out))
 	}
 	if strings.TrimSpace(out) == "" {
@@ -137,9 +137,9 @@ func TestDivineBlessingLine_UnitFollowsType(t *testing.T) {
 		typ  string
 		want []string
 	}{
-		{"harvest_blessing", []string{"spannmål"}},
-		{"divine_recruits", []string{"man"}},
-		{"sea_blessing", []string{"skepp"}},
+		{"harvest_blessing", []string{"grain"}},
+		{"divine_recruits", []string{"men"}},
+		{"sea_blessing", []string{"ships"}},
 	}
 	for _, tc := range cases {
 		out := capturePrint(t, func() {
@@ -181,7 +181,7 @@ func TestFoodShortfallLine_NamesSettlementAndAmount(t *testing.T) {
 	}
 	// unmet is a ration, not population lost — must not read like the
 	// SubsistenceWarning mechanic (pop_loss).
-	if strings.Contains(out, "svalt") || strings.Contains(out, "dog") {
+	if strings.Contains(out, "starved") || strings.Contains(out, "died") {
 		t.Errorf("line %q reads as population loss, but unmet is a ration shortfall, not deaths", out)
 	}
 }

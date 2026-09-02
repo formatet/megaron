@@ -239,7 +239,7 @@ nothing that happened before the connection opened is missed.`,
 				conn, _, dialErr := websocket.DefaultDialer.Dial(target, header)
 				if dialErr != nil {
 					if !jsonMode {
-						fmt.Fprintf(os.Stderr, "  kunde inte ansluta (%v) — försöker igen om %s\n", dialErr, backoff)
+						fmt.Fprintf(os.Stderr, "  could not connect (%v) — retrying in %s\n", dialErr, backoff)
 					}
 					time.Sleep(backoff)
 					backoff = nextBackoff(backoff)
@@ -247,7 +247,7 @@ nothing that happened before the connection opened is missed.`,
 					continue
 				}
 				if reconnecting && !jsonMode {
-					fmt.Println("  strömmen återansluten")
+					fmt.Println("  stream reconnected")
 				}
 				backoff = time.Second
 
@@ -263,10 +263,10 @@ nothing that happened before the connection opened is missed.`,
 					return nil
 				}
 				if !jsonMode {
-					fmt.Println("  strömmen bröts — läser ikapp")
+					fmt.Println("  stream dropped — catching up")
 				}
 				if err := watchCatchup(c, cfg.WorldID, kinds); err != nil && !jsonMode {
-					fmt.Fprintf(os.Stderr, "  ikapp-läsning misslyckades: %v\n", err)
+					fmt.Fprintf(os.Stderr, "  catch-up read failed: %v\n", err)
 				}
 				reconnecting = true
 				time.Sleep(backoff)

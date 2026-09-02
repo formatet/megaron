@@ -21,7 +21,7 @@ func messageCmd() *cobra.Command {
 		Args: rejectPositionalArgs("to"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if fromHost && fromName != "" {
-				return fmt.Errorf("--from och --from-host kan inte kombineras — hostet ÄR avsändaren")
+				return fmt.Errorf("--from and --from-host cannot be combined — the host IS the sender")
 			}
 			c := newClient(cfg)
 
@@ -123,7 +123,7 @@ func tradeOfferCmd() *cobra.Command {
 			buySet := wantGood != "" && wantQty > 0 && offerSilver > 0
 			sellSet := offerGood != "" && offerQty > 0 && wantSilver > 0
 			if buySet == sellSet {
-				return fmt.Errorf("ange antingen en köpoffert (--want-good --want-qty --offer-silver) ELLER en säljoffert (--offer-good --offer-qty --want-silver), inte båda/ofullständigt")
+				return fmt.Errorf("specify either a buy offer (--want-good --want-qty --offer-silver) OR a sell offer (--offer-good --offer-qty --want-silver), not both/incomplete")
 			}
 
 			c := newClient(cfg)

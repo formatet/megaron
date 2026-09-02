@@ -54,13 +54,13 @@ func TestRenderCatchmentForecast_ThreeStates(t *testing.T) {
 		forbidWord string
 	}{
 		// −5/tick: starving outright, well below zero.
-		{name: "starving", cons: 20, net: -5, wantWord: "svälter"},
+		{name: "starving", cons: 20, net: -5, wantWord: "starves"},
 		// +0.4/tick with consumption 10 → marginal ceiling is 1.0, so 0.4 is
 		// "on the margin", one missed hex from starving — NOT self-sufficient.
-		{name: "marginal", cons: 10, net: 0.4, wantWord: "på marginalen"},
+		{name: "marginal", cons: 10, net: 0.4, wantWord: "marginal"},
 		// +900/tick with consumption 50 → marginal ceiling is 5.0, so 900 is
 		// unambiguously self-sufficient.
-		{name: "self-sufficient", cons: 50, net: 900, wantWord: "självförsörjande"},
+		{name: "self-sufficient", cons: 50, net: 900, wantWord: "self-sufficient"},
 	}
 
 	var outputs []string

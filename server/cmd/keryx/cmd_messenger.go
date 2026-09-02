@@ -269,7 +269,7 @@ func outboxCmd() *cobra.Command {
 					// except for the [delivered] tag, so a Wanax couldn't tell "on
 					// the way" from "there, waiting on them" at a glance.
 					if offerStatus == "pending" && status == "delivered" {
-						line += fmt.Sprintf("  väntar på svar från %s", dest)
+						line += fmt.Sprintf("  waiting on a reply from %s", dest)
 					}
 					// Escrow countdown (Fas 2b) — a pending offer's expires_at wasn't
 					// shown anywhere before, so there was no visible deadline for when

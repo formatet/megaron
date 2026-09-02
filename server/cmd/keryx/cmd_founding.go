@@ -46,22 +46,22 @@ func fetchFoundingStatus(c *Client) (*foundingStatusResp, error) {
 // clock). Mirrors the web Host panel's hostStoreLine (render/map.js).
 func foundingStoreLine(label string, s foundingStore, tickSeconds float64) string {
 	if s.TicksLeft == nil {
-		return fmt.Sprintf("%s: %.0f — räcker tills vidare", label, s.Amount)
+		return fmt.Sprintf("%s: %.0f — lasts indefinitely", label, s.Amount)
 	}
 	ticksLeft := float64(*s.TicksLeft)
 	realH := float64(*s.TicksLeft) * tickSeconds / 3600
 	real := fmt.Sprintf("≈ %.0f h", realH)
 	if realH >= 48 {
-		real = fmt.Sprintf("≈ %.0f dygn", realH/24)
+		real = fmt.Sprintf("≈ %.0f days", realH/24)
 	}
-	return fmt.Sprintf("%s: %.0f kvar — %.0f tick (%s verklig tid)", label, s.Amount, ticksLeft, real)
+	return fmt.Sprintf("%s: %.0f left — %.0f tick (%s real time)", label, s.Amount, ticksLeft, real)
 }
 
 // printFoundingStatus renders the wandering host's status block — shared by
 // `founding status` and the founder-fallback in `status`/`map` (a Wanax
 // without a settlement must still see and act, feedback_keryx_surface).
 func printFoundingStatus(fp *foundingStatusResp) error {
-	pos := "okänd"
+	pos := "unknown"
 	if fp.Q != nil && fp.R != nil {
 		pos = fmt.Sprintf("(%d,%d)", *fp.Q, *fp.R)
 	}
@@ -69,7 +69,7 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 	if fp.HostUnitID != nil {
 		hostID = *fp.HostUnitID
 	}
-	fmt.Println("Nomadic Host — ditt folk på vandring")
+	fmt.Println("Nomadic Host — your people on the move")
 	// Synradien är 2 sedan Timothy 2026-08-22 ("synradie för alla landenheter är
 	// två"), med hostets två gamla undantag kvar: vid vatten 4, på berg 2+2
 	// (province.LiveRadius, nomadic_host_vision_test.go). Raden sa "syn 1 hex"
@@ -79,18 +79,18 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 	// Grundningsprognosen visar bara KÄNDA hexar, så den skillnaden är hela
 	// skälet till att prognosens fyndighetsrad ("Övrigt: silver-deposit ✓") är
 	// ifylld i stället för tom.
-	fmt.Printf("  %d folk · kan inte strida · syn 2 hexar (4 vid vatten eller på berg) · position %s\n", fp.Population, pos)
-	fmt.Printf("  %s\n", foundingStoreLine("Grain (eskortens ranson)", fp.Grain, fp.TickSeconds))
-	fmt.Printf("  %s\n", foundingStoreLine("Silver (eskortens sold)", fp.Silver, fp.TickSeconds))
-	kohort := "kohorter"
+	fmt.Printf("  %d people · cannot fight · sight 2 hexes (4 by water or on mountains) · position %s\n", fp.Population, pos)
+	fmt.Printf("  %s\n", foundingStoreLine("Grain (escort's ration)", fp.Grain, fp.TickSeconds))
+	fmt.Printf("  %s\n", foundingStoreLine("Silver (escort's pay)", fp.Silver, fp.TickSeconds))
+	kohort := "cohorts"
 	if fp.SpearmenInField == 1 {
-		kohort = "kohort"
+		kohort = "cohort"
 	}
-	fmt.Printf("  %d Spearmen-%s i fält · budbärare fria att sända\n", fp.SpearmenInField, kohort)
-	fmt.Println("\nNästa steg:")
-	fmt.Printf("  keryx unit march --unit %s --q <q> --r <r>   # vandra\n", hostID)
-	fmt.Println("  keryx founding settle                       # grunda huvudstaden där hostet står")
-	fmt.Println("  keryx message --from-host --to <stad> --text \"...\"")
+	fmt.Printf("  %d Spearmen-%s in the field · messengers free to send\n", fp.SpearmenInField, kohort)
+	fmt.Println("\nNext steps:")
+	fmt.Printf("  keryx unit march --unit %s --q <q> --r <r>   # travel\n", hostID)
+	fmt.Println("  keryx founding settle                       # found the metropolis where the host stands")
+	fmt.Println("  keryx message --from-host --to <city> --text \"...\"")
 	return nil
 }
 
@@ -127,7 +127,7 @@ func foundingStatusCmd() *cobra.Command {
 				return err
 			}
 			if !fp.Active {
-				fmt.Println("Ingen aktiv founder-fas — huvudstaden är grundad (se: keryx status).")
+				fmt.Println("No active founder phase — the metropolis is already founded (see: keryx status).")
 				return nil
 			}
 			return printFoundingStatus(fp)
@@ -165,10 +165,10 @@ settling. To found somewhere else: march the host there first
 				return err
 			}
 			if !fp.Active {
-				return fmt.Errorf("du har ingen vandrande host — huvudstaden är redan grundad (se: keryx status)")
+				return fmt.Errorf("you have no wandering host — the metropolis is already founded (see: keryx status)")
 			}
 			if fp.Q == nil || fp.R == nil {
-				return fmt.Errorf("hostet har ingen position på kartan — kan inte grunda")
+				return fmt.Errorf("the host has no position on the map — cannot found")
 			}
 			q, r := *fp.Q, *fp.R
 
@@ -176,7 +176,7 @@ settling. To found somewhere else: march the host there first
 				// Machine caller: no interactive prompt possible, and the act is
 				// irreversible — demand the explicit flag instead of proceeding.
 				if !yes {
-					return fmt.Errorf("--yes krävs i --json-läge: grundningen är oåterkallelig")
+					return fmt.Errorf("--yes required in --json mode: the founding is irreversible")
 				}
 			} else {
 				// The forecast for the hex the host STANDS on — settle founds here,
@@ -188,20 +188,20 @@ settling. To found somewhere else: march the host there first
 				}
 				preview, perr := fetchColonizePreviewParams(c, cfg.WorldID, q, r, fp.Population, seed)
 				if perr != nil {
-					fmt.Printf("(kunde inte hämta grundningsprognos: %v)\n", perr)
+					fmt.Printf("(could not fetch founding forecast: %v)\n", perr)
 				} else {
-					renderCatchmentForecast(fmt.Sprintf("Grundning (%d,%d) — metropolis om %d folk", q, r, fp.Population), preview)
+					renderCatchmentForecast(fmt.Sprintf("Founding (%d,%d) — metropolis of %d people", q, r, fp.Population), preview)
 				}
 				if !yes {
 					if !stdinIsTerminal() {
-						return fmt.Errorf("icke-interaktiv körning: lägg till --yes för att bekräfta den oåterkalleliga grundningen")
+						return fmt.Errorf("non-interactive run: add --yes to confirm the irreversible founding")
 					}
-					ok, aerr := askYesNo("Grunda huvudstaden här? Hostet upplöses — för alltid.")
+					ok, aerr := askYesNo("Found the metropolis here? The host dissolves — forever.")
 					if aerr != nil {
 						return aerr
 					}
 					if !ok {
-						fmt.Println("Avbröt — hostet vandrar vidare.")
+						fmt.Println("Aborted — the host travels on.")
 						return nil
 					}
 				}
@@ -242,13 +242,13 @@ settling. To found somewhere else: march the host there first
 				SilverCarried float64 `json:"silver_carried"`
 			}
 			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("⚒ Metropolis grundad på (%d,%d)! Hostet är upplöst — folket har ett hem.\n",
+			fmt.Printf("⚒ Metropolis founded at (%d,%d)! The host is dissolved — the people have a home.\n",
 				resp.Tile.Q, resp.Tile.R)
-			fmt.Printf("  Buret in i staden: %.0f grain, %.0f silver\n", resp.GrainCarried, resp.SilverCarried)
+			fmt.Printf("  Carried into the city: %.0f grain, %.0f silver\n", resp.GrainCarried, resp.SilverCarried)
 			if resp.PoseidonGift != nil {
-				fmt.Println("  Poseidons gåva: en galär ligger i hamnen.")
+				fmt.Println("  Poseidon's gift: a galley lies in the harbor.")
 			}
-			fmt.Println("  Kör: keryx status")
+			fmt.Println("  Run: keryx status")
 			return nil
 		},
 	}
