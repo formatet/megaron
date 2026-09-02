@@ -278,7 +278,7 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, playerID).Scan(&wanax)
 	if wanax == "" {
-		wanax = "en okänd Wanax"
+		wanax = "an unknown Wanax"
 	}
 
 	var cityName, culture string
@@ -298,7 +298,7 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// epitaphLines reconstructs a fallen Wanax's reign as short Swedish prose lines,
+// epitaphLines reconstructs a fallen Wanax's reign as short English prose lines,
 // drawn from the fallen capital's own event stream (stream_id = settlementID). The
 // founding and closing lines are synthesized — the event log carries no explicit
 // "settlement founded" event — so the crawl always has a beginning and an end even
@@ -306,9 +306,9 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, cityName string) []string {
 	city := cityName
 	if city == "" {
-		city = "staden"
+		city = "the city"
 	}
-	lines := []string{city + " restes vid Thalassas kust."}
+	lines := []string{city + " rose on the shore of the Thalassa."}
 
 	if settlementID != nil {
 		rows, err := h.pool.Query(ctx,
@@ -333,11 +333,11 @@ func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, 
 		}
 	}
 
-	lines = append(lines, "Så slutade en Wanax' regeringstid.")
+	lines = append(lines, "So ended a Wanax's reign.")
 	return lines
 }
 
-// epitaphLine renders one reign-worthy event into a Swedish crawl line, or "" to
+// epitaphLine renders one reign-worthy event into an English crawl line, or "" to
 // skip it. Deliberately narrow — only the beats that read as a story (buildings
 // raised, armies mustered, battles, divine favour, the fall) earn a line.
 func epitaphLine(eventType string, payload []byte, city string) string {
@@ -352,28 +352,28 @@ func epitaphLine(eventType string, payload []byte, city string) string {
 	switch eventType {
 	case "BuildComplete":
 		if b := str("building_type"); b != "" {
-			return "Reste " + b + " i " + city + "."
+			return "Raised " + b + " in " + city + "."
 		}
-		return "Ett byggnadsverk restes i " + city + "."
+		return "A building was raised in " + city + "."
 	case "TrainComplete":
 		if u := str("unit_type"); u != "" {
-			return "Mönstrade " + u + " ur " + city + "."
+			return "Mustered " + u + " from " + city + "."
 		}
-		return "Mönstrade en här ur " + city + "."
+		return "Mustered a host from " + city + "."
 	case "CombatResolved", "UnitCombatResolved":
-		return "Krigets vindar drog över " + city + "."
+		return "The winds of war swept over " + city + "."
 	case "DivineBlessing":
-		return "Gudarna log mot " + city + "."
+		return "The gods smiled upon " + city + "."
 	case "DivinePunishment":
-		return "Gudarna vände sig från " + city + "."
+		return "The gods turned away from " + city + "."
 	case "CityCollapsed":
 		switch str("cause") {
 		case "starvation":
-			return "Hungern kom. " + city + " föll."
+			return "Hunger came. " + city + " fell."
 		case "overmobilisation":
-			return "Härarna tömde " + city + ". Staden föll."
+			return "The armies emptied " + city + ". The city fell."
 		default:
-			return city + " föll."
+			return city + " fell."
 		}
 	default:
 		return ""
