@@ -3,17 +3,16 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
@@ -997,291 +996,166 @@ func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx,
 	return map[string]any{"good": "grain", "multiplier": 1.25, "gained": gained}, msg, nil
 }
 
-// applyOracleRevealDeposits reveals the nearest uncolonised tile(s) within
-// oracleRadius hexes of the settlement whose 6-hex catchment contains a tin,
-// copper, or silver deposit. Tin is prioritised (rarest); copper next; silver last.
+// applyOracleRevealDeposits reveals SEVEN hexes of map — an ore hex somewhere in
+// the world plus its six neighbours — and lifts the fog from all of them.
 //
-// P1b (soak 2026-07-18): radius was 8, which on a sparse map (5 tin deposits
-// across a 230×230 mostly-sea world for 14 players) meant most casts found
-// nothing — the oracle is the ONLY discovery surface for deposits outside a
-// settlement's own catchment, so a narrow radius made tin permanently
-// undiscoverable for players whose nearest tin site fell outside it. Widened
-// 8 → 20. (The soak note that only the capital could cast was checked against
-// the code and found stale: Rite already gates on ownership only — see the
-// `owner_id = playerID` lock query above, not `is_capital` — so any owned
-// settlement with a temple can already cast; no change needed there.)
+// Canon (Timothy 2026-09-02), replacing the mechanic this function carried until
+// then: the oracle no longer searches for a colonisable SITE within reach of the
+// casting settlement. It picks an ore hex anywhere on the map and shows it to
+// you, whether or not settling there is remotely practical. Timothy: *"Den
+// kunskapen är värdefull, kan bytas även om man inte ser det som reellt möjligt
+// att kolonisera där."* Knowing where the world's copper lies is worth having
+// and worth trading, and the map is free text away from any other Wanax — the
+// value of the reveal is not bounded by your own reach.
 //
-// FIX (Fas 1b, 2026-06-22): the previous query searched the `provinces` table (only
-// already-settled hexes joined to map_tiles). Tin tiles are `mountain_limestone`
-// (impassable, never settled), and their colonisable hills-neighbours were always
-// unclaimed → zero results. The new query searches `map_tiles` directly for a
-// **buildable** candidate tile (terrain eligible as a colony site) whose 6 axial
-// neighbours include a deposit tile, skipping tiles the player already owns.
+// Why the old shape had to go, measured 2026-09-02 against the acceptance world
+// 198135bb: the rite searched within oracleRadius=20 hexes. All six player
+// cities sat on one landmass carrying tin and no copper; the nearest copper was
+// 28-41 hexes away across open water, because copper and tin never share a
+// landmass by design (world.TestGenerateMap_CopperTinSeaSeparated — "bronze must
+// require sea trade"). The rite was therefore STRUCTURALLY incapable of ever
+// mentioning copper to any of them, and answered six casts with "no ore deposits
+// lie within reach to reveal". The playtest recorded that as the agents failing
+// to explore. They had not failed; their only discovery tool could not see.
 //
-// Payload format returned in effectPayload (nested under "effect" in RiteCast event):
+// Knowledge does not move an army: the voyage, the colony, the mine and the
+// shipping home are all unchanged, and travel time remains the real gate. What
+// the radius protected was nothing; what it cost was the chain gate's bronze
+// step (CLAUDE.md §Gate 1).
+//
+// An already-known deposit is never handed back. A rite costs kharis, an
+// offering and a long cooldown, so returning something the player already has is
+// a paid no-op — the failure mode ritens_utfall closed for the harvest blessing
+// on 2026-09-01 and this function's own empty answer showed again. When every
+// ore hex is already known the rite says exactly that, rather than pretending.
+//
+// Payload (nested under "effect" in the RiteCast event):
 //
 //	{
-//	  "reveals": [
-//	    { "q": 47, "r": 12, "ore": "tin", "ore_tiles": [{"q": 48, "r": 11}] },
-//	    { "q": 45, "r": 14, "ore": "copper", "ore_tiles": [{"q": 45, "r": 13}] }   // optional second result
-//	  ]
+//	  "revealed_ore":   {"q": 1, "r": 67, "ore": "copper"},
+//	  "revealed_tiles": [{"q": 0, "r": 67}, {"q": 1, "r": 67}, ...]
 //	}
 //
-// "q"/"r" stay the colonisable site (unchanged shape — harness/agent.py read these).
-// "ore_tiles" is the new field: the site's neighbour(s) that actually carry the named
-// deposit (the CTE below aggregates BOOL_OR across all 6 neighbours and loses which one
-// it was, so this is looked up separately per reveal).
+// The old key "reveals" is deliberately NOT reused. Its "q"/"r" meant the
+// colonisable site; here they would mean the ore hex itself. Renaming rather than
+// reinterpreting keeps every historical RiteCast event readable as what it meant
+// when it was written (CLAUDE.md §Events: semantics are frozen forever). A doc
+// comment here used to promise "harness/agent.py" read reveals[0] — no such
+// consumer exists in the repo or the vault any more, and neither keryx nor the
+// web read the effect payload at all; both render the message string.
 //
-// Harness usage: read event payload["effect"]["reveals"][0]["q"/"r"] to get the
-// colonisable tile coordinates, then issue a settle action there. colonize validation
-// (unit.go:179) only requires a buildable unoccupied tile — FOW-visibility is NOT
-// required to colonize it. Both the site and its ore_tiles are written to
-// player_scouted_tiles so the deposit itself (not just the colony site) persists as
-// map/FOW memory and actually renders on /map (movement-motor Pass II).
-//
-// Idempotency: each reveal is INSERT ... ON CONFLICT DO NOTHING against
-// player_scouted_tiles, so re-running (e.g. a retried TX) is safe.
+// Idempotency: the reveal is INSERT ... ON CONFLICT DO NOTHING against
+// player_scouted_tiles, so a retried TX is safe. A retry re-rolls the ore hex,
+// which is correct — the roll's outcome is what the event records.
 func (h *SettlementHandler) applyOracleRevealDeposits(
 	ctx context.Context,
 	tx pgx.Tx,
 	settlementID, worldID, playerID uuid.UUID,
 	spec religion.PrayerSpec,
 ) (map[string]any, string, error) {
-	const oracleRadius = 20
+	// The reveal patch: centre + its six neighbours = 7 hexes. This is a SIGHT
+	// radius and has nothing to do with hexgrid.CatchmentRadius (the economic
+	// catchment, currently 2) — they are different concepts that happen to be
+	// small numbers, and unifying them later would silently change the rite.
+	// Do not replace this with CatchmentRadius.
+	const oracleRevealRadius = 1
 
-	// Find the settlement's province position (origin for radius search).
-	var originQ, originR int
-	if err := tx.QueryRow(ctx,
-		`SELECT p.map_q, p.map_r FROM provinces p
-		 JOIN settlements s ON s.province_id = p.id
-		 WHERE s.id = $1`,
-		settlementID,
-	).Scan(&originQ, &originR); err != nil {
-		return nil, "", fmt.Errorf("oracle: could not find settlement province: %w", err)
+	// Pick an ore hex the player does not already know, uniformly at random over
+	// the whole map. Uniform over HEXES, not over metals: a metal with more hexes
+	// is correspondingly likelier, which is the honest reading of "somewhere on
+	// the map" and keeps an abundant metal from being as rare a find as a scarce
+	// one. A hex carrying more than one deposit reports a single ore by the
+	// priority below; no world generated so far produces such a hex.
+	var oreQ, oreR int
+	var ore string
+	err := tx.QueryRow(ctx,
+		`SELECT mt.q, mt.r,
+		        CASE WHEN mt.copper_deposit THEN 'copper'
+		             WHEN mt.tin_deposit    THEN 'tin'
+		             ELSE 'silver' END
+		   FROM map_tiles mt
+		  WHERE mt.world_id = $1
+		    AND (mt.copper_deposit OR mt.tin_deposit OR COALESCE(mt.silver_deposit, false))
+		    AND NOT EXISTS (
+		        SELECT 1 FROM player_scouted_tiles pst
+		         WHERE pst.world_id = mt.world_id AND pst.player_id = $2
+		           AND pst.q = mt.q AND pst.r = mt.r
+		    )
+		  ORDER BY random()
+		  LIMIT 1`,
+		worldID, playerID,
+	).Scan(&oreQ, &oreR, &ore)
+	if errors.Is(err, pgx.ErrNoRows) {
+		msg := fmt.Sprintf("%s searches the world for you and finds nothing new — every vein of ore it can see is already marked on your map.", spec.God)
+		return map[string]any{"revealed_ore": nil, "revealed_tiles": []any{}}, msg, nil
+	}
+	if err != nil {
+		return nil, "", fmt.Errorf("oracle: pick ore hex: %w", err)
 	}
 
-	// Find buildable tiles (colony candidates) in map_tiles:
-	//   - terrain is eligible for settlement (not sea, impassable mountains, or semi_desert)
-	//   - at least one hex of their CATCHMENT carries a deposit
+	// Lift the fog from the ore hex and its six neighbours. INSERT ... SELECT
+	// against map_tiles so only hexes that actually exist are written, rather
+	// than phantom coordinates entering the player's map memory.
 	//
-	// "Catchment" here means hexgrid.CatchmentRadius, passed into the SQL rather
-	// than spelled out as an offset list, so the radius keeps exactly one source
-	// in the codebase. Until 2026-09-02 both queries below hardcoded the six
-	// axial neighbours — the pre-P1 radius-1 catchment. P1 (2026-08-07) raised
-	// it to 2 (19 hexes, 18 worked) and the DATA moved, but this rite kept
-	// asking the old question, so a colony site with ore two hexes out — fully
-	// workable once founded — was answered with "no ore deposits lie within
-	// reach to reveal". The oracle is the only discovery surface for deposits
-	// outside a settlement's own catchment, so the lie landed squarely on the
-	// chain gate's measured bottleneck (CLAUDE.md §Gate 1: bronze). The map's
-	// catchment highlight was the other P1 straggler, fixed 2026-09-01; these
-	// two queries were the last.
+	// In practice that means seven hexes almost always. The sea is NOT a hole in
+	// the map — coastal_sea and deep_sea are ordinary map_tiles rows (1893 of the
+	// acceptance world's 2500), so a coastal deposit reveals its water too, which
+	// is exactly what you want for a metal you have to sail to: the six
+	// neighbours show you the approach. Only the literal outermost ring of the
+	// grid yields fewer, because there is no row beyond the map's edge.
 	//
-	// Distance 0 is excluded on purpose: a settlement's own hex is part of the
-	// 19 but is NOT worked (CLAUDE.md §Design guardrails — "19 hexes, 18
-	// worked"), so ore directly under the town square does not make the site
-	// worth naming. The q/r BETWEEN bounds are redundant with the cube-distance
-	// test but keep the (world_id, q, r) primary key usable instead of forcing a
-	// scan of the whole world per candidate site.
-	//   - not already owned by this player (no province row with owner = playerID)
-	//   - within oracleRadius hex-distance from origin
-	//
-	// We generate the 6 neighbour offsets inline in SQL using LATERAL / VALUES so
-	// this stays a single round-trip with no application-side loops.
-	//
-	// Bronze needs BOTH copper AND tin, but the oracle is gated by a long cooldown —
-	// so a single cast must seed the whole chain, not roll one random metal (rolling
-	// silver used to lock a Wanax out of the bronze metals for the whole cooldown).
-	// Reveal the nearest TIN site and the nearest COPPER site (the two bronze metals),
-	// plus the nearest silver-only site as a bonus when present.
+	// The q/r BETWEEN bounds are redundant with the cube distance but keep the
+	// (world_id, q, r) primary key usable.
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+		 SELECT $1, $2, mt.q, mt.r
+		   FROM map_tiles mt
+		  WHERE mt.world_id = $1
+		    AND mt.q BETWEEN $3::int - $5::int AND $3::int + $5::int
+		    AND mt.r BETWEEN $4::int - $5::int AND $4::int + $5::int
+		    AND (ABS(mt.q - $3::int) + ABS((mt.q - $3::int) + (mt.r - $4::int)) + ABS(mt.r - $4::int)) / 2 <= $5::int
+		 ON CONFLICT DO NOTHING`,
+		worldID, playerID, oreQ, oreR, oracleRevealRadius,
+	); err != nil {
+		return nil, "", fmt.Errorf("oracle: reveal tiles: %w", err)
+	}
+
+	// Read back what the patch actually covers, so the payload reports the reveal
+	// that happened rather than the one that was intended (CLAUDE.md §Events:
+	// outcomes, not intentions). ON CONFLICT DO NOTHING above means a hex the
+	// player already knew is not re-inserted, but it IS part of the patch and
+	// belongs in the report.
 	rows, err := tx.Query(ctx,
-		`WITH sites AS (
-		     SELECT site.q AS q, site.r AS r,
-		            BOOL_OR(nb.tin_deposit)                     AS has_tin,
-		            BOOL_OR(nb.copper_deposit)                   AS has_copper,
-		            BOOL_OR(COALESCE(nb.silver_deposit, false))  AS has_silver,
-		            (ABS(site.q - $2) + ABS((site.q - $2) + (site.r - $3)) + ABS(site.r - $3)) / 2 AS dist
-		     FROM map_tiles site
-		     JOIN map_tiles nb
-		       ON nb.world_id = site.world_id
-		      AND nb.q BETWEEN site.q - $5 AND site.q + $5
-		      AND nb.r BETWEEN site.r - $5 AND site.r + $5
-		      AND (ABS(nb.q - site.q) + ABS((nb.q - site.q) + (nb.r - site.r)) + ABS(nb.r - site.r)) / 2
-		          BETWEEN 1 AND $5
-		      AND (nb.tin_deposit OR nb.copper_deposit OR COALESCE(nb.silver_deposit, false))
-		     WHERE site.world_id = $1
-		       AND site.terrain NOT IN
-		           ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')
-		       AND (ABS(site.q - $2) + ABS((site.q - $2) + (site.r - $3)) + ABS(site.r - $3)) / 2 <= $4
-		       -- the revealed site must be COLONISABLE: no active settlement on it
-		       -- (any owner). Revealing a hex someone else already holds is useless —
-		       -- you can't colonise it. The exclusion is owner-agnostic, so playerID is
-		       -- no longer a query parameter (passing an unreferenced $2 made Postgres
-		       -- fail with "could not determine data type of parameter $2").
-		       AND NOT EXISTS (
-		           SELECT 1 FROM settlements s2
-		           JOIN provinces p ON p.id = s2.province_id
-		           WHERE p.world_id = site.world_id
-		             AND p.map_q = site.q AND p.map_r = site.r
-		             AND s2.state = 'active'
-		       )
-		     GROUP BY site.q, site.r
-		 )
-		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_tin ORDER BY dist LIMIT 1)
-		 UNION ALL
-		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_copper AND NOT has_tin ORDER BY dist LIMIT 1)
-		 UNION ALL
-		 (SELECT q, r, has_tin, has_copper, has_silver FROM sites WHERE has_silver AND NOT has_tin AND NOT has_copper ORDER BY dist LIMIT 1)`,
-		worldID, originQ, originR, oracleRadius, hexgrid.CatchmentRadius,
+		`SELECT mt.q, mt.r
+		   FROM map_tiles mt
+		  WHERE mt.world_id = $1
+		    AND mt.q BETWEEN $2::int - $4::int AND $2::int + $4::int
+		    AND mt.r BETWEEN $3::int - $4::int AND $3::int + $4::int
+		    AND (ABS(mt.q - $2::int) + ABS((mt.q - $2::int) + (mt.r - $3::int)) + ABS(mt.r - $3::int)) / 2 <= $4::int
+		  ORDER BY mt.q, mt.r`,
+		worldID, oreQ, oreR, oracleRevealRadius,
 	)
 	if err != nil {
-		return nil, "", fmt.Errorf("oracle: query deposits: %w", err)
+		return nil, "", fmt.Errorf("oracle: read revealed tiles: %w", err)
 	}
-	defer rows.Close()
-
-	type revealedSite struct {
-		Q, R   int
-		Tin    bool
-		Copper bool
-		Silver bool
-	}
-	var revealed []revealedSite
+	revealedTiles := []map[string]any{}
 	for rows.Next() {
-		var rs revealedSite
-		if err := rows.Scan(&rs.Q, &rs.R, &rs.Tin, &rs.Copper, &rs.Silver); err == nil {
-			revealed = append(revealed, rs)
+		var q, r int
+		if scanErr := rows.Scan(&q, &r); scanErr == nil {
+			revealedTiles = append(revealedTiles, map[string]any{"q": q, "r": r})
 		}
 	}
 	rows.Close()
-
-	if len(revealed) == 0 {
-		msg := fmt.Sprintf("%s gazes into the distance — no ore deposits lie within reach to reveal.", spec.God)
-		return map[string]any{"reveals": []any{}}, msg, nil
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return nil, "", fmt.Errorf("oracle: read revealed tiles: %w", rowsErr)
 	}
 
-	// Build human-readable message and structured payload.
-	oreKey := func(rs revealedSite) string {
-		switch {
-		case rs.Tin:
-			return "tin"
-		case rs.Copper:
-			return "copper"
-		default:
-			return "silver"
-		}
-	}
-
-	var parts []string
-	revealsPayload := make([]map[string]any, 0, len(revealed))
-	foundTin, foundCopper, foundSilver := false, false, false
-	for _, rs := range revealed {
-		ore := oreKey(rs)
-		parts = append(parts, fmt.Sprintf("%s at (%d,%d)", ore, rs.Q, rs.R))
-
-		// The sites CTE aggregates BOOL_OR(nb.*_deposit) across the whole catchment
-		// to decide whether a colony site qualifies, so it loses WHICH hex actually
-		// carries the deposit (GROUP BY site.q, site.r). Without this lookup only the
-		// colonisable site itself gets written to player_scouted_tiles below — the
-		// deposit hex named in the reveal stays fog forever, no marker ever appears.
-		// Only the hex(es) bearing the SAME ore type reported for this site are
-		// fetched, never all deposit-bearing hexes, so e.g. a tin reveal cannot
-		// leak an unrelated silver hex sitting next door that the rite never named.
-		// The radius MUST match the CTE's above — a wider CTE with a narrower
-		// lookup would name a site and then reveal none of the ore that justified
-		// it, which is how this bug reads to a player.
-		oreTiles := []map[string]any{}
-		oreRows, oreErr := tx.Query(ctx,
-			`SELECT nb.q, nb.r
-			 FROM map_tiles nb
-			 WHERE nb.world_id = $1
-			   AND nb.q BETWEEN $2::int - $5::int AND $2::int + $5::int
-			   AND nb.r BETWEEN $3::int - $5::int AND $3::int + $5::int
-			   AND (ABS(nb.q - $2::int) + ABS((nb.q - $2::int) + (nb.r - $3::int)) + ABS(nb.r - $3::int)) / 2
-			       BETWEEN 1 AND $5::int
-			   AND CASE $4::text
-			         WHEN 'tin' THEN nb.tin_deposit
-			         WHEN 'copper' THEN nb.copper_deposit
-			         ELSE COALESCE(nb.silver_deposit, false)
-			       END
-			 ORDER BY nb.q, nb.r`,
-			worldID, rs.Q, rs.R, ore, hexgrid.CatchmentRadius,
-		)
-		if oreErr != nil {
-			slog.Warn("oracle: ore-hex lookup failed", "q", rs.Q, "r", rs.R, "err", oreErr)
-		} else {
-			for oreRows.Next() {
-				var oq, orr int
-				if scanErr := oreRows.Scan(&oq, &orr); scanErr == nil {
-					oreTiles = append(oreTiles, map[string]any{"q": oq, "r": orr})
-				}
-			}
-			oreRows.Close()
-		}
-
-		revealsPayload = append(revealsPayload, map[string]any{
-			"q":         rs.Q,
-			"r":         rs.R,
-			"ore":       ore,
-			"ore_tiles": oreTiles,
-		})
-		// Persist the reveal as scouted-tile memory (R3): the coordinate stays on the
-		// player's map/FOW after this rite even though colonize itself is not FOW-gated.
-		if _, insErr := tx.Exec(ctx,
-			`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
-			 VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
-			worldID, playerID, rs.Q, rs.R,
-		); insErr != nil {
-			slog.Warn("oracle: scouted-tile insert failed", "q", rs.Q, "r", rs.R, "err", insErr)
-		}
-		// Also persist the ore hex(es) themselves. Without this the neighbour tile
-		// bearing the deposit the rite just named never enters player_scouted_tiles,
-		// so it stays fog in /map's tier switch and the marker never renders even
-		// though the coordinate above is now "remembered" terrain.
-		for _, ot := range oreTiles {
-			oq, orr := ot["q"].(int), ot["r"].(int)
-			if _, insErr := tx.Exec(ctx,
-				`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
-				 VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING`,
-				worldID, playerID, oq, orr,
-			); insErr != nil {
-				slog.Warn("oracle: ore-hex scouted-tile insert failed", "q", oq, "r", orr, "err", insErr)
-			}
-		}
-		switch ore {
-		case "tin":
-			foundTin = true
-		case "copper":
-			foundCopper = true
-		case "silver":
-			foundSilver = true
-		}
-	}
-
-	// Name absent metals explicitly so the player doesn't wait on cooldown hoping for more.
-	var absent []string
-	if !foundTin {
-		absent = append(absent, "no tin")
-	}
-	if !foundCopper {
-		absent = append(absent, "no copper")
-	}
-	if !foundSilver {
-		absent = append(absent, "no silver")
-	}
-	absentNote := ""
-	if len(absent) > 0 {
-		absentNote = " (" + strings.Join(absent, ", ") + " within reach)"
-	}
-
-	var msg string
-	if len(parts) == 1 {
-		msg = fmt.Sprintf("%s reveals a site near hidden ore — %s%s.", spec.God, parts[0], absentNote)
-	} else {
-		msg = fmt.Sprintf("%s reveals sites near hidden ore — %s%s.", spec.God, strings.Join(parts, "; "), absentNote)
-	}
+	msg := fmt.Sprintf("%s draws back the veil over a distant land — %s at (%d,%d), and %d hexes of map around it.",
+		spec.God, ore, oreQ, oreR, len(revealedTiles))
 
 	return map[string]any{
-		"reveals": revealsPayload,
+		"revealed_ore":   map[string]any{"q": oreQ, "r": oreR, "ore": ore},
+		"revealed_tiles": revealedTiles,
 	}, msg, nil
 }
 
