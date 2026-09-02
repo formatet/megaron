@@ -3,9 +3,10 @@ package combat
 // P2 fix (2026-07-18 soak, "Dole mot Eastern Outpost"): a march arriving on a
 // hex with no settlement row used to always garrison peacefully, even when a
 // hostile unit already sat there (status='positioned' — the only way a unit
-// occupies a settlement-less hex; there is no "outpost province" establishment
-// path in the current codebase despite the provinces.owner_id/outpost_feeds
-// columns existing — see migration 030's comment. The soak report's "Eastern
+// occupies a settlement-less hex; there was no "outpost province" establishment
+// path in the codebase despite provinces.owner_id/outpost_feeds existing — see
+// migration 030. Those columns were dropped outright in migration 138
+// (2026-09-02) since nothing ever wrote them. The soak report's "Eastern
 // Outpost" was in fact this: an enemy unit parked on open ground). This file
 // adds the missing combat resolution for that case, mirroring resolveCombat's
 // strength/fortune/loyalty math (in unit_arrival.go) but without a wall bonus

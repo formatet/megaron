@@ -10,14 +10,13 @@ package combat
 //   3. Disband existing garrison units (they join the warband as stragglers; simplest
 //      approach that leaves no orphan rows). Men were already drawn from pop at recruit
 //      time so no pop is returned — they are "part of the collapse".
-//   4. Tear down outpost_flows for the settlement's province (settlement_id match).
-//   5. Remove kingdom membership for the owner if this was their only city, or
+//   4. Remove kingdom membership for the owner if this was their only city, or
 //      remove them from kingdom_members if they remain in one.
-//   6. Dispossess: owner_id = NULL, control_type = 'occupied', kingdom_id = NULL,
+//   5. Dispossess: owner_id = NULL, control_type = 'occupied', kingdom_id = NULL,
 //      state = 'collapsed' on the settlement row.
-//   7. Succession: promote the highest-loyalty survivor to capital, or — if this
+//   6. Succession: promote the highest-loyalty survivor to capital, or — if this
 //      was the player's last city — mark them dispossessed for the epitaph.
-//   8. Emit CityCollapsed event.
+//   7. Emit CityCollapsed event.
 //
 // Garrison-unit decision: existing garrison units are disbanded (status='disbanded')
 // so no orphan rows remain. Their men are "subsumed into" the new warband narratively;
@@ -87,7 +86,7 @@ func (h *CollapseSettlementHandler) Handle(ctx context.Context, e events.Schedul
 
 // collapseSettlement performs the full teardown of a city reduced to ≤ 100 pop.
 // All DB writes use ctx and tx (G2). Succession/game-over is handled inline in
-// step 7 via handleOwnerCityLoss (succession.go).
+// step 6 via handleOwnerCityLoss (succession.go).
 //
 // Idempotent: returns nil immediately if state == 'collapsed'.
 func collapseSettlement(
@@ -196,70 +195,12 @@ func collapseSettlement(
 		}
 	}
 
-	// ── 4. Tear down outpost_flows for this settlement ─────────────────────────
-	// outpost_flows.settlement_id points to the feeding settlement.
-	// We need to subtract the rates from settlement_goods before deleting.
-	flowRows, err := tx.Query(ctx,
-		`SELECT province_id, good_key, rate FROM outpost_flows WHERE settlement_id = $1`,
-		settlementID,
-	)
-	if err != nil {
-		return fmt.Errorf("load outpost flows for collapse: %w", err)
-	}
-	type outpostFlow struct {
-		provinceID uuid.UUID
-		goodKey    string
-		rate       float64
-	}
-	var outpostFlows []outpostFlow
-	for flowRows.Next() {
-		var f outpostFlow
-		if scanErr := flowRows.Scan(&f.provinceID, &f.goodKey, &f.rate); scanErr == nil {
-			outpostFlows = append(outpostFlows, f)
-		}
-	}
-	flowRows.Close()
-
-	for _, f := range outpostFlows {
-		// Settle-then-subtract (same pattern as teardownOutpost in arrival.go).
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET
-			     amount  = LEAST(cap, settled(amount, rate, calc_tick)),
-			     rate    = GREATEST(0, rate - $3),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = $2`,
-			settlementID, f.goodKey, f.rate,
-		); err != nil {
-			slog.Warn("collapse: subtract outpost flow from settlement goods",
-				"settlement", settlementID, "good", f.goodKey, "err", err)
-		}
-		// Free the province.
-		if _, err := tx.Exec(ctx,
-			`UPDATE provinces SET
-			     territory_state = 'free',
-			     owner_id        = NULL,
-			     outpost_feeds   = NULL,
-			     garrison_strength = 0
-			 WHERE id = $1`,
-			f.provinceID,
-		); err != nil {
-			slog.Warn("collapse: free outpost province",
-				"province", f.provinceID, "err", err)
-		}
-	}
-	if _, err := tx.Exec(ctx,
-		`DELETE FROM outpost_flows WHERE settlement_id = $1`,
-		settlementID,
-	); err != nil {
-		return fmt.Errorf("delete outpost flows for collapse: %w", err)
-	}
-
-	// ── 5. Kingdom membership ──────────────────────────────────────────────────
+	// ── 4. Kingdom membership ──────────────────────────────────────────────────
 	// Remove the owner from kingdom_members ONLY if this was their last city.
-	// Losing one city while others survive triggers succession (step 7 promotes a
+	// Losing one city while others survive triggers succession (step 6 promotes a
 	// new capital) — the player lives on and must KEEP their kingdom seat. The
 	// NOT EXISTS excludes the collapsing settlement (still owned here; owner_id is
-	// nulled in step 6) so a survivor's membership is untouched. Latent until
+	// nulled in step 5) so a survivor's membership is untouched. Latent until
 	// kingdoms are re-enabled, but the unconditional delete was simply wrong.
 	if effectiveOwnerID != uuid.Nil {
 		if _, err := tx.Exec(ctx,
@@ -275,7 +216,7 @@ func collapseSettlement(
 		}
 	}
 
-	// ── 6. Dispossess settlement ───────────────────────────────────────────────
+	// ── 5. Dispossess settlement ───────────────────────────────────────────────
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlements SET
 		   owner_id     = NULL,
@@ -318,8 +259,8 @@ func collapseSettlement(
 		slog.Warn("collapse: broadcast gossip", "settlement", settlementID, "err", err)
 	}
 
-	// ── 7. Succession / game-over ──────────────────────────────────────────────
-	// owner_id was cleared in step 6, so the fallen city no longer counts as the
+	// ── 6. Succession / game-over ──────────────────────────────────────────────
+	// owner_id was cleared in step 5, so the fallen city no longer counts as the
 	// player's. handleOwnerCityLoss decides between metropolis succession (promote
 	// the highest-loyalty survivor) and game-over (last city → dispossessed, with
 	// last_settlement_id anchored for the epitaph crawl).
@@ -332,7 +273,7 @@ func collapseSettlement(
 		isLastCity = gameOver
 	}
 
-	// ── 8. Emit CityCollapsed event ────────────────────────────────────────────
+	// ── 7. Emit CityCollapsed event ────────────────────────────────────────────
 	_, _ = eventStore.Append(ctx, settlementID, events.StreamProvince, unit.EventCityCollapsed,
 		unit.CityCollapsedPayload{
 			SettlementID:   settlementID,
@@ -351,7 +292,7 @@ func collapseSettlement(
 	// no one at all when this was their last city — and the CityCollapsed event,
 	// which is audit-only (chronicle/province-stream, never surfaced to a
 	// client). A Wanax whose garrison was just disbanded into the warband (step
-	// 3) and whose city vanished (step 6) had no notification connecting either
+	// 3) and whose city vanished (step 5) had no notification connecting either
 	// to this. level 1 (top priority): losing a settlement outranks losing a
 	// single unit (upkeep.go's UnitAttrition/UnitDeserted use level 2/3).
 	if hub != nil && effectiveOwnerID != uuid.Nil {

@@ -1,13 +1,15 @@
 package messenger
 
 // RecallArrival: when a recall-order messenger reaches the unit, this handler
-// fires and starts the actual return march / outpost teardown.
+// fires and starts the actual return march.
 //
-// Two sub-types share the same event type, distinguished by the Kind field:
-//   - "march"   — turn an in-flight army around and march it home
-//   - "outpost" — tear down an outpost and march the garrison home
+// The event payload carries a Kind field for future sub-types; today only
+// "march" — turn an in-flight army around and march it home — exists (an
+// "outpost" sub-type existed here until migration 138 dropped the outpost
+// data model, 2026-09-02: no code path ever established an outpost, so
+// handleOutpost never ran).
 //
-// Both are idempotent via an atomic conditional claim (CLAUDE.md "Event handlers"):
+// Idempotent via an atomic conditional claim (CLAUDE.md "Event handlers"):
 // the return work only happens if the unit is still recallable when the messenger arrives.
 
 import (
@@ -70,26 +72,6 @@ type RecallMarchPayload struct {
 	TargetID uuid.UUID `json:"target_id"` // province at the interception hex — where the return march departs from
 }
 
-// RecallOutpostPayload is the RecallArrival payload for an outpost recall.
-type RecallOutpostPayload struct {
-	Kind           string    `json:"kind"` // "outpost"
-	WorldID        uuid.UUID `json:"world_id"`
-	MessengerID    uuid.UUID `json:"messenger_id"`
-	ProvinceID     uuid.UUID `json:"province_id"` // the outpost province
-	HomeID         uuid.UUID `json:"home_id"`     // province the garrison returns to
-	Spearman       int       `json:"spearman"`
-	WarChariot     int       `json:"war_chariot"`
-	Ship           int       `json:"ship"` // galley
-	EliteInfantry  int       `json:"elite_infantry"`
-	WarGalley      int       `json:"war_galley"`
-	Merchantman    int       `json:"merchantman"`
-	OutpostTerrain string    `json:"outpost_terrain"`
-	OutpostQ       int       `json:"outpost_q"`
-	OutpostR       int       `json:"outpost_r"`
-	HomeQ          int       `json:"home_q"`
-	HomeR          int       `json:"home_r"`
-}
-
 // RecallArrivalHandler processes RecallArrival scheduled events.
 // It is registered with events.Worker and must be idempotent.
 type RecallArrivalHandler struct {
@@ -116,8 +98,6 @@ func (h *RecallArrivalHandler) Handle(ctx context.Context, e events.ScheduledEve
 	switch peek.Kind {
 	case "march":
 		return h.handleMarch(ctx, e)
-	case "outpost":
-		return h.handleOutpost(ctx, e)
 	default:
 		return fmt.Errorf("unknown recall kind: %q", peek.Kind)
 	}
@@ -232,122 +212,6 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 	}
 	slog.Info("recall messenger reached army, return march started",
 		"march_id", p.MarchID, "return_march_id", returnMarchID, "returns_at", returnsAt, "dist", dist)
-	return nil
-}
-
-// handleOutpost tears down the outpost and sends the garrison home once the recall messenger arrives.
-// Idempotent: the province is freed with an atomic conditional UPDATE (owner_id IS NOT NULL); a
-// duplicate fire (or an outpost already captured/freed) matches 0 rows and does nothing.
-func (h *RecallArrivalHandler) handleOutpost(ctx context.Context, e events.ScheduledEvent) error {
-	var p RecallOutpostPayload
-	if err := json.Unmarshal(e.Payload, &p); err != nil {
-		return fmt.Errorf("unmarshal recall outpost payload: %w", err)
-	}
-
-	tx, err := h.pool.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("begin tx: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	if p.MessengerID != uuid.Nil {
-		_, _ = tx.Exec(ctx, `UPDATE messengers SET status='arrived' WHERE id=$1`, p.MessengerID)
-	}
-
-	// Atomic claim + free the province. If it is no longer an owned outpost, the recall is a no-op.
-	ct, err := tx.Exec(ctx,
-		`UPDATE provinces SET territory_state='free', owner_id=NULL, outpost_feeds=NULL, garrison_strength=0
-		 WHERE id=$1 AND owner_id IS NOT NULL`,
-		p.ProvinceID,
-	)
-	if err != nil {
-		return fmt.Errorf("claim/free outpost province: %w", err)
-	}
-	if ct.RowsAffected() == 0 {
-		slog.Info("recall messenger arrived but outpost already gone — recall missed", "province", p.ProvinceID)
-		return tx.Commit(ctx)
-	}
-
-	// Settle-then-subtract the ledgered production flows this outpost fed home.
-	rows, err := tx.Query(ctx,
-		`SELECT settlement_id, good_key, rate FROM outpost_flows WHERE province_id = $1`, p.ProvinceID,
-	)
-	if err != nil {
-		return fmt.Errorf("load outpost flows: %w", err)
-	}
-	type flow struct {
-		settlementID uuid.UUID
-		key          string
-		rate         float64
-	}
-	var flows []flow
-	for rows.Next() {
-		var f flow
-		if err := rows.Scan(&f.settlementID, &f.key, &f.rate); err == nil {
-			flows = append(flows, f)
-		}
-	}
-	rows.Close()
-
-	for _, f := range flows {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET
-			     amount  = LEAST(cap, settled(amount, rate, calc_tick)),
-			     rate    = GREATEST(0, rate - $3),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = $2`,
-			f.settlementID, f.key, f.rate,
-		); err != nil {
-			return fmt.Errorf("subtract outpost flow: %w", err)
-		}
-	}
-	if _, err := tx.Exec(ctx, `DELETE FROM outpost_flows WHERE province_id = $1`, p.ProvinceID); err != nil {
-		return fmt.Errorf("delete outpost flows: %w", err)
-	}
-
-	// March the garrison home (if any).
-	var returnMarchID uuid.UUID
-	var returnsAt time.Time
-	if p.Spearman+p.WarChariot+p.Ship+p.EliteInfantry+p.WarGalley+p.Merchantman > 0 {
-		dist := province.HexDistance(
-			province.MapPosition{Q: p.OutpostQ, R: p.OutpostR},
-			province.MapPosition{Q: p.HomeQ, R: p.HomeR},
-		)
-		now := h.clk.Now()
-		returnsAt = now.Add(returnDuration(dist, p.OutpostTerrain))
-
-		var currentTick int
-		_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-		dueTick := currentTick + returnTicks(dist, p.OutpostTerrain)
-
-		if err := tx.QueryRow(ctx,
-			`INSERT INTO marching_armies
-			 (world_id, origin_id, target_id, infantry, chariot, ship, elite_infantry,
-			  war_galley, merchantman, intent, departs_at, arrives_at, depart_tick, arrive_tick)
-			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'return',$10,$11,$12,$13)
-			 RETURNING id`,
-			p.WorldID, p.ProvinceID, p.HomeID,
-			p.Spearman, p.WarChariot, p.Ship, p.EliteInfantry,
-			p.WarGalley, p.Merchantman,
-			now, returnsAt, currentTick, dueTick,
-		).Scan(&returnMarchID); err != nil {
-			return fmt.Errorf("create garrison return march: %w", err)
-		}
-		if err := h.scheduler.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledArmyArrival,
-			armyArrivalPayload{MarchingArmyID: returnMarchID}, dueTick); err != nil {
-			return fmt.Errorf("schedule garrison arrival: %w", err)
-		}
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit: %w", err)
-	}
-	if returnMarchID != uuid.Nil {
-		slog.Info("recall messenger reached outpost, garrison return march started",
-			"province", p.ProvinceID, "return_march_id", returnMarchID, "returns_at", returnsAt)
-	} else {
-		slog.Info("recall messenger reached outpost, province freed (no garrison to return)", "province", p.ProvinceID)
-	}
 	return nil
 }
 
