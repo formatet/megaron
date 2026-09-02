@@ -142,7 +142,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR)
 
   containerEl.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
-      <span>Gubbar: <b>${opts.total_gubbar - opts.pool_size}/${opts.total_gubbar}</b> placed</span>
+      <span>Citizens: <b>${opts.total_gubbar - opts.pool_size}/${opts.total_gubbar}</b> placed</span>
       <span style="color:var(--text-dim)">${opts.pool_size} idle</span>
     </div>
     <svg class="gubbe-svg" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" preserveAspectRatio="xMidYMid meet">${cells}</svg>

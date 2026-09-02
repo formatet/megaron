@@ -248,8 +248,8 @@ export async function loadCityDrawer() {
       let foodNote = '';
       if (pd.food_gubbar_required != null) {
         foodNote = pd.food_self_sufficient === false
-          ? ` <span class="stat-warn">(⚠ catchmentet mättar inte befolkningen ens med alla ${pd.food_gubbar_required} gubbar)</span>`
-          : ` <span style="color:var(--text-dim);font-size:.7rem">(${pd.food_gubbar_required} gubbar krävs för föda · ${pd.food_gubbar_placed} placerade)</span>`;
+          ? ` <span class="stat-warn">(⚠ catchmentet mättar inte befolkningen ens med alla ${pd.food_gubbar_required} citizens)</span>`
+          : ` <span style="color:var(--text-dim);font-size:.7rem">(${pd.food_gubbar_required} citizens krävs för föda · ${pd.food_gubbar_placed} placerade)</span>`;
       }
       grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodTick.toFixed(1)} − cons ${consTick.toFixed(1)} = <b style="color:${netTick >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)}/tick</b>${foodNote}</span></div>`;
     }

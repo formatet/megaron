@@ -141,7 +141,7 @@ func TestBuildComplete_HintPointsToPlacement_NotDeadLabor(t *testing.T) {
 	}
 
 	hint, _ := body["hint"].(string)
-	const want = "mine is built but produces nothing until staffed — place a gubbe to work stone (`keryx place`/`staff`, or the city's placement grid) to start production."
+	const want = "mine is built but produces nothing until staffed — place a citizen to work stone (`keryx place`/`staff`, or the city's placement grid) to start production."
 	if hint != want {
 		t.Errorf("hint mismatch:\n got:  %q\n want: %q", hint, want)
 	}

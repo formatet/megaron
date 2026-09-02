@@ -19,7 +19,7 @@ func slaughterCmd() *cobra.Command {
 		Short: "Slaughter one livestock for +10 population right now",
 		Long: `Trades one animal from your herd for ten citizens, immediately. Requires at
 least one livestock in stock — refused cleanly if the herd is empty. If the
-ten new citizens cross a new full hundred, the newly-born gubbe is
+ten new citizens cross a new full hundred, the newly-born citizen is
 auto-placed on the best available food hex, same as ordinary population
 growth.`,
 		Example: `  keryx slaughter
@@ -53,7 +53,7 @@ growth.`,
 			}
 			fmt.Printf("Slaughtered one animal. Population is now %d.\n", resp.Population)
 			if resp.GubbarPlaced > 0 {
-				fmt.Printf("A new gubbe was born and auto-placed on the best food hex.\n")
+				fmt.Printf("A new citizen was born and auto-placed on the best food hex.\n")
 			}
 			return nil
 		},

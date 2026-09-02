@@ -370,7 +370,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if placed.Total >= totalGubbar {
-		writeError(w, http.StatusConflict, "no gubbar left in the pool — every gubbe is already placed")
+		writeError(w, http.StatusConflict, "no citizens left in the pool — every citizen is already placed")
 		return
 	}
 	usedOrdinals := make(map[int]bool, placed.Total)
@@ -394,7 +394,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if gubbeOrdinal == 0 {
-		writeError(w, http.StatusConflict, "no gubbar left in the pool — every gubbe is already placed")
+		writeError(w, http.StatusConflict, "no citizens left in the pool — every citizen is already placed")
 		return
 	}
 
@@ -469,7 +469,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			 VALUES ($1, $2, 'hex', $3, $4, $5)`,
 			settlementID, gubbeOrdinal, hex.Q, hex.R, req.GoodKey,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not place gubbe")
+			writeError(w, http.StatusInternalServerError, "could not place citizen")
 			return
 		}
 
@@ -505,7 +505,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			 VALUES ($1, $2, 'building', $3, $4)`,
 			settlementID, gubbeOrdinal, req.BuildingType, req.GoodKey,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not place gubbe")
+			writeError(w, http.StatusInternalServerError, "could not place citizen")
 			return
 		}
 
@@ -548,7 +548,7 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 	}
 	ordinal, err := parsePositiveInt(chi.URLParam(r, "ordinal"))
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid gubbe ordinal")
+		writeError(w, http.StatusBadRequest, "invalid citizen ordinal")
 		return
 	}
 
@@ -570,11 +570,11 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 		settlementID, ordinal,
 	)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not unplace gubbe")
+		writeError(w, http.StatusInternalServerError, "could not unplace citizen")
 		return
 	}
 	if tag.RowsAffected() == 0 {
-		writeError(w, http.StatusNotFound, "that gubbe isn't placed")
+		writeError(w, http.StatusNotFound, "that citizen isn't placed")
 		return
 	}
 
@@ -691,7 +691,7 @@ func (h *ProvinceHandler) SlaughterLivestock(w http.ResponseWriter, r *http.Requ
 	for ordinal := oldGubbar + 1; ordinal <= newGubbar; ordinal++ {
 		placed, perr := economy.PlaceNextGubbeOnBestFoodHex(r.Context(), tx, settlementID, ordinal)
 		if perr != nil {
-			writeError(w, http.StatusInternalServerError, "could not place new gubbe")
+			writeError(w, http.StatusInternalServerError, "could not place new citizen")
 			return
 		}
 		if placed {

@@ -20,7 +20,7 @@ func allocateCmd() *cobra.Command {
 		Short: "Set temple devotion (cult %, defaults to capital; --province for a colony)",
 		Long: `Set the share (%) of your settlement's population devoted to the temple (cult).
 
-Production is set by placing gubbar on hexes/buildings — see 'keryx place',
+Production is set by placing citizens on hexes/buildings — see 'keryx place',
 'keryx staff', 'keryx city'. This command is only for cult (temple devotion),
 which is ADDITIVE (it does not compete with placed workers). It is allocatable
 up to your temple's capacity — 15% per temple level (L1=15%, L2=30%, L3=45%) —
@@ -184,7 +184,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		fmt.Println("  tick reads it. A temple employs 15% of the city per level, and devotion beyond")
 		fmt.Println("  that is not served: to devote more, raise the temple.")
 	}
-	fmt.Println("\nProduction is set by placing gubbar on hexes/buildings — see `keryx place`,")
+	fmt.Println("\nProduction is set by placing citizens on hexes/buildings — see `keryx place`,")
 	fmt.Println("`keryx staff`, `keryx city`. `allocate` only sets cult (temple devotion): `keryx allocate --cult 30`.")
 	return nil
 }

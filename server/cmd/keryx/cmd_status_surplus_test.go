@@ -165,22 +165,22 @@ func TestSurplusWithoutSinkWarning(t *testing.T) {
 		}
 	})
 
-	t.Run("(b) zero capacity, large stock, gubbar placed — warns with gubbe count", func(t *testing.T) {
+	t.Run("(b) zero capacity, large stock, citizens placed — warns with citizen count", func(t *testing.T) {
 		got := surplusWithoutSinkWarning("Purple", 10_000, 5, 0, 3)
 		if got == "" {
 			t.Fatal("surplusWithoutSinkWarning(zero capacity, stock 10000) = \"\", want a warning")
 		}
-		for _, want := range []string{"Purple", "3 gubbar", "known sinks", "keryx place"} {
+		for _, want := range []string{"Purple", "3 citizens", "known sinks", "keryx place"} {
 			if !strings.Contains(got, want) {
 				t.Errorf("surplusWithoutSinkWarning() = %q, want it to contain %q", got, want)
 			}
 		}
 	})
 
-	t.Run("(c) zero capacity, large stock, zero gubbar — silent (nothing to move)", func(t *testing.T) {
+	t.Run("(c) zero capacity, large stock, zero citizens — silent (nothing to move)", func(t *testing.T) {
 		got := surplusWithoutSinkWarning("Purple", 10_000, 5, 0, 0)
 		if got != "" {
-			t.Errorf("surplusWithoutSinkWarning(zero gubbar) = %q, want \"\"", got)
+			t.Errorf("surplusWithoutSinkWarning(zero citizens) = %q, want \"\"", got)
 		}
 	})
 
@@ -205,7 +205,7 @@ func TestSurplusWithoutSinkWarning(t *testing.T) {
 		}
 	})
 
-	t.Run("silent with rate <= 0 regardless of capacity/gubbar", func(t *testing.T) {
+	t.Run("silent with rate <= 0 regardless of capacity/citizens", func(t *testing.T) {
 		if got := surplusWithoutSinkWarning("Fish", 54_900, 0, 0, 3); got != "" {
 			t.Errorf("surplusWithoutSinkWarning(rate=0) = %q, want \"\"", got)
 		}
@@ -214,10 +214,10 @@ func TestSurplusWithoutSinkWarning(t *testing.T) {
 		}
 	})
 
-	t.Run("singular gubbe wording", func(t *testing.T) {
+	t.Run("singular citizen wording", func(t *testing.T) {
 		got := surplusWithoutSinkWarning("Fish", 1000, 10, 0, 1)
-		if !strings.Contains(got, "1 gubbe") || strings.Contains(got, "1 gubbar") {
-			t.Errorf("surplusWithoutSinkWarning() = %q, want singular \"1 gubbe\"", got)
+		if !strings.Contains(got, "1 citizen") || strings.Contains(got, "1 citizens") {
+			t.Errorf("surplusWithoutSinkWarning() = %q, want singular \"1 citizen\"", got)
 		}
 	})
 

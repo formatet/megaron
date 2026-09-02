@@ -19,9 +19,9 @@ func staffCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "staff <byggnad> [+n|-n]",
-		Short: "Place or remove n gubbar from a building workplace (default: show current staffing)",
+		Short: "Place or remove n citizens from a building workplace (default: show current staffing)",
 		Long: `<byggnad> is a building type (e.g. stonequarry). +n places n more idle
-gubbar there; -n returns n gubbar to the idle pool. Omit the delta to just
+citizens there; -n returns n citizens to the idle pool. Omit the delta to just
 see current occupancy.`,
 		Example: `  keryx staff stonequarry
   keryx staff stonequarry +2
@@ -61,7 +61,7 @@ see current occupancy.`,
 				// stands — check the real buildings list before saying that.
 				if buildingType == "temple" {
 					if lvl, built := fetchBuiltBuildingLevel(c, cfg.WorldID, prov, "temple"); built {
-						return fmt.Errorf("temple (L%d) is built, but cult isn't a placed gubbe — it's devotion, set with `keryx allocate --cult <pct>`, not `keryx staff`", lvl)
+						return fmt.Errorf("temple (L%d) is built, but cult isn't a placed citizen — it's devotion, set with `keryx allocate --cult <pct>`, not `keryx staff`", lvl)
 					}
 				}
 				return fmt.Errorf("no built workplace %q here (see `keryx city` for what's built)", buildingType)
@@ -104,7 +104,7 @@ see current occupancy.`,
 				}
 				if !jsonMode {
 					if applied == delta {
-						fmt.Printf("Placed %d gubbe(s) on %s.\n", applied, buildingType)
+						fmt.Printf("Placed %d citizen(s) on %s.\n", applied, buildingType)
 					} else {
 						fmt.Printf("Placed %d of %d requested (stopped: %v).\n", applied, delta, stopErr)
 					}
@@ -126,9 +126,9 @@ see current occupancy.`,
 					removed := -applied
 					if removed == want {
 						if want < -delta {
-							fmt.Printf("Removed %d gubbe(s) — only %d were staffed there.\n", removed, want)
+							fmt.Printf("Removed %d citizen(s) — only %d were staffed there.\n", removed, want)
 						} else {
-							fmt.Printf("Removed %d gubbe(s) from %s.\n", removed, buildingType)
+							fmt.Printf("Removed %d citizen(s) from %s.\n", removed, buildingType)
 						}
 					} else {
 						fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, stopErr)
@@ -170,7 +170,7 @@ see current occupancy.`,
 			if after != nil {
 				fmt.Printf("  %s\n", goodCell(*after))
 			}
-			fmt.Printf("  %d idle gubbar left.\n", opts2.PoolSize)
+			fmt.Printf("  %d idle citizens left.\n", opts2.PoolSize)
 			if applied == 0 && stopErr != nil {
 				return stopErr
 			}
