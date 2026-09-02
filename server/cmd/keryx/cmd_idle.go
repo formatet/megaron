@@ -14,7 +14,7 @@ func idleCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "idle",
-		Short: "Show how many gubbar are idle (unplaced) in a settlement (default: your capital)",
+		Short: "Show how many citizens are idle (unplaced) in a settlement (default: your capital)",
 		Args:  noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -35,10 +35,10 @@ func idleCmd() *cobra.Command {
 				return nil
 			}
 			if opts.PoolSize == 0 {
-				fmt.Printf("All %d gubbar are placed.\n", opts.TotalGubbar)
+				fmt.Printf("All %d citizens are placed.\n", opts.TotalGubbar)
 				return nil
 			}
-			fmt.Printf("%d of %d gubbar are idle.\n", opts.PoolSize, opts.TotalGubbar)
+			fmt.Printf("%d of %d citizens are idle.\n", opts.PoolSize, opts.TotalGubbar)
 			fmt.Println("Run `keryx city` to see open catchment hexes and buildings.")
 			return nil
 		},

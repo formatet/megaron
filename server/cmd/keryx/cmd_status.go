@@ -264,9 +264,9 @@ func surplusWithoutSinkWarning(label string, amount, rateVal, capacity float64, 
 	if rateVal <= 0 || gubbar <= 0 || amount <= capacity {
 		return ""
 	}
-	who := fmt.Sprintf("%d gubbar", gubbar)
+	who := fmt.Sprintf("%d citizens", gubbar)
 	if gubbar == 1 {
-		who = "1 gubbe"
+		who = "1 citizen"
 	}
 	return fmt.Sprintf("⚠ %-8s %6s  %s  — known sinks absorb at most %s within %d tick; %s produces with no receiver (`keryx place`)",
 		label, resource(amount), rate(rateVal), resource(capacity), productionHorizonTicks, who)
@@ -665,10 +665,10 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// food slots need, out of SAME greedy loop founding/growth use.
 						if req, ok := sett["food_gubbar_required"].(float64); ok {
 							if suff, ok2 := sett["food_self_sufficient"].(bool); ok2 && !suff {
-								line += fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d gubbar", int(req))
+								line += fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d citizens", int(req))
 							} else {
 								placed, _ := sett["food_gubbar_placed"].(float64)
-								line += fmt.Sprintf("  (%d gubbar needed for food · %d placed)", int(req), int(placed))
+								line += fmt.Sprintf("  (%d citizens needed for food · %d placed)", int(req), int(placed))
 							}
 						}
 						fmt.Println(line)

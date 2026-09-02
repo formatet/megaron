@@ -16,7 +16,7 @@ import (
 func briefCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "brief",
-		Short: "One line per settlement you own: idle gubbar, if any",
+		Short: "One line per settlement you own: idle citizens, if any",
 		Args:  noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
@@ -74,7 +74,7 @@ func briefCmd() *cobra.Command {
 				fmt.Printf("%-20s  %d/%d idle — run `keryx city %s`\n", r.name, r.pool, r.total, r.name)
 			}
 			if !anyIdle {
-				fmt.Println("\nEvery gubbe you have is placed.")
+				fmt.Println("\nEvery citizen you have is placed.")
 			}
 			return nil
 		},

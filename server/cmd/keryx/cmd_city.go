@@ -17,8 +17,8 @@ func cityCmd() *cobra.Command {
 		Use:   "city [stad]",
 		Short: "Show a settlement's catchment hexes, building slots and idle pool (default: your capital)",
 		Long: `Every catchment hex and building workplace, with its own occupancy and the
-yield the NEXT gubbe placed there would add ("next"). Grain has no cap — any
-number of gubbar can farm the same hex. A hex or building can support more
+yield the NEXT citizen placed there would add ("next"). Grain has no cap — any
+number of citizens can farm the same hex. A hex or building can support more
 than one good; each is its own row.
 
 Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
@@ -46,7 +46,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				return nil
 			}
 
-			fmt.Printf("Gubbar: %d/%d placed, %d idle\n\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
+			fmt.Printf("Citizens: %d/%d placed, %d idle\n\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
 
 			fmt.Println("Catchment:")
 			if len(opts.Hexes) == 0 {

@@ -214,7 +214,7 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			// anything (CLAUDE.md "Labor = individual placement").
 			body["unlocked_goods"] = unlockedGoods
 			body["hint"] = fmt.Sprintf(
-				"%s is built but produces nothing until staffed — place a gubbe to work %s (`keryx place`/`staff`, or the city's placement grid) to start production.",
+				"%s is built but produces nothing until staffed — place a citizen to work %s (`keryx place`/`staff`, or the city's placement grid) to start production.",
 				p.BuildingType, strings.Join(unlockedGoods, ", "))
 		}
 		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "BuildComplete", 4, body)

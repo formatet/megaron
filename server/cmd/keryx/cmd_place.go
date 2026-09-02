@@ -19,15 +19,15 @@ func placeCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "place <roll> <ordinal> [+n|-n]",
-		Short: "Place or remove gubbar on catchment hex <ordinal> doing <roll> (good)",
+		Short: "Place or remove citizens on catchment hex <ordinal> doing <roll> (good)",
 		Long: `<roll> is a good key (grain, timber, fish, ...) and <ordinal> is the hex
 number (1..18) from ` + "`keryx city`" + `. Rejected if the hex has no such production
 option, is already full for that good (grain is never full), or hasn't been
 scouted yet.
 
-Omit the delta to place a single gubbe (default +1, unchanged from before).
-+n places n more; -n returns n gubbar from that hex to the idle pool — free
-and immediate. To move a gubbe from a hex into a building:
+Omit the delta to place a single citizen (default +1, unchanged from before).
++n places n more; -n returns n citizens from that hex to the idle pool — free
+and immediate. To move a citizen from a hex into a building:
 
   keryx place grain 5 -1
   keryx staff olive_press +1`,
@@ -97,13 +97,13 @@ func placeSingle(c *Client, path, worldID, prov string, ordinal int, roll string
 	if jerr := json.Unmarshal(data, &resp); jerr != nil {
 		return jerr
 	}
-	fmt.Printf("Placed gubbe #%d on hex #%d doing %s.\n", resp.GubbeOrdinal, ordinal, roll)
+	fmt.Printf("Placed citizen #%d on hex #%d doing %s.\n", resp.GubbeOrdinal, ordinal, roll)
 
 	// Show what changed — same "confirm against the resulting state" pattern
 	// as allocate's post-write echo, using the SAME hex row `city` would show.
 	if opts, oerr := fetchPlacementOptions(c, worldID, prov); oerr == nil {
 		printHexGoodRow(opts, ordinal, roll)
-		fmt.Printf("  %d idle gubbar left.\n", opts.PoolSize)
+		fmt.Printf("  %d idle citizens left.\n", opts.PoolSize)
 	}
 	return nil
 }
@@ -125,7 +125,7 @@ func placeMany(c *Client, path, worldID, prov string, ordinal int, roll string, 
 	}
 	if !jsonMode {
 		if applied == delta {
-			fmt.Printf("Placed %d gubbe(s) on hex #%d doing %s.\n", applied, ordinal, roll)
+			fmt.Printf("Placed %d citizen(s) on hex #%d doing %s.\n", applied, ordinal, roll)
 		} else {
 			fmt.Printf("Placed %d of %d requested (stopped: %v).\n", applied, delta, stopErr)
 		}
@@ -152,7 +152,7 @@ func placeMany(c *Client, path, worldID, prov string, ordinal int, roll string, 
 		return nil
 	}
 	printHexGoodRow(opts, ordinal, roll)
-	fmt.Printf("  %d idle gubbar left.\n", opts.PoolSize)
+	fmt.Printf("  %d idle citizens left.\n", opts.PoolSize)
 	if applied == 0 && stopErr != nil {
 		return stopErr
 	}
@@ -199,9 +199,9 @@ func unplaceMany(c *Client, path, worldID, prov string, ordinal int, roll string
 	if !jsonMode {
 		if removed == want {
 			if want < requested {
-				fmt.Printf("Removed %d gubbe(s) — only %d were placed there.\n", removed, want)
+				fmt.Printf("Removed %d citizen(s) — only %d were placed there.\n", removed, want)
 			} else {
-				fmt.Printf("Removed %d gubbe(s) from hex #%d.\n", removed, ordinal)
+				fmt.Printf("Removed %d citizen(s) from hex #%d.\n", removed, ordinal)
 			}
 		} else {
 			fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, stopErr)
@@ -229,7 +229,7 @@ func unplaceMany(c *Client, path, worldID, prov string, ordinal int, roll string
 		return nil
 	}
 	printHexGoodRow(opts2, ordinal, roll)
-	fmt.Printf("  %d idle gubbar left.\n", opts2.PoolSize)
+	fmt.Printf("  %d idle citizens left.\n", opts2.PoolSize)
 	if removed == 0 && stopErr != nil {
 		return stopErr
 	}
