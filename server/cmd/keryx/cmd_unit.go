@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
@@ -215,6 +216,18 @@ func unitListCmd() *cobra.Command {
 				fmt.Println("No units.")
 				return nil
 			}
+			// Forward-post naming (P7, megaron_plan_utforskaren.md): a sentried
+			// land unit standing out on the map IS a forward post — it needs its
+			// home settlement's hex to show how far out it stands. Only fetched
+			// when at least one unit actually qualifies, so a roster with no
+			// posts costs no extra round trip.
+			var homes map[string]settlementPos
+			for _, u := range resp.Units {
+				if isForwardPost(u) {
+					homes = fetchOwnSettlementPositions(c, cfg.WorldID)
+					break
+				}
+			}
 			// Namnkolumnen är namnstandardens display_name från servern
 			// ("2nd Spearmen of Knossos", "White Dolphin, Galley of
 			// Kydonia"). Keryx formaterar den INTE själv: allt i temenos ska vara
@@ -229,7 +242,7 @@ func unitListCmd() *cobra.Command {
 					name = unit.DisplayName(u.Type) + shipNameSuffix(u.Name)
 				}
 				fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
-					u.ID, name, formatSize(c, u), u.Status, stanceStr(u.Stance), locationStr(c, u))
+					u.ID, name, formatSize(c, u), u.Status, stanceStr(u.Stance), locationStr(c, u, homes))
 			}
 			return nil
 		},
@@ -262,6 +275,11 @@ type unitRow struct {
 	ColonyName      *string    `json:"colony_name"`
 	Reinforcing     bool       `json:"reinforcing"`
 	CanReinforce    bool       `json:"can_reinforce"`
+	// OriginSettlementID is the cohort's permanent home city (mig 126). Used
+	// here to measure how far a forward post stands from home — a naval unit
+	// or a pre-mig-126 unit may have it nil, in which case the distance is
+	// simply omitted rather than guessed.
+	OriginSettlementID *string `json:"origin_settlement_id"`
 }
 
 func formatSize(c *Client, u unitRow) string {
@@ -342,7 +360,65 @@ func stanceStr(s *string) string {
 	return *s
 }
 
-func locationStr(c *Client, u unitRow) string {
+// isForwardPost reports whether u is a land unit standing sentry out on the
+// map — the "forward post" P7 (megaron_plan_utforskaren.md) names in the
+// player surface. The mechanic already exists (province.LoadLiveEyes gives
+// any standing unit vision; sentry additionally watches for foreign marches
+// and intercepts caravans, combat/unit_intercept_scan.go) — this only decides
+// whether `unit list` should read the row that way. status="positioned" is
+// what a land unit gets on arrival with a stance (unit.StatusPositioned);
+// fortify/storm positioned units are NOT a post and fall through to the
+// plain hex display.
+func isForwardPost(u unitRow) bool {
+	return u.Category != "naval" && u.Status == "positioned" &&
+		u.Stance != nil && *u.Stance == "sentry"
+}
+
+// settlementPos is a settlement's map hex, keyed by settlement ID — just
+// enough to measure a forward post's distance from home.
+type settlementPos struct {
+	Q, R int
+	Name string
+}
+
+// fetchOwnSettlementPositions loads the Wanax's own settlements' hexes from
+// /provinces (best-effort: returns nil on any error, in which case a forward
+// post is shown without its distance rather than blocking `unit list`).
+func fetchOwnSettlementPositions(c *Client, worldID string) map[string]settlementPos {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", worldID))
+	if err != nil {
+		return nil
+	}
+	var markers []struct {
+		SettlementID string `json:"settlement_id"`
+		Name         string `json:"name"`
+		Q            int    `json:"q"`
+		R            int    `json:"r"`
+		Own          bool   `json:"own"`
+	}
+	if err := json.Unmarshal(data, &markers); err != nil {
+		return nil
+	}
+	out := make(map[string]settlementPos)
+	for _, m := range markers {
+		if m.Own && m.SettlementID != "" {
+			out[m.SettlementID] = settlementPos{Q: m.Q, R: m.R, Name: m.Name}
+		}
+	}
+	return out
+}
+
+func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
+	if isForwardPost(u) && u.Q != nil && u.R != nil {
+		loc := fmt.Sprintf("forward post at (%d,%d)", *u.Q, *u.R)
+		if u.OriginSettlementID != nil && homes != nil {
+			if home, ok := homes[*u.OriginSettlementID]; ok {
+				dist := hexgrid.Distance(hexgrid.Coord{Q: *u.Q, R: *u.R}, hexgrid.Coord{Q: home.Q, R: home.R})
+				loc += fmt.Sprintf(" — %d hexes from %s", dist, home.Name)
+			}
+		}
+		return loc + " (double rations in the field)"
+	}
 	switch u.Status {
 	case "marching":
 		loc := ""
