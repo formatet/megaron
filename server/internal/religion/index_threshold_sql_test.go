@@ -30,7 +30,20 @@ func TestRecomputeDivineValuations_PerGoodThresholdSQLExecutes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("connect to test database: %v", err)
 	}
-	defer pool.Close()
+	// t.Cleanup, NOT defer: deferred calls run when the test function returns,
+	// t.Cleanup functions run after that. `defer pool.Close()` therefore closed
+	// the pool BEFORE the cleanup below could use it, both Exec calls failed
+	// into `_, _ =`, and this test's status='active' world was never deleted.
+	// t.Cleanup runs LIFO, so registering the close first means the world is
+	// deleted first and the pool closes last.
+	//
+	// That leak is what made `go test -count=1 -p 1 ./...` lie on a FRESH
+	// database (fixed 2026-09-03). The leftover world is named
+	// 'holder-threshold-smoke', which is precisely why the transport intercept
+	// fixture's old `AND name LIKE 'test-world-%'` sweep never caught it and
+	// two of its tests died on the one_active_world constraint (mig 063).
+	// That fixture was made unconditional in 306e102; this is the source.
+	t.Cleanup(pool.Close)
 
 	// current_world_tick() (used by the valuation upsert) reads a status='active'
 	// world, so the smoke world must be active. Only name is NOT NULL without a
