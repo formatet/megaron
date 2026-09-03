@@ -92,6 +92,10 @@ Categories: province, military, trade, diplomacy, kingdom, cult`,
 					fmt.Println()
 					fmt.Println(hint)
 				}
+				if hint := forwardPostHint(c, cfg.WorldID); hint != "" {
+					fmt.Println()
+					fmt.Println(hint)
+				}
 				return nil
 			}
 			category := strings.ToLower(args[0])
@@ -177,6 +181,43 @@ func noTradeContactsHint(verbs []actionVerb) string {
 			return "No trade contacts yet — trade needs a foreign settlement within your vision. " +
 				"Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), " +
 				"then `keryx message --to <name>` or `keryx trade-offer` once one is visible."
+		}
+	}
+	return ""
+}
+
+// forwardPostHint teaches the forward-post strategy (P7,
+// megaron_plan_utforskaren.md): the mechanic — a sentried land unit standing
+// on the map is a tier-1 eye that also watches for foreign marches and
+// intercepts caravans — has existed since sentry was built, but nothing in
+// the player surface ever pointed at it. Measured over two runs, no scout
+// got further than ~6 hexes from home. `actions` is the one place allowed to
+// teach the strategy; it must never suggest WHERE to post one (Timothy's
+// definition of discovery: the player finds the map by moving through it —
+// naming a destination would turn discovery into a delivered information
+// layer).
+//
+// Fires whenever the Wanax has at least one garrisoned land unit — the same
+// literal condition the plan's contract names, not "hasn't posted one yet":
+// suppressing it once a post exists would be a small recommendation engine
+// this slice is explicitly not building.
+func forwardPostHint(c *Client, worldID string) string {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/units", worldID))
+	if err != nil {
+		return ""
+	}
+	var resp struct {
+		Units []unitRow `json:"units"`
+	}
+	if json.Unmarshal(data, &resp) != nil {
+		return ""
+	}
+	for _, u := range resp.Units {
+		if u.Category != "naval" && u.Status == "garrison" {
+			return "You have a garrisoned land unit — march it out and hold it there as a forward post " +
+				"(`keryx unit post --unit <id> --q <q> --r <r>`): it extends your map memory from where it " +
+				"stands and watches for foreign marches and caravans passing nearby. It eats double rations " +
+				"in the field, so weigh the ground it buys against the grain it costs."
 		}
 	}
 	return ""
