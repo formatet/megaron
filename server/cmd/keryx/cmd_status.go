@@ -317,6 +317,30 @@ func buildQueueETA(c *Client, iso string) string {
 // this is a game-day figure, not a wall-clock one.
 const netUpkeepWarningRunwayTicks = 30
 
+// foodGubbarLine renders the "(N citizens needed for food · M placed)"
+// annex on the grain row, using the same food_gubbar_required/placed/
+// self_sufficient figures `keryx city`'s hex listing is built from
+// (megaron_plan_omfordelningsmatningen.md — Timothy 2026-09-02: five of five
+// soak cities stood 5-10x overstaffed on food and the row that already
+// printed this data read as neutral information, not an actionable one).
+// Pure — unit-testable without a server.
+//
+// The reassignment itself stays entirely the Wanax's call (no auto-release,
+// no auto-placement): this only NAMES the number that could move and points
+// at the surface (`keryx city`) that shows which hexes carry it. When placed
+// exceeds required and the catchment is self-sufficient, the surplus is
+// spelled out as its own figure — a Wanax should never have to subtract
+// 70-7 in their head to notice a city 10x overstaffed on grain.
+func foodGubbarLine(req, placed int, selfSufficient bool) string {
+	if !selfSufficient {
+		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d citizens", req)
+	}
+	if surplus := placed - req; surplus > 0 {
+		return fmt.Sprintf("  (%d citizens needed for food · %d placed — %d could move; see 'keryx city')", req, placed, surplus)
+	}
+	return fmt.Sprintf("  (%d citizens needed for food · %d placed)", req, placed)
+}
+
 // armyUpkeepWarning grinds the ⚠ line under the post-upkeep Netto row on
 // STOCK RUNWAY, not on the sign of the net rate alone (megaron_plan_cli_sanning
 // §A; soak 2026-07-24 + 2026-08-23 confirmed independently by two agents):
@@ -664,12 +688,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// weight-based break-even hint: how many gubbar the catchment's
 						// food slots need, out of SAME greedy loop founding/growth use.
 						if req, ok := sett["food_gubbar_required"].(float64); ok {
-							if suff, ok2 := sett["food_self_sufficient"].(bool); ok2 && !suff {
-								line += fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d citizens", int(req))
-							} else {
-								placed, _ := sett["food_gubbar_placed"].(float64)
-								line += fmt.Sprintf("  (%d citizens needed for food · %d placed)", int(req), int(placed))
-							}
+							placed, _ := sett["food_gubbar_placed"].(float64)
+							suff, _ := sett["food_self_sufficient"].(bool)
+							line += foodGubbarLine(int(req), int(placed), suff)
 						}
 						fmt.Println(line)
 					}
