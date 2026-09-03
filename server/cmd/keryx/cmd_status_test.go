@@ -226,6 +226,54 @@ func TestArmyUpkeepWarning(t *testing.T) {
 	}
 }
 
+// TestFoodGubbarLine reproduces the soak finding of
+// megaron_plan_omfordelningsmatningen.md (Timothy 2026-09-02): five of five
+// soak cities stood 5-10x overstaffed on food (7 required / 70 placed, etc.)
+// and `status` already showed both numbers but never named the surplus or
+// the verb — a Wanax had to subtract 70-7 by hand and had no pointer to the
+// surface that lets them act. This locks: the surplus is exactly
+// placed-required (not placed alone, not required alone), the surplus line
+// only appears when there IS a surplus, a correctly-staffed city gets the
+// plain line with no surplus text, and an insufficient catchment still gets
+// the pre-existing shortage warning untouched.
+func TestFoodGubbarLine(t *testing.T) {
+	tests := []struct {
+		name           string
+		req, placed    int
+		selfSufficient bool
+		want           string
+	}{
+		{
+			name: "soak finding: 7 required, 70 placed — names the 63 that could move",
+			req:  7, placed: 70, selfSufficient: true,
+			want: "  (7 citizens needed for food · 70 placed — 63 could move; see 'keryx city')",
+		},
+		{
+			name: "exactly staffed — no surplus text",
+			req:  7, placed: 7, selfSufficient: true,
+			want: "  (7 citizens needed for food · 7 placed)",
+		},
+		{
+			name: "understaffed but still self-sufficient (e.g. fish covers the rest) — no surplus text",
+			req:  8, placed: 5, selfSufficient: true,
+			want: "  (8 citizens needed for food · 5 placed)",
+		},
+		{
+			name: "insufficient catchment — pre-existing shortage warning, never a surplus claim",
+			req:  20, placed: 20, selfSufficient: false,
+			want: "  ⚠ the catchment doesn't feed the population even with all 20 citizens",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := foodGubbarLine(tt.req, tt.placed, tt.selfSufficient)
+			if got != tt.want {
+				t.Errorf("foodGubbarLine(%d, %d, %v) = %q, want %q", tt.req, tt.placed, tt.selfSufficient, got, tt.want)
+			}
+		})
+	}
+}
+
 // TestSitosGranaryState reproduces §5 of megaron_plan_sitos_utlosning.md: the
 // granary's state text (printed under the "Sitos-magasinet" line in `status`)
 // was inline in statusCmd's RunE, reachable only through a live server round
