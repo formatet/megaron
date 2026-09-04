@@ -622,6 +622,20 @@ export async function warAbandon(settlementID, name) {
   }
 }
 
+// The recall/redirect endpoint answers in one of two shapes. Every ordinary
+// unit gets 202 {status:"order_dispatched", courier_arrives_at} — a Runner is
+// on its way and the order lands when it arrives. The nomadic host gets
+// 200 {status:"order_applied"} with NO courier: Wanax travels with the host,
+// so the order needs no messenger (unit.CommandedInPerson, server-side). Read
+// the shape rather than assuming the courier field is there — printing
+// "reaches the unit undefined" was the bug this replaces.
+function orderSentLine(d, verb) {
+  if (d && d.status === 'order_applied') {
+    return verb + ' order given in person — you ride with the host, so it takes effect at once.';
+  }
+  return verb + ' order sent by Runner — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.';
+}
+
 export async function unitRecall(unitID) {
   const statusEl = document.getElementById('uorder-' + unitID);
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/recall`, {
@@ -629,7 +643,7 @@ export async function unitRecall(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Recall order sent by Runner — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = orderSentLine(d, 'Recall'); }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Recall failed';
@@ -650,7 +664,7 @@ export async function unitRedirect(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = 'Redirect order sent by Runner — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.'; }
+    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = orderSentLine(d, 'Redirect'); }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Redirect failed';
