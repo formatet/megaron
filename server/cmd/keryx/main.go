@@ -110,6 +110,7 @@ func main() {
 		marchAliasCmd(),
 		reinforceAliasCmd(),
 		recallAliasCmd(),
+		redirectAliasCmd(),
 		foundingCmd(),
 		wantsCmd(),
 		riteCmd(),

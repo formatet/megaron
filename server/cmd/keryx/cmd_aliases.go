@@ -54,6 +54,17 @@ func recallAliasCmd() *cobra.Command {
 	return c
 }
 
+// redirectAliasCmd is `redirect` — an alias for `unit redirect`.
+// unitRedirectCmd's Use is already "redirect", so only the Short changes.
+// Same guessability gap as recallAliasCmd: a Wanax who has just used `keryx
+// march`/`keryx recall` at the top level has no textual reason to expect
+// `redirect` to live one level deeper than its siblings.
+func redirectAliasCmd() *cobra.Command {
+	c := unitRedirectCmd()
+	c.Short = "Redirect a marching unit to a new hex (alias for `unit redirect`)"
+	return c
+}
+
 // placementsAliasCmd is `placements` — an alias for `city`. The verbs that
 // actually change placements are named `place`/`staff`, so an agent that
 // wants to SEE them reasonably guesses the plural noun rather than either
