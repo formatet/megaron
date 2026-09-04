@@ -99,6 +99,20 @@ func CanEmbark(t Type) bool {
 	return t != TypeNomadicHost
 }
 
+// CommandedInPerson reports whether a unit type receives orders from Wanax's
+// own presence rather than a physical Runner. This is the ONE exception to
+// the messenger pillar (temenos_orderlopare_plan.md — command is never
+// instant for anything else): true exclusively for the nomadic host, because
+// Wanax travels WITH it. An order to this unit is an order to Wanax's own
+// body — there is no distance for a courier to cross, so recall/redirect
+// apply directly instead of failing on "no Runner can catch this unit".
+// Every other unit type still requires an honest courier/interception, even
+// one Wanax happens to be standing right next to (2026-09-04 buggrapport
+// 70c1bfb3 — do not widen this to any other type without a fresh canon call).
+func CommandedInPerson(t Type) bool {
+	return t == TypeNomadicHost
+}
+
 // MarchHoursFactorFor returns the multiplier to apply to
 // province.TerrainMoveTicks for this unit type.
 //
