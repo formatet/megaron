@@ -14,6 +14,7 @@ require (
 	github.com/redis/go-redis/v9 v9.5.4
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.24.0
+	golang.org/x/term v0.45.0
 )
 
 require (
@@ -29,6 +30,6 @@ require (
 	github.com/spf13/pflag v1.0.9 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 )
