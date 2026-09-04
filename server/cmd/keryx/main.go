@@ -3,6 +3,7 @@
 // Usage:
 //
 //	keryx login --server http://10.0.1.88:8080 --username alice
+//	keryx join
 //	keryx status
 //	keryx recruit --unit spearman --count 20
 //	keryx build --type farm
@@ -57,6 +58,7 @@ func main() {
 
 	root.AddCommand(
 		loginCmd(),
+		joinCmd(),
 		statusCmd(),
 		mapCmd(),
 		sightingsCmd(),
