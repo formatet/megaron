@@ -19,6 +19,10 @@
             <label>Username</label>
             <input type="text" id="login-ident" required autocomplete="username">
           </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="login-pass" required autocomplete="current-password">
+          </div>
           <div id="login-error" class="form-error"></div>
           <button type="submit" class="btn-primary">Enter</button>
         </form>
@@ -29,6 +33,14 @@
           <div class="field">
             <label>Username</label>
             <input type="text" id="reg-username" required minlength="3" maxlength="24" autocomplete="username">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="reg-pass" required autocomplete="new-password">
+          </div>
+          <div class="field">
+            <label>Repeat password</label>
+            <input type="password" id="reg-pass2" required autocomplete="new-password">
           </div>
           <div id="reg-error" class="form-error"></div>
           <button type="submit" class="btn-primary">Claim your seat</button>
@@ -75,16 +87,22 @@ document.getElementById('login-form').addEventListener('submit', e => {
   e.preventDefault();
   doAuth('/api/v1/auth/login', {
     username_or_email: document.getElementById('login-ident').value,
-    password: '',
+    password: document.getElementById('login-pass').value,
   }, document.getElementById('login-error'));
 });
 
 document.getElementById('register-form').addEventListener('submit', e => {
   e.preventDefault();
+  const errorEl = document.getElementById('reg-error');
+  const pass = document.getElementById('reg-pass').value;
+  if (pass !== document.getElementById('reg-pass2').value) {
+    errorEl.textContent = 'The two passwords do not match.';
+    return;
+  }
   doAuth('/api/v1/auth/register', {
     username: document.getElementById('reg-username').value,
-    password: '',
-  }, document.getElementById('reg-error'));
+    password: pass,
+  }, errorEl);
 });
 </script>
 {{end}}
