@@ -28,6 +28,21 @@ type foundingStore struct {
 	TicksLeft   *int    `json:"ticks_left"`
 }
 
+// neverJoined reports whether the player has neither a settlement nor an
+// active founder phase in this world — i.e. has never run `keryx join`.
+// GET .../founding/status answers {"active":false} for BOTH "never joined"
+// and "already founded" (api/handlers/found_metropolis.go FoundingStatus:
+// "No active phase — settled (or never a founder)") — the two look
+// identical to the server but mean opposite things to the player, and
+// telling someone who never joined that their metropolis "is already
+// founded" sends them looking for a city that never existed
+// (megaron_plan_tva_gate1_slices §1, 2026-09-04). A live province check is
+// the only way to tell them apart — cfg.ProvinceID alone would be wrong for
+// a stale local config.
+func neverJoined(c *Client, worldID string) bool {
+	return autoDetectProvince(c, worldID) == ""
+}
+
 // fetchFoundingStatus GETs the founder-phase read surface.
 func fetchFoundingStatus(c *Client) (*foundingStatusResp, error) {
 	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/founding/status", cfg.WorldID))
@@ -127,6 +142,10 @@ func foundingStatusCmd() *cobra.Command {
 				return err
 			}
 			if !fp.Active {
+				if neverJoined(c, cfg.WorldID) {
+					fmt.Println("No active founder phase — you haven't joined this world yet. Run: keryx join")
+					return nil
+				}
 				fmt.Println("No active founder phase — the metropolis is already founded (see: keryx status).")
 				return nil
 			}
@@ -165,6 +184,9 @@ settling. To found somewhere else: march the host there first
 				return err
 			}
 			if !fp.Active {
+				if neverJoined(c, cfg.WorldID) {
+					return fmt.Errorf("you haven't joined this world yet — run: keryx join")
+				}
 				return fmt.Errorf("you have no wandering host — the metropolis is already founded (see: keryx status)")
 			}
 			if fp.Q == nil || fp.R == nil {
