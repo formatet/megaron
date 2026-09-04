@@ -38,8 +38,12 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 REMOTE="${RESEED_REMOTE:-root@10.0.1.92}"
 ENV_FILE="${RESEED_ENV_FILE:-/opt/poleia/.env}"
-MAP_WIDTH="${MAP_WIDTH:-230}"
-MAP_HEIGHT="${MAP_HEIGHT:-230}"
+# INGEN default på kartstorleken — med flit. Skriptet raderar livevärlden, och en
+# tyst default gör storleken till en gissning i det ögonblick man minst vill gissa.
+# Den 2026-09-04 körande världen är 30×30 (900 tiles); runbookens gamla exempel sa
+# 230×230 (52 900 tiles) — 58 gånger större. En default hade valt åt operatören.
+MAP_WIDTH="${MAP_WIDTH:-}"
+MAP_HEIGHT="${MAP_HEIGHT:-}"
 AGENT_PATTERN="${RESEED_AGENT_PATTERN:-playtest/agent.py}"
 BIN_LOCAL="/tmp/create-world"
 BIN_REMOTE="/tmp/create-world"
@@ -49,12 +53,20 @@ TICKS_TIMEOUT_S=15
 TICKS_POLL_S=3
 
 DRY_RUN=0
+ASSUME_YES=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=1 ;;
+    --yes|-y)  ASSUME_YES=1 ;;
     -h|--help)
-      echo "Användning: $0 [--dry-run]"
-      echo "Env: RESEED_REMOTE, RESEED_ENV_FILE, MAP_WIDTH, MAP_HEIGHT, RESEED_AGENT_PATTERN, RESEED_JOURNAL_TIMEOUT_S"
+      echo "Användning: MAP_WIDTH=<n> MAP_HEIGHT=<n> $0 [--dry-run] [--yes]"
+      echo
+      echo "  --dry-run  visa varje steg utan att röra något"
+      echo "  --yes      hoppa över bekräftelsefrågan (för skriptad körning)"
+      echo
+      echo "MAP_WIDTH och MAP_HEIGHT är OBLIGATORISKA — skriptet raderar livevärlden"
+      echo "och gissar aldrig storleken. Världen 2026-09-04 var 30x30."
+      echo "Env: RESEED_REMOTE, RESEED_ENV_FILE, RESEED_AGENT_PATTERN, RESEED_JOURNAL_TIMEOUT_S"
       exit 0
       ;;
     *)
@@ -66,6 +78,27 @@ done
 
 say() { echo "$*"; }
 step() { echo; echo "== $* =="; }
+
+if [ -z "$MAP_WIDTH" ] || [ -z "$MAP_HEIGHT" ]; then
+  echo "✗ MAP_WIDTH och MAP_HEIGHT måste anges — skriptet gissar aldrig kartstorleken." >&2
+  echo "  Exempel:  MAP_WIDTH=30 MAP_HEIGHT=30 $0 --dry-run" >&2
+  exit 1
+fi
+
+# Bekräftelse. Steg 2 kör TRUNCATE worlds CASCADE på livevärlden — det finns ingen
+# ångra. --dry-run och --yes hoppar över frågan.
+if [ "$DRY_RUN" -eq 0 ] && [ "$ASSUME_YES" -eq 0 ]; then
+  cat >&2 <<WARN
+⚠️  Detta RADERAR den nuvarande världen på $REMOTE och skapar en ny på ${MAP_WIDTH}x${MAP_HEIGHT}.
+    Alla städer, enheter, notiser och spelarpositioner försvinner. Det går inte att ångra.
+WARN
+  printf 'Skriv RESEED för att fortsätta: ' >&2
+  read -r confirm
+  if [ "$confirm" != "RESEED" ]; then
+    echo "avbrutet." >&2
+    exit 1
+  fi
+fi
 
 # remote_sql <SQL> — kör read/write-SQL på servern via psql, med DATABASE_URL
 # sourcad ur $ENV_FILE. -tAc = tuple-only, unaligned — bekväm att grep:a/jämföra.
@@ -139,7 +172,10 @@ RESTART_AT=""
 if [ "$DRY_RUN" -eq 1 ]; then
   say "  [dry-run] ssh $REMOTE 'systemctl restart poleia'"
 else
-  RESTART_AT="$(date '+%Y-%m-%d %H:%M:%S')"
+  # Tidsstämpeln tas PÅ SERVERN, inte lokalt: --since i steg 5 tolkas av serverns
+  # journalctl mot serverns klocka. Klockorna gick i takt 2026-09-04, men en drift
+  # på några sekunder hade fått steg 5 att missa raden och avbryta en lyckad reseed.
+  RESTART_AT="$(ssh "$REMOTE" "date '+%Y-%m-%d %H:%M:%S'")"
   ssh "$REMOTE" "systemctl restart poleia"
   say "  ✓ restart skickad kl $RESTART_AT"
 fi
