@@ -167,9 +167,12 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   design `Temenos_varutaxonomi_sol.md` §1.1, §8. **P1–P6 are ALL built and deployed** — including
   **P5, the web placement surface** (`web/static/js/megaron/ui/citygrid.js`, commit `c8197f0`,
   imported by `ui/drawers/city.js`; keryx `place`/`staff`). *(This line said "P5 not built" until
-  2026-08-22 — it had been stale since 2026-08-08.)* The old percent-allocation endpoint
-  (`LaborAlloc`) and its web drawer still exist beside it and are inert no-ops for non-cult goods
-  (harmless dead writes to `settlement_labor`) — **removing them is the open work, not building P5.**
+  2026-08-22 — it had been stale since 2026-08-08.)* **`LaborAlloc` (`PUT …/labor`) is NOT dead code
+  and must not be deleted** — it was NARROWED to cult only (`megaron_plan_riv_procentallokeringen.md`),
+  and cult devotion is `settlement_labor`'s permanent home, read live by `kharis/tick.go`. The web
+  side is one `.labor-input` with `data-good="cult"`. *(This line called the endpoint and its drawer
+  "inert no-ops" whose removal was "the open work" until 2026-09-04 — measured false against the code
+  and a live acceptance world. An agent trusting it would have ripped out a working temple control.)*
   *(Both former "known shape problems" are now CLOSED — verified against master 2026-08-30.
   **"building LEVEL does not raise production"** was fixed by Form B, `megaron_plan_byggnadsniva_takt.md`
   (`aec63ad`, 2026-08-24): `economy.placement_yield.go`'s `MultPerGood = cap(actualLevel)/capL1`
