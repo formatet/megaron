@@ -521,6 +521,48 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	recallOrder := &combat.RecallOrder{WorldID: worldID, UnitID: unitID, Mode: mode}
+	if mode == "redirect" {
+		recallOrder.NewTargetQ = &newTargetQ
+		recallOrder.NewTargetR = &newTargetR
+	}
+
+	// Wanax travels WITH the nomadic host — an order to it is an order to
+	// Wanax's own body, so it needs no Runner (unit.CommandedInPerson; the
+	// one exception to the messenger pillar, buggrapport 70c1bfb3
+	// 2026-09-04). Every other unit type still falls through to the courier
+	// path below, unchanged. Apply directly via the SAME execution core a
+	// courier's delivery runs (messenger.OrderDeliveryHandler.Handle's
+	// recall/redirect case) — no duplicated logic, just no runner to wait for.
+	if unit.CommandedInPerson(u.Type) {
+		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *recallOrder)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not apply order")
+			return
+		}
+		if res == nil {
+			// The unit stopped marching between the status check above and
+			// here (e.g. it arrived in the instant this request was being
+			// handled) — a genuine miss, not a game-rule rejection.
+			writeError(w, http.StatusConflict,
+				"the unit was no longer marching by the time the order was applied — check its current status")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"status":     "order_applied",
+			"verb":       mode,
+			"unit_id":    res.UnitID,
+			"q":          res.FromQ,
+			"r":          res.FromR,
+			"target_q":   res.NewTargetQ,
+			"target_r":   res.NewTargetR,
+			"arrives_at": res.ArrivesAt,
+		})
+		return
+	}
+
 	// Resolve who dispatches the order: the nearest own active settlement to
 	// the unit's CURRENT position (beslut 4, temenos_orderlopare_plan.md) — the
 	// same resolveOrderOrigin march/stance already use, not the old bespoke
@@ -564,11 +606,8 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		msgText = fmt.Sprintf("Runner — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
 	}
 
-	recallOrder := &combat.RecallOrder{WorldID: worldID, UnitID: unitID, Mode: mode}
 	extra := map[string]any{"mode": mode}
 	if mode == "redirect" {
-		recallOrder.NewTargetQ = &newTargetQ
-		recallOrder.NewTargetR = &newTargetR
 		extra["target_q"] = newTargetQ
 		extra["target_r"] = newTargetR
 	}
