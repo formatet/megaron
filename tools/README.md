@@ -3,6 +3,13 @@
 Renderingsprinciperna och acceptansgrinden bor i `megaron_terrangrendering.md` (vault).
 Här står bara HUR riggen körs.
 
+## Reseed av livevärlden
+
+`tools/reseed.sh [--dry-run]` kör hela `megaron_drift.md` §Reseed-runbook i ett kommando —
+pre-flight, ny värld, städ av `scheduled_events`-zombies, och (alltid) `systemctl restart poleia`
+med verifiering mot en NY `world ready`-rad i journalen. Se skriptets egen header och
+`megaron_drift.md` §Reseed-runbook för detaljerna och fällorna (healthz/`data-website-id` ljuger).
+
 För **rent visuellt** arbete i renderaren ska browserrundan mot dev-servern inte vara loopen.
 `web/static/showcase-*.html` fyller `State` med en fast fixtur och ritar EN fryst frame ur den
 riktiga `render/map.js` — ingen server, ingen auth, ingen fetch, ingen deploy per iteration.
