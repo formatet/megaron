@@ -60,10 +60,12 @@ func NewService(pool *pgxpool.Pool, jwtSecret string) *Service {
 }
 
 // Register creates a new player and returns access + refresh tokens.
-// Password is not required in this stage — column kept for future use.
-func (s *Service) Register(ctx context.Context, username, _ string) (accessToken, refreshToken string, err error) {
-	// Store a placeholder hash so the column constraint is satisfied.
-	hash, _ := bcrypt.GenerateFromPassword([]byte(username), bcrypt.MinCost)
+// No strength requirement on password — an empty string is accepted.
+func (s *Service) Register(ctx context.Context, username, password string) (accessToken, refreshToken string, err error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", "", fmt.Errorf("hash password: %w", err)
+	}
 
 	var id uuid.UUID
 	err = s.pool.QueryRow(ctx,
@@ -80,8 +82,8 @@ func (s *Service) Register(ctx context.Context, username, _ string) (accessToken
 	return s.issueTokenPair(ctx, id, username)
 }
 
-// Login issues a token for any known username — no password check.
-func (s *Service) Login(ctx context.Context, usernameOrEmail, _ string) (accessToken, refreshToken string, err error) {
+// Login issues a token for a known username whose password matches.
+func (s *Service) Login(ctx context.Context, usernameOrEmail, password string) (accessToken, refreshToken string, err error) {
 	var p Player
 	err = s.pool.QueryRow(ctx,
 		`SELECT id, username, password_hash, era_count, created_at
@@ -93,6 +95,10 @@ func (s *Service) Login(ctx context.Context, usernameOrEmail, _ string) (accessT
 	}
 	if err != nil {
 		return "", "", fmt.Errorf("lookup player: %w", err)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(p.PasswordHash), []byte(password)); err != nil {
+		return "", "", ErrInvalidPassword
 	}
 
 	slog.Info("player logged in", "id", p.ID, "username", p.Username)
