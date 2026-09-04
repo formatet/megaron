@@ -3,7 +3,7 @@ import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
 import { arrivalHTML, fmtClock } from '../time.js';
 import { renderLockedActions } from '../misc.js';
-import { esc } from '../format.js';
+import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid } from '../citygrid.js';
@@ -452,7 +452,7 @@ export async function startBuild() {
     await refreshCityBuildings(capital.id);
   } else {
     resultEl.style.color = 'var(--accent)';
-    resultEl.textContent = d.error || 'Build failed.';
+    resultEl.textContent = formatApiError(d, 'Build failed.');
   }
 }
 

@@ -1,7 +1,7 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
-import { esc, fmtAgo } from '../format.js';
+import { esc, fmtAgo, formatApiError } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 
@@ -386,7 +386,7 @@ export async function dipSendInThread(cid, destId) {
     // Reload threads after a short delay so sent message appears
     setTimeout(() => loadDipThreads(), 1200);
   } else {
-    showStatus(data.error || 'send failed', false);
+    showStatus(formatApiError(data, 'send failed'), false);
   }
 }
 
@@ -400,7 +400,7 @@ export async function dipCancel(id, btn) {
   } else {
     const data = await res.json().catch(() => ({}));
     btn.disabled = false;
-    alert(data.error || 'Cancel failed');
+    alert(formatApiError(data, 'Cancel failed'));
   }
 }
 
@@ -418,7 +418,7 @@ export async function dipAccept(id, btn) {
     if (block) {
       const err = document.createElement('div');
       err.style.cssText = 'color:var(--accent);font-size:.72rem;margin-top:.2rem';
-      err.textContent = data.error || 'failed';
+      err.textContent = formatApiError(data, 'failed');
       block.appendChild(err);
       setTimeout(() => err.remove(), 6000);
     }
