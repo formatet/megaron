@@ -119,7 +119,21 @@ func (h *UnitArrivalHandler) NotifyDeadLetter(ctx context.Context, e events.Sche
 
 func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, worldID uuid.UUID) error {
 	// Load arriving unit with FOR UPDATE — idempotency guard.
+	//
+	// q/r are scanned as NULLABLE and only moved into unitRow once the unit is
+	// known to still be marching. A unit that has STOPPED marching has NULL
+	// coordinates by design — garrisoning nulls them (found_metropolis.go), and
+	// so does the host dissolving into the metropolis it founds. Scanning them
+	// straight into unitRow's plain ints made the load fail on exactly those
+	// rows, three lines above the "already resolved" check written to handle
+	// them: the handler errored, the worker retried, and after three attempts
+	// the dead-letter told the player their march had suffered a "system fault"
+	// (G2). Live 2026-09-03, Polyidos: host ordered to march at tick 1, founded
+	// its metropolis at tick 2 — nothing cancels a queued arrival — and the
+	// arrival fired at tick 3 against a disbanded row. The founding had
+	// succeeded; only the notification claimed otherwise.
 	var u unitRow
+	var curQ, curR *int
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
@@ -127,15 +141,20 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
+		&u.status, &curQ, &curR, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
 		&u.carriedSilver, &u.provisions); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
-	// Idempotent: already resolved.
+	// Idempotent: already resolved. MUST stay above the coordinate requirement
+	// below — see the comment on the scan.
 	if u.status != "marching" {
 		return nil
 	}
+	if curQ == nil || curR == nil {
+		return fmt.Errorf("unit %s is marching but has no current position", unitID)
+	}
+	u.q, u.r = *curQ, *curR
 	if u.targetQ == nil || u.targetR == nil {
 		return fmt.Errorf("unit %s has no target coordinates", unitID)
 	}
