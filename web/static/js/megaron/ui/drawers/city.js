@@ -425,7 +425,7 @@ export async function slaughterLivestock(provinceID) {
 // ── City build action ─────────────────────────────────────────────────────
 const _BLD_LBL = {
   farm:'Farm', barracks:'Barracks', mine:'Mine', lumbermill:'Lumbermill',
-  stonequarry:'Stone Quarry', market:'Trading House', wall:'Wall', tower:'Tower',
+  stonequarry:'Stone Quarry', market:'Marketplace', wall:'Wall', tower:'Tower',
   harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
   temple:'Temple', silver_mine:'Silver Mine',
@@ -582,7 +582,7 @@ async function refreshCityBuildings(provinceID) {
     h2 += `
       <div class="dsec-title" style="margin-top:.8rem">Construct</div>
       <select id="city-build-select" class="build-select">
-        <option value="market">Trading House — 100 timber 60 stone · +0.5 silver/tick</option>
+        <option value="market">Marketplace — 100 timber 60 stone · +0.5 silver/tick</option>
         <option value="barracks">Barracks — 80 timber 80 stone · recruits</option>
         <option value="farm">Farm — 50 timber 20 stone · +grain/tick</option>
         <option value="foundry">Foundry — 80 timber 100 stone · ${foundryRecipe ? 'craft ' + foundryRecipe.output_key : 'craft goods'}</option>
