@@ -30,7 +30,7 @@ import {
   renderColonizePreviewHTML,
 } from './ui/marchctx.js';
 import {
-  loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild, startCraft,
+  loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild,
   loadTicklog, cancelBuild, slaughterLivestock,
 } from './ui/drawers/city.js';
 import {
@@ -180,7 +180,6 @@ Object.assign(window, {
   sendMessengerFromInspect,
   slaughterLivestock,
   startBuild,
-  startCraft,
   startTransfer,
   submitReport,
   toggleActivityOverlay,

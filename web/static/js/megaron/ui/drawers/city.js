@@ -479,29 +479,6 @@ async function getRecipes() {
   return _recipesPromise;
 }
 
-export async function startCraft(provinceID, recipeID) {
-  const qtyEl = document.getElementById('city-craft-qty');
-  const resultEl = document.getElementById('city-craft-result');
-  const qty = qtyEl ? parseInt(qtyEl.value, 10) || 0 : 0;
-  if (!resultEl || qty <= 0 || !recipeID) return;
-  resultEl.textContent = '';
-  const r = await fetchAuth(
-    `/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/craft`,
-    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({recipe_id: Number(recipeID), quantity: qty}) }
-  );
-  const d = await r.json().catch(() => ({}));
-  if (r.ok) {
-    resultEl.style.color = 'var(--safe)';
-    // Result reads the server's own output_key/produced (Craft's response),
-    // not a client-guessed output — no recipe assumption survives here.
-    resultEl.textContent = `${d.produced ?? qty} ${d.output_key || 'goods'} crafted.`;
-    await refreshCityBuildings(provinceID);
-  } else {
-    resultEl.style.color = 'var(--accent)';
-    resultEl.textContent = d.error || 'Craft failed.';
-  }
-}
-
 export async function loadTicklog() {
   const capital = activeCitySettlement();
   const el = document.getElementById('city-ticklog-sec');
@@ -591,17 +568,13 @@ async function refreshCityBuildings(provinceID) {
           .map(i => `${((res[i.good_key] || {}).amount || 0).toFixed(0)} ${i.good_key}`)
           .join(', ');
         h2 += `
-          <div class="dsec-title" style="margin-top:.8rem">Craft — ${outputName}</div>
+          <div class="dsec-title" style="margin-top:.8rem">Foundry — ${outputName}</div>
           <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">${ingredientsStr} → ${foundryRecipe.output_qty} ${foundryRecipe.output_key} · stock: ${stockStr}</div>
-          <div style="display:flex;gap:.4rem;align-items:center">
-            <input type="number" id="city-craft-qty" min="1" value="1" style="width:4rem;background:var(--warm-white);border:1px solid var(--border);padding:.15rem .3rem;font-family:var(--mono);font-size:.75rem">
-            <button class="btn-primary btn-small" onclick="startCraft('${provinceID}',${foundryRecipe.id})">Craft →</button>
-          </div>
-          <div id="city-craft-result" class="action-result"></div>`;
+          <p class="empty-state" style="font-size:.72rem">Smelted on its own every tick — put a worker in the foundry and keep the ingredients in store.</p>`;
       } else {
-        // Degrade honestly: no fabricated ratio, no dead Craft button.
+        // Degrade honestly: no fabricated ratio.
         h2 += `
-          <div class="dsec-title" style="margin-top:.8rem">Craft</div>
+          <div class="dsec-title" style="margin-top:.8rem">Foundry</div>
           <p class="empty-state" style="font-size:.72rem">Recipe data unavailable — try reloading.</p>`;
       }
     }
