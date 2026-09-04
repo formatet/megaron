@@ -2,7 +2,7 @@ import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
-import { esc } from '../format.js';
+import { esc, formatApiError } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel, actorName } from '../actornames.js';
@@ -338,7 +338,7 @@ async function warRecruit(provinceID, unitType) {
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
-    resEl.textContent = data.error || 'failed';
+    resEl.textContent = formatApiError(data, 'failed');
   }
 }
 
@@ -367,7 +367,7 @@ export async function warRecruitShip(unitType) {
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
-    resEl.textContent = data.error || 'failed';
+    resEl.textContent = formatApiError(data, 'failed');
   }
 }
 
@@ -390,7 +390,7 @@ export async function warDisband(provinceID) {
     }
   } else {
     const resEl = document.getElementById('war-disband-res');
-    if (resEl) resEl.textContent = data.error || 'failed';
+    if (resEl) resEl.textContent = formatApiError(data, 'failed');
   }
 }
 
@@ -697,7 +697,7 @@ export async function unitMarchSend() {
     closeMarchPanel();
     loadWarDrawer();
   } else {
-    errEl.textContent = data.error || 'March failed';
+    errEl.textContent = formatApiError(data, 'March failed');
   }
 }
 
@@ -725,7 +725,7 @@ export async function unitStance(unitID) {
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
-    resEl.textContent = data.error || 'Stance change failed';
+    resEl.textContent = formatApiError(data, 'Stance change failed');
   }
 }
 
@@ -746,7 +746,7 @@ export async function unitReinforce(unitID) {
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
-    resEl.textContent = data.error || 'Reinforce failed';
+    resEl.textContent = formatApiError(data, 'Reinforce failed');
   }
 }
 
@@ -789,7 +789,7 @@ async function unitLoad(shipID, cargoUnitID) {
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
-    resEl.textContent = data.error || 'Load failed';
+    resEl.textContent = formatApiError(data, 'Load failed');
   }
 }
 
@@ -804,7 +804,7 @@ export async function unitUnload(shipID) {
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
-    resEl.textContent = data.error || 'Unload failed';
+    resEl.textContent = formatApiError(data, 'Unload failed');
   }
 }
 
@@ -824,6 +824,6 @@ export async function unitRepair(shipID) {
     loadWarDrawer();
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
-    resEl.textContent = data.error || 'Repair failed';
+    resEl.textContent = formatApiError(data, 'Repair failed');
   }
 }

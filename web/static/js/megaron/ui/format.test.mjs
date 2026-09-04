@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { notifText, fmtSilver } from './format.js';
+import { notifText, fmtSilver, formatApiError } from './format.js';
 
 // Decimal-silver formatter (Timothy 2026-08-13: sexagesimal shekel/mina/talang
 // retired). One decimal, trailing ".0" dropped, always suffixed " silver".
@@ -292,4 +292,49 @@ test('FoodShortfall without a name falls back to a generic settlement label', ()
     notifText('FoodShortfall', { unmet: 312 }),
     'A settlement went hungry today — 312 grain unmet',
   );
+});
+
+// formatApiError — bug report bee16ca7 (tick 230): the web threw away the
+// server's structured 422 {"error":"insufficient_goods","missing":[...]}
+// (writeGoodsError, api/handlers/helpers.go) and showed only the raw string
+// "insufficient_goods". Every good must be named with both need and have.
+
+test('insufficient_goods with one missing good names it with need and have', () => {
+  const data = { error: 'insufficient_goods', missing: [{ good: 'timber', need: 40, have: 12 }] };
+  assert.equal(formatApiError(data, 'Build failed.'), 'Not enough: timber 40 needed, 12 in store.');
+});
+
+test('insufficient_goods with several missing goods lists every one', () => {
+  const data = {
+    error: 'insufficient_goods',
+    missing: [
+      { good: 'timber', need: 40, have: 12 },
+      { good: 'copper', need: 10, have: 0 },
+    ],
+  };
+  assert.equal(
+    formatApiError(data, 'Build failed.'),
+    'Not enough: timber 40 needed, 12 in store; copper 10 needed, 0 in store.',
+  );
+});
+
+test('insufficient_goods rounds fractional need/have so a lazy-eval float never reaches the eye', () => {
+  const data = { error: 'insufficient_goods', missing: [{ good: 'grain', need: 39.999999, have: 4.2 }] };
+  assert.equal(formatApiError(data, 'Build failed.'), 'Not enough: grain 40 needed, 4 in store.');
+});
+
+test('insufficient_goods with an empty missing array falls back to data.error', () => {
+  const data = { error: 'insufficient_goods', missing: [] };
+  assert.equal(formatApiError(data, 'Build failed.'), 'insufficient_goods');
+});
+
+test('a different error code is passed through untouched', () => {
+  const data = { error: 'not_owner' };
+  assert.equal(formatApiError(data, 'Build failed.'), 'not_owner');
+});
+
+test('an empty response body (fetchAuth catch-guard) falls back to the fallback string', () => {
+  assert.equal(formatApiError({}, 'Build failed.'), 'Build failed.');
+  assert.equal(formatApiError(null, 'Build failed.'), 'Build failed.');
+  assert.equal(formatApiError(undefined, 'Build failed.'), 'Build failed.');
 });

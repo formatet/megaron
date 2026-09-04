@@ -42,6 +42,29 @@ export function fmtAgo(iso) {
   return Math.floor(ms / 86400000) + 'd ago';
 }
 
+// formatApiError turns a failed fetchAuth response body into player-readable
+// text. The server's writeGoodsError (api/handlers/helpers.go) sends
+// 422 {"error":"insufficient_goods","missing":[{good,need,have},...]} for
+// every goods-gated action (build, recruit, craft, ...) — until this helper
+// existed, every drawer call site printed the raw string "insufficient_goods"
+// verbatim (bug report bee16ca7, tick 230: "hade varit bättre om den visade
+// vad man har för resurser samtidigt som den avslår"). Rounds need/have so a
+// lazy-eval float like 39.999999 never reaches the eye. Any other shape
+// (missing 422, different error, empty/absent missing array) falls back to
+// the plain error string exactly as every call site did before, so this is
+// additive, not a behaviour change for the common non-goods case.
+export function formatApiError(data, fallback) {
+  if (data && data.error === 'insufficient_goods' && Array.isArray(data.missing) && data.missing.length) {
+    const parts = data.missing.map(m => {
+      const need = Math.round(Number(m.need) || 0);
+      const have = Math.round(Number(m.have) || 0);
+      return `${m.good || 'goods'} ${need} needed, ${have} in store`;
+    });
+    return 'Not enough: ' + parts.join('; ') + '.';
+  }
+  return (data && data.error) || fallback;
+}
+
 // fmtSoon: local, minimal future-relative helper for notifText's OfferAccepted
 // ETA tail. Deliberately NOT delegated to ui/time.js's fmtEta — that module
 // imports esc/fmtAgo FROM this file, so importing it back here would be a
