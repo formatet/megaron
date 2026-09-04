@@ -173,6 +173,14 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// Must be garrisoned or positioned (positioned = on map without a settlement,
 	// e.g. landed on empty hex; it must be able to march back or onward).
 	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
+		// A unit already marching can't start a second march — but it isn't
+		// stuck: redirect sends a courier that turns it onto a new course
+		// without waiting for it to arrive first. Name that verb instead of
+		// leaving the player at "it says no" (megaron_plan_fyra_smaslices §4b).
+		if u.Status == unit.StatusMarching {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"unit is already marching and cannot start a new march; redirect it to a new destination instead — keryx redirect --unit %s --target q,r", u.ID)
+		}
 		return nil, reject(http.StatusUnprocessableEntity,
 			"unit cannot march: status is '%s' (must be 'garrison' or 'positioned')", string(u.Status))
 	}
@@ -479,7 +487,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
 		if !pathOK {
-			hint := "a sea crossing needs a ship (embark), and mountains must be routed around"
+			hint := "a sea crossing needs a ship — load the land unit aboard first: keryx unit load --ship <id> --unit <id> (ship and unit in the same settlement, both garrisoned, settlement coastal or with a harbour); mountains must be routed around"
 			if unit.CategoryOf(u.Type) == unit.CategoryNaval {
 				hint = "the sea is blocked by land — no open-water route reaches it from this settlement's shore (building a harbour will not change this)"
 			}
