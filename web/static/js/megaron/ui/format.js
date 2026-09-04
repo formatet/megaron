@@ -182,12 +182,16 @@ export function notifText(kind, body) {
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
     case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
     case 'MessengerArrival':   return body.message || 'Messenger arrived';
+    // name (megaron_plan_dispatches.md §4, unit.LoadDisplayName server-side)
+    // names the SUBJECT — "2nd Spearmen of Knossos", not the category "A
+    // unit" — falling back to unit_type/'A unit' for older bodies persisted
+    // before this slice, or a unit whose row could not be resolved.
     case 'UnitAttrition':      return body.disbanded
-                                 ? `${body.unit_type || 'A unit'} starved to nothing — no grain`
-                                 : `${body.unit_type || 'A unit'} starving — lost ${body.lost || 0} to hunger`;
+                                 ? `${body.name || body.unit_type || 'A unit'} starved to nothing — no grain`
+                                 : `${body.name || body.unit_type || 'A unit'} starving — lost ${body.lost || 0} to hunger`;
     case 'UnitDeserted':       return body.disbanded
-                                 ? `${body.unit_type || 'A unit'} deserted — unpaid, unit lost`
-                                 : `${body.unit_type || 'A unit'} deserting — ${body.lost || 0} left (unpaid)`;
+                                 ? `${body.name || body.unit_type || 'A unit'} deserted — unpaid, unit lost`
+                                 : `${body.name || body.unit_type || 'A unit'} deserting — ${body.lost || 0} left (unpaid)`;
     case 'UpkeepUnpaid': {
       // Forewarning fired BEFORE desertion starts (SLICE A) — recordUnpaid's
       // else-branch used to bump unpaid_periods with zero player-facing signal
@@ -197,7 +201,7 @@ export function notifText(kind, body) {
       const tail = left === 1
         ? ' — one more unpaid period and they desert'
         : ` — ${left} periods left before desertion`;
-      return `${body.unit_type || 'A unit'} unpaid (period ${body.unpaid_periods || 0})${tail}`;
+      return `${body.name || body.unit_type || 'A unit'} unpaid (period ${body.unpaid_periods || 0})${tail}`;
     }
     case 'ForeignMarchSighted': {
       // The notice that starts the clock in the asynchronicity gate: a foreign
@@ -301,16 +305,19 @@ export function notifText(kind, body) {
       // the draw (0 ⇒ sunk is also true). returning_home is only ever true
       // for a routed side's survivor — the winning side's damaged ships keep
       // their orders and never carry this flag, even at the same hull loss.
-      if (body.sunk) return `Your ${body.unit_type || 'ship'} was sunk in battle`;
+      // subject falls back to unit_type/'ship' for bodies persisted before
+      // the naming fix (megaron_plan_dispatches.md §4).
+      const subject = `Your ${body.name || body.unit_type || 'ship'}`;
+      if (body.sunk) return `${subject} was sunk in battle`;
       const hull = `hull ${body.hull ?? '?'}/${body.hull_max ?? 5}`;
       return body.returning_home
-        ? `Your ${body.unit_type || 'ship'} took damage (${hull}) and is limping home for repair`
-        : `Your ${body.unit_type || 'ship'} took damage (${hull}) but holds its orders`;
+        ? `${subject} took damage (${hull}) and is limping home for repair`
+        : `${subject} took damage (${hull}) but holds its orders`;
     }
     case 'ShipRepaired': {
       // Payload per ShipRepairCompleteHandler (megaron_plan_skeppsreparation.md
       // Slice C point 4) — hull is always hull_max here, the repair job's outcome.
-      return `Your ${body.unit_type || 'ship'} is repaired (hull ${body.hull ?? 5}/5) and ready to sail`;
+      return `Your ${body.name || body.unit_type || 'ship'} is repaired (hull ${body.hull ?? 5}/5) and ready to sail`;
     }
     case 'CityOccupied': {
       // Payload per occupation.go's occupySettlement (megaron_plan_erovring.md
@@ -375,19 +382,25 @@ export function notifText(kind, body) {
     }
     case 'UnitLostAtSea': {
       const cause = body.reason === 'silver_shortage' ? 'the ship went unpaid' : 'the ship starved';
-      return `${body.unit_type || 'A unit'} lost at sea — ${cause}, ${body.lost || 0} men gone`;
+      return `${body.name || body.unit_type || 'A unit'} lost at sea — ${cause}, ${body.lost || 0} men gone`;
     }
     case 'CaravanSeized':   return `You seized an enemy caravan at (${body.q}, ${body.r})`;
     case 'CaravanRaided':   return `Your caravan was raided at (${body.q}, ${body.r})`;
+    // MarchStalled's reason is server-crafted (unit_arrival.go NotifyDeadLetter)
+    // and already names the subject there — nothing to enrich client-side.
     case 'MarchStalled':    return body.reason || 'A march could not be processed';
     case 'UnitArrived': {
-      const type = body.type ? `${body.type} ` : 'A unit ';
+      const subject = body.name || body.type || 'A unit';
       const stance = body.stance ? `, standing ${body.stance}` : '';
-      return `${type}arrived at (${body.q}, ${body.r}) — ${body.status || 'positioned'}${stance}`;
+      return `${subject} arrived at (${body.q}, ${body.r}) — ${body.status || 'positioned'}${stance}`;
     }
     case 'UnitExploreReturned': {
+      // da660376 (megaron_plan_dispatches.md §4): "'Scout returning home' —
+      // is it the galley that's meant?" — name falls back to the bare "Scout"
+      // category only for bodies persisted before this slice / a lookup miss.
       const eta = fmtSoon(body.arrives_at);
-      return `Scout returning home${eta ? ` — arrives ${eta}` : ''}`;
+      const subject = body.name || 'Scout';
+      return `${subject} returning home${eta ? ` — arrives ${eta}` : ''}`;
     }
     case 'UnitReturnedStarving': {
       // Payload per dispatchReturnHome's returnReasonStarvation branch
@@ -397,15 +410,21 @@ export function notifText(kind, body) {
       // it costs (a thinned crew sails slower), never reuse the scout's text.
       const eta = fmtSoon(body.arrives_at);
       const crew = body.crew_after != null ? ` (crew down to ${body.crew_after})` : '';
-      return `Ship's crew starved to half strength${crew} — turning home on its own, sailing slower${eta ? `, arrives ${eta}` : ''}`;
+      const subject = body.name ? `${body.name}'s crew` : "Ship's crew";
+      return `${subject} starved to half strength${crew} — turning home on its own, sailing slower${eta ? `, arrives ${eta}` : ''}`;
     }
-    case 'OrderFailed':
-      return body.reason ? `Order failed (${body.verb || '?'}): ${body.reason}` : `Order failed (${body.verb || '?'})`;
+    case 'OrderFailed': {
+      const prefix = body.name ? `${body.name} — ` : '';
+      return body.reason
+        ? `${prefix}Order failed (${body.verb || '?'}): ${body.reason}`
+        : `${prefix}Order failed (${body.verb || '?'})`;
+    }
     case 'UnitRecalled':
     case 'UnitRedirected': {
       const eta = fmtSoon(body.arrives_at);
       const verb = kind === 'UnitRecalled' ? 'recalled' : 'redirected';
-      return `Unit ${verb} — new course to (${body.target_q}, ${body.target_r})${eta ? `, arrives ${eta}` : ''}`;
+      const subject = body.name || 'Unit';
+      return `${subject} ${verb} — new course to (${body.target_q}, ${body.target_r})${eta ? `, arrives ${eta}` : ''}`;
     }
     case 'SitosGranaryRelease': {
       const empty = body.granary_empty ? ' — granary now empty' : '';

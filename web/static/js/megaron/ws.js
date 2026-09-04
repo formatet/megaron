@@ -8,7 +8,7 @@ import { notifText, notifIcon, colonyFoundedGrainLine } from './ui/format.js';
 // ── WebSocket — real-time province updates ────────────────────────────────
 // notifText/notifIcon/colonyFoundedGrainLine are pure formatting helpers
 // (ui/format.js, no DOM/state deps of their own) so this module imports them
-// directly. MusicPlayer, addNotifChip, refreshTiles and updateNotifBadge live
+// directly. MusicPlayer, addDispatch, refreshTiles and updateNotifBadge live
 // in higher layers (ui/misc.js, ui/chips.js, render/map.js) that this module
 // is not allowed to import per the config/state ← api/ws ← render ← ui ← main
 // dependency order — those are reached via the window.* bridge that main.js
@@ -118,40 +118,40 @@ export function initWS() {
       }
       if (msg.kind === 'MessengerArrival') {
         coalesce('messengers', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; })));
-        window.addNotifChip('diplomacy', '✉', msg.payload?.message || 'Messenger arrived', 'now');
+        window.addDispatch('diplomacy', '✉', msg.payload?.message || 'Messenger arrived', 'now');
       }
       if (msg.kind === 'ArmyArrival') {
         const intent = msg.payload?.intent || '';
-        window.addNotifChip('war', '⚔', `Army arrived — ${intent}`, 'now');
+        window.addDispatch('war', '⚔', `Army arrived — ${intent}`, 'now');
       }
       if (msg.kind === 'BuildComplete') {
-        window.addNotifChip('city', '🏛', `Build complete`, 'now');
+        window.addDispatch('city', '🏛', `Build complete`, 'now');
       }
       if (msg.kind === 'GoodsCrafted') {
         // Refetch goods — the city drawer's stock is now stale.
         coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; })));
-        window.addNotifChip('city', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch('city', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
       if (msg.kind === 'MetropolisFounded') {
-        window.addNotifChip('city', '👑', notifText('MetropolisFounded', msg.payload || {}), 'now');
+        window.addDispatch('city', '👑', notifText('MetropolisFounded', msg.payload || {}), 'now');
       }
       if (msg.kind === 'ColonyFounded') {
         // Founding grain balance rides in the payload (DEL B) — a colony that
         // starts at a deficit drains its seed from THIS tick, so say so now.
         const p = msg.payload || {};
         const grainLine = colonyFoundedGrainLine(p);
-        window.addNotifChip('city', '🏛', notifText('ColonyFounded', p) + (grainLine ? ' — ' + grainLine : ''), 'now');
+        window.addDispatch('city', '🏛', notifText('ColonyFounded', p) + (grainLine ? ' — ' + grainLine : ''), 'now');
       }
       if (msg.kind === 'TradeCaravanArrival') {
         coalesce('trades', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; })));
-        window.addNotifChip('trade', '🐂', 'Caravan arrived', 'now');
+        window.addDispatch('trade', '🐂', 'Caravan arrived', 'now');
       }
       if (msg.kind === 'KharisEvent') {
-        window.addNotifChip('kult', '⛩', msg.payload?.message || 'Divine event', 'now');
+        window.addDispatch('kult', '⛩', msg.payload?.message || 'Divine event', 'now');
       }
       if (msg.kind === 'UnitAttrition' || msg.kind === 'UnitDeserted') {
         // Units bleeding out from grain/silver shortage — previously silent.
-        window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
       }
       if (msg.kind === 'UpkeepUnpaid') {
@@ -159,14 +159,14 @@ export function initWS() {
         // UnitDeserted above, no unit size/status changed (only unpaid_periods,
         // not shown in any drawer), so there's nothing to refetch — just the
         // chip, which is the entire point of this notification existing.
-        window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
       if (msg.kind === 'ForeignMarchSighted') {
         // A foreign march just entered this Wanax's live tier. Unlike UpkeepUnpaid
         // above, the refetch IS warranted: the march is a new map actor, and the
         // whole value of this notification is the travel time still left to answer
         // it — waiting for the next 30-second poll spends that time for nothing.
-        window.addNotifChip('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
         coalesce('foreignUnits', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`)
           .then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; })));
       }
@@ -175,7 +175,7 @@ export function initWS() {
         // messenger.go) — previously silent until the delayed TradeDelivery/
         // TradeReturn. Domain 'trade' → chip click opens the diplomacy drawer
         // via DOMAIN_DRAWER, where the offer thread actually lives.
-        window.addNotifChip('trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch('trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
       }
       if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its

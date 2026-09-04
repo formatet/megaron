@@ -237,6 +237,7 @@ func (h *BattleTickHandler) notifyShipDamaged(ctx context.Context, battleID, wor
 	if err := h.hub.NotifyPlayer(ctx, worldID, p.ownerID, EventShipDamaged, level, map[string]any{
 		"unit_id":        p.unitID,
 		"unit_type":      p.utype,
+		"name":           unit.LoadDisplayName(ctx, h.pool, p.unitID),
 		"hull":           hull,
 		"hull_max":       hullMax,
 		"sunk":           sunk,

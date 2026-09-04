@@ -627,6 +627,7 @@ func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, wor
 	payload := map[string]any{
 		"unit_id":   u.id,
 		"unit_type": u.unitType,
+		"name":      unit.LoadDisplayName(ctx, h.pool, u.id),
 		"lost":      lost,
 		"disbanded": disbanded,
 		"reason":    reason,
@@ -676,6 +677,7 @@ func (h *UpkeepHandler) notifyUpkeepUnpaid(ctx context.Context, u upkeepUnitRow,
 	payload := map[string]any{
 		"unit_id":                 u.id,
 		"unit_type":               u.unitType,
+		"name":                    unit.LoadDisplayName(ctx, h.pool, u.id),
 		"unpaid_periods":          unpaidPeriods,
 		"periods_until_desertion": periodsUntilDesertion,
 		"silver_unpaid":           silverNeed,
@@ -731,6 +733,7 @@ func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, worldID, shipID
 		_ = h.hub.NotifyPlayer(ctx, worldID, cargoOwnerID, "UnitLostAtSea", 2, map[string]any{
 			"unit_id":   *cargoUnitID,
 			"unit_type": cargoType,
+			"name":      unit.LoadDisplayName(ctx, h.pool, *cargoUnitID),
 			"lost":      cargoSize,
 			"disbanded": true,
 			"reason":    reason,
