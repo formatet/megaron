@@ -888,8 +888,8 @@ body:has(.auth-page) main {
 }
 .gt-netstatus.visible { display: flex; }
 
-/* Notification strip — chips slide in from right */
-.gt-notif-strip {
+/* Dispatch strip — chips slide in from right */
+.gt-dispatch-strip {
   flex: 1;
   display: flex;
   align-items: center;
@@ -901,7 +901,7 @@ body:has(.auth-page) main {
 
 /* Dismiss-all for the transient chip stream — shown only when the strip is
    crowded enough for one-by-one dismissal to be a chore (see chips.js). */
-.nc-dismiss-all {
+.dc-dismiss-all {
   flex-shrink: 0;
   background: none;
   border: 1px solid var(--chip-border);
@@ -913,9 +913,9 @@ body:has(.auth-page) main {
   font-size: var(--fs-xs);
   letter-spacing: 0.05em;
 }
-.nc-dismiss-all:hover { color: var(--accent); border-color: var(--accent); }
+.dc-dismiss-all:hover { color: var(--accent); border-color: var(--accent); }
 
-.notif-chip {
+.dispatch-chip {
   display: flex;
   align-items: center;
   height: 30px;
@@ -934,21 +934,21 @@ body:has(.auth-page) main {
   transition: max-width 0.3s ease, opacity 0.25s ease, box-shadow 0.2s ease, background 0.15s ease;
 }
 
-.nc-war       { border-left-color: var(--accent-war);       background: rgba(162,58,50,0.13);  box-shadow: var(--chip-shadow-war); }
-.nc-city      { border-left-color: var(--accent-city);      background: rgba(62,107,170,0.13); box-shadow: var(--chip-shadow-city); }
-.nc-trade     { border-left-color: var(--accent-trade);     background: rgba(200,154,43,0.13); box-shadow: var(--chip-shadow-trade); }
-.nc-diplomacy { border-left-color: var(--accent-diplomacy); background: rgba(122,74,165,0.13); box-shadow: var(--chip-shadow-diplomacy); }
-.nc-kult     { border-left-color: var(--accent-oikos);     background: rgba(78,122,82,0.13);  box-shadow: var(--chip-shadow-oikos); }
-.nc-system    { border-left-color: var(--accent-system);    background: rgba(108,106,104,0.13);box-shadow: var(--chip-shadow-system); }
+.dc-war       { border-left-color: var(--accent-war);       background: rgba(162,58,50,0.13);  box-shadow: var(--chip-shadow-war); }
+.dc-city      { border-left-color: var(--accent-city);      background: rgba(62,107,170,0.13); box-shadow: var(--chip-shadow-city); }
+.dc-trade     { border-left-color: var(--accent-trade);     background: rgba(200,154,43,0.13); box-shadow: var(--chip-shadow-trade); }
+.dc-diplomacy { border-left-color: var(--accent-diplomacy); background: rgba(122,74,165,0.13); box-shadow: var(--chip-shadow-diplomacy); }
+.dc-kult     { border-left-color: var(--accent-oikos);     background: rgba(78,122,82,0.13);  box-shadow: var(--chip-shadow-oikos); }
+.dc-system    { border-left-color: var(--accent-system);    background: rgba(108,106,104,0.13);box-shadow: var(--chip-shadow-system); }
 
-.nc-war:hover       { background: rgba(162,58,50,0.32); }
-.nc-city:hover      { background: rgba(62,107,170,0.32); }
-.nc-trade:hover     { background: rgba(200,154,43,0.32); }
-.nc-diplomacy:hover { background: rgba(122,74,165,0.32); }
-.nc-kult:hover     { background: rgba(78,122,82,0.32); }
-.nc-system:hover    { background: rgba(108,106,104,0.32); }
+.dc-war:hover       { background: rgba(162,58,50,0.32); }
+.dc-city:hover      { background: rgba(62,107,170,0.32); }
+.dc-trade:hover     { background: rgba(200,154,43,0.32); }
+.dc-diplomacy:hover { background: rgba(122,74,165,0.32); }
+.dc-kult:hover     { background: rgba(78,122,82,0.32); }
+.dc-system:hover    { background: rgba(108,106,104,0.32); }
 
-.nc-icon {
+.dc-icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -957,29 +957,29 @@ body:has(.auth-page) main {
   gap: 3px;
   flex-shrink: 0;
 }
-.nc-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.nc-war .nc-dot       { background: var(--accent-war); }
-.nc-city .nc-dot      { background: var(--accent-city); }
-.nc-trade .nc-dot     { background: var(--accent-trade); }
-.nc-diplomacy .nc-dot { background: var(--accent-diplomacy); }
-.nc-kult .nc-dot     { background: var(--accent-oikos); }
-.nc-system .nc-dot    { background: var(--accent-system); }
+.dc-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.dc-war .dc-dot       { background: var(--accent-war); }
+.dc-city .dc-dot      { background: var(--accent-city); }
+.dc-trade .dc-dot     { background: var(--accent-trade); }
+.dc-diplomacy .dc-dot { background: var(--accent-diplomacy); }
+.dc-kult .dc-dot     { background: var(--accent-oikos); }
+.dc-system .dc-dot    { background: var(--accent-system); }
 
-.nc-glyph { font-size: var(--fs-sm); line-height: 1; }
-.nc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; min-width: 0; }
-.nc-time  { font-size: var(--fs-xs); color: rgba(28,28,28,0.55); margin-right: 4px; flex-shrink: 0; }
-.nc-x {
+.dc-glyph { font-size: var(--fs-sm); line-height: 1; }
+.dc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; min-width: 0; }
+.dc-time  { font-size: var(--fs-xs); color: rgba(28,28,28,0.55); margin-right: 4px; flex-shrink: 0; }
+.dc-x {
   background: none; border: none; color: rgba(233,225,210,0.4);
   cursor: pointer; padding: 0 6px 0 2px; font-size: var(--fs-xs); flex-shrink: 0;
 }
-.nc-x:hover { color: var(--chip-text); }
+.dc-x:hover { color: var(--chip-text); }
 
 @keyframes chipSlideIn {
   from { transform: translateX(240px); opacity: 0; max-width: 0; }
   60%  { opacity: 1; }
   to   { transform: translateX(0); opacity: 1; }
 }
-.notif-chip.dismissing { animation: chipDismiss 0.25s ease forwards; }
+.dispatch-chip.dismissing { animation: chipDismiss 0.25s ease forwards; }
 @keyframes chipDismiss {
   to { max-width: 0; opacity: 0; padding: 0; margin: 0; border-width: 0; }
 }
@@ -1201,7 +1201,7 @@ body:has(.auth-page) main {
 .drawer-close:hover { color: var(--accent); border-color: var(--accent); }
 /* The drawer is an ARCHIVE (Timothy 2026-08-22) — it carries a label, not a
    clear-all control. The dismiss-all lives on the transient chip strip instead
-   (.nc-dismiss-all). */
+   (.dc-dismiss-all). */
 .notif-archive-note {
   margin-left: auto;
   margin-right: 0.4rem;

@@ -27,7 +27,7 @@ export async function initNotifications() {
   } catch (_) {}
 }
 
-// ── Notification chips ─────────────────────────────────────────────────────
+// ── Dispatch chips ──────────────────────────────────────────────────────────
 const MIN_W = 26;
 const GAP   = 3;
 
@@ -36,11 +36,11 @@ const GAP   = 3;
 const DISMISS_ALL_FROM = 3;
 
 function recomputeChips() {
-  const strip = document.getElementById('gt-notif-strip');
-  const chips = [...strip.querySelectorAll('.notif-chip:not(.dismissing)')];
+  const strip = document.getElementById('gt-dispatch-strip');
+  const chips = [...strip.querySelectorAll('.dispatch-chip:not(.dismissing)')];
   // Toggled BEFORE the empty-strip early return below — otherwise the button
   // would survive the dismissal of the last chip it belongs to.
-  const allBtn = document.getElementById('nc-dismiss-all');
+  const allBtn = document.getElementById('dc-dismiss-all');
   if (allBtn) allBtn.style.display = chips.length >= DISMISS_ALL_FROM ? '' : 'none';
   if (!chips.length) return;
   const n         = chips.length;
@@ -54,9 +54,9 @@ function recomputeChips() {
     const op     = Math.max(0.42, 1 - depth * 0.1);
     chip.style.maxWidth = width + 'px';
     chip.style.opacity  = op;
-    const textEl = chip.querySelector('.nc-text');
-    const timeEl = chip.querySelector('.nc-time');
-    const xEl    = chip.querySelector('.nc-x');
+    const textEl = chip.querySelector('.dc-text');
+    const timeEl = chip.querySelector('.dc-time');
+    const xEl    = chip.querySelector('.dc-x');
     if (textEl) textEl.style.display = width <= 70  ? 'none' : '';
     if (timeEl) timeEl.style.display = width <= 115 ? 'none' : '';
     if (xEl)    xEl.style.display    = width <= 115 ? 'none' : '';
@@ -69,15 +69,15 @@ function dismissChip(chip) {
   chip.addEventListener('animationend', () => { chip.remove(); recomputeChips(); }, { once: true });
 }
 
-// Dismiss every chip currently on the strip. Timothy 2026-08-22: "'ta bort allt'
-// är mer motiverat för den andra notislistan, där de ramlar in högerifrån."
-// This is the transient stream, so clearing it destroys nothing — every chip is
-// also a row in the notifications drawer, which is the permanent archive (see
+// Dismiss every dispatch currently on the strip. Timothy 2026-08-22: "'ta bort
+// allt' är mer motiverat för den andra notislistan, där de ramlar in högerifrån."
+// This is the transient stream, so clearing it destroys nothing — every dispatch
+// is also a row in the notifications drawer, which is the permanent archive (see
 // ui/drawers/notif.js). The strip is empty on reload regardless.
 export function dismissAllChips() {
-  const strip = document.getElementById('gt-notif-strip');
+  const strip = document.getElementById('gt-dispatch-strip');
   if (!strip) return;
-  strip.querySelectorAll('.notif-chip:not(.dismissing)').forEach(dismissChip);
+  strip.querySelectorAll('.dispatch-chip:not(.dismissing)').forEach(dismissChip);
 }
 
 const DOMAIN_DRAWER = {
@@ -89,19 +89,19 @@ const DOMAIN_DRAWER = {
 // topmost layer) — this module cannot import it without an upward/cyclical
 // dependency, so it goes through the window bridge main.js sets up, same
 // convention as the canvas → drawer calls in render/map.js.
-export function addNotifChip(domain, glyph, text, time) {
-  const strip = document.getElementById('gt-notif-strip');
+export function addDispatch(domain, glyph, text, time) {
+  const strip = document.getElementById('gt-dispatch-strip');
   const chip  = document.createElement('div');
-  chip.className  = 'notif-chip nc-' + domain;
+  chip.className  = 'dispatch-chip dc-' + domain;
   chip.title      = text;
   chip.innerHTML  = `
-    <span class="nc-icon"><span class="nc-dot"></span><span class="nc-glyph">${glyph}</span></span>
-    <span class="nc-text">${text}</span>
-    <span class="nc-time">${time}</span>
-    <button class="nc-x" title="Dismiss">✕</button>
+    <span class="dc-icon"><span class="dc-dot"></span><span class="dc-glyph">${glyph}</span></span>
+    <span class="dc-text">${text}</span>
+    <span class="dc-time">${time}</span>
+    <button class="dc-x" title="Dismiss">✕</button>
   `;
   chip.addEventListener('click', function(e) {
-    if (e.target.classList.contains('nc-x')) return;
+    if (e.target.classList.contains('dc-x')) return;
     const target = DOMAIN_DRAWER[domain];
     if (target) window.openDrawer(target);
     dismissChip(this);
@@ -110,7 +110,7 @@ export function addNotifChip(domain, glyph, text, time) {
     e.preventDefault();
     dismissChip(this);
   });
-  chip.querySelector('.nc-x').addEventListener('click', function(e) {
+  chip.querySelector('.dc-x').addEventListener('click', function(e) {
     e.stopPropagation();
     dismissChip(chip);
   });

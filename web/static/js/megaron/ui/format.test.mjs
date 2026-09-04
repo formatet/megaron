@@ -294,6 +294,88 @@ test('FoodShortfall without a name falls back to a generic settlement label', ()
   );
 });
 
+// Dispatches naming (megaron_plan_dispatches.md §4, bug report da660376):
+// "'Scout returning home — arrives in ~10 min' — is it the galley that's
+// meant?" — every unit-carrying kind now gets a `name` field from the
+// server (unit.LoadDisplayName), and notifText must prefer it over the bare
+// category. Bodies without a name (persisted before this slice, or a failed
+// lookup) fall back to the old generic wording — proven above, unchanged.
+
+test('UnitExploreReturned names the returning unit instead of a bare category', () => {
+  assert.equal(
+    notifText('UnitExploreReturned', { unit_id: 'x', q: 1, r: 1, name: 'Nomadic Host of formatet' }),
+    'Nomadic Host of formatet returning home',
+  );
+});
+
+test('UnitArrived names the unit over the type', () => {
+  assert.equal(
+    notifText('UnitArrived', { unit_id: 'x', type: 'ship', name: 'White Dolphin, Galley of Kydonia', q: 5, r: 6, status: 'positioned' }),
+    'White Dolphin, Galley of Kydonia arrived at (5, 6) — positioned',
+  );
+});
+
+test('UnitReturnedStarving names the ship possessively', () => {
+  assert.equal(
+    notifText('UnitReturnedStarving', { unit_id: 'x', q: 1, r: 1, crew_after: 10, name: 'White Dolphin, Galley of Kydonia' }),
+    "White Dolphin, Galley of Kydonia's crew starved to half strength (crew down to 10) — turning home on its own, sailing slower",
+  );
+});
+
+test('UnitAttrition and UnitDeserted name the unit', () => {
+  assert.equal(
+    notifText('UnitAttrition', { unit_type: 'infantry', name: '2nd Spearmen of Knossos', lost: 12, disbanded: false }),
+    '2nd Spearmen of Knossos starving — lost 12 to hunger',
+  );
+  assert.equal(
+    notifText('UnitDeserted', { unit_type: 'infantry', name: '2nd Spearmen of Knossos', disbanded: true }),
+    '2nd Spearmen of Knossos deserted — unpaid, unit lost',
+  );
+});
+
+test('UpkeepUnpaid names the unit', () => {
+  assert.equal(
+    notifText('UpkeepUnpaid', { unit_type: 'infantry', name: '2nd Spearmen of Knossos', unpaid_periods: 2, periods_until_desertion: 1 }),
+    '2nd Spearmen of Knossos unpaid (period 2) — one more unpaid period and they desert',
+  );
+});
+
+test('UnitLostAtSea names the unit', () => {
+  assert.equal(
+    notifText('UnitLostAtSea', { unit_type: 'infantry', name: '2nd Spearmen of Knossos', lost: 40, reason: 'grain_shortage' }),
+    '2nd Spearmen of Knossos lost at sea — the ship starved, 40 men gone',
+  );
+});
+
+test('UnitRecalled and UnitRedirected name the unit', () => {
+  assert.equal(
+    notifText('UnitRecalled', { unit_id: 'x', name: '2nd Spearmen of Knossos', target_q: 2, target_r: 3 }),
+    '2nd Spearmen of Knossos recalled — new course to (2, 3)',
+  );
+  assert.equal(
+    notifText('UnitRedirected', { unit_id: 'x', name: '2nd Spearmen of Knossos', target_q: 2, target_r: 3 }),
+    '2nd Spearmen of Knossos redirected — new course to (2, 3)',
+  );
+});
+
+test('OrderFailed prefixes the named unit when present', () => {
+  assert.equal(
+    notifText('OrderFailed', { verb: 'recall', name: '2nd Spearmen of Knossos', reason: 'the army had already resolved' }),
+    '2nd Spearmen of Knossos — Order failed (recall): the army had already resolved',
+  );
+});
+
+test('ShipDamaged and ShipRepaired name the ship over the bare type', () => {
+  assert.equal(
+    notifText('ShipDamaged', { unit_type: 'galley', name: 'White Dolphin, Galley of Kydonia', hull: 0, hull_max: 5, sunk: true, returning_home: false }),
+    'Your White Dolphin, Galley of Kydonia was sunk in battle',
+  );
+  assert.equal(
+    notifText('ShipRepaired', { unit_type: 'galley', name: 'White Dolphin, Galley of Kydonia', hull: 5 }),
+    'Your White Dolphin, Galley of Kydonia is repaired (hull 5/5) and ready to sail',
+  );
+});
+
 // formatApiError — bug report bee16ca7 (tick 230): the web threw away the
 // server's structured 422 {"error":"insufficient_goods","missing":[...]}
 // (writeGoodsError, api/handlers/helpers.go) and showed only the raw string

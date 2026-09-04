@@ -178,6 +178,7 @@ func (h *ShipRepairCompleteHandler) Handle(ctx context.Context, e events.Schedul
 		if err := h.hub.NotifyPlayer(ctx, p.WorldID, ownerID, EventShipRepaired, 3, map[string]any{
 			"unit_id":       p.UnitID,
 			"unit_type":     p.UnitType,
+			"name":          unit.LoadDisplayName(ctx, h.pool, p.UnitID),
 			"settlement_id": p.SettlementID,
 			"hull":          HullMax,
 		}); err != nil {

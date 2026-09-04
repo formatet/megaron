@@ -107,11 +107,20 @@ func (h *UnitArrivalHandler) NotifyDeadLetter(ctx context.Context, e events.Sche
 	).Scan(&ownerID, &status, &utype); err != nil {
 		return fmt.Errorf("dead-letter: load unit owner: %w", err)
 	}
+	// Namnger subjektet (megaron_plan_dispatches.md §4) — "your infantry's
+	// arrival..." läses som en kategori; med namnet blir det "2nd Spearmen of
+	// Knossos's arrival...", vilket Wanaxen faktiskt känner igen.
+	name := unit.LoadDisplayName(ctx, h.pool, payload.UnitID)
+	subject := "your " + utype
+	if name != "" {
+		subject = name
+	}
 	_ = h.hub.NotifyPlayer(ctx, payload.WorldID, ownerID, "MarchStalled", 1, map[string]any{
 		"unit_id": payload.UnitID,
+		"name":    name,
 		"reason": fmt.Sprintf(
-			"your %s's arrival could not be processed after repeated attempts (system fault) — check `unit list`/`map`; its status is currently %q and may need a fresh march order",
-			utype, status),
+			"%s's arrival could not be processed after repeated attempts (system fault) — check `unit list`/`map`; its status is currently %q and may need a fresh march order",
+			subject, status),
 	})
 	slog.Warn("dead-letter: notified owner of stalled unit arrival", "unit", payload.UnitID, "owner", ownerID)
 	return nil
@@ -425,6 +434,7 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
 			"unit_id": u.id,
 			"type":    u.utype,
+			"name":    unit.LoadDisplayName(ctx, tx, u.id),
 			"q":       destQ,
 			"r":       destR,
 			"status":  newStatus,
@@ -655,6 +665,9 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 
 	// Tail: reason picks the event type + notification kind. The route/dispatch
 	// above is identical for every reason — only what the Wanax is told differs.
+	// Named once here: both tails below report the same turning-for-home unit
+	// (megaron_plan_dispatches.md §4 — "Scout returning home" named no scout).
+	name := unit.LoadDisplayName(ctx, tx, u.id)
 	if reason == returnReasonStarvation {
 		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitReturnedStarving,
 			unit.UnitReturnedStarvingPayload{
@@ -669,6 +682,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		if h.hub != nil {
 			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitReturnedStarving", 3, map[string]any{
 				"unit_id":    u.id,
+				"name":       name,
 				"q":          fromQ,
 				"r":          fromR,
 				"arrives_at": arrivesAt,
@@ -691,6 +705,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitExploreReturned", 5, map[string]any{
 			"unit_id":    u.id,
+			"name":       name,
 			"q":          fromQ,
 			"r":          fromR,
 			"arrives_at": arrivesAt,
@@ -744,6 +759,7 @@ func (h *UnitArrivalHandler) exploreReturned(
 	if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
 			"unit_id": u.id,
+			"name":    unit.LoadDisplayName(ctx, tx, u.id),
 			"q":       destQ,
 			"r":       destR,
 			"status":  "garrison",
@@ -802,6 +818,7 @@ func (h *UnitArrivalHandler) damagedShipReturned(
 	if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
 			"unit_id": u.id,
+			"name":    unit.LoadDisplayName(ctx, tx, u.id),
 			"q":       destQ,
 			"r":       destR,
 			"status":  "garrison",
@@ -863,6 +880,7 @@ func (h *UnitArrivalHandler) sentryArrived(
 	if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
 			"unit_id": u.id,
+			"name":    unit.LoadDisplayName(ctx, tx, u.id),
 			"q":       destQ,
 			"r":       destR,
 			"status":  "positioned",

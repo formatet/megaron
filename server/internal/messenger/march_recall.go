@@ -218,6 +218,7 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		}
 		_ = h.hub.NotifyPlayer(ctx, p.WorldID, ownerID, notifKind, 3, map[string]any{
 			"unit_id":    p.UnitID,
+			"name":       unit.LoadDisplayName(ctx, h.pool, p.UnitID),
 			"q":          currentPos.Q,
 			"r":          currentPos.R,
 			"target_q":   newTarget.Q,

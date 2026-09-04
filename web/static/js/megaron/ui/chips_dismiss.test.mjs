@@ -1,4 +1,4 @@
-// Chip-strimmans "✕ all" (webb/notisarkiv-o-panelfokus, beteende 2).
+// Dispatch-strimmans "✕ all" (webb/notisarkiv-o-panelfokus, beteende 2).
 //
 // ⚠️ EGEN FIL med avsikt, inte av slarv. Grannen chips.test.mjs bevisar
 // notis-BADGEN och stubbar `document.getElementById` så att just
@@ -12,9 +12,9 @@ import assert from 'node:assert/strict';
 
 // webb/notisarkiv-o-panelfokus, beteende 2 (Timothy 2026-08-22): "'ta bort
 // allt' är mer motiverat för den andra notislistan, där de ramlar in
-// högerifrån." dismissAllChips() tömmer chip-STRIMMAN (transient), inte
-// notis-arkivet (varje chip finns redan som rad i notif.js-drawern — se
-// notif.test.mjs). Knappen (#nc-dismiss-all) ska bara synas vid >= 3 chips.
+// högerifrån." dismissAllChips() tömmer dispatch-STRIMMAN (transient), inte
+// notis-arkivet (varje dispatch finns redan som rad i notif.js-drawern — se
+// notif.test.mjs). Knappen (#dc-dismiss-all) ska bara synas vid >= 3 chips.
 //
 // chips.js touches `window.addEventListener('resize', recomputeChips)` at
 // MODULE TOP LEVEL — samma fälla som master's chips.test.mjs redan
@@ -30,7 +30,7 @@ globalThis.window ??= { addEventListener() {}, openDrawer() {} };
 function makeChipEl() {
   const classes = new Set();
   const listeners = {};
-  const sub = { style: {}, addEventListener() {} }; // .nc-text/.nc-time/.nc-x stand-in
+  const sub = { style: {}, addEventListener() {} }; // .dc-text/.dc-time/.dc-x stand-in
   return {
     style: {},
     classList: {
@@ -54,8 +54,8 @@ function makeStrip() {
     children,
     appendChild(chip) { children.push(chip); },
     querySelectorAll(sel) {
-      // Enda selektorn chips.js faktiskt använder är '.notif-chip:not(.dismissing)'.
-      assert.equal(sel, '.notif-chip:not(.dismissing)');
+      // Enda selektorn chips.js faktiskt använder är '.dispatch-chip:not(.dismissing)'.
+      assert.equal(sel, '.dispatch-chip:not(.dismissing)');
       return children.filter(c => !c.classList.contains('dismissing'));
     },
   };
@@ -65,29 +65,29 @@ const strip = makeStrip();
 const dismissAllBtn = { style: {} };
 globalThis.document = {
   getElementById(id) {
-    if (id === 'gt-notif-strip') return strip;
-    if (id === 'nc-dismiss-all') return dismissAllBtn;
+    if (id === 'gt-dispatch-strip') return strip;
+    if (id === 'dc-dismiss-all') return dismissAllBtn;
     if (id === 'gt-notif-badge') return { style: {} };
     return null;
   },
   createElement: () => makeChipEl(),
 };
 
-const { addNotifChip, dismissAllChips } = await import('./chips.js');
+const { addDispatch, dismissAllChips } = await import('./chips.js');
 
 test('AK1: chips.js importeras utan att röra DOM/window före denna punkt', () => {
   assert.ok(true);
 });
 
 test('AK2: "✕ all" är dold under 3 chips', () => {
-  addNotifChip('war', '⚔', 'Army arrived', 'now');
-  addNotifChip('city', '🏛', 'Build complete', 'now');
+  addDispatch('war', '⚔', 'Army arrived', 'now');
+  addDispatch('city', '🏛', 'Build complete', 'now');
   assert.equal(strip.children.length, 2);
   assert.equal(dismissAllBtn.style.display, 'none');
 });
 
 test('AK3: "✕ all" dyker upp vid exakt 3 chips (DISMISS_ALL_FROM)', () => {
-  addNotifChip('diplomacy', '✉', 'Messenger arrived', 'now');
+  addDispatch('diplomacy', '✉', 'Messenger arrived', 'now');
   assert.equal(strip.children.length, 3);
   assert.equal(dismissAllBtn.style.display, '');
 });

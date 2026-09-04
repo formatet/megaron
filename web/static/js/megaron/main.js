@@ -23,7 +23,7 @@ import {
   showLawagatasBrief, dismissBrief, MusicPlayer, toggleMusic,
   initCelestial, initMusicAutostart,
 } from './ui/misc.js';
-import { updateNotifBadge, initNotifications, addNotifChip, dismissAllChips } from './ui/chips.js';
+import { updateNotifBadge, initNotifications, addDispatch, dismissAllChips } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
 import {
   closeMarchCtx, onColonizeToggle, openMarchCtx, sendMarch,
@@ -203,7 +203,7 @@ Object.assign(window, {
   zoom,
   // (b) window-bridge (not inline-handler targets)
   MusicPlayer,
-  addNotifChip,
+  addDispatch,
   openDrawer,
   openMarchCtx,
   refreshTiles,

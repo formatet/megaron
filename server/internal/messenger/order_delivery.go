@@ -26,6 +26,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -153,6 +154,7 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		if h.hub != nil {
 			_ = h.hub.NotifyPlayer(ctx, p.WorldID, res.OwnerID, notifKind, 3, map[string]any{
 				"unit_id":    res.UnitID,
+				"name":       unit.LoadDisplayName(ctx, h.pool, res.UnitID),
 				"q":          res.FromQ,
 				"r":          res.FromR,
 				"target_q":   res.NewTargetQ,
@@ -223,6 +225,7 @@ func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.Sc
 	}
 	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 1, map[string]any{
 		"unit_id": p.UnitID,
+		"name":    unit.LoadDisplayName(ctx, h.pool, p.UnitID),
 		"verb":    p.Verb,
 		"reason":  fmt.Sprintf("your %s order's Runner could not deliver it after repeated attempts (system fault) — the unit never received it; check its status and reissue the order", p.Verb),
 	})
@@ -239,6 +242,7 @@ func (h *OrderDeliveryHandler) notifyOrderFailed(ctx context.Context, p OrderDel
 	}
 	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 2, map[string]any{
 		"unit_id": p.UnitID,
+		"name":    unit.LoadDisplayName(ctx, h.pool, p.UnitID),
 		"verb":    p.Verb,
 		"reason":  reason,
 	})
