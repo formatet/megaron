@@ -118,40 +118,40 @@ export function initWS() {
       }
       if (msg.kind === 'MessengerArrival') {
         coalesce('messengers', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; })));
-        window.addDispatch('diplomacy', '✉', msg.payload?.message || 'Messenger arrived', 'now');
+        window.addDispatch(msg.kind, 'diplomacy', '✉', msg.payload?.message || 'Messenger arrived', 'now', msg.payload || {});
       }
       if (msg.kind === 'ArmyArrival') {
         const intent = msg.payload?.intent || '';
-        window.addDispatch('war', '⚔', `Army arrived — ${intent}`, 'now');
+        window.addDispatch(msg.kind, 'war', '⚔', `Army arrived — ${intent}`, 'now', msg.payload || {});
       }
       if (msg.kind === 'BuildComplete') {
-        window.addDispatch('city', '🏛', `Build complete`, 'now');
+        window.addDispatch(msg.kind, 'city', '🏛', `Build complete`, 'now', msg.payload || {});
       }
       if (msg.kind === 'GoodsCrafted') {
         // Refetch goods — the city drawer's stock is now stale.
         coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; })));
-        window.addDispatch('city', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch(msg.kind, 'city', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
       }
       if (msg.kind === 'MetropolisFounded') {
-        window.addDispatch('city', '👑', notifText('MetropolisFounded', msg.payload || {}), 'now');
+        window.addDispatch(msg.kind, 'city', '👑', notifText('MetropolisFounded', msg.payload || {}), 'now', msg.payload || {});
       }
       if (msg.kind === 'ColonyFounded') {
         // Founding grain balance rides in the payload (DEL B) — a colony that
         // starts at a deficit drains its seed from THIS tick, so say so now.
         const p = msg.payload || {};
         const grainLine = colonyFoundedGrainLine(p);
-        window.addDispatch('city', '🏛', notifText('ColonyFounded', p) + (grainLine ? ' — ' + grainLine : ''), 'now');
+        window.addDispatch(msg.kind, 'city', '🏛', notifText('ColonyFounded', p) + (grainLine ? ' — ' + grainLine : ''), 'now', p);
       }
       if (msg.kind === 'TradeCaravanArrival') {
         coalesce('trades', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; })));
-        window.addDispatch('trade', '🐂', 'Caravan arrived', 'now');
+        window.addDispatch(msg.kind, 'trade', '🐂', 'Caravan arrived', 'now', msg.payload || {});
       }
       if (msg.kind === 'KharisEvent') {
-        window.addDispatch('kult', '⛩', msg.payload?.message || 'Divine event', 'now');
+        window.addDispatch(msg.kind, 'kult', '⛩', msg.payload?.message || 'Divine event', 'now', msg.payload || {});
       }
       if (msg.kind === 'UnitAttrition' || msg.kind === 'UnitDeserted') {
         // Units bleeding out from grain/silver shortage — previously silent.
-        window.addDispatch('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
       }
       if (msg.kind === 'UpkeepUnpaid') {
@@ -159,23 +159,23 @@ export function initWS() {
         // UnitDeserted above, no unit size/status changed (only unpaid_periods,
         // not shown in any drawer), so there's nothing to refetch — just the
         // chip, which is the entire point of this notification existing.
-        window.addDispatch('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
       }
       if (msg.kind === 'ForeignMarchSighted') {
         // A foreign march just entered this Wanax's live tier. Unlike UpkeepUnpaid
         // above, the refetch IS warranted: the march is a new map actor, and the
         // whole value of this notification is the travel time still left to answer
         // it — waiting for the next 30-second poll spends that time for nothing.
-        window.addDispatch('war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
         coalesce('foreignUnits', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`)
           .then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; })));
       }
       if (['OfferAccepted','OfferDeclined','OfferExpired'].includes(msg.kind)) {
         // Trade offer resolution — the offer's originator (see economy/trade.go,
         // messenger.go) — previously silent until the delayed TradeDelivery/
-        // TradeReturn. Domain 'trade' → chip click opens the diplomacy drawer
-        // via DOMAIN_DRAWER, where the offer thread actually lives.
-        window.addDispatch('trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now');
+        // TradeReturn. Chip click opens the dispatch window (megaron_plan_
+        // dispatches.md §1), whose "take me there" jumps to settlement_id.
+        window.addDispatch(msg.kind, 'trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
       }
       if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its
