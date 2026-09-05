@@ -646,6 +646,65 @@ func LoadPlacementCounts(ctx context.Context, tx Tx, settlementID uuid.UUID) (Pl
 	return out, nil
 }
 
+// GlobalHexOccupancy is LoadPlacementCounts' cross-settlement counterpart for
+// hex targets ONLY (megaron_plan_hexagarskap_och_stadsavstand.md §2: "en hex
+// ska bära ett bestämt antal gubbar TOTALT, oavsett hur många städer som har
+// den i sin catchment"). It answers "how many gubbar, from EVERY settlement
+// in this world, already stand on hex H doing good G" — the number a hex's
+// PlaceCapPerGood must be checked against once two settlements' catchments
+// can overlap (§3, not yet built — CatchmentClearanceHexes still forbids it
+// today, so for any hex that belongs to only one settlement's catchment this
+// returns EXACTLY what LoadPlacementCounts would have for that settlement
+// alone; the two are indistinguishable until overlap is possible).
+//
+// Deliberately NOT used by RecomputeProduction/placementYield: those stay on
+// LoadPlacementCounts (settlement-scoped) because placementYield's formula is
+// already correct per-gubbe — rate/capL1×mult is a FIXED contribution per
+// worker, so as long as the global occupancy check below (PlaceGubbe) never
+// lets a hex's total exceed PlaceCapPerGood, two settlements sharing a hex
+// simply split that hex's one ceiling between their own placed headcounts;
+// summing each settlement's own RecomputeProduction output already adds up to
+// no more than a single settlement fully staffing it would have produced. The
+// capacity CHECK is the only thing that needs to become global — the
+// production FORMULA does not (this is the plan's step 2: "det är den enda
+// verkliga kodändringen — resten är följd").
+func GlobalHexOccupancy(ctx context.Context, tx Tx, worldID uuid.UUID, hexes []hexgrid.Coord) (map[hexgrid.Coord]map[string]int, error) {
+	out := make(map[hexgrid.Coord]map[string]int)
+	if len(hexes) == 0 {
+		return out, nil
+	}
+	q, r := hexgrid.QRArrays(hexes)
+	rows, err := tx.Query(ctx,
+		`SELECT sp.hex_q, sp.hex_r, sp.good_key, COUNT(*)
+		 FROM settlement_placement sp
+		 JOIN settlements s ON s.id = sp.settlement_id
+		 JOIN unnest($2::int[], $3::int[]) AS wanted(q, r) ON wanted.q = sp.hex_q AND wanted.r = sp.hex_r
+		 WHERE s.world_id = $1 AND sp.target_kind = 'hex'
+		 GROUP BY sp.hex_q, sp.hex_r, sp.good_key`,
+		worldID, q, r,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("global hex occupancy: query: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var qq, rr, n int
+		var good string
+		if err := rows.Scan(&qq, &rr, &good, &n); err != nil {
+			return nil, fmt.Errorf("global hex occupancy: scan: %w", err)
+		}
+		c := hexgrid.Coord{Q: qq, R: rr}
+		if out[c] == nil {
+			out[c] = make(map[string]int)
+		}
+		out[c][good] = n
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("global hex occupancy: rows: %w", err)
+	}
+	return out, nil
+}
+
 // MarginalYieldForSlot is the ONE per-slot marginal-yield formula — grain
 // keeps placementYield's rate × placed shape (no capacity division, see
 // placementYield's doc comment); every other good divides by capL1 and

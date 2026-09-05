@@ -2612,7 +2612,20 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// one-row-per-good shape. Never a second formula.
 	hexOptionsForYield, _ := economy.LoadHexProductionOptions(r.Context(), h.pool, settlementID, nil)
 	buildingOptionsForYield, _ := economy.LoadBuildingProductionOptions(r.Context(), h.pool, settlementID)
-	marginalYields := economy.MarginalYieldPerGood(hexOptionsForYield, buildingOptionsForYield, placed)
+	// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2): whether a
+	// hex slot is "available" for the next gubbe must be judged against every
+	// settlement's occupancy, not just this one's — see the identical note in
+	// PlacementOptions (settlement_placement.go). A no-op today (no overlap
+	// exists yet). employedByGood/idleCitizens above stay on the ORIGINAL
+	// settlement-scoped `placed` — this is only about "is there room left",
+	// never about whose citizens they are.
+	hexCoordsForYield := make([]hexgrid.Coord, len(hexOptionsForYield))
+	for i, opt := range hexOptionsForYield {
+		hexCoordsForYield[i] = opt.Coord
+	}
+	globalHexOccupancyForYield, _ := economy.GlobalHexOccupancy(r.Context(), h.pool, worldID, hexCoordsForYield)
+	marginalPlaced := economy.PlacementCounts{Hex: globalHexOccupancyForYield, Building: placed.Building}
+	marginalYields := economy.MarginalYieldPerGood(hexOptionsForYield, buildingOptionsForYield, marginalPlaced)
 
 	// Idle = population neither placed on a good nor devoted to the temple.
 	// placed.Total counts only non-cult gubbar (cult never enters
