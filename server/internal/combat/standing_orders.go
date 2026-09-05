@@ -39,15 +39,18 @@ package combat
 //     is simply never sent past what is actually there (the same guarantee
 //     any other transfer already has).
 //
-// Naval routing (plan §4 point 3, cheaper coastal upkeep) is NOT built here:
-// the only existing land/naval auto-selection precedent found in the codebase
-// (RecallMarch's FindPath-land-then-naval fallback) verifies an ALREADY
-// MOVING army's real path against real map_tiles; the existing single-shot
-// internal transfer this slice is told to reuse (api/handlers/province.go
-// Trade) hardcodes Category: "land" and does no such detection at all. Every
-// route dispatched from here does the same — land only — which also matches
-// the plan's own worked example (Petras → 15,35 is landlocked, §4b). Flagged
-// in the slice report as future work, not built silently.
+// Naval routing (plan §4 point 3, cheaper coastal upkeep — built
+// megaron_plan_tva_slices_20260905.md §2): a route whose both ends are
+// coastal-or-harboured AND connected by a navigable sea lane
+// (province.ResolveTradeRoute — same substrate api/handlers/province.go's
+// Trade handler now uses for the single-shot internal transfer) dispatches
+// "naval" and prices its crew as the abstracted transport ship's own flat
+// hull ration (UpkeepSpecs["merchantman"]) instead of a gubbe — see
+// standingOrderRation's naval sibling, standingOrderNavalRation, and the
+// category branch in dispatchOutboundIfNeeded. A naval leg draws no gubbe at
+// all (idleGubbar/busyOrdersCrewedBy are skipped): the plan is explicit this
+// slice requires no owned ship, so there is no population-scale crew to
+// reserve, only the flat grain ration to pay.
 import (
 	"context"
 	"errors"
@@ -61,6 +64,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/transport"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -77,6 +81,45 @@ import (
 // unit type that only coincidentally matches.
 func standingOrderRation() float64 {
 	return economy.GrainConsumptionPerCitizenPerTick * 100 * upkeepFieldGrainFactor
+}
+
+// standingOrderNavalRation is what the abstracted transport ship eats per
+// tick on a naval leg — the merchantman's own flat hull ration from
+// UpkeepSpecs (megaron_plan_tva_slices_20260905.md §2: "Sjövägen ska kosta
+// fartygets egen besättning ... och skrovets platta ranson ur UpkeepSpecs.
+// Använd befintliga tal, hitta inte på nya"). UnitUpkeep's naval branch
+// never scales by size/crew (upkeep.go:105-107 — "naval: flat, status never
+// changes it"), so this is just the table value, unadorned; the plan names
+// merchantman specifically (crew 10, vs. galley's 20) as the everyday trade
+// hull.
+func standingOrderNavalRation() float64 {
+	return UpkeepSpecs[string(unit.TypeMerchantman)].Grain
+}
+
+// settlementCoastalOrHarboured reports whether a settlement may send/receive
+// naval traffic: adjacent to the sea (provinces.coastal) or it has built a
+// harbour. Same "coastal OR harbour" gate api/handlers/unit.go's
+// embark/disembark checks use (megaron_plan_tva_slices_20260905.md §2 step
+// 1: "Använd samma definition — hitta inte på en ny").
+func settlementCoastalOrHarboured(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (bool, error) {
+	var coastal bool
+	if err := tx.QueryRow(ctx,
+		`SELECT COALESCE(p.coastal, false) FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+		settlementID,
+	).Scan(&coastal); err != nil {
+		return false, err
+	}
+	if coastal {
+		return true, nil
+	}
+	var hasHarbour bool
+	if err := tx.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'harbour')`,
+		settlementID,
+	).Scan(&hasHarbour); err != nil {
+		return false, err
+	}
+	return hasHarbour, nil
 }
 
 // standingOrderRow is one route as read by the sweep.
@@ -251,7 +294,26 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("load destination hex: %w", err)
 	}
-	dist := province.HexDistance(province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR})
+
+	// Coastal advantage (megaron_plan_tva_slices_20260905.md §2): naval only
+	// when both ends are coastal-or-harboured AND a navigable sea lane
+	// actually connects them (province.ResolveTradeRoute — the same
+	// substrate api/handlers/province.go's Trade handler uses for the
+	// single-shot internal transfer). Falls back to "land" with the
+	// unchanged straight-line hex distance otherwise.
+	fromCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.fromID)
+	if err != nil {
+		return fmt.Errorf("check source coastal: %w", err)
+	}
+	toCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.toID)
+	if err != nil {
+		return fmt.Errorf("check destination coastal: %w", err)
+	}
+	category, dist, err := province.ResolveTradeRoute(ctx, tx, o.worldID, fromCoastal, toCoastal,
+		province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR})
+	if err != nil {
+		return fmt.Errorf("resolve trade route: %w", err)
+	}
 	travelMins := 30.0 + float64(dist)*2.0 // same estimate api/handlers/province.go's Trade handler uses
 	travelTicks := int(math.Round(travelMins / 60))
 	if travelTicks < 1 {
@@ -266,7 +328,13 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("load source population: %w", err)
 	}
+	// Naval pays the abstracted ship's own flat hull ration instead of a
+	// gubbe's (plan §2: "Sjövägen ska kosta fartygets egen besättning ...
+	// och skrovets platta ranson ur UpkeepSpecs").
 	ration := standingOrderRation()
+	if category == "naval" {
+		ration = standingOrderNavalRation()
+	}
 	provisions := VoyageProvisions(ration, travelTicks, 0)
 	grainReserve := economy.GrainConsumptionPerCitizenPerTick * float64(fromPop) * float64(2*travelTicks)
 	if o.crewID == o.fromID {
@@ -307,16 +375,23 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	// change to settlement_placement (P4's target_kind CHECK stays hex|
 	// building only) — this order's own gubbe is tracked purely via its
 	// transport leg state, not a placement row.
-	idle, err := idleGubbar(ctx, tx, o.crewID)
-	if err != nil {
-		return fmt.Errorf("load idle gubbar: %w", err)
-	}
-	busyElsewhere, err := busyOrdersCrewedBy(ctx, tx, o.crewID, o.id)
-	if err != nil {
-		return fmt.Errorf("count busy orders: %w", err)
-	}
-	if idle-busyElsewhere < 1 {
-		return h.pauseOrder(ctx, tx, o, "no spare workforce at the crewing settlement")
+	//
+	// Naval skips this entirely: the plan is explicit this slice requires no
+	// owned ship (an abstracted hull, like the land route needs no owned
+	// donkeys), so there is no gubbe-scale (100-citizen) workforce to reserve
+	// — only the flat grain ration above, paid regardless of category below.
+	if category == "land" {
+		idle, err := idleGubbar(ctx, tx, o.crewID)
+		if err != nil {
+			return fmt.Errorf("load idle gubbar: %w", err)
+		}
+		busyElsewhere, err := busyOrdersCrewedBy(ctx, tx, o.crewID, o.id)
+		if err != nil {
+			return fmt.Errorf("count busy orders: %w", err)
+		}
+		if idle-busyElsewhere < 1 {
+			return h.pauseOrder(ctx, tx, o, "no spare workforce at the crewing settlement")
+		}
 	}
 
 	if o.crewID != o.fromID {
