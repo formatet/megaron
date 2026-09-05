@@ -1091,6 +1091,16 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 			if err := economy.RecomputeProduction(ctx, h.pool, sid); err != nil {
 				slog.Warn("recompute after pop tick failed", "settlement", sid, "err", err)
 			}
+			// Blockad med enhet (megaron_plan_blockad_med_enhet.md, Timothy
+			// 2026-09-05): RecomputeProduction above already zeroed any
+			// blocked hex's yield live, every call — this is the once-a-day
+			// TRANSITION check (did a hex start/stop being blocked since
+			// yesterday) that fires the owner's dispatch (plan §3.4). Must
+			// run AFTER RecomputeProduction so a hex pruned to zero placements
+			// this same tick doesn't get compared against a stale set.
+			if err := economy.SyncHexBlockade(ctx, h.pool, h.store, h.hub, worldID, sid); err != nil {
+				slog.Warn("sync hex blockade failed", "settlement", sid, "err", err)
+			}
 		}
 	}
 

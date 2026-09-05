@@ -1,0 +1,13 @@
+-- Migration 142: blockad med enhet (megaron_plan_blockad_med_enhet.md,
+-- Timothy 2026-09-05). Tracks, per HEX placement, whether it is currently
+-- silenced by a foreign unit standing in fortify/sentry on that exact hex —
+-- economy.RecomputeProduction reads live state to zero the yield every call
+-- (it does not need this column at all), but detecting the START/END
+-- TRANSITION for the owner's dispatch (rule 4 of the plan) requires
+-- remembering yesterday's state somewhere. This column is that memory.
+--
+-- Meaningless for target_kind = 'building' rows (a workplace slot sits on
+-- the settlement's own hex, which the blockade rule explicitly exempts —
+-- §2 of the plan, "en enhet som står på själva staden är en belägring") —
+-- economy.SyncHexBlockade only ever reads/writes 'hex' rows.
+ALTER TABLE settlement_placement ADD COLUMN blockaded BOOLEAN NOT NULL DEFAULT false;

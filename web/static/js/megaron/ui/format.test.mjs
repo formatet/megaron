@@ -294,6 +294,31 @@ test('FoodShortfall without a name falls back to a generic settlement label', ()
   );
 });
 
+// Blockad med enhet (megaron_plan_blockad_med_enhet.md, Timothy 2026-09-05):
+// HexBlockaded/HexUnblockaded must name the settlement, the worker count
+// (singular/plural), and carry q/r in the body so resolveDestination
+// (dispatch_window.js) can jump the map straight to it.
+test('HexBlockaded names the settlement, the worker count, and the hex', () => {
+  assert.equal(
+    notifText('HexBlockaded', { name: 'Petras', workers: 4, q: 14, r: 33 }),
+    '4 workers in Petras have stopped — a foreign unit stands on (14, 33)',
+  );
+});
+
+test('HexBlockaded uses singular phrasing for exactly one worker', () => {
+  assert.equal(
+    notifText('HexBlockaded', { name: 'Petras', workers: 1, q: 14, r: 33 }),
+    '1 worker in Petras has stopped — a foreign unit stands on (14, 33)',
+  );
+});
+
+test('HexUnblockaded names the settlement, the worker count, and the hex', () => {
+  assert.equal(
+    notifText('HexUnblockaded', { name: 'Petras', workers: 4, q: 14, r: 33 }),
+    '4 workers in Petras have resumed work — the foreign unit at (14, 33) is gone',
+  );
+});
+
 // Dispatches naming (megaron_plan_dispatches.md §4, bug report da660376):
 // "'Scout returning home — arrives in ~10 min' — is it the galley that's
 // meant?" — every unit-carrying kind now gets a `name` field from the

@@ -625,6 +625,31 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		return fmt.Errorf("recompute: write besieged flag: %w", err)
 	}
 
+	// ── 1c. Blockad med enhet (megaron_plan_blockad_med_enhet.md, Timothy
+	// 2026-09-05): independent of, and in addition to, S1+S2's path-reachability
+	// denial above — a fientlig unit standing in fortify/sentry directly ON a
+	// worked ring hex silences that hex whether or not the settlement is
+	// besieged. Folded into the SAME `reachable` map LoadHexProductionOptions
+	// already filters against below, so a blocked hex drops out of hexOptions
+	// exactly like an unreachable one: placements.Hex simply finds no
+	// HexOption for that coord, contributing zero (the gubbe stays placed,
+	// rule 3 of the plan — RecomputeProduction never touches
+	// settlement_placement rows, it just stops crediting their yield).
+	// Deliberately does NOT touch `besieged` (already written above) — a
+	// single fortify/sentry unit on one hex is not a siege. One query for
+	// every such unit in the whole world (LoadEnemyPositionedHexes), matched
+	// against this settlement's ~18 ring hexes in memory — never one query
+	// per hex (the plan's named performance trap).
+	blockedHexes, err := LoadEnemyPositionedHexes(ctx, tx, worldID, ownerID)
+	if err != nil {
+		return fmt.Errorf("recompute: %w", err)
+	}
+	for _, c := range ring {
+		if blockedHexes[c] {
+			reachable[c] = false
+		}
+	}
+
 	// ── 2. Load this settlement's placement-eligible production menu ─────────
 	// Every catchment ring hex's own production menu, every built workplace
 	// building's terrain-free menu, and the flat unconditional trickle — see

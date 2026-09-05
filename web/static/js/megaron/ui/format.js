@@ -110,6 +110,8 @@ export function notifIcon(kind) {
     DivinePunishment:   '⚡',
     DivineBlessing:     '✨',
     FoodShortfall:      '🍽',
+    HexBlockaded:       '🚧',
+    HexUnblockaded:     '↩',
   };
   return icons[kind] || '◉';
 }
@@ -467,6 +469,22 @@ export function notifText(kind, body) {
       // SubsistenceWarning's pop_loss — a different mechanic, don't conflate).
       const place = body.name || 'A settlement';
       return `${place} went hungry today — ${Math.round(body.unmet || 0)} grain unmet`;
+    }
+    case 'HexBlockaded': {
+      // Payload per economy.SyncHexBlockade (megaron_plan_blockad_med_enhet.md,
+      // Timothy 2026-09-05): a foreign unit in fortify/sentry standing directly
+      // on a worked catchment hex — the gubbar there stay placed but produce
+      // nothing until the unit leaves (HexUnblockaded below).
+      const n = body.workers || 0;
+      const place = body.name || 'A settlement';
+      return `${n} worker${n === 1 ? '' : 's'} in ${place} ${n === 1 ? 'has' : 'have'} stopped ` +
+             `— a foreign unit stands on (${body.q}, ${body.r})`;
+    }
+    case 'HexUnblockaded': {
+      const n = body.workers || 0;
+      const place = body.name || 'A settlement';
+      return `${n} worker${n === 1 ? '' : 's'} in ${place} ${n === 1 ? 'has' : 'have'} resumed work ` +
+             `— the foreign unit at (${body.q}, ${body.r}) is gone`;
     }
     // Every kind above is hand-written. This arm stays as a generic fallback
     // for any future NotifyPlayer kind added without a case here — the 2026-08-05
