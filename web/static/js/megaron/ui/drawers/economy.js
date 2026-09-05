@@ -136,9 +136,10 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
   </table>`;
 }
 
-// Sort state + row cache survive only for the current Goods tab render — a
-// fresh loadEconomyGoods() call (tab switch, drawer reopen) resets both, same
-// lifetime as the rest of the tab's DOM.
+// Row cache is rebuilt by every loadEconomyGoods() call (tab switch, drawer
+// reopen) — it only ever holds the most recent fetch. Sort choice is kept
+// across those reloads on purpose: re-opening the tab after acting on the
+// worst-off city shouldn't silently drop the Wanax back to the default order.
 let _settlementRows = [];
 let _settlementSort = { key: 'brist', dir: 'asc' };
 
