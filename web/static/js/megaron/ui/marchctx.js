@@ -144,13 +144,13 @@ export function renderColonizePreviewHTML(p) {
   // [centre, ...6 neighbours] (world.go ColonizePreview) — entry 0 is tagged
   // "centrum" for readability, but nothing above depends on that ordering.
   const hexRows = (p.catchment || []).map((ce, i) => {
-    const centerTag = i === 0 ? ' <span style="color:var(--text-dim)">(centrum)</span>' : '';
-    if (!ce.known) return `<div>? <span style="color:var(--text-dim)">outforskad</span>${centerTag}</div>`;
+    const centerTag = i === 0 ? ' <span style="color:var(--text-dim)">(center)</span>' : '';
+    if (!ce.known) return `<div>? <span style="color:var(--text-dim)">unexplored</span>${centerTag}</div>`;
     const hexDeps = [];
-    if (ce.copper_deposit) hexDeps.push('koppar');
-    if (ce.tin_deposit)    hexDeps.push('tenn');
+    if (ce.copper_deposit) hexDeps.push('copper');
+    if (ce.tin_deposit)    hexDeps.push('tin');
     if (ce.silver_deposit) hexDeps.push('silver');
-    if (ce.cedar_deposit)  hexDeps.push('ceder');
+    if (ce.cedar_deposit)  hexDeps.push('cedar');
     const depStr = hexDeps.length ? ` <span style="color:var(--text-dim)">· ${hexDeps.join(', ')}</span>` : '';
     return `<div>${catchmentTerrainLabel(ce.terrain)}${depStr}${centerTag}</div>`;
   }).join('');

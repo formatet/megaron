@@ -24,18 +24,18 @@
 
 export function sitosGranaryState(cov, low, high, total, net) {
   if (cov < low && total <= 0 && net > 0) {
-    return { text: 'tomt — men lagret växer, täckningen stiger', severity: 'empty-growing' };
+    return { text: 'empty — but the stock is growing, coverage is rising', severity: 'empty-growing' };
   }
   if (cov < low && total <= 0) {
-    return { text: 'TOMT och lagret krymper — staden är utan skydd', severity: 'empty-shrinking' };
+    return { text: 'EMPTY and the stock is shrinking — the city is unprotected', severity: 'empty-shrinking' };
   }
   if (cov < low) {
-    return { text: 'släpper mat till staden', severity: 'release' };
+    return { text: 'releasing food to the city', severity: 'release' };
   }
   if (cov <= high) {
-    return { text: 'vilar — varken undan eller ut', severity: 'rest' };
+    return { text: 'resting — neither storing nor releasing', severity: 'rest' };
   }
-  return { text: 'lägger undan ett tionde av överskottet', severity: 'store' };
+  return { text: 'storing away a tenth of the surplus', severity: 'store' };
 }
 
 // sitosStateHtml renders the state as one stat-row, using the same `sitos`
@@ -51,6 +51,6 @@ export function sitosStateHtml(s) {
   const total = s.granary_total     || 0;
   const net   = s.food_net_per_tick || 0;
   const { text, severity } = sitosGranaryState(cov, low, high, total, net);
-  return `<div class="stat-row"><span class="sr-label">Tillstånd</span>` +
+  return `<div class="stat-row"><span class="sr-label">State</span>` +
     `<span class="sr-val sitos-state-${severity}">${text}</span></div>`;
 }

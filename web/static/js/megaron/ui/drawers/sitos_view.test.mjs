@@ -11,31 +11,31 @@ import { sitosGranaryState, sitosStateHtml } from './sitos_view.js';
 
 test('under LowDays: empty + shrinking reads as a hard warning', () => {
   const s = sitosGranaryState(3, 10, 30, 0, -5);
-  assert.equal(s.text, 'TOMT och lagret krymper — staden är utan skydd');
+  assert.equal(s.text, 'EMPTY and the stock is shrinking — the city is unprotected');
   assert.equal(s.severity, 'empty-shrinking');
 });
 
 test('under LowDays but empty + growing reads as reassuring, not alarming', () => {
   const s = sitosGranaryState(3, 10, 30, 0, 12);
-  assert.equal(s.text, 'tomt — men lagret växer, täckningen stiger');
+  assert.equal(s.text, 'empty — but the stock is growing, coverage is rising');
   assert.equal(s.severity, 'empty-growing');
 });
 
 test('under LowDays with stock still in the granary: releasing', () => {
   const s = sitosGranaryState(4, 10, 30, 1200, -50);
-  assert.equal(s.text, 'släpper mat till staden');
+  assert.equal(s.text, 'releasing food to the city');
   assert.equal(s.severity, 'release');
 });
 
 test('between LowDays and HighDays: resting', () => {
   const s = sitosGranaryState(15, 10, 30, 5000, 3);
-  assert.equal(s.text, 'vilar — varken undan eller ut');
+  assert.equal(s.text, 'resting — neither storing nor releasing');
   assert.equal(s.severity, 'rest');
 });
 
 test('over HighDays: storing a tenth of the surplus', () => {
   const s = sitosGranaryState(40, 10, 30, 20000, 10);
-  assert.equal(s.text, 'lägger undan ett tionde av överskottet');
+  assert.equal(s.text, 'storing away a tenth of the surplus');
   assert.equal(s.severity, 'store');
 });
 
@@ -53,7 +53,7 @@ test('sitosStateHtml renders a stat-row with the derived state text and severity
   const html = sitosStateHtml({ coverage_ticks: 4, low_ticks: 10, high_ticks: 30, granary_total: 1200, food_net_per_tick: -50 });
   assert.match(html, /sr-label/);
   assert.match(html, /sitos-state-release/);
-  assert.match(html, /släpper mat till staden/);
+  assert.match(html, /releasing food to the city/);
 });
 
 test('sitosStateHtml on a settlement with no sitos object at all renders nothing and does not throw', () => {

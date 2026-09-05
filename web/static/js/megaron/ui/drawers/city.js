@@ -138,11 +138,11 @@ export async function loadCityDrawer() {
       <button class="dtab" data-tab="garnison">Garrison</button>
     </div>
     <div id="ctab-produktion" class="city-tab">
-      <div class="dsec"><div class="dsec-title">Befolkning</div><div id="city-pop-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div class="dsec"><div class="dsec-title">Produktion</div><div id="city-prod-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+      <div class="dsec"><div class="dsec-title">Population</div><div id="city-pop-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+      <div class="dsec"><div class="dsec-title">Production</div><div id="city-prod-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       <div class="dsec"><div class="dsec-title">Sitos</div><div id="city-sitos-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div class="dsec"><div class="dsec-title">Senaste tick</div><div id="city-lasttick-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div class="dsec"><div class="dsec-title">Lojalitetslogg</div><div id="city-loyalty-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+      <div class="dsec"><div class="dsec-title">Last tick</div><div id="city-lasttick-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
+      <div class="dsec"><div class="dsec-title">Loyalty log</div><div id="city-loyalty-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
       <div class="dsec">
         <div class="dsec-title">Ticklog <button class="btn-small" onclick="loadTicklog()" style="margin-left:.4rem;padding:.05rem .3rem;font-size:.65rem;cursor:pointer">Show recent ticks</button></div>
         <div id="city-ticklog-sec"></div>
