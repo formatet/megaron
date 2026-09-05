@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,6 +14,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // parsePositiveInt parses a URL path param as a positive integer (gubbe
@@ -163,6 +166,23 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		writeError(w, http.StatusInternalServerError, "could not load catchment")
 		return
 	}
+	// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2): "placed"
+	// for a HEX good must count every settlement's gubbar on that hex, not
+	// just this one — a neighbour's occupant still fills the one shared
+	// ceiling. A no-op today (CatchmentClearanceHexes forbids overlap), but
+	// showing settlement-scoped room here would promise a placement the
+	// write-time check (PlaceGubbe, same global count) could reject once §3
+	// lets two catchments share ground. Buildings are never shared between
+	// settlements, so placed.Building stays exactly as it was.
+	hexCoords := make([]hexgrid.Coord, len(hexOptions))
+	for i, opt := range hexOptions {
+		hexCoords[i] = opt.Coord
+	}
+	globalHexOccupancy, err := economy.GlobalHexOccupancy(r.Context(), h.pool, worldID, hexCoords)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check hex capacity")
+		return
+	}
 	eyes := loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 
@@ -228,7 +248,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			HexR:       opt.Coord.R,
 			HexOrdinal: ordinal,
 			Terrain:    opt.Terrain,
-			Goods:      buildGoods(opt.RatePerGood, opt.CapL1PerGood, opt.PlaceCapPerGood, opt.MultPerGood, placed.Hex[opt.Coord], placedOrdinals.Hex[opt.Coord]),
+			Goods:      buildGoods(opt.RatePerGood, opt.CapL1PerGood, opt.PlaceCapPerGood, opt.MultPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),
 		})
 	}
 
@@ -306,6 +326,34 @@ func loadPlacedOrdinals(ctx context.Context, tx economy.Tx, settlementID uuid.UU
 		}
 	}
 	return out, rows.Err()
+}
+
+// neighborHoldingHex names an OTHER settlement (any owner) that already
+// holds a placement on (worldID, hex) for goodKey, if one exists — turns a
+// bare capacity conflict into the comprehensible answer
+// megaron_plan_hexagarskap_och_stadsavstand.md §5 asks for once catchments
+// can overlap: "den andra får ett begripligt nej som namnger den stad som
+// håller platsen." Returns ("", nil) when every occupant IS the calling
+// settlement — the ordinary single-city full-hex case (the only one
+// reachable today) keeps PlaceGubbe's original, unnamed message.
+func neighborHoldingHex(ctx context.Context, tx economy.Tx, worldID, settlementID uuid.UUID, hex hexgrid.Coord, goodKey string) (string, error) {
+	var name string
+	err := tx.QueryRow(ctx,
+		`SELECT s.name
+		 FROM settlement_placement sp
+		 JOIN settlements s ON s.id = sp.settlement_id
+		 WHERE s.world_id = $1 AND sp.target_kind = 'hex' AND sp.hex_q = $2 AND sp.hex_r = $3
+		   AND sp.good_key = $4 AND sp.settlement_id != $5
+		 LIMIT 1`,
+		worldID, hex.Q, hex.R, goodKey, settlementID,
+	).Scan(&name)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", nil
+		}
+		return "", err
+	}
+	return name, nil
 }
 
 // PlaceGubbe handles POST /worlds/:worldID/provinces/:provinceID/placements —
@@ -460,7 +508,43 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		// producing nothing. Grain's PlaceCapPerGood stays the real
 		// level-actual cap (megaron_plan_grain_cap.md), unaffected.
 		cap := opt.PlaceCapPerGood[req.GoodKey]
-		if cap <= 0 || placed.Hex[hex][req.GoodKey] >= cap {
+		if cap <= 0 {
+			writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
+			return
+		}
+
+		// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2): a hex
+		// bears a FIXED number of gubbar total, no matter how many
+		// settlements' catchments include it. CatchmentClearanceHexes still
+		// forbids two settlements' catchments from overlapping today, so this
+		// lock and the global count below are a no-op in practice for every
+		// existing world — but the write-time gate must already be correct
+		// for the day §3 lets two catchments share ground, and a settlement
+		// row lock is the ONLY thing that makes the count-then-insert below
+		// atomic against a concurrent PlaceGubbe from a DIFFERENT settlement
+		// targeting the SAME hex: map_tiles has a PRIMARY KEY on
+		// (world_id, q, r) (mig 001), so this always locks exactly the one
+		// row for this hex, and a second transaction racing for the last
+		// slot blocks here until the first commits or rolls back — it then
+		// re-reads a fresh, correct occupancy count instead of the stale one
+		// it would have seen without the lock.
+		if _, err := tx.Exec(r.Context(),
+			`SELECT 1 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3 FOR UPDATE`,
+			worldID, hex.Q, hex.R,
+		); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not lock hex")
+			return
+		}
+		globalOccupancy, err := economy.GlobalHexOccupancy(r.Context(), tx, worldID, []hexgrid.Coord{hex})
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check hex capacity")
+			return
+		}
+		if globalOccupancy[hex][req.GoodKey] >= cap {
+			if holder, herr := neighborHoldingHex(r.Context(), tx, worldID, settlementID, hex, req.GoodKey); herr == nil && holder != "" {
+				writeError(w, http.StatusConflict, fmt.Sprintf("this hex is fully staffed for that good — %s already holds it", holder))
+				return
+			}
 			writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
 			return
 		}
