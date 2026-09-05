@@ -3891,12 +3891,12 @@ function destFromHex(h, tile, target) {
 
 // Fog: nothing known yet — no terrain/deposits/produces, no affordances.
 function openFogPanel(h) {
-  document.getElementById('ip-name').textContent = 'Outforskat land';
+  document.getElementById('ip-name').textContent = 'Unexplored land';
   setCityFieldsVisible(false);
   document.getElementById('ip-terrain').textContent = `(${h.q},${h.r})`;
   document.getElementById('ip-deposits-row').style.display = 'none';
   document.getElementById('ip-produces').textContent = '—';
-  document.getElementById('ip-foot').innerHTML = '<p class="empty-state">Segla eller marschera i närheten för att avslöja.</p>';
+  document.getElementById('ip-foot').innerHTML = '<p class="empty-state">Sail or march nearby to reveal.</p>';
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
@@ -3935,7 +3935,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
         <span class="msg-err" id="ip-msg-err"></span>
       </div>`;
   }
-  footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>';
+  footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">March here →</button>';
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
   bindMarchButton(document.getElementById('ip-march-btn'), destFromHex(h, tile, marker), 'land');
@@ -3955,7 +3955,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   let footHtml = unitListHTML(units, foreignUnits);
 
   if (isMountain) {
-    footHtml += '<p class="empty-state">Ogenomträngligt — arméer kan inte gå här.</p>';
+    footHtml += '<p class="empty-state">Impassable — armies cannot go here.</p>';
     foot.innerHTML = footHtml;
     bindUnitButtons(foot);
     document.getElementById('inspect-panel').style.display = 'flex';
@@ -3964,7 +3964,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
 
   const dest = destFromHex(h, tile, null);
   if (isSea) {
-    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Skicka galärer →</button>';
+    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Send galleys →</button>';
   } else if (State.founderPhase) {
     // Founder phase: empty land is a POSSIBLE HOME, never a colony ("aldrig
     // Kolonisera"). March the host here; the founding forecast shows what the
@@ -3973,12 +3973,12 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
     // The forecast belongs in the scrolling body, not beside the action in the
     // foot — same reason as the Host panel: it is unbounded and it was pushing
     // the foot past the panel's bottom edge.
-    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>';
+    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">March here →</button>';
     document.getElementById('ip-body-extra').innerHTML =
-      '<div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Hämtar grundningsprognos…</div>';
+      '<div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>';
   } else {
-    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">Marschera hit →</button>'
-             +  '<button id="ip-colonize-btn" style="' + MARCH_BTN_STYLE + '">Kolonisera →</button>';
+    footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">March here →</button>'
+             +  '<button id="ip-colonize-btn" style="' + MARCH_BTN_STYLE + '">Colonize →</button>';
   }
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
@@ -4033,9 +4033,9 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = `<p class="empty-state">Del av ${rural.name}s omland — brukas härifrån.</p>`;
+  let footHtml = `<p class="empty-state">Part of ${rural.name}'s hinterland — worked from here.</p>`;
   footHtml += unitListHTML(units, foreignUnits);
-  footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Öppna ${rural.name} →</button>`;
+  footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Open ${rural.name} →</button>`;
   foot.innerHTML = footHtml;
   bindUnitButtons(foot);
   document.getElementById('ip-rural-city-btn').addEventListener('click', () => {
@@ -4061,11 +4061,11 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
 // of stale scaling as cmd_goods.go's Rate/d bug (mirrors keryx's already-
 // correct foundingStoreLine, cmd_founding.go).
 function hostStoreLine(label, s, tickSeconds) {
-  if (!s || s.ticks_left == null) return `${label}: räcker tills vidare`;
+  if (!s || s.ticks_left == null) return `${label}: lasts indefinitely`;
   const ticksLeft = s.ticks_left;
   const realH = Math.round(s.ticks_left * tickSeconds / 3600);
-  const real = realH >= 48 ? `≈ ${Math.round(realH / 24)} dygn` : `≈ ${realH} h`;
-  return `${label}: ${ticksLeft} tick kvar (${real} verklig tid)`;
+  const real = realH >= 48 ? `≈ ${Math.round(realH / 24)} days` : `≈ ${realH} h`;
+  return `${label}: ${ticksLeft} tick left (${real} real time)`;
 }
 
 async function openHostPanel(h, tile) {
@@ -4093,17 +4093,17 @@ async function openHostPanel(h, tile) {
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
     `<div style="margin-bottom:.5rem;line-height:1.5">
-       <div>${(fp.population || 0).toLocaleString('sv-SE')} folk · Kan inte strida · Syn: 1 hex</div>
-       <div>${hostStoreLine('Grain', fp.grain, fp.tick_seconds)}</div>
-       <div>${hostStoreLine('Silver för Spearmen', fp.silver, fp.tick_seconds)}</div>
-       <div>${fp.spearmen_in_field || 0} Spearmen-kohort${fp.spearmen_in_field === 1 ? '' : 'er'} i fält</div>
-       <div>Budbärare: fria att sända</div>
+       <div>${(fp.population || 0).toLocaleString('en-US')} people · cannot fight · sight 2 hexes (4 by water or on mountains)</div>
+       <div>${hostStoreLine('Grain (escort\'s ration)', fp.grain, fp.tick_seconds)}</div>
+       <div>${hostStoreLine('Silver (escort\'s pay)', fp.silver, fp.tick_seconds)}</div>
+       <div>${fp.spearmen_in_field || 0} Spearmen ${fp.spearmen_in_field === 1 ? 'cohort' : 'cohorts'} in the field</div>
+       <div>Messengers free to send</div>
      </div>
-     <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Hämtar grundningsprognos…</div>`;
+     <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>`;
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML =
-    `<button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Grunda huvudstaden här</button>
+    `<button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
      <span class="msg-err" id="ip-settle-err"></span>`;
   document.getElementById('inspect-panel').style.display = 'flex';
 
@@ -4127,7 +4127,7 @@ async function openHostPanel(h, tile) {
     .catch(() => {});
 
   document.getElementById('ip-settle-btn').addEventListener('click', async () => {
-    if (!confirm('Grunda din huvudstad här? Hostet upplöses — för alltid.')) return;
+    if (!confirm('Found the metropolis here? The host dissolves — forever.')) return;
     const errEl = document.getElementById('ip-settle-err');
     const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/founding/settle`, {
       method: 'POST',
