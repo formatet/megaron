@@ -39,10 +39,12 @@ export async function loadEconomyDrawer() {
     '<div class="drawer-tabs">' +
       '<button class="dtab active" data-tab="goods">Goods</button>' +
       '<button class="dtab" data-tab="transfer">Transfer</button>' +
+      '<button class="dtab" data-tab="automation">Automation</button>' +
       '<button class="dtab" data-tab="wants">Wants</button>' +
     '</div>' +
     '<div id="ectab-goods" class="city-tab"></div>' +
     '<div id="ectab-transfer" class="city-tab" style="display:none"></div>' +
+    '<div id="ectab-automation" class="city-tab" style="display:none"></div>' +
     '<div id="ectab-wants" class="city-tab" style="display:none"></div>';
 
   body.querySelectorAll('.dtab').forEach(tab => {
@@ -54,6 +56,7 @@ export async function loadEconomyDrawer() {
       if (el) el.style.display = '';
       if (this.dataset.tab === 'goods') loadEconomyGoods(mySettlements);
       else if (this.dataset.tab === 'transfer') loadEconomyTransfer(mySettlements);
+      else if (this.dataset.tab === 'automation') loadEconomyAutomation(mySettlements);
       else if (this.dataset.tab === 'wants') loadEconomyWants();
     });
   });
@@ -234,6 +237,144 @@ export async function startTransfer() {
     resultEl.style.color = 'var(--accent)';
     resultEl.textContent = d.error || 'Transfer failed.';
   }
+}
+
+// ── Automation tab (standing orders) ────────────────────────────────────────
+// megaron_plan_staende_leverans.md: a caravan that keeps a destination's
+// stock topped up on its own (PULL — "hold grain at Colony ≥ 200" — not a
+// fixed quantity/interval). Home per megaron_plan_stad_vs_ekonomi.md §1: a
+// flow between two settlements belongs to neither city's own drawer.
+
+// parseGoodAmountPairs parses "grain:200,fish:50" into [{good_key,amount}] —
+// same shape and separator as keryx's --out/--home flags (cmd_route.go), so
+// a Wanax moving between the two surfaces sees one format, not two.
+export function parseGoodAmountPairs(spec) {
+  if (!spec || !spec.trim()) return [];
+  return spec.split(',').map(part => {
+    const [good, amt] = part.split(':').map(s => (s || '').trim());
+    return { good_key: good, amount: parseFloat(amt) };
+  }).filter(p => p.good_key && !isNaN(p.amount));
+}
+
+async function loadEconomyAutomation(mySettlements) {
+  const el = document.getElementById('ectab-automation');
+  if (mySettlements.length < 2) {
+    el.innerHTML = '<p class="empty-state" style="padding:1rem">Need at least two of your own settlements for a standing order.</p>';
+    return;
+  }
+  const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
+  const opts = mySettlements.map(s => `<option value="${s.settlement_id||s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
+  el.innerHTML = `
+    <div class="dsec">
+      <div class="dsec-title">New standing order</div>
+      <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
+        <label>From <select id="ec-so-from" style="${inputStyle}">${opts}</select></label>
+        <label>To <select id="ec-so-to" style="${inputStyle}">${opts}</select></label>
+        <label>Crewed by (which end supplies the gubbe)
+          <select id="ec-so-crew" style="${inputStyle}">
+            <option value="from">From (source)</option>
+            <option value="to">To (destination)</option>
+          </select>
+        </label>
+        <label>Keep at destination — good:threshold, comma-separated
+          <input id="ec-so-out" placeholder="grain:200,fish:50" style="${inputStyle}">
+        </label>
+        <label>Bring home — good:floor, comma-separated (optional)
+          <input id="ec-so-home" placeholder="silver:0,stone:20" style="${inputStyle}">
+        </label>
+        <button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
+        <div id="ec-so-result" class="action-result"></div>
+      </div>
+    </div>
+    <div class="dsec">
+      <div class="dsec-title">Standing orders</div>
+      <div id="ec-so-list" class="loading" style="padding:.4rem 0">Loading…</div>
+    </div>`;
+  const toSel = document.getElementById('ec-so-to');
+  if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
+  refreshStandingOrders();
+}
+
+// renderStandingOrdersHTML is pure (list in, markup out) for the same
+// testability reason as renderCargoHTML above.
+export function renderStandingOrdersHTML(orders) {
+  if (!orders.length) return '<p class="empty-state" style="padding:.4rem 0">No standing orders yet.</p>';
+  return '<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem">' +
+    '<td>Route</td><td>Status</td><td></td></tr>' +
+    orders.map(o => {
+      const statusText = o.status === 'paused'
+        ? `paused${o.pause_reason ? ' — ' + esc(o.pause_reason) : ''}`
+        : 'active';
+      const toggleLabel = o.status === 'paused' ? 'Resume' : 'Pause';
+      const toggleFn = o.status === 'paused' ? 'resumeStandingOrder' : 'pauseStandingOrder';
+      return `<tr>
+        <td>${esc(o.from_name)} → ${esc(o.to_name)}</td>
+        <td>${esc(statusText)}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn-small" onclick="${toggleFn}('${o.id}')">${toggleLabel}</button>
+          <button class="btn-small" onclick="deleteStandingOrder('${o.id}')">Delete</button>
+        </td>
+      </tr>`;
+    }).join('') +
+    '</table>';
+}
+
+async function refreshStandingOrders() {
+  const el = document.getElementById('ec-so-list');
+  if (!el) return;
+  el.innerHTML = '<div class="loading" style="padding:.4rem 0">Loading…</div>';
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders`);
+    if (!r.ok) { el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>'; return; }
+    const orders = (await r.json()) || [];
+    el.innerHTML = renderStandingOrdersHTML(orders);
+  } catch (_) {
+    el.innerHTML = '<p class="empty-state" style="padding:.4rem 0">Could not load.</p>';
+  }
+}
+
+export async function createStandingOrder() {
+  const from = document.getElementById('ec-so-from')?.value;
+  const to = document.getElementById('ec-so-to')?.value;
+  const crew = document.getElementById('ec-so-crew')?.value;
+  const outSpec = document.getElementById('ec-so-out')?.value || '';
+  const homeSpec = document.getElementById('ec-so-home')?.value || '';
+  const resultEl = document.getElementById('ec-so-result');
+  if (!resultEl) return;
+  if (!from || !to || from === to) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Pick two different settlements.'; return; }
+  const outbound = parseGoodAmountPairs(outSpec).map(p => ({ good_key: p.good_key, threshold: p.amount }));
+  if (!outbound.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Name at least one good:threshold to keep topped up.'; return; }
+  const ret = parseGoodAmountPairs(homeSpec).map(p => ({ good_key: p.good_key, floor: p.amount }));
+  const crewedBy = crew === 'to' ? to : from;
+  resultEl.textContent = '';
+  const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ from_settlement_id: from, to_settlement_id: to, crewed_by_settlement_id: crewedBy, outbound, return: ret }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (r.ok) {
+    resultEl.style.color = 'var(--safe)';
+    resultEl.textContent = 'Standing order created.';
+    refreshStandingOrders();
+  } else {
+    resultEl.style.color = 'var(--accent)';
+    resultEl.textContent = d.error || 'Could not create standing order.';
+  }
+}
+
+export async function pauseStandingOrder(id) {
+  await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders/${id}/pause`, { method: 'POST' });
+  refreshStandingOrders();
+}
+
+export async function resumeStandingOrder(id) {
+  await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders/${id}/resume`, { method: 'POST' });
+  refreshStandingOrders();
+}
+
+export async function deleteStandingOrder(id) {
+  await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders/${id}`, { method: 'DELETE' });
+  refreshStandingOrders();
 }
 
 async function loadEconomyWants() {
