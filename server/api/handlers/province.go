@@ -2624,6 +2624,12 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		hexCoordsForYield[i] = opt.Coord
 	}
 	globalHexOccupancyForYield, _ := economy.GlobalHexOccupancy(r.Context(), h.pool, worldID, hexCoordsForYield)
+	// §2b (Timothy 2026-09-05): a hex held by ANOTHER settlement offers no
+	// good at all — mirrors the identical adjustment in PlacementOptions
+	// (settlement_placement.go) so /goods never reports a "next gubbe" yield
+	// for a hex the write path would reject outright.
+	heldByOtherForYield, _ := economy.HexesHeldByOtherSettlement(r.Context(), h.pool, worldID, settlementID, hexCoordsForYield)
+	globalHexOccupancyForYield = economy.MarkHeldHexesFullyOccupied(hexOptionsForYield, heldByOtherForYield, globalHexOccupancyForYield)
 	marginalPlaced := economy.PlacementCounts{Hex: globalHexOccupancyForYield, Building: placed.Building}
 	marginalYields := economy.MarginalYieldPerGood(hexOptionsForYield, buildingOptionsForYield, marginalPlaced)
 

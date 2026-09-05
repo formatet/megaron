@@ -1,13 +1,16 @@
 package handlers
 
-// HTTP-level tests for §2 of megaron_plan_hexagarskap_och_stadsavstand.md:
-// a hex bears a FIXED number of gubbar TOTAL, across every settlement whose
-// catchment includes it — not per settlement. These fixtures deliberately
-// place two settlements close enough that their catchments share a hex,
-// bypassing province.SettlementCatchmentOverlap (the founding-time gate that
-// forbids this in practice today, §1/§3 — untouched by this slice) by
-// inserting the settlement rows directly, the same way the rest of this
-// package's fixtures skip the founding HTTP flow entirely.
+// HTTP-level tests for §2/§2b of megaron_plan_hexagarskap_och_stadsavstand.md.
+// §2b (Timothy 2026-09-05) supersedes §2's original per-good global cap: a
+// hex has exactly ONE owning settlement — the first to place any gubbe on it,
+// for any good — and every other settlement (even one under the same wanax)
+// has no access to it at all, regardless of how much room that good's own
+// cap has left. These fixtures deliberately place two settlements close
+// enough that their catchments share a hex, bypassing
+// province.SettlementCatchmentOverlap (the founding-time gate that forbids
+// this in practice today, §1/§3 — untouched by this slice) by inserting the
+// settlement rows directly, the same way the rest of this package's
+// fixtures skip the founding HTTP flow entirely.
 
 import (
 	"bytes"
@@ -15,7 +18,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -167,42 +169,59 @@ func (f *twoSettlementHexFixture) doAs(t *testing.T, token, method, path string,
 	return rec.Code, resp
 }
 
-// TestPlaceGubbe_SharedHexIsCappedGloballyNotPerSettlement is the plan's
-// core §1 bug made concrete: settlement A places 3 of the shared bare-plains
-// hex's grain cap (4, hexCapacityRule{"grain",4,6,"farm"} with no farm — see
-// internal/economy/recompute.go plainsCapacityRules), settlement B places 1
-// (global count 3+1=4, still legal — B is not yet at ITS OWN cap of 4 rows
-// either, so a settlement-scoped check would have wrongly allowed this too).
-// B's SECOND attempt is where the two checks diverge: B's OWN count on this
-// hex is only 1 (a settlement-scoped check would happily allow 3 more), but
-// the GLOBAL count is already 4 = cap. A pre-§2 settlement-scoped check would
-// let the settlement's own count grow to 4 independently of A's 3, giving 7
-// gubbar total on one 4-gubbe hex — exactly "marken skördas två gånger."
-func TestPlaceGubbe_SharedHexIsCappedGloballyNotPerSettlement(t *testing.T) {
+// TestPlaceGubbe_HexOwnershipBlocksNeighborEvenWithRoomLeft is §2b's core
+// claim made concrete, and the exact case that distinguishes it from §2's
+// original per-good global cap (ad2e042): settlement A places a SINGLE
+// grain worker on the shared plains hex, leaving three of the hex's four
+// grain slots (hexCapacityRule{"grain",4,6,"farm"} with no farm — see
+// internal/economy/recompute.go plainsCapacityRules) completely empty. Under
+// §2 (globalOccupancy[hex][good] >= cap) B's grain placement would have been
+// allowed — 1 < 4. Under §2b it must be rejected on B's very FIRST attempt,
+// because A already owns the hex outright, room or no room.
+func TestPlaceGubbe_HexOwnershipBlocksNeighborEvenWithRoomLeft(t *testing.T) {
 	f := setupTwoSettlementHexFixture(t, "plains", [2]int{2, 0})
 
-	for i := 0; i < 3; i++ {
-		code, resp := f.doAs(t, f.tokenA, http.MethodPost, f.placementsPath(f.provinceA),
-			map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "grain"})
-		if code != http.StatusCreated {
-			t.Fatalf("A's placement #%d = %d: %v", i+1, code, resp)
-		}
-	}
-
-	code, resp := f.doAs(t, f.tokenB, http.MethodPost, f.placementsPath(f.provinceB),
+	code, resp := f.doAs(t, f.tokenA, http.MethodPost, f.placementsPath(f.provinceA),
 		map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "grain"})
 	if code != http.StatusCreated {
-		t.Fatalf("B's first placement (global count 3 of cap 4) = %d: %v", code, resp)
+		t.Fatalf("A's placement = %d: %v", code, resp)
 	}
 
 	code2, resp2 := f.doAs(t, f.tokenB, http.MethodPost, f.placementsPath(f.provinceB),
 		map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "grain"})
 	if code2 != http.StatusConflict {
-		t.Fatalf("B's second placement on a globally-full hex (A holds 3, B holds 1, cap 4) = %d: %v, want 409", code2, resp2)
+		t.Fatalf("B's placement on a hex A already holds (only 1 of 4 grain slots taken) = %d: %v, want 409", code2, resp2)
 	}
 	msg, _ := resp2["error"].(string)
-	if !strings.Contains(msg, f.nameA) {
-		t.Errorf("conflict message should name the neighbouring settlement (%s) holding the hex, got %q", f.nameA, msg)
+	if want := f.nameA + " holds this hex"; msg != want {
+		t.Errorf("rejection text = %q, want exactly %q", msg, want)
+	}
+}
+
+// TestPlaceGubbe_HexOwnershipBlocksNeighborAcrossDifferentGoods proves
+// ownership is PER HEX, not per good: A takes the shared plains hex with a
+// grain worker; B then tries LIVESTOCK — a completely independent good with
+// its own untouched cap (plainsCapacityRules: {"livestock",1,3,""}) — on the
+// very same hex. A per-good check (§2) would have happily allowed this,
+// since B's own livestock count there is zero. §2b forbids it: the hex
+// belongs to A, full stop, regardless of which good B wants.
+func TestPlaceGubbe_HexOwnershipBlocksNeighborAcrossDifferentGoods(t *testing.T) {
+	f := setupTwoSettlementHexFixture(t, "plains", [2]int{2, 0})
+
+	code, resp := f.doAs(t, f.tokenA, http.MethodPost, f.placementsPath(f.provinceA),
+		map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "grain"})
+	if code != http.StatusCreated {
+		t.Fatalf("A's grain placement = %d: %v", code, resp)
+	}
+
+	code2, resp2 := f.doAs(t, f.tokenB, http.MethodPost, f.placementsPath(f.provinceB),
+		map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "livestock"})
+	if code2 != http.StatusConflict {
+		t.Fatalf("B's livestock placement on A's grain hex = %d: %v, want 409", code2, resp2)
+	}
+	msg, _ := resp2["error"].(string)
+	if want := f.nameA + " holds this hex"; msg != want {
+		t.Errorf("rejection text = %q, want exactly %q", msg, want)
 	}
 }
 
@@ -279,5 +298,55 @@ func TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot(t *testing.T) {
 	}
 	if n := occ[sharedHex]["fish"]; n != 1 {
 		t.Fatalf("global occupancy for fish on the shared hex after the race = %d, want exactly 1", n)
+	}
+}
+
+// TestPlaceGubbe_ConcurrentRaceForHexOwnershipAcrossDifferentGoods is
+// §2b's race proof: A and B fire their FIRST placement on a still-EMPTY
+// shared hex concurrently, for two DIFFERENT goods (grain, livestock) that
+// each have plenty of their own room (plainsCapacityRules: grain cap 4,
+// livestock cap 1 — neither anywhere near contested by a single gubbe). A
+// per-good cap check would let both succeed; ownership must not — exactly
+// one may claim the hex, because the map_tiles row lock in PlaceGubbe's hex
+// branch serializes the two transactions ahead of the ownership check, not
+// just ahead of the per-good capacity check.
+func TestPlaceGubbe_ConcurrentRaceForHexOwnershipAcrossDifferentGoods(t *testing.T) {
+	f := setupTwoSettlementHexFixture(t, "plains", [2]int{2, 0})
+
+	var wg sync.WaitGroup
+	codes := make([]int, 2)
+	resps := make([]map[string]any, 2)
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		codes[0], resps[0] = f.doAs(t, f.tokenA, http.MethodPost, f.placementsPath(f.provinceA),
+			map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "grain"})
+	}()
+	go func() {
+		defer wg.Done()
+		codes[1], resps[1] = f.doAs(t, f.tokenB, http.MethodPost, f.placementsPath(f.provinceB),
+			map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "livestock"})
+	}()
+	wg.Wait()
+
+	successes := 0
+	for _, c := range codes {
+		if c == http.StatusCreated {
+			successes++
+		}
+	}
+	if successes != 1 {
+		t.Fatalf("exactly one of two concurrent placements for DIFFERENT goods on an unowned hex must succeed — ownership is per-hex, not per-good; got codes=%v resps=%v", codes, resps)
+	}
+
+	// Confirm the DB agrees: the hex must hold exactly one gubbe TOTAL across
+	// both goods after the race, never one of each.
+	sharedHex := hexgrid.Coord{Q: 2, R: 0}
+	occ, err := economy.GlobalHexOccupancy(context.Background(), p10TestPool(t), f.worldID, []hexgrid.Coord{sharedHex})
+	if err != nil {
+		t.Fatalf("GlobalHexOccupancy: %v", err)
+	}
+	if total := occ[sharedHex]["grain"] + occ[sharedHex]["livestock"]; total != 1 {
+		t.Fatalf("hex should hold exactly one gubbe total (grain+livestock) after the race, got %d", total)
 	}
 }
