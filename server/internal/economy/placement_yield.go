@@ -705,6 +705,75 @@ func GlobalHexOccupancy(ctx context.Context, tx Tx, worldID uuid.UUID, hexes []h
 	return out, nil
 }
 
+// HexesHeldByOtherSettlement returns, for each hex in hexes, whether some
+// settlement OTHER than settlementID already holds a placement there —
+// api/handlers' neighborHoldingHex's read-only, batched counterpart.
+// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2b, Timothy
+// 2026-09-05): a hex has exactly ONE owning settlement, so this is the same
+// question PlaceGubbe's write-time gate asks, surfaced to the read paths
+// (PlacementOptions, /goods marginal yield) so they never promise a slot a
+// write would reject.
+func HexesHeldByOtherSettlement(ctx context.Context, tx Tx, worldID, settlementID uuid.UUID, hexes []hexgrid.Coord) (map[hexgrid.Coord]bool, error) {
+	out := make(map[hexgrid.Coord]bool)
+	if len(hexes) == 0 {
+		return out, nil
+	}
+	q, r := hexgrid.QRArrays(hexes)
+	rows, err := tx.Query(ctx,
+		`SELECT DISTINCT sp.hex_q, sp.hex_r
+		 FROM settlement_placement sp
+		 JOIN settlements s ON s.id = sp.settlement_id
+		 JOIN unnest($2::int[], $3::int[]) AS wanted(q, r) ON wanted.q = sp.hex_q AND wanted.r = sp.hex_r
+		 WHERE s.world_id = $1 AND sp.target_kind = 'hex' AND sp.settlement_id != $4`,
+		worldID, q, r, settlementID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("hexes held by other settlement: query: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var qq, rr int
+		if err := rows.Scan(&qq, &rr); err != nil {
+			return nil, fmt.Errorf("hexes held by other settlement: scan: %w", err)
+		}
+		out[hexgrid.Coord{Q: qq, R: rr}] = true
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("hexes held by other settlement: rows: %w", err)
+	}
+	return out, nil
+}
+
+// MarkHeldHexesFullyOccupied overrides occupancy so every good on a hex
+// flagged in heldByOther reads as fully staffed (occupied == its own
+// PlaceCapPerGood), regardless of that good's own remaining room. §2b gave
+// the hex a single owner, so a hex held by someone else offers NO good at
+// all — not "whatever headroom that good's own cap happens to have left".
+// Shared by PlacementOptions' per-hex grid and /goods' aggregate marginal
+// yield (api/handlers/settlement_placement.go, province.go) — one
+// adjustment, not two copies. Returns occupancy unchanged (same map, no
+// copy) when heldByOther is empty, the ordinary no-overlap case.
+func MarkHeldHexesFullyOccupied(hexOptions []HexOption, heldByOther map[hexgrid.Coord]bool, occupancy map[hexgrid.Coord]map[string]int) map[hexgrid.Coord]map[string]int {
+	if len(heldByOther) == 0 {
+		return occupancy
+	}
+	out := make(map[hexgrid.Coord]map[string]int, len(occupancy))
+	for hex, goods := range occupancy {
+		out[hex] = goods
+	}
+	for _, opt := range hexOptions {
+		if !heldByOther[opt.Coord] {
+			continue
+		}
+		full := make(map[string]int, len(opt.PlaceCapPerGood))
+		for good, cap := range opt.PlaceCapPerGood {
+			full[good] = cap
+		}
+		out[opt.Coord] = full
+	}
+	return out
+}
+
 // MarginalYieldForSlot is the ONE per-slot marginal-yield formula — grain
 // keeps placementYield's rate × placed shape (no capacity division, see
 // placementYield's doc comment); every other good divides by capL1 and

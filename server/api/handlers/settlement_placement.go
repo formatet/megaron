@@ -183,6 +183,16 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		writeError(w, http.StatusInternalServerError, "could not check hex capacity")
 		return
 	}
+	// §2b (Timothy 2026-09-05): a hex held by ANOTHER settlement offers no
+	// good at all, not just "whatever room that good's own cap has left" —
+	// mirror PlaceGubbe's ownership gate here so this menu never shows a
+	// slot the write path would reject.
+	heldByOther, err := economy.HexesHeldByOtherSettlement(r.Context(), h.pool, worldID, settlementID, hexCoords)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check hex ownership")
+		return
+	}
+	globalHexOccupancy = economy.MarkHeldHexesFullyOccupied(hexOptions, heldByOther, globalHexOccupancy)
 	eyes := loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 
@@ -329,23 +339,24 @@ func loadPlacedOrdinals(ctx context.Context, tx economy.Tx, settlementID uuid.UU
 }
 
 // neighborHoldingHex names an OTHER settlement (any owner) that already
-// holds a placement on (worldID, hex) for goodKey, if one exists — turns a
-// bare capacity conflict into the comprehensible answer
-// megaron_plan_hexagarskap_och_stadsavstand.md §5 asks for once catchments
-// can overlap: "den andra får ett begripligt nej som namnger den stad som
-// håller platsen." Returns ("", nil) when every occupant IS the calling
-// settlement — the ordinary single-city full-hex case (the only one
-// reachable today) keeps PlaceGubbe's original, unnamed message.
-func neighborHoldingHex(ctx context.Context, tx economy.Tx, worldID, settlementID uuid.UUID, hex hexgrid.Coord, goodKey string) (string, error) {
+// holds ANY placement on (worldID, hex) — regardless of good_key — if one
+// exists. Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2b,
+// Timothy 2026-09-05): "den som först sätter arbetsgubbar på hexen får den,
+// och den andra har inte tillgång till den alls" — a hex has exactly ONE
+// owning settlement, so this is checked before any per-good capacity math,
+// not as a fallback once a good's own cap is full. Returns ("", nil) when
+// every occupant IS the calling settlement (or the hex is empty) — a
+// settlement's own further placements on its own hex are unaffected.
+func neighborHoldingHex(ctx context.Context, tx economy.Tx, worldID, settlementID uuid.UUID, hex hexgrid.Coord) (string, error) {
 	var name string
 	err := tx.QueryRow(ctx,
 		`SELECT s.name
 		 FROM settlement_placement sp
 		 JOIN settlements s ON s.id = sp.settlement_id
 		 WHERE s.world_id = $1 AND sp.target_kind = 'hex' AND sp.hex_q = $2 AND sp.hex_r = $3
-		   AND sp.good_key = $4 AND sp.settlement_id != $5
+		   AND sp.settlement_id != $4
 		 LIMIT 1`,
-		worldID, hex.Q, hex.R, goodKey, settlementID,
+		worldID, hex.Q, hex.R, settlementID,
 	).Scan(&name)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -513,20 +524,23 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2): a hex
-		// bears a FIXED number of gubbar total, no matter how many
-		// settlements' catchments include it. CatchmentClearanceHexes still
-		// forbids two settlements' catchments from overlapping today, so this
-		// lock and the global count below are a no-op in practice for every
-		// existing world — but the write-time gate must already be correct
-		// for the day §3 lets two catchments share ground, and a settlement
-		// row lock is the ONLY thing that makes the count-then-insert below
-		// atomic against a concurrent PlaceGubbe from a DIFFERENT settlement
-		// targeting the SAME hex: map_tiles has a PRIMARY KEY on
-		// (world_id, q, r) (mig 001), so this always locks exactly the one
-		// row for this hex, and a second transaction racing for the last
-		// slot blocks here until the first commits or rolls back — it then
-		// re-reads a fresh, correct occupancy count instead of the stale one
+		// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2, §2b —
+		// Timothy 2026-09-05): a hex has exactly ONE owning settlement. The
+		// first settlement to place any gubbe on it — any good — owns it
+		// outright; every other settlement (even one under the SAME wanax)
+		// has no access to it at all, regardless of which good it wants or
+		// how much of that good's own cap is still free. CatchmentClearanceHexes
+		// still forbids two settlements' catchments from overlapping today,
+		// so this lock and the ownership check below are a no-op in practice
+		// for every existing world — but the write-time gate must already be
+		// correct for the day §3 lets two catchments share ground, and a
+		// settlement row lock is the ONLY thing that makes the
+		// check-then-insert below atomic against a concurrent PlaceGubbe from
+		// a DIFFERENT settlement targeting the SAME hex: map_tiles has a
+		// PRIMARY KEY on (world_id, q, r) (mig 001), so this always locks
+		// exactly the one row for this hex, and a second transaction racing
+		// for it blocks here until the first commits or rolls back — it then
+		// re-reads a fresh, correct ownership state instead of the stale one
 		// it would have seen without the lock.
 		if _, err := tx.Exec(r.Context(),
 			`SELECT 1 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3 FOR UPDATE`,
@@ -535,16 +549,19 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not lock hex")
 			return
 		}
+		if holder, herr := neighborHoldingHex(r.Context(), tx, worldID, settlementID, hex); herr != nil {
+			writeError(w, http.StatusInternalServerError, "could not check hex ownership")
+			return
+		} else if holder != "" {
+			writeError(w, http.StatusConflict, fmt.Sprintf("%s holds this hex", holder))
+			return
+		}
 		globalOccupancy, err := economy.GlobalHexOccupancy(r.Context(), tx, worldID, []hexgrid.Coord{hex})
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not check hex capacity")
 			return
 		}
 		if globalOccupancy[hex][req.GoodKey] >= cap {
-			if holder, herr := neighborHoldingHex(r.Context(), tx, worldID, settlementID, hex, req.GoodKey); herr == nil && holder != "" {
-				writeError(w, http.StatusConflict, fmt.Sprintf("this hex is fully staffed for that good — %s already holds it", holder))
-				return
-			}
 			writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
 			return
 		}
