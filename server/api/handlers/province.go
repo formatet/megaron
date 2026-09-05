@@ -2887,6 +2887,21 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// settlementHasHarbour reports whether a settlement has built a harbour —
+// half of the "coastal OR harbour" naval-eligibility gate unit.go's
+// embark/disembark checks already use (the other half, provinces.coastal, is
+// read inline by callers since it's already in their settlement/province
+// JOIN). A settlement's own coastal flag is checked by the caller; this only
+// covers the building fallback for an inland settlement that dug a harbour.
+func settlementHasHarbour(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (bool, error) {
+	var hasHarbour bool
+	err := pool.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'harbour')`,
+		settlementID,
+	).Scan(&hasHarbour)
+	return hasHarbour, err
+}
+
 // Trade handles POST /worlds/:worldID/provinces/:provinceID/trade.
 // Body: { "destination_id": "<settlement UUID>", "good_key": "grain", "quantity": 10.0 }
 func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
@@ -2927,13 +2942,14 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// Find origin settlement and verify ownership.
 	var originID uuid.UUID
 	var originQ, originR int
+	var originCoastal bool
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT s.id, prov.map_q, prov.map_r
+		`SELECT s.id, prov.map_q, prov.map_r, COALESCE(prov.coastal, false)
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.province_id = $1 AND s.world_id = $2 AND s.owner_id = $3`,
 		provinceID, worldID, playerID,
-	).Scan(&originID, &originQ, &originR)
+	).Scan(&originID, &originQ, &originR, &originCoastal)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
@@ -2942,14 +2958,15 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// Get destination — also verify it's owned by the same player (internal transfer only).
 	// External trade requires messenger-based negotiation.
 	var destQ, destR int
+	var destCoastal bool
 	var destOwnerID *uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT prov.map_q, prov.map_r, s.owner_id
+		`SELECT prov.map_q, prov.map_r, COALESCE(prov.coastal, false), s.owner_id
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.id = $1 AND s.world_id = $2`,
 		req.DestinationID, worldID,
-	).Scan(&destQ, &destR, &destOwnerID)
+	).Scan(&destQ, &destR, &destCoastal, &destOwnerID)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "destination settlement not found")
 		return
@@ -2971,10 +2988,32 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dist := province.HexDistance(
+	// Coastal advantage (megaron_plan_tva_slices_20260905.md §2): a transfer
+	// between two settlements that are BOTH coastal-or-harboured (same gate
+	// unit.go's embark/disembark checks use) and connected by a navigable sea
+	// lane goes as naval, not as a land caravan blind to the coastline. Falls
+	// back to "land" with the unchanged straight-line hex distance whenever
+	// either end can't reach the sea or no route connects them — an existing
+	// land route must cost exactly what it did before this existed.
+	originHarboured, err := settlementHasHarbour(r.Context(), h.pool, originID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check origin harbour")
+		return
+	}
+	destHarboured, err := settlementHasHarbour(r.Context(), h.pool, req.DestinationID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check destination harbour")
+		return
+	}
+	category, dist, err := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+		originCoastal || originHarboured, destCoastal || destHarboured,
 		province.MapPosition{Q: originQ, R: originR},
 		province.MapPosition{Q: destQ, R: destR},
 	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve trade route")
+		return
+	}
 	base := 30.0 + float64(dist)*2.0
 	weightPenalty := 0.0
 	if weight > 1.0 {
@@ -3036,7 +3075,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		Kind:          "transfer",
 		OriginID:      originID,
 		DestID:        req.DestinationID,
-		Category:      "land",
+		Category:      category,
 		OriginQ:       originQ,
 		OriginR:       originR,
 		DestQ:         destQ,
