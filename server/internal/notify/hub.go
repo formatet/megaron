@@ -106,8 +106,32 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 		h.BroadcastEvent(worldID, kind, payload)
 		return nil
 	}
+	// The archive insert above always happens — muting only ever suppresses
+	// the transient dispatch chip (megaron_plan_dispatches.md §1: "kryssa ur
+	// den → sorten slutar bli dispatch och syns bara i arkivet").
+	if h.isDispatchMuted(ctx, playerID, kind) {
+		return nil
+	}
 	h.sendTo(worldID, playerID, Msg{Kind: kind, Payload: payload})
 	return nil
+}
+
+// isDispatchMuted reports whether playerID has muted kind as a dispatch
+// (dispatch_mutes, mig 140). Fails open on any DB error — a lookup failure
+// must never silently swallow a real notification.
+func (h *Hub) isDispatchMuted(ctx context.Context, playerID uuid.UUID, kind string) bool {
+	if h.pool == nil {
+		return false
+	}
+	var muted bool
+	if err := h.pool.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM dispatch_mutes WHERE player_id = $1 AND kind = $2)`,
+		playerID, kind,
+	).Scan(&muted); err != nil {
+		slog.Warn("check dispatch mute", "kind", kind, "err", err)
+		return false
+	}
+	return muted
 }
 
 // Broadcast sends msg to every client connected to worldID.

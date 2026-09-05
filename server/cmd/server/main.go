@@ -282,6 +282,7 @@ func main() {
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
 	nh := handlers.NewNotificationsHandler(pool)
+	dph := handlers.NewDispatchPreferencesHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 	godH := handlers.NewGodHandler(pool)
 	rh := handlers.NewReportsHandler(pool)
@@ -300,6 +301,13 @@ func main() {
 		// one shared helper so the offer form and the offer validator can
 		// never drift apart.
 		r.Get("/goods", handlers.NewGoodsHandler(pool).TradeableCatalogue)
+
+		// Dispatch preferences — per-player, not per-world (players is a global
+		// account, and the preference is about the KIND of event, the same
+		// across every world). megaron_plan_dispatches.md §2/§6:4.
+		r.With(auth.Middleware(authSvc)).Get("/notification-preferences", dph.List)
+		r.With(auth.Middleware(authSvc)).Put("/notification-preferences/{kind}", dph.Mute)
+		r.With(auth.Middleware(authSvc)).Delete("/notification-preferences/{kind}", dph.Unmute)
 
 		// World endpoints — list/get/map are public; create requires auth.
 		r.Get("/worlds", wh.List)
