@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { State } from '../../state.js';
-import { loadEconomyDrawer, loadTransferGoods, startTransfer, atStorageCeiling, goodsRateCell } from './economy.js';
+import {
+  loadEconomyDrawer, loadTransferGoods, startTransfer, atStorageCeiling, goodsRateCell,
+  parseGoodAmountPairs, renderStandingOrdersHTML,
+} from './economy.js';
 
 test('atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap', () => {
   assert.equal(atStorageCeiling(1000000, 1000000), true);
@@ -41,6 +44,48 @@ test('AK1: economy.js imports under node --test without a DOM (proves the misc.j
   assert.equal(typeof loadEconomyDrawer, 'function');
   assert.equal(typeof loadTransferGoods, 'function');
   assert.equal(typeof startTransfer, 'function');
+});
+
+test('parseGoodAmountPairs: matches keryx cmd_route.go\'s good:amount,good:amount shape', () => {
+  assert.deepEqual(parseGoodAmountPairs('grain:200,fish:50'), [
+    { good_key: 'grain', amount: 200 },
+    { good_key: 'fish', amount: 50 },
+  ]);
+  assert.deepEqual(parseGoodAmountPairs(' grain : 200 , fish:50 '), [
+    { good_key: 'grain', amount: 200 },
+    { good_key: 'fish', amount: 50 },
+  ]);
+});
+
+test('parseGoodAmountPairs: empty/blank input is an empty list, not an error', () => {
+  assert.deepEqual(parseGoodAmountPairs(''), []);
+  assert.deepEqual(parseGoodAmountPairs('   '), []);
+});
+
+test('parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form', () => {
+  assert.deepEqual(parseGoodAmountPairs('grain:200,nonsense,fish:abc,stone:20'), [
+    { good_key: 'grain', amount: 200 },
+    { good_key: 'stone', amount: 20 },
+  ]);
+});
+
+test('renderStandingOrdersHTML: empty list renders the empty-state message', () => {
+  assert.match(renderStandingOrdersHTML([]), /No standing orders yet/);
+});
+
+test('renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason', () => {
+  const active = renderStandingOrdersHTML([{ id: 'a1', from_name: 'Petras', to_name: 'Colony', status: 'active' }]);
+  assert.match(active, /Petras/);
+  assert.match(active, /Colony/);
+  assert.match(active, /pauseStandingOrder\('a1'\)/);
+  assert.doesNotMatch(active, /resumeStandingOrder/);
+
+  const paused = renderStandingOrdersHTML([{
+    id: 'p1', from_name: 'Petras', to_name: 'Colony', status: 'paused',
+    pause_reason: 'no spare workforce at the crewing settlement',
+  }]);
+  assert.match(paused, /resumeStandingOrder\('p1'\)/);
+  assert.match(paused, /no spare workforce/);
 });
 
 test('loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else', async () => {
