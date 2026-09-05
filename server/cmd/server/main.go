@@ -197,6 +197,8 @@ func main() {
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub, unitArrivalH)
 	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
+	standingOrderH := combat.NewStandingOrderTickHandler(pool, scheduler, gameClock, hub)
+	worker.Register(events.ScheduledStandingOrderTick, standingOrderH.Handle)
 	worker.Register(events.ScheduledFoodTick, foodTickH.Handle)
 	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler, hub)
 	worker.Register(events.ScheduledOfferExpiry, offerExpiryH.Handle)
@@ -478,6 +480,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledUnitInterceptScan,
 		events.ScheduledMarchSightingScan,
 		events.ScheduledMarchEncounterScan,
+		events.ScheduledStandingOrderTick,
 	}
 
 	for _, wid := range worldIDs {

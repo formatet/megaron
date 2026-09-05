@@ -113,6 +113,11 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledLoyaltyWelfareTick: tickPriorityConsequence,
 	ScheduledColonyPenaltyTick:  tickPriorityConsequence,
 	ScheduledBorrowedArmyTick:   tickPriorityConsequence,
+	// Standing orders read stock levels to decide whether to dispatch — placed
+	// after reserve/upkeep/food/growth (40/50/55/60) so a dispatch decision sees
+	// the day's stock AFTER its own consumption/stabilization has settled, never
+	// a mid-day number that growth or upkeep is about to eat into.
+	ScheduledStandingOrderTick: tickPriorityConsequence,
 
 	// 80 — hushåll.
 	ScheduledOfferExpiry:        tickPriorityHousekeep,
