@@ -422,7 +422,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	orderID := o.id
 	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
 		WorldID: o.worldID, OwnerID: o.ownerID, Kind: "standing_order_out",
-		OriginID: o.fromID, DestID: o.toID, Category: "land",
+		OriginID: o.fromID, DestID: o.toID, Category: category,
 		OriginQ: fromQ, OriginR: fromR, DestQ: toQ, DestR: toR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
 		Manifest: manifest, Interceptable: true, StandingOrderID: &orderID,
@@ -494,7 +494,24 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 	if err != nil {
 		return fmt.Errorf("load source hex: %w", err)
 	}
-	dist := province.HexDistance(province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR})
+
+	// Same lane home as the outbound leg sailed/marched — resolve it the same
+	// way (megaron_plan_tva_slices_20260905.md §2) rather than assuming land:
+	// a route that went naval out returns naval, priced off the real sea
+	// path's own length, not the straight-line hex count.
+	toCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.toID)
+	if err != nil {
+		return fmt.Errorf("check destination coastal: %w", err)
+	}
+	fromCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.fromID)
+	if err != nil {
+		return fmt.Errorf("check source coastal: %w", err)
+	}
+	category, dist, err := province.ResolveTradeRoute(ctx, tx, o.worldID, toCoastal, fromCoastal,
+		province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR})
+	if err != nil {
+		return fmt.Errorf("resolve return trade route: %w", err)
+	}
 	travelMins := 30.0 + float64(dist)*2.0
 	travelTicks := int(math.Round(travelMins / 60))
 	if travelTicks < 1 {
@@ -509,7 +526,7 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 	orderID := o.id
 	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
 		WorldID: o.worldID, OwnerID: o.ownerID, Kind: "standing_order_return",
-		OriginID: o.toID, DestID: o.fromID, Category: "land",
+		OriginID: o.toID, DestID: o.fromID, Category: category,
 		OriginQ: toQ, OriginR: toR, DestQ: fromQ, DestR: fromR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
 		Manifest: returnManifest, Interceptable: true, StandingOrderID: &orderID,
