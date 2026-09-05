@@ -1,5 +1,6 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
+import { openDispatchWindow } from './dispatch_window.js';
 
 // ── Persistent notifications (bell badge) ──────────────────────────────────
 export function updateNotifBadge(count) {
@@ -80,16 +81,12 @@ export function dismissAllChips() {
   strip.querySelectorAll('.dispatch-chip:not(.dismissing)').forEach(dismissChip);
 }
 
-const DOMAIN_DRAWER = {
-  war: 'war', city: 'city', trade: 'diplomacy',
-  diplomacy: 'diplomacy', kult: 'kult', system: null,
-};
-
-// openDrawer is the generic drawer-chrome dispatcher owned by main.js (the
-// topmost layer) — this module cannot import it without an upward/cyclical
-// dependency, so it goes through the window bridge main.js sets up, same
-// convention as the canvas → drawer calls in render/map.js.
-export function addDispatch(domain, glyph, text, time) {
+// addDispatch renders one dispatch chip. `kind` and `payload` are the raw
+// NotifyPlayer values (ws.js passes msg.kind/msg.payload straight through) —
+// a click opens the SAME window a Notifications archive row opens
+// (megaron_plan_dispatches.md §1: "ett fönster, två dörrar"), never a
+// domain drawer directly any more.
+export function addDispatch(kind, domain, glyph, text, time, payload) {
   const strip = document.getElementById('gt-dispatch-strip');
   const chip  = document.createElement('div');
   chip.className  = 'dispatch-chip dc-' + domain;
@@ -102,8 +99,7 @@ export function addDispatch(domain, glyph, text, time) {
   `;
   chip.addEventListener('click', function(e) {
     if (e.target.classList.contains('dc-x')) return;
-    const target = DOMAIN_DRAWER[domain];
-    if (target) window.openDrawer(target);
+    openDispatchWindow(kind, payload, time);
     dismissChip(this);
   });
   chip.addEventListener('contextmenu', function(e) {

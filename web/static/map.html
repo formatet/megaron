@@ -234,6 +234,19 @@
   </div>
 </div>
 
+<!-- ── DISPATCH WINDOW — one window, two doors (megaron_plan_dispatches.md §1):
+     a dispatch chip click and a Notifications archive row click both open this
+     same overlay via ui/dispatch_window.js's openDispatchWindow(). ─────────── -->
+<div class="dispatch-window-overlay" id="dispatch-window-overlay" onclick="closeDispatchWindow(event)">
+  <div class="dispatch-window" onclick="event.stopPropagation()">
+    <div class="dw-header">
+      <span class="drawer-title">Dispatch</span>
+      <button class="drawer-close" onclick="closeDispatchWindow()">✕</button>
+    </div>
+    <div class="dw-body" id="dw-body"></div>
+  </div>
+</div>
+
 <!-- ── Tile tooltip and march context (position:fixed) ─────────────────── -->
 <div id="tile-tooltip" class="tile-tooltip" style="display:none"></div>
 <div id="march-ctx" class="march-ctx" style="display:none">

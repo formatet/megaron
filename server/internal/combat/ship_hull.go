@@ -88,7 +88,7 @@ func cargoSizeAfterHullLoss(size, hullLoss int) int {
 // act on.
 func (h *BattleTickHandler) applyNavalHullDamage(
 	ctx context.Context, tx pgx.Tx,
-	battleID, worldID uuid.UUID, tickIndex int,
+	battleID, worldID uuid.UUID, q, r, tickIndex int,
 	participants []battleParticipant, initialSizes, sizes []int, bySide map[string][]int,
 	attRouted, defRouted bool,
 ) {
@@ -122,7 +122,7 @@ func (h *BattleTickHandler) applyNavalHullDamage(
 			if sizes[i] <= 0 {
 				continue // already sunk this tick by the ordinary casualty roll — hull is moot
 			}
-			h.drawShipHull(ctx, tx, battleID, worldID, tickIndex, participants[i], hullLoss, routedHome)
+			h.drawShipHull(ctx, tx, battleID, worldID, q, r, tickIndex, participants[i], hullLoss, routedHome)
 		}
 	}
 }
@@ -135,7 +135,7 @@ func (h *BattleTickHandler) applyNavalHullDamage(
 // same posture as notifyBattleEnded elsewhere in this file).
 func (h *BattleTickHandler) drawShipHull(
 	ctx context.Context, tx pgx.Tx,
-	battleID, worldID uuid.UUID, tickIndex int,
+	battleID, worldID uuid.UUID, q, r, tickIndex int,
 	p battleParticipant, hullLoss int, routedHome bool,
 ) {
 	var newHull int
@@ -168,7 +168,7 @@ func (h *BattleTickHandler) drawShipHull(
 		}
 	}
 
-	h.notifyShipDamaged(ctx, battleID, worldID, p, newHull, sunk, routedHome && !sunk)
+	h.notifyShipDamaged(ctx, battleID, worldID, q, r, p, newHull, sunk, routedHome && !sunk)
 
 	if routedHome && !sunk {
 		if err := h.sendDamagedShipHome(ctx, tx, worldID, p.unitID, p.ownerID, p.utype, tickIndex); err != nil {
@@ -220,7 +220,7 @@ func (h *BattleTickHandler) applyCargoLoss(ctx context.Context, tx pgx.Tx, cargo
 // notifyShipDamaged is §Slice B point 6 — the ShipDamaged notification +
 // audit event. Best-effort: never blocks the battle-tick tx (matches every
 // other notify call in this file).
-func (h *BattleTickHandler) notifyShipDamaged(ctx context.Context, battleID, worldID uuid.UUID, p battleParticipant, hull int, sunk, returningHome bool) {
+func (h *BattleTickHandler) notifyShipDamaged(ctx context.Context, battleID, worldID uuid.UUID, q, r int, p battleParticipant, hull int, sunk, returningHome bool) {
 	_, _ = h.eventStore.Append(ctx, p.unitID, events.StreamType(unit.StreamUnit), EventShipDamaged,
 		ShipDamagedPayload{
 			BattleID: battleID, WorldID: worldID, UnitID: p.unitID, UnitType: p.utype,
@@ -238,6 +238,8 @@ func (h *BattleTickHandler) notifyShipDamaged(ctx context.Context, battleID, wor
 		"unit_id":        p.unitID,
 		"unit_type":      p.utype,
 		"name":           unit.LoadDisplayName(ctx, h.pool, p.unitID),
+		"q":              q,
+		"r":              r,
 		"hull":           hull,
 		"hull_max":       hullMax,
 		"sunk":           sunk,

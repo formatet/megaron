@@ -162,6 +162,8 @@ func (h *RecallArrivalHandler) handleMarch(ctx context.Context, e events.Schedul
 			_ = h.hub.NotifyPlayer(ctx, p.WorldID, ownerID, "OrderFailed", 2, map[string]any{
 				"march_id": p.MarchID,
 				"verb":     "recall",
+				"q":        p.TargetQ, // interception hex — where the recall messenger caught up
+				"r":        p.TargetR,
 				"reason": "your recall messenger reached the army, but it had already resolved (combat, colonization, " +
 					"or another order) before the messenger arrived — the army was not turned back; check its outcome " +
 					"and issue fresh orders if it still needs them",

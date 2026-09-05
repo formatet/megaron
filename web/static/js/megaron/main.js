@@ -51,6 +51,7 @@ import {
 import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
 import { loadGossipDrawer } from './ui/drawers/gossip.js';
+import { closeDispatchWindow } from './ui/dispatch_window.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
 export function toggleDrawer(name) {
@@ -93,6 +94,7 @@ export function closeDrawer(name) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (State.activeDrawer) { closeDrawer(State.activeDrawer); return; }
+    closeDispatchWindow();
     document.getElementById('search-overlay').classList.remove('open');
   }
 });
@@ -150,6 +152,7 @@ Object.assign(window, {
   // (a) inline-handler targets
   cancelBuild,
   centreOn,
+  closeDispatchWindow,
   closeDrawer,
   closeInspect,
   closeMarchCtx,

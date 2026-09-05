@@ -80,14 +80,14 @@ test('AK1: chips.js importeras utan att röra DOM/window före denna punkt', () 
 });
 
 test('AK2: "✕ all" är dold under 3 chips', () => {
-  addDispatch('war', '⚔', 'Army arrived', 'now');
-  addDispatch('city', '🏛', 'Build complete', 'now');
+  addDispatch('ArmyArrival', 'war', '⚔', 'Army arrived', 'now', {});
+  addDispatch('BuildComplete', 'city', '🏛', 'Build complete', 'now', {});
   assert.equal(strip.children.length, 2);
   assert.equal(dismissAllBtn.style.display, 'none');
 });
 
 test('AK3: "✕ all" dyker upp vid exakt 3 chips (DISMISS_ALL_FROM)', () => {
-  addDispatch('diplomacy', '✉', 'Messenger arrived', 'now');
+  addDispatch('MessengerArrival', 'diplomacy', '✉', 'Messenger arrived', 'now', {});
   assert.equal(strip.children.length, 3);
   assert.equal(dismissAllBtn.style.display, '');
 });

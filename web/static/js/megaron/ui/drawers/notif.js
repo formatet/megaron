@@ -3,6 +3,7 @@ import { fetchAuth } from '../../api.js';
 import { updateNotifBadge } from '../chips.js';
 import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.js';
 import { currentCalendarDate, monthLabel } from '../misc.js';
+import { openDispatchWindow } from '../dispatch_window.js';
 
 // ── Notifications drawer ──────────────────────────────────────────────────
 // Mirrors keryx `notifications` (DEL B/D): the default view excludes the noisy
@@ -66,7 +67,7 @@ export async function loadNotifDrawer(kindFilter) {
       html += `<div class="notif-list-item" style="cursor:pointer;color:var(--text-dim)" onclick="notifShowKind()">
         <span class="nli-kind">←</span><span class="nli-text">All notifications</span><span class="nli-time"></span></div>`;
     }
-    html += notifs.map(n => {
+    html += notifs.map((n, i) => {
       const ago = fmtAgo(n.created_at);
       const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
       const text = notifText(n.kind, body_obj);
@@ -75,7 +76,11 @@ export async function loadNotifDrawer(kindFilter) {
       const tier = tierOf(n);
       const tierClass = tier ? ` notif-tier-${tier}` : '';
       const grainLine = n.kind === 'ColonyFounded' ? colonyFoundedGrainLine(body_obj) : '';
-      return `<div class="notif-list-item ${lvlClass}${unread}${tierClass}">
+      // data-idx: the second door (megaron_plan_dispatches.md §1) — every
+      // archive row opens the SAME window a dispatch chip does. Wired below
+      // via addEventListener (not inline onclick) since the payload doesn't
+      // survive HTML-attribute escaping cleanly.
+      return `<div class="notif-list-item ${lvlClass}${unread}${tierClass}" data-idx="${i}">
         <span class="nli-kind">${notifIcon(n.kind)}</span>
         <span class="nli-text">${text}</span>
         <span class="nli-time">${ago}</span>
@@ -101,6 +106,19 @@ export async function loadNotifDrawer(kindFilter) {
     }
 
     body.innerHTML = notifDateHeader() + (html || '<p class="empty-state" style="padding:1rem">No notifications yet.</p>');
+
+    // Second door (megaron_plan_dispatches.md §1): every real notification
+    // row opens the same window a dispatch chip opens. The two meta-rows
+    // above ("← All notifications", "+N … click to view") have their own
+    // inline onclick and carry no data-idx, so this selector never touches them.
+    body.querySelectorAll('.notif-list-item[data-idx]').forEach(el => {
+      el.addEventListener('click', () => {
+        const n = notifs[Number(el.dataset.idx)];
+        if (!n) return;
+        const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
+        openDispatchWindow(n.kind, body_obj, fmtAgo(n.created_at));
+      });
+    });
   } catch (_) {
     body.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load notifications.</p>';
   }
