@@ -197,6 +197,8 @@ func main() {
 	worker.Register(events.ScheduledCollapseSettlement, collapseH.Handle)
 	upkeepH := combat.NewUpkeepHandler(pool, scheduler, eventStore, hub, unitArrivalH)
 	worker.Register(events.ScheduledUpkeepTick, upkeepH.Handle)
+	standingOrderH := combat.NewStandingOrderTickHandler(pool, scheduler, gameClock, hub)
+	worker.Register(events.ScheduledStandingOrderTick, standingOrderH.Handle)
 	worker.Register(events.ScheduledFoodTick, foodTickH.Handle)
 	offerExpiryH := economy.NewOfferExpiryHandler(pool, scheduler, hub)
 	worker.Register(events.ScheduledOfferExpiry, offerExpiryH.Handle)
@@ -278,6 +280,7 @@ func main() {
 	wh := handlers.NewWorldHandler(pool, authSvc, gameClock)
 	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore, hub)
+	soh := handlers.NewStandingOrderHandler(pool)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
@@ -343,6 +346,12 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 			r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/slaughter-livestock", ph.SlaughterLivestock)
+
+			r.Post("/worlds/{worldID}/standing-orders", soh.Create)
+			r.Get("/worlds/{worldID}/standing-orders", soh.List)
+			r.Post("/worlds/{worldID}/standing-orders/{orderID}/pause", soh.Pause)
+			r.Post("/worlds/{worldID}/standing-orders/{orderID}/resume", soh.Resume)
+			r.Delete("/worlds/{worldID}/standing-orders/{orderID}", soh.Delete)
 
 			r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)
 
@@ -478,6 +487,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledUnitInterceptScan,
 		events.ScheduledMarchSightingScan,
 		events.ScheduledMarchEncounterScan,
+		events.ScheduledStandingOrderTick,
 	}
 
 	for _, wid := range worldIDs {

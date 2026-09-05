@@ -153,6 +153,13 @@ const (
 	// dependency of kharis (G1) — so, like ScheduledCollapseSettlement, this
 	// crosses the layer boundary via event emission instead.
 	ScheduledSiegeCapitulation ScheduledEventType = "SiegeCapitulation"
+	// ScheduledStandingOrderTick is the self-rescheduling per-world sweep that
+	// drives every standing order (megaron_plan_staende_leverans.md, PULL not
+	// push): each firing reads every route's destination shortfall and
+	// dispatches/waits/pauses accordingly. internal/combat/standing_orders.go.
+	// Arrival reuses the existing generic ScheduledTransportArrival/ArrivalHandler
+	// unchanged — no new arrival event.
+	ScheduledStandingOrderTick ScheduledEventType = "StandingOrderTick"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

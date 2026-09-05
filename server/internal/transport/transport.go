@@ -45,6 +45,12 @@ type DispatchParams struct {
 	DueTick       int
 	Manifest      Manifest
 	Interceptable bool
+	// StandingOrderID tags this mover as belonging to a standing order
+	// (megaron_plan_staende_leverans.md) — nil for every other transport kind.
+	// The standing-order sweep (internal/combat) reads this column back to
+	// find "is a caravan already in flight for this route" without a second
+	// table; nothing else in the package reads or writes it.
+	StandingOrderID *uuid.UUID
 }
 
 // Dispatch inserts a transport mover and its goods manifest, then schedules the
@@ -75,11 +81,13 @@ func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, err
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO transports
 		   (world_id, owner_id, kind, origin_id, dest_id, category,
-		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable,
+		    standing_order_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
 		 RETURNING id`,
 		p.WorldID, p.OwnerID, p.Kind, p.OriginID, p.DestID, p.Category,
 		p.OriginQ, p.OriginR, p.DestQ, p.DestR, p.DepartsAt, p.ArrivesAt, p.DueTick, p.Interceptable,
+		p.StandingOrderID,
 	).Scan(&id); err != nil {
 		return uuid.Nil, fmt.Errorf("insert transport: %w", err)
 	}

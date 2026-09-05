@@ -41,6 +41,7 @@ import {
 } from './ui/drawers/war.js';
 import {
   loadEconomyDrawer, loadTransferGoods, startTransfer,
+  createStandingOrder, pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
 } from './ui/drawers/economy.js';
 import { loadKultDrawer, okRite, okRiteComposed, okOfferWorth } from './ui/drawers/kult.js';
 import {
@@ -154,7 +155,9 @@ Object.assign(window, {
   closeMarchCtx,
   closeMarchPanel,
   closeSearch,
+  createStandingOrder,
   cycleCityView,
+  deleteStandingOrder,
   dipAccept,
   dipCancel,
   dipComposeToggleKind,
@@ -174,7 +177,9 @@ Object.assign(window, {
   okRiteComposed,
   okOfferWorth,
   onColonizeToggle,
+  pauseStandingOrder,
   resetView,
+  resumeStandingOrder,
   saveLaborAlloc,
   sendMarch,
   sendMessengerFromInspect,
