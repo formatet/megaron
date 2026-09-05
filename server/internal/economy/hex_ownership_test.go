@@ -21,11 +21,12 @@ import (
 // slice, PlaceGubbe/PlacementOptions read occupancy via
 // LoadPlacementCounts(settlementID) — settlement-scoped. After, the hex
 // branch reads GlobalHexOccupancy(worldID, hexes) instead. For any
-// settlement that is the ONLY one touching its own catchment hexes (true of
-// every settlement in every existing world — CatchmentClearanceHexes still
-// forbids overlap), the two numbers must be identical for every hex and
-// every good. This test proves that arithmetic fact directly, not just via
-// the full test suite staying green.
+// settlement that is the ONLY one touching its own catchment hexes (still
+// true of every settlement whose catchment has no neighbour within
+// CatchmentClearanceHexes' reach, even after §3 lowered that minimum founding
+// distance), the two numbers must be identical for every hex and every good.
+// This test proves that arithmetic fact directly, not just via the full test
+// suite staying green.
 func TestGlobalHexOccupancy_MatchesSettlementScopedCountWhenAlone(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()

@@ -169,10 +169,11 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2): "placed"
 	// for a HEX good must count every settlement's gubbar on that hex, not
 	// just this one — a neighbour's occupant still fills the one shared
-	// ceiling. A no-op today (CatchmentClearanceHexes forbids overlap), but
-	// showing settlement-scoped room here would promise a placement the
-	// write-time check (PlaceGubbe, same global count) could reject once §3
-	// lets two catchments share ground. Buildings are never shared between
+	// ceiling. Was a no-op before §3 (CatchmentClearanceHexes forbade any
+	// overlap outright); now that §3 has lowered the minimum founding
+	// distance, two catchments CAN share ground, so showing settlement-scoped
+	// room here would promise a placement the write-time check (PlaceGubbe,
+	// same global count) could reject. Buildings are never shared between
 	// settlements, so placed.Building stays exactly as it was.
 	hexCoords := make([]hexgrid.Coord, len(hexOptions))
 	for i, opt := range hexOptions {
@@ -529,12 +530,13 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		// first settlement to place any gubbe on it — any good — owns it
 		// outright; every other settlement (even one under the SAME wanax)
 		// has no access to it at all, regardless of which good it wants or
-		// how much of that good's own cap is still free. CatchmentClearanceHexes
-		// still forbids two settlements' catchments from overlapping today,
-		// so this lock and the ownership check below are a no-op in practice
-		// for every existing world — but the write-time gate must already be
-		// correct for the day §3 lets two catchments share ground, and a
-		// settlement row lock is the ONLY thing that makes the
+		// how much of that good's own cap is still free. Before §3,
+		// CatchmentClearanceHexes forbade any catchment overlap outright, so
+		// this lock and the ownership check below were a no-op in practice
+		// for every existing world. §3 lowered the minimum founding distance,
+		// so two settlements' catchments CAN now share ground — this is the
+		// live gate for that case. A settlement row lock is the ONLY thing
+		// that makes the
 		// check-then-insert below atomic against a concurrent PlaceGubbe from
 		// a DIFFERENT settlement targeting the SAME hex: map_tiles has a
 		// PRIMARY KEY on (world_id, q, r) (mig 001), so this always locks

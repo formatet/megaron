@@ -651,11 +651,12 @@ func LoadPlacementCounts(ctx context.Context, tx Tx, settlementID uuid.UUID) (Pl
 // ska bära ett bestämt antal gubbar TOTALT, oavsett hur många städer som har
 // den i sin catchment"). It answers "how many gubbar, from EVERY settlement
 // in this world, already stand on hex H doing good G" — the number a hex's
-// PlaceCapPerGood must be checked against once two settlements' catchments
-// can overlap (§3, not yet built — CatchmentClearanceHexes still forbids it
-// today, so for any hex that belongs to only one settlement's catchment this
-// returns EXACTLY what LoadPlacementCounts would have for that settlement
-// alone; the two are indistinguishable until overlap is possible).
+// PlaceCapPerGood must be checked against now that two settlements'
+// catchments can overlap (§3, landed — CatchmentClearanceHexes lowered the
+// minimum founding distance below 2*CatchmentRadius+1). For any hex that
+// still belongs to only one settlement's catchment this returns EXACTLY what
+// LoadPlacementCounts would have for that settlement alone; the two stay
+// indistinguishable there.
 //
 // Deliberately NOT used by RecomputeProduction/placementYield: those stay on
 // LoadPlacementCounts (settlement-scoped) because placementYield's formula is
