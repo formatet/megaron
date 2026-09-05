@@ -223,12 +223,16 @@ func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.Sc
 	if h.hub == nil {
 		return nil
 	}
-	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 1, map[string]any{
+	deadLetterPayload := map[string]any{
 		"unit_id": p.UnitID,
 		"name":    unit.LoadDisplayName(ctx, h.pool, p.UnitID),
 		"verb":    p.Verb,
 		"reason":  fmt.Sprintf("your %s order's Runner could not deliver it after repeated attempts (system fault) — the unit never received it; check its status and reissue the order", p.Verb),
-	})
+	}
+	if p.Verb == "occupy_action" && p.Occupy != nil {
+		deadLetterPayload["settlement_id"] = p.Occupy.SettlementID
+	}
+	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 1, deadLetterPayload)
 	slog.Warn("dead-letter: notified owner of stalled order delivery", "messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb)
 	return nil
 }
@@ -240,10 +244,17 @@ func (h *OrderDeliveryHandler) notifyOrderFailed(ctx context.Context, p OrderDel
 	if h.hub == nil {
 		return
 	}
-	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 2, map[string]any{
+	payload := map[string]any{
 		"unit_id": p.UnitID,
 		"name":    unit.LoadDisplayName(ctx, h.pool, p.UnitID),
 		"verb":    p.Verb,
 		"reason":  reason,
-	})
+	}
+	// occupy_action targets a SETTLEMENT, not a unit — UnitID is left
+	// zero-value for this verb (see OrderDeliveryPayload.Occupy doc comment),
+	// so without this the failure notice would carry no usable location.
+	if p.Verb == "occupy_action" && p.Occupy != nil {
+		payload["settlement_id"] = p.Occupy.SettlementID
+	}
+	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 2, payload)
 }

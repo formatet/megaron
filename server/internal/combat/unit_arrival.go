@@ -102,9 +102,10 @@ func (h *UnitArrivalHandler) NotifyDeadLetter(ctx context.Context, e events.Sche
 	}
 	var ownerID uuid.UUID
 	var status, utype string
+	var q, r int
 	if err := h.pool.QueryRow(ctx,
-		`SELECT owner_id, status, type FROM units WHERE id = $1`, payload.UnitID,
-	).Scan(&ownerID, &status, &utype); err != nil {
+		`SELECT owner_id, status, type, q, r FROM units WHERE id = $1`, payload.UnitID,
+	).Scan(&ownerID, &status, &utype, &q, &r); err != nil {
 		return fmt.Errorf("dead-letter: load unit owner: %w", err)
 	}
 	// Namnger subjektet (megaron_plan_dispatches.md §4) — "your infantry's
@@ -118,6 +119,8 @@ func (h *UnitArrivalHandler) NotifyDeadLetter(ctx context.Context, e events.Sche
 	_ = h.hub.NotifyPlayer(ctx, payload.WorldID, ownerID, "MarchStalled", 1, map[string]any{
 		"unit_id": payload.UnitID,
 		"name":    name,
+		"q":       q,
+		"r":       r,
 		"reason": fmt.Sprintf(
 			"%s's arrival could not be processed after repeated attempts (system fault) — check `unit list`/`map`; its status is currently %q and may need a fresh march order",
 			subject, status),

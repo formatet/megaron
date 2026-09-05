@@ -634,6 +634,11 @@ func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, wor
 	}
 	if sid != (uuid.UUID{}) {
 		payload["settlement_id"] = sid
+	} else if u.q != nil && u.r != nil {
+		// No supporting settlement (mig 100: supportSettlementID is NULL when
+		// the city is gone or changed hands) — fall back to the unit's own
+		// last-known hex so the notice still has a destination.
+		payload["q"], payload["r"] = *u.q, *u.r
 	}
 	_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, kind, level, payload)
 }
@@ -684,6 +689,8 @@ func (h *UpkeepHandler) notifyUpkeepUnpaid(ctx context.Context, u upkeepUnitRow,
 	}
 	if sid != (uuid.UUID{}) {
 		payload["settlement_id"] = sid
+	} else if u.q != nil && u.r != nil {
+		payload["q"], payload["r"] = *u.q, *u.r
 	}
 	_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, upkeepUnpaidWarningKind, level, payload)
 }
@@ -700,7 +707,7 @@ func (h *UpkeepHandler) notifyUpkeepUnpaid(ctx context.Context, u upkeepUnitRow,
 // with no explanation at all. reason mirrors the ship's own loss reason
 // ("grain_shortage" | "silver_shortage") so the cause reads the same for both
 // notifications.
-func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, worldID, shipID uuid.UUID, cargoUnitID *uuid.UUID, reason string) {
+func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, worldID, shipID uuid.UUID, cargoUnitID *uuid.UUID, q, r *int, reason string) {
 	if cargoUnitID == nil {
 		return
 	}
@@ -730,7 +737,7 @@ func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, worldID, shipID
 		worldID, nil,
 	)
 	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, cargoOwnerID, "UnitLostAtSea", 2, map[string]any{
+		payload := map[string]any{
 			"unit_id":   *cargoUnitID,
 			"unit_type": cargoType,
 			"name":      unit.LoadDisplayName(ctx, h.pool, *cargoUnitID),
@@ -738,7 +745,15 @@ func (h *UpkeepHandler) cascadeCargoDisband(ctx context.Context, worldID, shipID
 			"disbanded": true,
 			"reason":    reason,
 			"ship_id":   shipID,
-		})
+		}
+		// The cargo unit is embarked and has no hex of its own — the carrying
+		// ship's own q/r (nil only when the ship itself is garrisoned inside a
+		// settlement, units.q/r has no NOT NULL) is the closest thing to "where
+		// this happened".
+		if q != nil && r != nil {
+			payload["q"], payload["r"] = *q, *r
+		}
+		_ = h.hub.NotifyPlayer(ctx, worldID, cargoOwnerID, "UnitLostAtSea", 2, payload)
 	}
 }
 
@@ -831,7 +846,7 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 		slog.Error("upkeep: attrition update failed", "unit", u.id, "err", updateErr)
 	}
 	if disbanded {
-		h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, "grain_shortage")
+		h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, u.q, u.r, "grain_shortage")
 	}
 
 	_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitAttrition",
@@ -946,7 +961,7 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 			slog.Error("upkeep: desertion update failed", "unit", u.id, "err", updateErr)
 		}
 		if disbanded {
-			h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, "silver_shortage")
+			h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, u.q, u.r, "silver_shortage")
 		}
 
 		_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitDeserted",

@@ -858,7 +858,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	// already-ended battle before it gets this far either — same "one
 	// battle-end, one draw" idempotency guarantee as notifyBattleEnded below,
 	// and for the same reason: this whole tx only commits once.
-	h.applyNavalHullDamage(ctx, tx, battleID, worldID, tickIndex, participants, initialSizes, sizes, bySide, attRouted, defRouted)
+	h.applyNavalHullDamage(ctx, tx, battleID, worldID, q, r, tickIndex, participants, initialSizes, sizes, bySide, attRouted, defRouted)
 
 	h.notifyBattleEnded(ctx, tx, battleID, worldID, q, r, tickIndex, winner)
 
