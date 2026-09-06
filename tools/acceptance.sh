@@ -47,6 +47,90 @@ wait_healthy() {
 # created_at DESC, men vi litar inte på den implicita ordningen här — och om mer
 # än en värld existerar (t.ex. en gammal körning som inte revs) skriver vi det på
 # stderr så kommandon inte tyst pekar på någon annans värld.
+# ── Riggen städar efter SIG ────────────────────────────────────────────────────
+#
+# Varje `up --build` lämnar två otaggade images efter sig: det förra slutimaget
+# (~100 MB) och det förra BYGGSTEGET (~260 MB). Riggen byggdes om fem gånger på en
+# dag 2026-08-05 och bidrog till att rotpartitionen (100 GB, delad med
+# pacman-cachen och hela /var/lib/docker) gick till 99 % — 66 dangling images,
+# 12,3 GB. Nio Go-test föll på "No space left on device" och såg ut som
+# regressioner tills disken mättes. Ett verktyg som växer monotont varje gång man
+# använder det är trasigt, inte bara slarvigt.
+#
+# ⛔ Varför INTE `docker image prune -f`, som var första förslaget: den är
+# SYSTEMOMFATTANDE. Mätt 2026-09-06 låg 53 dangling images på maskinen — 27 i
+# riggens storleksklass och 25 i GB-klassen från ANDRA projekt (~13 GB av 15,9 GB
+# återvinningsbart). Riggen hade alltså städat fem sjättedelar åt
+# kristall/matlista/isladan varje gång någon startade den, och dess beteende hade
+# berott på vad som råkade ligga på maskinen. En testrigg städar efter sig själv.
+#
+# ⚠️ Byggsteget är den STÖRRE läckan (261 MB mot slutimagets 100 MB, mätt
+# 2026-09-06). En fix som bara tar slutimaget löser under en tredjedel av
+# tillväxten — det såg ut att fungera i första körningen och gjorde det inte.
+
+# docker image inspect .Size rapporterar KOMPRIMERAD storlek under containerd-
+# snapshottern — ~3× mindre än vad `docker image ls` visar (mätt: 32 MB mot
+# 100 MB för samma image). En städrad som säger 32 när användaren ser 100 i
+# `docker image ls` är precis en sådan ljugande statusrad §10 förbjuder, så
+# talet läses ur samma källa som ls.
+# ⚠️ awk får INTE avsluta tidigt (`exit` efter träff). Gör den det stängs röret
+# medan `docker image ls` fortfarande skriver, ls dör av SIGPIPE, och `set -o
+# pipefail` gör hela pipelinen 141 — vilket `set -e` tar som fel och river
+# riggen mitt i en `up`. Fångat 2026-09-06 genom att köra funktionen skarpt;
+# `bash -n` ser det inte. Listan är ~70 rader, så att läsa hela är gratis.
+image_disk_size() {
+  docker image ls -a --no-trunc --format '{{.ID}} {{.Size}}' 2>/dev/null \
+    | awk -v id="$1" '$1==id {v=$2} END {if (v!="") print v}' || true
+}
+
+# compose namnger slutimaget deterministiskt <projekt>-<tjänst>. ID:t läses FÖRE
+# bygget; efteråt är det gamla otaggat och går inte längre att hitta på namn.
+rig_image_id() { docker image inspect -f '{{.Id}}' "${PROJECT}-server" 2>/dev/null || true; }
+
+# Tar bort exakt det slutimage som fanns före ombygget — bara om bygget gav ett
+# NYTT id och det gamla nu är otaggat. Docker vägrar ändå ta bort ett image som en
+# container använder; kontrollen finns för att utskriften ska vara ärlig i stället
+# för att tiga om ett misslyckande.
+drop_previous_rig_image() {
+  local old="${1:-}" new tags size
+  [ -n "$old" ] || return 0
+  new=$(rig_image_id)
+  [ -n "$new" ] && [ "$new" != "$old" ] || return 0
+  tags=$(docker image inspect -f '{{len .RepoTags}}' "$old" 2>/dev/null || echo 1)
+  [ "$tags" = "0" ] || return 0
+  size=$(image_disk_size "$old")
+  if docker image rm "$old" >/dev/null 2>&1; then
+    echo "  städat: föregående slutimage (${size:-?})"
+  else
+    echo "  (föregående slutimage kunde inte tas bort — används det fortfarande?)"
+  fi
+  return 0
+}
+
+# Slänger gamla byggsteg, men BEHÅLLER det nyaste: med classic builder ÄR
+# byggstegets lager nästa bygges cache (`docker system df` visar Build Cache 0 B —
+# cachen bor i imagelagren, inte i BuildKit). Slänger man det nyaste kompileras
+# allt om från noll varje gång, och riggen blir långsammare i stället för mindre.
+# Filtret är etiketten ur Dockerfile:n, så bara Megarons egna byggsteg kan träffas.
+drop_stale_builder_images() {
+  local first=1 id size n=0
+  while read -r id; do
+    [ -n "$id" ] || continue
+    if [ "$first" = 1 ]; then first=0; continue; fi
+    size=$(image_disk_size "$id")
+    if docker image rm "$id" >/dev/null 2>&1; then
+      n=$(( n + 1 ))
+      echo "  städat: gammalt byggsteg (${size:-?})"
+    fi
+  # Sorterar EXPLICIT på tidsstämpel i stället för att lita på `docker image ls`
+  # defaultordning: mätt 2026-09-06 kastade den om två images som delade sekund,
+  # och då hade den nyaste (nästa bygges cache) slängts i stället för den äldsta.
+  done < <(docker image ls --filter "label=com.megaron.build-stage=builder" \
+             --filter "dangling=true" --no-trunc --format '{{.CreatedAt}}|{{.ID}}' 2>/dev/null \
+             | sort -r | cut -d'|' -f2 || true)
+  return 0
+}
+
 world_id() {
   curl -fsS -m 8 "$API/worlds" | python3 -c '
 import json, sys
@@ -61,7 +145,10 @@ print(ws[0]["id"])'
 
 cmd_up() {
   echo "→ bygger och startar acceptansvärlden (projekt $PROJECT)"
+  local prev; prev=$(rig_image_id)
   "${DC[@]}" up -d --build
+  drop_previous_rig_image "$prev"
+  drop_stale_builder_images
   wait_healthy
   local w; w=$(world_id)
   cat <<EOF

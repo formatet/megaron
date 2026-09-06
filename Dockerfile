@@ -1,4 +1,9 @@
 FROM golang:1.25-alpine AS builder
+# Byggsteget blir OTAGGAT vid varje ombygge och kan därför inte kännas igen på
+# namn. Etiketten är det enda som överlever avtaggningen, och den är vad
+# tools/acceptance.sh städar på — så riggen kan slänga SINA gamla byggsteg utan
+# att röra andra projekts images. Se drop_stale_builder_images där.
+LABEL com.megaron.build-stage=builder
 
 WORKDIR /build
 
