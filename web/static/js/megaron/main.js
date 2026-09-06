@@ -42,6 +42,7 @@ import {
 import {
   loadEconomyDrawer, loadTransferGoods, startTransfer,
   createStandingOrder, pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
+  sortEconomySettlements, openCitySettlement,
 } from './ui/drawers/economy.js';
 import { loadKultDrawer, okRite, okRiteComposed, okOfferWorth } from './ui/drawers/kult.js';
 import {
@@ -180,6 +181,7 @@ Object.assign(window, {
   okRiteComposed,
   okOfferWorth,
   onColonizeToggle,
+  openCitySettlement,
   pauseStandingOrder,
   resetView,
   resumeStandingOrder,
@@ -187,6 +189,7 @@ Object.assign(window, {
   sendMarch,
   sendMessengerFromInspect,
   slaughterLivestock,
+  sortEconomySettlements,
   startBuild,
   startTransfer,
   submitReport,

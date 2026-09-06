@@ -3,6 +3,7 @@ import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
 import { esc, fmtSilver } from '../format.js';
 import { renderLockedActions } from '../misc.js';
+import { sitosGranaryState } from './sitos_view.js';
 
 // A good at its storage ceiling is a silent off-switch: everything produced
 // past the cap is discarded, so labour sitting on it earns nothing. Mirror
@@ -27,6 +28,138 @@ export function goodsRateCell(g) {
     return `<td class="goods-atcap" title="${esc(title)}">full${lost}</td>`;
   }
   return rate > 0 ? `<td style="color:var(--safe)">+${rate.toFixed(1)}/tick</td>` : '<td></td>';
+}
+
+// ── Settlements overview (S1, megaron_plan_stad_vs_ekonomi.md §3) ──────────
+// Answers "vilken av mina städer?" for food — the one question this table
+// exists for (§1: "Ekonomi äger jämförelsen"). `sitosGranaryState` is the
+// exact same pure function city.js's per-settlement Tillstånd row (and
+// keryx's `status`) derive their five states from — reused here, not
+// re-derived, so this table and the city drawer can never disagree about
+// which state a settlement is in.
+const FOOD_RANK = { 'empty-shrinking': 0, 'release': 1, 'empty-growing': 2, 'rest': 3, 'store': 4 };
+const FOOD_LABEL = {
+  'empty-shrinking': 'starving',
+  'release': 'drawing down reserve',
+  'empty-growing': 'empty, refilling',
+  'rest': 'stable',
+  'store': 'surplus',
+};
+
+// One settlement's food-survival summary. `pd` is the settlement object from
+// GET .../provinces/{id} (the same fields city.js already reads: population,
+// grain_prod_rate/grain_consum_rate, food_self_sufficient, sitos.*) — no new
+// server data (plan §4: "Ingen ny data på servern"). `pd` may be null if the
+// fetch failed; that renders as an honest "no data" row rather than a guess.
+export function settlementFoodRow(s, pd) {
+  if (!pd) {
+    return { id: s.id, name: s.name, isCapital: !!s.is_capital, population: 0,
+      grainRate: 0, coverage: 0, severity: 'rest', label: 'no data', rank: 5 };
+  }
+  const netTick = (pd.grain_prod_rate || 0) - (pd.grain_consum_rate || 0);
+  const sitos = pd.sitos || {};
+  const cov   = sitos.coverage_ticks    || 0;
+  const low   = sitos.low_ticks         || 0;
+  const high  = sitos.high_ticks        || 0;
+  const total = sitos.granary_total     || 0;
+  const net   = sitos.food_net_per_tick != null ? sitos.food_net_per_tick : netTick;
+  // food_self_sufficient===false means the catchment cannot feed the
+  // population even with every citizen on food — worse than any coverage
+  // number can say (it will never recover on its own), so it overrides the
+  // granary state and always sorts to the very top.
+  const cannotFeed = pd.food_self_sufficient === false;
+  const { severity } = sitosGranaryState(cov, low, high, total, net);
+  return {
+    id: s.id,
+    name: s.name,
+    isCapital: !!s.is_capital,
+    population: pd.population || 0,
+    grainRate: netTick,
+    coverage: cov,
+    severity: cannotFeed ? 'empty-shrinking' : severity,
+    label: cannotFeed ? 'cannot feed itself' : (FOOD_LABEL[severity] || severity),
+    rank: cannotFeed ? -1 : (FOOD_RANK[severity] ?? 3),
+  };
+}
+
+const SETTLEMENT_SORT_KEYS = {
+  name:       r => r.name.toLowerCase(),
+  population: r => r.population,
+  grainRate:  r => r.grainRate,
+  coverage:   r => r.coverage,
+  brist:      r => r.rank,
+};
+
+// Sortable on every column, but the table exists to answer one question —
+// so the caller (loadEconomyGoods) defaults to key='brist', dir='asc'
+// (most urgent first). Pure (array in, new sorted array out) for testing.
+export function sortSettlementRows(rows, key, dir) {
+  const getter = SETTLEMENT_SORT_KEYS[key] || SETTLEMENT_SORT_KEYS.brist;
+  const sign = dir === 'desc' ? -1 : 1;
+  return [...rows].sort((a, b) => {
+    const av = getter(a), bv = getter(b);
+    if (av < bv) return -1 * sign;
+    if (av > bv) return 1 * sign;
+    return 0;
+  });
+}
+
+// renderSettlementsOverviewHTML builds the sortable comparison table —
+// clicking a header re-sorts (sortEconomySettlements), clicking a row opens
+// that settlement's City drawer (openCitySettlement) rather than exposing
+// any per-settlement control here (plan §1 point 3: Economy only links to
+// Stad, it never edits a single settlement).
+export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
+  if (!rows.length) return '';
+  const arrow = key => key === sortKey ? (sortDir === 'desc' ? ' ▼' : ' ▲') : '';
+  const th = (key, label, align) =>
+    `<td onclick="sortEconomySettlements('${key}')" style="cursor:pointer${align ? `;text-align:${align}` : ''}">${esc(label)}${arrow(key)}</td>`;
+  return `<table class="goods-mini">
+    <tr style="color:var(--text-dim);font-size:.7rem">
+      ${th('name', 'Settlement')}
+      ${th('population', 'Pop', 'right')}
+      ${th('grainRate', 'Grain', 'right')}
+      ${th('coverage', 'Coverage', 'right')}
+      ${th('brist', 'Status')}
+    </tr>
+    ${rows.map(r => {
+      const rateColor = r.grainRate < 0 ? 'var(--danger)' : (r.grainRate > 0 ? 'var(--safe)' : 'var(--text-dim)');
+      const rateSign = r.grainRate > 0 ? '+' : '';
+      return `<tr onclick="openCitySettlement('${r.id}')" style="cursor:pointer">
+        <td>${esc(r.name)}${r.isCapital ? ' ★' : ''}</td>
+        <td style="text-align:right">${Math.floor(r.population)}</td>
+        <td style="text-align:right;color:${rateColor}">${rateSign}${r.grainRate.toFixed(1)}/tick</td>
+        <td style="text-align:right">${r.coverage.toFixed(1)} ticks</td>
+        <td><span class="sitos-state-${r.severity}">${esc(r.label)}</span></td>
+      </tr>`;
+    }).join('')}
+  </table>`;
+}
+
+// Row cache is rebuilt by every loadEconomyGoods() call (tab switch, drawer
+// reopen) — it only ever holds the most recent fetch. Sort choice is kept
+// across those reloads on purpose: re-opening the tab after acting on the
+// worst-off city shouldn't silently drop the Wanax back to the default order.
+let _settlementRows = [];
+let _settlementSort = { key: 'brist', dir: 'asc' };
+
+export function sortEconomySettlements(key) {
+  _settlementSort = _settlementSort.key === key
+    ? { key, dir: _settlementSort.dir === 'asc' ? 'desc' : 'asc' }
+    : { key, dir: 'asc' };
+  const el = document.getElementById('ec-settlements-overview');
+  if (!el) return;
+  el.innerHTML = renderSettlementsOverviewHTML(
+    sortSettlementRows(_settlementRows, _settlementSort.key, _settlementSort.dir),
+    _settlementSort.key, _settlementSort.dir);
+}
+
+// Opens the City drawer on a specific settlement — the only way Economy ever
+// reaches a single settlement's controls (plan §1 point 3). Same pattern
+// render/map.js already uses when a settlement marker is clicked on the map.
+export function openCitySettlement(provinceId) {
+  State.cityViewID = provinceId;
+  window.openDrawer('city');
 }
 
 // ── Economy drawer ────────────────────────────────────────────────────────
@@ -68,18 +201,35 @@ async function loadEconomyGoods(mySettlements) {
   const el = document.getElementById('ectab-goods');
   el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
   try {
-    const results = await Promise.all(
-      mySettlements.map(s => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${s.id}/goods`))
-    );
+    const [goodsResults, provResults] = await Promise.all([
+      Promise.all(mySettlements.map(s => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${s.id}/goods`))),
+      // The list endpoint (/provinces) carries only size_tier for a settlement,
+      // never exact population or grain rates — the per-settlement detail
+      // (already fetched by city.js) is where those live, so the overview
+      // fetches it too rather than inventing a new endpoint.
+      Promise.all(mySettlements.map(s => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${s.id}`))),
+    ]);
+
+    _settlementRows = await Promise.all(mySettlements.map(async (s, i) => {
+      const pr = provResults[i];
+      const pd = pr.ok ? (await pr.json()).settlement : null;
+      return settlementFoodRow(s, pd);
+    }));
+    const overviewHtml =
+      `<div class="dsec-title">Settlements</div>` +
+      `<div id="ec-settlements-overview">${renderSettlementsOverviewHTML(
+        sortSettlementRows(_settlementRows, _settlementSort.key, _settlementSort.dir),
+        _settlementSort.key, _settlementSort.dir)}</div>`;
+
     let html = '';
     for (let i = 0; i < mySettlements.length; i++) {
       const s = mySettlements[i];
-      const r = results[i];
+      const r = goodsResults[i];
       if (!r.ok) continue;
       const goods = await r.json();
       const silver = goods.find(g => g.key === 'silver');
       const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible));
-      html += `<div class="dsec-title" style="margin-top:${i>0?'.8rem':'0'}">${s.name}${s.is_capital?' ★':''}</div>`;
+      html += `<div class="dsec-title" style="margin-top:.8rem">${s.name}${s.is_capital?' ★':''}</div>`;
       if (silver) {
         html += `<div class="silver-balance">
           <div>
@@ -95,7 +245,7 @@ async function loadEconomyGoods(mySettlements) {
         ).join('')}</table>`;
       }
     }
-    el.innerHTML = (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
+    el.innerHTML = overviewHtml + (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
   }
