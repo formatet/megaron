@@ -241,7 +241,7 @@ func main() {
 		staticFS.ServeHTTP(w, req)
 	}))
 
-	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir, staticDir, gameClock, serverWorldID)
+	webH, err := handlers.NewWebHandler(pool, authSvc, templateDir, staticDir, gameClock)
 	if err != nil {
 		slog.Error("load templates", "err", err)
 		os.Exit(1)
@@ -684,7 +684,7 @@ func absorbStartupDowntime(ctx context.Context, pool *pgxpool.Pool, clk *clock.W
 // it lives in the database.
 func ensureWorld(ctx context.Context, pool *pgxpool.Pool, clk *clock.WallClock) (uuid.UUID, error) {
 	var id uuid.UUID
-	err := pool.QueryRow(ctx, `SELECT id FROM worlds LIMIT 1`).Scan(&id)
+	err := pool.QueryRow(ctx, `SELECT id FROM worlds ORDER BY created_at DESC LIMIT 1`).Scan(&id)
 	if err == nil {
 		return id, nil
 	}

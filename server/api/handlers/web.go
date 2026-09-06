@@ -47,12 +47,11 @@ type WebHandler struct {
 	templateDir string
 	mapFile     string // static/map.html — served directly, no Go templating (FAS 1 frikoppling)
 	clk         clock.Clock
-	worldID     uuid.UUID // the single world this server hosts
 }
 
 // NewWebHandler creates a WebHandler. Only base.html is pre-parsed; page
 // templates are parsed fresh per request so each gets its own "content" block.
-func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, staticDir string, clk clock.Clock, worldID uuid.UUID) (*WebHandler, error) {
+func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string, staticDir string, clk clock.Clock) (*WebHandler, error) {
 	buildingNames := map[string]string{
 		"farm":        "Farm",
 		"lumbermill":  "Lumbermill",
@@ -119,7 +118,19 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 	if err != nil {
 		return nil, err
 	}
-	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir, mapFile: filepath.Join(staticDir, "map.html"), clk: clk, worldID: worldID}, nil
+	return &WebHandler{pool: pool, authSvc: authSvc, base: base, templateDir: templateDir, mapFile: filepath.Join(staticDir, "map.html"), clk: clk}, nil
+}
+
+// resolveWorldID returns the world this server currently hosts, looked up per
+// request rather than frozen at boot (megaron_plan_varldsid_resolver.md): a
+// reseed replaces the world row, and the web surface must follow it without a
+// restart. ORDER BY created_at DESC makes the pick deterministic and prefers the
+// freshest world if more than one row ever exists (reseed TRUNCATEs, so there is
+// normally exactly one).
+func (h *WebHandler) resolveWorldID(ctx context.Context) (uuid.UUID, error) {
+	var id uuid.UUID
+	err := h.pool.QueryRow(ctx, `SELECT id FROM worlds ORDER BY created_at DESC LIMIT 1`).Scan(&id)
+	return id, err
 }
 
 // render renders a full-page template that extends base.html.
@@ -154,14 +165,19 @@ func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	wid, err := h.resolveWorldID(r.Context())
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	var exists bool
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT EXISTS (SELECT 1 FROM settlements WHERE owner_id = $1 AND world_id = $2)
 		     OR EXISTS (SELECT 1 FROM founder_phase WHERE owner_id = $1 AND world_id = $2 AND active)`,
-		playerID, h.worldID,
+		playerID, wid,
 	).Scan(&exists)
 	if exists {
-		http.Redirect(w, r, "/world/"+h.worldID.String()+"/map", http.StatusSeeOther)
+		http.Redirect(w, r, "/world/"+wid.String()+"/map", http.StatusSeeOther)
 		return
 	}
 	// No settlement. A dispossessed Wanax (lost their last city) is shown their
@@ -170,28 +186,33 @@ func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT EXISTS (SELECT 1 FROM player_world_records
 		   WHERE player_id = $1 AND world_id = $2 AND status = 'dispossessed')`,
-		playerID, h.worldID,
+		playerID, wid,
 	).Scan(&dispossessed)
 	if dispossessed {
-		http.Redirect(w, r, "/world/"+h.worldID.String()+"/epitaph", http.StatusSeeOther)
+		http.Redirect(w, r, "/world/"+wid.String()+"/epitaph", http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/world/"+h.worldID.String()+"/join", http.StatusSeeOther)
+	http.Redirect(w, r, "/world/"+wid.String()+"/join", http.StatusSeeOther)
 }
 
 // JoinView serves the world join page — shown to new players before they have a settlement.
 func (h *WebHandler) JoinView(w http.ResponseWriter, r *http.Request) {
+	wid, err := h.resolveWorldID(r.Context())
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 	var name, state string
 	var players int
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT w.name, w.state,
 		        (SELECT COUNT(*) FROM settlements WHERE world_id = w.id AND owner_id IS NOT NULL)
 		 FROM worlds w WHERE w.id = $1`,
-		h.worldID,
+		wid,
 	).Scan(&name, &state, &players)
 
 	h.render(w, "join.html", map[string]any{
-		"WorldID":   h.worldID,
+		"WorldID":   wid,
 		"WorldName": name,
 		"State":     state,
 		"Players":   players,
@@ -261,13 +282,18 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	wid, err := h.resolveWorldID(r.Context())
+	if err != nil {
+		http.Redirect(w, r, "/play", http.StatusSeeOther)
+		return
+	}
 
 	var status string
 	var lastSettlementID *uuid.UUID
-	err := h.pool.QueryRow(r.Context(),
+	err = h.pool.QueryRow(r.Context(),
 		`SELECT status, last_settlement_id FROM player_world_records
 		 WHERE player_id = $1 AND world_id = $2`,
-		playerID, h.worldID,
+		playerID, wid,
 	).Scan(&status, &lastSettlementID)
 	if err != nil || status != "dispossessed" {
 		http.Redirect(w, r, "/play", http.StatusSeeOther)
@@ -293,7 +319,7 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 		"City":    cityName,
 		"Culture": culture,
 		"Lines":   h.epitaphLines(r.Context(), lastSettlementID, cityName),
-		"WorldID": h.worldID,
+		"WorldID": wid,
 		"MapMode": true, // suppress the site nav/footer for a full-screen crawl
 	})
 }
