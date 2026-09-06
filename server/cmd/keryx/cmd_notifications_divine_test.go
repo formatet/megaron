@@ -196,6 +196,44 @@ func TestFoodShortfallLine_ZeroUnmetIsSilent(t *testing.T) {
 	}
 }
 
+// TestPrintSiegeLine covers SiegeStarted/SiegeLifted (economy.SyncSiegeState,
+// megaron_plan_belagringsdispatch.md, Timothy 2026-09-06) — keryx must show
+// this, not just the web (feedback_feature_order — blockade itself has a
+// known gap here, this slice does not repeat it).
+func TestPrintSiegeLine(t *testing.T) {
+	started := func(t *testing.T, name, besieger string) notificationItem {
+		t.Helper()
+		raw, err := json.Marshal(map[string]any{"name": name, "besieger_name": besieger, "q": 14, "r": 33})
+		if err != nil {
+			t.Fatalf("marshal body: %v", err)
+		}
+		return notificationItem{Kind: "SiegeStarted", Level: 2, Body: raw}
+	}
+	lifted := func(t *testing.T, name string) notificationItem {
+		t.Helper()
+		raw, err := json.Marshal(map[string]any{"name": name, "q": 14, "r": 33})
+		if err != nil {
+			t.Fatalf("marshal body: %v", err)
+		}
+		return notificationItem{Kind: "SiegeLifted", Level: 3, Body: raw}
+	}
+
+	out := capturePrint(t, func() { printSiegeLine(started(t, "Petras", "Idomeneus")) })
+	if !strings.Contains(out, "Petras") || !strings.Contains(out, "Idomeneus") {
+		t.Errorf("SiegeStarted line %q does not name both the settlement and the besieger", strings.TrimSpace(out))
+	}
+
+	out = capturePrint(t, func() { printSiegeLine(started(t, "Petras", "")) })
+	if !strings.Contains(out, "an enemy") {
+		t.Errorf("SiegeStarted line %q does not fall back to \"an enemy\" when besieger_name is missing", strings.TrimSpace(out))
+	}
+
+	out = capturePrint(t, func() { printSiegeLine(lifted(t, "Petras")) })
+	if !strings.Contains(out, "Petras") || !strings.Contains(out, "lifted") {
+		t.Errorf("SiegeLifted line %q does not read as the siege of Petras lifting", strings.TrimSpace(out))
+	}
+}
+
 // The help a new Wanax copies must use the vocabulary `recruit --list` prints.
 // The aliases stay working — this is about what the CLI TEACHES, not what it
 // accepts. Found in the acceptance sweep 2026-08-24: every example named a

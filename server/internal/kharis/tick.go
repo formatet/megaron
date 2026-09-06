@@ -1101,6 +1101,14 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 			if err := economy.SyncHexBlockade(ctx, h.pool, h.store, h.hub, worldID, sid); err != nil {
 				slog.Warn("sync hex blockade failed", "settlement", sid, "err", err)
 			}
+			// Belägringens start-/lyft-dispatch (megaron_plan_belagringsdispatch.md,
+			// Timothy 2026-09-06): RecomputeProduction above already wrote this
+			// tick's fresh `besieged` value — this is the once-a-day TRANSITION
+			// check (did the siege start or lift since yesterday) that fires the
+			// owner's dispatch, mirroring SyncHexBlockade's own placement above.
+			if err := economy.SyncSiegeState(ctx, h.pool, h.store, h.hub, worldID, sid); err != nil {
+				slog.Warn("sync siege state failed", "settlement", sid, "err", err)
+			}
 		}
 	}
 
