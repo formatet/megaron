@@ -319,6 +319,30 @@ test('HexUnblockaded names the settlement, the worker count, and the hex', () =>
   );
 });
 
+// SiegeStarted/SiegeLifted (economy.SyncSiegeState,
+// megaron_plan_belagringsdispatch.md, Timothy 2026-09-06): a Wanax away for
+// nine hours must learn a siege started or lifted — asynchronicity gate 2.
+test('SiegeStarted names the settlement and the besieger', () => {
+  assert.equal(
+    notifText('SiegeStarted', { name: 'Petras', besieger_name: 'Idomeneus', q: 14, r: 33 }),
+    'Petras is under siege — Idomeneus holds the approaches',
+  );
+});
+
+test('SiegeStarted falls back to "an enemy" when besieger_name is missing', () => {
+  assert.equal(
+    notifText('SiegeStarted', { name: 'Petras', q: 14, r: 33 }),
+    'Petras is under siege — an enemy holds the approaches',
+  );
+});
+
+test('SiegeLifted names the settlement', () => {
+  assert.equal(
+    notifText('SiegeLifted', { name: 'Petras', q: 14, r: 33 }),
+    'The siege of Petras has lifted',
+  );
+});
+
 // Dispatches naming (megaron_plan_dispatches.md §4, bug report da660376):
 // "'Scout returning home — arrives in ~10 min' — is it the galley that's
 // meant?" — every unit-carrying kind now gets a `name` field from the

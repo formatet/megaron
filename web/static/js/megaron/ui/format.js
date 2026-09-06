@@ -112,6 +112,8 @@ export function notifIcon(kind) {
     FoodShortfall:      '🍽',
     HexBlockaded:       '🚧',
     HexUnblockaded:     '↩',
+    SiegeStarted:       '⚔️',
+    SiegeLifted:        '🕊️',
   };
   return icons[kind] || '◉';
 }
@@ -485,6 +487,18 @@ export function notifText(kind, body) {
       const place = body.name || 'A settlement';
       return `${n} worker${n === 1 ? '' : 's'} in ${place} ${n === 1 ? 'has' : 'have'} resumed work ` +
              `— the foreign unit at (${body.q}, ${body.r}) is gone`;
+    }
+    case 'SiegeStarted': {
+      // Payload per economy.SyncSiegeState (megaron_plan_belagringsdispatch.md,
+      // Timothy 2026-09-06). besieger_name is omitted when no sentry unit is
+      // in range at sync time even though the reachability walk sees a block.
+      const place = body.name || 'A settlement';
+      const besieger = body.besieger_name || 'an enemy';
+      return `${place} is under siege — ${besieger} holds the approaches`;
+    }
+    case 'SiegeLifted': {
+      const place = body.name || 'A settlement';
+      return `The siege of ${place} has lifted`;
     }
     // Every kind above is hand-written. This arm stays as a generic fallback
     // for any future NotifyPlayer kind added without a case here — the 2026-08-05

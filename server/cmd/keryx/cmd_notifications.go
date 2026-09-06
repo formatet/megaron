@@ -146,6 +146,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "FoodShortfall" {
 		printFoodShortfallLine(n)
 	}
+	if n.Kind == "SiegeStarted" || n.Kind == "SiegeLifted" {
+		printSiegeLine(n)
+	}
 	switch n.Kind {
 	case "CityOccupied", "OccupationDefended", "CityAnnexReady", "SettlementLooted", "SettlementBurned":
 		printOccupationLine(n)
@@ -779,4 +782,32 @@ func printFoodShortfallLine(n notificationItem) {
 		where = body.Name
 	}
 	fmt.Printf("      %s went hungry today — %s grain was missing.\n", where, resource(body.Unmet))
+}
+
+// printSiegeLine renders SiegeStarted/SiegeLifted (economy.SyncSiegeState,
+// megaron_plan_belagringsdispatch.md, Timothy 2026-09-06) — same wording as
+// web's notifText (format.js), same feature-order rule as printOccupationLine:
+// keryx must show what the web shows, not just the raw JSON body.
+func printSiegeLine(n notificationItem) {
+	var body struct {
+		Name         string `json:"name"`
+		BesiegerName string `json:"besieger_name"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	place := body.Name
+	if place == "" {
+		place = "A settlement"
+	}
+	switch n.Kind {
+	case "SiegeStarted":
+		besieger := body.BesiegerName
+		if besieger == "" {
+			besieger = "an enemy"
+		}
+		fmt.Printf("      %s is under siege — %s holds the approaches\n", place, besieger)
+	case "SiegeLifted":
+		fmt.Printf("      The siege of %s has lifted\n", place)
+	}
 }
