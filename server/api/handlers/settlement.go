@@ -12,6 +12,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/messenger"
@@ -31,11 +32,12 @@ type SettlementHandler struct {
 	eventStore *events.Store
 	scheduler  *events.Scheduler
 	clk        clock.Clock
+	sitosCfg   economy.SitosConfig
 }
 
 // NewSettlementHandler creates a SettlementHandler.
-func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store, sched *events.Scheduler, clk clock.Clock) *SettlementHandler {
-	return &SettlementHandler{pool: pool, eventStore: store, scheduler: sched, clk: clk}
+func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store, sched *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig) *SettlementHandler {
+	return &SettlementHandler{pool: pool, eventStore: store, scheduler: sched, clk: clk, sitosCfg: sitosCfg}
 }
 
 // List handles GET /worlds/:worldID/settlements — returns the caller's settlements.
@@ -90,6 +92,99 @@ func (h *SettlementHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 	if result == nil {
 		result = []item{}
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+// SettlementsOverview handles GET /worlds/:worldID/settlements/overview —
+// every field the economy drawer's settlement list needs, per settlement the
+// caller OWNS, in one call (megaron_plan_oversiktsendpoint.md, 2026-09-06).
+// Replaces the old N+1 (one /provinces/{id} fetch per owned settlement) that
+// backed web/static/js/megaron/ui/drawers/economy.js's loadEconomyGoods.
+//
+// Values come from settlementFoodSummary — the exact same economy.* calls
+// ProvinceHandler.Get uses — so this endpoint and /provinces/{id} can never
+// disagree about a settlement's food state (the invariant the parity test
+// checks).
+//
+// FOW/ownership (CLAUDE.md §Trade & messenger layer, §1): only the caller's
+// OWN settlements, never another Wanax's — the query is scoped by owner_id.
+func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT id, name, is_capital, population
+		 FROM settlements
+		 WHERE world_id = $1 AND owner_id = $2 AND state = 'active'
+		 ORDER BY is_capital DESC, name`,
+		worldID, playerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load settlements")
+		return
+	}
+
+	type sitosRow struct {
+		CoverageTicks  float64 `json:"coverage_ticks"`
+		LowTicks       float64 `json:"low_ticks"`
+		HighTicks      float64 `json:"high_ticks"`
+		GranaryTotal   float64 `json:"granary_total"`
+		FoodNetPerTick float64 `json:"food_net_per_tick"`
+	}
+	type item struct {
+		ID                 uuid.UUID `json:"id"`
+		Name               string    `json:"name"`
+		IsCapital          bool      `json:"is_capital"`
+		Population         int       `json:"population"`
+		GrainProdRate      float64   `json:"grain_prod_rate"`
+		GrainConsumRate    float64   `json:"grain_consum_rate"`
+		FoodSelfSufficient bool      `json:"food_self_sufficient"`
+		Sitos              sitosRow  `json:"sitos"`
+	}
+
+	type settRow struct {
+		id         uuid.UUID
+		name       string
+		isCapital  bool
+		population int
+	}
+	var settRows []settRow
+	for rows.Next() {
+		var s settRow
+		if scanErr := rows.Scan(&s.id, &s.name, &s.isCapital, &s.population); scanErr == nil {
+			settRows = append(settRows, s)
+		}
+	}
+	rows.Close()
+
+	result := make([]item, 0, len(settRows))
+	for _, s := range settRows {
+		fs := settlementFoodSummary(r.Context(), h.pool, s.id, s.population, h.sitosCfg)
+		result = append(result, item{
+			ID:                 s.id,
+			Name:               s.name,
+			IsCapital:          s.isCapital,
+			Population:         s.population,
+			GrainProdRate:      fs.GrainProdRate,
+			GrainConsumRate:    fs.GrainConsumRate,
+			FoodSelfSufficient: fs.FoodSelfSufficient,
+			Sitos: sitosRow{
+				CoverageTicks:  fs.CoverageTicks,
+				LowTicks:       fs.LowTicks,
+				HighTicks:      fs.HighTicks,
+				GranaryTotal:   fs.GranaryTotal,
+				FoodNetPerTick: fs.FoodNetPerTick,
+			},
+		})
 	}
 	writeJSON(w, http.StatusOK, result)
 }

@@ -20,6 +20,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
@@ -88,7 +89,7 @@ func riteHarvestFixture(t *testing.T, pool *pgxpool.Pool, grainAmount float64) (
 func callApplyHarvestBlessing(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (effect map[string]any, message string) {
 	t.Helper()
 	ctx := context.Background()
-	h := NewSettlementHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clock.NewTestClock(time.Now())), clock.NewTestClock(time.Now()))
+	h := NewSettlementHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clock.NewTestClock(time.Now())), clock.NewTestClock(time.Now()), economy.SitosConfig{})
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		t.Fatalf("begin tx: %v", err)
