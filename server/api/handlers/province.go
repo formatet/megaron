@@ -606,69 +606,19 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// question.
 		var currentTick int
 		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
-		granaryPerGood, granaryTotal, granErr := economy.GranaryTotals(r.Context(), h.pool, sett.ID)
-		if granErr != nil {
-			slog.Error("granary read failed", "err", granErr, "settlement", sett.ID)
-		}
-		var grainBaseValue, grainAmount, grainRate, grainCap float64
-		var grainCalcTick int
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT g.base_value, sg.amount, sg.rate, sg.cap, sg.calc_tick
-			 FROM settlement_goods sg JOIN goods g ON g.key = sg.good_key
-			 WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'`,
-			sett.ID,
-		).Scan(&grainBaseValue, &grainAmount, &grainRate, &grainCap, &grainCalcTick)
-		// Coverage is measured on the whole food basket (B6) — grain first, fish
-		// for the remainder, one need (economy.FoodConsumptionSplit). Counting
-		// grain alone would call a fish-fed city starving.
-		var foodStock, foodRatePerTick float64
-		for _, good := range h.sitosCfg.SubsistenceGoods {
-			var s, rate float64
-			if h.pool.QueryRow(r.Context(),
-				`SELECT GREATEST(0, settled(amount, rate, calc_tick)), rate
-				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
-				sett.ID, good,
-			).Scan(&s, &rate) == nil {
-				foodStock += s
-				foodRatePerTick += rate
-			}
-		}
-		coverageDays := economy.CoverageDays(foodStock, sett.Population)
-		granaryCap := economy.GranaryCap(sett.Population, h.sitosCfg)
-		// Coverage is a stock figure, so it says nothing about which way the city
-		// is going — and a newly founded city legitimately starts near zero
-		// coverage while producing a large surplus. Reported alone it reads as
-		// famine for the first days of every city's life (eye-check 2026-08-03:
-		// a city with +21 000 grain/day showed "0.1 days, granary empty"). The
-		// net food rate is what separates "lean and climbing" from "starving",
-		// and the surfaces need both to say either honestly.
-		foodNetPerDay := foodRatePerTick
-
-		// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md).
-		//
-		// Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
-		// 2026-08-26) the stored grain rate is RAW production — the population's
-		// food is debited once a day from STOCK by FoodTick, not folded into this
-		// rate — so grainProdRate is grain's rate as-is, and grainConsumRate comes
-		// from economy.GrainBalance (D6, the one shared reader every surface uses
-		// instead of re-deriving laborPool × GrainConsumptionPerCitizenPerTick
-		// itself — province.go used to do exactly that twice).
-		grainConsumRate, _ := economy.GrainBalance(grainRate, laborPool)
-		grainProdRate := grainRate
-
-		// Gubbar krävda för föda (P4-arvet i province.go, replaces the old
-		// pre-P4 weight-based figure — megaron_plan_p4_arvet_i_province.md
-		// §2): how many gubbar the catchment's food (grain/fish) slots need for
-		// the settlement's OWN production to cover the population's daily
-		// ration, run through the SAME greedy loop founding/growth placement
-		// use (economy.FoodGubbarRequired) — never a second formula.
-		// foodSelfSufficient=false is not silent (arbetssätt §7): a catchment
-		// that cannot feed its population even with every gubbe placed on food
-		// (Gournia/Zakros in drift) must say so, not just drop the field.
-		foodGubbarRequired, foodSelfSufficient, foodReqErr := economy.FoodGubbarRequired(r.Context(), h.pool, sett.ID)
-		if foodReqErr != nil {
-			slog.Error("food gubbar required failed", "err", foodReqErr, "settlement", sett.ID)
-		}
+		// Extracted to settlementFoodSummary (megaron_plan_oversiktsendpoint.md,
+		// 2026-09-06) so SettlementsOverview reads the exact same economy.* calls
+		// — the two surfaces can never disagree about a settlement's food state.
+		foodSummary := settlementFoodSummary(r.Context(), h.pool, sett.ID, sett.Population, h.sitosCfg)
+		granaryPerGood := foodSummary.GranaryPerGood
+		granaryTotal := foodSummary.GranaryTotal
+		coverageDays := foodSummary.CoverageTicks
+		granaryCap := foodSummary.GranaryCap
+		foodNetPerDay := foodSummary.FoodNetPerTick
+		grainConsumRate := foodSummary.GrainConsumRate
+		grainProdRate := foodSummary.GrainProdRate
+		foodGubbarRequired := foodSummary.FoodGubbarRequired
+		foodSelfSufficient := foodSummary.FoodSelfSufficient
 		// food_gubbar_placed counts ONLY grain/fish rows — the exact good set
 		// rankSlotsFromOptions greedily places on (economy/founding_placement.go).
 		// Never settlement_labor (the dead table) and never economy.FoodGoods
@@ -861,6 +811,118 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, resp)
+}
+
+// FoodSummary is a settlement's food/granary snapshot as the economy.*
+// functions compute it — shared by ProvinceHandler.Get and
+// SettlementHandler.SettlementsOverview (megaron_plan_oversiktsendpoint.md,
+// 2026-09-06) so the two surfaces read the same numbers from the same
+// functions and can never disagree.
+type FoodSummary struct {
+	GrainProdRate      float64
+	GrainConsumRate    float64
+	FoodSelfSufficient bool
+	FoodGubbarRequired int
+	GranaryPerGood     map[string]float64
+	GranaryTotal       float64
+	GranaryCap         float64
+	CoverageTicks      float64
+	FoodNetPerTick     float64
+	LowTicks           float64
+	HighTicks          float64
+}
+
+// settlementFoodSummary computes a settlement's food economy exactly as
+// ProvinceHandler.Get always has (formerly inline in Get, extracted
+// 2026-09-06 — same economy.* calls, same SQL, never a second formula).
+// population is the caller's already-loaded sett.Population, passed
+// explicitly so a caller that only loaded id/name/population (the overview
+// handler) doesn't need a full settlement.Settlement.
+func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.UUID, population int, sitosCfg economy.SitosConfig) FoodSummary {
+	// Part B: labor_pool = population. Soldiers are extracted from population at
+	// recruit time, so army columns are no longer a labor drain.
+	laborPool := population
+	if laborPool < 0 {
+		laborPool = 0
+	}
+
+	granaryPerGood, granaryTotal, granErr := economy.GranaryTotals(ctx, pool, settID)
+	if granErr != nil {
+		slog.Error("granary read failed", "err", granErr, "settlement", settID)
+	}
+	var grainBaseValue, grainAmount, grainRate, grainCap float64
+	var grainCalcTick int
+	_ = pool.QueryRow(ctx,
+		`SELECT g.base_value, sg.amount, sg.rate, sg.cap, sg.calc_tick
+		 FROM settlement_goods sg JOIN goods g ON g.key = sg.good_key
+		 WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'`,
+		settID,
+	).Scan(&grainBaseValue, &grainAmount, &grainRate, &grainCap, &grainCalcTick)
+	// Coverage is measured on the whole food basket (B6) — grain first, fish
+	// for the remainder, one need (economy.FoodConsumptionSplit). Counting
+	// grain alone would call a fish-fed city starving.
+	var foodStock, foodRatePerTick float64
+	for _, good := range sitosCfg.SubsistenceGoods {
+		var s, rate float64
+		if pool.QueryRow(ctx,
+			`SELECT GREATEST(0, settled(amount, rate, calc_tick)), rate
+			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+			settID, good,
+		).Scan(&s, &rate) == nil {
+			foodStock += s
+			foodRatePerTick += rate
+		}
+	}
+	coverageDays := economy.CoverageDays(foodStock, population)
+	granaryCap := economy.GranaryCap(population, sitosCfg)
+	// Coverage is a stock figure, so it says nothing about which way the city
+	// is going — and a newly founded city legitimately starts near zero
+	// coverage while producing a large surplus. Reported alone it reads as
+	// famine for the first days of every city's life (eye-check 2026-08-03:
+	// a city with +21 000 grain/day showed "0.1 days, granary empty"). The
+	// net food rate is what separates "lean and climbing" from "starving",
+	// and the surfaces need both to say either honestly.
+	foodNetPerDay := foodRatePerTick
+
+	// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md).
+	//
+	// Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
+	// 2026-08-26) the stored grain rate is RAW production — the population's
+	// food is debited once a day from STOCK by FoodTick, not folded into this
+	// rate — so grainProdRate is grain's rate as-is, and grainConsumRate comes
+	// from economy.GrainBalance (D6, the one shared reader every surface uses
+	// instead of re-deriving laborPool × GrainConsumptionPerCitizenPerTick
+	// itself — province.go used to do exactly that twice).
+	grainConsumRate, _ := economy.GrainBalance(grainRate, laborPool)
+	grainProdRate := grainRate
+
+	// Gubbar krävda för föda (P4-arvet i province.go, replaces the old
+	// pre-P4 weight-based figure — megaron_plan_p4_arvet_i_province.md
+	// §2): how many gubbar the catchment's food (grain/fish) slots need for
+	// the settlement's OWN production to cover the population's daily
+	// ration, run through the SAME greedy loop founding/growth placement
+	// use (economy.FoodGubbarRequired) — never a second formula.
+	// foodSelfSufficient=false is not silent (arbetssätt §7): a catchment
+	// that cannot feed its population even with every gubbe placed on food
+	// (Gournia/Zakros in drift) must say so, not just drop the field.
+	foodGubbarRequired, foodSelfSufficient, foodReqErr := economy.FoodGubbarRequired(ctx, pool, settID)
+	if foodReqErr != nil {
+		slog.Error("food gubbar required failed", "err", foodReqErr, "settlement", settID)
+	}
+
+	return FoodSummary{
+		GrainProdRate:      grainProdRate,
+		GrainConsumRate:    grainConsumRate,
+		FoodSelfSufficient: foodSelfSufficient,
+		FoodGubbarRequired: foodGubbarRequired,
+		GranaryPerGood:     granaryPerGood,
+		GranaryTotal:       granaryTotal,
+		GranaryCap:         granaryCap,
+		CoverageTicks:      coverageDays,
+		FoodNetPerTick:     foodNetPerDay,
+		LowTicks:           sitosCfg.LowDays,
+		HighTicks:          sitosCfg.HighDays,
+	}
 }
 
 // upkeepAmount is a grain+silver upkeep total per upkeep-period (the daily tick).

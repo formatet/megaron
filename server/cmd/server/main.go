@@ -281,7 +281,7 @@ func main() {
 	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore, hub)
 	soh := handlers.NewStandingOrderHandler(pool)
-	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
+	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock, sitosCfg)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
 	nh := handlers.NewNotificationsHandler(pool)
@@ -401,6 +401,10 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/repair", uh.Repair)
 
 			r.Get("/worlds/{worldID}/settlements", sh.List)
+			// Registered before {settlementID} so the static "overview" segment
+			// is unambiguous — chi matches static segments before wildcards
+			// regardless of order, but keeping it first documents the intent.
+			r.Get("/worlds/{worldID}/settlements/overview", sh.SettlementsOverview)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/occupation-order", uh.OccupationOrder)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)

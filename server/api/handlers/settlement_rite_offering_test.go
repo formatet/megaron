@@ -27,6 +27,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -91,7 +92,7 @@ func TestRiteOffering_DeductedRegardlessOfOutcome(t *testing.T) {
 	}
 
 	clk := clock.NewTestClock(time.Now())
-	sh := NewSettlementHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clk), clk)
+	sh := NewSettlementHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clk), clk, economy.SitosConfig{})
 
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))

@@ -46,11 +46,15 @@ const FOOD_LABEL = {
   'store': 'surplus',
 };
 
-// One settlement's food-survival summary. `pd` is the settlement object from
-// GET .../provinces/{id} (the same fields city.js already reads: population,
-// grain_prod_rate/grain_consum_rate, food_self_sufficient, sitos.*) — no new
-// server data (plan §4: "Ingen ny data på servern"). `pd` may be null if the
-// fetch failed; that renders as an honest "no data" row rather than a guess.
+// One settlement's food-survival summary. `pd` is one row from
+// GET .../settlements/overview (megaron_plan_oversiktsendpoint.md,
+// 2026-09-06 — previously one GET .../provinces/{id} per settlement): same
+// fields city.js's /provinces/{id} fetch already reads (population,
+// grain_prod_rate/grain_consum_rate, food_self_sufficient, sitos.*), backed
+// by the same economy.* functions server-side — no new server data (plan §4:
+// "Ingen ny data på servern"). `pd` may be null if the settlement is missing
+// from the overview response; that renders as an honest "no data" row rather
+// than a guess.
 export function settlementFoodRow(s, pd) {
   if (!pd) {
     return { id: s.id, name: s.name, isCapital: !!s.is_capital, population: 0,
@@ -201,20 +205,20 @@ async function loadEconomyGoods(mySettlements) {
   const el = document.getElementById('ectab-goods');
   el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
   try {
-    const [goodsResults, provResults] = await Promise.all([
+    const [goodsResults, overviewResult] = await Promise.all([
       Promise.all(mySettlements.map(s => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${s.id}/goods`))),
-      // The list endpoint (/provinces) carries only size_tier for a settlement,
-      // never exact population or grain rates — the per-settlement detail
-      // (already fetched by city.js) is where those live, so the overview
-      // fetches it too rather than inventing a new endpoint.
-      Promise.all(mySettlements.map(s => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${s.id}`))),
+      // One call for every owned settlement's food/granary fields, instead of
+      // the old N /provinces/{id} fetches (megaron_plan_oversiktsendpoint.md,
+      // 2026-09-06). Same economy.* functions as /provinces/{id} under the
+      // hood, so the rendered rows are unchanged.
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/overview`),
     ]);
 
-    _settlementRows = await Promise.all(mySettlements.map(async (s, i) => {
-      const pr = provResults[i];
-      const pd = pr.ok ? (await pr.json()).settlement : null;
-      return settlementFoodRow(s, pd);
-    }));
+    const overviewByID = new Map();
+    if (overviewResult.ok) {
+      for (const pd of await overviewResult.json()) overviewByID.set(pd.id, pd);
+    }
+    _settlementRows = mySettlements.map(s => settlementFoodRow(s, overviewByID.get(s.id) || null));
     const overviewHtml =
       `<div class="dsec-title">Settlements</div>` +
       `<div id="ec-settlements-overview">${renderSettlementsOverviewHTML(
