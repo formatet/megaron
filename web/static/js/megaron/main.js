@@ -270,15 +270,9 @@ async function bootstrap() {
       State.CURRENT_TICK   = world.current_tick;
       State.TICK_SECONDS   = world.tick_seconds;
       State.TICK_ANCHOR_MS = serverNow();
-      // Dev tempo label: at production cadence 1 tick = 1 game hour takes a
-      // real hour (3600 s); anything faster than that is a test world.
-      if (world.tick_seconds < 3600) {
-        const el = document.getElementById('gt-devtempo');
-        if (el) {
-          el.textContent = 'Test world — time runs ' + Math.round(3600 / world.tick_seconds) + '× faster';
-          el.style.display = '';
-        }
-      }
+      // World speed (ticks/wall-clock hour) now lives in the Notifications
+      // archive under the date line (ui/drawers/notif.js), not as a topbar
+      // banner (Timothy 2026-09-07). State.TICK_SECONDS above still feeds that.
     }
 
     const capital = provinces.find(p => p.own && p.is_capital);
