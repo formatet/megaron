@@ -31,7 +31,36 @@ globalThis.window ??= {
 };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { panDelta, CATCHMENT_OFFSETS, CATCHMENT_RADIUS } = await import('./map.js');
+const { panDelta, CATCHMENT_OFFSETS, CATCHMENT_RADIUS, workedHexesFromRoster } = await import('./map.js');
+
+// The worked-hex map markers (report 54f2b747) come from the placement-roster
+// payload reduced to one {q,r} per own catchment hex carrying a placed gubbe.
+test('workedHexesFromRoster: one marker per hex, dedup across gubbar/goods', () => {
+  const roster = [{
+    name: 'Knossos',
+    assignments: [
+      { target_kind: 'hex', hex_q: -2, hex_r: 0, good_key: 'grain', count: 3 },
+      { target_kind: 'hex', hex_q: -2, hex_r: 0, good_key: 'grain', count: 1 }, // same hex again
+      { target_kind: 'hex', hex_q: -2, hex_r: 2, good_key: 'fish', count: 1 },
+      { target_kind: 'building', building_type: 'stonequarry', good_key: 'stone', count: 1 }, // no q/r
+    ],
+  }];
+  const out = workedHexesFromRoster(roster);
+  assert.equal(out.length, 2, 'two distinct hexes, building assignment excluded');
+  assert.deepEqual(new Set(out.map(h => `${h.q},${h.r}`)), new Set(['-2,0', '-2,2']));
+});
+
+test('workedHexesFromRoster: spans settlements and tolerates empty/missing', () => {
+  assert.deepEqual(workedHexesFromRoster([]), []);
+  assert.deepEqual(workedHexesFromRoster(null), []);
+  const out = workedHexesFromRoster([
+    { assignments: [{ target_kind: 'hex', hex_q: 1, hex_r: 1 }] },
+    { assignments: [{ target_kind: 'hex', hex_q: 5, hex_r: 5 }] },
+    { assignments: [{ target_kind: 'hex', hex_q: null, hex_r: null }] }, // guarded
+    { /* no assignments field */ },
+  ]);
+  assert.deepEqual(new Set(out.map(h => `${h.q},${h.r}`)), new Set(['1,1', '5,5']));
+});
 
 // The catchment highlight must cover the settlement's radius-2 disc (19 hexes,
 // mirroring server hexgrid.CatchmentRadius), not the pre-P1 7-hex radius-1

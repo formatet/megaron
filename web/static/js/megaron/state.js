@@ -35,6 +35,7 @@ export const State = {
   unitsData: [],  // per-unit armies/fleets (units table) — drawn on the canvas
   foreignUnitData: [], // GET /foreign-units — non-owned units currently in live vision
   ruralData: [],  // rural building projections on own catchment hexes (Fas A2)
+  workedHexes: [], // own catchment hexes with >=1 placed gubbe: [{q,r}] (report 54f2b747)
 
   // Canvas camera + interaction state (render/map.js).
   camera: { x: 0, y: 0, zoom: 1 },
