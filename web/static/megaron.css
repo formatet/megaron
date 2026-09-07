@@ -859,6 +859,21 @@ body:has(.auth-page) main {
   overflow: hidden;
 }
 
+/* Wanax name (megaron_plan_wanaxnamn_tilltal.md): identity anchor at the left
+   of the topbar, filled in by main.js bootstrap() from /auth/me's wanax_name.
+   Always shown (unlike gt-netstatus/gt-devtempo, which toggle on state). */
+.gt-wanax {
+  padding: 0 0.7rem;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* Dev tempo label (Tid & kalender Fas B): shown when TICK_SECONDS < 3600.
    text-dim, not gold — the topbar face is light plaster where gold vanishes. */
 .gt-devtempo {
