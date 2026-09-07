@@ -123,6 +123,7 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":         p.ID,
 		"username":   p.Username,
+		"wanax_name": p.WanaxName,
 		"era_count":  p.EraCount,
 		"created_at": p.CreatedAt,
 	})

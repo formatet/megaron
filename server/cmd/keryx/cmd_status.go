@@ -455,6 +455,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
+			// Player report 4eb54d52 ("no surface addresses me by name"): the very
+			// top of status, ahead of the founder/settlement branch below, so it
+			// shows for a nomadic host too. Suppressed in --json mode, which emits
+			// the server's raw payload verbatim.
+			if !jsonMode {
+				printWanaxGreeting(c)
+			}
 			// Default to the capital; --province lets you inspect any province you own
 			// (the server FOW/ownership-gates it), mirroring `build --province`.
 			prov := cfg.ProvinceID
@@ -1057,6 +1064,39 @@ func formatLoyaltyLog(entries []loyaltyLogEntry) []string {
 // prints noTradeContactsHint's message (cmd_actions.go) when this Wanax has
 // zero foreign settlements in vision yet — best-effort, mirroring
 // printLoyaltyLog: never blocks `status` if the request or parse fails.
+// wanaxMeResp is the subset of GET /auth/me's payload `status` needs — the
+// server always returns COALESCE(wanax_name, username), so wanax_name is
+// never empty for an authenticated player (megaron_plan_wanaxnamn_tilltal.md).
+type wanaxMeResp struct {
+	WanaxName string `json:"wanax_name"`
+}
+
+// fetchMe calls GET /auth/me and returns the Wanax's display name, or "" on
+// any failure — best-effort, same pattern as fetchFoodStatus: a name greeting
+// must never block `status`.
+func fetchMe(c *Client) string {
+	data, err := c.get("/api/v1/auth/me")
+	if err != nil {
+		return ""
+	}
+	var me wanaxMeResp
+	if err := json.Unmarshal(data, &me); err != nil {
+		return ""
+	}
+	return me.WanaxName
+}
+
+// printWanaxGreeting prints the top-of-status line addressing the player by
+// their Wanax name. Best-effort: silently skipped if /auth/me fails, same
+// convention as printNoTradeContactsHint/printLoyaltyLog below.
+func printWanaxGreeting(c *Client) {
+	name := fetchMe(c)
+	if name == "" {
+		return
+	}
+	fmt.Printf("Wanax %s\n\n", name)
+}
+
 func printNoTradeContactsHint(c *Client, worldID, prov string) {
 	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/actions", worldID, prov))
 	if err != nil {

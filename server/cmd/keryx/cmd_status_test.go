@@ -473,3 +473,73 @@ func TestFetchGarrisonCohorts(t *testing.T) {
 		}
 	})
 }
+
+// TestFetchMe (megaron_plan_wanaxnamn_tilltal.md, player report 4eb54d52):
+// `status` greets the player by wanax name, read off GET /auth/me's
+// wanax_name field. Red before that field existed server-side — this would
+// have decoded "" out of a payload carrying only "username".
+func TestFetchMe(t *testing.T) {
+	t.Run("reads wanax_name from /auth/me", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/api/v1/auth/me" {
+				t.Errorf("unexpected path: %s", r.URL.Path)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"id":"p1","username":"login123","wanax_name":"Idomeneus","era_count":0}`))
+		}))
+		defer ts.Close()
+		cfg := &Config{Server: ts.URL, WorldID: "world-1"}
+		c := newClient(cfg)
+
+		if got := fetchMe(c); got != "Idomeneus" {
+			t.Errorf("fetchMe() = %q, want %q", got, "Idomeneus")
+		}
+	})
+
+	t.Run("server error degrades to empty string, never errors", func(t *testing.T) {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}))
+		defer ts.Close()
+		cfg := &Config{Server: ts.URL, WorldID: "world-1"}
+		c := newClient(cfg)
+
+		if got := fetchMe(c); got != "" {
+			t.Errorf("fetchMe(server error) = %q, want empty", got)
+		}
+	})
+}
+
+// TestPrintWanaxGreeting_AddressesPlayerByName is the surface the report
+// asked for: the status header names the Wanax, not just the settlement.
+func TestPrintWanaxGreeting_AddressesPlayerByName(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"wanax_name":"Idomeneus"}`))
+	}))
+	defer ts.Close()
+	cfg := &Config{Server: ts.URL, WorldID: "world-1"}
+	c := newClient(cfg)
+
+	out, _ := captureStdout(t, func() error { printWanaxGreeting(c); return nil })
+	if !strings.Contains(out, "Idomeneus") {
+		t.Errorf("printWanaxGreeting did not address the player by name:\n%s", out)
+	}
+}
+
+// TestPrintWanaxGreeting_SilentOnFailure: best-effort, must never print a
+// broken/error line when /auth/me is unreachable — same convention as
+// printLoyaltyLog/printNoTradeContactsHint.
+func TestPrintWanaxGreeting_SilentOnFailure(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer ts.Close()
+	cfg := &Config{Server: ts.URL, WorldID: "world-1"}
+	c := newClient(cfg)
+
+	out, _ := captureStdout(t, func() error { printWanaxGreeting(c); return nil })
+	if out != "" {
+		t.Errorf("printWanaxGreeting on failure printed %q, want silence", out)
+	}
+}
