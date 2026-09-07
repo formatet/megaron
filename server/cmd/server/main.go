@@ -405,6 +405,9 @@ func main() {
 			// is unambiguous — chi matches static segments before wildcards
 			// regardless of order, but keeping it first documents the intent.
 			r.Get("/worlds/{worldID}/settlements/overview", sh.SettlementsOverview)
+			// Static segment before the {settlementID} wildcard, same reason as
+			// overview above — realm-wide gubbe roster (report 19ed51f1).
+			r.Get("/worlds/{worldID}/settlements/placement-roster", sh.PlacementRoster)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/occupation-order", uh.OccupationOrder)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)
