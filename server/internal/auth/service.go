@@ -29,6 +29,7 @@ var (
 type Player struct {
 	ID           uuid.UUID
 	Username     string
+	WanaxName    string // COALESCE(wanax_name, username) — never empty, never another player's name
 	PasswordHash string
 	EraCount     int
 	CreatedAt    time.Time
@@ -160,10 +161,10 @@ func (s *Service) ValidateAccessToken(tokenStr string) (*Claims, error) {
 func (s *Service) Me(ctx context.Context, playerID uuid.UUID) (*Player, error) {
 	var p Player
 	err := s.pool.QueryRow(ctx,
-		`SELECT id, username, password_hash, era_count, created_at
+		`SELECT id, username, password_hash, era_count, created_at, COALESCE(wanax_name, username)
 		 FROM players WHERE id = $1`,
 		playerID,
-	).Scan(&p.ID, &p.Username, &p.PasswordHash, &p.EraCount, &p.CreatedAt)
+	).Scan(&p.ID, &p.Username, &p.PasswordHash, &p.EraCount, &p.CreatedAt, &p.WanaxName)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrUserNotFound
 	}
