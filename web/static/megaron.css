@@ -1408,6 +1408,16 @@ body:has(.auth-page) main {
   border-bottom: 1px solid var(--border);
   margin-bottom: 0.4rem;
 }
+/* World speed, second line under the date (Timothy 2026-09-07) — normal case
+   and dimmer so it reads as a secondary meta fact, not another date. */
+.notif-world-tempo {
+  font-size: var(--fs-xs);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--text-dim);
+  opacity: 0.8;
+  margin-top: 0.3rem;
+}
 .notif-list-item {
   display: grid;
   grid-template-columns: 1.4rem 1fr auto;

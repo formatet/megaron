@@ -20,7 +20,16 @@ const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
 function notifDateHeader() {
   const cal = currentCalendarDate();
   if (!cal) return '';
-  return `<div class="notif-date-header">Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}</div>`;
+  // World speed under the date (Timothy 2026-09-07): ticks per wall-clock hour
+  // = 3600 / TICK_SECONDS. Production cadence reads "1 tick per hour"; a test
+  // world runs faster, e.g. 600. A meta line, so it sits with the date, not in
+  // the event feed below.
+  let tempo = '';
+  if (State.TICK_SECONDS > 0) {
+    const tph = Math.round(3600 / State.TICK_SECONDS);
+    tempo = `<div class="notif-world-tempo">World speed — ${tph} ${tph === 1 ? 'tick' : 'ticks'} per hour</div>`;
+  }
+  return `<div class="notif-date-header">Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}${tempo}</div>`;
 }
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }
