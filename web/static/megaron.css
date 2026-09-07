@@ -866,7 +866,7 @@ body:has(.auth-page) main {
   padding: 0 0.7rem;
   font-size: var(--fs-xs);
   letter-spacing: 0.06em;
-  color: var(--gold);
+  color: var(--text);
   border-right: 1px solid var(--border);
   display: flex;
   align-items: center;
