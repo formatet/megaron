@@ -3063,6 +3063,51 @@ function drawLumbermill(ctx, x, y) {
 
 const RURAL_SPRITES = { farm: drawFarm, mine: drawMine, lumbermill: drawLumbermill };
 
+// A worked-hex marker: a small labourer on an own catchment hex that has at
+// least one placed gubbe (settlement_placement, via /settlements/placement-
+// roster). Player report 54f2b747: "indikeras PÅ HEXEN på kartan att det FINNS
+// gubbar där och arbetar, sen får man gå in på hexen i stadsvyn för att
+// faktiskt se hur många." So this marks PRESENCE only — the count and the good
+// live in the city drawer's hex grid (citygrid.js), reached by clicking the
+// hex. Drawn bottom-left of centre so it clears the rural building sprite
+// (centre) and the deposit icons (top-right); 1px charcoal outline, saturated
+// fill, no AA — temenos_designprinciper.
+function drawWorkerMarker(ctx, cx, cy) {
+  const x = cx - 7, y = cy + 6;
+  ctx.save();
+  ctx.strokeStyle = RURAL_OUTLINE; ctx.lineWidth = 0.7; ctx.lineJoin = 'round';
+  ctx.fillStyle = '#C6603A';           // terracotta tunic — distinct from wheat gold, grey spoil, deposit hues
+  ctx.beginPath();                     // body: trapezoid
+  ctx.moveTo(x - 2.2, y + 3);
+  ctx.lineTo(x - 1.2, y - 1);
+  ctx.lineTo(x + 1.2, y - 1);
+  ctx.lineTo(x + 2.2, y + 3);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#E7C7A0';           // head: skin
+  ctx.beginPath(); ctx.arc(x, y - 2.6, 1.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+
+// workedHexesFromRoster reduces the /settlements/placement-roster payload to a
+// deduped [{q,r}] of own catchment hexes that carry at least one placed gubbe
+// on a HEX (building assignments have no q/r — they live inside the city, not
+// on the map). One marker per hex regardless of how many gubbar or goods sit
+// there; the city drawer holds the breakdown.
+export function workedHexesFromRoster(roster) {
+  const seen = new Set();
+  const out = [];
+  for (const s of roster || []) {
+    for (const a of s.assignments || []) {
+      if (a.target_kind !== 'hex' || a.hex_q == null || a.hex_r == null) continue;
+      const key = a.hex_q + ',' + a.hex_r;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ q: a.hex_q, r: a.hex_r });
+    }
+  }
+  return out;
+}
+
 // ── Keyboard pan (WASD / arrows) ────────────────────────────────────────────
 // Currently-held direction keys, maintained by the keydown/keyup listeners
 // registered in initMap() below and consumed once per rendered frame inside
@@ -3404,6 +3449,15 @@ export function render() {
       sprite(ctx, x, y);
       ctx.restore();
     }
+    // Worked-hex markers — own catchment hexes that carry placed gubbar
+    // (report 54f2b747). Same LOCAL register as rural projections: "who works
+    // here" is a local question. Skip any hex gone to fog since the last fetch.
+    for (const wh of State.workedHexes) {
+      const t = State.tileData.find(t => t.q === wh.q && t.r === wh.r);
+      if (!t || t.terrain === 'fog') continue;
+      const { x, y } = hexPx(wh.q, wh.r);
+      drawWorkerMarker(ctx, x, y);
+    }
   }
   pass('tint+rural');
 
@@ -3645,7 +3699,7 @@ export function render() {
 
 // ── Data loading ──────────────────────────────────────────────────────────
 export async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes, foreignUnitsRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes, foreignUnitsRes, rosterRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`),
@@ -3654,6 +3708,7 @@ export async function loadMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`),
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`),
   ]);
 
   if (tilesRes.ok) {
@@ -3682,6 +3737,9 @@ export async function loadMap() {
   }
   if (foreignUnitsRes.ok) {
     State.foreignUnitData = await foreignUnitsRes.json();
+  }
+  if (rosterRes.ok) {
+    State.workedHexes = workedHexesFromRoster(await rosterRes.json());
   }
   window.MusicPlayer.update();
 }
@@ -4403,6 +4461,7 @@ export function initMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`).then(r => r.ok && r.json().then(d => { State.ruralData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`).then(r => r.ok && r.json().then(d => { State.workedHexes = workedHexesFromRoster(d); State.dirty = true; }));
   }, 30000);
 
   // While any own unit is marching, refresh units + fog fast so the fog visibly
