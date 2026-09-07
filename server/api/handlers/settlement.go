@@ -8,12 +8,14 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
+	"sort"
 	"time"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
@@ -184,6 +186,223 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 				GranaryTotal:   fs.GranaryTotal,
 				FoodNetPerTick: fs.FoodNetPerTick,
 			},
+		})
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
+// PlacementRoster handles GET /worlds/:worldID/settlements/placement-roster —
+// a realm-wide roll of every placed gubbe grouped by settlement, so a Wanax
+// can see where their citizens work (and how many sit idle) without opening
+// each settlement one at a time. Player reports 19ed51f1/54f2b747, 2026-09-04:
+// "se en lista över våra 'gubbar' och var de är och arbetar utan att behöva
+// gå in på särskilda hexar … för att minska bemanningen och frigöra gubbar."
+//
+// This is the aggregate substrate under both `keryx roster` and (a later
+// slice) the web roster — one call, not the N+1 a client would otherwise make
+// hitting /provinces/{id}/placements per settlement (same reason
+// SettlementsOverview exists).
+//
+// Ownership/FOW (CLAUDE.md §Trade & messenger layer, §1): owner_id-scoped —
+// only the caller's OWN settlements, never another Wanax's gubbar. Hex
+// ordinals are computed here (hexgrid.RingOrdinal against each settlement's
+// own centre) so the numbers match `keryx city`/place exactly — no client
+// duplicates the ring math. cult is NOT here: it's temple devotion in
+// settlement_labor, set via `keryx allocate --cult`, not a placed gubbe
+// (CLAUDE.md §Labor).
+func (h *SettlementHandler) PlacementRoster(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+
+	type settRow struct {
+		id         uuid.UUID
+		provinceID uuid.UUID
+		name       string
+		isCapital  bool
+		population int
+		center     hexgrid.Coord
+	}
+	rows, err := h.pool.Query(r.Context(),
+		`SELECT s.id, s.province_id, s.name, s.is_capital, s.population, p.map_q, p.map_r
+		 FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2 AND s.state = 'active'
+		 ORDER BY s.is_capital DESC, s.name`,
+		worldID, playerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load settlements")
+		return
+	}
+	var settRows []settRow
+	settIdx := make(map[uuid.UUID]int)
+	for rows.Next() {
+		var s settRow
+		if scanErr := rows.Scan(&s.id, &s.provinceID, &s.name, &s.isCapital, &s.population, &s.center.Q, &s.center.R); scanErr == nil {
+			settIdx[s.id] = len(settRows)
+			settRows = append(settRows, s)
+		}
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load settlements")
+		return
+	}
+
+	// One pass over every owned settlement's placements (2 queries total, not
+	// N+1). Group by (target_kind, location, good) into a count — the same
+	// shape `keryx city` shows per hex/building row.
+	prows, err := h.pool.Query(r.Context(),
+		`SELECT sp.settlement_id, sp.target_kind, sp.hex_q, sp.hex_r, sp.building_type, sp.good_key
+		 FROM settlement_placement sp
+		 JOIN settlements s ON s.id = sp.settlement_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2`,
+		worldID, playerID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load placements")
+		return
+	}
+	type assignKey struct {
+		kind         string
+		hexOrdinal   int
+		buildingType string
+		good         string
+	}
+	type assignAgg struct {
+		key   assignKey
+		hexQ  int
+		hexR  int
+		count int
+	}
+	// aggregation per settlement, keyed by assignKey, plus placed count.
+	perSett := make(map[uuid.UUID]map[assignKey]*assignAgg, len(settRows))
+	placedCount := make(map[uuid.UUID]int, len(settRows))
+	for prows.Next() {
+		var sid uuid.UUID
+		var kind, good string
+		var hexQ, hexR *int
+		var buildingType *string
+		if scanErr := prows.Scan(&sid, &kind, &hexQ, &hexR, &buildingType, &good); scanErr != nil {
+			prows.Close()
+			writeError(w, http.StatusInternalServerError, "could not read placement")
+			return
+		}
+		idx, known := settIdx[sid]
+		if !known {
+			continue // placement for a non-active settlement — skip
+		}
+		placedCount[sid]++
+		k := assignKey{kind: kind, good: good}
+		var q, rr int
+		if kind == "hex" && hexQ != nil && hexR != nil {
+			q, rr = *hexQ, *hexR
+			if ord, found := hexgrid.RingOrdinal(settRows[idx].center, hexgrid.CatchmentRadius, hexgrid.Coord{Q: q, R: rr}); found {
+				k.hexOrdinal = ord
+			}
+		}
+		if kind == "building" && buildingType != nil {
+			k.buildingType = *buildingType
+		}
+		bucket := perSett[sid]
+		if bucket == nil {
+			bucket = make(map[assignKey]*assignAgg)
+			perSett[sid] = bucket
+		}
+		if agg := bucket[k]; agg != nil {
+			agg.count++
+		} else {
+			bucket[k] = &assignAgg{key: k, hexQ: q, hexR: rr, count: 1}
+		}
+	}
+	prows.Close()
+	if err := prows.Err(); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read placements")
+		return
+	}
+
+	type assignOut struct {
+		GoodKey      string `json:"good_key"`
+		TargetKind   string `json:"target_kind"`
+		HexOrdinal   *int   `json:"hex_ordinal,omitempty"`
+		HexQ         *int   `json:"hex_q,omitempty"`
+		HexR         *int   `json:"hex_r,omitempty"`
+		BuildingType string `json:"building_type,omitempty"`
+		Count        int    `json:"count"`
+	}
+	type settOut struct {
+		ID          uuid.UUID   `json:"id"`
+		ProvinceID  uuid.UUID   `json:"province_id"`
+		Name        string      `json:"name"`
+		IsCapital   bool        `json:"is_capital"`
+		TotalGubbar int         `json:"total_gubbar"`
+		Placed      int         `json:"placed"`
+		Idle        int         `json:"idle"`
+		Assignments []assignOut `json:"assignments"`
+	}
+
+	result := make([]settOut, 0, len(settRows))
+	for _, s := range settRows {
+		total := s.population / 100
+		placed := placedCount[s.id]
+		assigns := make([]assignOut, 0, len(perSett[s.id]))
+		for _, agg := range perSett[s.id] {
+			a := assignOut{
+				GoodKey:      agg.key.good,
+				TargetKind:   agg.key.kind,
+				BuildingType: agg.key.buildingType,
+				Count:        agg.count,
+			}
+			if agg.key.kind == "hex" {
+				q, rr := agg.hexQ, agg.hexR
+				a.HexQ, a.HexR = &q, &rr
+				if agg.key.hexOrdinal > 0 {
+					ord := agg.key.hexOrdinal
+					a.HexOrdinal = &ord
+				}
+			}
+			assigns = append(assigns, a)
+		}
+		// Deterministic order: buildings after hexes, then by ordinal /
+		// building, then good — so the roster (and its test) reads the same
+		// on every call regardless of map iteration order.
+		sort.Slice(assigns, func(i, j int) bool {
+			ai, aj := assigns[i], assigns[j]
+			if ai.TargetKind != aj.TargetKind {
+				return ai.TargetKind < aj.TargetKind // "building" < "hex"
+			}
+			if ai.TargetKind == "hex" {
+				oi, oj := 0, 0
+				if ai.HexOrdinal != nil {
+					oi = *ai.HexOrdinal
+				}
+				if aj.HexOrdinal != nil {
+					oj = *aj.HexOrdinal
+				}
+				if oi != oj {
+					return oi < oj
+				}
+			} else if ai.BuildingType != aj.BuildingType {
+				return ai.BuildingType < aj.BuildingType
+			}
+			return ai.GoodKey < aj.GoodKey
+		})
+		result = append(result, settOut{
+			ID:          s.id,
+			ProvinceID:  s.provinceID,
+			Name:        s.name,
+			IsCapital:   s.isCapital,
+			TotalGubbar: total,
+			Placed:      placed,
+			Idle:        total - placed,
+			Assignments: assigns,
 		})
 	}
 	writeJSON(w, http.StatusOK, result)

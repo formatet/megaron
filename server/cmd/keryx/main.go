@@ -81,6 +81,7 @@ func main() {
 		kingdomTreasuryDepositCmd(),
 		kingdomBorrowArmyCmd(),
 		settlementsCmd(),
+		rosterCmd(),
 		occupationCmd(),
 		citiesCmd(),
 		diplomacyCmd(),
