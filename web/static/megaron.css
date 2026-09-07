@@ -1554,6 +1554,10 @@ body:has(.auth-page) main {
 .sitos-state-empty-growing  { color: var(--safe); }
 .sitos-state-empty-shrinking{ color: var(--danger); }
 
+/* Gubbrulla (economy.js renderRosterHTML) — an idle count is "worth a look,
+   not an alarm", same weight as .sitos-state-release. */
+.roster-idle { color: var(--accent); }
+
 .sr-category {
   padding: 0.25rem 0.8rem; font-size: var(--fs-xs);
   text-transform: uppercase; letter-spacing: 0.12em;
