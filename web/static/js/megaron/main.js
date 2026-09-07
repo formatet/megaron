@@ -249,6 +249,12 @@ async function bootstrap() {
   }
   State.MY_PLAYER_ID = me.id;
 
+  // Player report 4eb54d52: no surface addressed the player by name. wanax_name
+  // is always COALESCE(wanax_name, username) server-side, so this never renders
+  // empty for an authenticated player (megaron_plan_wanaxnamn_tilltal.md).
+  const wanaxEl = document.getElementById('gt-wanax');
+  if (wanaxEl && me.wanax_name) wanaxEl.textContent = 'Wanax ' + me.wanax_name;
+
   try {
     const [world, provinces] = await Promise.all([
       get('/api/v1/worlds/' + worldID),
