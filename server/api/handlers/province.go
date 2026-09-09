@@ -1199,9 +1199,29 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			worldID, catchQ, catchR,
 		).Scan(&hasDeposit)
 		if !hasDeposit {
-			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("a %s here would produce nothing — no %s deposit within this settlement's production catchment (its own hex plus every hex within %d steps). Build it on or in reach of the ore.",
-					req.BuildingType, oreName, hexgrid.CatchmentRadius))
+			msg := fmt.Sprintf("a %s here would produce nothing — no %s deposit within this settlement's production catchment (its own hex plus every hex within %d steps). Build it on or in reach of the ore.",
+				req.BuildingType, oreName, hexgrid.CatchmentRadius)
+			// A player who tried "mine" on a silver-only catchment read this as
+			// "no ore anywhere here" and reported not knowing how to mine silver
+			// at all (player_reports 2026-09-07, tick 1009/1012, Phaistos) — name
+			// the building that would actually work instead of leaving them to
+			// guess (silver_mine's own error, oreName=="silver", needs no such
+			// hint: there is no third building type to redirect to).
+			if req.BuildingType == "mine" {
+				var hasSilver bool
+				_ = h.pool.QueryRow(r.Context(),
+					`SELECT EXISTS(
+					   SELECT 1 FROM map_tiles mt
+					   JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
+					   WHERE mt.world_id = $1 AND COALESCE(mt.silver_deposit,false)
+					 )`,
+					worldID, catchQ, catchR,
+				).Scan(&hasSilver)
+				if hasSilver {
+					msg += " A silver deposit is in reach instead — build silver_mine to extract that."
+				}
+			}
+			writeError(w, http.StatusUnprocessableEntity, msg)
 			return
 		}
 	}

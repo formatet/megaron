@@ -64,7 +64,7 @@ func timberBottleneckWarning(rate float64) string {
 	if rate > 0.01 {
 		return ""
 	}
-	return "⚠ Timber-produktion ~0 — timber gatear hamn (140)/barracks (80)/foundry (80)/temple (60). Allokera labor: `keryx allocate --timber <n>`"
+	return "⚠ Timber production ~0 — timber gates harbour (140)/barracks (80)/foundry (80)/temple (60). Place workers on a timber hex: `keryx place <ordinal> timber` (see `keryx city`)."
 }
 
 // productionHorizonTicks is how far ahead a Wanax is expected to plan
@@ -831,8 +831,26 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if cd, ok := p["catchment_deposits"].([]any); ok {
 				buildings, _ := sett["buildings"].([]any)
 				if unused := unusedCatchmentDeposits(cd, buildings); len(unused) > 0 {
-					fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine/silver_mine here to extract it\n",
-						strings.Join(unused, ", "))
+					var mineOres, silverOres []string
+					for _, d := range unused {
+						if d == "silver" {
+							silverOres = append(silverOres, d)
+						} else {
+							mineOres = append(mineOres, d)
+						}
+					}
+					// Named separately, not "mine/silver_mine" — a player who tried
+					// "mine" for a silver-only deposit hit "no copper or tin deposit"
+					// and reported not understanding how to mine silver at all
+					// (player_reports 2026-09-07, tick 1009/1012, Phaistos).
+					if len(mineOres) > 0 {
+						fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine here to extract it\n",
+							strings.Join(mineOres, ", "))
+					}
+					if len(silverOres) > 0 {
+						fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a silver_mine here to extract it\n",
+							strings.Join(silverOres, ", "))
+					}
 				}
 			}
 			// Kharis (PLAN B, megaron_kult_legibilitet_plan.md): kharis is now

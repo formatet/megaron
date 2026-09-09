@@ -262,3 +262,43 @@ func TestBuildSilverMine_Ring2DepositActuallyProduces(t *testing.T) {
 		t.Errorf("silver rate after placing a gubbe on the ring-2 deposit and recomputing = %v, want > 0 (the mine on ring 2 must actually produce)", rate)
 	}
 }
+
+// TestBuildMine_SilverOnlyCatchmentHintsSilverMine reproduces player_reports
+// 2026-09-07 (tick 1009/1012, Phaistos): a Wanax with ONLY a silver deposit in
+// catchment tried "mine" (the copper/tin building), got "no copper or tin
+// deposit... Build it on or in reach of the ore", and reported not
+// understanding how to mine silver at all — the message named what was
+// missing but never named the building that would actually work.
+func TestBuildMine_SilverOnlyCatchmentHintsSilverMine(t *testing.T) {
+	deposit := hexgrid.Coord{Q: 1, R: 0}
+	f := setupMineGateFixture(t, &deposit)
+
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine"})
+	if code != http.StatusUnprocessableEntity {
+		t.Fatalf("build mine on silver-only catchment = %d: %v, want 422", code, resp)
+	}
+	errMsg, _ := resp["error"].(string)
+	if !strings.Contains(errMsg, "no copper or tin deposit") {
+		t.Fatalf("error = %q, want it to still name the missing copper/tin deposit", errMsg)
+	}
+	if !strings.Contains(errMsg, "silver_mine") {
+		t.Errorf("error = %q, want it to point at silver_mine since a silver deposit IS in reach", errMsg)
+	}
+}
+
+// TestBuildMine_NoDepositAtAllGivesNoSilverHint is the negative case: when
+// there is no ore of any kind in catchment, the error must not mention
+// silver_mine — a hint pointing at a building that would ALSO fail is worse
+// than no hint.
+func TestBuildMine_NoDepositAtAllGivesNoSilverHint(t *testing.T) {
+	f := setupMineGateFixture(t, nil)
+
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine"})
+	if code != http.StatusUnprocessableEntity {
+		t.Fatalf("build mine with no deposit at all = %d: %v, want 422", code, resp)
+	}
+	errMsg, _ := resp["error"].(string)
+	if strings.Contains(errMsg, "silver_mine") {
+		t.Errorf("error = %q, must not suggest silver_mine when no silver deposit is in reach either", errMsg)
+	}
+}
