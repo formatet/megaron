@@ -5,7 +5,6 @@ import {
   loadEconomyDrawer, loadTransferGoods, startTransfer, atStorageCeiling, goodsRateCell,
   parseGoodAmountPairs, renderStandingOrdersHTML,
   settlementFoodRow, sortSettlementRows, renderSettlementsOverviewHTML,
-  rosterLocation, renderRosterHTML,
 } from './economy.js';
 
 test('atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap', () => {
@@ -190,65 +189,4 @@ test('loadEconomyDrawer: with no owned settlements, renders the empty-state mess
   // goes on to build tabs or fetch goods.
   assert.deepEqual(calls, ['economy-body']);
   delete globalThis.document;
-});
-
-// ── Gubbrulla (megaron_plan_webb_gubbrulla.md) — webb-syskon till `keryx
-// roster` ────────────────────────────────────────────────────────────────
-// Fixture is the exact payload documented for
-// GET .../settlements/placement-roster in the plan.
-const ROSTER_FIXTURE = [
-  {
-    id: 's-knossos', province_id: 'p-knossos', name: 'Knossos', is_capital: true,
-    total_gubbar: 8, placed: 5, idle: 3,
-    assignments: [
-      { good_key: 'stone', target_kind: 'building', building_type: 'stonequarry', count: 1 },
-      { good_key: 'grain', target_kind: 'hex', hex_ordinal: 1, hex_q: -2, hex_r: 0, count: 3 },
-      { good_key: 'fish', target_kind: 'hex', hex_ordinal: 2, hex_q: -2, hex_r: 1, count: 1 },
-    ],
-  },
-];
-
-test('rosterLocation: mirrors keryx cmd_roster.go — hex #ordinal, hex (q,r) fallback, or building type', () => {
-  assert.equal(rosterLocation({ target_kind: 'hex', hex_ordinal: 5 }), 'hex #5');
-  assert.equal(rosterLocation({ target_kind: 'hex', hex_ordinal: null, hex_q: -2, hex_r: 1 }), 'hex (-2,1)');
-  assert.equal(rosterLocation({ target_kind: 'hex' }), 'hex');
-  assert.equal(rosterLocation({ target_kind: 'building', building_type: 'stonequarry' }), 'stonequarry');
-  assert.equal(rosterLocation({ target_kind: 'weird' }), 'weird');
-});
-
-test('renderRosterHTML: empty roster (founder phase) renders an honest empty state, no crash', () => {
-  const html = renderRosterHTML([]);
-  assert.match(html, /No settlements yet/);
-});
-
-test('renderRosterHTML: realm summary sums placed/idle/total across settlements', () => {
-  const html = renderRosterHTML(ROSTER_FIXTURE);
-  assert.match(html, /Gubbar across 1 settlement — 5\/8 placed/);
-  assert.match(html, /class="roster-idle">3 idle</);
-});
-
-test('renderRosterHTML: a settlement with zero idle shows no idle note (mirrors keryx, which omits it too)', () => {
-  const html = renderRosterHTML([{ ...ROSTER_FIXTURE[0], idle: 0, placed: 8 }]);
-  assert.doesNotMatch(html, /idle<\/span>/);
-});
-
-test('renderRosterHTML: renders capital marker, placed/total, and a hex #N assignment row', () => {
-  const html = renderRosterHTML(ROSTER_FIXTURE);
-  assert.match(html, /Knossos/);
-  assert.match(html, /★/);
-  assert.match(html, /5\/8 placed/);
-  assert.match(html, /hex #1/);
-  assert.match(html, /3× grain/);
-  assert.match(html, /1× stone/);
-  assert.match(html, /stonequarry/);
-});
-
-test('renderRosterHTML: a settlement with no assignments reads "every citizen is idle", not an empty table', () => {
-  const html = renderRosterHTML([{ id: 's2', name: 'Founding', is_capital: false, total_gubbar: 2, placed: 0, idle: 2, assignments: [] }]);
-  assert.match(html, /every citizen is idle/);
-});
-
-test('renderRosterHTML: no hardcoded hex colors — only CSS custom properties or classes', () => {
-  const html = renderRosterHTML(ROSTER_FIXTURE);
-  assert.doesNotMatch(html, /#[0-9a-fA-F]{3,6}(?!\d)/); // no literal hex color codes (hex #N location strings use a space before '#', not this pattern)
 });

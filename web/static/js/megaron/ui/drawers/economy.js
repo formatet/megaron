@@ -166,55 +166,6 @@ export function openCitySettlement(provinceId) {
   window.openDrawer('city');
 }
 
-// ── Gubbrulla (webb-syskon till `keryx roster`, cmd_roster.go) ──────────────
-// Report 19ed51f1: a Wanax needs to see every placed/idle gubbe across all
-// settlements without opening each city drawer. Wording mirrors keryx's
-// `roster` command exactly so the same numbers read the same way on both
-// surfaces (feedback_feature_order: keryx is already right, copy it).
-
-// rosterLocation mirrors keryx cmd_roster.go's rosterLocation: "hex #<ordinal>"
-// (the same number `keryx place`/citygrid use), "hex (q,r)" if the ordinal
-// couldn't be resolved, or the building type for a workplace.
-export function rosterLocation(a) {
-  if (a.target_kind === 'hex') {
-    if (a.hex_ordinal != null) return `hex #${a.hex_ordinal}`;
-    if (a.hex_q != null && a.hex_r != null) return `hex (${a.hex_q},${a.hex_r})`;
-    return 'hex';
-  }
-  if (a.target_kind === 'building') return a.building_type;
-  return a.target_kind;
-}
-
-// renderRosterHTML builds the roster section: a realm summary line, then one
-// block per settlement with its placed/idle count and grouped assignments.
-// Pure (array in, string out) for the same testability reason as
-// renderCargoHTML/renderStandingOrdersHTML above — no fetch, no DOM. `roster`
-// is the exact GET .../settlements/placement-roster payload — already
-// owner-scoped and pre-sorted server-side (building before hex, then
-// ordinal, then good), so nothing here recomputes or re-sorts it.
-export function renderRosterHTML(roster) {
-  if (!roster.length) {
-    return '<p class="empty-state" style="padding:.4rem 0">No settlements yet.</p>';
-  }
-  let total = 0, placed = 0, idle = 0;
-  for (const s of roster) { total += s.total_gubbar || 0; placed += s.placed || 0; idle += s.idle || 0; }
-  const plural = roster.length === 1 ? 'settlement' : 'settlements';
-  const realmIdle = idle > 0 ? `, <span class="roster-idle">${idle} idle</span>` : '';
-  let html = `<p style="font-size:.8rem">Gubbar across ${roster.length} ${plural} — ${placed}/${total} placed${realmIdle}</p>`;
-  html += roster.map(s => {
-    const role = s.is_capital ? ' ★' : '';
-    const idleTxt = s.idle > 0 ? `, <span class="roster-idle">${s.idle} idle</span>` : '';
-    const body = (s.assignments && s.assignments.length)
-      ? `<table class="goods-mini">${s.assignments.map(a =>
-          `<tr><td>${a.count}× ${esc(a.good_key)}</td><td>${esc(rosterLocation(a))}</td></tr>`
-        ).join('')}</table>`
-      : '<p class="empty-state" style="padding:.2rem 0">No gubbar placed — every citizen is idle.</p>';
-    return `<div class="dsec-title" style="margin-top:.6rem;font-size:.75rem">`
-      + `${esc(s.name)}${role} — ${s.placed}/${s.total_gubbar} placed${idleTxt}</div>${body}`;
-  }).join('');
-  return html;
-}
-
 // ── Economy drawer ────────────────────────────────────────────────────────
 export async function loadEconomyDrawer() {
   const body = document.getElementById('economy-body');
@@ -254,16 +205,13 @@ async function loadEconomyGoods(mySettlements) {
   const el = document.getElementById('ectab-goods');
   el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
   try {
-    const [goodsResults, overviewResult, rosterResult] = await Promise.all([
+    const [goodsResults, overviewResult] = await Promise.all([
       Promise.all(mySettlements.map(s => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${s.id}/goods`))),
       // One call for every owned settlement's food/granary fields, instead of
       // the old N /provinces/{id} fetches (megaron_plan_oversiktsendpoint.md,
       // 2026-09-06). Same economy.* functions as /provinces/{id} under the
       // hood, so the rendered rows are unchanged.
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/overview`),
-      // Webb-syskon till `keryx roster` (megaron_plan_webb_gubbrulla.md) —
-      // owner-scoped placement roster, one row per active settlement.
-      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`),
     ]);
 
     const overviewByID = new Map();
@@ -301,10 +249,7 @@ async function loadEconomyGoods(mySettlements) {
         ).join('')}</table>`;
       }
     }
-    const roster = rosterResult.ok ? (await rosterResult.json()) || [] : [];
-    const rosterHtml = `<div class="dsec-title" style="margin-top:.8rem">Citizens</div>${renderRosterHTML(roster)}`;
-
-    el.innerHTML = overviewHtml + (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + rosterHtml + await renderLockedActions('trade');
+    el.innerHTML = overviewHtml + (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
   }
