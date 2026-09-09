@@ -64,7 +64,7 @@ func timberBottleneckWarning(rate float64) string {
 	if rate > 0.01 {
 		return ""
 	}
-	return "⚠ Timber production ~0 — timber gates harbour (140)/barracks (80)/foundry (80)/temple (60). Place workers on a timber hex: `keryx place <ordinal> timber` (see `keryx city`)."
+	return "⚠ Timber production ~0 — timber gates harbour (140)/barracks (80)/foundry (80)/temple (60). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`)."
 }
 
 // productionHorizonTicks is how far ahead a Wanax is expected to plan
