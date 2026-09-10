@@ -1,6 +1,7 @@
 import { BASE } from './config.js';
 import { noteServerDate } from './clock.js';
 import { track } from './telemetry.js';
+import { recordApiFailure } from './ui/diagnostics.js';
 
 // Strip UUIDs from a path so retry/fail events aggregate by shape
 // (`/api/v1/worlds/:id/units`) instead of exploding per world/unit.
@@ -43,6 +44,17 @@ export async function fetchAuth(url, opts = {}) {
       }
       if (res.status >= 500) track('fetch_fail', { path: telemetryPath(url), status: res.status });
       if (res.status < 500) setNetStatus(false); // reachable → clear the pill
+      // Remember what the server refused, so a bug report saying "I clicked and
+      // nothing happened" carries the actual reason. Cloned BEFORE returning so
+      // the caller's own res.json() still has an unread body, and deliberately
+      // not awaited — a diagnostic must never sit in the path of the UI.
+      if (!res.ok) {
+        try {
+          res.clone().text().then(body => {
+            recordApiFailure({ path: telemetryPath(url), status: res.status, body });
+          }).catch(() => {});
+        } catch (_) { /* clone unsupported or body already gone — skip silently */ }
+      }
       return res;
     } catch (e) {
       if (attempt < backoffs.length) {
