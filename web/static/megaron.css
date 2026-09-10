@@ -1346,6 +1346,10 @@ body:has(.auth-page) main {
 .gubbe-good-row:last-child { border-bottom: none; }
 .gubbe-pip { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; background: var(--safe); margin: 0.15rem 0.1rem 0 0; }
 .gubbe-pip.empty { background: var(--bg-raised); border: 1px solid var(--border-in); }
+/* A refused placement, in the server's own words, under the buttons that were
+   just pressed. --accent is the same refusal tone war.js uses for a rejected
+   order. */
+.gubbe-refusal { margin-top: 0.4rem; padding-top: 0.35rem; border-top: 1px solid var(--border-in); color: var(--accent); font-size: var(--fs-xs); }
 
 /* Inbox items */
 .inbox-item { border: 1px solid var(--border); padding: 0.5rem 0.6rem; margin-bottom: 0.4rem; background: var(--bg-raised); }
