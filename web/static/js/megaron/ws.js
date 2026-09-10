@@ -4,6 +4,9 @@ import { serverNow } from './clock.js';
 import { fetchAuth } from './api.js';
 import { track } from './telemetry.js';
 import { notifText, notifIcon, colonyFoundedGrainLine } from './ui/format.js';
+// sfx.js imports nothing, so pulling it in here cannot create the cycle the
+// window.* indirection below exists to avoid.
+import { playWarHorn, playBattleClash } from './ui/sfx.js';
 
 // ── WebSocket — real-time province updates ────────────────────────────────
 // notifText/notifIcon/colonyFoundedGrainLine are pure formatting helpers
@@ -108,6 +111,9 @@ export function initWS() {
       'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
       'UnitAttrition','UnitDeserted','UpkeepUnpaid','ForeignMarchSighted',
       'OfferAccepted','OfferDeclined','OfferExpired',
+      // These four are archived server-side like every other notification, so
+      // the unread badge must count them too — it never did.
+      'BattleWon','BattleLost','UnitRecalled','UnitRedirected',
     ]);
     ws.onmessage = e => {
       State.lastWsMsgAt = Date.now();
@@ -182,6 +188,29 @@ export function initWS() {
         // position changed. Refresh the fog map and the unit layer immediately
         // rather than waiting for the 30 s poll.
         window.refreshTiles();
+        coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
+      }
+      // ── War sounds (Timothy 2026-09-10) ──────────────────────────────────
+      // Both of these kinds were pushed by the server and DROPPED by this
+      // client: neither had a branch here nor a place in PERSISTENT_KINDS, so
+      // a concluded battle and a delivered order were invisible in real time
+      // until the next page load. The sound could not exist without the wire,
+      // so the wire is part of the same slice.
+      if (msg.kind === 'BattleWon' || msg.kind === 'BattleLost') {
+        playBattleClash();
+        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
+        // A battle changes who holds what and which units still exist.
+        coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
+        coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; window.MusicPlayer.update(); })));
+      }
+      // The moment the soldiers actually RECEIVE an order — the Runner reached
+      // them (messenger/order_delivery.go). Deliberately not at send time: an
+      // order to a unit in the field rides a courier, and sounding the horn
+      // when the Wanax speaks rather than when the troops hear would teach the
+      // opposite of this game's load-bearing rule that command is never instant.
+      if (msg.kind === 'UnitRecalled' || msg.kind === 'UnitRedirected') {
+        playWarHorn();
+        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
       }
       if (PERSISTENT_KINDS.has(msg.kind)) {
