@@ -25,6 +25,12 @@ export const State = {
   TICK_SECONDS: null,
   TICK_ANCHOR_MS: null,
 
+  // World start gate (join.go worldStartWanaxes): 'forming' means the clock has
+  // not begun. Players may join, look around and give orders while it waits.
+  WORLD_STATE: null,
+  WANAXES_JOINED: 0,
+  WANAXES_NEEDED: 0,
+
   // Server-fetched map data (render/map.js loadMap()/refreshTiles() and the
   // WebSocket handler in ws.js keep these current).
   tileData: [],

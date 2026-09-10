@@ -265,10 +265,24 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// A forming world's clock has not started (join.go: worldStartWanaxes).
+	// The client needs the two counts to say WHY nothing is moving — a frozen
+	// world with no explanation is indistinguishable from a broken one, which
+	// is the failure mode this codebase keeps having to fix.
+	var joined int
+	if err := h.pool.QueryRow(r.Context(),
+		`SELECT count(*) FROM player_world_records WHERE world_id = $1 AND status = 'active'`,
+		worldID,
+	).Scan(&joined); err != nil {
+		joined = 0
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":             wld.ID,
 		"name":           wld.Name,
 		"state":          wld.State,
+		"wanaxes_joined": joined,
+		"wanaxes_needed": worldStartWanaxes,
 		"prestige":       wld.Prestige,
 		"era_number":     wld.EraNumber,
 		"era_started_at": wld.EraStartedAt,

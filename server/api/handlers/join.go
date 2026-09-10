@@ -341,12 +341,45 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Transition world to active if still forming.
+	// Transition world to active once enough Wanaxes have joined.
+	//
+	// The world used to start on the FIRST join, which meant an alpha world
+	// burned game days for whoever showed up first while everyone else was
+	// still asleep — the live world stood at tick 148 with zero Wanaxes in it
+	// (measured 2026-09-10). Timothy: "tiden börjar inte gå förrän fyra
+	// wanaxes loggat in."
+	//
+	// Everything the player can do BEFORE the start still works: joining, the
+	// host, the land around it, and giving orders. Only the clock waits. That
+	// falls out of the architecture rather than needing a second gate —
+	// worlds.status stays 'active' (so RequireActiveWorld still accepts
+	// writes, and current_world_tick()/settled() still read normally), while
+	// the tick worker refuses to advance a forming world. Orders given during
+	// the wait are scheduled on due_tick, and due_tick never comes due while
+	// current_tick is frozen, so they simply queue and all resolve together
+	// when time begins.
 	if wState == "forming" {
-		_, _ = tx.Exec(r.Context(),
-			`UPDATE worlds SET state = 'active' WHERE id = $1 AND state = 'forming'`,
+		var joined int
+		if err := tx.QueryRow(r.Context(),
+			`SELECT count(*) FROM player_world_records WHERE world_id = $1 AND status = 'active'`,
 			worldID,
-		)
+		).Scan(&joined); err != nil {
+			slog.Error("join: could not count wanaxes", "err", err, "world", worldID)
+		} else if joined >= worldStartWanaxes {
+			// last_tick_at MUST be reset to now. The tick worker advances by
+			// addition (last_tick_at + one tick) to keep catch-up accurate, so
+			// a world that sat forming for hours would otherwise be "owed"
+			// every tick of the wait and would race through them the instant
+			// it activated — the whole point of waiting, undone in seconds.
+			if _, err := tx.Exec(r.Context(),
+				`UPDATE worlds SET state = 'active', last_tick_at = $2 WHERE id = $1 AND state = 'forming'`,
+				worldID, h.clk.Now(),
+			); err != nil {
+				slog.Error("join: could not start world", "err", err, "world", worldID)
+			} else {
+				slog.Info("world started", "world", worldID, "wanaxes", joined)
+			}
+		}
 	}
 
 	if err := tx.Commit(r.Context()); err != nil {
