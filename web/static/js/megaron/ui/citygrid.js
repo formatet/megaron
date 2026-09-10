@@ -1,5 +1,6 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
+import { formatApiError } from './format.js';
 
 // Gubbe placement grid (P5: megaron_plan_fysisk_gubbemodell.md). Replaces the
 // old percent-per-good allocation table (DE2=B, 2026-08-07) with the P0-UI-
@@ -72,6 +73,102 @@ function goodRowHTML(target, good) {
         <button class="btn-small gubbe-act" data-verb="unplace1" ${good.placed > 0 ? '' : 'disabled'}>−1</button>
       </div>
     </div>`;
+}
+
+// refusalText turns a failed placement response into the line the player reads.
+//
+// The server has written eight distinct, human-readable refusals for this
+// endpoint since it was built (api/handlers/settlement_placement.go): an empty
+// citizen pool, an unscouted hex, a hex already fully staffed for that good, a
+// good the terrain cannot produce, a hex outside the catchment, and so on.
+// doAction used to `await fetchAuth(...)` without ever reading res.ok, so every
+// one of those was thrown away and a refusal was indistinguishable from a
+// working game — the player clicked +1, nothing moved, nothing was said. That
+// is the most-repeated interaction in a new player's first hour.
+//
+// No new wording is invented here: the server's own sentence is what surfaces.
+// formatApiError is the same helper every other action surface in the client
+// already routes failures through (build, recruit, march, stance, load, repair,
+// trade — 17 call sites); the placement grid was the only one that never
+// adopted it. The status-code fallback covers a body that is empty or not JSON,
+// which res.json() throws on.
+export async function refusalText(res) {
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    // empty or non-JSON body — fall through to the status-code fallback
+  }
+  return formatApiError(data, `Could not place that citizen (error ${res.status}).`);
+}
+
+// placementOutcome is the network half of a grid action, with no DOM in sight —
+// the same "export the pure half" seam report.js uses for buildContext. It
+// answers the only two questions the caller has: did anything change (→ worth
+// re-rendering), and is there something to tell the player (→ refusal).
+//
+// Keeping this separate is what makes the silent-failure fix testable at all:
+// the widget's own render path is SVG + innerHTML + listeners, and a test that
+// had to fake all of that would prove nothing about the decision.
+//
+// `fetchImpl` is injected so a test can drive the whole verb table off scripted
+// responses. Returns { changed, refusal, refresh }.
+export async function placementOutcome(verb, ctx) {
+  const { placementsURL, targetBody, good, cap, fetchImpl } = ctx;
+  const post = () => fetchImpl(placementsURL, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...targetBody, good_key: good }),
+  });
+
+  if (verb === 'place1') {
+    const res = await post();
+    if (!res.ok) return { changed: false, refusal: await refusalText(res) };
+    return { changed: true, refusal: null };
+  }
+
+  if (verb === 'unplace1') {
+    // Gubbar are anonymous/interchangeable (P0-UI) — removing "one" from
+    // this hex/good just means the first ordinal found there.
+    const listRes = await fetchImpl(placementsURL);
+    if (!listRes.ok) return { changed: false, refusal: await refusalText(listRes) };
+    const list = (await listRes.json()).placements || [];
+    const match = list.find(p =>
+      p.good_key === good &&
+      (targetBody.target_kind === 'hex' ? p.hex_ordinal === targetBody.hex_ordinal : p.building_type === targetBody.building_type));
+    if (!match) {
+      // The −1 button is only enabled when placed > 0, so an empty match means
+      // the grid is stale — say so AND refresh, rather than the old silent
+      // return that left a button which visibly did nothing.
+      return { changed: false, refresh: true, refusal: 'No citizen of yours is working that here any more — refreshing.' };
+    }
+    const del = await fetchImpl(`${placementsURL}/${match.gubbe_ordinal}`, { method: 'DELETE' });
+    if (!del.ok) return { changed: false, refusal: await refusalText(del) };
+    return { changed: true, refusal: null };
+  }
+
+  if (verb === 'fill') {
+    // Client-side bulk loop (no bulk endpoint) — same "+1 repeated" the
+    // player could do by hand, just automated for THIS place (P0-UI:
+    // "Fyll den här platsen" is fine, "Fyll bästa X" over hexes is not —
+    // this never chooses WHERE, only repeats the already-chosen target).
+    const guard = cap != null ? cap : 500; // uncapped (grain): a sane stop, not a real limit
+    let placedCount = 0;
+    for (let i = 0; i < guard; i++) {
+      const r = await post();
+      if (!r.ok) {
+        // Placed nothing at all: no pip will move, so this is the silent case
+        // and the reason has to be said. Placed some and then stopped: the
+        // pips moved, the player got their feedback, and the stop reason is
+        // visible in the re-rendered row.
+        if (placedCount === 0) return { changed: false, refusal: await refusalText(r) };
+        break;
+      }
+      placedCount++;
+    }
+    return { changed: placedCount > 0, refusal: null };
+  }
+
+  return { changed: false, refusal: null };
 }
 
 // renderGubbeGrid mounts the whole widget (SVG raster + selection panel)
@@ -153,38 +250,34 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR)
 
   const rerender = () => renderGubbeGrid(containerEl, provinceID, centerQ, centerR);
 
-  const doAction = async (verb, targetBody, good, cap) => {
-    if (verb === 'place1') {
-      await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/placements`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...targetBody, good_key: good }),
-      });
-    } else if (verb === 'unplace1') {
-      // Gubbar are anonymous/interchangeable (P0-UI) — removing "one" from
-      // this hex/good just means the first ordinal found there.
-      const listRes = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/placements`);
-      const list = listRes.ok ? (await listRes.json()).placements || [] : [];
-      const match = list.find(p =>
-        p.good_key === good &&
-        (targetBody.target_kind === 'hex' ? p.hex_ordinal === targetBody.hex_ordinal : p.building_type === targetBody.building_type));
-      if (match) {
-        await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/placements/${match.gubbe_ordinal}`, { method: 'DELETE' });
-      }
-    } else if (verb === 'fill') {
-      // Client-side bulk loop (no bulk endpoint) — same "+1 repeated" the
-      // player could do by hand, just automated for THIS place (P0-UI:
-      // "Fyll den här platsen" is fine, "Fyll bästa X" over hexes is not —
-      // this never chooses WHERE, only repeats the already-chosen target).
-      let guard = cap != null ? cap : 500; // uncapped (grain): a sane stop, not a real limit
-      for (let i = 0; i < guard; i++) {
-        const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/placements`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...targetBody, good_key: good }),
-        });
-        if (!r.ok) break; // pool empty or cap hit — stop quietly, the re-render shows the result
-      }
+  // A refusal is shown where the player just clicked and does NOT re-render:
+  // nothing changed on the server, so rebuilding the widget would only throw
+  // away the selected hex and leave the player with no way back to the button
+  // they pressed. On success we re-render as before.
+  const showRefusal = (msg) => {
+    const detail = containerEl.querySelector('#gubbe-detail');
+    if (!detail) return;
+    let el = detail.querySelector('.gubbe-refusal');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'gubbe-refusal';
+      detail.appendChild(el);
     }
-    await rerender();
+    el.textContent = msg;
+  };
+
+  const doAction = async (verb, targetBody, good, cap) => {
+    // Clear any refusal from a previous click so a stale line never reads as
+    // the verdict on this one.
+    const stale = containerEl.querySelector('.gubbe-refusal');
+    if (stale) stale.remove();
+
+    const out = await placementOutcome(verb, {
+      placementsURL: `/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/placements`,
+      targetBody, good, cap, fetchImpl: fetchAuth,
+    });
+    if (out.refusal) showRefusal(out.refusal);
+    if (out.changed || out.refresh) await rerender();
   };
 
   containerEl.querySelectorAll('.gubbe-hex-g').forEach(g => {
