@@ -19,6 +19,17 @@ import (
 // hex by farm level — can absorb 40 while the city still eats for all 4 000; 1 000 =
 // 10 gubbar fits under the caps with room to spare, so a fresh metropolis can
 // actually feed itself). Soldiers are separate from population throughout.
+// worldStartWanaxes is how many Wanaxes must have joined before the world clock
+// begins (Timothy 2026-09-10). Until then a world stays 'forming': players can
+// join, see their host and the land around it, and give orders — only time
+// waits. To start a world early or by hand:
+//
+//	UPDATE worlds SET state = 'active', last_tick_at = now() WHERE id = '…';
+//
+// (last_tick_at must be reset, or the tick worker's catch-up races through
+// every tick of the wait — see the transition in join.go.)
+const worldStartWanaxes = 4
+
 const (
 	nomadicHostPopulation   = 1000
 	nomadicHostSpearmen     = 2

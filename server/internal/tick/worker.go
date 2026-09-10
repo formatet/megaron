@@ -167,10 +167,22 @@ func (w *Worker) tryAdvanceOnce(ctx context.Context, tickDur time.Duration) (boo
 	}
 	defer tx.Rollback(ctx)
 
+	// state = 'active' is the start gate (Timothy 2026-09-10): a world stays
+	// 'forming' until worldStartWanaxes players have joined, and a forming
+	// world's clock does not move. This is the ONLY place time is held back —
+	// because the economy is tick-based (settled(amount, rate, calc_tick)
+	// against current_world_tick()) and the event scheduler is tick-based
+	// (due_tick <= current_tick), freezing current_tick freezes production,
+	// consumption and every scheduled arrival coherently, with no second
+	// mechanism to keep in step.
+	//
+	// status = 'active' remains the separate lifecycle gate (live vs archived)
+	// and is deliberately untouched: it is what lets a forming world still be
+	// written to and read from, so a waiting player can give orders.
 	var worldID uuid.UUID
 	err = tx.QueryRow(ctx, `
 		SELECT id FROM worlds
-		WHERE status = 'active' AND last_tick_at <= $1
+		WHERE status = 'active' AND state = 'active' AND last_tick_at <= $1
 		ORDER BY last_tick_at
 		LIMIT 1
 		FOR UPDATE SKIP LOCKED

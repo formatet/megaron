@@ -1408,6 +1408,20 @@ body:has(.auth-page) main {
   opacity: 0.8;
   margin-top: 0.3rem;
 }
+/* The world has not started yet. Louder than the tempo line above it: this one
+   explains why nothing is moving, and a player who misses it thinks the game
+   is broken. */
+.notif-world-waiting {
+  font-size: var(--fs-xs);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  background: var(--bg-raised);
+  border-left: 2px solid var(--gold);
+  padding: 0.35rem 0.5rem;
+  margin-top: 0.4rem;
+  line-height: 1.4;
+}
 .notif-list-item {
   display: grid;
   grid-template-columns: 1.4rem 1fr auto;

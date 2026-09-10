@@ -24,12 +24,27 @@ function notifDateHeader() {
   // = 3600 / TICK_SECONDS. Production cadence reads "1 tick per hour"; a test
   // world runs faster, e.g. 600. A meta line, so it sits with the date, not in
   // the event feed below.
+  // One tick is one game day (mig 109), so ticks-per-hour IS the multiplier
+  // against the intended pace of one game day per wall-clock hour. Said as a
+  // multiplier because "10 ticks per hour" does not tell a player the world is
+  // running ten times faster than it is meant to — and since the dev-tempo
+  // banner was removed from the topbar (2026-09-08), this line is the only
+  // place a tester can learn it (Timothy 2026-09-10).
   let tempo = '';
   if (State.TICK_SECONDS > 0) {
-    const tph = Math.round(3600 / State.TICK_SECONDS);
-    tempo = `<div class="notif-world-tempo">World speed — ${tph} ${tph === 1 ? 'tick' : 'ticks'} per hour</div>`;
+    const mult = Math.round(3600 / State.TICK_SECONDS);
+    const days = `${mult} game ${mult === 1 ? 'day' : 'days'} per hour`;
+    tempo = `<div class="notif-world-tempo">World speed — ${mult === 1 ? `normal (${days})` : `<b>${mult}× normal</b> (${days})`}</div>`;
   }
-  return `<div class="notif-date-header">Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}${tempo}</div>`;
+  // A world whose clock has not started yet. Without this the world simply
+  // looks frozen, which reads as a broken game rather than as a lobby.
+  let waiting = '';
+  if (State.WORLD_STATE === 'forming') {
+    const need = Math.max(0, (State.WANAXES_NEEDED || 0) - (State.WANAXES_JOINED || 0));
+    waiting = `<div class="notif-world-waiting">⏳ The world has not begun — waiting for ${need} more ${need === 1 ? 'Wanax' : 'Wanaxes'}.` +
+      ` Time stands still until then; you may look around, and give orders that will be carried out the moment it starts.</div>`;
+  }
+  return `<div class="notif-date-header">Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}${tempo}${waiting}</div>`;
 }
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }

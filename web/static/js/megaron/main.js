@@ -280,6 +280,9 @@ async function bootstrap() {
       // archive under the date line (ui/drawers/notif.js), not as a topbar
       // banner (Timothy 2026-09-07). State.TICK_SECONDS above still feeds that.
     }
+    State.WORLD_STATE    = world.state || null;
+    State.WANAXES_JOINED = world.wanaxes_joined || 0;
+    State.WANAXES_NEEDED = world.wanaxes_needed || 0;
 
     const capital = provinces.find(p => p.own && p.is_capital);
     State.MY_SETTLEMENT_ID = capital ? capital.settlement_id : '';

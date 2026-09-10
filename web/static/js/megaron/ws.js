@@ -101,6 +101,11 @@ export function initWS() {
           if (d.current_tick != null && d.tick_seconds > 0) {
             State.CURRENT_TICK = d.current_tick; State.TICK_SECONDS = d.tick_seconds; State.TICK_ANCHOR_MS = serverNow();
           }
+          // A reconnect is exactly when the world may have STARTED while the
+          // tab was away, so re-read the gate too, not only the tick anchor.
+          if (d.state) {
+            State.WORLD_STATE = d.state; State.WANAXES_JOINED = d.wanaxes_joined || 0; State.WANAXES_NEEDED = d.wanaxes_needed || 0;
+          }
         }));
         fullResync(); // provinces + units + marches + messengers + trades + tiles + badge
       }
