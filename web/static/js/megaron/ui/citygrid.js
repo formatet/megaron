@@ -171,11 +171,35 @@ export async function placementOutcome(verb, ctx) {
   return { changed: false, refusal: null };
 }
 
+// selectionKey identifies which hex (or the city centre) the player has open,
+// so a re-render can put them back where they were. Kept as a tiny pure helper
+// because it is the one piece of the restore path worth locking in a test.
+export function selectionKey(g) {
+  if (!g || !g.dataset) return null;
+  return g.dataset.target === 'city' ? 'city' : 'hex:' + g.dataset.ordinal;
+}
+
+// Only the newest render may paint. Clicking +1 three times quickly fires three
+// POSTs and three re-renders whose fetches can settle out of order — without
+// this guard the last DOM written could be the OLDEST response, so the grid
+// would show one citizen placed when three were. Repeated clicking is exactly
+// the workflow this widget is for, so the race is the normal case, not an edge.
+let renderSeq = 0;
+
 // renderGubbeGrid mounts the whole widget (SVG raster + selection panel)
 // into containerEl. centerQ/centerR are the settlement's own tile — the
 // catchment ring is relative to it (server returns absolute hex_q/hex_r).
-export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR) {
-  containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
+//
+// opts.selected  — a selectionKey() to re-open after painting, so +1/−1 leaves
+//                  the player on the hex they were working on.
+// opts.silent    — skip the "Loading…" wipe. A re-render after an action must
+//                  never collapse the widget to a one-line box and grow back:
+//                  that flicker is what made the panel appear to jump away on
+//                  every click (Timothy 2026-09-10).
+export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
+  const { selected = null, silent = false } = renderOpts;
+  const mySeq = ++renderSeq;
+  if (!silent) containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
 
   let opts;
   try {
@@ -184,9 +208,12 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR)
     opts = await res.json();
   } catch (e) {
     console.error('renderGubbeGrid', e);
-    containerEl.innerHTML = '<p class="empty-state">Could not load catchment.</p>';
+    // A failed background refresh must not destroy a working grid the player is
+    // mid-click in; only the first load has nothing to preserve.
+    if (!silent) containerEl.innerHTML = '<p class="empty-state">Could not load catchment.</p>';
     return;
   }
+  if (mySeq !== renderSeq) return; // a newer click already owns the DOM
 
   const hexes = opts.hexes || [];
   const buildings = opts.buildings || [];
@@ -248,7 +275,12 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR)
       <p class="empty-state">Click a catchment hex, or the city hex for buildings.</p>
     </div>`;
 
-  const rerender = () => renderGubbeGrid(containerEl, provinceID, centerQ, centerR);
+  // What the player has open right now. Updated by selectTarget and handed to
+  // the next render so +1/−1 does not close the panel they are clicking in.
+  let openKey = selected;
+
+  const rerender = () => renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
+    { selected: openKey, silent: true });
 
   // A refusal is shown where the player just clicked and does NOT re-render:
   // nothing changed on the server, so rebuilding the widget would only throw
@@ -276,48 +308,65 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR)
       placementsURL: `/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/placements`,
       targetBody, good, cap, fetchImpl: fetchAuth,
     });
-    if (out.refusal) showRefusal(out.refusal);
+    // Re-render FIRST, then speak: rerender rebuilds #gubbe-detail, so a
+    // refusal written before it would be wiped by the refresh it asked for.
     if (out.changed || out.refresh) await rerender();
+    if (out.refusal) showRefusal(out.refusal);
   };
 
-  containerEl.querySelectorAll('.gubbe-hex-g').forEach(g => {
-    g.addEventListener('click', () => {
-      containerEl.querySelectorAll('.gubbe-hex').forEach(el => el.classList.remove('selected'));
-      g.querySelector('.gubbe-hex').classList.add('selected');
-      const detail = containerEl.querySelector('#gubbe-detail');
+  // selectTarget opens one hex (or the city centre) in the detail panel. Shared
+  // verbatim by the click handler and by the post-render restore below — the
+  // restore must not be a second, drifting copy of the selection logic.
+  const selectTarget = (g) => {
+    containerEl.querySelectorAll('.gubbe-hex').forEach(el => el.classList.remove('selected'));
+    const poly = g.querySelector('.gubbe-hex');
+    if (poly) poly.classList.add('selected');
+    openKey = selectionKey(g);
+    const detail = containerEl.querySelector('#gubbe-detail');
+    if (!detail) return;
 
-      if (g.dataset.target === 'city') {
-        if (!buildings.length) {
-          detail.innerHTML = '<p class="empty-state">No workplace buildings staffed here yet.</p>';
-          return;
-        }
-        detail.innerHTML = buildings.map(b => `
-          <div class="dsec-title">${b.building_type} L${b.level}</div>
-          ${(b.goods || []).map(good => goodRowHTML({ target_kind: 'building', building_type: b.building_type }, good)).join('')}
-        `).join('');
-      } else {
-        const ordinal = Number(g.dataset.ordinal);
-        const hex = hexes.find(h => h.hex_ordinal === ordinal);
-        if (!hex) return;
-        detail.innerHTML = `
-          <div class="dsec-title">#${hex.hex_ordinal} — ${terrainLabel(hex.terrain)}</div>
-          ${(hex.goods || []).length
-            ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good)).join('')
-            : '<p class="empty-state">No producible good on this hex.</p>'}`;
+    if (g.dataset.target === 'city') {
+      if (!buildings.length) {
+        detail.innerHTML = '<p class="empty-state">No workplace buildings staffed here yet.</p>';
+        return;
       }
+      detail.innerHTML = buildings.map(b => `
+        <div class="dsec-title">${b.building_type} L${b.level}</div>
+        ${(b.goods || []).map(good => goodRowHTML({ target_kind: 'building', building_type: b.building_type }, good)).join('')}
+      `).join('');
+    } else {
+      const ordinal = Number(g.dataset.ordinal);
+      const hex = hexes.find(h => h.hex_ordinal === ordinal);
+      if (!hex) return;
+      detail.innerHTML = `
+        <div class="dsec-title">#${hex.hex_ordinal} — ${terrainLabel(hex.terrain)}</div>
+        ${(hex.goods || []).length
+          ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good)).join('')
+          : '<p class="empty-state">No producible good on this hex.</p>'}`;
+    }
 
-      detail.querySelectorAll('.gubbe-act').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const row = btn.closest('.gubbe-good-row');
-          const good = row.dataset.good;
-          const cap = row.dataset.cap === '' ? null : Number(row.dataset.cap);
-          // dataset already HTML-entity-decodes the attribute (the &quot;
-          // escaping in goodRowHTML is only needed to keep the attribute
-          // itself well-formed), so this is plain JSON by the time it's read.
-          const target = JSON.parse(row.dataset.target);
-          doAction(btn.dataset.verb, target, good, cap);
-        });
+    detail.querySelectorAll('.gubbe-act').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('.gubbe-good-row');
+        const good = row.dataset.good;
+        const cap = row.dataset.cap === '' ? null : Number(row.dataset.cap);
+        // dataset already HTML-entity-decodes the attribute (the &quot;
+        // escaping in goodRowHTML is only needed to keep the attribute
+        // itself well-formed), so this is plain JSON by the time it's read.
+        const target = JSON.parse(row.dataset.target);
+        doAction(btn.dataset.verb, target, good, cap);
       });
     });
-  });
+  };
+
+  const groups = Array.from(containerEl.querySelectorAll('.gubbe-hex-g'));
+  groups.forEach(g => g.addEventListener('click', () => selectTarget(g)));
+
+  // Put the player back on the hex they were working on. A hex that vanished
+  // between renders (fog, ownership) simply leaves the panel closed rather
+  // than throwing.
+  if (openKey) {
+    const again = groups.find(g => selectionKey(g) === openKey);
+    if (again) selectTarget(again);
+  }
 }
