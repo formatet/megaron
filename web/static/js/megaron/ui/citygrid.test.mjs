@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -123,6 +123,36 @@ test('CG10: an empty or non-JSON error body still produces a line, never blank s
   const text = await refusalText({ ok: false, status: 502, json: async () => { throw new SyntaxError('no body'); } });
   assert.match(text, /502/);
   assert.notEqual(text.trim(), '');
+});
+
+// ── Keeping the panel open across a re-render ───────────────────────────────
+// +1/−1 used to close the panel the player was clicking in: the re-render
+// rebuilt the whole widget and the detail pane fell back to its empty state.
+// selectionKey is what lets the restore path find the same hex again.
+
+test('CG12: the city centre and a hex are never confused for one another', () => {
+  assert.equal(selectionKey({ dataset: { target: 'city' } }), 'city');
+  assert.equal(selectionKey({ dataset: { target: 'hex', ordinal: '5' } }), 'hex:5');
+  assert.notEqual(selectionKey({ dataset: { target: 'city' } }),
+                  selectionKey({ dataset: { target: 'hex', ordinal: '5' } }));
+});
+
+test('CG13: two different hexes get different keys — a restore must not land on the wrong one', () => {
+  const keys = ['1', '5', '18'].map(o => selectionKey({ dataset: { target: 'hex', ordinal: o } }));
+  assert.equal(new Set(keys).size, 3);
+});
+
+test('CG14: the key survives a round trip through a re-rendered element with the same identity', () => {
+  // The restore matches on key, not on object identity — the <g> after a
+  // re-render is a different element carrying the same dataset.
+  const before = { dataset: { target: 'hex', ordinal: '12' } };
+  const afterRerender = { dataset: { target: 'hex', ordinal: '12' } };
+  assert.equal(selectionKey(before), selectionKey(afterRerender));
+});
+
+test('CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing', () => {
+  assert.equal(selectionKey(null), null);
+  assert.equal(selectionKey({}), null);
 });
 
 test('CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses', async () => {
