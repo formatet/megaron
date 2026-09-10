@@ -33,6 +33,7 @@ function makeChipEl() {
   const sub = { style: {}, addEventListener() {} }; // .dc-text/.dc-time/.dc-x stand-in
   return {
     style: {},
+    dataset: {}, // real elements always have one; dismissChip reads .notifId
     classList: {
       add: (c) => classes.add(c),
       remove: (c) => classes.delete(c),
@@ -80,23 +81,26 @@ test('AK1: chips.js importeras utan att röra DOM/window före denna punkt', () 
 });
 
 test('AK2: "✕ all" är dold under 3 chips', () => {
-  addDispatch('ArmyArrival', 'war', '⚔', 'Army arrived', 'now', {});
-  addDispatch('BuildComplete', 'city', '🏛', 'Build complete', 'now', {});
+  addDispatch({ kind: 'ArmyArrival', payload: {}, time: 'now' });
+  addDispatch({ kind: 'BuildComplete', payload: {}, time: 'now' });
   assert.equal(strip.children.length, 2);
   assert.equal(dismissAllBtn.style.display, 'none');
 });
 
 test('AK3: "✕ all" dyker upp vid exakt 3 chips (DISMISS_ALL_FROM)', () => {
-  addDispatch('MessengerArrival', 'diplomacy', '✉', 'Messenger arrived', 'now', {});
+  addDispatch({ kind: 'MessengerArrival', payload: {}, time: 'now' });
   assert.equal(strip.children.length, 3);
   assert.equal(dismissAllBtn.style.display, '');
 });
 
-test('AK4: dismissAllChips märker varje aktivt chip som "dismissing" utan att röra nätverket/arkivet', () => {
-  // Om dismissAllChips (eller dismissChip den anropar) någonsin börjar prata
-  // med servern skulle den bryta mot invarianten "chippen arkiveras, raderas
-  // inte" — arkivet är notif.js/den riktiga /notifications-tabellen, aldrig
-  // denna transienta strimma. Ett fetch-anrop här vore fel oavsett mål-URL.
+test('AK4: dismissAllChips märker varje aktivt chip som "dismissing" utan nätverksanrop för chip utan id', () => {
+  // ⚠️ OMSKRIVEN 2026-09-10 tillsammans med "arkivet matar stapeln". Förut löd
+  // raden "utan att röra nätverket/arkivet" och förbjöd VARJE fetch. Det är inte
+  // längre sant: ett chip som bär ett notis-id markerar sin arkivrad LÄST när
+  // det avfärdas (AK6), annars kom det tillbaka vid varje omladdning. Men läst
+  // är inte raderat — invarianten "chippen arkiveras, raderas aldrig" står kvar
+  // och bevakas av AK6:s metodkontroll (POST .../read, aldrig DELETE).
+  // Chip UTAN id har inget att märka och ska fortfarande vara helt nätfria.
   const originalFetch = globalThis.fetch;
   globalThis.fetch = () => { throw new Error('dismissAllChips fick aldrig nätverksanropa'); };
   try {
@@ -116,4 +120,30 @@ test('AK5: när animationen är klar försvinner chippen och "✕ all" göms ige
   // vill se effekten av, och den läser via querySelectorAll som redan
   // filtrerar bort dismissing-chip. display ska därför falla tillbaka till 'none'.
   assert.equal(dismissAllBtn.style.display, 'none');
+});
+
+test('AK6: ett chip som bär notis-id markerar SIN egen arkivrad läst vid avfärdande — POST .../read, aldrig DELETE', async () => {
+  // Substratet bakom "arkivet matar stapeln": stapeln byggs om vid inloggning
+  // ur de olästa notiserna, så ett avfärdat chip måste bli läst på servern —
+  // annars är avfärdandet en gest utan minne och samma bricka står där igen
+  // efter en omladdning. Läst ≠ raderat: raden finns kvar i arkivet.
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.localStorage ??= { getItem: () => 'test-token' };
+  globalThis.fetch = (url, opts) => {
+    calls.push({ url, method: (opts && opts.method) || 'GET' });
+    return Promise.resolve({ ok: true, status: 204, headers: { get: () => null } });
+  };
+  try {
+    addDispatch({ kind: 'FoodShortfall', payload: {}, id: 'notis-42', time: 'now' });
+    const chip = strip.children[strip.children.length - 1];
+    assert.equal(chip.dataset.notifId, 'notis-42', 'id:t ska ligga på elementet, inte bara i en closure');
+    dismissAllChips();
+    await new Promise(r => setImmediate(r)); // markRead är fire-and-forget
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.equal(calls.length, 1, 'exakt ett anrop — ett per avfärdat chip med id');
+  assert.equal(calls[0].method, 'POST');
+  assert.match(calls[0].url, /\/notifications\/notis-42\/read$/);
 });

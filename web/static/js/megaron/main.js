@@ -336,5 +336,5 @@ async function bootstrap() {
   initMap();           // canvas input handlers + loadMap() + render loop + 30s/3s polls
   initWS();            // websocket connect + reconnect loop
   initCelestial();     // celestial clock + its tick-scaled repaint interval
-  initNotifications(); // initial unread-badge fetch
+  initNotifications(); // unread badge + rebuild the Dispatches strip from the archive
 })();

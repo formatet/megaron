@@ -427,6 +427,7 @@ func main() {
 
 			r.Get("/worlds/{worldID}/notifications", nh.List)
 			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)
+			r.Post("/worlds/{worldID}/notifications/{notifID}/read", nh.MarkRead)
 			r.Delete("/worlds/{worldID}/notifications", nh.DeleteAll)
 
 			r.Post("/worlds/{worldID}/reports", rh.Create)
