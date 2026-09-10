@@ -5,6 +5,7 @@ import { esc } from './format.js';
 import { unitTypeLabel } from './actornames.js';
 import { arrivalHTML } from './time.js';
 import { MusicPlayer } from './misc.js';
+import { playWarHorn } from './sfx.js';
 import { canvas } from '../render/map.js';
 
 // ── March context menu (per-unit model) ───────────────────────────────────
@@ -359,6 +360,10 @@ export async function sendMarch() {
   const failed = results.filter(r => !r.ok);
   if (failed.length < results.length) {
     track('march_sent', { intent: colonize ? 'colonize' : State.marchCtxDest.isSea ? 'explore' : (stance || 'march') });
+    // Horn only for units that received the order on the spot. A field unit's
+    // order rides a Runner ('order_dispatched') and sounds when it lands, in
+    // ws.js — command is never instant, and the sound must not say otherwise.
+    if (results.some(r => r.ok && r.data.status !== 'order_dispatched')) playWarHorn();
     // Refetch the units the order just moved. Without this the unit stays
     // 'garrison' in State until the 30s poll — and worse, map.js's 3s fast
     // poll is GATED on State.unitsData containing a marching unit, so it can

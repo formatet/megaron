@@ -6,6 +6,7 @@ import { esc, formatApiError } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel, actorName } from '../actornames.js';
+import { playWarHorn } from '../sfx.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
 
@@ -708,6 +709,11 @@ export async function unitMarchSend() {
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
     track('march_sent', { intent: stance || 'march' });
+    // The horn sounds when the troops HEAR the order. A garrisoned unit is
+    // stood in front of the Wanax, so that is now; an order that leaves as
+    // 'order_dispatched' rides a Runner and sounds on UnitRecalled/
+    // UnitRedirected instead (ws.js), when it actually reaches them.
+    if (data.status !== 'order_dispatched') playWarHorn();
     closeMarchPanel();
     loadWarDrawer();
   } else {

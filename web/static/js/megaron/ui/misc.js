@@ -1,6 +1,7 @@
 import { State, ownCapital } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { esc } from './format.js';
+import { setSoundMuted } from './sfx.js';
 
 // ── Lawagetas advisory voice ──────────────────────────────────────────────
 const LAWAGETAS_BRIEFS = {
@@ -99,6 +100,9 @@ export const MusicPlayer = (() => {
 
 export function toggleMusic() {
   const isPaused = MusicPlayer.togglePause();
+  // One control for ALL audio: a player who silenced the music does not want a
+  // war horn either, and a second toggle would be a second thing to find.
+  setSoundMuted(isPaused);
   document.getElementById('music-btn').textContent = isPaused ? '♪' : '♫';
 }
 

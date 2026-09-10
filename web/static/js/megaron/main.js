@@ -52,6 +52,7 @@ import {
 import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
 import { installErrorCapture } from './ui/diagnostics.js';
+import { playWarHorn, playBattleClash } from './ui/sfx.js';
 import { loadGossipDrawer } from './ui/drawers/gossip.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
 
@@ -215,6 +216,10 @@ Object.assign(window, {
   zoom,
   // (b) window-bridge (not inline-handler targets)
   MusicPlayer,
+  // The war sounds have no button of their own (they ride the ♫ toggle), so
+  // this is how they can be heard on demand instead of only by starting a real
+  // battle: `SFX.clash()` / `SFX.horn()` from the console.
+  SFX: { horn: playWarHorn, clash: playBattleClash },
   addDispatch,
   openDrawer,
   openMarchCtx,
