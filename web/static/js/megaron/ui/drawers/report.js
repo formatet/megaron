@@ -1,5 +1,6 @@
 import { State, ownCapital, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
+import { diagnosticsSnapshot } from '../diagnostics.js';
 
 // ── Report drawer (B1, megaron_mvp_mandag.md §B1) ─────────────────────────
 // Deliberately primitive: kind + free text, sent to POST /reports. Position
@@ -59,8 +60,13 @@ export async function submitReport() {
     body.r = hex.r;
   }
   if (State.previousDrawer) body.view = State.previousDrawer;
-  const context = buildContext();
-  if (context) body.context = context;
+  // buildContext answers "which entity was the player looking at" and is
+  // deliberately absent when there is no such entity — a war-drawer report must
+  // never imply a city. The diagnostics are a different kind of fact (browser,
+  // window, what most recently failed) and apply to EVERY report, so they are
+  // merged in here rather than inside buildContext, which keeps that guarantee
+  // exactly as it was.
+  body.context = { ...(buildContext() || {}), ...diagnosticsSnapshot() };
 
   if (statusEl) statusEl.textContent = 'Sending…';
   try {

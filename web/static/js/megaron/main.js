@@ -51,6 +51,7 @@ import {
 } from './ui/drawers/diplomacy.js';
 import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
+import { installErrorCapture } from './ui/diagnostics.js';
 import { loadGossipDrawer } from './ui/drawers/gossip.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
 
@@ -311,6 +312,11 @@ async function bootstrap() {
 // that reads State.WORLD_ID fires. Each init corresponds to top-level code
 // that ran unconditionally in the old single <script>.
 (async function start() {
+  // First of all, and synchronously: a script error thrown during bootstrap is
+  // exactly the kind a player reports as "the page is broken", so the capture
+  // has to be live before anything else can throw.
+  installErrorCapture();
+
   // Registered synchronously, before the first await, so the pointerdown
   // gate is live at the same moment it used to be as a module-top-level
   // statement in ui/misc.js — a click during bootstrap()'s fetches must

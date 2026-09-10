@@ -9,6 +9,102 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// reportContextLines renders a report's context blob as indented, readable
+// lines instead of the raw JSON tail that used to be glued onto the end of the
+// report line.
+//
+// The client now attaches diagnostics to every report (browser, window size,
+// the last refusals the server gave, the last script errors — see
+// web/static/js/megaron/ui/diagnostics.js), which answers the questions the
+// 2026-09-04 and 09-09 sweeps kept having to ask by hand. Dumped raw, that
+// turns every report into an unreadable one-line wall, so the reading surface
+// has to grow with the data.
+//
+// Anything not recognised is preserved verbatim on a `context:` line — this
+// must never silently drop a field, since the blob is free-form by design
+// (mig 123) and will keep gaining keys.
+func reportContextLines(raw json.RawMessage) []string {
+	if len(raw) == 0 || string(raw) == "null" {
+		return nil
+	}
+	var blob map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &blob); err != nil {
+		return []string{"context: " + string(raw)} // not an object — show it as-is
+	}
+
+	var out []string
+
+	if c, ok := blob["client"]; ok {
+		var cl struct {
+			UA       string  `json:"ua"`
+			Viewport string  `json:"viewport"`
+			DPR      float64 `json:"dpr"`
+			Lang     string  `json:"lang"`
+		}
+		if json.Unmarshal(c, &cl) == nil {
+			parts := []string{}
+			if cl.Viewport != "" {
+				px := cl.Viewport
+				if cl.DPR != 0 && cl.DPR != 1 {
+					px = fmt.Sprintf("%s @%gx", px, cl.DPR)
+				}
+				parts = append(parts, px)
+			}
+			if cl.Lang != "" {
+				parts = append(parts, cl.Lang)
+			}
+			line := "client: " + cl.UA
+			if len(parts) > 0 {
+				line += "  (" + strings.Join(parts, " · ") + ")"
+			}
+			out = append(out, line)
+		}
+		delete(blob, "client")
+	}
+
+	if f, ok := blob["recent_api_failures"]; ok {
+		var fails []struct {
+			Path   string `json:"path"`
+			Status int    `json:"status"`
+			Body   string `json:"body"`
+		}
+		if json.Unmarshal(f, &fails) == nil {
+			// Newest last, matching the buffer's own order — the refusal that
+			// prompted the report is the one at the bottom.
+			for _, x := range fails {
+				out = append(out, fmt.Sprintf("refused: %d %s — %s", x.Status, x.Path, x.Body))
+			}
+		}
+		delete(blob, "recent_api_failures")
+	}
+
+	if e, ok := blob["recent_js_errors"]; ok {
+		var errs []struct {
+			Message string `json:"message"`
+			Source  string `json:"source"`
+		}
+		if json.Unmarshal(e, &errs) == nil {
+			for _, x := range errs {
+				line := "js error: " + x.Message
+				if x.Source != "" {
+					line += " (" + x.Source + ")"
+				}
+				out = append(out, line)
+			}
+		}
+		delete(blob, "recent_js_errors")
+	}
+
+	// Whatever is left is the entity context (settlement_id, unit_ids,
+	// march_ctx_dest, and anything a future drawer adds).
+	if len(blob) > 0 {
+		if rest, err := json.Marshal(blob); err == nil {
+			out = append(out, "context: "+string(rest))
+		}
+	}
+	return out
+}
+
 // reportCmd sends a bug/design/confused report (B1, megaron_mvp_mandag.md
 // §B1). The server stamps player, tick and world itself — --q/--r are the
 // only optional context a caller might add (a hex the report is about).
@@ -124,12 +220,11 @@ func reportsCmd() *cobra.Command {
 				if rr.View != nil && *rr.View != "" {
 					view = " [" + *rr.View + "]"
 				}
-				ctx := ""
-				if len(rr.Context) > 0 && string(rr.Context) != "null" {
-					ctx = " " + string(rr.Context)
+				fmt.Printf("[tick %d] %-9s %-16s%s%s — %s\n",
+					rr.Tick, rr.Kind, rr.Player, pos, view, rr.Body)
+				for _, line := range reportContextLines(rr.Context) {
+					fmt.Printf("    %s\n", line)
 				}
-				fmt.Printf("[tick %d] %-9s %-16s%s%s — %s%s\n",
-					rr.Tick, rr.Kind, rr.Player, pos, view, rr.Body, ctx)
 			}
 			fmt.Printf("\n%d report(s)\n", len(resp.Reports))
 			return nil
