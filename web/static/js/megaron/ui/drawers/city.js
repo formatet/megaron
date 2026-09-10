@@ -479,6 +479,90 @@ async function getRecipes() {
   return _recipesPromise;
 }
 
+// Building catalogue (GET /api/v1/buildings) — static for a world's lifetime,
+// so fetch once and memoize rather than refetching on every drawer render.
+// Same pattern as getUnitCatalogue() (war.js) and getRecipes() above: cache
+// the in-flight/resolved promise, clear it on failure so the next render
+// retries, return null on failure (never [] — [] would mean "the server has
+// no buildings"). Replaces the 14-row hardcoded <option> list in the
+// Construct dropdown, which was missing silver_mine entirely and quoted
+// every other cost from before mig 136's dagsverkesskalan (~40-80x off on
+// timber) — megaron_plan_byggkatalogen_i_webben.md.
+let _buildingCataloguePromise = null;
+async function getBuildingCatalogue() {
+  if (!_buildingCataloguePromise) {
+    _buildingCataloguePromise = fetchAuth('/api/v1/buildings').then(r => {
+      if (!r.ok) throw new Error('buildings catalogue fetch failed: ' + r.status);
+      return r.json();
+    }).catch(e => {
+      console.error('getBuildingCatalogue', e);
+      _buildingCataloguePromise = null;
+      return null; // null = fetch failed; [] would mean "server has no buildings"
+    });
+  }
+  return _buildingCataloguePromise;
+}
+
+// wall keeps its old hardcoded option: the catalogue's "wall" entry carries
+// only the L1 (Palisade) build cost — the Stone Wall/Bronze Wall upgrade
+// ladder lives in province.WallLevelSpecs, a separate spec that
+// GET /api/v1/buildings does not surface (province.LevelledBuildings
+// excludes wall, so entry.upgrade_costs is empty for it). Rendering wall
+// generically from entry.costs would silently drop the "upgrade" framing
+// and the ladder note. Stop condition, megaron_plan_byggkatalogen_i_webben.md
+// §7 — keep today's behaviour for wall specifically rather than inventing a
+// new representation here.
+const WALL_OPTION_HTML = '<option value="wall">Wall — upgrade (Palisade→Stone Wall→Bronze Wall)</option>';
+
+// entry.costs comes from a Go map, so its JSON key order is not stable across
+// requests — some explicit order is needed regardless of style. timber/stone
+// first (matches the old hardcoded option strings and every current
+// building's cost), anything else alphabetically after.
+const GOOD_ORDER = ['timber', 'stone'];
+
+// Cost string for one catalogue entry: "1 timber 9 stone", rounded the same
+// way the CLI does (%.0f per good, cmd_build.go) so the two clients can never
+// quote different prices for the same building.
+function fmtBuildCost(entry) {
+  const parts = Object.entries(entry.costs || {})
+    .filter(([, v]) => v > 0)
+    .sort(([a], [b]) => {
+      const ia = GOOD_ORDER.indexOf(a), ib = GOOD_ORDER.indexOf(b);
+      if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+      return a.localeCompare(b);
+    })
+    .map(([k, v]) => `${Math.round(v)} ${k}`);
+  if (entry.cost_silver > 0) parts.push(`${Math.round(entry.cost_silver)} silver`);
+  return parts.join(' ');
+}
+
+// "requires X deposit, Y terrain" — the gate fields the catalogue carries
+// (requires_coastal/requires_deposits/requires_terrain), rendered so a
+// player with (or without) the right deposit/terrain understands why a
+// building is or isn't buildable, rather than meeting a silent option.
+function fmtBuildRequires(entry) {
+  const reqs = [];
+  if (entry.requires_coastal) reqs.push('coastal (adjacent sea)');
+  for (const d of entry.requires_deposits || []) reqs.push(`${d} deposit`);
+  if (entry.requires_terrain && entry.requires_terrain.length) reqs.push(`${entry.requires_terrain.join('/')} terrain`);
+  return reqs.length ? 'requires ' + reqs.join(', ') : '';
+}
+
+// Construct dropdown <option> list, built from the building catalogue instead
+// of a hardcoded list. Pure string builder — no DOM/fetch — testable the same
+// way loyaltyLogRowsHTML above is. `catalogue` is the array from
+// getBuildingCatalogue(), already sorted alphabetically by type (server does
+// the sort). Display name comes from the existing _BLD_LBL map (unchanged).
+export function buildingOptionsHTML(catalogue) {
+  return (catalogue || []).map(entry => {
+    if (entry.type === 'wall') return WALL_OPTION_HTML;
+    const label = _BLD_LBL[entry.type] || entry.type;
+    const costStr = fmtBuildCost(entry);
+    const tail = [entry.purpose, fmtBuildRequires(entry)].filter(Boolean).join(' · ');
+    return `<option value="${entry.type}">${label} — ${costStr}${tail ? ' · ' + tail : ''}</option>`;
+  }).join('');
+}
+
 export async function loadTicklog() {
   const capital = activeCitySettlement();
   const el = document.getElementById('city-ticklog-sec');
@@ -556,7 +640,7 @@ async function refreshCityBuildings(provinceID) {
     // Recipes are fetched once regardless of whether a foundry is built —
     // also needed below for the Construct dropdown's foundry purpose label,
     // so a recipe change never leaves a stale string there either.
-    const recipes = await getRecipes();
+    const [recipes, buildingCatalogue] = await Promise.all([getRecipes(), getBuildingCatalogue()]);
     const foundryRecipe = recipes ? recipes.find(rc => rc.building_type === 'foundry') : null;
 
     if (blds.some(b => b.type === 'foundry')) {
@@ -579,25 +663,16 @@ async function refreshCityBuildings(provinceID) {
       }
     }
     const prevSel = document.getElementById('city-build-select')?.value || '';
+    const constructHTML = buildingCatalogue ? `
+      <select id="city-build-select" class="build-select">
+        ${buildingOptionsHTML(buildingCatalogue)}
+      </select>
+      <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>`
+      : `<p class="empty-state">Could not load the building catalogue — try again.</p>
+      <button class="btn-primary btn-small" disabled style="margin-top:.5rem;width:100%">+ Build</button>`;
     h2 += `
       <div class="dsec-title" style="margin-top:.8rem">Construct</div>
-      <select id="city-build-select" class="build-select">
-        <option value="market">Marketplace — 100 timber 60 stone · +0.5 silver/tick</option>
-        <option value="barracks">Barracks — 80 timber 80 stone · recruits</option>
-        <option value="farm">Farm — 50 timber 20 stone · +grain/tick</option>
-        <option value="foundry">Foundry — 80 timber 100 stone · ${foundryRecipe ? 'craft ' + foundryRecipe.output_key : 'craft goods'}</option>
-        <option value="harbour">Harbour — 140 timber 60 stone · fish, sea trade</option>
-        <option value="lumbermill">Lumbermill — 40 timber 40 stone · +timber/tick</option>
-        <option value="mine">Mine — 60 timber 40 stone · +ore/tick</option>
-        <option value="olive_press">Olive Press — 30 timber 40 stone · +oil/tick</option>
-        <option value="shipyard">Shipyard — 140 timber 60 stone · builds/repairs ships</option>
-        <option value="stable">Stable — 60 timber 40 stone · horses</option>
-        <option value="stonequarry">Stone Quarry — 50 timber 20 stone · +stone/tick</option>
-        <option value="temple">Temple — 60 timber 60 stone</option>
-        <option value="wall">Wall — upgrade (Palisade→Stone Wall→Bronze Wall)</option>
-        <option value="winery">Winery — 40 timber 30 stone · +wine/tick</option>
-      </select>
-      <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>
+      ${constructHTML}
       <div id="city-build-result" class="action-result"></div>`;
     bldSec.innerHTML = h2;
     // Restore previous dropdown selection and result message
