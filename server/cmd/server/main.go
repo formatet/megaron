@@ -264,6 +264,7 @@ func main() {
 		r.Post("/login", ah.Login)
 		r.Post("/refresh", ah.Refresh)
 		r.With(auth.Middleware(authSvc)).Get("/me", ah.Me)
+		r.With(auth.Middleware(authSvc)).Post("/password", ah.ChangePassword)
 	})
 
 	// Game routes (authenticated).

@@ -15,6 +15,7 @@ package economy
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"formatet/megaron/server/internal/events"
@@ -372,7 +373,9 @@ func TestCatchmentBasePotential_SeesTheHexBlockade(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if sum(after) != sum(before) {
+	// Per good, not the summed total: summing a Go map adds in random order,
+	// so two equal maps can differ in the last float bit.
+	if !reflect.DeepEqual(after, before) {
 		t.Errorf("potential after the enemy left = %v, want the baseline %v", after, before)
 	}
 }

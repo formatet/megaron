@@ -106,6 +106,49 @@ func (s *Service) Login(ctx context.Context, usernameOrEmail, password string) (
 	return s.issueTokenPair(ctx, p.ID, p.Username)
 }
 
+// ChangePassword replaces a player's password after checking the current one,
+// and revokes every refresh token they hold so a leaked old session cannot
+// renew itself. Access tokens are stateless JWTs and stay valid until they
+// expire (accessTTL) — the same limit logout has; there is no revocation list.
+//
+// All in one transaction with the player row locked, so two concurrent
+// changes cannot both pass the old-password check against the same hash.
+// No strength requirement on the new password, matching Register.
+func (s *Service) ChangePassword(ctx context.Context, playerID uuid.UUID, oldPassword, newPassword string) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("change password: begin: %w", err)
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck
+
+	var hash string
+	err = tx.QueryRow(ctx, `SELECT password_hash FROM players WHERE id = $1 FOR UPDATE`, playerID).Scan(&hash)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return ErrUserNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("change password: lookup: %w", err)
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(oldPassword)); err != nil {
+		return ErrInvalidPassword
+	}
+	newHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("change password: hash: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `UPDATE players SET password_hash = $2 WHERE id = $1`, playerID, string(newHash)); err != nil {
+		return fmt.Errorf("change password: update: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM refresh_tokens WHERE player_id = $1`, playerID); err != nil {
+		return fmt.Errorf("change password: revoke refresh tokens: %w", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("change password: commit: %w", err)
+	}
+	slog.Info("player changed password", "id", playerID)
+	return nil
+}
+
 // Refresh validates a refresh token and issues a new token pair.
 func (s *Service) Refresh(ctx context.Context, refreshToken string) (newAccess, newRefresh string, err error) {
 	hash := hashToken(refreshToken)
