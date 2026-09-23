@@ -31,6 +31,7 @@ import (
 // ReachableCatchmentHexes call) rather than threaded in from
 // RecomputeProduction — this is a read-only display path, not the hot
 // production-write path S1's "billig förkoll" is written to protect.
+// The per-hex blockade (RecomputeProduction step 1c) is mirrored the same way.
 func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]float64, error) {
 	var worldID uuid.UUID
 	var ownerID uuid.UUID
@@ -56,6 +57,19 @@ func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	reachable, _, err := ReachableCatchmentHexes(ctx, tx, worldID, ownerID, center, ring)
 	if err != nil {
 		return nil, fmt.Errorf("catchment base potential: %w", err)
+	}
+	// Blockad med enhet — mirrors RecomputeProduction step 1c: a fientlig unit
+	// in fortify/sentry ON a ring hex silences it whether or not the city is
+	// besieged. Without this the break-even hint promised a blockaded city the
+	// production it had just lost.
+	blockedHexes, err := LoadEnemyPositionedHexes(ctx, tx, worldID, ownerID)
+	if err != nil {
+		return nil, fmt.Errorf("catchment base potential: %w", err)
+	}
+	for _, c := range ring {
+		if blockedHexes[c] {
+			reachable[c] = false
+		}
 	}
 	filteredRing := ring[:0:0]
 	for _, c := range ring {

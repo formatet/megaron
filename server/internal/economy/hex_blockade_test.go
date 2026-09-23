@@ -332,3 +332,47 @@ func TestSyncHexBlockade_FiresDispatchOnStartAndLift(t *testing.T) {
 		t.Errorf("events appended = %d, want 2 (one per transition)", eventCount)
 	}
 }
+
+// CatchmentBasePotential feeds the status endpoint's break-even hint. It
+// mirrored belägring's denial but not the per-hex blockade, so a blockaded
+// city was promised the production it had just lost. It must drop the held
+// hex exactly as RecomputeProduction step 1c does — and restore it after.
+func TestCatchmentBasePotential_SeesTheHexBlockade(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	settlementID, worldID, _ := seedSiegeFixture(t, 100, 100)
+	seedTile(t, worldID, 1, 0, "hills")
+
+	sum := func(m map[string]float64) float64 {
+		var s float64
+		for _, v := range m {
+			s += v
+		}
+		return s
+	}
+	before, err := CatchmentBasePotential(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum(before) <= 0 {
+		t.Fatalf("baseline potential %v — the hills hex must contribute something for this test to mean anything", before)
+	}
+
+	enemyUnitID := placeEnemyUnitWithStance(t, worldID, createEnemyOwner(t), 1, 0, "fortify")
+	blocked, err := CatchmentBasePotential(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum(blocked) != 0 {
+		t.Errorf("potential with a fortify enemy on the only worked hex = %v, want nothing — the break-even hint promises production the blockade cut off", blocked)
+	}
+
+	removeUnit(t, enemyUnitID)
+	after, err := CatchmentBasePotential(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum(after) != sum(before) {
+		t.Errorf("potential after the enemy left = %v, want the baseline %v", after, before)
+	}
+}
