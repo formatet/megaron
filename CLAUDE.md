@@ -6,6 +6,8 @@ If code and this file conflict, trust the code, then fix this file.
 read from code or vault on demand. A `≥3` beside the word "invariant" makes an agent refuse to tune it.
 
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
+  **And run `git status` + `git worktree list` first** — a session that died mid-slice leaves its work
+  uncommitted and unrecorded (two slices sat 13 days in the tree before 2026-09-23). Rescue it before new work.
 - **Two gates** — mark every piece of work *blocks* / *proves* / *waits for* them:
   **(1) The chain:** a competent player completes geografi → brist → brons → elit via web and keryx, with no
   developer intervention and **without hitting a surface that doesn't exist**. Progress is measured in **game
@@ -14,7 +16,9 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
   their way and when it lands — **and have time to answer**. Sharp form: order travel + defender travel <
   attacker's remaining travel. Orders are physical; command is never instant.
 - **Before ending a session:** update `megaron_todo.md` — four queues with caps (NU ≤5 · BESLUT ≤7 ·
-  VERIFIERING · SENARE). Not a diary. Group new observations by likely shared root before writing them down.
+  VERIFIERING · SENARE). Not a diary: a line is next action · why · blocker · who decides, ≤ ~4 lines —
+  what you did goes in `git log`, a process report or memory. (It grew to 241 KB of session logs; rewritten
+  2026-09-23, history in `megaron_todo_arkiv_20260923`.) Group new observations by likely shared root first.
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
 - **Timestamps:** pull the actual wall clock from plain `date`, never a guessed or remembered time.
   **Never a `TZ=` prefix** — git-for-Windows ships no zoneinfo DB, so it silently falls back to UTC.
