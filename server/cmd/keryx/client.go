@@ -215,6 +215,12 @@ func (c *Client) delete(path string) ([]byte, error) {
 }
 
 func apiError(body []byte, status int) error {
+	// The server's 401 text is written for the web ("reload the page"); in a
+	// terminal the way back in is keryx login. Without this an expired token
+	// read as a bare "HTTP 401" to a player — or an LLM agent — mid-loop.
+	if status == http.StatusUnauthorized {
+		return fmt.Errorf("not logged in, or your session has expired — run `keryx login` (HTTP 401)")
+	}
 	var e struct {
 		Error   string `json:"error"`
 		Missing []struct {
