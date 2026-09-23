@@ -143,6 +143,21 @@ else
   say "  ✓ byggd och skickad"
 fi
 
+step "Steg 1b: arkivera spelarrapporterna"
+# player_reports.world_id är ON DELETE CASCADE (mig 119), så TRUNCATE worlds
+# CASCADE i steg 2 raderar varje buggrapport. Reseeden 2026-09-09 tog så 12
+# ogenomgångna design/confused-rapporter. Exporten är en förutsättning, inte
+# bästa-försök: misslyckas den avbryts reseeden innan något raderats.
+REPORT_DIR="${RESEED_REPORT_DIR:-$HOME/megaron-arkiv/player_reports}"
+REPORT_FILE="$REPORT_DIR/$(date +%Y%m%d-%H%M%S).csv"
+if [ "$DRY_RUN" -eq 1 ]; then
+  say "  [dry-run] COPY player_reports (+ username) → $REPORT_FILE"
+else
+  mkdir -p "$REPORT_DIR"
+  remote_sql "COPY (SELECT r.*, p.username FROM player_reports r LEFT JOIN players p ON p.id = r.player_id ORDER BY r.created_at) TO STDOUT WITH CSV HEADER" > "$REPORT_FILE"
+  say "  ✓ $(wc -c < "$REPORT_FILE") byte → $REPORT_FILE"
+fi
+
 step "Steg 2: skapa ny värld (MAP_WIDTH=$MAP_WIDTH MAP_HEIGHT=$MAP_HEIGHT)"
 NEW_WORLD_ID="<NEW_WORLD_ID>"
 if [ "$DRY_RUN" -eq 1 ]; then
