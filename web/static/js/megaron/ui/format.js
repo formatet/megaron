@@ -114,7 +114,7 @@ export function notifDomain(kind) {
     StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
     OfferAccepted: 'trade', OfferDeclined: 'trade', OfferExpired: 'trade',
     // Diplomacy — the messenger channel.
-    MessengerArrival: 'diplomacy',
+    MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy',
     // Kult — the gods answering.
     DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
@@ -135,6 +135,7 @@ export function notifIcon(kind) {
     TradeLost:          '🌊',
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
+    MessengerReturned:  '📜',
     UnitAttrition:      '💀',
     UnitDeserted:       '🏃',
     UpkeepUnpaid:       '⚠',
@@ -226,7 +227,38 @@ export function notifText(kind, body) {
     case 'TradeDelivery':      return `Trade delivered: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
     case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
-    case 'MessengerArrival':   return body.message || 'Messenger arrived';
+    case 'MessengerArrival': {
+      // A messenger standing in your court (messenger/handler.go
+      // notifyDelivered). Names the sender by Wanax name and the city it
+      // reached — "a messenger arrived" tells a Wanax with five cities
+      // nothing. An offer-bearing messenger states the bargain: the offer can
+      // only be accepted while its bearer is still there, so the terms ARE the
+      // notification.
+      const from = body.from || 'an unknown Wanax';
+      const place = body.name ? ` at ${body.name}` : '';
+      const o = body.offer;
+      if (o) {
+        const wants = o.kind === 'sell'
+          ? fmtSilver(o.want_silver || 0)
+          : `${Math.floor(o.want_qty || 0)} ${o.want_good || ''}`.trim();
+        const offers = o.kind === 'sell'
+          ? `${Math.floor(o.offer_qty || 0)} ${o.offer_good || ''}`.trim()
+          : fmtSilver(o.offer_silver || 0);
+        return `Trade offer from ${from}${place} — wants ${wants}, offers ${offers}`;
+      }
+      return `Messenger from ${from} arrived${place}` + (body.message ? ` — "${body.message}"` : '');
+    }
+    case 'MessengerReturned': {
+      // Your own messenger is home. The reply rides back WITH it (never in
+      // place — command is never instant), so this is where the exchange
+      // closes for the sender.
+      const to = body.to ? ` from ${body.to}` : '';
+      const home = body.name ? ` to ${body.name}` : '';
+      if (body.replied) {
+        return `Your messenger returned${home}${to} with a reply — "${body.reply || ''}"`;
+      }
+      return `Your messenger returned${home}${to} with no reply`;
+    }
     // name (megaron_plan_dispatches.md §4, unit.LoadDisplayName server-side)
     // names the SUBJECT — "2nd Spearmen of Knossos", not the category "A
     // unit" — falling back to unit_type/'A unit' for older bodies persisted

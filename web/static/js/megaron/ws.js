@@ -128,8 +128,8 @@ export function initWS() {
       // the kind inside addDispatch (ui/format.js).
       //
       // The kind-specific branches below are now only side effects — refetch
-      // this, play that. Some of them (ArmyArrival, MessengerArrival,
-      // GoodsCrafted, KharisEvent, TradeCaravanArrival) have no server emitter
+      // this, play that. Some of them (ArmyArrival, GoodsCrafted, KharisEvent,
+      // TradeCaravanArrival) have no server emitter
       // today; they are left standing because their refetch is still the right
       // thing to do the day one appears, and they no longer cost a chip branch.
       if (msg.id) {
@@ -144,7 +144,9 @@ export function initWS() {
         coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; window.MusicPlayer.update(); })));
         coalesce('marches', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; window.MusicPlayer.update(); })));
       }
-      if (msg.kind === 'MessengerArrival') {
+      // A returning messenger carries the reply, so the diplomacy data is stale
+      // on both ends of the round trip (messenger/handler.go).
+      if (msg.kind === 'MessengerArrival' || msg.kind === 'MessengerReturned') {
         coalesce('messengers', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; })));
       }
       if (msg.kind === 'GoodsCrafted') {
