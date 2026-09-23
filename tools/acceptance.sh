@@ -13,7 +13,8 @@
 #   tools/acceptance.sh psql [SQL]  DB-bevis (utan SQL: interaktiv shell)
 #   tools/acceptance.sh logs [N]    serverlogg
 #   tools/acceptance.sh down        stoppa och radera volymerna
-#   tools/acceptance.sh status      vad som kör och mot vilken commit
+#   tools/acceptance.sh status      vad som kör och mot vilken commit (varnar vid avvikelse)
+#   tools/acceptance.sh provenance  en klistrbar härkomstrad för rapporter (commit ur /healthz)
 #
 # Allt hamnar på egna portar och egna volymer (docker-compose.acceptance.yml).
 # Skriptet vägrar arbeta mot något annat än sitt eget projektnamn.
@@ -143,13 +144,52 @@ if len(ws) > 1:
 print(ws[0]["id"])'
 }
 
+# ── Härkomst: vad kör containern, och är det repots kod? ──────────────────────
+# Läses ur /healthz (containerns egen sanning), ALDRIG ur git rev-parse — den
+# substitutionen lät speldygnstestet 2026-08-30 mäta en rigg åtta migrationer
+# efter master utan att någon såg det (megaron_plan_riggens_harkomst.md).
+repo_commit() {
+  local c; c=$(git -C "$ROOT" rev-parse --short=7 HEAD)
+  git -C "$ROOT" diff --quiet HEAD -- 2>/dev/null || c="$c+dirty"
+  echo "$c"
+}
+repo_migration() {
+  ls "$ROOT/server/db/migrations" | sed -n 's/^\([0-9]*\)_.*\.up\.sql$/\1/p' | sort -n | tail -1 | sed 's/^0*//'
+}
+healthz_field() {
+  curl -fsS -m 3 "$BASE/healthz" | python3 -c "import json,sys; v=json.load(sys.stdin).get('$1'); print('' if v is None else v)"
+}
+rig_tick_seconds() {
+  docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${PROJECT}-server-1" 2>/dev/null | sed -n 's/^TICK_SECONDS=//p'
+}
+# check_provenance fatal|warn — jämför containern mot repot. `up` avbryter (en
+# varning som scrollar förbi är precis vad som hände 2026-08-30); `status` varnar
+# bara, så den kan köras på en trasig rigg för att diagnostisera den.
+check_provenance() {
+  local mode=$1 hc hm rc rm bad=0
+  hc=$(healthz_field commit); hm=$(healthz_field migration)
+  rc=$(repo_commit); rm=$(repo_migration)
+  if [ "$hm" != "$rm" ]; then
+    echo "  ✗ riggen står på migration ${hm:-okänd}, repot på $rm" >&2; bad=1
+  fi
+  if [ "$hc" != "$rc" ]; then
+    echo "  ✗ riggen kör commit ${hc:-okänd}, repot står på $rc" >&2; bad=1
+  fi
+  if [ $bad = 1 ]; then
+    [ "$mode" = fatal ] && die "riggen kör inte repots kod — kör 'tools/acceptance.sh down && tools/acceptance.sh up'"
+    echo "  ⚠ mät inte på den här riggen förrän den byggts om" >&2
+  fi
+  return 0
+}
+
 cmd_up() {
   echo "→ bygger och startar acceptansvärlden (projekt $PROJECT)"
   local prev; prev=$(rig_image_id)
-  "${DC[@]}" up -d --build
+  BUILD_COMMIT=$(repo_commit) "${DC[@]}" up -d --build
   drop_previous_rig_image "$prev"
   drop_stale_builder_images
   wait_healthy
+  check_provenance fatal
   local w; w=$(world_id)
   cat <<EOF
 
@@ -158,9 +198,9 @@ cmd_up() {
   webb      $BASE
   API       $API
   värld     $w
-  commit    $(git -C "$ROOT" rev-parse --short HEAD) ($(git -C "$ROOT" rev-parse --abbrev-ref HEAD))
-  migration $(cmd_psql "SELECT version || CASE WHEN dirty THEN ' DIRTY' ELSE '' END FROM schema_migrations" | tr -d ' ')
-  tick      $(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "${PROJECT}-server-1" 2>/dev/null | sed -n 's/^TICK_SECONDS=//p') s     karta $(cmd_psql "SELECT map_width || 'x' || map_height FROM worlds ORDER BY created_at DESC LIMIT 1" | tr -d ' ')
+  commit    $(healthz_field commit) ($(git -C "$ROOT" rev-parse --abbrev-ref HEAD)) — ur /healthz
+  migration $(healthz_field migration)/$(repo_migration)
+  tick      $(rig_tick_seconds) s     karta $(cmd_psql "SELECT map_width || 'x' || map_height FROM worlds ORDER BY created_at DESC LIMIT 1" | tr -d ' ')
 
   nästa:    tools/acceptance.sh player Wanax1
 EOF
@@ -221,8 +261,13 @@ cmd_down()   { "${DC[@]}" down -v; echo "  acceptansvärlden riven, volymerna bo
 cmd_status() {
   "${DC[@]}" ps
   curl -fsS -m 3 "$BASE/healthz" >/dev/null 2>&1 \
-    && echo "  healthz OK · värld $(world_id) · migration $(cmd_psql 'SELECT version FROM schema_migrations' | tr -d ' ')" \
+    && { echo "  healthz OK · värld $(world_id) · commit $(healthz_field commit) · migration $(healthz_field migration)/$(repo_migration)"; check_provenance warn; } \
     || echo "  healthz svarar inte"
+}
+# En rad att klistra in i en rapports SAMMANFATTNING (megaron_arbetssatt §12).
+cmd_provenance() {
+  local w; w=$(world_id)
+  echo "rigg: commit $(healthz_field commit) · migration $(healthz_field migration)/$(repo_migration) · värld ${w:0:8} · tick $(cmd_psql "SELECT current_tick FROM worlds WHERE id = '$w'" | tr -d ' ') · TICK_SECONDS=$(rig_tick_seconds) · $(date '+%Y-%m-%d %H:%M')"
 }
 
 case "${1:-}" in
@@ -234,5 +279,6 @@ case "${1:-}" in
   logs)   shift; cmd_logs "$@" ;;
   down)   cmd_down ;;
   status) cmd_status ;;
+  provenance) cmd_provenance ;;
   *)      sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac

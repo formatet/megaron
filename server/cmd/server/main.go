@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strconv"
 	"syscall"
 	"time"
@@ -210,22 +211,11 @@ func main() {
 	r := chi.NewRouter()
 	installMiddleware(r)
 
-	// Liveness/readiness probe for deploy verification and monitoring. Public,
-	// no auth. Pings the DB with a short deadline so a 200 means the server can
-	// actually serve (DB reachable), not merely that the process is up; 503
-	// signals a live process that can't reach its database.
-	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		pingCtx, pingCancel := context.WithTimeout(r.Context(), 2*time.Second)
-		defer pingCancel()
-		w.Header().Set("Content-Type", "application/json")
-		if err := pool.Ping(pingCtx); err != nil {
-			w.WriteHeader(http.StatusServiceUnavailable)
-			_ = json.NewEncoder(w).Encode(map[string]string{"status": "unavailable"})
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-	})
+	// Liveness/readiness probe — see provenance.go.
+	info, ok := debug.ReadBuildInfo()
+	commit := commitFromBuildInfo(buildCommit, info, ok)
+	slog.Info("build", "commit", commit)
+	r.Get("/healthz", healthz(pool, commit))
 
 	// Static files and HTML templates.
 	staticDir := getEnv("STATIC_DIR", "../../web/static")

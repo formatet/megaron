@@ -13,7 +13,11 @@ COPY server/go.mod server/go.sum ./
 RUN go mod download
 
 COPY server/ .
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o temenos ./cmd/server
+# The build context has no .git, so Go cannot stamp vcs.revision itself — the
+# commit comes in as a build arg (tools/acceptance.sh sets it) and is reported
+# by /healthz (cmd/server/provenance.go). Unset ⇒ "unknown", never a guess.
+ARG BUILD_COMMIT=unknown
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.buildCommit=${BUILD_COMMIT}" -o temenos ./cmd/server
 
 FROM alpine:3.20
 WORKDIR /app
