@@ -108,6 +108,36 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, tokenResponse{AccessToken: access, RefreshToken: refresh})
 }
 
+// ChangePassword handles POST /auth/password. A wrong current password is a
+// 403, never a 401: a 401 from this API means "your session has expired" to
+// both clients (auth.SessionExpiredMessage, keryx apiError), and a typo in the
+// old password must not send the player off to log in again.
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, auth.SessionExpiredMessage)
+		return
+	}
+	var req struct {
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	err := h.svc.ChangePassword(r.Context(), playerID, req.OldPassword, req.NewPassword)
+	if errors.Is(err, auth.ErrInvalidPassword) {
+		writeError(w, http.StatusForbidden, "your current password is incorrect")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not change password")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // Me handles GET /auth/me.
 func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())

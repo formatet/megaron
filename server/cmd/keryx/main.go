@@ -58,6 +58,7 @@ func main() {
 
 	root.AddCommand(
 		loginCmd(),
+		passwordCmd(),
 		joinCmd(),
 		statusCmd(),
 		mapCmd(),
