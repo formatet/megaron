@@ -12,6 +12,13 @@ bevis** (`megaron_arbetssatt` §3). Baslinje och fix = två körningar = två f�
 `-p 1` är inte valfritt: parallella paket slåss om `one_active_world` och `current_world_tick()`
 blir NULL.
 
+## Acceptansriggens härkomst
+
+`tools/acceptance.sh up` bygger med `BUILD_COMMIT` och **avbryter** om containerns `/healthz`
+(`commit`, `migration`) inte matchar repot. `status` varnar, `provenance` skriver raden som ska stå
+i varje rapport som bär mätdata. Läs aldrig riggens commit ur `git rev-parse` — det är värdens, inte
+containerns.
+
 ## Reseed av livevärlden
 
 `tools/reseed.sh [--dry-run]` kör hela `megaron_drift.md` §Reseed-runbook i ett kommando —
