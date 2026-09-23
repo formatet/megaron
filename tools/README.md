@@ -3,6 +3,15 @@
 Renderingsprinciperna och acceptansgrinden bor i `megaron_terrangrendering.md` (vault).
 Här står bara HUR riggen körs.
 
+## Go-sviten mot färsk DB
+
+`tools/gotest.sh [paket] [go test-flaggor]` startar en tom Postgres i en engångscontainer,
+migrerar till senaste versionen (och vägrar köra om `schema_migrations` inte stämmer), kör
+`go test -count=1 -p 1` med rensad miljö och river containern. **Det enda utfall som räknas som
+bevis** (`megaron_arbetssatt` §3). Baslinje och fix = två körningar = två färska DB:er automatiskt.
+`-p 1` är inte valfritt: parallella paket slåss om `one_active_world` och `current_world_tick()`
+blir NULL.
+
 ## Reseed av livevärlden
 
 `tools/reseed.sh [--dry-run]` kör hela `megaron_drift.md` §Reseed-runbook i ett kommando —
