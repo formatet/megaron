@@ -125,6 +125,13 @@ test('CG10: an empty or non-JSON error body still produces a line, never blank s
   assert.notEqual(text.trim(), '');
 });
 
+test('CG11: an expired session reads as the server\'s own sentence, not "error 401"', async () => {
+  // auth.SessionExpiredMessage — the API middleware's 401 body since 2026-09-23.
+  const msg = 'Your session has expired — reload the page to log in again.';
+  const text = await refusalText({ ok: false, status: 401, json: async () => ({ error: msg }) });
+  assert.equal(text, msg);
+});
+
 // ── Keeping the panel open across a re-render ───────────────────────────────
 // +1/−1 used to close the panel the player was clicking in: the re-render
 // rebuilt the whole widget and the detail pane fell back to its empty state.

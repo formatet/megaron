@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -21,12 +22,12 @@ func Middleware(svc *Service) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := tokenFromRequest(r)
 			if token == "" {
-				http.Error(w, "missing or malformed token", http.StatusUnauthorized)
+				writeUnauthorized(w)
 				return
 			}
 			claims, err := svc.ValidateAccessToken(token)
 			if err != nil {
-				http.Error(w, "invalid token", http.StatusUnauthorized)
+				writeUnauthorized(w)
 				return
 			}
 			ctx := context.WithValue(r.Context(), contextKeyPlayerID, claims.PlayerID)
@@ -34,6 +35,19 @@ func Middleware(svc *Service) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+// SessionExpiredMessage is the 401 body's error text. It is written for the web
+// player, where every refusal surface renders the server's own `error` string
+// (formatApiError): a tab left open overnight is the normal case in a game
+// built around nine-hour absences, and a plain-text 401 used to reach them as
+// "error 401". keryx replaces it with its own login hint (cmd/keryx apiError).
+const SessionExpiredMessage = "Your session has expired — reload the page to log in again."
+
+func writeUnauthorized(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
+	_ = json.NewEncoder(w).Encode(map[string]string{"error": SessionExpiredMessage})
 }
 
 // WebMiddleware is like Middleware but redirects to / on failure instead of 401.
