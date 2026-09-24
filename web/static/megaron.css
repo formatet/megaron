@@ -1761,3 +1761,158 @@ body:has(.auth-page) main {
   color: var(--text-dim);
   margin: .25rem 0 .4rem 0;
 }
+
+/* ── Codex — the player's wiki (ui/codex.js, megaron_plan_kodex.md) ────────
+   Anchored LEFT, outside the drawer system: a drawer (right) can stay open
+   beside it. Above drawers (200), below the dispatch window (500), which
+   links into it. */
+.gt-codex-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 0.15rem 0.5rem;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  font-weight: bold;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 4px;
+  align-self: center;
+}
+.gt-codex-btn:hover, .gt-codex-btn.active { border-color: var(--accent); color: var(--accent); }
+.drawer-help {
+  margin-left: auto;
+  margin-right: 0.4rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.15rem 0.45rem;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  font-weight: bold;
+}
+.drawer-help:hover { color: var(--accent); border-color: var(--accent); }
+.codex-panel {
+  position: fixed;
+  top: 34px;
+  left: 0;
+  bottom: 34px;
+  width: 440px;
+  background: var(--bg-panel);
+  border-right: 2px solid var(--border);
+  transform: translateX(-100%);
+  transition: transform 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 210;
+}
+.codex-panel.open { transform: translateX(0); box-shadow: 6px 0 30px rgba(0,0,0,0.6); }
+@media (max-width: 480px) {
+  .codex-panel { width: 100%; border-right: none; }
+}
+.codex-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg-raised);
+  flex-shrink: 0;
+}
+.codex-header .drawer-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.codex-back {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.1rem 0.5rem;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+}
+.codex-back:hover { color: var(--accent); border-color: var(--accent); }
+.codex-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.8rem 1rem 1.5rem;
+  color: var(--text);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+}
+.cx-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.5rem;
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-sm);
+}
+.cx-results { margin: 0.4rem 0 0.6rem; }
+.cx-result { display: block; padding: 0.2rem 0; }
+.cx-cat { margin-top: 0.9rem; }
+.cx-cat-title {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.15rem;
+  margin-bottom: 0.3rem;
+}
+.cx-entry { display: block; padding: 0.15rem 0; }
+.cx-link { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+.cx-link:hover { border-bottom-style: solid; }
+.cx-link-missing { color: var(--text-dim); }
+.cx-crumb {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+}
+.cx-article p { margin: 0 0 0.7rem; }
+.cx-h { color: var(--accent); font-family: var(--font); margin: 1rem 0 0.4rem; }
+h3.cx-h { font-size: var(--fs-md); }
+h4.cx-h { font-size: var(--fs-base); }
+.cx-list { margin: 0 0 0.7rem; padding-left: 1.3rem; }
+.cx-list li { margin-bottom: 0.25rem; }
+.cx-quote {
+  margin: 0 0 0.7rem;
+  padding: 0.4rem 0.6rem;
+  border-left: 3px solid var(--border);
+  background: var(--bg-raised);
+}
+.cx-pre {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  white-space: pre-wrap;
+  margin: 0 0 0.7rem;
+}
+.cx-article code { font-family: var(--mono); font-size: 0.9em; background: var(--bg-raised); padding: 0 0.2em; }
+.cx-table { border-collapse: collapse; margin: 0 0 0.8rem; font-size: var(--fs-sm); width: 100%; }
+.cx-table th, .cx-table td { border: 1px solid var(--border); padding: 0.25rem 0.4rem; text-align: left; vertical-align: top; }
+.cx-table th { background: var(--bg-raised); }
+.cx-foot {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+.cx-foot-label {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-right: 0.3rem;
+}
+.dw-codex-btn { margin-top: 0.4rem; }
+.notif-archive-note + .drawer-help { margin-left: 0; }
+.codex-back.hidden { display: none; }

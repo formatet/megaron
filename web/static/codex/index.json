@@ -1,0 +1,57 @@
+{
+  "categories": ["Start here", "Founding", "Your city", "Goods and trade", "The wider world", "War", "The gods", "Growing", "Reference"],
+  "articles": [
+    {"id": "welcome",      "title": "Welcome, Wanax",               "category": "Start here", "related": ["time", "runners", "coming-back"]},
+    {"id": "getting-in",   "title": "Getting in",                   "category": "Start here", "related": ["time", "horde"]},
+    {"id": "time",         "title": "Days and the clock",           "category": "Start here", "related": ["welcome", "coming-back"]},
+    {"id": "screen",       "title": "The screen",                   "category": "Start here", "related": ["coming-back", "report"]},
+    {"id": "runners",      "title": "Orders and Runners",           "category": "Start here", "kinds": ["OrderFailed", "UnitRecalled", "UnitRedirected"], "related": ["marching", "defence"]},
+    {"id": "coming-back",  "title": "Coming back after time away",  "category": "Start here", "drawer": "notif", "related": ["time", "routes", "defence"]},
+
+    {"id": "horde",        "title": "The Nomadic Host",             "category": "Founding", "related": ["founding", "sight"]},
+    {"id": "founding",     "title": "Founding your city",           "category": "Founding", "kinds": ["MetropolisFounded"], "related": ["catchment", "horde", "food"]},
+
+    {"id": "city",         "title": "The City drawer",              "category": "Your city", "drawer": "city", "related": ["citizens", "sitos", "buildings"]},
+    {"id": "catchment",    "title": "Catchment",                    "category": "Your city", "related": ["citizens", "founding", "sieges"]},
+    {"id": "citizens",     "title": "Citizens and placement",       "category": "Your city", "related": ["catchment", "buildings", "surplus"]},
+    {"id": "food",         "title": "Food and hunger",              "category": "Your city", "kinds": ["FoodShortfall", "SubsistenceWarning", "CityCollapsed"], "related": ["sitos", "growth", "upkeep"]},
+    {"id": "growth",       "title": "Growth",                       "category": "Your city", "related": ["food", "citizens"]},
+    {"id": "sitos",        "title": "The Sitos granary",            "category": "Your city", "kinds": ["SitosGranaryRelease"], "related": ["food", "growth"]},
+    {"id": "buildings",    "title": "Buildings",                    "category": "Your city", "kinds": ["BuildComplete", "GoodsCrafted"], "related": ["citizens", "goods", "temples"]},
+
+    {"id": "goods",        "title": "Goods",                        "category": "Goods and trade", "drawer": "economy", "related": ["surplus", "silver", "bronze"]},
+    {"id": "silver",       "title": "Silver",                       "category": "Goods and trade", "related": ["upkeep", "trade", "goods"]},
+    {"id": "surplus",      "title": "Surplus and waste",            "category": "Goods and trade", "related": ["citizens", "goods", "trade"]},
+    {"id": "transfers",    "title": "Transfers and caravans",       "category": "Goods and trade", "kinds": ["TransferDelivered", "CaravanRaided", "CaravanSeized"], "related": ["routes", "trade"]},
+    {"id": "routes",       "title": "Standing orders",              "category": "Goods and trade", "related": ["transfers", "coming-back", "colonies"]},
+    {"id": "trade",        "title": "Trade offers",                 "category": "Goods and trade", "kinds": ["OfferAccepted", "OfferDeclined", "OfferExpired", "TradeDelivery", "TradeLost", "TradeReturn"], "related": ["messengers", "contact", "silver"]},
+
+    {"id": "sight",        "title": "Sight and memory",             "category": "The wider world", "kinds": ["ScoutReport", "UnitExploreReturned"], "related": ["contact", "defence", "horde"]},
+    {"id": "contact",      "title": "Contact",                      "category": "The wider world", "related": ["messengers", "trade", "gossip"]},
+    {"id": "messengers",   "title": "Messengers and letters",       "category": "The wider world", "drawer": "diplomacy", "kinds": ["MessengerArrival"], "related": ["contact", "trade", "runners"]},
+    {"id": "gossip",       "title": "Gossip",                       "category": "The wider world", "drawer": "gossip", "related": ["contact", "sight"]},
+    {"id": "sea",          "title": "The Thalassa and ships",       "category": "The wider world", "kinds": ["ShipDamaged", "ShipRepaired", "UnitLostAtSea"], "related": ["units", "bronze", "sight"]},
+
+    {"id": "units",        "title": "Soldiers and ships",           "category": "War", "drawer": "war", "kinds": ["TrainComplete"], "related": ["marching", "upkeep", "battle"]},
+    {"id": "marching",     "title": "Marching",                     "category": "War", "kinds": ["UnitArrived", "ArmyArrival", "MarchStalled"], "related": ["runners", "stances", "sight"]},
+    {"id": "stances",      "title": "Stances and watches",          "category": "War", "kinds": ["SentryAlerted"], "related": ["sieges", "defence", "battle"]},
+    {"id": "defence",      "title": "Seeing them coming",           "category": "War", "kinds": ["ForeignMarchSighted"], "related": ["runners", "stances", "sight"]},
+    {"id": "battle",       "title": "Battle",                       "category": "War", "kinds": ["BattleWon", "BattleLost", "SettlementDefended"], "related": ["units", "loyalty", "stances"]},
+    {"id": "sieges",       "title": "Sieges and blockades",         "category": "War", "kinds": ["SiegeStarted", "SiegeLifted", "HexBlockaded", "HexUnblockaded"], "related": ["occupation", "stances", "catchment"]},
+    {"id": "occupation",   "title": "Occupation and captured cities", "category": "War", "kinds": ["CityOccupied", "CityAnnexReady", "OccupationDefended", "SettlementCaptured", "SettlementSacked", "SettlementLooted", "SettlementBurned", "OutpostCaptured"], "related": ["sieges", "battle", "rough-edges"]},
+    {"id": "upkeep",       "title": "Upkeep: pay and bread",        "category": "War", "kinds": ["UpkeepUnpaid", "UnitDeserted", "UnitAttrition", "UnitReturnedStarving"], "related": ["silver", "food", "units"]},
+
+    {"id": "kharis",       "title": "Kharis",                       "category": "The gods", "drawer": "kult", "kinds": ["DivineBlessing", "DivinePunishment"], "related": ["temples", "rites"]},
+    {"id": "temples",      "title": "Temples and devotion",         "category": "The gods", "related": ["kharis", "buildings"]},
+    {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "related": ["kharis", "bronze"]},
+
+    {"id": "colonies",     "title": "Colonies",                     "category": "Growing", "kinds": ["ColonyFounded", "OutpostEstablished"], "related": ["loyalty", "routes", "founding"]},
+    {"id": "loyalty",      "title": "Loyalty",                      "category": "Growing", "related": ["colonies", "battle"]},
+    {"id": "bronze",       "title": "The bronze problem",           "category": "Growing", "related": ["goods", "sea", "rites"]},
+
+    {"id": "report",       "title": "Reporting a problem",          "category": "Reference", "drawer": "report", "related": ["rough-edges"]},
+    {"id": "rough-edges",  "title": "Rough edges",                  "category": "Reference", "related": ["report", "keryx"]},
+    {"id": "keryx",        "title": "Keryx, the command line",      "category": "Reference", "related": ["rough-edges"]},
+    {"id": "glossary",     "title": "Glossary",                     "category": "Reference", "related": ["welcome"]}
+  ]
+}

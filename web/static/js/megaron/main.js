@@ -55,6 +55,7 @@ import { installErrorCapture } from './ui/diagnostics.js';
 import { playWarHorn, playBattleClash } from './ui/sfx.js';
 import { loadGossipDrawer } from './ui/drawers/gossip.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
+import { initCodex, openCodex, openCodexForDrawer, closeCodex, codexBack } from './ui/codex.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
 export function toggleDrawer(name) {
@@ -96,11 +97,19 @@ export function closeDrawer(name) {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    const cx = document.getElementById('codex-panel');
+    if (cx && cx.classList.contains('open')) { closeCodex(); return; }
     if (State.activeDrawer) { closeDrawer(State.activeDrawer); return; }
     closeDispatchWindow();
     document.getElementById('search-overlay').classList.remove('open');
   }
 });
+
+// The top-bar ? — opens the Codex on its index, or closes it if open.
+function toggleCodex() {
+  const cx = document.getElementById('codex-panel');
+  if (cx && cx.classList.contains('open')) closeCodex(); else openCodex();
+}
 
 // Drawer content dispatch — was one big loadDrawerContent(name) with the city
 // branch inline; each branch now lives in its drawer module.
@@ -155,12 +164,14 @@ Object.assign(window, {
   // (a) inline-handler targets
   cancelBuild,
   centreOn,
+  closeCodex,
   closeDispatchWindow,
   closeDrawer,
   closeInspect,
   closeMarchCtx,
   closeMarchPanel,
   closeSearch,
+  codexBack,
   createStandingOrder,
   cycleCityView,
   deleteStandingOrder,
@@ -184,6 +195,8 @@ Object.assign(window, {
   okOfferWorth,
   onColonizeToggle,
   openCitySettlement,
+  openCodex,
+  openCodexForDrawer,
   pauseStandingOrder,
   resetView,
   resumeStandingOrder,
@@ -196,6 +209,7 @@ Object.assign(window, {
   startTransfer,
   submitReport,
   toggleActivityOverlay,
+  toggleCodex,
   toggleDrawer,
   toggleMusic,
   toggleSearch,
@@ -337,4 +351,5 @@ async function bootstrap() {
   initWS();            // websocket connect + reconnect loop
   initCelestial();     // celestial clock + its tick-scaled repaint interval
   initNotifications(); // initial unread-badge fetch
+  initCodex();         // Codex index, so dispatch/drawer links know which articles exist
 })();
