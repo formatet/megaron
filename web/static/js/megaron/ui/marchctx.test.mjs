@@ -26,7 +26,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML } =
+const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML, resolveMarchIntent, exploreRowVisible } =
   await import('./marchctx.js');
 
 const spearman = (id, ordinal, q, r) => ({
@@ -105,4 +105,35 @@ test('AK8: a hostile unit name is escaped, not injected', () => {
   const u = { id: 'u1', type: 'spearman', display_name: '<img src=x onerror=alert(1)>', q: 1, r: 1 };
   const groups = groupMarchUnits([u], []);
   assert.doesNotMatch(marchGroupLabelHTML(groups[0]), /<img/);
+});
+
+// resolveMarchIntent — found 2026-09-24: the server forbids a plain march
+// onto land no man of yours has ever seen, UNLESS intent=explore
+// (march_start.go's FOW rule). The web only ever sent explore for sea
+// targets, so a web player could not explore unknown land with a land unit.
+// This is the pure decision the fix hangs on: sea and unseen-land are always
+// explore (the FOW rule accepts nothing else on unseen ground, and no
+// separate recall order exists for ships); known land is plain march unless
+// the player opted in.
+test('MI1: sea target is always explore, regardless of the checkbox', () => {
+  assert.equal(resolveMarchIntent({ isSea: true, known: true }, false), 'explore');
+  assert.equal(resolveMarchIntent({ isSea: true, known: true }, true), 'explore');
+});
+
+test('MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there', () => {
+  assert.equal(resolveMarchIntent({ isSea: false, known: false }, false), 'explore');
+});
+
+test('MI3: a known land target is a plain march by default', () => {
+  assert.equal(resolveMarchIntent({ isSea: false, known: true }, false), '');
+});
+
+test('MI4: a known land target explores when the player opts in', () => {
+  assert.equal(resolveMarchIntent({ isSea: false, known: true }, true), 'explore');
+});
+
+test('MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement', () => {
+  assert.equal(exploreRowVisible({ isSea: false, isSettlement: false }), true);
+  assert.equal(exploreRowVisible({ isSea: true, isSettlement: false }), false);
+  assert.equal(exploreRowVisible({ isSea: false, isSettlement: true }), false);
 });

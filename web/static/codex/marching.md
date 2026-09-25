@@ -12,7 +12,7 @@ A unit standing in its city hears you at once. A unit out in the field does not 
 
 ## Where you can march
 
-- **Only onto ground your people have seen.** Unknown land cannot be a destination; explore towards it first ([[sight]]).
+- **A plain march only reaches ground your people have already seen.** Right-click an unseen hex and the order menu offers **Explore** instead — the unit scouts it and returns home on its own ([[sight]]).
 - Crossing the sea needs ships ([[sea]]).
 - A march that cannot go on — its path blocked, or impossible — stalls, and you are told why.
 
