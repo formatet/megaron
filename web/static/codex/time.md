@@ -10,4 +10,4 @@ Everything keeps happening while you are away: production, eating, [[upkeep|pay]
 
 ## Before the world begins
 
-A new world's clock is frozen until enough Wanaxes have joined (see [[getting-in]]). You can look around and give orders while you wait; orders that need time to pass are held and carried out when the world begins.
+A new world's clock is frozen until enough Wanaxes have joined (see [[getting-in]]). You can look around while you wait, but no orders: building, recruiting, placing people, marching, founding your city, sending messengers — each is refused with *"The world has not begun"* and a count of how many Wanaxes have arrived. Give them once the world starts.

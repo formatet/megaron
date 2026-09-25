@@ -144,3 +144,53 @@ export function playBattleClash() {
   tone(ac, { type: 'square', from: 1560, to: 1200, peak: 0.05, attack: 0.004, duration: 0.11, delay: 0.22, filterHz: 4000 });
   tone(ac, { type: 'triangle', from: 78, to: 48, peak: 0.18, attack: 0.01, duration: 0.45, delay: 0.18 });
 }
+
+// ── Arrival and dispatch sounds (Timothy 2026-09-25) ────────────────────────
+// "jag älskar bitmusikljudet som kommer när man ger order.. kan vi få ett
+// liknande när de anländer? eller vid varje dispatch som kommer?"
+//
+// Both, but not the same sound: an arrival is an event the player caused and
+// waited for, a dispatch is the world knocking. Only LIVE pushes play (ws.js);
+// the strip rebuilt from the archive at login stays silent, or a returning
+// Wanax would be greeted by a dozen chimes at once.
+
+// Kinds that already carry their own sound in ws.js (horn, clash) — the chime
+// must not stack on top of them.
+const OWN_SOUND_KINDS = new Set(['BattleWon', 'BattleLost', 'UnitRecalled', 'UnitRedirected']);
+const ARRIVAL_KINDS = new Set(['UnitArrived', 'UnitExploreReturned', 'ArmyArrival', 'MessengerReturned']);
+
+// soundForKind is the whole routing decision, pure for testing:
+// 'arrival' | 'chime' | null (null = the kind has its own sound, or none).
+export function soundForKind(kind) {
+  if (!kind || OWN_SOUND_KINDS.has(kind)) return null;
+  return ARRIVAL_KINDS.has(kind) ? 'arrival' : 'chime';
+}
+
+// An arrival: three short rising notes, a bright fanfare in miniature, over a
+// soft drum tap — the horn's answer ("we are here"), in the same bronze voice.
+export function playArrival() {
+  if (!shouldPlay('arrival')) return;
+  const ac = audioCtx();
+  if (!ac) return;
+  tone(ac, { type: 'sawtooth', from: 293.7, to: 293.7, peak: 0.13, attack: 0.02, duration: 0.18, filterHz: 1500 });
+  tone(ac, { type: 'sawtooth', from: 370.0, to: 370.0, peak: 0.13, attack: 0.02, duration: 0.18, delay: 0.14, filterHz: 1600 });
+  tone(ac, { type: 'sawtooth', from: 440.0, to: 440.0, peak: 0.15, attack: 0.02, duration: 0.40, delay: 0.28, filterHz: 1800 });
+  tone(ac, { type: 'sine', from: 110, to: 70, peak: 0.16, attack: 0.005, duration: 0.20 });
+}
+
+// A dispatch: one soft bell-like note with its fifth — quiet enough to hear
+// many times an evening without wearing thin.
+export function playDispatchChime() {
+  if (!shouldPlay('chime')) return;
+  const ac = audioCtx();
+  if (!ac) return;
+  tone(ac, { type: 'triangle', from: 659.3, to: 659.3, peak: 0.07, attack: 0.01, duration: 0.55 });
+  tone(ac, { type: 'sine', from: 988.0, to: 988.0, peak: 0.035, attack: 0.01, duration: 0.40, delay: 0.02 });
+}
+
+// playForKind — the one call ws.js makes for every live dispatch.
+export function playForKind(kind) {
+  const s = soundForKind(kind);
+  if (s === 'arrival') playArrival();
+  else if (s === 'chime') playDispatchChime();
+}

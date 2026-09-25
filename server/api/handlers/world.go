@@ -28,12 +28,18 @@ type WorldHandler struct {
 	pool    *pgxpool.Pool
 	authSvc *auth.Service
 	clk     clock.Clock
+	// startWanaxes is reported as wanaxes_needed (POLEIA_WORLD_START_WANAXES).
+	startWanaxes int
 }
 
 // NewWorldHandler creates a WorldHandler.
 func NewWorldHandler(pool *pgxpool.Pool, authSvc *auth.Service, clk clock.Clock) *WorldHandler {
-	return &WorldHandler{pool: pool, authSvc: authSvc, clk: clk}
+	return &WorldHandler{pool: pool, authSvc: authSvc, clk: clk, startWanaxes: DefaultWorldStartWanaxes}
 }
+
+// SetWorldStartWanaxes overrides the start threshold GET /worlds/{id} reports
+// as wanaxes_needed — must match the JoinHandler's (cmd/server sets both).
+func (h *WorldHandler) SetWorldStartWanaxes(n int) { h.startWanaxes = n }
 
 // worldNamePool — Egyptian primordial / Zep Tepi ("the first time") names. A reseed
 // with no explicit name draws from here so worlds read as myth, not UUID. Recurrence
@@ -265,7 +271,7 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// A forming world's clock has not started (join.go: worldStartWanaxes).
+	// A forming world's clock has not started (join.go: startWanaxes).
 	// The client needs the two counts to say WHY nothing is moving — a frozen
 	// world with no explanation is indistinguishable from a broken one, which
 	// is the failure mode this codebase keeps having to fix.
@@ -282,7 +288,7 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"name":           wld.Name,
 		"state":          wld.State,
 		"wanaxes_joined": joined,
-		"wanaxes_needed": worldStartWanaxes,
+		"wanaxes_needed": h.startWanaxes,
 		"prestige":       wld.Prestige,
 		"era_number":     wld.EraNumber,
 		"era_started_at": wld.EraStartedAt,

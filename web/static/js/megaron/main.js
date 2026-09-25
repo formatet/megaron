@@ -26,18 +26,18 @@ import {
 import { updateNotifBadge, initNotifications, addDispatch, dismissAllChips } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
 import {
-  closeMarchCtx, onColonizeToggle, openMarchCtx, sendMarch,
+  closeMarchCtx, onColonizeToggle, onExploreToggle, openMarchCtx, sendMarch,
   renderColonizePreviewHTML,
 } from './ui/marchctx.js';
 import {
   loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild,
-  loadTicklog, cancelBuild, slaughterLivestock,
+  loadTicklog, cancelBuild, slaughterLivestock, sendGift,
 } from './ui/drawers/city.js';
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
-  unitRecall, unitRedirect, unitRedirectToggle, unitMarch, unitMarchSend,
+  unitRecall, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch, unitMarchSend,
   closeMarchPanel, unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
-  warFocusUnit,
+  unitRetreatOrder, saveRetreatDefault, warFocusUnit,
 } from './ui/drawers/war.js';
 import {
   loadEconomyDrawer, loadTransferGoods, startTransfer,
@@ -52,9 +52,10 @@ import {
 import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
 import { installErrorCapture } from './ui/diagnostics.js';
-import { playWarHorn, playBattleClash } from './ui/sfx.js';
+import { playWarHorn, playBattleClash, playArrival, playDispatchChime } from './ui/sfx.js';
 import { loadGossipDrawer } from './ui/drawers/gossip.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
+import { closeAccountWindow, toggleAccountWindow } from './ui/account_window.js';
 import { initCodex, openCodex, openCodexForDrawer, closeCodex, codexBack } from './ui/codex.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
@@ -101,6 +102,7 @@ document.addEventListener('keydown', e => {
     if (cx && cx.classList.contains('open')) { closeCodex(); return; }
     if (State.activeDrawer) { closeDrawer(State.activeDrawer); return; }
     closeDispatchWindow();
+    closeAccountWindow();
     document.getElementById('search-overlay').classList.remove('open');
   }
 });
@@ -164,6 +166,7 @@ Object.assign(window, {
   // (a) inline-handler targets
   cancelBuild,
   centreOn,
+  closeAccountWindow,
   closeCodex,
   closeDispatchWindow,
   closeDrawer,
@@ -194,6 +197,7 @@ Object.assign(window, {
   okRiteComposed,
   okOfferWorth,
   onColonizeToggle,
+  onExploreToggle,
   openCitySettlement,
   openCodex,
   openCodexForDrawer,
@@ -201,6 +205,8 @@ Object.assign(window, {
   resetView,
   resumeStandingOrder,
   saveLaborAlloc,
+  saveRetreatDefault,
+  sendGift,
   sendMarch,
   sendMessengerFromInspect,
   slaughterLivestock,
@@ -208,6 +214,7 @@ Object.assign(window, {
   startBuild,
   startTransfer,
   submitReport,
+  toggleAccountWindow,
   toggleActivityOverlay,
   toggleCodex,
   toggleDrawer,
@@ -220,7 +227,9 @@ Object.assign(window, {
   unitRecall,
   unitRedirect,
   unitRedirectToggle,
+  unitRedirectTypedToggle,
   unitRepair,
+  unitRetreatOrder,
   unitStance,
   unitUnload,
   warAbandon,
@@ -233,7 +242,7 @@ Object.assign(window, {
   // The war sounds have no button of their own (they ride the ♫ toggle), so
   // this is how they can be heard on demand instead of only by starting a real
   // battle: `SFX.clash()` / `SFX.horn()` from the console.
-  SFX: { horn: playWarHorn, clash: playBattleClash },
+  SFX: { horn: playWarHorn, clash: playBattleClash, arrival: playArrival, chime: playDispatchChime },
   addDispatch,
   openDrawer,
   openMarchCtx,
@@ -350,6 +359,6 @@ async function bootstrap() {
   initMap();           // canvas input handlers + loadMap() + render loop + 30s/3s polls
   initWS();            // websocket connect + reconnect loop
   initCelestial();     // celestial clock + its tick-scaled repaint interval
-  initNotifications(); // initial unread-badge fetch
+  initNotifications(); // unread badge + rebuild the Dispatches strip from the archive
   initCodex();         // Codex index, so dispatch/drawer links know which articles exist
 })();

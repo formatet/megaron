@@ -138,8 +138,8 @@ func main() {
 	welfareH := loyalty.NewWelfareHandler(pool, scheduler, eventStore)
 	colonyH := loyalty.NewColonyPenaltyHandler(pool, scheduler, eventStore)
 	borrowedH := loyalty.NewBorrowedArmyPenaltyHandler(pool, scheduler, eventStore, gameClock)
-	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
-	messengerReturnH := messenger.NewReturnHandler(pool, eventStore)
+	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore, hub)
+	messengerReturnH := messenger.NewReturnHandler(pool, eventStore, hub)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore, hub)
 	sitosCfg := economy.LoadSitosConfig()
 	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
@@ -267,14 +267,28 @@ func main() {
 		r.With(auth.Middleware(authSvc)).Post("/password", ah.ChangePassword)
 	})
 
+	// World start threshold (Timothy 2026-09-25): how many Wanaxes must join
+	// before a forming world's clock begins. Read once here and injected into
+	// the three places that must agree on it — join (flips the world active),
+	// GET /worlds/{id} (reports wanaxes_needed) and RequireStartedWorld (the
+	// refusal's "N of M"). A bad value fails the boot, like MAP_WIDTH.
+	worldStartWanaxes, err := envWorldStartWanaxes()
+	if err != nil {
+		slog.Error("world start threshold", "err", err)
+		os.Exit(1)
+	}
+
 	// Game routes (authenticated).
 	wh := handlers.NewWorldHandler(pool, authSvc, gameClock)
+	wh.SetWorldStartWanaxes(worldStartWanaxes)
 	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore, hub)
 	soh := handlers.NewStandingOrderHandler(pool)
+	rdh := handlers.NewRetreatDefaultHandler(pool)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock, sitosCfg)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
+	jh.SetWorldStartWanaxes(worldStartWanaxes)
 	nh := handlers.NewNotificationsHandler(pool)
 	dph := handlers.NewDispatchPreferencesHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
@@ -332,6 +346,11 @@ func main() {
 			// Single-world enforcement: reject writes aimed at an archived world
 			// (a stale client otherwise gets writes accepted but never ticked).
 			r.Use(handlers.RequireActiveWorld(pool))
+			// No orders before the world has begun (Timothy 2026-09-25): every
+			// write in this group is refused while worlds.state = 'forming',
+			// except join, reports and the notification inbox — the exempt list
+			// lives in world_guard.go and is fail-closed for new routes.
+			r.Use(handlers.RequireStartedWorld(pool, worldStartWanaxes))
 
 			r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/actions", ph.Actions)
@@ -392,6 +411,10 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
 			r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
+			// Realm-wide retreat default (War → "When to retreat"): seeds every
+			// battle participant this Wanax's units get from now on.
+			r.Get("/worlds/{worldID}/retreat-default", rdh.Get)
+			r.Put("/worlds/{worldID}/retreat-default", rdh.Put)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
 			r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
@@ -424,6 +447,7 @@ func main() {
 
 			r.Get("/worlds/{worldID}/notifications", nh.List)
 			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)
+			r.Post("/worlds/{worldID}/notifications/{notifID}/read", nh.MarkRead)
 			r.Delete("/worlds/{worldID}/notifications", nh.DeleteAll)
 
 			r.Post("/worlds/{worldID}/reports", rh.Create)
@@ -630,6 +654,27 @@ func envMapDim(key string, def, min int) (int, error) {
 	}
 	if n < min {
 		return 0, fmt.Errorf("%s=%d is below the minimum map dimension (%d) — refusing to seed an unusably small world", key, n, min)
+	}
+	return n, nil
+}
+
+// envWorldStartWanaxes reads POLEIA_WORLD_START_WANAXES — how many Wanaxes
+// must join before a forming world's clock begins — defaulting to
+// handlers.DefaultWorldStartWanaxes when unset. A non-integer or a value below
+// 1 is refused rather than defaulted: a world that can never start, or a typo
+// that silently becomes 4, should fail the boot and say why.
+func envWorldStartWanaxes() (int, error) {
+	const key = "POLEIA_WORLD_START_WANAXES"
+	v := os.Getenv(key)
+	if v == "" {
+		return handlers.DefaultWorldStartWanaxes, nil
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return 0, fmt.Errorf("%s=%q: not an integer", key, v)
+	}
+	if n < 1 {
+		return 0, fmt.Errorf("%s=%d: at least one Wanax must join before a world can start", key, n)
 	}
 	return n, nil
 }

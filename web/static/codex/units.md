@@ -15,6 +15,8 @@ The **War (⚔)** drawer has three tabs: **Army**, **Recruit** and **Movements**
 
 Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. You are notified when training finishes.
 
+Every cohort is numbered by the city that pays it: **2nd Spearmen of Knossos**. A lost regiment's number is never given out again. Before you found your first city, your [[horde]]'s two escort cohorts carry your own name instead — **1st** and **2nd Spearmen of** *you* — and become the new city's 1st and 2nd when you settle.
+
 ## Recruits are your own people
 
 A cohort is drafted out of your city's population and stays out of it until disbanded. Soldiers still eat, and they draw pay in [[silver]] every day ([[upkeep]]). An army bigger than your city can feed and pay is not a strong army; it is a famine with spears.

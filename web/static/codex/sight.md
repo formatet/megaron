@@ -23,6 +23,6 @@ Everything you have seen and are no longer looking at is drawn **dimmed, frozen 
 
 ## Exploring
 
-You cannot march an army into land none of your people has ever seen. Push the edge outwards step by step — every hex a unit reaches widens what it sees. At sea, sending a ship to an unknown hex is an **explore** order: the ship sweeps the fog there and sails home by itself, and you are told what it found.
+You cannot **march** an army into land none of your people has ever seen — but you can **explore** it. Sending a unit to an unseen hex, land or sea, is an **explore** order: it sweeps the fog there and returns home by itself, and you are told what it found. Right-click an unexplored hex and the order menu offers only this — terrain there is unknown, so any unit that can reach it may go. On ground you already know, "Explore" is also offered alongside plain March, if you just want a look without garrisoning.
 
 The oracle rite reveals ore deposits you cannot see — see [[rites]]. Seeing a city does not open trade with it — that takes [[contact]].

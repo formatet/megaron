@@ -26,7 +26,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML } =
+const { groupMarchUnits, marchGroupLabelHTML, marchGroupNamesHTML, resolveMarchIntent, exploreRowVisible } =
   await import('./marchctx.js');
 
 const spearman = (id, ordinal, q, r) => ({
@@ -105,4 +105,82 @@ test('AK8: a hostile unit name is escaped, not injected', () => {
   const u = { id: 'u1', type: 'spearman', display_name: '<img src=x onerror=alert(1)>', q: 1, r: 1 };
   const groups = groupMarchUnits([u], []);
   assert.doesNotMatch(marchGroupLabelHTML(groups[0]), /<img/);
+});
+
+// resolveMarchIntent — found 2026-09-24: the server forbids a plain march
+// onto land no man of yours has ever seen, UNLESS intent=explore
+// (march_start.go's FOW rule). The web only ever sent explore for sea
+// targets, so a web player could not explore unknown land with a land unit.
+// This is the pure decision the fix hangs on: sea and unseen-land are always
+// explore (the FOW rule accepts nothing else on unseen ground, and no
+// separate recall order exists for ships); known land is plain march unless
+// the player opted in.
+test('MI1: sea target is always explore, regardless of the checkbox', () => {
+  assert.equal(resolveMarchIntent({ isSea: true, known: true }, false), 'explore');
+  assert.equal(resolveMarchIntent({ isSea: true, known: true }, true), 'explore');
+});
+
+test('MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there', () => {
+  assert.equal(resolveMarchIntent({ isSea: false, known: false }, false), 'explore');
+});
+
+test('MI3: a known land target is a plain march by default', () => {
+  assert.equal(resolveMarchIntent({ isSea: false, known: true }, false), '');
+});
+
+test('MI4: a known land target explores when the player opts in', () => {
+  assert.equal(resolveMarchIntent({ isSea: false, known: true }, true), 'explore');
+});
+
+test('MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement', () => {
+  assert.equal(exploreRowVisible({ isSea: false, isSettlement: false }), true);
+  assert.equal(exploreRowVisible({ isSea: true, isSettlement: false }), false);
+  assert.equal(exploreRowVisible({ isSea: false, isSettlement: true }), false);
+});
+
+// Timothy 2026-09-25: "it doesn't seem possible to give orders to units that
+// have already been given orders — that is wrong, they must be reachable by
+// orders." The right-click march menu used to filter marching units out
+// entirely; marchCtxOrderMode is the pure decision (eligible? march or
+// redirect?) that now drives both that filter and the group's send target.
+const { marchCtxOrderMode } = await import('./marchctx.js');
+
+test('AK9: a garrisoned/positioned unit is eligible to march', () => {
+  assert.equal(marchCtxOrderMode({ status: 'garrison', deployable: true }), 'march');
+  assert.equal(marchCtxOrderMode({ status: 'positioned', deployable: true }), 'march');
+});
+
+test('AK10: a marching unit is eligible too — but for redirect, not a fresh march', () => {
+  assert.equal(marchCtxOrderMode({ status: 'marching', deployable: true }), 'redirect');
+});
+
+test('AK11: a fortified unit stays ineligible (server blocks fresh march on it)', () => {
+  assert.equal(marchCtxOrderMode({ status: 'garrison', deployable: true, stance: 'fortify' }), null);
+});
+
+test('AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped', () => {
+  assert.equal(marchCtxOrderMode({ status: 'forming', deployable: false }), null);
+  assert.equal(marchCtxOrderMode({ status: 'marching', deployable: false }), null);
+});
+
+test('AK13: a unit embarked/disbanded/other status is ineligible', () => {
+  assert.equal(marchCtxOrderMode({ status: 'embarked', deployable: true }), null);
+});
+
+test('AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send', () => {
+  const units = [
+    { id: 'u1', type: 'spearman', status: 'garrison', deployable: true, q: 5, r: 5, display_name: 'First Spearmen' },
+    { id: 'u2', type: 'spearman', status: 'marching', deployable: true, q: 5, r: 5, display_name: 'Second Spearmen' },
+  ];
+  const groups = groupMarchUnits(units, []);
+  assert.equal(groups.length, 2, 'march and redirect groups must not merge even at the same (q,r)');
+  const byMode = Object.fromEntries(groups.map(g => [g.mode, g]));
+  assert.deepEqual(byMode.march.ids, ['u1']);
+  assert.deepEqual(byMode.redirect.ids, ['u2']);
+});
+
+test('AK15: a redirect group is marked in its label — the player must see this send goes to a Runner', () => {
+  const u = { id: 'u1', type: 'spearman', status: 'marching', deployable: true, q: 5, r: 5, display_name: 'First Spearmen' };
+  const groups = groupMarchUnits([u], []);
+  assert.match(marchGroupLabelHTML(groups[0]), /redirect by Runner/);
 });

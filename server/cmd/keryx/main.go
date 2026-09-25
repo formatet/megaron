@@ -115,6 +115,7 @@ func main() {
 		idleCmd(),
 		briefCmd(),
 		unitCmd(),
+		retreatDefaultCmd(),
 		armyAliasCmd(),
 		marchAliasCmd(),
 		reinforceAliasCmd(),

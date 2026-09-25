@@ -31,12 +31,20 @@ type JoinHandler struct {
 	sitosCfg   economy.SitosConfig
 	clk        clock.Clock
 	hub        *notify.Hub // nil-guarded; carries the MetropolisFounded notice
+	// startWanaxes is the join count that flips a forming world to active
+	// (POLEIA_WORLD_START_WANAXES, injected via SetWorldStartWanaxes).
+	startWanaxes int
 }
 
 // NewJoinHandler creates a JoinHandler.
 func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store, sitosCfg economy.SitosConfig, clk clock.Clock, hub *notify.Hub) *JoinHandler {
-	return &JoinHandler{pool: pool, eventStore: eventStore, sitosCfg: sitosCfg, clk: clk, hub: hub}
+	return &JoinHandler{pool: pool, eventStore: eventStore, sitosCfg: sitosCfg, clk: clk, hub: hub,
+		startWanaxes: DefaultWorldStartWanaxes}
 }
+
+// SetWorldStartWanaxes overrides how many joins start a forming world
+// (cmd/server reads it from POLEIA_WORLD_START_WANAXES at boot).
+func (h *JoinHandler) SetWorldStartWanaxes(n int) { h.startWanaxes = n }
 
 // Join creates a province + settlement for the authenticated player in the given world.
 // If a settlement already exists, returns the existing one.
@@ -349,15 +357,15 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	// (measured 2026-09-10). Timothy: "tiden börjar inte gå förrän fyra
 	// wanaxes loggat in."
 	//
-	// Everything the player can do BEFORE the start still works: joining, the
-	// host, the land around it, and giving orders. Only the clock waits. That
-	// falls out of the architecture rather than needing a second gate —
-	// worlds.status stays 'active' (so RequireActiveWorld still accepts
-	// writes, and current_world_tick()/settled() still read normally), while
-	// the tick worker refuses to advance a forming world. Orders given during
-	// the wait are scheduled on due_tick, and due_tick never comes due while
-	// current_tick is frozen, so they simply queue and all resolve together
-	// when time begins.
+	// Before the start a Wanax may join, look around and file reports — but
+	// give no orders (Timothy 2026-09-25: "No orders before the world has
+	// begun"). This overturns the earlier "only the clock waits" rule, under
+	// which orders queued on a frozen due_tick and all resolved together the
+	// instant time began. The refusal lives in RequireStartedWorld
+	// (world_guard.go), not here — join itself is exempt from it, since
+	// joining is what starts the world. worlds.status stays 'active'
+	// throughout, so RequireActiveWorld and current_world_tick()/settled()
+	// read normally, while the tick worker refuses to advance a forming world.
 	if wState == "forming" {
 		var joined int
 		if err := tx.QueryRow(r.Context(),
@@ -365,7 +373,7 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 			worldID,
 		).Scan(&joined); err != nil {
 			slog.Error("join: could not count wanaxes", "err", err, "world", worldID)
-		} else if joined >= worldStartWanaxes {
+		} else if joined >= h.startWanaxes {
 			// last_tick_at MUST be reset to now. The tick worker advances by
 			// addition (last_tick_at + one tick) to keep catch-up accurate, so
 			// a world that sat forming for hours would otherwise be "owed"

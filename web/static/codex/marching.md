@@ -6,13 +6,17 @@ You can also left-click a hex and use **March here →** — or **Send galleys �
 
 A notification tells you when a unit arrives.
 
+## A marching unit is still reachable
+
+Right-click a new destination and a unit already marching shows up in the menu too, marked **marching → redirect by Runner**. Pick it like any other unit — the order is a **Redirect**, not a fresh march: the unit keeps going on its old course until the Runner reaches it, then turns onto the new one. You can also redirect from **War → Army** (see below).
+
 ## Orders to units already in the field travel by Runner
 
 A unit standing in its city hears you at once. A unit out in the field does not — **Recall** and **Redirect** are carried by a [[runners|Runner]], and the game tells you when he will reach the unit. The horn sounds when the soldiers *receive* the order, not when you give it.
 
 ## Where you can march
 
-- **Only onto ground your people have seen.** Unknown land cannot be a destination; explore towards it first ([[sight]]).
+- **A plain march only reaches ground your people have already seen.** Right-click an unseen hex and the order menu offers **Explore** instead — the unit scouts it and returns home on its own ([[sight]]).
 - Crossing the sea needs ships ([[sea]]).
 - A march that cannot go on — its path blocked, or impossible — stalls, and you are told why.
 

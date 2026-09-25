@@ -27,22 +27,29 @@ func TestLandUnitName(t *testing.T) {
 		unitType string
 		ordinal  int
 		town     string
+		wanax    string
 		want     string
 	}{
-		{"kanoniskt", "spearman", 2, "Knossos", "2nd Spearmen of Knossos"},
-		{"elit", "elite_infantry", 1, "Knossos", "1st Elite Infantry of Knossos"},
-		{"vagn", "war_chariot", 3, "Miletos", "3rd War Chariot of Miletos"},
-		// En warband efter en kollaps har ingen försörjande stad. Ledet ska
-		// falla bort helt — inte lämna ett "of " eller ett "of <tomt>".
-		{"utan stad", "spearman", 2, "", "2nd Spearmen"},
+		{"kanoniskt", "spearman", 2, "Knossos", "", "2nd Spearmen of Knossos"},
+		{"elit", "elite_infantry", 1, "Knossos", "", "1st Elite Infantry of Knossos"},
+		{"vagn", "war_chariot", 3, "Miletos", "", "3rd War Chariot of Miletos"},
+		// Utan stad OCH utan Wanax ska ledet falla bort helt — inte lämna ett
+		// "of " eller ett "of <tomt>".
+		{"utan stad", "spearman", 2, "", "", "2nd Spearmen"},
+		// Före grundandet finns ingen stad: eskorten bär sin Wanax namn, så
+		// hordens två kohorter går att skilja åt (Timothy 2026-09-25).
+		{"före grundandet", "spearman", 1, "", "Ariadne", "1st Spearmen of Ariadne"},
+		{"före grundandet, andra", "spearman", 2, "", "Ariadne", "2nd Spearmen of Ariadne"},
+		// Staden går före Wanax — efter grundandet tar "of <stad>" över.
+		{"stad slår wanax", "spearman", 1, "Knossos", "Ariadne", "1st Spearmen of Knossos"},
 		// Backfill kan lämna ordinal = 0 på rader som aldrig fick ett nummer.
-		{"utan ordinal", "spearman", 0, "Knossos", "Spearmen of Knossos"},
+		{"utan ordinal", "spearman", 0, "Knossos", "", "Spearmen of Knossos"},
 		// Apostrof i stadsnamnet får inte behandlas specialt — namnet är data.
-		{"apostrof", "spearman", 1, "K'ana", "1st Spearmen of K'ana"},
+		{"apostrof", "spearman", 1, "K'ana", "", "1st Spearmen of K'ana"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := LandUnitName(tt.unitType, tt.ordinal, tt.town).DisplayName; got != tt.want {
+			if got := LandUnitName(tt.unitType, tt.ordinal, tt.town, tt.wanax).DisplayName; got != tt.want {
 				t.Errorf("= %q, vill ha %q", got, tt.want)
 			}
 		})

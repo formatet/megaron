@@ -326,9 +326,9 @@ func (h *UnitArrivalHandler) startBattle(
 	var attackerRefs, defenderRefs []BattleParticipantRef
 	for _, p := range all {
 		if _, err := tx.Exec(ctx,
-			`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size)
-			 VALUES ($1,$2,$3,$4,$5,$6,$6)`,
-			battleID, p.unitID, p.ownerID, p.side, currentTick, p.currentSize,
+			`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size, standing_orders)
+			 VALUES ($1,$2,$3,$4,$5,$6,$6, `+seedStandingOrdersSQL+`)`,
+			battleID, p.unitID, p.ownerID, p.side, currentTick, p.currentSize, worldID,
 		); err != nil {
 			return fmt.Errorf("start battle: insert participant %s: %w", p.unitID, err)
 		}
@@ -363,10 +363,10 @@ func (h *UnitArrivalHandler) joinBattle(
 	ctx context.Context, tx pgx.Tx, worldID, battleID uuid.UUID, currentTick int, arriving battleParticipant,
 ) error {
 	tag, err := tx.Exec(ctx,
-		`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size)
-		 VALUES ($1,$2,$3,$4,$5,$6,$6)
+		`INSERT INTO battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size, standing_orders)
+		 VALUES ($1,$2,$3,$4,$5,$6,$6, `+seedStandingOrdersSQL+`)
 		 ON CONFLICT (battle_id, unit_id) DO NOTHING`,
-		battleID, arriving.unitID, arriving.ownerID, arriving.side, currentTick, arriving.currentSize,
+		battleID, arriving.unitID, arriving.ownerID, arriving.side, currentTick, arriving.currentSize, worldID,
 	)
 	if err != nil {
 		return fmt.Errorf("join battle: insert participant: %w", err)
@@ -709,9 +709,10 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	//
 	// Write path: SetStandingOrders (standing_orders_set.go) — a mid-battle
 	// retreat order via the HTTP handler/keryx/courier, same shape as
-	// SetStance. Only reachable while the unit is an active participant;
-	// battles a unit joined before any order was set still fall through to
-	// the loyalty default exactly as before that slice landed.
+	// SetStance. Only reachable while the unit is an active participant.
+	// A participant row is born with its owner's realm-wide retreat default
+	// (retreat_default.go, mig 145); '{}' — the default's own default — still
+	// falls through to the loyalty threshold exactly as before.
 	attRouted, defRouted := false, false
 	if !wiped {
 		attRouted = sideRouts(bySide["attacker"], initialSizes, sizes, standingOrders, loyaltyBySide["attacker"])

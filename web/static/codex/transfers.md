@@ -9,3 +9,9 @@ A caravan is people and pack animals walking across the map. **It can be interce
 An internal transfer does not suffer the storms and pirates that a negotiated trade delivery risks — but it can still be raided.
 
 To move goods regularly without being there, use a [[routes|standing order]].
+
+## Gift — a loyalty gesture, not logistics
+
+A **gift** also sends silver and/or grain to one of your own settlements, but the point is different: it always sends from your *capital*, and 50 or more silver-equivalent (silver + grain × ½) earns the destination +1 [[loyalty]] the moment you send it. Open **City** on the colony you want to gift, and use **Gift from capital** on its Production tab, right above the Loyalty log the gift feeds.
+
+The silver and grain themselves are ordinary physical cargo — they still travel and arrive later, same as any transfer.

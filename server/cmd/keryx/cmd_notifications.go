@@ -149,10 +149,79 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "SiegeStarted" || n.Kind == "SiegeLifted" {
 		printSiegeLine(n)
 	}
+	if n.Kind == "MessengerArrival" || n.Kind == "MessengerReturned" {
+		printMessengerLine(n)
+	}
 	switch n.Kind {
 	case "CityOccupied", "OccupationDefended", "CityAnnexReady", "SettlementLooted", "SettlementBurned":
 		printOccupationLine(n)
 	}
+}
+
+// printMessengerLine renders the diplomacy channel — the one channel in the
+// game that produced no notification at all until 2026-09-10 (neither
+// messenger handler held a hub). Feature order: keryx says the same thing the
+// web does, so an LLM agent playing through keryx learns a messenger reached
+// its court without polling the inbox.
+//
+// The offer terms are printed, not summarised: an offer can only be accepted
+// while its bearer is still standing there, so the bargain IS the notice.
+func printMessengerLine(n notificationItem) {
+	var body struct {
+		From    string `json:"from"`
+		Name    string `json:"name"`
+		To      string `json:"to"`
+		Message string `json:"message"`
+		Replied bool   `json:"replied"`
+		Reply   string `json:"reply"`
+		Offer   *struct {
+			Kind        string  `json:"kind"`
+			WantGood    string  `json:"want_good"`
+			WantQty     float64 `json:"want_qty"`
+			OfferSilver float64 `json:"offer_silver"`
+			OfferGood   string  `json:"offer_good"`
+			OfferQty    float64 `json:"offer_qty"`
+			WantSilver  float64 `json:"want_silver"`
+		} `json:"offer"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	if n.Kind == "MessengerReturned" {
+		where := ""
+		if body.To != "" {
+			where = " from " + body.To
+		}
+		if body.Replied {
+			fmt.Printf("      Your messenger returned%s with a reply: %q\n", where, body.Reply)
+			return
+		}
+		fmt.Printf("      Your messenger returned%s with no reply\n", where)
+		return
+	}
+
+	from := body.From
+	if from == "" {
+		from = "an unknown Wanax"
+	}
+	place := ""
+	if body.Name != "" {
+		place = " at " + body.Name
+	}
+	if body.Offer != nil {
+		o := body.Offer
+		wants, offers := fmt.Sprintf("%.0f %s", o.WantQty, o.WantGood), fmt.Sprintf("%.0f silver", o.OfferSilver)
+		if o.Kind == "sell" {
+			wants, offers = fmt.Sprintf("%.0f silver", o.WantSilver), fmt.Sprintf("%.0f %s", o.OfferQty, o.OfferGood)
+		}
+		fmt.Printf("      Trade offer from %s%s — wants %s, offers %s\n", from, place, wants, offers)
+		return
+	}
+	msg := ""
+	if body.Message != "" {
+		msg = fmt.Sprintf(" — %q", body.Message)
+	}
+	fmt.Printf("      Messenger from %s arrived%s%s\n", from, place, msg)
 }
 
 // printForeignMarchSightedLine renders the human-readable follow-up to a

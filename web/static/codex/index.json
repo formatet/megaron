@@ -23,12 +23,12 @@
     {"id": "silver",       "title": "Silver",                       "category": "Goods and trade", "related": ["upkeep", "trade", "goods"]},
     {"id": "surplus",      "title": "Surplus and waste",            "category": "Goods and trade", "related": ["citizens", "goods", "trade"]},
     {"id": "transfers",    "title": "Transfers and caravans",       "category": "Goods and trade", "kinds": ["TransferDelivered", "CaravanRaided", "CaravanSeized"], "related": ["routes", "trade"]},
-    {"id": "routes",       "title": "Standing orders",              "category": "Goods and trade", "related": ["transfers", "coming-back", "colonies"]},
+    {"id": "routes",       "title": "Standing orders",              "category": "Goods and trade", "kinds": ["StandingOrderDispatched", "StandingOrderPaused"], "related": ["transfers", "coming-back", "colonies"]},
     {"id": "trade",        "title": "Trade offers",                 "category": "Goods and trade", "kinds": ["OfferAccepted", "OfferDeclined", "OfferExpired", "TradeDelivery", "TradeLost", "TradeReturn"], "related": ["messengers", "contact", "silver"]},
 
     {"id": "sight",        "title": "Sight and memory",             "category": "The wider world", "kinds": ["ScoutReport", "UnitExploreReturned"], "related": ["contact", "defence", "horde"]},
     {"id": "contact",      "title": "Contact",                      "category": "The wider world", "related": ["messengers", "trade", "gossip"]},
-    {"id": "messengers",   "title": "Messengers and letters",       "category": "The wider world", "drawer": "diplomacy", "kinds": ["MessengerArrival"], "related": ["contact", "trade", "runners"]},
+    {"id": "messengers",   "title": "Messengers and letters",       "category": "The wider world", "drawer": "diplomacy", "kinds": ["MessengerArrival", "MessengerReturned"], "related": ["contact", "trade", "runners"]},
     {"id": "gossip",       "title": "Gossip",                       "category": "The wider world", "drawer": "gossip", "related": ["contact", "sight"]},
     {"id": "sea",          "title": "The Thalassa and ships",       "category": "The wider world", "kinds": ["ShipDamaged", "ShipRepaired", "UnitLostAtSea"], "related": ["units", "bronze", "sight"]},
 
@@ -46,7 +46,7 @@
     {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "related": ["kharis", "bronze"]},
 
     {"id": "colonies",     "title": "Colonies",                     "category": "Growing", "kinds": ["ColonyFounded", "OutpostEstablished"], "related": ["loyalty", "routes", "founding"]},
-    {"id": "loyalty",      "title": "Loyalty",                      "category": "Growing", "related": ["colonies", "battle"]},
+    {"id": "loyalty",      "title": "Loyalty",                      "category": "Growing", "related": ["colonies", "battle", "transfers"]},
     {"id": "bronze",       "title": "The bronze problem",           "category": "Growing", "related": ["goods", "sea", "rites"]},
 
     {"id": "report",       "title": "Reporting a problem",          "category": "Reference", "drawer": "report", "related": ["rough-edges"]},

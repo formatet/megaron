@@ -168,7 +168,7 @@ func (w *Worker) tryAdvanceOnce(ctx context.Context, tickDur time.Duration) (boo
 	defer tx.Rollback(ctx)
 
 	// state = 'active' is the start gate (Timothy 2026-09-10): a world stays
-	// 'forming' until worldStartWanaxes players have joined, and a forming
+	// 'forming' until POLEIA_WORLD_START_WANAXES players have joined, and a forming
 	// world's clock does not move. This is the ONLY place time is held back —
 	// because the economy is tick-based (settled(amount, rate, calc_tick)
 	// against current_world_tick()) and the event scheduler is tick-based

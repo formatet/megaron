@@ -9,6 +9,7 @@ import { unitTypeLabel, actorName } from '../actornames.js';
 import { playWarHorn } from '../sfx.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
+import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 
 // "ready <eta>" while still building/training, collapsing to a bare "ready"
 // once complete (fmtArrival's doneWord already reads "ready" — this just
@@ -128,9 +129,12 @@ export async function loadWarDrawer() {
       // Founder phase: no settlement yet, but /units is settlement-independent
       // — the host + any field cohorts already exist server-side. Show them
       // in Army/Movements; Recruit needs a city, so it stays locked.
-      const unitsRes = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
+      const [unitsRes, retreatSec] = await Promise.all([
+        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
+        loadRetreatDefaultSection(),
+      ]);
       const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
-      let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>';
+      let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
       armyHtml += allUnits.length
         ? allUnits.map(u => renderUnitCard(u)).join('')
         : '<p class="empty-state">No units.</p>';
@@ -143,11 +147,12 @@ export async function loadWarDrawer() {
     }
 
     const needTwo = prevRecruitCity !== capital.id;
-    const [res, recRes, unitsRes, catalogue] = await Promise.all([
+    const [res, recRes, unitsRes, catalogue, retreatSec] = await Promise.all([
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}`),
       needTwo ? fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${prevRecruitCity}`) : Promise.resolve(null),
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
       getUnitCatalogue(),
+      loadRetreatDefaultSection(),
     ]);
     if (!res.ok) throw new Error();
     const pd = (await res.json()).settlement;
@@ -163,8 +168,8 @@ export async function loadWarDrawer() {
     const catByType = {};
     (catalogue || []).forEach(u => { catByType[u.type] = u; });
 
-    // Army tab — discrete units list
-    let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>';
+    // Army tab — the realm-wide retreat setting, then the discrete units list
+    let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
     if (allUnits.length) {
       armyHtml += allUnits.map(u => renderUnitCard(u)).join('');
     } else {
@@ -552,6 +557,14 @@ function renderUnitCard(u) {
       + (u.stance ? '<option value="none">— clear</option>' : '')
       + '</select> '
       + '<button onclick="unitStance(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
+
+    // Retreat order (KR3 §5): the per-unit override of the realm-wide
+    // setting, for the current battle only. Shown only while the unit is
+    // fighting (in_battle on the units list — the same condition
+    // SetStandingOrders checks); outside battle it could only ever answer
+    // "unit is not in an active battle", and the realm-wide setting at the
+    // top of this tab is what applies.
+    actions += unitRetreatControlHTML(u);
   }
 
   // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the
@@ -584,14 +597,22 @@ function renderUnitCard(u) {
 
   // Recall/redirect: marching units only. The order travels by messenger —
   // it does not apply instantly (temenos_settlement.md load-bearing pillar).
+  // Redirect's primary path is now the right-click march menu (Timothy
+  // 2026-09-25) — it lists this same marching unit and needs no typed
+  // coordinates. The button here just points there; typed Q/R survives as a
+  // no-cost fallback behind a link, for whoever prefers it or is off-map.
   let redirectRow = '';
   if (isMarching) {
     actions += '<button onclick="unitRecall(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> ';
     actions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
-    redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center;font-size:.65rem">'
-      + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
-      + '<label>R <input id="uredir-r-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
-      + '<button onclick="unitRedirect(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button>'
+    redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">'
+      + '<div>Right-click the new destination on the map — the Runner carries the order to this unit.</div>'
+      + '<div style="margin-top:.2rem"><a href="#" onclick="unitRedirectTypedToggle(\'' + u.id + '\');return false" style="color:var(--text-dim)">or type coordinates</a></div>'
+      + '<div id="uredir-typed-' + u.id + '" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center">'
+        + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+        + '<label>R <input id="uredir-r-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+        + '<button onclick="unitRedirect(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button>'
+      + '</div>'
       + '</div>';
   }
   const orderStatus = '<div id="uorder-' + u.id + '" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div>';
@@ -653,6 +674,15 @@ export async function unitRecall(unitID) {
 
 export function unitRedirectToggle(unitID) {
   const row = document.getElementById('uredir-' + unitID);
+  if (row) row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+// The typed Q/R fallback (megaron_arbetssatt.md: keep it only if it costs
+// nothing) — collapsed behind its own link so the primary instruction
+// ("right-click the map") isn't buried under an input form most players
+// won't need.
+export function unitRedirectTypedToggle(unitID) {
+  const row = document.getElementById('uredir-typed-' + unitID);
   if (row) row.style.display = row.style.display === 'none' ? 'flex' : 'none';
 }
 
@@ -746,6 +776,75 @@ export async function unitStance(unitID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = formatApiError(data, 'Stance change failed');
+  }
+}
+
+// unitRetreatOrder sets a unit's mid-battle rout threshold (KR3 §5). Same
+// latency rule as unitStance: a field unit's commander only hears it when a
+// Runner physically arrives (order_dispatched, 202); a garrisoned unit
+// already inside the battle (distance 0 — the Wanax is in that city) applies
+// at once. The control only shows while the unit is fighting (in_battle), but
+// the battle can end before a Runner arrives — any refusal still surfaces via
+// formatApiError below. It overrides the realm-wide setting for this battle only.
+export async function unitRetreatOrder(unitID) {
+  const sel = document.getElementById('uretreat-' + unitID);
+  if (!sel || !sel.value) return;
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const body = retreatBody(sel.value);
+  if (!body) return;
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/standing-orders`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    if (data.status === 'order_dispatched') {
+      if (resEl) {
+        resEl.style.color = 'var(--text-dim)';
+        resEl.textContent = '🏃 Runner carries the retreat order — applies on delivery';
+      }
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+    }
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = formatApiError(data, 'Retreat order failed');
+  }
+}
+
+// loadRetreatDefaultSection fetches the realm-wide retreat setting and renders
+// its section. A failed read shows the server's reason, never a guessed value.
+async function loadRetreatDefaultSection() {
+  try {
+    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/retreat-default`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return retreatDefaultSectionHTML(null, formatApiError(data, 'Could not load your retreat setting'));
+    return retreatDefaultSectionHTML(data);
+  } catch (e) {
+    console.error('loadRetreatDefaultSection', e);
+    return retreatDefaultSectionHTML(null);
+  }
+}
+
+// saveRetreatDefault stores the realm-wide retreat setting (PUT
+// …/retreat-default). A standing doctrine, not an order to a unit: no Runner,
+// it applies at once — but only to units entering a battle from now on.
+export async function saveRetreatDefault() {
+  const sel = document.getElementById('war-retreat-default');
+  const resEl = document.getElementById('war-retreat-default-res');
+  const body = sel ? retreatBody(sel.value) : null;
+  if (!body) return;
+  if (resEl) { resEl.className = 'retreat-res'; resEl.textContent = ''; }
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/retreat-default`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!resEl) return;
+  if (res.ok) {
+    resEl.textContent = 'Saved — applies to battles your units enter from now on.';
+  } else {
+    resEl.className = 'retreat-res retreat-res-err';
+    resEl.textContent = formatApiError(data, 'Could not save your retreat setting');
   }
 }
 

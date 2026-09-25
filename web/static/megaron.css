@@ -861,7 +861,9 @@ body:has(.auth-page) main {
 
 /* Wanax name (megaron_plan_wanaxnamn_tilltal.md): identity anchor at the left
    of the topbar, filled in by main.js bootstrap() from /auth/me's wanax_name.
-   Always shown (unlike gt-netstatus, which toggles on state). */
+   Always shown (unlike gt-netstatus, which toggles on state). Clickable — opens
+   the Account window (ui/account_window.js): the one identity anchor in the
+   topbar is also the one door into account settings. */
 .gt-wanax {
   padding: 0 0.7rem;
   font-size: var(--fs-xs);
@@ -872,7 +874,9 @@ body:has(.auth-page) main {
   align-items: center;
   flex-shrink: 0;
   white-space: nowrap;
+  cursor: pointer;
 }
+.gt-wanax:hover { color: var(--accent); }
 
 /* Net-status pill — shown by api.js while a GET is retrying after a network
    error / 5xx, cleared on the first reachable response. Discreet, non-blocking. */
@@ -965,6 +969,23 @@ body:has(.auth-page) main {
 .dc-diplomacy .dc-dot { background: var(--accent-diplomacy); }
 .dc-kult .dc-dot     { background: var(--accent-oikos); }
 .dc-system .dc-dot    { background: var(--accent-system); }
+
+/* Urgency overrides the domain colour (Timothy 2026-09-25: colour = how
+   urgent, the glyph = what about). Declared after the .dc-<domain> rules so
+   the same specificity wins by order. Backgrounds mix the palette tokens —
+   no new hex. */
+.dispatch-chip.dc-urg-urgent    { border-left-color: var(--blood);         background: color-mix(in srgb, var(--blood) 30%, transparent); }
+.dispatch-chip.dc-urg-important { border-left-color: var(--border);        background: color-mix(in srgb, var(--border) 22%, transparent); }
+.dispatch-chip.dc-urg-info      { border-left-color: var(--safe);          background: color-mix(in srgb, var(--safe) 14%, transparent); }
+.dispatch-chip.dc-urg-routine   { border-left-color: var(--accent-system); background: color-mix(in srgb, var(--accent-system) 10%, transparent); }
+.dispatch-chip.dc-urg-urgent:hover    { background: color-mix(in srgb, var(--blood) 45%, transparent); }
+.dispatch-chip.dc-urg-important:hover { background: color-mix(in srgb, var(--border) 36%, transparent); }
+.dispatch-chip.dc-urg-info:hover      { background: color-mix(in srgb, var(--safe) 28%, transparent); }
+.dispatch-chip.dc-urg-routine:hover   { background: color-mix(in srgb, var(--accent-system) 24%, transparent); }
+.dispatch-chip.dc-urg-urgent .dc-dot    { background: var(--blood); }
+.dispatch-chip.dc-urg-important .dc-dot { background: var(--border); }
+.dispatch-chip.dc-urg-info .dc-dot      { background: var(--safe); }
+.dispatch-chip.dc-urg-routine .dc-dot   { background: var(--accent-system); }
 
 .dc-glyph { font-size: var(--fs-sm); line-height: 1; }
 .dc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; min-width: 0; }
@@ -1243,6 +1264,30 @@ body:has(.auth-page) main {
 .drawer-body { flex: 1; overflow-y: auto; padding: 0.8rem; }
 
 .dsec { margin-bottom: 1.1rem; }
+
+/* War → Army: realm-wide retreat setting + per-unit (this battle) override */
+.retreat-row { display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
+.retreat-select {
+  font-size: var(--fs-sm);
+  padding: 0.1rem 0.2rem;
+  border: 1px solid var(--border);
+  background: var(--warm-white);
+  color: var(--text);
+}
+.retreat-select-sm { font-size: var(--fs-xs); }
+.retreat-btn {
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.retreat-btn:hover { border-color: var(--accent); }
+.retreat-btn-sm { font-size: var(--fs-xs); padding: 0.15rem 0.35rem; }
+.retreat-note { font-size: var(--fs-sm); color: var(--text-dim); margin: 0.3rem 0 0; }
+.retreat-res { font-size: var(--fs-sm); color: var(--text-dim); min-height: 1rem; margin-top: 0.2rem; }
+.retreat-res-err { color: var(--accent); }
 .dsec-title {
   font-size: var(--fs-xs);
   text-transform: uppercase;
@@ -1533,6 +1578,31 @@ body:has(.auth-page) main {
 }
 .dw-goto-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
 .dw-goto-btn:disabled { opacity: .4; cursor: default; }
+/* Occupation choices (sack/burn/annex) offered inline in the dispatch window —
+   megaron_plan_erovring.md S3/S6, web surface added 2026-09-25. */
+.dw-occupation {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+.dw-occ-label { color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 0.4rem; }
+.dw-occ-choice { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+.dw-occ-btn {
+  padding: 0.3rem 0.6rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.dw-occ-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.dw-occ-btn:disabled { opacity: .4; cursor: default; }
+.dw-occ-desc { color: var(--text-dim); font-size: var(--fs-xs); }
+.dw-occ-confirm { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.5rem 0; flex-wrap: wrap; }
+.dw-occ-warn { color: var(--blood); font-size: var(--fs-xs); font-weight: bold; }
+.dw-occ-result { margin-top: 0.4rem; color: var(--text-dim); font-size: var(--fs-xs); font-family: var(--mono); }
 /* Bottom-corner mute checkbox — the reglage sits ON the event, never on a
    settings page (megaron_plan_dispatches.md §1). */
 .dw-mute-row {

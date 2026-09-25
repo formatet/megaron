@@ -1440,6 +1440,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	summaries := unitSummaries(units, currentTick, h.clk,
 		settlementNames(r.Context(), h.pool, worldID, playerID), wanax)
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
+	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
@@ -1588,6 +1589,35 @@ type unitSummary struct {
 	OriginSettlementID *uuid.UUID `json:"origin_settlement_id,omitempty"`
 	Reinforcing        bool       `json:"reinforcing,omitempty"`
 	CanReinforce       bool       `json:"can_reinforce,omitempty"`
+	// InBattle is true while the unit is an active participant in an active
+	// battle — the only time a per-unit retreat order (SetStandingOrders)
+	// can take. Clients show that control only then; outside battle the
+	// realm-wide retreat default (GET/PUT …/retreat-default) is what applies.
+	InBattle bool `json:"in_battle"`
+}
+
+// attachBattleFlags sets InBattle for every unit that is currently an active
+// participant (left_tick IS NULL) in an active battle — the exact condition
+// SetStandingOrders checks before it accepts a per-unit retreat order.
+func attachBattleFlags(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, summaries []unitSummary) {
+	rows, err := db.Query(ctx,
+		`SELECT bp.unit_id FROM battle_participants bp JOIN battles b ON b.id = bp.battle_id
+		 WHERE b.world_id = $1 AND b.status = 'active' AND bp.left_tick IS NULL AND bp.owner_id = $2`,
+		worldID, ownerID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	fighting := make(map[uuid.UUID]bool)
+	for rows.Next() {
+		var id uuid.UUID
+		if rows.Scan(&id) == nil {
+			fighting[id] = true
+		}
+	}
+	for i := range summaries {
+		summaries[i].InBattle = fighting[summaries[i].ID]
+	}
 }
 
 // townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
@@ -1656,7 +1686,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			}
 			nm = unit.ShipDisplayName(string(u.Type), shipName, town)
 		default:
-			nm = unit.LandUnitName(string(u.Type), ordinal, town)
+			nm = unit.LandUnitName(string(u.Type), ordinal, town, wanax)
 		}
 
 		// 'repairing' (megaron_plan_skeppsreparation.md Slice C): a ship

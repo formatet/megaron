@@ -8,7 +8,7 @@ A **messenger** is a person who walks your letter to another Wanax's city — an
 
 ## Letters take time
 
-A letter to a distant city takes game-days, and the reply takes as long again. Plan diplomacy the way you plan a march.
+A letter to a distant city takes game-days, and the reply takes as long again. You are told when your messenger arrives, and again when he is home with the answer. Plan diplomacy the way you plan a march.
 
 ## Messengers are sacred
 

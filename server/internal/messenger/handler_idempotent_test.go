@@ -115,7 +115,7 @@ func TestArrivalHandler_ReplayIsIdempotent(t *testing.T) {
 	evt := events.ScheduledEvent{ID: 1, WorldID: f.worldID, Payload: payload, DueTick: 500}
 
 	clk := clock.NewTestClock(time.Now())
-	h := NewArrivalHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool))
+	h := NewArrivalHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil)
 
 	if err := h.Handle(ctx, evt); err != nil {
 		t.Fatalf("Handle (first run): %v", err)
@@ -182,7 +182,7 @@ func TestReturnHandler_ReplayIsIdempotent(t *testing.T) {
 	payload, _ := json.Marshal(ReturnPayload{MessengerID: messengerID})
 	evt := events.ScheduledEvent{ID: 1, WorldID: f.worldID, Payload: payload}
 
-	h := NewReturnHandler(pool, events.NewStore(pool))
+	h := NewReturnHandler(pool, events.NewStore(pool), nil)
 
 	if err := h.Handle(ctx, evt); err != nil {
 		t.Fatalf("Handle (first run): %v", err)

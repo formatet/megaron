@@ -80,6 +80,47 @@ function fmtSoon(iso) {
   return 'in ~' + (ms / 86400000).toFixed(1) + ' d';
 }
 
+// notifDomain maps a notification kind to the colour family a dispatch chip
+// wears (.dc-war/.dc-city/.dc-trade/.dc-diplomacy/.dc-kult/.dc-system in
+// megaron.css). It exists because the strip is fed generically now: ws.js used
+// to name a domain by hand in each of its 19 branches, which is exactly why 33
+// server kinds never got a chip at all — a kind nobody remembered to add was
+// silently dropped. Here an unmapped kind still gets a chip, in the neutral
+// system colour, so the failure mode is a dull chip instead of silence.
+export function notifDomain(kind) {
+  const domains = {
+    // War — units, battles, sieges, orders in the field, who holds what.
+    ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
+    ForeignMarchSighted: 'war', SentryAlerted: 'war', ScoutReport: 'war',
+    UnitArrived: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war',
+    UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
+    UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
+    UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
+    SiegeStarted: 'war', SiegeLifted: 'war',
+    CityOccupied: 'war', OccupationDefended: 'war', CityAnnexReady: 'war',
+    SettlementCaptured: 'war', SettlementBurned: 'war', SettlementLooted: 'war',
+    SettlementDefended: 'war', SettlementSacked: 'war', CityCollapsed: 'war',
+    OutpostCaptured: 'war',
+    // City — what your own settlements build, grow, eat and stop producing.
+    BuildComplete: 'city', GoodsCrafted: 'city', ColonyFounded: 'city',
+    MetropolisFounded: 'city', OutpostEstablished: 'city',
+    FoodShortfall: 'city', SubsistenceWarning: 'city',
+    SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
+    HexBlockaded: 'city', HexUnblockaded: 'city',
+    // Trade — goods on the move, and the offers that set them moving.
+    TradeDelivery: 'trade', TradeReturn: 'trade', TradeLost: 'trade',
+    TradeCaravanArrival: 'trade', TransferDelivered: 'trade',
+    CaravanSeized: 'trade', CaravanRaided: 'trade',
+    StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
+    OfferAccepted: 'trade', OfferDeclined: 'trade', OfferExpired: 'trade',
+    // Diplomacy — the messenger channel.
+    MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy',
+    // Kult — the gods answering.
+    DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+  };
+  return domains[kind] || 'system';
+}
+
 export function notifIcon(kind) {
   const icons = {
     BuildComplete:      '🏛',
@@ -94,6 +135,7 @@ export function notifIcon(kind) {
     TradeLost:          '🌊',
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
+    MessengerReturned:  '📜',
     UnitAttrition:      '💀',
     UnitDeserted:       '🏃',
     UpkeepUnpaid:       '⚠',
@@ -185,7 +227,38 @@ export function notifText(kind, body) {
     case 'TradeDelivery':      return `Trade delivered: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
     case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
-    case 'MessengerArrival':   return body.message || 'Messenger arrived';
+    case 'MessengerArrival': {
+      // A messenger standing in your court (messenger/handler.go
+      // notifyDelivered). Names the sender by Wanax name and the city it
+      // reached — "a messenger arrived" tells a Wanax with five cities
+      // nothing. An offer-bearing messenger states the bargain: the offer can
+      // only be accepted while its bearer is still there, so the terms ARE the
+      // notification.
+      const from = body.from || 'an unknown Wanax';
+      const place = body.name ? ` at ${body.name}` : '';
+      const o = body.offer;
+      if (o) {
+        const wants = o.kind === 'sell'
+          ? fmtSilver(o.want_silver || 0)
+          : `${Math.floor(o.want_qty || 0)} ${o.want_good || ''}`.trim();
+        const offers = o.kind === 'sell'
+          ? `${Math.floor(o.offer_qty || 0)} ${o.offer_good || ''}`.trim()
+          : fmtSilver(o.offer_silver || 0);
+        return `Trade offer from ${from}${place} — wants ${wants}, offers ${offers}`;
+      }
+      return `Messenger from ${from} arrived${place}` + (body.message ? ` — "${body.message}"` : '');
+    }
+    case 'MessengerReturned': {
+      // Your own messenger is home. The reply rides back WITH it (never in
+      // place — command is never instant), so this is where the exchange
+      // closes for the sender.
+      const to = body.to ? ` from ${body.to}` : '';
+      const home = body.name ? ` to ${body.name}` : '';
+      if (body.replied) {
+        return `Your messenger returned${home}${to} with a reply — "${body.reply || ''}"`;
+      }
+      return `Your messenger returned${home}${to} with no reply`;
+    }
     // name (megaron_plan_dispatches.md §4, unit.LoadDisplayName server-side)
     // names the SUBJECT — "2nd Spearmen of Knossos", not the category "A
     // unit" — falling back to unit_type/'A unit' for older bodies persisted
@@ -430,6 +503,18 @@ export function notifText(kind, body) {
       const subject = body.name || 'Unit';
       return `${subject} ${verb} — new course to (${body.target_q}, ${body.target_r})${eta ? `, arrives ${eta}` : ''}`;
     }
+    case 'StandingOrderDispatched': {
+      // Payload per combat.StandingOrderTickHandler.notifyDispatch: goods is
+      // [{good_key, quantity}]. leg is 'outbound' (goods going out) or the
+      // return leg of the same standing delivery.
+      const goods = (body.goods || [])
+        .map(g => `${Math.floor(g.quantity || 0)} ${g.good_key || ''}`.trim())
+        .filter(Boolean).join(', ');
+      const leg = body.leg === 'return' ? 'returning' : 'setting out';
+      return `Standing delivery ${leg}${goods ? ` — ${goods}` : ''}`;
+    }
+    case 'StandingOrderPaused':
+      return `Standing delivery paused — ${body.reason || 'reason unknown'}`;
     case 'SitosGranaryRelease': {
       const empty = body.granary_empty ? ' — granary now empty' : '';
       return `Granary released ${Math.round(body.food_released || 0)} grain (${body.coverage_days || 0} days' coverage)${empty}`;
