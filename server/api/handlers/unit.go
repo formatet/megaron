@@ -1656,7 +1656,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			}
 			nm = unit.ShipDisplayName(string(u.Type), shipName, town)
 		default:
-			nm = unit.LandUnitName(string(u.Type), ordinal, town)
+			nm = unit.LandUnitName(string(u.Type), ordinal, town, wanax)
 		}
 
 		// 'repairing' (megaron_plan_skeppsreparation.md Slice C): a ship
