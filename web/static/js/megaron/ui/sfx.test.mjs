@@ -73,3 +73,28 @@ test('SX-A2: the chime and the arrival call are throttled independently and obey
   assert.equal(shouldPlay('chime', 99999), false);
   setSoundMuted(false);
 });
+
+// ── Music cues (Timothy 2026-09-25) ─────────────────────────────────────────
+test('SX-M1: musicCueFor routes ForeignMarchSighted to war only when it threatens a settlement', async () => {
+  const { musicCueFor } = await import('./sfx.js');
+  assert.equal(musicCueFor('ForeignMarchSighted', { threatens_settlement_id: 42 }), 'war');
+  assert.equal(musicCueFor('ForeignMarchSighted', {}), null, 'sighted elsewhere on the map is not this player\'s war');
+  assert.equal(musicCueFor('ForeignMarchSighted', null), null, 'no payload at all is not a threat either');
+});
+
+test('SX-M2: musicCueFor routes capture/occupation by role', async () => {
+  const { musicCueFor } = await import('./sfx.js');
+  assert.equal(musicCueFor('SettlementCaptured', { role: 'attacker' }), 'victory');
+  assert.equal(musicCueFor('SettlementCaptured', { role: 'defender' }), 'doom');
+  assert.equal(musicCueFor('CityOccupied', { role: 'attacker' }), 'victory');
+  assert.equal(musicCueFor('CityOccupied', { role: 'defender' }), 'doom');
+  assert.equal(musicCueFor('SettlementCaptured', { role: 'bystander' }), null);
+});
+
+test('SX-M3: everything else — including BattleWon/BattleLost, which keep only their clash SFX — routes to no cue', async () => {
+  const { musicCueFor } = await import('./sfx.js');
+  assert.equal(musicCueFor('BattleWon', { role: 'attacker' }), null);
+  assert.equal(musicCueFor('BattleLost', {}), null);
+  assert.equal(musicCueFor('UnitArrived', {}), null);
+  assert.equal(musicCueFor(undefined, {}), null);
+});

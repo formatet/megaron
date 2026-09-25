@@ -194,3 +194,26 @@ export function playForKind(kind) {
   if (s === 'arrival') playArrival();
   else if (s === 'chime') playDispatchChime();
 }
+
+// ── Music cues (Timothy 2026-09-25) ─────────────────────────────────────────
+// musicCueFor routes a live WS notification to a music cue name — pure, so it
+// can be tested without an Audio element, and living here (not in ui/misc.js,
+// which ws.js cannot import — see ws.js's header comment) so ws.js can call it
+// directly. ws.js calls window.MusicPlayer.cue(cue) for a non-null result, in
+// the same LIVE-push branch as playForKind above — never from the archive
+// rebuild at login.
+export function musicCueFor(kind, payload) {
+  const p = payload || {};
+  if (kind === 'ForeignMarchSighted') {
+    // threatens_settlement_id is only set when the march targets one of the
+    // player's own settlements (combat/march_sighting.go) — a march sighted
+    // elsewhere on the map is not this player's war.
+    return p.threatens_settlement_id != null ? 'war' : null;
+  }
+  if (kind === 'SettlementCaptured' || kind === 'CityOccupied') {
+    if (p.role === 'attacker') return 'victory';
+    if (p.role === 'defender') return 'doom';
+    return null;
+  }
+  return null;
+}
