@@ -14,4 +14,4 @@ Then smelt it: a **Foundry** turns copper and tin into bronze ([[buildings]]).
 
 ## If you cannot find copper at all
 
-Use the **oracle** ([[rites]]). The rite that reveals deposits exists precisely because the metal you need is, by design, over the horizon.
+Go and look — that is what the world is for. Every ship and every scout widens the map ([[sight]]). And you can ask the **oracle** ([[rites]]): it reveals a deposit somewhere you have never been. Getting there is up to you.
