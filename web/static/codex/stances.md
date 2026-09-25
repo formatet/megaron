@@ -4,6 +4,12 @@ A **stance** tells a unit how to behave where it stands. Set it in the order men
 - **storm** — assault posture against an adjacent city. Halves what its wall absorbs, at the cost of much heavier losses of your own.
 - **sentry** — watch this ground. The unit spots marches passing nearby and **intercepts** enemy caravans within reach. You are alerted when it catches something.
 
+## A unit already on the march
+
+You can give a marching unit a stance too — from **War → Army**, or by picking a stance when you right-click a new destination for it. The order goes by [[runners|Runner]], and the Runner has to **catch up** with the unit: the game tells you where and roughly when it will reach it. From then the unit carries the stance, and it takes hold **where the unit stops** — fortify digs in there, sentry watches that ground, storm goes into the assault it is marching on. A stance never turns a unit off its road.
+
+If the unit is too far ahead for any Runner to overtake, the Runner follows it to its destination and the stance applies where it stopped.
+
 ## Sentry is a siege
 
 Units in sentry on the hexes an enemy city works stop those hexes feeding it. Hold that long enough and the city gives up without a battle — see [[sieges]].
