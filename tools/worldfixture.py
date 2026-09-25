@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dumpar en hel världs klientpayload till en riggfixtur.
 
-    python3 tools/worldfixture.py full                       # omniscient (utan auth)
+    POLEIA_ADMIN_KEY=… python3 tools/worldfixture.py full    # omniscient (god-view, admin-nyckel)
     python3 tools/worldfixture.py fow --user Sthenelos       # en spelares FOW-vy
 
 Skriver `web/static/fixtures/world-<etikett>.json` — exakt de payloads
@@ -11,7 +11,8 @@ riktig världsdata i riktig världsstorlek.
 
 Två fixturer behövs och mäter olika saker:
 
-  full  — hämtad UTAN token. `/map` svarar då `tier="live"` för varje tile
+  full  — hämtad via admin-vyn (`/admin/worlds/:id/god-view`, X-Admin-Key). Sedan 2026-09-25
+          svarar `/map` 401 utan token (FOW-läckan); varje tile märks `tier="live"` här
           (world.go: `case !authenticated`), alltså hela geografin utan dimma.
           Det är prestandans värsta fall (varje tile har textur) och den enda
           vy där kartans komposition som EN geografi går att bedöma.
@@ -26,6 +27,7 @@ arrayordning) och riggen vore inte deterministisk.
 """
 import argparse
 import json
+import os
 import pathlib
 import sys
 import urllib.error
@@ -78,6 +80,17 @@ def main():
     base = f"{args.server}/api/v1/worlds/{args.world}"
     out = {"world_id": args.world, "player_id": player_id, "user": args.user}
     for key, path in ENDPOINTS.items():
+        if key == "tiles" and not token:
+            # Omniscient: kartan utan FOW finns bara bakom admin-nyckeln.
+            key_env = os.environ.get("POLEIA_ADMIN_KEY", "")
+            if not key_env:
+                sys.exit("full-läget kräver POLEIA_ADMIN_KEY (god-view) — /map svarar 401 utan token")
+            req = urllib.request.Request(f"{args.server}/api/v1/admin/worlds/{args.world}/god-view")
+            req.add_header("X-Admin-Key", key_env)
+            with urllib.request.urlopen(req, timeout=30) as r:
+                god = json.load(r)
+            out["tiles"] = [dict(t, tier="live", visible=True) for t in god["tiles"]]
+            continue
         try:
             d = get(f"{base}/{path}", token)
         except urllib.error.HTTPError as e:
