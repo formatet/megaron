@@ -207,7 +207,7 @@ func newTestFoodTickHandler(pool *pgxpool.Pool) *economy.FoodTickHandler {
 	return economy.NewFoodTickHandler(pool, sched, store, nil)
 }
 
-// TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient is the hard
+// TestApplyDecay_Growth_MinimalCitySelfSufficient is the hard
 // invariant gate (success criterion #1): a start city with the minimal
 // guaranteed genesis catchment (exactly one plains tile — the self-sufficiency
 // invariant in api/handlers/join.go requires at least one plains/river_valley
@@ -230,8 +230,8 @@ func newTestFoodTickHandler(pool *pgxpool.Pool) *economy.FoodTickHandler {
 // stays self-sufficient forever. Start pop 1500 (15 gubbar, well under the
 // ~8-gubbe cap this hex's farm allows) proves exactly that — pop 5000 (50
 // gubbar) now legitimately starves the same fixture and is exercised
-// separately in TestApplyDecay_GrainFundedGrowth_OverCapPopulationStarves.
-func TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient(t *testing.T) {
+// separately in TestApplyDecay_Growth_OverCapPopulationStarves.
+func TestApplyDecay_Growth_MinimalCitySelfSufficient(t *testing.T) {
 	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
 	pool, worldID, settlementID := newGrowthFixture(t, terrains, 1500)
 	h := newTestTickHandler(pool)
@@ -265,14 +265,14 @@ func TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient(t *testing.T) {
 	}
 }
 
-// TestApplyDecay_GrainFundedGrowth_OverCapPopulationStarves is the flip side
+// TestApplyDecay_Growth_OverCapPopulationStarves is the flip side
 // of MinimalCitySelfSufficient above, proving the new (2026-08-19) policy
 // explicitly rather than leaving it as an absence of a test: a host too big
 // for its land IS allowed to starve. Same minimal one-plains-tile catchment,
 // but start pop 5000 (50 gubbar) — far more than the ~8 gubbar the single
 // hex's farm can ever put to work on grain — must hit zero grain and start
 // losing population. This is bad-land-placement risk, not a bug.
-func TestApplyDecay_GrainFundedGrowth_OverCapPopulationStarves(t *testing.T) {
+func TestApplyDecay_Growth_OverCapPopulationStarves(t *testing.T) {
 	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
 	pool, worldID, settlementID := newGrowthFixture(t, terrains, 5000)
 	h := newTestTickHandler(pool)
@@ -318,105 +318,61 @@ func rawGrainRow(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (amou
 
 // expectedDayResult mirrors ONE simulated day exactly — FoodTick's stock debit
 // (Utfodringsordningen D2/D3, runs first, priority 55) then tick.go's
-// applyDecay (decay ×0.99, then desired-growth pricing against
-// grainPerCitizen, throttled by affordability) — so the test can cross-check
-// the SQL's actual output against an independent Go computation: a rigorous
-// proof of the atomicity/consistency guarantee (pop-added always equals
-// grain-drawn/grainPerCitizen) rather than a heuristic bound.
+// applyDecay (decay ×0.99, then growth gated on economy.FoodNet) — so the test
+// can cross-check the SQL's actual output against an independent Go
+// computation. Growth draws no grain (Timothy 2026-09-26), so the stock the
+// SQL leaves must be exactly FoodTick's remainder after decay.
 func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, newGrain float64) {
 	rawGrainNow := prevAmount + prevRate // one tick elapsed since prev calc_tick
 
 	// FoodTick debits today's demand from stock before Kharis ever runs —
 	// grain first, no fish/livestock in these fixtures, so postFood < 0 IS
-	// exactly settlements.food_unmet_amount > 0 (D4): the population went
-	// hungry today, and growth takes the starvation branch below regardless
-	// of what decay does to the stock afterward.
+	// exactly settlements.food_unmet_amount > 0 (D4).
 	demand := economy.GrainConsumptionPerTick(prevPop)
 	postFood := rawGrainNow - demand
-	growing := postFood >= 0
+	starving := postFood < 0
 	if postFood < 0 {
 		postFood = 0
 	}
+	newGrain = postFood * 0.99
 
-	grainNow := postFood * 0.99
-	if grainNow < 0 {
-		grainNow = 0
-	}
-	softcap := 1.0 - float64(prevPop)/30000.0
-	if softcap < 0 {
-		softcap = 0
-	}
-	const variety = 1.0 // no fish/oil/wine/livestock in these fixtures
-	desired := float64(prevPop) * 0.005 * variety * softcap
-	desiredNew := int(desired + 0.5) // ROUND
-	if desiredNew < 1 {
-		desiredNew = 1
-	}
-
-	if !growing {
-		// starvation path — not exercised by these fixtures (food stays covered).
-		p := int(float64(prevPop)*0.995 + 0.5)
-		if p < 101 {
-			p = 101
+	switch {
+	case starving:
+		newPop = int(float64(prevPop)*0.995 + 0.5)
+	case economy.FoodNet(prevRate, prevPop) > 0:
+		softcap := 1.0 - float64(prevPop)/30000.0
+		if softcap < 0 {
+			softcap = 0
 		}
-		return p, grainNow // grain untouched past FoodTick+decay on the starvation path
+		const variety = 1.0 // no fish/oil/wine/livestock in these fixtures
+		add := int(float64(prevPop)*growthRatePerTick*variety*softcap + 0.5) // ROUND
+		if add < 1 {
+			add = 1
+		}
+		newPop = prevPop + add
+	default:
+		newPop = prevPop
 	}
-
-	// Growth spends only what stands above growthGrainReserve — mirrors the
-	// GREATEST(0, grain_now - $6) in tick.go's priced CTE.
-	spendable := grainNow - growthGrainReserve
-	if spendable < 0 {
-		spendable = 0
-	}
-
-	var actualNew int
-	var draw float64
-	cost := float64(desiredNew) * grainPerCitizen
-	if spendable >= cost {
-		actualNew = desiredNew
-		draw = cost
-	} else {
-		actualNew = int(spendable / grainPerCitizen)
-		draw = float64(actualNew) * grainPerCitizen
-	}
-
-	newPop = prevPop + actualNew
 	if newPop < 101 {
 		newPop = 101
 	}
 	if newPop > 30000 {
 		newPop = 30000
 	}
-	newGrain = grainNow - draw
-	if newGrain < 0 {
-		newGrain = 0
-	}
 	return newPop, newGrain
 }
 
-// TestApplyDecay_GrainFundedGrowth_CapUnpinnedAndConsistent verifies success
-// criterion #2 (cap un-pinned: a grain-poor-but-viable city's stock sits
-// below cap during growth, not glued at 1000) AND the grain-draw consistency
-// guarantee, by mirroring tick.go's exact formula in Go
-// (expectedDayResult) and cross-checking it against the real SQL's output
-// day by day — not just a heuristic bound.
-func TestApplyDecay_GrainFundedGrowth_CapUnpinnedAndConsistent(t *testing.T) {
-	// The minimal guaranteed catchment (one plains tile) is the realistic case
-	// where grainPerCitizen (300) is calibrated to bind: growth is throttled
-	// below the desired amount, so the remainder visibly sits under the 1000
-	// cap every day instead of re-saturating.
-	//
-	// Population 1500, not 5000 (megaron_plan_grain_cap.md, 2026-08-22 — same
-	// root cause and same fix as MinimalCitySelfSufficient above: pop 5000 now
-	// exceeds what this single capped hex can feed at all, which would make
-	// this test measure starvation, not the cap-unpinning/consistency
-	// guarantee it exists to prove).
+// TestApplyDecay_Growth_MatchesGoMirror cross-checks the SQL day by day
+// against expectedDayResult: population grows by the full rate exactly on the
+// days economy.FoodNet is positive — the same function the surfaces show as
+// food_net_per_tick — and growth leaves the grain stock untouched.
+func TestApplyDecay_Growth_MatchesGoMirror(t *testing.T) {
 	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
 	pool, worldID, settlementID := newGrowthFixture(t, terrains, 1500)
 	h := newTestTickHandler(pool)
 
-	sawBelowCap := false
-	const days = 15
+	sawGrowth, sawHold := false, false
+	const days = 30
 	for day := 1; day <= days; day++ {
 		prevPop, _ := snapshot(t, pool, settlementID)
 		prevAmount, prevRate := rawGrainRow(t, pool, settlementID)
@@ -425,34 +381,34 @@ func TestApplyDecay_GrainFundedGrowth_CapUnpinnedAndConsistent(t *testing.T) {
 		advanceOneDay(t, h, pool, worldID)
 
 		gotPop, gotGrain := snapshot(t, pool, settlementID)
-		t.Logf("day %d: pop=%d grain=%.2f (want pop=%d grain=%.2f)", day, gotPop, gotGrain, wantPop, wantGrain)
+		t.Logf("day %d: pop=%d grain=%.2f net=%.2f (want pop=%d grain=%.2f)",
+			day, gotPop, gotGrain, economy.FoodNet(prevRate, prevPop), wantPop, wantGrain)
 
 		if gotPop != wantPop {
 			t.Errorf("day %d: population = %d, want %d (Go mirror of tick.go formula)", day, gotPop, wantPop)
 		}
 		// RecomputeProduction runs after the growth write and re-derives the
-		// rate (and re-settles/clamps amount) from the new population — its
-		// settle step is a no-op here (elapsed=0) but it does re-derive rate,
-		// so allow float slop from that re-derivation, not from the growth math.
+		// rate (and re-settles/clamps amount) — allow float slop from that,
+		// not from the growth math.
 		if diff := gotGrain - wantGrain; diff > 5.0 || diff < -5.0 {
-			t.Errorf("day %d: grain = %.4f, want %.4f (Go mirror of tick.go formula)", day, gotGrain, wantGrain)
+			t.Errorf("day %d: grain = %.4f, want %.4f — growth must not draw grain", day, gotGrain, wantGrain)
 		}
-		if gotGrain < 999.0 {
-			sawBelowCap = true
+		if gotPop > prevPop {
+			sawGrowth = true
 		}
-		if gotGrain <= 0 {
-			t.Fatalf("day %d: grain hit %.4f — self-sufficiency invariant violated", day, gotGrain)
+		if gotPop == prevPop {
+			sawHold = true
 		}
 	}
-
-	if !sawBelowCap {
-		t.Errorf("grain never dipped below cap (1000) over %d days — growth is not consuming surplus (cap-pinning bug not fixed)", days)
+	if !sawGrowth {
+		t.Error("the city never grew — the fixture no longer exercises the överflöd branch")
 	}
+	t.Logf("saw a day with no growth (food net ≤ 0): %v", sawHold)
 }
 
-// TestApplyDecay_GrainFundedGrowth_GeographyDifferentiates verifies success
+// TestApplyDecay_Growth_GeographyDifferentiates verifies success
 // criterion #3: a grain-rich catchment grows faster than a grain-poor one.
-func TestApplyDecay_GrainFundedGrowth_GeographyDifferentiates(t *testing.T) {
+func TestApplyDecay_Growth_GeographyDifferentiates(t *testing.T) {
 	// current_world_tick() has no per-world scope — it reads whatever world has
 	// status='active' (single-world-enforcement assumption, see mig 067/063).
 	// Two fixtures can't run concurrently active; run poor to completion first,
@@ -480,35 +436,5 @@ func TestApplyDecay_GrainFundedGrowth_GeographyDifferentiates(t *testing.T) {
 
 	if popRich <= popPoor {
 		t.Errorf("expected richer catchment to grow faster: rich pop=%d, poor pop=%d", popRich, popPoor)
-	}
-}
-
-// TestApplyDecay_GrainFundedGrowth_NoOscillation verifies success criterion
-// #4: grain/pop evolve smoothly — grain does not sawtooth to (near) zero and
-// back up to cap every day, which would indicate grainPerCitizen consumes
-// ~100% of surplus instead of a damped fraction.
-func TestApplyDecay_GrainFundedGrowth_NoOscillation(t *testing.T) {
-	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
-	pool, worldID, settlementID := newGrowthFixture(t, terrains, 5000)
-	h := newTestTickHandler(pool)
-
-	const days = 20
-	var grains []float64
-	for day := 1; day <= days; day++ {
-		advanceOneDay(t, h, pool, worldID)
-		_, grain := snapshot(t, pool, settlementID)
-		grains = append(grains, grain)
-	}
-	t.Logf("grain trajectory: %v", grains)
-
-	// Look at the tail (after initial fill/settle transient) for near-zero
-	// troughs immediately followed by a near-cap peak — the oscillation
-	// signature. Skip the first third of the run (transient).
-	start := days / 3
-	for i := start; i < len(grains)-1; i++ {
-		if grains[i] < 5.0 && grains[i+1] > 900.0 {
-			t.Errorf("oscillation detected: day %d grain=%.2f -> day %d grain=%.2f (near-zero then slammed back to cap)",
-				i+1, grains[i], i+2, grains[i+1])
-		}
 	}
 }

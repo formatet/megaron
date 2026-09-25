@@ -28,10 +28,7 @@ import (
 
 func TestApplyDecay_ReplayIsIdempotent(t *testing.T) {
 	// All-plains catchment at a moderate population: a real catchment, not a
-	// synthetic one. A single tick's grain accrual is nowhere near
-	// grainPerCitizen×desired_new, so growth stays throttled to 0 for a while
-	// (exactly like the minimal-catchment fixture in grain_growth_test.go) —
-	// warm up several REAL, DISTINCT days first (advanceOneDay: a fresh event
+	// synthetic one. Warm up several REAL, DISTINCT days first (advanceOneDay: a fresh event
 	// ID every call, matching production's one-row-per-due-tick scheduling)
 	// so the settlement is actually growing before the replay is exercised.
 	terrains := [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}
@@ -72,10 +69,10 @@ func TestApplyDecay_ReplayIsIdempotent(t *testing.T) {
 	// warm-up), otherwise this test would pass even without the idempotency
 	// guard existing at all.
 	if firstPop <= startPop {
-		t.Fatalf("first applyDecay run did not grow population (%d -> %d) — fixture does not exercise the growth/grain-draw path this test targets", startPop, firstPop)
+		t.Fatalf("first applyDecay run did not grow population (%d -> %d) — fixture does not exercise the growth path this test targets", startPop, firstPop)
 	}
 	if firstGrain == startGrain {
-		t.Fatalf("first applyDecay run did not move grain (%.4f -> %.4f) — expected a grain draw alongside growth", startGrain, firstGrain)
+		t.Fatalf("first applyDecay run did not move grain (%.4f -> %.4f) — expected the ×0.99 decay", startGrain, firstGrain)
 	}
 
 	var claimsAfterFirst int
@@ -104,11 +101,11 @@ func TestApplyDecay_ReplayIsIdempotent(t *testing.T) {
 	// claim, closed alongside this test) are guarded, so a replay of the same
 	// event moves nothing. Before the decay claim landed, replay left grain at
 	// firstGrain × 0.99 (one extra shave); a non-idempotent growth CTE would
-	// additionally draw ~desired_new × grainPerCitizen on top. Either regression
+	// additionally grow the population a second time. Either regression
 	// blows past this tolerance.
 	if diff := replayGrain - firstGrain; diff > 0.5 || diff < -0.5 {
-		t.Errorf("grain after replay = %.4f, want unchanged %.4f (event %d replayed — a re-shaved ×0.99 decay would leave %.4f, a re-fired growth CTE would draw ~desired_new×%.0f grain further)",
-			replayGrain, firstGrain, fixedEventID, firstGrain*0.99, grainPerCitizen)
+		t.Errorf("grain after replay = %.4f, want unchanged %.4f (event %d replayed — a re-shaved ×0.99 decay would leave %.4f)",
+			replayGrain, firstGrain, fixedEventID, firstGrain*0.99)
 	}
 
 	var claimsAfterReplay int
@@ -135,17 +132,8 @@ func TestApplyDecay_DistinctEventsBothApply(t *testing.T) {
 
 	// This test's subject is the CLAIM, not the economy: it asks whether a
 	// distinct event is allowed to do work, and reads population growth as the
-	// observable. So growth has to be unambiguously affordable, or the test
-	// measures grain balance instead.
-	//
-	// Bare, this fixture is on a razor's edge: six plains at pop 5000 nets only
-	// ~170 grain/tick (production minus 2 500/tick of citizen consumption), so
-	// the stock creeps 169 → 336 → 502 and growth fires only on the days the
-	// remainder happens to clear one citizen's price. It passed for exactly
-	// that reason before growthGrainReserve landed, and stopped the day growth
-	// was told to leave a cohort's levy untouched — a false red about a
-	// mechanism the test does not test. Seeding a real stock removes the
-	// coincidence in both directions.
+	// observable, so the city must be fed on both days — a real stock keeps
+	// food_unmet_amount out of the picture.
 	if _, err := pool.Exec(ctx,
 		`UPDATE settlement_goods SET amount = 10000, calc_tick = (SELECT current_tick FROM worlds WHERE id = $2)
 		 WHERE settlement_id = $1 AND good_key = 'grain'`,

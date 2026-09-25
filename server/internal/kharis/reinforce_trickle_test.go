@@ -71,14 +71,16 @@ func loadUnitState(t *testing.T, pool *pgxpool.Pool, unitID uuid.UUID) (size int
 // resource stock outside the production loop — bronze/silver aren't produced
 // by this fixture's plains/mountain catchment, so RecomputeProduction's
 // cap-clamp upsert never touches them; verified empirically by these tests
-// passing with the exact deltas asserted below).
+// passing with the exact deltas asserted below). An existing row keeps its
+// rate: growth is gated on the food balance (economy.FoodNet, 2026-09-26), so
+// zeroing grain's rate here would stop the growth the trickle draws from.
 func setGood(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID, good string, amount float64) {
 	t.Helper()
 	ctx := context.Background()
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 VALUES ($1, $2, $3, 0, 100000, current_world_tick())
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = $3, rate = 0, calc_tick = current_world_tick()`,
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = $3, calc_tick = current_world_tick()`,
 		settlementID, good, amount,
 	); err != nil {
 		t.Fatalf("seed good %s: %v", good, err)

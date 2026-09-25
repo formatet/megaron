@@ -181,114 +181,18 @@ func templeTierMultiplier(level int) float64 {
 // strawman pick, easy to retune — temenos_balans_spakar.md §9.
 const kharisFloor = 1.0
 
-// grainPerCitizen is the grain cost of one new citizen at the daily growth
-// tick — makes growth a real economic draw on grain instead of a binary gate.
+// growthRatePerTick is the most a fed city grows in one tick, as a fraction of
+// its population, before the food-variety multiplier and the size soft cap.
 //
-// Calibration story (see TestApplyDecay_GrainFundedGrowth_* for the measured
-// numbers): a naive read of "consume 50–70% of surplus" against the good's
-// storage CAP (1000) doesn't hold up once measured — the decay step above
-// writes an uncapped settled() value, so any self-sufficient catchment's raw
-// daily accrual (rate, per tick) is many multiples of the 1000 cap
-// (≈5450 for the minimal one-plains-tile guaranteed floor, ≈13000+ for a
-// two-plains-tile catchment at start pop 5000). A modest draw against that
-// (25 × desired_new, ≈500/day) vanishes into the overshoot and
-// RecomputeProduction's own end-of-tick LEAST(cap,…) clamp re-pins the stock
-// at 1000 regardless — satisfying neither "cap un-pinned" nor "richer
-// catchment grows faster" (both catchments simply re-saturate identically).
-// grainPerCitizen=300 instead prices growth against that *raw* daily accrual:
-// the minimal one-plains catchment can only ever afford ~17–18 of the 21
-// desired new citizens/day (its cost, 21×300=6300, exceeds its ≈5450
-// accrual), spending nearly all of it and leaving a small-but-always-positive
-// remainder (1–300 grain, varies day to day, never zero — proven over 40 days
-// in TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient) — this is
-// what makes success criterion #2 (cap un-pinned) hold. A richer catchment
-// (≥2 grain tiles) has proportionally more accrual against the SAME cost
-// (desired_new depends on population/soft-cap only, not catchment), so it
-// affords desired growth in full every day and grows measurably faster —
-// criterion #3 — while its own stock re-saturates at cap (expected: its
-// surplus genuinely exceeds what a day's growth can spend). The floor-division
-// throttle (§ actual_new = floor(grain_now/grainPerCitizen) when unaffordable)
-// necessarily leaves a remainder in [0, grainPerCitizen) — occasionally small
-// in absolute terms on a given day — but it is mathematically always ≥ 0 and
-// never sign-flips negative (GREATEST(0,…) floors throughout), and a second
-// same-tick firing is a safe no-op (draw=0 when nothing is affordable). If
-// this ever measures as breaking the never-starve invariant for some other
-// catchment shape, lower it.
-//
-// REVIEWED AGAINST P1 (catchment 7→19, megaron_plan_fysisk_gubbemodell.md,
-// 2026-08-07) — left unchanged. The "minimal one-plains-tile" floor this
-// number is calibrated against is a TERRAIN LUCK case (does a founding site
-// have any grain-producing tile at all), not a catchment-SIZE case — a
-// minimal catchment can still be "1 plains tile among 18" exactly as it was
-// "1 plains tile among 6", so its raw accrual barely moves: ~5450/day
-// pre-P1 → ~5500/day post-P1 (+NearjordGrainPerTick, economy/recompute.go,
-// the only genuinely new floor contribution). A RICH catchment's ceiling
-// triples (TestP1_ProductionMultiplierVsPreP1Catchment,
-// internal/economy/catchment_p1_balance_test.go — 18 vs 6 ring hexes at
-// identical density), but that never raises how fast a city can grow: growth
-// is capped at desired_new (population/soft-cap only, economy-accrual-
-// independent above the affordability floor) — surplus beyond what a day's
-// growth can spend just re-saturates the grain stock, exactly as documented
-// above. A bigger catchment gives a Wanax more OPTIONS (more terrain variety
-// to allocate labor across via LaborCapacity's existing caps), not an
-// automatic multiply-by-three in actual production — allocation is still
-// player-chosen. Left as a strawman for soak-testing, per this constant's
-// existing calibration story, not re-derived from first principles.
-// ⚠️ 300 → 2,0 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27). Detta är
-// INTE en ren omskalning (÷43,2 hade gett 6,94) utan Timothys kalibreringsval:
-// **200 spannmål per ny GUBBE**, alltså 2,0 per invånare.
-//
-// Talet avgör om maten är bromsen på tillväxten eller inte. Mätt på Mochlos
-// (+56,7 grain/tick i överskott, vill växa 0,56 gubbar/dygn): under ~100 per
-// gubbe växer staden i full takt och priset blir kosmetiskt; vid 200 halveras
-// tillväxten mot vad staden vill; vid ~700 (dagens 300/invånare omräknat)
-// stryps den till en sjundedel. 200 valt 2026-08-27 för snabbare spel och
-// fortfarande märkbar geografisk skillnad — flodstäder växer synligt fortare
-// än slättstäder.
-//
-// De mätta talen i kalibreringsberättelsen nedan är PRE-OMSKALNING; dividera
-// med 43,2 för nuvarande skala. Rationa och slutsatserna står oförändrade.
-const grainPerCitizen = 2.0
-
-// growthGrainReserve is the grain a settlement's growth may never eat into.
-//
-// Without it, growth is the stock's unbounded first claimant: it buys as many
-// citizens as the stock affords and leaves a remainder in [0, grainPerCitizen).
-// Measured in world e7923ca8, that held for 2 511 of 2 511 samples across 141
-// ticks and three cities — the stored grain amount was ALWAYS a two- or
-// three-digit remainder, whatever the city's production rate. The consequence
-// is not cosmetic: a spearman cohort is levied at 300 grain, so the levy was
-// affordable only in the narrow window where settled() had folded in a fresh
-// tick of production but applyDecay had not yet spent it — 8,4 % of readings.
-// A Wanax could not reliably raise troops from a city with a large surplus,
-// because the surplus never existed as a STOCK, only as a rate.
-//
-// The reserve is deliberately equal to one land cohort's grain levy (spearman,
-// 300 — see the recruit catalogue in internal/province/training.go). That is
-// the whole point: a city always holds back exactly enough to raise the men it
-// can feed. Growth then spends only what stands ABOVE that line, which is what
-// "surplus feeds growth" was always supposed to mean (2026-08-19: surplus →
-// growth, not storage — the reserve does not store, it keeps growth from
-// spending the seed corn).
-//
-// This changes how FAST a city grows only while its stock sits between the
-// reserve and the reserve plus one citizen's price; above that the draw is
-// unchanged. It cannot make a city starve: a settlement below the reserve
-// simply does not grow that tick (actual_new = 0), it does not take the
-// starvation branch — that branch is gated on food_unmet_amount (D4,
-// megaron_plan_utfodringsordningen.md), not on this reserve or on grain_now.
-// 300 → 6,94 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27): grain-enhet,
-// ren division med 43,2. Ankaret som kommentaren ovan kräver hålls: en full
-// spjutkohort kostar 100 man × province.UnitSpecs["spearman"].Costs["grain"],
-// och den posten divideras med samma 43,2 i training.go — de två förblir
-// exakt lika, precis som före omskalningen.
-//
-// ⚠️ Reserven är INTE längre lika med grainPerCitizen, som den råkade vara när
-// båda stod på 300. Det var alltid en sammanträffning mellan två oberoende tal
-// (en kohorts spannmålsavgift respektive priset på en ny invånare), och mig 136
-// skiljer dem åt: reserven följer kohorten (÷43,2), tillväxtpriset är ett eget
-// kalibreringsval (2,0). Läs aldrig det ena ur det andra.
-const growthGrainReserve = 6.94
+// Tillväxten (Timothy 2026-09-26, megaron_styrande_beslut): growth costs NO
+// food. A city grows only when it has an ÖVERFLÖD — economy.FoodNet > 0, it
+// produces more food per tick than its population eats — and then always at
+// this full rate × variety × soft cap, never scaled to the size of the
+// surplus. The surplus itself stays in the stores. This replaces the
+// grain-priced model (grainPerCitizen 2,0 + growthGrainReserve 6,94, 2026-08-19
+// "surplus → growth, not storage"), under which growth spent every grain above
+// the reserve and the stores never filled.
+const growthRatePerTick = 0.005
 
 // starvationPopLossRatePerTick is the fraction of population a starving city
 // loses per tick (−0.5%/tick). Single source of truth for BOTH sides:
@@ -835,51 +739,35 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		slog.Error("goods decay failed", "world", worldID, "err", err)
 	}
 
-	// Reset invasions_today, update population, and — grain-funded growth —
-	// draw the grain cost of whatever growth is actually affordable.
+	// Reset invasions_today and update population.
 	//
-	// Growth model (daily tick):
-	//   pop ≥ 100  → proportional: 0.5% base × food-variety multiplier × soft-cap factor
-	//                gives a DESIRED new-citizen count; food_variety = 1.0 (base,
-	//                first economy.FoodGoods item present — normally grain) +
-	//                0.1 per additional distinct FoodGoods item present, capped
-	//                at 4 extras (max 1.4), soft_cap = max(0, 1 − pop/30000) →
-	//                growth → 0 near 30000.
-	//                That desired growth then costs desired_new × grainPerCitizen
-	//                grain: if the settled grain stock affords it in full, all of
-	//                it is applied and the cost is deducted; if not, growth is
-	//                throttled to floor(grain_now / grainPerCitizen) citizens and
-	//                grain is drawn down to (near) zero. Growth never grows the
-	//                city for grain it doesn't have.
-	//   starvation → −0.5% (pop ≥ 100), floor 101 (collapse fires for pop ≤ 100).
-	//                Unchanged — no grain is drawn on the starvation path.
+	// Growth model (daily tick, Timothy 2026-09-26 — see growthRatePerTick):
+	//   starving  (food_unmet_amount > 0, written by FoodTick at 55)
+	//             → −0.5% (starvationPopLossRatePerTick), floor 101 (collapse
+	//               fires for pop ≤ 100).
+	//   fed, food_net ≤ 0 → population holds. The city eats what it makes (or
+	//               lives off its stores) — no överflöd, no growth.
+	//   fed, food_net > 0 → + GREATEST(1, ROUND(pop × growthRatePerTick ×
+	//               variety × softcap)). variety = 1.0 + 0.1 per additional
+	//               distinct economy.FoodGoods item in store (cap 1.4);
+	//               softcap = max(0, 1 − pop/30000). Costs no food.
+	//
+	// food_net is economy.FoodNet written in SQL: Σ rate over
+	// economy.NetFoodGoods minus pop × GrainConsumptionPerCitizenPerTick. The
+	// surfaces' food_net_per_tick (api/handlers/province.go) reads the same
+	// function, so "+X food/day" on screen and "this city grows" agree.
+	// TestApplyDecay_GrowthGateMatchesFoodNet pins the two against each other.
 	//
 	// C-collapse: the floor is 101, not 50. Any settlement that would drop below 101
 	// from starvation is held at 101 here; a follow-up query then schedules
 	// CollapseSettlement events for all settlements at pop ≤ 100.
-	//
-	// Single CTE-chained statement (not a bare TX) so the population increment and
-	// the grain deduction are computed ONCE from the same snapshot and applied
-	// atomically — pop-added always equals grain-drawn/grainPerCitizen, never more.
-	//
-	// grain_now reads the raw settled() value (uncapped) — the same value the
-	// rest of the codebase treats as "available now" before a write clamps it.
-	// This matters for catchment differentiation (success criterion #3): the
-	// good's storage cap (1000) is a fixed constant unrelated to a catchment's
-	// richness, so clamping grain_now to it before pricing growth would make
-	// every self-sufficient catchment (however rich) read identically and grow
-	// at the identical rate — erasing the very signal geography is supposed to
-	// provide. Leaving it uncapped means a poor catchment's genuinely smaller
-	// daily accrual can fall short of desired growth's cost (throttling it)
-	// while a rich catchment's larger accrual doesn't — see
-	// TestApplyDecay_GrainFundedGrowth_GeographyDifferentiates.
 	growthRows, err := h.pool.Query(ctx,
 		`WITH claim AS (
 		     -- G2 exactly-once claim (migration 098): one row per (event_id,
 		     -- settlement_id). A replay of the same event finds every eligible
 		     -- settlement already claimed, ON CONFLICT DO NOTHING returns nothing
 		     -- for it, and growth_calc's JOIN below excludes it — a no-op, not a
-		     -- second growth/grain-draw. A later day's tick carries a different
+		     -- second growth. A later day's tick carries a different
 		     -- event_id and claims fresh.
 		     INSERT INTO processed_tick_claims (event_id, scope_id)
 		     SELECT $5::bigint, s.id FROM settlements s
@@ -891,34 +779,20 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		     SELECT
 		         s.id,
 		         s.population AS pop,
-		         COALESCE(
-		             (SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-		              FROM settlement_goods sg
-		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0
-		         ) AS grain_now,
 		         -- Utfodringsordningen D4 (megaron_plan_utfodringsordningen.md,
 		         -- 2026-08-26): whether the population actually ate today, written
-		         -- by FoodTick (priority 55, runs before this at 60). Replaces
-		         -- grain_now > 0, which since D1 (grain's rate is raw production,
-		         -- never netted against consumption) says nothing about whether
-		         -- the population was fed — a fish-fed city with grain_now == 0
-		         -- and unmet == 0 must still grow, and a city whose grain+fish+
-		         -- livestock ALL ran dry must starve even if some stray grain
-		         -- production briefly ticks grain_now positive again.
+		         -- by FoodTick (priority 55, runs before this at 60).
 		         s.food_unmet_amount AS unmet,
+		         -- economy.FoodNet: food produced per tick minus what the
+		         -- population eats per tick.
+		         (SELECT COALESCE(SUM(sg.rate), 0) FROM settlement_goods sg
+		          WHERE sg.settlement_id = s.id AND sg.good_key = ANY($6))
+		           - s.population * $2::float AS food_net,
 		         -- Variety reads economy.FoodGoods — the SAME list
 		         -- loyalty/welfare.go's diet-variety threshold reads (S2,
-		         -- megaron_plan_foda_konsistens.md: "en lista som båda läser").
-		         -- Before S2 this counted fish/oil/wine/livestock but not grain
-		         -- (a flat 1.0 base regardless of whether grain was present),
-		         -- while welfare.go counted grain but not livestock — the same
-		         -- good meant different things depending on who asked. The
-		         -- unified count-of-distinct-foods-present minus one (floored at
-		         -- 0) reproduces the exact old numbers for every settlement that
-		         -- HAS grain (base 1.0 + 0.1 per additional food type, capped at
-		         -- the same four extras) — growth only ever applies when
-		         -- food_unmet_amount <= 0 (see the growing flag below), so this
-		         -- is not a balance change, only a shared source of truth.
+		         -- megaron_plan_foda_konsistens.md: "en lista som båda läser"):
+		         -- base 1.0 + 0.1 per additional distinct food in store, capped
+		         -- at four extras.
 		         (1.0 + 0.1 * GREATEST(0, (
 		             SELECT COUNT(*) FROM settlement_goods sg
 		             WHERE sg.settlement_id = s.id AND sg.good_key = ANY($4)
@@ -928,42 +802,21 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		     FROM settlements s
 		     JOIN claim c ON c.scope_id = s.id
 		 ),
-		 resolved AS (
-		     SELECT
-		         id, pop, grain_now,
-		         (unmet <= 0) AS growing,
-		         GREATEST(1, ROUND(pop * 0.005 * variety * softcap)) AS desired_new
-		     FROM growth_calc
-		 ),
-		 priced AS (
-		     -- Growth spends only what stands ABOVE growthGrainReserve ($6), never
-		     -- the reserve itself. Both branches read the same spendable amount, so
-		     -- the "affords it in full" case and the throttled floor-division case
-		     -- stay consistent with each other. GREATEST(0, …) keeps a city whose
-		     -- stock is below the reserve at actual_new = 0 — it does not grow this
-		     -- tick, and it does NOT take the starvation branch, which is gated on
-		     -- growing (grain_now > 0) alone.
-		     SELECT
-		         id, pop, grain_now, growing,
-		         CASE
-		             WHEN NOT growing THEN 0
-		             WHEN GREATEST(0, grain_now - $6::float) >= desired_new * $2::float THEN desired_new
-		             ELSE FLOOR(GREATEST(0, grain_now - $6::float) / $2::float)
-		         END AS actual_new
-		     FROM resolved
-		 ),
 		 final AS (
 		     SELECT
-		         id, grain_now, pop AS old_pop,
+		         id, pop AS old_pop,
 		         GREATEST(101, LEAST(30000,
-		             -- Starvation: retain (1 - starvationPopLossRatePerTick) of pop. The
-		             -- ::numeric cast keeps this exact numeric ROUND (half away from
-		             -- zero) — a bare float8 product would round half-to-even and drift
-		             -- by ±1 at pop ≡ 100 (mod 200); verified over pop 101..30000.
-		             CASE WHEN growing THEN pop + actual_new ELSE ROUND(pop * (1 - $3::float8)::numeric) END
-		         )) AS new_pop,
-		         CASE WHEN growing THEN actual_new * $2::float ELSE 0 END AS grain_draw
-		     FROM priced
+		             CASE
+		                 -- Starvation: retain (1 - starvationPopLossRatePerTick) of pop. The
+		                 -- ::numeric cast keeps this exact numeric ROUND (half away from
+		                 -- zero) — a bare float8 product would round half-to-even and drift
+		                 -- by ±1 at pop ≡ 100 (mod 200); verified over pop 101..30000.
+		                 WHEN unmet > 0 THEN ROUND(pop * (1 - $3::float8)::numeric)
+		                 WHEN food_net > 0 THEN pop + GREATEST(1, ROUND(pop * $7::float8 * variety * softcap))
+		                 ELSE pop
+		             END
+		         )) AS new_pop
+		     FROM growth_calc
 		 ),
 		 pop_upd AS (
 		     UPDATE settlements s SET
@@ -972,17 +825,10 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		     FROM final f
 		     WHERE f.id = s.id
 		     RETURNING s.id, f.old_pop, f.new_pop
-		 ),
-		 grain_upd AS (
-		     UPDATE settlement_goods sg SET
-		         amount    = GREATEST(0, f.grain_now - f.grain_draw),
-		         calc_tick = current_world_tick()
-		     FROM final f
-		     WHERE f.grain_draw > 0 AND sg.settlement_id = f.id AND sg.good_key = 'grain'
-		     RETURNING sg.settlement_id
 		 )
 		 SELECT id, old_pop, new_pop FROM pop_upd`,
-		worldID, grainPerCitizen, starvationPopLossRatePerTick, economy.FoodGoods, eventID, growthGrainReserve,
+		worldID, economy.GrainConsumptionPerCitizenPerTick, starvationPopLossRatePerTick, economy.FoodGoods, eventID,
+		economy.NetFoodGoods, growthRatePerTick,
 	)
 	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)

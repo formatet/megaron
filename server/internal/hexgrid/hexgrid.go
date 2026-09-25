@@ -21,7 +21,7 @@ package hexgrid
 //
 // Changing this number is a balance decision with a full-economy blast
 // radius (production potential scales with hex count) — never tune it
-// without also redoing megaron_plan_foda_konsistens.md's grainPerCitizen and
+// without also redoing megaron_plan_foda_konsistens.md's food balance and
 // the herd-size calibration alongside it (same rebalancing pass, not two).
 const CatchmentRadius = 2
 

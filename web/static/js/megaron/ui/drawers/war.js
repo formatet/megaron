@@ -11,6 +11,7 @@ import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
 import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 import { canTakeStance, stanceSentLine } from '../stance.js';
+import { warMovements } from '../movements.js';
 
 // "ready <eta>" while still building/training, collapsing to a bare "ready"
 // once complete (fmtArrival's doneWord already reads "ready" — this just
@@ -123,7 +124,7 @@ export async function loadWarDrawer() {
     if (el) el.style.display = '';
   }
 
-  renderWarMovements(capital);
+  renderWarMovements();
 
   try {
     if (!capital) {
@@ -282,46 +283,37 @@ export async function loadWarDrawer() {
   }
 }
 
-function renderWarMovements(capital) {
+function renderWarMovements() {
   const el = document.getElementById('wtab-movements');
   if (!el) return;
-  // capital may be null (founder phase) — State.provinceData has no owned
-  // rows yet then, so ownPos/outgoing/incoming all come out empty and the
-  // tab falls through to "No movements." below.
-  const ownPos = new Set(State.provinceData.filter(p => p.own).map(p => p.q + ',' + p.r));
-  const outgoing = State.marchData.filter(m => ownPos.has(m.origin_q + ',' + m.origin_r));
-  const incoming = State.marchData.filter(m => {
-    const t = State.provinceData.find(p => p.q === m.target_q && p.r === m.target_r && p.own);
-    return t && !ownPos.has(m.origin_q + ',' + m.origin_r);
+  const { outgoing, incoming } = warMovements({
+    units: State.unitsData, foreign: State.foreignUnitData,
+    marches: State.marchData, provinces: State.provinceData,
   });
+  const placeName = (q, r) => {
+    const p = State.provinceData.find(p => p.q === q && p.r === r);
+    return p && p.name ? esc(p.name) : '(' + q + ',' + r + ')';
+  };
   let html = '';
   if (outgoing.length) {
     html += '<div class="dsec"><div class="dsec-title">Outgoing</div>';
-    html += outgoing.map(m => {
-      const target = State.provinceData.find(p => p.q === m.target_q && p.r === m.target_r);
-      const tname = target ? esc(target.name) : '(' + m.target_q + ',' + m.target_r + ')';
-      return '<div class="obj-card">'
-        + '<div class="obj-icon">⚔</div>'
-        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' → ' + tname + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + ' · recall/redirect in the Army tab</div></div>'
-        + '</div>';
-    }).join('');
+    html += outgoing.map(m => '<div class="obj-card">'
+      + '<div class="obj-icon">⚔</div>'
+      + '<div class="obj-info"><div class="obj-name">' + esc(m.title) + ' → ' + placeName(m.target_q, m.target_r) + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + ' · recall/redirect in the Army tab</div></div>'
+      + '</div>').join('');
     html += '</div>';
   } else {
     html += '<div class="dsec"><p class="empty-state">No armies in the field.</p></div>';
   }
   if (incoming.length) {
     html += '<div class="dsec"><div class="dsec-title" style="color:var(--accent)">⚠ Incoming</div>';
-    html += incoming.map(m => {
-      const origin = State.provinceData.find(p => p.q === m.origin_q && p.r === m.origin_r);
-      const oname = origin ? esc(origin.name) : '(' + m.origin_q + ',' + m.origin_r + ')';
-      return '<div class="obj-card">'
-        + '<div class="obj-icon" style="color:var(--accent)">⚔</div>'
-        + '<div class="obj-info"><div class="obj-name">' + m.intent.charAt(0).toUpperCase() + m.intent.slice(1) + ' from ' + oname + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + '</div></div>'
-        + '</div>';
-    }).join('');
+    html += incoming.map(m => '<div class="obj-card">'
+      + '<div class="obj-icon" style="color:var(--accent)">⚔</div>'
+      + '<div class="obj-info"><div class="obj-name">' + esc(m.title) + ' → ' + placeName(m.target_q, m.target_r) + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + '</div></div>'
+      + '</div>').join('');
     html += '</div>';
   }
-  el.innerHTML = html || '<p class="empty-state" style="padding:.5rem">No movements.</p>';
+  el.innerHTML = html;
 }
 
 export function warRecruitFromUI(unitType) {

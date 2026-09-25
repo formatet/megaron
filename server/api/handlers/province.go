@@ -861,18 +861,23 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	// Coverage is measured on the whole food basket (B6) — grain first, fish
 	// for the remainder, one need (economy.FoodConsumptionSplit). Counting
 	// grain alone would call a fish-fed city starving.
-	var foodStock, foodRatePerTick float64
+	var foodStock float64
 	for _, good := range sitosCfg.SubsistenceGoods {
-		var s, rate float64
+		var s float64
 		if pool.QueryRow(ctx,
-			`SELECT GREATEST(0, settled(amount, rate, calc_tick)), rate
+			`SELECT GREATEST(0, settled(amount, rate, calc_tick))
 			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
 			settID, good,
-		).Scan(&s, &rate) == nil {
+		).Scan(&s) == nil {
 			foodStock += s
-			foodRatePerTick += rate
 		}
 	}
+	var foodRatePerTick float64
+	_ = pool.QueryRow(ctx,
+		`SELECT COALESCE(SUM(rate), 0) FROM settlement_goods
+		 WHERE settlement_id = $1 AND good_key = ANY($2)`,
+		settID, economy.NetFoodGoods,
+	).Scan(&foodRatePerTick)
 	coverageDays := economy.CoverageDays(foodStock, population)
 	granaryCap := economy.GranaryCap(population, sitosCfg)
 	// Coverage is a stock figure, so it says nothing about which way the city
@@ -882,7 +887,13 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	// a city with +21 000 grain/day showed "0.1 days, granary empty"). The
 	// net food rate is what separates "lean and climbing" from "starving",
 	// and the surfaces need both to say either honestly.
-	foodNetPerDay := foodRatePerTick
+	//
+	// economy.FoodNet — production MINUS the population's ration, the same
+	// balance growth is gated on (kharis/tick.go). Until 2026-09-26 this was
+	// foodRatePerTick alone: since Utfodringsordningen D1 moved eating out of
+	// the rate, that was raw production, so every city read "+" here whether
+	// or not it fed itself.
+	foodNetPerDay := economy.FoodNet(foodRatePerTick, population)
 
 	// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md).
 	//

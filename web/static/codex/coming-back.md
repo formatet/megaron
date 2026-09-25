@@ -9,7 +9,7 @@ Click any row to open it in the **Dispatch window**. The same window opens from 
 - what happened,
 - **⌖ Take me there**, which jumps the map to where it happened,
 - **? Read about this**, which opens the Codex article that explains it,
-- a checkbox, *Stop these as dispatches*. Muting only silences the chip. The event is always kept in the archive.
+- a checkbox, *Stop these as dispatches*. Muting only silences the chip. The event is always kept in the archive. In [[keryx|Keryx]] the same setting is `keryx dispatches --mute <Kind>`, and it is shared between the two.
 
 ## What to act on first
 

@@ -1,7 +1,8 @@
 import { State } from '../state.js';
 import { hexPx, SCALE, canvas, clampCamera } from '../render/map.js';
 import { arrivalHTML } from './time.js';
-import { isTypingTarget } from './format.js';
+import { isTypingTarget, esc } from './format.js';
+import { warMovements } from './movements.js';
 
 // ── Search overlay (Sprint 4) ─────────────────────────────────────────────
 export function toggleSearch() {
@@ -68,9 +69,10 @@ function renderSearch(q) {
   const ownSettlements = State.provinceData.filter(p => p.own && !p.is_outpost);
   const visibleOther   = State.provinceData.filter(p => !p.own && !p.is_outpost && p.name);
 
-  // Own marches: origin q,r matches any own province
-  const ownPos = new Set(State.provinceData.filter(p => p.own).map(p => `${p.q},${p.r}`));
-  const ownArms = State.marchData.filter(m => ownPos.has(`${m.origin_q},${m.origin_r}`));
+  // Own armies in the field — the unit layer plus legacy recall columns (movements.js).
+  const ownArms = warMovements({
+    units: State.unitsData, marches: State.marchData, provinces: State.provinceData,
+  }).outgoing;
 
   function match(s) { return !q || (s || '').toLowerCase().includes(q); }
 
@@ -107,7 +109,7 @@ function renderSearch(q) {
     html += ownArms.map(m => `
       <div class="sr-item" onclick="closeSearch();centreOn(${m.target_q},${m.target_r})">
         <span class="sr-icon">⚔</span>
-        <span class="sr-name">${m.intent.charAt(0).toUpperCase()+m.intent.slice(1)} → (${m.target_q},${m.target_r})</span>
+        <span class="sr-name">${esc(m.title)} → (${m.target_q},${m.target_r})</span>
         <span class="sr-meta">Arrives ${arrivalHTML(m.arrives_at)}</span>
         <span class="sr-type">Army</span>
       </div>`).join('');
