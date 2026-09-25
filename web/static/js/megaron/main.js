@@ -26,7 +26,7 @@ import {
 import { updateNotifBadge, initNotifications, addDispatch, dismissAllChips } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
 import {
-  closeMarchCtx, onColonizeToggle, openMarchCtx, sendMarch,
+  closeMarchCtx, onColonizeToggle, onExploreToggle, openMarchCtx, sendMarch,
   renderColonizePreviewHTML,
 } from './ui/marchctx.js';
 import {
@@ -194,6 +194,7 @@ Object.assign(window, {
   okRiteComposed,
   okOfferWorth,
   onColonizeToggle,
+  onExploreToggle,
   openCitySettlement,
   openCodex,
   openCodexForDrawer,

@@ -1,7 +1,7 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
-import { esc } from './format.js';
+import { esc, formatApiError } from './format.js';
 import { unitTypeLabel } from './actornames.js';
 import { arrivalHTML } from './time.js';
 import { MusicPlayer } from './misc.js';
@@ -13,9 +13,11 @@ import { canvas } from '../render/map.js';
 // POST /worlds/{id}/units/{unitID}/march. The old aggregate
 // /provinces/{id}/march route was removed in the per-unit migration; the map
 // now marches discrete units, the same model the War drawer uses. A sea hex
-// lists only ships (galleys); a land hex lists only land units. Attack vs
-// reinforce is decided server-side on arrival from the target's ownership —
-// there is no client-chosen intent beyond optional colonize + stance.
+// lists only ships (galleys); a land hex lists only land units; an unseen
+// (fog) hex lists both, since terrain is unknown until scouted. Attack vs
+// reinforce is decided server-side on arrival from the target's ownership.
+// Client-chosen intent: optional colonize, optional explore (forced on an
+// unseen hex — the server's FOW rule accepts nothing else there), + stance.
 
 const marchCtx = document.getElementById('march-ctx');
 
@@ -34,15 +36,32 @@ export function closeMarchCtx() {
   if (chk) chk.checked = false;
   const prevEl = document.getElementById('mctx-colonize-preview');
   if (prevEl) { prevEl.style.display = 'none'; prevEl.innerHTML = ''; }
+  const exploreRow = document.getElementById('mctx-explore-row');
+  if (exploreRow) exploreRow.style.display = 'none';
+  const exploreChk = document.getElementById('mctx-explore-chk');
+  if (exploreChk) { exploreChk.checked = false; exploreChk.disabled = false; }
   // The menu is gone — so is any catchment preview it armed (Bugg 3).
   State.catchmentPreview = null;
   State.dirty = true;
+}
+
+// Explore and colonize are mutually exclusive intents for the same order —
+// checking one clears the other rather than letting both compete silently.
+export function onExploreToggle() {
+  const eChk = document.getElementById('mctx-explore-chk');
+  const cChk = document.getElementById('mctx-colonize-chk');
+  if (eChk && eChk.checked && cChk && cChk.checked) {
+    cChk.checked = false;
+    onColonizeToggle();
+  }
 }
 
 export async function onColonizeToggle() {
   const chk = document.getElementById('mctx-colonize-chk');
   const nameEl = document.getElementById('mctx-colony-name');
   if (nameEl) nameEl.style.display = chk && chk.checked ? 'block' : 'none';
+  const eChk = document.getElementById('mctx-explore-chk');
+  if (chk && chk.checked && eChk && eChk.checked && !eChk.disabled) eChk.checked = false;
 
   // 7-hex catchment tint (render §3.6) while the colonize box is armed — NOT
   // the FOV band (that's the plain march button's affordance, bindMarchButton
@@ -187,27 +206,67 @@ function repositionMarchCtx() {
   if (lastCtxPos && marchCtx.style.display !== 'none') positionMarchCtx(lastCtxPos.x, lastCtxPos.y);
 }
 
+// Pure decision helpers (AK-style extraction, see marchctx.test.mjs) — kept
+// free of the DOM so a unit test can drive them directly.
+
+// Explore is offered as an optional order on any land hex that isn't a
+// settlement (attack/reinforce owns those). Sea already always explores
+// (sendMarch/resolveMarchIntent below), so the checkbox would be redundant
+// there.
+export function exploreRowVisible(dest) {
+  return !dest.isSea && !dest.isSettlement;
+}
+
+// Which march intent to send, given the destination's FOW knowledge and
+// whether the player asked to explore. Mirrors march_start.go: a sea target
+// always explores (no separate recall order exists for ships); an unseen
+// (known === false) target accepts ONLY explore — that is the one intent the
+// server's FOW rule exempts from "none of your men have ever seen it"; a
+// known land target is a plain march unless the player opted into explore.
+export function resolveMarchIntent(dest, exploreWanted) {
+  if (dest.isSea) return 'explore';
+  if (dest.known === false) return 'explore';
+  return exploreWanted ? 'explore' : '';
+}
+
 // Open the march menu for a destination hex.
-// dest = { q, r, terrain, isSea, name, isSettlement, allied }
+// dest = { q, r, terrain, isSea, known, name, isSettlement, allied }
+// known === false means the hex is still fog to this Wanax — nobody of theirs
+// has ever seen it, so terrain (land or sea) is unknown too. march_start.go's
+// FOW rule then accepts only intent=explore (exploreRowVisible below and the
+// resolveMarchIntent forcing it here mirror that server rule).
 export async function openMarchCtx(dest, screenX, screenY) {
   State.marchCtxDest  = dest;
   State.marchCtxUnits = [];
   document.getElementById('mctx-err').textContent = '';
   document.getElementById('mctx-name').textContent = dest.name;
 
+  const unknown = dest.known === false;
   let hint;
-  if (dest.isSea)             hint = 'Order galleys here — they reveal fog-of-war and sail home on their own.';
+  if (unknown)                hint = 'Unexplored — only an explore order can reach it: the unit scouts the hex, then returns home on its own.';
+  else if (dest.isSea)        hint = 'Order galleys here — they reveal fog-of-war and sail home on their own.';
   else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here to attack on arrival.';
-  else                        hint = 'March land units to this hex, or found a new settlement here.';
+  else                        hint = 'March land units to this hex, found a new settlement here, or explore and return home.';
   document.getElementById('mctx-hint').textContent = hint;
 
-  // Colonize option only for empty land tiles — and never in founder phase:
-  // a people without a city cannot colonize, they FOUND (the Host panel owns
-  // that affordance).
+  // Colonize option only for empty, ALREADY-SEEN land tiles — and never in
+  // founder phase: a people without a city cannot colonize, they FOUND (the
+  // Host panel owns that affordance). Never offered blind (unknown) — the
+  // server would reject it anyway (colonize is not FOW-exempt) and a founder
+  // choosing a site needs the catchment forecast, which needs known ground.
   const colRow = document.getElementById('mctx-colonize-row');
-  colRow.style.display = (!dest.isSea && !dest.isSettlement && !State.founderPhase) ? 'block' : 'none';
+  colRow.style.display = (!unknown && !dest.isSea && !dest.isSettlement && !State.founderPhase) ? 'block' : 'none';
   const chk = document.getElementById('mctx-colonize-chk');
   if (chk) chk.checked = false;
+
+  // Explore option: any non-settlement, non-sea hex (sea already always
+  // explores — see sendMarch). Forced and locked when the hex is unseen,
+  // since it is the only intent that hex accepts.
+  const exploreRow = document.getElementById('mctx-explore-row');
+  if (exploreRow) exploreRow.style.display = exploreRowVisible(dest) ? 'block' : 'none';
+  const exploreChk = document.getElementById('mctx-explore-chk');
+  if (exploreChk) { exploreChk.checked = unknown; exploreChk.disabled = unknown; }
+
   onColonizeToggle();
 
   marchCtx.style.display = 'block';
@@ -219,16 +278,19 @@ export async function openMarchCtx(dest, screenX, screenY) {
   const all = ((await res.json()).units) || [];
 
   // Eligible to march: garrisoned or positioned, deployable.
-  // Naval hex → ships; land hex → land units. u.deployable is the server's own
-  // field (status != forming/training, api/handlers/unit.go:1342) — the server
-  // has no size gate on march (march_start.go), so a battle-worn cohort below
-  // 100 men is still orderable. Fortify stance blocks march server-side
-  // (march_start.go:132-135) and must not show as eligible here either.
+  // Naval hex → ships; land hex → land units. Unknown hex → either could fit
+  // (terrain is unseen by definition), so the category filter is skipped and
+  // the server sorts out a wrong-category pick (formatApiError shows why).
+  // u.deployable is the server's own field (status != forming/training,
+  // api/handlers/unit.go:1342) — the server has no size gate on march
+  // (march_start.go), so a battle-worn cohort below 100 men is still
+  // orderable. Fortify stance blocks march server-side (march_start.go:132-135)
+  // and must not show as eligible here either.
   const wantNaval = dest.isSea;
   State.marchCtxUnits = all.filter(u => {
     if (u.status !== 'garrison' && u.status !== 'positioned') return false;
     const naval = u.category === 'naval';
-    if (wantNaval !== naval) return false;
+    if (!unknown && wantNaval !== naval) return false;
     if (!u.deployable) return false;
     if (u.stance === 'fortify') return false;
     return true;
@@ -296,10 +358,11 @@ function renderMarchUnitList() {
   const stanceRow = document.getElementById('mctx-stance-row');
   State.marchCtxGroups = [];
   if (!State.marchCtxUnits.length) {
-    el.innerHTML = '<p style="font-size:.73rem;color:var(--text-dim);margin:.3rem 0">'
-      + (State.marchCtxDest && State.marchCtxDest.isSea
-          ? 'No galleys available. Build ships in a coastal city first.'
-          : 'No land units ready to march.') + '</p>';
+    const dest = State.marchCtxDest;
+    let empty = 'No land units ready to march.';
+    if (dest && dest.isSea) empty = 'No galleys available. Build ships in a coastal city first.';
+    else if (dest && dest.known === false) empty = 'No units ready to explore.';
+    el.innerHTML = '<p style="font-size:.73rem;color:var(--text-dim);margin:.3rem 0">' + empty + '</p>';
     stanceRow.style.display = 'none';
     return;
   }
@@ -337,6 +400,11 @@ export async function sendMarch() {
     && document.getElementById('mctx-colonize-row').style.display !== 'none');
   const nameEl = document.getElementById('mctx-colony-name');
   const colonyName = colonize && nameEl ? nameEl.value.trim() : '';
+  const exploreChk = document.getElementById('mctx-explore-chk');
+  const exploreRow = document.getElementById('mctx-explore-row');
+  const exploreWanted = !!(exploreChk && exploreChk.checked
+    && exploreRow && exploreRow.style.display !== 'none');
+  const intent = colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, exploreWanted);
 
   document.getElementById('mctx-send').disabled = true;
   document.getElementById('mctx-err').textContent = '';
@@ -345,21 +413,22 @@ export async function sendMarch() {
     const body = { target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r };
     if (stance)   body.stance = stance;
     if (colonize) { body.intent = 'colonize'; if (colonyName) body.name = colonyName; }
-    // Sea destinations are explore orders: the ship sweeps fog at the target
-    // then sails home automatically — no separate recall needed.
-    if (State.marchCtxDest.isSea) body.intent = 'explore';
+    // Sea destinations, unseen destinations and an explicit "explore" tick all
+    // resolve here (resolveMarchIntent) — the unit sweeps fog at the target
+    // then returns home on its own, no separate recall needed.
+    else if (intent) body.intent = intent;
     return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${uid}/march`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     }).then(async res => {
       const data = await res.json().catch(() => ({}));
-      return { ok: res.ok, data, err: res.ok ? '' : (data.error || 'March failed') };
+      return { ok: res.ok, data, err: res.ok ? '' : formatApiError(data, 'March failed') };
     });
   }));
 
   document.getElementById('mctx-send').disabled = false;
   const failed = results.filter(r => !r.ok);
   if (failed.length < results.length) {
-    track('march_sent', { intent: colonize ? 'colonize' : State.marchCtxDest.isSea ? 'explore' : (stance || 'march') });
+    track('march_sent', { intent: intent || stance || 'march' });
     // Horn only for units that received the order on the spot. A field unit's
     // order rides a Runner ('order_dispatched') and sounds when it lands, in
     // ws.js — command is never instant, and the sound must not say otherwise.
@@ -412,6 +481,7 @@ export async function sendMarch() {
     document.getElementById('mctx-units').innerHTML = '';
     document.getElementById('mctx-stance-row').style.display = 'none';
     document.getElementById('mctx-colonize-row').style.display = 'none';
+    if (exploreRow) exploreRow.style.display = 'none';
     document.getElementById('mctx-send').style.display = 'none';
   } else {
     closeMarchCtx();

@@ -3935,15 +3935,18 @@ function setCityFieldsVisible(visible) {
 
 // Build the same dest object the march-ctx menu consumes, whether the caller is
 // the left-click affordance panel or the right-click context menu. target is the
-// province marker at (h.q,h.r), or null for an empty/sea/mountain hex.
+// province marker at (h.q,h.r), or null for an empty/sea/mountain/fog hex.
+// known mirrors the server's FOW tier ('fog' terrain means this Wanax has
+// never seen it — same knowledge the march FOW rule in march_start.go checks).
 function destFromHex(h, tile, target) {
+  const known = tile.terrain !== 'fog';
   const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
   if (target) {
-    return { q: h.q, r: h.r, terrain: tile.terrain, isSea,
+    return { q: h.q, r: h.r, terrain: tile.terrain, isSea, known,
              name: target.name, isSettlement: true, allied: target.own ? true : !!target.allied };
   }
-  return { q: h.q, r: h.r, terrain: tile.terrain, isSea,
-           name: `${terrainLabel(tile.terrain)} (${h.q},${h.r})`,
+  return { q: h.q, r: h.r, terrain: tile.terrain, isSea, known,
+           name: known ? `${terrainLabel(tile.terrain)} (${h.q},${h.r})` : `Unexplored (${h.q},${h.r})`,
            isSettlement: false, allied: false };
 }
 
@@ -4423,7 +4426,17 @@ export function initMap() {
     const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
     const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
     const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
-    if (!tile || tile.terrain === 'fog') { window.closeMarchCtx(); return; }
+    if (!tile) { window.closeMarchCtx(); return; }
+    if (tile.terrain === 'fog') {
+      // Never seen by this Wanax: terrain, ownership and occupants are all
+      // unknown by definition, so none of the checks below (settlement,
+      // mountain, own-unit-standing-here) apply. The only order an unseen
+      // hex accepts is explore (march_start.go exempts intent=explore from
+      // the "none of your men have ever seen it" FOW rule) — openMarchCtx
+      // forces and locks that checkbox for an unknown dest.
+      window.openMarchCtx(destFromHex(h, tile, null), e.clientX, e.clientY);
+      return;
+    }
     const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
     if (target) {
       // Own settlement (capital included): march units home to reinforce the
