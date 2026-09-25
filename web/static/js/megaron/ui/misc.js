@@ -40,13 +40,41 @@ export function dismissBrief(name) {
 
 // ── Music player ──────────────────────────────────────────────────────────
 // Exposed on window (main.js: window.MusicPlayer = MusicPlayer) — render/map.js
-// and ws.js call MusicPlayer.update() from a lower layer that cannot import
-// this module directly (config/state ← api/ws ← render ← ui ← main).
+// and ws.js call MusicPlayer.update()/cue() from a lower layer that cannot
+// import this module directly (config/state ← api/ws ← render ← ui ← main).
+//
+// Timothy 2026-09-25: music is a BED plus one-shot CUES, not modes — the old
+// "war" mode (switching the loop itself based on State.marchData, which only
+// ever populated from a recall) is gone. The bed is always `<culture>_love`,
+// looping; `cue(name)` ducks it out, plays `<culture>_<name>` once, and fades
+// the bed back in on `ended`. Routing from a WS kind to a cue name lives in
+// sfx.js's musicCueFor (importable by ws.js without a cycle); the priority/
+// throttle decision here is `shouldPlayCue`, kept pure for the same reason
+// sfx.js's shouldPlay is: testable without an Audio element.
+const CUE_PRIORITY = { victory: 1, war: 2, doom: 3 };
+const CUE_THROTTLE_MS = 10 * 60 * 1000; // a returning player must not get the
+  // same cue three times for three sighted units in one sitting.
+
+// shouldPlayCue is the whole decision: is sound on, has the player interacted
+// yet, has this cue name been quiet long enough, and does it outrank whatever
+// is already playing? lastPlayedAt is read, never mutated — the caller
+// (MusicPlayer.cue) owns state and records the play only once this says yes.
+export function shouldPlayCue(name, { now, muted, started, activeCue, lastPlayedAt }) {
+  if (!started || muted) return false;
+  const last = lastPlayedAt[name];
+  if (last != null && now - last < CUE_THROTTLE_MS) return false;
+  if (activeCue && CUE_PRIORITY[activeCue] >= CUE_PRIORITY[name]) return false;
+  return true;
+}
+
 export const MusicPlayer = (() => {
   let cur = null;
   let curSrc = '';
   let paused = false;
   let started = false;
+  let activeCue = null;
+  let activeCueAudio = null;
+  const cueLastPlayedAt = Object.create(null);
 
   function ramp(el, to, ms, done) {
     const steps = 20, dt = ms / steps, dv = (to - el.volume) / steps;
@@ -63,7 +91,7 @@ export const MusicPlayer = (() => {
     const next = new Audio(src);
     next.loop = true;
     next.volume = 0;
-    if (started && !paused) {
+    if (started && !paused && !activeCue) {
       next.play().catch(() => {});
       ramp(next, 0.5, 1200);
     }
@@ -81,29 +109,104 @@ export const MusicPlayer = (() => {
     paused = !paused;
     if (paused) {
       if (cur) ramp(cur, 0, 500, () => cur.pause());
+      // Muting silences a cue in progress too — one control for all audio.
+      if (activeCueAudio) { activeCueAudio.pause(); activeCueAudio = null; activeCue = null; }
     } else {
       if (cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 500); }
     }
     return paused;
   }
 
+  // Init-time mute (persisted choice, applied before any user gesture) —
+  // sets the flag directly, no ramping since nothing is playing yet.
+  function setMuted(v) {
+    paused = !!v;
+  }
+
+  // update() keeps the bed on the capital's culture. The war/love switch that
+  // used to live here read State.marchData for an inbound attack — that table
+  // is only ever populated by a recall (server/internal/messenger/recall.go),
+  // so it practically never fired. War is now a cue, triggered off the real
+  // ForeignMarchSighted/SettlementCaptured notifications (see cue() + ws.js).
   function update() {
     const capital = ownCapital();
     if (!capital || !capital.culture) return;
-    const ownSet = new Set(State.provinceData.filter(p => p.own).map(p => p.q + ',' + p.r));
-    const war = State.marchData.some(m => m.intent === 'attack' && ownSet.has(m.target_q + ',' + m.target_r));
-    play('/static/music/' + capital.culture + '_' + (war ? 'war' : 'love') + '.ogg');
+    play('/static/music/' + capital.culture + '_love.ogg');
   }
 
-  return { start, update, togglePause };
+  // cue(name) — a one-shot war/victory/doom sting. Ducks the bed out, plays
+  // the cue once, and fades the bed back in when the cue ends (or errors —
+  // audio must never throw into the game, so a load failure just skips
+  // straight to "bed resumes").
+  function cue(name) {
+    const now = Date.now();
+    if (!shouldPlayCue(name, { now, muted: paused, started, activeCue, lastPlayedAt: cueLastPlayedAt })) return;
+    const capital = ownCapital();
+    if (!capital || !capital.culture) return;
+
+    if (activeCueAudio) { activeCueAudio.pause(); activeCueAudio = null; } // outranked cue, cut short
+
+    cueLastPlayedAt[name] = now;
+    activeCue = name;
+
+    if (cur) ramp(cur, 0, 800, () => cur.pause());
+
+    const audio = new Audio('/static/music/' + capital.culture + '_' + name + '.ogg');
+    audio.loop = false;
+    audio.volume = 0;
+    activeCueAudio = audio;
+    audio.play().catch(() => {});
+    ramp(audio, 0.6, 300);
+
+    const finish = () => {
+      if (activeCueAudio !== audio) return; // already superseded by a higher-priority cue
+      activeCueAudio = null;
+      activeCue = null;
+      if (started && !paused && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 800); }
+    };
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', finish);
+  }
+
+  // Hidden tab: pause everything audible (fade the bed, drop any mid-play
+  // cue outright — a cue quietly resuming out of context on return would be
+  // stranger than just letting it not resolve). Visible again: only the bed
+  // resumes, and only if the player hadn't muted it.
+  function onHidden() {
+    if (activeCueAudio) { activeCueAudio.pause(); activeCueAudio = null; activeCue = null; }
+    if (cur) ramp(cur, 0, 500, () => cur.pause());
+  }
+
+  function onVisible() {
+    if (started && !paused && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 500); }
+  }
+
+  return { start, update, cue, togglePause, setMuted, onHidden, onVisible };
 })();
+
+// One control for ALL audio: a player who silenced the music does not want a
+// war horn either, and a second toggle would be a second thing to find. The
+// choice is persisted (megaron_sound_muted) so it survives a reload.
+const SOUND_MUTED_KEY = 'megaron_sound_muted';
 
 export function toggleMusic() {
   const isPaused = MusicPlayer.togglePause();
-  // One control for ALL audio: a player who silenced the music does not want a
-  // war horn either, and a second toggle would be a second thing to find.
   setSoundMuted(isPaused);
+  try { localStorage.setItem(SOUND_MUTED_KEY, isPaused ? '1' : '0'); } catch (_) { /* no storage, no persistence */ }
   document.getElementById('music-btn').textContent = isPaused ? '♪' : '♫';
+}
+
+// Applies the persisted mute choice on load — before MusicPlayer.start() has
+// ever run, so this only needs to set flags and the button glyph, never touch
+// an Audio element. Missing/blocked storage reads back null → unmuted default.
+export function initSoundPrefs() {
+  let stored = null;
+  try { stored = localStorage.getItem(SOUND_MUTED_KEY); } catch (_) { stored = null; }
+  const muted = stored === '1';
+  MusicPlayer.setMuted(muted);
+  setSoundMuted(muted);
+  const btn = document.getElementById('music-btn');
+  if (btn) btn.textContent = muted ? '♪' : '♫';
 }
 
 // Autoplay policy: browsers require a user gesture before audio may play, so
@@ -112,6 +215,17 @@ export function toggleMusic() {
 // used to have as a module-top-level statement, evaluated before bootstrap().
 export function initMusicAutostart() {
   document.addEventListener('pointerdown', () => MusicPlayer.start(), { once: true });
+}
+
+// Hidden-tab handling — wired explicitly here (not a module-top-level
+// listener) for the same reason initMusicAutostart() is: this file is
+// imported by misc.test.mjs, which has no `document`, so any DOM wiring must
+// stay inside a function the tests never call.
+export function initMusicVisibility() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) MusicPlayer.onHidden();
+    else MusicPlayer.onVisible();
+  });
 }
 
 // ── Celestial clock ───────────────────────────────────────────────────────
