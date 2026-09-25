@@ -6,6 +6,7 @@
   <div class="auth-artwork">
     <img src="/static/hero.png" alt="" class="auth-artwork-img">
     <div class="auth-artwork-fade"></div>
+    <button id="auth-music-btn" class="auth-music-btn" onclick="toggleIntroMusic()" title="Music">♫</button>
 
     <div class="auth-forms">
       <div class="tabs" id="auth-tabs">
@@ -52,6 +53,88 @@
 </div>
 
 <script>
+// ── Opening theme (Timothy 2026-09-25) ──────────────────────────────────
+// Plays only on this sign-in screen, loops, and hands its playback position
+// off to the map page on login so MusicPlayer.playIntro() there can finish
+// the SAME track before the normal in-game repertoire takes over — see
+// introHandoff()/playIntro() in ui/misc.js. This page is a server-rendered
+// Go template with a plain inline <script>, not an ES module, so it cannot
+// import misc.js: the localStorage/sessionStorage key names below are
+// literal duplicates of misc.js's SOUND_MUTED_KEY and INTRO_HANDOFF_KEY —
+// keep them in sync by hand if either changes.
+const SOUND_MUTED_KEY = 'megaron_sound_muted';
+const INTRO_HANDOFF_KEY = 'megaron_intro_handoff';
+
+let introAudio = null;
+let introMuted = false;
+try { introMuted = localStorage.getItem(SOUND_MUTED_KEY) === '1'; } catch (e) { introMuted = false; }
+
+function introPlaying() {
+  return !!(introAudio && !introAudio.paused);
+}
+
+function rampIntro(to, ms) {
+  const el = introAudio;
+  if (!el) return;
+  const steps = 20, dt = ms / steps, dv = (to - el.volume) / steps;
+  let i = 0;
+  const t = setInterval(() => {
+    if (introAudio !== el) { clearInterval(t); return; }
+    el.volume = Math.max(0, Math.min(1, el.volume + dv));
+    if (++i >= steps) clearInterval(t);
+  }, dt);
+}
+
+function startIntro() {
+  if (introMuted || introPlaying()) return;
+  if (!introAudio) {
+    introAudio = new Audio('/static/music/minoan_intro.ogg');
+    introAudio.loop = true;
+    introAudio.volume = 0;
+  }
+  introAudio.play().then(() => rampIntro(0.5, 1200)).catch(() => {});
+}
+
+function toggleIntroMusic() {
+  introMuted = !introMuted;
+  try { localStorage.setItem(SOUND_MUTED_KEY, introMuted ? '1' : '0'); } catch (e) { /* no storage, no persistence */ }
+  document.getElementById('auth-music-btn').textContent = introMuted ? '♪' : '♫';
+  if (introMuted) {
+    if (introAudio) introAudio.pause();
+  } else {
+    startIntro();
+  }
+}
+
+// Called right before the redirect into the game (both login and register
+// go through doAuth below): if the theme is audible, save where it is so
+// the map page can pick the SAME track up there instead of restarting it.
+// Any stale key from an earlier, abandoned attempt is cleared either way.
+function handOffIntroMusic() {
+  try {
+    if (introPlaying()) {
+      sessionStorage.setItem(INTRO_HANDOFF_KEY, JSON.stringify({ pos: introAudio.currentTime, at: Date.now() }));
+    } else {
+      sessionStorage.removeItem(INTRO_HANDOFF_KEY);
+    }
+  } catch (e) { /* no storage — the map page just starts its bed as usual */ }
+}
+
+document.getElementById('auth-music-btn').textContent = introMuted ? '♪' : '♫';
+
+// Autoplay policy: try immediately (some browsers allow it on first paint),
+// caught silently if blocked, and also start on the first pointerdown OR
+// keydown on the page — typing a username counts as the gesture.
+startIntro();
+document.addEventListener('pointerdown', startIntro, { once: true });
+document.addEventListener('keydown', startIntro, { once: true });
+
+document.addEventListener('visibilitychange', () => {
+  if (!introAudio) return;
+  if (document.hidden) introAudio.pause();
+  else if (!introMuted) introAudio.play().catch(() => {});
+});
+
 function showTab(name) {
   document.getElementById('tab-login').style.display = name === 'login' ? '' : 'none';
   document.getElementById('tab-register').style.display = name === 'register' ? '' : 'none';
@@ -77,6 +160,7 @@ async function doAuth(url, body, errorEl) {
     // Also keep tokens in localStorage for HTMX API calls.
     localStorage.setItem('poleia_token', data.access_token);
     localStorage.setItem('poleia_refresh', data.refresh_token);
+    handOffIntroMusic();
     window.location.href = '/play';
   } catch (e) {
     errorEl.textContent = 'Network error.';
