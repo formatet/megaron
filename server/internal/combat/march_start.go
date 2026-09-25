@@ -177,9 +177,13 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		// stuck: redirect sends a courier that turns it onto a new course
 		// without waiting for it to arrive first. Name that verb instead of
 		// leaving the player at "it says no" (megaron_plan_fyra_smaslices §4b).
+		// Surface-neutral wording (Timothy 2026-09-25): this message reaches
+		// web players too, who have no keryx — the old text named only the
+		// CLI's flag syntax. Web's redirect surfaces are the march-menu
+		// right-click and War → Army's Redirect button.
 		if u.Status == unit.StatusMarching {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"unit is already marching and cannot start a new march; redirect it to a new destination instead — keryx redirect --unit %s --target q,r", u.ID)
+				"unit is already marching and cannot start a new march; redirect it to a new destination instead (right-click the map, or keryx redirect)")
 		}
 		return nil, reject(http.StatusUnprocessableEntity,
 			"unit cannot march: status is '%s' (must be 'garrison' or 'positioned')", string(u.Status))
