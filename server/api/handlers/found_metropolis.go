@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"sort"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
@@ -225,20 +226,21 @@ func foundMetropolisFromNomadicHost(
 		                        THEN NULL ELSE r END
 		 WHERE world_id = $2 AND owner_id = $3 AND id <> $4
 		   AND status <> 'disbanded'
-		 RETURNING id, type`,
+		 RETURNING id, type, COALESCE(ordinal, 0)`,
 		m.SettlementID, worldID, playerID, hostID, q, r,
 	)
 	if err != nil {
 		return out, fmt.Errorf("attach escort to metropolis: %w", err)
 	}
 	type escortUnit struct {
-		id  uuid.UUID
-		typ string
+		id      uuid.UUID
+		typ     string
+		ordinal int // numret före grundandet ("1st Spearmen of <Wanax>"), 0 = inget
 	}
 	var escort []escortUnit
 	for escortRows.Next() {
 		var e escortUnit
-		if err := escortRows.Scan(&e.id, &e.typ); err != nil {
+		if err := escortRows.Scan(&e.id, &e.typ, &e.ordinal); err != nil {
 			escortRows.Close()
 			return out, fmt.Errorf("scan escort: %w", err)
 		}
@@ -249,7 +251,18 @@ func foundMetropolisFromNomadicHost(
 		return out, fmt.Errorf("read escort: %w", err)
 	}
 	// Ordinalerna delas ut här, inte i UPDATE:n: räknaren är per (stad, typ) och
-	// måste stega en gång per enhet. Eskorten blir metropolisens 1st och 2nd.
+	// måste stega en gång per enhet. Eskorten blir metropolisens 1st och 2nd —
+	// i samma ordning som de bar före grundandet (seedNomadicHost), så "1st
+	// Spearmen of <Wanax>" blir "1st Spearmen of <stad>" och inte byter nummer
+	// med sin syster. RETURNING har ingen ordning, därför sorteringen. Ett
+	// förband utan nummer (0) sorteras sist.
+	sort.SliceStable(escort, func(i, j int) bool {
+		oi, oj := escort[i].ordinal, escort[j].ordinal
+		if (oi == 0) != (oj == 0) {
+			return oj == 0
+		}
+		return oi < oj
+	})
 	for _, e := range escort {
 		n, err := unit.AllocateOrdinal(ctx, tx, m.SettlementID, e.typ)
 		if err != nil {

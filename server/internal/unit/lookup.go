@@ -48,12 +48,16 @@ func LoadDisplayName(ctx context.Context, q DisplayNameLoader, unitID uuid.UUID)
 		return ""
 	}
 
-	if utype == string(TypeNomadicHost) {
+	loadWanax := func() string {
 		var wanax string
 		_ = q.QueryRow(ctx,
 			`SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, ownerID,
 		).Scan(&wanax)
-		return HostName(wanax).DisplayName
+		return wanax
+	}
+
+	if utype == string(TypeNomadicHost) {
+		return HostName(loadWanax()).DisplayName
 	}
 
 	town := ""
@@ -73,5 +77,11 @@ func LoadDisplayName(ctx context.Context, q DisplayNameLoader, unitID uuid.UUID)
 	if ordinal != nil {
 		ord = *ordinal
 	}
-	return LandUnitName(utype, ord, town).DisplayName
+	// Utan stad bär förbandet sin Wanax namn (LandUnitName) — samma regel som
+	// unitSummaries, så notisen och arméfliken säger samma sak.
+	wanax := ""
+	if town == "" {
+		wanax = loadWanax()
+	}
+	return LandUnitName(utype, ord, town, wanax).DisplayName
 }

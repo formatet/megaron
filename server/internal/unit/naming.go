@@ -18,6 +18,7 @@ import (
 // sju filer innan Fas 0.
 //
 //	LAND:    [Ordinal] [Unit Type] of [Support Settlement]
+//	         [Ordinal] [Unit Type] of [Wanax]   (utan stad — t.ex. före grundandet)
 //	HOST:    Nomadic Host of [Wanax]
 //	RUNNER:  [Wanax]'s Runner from [Origin] to [Destination]
 //	CARAVAN: [Wanax]'s [Good] Caravan from [Origin] to [Destination]
@@ -64,18 +65,29 @@ type Name struct {
 
 // LandUnitName: "2nd Spearmen of Knossos".
 //
-// Varje led kan saknas och faller då bort utan att lämna skräp: en enhet utan
-// försörjande stad (en warband efter en kollaps) heter bara "2nd Spearmen",
-// och en utan ordinal bara "Spearmen of Knossos".
-func LandUnitName(unitType string, ordinal int, supportTown string) Name {
+// Utan försörjande stad bär förbandet sin Wanax namn i stället: "1st Spearmen
+// of Ariadne". Det är nomadhordens eskort före grundandet (Timothy 2026-09-25:
+// "at start they are called 'First Spearmen of WANAX_NAME'") — innan dess hette
+// båda kohorterna bara "Spearmen" och gick inte att skilja åt. Samma regel
+// gäller allt annat utan stad (en warband efter en kollaps), av samma skäl som
+// HostName: förbandet hör då till en person, inte till en stad.
+//
+// Varje led kan saknas och faller då bort utan att lämna skräp: utan stad OCH
+// utan Wanax heter enheten bara "2nd Spearmen", och en utan ordinal bara
+// "Spearmen of Knossos".
+func LandUnitName(unitType string, ordinal int, supportTown, wanax string) Name {
 	n := Name{Ordinal: ordinal, Type: unitType, TypeLabel: DisplayName(unitType), SupportTown: supportTown}
 	parts := make([]string, 0, 4)
 	if ordinal > 0 {
 		parts = append(parts, Ordinal(ordinal))
 	}
 	parts = append(parts, n.TypeLabel)
-	if supportTown != "" {
+	switch {
+	case supportTown != "":
 		parts = append(parts, "of "+supportTown)
+	case wanax != "":
+		n.Wanax = wanax
+		parts = append(parts, "of "+wanax)
 	}
 	n.DisplayName = strings.Join(parts, " ")
 	return n

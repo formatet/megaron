@@ -108,15 +108,23 @@ func seedNomadicHost(
 
 	// The escort: two ordinary spearmen cohorts, standing with the host. They are
 	// ordinary units in every way except who pays them (the store, until founding).
+	//
+	// Each cohort carries its regiment number from the start (Timothy 2026-09-25:
+	// two identical "Spearmen" could not be told apart). Before founding there is
+	// no settlement, so there is no unit_ordinals counter to draw from (it is
+	// keyed on settlement_id) — but a fresh Wanax owns no other spearmen, so the
+	// escort is simply 1st and 2nd, and renders "1st Spearmen of <Wanax>"
+	// (unit.LandUnitName). At founding foundMetropolis re-draws both numbers from
+	// the metropolis's counter in this same order, so 1st stays 1st.
 	spearIDs := make([]uuid.UUID, 0, nomadicHostSpearmen)
 	for i := 0; i < nomadicHostSpearmen; i++ {
 		var id uuid.UUID
 		if err := tx.QueryRow(ctx,
-			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
-			 VALUES ($1, $2, $3, $4, $5, 0, 'positioned', $6, $7)
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, ordinal)
+			 VALUES ($1, $2, $3, $4, $5, 0, 'positioned', $6, $7, $8)
 			 RETURNING id`,
 			worldID, playerID, string(unit.TypeSpearman), string(unit.CategoryLand),
-			nomadicHostSpearmenSize, q, r,
+			nomadicHostSpearmenSize, q, r, i+1,
 		).Scan(&id); err != nil {
 			return uuid.Nil, fmt.Errorf("insert host spearman %d: %w", i+1, err)
 		}
