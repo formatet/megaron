@@ -14,4 +14,4 @@ A unit standing in the field eats more than one in garrison, with nothing to for
 
 From the command line there are also dedicated watch orders: a ship on **patrol** at a coastal hex, which comes home by itself when the patrol ends, and a land unit **posted** as a forward watch until you recall it ([[keryx]]).
 
-The threshold at which a unit retreats mid-battle can be set from the command line only, for now ([[rough-edges]]).
+The threshold at which a unit retreats mid-battle — a preset fraction of losses, or **hold to the last man** — is a retreat order set the same way as stance: **War → Army**, next to the stance selector, or `keryx unit retreat-order` ([[keryx]]). It only takes for a unit currently fighting; on a field unit it too travels by [[runners|Runner]].

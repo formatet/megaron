@@ -552,6 +552,23 @@ function renderUnitCard(u) {
       + (u.stance ? '<option value="none">— clear</option>' : '')
       + '</select> '
       + '<button onclick="unitStance(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
+
+    // Retreat order (KR3 §5, mid-battle rout threshold): same posture as
+    // Load/Unload/Repair below — the server is the sole judge of whether this
+    // unit is currently a battle participant (standing_orders lives on
+    // battle_participants, not on the unit itself, so the units payload
+    // carries no flag to gate this button on). A unit not in a battle gets
+    // back "unit is not in an active battle" via formatApiError. No way to
+    // show the CURRENT threshold here either — the API doesn't expose it on
+    // the units list, only on the standing-orders response itself.
+    actions += '<select id="uretreat-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
+      + '<option value="">retreat order…</option>'
+      + '<option value="0.25">retreat at 25% losses</option>'
+      + '<option value="0.5">retreat at 50% losses</option>'
+      + '<option value="0.75">retreat at 75% losses</option>'
+      + '<option value="hold">hold to the last man</option>'
+      + '</select> '
+      + '<button onclick="unitRetreatOrder(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
   }
 
   // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the
@@ -746,6 +763,38 @@ export async function unitStance(unitID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = formatApiError(data, 'Stance change failed');
+  }
+}
+
+// unitRetreatOrder sets a unit's mid-battle rout threshold (KR3 §5). Same
+// latency rule as unitStance: a field unit's commander only hears it when a
+// Runner physically arrives (order_dispatched, 202); a garrisoned unit
+// already inside the battle (distance 0 — the Wanax is in that city) applies
+// at once. The server rejects it outright if the unit is not currently a
+// battle participant — that refusal surfaces via formatApiError below, same
+// "let the server be the judge" posture as Load/Unload/Repair.
+export async function unitRetreatOrder(unitID) {
+  const sel = document.getElementById('uretreat-' + unitID);
+  if (!sel || !sel.value) return;
+  const resEl = document.getElementById('war-unit-res');
+  if (resEl) resEl.textContent = '';
+  const body = sel.value === 'hold' ? { hold_to_last_man: true } : { retreat_at_loss: parseFloat(sel.value) };
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/standing-orders`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    if (data.status === 'order_dispatched') {
+      if (resEl) {
+        resEl.style.color = 'var(--text-dim)';
+        resEl.textContent = '🏃 Runner carries the retreat order — applies on delivery';
+      }
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+    }
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = formatApiError(data, 'Retreat order failed');
   }
 }
 

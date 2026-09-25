@@ -37,7 +37,7 @@ import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
   unitRecall, unitRedirect, unitRedirectToggle, unitMarch, unitMarchSend,
   closeMarchPanel, unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
-  warFocusUnit,
+  unitRetreatOrder, warFocusUnit,
 } from './ui/drawers/war.js';
 import {
   loadEconomyDrawer, loadTransferGoods, startTransfer,
@@ -222,6 +222,7 @@ Object.assign(window, {
   unitRedirect,
   unitRedirectToggle,
   unitRepair,
+  unitRetreatOrder,
   unitStance,
   unitUnload,
   warAbandon,
