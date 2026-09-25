@@ -344,7 +344,7 @@ func placementYield(good string, rate float64, capL1 int, placeCap int, mult flo
 // production_rules row for building_type='farm', including plains+farm,
 // regardless of that row also naming a terrain) — so a farm didn't just raise
 // a hex's tier, it separately added its own 2 workers on top. Dropping that
-// second pool at P4 broke TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient
+// second pool at P4 broke TestApplyDecay_Growth_MinimalCitySelfSufficient
 // (a previously-green hard invariant: a neglected 5000-pop start city with
 // exactly one farmable hex must never starve — min grain observed on master
 // was already a thin 16.6, so losing farm's +2 workers pushed it to 0).

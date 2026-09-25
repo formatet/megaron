@@ -409,6 +409,22 @@ func GrainBalance(grossRate float64, population int) (consumption, net float64) 
 	return consumption, grossRate - consumption
 }
 
+// NetFoodGoods are the goods whose production counts toward a city's daily
+// food balance (FoodNet) — the two FoodTick feeds the population from every
+// day. Livestock is left out on purpose: it is the emergency slaughter at the
+// end of FoodConsumptionSplit's chain, not a daily ration. Same set as
+// SitosConfig's default SITOS_SUBSISTENCE_GOODS.
+var NetFoodGoods = []string{GoodGrain, GoodFish}
+
+// FoodNet is a city's daily food balance: what its NetFoodGoods produce per
+// tick (foodRate, the sum of their rates) minus what its population eats per
+// tick. Positive is an ÖVERFLÖD — the one gate for population growth (Timothy
+// 2026-09-26; kharis/tick.go applyDecay writes the same formula in SQL) — and
+// the direction figure every surface shows as food_net_per_tick.
+func FoodNet(foodRate float64, population int) float64 {
+	return foodRate - GrainConsumptionPerTick(population)
+}
+
 // livestockFoodValue is the food value of one slaughtered animal — Timothy
 // 2026-08-07: "jag tycker nästan att ett kreatur kan få leverera 200 mat om
 // det dödas." Explicitly a ratt, not a lock (megaron_plan_foda_konsistens.md

@@ -11,4 +11,4 @@ When the granary releases food you get a notification, and it says so if the gra
 
 The granary holds food only. Silver never passes through it.
 
-A well-filled Sitos also helps a city [[growth|grow]], and buys time under [[sieges|siege]].
+A well-filled Sitos buys time under [[sieges|siege]].

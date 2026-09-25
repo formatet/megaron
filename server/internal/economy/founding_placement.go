@@ -126,7 +126,7 @@ func rankSlotsFromOptions(hexOptions []HexOption, center hexgrid.Coord) []foodSl
 // default. Timothy 2026-08-08, resolving the collision between P4's "en
 // oplacerad gubbe producerar ingenting" (Temenos_varutaxonomi_sol.md §1.1)
 // and the pre-existing "a neglected new city must never starve" invariant
-// (TestApplyDecay_GrainFundedGrowth_MinimalCitySelfSufficient):
+// (TestApplyDecay_Growth_MinimalCitySelfSufficient):
 //
 //	"wanaxen måste logga in och grunda staden med sin host, och då tänker jag
 //	att det automatiskt placeras ut gubbar att arbeta på de mest produktiva

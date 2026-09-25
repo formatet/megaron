@@ -254,6 +254,13 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	if err := json.Unmarshal(getRec.Body.Bytes(), &getResp); err != nil {
 		t.Fatalf("parse provinces Get response: %v", err)
 	}
+	// food_net_per_tick is the food BALANCE — production minus the ration —
+	// the same figure growth is gated on (2026-09-26). Seeded: grain 12.5 +
+	// fish 2.0 per tick, pop 800 eating 0.005 each = 4.0. Written as literals
+	// so the test cannot agree with economy.FoodNet merely by calling it.
+	if got, want := getResp.Settlement.Sitos.FoodNetPerTick, 10.5; got < want-1e-9 || got > want+1e-9 {
+		t.Errorf("food_net_per_tick = %v, want %v (14.5 produced − 4.0 eaten)", got, want)
+	}
 
 	ovReq := httptest.NewRequest(http.MethodGet, "/worlds/"+worldID.String()+"/settlements/overview", nil)
 	ovReq.Header.Set("Authorization", "Bearer "+token)
