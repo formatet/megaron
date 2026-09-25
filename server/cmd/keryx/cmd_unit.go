@@ -1229,9 +1229,8 @@ func unitStanceCmd() *cobra.Command {
 
 // unitRetreatOrderCmd sends KR3 §5's mid-battle retreat order: change the
 // rout threshold (or hold-to-last-man) of a unit that is CURRENTLY fighting
-// in an active battle. There is no pre-battle preset — the unit must already
-// be a battle participant, same as the server-side scope (megaron_todo.md
-// KR3 loose end (c)).
+// in an active battle. It overrides, for that battle only, the realm-wide
+// retreat default the unit carried in (`keryx retreat-default`, mig 145).
 func unitStandingOrdersCmd() *cobra.Command {
 	var unitID string
 	var retreatAtLoss float64
@@ -1240,6 +1239,9 @@ func unitStandingOrdersCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "retreat-order",
 		Short: "Change a unit's mid-battle retreat threshold",
+		Long: `Change the retreat threshold of a unit that is fighting in a battle right now.
+It overrides your realm-wide retreat default (keryx retreat-default) for this
+battle only. A unit not in a battle is refused — set the default instead.`,
 		Example: `  keryx unit retreat-order --unit <id> --retreat-at-loss 0.5
   keryx unit retreat-order --unit <id> --hold-to-last-man`,
 		Args: rejectPositionalArgs("unit"),

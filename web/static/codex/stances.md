@@ -14,4 +14,9 @@ A unit standing in the field eats more than one in garrison, with nothing to for
 
 From the command line there are also dedicated watch orders: a ship on **patrol** at a coastal hex, which comes home by itself when the patrol ends, and a land unit **posted** as a forward watch until you recall it ([[keryx]]).
 
-The threshold at which a unit retreats mid-battle — a preset fraction of losses, or **hold to the last man** — is a retreat order set the same way as stance: **War → Army**, next to the stance selector, or `keryx unit retreat-order` ([[keryx]]). It only takes for a unit currently fighting; on a field unit it too travels by [[runners|Runner]].
+## When to retreat
+
+When your men break off a battle is set in two places:
+
+- **For the whole realm** — **War → Army → When to retreat**, or `keryx retreat-default` ([[keryx]]). Choose a share of losses, **hold to the last man**, or leave it to the troops' [[loyalty]] (the default: the more loyal their city, the longer they hold). Every unit carries this into a battle it enters. It applies at once, since no one has to carry it anywhere, but only to battles entered from then on — a battle already under way keeps what its units brought.
+- **For one unit, in the battle it is fighting now** — the **this battle** selector on its card in **War → Army** (it only appears while the unit is fighting), or `keryx unit retreat-order`. It overrides the realm setting for that battle only. On a field unit it is an order, and travels by [[runners|Runner]].

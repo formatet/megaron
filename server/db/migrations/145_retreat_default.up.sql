@@ -1,0 +1,17 @@
+-- Migration 145: a Wanax's realm-wide default retreat order (Timothy 2026-09-25:
+-- "there must be some kind of general setting under War").
+--
+-- Same JSONB shape as battle_participants.standing_orders (mig 114) —
+-- {"retreat_at_loss": <fraction of starting strength LEFT at which the side
+-- breaks>} or {"hold_to_last_man": true} — because it is copied verbatim onto
+-- every battle_participants row this Wanax's units get when they enter a
+-- battle (combat.startBattle/joinBattle). The per-battle override
+-- (combat.SetStandingOrders) then edits that copy, never this column.
+--
+-- Default '{}' = exactly today's behaviour for everyone who never touches it:
+-- an empty standing_orders means "break at the loyalty-derived threshold"
+-- (combat.routFractionForLoyalty) and is what every participant got before
+-- this migration. No backfill needed. The upserts in join.go and
+-- create_metropolis.go do not name this column, so a setting chosen while the
+-- world is forming survives founding.
+ALTER TABLE player_world_records ADD COLUMN retreat_default JSONB NOT NULL DEFAULT '{}'::jsonb;

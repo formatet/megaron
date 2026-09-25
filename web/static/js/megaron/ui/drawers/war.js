@@ -9,6 +9,7 @@ import { unitTypeLabel, actorName } from '../actornames.js';
 import { playWarHorn } from '../sfx.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
+import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 
 // "ready <eta>" while still building/training, collapsing to a bare "ready"
 // once complete (fmtArrival's doneWord already reads "ready" — this just
@@ -128,9 +129,12 @@ export async function loadWarDrawer() {
       // Founder phase: no settlement yet, but /units is settlement-independent
       // — the host + any field cohorts already exist server-side. Show them
       // in Army/Movements; Recruit needs a city, so it stays locked.
-      const unitsRes = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
+      const [unitsRes, retreatSec] = await Promise.all([
+        fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
+        loadRetreatDefaultSection(),
+      ]);
       const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
-      let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>';
+      let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
       armyHtml += allUnits.length
         ? allUnits.map(u => renderUnitCard(u)).join('')
         : '<p class="empty-state">No units.</p>';
@@ -143,11 +147,12 @@ export async function loadWarDrawer() {
     }
 
     const needTwo = prevRecruitCity !== capital.id;
-    const [res, recRes, unitsRes, catalogue] = await Promise.all([
+    const [res, recRes, unitsRes, catalogue, retreatSec] = await Promise.all([
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}`),
       needTwo ? fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${prevRecruitCity}`) : Promise.resolve(null),
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
       getUnitCatalogue(),
+      loadRetreatDefaultSection(),
     ]);
     if (!res.ok) throw new Error();
     const pd = (await res.json()).settlement;
@@ -163,8 +168,8 @@ export async function loadWarDrawer() {
     const catByType = {};
     (catalogue || []).forEach(u => { catByType[u.type] = u; });
 
-    // Army tab — discrete units list
-    let armyHtml = '<div class="dsec"><div class="dsec-title">Units</div>';
+    // Army tab — the realm-wide retreat setting, then the discrete units list
+    let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
     if (allUnits.length) {
       armyHtml += allUnits.map(u => renderUnitCard(u)).join('');
     } else {
@@ -553,22 +558,13 @@ function renderUnitCard(u) {
       + '</select> '
       + '<button onclick="unitStance(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
 
-    // Retreat order (KR3 §5, mid-battle rout threshold): same posture as
-    // Load/Unload/Repair below — the server is the sole judge of whether this
-    // unit is currently a battle participant (standing_orders lives on
-    // battle_participants, not on the unit itself, so the units payload
-    // carries no flag to gate this button on). A unit not in a battle gets
-    // back "unit is not in an active battle" via formatApiError. No way to
-    // show the CURRENT threshold here either — the API doesn't expose it on
-    // the units list, only on the standing-orders response itself.
-    actions += '<select id="uretreat-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
-      + '<option value="">retreat order…</option>'
-      + '<option value="0.25">retreat at 25% losses</option>'
-      + '<option value="0.5">retreat at 50% losses</option>'
-      + '<option value="0.75">retreat at 75% losses</option>'
-      + '<option value="hold">hold to the last man</option>'
-      + '</select> '
-      + '<button onclick="unitRetreatOrder(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> ';
+    // Retreat order (KR3 §5): the per-unit override of the realm-wide
+    // setting, for the current battle only. Shown only while the unit is
+    // fighting (in_battle on the units list — the same condition
+    // SetStandingOrders checks); outside battle it could only ever answer
+    // "unit is not in an active battle", and the realm-wide setting at the
+    // top of this tab is what applies.
+    actions += unitRetreatControlHTML(u);
   }
 
   // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the
@@ -787,15 +783,16 @@ export async function unitStance(unitID) {
 // latency rule as unitStance: a field unit's commander only hears it when a
 // Runner physically arrives (order_dispatched, 202); a garrisoned unit
 // already inside the battle (distance 0 — the Wanax is in that city) applies
-// at once. The server rejects it outright if the unit is not currently a
-// battle participant — that refusal surfaces via formatApiError below, same
-// "let the server be the judge" posture as Load/Unload/Repair.
+// at once. The control only shows while the unit is fighting (in_battle), but
+// the battle can end before a Runner arrives — any refusal still surfaces via
+// formatApiError below. It overrides the realm-wide setting for this battle only.
 export async function unitRetreatOrder(unitID) {
   const sel = document.getElementById('uretreat-' + unitID);
   if (!sel || !sel.value) return;
   const resEl = document.getElementById('war-unit-res');
   if (resEl) resEl.textContent = '';
-  const body = sel.value === 'hold' ? { hold_to_last_man: true } : { retreat_at_loss: parseFloat(sel.value) };
+  const body = retreatBody(sel.value);
+  if (!body) return;
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/standing-orders`, {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
   });
@@ -812,6 +809,42 @@ export async function unitRetreatOrder(unitID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = formatApiError(data, 'Retreat order failed');
+  }
+}
+
+// loadRetreatDefaultSection fetches the realm-wide retreat setting and renders
+// its section. A failed read shows the server's reason, never a guessed value.
+async function loadRetreatDefaultSection() {
+  try {
+    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/retreat-default`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return retreatDefaultSectionHTML(null, formatApiError(data, 'Could not load your retreat setting'));
+    return retreatDefaultSectionHTML(data);
+  } catch (e) {
+    console.error('loadRetreatDefaultSection', e);
+    return retreatDefaultSectionHTML(null);
+  }
+}
+
+// saveRetreatDefault stores the realm-wide retreat setting (PUT
+// …/retreat-default). A standing doctrine, not an order to a unit: no Runner,
+// it applies at once — but only to units entering a battle from now on.
+export async function saveRetreatDefault() {
+  const sel = document.getElementById('war-retreat-default');
+  const resEl = document.getElementById('war-retreat-default-res');
+  const body = sel ? retreatBody(sel.value) : null;
+  if (!body) return;
+  if (resEl) { resEl.className = 'retreat-res'; resEl.textContent = ''; }
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/retreat-default`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!resEl) return;
+  if (res.ok) {
+    resEl.textContent = 'Saved — applies to battles your units enter from now on.';
+  } else {
+    resEl.className = 'retreat-res retreat-res-err';
+    resEl.textContent = formatApiError(data, 'Could not save your retreat setting');
   }
 }
 
