@@ -7,7 +7,7 @@ After signing in you land on the join page, which names the world and how many W
 
 ## A world that has not begun
 
-A new world stands still until enough Wanaxes have entered it. Until then no day passes: nothing is produced, eaten or delivered. This is deliberate, so that whoever arrives first does not grow on everyone else's waiting time.
+A new world stands still until enough Wanaxes have entered it. Until then no day passes: nothing is produced, eaten or delivered — and no orders are taken. You can look around, read this Codex and file reports, but every order is refused with *"The world has not begun — 1 of 4 Wanaxes have arrived"* (the numbers are the world's own) until the last of them enters. This is deliberate, so that whoever arrives first does not grow on everyone else's waiting time.
 
 The **Notifications** drawer (☍) tells you whether the world has begun and how many more Wanaxes it is waiting for. If the date in the top bar never changes, this is almost certainly why. See [[time]].
 

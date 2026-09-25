@@ -25,8 +25,9 @@ export const State = {
   TICK_SECONDS: null,
   TICK_ANCHOR_MS: null,
 
-  // World start gate (join.go worldStartWanaxes): 'forming' means the clock has
-  // not begun. Players may join, look around and give orders while it waits.
+  // World start gate (POLEIA_WORLD_START_WANAXES, join.go): 'forming' means the
+  // clock has not begun. Players may join and look around while it waits, but
+  // every order is refused until it starts (world_guard.go RequireStartedWorld).
   WORLD_STATE: null,
   WANAXES_JOINED: 0,
   WANAXES_NEEDED: 0,
