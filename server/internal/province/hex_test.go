@@ -14,7 +14,7 @@ func TestLiveRadius_LandByEyeKind(t *testing.T) {
 		{EyeShip, 1},
 	}
 	for _, c := range cases {
-		if got := LiveRadius(c.kind, false, "plains"); got != c.want {
+		if got := LiveRadius(c.kind, "plains"); got != c.want {
 			t.Errorf("LiveRadius(%q, plains) = %d, want %d", c.kind, got, c.want)
 		}
 	}
@@ -37,7 +37,7 @@ func TestLiveRadius_MountainAddsTwo(t *testing.T) {
 	}
 	for _, terrain := range []string{"mountain_limestone", "mountain_red"} {
 		for _, c := range cases {
-			if got := LiveRadius(c.kind, false, terrain); got != c.want {
+			if got := LiveRadius(c.kind, terrain); got != c.want {
 				t.Errorf("LiveRadius(%q, %q) = %d, want %d", c.kind, terrain, got, c.want)
 			}
 		}
@@ -49,8 +49,16 @@ func TestLiveRadius_MountainAddsTwo(t *testing.T) {
 func TestAnyEyeSees_ShipSeesFarOverSeaButNotInland(t *testing.T) {
 	ship := Eye{Pos: MapPosition{Q: 0, R: 0}, Kind: EyeShip}
 	eyes := []Eye{ship}
+	// Open water everywhere except a strip of land east of the ship.
+	land := map[MapPosition]bool{{Q: 1, R: 0}: true, {Q: 2, R: 0}: true}
+	SetSeaHorizons(eyes, func(p MapPosition) string {
+		if land[p] {
+			return "plains"
+		}
+		return "deep_sea"
+	})
 
-	seaTile := MapPosition{Q: 4, R: 0} // distance 4
+	seaTile := MapPosition{Q: 0, R: 4} // distance 4, open water all the way
 	if !AnyEyeSees(eyes, seaTile, "coastal_sea") {
 		t.Error("ship should see 4 hexes out over sea")
 	}

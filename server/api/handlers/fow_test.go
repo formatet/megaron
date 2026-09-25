@@ -198,9 +198,16 @@ func TestFOWTier_LandUnitRadiusTwo(t *testing.T) {
 // hexes out over open water, only 1 hex inland.
 func TestFOWTier_ShipSeesSeaFarButLandNear(t *testing.T) {
 	eyes := []province.Eye{{Pos: province.MapPosition{Q: 0, R: 0}, Kind: province.EyeShip}}
+	// Open water along r (q = 0); the plains tiles below sit east of it.
+	province.SetSeaHorizons(eyes, func(p province.MapPosition) string {
+		if p.Q == 0 {
+			return "coastal_sea"
+		}
+		return "plains"
+	})
 	remembered := map[[2]int]bool{}
 
-	if got := tierOf(eyes, remembered, province.MapPosition{Q: 4, R: 0}, "coastal_sea"); got != "live" {
+	if got := tierOf(eyes, remembered, province.MapPosition{Q: 0, R: 4}, "coastal_sea"); got != "live" {
 		t.Errorf("ship should live-see sea at distance 4, got tier %q", got)
 	}
 	if got := tierOf(eyes, remembered, province.MapPosition{Q: 1, R: 0}, "plains"); got != "live" {

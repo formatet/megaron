@@ -13,7 +13,9 @@ import (
 // LoadLiveEyes returns the player's tier-1 (live) vision sources: own and allied
 // settlements, plus own units currently on the map (marching or positioned — units
 // still 'forming'/'garrison' have no q/r of their own and are seen only via their
-// settlement's eye; 'embarked' units carry no position, they move with their ship).
+// settlement's eye; 'embarked' units carry no position, they move with their ship;
+// 'disbanded' units no longer exist — most disband paths leave q/r in place, so
+// the status filter, not the position, is what keeps them from seeing).
 // Each eye is typed so LiveRadius can size vision per temenos_synlighet.md's
 // per-eye-kind × per-target-terrain table. Scouted tiles/provinces and messenger
 // contacts are NOT eyes — they are tier-2 memory (see loadRememberedTiles in
@@ -54,7 +56,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		`SELECT status, q, r, target_q, target_r, category, type, departs_at, arrives_at
 		 FROM units
 		 WHERE world_id = $1 AND owner_id = $2
-		   AND status != 'embarked'
+		   AND status NOT IN ('embarked', 'disbanded')
 		   AND q IS NOT NULL AND r IS NOT NULL`,
 		worldID, playerID,
 	)
@@ -167,84 +169,64 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		rRows.Close()
 	}
 
-	markEyesAtWater(ctx, db, worldID, eyes)
+	loadSeaHorizons(ctx, db, worldID, eyes)
 	return eyes
 }
 
-// markEyesAtWater sets Eye.AtWater for every eye standing on a sea hex or beside
-// one — the open-horizon condition in LiveRadius. Runs as a post-pass because a
-// marching eye's position is only known after interpolation.
+// loadSeaHorizons fills every eye's open-water horizon (SetSeaHorizons) from the
+// map. Runs as a post-pass because a marching eye's position is only known after
+// interpolation.
 //
-// Deliberately NOT map_tiles.coastal: migration 101 widened that column to mean
-// "adjacent to any water, river included", and a 1-hex river between banks opens
-// no horizon. This asks the terrain itself for sea, nothing else.
-//
-// One batched query over the eyes' own hexes ∪ their 6 neighbours (≤ 7·len(eyes)
-// hexes), not a full map load — the cost must not grow with map size.
-func markEyesAtWater(ctx context.Context, db Queryer, worldID uuid.UUID, eyes []Eye) {
+// One batched query for the sea hexes inside the SeaHorizonRadius disk of every
+// eye (≤ 61·len(eyes) hexes, deduplicated), not a full map load — the cost must not
+// grow with map size. Only sea hexes are fetched: the sightline asks nothing else.
+func loadSeaHorizons(ctx context.Context, db Queryer, worldID uuid.UUID, eyes []Eye) {
 	if len(eyes) == 0 {
 		return
 	}
 
-	want := make(map[[2]int]bool, len(eyes)*7)
+	want := make(map[MapPosition]struct{}, len(eyes)*61)
 	for _, e := range eyes {
-		want[[2]int{e.Pos.Q, e.Pos.R}] = true
-		for _, n := range HexNeighbors(e.Pos) {
-			want[[2]int{n.Q, n.R}] = true
+		for _, c := range hexgrid.Disk(hexgrid.Coord{Q: e.Pos.Q, R: e.Pos.R}, SeaHorizonRadius) {
+			want[MapPosition{Q: c.Q, R: c.R}] = struct{}{}
 		}
 	}
 	qs := make([]int32, 0, len(want))
 	rs := make([]int32, 0, len(want))
-	for k := range want {
-		qs = append(qs, int32(k[0]))
-		rs = append(rs, int32(k[1]))
+	for p := range want {
+		qs = append(qs, int32(p.Q))
+		rs = append(rs, int32(p.R))
 	}
 
 	rows, err := db.Query(ctx,
-		`SELECT t.q, t.r
+		`SELECT t.q, t.r, t.terrain
 		   FROM map_tiles t
 		   JOIN unnest($2::int[], $3::int[]) AS p(q, r) ON t.q = p.q AND t.r = p.r
 		  WHERE t.world_id = $1 AND t.terrain IN ('coastal_sea', 'deep_sea')`,
 		worldID, qs, rs,
 	)
 	if err != nil {
-		// Fail closed: every eye keeps AtWater=false and reads the sea at its
-		// ordinary land vantage. A failed lookup may hide fog, never reveal it.
+		// Fail closed: every eye keeps a nil horizon and reads the sea at its
+		// ordinary vantage. A failed lookup may hide fog, never reveal it.
 		return
 	}
-	sea := make(map[[2]int]bool)
+	terrain := make(map[MapPosition]string)
 	for rows.Next() {
-		var q, r int
-		if rows.Scan(&q, &r) == nil {
-			sea[[2]int{q, r}] = true
+		var p MapPosition
+		var t string
+		if rows.Scan(&p.Q, &p.R, &t) == nil {
+			terrain[p] = t
 		}
 	}
 	rows.Close()
 
-	markAtWater(eyes, sea)
-}
-
-// markAtWater is the pure half of markEyesAtWater: given the set of sea hexes,
-// flag every eye that stands on one or neighbours one. Mutates eyes in place.
-func markAtWater(eyes []Eye, sea map[[2]int]bool) {
-	for i := range eyes {
-		if sea[[2]int{eyes[i].Pos.Q, eyes[i].Pos.R}] {
-			eyes[i].AtWater = true
-			continue
-		}
-		for _, n := range HexNeighbors(eyes[i].Pos) {
-			if sea[[2]int{n.Q, n.R}] {
-				eyes[i].AtWater = true
-				break
-			}
-		}
-	}
+	SetSeaHorizons(eyes, func(p MapPosition) string { return terrain[p] })
 }
 
 // SweepLiveRadius force-records into player_scouted_tiles every tile that a live
-// eye of eyeKind standing at pos would currently reveal, using the same
-// per-target-terrain radius (LiveRadius) the ordinary /map read applies via
-// AnyEyeSees. /map normally does this memory-write itself on every read (see
+// eye of eyeKind standing at pos would currently reveal, using the same sight
+// test (Eye.Sees: LiveRadius + the open-water sightline) the ordinary /map read
+// applies via AnyEyeSees. /map normally does this memory-write itself on every read (see
 // api/handlers/world.go), so it self-heals for any unit that stays put — but a
 // unit whose live-vision window closes within the same transaction it opened
 // (combat/unit_arrival.go's exploreArrived: the ship turns for home immediately
@@ -255,25 +237,15 @@ func markAtWater(eyes []Eye, sea map[[2]int]bool) {
 // player happened to read the map at that exact instant.
 //
 // db must support both Query and Exec — pgx.Tx and *pgxpool.Pool both do.
-// radius is capped at 4 (the highest LiveRadius ever returns: EyeShip at open
-// sea, or a land eye at a mountain), so the candidate disk never needs to be
-// larger regardless of eyeKind.
+// The candidate disk is SeaHorizonRadius (4): the widest reach a ship or land
+// unit has (the open horizon, or a land eye at a mountain). The same disk holds
+// every hex the sightline can cross, so it also feeds SetSeaHorizons.
 func SweepLiveRadius(ctx context.Context, db interface {
 	Queryer
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
 }, worldID, playerID uuid.UUID, pos MapPosition, eyeKind string) error {
-	eyes := []Eye{{Pos: pos, Kind: eyeKind}}
-	markEyesAtWater(ctx, db, worldID, eyes)
-	eye := eyes[0]
-
-	const maxRadius = 4
-	disk := hexgrid.Disk(hexgrid.Coord{Q: pos.Q, R: pos.R}, maxRadius)
-	qs := make([]int32, len(disk))
-	rs := make([]int32, len(disk))
-	for i, c := range disk {
-		qs[i] = int32(c.Q)
-		rs[i] = int32(c.R)
-	}
+	disk := hexgrid.Disk(hexgrid.Coord{Q: pos.Q, R: pos.R}, SeaHorizonRadius)
+	qs, rs := hexgrid.QRArrays(disk)
 
 	rows, err := db.Query(ctx,
 		`SELECT t.q, t.r, t.terrain
@@ -285,28 +257,28 @@ func SweepLiveRadius(ctx context.Context, db interface {
 	if err != nil {
 		return err
 	}
-	type tile struct {
-		q, r    int
-		terrain string
-	}
-	var tiles []tile
+	terrain := make(map[MapPosition]string, len(disk))
 	for rows.Next() {
-		var t tile
-		if rows.Scan(&t.q, &t.r, &t.terrain) == nil {
-			tiles = append(tiles, t)
+		var p MapPosition
+		var t string
+		if rows.Scan(&p.Q, &p.R, &t) == nil {
+			terrain[p] = t
 		}
 	}
 	rows.Close()
 
-	for _, t := range tiles {
-		target := MapPosition{Q: t.q, R: t.r}
-		if HexDistance(eye.Pos, target) > LiveRadius(eye.Kind, eye.AtWater, t.terrain) {
+	eyes := []Eye{{Pos: pos, Kind: eyeKind}}
+	SetSeaHorizons(eyes, func(p MapPosition) string { return terrain[p] })
+	eye := eyes[0]
+
+	for target, t := range terrain {
+		if !eye.Sees(target, t) {
 			continue
 		}
 		if _, err := db.Exec(ctx,
 			`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
 			 VALUES ($1, $2, $3, $4) ON CONFLICT (world_id, player_id, q, r) DO NOTHING`,
-			worldID, playerID, t.q, t.r,
+			worldID, playerID, target.Q, target.R,
 		); err != nil {
 			return err
 		}
