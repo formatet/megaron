@@ -1533,6 +1533,31 @@ body:has(.auth-page) main {
 }
 .dw-goto-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
 .dw-goto-btn:disabled { opacity: .4; cursor: default; }
+/* Occupation choices (sack/burn/annex) offered inline in the dispatch window —
+   megaron_plan_erovring.md S3/S6, web surface added 2026-09-25. */
+.dw-occupation {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+.dw-occ-label { color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 0.4rem; }
+.dw-occ-choice { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; flex-wrap: wrap; }
+.dw-occ-btn {
+  padding: 0.3rem 0.6rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.dw-occ-btn:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.dw-occ-btn:disabled { opacity: .4; cursor: default; }
+.dw-occ-desc { color: var(--text-dim); font-size: var(--fs-xs); }
+.dw-occ-confirm { display: flex; align-items: center; gap: 0.4rem; margin: 0 0 0.5rem 0; flex-wrap: wrap; }
+.dw-occ-warn { color: var(--blood); font-size: var(--fs-xs); font-weight: bold; }
+.dw-occ-result { margin-top: 0.4rem; color: var(--text-dim); font-size: var(--fs-xs); font-family: var(--mono); }
 /* Bottom-corner mute checkbox — the reglage sits ON the event, never on a
    settings page (megaron_plan_dispatches.md §1). */
 .dw-mute-row {
