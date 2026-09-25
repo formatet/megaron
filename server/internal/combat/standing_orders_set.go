@@ -7,9 +7,10 @@ package combat
 // Same extraction pattern as SetStance (stance_set.go).
 //
 // standing_orders lives on battle_participants (migration 114), not on units —
-// there is deliberately no pre-battle "preset" surface here (megaron_todo.md
-// KR3 loose end (c) names only the MID-BATTLE change as the remaining gap);
-// a unit not currently in an active battle has nothing to update.
+// a unit not currently in an active battle has nothing to update. The
+// pre-battle setting is realm-wide, not per unit: a participant row is born
+// with its owner's retreat default (retreat_default.go, migration 145), and
+// this function overrides that copy for the current battle only.
 
 import (
 	"context"
