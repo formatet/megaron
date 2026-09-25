@@ -206,8 +206,8 @@ func TestSeaSightline_EdgeTieIsOpenIfEitherSideIsSea(t *testing.T) {
 	}
 }
 
-// TestSeaSightline_Symmetric: with both tie sides checked, from→to equals to→from
-// for every pair in a disk, on a mixed map.
+// TestSeaSightline_Symmetric: an eye sees a sea hex exactly when that hex sees it —
+// from→to equals to→from for every sea pair in a disk, on a mixed map.
 func TestSeaSightline_Symmetric(t *testing.T) {
 	isSea := func(p MapPosition) bool { return ((p.Q*7+p.R*13)%5+5)%5 != 0 }
 	checked, open := 0, 0

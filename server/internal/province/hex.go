@@ -178,8 +178,11 @@ func SetSeaHorizons(eyes []Eye, terrainAt func(MapPosition) string) {
 // Tie rule: where the line runs exactly along the edge between two hexes, it is
 // drawn twice, nudged a hair to either side (hexLine), and the sightline holds if
 // EITHER drawing is all open water. A line skimming the edge of a sea hex skims
-// open water. Checking both sides also makes the rule symmetric (from→to equals
-// to→from) and free of directional bias, which a single fixed nudge is not.
+// open water. A single fixed nudge would settle every edge tie toward the same
+// compass side of the map, so a coast running one way would block views that the
+// mirrored coast lets through; checking both sides has no such bias. (The rule is
+// symmetric, from→to equals to→from, either way: both endpoints get the same
+// nudge, so the drawn line does not depend on its direction.)
 func SeaSightline(from, to MapPosition, isSea func(MapPosition) bool) bool {
 	if !isSea(to) {
 		return false
