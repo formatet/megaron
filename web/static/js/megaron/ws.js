@@ -5,7 +5,7 @@ import { fetchAuth } from './api.js';
 import { track } from './telemetry.js';
 // sfx.js imports nothing, so pulling it in here cannot create the cycle the
 // window.* indirection below exists to avoid.
-import { playWarHorn, playBattleClash } from './ui/sfx.js';
+import { playWarHorn, playBattleClash, playForKind } from './ui/sfx.js';
 
 // ── WebSocket — real-time province updates ────────────────────────────────
 // This module no longer formats anything: a dispatch's text, icon and colour
@@ -134,6 +134,9 @@ export function initWS() {
       // thing to do the day one appears, and they no longer cost a chip branch.
       if (msg.id) {
         window.addDispatch({ kind: msg.kind, payload: msg.payload || {}, id: msg.id, level: msg.level, time: 'now' });
+        // Live pushes only — the archive rebuild at login goes through
+        // initNotifications and stays silent (ui/sfx.js playForKind).
+        playForKind(msg.kind);
         // Same signal for the archive's unread badge: archived ⇔ has an id.
         // This was a second hand-maintained list (PERSISTENT_KINDS) whose own
         // comment recorded it having missed four kinds.
