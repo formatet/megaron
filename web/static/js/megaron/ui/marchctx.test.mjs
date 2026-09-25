@@ -137,3 +137,50 @@ test('MI5: exploreRowVisible offers the checkbox on land, never on sea or a sett
   assert.equal(exploreRowVisible({ isSea: true, isSettlement: false }), false);
   assert.equal(exploreRowVisible({ isSea: false, isSettlement: true }), false);
 });
+
+// Timothy 2026-09-25: "it doesn't seem possible to give orders to units that
+// have already been given orders — that is wrong, they must be reachable by
+// orders." The right-click march menu used to filter marching units out
+// entirely; marchCtxOrderMode is the pure decision (eligible? march or
+// redirect?) that now drives both that filter and the group's send target.
+const { marchCtxOrderMode } = await import('./marchctx.js');
+
+test('AK9: a garrisoned/positioned unit is eligible to march', () => {
+  assert.equal(marchCtxOrderMode({ status: 'garrison', deployable: true }), 'march');
+  assert.equal(marchCtxOrderMode({ status: 'positioned', deployable: true }), 'march');
+});
+
+test('AK10: a marching unit is eligible too — but for redirect, not a fresh march', () => {
+  assert.equal(marchCtxOrderMode({ status: 'marching', deployable: true }), 'redirect');
+});
+
+test('AK11: a fortified unit stays ineligible (server blocks fresh march on it)', () => {
+  assert.equal(marchCtxOrderMode({ status: 'garrison', deployable: true, stance: 'fortify' }), null);
+});
+
+test('AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped', () => {
+  assert.equal(marchCtxOrderMode({ status: 'forming', deployable: false }), null);
+  assert.equal(marchCtxOrderMode({ status: 'marching', deployable: false }), null);
+});
+
+test('AK13: a unit embarked/disbanded/other status is ineligible', () => {
+  assert.equal(marchCtxOrderMode({ status: 'embarked', deployable: true }), null);
+});
+
+test('AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send', () => {
+  const units = [
+    { id: 'u1', type: 'spearman', status: 'garrison', deployable: true, q: 5, r: 5, display_name: 'First Spearmen' },
+    { id: 'u2', type: 'spearman', status: 'marching', deployable: true, q: 5, r: 5, display_name: 'Second Spearmen' },
+  ];
+  const groups = groupMarchUnits(units, []);
+  assert.equal(groups.length, 2, 'march and redirect groups must not merge even at the same (q,r)');
+  const byMode = Object.fromEntries(groups.map(g => [g.mode, g]));
+  assert.deepEqual(byMode.march.ids, ['u1']);
+  assert.deepEqual(byMode.redirect.ids, ['u2']);
+});
+
+test('AK15: a redirect group is marked in its label — the player must see this send goes to a Runner', () => {
+  const u = { id: 'u1', type: 'spearman', status: 'marching', deployable: true, q: 5, r: 5, display_name: 'First Spearmen' };
+  const groups = groupMarchUnits([u], []);
+  assert.match(marchGroupLabelHTML(groups[0]), /redirect by Runner/);
+});
