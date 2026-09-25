@@ -63,39 +63,43 @@ const (
 type Eye struct {
 	Pos  MapPosition
 	Kind string // EyeSettlement | EyeLandUnit | EyeNomadicHost | EyeShip
-	// AtWater is true when the eye itself stands at open water: on a sea hex, or
-	// on a land hex with a sea neighbour (a coastal city, a unit on the shore).
-	// Only such an eye gets the open horizon — see LiveRadius. Set by LoadLiveEyes
-	// from the map; the zero value (false = inland) is the fail-closed default, so
-	// a hand-built or unclassified Eye can only ever see LESS, never more.
-	AtWater bool
+	// seaHorizon is the set of sea hexes this eye sees on the open horizon: those
+	// within SeaHorizonRadius that an unbroken line of open water reaches
+	// (SeaSightline). Filled by SetSeaHorizons from the map around the eye —
+	// LoadLiveEyes and SweepLiveRadius do it for every eye they build. The zero
+	// value (nil) is the fail-closed default: a hand-built or unclassified Eye
+	// reads the sea at its ordinary vantage, so a missing lookup can only ever
+	// hide, never reveal.
+	seaHorizon map[MapPosition]struct{}
 }
 
-// LiveRadius returns the live-vision radius for an eye of eyeKind looking at a tile
-// of targetTerrain. Sea hides nothing, but the open horizon belongs to whoever
-// STANDS at the water — a ship, a coastal city, a unit on the shore (eyeAtWater).
-// An eye inland reads the sea at its ordinary land vantage.
-// Land limits vision to the eye's own vantage (settlement 3 / land-unit 2 / ship 1),
-// except mountains, which are landmarks visible +2 hexes further regardless of eye.
+// SeaHorizonRadius is how far an eye sees out over open water (temenos_synlighet.md
+// tier 1, "sea = 4"). It reaches only along a straight line of open water — see
+// SeaSightline. Tunable, not an invariant.
+const SeaHorizonRadius = 4
+
+// IsSea reports whether terrain is open water: coastal_sea or deep_sea.
+// Deliberately NOT river: the horizon comes from open water, and a 1-hex-wide
+// river between tall banks opens none (megaron_floden_plan.md §5, Timothy
+// 2026-07-29). Nor map_tiles.coastal, which migration 101 widened to mean
+// "adjacent to any water, river included".
+func IsSea(terrain string) bool {
+	return terrain == "coastal_sea" || terrain == "deep_sea"
+}
+
+// LiveRadius returns the ordinary live-vision radius for an eye of eyeKind looking
+// at a tile of targetTerrain: the eye's vantage (settlement 3 / land-unit 2 /
+// ship 1), plus +2 for mountains, which are landmarks. A sea tile is read at this
+// same vantage — the open horizon over the sea (SeaHorizonRadius) is NOT a radius,
+// because it depends on what lies between eye and target, not on distance alone.
+// It is granted per eye by SetSeaHorizons and applied in Eye.Sees.
 //
-// The eyeAtWater condition is new on 2026-08-05. Until then the sea branch returned
-// 4 before the eye was even read, so an army deep inland saw every sea hex within 4
-// (Timothy 2026-08-04: "där har vi ett designfel idag"). temenos_synlighet.md's
-// "sea = 4 for all eyes" is amended, not repealed: it is 4 for all eyes AT the water.
-func LiveRadius(eyeKind string, eyeAtWater bool, targetTerrain string) int {
-	// A naval unit floats on the sea by definition and always carries the open
-	// horizon. This is a domain truth, not a fallback for a missing lookup — a
-	// ship built by hand in a test must not read as inland.
-	if eyeKind == EyeShip {
-		eyeAtWater = true
-	}
-	if eyeAtWater && (targetTerrain == "coastal_sea" || targetTerrain == "deep_sea") {
-		return 4
-	}
-	// Deliberately NOT river: the sea's radius 4 comes from an open horizon over
-	// open water. A 1-hex-wide river between tall banks opens no horizon — it
-	// falls through to the ordinary land vantage below (megaron_floden_plan.md
-	// §5, Timothy 2026-07-29).
+// History: until 2026-08-05 the sea branch returned 4 for every eye; until
+// 2026-09-25 it returned 4 for every eye "at the water" (own hex sea, or a sea
+// neighbour) as a full disk — so a spearman on a shore saw an enclosed lake 4 hexes
+// behind him across forest, hills and a mountain ridge. Timothy 2026-09-25: the
+// open horizon is a SIGHTLINE rule.
+func LiveRadius(eyeKind string, targetTerrain string) int {
 	base := 2
 	switch eyeKind {
 	case EyeSettlement:
@@ -110,7 +114,7 @@ func LiveRadius(eyeKind string, eyeAtWater bool, targetTerrain string) int {
 		// ("a people on the move, not a scout"). The rule is now uniform — every
 		// eye on land reads ordinary ground at 2; the only departures from that
 		// are the settlement's vantage (3), the ship's blindness inland (1), the
-		// mountain landmark bonus and the open horizon at the water, all below.
+		// mountain landmark bonus and the open horizon over water (Eye.Sees).
 		base = 2
 	}
 	if targetTerrain == "mountain_limestone" || targetTerrain == "mountain_red" {
@@ -119,15 +123,128 @@ func LiveRadius(eyeKind string, eyeAtWater bool, targetTerrain string) int {
 	return base
 }
 
+// Sees reports whether this eye has live sight of target (of targetTerrain): within
+// its ordinary vantage (LiveRadius), or a sea hex on its open-water horizon. This
+// is the one sight test — AnyEyeSees and SweepLiveRadius both go through it.
+func (e Eye) Sees(target MapPosition, targetTerrain string) bool {
+	if HexDistance(e.Pos, target) <= LiveRadius(e.Kind, targetTerrain) {
+		return true
+	}
+	_, onHorizon := e.seaHorizon[target]
+	return onHorizon
+}
+
 // AnyEyeSees returns true if target (of targetTerrain) is within live vision of any
-// of the given eyes, using the per-eye-kind × per-target-terrain radius.
+// of the given eyes — see Eye.Sees.
 func AnyEyeSees(eyes []Eye, target MapPosition, targetTerrain string) bool {
 	for _, e := range eyes {
-		if HexDistance(e.Pos, target) <= LiveRadius(e.Kind, e.AtWater, targetTerrain) {
+		if e.Sees(target, targetTerrain) {
 			return true
 		}
 	}
 	return false
+}
+
+// SetSeaHorizons fills each eye's open-water horizon: every sea hex within
+// SeaHorizonRadius that SeaSightline reaches from the eye. terrainAt returns a
+// hex's terrain, or "" for a hex it does not know (off the map, not loaded) —
+// which reads as not-sea and so blocks, fail closed. It must cover the
+// SeaHorizonRadius disk around every eye. Mutates eyes in place.
+func SetSeaHorizons(eyes []Eye, terrainAt func(MapPosition) string) {
+	isSea := func(p MapPosition) bool { return IsSea(terrainAt(p)) }
+	for i := range eyes {
+		var horizon map[MapPosition]struct{}
+		for _, c := range hexgrid.Disk(hexgrid.Coord{Q: eyes[i].Pos.Q, R: eyes[i].Pos.R}, SeaHorizonRadius) {
+			target := MapPosition{Q: c.Q, R: c.R}
+			if target == eyes[i].Pos || !SeaSightline(eyes[i].Pos, target, isSea) {
+				continue
+			}
+			if horizon == nil {
+				horizon = make(map[MapPosition]struct{})
+			}
+			horizon[target] = struct{}{}
+		}
+		eyes[i].seaHorizon = horizon
+	}
+}
+
+// SeaSightline reports whether an eye at from looks across open water to the sea
+// hex to: to must be sea, and EVERY hex strictly between them on the straight hex
+// line must be sea. The eye's own hex may be land — a unit on the shore, a coastal
+// city — so the line may start from it. One land (or river, or unknown) hex
+// anywhere between blocks the horizon (Timothy 2026-09-25). An eye with no sea
+// neighbour therefore never has a horizon: its first step off its own hex is land.
+//
+// Tie rule: where the line runs exactly along the edge between two hexes, it is
+// drawn twice, nudged a hair to either side (hexLine), and the sightline holds if
+// EITHER drawing is all open water. A line skimming the edge of a sea hex skims
+// open water. A single fixed nudge would settle every edge tie toward the same
+// compass side of the map, so a coast running one way would block views that the
+// mirrored coast lets through; checking both sides has no such bias. (The rule is
+// symmetric, from→to equals to→from, either way: both endpoints get the same
+// nudge, so the drawn line does not depend on its direction.)
+func SeaSightline(from, to MapPosition, isSea func(MapPosition) bool) bool {
+	if !isSea(to) {
+		return false
+	}
+	for _, side := range [2]float64{1, -1} {
+		clear := true
+		for _, p := range hexLine(from, to, side) {
+			if p == from || p == to {
+				continue
+			}
+			if !isSea(p) {
+				clear = false
+				break
+			}
+		}
+		if clear {
+			return true
+		}
+	}
+	return false
+}
+
+// hexLine returns the hexes on the straight line from a to b, both included,
+// sampled at N = HexDistance(a,b) equal steps in cube space and rounded to the
+// nearest hex (the standard cube-lerp line). Both endpoints are shifted by a tiny
+// nudge — side = +1 or -1 picks its direction — so a sample that falls exactly on a
+// hex edge rounds to one consistent side instead of by float accident. The nudge
+// (1,2,-3)·ε in cube (q,s,r) is orthogonal to none of the three hex axes, so it
+// breaks every edge tie.
+func hexLine(a, b MapPosition, side float64) []MapPosition {
+	const eps = 1e-6
+	dq, ds, dr := side*eps, side*2*eps, -side*3*eps
+	aq, ar := float64(a.Q)+dq, float64(a.R)+dr
+	bq, br := float64(b.Q)+dq, float64(b.R)+dr
+	as, bs := -float64(a.Q)-float64(a.R)+ds, -float64(b.Q)-float64(b.R)+ds
+	n := HexDistance(a, b)
+	out := make([]MapPosition, 0, n+1)
+	for i := 0; i <= n; i++ {
+		t := 0.0
+		if n > 0 {
+			t = float64(i) / float64(n)
+		}
+		out = append(out, cubeRound(aq+(bq-aq)*t, as+(bs-as)*t, ar+(br-ar)*t))
+	}
+	return out
+}
+
+// cubeRound rounds fractional cube coordinates (q, s = -q-r, r) to the nearest
+// hex: round each, then recompute the one with the largest rounding error so the
+// three still sum to zero.
+func cubeRound(q, s, r float64) MapPosition {
+	rq, rs, rr := math.Round(q), math.Round(s), math.Round(r)
+	dq, ds, dr := math.Abs(rq-q), math.Abs(rs-s), math.Abs(rr-r)
+	switch {
+	case dq > ds && dq > dr:
+		rq = -rs - rr
+	case ds > dr:
+		// s is the worst — it is implied by q and r, which are returned as-is.
+	default:
+		rr = -rq - rs
+	}
+	return MapPosition{Q: int(rq), R: int(rr)}
 }
 
 func abs(x int) int {
