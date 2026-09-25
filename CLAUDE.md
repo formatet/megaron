@@ -20,6 +20,10 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
   what you did goes in `git log`, a process report or memory. (It grew to 241 KB of session logs; rewritten
   2026-09-23, history in `megaron_todo_arkiv_20260923`.) Group new observations by likely shared root first.
 - **When a design decision changes:** update the relevant vault doc immediately — don't defer.
+- **A verb lives on FOUR surfaces — change all four in the same slice** (Timothy 2026-09-25):
+  **temenos** (server) · **keryx** (CLI) · **megaron** (web) · **codex** (`web/static/codex/`, the in-game
+  wiki). The Codex is the player-facing truth; the vault's `megaron_spelmanual.md` is an archive. Parity
+  table: `megaron_verblista.md`. A new notification kind needs a Codex article (`codex.test.mjs` goes red).
 - **Timestamps:** pull the actual wall clock from plain `date`, never a guessed or remembered time.
   **Never a `TZ=` prefix** — git-for-Windows ships no zoneinfo DB, so it silently falls back to UTC.
   Format `(YYYY-MM-DD HH:MM)`.
