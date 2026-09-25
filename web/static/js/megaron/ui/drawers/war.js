@@ -584,14 +584,22 @@ function renderUnitCard(u) {
 
   // Recall/redirect: marching units only. The order travels by messenger —
   // it does not apply instantly (temenos_settlement.md load-bearing pillar).
+  // Redirect's primary path is now the right-click march menu (Timothy
+  // 2026-09-25) — it lists this same marching unit and needs no typed
+  // coordinates. The button here just points there; typed Q/R survives as a
+  // no-cost fallback behind a link, for whoever prefers it or is off-map.
   let redirectRow = '';
   if (isMarching) {
     actions += '<button onclick="unitRecall(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> ';
     actions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
-    redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center;font-size:.65rem">'
-      + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
-      + '<label>R <input id="uredir-r-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
-      + '<button onclick="unitRedirect(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button>'
+    redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">'
+      + '<div>Right-click the new destination on the map — the Runner carries the order to this unit.</div>'
+      + '<div style="margin-top:.2rem"><a href="#" onclick="unitRedirectTypedToggle(\'' + u.id + '\');return false" style="color:var(--text-dim)">or type coordinates</a></div>'
+      + '<div id="uredir-typed-' + u.id + '" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center">'
+        + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+        + '<label>R <input id="uredir-r-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
+        + '<button onclick="unitRedirect(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button>'
+      + '</div>'
       + '</div>';
   }
   const orderStatus = '<div id="uorder-' + u.id + '" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div>';
@@ -653,6 +661,15 @@ export async function unitRecall(unitID) {
 
 export function unitRedirectToggle(unitID) {
   const row = document.getElementById('uredir-' + unitID);
+  if (row) row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+// The typed Q/R fallback (megaron_arbetssatt.md: keep it only if it costs
+// nothing) — collapsed behind its own link so the primary instruction
+// ("right-click the map") isn't buried under an input form most players
+// won't need.
+export function unitRedirectTypedToggle(unitID) {
+  const row = document.getElementById('uredir-typed-' + unitID);
   if (row) row.style.display = row.style.display === 'none' ? 'flex' : 'none';
 }
 

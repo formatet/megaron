@@ -35,7 +35,7 @@ import {
 } from './ui/drawers/city.js';
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
-  unitRecall, unitRedirect, unitRedirectToggle, unitMarch, unitMarchSend,
+  unitRecall, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch, unitMarchSend,
   closeMarchPanel, unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
   warFocusUnit,
 } from './ui/drawers/war.js';
@@ -220,6 +220,7 @@ Object.assign(window, {
   unitRecall,
   unitRedirect,
   unitRedirectToggle,
+  unitRedirectTypedToggle,
   unitRepair,
   unitStance,
   unitUnload,
