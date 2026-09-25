@@ -970,6 +970,23 @@ body:has(.auth-page) main {
 .dc-kult .dc-dot     { background: var(--accent-oikos); }
 .dc-system .dc-dot    { background: var(--accent-system); }
 
+/* Urgency overrides the domain colour (Timothy 2026-09-25: colour = how
+   urgent, the glyph = what about). Declared after the .dc-<domain> rules so
+   the same specificity wins by order. Backgrounds mix the palette tokens —
+   no new hex. */
+.dispatch-chip.dc-urg-urgent    { border-left-color: var(--blood);         background: color-mix(in srgb, var(--blood) 30%, transparent); }
+.dispatch-chip.dc-urg-important { border-left-color: var(--border);        background: color-mix(in srgb, var(--border) 22%, transparent); }
+.dispatch-chip.dc-urg-info      { border-left-color: var(--safe);          background: color-mix(in srgb, var(--safe) 14%, transparent); }
+.dispatch-chip.dc-urg-routine   { border-left-color: var(--accent-system); background: color-mix(in srgb, var(--accent-system) 10%, transparent); }
+.dispatch-chip.dc-urg-urgent:hover    { background: color-mix(in srgb, var(--blood) 45%, transparent); }
+.dispatch-chip.dc-urg-important:hover { background: color-mix(in srgb, var(--border) 36%, transparent); }
+.dispatch-chip.dc-urg-info:hover      { background: color-mix(in srgb, var(--safe) 28%, transparent); }
+.dispatch-chip.dc-urg-routine:hover   { background: color-mix(in srgb, var(--accent-system) 24%, transparent); }
+.dispatch-chip.dc-urg-urgent .dc-dot    { background: var(--blood); }
+.dispatch-chip.dc-urg-important .dc-dot { background: var(--border); }
+.dispatch-chip.dc-urg-info .dc-dot      { background: var(--safe); }
+.dispatch-chip.dc-urg-routine .dc-dot   { background: var(--accent-system); }
+
 .dc-glyph { font-size: var(--fs-sm); line-height: 1; }
 .dc-text  { flex: 1; overflow: hidden; text-overflow: ellipsis; color: var(--chip-text); padding-right: 4px; min-width: 0; }
 .dc-time  { font-size: var(--fs-xs); color: rgba(28,28,28,0.55); margin-right: 4px; flex-shrink: 0; }

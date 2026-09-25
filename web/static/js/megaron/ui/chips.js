@@ -134,6 +134,19 @@ export function dismissAllChips() {
 //
 // A click opens the SAME window a Notifications archive row opens
 // (megaron_plan_dispatches.md §1: "ett fönster, två dörrar").
+// urgencyTier maps a notification's level (server NotifyPlayer, 1 = most
+// urgent … 5 = routine) to the chip's colour tier. Timothy 2026-09-25: colour
+// says how urgent a dispatch is, the icon says what it is about — "färg får
+// ange hur brådskande det är och då trycker man på den". Pure, for tests.
+export function urgencyTier(level) {
+  const l = Number(level);
+  if (!Number.isFinite(l) || l <= 0) return 'routine';
+  if (l <= 1) return 'urgent';
+  if (l === 2) return 'important';
+  if (l === 3) return 'info';
+  return 'routine';
+}
+
 export function addDispatch(n) {
   const strip = document.getElementById('gt-dispatch-strip');
   if (!strip) return;
@@ -147,7 +160,7 @@ export function addDispatch(n) {
   const text  = notifText(kind, payload) + (grain ? ' — ' + grain : '');
 
   const chip = document.createElement('div');
-  chip.className = 'dispatch-chip dc-' + notifDomain(kind);
+  chip.className = 'dispatch-chip dc-' + notifDomain(kind) + ' dc-urg-' + urgencyTier(n.level);
   chip.title     = text;
   if (n.id) chip.dataset.notifId = n.id;
   chip.innerHTML = `

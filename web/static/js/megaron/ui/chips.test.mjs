@@ -40,3 +40,14 @@ test('AK4: zero hides the badge', () => {
   updateNotifBadge(0);
   assert.equal(badge.style.display, 'none');
 });
+
+test('urgencyTier: colour follows the server level, not the domain (Timothy 2026-09-25)', async () => {
+  const { urgencyTier } = await import('./chips.js');
+  assert.equal(urgencyTier(1), 'urgent');
+  assert.equal(urgencyTier(2), 'important');
+  assert.equal(urgencyTier(3), 'info');
+  assert.equal(urgencyTier(4), 'routine');
+  assert.equal(urgencyTier(5), 'routine');
+  assert.equal(urgencyTier(undefined), 'routine');
+  assert.equal(urgencyTier('1'), 'urgent');
+});
