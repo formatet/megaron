@@ -51,3 +51,25 @@ test('SX6: mute survives across sound kinds and is readable', () => {
   _resetSfx();
   assert.equal(isSoundMuted(), false, '_resetSfx restores the default for the next test');
 });
+
+test('SX-A1: arrivals get the arrival call, other dispatches a chime, own-sound kinds nothing extra', async () => {
+  const { soundForKind } = await import('./sfx.js');
+  assert.equal(soundForKind('UnitArrived'), 'arrival');
+  assert.equal(soundForKind('UnitExploreReturned'), 'arrival');
+  assert.equal(soundForKind('MessengerReturned'), 'arrival');
+  assert.equal(soundForKind('FoodShortfall'), 'chime');
+  assert.equal(soundForKind('TradeDelivery'), 'chime');
+  assert.equal(soundForKind('BattleWon'), null, 'the clash already plays — no chime on top');
+  assert.equal(soundForKind('UnitRedirected'), null, 'the horn already plays');
+  assert.equal(soundForKind(undefined), null);
+});
+
+test('SX-A2: the chime and the arrival call are throttled independently and obey mute', () => {
+  _resetSfx();
+  assert.equal(shouldPlay('chime', 1000), true);
+  assert.equal(shouldPlay('chime', 1500), false, 'a burst of dispatches is one chime, not a stack');
+  assert.equal(shouldPlay('arrival', 1500), true, 'an arrival is not silenced by a chime');
+  setSoundMuted(true);
+  assert.equal(shouldPlay('chime', 99999), false);
+  setSoundMuted(false);
+});
