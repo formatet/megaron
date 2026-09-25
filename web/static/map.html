@@ -40,6 +40,7 @@
         ☍<span class="gt-notif-badge" id="gt-notif-badge" style="display:none">0</span>
       </button>
       <button class="gt-search-btn" onclick="toggleSearch()">⌕</button>
+      <button class="gt-codex-btn" id="gt-codex-btn" onclick="toggleCodex()" title="Codex — how the world works">?</button>
     </div>
   </div>
 
@@ -120,6 +121,7 @@
       <span class="drawer-title" id="city-drawer-title">City</span>
       <button class="drawer-nav" onclick="cycleCityView(1)" title="Next settlement">›</button>
     </div>
+    <button class="drawer-help" onclick="openCodexForDrawer('city')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('city')">✕</button>
   </div>
   <div class="drawer-body" id="city-body">
@@ -131,6 +133,7 @@
 <div class="drawer" id="drawer-war">
   <div class="drawer-header">
     <span class="drawer-title">War</span>
+    <button class="drawer-help" onclick="openCodexForDrawer('war')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('war')">✕</button>
   </div>
   <div class="drawer-body" id="war-body">
@@ -142,6 +145,7 @@
 <div class="drawer" id="drawer-diplomacy">
   <div class="drawer-header">
     <span class="drawer-title">Diplomacy</span>
+    <button class="drawer-help" onclick="openCodexForDrawer('diplomacy')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('diplomacy')">✕</button>
   </div>
   <div class="drawer-body" id="diplomacy-body">
@@ -153,6 +157,7 @@
 <div class="drawer" id="drawer-gossip">
   <div class="drawer-header">
     <span class="drawer-title">Gossip</span>
+    <button class="drawer-help" onclick="openCodexForDrawer('gossip')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('gossip')">✕</button>
   </div>
   <div class="drawer-body" id="gossip-body">
@@ -164,6 +169,7 @@
 <div class="drawer" id="drawer-economy">
   <div class="drawer-header">
     <span class="drawer-title">Economy</span>
+    <button class="drawer-help" onclick="openCodexForDrawer('economy')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('economy')">✕</button>
   </div>
   <div class="drawer-body" id="economy-body">
@@ -175,6 +181,7 @@
 <div class="drawer" id="drawer-kult">
   <div class="drawer-header">
     <span class="drawer-title">Kult</span>
+    <button class="drawer-help" onclick="openCodexForDrawer('kult')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('kult')">✕</button>
   </div>
   <div class="drawer-body" id="kult-body">
@@ -187,6 +194,7 @@
   <div class="drawer-header">
     <span class="drawer-title">Notifications</span>
     <span class="notif-archive-note" title="Nothing is removed from this list — it is the record of what happened while you were away">archive</span>
+    <button class="drawer-help" onclick="openCodexForDrawer('notif')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('notif')">✕</button>
   </div>
   <div class="drawer-body" id="notif-body">
@@ -198,6 +206,7 @@
 <div class="drawer" id="drawer-report">
   <div class="drawer-header">
     <span class="drawer-title">Report</span>
+    <button class="drawer-help" onclick="openCodexForDrawer('report')" title="Read about this in the Codex">?</button>
     <button class="drawer-close" onclick="closeDrawer('report')">✕</button>
   </div>
   <div class="drawer-body" id="report-body">
@@ -246,6 +255,17 @@
     <div class="dw-body" id="dw-body"></div>
   </div>
 </div>
+
+<!-- ── CODEX — the player's wiki (ui/codex.js, megaron_plan_kodex.md). Anchored
+     left, outside the drawer system, so a drawer can stay open beside it. ──── -->
+<aside class="codex-panel" id="codex-panel">
+  <div class="codex-header">
+    <button class="codex-back hidden" id="codex-back" onclick="codexBack()" title="Back">‹</button>
+    <span class="drawer-title" id="codex-title">Codex</span>
+    <button class="drawer-close" onclick="closeCodex()">✕</button>
+  </div>
+  <div class="codex-body" id="codex-body"></div>
+</aside>
 
 <!-- ── Tile tooltip and march context (position:fixed) ─────────────────── -->
 <div id="tile-tooltip" class="tile-tooltip" style="display:none"></div>

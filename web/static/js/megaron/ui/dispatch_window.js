@@ -1,6 +1,7 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { notifText, notifIcon, colonyFoundedGrainLine } from './format.js';
+import { codexArticleForKind, openCodex } from './codex.js';
 
 // centreOn (ui/search.js) is reached via the window.* bridge, not a direct
 // import: search.js touches real DOM elements (#search-input) at MODULE TOP
@@ -69,6 +70,9 @@ export function openDispatchWindow(kind, payload, timeLabel) {
 
   const dest = resolveDestination(kind, payload);
   const grainLine = kind === 'ColonyFounded' ? colonyFoundedGrainLine(payload) : '';
+  // Third door into the Codex (megaron_plan_kodex.md): every dispatch kind
+  // the index maps gets a link to the article that explains it.
+  const article = codexArticleForKind(kind);
 
   body.innerHTML = `
     <div class="dw-row">
@@ -78,6 +82,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     ${grainLine ? `<div class="dw-grain">${grainLine}</div>` : ''}
     ${timeLabel ? `<div class="dw-time">${timeLabel}</div>` : ''}
     <button class="dw-goto-btn" id="dw-goto-btn" ${dest ? '' : 'disabled title="No known location for this dispatch"'}>⌖ Take me there</button>
+    ${article ? '<button class="dw-goto-btn dw-codex-btn" id="dw-codex-btn">? Read about this</button>' : ''}
     <label class="dw-mute-row">
       <input type="checkbox" id="dw-mute-chk">
       Stop these as dispatches (still kept in Notifications)
@@ -89,6 +94,13 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     if (dest) window.centreOn(dest.q, dest.r);
     closeDispatchWindow();
   });
+
+  if (article) {
+    document.getElementById('dw-codex-btn').addEventListener('click', () => {
+      closeDispatchWindow();
+      openCodex(article);
+    });
+  }
 
   const chk = document.getElementById('dw-mute-chk');
   // Read the live preference every open (§6) — a dispatch having just fired
