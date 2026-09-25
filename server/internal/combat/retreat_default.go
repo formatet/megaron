@@ -114,4 +114,4 @@ func SetRetreatDefault(ctx context.Context, pool *pgxpool.Pool, worldID, playerI
 // too, and silently ignoring the default for it would be a difference the
 // player cannot see.
 const seedStandingOrdersSQL = `COALESCE((SELECT pwr.retreat_default FROM player_world_records pwr
-	   WHERE pwr.world_id = $7 AND pwr.player_id = $3), '{}'::jsonb)`
+	   WHERE pwr.world_id = $7 AND pwr.player_id = $3),'{}'::jsonb)`
