@@ -12,6 +12,6 @@ Because orders move at walking pace, **a defender who is offline is not helpless
 
 Sometimes a Runner arrives and the order can no longer be carried out. You get an *Order failed* notification that names the order and the reason. Look at the unit in **War → Army** and decide again.
 
-Recall and redirect are sent from **War → Army**. See [[marching]].
+Recall and redirect are sent from **War → Army**, or — for redirect — by right-clicking a new destination for a unit that is already marching. See [[marching]].
 
 Letters to other Wanaxes travel the same way, but they are sacred and cannot be stopped: see [[messengers]].
