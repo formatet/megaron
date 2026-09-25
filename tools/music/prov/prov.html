@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><title>Minoiskt ljudprov</title>
+<style>
+:root{--bg:#f4efe4;--fg:#2b2622;--mut:#6b6258;--line:#cbbfa8}
+@media (prefers-color-scheme:dark){:root{--bg:#1f1c19;--fg:#ece5d8;--mut:#a39a8c;--line:#4a433b}}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 Georgia,serif;max-width:760px;margin:2em auto;padding:0 16px}
+h1{font-size:1.5em;margin-bottom:.2em} h2{margin-top:2em;border-bottom:1px solid var(--line)}
+p.m{color:var(--mut);margin-top:0} audio{width:100%} .row{margin:1em 0}
+button{font:inherit;padding:.4em .9em;margin:.2em;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
+</style></head><body>
+<h1>Minoiskt ljudprov</h1>
+<p class="m">PROTOTYP, 2026-09-25. Ingenting här är inbyggt i spelet. Käll-ABC: <code>intro_dor.abc</code>/<code>intro_phr.abc</code>, bygge: <code>tools/music/intro_prov.py</code>.</p>
+
+<h2>1. Introt: samma melodi, två modus × två klangdräkter</h2>
+<p>Form: havet → orderhornets kvint D–A → aulosmelodin (motivet) → en klättrande "upptäckarfras" → ljusare mittdel (bygget, trumma + sistrum) → motivet en oktav upp, fullt → hornet ekar två gånger, havet tar tillbaka.</p>
+<p><b>Lyssna efter:</b> dorisk (B, E) är varmare, mer som Colonization. Frygisk (B♭, E♭) är mer medelhav och främmande. Och: föredrar du soundfonten eller syntesen i orderhornets röst?</p>
+<div class="row">Dorisk · soundfont<audio controls preload="none" src="intro_dor_sf.ogg"></audio></div>
+<div class="row">Dorisk · syntes<audio controls preload="none" src="intro_dor_synth.ogg"></audio></div>
+<div class="row">Frygisk · soundfont<audio controls preload="none" src="intro_phr_sf.ogg"></audio></div>
+<div class="row">Frygisk · syntes<audio controls preload="none" src="intro_phr_synth.ogg"></audio></div>
+
+<h2>2. Hornet: nu kontra varianter (riktig WebAudio, samma kod som spelet)</h2>
+<div class="row">
+<button onclick="hornNu()">Orderhornet i dag</button>
+<button onclick="snacka()">Snäckhorn (tritonsnäcka)</button>
+</div>
+<h2>3. Ankomsten: i dag kontra ur motivet</h2>
+<div class="row">
+<button onclick="ankomstNu()">Ankomst i dag (D–F♯–A)</button>
+<button onclick="ankomstMotiv(false)">Ankomst ur motivet, dorisk (A–B–A–D)</button>
+<button onclick="ankomstMotiv(true)">Ankomst ur motivet, frygisk (A–B♭–A–D)</button>
+</div>
+
+<script>
+// tone() och noiseBurst-idén är kopierade från web/static/js/megaron/ui/sfx.js.
+let ac=null; function A(){ if(!ac) ac=new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); return ac; }
+function tone(ac,{type,from,to,peak,attack,duration,delay=0,filterHz}){
+  const t=ac.currentTime+delay, o=ac.createOscillator(); o.type=type; o.frequency.setValueAtTime(from,t);
+  if(to&&to!==from) o.frequency.exponentialRampToValueAtTime(to,t+duration*0.6);
+  const g=ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(peak,t+attack); g.gain.exponentialRampToValueAtTime(0.0001,t+duration);
+  let tail=g; if(filterHz){const f=ac.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(filterHz,t); g.connect(f); tail=f;}
+  tail.connect(ac.destination); o.connect(g); o.start(t); o.stop(t+duration+0.05);
+}
+function breath(ac,{peak,duration,centreHz,delay=0}){
+  const t=ac.currentTime+delay, n=Math.floor(ac.sampleRate*duration), b=ac.createBuffer(1,n,ac.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1);
+  const s=ac.createBufferSource(); s.buffer=b; const f=ac.createBiquadFilter(); f.type='bandpass'; f.frequency.value=centreHz; f.Q.value=1.2;
+  const g=ac.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(peak,t+0.15); g.gain.exponentialRampToValueAtTime(0.0001,t+duration);
+  s.connect(f); f.connect(g); g.connect(ac.destination); s.start(t); s.stop(t+duration+0.05);
+}
+function hornNu(){ const a=A();
+  tone(a,{type:'sawtooth',from:146.8,to:164.8,peak:0.22,attack:0.05,duration:0.42,filterHz:1100});
+  tone(a,{type:'sawtooth',from:220.0,to:246.9,peak:0.20,attack:0.05,duration:0.55,delay:0.30,filterHz:1300});
+  tone(a,{type:'triangle',from:73.4,to:82.4,peak:0.14,attack:0.06,duration:0.85,filterHz:700});
+}
+// En tritonsnäcka ger i praktiken EN ton; karaktären är andningen och svällningen.
+function snacka(){ const a=A();
+  tone(a,{type:'sawtooth',from:138.6,to:146.8,peak:0.20,attack:0.25,duration:1.4,filterHz:750});
+  tone(a,{type:'triangle',from:277.2,to:293.7,peak:0.06,attack:0.3,duration:1.3,filterHz:1200});
+  breath(a,{peak:0.05,duration:1.4,centreHz:900});
+}
+function ankomstNu(){ const a=A();
+  tone(a,{type:'sawtooth',from:293.7,to:293.7,peak:0.13,attack:0.02,duration:0.18,filterHz:1500});
+  tone(a,{type:'sawtooth',from:370.0,to:370.0,peak:0.13,attack:0.02,duration:0.18,delay:0.14,filterHz:1600});
+  tone(a,{type:'sawtooth',from:440.0,to:440.0,peak:0.15,attack:0.02,duration:0.40,delay:0.28,filterHz:1800});
+  tone(a,{type:'sine',from:110,to:70,peak:0.16,attack:0.005,duration:0.20});
+}
+function ankomstMotiv(phr){ const a=A(), B=phr?233.1:246.9;
+  tone(a,{type:'sawtooth',from:220.0,to:220.0,peak:0.13,attack:0.02,duration:0.16,filterHz:1500});
+  tone(a,{type:'sawtooth',from:B,to:B,peak:0.13,attack:0.02,duration:0.14,delay:0.13,filterHz:1600});
+  tone(a,{type:'sawtooth',from:220.0,to:220.0,peak:0.13,attack:0.02,duration:0.16,delay:0.24,filterHz:1600});
+  tone(a,{type:'sawtooth',from:293.7,to:293.7,peak:0.15,attack:0.02,duration:0.55,delay:0.38,filterHz:1800});
+  tone(a,{type:'sine',from:110,to:70,peak:0.16,attack:0.005,duration:0.20,delay:0.38});
+}
+</script>
+</body></html>
