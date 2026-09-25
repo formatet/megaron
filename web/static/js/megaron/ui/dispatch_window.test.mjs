@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 // see the file's own header comment on why centreOn is reached via
 // window.centreOn instead of a direct ui/search.js import), so this file
 // needs no globalThis stubbing before import, unlike its DOM-heavy siblings.
-import { resolveDestination } from './dispatch_window.js';
+import { resolveDestination, occupationChoicesFor, buildOccupationOrderBody } from './dispatch_window.js';
 import { State } from '../state.js';
 
 test('AK1: a direct q/r on the payload wins outright, no lookup needed', () => {
@@ -70,4 +70,36 @@ test('AK9: no destination anywhere returns null (the disabled-button case)', () 
   State.foreignUnitData = [];
   assert.equal(resolveDestination('WorldAnnouncement', {}), null);
   assert.equal(resolveDestination('WorldAnnouncement', null), null);
+});
+
+// ── occupationChoicesFor (S3/S6, megaron_plan_erovring.md) ──────────────────
+
+test('OC1: CityOccupied as attacker offers sack/burn from the payload\'s own choices, never annex (too early)', () => {
+  assert.deepEqual(
+    occupationChoicesFor('CityOccupied', { role: 'attacker', choices: ['occupy', 'sack', 'burn'] }),
+    ['sack', 'burn'],
+  );
+});
+
+test('OC2: CityOccupied as defender offers nothing — it is not this Wanax\'s choice to make', () => {
+  assert.deepEqual(occupationChoicesFor('CityOccupied', { role: 'defender', choices: ['occupy', 'sack', 'burn'] }), []);
+});
+
+test('OC3: CityAnnexReady offers all three — sack/burn remain available once annex unlocks', () => {
+  assert.deepEqual(occupationChoicesFor('CityAnnexReady', { settlement_id: 'x' }), ['sack', 'burn', 'annex']);
+});
+
+test('OC4: an unrelated dispatch kind offers nothing', () => {
+  assert.deepEqual(occupationChoicesFor('BuildComplete', { settlement_id: 'x' }), []);
+});
+
+test('OC5: a missing/malformed choices list on CityOccupied degrades to no buttons rather than throwing', () => {
+  assert.deepEqual(occupationChoicesFor('CityOccupied', { role: 'attacker' }), []);
+  assert.deepEqual(occupationChoicesFor('CityOccupied', {}), []);
+});
+
+test('OC6: buildOccupationOrderBody sends exactly {action} — sack loots everything by default, no goods picker', () => {
+  assert.deepEqual(buildOccupationOrderBody('sack'), { action: 'sack' });
+  assert.deepEqual(buildOccupationOrderBody('burn'), { action: 'burn' });
+  assert.deepEqual(buildOccupationOrderBody('annex'), { action: 'annex' });
 });
