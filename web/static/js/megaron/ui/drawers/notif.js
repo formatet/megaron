@@ -42,7 +42,7 @@ function notifDateHeader() {
   if (State.WORLD_STATE === 'forming') {
     const need = Math.max(0, (State.WANAXES_NEEDED || 0) - (State.WANAXES_JOINED || 0));
     waiting = `<div class="notif-world-waiting">⏳ The world has not begun — waiting for ${need} more ${need === 1 ? 'Wanax' : 'Wanaxes'}.` +
-      ` Time stands still until then; you may look around, and give orders that will be carried out the moment it starts.</div>`;
+      ` Time stands still until then; you may look around, but orders can be given only once it starts.</div>`;
   }
   return `<div class="notif-date-header">Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}${tempo}${waiting}</div>`;
 }

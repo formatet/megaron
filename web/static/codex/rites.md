@@ -12,6 +12,6 @@ After a rite, the prayer cannot be repeated for a while.
 
 ## The prayers
 
-- **The oracle** — reveals ore deposits in the region. The best tool in the game for finding metal you cannot see ([[bronze]], [[sight]]).
+- **The oracle** — names one ore deposit you have never seen — copper, tin or silver, anywhere in the world, chosen by the gods — and lifts the fog from it and the land around it. Whether you can *reach* it is another matter ([[bronze]], [[sea]]).
 - **The harvest blessing** — swells your grain.
 - **Battle frenzy** — strengthens a garrison for a while ([[battle]]).
