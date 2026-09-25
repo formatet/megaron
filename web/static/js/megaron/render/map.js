@@ -3,13 +3,14 @@ import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
 import { serverNow } from '../clock.js';
 import {
-  LIVE_RADIUS_SEA, LIVE_RADIUS_BASE, LIVE_RADIUS_MOUNTAIN_BONUS, LOCAL_ZOOM,
+  LOCAL_ZOOM,
   GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM,
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
+import { eyeSees } from './sight.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
 
@@ -255,13 +256,17 @@ function hexDist(q1, r1, q2, r2) {
   return (Math.abs(q1-q2) + Math.abs(q1+r1-q2-r2) + Math.abs(r1-r2)) / 2;
 }
 
-// Mirrors server/internal/province/hex.go LiveRadius(eyeKind, targetTerrain) —
-// see config.js LIVE_RADIUS_* for the mirrored constants.
-function liveRadius(kind, terrain) {
-  if (terrain === 'coastal_sea' || terrain === 'deep_sea') return LIVE_RADIUS_SEA;
-  let base = LIVE_RADIUS_BASE[kind] ?? LIVE_RADIUS_BASE.land;
-  if (terrain === 'mountain_limestone' || terrain === 'mountain_red') base += LIVE_RADIUS_MOUNTAIN_BONUS;
-  return base;
+// (q,r) → terrain over State.tileData for the FOV preview's sightline, memoised
+// on the tileData array's identity (same pattern as panBounds above).
+let terrainLookupSrc = null, terrainLookup = null;
+function tileTerrainLookup() {
+  if (State.tileData !== terrainLookupSrc) {
+    terrainLookupSrc = State.tileData;
+    const m = new Map();
+    for (const t of State.tileData || []) m.set(`${t.q},${t.r}`, t.terrain);
+    terrainLookup = (q, r) => m.get(`${q},${r}`);
+  }
+  return terrainLookup;
 }
 
 // Adjacent neighbor of (cq,cr) that is one step closer to (tq,tr).
@@ -3473,15 +3478,15 @@ export function render() {
   }
 
   // 3.5 FOV preview band — hexes that would become live-visible from the hovered
-  // march affordance's target, per server/internal/province/hex.go LiveRadius.
-  // Fog tiles use the conservative base radius (no mountain bonus) since we
-  // can't know their real terrain without leaking it through the band shape.
+  // march affordance's target, per the server's Eye.Sees (render/sight.js).
+  // Fog tiles use the conservative base radius (no mountain bonus, no sea
+  // horizon) since we can't know their real terrain without leaking it through
+  // the band shape; a fog hex on the line also blocks the sea horizon.
   if (State.fovPreview) {
     const { q: fq, r: fr, kind } = State.fovPreview;
+    const terrainAt = tileTerrainLookup();
     for (const t of State.tileData) {
-      const known = t.terrain !== 'fog';
-      const radius = known ? liveRadius(kind, t.terrain) : LIVE_RADIUS_BASE[kind];
-      if (hexDist(fq, fr, t.q, t.r) > radius) continue;
+      if (!eyeSees(kind, fq, fr, t.q, t.r, terrainAt)) continue;
       const {x, y} = hexPx(t.q, t.r);
       const pts = hexPts(x, y);
       ctx.save();
