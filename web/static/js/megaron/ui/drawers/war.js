@@ -10,6 +10,7 @@ import { playWarHorn } from '../sfx.js';
 import { loadMap } from '../../render/map.js';
 import { loadCityDrawer } from './city.js';
 import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
+import { canTakeStance, stanceSentLine } from '../stance.js';
 
 // "ready <eta>" while still building/training, collapsing to a bare "ready"
 // once complete (fmtArrival's doneWord already reads "ready" — this just
@@ -546,9 +547,10 @@ function renderUnitCard(u) {
     actions += '<button onclick="unitMarch(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> ';
   }
 
-  // Stance buttons: garrison or positioned, land only — naval
-  // units carry no stance (ship-build overhaul 2026-07-09).
-  if ((isGarrison || isPositioned) && !isNaval) {
+  // Stance buttons: land only — naval units carry no stance (ship-build
+  // overhaul 2026-07-09). A marching unit takes one too: the Runner must catch
+  // up with it (megaron_styrande_beslut §11, canTakeStance mirrors the server).
+  if (canTakeStance(u)) {
     actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
       + '<option value="none">stance…</option>'
       + '<option value="fortify">fortify</option>'
@@ -564,7 +566,7 @@ function renderUnitCard(u) {
     // SetStandingOrders checks); outside battle it could only ever answer
     // "unit is not in an active battle", and the realm-wide setting at the
     // top of this tab is what applies.
-    actions += unitRetreatControlHTML(u);
+    if (isGarrison || isPositioned) actions += unitRetreatControlHTML(u);
   }
 
   // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the
@@ -768,7 +770,7 @@ export async function unitStance(unitID) {
     if (data.status === 'order_dispatched') {
       if (resEl) {
         resEl.style.color = 'var(--text-dim)';
-        resEl.textContent = '🏃 Runner carries the stance order — applies on delivery';
+        resEl.textContent = stanceSentLine(data, fmtArrival(data.courier_arrives_at, data.courier_due_tick));
       }
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     }

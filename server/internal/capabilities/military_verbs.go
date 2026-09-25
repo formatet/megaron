@@ -94,7 +94,9 @@ func canStance(cc checkContext) Verb {
 		"Set or clear a unit's stance: \"fortify\" digs in and refuses to march, "+
 			"\"storm\" presses an assault, \"sentry\" stands watch — it spots foreign marches "+
 			"passing nearby and intercepts enemy caravans within reach. Note a unit does not "+
-			"need sentry to SEE: anything standing on the map already extends your fog-of-war.",
+			"need sentry to SEE: anything standing on the map already extends your fog-of-war. "+
+			"A unit already on the march can be given a stance too — a Runner has to catch up "+
+			"with it, and the stance bites where the unit stops.",
 		[]Requirement{
 			req("a unit garrisoned or forming here", ok,
 				fmt.Sprintf("%d unit(s) here", n),

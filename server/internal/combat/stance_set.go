@@ -9,6 +9,7 @@ package combat
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"formatet/megaron/server/internal/events"
@@ -47,8 +48,39 @@ type StanceApplied struct {
 
 // SetStance validates and executes one stance order atomically. Any
 // *OrderReject return carries the HTTP status + reason exactly as the
-// SetStance handler answered.
+// SetStance handler answered. Only a garrisoned or positioned unit takes it —
+// this is the core behind the "stance" order verb, whose semantics are frozen.
 func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, o StanceOrder) (*StanceApplied, error) {
+	return setStance(ctx, pool, eventStore, o, false)
+}
+
+// SetStanceInPursuit is the core behind the "stance_pursuit" order verb
+// (megaron_styrande_beslut §11, Timothy 2026-09-25): a stance order to a
+// MARCHING unit, carried by a Runner that catches up with it on the same
+// intercept model as redirect (messenger.InterceptCourierTarget).
+//
+// Delivered while the unit still marches, the stance is set on the moving
+// unit exactly as `march --stance X` sets it at departure — a stance carried
+// on the road bites where the unit stops: fortify digs in on arrival (fortify
+// only forbids STARTING a march, march_start.go), storm is read by the arrival
+// assault, sentry takes its hold centre from the hex the unit stops on
+// (arriveGarrison). There is no moving-sentry mechanic: every interception
+// query reads status='positioned'. Delivered after the unit has stopped
+// (garrison/positioned), it applies where the unit stands — the plain
+// SetStance path.
+func SetStanceInPursuit(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, o StanceOrder) (*StanceApplied, error) {
+	res, err := setStance(ctx, pool, eventStore, o, true)
+	var rej *OrderReject
+	if errors.As(err, &rej) && rej.Status == http.StatusConflict {
+		// The unit stopped (or set out again) between the read and the row
+		// lock — the Runner still reached it; evaluate once more against the
+		// state it is in now rather than failing the order.
+		return setStance(ctx, pool, eventStore, o, true)
+	}
+	return res, err
+}
+
+func setStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, o StanceOrder, allowMarching bool) (*StanceApplied, error) {
 	// Validate stance value.
 	switch o.Stance {
 	case "fortify", "storm", "sentry", "none":
@@ -79,7 +111,8 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
 		return nil, reject(http.StatusUnprocessableEntity, "naval units cannot take a stance")
 	}
-	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
+	marching := allowMarching && u.Status == unit.StatusMarching
+	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned && !marching {
 		return nil, reject(http.StatusUnprocessableEntity,
 			"unit cannot change stance while %s (must be garrison or positioned)", string(u.Status))
 	}
@@ -100,7 +133,10 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 		// sentry_q/r = unit's current hex position.
 		// For garrisoned units, resolve via settlement province.
 		var hexQ, hexR int
-		if u.Q != nil && u.R != nil {
+		if marching {
+			// A marching unit has no hold centre yet — sentry_q/r stay NULL
+			// and arriveGarrison sets them to the hex it stops on.
+		} else if u.Q != nil && u.R != nil {
 			hexQ, hexR = *u.Q, *u.R
 		} else if u.SettlementID != nil {
 			if err := pool.QueryRow(ctx,
@@ -110,8 +146,10 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 				return nil, reject(http.StatusInternalServerError, "could not resolve unit hex for sentry")
 			}
 		}
-		newSentryQ = &hexQ
-		newSentryR = &hexR
+		if !marching {
+			newSentryQ = &hexQ
+			newSentryR = &hexR
+		}
 
 		// Default reaction policy reproduces today's hardcoded sentry behaviour
 		// (foreign→intercept) exactly; ReactionForeign leaves an explicit path to
@@ -142,7 +180,11 @@ func SetStance(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store
 	).Scan(&currentStatus, &currentStance); err != nil {
 		return nil, reject(http.StatusNotFound, "unit not found in transaction")
 	}
-	if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
+	// The status read above must still hold under the lock: a unit that
+	// stopped or set out in between would get the wrong sentry centre.
+	nowMarching := unit.Status(currentStatus) == unit.StatusMarching
+	if nowMarching != marching ||
+		(!marching && unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned) {
 		return nil, reject(http.StatusConflict, "unit status changed; stance not applied")
 	}
 

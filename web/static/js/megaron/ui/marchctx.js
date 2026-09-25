@@ -3,7 +3,8 @@ import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
 import { esc, formatApiError } from './format.js';
 import { unitTypeLabel } from './actornames.js';
-import { arrivalHTML } from './time.js';
+import { arrivalHTML, fmtArrival } from './time.js';
+import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
 import { canvas } from '../render/map.js';
@@ -434,14 +435,23 @@ export async function sendMarch() {
     if (p.mode === 'redirect') {
       // Already marching — a fresh /march is refused server-side
       // (march_start.go). Redirect it via the same Runner-borne /recall
-      // endpoint War → Army's Redirect button uses; stance/colonize/explore
-      // intent don't apply to an order already under way.
+      // endpoint War → Army's Redirect button uses; colonize/explore intent
+      // don't apply to an order already under way. A chosen stance does: it
+      // rides its own Runner, which must catch up with the marching unit
+      // (megaron_styrande_beslut §11) — sent only once the redirect is accepted.
       const body = { target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r };
       return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/recall`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       }).then(async res => {
         const data = await res.json().catch(() => ({}));
-        return { ok: res.ok, data, err: res.ok ? '' : (data.error || 'Redirect failed') };
+        if (!res.ok) return { ok: false, data, err: formatApiError(data, 'Redirect failed') };
+        if (!stance) return { ok: true, data, err: '' };
+        const sres = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/stance`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stance }),
+        });
+        const sdata = await sres.json().catch(() => ({}));
+        return { ok: true, data, stanceData: sres.ok ? sdata : null,
+          err: sres.ok ? '' : formatApiError(sdata, 'Stance order failed') };
       });
     }
     const body = { target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r };
@@ -508,11 +518,21 @@ export async function sendMarch() {
         (redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery')
       : '✓ Marching — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
+    // The stance for a marching unit rides a second Runner that must catch up.
+    const sd = first.stanceData;
+    if (sd) {
+      etaEl.innerHTML += '<br>' + esc(stanceSentLine(sd, fmtArrival(sd.courier_arrives_at, sd.courier_due_tick)));
+    }
     etaEl.style.display = 'block';
   }
+  // A redirect that went out but whose stance order was refused is sent, not
+  // failed — the refusal still has to be read.
+  const stanceRefused = results.filter(r => r.ok && r.err);
   if (failed.length) {
     const okCount = results.length - failed.length;
     document.getElementById('mctx-err').textContent = (okCount ? okCount + ' sent · ' : '') + failed[0].err;
+  } else if (stanceRefused.length) {
+    document.getElementById('mctx-err').textContent = stanceRefused[0].err;
   } else if (showEta) {
     // All sent — collapse the order form into a confirmation so a second
     // "March →" can't re-send the same (now marching) units. Escape/click-away

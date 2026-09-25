@@ -1169,6 +1169,11 @@ func unitStanceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stance",
 		Short: "Set or clear a unit's stance",
+		Long: `Set or clear a unit's stance. A garrisoned unit takes it at once; a unit in the
+field gets it by Runner. A unit on the march gets it too: the Runner must catch
+up with it, and the stance bites where the unit stops (fortify digs in there,
+sentry holds that hex). If no Runner can overtake it, the Runner follows it to
+its destination and the stance applies where it stopped.`,
 		Example: `  keryx unit stance --unit <id> --stance fortify
   keryx unit stance --unit <id> --stance sentry --reaction ignore
   keryx unit stance --unit <id> --stance none`,
@@ -1196,13 +1201,13 @@ func unitStanceCmd() *cobra.Command {
 			var stanceResp map[string]any
 			json.Unmarshal(data, &stanceResp)
 			if status, _ := stanceResp["status"].(string); status == "order_dispatched" {
-				fmt.Printf("A Runner carries your stance order (%s) to unit %s", stance, unitID[:8])
+				eta := ""
 				if courierAt, _ := stanceResp["courier_arrives_at"].(string); courierAt != "" {
 					if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
-						fmt.Printf("; the runner reaches it %s", gameETA(c, t))
+						eta = gameETA(c, t)
 					}
 				}
-				fmt.Println(" — it applies on delivery.")
+				fmt.Println(stanceDispatchLine(stanceResp, stance, unitID[:8], eta))
 				return nil
 			}
 			if stance == "none" {
@@ -1223,6 +1228,38 @@ func unitStanceCmd() *cobra.Command {
 	_ = cmd.MarkFlagRequired("unit")
 	_ = cmd.MarkFlagRequired("stance")
 	return cmd
+}
+
+// stanceDispatchLine words a stance order's 202 receipt. A marching unit's
+// Runner has to catch up with it (catch_up "on_the_march", aimed at the hex
+// where it overtakes the unit) or, when no Runner can overtake it, follows it
+// to where it stops ("at_destination") — megaron_styrande_beslut §11.
+func stanceDispatchLine(resp map[string]any, stance, unitShort, eta string) string {
+	s := fmt.Sprintf("A Runner carries your stance order (%s) to unit %s", stance, unitShort)
+	q, qok := resp["intercept_q"].(float64)
+	r, rok := resp["intercept_r"].(float64)
+	at := ""
+	if qok && rok {
+		at = fmt.Sprintf(" at (%d,%d)", int(q), int(r))
+	}
+	switch resp["catch_up"] {
+	case "on_the_march":
+		s += "; the unit is marching, so the runner must catch up with it" + at
+		if eta != "" {
+			s += " " + eta
+		}
+		return s + " — the stance applies from then, and bites where the unit stops."
+	case "at_destination":
+		s += "; the unit is marching and no runner can overtake it — the runner follows it to its destination" + at
+		if eta != "" {
+			s += ", reaching it " + eta
+		}
+		return s + " — the stance applies where it stopped."
+	}
+	if eta != "" {
+		s += "; the runner reaches it " + eta
+	}
+	return s + " — it applies on delivery."
 }
 
 // ---- unit retreat-order -------------------------------------------------------

@@ -37,7 +37,7 @@ type OrderDeliveryPayload struct {
 	PlayerID    uuid.UUID           `json:"player_id"`
 	UnitID      uuid.UUID           `json:"unit_id"`
 	MessengerID uuid.UUID           `json:"messenger_id"`
-	Verb        string              `json:"verb"` // "march" | "stance" | "recall" | "redirect" | "occupy_action" | "standing_orders"
+	Verb        string              `json:"verb"` // "march" | "stance" | "stance_pursuit" | "recall" | "redirect" | "occupy_action" | "standing_orders"
 	March       *combat.MarchOrder  `json:"march,omitempty"`
 	Stance      *combat.StanceOrder `json:"stance,omitempty"`
 	Recall      *combat.RecallOrder `json:"recall,omitempty"`
@@ -120,6 +120,28 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 			return nil
 		}
 		slog.Info("order delivered — stance applied", "unit", p.UnitID, "stance", res.Stance)
+		return nil
+	case "stance_pursuit":
+		// A stance order dispatched to a MARCHING unit (megaron_styrande_beslut
+		// §11): the Runner was aimed at the redirect intercept point, or at the
+		// march's destination when no intercept existed. A new verb, not a
+		// reinterpreted "stance": that verb's delivery still refuses a moving
+		// unit, and in-flight "stance" orders keep meaning exactly that.
+		if p.Stance == nil {
+			return fmt.Errorf("order delivery %s: stance_pursuit verb without stance payload", p.MessengerID)
+		}
+		res, err := combat.SetStanceInPursuit(ctx, h.pool, h.eventStore, *p.Stance)
+		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				h.notifyOrderFailed(ctx, p, rej.Reason)
+				return nil
+			}
+			slog.Error("order delivery: pursuit stance execution failed after claim — order dropped",
+				"messenger", p.MessengerID, "unit", p.UnitID, "err", err)
+			return nil
+		}
+		slog.Info("order delivered — stance applied after pursuit", "unit", p.UnitID, "stance", res.Stance)
 		return nil
 	case "recall", "redirect":
 		if p.Recall == nil {
