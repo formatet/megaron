@@ -166,16 +166,19 @@ export function soundForKind(kind) {
   return ARRIVAL_KINDS.has(kind) ? 'arrival' : 'chime';
 }
 
-// An arrival: three short rising notes, a bright fanfare in miniature, over a
-// soft drum tap — the horn's answer ("we are here"), in the same bronze voice.
+// An arrival: the Minoan motif's neighbour figure A–B♭–A resolving up to D,
+// over a soft drum tap — the horn's answer ("we are here"), in the same bronze
+// voice. Timothy 2026-09-25 chose it by ear over the old D–F♯–A (a D-major
+// fanfare that belonged to no mode the music uses); Phrygian, like the music.
 export function playArrival() {
   if (!shouldPlay('arrival')) return;
   const ac = audioCtx();
   if (!ac) return;
-  tone(ac, { type: 'sawtooth', from: 293.7, to: 293.7, peak: 0.13, attack: 0.02, duration: 0.18, filterHz: 1500 });
-  tone(ac, { type: 'sawtooth', from: 370.0, to: 370.0, peak: 0.13, attack: 0.02, duration: 0.18, delay: 0.14, filterHz: 1600 });
-  tone(ac, { type: 'sawtooth', from: 440.0, to: 440.0, peak: 0.15, attack: 0.02, duration: 0.40, delay: 0.28, filterHz: 1800 });
-  tone(ac, { type: 'sine', from: 110, to: 70, peak: 0.16, attack: 0.005, duration: 0.20 });
+  tone(ac, { type: 'sawtooth', from: 220.0, to: 220.0, peak: 0.13, attack: 0.02, duration: 0.16, filterHz: 1500 });
+  tone(ac, { type: 'sawtooth', from: 233.1, to: 233.1, peak: 0.13, attack: 0.02, duration: 0.14, delay: 0.13, filterHz: 1600 });
+  tone(ac, { type: 'sawtooth', from: 220.0, to: 220.0, peak: 0.13, attack: 0.02, duration: 0.16, delay: 0.24, filterHz: 1600 });
+  tone(ac, { type: 'sawtooth', from: 293.7, to: 293.7, peak: 0.15, attack: 0.02, duration: 0.55, delay: 0.38, filterHz: 1800 });
+  tone(ac, { type: 'sine', from: 110, to: 70, peak: 0.16, attack: 0.005, duration: 0.20, delay: 0.38 });
 }
 
 // A dispatch: one soft bell-like note with its fifth — quiet enough to hear
