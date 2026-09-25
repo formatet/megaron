@@ -1064,7 +1064,8 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 //
 // Rules:
 //   - Caller must own the unit.
-//   - Unit must be status='garrison' or status='positioned' (not marching, forming, etc.).
+//   - Unit must be status='garrison', 'positioned' or 'marching' (not forming, etc.).
+//     A marching unit gets it by a Runner that catches up (stanceToMarchingUnit).
 //   - "none" clears the stance.
 //   - "sentry": sets sentry_q/sentry_r to the unit's current hex.
 //
@@ -1103,6 +1104,14 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 	order := combat.StanceOrder{
 		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 		Stance: req.Stance, ReactionForeign: req.ReactionForeign,
+	}
+
+	// A MARCHING unit (megaron_styrande_beslut §11): the stance goes by a
+	// Runner that has to catch up with it — see stanceToMarchingUnit.
+	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
+		u.OwnerID == playerID && u.WorldID == worldID && u.Status == unit.StatusMarching {
+		h.stanceToMarchingUnit(w, ctx, u, order)
+		return
 	}
 
 	// Order latency (temenos_orderlopare_plan.md Fas 3): a stance order to a
@@ -1162,6 +1171,111 @@ func (h *UnitHandler) SetStance(w http.ResponseWriter, r *http.Request) {
 		"sentry_r":         res.SentryR,
 		"reaction_foreign": res.ReactionForeign,
 	})
+}
+
+// stanceToMarchingUnit dispatches a stance order to a unit on the march
+// (megaron_styrande_beslut §11, Timothy 2026-09-25: "yes, by Runner, but then
+// the Runner must catch up with it"). It reuses redirect's catch-up exactly —
+// no second pursuit model: the Runner leaves the nearest own city to the
+// unit's CURRENT position and is aimed at messenger.InterceptCourierTarget,
+// the earliest hex on the unit's path it can reach no later than the unit.
+//
+// Where redirect must refuse when no intercept exists (a new course is
+// meaningless once the march is over), a stance is not: the Runner is then
+// aimed at the march's destination and applies the stance where the unit has
+// stopped. Delivery runs the "stance_pursuit" verb (combat.SetStanceInPursuit).
+//
+// No in-flight guard: stance orders have always been latest-delivered-wins
+// (order_delivery.go), and the recall/redirect 409 guard is scoped to those
+// verbs — a stance Runner and a redirect Runner may pursue the same unit.
+func (h *UnitHandler) stanceToMarchingUnit(w http.ResponseWriter, ctx context.Context, u *unit.Unit, order combat.StanceOrder) {
+	switch order.Stance {
+	case "fortify", "storm", "sentry", "none":
+	default:
+		writeError(w, http.StatusBadRequest, `invalid stance: must be "fortify", "storm", "sentry", or "none"`)
+		return
+	}
+	if order.ReactionForeign != "" && !unit.ValidReactionVerb(order.ReactionForeign) {
+		writeError(w, http.StatusBadRequest,
+			`invalid reaction_foreign: must be "intercept", "escort", "ignore", or "alert"`)
+		return
+	}
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+		writeError(w, http.StatusUnprocessableEntity, "naval units cannot take a stance")
+		return
+	}
+	if u.Q == nil || u.R == nil || u.TargetQ == nil || u.TargetR == nil || u.DepartsAt == nil || u.ArrivesAt == nil {
+		writeError(w, http.StatusInternalServerError, "marching unit missing position data")
+		return
+	}
+
+	// Wanax rides with the nomadic host — no Runner (unit.CommandedInPerson,
+	// same exception Recall makes). Applied through the delivery core itself.
+	if unit.CommandedInPerson(u.Type) {
+		res, err := combat.SetStanceInPursuit(ctx, h.pool, h.eventStore, order)
+		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "stance change failed")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"unit_id":          res.UnitID,
+			"stance":           res.Stance,
+			"sentry_q":         res.SentryQ,
+			"sentry_r":         res.SentryR,
+			"reaction_foreign": res.ReactionForeign,
+		})
+		return
+	}
+
+	origin := province.MapPosition{Q: *u.Q, R: *u.R}
+	target := province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}
+	category := string(unit.CategoryOf(u.Type))
+	now := h.clk.Now()
+
+	currentPos, posOK, err := province.InterpolatePosition(ctx, h.pool, u.WorldID, origin, target, category,
+		*u.DepartsAt, *u.ArrivesAt, now)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve unit's current position")
+		return
+	}
+	if !posOK {
+		currentPos = origin
+	}
+	courierOrigin, ok := h.resolveOrderOrigin(w, ctx, u.WorldID, order.PlayerID, currentPos)
+	if !ok {
+		return
+	}
+	aim, intercepted, err := messenger.InterceptCourierTarget(ctx, h.pool, u.WorldID,
+		province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
+		*u.DepartsAt, *u.ArrivesAt, now)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve runner interception")
+		return
+	}
+	catchUp := "on_the_march"
+	if !intercepted {
+		aim = target
+		catchUp = "at_destination"
+	}
+
+	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
+		WorldID: u.WorldID, PlayerID: order.PlayerID, UnitID: u.ID,
+		Verb: "stance_pursuit", Stance: &order,
+	}, fmt.Sprintf("Runner — stance order (%s), catching up with a marching unit.", order.Stance),
+		courierOrigin, aim, map[string]any{
+			"stance":          order.Stance,
+			"catch_up":        catchUp,
+			"intercept_q":     aim.Q,
+			"intercept_r":     aim.R,
+			"unit_arrives_at": *u.ArrivesAt,
+		})
 }
 
 // Reinforce handles POST /worlds/{worldID}/units/{unitID}/reinforce

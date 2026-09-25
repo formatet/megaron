@@ -341,6 +341,13 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		   depart_tick   = NULL,
 		   arrive_tick   = NULL,
 		   march_intent  = NULL,
+		   -- A sentry's hold centre is where it stops (the hex SetStance
+		   -- would read for a unit already standing here). Without this a
+		   -- unit that marched with — or was sent by Runner — stance sentry
+		   -- arrived with a NULL (or stale) centre and never intercepted:
+		   -- every interception query needs sentry_q/r.
+		   sentry_q      = CASE WHEN stance = 'sentry' THEN $3 ELSE sentry_q END,
+		   sentry_r      = CASE WHEN stance = 'sentry' THEN $4 ELSE sentry_r END,
 		   updated_at    = now()
 		 WHERE id = $1`,
 		u.id, newStatus, destQ, destR, settlementID,
