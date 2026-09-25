@@ -20,6 +20,7 @@ keryx status
 ```
 keryx status                 # your realm at a glance
 keryx notifications          # the archive — what happened while you were away
+keryx dispatches             # which kinds of news are pushed to you live
 keryx map                    # the map around you
 keryx city                   # people and placement in a city
 keryx goods                  # stock and production
