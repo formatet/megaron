@@ -104,8 +104,10 @@ func TestLoadDisplayName(t *testing.T) {
 	).Scan(&landNoOrdinalID); err != nil {
 		t.Fatalf("create land unit without ordinal/support: %v", err)
 	}
-	if got := LoadDisplayName(ctx, pool, landNoOrdinalID); got != "Spearmen" {
-		t.Errorf("land unit without ordinal/support: LoadDisplayName = %q, want %q", got, "Spearmen")
+	// Utan stad bär förbandet sin Wanax namn (Timothy 2026-09-25) — samma regel
+	// som /units display_name.
+	if got, want := LoadDisplayName(ctx, pool, landNoOrdinalID), "Spearmen of "+wanaxName; got != want {
+		t.Errorf("land unit without ordinal/support: LoadDisplayName = %q, want %q", got, want)
 	}
 
 	var shipID uuid.UUID
