@@ -37,6 +37,14 @@ type notificationRow struct {
 // those kinds; ?exclude=<k1,k2> drops them (both comma-separated, mutually
 // useful e.g. to keep high-frequency kinds like SitosIntervention from
 // burying the LIMIT 100 window). Omitting both is unchanged from before.
+//
+// ?dispatchable=true additionally drops kinds this player has muted as
+// dispatches. It exists for the one caller that rebuilds the Dispatches strip
+// on load: the strip must show what a live push WOULD have shown, and
+// notify.Hub.NotifyPlayer suppresses muted kinds there. Filtering client-side
+// instead would need a second round trip and would drift the moment a third
+// client (keryx, Lawagetas) grew its own strip — the mute is a server truth,
+// so it is applied where the server answers.
 func (h *NotificationsHandler) List(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -50,6 +58,7 @@ func (h *NotificationsHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	onlyUnread := r.URL.Query().Get("unread") == "true"
+	dispatchableOnly := r.URL.Query().Get("dispatchable") == "true"
 	kinds := splitKinds(r.URL.Query().Get("kind"))
 	excludeKinds := splitKinds(r.URL.Query().Get("exclude"))
 
@@ -68,6 +77,10 @@ func (h *NotificationsHandler) List(w http.ResponseWriter, r *http.Request) {
 	if len(excludeKinds) > 0 {
 		args = append(args, excludeKinds)
 		query += fmt.Sprintf(` AND kind <> ALL($%d)`, len(args))
+	}
+	if dispatchableOnly {
+		// $2 is playerID, bound above.
+		query += ` AND kind NOT IN (SELECT kind FROM dispatch_mutes WHERE player_id = $2)`
 	}
 	query += ` ORDER BY created_at DESC LIMIT 100`
 
@@ -140,6 +153,41 @@ func (h *NotificationsHandler) ReadAll(w http.ResponseWriter, r *http.Request) {
 		`UPDATE notifications SET read_at = now()
 		 WHERE world_id = $1 AND player_id = $2 AND read_at IS NULL`,
 		worldID, playerID,
+	); err != nil {
+		writeError(w, http.StatusInternalServerError, "update failed")
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// MarkRead marks ONE notification read — what dismissing a dispatch chip
+// means. ReadAll (opening the archive) says "I have read the feed"; this says
+// "I have dealt with this one", which is what keeps a dismissed chip from
+// coming back on the next page load. Scoped to the caller's own rows, so a
+// player can never mark another Wanax's notification read. Idempotent: a row
+// already read, or an id that is not theirs, is 204 either way — a dismissal
+// must never fail loudly in the UI over bookkeeping.
+func (h *NotificationsHandler) MarkRead(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	notifID, err := uuid.Parse(chi.URLParam(r, "notifID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid notification ID")
+		return
+	}
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	if _, err := h.pool.Exec(r.Context(),
+		`UPDATE notifications SET read_at = now()
+		 WHERE id = $1 AND world_id = $2 AND player_id = $3 AND read_at IS NULL`,
+		notifID, worldID, playerID,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "update failed")
 		return

@@ -138,8 +138,8 @@ func main() {
 	welfareH := loyalty.NewWelfareHandler(pool, scheduler, eventStore)
 	colonyH := loyalty.NewColonyPenaltyHandler(pool, scheduler, eventStore)
 	borrowedH := loyalty.NewBorrowedArmyPenaltyHandler(pool, scheduler, eventStore, gameClock)
-	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore)
-	messengerReturnH := messenger.NewReturnHandler(pool, eventStore)
+	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore, hub)
+	messengerReturnH := messenger.NewReturnHandler(pool, eventStore, hub)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore, hub)
 	sitosCfg := economy.LoadSitosConfig()
 	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
@@ -418,6 +418,7 @@ func main() {
 
 			r.Get("/worlds/{worldID}/notifications", nh.List)
 			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)
+			r.Post("/worlds/{worldID}/notifications/{notifID}/read", nh.MarkRead)
 			r.Delete("/worlds/{worldID}/notifications", nh.DeleteAll)
 
 			r.Post("/worlds/{worldID}/reports", rh.Create)

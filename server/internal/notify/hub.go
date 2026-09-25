@@ -41,10 +41,21 @@ const (
 var heartbeatFrame, _ = json.Marshal(Msg{Kind: "Heartbeat"})
 
 // Msg is a JSON-encodable push message sent to all clients in a world.
+//
+// ID and Level exist so a live dispatch and its Notifications archive row are
+// the SAME object to the client, not two parallel representations that happen
+// to share kind+payload (megaron_plan_dispatches.md §1, "ett fönster, två
+// dörrar"). Without the id, dismissing a chip could not mark its archive row
+// read, so the chip came back on every reload; without the level, the strip
+// could not tell an urgent dispatch from a routine one while the archive
+// already could. Both are omitempty: a Broadcast was never archived and has
+// neither, and an older client ignores the extra fields.
 type Msg struct {
-	Kind    string `json:"kind"`    // e.g. "ArmyArrival", "BuildComplete"
+	Kind    string `json:"kind"` // e.g. "ArmyArrival", "BuildComplete"
 	WorldID string `json:"world_id"`
 	Payload any    `json:"payload"`
+	ID      string `json:"id,omitempty"`    // notifications.id this was archived as
+	Level   int    `json:"level,omitempty"` // 1 critical … 4 routine, as archived
 }
 
 type client struct {
@@ -90,14 +101,19 @@ func (h *Hub) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {
 // so every "personal" notification (trade offers, crafting results, ...) was
 // pushed to every connected client in the world regardless of who it was for.
 func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
+	// notifID is the archive row this push belongs to. Empty when there is no
+	// pool (unit tests) or the insert failed — the push still goes out in that
+	// case, it just cannot be marked read from the chip. Never suppress a
+	// notification because its bookkeeping failed.
+	var notifID string
 	if h.pool != nil && playerID != uuid.Nil {
 		bodyJSON, err := json.Marshal(payload)
 		if err == nil {
-			if _, dbErr := h.pool.Exec(ctx,
+			if dbErr := h.pool.QueryRow(ctx,
 				`INSERT INTO notifications (world_id, player_id, kind, level, body_json)
-				 VALUES ($1, $2, $3, $4, $5)`,
+				 VALUES ($1, $2, $3, $4, $5) RETURNING id`,
 				worldID, playerID, kind, level, bodyJSON,
-			); dbErr != nil {
+			).Scan(&notifID); dbErr != nil {
 				slog.Error("persist notification", "kind", kind, "err", dbErr)
 			}
 		}
@@ -112,7 +128,7 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 	if h.isDispatchMuted(ctx, playerID, kind) {
 		return nil
 	}
-	h.sendTo(worldID, playerID, Msg{Kind: kind, Payload: payload})
+	h.sendTo(worldID, playerID, Msg{Kind: kind, Payload: payload, ID: notifID, Level: level})
 	return nil
 }
 

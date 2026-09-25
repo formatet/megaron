@@ -469,3 +469,38 @@ test('an empty response body (fetchAuth catch-guard) falls back to the fallback 
   assert.equal(formatApiError(null, 'Build failed.'), 'Build failed.');
   assert.equal(formatApiError(undefined, 'Build failed.'), 'Build failed.');
 });
+
+// Messenger notices (messenger/handler.go notifyDelivered / notifyReturned).
+// Body keys mirror the Go map literally; offer keys mirror the trade_offer JSON
+// written by api/handlers/messenger.go.
+test('MessengerArrival names the sender and the city it reached', () => {
+  assert.equal(
+    notifText('MessengerArrival', { from: 'Polyidos', name: 'Knossos', message: 'Peace?' }),
+    'Messenger from Polyidos arrived at Knossos — "Peace?"',
+  );
+  assert.equal(notifText('MessengerArrival', {}), 'Messenger from an unknown Wanax arrived');
+});
+
+test('MessengerArrival with an offer states the bargain, both directions', () => {
+  assert.equal(
+    notifText('MessengerArrival', { from: 'Polyidos', name: 'Knossos',
+      offer: { kind: 'buy', want_good: 'tin', want_qty: 40, offer_silver: 120 } }),
+    'Trade offer from Polyidos at Knossos — wants 40 tin, offers 120 silver',
+  );
+  assert.equal(
+    notifText('MessengerArrival', { from: 'Polyidos',
+      offer: { kind: 'sell', offer_good: 'copper', offer_qty: 25, want_silver: 90 } }),
+    'Trade offer from Polyidos — wants 90 silver, offers 25 copper',
+  );
+});
+
+test('MessengerReturned says whether an answer came back', () => {
+  assert.equal(
+    notifText('MessengerReturned', { name: 'Pylos', to: 'Knossos', replied: true, reply: 'Yes' }),
+    'Your messenger returned to Pylos from Knossos with a reply — "Yes"',
+  );
+  assert.equal(
+    notifText('MessengerReturned', { to: 'Knossos' }),
+    'Your messenger returned from Knossos with no reply',
+  );
+});

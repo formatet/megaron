@@ -3,16 +3,16 @@ import { State } from './state.js';
 import { serverNow } from './clock.js';
 import { fetchAuth } from './api.js';
 import { track } from './telemetry.js';
-import { notifText, notifIcon, colonyFoundedGrainLine } from './ui/format.js';
 // sfx.js imports nothing, so pulling it in here cannot create the cycle the
 // window.* indirection below exists to avoid.
 import { playWarHorn, playBattleClash } from './ui/sfx.js';
 
 // ── WebSocket — real-time province updates ────────────────────────────────
-// notifText/notifIcon/colonyFoundedGrainLine are pure formatting helpers
-// (ui/format.js, no DOM/state deps of their own) so this module imports them
-// directly. MusicPlayer, addDispatch, refreshTiles and updateNotifBadge live
-// in higher layers (ui/misc.js, ui/chips.js, render/map.js) that this module
+// This module no longer formats anything: a dispatch's text, icon and colour
+// are derived from its kind inside ui/chips.js (via ui/format.js), so what
+// arrives here is routed, not rendered. MusicPlayer, addDispatch, refreshTiles
+// and updateNotifBadge live in higher layers (ui/misc.js, ui/chips.js,
+// render/map.js) that this module
 // is not allowed to import per the config/state ← api/ws ← render ← ui ← main
 // dependency order — those are reached via the window.* bridge that main.js
 // sets up (same convention used for canvas → drawer calls in render/map.js).
@@ -111,82 +111,62 @@ export function initWS() {
       }
       firstConnect = false;
     };
-    const PERSISTENT_KINDS = new Set([
-      'BuildComplete','GoodsCrafted','TrainComplete','ArmyArrival','ColonyFounded',
-      'OutpostEstablished','OutpostCaptured','TradeDelivery','TradeLost','TradeReturn','MessengerArrival',
-      'UnitAttrition','UnitDeserted','UpkeepUnpaid','ForeignMarchSighted',
-      'OfferAccepted','OfferDeclined','OfferExpired',
-      // These four are archived server-side like every other notification, so
-      // the unread badge must count them too — it never did.
-      'BattleWon','BattleLost','UnitRecalled','UnitRedirected',
-    ]);
     ws.onmessage = e => {
       State.lastWsMsgAt = Date.now();
       const msg = JSON.parse(e.data);
+      // ── Every notification becomes a dispatch ────────────────────────────
+      // A frame carrying an `id` is a notification the server archived for
+      // THIS player (notify.Hub.NotifyPlayer stamps it; Heartbeat and any
+      // future unarchived broadcast carry none). One generic call replaces the
+      // nineteen hand-written addDispatch branches this if-chain used to
+      // carry: five of them were dead kinds nothing emits any more, and 33
+      // live server kinds — FoodShortfall, SiegeStarted, CityOccupied,
+      // DivinePunishment among them — had no branch at all and were pushed
+      // and silently dropped. The archive already rendered every one of them,
+      // so the strip was the only surface that needed a list, and a list is
+      // exactly what kept going stale. Text, icon and colour are derived from
+      // the kind inside addDispatch (ui/format.js).
+      //
+      // The kind-specific branches below are now only side effects — refetch
+      // this, play that. Some of them (ArmyArrival, GoodsCrafted, KharisEvent,
+      // TradeCaravanArrival) have no server emitter
+      // today; they are left standing because their refetch is still the right
+      // thing to do the day one appears, and they no longer cost a chip branch.
+      if (msg.id) {
+        window.addDispatch({ kind: msg.kind, payload: msg.payload || {}, id: msg.id, level: msg.level, time: 'now' });
+        // Same signal for the archive's unread badge: archived ⇔ has an id.
+        // This was a second hand-maintained list (PERSISTENT_KINDS) whose own
+        // comment recorded it having missed four kinds.
+        coalesce('notifications', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/notifications?unread=true`)
+          .then(r => r.ok && r.json().then(d => window.updateNotifBadge(d.unread || 0))));
+      }
       if (['ArmyArrival','BuildComplete','TrainComplete'].includes(msg.kind)) {
         coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; window.MusicPlayer.update(); })));
         coalesce('marches', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; window.MusicPlayer.update(); })));
       }
-      if (msg.kind === 'MessengerArrival') {
+      // A returning messenger carries the reply, so the diplomacy data is stale
+      // on both ends of the round trip (messenger/handler.go).
+      if (msg.kind === 'MessengerArrival' || msg.kind === 'MessengerReturned') {
         coalesce('messengers', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; })));
-        window.addDispatch(msg.kind, 'diplomacy', '✉', msg.payload?.message || 'Messenger arrived', 'now', msg.payload || {});
-      }
-      if (msg.kind === 'ArmyArrival') {
-        const intent = msg.payload?.intent || '';
-        window.addDispatch(msg.kind, 'war', '⚔', `Army arrived — ${intent}`, 'now', msg.payload || {});
-      }
-      if (msg.kind === 'BuildComplete') {
-        window.addDispatch(msg.kind, 'city', '🏛', `Build complete`, 'now', msg.payload || {});
       }
       if (msg.kind === 'GoodsCrafted') {
         // Refetch goods — the city drawer's stock is now stale.
         coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; })));
-        window.addDispatch(msg.kind, 'city', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
-      }
-      if (msg.kind === 'MetropolisFounded') {
-        window.addDispatch(msg.kind, 'city', '👑', notifText('MetropolisFounded', msg.payload || {}), 'now', msg.payload || {});
-      }
-      if (msg.kind === 'ColonyFounded') {
-        // Founding grain balance rides in the payload (DEL B) — a colony that
-        // starts at a deficit drains its seed from THIS tick, so say so now.
-        const p = msg.payload || {};
-        const grainLine = colonyFoundedGrainLine(p);
-        window.addDispatch(msg.kind, 'city', '🏛', notifText('ColonyFounded', p) + (grainLine ? ' — ' + grainLine : ''), 'now', p);
       }
       if (msg.kind === 'TradeCaravanArrival') {
         coalesce('trades', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; })));
-        window.addDispatch(msg.kind, 'trade', '🐂', 'Caravan arrived', 'now', msg.payload || {});
-      }
-      if (msg.kind === 'KharisEvent') {
-        window.addDispatch(msg.kind, 'kult', '⛩', msg.payload?.message || 'Divine event', 'now', msg.payload || {});
       }
       if (msg.kind === 'UnitAttrition' || msg.kind === 'UnitDeserted') {
         // Units bleeding out from grain/silver shortage — previously silent.
-        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
       }
-      if (msg.kind === 'UpkeepUnpaid') {
-        // Forewarning BEFORE desertion starts (SLICE A) — unlike UnitAttrition/
-        // UnitDeserted above, no unit size/status changed (only unpaid_periods,
-        // not shown in any drawer), so there's nothing to refetch — just the
-        // chip, which is the entire point of this notification existing.
-        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
-      }
       if (msg.kind === 'ForeignMarchSighted') {
-        // A foreign march just entered this Wanax's live tier. Unlike UpkeepUnpaid
-        // above, the refetch IS warranted: the march is a new map actor, and the
+        // A foreign march just entered this Wanax's live tier. The refetch is
+        // warranted beyond the chip: the march is a new map actor, and the
         // whole value of this notification is the travel time still left to answer
         // it — waiting for the next 30-second poll spends that time for nothing.
-        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
         coalesce('foreignUnits', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`)
           .then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; })));
-      }
-      if (['OfferAccepted','OfferDeclined','OfferExpired'].includes(msg.kind)) {
-        // Trade offer resolution — the offer's originator (see economy/trade.go,
-        // messenger.go) — previously silent until the delayed TradeDelivery/
-        // TradeReturn. Chip click opens the dispatch window (megaron_plan_
-        // dispatches.md §1), whose "take me there" jumps to settlement_id.
-        window.addDispatch(msg.kind, 'trade', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
       }
       if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its
@@ -203,7 +183,6 @@ export function initWS() {
       // so the wire is part of the same slice.
       if (msg.kind === 'BattleWon' || msg.kind === 'BattleLost') {
         playBattleClash();
-        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
         // A battle changes who holds what and which units still exist.
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
         coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; window.MusicPlayer.update(); })));
@@ -215,12 +194,7 @@ export function initWS() {
       // opposite of this game's load-bearing rule that command is never instant.
       if (msg.kind === 'UnitRecalled' || msg.kind === 'UnitRedirected') {
         playWarHorn();
-        window.addDispatch(msg.kind, 'war', notifIcon(msg.kind), notifText(msg.kind, msg.payload || {}), 'now', msg.payload || {});
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
-      }
-      if (PERSISTENT_KINDS.has(msg.kind)) {
-        coalesce('notifications', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/notifications?unread=true`)
-          .then(r => r.ok && r.json().then(d => window.updateNotifBadge(d.unread || 0))));
       }
       // An open drawer showing units/province/trade data should follow the update.
       if (DATA_KINDS.has(msg.kind)) reloadDrawerDebounced();

@@ -59,7 +59,7 @@ func TestArrivalHandler_FailedScheduleRollsBackTheFlip(t *testing.T) {
 	evt := events.ScheduledEvent{ID: 1, WorldID: badWorldID, Payload: payload, DueTick: 500}
 
 	clk := clock.NewTestClock(time.Now())
-	h := NewArrivalHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool))
+	h := NewArrivalHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil)
 
 	if err := h.Handle(ctx, evt); err == nil {
 		t.Fatal("Handle with an unschedulable return timer returned nil error, want an error (the schedule step must fail)")
@@ -121,7 +121,7 @@ func TestArrivalHandler_LocksTheRowBeforeReading(t *testing.T) {
 	payload, _ := json.Marshal(ArrivalPayload{MessengerID: messengerID})
 	evt := events.ScheduledEvent{ID: 1, WorldID: f.worldID, Payload: payload, DueTick: 500}
 	clk := clock.NewTestClock(time.Now())
-	h := NewArrivalHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool))
+	h := NewArrivalHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), nil)
 
 	done := make(chan error, 1)
 	go func() { done <- h.Handle(ctx, evt) }()
