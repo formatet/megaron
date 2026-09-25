@@ -27,4 +27,4 @@ A cohort is drafted out of your city's population and stays out of it until disb
 
 Every unit you own, with its state, and its orders: **March**, **Recall**, **Redirect**, **Reinforce**, **Load** / **Unload**, **Repair**, and a stance selector with **Set**. See [[marching]] and [[stances]].
 
-**Movements** is meant to list armies moving to and from your ground, but for now it misses ordinary marches — follow your units in **Army** and on the map ([[rough-edges]]).
+**Movements** lists your units on the march (**Outgoing**) and every foreign unit you can see marching on one of your settlements (**Incoming**), soonest arrival first. You only see an incoming column once one of your eyes has it in sight — the *foreign march sighted* notification fires at the same moment ([[defence]]).
