@@ -46,7 +46,7 @@
     {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "related": ["kharis", "bronze"]},
 
     {"id": "colonies",     "title": "Colonies",                     "category": "Growing", "kinds": ["ColonyFounded", "OutpostEstablished"], "related": ["loyalty", "routes", "founding"]},
-    {"id": "loyalty",      "title": "Loyalty",                      "category": "Growing", "related": ["colonies", "battle"]},
+    {"id": "loyalty",      "title": "Loyalty",                      "category": "Growing", "related": ["colonies", "battle", "transfers"]},
     {"id": "bronze",       "title": "The bronze problem",           "category": "Growing", "related": ["goods", "sea", "rites"]},
 
     {"id": "report",       "title": "Reporting a problem",          "category": "Reference", "drawer": "report", "related": ["rough-edges"]},
