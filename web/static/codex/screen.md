@@ -26,5 +26,5 @@ Every drawer has a **?** in its header that opens its article here.
 - **Left-click a hex** to look at it — the inspect panel opens on the right.
 - **Right-click a hex** to give an order there — the march menu opens ([[marching]]).
 - Drag, or use WASD or the arrow keys, to pan. **+** and **−** zoom, **⌂** re-centres.
-- **♫** silences all sound: the music, the horn when troops receive a march order, the clash of a resolved battle, a short call when your units arrive, and a soft chime for each new dispatch while you are playing.
+- **♫** silences all sound: the sign-in screen's opening theme, the music, the horn when troops receive a march order, the clash of a resolved battle, a short call when your units arrive, and a soft chime for each new dispatch while you are playing.
 - **⚒** toggles an activity overlay.

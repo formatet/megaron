@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { State } from '../state.js';
-import { currentCalendarDate, monthLabel, shouldPlayCue } from './misc.js';
+import { currentCalendarDate, monthLabel, shouldPlayCue, introHandoff } from './misc.js';
 
 // The notifications drawer's date header only showed the month NAME ("Day 6
 // of the Olive, Year 1") — with no ordinal there is no way to count days
@@ -80,4 +80,34 @@ test('MC5: muted, or not yet started (no user gesture), drops the cue', () => {
   const base = { now: 1000, activeCue: null, lastPlayedAt: {} };
   assert.equal(shouldPlayCue('war', { ...base, muted: true, started: true }), false);
   assert.equal(shouldPlayCue('war', { ...base, muted: false, started: false }), false);
+});
+
+// ── Sign-in → map music handoff (Timothy 2026-09-25) ────────────────────────
+// introHandoff() is the pure decision behind initMusicIntroHandoff(): given
+// the raw sessionStorage string and the current time, is this a trustworthy,
+// fresh handoff? A stale or malformed record must fall back to "no handoff"
+// (the bed just starts cold), never a guessed position.
+
+test('IH1: a valid, fresh handoff returns its pos', () => {
+  const raw = JSON.stringify({ pos: 12.5, at: 100_000 });
+  assert.deepEqual(introHandoff(raw, 100_000), { pos: 12.5 });
+});
+
+test('IH2: missing or unparseable JSON returns null', () => {
+  assert.equal(introHandoff(null, 100_000), null);
+  assert.equal(introHandoff('', 100_000), null);
+  assert.equal(introHandoff('not json', 100_000), null);
+  assert.equal(introHandoff('"a string, not an object"', 100_000), null);
+});
+
+test('IH3: a negative or non-finite pos returns null', () => {
+  assert.equal(introHandoff(JSON.stringify({ pos: -1, at: 100_000 }), 100_000), null);
+  assert.equal(introHandoff(JSON.stringify({ pos: NaN, at: 100_000 }), 100_000), null);
+  assert.equal(introHandoff(JSON.stringify({ at: 100_000 }), 100_000), null, 'pos missing entirely');
+});
+
+test('IH4: an `at` older than 120s returns null, exactly-fresh does not', () => {
+  const raw = JSON.stringify({ pos: 3, at: 100_000 });
+  assert.deepEqual(introHandoff(raw, 100_000 + 120_000), { pos: 3 }, 'exactly at the age cap is still fresh');
+  assert.equal(introHandoff(raw, 100_000 + 120_001), null, 'one ms past the cap is stale');
 });

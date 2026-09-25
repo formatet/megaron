@@ -22,6 +22,7 @@ import { stopCityAnim } from './render/city.js';
 import {
   showLawagatasBrief, dismissBrief, MusicPlayer, toggleMusic,
   initCelestial, initMusicAutostart, initMusicVisibility, initSoundPrefs,
+  initMusicIntroHandoff,
 } from './ui/misc.js';
 import { updateNotifBadge, initNotifications, addDispatch, dismissAllChips } from './ui/chips.js';
 import { toggleSearch, closeSearch, centreOn } from './ui/search.js';
@@ -353,8 +354,9 @@ async function bootstrap() {
   // statement in ui/misc.js — a click during bootstrap()'s fetches must
   // still catch MusicPlayer.start().
   initMusicAutostart();
-  initSoundPrefs();     // apply the persisted ♫ choice to the button + flags
-  initMusicVisibility(); // pause/resume music on tab hide/show
+  initSoundPrefs();       // apply the persisted ♫ choice to the button + flags
+  initMusicIntroHandoff(); // finish the sign-in screen's opening theme if we just logged in
+  initMusicVisibility();  // pause/resume music on tab hide/show
 
   if (!(await bootstrap())) return; // 401 → redirected to /
 

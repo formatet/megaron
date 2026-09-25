@@ -106,6 +106,10 @@ export const MusicPlayer = (() => {
   function start() {
     if (started) return;
     started = true;
+    // Intro tail pending (see playIntro() below): resume THAT, from wherever
+    // its currentTime already sits, instead of starting the bed underneath
+    // it — the bed only takes over once the intro's own finish() runs.
+    if (activeCue === 'intro' && activeCueAudio) { activeCueAudio.play().catch(() => {}); return; }
     if (cur && !paused) { cur.play().catch(() => {}); ramp(cur, 0.5, 1200); }
   }
 
@@ -188,7 +192,44 @@ export const MusicPlayer = (() => {
     if (started && !paused && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 500); }
   }
 
-  return { start, update, cue, togglePause, setMuted, onHidden, onVisible };
+  // playIntro(pos) — sign-in → map handoff (Timothy 2026-09-25): the sign-in
+  // screen's opening theme (index.html) keeps playing across the full-page
+  // login navigation by handing its playback position through sessionStorage
+  // (see introHandoff() below); this finishes that SAME track once, from
+  // that position, before the normal bed takes over. Modelled on cue(): it
+  // occupies activeCue/activeCueAudio exactly like a war/victory/doom cue,
+  // so togglePause()/onHidden()/onVisible() and a real cue arriving mid-tail
+  // already duck or drop it correctly with no changes there — shouldPlayCue
+  // treats an unknown activeCue name ('intro' isn't in CUE_PRIORITY) as
+  // outranked by everything, so any real cue is free to cut the tail short.
+  // Two differences from cue(): there's no bed playing yet to duck out, and
+  // finish() must actively start cur rather than calling play() again — a
+  // second play() call with the same src is a silent no-op (see curSrc).
+  function playIntro(pos) {
+    if (paused) return;
+    const audio = new Audio('/static/music/minoan_intro.ogg');
+    audio.loop = false;
+    try { audio.currentTime = pos; } catch (_) { /* metadata not loaded yet — applied once it is */ }
+    audio.volume = 0.5;
+    activeCue = 'intro';
+    activeCueAudio = audio;
+    // A successful immediate play (same-origin nav can carry over user
+    // activation) counts as "started" the same way a real pointerdown does —
+    // audio is already flowing. A rejection leaves started for start()'s
+    // pointerdown fallback to set, resuming from the same currentTime.
+    audio.play().then(() => { started = true; }).catch(() => {});
+
+    const finish = () => {
+      if (activeCueAudio !== audio) return; // superseded by a real cue
+      activeCueAudio = null;
+      activeCue = null;
+      if (started && !paused && !tabHidden() && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 800); }
+    };
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', finish);
+  }
+
+  return { start, update, cue, togglePause, setMuted, onHidden, onVisible, playIntro };
 })();
 
 // One control for ALL audio: a player who silenced the music does not want a
@@ -233,6 +274,46 @@ export function initMusicVisibility() {
     if (document.hidden) MusicPlayer.onHidden();
     else MusicPlayer.onVisible();
   });
+}
+
+// ── Sign-in → map music handoff (Timothy 2026-09-25) ───────────────────────
+// index.html (the sign-in screen, a plain server template with no ES
+// modules) plays the opening theme and, right before the full-page redirect
+// into the game, writes its playback position to this sessionStorage key so
+// MusicPlayer.playIntro() can finish the SAME track here instead of
+// restarting the bed cold. index.html cannot import this module, so the key
+// name and the SOUND_MUTED_KEY-equivalent check there are duplicated
+// literals — keep them in sync by hand if either changes.
+const INTRO_HANDOFF_KEY = 'megaron_intro_handoff';
+const INTRO_HANDOFF_MAX_AGE_MS = 120 * 1000; // a handoff from an abandoned
+  // sign-in tab must not surface the intro minutes later on a fresh login.
+
+// Pure decision, kept separate from the sessionStorage read so it's testable
+// without a DOM: null for anything that isn't a trustworthy, fresh handoff
+// (missing/unparseable JSON, a non-finite or negative pos, or `at` older
+// than the age cap) — never a guess at 0 for a corrupt record.
+export function introHandoff(raw, now) {
+  if (!raw) return null;
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch (_) { return null; }
+  if (!parsed || typeof parsed !== 'object') return null;
+  const { pos, at } = parsed;
+  if (!Number.isFinite(pos) || pos < 0) return null;
+  if (!Number.isFinite(at) || now - at > INTRO_HANDOFF_MAX_AGE_MS) return null;
+  return { pos };
+}
+
+// Reads and removes the handoff key on map-page start-up. Called after
+// initSoundPrefs() so MusicPlayer's mute flag already reflects the
+// persisted ♫ choice — playIntro() itself is a no-op while muted.
+export function initMusicIntroHandoff() {
+  let raw = null;
+  try {
+    raw = sessionStorage.getItem(INTRO_HANDOFF_KEY);
+    sessionStorage.removeItem(INTRO_HANDOFF_KEY);
+  } catch (_) { /* no storage — the bed just starts cold, as before this feature */ }
+  const handoff = introHandoff(raw, Date.now());
+  if (handoff) MusicPlayer.playIntro(handoff.pos);
 }
 
 // ── Celestial clock ───────────────────────────────────────────────────────

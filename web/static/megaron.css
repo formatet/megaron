@@ -166,6 +166,26 @@ body:has(.auth-page) main {
   to   { transform: scale(1.03); }
 }
 
+/* Opening-theme toggle — top-right overlay on the hero artwork, same
+   semantics + localStorage key as the in-game ♫ (misc.js toggleMusic /
+   map.html's .mzo-btn), styled to match its small square icon-button look. */
+.auth-music-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 5;
+  width: 30px; height: 30px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.auth-music-btn:hover { background: var(--bg-raised); color: var(--accent); border-color: var(--accent); }
+
 /* gradient fades: subtle side vignette + bottom darkening behind login */
 .auth-artwork-fade {
   position: absolute;
