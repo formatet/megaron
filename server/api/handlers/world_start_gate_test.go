@@ -53,6 +53,9 @@ func startGateRouter(pool *pgxpool.Pool, authSvc *auth.Service) *chi.Mux {
 			r.Post("/worlds/{worldID}/reports", rh.Create)
 			r.Get("/worlds/{worldID}/units", uh.ListUnits)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
+			rdh := NewRetreatDefaultHandler(pool)
+			r.Get("/worlds/{worldID}/retreat-default", rdh.Get)
+			r.Put("/worlds/{worldID}/retreat-default", rdh.Put)
 		})
 	})
 	return r
@@ -133,6 +136,26 @@ func TestRequireStartedWorld_NoOrdersUntilThresholdJoins(t *testing.T) {
 	if rec := gateDo(t, r, http.MethodPost, base+"/reports", tokA,
 		`{"kind":"bug","body":"the world has not begun"}`); rec.Code >= 300 {
 		t.Fatalf("POST report while forming = %d %q, want 2xx", rec.Code, rec.Body.String())
+	}
+	// Exempt write: the realm-wide retreat default is a doctrine, not an order.
+	// Fresh = by loyalty; PUT sets it; GET reads it back; nonsense is refused.
+	rdPath := base + "/retreat-default"
+	if rec := gateDo(t, r, http.MethodGet, rdPath, tokA, ""); rec.Code != http.StatusOK ||
+		!strings.Contains(rec.Body.String(), `"by_loyalty":true`) {
+		t.Fatalf("GET retreat-default fresh = %d %q, want 200 by_loyalty", rec.Code, rec.Body.String())
+	}
+	if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, `{"retreat_at_loss":0.5}`); rec.Code != http.StatusOK {
+		t.Fatalf("PUT retreat-default while forming = %d %q, want 200", rec.Code, rec.Body.String())
+	}
+	if rec := gateDo(t, r, http.MethodGet, rdPath, tokA, ""); !strings.Contains(rec.Body.String(), `"retreat_at_loss":0.5`) ||
+		!strings.Contains(rec.Body.String(), `"by_loyalty":false`) {
+		t.Fatalf("GET retreat-default after PUT = %q, want retreat_at_loss 0.5", rec.Body.String())
+	}
+	if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, `{"retreat_at_loss":0.5,"hold_to_last_man":true}`); rec.Code != http.StatusBadRequest {
+		t.Fatalf("PUT two modes = %d %q, want 400", rec.Code, rec.Body.String())
+	}
+	if rec := gateDo(t, r, http.MethodPut, rdPath, tokB, `{"hold_to_last_man":true}`); rec.Code != http.StatusNotFound {
+		t.Fatalf("PUT by a Wanax who has not joined = %d %q, want 404", rec.Code, rec.Body.String())
 	}
 	// GET /worlds/{id} reports the injected threshold, not the default.
 	var wbody struct {

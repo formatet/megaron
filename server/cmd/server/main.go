@@ -284,6 +284,7 @@ func main() {
 	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
 	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore, hub)
 	soh := handlers.NewStandingOrderHandler(pool)
+	rdh := handlers.NewRetreatDefaultHandler(pool)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock, sitosCfg)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
@@ -404,6 +405,10 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
 			r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
+			// Realm-wide retreat default (War → "When to retreat"): seeds every
+			// battle participant this Wanax's units get from now on.
+			r.Get("/worlds/{worldID}/retreat-default", rdh.Get)
+			r.Put("/worlds/{worldID}/retreat-default", rdh.Put)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
 			r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)

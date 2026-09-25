@@ -58,11 +58,17 @@ func RequireActiveWorld(pool *pgxpool.Pool) func(http.Handler) http.Handler {
 //   - join: joining is what starts the world.
 //   - reports: a bug report is about the game, not an order inside it.
 //   - notifications read-all / delete: housekeeping of the Wanax's own inbox.
+//   - retreat-default: a standing doctrine, not an order. It moves nothing,
+//     spends nothing and resolves nothing — it is only read when a unit
+//     enters a battle, and no battle can happen before the clock starts — so
+//     there is no burst of queued effects for the gate to prevent. Waiting
+//     for the world to begin is exactly when a Wanax has time to choose it.
 var ordersBeforeStartExempt = []string{
 	"/worlds/{worldID}/join",
 	"/worlds/{worldID}/reports",
 	"/worlds/{worldID}/notifications/read-all",
 	"/worlds/{worldID}/notifications",
+	"/worlds/{worldID}/retreat-default",
 }
 
 // RequireStartedWorld refuses every order given to a world whose clock has
