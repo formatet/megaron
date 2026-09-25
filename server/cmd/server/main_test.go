@@ -77,3 +77,33 @@ func TestEnvMapDim(t *testing.T) {
 		}
 	})
 }
+
+// TestEnvWorldStartWanaxes covers POLEIA_WORLD_START_WANAXES: default on
+// unset, an override honoured, and refusal (not a silent fallback to the
+// default) on a non-integer or a value below 1.
+func TestEnvWorldStartWanaxes(t *testing.T) {
+	const key = "POLEIA_WORLD_START_WANAXES"
+
+	t.Run("unset falls back to the default", func(t *testing.T) {
+		t.Setenv(key, "")
+		got, err := envWorldStartWanaxes()
+		if err != nil || got != 4 {
+			t.Fatalf("got %d, %v — want 4, nil", got, err)
+		}
+	})
+	t.Run("override is honoured", func(t *testing.T) {
+		t.Setenv(key, "2")
+		got, err := envWorldStartWanaxes()
+		if err != nil || got != 2 {
+			t.Fatalf("got %d, %v — want 2, nil", got, err)
+		}
+	})
+	for _, bad := range []string{"0", "-1", "four"} {
+		t.Run("refuses "+bad, func(t *testing.T) {
+			t.Setenv(key, bad)
+			if _, err := envWorldStartWanaxes(); err == nil {
+				t.Fatalf("%s=%q accepted, want a boot error", key, bad)
+			}
+		})
+	}
+}
