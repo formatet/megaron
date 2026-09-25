@@ -76,6 +76,10 @@ export const MusicPlayer = (() => {
   let activeCueAudio = null;
   const cueLastPlayedAt = Object.create(null);
 
+  function tabHidden() {
+    return typeof document !== 'undefined' && document.hidden;
+  }
+
   function ramp(el, to, ms, done) {
     const steps = 20, dt = ms / steps, dv = (to - el.volume) / steps;
     let i = 0;
@@ -139,6 +143,9 @@ export const MusicPlayer = (() => {
   // audio must never throw into the game, so a load failure just skips
   // straight to "bed resumes").
   function cue(name) {
+    // A hidden tab stays silent: the dispatch strip and SFX still carry the
+    // news, and a cue here would end by restarting the bed in the background.
+    if (tabHidden()) return;
     const now = Date.now();
     if (!shouldPlayCue(name, { now, muted: paused, started, activeCue, lastPlayedAt: cueLastPlayedAt })) return;
     const capital = ownCapital();
@@ -162,7 +169,7 @@ export const MusicPlayer = (() => {
       if (activeCueAudio !== audio) return; // already superseded by a higher-priority cue
       activeCueAudio = null;
       activeCue = null;
-      if (started && !paused && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 800); }
+      if (started && !paused && !tabHidden() && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 800); }
     };
     audio.addEventListener('ended', finish);
     audio.addEventListener('error', finish);
