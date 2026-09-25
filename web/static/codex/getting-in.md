@@ -1,6 +1,6 @@
 The front page has two tabs: **Sign In** and **New Player**.
 
-- **New Player** asks for a username and a password (twice). The button says **Claim your seat**. There is no email and no password reset, so choose something you will remember. You can *change* your password from the command-line client with `keryx password` — see [[keryx]]. The browser has no screen for it yet.
+- **New Player** asks for a username and a password (twice). The button says **Claim your seat**. There is no email and no password reset, so choose something you will remember. You can *change* your password from inside the browser: click your name in the top bar to open the Account window. The command-line client has the same verb, `keryx password` — see [[keryx]].
 - **Sign In** takes your username and password.
 
 After signing in you land on the join page, which names the world and how many Wanaxes are already in it. Press **Enter the World** and you are in — as a [[horde|Nomadic Host]], not as a city.

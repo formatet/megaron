@@ -861,7 +861,9 @@ body:has(.auth-page) main {
 
 /* Wanax name (megaron_plan_wanaxnamn_tilltal.md): identity anchor at the left
    of the topbar, filled in by main.js bootstrap() from /auth/me's wanax_name.
-   Always shown (unlike gt-netstatus, which toggles on state). */
+   Always shown (unlike gt-netstatus, which toggles on state). Clickable — opens
+   the Account window (ui/account_window.js): the one identity anchor in the
+   topbar is also the one door into account settings. */
 .gt-wanax {
   padding: 0 0.7rem;
   font-size: var(--fs-xs);
@@ -872,7 +874,9 @@ body:has(.auth-page) main {
   align-items: center;
   flex-shrink: 0;
   white-space: nowrap;
+  cursor: pointer;
 }
+.gt-wanax:hover { color: var(--accent); }
 
 /* Net-status pill — shown by api.js while a GET is retrying after a network
    error / 5xx, cleared on the first reachable response. Discreet, non-blocking. */

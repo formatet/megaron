@@ -55,6 +55,7 @@ import { installErrorCapture } from './ui/diagnostics.js';
 import { playWarHorn, playBattleClash } from './ui/sfx.js';
 import { loadGossipDrawer } from './ui/drawers/gossip.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
+import { closeAccountWindow, toggleAccountWindow } from './ui/account_window.js';
 import { initCodex, openCodex, openCodexForDrawer, closeCodex, codexBack } from './ui/codex.js';
 
 // ── Drawer system (generic chrome — per-drawer content lives in ui/drawers/) ─
@@ -101,6 +102,7 @@ document.addEventListener('keydown', e => {
     if (cx && cx.classList.contains('open')) { closeCodex(); return; }
     if (State.activeDrawer) { closeDrawer(State.activeDrawer); return; }
     closeDispatchWindow();
+    closeAccountWindow();
     document.getElementById('search-overlay').classList.remove('open');
   }
 });
@@ -164,6 +166,7 @@ Object.assign(window, {
   // (a) inline-handler targets
   cancelBuild,
   centreOn,
+  closeAccountWindow,
   closeCodex,
   closeDispatchWindow,
   closeDrawer,
@@ -208,6 +211,7 @@ Object.assign(window, {
   startBuild,
   startTransfer,
   submitReport,
+  toggleAccountWindow,
   toggleActivityOverlay,
   toggleCodex,
   toggleDrawer,

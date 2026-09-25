@@ -14,7 +14,7 @@
 
   <!-- ── Game top bar ─────────────────────────────────────────────────── -->
   <div class="game-topbar">
-    <div class="gt-wanax" id="gt-wanax"></div>
+    <div class="gt-wanax" id="gt-wanax" onclick="toggleAccountWindow()" title="Account"></div>
     <div class="gt-netstatus" id="net-status">återansluter…</div>
     <div class="gt-dispatch-strip" id="gt-dispatch-strip">
       <button class="dc-dismiss-all" id="dc-dismiss-all" style="display:none"
@@ -253,6 +253,19 @@
       <button class="drawer-close" onclick="closeDispatchWindow()">✕</button>
     </div>
     <div class="dw-body" id="dw-body"></div>
+  </div>
+</div>
+
+<!-- ── ACCOUNT WINDOW — change password / sign out (ui/account_window.js).
+     Opened from #gt-wanax (the identity anchor in the topbar). Same
+     overlay/panel chrome as the dispatch window above. ───────────────────── -->
+<div class="dispatch-window-overlay" id="account-window-overlay" onclick="closeAccountWindow(event)">
+  <div class="dispatch-window" onclick="event.stopPropagation()">
+    <div class="dw-header">
+      <span class="drawer-title">Account</span>
+      <button class="drawer-close" onclick="closeAccountWindow()">✕</button>
+    </div>
+    <div class="dw-body" id="account-window-body"></div>
   </div>
 </div>
 
