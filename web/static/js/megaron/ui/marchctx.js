@@ -257,7 +257,7 @@ export function groupMarchUnits(units, provinceData) {
     if (!byKey.has(key)) byKey.set(key, { type: u.type, loc, ids: [], names: [] });
     const g = byKey.get(key);
     g.ids.push(u.id);
-    // display_name is server-formatted ("First Spearmen of Knossos") and always
+    // display_name is server-formatted ("1st Spearmen of Knossos") and always
     // present today; the type label is a fallback so a partial payload leaves a
     // readable row rather than a blank one.
     g.names.push(u.display_name || unitTypeLabel(u.type));
