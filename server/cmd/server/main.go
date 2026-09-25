@@ -307,18 +307,24 @@ func main() {
 		r.Get("/worlds", wh.List)
 		r.With(auth.Middleware(authSvc)).Post("/worlds", wh.Create)
 		r.Get("/worlds/{worldID}", wh.Get)
-		// Map and province list use OptionalMiddleware: fog-of-war when authenticated.
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/messengers", wh.MapMessengers)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/trades", wh.MapTrades)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/foreign-units", wh.ForeignUnits)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/rural-projections", wh.RuralProjections)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/wanaxes", wh.Wanaxes)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/cities", wh.Cities)
-		r.With(auth.OptionalMiddleware(authSvc)).Get("/worlds/{worldID}/diplomacy", wh.Diplomacy)
+		// Map-shaped reads REQUIRE a token (Timothy 2026-09-25: "upptäckten ÄR
+		// spelet"). They used OptionalMiddleware, and an anonymous caller got the
+		// no-eyes branch — which on /map meant EVERY tile live, deposits included,
+		// and on /provinces every city with owner and position. Anyone with the
+		// public URL could read where the copper is. A fog-of-war endpoint has no
+		// honest anonymous answer, so there is none: 401. Tools that need the
+		// whole map use the X-Admin-Key god view (api/handlers/god.go).
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/messengers", wh.MapMessengers)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/trades", wh.MapTrades)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/foreign-units", wh.ForeignUnits)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/rural-projections", wh.RuralProjections)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/wanaxes", wh.Wanaxes)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/cities", wh.Cities)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/diplomacy", wh.Diplomacy)
 
 		// Province and kingdom endpoints require authentication.
 		r.Group(func(r chi.Router) {
