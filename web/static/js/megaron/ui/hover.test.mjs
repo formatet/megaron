@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { unitHoverLines } from './hover.js';
+import { unitHoverLines, compassFromPixels } from './hover.js';
 
 const names = { '0,0': 'Knossos', '5,0': 'Phaistos' };
 const placeName = (q, r) => names[q + ',' + r] || `(${q},${r})`;
@@ -16,6 +16,24 @@ test('an own unit on the march says where it left from and where it is going', (
 test('an own unit standing still is just its name', () => {
   const lines = unitHoverLines({ placeName, own: [{ display_name: '1st Spearmen of Knossos', status: 'positioned', q: 2, r: 0 }] });
   assert.deepEqual(lines, ['1st Spearmen of Knossos']);
+});
+
+test('a foreign march shows its heading, never its destination', () => {
+  const lines = unitHoverLines({
+    placeName,
+    foreign: [{ name: '2nd Spearmen of Mallia', owner: 'Minos', status: 'marching', heading: 'north-west', target_q: 0, target_r: 0 }],
+  });
+  assert.deepEqual(lines, ['2nd Spearmen of Mallia (Minos) — heading north-west']);
+});
+
+test('compass reads screen pixels: y grows downward', () => {
+  assert.equal(compassFromPixels(10, 0), 'east');
+  assert.equal(compassFromPixels(0, -10), 'north');
+  assert.equal(compassFromPixels(0, 10), 'south');
+  assert.equal(compassFromPixels(-10, 10), 'south-west');
+  assert.equal(compassFromPixels(0, 0), '');
+  // A +r hex step on the flat-top map (hexPx: y = √3·(r + q/2)) is due south.
+  assert.equal(compassFromPixels(0, Math.sqrt(3)), 'south');
 });
 
 test('a foreign unit says what it is called and whose it is', () => {

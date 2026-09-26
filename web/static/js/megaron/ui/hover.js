@@ -11,6 +11,17 @@
 // megaron_plan_karavanbeslag.md).
 import { actorName, unitTypeLabel } from './actornames.js';
 
+// compassFromPixels: 8-point compass for a step of (dx, dy) SCREEN pixels
+// (y grows downward) — the direction the player sees the walker go, which is
+// what the tooltip must say. '' for no movement.
+const COMPASS = ['east', 'north-east', 'north', 'north-west', 'west', 'south-west', 'south', 'south-east'];
+export function compassFromPixels(dx, dy) {
+  if (dx === 0 && dy === 0) return '';
+  let angle = Math.atan2(-dy, dx);
+  if (angle < 0) angle += 2 * Math.PI;
+  return COMPASS[Math.round(angle / (Math.PI / 4)) % 8];
+}
+
 function route(placeName, oq, or, dq, dr) {
   return `from ${placeName(oq, or)} to ${placeName(dq, dr)}`;
 }
@@ -22,7 +33,8 @@ function cargo(t) {
 // unitHoverLines returns one line per actor on the hex, in the order
 // own units · foreign units · caravans · runners.
 //   own       — own units (GET /units) standing here
-//   foreign   — foreign units (GET /foreign-units) standing here
+//   foreign   — foreign units (GET /foreign-units) standing here; a marching
+//               one carries .heading (compassFromPixels of its current step)
 //   caravans  — trade markers (GET /trades) here
 //   runners   — messenger markers (GET /messengers) here
 //   placeName — (q, r) → the settlement's name, or "(q,r)"
@@ -35,9 +47,14 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
     }
     lines.push(line);
   }
+  // A foreign march shows its HEADING, never its destination (Timothy
+  // 2026-09-26): the watcher sees which way it goes now — which may be wrong
+  // about where it ends up, if the road bends round a mountain.
   for (const u of foreign) {
     const name = u.name || unitTypeLabel(u.type);
-    lines.push(u.owner ? `${name} (${u.owner})` : name);
+    let line = u.owner ? `${name} (${u.owner})` : name;
+    if (u.status === 'marching' && u.heading) line += ` — heading ${u.heading}`;
+    lines.push(line);
   }
   for (const t of caravans) {
     const load = cargo(t);
