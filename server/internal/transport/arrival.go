@@ -62,12 +62,13 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	var status, kind string
 	var destID *uuid.UUID
 	var shipUnitID *uuid.UUID
+	var standingOrderID *uuid.UUID
 	var ownerID uuid.UUID
 	var destQ, destR int
 	if err := tx.QueryRow(ctx,
-		`SELECT status, dest_id, kind, ship_unit_id, owner_id, dest_q, dest_r
+		`SELECT status, dest_id, kind, ship_unit_id, owner_id, dest_q, dest_r, standing_order_id
 		 FROM transports WHERE id = $1 FOR UPDATE`, p.TransportID,
-	).Scan(&status, &destID, &kind, &shipUnitID, &ownerID, &destQ, &destR); err != nil {
+	).Scan(&status, &destID, &kind, &shipUnitID, &ownerID, &destQ, &destR, &standingOrderID); err != nil {
 		return fmt.Errorf("load transport: %w", err)
 	}
 	if status != "in_transit" {
@@ -77,11 +78,18 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	// R3/R5 (megaron_plan_sjohandel_kraver_skepp.md): "ship_return" (the empty
 	// hemresa after a single-shot naval transfer) and "damaged_return" (the
 	// limped-home leg after a naval seizure, R5) are the two kinds whose
-	// arrival means "this ship's journey is over — release it." Every other
-	// kind leaves a bound ship exactly as bound as it was (R4: a standing sea
-	// route keeps its ship for the route's whole lifetime, including between
-	// legs in port).
-	releaseShip := shipUnitID != nil && (kind == "ship_return" || kind == "damaged_return")
+	// arrival means "this ship's journey is over — release it." A standing
+	// route's own legs ("standing_order_out"/"standing_order_return") leave a
+	// bound ship exactly as bound as it was (R4: the ship stays freighting for
+	// the route's whole lifetime, including between legs in port) — UNLESS the
+	// order itself was deleted while this leg was in flight (ON DELETE SET
+	// NULL on standing_order_id, migration 140): with no order left to manage
+	// it, the ship is freed wherever this orphaned leg lands, rather than
+	// staying freighting forever with nothing to release it. A route that was
+	// merely paused (order row still exists) releases its idle ship from the
+	// sweep itself (combat.StandingOrderTickHandler.tickOrder), never here.
+	releaseShip := shipUnitID != nil && (kind == "ship_return" || kind == "damaged_return" ||
+		((kind == "standing_order_out" || kind == "standing_order_return") && standingOrderID == nil))
 	if releaseShip {
 		if err := h.releaseArrivedShip(ctx, tx, e.WorldID, *shipUnitID, ownerID, destID, destQ, destR); err != nil {
 			return fmt.Errorf("release arrived ship: %w", err)

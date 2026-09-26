@@ -15,6 +15,7 @@ package combat
 import (
 	"context"
 	"math"
+	"strings"
 	"testing"
 
 	"formatet/megaron/server/internal/province"
@@ -96,6 +97,23 @@ func newCoastalStandingOrderFixture(t *testing.T, pool *pgxpool.Pool, tag string
 	return f
 }
 
+// shipAt inserts a garrison galley/merchantman at settlementID — sjöhandel
+// kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R4): since this slice,
+// a standing sea route needs a real free hull in its from-settlement, not
+// just a navigable sea lane.
+func shipAt(t *testing.T, pool *pgxpool.Pool, worldID, owner, settlementID uuid.UUID, shipType string) uuid.UUID {
+	t.Helper()
+	var id uuid.UUID
+	if err := pool.QueryRow(context.Background(),
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
+		 VALUES ($1, $2, $3, 'naval', 1, 10, 'garrison', $4) RETURNING id`,
+		worldID, owner, shipType, settlementID,
+	).Scan(&id); err != nil {
+		t.Fatalf("create ship %s at %s: %v", shipType, settlementID, err)
+	}
+	return id
+}
+
 // transportCategoryForOrder reads the category of the most recent transport
 // dispatched for a standing order — the field the whole slice is about.
 func transportCategoryForOrder(t *testing.T, pool *pgxpool.Pool, orderID uuid.UUID) string {
@@ -121,6 +139,7 @@ func TestStandingOrder_OutboundGoesNavalWhenBothEndsCoastal(t *testing.T) {
 	// Every gubbe placed — a land route would pause here (see
 	// TestStandingOrder_PausesWhenCrewHasNoIdleGubbe); a naval route must not.
 	placeGubbar(t, pool, f.capitalID, 10)
+	shipID := shipAt(t, pool, f.worldID, f.owner, f.capitalID, "merchantman")
 
 	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
 	addOutbound(t, pool, orderID, "grain", 200)
@@ -133,6 +152,22 @@ func TestStandingOrder_OutboundGoesNavalWhenBothEndsCoastal(t *testing.T) {
 	}
 	if got := transportCategoryForOrder(t, pool, orderID); got != "naval" {
 		t.Fatalf("category = %q, want naval (both ends coastal, sea lane exists)", got)
+	}
+
+	// R2/R4: the ship is bound (freighting) and saved onto the order.
+	var shipStatus string
+	if err := pool.QueryRow(context.Background(), `SELECT status FROM units WHERE id = $1`, shipID).Scan(&shipStatus); err != nil {
+		t.Fatalf("read ship status: %v", err)
+	}
+	if shipStatus != "freighting" {
+		t.Errorf("ship status = %q, want freighting", shipStatus)
+	}
+	var savedShipID *uuid.UUID
+	if err := pool.QueryRow(context.Background(), `SELECT ship_unit_id FROM standing_orders WHERE id = $1`, orderID).Scan(&savedShipID); err != nil {
+		t.Fatalf("read order ship_unit_id: %v", err)
+	}
+	if savedShipID == nil || *savedShipID != shipID {
+		t.Errorf("order ship_unit_id = %v, want %s", savedShipID, shipID)
 	}
 
 	// Naval pays the merchantman's flat hull ration (UpkeepSpecs), not a
@@ -150,9 +185,23 @@ func TestStandingOrder_OutboundGoesNavalWhenBothEndsCoastal(t *testing.T) {
 		travelTicks = 1
 	}
 	provisions := VoyageProvisions(standingOrderNavalRation(), travelTicks, 0)
-	want := 1000.0 - 200.0 - provisions
+
+	// R1/R4: a merchantman's capacity (200 weight units) caps the manifest —
+	// grain weighs 2.0/unit (goods.weight), so at most 100 of the 200 needed
+	// can actually go this trip, not the full shortfall.
+	var grainWeight float64
+	if err := pool.QueryRow(context.Background(), `SELECT weight FROM goods WHERE key = 'grain'`).Scan(&grainWeight); err != nil {
+		t.Fatalf("look up grain weight: %v", err)
+	}
+	shippedQty := 200.0
+	if capped := 200.0 /* merchantman capacity */ / grainWeight; shippedQty > capped {
+		shippedQty = capped
+	}
+
+	want := 1000.0 - shippedQty - provisions
 	if got := settledAmount(t, pool, f.capitalID, "grain"); got != want {
-		t.Errorf("capital grain after naval dispatch = %v, want %v (200 shipped + merchantman ration %v, not a gubbe's)", got, want, provisions)
+		t.Errorf("capital grain after naval dispatch = %v, want %v (%v shipped [capped by ship capacity] + merchantman ration %v, not a gubbe's)",
+			got, want, shippedQty, provisions)
 	}
 }
 
@@ -162,6 +211,7 @@ func TestStandingOrder_ReturnLegAlsoGoesNaval(t *testing.T) {
 	pool := testPool(t)
 	f := newCoastalStandingOrderFixture(t, pool, "so-naval-return")
 	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
+	shipID := shipAt(t, pool, f.worldID, f.owner, f.capitalID, "merchantman")
 
 	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
 	addOutbound(t, pool, orderID, "grain", 200)
@@ -201,4 +251,167 @@ func TestStandingOrder_ReturnLegAlsoGoesNaval(t *testing.T) {
 		t.Errorf("return leg category = %q, want naval — the caravan sailed out, it must sail home", got)
 	}
 	_ = returnID
+
+	// R4: the SAME ship carries the return leg, and stays freighting — the
+	// route isn't over, it's just between legs.
+	var shipStatus string
+	if err := pool.QueryRow(context.Background(), `SELECT status FROM units WHERE id = $1`, shipID).Scan(&shipStatus); err != nil {
+		t.Fatalf("read ship status: %v", err)
+	}
+	if shipStatus != "freighting" {
+		t.Errorf("ship status after return dispatch = %q, want still freighting", shipStatus)
+	}
+}
+
+// shipUnitStatus reads a unit's status + settlement_id.
+func shipUnitStatus(t *testing.T, pool *pgxpool.Pool, id uuid.UUID) (status string, settlementID *uuid.UUID) {
+	t.Helper()
+	if err := pool.QueryRow(context.Background(),
+		`SELECT status, settlement_id FROM units WHERE id = $1`, id,
+	).Scan(&status, &settlementID); err != nil {
+		t.Fatalf("read ship status: %v", err)
+	}
+	return status, settlementID
+}
+
+// 3a. R4 pause case 1: the ship is already idle, bound, sitting in the
+// from-harbour (between legs) when the Wanax pauses the route — it must be
+// released immediately (garrison, at the from-settlement), not left bound to
+// a route nobody is running.
+func TestStandingOrder_PauseReleasesIdleShipInHomePort(t *testing.T) {
+	pool := testPool(t)
+	f := newCoastalStandingOrderFixture(t, pool, "so-naval-pause-home")
+	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
+	shipID := shipAt(t, pool, f.worldID, f.owner, f.capitalID, "merchantman")
+	if _, err := pool.Exec(context.Background(), `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
+		t.Fatalf("pre-bind ship: %v", err)
+	}
+
+	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
+	addOutbound(t, pool, orderID, "grain", 200)
+	if _, err := pool.Exec(context.Background(),
+		`UPDATE standing_orders SET ship_unit_id = $2, status = 'paused', pause_reason = 'paused by Wanax' WHERE id = $1`,
+		orderID, shipID,
+	); err != nil {
+		t.Fatalf("bind ship to order + pause: %v", err)
+	}
+
+	runStandingOrderTick(t, pool, f)
+
+	status, settlementID := shipUnitStatus(t, pool, shipID)
+	if status != "garrison" {
+		t.Errorf("ship status after pause-idle sweep = %q, want garrison", status)
+	}
+	if settlementID == nil || *settlementID != f.capitalID {
+		t.Errorf("ship settlement after release = %v, want home port %s", settlementID, f.capitalID)
+	}
+}
+
+// 3b/3c. R4 pause cases 2 ("ute") and 3 ("i mål-hamnen"), chained: the Wanax
+// pauses while the outbound leg has already landed at the destination
+// (mirrors "ute" finishing its leg and reaching "i mål-hamnen") — the very
+// next sweep must send the ship home EMPTY (not the normal floor-based return
+// goods, since the route is shutting down), and once THAT leg lands the sweep
+// must release the ship at its home port.
+func TestStandingOrder_PauseAtDestinationSailsHomeEmptyThenReleases(t *testing.T) {
+	pool := testPool(t)
+	f := newCoastalStandingOrderFixture(t, pool, "so-naval-pause-dest")
+	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
+	shipID := shipAt(t, pool, f.worldID, f.owner, f.capitalID, "merchantman")
+
+	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
+	addOutbound(t, pool, orderID, "grain", 50)
+	addReturnGood(t, pool, orderID, "stone", 20)
+
+	runStandingOrderTick(t, pool, f) // dispatch outbound leg (active)
+
+	outboundID, kind, status := latestTransportForOrder(t, pool, orderID)
+	if kind != "standing_order_out" || status != "in_transit" {
+		t.Fatalf("latest transport = (%s, %s), want (standing_order_out, in_transit)", kind, status)
+	}
+	// Simulate the outbound leg's arrival at the destination — same
+	// stand-in the other naval test uses (the generic ArrivalHandler is
+	// untouched by this slice).
+	if _, err := pool.Exec(context.Background(),
+		`UPDATE transports SET status = 'delivered' WHERE id = $1`, outboundID,
+	); err != nil {
+		t.Fatalf("mark outbound delivered: %v", err)
+	}
+	// Plenty of surplus stone above the floor — if the route were still
+	// active, the return leg would carry it. Paused, it must carry nothing.
+	if _, err := pool.Exec(context.Background(),
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, 'stone', 500, 0, 1000000, $2)`,
+		f.townID, f.tick,
+	); err != nil {
+		t.Fatalf("seed destination stone: %v", err)
+	}
+
+	// The Wanax pauses the route while the ship sits in the destination port.
+	if _, err := pool.Exec(context.Background(),
+		`UPDATE standing_orders SET status = 'paused', pause_reason = 'paused by Wanax' WHERE id = $1`, orderID,
+	); err != nil {
+		t.Fatalf("pause order: %v", err)
+	}
+
+	runStandingOrderTick(t, pool, f) // dispatch the (empty) return leg despite being paused
+
+	returnID, kind, status := latestTransportForOrder(t, pool, orderID)
+	if kind != "standing_order_return" || status != "in_transit" {
+		t.Fatalf("latest transport = (%s, %s), want (standing_order_return, in_transit)", kind, status)
+	}
+	var stoneQty int
+	if err := pool.QueryRow(context.Background(),
+		`SELECT count(*) FROM transport_goods WHERE transport_id = $1`, returnID,
+	).Scan(&stoneQty); err != nil {
+		t.Fatalf("count return manifest: %v", err)
+	}
+	if stoneQty != 0 {
+		t.Errorf("return manifest rows = %d, want 0 (paused route sails home empty)", stoneQty)
+	}
+	shipStatus, _ := shipUnitStatus(t, pool, shipID)
+	if shipStatus != "freighting" {
+		t.Errorf("ship status right after empty-return dispatch = %q, want still freighting (not home yet)", shipStatus)
+	}
+
+	// Simulate the return leg's arrival at home.
+	if _, err := pool.Exec(context.Background(),
+		`UPDATE transports SET status = 'delivered' WHERE id = $1`, returnID,
+	); err != nil {
+		t.Fatalf("mark return delivered: %v", err)
+	}
+
+	runStandingOrderTick(t, pool, f) // idle, paused — releases the ship
+
+	finalStatus, settlementID := shipUnitStatus(t, pool, shipID)
+	if finalStatus != "garrison" {
+		t.Errorf("final ship status = %q, want garrison", finalStatus)
+	}
+	if settlementID == nil || *settlementID != f.capitalID {
+		t.Errorf("final ship settlement = %v, want home port %s", settlementID, f.capitalID)
+	}
+}
+
+// 4. R1/R4: with no free ship in the from-harbour and no land bridge between
+// the two settlements (pure sea lane, like province_trade_naval_test.go's
+// island case), the route pauses with an actionable reason instead of
+// silently doing nothing or crashing.
+func TestStandingOrder_PausesWithNoShipAndNoLandRoute(t *testing.T) {
+	pool := testPool(t)
+	f := newCoastalStandingOrderFixture(t, pool, "so-naval-no-ship")
+	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
+	// No ship created — the harbour is empty.
+
+	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
+	addOutbound(t, pool, orderID, "grain", 200)
+
+	runStandingOrderTick(t, pool, f)
+
+	status, reason := orderStatus(t, pool, orderID)
+	if status != "paused" {
+		t.Fatalf("order status = %q, want paused (no ship, no land route)", status)
+	}
+	if reason == nil || !strings.Contains(*reason, "no free galley or merchantman") || !strings.Contains(*reason, "Byblos") {
+		t.Errorf("pause reason = %v, want it to name Byblos and explain no free ship", reason)
+	}
 }

@@ -14,6 +14,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/transport"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -313,6 +314,14 @@ func (h *StandingOrderHandler) setStatus(w http.ResponseWriter, r *http.Request,
 // Delete handles DELETE /worlds/:worldID/standing-orders/:orderID. A caravan
 // already in flight is untouched (transports.standing_order_id ON DELETE SET
 // NULL, migration 140) — it keeps flying as an ordinary untagged transfer.
+//
+// R4 (megaron_plan_sjohandel_kraver_skepp.md): if the route had bound a real
+// ship, this is the ONLY chance to act on it while the order row still
+// exists — once deleted, the sweep can never read it again. If the ship is
+// idle right now (no leg in flight), it's released immediately. If a leg IS
+// in flight, the ship stays bound; transport.ArrivalHandler releases it
+// wherever that orphaned leg lands (standing_order_id is now NULL — see that
+// handler's own comment).
 func (h *StandingOrderHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -333,8 +342,43 @@ func (h *StandingOrderHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, "not your standing order")
 		return
 	}
-	if _, err := h.pool.Exec(r.Context(), `DELETE FROM standing_orders WHERE id = $1`, orderID); err != nil {
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	var fromID uuid.UUID
+	var shipUnitID *uuid.UUID
+	if err := tx.QueryRow(r.Context(),
+		`SELECT from_settlement_id, ship_unit_id FROM standing_orders WHERE id = $1`, orderID,
+	).Scan(&fromID, &shipUnitID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load standing order")
+		return
+	}
+	if shipUnitID != nil {
+		var legStatus string
+		err := tx.QueryRow(r.Context(),
+			`SELECT status FROM transports WHERE standing_order_id = $1 ORDER BY created_at DESC LIMIT 1`,
+			orderID,
+		).Scan(&legStatus)
+		idle := err != nil || legStatus != "in_transit" // no leg at all, or the latest one already landed
+		if idle {
+			if err := transport.ReleaseShip(r.Context(), tx, *shipUnitID, fromID); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not release ship")
+				return
+			}
+		}
+	}
+
+	if _, err := tx.Exec(r.Context(), `DELETE FROM standing_orders WHERE id = $1`, orderID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not delete standing order")
+		return
+	}
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
