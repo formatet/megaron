@@ -90,23 +90,30 @@ func (h *Hub) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {
 
 // NotifyPlayer persists a notification for a specific player and delivers the
 // event only to that player's own connections (all of them, if they have
-// several tabs open). If playerID is uuid.Nil, there is no specific player to
-// target — that is the existing "world-wide" contract some callers rely on
-// (e.g. announcements with no single recipient), so the event is broadcast to
-// every client in the world instead, same as before. This is deliberately
-// asymmetric with BroadcastEvent, which always goes to everyone: NotifyPlayer
-// is for events that name a recipient, BroadcastEvent is for events that
-// don't. Mixing the two up here is exactly how the FOW leak happened
-// (2026-07-25) — this function used to call BroadcastEvent unconditionally,
-// so every "personal" notification (trade offers, crafting results, ...) was
-// pushed to every connected client in the world regardless of who it was for.
+// several tabs open). NotifyPlayer is for events that name a recipient,
+// BroadcastEvent for events that don't. Mixing the two up is exactly how the
+// FOW leak happened (2026-07-25) — this function used to call BroadcastEvent
+// unconditionally, so every personal notification was pushed to every
+// connected client in the world regardless of who it was for.
+//
+// A uuid.Nil playerID is DROPPED, never broadcast. It used to fall through to
+// BroadcastEvent as a "world-wide" escape hatch, but no caller used it that
+// way (2026-09-26); what reached it was callers whose owner lookup failed
+// silently — `_ = …Scan(&ownerID)` on a dead city (owner_id NULL) — so a
+// TradeDelivery/TrainComplete for that city went to the whole world,
+// anonymous /ws connections included. A notice with no recipient reaches no
+// one; a genuinely world-wide event goes through BroadcastEvent.
 func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
 	// notifID is the archive row this push belongs to. Empty when there is no
 	// pool (unit tests) or the insert failed — the push still goes out in that
 	// case, it just cannot be marked read from the chip. Never suppress a
 	// notification because its bookkeeping failed.
+	if playerID == uuid.Nil {
+		slog.Warn("notify: no recipient, dropped (never broadcast)", "world", worldID, "kind", kind)
+		return nil
+	}
 	var notifID string
-	if h.pool != nil && playerID != uuid.Nil {
+	if h.pool != nil {
 		bodyJSON, err := json.Marshal(payload)
 		if err == nil {
 			if dbErr := h.pool.QueryRow(ctx,
@@ -117,10 +124,6 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 				slog.Error("persist notification", "kind", kind, "err", dbErr)
 			}
 		}
-	}
-	if playerID == uuid.Nil {
-		h.BroadcastEvent(worldID, kind, payload)
-		return nil
 	}
 	// The archive insert above always happens — muting only ever suppresses
 	// the transient dispatch chip (megaron_plan_dispatches.md §1: "kryssa ur

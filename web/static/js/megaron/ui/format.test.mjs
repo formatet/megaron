@@ -414,6 +414,14 @@ test('OrderFailed prefixes the named unit when present', () => {
   );
 });
 
+test('caravan seizure notices name the cargo when the payload carries it', () => {
+  const goods = [{ good_key: 'tin', quantity: 30 }, { good_key: 'grain', quantity: 12.7 }];
+  assert.equal(notifText('CaravanRaided', { q: 7, r: 0, goods }), 'Your caravan carrying 30 tin, 12 grain was raided at (7, 0)');
+  assert.equal(notifText('CaravanSeized', { q: 7, r: 0, goods }), 'You seized an enemy caravan carrying 30 tin, 12 grain at (7, 0)');
+  // Bodies persisted before the manifest was added keep their old wording.
+  assert.equal(notifText('CaravanRaided', { q: 7, r: 0 }), 'Your caravan was raided at (7, 0)');
+});
+
 test('OrderFailed never shows the raw server verb key', () => {
   assert.equal(
     notifText('OrderFailed', { verb: 'stance_pursuit', reason: 'the target is gone' }),

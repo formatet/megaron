@@ -163,6 +163,14 @@ export function notifIcon(kind) {
 // Caps for payloadSummary below: a notif chip is one line, so both a key
 // count and a character count are enforced — either one alone can be beaten
 // (few keys with huge values, or many keys with tiny ones).
+// "200 grain, 50 fish" from a [{good_key, quantity}] payload list
+// (StandingOrderDispatched, CaravanSeized/CaravanRaided). '' when empty/absent.
+function fmtGoods(goods) {
+  return (goods || [])
+    .map(g => `${Math.floor(g.quantity || 0)} ${g.good_key || ''}`.trim())
+    .filter(Boolean).join(', ');
+}
+
 // Player-facing names for OrderFailed's body.verb — one per order key the
 // server can reject (messenger/order_delivery.go, messenger/recall.go).
 const ORDER_VERB_LABELS = {
@@ -473,8 +481,14 @@ export function notifText(kind, body) {
       const cause = body.reason === 'silver_shortage' ? 'the ship went unpaid' : 'the ship starved';
       return `${body.name || body.unit_type || 'A unit'} lost at sea — ${cause}, ${body.lost || 0} men gone`;
     }
-    case 'CaravanSeized':   return `You seized an enemy caravan at (${body.q}, ${body.r})`;
-    case 'CaravanRaided':   return `Your caravan was raided at (${body.q}, ${body.r})`;
+    case 'CaravanSeized': {
+      const cargo = fmtGoods(body.goods);
+      return `You seized an enemy caravan${cargo ? ` carrying ${cargo}` : ''} at (${body.q}, ${body.r})`;
+    }
+    case 'CaravanRaided': {
+      const cargo = fmtGoods(body.goods);
+      return `Your caravan${cargo ? ` carrying ${cargo}` : ''} was raided at (${body.q}, ${body.r})`;
+    }
     // MarchStalled's reason is server-crafted (unit_arrival.go NotifyDeadLetter)
     // and already names the subject there — nothing to enrich client-side.
     case 'MarchStalled':    return body.reason || 'A march could not be processed';
@@ -522,9 +536,7 @@ export function notifText(kind, body) {
       // Payload per combat.StandingOrderTickHandler.notifyDispatch: goods is
       // [{good_key, quantity}]. leg is 'outbound' (goods going out) or the
       // return leg of the same standing delivery.
-      const goods = (body.goods || [])
-        .map(g => `${Math.floor(g.quantity || 0)} ${g.good_key || ''}`.trim())
-        .filter(Boolean).join(', ');
+      const goods = fmtGoods(body.goods);
       const leg = body.leg === 'return' ? 'returning' : 'setting out';
       return `Standing delivery ${leg}${goods ? ` — ${goods}` : ''}`;
     }

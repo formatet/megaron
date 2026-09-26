@@ -226,11 +226,11 @@ func TestBroadcastEventReachesEveryPlayer(t *testing.T) {
 	readKind(t, connB, "SeasonTurnover", 2*time.Second)
 }
 
-// TestNotifyPlayerNilBroadcasts confirms the documented uuid.Nil escape
-// hatch: callers with no specific recipient (playerID == uuid.Nil) still
-// reach every client in the world, preserving the pre-fix contract that
-// several existing callers deliberately rely on.
-func TestNotifyPlayerNilBroadcasts(t *testing.T) {
+// TestNotifyPlayerNilReachesNoOne: a notice whose recipient lookup failed
+// (uuid.Nil — e.g. `_ = …Scan(&ownerID)` on a dead city) must reach no one.
+// It used to broadcast to the whole world, anonymous connections included —
+// a TradeDelivery naming city, good and quantity leaked to every viewer.
+func TestNotifyPlayerNilReachesNoOne(t *testing.T) {
 	h := New()
 	world := uuid.New()
 
@@ -243,10 +243,10 @@ func TestNotifyPlayerNilBroadcasts(t *testing.T) {
 		t.Fatalf("clients never registered")
 	}
 
-	if err := h.NotifyPlayer(context.Background(), world, uuid.Nil, "WorldAnnouncement", 1, nil); err != nil {
+	if err := h.NotifyPlayer(context.Background(), world, uuid.Nil, "TradeDelivery", 3, nil); err != nil {
 		t.Fatalf("NotifyPlayer: %v", err)
 	}
 
-	readKind(t, connA, "WorldAnnouncement", 2*time.Second)
-	readKind(t, connB, "WorldAnnouncement", 2*time.Second)
+	expectNoMessage(t, connA, 300*time.Millisecond)
+	expectNoMessage(t, connB, 300*time.Millisecond)
 }

@@ -4,7 +4,7 @@ Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, a
 
 ## Cargo is physical
 
-A caravan is people and pack animals walking across the map. **It can be intercepted and seized** — yours by others, theirs by you. A hostile unit on watch ([[stances|sentry]]) near the road will stop a caravan that passes. Only [[messengers]] are safe.
+A caravan is people and pack animals walking across the map. **It can be intercepted and seized** — yours by others, theirs by you. A hostile unit on watch ([[stances|sentry]]) near the road will stop a caravan that passes. Only [[messengers]] are safe. When it happens, both sides are told where, and exactly what cargo changed hands; the seized goods go to the raider's capital.
 
 An internal transfer does not suffer the storms and pirates that a negotiated trade delivery risks — but it can still be raided.
 
