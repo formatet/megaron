@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -41,11 +42,12 @@ type foreignUnitView struct {
 	Q        int    `json:"q"`
 	R        int    `json:"r"`
 
-	TargetQ   *int       `json:"target_q,omitempty"`
-	TargetR   *int       `json:"target_r,omitempty"`
-	DepartsAt *time.Time `json:"departs_at,omitempty"`
-	ArrivesAt *time.Time `json:"arrives_at,omitempty"`
-	Path      [][2]int   `json:"path,omitempty"`
+	Heading string `json:"heading,omitempty"`
+	Toward  *struct {
+		Name    string    `json:"name"`
+		EtaAt   time.Time `json:"eta_at"`
+		EtaTick int       `json:"eta_tick"`
+	} `json:"toward,omitempty"`
 }
 
 // registerViewer creates a fresh player via a real auth.Service and returns
@@ -358,11 +360,23 @@ func TestForeignUnits_MarchingUnitRevealedByInterpolatedPosition(t *testing.T) {
 	if got.Q != -2 || got.R != 0 {
 		t.Errorf("interpolated position = (%d,%d), want (-2,0) — 0.4 progress along the 17-hex path", got.Q, got.R)
 	}
-	if got.TargetQ == nil || *got.TargetQ != 8 || got.TargetR == nil || *got.TargetR != 0 {
-		t.Errorf("target = (%v,%v), want (8,0) — march data must be disclosed in full", got.TargetQ, got.TargetR)
+	// Direction, never destination (Timothy 2026-09-26, "likrikta det"): the
+	// target, route and arrival never leave the server. A +q step along r=0 is
+	// south-east on the drawn map.
+	for _, leak := range []string{"target_q", "target_r", "path", "arrives_at", "departs_at", "arrival_tick", "depart_tick"} {
+		if strings.Contains(rec.Body.String(), `"`+leak+`"`) {
+			t.Errorf("foreign march discloses %q: %s", leak, rec.Body.String())
+		}
 	}
-	if len(got.Path) < 2 || got.Path[0] != [2]int{-8, 0} || got.Path[len(got.Path)-1] != [2]int{8, 0} {
-		t.Errorf("path = %v, want to start at (-8,0) and end at (8,0)", got.Path)
+	if got.Heading != "south-east" {
+		t.Errorf("heading = %q, want south-east", got.Heading)
+	}
+	// It already stands inside Viewerton's catchment (distance 2), so it seems
+	// bound for it — arriving "now" if that is its goal.
+	if got.Toward == nil || got.Toward.Name != "Viewerton" {
+		t.Errorf("toward = %+v, want Viewerton", got.Toward)
+	} else if !got.Toward.EtaAt.Equal(now) {
+		t.Errorf("toward.eta_at = %v, want now (%v) — already inside the catchment", got.Toward.EtaAt, now)
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 
@@ -24,6 +25,15 @@ const (
 	// frozen forever (CLAUDE.md §Events) — a changed meaning needs a new kind,
 	// never a new reading of this one.
 	ForeignMarchSightedKind = "ForeignMarchSighted"
+
+	// ForeignMarchSightedV2Kind replaces it from 2026-09-26 (Timothy: "likrikta
+	// det"): a sighted foreign march is reported by its HEADING, never its
+	// target or arrival. When it seems bound for the catchment of one of the
+	// receiver's cities, the notice names that city and when the march would
+	// get there IF that is where it is going (threatens_* + eta_if_*), at the
+	// urgent level. V1 rows already in the archive keep V1's meaning; the scan
+	// no longer writes V1.
+	ForeignMarchSightedV2Kind = "ForeignMarchSightedV2"
 )
 
 // MarchSightingHandler is the recurring sweep that tells a Wanax, once, that a
@@ -65,10 +75,10 @@ type sightedMarch struct {
 	category   string
 	size       int
 	stance     string
-	targetQ    int
-	targetR    int
-	arrivesAt  time.Time
 	arriveTick *int
+	departTick *int
+	march      province.ApparentMarch // what a watcher reads off it
+	pathSteps  int
 	pos        province.MapPosition
 	terrain    string
 	key        string
@@ -110,7 +120,7 @@ func (h *MarchSightingHandler) Handle(ctx context.Context, e events.ScheduledEve
 			if !province.AnyEyeSees(eyes, m.pos, m.terrain) {
 				continue
 			}
-			h.notifySighting(ctx, e.WorldID, playerID, m, owned)
+			h.notifySighting(ctx, e.WorldID, playerID, m, owned[playerID])
 		}
 	}
 
@@ -123,7 +133,7 @@ func (h *MarchSightingHandler) loadMarches(ctx context.Context, worldID uuid.UUI
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, COALESCE(pl.wanax_name, pl.username, ''), u.type, u.category, u.size,
 		        COALESCE(u.stance,''), u.q, u.r, u.target_q, u.target_r,
-		        u.departs_at, u.arrives_at, u.arrive_tick
+		        u.departs_at, u.arrives_at, u.arrive_tick, u.depart_tick
 		 FROM units u
 		 LEFT JOIN players pl ON pl.id = u.owner_id
 		 WHERE u.world_id = $1 AND u.status = 'marching' AND u.owner_id IS NOT NULL
@@ -140,14 +150,17 @@ func (h *MarchSightingHandler) loadMarches(ctx context.Context, worldID uuid.UUI
 		sightedMarch
 		originQ   int
 		originR   int
+		targetQ   int
+		targetR   int
 		departsAt time.Time
+		arrivesAt time.Time
 	}
 	var raw []rawMarch
 	for rows.Next() {
 		var m rawMarch
 		if scanErr := rows.Scan(&m.id, &m.owner, &m.ownerName, &m.unitType, &m.category, &m.size,
 			&m.stance, &m.originQ, &m.originR, &m.targetQ, &m.targetR,
-			&m.departsAt, &m.arrivesAt, &m.arriveTick); scanErr != nil {
+			&m.departsAt, &m.arrivesAt, &m.arriveTick, &m.departTick); scanErr != nil {
 			rows.Close()
 			return nil, fmt.Errorf("march sighting: scan march: %w", scanErr)
 		}
@@ -169,11 +182,17 @@ func (h *MarchSightingHandler) loadMarches(ctx context.Context, worldID uuid.UUI
 	out := make([]sightedMarch, 0, len(raw))
 	for _, m := range raw {
 		pos := province.MapPosition{Q: m.originQ, R: m.originR}
+		var march province.ApparentMarch
+		var hasHeading bool
+		var pathSteps int
 		if path, _, ok := g.FindPath(pos, province.MapPosition{Q: m.targetQ, R: m.targetR}, m.category); ok && len(path) > 0 {
 			pos = province.InterpolateAlongPath(now, m.departsAt, m.arrivesAt, path)
+			march, hasHeading = province.ReadMarch(path, m.departsAt, m.arrivesAt, now)
+			pathSteps = len(path) - 1
 		}
 		// Pathfinding failure keeps the stored origin hex — best-effort, same as
-		// /foreign-units. The unit is never silently dropped for it.
+		// /foreign-units. The unit is never silently dropped for it; it is
+		// reported without a heading.
 
 		terrain, ok := g[[2]int{pos.Q, pos.R}]
 		if !ok {
@@ -185,6 +204,9 @@ func (h *MarchSightingHandler) loadMarches(ctx context.Context, worldID uuid.UUI
 		s := m.sightedMarch
 		s.pos = pos
 		s.terrain = terrain
+		if hasHeading {
+			s.march, s.pathSteps = march, pathSteps
+		}
 		// Dedupe key. A string, compared as a string — never as a time. A NEW
 		// march by the same unit gets a new departs_at and therefore a new key,
 		// so it warrants a new warning; the same march never does.
@@ -219,18 +241,20 @@ func (h *MarchSightingHandler) loadReceivers(ctx context.Context, worldID uuid.U
 	return out, rows.Err()
 }
 
-// ownedHex is a settlement seen from the map: who holds it and what it is called.
+// ownedHex is a settlement seen from the map: who holds it, what it is called
+// and the catchment a march may seem bound for.
 type ownedHex struct {
-	owner uuid.UUID
-	id    uuid.UUID
-	name  string
+	owner     uuid.UUID
+	id        uuid.UUID
+	name      string
+	catchment []province.MapPosition
 }
 
-// loadOwnedSettlementHexes maps each settled hex to its holder, so a march's
-// target hex can be tested against the RECEIVER's own cities. Only the receiver's
+// loadOwnedSettlementHexes groups every settlement by its holder, so a march's
+// heading can be tested against the RECEIVER's own catchments. Only the receiver's
 // own holdings may raise the level — that keeps the urgency decision inside what
 // the receiver already knows, never inside what the scan knows.
-func (h *MarchSightingHandler) loadOwnedSettlementHexes(ctx context.Context, worldID uuid.UUID) (map[[2]int]ownedHex, error) {
+func (h *MarchSightingHandler) loadOwnedSettlementHexes(ctx context.Context, worldID uuid.UUID) (map[uuid.UUID][]ownedHex, error) {
 	rows, err := h.pool.Query(ctx,
 		`SELECT p.map_q, p.map_r, s.owner_id, s.id, s.name
 		 FROM settlements s JOIN provinces p ON p.id = s.province_id
@@ -242,14 +266,17 @@ func (h *MarchSightingHandler) loadOwnedSettlementHexes(ctx context.Context, wor
 	}
 	defer rows.Close()
 
-	out := make(map[[2]int]ownedHex)
+	out := make(map[uuid.UUID][]ownedHex)
 	for rows.Next() {
 		var q, r int
 		var oh ownedHex
 		if scanErr := rows.Scan(&q, &r, &oh.owner, &oh.id, &oh.name); scanErr != nil {
 			return nil, fmt.Errorf("march sighting: scan settlement hex: %w", scanErr)
 		}
-		out[[2]int{q, r}] = oh
+		for _, c := range hexgrid.Disk(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius) {
+			oh.catchment = append(oh.catchment, province.MapPosition{Q: c.Q, R: c.R})
+		}
+		out[oh.owner] = append(out[oh.owner], oh)
 	}
 	return out, rows.Err()
 }
@@ -263,30 +290,53 @@ func (h *MarchSightingHandler) loadOwnedSettlementHexes(ctx context.Context, wor
 // the opposite: the scan runs every tick for as long as the army stays in sight,
 // so keying on unread rows would re-alarm the same march over and over the moment
 // the player read it — punishing them for reading.
-func (h *MarchSightingHandler) notifySighting(ctx context.Context, worldID, playerID uuid.UUID, m sightedMarch, owned map[[2]int]ownedHex) {
+func (h *MarchSightingHandler) notifySighting(ctx context.Context, worldID, playerID uuid.UUID, m sightedMarch, ownCities []ownedHex) {
 	if h.hub == nil {
 		return
 	}
 
+	// Does it SEEM bound for one of the receiver's catchments? Nearest wins.
+	var threat *ownedHex
+	threatDist := -1
+	if m.march.Heading != "" {
+		for i := range ownCities {
+			d, ok := m.march.SeemsBoundFor(ownCities[i].catchment)
+			if ok && (threatDist < 0 || d < threatDist) {
+				threat, threatDist = &ownCities[i], d
+			}
+		}
+	}
+
+	// Dedupe. A warning's key carries the city the march seems bound for, so a
+	// march first seen passing by and then TURNING toward your lands warns again
+	// — that turn is exactly what the defender must learn in time. A plain
+	// sighting is sent only if nothing at all has been said about this march
+	// yet: once warned, "it is passing" is not news.
+	key := m.key
+	match := `body_json->>'march_key' = $4`
+	if threat != nil {
+		key += "→" + threat.id.String()
+	} else {
+		match = `(body_json->>'march_key' = $4 OR body_json->>'march_key' LIKE $4 || '→%')`
+	}
 	var exists bool
 	if err := h.pool.QueryRow(ctx,
 		`SELECT EXISTS (
 		    SELECT 1 FROM notifications
-		    WHERE world_id = $1 AND player_id = $2 AND kind = $3
-		      AND body_json->>'march_key' = $4
+		    WHERE world_id = $1 AND player_id = $2 AND kind = $3 AND `+match+`
 		 )`,
-		worldID, playerID, ForeignMarchSightedKind, m.key,
+		worldID, playerID, ForeignMarchSightedV2Kind, key,
 	).Scan(&exists); err == nil && exists {
 		return
 	}
 
 	// level follows the file's scale (2 = urgent, 3 = info) and the irreversibility
-	// gradient (Timothy 2026-08-03): a march ONTO one of your own cities is the
-	// heavy end and must be urgent; one merely crossing your field of view is a
-	// line of information, not an alarm. Two levels, one notification type.
+	// gradient (Timothy 2026-08-03): a march that seems bound for your lands is
+	// the heavy end and must be urgent; one merely crossing your field of view is
+	// a line of information, not an alarm.
 	level := 3
 	payload := map[string]any{
-		"march_key": m.key,
+		"march_key": key,
 		"unit_id":   m.id,
 		"owner_id":  m.owner,
 		"owner":     m.ownerName,
@@ -294,25 +344,25 @@ func (h *MarchSightingHandler) notifySighting(ctx context.Context, worldID, play
 		"category":  m.category,
 		"size":      m.size,
 		"stance":    m.stance,
-		// q/r is the OBSERVATION hex — where the unit was when it was seen — not
-		// its origin and not its destination.
-		"q":          m.pos.Q,
-		"r":          m.pos.R,
-		"target_q":   m.targetQ,
-		"target_r":   m.targetR,
-		"arrives_at": m.arrivesAt.UTC().Format(time.RFC3339),
+		// q/r is the OBSERVATION hex — where the unit was when it was seen.
+		// Never its origin, never its destination.
+		"q":       m.pos.Q,
+		"r":       m.pos.R,
+		"heading": m.march.Heading,
 	}
-	if m.arriveTick != nil {
-		// The tick is what the player actually counts in — speldygn, not wall clock.
-		payload["arrive_tick"] = *m.arriveTick
-	}
-	if oh, ok := owned[[2]int{m.targetQ, m.targetR}]; ok && oh.owner == playerID {
+	if threat != nil {
 		level = 2
-		payload["threatens_settlement_id"] = oh.id
-		payload["threatens_name"] = oh.name
+		payload["threatens_settlement_id"] = threat.id
+		payload["threatens_name"] = threat.name
+		// When it would get there IF that is where it is going — an estimate
+		// from its own pace, never its real arrival.
+		payload["eta_if_at"] = m.march.ArrivalIf(threatDist).UTC().Format(time.RFC3339)
+		if m.departTick != nil && m.arriveTick != nil {
+			payload["eta_if_tick"] = m.march.ArrivalTickIf(threatDist, *m.departTick, *m.arriveTick, m.pathSteps)
+		}
 	}
 
-	_ = h.hub.NotifyPlayer(ctx, worldID, playerID, ForeignMarchSightedKind, level, payload)
+	_ = h.hub.NotifyPlayer(ctx, worldID, playerID, ForeignMarchSightedV2Kind, level, payload)
 }
 
 // requeue schedules the next sweep.

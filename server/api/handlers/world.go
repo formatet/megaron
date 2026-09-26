@@ -1096,12 +1096,6 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
-	now := h.clk.Now()
-	var eyes []province.Eye
-	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, now)
-	}
-
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT ma.id, ma.intent,
 		        op.map_q, op.map_r, op.terrain_type, tp.map_q, tp.map_r, tp.terrain_type,
@@ -1162,28 +1156,15 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		// A player's own march is knowledge they already hold — always drawn, in
-		// full, even where it crosses fog (mirrors MapMessengers' m.Own rule). Every
-		// other march is gated on where its walker actually is right now.
-		own := authenticated && ownerID != nil && *ownerID == playerID
-		if !own {
-			if !authenticated {
-				continue
-			}
-			cat := "land"
-			if m.IsNaval {
-				cat = "naval"
-			}
-			from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
-			to := province.MapPosition{Q: m.TargetQ, R: m.TargetR}
-			var seen bool
-			if gerr == nil {
-				seen = seesInterpolatedActor(g, eyes, from, to, cat, m.DepartsAt, m.ArrivesAt, now)
-			} else {
-				seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, targetTerrain)
-			}
-			if !seen {
-				continue
-			}
+		// full, even where it crosses fog (mirrors MapMessengers' m.Own rule).
+		// Nobody else's legacy column is returned at all: this row carries intent,
+		// target and route, and a foreign march shows its direction, never its
+		// destination (Timothy 2026-09-26, "likrikta det") — a watcher sees
+		// foreign units through /foreign-units, which gives only the heading.
+		// (No unresolved marching_armies row existed on the live world when this
+		// changed, 2026-09-26.)
+		if !(authenticated && ownerID != nil && *ownerID == playerID) {
+			continue
 		}
 		markers = append(markers, m)
 	}

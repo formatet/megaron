@@ -137,6 +137,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "ForeignMarchSighted" {
 		printForeignMarchSightedLine(n)
 	}
+	if n.Kind == "ForeignMarchSightedV2" {
+		printForeignMarchSightedV2Line(n)
+	}
 	if n.Kind == "DivinePunishment" {
 		printDivinePunishmentLine(n)
 	}
@@ -273,6 +276,54 @@ func printForeignMarchSightedLine(n notificationItem) {
 	}
 	fmt.Printf("      %s %s (%d%s) marching to (%d,%d)%s — lands tick %d\n",
 		owner, unitType, body.Size, stance, body.TargetQ, body.TargetR, threat, body.ArriveTick)
+}
+
+// printForeignMarchSightedV2Line — the sighting since 2026-09-26 (Timothy:
+// "likrikta det"): WHO and WHICH WAY, never where it is going. When the march
+// seems bound for one of your cities' lands, the line names the city and the
+// tick it would get there IF that is its goal — an estimate from its pace,
+// which a road round a mountain can prove wrong. V1 rows keep the line above.
+func printForeignMarchSightedV2Line(n notificationItem) {
+	var body struct {
+		Owner         string `json:"owner"`
+		UnitType      string `json:"unit_type"`
+		Size          int    `json:"size"`
+		Stance        string `json:"stance"`
+		Q, R          int
+		Heading       string `json:"heading"`
+		ThreatensName string `json:"threatens_name"`
+		EtaIfTick     *int   `json:"eta_if_tick"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	owner := "An unknown Wanax's"
+	if body.Owner != "" {
+		owner = body.Owner + "'"
+		if !strings.HasSuffix(body.Owner, "s") {
+			owner += "s"
+		}
+	}
+	unitType := body.UnitType
+	if unitType == "" {
+		unitType = "force"
+	}
+	stance := ""
+	if body.Stance != "" {
+		stance = ", " + body.Stance
+	}
+	heading := ""
+	if body.Heading != "" {
+		heading = ", heading " + body.Heading
+	}
+	line := fmt.Sprintf("      %s %s (%d%s) seen at (%d,%d)%s", owner, unitType, body.Size, stance, body.Q, body.R, heading)
+	if body.ThreatensName != "" {
+		line += " — toward YOUR CITY " + body.ThreatensName + "'s lands"
+		if body.EtaIfTick != nil {
+			line += fmt.Sprintf("; there by tick %d if that is its goal", *body.EtaIfTick)
+		}
+	}
+	fmt.Println(line)
 }
 
 // printOccupationLine renders the erövring notification family
