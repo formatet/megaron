@@ -285,3 +285,62 @@ func TestMapTrades_UnauthenticatedNeverSeesRole(t *testing.T) {
 		}
 	}
 }
+
+// TestMapTrades_StrangerSeesCaravanNotCargo — Timothy 2026-09-26: "lasten är
+// hemlig tills den tas". A third Wanax's caravan heading for a city A can see
+// reaches A (it is on the map), but with no good_key/quantity: only sender and
+// recipient learn what a caravan carries. megaron_plan_karavanbeslag.md slice 1.
+func TestMapTrades_StrangerSeesCaravanNotCargo(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	ctx := context.Background()
+
+	var playerC, provC, settleC, transportID uuid.UUID
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"wanax-c-"+uuid.NewString()).Scan(&playerC); err != nil {
+		t.Fatalf("create player C: %v", err)
+	}
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 1, 0, 'plains') RETURNING id`,
+		f.worldID).Scan(&provC); err != nil {
+		t.Fatalf("create province C: %v", err)
+	}
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
+		 VALUES ($1, $2, 'Neighbour', 'achaean', $3, 'capital', true, 'active', 5000) RETURNING id`,
+		f.worldID, provC, playerC).Scan(&settleC); err != nil {
+		t.Fatalf("create settlement C: %v", err)
+	}
+	// C's caravan from far away into C's own city next door to A.
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO transports
+		   (world_id, owner_id, kind, dest_id, category,
+		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, status, interceptable)
+		 VALUES ($1,$2,'transfer',$3,'land',60,60,1,0,$4,$5,1,'in_transit',true) RETURNING id`,
+		f.worldID, playerC, settleC, time.Now(), time.Now().Add(time.Hour)).Scan(&transportID); err != nil {
+		t.Fatalf("create transport C: %v", err)
+	}
+	if _, err := f.pool.Exec(ctx,
+		`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1, 'tin', 40)`, transportID); err != nil {
+		t.Fatalf("seed manifest C: %v", err)
+	}
+
+	var stranger map[string]any
+	for _, m := range f.get(t, f.tokenA) {
+		if m["id"] == transportID.String() {
+			stranger = m
+		}
+	}
+	if stranger == nil {
+		t.Fatalf("C's caravan into A's neighbour city must be on A's map (fixture does not exercise the gate)")
+	}
+	if role, _ := stranger["role"].(string); role != "" {
+		t.Fatalf("stranger caravan role = %q, want \"\"", role)
+	}
+	if g, _ := stranger["good_key"].(string); g != "" {
+		t.Errorf("stranger caravan leaks good_key=%q to A", g)
+	}
+	if q, _ := stranger["quantity"].(float64); q != 0 {
+		t.Errorf("stranger caravan leaks quantity=%v to A", q)
+	}
+}
