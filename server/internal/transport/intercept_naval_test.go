@@ -99,6 +99,57 @@ func newNavalSeizureFixture(t *testing.T, pool *pgxpool.Pool) navalSeizureFixtur
 	return navalSeizureFixture{fixture: f, raider: raider, raiderCapital: raiderCapital, shipID: shipID, transportID: transportID, clk: clk}
 }
 
+// TestInterceptScan_PreexistingNavalTransportWithoutShipUsesOldBehaviour is
+// R6: a naval transport already in_transit at deploy time, from before this
+// slice, has ship_unit_id = NULL — seize() must credit the full loot to the
+// interceptor exactly as it always did, with no ship-outcome roll and no
+// crash, rather than assuming every naval transport now carries a ship.
+func TestInterceptScan_PreexistingNavalTransportWithoutShipUsesOldBehaviour(t *testing.T) {
+	pool := testPool(t)
+	nf := newNavalSeizureFixture(t, pool)
+	ctx := context.Background()
+
+	// Sever the ship binding — as if this transport predates migration 146.
+	if _, err := pool.Exec(ctx, `UPDATE transports SET ship_unit_id = NULL WHERE id = $1`, nf.transportID); err != nil {
+		t.Fatalf("clear ship_unit_id: %v", err)
+	}
+
+	h := NewInterceptScanHandler(pool, events.NewScheduler(pool, nf.clk), events.NewStore(pool), nil, nf.clk)
+	h.Dice = fixedDice{0.9} // would be "sunk" if the ship-outcome roll ran at all
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: nf.worldID, DueTick: 1}); err != nil {
+		t.Fatalf("intercept scan: %v", err)
+	}
+
+	var loot float64
+	_ = pool.QueryRow(ctx,
+		`SELECT COALESCE(settled(amount, rate, calc_tick), 0) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
+		nf.raiderCapital,
+	).Scan(&loot)
+	if loot != 100 {
+		t.Errorf("raider capital silver = %v, want 100 (pre-slice behaviour: full loot, no ship-outcome roll)", loot)
+	}
+
+	// The ship itself (still a real row, just unreferenced by this transport)
+	// is untouched.
+	var shipStatus string
+	if err := pool.QueryRow(ctx, `SELECT status FROM units WHERE id = $1`, nf.shipID).Scan(&shipStatus); err != nil {
+		t.Fatalf("read ship status: %v", err)
+	}
+	if shipStatus != "freighting" {
+		t.Errorf("ship status = %q, want unchanged (freighting) — R6: no ship_unit_id means no ship outcome at all", shipStatus)
+	}
+
+	var eventCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM scheduled_events WHERE world_id = $1 AND event_type = 'NavalSeizureOutcome'`, nf.worldID,
+	).Scan(&eventCount); err != nil {
+		t.Fatalf("count NavalSeizureOutcome events: %v", err)
+	}
+	if eventCount != 0 {
+		t.Errorf("NavalSeizureOutcome events = %d, want 0 (no ship bound to this transport)", eventCount)
+	}
+}
+
 func TestInterceptScan_NavalCaptured_TakesCargoAndEnqueuesShipCapture(t *testing.T) {
 	pool := testPool(t)
 	nf := newNavalSeizureFixture(t, pool)
