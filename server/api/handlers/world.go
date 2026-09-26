@@ -1248,10 +1248,12 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	}
 	playerID, authenticated := auth.PlayerIDFromContext(r.Context())
 
+	now := h.clk.Now()
 	var eyes []province.Eye
 	if authenticated {
-		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
+		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, now)
 	}
+	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
 
 	// Physical caravans in motion (movement-motor transport layer). Every in-transit
 	// row is a real mover — trade legs (delivery + return) AND internal transfers —
@@ -1272,7 +1274,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(top.good_key, ''), COALESCE(top.quantity, 0),
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
-		        t.departs_at, t.arrives_at
+		        t.departs_at, t.arrives_at, t.category
 		 FROM transports t
 		 LEFT JOIN settlements os ON os.id = t.origin_id
 		 LEFT JOIN provinces op ON op.id = os.province_id
@@ -1323,14 +1325,9 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var m tradeMarker
 		var ownerID uuid.UUID
 		var destOwnerID *uuid.UUID
-		var originTerrain, destTerrain string
+		var originTerrain, destTerrain, category string
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
-			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt); err != nil {
-			continue
-		}
-		if authenticated &&
-			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.OriginQ, R: m.OriginR}, originTerrain) &&
-			!province.AnyEyeSees(eyes, province.MapPosition{Q: m.DestQ, R: m.DestR}, destTerrain) {
+			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category); err != nil {
 			continue
 		}
 		// Unauthenticated callers get no ownership info at all — never let an
@@ -1343,6 +1340,24 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			m.Role = "sender"
 		case destOwnerID != nil && *destOwnerID == playerID:
 			m.Role = "recipient"
+		}
+		// Sender and recipient always see their own shipment. Everyone else's
+		// caravan is gated on where it IS now (the same interpolated-position
+		// gate /messengers and /foreign-units use) — the old origin-OR-dest
+		// check streamed a stranger's caravan along its whole route as soon as
+		// either end city was seen (megaron_plan_karavanbeslag.md slice 1b).
+		if authenticated && m.Role == "" {
+			from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
+			to := province.MapPosition{Q: m.DestQ, R: m.DestR}
+			var seen bool
+			if gerr == nil {
+				seen = seesInterpolatedActor(g, eyes, from, to, category, m.DepartsAt, m.ArrivesAt, now)
+			} else {
+				seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, destTerrain)
+			}
+			if !seen {
+				continue
+			}
 		}
 		// The cargo is secret until the caravan is taken (Timothy 2026-09-26,
 		// megaron_plan_karavanbeslag.md): a stranger sees a caravan on the

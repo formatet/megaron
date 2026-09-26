@@ -13,8 +13,9 @@ package handlers
 // entirely — the FOW gate itself must be UNCHANGED by this slice; (3) a
 // transport owned by someone else but visible only because its DESTINATION
 // lands on the caller's own settlement (an incoming trade delivery) is
-// admitted (proving the gate still checks origin OR dest, not touched) with
-// mine=false — ownership and visibility must not be conflated; (4) an
+// admitted with mine=false — ownership and visibility must not be conflated
+// (since 2026-09-26 sender and recipient always see their shipment; a
+// stranger's is gated on its interpolated position, slice 1b); (4) an
 // unauthenticated caller never gets mine:true on anything.
 //
 // Real Postgres, gated by DATABASE_URL — same harness as recruit_ship_test.go
@@ -101,6 +102,15 @@ func setupMapTradesMineFixture(t *testing.T) *mapTradesMineFixture {
 			t.Fatalf("create settlement %s: %v", name, err)
 		}
 		return settlementID
+	}
+	// A plains strip (0..12, 0) so a caravan along it has a real route and an
+	// interpolated position (seesInterpolatedActor) — without tiles every
+	// route is unpathable and the gate falls back to the origin hex.
+	for q := 0; q <= 12; q++ {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'plains')`, worldID, q); err != nil {
+			t.Fatalf("create tile (%d,0): %v", q, err)
+		}
 	}
 	settleA := mkSettlement("Athenai", 0, 0, playerA)
 	settleBFar := mkSettlement("Farland", 50, 50, playerB)
@@ -292,47 +302,12 @@ func TestMapTrades_UnauthenticatedNeverSeesRole(t *testing.T) {
 // recipient learn what a caravan carries. megaron_plan_karavanbeslag.md slice 1.
 func TestMapTrades_StrangerSeesCaravanNotCargo(t *testing.T) {
 	f := setupMapTradesMineFixture(t)
-	ctx := context.Background()
+	// C's caravan up the strip into C's own city next door to A, almost there.
+	id := f.strangerCaravan(t, 12, 1, time.Now().Add(-time.Hour), time.Now().Add(time.Minute))
 
-	var playerC, provC, settleC, transportID uuid.UUID
-	if err := f.pool.QueryRow(ctx,
-		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
-		"wanax-c-"+uuid.NewString()).Scan(&playerC); err != nil {
-		t.Fatalf("create player C: %v", err)
-	}
-	if err := f.pool.QueryRow(ctx,
-		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 1, 0, 'plains') RETURNING id`,
-		f.worldID).Scan(&provC); err != nil {
-		t.Fatalf("create province C: %v", err)
-	}
-	if err := f.pool.QueryRow(ctx,
-		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
-		 VALUES ($1, $2, 'Neighbour', 'achaean', $3, 'capital', true, 'active', 5000) RETURNING id`,
-		f.worldID, provC, playerC).Scan(&settleC); err != nil {
-		t.Fatalf("create settlement C: %v", err)
-	}
-	// C's caravan from far away into C's own city next door to A.
-	if err := f.pool.QueryRow(ctx,
-		`INSERT INTO transports
-		   (world_id, owner_id, kind, dest_id, category,
-		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, status, interceptable)
-		 VALUES ($1,$2,'transfer',$3,'land',60,60,1,0,$4,$5,1,'in_transit',true) RETURNING id`,
-		f.worldID, playerC, settleC, time.Now(), time.Now().Add(time.Hour)).Scan(&transportID); err != nil {
-		t.Fatalf("create transport C: %v", err)
-	}
-	if _, err := f.pool.Exec(ctx,
-		`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1, 'tin', 40)`, transportID); err != nil {
-		t.Fatalf("seed manifest C: %v", err)
-	}
-
-	var stranger map[string]any
-	for _, m := range f.get(t, f.tokenA) {
-		if m["id"] == transportID.String() {
-			stranger = m
-		}
-	}
+	stranger := findByID(f.get(t, f.tokenA), id)
 	if stranger == nil {
-		t.Fatalf("C's caravan into A's neighbour city must be on A's map (fixture does not exercise the gate)")
+		t.Fatalf("C's caravan beside A's city must be on A's map (fixture does not exercise the gate)")
 	}
 	if role, _ := stranger["role"].(string); role != "" {
 		t.Fatalf("stranger caravan role = %q, want \"\"", role)
@@ -343,4 +318,63 @@ func TestMapTrades_StrangerSeesCaravanNotCargo(t *testing.T) {
 	if q, _ := stranger["quantity"].(float64); q != 0 {
 		t.Errorf("stranger caravan leaks quantity=%v to A", q)
 	}
+}
+
+// TestMapTrades_StrangerCaravanSeenOnlyWhereItIs — plan slice 1b: a third
+// party's caravan is gated on where it IS now, not on whether either end city
+// is seen. Just departed from (12,0) toward C's city beside A, it is out of
+// A's sight even though A sees the destination; the old origin-OR-dest gate
+// streamed it across the whole route.
+func TestMapTrades_StrangerCaravanSeenOnlyWhereItIs(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	id := f.strangerCaravan(t, 12, 1, time.Now(), time.Now().Add(time.Hour))
+	if m := findByID(f.get(t, f.tokenA), id); m != nil {
+		t.Errorf("stranger caravan still at (12,0) reached A's map: %v", m)
+	}
+}
+
+// strangerCaravan creates a third Wanax C with a city at (destQ,0) and a
+// C-owned caravan carrying 40 tin from (originQ,0) to it. Returns its id.
+func (f *mapTradesMineFixture) strangerCaravan(t *testing.T, originQ, destQ int, departs, arrives time.Time) string {
+	t.Helper()
+	ctx := context.Background()
+	var playerC, provC, settleC, transportID uuid.UUID
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"wanax-c-"+uuid.NewString()).Scan(&playerC); err != nil {
+		t.Fatalf("create player C: %v", err)
+	}
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, $2, 0, 'plains') RETURNING id`,
+		f.worldID, destQ).Scan(&provC); err != nil {
+		t.Fatalf("create province C: %v", err)
+	}
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
+		 VALUES ($1, $2, 'Neighbour', 'achaean', $3, 'capital', true, 'active', 5000) RETURNING id`,
+		f.worldID, provC, playerC).Scan(&settleC); err != nil {
+		t.Fatalf("create settlement C: %v", err)
+	}
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO transports
+		   (world_id, owner_id, kind, dest_id, category,
+		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, status, interceptable)
+		 VALUES ($1,$2,'transfer',$3,'land',$4,0,$5,0,$6,$7,1,'in_transit',true) RETURNING id`,
+		f.worldID, playerC, settleC, originQ, destQ, departs, arrives).Scan(&transportID); err != nil {
+		t.Fatalf("create transport C: %v", err)
+	}
+	if _, err := f.pool.Exec(ctx,
+		`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1, 'tin', 40)`, transportID); err != nil {
+		t.Fatalf("seed manifest C: %v", err)
+	}
+	return transportID.String()
+}
+
+func findByID(markers []map[string]any, id string) map[string]any {
+	for _, m := range markers {
+		if m["id"] == id {
+			return m
+		}
+	}
+	return nil
 }
