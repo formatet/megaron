@@ -1155,13 +1155,17 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		silverArrivesAt := leg1ArrivesAt.Add(messenger.TradeTravelDuration(dist))
 
 		// Step 2: guarded flip to accepted, ETAs stamped in the same merge.
+		// ship_name is stamped too (empty when this trade walks) — the ship
+		// binding itself only lives in transports/units, and outbox/inbox
+		// read trade_offer long after this request's own response is gone.
 		tag, err = tx.Exec(r.Context(),
 			`UPDATE messengers SET trade_offer = trade_offer || jsonb_build_object(
 			     'status', 'accepted',
 			     'goods_arrives_at', $2::timestamptz,
-			     'silver_arrives_at', $3::timestamptz)
+			     'silver_arrives_at', $3::timestamptz,
+			     'ship_name', $4::text)
 			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID, goodsArrivesAt, silverArrivesAt,
+			messengerID, goodsArrivesAt, silverArrivesAt, shipName,
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")
@@ -1283,9 +1287,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			`UPDATE messengers SET trade_offer = trade_offer || jsonb_build_object(
 			     'status', 'accepted',
 			     'goods_arrives_at', $2::timestamptz,
-			     'silver_arrives_at', $3::timestamptz)
+			     'silver_arrives_at', $3::timestamptz,
+			     'ship_name', $4::text)
 			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID, goodsArrivesAt, silverArrivesAt,
+			messengerID, goodsArrivesAt, silverArrivesAt, shipName,
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")

@@ -72,6 +72,12 @@ func tradeAcceptCmd() *cobra.Command {
 			goodsAt, _ := resp["goods_arrives_at"].(string)
 			fmt.Printf("Trade accepted · %.0f %s incoming · silver paid: %.0f · goods arrive %s\n",
 				resp["quantity"], resp["good_key"], resp["silver_paid"], arrivalETA(c, goodsAt))
+			// sjöhandel mellan spelare (megaron_plan_sjohandel_mellan_spelare.md
+			// R3): a sea-going trade names the initiator's own ship — it sails
+			// both legs and isn't free again until leg 2 lands home.
+			if shipName, _ := resp["ship_name"].(string); shipName != "" {
+				fmt.Printf("  ⛵ carried by sea on %s — the ship isn't free again until it sails home with the return leg\n", shipName)
+			}
 			return nil
 		},
 	}
@@ -357,6 +363,11 @@ func deliveryETALine(c *Client, offer map[string]any) string {
 	}
 	if s := fmtLeg("silver", silverAt); s != "" {
 		parts = append(parts, s)
+	}
+	// sjöhandel mellan spelare (megaron_plan_sjohandel_mellan_spelare.md R3):
+	// stamped onto trade_offer at accept time — empty when the trade walked.
+	if shipName, _ := offer["ship_name"].(string); shipName != "" {
+		parts = append(parts, fmt.Sprintf("by sea on %s", shipName))
 	}
 	if len(parts) == 0 {
 		return ""
