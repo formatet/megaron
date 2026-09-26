@@ -89,6 +89,15 @@ const CategoryCourier = "courier"
 // passage. Replaced by real ships/trade-route legs when that mechanic exists.
 const CourierSeaTicks = 0.5
 
+// CategoryCourierLand is CategoryCourier's land-only twin (megaron_plan_
+// budet_liftar.md R1, "en ren landväg — courier-graf utan havshex"): same
+// runner speed (half a land unit's terrain ticks), but sea and river are
+// walls, exactly like the "land" category — a runner may only cross open
+// water by boarding a real carrier now, never by silently wading/rowing it
+// himself. Used to decide whether a messenger's route needs the sea-lift
+// mechanic at all before falling back to CategoryCourier's own abstract boat.
+const CategoryCourierLand = "courier_land"
+
 // isPassable reports whether terrain is traversable for the given unit category.
 //   - "naval": coastal_sea, deep_sea, river and river_ford are passable.
 //   - "courier": everything except mountains (sea and river = boat passage).
@@ -105,6 +114,13 @@ func isPassable(terrain, category string) bool {
 	}
 	if category == CategoryCourier {
 		return terrain != "mountain_limestone" && terrain != "mountain_red"
+	}
+	if category == CategoryCourierLand {
+		switch terrain {
+		case "coastal_sea", "deep_sea", "river", "mountain_limestone", "mountain_red":
+			return false
+		}
+		return true
 	}
 	switch terrain {
 	case "coastal_sea", "deep_sea", "river", "mountain_limestone", "mountain_red":
@@ -129,6 +145,9 @@ func moveHoursFor(terrain, category string) float64 {
 		if terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" {
 			return CourierSeaTicks
 		}
+		return TerrainMoveTicks(terrain) / 2
+	}
+	if category == CategoryCourierLand {
 		return TerrainMoveTicks(terrain) / 2
 	}
 	return TerrainMoveTicks(terrain)
@@ -222,6 +241,45 @@ func NearestUnclaimedLandNeighbor(ctx context.Context, db Queryer, worldID uuid.
 	return 0, 0, false, nil
 }
 
+// NearestSettlementNeighbor returns the ACTIVE settlement (any owner) adjacent
+// to (q,r), with its own province hex coordinates — the reverse of
+// NearestSeaNeighbor: given the sea hex a ship occupies (its own position, or
+// its march target), which land settlement's harbour is this? Used by
+// megaron_plan_budet_liftar.md to find (a) the port a naval march departed
+// from — a ship's stored q/r is its harbour SEA hex, not the settlement's own
+// land hex, so no direct join is possible — and (b) the land settlement a
+// plain ship march's sea-hex target neighbours, i.e. where a lifted messenger
+// can step ashore. found=false when no neighbour hex holds an active
+// settlement (patrol/explore targets on open water, most often).
+func NearestSettlementNeighbor(ctx context.Context, db Queryer, worldID uuid.UUID, q, r int) (settlementID uuid.UUID, sq, sr int, found bool, err error) {
+	for _, d := range axialDirs {
+		nq, nr := q+d[0], r+d[1]
+		rows, qerr := db.Query(ctx,
+			`SELECT s.id, p.map_q, p.map_r FROM provinces p
+			 JOIN settlements s ON s.province_id = p.id
+			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active'`,
+			worldID, nq, nr,
+		)
+		if qerr != nil {
+			return uuid.Nil, 0, 0, false, qerr
+		}
+		var id uuid.UUID
+		var mq, mr int
+		hasRow := rows.Next()
+		if hasRow {
+			if scanErr := rows.Scan(&id, &mq, &mr); scanErr != nil {
+				rows.Close()
+				return uuid.Nil, 0, 0, false, scanErr
+			}
+		}
+		rows.Close()
+		if hasRow {
+			return id, mq, mr, true, nil
+		}
+	}
+	return uuid.Nil, 0, 0, false, nil
+}
+
 // minPassableCost returns the cheapest TerrainMoveTicks among terrains passable
 // for the given category. It is the admissible A* heuristic multiplier: the
 // heuristic (HexDistance × minPassableCost) must never overestimate the true
@@ -240,7 +298,7 @@ func minPassableCost(category string) float64 {
 	if category == "naval" {
 		return TerrainMoveTicks("coastal_sea") // 0.4
 	}
-	if category == CategoryCourier {
+	if category == CategoryCourier || category == CategoryCourierLand {
 		return TerrainMoveTicks("plains") / 2 // 0.375
 	}
 	return TerrainMoveTicks("plains") // 0.75
@@ -335,10 +393,10 @@ type aStarItem struct {
 // aStarQueue is a min-heap of aStarItems ordered by f-score.
 type aStarQueue []*aStarItem
 
-func (q aStarQueue) Len() int            { return len(q) }
-func (q aStarQueue) Less(i, j int) bool  { return q[i].f < q[j].f }
-func (q aStarQueue) Swap(i, j int)       { q[i], q[j] = q[j], q[i] }
-func (q *aStarQueue) Push(x any)         { *q = append(*q, x.(*aStarItem)) }
+func (q aStarQueue) Len() int           { return len(q) }
+func (q aStarQueue) Less(i, j int) bool { return q[i].f < q[j].f }
+func (q aStarQueue) Swap(i, j int)      { q[i], q[j] = q[j], q[i] }
+func (q *aStarQueue) Push(x any)        { *q = append(*q, x.(*aStarItem)) }
 func (q *aStarQueue) Pop() any {
 	old := *q
 	n := len(old)
