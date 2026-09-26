@@ -1,6 +1,6 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError } from './format.js';
+import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError, passageNote } from './format.js';
 import { codexArticleForKind, openCodex } from './codex.js';
 import { fmtArrival } from './time.js';
 
@@ -138,7 +138,7 @@ async function sendOccupationOrder(settlementID, action, resultEl, allBtns) {
       allBtns.forEach(b => { b.disabled = false; });
       return;
     }
-    if (resultEl) resultEl.textContent = `Runner sent — reaches the city ${fmtArrival(data.courier_arrives_at)}.`;
+    if (resultEl) resultEl.textContent = `Runner sent — reaches the city ${fmtArrival(data.courier_arrives_at)}.` + passageNote(data);
   } catch (_) {
     if (resultEl) resultEl.textContent = 'Order failed — network error.';
     allBtns.forEach(b => { b.disabled = false; });

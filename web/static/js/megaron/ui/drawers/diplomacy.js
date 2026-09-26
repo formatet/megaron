@@ -1,7 +1,7 @@
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
-import { esc, fmtAgo, formatApiError } from '../format.js';
+import { esc, fmtAgo, formatApiError, passageNote } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 
@@ -269,7 +269,7 @@ async function loadDipThreads() {
                           : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
                           : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
                           : m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
-                          : m.status === 'delivering' ? '<span style="color:var(--text-dim)">en route · arrives ' + arrivalHTML(m.arrives_at) + '</span>'
+                          : m.status === 'delivering' ? '<span style="color:var(--text-dim)">en route · arrives ' + arrivalHTML(m.arrives_at) + passageNote(m) + '</span>'
                           : '<span style="color:var(--text-dim)">' + esc(m.status || '') + '</span>';
           const replyText = m.reply_text
             ? '<div class="dip-msg-text" style="color:var(--safe);text-align:right">' + esc(m.reply_text) + '</div>'
@@ -385,7 +385,7 @@ export async function dipSendInThread(cid, destId) {
   if (res.ok) {
     if (body.trade_offer) track('trade_offer', { kind: body.trade_offer.kind });
     else track('messenger_sent');
-    showStatus('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at), true);
+    showStatus('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at) + passageNote(data), true);
     if (textEl) textEl.value = '';
     fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     // Reload threads after a short delay so sent message appears
@@ -453,7 +453,7 @@ export async function dipReply(id) {
   const data = await res.json().catch(() => ({}));
   const row = document.getElementById('dip-reply-row-' + id);
   if (res.ok && row) {
-    row.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + '</div>';
+    row.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + passageNote(data) + '</div>';
   }
 }
 
@@ -525,7 +525,7 @@ export async function dipSend() {
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    showDipRes('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at), true);
+    showDipRes('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at) + passageNote(data), true);
     const mtel = document.getElementById('dip-msg-text'); if (mtel) mtel.value = '';
     const dsel = document.getElementById('dip-dest'); if (dsel) dsel.value = '';
     fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));

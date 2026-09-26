@@ -5,6 +5,21 @@
 import { serverNow } from '../clock.js';
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
+// passageNote (megaron_plan_budet_liftar.md): appended to any dispatch/order
+// status line built from a server response that MAY carry
+// passage_status/passage_port — set only when the runner's route needs the
+// sea and no land alternative exists, so it is waiting in its own port for a
+// real ship rather than crossing an abstract boat instantly. '' for the
+// ordinary, unaffected land case (the server omits the field entirely then).
+export function passageNote(data) {
+  if (data && data.passage_status === 'awaiting_passage') {
+    return data.passage_port
+      ? ' · waiting in ' + esc(data.passage_port) + ' for a ship'
+      : ' · waiting for a ship';
+  }
+  return '';
+}
+
 // True when `el` is a live text-entry target — an <input>/<textarea>/<select>
 // or any contenteditable region — and single-letter keyboard shortcuts (map
 // pan, search's f//) must not fire. Takes the element instead of reading

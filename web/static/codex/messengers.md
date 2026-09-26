@@ -17,3 +17,7 @@ A letter to a distant city takes game-days, and the reply takes as long again. Y
 Everything else that moves — armies, caravans, [[runners|Runners]] carrying your orders to your own units — travels the same roads, and only the messenger is safe on them.
 
 The first letter you send to a city also opens [[contact]] with it for good.
+
+## Crossing the sea
+
+A messenger cannot swim any more than a Runner can. When a letter's road crosses open water it waits in your own port for a ship instead — see [[sea]] for how the crossing actually works.
