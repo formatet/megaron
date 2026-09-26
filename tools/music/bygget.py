@@ -99,7 +99,7 @@ def woodblock(vel):
 
 VOICES = {68: (aulos, 0.30), 46: (lyre, 0.24), 60: (horn, 0.42), 61: (horn, 0.12), 33: (bass, 0.40)}
 
-def render_synth(mid_path):
+def render_synth(mid_path, voices=VOICES):
     t = 0.0; on = {}; notes = []; prog = {}
     for msg in mido.MidiFile(mid_path):
         t += msg.time
@@ -117,7 +117,7 @@ def render_synth(mid_path):
         if ch == 9:
             x = woodblock(v) if note in (76, 77) else drum(note, v)
         else:
-            fn, g = VOICES.get(prog.get(ch, 68), (aulos, 0.3))
+            fn, g = voices.get(prog.get(ch, 68), (aulos, 0.3))
             x = fn(f, dur, v) * g
         i = int(t0 * SR); mix[i:i + len(x)] += x[:len(mix) - i]
     return mix
