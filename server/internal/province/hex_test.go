@@ -128,8 +128,8 @@ func TestHexNeighbors_ReturnsSixAdjacent(t *testing.T) {
 // --- FuzzyBearing (temenos_gossip.md PASS 2b) --------------------------------
 
 // TestFuzzyBearing_DirectionBuckets pins the 8-sector compass bucketing for a
-// few canonical directions, derived from the doc's own cartesian conversion
-// (x = dq + dr/2, y = dr·√3/2).
+// few canonical directions on the map AS DRAWN (flat-top, web hexPx; since
+// 2026-09-26 — before, +r read "NE" though it is due south on screen).
 func TestFuzzyBearing_DirectionBuckets(t *testing.T) {
 	landmark := MapPosition{Q: 0, R: 0}
 	cases := []struct {
@@ -137,10 +137,11 @@ func TestFuzzyBearing_DirectionBuckets(t *testing.T) {
 		target MapPosition
 		want   string
 	}{
-		{"due E (dr=0)", MapPosition{Q: 5, R: 0}, "E"},
-		{"due W (dr=0)", MapPosition{Q: -5, R: 0}, "W"},
-		{"due N (x cancels out)", MapPosition{Q: -2, R: 4}, "N"},
-		{"NE (positive dr only)", MapPosition{Q: 0, R: 5}, "NE"},
+		{"due S (+r)", MapPosition{Q: 0, R: 5}, "S"},
+		{"due N (-r)", MapPosition{Q: 0, R: -5}, "N"},
+		{"SE (+q)", MapPosition{Q: 5, R: 0}, "SE"},
+		{"due E (y cancels out)", MapPosition{Q: 4, R: -2}, "E"},
+		{"due W", MapPosition{Q: -4, R: 2}, "W"},
 	}
 	for _, c := range cases {
 		got := FuzzyBearing(c.target, landmark)

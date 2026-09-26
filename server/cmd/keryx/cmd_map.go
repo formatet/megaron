@@ -34,8 +34,11 @@ func compassDirection(oq, or, tq, tr int) string {
 	}
 	dq := float64(tq - oq)
 	dr := float64(tr - or)
-	x := dq + dr/2
-	y := dr * math.Sqrt(3) / 2
+	// The map as drawn (flat-top, web hexPx: x = 1.5·q, y = √3·(r + q/2), y
+	// down) — compass y is up. Until 2026-09-26 this treated +r as up-right,
+	// so a step due south on screen read "NE" (province.ScreenCompass).
+	x := 1.5 * dq
+	y := -math.Sqrt(3) * (dr + dq/2)
 	angle := math.Atan2(y, x)
 	if angle < 0 {
 		angle += 2 * math.Pi

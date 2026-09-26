@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// The compass must be the map's, not FuzzyBearing's: a +r step is due south on
+// The compass must be the map's (FuzzyBearing shares it since 2026-09-26): a +r step is due south on
 // the flat-top map (hexPx: y = √3·(r + q/2)), a +q step is south-east.
 func TestScreenCompass_MatchesTheDrawnMap(t *testing.T) {
 	o := MapPosition{Q: 0, R: 0}
