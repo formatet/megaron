@@ -75,6 +75,18 @@ type PassagePort struct {
 	Q, R         int
 }
 
+// PassageStatusArg is the literal to write into messengers.passage_status at
+// INSERT time: "awaiting_passage" when ResolveDeparture/ResolveReturnDeparture
+// returned a port, nil (plain SQL NULL) otherwise. A tiny helper so every
+// dispatcher writes the same literal rather than repeating the string.
+func PassageStatusArg(passage *PassagePort) *string {
+	if passage == nil {
+		return nil
+	}
+	s := "awaiting_passage"
+	return &s
+}
+
 // RouteDecision is PlanOutboundRoute/PlanReturnRoute's result.
 type RouteDecision struct {
 	Mode RouteMode
@@ -751,6 +763,32 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 		return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerReturn,
 			ReturnPayload{MessengerID: messengerID}, dueTick)
 	}
-	return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerArrival,
-		ArrivalPayload{MessengerID: messengerID}, dueTick)
+	if err := sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerArrival,
+		ArrivalPayload{MessengerID: messengerID}, dueTick); err != nil {
+		return err
+	}
+
+	// A trade-offer-bearing messenger that needed the sea-lift could not have
+	// its expiry precomputed at send time (Send/SendFromHost schedule
+	// ScheduledOfferExpiry immediately for a land route — see api/handlers/
+	// messenger.go) — the real arrival time depends on which carrier, if any,
+	// picks it up. expires_at (the inbox's own filter column) and the expiry
+	// event are both set here, now that the real arrival is known.
+	var hasOffer bool
+	if err := tx.QueryRow(ctx,
+		`SELECT trade_offer IS NOT NULL FROM messengers WHERE id = $1`, messengerID,
+	).Scan(&hasOffer); err != nil {
+		return fmt.Errorf("schedule completion: check trade offer: %w", err)
+	}
+	if !hasOffer {
+		return nil
+	}
+	expiresAt := arrivesAt.Add(tick.RealUntil(OfferExpiryTicks, 0))
+	if _, err := tx.Exec(ctx,
+		`UPDATE messengers SET expires_at = $2 WHERE id = $1`, messengerID, expiresAt,
+	); err != nil {
+		return fmt.Errorf("schedule completion: set offer expiry: %w", err)
+	}
+	return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledOfferExpiry,
+		map[string]any{"messenger_id": messengerID.String()}, dueTick+OfferExpiryTicks)
 }

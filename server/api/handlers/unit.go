@@ -329,12 +329,24 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 // ScheduledOrderDelivery, answering 202 order_dispatched with the courier ETA.
 func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any) {
 	now := h.clk.Now()
-	courierTravelTicks, courierTravelDur := messenger.CourierTravel(ctx, h.pool, payload.WorldID,
-		province.MapPosition{Q: origin.q, R: origin.r}, unitPos)
-	courierArrivesAt := now.Add(courierTravelDur)
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	dueTick := currentTick + courierTravelTicks
+	// megaron_plan_budet_liftar.md R1: a runner order whose route needs sea runs
+	// to the PLAYER's own port and waits for a real carrier instead of crossing
+	// the abstract boat instantly.
+	courierArrivesAt, dueTick, passage, passageSinceTick, rErr := messenger.ResolveDeparture(
+		ctx, h.pool, payload.WorldID, payload.PlayerID,
+		province.MapPosition{Q: origin.q, R: origin.r}, unitPos, now, currentTick)
+	if rErr != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve courier route")
+		return
+	}
+	var passagePortID *uuid.UUID
+	var passageSinceTickArg *int
+	if passage != nil {
+		passagePortID = &passage.SettlementID
+		passageSinceTickArg = &passageSinceTick
+	}
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
@@ -350,20 +362,28 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 	var messengerID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO messengers
-		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at, order_payload)
-		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','order',$8,$9,$10,$11,$12,$13)
+		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at, order_payload, passage_status, passage_port_id, passage_since_tick)
+		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','order',$8,$9,$10,$11,$12,$13,$14,$15,$16)
 		 RETURNING id`,
 		payload.WorldID, payload.PlayerID, origin.settlementID, origin.unitID, originQ, originR,
 		msgText, origin.q, origin.r, unitPos.Q, unitPos.R, courierArrivesAt, mustJSON(payload),
+		messenger.PassageStatusArg(passage), passagePortID, passageSinceTickArg,
 	).Scan(&messengerID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch order runner")
 		return
 	}
 	payload.MessengerID = messengerID
-	if err := h.scheduler.EnqueueTickTx(ctx, tx, payload.WorldID, events.ScheduledOrderDelivery, payload, dueTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule order delivery")
-		return
+	if passage == nil {
+		if err := h.scheduler.EnqueueTickTx(ctx, tx, payload.WorldID, events.ScheduledOrderDelivery, payload, dueTick); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule order delivery")
+			return
+		}
 	}
+	// passage != nil: the runner just runs to its port and waits — no
+	// ScheduledOrderDelivery yet. messenger.PassageScanHandler schedules it
+	// (rebuilding the payload from order_payload) once it boards a carrier or
+	// takes the reserve (R2/R5). order_payload already carries the up-to-date
+	// payload written just above.
 	if err := tx.Commit(ctx); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not commit order dispatch")
 		return
@@ -376,6 +396,9 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 		"messenger_id":       messengerID,
 		"courier_arrives_at": courierArrivesAt,
 		"courier_due_tick":   dueTick,
+	}
+	if passage != nil {
+		resp["passage_status"] = "awaiting_passage"
 	}
 	for k, v := range extra {
 		resp[k] = v

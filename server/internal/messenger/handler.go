@@ -248,17 +248,27 @@ func (h *ReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	var status string
 	var originID uuid.UUID
+	var passageStatus *string
 	// origin_id is NULL for a host-sent messenger (mig 087); the origin unit is
 	// then the stream the MessengerReturned event belongs to.
 	err = tx.QueryRow(ctx,
-		`SELECT status, COALESCE(origin_id, origin_unit_id) FROM messengers WHERE id = $1 FOR UPDATE`,
+		`SELECT status, COALESCE(origin_id, origin_unit_id), passage_status FROM messengers WHERE id = $1 FOR UPDATE`,
 		payload.MessengerID,
-	).Scan(&status, &originID)
+	).Scan(&status, &originID, &passageStatus)
 	if err != nil {
 		return nil
 	}
 	if status == "arrived" {
 		return nil // idempotent replay
+	}
+	// megaron_plan_budet_liftar.md R6: Reply auto-schedules this SAME event type
+	// at delivery time (stayTicks) regardless of whether the return leg later
+	// turns out to need the sea-lift — a return leg still 'awaiting_passage' or
+	// 'aboard' physically has not reached home yet. This firing is premature
+	// (the auto-schedule racing ahead of the wait); the real one fires later,
+	// once messenger.scheduleCompletion has cleared passage_status to NULL.
+	if passageStatus != nil {
+		return nil
 	}
 
 	if _, err := tx.Exec(ctx,
