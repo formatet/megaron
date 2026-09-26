@@ -11,6 +11,8 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -19,6 +21,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/notify"
+	"formatet/megaron/server/internal/transport"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -133,6 +136,57 @@ func (f *tradeNavalFixture) settlement(t *testing.T, name string, q int, coastal
 	return settlementID, provinceID
 }
 
+// ship inserts a garrison galley/merchantman at settlementID — sjöhandel
+// kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R1/R3): since this
+// slice, a naval transfer needs a real free hull in the origin port, not just
+// a navigable sea lane.
+func (f *tradeNavalFixture) ship(t *testing.T, settlementID uuid.UUID, shipType string) uuid.UUID {
+	t.Helper()
+	var id uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
+		 VALUES ($1, $2, $3, 'naval', 1, 10, 'garrison', $4) RETURNING id`,
+		f.worldID, f.playerID, shipType, settlementID,
+	).Scan(&id); err != nil {
+		t.Fatalf("create ship %s at %s: %v", shipType, settlementID, err)
+	}
+	return id
+}
+
+// lastTradeDeliveryEvent mirrors tradeInternalFixture's own helper (same
+// shape, different fixture type — no shared base between the two test files).
+func (f *tradeNavalFixture) lastTradeDeliveryEvent(t *testing.T) events.ScheduledEvent {
+	t.Helper()
+	var id int64
+	var payload []byte
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT id, payload FROM scheduled_events
+		  WHERE world_id = $1 AND event_type = 'TradeDelivery'
+		  ORDER BY id DESC LIMIT 1`,
+		f.worldID,
+	).Scan(&id, &payload); err != nil {
+		t.Fatalf("no TradeDelivery scheduled: %v", err)
+	}
+	return events.ScheduledEvent{ID: id, WorldID: f.worldID, Payload: payload}
+}
+
+// lastTransportArrivalEvent fetches the most recently scheduled
+// TransportArrival event for this world (the ship's empty hemresa, R3).
+func (f *tradeNavalFixture) lastTransportArrivalEvent(t *testing.T) events.ScheduledEvent {
+	t.Helper()
+	var id int64
+	var payload []byte
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT id, payload FROM scheduled_events
+		  WHERE world_id = $1 AND event_type = 'TransportArrival'
+		  ORDER BY id DESC LIMIT 1`,
+		f.worldID,
+	).Scan(&id, &payload); err != nil {
+		t.Fatalf("no TransportArrival scheduled: %v", err)
+	}
+	return events.ScheduledEvent{ID: id, WorldID: f.worldID, Payload: payload}
+}
+
 func (f *tradeNavalFixture) transportCategory(t *testing.T, worldID, originID, destID uuid.UUID) string {
 	t.Helper()
 	var category string
@@ -158,6 +212,7 @@ func TestTrade_TwoCoastalSettlementsWithSeaRouteGoNaval(t *testing.T) {
 	for q := 1; q <= 4; q++ {
 		f.mapTile(t, q, 0, "coastal_sea")
 	}
+	shipID := f.ship(t, originID, "merchantman")
 
 	code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
 		map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": 10.0})
@@ -168,6 +223,101 @@ func TestTrade_TwoCoastalSettlementsWithSeaRouteGoNaval(t *testing.T) {
 	got := f.transportCategory(t, f.worldID, originID, destID)
 	if got != "naval" {
 		t.Fatalf("category = %q, want naval (two coastal settlements with a navigable sea lane)", got)
+	}
+
+	// R2: the ship is bound (freighting) for the round trip, not garrisoned.
+	var status string
+	if err := f.pool.QueryRow(context.Background(), `SELECT status FROM units WHERE id = $1`, shipID).Scan(&status); err != nil {
+		t.Fatalf("read ship status: %v", err)
+	}
+	if status != "freighting" {
+		t.Errorf("ship status = %q, want freighting", status)
+	}
+
+	// keryx/web semantic grind: the API response must name the ship, not just
+	// say "naval" — a Wanax has no way to look this up otherwise.
+	if respShipID, _ := resp["ship_id"].(string); respShipID != shipID.String() {
+		t.Errorf("response ship_id = %v, want %s", resp["ship_id"], shipID)
+	}
+	if shipName, _ := resp["ship_name"].(string); shipName == "" {
+		t.Error("response ship_name is empty, want the ship's display name")
+	}
+}
+
+// TestTrade_NoFreeShipFallsBackToLandWhenPossible and
+// TestTrade_NoFreeShipAndNoLandRejects cover R3's two "no ship" branches.
+func TestTrade_NoFreeShipFallsBackToLandWhenPossible(t *testing.T) {
+	f := setupTradeNavalFixture(t)
+
+	// Coastal at both ends, but ALSO a land bridge — no ship in port, so the
+	// transfer must go by land instead of failing outright.
+	originID, originProvince := f.settlement(t, "Tyre", 0, true, true)
+	destID, _ := f.settlement(t, "Sidon", 3, true, false)
+	f.mapTile(t, 1, 0, "plains")
+	f.mapTile(t, 2, 0, "plains")
+
+	code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
+		map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": 10.0})
+	if code != 201 {
+		t.Fatalf("trade returned %d: %v", code, resp)
+	}
+	got := f.transportCategory(t, f.worldID, originID, destID)
+	if got != "land" {
+		t.Fatalf("category = %q, want land (no ship, but a land bridge exists)", got)
+	}
+}
+
+func TestTrade_NoFreeShipAndNoLandRejects(t *testing.T) {
+	f := setupTradeNavalFixture(t)
+
+	// Two islands: coastal at both ends, connected ONLY by sea — no ship, no
+	// land bridge either, so there is genuinely nothing to send this on.
+	_, originProvince := f.settlement(t, "Byblos", 0, true, true)
+	destID, _ := f.settlement(t, "Ugarit", 5, true, false)
+	for q := 1; q <= 4; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+
+	code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
+		map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": 10.0})
+	if code != 422 {
+		t.Fatalf("trade returned %d: %v, want 422 (no ship, no land route)", code, resp)
+	}
+	errMsg, _ := resp["error"].(string)
+	if !strings.Contains(errMsg, "no free galley or merchantman") || !strings.Contains(errMsg, "Byblos") {
+		t.Errorf("error = %q, want it to name Byblos and explain no free ship", errMsg)
+	}
+}
+
+// TestTrade_ManifestOverShipCapacityRejected proves R1's capacity gate: a
+// galley (capacity 60) cannot carry a shipment heavier than that.
+func TestTrade_ManifestOverShipCapacityRejected(t *testing.T) {
+	f := setupTradeNavalFixture(t)
+
+	originID, originProvince := f.settlement(t, "Byblos", 0, true, true)
+	destID, _ := f.settlement(t, "Ugarit", 5, true, false)
+	for q := 1; q <= 4; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	f.ship(t, originID, "galley")
+
+	var grainWeight float64
+	if err := f.pool.QueryRow(context.Background(), `SELECT weight FROM goods WHERE key = 'grain'`).Scan(&grainWeight); err != nil {
+		t.Fatalf("look up grain weight: %v", err)
+	}
+	if grainWeight <= 0 {
+		grainWeight = 1
+	}
+	overCapacityQty := 61.0 / grainWeight // galley capacity is 60
+
+	code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
+		map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": overCapacityQty})
+	if code != 422 {
+		t.Fatalf("trade returned %d: %v, want 422 (over capacity)", code, resp)
+	}
+	errMsg, _ := resp["error"].(string)
+	if !strings.Contains(errMsg, "capacity") {
+		t.Errorf("error = %q, want it to mention capacity", errMsg)
 	}
 }
 
@@ -300,6 +450,7 @@ func TestTrade_NavalRouteTravelTimeFollowsSeaPathNotStraightLine(t *testing.T) {
 	); err != nil {
 		t.Fatalf("seed dest grain: %v", err)
 	}
+	f.ship(t, originID, "merchantman")
 
 	// The only sea tiles on this map form ONE chain, bending out and back:
 	// (1,0)->(2,0)->(3,0)->(3,1)->(3,2)->(2,3)->(1,3) — 6 hops (dist 6) to
@@ -330,5 +481,153 @@ func TestTrade_NavalRouteTravelTimeFollowsSeaPathNotStraightLine(t *testing.T) {
 	travelMin, _ := resp["travel_min"].(float64)
 	if travelMin <= 36.0 {
 		t.Fatalf("travel_min = %v, want > 36 (must reflect the real bending sea path, not the 3-hex straight line)", travelMin)
+	}
+}
+
+// TestTrade_NavalRoundTrip is R3's acceptance criterion 2 end to end: the
+// bound ship carries the goods out, the destination is credited exactly once,
+// an empty hemresa sails back on its own, and the ship is freed (garrison) at
+// its home port once that leg lands — never sooner.
+func TestTrade_NavalRoundTrip(t *testing.T) {
+	f := setupTradeNavalFixture(t)
+	ctx := context.Background()
+
+	originID, originProvince := f.settlement(t, "Byblos", 0, true, true)
+	destID, _ := f.settlement(t, "Ugarit", 5, true, false)
+	for q := 1; q <= 4; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	shipID := f.ship(t, originID, "merchantman")
+
+	deliveryHandler := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
+	arrivalHandler := transport.NewArrivalHandler(f.pool, nil)
+
+	var lastTransportID uuid.UUID
+	delivered := false
+	for i := 0; i < 25 && !delivered; i++ {
+		code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
+			map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": 10.0})
+		if code != 201 {
+			t.Fatalf("trade returned %d: %v", code, resp)
+		}
+
+		// The ship must be bound (freighting) the instant the outbound leg departs.
+		var status string
+		if err := f.pool.QueryRow(ctx, `SELECT status FROM units WHERE id = $1`, shipID).Scan(&status); err != nil {
+			t.Fatalf("read ship status: %v", err)
+		}
+		if status != "freighting" {
+			t.Fatalf("ship status after dispatch = %q, want freighting", status)
+		}
+
+		ev := f.lastTradeDeliveryEvent(t)
+		if err := deliveryHandler.Handle(ctx, ev); err != nil {
+			t.Fatalf("delivery handle: %v", err)
+		}
+		var dPayload struct {
+			TransportID uuid.UUID `json:"transport_id"`
+		}
+		_ = json.Unmarshal(ev.Payload, &dPayload)
+		lastTransportID = dPayload.TransportID
+		var tstatus string
+		_ = f.pool.QueryRow(ctx, `SELECT status FROM transports WHERE id = $1`, lastTransportID).Scan(&tstatus)
+		delivered = tstatus == "delivered"
+		if !delivered {
+			// Lost to the pre-existing 5% storm roll — the ship is not
+			// released by a loss (only ship_return/damaged_return release
+			// it), so unbind it by hand to retry with a fresh transfer,
+			// exactly as the land equivalent test does.
+			if _, err := f.pool.Exec(ctx, `UPDATE units SET status = 'garrison' WHERE id = $1`, shipID); err != nil {
+				t.Fatalf("reset ship after lost transfer: %v", err)
+			}
+		}
+	}
+	if !delivered {
+		t.Fatalf("naval transfer never delivered across %d retries (all lost to storm?)", 25)
+	}
+
+	if got := f.transportCategory(t, f.worldID, originID, destID); got != "naval" {
+		t.Fatalf("category = %q, want naval", got)
+	}
+
+	// Destination credited exactly once — f.settlement seeds 100000 grain, so
+	// the delivery must land it at exactly +10, never +20 (double-credit).
+	var grainAmount float64
+	if err := f.pool.QueryRow(ctx,
+		`SELECT settled(amount, rate, calc_tick) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'`,
+		destID,
+	).Scan(&grainAmount); err != nil {
+		t.Fatalf("read dest grain: %v", err)
+	}
+	if grainAmount != 100010.0 {
+		t.Fatalf("dest grain = %v, want exactly 100010 (one delivery of 10, no double-credit)", grainAmount)
+	}
+
+	// Ship still bound — the round trip isn't over until the hemresa lands.
+	var status string
+	if err := f.pool.QueryRow(ctx, `SELECT status FROM units WHERE id = $1`, shipID).Scan(&status); err != nil {
+		t.Fatalf("read ship status: %v", err)
+	}
+	if status != "freighting" {
+		t.Fatalf("ship status right after delivery = %q, want still freighting (hemresa not landed yet)", status)
+	}
+
+	// Fire the hemresa's own arrival.
+	returnEv := f.lastTransportArrivalEvent(t)
+	if err := arrivalHandler.Handle(ctx, returnEv); err != nil {
+		t.Fatalf("ship return arrival handle: %v", err)
+	}
+
+	var finalStatus string
+	var finalSettlement *uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT status, settlement_id FROM units WHERE id = $1`, shipID).
+		Scan(&finalStatus, &finalSettlement); err != nil {
+		t.Fatalf("read final ship state: %v", err)
+	}
+	if finalStatus != "garrison" {
+		t.Fatalf("final ship status = %q, want garrison", finalStatus)
+	}
+	if finalSettlement == nil || *finalSettlement != originID {
+		t.Fatalf("final ship settlement = %v, want home port %s", finalSettlement, originID)
+	}
+}
+
+// TestTrade_NavalConcurrentTransfersSecondDenied is R3's other half of
+// acceptance criterion 2: with exactly one free ship, a second transfer
+// request while the first is still out must not find a ship to bind — it
+// falls back to land or is rejected, but it can never bind the SAME ship
+// twice.
+func TestTrade_NavalConcurrentTransfersSecondDenied(t *testing.T) {
+	f := setupTradeNavalFixture(t)
+
+	originID, originProvince := f.settlement(t, "Byblos", 0, true, true)
+	destID, _ := f.settlement(t, "Ugarit", 5, true, false)
+	for q := 1; q <= 4; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	f.ship(t, originID, "merchantman")
+
+	code1, resp1 := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
+		map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": 10.0})
+	if code1 != 201 {
+		t.Fatalf("first trade returned %d: %v", code1, resp1)
+	}
+
+	code2, resp2 := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",
+		map[string]any{"destination_id": destID.String(), "good_key": "grain", "quantity": 10.0})
+	if code2 != 422 {
+		t.Fatalf("second trade returned %d: %v, want 422 (the only ship is already bound)", code2, resp2)
+	}
+
+	// Exactly one ship exists, and it is the one bound by the first transfer —
+	// the second request never found (let alone bound) a second one.
+	var freightingCount int
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT count(*) FROM units WHERE world_id = $1 AND status = 'freighting'`, f.worldID,
+	).Scan(&freightingCount); err != nil {
+		t.Fatalf("count freighting ships: %v", err)
+	}
+	if freightingCount != 1 {
+		t.Fatalf("freighting ships = %d, want exactly 1 (double-binding must be impossible)", freightingCount)
 	}
 }

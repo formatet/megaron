@@ -89,6 +89,19 @@ test('renderStandingOrdersHTML: an active order offers Pause, a paused one offer
   assert.match(paused, /no spare workforce/);
 });
 
+// megaron_plan_sjohandel_kraver_skepp.md R4: a naval route names its bound
+// ship; a route with no ship yet (never dispatched, or still land) shows
+// nothing extra.
+test('renderStandingOrdersHTML: a naval route names its bound ship', () => {
+  const withShip = renderStandingOrdersHTML([{
+    id: 'n1', from_name: 'Byblos', to_name: 'Ugarit', status: 'active', ship_name: 'White Dolphin, Merchantman',
+  }]);
+  assert.match(withShip, /White Dolphin, Merchantman/);
+
+  const noShip = renderStandingOrdersHTML([{ id: 'l1', from_name: 'Mycenae', to_name: 'Tiryns', status: 'active' }]);
+  assert.doesNotMatch(noShip, /⛵/);
+});
+
 // ── S1: settlements overview (megaron_plan_stad_vs_ekonomi.md §3) ──────────
 
 test('settlementFoodRow: a self-sufficient, well-stocked settlement reads "stable"', () => {

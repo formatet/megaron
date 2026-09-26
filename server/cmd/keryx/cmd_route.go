@@ -177,6 +177,12 @@ func routesCmd() *cobra.Command {
 			for _, o := range orders {
 				status, _ := o["status"].(string)
 				line := fmt.Sprintf("%v  %v → %v  [%s]", o["id"], o["from_name"], o["to_name"], status)
+				// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md
+				// R4): a naval route locks a real ship for its whole lifetime —
+				// name it, don't just say the route exists.
+				if shipName, _ := o["ship_name"].(string); shipName != "" {
+					line += "  ⛵ " + shipName
+				}
 				if reason, _ := o["pause_reason"].(string); reason != "" {
 					line += " — " + reason
 				}

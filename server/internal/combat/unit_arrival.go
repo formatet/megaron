@@ -228,7 +228,11 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// combat.BattleTickHandler.sendDamagedShipHome (ship_hull.go) at battle end.
 	// Same "bypass the hex→settlement lookup" reason as explore_return above —
 	// the target is the sea hex adjacent to home, which has no settlement row.
-	if u.marchIntent != nil && *u.marchIntent == "damaged_return" {
+	// "captured_return" (megaron_plan_sjohandel_kraver_skepp.md R5) is the
+	// SAME march, dispatched by combat.NavalSeizureOutcomeHandler for a ship
+	// that just changed hands in a naval seizure — it re-garrisons exactly
+	// the same way at the (now new-owner's) home_settlement_id.
+	if u.marchIntent != nil && (*u.marchIntent == "damaged_return" || *u.marchIntent == "captured_return") {
 		return h.damagedShipReturned(ctx, tx, u, destQ, destR, worldID)
 	}
 

@@ -422,6 +422,57 @@ test('caravan seizure notices name the cargo when the payload carries it', () =>
   assert.equal(notifText('CaravanRaided', { q: 7, r: 0 }), 'Your caravan was raided at (7, 0)');
 });
 
+// megaron_plan_sjohandel_kraver_skepp.md R5: ship_outcome is present only for
+// a naval transport. body.goods is always the FULL pre-outcome manifest
+// (seize()'s own doc comment) — for "limped"/"sunk" the raider never actually
+// got it, so the text must say so instead of claiming cargo that was
+// destroyed or sailed home with the victim.
+test('naval seizure notices tell the truth about each ship outcome, never claiming cargo nobody got', () => {
+  const goods = [{ good_key: 'silver', quantity: 100 }];
+
+  assert.equal(
+    notifText('CaravanSeized', { q: 2, r: 0, goods, ship_outcome: 'captured' }),
+    'You seized an enemy caravan carrying 100 silver and the ship at (2, 0)',
+  );
+  assert.equal(
+    notifText('CaravanRaided', { q: 2, r: 0, goods, ship_outcome: 'captured' }),
+    'Your caravan carrying 100 silver and the ship was raided at (2, 0)',
+  );
+
+  assert.equal(
+    notifText('CaravanSeized', { q: 2, r: 0, goods, ship_outcome: 'limped' }),
+    'You caught an enemy ship at (2, 0) — it limped home with half its cargo, the rest lost in the scramble',
+  );
+  assert.equal(
+    notifText('CaravanRaided', { q: 2, r: 0, goods, ship_outcome: 'limped' }),
+    'Your ship was caught at (2, 0) — it limped home with half its cargo, the rest lost',
+  );
+
+  assert.equal(
+    notifText('CaravanSeized', { q: 2, r: 0, goods, ship_outcome: 'sunk' }),
+    'You caught an enemy ship at (2, 0) — it sank with its cargo before you could take anything',
+  );
+  assert.equal(
+    notifText('CaravanRaided', { q: 2, r: 0, goods, ship_outcome: 'sunk' }),
+    'Your ship was sunk at (2, 0), with everything it carried',
+  );
+});
+
+test('ShipCaptured/ShipLost/ShipStranded read correctly', () => {
+  assert.equal(
+    notifText('ShipCaptured', { q: 5, r: 1 }),
+    'You captured an enemy ship at (5, 1) — it is under way to your nearest port',
+  );
+  assert.equal(
+    notifText('ShipLost', { q: 5, r: 1 }),
+    'Your ship was captured at (5, 1) and is gone',
+  );
+  assert.equal(
+    notifText('ShipStranded', { q: 8, r: 8 }),
+    'Your ship has nowhere left to dock and sits stranded at (8, 8) — give it a new order',
+  );
+});
+
 test('ForeignMarchSightedV2 says which way — never where — and an arrival only if bound for you', () => {
   assert.equal(
     notifText('ForeignMarchSightedV2', { owner: 'Minos', unit_type: 'spearman', size: 100, q: 15, r: 0, heading: 'south-east' }),

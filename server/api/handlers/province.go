@@ -3034,15 +3034,16 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 
 	// Find origin settlement and verify ownership.
 	var originID uuid.UUID
+	var originName string
 	var originQ, originR int
 	var originCoastal bool
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT s.id, prov.map_q, prov.map_r, COALESCE(prov.coastal, false)
+		`SELECT s.id, s.name, prov.map_q, prov.map_r, COALESCE(prov.coastal, false)
 		 FROM settlements s
 		 JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.province_id = $1 AND s.world_id = $2 AND s.owner_id = $3`,
 		provinceID, worldID, playerID,
-	).Scan(&originID, &originQ, &originR, &originCoastal)
+	).Scan(&originID, &originName, &originQ, &originR, &originCoastal)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
@@ -3107,12 +3108,6 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not resolve trade route")
 		return
 	}
-	base := 30.0 + float64(dist)*2.0
-	weightPenalty := 0.0
-	if weight > 1.0 {
-		weightPenalty = (weight - 1.0) * 0.1
-	}
-	travelMins := base * (1.0 + weightPenalty)
 
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
@@ -3120,6 +3115,68 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback(r.Context())
+
+	// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): a
+	// resolved "naval" route only means a sea lane connects the two shores —
+	// it says nothing about whether the Wanax actually owns a free hull to
+	// sail it. Bound inside this same transaction (FindFreeShip's row lock
+	// held through to commit) so two concurrent transfers can never bind the
+	// same ship.
+	var shipID *uuid.UUID
+	var shipName string
+	if category == "naval" {
+		ship, found, ferr := transport.FindFreeShip(r.Context(), tx, worldID, playerID, originID)
+		if ferr != nil {
+			writeError(w, http.StatusInternalServerError, "could not look for a free ship")
+			return
+		}
+		if found {
+			if totalWeight := weight * req.Quantity; totalWeight > ship.Capacity {
+				writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
+					"%s's cargo capacity is %.0f, this shipment weighs %.0f — split it into smaller loads",
+					unit.DisplayName(ship.Type), ship.Capacity, totalWeight))
+				return
+			}
+			if err := transport.BindShip(r.Context(), tx, ship.ID); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not bind ship")
+				return
+			}
+			sid := ship.ID
+			shipID = &sid
+			shipOwnName := ""
+			if ship.Name != nil {
+				shipOwnName = *ship.Name
+			}
+			shipName = unit.ShipDisplayName(ship.Type, shipOwnName, originName).DisplayName
+		} else {
+			// No free galley/merchantman — fall back to a real land route if
+			// one actually exists (a resolved-naval pair may have NO land
+			// connection at all, e.g. two islands); otherwise there is
+			// genuinely nothing to send this on.
+			_, _, landOK, ferr := province.FindPath(r.Context(), tx, worldID,
+				province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR}, "land")
+			if ferr != nil {
+				writeError(w, http.StatusInternalServerError, "could not resolve a land fallback route")
+				return
+			}
+			if !landOK {
+				writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
+					"no free galley or merchantman in %s to carry goods by sea — build one at a shipyard or wait for one to return",
+					originName))
+				return
+			}
+			category = "land"
+			dist = province.HexDistance(
+				province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR})
+		}
+	}
+
+	base := 30.0 + float64(dist)*2.0
+	weightPenalty := 0.0
+	if weight > 1.0 {
+		weightPenalty = (weight - 1.0) * 0.1
+	}
+	travelMins := base * (1.0 + weightPenalty)
 
 	// Deduct from origin — silver is now a normal good in settlement_goods.
 	deductTag, err := tx.Exec(r.Context(),
@@ -3178,6 +3235,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		DueTick:       tradeCurrentTick + tradeTravelTicks,
 		Manifest:      transport.Manifest{req.GoodKey: req.Quantity},
 		Interceptable: true,
+		ShipUnitID:    shipID,
 	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch transfer caravan")
@@ -3204,13 +3262,19 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{
+	resp := map[string]any{
 		"route_id":      routeID,
 		"arrives_at":    arrivesAt,
 		"distance":      dist,
 		"travel_min":    travelMins,
 		"delivered_qty": req.Quantity,
-	})
+		"category":      category,
+	}
+	if shipID != nil {
+		resp["ship_id"] = *shipID
+		resp["ship_name"] = shipName
+	}
+	writeJSON(w, http.StatusCreated, resp)
 }
 
 // Marches handles GET /worlds/:worldID/provinces/:provinceID/marches.

@@ -96,6 +96,7 @@ export function notifDomain(kind) {
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
+    ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
     SiegeStarted: 'war', SiegeLifted: 'war',
     CityOccupied: 'war', OccupationDefended: 'war', CityAnnexReady: 'war',
     SettlementCaptured: 'war', SettlementBurned: 'war', SettlementLooted: 'war',
@@ -150,6 +151,9 @@ export function notifIcon(kind) {
     BattleLost:         '⚔',
     ShipDamaged:        '⛵',
     ShipRepaired:       '🔨',
+    ShipCaptured:       '⛵',
+    ShipLost:           '⚔',
+    ShipStranded:       '⚠',
     DivinePunishment:   '⚡',
     DivineBlessing:     '✨',
     FoodShortfall:      '🍽',
@@ -497,12 +501,45 @@ export function notifText(kind, body) {
       return `${body.name || body.unit_type || 'A unit'} lost at sea — ${cause}, ${body.lost || 0} men gone`;
     }
     case 'CaravanSeized': {
+      // ship_outcome (megaron_plan_sjohandel_kraver_skepp.md R5) is present
+      // only for a naval transport — land caravans keep the plain wording.
+      // body.goods is the FULL pre-outcome manifest either way (seize()'s own
+      // doc comment), which only actually reached the raider's hands for a
+      // land caravan or a "captured" ship — "limped"/"sunk" must say so
+      // instead of claiming cargo the raider never got.
       const cargo = fmtGoods(body.goods);
-      return `You seized an enemy caravan${cargo ? ` carrying ${cargo}` : ''} at (${body.q}, ${body.r})`;
+      if (body.ship_outcome === 'limped') {
+        return `You caught an enemy ship at (${body.q}, ${body.r}) — it limped home with half its cargo, the rest lost in the scramble`;
+      }
+      if (body.ship_outcome === 'sunk') {
+        return `You caught an enemy ship at (${body.q}, ${body.r}) — it sank with its cargo before you could take anything`;
+      }
+      const shipTail = body.ship_outcome === 'captured' ? ' and the ship' : '';
+      return `You seized an enemy caravan${cargo ? ` carrying ${cargo}` : ''}${shipTail} at (${body.q}, ${body.r})`;
     }
     case 'CaravanRaided': {
       const cargo = fmtGoods(body.goods);
-      return `Your caravan${cargo ? ` carrying ${cargo}` : ''} was raided at (${body.q}, ${body.r})`;
+      if (body.ship_outcome === 'limped') {
+        return `Your ship was caught at (${body.q}, ${body.r}) — it limped home with half its cargo, the rest lost`;
+      }
+      if (body.ship_outcome === 'sunk') {
+        return `Your ship was sunk at (${body.q}, ${body.r}), with everything it carried`;
+      }
+      const shipTail = body.ship_outcome === 'captured' ? ' and the ship' : '';
+      return `Your caravan${cargo ? ` carrying ${cargo}` : ''}${shipTail} was raided at (${body.q}, ${body.r})`;
+    }
+    case 'ShipCaptured': {
+      // Payload per combat.NavalSeizureOutcomeHandler — fired the moment
+      // ownership changes, before the ship's home march even lands.
+      return `You captured an enemy ship at (${body.q}, ${body.r}) — it is under way to your nearest port`;
+    }
+    case 'ShipLost': {
+      return `Your ship was captured at (${body.q}, ${body.r}) and is gone`;
+    }
+    case 'ShipStranded': {
+      // Payload per transport.ArrivalHandler.releaseArrivedShip — a bound
+      // ship came home to find no own port left at all.
+      return `Your ship has nowhere left to dock and sits stranded at (${body.q}, ${body.r}) — give it a new order`;
     }
     // MarchStalled's reason is server-crafted (unit_arrival.go NotifyDeadLetter)
     // and already names the subject there — nothing to enrich client-side.

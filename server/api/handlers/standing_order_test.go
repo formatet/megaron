@@ -244,3 +244,183 @@ func TestStandingOrderAPI_RejectsUnshippableGood(t *testing.T) {
 		t.Errorf("a standing_orders row was written despite the rejected good: %d rows", count)
 	}
 }
+
+// shipForOrder inserts a garrison ship at settlementID, owned by whoever owns
+// that settlement, for R4 Delete tests below.
+func (f *standingOrderFixture) shipForOrder(t *testing.T, settlementID uuid.UUID) uuid.UUID {
+	t.Helper()
+	ctx := context.Background()
+	var ownerID uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, settlementID).Scan(&ownerID); err != nil {
+		t.Fatalf("look up settlement owner: %v", err)
+	}
+	var shipID uuid.UUID
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
+		 VALUES ($1, $2, 'merchantman', 'naval', 1, 10, 'garrison', $3) RETURNING id`,
+		f.worldID, ownerID, settlementID,
+	).Scan(&shipID); err != nil {
+		t.Fatalf("create ship: %v", err)
+	}
+	return shipID
+}
+
+// R4 (megaron_plan_sjohandel_kraver_skepp.md), Delete case 1: a route whose
+// bound ship is idle (no leg in flight — here, no leg ever dispatched) is
+// released the instant the Wanax deletes the route, not left bound forever
+// with no order left to manage it.
+func TestStandingOrderAPI_DeleteReleasesIdleShip(t *testing.T) {
+	f := setupStandingOrderFixture(t)
+	ctx := context.Background()
+	base := "/worlds/" + f.worldID.String() + "/standing-orders"
+
+	code, resp := f.do(t, http.MethodPost, base, map[string]any{
+		"from_settlement_id":      f.fromID,
+		"to_settlement_id":        f.toID,
+		"crewed_by_settlement_id": f.fromID,
+		"outbound":                []map[string]any{{"good_key": "grain", "threshold": 200}},
+	})
+	if code != http.StatusCreated {
+		t.Fatalf("Create = %d %v", code, resp)
+	}
+	orderID, _ := resp["id"].(string)
+
+	shipID := f.shipForOrder(t, f.fromID)
+	if _, err := f.pool.Exec(ctx,
+		`UPDATE standing_orders SET ship_unit_id = $2 WHERE id = $1`, orderID, shipID,
+	); err != nil {
+		t.Fatalf("bind ship to order: %v", err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
+		t.Fatalf("mark ship freighting: %v", err)
+	}
+
+	code, resp = f.do(t, http.MethodDelete, base+"/"+orderID, nil)
+	if code != http.StatusNoContent {
+		t.Fatalf("Delete = %d %v", code, resp)
+	}
+
+	var status string
+	var settlementID *uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT status, settlement_id FROM units WHERE id = $1`, shipID).
+		Scan(&status, &settlementID); err != nil {
+		t.Fatalf("read ship state: %v", err)
+	}
+	if status != "garrison" {
+		t.Errorf("ship status after delete = %q, want garrison", status)
+	}
+	if settlementID == nil || *settlementID != f.fromID {
+		t.Errorf("ship settlement after delete = %v, want %s", settlementID, f.fromID)
+	}
+}
+
+// R4 Delete case 2 ("ute"): a route whose ship is mid-leg when the Wanax
+// deletes it keeps its ship bound (the leg must not be yanked out from under
+// it) — transport.ArrivalHandler releases it once that orphaned leg lands
+// (proven directly against the handler in internal/transport; here we only
+// check the API call itself doesn't touch a ship that's still moving, and
+// that the cascade actually orphans the leg).
+func TestStandingOrderAPI_DeleteLeavesInFlightShipBound(t *testing.T) {
+	f := setupStandingOrderFixture(t)
+	ctx := context.Background()
+	base := "/worlds/" + f.worldID.String() + "/standing-orders"
+
+	code, resp := f.do(t, http.MethodPost, base, map[string]any{
+		"from_settlement_id":      f.fromID,
+		"to_settlement_id":        f.toID,
+		"crewed_by_settlement_id": f.fromID,
+		"outbound":                []map[string]any{{"good_key": "grain", "threshold": 200}},
+	})
+	if code != http.StatusCreated {
+		t.Fatalf("Create = %d %v", code, resp)
+	}
+	orderID, _ := resp["id"].(string)
+
+	shipID := f.shipForOrder(t, f.fromID)
+	if _, err := f.pool.Exec(ctx,
+		`UPDATE standing_orders SET ship_unit_id = $2 WHERE id = $1`, orderID, shipID,
+	); err != nil {
+		t.Fatalf("bind ship to order: %v", err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
+		t.Fatalf("mark ship freighting: %v", err)
+	}
+	var transportID uuid.UUID
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO transports
+		   (world_id, owner_id, kind, origin_id, dest_id, category,
+		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick,
+		    status, interceptable, standing_order_id, ship_unit_id)
+		 VALUES ($1, (SELECT owner_id FROM settlements WHERE id = $2), 'standing_order_out', $2, $3, 'naval',
+		         0, 0, 4, 0, now(), now() + interval '1 hour', 1,
+		         'in_transit', true, $4, $5)
+		 RETURNING id`,
+		f.worldID, f.fromID, f.toID, orderID, shipID,
+	).Scan(&transportID); err != nil {
+		t.Fatalf("insert in-flight leg: %v", err)
+	}
+
+	code, resp = f.do(t, http.MethodDelete, base+"/"+orderID, nil)
+	if code != http.StatusNoContent {
+		t.Fatalf("Delete = %d %v", code, resp)
+	}
+
+	var status string
+	if err := f.pool.QueryRow(ctx, `SELECT status FROM units WHERE id = $1`, shipID).Scan(&status); err != nil {
+		t.Fatalf("read ship status: %v", err)
+	}
+	if status != "freighting" {
+		t.Errorf("ship status right after delete = %q, want still freighting (leg not landed yet)", status)
+	}
+
+	var orphanedOrderID *uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT standing_order_id FROM transports WHERE id = $1`, transportID).
+		Scan(&orphanedOrderID); err != nil {
+		t.Fatalf("read transport standing_order_id: %v", err)
+	}
+	if orphanedOrderID != nil {
+		t.Errorf("transport.standing_order_id after delete = %v, want NULL (ON DELETE SET NULL)", orphanedOrderID)
+	}
+}
+
+// R4 keryx/web semantic grind: List must name a route's bound ship, not just
+// let the client infer it exists.
+func TestStandingOrderAPI_ListNamesTheBoundShip(t *testing.T) {
+	f := setupStandingOrderFixture(t)
+	ctx := context.Background()
+	base := "/worlds/" + f.worldID.String() + "/standing-orders"
+
+	code, resp := f.do(t, http.MethodPost, base, map[string]any{
+		"from_settlement_id":      f.fromID,
+		"to_settlement_id":        f.toID,
+		"crewed_by_settlement_id": f.fromID,
+		"outbound":                []map[string]any{{"good_key": "grain", "threshold": 200}},
+	})
+	if code != http.StatusCreated {
+		t.Fatalf("Create = %d %v", code, resp)
+	}
+	orderID, _ := resp["id"].(string)
+	shipID := f.shipForOrder(t, f.fromID)
+	if _, err := f.pool.Exec(ctx, `UPDATE standing_orders SET ship_unit_id = $2 WHERE id = $1`, orderID, shipID); err != nil {
+		t.Fatalf("bind ship: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, base, nil)
+	req.Header.Set("Authorization", "Bearer "+f.accessToken)
+	rec := httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	var orders []map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &orders); err != nil {
+		t.Fatalf("unmarshal list: %v", err)
+	}
+	if len(orders) != 1 {
+		t.Fatalf("orders = %d, want 1", len(orders))
+	}
+	if orders[0]["ship_id"] != shipID.String() {
+		t.Errorf("ship_id = %v, want %s", orders[0]["ship_id"], shipID)
+	}
+	shipName, _ := orders[0]["ship_name"].(string)
+	if shipName == "" {
+		t.Error("ship_name is empty, want the ship's display name")
+	}
+}

@@ -9,6 +9,7 @@ import (
 
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -363,6 +364,19 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'delivered', updated_at = now() WHERE id = $1`, p.TransportID)
 	}
 
+	// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): a
+	// naval leg that bound a real ship is only half done — the ship still has
+	// to sail home before it's free again. Raw SQL, not transport.Dispatch:
+	// economy may not import the transport package (G1), same reason the
+	// ThenReturn leg above is built by hand. transport.ArrivalHandler (already
+	// registered for ScheduledTransportArrival, whoever inserted the row it
+	// fires for) does the actual release when this leg lands.
+	if p.TransportID != (uuid.UUID{}) {
+		if err := dispatchShipReturnLeg(ctx, tx, h.scheduler, e.WorldID, p.TransportID, p.DestinationID); err != nil {
+			slog.Error("dispatch ship return leg failed", "transport", p.TransportID, "err", err)
+		}
+	}
+
 	// Chain: if this was a silver leg, dispatch the goods return now — as its own
 	// physical caravan (leg 2), so the return trip is visible and interceptable too.
 	if len(p.ThenReturn) > 0 && h.scheduler != nil {
@@ -477,4 +491,58 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 
 	slog.Info("trade delivery", "destination", p.DestinationID, "good", p.GoodKey, "qty", delivered)
 	return nil
+}
+
+// dispatchShipReturnLeg is R3's hemresa: if the transport that just delivered
+// bound a real ship (ship_unit_id set — sjöhandel kräver skepp), that ship
+// still owes an empty voyage home before it's free again. No-ops silently
+// when the leg wasn't naval or bound no ship (every land caravan and every
+// pre-slice naval transport, R6). Best-effort: a failure here must never
+// block the delivery itself — the caller only logs it.
+func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID uuid.UUID, transportID, arrivedID uuid.UUID) error {
+	var shipUnitID *uuid.UUID
+	var homeID uuid.UUID
+	var ownerID uuid.UUID
+	var homeQ, homeR, arriveQ, arriveR int
+	if err := tx.QueryRow(ctx,
+		`SELECT ship_unit_id, origin_id, owner_id, origin_q, origin_r, dest_q, dest_r
+		 FROM transports WHERE id = $1`, transportID,
+	).Scan(&shipUnitID, &homeID, &ownerID, &homeQ, &homeR, &arriveQ, &arriveR); err != nil {
+		return fmt.Errorf("load outbound leg: %w", err)
+	}
+	if shipUnitID == nil {
+		return nil // land caravan, or a naval transport that never bound a ship (R6)
+	}
+
+	// Both origin_q/r and dest_q/r on the outbound leg are already the two
+	// shores' nearest-sea hexes (province.ResolveTradeRoute's own naval
+	// branch) — real sea hexes, valid FindPath endpoints as-is.
+	travelMins := 30.0
+	if path, _, ok, err := province.FindPath(ctx, tx, worldID,
+		province.MapPosition{Q: arriveQ, R: arriveR}, province.MapPosition{Q: homeQ, R: homeR}, "naval"); err == nil && ok {
+		travelMins = 30.0 + float64(len(path)-1)*2.0
+	}
+	travelTicks := int(math.Round(travelMins / 60))
+	if travelTicks < 1 {
+		travelTicks = 1
+	}
+	var currentTick int
+	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+
+	var returnID uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`INSERT INTO transports
+		   (world_id, owner_id, kind, origin_id, dest_id, category,
+		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick,
+		    interceptable, ship_unit_id)
+		 VALUES ($1,$2,'ship_return',$3,$4,'naval',$5,$6,$7,$8,
+		         now(), now() + make_interval(mins => $9), $10, true, $11)
+		 RETURNING id`,
+		worldID, ownerID, arrivedID, homeID,
+		arriveQ, arriveR, homeQ, homeR, travelMins, currentTick+travelTicks, *shipUnitID,
+	).Scan(&returnID); err != nil {
+		return fmt.Errorf("insert ship return leg: %w", err)
+	}
+	return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledTransportArrival,
+		map[string]any{"transport_id": returnID}, currentTick+travelTicks)
 }

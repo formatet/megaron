@@ -14,6 +14,8 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/transport"
+	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -162,6 +164,12 @@ type standingOrderOut struct {
 	PauseReason *string         `json:"pause_reason,omitempty"`
 	Outbound    []goodThreshold `json:"outbound"`
 	Return      []goodFloor     `json:"return"`
+	// ShipID/ShipName (megaron_plan_sjohandel_kraver_skepp.md R4) name the
+	// real galley/merchantman a naval route has locked to itself for the
+	// route's whole lifetime — nil for a land route, or a naval route that
+	// hasn't dispatched its first leg yet (no ship acquired until then).
+	ShipID   *uuid.UUID `json:"ship_id,omitempty"`
+	ShipName string     `json:"ship_name,omitempty"`
 }
 
 // List handles GET /worlds/:worldID/standing-orders — every route the
@@ -182,10 +190,12 @@ func (h *StandingOrderHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT so.id, so.from_settlement_id, sf.name, so.to_settlement_id, st.name,
-		        so.crewed_by_settlement_id, so.status, so.pause_reason
+		        so.crewed_by_settlement_id, so.status, so.pause_reason,
+		        so.ship_unit_id, u.name, u.type
 		 FROM standing_orders so
 		 JOIN settlements sf ON sf.id = so.from_settlement_id
 		 JOIN settlements st ON st.id = so.to_settlement_id
+		 LEFT JOIN units u ON u.id = so.ship_unit_id
 		 WHERE so.world_id = $1 AND so.owner_id = $2
 		 ORDER BY so.created_at`,
 		worldID, playerID,
@@ -197,11 +207,20 @@ func (h *StandingOrderHandler) List(w http.ResponseWriter, r *http.Request) {
 	var out []standingOrderOut
 	for rows.Next() {
 		var o standingOrderOut
+		var shipOwnName *string
+		var shipType *string
 		if err := rows.Scan(&o.ID, &o.FromID, &o.FromName, &o.ToID, &o.ToName,
-			&o.CrewedByID, &o.Status, &o.PauseReason); err != nil {
+			&o.CrewedByID, &o.Status, &o.PauseReason, &o.ShipID, &shipOwnName, &shipType); err != nil {
 			rows.Close()
 			writeError(w, http.StatusInternalServerError, "could not read standing order")
 			return
+		}
+		if o.ShipID != nil && shipType != nil {
+			own := ""
+			if shipOwnName != nil {
+				own = *shipOwnName
+			}
+			o.ShipName = unit.ShipDisplayName(*shipType, own, o.FromName).DisplayName
 		}
 		out = append(out, o)
 	}
@@ -313,6 +332,14 @@ func (h *StandingOrderHandler) setStatus(w http.ResponseWriter, r *http.Request,
 // Delete handles DELETE /worlds/:worldID/standing-orders/:orderID. A caravan
 // already in flight is untouched (transports.standing_order_id ON DELETE SET
 // NULL, migration 140) — it keeps flying as an ordinary untagged transfer.
+//
+// R4 (megaron_plan_sjohandel_kraver_skepp.md): if the route had bound a real
+// ship, this is the ONLY chance to act on it while the order row still
+// exists — once deleted, the sweep can never read it again. If the ship is
+// idle right now (no leg in flight), it's released immediately. If a leg IS
+// in flight, the ship stays bound; transport.ArrivalHandler releases it
+// wherever that orphaned leg lands (standing_order_id is now NULL — see that
+// handler's own comment).
 func (h *StandingOrderHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -333,8 +360,43 @@ func (h *StandingOrderHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, "not your standing order")
 		return
 	}
-	if _, err := h.pool.Exec(r.Context(), `DELETE FROM standing_orders WHERE id = $1`, orderID); err != nil {
+
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	var fromID uuid.UUID
+	var shipUnitID *uuid.UUID
+	if err := tx.QueryRow(r.Context(),
+		`SELECT from_settlement_id, ship_unit_id FROM standing_orders WHERE id = $1`, orderID,
+	).Scan(&fromID, &shipUnitID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load standing order")
+		return
+	}
+	if shipUnitID != nil {
+		var legStatus string
+		err := tx.QueryRow(r.Context(),
+			`SELECT status FROM transports WHERE standing_order_id = $1 ORDER BY created_at DESC LIMIT 1`,
+			orderID,
+		).Scan(&legStatus)
+		idle := err != nil || legStatus != "in_transit" // no leg at all, or the latest one already landed
+		if idle {
+			if err := transport.ReleaseShip(r.Context(), tx, *shipUnitID, fromID); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not release ship")
+				return
+			}
+		}
+	}
+
+	if _, err := tx.Exec(r.Context(), `DELETE FROM standing_orders WHERE id = $1`, orderID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not delete standing order")
+		return
+	}
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

@@ -280,6 +280,11 @@ type unitRow struct {
 	// or a pre-mig-126 unit may have it nil, in which case the distance is
 	// simply omitted rather than guessed.
 	OriginSettlementID *string `json:"origin_settlement_id"`
+	// FreightingNote (megaron_plan_sjohandel_kraver_skepp.md R2/R4) explains a
+	// status='freighting' ship: a single transfer's destination, or the
+	// standing sea route it's locked to. Server-formatted, same reason
+	// DisplayName is.
+	FreightingNote *string `json:"freighting_note"`
 }
 
 func formatSize(c *Client, u unitRow) string {
@@ -457,6 +462,14 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 			return "embarked on ship " + (*u.CarrierShipID)[:8] + "…"
 		}
 		return "embarked"
+	case "freighting":
+		// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md
+		// R2/R4): bound to a naval transfer or standing sea route — not
+		// deployable, not drawn on the map (the transport/route is).
+		if u.FreightingNote != nil && *u.FreightingNote != "" {
+			return *u.FreightingNote
+		}
+		return "freighting"
 	default:
 		if u.SettlementID != nil {
 			return "settlement " + (*u.SettlementID)[:8] + "…"

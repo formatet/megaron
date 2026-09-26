@@ -124,13 +124,14 @@ func settlementCoastalOrHarboured(ctx context.Context, tx pgx.Tx, settlementID u
 
 // standingOrderRow is one route as read by the sweep.
 type standingOrderRow struct {
-	id      uuid.UUID
-	worldID uuid.UUID
-	ownerID uuid.UUID
-	fromID  uuid.UUID
-	toID    uuid.UUID
-	crewID  uuid.UUID
-	status  string
+	id         uuid.UUID
+	worldID    uuid.UUID
+	ownerID    uuid.UUID
+	fromID     uuid.UUID
+	toID       uuid.UUID
+	crewID     uuid.UUID
+	status     string
+	shipUnitID *uuid.UUID
 }
 
 // legState is the most recent transports row dispatched for a standing order
@@ -176,7 +177,7 @@ func NewStandingOrderTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, cl
 // Handle processes one ScheduledStandingOrderTick event for a world.
 func (h *StandingOrderTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, world_id, owner_id, from_settlement_id, to_settlement_id, crewed_by_settlement_id, status
+		`SELECT id, world_id, owner_id, from_settlement_id, to_settlement_id, crewed_by_settlement_id, status, ship_unit_id
 		 FROM standing_orders WHERE world_id = $1`,
 		e.WorldID,
 	)
@@ -186,7 +187,7 @@ func (h *StandingOrderTickHandler) Handle(ctx context.Context, e events.Schedule
 	var orders []standingOrderRow
 	for rows.Next() {
 		var o standingOrderRow
-		if err := rows.Scan(&o.id, &o.worldID, &o.ownerID, &o.fromID, &o.toID, &o.crewID, &o.status); err == nil {
+		if err := rows.Scan(&o.id, &o.worldID, &o.ownerID, &o.fromID, &o.toID, &o.crewID, &o.status, &o.shipUnitID); err == nil {
 			orders = append(orders, o)
 		}
 	}
@@ -239,6 +240,19 @@ func (h *StandingOrderTickHandler) tickOrder(ctx context.Context, o standingOrde
 	}
 
 	if o.status != "active" {
+		// R4 (megaron_plan_sjohandel_kraver_skepp.md): reaching this point means
+		// no leg is in flight and the outbound-delivered-awaiting-return case
+		// above didn't fire either — a bound ship is therefore sitting idle
+		// right now. A paused/deleted-then-recreated-inactive route has no use
+		// for it: free it rather than leaving it locked to a route the Wanax
+		// isn't running. (Deletion itself is handled synchronously in
+		// api/handlers/standing_order.go — this branch only ever sees a route
+		// that still exists, i.e. a pause.)
+		if o.shipUnitID != nil {
+			if err := transport.ReleaseShip(ctx, tx, *o.shipUnitID, o.fromID); err != nil {
+				return fmt.Errorf("release idle route ship: %w", err)
+			}
+		}
 		return tx.Commit(ctx) // paused, idle, nothing in flight — leave it alone
 	}
 
@@ -314,6 +328,43 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("resolve trade route: %w", err)
 	}
+
+	// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R4): a
+	// standing sea route locks one real ship for the route's WHOLE lifetime
+	// (freighting even while docked between legs), not just for one leg — so
+	// resolve/acquire it here, once, on the outbound leg; the return leg
+	// (dispatchReturn) reuses whatever this saves on the order.
+	var shipID *uuid.UUID
+	var shipCapacity float64
+	if category == "naval" {
+		resolved, capacity, rerr := h.resolveRouteShip(ctx, tx, o)
+		if rerr != nil {
+			return fmt.Errorf("resolve route ship: %w", rerr)
+		}
+		if resolved != nil {
+			shipID, shipCapacity = resolved, capacity
+		} else {
+			// No usable ship — fall back to a real land route if one exists,
+			// exactly like the single-shot Trade handler (R3); pause with an
+			// actionable reason if there is genuinely no way to send this.
+			_, _, landOK, ferr := province.FindPath(ctx, tx, o.worldID,
+				province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR}, "land")
+			if ferr != nil {
+				return fmt.Errorf("resolve land fallback route: %w", ferr)
+			}
+			if !landOK {
+				var fromName string
+				_ = tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, o.fromID).Scan(&fromName)
+				return h.pauseOrder(ctx, tx, o, fmt.Sprintf(
+					"no free galley or merchantman in %s to carry goods by sea — build one at a shipyard or wait for one to return",
+					fromName))
+			}
+			category = "land"
+			dist = province.HexDistance(
+				province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR})
+		}
+	}
+
 	travelMins := 30.0 + float64(dist)*2.0 // same estimate api/handlers/province.go's Trade handler uses
 	travelTicks := int(math.Round(travelMins / 60))
 	if travelTicks < 1 {
@@ -345,22 +396,45 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		grainReserve += provisions
 	}
 
+	// Built in `needs` order (not shortfall's unordered map) so a capacity cap
+	// below is deterministic and keeps whatever priority the outbound-goods
+	// list already had — R4: "prioritet: behåll ordningen koden redan har."
 	manifest := transport.Manifest{}
-	for good, want := range shortfall {
-		available, err := settledStock(ctx, tx, o.fromID, good)
+	usedWeight := 0.0
+	capped := category == "naval" && shipID != nil
+	for _, n := range needs {
+		want, needed := shortfall[n.good]
+		if !needed {
+			continue
+		}
+		available, err := settledStock(ctx, tx, o.fromID, n.good)
 		if err != nil {
 			return err
 		}
 		reserve := 0.0
-		if good == economy.GoodGrain {
+		if n.good == economy.GoodGrain {
 			reserve = grainReserve
 		}
 		spendable := available - reserve
 		if spendable <= 0 {
 			continue
 		}
-		if send := math.Min(want, spendable); send > 0 {
-			manifest[good] = send
+		send := math.Min(want, spendable)
+		if capped {
+			weight, _, werr := economy.IsShippableGood(ctx, tx, n.good)
+			if werr == nil && weight > 0 {
+				remainingCap := shipCapacity - usedWeight
+				if remainingCap <= 0 {
+					continue
+				}
+				if maxQty := remainingCap / weight; send > maxQty {
+					send = maxQty
+				}
+				usedWeight += send * weight
+			}
+		}
+		if send > 0 {
+			manifest[n.good] = send
 		}
 	}
 
@@ -425,7 +499,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		OriginID: o.fromID, DestID: o.toID, Category: category,
 		OriginQ: fromQ, OriginR: fromR, DestQ: toQ, DestR: toR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
-		Manifest: manifest, Interceptable: true, StandingOrderID: &orderID,
+		Manifest: manifest, Interceptable: true, StandingOrderID: &orderID, ShipUnitID: shipID,
 	}); err != nil {
 		return fmt.Errorf("dispatch outbound leg: %w", err)
 	}
@@ -444,45 +518,102 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	return nil
 }
 
+// resolveRouteShip is R4's ship-reuse rule for a standing sea route: an
+// already-bound ship the order still owns is reused as-is (freighting — still
+// out serving this same route — or reverted to garrison in its home port,
+// e.g. after a crash mid-cycle); any other reference (captured, disbanded,
+// wrong owner, sitting somewhere else) is treated as stale and replaced by a
+// fresh free ship via transport.FindFreeShip (R1), saved onto the order so
+// every later leg reuses the SAME hull for the route's whole lifetime.
+// A nil ship with a nil error means no usable ship exists right now — the
+// caller falls back to land or pauses.
+func (h *StandingOrderTickHandler) resolveRouteShip(ctx context.Context, tx pgx.Tx, o standingOrderRow) (*uuid.UUID, float64, error) {
+	if o.shipUnitID != nil {
+		var ownerID uuid.UUID
+		var status, shipType string
+		var settlementID *uuid.UUID
+		err := tx.QueryRow(ctx,
+			`SELECT owner_id, status, settlement_id, type FROM units WHERE id = $1`, *o.shipUnitID,
+		).Scan(&ownerID, &status, &settlementID, &shipType)
+		reusable := err == nil && ownerID == o.ownerID &&
+			(status == "freighting" || (status == "garrison" && settlementID != nil && *settlementID == o.fromID))
+		if reusable {
+			if status == "garrison" {
+				if err := transport.BindShip(ctx, tx, *o.shipUnitID); err != nil {
+					return nil, 0, err
+				}
+			}
+			capacity, _ := transport.ShipCapacityFor(shipType)
+			return o.shipUnitID, capacity, nil
+		}
+		// Stale/invalid reference — fall through to acquiring a fresh one.
+	}
+
+	ship, found, err := transport.FindFreeShip(ctx, tx, o.worldID, o.ownerID, o.fromID)
+	if err != nil {
+		return nil, 0, err
+	}
+	if !found {
+		return nil, 0, nil
+	}
+	if err := transport.BindShip(ctx, tx, ship.ID); err != nil {
+		return nil, 0, err
+	}
+	if _, err := tx.Exec(ctx,
+		`UPDATE standing_orders SET ship_unit_id = $2 WHERE id = $1`, o.id, ship.ID,
+	); err != nil {
+		return nil, 0, err
+	}
+	id := ship.ID
+	return &id, ship.Capacity, nil
+}
+
 // dispatchReturn runs once the outbound leg has landed: it loads home
 // whatever surplus the destination can spare above each return good's floor
 // (possibly nothing — an empty caravan going home is quiet and normal,
 // plan §4c) and sends the SAME gubbe back the way it came.
 func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx, o standingOrderRow) error {
-	floorRows, err := tx.Query(ctx,
-		`SELECT good_key, floor FROM standing_order_return_goods WHERE standing_order_id = $1`, o.id)
-	if err != nil {
-		return fmt.Errorf("load return goods: %w", err)
-	}
-	type floor struct {
-		good string
-		min  float64
-	}
-	var floors []floor
-	for floorRows.Next() {
-		var f floor
-		if scanErr := floorRows.Scan(&f.good, &f.min); scanErr == nil {
-			floors = append(floors, f)
-		}
-	}
-	floorRows.Close()
-	if err := floorRows.Err(); err != nil {
-		return err
-	}
-
 	returnManifest := transport.Manifest{}
-	for _, f := range floors {
-		stock, err := settledStock(ctx, tx, o.toID, f.good)
+
+	// R4 (megaron_plan_sjohandel_kraver_skepp.md): a paused/shut-down route's
+	// ship "seglar hem tomt" — it sails home empty rather than still running
+	// the normal floor-based return logistics, since the route isn't serving
+	// the destination's stock levels any more once the Wanax has stopped it.
+	if o.status == "active" {
+		floorRows, err := tx.Query(ctx,
+			`SELECT good_key, floor FROM standing_order_return_goods WHERE standing_order_id = $1`, o.id)
 		if err != nil {
+			return fmt.Errorf("load return goods: %w", err)
+		}
+		type floor struct {
+			good string
+			min  float64
+		}
+		var floors []floor
+		for floorRows.Next() {
+			var f floor
+			if scanErr := floorRows.Scan(&f.good, &f.min); scanErr == nil {
+				floors = append(floors, f)
+			}
+		}
+		floorRows.Close()
+		if err := floorRows.Err(); err != nil {
 			return err
 		}
-		if send := stock - f.min; send > 0 {
-			returnManifest[f.good] = send
+
+		for _, f := range floors {
+			stock, err := settledStock(ctx, tx, o.toID, f.good)
+			if err != nil {
+				return err
+			}
+			if send := stock - f.min; send > 0 {
+				returnManifest[f.good] = send
+			}
 		}
-	}
-	for good, qty := range returnManifest {
-		if err := deductGood(ctx, tx, o.toID, good, qty); err != nil {
-			return fmt.Errorf("deduct %s for return leg: %w", good, err)
+		for good, qty := range returnManifest {
+			if err := deductGood(ctx, tx, o.toID, good, qty); err != nil {
+				return fmt.Errorf("deduct %s for return leg: %w", good, err)
+			}
 		}
 	}
 
@@ -529,7 +660,7 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 		OriginID: o.toID, DestID: o.fromID, Category: category,
 		OriginQ: toQ, OriginR: toR, DestQ: fromQ, DestR: fromR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
-		Manifest: returnManifest, Interceptable: true, StandingOrderID: &orderID,
+		Manifest: returnManifest, Interceptable: true, StandingOrderID: &orderID, ShipUnitID: o.shipUnitID,
 	}); err != nil {
 		return fmt.Errorf("dispatch return leg: %w", err)
 	}

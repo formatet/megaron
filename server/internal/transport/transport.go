@@ -51,6 +51,13 @@ type DispatchParams struct {
 	// find "is a caravan already in flight for this route" without a second
 	// table; nothing else in the package reads or writes it.
 	StandingOrderID *uuid.UUID
+	// ShipUnitID (megaron_plan_sjohandel_kraver_skepp.md R2) is the real
+	// galley/merchantman bound to this naval mover — nil for every land
+	// caravan and for a naval transport predating this slice (R6). Read back
+	// by InterceptScanHandler.seize (R5, which ship is at risk) and by
+	// ArrivalHandler (R3/R5-limped: kind "ship_return"/"damaged_return" and a
+	// non-nil ShipUnitID means "release this ship on arrival").
+	ShipUnitID *uuid.UUID
 }
 
 // Dispatch inserts a transport mover and its goods manifest, then schedules the
@@ -82,12 +89,12 @@ func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, err
 		`INSERT INTO transports
 		   (world_id, owner_id, kind, origin_id, dest_id, category,
 		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable,
-		    standing_order_id)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+		    standing_order_id, ship_unit_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
 		 RETURNING id`,
 		p.WorldID, p.OwnerID, p.Kind, p.OriginID, p.DestID, p.Category,
 		p.OriginQ, p.OriginR, p.DestQ, p.DestR, p.DepartsAt, p.ArrivesAt, p.DueTick, p.Interceptable,
-		p.StandingOrderID,
+		p.StandingOrderID, p.ShipUnitID,
 	).Scan(&id); err != nil {
 		return uuid.Nil, fmt.Errorf("insert transport: %w", err)
 	}
