@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -11,12 +12,14 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/capabilities"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
+	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -77,6 +80,30 @@ func (h *MessengerHandler) tradeableGood(ctx context.Context, key string) (strin
 		}
 	}
 	return fmt.Sprintf("unknown good %q — valid goods are: %s", key, strings.Join(valid, ", ")), false
+}
+
+// heaviestTradeLeg returns the weight (Σ quantity × good weight) of whichever
+// of a trade offer's two legs is heavier — the leg a sea-going ship actually
+// has to carry (R2/R3, megaron_plan_sjohandel_mellan_spelare.md): both legs
+// share the same hull on its round trip, so only the bigger of the two can
+// ever be the binding capacity constraint.
+func heaviestTradeLeg(ctx context.Context, pool *pgxpool.Pool, kind, offerGood string, offerQty, offerSilver float64, wantGood string, wantQty, wantSilver float64) (float64, error) {
+	silverWeight, _, err := economy.IsShippableGood(ctx, pool, "silver")
+	if err != nil {
+		return 0, err
+	}
+	if kind == "sell" {
+		goodWeight, _, err := economy.IsShippableGood(ctx, pool, offerGood)
+		if err != nil {
+			return 0, err
+		}
+		return math.Max(goodWeight*offerQty, silverWeight*wantSilver), nil
+	}
+	goodWeight, _, err := economy.IsShippableGood(ctx, pool, wantGood)
+	if err != nil {
+		return 0, err
+	}
+	return math.Max(silverWeight*offerSilver, goodWeight*wantQty), nil
 }
 
 // Send handles POST /worlds/:worldID/settlements/:settlementID/messengers.
@@ -176,10 +203,11 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 
 	// Verify caller owns the origin settlement.
 	var ownerID *uuid.UUID
+	var originName string
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT owner_id FROM settlements WHERE id = $1 AND world_id = $2`,
+		`SELECT owner_id, name FROM settlements WHERE id = $1 AND world_id = $2`,
 		originID, worldID,
-	).Scan(&ownerID)
+	).Scan(&ownerID, &originName)
 	if err != nil || ownerID == nil || *ownerID != playerID {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
@@ -245,22 +273,24 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 
 	// Look up province hex coords for distance calculation.
 	var oQ, oR int
+	var originCoastal bool
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT p.map_q, p.map_r FROM provinces p
+		`SELECT p.map_q, p.map_r, COALESCE(p.coastal, false) FROM provinces p
 		 JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
 		originID,
-	).Scan(&oQ, &oR)
+	).Scan(&oQ, &oR, &originCoastal)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not find origin province")
 		return
 	}
 
 	var dQ, dR int
+	var destCoastal bool
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT p.map_q, p.map_r FROM provinces p
+		`SELECT p.map_q, p.map_r, COALESCE(p.coastal, false) FROM provinces p
 		 JOIN settlements s ON s.province_id = p.id WHERE s.id = $1 AND s.world_id = $2`,
 		destID, worldID,
-	).Scan(&dQ, &dR)
+	).Scan(&dQ, &dR, &destCoastal)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "destination settlement not found in this world")
 		return
@@ -281,6 +311,76 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "settlements are on the same province")
 		return
 	}
+
+	// R1/R2 (megaron_plan_sjohandel_mellan_spelare.md): a trade offer between
+	// two coastal/harboured cities goes to sea on the INITIATOR's own ship —
+	// checked here but never bound (R2: the ship might be needed for
+	// something else before the counterparty answers, and binding happens at
+	// accept instead, R3). A Wanax with no ship and no land route learns
+	// immediately, rather than after the messenger has already walked there
+	// and the counterparty's accept fails instead.
+	if req.TradeOffer != nil {
+		originHarboured, herr := settlementHasHarbour(r.Context(), h.pool, originID)
+		if herr != nil {
+			writeError(w, http.StatusInternalServerError, "could not check origin harbour")
+			return
+		}
+		destHarboured, herr := settlementHasHarbour(r.Context(), h.pool, destID)
+		if herr != nil {
+			writeError(w, http.StatusInternalServerError, "could not check destination harbour")
+			return
+		}
+		category, _, rerr := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+			originCoastal || originHarboured, destCoastal || destHarboured,
+			province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+		if rerr != nil {
+			writeError(w, http.StatusInternalServerError, "could not resolve trade route")
+			return
+		}
+		if category == "naval" {
+			heaviest, wErr := heaviestTradeLeg(r.Context(), h.pool, req.TradeOffer.Kind,
+				req.TradeOffer.OfferGood, req.TradeOffer.OfferQty, req.TradeOffer.OfferSilver,
+				req.TradeOffer.WantGood, req.TradeOffer.WantQty, req.TradeOffer.WantSilver)
+			if wErr != nil {
+				writeError(w, http.StatusInternalServerError, "could not weigh trade manifest")
+				return
+			}
+
+			checkTx, terr := h.pool.Begin(r.Context())
+			if terr != nil {
+				writeError(w, http.StatusInternalServerError, "transaction error")
+				return
+			}
+			ship, found, ferr := transport.FindFreeShip(r.Context(), checkTx, worldID, playerID, originID)
+			// R2: never bind at send time — release the row lock immediately,
+			// win or lose. Binding happens only at accept (R3).
+			_ = checkTx.Rollback(r.Context())
+			if ferr != nil {
+				writeError(w, http.StatusInternalServerError, "could not look for a free ship")
+				return
+			}
+			if !found {
+				_, _, landOK, lerr := province.FindPath(r.Context(), h.pool, worldID,
+					province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, "land")
+				if lerr != nil {
+					writeError(w, http.StatusInternalServerError, "could not resolve a land fallback route")
+					return
+				}
+				if !landOK {
+					writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
+						"you have no free galley or merchantman in %s to carry this trade by sea — build one at a shipyard or wait for one to return",
+						originName))
+					return
+				}
+			} else if heaviest > ship.Capacity {
+				writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
+					"%s's cargo capacity is %.0f, this trade's heaviest leg weighs %.0f — offer a smaller quantity",
+					unit.DisplayName(ship.Type), ship.Capacity, heaviest))
+				return
+			}
+		}
+	}
+
 	// Runner travel: path-based over the courier graph (land at 2×
 	// spearman speed, sea legs by boat) — temenos_orderlopare_plan.md Fas 4.
 	msgTravelTicks, msgTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
