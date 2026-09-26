@@ -15,6 +15,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/transport"
+	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -163,6 +164,12 @@ type standingOrderOut struct {
 	PauseReason *string         `json:"pause_reason,omitempty"`
 	Outbound    []goodThreshold `json:"outbound"`
 	Return      []goodFloor     `json:"return"`
+	// ShipID/ShipName (megaron_plan_sjohandel_kraver_skepp.md R4) name the
+	// real galley/merchantman a naval route has locked to itself for the
+	// route's whole lifetime — nil for a land route, or a naval route that
+	// hasn't dispatched its first leg yet (no ship acquired until then).
+	ShipID   *uuid.UUID `json:"ship_id,omitempty"`
+	ShipName string     `json:"ship_name,omitempty"`
 }
 
 // List handles GET /worlds/:worldID/standing-orders — every route the
@@ -183,10 +190,12 @@ func (h *StandingOrderHandler) List(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT so.id, so.from_settlement_id, sf.name, so.to_settlement_id, st.name,
-		        so.crewed_by_settlement_id, so.status, so.pause_reason
+		        so.crewed_by_settlement_id, so.status, so.pause_reason,
+		        so.ship_unit_id, u.name, u.type
 		 FROM standing_orders so
 		 JOIN settlements sf ON sf.id = so.from_settlement_id
 		 JOIN settlements st ON st.id = so.to_settlement_id
+		 LEFT JOIN units u ON u.id = so.ship_unit_id
 		 WHERE so.world_id = $1 AND so.owner_id = $2
 		 ORDER BY so.created_at`,
 		worldID, playerID,
@@ -198,11 +207,20 @@ func (h *StandingOrderHandler) List(w http.ResponseWriter, r *http.Request) {
 	var out []standingOrderOut
 	for rows.Next() {
 		var o standingOrderOut
+		var shipOwnName *string
+		var shipType *string
 		if err := rows.Scan(&o.ID, &o.FromID, &o.FromName, &o.ToID, &o.ToName,
-			&o.CrewedByID, &o.Status, &o.PauseReason); err != nil {
+			&o.CrewedByID, &o.Status, &o.PauseReason, &o.ShipID, &shipOwnName, &shipType); err != nil {
 			rows.Close()
 			writeError(w, http.StatusInternalServerError, "could not read standing order")
 			return
+		}
+		if o.ShipID != nil && shipType != nil {
+			own := ""
+			if shipOwnName != nil {
+				own = *shipOwnName
+			}
+			o.ShipName = unit.ShipDisplayName(*shipType, own, o.FromName).DisplayName
 		}
 		out = append(out, o)
 	}

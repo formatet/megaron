@@ -3123,6 +3123,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// held through to commit) so two concurrent transfers can never bind the
 	// same ship.
 	var shipID *uuid.UUID
+	var shipName string
 	if category == "naval" {
 		ship, found, ferr := transport.FindFreeShip(r.Context(), tx, worldID, playerID, originID)
 		if ferr != nil {
@@ -3142,6 +3143,11 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			}
 			sid := ship.ID
 			shipID = &sid
+			shipOwnName := ""
+			if ship.Name != nil {
+				shipOwnName = *ship.Name
+			}
+			shipName = unit.ShipDisplayName(ship.Type, shipOwnName, originName).DisplayName
 		} else {
 			// No free galley/merchantman — fall back to a real land route if
 			// one actually exists (a resolved-naval pair may have NO land
@@ -3256,13 +3262,19 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{
+	resp := map[string]any{
 		"route_id":      routeID,
 		"arrives_at":    arrivesAt,
 		"distance":      dist,
 		"travel_min":    travelMins,
 		"delivered_qty": req.Quantity,
-	})
+		"category":      category,
+	}
+	if shipID != nil {
+		resp["ship_id"] = *shipID
+		resp["ship_name"] = shipName
+	}
+	writeJSON(w, http.StatusCreated, resp)
 }
 
 // Marches handles GET /worlds/:worldID/provinces/:provinceID/marches.

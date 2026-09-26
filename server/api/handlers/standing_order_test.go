@@ -382,3 +382,45 @@ func TestStandingOrderAPI_DeleteLeavesInFlightShipBound(t *testing.T) {
 		t.Errorf("transport.standing_order_id after delete = %v, want NULL (ON DELETE SET NULL)", orphanedOrderID)
 	}
 }
+
+// R4 keryx/web semantic grind: List must name a route's bound ship, not just
+// let the client infer it exists.
+func TestStandingOrderAPI_ListNamesTheBoundShip(t *testing.T) {
+	f := setupStandingOrderFixture(t)
+	ctx := context.Background()
+	base := "/worlds/" + f.worldID.String() + "/standing-orders"
+
+	code, resp := f.do(t, http.MethodPost, base, map[string]any{
+		"from_settlement_id":      f.fromID,
+		"to_settlement_id":        f.toID,
+		"crewed_by_settlement_id": f.fromID,
+		"outbound":                []map[string]any{{"good_key": "grain", "threshold": 200}},
+	})
+	if code != http.StatusCreated {
+		t.Fatalf("Create = %d %v", code, resp)
+	}
+	orderID, _ := resp["id"].(string)
+	shipID := f.shipForOrder(t, f.fromID)
+	if _, err := f.pool.Exec(ctx, `UPDATE standing_orders SET ship_unit_id = $2 WHERE id = $1`, orderID, shipID); err != nil {
+		t.Fatalf("bind ship: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, base, nil)
+	req.Header.Set("Authorization", "Bearer "+f.accessToken)
+	rec := httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	var orders []map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &orders); err != nil {
+		t.Fatalf("unmarshal list: %v", err)
+	}
+	if len(orders) != 1 {
+		t.Fatalf("orders = %d, want 1", len(orders))
+	}
+	if orders[0]["ship_id"] != shipID.String() {
+		t.Errorf("ship_id = %v, want %s", orders[0]["ship_id"], shipID)
+	}
+	shipName, _ := orders[0]["ship_name"].(string)
+	if shipName == "" {
+		t.Error("ship_name is empty, want the ship's display name")
+	}
+}

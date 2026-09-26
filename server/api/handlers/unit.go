@@ -1555,6 +1555,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 		settlementNames(r.Context(), h.pool, worldID, playerID), wanax)
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
+	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
@@ -1708,6 +1709,13 @@ type unitSummary struct {
 	// can take. Clients show that control only then; outside battle the
 	// realm-wide retreat default (GET/PUT …/retreat-default) is what applies.
 	InBattle bool `json:"in_battle"`
+	// FreightingNote (megaron_plan_sjohandel_kraver_skepp.md R2/R4) explains
+	// what a status='freighting' ship is doing — a single naval transfer's
+	// destination, or which standing sea route it's locked to — nil for every
+	// other status. Server-formatted for the same reason DisplayName is: a
+	// client should never have to reconstruct this from transport/route rows
+	// itself.
+	FreightingNote *string `json:"freighting_note,omitempty"`
 }
 
 // attachBattleFlags sets InBattle for every unit that is currently an active
@@ -1731,6 +1739,66 @@ func attachBattleFlags(ctx context.Context, db province.Queryer, worldID, ownerI
 	}
 	for i := range summaries {
 		summaries[i].InBattle = fighting[summaries[i].ID]
+	}
+}
+
+// attachFreightingNotes (megaron_plan_sjohandel_kraver_skepp.md R2/R4) fills
+// FreightingNote for every status='freighting' ship. A currently in-transit
+// leg (the ship is actually moving right now) wins over a standing route's
+// own note (the ship might be docked between legs, still locked to the
+// route) — the more specific, currently-true fact is always preferred.
+func attachFreightingNotes(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, summaries []unitSummary) {
+	freighting := map[uuid.UUID]int{} // unit id -> index into summaries
+	for i, s := range summaries {
+		if s.Status == "freighting" {
+			freighting[s.ID] = i
+		}
+	}
+	if len(freighting) == 0 {
+		return
+	}
+
+	notes := make(map[uuid.UUID]string, len(freighting))
+
+	if rows, err := db.Query(ctx,
+		`SELECT t.ship_unit_id, s.name FROM transports t JOIN settlements s ON s.id = t.dest_id
+		 WHERE t.world_id = $1 AND t.owner_id = $2 AND t.status = 'in_transit' AND t.ship_unit_id IS NOT NULL`,
+		worldID, ownerID,
+	); err == nil {
+		for rows.Next() {
+			var shipID uuid.UUID
+			var destName string
+			if rows.Scan(&shipID, &destName) == nil {
+				notes[shipID] = "carrying goods to " + destName
+			}
+		}
+		rows.Close()
+	}
+
+	if rows, err := db.Query(ctx,
+		`SELECT so.ship_unit_id, sf.name, st.name FROM standing_orders so
+		 JOIN settlements sf ON sf.id = so.from_settlement_id
+		 JOIN settlements st ON st.id = so.to_settlement_id
+		 WHERE so.world_id = $1 AND so.owner_id = $2 AND so.ship_unit_id IS NOT NULL`,
+		worldID, ownerID,
+	); err == nil {
+		for rows.Next() {
+			var shipID uuid.UUID
+			var fromName, toName string
+			if rows.Scan(&shipID, &fromName, &toName) == nil {
+				if _, alreadyNoted := notes[shipID]; !alreadyNoted {
+					notes[shipID] = "on standing route " + fromName + " → " + toName
+				}
+			}
+		}
+		rows.Close()
+	}
+
+	for shipID, note := range notes {
+		if i, ok := freighting[shipID]; ok {
+			n := note
+			summaries[i].FreightingNote = &n
+		}
 	}
 }
 

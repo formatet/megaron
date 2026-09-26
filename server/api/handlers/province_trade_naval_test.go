@@ -233,6 +233,15 @@ func TestTrade_TwoCoastalSettlementsWithSeaRouteGoNaval(t *testing.T) {
 	if status != "freighting" {
 		t.Errorf("ship status = %q, want freighting", status)
 	}
+
+	// keryx/web semantic grind: the API response must name the ship, not just
+	// say "naval" — a Wanax has no way to look this up otherwise.
+	if respShipID, _ := resp["ship_id"].(string); respShipID != shipID.String() {
+		t.Errorf("response ship_id = %v, want %s", resp["ship_id"], shipID)
+	}
+	if shipName, _ := resp["ship_name"].(string); shipName == "" {
+		t.Error("response ship_name is empty, want the ship's display name")
+	}
 }
 
 // TestTrade_NoFreeShipFallsBackToLandWhenPossible and
