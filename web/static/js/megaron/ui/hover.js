@@ -11,17 +11,6 @@
 // megaron_plan_karavanbeslag.md).
 import { actorName, unitTypeLabel } from './actornames.js';
 
-// compassFromPixels: 8-point compass for a step of (dx, dy) SCREEN pixels
-// (y grows downward) — the direction the player sees the walker go, which is
-// what the tooltip must say. '' for no movement.
-const COMPASS = ['east', 'north-east', 'north', 'north-west', 'west', 'south-west', 'south', 'south-east'];
-export function compassFromPixels(dx, dy) {
-  if (dx === 0 && dy === 0) return '';
-  let angle = Math.atan2(-dy, dx);
-  if (angle < 0) angle += 2 * Math.PI;
-  return COMPASS[Math.round(angle / (Math.PI / 4)) % 8];
-}
-
 function route(placeName, oq, or, dq, dr) {
   return `from ${placeName(oq, or)} to ${placeName(dq, dr)}`;
 }
@@ -34,7 +23,7 @@ function cargo(t) {
 // own units · foreign units · caravans · runners.
 //   own       — own units (GET /units) standing here
 //   foreign   — foreign units (GET /foreign-units) standing here; a marching
-//               one carries .heading (compassFromPixels of its current step)
+//               one carries the server's .heading (province.ReadMarch)
 //   caravans  — trade markers (GET /trades) here
 //   runners   — messenger markers (GET /messengers) here
 //   placeName — (q, r) → the settlement's name, or "(q,r)"

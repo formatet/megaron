@@ -98,3 +98,9 @@ test('SX-M3: everything else — including BattleWon/BattleLost, which keep only
   assert.equal(musicCueFor('UnitArrived', {}), null);
   assert.equal(musicCueFor(undefined, {}), null);
 });
+
+test('SX-M1b: the V2 sighting routes to war only when it seems bound for your lands', async () => {
+  const { musicCueFor } = await import('./sfx.js');
+  assert.equal(musicCueFor('ForeignMarchSightedV2', { threatens_settlement_id: 's1', heading: 'north' }), 'war');
+  assert.equal(musicCueFor('ForeignMarchSightedV2', { heading: 'north' }), null);
+});

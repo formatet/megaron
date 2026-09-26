@@ -207,7 +207,7 @@ export function playForKind(kind) {
 // rebuild at login.
 export function musicCueFor(kind, payload) {
   const p = payload || {};
-  if (kind === 'ForeignMarchSighted') {
+  if (kind === 'ForeignMarchSighted' || kind === 'ForeignMarchSightedV2') {
     // threatens_settlement_id is only set when the march targets one of the
     // player's own settlements (combat/march_sighting.go) — a march sighted
     // elsewhere on the map is not this player's war.

@@ -30,14 +30,23 @@ export function warMovements({ units = [], foreign = [], marches = [], provinces
       arrives_at: u.arrives_at,
     }));
 
+  // A foreign march never discloses its target (Timothy 2026-09-26, "likrikta
+  // det"): the server says only which of YOUR cities' lands it seems bound for
+  // (u.toward) and when it would get there IF that is its goal — so these rows
+  // carry ifBound, and the arrival is an estimate, never a fact.
   const incoming = foreign
-    .filter(u => u.status === 'marching' && u.target_q != null && isOwn(u.target_q, u.target_r))
-    .map(u => ({
-      title: unitTypeLabel(u.type) + ' (' + u.size + ') of ' + u.owner,
-      target_q: u.target_q, target_r: u.target_r,
-      origin_q: u.q, origin_r: u.r,
-      arrives_at: u.arrives_at,
-    }));
+    .filter(u => u.status === 'marching' && u.toward)
+    .map(u => {
+      const city = provinces.find(p => p.settlement_id === u.toward.settlement_id);
+      return {
+        title: unitTypeLabel(u.type) + ' (' + u.size + ') of ' + u.owner,
+        target_q: city ? city.q : null, target_r: city ? city.r : null,
+        origin_q: u.q, origin_r: u.r,
+        arrives_at: u.toward.eta_at,
+        ifBound: true,
+      };
+    })
+    .filter(m => m.target_q != null);
 
   for (const m of marches) {
     const row = {

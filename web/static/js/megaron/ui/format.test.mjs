@@ -422,6 +422,18 @@ test('caravan seizure notices name the cargo when the payload carries it', () =>
   assert.equal(notifText('CaravanRaided', { q: 7, r: 0 }), 'Your caravan was raided at (7, 0)');
 });
 
+test('ForeignMarchSightedV2 says which way — never where — and an arrival only if bound for you', () => {
+  assert.equal(
+    notifText('ForeignMarchSightedV2', { owner: 'Minos', unit_type: 'spearman', size: 100, q: 15, r: 0, heading: 'south-east' }),
+    "Minos's spearman (100) sighted at (15,0), heading south-east",
+  );
+  assert.equal(
+    notifText('ForeignMarchSightedV2', { owner: 'Minos', unit_type: 'spearman', size: 100, q: 15, r: 0, heading: 'south-east',
+      threatens_name: 'Mycenae', eta_if_tick: 3017 }),
+    "Minos's spearman (100) is heading for Mycenae's lands — there by tick 3017 if that is its goal",
+  );
+});
+
 test('OrderFailed never shows the raw server verb key', () => {
   assert.equal(
     notifText('OrderFailed', { verb: 'stance_pursuit', reason: 'the target is gone' }),

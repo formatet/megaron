@@ -91,7 +91,7 @@ export function notifDomain(kind) {
   const domains = {
     // War — units, battles, sieges, orders in the field, who holds what.
     ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
-    ForeignMarchSighted: 'war', SentryAlerted: 'war', ScoutReport: 'war',
+    ForeignMarchSighted: 'war', ForeignMarchSightedV2: 'war', SentryAlerted: 'war', ScoutReport: 'war',
     UnitArrived: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war',
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
@@ -140,6 +140,7 @@ export function notifIcon(kind) {
     UnitDeserted:       '🏃',
     UpkeepUnpaid:       '⚠',
     ForeignMarchSighted: '🛡',
+    ForeignMarchSightedV2: '🛡',
     SubsistenceWarning: '🌾',
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
@@ -316,6 +317,20 @@ export function notifText(kind, body) {
         return `${owner} ${force}${size} is marching on ${body.threatens_name}${lands}`;
       }
       return `${owner} ${force}${size} sighted marching to (${body.target_q},${body.target_r})${lands}`;
+    }
+    case 'ForeignMarchSightedV2': {
+      // Since 2026-09-26 (Timothy, "likrikta det"): WHO and WHICH WAY — never
+      // where it is going. Toward your lands it names the city and when it
+      // would get there IF that is its goal (combat/march_sighting.go V2).
+      const owner = body.owner ? `${body.owner}'s` : 'An unknown';
+      const force = body.unit_type || 'force';
+      const size = body.size ? ` (${body.size})` : '';
+      const heading = body.heading ? `, heading ${body.heading}` : '';
+      if (body.threatens_name) {
+        const when = body.eta_if_tick != null ? ` — there by tick ${body.eta_if_tick} if that is its goal` : '';
+        return `${owner} ${force}${size} is heading for ${body.threatens_name}'s lands${when}`;
+      }
+      return `${owner} ${force}${size} sighted at (${body.q},${body.r})${heading}`;
     }
     case 'SubsistenceWarning': {
       // Payload per kharis.emitSubsistenceWarning: name, tier, net_per_tick,

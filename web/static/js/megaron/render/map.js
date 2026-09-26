@@ -13,7 +13,7 @@ import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actors
 import { eyeSees } from './sight.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
-import { unitHoverLines, compassFromPixels } from '../ui/hover.js';
+import { unitHoverLines } from '../ui/hover.js';
 import { incomingTargetKeys } from '../ui/movements.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -363,24 +363,6 @@ function unitHexNow(u) {
     return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: u.q, r: u.r};
   }
   return u.q != null ? {q: u.q, r: u.r} : null;
-}
-
-// unitHeadingNow: the compass way a marching unit's walker is moving right
-// now — the current step of the same route unitHexNow interpolates along.
-// Not its destination: round a mountain, the heading bends away from it.
-function unitHeadingNow(u) {
-  if (u.status !== 'marching' || !u.departs_at || !u.arrives_at || u.q == null || u.target_q == null) return '';
-  const departs = new Date(u.departs_at).getTime();
-  const arrives = new Date(u.arrives_at).getTime();
-  const progress = Math.min(1, Math.max(0, (serverNow() - departs) / (arrives - departs)));
-  const steps = (u.path && u.path.length > 1)
-    ? u.path.map(([q, r]) => ({q, r}))
-    : getHexPath(u.q, u.r, u.target_q, u.target_r);
-  if (steps.length < 2) return '';
-  const i = Math.min(steps.length - 2, Math.floor(progress * (steps.length - 1)));
-  const a = hexPx(steps[i].q, steps[i].r);
-  const b = hexPx(steps[i + 1].q, steps[i + 1].r);
-  return compassFromPixels(b.x - a.x, b.y - a.y);
 }
 
 // legHexNow: the hex a caravan or runner walker is drawn on right now —
@@ -3677,18 +3659,10 @@ export function render() {
   for (const u of State.foreignUnitData) {
     const naval = u.category === 'naval';
     const kind = canonicalUnitType(u.type) || (naval ? 'galley' : 'spearman');
-    if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
-      const now = serverNow();
-      const departs = new Date(u.departs_at).getTime();
-      const arrives = new Date(u.arrives_at).getTime();
-      const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
-      const pos = (u.path && u.path.length > 1)
-        ? pathPx(u.path, progress)
-        : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
-      if (isTileLive(pos.q, pos.r)) {
-        drawActor(ctx, kind, pos.x, pos.y, '', walkPhase, FOREIGN_ACCENT, foreignOutline);
-      }
-    } else if (u.status === 'positioned' && u.q != null && isTileLive(u.q, u.r)) {
+    // A foreign march no longer discloses its route (Timothy 2026-09-26,
+    // "likrikta det"): the server sends only the hex it stands on now, so the
+    // walker is drawn there — walking in place — and steps on at each refetch.
+    if ((u.status === 'marching' || u.status === 'positioned') && u.q != null && isTileLive(u.q, u.r)) {
       const {x, y} = hexPx(u.q, u.r);
       drawActor(ctx, kind, x, y, '', walkPhase, FOREIGN_ACCENT, foreignOutline);
     }
@@ -4418,8 +4392,7 @@ export function initMap() {
       // units only on live tiles, caravans and runners along their leg.
       const here = at => at && at.q === h.q && at.r === h.r;
       const foreign = (State.foreignUnitData || []).filter(u =>
-        (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r))
-        .map(u => Object.assign({}, u, { heading: unitHeadingNow(u) }));
+        (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r));
       const caravans = (State.tradeData || []).filter(t =>
         here(legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at)));
       const runners = (State.messengerData || []).filter(m =>
