@@ -702,9 +702,11 @@ func (h *MessengerHandler) ListFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at
+		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at,
+		        m.passage_status, pps.name, m.carrier_name
 		 FROM messengers m
 		 LEFT JOIN settlements s ON s.id = m.destination_id
+		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.origin_unit_id IS NOT NULL
 		 ORDER BY m.sent_at DESC LIMIT 20`,
 		worldID, playerID,
@@ -716,20 +718,23 @@ func (h *MessengerHandler) ListFromHost(w http.ResponseWriter, r *http.Request) 
 	defer rows.Close()
 
 	type item struct {
-		ID        uuid.UUID  `json:"id"`
-		DestID    *uuid.UUID `json:"destination_id"`
-		DestName  string     `json:"destination_name"`
-		Message   string     `json:"message_text"`
-		Status    string     `json:"status"`
-		ReplyText *string    `json:"reply_text"`
-		SentAt    time.Time  `json:"sent_at"`
-		ArrivesAt time.Time  `json:"arrives_at"`
+		ID            uuid.UUID  `json:"id"`
+		DestID        *uuid.UUID `json:"destination_id"`
+		DestName      string     `json:"destination_name"`
+		Message       string     `json:"message_text"`
+		Status        string     `json:"status"`
+		ReplyText     *string    `json:"reply_text"`
+		SentAt        time.Time  `json:"sent_at"`
+		ArrivesAt     time.Time  `json:"arrives_at"`
+		PassageStatus *string    `json:"passage_status,omitempty"`
+		PassagePort   *string    `json:"passage_port,omitempty"`
+		CarrierName   *string    `json:"carrier_name,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
-			&m.SentAt, &m.ArrivesAt); err == nil {
+			&m.SentAt, &m.ArrivesAt, &m.PassageStatus, &m.PassagePort, &m.CarrierName); err == nil {
 			result = append(result, m)
 		}
 	}
@@ -769,9 +774,11 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at
+		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
+		        m.passage_status, pps.name, m.carrier_name
 		 FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
+		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 WHERE m.origin_id = $1
 		 ORDER BY m.sent_at DESC LIMIT 20`,
 		originID,
@@ -793,13 +800,22 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 		ArrivesAt  time.Time       `json:"arrives_at"`
 		TradeOffer json.RawMessage `json:"trade_offer,omitempty"`
 		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
+		// PassageStatus/PassagePort/CarrierName (megaron_plan_budet_liftar.md):
+		// set only while sea-lift-relevant. CarrierName lingers on the row after
+		// boarding even once PassageStatus has cleared (see internal/messenger/
+		// passage.go's own note on why "aboard" is not a durable status) — it is
+		// the surface's only remaining sign the leg rode a ship.
+		PassageStatus *string `json:"passage_status,omitempty"`
+		PassagePort   *string `json:"passage_port,omitempty"`
+		CarrierName   *string `json:"carrier_name,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
-			&m.SentAt, &m.ArrivesAt, &tradeOffer, &m.ExpiresAt); err == nil {
+			&m.SentAt, &m.ArrivesAt, &tradeOffer, &m.ExpiresAt,
+			&m.PassageStatus, &m.PassagePort, &m.CarrierName); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}

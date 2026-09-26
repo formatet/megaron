@@ -64,6 +64,7 @@ func messageCmd() *cobra.Command {
 				json.Unmarshal(data, &resp)
 				arrivesAt, _ := resp["arrives_at"].(string)
 				fmt.Printf("Messenger dispatched from the host to %s · arrives %s\n", resolvedName, arrivalETA(c, arrivesAt))
+				printPassageNote(resp)
 				return nil
 			}
 
@@ -89,6 +90,7 @@ func messageCmd() *cobra.Command {
 			json.Unmarshal(data, &resp)
 			arrivesAt, _ := resp["arrives_at"].(string)
 			fmt.Printf("Message dispatched to %s · arrives %s\n", destName, arrivalETA(c, arrivesAt))
+			printPassageNote(resp)
 			return nil
 		},
 	}
@@ -192,6 +194,7 @@ func tradeOfferCmd() *cobra.Command {
 				fmt.Printf("Sell offer dispatched to %s (selling %.0f %s for %.0f silver) · arrives %s\n",
 					resolvedName, offerQty, offerGood, wantSilver, arrivalETA(c, arrivesAt))
 			}
+			printPassageNote(resp)
 			return nil
 		},
 	}
