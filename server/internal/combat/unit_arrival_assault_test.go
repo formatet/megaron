@@ -79,17 +79,20 @@ func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 		}
 	}
 
-	// Attacker capital (needed for the demographic pop-loss write).
+	// Attacker capital (needed for the demographic pop-loss write, and — R5,
+	// megaron_plan_skeppsuppdrag_landsatt.md — as the galley's home port to
+	// sail back to once its cargo is ashore).
 	var attCapProv uuid.UUID
 	_ = pool.QueryRow(ctx,
 		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'plains') RETURNING id`,
 		worldID,
 	).Scan(&attCapProv)
-	if _, err := pool.Exec(ctx,
+	var attCapID uuid.UUID
+	if err := pool.QueryRow(ctx,
 		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
-		 VALUES ($1, $2, 'Raider Home', 'achaean', $3, 'capital', true, 'active', 8000)`,
+		 VALUES ($1, $2, 'Raider Home', 'achaean', $3, 'capital', true, 'active', 8000) RETURNING id`,
 		worldID, attCapProv, attacker,
-	); err != nil {
+	).Scan(&attCapID); err != nil {
 		t.Fatalf("create attacker capital: %v", err)
 	}
 
@@ -136,15 +139,17 @@ func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 		t.Fatalf("create cargo unit: %v", err)
 	}
 	// The laden galley, arriving at the landing hex (2,0) with intent=assault.
+	// home_settlement_id is set here exactly as a real march dispatch would
+	// (march_start.go's assaultLanding branch) — R5 needs it to sail home.
 	var galleyID uuid.UUID
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units
 		   (world_id, owner_id, type, category, size, crew, status, q, r,
-		    target_q, target_r, departs_at, arrives_at, march_intent, cargo_unit_id, capture_mode)
+		    target_q, target_r, departs_at, arrives_at, march_intent, cargo_unit_id, capture_mode, home_settlement_id)
 		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'marching', 1, 0,
-		         2, 0, now(), now(), 'assault', $3, 'annex')
+		         2, 0, now(), now(), 'assault', $3, 'annex', $4)
 		 RETURNING id`,
-		worldID, attacker, cargoID,
+		worldID, attacker, cargoID, attCapID,
 	).Scan(&galleyID); err != nil {
 		t.Fatalf("create galley: %v", err)
 	}
@@ -190,19 +195,24 @@ func TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout(t *testing.T) {
 		t.Errorf("cargo size = %d, want 1500 (full — no dice rolled yet)", cargoSize)
 	}
 
-	// The galley is already empty and positioned at the landing sea hex,
-	// regardless of how the fight on shore eventually goes.
+	// The galley is already empty and sailing home (R5,
+	// megaron_plan_skeppsuppdrag_landsatt.md) — it no longer simply sits at
+	// the landing sea hex regardless of how the fight ashore eventually goes.
 	var galleyStatus string
 	var galleyCargo *uuid.UUID
 	var galleyQ, galleyR int
+	var galleyMarchIntent *string
 	if err := pool.QueryRow(ctx,
-		`SELECT status, cargo_unit_id, q, r FROM units WHERE id = $1`, galleyID,
-	).Scan(&galleyStatus, &galleyCargo, &galleyQ, &galleyR); err != nil {
+		`SELECT status, cargo_unit_id, q, r, march_intent FROM units WHERE id = $1`, galleyID,
+	).Scan(&galleyStatus, &galleyCargo, &galleyQ, &galleyR, &galleyMarchIntent); err != nil {
 		t.Fatalf("read galley after assault initiation: %v", err)
 	}
-	if galleyStatus != "positioned" || galleyCargo != nil || galleyQ != 2 || galleyR != 0 {
-		t.Errorf("galley status=%q cargo=%v pos=(%d,%d), want positioned/empty at (2,0)",
+	if galleyStatus != "marching" || galleyCargo != nil || galleyQ != 2 || galleyR != 0 {
+		t.Errorf("galley status=%q cargo=%v pos=(%d,%d), want marching/empty, departing from (2,0)",
 			galleyStatus, galleyCargo, galleyQ, galleyR)
+	}
+	if galleyMarchIntent == nil || *galleyMarchIntent != "explore_return" {
+		t.Errorf("galley march_intent = %v, want \"explore_return\" (sailing home on its own, R5)", galleyMarchIntent)
 	}
 
 	var battleID uuid.UUID

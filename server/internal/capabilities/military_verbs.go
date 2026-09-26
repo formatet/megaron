@@ -136,6 +136,29 @@ func canUnload(cc checkContext) Verb {
 		})
 }
 
+// canLand is R1's mission hint (megaron_plan_skeppsuppdrag_landsatt.md): a
+// laden ship garrisoned here can be given a "land" mission — it sails out,
+// puts its cargo ashore on open unclaimed land, optionally founds a colony
+// there directly, and always sails home again on its own. This is the ONLY
+// way to land troops away from a friendly port now that Unload's field-
+// landing fall (b) is retired (R2) — a ship at sea takes no further orders
+// (R3).
+func canLand(cc checkContext) Verb {
+	n := cc.ladenNavalUnits()
+	ok := n > 0
+	return verb("land", CategoryMilitary,
+		"March a laden ship with intent=land to a hex of open, unclaimed land near the coast — "+
+			"it sails to the sea hex next to it, puts its cargo ashore there, optionally founds a "+
+			"colony on arrival (cargo_intent=colonize, no further order needed), and always sails "+
+			"home again on its own afterwards. Give the mission from port — a ship at sea takes no "+
+			"further orders.",
+		[]Requirement{
+			req("a laden ship garrisoned here", ok,
+				fmt.Sprintf("%d laden ship(s) here", n),
+				"load a land unit onto a ship here first (`unit load`)"),
+		})
+}
+
 func canDisband(cc checkContext) Verb {
 	n := cc.anyUnitsHere()
 	ok := n > 0

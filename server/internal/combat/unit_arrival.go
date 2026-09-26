@@ -149,12 +149,12 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
-		        carried_silver, provisions
+		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
 		&u.status, &curQ, &curR, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
-		&u.carriedSilver, &u.provisions); err != nil {
+		&u.carriedSilver, &u.provisions, &u.landTargetQ, &u.landTargetR, &u.landCargoIntent); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -241,6 +241,15 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// beach — the landing is resolved with the cargo's strength, not the ship's.
 	if u.marchIntent != nil && *u.marchIntent == "assault" {
 		return h.resolveAmphibiousAssault(ctx, tx, u, destQ, destR, worldID)
+	}
+
+	// Land mission (R1, megaron_plan_skeppsuppdrag_landsatt.md): the ship has
+	// reached the sea hex next to its chosen land target. Land the cargo there
+	// (or on the nearest still-unclaimed neighbour, if the world changed
+	// mid-transit) and turn the ship for home — never garrison/fight at the
+	// sea waypoint itself.
+	if u.marchIntent != nil && *u.marchIntent == "land" {
+		return h.landArrived(ctx, tx, u, destQ, destR, worldID)
 	}
 
 	// Find settlement at destination (if any). The JOIN condition's karens
@@ -472,6 +481,138 @@ func (h *UnitArrivalHandler) arriveGarrison(
 
 	slog.Info("unit arrived (garrison)", "unit", u.id, "q", destQ, "r", destR, "status", newStatus)
 	return nil
+}
+
+// landArrived handles a "land" mission ship reaching the sea hex next to its
+// chosen land target (R1, megaron_plan_skeppsuppdrag_landsatt.md). It puts
+// the cargo ashore, optionally founds a colony there, and always turns the
+// ship for home (dispatchReturnHome, reusing the explore_return machinery) —
+// a land mission never ends with the ship standing at sea.
+func (h *UnitArrivalHandler) landArrived(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if u.cargoUnitID == nil || u.landTargetQ == nil || u.landTargetR == nil || u.homeSettlementID == nil {
+		// Defensive: dispatch always sets these three together for a land
+		// mission — never strand the ship over a data inconsistency.
+		slog.Warn("land arrival: missing cargo/land target/home settlement, garrisoning ship in place instead", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+	landQ, landR := *u.landTargetQ, *u.landTargetR
+	cargoID := *u.cargoUnitID
+
+	// Re-resolve the landing hex authoritatively — the world can change
+	// mid-transit. Still free → land exactly where chosen. Taken by now → the
+	// nearest still-unclaimed neighbour (the retired Unload fall (b)'s own
+	// fallback). Nowhere left at all → keep the cargo aboard and sail home
+	// with it; the Wanax is told why.
+	var settled bool
+	if err := tx.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM provinces p JOIN settlements s ON s.province_id = p.id
+		              WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active')`,
+		worldID, landQ, landR,
+	).Scan(&settled); err != nil {
+		slog.Warn("land arrival: could not check landing hex, garrisoning ship instead", "unit", u.id, "err", err)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+	if settled {
+		if nq, nr, found, nErr := province.NearestUnclaimedLandNeighbor(ctx, tx, worldID, destQ, destR); nErr == nil && found {
+			landQ, landR = nq, nr
+		} else {
+			if h.hub != nil {
+				_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 2, map[string]any{
+					"unit_id": u.id,
+					"name":    unit.LoadDisplayName(ctx, tx, u.id),
+					"note": fmt.Sprintf(
+						"the chosen landing site at (%d,%d) is no longer open ground, and nowhere unclaimed remains nearby — the cargo stays aboard and the ship turns for home",
+						*u.landTargetQ, *u.landTargetR),
+				})
+			}
+			return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonExplore)
+		}
+	}
+
+	// Disembark: the cargo becomes a field-positioned unit of its own — the
+	// same outcome the retired Unload fall (b) used to produce.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET status = 'positioned', settlement_id = NULL, q = $2, r = $3, updated_at = now()
+		 WHERE id = $1`,
+		cargoID, landQ, landR,
+	); err != nil {
+		return fmt.Errorf("land arrival: disembark cargo: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `UPDATE units SET cargo_unit_id = NULL WHERE id = $1`, u.id); err != nil {
+		return fmt.Errorf("land arrival: clear ship cargo: %w", err)
+	}
+	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
+		unit.ShipUnloadedPayload{ShipUnitID: u.id, CargoUnitID: cargoID, Q: landQ, R: landR}, worldID, nil)
+
+	// Grounding order: found a colony right there, no further order needed.
+	// Re-runs the SAME authoritative checks the plain-colonize arrival branch
+	// below runs (settlement cap, catchment overlap) — dispatch already ran
+	// them once (colonizeDispatchPreflight), but the world can change
+	// mid-transit. On failure the cargo still lands (above) — only the
+	// colonize half is refused, with an honest reason, matching arriveGarrison's
+	// existing "co-locate, don't silently fail" posture for the plain case.
+	if u.landCargoIntent != nil && *u.landCargoIntent == "colonize" {
+		var owned int
+		_ = tx.QueryRow(ctx,
+			`SELECT count(*) FROM settlements WHERE world_id = $1 AND owner_id = $2 AND state = 'active'`,
+			worldID, u.ownerID,
+		).Scan(&owned)
+		var conflict *province.CatchmentConflict
+		if owned < province.MaxSettlementsPerWanax {
+			conflict, _ = province.SettlementCatchmentOverlap(ctx, tx, worldID, landQ, landR)
+		}
+		switch {
+		case owned >= province.MaxSettlementsPerWanax:
+			h.notifyLandColonizeFailed(ctx, tx, u, cargoID, landQ, landR, worldID,
+				"you already hold as many settlements as you may — the landing party garrisons the beach instead of founding a colony")
+		case conflict != nil:
+			h.notifyLandColonizeFailed(ctx, tx, u, cargoID, landQ, landR, worldID,
+				"this ground is already farmed by a neighbouring settlement's catchment — the landing party garrisons the beach instead of founding a colony")
+		default:
+			var cargoSize int
+			_ = tx.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, cargoID).Scan(&cargoSize)
+			cargoRow := unitRow{id: cargoID, ownerID: u.ownerID, colonyName: u.colonyName, size: cargoSize}
+			if err := h.foundColony(ctx, tx, cargoRow, uuid.Nil, landQ, landR, worldID); err != nil {
+				return fmt.Errorf("land arrival: found colony: %w", err)
+			}
+			return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonExplore)
+		}
+	}
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+			"unit_id": cargoID,
+			"name":    unit.LoadDisplayName(ctx, tx, cargoID),
+			"q":       landQ,
+			"r":       landR,
+			"status":  "positioned",
+		})
+	}
+
+	slog.Info("land mission: cargo landed, ship turning for home", "ship", u.id, "cargo", cargoID, "q", landQ, "r", landR)
+	return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonExplore)
+}
+
+// notifyLandColonizeFailed tells the Wanax why a "land" mission's
+// cargo_intent=colonize could not found a colony at arrival — the cargo has
+// already landed (positioned) by the time this is called, so this only
+// explains why it is NOT a new city.
+func (h *UnitArrivalHandler) notifyLandColonizeFailed(ctx context.Context, tx pgx.Tx, u unitRow, cargoID uuid.UUID, q, r int, worldID uuid.UUID, reason string) {
+	slog.Info("land mission: colonize declined at arrival", "ship", u.id, "cargo", cargoID, "q", q, "r", r, "reason", reason)
+	if h.hub == nil {
+		return
+	}
+	_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 3, map[string]any{
+		"unit_id": cargoID,
+		"name":    unit.LoadDisplayName(ctx, tx, cargoID),
+		"q":       q,
+		"r":       r,
+		"status":  "positioned",
+		"note":    reason,
+	})
 }
 
 // exploreArrived handles a unit reaching its explore target: instead of
@@ -1336,9 +1477,23 @@ func (h *UnitArrivalHandler) resolveCombat(
 func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 	ctx context.Context, tx pgx.Tx, u unitRow, seaQ, seaR int, worldID uuid.UUID,
 ) error {
-	// No cargo → nothing to land. Fall back to a plain garrison at the sea hex.
+	// sailHomeOrGarrison is R5's return leg (megaron_plan_skeppsuppdrag_
+	// landsatt.md) — the ship sails home on its own rather than sitting at the
+	// beach forever. Defensive fallback to the old "garrison at sea" outcome
+	// for a unit somehow missing home_settlement_id (a real dispatch always
+	// sets it, mirroring patrol/land above) — same posture as exploreArrived's
+	// own nil guard: never strand a unit with nothing to return to.
+	sailHomeOrGarrison := func(q, r int) error {
+		if u.homeSettlementID == nil {
+			slog.Warn("amphibious assault: unit has no home_settlement_id, garrisoning at sea instead of returning", "unit", u.id)
+			return h.arriveGarrison(ctx, tx, u, q, r, nil, worldID)
+		}
+		return h.dispatchReturnHome(ctx, tx, u, q, r, worldID, returnReasonExplore)
+	}
+
+	// No cargo → nothing to land.
 	if u.cargoUnitID == nil {
-		return h.arriveGarrison(ctx, tx, u, seaQ, seaR, nil, worldID)
+		return sailHomeOrGarrison(seaQ, seaR)
 	}
 
 	// Find an enemy (non-owned) coastal settlement adjacent to the landing hex.
@@ -1357,11 +1512,12 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 		worldID, u.ownerID, seaQ, seaR,
 	).Scan(&dest.settlementID, &dest.ownerID, &dest.wallLevel,
 		&dest.provinceID, &dest.terrain, &settleQ, &settleR); err != nil {
-		// The target vanished (captured, abandoned, or ownership changed) before the
-		// landing. Nothing to storm — the ship simply garrisons at the beach.
-		slog.Info("amphibious assault: no adjacent enemy coastal settlement, garrisoning at sea",
+		// The target vanished (captured, abandoned, or ownership changed) before
+		// the landing. Nothing to storm — the ship (and its still-embarked cargo)
+		// sails home instead of sitting at the beach (R5).
+		slog.Info("amphibious assault: no adjacent enemy coastal settlement, returning home",
 			"ship", u.id, "q", seaQ, "r", seaR)
-		return h.arriveGarrison(ctx, tx, u, seaQ, seaR, nil, worldID)
+		return sailHomeOrGarrison(seaQ, seaR)
 	}
 
 	// Load the cargo land unit — it is the real attacker.
@@ -1420,19 +1576,18 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 	}
 
 	// The galley's part is done the instant its cargo lands — it empties and
-	// rests at the sea hex regardless of how the fight ashore eventually goes
-	// (ship/cargo handling kept from the old model; only the outcome moved).
+	// sails home on its own (R5, megaron_plan_skeppsuppdrag_landsatt.md)
+	// regardless of how the fight ashore eventually goes (ship/cargo landing
+	// handling kept from the old model; only the "sits at the beach forever"
+	// outcome is gone).
 	if _, err := tx.Exec(ctx,
-		`UPDATE units SET cargo_unit_id = NULL, status = 'positioned',
-		   q = $2, r = $3, settlement_id = NULL, target_q = NULL, target_r = NULL,
-		   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()
-		 WHERE id = $1`,
+		`UPDATE units SET cargo_unit_id = NULL, q = $2, r = $3, updated_at = now() WHERE id = $1`,
 		u.id, seaQ, seaR,
 	); err != nil {
 		return fmt.Errorf("amphibious assault: empty galley: %w", err)
 	}
 
-	return nil
+	return sailHomeOrGarrison(seaQ, seaR)
 }
 
 // ── Internal types ─────────────────────────────────────────────────────────────
@@ -1451,10 +1606,18 @@ type unitRow struct {
 	targetQ          *int
 	targetR          *int
 	stance           *string    // C5: fortify/storm/sentry or nil
-	marchIntent      *string    // "colonize" | "explore" | "explore_return" | nil (plain march)
+	marchIntent      *string    // "colonize" | "explore" | "explore_return" | "land" | nil (plain march)
 	colonyName       *string    // chosen colony name or nil
-	homeSettlementID *uuid.UUID // set for "explore"/"explore_return"; the settlement to return to
+	homeSettlementID *uuid.UUID // set for "explore"/"explore_return"/"land"; the settlement to return to
 	captureMode      string     // "sack" (default) | "annex" — set at march dispatch, read on conquest
+	// landTargetQ/R + landCargoIntent (mig 147, megaron_plan_skeppsuppdrag_
+	// landsatt.md R1): set only for marchIntent == "land" — the CHOSEN land
+	// hex (this ship's own q/r,target_q/target_r are the sea waypoint it
+	// actually sails to) and the optional grounding order for the cargo it
+	// puts ashore there ("" or "colonize").
+	landTargetQ     *int
+	landTargetR     *int
+	landCargoIntent *string
 	// carriedSilver is the colonist purse (mig 107): silver debited from the
 	// mother city at dispatch and riding on this unit. Credited to the colony it
 	// founds, or back into whatever settlement it walks into if it turns around.

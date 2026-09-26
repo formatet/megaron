@@ -74,9 +74,13 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		TargetQ int    `json:"target_q"`
 		TargetR int    `json:"target_r"`
 		Stance  string `json:"stance"` // optional; fortify|storm|sentry — persisted for C5
-		Intent  string `json:"intent"` // optional; "" = plain march, "colonize" = found a colony on arrival
-		Name    string `json:"name"`   // optional colony name (only used with intent=colonize)
+		Intent  string `json:"intent"` // optional; "" = plain march, "colonize" = found a colony on arrival, "land" = land troops from a ship (R1)
+		Name    string `json:"name"`   // optional colony name (intent=colonize, or intent=land + cargo_intent=colonize)
 		Mode    string `json:"mode"`   // optional; "" = sack (default) | "annex" — conquest choice on arrival (Del 2b)
+		// CargoIntent (megaron_plan_skeppsuppdrag_landsatt.md R1) is only
+		// meaningful with intent=land: "" (just land) or "colonize" (found a
+		// colony on arrival, no further order needed).
+		CargoIntent string `json:"cargo_intent"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -121,6 +125,7 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 			WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 			TargetQ: req.TargetQ, TargetR: req.TargetR,
 			Stance: req.Stance, Intent: req.Intent, Name: req.Name, Mode: req.Mode,
+			CargoIntent: req.CargoIntent,
 		}
 		h.dispatchMarchCourier(w, ctx, order, province.MapPosition{Q: *u.Q, R: *u.R}, targetKnown)
 		return
@@ -129,15 +134,16 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	// Validate+execute core shared with the order-courier delivery path
 	// (temenos_orderlopare_plan.md Fas 1) — internal/combat.StartMarch.
 	res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, combat.MarchOrder{
-		WorldID:  worldID,
-		PlayerID: playerID,
-		UnitID:   unitID,
-		TargetQ:  req.TargetQ,
-		TargetR:  req.TargetR,
-		Stance:   req.Stance,
-		Intent:   req.Intent,
-		Name:     req.Name,
-		Mode:     req.Mode,
+		WorldID:     worldID,
+		PlayerID:    playerID,
+		UnitID:      unitID,
+		TargetQ:     req.TargetQ,
+		TargetR:     req.TargetR,
+		Stance:      req.Stance,
+		Intent:      req.Intent,
+		Name:        req.Name,
+		Mode:        req.Mode,
+		CargoIntent: req.CargoIntent,
 	}, targetKnown)
 	if err != nil {
 		var rej *combat.OrderReject
