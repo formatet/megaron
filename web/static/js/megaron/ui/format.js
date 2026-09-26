@@ -92,7 +92,7 @@ export function notifDomain(kind) {
     // War — units, battles, sieges, orders in the field, who holds what.
     ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
     ForeignMarchSighted: 'war', ForeignMarchSightedV2: 'war', SentryAlerted: 'war', ScoutReport: 'war',
-    UnitArrived: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war',
+    UnitArrived: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipSweptFromSea: 'war',
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
@@ -567,6 +567,17 @@ export function notifText(kind, body) {
       const crew = body.crew_after != null ? ` (crew down to ${body.crew_after})` : '';
       const subject = body.name ? `${body.name}'s crew` : "Ship's crew";
       return `${subject} starved to half strength${crew} — turning home on its own, sailing slower${eta ? `, arrives ${eta}` : ''}`;
+    }
+    case 'ShipSweptFromSea': {
+      // R6 (megaron_plan_skeppsuppdrag_landsatt.md): the one-time deploy
+      // transition — a ship left 'positioned' at sea under the pre-R3 rules,
+      // where ships at sea could still take orders, is swept home once R3
+      // makes that no longer possible. A DELIBERATELY separate text from
+      // UnitExploreReturned/UnitReturnedStarving — same mechanics, honest
+      // different cause.
+      const eta = fmtSoon(body.arrives_at);
+      const subject = body.name || 'A ship';
+      return `${subject} — ${body.reason || 'ships at sea take no orders'} — returning to port${eta ? `, arrives ${eta}` : ''}`;
     }
     case 'OrderFailed': {
       // body.verb is the server's order key (order_delivery.go switch +

@@ -37,7 +37,7 @@ import {
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
   unitRecall, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch, unitMarchSend,
-  closeMarchPanel, unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
+  closeMarchPanel, wmpLandToggle, unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
   unitRetreatOrder, saveRetreatDefault, warFocusUnit,
 } from './ui/drawers/war.js';
 import {
@@ -237,6 +237,7 @@ Object.assign(window, {
   warDisband,
   warRecruitFromUI,
   warRecruitShip,
+  wmpLandToggle,
   zoom,
   // (b) window-bridge (not inline-handler targets)
   MusicPlayer,
