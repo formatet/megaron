@@ -933,7 +933,7 @@ func colonistPurse(ctx context.Context, tx pgx.Tx, unitSize int) float64 {
 // (q,r) — used by the P7 explore fix above to give a field-positioned unit a
 // home to return to without requiring it to already be standing in one.
 // found=false when the player owns no active settlement at all.
-func nearestOwnedSettlement(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, q, r int) (uuid.UUID, bool, error) {
+func nearestOwnedSettlement(ctx context.Context, pool province.Queryer, worldID, playerID uuid.UUID, q, r int) (uuid.UUID, bool, error) {
 	rows, err := pool.Query(ctx,
 		`SELECT s.id, p.map_q, p.map_r FROM settlements s
 		 JOIN provinces p ON p.id = s.province_id

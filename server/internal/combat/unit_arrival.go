@@ -724,6 +724,11 @@ const (
 	// navalStarvationReturnCrewFraction of its full crew (upkeep.go
 	// applyAttrition) and it turns for home on its own.
 	returnReasonStarvation
+	// returnReasonSweptFromSea: R6's one-time deploy transition
+	// (main.go's sweepShipsAtSeaOnDeploy) turns a ship for home because it was
+	// left 'positioned' at sea under the pre-R3 rules — R3 means it can never
+	// receive a fresh order again otherwise.
+	returnReasonSweptFromSea
 )
 
 // dispatchReturnHome turns a field unit around and marches it back to its home
@@ -818,9 +823,10 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		   sentry_q      = NULL,
 		   sentry_r      = NULL,
 		   march_intent  = $7,
+		   home_settlement_id = $10,
 		   updated_at    = now()
 		 WHERE id = $1`,
-		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks,
+		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks, u.homeSettlementID,
 	); err != nil {
 		return fmt.Errorf("dispatchReturnHome: dispatch return march: %w", err)
 	}
@@ -860,6 +866,29 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 			})
 		}
 		slog.Info("field unit turning for home (starving)", "unit", u.id, "from_q", fromQ, "from_r", fromR, "home_q", homeQ, "home_r", homeR, "crew_after", u.crew)
+		return nil
+	}
+	if reason == returnReasonSweptFromSea {
+		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitSweptFromSea,
+			unit.UnitSweptFromSeaPayload{
+				UnitID:           u.id,
+				Q:                fromQ,
+				R:                fromR,
+				HomeSettlementID: *u.homeSettlementID,
+				ArrivesAt:        arrivesAt.Format(time.RFC3339),
+			}, worldID, nil)
+
+		if h.hub != nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ShipSweptFromSea", 3, map[string]any{
+				"unit_id":    u.id,
+				"name":       name,
+				"q":          fromQ,
+				"r":          fromR,
+				"arrives_at": arrivesAt,
+				"reason":     "returning to port — ships at sea take no orders",
+			})
+		}
+		slog.Info("ship swept from sea, turning for home", "unit", u.id, "from_q", fromQ, "from_r", fromR, "home_q", homeQ, "home_r", homeR)
 		return nil
 	}
 
