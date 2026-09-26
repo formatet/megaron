@@ -14,6 +14,7 @@
 #      det NYA världs-id:t ur dess utdata.
 #   3. Städar zombie-rader i scheduled_events (world_id som inte längre finns i worlds —
 #      scheduled_events saknar FK-cascade mot worlds, se runbooken).
+#   3b. ANALYZE map_tiles — färsk planerarstatistik för den nya kartan.
 #   4. systemctl restart poleia PÅ SERVERN — görs ALDRIG valfritt eller sist i huvudet.
 #      ensureWorld() (cmd/server/main.go) cachar världs-id:t vid boot; utan omstart
 #      serverar processen ett raderat id tills någon råkar starta om den för hand.
@@ -180,6 +181,18 @@ if [ "$DRY_RUN" -eq 1 ]; then
 else
   remote_sql "DELETE FROM scheduled_events WHERE world_id NOT IN (SELECT id FROM worlds);" >/dev/null
   say "  ✓ städat"
+fi
+
+step "Steg 3b: ANALYZE map_tiles"
+# En nyss fylld map_tiles saknar planerarstatistik tills autovacuum hinner ikapp
+# (minuter). Under tiden planerar Postgres havshorisontens unnest-join som nested
+# loop — 268 ms mot 6 ms, mätt 2026-09-25. Första spelarna efter en reseed ska inte
+# betala det.
+if [ "$DRY_RUN" -eq 1 ]; then
+  say "  [dry-run] ANALYZE map_tiles;"
+else
+  remote_sql "ANALYZE map_tiles;" >/dev/null
+  say "  ✓ statistik färsk"
 fi
 
 step "Steg 4: systemctl restart poleia — ALDRIG valfritt"
