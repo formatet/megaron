@@ -129,6 +129,16 @@ test('BR2: nextBedTrack with one track returns it, and with no last picks from a
   assert.equal(nextBedTrack(['a', 'b'], '', () => 0.999), 'b');
 });
 
+test('BR4: nextBedTrack never lets a piece follow itself in its other timbre', () => {
+  const list = ['m_bygget_sf', 'm_bygget_synth', 'm_templet_sf', 'm_templet_synth'];
+  for (const r of [0, 0.5, 0.999]) {
+    assert.match(nextBedTrack(list, 'm_bygget_sf', () => r), /templet/);
+    assert.match(nextBedTrack(list, 'm_templet_synth', () => r), /bygget/);
+  }
+  assert.equal(nextBedTrack(list, 'm_bygget_sf', () => 0), 'm_templet_sf', 'both timbres of the other piece are reachable');
+  assert.equal(nextBedTrack(list, 'm_bygget_sf', () => 0.999), 'm_templet_synth');
+});
+
 test('BR3: bedGapMs stays within 30–90 s at both ends', () => {
   assert.equal(bedGapMs(() => 0), 30_000);
   assert.equal(bedGapMs(() => 0.999999), 90_000);

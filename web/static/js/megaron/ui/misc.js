@@ -59,15 +59,20 @@ export function dismissBrief(name) {
 // same piece may appear in two timbres (soundfont/synth) — variation without a
 // new melody. The sign-in intro is deliberately NOT in the rotation.
 const BED_ROTATION = {
-  minoan: ['minoan_bygget_sf', 'minoan_bygget_synth'],
+  minoan: ['minoan_bygget_sf', 'minoan_bygget_synth', 'minoan_templet_sf', 'minoan_templet_synth'],
 };
 const BED_GAP_MIN_MS = 30 * 1000;
 const BED_GAP_MAX_MS = 90 * 1000;
 
-// nextBedTrack picks the next piece at random, never the one that just ended
-// (with two tracks that is plain alternation). rand is injectable for tests.
+// nextBedTrack picks at random, but never the same PIECE twice in a row — a
+// piece's timbres (`_sf`/`_synth`) count as one piece, so the same melody
+// does not follow itself in another dress. With only one piece it falls back
+// to "not the same file"; with one file, that file. rand is injectable for tests.
+const bedPiece = (t) => t.replace(/_(sf|synth)$/, '');
 export function nextBedTrack(list, last, rand = Math.random) {
-  const pool = list.length > 1 ? list.filter((t) => t !== last) : list;
+  let pool = list.filter((t) => bedPiece(t) !== bedPiece(last));
+  if (!pool.length) pool = list.filter((t) => t !== last);
+  if (!pool.length) pool = list;
   return pool[Math.floor(rand() * pool.length)];
 }
 
