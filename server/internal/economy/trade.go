@@ -364,6 +364,14 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'delivered', updated_at = now() WHERE id = $1`, p.TransportID)
 	}
 
+	// R4 (megaron_plan_sjohandel_mellan_spelare.md): does leg 1's ship (if any)
+	// still owe an EMPTY voyage home, or is the counterpart's ThenReturn leg 2
+	// its way home instead? Read once, before either branch below decides.
+	var leg1ShipUnitID *uuid.UUID
+	if p.TransportID != (uuid.UUID{}) {
+		_ = tx.QueryRow(ctx, `SELECT ship_unit_id FROM transports WHERE id = $1`, p.TransportID).Scan(&leg1ShipUnitID)
+	}
+
 	// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): a
 	// naval leg that bound a real ship is only half done — the ship still has
 	// to sail home before it's free again. Raw SQL, not transport.Dispatch:
@@ -371,7 +379,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// ThenReturn leg above is built by hand. transport.ArrivalHandler (already
 	// registered for ScheduledTransportArrival, whoever inserted the row it
 	// fires for) does the actual release when this leg lands.
-	if p.TransportID != (uuid.UUID{}) {
+	//
+	// R4 (sjöhandel mellan spelare): skipped when a ThenReturn leg exists —
+	// that chained leg 2 IS the ship's way home (same ship, cargo instead of
+	// an empty hold); dispatching BOTH would sail the same hull twice.
+	if p.TransportID != (uuid.UUID{}) && len(p.ThenReturn) == 0 {
 		if err := dispatchShipReturnLeg(ctx, tx, h.scheduler, e.WorldID, p.TransportID, p.DestinationID); err != nil {
 			slog.Error("dispatch ship return leg failed", "transport", p.TransportID, "err", err)
 		}
@@ -406,15 +418,29 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			var leg2ID uuid.UUID
 			retOwner, _ := uuid.Parse(ret.OwnerID)
 			retDest, _ := uuid.Parse(ret.DestinationID)
+			leg2Category := "land"
+			var leg2ShipUnitID *uuid.UUID
+			if leg1ShipUnitID != nil {
+				// R4: the SAME ship carries leg 2 home — its owner is the
+				// ship's real owner (the trade's initiator), not whoever's
+				// city leg 2 happens to depart from (the land-caravan
+				// ownership rule ret.OwnerID otherwise encodes, still
+				// correct for a non-naval leg 2 below).
+				leg2Category = "naval"
+				leg2ShipUnitID = leg1ShipUnitID
+				if serr := tx.QueryRow(ctx, `SELECT owner_id FROM units WHERE id = $1`, *leg1ShipUnitID).Scan(&retOwner); serr != nil {
+					slog.Error("read ship owner for leg 2", "ship", *leg1ShipUnitID, "err", serr)
+				}
+			}
 			if scanErr := tx.QueryRow(ctx,
 				`INSERT INTO transports
 				   (world_id, owner_id, kind, origin_id, dest_id, category,
-				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable)
-				 VALUES ($1,$2,'trade_return',$3,$4,'land',$5,$6,$7,$8,
-				         now(), now() + make_interval(mins => $9), $10, true)
+				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable, ship_unit_id)
+				 VALUES ($1,$2,'trade_return',$3,$4,$5,$6,$7,$8,$9,
+				         now(), now() + make_interval(mins => $10), $11, true, $12)
 				 RETURNING id`,
-				e.WorldID, retOwner, p.DestinationID, retDest,
-				ret.OriginQ, ret.OriginR, ret.DestQ, ret.DestR, ret.TravelMins, currentTick+travelTicks,
+				e.WorldID, retOwner, p.DestinationID, retDest, leg2Category,
+				ret.OriginQ, ret.OriginR, ret.DestQ, ret.DestR, ret.TravelMins, currentTick+travelTicks, leg2ShipUnitID,
 			).Scan(&leg2ID); scanErr == nil {
 				_, _ = tx.Exec(ctx,
 					`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1,$2,$3)`,

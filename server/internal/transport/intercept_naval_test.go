@@ -255,6 +255,48 @@ func TestInterceptScan_NavalLimped_HalfCargoLostShipSailsHome(t *testing.T) {
 	}
 }
 
+// TestInterceptScan_NavalLimped_Leg2SurvivorsGoToShipsHomeNotTransportOrigin
+// is R5 (megaron_plan_sjohandel_mellan_spelare.md): a negotiated trade's leg 2
+// sails counterparty->initiator, so its OWN origin_id is the counterparty's
+// city — using that as "home" (the pre-slice behaviour) would limp the
+// survivors to the wrong Wanax. units.settlement_id is untouched by BindShip
+// while freighting, so it stays the ship's true home port regardless of which
+// direction this particular leg happens to sail; dispatchLimpedReturn must
+// resolve "home" from there, not from t.originID.
+func TestInterceptScan_NavalLimped_Leg2SurvivorsGoToShipsHomeNotTransportOrigin(t *testing.T) {
+	pool := testPool(t)
+	nf := newNavalSeizureFixture(t, pool)
+	ctx := context.Background()
+
+	// Simulate leg 2: the transport's own origin_id is the COUNTERPARTY's
+	// city (nf.destID), while the ship's real home (units.settlement_id,
+	// set by newNavalSeizureFixture and never touched by BindShip) stays the
+	// initiator's city (nf.sourceID).
+	if _, err := pool.Exec(ctx, `UPDATE transports SET origin_id = $1 WHERE id = $2`, nf.destID, nf.transportID); err != nil {
+		t.Fatalf("simulate leg2 origin: %v", err)
+	}
+
+	h := NewInterceptScanHandler(pool, events.NewScheduler(pool, nf.clk), events.NewStore(pool), nil, nf.clk)
+	h.Dice = fixedDice{0.5} // 0.4 <= x < 0.8 -> limped
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: nf.worldID, DueTick: 1}); err != nil {
+		t.Fatalf("intercept scan: %v", err)
+	}
+
+	var damagedOrigin, damagedDest uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`SELECT origin_id, dest_id FROM transports
+		 WHERE world_id = $1 AND kind = 'damaged_return' ORDER BY created_at DESC LIMIT 1`,
+		nf.worldID,
+	).Scan(&damagedOrigin, &damagedDest); err != nil {
+		t.Fatalf("no damaged_return leg found: %v", err)
+	}
+	if damagedOrigin != nf.sourceID || damagedDest != nf.sourceID {
+		t.Errorf("damaged_return origin/dest = %s/%s, want both %s (the ship's real home, units.settlement_id) — "+
+			"NOT %s (the transport's own origin_id, the counterparty's city on a negotiated trade's leg 2)",
+			damagedOrigin, damagedDest, nf.sourceID, nf.destID)
+	}
+}
+
 func TestInterceptScan_NavalSunk_CargoAndShipBothLost(t *testing.T) {
 	pool := testPool(t)
 	nf := newNavalSeizureFixture(t, pool)
