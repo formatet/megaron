@@ -20,6 +20,7 @@ import (
 	"math"
 	"time"
 
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
@@ -270,29 +271,46 @@ func (h *BattleTickHandler) sendDamagedShipHome(
 	ctx context.Context, tx pgx.Tx,
 	worldID, unitID, ownerID uuid.UUID, utype string, tickIndex int,
 ) error {
+	return marchShipToNearestOwnPort(ctx, tx, h.clk, h.scheduler, worldID, unitID, ownerID, utype, tickIndex, "damaged_return")
+}
+
+// marchShipToNearestOwnPort is sendDamagedShipHome's mechanism, generalized
+// (megaron_plan_sjohandel_kraver_skepp.md R5) so a CAPTURED ship can reuse the
+// exact same march machinery to reach its NEW owner's (the captor's) nearest
+// port instead of its old owner's: portOwnerID is whose settlements to search
+// (the current owner for a damaged-return march, the captor for a captured
+// one) and marchIntent is the value unit_arrival.go's arrival branch matches
+// on ("damaged_return" and "captured_return" both land on
+// damagedShipReturned, which only ever re-garrisons at home_settlement_id —
+// it has no reason to care which of the two sent it there).
+func marchShipToNearestOwnPort(
+	ctx context.Context, tx pgx.Tx,
+	clk clock.Clock, scheduler *events.Scheduler,
+	worldID, unitID, portOwnerID uuid.UUID, utype string, tickIndex int, marchIntent string,
+) error {
 	var fromQ, fromR, crew int
 	var cargoUnitID *uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`SELECT q, r, crew, cargo_unit_id FROM units WHERE id = $1`, unitID,
 	).Scan(&fromQ, &fromR, &crew, &cargoUnitID); err != nil {
-		return fmt.Errorf("send damaged ship home: load position: %w", err)
+		return fmt.Errorf("march ship to nearest own port: load position: %w", err)
 	}
 
-	homeSettlementID, homeQ, homeR, found, err := nearestOwnShipyardSettlement(ctx, tx, worldID, ownerID, fromQ, fromR)
+	homeSettlementID, homeQ, homeR, found, err := nearestOwnShipyardSettlement(ctx, tx, worldID, portOwnerID, fromQ, fromR)
 	if err != nil {
-		return fmt.Errorf("send damaged ship home: resolve home port: %w", err)
+		return fmt.Errorf("march ship to nearest own port: resolve home port: %w", err)
 	}
 	if !found {
-		slog.Warn("send damaged ship home: owner has no settlement to return to, leaving ship in place", "unit", unitID, "owner", ownerID)
+		slog.Warn("march ship to nearest own port: owner has no settlement to return to, leaving ship in place", "unit", unitID, "owner", portOwnerID)
 		return nil
 	}
 
 	if seaQ, seaR, seaFound, seaErr := province.NearestSeaNeighbor(ctx, tx, worldID, homeQ, homeR); seaErr != nil {
-		return fmt.Errorf("send damaged ship home: resolve sea approach: %w", seaErr)
+		return fmt.Errorf("march ship to nearest own port: resolve sea approach: %w", seaErr)
 	} else if seaFound {
 		homeQ, homeR = seaQ, seaR
 	} else {
-		slog.Warn("send damaged ship home: home settlement has no adjacent sea hex, using its land hex", "unit", unitID, "settlement", homeSettlementID)
+		slog.Warn("march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex", "unit", unitID, "settlement", homeSettlementID)
 	}
 
 	_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
@@ -304,7 +322,7 @@ func (h *BattleTickHandler) sendDamagedShipHome(
 		// Defensive fallback, same shape as dispatchReturnHome's — the outbound
 		// leg into this battle already proved passability between these regions.
 		if pathErr != nil {
-			slog.Warn("send damaged ship home: FindPath failed, falling back to straight line", "unit", unitID, "err", pathErr)
+			slog.Warn("march ship to nearest own port: FindPath failed, falling back to straight line", "unit", unitID, "err", pathErr)
 		}
 		dist := province.HexDistance(province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: homeQ, R: homeR})
 		if dist < 1 {
@@ -319,8 +337,8 @@ func (h *BattleTickHandler) sendDamagedShipHome(
 		travelTicks = 1
 	}
 
-	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
-	returnIntent := "damaged_return"
+	arrivesAt := clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
+	returnIntent := marchIntent
 
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET
@@ -343,16 +361,16 @@ func (h *BattleTickHandler) sendDamagedShipHome(
 		 WHERE id = $1`,
 		unitID, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, tickIndex, tickIndex+travelTicks, homeSettlementID,
 	); err != nil {
-		return fmt.Errorf("send damaged ship home: dispatch march: %w", err)
+		return fmt.Errorf("march ship to nearest own port: dispatch march: %w", err)
 	}
 
-	if h.scheduler == nil {
-		return fmt.Errorf("send damaged ship home: no scheduler configured")
+	if scheduler == nil {
+		return fmt.Errorf("march ship to nearest own port: no scheduler configured")
 	}
-	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival,
+	if err := scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival,
 		unit.ScheduledUnitArrivalPayload{UnitID: unitID, WorldID: worldID}, tickIndex+travelTicks,
 	); err != nil {
-		return fmt.Errorf("send damaged ship home: schedule arrival: %w", err)
+		return fmt.Errorf("march ship to nearest own port: schedule arrival: %w", err)
 	}
 	return nil
 }

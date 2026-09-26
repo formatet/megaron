@@ -160,6 +160,16 @@ const (
 	// Arrival reuses the existing generic ScheduledTransportArrival/ArrivalHandler
 	// unchanged — no new arrival event.
 	ScheduledStandingOrderTick ScheduledEventType = "StandingOrderTick"
+	// ScheduledNavalSeizureOutcome (megaron_plan_sjohandel_kraver_skepp.md R5)
+	// carries a "captured" naval-seizure outcome across the transport→combat
+	// G1 boundary: transport.InterceptScanHandler.seize rolls the outcome and
+	// credits the cargo, but turning the captured ship over to a march toward
+	// its new owner's port needs combat's march machinery (transport may not
+	// import combat). limped/sunk need no such crossing — transport resolves
+	// those directly with SQL + transport.Dispatch. One instance per capture,
+	// emitted from inside the same seize() transaction that flips the
+	// transport to intercepted.
+	ScheduledNavalSeizureOutcome ScheduledEventType = "NavalSeizureOutcome"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

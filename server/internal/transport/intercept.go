@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"math/rand"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
@@ -15,6 +16,54 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// Dice is R5's injectable probability seam (megaron_plan_sjohandel_kraver_
+// skepp.md — "en injicerbar seam i InterceptScanHandler. Följ mönstret med
+// Dice i UnitArrivalHandler / economy.NewWallDice"). transport may not import
+// economy (G1: they sit at the same tier), so this is its own tiny copy of
+// the same one-method contract rather than a shared type — any economy.Dice
+// value (e.g. economy.NewWallDice()) already satisfies it structurally, so
+// production wiring in cmd/server just passes that straight in.
+type Dice interface {
+	Float64() float64 // [0,1) — math/rand.Float64's contract
+}
+
+// wallDice is the production Dice default (InterceptScanHandler.Dice is
+// nil-checked and falls back to this) — delegates to the global math/rand
+// source, matching economy.wallDice's own behaviour.
+type wallDice struct{}
+
+func (wallDice) Float64() float64 { return rand.Float64() }
+
+// NavalSeizureOutcome is R5's three-way naval interception result, rolled
+// ONCE in seize() (events store outcomes, never intentions — CLAUDE.md).
+type NavalSeizureOutcome string
+
+const (
+	// NavalSeizureCaptured: the interceptor takes the cargo AND the ship —
+	// strawman 40%.
+	NavalSeizureCaptured NavalSeizureOutcome = "captured"
+	// NavalSeizureLimped: half the cargo is destroyed outright, the ship
+	// limps home with the rest — strawman 40%.
+	NavalSeizureLimped NavalSeizureOutcome = "limped"
+	// NavalSeizureSunk: the whole cargo and the ship are lost — strawman 20%.
+	NavalSeizureSunk NavalSeizureOutcome = "sunk"
+)
+
+// rollNavalSeizureOutcome applies R5's strawman odds (captured 40% / limped
+// 40% / sunk 20% — "okalibrerat, justeras med prissättningen"). Tests inject
+// a Dice that returns a fixed value to force each branch deterministically.
+func rollNavalSeizureOutcome(d Dice) NavalSeizureOutcome {
+	roll := d.Float64()
+	switch {
+	case roll < 0.4:
+		return NavalSeizureCaptured
+	case roll < 0.8:
+		return NavalSeizureLimped
+	default:
+		return NavalSeizureSunk
+	}
+}
 
 // Interception tuning (calibration — tune freely). radius: an enemy sentry watching
 // a hex within this many hexes of a caravan's current position seizes it. interval:
@@ -39,23 +88,36 @@ type InterceptScanHandler struct {
 	eventStore *events.Store
 	notifier   Notifier
 	clk        clock.Clock
+	// Dice is R5's naval-seizure-outcome seam. nil-guarded (falls back to
+	// wallDice{}, production behaviour) — tests inject a fixed-value Dice to
+	// force captured/limped/sunk deterministically.
+	Dice Dice
 }
 
 // NewInterceptScanHandler creates an InterceptScanHandler.
 func NewInterceptScanHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, notifier Notifier, clk clock.Clock) *InterceptScanHandler {
-	return &InterceptScanHandler{pool: pool, scheduler: sched, eventStore: store, notifier: notifier, clk: clk}
+	return &InterceptScanHandler{pool: pool, scheduler: sched, eventStore: store, notifier: notifier, clk: clk, Dice: wallDice{}}
+}
+
+func (h *InterceptScanHandler) dice() Dice {
+	if h.Dice != nil {
+		return h.Dice
+	}
+	return wallDice{}
 }
 
 type inFlightTransport struct {
-	id       uuid.UUID
-	owner    uuid.UUID
-	originQ  int
-	originR  int
-	destQ    int
-	destR    int
-	category string
-	departs  time.Time
-	arrives  time.Time
+	id         uuid.UUID
+	owner      uuid.UUID
+	originID   *uuid.UUID
+	originQ    int
+	originR    int
+	destQ      int
+	destR      int
+	category   string
+	departs    time.Time
+	arrives    time.Time
+	shipUnitID *uuid.UUID
 }
 
 // Handle scans every in-transit interceptable caravan once, seizing any caught by
@@ -74,7 +136,7 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	eyesByOwner := map[uuid.UUID][]province.Eye{}
 
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, origin_q, origin_r, dest_q, dest_r, category, departs_at, arrives_at
+		`SELECT id, owner_id, origin_id, origin_q, origin_r, dest_q, dest_r, category, departs_at, arrives_at, ship_unit_id
 		 FROM transports
 		 WHERE world_id = $1 AND status = 'in_transit' AND interceptable = true`,
 		e.WorldID,
@@ -85,8 +147,8 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	var fleet []inFlightTransport
 	for rows.Next() {
 		var t inFlightTransport
-		if scanErr := rows.Scan(&t.id, &t.owner, &t.originQ, &t.originR, &t.destQ, &t.destR,
-			&t.category, &t.departs, &t.arrives); scanErr != nil {
+		if scanErr := rows.Scan(&t.id, &t.owner, &t.originID, &t.originQ, &t.originR, &t.destQ, &t.destR,
+			&t.category, &t.departs, &t.arrives, &t.shipUnitID); scanErr != nil {
 			rows.Close()
 			return fmt.Errorf("intercept scan: scan transport: %w", scanErr)
 		}
@@ -195,27 +257,57 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 		return err
 	}
 
-	// The raider hauls the cargo home to their capital. No capital (rare) → the goods
-	// are lost to the raid rather than credited.
-	var capital *uuid.UUID
-	_ = tx.QueryRow(ctx,
-		`SELECT id FROM settlements WHERE owner_id = $1 AND world_id = $2 AND is_capital = true LIMIT 1`,
-		interceptor, worldID,
-	).Scan(&capital)
-	if capital != nil {
-		if _, err := tx.Exec(ctx,
-			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-			 SELECT $1, tg.good_key, tg.quantity, 0, 1000000, current_world_tick()
-			 FROM transport_goods tg WHERE tg.transport_id = $2
-			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-			     amount = LEAST(
-			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
-			             + EXCLUDED.amount,
-			         settlement_goods.cap),
-			     calc_tick = current_world_tick()`,
-			*capital, t.id,
-		); err != nil {
-			return fmt.Errorf("credit loot: %w", err)
+	// R5 (megaron_plan_sjohandel_kraver_skepp.md): a naval transport with a
+	// bound ship rolls ONE of three outcomes (events store outcomes, never
+	// intentions). A land caravan, or a pre-slice naval transport with no
+	// bound ship (R6), keeps today's unconditional "loot goes to capital"
+	// behaviour untouched.
+	var shipOutcome *NavalSeizureOutcome
+	if t.shipUnitID != nil {
+		outcome := rollNavalSeizureOutcome(h.dice())
+		shipOutcome = &outcome
+		switch outcome {
+		case NavalSeizureCaptured:
+			// Cargo behaves exactly like a land caravan's loot (below); the
+			// ship ALSO changes hands, which needs combat's march machinery
+			// (transport may not import combat, G1) — cross the boundary via
+			// event emission, in the SAME tx so the flip and the event are
+			// atomic.
+			if err := creditLootToCapital(ctx, tx, worldID, interceptor, t.id); err != nil {
+				return err
+			}
+			if h.scheduler != nil {
+				var currentTick int
+				_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+				if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledNavalSeizureOutcome,
+					map[string]any{
+						"transport_id": t.id, "ship_unit_id": *t.shipUnitID,
+						"outcome": string(outcome), "captor_id": interceptor, "q": pos.Q, "r": pos.R,
+					}, currentTick); err != nil {
+					return fmt.Errorf("enqueue naval seizure outcome: %w", err)
+				}
+			}
+		case NavalSeizureLimped:
+			// Half the cargo is destroyed outright (never credited to the
+			// interceptor — it simply doesn't exist any more); the rest
+			// sails home with the same ship, released on arrival exactly
+			// like R3's ship_return leg (kind="damaged_return" is in
+			// ArrivalHandler's release set).
+			if err := h.dispatchLimpedReturn(ctx, tx, worldID, t, pos, goods); err != nil {
+				return fmt.Errorf("dispatch limped return: %w", err)
+			}
+		case NavalSeizureSunk:
+			// Cargo and ship both lost outright — no loot for anyone.
+			if _, err := tx.Exec(ctx,
+				`UPDATE units SET status = 'disbanded', size = 0, crew = 0, updated_at = now() WHERE id = $1`,
+				*t.shipUnitID,
+			); err != nil {
+				return fmt.Errorf("sink seized ship: %w", err)
+			}
+		}
+	} else {
+		if err := creditLootToCapital(ctx, tx, worldID, interceptor, t.id); err != nil {
+			return err
 		}
 	}
 
@@ -225,19 +317,112 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 
 	// Audit + notify both Wanax: the raider (seized) and the victim (raided). Async
 	// play → the victim is likely offline when the raid lands, so the notice matters.
+	auditPayload := map[string]any{"transport_id": t.id, "sentry_unit_id": sentryID, "interceptor": interceptor, "q": pos.Q, "r": pos.R}
+	seizedPayload := map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R, "goods": goods}
+	raidedPayload := map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R, "goods": goods}
+	if shipOutcome != nil {
+		auditPayload["ship_outcome"] = string(*shipOutcome)
+		auditPayload["ship_unit_id"] = *t.shipUnitID
+		seizedPayload["ship_outcome"] = string(*shipOutcome)
+		seizedPayload["ship_unit_id"] = *t.shipUnitID
+		raidedPayload["ship_outcome"] = string(*shipOutcome)
+		raidedPayload["ship_unit_id"] = *t.shipUnitID
+	}
 	if h.eventStore != nil {
-		_, _ = h.eventStore.Append(ctx, t.id, events.StreamProvince, "CaravanIntercepted",
-			map[string]any{"transport_id": t.id, "sentry_unit_id": sentryID, "interceptor": interceptor, "q": pos.Q, "r": pos.R},
-			worldID, nil)
+		_, _ = h.eventStore.Append(ctx, t.id, events.StreamProvince, "CaravanIntercepted", auditPayload, worldID, nil)
 	}
 	if h.notifier != nil {
-		_ = h.notifier.NotifyPlayer(ctx, worldID, interceptor, "CaravanSeized", 3,
-			map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R, "goods": goods})
-		_ = h.notifier.NotifyPlayer(ctx, worldID, t.owner, "CaravanRaided", 3,
-			map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R, "goods": goods})
+		_ = h.notifier.NotifyPlayer(ctx, worldID, interceptor, "CaravanSeized", 3, seizedPayload)
+		_ = h.notifier.NotifyPlayer(ctx, worldID, t.owner, "CaravanRaided", 3, raidedPayload)
 	}
-	slog.Info("caravan intercepted", "transport", t.id, "by", interceptor, "sentry", sentryID, "q", pos.Q, "r", pos.R)
+	shipOutcomeLog := "n/a"
+	if shipOutcome != nil {
+		shipOutcomeLog = string(*shipOutcome)
+	}
+	slog.Info("caravan intercepted", "transport", t.id, "by", interceptor, "sentry", sentryID, "q", pos.Q, "r", pos.R,
+		"ship_outcome", shipOutcomeLog)
 	return nil
+}
+
+// creditLootToCapital is the pre-R5 seizure behaviour, unchanged: the
+// interceptor hauls the cargo home to their capital, or it's lost to the raid
+// if they have none (rare).
+func creditLootToCapital(ctx context.Context, tx pgx.Tx, worldID, interceptor, transportID uuid.UUID) error {
+	var capital *uuid.UUID
+	_ = tx.QueryRow(ctx,
+		`SELECT id FROM settlements WHERE owner_id = $1 AND world_id = $2 AND is_capital = true LIMIT 1`,
+		interceptor, worldID,
+	).Scan(&capital)
+	if capital == nil {
+		return nil
+	}
+	if _, err := tx.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 SELECT $1, tg.good_key, tg.quantity, 0, 1000000, current_world_tick()
+		 FROM transport_goods tg WHERE tg.transport_id = $2
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
+		     amount = LEAST(
+		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
+		             + EXCLUDED.amount,
+		         settlement_goods.cap),
+		     calc_tick = current_world_tick()`,
+		*capital, transportID,
+	); err != nil {
+		return fmt.Errorf("credit loot: %w", err)
+	}
+	return nil
+}
+
+// dispatchLimpedReturn is R5's "limped" outcome: half the manifest is
+// destroyed on the spot, the other half sails home with the same ship on a
+// fresh "damaged_return" transport from the capture hex — ArrivalHandler
+// credits that half and releases the ship when it lands (same mechanism as
+// R3's ship_return leg). No avsändarstad left on record (origin_id vanished)
+// → falls back to the owner's nearest own port, same as ArrivalHandler's own
+// vanished-destination fallback; if the owner has NO settlement left at all,
+// there is nowhere to dispatch a leg TO, so the ship is stranded on the spot
+// instead (the half-cargo is lost either way — there's no settlement to
+// credit it to).
+func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, t inFlightTransport, pos province.MapPosition, goods []manifestLine) error {
+	half := Manifest{}
+	for _, g := range goods {
+		if remaining := g.Quantity / 2; remaining > 0 {
+			half[g.GoodKey] = remaining
+		}
+	}
+
+	destID := t.originID
+	if destID == nil {
+		if portID, _, _, found, perr := NearestOwnPort(ctx, tx, worldID, t.owner, t.originQ, t.originR); perr == nil && found {
+			destID = &portID
+		}
+	}
+	if destID == nil {
+		return StrandShip(ctx, tx, *t.shipUnitID, pos.Q, pos.R)
+	}
+
+	travelMins := 30.0
+	if path, _, ok, err := province.FindPath(ctx, tx, worldID,
+		pos, province.MapPosition{Q: t.originQ, R: t.originR}, "naval"); err == nil && ok {
+		travelMins = 30.0 + float64(len(path)-1)*2.0
+	}
+	travelTicks := int(math.Round(travelMins / 60))
+	if travelTicks < 1 {
+		travelTicks = 1
+	}
+	var currentTick int
+	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	departsAt := h.clk.Now()
+	arrivesAt := departsAt.Add(time.Duration(travelMins * float64(time.Minute)))
+
+	_, err := Dispatch(ctx, tx, h.scheduler, DispatchParams{
+		WorldID: worldID, OwnerID: t.owner, Kind: "damaged_return",
+		OriginID: *destID, DestID: *destID, Category: "naval",
+		OriginQ: pos.Q, OriginR: pos.R, DestQ: t.originQ, DestR: t.originR,
+		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
+		Manifest: half, Interceptable: true, ShipUnitID: t.shipUnitID,
+	})
+	return err
 }
 
 // manifestLine is one good in a seized caravan's notice payload — same

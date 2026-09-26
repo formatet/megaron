@@ -94,6 +94,9 @@ var tickPriorities = map[ScheduledEventType]int{
 	// 30 — strid.
 	ScheduledBattleTick:      tickPriorityBattle,
 	ScheduledOccupationCheck: tickPriorityBattle,
+	// A captured ship's ownership change + home march is a violence outcome,
+	// same tier as the battle/occupation consequences above it.
+	ScheduledNavalSeizureOutcome: tickPriorityBattle,
 
 	// 40 — magasinet.
 	ScheduledSitosTick: tickPriorityReserve,
