@@ -7,7 +7,9 @@ import (
 	"log/slog"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -148,6 +150,29 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'delivered', updated_at = now() WHERE id = $1`, p.TransportID)
 	}
 
+	// R4 (megaron_plan_sjohandel_mellan_spelare.md): this leg landing IS the
+	// ship's homecoming when it bound one (leg 2 sailed the initiator's own
+	// hull home instead of an empty ship_return leg, DeliveryHandler.Handle).
+	// p.DestinationID is the initiator's own settlement (ThenReturn always
+	// credits the trade's origin) — exactly R3's "origin" for release
+	// purposes, so the same fallback order applies: still an active
+	// settlement the owner holds ⇒ garrison there; otherwise the owner's
+	// nearest own port; no settlement left at all ⇒ left `positioned` on the
+	// arrival hex (R3, transport.StrandShip's exact contract, copied here
+	// because economy may not import transport — G1).
+	if p.TransportID != (uuid.UUID{}) {
+		var shipUnitID *uuid.UUID
+		var ownerID uuid.UUID
+		var destQ, destR int
+		if serr := tx.QueryRow(ctx,
+			`SELECT ship_unit_id, owner_id, dest_q, dest_r FROM transports WHERE id = $1`, p.TransportID,
+		).Scan(&shipUnitID, &ownerID, &destQ, &destR); serr == nil && shipUnitID != nil {
+			if rerr := releaseShipAfterTradeReturn(ctx, tx, e.WorldID, *shipUnitID, ownerID, p.DestinationID, destQ, destR); rerr != nil {
+				slog.Error("release ship after trade return", "ship", *shipUnitID, "err", rerr)
+			}
+		}
+	}
+
 	if err = tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
@@ -171,4 +196,82 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 
 	slog.Info("trade return delivered", "buyer", p.DestinationID, "good", p.GoodKey, "qty", p.Quantity)
 	return nil
+}
+
+// releaseShipAfterTradeReturn is R4's frigörande when leg 2 of a negotiated
+// trade sailed the initiator's own ship home (megaron_plan_sjohandel_mellan_
+// spelare.md). economy may not import transport (G1), so — same reasoning as
+// dispatchShipReturnLeg above, and carrier.go's own NearestOwnPort doc
+// comment about crossing this exact boundary — this is its own small copy of
+// transport.ReleaseShip / NearestOwnPort / StrandShip's exact SQL and
+// fallback order, not a shared call. homeID is where the ship should end up
+// (R3's fallback order): still an active settlement the owner holds ⇒
+// garrison there; else the owner's nearest own settlement (shipyard
+// preferred) ⇒ garrison there; no settlement left at all ⇒ left `positioned`
+// on the arrival hex.
+func releaseShipAfterTradeReturn(ctx context.Context, tx pgx.Tx, worldID, shipUnitID, ownerID, homeID uuid.UUID, homeQ, homeR int) error {
+	var state string
+	var curOwner uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT state, owner_id FROM settlements WHERE id = $1`, homeID,
+	).Scan(&state, &curOwner); err == nil && state == "active" && curOwner == ownerID {
+		_, err := tx.Exec(ctx,
+			`UPDATE units SET status = 'garrison', settlement_id = $2, updated_at = now()
+			 WHERE id = $1 AND status = 'freighting'`, shipUnitID, homeID)
+		return err
+	}
+
+	rows, err := tx.Query(ctx,
+		`SELECT s.id, p.map_q, p.map_r,
+		        EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = 'shipyard') AS has_shipyard
+		 FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE s.owner_id = $1 AND s.world_id = $2 AND s.state = 'active'`,
+		ownerID, worldID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	type candidate struct {
+		id          uuid.UUID
+		q, r        int
+		hasShipyard bool
+	}
+	var withYard, all []candidate
+	for rows.Next() {
+		var c candidate
+		if scanErr := rows.Scan(&c.id, &c.q, &c.r, &c.hasShipyard); scanErr != nil {
+			return scanErr
+		}
+		all = append(all, c)
+		if c.hasShipyard {
+			withYard = append(withYard, c)
+		}
+	}
+	if rowsErr := rows.Err(); rowsErr != nil {
+		return rowsErr
+	}
+
+	pick := withYard
+	if len(pick) == 0 {
+		pick = all
+	}
+	if len(pick) == 0 {
+		_, err := tx.Exec(ctx,
+			`UPDATE units SET status = 'positioned', settlement_id = NULL, q = $2, r = $3, updated_at = now()
+			 WHERE id = $1 AND status = 'freighting'`, shipUnitID, homeQ, homeR)
+		return err
+	}
+	best := pick[0]
+	bestDist := province.HexDistance(province.MapPosition{Q: homeQ, R: homeR}, province.MapPosition{Q: best.q, R: best.r})
+	for _, c := range pick[1:] {
+		d := province.HexDistance(province.MapPosition{Q: homeQ, R: homeR}, province.MapPosition{Q: c.q, R: c.r})
+		if d < bestDist {
+			best, bestDist = c, d
+		}
+	}
+	_, err = tx.Exec(ctx,
+		`UPDATE units SET status = 'garrison', settlement_id = $2, updated_at = now()
+		 WHERE id = $1 AND status = 'freighting'`, shipUnitID, best.id)
+	return err
 }

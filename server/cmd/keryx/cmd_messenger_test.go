@@ -149,6 +149,32 @@ func TestDeliveryETALine(t *testing.T) {
 			t.Errorf("expected empty line for malformed timestamp, got %q", got)
 		}
 	})
+
+	// sjöhandel mellan spelare (megaron_plan_sjohandel_mellan_spelare.md): an
+	// accepted trade that sailed names the initiator's ship, stamped onto
+	// trade_offer at accept time (ship_name) — a land trade leaves it empty
+	// and the line is unaffected.
+	t.Run("ship_name present shows the sea leg", func(t *testing.T) {
+		offer := map[string]any{
+			"goods_arrives_at": future(2 * time.Hour),
+			"ship_name":        "Persephone, Merchantman",
+		}
+		got := deliveryETALine(c, offer)
+		if !strings.Contains(got, "by sea on Persephone, Merchantman") {
+			t.Errorf("expected the ship name in the line, got %q", got)
+		}
+	})
+
+	t.Run("empty ship_name (land trade) shows nothing extra", func(t *testing.T) {
+		offer := map[string]any{
+			"goods_arrives_at": future(2 * time.Hour),
+			"ship_name":        "",
+		}
+		got := deliveryETALine(c, offer)
+		if strings.Contains(got, "by sea") {
+			t.Errorf("expected no sea-leg text for a land trade, got %q", got)
+		}
+	})
 }
 
 // TestOfferStatusLabel guards the outbox against the misreading that cost a
