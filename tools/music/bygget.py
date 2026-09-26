@@ -8,9 +8,12 @@ Tonart: B♭-dur har exakt samma toner som introts D frygisk — samma tonförr�
 Motivet D–A–B♭–A ärvs ordagrant; A blir ledton som löser upp i B♭. Hornet öppnar med familjens kvint D–A
 och svarar i slutet med B♭–F — arbetet är gjort.
 
-Form (takt à 6/8, punkterad fjärdedel = 84):
+Form (takt à 6/8, punkterad fjärdedel = 66):
   morgonen 4 · motivet i dur 8 · verkstaden (trähammare) 8 · skuggan (g-moll, sistrum) 8 ·
-  motivet fullt 8 · kadens 4
+  motivet igen 8 · kadens 4
+
+v2 (Timothy 2026-09-26: "för storslaget, långsammare?"): 84 → 66, inga hornackord, ingen galopp,
+högst mf. Det som föll var det moderna/orkestrala — lyra, aulos, ramtrumma och sistrum är kvar.
 
 Kör: <venv med numpy scipy mido soundfile>/python tools/music/bygget.py
 Ut:  tools/music/prov/bygget.{abc,mid} + bygget_sf.ogg + bygget_synth.ogg
@@ -22,21 +25,21 @@ from minoan_intro import lyre_bar, bass_bar, pad_bar, bass
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'prov')
-QPM = 84
+QPM = 66
 
 # (namn, melodi, grundtoner, basmönster, trummönster, hornackord?, dynamik)
 # K:Bb — bokstäverna B och E klingar B♭ och E♭. Aldrig A som grundton (A–E♭ är ingen ren kvint).
 S = [
     ("morgonen",  ["z6"] * 4, "BBBB", "pedal", None, False, "mp"),
     ("motivet",   ["d3 A3", "B2A B2c", "d2e f2d", "c6", "d3 A3", "B2c d2e", "f2e d2c", "B6"],
-                  "BBBFBEFB", "calm", "light", False, "mf"),
+                  "BBBFBEFB", "calm", "light", False, "mp"),
     ("verkstaden", ["f2f g2f", "e2d c3", "d2d e2d", "c2B A3", "B2c d2e", "f2g a2f", "g2f e2c", "d6"],
-                  "BEBFBFCB", "gallop", "verk", True, "mf"),
+                  "BEBFBFCB", "calm", "verk", False, "mf"),
     ("skuggan",   ["G3 B3", "d2c B2A", "G2A B2c", "d6", "e3 d3", "c2B A2G", "A2B c2A", "F6"],
                   "GGCGECFF", "long", "sistrum", False, "mp"),
     ("motivet2",  ["d3 A3", "B2A B2c", "d2e f2d", "c6", "d3 f3", "g2f e2d", "c2B A2c", "B6"],
-                  "BBBFBEFB", "gallop", "full", True, "f"),
-    ("kadens",    ["d3 c3", "B6", "z6", "z6"], "FBBB", "calm", "end", True, "f"),
+                  "BBBFBEFB", "calm", "verk", False, "mf"),
+    ("kadens",    ["d3 c3", "B6", "z6", "z6"], "FBBB", "long", "end", False, "mp"),
 ]
 
 # e = hög träkloss (GM 76) — hammaren i verkstaden. ^F, = sistrum (tamburin), F,, / A,, = ramtrumma.
@@ -58,9 +61,9 @@ def build_abc():
                 drm.append(DRUMS[dstyle] if dstyle else "z6")
     n = len(mel)
     hrn = ["z6"] * n
-    hrn[0] = "!mf!D,3 A,3"            # familjens kvint, som introt och orderhornet
-    hrn[2] = "!mp!D,3 A,3"
-    hrn[n - 3] = "!mf!B,,3 F,3"       # svaret: arbetet är gjort
+    hrn[0] = "!mp!D,3 A,3"            # familjens kvint, som introt och orderhornet
+    hrn[2] = "!p!D,3 A,3"
+    hrn[n - 3] = "!mp!B,,3 F,3"       # svaret: arbetet är gjort
     def v(bars): return "|".join(bars) + "|]"
     return f"""X:1
 T:Bygget (minoerna)
