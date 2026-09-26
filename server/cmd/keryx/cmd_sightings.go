@@ -13,6 +13,7 @@ import (
 // server/api/handlers/foreign_units.go), plus the distance/bearing keryx
 // derives locally — same pattern as mapCmd's `cand` type.
 type sightingUnit struct {
+	Name     string `json:"name"`
 	Owner    string `json:"owner"`
 	Type     string `json:"type"`
 	Category string `json:"category"`
@@ -175,6 +176,9 @@ something of mine", not "how far is it from my palace".`,
 					}
 					fmt.Printf("  %d hexes %-2s   %-13s %-13s ×%-5d %s\n",
 						u.Distance, u.Bearing, owner, u.Type, u.Size, detail)
+					if u.Name != "" {
+						fmt.Printf("                   %s\n", u.Name)
+					}
 					if u.Cargo != nil {
 						fmt.Printf("                                                   carrying: %s ×%d\n",
 							u.Cargo.Type, u.Cargo.Size)

@@ -43,6 +43,7 @@ type messengerMarkerView struct {
 	DestQ   int    `json:"dest_q"`
 	DestR   int    `json:"dest_r"`
 	Own     bool   `json:"own"`
+	Sender  string `json:"sender"`
 }
 
 // TestMarches_ForeignMarchHiddenWhenCurrentPositionInFog is the leak regression:
@@ -282,4 +283,60 @@ func callMessengers(t *testing.T, pool *pgxpool.Pool, authSvc *auth.Service, wor
 		t.Fatalf("decode /messengers: %v (body: %s)", err, rec.Body.String())
 	}
 	return out
+}
+
+// TestMapMessengers_ForeignRunnerNamesItsSender — the map tooltip says whose
+// runner it is (Timothy 2026-09-26). A runner just leaving a visible enemy
+// city is on the viewer's map, carrying its sender's name.
+func TestMapMessengers_ForeignRunnerNamesItsSender(t *testing.T) {
+	pool := citiesTestPool(t)
+	ctx := context.Background()
+
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'archived') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(ctx, `DELETE FROM worlds WHERE id = $1`, worldID) })
+
+	authSvc := auth.NewService(pool, "test-secret")
+	viewerID, token := registerViewer(t, ctx, authSvc, "msg-viewer")
+
+	enemyName := "msg-enemy-" + uuid.New().String()
+	var enemyID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`, enemyName,
+	).Scan(&enemyID); err != nil {
+		t.Fatalf("create enemy: %v", err)
+	}
+
+	capProv := insertProvince(t, ctx, pool, worldID, 0, 0)
+	insertSettlement(t, ctx, pool, worldID, capProv, "Viewerton", viewerID, true)
+	for q := 0; q <= 20; q++ {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'plains')`, worldID, q); err != nil {
+			t.Fatalf("map_tiles(%d,0): %v", q, err)
+		}
+	}
+	originSett := insertSettlement(t, ctx, pool, worldID, insertProvince(t, ctx, pool, worldID, 2, 0), "Enemyburg", enemyID, true)
+	destSett := insertSettlement(t, ctx, pool, worldID, insertProvince(t, ctx, pool, worldID, 20, 0), "Faraway", enemyID, false)
+
+	now := time.Now().UTC().Truncate(time.Second)
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, kind, message_text, status, hex_q, hex_r, sent_at, arrives_at)
+		 VALUES ($1, $2, $3, $4, 'message', 'hail', 'outbound', 2, 0, $5, $6)`,
+		worldID, enemyID, originSett, destSett, now, now.Add(10*time.Hour),
+	); err != nil {
+		t.Fatalf("insert messenger: %v", err)
+	}
+
+	got := callMessengers(t, pool, authSvc, worldID, token, now)
+	if len(got) != 1 {
+		t.Fatalf("runner leaving a visible enemy city must be shown, got %d: %+v", len(got), got)
+	}
+	if got[0].Sender != enemyName {
+		t.Errorf("runner sender = %q, want %q", got[0].Sender, enemyName)
+	}
 }

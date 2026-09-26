@@ -312,6 +312,9 @@ func TestMapTrades_StrangerSeesCaravanNotCargo(t *testing.T) {
 	if role, _ := stranger["role"].(string); role != "" {
 		t.Fatalf("stranger caravan role = %q, want \"\"", role)
 	}
+	if o, _ := stranger["owner"].(string); len(o) < 8 || o[:8] != "wanax-c-" {
+		t.Errorf("stranger caravan owner = %q, want C's name — the tooltip says whose it is", o)
+	}
 	if g, _ := stranger["good_key"].(string); g != "" {
 		t.Errorf("stranger caravan leaks good_key=%q to A", g)
 	}

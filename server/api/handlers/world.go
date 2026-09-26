@@ -1274,8 +1274,9 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(top.good_key, ''), COALESCE(top.quantity, 0),
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
-		        t.departs_at, t.arrives_at, t.category
+		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, '')
 		 FROM transports t
+		 LEFT JOIN players pl ON pl.id = t.owner_id
 		 LEFT JOIN settlements os ON os.id = t.origin_id
 		 LEFT JOIN provinces op ON op.id = os.province_id
 		 LEFT JOIN settlements ds ON ds.id = t.dest_id
@@ -1304,6 +1305,9 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		DepartsAt time.Time `json:"departs_at"`
 		ArrivesAt time.Time `json:"arrives_at"`
 		Mine      bool      `json:"mine"`
+		// Owner is the dispatching Wanax's name — whose caravan it is, which the
+		// map tooltip says for every caravan in sight. Never what it carries.
+		Owner string `json:"owner"`
 		// Role says which side of this shipment the caller is on:
 		// "sender", "recipient", or "" for a third party's caravan seen in
 		// passing. It is ADDITIVE and Mine is untouched — Mine has always
@@ -1327,7 +1331,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var destOwnerID *uuid.UUID
 		var originTerrain, destTerrain, category string
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
-			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category); err != nil {
+			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner); err != nil {
 			continue
 		}
 		// Unauthenticated callers get no ownership info at all — never let an
@@ -1398,7 +1402,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.sender_id, m.kind, m.order_payload->>'unit_id',
+		`SELECT m.id, m.sender_id, COALESCE(spl.wanax_name, spl.username, ''), m.kind, m.order_payload->>'unit_id',
 		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
 		        COALESCE(op.terrain_type, omt.terrain, ''),
 		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
@@ -1411,6 +1415,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN map_tiles omt ON omt.world_id = m.world_id AND omt.q = m.origin_q AND omt.r = m.origin_r
 		 LEFT JOIN settlements ds ON ds.id = m.destination_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 LEFT JOIN players spl ON spl.id = m.sender_id
 		 WHERE m.world_id = $1 AND m.status IN ('outbound', 'returning')`,
 		worldID,
 	)
@@ -1434,6 +1439,10 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		// plan.md Fas 5). Foreign messengers keep the tier-1 endpoint gate.
 		Own  bool   `json:"own"`
 		Kind string `json:"kind"`
+		// Sender is whose runner it is — the map tooltip names it. The runner's
+		// full name ("…'s Runner from X to Y") is not sent: its destination is
+		// the sender's business.
+		Sender string `json:"sender"`
 		// OrderUnitID ties a kind='order' runner to the unit it is
 		// running to, so the unit card can show "order på väg" + courier ETA.
 		OrderUnitID *uuid.UUID `json:"order_unit_id,omitempty"`
@@ -1447,7 +1456,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		var originTerrain, destTerrain string
 		var status string
 		var returnDepartsAt *time.Time
-		if err := rows.Scan(&m.ID, &senderID, &m.Kind, &orderUnitID,
+		if err := rows.Scan(&m.ID, &senderID, &m.Sender, &m.Kind, &orderUnitID,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
 			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt); err != nil {
 			continue

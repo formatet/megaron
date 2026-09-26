@@ -30,6 +30,7 @@ import (
 // decoding.
 type foreignUnitView struct {
 	ID       string `json:"id"`
+	Name     string `json:"name"`
 	Owner    string `json:"owner"`
 	OwnerID  string `json:"owner_id"`
 	Type     string `json:"type"`
@@ -162,6 +163,10 @@ func TestForeignUnits_LiveTierRevealsNearbyPositionedUnit(t *testing.T) {
 	}
 	if got.Q != 2 || got.R != 0 {
 		t.Errorf("visible unit position = (%d,%d), want (2,0)", got.Q, got.R)
+	}
+	// The map tooltip names every unit in sight (Timothy 2026-09-26).
+	if got.Name == "" {
+		t.Errorf("visible foreign unit carries no name: %+v", got)
 	}
 }
 

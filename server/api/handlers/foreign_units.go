@@ -6,6 +6,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -20,7 +21,11 @@ import (
 // the server does the interpolation once instead of teaching the client to
 // re-derive a stranger's march the way it derives its own.
 type foreignUnit struct {
-	ID       uuid.UUID `json:"id"`
+	ID uuid.UUID `json:"id"`
+	// Name is the server-formatted unit name ("2nd Spearmen of Knossos") —
+	// the map tooltip names every unit it shows, foreign ones included
+	// (Timothy 2026-09-26: "vems den är och vad den heter").
+	Name     string    `json:"name"`
 	Owner    string    `json:"owner"`
 	OwnerID  uuid.UUID `json:"owner_id"`
 	Type     string    `json:"type"`
@@ -195,6 +200,11 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 	if err := rows.Err(); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load foreign units")
 		return
+	}
+	// Names are loaded after the rows are drained — only for units that passed
+	// the FOW gate, and never while the query above holds its connection.
+	for i := range out {
+		out[i].Name = unit.LoadDisplayName(r.Context(), h.pool, out[i].ID)
 	}
 	if out == nil {
 		out = []foreignUnit{}
