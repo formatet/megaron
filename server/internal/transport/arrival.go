@@ -7,6 +7,7 @@ import (
 
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -58,16 +59,35 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	}
 
 	// Re-check the mover is still in transit; interception/loss cancels delivery.
-	var status string
+	var status, kind string
 	var destID *uuid.UUID
+	var shipUnitID *uuid.UUID
+	var ownerID uuid.UUID
+	var destQ, destR int
 	if err := tx.QueryRow(ctx,
-		`SELECT status, dest_id FROM transports WHERE id = $1 FOR UPDATE`, p.TransportID,
-	).Scan(&status, &destID); err != nil {
+		`SELECT status, dest_id, kind, ship_unit_id, owner_id, dest_q, dest_r
+		 FROM transports WHERE id = $1 FOR UPDATE`, p.TransportID,
+	).Scan(&status, &destID, &kind, &shipUnitID, &ownerID, &destQ, &destR); err != nil {
 		return fmt.Errorf("load transport: %w", err)
 	}
 	if status != "in_transit" {
 		return nil // intercepted, lost, or already delivered
 	}
+
+	// R3/R5 (megaron_plan_sjohandel_kraver_skepp.md): "ship_return" (the empty
+	// hemresa after a single-shot naval transfer) and "damaged_return" (the
+	// limped-home leg after a naval seizure, R5) are the two kinds whose
+	// arrival means "this ship's journey is over — release it." Every other
+	// kind leaves a bound ship exactly as bound as it was (R4: a standing sea
+	// route keeps its ship for the route's whole lifetime, including between
+	// legs in port).
+	releaseShip := shipUnitID != nil && (kind == "ship_return" || kind == "damaged_return")
+	if releaseShip {
+		if err := h.releaseArrivedShip(ctx, tx, e.WorldID, *shipUnitID, ownerID, destID, destQ, destR); err != nil {
+			return fmt.Errorf("release arrived ship: %w", err)
+		}
+	}
+
 	if destID == nil {
 		// Destination vanished (settlement removed). Nothing to credit — close it out.
 		if _, err := tx.Exec(ctx,
@@ -158,5 +178,46 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		})
 	}
 
+	return nil
+}
+
+// releaseArrivedShip is R3's frigörande, called (in the SAME tx as the
+// transport's own status flip, before commit — R3's idempotency requirement)
+// whenever a "ship_return" or "damaged_return" leg lands: the ship goes back
+// to 'garrison' at its home port if that settlement is still an active
+// settlement the owner holds, else at the owner's nearest other own port
+// (R3: "finns hemstaden inte längre som egen stad"), else it is left
+// `positioned` on the arrival hex and the owner is notified (R3: "ingen →
+// skeppet står positioned på sista hex och en notis säger det").
+func (h *ArrivalHandler) releaseArrivedShip(
+	ctx context.Context, tx pgx.Tx,
+	worldID, shipUnitID, ownerID uuid.UUID, destID *uuid.UUID, destQ, destR int,
+) error {
+	if destID != nil {
+		var state string
+		var curOwner uuid.UUID
+		if err := tx.QueryRow(ctx,
+			`SELECT state, owner_id FROM settlements WHERE id = $1`, *destID,
+		).Scan(&state, &curOwner); err == nil && state == "active" && curOwner == ownerID {
+			return ReleaseShip(ctx, tx, shipUnitID, *destID)
+		}
+	}
+
+	if portID, _, _, found, err := NearestOwnPort(ctx, tx, worldID, ownerID, destQ, destR); err != nil {
+		return err
+	} else if found {
+		return ReleaseShip(ctx, tx, shipUnitID, portID)
+	}
+
+	if err := StrandShip(ctx, tx, shipUnitID, destQ, destR); err != nil {
+		return err
+	}
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "ShipStranded", 2, map[string]any{
+			"unit_id": shipUnitID,
+			"q":       destQ,
+			"r":       destR,
+		})
+	}
 	return nil
 }
