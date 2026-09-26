@@ -53,3 +53,14 @@ export function warMovements({ units = [], foreign = [], marches = [], provinces
   const byArrival = (a, b) => String(a.arrives_at).localeCompare(String(b.arrives_at));
   return { outgoing: outgoing.sort(byArrival), incoming: incoming.sort(byArrival) };
 }
+
+// incomingTargetKeys: "q,r" of every own province something hostile is
+// marching onto — the map's pulsing red glow. Same incoming list the War tab
+// shows, so the map and the drawer can never disagree about a threat. Legacy
+// columns count only with intent 'attack' (a recall column is no threat).
+export function incomingTargetKeys({ foreign = [], marches = [], provinces = [] }) {
+  const { incoming } = warMovements({
+    foreign, provinces, marches: marches.filter(m => m.intent === 'attack'),
+  });
+  return new Set(incoming.map(m => m.target_q + ',' + m.target_r));
+}

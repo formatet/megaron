@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { warMovements } from './movements.js';
+import { warMovements, incomingTargetKeys } from './movements.js';
 
 const provinces = [
   { q: 0, r: 0, own: true, name: 'Knossos' },
@@ -45,4 +45,28 @@ test('legacy marching_armies rows (recall) still show, sorted by arrival with un
   });
   assert.deepEqual(outgoing.map(m => m.title), ['Recall', 'A']);
   assert.deepEqual(incoming.map(m => m.title), ['Attack']);
+});
+
+test('the map glow lights own provinces a foreign march is headed for — never a march elsewhere', () => {
+  const keys = incomingTargetKeys({
+    provinces,
+    foreign: [
+      { status: 'marching', type: 'infantry', size: 40, owner: 'Minos', q: 3, r: 3, target_q: 0, target_r: 0 },
+      { status: 'marching', type: 'infantry', size: 40, owner: 'Minos', q: 3, r: 3, target_q: 5, target_r: 5 },
+      { status: 'positioned', type: 'infantry', size: 40, owner: 'Minos', q: 1, r: 0 },
+    ],
+    marches: [
+      // own legacy attack on someone else — not an incoming threat
+      { intent: 'attack', origin_q: 0, origin_r: 0, target_q: 5, target_r: 5 },
+    ],
+  });
+  assert.deepEqual([...keys], ['0,0']);
+});
+
+test('a legacy recall column onto an own province is no threat', () => {
+  const keys = incomingTargetKeys({
+    provinces,
+    marches: [{ intent: 'recall', origin_q: 5, origin_r: 5, target_q: 0, target_r: 0 }],
+  });
+  assert.equal(keys.size, 0);
 });
