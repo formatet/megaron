@@ -13,6 +13,7 @@ import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actors
 import { eyeSees } from './sight.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
+import { unitHoverLines } from '../ui/hover.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -361,6 +362,16 @@ function unitHexNow(u) {
     return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: u.q, r: u.r};
   }
   return u.q != null ? {q: u.q, r: u.r} : null;
+}
+
+// legHexNow: the hex a caravan or runner walker is drawn on right now —
+// the same hexPathPx interpolation render() steps 6–7 use.
+function legHexNow(oq, or, dq, dr, startIso, endIso) {
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  const progress = Math.min(1, Math.max(0, (serverNow() - start) / (end - start)));
+  const pos = hexPathPx(oq, or, dq, dr, progress);
+  return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: oq, r: or};
 }
 
 function isTileVisible(q, r) {
@@ -4375,11 +4386,25 @@ export function initMap() {
       // enhets u.q/u.r är avgångshexen — gångaren ritas vid pathPx/hexPathPx
       // interpolerade waypoint, så tooltipen måste läsa samma position som
       // spriten. Annars pekar namnet på en tom hex enheten lämnat.
-      const names = (State.unitsData || []).filter(u => {
+      const own = (State.unitsData || []).filter(u => {
         const at = unitHexNow(u);
         if (at) return at.q === h.q && at.r === h.r;
         return prov && u.settlement_id && u.settlement_id === prov.settlement_id;
-      }).map(u => u.display_name).filter(Boolean);
+      });
+      // Every other actor is placed exactly where render() draws it — foreign
+      // units only on live tiles, caravans and runners along their leg.
+      const here = at => at && at.q === h.q && at.r === h.r;
+      const foreign = (State.foreignUnitData || []).filter(u =>
+        (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r));
+      const caravans = (State.tradeData || []).filter(t =>
+        here(legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at)));
+      const runners = (State.messengerData || []).filter(m =>
+        here(legHexNow(m.origin_q, m.origin_r, m.dest_q, m.dest_r, m.sent_at, m.arrives_at)));
+      const placeName = (q, r) => {
+        const p = State.provinceData.find(p => p.q === q && p.r === r);
+        return p && p.name ? p.name : `(${q},${r})`;
+      };
+      const names = unitHoverLines({ own, foreign, caravans, runners, placeName });
       if (prov) {
         const parts = [prov.name, tl];
         if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
