@@ -214,7 +214,14 @@ func transferCmd() *cobra.Command {
 				return err
 			}
 			mins, _ := resp["travel_min"].(float64)
-			fmt.Printf("Transfer dispatched: %.1f %s → %s · arrives in %.0f min\n", qty, good, destName, mins)
+			line := fmt.Sprintf("Transfer dispatched: %.1f %s → %s · arrives in %.0f min", qty, good, destName, mins)
+			// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md
+			// R3): a naval transfer names the ship carrying it and warns it
+			// won't be free again until it's sailed home too.
+			if shipName, _ := resp["ship_name"].(string); shipName != "" {
+				line += fmt.Sprintf("\n  ⛵ carried by %s — the ship sails home empty afterward and isn't free again until it does", shipName)
+			}
+			fmt.Println(line)
 			return nil
 		},
 	}
