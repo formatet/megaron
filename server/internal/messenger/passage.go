@@ -398,7 +398,7 @@ func (h *PassageScanHandler) takeReserveOne(ctx context.Context, worldID uuid.UU
 func (h *PassageScanHandler) boardTransports(ctx context.Context, worldID uuid.UUID, currentTick int) error {
 	windowStart := h.clk.Now().Add(-tick.RealUntil(passageDepartureWindowTicks, 0))
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, dest_id, dest_q, dest_r, due_tick, arrives_at, ship_unit_id
+		`SELECT id, owner_id, origin_id, dest_id, dest_q, dest_r, due_tick, arrives_at, ship_unit_id
 		   FROM transports
 		  WHERE world_id = $1 AND status = 'in_transit' AND ship_unit_id IS NOT NULL
 		    AND category = 'naval' AND departs_at >= $2`,
@@ -409,6 +409,7 @@ func (h *PassageScanHandler) boardTransports(ctx context.Context, worldID uuid.U
 	}
 	type carrier struct {
 		id, owner    uuid.UUID
+		originID     uuid.UUID
 		destID       uuid.UUID
 		destQ, destR int
 		dueTick      int
@@ -418,7 +419,7 @@ func (h *PassageScanHandler) boardTransports(ctx context.Context, worldID uuid.U
 	var carriers []carrier
 	for rows.Next() {
 		var c carrier
-		if err := rows.Scan(&c.id, &c.owner, &c.destID, &c.destQ, &c.destR, &c.dueTick, &c.arrivesAt, &c.shipUnitID); err != nil {
+		if err := rows.Scan(&c.id, &c.owner, &c.originID, &c.destID, &c.destQ, &c.destR, &c.dueTick, &c.arrivesAt, &c.shipUnitID); err != nil {
 			rows.Close()
 			return err
 		}
@@ -437,7 +438,9 @@ func (h *PassageScanHandler) boardTransports(ctx context.Context, worldID uuid.U
 		if shipName != nil && *shipName != "" {
 			name = *shipName
 		}
-		if err := h.boardEligible(ctx, worldID, c.owner, c.destID, province.MapPosition{Q: c.destQ, R: c.destR},
+		// The PORT waiting messengers stand at is the transport's ORIGIN (where
+		// it departed from); the disembark point is its destination.
+		if err := h.boardEligible(ctx, worldID, c.owner, c.originID, province.MapPosition{Q: c.destQ, R: c.destR},
 			c.dueTick, c.arrivesAt, boardedCarrier{transportID: &c.id, name: name}); err != nil {
 			slog.Error("passage scan: board transport", "transport", c.id, "err", err)
 		}
