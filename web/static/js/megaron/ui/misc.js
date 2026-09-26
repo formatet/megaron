@@ -45,12 +45,37 @@ export function dismissBrief(name) {
 //
 // Timothy 2026-09-25: music is a BED plus one-shot CUES, not modes — the old
 // "war" mode (switching the loop itself based on State.marchData, which only
-// ever populated from a recall) is gone. The bed is always `<culture>_love`,
-// looping; `cue(name)` ducks it out, plays `<culture>_<name>` once, and fades
+// ever populated from a recall) is gone. The bed is `<culture>_love`, looping
+// (or a rotation — see BED_ROTATION below); `cue(name)` ducks it out, plays `<culture>_<name>` once, and fades
 // the bed back in on `ended`. Routing from a WS kind to a cue name lives in
 // sfx.js's musicCueFor (importable by ws.js without a cycle); the priority/
 // throttle decision here is `shouldPlayCue`, kept pure for the same reason
 // sfx.js's shouldPlay is: testable without an Audio element.
+//
+// Timothy 2026-09-26: for a culture listed in BED_ROTATION the bed is no longer
+// one loop but a ROTATION of pieces that each have their own ending, with
+// silence between them (megaron_ljud_minoisk_brief §0 — Colonization's tracks
+// are never loops). Every other culture keeps its `<culture>_love` loop. The
+// same piece may appear in two timbres (soundfont/synth) — variation without a
+// new melody. The sign-in intro is deliberately NOT in the rotation.
+const BED_ROTATION = {
+  minoan: ['minoan_bygget_sf', 'minoan_bygget_synth'],
+};
+const BED_GAP_MIN_MS = 30 * 1000;
+const BED_GAP_MAX_MS = 90 * 1000;
+
+// nextBedTrack picks the next piece at random, never the one that just ended
+// (with two tracks that is plain alternation). rand is injectable for tests.
+export function nextBedTrack(list, last, rand = Math.random) {
+  const pool = list.length > 1 ? list.filter((t) => t !== last) : list;
+  return pool[Math.floor(rand() * pool.length)];
+}
+
+// bedGapMs — the silence after a piece ends, uniform in [30 s, 90 s].
+export function bedGapMs(rand = Math.random) {
+  return BED_GAP_MIN_MS + Math.floor(rand() * (BED_GAP_MAX_MS - BED_GAP_MIN_MS + 1));
+}
+
 const CUE_PRIORITY = { victory: 1, war: 2, doom: 3 };
 const CUE_THROTTLE_MS = 10 * 60 * 1000; // a returning player must not get the
   // same cue three times for three sighted units in one sitting.
@@ -70,6 +95,10 @@ export function shouldPlayCue(name, { now, muted, started, activeCue, lastPlayed
 export const MusicPlayer = (() => {
   let cur = null;
   let curSrc = '';
+  let curBed = '';        // culture whose bed (loop or rotation) is loaded
+  let curTrack = '';      // rotation only: the piece in cur
+  let inGap = false;      // rotation only: cur has ended, silence until gapTimer
+  let gapTimer = null;
   let paused = false;
   let started = false;
   let activeCue = null;
@@ -103,6 +132,53 @@ export const MusicPlayer = (() => {
     cur = next;
   }
 
+  function canSound() {
+    return started && !paused && !activeCue && !tabHidden();
+  }
+
+  // resume(ms) — every "bed comes back" path (start, unmute, cue ended, tab
+  // visible) goes through here. Inside a rotation gap there is nothing to
+  // resume: gapTimer brings the next piece in on its own.
+  function resume(ms) {
+    if (!cur || inGap) return;
+    cur.play().catch(() => {});
+    ramp(cur, 0.5, ms);
+  }
+
+  // Rotation: load `track` as cur; it plays now if it may, otherwise the next
+  // resume() starts it. On `ended` (or a load error — audio must never throw
+  // into the game) comes a silence, then the next piece.
+  function playTrack(culture, track) {
+    curTrack = track;
+    inGap = false;
+    const audio = new Audio('/static/music/' + track + '.ogg');
+    audio.loop = false;
+    audio.volume = 0;
+    const done = () => {
+      if (cur !== audio) return; // replaced (culture changed)
+      inGap = true;
+      gapTimer = setTimeout(() => {
+        gapTimer = null;
+        playTrack(culture, nextBedTrack(BED_ROTATION[culture], track));
+      }, bedGapMs());
+    };
+    audio.addEventListener('ended', done);
+    audio.addEventListener('error', done);
+    if (cur) { const old = cur; ramp(old, 0, 800, () => old.pause()); }
+    cur = audio;
+    if (canSound()) { audio.play().catch(() => {}); ramp(audio, 0.5, 1200); }
+  }
+
+  function playBed(culture) {
+    if (curBed === culture) return;
+    curBed = culture;
+    if (gapTimer) { clearTimeout(gapTimer); gapTimer = null; }
+    const list = BED_ROTATION[culture];
+    if (!list) { inGap = false; play('/static/music/' + culture + '_love.ogg'); return; }
+    curSrc = '';
+    playTrack(culture, nextBedTrack(list, ''));
+  }
+
   function start() {
     if (started) return;
     started = true;
@@ -110,7 +186,7 @@ export const MusicPlayer = (() => {
     // its currentTime already sits, instead of starting the bed underneath
     // it — the bed only takes over once the intro's own finish() runs.
     if (activeCue === 'intro' && activeCueAudio) { activeCueAudio.play().catch(() => {}); return; }
-    if (cur && !paused) { cur.play().catch(() => {}); ramp(cur, 0.5, 1200); }
+    if (!paused) resume(1200);
   }
 
   function togglePause() {
@@ -120,7 +196,7 @@ export const MusicPlayer = (() => {
       // Muting silences a cue in progress too — one control for all audio.
       if (activeCueAudio) { activeCueAudio.pause(); activeCueAudio = null; activeCue = null; }
     } else {
-      if (cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 500); }
+      resume(500);
     }
     return paused;
   }
@@ -139,7 +215,7 @@ export const MusicPlayer = (() => {
   function update() {
     const capital = ownCapital();
     if (!capital || !capital.culture) return;
-    play('/static/music/' + capital.culture + '_love.ogg');
+    playBed(capital.culture);
   }
 
   // cue(name) — a one-shot war/victory/doom sting. Ducks the bed out, plays
@@ -173,7 +249,7 @@ export const MusicPlayer = (() => {
       if (activeCueAudio !== audio) return; // already superseded by a higher-priority cue
       activeCueAudio = null;
       activeCue = null;
-      if (started && !paused && !tabHidden() && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 800); }
+      if (started && !paused && !tabHidden()) resume(800);
     };
     audio.addEventListener('ended', finish);
     audio.addEventListener('error', finish);
@@ -189,7 +265,7 @@ export const MusicPlayer = (() => {
   }
 
   function onVisible() {
-    if (started && !paused && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 500); }
+    if (started && !paused) resume(500);
   }
 
   // playIntro(pos) — sign-in → map handoff (Timothy 2026-09-25): the sign-in
@@ -223,7 +299,7 @@ export const MusicPlayer = (() => {
       if (activeCueAudio !== audio) return; // superseded by a real cue
       activeCueAudio = null;
       activeCue = null;
-      if (started && !paused && !tabHidden() && cur) { cur.play().catch(() => {}); ramp(cur, 0.5, 800); }
+      if (started && !paused && !tabHidden()) resume(800);
     };
     audio.addEventListener('ended', finish);
     audio.addEventListener('error', finish);

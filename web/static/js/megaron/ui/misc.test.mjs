@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { State } from '../state.js';
-import { currentCalendarDate, monthLabel, shouldPlayCue, introHandoff } from './misc.js';
+import { currentCalendarDate, monthLabel, shouldPlayCue, introHandoff, nextBedTrack, bedGapMs } from './misc.js';
 
 // The notifications drawer's date header only showed the month NAME ("Day 6
 // of the Olive, Year 1") — with no ordinal there is no way to count days
@@ -110,4 +110,26 @@ test('IH4: an `at` older than 120s returns null, exactly-fresh does not', () => 
   const raw = JSON.stringify({ pos: 3, at: 100_000 });
   assert.deepEqual(introHandoff(raw, 100_000 + 120_000), { pos: 3 }, 'exactly at the age cap is still fresh');
   assert.equal(introHandoff(raw, 100_000 + 120_001), null, 'one ms past the cap is stale');
+});
+
+// nextBedTrack/bedGapMs are the rotation's whole decision (Timothy 2026-09-26):
+// pieces with their own ending, never the same file twice in a row, then
+// 30–90 s of silence.
+test('BR1: nextBedTrack never repeats the track that just ended', () => {
+  const list = ['a_sf', 'a_synth', 'b'];
+  for (const r of [0, 0.34, 0.67, 0.999]) {
+    assert.notEqual(nextBedTrack(list, 'a_sf', () => r), 'a_sf');
+  }
+  assert.equal(nextBedTrack(['a_sf', 'a_synth'], 'a_sf', () => 0.999), 'a_synth', 'two tracks alternate');
+});
+
+test('BR2: nextBedTrack with one track returns it, and with no last picks from all', () => {
+  assert.equal(nextBedTrack(['only'], 'only', () => 0.5), 'only');
+  assert.equal(nextBedTrack(['a', 'b'], '', () => 0), 'a');
+  assert.equal(nextBedTrack(['a', 'b'], '', () => 0.999), 'b');
+});
+
+test('BR3: bedGapMs stays within 30–90 s at both ends', () => {
+  assert.equal(bedGapMs(() => 0), 30_000);
+  assert.equal(bedGapMs(() => 0.999999), 90_000);
 });
