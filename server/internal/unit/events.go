@@ -36,6 +36,14 @@ const (
 	// dispatchReturnHome mechanics, different cause, and eventsemantik is
 	// frozen forever (CLAUDE.md §Events).
 	EventUnitReturnedStarving = "UnitReturnedStarving"
+	// EventUnitSweptFromSea: R6's one-time deploy transition
+	// (megaron_plan_skeppsuppdrag_landsatt.md) turns for home any ship still
+	// status='positioned' at sea (not on an active patrol) once ships at sea
+	// stop taking orders (R3) — otherwise such a ship would be unreachable
+	// forever. A DELIBERATELY NEW type, never a reinterpretation of
+	// EventUnitExploreReturned — same dispatchReturnHome mechanics, different
+	// cause, and eventsemantik is frozen forever (CLAUDE.md §Events).
+	EventUnitSweptFromSea = "UnitSweptFromSea"
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -224,6 +232,18 @@ type UnitReturnedStarvingPayload struct {
 	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
 	ArrivesAt        string    `json:"arrives_at"` // RFC3339
 	CrewAfter        int       `json:"crew_after"`
+}
+
+// UnitSweptFromSeaPayload is emitted when R6's one-time deploy transition
+// (EventUnitSweptFromSea) turns a ship for home because it was left
+// 'positioned' at sea under the pre-R3 rules, where ships at sea could still
+// receive orders — now they cannot, so this is its only remaining way home.
+type UnitSweptFromSeaPayload struct {
+	UnitID           uuid.UUID `json:"unit_id"`
+	Q                int       `json:"q"`
+	R                int       `json:"r"`
+	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
+	ArrivesAt        string    `json:"arrives_at"` // RFC3339
 }
 
 // UnitScoutReportPayload is emitted when an explore-ordered unit reaches its

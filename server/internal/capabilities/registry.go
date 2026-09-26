@@ -28,6 +28,7 @@ var checkers = []func(checkContext) Verb{
 	canStance,
 	canLoad,
 	canUnload,
+	canLand,
 	canDisband,
 	canColonize,
 	// trade

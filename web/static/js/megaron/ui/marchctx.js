@@ -302,7 +302,12 @@ export async function openMarchCtx(dest, screenX, screenY) {
 // is the caller's job (openMarchCtx) — this only judges the unit's own state.
 export function marchCtxOrderMode(u) {
   if (!u.deployable) return null;
-  if (u.status === 'marching') return 'redirect';
+  // A marching ship is on a mission with a built-in return leg and takes no
+  // orders at all (R3, megaron_plan_skeppsuppdrag_landsatt.md) — the server
+  // would refuse a redirect, so it is not offered here either (the semantic
+  // grind: never promise an order the game cannot deliver). Land units are
+  // unaffected.
+  if (u.status === 'marching') return u.category === 'naval' ? null : 'redirect';
   if (u.status === 'garrison' || u.status === 'positioned') {
     return u.stance === 'fortify' ? null : 'march';
   }

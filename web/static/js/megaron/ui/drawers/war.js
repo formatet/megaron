@@ -195,6 +195,13 @@ export async function loadWarDrawer() {
         <button onclick="unitMarchSend()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.7rem;cursor:pointer">March →</button>
         <button onclick="closeMarchPanel()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.7rem;cursor:pointer">Cancel</button>
       </div>
+      <div id="wmp-land-row" style="display:none;margin-top:.3rem;padding-top:.3rem;border-top:1px solid var(--border);gap:.3rem;align-items:center;flex-wrap:wrap">
+        <label style="color:var(--text-dim)"><input id="wmp-land-chk" type="checkbox" onchange="wmpLandToggle()"> Land troops here (Q,R above is the LAND hex — the ship sails to the sea hex next to it, lands its cargo, then sails home on its own)</label>
+      </div>
+      <div id="wmp-land-colonize-row" style="display:none;margin-top:.2rem;gap:.3rem;align-items:center;flex-wrap:wrap">
+        <label style="color:var(--text-dim)"><input id="wmp-land-colonize-chk" type="checkbox"> …and found a colony there</label>
+        <input id="wmp-land-name" type="text" placeholder="colony name (optional)" style="padding:.1rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-size:.72rem">
+      </div>
       <div id="wmp-err" style="color:var(--accent);font-size:.7rem;margin-top:.2rem;min-height:.8rem"></div>
     </div>`;
     document.getElementById('wtab-army').innerHTML = armyHtml;
@@ -601,14 +608,19 @@ function renderUnitCard(u) {
     actions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
   }
 
-  // Recall/redirect: marching units only. The order travels by messenger —
-  // it does not apply instantly (temenos_settlement.md load-bearing pillar).
-  // Redirect's primary path is now the right-click march menu (Timothy
-  // 2026-09-25) — it lists this same marching unit and needs no typed
-  // coordinates. The button here just points there; typed Q/R survives as a
-  // no-cost fallback behind a link, for whoever prefers it or is off-map.
+  // Recall/redirect: marching LAND units only. A marching ship is on a
+  // mission with a built-in return leg and takes no orders at all (R3,
+  // megaron_plan_skeppsuppdrag_landsatt.md) — the server would refuse both
+  // buttons, so the semantic grind forbids offering them (UI must not
+  // promise a command the game cannot deliver). The order travels by
+  // messenger for land units — it does not apply instantly (temenos_
+  // settlement.md load-bearing pillar). Redirect's primary path is now the
+  // right-click march menu (Timothy 2026-09-25) — it lists this same
+  // marching unit and needs no typed coordinates. The button here just
+  // points there; typed Q/R survives as a no-cost fallback behind a link,
+  // for whoever prefers it or is off-map.
   let redirectRow = '';
-  if (isMarching) {
+  if (isMarching && !isNaval) {
     actions += '<button onclick="unitRecall(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> ';
     actions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
     redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">'
@@ -620,6 +632,8 @@ function renderUnitCard(u) {
         + '<button onclick="unitRedirect(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button>'
       + '</div>'
       + '</div>';
+  } else if (isMarching && isNaval) {
+    redirectRow = '<div style="margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">On its mission — returns to port automatically, no orders reach it at sea.</div>';
   }
   const orderStatus = '<div id="uorder-' + u.id + '" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div>';
 
@@ -708,6 +722,17 @@ export async function unitRedirect(unitID) {
   }
 }
 
+// wmpLandEligible: a laden ship garrisoned in port can be given a "land"
+// mission (R1, megaron_plan_skeppsuppdrag_landsatt.md) — the ONE way to put
+// troops ashore away from a friendly harbour now that Unload's field-landing
+// fall (b) is retired (R2). Looked up from State.unitsData (kept fresh by
+// the map's own poller) rather than re-fetching — this panel opens from a
+// card already rendered from that same list.
+function wmpLandEligible(unitID) {
+  const u = (State.unitsData || []).find(x => x.id === unitID);
+  return !!(u && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id);
+}
+
 export function unitMarch(unitID) {
   _marchUnitID = unitID;
   const panel = document.getElementById('war-march-panel');
@@ -719,32 +744,73 @@ export function unitMarch(unitID) {
     if (card) card.after(panel);
     panel.style.display = '';
     document.getElementById('wmp-err').textContent = '';
+    const landRow = document.getElementById('wmp-land-row');
+    const landChk = document.getElementById('wmp-land-chk');
+    if (landRow) landRow.style.display = wmpLandEligible(unitID) ? 'flex' : 'none';
+    if (landChk) landChk.checked = false;
+    wmpLandToggle();
     panel.scrollIntoView({ block: 'nearest' });
     document.getElementById('wmp-q')?.focus();
   }
+}
+
+// The land checkbox and the stance select both apply to where the unit ENDS
+// UP — a ship on a land mission carries no stance (naval units never do,
+// same as everywhere else), so hide Stance while Land is armed rather than
+// send a value the server would silently ignore.
+export function wmpLandToggle() {
+  const landChk = document.getElementById('wmp-land-chk');
+  const on = !!(landChk && landChk.checked);
+  const colonizeRow = document.getElementById('wmp-land-colonize-row');
+  if (colonizeRow) colonizeRow.style.display = on ? 'flex' : 'none';
+  const stanceSelect = document.getElementById('wmp-stance');
+  if (stanceSelect) stanceSelect.style.display = on ? 'none' : '';
 }
 
 export function closeMarchPanel() {
   _marchUnitID = null;
   const panel = document.getElementById('war-march-panel');
   if (panel) panel.style.display = 'none';
+  const landRow = document.getElementById('wmp-land-row');
+  const landChk = document.getElementById('wmp-land-chk');
+  const colonizeChk = document.getElementById('wmp-land-colonize-chk');
+  const nameEl = document.getElementById('wmp-land-name');
+  if (landRow) landRow.style.display = 'none';
+  if (landChk) landChk.checked = false;
+  if (colonizeChk) colonizeChk.checked = false;
+  if (nameEl) nameEl.value = '';
 }
 
 export async function unitMarchSend() {
   if (!_marchUnitID) return;
   const q = parseInt(document.getElementById('wmp-q').value, 10);
   const r = parseInt(document.getElementById('wmp-r').value, 10);
-  const stance = document.getElementById('wmp-stance').value || undefined;
   const errEl = document.getElementById('wmp-err');
   errEl.textContent = '';
+  const landChk = document.getElementById('wmp-land-chk');
+  const land = !!(landChk && landChk.checked
+    && document.getElementById('wmp-land-row').style.display !== 'none');
   const body = { target_q: q, target_r: r };
-  if (stance) body.stance = stance;
+  let intentLabel = 'march';
+  if (land) {
+    body.intent = 'land';
+    intentLabel = 'land';
+    const colonizeChk = document.getElementById('wmp-land-colonize-chk');
+    if (colonizeChk && colonizeChk.checked) {
+      body.cargo_intent = 'colonize';
+      const name = (document.getElementById('wmp-land-name')?.value || '').trim();
+      if (name) body.name = name;
+    }
+  } else {
+    const stance = document.getElementById('wmp-stance').value || undefined;
+    if (stance) { body.stance = stance; intentLabel = stance; }
+  }
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${_marchUnitID}/march`, {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
-    track('march_sent', { intent: stance || 'march' });
+    track('march_sent', { intent: intentLabel });
     // The horn sounds when the troops HEAR the order. A garrisoned unit is
     // stood in front of the Wanax, so that is now; an order that leaves as
     // 'order_dispatched' rides a Runner and sounds on UnitRecalled/

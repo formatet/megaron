@@ -441,6 +441,12 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		if u.MarchIntent != nil && *u.MarchIntent == "explore_return" {
 			loc = "returning home from explore — "
 		}
+		// Land mission (R1, megaron_plan_skeppsuppdrag_landsatt.md): the ship's
+		// own target_q/r is the SEA waypoint next to the chosen land hex, not
+		// the land hex itself — same limitation assault's offshore hex has.
+		if u.MarchIntent != nil && *u.MarchIntent == "land" {
+			loc = "sailing to land troops — "
+		}
 		if u.Q != nil && u.R != nil {
 			loc += fmt.Sprintf("(%d,%d)→", *u.Q, *u.R)
 		}
@@ -491,6 +497,7 @@ func unitMarchCmd() *cobra.Command {
 	var intent, name string
 	var mode string
 	var yes bool
+	var landColonize bool
 
 	cmd := &cobra.Command{
 		Use:   "march",
@@ -524,6 +531,15 @@ at a settlement (it needs a home to return to). Works for land or naval
 units; its main use is sending a ship out to sweep fog and sail home on
 its own.
 
+--intent land puts a laden ship's cargo ashore (megaron_plan_
+skeppsuppdrag_landsatt.md R1): the ship must be a naval unit, in its own
+port, carrying a land unit (keryx unit load first). --q/--r is the chosen
+LAND hex, not a sea hex — the ship sails to the sea hex next to it,
+lands the cargo there, and always sails home on its own afterwards. Add
+--colonize to found a colony on arrival with no further order (--name to
+name it). A ship at sea takes no orders at all (march/recall/stance) —
+give every sea mission from port.
+
 Ore on mountain terrain (copper, tin, silver):
   Mountains are impassable — you cannot colonize the mountain hex itself.
   Instead, colonize an ADJACENT passable hex: the ore deposit will fall in
@@ -545,6 +561,10 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   keryx unit march --unit <id> --q 12 --r -8
   # Explore: sails/marches to the target then automatically returns home
   keryx unit march --unit <id> --q 12 --r -8 --intent explore
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
   # Attack an enemy settlement and annex it instead of the sack default:
   keryx unit march --unit <id> --q 5 --r -3 --mode annex`,
 		Args: rejectPositionalArgs("unit"),
@@ -615,6 +635,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			if mode != "" {
 				body["mode"] = mode
 			}
+			if intent == "land" && landColonize {
+				body["cargo_intent"] = "colonize"
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			data, err := c.post(path, body)
 			if err != nil {
@@ -645,6 +668,8 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				verb = "colonizing"
 			} else if intent == "explore" {
 				verb = "exploring"
+			} else if intent == "land" {
+				verb = "sailing to land troops at"
 			}
 			fmt.Printf("Unit %s %s (%d,%d)", unitID[:8], verb, targetQ, targetR)
 			if arrivesAt != "" {
@@ -654,6 +679,13 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			}
 			if intent == "explore" {
 				fmt.Print(" — it will sail/march home automatically once it arrives")
+			}
+			if intent == "land" {
+				if landColonize {
+					fmt.Print(" — will found a colony there and sail home on its own")
+				} else {
+					fmt.Print(" — will land its cargo there and sail home on its own")
+				}
 			}
 			fmt.Println()
 			// The colonist purse (mig 107): a founding no longer mints the colony's
@@ -681,10 +713,11 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement)")
-	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize)")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)")
+	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize, or --intent land --colonize)")
 	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")
+	cmd.Flags().BoolVar(&landColonize, "colonize", false, "with --intent land: found a colony on arrival with no further order (use --name to name it)")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }

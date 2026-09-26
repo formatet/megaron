@@ -188,6 +188,15 @@ func main() {
 	// stay silently "marching" forever with no player-facing signal.
 	worker.RegisterDeadLetterHook(events.ScheduledUnitArrival, unitArrivalH.NotifyDeadLetter)
 	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
+	// R6 (megaron_plan_skeppsuppdrag_landsatt.md): one-time deploy transition —
+	// a ship left 'positioned' at sea under the pre-R3 rules can no longer take
+	// any fresh order (R3), so send each one home once, at startup. Idempotent;
+	// safe to run on every restart.
+	if swept, sweepErr := combat.SweepShipsAtSeaOnDeploy(ctx, pool, unitArrivalH); sweepErr != nil {
+		slog.Error("sweep ships at sea on deploy failed", "err", sweepErr)
+	} else if swept > 0 {
+		slog.Info("sweep ships at sea on deploy: sent ships home", "count", swept)
+	}
 	battleTickH := combat.NewBattleTickHandler(pool, eventStore, scheduler, hub, gameClock)
 	worker.Register(events.ScheduledBattleTick, battleTickH.Handle)
 	occupationCheckH := combat.NewOccupationCheckHandler(pool, scheduler, hub)

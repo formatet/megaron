@@ -12,8 +12,8 @@ A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a f
 
 ## At sea
 
-- **Carrying an army.** From **War → Army**, **Load** a land unit onto a ship standing with it, sail, and **Unload** at the far shore.
-- **Exploring.** A ship ordered to an unknown sea hex sweeps the fog there and comes home by itself ([[sight]]).
+- **A ship is given its whole mission in port, then sails alone.** From **War → Army**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own — tick "…and found a colony" to settle right there, no further order needed. **Patrol** and **Explore** work the same way: out, then home by themselves ([[sight]]).
+- **Once it sails, a ship takes no more orders.** March, Recall, Redirect, Stance, Load, Unload — none of them reach a ship that isn't standing in its own port. This is the messenger pillar taken to its edge: nothing reaches a ship at sea, not even you. Give the whole mission before it leaves; it always sails home on its own afterwards, and the drawer tells you when.
 - **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.
 - **Supplies.** A crew eats. A ship whose crew runs short of food turns for home on its own — you are told why, and a thinned crew sails slower ([[upkeep]]).
 

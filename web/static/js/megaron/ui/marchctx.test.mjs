@@ -154,6 +154,10 @@ test('AK10: a marching unit is eligible too — but for redirect, not a fresh ma
   assert.equal(marchCtxOrderMode({ status: 'marching', deployable: true }), 'redirect');
 });
 
+test('R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea', () => {
+  assert.equal(marchCtxOrderMode({ status: 'marching', deployable: true, category: 'naval' }), null);
+});
+
 test('AK11: a fortified unit stays ineligible (server blocks fresh march on it)', () => {
   assert.equal(marchCtxOrderMode({ status: 'garrison', deployable: true, stance: 'fortify' }), null);
 });

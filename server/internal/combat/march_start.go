@@ -41,9 +41,14 @@ type MarchOrder struct {
 	TargetQ  int
 	TargetR  int
 	Stance   string // optional; fortify|storm|sentry — persisted for C5
-	Intent   string // optional; "" = plain march, "colonize"/"explore"
-	Name     string // optional colony name (only used with intent=colonize)
+	Intent   string // optional; "" = plain march, "colonize"/"explore"/"patrol"/"land"
+	Name     string // optional colony name (used with intent=colonize, or intent=land + CargoIntent=colonize)
 	Mode     string // optional; "" = sack (default) | "annex"
+	// CargoIntent is R1's (megaron_plan_skeppsuppdrag_landsatt.md) optional
+	// grounding order for the cargo a "land" mission puts ashore: "" (just
+	// land) or "colonize" (found a colony on arrival, no further order
+	// needed). Only meaningful when Intent == "land".
+	CargoIntent string
 }
 
 // OrderReject is a game-rule validation failure with the HTTP status the API
@@ -249,7 +254,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// the ship is routed to the offshore hex and tagged intent=assault.
 	targetQ, targetR := o.TargetQ, o.TargetR
 	assaultLanding := false
-	if unit.CategoryOf(u.Type) == unit.CategoryNaval && u.CargoUnitID != nil {
+	if o.Intent != "land" && unit.CategoryOf(u.Type) == unit.CategoryNaval && u.CargoUnitID != nil {
 		var settOwner uuid.UUID
 		var settCoastal bool
 		if sErr := pool.QueryRow(ctx,
@@ -269,6 +274,78 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			assaultLanding = true
 			targetQ, targetR = seaQ, seaR
 		}
+	}
+
+	// R1 (megaron_plan_skeppsuppdrag_landsatt.md): mission "land". o.TargetQ/R
+	// here IS the chosen land hex (not yet the ship's real sailing target) —
+	// resolved and validated before the generic destTerrain lookup below,
+	// which from this point on tracks the ship's actual path, same as
+	// assaultLanding's redirect above.
+	landMission := o.Intent == "land"
+	var landTargetQ, landTargetR int
+	if landMission {
+		if unit.CategoryOf(u.Type) != unit.CategoryNaval {
+			return nil, reject(http.StatusUnprocessableEntity, "only a ship can be given a land mission")
+		}
+		// Distance 0 only (temenos_orderlopare_plan.md beslut 10): a land
+		// mission is given from port, never carried by a Runner to a ship
+		// already at sea — R3's RequireShipInPort already refuses any order to
+		// a non-garrisoned ship at the two intake points; this repeats the
+		// check so a direct StartMarch caller (tests, the delivery handler's
+		// defensive re-validation) gets the same honest rejection.
+		if u.Status != unit.StatusGarrison {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"a land mission can only be given from a ship docked in its own port")
+		}
+		if u.CargoUnitID == nil {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"a land mission needs cargo aboard — load a unit first")
+		}
+		if o.CargoIntent != "" && o.CargoIntent != "colonize" {
+			return nil, reject(http.StatusBadRequest,
+				"unknown cargo intent %q (must be \"colonize\" or omitted)", o.CargoIntent)
+		}
+		landTargetQ, landTargetR = o.TargetQ, o.TargetR
+		var landTerrain string
+		if err := pool.QueryRow(ctx,
+			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			o.WorldID, landTargetQ, landTargetR,
+		).Scan(&landTerrain); err != nil {
+			return nil, reject(http.StatusNotFound, "target hex not found")
+		}
+		// Same "ofri mark" criteria as province.NearestUnclaimedLandNeighbor —
+		// applied to the chosen hex directly rather than a neighbour of it.
+		isSea := landTerrain == "coastal_sea" || landTerrain == "deep_sea" || landTerrain == "river" || landTerrain == "river_ford"
+		isMountain := landTerrain == "mountain_limestone" || landTerrain == "mountain_red"
+		var settledCount int
+		_ = pool.QueryRow(ctx,
+			`SELECT count(*) FROM provinces p JOIN settlements s ON s.province_id = p.id
+			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active'`,
+			o.WorldID, landTargetQ, landTargetR,
+		).Scan(&settledCount)
+		if isSea || isMountain || settledCount > 0 {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"(%d,%d) is not open, unclaimed land — a land mission needs bare ground to put troops ashore on",
+				landTargetQ, landTargetR)
+		}
+		seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, pool, o.WorldID, landTargetQ, landTargetR)
+		if seaErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not resolve a sea approach to the landing hex")
+		}
+		if !foundSea {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"no open sea reaches (%d,%d) — pick a different landing site", landTargetQ, landTargetR)
+		}
+		// cargo_intent=colonize: run the exact same pre-flights a colonize
+		// march runs at dispatch (settlement cap, catchment overlap, karens,
+		// name-taken) against the TRUE land target — before the ship even
+		// sails, not just at arrival.
+		if o.CargoIntent == "colonize" {
+			if rej := colonizeDispatchPreflight(ctx, pool, clk, o.WorldID, o.PlayerID, landTargetQ, landTargetR, o.Name); rej != nil {
+				return nil, rej
+			}
+		}
+		targetQ, targetR = seaQ, seaR
 	}
 
 	// Target hex must exist on this world's map.
@@ -308,12 +385,12 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		o.Intent = "patrol"
 	}
 
-	// Intent validation: colonize, explore and patrol are the only supported
-	// intents. Validate up front so the agent gets an actionable error
-	// instead of a silent return-home at arrival.
-	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "patrol" {
+	// Intent validation: colonize, explore, patrol and land are the only
+	// supported intents. Validate up front so the agent gets an actionable
+	// error instead of a silent return-home at arrival.
+	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "patrol" && o.Intent != "land" {
 		return nil, reject(http.StatusBadRequest,
-			"unknown march intent %q (must be \"colonize\", \"explore\" or \"patrol\")", o.Intent)
+			"unknown march intent %q (must be \"colonize\", \"explore\", \"patrol\" or \"land\")", o.Intent)
 	}
 	// Del 2b: conquest choice. Empty defaults to "sack" (loot + raze); "annex" keeps
 	// the settlement (capital→colony takeover). Validated up front, same reasoning
@@ -398,68 +475,24 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if unit.CategoryOf(u.Type) != unit.CategoryLand {
 			return nil, reject(http.StatusUnprocessableEntity, "only land units can found a colony")
 		}
-		// The target province must be unclaimed (no settlement). Best-effort pre-flight;
-		// the arrival handler re-checks under lock and returns the unit home on a race.
-		// Exception (megaron_plan_erovring.md S5): a settlement razed by
-		// sack-and-burn is EXCLUDED here once its burnRecolonizeKaren has
-		// elapsed (recolonizable_after_tick <= current tick) — the karens
-		// replaces what used to be a PERMANENT block for every razed row.
-		// Every other dead state (old sackSettlement's razed rows with no
-		// karens set, collapsed rows) still blocks forever, unchanged.
-		var existing int
-		if err := pool.QueryRow(ctx,
-			`SELECT count(*) FROM settlements s
-			 JOIN provinces p ON p.id = s.province_id
-			 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3
-			   AND NOT (s.state = 'razed' AND s.recolonizable_after_tick IS NOT NULL
-			            AND s.recolonizable_after_tick <= current_world_tick())`,
-			o.WorldID, targetQ, targetR,
-		).Scan(&existing); err == nil && existing > 0 {
+		if rej := colonizeDispatchPreflight(ctx, pool, clk, o.WorldID, o.PlayerID, targetQ, targetR, o.Name); rej != nil {
+			return nil, rej
+		}
+	}
+
+	// R4 (megaron_plan_skeppsuppdrag_landsatt.md): a naval unit's plain march
+	// (no intent) must end at a hex next to a settlement of its own —
+	// otherwise it would drift to open sea and become a "positioned" ship no
+	// order can ever reach again (R3), short of the one-time R6 sweep. Every
+	// mission that already carries its own return leg (explore/patrol/land)
+	// and assault (already redirected to the enemy's offshore hex above) is
+	// exempt — each validates its own destination on its own terms.
+	if o.Intent == "" && !assaultLanding && unit.CategoryOf(u.Type) == unit.CategoryNaval {
+		if _, found, fErr := friendlySettlementAdjacent(ctx, pool, o.WorldID, o.PlayerID, targetQ, targetR); fErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not check for a port at the destination")
+		} else if !found {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"target hex already has a settlement — colonize requires an empty hex")
-		}
-		// Catchment overlap: no settlement, of ANY owner, may found where its
-		// 7-hex catchment would overlap an existing, alive settlement's — the
-		// delad-catchment-grind invariant (Timothy 2026-07-27/28: "finns delat
-		// catchment kan staden inte grundas"). Best-effort pre-flight, same
-		// reasoning as the exact-hex check above; unit_arrival.go's foundColony
-		// gate is the authoritative fallback if the world changes mid-transit.
-		// Never names the blocking settlement here — FOW-aware naming needs the
-		// api/handlers knownToPlayer model, which this package cannot import
-		// (G1 package order); the generic phrasing is trivially FOW-safe.
-		if conflict, cErr := province.SettlementCatchmentOverlap(ctx, pool, o.WorldID, targetQ, targetR); cErr == nil && conflict != nil {
-			needed := province.CatchmentClearanceHexes(province.HexDistance(
-				province.MapPosition{Q: targetQ, R: targetR}, province.MapPosition{Q: conflict.Q, R: conflict.R}))
-			return nil, reject(http.StatusUnprocessableEntity,
-				"this ground is already farmed by another settlement — its catchment overlaps yours here; move at least %d hex(es) farther away to found a settlement",
-				needed)
-		}
-		// Settlement cap: a Wanax may hold at most maxSettlementsPerWanax active
-		// settlements. Enforced at dispatch so the harness gets immediate feedback
-		// and the colonising army never wastes the march. The arrival handler is the
-		// authoritative fallback if the count changes mid-transit.
-		//
-		// Reuses capabilities' colonize checker's settlement-cap requirement
-		// directly (temenos_capabilities.md Fas 3 anti-drift) — not the whole
-		// canColonize verb, because its OTHER requirement ("a deployable land
-		// unit garrisoned here") is aggregate-per-settlement and would wrongly
-		// reject a "positioned" unit (already off any settlement, mid-journey)
-		// that this handler has already validated is deployable by other means
-		// (status + size checks above).
-		capReq := capabilities.SettlementCapRequirement(
-			capabilities.NewContext(ctx, pool, clk, o.WorldID, uuid.Nil, o.PlayerID, uuid.Nil))
-		if !capReq.Satisfied {
-			return nil, reject(http.StatusUnprocessableEntity, "%s", capReq.Hint)
-		}
-		// A chosen colony name must be free: names are how Wanaxes address each
-		// other's cities. Caught at dispatch so the Wanax can pick another before
-		// the column marches; the arrival handler falls back to a generated name
-		// if the name is claimed while the colonists are still on the road.
-		if o.Name != "" {
-			if taken, nErr := province.SettlementNameIsTaken(ctx, pool, o.WorldID, o.Name); nErr == nil && taken {
-				return nil, reject(http.StatusConflict,
-					"a settlement named %q already stands in this world — choose another name", o.Name)
-			}
+				"ships need a mission when not sailing to a port: patrol, explore or land")
 		}
 	}
 
@@ -679,6 +712,12 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// combat.UnitArrivalHandler.exploreArrived.
 	var intentArg, nameArg *string
 	var homeSettlementArg *uuid.UUID
+	// R1 (megaron_plan_skeppsuppdrag_landsatt.md): the chosen land hex and
+	// optional cargo grounding order ride along on the SHIP (its own
+	// target_q/target_r is overwritten below to the sea waypoint it actually
+	// sails to) — see land_target_q/r + land_cargo_intent, mig 147.
+	var landTargetQArg, landTargetRArg *int
+	var landCargoIntentArg *string
 	if o.Intent != "" {
 		intent := o.Intent
 		intentArg = &intent
@@ -696,12 +735,33 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			// sentryArrived's patrol timer can turn the ship for home.
 			homeSettlementArg = u.SettlementID
 		}
+		if landMission {
+			// Same reasoning as patrol above: capture the home port now, before
+			// settlement_id is nulled, so the arrival handler's dispatchReturnHome
+			// (reusing the explore_return machinery, R1) knows where to sail home to.
+			homeSettlementArg = u.SettlementID
+			lq, lr := landTargetQ, landTargetR
+			landTargetQArg, landTargetRArg = &lq, &lr
+			if o.CargoIntent != "" {
+				ci := o.CargoIntent
+				landCargoIntentArg = &ci
+				if o.CargoIntent == "colonize" && o.Name != "" {
+					name := o.Name
+					nameArg = &name
+				}
+			}
+		}
 	}
 	// Amphibious assault: the ship carries intent=assault to its offshore hex so
 	// the arrival handler storms the adjacent coastal settlement with the cargo.
+	// homeSettlementArg captures the home port now (about to be nulled below),
+	// same as patrol/land above — R5 (megaron_plan_skeppsuppdrag_landsatt.md):
+	// the ship sails home on its own once its cargo is ashore, it no longer
+	// simply sits at the beach.
 	if assaultLanding {
 		a := "assault"
 		intentArg = &a
+		homeSettlementArg = u.SettlementID
 	}
 
 	if _, err := tx.Exec(ctx,
@@ -721,10 +781,13 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		   capture_mode = $12,
 		   depart_tick  = $13,
 		   arrive_tick  = $14,
+		   land_target_q = $15,
+		   land_target_r = $16,
+		   land_cargo_intent = $17,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		o.UnitID, originQ, originR, targetQ, targetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
-		currentTick, currentTick+travelTicks,
+		currentTick, currentTick+travelTicks, landTargetQArg, landTargetRArg, landCargoIntentArg,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}
@@ -773,6 +836,77 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	}, nil
 }
 
+// colonizeDispatchPreflight runs the four colonize dispatch checks — target
+// unclaimed, catchment doesn't overlap a neighbour, settlement cap, chosen
+// name free — against (targetQ,targetR) for playerID. Shared by a plain
+// colonize march and R1's land mission (megaron_plan_skeppsuppdrag_landsatt.md)
+// when its cargo_intent is "colonize": the ship's own category/cargo checks
+// differ between the two callers, but once a land hex and a Wanax are known,
+// "can a colony be founded here" is the exact same question both times.
+// Best-effort pre-flight in every case; unit_arrival.go's foundColony gate
+// (or, for the land mission, its own arrival-time re-check) is the
+// authoritative fallback if the world changes mid-transit.
+func colonizeDispatchPreflight(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, worldID, playerID uuid.UUID, targetQ, targetR int, name string) *OrderReject {
+	// The target province must be unclaimed (no settlement). Exception
+	// (megaron_plan_erovring.md S5): a settlement razed by sack-and-burn is
+	// EXCLUDED here once its burnRecolonizeKaren has elapsed
+	// (recolonizable_after_tick <= current tick) — the karens replaces what
+	// used to be a PERMANENT block for every razed row. Every other dead
+	// state (old sackSettlement's razed rows with no karens set, collapsed
+	// rows) still blocks forever, unchanged.
+	var existing int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3
+		   AND NOT (s.state = 'razed' AND s.recolonizable_after_tick IS NOT NULL
+		            AND s.recolonizable_after_tick <= current_world_tick())`,
+		worldID, targetQ, targetR,
+	).Scan(&existing); err == nil && existing > 0 {
+		return reject(http.StatusUnprocessableEntity,
+			"target hex already has a settlement — colonize requires an empty hex")
+	}
+	// Catchment overlap: no settlement, of ANY owner, may found where its
+	// 7-hex catchment would overlap an existing, alive settlement's — the
+	// delad-catchment-grind invariant (Timothy 2026-07-27/28: "finns delat
+	// catchment kan staden inte grundas"). Never names the blocking
+	// settlement here — FOW-aware naming needs the api/handlers
+	// knownToPlayer model, which this package cannot import (G1 package
+	// order); the generic phrasing is trivially FOW-safe.
+	if conflict, cErr := province.SettlementCatchmentOverlap(ctx, pool, worldID, targetQ, targetR); cErr == nil && conflict != nil {
+		needed := province.CatchmentClearanceHexes(province.HexDistance(
+			province.MapPosition{Q: targetQ, R: targetR}, province.MapPosition{Q: conflict.Q, R: conflict.R}))
+		return reject(http.StatusUnprocessableEntity,
+			"this ground is already farmed by another settlement — its catchment overlaps yours here; move at least %d hex(es) farther away to found a settlement",
+			needed)
+	}
+	// Settlement cap: a Wanax may hold at most maxSettlementsPerWanax active
+	// settlements. Enforced at dispatch so the harness gets immediate
+	// feedback and the colonising expedition never wastes the trip.
+	//
+	// Reuses capabilities' colonize checker's settlement-cap requirement
+	// directly (temenos_capabilities.md Fas 3 anti-drift) — not the whole
+	// canColonize verb, because its OTHER requirement ("a deployable land
+	// unit garrisoned here") is aggregate-per-settlement and would wrongly
+	// reject a unit already off any settlement mid-journey.
+	capReq := capabilities.SettlementCapRequirement(
+		capabilities.NewContext(ctx, pool, clk, worldID, uuid.Nil, playerID, uuid.Nil))
+	if !capReq.Satisfied {
+		return reject(http.StatusUnprocessableEntity, "%s", capReq.Hint)
+	}
+	// A chosen colony name must be free: names are how Wanaxes address each
+	// other's cities. Caught at dispatch so the Wanax can pick another before
+	// anything sets out; the arrival handler falls back to a generated name
+	// if the name is claimed while the colonists are still on the road.
+	if name != "" {
+		if taken, nErr := province.SettlementNameIsTaken(ctx, pool, worldID, name); nErr == nil && taken {
+			return reject(http.StatusConflict,
+				"a settlement named %q already stands in this world — choose another name", name)
+		}
+	}
+	return nil
+}
+
 // colonistPurse is what a colonising expedition tries to take with it: exactly
 // the liquid silver the colony used to be seeded with out of thin air, so the
 // colony's balance sheet is unchanged and only its SOURCE moves — from the
@@ -799,7 +933,7 @@ func colonistPurse(ctx context.Context, tx pgx.Tx, unitSize int) float64 {
 // (q,r) — used by the P7 explore fix above to give a field-positioned unit a
 // home to return to without requiring it to already be standing in one.
 // found=false when the player owns no active settlement at all.
-func nearestOwnedSettlement(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, q, r int) (uuid.UUID, bool, error) {
+func nearestOwnedSettlement(ctx context.Context, pool province.Queryer, worldID, playerID uuid.UUID, q, r int) (uuid.UUID, bool, error) {
 	rows, err := pool.Query(ctx,
 		`SELECT s.id, p.map_q, p.map_r FROM settlements s
 		 JOIN provinces p ON p.id = s.province_id
