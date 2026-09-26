@@ -152,6 +152,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "MessengerArrival" || n.Kind == "MessengerReturned" {
 		printMessengerLine(n)
 	}
+	if n.Kind == "CaravanSeized" || n.Kind == "CaravanRaided" {
+		printCaravanSeizureLine(n)
+	}
 	switch n.Kind {
 	case "CityOccupied", "OccupationDefended", "CityAnnexReady", "SettlementLooted", "SettlementBurned":
 		printOccupationLine(n)
@@ -419,6 +422,35 @@ func printShipRepairedLine(n notificationItem) {
 		return
 	}
 	fmt.Printf("      Your %s is repaired (hull %d/5) and ready to sail again.\n", body.UnitType, body.Hull)
+}
+
+// printCaravanSeizureLine names the cargo that changed hands — the same text
+// the web's notifText gives (format.js). Bodies from before the manifest was
+// added carry no goods and print the bare line.
+func printCaravanSeizureLine(n notificationItem) {
+	var body struct {
+		Q, R  int
+		Goods []struct {
+			GoodKey  string  `json:"good_key"`
+			Quantity float64 `json:"quantity"`
+		} `json:"goods"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	cargo := make([]string, 0, len(body.Goods))
+	for _, g := range body.Goods {
+		cargo = append(cargo, fmt.Sprintf("%d %s", int(g.Quantity), g.GoodKey))
+	}
+	carrying := ""
+	if len(cargo) > 0 {
+		carrying = " carrying " + strings.Join(cargo, ", ")
+	}
+	if n.Kind == "CaravanSeized" {
+		fmt.Printf("      You seized an enemy caravan%s at (%d, %d)\n", carrying, body.Q, body.R)
+		return
+	}
+	fmt.Printf("      Your caravan%s was raided at (%d, %d)\n", carrying, body.Q, body.R)
 }
 
 // printUpkeepUnpaidLine renders the human-readable follow-up to an UpkeepUnpaid

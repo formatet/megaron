@@ -86,13 +86,24 @@ func TestInterceptScanHandler_SeizeReplayIsIdempotent(t *testing.T) {
 		t.Fatalf("seed transport goods: %v", err)
 	}
 
-	h := &InterceptScanHandler{pool: pool}
+	fb := &fakeBroadcaster{}
+	h := &InterceptScanHandler{pool: pool, notifier: fb}
 	tr := inFlightTransport{id: transportID, owner: victim, originQ: 5, originR: 0, destQ: 10, destR: 0, category: "land"}
 	pos := province.MapPosition{Q: 7, R: 0}
 	sentryID := uuid.New()
 
 	if err := h.seize(ctx, worldID, tr, sentryID, raider, pos); err != nil {
 		t.Fatalf("seize (first run): %v", err)
+	}
+
+	// Both notices name the cargo that changed hands (dispatch-familjens rest):
+	// seized for the raider, raided for the victim — raided is sent last.
+	if len(fb.notified) != 2 || fb.notified[0] != "CaravanSeized" || fb.lastKind != "CaravanRaided" {
+		t.Fatalf("notices = %v, want [CaravanSeized CaravanRaided]", fb.notified)
+	}
+	goods, _ := fb.lastBody["goods"].([]manifestLine)
+	if len(goods) != 1 || goods[0].GoodKey != "tin" || goods[0].Quantity != 30 {
+		t.Errorf("CaravanRaided goods = %#v, want [{tin 30}]", fb.lastBody["goods"])
 	}
 
 	var tinAfterFirst float64

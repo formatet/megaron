@@ -12,6 +12,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -186,6 +187,14 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 		return nil // already delivered/intercepted by a racing sweep
 	}
 
+	// The manifest, read inside the seizure TX so the notices name exactly the
+	// cargo that changed hands — "your caravan was raided" without saying of
+	// what left both Wanaxes guessing (megaron_plan_dispatches.md family rest).
+	goods, err := loadManifest(ctx, tx, t.id)
+	if err != nil {
+		return err
+	}
+
 	// The raider hauls the cargo home to their capital. No capital (rare) → the goods
 	// are lost to the raid rather than credited.
 	var capital *uuid.UUID
@@ -223,12 +232,39 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 	}
 	if h.notifier != nil {
 		_ = h.notifier.NotifyPlayer(ctx, worldID, interceptor, "CaravanSeized", 3,
-			map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R})
+			map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R, "goods": goods})
 		_ = h.notifier.NotifyPlayer(ctx, worldID, t.owner, "CaravanRaided", 3,
-			map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R})
+			map[string]any{"transport_id": t.id, "q": pos.Q, "r": pos.R, "goods": goods})
 	}
 	slog.Info("caravan intercepted", "transport", t.id, "by", interceptor, "sentry", sentryID, "q", pos.Q, "r", pos.R)
 	return nil
+}
+
+// manifestLine is one good in a seized caravan's notice payload — same
+// {good_key, quantity} shape StandingOrderDispatched carries, so every client
+// formats cargo the same way.
+type manifestLine struct {
+	GoodKey  string  `json:"good_key"`
+	Quantity float64 `json:"quantity"`
+}
+
+func loadManifest(ctx context.Context, tx pgx.Tx, transportID uuid.UUID) ([]manifestLine, error) {
+	rows, err := tx.Query(ctx,
+		`SELECT good_key, quantity FROM transport_goods
+		 WHERE transport_id = $1 AND quantity > 0 ORDER BY quantity DESC, good_key`, transportID)
+	if err != nil {
+		return nil, fmt.Errorf("load manifest: %w", err)
+	}
+	defer rows.Close()
+	goods := []manifestLine{}
+	for rows.Next() {
+		var g manifestLine
+		if err := rows.Scan(&g.GoodKey, &g.Quantity); err != nil {
+			return nil, fmt.Errorf("scan manifest: %w", err)
+		}
+		goods = append(goods, g)
+	}
+	return goods, rows.Err()
 }
 
 // straightLineHexPosition returns the caravan's position along a straight cube-
