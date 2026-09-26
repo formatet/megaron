@@ -1,0 +1,24 @@
+X:1
+T:Bygget (minoerna)
+M:6/8
+L:1/8
+Q:3/8=84
+K:Bb
+V:1 name="aulos"
+%%MIDI program 68
+!mp!z6|z6|z6|z6|!mf!d3 A3|B2A B2c|d2e f2d|c6|d3 A3|B2c d2e|f2e d2c|B6|!mf!f2f g2f|e2d c3|d2d e2d|c2B A3|B2c d2e|f2g a2f|g2f e2c|d6|!mp!G3 B3|d2c B2A|G2A B2c|d6|e3 d3|c2B A2G|A2B c2A|F6|!f!d3 A3|B2A B2c|d2e f2d|c6|d3 f3|g2f e2d|c2B A2c|B6|!f!d3 c3|B6|z6|z6|]
+V:2 name="lyra"
+%%MIDI program 46
+!mp!B,,F,B, FB,F,|B,,F,B, FB,F,|B,,F,B, FB,F,|B,,F,B, FB,F,|!mp!B,,F,B, FB,F,|B,,F,B, FB,F,|B,,F,B, FB,F,|F,CF cFC|B,,F,B, FB,F,|E,B,E BEB,|F,CF cFC|B,,F,B, FB,F,|!mp!B,,F,B, FB,F,|E,B,E BEB,|B,,F,B, FB,F,|F,CF cFC|B,,F,B, FB,F,|F,CF cFC|C,G,C GCG,|B,,F,B, FB,F,|!mp!G,DG dGD|G,DG dGD|C,G,C GCG,|G,DG dGD|E,B,E BEB,|C,G,C GCG,|F,CF cFC|F,CF cFC|!mp!B,,F,B, FB,F,|B,,F,B, FB,F,|B,,F,B, FB,F,|F,CF cFC|B,,F,B, FB,F,|E,B,E BEB,|F,CF cFC|B,,F,B, FB,F,|!mp!F,CF cFC|B,,F,B, FB,F,|B,,F,B, FB,F,|B,,F,B, FB,F,|]
+V:3 name="horn"
+%%MIDI program 60
+!mf!D,3 A,3|z6|!mp!D,3 A,3|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|!mf!B,,3 F,3|z6|z6|]
+V:4 name="hornackord"
+%%MIDI program 61
+z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|z6|!mp![B,DF]6|[E,G,B,]6|[B,DF]6|[F,A,C]6|[B,DF]6|[F,A,C]6|[C,E,G,]6|[B,DF]6|z6|z6|z6|z6|z6|z6|z6|z6|!f![B,DF]6|[B,DF]6|[B,DF]6|[F,A,C]6|[B,DF]6|[E,G,B,]6|[F,A,C]6|[B,DF]6|!f![F,A,C]6|[B,DF]6|[B,DF]6|[B,DF]6|]
+V:5 name="bas"
+%%MIDI program 33
+!mp!B,,3 B,,3|B,,3 B,,3|B,,3 B,,3|B,,3 B,,3|!mf!B,,3 B,3|B,,3 B,3|B,,3 B,3|F,,3 F,3|B,,3 B,3|E,,3 E,3|F,,3 F,3|B,,3 B,3|!mf!B,,2B,, B,2B,,|E,,2E,, E,2E,,|B,,2B,, B,2B,,|F,,2F,, F,2F,,|B,,2B,, B,2B,,|F,,2F,, F,2F,,|C,,2C,, C,2C,,|B,,2B,, B,2B,,|!mp!G,,6|G,,6|C,,6|G,,6|E,,6|C,,6|F,,6|F,,6|!f!B,,2B,, B,2B,,|B,,2B,, B,2B,,|B,,2B,, B,2B,,|F,,2F,, F,2F,,|B,,2B,, B,2B,,|E,,2E,, E,2E,,|F,,2F,, F,2F,,|B,,2B,, B,2B,,|!f!F,,3 F,3|B,,3 B,3|B,,3 B,3|B,,3 B,3|]
+V:6 name="trumma+sistrum+träkloss" clef=perc
+%%MIDI channel 10
+[K:C]z6|z6|z6|z6|F,,3 A,,3|F,,3 A,,3|F,,3 A,,3|F,,3 A,,3|F,,3 A,,3|F,,3 A,,3|F,,3 A,,3|F,,3 A,,3|F,,2e A,,2e|F,,2e A,,2e|F,,2e A,,2e|F,,2e A,,2e|F,,2e A,,2e|F,,2e A,,2e|F,,2e A,,2e|F,,2e A,,2e|z2^F, z2^F,|z2^F, z2^F,|z2^F, z2^F,|z2^F, z2^F,|z2^F, z2^F,|z2^F, z2^F,|z2^F, z2^F,|z2^F, z2^F,|[F,,^F,]2e [A,,^F,]2e|[F,,^F,]2e [A,,^F,]2e|[F,,^F,]2e [A,,^F,]2e|[F,,^F,]2e [A,,^F,]2e|[F,,^F,]2e [A,,^F,]2e|[F,,^F,]2e [A,,^F,]2e|[F,,^F,]2e [A,,^F,]2e|[F,,^F,]2e [A,,^F,]2e|F,,6|F,,6|z6|z6|]
