@@ -260,7 +260,12 @@ async function loadDipThreads() {
         } else {
           // Sent message
           const offerStatus = m.trade_offer && m.trade_offer.status;
-          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted</span>'
+          // sjöhandel mellan spelare (megaron_plan_sjohandel_mellan_spelare.md
+          // R3): stamped onto trade_offer at accept — empty for a land trade.
+          const shipBit = m.trade_offer && m.trade_offer.ship_name
+            ? ' · ⛵ by sea on ' + esc(m.trade_offer.ship_name)
+            : '';
+          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted' + shipBit + '</span>'
                           : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
                           : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
                           : m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
@@ -412,7 +417,10 @@ export async function dipAccept(id, btn) {
   const data = await res.json().catch(() => ({}));
   const block = document.getElementById('dip-trade-' + id);
   if (res.ok && block) {
-    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' arriving ' + arrivalHTML(data.goods_arrives_at) + ' · ' + data.silver_paid + ' silver paid</span>';
+    // sjöhandel mellan spelare (R3): the response names the initiator's own
+    // ship when the trade sails — empty when it walks.
+    const shipBit = data.ship_name ? ' · ⛵ by sea on ' + esc(data.ship_name) : '';
+    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' arriving ' + arrivalHTML(data.goods_arrives_at) + ' · ' + data.silver_paid + ' silver paid' + shipBit + '</span>';
   } else {
     btn.disabled = false;
     if (block) {
