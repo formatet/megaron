@@ -309,7 +309,9 @@ function renderWarMovements() {
     html += '<div class="dsec"><div class="dsec-title" style="color:var(--accent)">⚠ Incoming</div>';
     html += incoming.map(m => '<div class="obj-card">'
       + '<div class="obj-icon" style="color:var(--accent)">⚔</div>'
-      + '<div class="obj-info"><div class="obj-name">' + esc(m.title) + ' → ' + placeName(m.target_q, m.target_r) + '</div><div class="obj-sub">Arrives ' + arrivalHTML(m.arrives_at) + '</div></div>'
+      + '<div class="obj-info"><div class="obj-name">' + esc(m.title) + ' → ' + placeName(m.target_q, m.target_r) + (m.ifBound ? '?' : '') + '</div><div class="obj-sub">'
+      + (m.ifBound ? 'Heading for its lands — there ' + arrivalHTML(m.arrives_at) + ' if that is its goal' : 'Arrives ' + arrivalHTML(m.arrives_at))
+      + '</div></div>'
       + '</div>').join('');
     html += '</div>';
   }

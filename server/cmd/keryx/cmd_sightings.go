@@ -28,12 +28,19 @@ type sightingUnit struct {
 	// rör sig från Knossos"). Nil unless the unit has cargo aboard.
 	Cargo *sightingCargo `json:"cargo,omitempty"`
 
-	TargetQ   *int       `json:"target_q,omitempty"`
-	TargetR   *int       `json:"target_r,omitempty"`
-	ArrivesAt *time.Time `json:"arrives_at,omitempty"`
+	// Heading/Toward mirror foreignUnit (server/api/handlers/foreign_units.go):
+	// a foreign march shows which way it goes, never where (Timothy 2026-09-26).
+	Heading string          `json:"heading,omitempty"`
+	Toward  *sightingToward `json:"toward,omitempty"`
 
 	Distance int    `json:"distance"`
 	Bearing  string `json:"bearing"`
+}
+
+// sightingToward mirrors foreignToward: your city a march seems bound for.
+type sightingToward struct {
+	Name  string    `json:"name"`
+	EtaAt time.Time `json:"eta_at"`
 }
 
 // sightingCargo mirrors foreignCargo (server/api/handlers/foreign_units.go).
@@ -158,15 +165,18 @@ something of mine", not "how far is it from my palace".`,
 						owner = "—"
 					}
 					var detail string
-					if u.Status == "marching" && u.TargetQ != nil && u.TargetR != nil {
-						eta := "unknown"
-						if u.ArrivesAt != nil {
-							eta = gameETA(c, *u.ArrivesAt)
+					if u.Status == "marching" {
+						detail = fmt.Sprintf("marching at (%d,%d)", u.Q, u.R)
+						if u.Heading != "" {
+							detail += ", heading " + u.Heading
 						}
-						// gameETA already supplies its own connector ("in N game-days" /
-						// "any moment") in English — "arrives", not Swedish "landar",
-						// to match (this line was mixed-language before rad K too).
-						detail = fmt.Sprintf("marching → (%d,%d), arrives %s", *u.TargetQ, *u.TargetR, eta)
+						// gameETA supplies its own connector ("in N game-days" /
+						// "any moment"). An estimate IF your city is its goal —
+						// never its real destination or arrival.
+						if u.Toward != nil {
+							detail += fmt.Sprintf(" — toward %s's lands, there %s if that is its goal",
+								u.Toward.Name, gameETA(c, u.Toward.EtaAt))
+						}
 					} else {
 						stance := u.Stance
 						if stance == "" {

@@ -215,7 +215,7 @@ nothing that happened before the connection opened is missed.`,
 		Example: `  keryx watch
   keryx watch --json
   keryx watch --count 1
-  keryx watch --kind ForeignMarchSighted,BattleWon,BattleLost`,
+  keryx watch --kind ForeignMarchSightedV2,BattleWon,BattleLost`,
 		Args: noPositionalArgs(),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			c := newClient(cfg)

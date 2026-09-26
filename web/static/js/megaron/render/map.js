@@ -13,6 +13,8 @@ import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actors
 import { eyeSees } from './sight.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
+import { unitHoverLines } from '../ui/hover.js';
+import { incomingTargetKeys } from '../ui/movements.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -361,6 +363,16 @@ function unitHexNow(u) {
     return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: u.q, r: u.r};
   }
   return u.q != null ? {q: u.q, r: u.r} : null;
+}
+
+// legHexNow: the hex a caravan or runner walker is drawn on right now —
+// the same hexPathPx interpolation render() steps 6–7 use.
+function legHexNow(oq, or, dq, dr, startIso, endIso) {
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  const progress = Math.min(1, Math.max(0, (serverNow() - start) / (end - start)));
+  const pos = hexPathPx(oq, or, dq, dr, progress);
+  return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: oq, r: or};
 }
 
 function isTileVisible(q, r) {
@@ -3227,7 +3239,8 @@ export function render() {
   if (blinkChanged) State.lastBlinkTick = blinkTick;
 
   if (!State.dirty && !seaChanged && !blinkChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
-      && !State.unitsData.some(u => u.status === 'marching')) {
+      && !State.unitsData.some(u => u.status === 'marching')
+      && !State.foreignUnitData.some(u => u.status === 'marching')) {
     requestAnimationFrame(render);
     return;
   }
@@ -3529,10 +3542,13 @@ export function render() {
     }
   }
 
-  // 3b. Incoming attack glow — pulsing red on target hex of any visible attack march
-  const attackTargets = new Set(
-    State.marchData.filter(m => m.intent === 'attack').map(m => `${m.target_q},${m.target_r}`)
-  );
+  // 3b. Incoming attack glow — pulsing red on each own province a visible
+  // hostile march is headed for. Read from the unit layer (foreign units in
+  // live vision), not marchData alone: marching_armies is only written by
+  // recall, so the glow never lit for a real march (same root as War→Movements).
+  const attackTargets = incomingTargetKeys({
+    foreign: State.foreignUnitData, marches: State.marchData, provinces: State.provinceData,
+  });
   if (attackTargets.size > 0) {
     const pulse = 0.25 + 0.15 * Math.sin(State.animFrame * 0.08);
     for (const p of State.provinceData) {
@@ -3643,18 +3659,10 @@ export function render() {
   for (const u of State.foreignUnitData) {
     const naval = u.category === 'naval';
     const kind = canonicalUnitType(u.type) || (naval ? 'galley' : 'spearman');
-    if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
-      const now = serverNow();
-      const departs = new Date(u.departs_at).getTime();
-      const arrives = new Date(u.arrives_at).getTime();
-      const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
-      const pos = (u.path && u.path.length > 1)
-        ? pathPx(u.path, progress)
-        : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
-      if (isTileLive(pos.q, pos.r)) {
-        drawActor(ctx, kind, pos.x, pos.y, '', walkPhase, FOREIGN_ACCENT, foreignOutline);
-      }
-    } else if (u.status === 'positioned' && u.q != null && isTileLive(u.q, u.r)) {
+    // A foreign march no longer discloses its route (Timothy 2026-09-26,
+    // "likrikta det"): the server sends only the hex it stands on now, so the
+    // walker is drawn there — walking in place — and steps on at each refetch.
+    if ((u.status === 'marching' || u.status === 'positioned') && u.q != null && isTileLive(u.q, u.r)) {
       const {x, y} = hexPx(u.q, u.r);
       drawActor(ctx, kind, x, y, '', walkPhase, FOREIGN_ACCENT, foreignOutline);
     }
@@ -4375,11 +4383,25 @@ export function initMap() {
       // enhets u.q/u.r är avgångshexen — gångaren ritas vid pathPx/hexPathPx
       // interpolerade waypoint, så tooltipen måste läsa samma position som
       // spriten. Annars pekar namnet på en tom hex enheten lämnat.
-      const names = (State.unitsData || []).filter(u => {
+      const own = (State.unitsData || []).filter(u => {
         const at = unitHexNow(u);
         if (at) return at.q === h.q && at.r === h.r;
         return prov && u.settlement_id && u.settlement_id === prov.settlement_id;
-      }).map(u => u.display_name).filter(Boolean);
+      });
+      // Every other actor is placed exactly where render() draws it — foreign
+      // units only on live tiles, caravans and runners along their leg.
+      const here = at => at && at.q === h.q && at.r === h.r;
+      const foreign = (State.foreignUnitData || []).filter(u =>
+        (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r));
+      const caravans = (State.tradeData || []).filter(t =>
+        here(legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at)));
+      const runners = (State.messengerData || []).filter(m =>
+        here(legHexNow(m.origin_q, m.origin_r, m.dest_q, m.dest_r, m.sent_at, m.arrives_at)));
+      const placeName = (q, r) => {
+        const p = State.provinceData.find(p => p.q === q && p.r === r);
+        return p && p.name ? p.name : `(${q},${r})`;
+      };
+      const names = unitHoverLines({ own, foreign, caravans, runners, placeName });
       if (prov) {
         const parts = [prov.name, tl];
         if (prov.owner) parts.push(`Wanax: ${prov.owner}`);

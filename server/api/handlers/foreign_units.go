@@ -1,14 +1,17 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // foreignUnit is the JSON shape returned by ForeignUnits for one enemy/neutral
@@ -46,18 +49,24 @@ type foreignUnit struct {
 	// separate system and out of scope for this field — flagged as a
 	// follow-up, not built here.
 	Cargo *foreignCargo `json:"cargo,omitempty"`
-	// TargetQ/TargetR/DepartsAt/ArrivesAt/DepartTick/ArrivalTick/Path describe the
-	// march itself (kanonbeslut 3, 2026-08-03): full disclosure of what the unit is
-	// doing, since that is knowledge about the UNIT, not the map. They never cause
-	// the target/route hexes to be revealed — no terrain, no city, no
-	// player_scouted_tiles row is written or read for them here.
-	TargetQ     *int       `json:"target_q,omitempty"`
-	TargetR     *int       `json:"target_r,omitempty"`
-	DepartsAt   *time.Time `json:"departs_at,omitempty"`
-	ArrivesAt   *time.Time `json:"arrives_at,omitempty"`
-	DepartTick  *int       `json:"depart_tick,omitempty"`
-	ArrivalTick *int       `json:"arrival_tick,omitempty"`
-	Path        [][2]int   `json:"path,omitempty"`
+	// Heading is which way a marching unit goes NOW (province.ReadMarch, the
+	// map's own compass) — never where it is going. Timothy 2026-09-26: "likrikta
+	// det" — the target, route and arrival that kanonbeslut 3 (2026-08-03) used
+	// to disclose here no longer leave the server (megaron_plan_karavanbeslag §7).
+	Heading string `json:"heading,omitempty"`
+	// Toward is set when the march SEEMS bound for the catchment of one of the
+	// caller's own cities: which one, and when it would get there if that is
+	// where it is going. An appearance, not a fact — a road round a mountain
+	// fools it by design.
+	Toward *foreignToward `json:"toward,omitempty"`
+}
+
+// foreignToward is the caller's city a foreign march seems bound for.
+type foreignToward struct {
+	SettlementID uuid.UUID `json:"settlement_id"`
+	Name         string    `json:"name"`
+	EtaAt        time.Time `json:"eta_at"`
+	EtaTick      int       `json:"eta_tick"`
 }
 
 // foreignCargo is the embarked cohort a foreign naval unit carries (type +
@@ -106,6 +115,12 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 	g, err := province.LoadTileGraph(r.Context(), h.pool, worldID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load terrain")
+		return
+	}
+
+	ownCities, err := loadOwnCityCatchments(r.Context(), h.pool, worldID, playerID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load settlements")
 		return
 	}
 
@@ -159,12 +174,15 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		// position model. Fall back to the stored (origin) hex when pathfinding
 		// fails or the unit is merely 'positioned'.
 		pos := province.MapPosition{Q: storedQ, R: storedR}
-		var path []province.MapPosition
+		var march *province.ApparentMarch
+		var pathSteps int
 		if fu.Status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
 			p, _, ok := g.FindPath(pos, province.MapPosition{Q: *targetQ, R: *targetR}, fu.Category)
 			if ok && len(p) > 0 {
-				path = p
-				pos = interpolatedEyePos(now, *departsAt, *arrivesAt, p)
+				pos = province.InterpolateAlongPath(now, *departsAt, *arrivesAt, p)
+				if m, ok := province.ReadMarch(p, *departsAt, *arrivesAt, now); ok {
+					march, pathSteps = &m, len(p)-1
+				}
 			}
 		}
 
@@ -180,20 +198,9 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 
 		fu.Q = pos.Q
 		fu.R = pos.R
-		if fu.Status == "marching" {
-			fu.TargetQ = targetQ
-			fu.TargetR = targetR
-			fu.DepartsAt = departsAt
-			fu.ArrivesAt = arrivesAt
-			fu.DepartTick = departTick
-			fu.ArrivalTick = arriveTick
-			if len(path) > 0 {
-				wp := make([][2]int, len(path))
-				for i, p := range path {
-					wp[i] = [2]int{p.Q, p.R}
-				}
-				fu.Path = wp
-			}
+		if march != nil {
+			fu.Heading = march.Heading
+			fu.Toward = seemsBoundForOwn(*march, ownCities, departTick, arriveTick, pathSteps)
 		}
 		out = append(out, fu)
 	}
@@ -210,4 +217,55 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		out = []foreignUnit{}
 	}
 	writeJSON(w, http.StatusOK, out)
+}
+
+// ownCity is one of the caller's settlements with its catchment, for testing
+// which of them a foreign march seems bound for.
+type ownCity struct {
+	id        uuid.UUID
+	name      string
+	catchment []province.MapPosition
+}
+
+func loadOwnCityCatchments(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) ([]ownCity, error) {
+	rows, err := pool.Query(ctx,
+		`SELECT s.id, s.name, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
+		 WHERE s.world_id = $1 AND s.owner_id = $2`, worldID, playerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []ownCity
+	for rows.Next() {
+		var c ownCity
+		var q, r int
+		if err := rows.Scan(&c.id, &c.name, &q, &r); err != nil {
+			return nil, err
+		}
+		for _, h := range hexgrid.Disk(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius) {
+			c.catchment = append(c.catchment, province.MapPosition{Q: h.Q, R: h.R})
+		}
+		out = append(out, c)
+	}
+	return out, rows.Err()
+}
+
+// seemsBoundForOwn picks the nearest of the caller's cities whose catchment the
+// march seems headed into, with the arrival "if that is where it is going".
+func seemsBoundForOwn(m province.ApparentMarch, cities []ownCity, departTick, arriveTick *int, pathSteps int) *foreignToward {
+	var best *foreignToward
+	bestDist := -1
+	for _, c := range cities {
+		d, ok := m.SeemsBoundFor(c.catchment)
+		if !ok || (bestDist >= 0 && d >= bestDist) {
+			continue
+		}
+		bestDist = d
+		t := &foreignToward{SettlementID: c.id, Name: c.name, EtaAt: m.ArrivalIf(d)}
+		if departTick != nil && arriveTick != nil {
+			t.EtaTick = m.ArrivalTickIf(d, *departTick, *arriveTick, pathSteps)
+		}
+		best = t
+	}
+	return best
 }

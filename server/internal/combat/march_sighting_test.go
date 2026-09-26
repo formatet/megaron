@@ -188,7 +188,7 @@ func notifCount(t *testing.T, pool *pgxpool.Pool, worldID, playerID uuid.UUID) i
 	if err := pool.QueryRow(context.Background(),
 		`SELECT count(*) FROM notifications
 		  WHERE world_id = $1 AND player_id = $2 AND kind = $3`,
-		worldID, playerID, ForeignMarchSightedKind,
+		worldID, playerID, ForeignMarchSightedV2Kind,
 	).Scan(&n); err != nil {
 		t.Fatalf("count notifications: %v", err)
 	}
@@ -231,8 +231,19 @@ func TestMarchSighting_NotifiesTargetedDefenderOnce(t *testing.T) {
 	if got := c.payload["threatens_name"]; got != f.defenderCityName {
 		t.Errorf("threatens_name = %v, want %q", got, f.defenderCityName)
 	}
-	if got, want := c.payload["arrive_tick"], float64(f.arriveTick); got != want {
-		t.Errorf("arrive_tick = %v, want %v", got, want)
+	// Direction, never destination (Timothy 2026-09-26): no target, no real
+	// arrival. Standing inside Pylos' catchment already, it would be "there"
+	// now — tick+28 — if Pylos is its goal.
+	for _, leak := range []string{"target_q", "target_r", "arrive_tick", "arrives_at"} {
+		if v, ok := c.payload[leak]; ok {
+			t.Errorf("payload discloses %s = %v", leak, v)
+		}
+	}
+	if got := c.payload["heading"]; got != "south-east" {
+		t.Errorf("heading = %v, want south-east (a +q step on the drawn map)", got)
+	}
+	if got, want := c.payload["eta_if_tick"], float64(f.tick+28); got != want {
+		t.Errorf("eta_if_tick = %v, want %v", got, want)
 	}
 	if got, want := c.payload["size"], float64(100); got != want {
 		t.Errorf("size = %v, want %v", got, want)
@@ -324,18 +335,19 @@ func TestMarchSighting_SilentUntilTheMarchIsActuallyVisible(t *testing.T) {
 	}
 }
 
-// T4 — receiver selection and the level gradient in one sweep. At the corridor's
-// midpoint the bystander's city sees the march go by while the defender's city
-// (16 hexes ahead) cannot yet, and the attacker is never told about their own army.
+// T4 — receiver selection and the level gradient in one sweep. Just past the
+// bystander's city (hour 17 — earlier, its catchment still lies in the march's
+// heading, see T6) the bystander sees the march go by while the defender's city
+// (13 hexes ahead) cannot yet, and the attacker is never told about their own army.
 func TestMarchSighting_BystanderGetsInfoLevelAndOwnerGetsNothing(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	t0 := time.Date(2026, 8, 4, 12, 0, 0, 0, time.UTC)
 	f := newMarchSightFixture(t, pool, t0)
 
-	clk := clock.NewTestClock(t0.Add(sightBystanderQ * time.Hour))
+	clk := clock.NewTestClock(t0.Add((sightBystanderQ + 2) * time.Hour))
 	h, rec := newSightingHandler(pool, clk)
-	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick + sightBystanderQ}); err != nil {
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick + sightBystanderQ + 2}); err != nil {
 		t.Fatalf("Handle: %v", err)
 	}
 
@@ -343,7 +355,7 @@ func TestMarchSighting_BystanderGetsInfoLevelAndOwnerGetsNothing(t *testing.T) {
 		t.Fatalf("attacker notifications = %d, want 0 — never warn a Wanax about their own march", got)
 	}
 	if got := notifCount(t, pool, f.worldID, f.defender); got != 0 {
-		t.Fatalf("defender notifications = %d, want 0 — the march is still 16 hexes from Pylos", got)
+		t.Fatalf("defender notifications = %d, want 0 — the march is still 13 hexes from Pylos", got)
 	}
 	if got := notifCount(t, pool, f.worldID, f.bystander); got != 1 {
 		t.Fatalf("bystander notifications = %d, want 1", got)
@@ -359,7 +371,7 @@ func TestMarchSighting_BystanderGetsInfoLevelAndOwnerGetsNothing(t *testing.T) {
 		t.Errorf("bystander level = %d, want 3 (info — a march passing by is not an alarm)", c.level)
 	}
 	if _, ok := c.payload["threatens_name"]; ok {
-		t.Errorf("bystander payload carries threatens_name = %v, want absent — the march targets someone else's city",
+		t.Errorf("bystander payload carries threatens_name = %v, want absent — the march is past Mycenae's lands",
 			c.payload["threatens_name"])
 	}
 	if got := c.payload["owner_id"]; got != f.attacker.String() {
@@ -509,5 +521,47 @@ func TestMarchSighting_IgnorePolicyMarchStillNotifiesBothOwnersOnCrossing(t *tes
 	if got := notifCount(t, pool, worldID, ownerB); got == 0 {
 		t.Errorf("ownerB (reaction_policy.foreign=ignore) notifications = 0, want ≥1 — detection must be unconditional (KR2 = B): "+
 			"B's own marching unit is still one of B's eyes regardless of its reaction policy")
+	}
+}
+
+// T6 — appearance, not fact (Timothy 2026-09-26: "OM enheten VERKAR ha riktning
+// mot någon del av din stads catchment så säger notisen när den beräknas komma
+// fram OM det är dit den är på väg"). At the corridor's midpoint Mycenae's
+// catchment lies in the march's heading, so the bystander is warned — urgent,
+// naming Mycenae, with an arrival-if — although its real target is Pylos. Two
+// hours later it has passed: no second, plain "it is passing" notice follows.
+func TestMarchSighting_WarnsWhenItSeemsBoundForYourLands(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	t0 := time.Date(2026, 8, 4, 12, 0, 0, 0, time.UTC)
+	f := newMarchSightFixture(t, pool, t0)
+
+	clk := clock.NewTestClock(t0.Add(sightBystanderQ * time.Hour))
+	h, rec := newSightingHandler(pool, clk)
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick + sightBystanderQ}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+	var c *sightingCall
+	for i := range rec.calls {
+		if rec.calls[i].playerID == f.bystander {
+			c = &rec.calls[i]
+		}
+	}
+	if c == nil {
+		t.Fatal("bystander not told about a march heading for Mycenae's lands")
+	}
+	if c.level != 2 || c.payload["threatens_name"] != "Mycenae" {
+		t.Errorf("level=%d threatens_name=%v, want 2 / Mycenae", c.level, c.payload["threatens_name"])
+	}
+	if _, ok := c.payload["eta_if_tick"]; !ok {
+		t.Error("warning carries no eta_if_tick")
+	}
+
+	clk.Set(t0.Add((sightBystanderQ + 2) * time.Hour))
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick + sightBystanderQ + 2}); err != nil {
+		t.Fatalf("Handle after passing: %v", err)
+	}
+	if got := notifCount(t, pool, f.worldID, f.bystander); got != 1 {
+		t.Errorf("bystander notifications after the march passed = %d, want 1 — once warned, passing is not news", got)
 	}
 }

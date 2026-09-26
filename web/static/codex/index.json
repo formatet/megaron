@@ -35,7 +35,7 @@
     {"id": "units",        "title": "Soldiers and ships",           "category": "War", "drawer": "war", "kinds": ["TrainComplete"], "related": ["marching", "upkeep", "battle"]},
     {"id": "marching",     "title": "Marching",                     "category": "War", "kinds": ["UnitArrived", "ArmyArrival", "MarchStalled"], "related": ["runners", "stances", "sight"]},
     {"id": "stances",      "title": "Stances and watches",          "category": "War", "kinds": ["SentryAlerted"], "related": ["sieges", "defence", "battle"]},
-    {"id": "defence",      "title": "Seeing them coming",           "category": "War", "kinds": ["ForeignMarchSighted"], "related": ["runners", "stances", "sight"]},
+    {"id": "defence",      "title": "Seeing them coming",           "category": "War", "kinds": ["ForeignMarchSighted", "ForeignMarchSightedV2"], "related": ["runners", "stances", "sight"]},
     {"id": "battle",       "title": "Battle",                       "category": "War", "kinds": ["BattleWon", "BattleLost", "SettlementDefended"], "related": ["units", "loyalty", "stances"]},
     {"id": "sieges",       "title": "Sieges and blockades",         "category": "War", "kinds": ["SiegeStarted", "SiegeLifted", "HexBlockaded", "HexUnblockaded"], "related": ["occupation", "stances", "catchment"]},
     {"id": "occupation",   "title": "Occupation and captured cities", "category": "War", "kinds": ["CityOccupied", "CityAnnexReady", "OccupationDefended", "SettlementCaptured", "SettlementSacked", "SettlementLooted", "SettlementBurned", "OutpostCaptured"], "related": ["sieges", "battle", "rough-edges"]},

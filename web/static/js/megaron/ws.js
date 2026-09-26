@@ -167,7 +167,7 @@ export function initWS() {
         // Units bleeding out from grain/silver shortage — previously silent.
         coalesce('units', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; })));
       }
-      if (msg.kind === 'ForeignMarchSighted') {
+      if (msg.kind === 'ForeignMarchSighted' || msg.kind === 'ForeignMarchSightedV2') {
         // A foreign march just entered this Wanax's live tier. The refetch is
         // warranted beyond the chip: the march is a new map actor, and the
         // whole value of this notification is the travel time still left to answer
