@@ -204,6 +204,15 @@ const (
 	// flips back to StatusGarrison at hull=HullMax when the job completes
 	// (ShipRepairCompleteHandler). Land units never carry this status.
 	StatusRepairing Status = "repairing"
+	// StatusFreighting (megaron_plan_sjohandel_kraver_skepp.md R2): a galley or
+	// merchantman bound to a single naval transport leg or to a standing sea
+	// route for the route's whole lifetime (locked in port between legs too —
+	// R4). Follows the exact StatusRepairing convention: not deployable
+	// (cannot march/load/embark/disband/repair/change stance), not drawn as
+	// its own map marker (the transport/route is drawn instead), upkeep runs
+	// as normal. Land units never carry this status; war_galley never does
+	// either (it may never carry cargo — R1).
+	StatusFreighting Status = "freighting"
 )
 
 // Stance is the tactical posture of a stationary unit.

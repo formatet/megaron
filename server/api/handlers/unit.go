@@ -1805,7 +1805,10 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 
 		// 'repairing' (megaron_plan_skeppsreparation.md Slice C): a ship
 		// mid-repair cannot march any more than a still-forming one can.
-		deployable := u.Status != "forming" && u.Status != "training" && u.Status != "repairing"
+		// 'freighting' (megaron_plan_sjohandel_kraver_skepp.md R2): a ship bound
+		// to a naval transport leg or standing sea route — same non-deployable
+		// gate, it belongs to the transport/route until that releases it.
+		deployable := u.Status != "forming" && u.Status != "training" && u.Status != "repairing" && u.Status != "freighting"
 		menToDeploy := 0
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size

@@ -307,6 +307,9 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// status entirely" (UnitUpkeep's own doc comment) — leaving a ship parked
 	// in a shipyard queue out of this filter would have made permanent repair
 	// a free way to dodge silver upkeep.
+	// 'freighting' added for the same reason (megaron_plan_sjohandel_kraver_
+	// skepp.md R2): a ship bound to a naval transport/route keeps paying its
+	// own flat upkeep exactly as it would sitting in garrison.
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.crew, u.settlement_id,
 		        u.unpaid_periods, u.cargo_unit_id,
@@ -317,7 +320,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		        u.status, u.q, u.r, u.home_settlement_id
 		 FROM units u
 		 WHERE u.world_id = $1
-		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing')
+		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing', 'freighting')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM founder_phase fp
 		       WHERE fp.world_id = u.world_id
