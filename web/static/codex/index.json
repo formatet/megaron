@@ -30,7 +30,7 @@
     {"id": "contact",      "title": "Contact",                      "category": "The wider world", "related": ["messengers", "trade", "gossip"]},
     {"id": "messengers",   "title": "Messengers and letters",       "category": "The wider world", "drawer": "diplomacy", "kinds": ["MessengerArrival", "MessengerReturned"], "related": ["contact", "trade", "runners"]},
     {"id": "gossip",       "title": "Gossip",                       "category": "The wider world", "drawer": "gossip", "related": ["contact", "sight"]},
-    {"id": "sea",          "title": "The Thalassa and ships",       "category": "The wider world", "kinds": ["ShipDamaged", "ShipRepaired", "UnitLostAtSea"], "related": ["units", "bronze", "sight"]},
+    {"id": "sea",          "title": "The Thalassa and ships",       "category": "The wider world", "kinds": ["ShipDamaged", "ShipRepaired", "UnitLostAtSea", "ShipCaptured", "ShipLost", "ShipStranded"], "related": ["units", "bronze", "sight", "transfers"]},
 
     {"id": "units",        "title": "Soldiers and ships",           "category": "War", "drawer": "war", "kinds": ["TrainComplete"], "related": ["marching", "upkeep", "battle"]},
     {"id": "marching",     "title": "Marching",                     "category": "War", "kinds": ["UnitArrived", "ArmyArrival", "MarchStalled"], "related": ["runners", "stances", "sight"]},
