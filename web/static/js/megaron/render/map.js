@@ -13,6 +13,7 @@ import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actors
 import { eyeSees } from './sight.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
+import { incomingTargetKeys } from '../ui/movements.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -3227,7 +3228,8 @@ export function render() {
   if (blinkChanged) State.lastBlinkTick = blinkTick;
 
   if (!State.dirty && !seaChanged && !blinkChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
-      && !State.unitsData.some(u => u.status === 'marching')) {
+      && !State.unitsData.some(u => u.status === 'marching')
+      && !State.foreignUnitData.some(u => u.status === 'marching')) {
     requestAnimationFrame(render);
     return;
   }
@@ -3529,10 +3531,13 @@ export function render() {
     }
   }
 
-  // 3b. Incoming attack glow — pulsing red on target hex of any visible attack march
-  const attackTargets = new Set(
-    State.marchData.filter(m => m.intent === 'attack').map(m => `${m.target_q},${m.target_r}`)
-  );
+  // 3b. Incoming attack glow — pulsing red on each own province a visible
+  // hostile march is headed for. Read from the unit layer (foreign units in
+  // live vision), not marchData alone: marching_armies is only written by
+  // recall, so the glow never lit for a real march (same root as War→Movements).
+  const attackTargets = incomingTargetKeys({
+    foreign: State.foreignUnitData, marches: State.marchData, provinces: State.provinceData,
+  });
   if (attackTargets.size > 0) {
     const pulse = 0.25 + 0.15 * Math.sin(State.animFrame * 0.08);
     for (const p of State.provinceData) {
