@@ -63,6 +63,8 @@ const BED_ROTATION = {
 };
 const BED_GAP_MIN_MS = 30 * 1000;
 const BED_GAP_MAX_MS = 90 * 1000;
+const BED_FADE_IN_MS = 4000; // a new piece rises out of the silence (Timothy 2026-09-26);
+  // the rendered files start at full level with the horn, so the fade lives here.
 
 // nextBedTrack picks at random, but never the same PIECE twice in a row — a
 // piece's timbres (`_sf`/`_synth`) count as one piece, so the same melody
@@ -103,6 +105,7 @@ export const MusicPlayer = (() => {
   let curBed = '';        // culture whose bed (loop or rotation) is loaded
   let curTrack = '';      // rotation only: the piece in cur
   let inGap = false;      // rotation only: cur has ended, silence until gapTimer
+  let curFresh = false;   // rotation only: cur has not been heard yet — fade it in slowly
   let gapTimer = null;
   let paused = false;
   let started = false;
@@ -147,7 +150,8 @@ export const MusicPlayer = (() => {
   function resume(ms) {
     if (!cur || inGap) return;
     cur.play().catch(() => {});
-    ramp(cur, 0.5, ms);
+    ramp(cur, 0.5, curFresh ? BED_FADE_IN_MS : ms);
+    curFresh = false;
   }
 
   // Rotation: load `track` as cur; it plays now if it may, otherwise the next
@@ -171,7 +175,8 @@ export const MusicPlayer = (() => {
     audio.addEventListener('error', done);
     if (cur) { const old = cur; ramp(old, 0, 800, () => old.pause()); }
     cur = audio;
-    if (canSound()) { audio.play().catch(() => {}); ramp(audio, 0.5, 1200); }
+    curFresh = true;
+    if (canSound()) resume(BED_FADE_IN_MS);
   }
 
   function playBed(culture) {
