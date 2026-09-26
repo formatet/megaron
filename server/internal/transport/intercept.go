@@ -391,7 +391,24 @@ func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.
 		}
 	}
 
-	destID := t.originID
+	// R5 (megaron_plan_sjohandel_mellan_spelare.md): "half the survivors go
+	// home to the INITIATOR, never to whichever city this leg happened to be
+	// sailing FROM." For a negotiated trade's leg 2, t.originID is the
+	// COUNTERPARTY's city (leg 2 sails counterparty→initiator) — using it as
+	// "home" here would limp the cargo to the wrong Wanax. units.settlement_id
+	// is left untouched by BindShip while freighting (only ReleaseShip changes
+	// it), so it is the one field that stays the ship's true home port across
+	// every leg of a round trip, whichever direction that particular leg
+	// happens to sail — for leg 1 (and R3's single-shot transfer) it agrees
+	// with t.originID exactly, so this changes nothing there.
+	var destID *uuid.UUID
+	var shipHome *uuid.UUID
+	if serr := tx.QueryRow(ctx, `SELECT settlement_id FROM units WHERE id = $1`, *t.shipUnitID).Scan(&shipHome); serr == nil && shipHome != nil {
+		destID = shipHome
+	}
+	if destID == nil {
+		destID = t.originID
+	}
 	if destID == nil {
 		if portID, _, _, found, perr := NearestOwnPort(ctx, tx, worldID, t.owner, t.originQ, t.originR); perr == nil && found {
 			destID = &portID
