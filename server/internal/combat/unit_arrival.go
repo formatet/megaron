@@ -313,6 +313,21 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 		}
 	}
 	if !hasSettlement || dest.ownerID == nil || *dest.ownerID == u.ownerID {
+		// R4 (megaron_plan_skeppsuppdrag_landsatt.md): a naval unit's plain
+		// march (no intent) was validated at dispatch to end next to a
+		// friendly settlement — re-resolve that authoritatively here (the
+		// world can change mid-transit), AFTER the field-defenders check
+		// above, so a contested hex still fights first — so the ship actually
+		// docks instead of sitting "positioned" at the sea hex forever, which
+		// is exactly the R3/R6 problem this slice closes. If the settlement
+		// is gone by now, fall through to the ordinary peaceful arrival below
+		// (the ship ends up positioned, same as any other unclaimed-hex
+		// arrival).
+		if !hasSettlement && u.category == "naval" && (u.marchIntent == nil || *u.marchIntent == "") {
+			if sid, found, fErr := friendlySettlementAdjacent(ctx, tx, worldID, u.ownerID, destQ, destR); fErr == nil && found {
+				return h.arriveGarrison(ctx, tx, u, destQ, destR, &sid, worldID)
+			}
+		}
 		return h.arriveGarrison(ctx, tx, u, destQ, destR, dest.settlementID, worldID)
 	}
 

@@ -57,6 +57,31 @@ func TestStartMarch_ShorthandedGalleyIsSlower(t *testing.T) {
 		}
 	}
 
+	// R4 (megaron_plan_skeppsuppdrag_landsatt.md): a naval unit's plain march
+	// must now end next to a port of its own — this test measures crew speed,
+	// not port validation, so give it a settlement at (11,0), right off the
+	// end of the lane, purely to keep the destination (10,0) legal.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 11, 0, 'plains')`,
+		worldID,
+	); err != nil {
+		t.Fatalf("insert port map tile (11,0): %v", err)
+	}
+	var portProvinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 11, 0, 'plains') RETURNING id`,
+		worldID,
+	).Scan(&portProvinceID); err != nil {
+		t.Fatalf("create port province: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Port', 'achaean', $3, 'capital', true)`,
+		worldID, portProvinceID, ownerID,
+	); err != nil {
+		t.Fatalf("create port settlement: %v", err)
+	}
+
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	eventStore := events.NewStore(pool)

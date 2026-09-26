@@ -463,6 +463,22 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 	}
 
+	// R4 (megaron_plan_skeppsuppdrag_landsatt.md): a naval unit's plain march
+	// (no intent) must end at a hex next to a settlement of its own —
+	// otherwise it would drift to open sea and become a "positioned" ship no
+	// order can ever reach again (R3), short of the one-time R6 sweep. Every
+	// mission that already carries its own return leg (explore/patrol/land)
+	// and assault (already redirected to the enemy's offshore hex above) is
+	// exempt — each validates its own destination on its own terms.
+	if o.Intent == "" && !assaultLanding && unit.CategoryOf(u.Type) == unit.CategoryNaval {
+		if _, found, fErr := friendlySettlementAdjacent(ctx, pool, o.WorldID, o.PlayerID, targetQ, targetR); fErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not check for a port at the destination")
+		} else if !found {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"ships need a mission when not sailing to a port: patrol, explore or land")
+		}
+	}
+
 	// Mountains are impassable.
 	if destTerrain == "mountain_limestone" || destTerrain == "mountain_red" {
 		return nil, reject(http.StatusUnprocessableEntity, "mountain terrain is impassable")

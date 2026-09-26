@@ -83,6 +83,22 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return nil
 	}
 
+	// R3 (megaron_plan_skeppsuppdrag_landsatt.md): going forward, no fresh
+	// dispatch ever sends a Runner toward a ship that isn't in port (the
+	// synchronous handler refuses it up front — see RequireShipInPort's doc
+	// comment). This check only ever fires for an envelope that was ALREADY in
+	// flight under the old rules across the deploy that introduced R3 — a
+	// stale courier reaching a ship that can no longer take its order. Land
+	// units are unaffected (RequireShipInPort is a no-op for them).
+	if u, uErr := unit.NewStore(h.pool).Get(ctx, p.UnitID); uErr == nil {
+		if rej := combat.RequireShipInPort(ctx, h.pool, p.WorldID, u.OwnerID,
+			unit.CategoryOf(u.Type), u.Status, unit.LoadDisplayName(ctx, h.pool, u.ID),
+			u.TargetQ, u.TargetR, u.ArrivesAt); rej != nil {
+			h.notifyOrderFailed(ctx, p, rej.Reason)
+			return nil
+		}
+	}
+
 	switch p.Verb {
 	case "march":
 		if p.March == nil {

@@ -105,6 +105,18 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		u.OwnerID == playerID && u.WorldID == worldID &&
 		u.Status == unit.StatusPositioned && u.SettlementID == nil &&
 		u.Q != nil && u.R != nil {
+		// R3 (megaron_plan_skeppsuppdrag_landsatt.md): a ship standing off at
+		// sea — the only way a naval unit reaches this "field-positioned, no
+		// settlement" branch — takes no orders; its mission already carries it
+		// home on its own. Checked here, before a Runner is even dispatched,
+		// not inside combat.StartMarch (see RequireShipInPort's own doc
+		// comment for why).
+		if rej := combat.RequireShipInPort(ctx, h.pool, worldID, playerID,
+			unit.CategoryOf(u.Type), u.Status, unit.LoadDisplayName(ctx, h.pool, u.ID),
+			nil, nil, nil); rej != nil {
+			writeError(w, rej.Status, rej.Reason)
+			return
+		}
 		order := combat.MarchOrder{
 			WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 			TargetQ: req.TargetQ, TargetR: req.TargetR,
@@ -432,6 +444,17 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	}
 	if u.Q == nil || u.R == nil || u.TargetQ == nil || u.TargetR == nil || u.DepartsAt == nil || u.ArrivesAt == nil {
 		writeError(w, http.StatusInternalServerError, "marching unit missing position data")
+		return
+	}
+
+	// R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching ship is always at
+	// sea, on a mission with a built-in return leg — it cannot be recalled or
+	// redirected. Land units are unaffected (RequireShipInPort is a no-op for
+	// them).
+	if rej := combat.RequireShipInPort(ctx, h.pool, worldID, playerID,
+		unit.CategoryOf(u.Type), u.Status, unit.LoadDisplayName(ctx, h.pool, u.ID),
+		u.TargetQ, u.TargetR, u.ArrivesAt); rej != nil {
+		writeError(w, rej.Status, rej.Reason)
 		return
 	}
 
@@ -839,28 +862,27 @@ func (h *UnitHandler) Load(w http.ResponseWriter, r *http.Request) {
 
 // Unload handles POST /worlds/{worldID}/units/{shipID}/unload
 //
-// Disembarks the cargo land unit from a naval unit. Rules (C6 plan, extended
-// P7 soak fix 2026-07-19):
+// Disembarks the cargo land unit from a naval unit. Rules (C6 plan; the P7
+// soak fix's field-landing fall (b) was RETIRED by
+// megaron_plan_skeppsuppdrag_landsatt.md R2 — see below):
 //   - Caller must own the ship.
 //   - Ship must have a cargo unit (cargo_unit_id non-null).
-//   - Ship must be either:
-//     (a) garrisoned at a coastal (adjacent to sea) settlement or harbour — the
-//     original path, cargo joins that settlement's garrison; or
-//     (b) field-positioned (status='positioned', no settlement) at a sea hex
-//     next to unclaimed land — the cargo steps ashore there as a
-//     field-positioned unit of its own, exactly like a unit that marched
-//     there directly, so a normal `march --intent colonize` can found a
-//     colony on it afterwards.
+//   - Ship must be garrisoned at a coastal (adjacent to sea) settlement or
+//     harbour — cargo joins that settlement's garrison. A ship standing to sea
+//     (status='positioned') can no longer unload there at all: 422.
 //
-// Before (b), landing troops from a ship anywhere but an already-friendly
-// harbour was structurally impossible: a ship scouting to genuinely new
-// coastline had no way to put its cargo ashore there at all, so a sea-enclosed
-// start could never expand territorially by ship (P7, temenos_soak_fixlista
-// 2026-07-18). Amphibious ASSAULT against an enemy settlement already worked
-// via a separate path (march intent=assault, unit_arrival.go
-// resolveAmphibiousAssault) — this is the peaceful equivalent for empty land.
+// P7 (2026-07-19) added a field-landing fall (b) — a ship field-positioned at
+// a sea hex could drop its cargo ashore on unclaimed land next to it,
+// immediately, with no courier. That is exactly the "order that skips the
+// messenger pillar" the order-runner plan closes: landing troops is now a
+// mission a ship is given IN PORT (march intent=land — see
+// api/handlers/unit.go's March/combat.StartMarch and
+// megaron_plan_skeppsuppdrag_landsatt.md R1), with a built-in return leg,
+// never an instant remote command to a ship already out at sea. Amphibious
+// ASSAULT against an enemy settlement is unaffected (march intent=assault,
+// unit_arrival.go resolveAmphibiousAssault).
 //
-// Outcome: cargo unit status → 'garrison' (a) or 'positioned' (b); ship.cargo_unit_id = NULL.
+// Outcome: cargo unit status → 'garrison'; ship.cargo_unit_id = NULL.
 // Emits ShipUnloaded.
 func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 	playerID, ok := auth.PlayerIDFromContext(r.Context())
@@ -894,9 +916,14 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, "unit is not a naval vessel")
 		return
 	}
-	if ship.Status != unit.StatusGarrison && ship.Status != unit.StatusPositioned {
+	// R2 (megaron_plan_skeppsuppdrag_landsatt.md): fall (b) — landing on bare,
+	// unclaimed shore from a ship standing to sea — is retired. A ship at sea
+	// takes no orders (R3); putting troops ashore away from a friendly port is
+	// now a MISSION given in port (march intent=land, R1), never an instant
+	// command to a ship already out on the water.
+	if ship.Status != unit.StatusGarrison {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("ship must be garrisoned or positioned to unload (status: %s)", string(ship.Status)))
+			"a ship at sea cannot be ordered to unload — give it a \"land\" mission from port instead")
 		return
 	}
 	if ship.CargoUnitID == nil {
@@ -904,65 +931,43 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// destQ/destR is where the cargo unit ends up; destSettlementID is nil for
-	// a bare-land landing (b). Resolved up front so both the pre-flight and the
-	// in-tx re-check below agree on the same target.
+	// destQ/destR is where the cargo unit ends up. Resolved up front so both
+	// the pre-flight and the in-tx re-check below agree on the same target.
 	var destQ, destR int
-	var destSettlementID *uuid.UUID
+	destSettlementID := ship.SettlementID
 
-	if ship.SettlementID != nil {
-		// (a) Ship is docked at a settlement — disembark gating: must be coastal or harbour.
-		var disembarkCoastal bool
-		if err := h.pool.QueryRow(ctx,
-			`SELECT COALESCE(p.coastal, false)
-			 FROM settlements s
-			 JOIN provinces p ON p.id = s.province_id
-			 WHERE s.id = $1`,
+	// Ship is docked at a settlement — disembark gating: must be coastal or harbour.
+	var disembarkCoastal bool
+	if err := h.pool.QueryRow(ctx,
+		`SELECT COALESCE(p.coastal, false)
+		 FROM settlements s
+		 JOIN provinces p ON p.id = s.province_id
+		 WHERE s.id = $1`,
+		*ship.SettlementID,
+	).Scan(&disembarkCoastal); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not check settlement coastal")
+		return
+	}
+	if !disembarkCoastal {
+		var hasHarbour bool
+		_ = h.pool.QueryRow(ctx,
+			`SELECT EXISTS(
+			   SELECT 1 FROM buildings b
+			   JOIN settlements s ON s.id = b.settlement_id
+			   WHERE s.id = $1 AND b.building_type = 'harbour'
+			 )`,
 			*ship.SettlementID,
-		).Scan(&disembarkCoastal); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not check settlement coastal")
+		).Scan(&hasHarbour)
+		if !hasHarbour {
+			writeError(w, http.StatusUnprocessableEntity, "units can only disembark at coastal settlements or harbours")
 			return
 		}
-		if !disembarkCoastal {
-			var hasHarbour bool
-			_ = h.pool.QueryRow(ctx,
-				`SELECT EXISTS(
-				   SELECT 1 FROM buildings b
-				   JOIN settlements s ON s.id = b.settlement_id
-				   WHERE s.id = $1 AND b.building_type = 'harbour'
-				 )`,
-				*ship.SettlementID,
-			).Scan(&hasHarbour)
-			if !hasHarbour {
-				writeError(w, http.StatusUnprocessableEntity, "units can only disembark at coastal settlements or harbours")
-				return
-			}
-		}
-		if ship.Q != nil {
-			destQ = *ship.Q
-		}
-		if ship.R != nil {
-			destR = *ship.R
-		}
-		destSettlementID = ship.SettlementID
-	} else {
-		// (b) Ship is field-positioned (out at sea) with no settlement of its
-		// own — land the cargo on an adjacent hex of unclaimed dry ground.
-		if ship.Q == nil || ship.R == nil {
-			writeError(w, http.StatusUnprocessableEntity, "ship has no known position; cannot resolve a landing hex")
-			return
-		}
-		lq, lr, found, nErr := province.NearestUnclaimedLandNeighbor(ctx, h.pool, worldID, *ship.Q, *ship.R)
-		if nErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not resolve a landing hex")
-			return
-		}
-		if !found {
-			writeError(w, http.StatusUnprocessableEntity,
-				"no unclaimed land adjacent to this hex to land on — every neighbour is sea, mountain, or already settled; sail somewhere with open shore, or dock at one of your own harbours to unload normally")
-			return
-		}
-		destQ, destR = lq, lr
+	}
+	if ship.Q != nil {
+		destQ = *ship.Q
+	}
+	if ship.R != nil {
+		destR = *ship.R
 	}
 
 	cargoID := *ship.CargoUnitID
@@ -1406,6 +1411,14 @@ func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) 
 	if u, uErr := h.store.Get(ctx, unitID); uErr == nil &&
 		u.OwnerID == playerID && u.WorldID == worldID &&
 		u.SettlementID == nil && u.Q != nil && u.R != nil {
+		// R3 (megaron_plan_skeppsuppdrag_landsatt.md): a ship not docked at its
+		// own port takes no orders, standing orders included.
+		if rej := combat.RequireShipInPort(ctx, h.pool, worldID, playerID,
+			unit.CategoryOf(u.Type), u.Status, unit.LoadDisplayName(ctx, h.pool, u.ID),
+			u.TargetQ, u.TargetR, u.ArrivesAt); rej != nil {
+			writeError(w, rej.Status, rej.Reason)
+			return
+		}
 		unitPos := province.MapPosition{Q: *u.Q, R: *u.R}
 		origin, originOK := h.resolveOrderOrigin(w, ctx, worldID, playerID, unitPos)
 		if !originOK {
