@@ -59,7 +59,11 @@ export function dismissBrief(name) {
 // same piece may appear in two timbres (soundfont/synth) — variation without a
 // new melody. The sign-in intro is deliberately NOT in the rotation.
 const BED_ROTATION = {
-  minoan: ['minoan_bygget_sf', 'minoan_bygget_synth', 'minoan_templet_sf', 'minoan_templet_synth'],
+  minoan: [
+    'minoan_bygget_sf', 'minoan_bygget_synth',
+    'minoan_templet_sf', 'minoan_templet_synth',
+    'minoan_havet_sf', 'minoan_havet_synth',
+  ],
 };
 const BED_GAP_MIN_MS = 30 * 1000;
 const BED_GAP_MAX_MS = 90 * 1000;
