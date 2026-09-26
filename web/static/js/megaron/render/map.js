@@ -3847,7 +3847,7 @@ function producesText(tile) {
 
 // foreignUnits (optional): non-owned units on this same hex (GET /foreign-units,
 // fow/frammande-enheter) — listed below the player's own, tagged with the
-// owner's name, and with no "Visa →" button (there is nothing of theirs to
+// owner's name, and with no "Show →" button (there is nothing of theirs to
 // act on).
 function unitListHTML(units, foreignUnits) {
   let html = '';
@@ -3856,7 +3856,7 @@ function unitListHTML(units, foreignUnits) {
       const lbl = actorName(u);
       return '<div style="display:flex;justify-content:space-between;align-items:center;gap:.4rem;padding:.2rem 0">'
         + '<span>' + lbl + ' <span style="color:var(--text-dim)">(' + u.status + ')</span></span>'
-        + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Visa →</button>'
+        + '<button data-unit-id="' + u.id + '" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Show →</button>'
         + '</div>';
     }).join('');
     html += '<div style="margin-bottom:.5rem"><div class="ir-label" style="margin-bottom:.2rem">Units here</div>' + rows + '</div>';
@@ -4455,7 +4455,7 @@ export function initMap() {
     // Moment-22: an own field unit standing right here IS the order target,
     // not the hex — marching-to-your-own-hex is rejected server-side ("cannot
     // march to own hex"). Route to the same map→drawer bridge the left-click
-    // "Visa →" button uses (war.js warFocusUnit): the War drawer opens with
+    // "Show →" button uses (war.js warFocusUnit): the War drawer opens with
     // that unit's card focused, its March button ready. This detects "is a
     // friendly unit standing here" (u.deployable, not u.size — the server has
     // no size gate); it deliberately does NOT also exclude fortify stance like

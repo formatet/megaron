@@ -432,10 +432,10 @@ function renderUnitCard(u) {
   if (isGarrison || isForming || isTraining || isEmbarked) {
     const prov = State.provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
     const place = prov ? esc(prov.name) : 'city';
-    // A galley idle at its coastal settlement is docked — say it is "i hamn"
+    // A galley idle at its coastal settlement is docked — say it is "in harbour"
     // rather than just naming the city (a land garrison is self-evidently in the
     // city; a ship being IN PORT vs at sea is the meaningful distinction).
-    loc = (isNaval && isGarrison) ? '⚓ i hamn — ' + place : place;
+    loc = (isNaval && isGarrison) ? '⚓ in harbour — ' + place : place;
   } else if (isMarching && u.target_q != null) {
     // arrival_tick is the authoritative arrival (K4) — the stored arrives_at
     // stamp lies across server downtime; the tick self-corrects.
@@ -478,7 +478,7 @@ function renderUnitCard(u) {
     // worker poll away) — say "delivering", not the stale "en route" ETA.
     const arrived = serverNow() >= new Date(runner.arrives_at).getTime();
     pendingOrder = arrived
-      ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Runner levererar ordern…</div>'
+      ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Runner carrying the order…</div>'
       : '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Runner en route — order arrives ' + arrivalHTML(runner.arrives_at) + '</div>';
   }
 
