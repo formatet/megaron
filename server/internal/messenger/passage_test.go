@@ -134,9 +134,35 @@ func (f *passageFixture) waitingMessenger(t *testing.T, portID uuid.UUID, sinceT
 	return id
 }
 
+// waitingReturnMessenger inserts a 'returning' messenger (already delivered
+// and replied/auto-returned) waiting for passage back home from portID — R6's
+// case: the return leg's port is wherever the messenger currently stands,
+// which may be a foreign city.
+func (f *passageFixture) waitingReturnMessenger(t *testing.T, portID uuid.UUID, sinceTick int) uuid.UUID {
+	t.Helper()
+	var id uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, reply_text, status, kind,
+		                          hex_q, hex_r, arrives_at, return_departs_at, passage_status, passage_port_id, passage_since_tick)
+		 VALUES ($1,$2,$3,$4,'hello','ok','returning','diplomatic',5,0,now(),now(),'awaiting_passage',$5,$6) RETURNING id`,
+		f.worldID, f.ownerID, f.originID, f.destID, portID, sinceTick,
+	).Scan(&id); err != nil {
+		t.Fatalf("create waiting return messenger: %v", err)
+	}
+	return id
+}
+
 // departingTransport inserts an in-transit naval transport bound to shipID,
 // departing portID toward f.destID, "just now" (within the scan's window).
 func (f *passageFixture) departingTransport(t *testing.T, portID, shipID uuid.UUID, dueTick int) uuid.UUID {
+	t.Helper()
+	return f.departingTransportTo(t, portID, f.destID, 5, 0, shipID, dueTick)
+}
+
+// departingTransportTo is departingTransport with an explicit destination —
+// used for R6's return leg, which departs a FOREIGN city toward the
+// messenger's own home rather than toward f.destID.
+func (f *passageFixture) departingTransportTo(t *testing.T, portID, destID uuid.UUID, destQ, destR int, shipID uuid.UUID, dueTick int) uuid.UUID {
 	t.Helper()
 	var id uuid.UUID
 	now := time.Now()
@@ -144,10 +170,29 @@ func (f *passageFixture) departingTransport(t *testing.T, portID, shipID uuid.UU
 		`INSERT INTO transports (world_id, owner_id, kind, origin_id, dest_id, category,
 		                          origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick,
 		                          status, interceptable, ship_unit_id)
-		 VALUES ($1,$2,'transfer',$3,$4,'naval',0,0,5,0,$5,$6,$7,'in_transit',true,$8) RETURNING id`,
-		f.worldID, f.ownerID, portID, f.destID, now, now.Add(time.Hour), dueTick, shipID,
+		 VALUES ($1,$2,'transfer',$3,$4,'naval',0,0,$5,$6,$7,$8,$9,'in_transit',true,$10) RETURNING id`,
+		f.worldID, f.ownerID, portID, destID, destQ, destR, now, now.Add(time.Hour), dueTick, shipID,
 	).Scan(&id); err != nil {
 		t.Fatalf("create departing transport: %v", err)
+	}
+	return id
+}
+
+// marchingShip inserts a naval unit mid-march: q,r is its frozen departure
+// hex (the sea hex adjacent to its port, per combat.StartMarch), target_q/r
+// its destination hex, departing exactly at depart_tick and arriving at
+// arriveTick.
+func (f *passageFixture) marchingShip(t *testing.T, q, r, targetQ, targetR, departTick, arriveTick int) uuid.UUID {
+	t.Helper()
+	var id uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, target_q, target_r,
+		                    depart_tick, arrive_tick, departs_at, arrives_at, name)
+		 VALUES ($1,$2,'merchantman','naval',1,10,'marching',$3,$4,$5,$6,$7,$8,now(),now()+interval '1 hour','Test-mission-ship')
+		 RETURNING id`,
+		f.worldID, f.ownerID, q, r, targetQ, targetR, departTick, arriveTick,
+	).Scan(&id); err != nil {
+		t.Fatalf("create marching ship: %v", err)
 	}
 	return id
 }
@@ -228,6 +273,72 @@ func TestPassageScan_BoardsWaitingMessengerAndSchedulesDisembark(t *testing.T) {
 	}
 	if dueTick < transportDueTick {
 		t.Errorf("disembark due_tick = %d, want >= carrier's own due_tick %d", dueTick, transportDueTick)
+	}
+}
+
+// TestPassageScan_BoardsShipMission is R2's other carrier kind
+// (megaron_plan_skeppsuppdrag_landsatt.md): a ship starting an ordinary
+// port-to-port march this exact tick is also an eligible carrier — its
+// frozen origin hex (q,r) resolves to the port via
+// province.NearestSettlementNeighbor, and its target hex resolves to the
+// disembark point the same way.
+func TestPassageScan_BoardsShipMission(t *testing.T) {
+	f := setupPassageFixture(t)
+	ctx := context.Background()
+	messengerID := f.waitingMessenger(t, f.originID, f.currentTick+1)
+	arriveTick := f.currentTick + 4
+	// (1,0) neighbours the origin settlement (q=0); (4,0) neighbours the
+	// destination settlement (q=5) — same axial layout the fixture's own
+	// sea lane uses.
+	f.marchingShip(t, 1, 0, 4, 0, f.currentTick, arriveTick)
+
+	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+
+	_, passageStatus, carrierName, _ := f.messengerRow(t, messengerID)
+	if passageStatus != nil {
+		t.Errorf("passage_status = %v, want NULL (boarded the ship mission)", *passageStatus)
+	}
+	if carrierName == nil || *carrierName != "Test-mission-ship" {
+		t.Errorf("carrier_name = %v, want Test-mission-ship", carrierName)
+	}
+	if n := f.countScheduled(t, "MessengerArrival", messengerID); n != 1 {
+		t.Errorf("scheduled MessengerArrival count = %d, want 1", n)
+	}
+}
+
+// TestPassageScan_BoardsReturnLegFromForeignCity is acceptance criterion 5
+// (R6): a reply's return leg waits at wherever the messenger stands — which
+// may be a foreign city the sender does not own — and boards any of the
+// SENDER's own ships that happen to depart from there, e.g. slice 1b's own
+// trade-ship leg 2 home. Boarding never checks who owns the port, only who
+// owns the ship.
+func TestPassageScan_BoardsReturnLegFromForeignCity(t *testing.T) {
+	f := setupPassageFixture(t)
+	ctx := context.Background()
+	messengerID := f.waitingReturnMessenger(t, f.destID, f.currentTick+1)
+	shipID := f.ship(t, f.destID, "merchantman") // the sender's own ship, docked in the (foreign) city the bud stands in
+	transportDueTick := f.currentTick + 3
+	// Home leg: destID (foreign, where the bud waits) -> originID (home).
+	f.departingTransportTo(t, f.destID, f.originID, 0, 0, shipID, transportDueTick)
+
+	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+
+	_, passageStatus, carrierName, _ := f.messengerRow(t, messengerID)
+	if passageStatus != nil {
+		t.Errorf("passage_status = %v, want NULL (boarded the return leg)", *passageStatus)
+	}
+	if carrierName == nil || *carrierName == "" {
+		t.Error("carrier_name not set on the return leg")
+	}
+	if n := f.countScheduled(t, "MessengerReturn", messengerID); n != 1 {
+		t.Errorf("scheduled MessengerReturn count = %d, want 1", n)
+	}
+	if n := f.countScheduled(t, "MessengerArrival", messengerID); n != 0 {
+		t.Errorf("scheduled MessengerArrival count = %d, want 0 (this is the return leg, not a fresh outbound)", n)
 	}
 }
 
