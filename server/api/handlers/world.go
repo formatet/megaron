@@ -1257,7 +1257,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	// row is a real mover — trade legs (delivery + return) AND internal transfers —
 	// so all of them render, and an intercepted caravan (status != 'in_transit')
 	// vanishes from the map the moment it is seized. good_key/quantity = the heaviest
-	// manifest good, for display (LATERAL so both columns come off the SAME winning
+	// manifest good (blanked below for anyone not party to the shipment), for display (LATERAL so both columns come off the SAME winning
 	// row — two independent scalar subqueries could each pick a different good on a
 	// tie). origin/dest coords come off the transport row itself; the settlement
 	// join only supplies terrain for the fog-of-war gate.
@@ -1343,6 +1343,12 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			m.Role = "sender"
 		case destOwnerID != nil && *destOwnerID == playerID:
 			m.Role = "recipient"
+		}
+		// The cargo is secret until the caravan is taken (Timothy 2026-09-26,
+		// megaron_plan_karavanbeslag.md): a stranger sees a caravan on the
+		// road, never what it carries. Only sender and recipient learn it.
+		if m.Role == "" {
+			m.GoodKey, m.Quantity = "", 0
 		}
 		markers = append(markers, m)
 	}
