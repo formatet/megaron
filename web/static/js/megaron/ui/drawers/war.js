@@ -428,10 +428,17 @@ function renderUnitCard(u) {
   const isPositioned = u.status === 'positioned';
   const isMarching = u.status === 'marching';
   const isEmbarked = u.status === 'embarked';
+  // Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R2/R4): a
+  // ship bound to a naval transfer or standing sea route — not deployable,
+  // not drawn on the map (the transport/route is), parked at the settlement
+  // it was bound from.
+  const isFreighting = u.status === 'freighting';
 
   // Location string
   let loc = '';
-  if (isGarrison || isForming || isTraining || isEmbarked) {
+  if (isFreighting) {
+    loc = 'Freighting — ' + (u.freighting_note ? esc(u.freighting_note) : 'bound to a sea route');
+  } else if (isGarrison || isForming || isTraining || isEmbarked) {
     const prov = State.provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
     const place = prov ? esc(prov.name) : 'city';
     // A galley idle at its coastal settlement is docked — say it is "in harbour"
@@ -509,7 +516,10 @@ function renderUnitCard(u) {
   // låg — till skillnad från hull-bricka ovan. Skälet är att det här är talet
   // som avgör om du kan ge en order alls, och ett skepp som tyst närmar sig
   // noll är precis det mekaniken finns för att göra synligt.
-  const atSea = isNaval && u.status !== 'garrison' && u.status !== 'repairing';
+  // 'freighting' excluded too (megaron_plan_sjohandel_kraver_skepp.md — this
+  // slice doesn't model per-ship provisions for a bound trade hull; showing
+  // a food badge the server never resolves would be a promise it can't keep).
+  const atSea = isNaval && u.status !== 'garrison' && u.status !== 'repairing' && u.status !== 'freighting';
   const days = u.provision_days || 0;
   const foodBadge = atSea
     ? '<span style="font-size:.6rem;margin-left:.3rem;color:' +
