@@ -163,6 +163,18 @@ export function notifIcon(kind) {
 // Caps for payloadSummary below: a notif chip is one line, so both a key
 // count and a character count are enforced — either one alone can be beaten
 // (few keys with huge values, or many keys with tiny ones).
+// Player-facing names for OrderFailed's body.verb — one per order key the
+// server can reject (messenger/order_delivery.go, messenger/recall.go).
+const ORDER_VERB_LABELS = {
+  march: 'march',
+  stance: 'stance',
+  stance_pursuit: 'pursuit',
+  recall: 'recall',
+  redirect: 'redirect',
+  standing_orders: 'standing orders',
+  occupy_action: 'occupation',
+};
+
 const PAYLOAD_SUMMARY_MAX_KEYS = 6;
 const PAYLOAD_SUMMARY_MAX_CHARS = 120;
 
@@ -491,10 +503,13 @@ export function notifText(kind, body) {
       return `${subject} starved to half strength${crew} — turning home on its own, sailing slower${eta ? `, arrives ${eta}` : ''}`;
     }
     case 'OrderFailed': {
+      // body.verb is the server's order key (order_delivery.go switch +
+      // recall.go) — never shown raw: "Order failed (stance_pursuit)" told
+      // the player nothing. An unknown key drops the parenthesis entirely.
       const prefix = body.name ? `${body.name} — ` : '';
-      return body.reason
-        ? `${prefix}Order failed (${body.verb || '?'}): ${body.reason}`
-        : `${prefix}Order failed (${body.verb || '?'})`;
+      const label = ORDER_VERB_LABELS[body.verb];
+      const what = label ? `Order failed (${label})` : 'Order failed';
+      return body.reason ? `${prefix}${what}: ${body.reason}` : `${prefix}${what}`;
     }
     case 'UnitRecalled':
     case 'UnitRedirected': {

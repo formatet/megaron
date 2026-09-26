@@ -414,6 +414,15 @@ test('OrderFailed prefixes the named unit when present', () => {
   );
 });
 
+test('OrderFailed never shows the raw server verb key', () => {
+  assert.equal(
+    notifText('OrderFailed', { verb: 'stance_pursuit', reason: 'the target is gone' }),
+    'Order failed (pursuit): the target is gone',
+  );
+  assert.equal(notifText('OrderFailed', { verb: 'occupy_action' }), 'Order failed (occupation)');
+  assert.equal(notifText('OrderFailed', { verb: 'something_new' }), 'Order failed');
+});
+
 test('ShipDamaged and ShipRepaired name the ship over the bare type', () => {
   assert.equal(
     notifText('ShipDamaged', { unit_type: 'galley', name: 'White Dolphin, Galley of Kydonia', hull: 0, hull_max: 5, sunk: true, returning_home: false }),
