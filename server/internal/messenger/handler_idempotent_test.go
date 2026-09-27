@@ -11,7 +11,9 @@ package messenger
 // tests (real Postgres, gated by DATABASE_URL) proving both guards: each
 // drives the SAME scheduled event through Handle twice and asserts the
 // messenger's status only flips once (and, for Arrival, that only one
-// ScheduledMessengerReturn auto-return timer is armed).
+// ScheduledMessengerStayEnd stay-end timer is armed — megaron_plan_ordna_
+// passage.md 3b-2 replaced the direct ScheduledMessengerReturn auto-return
+// this test used to check with that two-stage timer).
 
 import (
 	"context"
@@ -131,13 +133,13 @@ func TestArrivalHandler_ReplayIsIdempotent(t *testing.T) {
 
 	var returnTimersAfterFirst int
 	if err := pool.QueryRow(ctx,
-		`SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='MessengerReturn' AND (payload->>'messenger_id')::uuid=$2`,
+		`SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='MessengerStayEnd' AND (payload->>'messenger_id')::uuid=$2`,
 		f.worldID, messengerID,
 	).Scan(&returnTimersAfterFirst); err != nil {
-		t.Fatalf("count return timers after first run: %v", err)
+		t.Fatalf("count stay-end timers after first run: %v", err)
 	}
 	if returnTimersAfterFirst != 1 {
-		t.Fatalf("return timers armed after first run = %d, want 1", returnTimersAfterFirst)
+		t.Fatalf("stay-end timers armed after first run = %d, want 1", returnTimersAfterFirst)
 	}
 
 	// Replay the SAME event.
@@ -155,13 +157,13 @@ func TestArrivalHandler_ReplayIsIdempotent(t *testing.T) {
 
 	var returnTimersAfterReplay int
 	if err := pool.QueryRow(ctx,
-		`SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='MessengerReturn' AND (payload->>'messenger_id')::uuid=$2`,
+		`SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='MessengerStayEnd' AND (payload->>'messenger_id')::uuid=$2`,
 		f.worldID, messengerID,
 	).Scan(&returnTimersAfterReplay); err != nil {
-		t.Fatalf("count return timers after replay: %v", err)
+		t.Fatalf("count stay-end timers after replay: %v", err)
 	}
 	if returnTimersAfterReplay != 1 {
-		t.Errorf("return timers armed after replay = %d, want still 1 (a non-idempotent handler would arm a second auto-return timer)", returnTimersAfterReplay)
+		t.Errorf("stay-end timers armed after replay = %d, want still 1 (a non-idempotent handler would arm a second stay-end timer)", returnTimersAfterReplay)
 	}
 }
 
