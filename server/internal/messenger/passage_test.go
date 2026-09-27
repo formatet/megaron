@@ -698,3 +698,74 @@ func TestResolveDeparture_NoOwnPortIsErrNoPort(t *testing.T) {
 		t.Fatalf("ResolveDeparture err = %v, want ErrNoPort (no coastal/harboured settlement of the sender's exists at all)", err)
 	}
 }
+
+// TestPassageScan_StalledAgainOnReturnLeg is the planner review's reproduction
+// (megaron_plan_ordna_passage.md 3b-4 R5, "en gång per väntperiod"): a
+// messenger that got its PassageStalled on the OUTBOUND leg, then boarded a
+// carrier, was delivered and turned for home, stands awaiting_passage in the
+// foreign port — a NEW waiting spell. It must get a new dispatch there;
+// otherwise it waits silently forever (the failure mode R5 exists to prevent).
+// Real flow throughout: scan → board → ArrivalHandler → StartReturnLeg → scan.
+func TestPassageScan_StalledAgainOnReturnLeg(t *testing.T) {
+	f := setupPassageFixture(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	sched := events.NewScheduler(f.pool, clk)
+	hub := &fakeRecallBroadcaster{}
+	scan := NewPassageScanHandler(f.pool, sched, hub, clk, nil)
+	stalledCount := func() int {
+		n := 0
+		for _, k := range hub.notified {
+			if k == "PassageStalled" {
+				n++
+			}
+		}
+		return n
+	}
+
+	// 1. Outbound stall → exactly one dispatch.
+	start := f.currentTick
+	messengerID := f.waitingMessenger(t, f.originID, start)
+	for i := 0; i <= PassageStallNoticeTicks; i++ {
+		f.setTick(t, start+i)
+		if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+			t.Fatalf("Handle (outbound stall): %v", err)
+		}
+	}
+	if n := stalledCount(); n != 1 {
+		t.Fatalf("outbound PassageStalled = %d, want 1", n)
+	}
+
+	// 2. A carrier departs; the scan boards the messenger.
+	shipID := f.ship(t, f.originID, "merchantman")
+	f.departingTransport(t, f.originID, shipID, f.currentTick+3)
+	if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle (board): %v", err)
+	}
+	if row := f.fullRow(t, messengerID); row.passageStatus == nil || *row.passageStatus != "aboard" {
+		t.Fatalf("passage_status after boarding = %v, want aboard", row.passageStatus)
+	}
+
+	// 3. Delivery via the real ArrivalHandler, then the real return-leg start.
+	arrivalH := NewArrivalHandler(f.pool, sched, events.NewStore(f.pool), nil)
+	if err := arrivalH.Handle(ctx, f.loadScheduledEvent(t, "MessengerArrival", messengerID)); err != nil {
+		t.Fatalf("arrival Handle: %v", err)
+	}
+	f.setTick(t, f.currentTick+4)
+	res, err := StartReturnLeg(ctx, f.pool, sched, f.worldID, messengerID, clk.Now(), f.currentTick, nil)
+	if err != nil || !res.Started || !res.PassageAwaiting {
+		t.Fatalf("StartReturnLeg = %+v, %v — want started and awaiting passage (no land route home)", res, err)
+	}
+
+	// 4. The return-leg wait must earn its own dispatch.
+	back := f.currentTick
+	for i := 0; i <= PassageStallNoticeTicks; i++ {
+		f.setTick(t, back+i)
+		if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+			t.Fatalf("Handle (return stall): %v", err)
+		}
+	}
+	if n := stalledCount(); n != 2 {
+		t.Errorf("PassageStalled total = %d, want 2 — the return-leg wait is a new waiting spell and must be told to the player", n)
+	}
+}

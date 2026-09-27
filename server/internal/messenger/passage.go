@@ -873,8 +873,11 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	defer tx.Rollback(ctx)
 
 	tag, err := tx.Exec(ctx,
+		// Boarding ends this waiting spell, so the stall marker resets: the
+		// next spell (the return leg in a foreign port, or a re-wait after
+		// this carrier is lost) earns its own PassageStalled dispatch.
 		`UPDATE messengers SET passage_status = 'aboard', carrier_transport_id = $2,
-		        carrier_unit_id = $3, carrier_name = $4
+		        carrier_unit_id = $3, carrier_name = $4, passage_stalled_notified_tick = NULL
 		  WHERE id = $1 AND passage_status = 'awaiting_passage'`,
 		messengerID, carrier.transportID, carrier.unitID, carrier.name,
 	)
