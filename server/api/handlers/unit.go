@@ -849,20 +849,6 @@ func (h *UnitHandler) Pickup(w http.ResponseWriter, r *http.Request) {
 	// to the Wanax like any other stranded wait, rather than a silent leak.
 	estimateTicks := 0
 	var messengerID *uuid.UUID
-	if runnerNeeded {
-		msgID, mErr := h.dispatchPickupRunner(ctx, worldID, playerID, fetchUnitID,
-			*ship.SettlementID, shipPortQ, shipPortR, shoreQ, shoreR, unitQ, unitR)
-		if mErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not dispatch the pickup runner")
-			return
-		}
-		messengerID = &msgID
-		if t, ok := estimateTicksToShore(ctx, h.pool, worldID, shoreQ, shoreR, unitQ, unitR, fetched.Type, fetched.Crew); ok {
-			estimateTicks = t
-		}
-	}
-
-	// R2.2.
 	res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, combat.MarchOrder{
 		WorldID: worldID, PlayerID: playerID, UnitID: shipID,
 		TargetQ: shoreQ, TargetR: shoreR,
@@ -882,6 +868,25 @@ func (h *UnitHandler) Pickup(w http.ResponseWriter, r *http.Request) {
 
 	// R2.3: board the runner now, at dispatch — same reasoning as Arrange
 	// (R0, megaron_plan_hamta_hem.md).
+	// The runner is created only AFTER the ship's march is accepted: created
+	// first, a StartMarch rejection would strand a runner in port carrying an
+	// order the player was just told had failed (review 2026-09-28).
+	if runnerNeeded {
+		msgID, mErr := h.dispatchPickupRunner(ctx, worldID, playerID, fetchUnitID,
+			*ship.SettlementID, shipPortQ, shipPortR, shoreQ, shoreR, unitQ, unitR)
+		if mErr != nil {
+			// The ship has already sailed: it will wait its ticks and come home
+			// empty. Log it rather than answer 500 for a march that did start.
+			slog.Error("pickup: could not dispatch the runner after the ship sailed", "ship", shipID, "err", mErr)
+		} else {
+			messengerID = &msgID
+		}
+		if t, ok := estimateTicksToShore(ctx, h.pool, worldID, shoreQ, shoreR, unitQ, unitR, fetched.Type, fetched.Crew); ok {
+			estimateTicks = t
+		}
+	}
+
+	// R2.2.
 	if runnerNeeded {
 		if err := messenger.BoardDispatchedShipRunner(ctx, h.pool, h.scheduler, h.clk, worldID, shipID); err != nil {
 			slog.Error("pickup: board runner at dispatch failed", "ship", shipID, "err", err)
