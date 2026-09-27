@@ -170,6 +170,16 @@ const (
 	// emitted from inside the same seize() transaction that flips the
 	// transport to intercepted.
 	ScheduledNavalSeizureOutcome ScheduledEventType = "NavalSeizureOutcome"
+	// ScheduledPassageScan (megaron_plan_budet_liftar.md, slice 3a) is the
+	// self-rescheduling per-world sweep that drives a sea-lifted messenger's
+	// whole wait-board-disembark lifecycle: promotes a carrier-lost messenger
+	// back out of its sealed delay, takes the RESERVE (old abstract crossing)
+	// for a messenger no real carrier has picked up in time, boards a waiting
+	// messenger onto a departing transport/ship mission, and detects a boarded
+	// messenger whose carrier was captured/limped/sunk. One instance per
+	// world, same self-perpetuating shape as ScheduledInterceptScan.
+	// internal/messenger/passage.go.
+	ScheduledPassageScan ScheduledEventType = "PassageScan"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

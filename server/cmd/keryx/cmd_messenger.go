@@ -37,6 +37,7 @@ func replyCmd() *cobra.Command {
 			}
 			returnsAt, _ := resp["returns_at"].(string)
 			fmt.Printf("Messenger returning · arrives %s\n", arrivalETA(c, returnsAt))
+			printPassageNote(resp)
 			return nil
 		},
 	}
@@ -230,6 +231,18 @@ func outboxCmd() *cobra.Command {
 					}
 				}
 				line := fmt.Sprintf("→ %s  [%s]  (%s)  id:%s", dest, status, when, id)
+				// megaron_plan_budet_liftar.md: a sea-lifted runner's current
+				// state, once it has any (a purely-land runner never sets these).
+				if passageStatus, _ := m["passage_status"].(string); passageStatus == "awaiting_passage" {
+					port, _ := m["passage_port"].(string)
+					if port != "" {
+						line += fmt.Sprintf("  [waiting in %s for a ship]", port)
+					} else {
+						line += "  [waiting for a ship]"
+					}
+				} else if carrier, _ := m["carrier_name"].(string); carrier != "" {
+					line += fmt.Sprintf("  [aboard %s]", carrier)
+				}
 				// The reply rides home with the returning messenger — without this
 				// line the correspondence's whole payoff was --json-only.
 				if reply, ok := m["reply_text"].(string); ok && reply != "" {

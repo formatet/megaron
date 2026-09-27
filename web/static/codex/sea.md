@@ -22,3 +22,14 @@ A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a f
 Ships are damaged in [[battle]] and by storms. A damaged ship can be **Repaired** at a Shipyard (**War → Army → Repair**); you are notified when the work is done. Ships can also be lost at sea outright — and the gods, when angry, sometimes take one from the harbour ([[kharis]]).
 
 A ship caught carrying cargo (see [[transfers]]) can also be **captured outright** — it changes hands on the spot and sails to the raider's nearest port under its new flag. If your own trade route's home port is gone by the time a ship comes back — burned, occupied, abandoned — it docks at your next-nearest settlement instead; with none left anywhere, it sits **stranded** wherever it made landfall until you give it a fresh order.
+
+## Budet liftar — how a letter or an order crosses the sea
+
+A [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim. When its road crosses open water:
+
+- It runs to **your own nearest coastal or harboured city** and waits there — you are told which one, and why.
+- The moment one of **your own** ships or trade routes sails from that port toward the right side of the sea, it **boards** — free, no cargo space taken — and steps off wherever that ship lands, then finishes the trip on foot.
+- If the ship carrying it is **captured, damaged home or sunk**, the letter or order is never lost, never read and never delayed for long: it comes back sealed to the port it left from after a short spell, and waits for the next ship.
+- If no ship of yours sails that way in time, it still gets there — it crosses by the old, abstract passage instead, and the game says so. This fallback exists so you are never stuck; a future change will require an actual ship every time.
+
+None of this changes anything for a message or order whose road stays on dry land.

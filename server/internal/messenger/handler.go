@@ -18,11 +18,17 @@ import (
 // ArrivalPayload is the scheduled event payload for a messenger reaching its destination.
 type ArrivalPayload struct {
 	MessengerID uuid.UUID `json:"messenger_id"`
+	// PassageGeneration (megaron_plan_budet_liftar.md R4) — see
+	// OrderDeliveryPayload's field of the same name for the full rationale.
+	// Zero for every messenger that never needed the sea-lift.
+	PassageGeneration int `json:"passage_generation,omitempty"`
 }
 
 // ReturnPayload is the scheduled event payload for a messenger returning home.
 type ReturnPayload struct {
 	MessengerID uuid.UUID `json:"messenger_id"`
+	// PassageGeneration — see ArrivalPayload's field of the same name.
+	PassageGeneration int `json:"passage_generation,omitempty"`
 }
 
 // How long a messenger waits at its destination before heading home unanswered.
@@ -89,20 +95,35 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	var status string
 	var destinationID, senderID uuid.UUID
 	var carriesOffer bool
+	var passageStatus *string
+	var currentGeneration int
 	err = tx.QueryRow(ctx,
-		`SELECT status, destination_id, sender_id, trade_offer IS NOT NULL
+		`SELECT status, destination_id, sender_id, trade_offer IS NOT NULL, passage_status, passage_generation
 		   FROM messengers WHERE id = $1 FOR UPDATE`,
 		payload.MessengerID,
-	).Scan(&status, &destinationID, &senderID, &carriesOffer)
+	).Scan(&status, &destinationID, &senderID, &carriesOffer, &passageStatus, &currentGeneration)
 	if err != nil {
 		return nil // deleted or not found — silently skip
 	}
 	if status != "outbound" {
 		return nil // idempotent replay: already delivered (or further along)
 	}
+	// megaron_plan_budet_liftar.md R4: two distinct reasons this firing can be
+	// premature/stale — see ReturnHandler.Handle's twin check for the full
+	// rationale. Always false for a plain land messenger (passage_status stays
+	// NULL, generation stays 0==0).
+	if (passageStatus != nil && (*passageStatus == "awaiting_passage" || *passageStatus == "returning_sealed")) ||
+		payload.PassageGeneration != currentGeneration {
+		slog.Info("messenger arrival: premature or stale passage generation — no-op",
+			"id", payload.MessengerID, "passage_status", passageStatus,
+			"event_generation", payload.PassageGeneration, "current_generation", currentGeneration)
+		return nil
+	}
 
 	if _, err := tx.Exec(ctx,
-		`UPDATE messengers SET status = 'delivered' WHERE id = $1 AND status = 'outbound'`,
+		`UPDATE messengers SET status = 'delivered',
+		        passage_status = NULL, carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL
+		  WHERE id = $1 AND status = 'outbound'`,
 		payload.MessengerID,
 	); err != nil {
 		return fmt.Errorf("mark messenger delivered: %w", err)
@@ -248,21 +269,47 @@ func (h *ReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 	var status string
 	var originID uuid.UUID
+	var passageStatus *string
+	var currentGeneration int
 	// origin_id is NULL for a host-sent messenger (mig 087); the origin unit is
 	// then the stream the MessengerReturned event belongs to.
 	err = tx.QueryRow(ctx,
-		`SELECT status, COALESCE(origin_id, origin_unit_id) FROM messengers WHERE id = $1 FOR UPDATE`,
+		`SELECT status, COALESCE(origin_id, origin_unit_id), passage_status, passage_generation
+		   FROM messengers WHERE id = $1 FOR UPDATE`,
 		payload.MessengerID,
-	).Scan(&status, &originID)
+	).Scan(&status, &originID, &passageStatus, &currentGeneration)
 	if err != nil {
 		return nil
 	}
 	if status == "arrived" {
 		return nil // idempotent replay
 	}
+	// megaron_plan_budet_liftar.md R4/R6: two distinct premature-firing risks,
+	// both a no-op — the event that matches, whenever it fires, owns the real
+	// completion:
+	//  (a) Reply auto-schedules this SAME event type at delivery time
+	//      (stayTicks) regardless of whether the return leg later turns out to
+	//      need the sea-lift. Still 'awaiting_passage' (never boarded yet) or
+	//      'returning_sealed' (carrier lost, waiting out the delay) means the
+	//      runner has definitely not reached home — this firing is premature,
+	//      full stop, no matter what generation it carries.
+	//  (b) A boarded ('aboard') or already-resolved (NULL) messenger's plan may
+	//      still have been SUPERSEDED since this exact event was scheduled
+	//      (carrier lost and re-boarded, or the reserve taken instead) —
+	//      payload.PassageGeneration no longer matching the row's current one
+	//      is that signal. Always equal (0==0) for a plain land messenger.
+	if (passageStatus != nil && (*passageStatus == "awaiting_passage" || *passageStatus == "returning_sealed")) ||
+		payload.PassageGeneration != currentGeneration {
+		slog.Info("messenger return: premature or stale passage generation — no-op",
+			"id", payload.MessengerID, "passage_status", passageStatus,
+			"event_generation", payload.PassageGeneration, "current_generation", currentGeneration)
+		return nil
+	}
 
 	if _, err := tx.Exec(ctx,
-		`UPDATE messengers SET status = 'arrived' WHERE id = $1 AND status != 'arrived'`,
+		`UPDATE messengers SET status = 'arrived',
+		        passage_status = NULL, carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL
+		  WHERE id = $1 AND status != 'arrived'`,
 		payload.MessengerID,
 	); err != nil {
 		return fmt.Errorf("mark messenger arrived: %w", err)

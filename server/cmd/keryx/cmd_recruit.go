@@ -191,20 +191,20 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		return err
 	}
 	var catalogue []struct {
-		Type             string             `json:"type"`
-		Costs            map[string]float64 `json:"costs"`
-		BatchMen         int                `json:"batch_men"`
-		PopCost          int                `json:"pop_cost"`
+		Type     string             `json:"type"`
+		Costs    map[string]float64 `json:"costs"`
+		BatchMen int                `json:"batch_men"`
+		PopCost  int                `json:"pop_cost"`
 		// Game-days, not wall-clock minutes — mirrors the server's
 		// duration_game_days rename (province.go UnitCatalogue). One tick is
 		// one game-day; the old duration_minutes field floored to a 1-minute
 		// granularity and gave wrong figures at a sub-minute TICK_SECONDS.
-		DurationGameDays int                `json:"duration_game_days"`
-		RequiresBarracks bool               `json:"requires_barracks"`
-		RequiresStable   bool               `json:"requires_stable"`
-		RequiresHarbour  bool               `json:"requires_harbour"`
-		RequiresShipyard bool               `json:"requires_shipyard"`
-		RequiresFoundry  bool               `json:"requires_foundry"`
+		DurationGameDays int  `json:"duration_game_days"`
+		RequiresBarracks bool `json:"requires_barracks"`
+		RequiresStable   bool `json:"requires_stable"`
+		RequiresHarbour  bool `json:"requires_harbour"`
+		RequiresShipyard bool `json:"requires_shipyard"`
+		RequiresFoundry  bool `json:"requires_foundry"`
 	}
 	if jsonMode {
 		printRawJSON(data)

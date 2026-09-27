@@ -1,7 +1,7 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
-import { esc, formatApiError } from './format.js';
+import { esc, formatApiError, passageNote } from './format.js';
 import { unitTypeLabel } from './actornames.js';
 import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
@@ -520,7 +520,8 @@ export async function sendMarch() {
     etaEl.innerHTML = dispatched
       ? '🏃 Runner carries the order — reaches the unit ' +
         arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
-        (redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery')
+        (redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +
+        passageNote(first.data)
       : '✓ Marching — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
     // The stance for a marching unit rides a second Runner that must catch up.

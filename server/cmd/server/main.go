@@ -149,6 +149,7 @@ func main() {
 	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, hub, gameClock)
 	marchRecallH := messenger.NewMarchRecallHandler(pool, scheduler, eventStore, hub, gameClock)
 	orderDeliveryH := messenger.NewOrderDeliveryHandler(pool, scheduler, eventStore, hub, gameClock)
+	passageScanH := messenger.NewPassageScanHandler(pool, scheduler, hub, gameClock)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
 	worker.Register(events.ScheduledShipRepairComplete, shipRepairH.Handle)
@@ -175,6 +176,7 @@ func main() {
 	worker.Register(events.ScheduledTransportArrival, transportH.Handle)
 	interceptH := transport.NewInterceptScanHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
+	worker.Register(events.ScheduledPassageScan, passageScanH.Handle)
 	unitInterceptH := combat.NewUnitInterceptScanHandler(pool, scheduler, eventStore, gameClock, hub)
 	worker.Register(events.ScheduledUnitInterceptScan, unitInterceptH.Handle)
 	marchSightH := combat.NewMarchSightingHandler(pool, scheduler, hub, gameClock)
@@ -535,6 +537,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledMarchSightingScan,
 		events.ScheduledMarchEncounterScan,
 		events.ScheduledStandingOrderTick,
+		events.ScheduledPassageScan,
 	}
 
 	for _, wid := range worldIDs {

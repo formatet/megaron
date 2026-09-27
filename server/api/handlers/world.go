@@ -1387,7 +1387,8 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
 		        COALESCE(op.terrain_type, omt.terrain, ''),
 		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
-		        m.sent_at, m.arrives_at, m.status, m.return_departs_at
+		        m.sent_at, m.arrives_at, m.status, m.return_departs_at,
+		        m.passage_status, pp.map_q, pp.map_r, pps.name
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its frozen
 		 -- departure point (origin_q/origin_r) places it, with terrain off the tile.
@@ -1397,6 +1398,11 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		 LEFT JOIN settlements ds ON ds.id = m.destination_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
 		 LEFT JOIN players spl ON spl.id = m.sender_id
+		 -- megaron_plan_budet_liftar.md: while awaiting_passage the runner stands
+		 -- at its port, not its final destination — pp/pps resolve that hex/name
+		 -- so the leg drawn below stops there instead of the full sea crossing.
+		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
+		 LEFT JOIN provinces pp ON pp.id = pps.province_id
 		 WHERE m.world_id = $1 AND m.status IN ('outbound', 'returning')`,
 		worldID,
 	)
@@ -1427,6 +1433,14 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		// OrderUnitID ties a kind='order' runner to the unit it is
 		// running to, so the unit card can show "order på väg" + courier ETA.
 		OrderUnitID *uuid.UUID `json:"order_unit_id,omitempty"`
+		// PassageStatus/PassagePort (megaron_plan_budet_liftar.md) are set only
+		// while the runner is 'awaiting_passage' at its own port — the client
+		// shows it standing there rather than mid-crossing. Once boarded or
+		// reserved, passage_status clears and the marker draws exactly as any
+		// other in-flight runner (this slice does not redraw the physical
+		// port→ship→disembark journey — see the plan's own BILD stop-condition).
+		PassageStatus *string `json:"passage_status,omitempty"`
+		PassagePort   *string `json:"passage_port,omitempty"`
 	}
 
 	var markers []messengerMarker
@@ -1437,9 +1451,11 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		var originTerrain, destTerrain string
 		var status string
 		var returnDepartsAt *time.Time
+		var portQ, portR *int
 		if err := rows.Scan(&m.ID, &senderID, &m.Sender, &m.Kind, &orderUnitID,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
-			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt); err != nil {
+			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt,
+			&m.PassageStatus, &portQ, &portR, &m.PassagePort); err != nil {
 			continue
 		}
 		// The current leg's travel window. Outbound: sent_at → arrives_at. Return:
@@ -1460,6 +1476,13 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 				m.SentAt = *returnDepartsAt
 				legStart, legEnd = *returnDepartsAt, returnDepartsAt.Add(outboundDur)
 			}
+		}
+		// Standing at its own port, not mid-crossing: the current leg's
+		// endpoint is the PORT, never the final destination — applies after
+		// the outbound/return swap above so it is correct in both directions.
+		if m.PassageStatus != nil && *m.PassageStatus == "awaiting_passage" && portQ != nil && portR != nil {
+			m.DestQ, m.DestR = *portQ, *portR
+			legEnd = m.ArrivesAt
 		}
 		m.Own = authenticated && senderID == playerID
 		if m.Own && orderUnitID != nil {

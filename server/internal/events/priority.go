@@ -90,6 +90,10 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledUnitInterceptScan:  tickPrioritySight,
 	ScheduledMarchSightingScan:  tickPrioritySight,
 	ScheduledMarchEncounterScan: tickPrioritySight,
+	// Budet ser vilka bärare just lämnade hamn (boarding) och vilka redan
+	// ombordvarande bärare försvann (kapning) — samma "efter rörelsen" tier
+	// som de andra svepen ovan.
+	ScheduledPassageScan: tickPrioritySight,
 
 	// 30 — strid.
 	ScheduledBattleTick:      tickPriorityBattle,

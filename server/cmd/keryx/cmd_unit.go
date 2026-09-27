@@ -660,6 +660,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 					}
 				}
 				fmt.Println(" — the march begins on delivery.")
+				printPassageNote(resp)
 				return nil
 			}
 			arrivesAt, _ := resp["arrives_at"].(string)
@@ -1254,6 +1255,7 @@ its destination and the stance applies where it stopped.`,
 					}
 				}
 				fmt.Println(stanceDispatchLine(stanceResp, stance, unitID[:8], eta))
+				printPassageNote(stanceResp)
 				return nil
 			}
 			if stance == "none" {
@@ -1364,6 +1366,7 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 					}
 				}
 				fmt.Println(" — it applies on delivery.")
+				printPassageNote(resp)
 				return nil
 			}
 			fmt.Printf("Unit %s standing orders updated (retreat_at_loss=%v, hold_to_last_man=%v)\n",

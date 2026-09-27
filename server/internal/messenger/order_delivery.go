@@ -50,6 +50,14 @@ type OrderDeliveryPayload struct {
 	// hex the same way as any other order (command is never instant, even for
 	// an army already standing there).
 	Occupy *combat.OccupyActionOrder `json:"occupy,omitempty"`
+	// PassageGeneration (megaron_plan_budet_liftar.md R4) is the messenger's
+	// passage_generation at the moment this event was scheduled — additive
+	// metadata, not a reinterpretation of the event: zero (its Go zero value)
+	// for every envelope that never needed the sea-lift, since neither this
+	// field nor the row's own counter is ever touched for those. Compared
+	// against the row's CURRENT generation at delivery to detect a stale
+	// firing superseded by a later re-boarding or reserve crossing.
+	PassageGeneration int `json:"passage_generation,omitempty"`
 }
 
 // OrderDeliveryHandler processes ScheduledOrderDelivery events.
@@ -74,12 +82,23 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	// Atomic claim: outbound→arrived is one-way; a replay no-ops here.
-	ct, err := h.pool.Exec(ctx, `UPDATE messengers SET status='arrived' WHERE id=$1 AND status != 'arrived'`, p.MessengerID)
+	// megaron_plan_budet_liftar.md R4: passage_generation = $2 also catches a
+	// STALE firing — this envelope's sea-lift plan was superseded (its carrier
+	// was lost and it re-boarded, or it took the reserve) after this exact
+	// event was scheduled. A plain land envelope never has its generation
+	// bumped (payload and row both stay 0), so this is a no-op change for the
+	// unaffected common case.
+	ct, err := h.pool.Exec(ctx,
+		`UPDATE messengers SET status='arrived',
+		        passage_status = NULL, carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL
+		  WHERE id=$1 AND status != 'arrived' AND passage_generation = $2
+		    AND (passage_status IS NULL OR passage_status = 'aboard')`,
+		p.MessengerID, p.PassageGeneration)
 	if err != nil {
 		return fmt.Errorf("claim order messenger: %w", err)
 	}
 	if ct.RowsAffected() == 0 {
-		slog.Info("order messenger already processed — idempotent replay skipped", "messenger", p.MessengerID)
+		slog.Info("order messenger already processed or superseded by a later passage — idempotent replay skipped", "messenger", p.MessengerID)
 		return nil
 	}
 

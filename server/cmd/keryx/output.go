@@ -125,3 +125,20 @@ func arrivalETA(c *Client, iso string) string {
 	}
 	return gameETA(c, t)
 }
+
+// printPassageNote (megaron_plan_budet_liftar.md) prints, when present, the
+// one line every dispatching command (message/reply/order) shares: the
+// runner needs to cross the sea and is waiting in its own port for a ship,
+// rather than crossing an abstract boat instantly. resp is the raw JSON body
+// of a Send/SendFromHost/Reply/march-order response — a no-op if the server
+// did not set passage_status (the ordinary, unaffected land case).
+func printPassageNote(resp map[string]any) {
+	if status, _ := resp["passage_status"].(string); status == "awaiting_passage" {
+		port, _ := resp["passage_port"].(string)
+		if port != "" {
+			fmt.Printf("  waiting in %s for a ship of yours to sail that way\n", port)
+		} else {
+			fmt.Printf("  waiting for a ship of yours to sail that way\n")
+		}
+	}
+}

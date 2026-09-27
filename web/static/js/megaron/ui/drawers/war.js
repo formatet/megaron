@@ -2,7 +2,7 @@ import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
-import { esc, formatApiError } from '../format.js';
+import { esc, formatApiError, passageNote } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel, actorName } from '../actornames.js';
@@ -840,7 +840,7 @@ export async function unitStance(unitID) {
     if (data.status === 'order_dispatched') {
       if (resEl) {
         resEl.style.color = 'var(--text-dim)';
-        resEl.textContent = stanceSentLine(data, fmtArrival(data.courier_arrives_at, data.courier_due_tick));
+        resEl.textContent = stanceSentLine(data, fmtArrival(data.courier_arrives_at, data.courier_due_tick)) + passageNote(data);
       }
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     }
@@ -873,7 +873,7 @@ export async function unitRetreatOrder(unitID) {
     if (data.status === 'order_dispatched') {
       if (resEl) {
         resEl.style.color = 'var(--text-dim)';
-        resEl.textContent = '🏃 Runner carries the retreat order — applies on delivery';
+        resEl.textContent = '🏃 Runner carries the retreat order — applies on delivery' + passageNote(data);
       }
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     }

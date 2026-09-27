@@ -383,12 +383,19 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 
 	// Runner travel: path-based over the courier graph (land at 2×
 	// spearman speed, sea legs by boat) — temenos_orderlopare_plan.md Fas 4.
-	msgTravelTicks, msgTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
-		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
-	arrivesAt := h.clk.Now().Add(msgTravelDur)
+	// megaron_plan_budet_liftar.md R1: a route with no land alternative at all
+	// runs to the sender's own port and waits for a real carrier instead of
+	// crossing the abstract boat — see ResolveDeparture's doc comment.
+	now := h.clk.Now()
 	var msgSendCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&msgSendCurrentTick)
-	msgArrivalDueTick := msgSendCurrentTick + msgTravelTicks
+	arrivesAt, msgArrivalDueTick, passage, passageSinceTick, rErr := messenger.ResolveDeparture(
+		r.Context(), h.pool, worldID, playerID,
+		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, now, msgSendCurrentTick)
+	if rErr != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve messenger route")
+		return
+	}
 
 	var tradeOfferJSON []byte
 	if req.TradeOffer != nil {
@@ -419,10 +426,20 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	// That fiction is what clients (and agent.py) display, and what the inbox's
 	// `expires_at > now()` filter tests, while the real expiry fires off the
 	// scheduled tick below.
+	// A sea-lifted offer's real arrival is unknown at send time (it depends on
+	// which carrier, if any, eventually picks it up) — expires_at is set later,
+	// by messenger.scheduleCompletion, once the messenger actually resolves its
+	// passage. See ResolveDeparture's doc comment (megaron_plan_budet_liftar.md R1).
 	var expiresAt *time.Time
-	if req.TradeOffer != nil {
+	if req.TradeOffer != nil && passage == nil {
 		exp := arrivesAt.Add(tick.RealUntil(offerExpiryTicks, 0))
 		expiresAt = &exp
+	}
+	var passagePortID *uuid.UUID
+	var passageSinceTickArg *int
+	if passage != nil {
+		passagePortID = &passage.SettlementID
+		passageSinceTickArg = &passageSinceTick
 	}
 	var messengerID uuid.UUID
 
@@ -482,25 +499,32 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err = tx.QueryRow(r.Context(),
-			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at)
-			 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10) RETURNING id`,
+			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at, passage_status, passage_port_id, passage_since_tick)
+			 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
 			worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt, expiresAt,
+			messenger.PassageStatusArg(passage), passagePortID, passageSinceTickArg,
 		).Scan(&messengerID); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not create messenger")
 			return
 		}
 
-		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
-			messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not schedule arrival")
-			return
+		if passage == nil {
+			if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
+				messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not schedule arrival")
+				return
+			}
+			// Offer expiry: 7 in-game days (offerExpiryTicks) after arrival.
+			if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledOfferExpiry,
+				map[string]any{"messenger_id": messengerID.String()}, msgArrivalDueTick+offerExpiryTicks); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not schedule offer expiry")
+				return
+			}
 		}
-		// Offer expiry: 7 in-game days (offerExpiryTicks) after arrival.
-		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledOfferExpiry,
-			map[string]any{"messenger_id": messengerID.String()}, msgArrivalDueTick+offerExpiryTicks); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not schedule offer expiry")
-			return
-		}
+		// passage != nil: the messenger just runs to its port and waits — no
+		// terminal event yet. messenger.PassageScanHandler schedules the
+		// arrival (and, for an offer, its expiry) once it boards a carrier or
+		// takes the reserve (megaron_plan_budet_liftar.md R1/R2/R5).
 
 		if err = tx.Commit(r.Context()); err != nil {
 			writeError(w, http.StatusInternalServerError, "commit failed")
@@ -509,24 +533,34 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Plain message: non-transactional path unchanged.
 		err = h.pool.QueryRow(r.Context(),
-			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at)
-			 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10) RETURNING id`,
+			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at, passage_status, passage_port_id, passage_since_tick)
+			 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
 			worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt, expiresAt,
+			messenger.PassageStatusArg(passage), passagePortID, passageSinceTickArg,
 		).Scan(&messengerID)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not create messenger")
 			return
 		}
 
-		_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
-			messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick)
+		if passage == nil {
+			_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
+				messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick)
+		}
 	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{
+	resp := map[string]any{
 		"id":         messengerID,
 		"arrives_at": arrivesAt,
 		"distance":   dist,
-	})
+	}
+	if passage != nil {
+		resp["passage_status"] = "awaiting_passage"
+		var portName string
+		_ = h.pool.QueryRow(r.Context(), `SELECT name FROM settlements WHERE id = $1`, passage.SettlementID).Scan(&portName)
+		resp["passage_port"] = portName
+	}
+	writeJSON(w, http.StatusCreated, resp)
 }
 
 // SendFromHost handles POST /worlds/:worldID/founding/messengers.
@@ -608,31 +642,47 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 		writeError(w, http.StatusBadRequest, "the host is standing on that settlement's province")
 		return
 	}
-	hostTravelTicks, hostTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
-		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
-	arrivesAt := h.clk.Now().Add(hostTravelDur)
 	var currentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
-	dueTick := currentTick + hostTravelTicks
+	arrivesAt, dueTick, passage, passageSinceTick, rErr := messenger.ResolveDeparture(
+		r.Context(), h.pool, worldID, playerID,
+		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, h.clk.Now(), currentTick)
+	if rErr != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve messenger route")
+		return
+	}
+	var passagePortID *uuid.UUID
+	var passageSinceTickArg *int
+	if passage != nil {
+		passagePortID = &passage.SettlementID
+		passageSinceTickArg = &passageSinceTick
+	}
 
 	var messengerID uuid.UUID
 	if err = h.pool.QueryRow(r.Context(),
-		`INSERT INTO messengers (world_id, sender_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, hex_q, hex_r, arrives_at)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+		`INSERT INTO messengers (world_id, sender_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, hex_q, hex_r, arrives_at, passage_status, passage_port_id, passage_since_tick)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
 		worldID, playerID, hostID, oQ, oR, destID, req.Message, dQ, dR, arrivesAt,
+		messenger.PassageStatusArg(passage), passagePortID, passageSinceTickArg,
 	).Scan(&messengerID); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not create messenger")
 		return
 	}
 
-	_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
-		messenger.ArrivalPayload{MessengerID: messengerID}, dueTick)
+	if passage == nil {
+		_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
+			messenger.ArrivalPayload{MessengerID: messengerID}, dueTick)
+	}
 
-	writeJSON(w, http.StatusCreated, map[string]any{
+	resp := map[string]any{
 		"id":         messengerID,
 		"arrives_at": arrivesAt,
 		"distance":   dist,
-	})
+	}
+	if passage != nil {
+		resp["passage_status"] = "awaiting_passage"
+	}
+	writeJSON(w, http.StatusCreated, resp)
 }
 
 // ListFromHost handles GET /worlds/:worldID/founding/messengers.
@@ -652,9 +702,11 @@ func (h *MessengerHandler) ListFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at
+		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at,
+		        m.passage_status, pps.name, m.carrier_name
 		 FROM messengers m
 		 LEFT JOIN settlements s ON s.id = m.destination_id
+		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.origin_unit_id IS NOT NULL
 		 ORDER BY m.sent_at DESC LIMIT 20`,
 		worldID, playerID,
@@ -666,20 +718,23 @@ func (h *MessengerHandler) ListFromHost(w http.ResponseWriter, r *http.Request) 
 	defer rows.Close()
 
 	type item struct {
-		ID        uuid.UUID  `json:"id"`
-		DestID    *uuid.UUID `json:"destination_id"`
-		DestName  string     `json:"destination_name"`
-		Message   string     `json:"message_text"`
-		Status    string     `json:"status"`
-		ReplyText *string    `json:"reply_text"`
-		SentAt    time.Time  `json:"sent_at"`
-		ArrivesAt time.Time  `json:"arrives_at"`
+		ID            uuid.UUID  `json:"id"`
+		DestID        *uuid.UUID `json:"destination_id"`
+		DestName      string     `json:"destination_name"`
+		Message       string     `json:"message_text"`
+		Status        string     `json:"status"`
+		ReplyText     *string    `json:"reply_text"`
+		SentAt        time.Time  `json:"sent_at"`
+		ArrivesAt     time.Time  `json:"arrives_at"`
+		PassageStatus *string    `json:"passage_status,omitempty"`
+		PassagePort   *string    `json:"passage_port,omitempty"`
+		CarrierName   *string    `json:"carrier_name,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
-			&m.SentAt, &m.ArrivesAt); err == nil {
+			&m.SentAt, &m.ArrivesAt, &m.PassageStatus, &m.PassagePort, &m.CarrierName); err == nil {
 			result = append(result, m)
 		}
 	}
@@ -719,9 +774,11 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at
+		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
+		        m.passage_status, pps.name, m.carrier_name
 		 FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
+		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 WHERE m.origin_id = $1
 		 ORDER BY m.sent_at DESC LIMIT 20`,
 		originID,
@@ -743,13 +800,22 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 		ArrivesAt  time.Time       `json:"arrives_at"`
 		TradeOffer json.RawMessage `json:"trade_offer,omitempty"`
 		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
+		// PassageStatus/PassagePort/CarrierName (megaron_plan_budet_liftar.md):
+		// set only while sea-lift-relevant. CarrierName lingers on the row after
+		// boarding even once PassageStatus has cleared (see internal/messenger/
+		// passage.go's own note on why "aboard" is not a durable status) — it is
+		// the surface's only remaining sign the leg rode a ship.
+		PassageStatus *string `json:"passage_status,omitempty"`
+		PassagePort   *string `json:"passage_port,omitempty"`
+		CarrierName   *string `json:"carrier_name,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
-			&m.SentAt, &m.ArrivesAt, &tradeOffer, &m.ExpiresAt); err == nil {
+			&m.SentAt, &m.ArrivesAt, &tradeOffer, &m.ExpiresAt,
+			&m.PassageStatus, &m.PassagePort, &m.CarrierName); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}
@@ -932,23 +998,38 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		oQ, oR = *originQ, *originR
 	}
 	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
-	replyTravelTicks, replyTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
-		province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
 	replyDepartsAt := h.clk.Now()
-	returnsAt := replyDepartsAt.Add(replyTravelDur)
 	var replyCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&replyCurrentTick)
-	replyReturnDueTick := replyCurrentTick + replyTravelTicks
+	// R6 (megaron_plan_budet_liftar.md): the return leg's port is wherever the
+	// messenger already stands (destID) — no landward leg needed to reach it.
+	returnsAt, replyReturnDueTick, passage, passageSinceTick, rErr := messenger.ResolveReturnDeparture(
+		r.Context(), h.pool, worldID, destID,
+		province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR}, replyDepartsAt, replyCurrentTick)
+	if rErr != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve return route")
+		return
+	}
+	var passagePortID *uuid.UUID
+	var passageSinceTickArg *int
+	if passage != nil {
+		passagePortID = &passage.SettlementID
+		passageSinceTickArg = &passageSinceTick
+	}
 
 	// Give the return leg its own time window: return_departs_at = now, arrives_at =
-	// the reply's homecoming. sent_at is left untouched (the correspondence log
-	// keys on the original send). Without this the return leg carried the outbound
-	// window and the runner had no eye on the way home (temenos_orderlopare
-	// §(b)).
+	// the reply's homecoming (or, sea-lifted, the moment it starts waiting at its
+	// port — now, since it already stands there). sent_at is left untouched (the
+	// correspondence log keys on the original send). Without this the return leg
+	// carried the outbound window and the runner had no eye on the way home
+	// (temenos_orderlopare §(b)).
 	_, err = h.pool.Exec(r.Context(),
 		`UPDATE messengers SET reply_text = $1, status = 'returning',
-		        return_departs_at = $2, arrives_at = $3 WHERE id = $4`,
+		        return_departs_at = $2, arrives_at = $3,
+		        passage_status = $5, passage_port_id = $6, passage_since_tick = $7
+		  WHERE id = $4`,
 		req.Reply, replyDepartsAt, returnsAt, messengerID,
+		messenger.PassageStatusArg(passage), passagePortID, passageSinceTickArg,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not save reply")
@@ -956,13 +1037,22 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Schedule return. The auto-return (48h from delivery) is harmless — ReturnHandler is idempotent.
-	_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerReturn,
-		messenger.ReturnPayload{MessengerID: messengerID}, replyReturnDueTick)
+	// passage != nil: no terminal event yet — messenger.PassageScanHandler
+	// schedules ScheduledMessengerReturn once a carrier is boarded or the
+	// reserve is taken (R6).
+	if passage == nil {
+		_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerReturn,
+			messenger.ReturnPayload{MessengerID: messengerID}, replyReturnDueTick)
+	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
+	resp := map[string]any{
 		"returns_at": returnsAt,
 		"distance":   dist,
-	})
+	}
+	if passage != nil {
+		resp["passage_status"] = "awaiting_passage"
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 // TradeAccept handles POST /worlds/:worldID/messengers/:messengerID/trade-accept.
