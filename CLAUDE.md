@@ -98,7 +98,7 @@ Go 1.22+ · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/webso
 
 ### Package dependency order (G1 — strict, no exceptions)
 ```
-ai, auth, clock, gossip, hexgrid, notify, province, religion, unit, world  ← zero internal deps
+ai, auth, clock, gossip, hexgrid, movement, notify, province, religion, unit, world  ← zero internal deps
   ↑
 events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
