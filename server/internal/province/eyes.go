@@ -99,10 +99,24 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 	// uninterceptable either way — the eye is purely so the sender's own runner
 	// keeps revealing fog on the way there AND back.
 	mRows, err := db.Query(ctx,
-		`SELECT m.hex_q, m.hex_r,
+		`SELECT COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
 		        COALESCE(m.dest_q, dp.map_q), COALESCE(m.dest_r, dp.map_r),
 		        m.sent_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r
 		 FROM messengers m
+		 -- Bifynd from 3b-1 (megaron_plan_ordna_passage.md), same root: the
+		 -- true origin is origin_id (a settlement, joined here) or, for a
+		 -- host-sent messenger (mig 087), origin_q/origin_r — NEVER hex_q/hex_r.
+		 -- hex_q/hex_r only happens to equal the origin for kind='order'
+		 -- (unit.go sendOrderCourier) and kind='recall' (province.go's march
+		 -- recall), which deliberately write it there; a plain diplomatic
+		 -- message (Send/SendFromHost) writes the DESTINATION into hex_q/hex_r
+		 -- instead, which made pos==target==destination for the whole outbound
+		 -- leg of every ordinary message. origin_id/origin_q are authoritative
+		 -- for every kind alike (messengers_exactly_one_origin, mig 087) — same
+		 -- join finalTargetQuery (messenger/passage.go) and the return-leg
+		 -- query below already use.
+		 LEFT JOIN settlements os ON os.id = m.origin_id
+		 LEFT JOIN provinces op ON op.id = os.province_id
 		 LEFT JOIN settlements ds ON ds.id = m.destination_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
 		 -- megaron_plan_ordna_passage.md 3b-1: pp/pps resolve the port hex for a
