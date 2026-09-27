@@ -8,13 +8,15 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
   **And run `git status` + `git worktree list` first** — a session that died mid-slice leaves its work
   uncommitted and unrecorded (two slices sat 13 days in the tree before 2026-09-23). Rescue it before new work.
-- **Two gates** — mark every piece of work *blocks* / *proves* / *waits for* them:
-  **(1) The chain:** a competent player completes geografi → brist → brons → elit via web and keryx, with no
+- **The gate** — mark every piece of work *blocks* / *proves* / *waits for* it:
+  **The chain:** a competent player completes geografi → brist → brons → elit via web and keryx, with no
   developer intervention and **without hitting a surface that doesn't exist**. Progress is measured in **game
   days, never wall time** ("in one session" was struck 2026-08-02 — at 60 min/tick the chain spans real days).
-  **(2) Asynchronicity:** a Wanax away for nine hours must, on login, learn what happened, see what is heading
-  their way and when it lands — **and have time to answer**. Sharp form: order travel + defender travel <
-  attacker's remaining travel. Orders are physical; command is never instant.
+- **Asynchronicity is a property, not a gate** (demoted by Timothy 2026-09-27): the world runs while you are
+  away, and on login you should be able to read what happened. Orders are physical; command is never instant.
+  The old "nine hours away / time to answer" test is **arbitrary** — do not mark work against it, do not use
+  it as the argument for a design choice, and do not put it in research prompts. AIs have consistently
+  over-weighted it. Argue from consistency, legibility and the game's own rules instead.
 - **Before ending a session:** update `megaron_todo.md` — four queues with caps (NU ≤5 · BESLUT ≤7 ·
   VERIFIERING · SENARE). Not a diary: a line is next action · why · blocker · who decides, ≤ ~4 lines —
   what you did goes in `git log`, a process report or memory. (It grew to 241 KB of session logs; rewritten
