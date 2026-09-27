@@ -452,10 +452,22 @@ function renderUnitCard(u) {
     // rather than just naming the city (a land garrison is self-evidently in the
     // city; a ship being IN PORT vs at sea is the meaningful distinction).
     loc = (isNaval && isGarrison) ? '⚓ in harbour — ' + place : place;
+  } else if (isPositioned && u.march_intent === 'pickup_wait' && u.q != null) {
+    // Pickup wait (megaron_plan_hamta_hem.md, slice 2b): the ship holds off
+    // the shore for the fetched unit — ScheduledPickupTimeout is what sends
+    // it home if the unit never makes it.
+    const who = u.pickup_for ? esc(u.pickup_for) : 'the unit';
+    const until = u.waiting_until_tick != null ? ' until tick ' + u.waiting_until_tick : '';
+    loc = 'waiting off (' + u.q + ',' + u.r + ') for ' + who + until;
   } else if (isMarching && u.target_q != null) {
+    // Pickup (megaron_plan_hamta_hem.md): sailing to fetch a unit — target_q/r
+    // is the sea waypoint, not the shore itself.
+    const pickupPrefix = u.march_intent === 'pickup'
+      ? 'sailing to fetch ' + (u.pickup_for ? esc(u.pickup_for) : 'a unit') + ' — '
+      : '';
     // arrival_tick is the authoritative arrival (K4) — the stored arrives_at
     // stamp lies across server downtime; the tick self-corrects.
-    loc = '→ (' + u.target_q + ',' + u.target_r + ') arrives ' + arrivalHTML(u.arrives_at, u.arrival_tick);
+    loc = pickupPrefix + '→ (' + u.target_q + ',' + u.target_r + ') arrives ' + arrivalHTML(u.arrives_at, u.arrival_tick);
   } else if (u.q != null) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
@@ -600,6 +612,26 @@ function renderUnitCard(u) {
     actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
   }
 
+  // Fetch by ship (R1, megaron_plan_hamta_hem.md, slice 2b): a field-
+  // positioned own land unit the server says can be fetched — can_fetch_by_
+  // ship and pickup_ships are computed server-side (attachPickupNotes),
+  // never re-derived here (megaron_arbetssatt: the client must never promise
+  // an action the server cannot perform).
+  let pickupRow = '';
+  if (isPositioned && !isNaval && u.can_fetch_by_ship && (u.pickup_ships || []).length) {
+    actions += '<button onclick="unitPickupToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Fetch by ship</button> ';
+    const shipOptions = u.pickup_ships.map(s =>
+      '<option value="' + s.id + '">' + esc(s.name) + ' (' + esc(s.settlement_name) + ')' +
+      (s.can_carry_runner ? '' : ' — war galley, must already be on the shore') + '</option>'
+    ).join('');
+    pickupRow = '<div id="upick-' + u.id + '" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">'
+      + '<select id="upick-ship-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">' + shipOptions + '</select> '
+      + '<label>wait <input id="upick-wait-' + u.id + '" type="number" min="1" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem" placeholder="default"></label> '
+      + '<button onclick="unitPickup(\'' + u.id + '\')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send</button>'
+      + '<div id="upick-res-' + u.id + '" style="margin-top:.15rem"></div>'
+      + '</div>';
+  }
+
   // Repair button (megaron_plan_skeppsreparation.md Slice C): naval garrison
   // with hull < 5. The server rejects it if the settlement has no shipyard
   // or the yard is full — this button only knows the ship is damaged and
@@ -647,7 +679,7 @@ function renderUnitCard(u) {
     + (loc ? '<div style="font-size:.65rem;color:var(--text-dim)">' + loc + '</div>' : '')
     + pendingOrder
     + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
-    + redirectRow + (isMarching ? orderStatus : '')
+    + redirectRow + pickupRow + (isMarching ? orderStatus : '')
     + '</div>';
 }
 
@@ -996,6 +1028,43 @@ export async function unitUnload(shipID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = formatApiError(data, 'Unload failed');
+  }
+}
+
+// unitPickupToggle shows/hides the ship-choice panel for "Fetch by ship"
+// (R1, megaron_plan_hamta_hem.md, slice 2b) — same toggle shape as
+// unitRedirectToggle above.
+export function unitPickupToggle(unitID) {
+  const row = document.getElementById('upick-' + unitID);
+  if (row) row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+// unitPickup sends the chosen ship to fetch unitID. wait_ticks is only sent
+// when the Wanax typed one — an empty field means "server default"
+// (combat.PickupWaitDefaultTicks), never a client-guessed number.
+export async function unitPickup(unitID) {
+  const shipSel = document.getElementById('upick-ship-' + unitID);
+  const waitInput = document.getElementById('upick-wait-' + unitID);
+  const resEl = document.getElementById('upick-res-' + unitID);
+  const shipID = shipSel ? shipSel.value : '';
+  const body = { ship_id: shipID };
+  const waitVal = waitInput ? parseInt(waitInput.value, 10) : NaN;
+  if (!isNaN(waitVal)) body.wait_ticks = waitVal;
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/pickup`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    if (resEl) {
+      resEl.style.color = 'var(--safe)';
+      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives tick ' + data.arrival_tick +
+        (data.messenger_id ? ', a runner rides along' : '') + '.';
+    }
+    loadWarDrawer();
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = formatApiError(data, 'Fetch by ship failed');
   }
 }
 

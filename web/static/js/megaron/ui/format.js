@@ -109,6 +109,7 @@ export function notifDomain(kind) {
     ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
     ForeignMarchSighted: 'war', ForeignMarchSightedV2: 'war', SentryAlerted: 'war', ScoutReport: 'war',
     UnitArrived: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipSweptFromSea: 'war',
+    PickupWaiting: 'war', UnitFetched: 'war', PickupTimedOut: 'war',
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
@@ -178,6 +179,9 @@ export function notifIcon(kind) {
     HexUnblockaded:     '↩',
     SiegeStarted:       '⚔️',
     SiegeLifted:        '🕊️',
+    PickupWaiting:      '⚓',
+    UnitFetched:        '⛵',
+    PickupTimedOut:     '⚠',
   };
   return icons[kind] || '◉';
 }
@@ -612,6 +616,13 @@ export function notifText(kind, body) {
       const subject = body.name || 'A ship';
       return `${subject} — ${body.reason || 'ships at sea take no orders'} — returning to port${eta ? `, arrives ${eta}` : ''}`;
     }
+    // PickupWaiting/UnitFetched/PickupTimedOut (megaron_plan_hamta_hem.md,
+    // slice 2b): all three are server-crafted in full, same posture as
+    // MarchStalled's own reason above — the server already names the ship
+    // and the fetched unit, nothing to enrich client-side.
+    case 'PickupWaiting':   return body.note || 'A ship waits off the shore for a unit it was sent to fetch';
+    case 'UnitFetched':     return body.note || 'A unit is aboard, sailing home';
+    case 'PickupTimedOut':  return body.note || 'A ship gave up waiting and is sailing home';
     case 'OrderFailed': {
       // body.verb is the server's order key (order_delivery.go switch +
       // recall.go) — never shown raw: "Order failed (stance_pursuit)" told
