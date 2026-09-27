@@ -1388,7 +1388,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(op.terrain_type, omt.terrain, ''),
 		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
 		        m.sent_at, m.arrives_at, m.status, m.return_departs_at,
-		        m.passage_status, pp.map_q, pp.map_r, pps.name
+		        m.passage_status, pp.map_q, pp.map_r, pps.name, m.withdrawn
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its frozen
 		 -- departure point (origin_q/origin_r) places it, with terrain off the tile.
@@ -1452,10 +1452,11 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		var status string
 		var returnDepartsAt *time.Time
 		var portQ, portR *int
+		var withdrawn bool
 		if err := rows.Scan(&m.ID, &senderID, &m.Sender, &m.Kind, &orderUnitID,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
 			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt,
-			&m.PassageStatus, &portQ, &portR, &m.PassagePort); err != nil {
+			&m.PassageStatus, &portQ, &portR, &m.PassagePort, &withdrawn); err != nil {
 			continue
 		}
 		// The current leg's travel window. Outbound: sent_at → arrives_at. Return:
@@ -1475,6 +1476,15 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			if returnDepartsAt != nil {
 				m.SentAt = *returnDepartsAt
 				legStart, legEnd = *returnDepartsAt, returnDepartsAt.Add(outboundDur)
+			}
+			// 3b-4 R5 "kalla tillbaka" (planner review fix,
+			// megaron_plan_ordna_passage.md): a withdrawn runner's leg just
+			// swapped in the DESTINATION as its "from" — but it never reached
+			// the destination, so that is the wrong city. Its real leg starts
+			// at the PORT it turned back from (CallBack deliberately leaves
+			// passage_port_id set for exactly this).
+			if withdrawn && portQ != nil && portR != nil {
+				m.OriginQ, m.OriginR = *portQ, *portR
 			}
 		}
 		// Standing at its own port, not mid-crossing: the current leg's

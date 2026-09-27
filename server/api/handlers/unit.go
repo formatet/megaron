@@ -337,6 +337,10 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 	courierArrivesAt, dueTick, passage, passageSinceTick, rErr := messenger.ResolveDeparture(
 		ctx, h.pool, payload.WorldID, payload.PlayerID,
 		province.MapPosition{Q: origin.q, R: origin.r}, unitPos, now, currentTick)
+	if errors.Is(rErr, messenger.ErrNoPort) {
+		writeError(w, http.StatusUnprocessableEntity, rErr.Error())
+		return
+	}
 	if rErr != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve courier route")
 		return

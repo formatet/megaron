@@ -261,36 +261,40 @@ func MessengerTravelTicks(dist int) int {
 // CourierTravel returns the world-tick and wall-clock travel time for a
 // runner from 'from' to 'to' (temenos_orderlopare_plan.md Fas 4): A*
 // over the courier graph — land at half a land unit's terrain ticks (2×
-// spearman speed), sea legs at the flat boat rate province.CourierSeaTicks,
-// mountains routed around. Falls back to the legacy straight-line rate when no
-// route exists (should be unreachable with sea passable — e.g. a target walled
-// in by mountains) so an order is never stranded by the pathfinder.
-// One speed model for ALL messengers: diplomatic, recall/redirect and order
-// runners alike (trade CARAVANS keep their own TradeTicksPerHex seam below).
-func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration) {
+// spearman speed), mountains routed around, rivers by boat
+// (province.CourierSeaTicks, megaron_floden_plan.md — untouched by 3b-4).
+// ok=false when no such route exists — most often because it needs the sea,
+// which a courier may no longer cross on its own (megaron_plan_ordna_
+// passage.md, slice 3b-4, R3: the old straight-line raklinjefallback is
+// GONE). Every caller must handle !ok visibly (a 422 or a genuine error),
+// never by guessing a travel time. One speed model for ALL messengers:
+// diplomatic, recall/redirect and order runners alike (trade CARAVANS keep
+// their own TradeTicksPerHex seam below).
+func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool, err error) {
 	g, err := province.LoadTileGraph(ctx, db, worldID)
 	if err != nil {
-		dist := province.HexDistance(from, to)
-		return MessengerTravelTicks(dist), MessengerTravelDuration(dist)
+		return 0, 0, false, err
 	}
-	return CourierTravelOnGraph(g, from, to)
+	ticks, dur, ok = CourierTravelOnGraph(g, from, to)
+	return ticks, dur, ok, nil
 }
 
 // CourierTravelOnGraph is CourierTravel over an already-loaded TileGraph —
 // avoids re-querying every map_tile per call. Used by InterceptAlongPath,
 // which evaluates many candidate hexes against the same courier origin within
 // one request; loading the graph once instead of once per candidate is the
-// difference between one DB round-trip and dozens.
-func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (ticks int, dur time.Duration) {
-	if _, hours, ok := g.FindPath(from, to, province.CategoryCourier); ok {
-		t := int(math.Round(hours))
-		if t < 1 {
-			t = 1
-		}
-		return t, tick.RealUntil(t, 0)
+// difference between one DB round-trip and dozens. ok=false — see
+// CourierTravel's own doc comment; no raklinjefallback here either.
+func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool) {
+	_, hours, pathOK := g.FindPath(from, to, province.CategoryCourier)
+	if !pathOK {
+		return 0, 0, false
 	}
-	dist := province.HexDistance(from, to)
-	return MessengerTravelTicks(dist), MessengerTravelDuration(dist)
+	t := int(math.Round(hours))
+	if t < 1 {
+		t = 1
+	}
+	return t, tick.RealUntil(t, 0), true
 }
 
 // AggregateArmyCategory guesses the province.FindPath category ("land" or
@@ -365,7 +369,17 @@ func InterceptAlongPath(
 		// destination, which ties the remaining time exactly at the halfway
 		// mark. Ties are let through; a genuine loss of that race still ends
 		// in a visible OrderFailed (order_delivery.go), never a silent one.
-		_, courierDur := CourierTravelOnGraph(g, courierOrigin, path[i])
+		//
+		// 3b-4 R4: a hex the courier can only reach by crossing open sea on
+		// its own is no longer a candidate at all — CourierTravelOnGraph's
+		// ok=false skips it, never approximates it with a raklinje guess.
+		// Stance-pursuit's own aim (combat's stanceToMarchingUnit) already
+		// targets the unit's destination and takes the real passage route
+		// when a land intercept misses, exactly as before this slice.
+		_, courierDur, courierOK := CourierTravelOnGraph(g, courierOrigin, path[i])
+		if !courierOK {
+			continue
+		}
 		if !now.Add(courierDur).After(unitTime) {
 			return path[i], true
 		}

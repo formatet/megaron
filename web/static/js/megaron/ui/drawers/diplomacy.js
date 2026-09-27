@@ -298,13 +298,24 @@ async function loadDipThreads() {
               passageBtn = '<div style="font-size:.68rem;color:var(--text-dim);font-style:italic;margin-top:.3rem;text-align:right">no ship of yours is free there yet</div>';
             }
           }
+          // Call back (megaron_plan_ordna_passage.md, 3b-4 R5): the other
+          // choice for a runner stuck waiting for passage — bring it home
+          // now, undelivered. Only ever offered for an outbound runner in
+          // its OWN port (server-computed can_call_back, same rule as
+          // can_arrange_passage: never a client-side guess).
+          let callBackBtn = '';
+          if (m.can_call_back) {
+            callBackBtn = '<div style="text-align:right;margin-top:.3rem">'
+              + '<button class="btn-small btn-danger" onclick="dipCallBack(\'' + m.id + '\',this)">Call it back</button>'
+              + '</div>';
+          }
           html += '<div class="dip-msg-row dip-msg-row-out">'
             + '<div class="dip-bubble dip-bubble-out">'
             + '<div class="dip-bubble-meta dip-bubble-meta-out">You → ' + esc(m.destination_name || 'unknown') + ' · ' + fmtAgo(m.sent_at || m.created_at) + '</div>'
             + '<div class="dip-msg-text">' + esc(m.message_text || m.message || '') + '</div>'
             + replyText
             + '<div style="font-size:.68rem;font-family:var(--mono);text-align:right">' + statusBit + '</div>'
-            + cancelBtn + passageBtn
+            + cancelBtn + passageBtn + callBackBtn
             + '</div></div>';
         }
       }
@@ -494,6 +505,25 @@ export async function dipArrangePassage(id, selId, btn) {
   } else {
     btn.disabled = false;
     alert(formatApiError(data, 'Arrange passage failed'));
+  }
+}
+
+// dipCallBack is 3b-4's "Call it back" button (R5, megaron_plan_ordna_
+// passage.md): bring a runner stuck waiting for passage in its own port
+// straight home, undelivered. res.ok drives the outcome — a refusal shows
+// the server's own text, never a client-guessed reason.
+export async function dipCallBack(id, btn) {
+  btn.disabled = true;
+  const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/' + id + '/call-back', {
+    method: 'POST',
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    const row = btn.closest('div');
+    if (row) row.outerHTML = '<div style="font-size:.72rem;color:var(--text-dim);margin-top:.3rem;text-align:right">↩ Called back — returns ' + arrivalHTML(data.returns_at) + ', undelivered</div>';
+  } else {
+    btn.disabled = false;
+    alert(formatApiError(data, 'Call back failed'));
   }
 }
 

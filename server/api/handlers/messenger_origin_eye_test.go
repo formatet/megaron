@@ -219,6 +219,13 @@ func TestLoadLiveEyes_HostSentMessageSeesHostPositionNotDestination(t *testing.T
 	}
 
 	destID := f.settlement(t, "Farcity", 4, recipientID)
+	// The host's own tile (0,0) — missing it made FindPath see no origin at
+	// all, wrongly routing this plain land send through the sea-lift branch
+	// (megaron_plan_ordna_passage.md 3b-4 R2/R3: a courier with no real land
+	// route and no owned port gets ErrNoPort instead of the old fallback). A
+	// city-founded sender gets this tile from f.settlement() itself; a
+	// founder-phase host, with no settlement at all, does not.
+	f.mapTile(t, 0, 0, "plains")
 	for q := 1; q <= 3; q++ {
 		f.mapTile(t, q, 0, "plains")
 	}

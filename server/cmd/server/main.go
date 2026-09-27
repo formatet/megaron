@@ -468,6 +468,7 @@ func main() {
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-decline", mh.TradeDecline)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-cancel", mh.CancelOffer)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/passage", pah.Arrange)
+			r.Post("/worlds/{worldID}/messengers/{messengerID}/call-back", pah.CallBack)
 
 			r.Get("/worlds/{worldID}/notifications", nh.List)
 			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)

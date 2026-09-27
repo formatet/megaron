@@ -1,6 +1,6 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError, passageNote } from './format.js';
+import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError, passageNote, esc } from './format.js';
 import { codexArticleForKind, openCodex } from './codex.js';
 import { fmtArrival } from './time.js';
 
@@ -145,6 +145,91 @@ async function sendOccupationOrder(settlementID, action, resultEl, allBtns) {
   }
 }
 
+// ── PassageStalled — "ordna passage" or "kalla tillbaka" (3b-4 R5) ─────────
+// megaron_plan_ordna_passage.md, slice 3b-4: a runner has waited long enough
+// with no real carrier that it is now a Wanax decision, not something the
+// game resolves on its own (the old reserve/abstract crossing is gone).
+// Same button pattern as the occupation choice above (dw-occ-btn) — "let it
+// wait" gets no button at all, since closing the dispatch already does that.
+function passageStalledBlockHTML(payload) {
+  const ships = Array.isArray(payload.eligible_ships) ? payload.eligible_ships : [];
+  const selId = 'dw-passage-ship-' + payload.messenger_id;
+  let arrangeRow;
+  if (ships.length > 0) {
+    const opts = ships.map(s => '<option value="' + esc(s.id) + '">' + esc(s.name) + ' (' + esc(s.settlement_name) + ')</option>').join('');
+    arrangeRow = '<div class="dw-occ-choice">'
+      + '<select id="' + selId + '" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem;font-size:.75rem">' + opts + '</select>'
+      + '<button class="dw-occ-btn" id="dw-passage-arrange-btn">Arrange passage</button>'
+      + '</div>';
+  } else {
+    arrangeRow = '<div class="dw-occ-choice"><span class="dw-occ-desc">No eligible ship of yours is in port yet — build or send one.</span></div>';
+  }
+  const callBackRow = payload.own_port
+    ? '<div class="dw-occ-choice">'
+      + '<button class="dw-occ-btn" id="dw-passage-callback-btn">Call it back</button>'
+      + '<span class="dw-occ-desc">Bring the runner home now, undelivered.</span>'
+      + '</div>'
+    : '';
+  return '<div class="dw-occupation" id="dw-passage-stalled">'
+    + '<div class="dw-occ-label">Decide the runner\'s fate:</div>'
+    + arrangeRow + callBackRow
+    + '<div class="dw-occ-result" id="dw-passage-result"></div>'
+    + '</div>';
+}
+
+async function sendPassageArrange(messengerID, selId, resultEl) {
+  const sel = document.getElementById(selId);
+  if (!sel || !sel.value) return;
+  resultEl.textContent = 'Sending…';
+  try {
+    const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/' + messengerID + '/passage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ship_id: sel.value }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) { resultEl.textContent = formatApiError(data, 'Arrange passage failed'); return; }
+    resultEl.textContent = '✓ Passage arranged — arrives ' + fmtArrival(data.arrives_at);
+  } catch (_) {
+    resultEl.textContent = 'Arrange passage failed — network error.';
+  }
+}
+
+async function sendPassageCallBack(messengerID, resultEl) {
+  resultEl.textContent = 'Sending…';
+  try {
+    const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/' + messengerID + '/call-back', {
+      method: 'POST',
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) { resultEl.textContent = formatApiError(data, 'Call back failed'); return; }
+    resultEl.textContent = '✓ Called back — home ' + fmtArrival(data.returns_at) + ', undelivered.';
+  } catch (_) {
+    resultEl.textContent = 'Call back failed — network error.';
+  }
+}
+
+function wirePassageStalledBlock(payload) {
+  const root = document.getElementById('dw-passage-stalled');
+  if (!root) return;
+  const resultEl = document.getElementById('dw-passage-result');
+  const selId = 'dw-passage-ship-' + payload.messenger_id;
+  const arrangeBtn = document.getElementById('dw-passage-arrange-btn');
+  if (arrangeBtn) {
+    arrangeBtn.addEventListener('click', () => {
+      arrangeBtn.disabled = true;
+      sendPassageArrange(payload.messenger_id, selId, resultEl).finally(() => { arrangeBtn.disabled = false; });
+    });
+  }
+  const callBackBtn = document.getElementById('dw-passage-callback-btn');
+  if (callBackBtn) {
+    callBackBtn.addEventListener('click', () => {
+      callBackBtn.disabled = true;
+      sendPassageCallBack(payload.messenger_id, resultEl).finally(() => { callBackBtn.disabled = false; });
+    });
+  }
+}
+
 function wireOccupationBlock(choices, settlementID) {
   const root = document.getElementById('dw-occupation');
   if (!root) return;
@@ -184,6 +269,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   const occChoices = occupationChoicesFor(kind, payload);
   const settlementID = payload.settlement_id;
   const showOcc = occChoices.length > 0 && !!settlementID;
+  const showPassageStalled = kind === 'PassageStalled' && !!payload.messenger_id;
 
   body.innerHTML = `
     <div class="dw-row">
@@ -193,6 +279,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     ${grainLine ? `<div class="dw-grain">${grainLine}</div>` : ''}
     ${timeLabel ? `<div class="dw-time">${timeLabel}</div>` : ''}
     ${showOcc ? occupationBlockHTML(occChoices) : ''}
+    ${showPassageStalled ? passageStalledBlockHTML(payload) : ''}
     <button class="dw-goto-btn" id="dw-goto-btn" ${dest ? '' : 'disabled title="No known location for this dispatch"'}>⌖ Take me there</button>
     ${article ? '<button class="dw-goto-btn dw-codex-btn" id="dw-codex-btn">? Read about this</button>' : ''}
     <label class="dw-mute-row">
@@ -215,6 +302,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   }
 
   if (showOcc) wireOccupationBlock(occChoices, settlementID);
+  if (showPassageStalled) wirePassageStalledBlock(payload);
 
   const chk = document.getElementById('dw-mute-chk');
   // Read the live preference every open (§6) — a dispatch having just fired

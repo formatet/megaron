@@ -134,6 +134,19 @@ func goodValidationFixture(t *testing.T, pool *pgxpool.Pool) (worldID, originID,
 	).Scan(&destID); err != nil {
 		t.Fatalf("create dest settlement: %v", err)
 	}
+	// A connected plains road from origin to destination — Send routes the
+	// messenger through a real Runner (megaron_plan_ordna_passage.md 3b-4
+	// R2/R3), and since neither settlement is coastal, a missing map_tiles
+	// row anywhere on the road would wrongly look like "needs the sea, and
+	// this player has no port" instead of the intended plain land trip.
+	for q := 0; q <= 5; q++ {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'plains') ON CONFLICT (world_id, q, r) DO NOTHING`,
+			worldID, q,
+		); err != nil {
+			t.Fatalf("create map tile (%d,0): %v", q, err)
+		}
+	}
 	return worldID, originID, destID, accessToken
 }
 

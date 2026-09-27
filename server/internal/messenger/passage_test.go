@@ -1,23 +1,27 @@
 package messenger
 
 // DB integration tests for megaron_plan_budet_liftar.md (slice 3a) — the core
-// mechanics R2 (boarding), R3 (disembark scheduling), R4 (carrier lost →
-// sealed → promoted) and R5 (reserve after N ticks with no carrier), proven
-// directly against PassageScanHandler rather than through the full HTTP
-// dispatch surface (that wiring — R1/R6 — is proven in
-// api/handlers/messenger_passage_test.go).
+// mechanics R2 (boarding), R3 (disembark scheduling) and R4 (carrier lost →
+// sealed → promoted), proven directly against PassageScanHandler rather than
+// through the full HTTP dispatch surface (that wiring — R1/R6 — is proven in
+// api/handlers/messenger_passage_test.go). The old R5 (reserve after N ticks
+// with no carrier) is GONE (megaron_plan_ordna_passage.md, slice 3b-4) — its
+// replacement, the PassageStalled dispatch, and R2's ErrNoPort are tested
+// below.
 //
 // Fixture: two coastal settlements (origin q=0, dest q=5) separated by a sea
 // lane (q=1..4) — same geography as messenger_trade_naval_test.go.
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -395,34 +399,52 @@ func TestPassageScan_BoardsReturnLegFromForeignCity(t *testing.T) {
 	}
 }
 
-// TestPassageScan_ReserveAfterWait is acceptance criterion 3: no eligible
-// carrier ever departs, so after PassageReserveWaitTicks the messenger takes
-// the old abstract crossing from its port.
-func TestPassageScan_ReserveAfterWait(t *testing.T) {
+// TestPassageScan_StalledNeverCrossesAndNotifiesOnce is 3b-4's acceptance
+// criterion 1: with no eligible carrier ever departing, a messenger waiting
+// 'awaiting_passage' at its own port stays there — the old RESERVE (R1 of
+// this slice) is gone, so nothing crosses on its own any more — and its
+// sender gets exactly ONE PassageStalled dispatch, not one per scan, driven
+// through the real scan handler across many ticks (megaron_arbetssatt.md §3:
+// "varje acceptans ... genom det verkliga flödet").
+func TestPassageScan_StalledNeverCrossesAndNotifiesOnce(t *testing.T) {
 	f := setupPassageFixture(t)
 	ctx := context.Background()
 	sinceTick := f.currentTick
 	messengerID := f.waitingMessenger(t, f.originID, sinceTick)
 
-	// Not yet due.
-	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
-		t.Fatalf("Handle (too early): %v", err)
-	}
-	_, passageStatus, _, _ := f.messengerRow(t, messengerID)
-	if passageStatus == nil || *passageStatus != "awaiting_passage" {
-		t.Fatalf("passage_status before the wait elapsed = %v, want still awaiting_passage", passageStatus)
+	clk := clock.NewTestClock(time.Now())
+	hub := &fakeRecallBroadcaster{}
+	handler := NewPassageScanHandler(f.pool, events.NewScheduler(f.pool, clk), hub, clk, nil)
+
+	// Run the real scan across many ticks — well past PassageStallNoticeTicks
+	// — never boarding any carrier (none exists in this fixture).
+	for i := 0; i <= 10; i++ {
+		f.setTick(t, sinceTick+i)
+		if err := handler.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+			t.Fatalf("Handle (tick %d): %v", f.currentTick, err)
+		}
 	}
 
-	f.setTick(t, sinceTick+PassageReserveWaitTicks)
-	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
-		t.Fatalf("Handle (reserve due): %v", err)
+	status, passageStatus, _, _ := f.messengerRow(t, messengerID)
+	if status != "outbound" {
+		t.Errorf("status = %q, want outbound — the messenger must never resolve itself without a real carrier", status)
 	}
-	_, passageStatus, _, _ = f.messengerRow(t, messengerID)
-	if passageStatus != nil {
-		t.Errorf("passage_status after reserve = %v, want NULL", *passageStatus)
+	if passageStatus == nil || *passageStatus != "awaiting_passage" {
+		t.Errorf("passage_status = %v, want still awaiting_passage — no abstract crossing exists any more", passageStatus)
 	}
-	if n := f.countScheduled(t, "MessengerArrival", messengerID); n != 1 {
-		t.Errorf("scheduled MessengerArrival count = %d, want 1 (took the reserve crossing)", n)
+	if n := f.countScheduled(t, "MessengerArrival", messengerID); n != 0 {
+		t.Errorf("scheduled MessengerArrival count = %d, want 0 — nothing may schedule a delivery with no carrier", n)
+	}
+
+	var passageStalledCount int
+	for _, k := range hub.notified {
+		if k == "PassageStalled" {
+			passageStalledCount++
+		}
+	}
+	if passageStalledCount != 1 {
+		t.Errorf("PassageStalled notifications = %d, want exactly 1 across %d scans (one per waiting spell, not one per scan)",
+			passageStalledCount, 11)
 	}
 }
 
@@ -600,5 +622,150 @@ func TestPassageScan_LostShipMissionCarrierSeals(t *testing.T) {
 	}
 	if sealed.generation != 2 {
 		t.Errorf("generation after seal = %d, want 2", sealed.generation)
+	}
+}
+
+// TestResolveDeparture_NoOwnPortIsErrNoPort is 3b-4's R2 and part of
+// acceptance criterion 1: a sender with NO coastal or harboured settlement at
+// all, whose only route to the target crosses the sea, gets a visible,
+// named rejection (errors.Is ErrNoPort) at send time — never a silent
+// success (the old RESERVE) and never a port to wait at that does not exist.
+func TestResolveDeparture_NoOwnPortIsErrNoPort(t *testing.T) {
+	pool := passageTestPool(t)
+	ctx := context.Background()
+
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status, current_tick) VALUES ($1, 'active', 100) RETURNING id`,
+		"noport-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(context.Background(), `DELETE FROM worlds WHERE id = $1`, worldID) })
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"noport-owner-"+uuid.New().String(),
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create player: %v", err)
+	}
+
+	// Origin: an INLAND settlement (not coastal, no harbour) — the sender has
+	// no port anywhere. A sea lane (q=1..4) then open land (q=5) on the far
+	// side severs every land route, so the only possible route needs the sea.
+	mkTile := func(q, r int, terrain string) {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, q, r, terrain,
+		); err != nil {
+			t.Fatalf("insert tile (%d,%d): %v", q, r, err)
+		}
+	}
+	mkTile(0, 0, "plains")
+	for q := 1; q <= 4; q++ {
+		mkTile(q, 0, "coastal_sea")
+	}
+	mkTile(5, 0, "plains")
+
+	var originProvinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, coastal) VALUES ($1, 0, 0, 'plains', false) RETURNING id`,
+		worldID,
+	).Scan(&originProvinceID); err != nil {
+		t.Fatalf("create origin province: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
+		 VALUES ($1, $2, $3, 'achaean', $4, 'capital', true, 'active', 5000)`,
+		worldID, originProvinceID, "NoPort-Origin-"+uuid.NewString(), ownerID,
+	); err != nil {
+		t.Fatalf("create origin settlement: %v", err)
+	}
+	// The far side needs its own province row (plain FindPath target
+	// validation), no settlement required.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 5, 0, 'plains')`,
+		worldID,
+	); err != nil {
+		t.Fatalf("create target province: %v", err)
+	}
+
+	now := time.Now()
+	_, _, _, _, err := ResolveDeparture(ctx, pool, worldID, ownerID,
+		province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 5, R: 0}, now, 100)
+	if !errors.Is(err, ErrNoPort) {
+		t.Fatalf("ResolveDeparture err = %v, want ErrNoPort (no coastal/harboured settlement of the sender's exists at all)", err)
+	}
+}
+
+// TestPassageScan_StalledAgainOnReturnLeg is the planner review's reproduction
+// (megaron_plan_ordna_passage.md 3b-4 R5, "en gång per väntperiod"): a
+// messenger that got its PassageStalled on the OUTBOUND leg, then boarded a
+// carrier, was delivered and turned for home, stands awaiting_passage in the
+// foreign port — a NEW waiting spell. It must get a new dispatch there;
+// otherwise it waits silently forever (the failure mode R5 exists to prevent).
+// Real flow throughout: scan → board → ArrivalHandler → StartReturnLeg → scan.
+func TestPassageScan_StalledAgainOnReturnLeg(t *testing.T) {
+	f := setupPassageFixture(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	sched := events.NewScheduler(f.pool, clk)
+	hub := &fakeRecallBroadcaster{}
+	scan := NewPassageScanHandler(f.pool, sched, hub, clk, nil)
+	stalledCount := func() int {
+		n := 0
+		for _, k := range hub.notified {
+			if k == "PassageStalled" {
+				n++
+			}
+		}
+		return n
+	}
+
+	// 1. Outbound stall → exactly one dispatch.
+	start := f.currentTick
+	messengerID := f.waitingMessenger(t, f.originID, start)
+	for i := 0; i <= PassageStallNoticeTicks; i++ {
+		f.setTick(t, start+i)
+		if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+			t.Fatalf("Handle (outbound stall): %v", err)
+		}
+	}
+	if n := stalledCount(); n != 1 {
+		t.Fatalf("outbound PassageStalled = %d, want 1", n)
+	}
+
+	// 2. A carrier departs; the scan boards the messenger.
+	shipID := f.ship(t, f.originID, "merchantman")
+	f.departingTransport(t, f.originID, shipID, f.currentTick+3)
+	if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle (board): %v", err)
+	}
+	if row := f.fullRow(t, messengerID); row.passageStatus == nil || *row.passageStatus != "aboard" {
+		t.Fatalf("passage_status after boarding = %v, want aboard", row.passageStatus)
+	}
+
+	// 3. Delivery via the real ArrivalHandler, then the real return-leg start.
+	arrivalH := NewArrivalHandler(f.pool, sched, events.NewStore(f.pool), nil)
+	if err := arrivalH.Handle(ctx, f.loadScheduledEvent(t, "MessengerArrival", messengerID)); err != nil {
+		t.Fatalf("arrival Handle: %v", err)
+	}
+	f.setTick(t, f.currentTick+4)
+	res, err := StartReturnLeg(ctx, f.pool, sched, f.worldID, messengerID, clk.Now(), f.currentTick, nil)
+	if err != nil || !res.Started || !res.PassageAwaiting {
+		t.Fatalf("StartReturnLeg = %+v, %v — want started and awaiting passage (no land route home)", res, err)
+	}
+
+	// 4. The return-leg wait must earn its own dispatch.
+	back := f.currentTick
+	for i := 0; i <= PassageStallNoticeTicks; i++ {
+		f.setTick(t, back+i)
+		if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+			t.Fatalf("Handle (return stall): %v", err)
+		}
+	}
+	if n := stalledCount(); n != 2 {
+		t.Errorf("PassageStalled total = %d, want 2 — the return-leg wait is a new waiting spell and must be told to the player", n)
 	}
 }

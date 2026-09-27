@@ -9,13 +9,19 @@
 // messenger's sender — when one leaves (passage_status='aboard'), then
 // disembarks at the carrier's own destination and runs the rest of the way on
 // land. A carrier lost to interception seals the messenger back to its port
-// after a short delay (R4). A messenger no real carrier picks up within
-// PassageReserveWaitTicks takes the RESERVE — today's old abstract crossing,
-// kept only until slice 3b removes it (R5).
+// after a short delay (R4). A messenger no real carrier picks up in time is a
+// PLAYER decision now, not a mechanic — see the RESERVE's removal note below
+// (R5, slice 3b-4).
 //
 // Invariant (R2/R4): boarding never changes the CARRIER's own order, and a
 // lost carrier never loses or reveals the messenger's contents — only delays
 // it. A messenger is never killed or read by this mechanic.
+//
+// The RESERVE — the old abstract crossing a messenger with no real carrier
+// took after a short wait — is GONE (megaron_plan_ordna_passage.md, slice
+// 3b-4, R1): a messenger with no ship never crosses on its own. A Wanax
+// decides what happens next, through a PassageStalled dispatch (R5) — arrange
+// passage, call the runner back, or let it wait.
 package messenger
 
 import (
@@ -39,11 +45,13 @@ import (
 // Strawman timings (Timothy 2026-09-26 pattern: "okalibrerat, justeras med
 // prissättningen" — same spirit as transport.ShipCapacityFor's constants).
 const (
-	// PassageReserveWaitTicks is R5: how long a messenger waits
-	// 'awaiting_passage' with no eligible carrier before it takes the RESERVE
-	// (the old abstract crossing). Removed in slice 3b along with the reserve
-	// itself.
-	PassageReserveWaitTicks = 3
+	// PassageStallNoticeTicks is 3b-4's R5: how long a messenger waits
+	// 'awaiting_passage' with no eligible carrier before its sender gets a
+	// PassageStalled dispatch — strawman, uncalibrated, same spirit as
+	// transport.ShipCapacityFor's own constants (Timothy 2026-09-26 pattern).
+	// Unlike the reserve this replaced, nothing happens automatically once
+	// this elapses — the dispatch is offered, not a deadline.
+	PassageStallNoticeTicks = 3
 	// PassageLostDelayTicks is R4: how long a messenger whose carrier was
 	// captured/limped/sunk stays sealed before it reappears 'awaiting_passage'
 	// at its port.
@@ -113,14 +121,29 @@ type RouteDecision struct {
 // `from` toward `to` needs the sea-lift mechanic (R1: "vid varje avsändande").
 // Mode==RouteLand: proceed exactly as before this slice. Mode==RouteSea &&
 // PortFound: run the landward leg to Port and wait there. Mode==RouteSea &&
-// !PortFound: no reachable port at all — take the reserve immediately.
+// !PortFound: no reachable port at all — ResolveDeparture reports ErrNoPort
+// (3b-4 R2; the old reserve fallback is gone).
 func PlanOutboundRoute(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, from, to province.MapPosition) (RouteDecision, error) {
 	_, _, landOK, err := province.FindPath(ctx, db, worldID, from, to, province.CategoryCourierLand)
 	if err != nil {
 		return RouteDecision{}, fmt.Errorf("plan outbound route: land check: %w", err)
 	}
 	if landOK {
-		ticks, dur := CourierTravel(ctx, db, worldID, from, to)
+		// CourierTravel (plain CategoryCourier, river still boatable —
+		// megaron_floden_plan.md, untouched by 3b-4) rather than the
+		// CategoryCourierLand cost above: a route with no sea alternative may
+		// still shortcut a river by boat, exactly as before this slice — only
+		// SEA shortcuts are gone (R3). landOK guarantees a CategoryCourierLand
+		// path exists, and CategoryCourier permits everything that does plus
+		// rivers, so ok=false here would be an internal inconsistency, not a
+		// player-facing case.
+		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+		if cErr != nil {
+			return RouteDecision{}, fmt.Errorf("plan outbound route: land ticks: %w", cErr)
+		}
+		if !ok {
+			return RouteDecision{}, fmt.Errorf("plan outbound route: land route found but courier travel time could not be computed")
+		}
 		return RouteDecision{Mode: RouteLand, Ticks: ticks, Dur: dur}, nil
 	}
 
@@ -163,7 +186,16 @@ func PlanReturnRoute(ctx context.Context, db province.Queryer, worldID uuid.UUID
 		return RouteDecision{}, fmt.Errorf("plan return route: land check: %w", err)
 	}
 	if landOK {
-		ticks, dur := CourierTravel(ctx, db, worldID, from, to)
+		// See PlanOutboundRoute's own comment: plain CourierTravel, not the
+		// CategoryCourierLand cost — a river shortcut is still fine, only sea
+		// shortcuts are gone (3b-4 R3).
+		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+		if cErr != nil {
+			return RouteDecision{}, fmt.Errorf("plan return route: land ticks: %w", cErr)
+		}
+		if !ok {
+			return RouteDecision{}, fmt.Errorf("plan return route: land route found but courier travel time could not be computed")
+		}
 		return RouteDecision{Mode: RouteLand, Ticks: ticks, Dur: dur}, nil
 	}
 	return RouteDecision{
@@ -213,6 +245,15 @@ func ownedCoastalPorts(ctx context.Context, db province.Queryer, worldID, ownerI
 	return out, rows.Err()
 }
 
+// ErrNoPort is 3b-4's R2: an outbound route needs the sea and the sender has
+// no reachable coastal/harboured settlement of their own AT ALL — there is no
+// port to even wait at. Before this slice that fell back to the RESERVE (the
+// abstract crossing, R1, now gone); now it is a visible, named rejection at
+// send time instead of a silent success — every caller (Send, SendFromHost,
+// sendOrderCourier) turns this into a 422 with an explaining sentence, never
+// dispatches a messenger that can never reach a port.
+var ErrNoPort = fmt.Errorf("no port of yours to take ship from — a runner cannot cross the sea without a ship")
+
 // ResolveDeparture is the single entry point every outbound dispatcher (Send,
 // SendFromHost, sendOrderCourier) calls in place of a bare CourierTravel, per
 // R1's "alla anropare ska gå via den nya mekaniken". passage==nil: the caller
@@ -220,18 +261,18 @@ func ownedCoastalPorts(ctx context.Context, db province.Queryer, worldID, ownerI
 // dueTick/arrivesAt). passage!=nil: the caller instead writes an
 // 'awaiting_passage' row (arrivesAt/dueTick are the LANDWARD leg to the port)
 // and does NOT schedule the terminal event — the passage scan does that once
-// a carrier is boarded, or the reserve is taken.
+// a carrier is boarded. err wraps ErrNoPort (errors.Is) when the route needs
+// the sea and no port exists at all — see ErrNoPort's own doc comment.
 func ResolveDeparture(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, from, to province.MapPosition, now time.Time, currentTick int) (arrivesAt time.Time, dueTick int, passage *PassagePort, sinceTick int, err error) {
 	rd, err := PlanOutboundRoute(ctx, db, worldID, ownerID, from, to)
 	if err != nil {
 		return time.Time{}, 0, nil, 0, err
 	}
-	if rd.Mode == RouteLand || !rd.PortFound {
-		ticks, dur := rd.Ticks, rd.Dur
-		if rd.Mode == RouteSea {
-			ticks, dur = CourierTravel(ctx, db, worldID, from, to)
-		}
-		return now.Add(dur), currentTick + ticks, nil, 0, nil
+	if rd.Mode == RouteSea && !rd.PortFound {
+		return time.Time{}, 0, nil, 0, ErrNoPort
+	}
+	if rd.Mode == RouteLand {
+		return now.Add(rd.Dur), currentTick + rd.Ticks, nil, 0, nil
 	}
 	sinceTick = currentTick + rd.LandTicks
 	return now.Add(rd.LandDur), sinceTick, &rd.Port, sinceTick, nil
@@ -291,8 +332,8 @@ func (h *PassageScanHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	if err := h.promoteSealed(ctx, e.WorldID, currentTick); err != nil {
 		slog.Error("passage scan: promote sealed", "err", err)
 	}
-	if err := h.takeReserve(ctx, e.WorldID, currentTick); err != nil {
-		slog.Error("passage scan: reserve fallback", "err", err)
+	if err := h.notifyStalled(ctx, e.WorldID, currentTick); err != nil {
+		slog.Error("passage scan: notify stalled", "err", err)
 	}
 	if err := h.releasePassageWait(ctx, e.WorldID, currentTick); err != nil {
 		slog.Error("passage scan: release passage wait", "err", err)
@@ -419,12 +460,14 @@ func passageWaitShouldRelease(ctx context.Context, tx pgx.Tx, worldID uuid.UUID,
 
 // promoteSealed is R4's delay expiring: a messenger sealed by a lost carrier
 // becomes 'awaiting_passage' again at its (unchanged) port once
-// passage_lost_until_tick is reached, restarting the R5 reserve clock.
+// passage_lost_until_tick is reached — restarting the R5 stall clock: this is
+// a NEW waiting spell, so passage_stalled_notified_tick resets to NULL and a
+// fresh PassageStalled dispatch may fire for it ("efter en ny försegling").
 func (h *PassageScanHandler) promoteSealed(ctx context.Context, worldID uuid.UUID, currentTick int) error {
 	_, err := h.pool.Exec(ctx,
 		`UPDATE messengers
 		    SET passage_status = 'awaiting_passage', passage_since_tick = $2,
-		        passage_lost_until_tick = NULL
+		        passage_lost_until_tick = NULL, passage_stalled_notified_tick = NULL
 		  WHERE world_id = $1 AND passage_status = 'returning_sealed'
 		    AND passage_lost_until_tick IS NOT NULL AND passage_lost_until_tick <= $2`,
 		worldID, currentTick,
@@ -432,88 +475,197 @@ func (h *PassageScanHandler) promoteSealed(ctx context.Context, worldID uuid.UUI
 	return err
 }
 
-// takeReserve is R5: a messenger that has waited PassageReserveWaitTicks at
-// its port with no carrier takes the old abstract crossing from the PORT
-// (physically honest — it already walked there) to its true final target.
-func (h *PassageScanHandler) takeReserve(ctx context.Context, worldID uuid.UUID, currentTick int) error {
+// stalledEligibleShip is one of the sender's own ships a PassageStalled
+// dispatch can point at as a real "arrange passage" choice — same shape as
+// api/handlers.eligiblePassageShip, duplicated here rather than imported
+// (CLAUDE.md G1: messenger sits BELOW api/handlers, so the import must never
+// go the other way).
+type stalledEligibleShip struct {
+	ID             uuid.UUID `json:"id"`
+	Name           string    `json:"name"`
+	Type           string    `json:"type"`
+	SettlementID   uuid.UUID `json:"settlement_id"`
+	SettlementName string    `json:"settlement_name"`
+}
+
+// stalledEligibleShips mirrors api/handlers.eligiblePassageShips' own R1
+// predicate: the sender's own idle galleys/merchantmen, docked at exactly the
+// waiting port if it is the sender's OWN port, or at any of the sender's own
+// ports for a foreign-port pickup.
+func stalledEligibleShips(ctx context.Context, db province.Queryer, worldID, senderID, portID uuid.UUID, ownPort bool) ([]stalledEligibleShip, error) {
+	query := `SELECT u.id, u.name, u.type, u.settlement_id, s.name
+	            FROM units u JOIN settlements s ON s.id = u.settlement_id
+	           WHERE u.world_id = $1 AND u.owner_id = $2 AND u.status = 'garrison'
+	             AND u.type IN ('galley', 'merchantman')`
+	args := []any{worldID, senderID}
+	if ownPort {
+		query += ` AND u.settlement_id = $3`
+		args = append(args, portID)
+	}
+	rows, err := db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []stalledEligibleShip
+	for rows.Next() {
+		var s stalledEligibleShip
+		var name *string
+		if err := rows.Scan(&s.ID, &name, &s.Type, &s.SettlementID, &s.SettlementName); err != nil {
+			return nil, err
+		}
+		s.Name = unit.DisplayName(s.Type)
+		if name != nil && *name != "" {
+			s.Name = *name
+		}
+		out = append(out, s)
+	}
+	if out == nil {
+		out = []stalledEligibleShip{}
+	}
+	return out, rows.Err()
+}
+
+// notifyStalled is 3b-4's R5: a messenger stuck 'awaiting_passage' with no
+// carrier for PassageStallNoticeTicks is a PLAYER DECISION, not a mechanic —
+// megaron_styrande_beslut.md "Havet är fysiskt" (Timothy 2026-09-27): "det är
+// en helt ny mekanik ... men det ska ske enligt en dispatch — spelaren får
+// avgöra. Ingen automatisk reserv, ingen tidsgräns." Sent exactly once per
+// waiting spell: passage_stalled_notified_tick is the marker, cleared only by
+// promoteSealed on a fresh reseal — never re-sent every scan while the SAME
+// spell continues.
+func (h *PassageScanHandler) notifyStalled(ctx context.Context, worldID uuid.UUID, currentTick int) error {
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, passage_port_id, sender_id FROM messengers
+		`SELECT id FROM messengers
 		  WHERE world_id = $1 AND passage_status = 'awaiting_passage'
-		    AND passage_since_tick IS NOT NULL AND passage_since_tick <= $2
-		    AND $2 - passage_since_tick >= $3
+		    AND passage_since_tick IS NOT NULL AND $2 - passage_since_tick >= $3
+		    AND passage_stalled_notified_tick IS NULL
 		  FOR UPDATE SKIP LOCKED`,
-		worldID, currentTick, PassageReserveWaitTicks,
+		worldID, currentTick, PassageStallNoticeTicks,
 	)
 	if err != nil {
 		return err
 	}
-	type row struct {
-		id, port, sender uuid.UUID
-	}
-	var due []row
+	var due []uuid.UUID
 	for rows.Next() {
-		var r row
-		if err := rows.Scan(&r.id, &r.port, &r.sender); err != nil {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
 			rows.Close()
 			return err
 		}
-		due = append(due, r)
+		due = append(due, id)
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
 		return err
 	}
 
-	for _, r := range due {
-		if err := h.takeReserveOne(ctx, worldID, r.id, r.port, r.sender, currentTick); err != nil {
-			slog.Error("passage scan: take reserve", "messenger", r.id, "err", err)
+	for _, id := range due {
+		if err := h.notifyStalledOne(ctx, worldID, id, currentTick); err != nil {
+			slog.Error("passage scan: notify stalled", "messenger", id, "err", err)
 		}
 	}
 	return nil
 }
 
-func (h *PassageScanHandler) takeReserveOne(ctx context.Context, worldID uuid.UUID, messengerID, portID, senderID uuid.UUID, currentTick int) error {
+func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, messengerID uuid.UUID, currentTick int) error {
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
 
-	tag, err := tx.Exec(ctx,
-		`UPDATE messengers SET passage_status = NULL WHERE id = $1 AND passage_status = 'awaiting_passage'`,
-		messengerID)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return nil // boarded or already resolved by a racing pass
+	var senderID, portID uuid.UUID
+	var kind string
+	var orderPayload []byte
+	if err := tx.QueryRow(ctx,
+		`SELECT sender_id, kind, order_payload, passage_port_id FROM messengers
+		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND passage_stalled_notified_tick IS NULL
+		  FOR UPDATE`,
+		messengerID,
+	).Scan(&senderID, &kind, &orderPayload, &portID); err != nil {
+		return nil // already notified by a racing pass, or resolved
 	}
 
+	var portOwnerID uuid.UUID
+	var portName string
 	var portQ, portR int
 	if err := tx.QueryRow(ctx,
-		`SELECT map_q, map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
+		`SELECT s.owner_id, s.name, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
 		portID,
-	).Scan(&portQ, &portR); err != nil {
-		return fmt.Errorf("load port coords: %w", err)
+	).Scan(&portOwnerID, &portName, &portQ, &portR); err != nil {
+		return fmt.Errorf("notify stalled: load port: %w", err)
 	}
+	ownPort := portOwnerID == senderID
+
 	targetQ, targetR, err := FinalTargetTx(ctx, tx, messengerID)
 	if err != nil {
 		return err
 	}
-	ticks, dur := CourierTravel(ctx, tx, worldID, province.MapPosition{Q: portQ, R: portR}, province.MapPosition{Q: targetQ, R: targetR})
-	if err := scheduleCompletion(ctx, tx, h.scheduler, messengerID, currentTick+ticks, h.clk.Now().Add(dur)); err != nil {
+	var targetName *string
+	if err := tx.QueryRow(ctx,
+		`SELECT s.name FROM provinces p JOIN settlements s ON s.province_id = p.id
+		  WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active' LIMIT 1`,
+		worldID, targetQ, targetR,
+	).Scan(&targetName); err != nil {
+		targetName = nil // no settlement exactly there (a unit order) — best-effort only
+	}
+
+	var verb string
+	if kind == "order" && len(orderPayload) > 0 {
+		var p OrderDeliveryPayload
+		if json.Unmarshal(orderPayload, &p) == nil {
+			verb = p.Verb
+		}
+	}
+
+	ships, err := stalledEligibleShips(ctx, tx, worldID, senderID, portID, ownPort)
+	if err != nil {
 		return err
+	}
+
+	tag, err := tx.Exec(ctx,
+		`UPDATE messengers SET passage_stalled_notified_tick = $2
+		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND passage_stalled_notified_tick IS NULL`,
+		messengerID, currentTick,
+	)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return nil // already notified by a racing pass
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return err
 	}
+
 	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, senderID, "OrderFailed", 3, map[string]any{
+		body := map[string]any{
 			"messenger_id": messengerID,
-			"reason":       "no ship of yours sailed that way in time — your runner crossed the old passage instead",
-		})
+			"port_name":    portName,
+			"port_q":       portQ,
+			"port_r":       portR,
+			// q/r (megaron_plan_dispatches.md §6:3): the generic "⌖ Take me
+			// there" field every dispatch kind's resolveDestination reads
+			// first — points at the port, where the decision is made.
+			"q":              portQ,
+			"r":              portR,
+			"target_q":       targetQ,
+			"target_r":       targetR,
+			"own_port":       ownPort,
+			"kind":           kind,
+			"eligible_ships": ships,
+		}
+		if verb != "" {
+			body["verb"] = verb
+		}
+		if targetName != nil {
+			body["target_name"] = *targetName
+		}
+		_ = h.hub.NotifyPlayer(ctx, worldID, senderID, "PassageStalled", 2, body)
 	}
-	slog.Info("passage: took reserve crossing", "messenger", messengerID, "ticks", ticks)
+	slog.Info("passage: stalled, dispatch sent", "messenger", messengerID, "port", portName, "own_port", ownPort)
 	return nil
 }
 
@@ -721,8 +873,11 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	defer tx.Rollback(ctx)
 
 	tag, err := tx.Exec(ctx,
+		// Boarding ends this waiting spell, so the stall marker resets: the
+		// next spell (the return leg in a foreign port, or a re-wait after
+		// this carrier is lost) earns its own PassageStalled dispatch.
 		`UPDATE messengers SET passage_status = 'aboard', carrier_transport_id = $2,
-		        carrier_unit_id = $3, carrier_name = $4
+		        carrier_unit_id = $3, carrier_name = $4, passage_stalled_notified_tick = NULL
 		  WHERE id = $1 AND passage_status = 'awaiting_passage'`,
 		messengerID, carrier.transportID, carrier.unitID, carrier.name,
 	)
@@ -733,7 +888,18 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 		return nil // already boarded/resolved
 	}
 
-	landTicks, landDur := CourierTravel(ctx, tx, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR})
+	// boardEligible already proved a CategoryCourierLand path exists from
+	// disembarkAt to the target right before calling this — CourierTravel
+	// (plain CategoryCourier) permits everything that does, plus rivers, so
+	// !ok here would be an internal inconsistency: fail the boarding rather
+	// than guess a landward-leg time, and let a later scan retry it.
+	landTicks, landDur, ok, err := CourierTravel(ctx, tx, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR})
+	if err != nil {
+		return fmt.Errorf("board one: landward leg: %w", err)
+	}
+	if !ok {
+		return fmt.Errorf("board one: no landward route from disembark point to target, despite boardEligible's own check")
+	}
 	dueTick := carrierDueTick + landTicks
 	arrivesAt := carrierArrivesAt.Add(landDur)
 	if err := scheduleCompletion(ctx, tx, h.scheduler, messengerID, dueTick, arrivesAt); err != nil {

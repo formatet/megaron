@@ -72,6 +72,21 @@ func TestStance_FieldUnitOrderTravelsByCourier(t *testing.T) {
 		t.Fatalf("create capital settlement: %v", err)
 	}
 
+	// A connected plains block from the capital out to the field unit — since
+	// 3b-4 (megaron_plan_ordna_passage.md R2/R3) a courier with no real land
+	// route and no owned port gets a visible ErrNoPort instead of the old
+	// silent abstract crossing, so the runner needs an actual route to travel.
+	for q := -1; q <= 6; q++ {
+		for r := -1; r <= 1; r++ {
+			if _, err := pool.Exec(ctx,
+				`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, 'plains') ON CONFLICT (world_id, q, r) DO NOTHING`,
+				worldID, q, r,
+			); err != nil {
+				t.Fatalf("create map tile (%d,%d): %v", q, r, err)
+			}
+		}
+	}
+
 	// A field unit 5 hexes out.
 	var unitID uuid.UUID
 	if err := pool.QueryRow(ctx,
