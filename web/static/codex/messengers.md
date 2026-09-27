@@ -10,6 +10,8 @@ A **messenger** is a person who walks your letter to another Wanax's city — an
 
 A letter to a distant city takes game-days, and the reply takes as long again. You are told when your messenger arrives, and again when he is home with the answer. Plan diplomacy the way you plan a march.
 
+If nobody replies, your messenger does not wait forever in that city's court. After a while he gives up and turns around on his own, walking home just as he would with an answer in hand — the same road, taking the same time. You are still told the moment he is back, only without a reply riding along.
+
 ## Messengers are sacred
 
 **A messenger cannot be intercepted** — not on the way out, not on the way home. A herald is sacred and everyone knows it. It is the one thing on the map that is immune, which is why letters are the reliable backbone of everything you do at a distance.
