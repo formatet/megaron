@@ -249,23 +249,41 @@ func ResolveReturnDeparture(ctx context.Context, db province.Queryer, worldID uu
 	return now, currentTick, &rd.Port, currentTick, nil
 }
 
+// PassageShipReleaser is the thin, downward-only capability messenger needs
+// from combat to run R4's release phase (megaron_plan_ordna_passage.md
+// 3b-3): send a passage_wait ship home. Defined here, in the CONSUMING
+// package, per CLAUDE.md G1 ("consumer interfaces are defined in the
+// consuming package, never in the implementing one") — combat.
+// UnitArrivalHandler satisfies it without messenger ever being imported by
+// combat.
+type PassageShipReleaser interface {
+	ReleasePassageWaitShip(ctx context.Context, tx pgx.Tx, shipID, worldID uuid.UUID) error
+}
+
 // PassageScanHandler drives boarding, disembark-scheduling, the R5 reserve
-// fallback and R4's carrier-loss recovery. One self-perpetuating instance per
-// world (ScheduledPassageScan), same shape as transport.InterceptScanHandler.
+// fallback, R4's carrier-loss recovery and 3b-3's passage_wait release. One
+// self-perpetuating instance per world (ScheduledPassageScan), same shape as
+// transport.InterceptScanHandler.
 type PassageScanHandler struct {
 	pool      *pgxpool.Pool
 	scheduler *events.Scheduler
 	hub       combat.Broadcaster
 	clk       clock.Clock
+	ships     PassageShipReleaser
 }
 
 // NewPassageScanHandler creates a PassageScanHandler.
-func NewPassageScanHandler(pool *pgxpool.Pool, sched *events.Scheduler, hub combat.Broadcaster, clk clock.Clock) *PassageScanHandler {
-	return &PassageScanHandler{pool: pool, scheduler: sched, hub: hub, clk: clk}
+func NewPassageScanHandler(pool *pgxpool.Pool, sched *events.Scheduler, hub combat.Broadcaster, clk clock.Clock, ships PassageShipReleaser) *PassageScanHandler {
+	return &PassageScanHandler{pool: pool, scheduler: sched, hub: hub, clk: clk, ships: ships}
 }
 
-// Handle runs the four phases in order (each independent — a failure in one
-// is logged, never aborts the others) then re-enqueues itself.
+// Handle runs the phases in order (each independent — a failure in one is
+// logged, never aborts the others) then re-enqueues itself. releasePassageWait
+// runs BEFORE boardShipMissions (megaron_plan_ordna_passage.md 3b-3 R4): a
+// ship released this exact call gets depart_tick = currentTick, so
+// boardShipMissions — later in this SAME call — boards its runner in the
+// very same scan, regardless of which earlier tick the ship actually parked
+// 'passage_wait' at.
 func (h *PassageScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
@@ -275,6 +293,9 @@ func (h *PassageScanHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 	if err := h.takeReserve(ctx, e.WorldID, currentTick); err != nil {
 		slog.Error("passage scan: reserve fallback", "err", err)
+	}
+	if err := h.releasePassageWait(ctx, e.WorldID, currentTick); err != nil {
+		slog.Error("passage scan: release passage wait", "err", err)
 	}
 	if err := h.boardTransports(ctx, e.WorldID, currentTick); err != nil {
 		slog.Error("passage scan: board transports", "err", err)
@@ -288,6 +309,112 @@ func (h *PassageScanHandler) Handle(ctx context.Context, e events.ScheduledEvent
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledPassageScan,
 		struct{}{}, e.DueTick, PassageScanIntervalTicks)
+}
+
+// releasePassageWait is R4: a ship holding status='positioned', march_intent=
+// 'passage_wait' is sent home the moment its arranged runner either (a)
+// stands 'awaiting_passage' at the settlement adjacent to the ship's own hex
+// (ready to travel with it), or (b) is done or gone (arrived, or the row is
+// simply missing). Both conditions are read fresh every scan — no caching —
+// same SKIP LOCKED claim idiom as every other phase in this file.
+func (h *PassageScanHandler) releasePassageWait(ctx context.Context, worldID uuid.UUID, currentTick int) error {
+	rows, err := h.pool.Query(ctx,
+		`SELECT id FROM units
+		  WHERE world_id = $1 AND status = 'positioned' AND march_intent = 'passage_wait'
+		  FOR UPDATE SKIP LOCKED`,
+		worldID,
+	)
+	if err != nil {
+		return err
+	}
+	var shipIDs []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			rows.Close()
+			return err
+		}
+		shipIDs = append(shipIDs, id)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	for _, id := range shipIDs {
+		if err := h.releasePassageWaitOne(ctx, worldID, id, currentTick); err != nil {
+			slog.Error("passage scan: release passage wait ship", "unit", id, "err", err)
+		}
+	}
+	return nil
+}
+
+func (h *PassageScanHandler) releasePassageWaitOne(ctx context.Context, worldID, shipID uuid.UUID, currentTick int) error {
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	var shipQ, shipR int
+	var msgID *uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT q, r, passage_messenger_id FROM units
+		  WHERE id = $1 AND status = 'positioned' AND march_intent = 'passage_wait' FOR UPDATE`,
+		shipID,
+	).Scan(&shipQ, &shipR, &msgID); err != nil {
+		return nil // already resolved by a racing pass
+	}
+
+	release, err := passageWaitShouldRelease(ctx, tx, worldID, shipQ, shipR, msgID)
+	if err != nil {
+		return err
+	}
+	if !release {
+		return nil // still waiting — nothing to do, no write made
+	}
+
+	if h.ships == nil {
+		return fmt.Errorf("release passage wait ship: no PassageShipReleaser configured")
+	}
+	if err := h.ships.ReleasePassageWaitShip(ctx, tx, shipID, worldID); err != nil {
+		return fmt.Errorf("release passage wait ship: %w", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	slog.Info("passage: passage_wait ship released", "unit", shipID)
+	return nil
+}
+
+// passageWaitShouldRelease is R4's two release conditions: (a) the runner is
+// ready — 'awaiting_passage' at the settlement adjacent to the ship's own
+// hex — or (b) the runner is done or gone. A missing runner row (defensive:
+// dispatch always sets passage_messenger_id) also releases — never strand a
+// ship over a data inconsistency.
+func passageWaitShouldRelease(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, shipQ, shipR int, msgID *uuid.UUID) (bool, error) {
+	if msgID == nil {
+		return true, nil
+	}
+	var status string
+	var passageStatus *string
+	var passagePortID *uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT status, passage_status, passage_port_id FROM messengers WHERE id = $1`, *msgID,
+	).Scan(&status, &passageStatus, &passagePortID); err != nil {
+		return true, nil // row gone — nothing left to wait for
+	}
+	if status == "arrived" {
+		return true, nil
+	}
+	if passageStatus == nil || *passageStatus != "awaiting_passage" || passagePortID == nil {
+		return false, nil
+	}
+	portAtShip, _, _, portFound, err := province.NearestSettlementNeighbor(ctx, tx, worldID, shipQ, shipR)
+	if err != nil {
+		return false, err
+	}
+	return portFound && portAtShip == *passagePortID, nil
 }
 
 // promoteSealed is R4's delay expiring: a messenger sealed by a lost carrier
@@ -369,7 +496,7 @@ func (h *PassageScanHandler) takeReserveOne(ctx context.Context, worldID uuid.UU
 	).Scan(&portQ, &portR); err != nil {
 		return fmt.Errorf("load port coords: %w", err)
 	}
-	targetQ, targetR, err := finalTargetTx(ctx, tx, messengerID)
+	targetQ, targetR, err := FinalTargetTx(ctx, tx, messengerID)
 	if err != nil {
 		return err
 	}
@@ -566,7 +693,7 @@ func (h *PassageScanHandler) boardEligible(ctx context.Context, worldID, ownerID
 	}
 
 	for _, id := range ids {
-		targetQ, targetR, err := finalTarget(ctx, h.pool, id)
+		targetQ, targetR, err := FinalTarget(ctx, h.pool, id)
 		if err != nil {
 			slog.Error("passage scan: load final target", "messenger", id, "err", err)
 			continue
@@ -730,16 +857,19 @@ type queryRower interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
-// finalTarget/finalTargetTx read a messenger's true ultimate destination hex —
+// FinalTarget/FinalTargetTx read a messenger's true ultimate destination hex —
 // NOT hex_q/hex_r for an order envelope (which stores the RUNNER's ORIGIN
 // there; dest_q/dest_r holds the unit's position — see api/handlers/unit.go
 // sendOrderCourier's INSERT column order) and NOT hex_q/hex_r for a return
 // leg (still the outbound destination; the return target is the origin).
-func finalTarget(ctx context.Context, db queryRower, messengerID uuid.UUID) (q, r int, err error) {
+// Exported (megaron_plan_ordna_passage.md 3b-3 R2) so api/handlers.
+// ArrangePassage can resolve the same "where is this runner actually headed"
+// question the sea-lift board mechanic already answers — one query, not two.
+func FinalTarget(ctx context.Context, db queryRower, messengerID uuid.UUID) (q, r int, err error) {
 	return finalTargetQuery(ctx, db, messengerID)
 }
 
-func finalTargetTx(ctx context.Context, tx pgx.Tx, messengerID uuid.UUID) (q, r int, err error) {
+func FinalTargetTx(ctx context.Context, tx pgx.Tx, messengerID uuid.UUID) (q, r int, err error) {
 	return finalTargetQuery(ctx, tx, messengerID)
 }
 

@@ -150,7 +150,13 @@ func main() {
 	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, hub, gameClock)
 	marchRecallH := messenger.NewMarchRecallHandler(pool, scheduler, eventStore, hub, gameClock)
 	orderDeliveryH := messenger.NewOrderDeliveryHandler(pool, scheduler, eventStore, hub, gameClock)
-	passageScanH := messenger.NewPassageScanHandler(pool, scheduler, hub, gameClock)
+	// Constructed here (moved up from its later, natural position among the
+	// other combat handlers) so passageScanH's R4 release phase
+	// (megaron_plan_ordna_passage.md 3b-3) can call it — messenger may use
+	// combat (G1), never the reverse, so the handler is built once, up front,
+	// and handed down as messenger's own PassageShipReleaser interface.
+	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
+	passageScanH := messenger.NewPassageScanHandler(pool, scheduler, hub, gameClock, unitArrivalH)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
 	worker.Register(events.ScheduledShipRepairComplete, shipRepairH.Handle)
@@ -185,7 +191,8 @@ func main() {
 	worker.Register(events.ScheduledMarchSightingScan, marchSightH.Handle)
 	marchEncounterH := combat.NewMarchEncounterHandler(pool, scheduler, eventStore, gameClock, hub)
 	worker.Register(events.ScheduledMarchEncounterScan, marchEncounterH.Handle)
-	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
+	// unitArrivalH itself is constructed earlier, above passageScanH — see the
+	// comment there.
 	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
 	// P3 soak fix (2026-07-19): same reasoning as the order-delivery hook above —
 	// a marching unit's arrival that dead-letters must tell its owner, not just

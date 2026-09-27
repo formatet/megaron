@@ -13,6 +13,13 @@ package combat
 // (a pending ScheduledSentryReturn) is left alone; its own timer already
 // returns it home on schedule, unchanged.
 //
+// R5 (megaron_plan_ordna_passage.md, 3b-3): a ship holding march_intent=
+// 'passage_wait' is ALSO left alone — it is not stranded, it is waiting in a
+// port it is already standing off, for a runner whose homeward leg is
+// pending. Every restart would otherwise send it home before that runner
+// ever gets its ride, silently breaking "ordna passage" on every deploy.
+// PassageScanHandler's own release phase (R4) is its only path home.
+//
 // Idempotent: it only ever selects status='positioned' naval units, and
 // dispatchReturnHome flips that to 'marching' — a second run (a restart, or
 // calling this twice) finds nothing left to do.
@@ -41,6 +48,7 @@ func SweepShipsAtSeaOnDeploy(ctx context.Context, pool *pgxpool.Pool, h *UnitArr
 		`SELECT u.id FROM units u
 		 JOIN worlds w ON w.id = u.world_id
 		 WHERE w.status = 'active' AND u.category = 'naval' AND u.status = 'positioned'
+		   AND (u.march_intent IS DISTINCT FROM 'passage_wait')
 		   AND NOT EXISTS (
 		     SELECT 1 FROM scheduled_events se
 		     WHERE se.event_type = $1 AND se.processed_at IS NULL
@@ -99,7 +107,8 @@ func sweepOneShip(ctx context.Context, pool *pgxpool.Pool, h *UnitArrivalHandler
 		`SELECT id, world_id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent
-		 FROM units WHERE id = $1 AND status = 'positioned' AND category = 'naval' FOR UPDATE`,
+		 FROM units WHERE id = $1 AND status = 'positioned' AND category = 'naval'
+		   AND (march_intent IS DISTINCT FROM 'passage_wait') FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &worldID, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
 		&u.status, &curQ, &curR, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
