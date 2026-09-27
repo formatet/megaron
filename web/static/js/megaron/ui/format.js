@@ -9,8 +9,9 @@ export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '
 // status line built from a server response that MAY carry
 // passage_status/passage_port — set only when the runner's route needs the
 // sea and no land alternative exists, so it is waiting in its own port for a
-// real ship rather than crossing an abstract boat instantly. '' for the
-// ordinary, unaffected land case (the server omits the field entirely then).
+// real ship — there is no other way across (megaron_plan_ordna_passage.md
+// 3b-4: the old instant abstract-boat crossing is gone). '' for the ordinary,
+// unaffected land case (the server omits the field entirely then).
 export function passageNote(data) {
   if (data && data.passage_status === 'awaiting_passage') {
     return data.passage_port

@@ -9,9 +9,9 @@
 // messenger's sender — when one leaves (passage_status='aboard'), then
 // disembarks at the carrier's own destination and runs the rest of the way on
 // land. A carrier lost to interception seals the messenger back to its port
-// after a short delay (R4). A messenger no real carrier picks up within
-// PassageReserveWaitTicks takes the RESERVE — today's old abstract crossing,
-// kept only until slice 3b removes it (R5).
+// after a short delay (R4). A messenger no real carrier picks up in time is a
+// PLAYER decision now, not a mechanic — see the RESERVE's removal note below
+// (R5, slice 3b-4).
 //
 // Invariant (R2/R4): boarding never changes the CARRIER's own order, and a
 // lost carrier never loses or reveals the messenger's contents — only delays
