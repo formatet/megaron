@@ -101,10 +101,16 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 	mRows, err := db.Query(ctx,
 		`SELECT m.hex_q, m.hex_r,
 		        COALESCE(m.dest_q, dp.map_q), COALESCE(m.dest_r, dp.map_r),
-		        m.sent_at, m.arrives_at
+		        m.sent_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r
 		 FROM messengers m
 		 LEFT JOIN settlements ds ON ds.id = m.destination_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 -- megaron_plan_ordna_passage.md 3b-1: pp/pps resolve the port hex for a
+		 -- runner that is awaiting_passage there — its eye must sit at the port,
+		 -- never interpolated toward a final target across the sea it hasn't
+		 -- crossed yet.
+		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
+		 LEFT JOIN provinces pp ON pp.id = pps.province_id
 		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'outbound'`,
 		worldID, playerID,
 	)
@@ -113,8 +119,35 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			var oq, or_ int
 			var dq, dr *int
 			var sentAt, arrivesAt time.Time
-			if mRows.Scan(&oq, &or_, &dq, &dr, &sentAt, &arrivesAt) != nil {
+			var passageStatus *string
+			var portQ, portR *int
+			if mRows.Scan(&oq, &or_, &dq, &dr, &sentAt, &arrivesAt, &passageStatus, &portQ, &portR) != nil {
 				continue
+			}
+			// 3b-1: a sea-lift runner's eye follows the leg it is actually on,
+			// not the flat origin→final-target courier interpolation below
+			// (which assumes an unbroken crossing and, for awaiting_passage,
+			// reads an arrives_at that is its PAST landward arrival at the
+			// port — clamping progress to 1 and leaking an eye on the far
+			// shore for the whole wait).
+			if passageStatus != nil {
+				switch *passageStatus {
+				case "aboard", "returning_sealed":
+					// Sealed cargo aboard a carrier, or sealed between carrier
+					// and port: the runner itself reveals nothing — the carrier
+					// is its own eye, if any. This also covers the landward leg
+					// after disembark (stop condition in the plan): passage_status
+					// stays 'aboard' for the whole voyage, so no eye is given
+					// there either, conservatively, rather than adding a column
+					// for the landward leg's own start time.
+					continue
+				case "awaiting_passage":
+					// Standing at its port, not mid-crossing.
+					if portQ != nil && portR != nil {
+						eyes = append(eyes, Eye{Pos: MapPosition{Q: *portQ, R: *portR}, Kind: EyeLandUnit})
+					}
+					continue
+				}
 			}
 			pos := MapPosition{Q: oq, R: or_}
 			if dq != nil && dr != nil {
@@ -138,12 +171,16 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 	rRows, err := db.Query(ctx,
 		`SELECT COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r),
 		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
-		        m.return_departs_at, m.arrives_at
+		        m.return_departs_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r
 		 FROM messengers m
 		 LEFT JOIN settlements os ON os.id = m.origin_id
 		 LEFT JOIN provinces op ON op.id = os.province_id
 		 LEFT JOIN settlements ds ON ds.id = m.destination_id
 		 LEFT JOIN provinces dp ON dp.id = ds.province_id
+		 -- megaron_plan_ordna_passage.md 3b-1: the return leg can also be
+		 -- awaiting_passage (in a foreign port, R6 of megaron_plan_budet_liftar.md).
+		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
+		 LEFT JOIN provinces pp ON pp.id = pps.province_id
 		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'returning'
 		   AND m.return_departs_at IS NOT NULL`,
 		worldID, playerID,
@@ -153,8 +190,22 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			var sq, sr int  // return start = delivery point (destination)
 			var hq, hr *int // return end = home (origin)
 			var departsAt, arrivesAt time.Time
-			if rRows.Scan(&sq, &sr, &hq, &hr, &departsAt, &arrivesAt) != nil {
+			var passageStatus *string
+			var portQ, portR *int
+			if rRows.Scan(&sq, &sr, &hq, &hr, &departsAt, &arrivesAt, &passageStatus, &portQ, &portR) != nil {
 				continue
+			}
+			// 3b-1: same leg-follows-status rule as the outbound query above.
+			if passageStatus != nil {
+				switch *passageStatus {
+				case "aboard", "returning_sealed":
+					continue
+				case "awaiting_passage":
+					if portQ != nil && portR != nil {
+						eyes = append(eyes, Eye{Pos: MapPosition{Q: *portQ, R: *portR}, Kind: EyeLandUnit})
+					}
+					continue
+				}
 			}
 			pos := MapPosition{Q: sq, R: sr}
 			if hq != nil && hr != nil {
