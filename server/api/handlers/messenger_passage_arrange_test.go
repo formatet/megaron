@@ -777,3 +777,77 @@ func TestArrangePassage_Rejections(t *testing.T) {
 		}
 	})
 }
+
+// ---------------------------------------------------------------------------
+// R0 (megaron_plan_hamta_hem.md, slice 2b): a passage ship arranged MID-TICK
+// must have its runner aboard once the world moves on — not one scan later.
+//
+// boardShipMissions only ever boards a ship whose depart_tick equals the
+// tick currently being scanned. A Wanax who arranges passage between two
+// scans of the SAME tick T gets a ship with depart_tick=T — but the scan for
+// T has already run by then, and the NEXT scan (at T+1) filters on
+// depart_tick=T+1 and never finds it. Without R0's fix
+// (messenger.BoardDispatchedShipRunner, called from Arrange right after
+// combat.StartMarch succeeds) the runner sails "without" the ship it was
+// just arranged onto.
+// ---------------------------------------------------------------------------
+
+func TestArrangePassage_DispatchedMidTick_RunnerBoardsAtDispatchNotNextScan(t *testing.T) {
+	f := setupPassageArrangeFixture(t)
+	homeID := f.settlement(t, "MidTick-Home", 0, f.initiatorID, true)
+	foreignID := f.settlement(t, "MidTick-Foreign", 5, f.counterpartyID, true)
+	for q := 1; q <= 4; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	shipID := f.ship(t, homeID, f.initiatorID, "merchantman")
+
+	code, sendResp := f.post(t, f.initiatorToken,
+		"/worlds/"+f.worldID.String()+"/settlements/"+homeID.String()+"/messengers",
+		map[string]any{"destination_id": foreignID.String(), "message": "mid-tick dispatch"})
+	if code != 201 {
+		t.Fatalf("Send status = %d, want 201 (%v)", code, sendResp)
+	}
+	var messengerID uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT id FROM messengers WHERE origin_id = $1 AND destination_id = $2`, homeID, foreignID,
+	).Scan(&messengerID); err != nil {
+		t.Fatalf("load sent messenger: %v", err)
+	}
+
+	// Tick T's own scan has ALREADY run — nothing to board yet, the ship
+	// hasn't been dispatched.
+	f.runPassageScan(t)
+
+	// The Wanax arranges passage mid-tick T: the world has not advanced since
+	// the scan above ran, so the ship's depart_tick = T, the SAME tick that
+	// scan already covered.
+	shipArriveTick := f.arrangePassage(t, f.initiatorToken, messengerID, shipID)
+
+	// Prove the fix fired synchronously inside Arrange — before any further
+	// scan runs at all.
+	boardedAtDispatch := f.messengerRow(t, messengerID)
+	if boardedAtDispatch.passageStatus == nil || *boardedAtDispatch.passageStatus != "aboard" {
+		t.Fatalf("mid-tick dispatch: passage_status = %v immediately after Arrange, want \"aboard\" (R0: boarded at dispatch, not by a later scan)", boardedAtDispatch.passageStatus)
+	}
+	if boardedAtDispatch.carrierUnitID == nil || *boardedAtDispatch.carrierUnitID != shipID {
+		t.Fatalf("mid-tick dispatch: carrier_unit_id = %v, want the ship %v", boardedAtDispatch.carrierUnitID, shipID)
+	}
+
+	// The world advances to T+1 and that tick's own scan runs — this must be
+	// a harmless no-op (boardOne's own awaiting_passage guard), not a double
+	// boarding or an error.
+	f.setTick(t, 1)
+	f.runPassageScan(t)
+	stillBoarded := f.messengerRow(t, messengerID)
+	if stillBoarded.passageStatus == nil || *stillBoarded.passageStatus != "aboard" || stillBoarded.carrierUnitID == nil || *stillBoarded.carrierUnitID != shipID {
+		t.Fatalf("mid-tick dispatch: a later scan disturbed the already-boarded runner: %+v", stillBoarded)
+	}
+
+	// Sanity: the rest of the voyage still plays out normally from here.
+	f.runUnitArrival(t, shipArriveTick, shipID)
+	f.runMessengerArrival(t, shipArriveTick, messengerID)
+	delivered := f.messengerRow(t, messengerID)
+	if delivered.status != "delivered" {
+		t.Errorf("messenger status = %q, want \"delivered\"", delivered.status)
+	}
+}

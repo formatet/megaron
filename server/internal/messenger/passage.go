@@ -751,19 +751,9 @@ func (h *PassageScanHandler) boardShipMissions(ctx context.Context, worldID uuid
 	if err != nil {
 		return err
 	}
-	type ship struct {
-		id, owner                uuid.UUID
-		typ                      string
-		q, r                     int
-		targetQ, targetR         int
-		landTargetQ, landTargetR *int
-		arriveTick               int
-		arrivesAt                time.Time
-		name                     *string
-	}
-	var ships []ship
+	var ships []shipMissionRow
 	for rows.Next() {
-		var s ship
+		var s shipMissionRow
 		if err := rows.Scan(&s.id, &s.owner, &s.typ, &s.q, &s.r, &s.targetQ, &s.targetR,
 			&s.landTargetQ, &s.landTargetR, &s.arriveTick, &s.arrivesAt, &s.name); err != nil {
 			rows.Close()
@@ -777,39 +767,99 @@ func (h *PassageScanHandler) boardShipMissions(ctx context.Context, worldID uuid
 	}
 
 	for _, s := range ships {
-		portID, _, _, portFound, err := province.NearestSettlementNeighbor(ctx, h.pool, worldID, s.q, s.r)
-		if err != nil {
-			slog.Error("passage scan: resolve ship's port", "unit", s.id, "err", err)
-			continue
-		}
-		if !portFound {
-			continue // departed from open water (colonize-in-place substrate etc.) — no port to check
-		}
-		var landQ, landR int
-		var haveLand bool
-		if s.landTargetQ != nil && s.landTargetR != nil {
-			landQ, landR, haveLand = *s.landTargetQ, *s.landTargetR, true
-		} else {
-			_, lq, lr, ok, nerr := province.NearestSettlementNeighbor(ctx, h.pool, worldID, s.targetQ, s.targetR)
-			if nerr != nil {
-				slog.Error("passage scan: resolve ship's landing point", "unit", s.id, "err", nerr)
-				continue
-			}
-			landQ, landR, haveLand = lq, lr, ok
-		}
-		if !haveLand {
-			continue // patrol/explore/assault into open water — no disembark point
-		}
-		name := unit.DisplayName(s.typ)
-		if s.name != nil && *s.name != "" {
-			name = *s.name
-		}
-		if err := h.boardEligible(ctx, worldID, s.owner, portID, province.MapPosition{Q: landQ, R: landR},
-			s.arriveTick, s.arrivesAt, boardedCarrier{unitID: &s.id, name: name}); err != nil {
+		if err := h.boardShipMissionOne(ctx, worldID, s); err != nil {
 			slog.Error("passage scan: board ship mission", "unit", s.id, "err", err)
 		}
 	}
 	return nil
+}
+
+// shipMissionRow is one naval unit on a ship mission (land/passage/pickup) —
+// the row shape boardShipMissions scans in bulk and BoardDispatchedShipRunner
+// (R0, megaron_plan_hamta_hem.md) loads for exactly one ship.
+type shipMissionRow struct {
+	id, owner                uuid.UUID
+	typ                      string
+	q, r                     int
+	targetQ, targetR         int
+	landTargetQ, landTargetR *int
+	arriveTick               int
+	arrivesAt                time.Time
+	name                     *string
+}
+
+// boardShipMissionOne is boardShipMissions' per-ship body, extracted (R0,
+// megaron_plan_hamta_hem.md) so exactly one port/land-target resolution feeds
+// both the bulk scan and BoardDispatchedShipRunner's single-ship dispatch-time
+// call — two callers, one resolution, never two ways to compute the same
+// thing that could drift apart (the 3b lesson messengers.hex_q already taught
+// once).
+func (h *PassageScanHandler) boardShipMissionOne(ctx context.Context, worldID uuid.UUID, s shipMissionRow) error {
+	portID, _, _, portFound, err := province.NearestSettlementNeighbor(ctx, h.pool, worldID, s.q, s.r)
+	if err != nil {
+		return fmt.Errorf("resolve ship's port: %w", err)
+	}
+	if !portFound {
+		return nil // departed from open water (colonize-in-place substrate etc.) — no port to check
+	}
+	var landQ, landR int
+	var haveLand bool
+	if s.landTargetQ != nil && s.landTargetR != nil {
+		landQ, landR, haveLand = *s.landTargetQ, *s.landTargetR, true
+	} else {
+		_, lq, lr, ok, nerr := province.NearestSettlementNeighbor(ctx, h.pool, worldID, s.targetQ, s.targetR)
+		if nerr != nil {
+			return fmt.Errorf("resolve ship's landing point: %w", nerr)
+		}
+		landQ, landR, haveLand = lq, lr, ok
+	}
+	if !haveLand {
+		return nil // patrol/explore/assault into open water — no disembark point
+	}
+	name := unit.DisplayName(s.typ)
+	if s.name != nil && *s.name != "" {
+		name = *s.name
+	}
+	return h.boardEligible(ctx, worldID, s.owner, portID, province.MapPosition{Q: landQ, R: landR},
+		s.arriveTick, s.arrivesAt, boardedCarrier{unitID: &s.id, name: name})
+}
+
+// BoardDispatchedShipRunner is R0's fix (megaron_plan_hamta_hem.md): board a
+// just-dispatched ship mission's waiting runner(s) immediately at dispatch,
+// instead of waiting for PassageScanHandler's next ScheduledPassageScan pass.
+//
+// boardShipMissions only ever looks for ships with depart_tick == the tick
+// CURRENTLY being scanned. A ship dispatched (Arrange, or R2's pickup) mid-
+// tick T — after tick T's own scan has already run, but before the world
+// advances to T+1 — gets depart_tick=T, yet the NEXT scan (at T+1) filters on
+// depart_tick=T+1 and never finds it: the ship sails "without" its runner
+// until a scan one tick later than the Wanax was told. This runs the exact
+// same per-ship resolution boardShipMissions itself uses (boardShipMissionOne)
+// for the one ship that was just dispatched, right after combat.StartMarch
+// succeeds for it.
+//
+// Idempotent and side-effect-free if there is nothing to board: boardOne
+// guards on passage_status='awaiting_passage', so a later scan finding the
+// runner already 'aboard' is a no-op, and a shipID that isn't a marching
+// galley/merchantman (any other march intent, or the ship failed to start)
+// simply does nothing here.
+func BoardDispatchedShipRunner(ctx context.Context, pool *pgxpool.Pool, sched *events.Scheduler, clk clock.Clock, worldID, shipID uuid.UUID) error {
+	var s shipMissionRow
+	if err := pool.QueryRow(ctx,
+		`SELECT id, owner_id, type, q, r, target_q, target_r, land_target_q, land_target_r, arrive_tick, arrives_at, name
+		   FROM units
+		  WHERE world_id = $1 AND id = $2 AND status = 'marching'
+		    AND type IN ('galley', 'merchantman')`,
+		worldID, shipID,
+	).Scan(&s.id, &s.owner, &s.typ, &s.q, &s.r, &s.targetQ, &s.targetR,
+		&s.landTargetQ, &s.landTargetR, &s.arriveTick, &s.arrivesAt, &s.name); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil // not a marching ship mission (e.g. a war galley, or dispatch failed) — nothing to board
+		}
+		return err
+	}
+	h := &PassageScanHandler{pool: pool, scheduler: sched, clk: clk}
+	return h.boardShipMissionOne(ctx, worldID, s)
 }
 
 // boardedCarrier is which of the two carrier kinds boarded a messenger.

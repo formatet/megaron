@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"formatet/megaron/server/internal/auth"
@@ -193,6 +194,17 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 		}
 		writeError(w, http.StatusInternalServerError, "passage failed")
 		return
+	}
+
+	// R0 (megaron_plan_hamta_hem.md): board the runner NOW, at dispatch —
+	// PassageScanHandler's next scan only finds a ship whose depart_tick
+	// equals the tick it is currently scanning, and a ship arranged mid-tick
+	// already misses that window (see BoardDispatchedShipRunner's own doc
+	// comment). Best-effort: a failure here is not this request's failure —
+	// the ship is already committed to its march, and the next scan pass
+	// still boards the runner one tick late rather than never.
+	if err := messenger.BoardDispatchedShipRunner(ctx, h.pool, h.scheduler, h.clk, worldID, req.ShipID); err != nil {
+		slog.Error("arrange passage: board runner at dispatch failed", "ship", req.ShipID, "err", err)
 	}
 
 	writeJSON(w, http.StatusAccepted, map[string]any{
