@@ -443,6 +443,9 @@ func main() {
 			r.Put("/worlds/{worldID}/retreat-default", rdh.Put)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
+			// R1 (megaron_plan_hamta_hem.md, slice 2b): send a ship to fetch a
+			// unit standing positioned in the field on another landmass.
+			r.Post("/worlds/{worldID}/units/{unitID}/pickup", uh.Pickup)
 			r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
 			r.Post("/worlds/{worldID}/units/{unitID}/repair", uh.Repair)
 

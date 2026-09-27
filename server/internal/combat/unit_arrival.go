@@ -1570,6 +1570,16 @@ func (h *UnitArrivalHandler) damagedShipReturned(
 // a ship ("self-terminating sea orders").
 const SentryPatrolTicks = 24
 
+// PickupWaitDefaultTicks/PickupWaitMaxTicks (R1, megaron_plan_hamta_hem.md,
+// slice 2b) bound how long a pickup ship holds off the shore for the unit it
+// was sent to fetch before ScheduledPickupTimeout sends it home regardless —
+// the pickup verb's "nån måtta får det vara" (Timothy). Strawman values,
+// same uncalibrated status as SentryPatrolTicks above — tune in soak, not here.
+const (
+	PickupWaitDefaultTicks = 3
+	PickupWaitMaxTicks     = 12
+)
+
 // sentryArrived posts a naval unit on patrol: it reached its coastal_sea target
 // and now HOLDS there (status='positioned' + stance='sentry' + sentry_q/r) — the
 // same posture SetStance produces, so the existing InterceptScan seizes enemy

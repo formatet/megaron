@@ -360,6 +360,38 @@ func resolveOutboundDisembark(ctx context.Context, pool *pgxpool.Pool, worldID, 
 		"no open shore near the runner's destination that this ship can reach by sea — arrange passage is not possible here")
 }
 
+// resolvePickupShore is R1's shore rule (megaron_plan_hamta_hem.md, slice
+// 2b): the fetched unit's own hex, if it already stands on dry land with a
+// sea approach reachable from the ship's own port — the radius-0 case
+// resolveOutboundDisembark's own ring search never considers, since it
+// starts at radius 1 (added here, as its own small check, rather than by
+// changing that function's own behaviour). Otherwise, the nearest open shore
+// resolveOutboundDisembark already knows how to find, searched with the
+// unit's own hex as the target.
+func resolvePickupShore(ctx context.Context, pool *pgxpool.Pool, worldID, shipPortSettlementID uuid.UUID, unitQ, unitR int) (int, int, error) {
+	var terrain string
+	if err := pool.QueryRow(ctx,
+		`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+		worldID, unitQ, unitR,
+	).Scan(&terrain); err == nil && isDryLandTerrain(terrain) {
+		if unitSeaQ, unitSeaR, foundUnitSea, sErr := province.NearestSeaNeighbor(ctx, pool, worldID, unitQ, unitR); sErr == nil && foundUnitSea {
+			var shipPortQ, shipPortR int
+			if pErr := pool.QueryRow(ctx,
+				`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
+				shipPortSettlementID,
+			).Scan(&shipPortQ, &shipPortR); pErr == nil {
+				if shipSeaQ, shipSeaR, foundShipSea, sErr2 := province.NearestSeaNeighbor(ctx, pool, worldID, shipPortQ, shipPortR); sErr2 == nil && foundShipSea {
+					if _, _, navalOK, nErr := province.FindPath(ctx, pool, worldID,
+						province.MapPosition{Q: shipSeaQ, R: shipSeaR}, province.MapPosition{Q: unitSeaQ, R: unitSeaR}, "naval"); nErr == nil && navalOK {
+						return unitQ, unitR, nil
+					}
+				}
+			}
+		}
+	}
+	return resolveOutboundDisembark(ctx, pool, worldID, shipPortSettlementID, unitQ, unitR)
+}
+
 // isDryLandTerrain excludes sea/river (a ship cannot make landfall standing
 // in water) and mountains (StartMarch's own passage validation would refuse
 // them anyway — see march_start.go's passageMission branch) — the same two
