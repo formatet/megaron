@@ -375,6 +375,111 @@ function legHexNow(oq, or, dq, dr, startIso, endIso) {
   return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: oq, r: or};
 }
 
+// unitPixelNow: the PIXEL position a unit sprite is drawn at right now —
+// marching (interpolated along its waypoints/straight hex line) or positioned
+// (its own hex). Extracted from render() step 5b (megaron_plan_budets_tre_ben.md,
+// slice 3c) so step 6's runner-on-carrier lookup can find the SAME position
+// the carrier's own sprite is drawn at, without a second copy of this math —
+// 5b's own drawing is unchanged, it just calls this now. Returns null when u
+// has neither a marching route nor a standing hex.
+function unitPixelNow(u) {
+  if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
+    const departs = new Date(u.departs_at).getTime();
+    const arrives = new Date(u.arrives_at).getTime();
+    const progress = Math.min(1, Math.max(0, (serverNow() - departs) / (arrives - departs)));
+    return (u.path && u.path.length > 1) ? pathPx(u.path, progress) : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
+  }
+  if (u.status === 'positioned' && u.q != null) return hexPx(u.q, u.r);
+  return null;
+}
+
+// transportPixelNow: same idea as unitPixelNow, for a /trades caravan —
+// extracted from render() step 7 so step 6's runner-on-carrier lookup can
+// place a runner marker on the exact same pixel a naval transport's own
+// caravan sprite draws at.
+function transportPixelNow(t) {
+  const departs = new Date(t.departs_at).getTime();
+  const arrives = new Date(t.arrives_at).getTime();
+  const progress = Math.min(1, Math.max(0, (serverNow() - departs) / (arrives - departs)));
+  return hexPathPx(t.origin_q, t.origin_r, t.dest_q, t.dest_r, progress);
+}
+
+// messengerLegPosition (megaron_plan_budets_tre_ben.md, slice 3c, R4): where
+// and how to draw an own passage-lifted runner, given the leg the server
+// (R3, MapMessengers) says it is actually on. Pure — takes units/trades and
+// the current instant explicitly, rather than reading State/serverNow(),
+// so it is testable without a DOM stub. Returns null when m.leg is unset
+// (today's flat interpolation applies unchanged, R4's own "utan m.leg" rule).
+//
+// mode is one of: 'walk' (to_port/ashore — a gait, like any other walker),
+// 'waiting' (stand still at the port), 'sealed' (stand still, dimmed),
+// 'aboard-carrier' (drawn ON a located carrier — no gait, never dimmed) or
+// 'aboard-reserve' (server's own leg, carrier not found client-side — no gait).
+export function messengerLegPosition(m, units, trades, nowMs) {
+  if (!m.leg) return null;
+  const legStart = m.leg_start ? new Date(m.leg_start).getTime() : null;
+  const legEnd = m.leg_end ? new Date(m.leg_end).getTime() : null;
+  const progress = (legStart != null && legEnd != null && legEnd > legStart)
+    ? Math.min(1, Math.max(0, (nowMs - legStart) / (legEnd - legStart)))
+    : 1;
+  if (m.leg === 'to_port' || m.leg === 'ashore') {
+    const pos = hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
+    return {mode: 'walk', x: pos.x, y: pos.y, q: pos.q, r: pos.r};
+  }
+  if (m.leg === 'waiting') {
+    const pos = hexPx(m.leg_from_q, m.leg_from_r);
+    return {mode: 'waiting', x: pos.x, y: pos.y, q: m.leg_from_q, r: m.leg_from_r};
+  }
+  if (m.leg === 'sealed') {
+    const pos = hexPx(m.leg_from_q, m.leg_from_r);
+    return {mode: 'sealed', x: pos.x, y: pos.y, q: m.leg_from_q, r: m.leg_from_r};
+  }
+  if (m.leg === 'aboard') {
+    if (m.carrier_unit_id) {
+      const u = (units || []).find(x => x.id === m.carrier_unit_id);
+      const pos = u && unitPixelNow(u);
+      if (pos) return {mode: 'aboard-carrier', x: pos.x, y: pos.y};
+    }
+    if (m.carrier_transport_id) {
+      const t = (trades || []).find(x => x.id === m.carrier_transport_id);
+      if (t) {
+        const pos = transportPixelNow(t);
+        return {mode: 'aboard-carrier', x: pos.x, y: pos.y};
+      }
+    }
+    // R4's stop condition: the carrier isn't in the client's own data (an
+    // allied ship, or a transport /trades didn't send) — use the server's
+    // own reserve leg instead of hiding the runner.
+    const pos = hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
+    return {mode: 'aboard-reserve', x: pos.x, y: pos.y, q: pos.q, r: pos.r};
+  }
+  return null;
+}
+
+// messengerHexNow: the hex an OWN runner's tooltip should match right now —
+// legHexNow's own leg-aware cousin (megaron_plan_budets_tre_ben.md, slice 3c
+// R5), so hovering the runner's REAL drawn position (waiting at a port,
+// aboard a carrier, sealed) shows its hover line, not wherever the old flat
+// interpolation would have put it. Reads State directly (unlike the pure
+// messengerLegPosition) since it is only ever called from the hover
+// hex-match filter below, which already does.
+function messengerHexNow(m) {
+  if (!m.leg) return legHexNow(m.origin_q, m.origin_r, m.dest_q, m.dest_r, m.sent_at, m.arrives_at);
+  const leg = messengerLegPosition(m, State.unitsData, State.tradeData, serverNow());
+  if (leg && leg.q != null) return {q: leg.q, r: leg.r};
+  // 'aboard-carrier' has no q/r of its own — match the carrier's own hex.
+  if (m.carrier_unit_id) {
+    const u = (State.unitsData || []).find(x => x.id === m.carrier_unit_id);
+    const at = u && unitHexNow(u);
+    if (at) return at;
+  }
+  if (m.carrier_transport_id) {
+    const t = (State.tradeData || []).find(x => x.id === m.carrier_transport_id);
+    if (t) return legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at);
+  }
+  return {q: m.leg_from_q, r: m.leg_from_r};
+}
+
 function isTileVisible(q, r) {
   return State.tileData.some(t => t.q === q && t.r === r && t.terrain !== 'fog');
 }
@@ -3031,6 +3136,70 @@ function drawMessenger(ctx, x, y, walkPhase, isOrder, isOwn, delivering) {
   ctx.restore();
 }
 
+// ── Runner, waiting for passage (megaron_plan_budets_tre_ben.md, slice 3c) —
+// standing still at the port, no gait (same frozen phase 0 as "delivering",
+// which this deliberately does not reuse: delivering's gold pulse means
+// "handing over the order", a different fact). A stalled wait (a
+// PassageStalled dispatch already fired) adds a small blinking red mark,
+// clocked on State.animFrame — NEVER the wall clock, so the frozen-frame BILD
+// rigs stay deterministic across screenshots (see the foreign-blink comment
+// on `blinkTick` above).
+function drawMessengerWaiting(ctx, x, y, isOrder, stalled) {
+  ctx.save();
+  drawActor(ctx, 'runner', x, y, '', 0, isOrder ? '#A03A2A' : '#6B8B4A');
+  ctx.fillStyle = '#D8B84A';
+  ctx.fillRect(x - 4, y - 16, 1, 4);
+  ctx.fillRect(x - 3, y - 16, 2, 1);
+  if (stalled && (State.animFrame >> 4) % 2 === 0) {
+    ctx.fillStyle = '#C0392B';
+    ctx.strokeStyle = '#33291E';
+    ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    ctx.arc(x + 5, y - 15, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ── Runner, sealed (megaron_plan_budets_tre_ben.md, slice 3c) — between a
+// lost carrier and its port; real position unknown, so it stands at the port,
+// dimmed (same idiom as fog dimming elsewhere in this file) with a small
+// wax-seal mark instead of the gold "whose runner" pennant (it belongs to no
+// visible journey right now).
+function drawMessengerSealed(ctx, x, y) {
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  drawActor(ctx, 'runner', x, y, '', 0, '#8A7A6A');
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#5C3A28';
+  ctx.strokeStyle = '#1F1712';
+  ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  ctx.arc(x, y - 11, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ── Runner, aboard a located carrier (megaron_plan_budets_tre_ben.md, slice
+// 3c) — a small marker offset from the carrier's own sprite, never dimmed
+// (the carrier is its own eye — a visible ship makes its passenger visible
+// too) and with no gait (it is not moving under its own power).
+function drawMessengerAboardCarrier(ctx, x, y, isOrder) {
+  ctx.save();
+  ctx.fillStyle = isOrder ? '#A03A2A' : '#6B8B4A';
+  ctx.strokeStyle = '#33291E';
+  ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  ctx.arc(x + 4, y - 7, 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#D8B84A';
+  ctx.fillRect(x + 3, y - 12, 1, 3);
+  ctx.restore();
+}
+
 // ── Rural projections (Fas A2, megaron_lokal_varld.md) ───────────────────
 // A rural sprite is NOT a new building — it is a cartographic projection of an
 // existing city building onto a compatible catchment hex, placed server-side
@@ -3623,14 +3792,8 @@ export function render() {
     // fyra former. Rördragningen är hela skillnaden.
     const kind = canonicalUnitType(u.type) || (naval ? 'galley' : 'spearman');
     if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
-      const now = serverNow();
-      const departs = new Date(u.departs_at).getTime();
-      const arrives = new Date(u.arrives_at).getTime();
-      const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
-      const pos = (u.path && u.path.length > 1)
-        ? pathPx(u.path, progress)
-        : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
-      if (isTileVisible(pos.q, pos.r)) {
+      const pos = unitPixelNow(u);
+      if (pos && isTileVisible(pos.q, pos.r)) {
         // explore/explore_return share the cyan "explore" sail; other legs use
         // the neutral default colour (intent is resolved server-side on arrival).
         const intent = (u.march_intent === 'explore' || u.march_intent === 'explore_return') ? 'explore' : (u.march_intent || '');
@@ -3672,7 +3835,40 @@ export function render() {
   // dimmed over fog (the player's own runner is information they already
   // possess — temenos_orderlopare_plan.md Fas 5); foreign messengers only
   // inside live-visible tiles, as before.
+  //
+  // megaron_plan_budets_tre_ben.md (slice 3c): an OWN runner with m.leg set
+  // (passage-lifted, R3) is drawn on the physical leg the server says it is
+  // actually on, instead of the flat origin→destination line below, which has
+  // no notion of "waiting at a port" or "aboard a ship". A runner without
+  // m.leg (a plain land courier, or any foreign one) draws exactly as before.
   for (const m of State.messengerData) {
+    if (m.own && m.leg) {
+      const leg = messengerLegPosition(m, State.unitsData, State.tradeData, serverNow());
+      if (!leg) continue;
+      const visible = isTileVisible(leg.q, leg.r); // undefined q/r (waiting/sealed/aboard-carrier) → false, treated as "over fog"
+      ctx.save();
+      if (!visible) ctx.globalAlpha = 0.45;
+      const x = Math.round(leg.x), y = Math.round(leg.y);
+      const isOrder = m.kind === 'order';
+      if (leg.mode === 'walk') {
+        drawMessenger(ctx, x, y, walkPhase, isOrder, true, false);
+      } else if (leg.mode === 'waiting') {
+        drawMessengerWaiting(ctx, x, y, isOrder, !!m.stalled);
+      } else if (leg.mode === 'sealed') {
+        drawMessengerSealed(ctx, x, y);
+      } else if (leg.mode === 'aboard-carrier') {
+        // Full opacity even over fog/dimming: the carrier is its own eye
+        // (R4's own rule) — a runner riding a visible ship is visible too.
+        ctx.globalAlpha = 1;
+        drawMessengerAboardCarrier(ctx, x, y, isOrder);
+      } else {
+        // 'aboard-reserve': the carrier isn't in the client's own data — draw
+        // the server's own reserve leg, no gait (R4).
+        drawMessenger(ctx, x, y, 0, isOrder, true, false);
+      }
+      ctx.restore();
+      continue;
+    }
     const now = serverNow();
     const sent   = new Date(m.sent_at).getTime();
     const arrives = new Date(m.arrives_at).getTime();
@@ -3695,11 +3891,7 @@ export function render() {
 
   // 7. Animated trade caravans
   for (const t of State.tradeData) {
-    const now = serverNow();
-    const departs = new Date(t.departs_at).getTime();
-    const arrives = new Date(t.arrives_at).getTime();
-    const progress = Math.min(1, Math.max(0, (now - departs) / (arrives - departs)));
-    const pos = hexPathPx(t.origin_q, t.origin_r, t.dest_q, t.dest_r, progress);
+    const pos = transportPixelNow(t);
     if (isTileVisible(pos.q, pos.r)) {
       drawCaravan(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase);
     }
@@ -4395,8 +4587,7 @@ export function initMap() {
         (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r));
       const caravans = (State.tradeData || []).filter(t =>
         here(legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at)));
-      const runners = (State.messengerData || []).filter(m =>
-        here(legHexNow(m.origin_q, m.origin_r, m.dest_q, m.dest_r, m.sent_at, m.arrives_at)));
+      const runners = (State.messengerData || []).filter(m => here(messengerHexNow(m)));
       const placeName = (q, r) => {
         const p = State.provinceData.find(p => p.q === q && p.r === r);
         return p && p.name ? p.name : `(${q},${r})`;

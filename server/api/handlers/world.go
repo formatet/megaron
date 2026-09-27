@@ -1388,7 +1388,10 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(op.terrain_type, omt.terrain, ''),
 		        COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r), COALESCE(dp.terrain_type, ''),
 		        m.sent_at, m.arrives_at, m.status, m.return_departs_at,
-		        m.passage_status, pp.map_q, pp.map_r, pps.name, m.withdrawn
+		        m.passage_status, pp.map_q, pp.map_r, pps.name, m.withdrawn,
+		        m.carrier_transport_id, m.carrier_unit_id, m.carrier_name,
+		        m.disembark_q, m.disembark_r, m.boarded_at, m.disembark_at,
+		        m.passage_stalled_notified_tick
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its frozen
 		 -- departure point (origin_q/origin_r) places it, with terrain off the tile.
@@ -1441,6 +1444,38 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		// port→ship→disembark journey — see the plan's own BILD stop-condition).
 		PassageStatus *string `json:"passage_status,omitempty"`
 		PassagePort   *string `json:"passage_port,omitempty"`
+		// Leg (megaron_plan_budets_tre_ben.md, slice 3c) is set only for the
+		// OWNER of a passage-lifted runner (PassageStatus != nil): which of the
+		// four physical legs it is actually on right now — "to_port" (walking to
+		// its own port, same as PassageStatus's old flat draw), "waiting"
+		// (standing at the port with no carrier yet), "aboard" (on the carrier,
+		// port → disembark point), or "ashore" (disembarked, running the last
+		// land leg to its true destination). "sealed" is passage_status=
+		// 'returning_sealed' — standing at the port, real position unknown. The
+		// client interpolates LegFromQ/R → LegToQ/R over [LegStart, LegEnd]; it
+		// never computes a leg itself (substrate: server decides, client only
+		// interpolates — this slice's own contract).
+		Leg      *string    `json:"leg,omitempty"`
+		LegFromQ *int       `json:"leg_from_q,omitempty"`
+		LegFromR *int       `json:"leg_from_r,omitempty"`
+		LegToQ   *int       `json:"leg_to_q,omitempty"`
+		LegToR   *int       `json:"leg_to_r,omitempty"`
+		LegStart *time.Time `json:"leg_start,omitempty"`
+		LegEnd   *time.Time `json:"leg_end,omitempty"`
+		// CarrierUnitID/CarrierTransportID (set whenever passage_status=='aboard',
+		// covering both the Leg=="aboard" and Leg=="ashore" sub-phases — the row
+		// stays 'aboard' for the whole voyage+landward leg, see
+		// scheduleCompletion's own doc comment) let the client find the SAME
+		// carrier /units or /trades already drew, and paint the runner marker on
+		// it, rather than re-deriving a second position estimate.
+		CarrierUnitID      *uuid.UUID `json:"carrier_unit_id,omitempty"`
+		CarrierTransportID *uuid.UUID `json:"carrier_transport_id,omitempty"`
+		CarrierName        *string    `json:"carrier_name,omitempty"`
+		// Stalled is set only for Leg=="waiting": passage_stalled_notified_tick
+		// is non-NULL, i.e. a PassageStalled dispatch already fired for this
+		// wait — the client draws a small extra signal on top of the ordinary
+		// waiting pose.
+		Stalled *bool `json:"stalled,omitempty"`
 	}
 
 	var markers []messengerMarker
@@ -1453,10 +1488,18 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		var returnDepartsAt *time.Time
 		var portQ, portR *int
 		var withdrawn bool
+		var carrierTransportID, carrierUnitID *uuid.UUID
+		var carrierName *string
+		var disembarkQ, disembarkR *int
+		var boardedAt, disembarkAt *time.Time
+		var stalledNotifiedTick *int
 		if err := rows.Scan(&m.ID, &senderID, &m.Sender, &m.Kind, &orderUnitID,
 			&m.OriginQ, &m.OriginR, &originTerrain, &m.DestQ, &m.DestR, &destTerrain,
 			&m.SentAt, &m.ArrivesAt, &status, &returnDepartsAt,
-			&m.PassageStatus, &portQ, &portR, &m.PassagePort, &withdrawn); err != nil {
+			&m.PassageStatus, &portQ, &portR, &m.PassagePort, &withdrawn,
+			&carrierTransportID, &carrierUnitID, &carrierName,
+			&disembarkQ, &disembarkR, &boardedAt, &disembarkAt,
+			&stalledNotifiedTick); err != nil {
 			continue
 		}
 		// The current leg's travel window. Outbound: sent_at → arrives_at. Return:
@@ -1498,6 +1541,76 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		if m.Own && orderUnitID != nil {
 			if uid, err := uuid.Parse(*orderUnitID); err == nil {
 				m.OrderUnitID = &uid
+			}
+		}
+		// R3 (megaron_plan_budets_tre_ben.md, slice 3c): tell the OWNER which
+		// physical leg their passage-lifted runner is actually on right now, so
+		// map.js can draw it there instead of interpolating a flat line through
+		// the sea (this block's whole reason to exist). Foreign passage-status
+		// runners are handled below (still hidden entirely for aboard/sealed,
+		// unchanged) — this is additive and only for m.Own.
+		if m.Own && m.PassageStatus != nil && portQ != nil && portR != nil {
+			leg := func(s string) *string { return &s }
+			switch *m.PassageStatus {
+			case "awaiting_passage":
+				if now.Before(m.ArrivesAt) {
+					// Walking to its own port — identical endpoints/window to the
+					// flat draw this slice replaces (m.OriginQ/R → m.DestQ/R, the
+					// latter already overridden to the port above).
+					m.Leg = leg("to_port")
+					fq, fr, tq, tr := m.OriginQ, m.OriginR, m.DestQ, m.DestR
+					m.LegFromQ, m.LegFromR, m.LegToQ, m.LegToR = &fq, &fr, &tq, &tr
+					ls, le := legStart, legEnd
+					m.LegStart, m.LegEnd = &ls, &le
+				} else {
+					// Standing at the port, no carrier yet.
+					m.Leg = leg("waiting")
+					pq, pr := *portQ, *portR
+					m.LegFromQ, m.LegFromR, m.LegToQ, m.LegToR = &pq, &pr, &pq, &pr
+					ls, le := legStart, legEnd
+					m.LegStart, m.LegEnd = &ls, &le
+					if stalledNotifiedTick != nil {
+						st := true
+						m.Stalled = &st
+					}
+				}
+			case "aboard":
+				m.CarrierUnitID, m.CarrierTransportID, m.CarrierName = carrierUnitID, carrierTransportID, carrierName
+				switch {
+				case disembarkQ != nil && disembarkR != nil && boardedAt != nil && disembarkAt != nil && now.Before(*disembarkAt):
+					// On the carrier: port → disembark point.
+					m.Leg = leg("aboard")
+					pq, pr, dq, dr := *portQ, *portR, *disembarkQ, *disembarkR
+					m.LegFromQ, m.LegFromR, m.LegToQ, m.LegToR = &pq, &pr, &dq, &dr
+					ba, da := *boardedAt, *disembarkAt
+					m.LegStart, m.LegEnd = &ba, &da
+				case disembarkQ != nil && disembarkR != nil && disembarkAt != nil:
+					// Disembarked: running the last land leg to the true target
+					// (m.DestQ/R — untouched here, since the awaiting_passage
+					// override above never fires for 'aboard').
+					m.Leg = leg("ashore")
+					dq, dr, tq, tr := *disembarkQ, *disembarkR, m.DestQ, m.DestR
+					m.LegFromQ, m.LegFromR, m.LegToQ, m.LegToR = &dq, &dr, &tq, &tr
+					da, aa := *disembarkAt, m.ArrivesAt
+					m.LegStart, m.LegEnd = &da, &aa
+				default:
+					// R3's own NULL-columns case (boarded before mig 151): the
+					// carrier is known but its disembark point is not — never
+					// guess it, draw stationary at the port instead.
+					m.Leg = leg("aboard")
+					pq, pr := *portQ, *portR
+					m.LegFromQ, m.LegFromR, m.LegToQ, m.LegToR = &pq, &pr, &pq, &pr
+					ls, le := legStart, legEnd
+					m.LegStart, m.LegEnd = &ls, &le
+				}
+			case "returning_sealed":
+				// Sealed between a lost carrier and its port — real position
+				// unknown, the port is the only honest anchor (R3's own doc).
+				m.Leg = leg("sealed")
+				pq, pr := *portQ, *portR
+				m.LegFromQ, m.LegFromR, m.LegToQ, m.LegToR = &pq, &pr, &pq, &pr
+				ls, le := legStart, legEnd
+				m.LegStart, m.LegEnd = &ls, &le
 			}
 		}
 		// megaron_plan_ordna_passage.md 3b-1: a runner sealed aboard a carrier, or
