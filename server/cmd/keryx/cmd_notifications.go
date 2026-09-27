@@ -162,6 +162,81 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	case "CityOccupied", "OccupationDefended", "CityAnnexReady", "SettlementLooted", "SettlementBurned":
 		printOccupationLine(n)
 	}
+	if n.Kind == "PassageStalled" {
+		printPassageStalledLine(n)
+	}
+	if n.Kind == "MessengerReturned" {
+		printWithdrawnReturnLine(n)
+	}
+}
+
+// printPassageStalledLine renders PassageStalled (megaron_plan_ordna_
+// passage.md, slice 3b-4, R5): a runner has been waiting for a real carrier
+// long enough that it is now a decision, not something the game resolves on
+// its own — the old reserve/abstract crossing is gone. Names both commands a
+// Wanax can act on; "let it wait" needs no command at all (closing the
+// dispatch already does that).
+func printPassageStalledLine(n notificationItem) {
+	var body struct {
+		MessengerID   string `json:"messenger_id"`
+		PortName      string `json:"port_name"`
+		OwnPort       bool   `json:"own_port"`
+		TargetName    string `json:"target_name"`
+		Kind          string `json:"kind"`
+		Verb          string `json:"verb"`
+		EligibleShips []struct {
+			Name string `json:"name"`
+		} `json:"eligible_ships"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	target := body.TargetName
+	if target == "" {
+		target = "its target"
+	}
+	verb := ""
+	if body.Kind == "order" && body.Verb != "" {
+		verb = " (" + body.Verb + " order)"
+	}
+	fmt.Printf("      A Runner%s is still waiting in %s for a ship toward %s.\n", verb, body.PortName, target)
+	switch len(body.EligibleShips) {
+	case 0:
+		fmt.Printf("      No eligible ship of yours is there yet — build or send one, or decide below.\n")
+	default:
+		var names []string
+		for _, s := range body.EligibleShips {
+			if s.Name != "" {
+				names = append(names, s.Name)
+			}
+		}
+		if len(names) > 0 {
+			fmt.Printf("      Ships there now: %s.\n", strings.Join(names, ", "))
+		}
+	}
+	fmt.Printf("      keryx passage --id %s --ship <id>   (arrange passage)\n", body.MessengerID)
+	if body.OwnPort {
+		fmt.Printf("      keryx call-back --id %s               (bring it home, undelivered)\n", body.MessengerID)
+	}
+}
+
+// printWithdrawnReturnLine renders the withdrawn/order-withdrawn half of a
+// MessengerReturned notification (3b-4 R5) — additive fields on the same
+// notification kind (CLAUDE.md: event semantics are frozen forever), never
+// printed for the ordinary reply/no-reply case.
+func printWithdrawnReturnLine(n notificationItem) {
+	var body struct {
+		Withdrawn bool `json:"withdrawn"`
+		Order     bool `json:"order"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil || !body.Withdrawn {
+		return
+	}
+	if body.Order {
+		fmt.Printf("      Order withdrawn — the runner came home without ever delivering it.\n")
+		return
+	}
+	fmt.Printf("      Your runner came home undelivered — you called it back.\n")
 }
 
 // printMessengerLine renders the diplomacy channel — the one channel in the

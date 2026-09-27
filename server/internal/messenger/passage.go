@@ -642,10 +642,15 @@ func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, mess
 
 	if h.hub != nil {
 		body := map[string]any{
-			"messenger_id":   messengerID,
-			"port_name":      portName,
-			"port_q":         portQ,
-			"port_r":         portR,
+			"messenger_id": messengerID,
+			"port_name":    portName,
+			"port_q":       portQ,
+			"port_r":       portR,
+			// q/r (megaron_plan_dispatches.md §6:3): the generic "⌖ Take me
+			// there" field every dispatch kind's resolveDestination reads
+			// first — points at the port, where the decision is made.
+			"q":              portQ,
+			"r":              portR,
 			"target_q":       targetQ,
 			"target_r":       targetR,
 			"own_port":       ownPort,

@@ -103,3 +103,12 @@ test('OC6: buildOccupationOrderBody sends exactly {action} — sack loots everyt
   assert.deepEqual(buildOccupationOrderBody('burn'), { action: 'burn' });
   assert.deepEqual(buildOccupationOrderBody('annex'), { action: 'annex' });
 });
+
+// ── PassageStalled (megaron_plan_ordna_passage.md, slice 3b-4 R5) ──────────
+test('PS1: PassageStalled resolves "take me there" via the port q/r the server sends', () => {
+  State.provinceData = [];
+  assert.deepEqual(
+    resolveDestination('PassageStalled', { q: 4, r: 2, port_q: 4, port_r: 2, messenger_id: 'm1' }),
+    { q: 4, r: 2 },
+  );
+});

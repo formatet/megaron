@@ -130,7 +130,7 @@ export function notifDomain(kind) {
     StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
     OfferAccepted: 'trade', OfferDeclined: 'trade', OfferExpired: 'trade',
     // Diplomacy — the messenger channel.
-    MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy',
+    MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
     DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
@@ -152,6 +152,7 @@ export function notifIcon(kind) {
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
     MessengerReturned:  '📜',
+    PassageStalled:     '⚓',
     UnitAttrition:      '💀',
     UnitDeserted:       '🏃',
     UpkeepUnpaid:       '⚠',
@@ -294,10 +295,26 @@ export function notifText(kind, body) {
       // closes for the sender.
       const to = body.to ? ` from ${body.to}` : '';
       const home = body.name ? ` to ${body.name}` : '';
+      // withdrawn (megaron_plan_ordna_passage.md 3b-4 R5): a called-back
+      // runner never reached its target — additive fields on the same
+      // notification kind, never a reinterpretation of it.
+      if (body.withdrawn) {
+        return body.order
+          ? `Order withdrawn${home} — the runner came home without delivering it`
+          : `Your runner returned${home}${to} undelivered — you called it back`;
+      }
       if (body.replied) {
         return `Your messenger returned${home}${to} with a reply — "${body.reply || ''}"`;
       }
       return `Your messenger returned${home}${to} with no reply`;
+    }
+    case 'PassageStalled': {
+      // A runner has waited long enough with no real carrier that it is now
+      // a decision, not something the game resolves on its own — the old
+      // reserve/abstract crossing is gone (3b-4 R5).
+      const target = body.target_name || 'its target';
+      const verb = body.kind === 'order' && body.verb ? ` (${body.verb} order)` : '';
+      return `A Runner${verb} is still waiting in ${body.port_name || 'port'} for a ship toward ${target}`;
     }
     // name (megaron_plan_dispatches.md §4, unit.LoadDisplayName server-side)
     // names the SUBJECT — "2nd Spearmen of Knossos", not the category "A

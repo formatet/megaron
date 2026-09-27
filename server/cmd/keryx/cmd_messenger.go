@@ -199,6 +199,49 @@ func passageCmd() *cobra.Command {
 	return cmd
 }
 
+// callBackCmd is "kalla tillbaka" (megaron_plan_ordna_passage.md, slice
+// 3b-4, R5): the other choice for a runner stuck waiting for passage in your
+// OWN port — turn it around and walk it home over land, delivering nothing.
+// A runner already aboard a ship, or waiting for its return leg's pickup in
+// a foreign port, cannot be called back this way.
+func callBackCmd() *cobra.Command {
+	var msgID string
+	cmd := &cobra.Command{
+		Use:   "call-back",
+		Short: "Call a runner stuck waiting for passage back home, undelivered",
+		Example: `  keryx call-back --id <messenger-id>
+  (find the messenger id with: keryx outbox)`,
+		Args: rejectPositionalArgs("id"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if msgID == "" {
+				return fmt.Errorf("--id required (find the id with: keryx outbox)")
+			}
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/call-back", cfg.WorldID, msgID)
+			data, err := c.post(path, map[string]any{})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp map[string]any
+			if err := json.Unmarshal(data, &resp); err != nil {
+				return err
+			}
+			var eta string
+			if arrT, ok := resp["returns_at"].(string); ok {
+				eta = arrT
+			}
+			fmt.Printf("Runner called back — walking home undelivered. Arrives %v\n", eta)
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (find with: keryx outbox)")
+	return cmd
+}
+
 // outboxCmd lists your last 20 sent messengers (with trade_offer details).
 func outboxCmd() *cobra.Command {
 	return &cobra.Command{
@@ -313,6 +356,13 @@ func outboxCmd() *cobra.Command {
 								}
 							}
 						}
+					}
+					// 3b-4 (megaron_plan_ordna_passage.md, R5): the other choice —
+					// give up on this errand and bring the runner straight home,
+					// undelivered. Only ever offered for an outbound runner in its
+					// OWN port (can_call_back is false for a foreign-port pickup).
+					if canCallBack, _ := m["can_call_back"].(bool); canCallBack {
+						line += fmt.Sprintf(" — or call it back, undelivered: keryx call-back --id %s", id)
 					}
 				} else if carrier, _ := m["carrier_name"].(string); carrier != "" {
 					line += fmt.Sprintf("  [aboard %s]", carrier)

@@ -25,14 +25,22 @@ A ship caught carrying cargo (see [[transfers]]) can also be **captured outright
 
 ## Budet liftar — how a letter or an order crosses the sea
 
-A [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim. When its road crosses open water:
+A [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim, and it never guesses at a crossing — it needs a real ship, full stop. When its road crosses open water:
 
-- It runs to **your own nearest coastal or harboured city** and waits there — you are told which one, and why.
+- It runs to **your own nearest coastal or harboured city** and waits there — you are told which one, and why. If you have no coastal or harboured city anywhere, the message is refused outright at the moment you send it, rather than dispatched to wait forever.
 - The moment one of **your own** ships or trade routes sails from that port toward the right side of the sea, it **boards** — free, no cargo space taken — and steps off wherever that ship lands, then finishes the trip on foot.
 - If the ship carrying it is **captured, damaged home or sunk**, the letter or order is never lost, never read and never delayed for long: it comes back sealed to the port it left from after a short spell, and waits for the next ship.
-- If no ship of yours sails that way in time, it still gets there — it crosses by the old, abstract passage instead, and the game says so. This fallback exists so you are never stuck; a future change will require an actual ship every time.
+- If no ship of yours sails that way for a while, it simply keeps waiting — nothing crosses on its own. See "A runner stuck waiting" below for what you can do about it.
 
-None of this changes anything for a message or order whose road stays on dry land.
+None of this changes anything for a message or order whose road stays on dry land — a Runner on land never needs a ship, only [[marching|the roads]] it can already walk (a river still needs a ford or a boat of its own, unrelated to sea passage).
+
+## A runner stuck waiting — your decision, not the game's
+
+Wait long enough with no ship of yours sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand — it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a lost-and-resealed carrier can trigger it again later). Three choices:
+
+- **Arrange passage** — the same button as above, right there in the dispatch.
+- **Call it back** — give up on this errand. The runner turns around and walks home over land, delivering nothing: a letter comes home undelivered, an order comes home withdrawn. Only works for an outbound runner still standing in **your own** port — a runner already aboard a ship, or waiting in a foreign port for its OWN return trip, cannot be called back this way.
+- **Let it wait** — close the dispatch and do nothing. It keeps waiting, exactly as it was.
 
 ## Ordna passage — send a ship for your own runner
 
