@@ -1,0 +1,13 @@
+-- Migration 149: "ordna passage" (megaron_plan_ordna_passage.md, slice 3b-3).
+--
+-- A ship dispatched with march_intent='passage' (and, once parked waiting for
+-- its runner's return, 'passage_wait') carries the id of the messenger it was
+-- arranged for here. Read at arrival (combat.UnitArrivalHandler.passageArrived)
+-- to decide whether the ship should hold for that messenger's homeward leg,
+-- and by messenger.PassageScanHandler's release phase (R4) to decide when a
+-- waiting ship may finally turn for home. NULL for every ship not on a
+-- passage mission — additive and inert otherwise. The chosen disembark hex
+-- itself rides on the existing land_target_q/land_target_r columns (mig 147)
+-- — boardShipMissions already reads those generically for any ship mission,
+-- so no new column is needed for that half.
+ALTER TABLE units ADD COLUMN passage_messenger_id UUID REFERENCES messengers(id);
