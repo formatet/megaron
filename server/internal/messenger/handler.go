@@ -69,13 +69,15 @@ func NewArrivalHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *event
 	return &ArrivalHandler{pool: pool, scheduler: sched, store: store, hub: hub}
 }
 
-// Handle marks the messenger as delivered and schedules an auto-return after 48 hours
-// in case the recipient never replies.
+// Handle marks the messenger as delivered and arms a stay-end timer
+// (ScheduledMessengerStayEnd) in case the recipient never replies — see
+// StartReturnLeg (return_leg.go), which that timer's handler calls
+// (megaron_plan_ordna_passage.md 3b-2 R1).
 //
-// The flip (outbound→delivered) and the return-scheduling live in ONE
+// The flip (outbound→delivered) and the stay-end scheduling live in ONE
 // transaction (megaron_plan_budbararens_ankomst_tx.md): a crash between the
 // two used to leave status='delivered' committed with no
-// ScheduledMessengerReturn ever enqueued — a permanently stranded messenger
+// ScheduledMessengerStayEnd ever enqueued — a permanently stranded messenger
 // that a retry silently no-ops on (status != "outbound" trips the replay
 // guard and returns nil). The row is locked FOR UPDATE before the status
 // check, closing the same race the package's other five claim-sites already
@@ -137,13 +139,17 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		slog.Error("propagate gossip on messenger arrival", "err", err)
 	}
 
-	// Auto-return once the stay is up, if the recipient does not reply sooner.
+	// Arm the stay-end timer: if the recipient does not reply sooner, the
+	// messenger turns around and walks itself home when the stay runs out
+	// (megaron_plan_ordna_passage.md 3b-2 R1) — StartReturnLeg does the actual
+	// turning, on whichever of Reply or ScheduledMessengerStayEnd gets there
+	// first; the other is then a no-op (status no longer 'delivered').
 	// An offer-bearing messenger stays as long as its offer lives — see stayTicks.
 	// This MUST commit atomically with the flip above — see the doc comment.
-	if err := h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledMessengerReturn,
-		ReturnPayload{MessengerID: payload.MessengerID}, e.DueTick+stayTicks(carriesOffer),
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledMessengerStayEnd,
+		StayEndPayload{MessengerID: payload.MessengerID}, e.DueTick+stayTicks(carriesOffer),
 	); err != nil {
-		return fmt.Errorf("schedule messenger return: %w", err)
+		return fmt.Errorf("schedule messenger stay end: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

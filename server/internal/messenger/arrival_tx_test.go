@@ -75,13 +75,13 @@ func TestArrivalHandler_FailedScheduleRollsBackTheFlip(t *testing.T) {
 
 	var timers int
 	if err := pool.QueryRow(ctx,
-		`SELECT count(*) FROM scheduled_events WHERE event_type='MessengerReturn' AND (payload->>'messenger_id')::uuid=$1`,
+		`SELECT count(*) FROM scheduled_events WHERE event_type='MessengerStayEnd' AND (payload->>'messenger_id')::uuid=$1`,
 		messengerID,
 	).Scan(&timers); err != nil {
-		t.Fatalf("count return timers: %v", err)
+		t.Fatalf("count stay-end timers: %v", err)
 	}
 	if timers != 0 {
-		t.Errorf("return timers after failed schedule = %d, want 0", timers)
+		t.Errorf("stay-end timers after failed schedule = %d, want 0", timers)
 	}
 }
 

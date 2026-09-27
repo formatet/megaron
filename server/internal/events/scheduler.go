@@ -60,11 +60,24 @@ const (
 	ScheduledBorrowedArmyTick   ScheduledEventType = "BorrowedArmyTick"
 	ScheduledMessengerArrival   ScheduledEventType = "MessengerArrival"
 	ScheduledMessengerReturn    ScheduledEventType = "MessengerReturn"
-	ScheduledKharisTick         ScheduledEventType = "KharisTick"
-	ScheduledTradeDelivery      ScheduledEventType = "TradeDelivery"
-	ScheduledTradeReturn        ScheduledEventType = "TradeReturn"
-	ScheduledRecallArrival      ScheduledEventType = "RecallArrival"
-	ScheduledLogisticsArrival   ScheduledEventType = "LogisticsArrival"
+	// ScheduledMessengerStayEnd fires when a delivered messenger's stay
+	// (stayTicks) runs out with no reply — it starts the return leg exactly as
+	// a spoken Reply does (messenger.StartReturnLeg), just carrying no words
+	// home (megaron_plan_ordna_passage.md 3b-2 R1/R2). Frozen semantics
+	// (CLAUDE.md "Events"): ScheduledMessengerReturn itself is UNCHANGED and
+	// keeps meaning "the messenger is actually home" — see ReturnHandler's own
+	// doc comment. Before this type existed, ArrivalHandler scheduled
+	// ScheduledMessengerReturn directly at delivery+stayTicks, and its handler
+	// teleported the messenger straight to 'arrived' with no travel at all —
+	// also across the sea. A ScheduledMessengerReturn already queued by an
+	// ArrivalHandler that ran before this type shipped keeps that old meaning
+	// (3b-2 R4) — it is never reinterpreted.
+	ScheduledMessengerStayEnd ScheduledEventType = "MessengerStayEnd"
+	ScheduledKharisTick       ScheduledEventType = "KharisTick"
+	ScheduledTradeDelivery    ScheduledEventType = "TradeDelivery"
+	ScheduledTradeReturn      ScheduledEventType = "TradeReturn"
+	ScheduledRecallArrival    ScheduledEventType = "RecallArrival"
+	ScheduledLogisticsArrival ScheduledEventType = "LogisticsArrival"
 	// Physical goods transport (movement-motor transport layer) — a caravan/ship
 	// carrying a goods manifest arrives at its destination. Supersedes the abstract
 	// LogisticsArrival for movers that have a map position (see internal/transport).

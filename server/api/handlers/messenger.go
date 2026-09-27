@@ -954,18 +954,13 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Messenger must be delivered to one of the caller's settlements.
-	// origin_id is NULL for a host-sent messenger (mig 087); its frozen departure
-	// point (origin_q/origin_r) then carries the return-trip geometry instead.
-	var destID uuid.UUID
-	var originID *uuid.UUID
-	var originQ, originR *int
 	var offerStatus *string
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT m.destination_id, m.origin_id, m.origin_q, m.origin_r, m.trade_offer->>'status' FROM messengers m
+		`SELECT m.trade_offer->>'status' FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.status = 'delivered'`,
 		messengerID, worldID, playerID,
-	).Scan(&destID, &originID, &originQ, &originR, &offerStatus)
+	).Scan(&offerStatus)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "messenger not found, not yours, or not yet arrived")
 		return
@@ -983,73 +978,27 @@ func (h *MessengerHandler) Reply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Calculate return trip distance.
-	var dQ, dR, oQ, oR int
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
-		destID,
-	).Scan(&dQ, &dR)
-	if originID != nil {
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
-			originID,
-		).Scan(&oQ, &oR)
-	} else if originQ != nil && originR != nil {
-		oQ, oR = *originQ, *originR
-	}
-	dist := province.HexDistance(province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR})
-	replyDepartsAt := h.clk.Now()
+	// Turn the messenger around and start its journey home — the SAME function
+	// an unanswered stay's end uses (messenger.StartReturnLeg,
+	// megaron_plan_ordna_passage.md 3b-2 R2), just carrying the reply's words.
 	var replyCurrentTick int
 	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&replyCurrentTick)
-	// R6 (megaron_plan_budet_liftar.md): the return leg's port is wherever the
-	// messenger already stands (destID) — no landward leg needed to reach it.
-	returnsAt, replyReturnDueTick, passage, passageSinceTick, rErr := messenger.ResolveReturnDeparture(
-		r.Context(), h.pool, worldID, destID,
-		province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR}, replyDepartsAt, replyCurrentTick)
+	result, rErr := messenger.StartReturnLeg(r.Context(), h.pool, h.scheduler, worldID, messengerID,
+		h.clk.Now(), replyCurrentTick, &req.Reply)
 	if rErr != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve return route")
 		return
 	}
-	var passagePortID *uuid.UUID
-	var passageSinceTickArg *int
-	if passage != nil {
-		passagePortID = &passage.SettlementID
-		passageSinceTickArg = &passageSinceTick
-	}
-
-	// Give the return leg its own time window: return_departs_at = now, arrives_at =
-	// the reply's homecoming (or, sea-lifted, the moment it starts waiting at its
-	// port — now, since it already stands there). sent_at is left untouched (the
-	// correspondence log keys on the original send). Without this the return leg
-	// carried the outbound window and the runner had no eye on the way home
-	// (temenos_orderlopare §(b)).
-	_, err = h.pool.Exec(r.Context(),
-		`UPDATE messengers SET reply_text = $1, status = 'returning',
-		        return_departs_at = $2, arrives_at = $3,
-		        passage_status = $5, passage_port_id = $6, passage_since_tick = $7
-		  WHERE id = $4`,
-		req.Reply, replyDepartsAt, returnsAt, messengerID,
-		messenger.PassageStatusArg(passage), passagePortID, passageSinceTickArg,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not save reply")
+	if !result.Started {
+		writeError(w, http.StatusConflict, "messenger already started its way home")
 		return
 	}
 
-	// Schedule return. The auto-return (48h from delivery) is harmless — ReturnHandler is idempotent.
-	// passage != nil: no terminal event yet — messenger.PassageScanHandler
-	// schedules ScheduledMessengerReturn once a carrier is boarded or the
-	// reserve is taken (R6).
-	if passage == nil {
-		_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerReturn,
-			messenger.ReturnPayload{MessengerID: messengerID}, replyReturnDueTick)
-	}
-
 	resp := map[string]any{
-		"returns_at": returnsAt,
-		"distance":   dist,
+		"returns_at": result.ReturnsAt,
+		"distance":   result.Distance,
 	}
-	if passage != nil {
+	if result.PassageAwaiting {
 		resp["passage_status"] = "awaiting_passage"
 	}
 	writeJSON(w, http.StatusOK, resp)
