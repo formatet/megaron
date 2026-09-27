@@ -1,6 +1,7 @@
 package movement
 
 import (
+	"math/big"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -60,8 +61,20 @@ func mergeAdjacent(ivs []Interval) []Interval {
 	return out
 }
 
+// wantBoundaryHalfUp independently recomputes b_i (round-half-up), coded
+// separately from Boundaries, so it still catches a rounding-direction bug
+// in Boundaries even though endpoints and monotonicity alone would not
+// (both hold whether the intermediate rounding is round-half-up or floor).
+func wantBoundaryHalfUp(start, d, prefix, total int64) Milli {
+	num := new(big.Int).Mul(big.NewInt(d), big.NewInt(prefix))
+	num.Add(num, big.NewInt(total/2))
+	q := new(big.Int).Div(num, big.NewInt(total))
+	return Milli(start + q.Int64())
+}
+
 // FuzzBoundaries checks R2's invariants for random valid Moves: monotonic
-// boundaries, exact endpoints, PositionAt always on the path, determinism.
+// boundaries, exact endpoints, every boundary matches the independent
+// round-half-up reference, PositionAt always on the path, determinism.
 func FuzzBoundaries(f *testing.F) {
 	f.Add(int64(1))
 	f.Add(int64(42))
@@ -87,6 +100,20 @@ func FuzzBoundaries(f *testing.F) {
 		}
 		if want := Milli(m.EndTick) * millisPerTick; bounds[len(bounds)-1] != want {
 			t.Fatalf("bounds[last] = %d, want %d", bounds[len(bounds)-1], want)
+		}
+
+		d := int64(m.EndTick-m.StartTick) * millisPerTick
+		var total int64
+		for _, c := range m.Costs {
+			total += c
+		}
+		var prefix int64
+		for i, c := range m.Costs {
+			prefix += c
+			want := wantBoundaryHalfUp(int64(m.StartTick)*millisPerTick, d, prefix, total)
+			if bounds[i+1] != want {
+				t.Fatalf("bounds[%d] = %d, want %d (round-half-up reference) — Costs=%v", i+1, bounds[i+1], want, m.Costs)
+			}
 		}
 
 		bounds2, err := Boundaries(m)
