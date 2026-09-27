@@ -395,34 +395,52 @@ func TestPassageScan_BoardsReturnLegFromForeignCity(t *testing.T) {
 	}
 }
 
-// TestPassageScan_ReserveAfterWait is acceptance criterion 3: no eligible
-// carrier ever departs, so after PassageReserveWaitTicks the messenger takes
-// the old abstract crossing from its port.
-func TestPassageScan_ReserveAfterWait(t *testing.T) {
+// TestPassageScan_StalledNeverCrossesAndNotifiesOnce is 3b-4's acceptance
+// criterion 1: with no eligible carrier ever departing, a messenger waiting
+// 'awaiting_passage' at its own port stays there — the old RESERVE (R1 of
+// this slice) is gone, so nothing crosses on its own any more — and its
+// sender gets exactly ONE PassageStalled dispatch, not one per scan, driven
+// through the real scan handler across many ticks (megaron_arbetssatt.md §3:
+// "varje acceptans ... genom det verkliga flödet").
+func TestPassageScan_StalledNeverCrossesAndNotifiesOnce(t *testing.T) {
 	f := setupPassageFixture(t)
 	ctx := context.Background()
 	sinceTick := f.currentTick
 	messengerID := f.waitingMessenger(t, f.originID, sinceTick)
 
-	// Not yet due.
-	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
-		t.Fatalf("Handle (too early): %v", err)
-	}
-	_, passageStatus, _, _ := f.messengerRow(t, messengerID)
-	if passageStatus == nil || *passageStatus != "awaiting_passage" {
-		t.Fatalf("passage_status before the wait elapsed = %v, want still awaiting_passage", passageStatus)
+	clk := clock.NewTestClock(time.Now())
+	hub := &fakeRecallBroadcaster{}
+	handler := NewPassageScanHandler(f.pool, events.NewScheduler(f.pool, clk), hub, clk, nil)
+
+	// Run the real scan across many ticks — well past PassageStallNoticeTicks
+	// — never boarding any carrier (none exists in this fixture).
+	for i := 0; i <= 10; i++ {
+		f.setTick(t, sinceTick+i)
+		if err := handler.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+			t.Fatalf("Handle (tick %d): %v", f.currentTick, err)
+		}
 	}
 
-	f.setTick(t, sinceTick+PassageReserveWaitTicks)
-	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
-		t.Fatalf("Handle (reserve due): %v", err)
+	status, passageStatus, _, _ := f.messengerRow(t, messengerID)
+	if status != "outbound" {
+		t.Errorf("status = %q, want outbound — the messenger must never resolve itself without a real carrier", status)
 	}
-	_, passageStatus, _, _ = f.messengerRow(t, messengerID)
-	if passageStatus != nil {
-		t.Errorf("passage_status after reserve = %v, want NULL", *passageStatus)
+	if passageStatus == nil || *passageStatus != "awaiting_passage" {
+		t.Errorf("passage_status = %v, want still awaiting_passage — no abstract crossing exists any more", passageStatus)
 	}
-	if n := f.countScheduled(t, "MessengerArrival", messengerID); n != 1 {
-		t.Errorf("scheduled MessengerArrival count = %d, want 1 (took the reserve crossing)", n)
+	if n := f.countScheduled(t, "MessengerArrival", messengerID); n != 0 {
+		t.Errorf("scheduled MessengerArrival count = %d, want 0 — nothing may schedule a delivery with no carrier", n)
+	}
+
+	var passageStalledCount int
+	for _, k := range hub.notified {
+		if k == "PassageStalled" {
+			passageStalledCount++
+		}
+	}
+	if passageStalledCount != 1 {
+		t.Errorf("PassageStalled notifications = %d, want exactly 1 across %d scans (one per waiting spell, not one per scan)",
+			passageStalledCount, 11)
 	}
 }
 
