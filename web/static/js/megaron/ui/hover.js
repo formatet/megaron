@@ -57,7 +57,21 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
   }
   for (const m of runners) {
     if (m.own) {
-      lines.push('Your Runner — ' + route(placeName, m.origin_q, m.origin_r, m.dest_q, m.dest_r));
+      // megaron_plan_budets_tre_ben.md R5: which physical leg the runner is
+      // actually on — 'to_port' falls through to the ordinary route line
+      // below (its endpoints already point at the port, R4's own "precis som
+      // i dag" for that leg).
+      if (m.leg === 'waiting') {
+        lines.push(`Your Runner — waiting for passage at ${placeName(m.leg_from_q, m.leg_from_r)}`);
+      } else if (m.leg === 'aboard') {
+        lines.push(`Your Runner — aboard ${m.carrier_name || 'a ship'}`);
+      } else if (m.leg === 'ashore') {
+        lines.push(`Your Runner — ashore, running to ${placeName(m.dest_q, m.dest_r)}`);
+      } else if (m.leg === 'sealed') {
+        lines.push(`Your Runner — sealed, returning to ${placeName(m.leg_from_q, m.leg_from_r)}`);
+      } else {
+        lines.push('Your Runner — ' + route(placeName, m.origin_q, m.origin_r, m.dest_q, m.dest_r));
+      }
     } else {
       lines.push(m.sender ? `Runner of ${m.sender}` : 'Runner');
     }
