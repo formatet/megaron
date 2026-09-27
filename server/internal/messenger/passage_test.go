@@ -1,23 +1,27 @@
 package messenger
 
 // DB integration tests for megaron_plan_budet_liftar.md (slice 3a) — the core
-// mechanics R2 (boarding), R3 (disembark scheduling), R4 (carrier lost →
-// sealed → promoted) and R5 (reserve after N ticks with no carrier), proven
-// directly against PassageScanHandler rather than through the full HTTP
-// dispatch surface (that wiring — R1/R6 — is proven in
-// api/handlers/messenger_passage_test.go).
+// mechanics R2 (boarding), R3 (disembark scheduling) and R4 (carrier lost →
+// sealed → promoted), proven directly against PassageScanHandler rather than
+// through the full HTTP dispatch surface (that wiring — R1/R6 — is proven in
+// api/handlers/messenger_passage_test.go). The old R5 (reserve after N ticks
+// with no carrier) is GONE (megaron_plan_ordna_passage.md, slice 3b-4) — its
+// replacement, the PassageStalled dispatch, and R2's ErrNoPort are tested
+// below.
 //
 // Fixture: two coastal settlements (origin q=0, dest q=5) separated by a sea
 // lane (q=1..4) — same geography as messenger_trade_naval_test.go.
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -618,5 +622,79 @@ func TestPassageScan_LostShipMissionCarrierSeals(t *testing.T) {
 	}
 	if sealed.generation != 2 {
 		t.Errorf("generation after seal = %d, want 2", sealed.generation)
+	}
+}
+
+// TestResolveDeparture_NoOwnPortIsErrNoPort is 3b-4's R2 and part of
+// acceptance criterion 1: a sender with NO coastal or harboured settlement at
+// all, whose only route to the target crosses the sea, gets a visible,
+// named rejection (errors.Is ErrNoPort) at send time — never a silent
+// success (the old RESERVE) and never a port to wait at that does not exist.
+func TestResolveDeparture_NoOwnPortIsErrNoPort(t *testing.T) {
+	pool := passageTestPool(t)
+	ctx := context.Background()
+
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status, current_tick) VALUES ($1, 'active', 100) RETURNING id`,
+		"noport-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(context.Background(), `DELETE FROM worlds WHERE id = $1`, worldID) })
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"noport-owner-"+uuid.New().String(),
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create player: %v", err)
+	}
+
+	// Origin: an INLAND settlement (not coastal, no harbour) — the sender has
+	// no port anywhere. A sea lane (q=1..4) then open land (q=5) on the far
+	// side severs every land route, so the only possible route needs the sea.
+	mkTile := func(q, r int, terrain string) {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, q, r, terrain,
+		); err != nil {
+			t.Fatalf("insert tile (%d,%d): %v", q, r, err)
+		}
+	}
+	mkTile(0, 0, "plains")
+	for q := 1; q <= 4; q++ {
+		mkTile(q, 0, "coastal_sea")
+	}
+	mkTile(5, 0, "plains")
+
+	var originProvinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, coastal) VALUES ($1, 0, 0, 'plains', false) RETURNING id`,
+		worldID,
+	).Scan(&originProvinceID); err != nil {
+		t.Fatalf("create origin province: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, state, population)
+		 VALUES ($1, $2, $3, 'achaean', $4, 'capital', true, 'active', 5000)`,
+		worldID, originProvinceID, "NoPort-Origin-"+uuid.NewString(), ownerID,
+	); err != nil {
+		t.Fatalf("create origin settlement: %v", err)
+	}
+	// The far side needs its own province row (plain FindPath target
+	// validation), no settlement required.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 5, 0, 'plains')`,
+		worldID,
+	); err != nil {
+		t.Fatalf("create target province: %v", err)
+	}
+
+	now := time.Now()
+	_, _, _, _, err := ResolveDeparture(ctx, pool, worldID, ownerID,
+		province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 5, R: 0}, now, 100)
+	if !errors.Is(err, ErrNoPort) {
+		t.Fatalf("ResolveDeparture err = %v, want ErrNoPort (no coastal/harboured settlement of the sender's exists at all)", err)
 	}
 }

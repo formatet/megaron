@@ -82,8 +82,26 @@ func TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex(t *testing.T) {
 	// hexgrid.CatchmentRadius 2 (P1) needs centre-distance >= 5, not the old
 	// radius-1 threshold of 3.
 	const hexQ, hexR = 5, -1
+	// A connected plains block from the capital out to the target hex — the
+	// ORDER dispatch (sendOrderCourier) still routes a real Runner from the
+	// capital to wherever the unit stands, even though the march itself
+	// bypasses FindPath (see doc comment above); since 3b-4 (megaron_plan_
+	// ordna_passage.md R2/R3) a courier with no real land route and no owned
+	// port gets a visible ErrNoPort rather than the old silent abstract
+	// crossing, so this fixture must give it one. ON CONFLICT: the target
+	// hex below is filled by this same block.
+	for q := -1; q <= hexQ+1; q++ {
+		for r := hexR - 1; r <= 1; r++ {
+			if _, err := pool.Exec(ctx,
+				`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, 'plains') ON CONFLICT (world_id, q, r) DO NOTHING`,
+				worldID, q, r,
+			); err != nil {
+				t.Fatalf("create connecting map tile (%d,%d): %v", q, r, err)
+			}
+		}
+	}
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, 'plains')`,
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, 'plains') ON CONFLICT (world_id, q, r) DO NOTHING`,
 		worldID, hexQ, hexR,
 	); err != nil {
 		t.Fatalf("create target map tile: %v", err)

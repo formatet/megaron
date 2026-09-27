@@ -221,6 +221,15 @@ func ownedCoastalPorts(ctx context.Context, db province.Queryer, worldID, ownerI
 	return out, rows.Err()
 }
 
+// ErrNoPort is 3b-4's R2: an outbound route needs the sea and the sender has
+// no reachable coastal/harboured settlement of their own AT ALL — there is no
+// port to even wait at. Before this slice that fell back to the RESERVE (the
+// abstract crossing, R1, now gone); now it is a visible, named rejection at
+// send time instead of a silent success — every caller (Send, SendFromHost,
+// sendOrderCourier) turns this into a 422 with an explaining sentence, never
+// dispatches a messenger that can never reach a port.
+var ErrNoPort = fmt.Errorf("no port of yours to take ship from — a runner cannot cross the sea without a ship")
+
 // ResolveDeparture is the single entry point every outbound dispatcher (Send,
 // SendFromHost, sendOrderCourier) calls in place of a bare CourierTravel, per
 // R1's "alla anropare ska gå via den nya mekaniken". passage==nil: the caller
@@ -228,18 +237,18 @@ func ownedCoastalPorts(ctx context.Context, db province.Queryer, worldID, ownerI
 // dueTick/arrivesAt). passage!=nil: the caller instead writes an
 // 'awaiting_passage' row (arrivesAt/dueTick are the LANDWARD leg to the port)
 // and does NOT schedule the terminal event — the passage scan does that once
-// a carrier is boarded, or the reserve is taken.
+// a carrier is boarded. err wraps ErrNoPort (errors.Is) when the route needs
+// the sea and no port exists at all — see ErrNoPort's own doc comment.
 func ResolveDeparture(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, from, to province.MapPosition, now time.Time, currentTick int) (arrivesAt time.Time, dueTick int, passage *PassagePort, sinceTick int, err error) {
 	rd, err := PlanOutboundRoute(ctx, db, worldID, ownerID, from, to)
 	if err != nil {
 		return time.Time{}, 0, nil, 0, err
 	}
-	if rd.Mode == RouteLand || !rd.PortFound {
-		ticks, dur := rd.Ticks, rd.Dur
-		if rd.Mode == RouteSea {
-			ticks, dur = CourierTravel(ctx, db, worldID, from, to)
-		}
-		return now.Add(dur), currentTick + ticks, nil, 0, nil
+	if rd.Mode == RouteSea && !rd.PortFound {
+		return time.Time{}, 0, nil, 0, ErrNoPort
+	}
+	if rd.Mode == RouteLand {
+		return now.Add(rd.Dur), currentTick + rd.Ticks, nil, 0, nil
 	}
 	sinceTick = currentTick + rd.LandTicks
 	return now.Add(rd.LandDur), sinceTick, &rd.Port, sinceTick, nil

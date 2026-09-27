@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -392,6 +393,10 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 	arrivesAt, msgArrivalDueTick, passage, passageSinceTick, rErr := messenger.ResolveDeparture(
 		r.Context(), h.pool, worldID, playerID,
 		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, now, msgSendCurrentTick)
+	if errors.Is(rErr, messenger.ErrNoPort) {
+		writeError(w, http.StatusUnprocessableEntity, rErr.Error())
+		return
+	}
 	if rErr != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve messenger route")
 		return
@@ -647,6 +652,10 @@ func (h *MessengerHandler) SendFromHost(w http.ResponseWriter, r *http.Request) 
 	arrivesAt, dueTick, passage, passageSinceTick, rErr := messenger.ResolveDeparture(
 		r.Context(), h.pool, worldID, playerID,
 		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, h.clk.Now(), currentTick)
+	if errors.Is(rErr, messenger.ErrNoPort) {
+		writeError(w, http.StatusUnprocessableEntity, rErr.Error())
+		return
+	}
 	if rErr != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve messenger route")
 		return
