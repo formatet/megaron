@@ -194,6 +194,68 @@ func TestSweepShipsAtSeaOnDeploy_ActivePatrolLeftAlone(t *testing.T) {
 	}
 }
 
+// TestSweepShipsAtSeaOnDeploy_PassageWaitLeftAlone is R5 (megaron_plan_
+// ordna_passage.md, 3b-3): a ship holding for its runner's return must
+// survive a restart untouched — the deploy sweep is not its path home, the
+// passage scan's own release phase is.
+func TestSweepShipsAtSeaOnDeploy_PassageWaitLeftAlone(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	worldID := sweepTestWorld(t)
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"passage-wait-owner-"+uuid.New().String(),
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create test player: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 5, 0, 'coastal_sea')`,
+		worldID,
+	); err != nil {
+		t.Fatalf("insert map tile: %v", err)
+	}
+
+	var shipID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, march_intent)
+		 VALUES ($1, $2, 'merchantman', 'naval', 1, 10, 'positioned', 5, 0, 'passage_wait') RETURNING id`,
+		worldID, ownerID,
+	).Scan(&shipID); err != nil {
+		t.Fatalf("create passage_wait ship: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	h := &UnitArrivalHandler{
+		pool:       pool,
+		eventStore: events.NewStore(pool),
+		hub:        &fakeBroadcaster{},
+		scheduler:  events.NewScheduler(pool, clk),
+		clk:        clk,
+	}
+
+	swept, err := SweepShipsAtSeaOnDeploy(ctx, pool, h)
+	if err != nil {
+		t.Fatalf("SweepShipsAtSeaOnDeploy: %v", err)
+	}
+	if swept != 0 {
+		t.Errorf("swept = %d, want 0 — a passage_wait ship must be left for the passage scan's release phase", swept)
+	}
+
+	var status string
+	var marchIntent *string
+	if err := pool.QueryRow(ctx, `SELECT status, march_intent FROM units WHERE id = $1`, shipID).Scan(&status, &marchIntent); err != nil {
+		t.Fatalf("load ship: %v", err)
+	}
+	if status != "positioned" {
+		t.Errorf("status = %q, want still \"positioned\" (waiting)", status)
+	}
+	if marchIntent == nil || *marchIntent != "passage_wait" {
+		t.Errorf("march_intent = %v, want still \"passage_wait\"", marchIntent)
+	}
+}
+
 func TestSweepShipsAtSeaOnDeploy_StrandedOwnerLeftAlone(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
