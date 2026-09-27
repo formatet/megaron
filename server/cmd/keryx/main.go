@@ -102,6 +102,7 @@ func main() {
 		tradeAcceptCmd(),
 		tradeDeclineCmd(),
 		tradeCancelCmd(),
+		passageCmd(),
 		gossipCmd(),
 		messengerCmd(),
 		messageCmd(),

@@ -153,6 +153,52 @@ func tradeCancelCmd() *cobra.Command {
 	return cmd
 }
 
+// passageCmd is "Ordna passage" (megaron_plan_ordna_passage.md, slice 3b-3):
+// arrange for one of your own ships, standing in port, to carry a runner
+// that is currently waiting for passage — outbound, or fetched back from a
+// foreign port.
+func passageCmd() *cobra.Command {
+	var msgID, shipID string
+	cmd := &cobra.Command{
+		Use:   "passage",
+		Short: "Arrange for a ship to carry a runner across the sea",
+		Example: `  keryx passage --id <messenger-id> --ship <ship-id>
+  (find the messenger id with: keryx outbox — it names the ship choices too)`,
+		Args: rejectPositionalArgs("id"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if msgID == "" {
+				return fmt.Errorf("--id required (find the id with: keryx outbox)")
+			}
+			if shipID == "" {
+				return fmt.Errorf("--ship required (find eligible ships with: keryx outbox, or: keryx unit)")
+			}
+			c := newClient(cfg)
+			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/passage", cfg.WorldID, msgID)
+			data, err := c.post(path, map[string]any{"ship_id": shipID})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp map[string]any
+			if err := json.Unmarshal(data, &resp); err != nil {
+				return err
+			}
+			var eta string
+			if arrT, ok := resp["arrives_at"].(string); ok {
+				eta = arrT
+			}
+			fmt.Printf("Passage arranged — ship %v sails, runner aboard when it departs. Arrives %v\n", resp["unit_id"], eta)
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&msgID, "id", "", "messenger ID (find with: keryx outbox)")
+	cmd.Flags().StringVar(&shipID, "ship", "", "ship ID (galley or merchantman, garrisoned; find with: keryx outbox or keryx unit)")
+	return cmd
+}
+
 // outboxCmd lists your last 20 sent messengers (with trade_offer details).
 func outboxCmd() *cobra.Command {
 	return &cobra.Command{
@@ -239,6 +285,34 @@ func outboxCmd() *cobra.Command {
 						line += fmt.Sprintf("  [waiting in %s for a ship]", port)
 					} else {
 						line += "  [waiting for a ship]"
+					}
+					// 3b-3 (megaron_plan_ordna_passage.md): the server-validated
+					// "arrange passage" affordance — only shown when a real choice
+					// of ship exists (or the server says none does).
+					if canArrange, _ := m["can_arrange_passage"].(bool); canArrange {
+						if port != "" {
+							line += fmt.Sprintf(" — arrange passage with a ship there: keryx passage --id %s --ship <id>", id)
+						} else {
+							line += fmt.Sprintf(" — arrange passage: keryx passage --id %s --ship <id>", id)
+						}
+						if ships, ok := m["eligible_ships"].([]any); ok {
+							switch len(ships) {
+							case 0:
+								line += " (no eligible ship there yet)"
+							default:
+								var names []string
+								for _, raw := range ships {
+									if s, ok := raw.(map[string]any); ok {
+										if n, _ := s["name"].(string); n != "" {
+											names = append(names, n)
+										}
+									}
+								}
+								if len(names) > 0 {
+									line += fmt.Sprintf(" (ships: %s)", strings.Join(names, ", "))
+								}
+							}
+						}
 					}
 				} else if carrier, _ := m["carrier_name"].(string); carrier != "" {
 					line += fmt.Sprintf("  [aboard %s]", carrier)
