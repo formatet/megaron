@@ -34,6 +34,15 @@ A [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim,
 
 None of this changes anything for a message or order whose road stays on dry land — a Runner on land never needs a ship, only [[marching|the roads]] it can already walk (a river still needs a ford or a boat of its own, unrelated to sea passage).
 
+## What the map shows while it crosses
+
+Your own [[messengers|letter]] or [[runners|Runner]] is drawn exactly where it really is, not sailing on its own across open water:
+
+- **Waiting** — it stands still in the port it ran to, a gold pennant marking it as yours. A small red mark on top means a **PassageStalled** dispatch has already fired for this wait.
+- **Aboard** — it rides the deck of whichever ship or trade route picked it up, moving exactly when and where that ship does. Hover it to see the carrier's name.
+- **Ashore** — once the ship lands it, it steps off and finishes the last stretch on foot, same as any Runner on land.
+- **Sealed** — a runner whose carrier was captured, damaged home or sunk stands dimmed at the port, a small wax seal marking it as out of reach until it reappears.
+
 ## A runner stuck waiting — your decision, not the game's
 
 Wait long enough with no ship of yours sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand — it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a lost-and-resealed carrier can trigger it again later). Three choices:
