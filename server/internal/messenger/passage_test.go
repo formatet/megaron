@@ -276,7 +276,11 @@ func (f *passageFixture) loadScheduledEvent(t *testing.T, eventType string, mess
 
 func (f *passageFixture) handler() *PassageScanHandler {
 	clk := clock.NewTestClock(time.Now())
-	return NewPassageScanHandler(f.pool, events.NewScheduler(f.pool, clk), nil, clk)
+	// nil PassageShipReleaser: none of this file's fixtures create a
+	// passage_wait ship, so releasePassageWait's own query always comes back
+	// empty and h.ships is never dereferenced. 3b-3's own tests
+	// (passage_arrange_test.go) construct a real combat.UnitArrivalHandler.
+	return NewPassageScanHandler(f.pool, events.NewScheduler(f.pool, clk), nil, clk, nil)
 }
 
 // TestPassageScan_BoardsWaitingMessengerAndSchedulesDisembark is acceptance

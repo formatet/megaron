@@ -49,6 +49,7 @@ import { loadKultDrawer, okRite, okRiteComposed, okOfferWorth } from './ui/drawe
 import {
   loadDiplomacyDrawer, dipToggleKind, dipToggleThread, dipSendInThread,
   dipCancel, dipAccept, dipDecline, dipReply, dipComposeToggleKind, dipSend,
+  dipArrangePassage,
 } from './ui/drawers/diplomacy.js';
 import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
@@ -180,6 +181,7 @@ Object.assign(window, {
   cycleCityView,
   deleteStandingOrder,
   dipAccept,
+  dipArrangePassage,
   dipCancel,
   dipComposeToggleKind,
   dipDecline,

@@ -98,11 +98,19 @@ func setupNavalPlayerFixture(t *testing.T) *navalPlayerFixture {
 	hub := notify.New()
 	hub.SetPool(pool)
 	mh := NewMessengerHandler(pool, scheduler, clk, hub)
+	// eventStore + pah (megaron_plan_ordna_passage.md 3b-3): added for the
+	// "Arrange passage" verb, which needs an *events.Store for combat.
+	// StartMarch — PassageHandler is a separate handler precisely so this
+	// fixture's own mh construction above never has to change.
+	eventStore := events.NewStore(pool)
+	pah := NewPassageHandler(pool, scheduler, eventStore, clk)
 
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))
 	r.Post("/worlds/{worldID}/settlements/{settlementID}/messengers", mh.Send)
 	r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-accept", mh.TradeAccept)
+	r.Post("/worlds/{worldID}/messengers/{messengerID}/reply", mh.Reply)
+	r.Post("/worlds/{worldID}/messengers/{messengerID}/passage", pah.Arrange)
 
 	return &navalPlayerFixture{
 		pool: pool, worldID: worldID,

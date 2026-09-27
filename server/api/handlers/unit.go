@@ -1598,6 +1598,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
+	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
@@ -1758,6 +1759,13 @@ type unitSummary struct {
 	// client should never have to reconstruct this from transport/route rows
 	// itself.
 	FreightingNote *string `json:"freighting_note,omitempty"`
+	// PassageFor/WaitingForReturn (megaron_plan_ordna_passage.md 3b-3): a ship
+	// on a "passage" mission names the runner's destination; once it actually
+	// holds for that runner's return leg (march_intent="passage_wait"),
+	// WaitingForReturn says so plainly. Server-formatted for the same reason
+	// FreightingNote is — the client never re-derives march_intent's meaning.
+	PassageFor       *string `json:"passage_for,omitempty"`
+	WaitingForReturn bool    `json:"waiting_for_return,omitempty"`
 }
 
 // attachBattleFlags sets InBattle for every unit that is currently an active
@@ -1841,6 +1849,61 @@ func attachFreightingNotes(ctx context.Context, db province.Queryer, worldID, ow
 			n := note
 			summaries[i].FreightingNote = &n
 		}
+	}
+}
+
+// attachPassageNotes fills PassageFor/WaitingForReturn (megaron_plan_ordna_
+// passage.md 3b-3) for every ship on a "passage"/"passage_wait" mission —
+// units carries the same rows ListUnits already loaded (march_intent isn't
+// itself enough to name a DESTINATION, which lives on the arranged runner).
+func attachPassageNotes(ctx context.Context, db province.Queryer, worldID uuid.UUID, units []*unit.Unit, summaries []unitSummary) {
+	index := make(map[uuid.UUID]int, len(summaries))
+	for i, s := range summaries {
+		index[s.ID] = i
+	}
+	var ids []uuid.UUID
+	waiting := map[uuid.UUID]bool{}
+	for _, u := range units {
+		if u.MarchIntent == nil {
+			continue
+		}
+		switch *u.MarchIntent {
+		case "passage":
+			ids = append(ids, u.ID)
+		case "passage_wait":
+			ids = append(ids, u.ID)
+			waiting[u.ID] = true
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+
+	rows, err := db.Query(ctx,
+		`SELECT u.id, COALESCE(ds.name, 'its destination')
+		   FROM units u
+		   LEFT JOIN messengers m ON m.id = u.passage_messenger_id
+		   LEFT JOIN settlements ds ON ds.id = m.destination_id
+		  WHERE u.world_id = $1 AND u.id = ANY($2)`,
+		worldID, ids,
+	)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var shipID uuid.UUID
+		var destName string
+		if rows.Scan(&shipID, &destName) != nil {
+			continue
+		}
+		i, ok := index[shipID]
+		if !ok {
+			continue
+		}
+		n := destName
+		summaries[i].PassageFor = &n
+		summaries[i].WaitingForReturn = waiting[shipID]
 	}
 }
 

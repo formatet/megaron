@@ -41,7 +41,7 @@ type MarchOrder struct {
 	TargetQ  int
 	TargetR  int
 	Stance   string // optional; fortify|storm|sentry — persisted for C5
-	Intent   string // optional; "" = plain march, "colonize"/"explore"/"patrol"/"land"
+	Intent   string // optional; "" = plain march, "colonize"/"explore"/"patrol"/"land"/"passage"
 	Name     string // optional colony name (used with intent=colonize, or intent=land + CargoIntent=colonize)
 	Mode     string // optional; "" = sack (default) | "annex"
 	// CargoIntent is R1's (megaron_plan_skeppsuppdrag_landsatt.md) optional
@@ -49,6 +49,12 @@ type MarchOrder struct {
 	// land) or "colonize" (found a colony on arrival, no further order
 	// needed). Only meaningful when Intent == "land".
 	CargoIntent string
+	// PassageMessengerID is R1's (megaron_plan_ordna_passage.md, 3b-3) required
+	// payload for Intent == "passage": the messenger this ship is being sent to
+	// carry (outbound) or fetch (pickup). TargetQ/TargetR for this intent is
+	// the disembark hex api/handlers.ArrangePassage already resolved (R2) —
+	// this field only carries which runner the ship is doing it for.
+	PassageMessengerID *uuid.UUID
 }
 
 // OrderReject is a game-rule validation failure with the HTTP status the API
@@ -254,7 +260,7 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// the ship is routed to the offshore hex and tagged intent=assault.
 	targetQ, targetR := o.TargetQ, o.TargetR
 	assaultLanding := false
-	if o.Intent != "land" && unit.CategoryOf(u.Type) == unit.CategoryNaval && u.CargoUnitID != nil {
+	if o.Intent != "land" && o.Intent != "passage" && unit.CategoryOf(u.Type) == unit.CategoryNaval && u.CargoUnitID != nil {
 		var settOwner uuid.UUID
 		var settCoastal bool
 		if sErr := pool.QueryRow(ctx,
@@ -348,6 +354,59 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		targetQ, targetR = seaQ, seaR
 	}
 
+	// R1 (megaron_plan_ordna_passage.md, 3b-3): mission "passage". Same shape
+	// as "land" above — o.TargetQ/R is the disembark hex api/handlers.
+	// ArrangePassage already chose (R2), not yet the ship's real sailing
+	// target — but unlike a land mission, a passage disembark hex is very
+	// often a SETTLED hex (the whole point is usually a city), so none of
+	// land mission's "bare, unclaimed ground" checks apply here; only that it
+	// is dry land with a sea approach.
+	passageMission := o.Intent == "passage"
+	var passageDisembarkQ, passageDisembarkR int
+	if passageMission {
+		if unit.CategoryOf(u.Type) != unit.CategoryNaval {
+			return nil, reject(http.StatusUnprocessableEntity, "only a ship can be arranged for passage")
+		}
+		if u.Type == unit.TypeWarGalley {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"a war galley cannot carry a runner — passage needs a galley or merchantman")
+		}
+		// Distance 0 only, same reasoning as the land mission above: passage is
+		// arranged from a ship already docked in its own port, never carried to
+		// a ship already at sea.
+		if u.Status != unit.StatusGarrison {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"passage can only be arranged for a ship docked in its own port")
+		}
+		if o.PassageMessengerID == nil {
+			return nil, reject(http.StatusBadRequest, "passage needs a messenger to carry")
+		}
+		passageDisembarkQ, passageDisembarkR = o.TargetQ, o.TargetR
+		var passageTerrain string
+		if err := pool.QueryRow(ctx,
+			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			o.WorldID, passageDisembarkQ, passageDisembarkR,
+		).Scan(&passageTerrain); err != nil {
+			return nil, reject(http.StatusNotFound, "disembark hex not found")
+		}
+		isSea := passageTerrain == "coastal_sea" || passageTerrain == "deep_sea" || passageTerrain == "river" || passageTerrain == "river_ford"
+		isMountain := passageTerrain == "mountain_limestone" || passageTerrain == "mountain_red"
+		if isSea || isMountain {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"(%d,%d) is not dry land — passage needs a shore to put the runner ashore on",
+				passageDisembarkQ, passageDisembarkR)
+		}
+		seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, pool, o.WorldID, passageDisembarkQ, passageDisembarkR)
+		if seaErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not resolve a sea approach to the disembark hex")
+		}
+		if !foundSea {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"no open sea reaches (%d,%d) — passage is not possible there", passageDisembarkQ, passageDisembarkR)
+		}
+		targetQ, targetR = seaQ, seaR
+	}
+
 	// Target hex must exist on this world's map.
 	var destTerrain string
 	if err := pool.QueryRow(ctx,
@@ -385,12 +444,12 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		o.Intent = "patrol"
 	}
 
-	// Intent validation: colonize, explore, patrol and land are the only
-	// supported intents. Validate up front so the agent gets an actionable
-	// error instead of a silent return-home at arrival.
-	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "patrol" && o.Intent != "land" {
+	// Intent validation: colonize, explore, patrol, land and passage are the
+	// only supported intents. Validate up front so the agent gets an
+	// actionable error instead of a silent return-home at arrival.
+	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "patrol" && o.Intent != "land" && o.Intent != "passage" {
 		return nil, reject(http.StatusBadRequest,
-			"unknown march intent %q (must be \"colonize\", \"explore\", \"patrol\" or \"land\")", o.Intent)
+			"unknown march intent %q (must be \"colonize\", \"explore\", \"patrol\", \"land\" or \"passage\")", o.Intent)
 	}
 	// Del 2b: conquest choice. Empty defaults to "sack" (loot + raze); "annex" keeps
 	// the settlement (capital→colony takeover). Validated up front, same reasoning
@@ -718,6 +777,9 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// sails to) — see land_target_q/r + land_cargo_intent, mig 147.
 	var landTargetQArg, landTargetRArg *int
 	var landCargoIntentArg *string
+	// R1 (megaron_plan_ordna_passage.md, 3b-3): the messenger this passage
+	// mission was arranged for — see mig 149.
+	var passageMessengerArg *uuid.UUID
 	if o.Intent != "" {
 		intent := o.Intent
 		intentArg = &intent
@@ -750,6 +812,18 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 					nameArg = &name
 				}
 			}
+		}
+		if passageMission {
+			// Same reasoning as patrol/land above: capture the home port now,
+			// before settlement_id is nulled, so the release phase and
+			// dispatchReturnHome know where to sail home to. The chosen
+			// disembark hex reuses land_target_q/r (boardShipMissions already
+			// reads those generically for any ship mission) — no new columns
+			// for that half, only passage_messenger_id (mig 149) for R3/R4.
+			homeSettlementArg = u.SettlementID
+			lq, lr := passageDisembarkQ, passageDisembarkR
+			landTargetQArg, landTargetRArg = &lq, &lr
+			passageMessengerArg = o.PassageMessengerID
 		}
 	}
 	// Amphibious assault: the ship carries intent=assault to its offshore hex so
@@ -784,10 +858,11 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		   land_target_q = $15,
 		   land_target_r = $16,
 		   land_cargo_intent = $17,
+		   passage_messenger_id = $18,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		o.UnitID, originQ, originR, targetQ, targetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
-		currentTick, currentTick+travelTicks, landTargetQArg, landTargetRArg, landCargoIntentArg,
+		currentTick, currentTick+travelTicks, landTargetQArg, landTargetRArg, landCargoIntentArg, passageMessengerArg,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}

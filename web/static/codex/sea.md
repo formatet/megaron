@@ -12,7 +12,7 @@ A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a f
 
 ## At sea
 
-- **A ship is given its whole mission in port, then sails alone.** From **War → Army**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own — tick "…and found a colony" to settle right there, no further order needed. **Patrol** and **Explore** work the same way: out, then home by themselves ([[sight]]).
+- **A ship is given its whole mission in port, then sails alone.** From **War → Army**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own — tick "…and found a colony" to settle right there, no further order needed. **Patrol** and **Explore** work the same way: out, then home by themselves ([[sight]]). **Passage** is a fourth mission, empty of cargo, given to carry a [[messengers|letter]] or [[runners|order]] — see "Ordna passage" below.
 - **Once it sails, a ship takes no more orders.** March, Recall, Redirect, Stance, Load, Unload — none of them reach a ship that isn't standing in its own port. This is the messenger pillar taken to its edge: nothing reaches a ship at sea, not even you. Give the whole mission before it leaves; it always sails home on its own afterwards, and the drawer tells you when.
 - **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.
 - **Supplies.** A crew eats. A ship whose crew runs short of food turns for home on its own — you are told why, and a thinned crew sails slower ([[upkeep]]).
@@ -33,3 +33,12 @@ A [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim.
 - If no ship of yours sails that way in time, it still gets there — it crosses by the old, abstract passage instead, and the game says so. This fallback exists so you are never stuck; a future change will require an actual ship every time.
 
 None of this changes anything for a message or order whose road stays on dry land.
+
+## Ordna passage — send a ship for your own runner
+
+Waiting for a ship to happen to sail the right way is not your only choice. From your **outbox** (Diplomacy, or `keryx outbox`), a runner waiting for passage shows an **Arrange passage** button (or `keryx passage`) whenever one of your own ships qualifies — the choice of ship is always yours to make, but only real, eligible ships are ever offered: a Galley or Emporos (never a War Galley), standing free in port with no mission of its own.
+
+- **Sending one out:** the ship must stand in the SAME port the runner is waiting in. It sails straight for the runner's destination, boards it the moment it leaves, and puts it ashore there — no different from boarding any ship that happened to be going that way, except this one you chose yourself.
+- **Bringing one home:** a runner that has finished its errand and is waiting in a **foreign** port may be fetched instead — any of your own ports will do. The ship sails there, waits (**War → Army** shows it "waiting at (…) for the runner's return", or `keryx unit` says the same), and carries the runner all the way home the moment it is ready to travel.
+- Either way, **the ship still finishes its own mission on its own** afterwards — it always sails home again, exactly like Land, Patrol or Explore. The runner never commands the ship; you send the ship for the runner, never the other way round. While it sails out, the drawer and `keryx unit` show it "carrying a runner to (…)".
+- The ship's own risks are unchanged: it can still be damaged, captured or sunk, and a starved crew still turns it for home ([[upkeep]]) — none of that touches the runner, who stands safely ashore the whole time.

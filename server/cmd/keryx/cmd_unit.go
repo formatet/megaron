@@ -285,6 +285,11 @@ type unitRow struct {
 	// standing sea route it's locked to. Server-formatted, same reason
 	// DisplayName is.
 	FreightingNote *string `json:"freighting_note"`
+	// PassageFor/WaitingForReturn (megaron_plan_ordna_passage.md 3b-3): a ship
+	// on a "passage"/"passage_wait" mission names the runner's destination,
+	// server-formatted for the same reason FreightingNote is.
+	PassageFor       *string `json:"passage_for"`
+	WaitingForReturn bool    `json:"waiting_for_return"`
 }
 
 func formatSize(c *Client, u unitRow) string {
@@ -414,6 +419,20 @@ func fetchOwnSettlementPositions(c *Client, worldID string) map[string]settlemen
 }
 
 func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
+	// Passage wait (megaron_plan_ordna_passage.md 3b-3 R3): the ship stands
+	// positioned, off a port, holding for its runner's return — not a forward
+	// post (no stance), not stranded, just waiting for the passage scan's own
+	// release phase to send it home.
+	if u.MarchIntent != nil && *u.MarchIntent == "passage_wait" {
+		dest := "its runner's return"
+		if u.PassageFor != nil && *u.PassageFor != "" {
+			dest = "the runner's return from " + *u.PassageFor
+		}
+		if u.Q != nil && u.R != nil {
+			return fmt.Sprintf("waiting at (%d,%d) for %s", *u.Q, *u.R, dest)
+		}
+		return "waiting for " + dest
+	}
 	if isForwardPost(u) && u.Q != nil && u.R != nil {
 		loc := fmt.Sprintf("forward post at (%d,%d)", *u.Q, *u.R)
 		if u.OriginSettlementID != nil && homes != nil {
@@ -446,6 +465,16 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		// the land hex itself — same limitation assault's offshore hex has.
 		if u.MarchIntent != nil && *u.MarchIntent == "land" {
 			loc = "sailing to land troops — "
+		}
+		// Passage (megaron_plan_ordna_passage.md 3b-3 R2): carrying a runner
+		// across the sea — target_q/r is the sea waypoint, not the disembark
+		// hex itself, same limitation "land" has above.
+		if u.MarchIntent != nil && *u.MarchIntent == "passage" {
+			if u.PassageFor != nil && *u.PassageFor != "" {
+				loc = "carrying a runner to " + *u.PassageFor + " — "
+			} else {
+				loc = "carrying a runner — "
+			}
 		}
 		if u.Q != nil && u.R != nil {
 			loc += fmt.Sprintf("(%d,%d)→", *u.Q, *u.R)

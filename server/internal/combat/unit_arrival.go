@@ -149,12 +149,12 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
-		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent
+		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
 		&u.status, &curQ, &curR, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
-		&u.carriedSilver, &u.provisions, &u.landTargetQ, &u.landTargetR, &u.landCargoIntent); err != nil {
+		&u.carriedSilver, &u.provisions, &u.landTargetQ, &u.landTargetR, &u.landCargoIntent, &u.passageMessengerID); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -250,6 +250,13 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// sea waypoint itself.
 	if u.marchIntent != nil && *u.marchIntent == "land" {
 		return h.landArrived(ctx, tx, u, destQ, destR, worldID)
+	}
+
+	// Passage mission (R2/R3, megaron_plan_ordna_passage.md 3b-3): the ship has
+	// reached the sea hex next to the disembark hex arranged for its runner.
+	// No cargo to land — only the wait-or-go-home decision (passageArrived).
+	if u.marchIntent != nil && *u.marchIntent == "passage" {
+		return h.passageArrived(ctx, tx, u, destQ, destR, worldID)
 	}
 
 	// Find settlement at destination (if any). The JOIN condition's karens
@@ -615,6 +622,117 @@ func (h *UnitArrivalHandler) notifyLandColonizeFailed(ctx context.Context, tx pg
 	})
 }
 
+// passageArrived handles a "passage" mission ship reaching the sea hex next
+// to the disembark hex api/handlers.ArrangePassage chose for its runner (R2/
+// R3, megaron_plan_ordna_passage.md 3b-3). Unlike a "land" mission, this ship
+// carries no cargo — its whole job is the runner boardShipMissions already
+// boarded (outbound) or is waiting to be fetched by (pickup), and this
+// function only decides whether the ship should hold for that runner's
+// homeward leg or turn straight for home:
+//   - the runner still needs a physical ride for some leg of its own journey
+//     (kind != "order" and status != "arrived" — covers both an outbound
+//     runner not yet on its way home, AND a pickup runner already standing
+//     "awaiting_passage" right here) — the ship holds (status='positioned',
+//     march_intent='passage_wait') until PassageScanHandler's release phase
+//     (R4) sends it home, boarding the runner in the very same scan.
+//   - otherwise (an order — one-way, never comes back — or the runner is
+//     already fully home/gone) — nothing to wait for; the ship turns for
+//     home immediately, exactly like a "land" mission's empty return leg.
+func (h *UnitArrivalHandler) passageArrived(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if u.homeSettlementID == nil {
+		// Defensive: dispatch always sets this for a passage mission — never
+		// strand the ship over a data inconsistency.
+		slog.Warn("passage arrival: missing home settlement, garrisoning ship in place instead", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+
+	waiting := false
+	if u.passageMessengerID != nil {
+		var kind, status string
+		if err := tx.QueryRow(ctx,
+			`SELECT kind, status FROM messengers WHERE id = $1`, *u.passageMessengerID,
+		).Scan(&kind, &status); err == nil {
+			waiting = kind != "order" && status != "arrived"
+		}
+		// A scan error (row gone) leaves waiting=false — nothing left to wait for.
+	}
+
+	if !waiting {
+		slog.Info("passage: nothing left to wait for, ship turning for home", "unit", u.id, "messenger", u.passageMessengerID)
+		return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonExplore)
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status       = 'positioned',
+		   q            = $2,
+		   r            = $3,
+		   target_q     = NULL,
+		   target_r     = NULL,
+		   departs_at   = NULL,
+		   arrives_at   = NULL,
+		   depart_tick  = NULL,
+		   arrive_tick  = NULL,
+		   march_intent = 'passage_wait',
+		   updated_at   = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR,
+	); err != nil {
+		return fmt.Errorf("passageArrived: post passage_wait: %w", err)
+	}
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 2, map[string]any{
+			"unit_id": u.id,
+			"name":    unit.LoadDisplayName(ctx, tx, u.id),
+			"q":       destQ,
+			"r":       destR,
+			"status":  "positioned",
+			"note":    "waiting for the runner's return",
+		})
+	}
+
+	slog.Info("passage: ship waiting for runner's return", "unit", u.id, "messenger", *u.passageMessengerID)
+	return nil
+}
+
+// ReleasePassageWaitShip is messenger's thin, downward-only call into combat
+// (G1: messenger may use combat, never the reverse) for R4's release phase
+// (megaron_plan_ordna_passage.md 3b-3): messenger.PassageScanHandler decided
+// a passage_wait ship's runner is either ready to travel home with it or no
+// longer needs it, and calls this to actually turn the ship around — reusing
+// dispatchReturnHome exactly like every other return-leg caller in this file,
+// inside the SAME transaction and scan the caller is already running (so the
+// ship's depart_tick = the current tick, and boardShipMissions — run right
+// after this in the same PassageScanHandler.Handle — boards the runner in
+// that very scan). A no-op (nil, nothing written) if the ship has already
+// been resolved by a racing pass — same claim-then-guard idiom as every other
+// handler in this file.
+func (h *UnitArrivalHandler) ReleasePassageWaitShip(ctx context.Context, tx pgx.Tx, shipID, worldID uuid.UUID) error {
+	var u unitRow
+	var curQ, curR *int
+	if err := tx.QueryRow(ctx,
+		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
+		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id
+		 FROM units WHERE id = $1 AND status = 'positioned' AND march_intent = 'passage_wait' FOR UPDATE`,
+		shipID,
+	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
+		&u.status, &curQ, &curR, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
+		&u.carriedSilver, &u.provisions, &u.landTargetQ, &u.landTargetR, &u.landCargoIntent, &u.passageMessengerID); err != nil {
+		return nil // already released by a racing pass, or gone
+	}
+	if curQ == nil || curR == nil || u.homeSettlementID == nil {
+		return fmt.Errorf("release passage wait ship: unit %s has no position or home settlement", shipID)
+	}
+	u.q, u.r = *curQ, *curR
+
+	return h.dispatchReturnHome(ctx, tx, u, u.q, u.r, worldID, returnReasonPassageRelease)
+}
+
 // exploreArrived handles a unit reaching its explore target: instead of
 // garrisoning or fighting, it immediately turns back toward the settlement it
 // departed from (captured at dispatch as home_settlement_id, since the normal
@@ -729,6 +847,11 @@ const (
 	// left 'positioned' at sea under the pre-R3 rules — R3 means it can never
 	// receive a fresh order again otherwise.
 	returnReasonSweptFromSea
+	// returnReasonPassageRelease: PassageScanHandler's release phase (R4,
+	// megaron_plan_ordna_passage.md 3b-3) turns a passage_wait ship for home —
+	// either its runner is ready to travel with it, or nothing is left to
+	// wait for.
+	returnReasonPassageRelease
 )
 
 // dispatchReturnHome turns a field unit around and marches it back to its home
@@ -807,6 +930,16 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
 	returnIntent := "explore_return"
+	// land_target_q/r, land_cargo_intent and passage_messenger_id (mig 147/149)
+	// are cleared here, not just at re-garrison: a "land" or "passage" ship's
+	// mission data would otherwise ride along, stale, onto this very return
+	// leg — and for a passage ship specifically, boardShipMissions reads
+	// land_target_q/r generically for ANY marching ship, so a leftover value
+	// (the OUTBOUND disembark hex) would make the release phase's return leg
+	// try to disembark a runner at the port it is leaving, not the one it is
+	// sailing home to (megaron_plan_ordna_passage.md 3b-3 R4). Safe for every
+	// other caller too: land_target_q/r is otherwise only ever non-NULL for a
+	// mission that has just ended, one way or another, right here.
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET
 		   status        = 'marching',
@@ -824,6 +957,10 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		   sentry_r      = NULL,
 		   march_intent  = $7,
 		   home_settlement_id = $10,
+		   land_target_q = NULL,
+		   land_target_r = NULL,
+		   land_cargo_intent = NULL,
+		   passage_messenger_id = NULL,
 		   updated_at    = now()
 		 WHERE id = $1`,
 		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks, u.homeSettlementID,
@@ -1647,6 +1784,11 @@ type unitRow struct {
 	landTargetQ     *int
 	landTargetR     *int
 	landCargoIntent *string
+	// passageMessengerID (mig 149, megaron_plan_ordna_passage.md 3b-3): set
+	// only for marchIntent == "passage"/"passage_wait" — the messenger this
+	// ship was arranged to carry (outbound) or fetch (pickup). Read at arrival
+	// (passageArrived) and by the passage scan's release phase.
+	passageMessengerID *uuid.UUID
 	// carriedSilver is the colonist purse (mig 107): silver debited from the
 	// mother city at dispatch and riding on this unit. Credited to the colony it
 	// founds, or back into whatever settlement it walks into if it turns around.
