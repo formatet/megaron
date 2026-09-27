@@ -20,6 +20,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
@@ -206,17 +207,30 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// disembarkSearchMaxRadius bounds resolveOutboundDisembark's ring search
+// (below) — generous enough for any world this codebase seeds (64×64 is the
+// largest on record, megaron_moc.md), while still refusing to scan an
+// unbounded map. A world too large for this radius to ever reach a shore
+// gets resolveOutboundDisembark's own honest 422, never a silent hang.
+const disembarkSearchMaxRadius = 60
+
 // resolveOutboundDisembark is R2's outbound half: disembark at the runner's
 // true destination hex directly if a settlement there is coastal or
-// harboured (the common case — most cities are); otherwise the coastal/
-// harboured settlement — reachable by a naval route from the ship's own
-// port — with the shortest CategoryCourierLand time onward to the target.
+// harboured (the common case — most cities are, and the target is already
+// known to the player: it is their own runner's destination). Otherwise, the
+// nearest EMPTY coastal land hex — reachable by a naval route from the
+// ship's own port, with a land route onward to the target — expanding
+// outward from the target ring by ring (hexgrid.Ring) and taking the
+// shortest-land-cost candidate in the first ring that yields any.
 //
-// Candidates are ACTIVE SETTLEMENTS, not raw map tiles: a courier route is
-// only ever asked to reach a named place in practice, and a bare unsettled
-// coastal tile is nowhere a runner has reason to walk from. Searching every
-// tile on a large world would be materially more expensive for no case this
-// slice's acceptance criteria exercise.
+// Candidates are never settlements (fixed 2026-09-27, planner review): the
+// first version of this search picked among ACTIVE SETTLEMENTS regardless of
+// owner or whether the calling player had ever seen them — a Wanax could
+// discover a foreign city purely by arranging passage near it, and an order
+// to a unit on a landmass with no city at all could never get a disembark
+// hex at all. Searching raw, empty coastline instead needs no visibility
+// check and no settlement to exist: it never queries anything that could
+// leak one, and it works on genuinely empty shores.
 func resolveOutboundDisembark(ctx context.Context, pool *pgxpool.Pool, worldID, shipPortSettlementID uuid.UUID, targetQ, targetR int) (int, int, error) {
 	if isPort, err := settlementAtHexIsPort(ctx, pool, worldID, targetQ, targetR); err != nil {
 		return 0, 0, err
@@ -231,70 +245,110 @@ func resolveOutboundDisembark(ctx context.Context, pool *pgxpool.Pool, worldID, 
 	).Scan(&shipPortQ, &shipPortR); err != nil {
 		return 0, 0, fmt.Errorf("load ship's own port: %w", err)
 	}
-	shipSeaQ, shipSeaR, foundSea, err := province.NearestSeaNeighbor(ctx, pool, worldID, shipPortQ, shipPortR)
-	if err != nil {
-		return 0, 0, err
-	}
-	if !foundSea {
-		return 0, 0, fmt.Errorf("the ship's own port has no sea approach")
-	}
 
 	graph, err := province.LoadTileGraph(ctx, pool, worldID)
 	if err != nil {
 		return 0, 0, err
 	}
-
-	rows, err := pool.Query(ctx,
-		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id
-		 WHERE s.world_id = $1 AND s.state = 'active'
-		   AND (COALESCE(p.coastal, false)
-		        OR EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = 'harbour'))`,
-		worldID,
-	)
-	if err != nil {
-		return 0, 0, err
-	}
-	type candidate struct{ q, r int }
-	var candidates []candidate
-	for rows.Next() {
-		var c candidate
-		if err := rows.Scan(&c.q, &c.r); err != nil {
-			rows.Close()
-			return 0, 0, err
-		}
-		candidates = append(candidates, c)
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
-		return 0, 0, err
+	shipSeaQ, shipSeaR, foundSea := graphNearestSeaNeighbor(graph, shipPortQ, shipPortR)
+	if !foundSea {
+		return 0, 0, fmt.Errorf("the ship's own port has no sea approach")
 	}
 
-	bestQ, bestR := 0, 0
-	bestLandCost := -1.0
-	for _, c := range candidates {
-		_, landCost, landOK := graph.FindPath(
-			province.MapPosition{Q: c.q, R: c.r}, province.MapPosition{Q: targetQ, R: targetR}, province.CategoryCourierLand)
-		if !landOK {
-			continue
+	target := hexgrid.Coord{Q: targetQ, R: targetR}
+	for radius := 1; radius <= disembarkSearchMaxRadius; radius++ {
+		bestQ, bestR := 0, 0
+		bestLandCost := -1.0
+		for _, c := range hexgrid.Ring(target, radius) {
+			terrain, onMap := graph[[2]int{c.Q, c.R}]
+			if !onMap || !isDryLandTerrain(terrain) {
+				continue
+			}
+			candSeaQ, candSeaR, foundCandSea := graphNearestSeaNeighbor(graph, c.Q, c.R)
+			if !foundCandSea {
+				continue // not itself a coastal hex
+			}
+			_, landCost, landOK := graph.FindPath(
+				province.MapPosition{Q: c.Q, R: c.R}, province.MapPosition{Q: targetQ, R: targetR}, province.CategoryCourierLand)
+			if !landOK {
+				continue
+			}
+			_, _, navalOK := graph.FindPath(
+				province.MapPosition{Q: shipSeaQ, R: shipSeaR}, province.MapPosition{Q: candSeaQ, R: candSeaR}, "naval")
+			if !navalOK {
+				continue
+			}
+			// Never a settlement — any owner, seen or not (see doc comment
+			// above). Checked last: it is the only DB round trip per
+			// candidate, so cheaper checks eliminate most candidates first.
+			if settled, sErr := hexIsSettled(ctx, pool, worldID, c.Q, c.R); sErr != nil {
+				return 0, 0, sErr
+			} else if settled {
+				continue
+			}
+			if bestLandCost < 0 || landCost < bestLandCost {
+				bestQ, bestR, bestLandCost = c.Q, c.R, landCost
+			}
 		}
-		candSeaQ, candSeaR, foundCandSea, seaErr := province.NearestSeaNeighbor(ctx, pool, worldID, c.q, c.r)
-		if seaErr != nil || !foundCandSea {
-			continue
-		}
-		_, _, navalOK := graph.FindPath(
-			province.MapPosition{Q: shipSeaQ, R: shipSeaR}, province.MapPosition{Q: candSeaQ, R: candSeaR}, "naval")
-		if !navalOK {
-			continue
-		}
-		if bestLandCost < 0 || landCost < bestLandCost {
-			bestQ, bestR, bestLandCost = c.q, c.r, landCost
+		if bestLandCost >= 0 {
+			return bestQ, bestR, nil
 		}
 	}
-	if bestLandCost < 0 {
-		return 0, 0, fmt.Errorf(
-			"no coastal city near the runner's destination that this ship can reach by sea — arrange passage is not possible here")
+	return 0, 0, fmt.Errorf(
+		"no open shore near the runner's destination that this ship can reach by sea — arrange passage is not possible here")
+}
+
+// isDryLandTerrain excludes sea/river (a ship cannot make landfall standing
+// in water) and mountains (StartMarch's own passage validation would refuse
+// them anyway — see march_start.go's passageMission branch) — the same two
+// exclusions "land mission" applies to its own chosen target.
+func isDryLandTerrain(terrain string) bool {
+	switch terrain {
+	case "coastal_sea", "deep_sea", "river", "river_ford",
+		"mountain_limestone", "mountain_red":
+		return false
 	}
-	return bestQ, bestR, nil
+	return true
+}
+
+// isSeaOrRiverTerrain matches province.NearestSeaNeighbor's own definition of
+// "water a ship can float on" — duplicated here (not exported there) so the
+// ring search can test it against an in-memory TileGraph instead of paying a
+// DB round trip per candidate hex.
+func isSeaOrRiverTerrain(terrain string) bool {
+	switch terrain {
+	case "coastal_sea", "deep_sea", "river", "river_ford":
+		return true
+	}
+	return false
+}
+
+// graphNearestSeaNeighbor is province.NearestSeaNeighbor against an
+// already-loaded TileGraph, in axialDirs order (hexgrid.Neighbors) — same
+// semantics, zero DB round trips, used here once per ring candidate instead
+// of once per DB call.
+func graphNearestSeaNeighbor(graph province.TileGraph, q, r int) (sq, sr int, found bool) {
+	for _, d := range hexgrid.Neighbors(hexgrid.Coord{Q: q, R: r}) {
+		if terrain, ok := graph[[2]int{d.Q, d.R}]; ok && isSeaOrRiverTerrain(terrain) {
+			return d.Q, d.R, true
+		}
+	}
+	return 0, 0, false
+}
+
+// hexIsSettled reports whether an ACTIVE settlement (any owner) sits exactly
+// at (q,r) — the one DB check resolveOutboundDisembark's candidate loop
+// makes, and the reason a candidate is never chosen on the strength of a
+// city existing there (see the function's own doc comment).
+func hexIsSettled(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, q, r int) (bool, error) {
+	var settled bool
+	err := pool.QueryRow(ctx,
+		`SELECT EXISTS(
+		    SELECT 1 FROM provinces p JOIN settlements s ON s.province_id = p.id
+		    WHERE p.world_id = $1 AND p.map_q = $2 AND p.map_r = $3 AND s.state = 'active')`,
+		worldID, q, r,
+	).Scan(&settled)
+	return settled, err
 }
 
 // settlementAtHexIsPort reports whether an active settlement sits exactly at

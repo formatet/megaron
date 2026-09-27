@@ -23,6 +23,8 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"formatet/megaron/server/internal/combat"
@@ -448,12 +450,11 @@ func TestArrangePassage_OrderToOwnUnit_ShipGoesHomeImmediately(t *testing.T) {
 	for q := 1; q <= 4; q++ {
 		f.mapTile(t, q, 0, "coastal_sea")
 	}
-	// A beachhead settlement (also the initiator's own) at the coast — R2's
-	// "no settlement AT the target, so disembark at the nearest coastal city
-	// with a land route onward" branch. The target unit stands one land hex
-	// further inland, on unclaimed ground with no settlement of its own — the
-	// "far shore" no ship can dock at directly.
-	f.settlement(t, "Passage-Beachhead3", 5, f.initiatorID, true)
+	// Planner review 2026-09-27: NO settlement anywhere near the target — a
+	// landmass with no city at all. R2's disembark search must still find an
+	// EMPTY coastal hex (5,0) with a land route onward, never depending on a
+	// settlement existing to find its footing.
+	f.mapTile(t, 5, 0, "plains")
 	farQ, farR := 6, 0
 	f.mapTile(t, farQ, farR, "plains")
 	shipID := f.ship(t, homeID, f.initiatorID, "galley")
@@ -611,6 +612,93 @@ func TestArrangePassage_Pickup_ShipFetchesFromDifferentOwnPort(t *testing.T) {
 	finalMsg := f.messengerRow(t, runnerID)
 	if finalMsg.status != "arrived" {
 		t.Errorf("runner final status = %q, want \"arrived\"", finalMsg.status)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Planner review (2026-09-27): an unseen foreign coastal city nearer the
+// target than any empty coastal hex must never be chosen, and must never
+// leak into the response — resolveOutboundDisembark's candidates are raw
+// coastline, never settlements (bar the target's own, already-known hex).
+// ---------------------------------------------------------------------------
+
+func TestArrangePassage_OrderToUnseenLandmass_PicksEmptyShoreNotForeignCity(t *testing.T) {
+	f := setupPassageArrangeFixture(t)
+	homeID := f.settlement(t, "Passage-Home6", 0, f.initiatorID, true)
+	for q := 1; q <= 5; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	// A foreign, UNSEEN coastal city at (6,0) — ring distance 2 from the
+	// target (8,0), with its own valid land route there via (7,0). Nothing
+	// scouts it: no player_scouted_tiles row is ever written for it, exactly
+	// as an unvisited foreign city would sit in a live world.
+	f.settlement(t, "Passage-UnseenCity6", 6, f.counterpartyID, true)
+	f.mapTile(t, 7, 0, "plains")
+	f.mapTile(t, 8, 0, "plains") // the target unit's own hex
+	// A farther, EMPTY coastal hex at (6,-1) — ring distance 3 from the
+	// target, reachable by land via (7,-1)→(8,-1)→(8,0) and by sea via the
+	// same lane (adjacent to (5,0)). The only valid candidate once the
+	// nearer city is correctly excluded.
+	f.mapTile(t, 6, -1, "plains")
+	f.mapTile(t, 7, -1, "plains")
+	f.mapTile(t, 8, -1, "plains")
+	shipID := f.ship(t, homeID, f.initiatorID, "galley")
+
+	farQ, farR := 8, 0
+	var targetUnitID uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'positioned', $3, $4) RETURNING id`,
+		f.worldID, f.initiatorID, farQ, farR,
+	).Scan(&targetUnitID); err != nil {
+		t.Fatalf("create field target unit: %v", err)
+	}
+
+	stanceOrder := combat.StanceOrder{WorldID: f.worldID, PlayerID: f.initiatorID, UnitID: targetUnitID, Stance: "fortify"}
+	payload := messenger.OrderDeliveryPayload{
+		WorldID: f.worldID, PlayerID: f.initiatorID, UnitID: targetUnitID,
+		Verb: "stance", Stance: &stanceOrder,
+	}
+	var orderMsgID uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, status, kind,
+		                          hex_q, hex_r, dest_q, dest_r, arrives_at, order_payload, passage_status, passage_port_id, passage_since_tick)
+		 VALUES ($1,$2,$3,NULL,'Runner — stance order.','outbound','order',0,0,$4,$5,now(),$6,'awaiting_passage',$3,0)
+		 RETURNING id`,
+		f.worldID, f.initiatorID, homeID, farQ, farR, mustJSON(payload),
+	).Scan(&orderMsgID); err != nil {
+		t.Fatalf("seed order runner: %v", err)
+	}
+	payload.MessengerID = orderMsgID
+	if _, err := f.pool.Exec(context.Background(), `UPDATE messengers SET order_payload = $1 WHERE id = $2`, mustJSON(payload), orderMsgID); err != nil {
+		t.Fatalf("update order payload with messenger id: %v", err)
+	}
+
+	code, resp := f.post(t, f.initiatorToken,
+		"/worlds/"+f.worldID.String()+"/messengers/"+orderMsgID.String()+"/passage",
+		map[string]any{"ship_id": shipID.String()})
+	if code != 202 {
+		t.Fatalf("Arrange status = %d, want 202 (%v)", code, resp)
+	}
+
+	disembarkQ, _ := resp["disembark_q"].(float64)
+	disembarkR, _ := resp["disembark_r"].(float64)
+	if int(disembarkQ) == 6 && int(disembarkR) == 0 {
+		t.Fatalf("disembark hex = (6,0) — the foreign city itself, want the empty shore instead")
+	}
+	settled, err := hexIsSettled(context.Background(), f.pool, f.worldID, int(disembarkQ), int(disembarkR))
+	if err != nil {
+		t.Fatalf("check disembark hex settled: %v", err)
+	}
+	if settled {
+		t.Errorf("disembark hex (%v,%v) is settled — the search must never depend on a city existing there", disembarkQ, disembarkR)
+	}
+
+	// The response must not name the foreign city anywhere — the whole point
+	// of the fix is that arranging passage never reveals it.
+	respJSON, _ := json.Marshal(resp)
+	if strings.Contains(string(respJSON), "Passage-UnseenCity6") {
+		t.Errorf("response leaks the unseen foreign city's name: %s", respJSON)
 	}
 }
 
