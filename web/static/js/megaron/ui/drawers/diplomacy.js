@@ -279,13 +279,32 @@ async function loadDipThreads() {
             const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim);text-align:right">' + expiryWord(m.expires_at) + '</div>' : '';
             cancelBtn = countdown + '<div style="text-align:right;margin-top:.2rem"><button class="btn-small btn-danger" onclick="dipCancel(\'' + m.id + '\',this)">Cancel offer ✗</button></div>';
           }
+          // Arrange passage (megaron_plan_ordna_passage.md, 3b-3): only shown
+          // while the runner is actually waiting for one — the ship choices
+          // are the server's own (ListSent's eligible_ships), never counted
+          // client-side, so the button can never promise a ship the server
+          // would refuse.
+          let passageBtn = '';
+          if (m.can_arrange_passage) {
+            const ships = Array.isArray(m.eligible_ships) ? m.eligible_ships : [];
+            const selId = 'dip-passage-ship-' + m.id;
+            if (ships.length > 0) {
+              const opts = ships.map(s => '<option value="' + esc(s.id) + '">' + esc(s.name) + ' (' + esc(s.settlement_name) + ')</option>').join('');
+              passageBtn = '<div id="dip-passage-' + m.id + '" style="display:flex;gap:.3rem;margin-top:.3rem;align-items:center">'
+                + '<select id="' + selId + '" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem;font-size:.7rem">' + opts + '</select>'
+                + '<button class="btn-small btn-primary" onclick="dipArrangePassage(\'' + m.id + '\',\'' + selId + '\',this)">Arrange passage</button>'
+                + '</div>';
+            } else {
+              passageBtn = '<div style="font-size:.68rem;color:var(--text-dim);font-style:italic;margin-top:.3rem;text-align:right">no ship of yours is free there yet</div>';
+            }
+          }
           html += '<div class="dip-msg-row dip-msg-row-out">'
             + '<div class="dip-bubble dip-bubble-out">'
             + '<div class="dip-bubble-meta dip-bubble-meta-out">You → ' + esc(m.destination_name || 'unknown') + ' · ' + fmtAgo(m.sent_at || m.created_at) + '</div>'
             + '<div class="dip-msg-text">' + esc(m.message_text || m.message || '') + '</div>'
             + replyText
             + '<div style="font-size:.68rem;font-family:var(--mono);text-align:right">' + statusBit + '</div>'
-            + cancelBtn
+            + cancelBtn + passageBtn
             + '</div></div>';
         }
       }
@@ -454,6 +473,27 @@ export async function dipReply(id) {
   const row = document.getElementById('dip-reply-row-' + id);
   if (res.ok && row) {
     row.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + passageNote(data) + '</div>';
+  }
+}
+
+// dipArrangePassage is 3b-3's "Arrange passage" button: POST the chosen ship
+// against the runner waiting for passage. res.ok drives the outcome — a
+// refusal shows the server's own text, never a client-guessed reason.
+export async function dipArrangePassage(id, selId, btn) {
+  const sel = document.getElementById(selId);
+  const shipId = sel ? sel.value : '';
+  if (!shipId) return;
+  btn.disabled = true;
+  const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/' + id + '/passage', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ ship_id: shipId }),
+  });
+  const data = await res.json().catch(() => ({}));
+  const block = document.getElementById('dip-passage-' + id);
+  if (res.ok) {
+    if (block) block.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.3rem;text-align:right">✓ Passage arranged — arrives ' + arrivalHTML(data.arrives_at) + '</div>';
+  } else {
+    btn.disabled = false;
+    alert(formatApiError(data, 'Arrange passage failed'));
   }
 }
 
