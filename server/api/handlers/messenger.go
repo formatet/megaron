@@ -775,7 +775,7 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
-		        m.passage_status, pps.name, m.carrier_name
+		        m.passage_status, pps.id, pps.name, pps.owner_id, m.carrier_name
 		 FROM messengers m
 		 JOIN settlements s ON s.id = m.destination_id
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
@@ -808,16 +808,29 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 		PassageStatus *string `json:"passage_status,omitempty"`
 		PassagePort   *string `json:"passage_port,omitempty"`
 		CarrierName   *string `json:"carrier_name,omitempty"`
+		// CanArrangePassage/EligibleShips (megaron_plan_ordna_passage.md 3b-3):
+		// true, with the real server-validated ship choices, exactly while this
+		// runner is 'awaiting_passage' — the web/keryx "Arrange passage"
+		// affordance reads this instead of re-deriving R1's rule itself.
+		CanArrangePassage bool                  `json:"can_arrange_passage"`
+		EligibleShips     []eligiblePassageShip `json:"eligible_ships,omitempty"`
 	}
 	var result []item
 	for rows.Next() {
 		var m item
 		var tradeOffer []byte
+		var passagePortID, passagePortOwnerID *uuid.UUID
 		if err := rows.Scan(&m.ID, &m.DestID, &m.DestName, &m.Message, &m.Status, &m.ReplyText,
 			&m.SentAt, &m.ArrivesAt, &tradeOffer, &m.ExpiresAt,
-			&m.PassageStatus, &m.PassagePort, &m.CarrierName); err == nil {
+			&m.PassageStatus, &passagePortID, &m.PassagePort, &passagePortOwnerID, &m.CarrierName); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
+			}
+			if m.PassageStatus != nil && *m.PassageStatus == "awaiting_passage" && passagePortID != nil && passagePortOwnerID != nil {
+				m.CanArrangePassage = true
+				if ships, shErr := eligiblePassageShips(r.Context(), h.pool, worldID, playerID, *passagePortID, *passagePortOwnerID); shErr == nil {
+					m.EligibleShips = ships
+				}
 			}
 			result = append(result, m)
 		}

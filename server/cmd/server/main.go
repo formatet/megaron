@@ -309,6 +309,7 @@ func main() {
 	rdh := handlers.NewRetreatDefaultHandler(pool)
 	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock, sitosCfg)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
+	pah := handlers.NewPassageHandler(pool, scheduler, eventStore, gameClock)
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
 	jh.SetWorldStartWanaxes(worldStartWanaxes)
 	nh := handlers.NewNotificationsHandler(pool)
@@ -466,6 +467,7 @@ func main() {
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-accept", mh.TradeAccept)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-decline", mh.TradeDecline)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-cancel", mh.CancelOffer)
+			r.Post("/worlds/{worldID}/messengers/{messengerID}/passage", pah.Arrange)
 
 			r.Get("/worlds/{worldID}/notifications", nh.List)
 			r.Post("/worlds/{worldID}/notifications/read-all", nh.ReadAll)
