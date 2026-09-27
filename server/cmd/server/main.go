@@ -199,6 +199,9 @@ func main() {
 	// stay silently "marching" forever with no player-facing signal.
 	worker.RegisterDeadLetterHook(events.ScheduledUnitArrival, unitArrivalH.NotifyDeadLetter)
 	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
+	// R6 (megaron_plan_hamta_hem.md, slice 2b): a pickup ship's own wait timer,
+	// same self-terminating-sea-order shape as the sentry patrol above.
+	worker.Register(events.ScheduledPickupTimeout, unitArrivalH.HandlePickupTimeout)
 	// R6 (megaron_plan_skeppsuppdrag_landsatt.md): one-time deploy transition —
 	// a ship left 'positioned' at sea under the pre-R3 rules can no longer take
 	// any fresh order (R3), so send each one home once, at startup. Idempotent;
@@ -440,6 +443,9 @@ func main() {
 			r.Put("/worlds/{worldID}/retreat-default", rdh.Put)
 			r.Post("/worlds/{worldID}/units/{unitID}/load", uh.Load)
 			r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
+			// R1 (megaron_plan_hamta_hem.md, slice 2b): send a ship to fetch a
+			// unit standing positioned in the field on another landmass.
+			r.Post("/worlds/{worldID}/units/{unitID}/pickup", uh.Pickup)
 			r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
 			r.Post("/worlds/{worldID}/units/{unitID}/repair", uh.Repair)
 

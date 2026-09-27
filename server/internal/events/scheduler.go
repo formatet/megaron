@@ -195,6 +195,14 @@ const (
 	// limped/sunk. One instance per world, same self-perpetuating shape as
 	// ScheduledInterceptScan. internal/messenger/passage.go.
 	ScheduledPassageScan ScheduledEventType = "PassageScan"
+	// ScheduledPickupTimeout (megaron_plan_hamta_hem.md, slice 2b) fires when a
+	// pickup ship's wait off the shore (pickup_wait_ticks after arrival) runs
+	// out with the fetched unit still not there: the ship turns for home
+	// empty. Idempotent no-op if the ship already left pickup_wait by then
+	// (the unit made it and boarded first — R3/R4's own boarding path already
+	// dispatched it home). One instance per pickup mission that ever waits,
+	// armed by combat.UnitArrivalHandler.pickupArrived.
+	ScheduledPickupTimeout ScheduledEventType = "PickupTimeout"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

@@ -71,6 +71,9 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledLogisticsArrival: tickPriorityArrival,
 	ScheduledRecallArrival:    tickPriorityArrival,
 	ScheduledSentryReturn:     tickPriorityArrival,
+	// Same tier as the sentry patrol timer above — a self-terminating sea
+	// order's own timer firing and dispatching a home march.
+	ScheduledPickupTimeout:    tickPriorityArrival,
 	ScheduledMarchRecall:      tickPriorityArrival,
 	ScheduledOrderDelivery:    tickPriorityArrival,
 	ScheduledMessengerArrival: tickPriorityArrival,

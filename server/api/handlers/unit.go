@@ -6,11 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
+	"math"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"formatet/megaron/server/internal/auth"
@@ -345,10 +348,8 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 		writeError(w, http.StatusInternalServerError, "could not resolve courier route")
 		return
 	}
-	var passagePortID *uuid.UUID
 	var passageSinceTickArg *int
 	if passage != nil {
-		passagePortID = &passage.SettlementID
 		passageSinceTickArg = &passageSinceTick
 	}
 
@@ -359,20 +360,9 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 	}
 	defer tx.Rollback(ctx)
 
-	var originQ, originR *int
-	if origin.unitID != nil {
-		originQ, originR = &origin.q, &origin.r
-	}
-	var messengerID uuid.UUID
-	if err := tx.QueryRow(ctx,
-		`INSERT INTO messengers
-		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at, order_payload, passage_status, passage_port_id, passage_since_tick)
-		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','order',$8,$9,$10,$11,$12,$13,$14,$15,$16)
-		 RETURNING id`,
-		payload.WorldID, payload.PlayerID, origin.settlementID, origin.unitID, originQ, originR,
-		msgText, origin.q, origin.r, unitPos.Q, unitPos.R, courierArrivesAt, mustJSON(payload),
-		messenger.PassageStatusArg(passage), passagePortID, passageSinceTickArg,
-	).Scan(&messengerID); err != nil {
+	messengerID, err := insertOrderMessenger(ctx, tx, payload, msgText, origin,
+		unitPos.Q, unitPos.R, courierArrivesAt, passage, passageSinceTickArg)
+	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not dispatch order runner")
 		return
 	}
@@ -417,6 +407,44 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 func mustJSON(v any) []byte {
 	b, _ := json.Marshal(v)
 	return b
+}
+
+// insertOrderMessenger is the ONE INSERT shape for a kind='order' messenger
+// row — extracted out of sendOrderCourier (megaron_plan_hamta_hem.md R2) so
+// its two callers, sendOrderCourier's own route-resolved dispatch and the
+// pickup handler's bud (which already knows its route — it is created
+// directly at the ship's own port, never routed via messenger.
+// ResolveDeparture, since the whole point is to ride THIS specific ship) —
+// agree on what each column means. ⚠️ messengers.hex_q/hex_r/origin_q/origin_r
+// had drifted into meaning different things per INSERT path before (the 3b-3
+// lesson); one function now owns the mapping. hex_q/hex_r is always the
+// courier's own current (starting) position; dest_q/dest_r is the unit it is
+// walking to deliver the order to.
+func insertOrderMessenger(
+	ctx context.Context, tx pgx.Tx,
+	payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin,
+	destQ, destR int, arrivesAt time.Time,
+	passage *messenger.PassagePort, passageSinceTick *int,
+) (uuid.UUID, error) {
+	var originQ, originR *int
+	if origin.unitID != nil {
+		originQ, originR = &origin.q, &origin.r
+	}
+	var passagePortID *uuid.UUID
+	if passage != nil {
+		passagePortID = &passage.SettlementID
+	}
+	var messengerID uuid.UUID
+	err := tx.QueryRow(ctx,
+		`INSERT INTO messengers
+		     (world_id, sender_id, origin_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at, order_payload, passage_status, passage_port_id, passage_since_tick)
+		 VALUES ($1,$2,$3,$4,$5,$6,NULL,$7,'outbound','order',$8,$9,$10,$11,$12,$13,$14,$15,$16)
+		 RETURNING id`,
+		payload.WorldID, payload.PlayerID, origin.settlementID, origin.unitID, originQ, originR,
+		msgText, origin.q, origin.r, destQ, destR, arrivesAt, mustJSON(payload),
+		messenger.PassageStatusArg(passage), passagePortID, passageSinceTick,
+	).Scan(&messengerID)
+	return messengerID, err
 }
 
 // Recall handles POST /worlds/{worldID}/units/{unitID}/recall
@@ -672,6 +700,283 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 		Verb: mode, Recall: recallOrder,
 	}, msgText, courierOrigin, interceptPos, extra)
+}
+
+// Pickup handles POST /worlds/{worldID}/units/{unitID}/pickup — R1/R2,
+// megaron_plan_hamta_hem.md, slice 2b. unitID is the fetched unit (a land
+// unit standing positioned in the field, no settlement); the body names one
+// of the caller's own ships. Body: {"ship_id": "...", "wait_ticks": N?}.
+//
+// The ship sails to the shore nearest the fetched unit's own hex (the unit's
+// own hex, if it already stands on one reachable by sea from the ship's
+// port). If the unit does not already stand there, a runner is dispatched
+// automatically to march it there — riding the very same ship across the
+// sea, exactly like an arranged passage. See combat.StartMarch's "pickup"
+// intent, combat.UnitArrivalHandler.pickupArrived/boardPickupUnit/
+// HandlePickupTimeout/pickupReturned for what happens at either end of the
+// voyage.
+func (h *UnitHandler) Pickup(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	fetchUnitID, err := uuid.Parse(chi.URLParam(r, "unitID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid unit ID")
+		return
+	}
+
+	var req struct {
+		ShipID    string `json:"ship_id"`
+		WaitTicks *int   `json:"wait_ticks"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+	shipID, err := uuid.Parse(req.ShipID)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid ship_id")
+		return
+	}
+
+	ctx := r.Context()
+
+	// Load and validate the fetched unit (R1's first condition).
+	fetched, err := h.store.Get(ctx, fetchUnitID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "unit not found")
+		return
+	}
+	if fetched.OwnerID != playerID || fetched.WorldID != worldID {
+		writeError(w, http.StatusForbidden, "not your unit")
+		return
+	}
+	fetchedName := unit.LoadDisplayName(ctx, h.pool, fetchUnitID)
+	if unit.CategoryOf(fetched.Type) != unit.CategoryLand || !unit.CanEmbark(fetched.Type) {
+		writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s cannot be carried by ship", fetchedName))
+		return
+	}
+	switch fetched.Status {
+	case unit.StatusMarching:
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("%s is on the march — fetch it once it has halted", fetchedName))
+		return
+	case unit.StatusGarrison:
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("%s is in a city — send the ship there and load it", fetchedName))
+		return
+	case unit.StatusPositioned:
+		// ok — a field-positioned unit is exactly what pickup is for.
+	default:
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("%s cannot be fetched right now (status: %s)", fetchedName, string(fetched.Status)))
+		return
+	}
+	if fetched.SettlementID != nil || fetched.Q == nil || fetched.R == nil {
+		writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s has no known position in the field", fetchedName))
+		return
+	}
+	unitQ, unitR := *fetched.Q, *fetched.R
+
+	// Load and validate the ship (R1's second/third/fourth conditions — same
+	// "docked, garrison, no cargo" shape as ArrangePassage's own ship check).
+	ship, err := h.store.Get(ctx, shipID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "ship not found")
+		return
+	}
+	if ship.OwnerID != playerID || ship.WorldID != worldID {
+		writeError(w, http.StatusForbidden, "not your ship")
+		return
+	}
+	if unit.CategoryOf(ship.Type) != unit.CategoryNaval {
+		writeError(w, http.StatusUnprocessableEntity, "unit is not a naval vessel")
+		return
+	}
+	if ship.Status != unit.StatusGarrison || ship.SettlementID == nil {
+		writeError(w, http.StatusUnprocessableEntity,
+			"the ship must be docked in its own port, free of any mission, to be sent to fetch a unit")
+		return
+	}
+	if ship.CargoUnitID != nil {
+		writeError(w, http.StatusUnprocessableEntity, "the ship is already carrying a unit — unload it first")
+		return
+	}
+
+	waitTicks := combat.PickupWaitDefaultTicks
+	if req.WaitTicks != nil {
+		waitTicks = *req.WaitTicks
+		if waitTicks < 1 || waitTicks > combat.PickupWaitMaxTicks {
+			writeError(w, http.StatusBadRequest,
+				fmt.Sprintf("wait_ticks must be between 1 and %d", combat.PickupWaitMaxTicks))
+			return
+		}
+	}
+
+	shoreQ, shoreR, err := resolvePickupShore(ctx, h.pool, worldID, *ship.SettlementID, unitQ, unitR)
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("no open shore near %s that this ship can reach by sea", fetchedName))
+		return
+	}
+	runnerNeeded := shoreQ != unitQ || shoreR != unitR
+	if runnerNeeded && ship.Type == unit.TypeWarGalley {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("a war galley cannot carry a runner — %s must already stand on the shore, or send a galley or merchantman", fetchedName))
+		return
+	}
+
+	var shipPortQ, shipPortR int
+	if err := h.pool.QueryRow(ctx,
+		`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
+		*ship.SettlementID,
+	).Scan(&shipPortQ, &shipPortR); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load the ship's port")
+		return
+	}
+
+	// R2.1: the bud, if the unit does not already stand on the chosen shore.
+	// Created BEFORE the ship's own march (R2's own ordering) — a worst-case
+	// StartMarch failure right after leaves an orphaned, but self-healing,
+	// waiting runner: the existing PassageStalled dispatch (3b-4) surfaces it
+	// to the Wanax like any other stranded wait, rather than a silent leak.
+	estimateTicks := 0
+	var messengerID *uuid.UUID
+	res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, combat.MarchOrder{
+		WorldID: worldID, PlayerID: playerID, UnitID: shipID,
+		TargetQ: shoreQ, TargetR: shoreR,
+		Intent:          "pickup",
+		PickupUnitID:    &fetchUnitID,
+		PickupWaitTicks: waitTicks,
+	}, nil) // no FOW check: the shore is server-computed, not player-typed
+	if err != nil {
+		var rej *combat.OrderReject
+		if errors.As(err, &rej) {
+			writeError(w, rej.Status, rej.Reason)
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "pickup failed")
+		return
+	}
+
+	// R2.3: board the runner now, at dispatch — same reasoning as Arrange
+	// (R0, megaron_plan_hamta_hem.md).
+	// The runner is created only AFTER the ship's march is accepted: created
+	// first, a StartMarch rejection would strand a runner in port carrying an
+	// order the player was just told had failed (review 2026-09-28).
+	if runnerNeeded {
+		msgID, mErr := h.dispatchPickupRunner(ctx, worldID, playerID, fetchUnitID,
+			*ship.SettlementID, shipPortQ, shipPortR, shoreQ, shoreR, unitQ, unitR)
+		if mErr != nil {
+			// The ship has already sailed: it will wait its ticks and come home
+			// empty. Log it rather than answer 500 for a march that did start.
+			slog.Error("pickup: could not dispatch the runner after the ship sailed", "ship", shipID, "err", mErr)
+		} else {
+			messengerID = &msgID
+		}
+		if t, ok := estimateTicksToShore(ctx, h.pool, worldID, shoreQ, shoreR, unitQ, unitR, fetched.Type, fetched.Crew); ok {
+			estimateTicks = t
+		}
+	}
+
+	// R2.2.
+	if runnerNeeded {
+		if err := messenger.BoardDispatchedShipRunner(ctx, h.pool, h.scheduler, h.clk, worldID, shipID); err != nil {
+			slog.Error("pickup: board runner at dispatch failed", "ship", shipID, "err", err)
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"unit_id":                  shipID,
+		"pickup_unit_id":           fetchUnitID,
+		"shore_q":                  shoreQ,
+		"shore_r":                  shoreR,
+		"arrival_tick":             res.ArrivalTick,
+		"wait_ticks":               waitTicks,
+		"messenger_id":             messengerID,
+		"estimated_ticks_to_shore": estimateTicks,
+	})
+}
+
+// dispatchPickupRunner is R2.1 (megaron_plan_hamta_hem.md): creates the order
+// bud that will ride the pickup ship inland to march the fetched unit to the
+// shore. Unlike sendOrderCourier's own dispatch, this bud's route is already
+// known — it is created directly at the ship's own port and is ALWAYS
+// awaiting passage there (the whole point is to ride this specific ship), so
+// it goes straight through insertOrderMessenger rather than messenger.
+// ResolveDeparture's route search. arrives_at/passage_since_tick = now/the
+// current tick, same as ResolveReturnDeparture's own sea branch for a
+// messenger that already stands at its port with no landward leg to run.
+func (h *UnitHandler) dispatchPickupRunner(
+	ctx context.Context, worldID, playerID, fetchUnitID, shipSettlementID uuid.UUID,
+	portQ, portR, shoreQ, shoreR, unitQ, unitR int,
+) (uuid.UUID, error) {
+	now := h.clk.Now()
+	var currentTick int
+	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+
+	march := combat.MarchOrder{
+		WorldID: worldID, PlayerID: playerID, UnitID: fetchUnitID,
+		TargetQ: shoreQ, TargetR: shoreR,
+	}
+	payload := messenger.OrderDeliveryPayload{
+		WorldID: worldID, PlayerID: playerID, UnitID: fetchUnitID,
+		Verb: "march", March: &march,
+	}
+	msgText := fmt.Sprintf("Runner — order to march to (%d,%d) for pickup.", shoreQ, shoreR)
+	origin := orderOrigin{settlementID: &shipSettlementID, q: portQ, r: portR}
+	passage := &messenger.PassagePort{SettlementID: shipSettlementID, Q: portQ, R: portR}
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	messengerID, err := insertOrderMessenger(ctx, tx, payload, msgText, origin,
+		unitQ, unitR, now, passage, &currentTick)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return uuid.Nil, err
+	}
+	return messengerID, nil
+}
+
+// estimateTicksToShore is R2.4's estimated_ticks_to_shore (megaron_plan_
+// hamta_hem.md): the bud's own landward leg from the shore to the fetched
+// unit (CategoryCourierLand) plus the fetched unit's own march from itself
+// to the shore (its own category), rounded UP to a whole tick — so the Wanax
+// can choose wait_ticks with a real number in hand, not a guess. ok=false
+// when either leg has no route; best-effort — the caller then reports 0
+// rather than refusing the whole pickup over a preview number.
+func estimateTicksToShore(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, shoreQ, shoreR, unitQ, unitR int, unitType unit.Type, unitCrew int) (int, bool) {
+	shore := province.MapPosition{Q: shoreQ, R: shoreR}
+	unitPos := province.MapPosition{Q: unitQ, R: unitR}
+	_, courierHours, courierOK, cErr := province.FindPath(ctx, pool, worldID, shore, unitPos, province.CategoryCourierLand)
+	if cErr != nil || !courierOK {
+		return 0, false
+	}
+	_, marchHours, marchOK, mErr := province.FindPath(ctx, pool, worldID, unitPos, shore, string(unit.CategoryOf(unitType)))
+	if mErr != nil || !marchOK {
+		return 0, false
+	}
+	marchHours *= combat.TravelFactor(unitType, unitCrew, false)
+	ticks := int(math.Ceil(courierHours + marchHours))
+	if ticks < 1 {
+		ticks = 1
+	}
+	return ticks, true
 }
 
 // Load handles POST /worlds/{worldID}/units/{shipID}/load
@@ -1603,6 +1908,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
 	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
+	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
@@ -1770,6 +2076,38 @@ type unitSummary struct {
 	// FreightingNote is — the client never re-derives march_intent's meaning.
 	PassageFor       *string `json:"passage_for,omitempty"`
 	WaitingForReturn bool    `json:"waiting_for_return,omitempty"`
+	// PickupFor/ShoreQ,ShoreR/WaitingUntilTick (megaron_plan_hamta_hem.md,
+	// slice 2b): a ship on a "pickup"/"pickup_wait" mission names the fetched
+	// unit and the shore it is sailing to (or waiting off); WaitingUntilTick
+	// is set only while parked pickup_wait — the tick ScheduledPickupTimeout
+	// will fire at if the unit never makes it. Server-formatted for the same
+	// reason PassageFor is.
+	PickupFor        *string `json:"pickup_for,omitempty"`
+	ShoreQ           *int    `json:"shore_q,omitempty"`
+	ShoreR           *int    `json:"shore_r,omitempty"`
+	WaitingUntilTick *int    `json:"waiting_until_tick,omitempty"`
+	// CanFetchByShip/PickupShips (R1, megaron_plan_hamta_hem.md): a
+	// field-positioned OWN land unit (no settlement) that can be embarked
+	// carries the caller's own idle ships that satisfy pickup's ship
+	// condition — computed on the server so the client never re-derives R1's
+	// rule itself (megaron_arbetssatt: the client must never promise an
+	// action the server cannot perform). No sea route is checked per row —
+	// that is only ever proven at POST .../pickup.
+	CanFetchByShip bool               `json:"can_fetch_by_ship,omitempty"`
+	PickupShips    []pickupShipOption `json:"pickup_ships,omitempty"`
+}
+
+// pickupShipOption is one of the caller's own ships offered as a pickup
+// choice for a fetchable field unit (R1, megaron_plan_hamta_hem.md).
+type pickupShipOption struct {
+	ID             uuid.UUID `json:"id"`
+	Name           string    `json:"name"`
+	Type           string    `json:"type"`
+	SettlementID   uuid.UUID `json:"settlement_id"`
+	SettlementName string    `json:"settlement_name"`
+	// CanCarryRunner is false for a war galley — it can only fetch a unit
+	// that already stands on the shore, never one needing a runner (R1).
+	CanCarryRunner bool `json:"can_carry_runner"`
 }
 
 // attachBattleFlags sets InBattle for every unit that is currently an active
@@ -1909,6 +2247,144 @@ func attachPassageNotes(ctx context.Context, db province.Queryer, worldID uuid.U
 		summaries[i].PassageFor = &n
 		summaries[i].WaitingForReturn = waiting[shipID]
 	}
+}
+
+// attachPickupNotes fills PickupFor/ShoreQ/ShoreR/WaitingUntilTick (R1,
+// megaron_plan_hamta_hem.md) for every ship on a "pickup"/"pickup_wait"
+// mission, and CanFetchByShip/PickupShips for every field-positioned (no
+// settlement) OWN land unit that can be embarked — the surface a "Fetch by
+// ship" button reads. units carries the same rows ListUnits already loaded.
+func attachPickupNotes(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, units []*unit.Unit, summaries []unitSummary) {
+	index := make(map[uuid.UUID]int, len(summaries))
+	for i, s := range summaries {
+		index[s.ID] = i
+	}
+
+	var shipIDs []uuid.UUID
+	waiting := map[uuid.UUID]bool{}
+	var fetchableIDs []uuid.UUID
+	for _, u := range units {
+		if u.MarchIntent != nil {
+			switch *u.MarchIntent {
+			case "pickup":
+				shipIDs = append(shipIDs, u.ID)
+			case "pickup_wait":
+				shipIDs = append(shipIDs, u.ID)
+				waiting[u.ID] = true
+			}
+		}
+		if u.Status == "positioned" && u.SettlementID == nil &&
+			unit.CategoryOf(u.Type) == unit.CategoryLand && unit.CanEmbark(u.Type) {
+			fetchableIDs = append(fetchableIDs, u.ID)
+		}
+	}
+
+	if len(shipIDs) > 0 {
+		rows, err := db.Query(ctx,
+			`SELECT u.id, u.land_target_q, u.land_target_r, COALESCE(pu.name, pu.type, 'the unit')
+			   FROM units u
+			   LEFT JOIN units pu ON pu.id = u.pickup_unit_id
+			  WHERE u.world_id = $1 AND u.id = ANY($2)`,
+			worldID, shipIDs,
+		)
+		if err == nil {
+			for rows.Next() {
+				var shipID uuid.UUID
+				var shoreQ, shoreR *int
+				var pickupName string
+				if rows.Scan(&shipID, &shoreQ, &shoreR, &pickupName) != nil {
+					continue
+				}
+				i, ok := index[shipID]
+				if !ok {
+					continue
+				}
+				n := pickupName
+				summaries[i].PickupFor = &n
+				summaries[i].ShoreQ = shoreQ
+				summaries[i].ShoreR = shoreR
+			}
+			rows.Close()
+		}
+		if len(waiting) > 0 {
+			var waitingIDs []uuid.UUID
+			for id := range waiting {
+				waitingIDs = append(waitingIDs, id)
+			}
+			if rows, err := db.Query(ctx,
+				`SELECT (payload->>'unit_id')::uuid, due_tick FROM scheduled_events
+				  WHERE event_type = 'PickupTimeout' AND processed_at IS NULL
+				    AND (payload->>'unit_id')::uuid = ANY($1)`,
+				waitingIDs,
+			); err == nil {
+				for rows.Next() {
+					var shipID uuid.UUID
+					var dueTick int
+					if rows.Scan(&shipID, &dueTick) != nil {
+						continue
+					}
+					if i, ok := index[shipID]; ok {
+						t := dueTick
+						summaries[i].WaitingUntilTick = &t
+					}
+				}
+				rows.Close()
+			}
+		}
+	}
+
+	if len(fetchableIDs) == 0 {
+		return
+	}
+	ships, err := eligiblePickupShips(ctx, db, worldID, ownerID)
+	if err != nil || len(ships) == 0 {
+		return
+	}
+	for _, id := range fetchableIDs {
+		i, ok := index[id]
+		if !ok {
+			continue
+		}
+		summaries[i].CanFetchByShip = true
+		summaries[i].PickupShips = ships
+	}
+}
+
+// eligiblePickupShips lists ownerID's own idle ships that satisfy R1's ship
+// condition for a pickup mission: naval, garrisoned in their own port, no
+// cargo. Whether each can actually carry a runner (not a war galley) is
+// surfaced per-row so the client never re-derives R1's rule itself.
+func eligiblePickupShips(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID) ([]pickupShipOption, error) {
+	rows, err := db.Query(ctx,
+		`SELECT u.id, u.name, u.type, u.settlement_id, s.name
+		   FROM units u JOIN settlements s ON s.id = u.settlement_id
+		  WHERE u.world_id = $1 AND u.owner_id = $2 AND u.status = 'garrison'
+		    AND u.category = 'naval' AND u.cargo_unit_id IS NULL`,
+		worldID, ownerID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []pickupShipOption
+	for rows.Next() {
+		var s pickupShipOption
+		var name *string
+		if err := rows.Scan(&s.ID, &name, &s.Type, &s.SettlementID, &s.SettlementName); err != nil {
+			return nil, err
+		}
+		s.Name = unit.DisplayName(s.Type)
+		if name != nil && *name != "" {
+			s.Name = *name
+		}
+		s.CanCarryRunner = s.Type != string(unit.TypeWarGalley)
+		out = append(out, s)
+	}
+	if out == nil {
+		out = []pickupShipOption{}
+	}
+	return out, rows.Err()
 }
 
 // townNames är id → namn för de städer enheterna hänvisar till. Utan den kan

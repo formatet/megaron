@@ -59,3 +59,14 @@ Waiting for a ship to happen to sail the right way is not your only choice. From
 - **Bringing one home:** a runner that has finished its errand and is waiting in a **foreign** port may be fetched instead — any of your own ports will do. The ship sails there, waits (**War → Army** shows it "waiting at (…) for the runner's return", or `keryx unit` says the same), and carries the runner all the way home the moment it is ready to travel.
 - Either way, **the ship still finishes its own mission on its own** afterwards — it always sails home again, exactly like Land, Patrol or Explore. The runner never commands the ship; you send the ship for the runner, never the other way round. While it sails out, the drawer and `keryx unit` show it "carrying a runner to (…)".
 - The ship's own risks are unchanged: it can still be damaged, captured or sunk, and a starved crew still turns it for home ([[upkeep]]) — none of that touches the runner, who stands safely ashore the whole time.
+
+## Hämta hem — send a ship to fetch a unit
+
+A land [[units|unit]] stranded on another shore — landed there, or marched off on its own — cannot swim home. From that unit's own card (a **Fetch by ship** button, whenever one of your own ships qualifies), or `keryx unit pickup`, you send a ship to bring it back.
+
+- **The shore is chosen for you.** If the unit already stands on ground a ship can reach by sea, that is the shore. Otherwise the nearest open, unclaimed coastline near it is picked automatically — never a foreign city.
+- **A runner rides along if one is needed.** When the unit does not already stand on the chosen shore, a Runner boards the very same ship, steps ashore with it, and marches inland to order the unit to the shore — exactly like [[messengers|ordna passage]]'s own crossing, just carrying a march order instead of a letter. Only a Galley or Emporos can carry that runner; a War Galley may only fetch a unit that is already standing on the shore.
+- **The ship waits, but not forever.** You choose how many ticks it holds off the shore. If the unit reaches the shore in time, it boards at once and the ship sails home with it. If the wait runs out first, the ship sails home empty — you are told either way.
+- **Home is the end of the errand.** The moment the ship docks, the fetched unit steps off straight into that city's garrison — no separate Unload needed.
+
+None of this reaches a ship already at sea (ships take no orders once they sail — see "At sea" above): a pickup is a whole mission, given from port, same as Land, Patrol or Explore.

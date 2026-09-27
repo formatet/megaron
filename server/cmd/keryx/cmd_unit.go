@@ -33,6 +33,7 @@ func unitCmd() *cobra.Command {
 		unitLoadCmd(),
 		unitUnloadCmd(),
 		unitRepairCmd(),
+		unitPickupCmd(),
 	)
 	return cmd
 }
@@ -290,6 +291,27 @@ type unitRow struct {
 	// server-formatted for the same reason FreightingNote is.
 	PassageFor       *string `json:"passage_for"`
 	WaitingForReturn bool    `json:"waiting_for_return"`
+	// PickupFor/ShoreQ,ShoreR/WaitingUntilTick (megaron_plan_hamta_hem.md,
+	// slice 2b): a ship on a "pickup"/"pickup_wait" mission names the fetched
+	// unit and the shore it is sailing to or waiting off.
+	PickupFor        *string `json:"pickup_for"`
+	ShoreQ           *int    `json:"shore_q"`
+	ShoreR           *int    `json:"shore_r"`
+	WaitingUntilTick *int    `json:"waiting_until_tick"`
+	// CanFetchByShip/PickupShips: a field-positioned own land unit that can
+	// be embarked carries the caller's own idle ships eligible to fetch it.
+	CanFetchByShip bool               `json:"can_fetch_by_ship"`
+	PickupShips    []pickupShipChoice `json:"pickup_ships"`
+}
+
+// pickupShipChoice is one ship offered as a pickup choice for a fetchable
+// unit (megaron_plan_hamta_hem.md R1).
+type pickupShipChoice struct {
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Type           string `json:"type"`
+	SettlementName string `json:"settlement_name"`
+	CanCarryRunner bool   `json:"can_carry_runner"`
 }
 
 func formatSize(c *Client, u unitRow) string {
@@ -433,6 +455,24 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		}
 		return "waiting for " + dest
 	}
+	// Pickup wait (megaron_plan_hamta_hem.md, slice 2b): the ship stands
+	// positioned off the shore, holding for the fetched unit to reach it —
+	// ScheduledPickupTimeout is what sends it home if it never does.
+	if u.MarchIntent != nil && *u.MarchIntent == "pickup_wait" {
+		who := "the unit"
+		if u.PickupFor != nil && *u.PickupFor != "" {
+			who = *u.PickupFor
+		}
+		shore := ""
+		if u.ShoreQ != nil && u.ShoreR != nil {
+			shore = fmt.Sprintf("(%d,%d) ", *u.ShoreQ, *u.ShoreR)
+		}
+		until := ""
+		if u.WaitingUntilTick != nil {
+			until = fmt.Sprintf(" until tick %d", *u.WaitingUntilTick)
+		}
+		return fmt.Sprintf("waiting off %sfor %s%s", shore, who, until)
+	}
 	if isForwardPost(u) && u.Q != nil && u.R != nil {
 		loc := fmt.Sprintf("forward post at (%d,%d)", *u.Q, *u.R)
 		if u.OriginSettlementID != nil && homes != nil {
@@ -475,6 +515,20 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 			} else {
 				loc = "carrying a runner — "
 			}
+		}
+		// Pickup (megaron_plan_hamta_hem.md, slice 2b): sailing to fetch a
+		// unit — target_q/r is the sea waypoint, not the shore itself, same
+		// limitation "land"/"passage" have above.
+		if u.MarchIntent != nil && *u.MarchIntent == "pickup" {
+			who := "a unit"
+			if u.PickupFor != nil && *u.PickupFor != "" {
+				who = *u.PickupFor
+			}
+			shore := ""
+			if u.ShoreQ != nil && u.ShoreR != nil {
+				shore = fmt.Sprintf(" at (%d,%d)", *u.ShoreQ, *u.ShoreR)
+			}
+			loc = "sailing to fetch " + who + shore + " — "
 		}
 		if u.Q != nil && u.R != nil {
 			loc += fmt.Sprintf("(%d,%d)→", *u.Q, *u.R)
@@ -1489,6 +1543,83 @@ func unitUnloadCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&shipID, "ship", "", "ship unit UUID (required)")
+	_ = cmd.MarkFlagRequired("ship")
+	return cmd
+}
+
+// ---- unit pickup ---------------------------------------------------------
+
+// unitPickupCmd is "hämta hem" (megaron_plan_hamta_hem.md, slice 2b): send
+// one of the caller's own ships to fetch a unit standing positioned in the
+// field (no settlement) — the far side of "unit load", for a unit that
+// cannot simply be walked to a shared port. The ship sails to the shore
+// nearest the unit (or the unit's own hex, if it already stands on a
+// reachable one); if the unit needs to be ordered there first, a runner is
+// dispatched automatically, riding the same ship across the sea.
+func unitPickupCmd() *cobra.Command {
+	var shipID string
+	var waitTicks int
+
+	cmd := &cobra.Command{
+		Use:   "pickup <unit>",
+		Short: "Send a ship to fetch a unit standing in the field",
+		Example: `  keryx unit pickup <unit-id> --ship <ship-id> [--wait N]
+  (find fetchable units and eligible ships with: keryx unit)`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if shipID == "" {
+				return fmt.Errorf("--ship required (find eligible ships with: keryx unit)")
+			}
+			c := newClient(cfg)
+			resolvedUnit, uerr := resolveUnitID(c, cfg.WorldID, args[0])
+			if uerr != nil {
+				return uerr
+			}
+			resolvedShip, serr := resolveUnitID(c, cfg.WorldID, shipID)
+			if serr != nil {
+				return serr
+			}
+			body := map[string]any{"ship_id": resolvedShip}
+			if cmd.Flags().Changed("wait") {
+				body["wait_ticks"] = waitTicks
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/pickup", cfg.WorldID, resolvedUnit)
+			data, err := c.post(path, body)
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var resp struct {
+				UnitID                string  `json:"unit_id"`
+				ShoreQ                int     `json:"shore_q"`
+				ShoreR                int     `json:"shore_r"`
+				ArrivalTick           int     `json:"arrival_tick"`
+				WaitTicks             int     `json:"wait_ticks"`
+				MessengerID           *string `json:"messenger_id"`
+				EstimatedTicksToShore int     `json:"estimated_ticks_to_shore"`
+			}
+			if err := json.Unmarshal(data, &resp); err != nil {
+				return err
+			}
+			fmt.Printf("Ship %s sails to (%d,%d), arriving tick %d, waiting %d ticks there",
+				resp.UnitID[:8], resp.ShoreQ, resp.ShoreR, resp.ArrivalTick, resp.WaitTicks)
+			if resp.MessengerID != nil {
+				fmt.Printf(" — a runner rides along, estimated %d ticks to reach the unit and march it to the shore", resp.EstimatedTicksToShore)
+			}
+			fmt.Println()
+			if resp.MessengerID != nil && resp.WaitTicks < resp.EstimatedTicksToShore {
+				fmt.Printf("Note: the wait (%d ticks) is SHORTER than the estimate (%d ticks) — the ship may leave before the unit gets there. Consider --wait %d or more.\n",
+					resp.WaitTicks, resp.EstimatedTicksToShore, resp.EstimatedTicksToShore)
+			}
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&shipID, "ship", "", "ship UUID to send (required; galley or merchantman if a runner is needed)")
+	cmd.Flags().IntVar(&waitTicks, "wait", 0, "ticks to wait off the shore before turning home regardless (default: server default)")
 	_ = cmd.MarkFlagRequired("ship")
 	return cmd
 }

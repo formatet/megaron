@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"formatet/megaron/server/internal/auth"
@@ -195,6 +196,17 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// R0 (megaron_plan_hamta_hem.md): board the runner NOW, at dispatch —
+	// PassageScanHandler's next scan only finds a ship whose depart_tick
+	// equals the tick it is currently scanning, and a ship arranged mid-tick
+	// already misses that window (see BoardDispatchedShipRunner's own doc
+	// comment). Best-effort: a failure here is not this request's failure —
+	// the ship is already committed to its march, and the next scan pass
+	// still boards the runner one tick late rather than never.
+	if err := messenger.BoardDispatchedShipRunner(ctx, h.pool, h.scheduler, h.clk, worldID, req.ShipID); err != nil {
+		slog.Error("arrange passage: board runner at dispatch failed", "ship", req.ShipID, "err", err)
+	}
+
 	writeJSON(w, http.StatusAccepted, map[string]any{
 		"unit_id":        res.UnitID,
 		"messenger_id":   messengerID,
@@ -346,6 +358,38 @@ func resolveOutboundDisembark(ctx context.Context, pool *pgxpool.Pool, worldID, 
 	}
 	return 0, 0, fmt.Errorf(
 		"no open shore near the runner's destination that this ship can reach by sea — arrange passage is not possible here")
+}
+
+// resolvePickupShore is R1's shore rule (megaron_plan_hamta_hem.md, slice
+// 2b): the fetched unit's own hex, if it already stands on dry land with a
+// sea approach reachable from the ship's own port — the radius-0 case
+// resolveOutboundDisembark's own ring search never considers, since it
+// starts at radius 1 (added here, as its own small check, rather than by
+// changing that function's own behaviour). Otherwise, the nearest open shore
+// resolveOutboundDisembark already knows how to find, searched with the
+// unit's own hex as the target.
+func resolvePickupShore(ctx context.Context, pool *pgxpool.Pool, worldID, shipPortSettlementID uuid.UUID, unitQ, unitR int) (int, int, error) {
+	var terrain string
+	if err := pool.QueryRow(ctx,
+		`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+		worldID, unitQ, unitR,
+	).Scan(&terrain); err == nil && isDryLandTerrain(terrain) {
+		if unitSeaQ, unitSeaR, foundUnitSea, sErr := province.NearestSeaNeighbor(ctx, pool, worldID, unitQ, unitR); sErr == nil && foundUnitSea {
+			var shipPortQ, shipPortR int
+			if pErr := pool.QueryRow(ctx,
+				`SELECT p.map_q, p.map_r FROM provinces p JOIN settlements s ON s.province_id = p.id WHERE s.id = $1`,
+				shipPortSettlementID,
+			).Scan(&shipPortQ, &shipPortR); pErr == nil {
+				if shipSeaQ, shipSeaR, foundShipSea, sErr2 := province.NearestSeaNeighbor(ctx, pool, worldID, shipPortQ, shipPortR); sErr2 == nil && foundShipSea {
+					if _, _, navalOK, nErr := province.FindPath(ctx, pool, worldID,
+						province.MapPosition{Q: shipSeaQ, R: shipSeaR}, province.MapPosition{Q: unitSeaQ, R: unitSeaR}, "naval"); nErr == nil && navalOK {
+						return unitQ, unitR, nil
+					}
+				}
+			}
+		}
+	}
+	return resolveOutboundDisembark(ctx, pool, worldID, shipPortSettlementID, unitQ, unitR)
 }
 
 // isDryLandTerrain excludes sea/river (a ship cannot make landfall standing

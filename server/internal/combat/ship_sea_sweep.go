@@ -20,6 +20,12 @@ package combat
 // ever gets its ride, silently breaking "ordna passage" on every deploy.
 // PassageScanHandler's own release phase (R4) is its only path home.
 //
+// R7 (megaron_plan_hamta_hem.md, slice 2b): 'pickup_wait' is left alone for
+// the identical reason — the ship is waiting off a shore for a fetched unit,
+// and ScheduledPickupTimeout (armed at pickupArrived) is its only path home.
+// Sweeping it here would turn it around before that timer, or an early
+// boarding, ever gets the chance.
+//
 // Idempotent: it only ever selects status='positioned' naval units, and
 // dispatchReturnHome flips that to 'marching' — a second run (a restart, or
 // calling this twice) finds nothing left to do.
@@ -49,6 +55,7 @@ func SweepShipsAtSeaOnDeploy(ctx context.Context, pool *pgxpool.Pool, h *UnitArr
 		 JOIN worlds w ON w.id = u.world_id
 		 WHERE w.status = 'active' AND u.category = 'naval' AND u.status = 'positioned'
 		   AND (u.march_intent IS DISTINCT FROM 'passage_wait')
+		   AND (u.march_intent IS DISTINCT FROM 'pickup_wait')
 		   AND NOT EXISTS (
 		     SELECT 1 FROM scheduled_events se
 		     WHERE se.event_type = $1 AND se.processed_at IS NULL
@@ -108,7 +115,8 @@ func sweepOneShip(ctx context.Context, pool *pgxpool.Pool, h *UnitArrivalHandler
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
 		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent
 		 FROM units WHERE id = $1 AND status = 'positioned' AND category = 'naval'
-		   AND (march_intent IS DISTINCT FROM 'passage_wait') FOR UPDATE`,
+		   AND (march_intent IS DISTINCT FROM 'passage_wait')
+		   AND (march_intent IS DISTINCT FROM 'pickup_wait') FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &worldID, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
 		&u.status, &curQ, &curR, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
