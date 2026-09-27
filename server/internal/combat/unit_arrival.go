@@ -149,12 +149,14 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
-		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id
+		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id,
+		        pickup_unit_id, pickup_wait_ticks
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		unitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
 		&u.status, &curQ, &curR, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
-		&u.carriedSilver, &u.provisions, &u.landTargetQ, &u.landTargetR, &u.landCargoIntent, &u.passageMessengerID); err != nil {
+		&u.carriedSilver, &u.provisions, &u.landTargetQ, &u.landTargetR, &u.landCargoIntent, &u.passageMessengerID,
+		&u.pickupUnitID, &u.pickupWaitTicks); err != nil {
 		return fmt.Errorf("load arriving unit: %w", err)
 	}
 
@@ -257,6 +259,19 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	// No cargo to land — only the wait-or-go-home decision (passageArrived).
 	if u.marchIntent != nil && *u.marchIntent == "passage" {
 		return h.passageArrived(ctx, tx, u, destQ, destR, worldID)
+	}
+
+	// Pickup mission (R3, megaron_plan_hamta_hem.md, slice 2b): the ship has
+	// reached the sea hex next to the shore chosen for the unit it was sent
+	// to fetch.
+	if u.marchIntent != nil && *u.marchIntent == "pickup" {
+		return h.pickupArrived(ctx, tx, u, destQ, destR, worldID)
+	}
+
+	// Pickup return leg (R6): the ship — with or without the fetched unit
+	// aboard — is back at its home settlement's departure hex.
+	if u.marchIntent != nil && *u.marchIntent == "pickup_return" {
+		return h.pickupReturned(ctx, tx, u, destQ, destR, worldID)
 	}
 
 	// Find settlement at destination (if any). The JOIN condition's karens
@@ -470,6 +485,29 @@ func (h *UnitArrivalHandler) arriveGarrison(
 			R:         destR,
 			NewStatus: newStatus,
 		}, worldID, nil)
+
+	// R4 (megaron_plan_hamta_hem.md, slice 2b): a fetched land unit reaching
+	// the shore AFTER its pickup ship already got there and started waiting —
+	// board it right here, in the same transaction, regardless of WHY it
+	// arrived (the bud's own march order, or one the Wanax gave directly).
+	// Field combat never reaches this function (resolveFieldCombat is checked
+	// in resolve() before arriveGarrison is ever called), so a unit that
+	// lands in a fight never boards.
+	if newStatus == "positioned" && u.category == "land" {
+		if ship, found, sErr := h.pickupWaitingShipFor(ctx, tx, worldID, u.ownerID, u.id, destQ, destR); sErr != nil {
+			slog.Warn("pickup: check for waiting ship failed", "unit", u.id, "err", sErr)
+		} else if found {
+			boarded, bErr := h.boardPickupUnit(ctx, tx, ship.id, u.id, u.ownerID, ship.q, ship.r, worldID)
+			if bErr != nil {
+				slog.Warn("pickup: board fetched unit failed", "unit", u.id, "ship", ship.id, "err", bErr)
+			} else if boarded {
+				ship.cargoUnitID = &u.id
+				if rErr := h.dispatchReturnHome(ctx, tx, ship, ship.q, ship.r, worldID, returnReasonPickup); rErr != nil {
+					return fmt.Errorf("arriveGarrison: pickup ship return home: %w", rErr)
+				}
+			}
+		}
+	}
 
 	// Fas 2h: this was the one arrival path with no player-facing notification —
 	// ColonyFounded/ArmyArrival/OutpostEstablished already notify, but a plain
@@ -733,6 +771,350 @@ func (h *UnitArrivalHandler) ReleasePassageWaitShip(ctx context.Context, tx pgx.
 	return h.dispatchReturnHome(ctx, tx, u, u.q, u.r, worldID, returnReasonPassageRelease)
 }
 
+// pickupArrived handles a "pickup" mission ship reaching the sea hex next to
+// the shore api/handlers' pickup handler chose for the unit it was sent to
+// fetch (R3, megaron_plan_hamta_hem.md, slice 2b). If the fetched unit is
+// ALREADY standing right there (same owner, same hex, positioned), it boards
+// immediately and the ship turns for home with it aboard. Otherwise the ship
+// holds off the shore (status='positioned', march_intent='pickup_wait') and a
+// ScheduledPickupTimeout, pickup_wait_ticks out, decides what happens if the
+// unit never makes it (R6).
+func (h *UnitArrivalHandler) pickupArrived(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if u.homeSettlementID == nil || u.pickupUnitID == nil || u.landTargetQ == nil || u.landTargetR == nil || u.pickupWaitTicks == nil {
+		// Defensive: dispatch always sets these together for a pickup mission —
+		// never strand the ship over a data inconsistency.
+		slog.Warn("pickup arrival: missing home settlement/pickup unit/shore/wait, garrisoning ship in place instead", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+	shoreQ, shoreR := *u.landTargetQ, *u.landTargetR
+	pickupID := *u.pickupUnitID
+
+	var unitStatus string
+	var unitOwner uuid.UUID
+	var unitQ, unitR *int
+	alreadyThere := false
+	err := tx.QueryRow(ctx,
+		`SELECT status, owner_id, q, r FROM units WHERE id = $1`, pickupID,
+	).Scan(&unitStatus, &unitOwner, &unitQ, &unitR)
+	if err != nil && err != pgx.ErrNoRows {
+		return fmt.Errorf("pickup arrival: load fetched unit: %w", err)
+	}
+	if err == nil {
+		alreadyThere = unitStatus == "positioned" && unitOwner == u.ownerID &&
+			unitQ != nil && unitR != nil && *unitQ == shoreQ && *unitR == shoreR
+	}
+
+	if alreadyThere {
+		boarded, bErr := h.boardPickupUnit(ctx, tx, u.id, pickupID, u.ownerID, destQ, destR, worldID)
+		if bErr != nil {
+			return fmt.Errorf("pickup arrival: board unit: %w", bErr)
+		}
+		if boarded {
+			u.cargoUnitID = &pickupID
+			return h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonPickup)
+		}
+		// Fell through: the unit moved on/changed hands between the SELECT
+		// above and boardPickupUnit's own re-check under FOR UPDATE. Wait for
+		// it exactly as if it had never been there — the timeout is the only
+		// backstop either way.
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status       = 'positioned',
+		   q            = $2,
+		   r            = $3,
+		   target_q     = NULL,
+		   target_r     = NULL,
+		   departs_at   = NULL,
+		   arrives_at   = NULL,
+		   depart_tick  = NULL,
+		   arrive_tick  = NULL,
+		   march_intent = 'pickup_wait',
+		   updated_at   = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR,
+	); err != nil {
+		return fmt.Errorf("pickupArrived: post pickup_wait: %w", err)
+	}
+
+	if h.scheduler == nil {
+		return fmt.Errorf("pickupArrived: no scheduler configured, cannot arm pickup timeout")
+	}
+	var currentTick int
+	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	dueTick := currentTick + *u.pickupWaitTicks
+	payload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledPickupTimeout, payload, dueTick); err != nil {
+		return fmt.Errorf("pickupArrived: arm pickup timeout: %w", err)
+	}
+
+	if h.hub != nil {
+		shipName := unit.LoadDisplayName(ctx, tx, u.id)
+		pickupName := unit.LoadDisplayName(ctx, tx, pickupID)
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "PickupWaiting", 3, map[string]any{
+			"unit_id":            u.id,
+			"pickup_unit_id":     pickupID,
+			"q":                  destQ,
+			"r":                  destR,
+			"waiting_until_tick": dueTick,
+			"note":               fmt.Sprintf("%s waits off (%d,%d) for %s until tick %d", shipName, destQ, destR, pickupName, dueTick),
+		})
+	}
+	slog.Info("pickup: ship waiting off shore for fetched unit", "unit", u.id, "pickup_unit", pickupID, "until_tick", dueTick)
+	return nil
+}
+
+// boardPickupUnit is R5 (megaron_plan_hamta_hem.md): embarks the fetched land
+// unit onto its pickup ship — the ONE function both R3 (pickupArrived, the
+// ship reaches the shore and the unit is already standing there) and R4
+// (arriveGarrison, the unit reaches the shore after the ship already does)
+// call. Guard: the unit is still positioned, owned by the ship's owner, at
+// exactly (shipQ,shipR), and the ship carries no other cargo — never boards a
+// unit that has moved on, changed hands, or already been picked up by a
+// racing pass. Same effect as Load (api/handlers/unit.go): unit -> embarked,
+// settlement_id=NULL, q/r = the ship's hex (R10's tolerated state-change
+// write); ship.cargo_unit_id = unit. Event ShipLoaded (existing type,
+// existing meaning). Returns boarded=false, nil error when there was nothing
+// to board — not an error, the caller falls back to waiting.
+func (h *UnitArrivalHandler) boardPickupUnit(
+	ctx context.Context, tx pgx.Tx,
+	shipID, pickupUnitID, ownerID uuid.UUID, shipQ, shipR int, worldID uuid.UUID,
+) (bool, error) {
+	var status string
+	var unitOwner uuid.UUID
+	var q, r *int
+	if err := tx.QueryRow(ctx,
+		`SELECT status, owner_id, q, r FROM units WHERE id = $1 FOR UPDATE`, pickupUnitID,
+	).Scan(&status, &unitOwner, &q, &r); err != nil {
+		if err == pgx.ErrNoRows {
+			return false, nil // unit gone (disbanded/destroyed) — nothing to board
+		}
+		return false, fmt.Errorf("board pickup unit: load unit: %w", err)
+	}
+	if status != "positioned" || unitOwner != ownerID || q == nil || r == nil || *q != shipQ || *r != shipR {
+		return false, nil
+	}
+
+	var shipCargo *uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT cargo_unit_id FROM units WHERE id = $1 FOR UPDATE`, shipID,
+	).Scan(&shipCargo); err != nil {
+		return false, fmt.Errorf("board pickup unit: load ship: %w", err)
+	}
+	if shipCargo != nil {
+		return false, nil // ship already carries something — defensive, should not happen
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET status = 'embarked', settlement_id = NULL, q = $2, r = $3, updated_at = now() WHERE id = $1`,
+		pickupUnitID, shipQ, shipR,
+	); err != nil {
+		return false, fmt.Errorf("board pickup unit: embark: %w", err)
+	}
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET cargo_unit_id = $2, updated_at = now() WHERE id = $1`,
+		shipID, pickupUnitID,
+	); err != nil {
+		return false, fmt.Errorf("board pickup unit: load ship: %w", err)
+	}
+
+	_, _ = h.eventStore.Append(ctx, shipID, events.StreamType(unit.StreamUnit), unit.EventShipLoaded,
+		unit.ShipLoadedPayload{ShipUnitID: shipID, CargoUnitID: pickupUnitID, Q: shipQ, R: shipR}, worldID, nil)
+
+	if h.hub != nil {
+		unitName := unit.LoadDisplayName(ctx, tx, pickupUnitID)
+		shipName := unit.LoadDisplayName(ctx, tx, shipID)
+		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "UnitFetched", 4, map[string]any{
+			"unit_id": pickupUnitID,
+			"ship_id": shipID,
+			"q":       shipQ,
+			"r":       shipR,
+			"note":    fmt.Sprintf("%s is aboard %s, sailing home", unitName, shipName),
+		})
+	}
+	slog.Info("pickup: unit boarded fetching ship", "ship", shipID, "unit", pickupUnitID)
+	return true, nil
+}
+
+// pickupWaitingShipFor is R4's own half of R5's boarding (megaron_plan_
+// hamta_hem.md): the fetched unit reached the shore AFTER its ship already
+// did. Looks for a ship of ownerID currently holding pickup_wait for exactly
+// pickupUnitID at (shoreQ,shoreR), locking the row FOR UPDATE if found.
+// found=false (not an error) when no such ship is waiting there.
+func (h *UnitArrivalHandler) pickupWaitingShipFor(
+	ctx context.Context, tx pgx.Tx, worldID, ownerID, pickupUnitID uuid.UUID, shoreQ, shoreR int,
+) (unitRow, bool, error) {
+	var u unitRow
+	err := tx.QueryRow(ctx,
+		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
+		        carried_silver, provisions
+		   FROM units
+		  WHERE world_id = $1 AND owner_id = $2 AND status = 'positioned' AND march_intent = 'pickup_wait'
+		    AND pickup_unit_id = $3 AND land_target_q = $4 AND land_target_r = $5
+		  FOR UPDATE`,
+		worldID, ownerID, pickupUnitID, shoreQ, shoreR,
+	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
+		&u.carriedSilver, &u.provisions)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return unitRow{}, false, nil
+		}
+		return unitRow{}, false, err
+	}
+	return u, true, nil
+}
+
+// HandlePickupTimeout is the scheduled handler for ScheduledPickupTimeout
+// (R6, megaron_plan_hamta_hem.md): a pickup ship's wait off the shore has run
+// out — turn it home empty (the unit never made it). Idempotent — a ship no
+// longer holding pickup_wait (already released by R3/R4's own boarding,
+// destroyed, captured) is a no-op. Mirrors HandleSentryReturn's own shape.
+func (h *UnitArrivalHandler) HandlePickupTimeout(ctx context.Context, e events.ScheduledEvent) error {
+	var payload unit.ScheduledUnitArrivalPayload
+	if err := json.Unmarshal(e.Payload, &payload); err != nil {
+		return fmt.Errorf("unmarshal pickup timeout payload: %w", err)
+	}
+
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	var u unitRow
+	var pickupID *uuid.UUID
+	if err := tx.QueryRow(ctx,
+		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
+		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
+		        carried_silver, provisions, pickup_unit_id
+		 FROM units WHERE id = $1 FOR UPDATE`,
+		payload.UnitID,
+	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
+		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
+		&u.carriedSilver, &u.provisions, &pickupID); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil // ship gone (disbanded/destroyed/captured)
+		}
+		return fmt.Errorf("load pickup-waiting ship: %w", err)
+	}
+
+	// Idempotent: only a ship still holding pickup_wait times out here.
+	if u.status != "positioned" || u.marchIntent == nil || *u.marchIntent != "pickup_wait" || u.homeSettlementID == nil {
+		return tx.Commit(ctx)
+	}
+
+	if h.hub != nil {
+		shipName := unit.LoadDisplayName(ctx, tx, u.id)
+		var note string
+		if pickupID != nil {
+			pickupName := unit.LoadDisplayName(ctx, tx, *pickupID)
+			note = fmt.Sprintf("%s waited, but %s did not reach the shore — sailing home without it", shipName, pickupName)
+		} else {
+			note = fmt.Sprintf("%s waited, but the unit it was sent to fetch is gone — sailing home", shipName)
+		}
+		_ = h.hub.NotifyPlayer(ctx, payload.WorldID, u.ownerID, "PickupTimedOut", 3, map[string]any{
+			"unit_id": u.id,
+			"q":       u.q,
+			"r":       u.r,
+			"note":    note,
+		})
+	}
+
+	if err := h.dispatchReturnHome(ctx, tx, u, u.q, u.r, payload.WorldID, returnReasonPickup); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+// pickupReturned re-garrisons a pickup ship that finished its return leg (R6,
+// megaron_plan_hamta_hem.md) and — if it made it home with the fetched unit
+// still aboard (cargoUnitID set) — disembarks that unit straight into the
+// home settlement's garrison in the SAME transaction, exactly like Unload's
+// own fall (a): the mission's natural completion, not a second sequence the
+// Wanax must remember to run (an embarked unit left sitting in port pays
+// field ration until unloaded — upkeep.go). Same "bypass the hex→settlement
+// lookup" reason as exploreReturned/damagedShipReturned above.
+func (h *UnitArrivalHandler) pickupReturned(
+	ctx context.Context, tx pgx.Tx,
+	u unitRow, destQ, destR int, worldID uuid.UUID,
+) error {
+	if u.homeSettlementID == nil {
+		slog.Warn("pickup return: unit has no home_settlement_id, garrisoning in place instead", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status             = 'garrison',
+		   q                  = $2,
+		   r                  = $3,
+		   settlement_id      = $4,
+		   home_settlement_id = NULL,
+		   target_q           = NULL,
+		   target_r           = NULL,
+		   departs_at         = NULL,
+		   arrives_at         = NULL,
+		   depart_tick        = NULL,
+		   arrive_tick        = NULL,
+		   march_intent       = NULL,
+		   updated_at         = now()
+		 WHERE id = $1`,
+		u.id, destQ, destR, *u.homeSettlementID,
+	); err != nil {
+		return fmt.Errorf("pickupReturned: re-garrison ship: %w", err)
+	}
+
+	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
+		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "garrison"}, worldID, nil)
+
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+			"unit_id": u.id,
+			"name":    unit.LoadDisplayName(ctx, tx, u.id),
+			"q":       destQ,
+			"r":       destR,
+			"status":  "garrison",
+		})
+	}
+
+	if u.cargoUnitID != nil {
+		cargoID := *u.cargoUnitID
+		if _, err := tx.Exec(ctx,
+			`UPDATE units SET status = 'garrison', settlement_id = $2, q = $3, r = $4, updated_at = now()
+			 WHERE id = $1`,
+			cargoID, *u.homeSettlementID, destQ, destR,
+		); err != nil {
+			return fmt.Errorf("pickupReturned: disembark fetched unit: %w", err)
+		}
+		if _, err := tx.Exec(ctx, `UPDATE units SET cargo_unit_id = NULL WHERE id = $1`, u.id); err != nil {
+			return fmt.Errorf("pickupReturned: clear ship cargo: %w", err)
+		}
+		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventShipUnloaded,
+			unit.ShipUnloadedPayload{ShipUnitID: u.id, CargoUnitID: cargoID, Q: destQ, R: destR}, worldID, nil)
+
+		if h.hub != nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
+				"unit_id": cargoID,
+				"name":    unit.LoadDisplayName(ctx, tx, cargoID),
+				"q":       destQ,
+				"r":       destR,
+				"status":  "garrison",
+			})
+		}
+		slog.Info("pickup: ship returned home with fetched unit", "unit", u.id, "settlement", *u.homeSettlementID, "cargo", cargoID)
+		return nil
+	}
+
+	slog.Info("pickup: ship returned home empty", "unit", u.id, "settlement", *u.homeSettlementID)
+	return nil
+}
+
 // exploreArrived handles a unit reaching its explore target: instead of
 // garrisoning or fighting, it immediately turns back toward the settlement it
 // departed from (captured at dispatch as home_settlement_id, since the normal
@@ -852,6 +1234,13 @@ const (
 	// either its runner is ready to travel with it, or nothing is left to
 	// wait for.
 	returnReasonPassageRelease
+	// returnReasonPickup: a pickup mission's ship turns for home (R6,
+	// megaron_plan_hamta_hem.md, slice 2b) — either the fetched unit boarded
+	// (R3/R4) and rides home with it, or ScheduledPickupTimeout gave up
+	// waiting and it sails home empty. Which one happened is read off
+	// u.cargoUnitID at call time (set by the caller right after a successful
+	// boardPickupUnit), not carried as a separate flag.
+	returnReasonPickup
 )
 
 // dispatchReturnHome turns a field unit around and marches it back to its home
@@ -930,6 +1319,14 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
 	returnIntent := "explore_return"
+	// R6 (megaron_plan_hamta_hem.md): a pickup ship sailing home WITH its
+	// fetched unit aboard gets its own resolve-branch (pickupReturned) so the
+	// unit can be unloaded straight into garrison on arrival — an empty
+	// pickup return (timed out, or nothing was ever boarded) is otherwise
+	// indistinguishable from a plain explore return and reuses that path.
+	if reason == returnReasonPickup && u.cargoUnitID != nil {
+		returnIntent = "pickup_return"
+	}
 	// land_target_q/r, land_cargo_intent and passage_messenger_id (mig 147/149)
 	// are cleared here, not just at re-garrison: a "land" or "passage" ship's
 	// mission data would otherwise ride along, stale, onto this very return
@@ -961,6 +1358,8 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		   land_target_r = NULL,
 		   land_cargo_intent = NULL,
 		   passage_messenger_id = NULL,
+		   pickup_unit_id = NULL,
+		   pickup_wait_ticks = NULL,
 		   updated_at    = now()
 		 WHERE id = $1`,
 		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks, u.homeSettlementID,
@@ -1789,6 +2188,12 @@ type unitRow struct {
 	// ship was arranged to carry (outbound) or fetch (pickup). Read at arrival
 	// (passageArrived) and by the passage scan's release phase.
 	passageMessengerID *uuid.UUID
+	// pickupUnitID/pickupWaitTicks (mig 152, megaron_plan_hamta_hem.md, slice
+	// 2b): set only for marchIntent == "pickup"/"pickup_wait" — the unit this
+	// ship was sent to fetch, and how many ticks it waits off the shore for
+	// that unit before giving up and turning for home empty (HandlePickupTimeout).
+	pickupUnitID    *uuid.UUID
+	pickupWaitTicks *int
 	// carriedSilver is the colonist purse (mig 107): silver debited from the
 	// mother city at dispatch and riding on this unit. Credited to the colony it
 	// founds, or back into whatever settlement it walks into if it turns around.

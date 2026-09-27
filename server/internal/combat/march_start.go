@@ -41,7 +41,7 @@ type MarchOrder struct {
 	TargetQ  int
 	TargetR  int
 	Stance   string // optional; fortify|storm|sentry — persisted for C5
-	Intent   string // optional; "" = plain march, "colonize"/"explore"/"patrol"/"land"/"passage"
+	Intent   string // optional; "" = plain march, "colonize"/"explore"/"patrol"/"land"/"passage"/"pickup"
 	Name     string // optional colony name (used with intent=colonize, or intent=land + CargoIntent=colonize)
 	Mode     string // optional; "" = sack (default) | "annex"
 	// CargoIntent is R1's (megaron_plan_skeppsuppdrag_landsatt.md) optional
@@ -55,6 +55,16 @@ type MarchOrder struct {
 	// the disembark hex api/handlers.ArrangePassage already resolved (R2) —
 	// this field only carries which runner the ship is doing it for.
 	PassageMessengerID *uuid.UUID
+	// PickupUnitID/PickupWaitTicks are R1's (megaron_plan_hamta_hem.md, slice
+	// 2b) required payload for Intent == "pickup": the unit this ship is
+	// being sent to fetch, and how many ticks it waits off the shore for that
+	// unit before turning for home regardless. TargetQ/TargetR for this
+	// intent is the shore hex api/handlers' pickup handler already resolved
+	// (R1) — the unit's own hex if it already stands on a reachable shore,
+	// otherwise the nearest open shore found the same way
+	// resolveOutboundDisembark finds one for passage.
+	PickupUnitID    *uuid.UUID
+	PickupWaitTicks int
 }
 
 // OrderReject is a game-rule validation failure with the HTTP status the API
@@ -407,6 +417,53 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		targetQ, targetR = seaQ, seaR
 	}
 
+	// R1 (megaron_plan_hamta_hem.md, slice 2b): mission "pickup". Same shape
+	// as "passage" above — o.TargetQ/R is the shore hex api/handlers' pickup
+	// handler already resolved (R1), not yet the ship's real sailing target —
+	// but unlike passage there is no war-galley restriction here: whether a
+	// runner rides along at all (and therefore whether the galley restriction
+	// applies) was already decided by the handler before this order was ever
+	// built. A galley may be sent when the unit already stands on the shore.
+	pickupMission := o.Intent == "pickup"
+	var pickupShoreQ, pickupShoreR int
+	if pickupMission {
+		if unit.CategoryOf(u.Type) != unit.CategoryNaval {
+			return nil, reject(http.StatusUnprocessableEntity, "only a ship can be sent to fetch a unit")
+		}
+		// Distance 0 only, same reasoning as land/passage above.
+		if u.Status != unit.StatusGarrison {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"a pickup mission can only be given from a ship docked in its own port")
+		}
+		if o.PickupUnitID == nil {
+			return nil, reject(http.StatusBadRequest, "pickup needs the unit to fetch")
+		}
+		pickupShoreQ, pickupShoreR = o.TargetQ, o.TargetR
+		var pickupTerrain string
+		if err := pool.QueryRow(ctx,
+			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			o.WorldID, pickupShoreQ, pickupShoreR,
+		).Scan(&pickupTerrain); err != nil {
+			return nil, reject(http.StatusNotFound, "shore hex not found")
+		}
+		isSea := pickupTerrain == "coastal_sea" || pickupTerrain == "deep_sea" || pickupTerrain == "river" || pickupTerrain == "river_ford"
+		isMountain := pickupTerrain == "mountain_limestone" || pickupTerrain == "mountain_red"
+		if isSea || isMountain {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"(%d,%d) is not dry land — a pickup needs a shore to fetch from",
+				pickupShoreQ, pickupShoreR)
+		}
+		seaQ, seaR, foundSea, seaErr := province.NearestSeaNeighbor(ctx, pool, o.WorldID, pickupShoreQ, pickupShoreR)
+		if seaErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not resolve a sea approach to the shore")
+		}
+		if !foundSea {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"no open sea reaches (%d,%d) — pickup is not possible there", pickupShoreQ, pickupShoreR)
+		}
+		targetQ, targetR = seaQ, seaR
+	}
+
 	// Target hex must exist on this world's map.
 	var destTerrain string
 	if err := pool.QueryRow(ctx,
@@ -444,12 +501,12 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		o.Intent = "patrol"
 	}
 
-	// Intent validation: colonize, explore, patrol, land and passage are the
-	// only supported intents. Validate up front so the agent gets an
+	// Intent validation: colonize, explore, patrol, land, passage and pickup
+	// are the only supported intents. Validate up front so the agent gets an
 	// actionable error instead of a silent return-home at arrival.
-	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "patrol" && o.Intent != "land" && o.Intent != "passage" {
+	if o.Intent != "" && o.Intent != "colonize" && o.Intent != "explore" && o.Intent != "patrol" && o.Intent != "land" && o.Intent != "passage" && o.Intent != "pickup" {
 		return nil, reject(http.StatusBadRequest,
-			"unknown march intent %q (must be \"colonize\", \"explore\", \"patrol\", \"land\" or \"passage\")", o.Intent)
+			"unknown march intent %q (must be \"colonize\", \"explore\", \"patrol\", \"land\", \"passage\" or \"pickup\")", o.Intent)
 	}
 	// Del 2b: conquest choice. Empty defaults to "sack" (loot + raze); "annex" keeps
 	// the settlement (capital→colony takeover). Validated up front, same reasoning
@@ -825,6 +882,17 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			landTargetQArg, landTargetRArg = &lq, &lr
 			passageMessengerArg = o.PassageMessengerID
 		}
+		if pickupMission {
+			// Same reasoning as passage above: capture the home port now,
+			// before settlement_id is nulled, and reuse land_target_q/r for
+			// the shore hex — boardShipMissions/BoardDispatchedShipRunner
+			// already read those generically for any ship mission, so a
+			// pickup order's bud (if one rides along) boards exactly like a
+			// passage order's does.
+			homeSettlementArg = u.SettlementID
+			lq, lr := pickupShoreQ, pickupShoreR
+			landTargetQArg, landTargetRArg = &lq, &lr
+		}
 	}
 	// Amphibious assault: the ship carries intent=assault to its offshore hex so
 	// the arrival handler storms the adjacent coastal settlement with the cargo.
@@ -836,6 +904,16 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		a := "assault"
 		intentArg = &a
 		homeSettlementArg = u.SettlementID
+	}
+
+	// R1 (megaron_plan_hamta_hem.md): the fetched unit's id and the chosen
+	// wait, ridden on the ship for pickupArrived/HandlePickupTimeout to read.
+	var pickupUnitArg *uuid.UUID
+	var pickupWaitArg *int
+	if pickupMission {
+		pickupUnitArg = o.PickupUnitID
+		w := o.PickupWaitTicks
+		pickupWaitArg = &w
 	}
 
 	if _, err := tx.Exec(ctx,
@@ -859,10 +937,13 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		   land_target_r = $16,
 		   land_cargo_intent = $17,
 		   passage_messenger_id = $18,
+		   pickup_unit_id = $19,
+		   pickup_wait_ticks = $20,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		o.UnitID, originQ, originR, targetQ, targetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
 		currentTick, currentTick+travelTicks, landTargetQArg, landTargetRArg, landCargoIntentArg, passageMessengerArg,
+		pickupUnitArg, pickupWaitArg,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}
