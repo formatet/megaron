@@ -216,6 +216,31 @@ func (f *passageFixture) messengerRow(t *testing.T, id uuid.UUID) (status string
 	return
 }
 
+// passageRow is messengerRow's fuller cousin — used by the tests that also
+// need to see the carrier reference and the generation counter (R4's own
+// review fix: a stale, superseded event must fail a generation check).
+type passageRow struct {
+	status                            string
+	passageStatus                     *string
+	carrierName                       *string
+	carrierTransportID, carrierUnitID *uuid.UUID
+	lostUntil                         *int
+	generation                        int
+}
+
+func (f *passageFixture) fullRow(t *testing.T, id uuid.UUID) passageRow {
+	t.Helper()
+	var r passageRow
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT status, passage_status, carrier_name, carrier_transport_id, carrier_unit_id, passage_lost_until_tick, passage_generation
+		   FROM messengers WHERE id = $1`,
+		id,
+	).Scan(&r.status, &r.passageStatus, &r.carrierName, &r.carrierTransportID, &r.carrierUnitID, &r.lostUntil, &r.generation); err != nil {
+		t.Fatalf("load messenger: %v", err)
+	}
+	return r
+}
+
 func (f *passageFixture) countScheduled(t *testing.T, eventType string, messengerID uuid.UUID) int {
 	t.Helper()
 	var n int
@@ -226,6 +251,27 @@ func (f *passageFixture) countScheduled(t *testing.T, eventType string, messenge
 		t.Fatalf("count scheduled %s: %v", eventType, err)
 	}
 	return n
+}
+
+// loadScheduledEvent loads the (single, expected) pending scheduled_events
+// row of eventType for messengerID as an events.ScheduledEvent, so a test can
+// fire it through the real handler directly — capturing it BEFORE a later
+// scan supersedes it is how the R4 review-fix tests prove a stale event
+// really is a no-op, not just that the row's own fields look right.
+func (f *passageFixture) loadScheduledEvent(t *testing.T, eventType string, messengerID uuid.UUID) events.ScheduledEvent {
+	t.Helper()
+	var e events.ScheduledEvent
+	var payload []byte
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT id, world_id, event_type, payload, due_tick FROM scheduled_events
+		  WHERE event_type = $1 AND (payload->>'messenger_id') = $2
+		  ORDER BY id DESC LIMIT 1`,
+		eventType, messengerID.String(),
+	).Scan(&e.ID, &e.WorldID, &e.EventType, &payload, &e.DueTick); err != nil {
+		t.Fatalf("load scheduled %s event: %v", eventType, err)
+	}
+	e.Payload = payload
+	return e
 }
 
 func (f *passageFixture) handler() *PassageScanHandler {
@@ -254,8 +300,11 @@ func TestPassageScan_BoardsWaitingMessengerAndSchedulesDisembark(t *testing.T) {
 	if status != "outbound" {
 		t.Errorf("status = %q, want still outbound (not delivered yet)", status)
 	}
-	if passageStatus != nil {
-		t.Errorf("passage_status = %v, want NULL (boarded and disembark already scheduled)", *passageStatus)
+	// R4 review fix: 'aboard' must PERSIST for the whole voyage (not clear the
+	// instant boarding happens) — otherwise a lost carrier mid-voyage can
+	// never be found by detectLostCarriers.
+	if passageStatus == nil || *passageStatus != "aboard" {
+		t.Errorf("passage_status = %v, want aboard (still at sea, only cleared on actual delivery)", passageStatus)
 	}
 	if carrierName == nil || *carrierName == "" {
 		t.Error("carrier_name not set — boarding did not record which ship carried it")
@@ -297,8 +346,8 @@ func TestPassageScan_BoardsShipMission(t *testing.T) {
 	}
 
 	_, passageStatus, carrierName, _ := f.messengerRow(t, messengerID)
-	if passageStatus != nil {
-		t.Errorf("passage_status = %v, want NULL (boarded the ship mission)", *passageStatus)
+	if passageStatus == nil || *passageStatus != "aboard" {
+		t.Errorf("passage_status = %v, want aboard (still en route, cleared only on delivery)", passageStatus)
 	}
 	if carrierName == nil || *carrierName != "Test-mission-ship" {
 		t.Errorf("carrier_name = %v, want Test-mission-ship", carrierName)
@@ -328,8 +377,8 @@ func TestPassageScan_BoardsReturnLegFromForeignCity(t *testing.T) {
 	}
 
 	_, passageStatus, carrierName, _ := f.messengerRow(t, messengerID)
-	if passageStatus != nil {
-		t.Errorf("passage_status = %v, want NULL (boarded the return leg)", *passageStatus)
+	if passageStatus == nil || *passageStatus != "aboard" {
+		t.Errorf("passage_status = %v, want aboard (still en route, cleared only on delivery)", passageStatus)
 	}
 	if carrierName == nil || *carrierName == "" {
 		t.Error("carrier_name not set on the return leg")
@@ -378,65 +427,174 @@ func TestPassageScan_ReserveAfterWait(t *testing.T) {
 // flips transports.status to 'intercepted') — the messenger is sealed at its
 // (unchanged) port for PassageLostDelayTicks, then reappears
 // 'awaiting_passage', its contents never touched.
+// TestPassageScan_LostCarrierSealsThenPromotes is the review's own reproduction
+// of the R4 bug and its fix, run through the REAL flow end to end (not a
+// hand-crafted 'aboard' fixture, which the original version of this test used
+// and which the real code never actually produced — passage_status was
+// cleared the instant boarding happened, making detectLostCarriers dead code
+// in practice):
+//
+//  1. bud väntar → skepp avgår → scan bordar det (passage_status stays 'aboard')
+//  2. bäraren kapas (transports.status='intercepted', as transport.seize does)
+//  3. scan upptäcker förlusten → sealed, generation bumped
+//  4. den GAMLA, nu inaktuella schemalagda händelsen fyrar → måste vara en no-op
+//  5. efter fördröjningen → awaiting_passage igen
+//  6. ett nytt skepp bordas → ny generation, ny händelse
+//  7. den NYA händelsen fyrar → levererar verkligen, exakt en gång, innehållet orört
 func TestPassageScan_LostCarrierSealsThenPromotes(t *testing.T) {
 	f := setupPassageFixture(t)
 	ctx := context.Background()
+	arrivalH := NewArrivalHandler(f.pool, events.NewScheduler(f.pool, clock.NewTestClock(time.Now())), events.NewStore(f.pool), nil)
+
+	// 1. Bordning via det riktiga svepet.
+	messengerID := f.waitingMessenger(t, f.originID, f.currentTick+1)
 	shipID := f.ship(t, f.originID, "merchantman")
-	transportID := f.departingTransport(t, f.originID, shipID, f.currentTick+5)
-
-	var messengerID uuid.UUID
-	if err := f.pool.QueryRow(ctx,
-		`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, status, kind,
-		                          hex_q, hex_r, arrives_at, passage_status, passage_port_id, carrier_transport_id, carrier_name)
-		 VALUES ($1,$2,$3,$4,'sealed cargo','outbound','diplomatic',5,0,now(),'aboard',$5,$6,'Test-merchantman') RETURNING id`,
-		f.worldID, f.ownerID, f.originID, f.destID, f.originID, transportID,
-	).Scan(&messengerID); err != nil {
-		t.Fatalf("create aboard messenger: %v", err)
+	transportID := f.departingTransport(t, f.originID, shipID, f.currentTick+3)
+	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle (board): %v", err)
 	}
+	boarded := f.fullRow(t, messengerID)
+	if boarded.passageStatus == nil || *boarded.passageStatus != "aboard" {
+		t.Fatalf("passage_status after boarding = %v, want aboard", boarded.passageStatus)
+	}
+	if boarded.generation != 1 {
+		t.Fatalf("generation after boarding = %d, want 1", boarded.generation)
+	}
+	staleEvt := f.loadScheduledEvent(t, "MessengerArrival", messengerID)
 
+	// 2. Bäraren kapas (transport.seize's own flip, R5 of megaron_plan_sjohandel_kraver_skepp.md).
 	if _, err := f.pool.Exec(ctx, `UPDATE transports SET status = 'intercepted' WHERE id = $1`, transportID); err != nil {
 		t.Fatalf("simulate seizure: %v", err)
 	}
 
+	// 3. Scan upptäcker förlusten och förseglar.
 	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
 		t.Fatalf("Handle (detect loss): %v", err)
 	}
-	status, passageStatus, carrierName, lostUntil := f.messengerRow(t, messengerID)
-	if status != "outbound" {
-		t.Errorf("status after loss = %q, want still outbound (never delivered, never lost)", status)
+	sealed := f.fullRow(t, messengerID)
+	if sealed.status != "outbound" {
+		t.Errorf("status after loss = %q, want still outbound (never delivered, never lost)", sealed.status)
 	}
-	if passageStatus == nil || *passageStatus != "returning_sealed" {
-		t.Fatalf("passage_status after loss = %v, want returning_sealed", passageStatus)
+	if sealed.passageStatus == nil || *sealed.passageStatus != "returning_sealed" {
+		t.Fatalf("passage_status after loss = %v, want returning_sealed", sealed.passageStatus)
 	}
-	if carrierName != nil {
-		t.Errorf("carrier_name after loss = %v, want cleared", *carrierName)
+	if sealed.carrierTransportID != nil {
+		t.Errorf("carrier_transport_id after loss = %v, want cleared", *sealed.carrierTransportID)
 	}
-	if lostUntil == nil || *lostUntil != f.currentTick+PassageLostDelayTicks {
-		t.Errorf("passage_lost_until_tick = %v, want %d", lostUntil, f.currentTick+PassageLostDelayTicks)
+	if sealed.lostUntil == nil || *sealed.lostUntil != f.currentTick+PassageLostDelayTicks {
+		t.Errorf("passage_lost_until_tick = %v, want %d", sealed.lostUntil, f.currentTick+PassageLostDelayTicks)
+	}
+	if sealed.generation != 2 {
+		t.Fatalf("generation after seal = %d, want 2 (bumped so the stale event below recognizes itself)", sealed.generation)
+	}
+
+	// 4. THE BUG THIS TEST REPRODUCES: the OLD scheduled event (from step 1,
+	// generation 1) is still sitting in the queue at its original due_tick.
+	// Firing it now must be a no-op — before the review fix it would have
+	// delivered the messenger on schedule regardless of the lost ship.
+	if err := arrivalH.Handle(ctx, staleEvt); err != nil {
+		t.Fatalf("stale event Handle: %v", err)
+	}
+	afterStale := f.fullRow(t, messengerID)
+	if afterStale.status == "delivered" {
+		t.Fatal("the STALE (superseded) event delivered the messenger anyway — R4 is dead code again")
+	}
+	if afterStale.passageStatus == nil || *afterStale.passageStatus != "returning_sealed" {
+		t.Errorf("passage_status after firing the stale event = %v, want unchanged (returning_sealed)", afterStale.passageStatus)
 	}
 	var messageText string
 	if err := f.pool.QueryRow(ctx, `SELECT message_text FROM messengers WHERE id = $1`, messengerID).Scan(&messageText); err != nil {
 		t.Fatalf("load message text: %v", err)
 	}
-	if messageText != "sealed cargo" {
-		t.Errorf("message_text = %q, want unchanged (never read/altered by the loss)", messageText)
+	if messageText != "hello" {
+		t.Errorf("message_text = %q, want unchanged (never read/altered by the loss or the stale firing)", messageText)
 	}
 
 	// Not yet promoted before the delay elapses.
 	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
 		t.Fatalf("Handle (still sealed): %v", err)
 	}
-	_, passageStatus, _, _ = f.messengerRow(t, messengerID)
-	if passageStatus == nil || *passageStatus != "returning_sealed" {
-		t.Fatalf("passage_status before the delay elapsed = %v, want still returning_sealed", passageStatus)
+	stillSealed := f.fullRow(t, messengerID)
+	if stillSealed.passageStatus == nil || *stillSealed.passageStatus != "returning_sealed" {
+		t.Fatalf("passage_status before the delay elapsed = %v, want still returning_sealed", stillSealed.passageStatus)
 	}
 
+	// 5. Efter fördröjningen: promoteSealed släpper ut det igen.
 	f.setTick(t, f.currentTick+PassageLostDelayTicks)
 	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
 		t.Fatalf("Handle (promote): %v", err)
 	}
-	_, passageStatus, _, _ = f.messengerRow(t, messengerID)
-	if passageStatus == nil || *passageStatus != "awaiting_passage" {
-		t.Fatalf("passage_status after the delay = %v, want awaiting_passage again", passageStatus)
+	promoted := f.fullRow(t, messengerID)
+	if promoted.passageStatus == nil || *promoted.passageStatus != "awaiting_passage" {
+		t.Fatalf("passage_status after the delay = %v, want awaiting_passage again", promoted.passageStatus)
+	}
+
+	// 6. Ett nytt skepp avgår — bordar igen, ny generation, ny händelse.
+	shipID2 := f.ship(t, f.originID, "galley")
+	f.departingTransport(t, f.originID, shipID2, f.currentTick+3)
+	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle (reboard): %v", err)
+	}
+	reboarded := f.fullRow(t, messengerID)
+	if reboarded.generation != 3 {
+		t.Fatalf("generation after reboard = %d, want 3", reboarded.generation)
+	}
+
+	// 7. Den NYA händelsen fyrar — ska verkligen leverera budet, exakt en gång.
+	realEvt := f.loadScheduledEvent(t, "MessengerArrival", messengerID)
+	if err := arrivalH.Handle(ctx, realEvt); err != nil {
+		t.Fatalf("real event Handle: %v", err)
+	}
+	final := f.fullRow(t, messengerID)
+	if final.status != "delivered" {
+		t.Fatalf("status after the real event fired = %q, want delivered", final.status)
+	}
+	if final.passageStatus != nil {
+		t.Errorf("passage_status after delivery = %v, want NULL (cleared on real arrival)", final.passageStatus)
+	}
+	// Replaying the same (now legitimately-consumed) event again must still be
+	// the ordinary, pre-existing idempotency no-op (status != 'outbound').
+	if err := arrivalH.Handle(ctx, realEvt); err != nil {
+		t.Fatalf("replay of the real event: %v", err)
+	}
+}
+
+// TestPassageScan_LostShipMissionCarrierSeals is R4's other carrier kind
+// (megaron_plan_skeppsuppdrag_landsatt.md): a ship mission sunk in combat
+// (status flips to 'disbanded', the same terminal state ship_hull.go's own
+// sinking path uses) seals its boarded messenger exactly like a captured
+// sjötransport does.
+func TestPassageScan_LostShipMissionCarrierSeals(t *testing.T) {
+	f := setupPassageFixture(t)
+	ctx := context.Background()
+
+	messengerID := f.waitingMessenger(t, f.originID, f.currentTick+1)
+	arriveTick := f.currentTick + 4
+	shipID := f.marchingShip(t, 1, 0, 4, 0, f.currentTick, arriveTick)
+	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle (board): %v", err)
+	}
+	boarded := f.fullRow(t, messengerID)
+	if boarded.carrierUnitID == nil || *boarded.carrierUnitID != shipID {
+		t.Fatalf("carrier_unit_id after boarding = %v, want %s", boarded.carrierUnitID, shipID)
+	}
+
+	// Sunk in combat mid-voyage.
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET status = 'disbanded' WHERE id = $1`, shipID); err != nil {
+		t.Fatalf("simulate sinking: %v", err)
+	}
+
+	if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+		t.Fatalf("Handle (detect loss): %v", err)
+	}
+	sealed := f.fullRow(t, messengerID)
+	if sealed.passageStatus == nil || *sealed.passageStatus != "returning_sealed" {
+		t.Fatalf("passage_status after the ship sank = %v, want returning_sealed", sealed.passageStatus)
+	}
+	if sealed.carrierUnitID != nil {
+		t.Errorf("carrier_unit_id after loss = %v, want cleared", *sealed.carrierUnitID)
+	}
+	if sealed.generation != 2 {
+		t.Errorf("generation after seal = %d, want 2", sealed.generation)
 	}
 }

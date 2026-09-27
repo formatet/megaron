@@ -619,15 +619,23 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	return nil
 }
 
-// detectLostCarriers is R4: a boarded messenger whose transport carrier was
-// captured/limped/sunk (transport.seize flips transports.status to
-// 'intercepted' — the single outcome-flip for all three, R5 of
-// megaron_plan_sjohandel_kraver_skepp.md) is sealed back to its port for
-// PassageLostDelayTicks. Ship-mission carriers (combat's own naval combat) are
-// NOT covered here — see this slice's final report for that gap.
+// lostCarrierRow is one messenger whose carrier detectLostCarriers found lost.
+type lostCarrierRow struct {
+	id, sender uuid.UUID
+	carrierRef string // transport or unit id, for the log line only
+}
+
+// detectLostCarriers is R4: a boarded messenger whose carrier is lost is
+// sealed back to its port for PassageLostDelayTicks. Two carrier kinds:
+//   - transport (sjötransport): transport.seize flips transports.status to
+//     'intercepted' — the single outcome-flip for all three of
+//     captured/limped/sunk (R5 of megaron_plan_sjohandel_kraver_skepp.md).
+//   - ship mission (skeppsuppdrag): the unit is 'disbanded' (sunk in combat)
+//     or has changed owner (captured) — the two unit-table signals available
+//     without messenger importing combat's naval-battle internals (G1).
 func (h *PassageScanHandler) detectLostCarriers(ctx context.Context, worldID uuid.UUID, currentTick int) error {
-	rows, err := h.pool.Query(ctx,
-		`SELECT m.id, m.passage_port_id, m.sender_id, t.id AS transport_id
+	transportRows, err := h.pool.Query(ctx,
+		`SELECT m.id, m.sender_id, t.id
 		   FROM messengers m JOIN transports t ON t.id = m.carrier_transport_id
 		  WHERE m.world_id = $1 AND m.passage_status = 'aboard' AND t.status = 'intercepted'
 		  FOR UPDATE OF m SKIP LOCKED`,
@@ -636,46 +644,83 @@ func (h *PassageScanHandler) detectLostCarriers(ctx context.Context, worldID uui
 	if err != nil {
 		return err
 	}
-	type row struct {
-		id, port, sender, transport uuid.UUID
-	}
-	var lost []row
-	for rows.Next() {
-		var r row
-		if err := rows.Scan(&r.id, &r.port, &r.sender, &r.transport); err != nil {
-			rows.Close()
+	var lost []lostCarrierRow
+	for transportRows.Next() {
+		var r lostCarrierRow
+		var transportID uuid.UUID
+		if err := transportRows.Scan(&r.id, &r.sender, &transportID); err != nil {
+			transportRows.Close()
 			return err
 		}
+		r.carrierRef = "transport:" + transportID.String()
 		lost = append(lost, r)
 	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
+	transportRows.Close()
+	if err := transportRows.Err(); err != nil {
+		return err
+	}
+
+	shipRows, err := h.pool.Query(ctx,
+		`SELECT m.id, m.sender_id, u.id
+		   FROM messengers m JOIN units u ON u.id = m.carrier_unit_id
+		  WHERE m.world_id = $1 AND m.passage_status = 'aboard'
+		    AND (u.status = 'disbanded' OR u.owner_id != m.sender_id)
+		  FOR UPDATE OF m SKIP LOCKED`,
+		worldID,
+	)
+	if err != nil {
+		return err
+	}
+	for shipRows.Next() {
+		var r lostCarrierRow
+		var unitID uuid.UUID
+		if err := shipRows.Scan(&r.id, &r.sender, &unitID); err != nil {
+			shipRows.Close()
+			return err
+		}
+		r.carrierRef = "unit:" + unitID.String()
+		lost = append(lost, r)
+	}
+	shipRows.Close()
+	if err := shipRows.Err(); err != nil {
 		return err
 	}
 
 	for _, r := range lost {
-		tag, err := h.pool.Exec(ctx,
-			`UPDATE messengers
-			    SET passage_status = 'returning_sealed', passage_lost_until_tick = $2,
-			        carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL
-			  WHERE id = $1 AND passage_status = 'aboard'`,
-			r.id, currentTick+PassageLostDelayTicks,
-		)
-		if err != nil {
+		if err := h.sealLostCarrier(ctx, worldID, r, currentTick); err != nil {
 			slog.Error("passage scan: seal lost carrier", "messenger", r.id, "err", err)
-			continue
 		}
-		if tag.RowsAffected() == 0 {
-			continue
-		}
-		if h.hub != nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, r.sender, "OrderFailed", 3, map[string]any{
-				"messenger_id": r.id,
-				"reason":       "your runner's ship was lost — sealed and safe, back awaiting passage in port shortly",
-			})
-		}
-		slog.Info("passage: carrier lost, messenger sealed", "messenger", r.id, "transport", r.transport)
 	}
+	return nil
+}
+
+// sealLostCarrier seals one messenger back to its port after
+// PassageLostDelayTicks and bumps passage_generation — invalidating the
+// terminal event scheduleCompletion already scheduled for the carrier this
+// messenger just lost, so its (still-queued, now stale) firing is a no-op
+// wherever it lands (megaron_plan_budet_liftar.md R4 review fix).
+func (h *PassageScanHandler) sealLostCarrier(ctx context.Context, worldID uuid.UUID, r lostCarrierRow, currentTick int) error {
+	tag, err := h.pool.Exec(ctx,
+		`UPDATE messengers
+		    SET passage_status = 'returning_sealed', passage_lost_until_tick = $2,
+		        carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL,
+		        passage_generation = passage_generation + 1
+		  WHERE id = $1 AND passage_status = 'aboard'`,
+		r.id, currentTick+PassageLostDelayTicks,
+	)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return nil // already sealed/resolved by a racing pass
+	}
+	if h.hub != nil {
+		_ = h.hub.NotifyPlayer(ctx, worldID, r.sender, "OrderFailed", 3, map[string]any{
+			"messenger_id": r.id,
+			"reason":       "your runner's ship was lost — sealed and safe, back awaiting passage in port shortly",
+		})
+	}
+	slog.Info("passage: carrier lost, messenger sealed", "messenger", r.id, "carrier", r.carrierRef)
 	return nil
 }
 
@@ -731,25 +776,34 @@ func finalTargetQuery(ctx context.Context, db queryRower, messengerID uuid.UUID)
 }
 
 // scheduleCompletion (re)schedules the terminal delivery/arrival event for a
-// messenger that has just resolved its passage (boarded and disembarked, or
-// took the reserve) — the SAME event kind/payload shape the original
+// messenger that has just resolved a plan for its passage (boarded a carrier,
+// or took the reserve) — the SAME event kind/payload shape the original
 // dispatcher would have scheduled directly had no sea-lift been needed, so
-// ArrivalHandler/ReturnHandler/OrderDeliveryHandler need no changes at all.
+// ArrivalHandler/ReturnHandler/OrderDeliveryHandler's own delivery logic needs
+// no changes — only a generation check (see those handlers) to recognise a
+// firing this function's LATER call (after a lost-carrier re-boarding, or a
+// reserve taken instead) has superseded.
+//
+// Deliberately does NOT touch passage_status: a boarded messenger stays
+// 'aboard' — with carrier_transport_id/carrier_unit_id still set, so
+// PassageScanHandler.detectLostCarriers can find it — for the WHOLE voyage
+// and landward leg, only cleared by the delivery handler at actual arrival
+// (megaron_plan_budet_liftar.md R4 review fix, 2026-09-26: passage_status was
+// previously cleared here, the instant boarding happened, which made
+// detectLostCarriers's own query dead code in the real flow — it could only
+// ever match a hand-crafted test fixture).
 func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, messengerID uuid.UUID, dueTick int, arrivesAt time.Time) error {
 	var worldID uuid.UUID
 	var kind, status string
 	var orderPayload []byte
+	var generation int
 	if err := tx.QueryRow(ctx,
-		`SELECT world_id, kind, status, order_payload FROM messengers WHERE id = $1`,
-		messengerID,
-	).Scan(&worldID, &kind, &status, &orderPayload); err != nil {
-		return fmt.Errorf("schedule completion: load messenger: %w", err)
-	}
-	if _, err := tx.Exec(ctx,
-		`UPDATE messengers SET passage_status = NULL, arrives_at = $2 WHERE id = $1`,
+		`UPDATE messengers SET arrives_at = $2, passage_generation = passage_generation + 1
+		  WHERE id = $1
+		  RETURNING world_id, kind, status, order_payload, passage_generation`,
 		messengerID, arrivesAt,
-	); err != nil {
-		return fmt.Errorf("schedule completion: clear passage: %w", err)
+	).Scan(&worldID, &kind, &status, &orderPayload, &generation); err != nil {
+		return fmt.Errorf("schedule completion: update messenger: %w", err)
 	}
 
 	if kind == "order" {
@@ -760,14 +814,15 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 			}
 		}
 		p.MessengerID = messengerID
+		p.PassageGeneration = generation
 		return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledOrderDelivery, p, dueTick)
 	}
 	if status == "returning" {
 		return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerReturn,
-			ReturnPayload{MessengerID: messengerID}, dueTick)
+			ReturnPayload{MessengerID: messengerID, PassageGeneration: generation}, dueTick)
 	}
 	if err := sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledMessengerArrival,
-		ArrivalPayload{MessengerID: messengerID}, dueTick); err != nil {
+		ArrivalPayload{MessengerID: messengerID, PassageGeneration: generation}, dueTick); err != nil {
 		return err
 	}
 
