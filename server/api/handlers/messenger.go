@@ -823,6 +823,10 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 		// affordance reads this instead of re-deriving R1's rule itself.
 		CanArrangePassage bool                  `json:"can_arrange_passage"`
 		EligibleShips     []eligiblePassageShip `json:"eligible_ships,omitempty"`
+		// CanCallBack (megaron_plan_ordna_passage.md 3b-4 R5): true only for
+		// the OWN-port case — a runner waiting in a foreign port cannot be
+		// called back (messenger.ErrCallBackNotOwnPort).
+		CanCallBack bool `json:"can_call_back"`
 	}
 	var result []item
 	for rows.Next() {
@@ -840,6 +844,11 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 				if ships, shErr := eligiblePassageShips(r.Context(), h.pool, worldID, playerID, *passagePortID, *passagePortOwnerID); shErr == nil {
 					m.EligibleShips = ships
 				}
+				// R5: only an OUTBOUND runner may be called back — a return
+				// leg (status='returning') waiting for passage is the pickup
+				// case (3b-3 hämtning), never call-back-able even if, in some
+				// edge case, its port happens to be the sender's own.
+				m.CanCallBack = m.Status == "outbound" && *passagePortOwnerID == playerID
 			}
 			result = append(result, m)
 		}

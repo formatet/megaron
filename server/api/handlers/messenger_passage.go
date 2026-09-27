@@ -207,6 +207,56 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// CallBack handles POST /worlds/{worldID}/messengers/{messengerID}/call-back
+// — R5's "kalla tillbaka" (megaron_plan_ordna_passage.md, slice 3b-4): turn a
+// runner stuck 'awaiting_passage' in the caller's OWN port back home over
+// land, delivering nothing. See messenger.CallBack's own doc comment for the
+// mechanics and messenger.ErrCallBackNotOwnPort for the foreign-port refusal.
+func (h *PassageHandler) CallBack(w http.ResponseWriter, r *http.Request) {
+	playerID, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "not authenticated")
+		return
+	}
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid world ID")
+		return
+	}
+	messengerID, err := uuid.Parse(chi.URLParam(r, "messengerID"))
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "invalid messenger ID")
+		return
+	}
+
+	ctx := r.Context()
+	var currentTick int
+	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+
+	res, err := messenger.CallBack(ctx, h.pool, h.scheduler, worldID, messengerID, playerID, h.clk.Now(), currentTick)
+	if err != nil {
+		switch {
+		case errors.Is(err, messenger.ErrCallBackNotOwnPort):
+			writeError(w, http.StatusUnprocessableEntity, err.Error())
+		case errors.Is(err, messenger.ErrCallBackNotYours):
+			writeError(w, http.StatusForbidden, err.Error())
+		default:
+			writeError(w, http.StatusInternalServerError, "call back failed")
+		}
+		return
+	}
+	if !res.Started {
+		writeError(w, http.StatusUnprocessableEntity, "this runner is not currently waiting for passage")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"messenger_id": messengerID,
+		"status":       "returning",
+		"returns_at":   res.ReturnsAt,
+	})
+}
+
 // disembarkSearchMaxRadius bounds resolveOutboundDisembark's ring search
 // (below) — generous enough for any world this codebase seeds (64×64 is the
 // largest on record, megaron_moc.md), while still refusing to scan an

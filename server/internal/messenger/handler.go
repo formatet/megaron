@@ -349,15 +349,17 @@ func (h *ReturnHandler) notifyReturned(ctx context.Context, worldID, messengerID
 	var reply *string
 	var originName, destName *string
 	var q, r *int
+	var withdrawn bool
+	var kind string
 	if err := h.pool.QueryRow(ctx,
-		`SELECT m.sender_id, m.reply_text, o.name, d.name, opr.map_q, opr.map_r
+		`SELECT m.sender_id, m.reply_text, o.name, d.name, opr.map_q, opr.map_r, m.withdrawn, m.kind
 		   FROM messengers m
 		   LEFT JOIN settlements o   ON o.id   = m.origin_id
 		   LEFT JOIN provinces   opr ON opr.id = o.province_id
 		   LEFT JOIN settlements d   ON d.id   = m.destination_id
 		  WHERE m.id = $1`,
 		messengerID,
-	).Scan(&senderID, &reply, &originName, &destName, &q, &r); err != nil {
+	).Scan(&senderID, &reply, &originName, &destName, &q, &r, &withdrawn, &kind); err != nil {
 		slog.Warn("messenger return notice lookup", "messenger", messengerID, "err", err)
 		return
 	}
@@ -380,10 +382,19 @@ func (h *ReturnHandler) notifyReturned(ctx context.Context, worldID, messengerID
 	if q != nil && r != nil {
 		body["q"], body["r"] = *q, *r
 	}
-	// Level 2 when an answer came back — that is a thing to read and act on.
-	// A messenger returning unanswered is information, not a decision.
+	// withdrawn (3b-4 R5, "kalla tillbaka"): a called-back runner never
+	// reached its target — additive field, not a reinterpretation of
+	// MessengerReturned (CLAUDE.md: event semantics are frozen forever). The
+	// client says "order withdrawn" for kind='order', "came home undelivered"
+	// otherwise, rather than the ordinary no-reply text.
 	level := 3
-	if reply != nil && *reply != "" {
+	switch {
+	case withdrawn:
+		body["withdrawn"] = true
+		body["order"] = kind == "order"
+	case reply != nil && *reply != "":
+		// Level 2 when an answer came back — that is a thing to read and act
+		// on. A messenger returning unanswered is information, not a decision.
 		body["replied"] = true
 		body["reply"] = *reply
 		level = 2
