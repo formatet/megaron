@@ -115,11 +115,24 @@ func CallBack(ctx context.Context, pool *pgxpool.Pool, sched *events.Scheduler, 
 	returnsAt := now.Add(dur)
 	dueTick := currentTick + ticks
 
+	// passage_port_id is deliberately LEFT SET (planner review fix,
+	// megaron_plan_ordna_passage.md 3b-4): it is the only record of where
+	// this return leg actually starts. Nulling it (the original version of
+	// this function did) left province/eyes.go's and world.go's return-leg
+	// queries with no port to fall back to — they defaulted to the
+	// DESTINATION, a place this withdrawn runner never reached, and
+	// FindPath(destination→origin) fails outright now that the sea walls
+	// the courier (R3), so the eye sat on the far shore for the whole walk
+	// home. Same precedent as carrier_name, which already lingers on the row
+	// after boarding for exactly this reason (passage.go's own doc comment
+	// on scheduleCompletion). passage_status/passage_since_tick/
+	// passage_stalled_notified_tick DO still clear — those describe the
+	// (now-ended) waiting-for-a-ship spell, not the port itself.
 	if _, err := tx.Exec(ctx,
 		`UPDATE messengers
 		    SET status = 'returning', withdrawn = true,
 		        return_departs_at = $2, arrives_at = $3,
-		        passage_status = NULL, passage_port_id = NULL, passage_since_tick = NULL,
+		        passage_status = NULL, passage_since_tick = NULL,
 		        passage_stalled_notified_tick = NULL
 		  WHERE id = $1 AND status = 'outbound' AND passage_status = 'awaiting_passage'`,
 		messengerID, now, returnsAt,

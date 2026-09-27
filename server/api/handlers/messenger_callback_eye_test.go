@@ -13,9 +13,14 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/province"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -95,5 +100,85 @@ func TestLoadLiveEyes_CalledBackSeesPortNotFarShore(t *testing.T) {
 	}
 	if gotEye.Pos.Q != 2 || gotEye.Pos.R != 0 {
 		t.Fatalf("runner eye = %+v, want the port (2,0) at the instant of call-back", gotEye.Pos)
+	}
+}
+
+// TestMapMessengers_CalledBackShowsPortNotFarShore proves the SAME fix for
+// MapMessengers' own-runner marker (the map's origin_q/origin_r for a
+// 'returning' bud). It shares the exact code path a foreign viewer's sight
+// check reads too (seesInterpolatedActor is called with this same, already-
+// corrected m.OriginQ/m.OriginR, before the own/foreign branch) — so this one
+// case proves both surfaces the planner named, not just the own marker.
+func TestMapMessengers_CalledBackShowsPortNotFarShore(t *testing.T) {
+	f := setupNavalPlayerFixture(t)
+	ctx := context.Background()
+
+	inlandID := f.settlement(t, "Inland", 0, f.initiatorID, false)
+	f.mapTile(t, 1, 0, "plains")
+	portID := f.settlement(t, "Port", 2, f.initiatorID, true)
+	for q := 3; q <= 6; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	ugaritID := f.settlement(t, "Ugarit", 7, f.counterpartyID, true)
+
+	code, resp := f.post(t, f.initiatorToken,
+		"/worlds/"+f.worldID.String()+"/settlements/"+inlandID.String()+"/messengers",
+		map[string]any{"destination_id": ugaritID.String(), "message": "hello over sea"})
+	if code != 201 {
+		t.Fatalf("Send status = %d, want 201 (%v)", code, resp)
+	}
+	var messengerID uuid.UUID
+	if err := f.pool.QueryRow(ctx,
+		`SELECT id FROM messengers WHERE origin_id = $1 AND destination_id = $2`,
+		inlandID, ugaritID,
+	).Scan(&messengerID); err != nil {
+		t.Fatalf("load messenger: %v", err)
+	}
+
+	code, resp = f.post(t, f.initiatorToken,
+		"/worlds/"+f.worldID.String()+"/messengers/"+messengerID.String()+"/call-back", map[string]any{})
+	if code != 200 {
+		t.Fatalf("CallBack status = %d, want 200 (%v)", code, resp)
+	}
+
+	// Same secret as setupNavalPlayerFixture's own auth.NewService — a fresh
+	// instance validates the SAME bearer token (JWT signature check is
+	// stateless), no need to widen the fixture's own struct just for this.
+	authSvc := auth.NewService(f.pool, "test-secret")
+	wh := NewWorldHandler(f.pool, authSvc, f.clk)
+	r := chi.NewRouter()
+	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/messengers", wh.MapMessengers)
+
+	req := httptest.NewRequest(http.MethodGet, "/worlds/"+f.worldID.String()+"/messengers", nil)
+	req.Header.Set("Authorization", "Bearer "+f.initiatorToken)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("MapMessengers = %d %q, want 200", rec.Code, rec.Body.String())
+	}
+	var markers []struct {
+		ID      uuid.UUID `json:"id"`
+		OriginQ int       `json:"origin_q"`
+		OriginR int       `json:"origin_r"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &markers); err != nil {
+		t.Fatalf("decode markers: %v", err)
+	}
+	var found bool
+	for _, m := range markers {
+		if m.ID != messengerID {
+			continue
+		}
+		found = true
+		if m.OriginQ == 7 && m.OriginR == 0 {
+			t.Fatalf("marker origin sits at the far shore (7,0) it never reached — same bug as LoadLiveEyes, "+
+				"the return leg must start at the port (%s=2,0) it was called back from", portID)
+		}
+		if m.OriginQ != 2 || m.OriginR != 0 {
+			t.Fatalf("marker origin = (%d,%d), want the port (2,0)", m.OriginQ, m.OriginR)
+		}
+	}
+	if !found {
+		t.Fatalf("called-back messenger %s not found in MapMessengers response", messengerID)
 	}
 }

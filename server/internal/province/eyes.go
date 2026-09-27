@@ -185,7 +185,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 	rRows, err := db.Query(ctx,
 		`SELECT COALESCE(dp.map_q, m.dest_q), COALESCE(dp.map_r, m.dest_r),
 		        COALESCE(op.map_q, m.origin_q), COALESCE(op.map_r, m.origin_r),
-		        m.return_departs_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r
+		        m.return_departs_at, m.arrives_at, m.passage_status, pp.map_q, pp.map_r, m.withdrawn
 		 FROM messengers m
 		 LEFT JOIN settlements os ON os.id = m.origin_id
 		 LEFT JOIN provinces op ON op.id = os.province_id
@@ -206,7 +206,8 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			var departsAt, arrivesAt time.Time
 			var passageStatus *string
 			var portQ, portR *int
-			if rRows.Scan(&sq, &sr, &hq, &hr, &departsAt, &arrivesAt, &passageStatus, &portQ, &portR) != nil {
+			var withdrawn bool
+			if rRows.Scan(&sq, &sr, &hq, &hr, &departsAt, &arrivesAt, &passageStatus, &portQ, &portR, &withdrawn) != nil {
 				continue
 			}
 			// 3b-1: same leg-follows-status rule as the outbound query above.
@@ -221,7 +222,18 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 					continue
 				}
 			}
-			pos := MapPosition{Q: sq, R: sr}
+			// 3b-4 R5 "kalla tillbaka" (planner review fix): a withdrawn
+			// runner's return leg starts at the PORT it turned back from,
+			// never the destination it never reached — sq,sr (from
+			// destination_id/dest_q/dest_r) names the WRONG city here, and a
+			// courier route from that unreached destination back to origin
+			// may not even exist (that is exactly why it needed a ship).
+			// CallBack deliberately leaves passage_port_id set for this.
+			startQ, startR := sq, sr
+			if withdrawn && portQ != nil && portR != nil {
+				startQ, startR = *portQ, *portR
+			}
+			pos := MapPosition{Q: startQ, R: startR}
 			if hq != nil && hr != nil {
 				path, _, ok, pathErr := FindPath(ctx, db, worldID, pos,
 					MapPosition{Q: *hq, R: *hr}, CategoryCourier)
