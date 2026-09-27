@@ -1490,6 +1490,15 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 				m.OrderUnitID = &uid
 			}
 		}
+		// megaron_plan_ordna_passage.md 3b-1: a runner sealed aboard a carrier, or
+		// sealed between a lost carrier and its port, reveals nothing about its own
+		// position to anyone but its owner — it is not moving under its own power
+		// and is uninterceptable cargo. Drawing it as a mid-sea walker (the flat
+		// origin→destination interpolation below has no notion of "aboard") was the
+		// FOW leak this slice fixes. The carrier, if visible at all, is its own eye.
+		if !m.Own && m.PassageStatus != nil && (*m.PassageStatus == "aboard" || *m.PassageStatus == "returning_sealed") {
+			continue
+		}
 		// A player's own runner is drawn in full (info they already hold); every
 		// other runner is gated on the courier's CURRENT interpolated position, so a
 		// runner between two seen cities no longer leaks its whole route through fog.
