@@ -104,6 +104,10 @@ func setupNavalPlayerFixture(t *testing.T) *navalPlayerFixture {
 	// fixture's own mh construction above never has to change.
 	eventStore := events.NewStore(pool)
 	pah := NewPassageHandler(pool, scheduler, eventStore, clk)
+	// uh (megaron_plan_hamta_hem.md, slice 2b): the "pickup" verb — added here,
+	// same reasoning as pah above, so this fixture's own construction never
+	// has to change for tests exercising it.
+	uh := NewUnitHandler(pool, scheduler, eventStore, clk)
 
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))
@@ -112,6 +116,8 @@ func setupNavalPlayerFixture(t *testing.T) *navalPlayerFixture {
 	r.Post("/worlds/{worldID}/messengers/{messengerID}/reply", mh.Reply)
 	r.Post("/worlds/{worldID}/messengers/{messengerID}/passage", pah.Arrange)
 	r.Post("/worlds/{worldID}/messengers/{messengerID}/call-back", pah.CallBack)
+	r.Post("/worlds/{worldID}/units/{unitID}/pickup", uh.Pickup)
+	r.Get("/worlds/{worldID}/units", uh.ListUnits)
 
 	return &navalPlayerFixture{
 		pool: pool, worldID: worldID,

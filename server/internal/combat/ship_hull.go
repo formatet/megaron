@@ -340,6 +340,15 @@ func marchShipToNearestOwnPort(
 	arrivesAt := clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 	returnIntent := marchIntent
 
+	// R7 (megaron_plan_hamta_hem.md): clear every prior mission's ride-along
+	// columns here, same reasoning as dispatchReturnHome's own identical
+	// clearing (unit_arrival.go) — a damaged/captured ship reusing this path
+	// mid-"land"/"passage"/"pickup" mission would otherwise carry a STALE
+	// land_target_q/r (or passage/pickup id) onto this new "damaged_return"/
+	// "captured_return" march, and boardShipMissions reads land_target_q/r
+	// generically for ANY marching galley/merchantman regardless of intent —
+	// a leftover value could make a later scan try to board a stray waiting
+	// messenger at the wrong disembark point.
 	if _, err := tx.Exec(ctx,
 		`UPDATE units SET
 		   status             = 'marching',
@@ -357,6 +366,12 @@ func marchShipToNearestOwnPort(
 		   sentry_r           = NULL,
 		   home_settlement_id = $10,
 		   march_intent       = $7,
+		   land_target_q      = NULL,
+		   land_target_r      = NULL,
+		   land_cargo_intent  = NULL,
+		   passage_messenger_id = NULL,
+		   pickup_unit_id     = NULL,
+		   pickup_wait_ticks  = NULL,
 		   updated_at         = now()
 		 WHERE id = $1`,
 		unitID, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, tickIndex, tickIndex+travelTicks, homeSettlementID,

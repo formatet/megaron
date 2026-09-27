@@ -497,7 +497,7 @@ func (h *UnitArrivalHandler) arriveGarrison(
 		if ship, found, sErr := h.pickupWaitingShipFor(ctx, tx, worldID, u.ownerID, u.id, destQ, destR); sErr != nil {
 			slog.Warn("pickup: check for waiting ship failed", "unit", u.id, "err", sErr)
 		} else if found {
-			boarded, bErr := h.boardPickupUnit(ctx, tx, ship.id, u.id, u.ownerID, ship.q, ship.r, worldID)
+			boarded, bErr := h.boardPickupUnit(ctx, tx, ship.id, u.id, u.ownerID, destQ, destR, ship.q, ship.r, worldID)
 			if bErr != nil {
 				slog.Warn("pickup: board fetched unit failed", "unit", u.id, "ship", ship.id, "err", bErr)
 			} else if boarded {
@@ -808,7 +808,7 @@ func (h *UnitArrivalHandler) pickupArrived(
 	}
 
 	if alreadyThere {
-		boarded, bErr := h.boardPickupUnit(ctx, tx, u.id, pickupID, u.ownerID, destQ, destR, worldID)
+		boarded, bErr := h.boardPickupUnit(ctx, tx, u.id, pickupID, u.ownerID, shoreQ, shoreR, destQ, destR, worldID)
 		if bErr != nil {
 			return fmt.Errorf("pickup arrival: board unit: %w", bErr)
 		}
@@ -882,7 +882,7 @@ func (h *UnitArrivalHandler) pickupArrived(
 // to board — not an error, the caller falls back to waiting.
 func (h *UnitArrivalHandler) boardPickupUnit(
 	ctx context.Context, tx pgx.Tx,
-	shipID, pickupUnitID, ownerID uuid.UUID, shipQ, shipR int, worldID uuid.UUID,
+	shipID, pickupUnitID, ownerID uuid.UUID, shoreQ, shoreR, shipQ, shipR int, worldID uuid.UUID,
 ) (bool, error) {
 	var status string
 	var unitOwner uuid.UUID
@@ -895,7 +895,11 @@ func (h *UnitArrivalHandler) boardPickupUnit(
 		}
 		return false, fmt.Errorf("board pickup unit: load unit: %w", err)
 	}
-	if status != "positioned" || unitOwner != ownerID || q == nil || r == nil || *q != shipQ || *r != shipR {
+	// The unit must be standing exactly on the SHORE (a ship can never make
+	// landfall — shipQ/shipR below is the ship's own SEA hex, a different
+	// place, which is where the embarked unit is placed, not where it must
+	// already stand to board).
+	if status != "positioned" || unitOwner != ownerID || q == nil || r == nil || *q != shoreQ || *r != shoreR {
 		return false, nil
 	}
 
@@ -989,6 +993,12 @@ func (h *UnitArrivalHandler) HandlePickupTimeout(ctx context.Context, e events.S
 
 	var u unitRow
 	var pickupID *uuid.UUID
+	// q/r are scanned as nullable: a ship that left 'pickup_wait' by some
+	// OTHER path (sunk/captured — disbanded rows carry NULL q/r) must still
+	// load cleanly here so the idempotency guard below can see its status and
+	// no-op, exactly as HandleSentryReturn's own guard does for the same
+	// reason (unit_arrival.go's resolve() doc comment on scanning q/r).
+	var qPtr, rPtr *int
 	if err := tx.QueryRow(ctx,
 		`SELECT id, owner_id, type, category, size, crew, cargo_unit_id,
 		        status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,
@@ -996,7 +1006,7 @@ func (h *UnitArrivalHandler) HandlePickupTimeout(ctx context.Context, e events.S
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		payload.UnitID,
 	).Scan(&u.id, &u.ownerID, &u.utype, &u.category, &u.size, &u.crew, &u.cargoUnitID,
-		&u.status, &u.q, &u.r, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
+		&u.status, &qPtr, &rPtr, &u.targetQ, &u.targetR, &u.stance, &u.marchIntent, &u.colonyName, &u.homeSettlementID, &u.captureMode,
 		&u.carriedSilver, &u.provisions, &pickupID); err != nil {
 		if err == pgx.ErrNoRows {
 			return nil // ship gone (disbanded/destroyed/captured)
@@ -1008,6 +1018,10 @@ func (h *UnitArrivalHandler) HandlePickupTimeout(ctx context.Context, e events.S
 	if u.status != "positioned" || u.marchIntent == nil || *u.marchIntent != "pickup_wait" || u.homeSettlementID == nil {
 		return tx.Commit(ctx)
 	}
+	if qPtr == nil || rPtr == nil {
+		return fmt.Errorf("pickup-waiting ship %s has no position", u.id)
+	}
+	u.q, u.r = *qPtr, *rPtr
 
 	if h.hub != nil {
 		shipName := unit.LoadDisplayName(ctx, tx, u.id)

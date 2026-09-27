@@ -1903,6 +1903,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
 	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
+	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
@@ -2070,6 +2071,38 @@ type unitSummary struct {
 	// FreightingNote is — the client never re-derives march_intent's meaning.
 	PassageFor       *string `json:"passage_for,omitempty"`
 	WaitingForReturn bool    `json:"waiting_for_return,omitempty"`
+	// PickupFor/ShoreQ,ShoreR/WaitingUntilTick (megaron_plan_hamta_hem.md,
+	// slice 2b): a ship on a "pickup"/"pickup_wait" mission names the fetched
+	// unit and the shore it is sailing to (or waiting off); WaitingUntilTick
+	// is set only while parked pickup_wait — the tick ScheduledPickupTimeout
+	// will fire at if the unit never makes it. Server-formatted for the same
+	// reason PassageFor is.
+	PickupFor        *string `json:"pickup_for,omitempty"`
+	ShoreQ           *int    `json:"shore_q,omitempty"`
+	ShoreR           *int    `json:"shore_r,omitempty"`
+	WaitingUntilTick *int    `json:"waiting_until_tick,omitempty"`
+	// CanFetchByShip/PickupShips (R1, megaron_plan_hamta_hem.md): a
+	// field-positioned OWN land unit (no settlement) that can be embarked
+	// carries the caller's own idle ships that satisfy pickup's ship
+	// condition — computed on the server so the client never re-derives R1's
+	// rule itself (megaron_arbetssatt: the client must never promise an
+	// action the server cannot perform). No sea route is checked per row —
+	// that is only ever proven at POST .../pickup.
+	CanFetchByShip bool               `json:"can_fetch_by_ship,omitempty"`
+	PickupShips    []pickupShipOption `json:"pickup_ships,omitempty"`
+}
+
+// pickupShipOption is one of the caller's own ships offered as a pickup
+// choice for a fetchable field unit (R1, megaron_plan_hamta_hem.md).
+type pickupShipOption struct {
+	ID             uuid.UUID `json:"id"`
+	Name           string    `json:"name"`
+	Type           string    `json:"type"`
+	SettlementID   uuid.UUID `json:"settlement_id"`
+	SettlementName string    `json:"settlement_name"`
+	// CanCarryRunner is false for a war galley — it can only fetch a unit
+	// that already stands on the shore, never one needing a runner (R1).
+	CanCarryRunner bool `json:"can_carry_runner"`
 }
 
 // attachBattleFlags sets InBattle for every unit that is currently an active
@@ -2209,6 +2242,144 @@ func attachPassageNotes(ctx context.Context, db province.Queryer, worldID uuid.U
 		summaries[i].PassageFor = &n
 		summaries[i].WaitingForReturn = waiting[shipID]
 	}
+}
+
+// attachPickupNotes fills PickupFor/ShoreQ/ShoreR/WaitingUntilTick (R1,
+// megaron_plan_hamta_hem.md) for every ship on a "pickup"/"pickup_wait"
+// mission, and CanFetchByShip/PickupShips for every field-positioned (no
+// settlement) OWN land unit that can be embarked — the surface a "Fetch by
+// ship" button reads. units carries the same rows ListUnits already loaded.
+func attachPickupNotes(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, units []*unit.Unit, summaries []unitSummary) {
+	index := make(map[uuid.UUID]int, len(summaries))
+	for i, s := range summaries {
+		index[s.ID] = i
+	}
+
+	var shipIDs []uuid.UUID
+	waiting := map[uuid.UUID]bool{}
+	var fetchableIDs []uuid.UUID
+	for _, u := range units {
+		if u.MarchIntent != nil {
+			switch *u.MarchIntent {
+			case "pickup":
+				shipIDs = append(shipIDs, u.ID)
+			case "pickup_wait":
+				shipIDs = append(shipIDs, u.ID)
+				waiting[u.ID] = true
+			}
+		}
+		if u.Status == "positioned" && u.SettlementID == nil &&
+			unit.CategoryOf(u.Type) == unit.CategoryLand && unit.CanEmbark(u.Type) {
+			fetchableIDs = append(fetchableIDs, u.ID)
+		}
+	}
+
+	if len(shipIDs) > 0 {
+		rows, err := db.Query(ctx,
+			`SELECT u.id, u.land_target_q, u.land_target_r, COALESCE(pu.name, pu.type, 'the unit')
+			   FROM units u
+			   LEFT JOIN units pu ON pu.id = u.pickup_unit_id
+			  WHERE u.world_id = $1 AND u.id = ANY($2)`,
+			worldID, shipIDs,
+		)
+		if err == nil {
+			for rows.Next() {
+				var shipID uuid.UUID
+				var shoreQ, shoreR *int
+				var pickupName string
+				if rows.Scan(&shipID, &shoreQ, &shoreR, &pickupName) != nil {
+					continue
+				}
+				i, ok := index[shipID]
+				if !ok {
+					continue
+				}
+				n := pickupName
+				summaries[i].PickupFor = &n
+				summaries[i].ShoreQ = shoreQ
+				summaries[i].ShoreR = shoreR
+			}
+			rows.Close()
+		}
+		if len(waiting) > 0 {
+			var waitingIDs []uuid.UUID
+			for id := range waiting {
+				waitingIDs = append(waitingIDs, id)
+			}
+			if rows, err := db.Query(ctx,
+				`SELECT (payload->>'unit_id')::uuid, due_tick FROM scheduled_events
+				  WHERE event_type = 'PickupTimeout' AND processed_at IS NULL
+				    AND (payload->>'unit_id')::uuid = ANY($1)`,
+				waitingIDs,
+			); err == nil {
+				for rows.Next() {
+					var shipID uuid.UUID
+					var dueTick int
+					if rows.Scan(&shipID, &dueTick) != nil {
+						continue
+					}
+					if i, ok := index[shipID]; ok {
+						t := dueTick
+						summaries[i].WaitingUntilTick = &t
+					}
+				}
+				rows.Close()
+			}
+		}
+	}
+
+	if len(fetchableIDs) == 0 {
+		return
+	}
+	ships, err := eligiblePickupShips(ctx, db, worldID, ownerID)
+	if err != nil || len(ships) == 0 {
+		return
+	}
+	for _, id := range fetchableIDs {
+		i, ok := index[id]
+		if !ok {
+			continue
+		}
+		summaries[i].CanFetchByShip = true
+		summaries[i].PickupShips = ships
+	}
+}
+
+// eligiblePickupShips lists ownerID's own idle ships that satisfy R1's ship
+// condition for a pickup mission: naval, garrisoned in their own port, no
+// cargo. Whether each can actually carry a runner (not a war galley) is
+// surfaced per-row so the client never re-derives R1's rule itself.
+func eligiblePickupShips(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID) ([]pickupShipOption, error) {
+	rows, err := db.Query(ctx,
+		`SELECT u.id, u.name, u.type, u.settlement_id, s.name
+		   FROM units u JOIN settlements s ON s.id = u.settlement_id
+		  WHERE u.world_id = $1 AND u.owner_id = $2 AND u.status = 'garrison'
+		    AND u.category = 'naval' AND u.cargo_unit_id IS NULL`,
+		worldID, ownerID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []pickupShipOption
+	for rows.Next() {
+		var s pickupShipOption
+		var name *string
+		if err := rows.Scan(&s.ID, &name, &s.Type, &s.SettlementID, &s.SettlementName); err != nil {
+			return nil, err
+		}
+		s.Name = unit.DisplayName(s.Type)
+		if name != nil && *name != "" {
+			s.Name = *name
+		}
+		s.CanCarryRunner = s.Type != string(unit.TypeWarGalley)
+		out = append(out, s)
+	}
+	if out == nil {
+		out = []pickupShipOption{}
+	}
+	return out, rows.Err()
 }
 
 // townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
