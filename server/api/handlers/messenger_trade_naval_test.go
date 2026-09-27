@@ -111,6 +111,7 @@ func setupNavalPlayerFixture(t *testing.T) *navalPlayerFixture {
 	r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-accept", mh.TradeAccept)
 	r.Post("/worlds/{worldID}/messengers/{messengerID}/reply", mh.Reply)
 	r.Post("/worlds/{worldID}/messengers/{messengerID}/passage", pah.Arrange)
+	r.Post("/worlds/{worldID}/messengers/{messengerID}/call-back", pah.CallBack)
 
 	return &navalPlayerFixture{
 		pool: pool, worldID: worldID,
