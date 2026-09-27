@@ -464,10 +464,15 @@ func passageWaitShouldRelease(ctx context.Context, tx pgx.Tx, worldID uuid.UUID,
 // a NEW waiting spell, so passage_stalled_notified_tick resets to NULL and a
 // fresh PassageStalled dispatch may fire for it ("efter en ny försegling").
 func (h *PassageScanHandler) promoteSealed(ctx context.Context, worldID uuid.UUID, currentTick int) error {
+	// disembark_q/r/boarded_at/disembark_at (mig 151): sealLostCarrier already
+	// nulled these the instant this row left 'aboard', so this is belt-and-
+	// suspenders, not a live path — but a re-'awaiting_passage' row must never
+	// carry a stale prior voyage's disembark point forward into a NEW wait.
 	_, err := h.pool.Exec(ctx,
 		`UPDATE messengers
 		    SET passage_status = 'awaiting_passage', passage_since_tick = $2,
-		        passage_lost_until_tick = NULL, passage_stalled_notified_tick = NULL
+		        passage_lost_until_tick = NULL, passage_stalled_notified_tick = NULL,
+		        disembark_q = NULL, disembark_r = NULL, boarded_at = NULL, disembark_at = NULL
 		  WHERE world_id = $1 AND passage_status = 'returning_sealed'
 		    AND passage_lost_until_tick IS NOT NULL AND passage_lost_until_tick <= $2`,
 		worldID, currentTick,
@@ -872,14 +877,22 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	}
 	defer tx.Rollback(ctx)
 
+	// disembark_q/r/boarded_at/disembark_at (mig 151, megaron_plan_budets_tre_ben.md
+	// R2): the physical leg the carrier itself covers — disembarkAt/carrierArrivesAt
+	// were already computed above (this call's own params) but previously only
+	// ever folded into the SUM (arrives_at below); the client can now draw the
+	// aboard→ashore legs a boarded messenger actually walks. Runs for BOTH the
+	// outbound and return leg — this is the ONE place either ever boards.
 	tag, err := tx.Exec(ctx,
 		// Boarding ends this waiting spell, so the stall marker resets: the
 		// next spell (the return leg in a foreign port, or a re-wait after
 		// this carrier is lost) earns its own PassageStalled dispatch.
 		`UPDATE messengers SET passage_status = 'aboard', carrier_transport_id = $2,
-		        carrier_unit_id = $3, carrier_name = $4, passage_stalled_notified_tick = NULL
+		        carrier_unit_id = $3, carrier_name = $4, passage_stalled_notified_tick = NULL,
+		        disembark_q = $5, disembark_r = $6, boarded_at = $7, disembark_at = $8
 		  WHERE id = $1 AND passage_status = 'awaiting_passage'`,
 		messengerID, carrier.transportID, carrier.unitID, carrier.name,
+		disembarkAt.Q, disembarkAt.R, h.clk.Now(), carrierArrivesAt,
 	)
 	if err != nil {
 		return err
@@ -993,10 +1006,15 @@ func (h *PassageScanHandler) detectLostCarriers(ctx context.Context, worldID uui
 // messenger just lost, so its (still-queued, now stale) firing is a no-op
 // wherever it lands (megaron_plan_budet_liftar.md R4 review fix).
 func (h *PassageScanHandler) sealLostCarrier(ctx context.Context, worldID uuid.UUID, r lostCarrierRow, currentTick int) error {
+	// disembark_q/r/boarded_at/disembark_at (mig 151) describe the carrier this
+	// messenger just lost — a sealed messenger's real position is unknown
+	// (R3's own doc: "hamnen är det enda ärliga ankaret"), so all four null out
+	// exactly like carrier_transport_id/carrier_unit_id/carrier_name already do.
 	tag, err := h.pool.Exec(ctx,
 		`UPDATE messengers
 		    SET passage_status = 'returning_sealed', passage_lost_until_tick = $2,
 		        carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL,
+		        disembark_q = NULL, disembark_r = NULL, boarded_at = NULL, disembark_at = NULL,
 		        passage_generation = passage_generation + 1
 		  WHERE id = $1 AND passage_status = 'aboard'`,
 		r.id, currentTick+PassageLostDelayTicks,
