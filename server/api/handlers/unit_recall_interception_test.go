@@ -226,3 +226,116 @@ func TestRecall_UndeliverableFromFarCapital_FailsVisibly(t *testing.T) {
 			"a doomed dispatch must fail now, visibly, not silently later", rec.Code, rec.Body.String())
 	}
 }
+
+// TestRecall_UnitOnAnotherLandmass_Fails422 is 3b-4's acceptance criterion 4
+// (megaron_plan_ordna_passage.md, R4): a unit marching entirely on a
+// landmass with no land bridge to any of the sender's own cities can no
+// longer be caught by a Runner at all — the old abstract courier boat that
+// let a Runner cross open sea on its own is gone (R3), so
+// InterceptAlongPath finds no reachable hex on the march's path and the
+// dispatch is refused now, visibly, rather than queuing a courier that could
+// never physically arrive.
+//
+// Fixture: capital at (0,0) on its own landmass; a two-hex sea strait at
+// q=1..2; a second landmass at q=3..7 with no ford/bridge anywhere, where the
+// unit marches (3,0)→(7,0), just departed (the whole march still ahead, so
+// this is genuinely about REACHABILITY, not timing).
+func TestRecall_UnitOnAnotherLandmass_Fails422(t *testing.T) {
+	pool := unitLoadTestPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE status = 'active'`); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID) })
+
+	authSvc := auth.NewService(pool, "test-secret")
+	accessToken, _, err := authSvc.Register(ctx, "landmass-recall-"+uuid.New().String(), "x")
+	if err != nil {
+		t.Fatalf("register test player: %v", err)
+	}
+	claims, err := authSvc.ValidateAccessToken(accessToken)
+	if err != nil {
+		t.Fatalf("validate minted token: %v", err)
+	}
+	playerID := claims.PlayerID
+
+	tiles := map[[2]int]string{
+		{0, 0}: "plains",
+		{1, 0}: "coastal_sea", {2, 0}: "coastal_sea",
+		{3, 0}: "plains", {4, 0}: "plains", {5, 0}: "plains", {6, 0}: "plains", {7, 0}: "plains",
+	}
+	for xy, terrain := range tiles {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, xy[0], xy[1], terrain,
+		); err != nil {
+			t.Fatalf("create map tile (%d,%d): %v", xy[0], xy[1], err)
+		}
+	}
+
+	var capProvID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'plains') RETURNING id`,
+		worldID,
+	).Scan(&capProvID); err != nil {
+		t.Fatalf("create capital province: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Capital', 'achaean', $3, 'capital', true)`,
+		worldID, capProvID, playerID,
+	); err != nil {
+		t.Fatalf("create capital settlement: %v", err)
+	}
+
+	departsAt := time.Now()
+	arrivesAt := departsAt.Add(3 * time.Hour)
+	var unitID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r, target_q, target_r, departs_at, arrives_at)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'marching', 3, 0, 7, 0, $3, $4) RETURNING id`,
+		worldID, playerID, departsAt, arrivesAt,
+	).Scan(&unitID); err != nil {
+		t.Fatalf("create marching unit on the far landmass: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	uh := NewUnitHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk)
+	r := chi.NewRouter()
+	r.Use(auth.Middleware(authSvc))
+	r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
+
+	req := httptest.NewRequest(http.MethodPost,
+		"/worlds/"+worldID.String()+"/units/"+unitID.String()+"/recall", bytes.NewReader([]byte("{}")))
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("Recall = %d %q, want 422 — no Runner can reach a unit on a landmass the sender has no city on, "+
+			"with sea walling out the old abstract courier boat (3b-4 R3/R4)", rec.Code, rec.Body.String())
+	}
+	var body map[string]any
+	_ = json.Unmarshal(rec.Body.Bytes(), &body)
+	if reason, _ := body["error"].(string); reason == "" {
+		t.Error("422 response carries no reason — every rejection must say why (megaron_arbetssatt: never a silent fallback)")
+	}
+
+	var messengerCount int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM messengers WHERE world_id = $1 AND kind = 'order'`, worldID,
+	).Scan(&messengerCount); err != nil {
+		t.Fatalf("count order messengers: %v", err)
+	}
+	if messengerCount != 0 {
+		t.Errorf("order messengers created = %d, want 0 — a rejected dispatch must not partially commit", messengerCount)
+	}
+}

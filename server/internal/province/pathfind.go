@@ -81,12 +81,25 @@ var axialDirs = func() [6][2]int {
 // CategoryCourier routes Runners — order/message couriers
 // (temenos_orderlopare_plan.md Fas 4, beslut Timothy 2026-07-16): every land
 // hex except mountains at HALF a land unit's terrain ticks (2× spearman
-// speed), and sea hexes at the flat boat rate CourierSeaTicks (no land route =
-// the runner commandeers a boat). Mountains are routed around like for land.
+// speed). Mountains are routed around like for land.
+//
+// SEA is a wall (megaron_plan_ordna_passage.md, slice 3b-4, R3): the old
+// "abstract boat" — a courier silently commandeering a boat to cross
+// coastal_sea/deep_sea at the flat CourierSeaTicks rate — is gone. A runner
+// may only cross open sea aboard a real carrier now (internal/messenger's
+// sea-lift mechanic); a route needing the sea reports ok=false here, same as
+// for a land unit. RIVER is untouched and stays a boat crossing (below) —
+// that is a separate, pre-existing design (megaron_floden_plan.md, Timothy
+// 2026-07-29: "a runner commandeers a boat over a river the same as over the
+// sea") this slice does not touch; only rivers have their own ford substrate
+// (river_ford) as the deliberate land crossing.
 const CategoryCourier = "courier"
 
-// CourierSeaTicks is a courier's ticks per sea hex — the abstracted boat
-// passage. Replaced by real ships/trade-route legs when that mechanic exists.
+// CourierSeaTicks is a courier's ticks per RIVER hex — the abstracted boat
+// passage over a plain river (megaron_floden_plan.md), unaffected by 3b-4.
+// The name is a pre-existing misnomer now that sea itself is impassable for
+// CategoryCourier — kept as-is rather than renamed, to avoid an unrelated
+// identifier churn across the tree for a slice that did not touch rivers.
 const CourierSeaTicks = 0.5
 
 // CategoryCourierLand is CategoryCourier's land-only twin (megaron_plan_
@@ -100,7 +113,10 @@ const CategoryCourierLand = "courier_land"
 
 // isPassable reports whether terrain is traversable for the given unit category.
 //   - "naval": coastal_sea, deep_sea, river and river_ford are passable.
-//   - "courier": everything except mountains (sea and river = boat passage).
+//   - "courier": everything except mountains AND sea (river = boat passage,
+//     unaffected by 3b-4 — see CategoryCourier's own doc comment).
+//   - "courier_land": everything "courier" allows, minus river too — a pure
+//     land route with no water crossing of any kind.
 //   - "land" (and any other value): coastal_sea, deep_sea, river, mountain_limestone,
 //     mountain_red are impassable; semi_desert costs 2.0 but is passable.
 //     River is a wall for land units (megaron_floden_plan.md — Timothy 2026-07-29).
@@ -113,7 +129,11 @@ func isPassable(terrain, category string) bool {
 		return terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" || terrain == "river_ford"
 	}
 	if category == CategoryCourier {
-		return terrain != "mountain_limestone" && terrain != "mountain_red"
+		switch terrain {
+		case "coastal_sea", "deep_sea", "mountain_limestone", "mountain_red":
+			return false
+		}
+		return true
 	}
 	if category == CategoryCourierLand {
 		switch terrain {
@@ -131,10 +151,12 @@ func isPassable(terrain, category string) bool {
 
 // moveHoursFor returns the cost to enter a hex of terrain for the category.
 // Couriers run land at half a land unit's terrain hours (2× spearman speed —
-// temenos_synlighet.md §Nivå 1) and cross sea (and river — a runner commandeers
-// a boat over a river the same as over the sea, megaron_floden_plan.md) at the
-// flat boat rate; every other category pays the plain TerrainMoveTicks.
-// river_ford is deliberately ABSENT from the courier-sea-rate branch below: a
+// temenos_synlighet.md §Nivå 1) and cross a plain RIVER (a runner commandeers a
+// boat over a river the same as over the sea used to be, megaron_floden_plan.md
+// — untouched by 3b-4) at the flat boat rate; every other category pays the
+// plain TerrainMoveTicks. Sea never reaches this function for CategoryCourier —
+// isPassable above walls it out before moveHoursFor is ever asked its cost.
+// river_ford is deliberately ABSENT from the courier-boat-rate branch below: a
 // runner does not commandeer a boat to cross a ford, he wades (megaron_plan_
 // flodbudget_och_vadstalle.md) — it falls through to TerrainMoveTicks/2 like
 // any other land terrain, and TerrainMoveTicks("river_ford") is itself steep
@@ -142,7 +164,7 @@ func isPassable(terrain, category string) bool {
 // flat boat rate.
 func moveHoursFor(terrain, category string) float64 {
 	if category == CategoryCourier {
-		if terrain == "coastal_sea" || terrain == "deep_sea" || terrain == "river" {
+		if terrain == "river" {
 			return CourierSeaTicks
 		}
 		return TerrainMoveTicks(terrain) / 2

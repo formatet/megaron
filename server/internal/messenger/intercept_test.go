@@ -74,7 +74,10 @@ func TestInterceptAlongPath_FindsCatchableHexPastNaiveSnapshot(t *testing.T) {
 	// Sanity-check the fixture's own premise: the naive snapshot really is
 	// undeliverable, so this test would be vacuous if it weren't.
 	snapshot := province.MapPosition{Q: 6, R: 0}
-	_, naiveDur := CourierTravelOnGraph(g, courierOrigin, snapshot)
+	_, naiveDur, naiveOK := CourierTravelOnGraph(g, courierOrigin, snapshot)
+	if !naiveOK {
+		t.Fatal("test fixture broken: no route to the naive snapshot at all (grid is all plains)")
+	}
 	remaining := arrivesAt.Sub(now)
 	if naiveDur <= remaining {
 		t.Fatalf("test fixture broken: naive snapshot ETA %v should EXCEED the unit's remaining march time %v "+

@@ -3525,9 +3525,23 @@ func (h *ProvinceHandler) RecallMarch(w http.ResponseWriter, r *http.Request) {
 
 	// Dispatch a visible recall messenger toward the interception hex, not the
 	// army's full destination — messenger_travel_ticks below is honestly the
-	// courier's time to THAT point.
-	recallTravelTicks, recallTravelDur := messenger.CourierTravel(r.Context(), h.pool, worldID,
+	// courier's time to THAT point. ok is guaranteed true here: interceptPos
+	// came from this same InterceptCourierTarget call above (courierOrigin ==
+	// originPos), which only ever returns a hex CourierTravelOnGraph already
+	// proved reachable by a real land route (3b-4 R3/R4) — a stopvillkor for
+	// this slice: aggregate-recall is left with land intercept and a plain
+	// 422 on the (should-be-unreachable) inconsistency, not rebuilt.
+	recallTravelTicks, recallTravelDur, travelOK, travelErr := messenger.CourierTravel(r.Context(), h.pool, worldID,
 		originPos, interceptPos)
+	if travelErr != nil {
+		writeError(w, http.StatusInternalServerError, "could not resolve recall messenger travel time")
+		return
+	}
+	if !travelOK {
+		writeError(w, http.StatusUnprocessableEntity,
+			"no Runner can reach it overland — it is across the sea from every city of yours; wait until it arrives, then send a fresh order")
+		return
+	}
 	messengerArrivesAt := h.clk.Now().Add(recallTravelDur)
 
 	var marchRecallCurrentTick int

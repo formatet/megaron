@@ -121,14 +121,29 @@ type RouteDecision struct {
 // `from` toward `to` needs the sea-lift mechanic (R1: "vid varje avsändande").
 // Mode==RouteLand: proceed exactly as before this slice. Mode==RouteSea &&
 // PortFound: run the landward leg to Port and wait there. Mode==RouteSea &&
-// !PortFound: no reachable port at all — take the reserve immediately.
+// !PortFound: no reachable port at all — ResolveDeparture reports ErrNoPort
+// (3b-4 R2; the old reserve fallback is gone).
 func PlanOutboundRoute(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, from, to province.MapPosition) (RouteDecision, error) {
 	_, _, landOK, err := province.FindPath(ctx, db, worldID, from, to, province.CategoryCourierLand)
 	if err != nil {
 		return RouteDecision{}, fmt.Errorf("plan outbound route: land check: %w", err)
 	}
 	if landOK {
-		ticks, dur := CourierTravel(ctx, db, worldID, from, to)
+		// CourierTravel (plain CategoryCourier, river still boatable —
+		// megaron_floden_plan.md, untouched by 3b-4) rather than the
+		// CategoryCourierLand cost above: a route with no sea alternative may
+		// still shortcut a river by boat, exactly as before this slice — only
+		// SEA shortcuts are gone (R3). landOK guarantees a CategoryCourierLand
+		// path exists, and CategoryCourier permits everything that does plus
+		// rivers, so ok=false here would be an internal inconsistency, not a
+		// player-facing case.
+		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+		if cErr != nil {
+			return RouteDecision{}, fmt.Errorf("plan outbound route: land ticks: %w", cErr)
+		}
+		if !ok {
+			return RouteDecision{}, fmt.Errorf("plan outbound route: land route found but courier travel time could not be computed")
+		}
 		return RouteDecision{Mode: RouteLand, Ticks: ticks, Dur: dur}, nil
 	}
 
@@ -171,7 +186,16 @@ func PlanReturnRoute(ctx context.Context, db province.Queryer, worldID uuid.UUID
 		return RouteDecision{}, fmt.Errorf("plan return route: land check: %w", err)
 	}
 	if landOK {
-		ticks, dur := CourierTravel(ctx, db, worldID, from, to)
+		// See PlanOutboundRoute's own comment: plain CourierTravel, not the
+		// CategoryCourierLand cost — a river shortcut is still fine, only sea
+		// shortcuts are gone (3b-4 R3).
+		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+		if cErr != nil {
+			return RouteDecision{}, fmt.Errorf("plan return route: land ticks: %w", cErr)
+		}
+		if !ok {
+			return RouteDecision{}, fmt.Errorf("plan return route: land route found but courier travel time could not be computed")
+		}
 		return RouteDecision{Mode: RouteLand, Ticks: ticks, Dur: dur}, nil
 	}
 	return RouteDecision{
@@ -856,7 +880,18 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 		return nil // already boarded/resolved
 	}
 
-	landTicks, landDur := CourierTravel(ctx, tx, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR})
+	// boardEligible already proved a CategoryCourierLand path exists from
+	// disembarkAt to the target right before calling this — CourierTravel
+	// (plain CategoryCourier) permits everything that does, plus rivers, so
+	// !ok here would be an internal inconsistency: fail the boarding rather
+	// than guess a landward-leg time, and let a later scan retry it.
+	landTicks, landDur, ok, err := CourierTravel(ctx, tx, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR})
+	if err != nil {
+		return fmt.Errorf("board one: landward leg: %w", err)
+	}
+	if !ok {
+		return fmt.Errorf("board one: no landward route from disembark point to target, despite boardEligible's own check")
+	}
 	dueTick := carrierDueTick + landTicks
 	arrivesAt := carrierArrivesAt.Add(landDur)
 	if err := scheduleCompletion(ctx, tx, h.scheduler, messengerID, dueTick, arrivesAt); err != nil {
