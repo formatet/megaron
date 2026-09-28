@@ -1281,7 +1281,10 @@ body:has(.auth-page) main {
 .dtab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .dtab:hover:not(.active) { color: var(--text); }
 
-.drawer-body { flex: 1; overflow-y: auto; padding: 0.8rem; }
+/* scrollbar-gutter: a classic (non-overlay) scrollbar — Chromium's default — otherwise
+   narrows the body only on tabs long enough to scroll, and .city-scene (sized off 100%)
+   jumps 403↔418 px between the city tabs. Reserving the gutter keeps every tab one width. */
+.drawer-body { flex: 1; overflow-y: auto; scrollbar-gutter: stable; padding: 0.8rem; }
 
 .dsec { margin-bottom: 1.1rem; }
 
