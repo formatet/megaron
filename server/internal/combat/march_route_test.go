@@ -284,3 +284,101 @@ func TestAcceptance1_DispatchReturnHome_SavesRoute(t *testing.T) {
 		t.Fatalf("test fixture is too weak: oracle return path %v has no real detour to prove against a straight line", want.Hexes)
 	}
 }
+
+// TestAcceptance1_MarchShipToNearestOwnPort_SavesRoute: write site 3
+// (ship_hull.go marchShipToNearestOwnPort, the damaged/captured-ship return
+// leg) saves its own route. Called directly (it is itself the "real
+// function" the plan names — its only callers are deep inside battle
+// resolution, which this test does not need to reproduce to exercise it
+// honestly).
+func TestAcceptance1_MarchShipToNearestOwnPort_SavesRoute(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE status = 'active'`); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID) })
+
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"port-tester-"+uuid.New().String(),
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create test player: %v", err)
+	}
+
+	// (0,0)/(1,0)/(2,0): a sea lane. (3,0): the home settlement's land hex,
+	// adjacent to (2,0) — its harbour.
+	for _, tl := range []struct {
+		q, r    int
+		terrain string
+	}{
+		{0, 0, "coastal_sea"}, {1, 0, "coastal_sea"}, {2, 0, "coastal_sea"}, {3, 0, "plains"},
+	} {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, tl.q, tl.r, tl.terrain,
+		); err != nil {
+			t.Fatalf("insert map tile (%d,%d): %v", tl.q, tl.r, err)
+		}
+	}
+	var provinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 3, 0, 'plains') RETURNING id`,
+		worldID,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create home province: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Home Port', 'achaean', $3, 'capital', true)`,
+		worldID, provinceID, ownerID,
+	); err != nil {
+		t.Fatalf("create home settlement: %v", err)
+	}
+
+	var shipID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
+		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'positioned', 0, 0) RETURNING id`,
+		worldID, ownerID,
+	).Scan(&shipID); err != nil {
+		t.Fatalf("create damaged ship: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	scheduler := events.NewScheduler(pool, clk)
+	const tickIndex = 5
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatalf("begin tx: %v", err)
+	}
+	if err := marchShipToNearestOwnPort(ctx, tx, clk, scheduler, worldID, shipID, ownerID, "galley", tickIndex, "damaged_return"); err != nil {
+		tx.Rollback(ctx)
+		t.Fatalf("marchShipToNearestOwnPort: %v", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		t.Fatalf("commit: %v", err)
+	}
+
+	raw, departTick, arriveTick := loadMarchRoute(t, pool, shipID)
+	if departTick == nil || arriveTick == nil {
+		t.Fatal("depart_tick/arrive_tick is NULL after marchShipToNearestOwnPort")
+	}
+	if *departTick != tickIndex {
+		t.Errorf("depart_tick = %d, want %d (tickIndex)", *departTick, tickIndex)
+	}
+	want := wantRouteFor(t, pool, worldID,
+		province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 2, R: 0}, "naval",
+		*departTick, *arriveTick)
+	assertRouteMatches(t, raw, departTick, arriveTick, want)
+}

@@ -15,6 +15,7 @@ package combat
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math"
@@ -313,12 +314,13 @@ func marchShipToNearestOwnPort(
 		slog.Warn("march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex", "unit", unitID, "settlement", homeSettlementID)
 	}
 
-	_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 		province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: homeQ, R: homeR}, "naval")
 	var moveTicks float64
 	if pathErr == nil && pathOK {
 		moveTicks = pathTicks
 	} else {
+		path = nil // fell back to straight line below — no real path to save (R5)
 		// Defensive fallback, same shape as dispatchReturnHome's — the outbound
 		// leg into this battle already proved passability between these regions.
 		if pathErr != nil {
@@ -339,6 +341,19 @@ func marchShipToNearestOwnPort(
 
 	arrivesAt := clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 	returnIntent := marchIntent
+
+	// movement 2a, R1/R5: save the path already found above — never re-search
+	// it at read time. NULL when FindPath fell back to a straight line.
+	var marchRoute []byte
+	if len(path) >= 2 {
+		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, "naval"); shErr == nil {
+			if route, ok := BuildRoute(path, stepHours, tickIndex, tickIndex+travelTicks); ok {
+				if raw, mErr := json.Marshal(route); mErr == nil {
+					marchRoute = raw
+				}
+			}
+		}
+	}
 
 	// R7 (megaron_plan_hamta_hem.md): clear every prior mission's ride-along
 	// columns here, same reasoning as dispatchReturnHome's own identical
@@ -372,9 +387,10 @@ func marchShipToNearestOwnPort(
 		   passage_messenger_id = NULL,
 		   pickup_unit_id     = NULL,
 		   pickup_wait_ticks  = NULL,
+		   march_route        = $11,
 		   updated_at         = now()
 		 WHERE id = $1`,
-		unitID, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, tickIndex, tickIndex+travelTicks, homeSettlementID,
+		unitID, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, tickIndex, tickIndex+travelTicks, homeSettlementID, marchRoute,
 	); err != nil {
 		return fmt.Errorf("march ship to nearest own port: dispatch march: %w", err)
 	}
