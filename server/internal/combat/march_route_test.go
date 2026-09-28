@@ -382,3 +382,73 @@ func TestAcceptance1_MarchShipToNearestOwnPort_SavesRoute(t *testing.T) {
 		*departTick, *arriveTick)
 	assertRouteMatches(t, raw, departTick, arriveTick, want)
 }
+
+// TestAcceptance1_ExecuteRecall_RedirectSavesRoute: write site 4
+// (recall_redirect.go ExecuteRecall) plus read site (a) — same function.
+// A redirect is issued the instant after dispatch (clk never advances), so
+// "current position" is read at Milli == the outbound route's own StartTick*1000
+// exactly. That is the R1 "val A" boundary: the unit has already left the
+// start hex (instantly) and entered Hexes[1] of the OUTBOUND route — a
+// different answer than the old province.InterpolatePosition would give at
+// the same instant (frac=0 -> the origin hex). This proves ExecuteRecall is
+// reading through the saved route (R6.a), not the old code, AND that the new
+// leg's own route is saved correctly (R5).
+func TestAcceptance1_ExecuteRecall_RedirectSavesRoute(t *testing.T) {
+	pool, worldID, ownerID := setupLandMarchWorld(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	scheduler := events.NewScheduler(pool, clk)
+	eventStore := events.NewStore(pool)
+
+	var unitID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'positioned', 0, 0) RETURNING id`,
+		worldID, ownerID,
+	).Scan(&unitID); err != nil {
+		t.Fatalf("create positioned land unit: %v", err)
+	}
+
+	res, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
+		WorldID: worldID, PlayerID: ownerID, UnitID: unitID,
+		TargetQ: 2, TargetR: 0,
+	}, nil)
+	if err != nil {
+		t.Fatalf("StartMarch: %v", err)
+	}
+	outboundDepart := res.ArrivalTick - res.DurationTicks
+	outboundWant := wantRouteFor(t, pool, worldID,
+		province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 2, R: 0}, "land",
+		outboundDepart, res.ArrivalTick)
+	if len(outboundWant.Hexes) < 3 {
+		t.Fatalf("test fixture is too weak: oracle outbound path %v has no real detour", outboundWant.Hexes)
+	}
+	expectFromHex := outboundWant.Hexes[1] // val A: already entered at t=StartTick*1000
+
+	markUnitArrivalProcessed(t, pool, worldID, unitID)
+	newTargetQ, newTargetR := 2, 1
+	applied, err := ExecuteRecall(ctx, pool, scheduler, eventStore, clk, RecallOrder{
+		WorldID: worldID, UnitID: unitID, Mode: "redirect",
+		NewTargetQ: &newTargetQ, NewTargetR: &newTargetR,
+	})
+	if err != nil {
+		t.Fatalf("ExecuteRecall(redirect): %v", err)
+	}
+	if applied == nil {
+		t.Fatal("ExecuteRecall returned (nil, nil) — unit was no longer marching?")
+	}
+	if applied.FromQ != expectFromHex[0] || applied.FromR != expectFromHex[1] {
+		t.Errorf("ExecuteRecall read current position (%d,%d), want %v (the saved-route answer, not the old re-walk's origin)",
+			applied.FromQ, applied.FromR, expectFromHex)
+	}
+
+	raw, departTick, arriveTick := loadMarchRoute(t, pool, unitID)
+	if departTick == nil || arriveTick == nil {
+		t.Fatal("depart_tick/arrive_tick is NULL after redirect")
+	}
+	want := wantRouteFor(t, pool, worldID,
+		province.MapPosition{Q: expectFromHex[0], R: expectFromHex[1]},
+		province.MapPosition{Q: newTargetQ, R: newTargetR}, "land",
+		*departTick, *arriveTick)
+	assertRouteMatches(t, raw, departTick, arriveTick, want)
+}
