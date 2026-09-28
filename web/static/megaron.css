@@ -1281,10 +1281,19 @@ body:has(.auth-page) main {
 .dtab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .dtab:hover:not(.active) { color: var(--text); }
 
-/* scrollbar-gutter: a classic (non-overlay) scrollbar — Chromium's default — otherwise
-   narrows the body only on tabs long enough to scroll, and .city-scene (sized off 100%)
-   jumps 403↔418 px between the city tabs. Reserving the gutter keeps every tab one width. */
-.drawer-body { flex: 1; overflow-y: auto; scrollbar-gutter: stable; padding: 0.8rem; }
+/* The drawer's own scrollbar, always drawn (Timothy 2026-09-28). A browser scrollbar that
+   appears only on tabs long enough to scroll narrowed the body there, and .city-scene (sized
+   off 100%) jumped 403↔418 px between the city tabs. overflow-y: scroll keeps the track on
+   every tab; the palette makes it part of the panel. Square, 1px charcoal outline on the thumb. */
+.drawer-body { flex: 1; overflow-y: scroll; padding: 0.8rem; }
+.drawer-body::-webkit-scrollbar       { width: 12px; }
+.drawer-body::-webkit-scrollbar-track { background: var(--bg-raised); border-left: 1px solid var(--border); }
+.drawer-body::-webkit-scrollbar-thumb { background: var(--sandstone); border: 1px solid var(--bg); border-radius: 0; }
+.drawer-body::-webkit-scrollbar-thumb:hover { background: var(--border); }
+/* Firefox has no ::-webkit-scrollbar; it takes the same two colours this way. */
+@supports not selector(::-webkit-scrollbar) {
+  .drawer-body { scrollbar-color: var(--sandstone) var(--bg-raised); }
+}
 
 .dsec { margin-bottom: 1.1rem; }
 
