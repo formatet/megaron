@@ -601,10 +601,16 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// straight-line guess either way.
 	var currentPos province.MapPosition
 	posOK := false
+	// routeOK/recallRoute/recallAnchor are reused for the courier's aim below,
+	// so position and aim come from the same model (review 2026-09-28).
+	var recallRoute combat.StoredRoute
+	var recallAnchor tick.Anchor
+	routeOK := false
 	if activeRoute, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
 		if anchor, aErr := tick.LoadAnchor(ctx, h.pool, worldID); aErr == nil {
 			if p, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(h.clk.Now())); rErr == nil {
 				currentPos, posOK = p, true
+				recallRoute, recallAnchor, routeOK = activeRoute, anchor, true
 			}
 		}
 	}
@@ -699,9 +705,16 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// the march remains, for any physically real runner to catch this unit —
 	// fail now, visibly, instead of queuing a courier already certain to
 	// arrive too late.
-	interceptPos, interceptOK, err := messenger.InterceptCourierTarget(ctx, h.pool, worldID,
-		province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
-		*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
+	var interceptPos province.MapPosition
+	var interceptOK bool
+	if routeOK {
+		interceptPos, interceptOK, err = messenger.InterceptCourierTargetRoute(ctx, h.pool, worldID,
+			province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, recallRoute, recallAnchor, h.clk.Now())
+	} else {
+		interceptPos, interceptOK, err = messenger.InterceptCourierTarget(ctx, h.pool, worldID,
+			province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
+			*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
+	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve runner interception")
 		return
