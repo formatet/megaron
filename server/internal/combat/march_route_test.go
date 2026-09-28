@@ -67,6 +67,31 @@ func setupLandMarchWorld(t *testing.T) (pool *pgxpool.Pool, worldID, ownerID uui
 	return pool, worldID, ownerID
 }
 
+// setupLandMarchWorldWithHome is setupLandMarchWorld plus a home settlement
+// at (0,0) — needed by any write site whose flow resolves a "home" to return
+// to (explore's auto-return, dispatchReturnHome).
+func setupLandMarchWorldWithHome(t *testing.T) (pool *pgxpool.Pool, worldID, ownerID, settlementID uuid.UUID) {
+	t.Helper()
+	pool, worldID, ownerID = setupLandMarchWorld(t)
+	ctx := context.Background()
+
+	var provinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'plains') RETURNING id`,
+		worldID,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create home province: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Home', 'achaean', $3, 'capital', true) RETURNING id`,
+		worldID, provinceID, ownerID,
+	).Scan(&settlementID); err != nil {
+		t.Fatalf("create home settlement: %v", err)
+	}
+	return pool, worldID, ownerID, settlementID
+}
+
 // wantRouteFor is the test's own oracle: a freshly reloaded tile graph (never
 // shared state with the code under test), the real FindPath + StepHours, and
 // the real BuildRoute — computed independently, so a match proves the write
@@ -205,5 +230,57 @@ func TestAcceptance1_StartMarch_ColonizeInPlace_SavesNoRoute(t *testing.T) {
 	raw, _, _ := loadMarchRoute(t, pool, unitID)
 	if raw != nil {
 		t.Errorf("march_route = %s, want NULL for colonize-in-place", raw)
+	}
+}
+
+// TestAcceptance1_DispatchReturnHome_SavesRoute: write site 2
+// (unit_arrival.go dispatchReturnHome, reached through the real
+// explore-mission flow: StartMarch(intent=explore) then the arrival handler
+// turning the unit for home) saves the return leg's own detour route.
+func TestAcceptance1_DispatchReturnHome_SavesRoute(t *testing.T) {
+	pool, worldID, ownerID, settlementID := setupLandMarchWorldWithHome(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	scheduler := events.NewScheduler(pool, clk)
+	eventStore := events.NewStore(pool)
+
+	var unitID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, settlement_id)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'garrison', $3) RETURNING id`,
+		worldID, ownerID, settlementID,
+	).Scan(&unitID); err != nil {
+		t.Fatalf("create garrisoned land unit: %v", err)
+	}
+
+	if _, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
+		WorldID: worldID, PlayerID: ownerID, UnitID: unitID,
+		TargetQ: 2, TargetR: 0, Intent: "explore",
+	}, nil); err != nil {
+		t.Fatalf("StartMarch(explore): %v", err)
+	}
+
+	markUnitArrivalProcessed(t, pool, worldID, unitID)
+	h := newArrivalHandler(pool, nil)
+	runFieldArrival(t, pool, h, worldID, unitID) // reaches (2,0), turns for home via dispatchReturnHome
+
+	var status string
+	if err := pool.QueryRow(ctx, `SELECT status FROM units WHERE id = $1`, unitID).Scan(&status); err != nil {
+		t.Fatalf("load unit after outbound arrival: %v", err)
+	}
+	if status != "marching" {
+		t.Fatalf("unit status after reaching explore target = %q, want \"marching\" (turning for home)", status)
+	}
+
+	raw, departTick, arriveTick := loadMarchRoute(t, pool, unitID)
+	if departTick == nil || arriveTick == nil {
+		t.Fatal("depart_tick/arrive_tick is NULL on the return leg")
+	}
+	want := wantRouteFor(t, pool, worldID,
+		province.MapPosition{Q: 2, R: 0}, province.MapPosition{Q: 0, R: 0}, "land",
+		*departTick, *arriveTick)
+	assertRouteMatches(t, raw, departTick, arriveTick, want)
+	if len(want.Hexes) < 3 {
+		t.Fatalf("test fixture is too weak: oracle return path %v has no real detour to prove against a straight line", want.Hexes)
 	}
 }
