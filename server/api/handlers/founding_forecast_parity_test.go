@@ -93,7 +93,7 @@ func TestFoundingGrainForecast_MatchesRealFounding(t *testing.T) {
 			// production_rules row), so the with-farm assumption degrades
 			// exactly to the building-free reality.
 			forecastProd, forecastNet, err := economy.FoundingGrainNetPerTick(
-				ctx, pool, worldID, center, map[string]int{"farm": 1}, nil, pop)
+				ctx, pool, worldID, center, true, nil, pop)
 			if err != nil {
 				t.Fatalf("FoundingGrainNetPerTick: %v", err)
 			}

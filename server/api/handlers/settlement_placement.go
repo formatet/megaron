@@ -238,12 +238,45 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		return out
 	}
 
+	// hexBuilding reports the ONE hex-bound production building (if any)
+	// actually standing on this settlement's catchment hexes — farm/mine/
+	// lumbermill/stonequarry (megaron_plan_byggnad_pa_hex.md §A). Nil for an
+	// empty hex.
+	hexBuiltAt := make(map[hexgrid.Coord]struct {
+		Type  string
+		Level int
+	})
+	brows, err := h.pool.Query(r.Context(),
+		`SELECT building_type, level, hex_q, hex_r FROM buildings WHERE settlement_id = $1 AND hex_q IS NOT NULL`,
+		settlementID,
+	)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load hex buildings")
+		return
+	}
+	for brows.Next() {
+		var bt string
+		var lvl, hq, hr int
+		if err := brows.Scan(&bt, &lvl, &hq, &hr); err == nil {
+			hexBuiltAt[hexgrid.Coord{Q: hq, R: hr}] = struct {
+				Type  string
+				Level int
+			}{bt, lvl}
+		}
+	}
+	brows.Close()
+
+	type hexBuildingOut struct {
+		Type  string `json:"type"`
+		Level int    `json:"level"`
+	}
 	type hexOut struct {
-		HexQ       int       `json:"hex_q"`
-		HexR       int       `json:"hex_r"`
-		HexOrdinal int       `json:"hex_ordinal"`
-		Terrain    string    `json:"terrain"`
-		Goods      []goodOut `json:"goods"`
+		HexQ       int             `json:"hex_q"`
+		HexR       int             `json:"hex_r"`
+		HexOrdinal int             `json:"hex_ordinal"`
+		Terrain    string          `json:"terrain"`
+		Building   *hexBuildingOut `json:"building,omitempty"`
+		Goods      []goodOut       `json:"goods"`
 	}
 	hexes := make([]hexOut, 0, len(hexOptions))
 	for _, opt := range hexOptions {
@@ -254,13 +287,17 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		if !found {
 			continue
 		}
-		hexes = append(hexes, hexOut{
+		ho := hexOut{
 			HexQ:       opt.Coord.Q,
 			HexR:       opt.Coord.R,
 			HexOrdinal: ordinal,
 			Terrain:    opt.Terrain,
 			Goods:      buildGoods(opt.RatePerGood, opt.CapL1PerGood, opt.PlaceCapPerGood, opt.MultPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),
-		})
+		}
+		if b, built := hexBuiltAt[opt.Coord]; built {
+			ho.Building = &hexBuildingOut{Type: b.Type, Level: b.Level}
+		}
+		hexes = append(hexes, ho)
 	}
 
 	buildingOptions, err := economy.LoadBuildingProductionOptions(r.Context(), h.pool, settlementID)
@@ -282,12 +319,31 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		})
 	}
 
+	// validHexesForBuilding gives the web build picker, per hex-bound type
+	// (province.HexBoundBuildings), exactly which of this settlement's
+	// catchment hexes could host it RIGHT NOW (in reach, terrain/deposit
+	// matches, not already occupied by that type) — extending this existing
+	// response rather than a new endpoint (megaron_plan_byggnad_pa_hex.md §A2).
+	validHexesForBuilding := make(map[string][]map[string]int, len(province.HexBoundBuildings))
+	for bt := range province.HexBoundBuildings {
+		valid, verr := economy.ValidHexesForBuilding(r.Context(), h.pool, worldID, settlementID, center, string(bt))
+		if verr != nil {
+			continue // best-effort — never fail the whole placement menu over the build picker's hint
+		}
+		list := make([]map[string]int, 0, len(valid))
+		for _, c := range valid {
+			list = append(list, map[string]int{"q": c.Q, "r": c.R})
+		}
+		validHexesForBuilding[string(bt)] = list
+	}
+
 	totalGubbar := population / 100
 	writeJSON(w, http.StatusOK, map[string]any{
-		"hexes":        hexes,
-		"buildings":    buildings,
-		"total_gubbar": totalGubbar,
-		"pool_size":    totalGubbar - placed.Total,
+		"hexes":                    hexes,
+		"buildings":                buildings,
+		"total_gubbar":             totalGubbar,
+		"pool_size":                totalGubbar - placed.Total,
+		"valid_hexes_for_building": validHexesForBuilding,
 	})
 }
 

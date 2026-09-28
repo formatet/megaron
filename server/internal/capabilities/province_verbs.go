@@ -11,8 +11,9 @@ import (
 // building types (farm, barracks, temple, ...) carry no structural gate at
 // all, only a resource cost, which capabilities does not check (see craft/
 // recruit for the affordance pattern this DOES apply to). The building types
-// that DO carry a live structural gate (harbour: coastal; mine/silver_mine:
-// catchment deposit; winery: hills/plains/scrub_maquis terrain (mig 103 —
+// that DO carry a live structural gate (harbour: coastal; mine: a deposit on
+// its own hex, silver included since silver_mine's 2026-09-28 retirement;
+// winery: hills/plains/scrub_maquis terrain (mig 103 —
 // vin odlas i hela Medelhavet, hills behåller övertaget), P10 soak
 // 2026-07-18 — its production_rules rows are all terrain-locked with no
 // NULL-terrain fallback, so off those terrains it silently produces

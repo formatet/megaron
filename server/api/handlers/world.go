@@ -593,12 +593,8 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// actually seed (starterFarm), once assuming a farm regardless — the
 	// with-farm call answers "would a farm help here" for the colony hint
 	// ("bygg en farm") without inventing a second formula for it.
-	buildingLevels := map[string]int{}
-	if starterFarm {
-		buildingLevels["farm"] = 1
-	}
 	basePerTick, estNetPerTick, err := economy.FoundingGrainNetPerTick(
-		ctx, h.pool, worldID, center, buildingLevels, reachable, forecastPop)
+		ctx, h.pool, worldID, center, starterFarm, reachable, forecastPop)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
 		return
@@ -608,7 +604,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// must stay on the same "production" footing for the colony hint ("bygg
 	// en farm") to read coherently.
 	withFarmProdPerTick, _, err := economy.FoundingGrainNetPerTick(
-		ctx, h.pool, worldID, center, map[string]int{"farm": 1}, reachable, forecastPop)
+		ctx, h.pool, worldID, center, true, reachable, forecastPop)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
 		return

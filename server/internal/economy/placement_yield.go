@@ -71,11 +71,72 @@ type HexOption struct {
 // §10.2's press/winery pair) that must keep flowing straight into
 // RatePerGood, ungated — only the row naming THIS specific building routes
 // into BoostRatePerGood. Every other good's building-boosted rows
-// (grain+farm, timber/cedar+lumbermill, stone+mine/stonequarry, copper/tin+
-// mine, silver+silver_mine, fish+harbour, livestock+pasture) are unaffected.
+// (grain+farm, timber/cedar+lumbermill, stone+mine/stonequarry, copper/tin/
+// silver+mine, fish+harbour, livestock+pasture) are unaffected.
 var weakestLinkRefiningBuilding = map[string]string{
 	GoodOil:  "olive_press",
 	GoodWine: "winery",
+}
+
+// BuildingSet carries a settlement's (or a founding forecast's hypothetical)
+// building levels, split by scope (megaron_plan_byggnad_pa_hex.md §A). City
+// holds settlement-wide buildings (harbour, market, …) — presence anywhere
+// gates every catchment hex, exactly as before this slice. Hex holds
+// hex-bound production buildings (farm/mine/lumbermill/stonequarry — see
+// hexBoundBuildingTypes, recompute.go), keyed by the EXACT hex they stand
+// on — presence gates ONLY that hex, which is the whole point of this slice
+// ("en farm lyfte hela catchmenten" is the bug this closes).
+type BuildingSet struct {
+	City map[string]int
+	Hex  map[hexgrid.Coord]map[string]int
+}
+
+// AllTypes returns every building type present anywhere (City ∪ every Hex
+// entry) — LoadHexProductionOptionsAt's coarse SQL pre-filter (which rows to
+// even fetch); the precise per-hex/per-city gate is then applied in Go
+// (megaron_plan_byggnad_pa_hex.md §A: "filtrera raderna i Go efter queryn är
+// enklast").
+func (bs BuildingSet) AllTypes() []string {
+	seen := make(map[string]bool)
+	for t := range bs.City {
+		seen[t] = true
+	}
+	for _, hx := range bs.Hex {
+		for t := range hx {
+			seen[t] = true
+		}
+	}
+	out := make([]string, 0, len(seen))
+	for t := range seen {
+		out = append(out, t)
+	}
+	return out
+}
+
+// levelsAt returns the flat building-level map hexGoodCaps already expects,
+// scoped to hex c: City merged with Hex[c]. A hex-bound type only ever
+// appears under Hex, a city-wide type only ever under City, so there is no
+// real collision — this is a plain union.
+func (bs BuildingSet) levelsAt(c hexgrid.Coord) map[string]int {
+	out := make(map[string]int, len(bs.City)+len(bs.Hex[c]))
+	for k, v := range bs.City {
+		out[k] = v
+	}
+	for k, v := range bs.Hex[c] {
+		out[k] = v
+	}
+	return out
+}
+
+// builtAt reports whether buildingType counts as built FOR HEX c: Hex[c]'s
+// own presence for a hex-bound type, City's settlement-wide presence for
+// everything else (harbour's coastal_sea+fish row is the one HexOption case
+// that reaches this — a terrain-gated row naming a city-wide building).
+func (bs BuildingSet) builtAt(c hexgrid.Coord, buildingType string) bool {
+	if hexBoundBuildingTypes[buildingType] {
+		return bs.Hex[c][buildingType] > 0
+	}
+	return bs.City[buildingType] > 0
 }
 
 // LoadHexProductionOptions returns every catchment ring hex's own production
@@ -111,12 +172,12 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 		return nil, fmt.Errorf("load hex production options: settlement coords: %w", err)
 	}
 
-	buildingLevels, err := loadBuildingLevels(ctx, tx, settlementID)
+	bs, err := loadBuildingSet(ctx, tx, settlementID)
 	if err != nil {
 		return nil, fmt.Errorf("load hex production options: %w", err)
 	}
 
-	return LoadHexProductionOptionsAt(ctx, tx, worldID, hexgrid.Coord{Q: q, R: r}, buildingLevels, reachable)
+	return LoadHexProductionOptionsAt(ctx, tx, worldID, hexgrid.Coord{Q: q, R: r}, bs, reachable)
 }
 
 // LoadHexProductionOptionsAt is LoadHexProductionOptions' settlement-free
@@ -128,14 +189,15 @@ func LoadHexProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID
 // EXACT SAME catchment math a real founding does, before any settlement row
 // exists to hang a settlementID off of.
 //
-// buildingLevels is an ASSUMED set here, not a live lookup — for a real
-// settlement it is whatever loadBuildingLevels found; for a forecast it is
-// the hypothetical building the founding would seed (e.g. {"farm": 1} for a
+// bs is an ASSUMED set here, not a live lookup — for a real settlement it is
+// whatever loadBuildingSet found; for a forecast it is the hypothetical
+// building(s) the founding would seed (e.g. a farm on one specific hex for a
 // metropolis, empty for a colony, which builds its own farm later). A
-// building's mere PRESENCE as a map key is enough to satisfy the gate below,
-// mirroring the settlement path's `EXISTS (SELECT 1 FROM buildings ...)`
-// check exactly (that check never looked at level either).
-func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, buildingLevels map[string]int, reachable map[hexgrid.Coord]bool) ([]HexOption, error) {
+// building's mere PRESENCE (City or Hex[c]) is enough to satisfy the gate
+// below, mirroring the settlement path's `EXISTS (SELECT 1 FROM buildings
+// ...)` check exactly (that check never looked at level either) — now scoped
+// per hex for hex-bound types instead of settlement-wide.
+func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, bs BuildingSet, reachable map[hexgrid.Coord]bool) ([]HexOption, error) {
 	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
 	if reachable != nil {
 		filtered := ring[:0:0]
@@ -148,10 +210,7 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 	}
 	catchQ, catchR := hexgrid.QRArrays(ring)
 
-	builtTypes := make([]string, 0, len(buildingLevels))
-	for bt := range buildingLevels {
-		builtTypes = append(builtTypes, bt)
-	}
+	builtTypes := bs.AllTypes()
 
 	rows, err := tx.Query(ctx,
 		`SELECT mt.q, mt.r, mt.terrain,
@@ -203,7 +262,7 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 		c := hexgrid.Coord{Q: qq, R: rr}
 		opt, ok := byCoord[c]
 		if !ok {
-			caps, capsL1, mult, placeCap := hexGoodCaps(terrain, copperDep, tinDep, silverDep, buildingLevels)
+			caps, capsL1, mult, placeCap := hexGoodCaps(terrain, copperDep, tinDep, silverDep, bs.levelsAt(c))
 			opt = &HexOption{
 				Coord:            c,
 				Terrain:          terrain,
@@ -216,6 +275,16 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 			}
 			byCoord[c] = opt
 			order = append(order, c)
+		}
+		// A row naming a building only counts on THIS hex if that building is
+		// actually built here (builtAt — hex-scoped for farm/mine/lumbermill/
+		// stonequarry, settlement-wide for everything else, e.g. harbour's
+		// coastal_sea+fish row). Without this, builtTypes above (a coarse
+		// ANYWHERE-in-settlement prefilter, kept just to limit which rows SQL
+		// even returns) would let a farm on hex X keep lifting grain's rate on
+		// every OTHER plains hex too — the exact bug this slice closes.
+		if buildingType != nil && !bs.builtAt(c, *buildingType) {
+			continue
 		}
 		if refiningBuilding, ok := weakestLinkRefiningBuilding[goodKey]; ok && buildingType != nil && *buildingType == refiningBuilding {
 			opt.BoostRatePerGood[goodKey] += rate
@@ -533,28 +602,180 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 	return out, nil
 }
 
-// loadBuildingLevels returns every building type the settlement has built,
-// mapped to its level — hexGoodCaps needs the level (not just presence) to
-// add the building's own WorkplaceSlots on top of the hex tier.
-func loadBuildingLevels(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]int, error) {
-	rows, err := tx.Query(ctx, `SELECT building_type, level FROM buildings WHERE settlement_id = $1`, settlementID)
+// loadBuildingSet returns every building the settlement has built, split
+// into BuildingSet's City/Hex scopes by its hex_q/hex_r columns (NULL = a
+// city building) — hexGoodCaps needs the LEVEL (not just presence) to add
+// the building's own WorkplaceSlots on top of the hex tier.
+func loadBuildingSet(ctx context.Context, tx Tx, settlementID uuid.UUID) (BuildingSet, error) {
+	rows, err := tx.Query(ctx, `SELECT building_type, level, hex_q, hex_r FROM buildings WHERE settlement_id = $1`, settlementID)
 	if err != nil {
-		return nil, fmt.Errorf("load building levels: %w", err)
+		return BuildingSet{}, fmt.Errorf("load building set: %w", err)
 	}
 	defer rows.Close()
-	built := make(map[string]int)
+	bs := BuildingSet{City: make(map[string]int), Hex: make(map[hexgrid.Coord]map[string]int)}
 	for rows.Next() {
 		var bt string
 		var level int
-		if err := rows.Scan(&bt, &level); err != nil {
-			return nil, fmt.Errorf("load building levels: scan: %w", err)
+		var hq, hr *int
+		if err := rows.Scan(&bt, &level, &hq, &hr); err != nil {
+			return BuildingSet{}, fmt.Errorf("load building set: scan: %w", err)
 		}
-		built[bt] = level
+		if hq != nil && hr != nil {
+			c := hexgrid.Coord{Q: *hq, R: *hr}
+			if bs.Hex[c] == nil {
+				bs.Hex[c] = make(map[string]int)
+			}
+			bs.Hex[c][bt] = level
+		} else {
+			bs.City[bt] = level
+		}
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("load building levels: rows: %w", err)
+		return BuildingSet{}, fmt.Errorf("load building set: rows: %w", err)
 	}
-	return built, nil
+	return bs, nil
+}
+
+// farmCapForTerrain returns the resulting grain cap (capWithBuilding +
+// WorkplaceSlots("farm", 1)) a farm would give if built on a hex of this
+// terrain, and whether the terrain is grain-capable at all — ChooseFarmHex's
+// per-terrain building block.
+func farmCapForTerrain(terrain string) (cap int, ok bool) {
+	if terrain == "plains" {
+		for _, rule := range plainsCapacityRules {
+			if rule.goodKey == GoodGrain {
+				return rule.capWithBuilding + WorkplaceSlots("farm", 1), true
+			}
+		}
+		return 0, false
+	}
+	if rule, found := terrainCapacityTable[terrain]; found && rule.goodKey == GoodGrain {
+		return rule.capWithBuilding + WorkplaceSlots("farm", 1), true
+	}
+	return 0, false
+}
+
+// ChooseFarmHex picks the ring hex a founding's free starter farm goes on —
+// the grain-terrain hex giving the largest resulting cap, ties broken by
+// lowest Q then lowest R (Timothy 2026-09-28,
+// megaron_plan_byggnad_pa_hex.md §A). Both the real founding
+// (create_metropolis.go) and its forecast (FoundingGrainNetPerTick) call this
+// SAME function so they pick the SAME hex. reachable is the same FOW/siege
+// gate LoadHexProductionOptionsAt takes (nil = unfiltered). ok=false means no
+// catchment ring hex can grow grain at all.
+func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, reachable map[hexgrid.Coord]bool) (best hexgrid.Coord, ok bool, err error) {
+	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
+	catchQ, catchR := hexgrid.QRArrays(ring)
+	rows, err := tx.Query(ctx,
+		`SELECT mt.q, mt.r, mt.terrain
+		 FROM unnest($2::int[], $3::int[]) AS catchment(q, r)
+		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r`,
+		worldID, catchQ, catchR,
+	)
+	if err != nil {
+		return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: query: %w", err)
+	}
+	defer rows.Close()
+
+	bestCap := -1
+	for rows.Next() {
+		var qq, rr int
+		var terrain string
+		if err := rows.Scan(&qq, &rr, &terrain); err != nil {
+			return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: scan: %w", err)
+		}
+		c := hexgrid.Coord{Q: qq, R: rr}
+		if reachable != nil && !reachable[c] {
+			continue
+		}
+		cap, capOK := farmCapForTerrain(terrain)
+		if !capOK {
+			continue
+		}
+		if !ok || cap > bestCap || (cap == bestCap && (c.Q < best.Q || (c.Q == best.Q && c.R < best.R))) {
+			ok, bestCap, best = true, cap, c
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: rows: %w", err)
+	}
+	return best, ok, nil
+}
+
+// HexSupportsBuilding reports whether hex could host a production building
+// of buildingType — the same terrain/deposit/coastal predicate
+// LoadHexProductionOptionsAt's SQL applies to gate a HexOption row, extracted
+// so build-time validation (POST .../build) and any read surface listing
+// valid hexes for a hex-bound type share exactly one gate.
+func HexSupportsBuilding(ctx context.Context, tx Tx, worldID uuid.UUID, hex hexgrid.Coord, buildingType string) (bool, error) {
+	var ok bool
+	err := tx.QueryRow(ctx,
+		`SELECT EXISTS(
+		   SELECT 1 FROM map_tiles mt
+		   JOIN production_rules pr ON pr.building_type = $4
+		       AND (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
+		       AND (NOT pr.requires_coastal OR mt.coastal)
+		       AND (pr.requires_deposit IS NULL
+		            OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
+		            OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
+		            OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+		            OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
+		   WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3
+		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
+		 )`,
+		worldID, hex.Q, hex.R, buildingType,
+	).Scan(&ok)
+	if err != nil {
+		return false, fmt.Errorf("hex supports building: %w", err)
+	}
+	return ok, nil
+}
+
+// ValidHexesForBuilding returns every catchment ring hex where buildingType
+// could be built RIGHT NOW — HexSupportsBuilding's per-hex gate, plus not
+// already carrying a building or queued build of that same type. This is
+// the list the web build picker needs to offer the player valid hexes
+// (megaron_plan_byggnad_pa_hex.md §A2) without duplicating the gate
+// client-side.
+func ValidHexesForBuilding(ctx context.Context, tx Tx, worldID uuid.UUID, settlementID uuid.UUID, center hexgrid.Coord, buildingType string) ([]hexgrid.Coord, error) {
+	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
+	occupied := make(map[hexgrid.Coord]bool)
+	rows, err := tx.Query(ctx,
+		`SELECT hex_q, hex_r FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND hex_q IS NOT NULL
+		 UNION
+		 SELECT hex_q, hex_r FROM build_queue WHERE settlement_id = $1 AND building_type = $2 AND hex_q IS NOT NULL`,
+		settlementID, buildingType,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("valid hexes for building: occupied: %w", err)
+	}
+	for rows.Next() {
+		var q, r int
+		if err := rows.Scan(&q, &r); err != nil {
+			rows.Close()
+			return nil, fmt.Errorf("valid hexes for building: scan occupied: %w", err)
+		}
+		occupied[hexgrid.Coord{Q: q, R: r}] = true
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("valid hexes for building: occupied rows: %w", err)
+	}
+
+	var out []hexgrid.Coord
+	for _, c := range ring {
+		if occupied[c] {
+			continue
+		}
+		ok, err := HexSupportsBuilding(ctx, tx, worldID, c, buildingType)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
+			out = append(out, c)
+		}
+	}
+	return out, nil
 }
 
 // UnconditionalPotential returns every good's flat, unconditional trickle —

@@ -110,7 +110,6 @@ const (
 	BuildingFarm        BuildingType = "farm"
 	BuildingBarracks    BuildingType = "barracks"
 	BuildingMine        BuildingType = "mine"
-	BuildingSilverMine  BuildingType = "silver_mine"
 	BuildingLumbermill  BuildingType = "lumbermill"
 	BuildingStonequarry BuildingType = "stonequarry"
 	BuildingMarket      BuildingType = "market"
@@ -123,6 +122,24 @@ const (
 	BuildingOlivePress  BuildingType = "olive_press"
 	BuildingWinery      BuildingType = "winery"
 )
+
+// HexBoundBuildings is the ONE canonical list of building types placed on a
+// specific catchment hex — their effect (production rate AND worker cap)
+// applies ONLY to that hex, and a settlement may build several of the same
+// type, one per hex (megaron_plan_byggnad_pa_hex.md §A, Timothy 2026-09-28).
+// Every other building stays city-wide (one per settlement), exactly as
+// before this slice.
+//
+// economy may not import province (G1), so it carries its OWN mirror of this
+// exact set (hexBoundBuildingTypes, recompute.go) rather than importing this
+// map — kept in sync by a test in a package allowed to import both
+// (api/handlers/hex_bound_mirror_test.go). Add a type here → add it there too.
+var HexBoundBuildings = map[BuildingType]bool{
+	BuildingFarm:        true,
+	BuildingMine:        true,
+	BuildingLumbermill:  true,
+	BuildingStonequarry: true,
+}
 
 // Province is a hex tile — terrain and territory state only.
 // Inhabited data (resources, army, name, owner) lives in the Settlement that

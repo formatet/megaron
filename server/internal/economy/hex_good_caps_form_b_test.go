@@ -22,7 +22,7 @@ func TestHexGoodCaps_SilverMineFormB(t *testing.T) {
 	const rate = 28.799999999999997 // mountain_limestone/silver_mine/silver, live DB value
 
 	atLevel := func(level int) (cap, capL1 int, mult float64, maxAtCapL1, maxOverstaffed float64) {
-		caps, capsL1, m, placeCap := hexGoodCaps("mountain_limestone", false, false, true /* silverDep */, map[string]int{"silver_mine": level})
+		caps, capsL1, m, placeCap := hexGoodCaps("mountain_limestone", false, false, true /* silverDep */, map[string]int{"mine": level})
 		cap = caps["silver"]
 		capL1 = capsL1["silver"]
 		mult = m["silver"]

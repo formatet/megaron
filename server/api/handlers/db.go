@@ -158,9 +158,15 @@ func loadLaborCapacities(ctx context.Context, pool *pgxpool.Pool, settlementID u
 		grows.Close()
 	}
 
+	// DISTINCT is on (good_key, b.id) — see economy.LoadWorkplaceSlots' doc
+	// comment (recompute.go) for why b.id, not just (good_key, building_type,
+	// level): a hex-bound type (farm/mine/lumbermill/stonequarry) can now
+	// have several same-level rows on different hexes, and the old
+	// DISTINCT-without-id would have collapsed them into one, undercounting
+	// this purely-informational level sum.
 	lrows, _ := pool.Query(ctx,
 		`SELECT good_key, SUM(level)::int FROM (
-		     SELECT DISTINCT pr.good_key, b.building_type, b.level
+		     SELECT DISTINCT pr.good_key, b.id, b.level
 		     FROM production_rules pr
 		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
 		 ) t GROUP BY good_key`,

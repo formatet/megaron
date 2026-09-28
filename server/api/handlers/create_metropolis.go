@@ -222,12 +222,22 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		return out, &metropolisError{"could not read catchment potential with farm", err}
 	}
 	if grainWithFarm["grain"] > grainNoFarm["grain"]+1e-9 {
-		if _, err = tx.Exec(ctx,
-			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'farm', 1)
-			 ON CONFLICT (settlement_id, building_type) DO NOTHING`,
-			out.SettlementID,
-		); err != nil {
-			return out, &metropolisError{"could not grant Demeter's farm", err}
+		// farm is hex-bound (megaron_plan_byggnad_pa_hex.md §A) — Demeter's
+		// gift stands on the grain-terrain hex giving the largest cap, the
+		// SAME choice ChooseFarmHex gives the founding forecast
+		// (economy.FoundingGrainNetPerTick), so prognosis and reality agree.
+		farmHex, hasFarmHex, chooseErr := economy.ChooseFarmHex(ctx, tx, p.WorldID, hexgrid.Coord{Q: p.Q, R: p.R}, nil)
+		if chooseErr != nil {
+			return out, &metropolisError{"could not choose farm hex", chooseErr}
+		}
+		if hasFarmHex {
+			if _, err = tx.Exec(ctx,
+				`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, $2, $3)
+				 ON CONFLICT (settlement_id, building_type, hex_q, hex_r) WHERE hex_q IS NOT NULL DO NOTHING`,
+				out.SettlementID, farmHex.Q, farmHex.R,
+			); err != nil {
+				return out, &metropolisError{"could not grant Demeter's farm", err}
+			}
 		}
 	}
 

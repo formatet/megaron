@@ -120,12 +120,12 @@ func TestColonizePreview_AK5_WaterInCatchmentRaisesForecastNet(t *testing.T) {
 	noWaterCenter := hexgrid.Coord{Q: 0, R: 0}
 	withWaterCenter := hexgrid.Coord{Q: 100, R: 0}
 	_, netNoWater, err := economy.FoundingGrainNetPerTick(
-		ctx, pool, worldID, noWaterCenter, nil, nil, forecastPop)
+		ctx, pool, worldID, noWaterCenter, false, nil, forecastPop)
 	if err != nil {
 		t.Fatalf("FoundingGrainNetPerTick (no water): %v", err)
 	}
 	_, netWithWater, err := economy.FoundingGrainNetPerTick(
-		ctx, pool, worldID, withWaterCenter, nil, nil, forecastPop)
+		ctx, pool, worldID, withWaterCenter, false, nil, forecastPop)
 	if err != nil {
 		t.Fatalf("FoundingGrainNetPerTick (with water): %v", err)
 	}

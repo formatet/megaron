@@ -17,10 +17,16 @@ import (
 )
 
 // BuildCompletePayload is the scheduled event payload for a completed building.
+// HexQ/HexR are set only for a hex-bound type (province.HexBoundBuildings) —
+// absent/nil means a city building, exactly today's meaning
+// (megaron_plan_byggnad_pa_hex.md §A) — no new event semantics, just two new
+// optional fields on an existing payload.
 type BuildCompletePayload struct {
 	SettlementID uuid.UUID `json:"settlement_id"`
 	BuildQueueID uuid.UUID `json:"build_queue_id"`
 	BuildingType string    `json:"building_type"`
+	HexQ         *int      `json:"hex_q,omitempty"`
+	HexR         *int      `json:"hex_r,omitempty"`
 }
 
 // BuildCompleteHandler resolves a completed building construction.
@@ -63,13 +69,27 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return nil // Already resolved.
 	}
 
-	// Insert completed building into settlement.
-	_, err = tx.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, $2, 1)
-		 ON CONFLICT (settlement_id, building_type)
-		 DO UPDATE SET level = buildings.level + 1`,
-		p.SettlementID, p.BuildingType,
-	)
+	// Insert completed building into settlement. Hex-bound types (HexQ/HexR
+	// set) upsert against the partial unique index keyed on (settlement_id,
+	// building_type, hex_q, hex_r) — a second build of the SAME type on the
+	// SAME hex is the upgrade path (level+1); a different hex is a distinct
+	// row. City buildings keep the (settlement_id, building_type) index,
+	// unchanged (migration 154).
+	if p.HexQ != nil && p.HexR != nil {
+		_, err = tx.Exec(ctx,
+			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, $2, 1, $3, $4)
+			 ON CONFLICT (settlement_id, building_type, hex_q, hex_r) WHERE hex_q IS NOT NULL
+			 DO UPDATE SET level = buildings.level + 1`,
+			p.SettlementID, p.BuildingType, *p.HexQ, *p.HexR,
+		)
+	} else {
+		_, err = tx.Exec(ctx,
+			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, $2, 1)
+			 ON CONFLICT (settlement_id, building_type) WHERE hex_q IS NULL
+			 DO UPDATE SET level = buildings.level + 1`,
+			p.SettlementID, p.BuildingType,
+		)
+	}
 	if err != nil {
 		return fmt.Errorf("insert building: %w", err)
 	}
@@ -158,25 +178,23 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 	// (temenos_gossip.md PASS 2b). Subject = this settlement, hint = the ore, so
 	// it registers as rumour-known ("rich in copper") for anyone who hears of it
 	// without having seen it. Best-effort — never fail the build over gossip.
-	if p.BuildingType == string(province.BuildingMine) || p.BuildingType == string(province.BuildingSilverMine) {
+	if p.BuildingType == string(province.BuildingMine) && p.HexQ != nil && p.HexR != nil {
+		// A mine is hex-bound now (silver_mine retired, migration 154) — read
+		// the ore straight off the hex it was actually built on instead of
+		// scanning the whole catchment ring for "any copper anywhere".
+		// Prefers copper, then tin, then silver when a hex somehow carries
+		// more than one deposit flag.
 		ore := "silver"
-		if p.BuildingType == string(province.BuildingMine) {
-			// "mine" gates on copper OR tin present in the catchment (see
-			// province.go's build-time deposit gate) — prefer copper as the hint
-			// when both are present.
+		var hasCopper, hasTin bool
+		_ = tx.QueryRow(ctx,
+			`SELECT COALESCE(copper_deposit, false), COALESCE(tin_deposit, false)
+			 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
+			e.WorldID, *p.HexQ, *p.HexR,
+		).Scan(&hasCopper, &hasTin)
+		if hasCopper {
+			ore = "copper"
+		} else if hasTin {
 			ore = "tin"
-			var hasCopper bool
-			if err := tx.QueryRow(ctx,
-				`SELECT EXISTS(
-				   SELECT 1 FROM map_tiles mt
-				   JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
-				   WHERE mt.world_id = (SELECT world_id FROM settlements WHERE id = $1)
-				     AND mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-				     AND mt.copper_deposit)`,
-				p.SettlementID, unlockCatchQ, unlockCatchR,
-			).Scan(&hasCopper); err == nil && hasCopper {
-				ore = "copper"
-			}
 		}
 		if err := gossip.Broadcast(ctx, tx, e.WorldID, p.SettlementID, "economy",
 			"A "+ore+" mine has opened.", 6,
@@ -195,6 +213,8 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 
 	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "BuildComplete", map[string]any{
 		"building_type": p.BuildingType,
+		"hex_q":         p.HexQ,
+		"hex_r":         p.HexR,
 	}, e.WorldID, nil); err != nil {
 		slog.Error("record BuildComplete event", "err", err)
 	}
@@ -205,6 +225,8 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		body := map[string]any{
 			"settlement_id": p.SettlementID,
 			"building_type": p.BuildingType,
+			"hex_q":         p.HexQ,
+			"hex_r":         p.HexR,
 		}
 		if len(unlockedGoods) > 0 {
 			// Post-P4 there is no auto-allocation: production comes from a
