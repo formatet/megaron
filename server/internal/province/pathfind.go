@@ -67,6 +67,36 @@ func (g TileGraph) FindPath(origin, target MapPosition, category string) (path [
 	return findPath(g, origin, target, category)
 }
 
+// StepHours returns the cost of entering each hex of an ALREADY-FOUND path
+// (path[1:]), using the same moveHoursFor A* itself uses. It does not search
+// a path — it only prices one a caller already has (movement slice 2a, R2:
+// "en redan funnen väg"). len(result) == len(path)-1, matching path[1:].
+// A path shorter than two hexes (nothing to enter) returns nil.
+func (g TileGraph) StepHours(path []MapPosition, category string) []float64 {
+	if len(path) < 2 {
+		return nil
+	}
+	out := make([]float64, len(path)-1)
+	for i := 1; i < len(path); i++ {
+		terrain := g[[2]int{path[i].Q, path[i].R}]
+		out[i-1] = moveHoursFor(terrain, category)
+	}
+	return out
+}
+
+// StepHoursDB is StepHours for a caller that only holds a path from the
+// package-level FindPath, which loads its own TileGraph internally and does
+// not expose it. It loads the world's tiles again to price the path — a
+// second DB query, but not a second path SEARCH, which is the thing R1/R5
+// forbid re-doing at read time (movement slice 2a).
+func StepHoursDB(ctx context.Context, db Queryer, worldID uuid.UUID, path []MapPosition, category string) ([]float64, error) {
+	g, err := LoadTileGraph(ctx, db, worldID)
+	if err != nil {
+		return nil, err
+	}
+	return g.StepHours(path, category), nil
+}
+
 // axialDirs lists the 6 axial hex neighbours, sourced from hexgrid (the
 // single source of truth — megaron_todo.md "7-hex-catchmentlistan är
 // duplicerad") rather than a second local literal duplicating hex.go's.
