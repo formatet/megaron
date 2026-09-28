@@ -106,7 +106,7 @@ economy(→clock,events,gossip,hexgrid) · transport(→clock,events,province) �
   ↑
 kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑
-combat(→…,hexgrid)  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events)
+combat(→…,hexgrid,movement)  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events, movement)
   ↑
 messenger  ← may use combat + everything below
   ↑

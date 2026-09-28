@@ -345,16 +345,51 @@ func InterceptAlongPath(
 		return province.MapPosition{}, false
 	}
 	total := arrivesAt.Sub(departsAt)
-	for i := 0; i < n; i++ {
+	unitTimeAt := func(i int) time.Time {
 		// unitTime is the instant the unit reaches path[i], on the same
 		// index-fraction-of-total model province.InterpolatePosition uses for
 		// "where is the unit right now" — the last hex is pinned to the exact
 		// stored arrivesAt to avoid float round-trip drift.
-		unitTime := arrivesAt
-		if i < n-1 {
-			frac := float64(i) / float64(n-1)
-			unitTime = departsAt.Add(time.Duration(frac * float64(total)))
+		if i == n-1 {
+			return arrivesAt
 		}
+		frac := float64(i) / float64(n-1)
+		return departsAt.Add(time.Duration(frac * float64(total)))
+	}
+	return interceptScan(g, courierOrigin, path, unitTimeAt, now)
+}
+
+// InterceptAlongPathRoute is InterceptAlongPath for a marching unit with a
+// gällande saved route (movement 2a, R6.d, megaron_plan_rorelse_sparad_vag.md):
+// unitTime for path[i] comes from the route's own hex-entry times
+// (combat.RouteEnterMilli, converted to wall clock via tick.Anchor.WallAt)
+// instead of the even frac=i/(n-1) split — terrain-weighted, not index-weighted.
+// path must be route.Hexes and enterAt[i] must be that same route's entry time
+// for Hexes[i] (see InterceptCourierTargetRoute, which pairs them correctly);
+// len(enterAt) must equal len(path). The rest of the logic — courier travel
+// time per candidate hex, ties let through, no raklinje guess over open sea —
+// is untouched, via the shared interceptScan.
+func InterceptAlongPathRoute(
+	g province.TileGraph, courierOrigin province.MapPosition, path []province.MapPosition,
+	enterAt []time.Time, now time.Time,
+) (target province.MapPosition, ok bool) {
+	if len(path) < 2 || len(enterAt) != len(path) {
+		return province.MapPosition{}, false
+	}
+	return interceptScan(g, courierOrigin, path, func(i int) time.Time { return enterAt[i] }, now)
+}
+
+// interceptScan is InterceptAlongPath/InterceptAlongPathRoute's shared scan:
+// the earliest path[i] a courier from courierOrigin at now can reach no later
+// than the unit itself does (unitTimeAt(i)), skipping any hex the unit has
+// already passed and any hex the courier can only reach by crossing open sea
+// on its own (CourierTravelOnGraph's ok=false).
+func interceptScan(
+	g province.TileGraph, courierOrigin province.MapPosition, path []province.MapPosition,
+	unitTimeAt func(i int) time.Time, now time.Time,
+) (target province.MapPosition, ok bool) {
+	for i := 0; i < len(path); i++ {
+		unitTime := unitTimeAt(i)
 		if !unitTime.After(now) {
 			continue // the unit has already passed (or is exactly at) this hex
 		}
@@ -410,6 +445,36 @@ func InterceptCourierTarget(
 		return province.MapPosition{}, false, err
 	}
 	t, ok := InterceptAlongPath(g, courierOrigin, path, departsAt, arrivesAt, now)
+	return t, ok, nil
+}
+
+// InterceptCourierTargetRoute is InterceptCourierTarget for a marching unit
+// with a gällande saved route (movement 2a, R6.d) — no path search at all
+// (R1): the path and each hex's entry time come straight from route via
+// combat.RouteEnterMilli + anchor.WallAt. err is non-nil only for a
+// Boundaries/PositionAt computation failure, which should not happen for a
+// route that already passed combat.LoadActiveRoute's own validation.
+func InterceptCourierTargetRoute(
+	ctx context.Context, db province.Queryer, worldID uuid.UUID,
+	courierOrigin province.MapPosition, route combat.StoredRoute, anchor tick.Anchor, now time.Time,
+) (target province.MapPosition, ok bool, err error) {
+	path := make([]province.MapPosition, len(route.Hexes))
+	for i, h := range route.Hexes {
+		path[i] = province.MapPosition{Q: h[0], R: h[1]}
+	}
+	enterMilli, err := combat.RouteEnterMilli(route)
+	if err != nil {
+		return province.MapPosition{}, false, err
+	}
+	enterAt := make([]time.Time, len(enterMilli))
+	for i, m := range enterMilli {
+		enterAt[i] = anchor.WallAt(m)
+	}
+	g, err := province.LoadTileGraph(ctx, db, worldID)
+	if err != nil {
+		return province.MapPosition{}, false, err
+	}
+	t, ok := InterceptAlongPathRoute(g, courierOrigin, path, enterAt, now)
 	return t, ok, nil
 }
 

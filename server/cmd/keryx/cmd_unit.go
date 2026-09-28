@@ -268,6 +268,13 @@ type unitRow struct {
 	R               *int       `json:"r"`
 	TargetQ         *int       `json:"target_q"`
 	TargetR         *int       `json:"target_r"`
+	// CurrentQ/CurrentR (movement 2a, R8, megaron_plan_rorelse_sparad_vag.md):
+	// a marching unit's live position, read server-side through its saved
+	// route — never a client-side guess. nil when no gällande route exists
+	// (pre-153 march, or the straight-line fallback); locationStr then falls
+	// back to showing only origin→target, exactly as before this slice.
+	CurrentQ        *int       `json:"current_q"`
+	CurrentR        *int       `json:"current_r"`
 	ArrivesAt       *time.Time `json:"arrives_at"`
 	CargoUnitID     *string    `json:"cargo_unit_id"`
 	CarrierShipID   *string    `json:"carrier_ship_id"`
@@ -535,6 +542,10 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		}
 		if u.TargetQ != nil && u.TargetR != nil {
 			loc += fmt.Sprintf("(%d,%d)", *u.TargetQ, *u.TargetR)
+		}
+		// movement 2a, R8: the saved-route position, when the server has one.
+		if u.CurrentQ != nil && u.CurrentR != nil {
+			loc += fmt.Sprintf(", now at (%d,%d)", *u.CurrentQ, *u.CurrentR)
 		}
 		if u.ArrivesAt != nil {
 			loc += " ETA " + gameETA(c, *u.ArrivesAt)

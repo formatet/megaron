@@ -84,11 +84,13 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	var departsAt, arrivesAt *time.Time
 	var marchIntent, colonyName *string
 	var cargoUnitID *uuid.UUID
+	var departTick, arriveTick *int
+	var storedRouteRaw []byte
 	if err := tx.QueryRow(ctx,
-		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id
+		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id, depart_tick, arrive_tick, march_route
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		p.UnitID,
-	).Scan(&ownerID, &utype, &category, &status, &q, &r, &crew, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID); err != nil {
+	).Scan(&ownerID, &utype, &category, &status, &q, &r, &crew, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID, &departTick, &arriveTick, &storedRouteRaw); err != nil {
 		return fmt.Errorf("load recalled unit: %w", err)
 	}
 
@@ -104,13 +106,27 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	target := province.MapPosition{Q: *targetQ, R: *targetR}
 	now := h.clk.Now()
 
-	currentPos, posOK, err := province.InterpolatePosition(ctx, tx, p.WorldID, origin, target, category, *departsAt, *arrivesAt, now)
-	if err != nil {
-		return fmt.Errorf("interpolate unit position: %w", err)
+	// movement 2a, R6.b: read via the saved route when it applies to this
+	// march (invariant 2); otherwise fall back to the old re-walk, unchanged.
+	var currentPos province.MapPosition
+	posOK := false
+	if activeRoute, ok := combat.LoadActiveRoute(storedRouteRaw, status, departTick, arriveTick); ok {
+		if anchor, aErr := tick.LoadAnchor(ctx, tx, p.WorldID); aErr == nil {
+			if pos, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(now)); rErr == nil {
+				currentPos, posOK = pos, true
+			}
+		}
 	}
 	if !posOK {
-		slog.Warn("march recall: could not re-walk outbound path, using origin as current position", "unit", p.UnitID)
-		currentPos = origin
+		var ipErr error
+		currentPos, posOK, ipErr = province.InterpolatePosition(ctx, tx, p.WorldID, origin, target, category, *departsAt, *arrivesAt, now)
+		if ipErr != nil {
+			return fmt.Errorf("interpolate unit position: %w", ipErr)
+		}
+		if !posOK {
+			slog.Warn("march recall: could not re-walk outbound path, using origin as current position", "unit", p.UnitID)
+			currentPos = origin
+		}
 	}
 
 	newTarget := origin // recall: head home to where the unit departed from
@@ -123,11 +139,12 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// fallback should not trigger in practice: for recall, currentPos lies on
 	// the very path that proved origin↔target traversable; for redirect, the
 	// new target was validated at dispatch time.
-	_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, p.WorldID, currentPos, newTarget, category)
+	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, p.WorldID, currentPos, newTarget, category)
 	var moveTicks float64
 	if pathErr == nil && pathOK {
 		moveTicks = pathTicks
 	} else {
+		path = nil // fell back to straight line below — no real path to save (R5)
 		if pathErr != nil {
 			slog.Warn("march recall: FindPath error, falling back to straight line", "unit", p.UnitID, "err", pathErr)
 		} else {
@@ -159,6 +176,19 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// arrival that had already happened — "sailed there but teleported home".
 	arrivesAtNew := now.Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
+	// movement 2a, R1/R5: save the NEW leg's own path — never re-search it at
+	// read time. NULL when FindPath fell back to a straight line.
+	var newMarchRoute []byte
+	if len(path) >= 2 {
+		if stepHours, shErr := province.StepHoursDB(ctx, tx, p.WorldID, path, category); shErr == nil {
+			if route, ok := combat.BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
+				if raw, mErr := json.Marshal(route); mErr == nil {
+					newMarchRoute = raw
+				}
+			}
+		}
+	}
+
 	// Recall clears any lingering colonize intent (heading home, not to found a
 	// colony); redirect keeps it — the unit still tries to fulfil it at the new target.
 	newIntent, newColonyName := marchIntent, colonyName
@@ -178,10 +208,11 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		   colony_name  = $9,
 		   depart_tick  = $10,
 		   arrive_tick  = $11,
+		   march_route  = $12,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		p.UnitID, currentPos.Q, currentPos.R, newTarget.Q, newTarget.R, now, arrivesAtNew, newIntent, newColonyName,
-		currentTick, currentTick+travelTicks,
+		currentTick, currentTick+travelTicks, newMarchRoute,
 	); err != nil {
 		return fmt.Errorf("turn unit toward new course: %w", err)
 	}

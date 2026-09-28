@@ -365,6 +365,13 @@ type Unit struct {
 	// arrival_tick/duration_ticks/arrives_at_utc from them.
 	DepartTick *int
 	ArriveTick *int
+	// MarchRoute is units.march_route (mig 153, megaron_plan_rorelse_sparad_vag.md
+	// R1): the raw JSON of the path + per-hex costs FindPath produced when this
+	// march was dispatched. nil for a non-marching unit, for colonize-in-place,
+	// and for any march dispatched before mig 153. Only meaningful together
+	// with DepartTick/ArriveTick — see combat.LoadActiveRoute, which is the
+	// only place that should ever parse it.
+	MarchRoute []byte
 
 	MarchIntent *string // "colonize" or nil (plain march)
 	ColonyName  *string // chosen colony name when MarchIntent == "colonize"
@@ -402,7 +409,7 @@ const selectCols = `
 	settlement_id, support_settlement_id, ordinal,
 	q, r,
 	target_q, target_r, departs_at, arrives_at,
-	depart_tick, arrive_tick,
+	depart_tick, arrive_tick, march_route,
 	sentry_q, sentry_r,
 	reaction_policy,
 	leader_role,
@@ -424,7 +431,7 @@ func scanUnit(row interface {
 		&u.SettlementID, &u.SupportSettlementID, &u.Ordinal,
 		&u.Q, &u.R,
 		&u.TargetQ, &u.TargetR, &u.DepartsAt, &u.ArrivesAt,
-		&u.DepartTick, &u.ArriveTick,
+		&u.DepartTick, &u.ArriveTick, &u.MarchRoute,
 		&u.SentryQ, &u.SentryR,
 		&reactionRaw,
 		&u.LeaderRole,

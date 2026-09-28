@@ -222,3 +222,73 @@ func TestFindPath_RiverBlocksLand_DetourAround(t *testing.T) {
 		}
 	}
 }
+
+// TestStepHours_SumMatchesFindPathCost is R2 (megaron_plan_rorelse_sparad_vag.md):
+// StepHours must not re-search a path, only price one already found — and its
+// per-step sum must equal FindPath's own total cost for that exact path, since
+// both use the same moveHoursFor.
+func TestStepHours_SumMatchesFindPathCost(t *testing.T) {
+	cases := []struct {
+		name     string
+		tiles    map[[2]int]string
+		origin   MapPosition
+		target   MapPosition
+		category string
+	}{
+		{
+			name: "land around a mountain",
+			tiles: map[[2]int]string{
+				{0, 0}: "plains", {1, 0}: "mountain_limestone", {2, 0}: "plains",
+				{0, 1}: "plains", {1, 1}: "plains", {2, 1}: "plains",
+			},
+			origin: MapPosition{Q: 0, R: 0}, target: MapPosition{Q: 2, R: 0}, category: "land",
+		},
+		{
+			name: "naval detour",
+			tiles: map[[2]int]string{
+				{0, 0}: "coastal_sea", {1, 0}: "deep_sea", {2, 0}: "deep_sea",
+				{0, 1}: "coastal_sea", {1, 1}: "coastal_sea", {2, 1}: "coastal_sea",
+			},
+			origin: MapPosition{Q: 0, R: 0}, target: MapPosition{Q: 2, R: 0}, category: "naval",
+		},
+		{
+			name: "courier over a river",
+			tiles: map[[2]int]string{
+				{0, 0}: "plains", {1, 0}: "river", {2, 0}: "plains",
+			},
+			origin: MapPosition{Q: 0, R: 0}, target: MapPosition{Q: 2, R: 0}, category: CategoryCourier,
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			g := TileGraph(c.tiles)
+			path, wantCost, ok := g.FindPath(c.origin, c.target, c.category)
+			if !ok {
+				t.Fatalf("FindPath did not find a route")
+			}
+			steps := g.StepHours(path, c.category)
+			if len(steps) != len(path)-1 {
+				t.Fatalf("StepHours returned %d steps, want %d (len(path)-1)", len(steps), len(path)-1)
+			}
+			var sum float64
+			for _, h := range steps {
+				sum += h
+			}
+			if math.Abs(sum-wantCost) > 1e-9 {
+				t.Errorf("sum(StepHours) = %f, want FindPath cost %f", sum, wantCost)
+			}
+		})
+	}
+}
+
+// TestStepHours_TooShortPath: a path with fewer than two hexes (nothing to
+// enter) returns nil, not a search or an error.
+func TestStepHours_TooShortPath(t *testing.T) {
+	g := TileGraph{{0, 0}: "plains"}
+	if got := g.StepHours([]MapPosition{{Q: 0, R: 0}}, "land"); got != nil {
+		t.Errorf("StepHours(single-hex path) = %v, want nil", got)
+	}
+	if got := g.StepHours(nil, "land"); got != nil {
+		t.Errorf("StepHours(nil path) = %v, want nil", got)
+	}
+}

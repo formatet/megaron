@@ -1,0 +1,1 @@
+ALTER TABLE units DROP COLUMN IF EXISTS march_route;

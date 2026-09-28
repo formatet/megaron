@@ -260,17 +260,31 @@ func hostCurrentPos(ctx context.Context, pool *pgxpool.Pool, now time.Time, worl
 	var q, r int
 	var targetQ, targetR *int
 	var departsAt, arrivesAt *time.Time
+	var departTick, arriveTick *int
+	var marchRouteRaw []byte
 	if err := pool.QueryRow(ctx,
-		`SELECT fp.host_unit_id, u.status, u.category, u.q, u.r, u.target_q, u.target_r, u.departs_at, u.arrives_at
+		`SELECT fp.host_unit_id, u.status, u.category, u.q, u.r, u.target_q, u.target_r, u.departs_at, u.arrives_at,
+		        u.depart_tick, u.arrive_tick, u.march_route
 		 FROM founder_phase fp JOIN units u ON u.id = fp.host_unit_id
 		 WHERE fp.world_id = $1 AND fp.owner_id = $2 AND fp.active
 		   AND u.q IS NOT NULL AND u.r IS NOT NULL`,
 		worldID, playerID,
-	).Scan(&hostID, &status, &category, &q, &r, &targetQ, &targetR, &departsAt, &arrivesAt); err != nil {
+	).Scan(&hostID, &status, &category, &q, &r, &targetQ, &targetR, &departsAt, &arrivesAt,
+		&departTick, &arriveTick, &marchRouteRaw); err != nil {
 		return uuid.Nil, province.MapPosition{}, false
 	}
 	pos := province.MapPosition{Q: q, R: r}
 	if status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
+		// movement 2a, R6.e: read via the saved route when it applies
+		// (invariant 2); otherwise the old FindPath + interpolatedEyePos,
+		// unchanged.
+		if route, ok := combat.LoadActiveRoute(marchRouteRaw, status, departTick, arriveTick); ok {
+			if anchor, aErr := tick.LoadAnchor(ctx, pool, worldID); aErr == nil {
+				if p, rErr := combat.RoutePositionAt(route, anchor.MilliAt(now)); rErr == nil {
+					return hostID, p, true
+				}
+			}
+		}
 		path, _, ok, err := province.FindPath(ctx, pool, worldID, pos,
 			province.MapPosition{Q: *targetQ, R: *targetR}, category)
 		if err == nil && ok && len(path) > 0 {
@@ -581,16 +595,36 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Interpolate the unit's actual current position along the path it already
-	// proved traversable at dispatch — never a straight-line guess.
-	currentPos, posOK, err := province.InterpolatePosition(ctx, h.pool, worldID, origin, target, category,
-		*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not resolve unit's current position")
-		return
+	// movement 2a, R6.c: read via the saved route when it applies to this
+	// march (invariant 2); otherwise interpolate along the path it already
+	// proved traversable at dispatch, exactly as before — never a
+	// straight-line guess either way.
+	var currentPos province.MapPosition
+	posOK := false
+	// routeOK/recallRoute/recallAnchor are reused for the courier's aim below,
+	// so position and aim come from the same model (review 2026-09-28).
+	var recallRoute combat.StoredRoute
+	var recallAnchor tick.Anchor
+	routeOK := false
+	if activeRoute, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
+		if anchor, aErr := tick.LoadAnchor(ctx, h.pool, worldID); aErr == nil {
+			if p, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(h.clk.Now())); rErr == nil {
+				currentPos, posOK = p, true
+				recallRoute, recallAnchor, routeOK = activeRoute, anchor, true
+			}
+		}
 	}
 	if !posOK {
-		currentPos = origin
+		var ipErr error
+		currentPos, posOK, ipErr = province.InterpolatePosition(ctx, h.pool, worldID, origin, target, category,
+			*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
+		if ipErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not resolve unit's current position")
+			return
+		}
+		if !posOK {
+			currentPos = origin
+		}
 	}
 
 	if mode == "redirect" {
@@ -671,9 +705,16 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// the march remains, for any physically real runner to catch this unit —
 	// fail now, visibly, instead of queuing a courier already certain to
 	// arrive too late.
-	interceptPos, interceptOK, err := messenger.InterceptCourierTarget(ctx, h.pool, worldID,
-		province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
-		*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
+	var interceptPos province.MapPosition
+	var interceptOK bool
+	if routeOK {
+		interceptPos, interceptOK, err = messenger.InterceptCourierTargetRoute(ctx, h.pool, worldID,
+			province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, recallRoute, recallAnchor, h.clk.Now())
+	} else {
+		interceptPos, interceptOK, err = messenger.InterceptCourierTarget(ctx, h.pool, worldID,
+			province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
+			*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
+	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve runner interception")
 		return
@@ -1582,22 +1623,54 @@ func (h *UnitHandler) stanceToMarchingUnit(w http.ResponseWriter, ctx context.Co
 	category := string(unit.CategoryOf(u.Type))
 	now := h.clk.Now()
 
-	currentPos, posOK, err := province.InterpolatePosition(ctx, h.pool, u.WorldID, origin, target, category,
-		*u.DepartsAt, *u.ArrivesAt, now)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not resolve unit's current position")
-		return
+	// movement 2a, R6.d: when a gällande saved route applies (invariant 2),
+	// both "where is it now" and the Runner's interception aim come from the
+	// core — no path search at all. Otherwise the old re-walk + interception,
+	// unchanged.
+	activeRoute, hasRoute := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick)
+	var anchor tick.Anchor
+	if hasRoute {
+		var aErr error
+		anchor, aErr = tick.LoadAnchor(ctx, h.pool, u.WorldID)
+		if aErr != nil {
+			hasRoute = false
+		}
+	}
+
+	var currentPos province.MapPosition
+	posOK := false
+	if hasRoute {
+		if p, rErr := combat.RoutePositionAt(activeRoute, anchor.MilliAt(now)); rErr == nil {
+			currentPos, posOK = p, true
+		}
 	}
 	if !posOK {
-		currentPos = origin
+		var ipErr error
+		currentPos, posOK, ipErr = province.InterpolatePosition(ctx, h.pool, u.WorldID, origin, target, category,
+			*u.DepartsAt, *u.ArrivesAt, now)
+		if ipErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not resolve unit's current position")
+			return
+		}
+		if !posOK {
+			currentPos = origin
+		}
 	}
 	courierOrigin, ok := h.resolveOrderOrigin(w, ctx, u.WorldID, order.PlayerID, currentPos)
 	if !ok {
 		return
 	}
-	aim, intercepted, err := messenger.InterceptCourierTarget(ctx, h.pool, u.WorldID,
-		province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
-		*u.DepartsAt, *u.ArrivesAt, now)
+	var aim province.MapPosition
+	var intercepted bool
+	var err error
+	if hasRoute {
+		aim, intercepted, err = messenger.InterceptCourierTargetRoute(ctx, h.pool, u.WorldID,
+			province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, activeRoute, anchor, now)
+	} else {
+		aim, intercepted, err = messenger.InterceptCourierTarget(ctx, h.pool, u.WorldID,
+			province.MapPosition{Q: courierOrigin.q, R: courierOrigin.r}, origin, target, category,
+			*u.DepartsAt, *u.ArrivesAt, now)
+	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve runner interception")
 		return
@@ -1902,9 +1975,19 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	// en stad, eftersom den existerar innan någon stad gör det.
 	var wanax string
 	_ = h.pool.QueryRow(r.Context(), `SELECT COALESCE(wanax_name, username) FROM players WHERE id = $1`, playerID).Scan(&wanax)
+	// movement 2a, R7: current_q/r for a marching unit with a gällande saved
+	// route comes from the core, at this exact Milli. A failed anchor load
+	// (should not happen for a real world) just means no unit gets current_q/r
+	// this call — never a guessed position.
+	var nowMilli int64
+	hasAnchor := false
+	if anchor, aErr := tick.LoadAnchor(r.Context(), h.pool, worldID); aErr == nil {
+		nowMilli = anchor.MilliAt(h.clk.Now())
+		hasAnchor = true
+	}
 	summaries := unitSummaries(units, currentTick, h.clk,
-		settlementNames(r.Context(), h.pool, worldID, playerID), wanax)
-	attachUnitPaths(r.Context(), h.pool, worldID, summaries)
+		settlementNames(r.Context(), h.pool, worldID, playerID), wanax, nowMilli, hasAnchor)
+	attachUnitPaths(r.Context(), h.pool, worldID, units, summaries)
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
 	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
@@ -1940,16 +2023,32 @@ func settlementNames(ctx context.Context, db province.Queryer, worldID, ownerID 
 // attachUnitPaths fills Path (the real A* route) for every marching unit, loading
 // the world's tile graph once. Non-marching units are left with an empty path —
 // they are not animated. Reuses marchPathWaypoints (world.go).
-func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID, summaries []unitSummary) {
-	marching := false
+func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID, units []*unit.Unit, summaries []unitSummary) {
+	// movement 2a, R7: a gällande saved route (combat.LoadActiveRoute) answers
+	// Path directly — route.Hexes, no FindPath at all. Only units WITHOUT one
+	// (pre-153 marches, or the straight-line fallback) need the old re-search
+	// below, so the tile graph is loaded lazily, only if at least one remains.
+	unitByID := make(map[uuid.UUID]*unit.Unit, len(units))
+	for _, u := range units {
+		unitByID[u.ID] = u
+	}
+	needsSearch := false
 	for i := range summaries {
 		s := &summaries[i]
-		if s.Status == "marching" && s.Q != nil && s.R != nil && s.TargetQ != nil && s.TargetR != nil {
-			marching = true
-			break
+		if s.Status != "marching" || s.Q == nil || s.R == nil || s.TargetQ == nil || s.TargetR == nil {
+			continue
 		}
+		u := unitByID[s.ID]
+		if u == nil {
+			continue
+		}
+		if route, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
+			s.Path = route.Hexes
+			continue
+		}
+		needsSearch = true
 	}
-	if !marching {
+	if !needsSearch {
 		return
 	}
 	g, err := province.LoadTileGraph(ctx, db, worldID)
@@ -1958,7 +2057,7 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 	}
 	for i := range summaries {
 		s := &summaries[i]
-		if s.Status != "marching" || s.Q == nil || s.R == nil || s.TargetQ == nil || s.TargetR == nil {
+		if s.Status != "marching" || s.Q == nil || s.R == nil || s.TargetQ == nil || s.TargetR == nil || s.Path != nil {
 			continue
 		}
 		cat := "land"
@@ -2032,7 +2131,15 @@ type unitSummary struct {
 	// mountains). The map animates the walker along it instead of a straight line,
 	// so it is drawn where the unit truly is. Empty for non-marching units and when
 	// no route exists (client falls back to the straight line). See marchPathWaypoints.
-	Path        [][2]int   `json:"path,omitempty"`
+	Path [][2]int `json:"path,omitempty"`
+	// CurrentQ/CurrentR (movement 2a, R7) is a marching unit's live position
+	// read through its saved route (combat.RoutePositionAt) — never re-searched,
+	// never guessed. Omitted unless a gällande route exists AND the world's
+	// tick anchor loaded; a march with no saved route (pre-153, or the
+	// straight-line fallback) omits it too. Client falls back to interpolating
+	// Path/DepartsAt/ArrivesAt itself when these are absent, exactly as today.
+	CurrentQ    *int       `json:"current_q,omitempty"`
+	CurrentR    *int       `json:"current_r,omitempty"`
 	CargoUnitID *uuid.UUID `json:"cargo_unit_id,omitempty"`
 	// CarrierShipID/Name identify the ship an embarked land unit is aboard (the
 	// ship whose cargo_unit_id points back at this unit). Without them a `unit
@@ -2389,7 +2496,7 @@ func eligiblePickupShips(ctx context.Context, db province.Queryer, worldID, owne
 
 // townNames är id → namn för de städer enheterna hänvisar till. Utan den kan
 // servern inte formatera namnstandarden, och då hamnar grammatiken i klienterna.
-func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string, wanax string) []unitSummary {
+func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames map[uuid.UUID]string, wanax string, nowMilli int64, hasAnchor bool) []unitSummary {
 	// Reverse map: cargo unit id → the ship carrying it, so an embarked unit can
 	// name its carrier. A ship and its cargo are owned by the same Wanax, so both
 	// rows are in us — no extra query needed.
@@ -2499,6 +2606,18 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			provisionDays = combat.ProvisionDaysLeft(u.Provisions,
 				combat.VoyageRation(string(u.Type), u.Size, cargoType, cargoSize))
 		}
+		// movement 2a, R7: current_q/r is read through the saved route — never
+		// re-searched, never guessed. Omitted (nil) unless a gällande route
+		// exists AND the world's tick anchor loaded successfully.
+		var currentQ, currentR *int
+		if hasAnchor {
+			if route, ok := combat.LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
+				if pos, err := combat.RoutePositionAt(route, nowMilli); err == nil {
+					q, r := pos.Q, pos.R
+					currentQ, currentR = &q, &r
+				}
+			}
+		}
 		out = append(out, unitSummary{
 			ID:                    u.ID,
 			Type:                  string(u.Type),
@@ -2535,6 +2654,8 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			OriginSettlementID:    u.OriginSettlementID,
 			Reinforcing:           u.Reinforcing,
 			CanReinforce:          canReinforce,
+			CurrentQ:              currentQ,
+			CurrentR:              currentR,
 		})
 	}
 	return out

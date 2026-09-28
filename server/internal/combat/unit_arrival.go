@@ -1288,7 +1288,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	}
 
 	// Route home via A* — the same passability graph the outbound leg proved.
-	_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 		province.MapPosition{Q: fromQ, R: fromR},
 		province.MapPosition{Q: homeQ, R: homeR},
 		u.category,
@@ -1297,6 +1297,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	if pathErr == nil && pathOK {
 		moveTicks = pathTicks
 	} else {
+		path = nil // fell back to straight line below — no real path to save (R5)
 		// Defensive fallback: the outbound march already proved passability
 		// between these regions, so this should not happen.
 		slog.Warn("return home: FindPath failed, falling back to straight line", "unit", u.id, "err", pathErr)
@@ -1331,6 +1332,20 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	// seconds/tick), not moveTicks-as-hours — same reason as the outbound leg in
 	// unit.go March: the map animates the ship against this window.
 	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
+
+	// movement 2a, R1/R5: save the path already found above — never re-search
+	// it at read time. NULL when FindPath fell back to a straight line (path
+	// was cleared to nil above).
+	var marchRoute []byte
+	if len(path) >= 2 {
+		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.category); shErr == nil {
+			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
+				if raw, mErr := json.Marshal(route); mErr == nil {
+					marchRoute = raw
+				}
+			}
+		}
+	}
 
 	returnIntent := "explore_return"
 	// R6 (megaron_plan_hamta_hem.md): a pickup ship sailing home WITH its
@@ -1374,9 +1389,10 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		   passage_messenger_id = NULL,
 		   pickup_unit_id = NULL,
 		   pickup_wait_ticks = NULL,
+		   march_route   = $11,
 		   updated_at    = now()
 		 WHERE id = $1`,
-		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks, u.homeSettlementID,
+		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks, u.homeSettlementID, marchRoute,
 	); err != nil {
 		return fmt.Errorf("dispatchReturnHome: dispatch return march: %w", err)
 	}

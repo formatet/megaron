@@ -15,6 +15,7 @@ package combat
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math"
@@ -629,13 +630,16 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// the only route crosses water) and routes around mountains correctly.
 	// Skipped for colonize-in-place: origin == target, so there is no route to
 	// find and no distance to travel — the colony settles on the next tick.
+	category := string(unit.CategoryOf(u.Type))
 	var moveTicks float64
+	var path []province.MapPosition
 	if !colonizeInPlace {
-		_, pathCost, pathOK, pathErr := province.FindPath(ctx, pool, o.WorldID,
+		p, pathCost, pathOK, pathErr := province.FindPath(ctx, pool, o.WorldID,
 			province.MapPosition{Q: originQ, R: originR},
 			province.MapPosition{Q: targetQ, R: targetR},
-			string(unit.CategoryOf(u.Type)),
+			category,
 		)
+		path = p
 		if pathErr != nil {
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
@@ -675,6 +679,24 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// (~24 min for a short hop) leaves the unit frozen at its origin until the
 	// real tick arrival (6 s at TICK_SECONDS=6) teleports it home.
 	arrivesAt := now.Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
+
+	// movement 2a, R1/R5: save the path FindPath already found (never a second
+	// search) so a later read (recall/redirect, courier interception, the
+	// owner's own map and keryx) never has to re-walk it. NULL for colonize-
+	// in-place (no real path) and for a FindPath result too short to build a
+	// route from (defensive — should not happen given pathOK was already
+	// checked above).
+	var marchRoute []byte
+	if len(path) >= 2 {
+		stepHours, shErr := province.StepHoursDB(ctx, pool, o.WorldID, path, category)
+		if shErr == nil {
+			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
+				if raw, mErr := json.Marshal(route); mErr == nil {
+					marchRoute = raw
+				}
+			}
+		}
+	}
 
 	// Atomic DB update: set unit to marching and schedule arrival event.
 	tx, err := pool.Begin(ctx)
@@ -939,11 +961,12 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		   passage_messenger_id = $18,
 		   pickup_unit_id = $19,
 		   pickup_wait_ticks = $20,
+		   march_route  = $21,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		o.UnitID, originQ, originR, targetQ, targetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
 		currentTick, currentTick+travelTicks, landTargetQArg, landTargetRArg, landCargoIntentArg, passageMessengerArg,
-		pickupUnitArg, pickupWaitArg,
+		pickupUnitArg, pickupWaitArg, marchRoute,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}
