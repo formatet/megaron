@@ -23,6 +23,7 @@ import (
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -216,5 +217,132 @@ func TestAcceptance1_MarchRecallHandler_RedirectSavesRoute(t *testing.T) {
 		if got.Costs[i] != want.Costs[i] {
 			t.Errorf("Costs[%d] = %d, want %d", i, got.Costs[i], want.Costs[i])
 		}
+	}
+}
+
+// setupFordMarchRecallWorld is combat's own setupFordMarchWorld fixture
+// (real-terrain T1/T7 analogue: (0,0) plains -> (1,0) river_ford (2.5h) ->
+// (2,0) plains (0.75h), dominated by the ford) plus a home settlement, which
+// insertRecallMessenger-style dispatch needs to resolve an order origin from.
+func setupFordMarchRecallWorld(t *testing.T) (pool *pgxpool.Pool, worldID, ownerID uuid.UUID) {
+	t.Helper()
+	pool = testPool(t)
+	ctx := context.Background()
+
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'archived') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(ctx, `DELETE FROM worlds WHERE id = $1`, worldID) })
+
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"ford-recall-tester-"+uuid.New().String(),
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create test player: %v", err)
+	}
+
+	for _, tl := range []struct {
+		q, r    int
+		terrain string
+	}{
+		{0, 0, "plains"}, {1, 0, "river_ford"}, {2, 0, "plains"},
+	} {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, tl.q, tl.r, tl.terrain,
+		); err != nil {
+			t.Fatalf("insert map tile (%d,%d): %v", tl.q, tl.r, err)
+		}
+	}
+
+	var provinceID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 0, 0, 'plains') RETURNING id`,
+		worldID,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create origin province: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Home', 'achaean', $3, 'capital', true)`,
+		worldID, provinceID, ownerID,
+	); err != nil {
+		t.Fatalf("create home settlement: %v", err)
+	}
+	return pool, worldID, ownerID
+}
+
+// TestAcceptance2_MarchRecallHandler_CatchesWhereTimeSays is combat's
+// TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays for write site 5 (the
+// budburen recall path, R6.b): same ford fixture, same 30%-through instant,
+// same expected divergence from the old floor-based interpolation.
+func TestAcceptance2_MarchRecallHandler_CatchesWhereTimeSays(t *testing.T) {
+	pool, worldID, ownerID := setupFordMarchRecallWorld(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET current_tick = 0, last_tick_at = $1 WHERE id = $2`, clk.Now(), worldID,
+	); err != nil {
+		t.Fatalf("align world tick anchor: %v", err)
+	}
+	scheduler := events.NewScheduler(pool, clk)
+	eventStore := events.NewStore(pool)
+
+	var unitID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'positioned', 0, 0) RETURNING id`,
+		worldID, ownerID,
+	).Scan(&unitID); err != nil {
+		t.Fatalf("create positioned land unit: %v", err)
+	}
+
+	res, err := combat.StartMarch(ctx, pool, scheduler, eventStore, clk, combat.MarchOrder{
+		WorldID: worldID, PlayerID: ownerID, UnitID: unitID,
+		TargetQ: 2, TargetR: 0,
+	}, nil)
+	if err != nil {
+		t.Fatalf("StartMarch: %v", err)
+	}
+	if res.DurationTicks != 3 {
+		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3", res.DurationTicks)
+	}
+
+	clk.Advance(time.Duration(0.3*3*float64(tick.TickSeconds)) * time.Second) // 30% through
+
+	var settlementID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`SELECT id FROM settlements WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
+		worldID, ownerID,
+	).Scan(&settlementID); err != nil {
+		t.Fatalf("load home settlement: %v", err)
+	}
+	var messengerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO messengers
+		     (world_id, sender_id, origin_id, destination_id, message_text, status, kind, hex_q, hex_r, dest_q, dest_r, arrives_at)
+		 VALUES ($1,$2,$3,NULL,'Recall order','outbound','recall',0,0,0,0,$4)
+		 RETURNING id`,
+		worldID, ownerID, settlementID, clk.Now(),
+	).Scan(&messengerID); err != nil {
+		t.Fatalf("insert recall messenger: %v", err)
+	}
+
+	h := NewMarchRecallHandler(pool, scheduler, eventStore, nil, clk)
+	payload := MarchRecallPayload{WorldID: worldID, UnitID: unitID, MessengerID: messengerID, Mode: "recall"}
+	raw, _ := json.Marshal(payload)
+	if err := h.Handle(ctx, events.ScheduledEvent{Payload: raw}); err != nil {
+		t.Fatalf("Handle: %v", err)
+	}
+
+	var q, r int
+	if err := pool.QueryRow(ctx, `SELECT q, r FROM units WHERE id = $1`, unitID).Scan(&q, &r); err != nil {
+		t.Fatalf("load unit after recall: %v", err)
+	}
+	if q != 1 || r != 0 {
+		t.Errorf("MarchRecallHandler caught the unit at (%d,%d), want (1,0) (the ford — val A, already entered at departure)", q, r)
 	}
 }

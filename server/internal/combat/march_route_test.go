@@ -15,6 +15,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -451,4 +452,116 @@ func TestAcceptance1_ExecuteRecall_RedirectSavesRoute(t *testing.T) {
 		province.MapPosition{Q: newTargetQ, R: newTargetR}, "land",
 		*departTick, *arriveTick)
 	assertRouteMatches(t, raw, departTick, arriveTick, want)
+}
+
+// setupFordMarchWorld builds the real-terrain analogue of movement's own T1/T7
+// fixture: (0,0) plains -> (1,0) river_ford (steep, 2.5h) -> (2,0) plains
+// (0.75h) — a real ford hex, passable for land, dominating the journey's cost
+// exactly like movement_test.go's T1. Used for acceptance 2 (megaron_plan_
+// rorelse_sparad_vag.md §6): a chosen instant where the OLD floor-based
+// interpolation and the core disagree on which hex the unit occupies.
+func setupFordMarchWorld(t *testing.T) (pool *pgxpool.Pool, worldID, ownerID uuid.UUID) {
+	t.Helper()
+	pool = testPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE status = 'active'`); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID) })
+
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"ford-tester-"+uuid.New().String(),
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create test player: %v", err)
+	}
+
+	for _, tl := range []struct {
+		q, r    int
+		terrain string
+	}{
+		{0, 0, "plains"}, {1, 0, "river_ford"}, {2, 0, "plains"},
+	} {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
+			worldID, tl.q, tl.r, tl.terrain,
+		); err != nil {
+			t.Fatalf("insert map tile (%d,%d): %v", tl.q, tl.r, err)
+		}
+	}
+	return pool, worldID, ownerID
+}
+
+// alignWorldTickAnchor pins worlds.current_tick/last_tick_at to clk's own
+// timeline: tick 0 starts exactly at clk.Now(). A fast unit test never runs
+// the real tick worker, so the DB's last_tick_at default (real wall time at
+// world creation) would otherwise be unrelated to the TestClock a march is
+// dispatched against — tick.Anchor.MilliAt needs the two aligned to mean
+// anything.
+func alignWorldTickAnchor(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, clk *clock.TestClock) {
+	t.Helper()
+	if _, err := pool.Exec(context.Background(),
+		`UPDATE worlds SET current_tick = 0, last_tick_at = $1 WHERE id = $2`, clk.Now(), worldID,
+	); err != nil {
+		t.Fatalf("align world tick anchor: %v", err)
+	}
+}
+
+// TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays: at 30% of a 3-tick
+// march dominated by the ford's cost, the OLD floor-based interpolation
+// (idx=floor(0.3*2)=0) says the unit is still at the ORIGIN — but the core
+// says it already entered the ford at departure (val A: the cost of a hex is
+// the time spent standing in it, and the ford's b_0 lands at ~77% of the
+// journey, well after 30%). ExecuteRecall must start the home leg from the
+// core's answer, not the old one.
+func TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays(t *testing.T) {
+	pool, worldID, ownerID := setupFordMarchWorld(t)
+	ctx := context.Background()
+	clk := clock.NewTestClock(time.Now())
+	alignWorldTickAnchor(t, pool, worldID, clk)
+	scheduler := events.NewScheduler(pool, clk)
+	eventStore := events.NewStore(pool)
+
+	var unitID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, q, r)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'positioned', 0, 0) RETURNING id`,
+		worldID, ownerID,
+	).Scan(&unitID); err != nil {
+		t.Fatalf("create positioned land unit: %v", err)
+	}
+
+	res, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
+		WorldID: worldID, PlayerID: ownerID, UnitID: unitID,
+		TargetQ: 2, TargetR: 0,
+	}, nil)
+	if err != nil {
+		t.Fatalf("StartMarch: %v", err)
+	}
+	if res.DurationTicks != 3 {
+		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3 (2.5h ford + 0.75h plains, rounds to 3)", res.DurationTicks)
+	}
+
+	// 30% of the 3-tick journey.
+	clk.Advance(time.Duration(0.3*3*float64(tick.TickSeconds)) * time.Second)
+
+	applied, err := ExecuteRecall(ctx, pool, scheduler, eventStore, clk, RecallOrder{
+		WorldID: worldID, UnitID: unitID, Mode: "recall",
+	})
+	if err != nil {
+		t.Fatalf("ExecuteRecall: %v", err)
+	}
+	if applied == nil {
+		t.Fatal("ExecuteRecall returned (nil, nil) — unit was no longer marching?")
+	}
+	if applied.FromQ != 1 || applied.FromR != 0 {
+		t.Errorf("ExecuteRecall caught the unit at (%d,%d), want (1,0) (the ford — val A, already entered at departure)", applied.FromQ, applied.FromR)
+	}
 }
