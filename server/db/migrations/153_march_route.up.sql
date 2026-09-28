@@ -1,0 +1,17 @@
+-- Migration 153: march_route — the sparad väg (megaron_plan_rorelse_sparad_vag.md, slice 2a).
+--
+-- Every march the five combat write sites dispatch from here on saves the
+-- exact path and per-hex costs FindPath produced at dispatch time, so a
+-- later read (recall, redirect, courier interception, the owner's own map
+-- and keryx) never has to re-search the path (R1: "vägen ... söks aldrig
+-- fram igen vid läsning").
+--
+-- Shape (combat.StoredRoute, R1): {"start_tick": int, "end_tick": int,
+-- "hexes": [[q,r], ...], "costs": [int, ...]} — costs[i] is the cost of
+-- entering hexes[i+1], in thousandths of a terrain-hour (round(hours*1000),
+-- minimum 1). start_tick/end_tick mirror the unit's own depart_tick/
+-- arrive_tick; a route only ever applies to the march it was saved for
+-- (combat.LoadActiveRoute checks the two pairs match) — no backfill, NULL
+-- for every march dispatched before this migration and for one that never
+-- got a real path (colonize-in-place: origin == target).
+ALTER TABLE units ADD COLUMN march_route JSONB;
