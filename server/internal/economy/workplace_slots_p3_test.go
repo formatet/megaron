@@ -70,8 +70,15 @@ func TestRecomputeProduction_HexSlotCapIsPopulationInvariant(t *testing.T) {
 }
 
 // TestLoadHexCapacity_BuildingRaisesCap — the "med byggnad" half of §8.3: a
-// lumbermill in the settlement must raise cedar's per-hex cap from 1 to 2,
-// doubling the total (18 → 36 for an 18-hex forest_cedar catchment).
+// lumbermill built on ONE hex raises cedar's cap on THAT hex from 1 to 2 —
+// and ONLY that hex (18 → 19 for an 18-hex forest_cedar catchment), not
+// every forest_cedar hex in the catchment.
+//
+// Before megaron_plan_byggnad_pa_hex.md §A this test asserted 18 → 36 (every
+// hex doubled) — that was hasBuilding read SETTLEMENT-WIDE, exactly the "en
+// farm/lumbermill lyfte hela catchmenten" bug the hex-bound slice closes.
+// Pinned here as the P3 sibling of TestHexBuildingCap_OnlyAffectsItsOwnHex
+// (building_hex_test.go).
 func TestLoadHexCapacity_BuildingRaisesCap(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
@@ -86,9 +93,11 @@ func TestLoadHexCapacity_BuildingRaisesCap(t *testing.T) {
 		t.Fatalf("18 forest_cedar hexes with no lumbermill should give 18 cedar slots, got %d", before["cedar"])
 	}
 
+	ring := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)
+	lumberHex := ring[0]
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'lumbermill', 1)`,
-		settlementID,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'lumbermill', 1, $2, $3)`,
+		settlementID, lumberHex.Q, lumberHex.R,
 	); err != nil {
 		t.Fatalf("seed lumbermill: %v", err)
 	}
@@ -96,7 +105,7 @@ func TestLoadHexCapacity_BuildingRaisesCap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadHexCapacity (with lumbermill): %v", err)
 	}
-	if after["cedar"] != 36 {
-		t.Fatalf("18 forest_cedar hexes WITH a lumbermill should give 36 cedar slots (2 per hex), got %d", after["cedar"])
+	if after["cedar"] != 19 {
+		t.Fatalf("18 forest_cedar hexes with a lumbermill on ONE of them should give 19 cedar slots (17×1 + 1×2), got %d", after["cedar"])
 	}
 }

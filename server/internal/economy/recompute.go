@@ -82,14 +82,14 @@ const NearjordGrainPerTick = 0.5
 // array's length too (WorkplaceSlots silently returns 0 for any level past it,
 // rather than crashing — but a raised level cap would then grant no extra
 // slots until this table is widened).
-// hexBoundBuildingTypes mirrors province.HexBoundBuildings — economy may not
+// HexBoundBuildingTypes mirrors province.HexBoundBuildings — economy may not
 // import province (G1: economy(→clock,events,gossip,hexgrid) only), so this
 // is its own copy, the same shape as workplaceSlotTable's pre-existing
 // economy-side mirror pattern. A type here only affects the ONE catchment
 // hex it stands on (its rate AND its cap); every other production building
 // stays settlement-wide. Mirror test: api/handlers/hex_bound_mirror_test.go.
 // Add a type here → add it to province.HexBoundBuildings too.
-var hexBoundBuildingTypes = map[string]bool{
+var HexBoundBuildingTypes = map[string]bool{
 	"farm":        true,
 	"mine":        true,
 	"lumbermill":  true,
@@ -243,7 +243,7 @@ var depositCapacityTable = map[string]hexCapacityRule{
 // per-hex cap times how many catchment hexes match. Mirrors LoadWorkplaceSlots'
 // shape (P2) applied to hexes instead of buildings.
 //
-// Whether "with building" applies is now scoped per hexBoundBuildingTypes'
+// Whether "with building" applies is now scoped per HexBoundBuildingTypes'
 // membership (megaron_plan_byggnad_pa_hex.md §A): a hex-bound relevant
 // building (farm/mine/lumbermill/stonequarry) only raises the cap of the ONE
 // hex it actually stands on — checked against builtAtHex below, keyed by
@@ -295,7 +295,7 @@ func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[st
 		if rule.relevantBuilding == "" {
 			return false
 		}
-		if hexBoundBuildingTypes[rule.relevantBuilding] {
+		if HexBoundBuildingTypes[rule.relevantBuilding] {
 			return builtAtHex[hex][rule.relevantBuilding]
 		}
 		return builtCitywide[rule.relevantBuilding]

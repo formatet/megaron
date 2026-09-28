@@ -83,7 +83,7 @@ var weakestLinkRefiningBuilding = map[string]string{
 // holds settlement-wide buildings (harbour, market, …) — presence anywhere
 // gates every catchment hex, exactly as before this slice. Hex holds
 // hex-bound production buildings (farm/mine/lumbermill/stonequarry — see
-// hexBoundBuildingTypes, recompute.go), keyed by the EXACT hex they stand
+// HexBoundBuildingTypes, recompute.go), keyed by the EXACT hex they stand
 // on — presence gates ONLY that hex, which is the whole point of this slice
 // ("en farm lyfte hela catchmenten" is the bug this closes).
 type BuildingSet struct {
@@ -133,7 +133,7 @@ func (bs BuildingSet) levelsAt(c hexgrid.Coord) map[string]int {
 // everything else (harbour's coastal_sea+fish row is the one HexOption case
 // that reaches this — a terrain-gated row naming a city-wide building).
 func (bs BuildingSet) builtAt(c hexgrid.Coord, buildingType string) bool {
-	if hexBoundBuildingTypes[buildingType] {
+	if HexBoundBuildingTypes[buildingType] {
 		return bs.Hex[c][buildingType] > 0
 	}
 	return bs.City[buildingType] > 0
@@ -542,10 +542,29 @@ type BuildingOption struct {
 }
 
 // LoadBuildingProductionOptions returns every built (level >= 1) workplace
-// building's terrain-free production menu.
+// building's terrain-free production menu, POOLED across every building of
+// that type — city buildings are one-per-settlement (unaffected), but a
+// hex-bound type's PRODUCTION can still route through here when its
+// production_rules row is terrain-free (mine+stone and stonequarry+stone
+// both are: only mine's copper/tin/silver rows are terrain+deposit-gated
+// HexOption rows). megaron_plan_byggnad_pa_hex.md §A made several buildings
+// of the same type possible (one per hex); this function's old single-row
+// assumption (`byType[buildingType]` overwriting Level/CapPerGood on a
+// second row instead of summing) silently corrupted a settlement with two
+// mines or two stonequarries — RatePerGood double-counted while CapPerGood
+// only reflected the LAST row's level. Fixed by summing rate and slots per
+// building ROW, the same way LoadWorkplaceSlots (recompute.go) already sums
+// across hex-bound buildings.
+//
+// Level is the MAX level across every building of this type — informational
+// display only (same convention db.go's loadLaborCapacities/province.go's
+// Goods handler already use for their own per-good level sums); with two
+// stonequarries at different levels there is no single "the" level, and the
+// pooled capacity numbers below (not this field) are what actually gates
+// placement.
 func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]BuildingOption, error) {
 	rows, err := tx.Query(ctx,
-		`SELECT b.building_type, b.level, pr.good_key, pr.rate_per_tick
+		`SELECT b.id, b.building_type, b.level, pr.good_key, pr.rate_per_tick
 		 FROM buildings b
 		 JOIN production_rules pr ON pr.building_type = b.building_type AND pr.terrain_type IS NULL
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
@@ -559,18 +578,11 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 
 	byType := make(map[string]*BuildingOption)
 	var order []string
-	for rows.Next() {
-		var buildingType, goodKey string
-		var level int
-		var rate float64
-		if err := rows.Scan(&buildingType, &level, &goodKey, &rate); err != nil {
-			return nil, fmt.Errorf("load building production options: scan: %w", err)
-		}
+	ensure := func(buildingType string) *BuildingOption {
 		opt, ok := byType[buildingType]
 		if !ok {
 			opt = &BuildingOption{
 				BuildingType:    buildingType,
-				Level:           level,
 				RatePerGood:     make(map[string]float64),
 				CapPerGood:      make(map[string]int),
 				CapL1PerGood:    make(map[string]int),
@@ -580,16 +592,27 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 			byType[buildingType] = opt
 			order = append(order, buildingType)
 		}
-		opt.RatePerGood[goodKey] += rate
-		opt.CapPerGood[goodKey] = WorkplaceSlots(buildingType, level)
-		capL1 := WorkplaceSlots(buildingType, 1)
-		opt.CapL1PerGood[goodKey] = capL1
-		opt.PlaceCapPerGood[goodKey] = capL1
-		if capL1 > 0 {
-			opt.MultPerGood[goodKey] = float64(opt.CapPerGood[goodKey]) / float64(capL1)
-		} else {
-			opt.MultPerGood[goodKey] = 1.0
+		return opt
+	}
+	for rows.Next() {
+		var buildingID uuid.UUID
+		var buildingType, goodKey string
+		var level int
+		var rate float64
+		if err := rows.Scan(&buildingID, &buildingType, &level, &goodKey, &rate); err != nil {
+			return nil, fmt.Errorf("load building production options: scan: %w", err)
 		}
+		opt := ensure(buildingType)
+		if level > opt.Level {
+			opt.Level = level
+		}
+		opt.RatePerGood[goodKey] += rate
+		// Sum PER BUILDING ROW, not per good — each row here is one distinct
+		// building instance contributing its own WorkplaceSlots(level) and
+		// WorkplaceSlots(1) to this good's pool, mirroring LoadWorkplaceSlots'
+		// per-row summation.
+		opt.CapPerGood[goodKey] += WorkplaceSlots(buildingType, level)
+		opt.CapL1PerGood[goodKey] += WorkplaceSlots(buildingType, 1)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("load building production options: rows: %w", err)
@@ -597,7 +620,16 @@ func LoadBuildingProductionOptions(ctx context.Context, tx Tx, settlementID uuid
 
 	out := make([]BuildingOption, 0, len(order))
 	for _, bt := range order {
-		out = append(out, *byType[bt])
+		opt := byType[bt]
+		for good, capL1 := range opt.CapL1PerGood {
+			opt.PlaceCapPerGood[good] = capL1
+			if capL1 > 0 {
+				opt.MultPerGood[good] = float64(opt.CapPerGood[good]) / float64(capL1)
+			} else {
+				opt.MultPerGood[good] = 1.0
+			}
+		}
+		out = append(out, *opt)
 	}
 	return out, nil
 }

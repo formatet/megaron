@@ -204,19 +204,25 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Buildings — already completed (agents/clients use this to avoid re-queuing).
+		// HexQ/HexR are set only for hex-bound types (province.HexBoundBuildings) —
+		// null for a city building (megaron_plan_byggnad_pa_hex.md §A). This is
+		// the field `keryx city`/`keryx status` read to show a hex-bound
+		// building's location.
 		type buildingItem struct {
 			Type  string `json:"type"`
 			Level int    `json:"level"`
+			HexQ  *int   `json:"hex_q,omitempty"`
+			HexR  *int   `json:"hex_r,omitempty"`
 		}
 		var buildings []buildingItem
 		brows, _ := h.pool.Query(r.Context(),
-			`SELECT building_type, level FROM buildings WHERE settlement_id = $1 ORDER BY building_type`,
+			`SELECT building_type, level, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY building_type, hex_q, hex_r`,
 			sett.ID,
 		)
 		if brows != nil {
 			for brows.Next() {
 				var bi buildingItem
-				_ = brows.Scan(&bi.Type, &bi.Level)
+				_ = brows.Scan(&bi.Type, &bi.Level, &bi.HexQ, &bi.HexR)
 				buildings = append(buildings, bi)
 			}
 			brows.Close()
@@ -2693,10 +2699,14 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// Wanax cannot tell "producing flat out from a level-1 harbour" from "half my
 	// fishermen have no boat to crew". (Playtest 2026-07-23, Deiphobos:
 	// "ingenting säger om detta är mättat".)
+	// DISTINCT is on (good_key, b.id), not (good_key, building_type, level) —
+	// same fix as db.go's loadLaborCapacities: a hex-bound type can now have
+	// several same-level rows (one per hex), which the old DISTINCT would
+	// have collapsed into one, undercounting this informational level sum.
 	workplaceLevels := make(map[string]int)
 	lvlRows, _ := h.pool.Query(r.Context(),
 		`SELECT good_key, SUM(level)::int FROM (
-		     SELECT DISTINCT pr.good_key, b.building_type, b.level
+		     SELECT DISTINCT pr.good_key, b.id, b.level
 		     FROM production_rules pr
 		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
 		 ) t GROUP BY good_key`,

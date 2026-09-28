@@ -98,13 +98,26 @@ func newGrowthFixture(t *testing.T, terrains [6]string, pop int) (*pgxpool.Pool,
 		t.Fatalf("create settlement: %v", err)
 	}
 
-	// Genesis starter buildings (mirrors api/handlers/starter_buildings.go).
+	// Genesis starter buildings. farm/lumbermill are hex-bound
+	// (megaron_plan_byggnad_pa_hex.md §A) — every caller of this fixture puts
+	// "plains" at catchmentOffsets[0] (1,0) by convention (grep confirms it:
+	// the one guaranteed-grain-capable hex the self-sufficiency invariant
+	// below needs), so the starter farm stands there; lumbermill rides along
+	// on the same hex — none of this fixture's terrain arrays include a
+	// forest terrain, so which hex it's on never affects any of these tests.
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level)
-		 SELECT $1, bt, 1 FROM unnest(ARRAY['farm','lumbermill','temple','market']) AS bt`,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r)
+		 SELECT $1, bt, 1, 1, 0 FROM unnest(ARRAY['farm','lumbermill']) AS bt`,
 		settlementID,
 	); err != nil {
-		t.Fatalf("seed starter buildings: %v", err)
+		t.Fatalf("seed starter hex-bound buildings: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO buildings (settlement_id, building_type, level)
+		 SELECT $1, bt, 1 FROM unnest(ARRAY['temple','market']) AS bt`,
+		settlementID,
+	); err != nil {
+		t.Fatalf("seed starter city buildings: %v", err)
 	}
 
 	// Genesis cult floor (mirrors api/handlers/join.go / foundColony) — cult

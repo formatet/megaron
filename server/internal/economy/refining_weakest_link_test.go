@@ -238,7 +238,7 @@ func TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker(t *testing.T) {
 	settlementID := plainsCatchmentFixture(t, 100, 100)
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, GoodWine)
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'farm', 1), ($1, 'winery', 1)`,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, 1, 0), ($1, 'winery', 1, NULL, NULL)`,
 		settlementID,
 	); err != nil {
 		t.Fatalf("build farm+winery: %v", err)
@@ -268,7 +268,7 @@ func TestRecomputeProduction_WineWineryBoostRealizedWhenStaffed(t *testing.T) {
 	settlementID := plainsCatchmentFixture(t, 100, 100)
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, GoodWine)
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'farm', 1), ($1, 'winery', 1)`,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, 1, 0), ($1, 'winery', 1, NULL, NULL)`,
 		settlementID,
 	); err != nil {
 		t.Fatalf("build farm+winery: %v", err)

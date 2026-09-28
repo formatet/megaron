@@ -349,7 +349,7 @@ func TestExecuteOccupyAction_Sack(t *testing.T) {
 		t.Fatalf("seed settlement_goods: %v", err)
 	}
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'mine', 2)`,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'mine', 2, 1, 0)`,
 		f.defSettlement,
 	); err != nil {
 		t.Fatalf("seed building: %v", err)

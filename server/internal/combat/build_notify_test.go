@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -90,11 +91,21 @@ func runBuildComplete(t *testing.T, pool *pgxpool.Pool, worldID, settlementID uu
 	t.Helper()
 	ctx := context.Background()
 
+	// buildingType is hex-bound (province.HexBoundBuildings — this file only
+	// ever exercises "mine") in every caller today: point it at the one ring
+	// tile newBuildNotifyFixture seeds, (1,0) — migration 154's
+	// build_queue_hex_bound_check CHECK constraint requires a hex for it.
+	var hexQ, hexR *int
+	if province.HexBoundBuildings[province.BuildingType(buildingType)] {
+		q, r := 1, 0
+		hexQ, hexR = &q, &r
+	}
+
 	queueID := uuid.New()
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO build_queue (id, settlement_id, world_id, building_type, complete_at)
-		 VALUES ($1, $2, $3, $4, now())`,
-		queueID, settlementID, worldID, buildingType,
+		`INSERT INTO build_queue (id, settlement_id, world_id, building_type, complete_at, hex_q, hex_r)
+		 VALUES ($1, $2, $3, $4, now(), $5, $6)`,
+		queueID, settlementID, worldID, buildingType, hexQ, hexR,
 	); err != nil {
 		t.Fatalf("seed build_queue: %v", err)
 	}
@@ -103,6 +114,8 @@ func runBuildComplete(t *testing.T, pool *pgxpool.Pool, worldID, settlementID uu
 		SettlementID: settlementID,
 		BuildQueueID: queueID,
 		BuildingType: buildingType,
+		HexQ:         hexQ,
+		HexR:         hexR,
 	})
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)

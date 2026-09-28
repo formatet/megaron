@@ -27,8 +27,13 @@ func TestRecomputeProduction_BuildingSlotCapIsPopulationInvariant(t *testing.T) 
 
 	rateAt := func(pop int) float64 {
 		settlementID := seedFullRingFixture(t, tick, pop, "plains")
+		// stonequarry is hex-bound (migration 154) but its stone production_rule
+		// is terrain-free (NULL terrain_type) — it routes through
+		// LoadBuildingProductionOptions, not HexOption, so which ring hex it
+		// sits on doesn't affect this test; (1,0) just satisfies the schema's
+		// buildings_hex_bound_check.
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'stonequarry', 1)`,
+			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', 1, 1, 0)`,
 			settlementID,
 		); err != nil {
 			t.Fatalf("seed stonequarry: %v", err)
