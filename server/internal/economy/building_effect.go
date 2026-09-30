@@ -218,11 +218,11 @@ type EffectTier struct {
 // renders from these numbers — keryx and web print it verbatim so the two
 // surfaces can never drift apart (megaron_plan_byggnad_pa_hex.md §B).
 type EffectRow struct {
-	Good    string      `json:"good"`
-	Kind    string      `json:"kind"` // "hex" | "workplace" | "refining" | "refining_ceiling"
-	Terrain string      `json:"terrain,omitempty"`
-	Deposit string      `json:"deposit,omitempty"`
-	Without EffectTier  `json:"without"`
+	Good    string       `json:"good"`
+	Kind    string       `json:"kind"` // "hex" | "workplace" | "refining" | "refining_ceiling"
+	Terrain string       `json:"terrain,omitempty"`
+	Deposit string       `json:"deposit,omitempty"`
+	Without EffectTier   `json:"without"`
 	Levels  []EffectTier `json:"levels"`
 	// CatchmentWide is true for a city-scope building's "hex" row (harbour's
 	// coastal_sea+fish row): it applies to EVERY matching catchment hex, not
@@ -472,19 +472,28 @@ func renderHexText(good, terrain, deposit string, without EffectTier, levels []E
 	if deposit != "" {
 		site += " with a " + deposit + " deposit"
 	}
-	return fmt.Sprintf("%s %s: %d × %.2f/tick → %s", good, site, without.Gubbar, without.PerGubbe, levelsText(levels))
+	return fmt.Sprintf("%s %s: %s → %s", good, site, withoutText(without), levelsText(levels))
 }
 
 func renderCeilingText(good, terrain string, without EffectTier, levels []EffectTier) string {
-	return fmt.Sprintf("%s ceiling on %s (needs a refining gubbe): %d × %.2f/tick → %s", good, terrain, without.Gubbar, without.PerGubbe, levelsText(levels))
+	return fmt.Sprintf("extra %s on %s (only with a worker in the building): %s → %s", good, terrain, withoutText(without), levelsText(levels))
 }
 
 func renderWorkplaceText(good, kind string, without EffectTier, levels []EffectTier) string {
-	label := "workplace"
+	label := "in the building"
 	if kind == "refining" {
-		label = "refining"
+		label = "refined in the building"
 	}
-	return fmt.Sprintf("%s (%s): %d × %.2f/tick → %s", good, label, without.Gubbar, without.PerGubbe, levelsText(levels))
+	return fmt.Sprintf("%s %s: %s → %s", good, label, withoutText(without), levelsText(levels))
+}
+
+// withoutText is the "no building" side of the arrow: "none" when the site
+// holds no worker for this good without the building, never "0 × 0.00".
+func withoutText(t EffectTier) string {
+	if t.Gubbar == 0 {
+		return "none"
+	}
+	return fmt.Sprintf("%d × %.2f/tick", t.Gubbar, t.PerGubbe)
 }
 
 func levelsText(levels []EffectTier) string {

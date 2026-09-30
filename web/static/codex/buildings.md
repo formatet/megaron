@@ -39,7 +39,7 @@ the real, live numbers, not a rounded-off promise.
 
 Each line reads as **workers × output per worker, per tick**, e.g. `grain on plains: 4 × 1.00/tick →
 L1 8 × 2.70 · L2 10 × 2.70 · L3 12 × 2.70`. The first pair (`4 × 1.00`) is what the hex gives with
-**no building** at all; the arrow (`→`) leads to what each level of the building adds instead. A level
+**no building** at all (`none` if the hex gives nothing of it without one); the arrow (`→`) leads to what each level of the building adds instead. A level
 raises the **output per worker**, not how many workers there are — the same crew simply produces more
 at L2 than at L1. **Grain is the one exception**: there, a level adds *more workers* the hex can hold,
 at the same rate each. If a number looks bad — falling, not rising — that's the real number, shown

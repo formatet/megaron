@@ -811,7 +811,7 @@ async function refreshCityBuildings(provinceID) {
     // build_queue/training) can be joined by type+hex.
     const builtEffectsByKey = new Map(
       (await fetchBuiltBuildingEffects(provinceID)).map(b =>
-        [builtEffectKey(b.type, b.hex_q, b.hex_r), b.effects || []])
+        [builtEffectKey(b.type, b.hex_q, b.hex_r), (b.effects || []).map(e => ({...e, text: `${e.text} (now L${b.current_level})`}))])
     );
     // hex_q/hex_r are set only for hex-bound buildings (farm/mine/lumbermill/
     // stonequarry) — null for a city building (megaron_plan_byggnad_pa_hex.md
