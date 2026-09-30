@@ -120,13 +120,14 @@ func TestBuildingCatalogue_ExposesTerrainGate(t *testing.T) {
 		}
 	}
 
-	// Kontrollen åt andra hållet: lumbermill HAR terrängfria basrader vid sidan
-	// av sin skogsbonus, producerar alltså något överallt, och får därför inte
-	// flaggas. Utan den här raden skulle testet passera även om katalogen
-	// flaggade varenda byggnad.
-	if lm, ok := byType["lumbermill"]; ok && len(lm) > 0 {
-		t.Errorf("lumbermill requires_terrain = %v, want none — den har terrängfria basrader "+
-			"och producerar något på varje terräng", lm)
+	// byggnadsregeln: lumbermill arbetar sin hex (olivskog, cederskog) och är
+	// därmed terräng-gatead likt farm; mine är bara avsatsgatead.
+	wantLumber := []string{"forest_cedar", "forest_olive_grove"}
+	if lm := byType["lumbermill"]; len(lm) != len(wantLumber) || lm[0] != wantLumber[0] || lm[1] != wantLumber[1] {
+		t.Errorf("lumbermill requires_terrain = %v, want %v", lm, wantLumber)
+	}
+	if mine := byType["mine"]; len(mine) != 0 {
+		t.Errorf("mine requires_terrain = %v, want none (deposit-gated)", mine)
 	}
 }
 
