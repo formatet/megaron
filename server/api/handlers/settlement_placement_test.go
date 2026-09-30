@@ -446,3 +446,33 @@ func TestPlaceGubbe_HexOrdinalOutOfRangeRejected(t *testing.T) {
 		t.Errorf("hex_ordinal=99 (out of range) = %d: %v, want 400", code, resp)
 	}
 }
+
+// byggnadsregeln: a farm gives its hex 4 + 4 = 8 grain places at EVERY level —
+// a level-2 farm no longer admits 10. The 9th placement is refused.
+func TestPlaceGubbe_FarmL2HexCapsAtEight(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+	pool := p10TestPool(t)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET population = 1500 WHERE id = $1`, f.settlementID); err != nil {
+		t.Fatalf("raise population: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 2, 1, 0)`,
+		f.settlementID); err != nil {
+		t.Fatalf("seed farm L2: %v", err)
+	}
+
+	placed := 0
+	var lastCode int
+	for i := 0; i < 9; i++ {
+		lastCode, _ = f.do(t, http.MethodPost, f.placementsPath(),
+			map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "grain"})
+		if lastCode != http.StatusCreated {
+			break
+		}
+		placed++
+	}
+	if placed != 8 || lastCode != http.StatusConflict {
+		t.Fatalf("placed %d grain gubbar on a farm-L2 hex, last status %d; want exactly 8 then 409", placed, lastCode)
+	}
+}

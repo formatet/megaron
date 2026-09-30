@@ -16,9 +16,8 @@ type BuildingSpec struct {
 // §B): a hand-written good name or terrain list here can drift from the real
 // production_rules/capacity-table data (farm was claiming "wine from hills
 // and plains" while also quietly raising oil — a claim these lines no
-// longer make). The numbers live in economy.BuildingEffectsForCatalogue/
-// BuildingEffectsForHex instead, exposed via GET /api/v1/buildings and the
-// CLI `build --list`/`city`.
+// longer make). The numbers live in economy.HexBuildEffects
+// (byggnadsregeln), exposed per hex via GET .../placement-options.
 var BuildingPurposes = map[BuildingType]string{
 	BuildingFarm:        "Stands on a grain hex and works its field",
 	BuildingBarracks:    "Enables recruiting spearmen and war chariots",
