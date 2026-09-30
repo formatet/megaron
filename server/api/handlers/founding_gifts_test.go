@@ -8,21 +8,21 @@ import "testing"
 // the pure half ColonizePreview calls; its conditions mirror createMetropolis
 // (Demeter) and foundMetropolisFromNomadicHost (Poseidon).
 
-func TestFoundingGifts_DemeterOnlyWhenAFarmWouldHelp(t *testing.T) {
+func TestFoundingGifts_DemeterOnlyWhenAFarmHexExists(t *testing.T) {
 	cases := []struct {
-		name                     string
-		baseGrain, withFarmGrain float64
-		coastal                  bool
-		want                     []string
+		name     string
+		farmGift bool
+		coastal  bool
+		want     []string
 	}{
-		{"barren inland — no gift at all", 4.0, 4.0, false, nil},
-		{"farmland inland — Demeter only", 4.0, 9.5, false, []string{"demeter_farm"}},
-		{"barren coast — Poseidon only", 4.0, 4.0, true, []string{"poseidon_galley"}},
-		{"farmland coast — both", 4.0, 9.5, true, []string{"demeter_farm", "poseidon_galley"}},
+		{"barren inland — no gift at all", false, false, nil},
+		{"farmland inland — Demeter only", true, false, []string{"demeter_farm"}},
+		{"barren coast — Poseidon only", false, true, []string{"poseidon_galley"}},
+		{"farmland coast — both", true, true, []string{"demeter_farm", "poseidon_galley"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := foundingGifts(tc.baseGrain, tc.withFarmGrain, tc.coastal)
+			got := foundingGifts(tc.farmGift, tc.coastal)
 			if len(got) != len(tc.want) {
 				t.Fatalf("got %d gifts, want %d (%v)", len(got), len(tc.want), got)
 			}
@@ -35,19 +35,10 @@ func TestFoundingGifts_DemeterOnlyWhenAFarmWouldHelp(t *testing.T) {
 	}
 }
 
-// Floating-point noise must not conjure a farm: the with-farm figure is computed
-// from the same table as the base, so an identical catchment can differ in the
-// last bits. Only a real improvement counts.
-func TestFoundingGifts_IgnoresFloatNoise(t *testing.T) {
-	if got := foundingGifts(7.2, 7.2+1e-12, false); len(got) != 0 {
-		t.Fatalf("float noise granted a farm: %v", got)
-	}
-}
-
 // Every gift must carry text a client can render as-is — an empty label would
 // print a bare bullet in both keryx and the map drawer.
 func TestFoundingGifts_CarryRenderableText(t *testing.T) {
-	for _, g := range foundingGifts(4.0, 9.5, true) {
+	for _, g := range foundingGifts(true, true) {
 		if g["key"] == "" || g["label"] == "" || g["detail"] == "" {
 			t.Errorf("gift missing text: %v", g)
 		}

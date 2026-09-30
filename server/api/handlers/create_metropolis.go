@@ -204,26 +204,14 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 
 	// Demeter's gift: a metropolis founds BUILDING-FREE (like a colony) — the Wanax
 	// raises farm/lumbermill/temple/market themselves. The single exception is a
-	// starter FARM, granted only where the land can grow wheat. Test: if assuming a
-	// farm would raise the catchment's grain potential above its building-free base,
-	// at least one catchment hex carries farm-compatible terrain (plains/
-	// river_valley/river_delta), so Demeter grants the farm. On barren ground she
-	// grants nothing — and the founding grain forecast still reads true there, since
-	// its with-farm assumption equals the building-free base when no farm helps.
+	// starter FARM, granted only where the land can grow wheat: ChooseFarmHex finds
+	// a grain hex (plains/river_valley/river_delta/hills) in the catchment. On
+	// barren ground she grants nothing — and the founding grain forecast still
+	// reads true there, since it uses the same function.
 	// Must precede RecomputeProduction so the farm's grain is picked up.
 	// (Poseidon's galley — the coastal gift — is granted by the caller.)
-	catchmentHexes := hexgrid.Ring(hexgrid.Coord{Q: p.Q, R: p.R}, hexgrid.CatchmentRadius)
-	grainNoFarm, err := economy.CatchmentBasePotentialAt(ctx, tx, p.WorldID, catchmentHexes, nil)
-	if err != nil {
-		return out, &metropolisError{"could not read catchment potential", err}
-	}
-	grainWithFarm, err := economy.CatchmentBasePotentialAt(ctx, tx, p.WorldID, catchmentHexes, []string{"farm"})
-	if err != nil {
-		return out, &metropolisError{"could not read catchment potential with farm", err}
-	}
-	if grainWithFarm["grain"] > grainNoFarm["grain"]+1e-9 {
-		// farm is hex-bound (megaron_plan_byggnad_pa_hex.md §A) — Demeter's
-		// gift stands on the grain-terrain hex giving the largest cap, the
+	{
+		// The farm stands on the hex giving the largest level-1 grain OUTPUT, the
 		// SAME choice ChooseFarmHex gives the founding forecast
 		// (economy.FoundingGrainNetPerTick), so prognosis and reality agree.
 		farmHex, hasFarmHex, chooseErr := economy.ChooseFarmHex(ctx, tx, p.WorldID, hexgrid.Coord{Q: p.Q, R: p.R}, nil)

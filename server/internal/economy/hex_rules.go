@@ -120,3 +120,29 @@ func hexYield(rate float64, places int, mult float64, placed int) float64 {
 // HexYieldPerWorker is the per-worker output of one option entry (rate * mult).
 func HexYieldPerWorker(rate, mult float64) float64 { return rate * mult }
 
+
+// ruleTerrains lists every terrain hexRules has a row for.
+var ruleTerrains = []string{"plains", "hills", "mountain_limestone", "river_valley", "river_delta",
+	"forest_olive_grove", "forest_cedar", "coastal_sea", "river", "river_ford", "deep_sea"}
+
+// RuleBuildingTypes are the buildings the rule table ties to hexes.
+var RuleBuildingTypes = []string{"farm", "mine", "lumbermill", "stonequarry", "harbour"}
+
+// RuleBuildingGate returns where buildingType can stand according to the rule
+// table: the terrains that carry a rule naming it, and the deposits (copper, tin,
+// silver) that do. A building needs ANY of them; a deposit-only building (mine)
+// returns no terrains. The catalogue shows this as requires_terrain /
+// requires_deposits.
+func RuleBuildingGate(buildingType string) (terrains, deposits []string) {
+	for _, t := range ruleTerrains {
+		if RuleBuildingSupportsHex(buildingType, t, false, false, false) {
+			terrains = append(terrains, t)
+		}
+	}
+	for _, d := range []string{"copper", "tin", "silver"} {
+		if RuleBuildingSupportsHex(buildingType, "", d == "copper", d == "tin", d == "silver") {
+			deposits = append(deposits, d)
+		}
+	}
+	return terrains, deposits
+}

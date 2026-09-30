@@ -216,7 +216,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	// marginal_yield so a levelled-up building still reads as more productive
 	// per slot, even though the slot COUNT no longer grows with level for
 	// non-grain goods.
-	buildGoods := func(rate map[string]float64, capL1 map[string]int, placeCap map[string]int, mult map[string]float64, placedGoods map[string]int, ordinalsGoods map[string][]int) []goodOut {
+	buildGoods := func(rate map[string]float64, yieldPerWorker func(good string, rate float64) float64, placeCap map[string]int, placedGoods map[string]int, ordinalsGoods map[string][]int) []goodOut {
 		out := make([]goodOut, 0, len(rate))
 		for good, rate := range rate {
 			g := goodOut{
@@ -227,11 +227,9 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			}
 			if c := placeCap[good]; c > 0 {
 				g.Cap = &c
-				// economy.MarginalYieldForSlot is the ONE marginal-yield
-				// formula, shared with economy.MarginalYieldPerGood
-				// (/goods' aggregate) — no second copy of the grain-vs-other
-				// split here (megaron_plan_p4_arvet_i_province.md §3 step C).
-				g.MarginalYield = economy.MarginalYieldForSlot(good, rate, capL1[good], mult[good])
+				// One worker's output, from the same formulas
+				// economy.MarginalYieldPerGood (/goods' aggregate) uses.
+				g.MarginalYield = yieldPerWorker(good, rate)
 			}
 			out = append(out, g)
 		}
@@ -269,6 +267,32 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	type hexBuildingOut struct {
 		Type  string `json:"type"`
 		Level int    `json:"level"`
+		// UpgradeEffect: "1.7 → 2.4 grain per worker" — absent at max level.
+		UpgradeEffect string `json:"upgrade_effect,omitempty"`
+	}
+	// Terrain/deposits of the ring hexes, for the per-hex effect texts.
+	type ringTile struct {
+		terrain             string
+		copper, tin, silver bool
+	}
+	ringTiles := make(map[hexgrid.Coord]ringTile)
+	{
+		rq, rr := hexgrid.QRArrays(hexgrid.Ring(center, hexgrid.CatchmentRadius))
+		trows, terr := h.pool.Query(r.Context(),
+			`SELECT mt.q, mt.r, mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+			 FROM unnest($2::int[], $3::int[]) AS want(q, r)
+			 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = want.q AND mt.r = want.r`,
+			worldID, rq, rr)
+		if terr == nil {
+			for trows.Next() {
+				var qq, rr2 int
+				var t ringTile
+				if trows.Scan(&qq, &rr2, &t.terrain, &t.copper, &t.tin, &t.silver) == nil {
+					ringTiles[hexgrid.Coord{Q: qq, R: rr2}] = t
+				}
+			}
+			trows.Close()
+		}
 	}
 	type hexOut struct {
 		HexQ       int             `json:"hex_q"`
@@ -292,10 +316,17 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			HexR:       opt.Coord.R,
 			HexOrdinal: ordinal,
 			Terrain:    opt.Terrain,
-			Goods:      buildGoods(opt.RatePerGood, opt.CapL1PerGood, opt.PlaceCapPerGood, opt.MultPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),
+			Goods: buildGoods(opt.RatePerGood, func(good string, rate float64) float64 {
+				return economy.HexYieldPerWorker(rate, opt.MultPerGood[good])
+			}, opt.PlaceCapPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),
 		}
 		if b, built := hexBuiltAt[opt.Coord]; built {
 			ho.Building = &hexBuildingOut{Type: b.Type, Level: b.Level}
+			if t, ok := ringTiles[opt.Coord]; ok {
+				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, b.Type, t.terrain, t.copper, t.tin, t.silver); ferr == nil {
+					ho.Building.UpgradeEffect = economy.UpgradeEffectText(fx, b.Level)
+				}
+			}
 		}
 		hexes = append(hexes, ho)
 	}
@@ -315,7 +346,9 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		buildings = append(buildings, buildingOut{
 			BuildingType: opt.BuildingType,
 			Level:        opt.Level,
-			Goods:        buildGoods(opt.RatePerGood, opt.CapL1PerGood, opt.PlaceCapPerGood, opt.MultPerGood, placed.Building[opt.BuildingType], placedOrdinals.Building[opt.BuildingType]),
+			Goods: buildGoods(opt.RatePerGood, func(good string, rate float64) float64 {
+				return economy.MarginalYieldForSlot(good, rate, opt.CapL1PerGood[good], opt.MultPerGood[good])
+			}, opt.PlaceCapPerGood, placed.Building[opt.BuildingType], placedOrdinals.Building[opt.BuildingType]),
 		})
 	}
 
@@ -324,15 +357,21 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	// catchment hexes could host it RIGHT NOW (in reach, terrain/deposit
 	// matches, not already occupied by that type) — extending this existing
 	// response rather than a new endpoint (megaron_plan_byggnad_pa_hex.md §A2).
-	validHexesForBuilding := make(map[string][]map[string]int, len(province.HexBoundBuildings))
+	validHexesForBuilding := make(map[string][]map[string]any, len(province.HexBoundBuildings))
 	for bt := range province.HexBoundBuildings {
 		valid, verr := economy.ValidHexesForBuilding(r.Context(), h.pool, worldID, settlementID, center, string(bt))
 		if verr != nil {
 			continue // best-effort — never fail the whole placement menu over the build picker's hint
 		}
-		list := make([]map[string]int, 0, len(valid))
+		list := make([]map[string]any, 0, len(valid))
 		for _, c := range valid {
-			list = append(list, map[string]int{"q": c.Q, "r": c.R})
+			entry := map[string]any{"q": c.Q, "r": c.R, "effect": ""}
+			if t, ok := ringTiles[c]; ok {
+				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, string(bt), t.terrain, t.copper, t.tin, t.silver); ferr == nil {
+					entry["effect"] = economy.BuildEffectText(fx)
+				}
+			}
+			list = append(list, entry)
 		}
 		validHexesForBuilding[string(bt)] = list
 	}
