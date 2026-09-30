@@ -1,10 +1,40 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
 )
+
+// builtBuildingRow is one row of GET .../buildings — every built building
+// with its own effect rows and current level (megaron_plan_byggnad_pa_hex.md
+// §B). Only the fields `city` prints are decoded.
+type builtBuildingRow struct {
+	Type         string `json:"type"`
+	CurrentLevel int    `json:"current_level"`
+	HexQ         *int   `json:"hex_q,omitempty"`
+	HexR         *int   `json:"hex_r,omitempty"`
+	Effects      []struct {
+		Text string `json:"text"`
+	} `json:"effects"`
+}
+
+// fetchBuiltBuildingEffects calls GET .../buildings and decodes it.
+// Best-effort like fetchFoodStatus below: any transport/decode error reads
+// as "no effects to show" rather than blocking the catchment/building
+// listing that doesn't need it.
+func fetchBuiltBuildingEffects(c *Client, worldID, provinceID string) []builtBuildingRow {
+	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/buildings", worldID, provinceID))
+	if err != nil {
+		return nil
+	}
+	var rows []builtBuildingRow
+	if err := json.Unmarshal(data, &rows); err != nil {
+		return nil
+	}
+	return rows
+}
 
 // cityCmd handles `keryx city [stad]` — the read-only view of a settlement's
 // gubbe placement: 18 catchment hexes (ordinal, terrain, per-good occupancy
@@ -53,6 +83,24 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			fs, _ := fetchFoodStatus(c, cfg.WorldID, prov)
 			surplus := foodSurplus(fs)
 
+			// Effect text lines per built building — hex-bound ones (farm/
+			// mine/lumbermill/stonequarry) keyed by their own hex, workplace
+			// ones (market/harbour/...) keyed by type. Best-effort: nil on
+			// any fetch error just means no effect lines below.
+			hexEffects := map[[2]int][]string{}
+			workplaceEffects := map[string][]string{}
+			for _, b := range fetchBuiltBuildingEffects(c, cfg.WorldID, prov) {
+				lines := make([]string, 0, len(b.Effects))
+				for _, e := range b.Effects {
+					lines = append(lines, fmt.Sprintf("%s  (now L%d)", e.Text, b.CurrentLevel))
+				}
+				if b.HexQ != nil && b.HexR != nil {
+					hexEffects[[2]int{*b.HexQ, *b.HexR}] = lines
+				} else {
+					workplaceEffects[b.Type] = lines
+				}
+			}
+
 			fmt.Printf("Citizens: %d/%d placed, %d idle\n\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
 
 			if fs != nil {
@@ -88,15 +136,20 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				// glance which hex a building is on without cross-referencing
 				// `status`'s flat Buildings list.
 				bldSuffix := ""
+				var effLines []string
 				if h.Building != nil {
 					if h.Terrain != "" {
 						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d) %s]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR, h.Terrain)
 					} else {
 						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d)]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR)
 					}
+					effLines = hexEffects[[2]int{h.HexQ, h.HexR}]
 				}
 				if len(h.Goods) == 0 {
 					fmt.Printf("  #%-3d %-14s (no producible good)%s\n", h.HexOrdinal, h.Terrain, bldSuffix)
+					for _, l := range effLines {
+						fmt.Printf("       %s\n", l)
+					}
 					continue
 				}
 				for i, g := range h.Goods {
@@ -105,6 +158,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 					} else {
 						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), foodMarker(g))
 					}
+				}
+				for _, l := range effLines {
+					fmt.Printf("       %s\n", l)
 				}
 			}
 
@@ -117,6 +173,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 						} else {
 							fmt.Printf("  %-14s %-3s %s%s\n", "", "", goodCell(g), foodMarker(g))
 						}
+					}
+					for _, l := range workplaceEffects[b.BuildingType] {
+						fmt.Printf("       %s\n", l)
 					}
 				}
 			}
