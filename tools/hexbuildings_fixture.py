@@ -127,6 +127,9 @@ def find_settle_site(w, grain_terrains_set):
     for attempt in range(1, MAX_SPAWN_ATTEMPTS + 1):
         name = f"hexdemo-{attempt}-{int(time.time())}"
         tok = register(name)
+        st, d = http("POST", f"{API}/worlds/{w}/join", bearer=tok)
+        if st not in (200, 201):
+            sys.exit(f"join failed: {st} {d}")
         fp = founding_status(w, tok)
         if not fp.get("active") or fp.get("q") is None:
             continue
@@ -199,6 +202,13 @@ def wait_for_builds(settlement_id, expect, timeout=120):
     completion itself still runs through the normal tick worker."""
     psql(f"UPDATE build_queue SET complete_at = now() - interval '1 minute' "
         f"WHERE settlement_id = '{settlement_id}'")
+    # The worker fires on scheduled_events.due_tick <= worlds.current_tick
+    # (events/scheduler.go), not on build_queue.complete_at — pull the build's
+    # own completion event forward to the current tick as well.
+    psql(f"UPDATE scheduled_events se SET due_tick = w.current_tick, process_after = now() - interval '1 minute' "
+         f"FROM worlds w WHERE w.id = se.world_id AND se.processed_at IS NULL "
+         f"AND se.payload->>'settlement_id' = '{settlement_id}' "
+         f"AND se.payload ? 'build_queue_id'")
     deadline = time.time() + timeout
     while time.time() < deadline:
         n = int(psql(f"SELECT count(*) FROM buildings WHERE settlement_id = '{settlement_id}' "
