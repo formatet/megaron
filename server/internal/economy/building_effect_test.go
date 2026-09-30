@@ -5,6 +5,7 @@ package economy
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"formatet/megaron/server/internal/hexgrid"
@@ -246,5 +247,34 @@ func TestBuildingEffect_ParityWithProductionPath(t *testing.T) {
 	if round2(wantBronzePerGubbe) != gotBronzeLevel2.PerGubbe || wantBronzeGubbar != gotBronzeLevel2.Gubbar {
 		t.Fatalf("foundry parity mismatch: production path = %d × %.2f, effect row L2 = %d × %.2f",
 			wantBronzeGubbar, round2(wantBronzePerGubbe), gotBronzeLevel2.Gubbar, gotBronzeLevel2.PerGubbe)
+	}
+}
+
+// A silver deposit has a capacity rule but no production_rules row without a
+// mine — nothing is placeable there, so "without" must read none, not 1 × 0.00.
+// Harbour's row is catchment-wide and must say so in its text.
+func TestBuildingEffect_SilverWithoutMineIsNone_HarbourSaysEveryHex(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	rows, err := BuildingEffectsForHex(ctx, pool, "mine", "hills", false, false, true, false)
+	if err != nil {
+		t.Fatalf("BuildingEffectsForHex: %v", err)
+	}
+	silver := findEffect(t, rows, GoodSilver, "hex")
+	if silver.Without.Gubbar != 0 || silver.Without.PerGubbe != 0 {
+		t.Fatalf("silver without mine = %d × %.2f, want none", silver.Without.Gubbar, silver.Without.PerGubbe)
+	}
+	if !strings.Contains(silver.Text, ": none →") {
+		t.Fatalf("silver text %q, want it to read none before the arrow", silver.Text)
+	}
+
+	harbour, err := BuildingEffectsForHex(ctx, pool, "harbour", "coastal_sea", false, false, false, true)
+	if err != nil {
+		t.Fatalf("BuildingEffectsForHex(harbour): %v", err)
+	}
+	fish := findEffect(t, harbour, GoodFish, "hex")
+	if !strings.Contains(fish.Text, "on every coastal sea hex") {
+		t.Fatalf("harbour fish text %q, want it to say every coastal sea hex", fish.Text)
 	}
 }

@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 )
 
 // waterTerrains mirrors LoadHexProductionOptionsAt's final WHERE clause
@@ -313,6 +314,12 @@ func effectRowsForSite(rules []productionRuleRow, bt, terrain string, copperDep,
 	var out []EffectRow
 	for _, good := range order {
 		without := tierAt(good, baselineRate[good], terrain, copperDep, tinDep, silverDep, map[string]int{}, 0)
+		if baselineRate[good] == 0 {
+			// A capacity rule without any production_rules row (silver on a
+			// deposit before a mine): LoadHexProductionOptionsAt never offers
+			// the good here, so nothing can be placed — not "1 × 0.00".
+			without = EffectTier{Level: 0}
+		}
 		withRate := baselineRate[good] + buildingRate[good]
 		levels := make([]EffectTier, 0, 3)
 		changed := false
@@ -330,7 +337,7 @@ func effectRowsForSite(rules []productionRuleRow, bt, terrain string, copperDep,
 				Without:       without,
 				Levels:        levels,
 				CatchmentWide: !HexBoundBuildingTypes[bt],
-				Text:          renderHexText(good, terrain, depositForGood(copperDep, tinDep, silverDep), without, levels),
+				Text:          renderHexText(good, terrain, depositForGood(copperDep, tinDep, silverDep), !HexBoundBuildingTypes[bt], without, levels),
 			})
 		}
 
@@ -467,8 +474,11 @@ func BuildingEffectsForHex(ctx context.Context, tx Tx, bt, terrain string, coppe
 // effect row's human-readable line is built — keryx and web print this
 // string verbatim so the two surfaces can never disagree about what a
 // building does (megaron_plan_byggnad_pa_hex.md §B).
-func renderHexText(good, terrain, deposit string, without EffectTier, levels []EffectTier) string {
-	site := "on " + terrain
+func renderHexText(good, terrain, deposit string, catchmentWide bool, without EffectTier, levels []EffectTier) string {
+	site := "on " + terrainText(terrain)
+	if catchmentWide {
+		site = "on every " + terrainText(terrain) + " hex"
+	}
 	if deposit != "" {
 		site += " with a " + deposit + " deposit"
 	}
@@ -476,7 +486,7 @@ func renderHexText(good, terrain, deposit string, without EffectTier, levels []E
 }
 
 func renderCeilingText(good, terrain string, without EffectTier, levels []EffectTier) string {
-	return fmt.Sprintf("extra %s on %s (only with a worker in the building): %s → %s", good, terrain, withoutText(without), levelsText(levels))
+	return fmt.Sprintf("extra %s on %s (only with a worker in the building): %s → %s", good, terrainText(terrain), withoutText(without), levelsText(levels))
 }
 
 func renderWorkplaceText(good, kind string, without EffectTier, levels []EffectTier) string {
@@ -485,6 +495,12 @@ func renderWorkplaceText(good, kind string, without EffectTier, levels []EffectT
 		label = "refined in the building"
 	}
 	return fmt.Sprintf("%s %s: %s → %s", good, label, withoutText(without), levelsText(levels))
+}
+
+// terrainText is a terrain key as the player reads it: "forest_olive_grove"
+// → "forest olive grove".
+func terrainText(terrain string) string {
+	return strings.ReplaceAll(terrain, "_", " ")
 }
 
 // withoutText is the "no building" side of the arrow: "none" when the site

@@ -155,6 +155,24 @@ def find_settle_site(w, grain_terrains_set):
              "re-run (spawn is randomised) or widen the map (ACC_MAP_WIDTH/HEIGHT)")
 
 
+def ensure_world_started(w):
+    """The world stays 'forming' (every order refused) until enough Wanaxes
+    have joined (POLEIA_WORLD_START_WANAXES, default 4). Join more Nomadic
+    Hosts until it starts — the same state as four players arriving, reached
+    through the real join verb. Returns how many extra hosts joined."""
+    extra = 0
+    for i in range(1, 9):
+        tok = register(f"hexfill-{i}-{int(time.time())}")
+        st, d = http("POST", f"{API}/worlds/{w}/join", bearer=tok)
+        if st not in (200, 201):
+            sys.exit(f"join (filler) failed: {st} {d}")
+        extra += 1
+        st, d = http("GET", f"{API}/worlds")
+        if st == 200 and any(x.get("id") == w and x.get("state") != "forming" for x in d):
+            return extra
+    sys.exit("world still forming after 8 extra joins — check POLEIA_WORLD_START_WANAXES")
+
+
 def settle(w, tok, name):
     st, d = http("POST", f"{API}/worlds/{w}/founding/settle", {"name": name}, bearer=tok)
     if st not in (200, 201):
@@ -269,6 +287,7 @@ def main():
     print(f"grain terrains: {sorted(terrains)}")
 
     tok, q, r, grain_hexes, silver_hexes = find_settle_site(w, terrains)
+    print(f"world started after {ensure_world_started(w)} extra join(s)")
     print(f"settling at ({q},{r}) — {args.name}")
     settled = settle(w, tok, args.name)
     province_id = settled.get("province_id") or settled["province"]["id"]
