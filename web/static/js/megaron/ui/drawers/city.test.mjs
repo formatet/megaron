@@ -69,20 +69,20 @@ test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue en
 
 test('HX1: a valid, empty hex renders as a build option with its coords and terrain', () => {
   const html = hexBuildOptionsHTML('farm', {
-    valid_hexes_for_building: { farm: [{ q: 3, r: -1 }] },
+    valid_hexes_for_building: { farm: [{ q: 3, r: -1, effect: 'grain 4 × 1.0 → 8 × 1.7' }] },
     hexes: [{ hex_q: 3, hex_r: -1, terrain: 'plains' }],
   });
   assert.match(html, /value="3,-1"/);
-  assert.match(html, /Plains — build/);
+  assert.match(html, />\(3,-1\) Plains — grain 4 × 1\.0 → 8 × 1\.7</);
 });
 
 test('HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade', () => {
   const html = hexBuildOptionsHTML('farm', {
     valid_hexes_for_building: { farm: [] },
-    hexes: [{ hex_q: 5, hex_r: 2, terrain: 'plains', building: { type: 'farm', level: 1 } }],
+    hexes: [{ hex_q: 5, hex_r: 2, terrain: 'plains', building: { type: 'farm', level: 1, upgrade_effect: '1.7 → 2.4 grain per worker' } }],
   });
   assert.match(html, /value="5,2"/);
-  assert.match(html, /upgrade to L2/);
+  assert.match(html, />\(5,2\) Plains — upgrade to L2: 1\.7 → 2\.4 grain per worker</);
 });
 
 test('HX3: a hex carrying a DIFFERENT-type building is not offered at all', () => {
@@ -99,6 +99,15 @@ test('HX4: a hex present in both lists is rendered once, as a build option (vali
     hexes: [{ hex_q: 1, hex_r: 1, terrain: 'plains' }],
   });
   assert.equal((html.match(/value="1,1"/g) || []).length, 1);
+});
+
+test('HX4b: server effect strings are escaped, and a missing effect leaves no dangling dash', () => {
+  const html = hexBuildOptionsHTML('mine', {
+    valid_hexes_for_building: { mine: [{ q: 1, r: 2, effect: '<b>x</b>' }, { q: 2, r: 2 }] },
+    hexes: [{ hex_q: 1, hex_r: 2, terrain: 'hills' }, { hex_q: 2, hex_r: 2, terrain: 'hills' }],
+  });
+  assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/);
+  assert.match(html, />\(2,2\) Hills</);
 });
 
 test('HX5: no placement-options data yet renders no options, not an error', () => {

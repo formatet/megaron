@@ -689,21 +689,22 @@ export function hexBuildOptionsHTML(buildingType, placementOpts) {
   const valid = (placementOpts.valid_hexes_for_building || {})[buildingType] || [];
   const seen = new Set();
   const rows = [];
-  for (const { q, r } of valid) {
+  for (const { q, r, effect } of valid) {
     const key = `${q},${r}`;
     seen.add(key);
     const h = hexesByCoord.get(key);
     const terrain = h ? terrainLabel(h.terrain) : '';
-    rows.push({ q, r, label: terrain ? `(${q},${r}) ${terrain} — build` : `(${q},${r}) — build` });
+    // `effect` is the server's formatted string, printed verbatim (escaped).
+    const tail = effect ? ` — ${esc(effect)}` : '';
+    rows.push({ q, r, label: `(${q},${r})${terrain ? ' ' + terrain : ''}${tail}` });
   }
   for (const h of placementOpts.hexes || []) {
     const key = `${h.hex_q},${h.hex_r}`;
     if (seen.has(key)) continue;
     if (h.building && h.building.type === buildingType) {
       const terrain = terrainLabel(h.terrain);
-      const label = terrain
-        ? `(${h.hex_q},${h.hex_r}) ${terrain} — upgrade to L${h.building.level + 1}`
-        : `(${h.hex_q},${h.hex_r}) — upgrade to L${h.building.level + 1}`;
+      const fx = h.building.upgrade_effect ? `: ${esc(h.building.upgrade_effect)}` : '';
+      const label = `(${h.hex_q},${h.hex_r})${terrain ? ' ' + terrain : ''} — upgrade to L${h.building.level + 1}${fx}`;
       rows.push({ q: h.hex_q, r: h.hex_r, label });
     }
   }
