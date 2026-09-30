@@ -74,7 +74,7 @@ func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, cent
 
 	grainBasePotential := 0.0
 	for _, opt := range hexOptions {
-		grainBasePotential += opt.RatePerGood[GoodGrain]
+		grainBasePotential += opt.RatePerGood[GoodGrain] * opt.MultPerGood[GoodGrain]
 	}
 	remainderCitizens := pop % 100
 	totalGubbar := pop / 100

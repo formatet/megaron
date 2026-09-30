@@ -77,44 +77,13 @@ func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 			filteredRing = append(filteredRing, c)
 		}
 	}
-	catchQ, catchR := hexgrid.QRArrays(filteredRing)
-	rows, err := tx.Query(ctx,
-		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
-		 FROM unnest($3::int[], $4::int[]) AS catchment(q, r)
-		 JOIN map_tiles mt ON mt.world_id = $2 AND mt.q = catchment.q AND mt.r = catchment.r
-		 JOIN production_rules pr ON
-		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
-		     AND (NOT pr.requires_coastal OR mt.coastal)
-		     AND (pr.building_type IS NULL OR EXISTS (
-		             SELECT 1 FROM buildings b
-		             WHERE b.settlement_id = $1 AND b.building_type = pr.building_type))
-		     AND (pr.requires_deposit IS NULL
-		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
-		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
-		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
-		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
-		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-		        OR pr.terrain_type = mt.terrain
-		 GROUP BY pr.good_key`,
-		settlementID, worldID, catchQ, catchR,
-	)
+	bs, err := loadBuildingSet(ctx, tx, settlementID)
 	if err != nil {
-		return nil, fmt.Errorf("catchment base potential: query production rules: %w", err)
+		return nil, fmt.Errorf("catchment base potential: %w", err)
 	}
-	defer rows.Close()
-
-	potentials := make(map[string]float64)
-	for rows.Next() {
-		var key string
-		var bp float64
-		if err := rows.Scan(&key, &bp); err != nil {
-			return nil, fmt.Errorf("catchment base potential: scan: %w", err)
-		}
-		potentials[key] = bp
+	opts, err := loadHexOptionsForHexes(ctx, tx, worldID, filteredRing, bs)
+	if err != nil {
+		return nil, fmt.Errorf("catchment base potential: %w", err)
 	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("catchment base potential: rows err: %w", err)
-	}
-	return potentials, nil
+	return FullCrewPotential(opts), nil
 }

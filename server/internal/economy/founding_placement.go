@@ -98,15 +98,11 @@ func rankSlotsFromOptions(hexOptions []HexOption, center hexgrid.Coord) []foodSl
 			if rate <= 0 {
 				continue
 			}
-			capL1 := opt.CapL1PerGood[good]
 			cap := opt.PlaceCapPerGood[good]
-			if capL1 <= 0 || cap <= 0 {
+			if cap <= 0 {
 				continue
 			}
-			yield := (rate / float64(capL1)) * opt.MultPerGood[good]
-			if good == GoodGrain {
-				yield = rate // grain's yield shape stays rate × placed, not rate/capL1×mult × placed (placementYield)
-			}
+			yield := HexYieldPerWorker(rate, opt.MultPerGood[good])
 			ordinal, _ := hexgrid.RingOrdinal(center, hexgrid.CatchmentRadius, opt.Coord)
 			slots = append(slots, foodSlot{opt.Coord, good, yield, cap, ordinal})
 		}
@@ -170,7 +166,7 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	}
 	grainBasePotential := 0.0
 	for _, opt := range hexOptions {
-		grainBasePotential += opt.RatePerGood[GoodGrain]
+		grainBasePotential += opt.RatePerGood[GoodGrain] * opt.MultPerGood[GoodGrain]
 	}
 	remainderCitizens := population % 100
 	guaranteedFood := NearjordGrainPerTick + (grainBasePotential/REF_LABOR)*float64(remainderCitizens)
@@ -262,7 +258,7 @@ func FoodGubbarRequired(ctx context.Context, tx Tx, settlementID uuid.UUID) (req
 
 	grainBasePotential := 0.0
 	for _, opt := range hexOptions {
-		grainBasePotential += opt.RatePerGood[GoodGrain]
+		grainBasePotential += opt.RatePerGood[GoodGrain] * opt.MultPerGood[GoodGrain]
 	}
 	// ⚠️ The ONE place outside recompute.go step 4b (and FoundingGrainNetPerTick,
 	// its forecast-time twin) where REF_LABOR still governs output after P4 —

@@ -72,8 +72,8 @@ func RecruitCostPerMan(unitType string) map[string]float64 {
 // this bound never binds a legitimate settlement — it only refuses absurdity.
 const MaxGenesisPopulation = 30000
 
-// CatchmentBasePotentialAt returns the base production potential per good summed
-// over an EXPLICIT set of catchment hexes, gated by an assumed (rather than
+// CatchmentBasePotentialAt returns the FULL-CREW production potential per good
+// (byggnadsregeln: places * rate per worker under the rule, FullCrewPotential) over an EXPLICIT set of catchment hexes, gated by an assumed (rather than
 // actual) building set. It exists for the colonize preview, which must estimate a
 // hex's production BEFORE a settlement is founded there — so it takes raw
 // coordinates and a hypothetical building list instead of a settlement id.
@@ -97,47 +97,26 @@ func CatchmentBasePotentialAt(ctx context.Context, tx Tx, worldID uuid.UUID, hex
 	if len(hexes) == 0 {
 		return map[string]float64{}, nil
 	}
-	qs, rs := hexgrid.QRArrays(hexes)
-	if assumeBuildings == nil {
-		assumeBuildings = []string{}
-	}
-
-	rows, err := tx.Query(ctx,
-		`SELECT pr.good_key, SUM(pr.rate_per_tick) AS base_potential
-		 FROM map_tiles mt
-		 JOIN unnest($2::int[], $3::int[]) AS hx(q, r) ON hx.q = mt.q AND hx.r = mt.r
-		 JOIN production_rules pr ON
-		     (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
-		     AND (NOT pr.requires_coastal OR mt.coastal)
-		     AND (pr.building_type IS NULL OR pr.building_type = ANY($4::text[]))
-		     AND (pr.requires_deposit IS NULL
-		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
-		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
-		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
-		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
-		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
-		 WHERE mt.world_id = $1
-		   AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
-		        OR pr.terrain_type = mt.terrain)
-		 GROUP BY pr.good_key`,
-		worldID, qs, rs, assumeBuildings,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("catchment base potential at: query production rules: %w", err)
-	}
-	defer rows.Close()
-
-	potentials := make(map[string]float64)
-	for rows.Next() {
-		var key string
-		var bp float64
-		if err := rows.Scan(&key, &bp); err != nil {
-			return nil, fmt.Errorf("catchment base potential at: scan: %w", err)
+	// assumeBuildings stand (level 1) on EVERY given hex — the old gate was
+	// settlement-wide, and "a farm somewhere" is what the caller asks about.
+	bs := BuildingSet{City: map[string]int{}, Hex: make(map[hexgrid.Coord]map[string]int, len(hexes))}
+	for _, b := range assumeBuildings {
+		if !HexBoundBuildingTypes[b] {
+			bs.City[b] = 1
 		}
-		potentials[key] = bp
 	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("catchment base potential at: rows err: %w", err)
+	for _, c := range hexes {
+		lv := make(map[string]int)
+		for _, b := range assumeBuildings {
+			if HexBoundBuildingTypes[b] {
+				lv[b] = 1
+			}
+		}
+		bs.Hex[c] = lv
 	}
-	return potentials, nil
+	opts, err := loadHexOptionsForHexes(ctx, tx, worldID, hexes, bs)
+	if err != nil {
+		return nil, fmt.Errorf("catchment base potential at: %w", err)
+	}
+	return FullCrewPotential(opts), nil
 }
