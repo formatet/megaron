@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loyaltyLogRowsHTML, buildingOptionsHTML, buildingEffectsHTML, hexBuildOptionsHTML } from './city.js';
+import { loyaltyLogRowsHTML, buildingOptionsHTML, hexBuildOptionsHTML } from './city.js';
 
 // megaron_plan_byggkatalogen_i_webben.md: the Construct dropdown used to be
 // 14 hardcoded <option> rows (silver_mine missing entirely, every cost
@@ -42,20 +42,14 @@ test('BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the 
   assert.doesNotMatch(html, /50 timber/);
 });
 
-test('BK4: a deposit gate is rendered so a player can see why a building is/isn\'t available', () => {
+test('BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)', () => {
   const html = buildingOptionsHTML([
     { type: 'mine', costs: { timber: 1, stone: 9 }, purpose: 'Extracts ore', requires_deposits: ['silver'] },
-  ]);
-  assert.match(html, /requires silver deposit/);
-});
-
-test('BK5: a coastal gate and a terrain gate are both rendered', () => {
-  const html = buildingOptionsHTML([
     { type: 'harbour', costs: { timber: 3, stone: 37 }, purpose: 'Enables fish production', requires_coastal: true },
-    { type: 'winery', costs: { timber: 1, stone: 23 }, purpose: 'Increases wine production', requires_terrain: ['hills', 'plains', 'scrub_maquis'] },
   ]);
-  assert.match(html, /requires coastal/);
-  assert.match(html, /hills\/plains\/scrub_maquis terrain/);
+  assert.match(html, /<option value="mine">Mine — 1 timber 9 stone<\/option>/);
+  assert.match(html, /<option value="harbour">Harbour — 3 timber 37 stone<\/option>/);
+  assert.doesNotMatch(html, /requires|Extracts|Enables/);
 });
 
 test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)', () => {
@@ -64,33 +58,6 @@ test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue en
   ]);
   assert.match(html, /Wall — upgrade \(Palisade→Stone Wall→Bronze Wall\)/);
   assert.doesNotMatch(html, /19 stone/);
-});
-
-test('BK7: an entry with no gates renders no "requires" clause', () => {
-  const html = buildingOptionsHTML([{ type: 'farm', costs: { timber: 1, stone: 9 }, purpose: 'Raises grain' }]);
-  assert.doesNotMatch(html, /requires/);
-});
-
-// buildingEffectsHTML: the Construct info panel — purpose + each effect's
-// server-rendered text on its own line (megaron_plan_byggnad_pa_hex.md §B).
-// A native <option> can't show this, so it fills a separate panel instead.
-test('BE1: purpose and each effect text render as their own line, verbatim', () => {
-  const html = buildingEffectsHTML({
-    type: 'farm', purpose: 'Farms one catchment hex',
-    effects: [{ text: 'grain on plains: 4 × 1.00/tick → L1 8 × 2.70 · L2 10 × 2.70 · L3 12 × 2.70' }],
-  });
-  assert.match(html, /Farms one catchment hex/);
-  assert.match(html, /grain on plains: 4 × 1\.00\/tick → L1 8 × 2\.70 · L2 10 × 2\.70 · L3 12 × 2\.70/);
-});
-
-test('BE2: no entry (catalogue not loaded / type not found) renders nothing', () => {
-  assert.equal(buildingEffectsHTML(null), '');
-  assert.equal(buildingEffectsHTML(undefined), '');
-});
-
-test('BE3: an entry with empty effects (e.g. market, stonequarry workplace-only) renders just the purpose', () => {
-  const html = buildingEffectsHTML({ type: 'market', purpose: 'A place to trade', effects: [] });
-  assert.match(html, /A place to trade/);
 });
 
 // hexBuildOptionsHTML: the Construct flow's hex picker for a hex-bound type
