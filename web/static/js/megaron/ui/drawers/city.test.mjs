@@ -42,20 +42,14 @@ test('BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the 
   assert.doesNotMatch(html, /50 timber/);
 });
 
-test('BK4: a deposit gate is rendered so a player can see why a building is/isn\'t available', () => {
+test('BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)', () => {
   const html = buildingOptionsHTML([
     { type: 'mine', costs: { timber: 1, stone: 9 }, purpose: 'Extracts ore', requires_deposits: ['silver'] },
-  ]);
-  assert.match(html, /requires silver deposit/);
-});
-
-test('BK5: a coastal gate and a terrain gate are both rendered', () => {
-  const html = buildingOptionsHTML([
     { type: 'harbour', costs: { timber: 3, stone: 37 }, purpose: 'Enables fish production', requires_coastal: true },
-    { type: 'winery', costs: { timber: 1, stone: 23 }, purpose: 'Increases wine production', requires_terrain: ['hills', 'plains', 'scrub_maquis'] },
   ]);
-  assert.match(html, /requires coastal/);
-  assert.match(html, /hills\/plains\/scrub_maquis terrain/);
+  assert.match(html, /<option value="mine">Mine — 1 timber 9 stone<\/option>/);
+  assert.match(html, /<option value="harbour">Harbour — 3 timber 37 stone<\/option>/);
+  assert.doesNotMatch(html, /requires|Extracts|Enables/);
 });
 
 test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)', () => {
@@ -64,11 +58,6 @@ test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue en
   ]);
   assert.match(html, /Wall — upgrade \(Palisade→Stone Wall→Bronze Wall\)/);
   assert.doesNotMatch(html, /19 stone/);
-});
-
-test('BK7: an entry with no gates renders no "requires" clause', () => {
-  const html = buildingOptionsHTML([{ type: 'farm', costs: { timber: 1, stone: 9 }, purpose: 'Raises grain' }]);
-  assert.doesNotMatch(html, /requires/);
 });
 
 // hexBuildOptionsHTML: the Construct flow's hex picker for a hex-bound type

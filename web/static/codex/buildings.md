@@ -1,18 +1,20 @@
-Open **City → Buildings**. The tab shows what is **built** (and its level), the **build queue** (with an ETA and a **✕** to cancel), **training** (units in progress) and **Construct**. Choose from the Construct list — each entry names the building, its cost and what it does — and press **+ Build**. A notification tells you when it is done.
+Open **City → Buildings**. The tab shows what is **built** (and its level), the **build queue** (with an ETA and a **✕** to cancel), **training** (units in progress) and **Construct**. Choose from the Construct list — each entry names the building and its cost — and press **+ Build**. A notification tells you when it is done.
 
 | Building | What it is for |
 |---|---|
-| **Farm** | Raises how many [[citizens]] the hex it stands on can hold, if that hex grows grain. The growth building. |
-| **Harbour** | Fishing and the sea. Required for every ship ([[sea]]). Stands in the city — see below. |
-| **Shipyard** | Builds and repairs ships. |
-| **Lumbermill**, **Stone Quarry** | The two materials nearly every other building needs. |
-| **Mine** | Copper, tin or silver — whichever deposit is on the hex it stands on. |
+| **Farm** | Stands on a grain hex you choose and works that field. |
+| **Harbour** | Works the settlement's coastal waters and enables sea trade ([[sea]]). Stands in the city — see below. |
+| **Shipyard** | Builds and repairs ships (needs a coastal city — an adjacent sea hex). |
+| **Lumbermill** | Stands on a forest hex and works its stands. |
+| **Stone Quarry** | Stands on a hex; its crew cut stone in the quarry itself, whatever the hex. |
+| **Mine** | Stands on an ore deposit hex and extracts whatever it holds — copper, tin or silver. |
 | **Foundry** | Smelts copper and tin into bronze ([[bronze]]). The gate to elite soldiers and war galleys. |
-| **Barracks** | Recruits infantry ([[units]]). |
-| **Stable** | War chariots. |
-| **Olive Press**, **Winery** | Oil and wine — temple offerings, food variety, trade goods. |
-| **Marketplace** | Trade infrastructure, and a trickle of [[silver]]. |
-| **Temple** | The gods. More important than it looks — see [[temples]]. |
+| **Barracks** | Enables recruiting infantry and war chariots ([[units]]). |
+| **Stable** | Enables war chariots. |
+| **Olive Press** | Refines a press-worker's oil from the settlement's groves. |
+| **Winery** | Refines a vintner's wine from the settlement's vines. |
+| **Market** | Enables trade offers and updates market price snapshots. |
+| **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
 | **Wall** | Palisade, then stone, then bronze. Absorbs damage in [[battle]]. |
 
 ## On a hex
@@ -28,3 +30,4 @@ Buildings level up to three. **A higher level makes the same crew produce more**
 Levelling a Harbour, Shipyard or Temple further also needs **cedar**, which is scarce and often only available by [[trade]].
 
 A building produces nothing without people in it. Staff it from the centre **City** hex of the placement grid ([[citizens]]).
+

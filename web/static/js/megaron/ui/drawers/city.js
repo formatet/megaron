@@ -500,7 +500,7 @@ export async function slaughterLivestock(provinceID) {
 // ── City build action ─────────────────────────────────────────────────────
 const _BLD_LBL = {
   farm:'Farm', barracks:'Barracks', mine:'Mine', lumbermill:'Lumbermill',
-  stonequarry:'Stone Quarry', market:'Marketplace', wall:'Wall', tower:'Tower',
+  stonequarry:'Stone Quarry', market:'Market', wall:'Wall', tower:'Tower',
   harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
   temple:'Temple',
@@ -652,18 +652,6 @@ function fmtBuildCost(entry) {
   return parts.join(' ');
 }
 
-// "requires X deposit, Y terrain" — the gate fields the catalogue carries
-// (requires_coastal/requires_deposits/requires_terrain), rendered so a
-// player with (or without) the right deposit/terrain understands why a
-// building is or isn't buildable, rather than meeting a silent option.
-function fmtBuildRequires(entry) {
-  const reqs = [];
-  if (entry.requires_coastal) reqs.push('coastal (adjacent sea)');
-  for (const d of entry.requires_deposits || []) reqs.push(`${d} deposit`);
-  if (entry.requires_terrain && entry.requires_terrain.length) reqs.push(`${entry.requires_terrain.join('/')} terrain`);
-  return reqs.length ? 'requires ' + reqs.join(', ') : '';
-}
-
 // Construct dropdown <option> list, built from the building catalogue instead
 // of a hardcoded list. Pure string builder — no DOM/fetch — testable the same
 // way loyaltyLogRowsHTML above is. `catalogue` is the array from
@@ -674,8 +662,10 @@ export function buildingOptionsHTML(catalogue) {
     if (entry.type === 'wall') return WALL_OPTION_HTML;
     const label = _BLD_LBL[entry.type] || entry.type;
     const costStr = fmtBuildCost(entry);
-    const tail = [entry.purpose, fmtBuildRequires(entry)].filter(Boolean).join(' · ');
-    return `<option value="${entry.type}">${label} — ${costStr}${tail ? ' · ' + tail : ''}</option>`;
+    // Name and price only (Timothy 2026-09-30: the purpose/requires tail made
+    // the list too long). Gates still hold: the hex picker only offers valid
+    // hexes and the server's refusal names the missing condition.
+    return `<option value="${entry.type}">${label} — ${costStr}</option>`;
   }).join('');
 }
 
@@ -843,8 +833,9 @@ async function refreshCityBuildings(provinceID) {
     bldSec.innerHTML = h2;
     // Restore previous dropdown selection and result message
     const newSel = document.getElementById('city-build-select');
-    if (newSel && prevSel) {
-      newSel.value = prevSel;
+    if (newSel) {
+      if (prevSel) newSel.value = prevSel;
+      // Also on the first render: a hex-bound default type needs its hex picker.
       onCityBuildTypeChange();
     }
   } catch(e) { console.error('refreshCityBuildings', e); }
