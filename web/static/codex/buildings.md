@@ -6,13 +6,13 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Harbour** | Works the settlement's coastal waters and enables sea trade ([[sea]]). Stands in the city — see below. |
 | **Shipyard** | Builds and repairs ships (needs a coastal city — an adjacent sea hex). |
 | **Lumbermill** | Stands on a forest hex and works its stands. |
-| **Stone Quarry** | Stands on a hex; its crew cut stone in the quarry itself, whatever the hex. |
+| **Stone Quarry** | Stands on a hex you choose and works the stone there. |
 | **Mine** | Stands on an ore deposit hex and extracts whatever it holds — copper, tin or silver. |
 | **Foundry** | Smelts copper and tin into bronze ([[bronze]]). The gate to elite soldiers and war galleys. |
 | **Barracks** | Enables recruiting infantry and war chariots ([[units]]). |
 | **Stable** | Enables war chariots. |
-| **Olive Press** | Refines a press-worker's oil from the settlement's groves. |
-| **Winery** | Refines a vintner's wine from the settlement's vines. |
+| **Olive Press** | Refines a press-worker's oil from the settlement's groves. Works inside the city. |
+| **Winery** | Refines a vintner's wine from the settlement's vines. Works inside the city. |
 | **Market** | Enables trade offers and updates market price snapshots. |
 | **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
 | **Wall** | Palisade, then stone, then bronze. Absorbs damage in [[battle]]. |
@@ -23,9 +23,13 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 
 Every other building, including **Harbour**, stands in the city itself. Harbour is the one exception worth naming: though it stands in the city (and needs the city's own hex to border the sea), its effect reaches every coastal-sea hex in your catchment at once, not just one.
 
+## The rule
+
+A farm, mine, lumbermill, stonequarry or harbour gives its hex four more worker places, and every worker there makes 70 % more of the hex's own yield per building level (×1.7, ×2.4, ×3.1). Silver can only be mined with a mine; olive press, winery and foundry work inside the city as before.
+
 ## Levels
 
-Buildings level up to three. **A higher level makes the same crew produce more** — it raises the output per worker, not how many workers the building employs. Farms are the deliberate exception: their level raises how many people a grain hex can hold.
+Buildings level up to three. **A higher level makes every worker on the hex produce more** — see the rule below.
 
 Levelling a Harbour, Shipyard or Temple further also needs **cedar**, which is scarce and often only available by [[trade]].
 
