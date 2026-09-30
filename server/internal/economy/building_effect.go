@@ -333,11 +333,11 @@ func effectRowsForSite(rules []productionRuleRow, bt, terrain string, copperDep,
 		if changed {
 			out = append(out, EffectRow{
 				Good: good, Kind: "hex", Terrain: terrain,
-				Deposit:       depositForGood(copperDep, tinDep, silverDep),
+				Deposit:       depositForGood(good, copperDep, tinDep, silverDep),
 				Without:       without,
 				Levels:        levels,
 				CatchmentWide: !HexBoundBuildingTypes[bt],
-				Text:          renderHexText(good, terrain, depositForGood(copperDep, tinDep, silverDep), !HexBoundBuildingTypes[bt], without, levels),
+				Text:          renderHexText(good, terrain, depositForGood(good, copperDep, tinDep, silverDep), !HexBoundBuildingTypes[bt], without, levels),
 			})
 		}
 
@@ -351,7 +351,7 @@ func effectRowsForSite(rules []productionRuleRow, bt, terrain string, copperDep,
 		boostWithout := EffectTier{Level: 0}
 		out = append(out, EffectRow{
 			Good: good, Kind: "refining_ceiling", Terrain: terrain,
-			Deposit:       depositForGood(copperDep, tinDep, silverDep),
+			Deposit:       depositForGood(good, copperDep, tinDep, silverDep),
 			Without:       boostWithout,
 			Levels:        boostLevels,
 			CatchmentWide: !HexBoundBuildingTypes[bt],
@@ -361,16 +361,14 @@ func effectRowsForSite(rules []productionRuleRow, bt, terrain string, copperDep,
 	return out
 }
 
-// depositForGood renders the active deposit flag (at most one is ever true
-// for a single site in this file's callers) as its production_rules key.
-func depositForGood(copperDep, tinDep, silverDep bool) string {
+// depositForGood names the deposit a row's good comes from — only on the
+// metal's own row (copper on a copper hex), never on another good that
+// happens to share the hex (grain on a copper hill is not "with a copper
+// deposit"). A real hex can carry more than one flag.
+func depositForGood(good string, copperDep, tinDep, silverDep bool) string {
 	switch {
-	case copperDep:
-		return "copper"
-	case tinDep:
-		return "tin"
-	case silverDep:
-		return "silver"
+	case good == GoodCopper && copperDep, good == GoodTin && tinDep, good == GoodSilver && silverDep:
+		return good
 	default:
 		return ""
 	}

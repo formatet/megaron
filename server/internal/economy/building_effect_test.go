@@ -278,3 +278,17 @@ func TestBuildingEffect_SilverWithoutMineIsNone_HarbourSaysEveryHex(t *testing.T
 		t.Fatalf("harbour fish text %q, want it to say every coastal sea hex", fish.Text)
 	}
 }
+
+// A deposit is named only on its own metal's row: grain on a copper hill is
+// not "with a copper deposit" (seen on the acceptance rig 2026-09-30).
+func TestBuildingEffect_DepositNamedOnlyOnItsMetal(t *testing.T) {
+	pool := testPool(t)
+	rows, err := BuildingEffectsForHex(context.Background(), pool, "farm", "hills", true, false, false, false)
+	if err != nil {
+		t.Fatalf("BuildingEffectsForHex: %v", err)
+	}
+	grain := findEffect(t, rows, GoodGrain, "hex")
+	if grain.Deposit != "" || strings.Contains(grain.Text, "deposit") {
+		t.Fatalf("grain row on a copper hill names a deposit: %q (deposit=%q)", grain.Text, grain.Deposit)
+	}
+}
