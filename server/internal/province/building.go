@@ -11,23 +11,29 @@ type BuildingSpec struct {
 	WallsBonus    int                // added to settlements.wall_level (capped at 3)
 }
 
-// BuildingPurposes is a short human-readable description of each building's role,
-// exposed via GET /api/v1/buildings and the CLI `build --list`.
+// BuildingPurposes is a short human-readable ROLE line for each building —
+// what it does, never what it PRODUCES or by how much (megaron_plan_byggnad_pa_hex.md
+// §B): a hand-written good name or terrain list here can drift from the real
+// production_rules/capacity-table data (farm was claiming "wine from hills
+// and plains" while also quietly raising oil — a claim these lines no
+// longer make). The numbers live in economy.BuildingEffectsForCatalogue/
+// BuildingEffectsForHex instead, exposed via GET /api/v1/buildings and the
+// CLI `build --list`/`city`.
 var BuildingPurposes = map[BuildingType]string{
-	BuildingFarm:        "Raises grain and oil production from plains; wine from hills and plains",
+	BuildingFarm:        "Stands on a grain hex and works its field",
 	BuildingBarracks:    "Enables recruiting spearmen and war chariots",
-	BuildingMine:        "Extracts copper, tin or silver from an ore deposit on its own hex (requires deposit)",
-	BuildingLumbermill:  "Increases cedar timber production from forest hexes",
-	BuildingStonequarry: "Increases stone production from hills and mountain catchment",
+	BuildingMine:        "Stands on an ore deposit and extracts what the hex holds",
+	BuildingLumbermill:  "Stands on a forest hex and works its stands",
+	BuildingStonequarry: "Stands on a hex and quarries its stone",
 	BuildingMarket:      "Enables trade offers and updates market price snapshots",
 	BuildingWall:        "Adds a wall tier (Palisade → Stone Wall → Bronze Wall) for combat defence",
-	BuildingHarbour:     "Enables fish production and efficient sea trade (requires coastal — adjacent sea hex)",
+	BuildingHarbour:     "Works the settlement's coastal waters and enables sea trade",
 	BuildingShipyard:    "Builds and repairs ships (requires coastal — adjacent sea hex)",
-	BuildingFoundry:     "Enables bronze smelting (copper + tin → bronze)",
-	BuildingStable:      "Produces horses and enables war chariots",
+	BuildingFoundry:     "Refines a gjuteriarbetare's ore into bronze",
+	BuildingStable:      "Enables war chariots",
 	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
-	BuildingOlivePress:  "Increases oil production from olive groves, plains and hills",
-	BuildingWinery:      "Increases wine production from hills, plains and scrub",
+	BuildingOlivePress:  "Refines a press-worker's oil from the settlement's groves",
+	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
 }
 
 // BuildingSpecs is the canonical catalogue of all constructable buildings.
