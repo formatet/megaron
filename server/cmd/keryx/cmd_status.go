@@ -15,36 +15,34 @@ import (
 
 // unusedCatchmentDeposits returns the ore deposit types present in a settlement's
 // 7-hex catchment (server-computed top-level "catchment_deposits" on the province
-// response) that have no matching extraction building yet — "mine" services both
-// copper and tin, "silver_mine" services silver (see api/handlers/province.go's
-// build-gate: BuildingType == "mine" || "silver_mine"). Cedar has no mine-equivalent
-// gate, so it is intentionally not flagged here.
+// response) that have no matching extraction building yet — "mine" now services
+// copper, tin AND silver (silver_mine is retired, megaron_plan_byggnad_pa_hex.md
+// §A: a mine on a silver-deposit hex produces silver, exactly like copper/tin on
+// their own hexes). Cedar has no mine-equivalent gate, so it is intentionally not
+// flagged here.
+//
+// This stays a settlement-wide "any mine anywhere" check, same as before mine
+// became hex-bound — catchment_deposits itself is an aggregate (any deposit
+// anywhere in the ring), so a per-hex-accurate answer isn't derivable from the
+// data this already has; it remains a heads-up, not a precise claim.
 //
 // P1a (soak 2026-07-18): `status` only ever showed Copper/Tin as a PRODUCED good
 // (after a mine already existed) — a player who never built one saw no signal that
 // an ore sat unused in their own catchment, waiting to be mined.
 func unusedCatchmentDeposits(catchmentDeposits []any, buildings []any) []string {
 	hasMine := false
-	hasSilverMine := false
 	for _, it := range buildings {
 		m, _ := it.(map[string]any)
-		switch m["type"] {
-		case "mine":
+		if m["type"] == "mine" {
 			hasMine = true
-		case "silver_mine":
-			hasSilverMine = true
 		}
 	}
 	var unused []string
 	for _, d := range catchmentDeposits {
 		ds, _ := d.(string)
 		switch ds {
-		case "copper", "tin":
+		case "copper", "tin", "silver":
 			if !hasMine {
-				unused = append(unused, ds)
-			}
-		case "silver":
-			if !hasSilverMine {
 				unused = append(unused, ds)
 			}
 		}
@@ -827,30 +825,14 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			}
 			// Obruten deposit i catchmenten (P1a, soak 2026-07-18): se
 			// unusedCatchmentDeposits — flaggar koppar/tenn/silver som ligger i
-			// stadens 7-hex catchment men saknar mine/silver_mine.
+			// stadens catchment men saknar mine. silver_mine avskaffad
+			// (megaron_plan_byggnad_pa_hex.md §A) — mine på en silverhex ger
+			// silver, precis som koppar/tenn, så det finns bara ett meddelande nu.
 			if cd, ok := p["catchment_deposits"].([]any); ok {
 				buildings, _ := sett["buildings"].([]any)
 				if unused := unusedCatchmentDeposits(cd, buildings); len(unused) > 0 {
-					var mineOres, silverOres []string
-					for _, d := range unused {
-						if d == "silver" {
-							silverOres = append(silverOres, d)
-						} else {
-							mineOres = append(mineOres, d)
-						}
-					}
-					// Named separately, not "mine/silver_mine" — a player who tried
-					// "mine" for a silver-only deposit hit "no copper or tin deposit"
-					// and reported not understanding how to mine silver at all
-					// (player_reports 2026-09-07, tick 1009/1012, Phaistos).
-					if len(mineOres) > 0 {
-						fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine here to extract it\n",
-							strings.Join(mineOres, ", "))
-					}
-					if len(silverOres) > 0 {
-						fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a silver_mine here to extract it\n",
-							strings.Join(silverOres, ", "))
-					}
+					fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine here to extract it\n",
+						strings.Join(unused, ", "))
 				}
 			}
 			// Kharis (PLAN B, megaron_kult_legibilitet_plan.md): kharis is now
