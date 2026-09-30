@@ -588,29 +588,44 @@ func executeSack(
 // decrementTopProductionBuilding drops the settlement's highest-level
 // PRODUCTION building (province.LevelledBuildings — excludes wall and any
 // unlevelled building) by one level, deterministically (ties broken by
-// building_type name, no RNG — plan requirement). A level-1 building is
-// destroyed outright (row deleted) rather than going to level 0. Returns the
-// building type hit, or "" if the settlement had no levelled building at all.
+// building_type name, then lowest hex_q/hex_r — no RNG — plan requirement).
+// A level-1 building is destroyed outright (row deleted) rather than going
+// to level 0. Returns the building type hit, or "" if the settlement had no
+// levelled building at all.
+//
+// Targets the building's own id, not (settlement_id, building_type) —
+// megaron_plan_byggnad_pa_hex.md §A made farm/mine/lumbermill/stonequarry
+// hex-bound, so a settlement can hold SEVERAL rows of the same type (one per
+// hex). The old by-type DELETE/UPDATE would have hit EVERY hex-bound
+// building of that type at once instead of the one row this function chose.
 func decrementTopProductionBuilding(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID) (string, error) {
-	rows, err := tx.Query(ctx, `SELECT building_type, level FROM buildings WHERE settlement_id = $1`, settlementID)
+	rows, err := tx.Query(ctx,
+		`SELECT id, building_type, level FROM buildings WHERE settlement_id = $1 ORDER BY building_type, hex_q, hex_r`,
+		settlementID)
 	if err != nil {
 		return "", fmt.Errorf("sack: load buildings: %w", err)
 	}
+	var topID uuid.UUID
 	var topType string
 	var topLevel int
 	found := false
 	for rows.Next() {
+		var id uuid.UUID
 		var bt string
 		var lvl int
-		if scanErr := rows.Scan(&bt, &lvl); scanErr != nil {
+		if scanErr := rows.Scan(&id, &bt, &lvl); scanErr != nil {
 			rows.Close()
 			return "", fmt.Errorf("sack: scan building: %w", scanErr)
 		}
 		if !province.LevelledBuildings[province.BuildingType(bt)] {
 			continue
 		}
+		// Rows arrive ORDERed by (building_type, hex_q, hex_r), so among ties
+		// (same type, same level) the first one seen already has the lowest
+		// hex — "!found || lvl > topLevel" only advances topID/topType/topLevel
+		// on a STRICT improvement, keeping that first (lowest-hex) row on a tie.
 		if !found || lvl > topLevel || (lvl == topLevel && bt < topType) {
-			found, topType, topLevel = true, bt, lvl
+			found, topID, topType, topLevel = true, id, bt, lvl
 		}
 	}
 	rows.Close()
@@ -621,13 +636,11 @@ func decrementTopProductionBuilding(ctx context.Context, tx pgx.Tx, settlementID
 		return "", nil
 	}
 	if topLevel <= 1 {
-		if _, err := tx.Exec(ctx, `DELETE FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
-			settlementID, topType); err != nil {
+		if _, err := tx.Exec(ctx, `DELETE FROM buildings WHERE id = $1`, topID); err != nil {
 			return "", fmt.Errorf("sack: destroy building: %w", err)
 		}
 	} else {
-		if _, err := tx.Exec(ctx, `UPDATE buildings SET level = level - 1 WHERE settlement_id = $1 AND building_type = $2`,
-			settlementID, topType); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE buildings SET level = level - 1 WHERE id = $1`, topID); err != nil {
 			return "", fmt.Errorf("sack: downgrade building: %w", err)
 		}
 	}

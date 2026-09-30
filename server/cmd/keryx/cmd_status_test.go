@@ -39,15 +39,15 @@ func TestUnusedCatchmentDeposits(t *testing.T) {
 			wantUnused: nil,
 		},
 		{
-			name:       "silver present, no silver_mine built",
+			name:       "silver present, no mine built",
 			deposits:   []any{"silver"},
-			buildings:  []any{building("mine")}, // a plain mine does not cover silver
+			buildings:  nil,
 			wantUnused: []string{"silver"},
 		},
 		{
-			name:       "silver present, silver_mine built",
+			name:       "silver present, mine built (silver_mine retired — mine covers it)",
 			deposits:   []any{"silver"},
-			buildings:  []any{building("silver_mine")},
+			buildings:  []any{building("mine")},
 			wantUnused: nil,
 		},
 		{
@@ -57,10 +57,10 @@ func TestUnusedCatchmentDeposits(t *testing.T) {
 			wantUnused: nil,
 		},
 		{
-			name:       "mixed: tin unused, silver already mined",
+			name:       "mixed: copper, tin and silver all unused without a mine",
 			deposits:   []any{"tin", "silver"},
-			buildings:  []any{building("silver_mine")},
-			wantUnused: []string{"tin"},
+			buildings:  nil,
+			wantUnused: []string{"tin", "silver"},
 		},
 	}
 

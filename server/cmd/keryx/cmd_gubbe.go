@@ -19,12 +19,22 @@ type placementGood struct {
 	MarginalYield  float64 `json:"marginal_yield"`
 }
 
+// placementHexBuilding is the ONE hex-bound production building (if any)
+// actually standing on this hex — farm/mine/lumbermill/stonequarry
+// (province.HexBoundBuildings, megaron_plan_byggnad_pa_hex.md §A). Nil when
+// the hex is empty.
+type placementHexBuilding struct {
+	Type  string `json:"type"`
+	Level int    `json:"level"`
+}
+
 type placementHex struct {
-	HexQ       int             `json:"hex_q"`
-	HexR       int             `json:"hex_r"`
-	HexOrdinal int             `json:"hex_ordinal"`
-	Terrain    string          `json:"terrain"`
-	Goods      []placementGood `json:"goods"`
+	HexQ       int                   `json:"hex_q"`
+	HexR       int                   `json:"hex_r"`
+	HexOrdinal int                   `json:"hex_ordinal"`
+	Terrain    string                `json:"terrain"`
+	Building   *placementHexBuilding `json:"building,omitempty"`
+	Goods      []placementGood       `json:"goods"`
 }
 
 type placementBuilding struct {

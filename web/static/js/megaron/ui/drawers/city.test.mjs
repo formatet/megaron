@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loyaltyLogRowsHTML, buildingOptionsHTML } from './city.js';
+import { loyaltyLogRowsHTML, buildingOptionsHTML, hexBuildOptionsHTML } from './city.js';
 
 // megaron_plan_byggkatalogen_i_webben.md: the Construct dropdown used to be
 // 14 hardcoded <option> rows (silver_mine missing entirely, every cost
@@ -8,12 +8,22 @@ import { loyaltyLogRowsHTML, buildingOptionsHTML } from './city.js';
 // fixture instead — same "pure string builder" testability as
 // loyaltyLogRowsHTML above.
 
-test('BK1: silver_mine is buildable from the catalogue (was missing entirely from the hardcoded list)', () => {
+test('BK1: mine is buildable from the catalogue (was missing entirely from the old hardcoded list)', () => {
   const html = buildingOptionsHTML([
-    { type: 'silver_mine', costs: { timber: 1.429, stone: 28.571 }, purpose: 'Extracts silver from silver deposits in catchment (requires deposit)', requires_deposits: ['silver'] },
+    { type: 'mine', costs: { timber: 1.429, stone: 28.571 }, purpose: 'Extracts copper/tin/silver from a deposit hex in catchment', requires_deposits: ['copper', 'tin', 'silver'] },
   ]);
-  assert.match(html, /value="silver_mine"/);
-  assert.match(html, /Silver Mine/);
+  assert.match(html, /value="mine"/);
+  assert.match(html, /Mine/);
+});
+
+// megaron_plan_byggnad_pa_hex.md §A: silver_mine is retired — a mine on a
+// silver-deposit hex now produces silver, exactly like copper/tin on their
+// own hexes. Nothing in the web client should still name silver_mine.
+test('silver_mine is gone from the Construct label map — an unlabelled fallback would betray a stale catalogue entry', () => {
+  const html = buildingOptionsHTML([
+    { type: 'silver_mine', costs: { timber: 1, stone: 9 }, purpose: 'x' },
+  ]);
+  assert.doesNotMatch(html, /Silver Mine/);
 });
 
 test('BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string', () => {
@@ -34,7 +44,7 @@ test('BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the 
 
 test('BK4: a deposit gate is rendered so a player can see why a building is/isn\'t available', () => {
   const html = buildingOptionsHTML([
-    { type: 'silver_mine', costs: { timber: 1, stone: 9 }, purpose: 'Extracts silver', requires_deposits: ['silver'] },
+    { type: 'mine', costs: { timber: 1, stone: 9 }, purpose: 'Extracts ore', requires_deposits: ['silver'] },
   ]);
   assert.match(html, /requires silver deposit/);
 });
@@ -59,6 +69,51 @@ test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue en
 test('BK7: an entry with no gates renders no "requires" clause', () => {
   const html = buildingOptionsHTML([{ type: 'farm', costs: { timber: 1, stone: 9 }, purpose: 'Raises grain' }]);
   assert.doesNotMatch(html, /requires/);
+});
+
+// hexBuildOptionsHTML: the Construct flow's hex picker for a hex-bound type
+// (megaron_plan_byggnad_pa_hex.md §A2). Merges valid_hexes_for_building
+// (server-computed "could build here now") with hexes[] entries that already
+// carry a building of the SAME type — those are excluded from
+// valid_hexes_for_building (they're the upgrade path, not a new build) so
+// this function has to add them back in labelled as upgrades.
+
+test('HX1: a valid, empty hex renders as a build option with its coords and terrain', () => {
+  const html = hexBuildOptionsHTML('farm', {
+    valid_hexes_for_building: { farm: [{ q: 3, r: -1 }] },
+    hexes: [{ hex_q: 3, hex_r: -1, terrain: 'plains' }],
+  });
+  assert.match(html, /value="3,-1"/);
+  assert.match(html, /Plains — build/);
+});
+
+test('HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade', () => {
+  const html = hexBuildOptionsHTML('farm', {
+    valid_hexes_for_building: { farm: [] },
+    hexes: [{ hex_q: 5, hex_r: 2, terrain: 'plains', building: { type: 'farm', level: 1 } }],
+  });
+  assert.match(html, /value="5,2"/);
+  assert.match(html, /upgrade to L2/);
+});
+
+test('HX3: a hex carrying a DIFFERENT-type building is not offered at all', () => {
+  const html = hexBuildOptionsHTML('farm', {
+    valid_hexes_for_building: { farm: [] },
+    hexes: [{ hex_q: 5, hex_r: 2, terrain: 'hills', building: { type: 'mine', level: 1 } }],
+  });
+  assert.equal(html, '');
+});
+
+test('HX4: a hex present in both lists is rendered once, as a build option (valid_hexes_for_building wins)', () => {
+  const html = hexBuildOptionsHTML('farm', {
+    valid_hexes_for_building: { farm: [{ q: 1, r: 1 }] },
+    hexes: [{ hex_q: 1, hex_r: 1, terrain: 'plains' }],
+  });
+  assert.equal((html.match(/value="1,1"/g) || []).length, 1);
+});
+
+test('HX5: no placement-options data yet renders no options, not an error', () => {
+  assert.equal(hexBuildOptionsHTML('farm', null), '');
 });
 
 // megaron_plan_webbytor_keryx_paritet.md, Slice LOYALTY-LOG: the city drawer

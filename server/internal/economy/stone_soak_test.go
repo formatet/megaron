@@ -25,8 +25,10 @@ func TestFullyStaffedStonequarry_DoesNotReachCapIn40Ticks(t *testing.T) {
 	ctx := context.Background()
 
 	settlementID := seedFullRingFixture(t, 0, 100, "plains")
+	// stonequarry's stone production_rule is terrain-free (BuildingOption
+	// path) — which hex it stands on doesn't affect this test.
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'stonequarry', 1)`,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', 1, 1, 0)`,
 		settlementID,
 	); err != nil {
 		t.Fatalf("seed stonequarry: %v", err)

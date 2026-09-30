@@ -33,6 +33,7 @@ import {
 import {
   loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild,
   loadTicklog, cancelBuild, slaughterLivestock, sendGift,
+  onCityBuildTypeChange,
 } from './ui/drawers/city.js';
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
@@ -200,6 +201,7 @@ Object.assign(window, {
   okRite,
   okRiteComposed,
   okOfferWorth,
+  onCityBuildTypeChange,
   onColonizeToggle,
   onExploreToggle,
   openCitySettlement,

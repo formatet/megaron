@@ -204,19 +204,25 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Buildings — already completed (agents/clients use this to avoid re-queuing).
+		// HexQ/HexR are set only for hex-bound types (province.HexBoundBuildings) —
+		// null for a city building (megaron_plan_byggnad_pa_hex.md §A). This is
+		// the field `keryx city`/`keryx status` read to show a hex-bound
+		// building's location.
 		type buildingItem struct {
 			Type  string `json:"type"`
 			Level int    `json:"level"`
+			HexQ  *int   `json:"hex_q,omitempty"`
+			HexR  *int   `json:"hex_r,omitempty"`
 		}
 		var buildings []buildingItem
 		brows, _ := h.pool.Query(r.Context(),
-			`SELECT building_type, level FROM buildings WHERE settlement_id = $1 ORDER BY building_type`,
+			`SELECT building_type, level, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY building_type, hex_q, hex_r`,
 			sett.ID,
 		)
 		if brows != nil {
 			for brows.Next() {
 				var bi buildingItem
-				_ = brows.Scan(&bi.Type, &bi.Level)
+				_ = brows.Scan(&bi.Type, &bi.Level, &bi.HexQ, &bi.HexR)
 				buildings = append(buildings, bi)
 			}
 			brows.Close()
@@ -1114,6 +1120,8 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		BuildingType string `json:"building_type"`
+		HexQ         *int   `json:"hex_q"`
+		HexR         *int   `json:"hex_r"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -1123,6 +1131,21 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	spec, ok := province.BuildingSpecs[province.BuildingType(req.BuildingType)]
 	if !ok {
 		writeError(w, http.StatusBadRequest, "unknown building type")
+		return
+	}
+
+	// Hex-bound types (farm/mine/lumbermill/stonequarry, province.HexBoundBuildings)
+	// are placed on ONE catchment hex and only affect that hex — hex_q/hex_r
+	// are required for them, and forbidden for every city building
+	// (megaron_plan_byggnad_pa_hex.md §A, Timothy 2026-09-28).
+	isHexBound := province.HexBoundBuildings[province.BuildingType(req.BuildingType)]
+	if isHexBound {
+		if req.HexQ == nil || req.HexR == nil {
+			writeError(w, http.StatusBadRequest, fmt.Sprintf("%s is placed on a hex — hex_q and hex_r are required", req.BuildingType))
+			return
+		}
+	} else if req.HexQ != nil || req.HexR != nil {
+		writeError(w, http.StatusBadRequest, fmt.Sprintf("%s is a city building and does not take a hex", req.BuildingType))
 		return
 	}
 
@@ -1173,68 +1196,51 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Mines require the matching ore deposit in the settlement's production
-	// catchment (own hex + hexgrid.CatchmentRadius ring, same set
-	// LoadHexProductionOptions reads — a mine without a matching deposit in
-	// reach would produce nothing). Gate it at build time.
-	//
-	// Was a hand-copied "own hex + 6 neighbours" (radius 1) list — stale since
-	// P1 (megaron_plan_fysisk_gubbemodell.md, 2026-08-07) doubled the
-	// catchment to radius 2 for production and megaron_plan_gruvgrinden.md's
-	// keryx-visible catchment_deposits field, but this write gate never
-	// followed. Now reads hexgrid.Disk (own hex included, matching that a
-	// mine may still be built directly on the ore, as before).
-	if req.BuildingType == "mine" || req.BuildingType == "silver_mine" {
+	// Hex-bound types are placed on ONE specific catchment hex — validate
+	// THAT hex, not the catchment in aggregate (megaron_plan_byggnad_pa_hex.md
+	// §A). silver_mine is retired: a mine on a silver-deposit hex now
+	// produces silver, exactly like copper/tin — there is no longer a second
+	// building type to hint the player toward.
+	if isHexBound {
 		var pq, pr int
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT map_q, map_r FROM provinces WHERE id = $1`, provinceID,
 		).Scan(&pq, &pr)
-		var depositCond, oreName string
-		if req.BuildingType == "silver_mine" {
-			depositCond = "COALESCE(silver_deposit,false)"
-			oreName = "silver"
-		} else {
-			depositCond = "(copper_deposit OR tin_deposit)"
-			oreName = "copper or tin"
-		}
-		catchQ, catchR := hexgrid.QRArrays(hexgrid.Disk(hexgrid.Coord{Q: pq, R: pr}, hexgrid.CatchmentRadius))
-		var hasDeposit bool
-		_ = h.pool.QueryRow(r.Context(),
-			fmt.Sprintf(`SELECT EXISTS(
-			   SELECT 1 FROM map_tiles mt
-			   JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
-			   WHERE mt.world_id = $1
-			     AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford')
-			     AND %s
-			 )`, depositCond),
-			worldID, catchQ, catchR,
-		).Scan(&hasDeposit)
-		if !hasDeposit {
-			msg := fmt.Sprintf("a %s here would produce nothing — no %s deposit within this settlement's production catchment (its own hex plus every hex within %d steps). Build it on or in reach of the ore.",
-				req.BuildingType, oreName, hexgrid.CatchmentRadius)
-			// A player who tried "mine" on a silver-only catchment read this as
-			// "no ore anywhere here" and reported not knowing how to mine silver
-			// at all (player_reports 2026-09-07, tick 1009/1012, Phaistos) — name
-			// the building that would actually work instead of leaving them to
-			// guess (silver_mine's own error, oreName=="silver", needs no such
-			// hint: there is no third building type to redirect to).
-			if req.BuildingType == "mine" {
-				var hasSilver bool
-				_ = h.pool.QueryRow(r.Context(),
-					`SELECT EXISTS(
-					   SELECT 1 FROM map_tiles mt
-					   JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
-					   WHERE mt.world_id = $1 AND COALESCE(mt.silver_deposit,false)
-					 )`,
-					worldID, catchQ, catchR,
-				).Scan(&hasSilver)
-				if hasSilver {
-					msg += " A silver deposit is in reach instead — build silver_mine to extract that."
-				}
+		center := hexgrid.Coord{Q: pq, R: pr}
+		chosen := hexgrid.Coord{Q: *req.HexQ, R: *req.HexR}
+
+		inRing := false
+		for _, c := range hexgrid.Ring(center, hexgrid.CatchmentRadius) {
+			if c == chosen {
+				inRing = true
+				break
 			}
-			writeError(w, http.StatusUnprocessableEntity, msg)
+		}
+		if !inRing {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("hex (%d,%d) is not within this settlement's production catchment (within %d steps)",
+					chosen.Q, chosen.R, hexgrid.CatchmentRadius))
 			return
 		}
+
+		supports, err := economy.HexSupportsBuilding(r.Context(), h.pool, worldID, chosen, req.BuildingType)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check hex")
+			return
+		}
+		if !supports {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("a %s at (%d,%d) would produce nothing — the terrain/deposit there doesn't support it",
+					req.BuildingType, chosen.Q, chosen.R))
+			return
+		}
+		// A completed building of the SAME type already standing on this
+		// exact hex is not rejected here — that is the upgrade path
+		// ("Uppgradering adresserar byggnaden via (typ, hex)"), handled below
+		// exactly like a city building's repeat-build-raises-level branch,
+		// just keyed on (type, hex) instead of (type) alone. Only a build
+		// ALREADY QUEUED for this same hex is rejected — the hex-scoped
+		// dupQueued check further below.
 	}
 
 	// Queue guards — block before we deduct resources.
@@ -1259,11 +1265,21 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		// Producing building: repeat-building raises its level, and the level is how
 		// many citizens the workplace can employ (economy.LaborCapacity). Cost for the
 		// NEXT level comes from LevelledSpec — level 1 unchanged, level 2+ adds cedar.
+		// Hex-bound types key this off (type, hex) — MAX(level) across the whole
+		// settlement would otherwise level up the WRONG hex's farm (or read a
+		// level that doesn't exist yet on THIS hex at all).
 		var lvl int
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
-			settlementID, req.BuildingType,
-		).Scan(&lvl)
+		if isHexBound {
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT COALESCE(level, 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND hex_q = $3 AND hex_r = $4`,
+				settlementID, req.BuildingType, *req.HexQ, *req.HexR,
+			).Scan(&lvl)
+		} else {
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
+				settlementID, req.BuildingType,
+			).Scan(&lvl)
+		}
 		if lvl >= province.MaxBuildingLevel {
 			writeError(w, http.StatusUnprocessableEntity,
 				fmt.Sprintf("%s is already at maximum level (%d)", req.BuildingType, province.MaxBuildingLevel))
@@ -1290,13 +1306,23 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 
 	var queueDepth int
 	var dupQueued bool
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT
-		   COUNT(*),
-		   COUNT(*) FILTER (WHERE building_type = $2) > 0
-		 FROM build_queue WHERE settlement_id = $1`,
-		settlementID, req.BuildingType,
-	).Scan(&queueDepth, &dupQueued)
+	if isHexBound {
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT
+			   COUNT(*),
+			   COUNT(*) FILTER (WHERE building_type = $2 AND hex_q = $3 AND hex_r = $4) > 0
+			 FROM build_queue WHERE settlement_id = $1`,
+			settlementID, req.BuildingType, *req.HexQ, *req.HexR,
+		).Scan(&queueDepth, &dupQueued)
+	} else {
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT
+			   COUNT(*),
+			   COUNT(*) FILTER (WHERE building_type = $2) > 0
+			 FROM build_queue WHERE settlement_id = $1`,
+			settlementID, req.BuildingType,
+		).Scan(&queueDepth, &dupQueued)
+	}
 	if dupQueued {
 		writeError(w, http.StatusUnprocessableEntity, "this building is already in the queue")
 		return
@@ -1361,9 +1387,9 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	completeAt := tick.EtaAt(h.clk, buildDueTick, buildCurrentTick)
 	var queueID uuid.UUID
 	err = h.pool.QueryRow(r.Context(),
-		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at)
-		 VALUES ($1, $2, $3, $4) RETURNING id`,
-		settlementID, worldID, req.BuildingType, completeAt,
+		`INSERT INTO build_queue (settlement_id, world_id, building_type, complete_at, hex_q, hex_r)
+		 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+		settlementID, worldID, req.BuildingType, completeAt, req.HexQ, req.HexR,
 	).Scan(&queueID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not queue build")
@@ -1375,6 +1401,8 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 			SettlementID: settlementID,
 			BuildQueueID: queueID,
 			BuildingType: req.BuildingType,
+			HexQ:         req.HexQ,
+			HexR:         req.HexR,
 		}, buildDueTick,
 	); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not schedule build")
@@ -1414,14 +1442,15 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 	// Verify ownership and fetch the build entry.
 	var settlementID uuid.UUID
 	var buildingType string
+	var hexQ, hexR *int
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT bq.settlement_id, bq.building_type
+		`SELECT bq.settlement_id, bq.building_type, bq.hex_q, bq.hex_r
 		 FROM build_queue bq
 		 JOIN settlements s ON s.id = bq.settlement_id
 		 WHERE bq.id = $1 AND bq.world_id = $2
 		   AND s.province_id = $3 AND s.owner_id = $4`,
 		queueID, worldID, provinceID, playerID,
-	).Scan(&settlementID, &buildingType)
+	).Scan(&settlementID, &buildingType, &hexQ, &hexR)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "build queue entry not found or not yours")
 		return
@@ -1450,11 +1479,20 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 		// Same reasoning as the wall above: buildings.level is only incremented on
 		// completion, so the queued level is current+1. Refund what was actually
 		// charged — otherwise cancelling a level-2 workplace silently ate its cedar.
+		// Hex-bound types (hexQ/hexR non-nil) key this off (type, hex) — MAX(level)
+		// across the whole settlement would read a DIFFERENT hex's farm level.
 		var lvl int
-		_ = h.pool.QueryRow(r.Context(),
-			`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
-			settlementID, buildingType,
-		).Scan(&lvl)
+		if hexQ != nil && hexR != nil {
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT COALESCE(level, 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND hex_q = $3 AND hex_r = $4`,
+				settlementID, buildingType, *hexQ, *hexR,
+			).Scan(&lvl)
+		} else {
+			_ = h.pool.QueryRow(r.Context(),
+				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
+				settlementID, buildingType,
+			).Scan(&lvl)
+		}
 		next := lvl + 1
 		if next > province.MaxBuildingLevel {
 			next = province.MaxBuildingLevel
@@ -1529,7 +1567,7 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT building_type, level, built_at FROM buildings WHERE settlement_id = $1 ORDER BY built_at`,
+		`SELECT building_type, level, built_at, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY built_at`,
 		settlementID,
 	)
 	if err != nil {
@@ -1542,11 +1580,15 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 		Type    string    `json:"type"`
 		Level   int       `json:"level"`
 		BuiltAt time.Time `json:"built_at"`
+		// HexQ/HexR are set only for hex-bound buildings (province.HexBoundBuildings)
+		// — null for a city building (megaron_plan_byggnad_pa_hex.md §A).
+		HexQ *int `json:"hex_q,omitempty"`
+		HexR *int `json:"hex_r,omitempty"`
 	}
 	var result []buildingRow
 	for rows.Next() {
 		var b buildingRow
-		if err := rows.Scan(&b.Type, &b.Level, &b.BuiltAt); err == nil {
+		if err := rows.Scan(&b.Type, &b.Level, &b.BuiltAt, &b.HexQ, &b.HexR); err == nil {
 			result = append(result, b)
 		}
 	}
@@ -1568,9 +1610,9 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 	// EVERY rule for that building names a terrain (no NULL/"any terrain" row).
 	// lumbermill och mine har terräng-konditionerade BONUS-rader vid sidan av en
 	// terrängfri basrad, producerar alltså något överallt och flaggas inte.
-	// farm, olive_press, silver_mine och winery har ENBART terrängrader och är
-	// därmed genuint gateade — en farm på kalksten producerar ingenting alls,
-	// tyst, vilket är exakt den dolda gate P10 (soak 2026-07-18) stänger.
+	// farm, olive_press och winery har ENBART terrängrader och är därmed
+	// genuint gateade — en farm på kalksten producerar ingenting alls, tyst,
+	// vilket är exakt den dolda gate P10 (soak 2026-07-18) stänger.
 	// (Kommentaren nämnde tidigare farm som exempel på MOTSATSEN. Fel sedan
 	// migration 008 — farm har aldrig haft en NULL-terrängrad. Rättat 2026-07-26.)
 	type gateInfo struct {
@@ -1662,6 +1704,11 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		// UpgradeCosts maps level → full cost of taking the building to that level
 		// (level 1 is Costs above). Empty for buildings with no level ladder.
 		UpgradeCosts map[int]map[string]float64 `json:"upgrade_costs,omitempty"`
+		// HexBound is true for farm/mine/lumbermill/stonequarry
+		// (province.HexBoundBuildings) — the build request must name a hex_q/
+		// hex_r, and a settlement may build several of this type, one per hex
+		// (megaron_plan_byggnad_pa_hex.md §A).
+		HexBound bool `json:"hex_bound,omitempty"`
 	}
 
 	// Stable ordering: sort building types alphabetically.
@@ -1681,6 +1728,7 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 			DurationGameDays: tick.GameDaysLeft(tick.RealUntil(spec.DurationTicks, 0)),
 			Purpose:          province.BuildingPurposes[province.BuildingType(bt)],
 			MaxLevel:        1,
+			HexBound:         province.HexBoundBuildings[province.BuildingType(bt)],
 		}
 		if province.LevelledBuildings[province.BuildingType(bt)] {
 			entry.MaxLevel = province.MaxBuildingLevel
@@ -2651,10 +2699,14 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// Wanax cannot tell "producing flat out from a level-1 harbour" from "half my
 	// fishermen have no boat to crew". (Playtest 2026-07-23, Deiphobos:
 	// "ingenting säger om detta är mättat".)
+	// DISTINCT is on (good_key, b.id), not (good_key, building_type, level) —
+	// same fix as db.go's loadLaborCapacities: a hex-bound type can now have
+	// several same-level rows (one per hex), which the old DISTINCT would
+	// have collapsed into one, undercounting this informational level sum.
 	workplaceLevels := make(map[string]int)
 	lvlRows, _ := h.pool.Query(r.Context(),
 		`SELECT good_key, SUM(level)::int FROM (
-		     SELECT DISTINCT pr.good_key, b.building_type, b.level
+		     SELECT DISTINCT pr.good_key, b.id, b.level
 		     FROM production_rules pr
 		     JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type
 		 ) t GROUP BY good_key`,

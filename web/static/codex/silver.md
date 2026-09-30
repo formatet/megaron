@@ -4,7 +4,7 @@ Every soldier draws pay every day. A Wanax who runs dry watches his cohorts walk
 
 ## Where silver comes from
 
-- **Out of the ground.** A silver deposit in your [[catchment]] and a **Silver Mine** ([[buildings]]) — a different building from the copper-and-tin Mine.
+- **Out of the ground.** A silver deposit in your [[catchment]] and a **Mine** built on that deposit hex ([[buildings]]) — the same building that works a copper or tin hex; the hex decides what it produces.
 - **A Marketplace** adds a trickle.
 - **Out of someone else's ground, through [[trade]].** Most Wanaxes will not have a deposit. That is the point: silver is why the map has merchants on it.
 

@@ -165,7 +165,7 @@ func TestFoundingGrainNetPerTick_MatchesPlaceStartingWorkforce(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	forecastProd, forecastNet, err := FoundingGrainNetPerTick(ctx, pool, worldID, center, nil, nil, pop)
+	forecastProd, forecastNet, err := FoundingGrainNetPerTick(ctx, pool, worldID, center, false, nil, pop)
 	if err != nil {
 		t.Fatalf("FoundingGrainNetPerTick: %v", err)
 	}

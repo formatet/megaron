@@ -6,7 +6,7 @@ import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
-import { renderGubbeGrid } from '../citygrid.js';
+import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
 import { sitosStateHtml } from './sitos_view.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
@@ -503,32 +503,73 @@ const _BLD_LBL = {
   stonequarry:'Stone Quarry', market:'Marketplace', wall:'Wall', tower:'Tower',
   harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
-  temple:'Temple', silver_mine:'Silver Mine',
+  temple:'Temple',
 };
 
 export async function startBuild() {
   const capital = activeCitySettlement();
   if (!capital) return;
   const sel = document.getElementById('city-build-select');
+  const hexSel = document.getElementById('city-build-hex');
   const resultEl = document.getElementById('city-build-result');
   if (!sel || !resultEl) return;
   const btype = sel.value;
   resultEl.textContent = '';
+  const body = { building_type: btype };
+  // A hex-bound type (farm/mine/lumbermill/stonequarry) needs hex_q/hex_r —
+  // the picker is only visible (see onCityBuildTypeChange) when the selected
+  // type is hex-bound, so a visible, non-empty value is exactly when to send
+  // one (megaron_plan_byggnad_pa_hex.md §A2).
+  let hexLabel = '';
+  if (hexSel && hexSel.style.display !== 'none' && hexSel.value) {
+    const [q, r] = hexSel.value.split(',').map(Number);
+    body.hex_q = q;
+    body.hex_r = r;
+    hexLabel = ` @ (${q},${r})`;
+  }
   const r = await fetchAuth(
     `/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}/build`,
-    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({building_type: btype}) }
+    { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }
   );
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     track('build_started', { building: btype });
     resultEl.style.color = 'var(--safe)';
-    resultEl.textContent = `${_BLD_LBL[btype]||btype} queued.`;
+    resultEl.textContent = `${_BLD_LBL[btype]||btype} queued${hexLabel}.`;
     // Refresh only the buildings section — avoids resetting the active tab
     await refreshCityBuildings(capital.id);
   } else {
     resultEl.style.color = 'var(--accent)';
     resultEl.textContent = formatApiError(d, 'Build failed.');
   }
+}
+
+// onCityBuildTypeChange: the Construct type <select>'s onchange. Shows/hides
+// and (re)populates the hex picker (#city-build-hex) — visible only for a
+// hex-bound type (province.HexBoundBuildings via the catalogue's hex_bound
+// field), fetched fresh each time since occupancy changes with every build
+// (unlike the catalogue, this is NOT memoized).
+export async function onCityBuildTypeChange() {
+  const typeSel = document.getElementById('city-build-select');
+  const hexSel = document.getElementById('city-build-hex');
+  if (!typeSel || !hexSel) return;
+  const catalogue = await getBuildingCatalogue();
+  const entry = (catalogue || []).find(e => e.type === typeSel.value);
+  if (!entry || !entry.hex_bound) {
+    hexSel.style.display = 'none';
+    hexSel.innerHTML = '';
+    return;
+  }
+  const capital = activeCitySettlement();
+  if (!capital) return;
+  let placementOpts = null;
+  try {
+    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}/placement-options`);
+    if (res.ok) placementOpts = await res.json();
+  } catch (e) { console.error('onCityBuildTypeChange', e); }
+  const html = hexBuildOptionsHTML(entry.type, placementOpts);
+  hexSel.innerHTML = html || '<option value="">(no valid catchment hex)</option>';
+  hexSel.style.display = 'block';
 }
 
 // Recipe catalogue (GET /api/v1/recipes) — static for a world's lifetime, so
@@ -638,6 +679,47 @@ export function buildingOptionsHTML(catalogue) {
   }).join('');
 }
 
+// hexBuildOptionsHTML: the Construct flow's hex picker for a hex-bound type
+// (farm/mine/lumbermill/stonequarry, megaron_plan_byggnad_pa_hex.md §A2).
+// Pure string builder over one placement-options response — no DOM/fetch,
+// same testable shape as buildingOptionsHTML above.
+//
+// Two sources merged, deliberately: `valid_hexes_for_building[type]` is the
+// server's list of hexes this type could be built on RIGHT NOW (catchment
+// reach + terrain/deposit match) — but it EXCLUDES a hex already carrying a
+// building of this same type (economy.ValidHexesForBuilding), because that
+// hex isn't a NEW build, it's the upgrade path (build the same type on the
+// same hex again). So a hex is offered as "upgrade" when `hexes[]` shows a
+// building of this exact type already standing there, and as "build"
+// otherwise. No client-side catchment/terrain validation is invented here —
+// both lists come straight from the server.
+export function hexBuildOptionsHTML(buildingType, placementOpts) {
+  if (!placementOpts) return '';
+  const hexesByCoord = new Map((placementOpts.hexes || []).map(h => [`${h.hex_q},${h.hex_r}`, h]));
+  const valid = (placementOpts.valid_hexes_for_building || {})[buildingType] || [];
+  const seen = new Set();
+  const rows = [];
+  for (const { q, r } of valid) {
+    const key = `${q},${r}`;
+    seen.add(key);
+    const h = hexesByCoord.get(key);
+    const terrain = h ? terrainLabel(h.terrain) : '';
+    rows.push({ q, r, label: terrain ? `(${q},${r}) ${terrain} — build` : `(${q},${r}) — build` });
+  }
+  for (const h of placementOpts.hexes || []) {
+    const key = `${h.hex_q},${h.hex_r}`;
+    if (seen.has(key)) continue;
+    if (h.building && h.building.type === buildingType) {
+      const terrain = terrainLabel(h.terrain);
+      const label = terrain
+        ? `(${h.hex_q},${h.hex_r}) ${terrain} — upgrade to L${h.building.level + 1}`
+        : `(${h.hex_q},${h.hex_r}) — upgrade to L${h.building.level + 1}`;
+      rows.push({ q: h.hex_q, r: h.hex_r, label });
+    }
+  }
+  return rows.map(o => `<option value="${o.q},${o.r}">${o.label}</option>`).join('');
+}
+
 export async function loadTicklog() {
   const capital = activeCitySettlement();
   const el = document.getElementById('city-ticklog-sec');
@@ -683,9 +765,13 @@ async function refreshCityBuildings(provinceID) {
     const pd = (await res.json()).settlement;
     if (!pd) return;
     const blds = pd.buildings || [], bq = pd.build_queue || [], tu = pd.training_units || [];
+    // hex_q/hex_r are set only for hex-bound buildings (farm/mine/lumbermill/
+    // stonequarry) — null for a city building (megaron_plan_byggnad_pa_hex.md
+    // §A). Two of the same type at different hexes level up independently,
+    // so the hex is the only way to tell them apart in this list.
     let h2 = blds.length
       ? `<div class="dsec-title">Built</div><table class="goods-mini">${
-          blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}</td><td>L${b.level}</td></tr>`).join('')
+          blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td></tr>`).join('')
         }</table>`
       : '<p class="empty-state">No buildings yet.</p>';
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
@@ -738,10 +824,15 @@ async function refreshCityBuildings(provinceID) {
       }
     }
     const prevSel = document.getElementById('city-build-select')?.value || '';
+    // #city-build-hex: the hex picker for a hex-bound type (farm/mine/
+    // lumbermill/stonequarry) — hidden by default, shown and populated by
+    // onCityBuildTypeChange() when the selected catalogue entry's hex_bound
+    // is true (megaron_plan_byggnad_pa_hex.md §A2).
     const constructHTML = buildingCatalogue ? `
-      <select id="city-build-select" class="build-select">
+      <select id="city-build-select" class="build-select" onchange="onCityBuildTypeChange()">
         ${buildingOptionsHTML(buildingCatalogue)}
       </select>
+      <select id="city-build-hex" class="build-select" style="display:none;margin-top:.3rem"></select>
       <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>`
       : `<p class="empty-state">Could not load the building catalogue — try again.</p>
       <button class="btn-primary btn-small" disabled style="margin-top:.5rem;width:100%">+ Build</button>`;
@@ -752,6 +843,9 @@ async function refreshCityBuildings(provinceID) {
     bldSec.innerHTML = h2;
     // Restore previous dropdown selection and result message
     const newSel = document.getElementById('city-build-select');
-    if (newSel && prevSel) newSel.value = prevSel;
+    if (newSel && prevSel) {
+      newSel.value = prevSel;
+      onCityBuildTypeChange();
+    }
   } catch(e) { console.error('refreshCityBuildings', e); }
 }

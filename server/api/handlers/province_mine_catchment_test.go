@@ -1,15 +1,14 @@
 package handlers
 
-// DB integration tests for megaron_plan_gruvgrinden.md Slice A: the mine/silver_mine
-// build gate hand-copied a "own hex + 6 neighbours" (radius 1) deposit check that
-// went stale when P1 (megaron_plan_fysisk_gubbemodell.md, 2026-08-07) doubled the
-// PRODUCTION catchment to hexgrid.CatchmentRadius=2 — the same radius keryx's
-// catchment_deposits field already reads (province.go's Get handler). A deposit at
-// exactly ring 2 was reachable, named "obruten deposit" to the player, and produces
-// silver once mined — but the OLD build gate rejected it with a 422 (see
-// TestBuildSilverMine_DepositAtRing2WasRejectedPreFix's doc comment for the captured
-// red-before output). Fixed by reading hexgrid.Disk(center, hexgrid.CatchmentRadius),
-// the exact same hex set LoadHexProductionOptions uses.
+// DB integration tests for megaron_plan_gruvgrinden.md Slice A (the mine build
+// gate's catchment radius) AND megaron_plan_byggnad_pa_hex.md §A (mine became
+// hex-bound, silver_mine retired — a mine on a silver-deposit hex now
+// produces silver, exactly like copper/tin). Rewritten 2026-09-28: every
+// build request now names hex_q/hex_r, and the two former "silver_mine hint"
+// tests (TestBuildMine_SilverOnlyCatchmentHintsSilverMine /
+// TestBuildMine_NoDepositAtAllGivesNoSilverHint) are gone along with the
+// mechanic they tested — there is only one mine building now, so there is no
+// second type left to hint the player toward.
 //
 // Real Postgres, gated by DATABASE_URL — same harness as recruit_shipyard_gate_test.go.
 
@@ -47,8 +46,8 @@ type mineGateFixture struct {
 // setupMineGateFixture creates a world with a capital settlement at (0,0) and, if
 // depositAt is non-nil, a silver-bearing hills tile at that coordinate (must be
 // within the settlement's catchment for the deposit to matter to the test). The
-// settlement is seeded with enough timber/stone to afford silver_mine (60/40,
-// province.BuildingSpecs) and enough population for one placeable gubbe.
+// settlement is seeded with enough timber/stone to afford a mine (province.BuildingSpecs)
+// and enough population for one placeable gubbe.
 func setupMineGateFixture(t *testing.T, depositAt *hexgrid.Coord) *mineGateFixture {
 	t.Helper()
 	pool := recruitShipTestPool(t)
@@ -165,47 +164,35 @@ func (f *mineGateFixture) do(t *testing.T, method, path string, body any) (int, 
 	return rec.Code, resp
 }
 
-// TestBuildSilverMine_DepositAtRing2WasRejectedPreFix is the acceptance criterion 1
-// red-before/green-after: a silver deposit at hex distance EXACTLY 2 from the
-// settlement (hexgrid.CatchmentRadius) is inside the production catchment (and is
-// what keryx's catchment_deposits field would already call "obruten") but the
-// PRE-FIX gate — a hand-copied own-hex+6-neighbours (radius 1) list — rejected it.
-//
-// Captured red-before output, run against unmodified master (0763d6d) before this
-// slice's fix landed:
-//
-//	province_mine_catchment_test.go:191: build silver_mine on ring-2 deposit = 422:
-//	  map[error:a silver_mine here would produce nothing — no silver deposit in this
-//	  settlement's catchment (its own hex or the 6 surrounding hexes). Build it on or
-//	  next to the ore.], want 201 (silver_mine queued — production reads
-//	  hexgrid.CatchmentRadius, this deposit is inside it)
-//
-// After the fix (hexgrid.Disk(center, hexgrid.CatchmentRadius)) the same request
-// succeeds.
-func TestBuildSilverMine_DepositAtRing2WasRejectedPreFix(t *testing.T) {
+// TestBuildMine_DepositAtRing2WasRejectedPreFix is the acceptance criterion 1
+// red-before/green-after (megaron_plan_gruvgrinden.md): a silver deposit at
+// hex distance EXACTLY 2 from the settlement (hexgrid.CatchmentRadius) is
+// inside the production catchment — building the mine ON that exact hex
+// must succeed.
+func TestBuildMine_DepositAtRing2WasRejectedPreFix(t *testing.T) {
 	deposit := hexgrid.Coord{Q: 2, R: 0} // hex distance 2 from (0,0) == hexgrid.CatchmentRadius
 	f := setupMineGateFixture(t, &deposit)
 
-	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "silver_mine"})
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine", "hex_q": deposit.Q, "hex_r": deposit.R})
 	if code != http.StatusCreated {
-		t.Fatalf("build silver_mine on ring-2 deposit = %d: %v, want %d (silver_mine queued — production reads hexgrid.CatchmentRadius, this deposit is inside it)",
+		t.Fatalf("build mine on ring-2 deposit = %d: %v, want %d (production reads hexgrid.CatchmentRadius, this deposit is inside it)",
 			code, resp, http.StatusCreated)
 	}
 }
 
-// TestBuildSilverMine_DepositAtRing3StillRejected is acceptance criterion 2: a
-// deposit ONE hex beyond the catchment (distance 3, outside hexgrid.CatchmentRadius)
-// must still be rejected — the fix widens the gate to match production, it does not
-// remove it. The error string must name the real reachable radius (derived from
-// hexgrid.CatchmentRadius, not a hardcoded "6 surrounding hexes" literal that would
+// TestBuildMine_DepositAtRing3StillRejected is acceptance criterion 2: a hex
+// ONE past the catchment (distance 3, outside hexgrid.CatchmentRadius) must
+// still be rejected — the fix widens the gate to match production, it does
+// not remove it. The error string must name the real reachable radius
+// (derived from hexgrid.CatchmentRadius, not a hardcoded literal that would
 // silently go stale again the next time the radius changes).
-func TestBuildSilverMine_DepositAtRing3StillRejected(t *testing.T) {
+func TestBuildMine_DepositAtRing3StillRejected(t *testing.T) {
 	deposit := hexgrid.Coord{Q: 3, R: 0} // hex distance 3 from (0,0) — one past CatchmentRadius
 	f := setupMineGateFixture(t, &deposit)
 
-	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "silver_mine"})
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine", "hex_q": deposit.Q, "hex_r": deposit.R})
 	if code != http.StatusUnprocessableEntity {
-		t.Fatalf("build silver_mine on ring-3 deposit (outside catchment) = %d: %v, want 422", code, resp)
+		t.Fatalf("build mine on ring-3 deposit (outside catchment) = %d: %v, want 422", code, resp)
 	}
 	errMsg, _ := resp["error"].(string)
 	wantSubstr := fmt.Sprintf("within %d steps", hexgrid.CatchmentRadius)
@@ -214,29 +201,29 @@ func TestBuildSilverMine_DepositAtRing3StillRejected(t *testing.T) {
 	}
 }
 
-// TestBuildSilverMine_Ring2DepositActuallyProduces is acceptance criterion 3 — the
-// proof that this is a reachability fix, not just a gate test: build the mine on the
-// ring-2 deposit, place a gubbe on that exact hex for silver, run
+// TestBuildMine_Ring2DepositActuallyProduces is acceptance criterion 3 — the
+// proof that this is a reachability fix, not just a gate test: build the mine
+// on the ring-2 deposit, place a gubbe on that exact hex for silver, run
 // economy.RecomputeProduction, and check the settlement's silver rate is > 0.
 //
 // The build queue itself (build_queue -> buildings on completion) is a separate
 // worker concern outside this slice's scope, so the queued build's completion is
 // simulated directly (INSERT INTO buildings) — Slice A only claims the GATE is
 // fixed; this test proves that once built, the ring-2 mine is not a dead end.
-func TestBuildSilverMine_Ring2DepositActuallyProduces(t *testing.T) {
+func TestBuildMine_Ring2DepositActuallyProduces(t *testing.T) {
 	deposit := hexgrid.Coord{Q: 2, R: 0}
 	f := setupMineGateFixture(t, &deposit)
 	ctx := context.Background()
 
-	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "silver_mine"})
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine", "hex_q": deposit.Q, "hex_r": deposit.R})
 	if code != http.StatusCreated {
-		t.Fatalf("build silver_mine on ring-2 deposit = %d: %v, want 201", code, resp)
+		t.Fatalf("build mine on ring-2 deposit = %d: %v, want 201", code, resp)
 	}
 
 	// Simulate the build queue completing (out of scope for this slice).
 	if _, err := f.pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'silver_mine', 1)`,
-		f.settlementID,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'mine', 1, $2, $3)`,
+		f.settlementID, deposit.Q, deposit.R,
 	); err != nil {
 		t.Fatalf("simulate build completion: %v", err)
 	}
@@ -263,42 +250,23 @@ func TestBuildSilverMine_Ring2DepositActuallyProduces(t *testing.T) {
 	}
 }
 
-// TestBuildMine_SilverOnlyCatchmentHintsSilverMine reproduces player_reports
-// 2026-09-07 (tick 1009/1012, Phaistos): a Wanax with ONLY a silver deposit in
-// catchment tried "mine" (the copper/tin building), got "no copper or tin
-// deposit... Build it on or in reach of the ore", and reported not
-// understanding how to mine silver at all — the message named what was
-// missing but never named the building that would actually work.
-func TestBuildMine_SilverOnlyCatchmentHintsSilverMine(t *testing.T) {
+// TestBuildMine_NoDepositAtChosenHexRejected is the hex-bound acceptance
+// criterion 4 (megaron_plan_byggnad_pa_hex.md §A): a hex WITHIN the
+// catchment but carrying no ore deposit at all must reject "mine" there,
+// naming the condition (terrain/deposit), even though the settlement DOES
+// have a silver deposit somewhere else in reach — the deposit must be on the
+// CHOSEN hex, not merely "in the catchment".
+func TestBuildMine_NoDepositAtChosenHexRejected(t *testing.T) {
 	deposit := hexgrid.Coord{Q: 1, R: 0}
 	f := setupMineGateFixture(t, &deposit)
 
-	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine"})
+	barren := hexgrid.Coord{Q: -1, R: 0} // plains, within catchment, no deposit
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine", "hex_q": barren.Q, "hex_r": barren.R})
 	if code != http.StatusUnprocessableEntity {
-		t.Fatalf("build mine on silver-only catchment = %d: %v, want 422", code, resp)
+		t.Fatalf("build mine on a deposit-free hex = %d: %v, want 422", code, resp)
 	}
 	errMsg, _ := resp["error"].(string)
-	if !strings.Contains(errMsg, "no copper or tin deposit") {
-		t.Fatalf("error = %q, want it to still name the missing copper/tin deposit", errMsg)
-	}
-	if !strings.Contains(errMsg, "silver_mine") {
-		t.Errorf("error = %q, want it to point at silver_mine since a silver deposit IS in reach", errMsg)
-	}
-}
-
-// TestBuildMine_NoDepositAtAllGivesNoSilverHint is the negative case: when
-// there is no ore of any kind in catchment, the error must not mention
-// silver_mine — a hint pointing at a building that would ALSO fail is worse
-// than no hint.
-func TestBuildMine_NoDepositAtAllGivesNoSilverHint(t *testing.T) {
-	f := setupMineGateFixture(t, nil)
-
-	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "mine"})
-	if code != http.StatusUnprocessableEntity {
-		t.Fatalf("build mine with no deposit at all = %d: %v, want 422", code, resp)
-	}
-	errMsg, _ := resp["error"].(string)
-	if strings.Contains(errMsg, "silver_mine") {
-		t.Errorf("error = %q, must not suggest silver_mine when no silver deposit is in reach either", errMsg)
+	if !strings.Contains(errMsg, "terrain/deposit") {
+		t.Errorf("error = %q, want it to name the terrain/deposit condition", errMsg)
 	}
 }

@@ -43,7 +43,10 @@ function hexCenterPx(dq, dr) {
   };
 }
 
-function terrainLabel(t) {
+// Exported: the Construct flow's hex picker (ui/drawers/city.js) reuses this
+// for its own option labels ("(3,-1) Plains — build") instead of a second
+// copy of the same terrain-string formatting.
+export function terrainLabel(t) {
   return (t || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 

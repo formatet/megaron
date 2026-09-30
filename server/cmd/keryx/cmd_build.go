@@ -10,9 +10,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// parseHexFlag parses "--hex q,r" into two ints. Kept separate from the
+// server's own hex validation (catchment/terrain/deposit) — this is only the
+// wire-format parse, everything else is the server's call and its error
+// comes back verbatim (megaron_plan_byggnad_pa_hex.md §A2).
+func parseHexFlag(s string) (q, r int, err error) {
+	parts := strings.SplitN(s, ",", 2)
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("--hex wants \"q,r\", got %q", s)
+	}
+	q, err = strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return 0, 0, fmt.Errorf("--hex: invalid q %q", parts[0])
+	}
+	r, err = strconv.Atoi(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return 0, 0, fmt.Errorf("--hex: invalid r %q", parts[1])
+	}
+	return q, r, nil
+}
+
 func buildCmd() *cobra.Command {
 	var buildingType string
 	var provinceID string
+	var hexFlag string
 	var list bool
 	var queue bool
 
@@ -20,9 +41,9 @@ func buildCmd() *cobra.Command {
 		Use:   "build",
 		Short: "Start construction of a building (--list for options, --queue to see what's queued; defaults to capital)",
 		Example: `  keryx build --list
-  keryx build --type farm
+  keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
   keryx build --type harbour          # requires coastal (adjacent sea hex)
-  keryx build --type mine --province <province-id>   # build in a colony
+  keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
   keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
   keryx build --queue                 # see what's already queued, with cancel-build IDs`,
 		Args: rejectPositionalArgs("type"),
@@ -65,6 +86,7 @@ func buildCmd() *cobra.Command {
 					Purpose          string                        `json:"purpose"`
 					MaxLevel         int                           `json:"max_level"`
 					UpgradeCosts     map[string]map[string]float64 `json:"upgrade_costs"`
+					HexBound         bool                          `json:"hex_bound"`
 				}
 				if err := json.Unmarshal(data, &catalogue); err != nil {
 					return err
@@ -90,6 +112,12 @@ func buildCmd() *cobra.Command {
 
 					// Format gate requirements
 					reqs := []string{}
+					if b.HexBound {
+						// megaron_plan_byggnad_pa_hex.md §A: farm/mine/lumbermill/
+						// stonequarry are placed on ONE catchment hex and only affect
+						// that hex — the player must pick one with --hex q,r.
+						reqs = append(reqs, "hex-bound — pick with --hex q,r")
+					}
 					if b.RequiresCoastal {
 						reqs = append(reqs, "coastal (adj sea)")
 					}
@@ -141,8 +169,17 @@ func buildCmd() *cobra.Command {
 				}
 				prov = resolved
 			}
+			body := map[string]any{"building_type": buildingType}
+			if hexFlag != "" {
+				q, r, perr := parseHexFlag(hexFlag)
+				if perr != nil {
+					return perr
+				}
+				body["hex_q"] = q
+				body["hex_r"] = r
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build", cfg.WorldID, prov)
-			data, err := c.post(path, map[string]string{"building_type": buildingType})
+			data, err := c.post(path, body)
 			if err != nil {
 				return err
 			}
@@ -150,7 +187,11 @@ func buildCmd() *cobra.Command {
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Construction queued: %s\n", buildingType)
+			if hexFlag != "" {
+				fmt.Printf("Construction queued: %s @ (%s)\n", buildingType, hexFlag)
+			} else {
+				fmt.Printf("Construction queued: %s\n", buildingType)
+			}
 			return nil
 		},
 	}
@@ -158,6 +199,7 @@ func buildCmd() *cobra.Command {
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
 	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
+	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment hex \"q,r\" — required for hex-bound types (farm, mine, lumbermill, stonequarry)")
 	cmd.Flags().BoolVar(&list, "list", false, "show the building catalogue and exit")
 	cmd.Flags().BoolVar(&queue, "queue", false, "show this settlement's build queue (with queue IDs for cancel-build) and exit")
 	return cmd

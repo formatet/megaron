@@ -50,12 +50,18 @@ func TestBuildingCatalogueStoneCost_MatchesPlannedFigure(t *testing.T) {
 	// 750 → 104,168 (mig 136, sten ÷7,2) → 410,396 (S4, dagsverkeskalibreringen
 	// 2026-08-27: byggnadskatalogen satt mot galärankaret på 30 dagsverken, se
 	// province.BuildingSpecs). Läses live ur katalogen ovan, inte härledd här.
+	// → 381,825 (mig 154, 2026-09-28: silver_mine utgår ur katalogen —
+	// megaron_plan_byggnad_pa_hex.md §A, beslut 2 — samma kostnad/byggtid
+	// som mine, alltså en ren minskning med EN byggnads stenkostnad 28,571,
+	// ingen balansändring i sig. megaron_plan_sten_stock.md §1:s citerade
+	// tal är ANNU inte uppdaterat till detta — flaggat, inte ändrat här
+	// (vault är utanför den här slicens scope).
 	//
 	// Tolerans i stället för det gamla strikta ==: buildingCatalogueStoneCost
 	// summerar en Go-map i icke-deterministisk iterationsordning, och
 	// kostnaderna är sedan mig 136 inte längre exakta multiplar som adderas
 	// bit-identiskt oavsett ordning — mätt drift ~1e-13, väl inom gränsen.
-	const want = 410.396
+	const want = 381.825
 	got := buildingCatalogueStoneCost()
 	if math.Abs(got-want) > 1e-6 {
 		t.Fatalf("building catalogue stone cost = %v, want %v (megaron_plan_sten_stock.md §1); "+

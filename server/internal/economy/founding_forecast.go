@@ -33,9 +33,11 @@ import (
 // through economy.GrainBalance before asserting parity. The acceptance test
 // in api/handlers/founding_forecast_parity_test.go does exactly that.
 //
-// buildingLevels is the hypothetical building set the founding would seed —
-// {"farm": 1} for a metropolis (createMetropolis's starter farm), empty for
-// a colony (builds its own farm later, unit_arrival.go foundColony). reachable
+// hasFarm mirrors whether the founding would seed a starter farm —
+// true for a metropolis (createMetropolis's Demeter's-gift farm), false for
+// a colony (builds its own farm later, unit_arrival.go foundColony). When
+// true, ChooseFarmHex picks the SAME hex a real founding would (§A of the
+// plan: "prognosen och verkligt grundande måste välja samma hex"). reachable
 // is LoadHexProductionOptionsAt's FOW gate: pass the set of hexes the
 // requesting Wanax actually knows so an unseen hex never leaks into the
 // forecast (api/handlers/world.go ColonizePreview is FOW-critical); nil runs
@@ -53,8 +55,18 @@ import (
 // livestockSettledThisTick guard forces livestockStock=0 for that very FIRST
 // recompute too (recompute.go) — verified against the code 2026-08-26, this
 // is not a stale simplification, it matches the real first-tick behaviour.
-func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, buildingLevels map[string]int, reachable map[hexgrid.Coord]bool, pop int) (prodPerTick, netPerTick float64, err error) {
-	hexOptions, err := LoadHexProductionOptionsAt(ctx, tx, worldID, center, buildingLevels, reachable)
+func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, hasFarm bool, reachable map[hexgrid.Coord]bool, pop int) (prodPerTick, netPerTick float64, err error) {
+	bs := BuildingSet{}
+	if hasFarm {
+		farmHex, ok, chooseErr := ChooseFarmHex(ctx, tx, worldID, center, reachable)
+		if chooseErr != nil {
+			return 0, 0, fmt.Errorf("founding grain net per tick: %w", chooseErr)
+		}
+		if ok {
+			bs = BuildingSet{Hex: map[hexgrid.Coord]map[string]int{farmHex: {"farm": 1}}}
+		}
+	}
+	hexOptions, err := LoadHexProductionOptionsAt(ctx, tx, worldID, center, bs, reachable)
 	if err != nil {
 		return 0, 0, fmt.Errorf("founding grain net per tick: %w", err)
 	}

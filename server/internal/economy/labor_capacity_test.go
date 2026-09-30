@@ -113,13 +113,14 @@ func TestWorkplaceSlots_LevelsIncrease(t *testing.T) {
 	}
 }
 
-// TestWorkplaceSlots_MineAndSilverMineMatchTaxonomy — regression for the exact
+// TestWorkplaceSlots_MineMatchesTaxonomy — regression for the exact
 // bug this file's history records: an earlier version of this table
-// extrapolated 1/2/4 for Mine/Silver mine instead of reading
-// Temenos_varutaxonomi_sol.md §8.2's own 2/4/6. Pinned so it cannot silently
-// drift back.
-func TestWorkplaceSlots_MineAndSilverMineMatchTaxonomy(t *testing.T) {
-	for _, bt := range []string{"mine", "silver_mine"} {
+// extrapolated 1/2/4 for Mine (then Mine/Silver mine, silver_mine retired
+// 2026-09-28 — a mine on a silver hex now produces silver) instead of
+// reading Temenos_varutaxonomi_sol.md §8.2's own 2/4/6. Pinned so it cannot
+// silently drift back.
+func TestWorkplaceSlots_MineMatchesTaxonomy(t *testing.T) {
+	for _, bt := range []string{"mine"} {
 		want := [3]int{2, 4, 6}
 		for level := 1; level <= 3; level++ {
 			if got := WorkplaceSlots(bt, level); got != want[level-1] {

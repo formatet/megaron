@@ -35,16 +35,18 @@ func TestRecomputeProduction_BuildingLevelIncreasesYield_HexGated(t *testing.T) 
 
 	rateAtLevel := func(level int) (rate float64, cap int) {
 		settlementID := seedFullRingFixture(t, tick, 500, "forest_cedar")
+		hex := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)[0]
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'lumbermill', $2)`,
-			settlementID, level,
+			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'lumbermill', $2, $3, $4)`,
+			settlementID, level, hex.Q, hex.R,
 		); err != nil {
 			t.Fatalf("seed lumbermill level %d: %v", level, err)
 		}
 		// hexCapacityRule{"cedar",1,2,"lumbermill"}.capWithBuilding=2, plus
 		// this level's own WorkplaceSlots on top (capOf in placement_yield.go).
+		// The lumbermill stands on THIS hex (megaron_plan_byggnad_pa_hex.md §A) —
+		// staffing must target the same one it raised the cap on.
 		cap = 2 + WorkplaceSlots("lumbermill", level)
-		hex := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)[0]
 		for i := 0; i < cap; i++ {
 			placeHexGubbe(t, pool, settlementID, i+1, hex, "cedar")
 		}
@@ -100,8 +102,11 @@ func TestRecomputeProduction_BuildingLevelIncreasesYield_BuildingGated(t *testin
 
 	rateAtLevel := func(level int) (rate float64, cap int) {
 		settlementID := seedFullRingFixture(t, tick, 500, "plains")
+		// stonequarry's stone production_rule is terrain-free (BuildingOption
+		// path, see the test's own doc comment) — which hex it stands on
+		// doesn't affect this test; (1,0) just satisfies the schema.
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'stonequarry', $2)`,
+			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', $2, 1, 0)`,
 			settlementID, level,
 		); err != nil {
 			t.Fatalf("seed stonequarry level %d: %v", level, err)

@@ -82,6 +82,20 @@ const NearjordGrainPerTick = 0.5
 // array's length too (WorkplaceSlots silently returns 0 for any level past it,
 // rather than crashing — but a raised level cap would then grant no extra
 // slots until this table is widened).
+// HexBoundBuildingTypes mirrors province.HexBoundBuildings — economy may not
+// import province (G1: economy(→clock,events,gossip,hexgrid) only), so this
+// is its own copy, the same shape as workplaceSlotTable's pre-existing
+// economy-side mirror pattern. A type here only affects the ONE catchment
+// hex it stands on (its rate AND its cap); every other production building
+// stays settlement-wide. Mirror test: api/handlers/hex_bound_mirror_test.go.
+// Add a type here → add it to province.HexBoundBuildings too.
+var HexBoundBuildingTypes = map[string]bool{
+	"farm":        true,
+	"mine":        true,
+	"lumbermill":  true,
+	"stonequarry": true,
+}
+
 var workplaceSlotTable = map[string][4]int{
 	// index 0 unused (level is always ≥1); index = level.
 	"farm":        {0, 2, 4, 6},
@@ -90,7 +104,6 @@ var workplaceSlotTable = map[string][4]int{
 	"harbour":     {0, 2, 4, 6},
 	"shipyard":    {0, 3, 6, 10},
 	"mine":        {0, 2, 4, 6},
-	"silver_mine": {0, 2, 4, 6},
 	"olive_press": {0, 1, 2, 4},
 	"winery":      {0, 1, 2, 4},
 	"market":      {0, 1, 2, 4},
@@ -120,8 +133,17 @@ func WorkplaceSlots(buildingType string, level int) int {
 // the same catchment-hex query duplicated at 13 call sites from not doing this
 // the first time.
 func LoadWorkplaceSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]int, error) {
+	// DISTINCT is on (good_key, b.id), not (good_key, building_type, level):
+	// a building type can match more than one production_rules row (e.g.
+	// several terrain variants) and DISTINCT on the OLD triple collapsed
+	// those duplicates correctly — but it would ALSO collapse two real,
+	// same-level buildings of a hex-bound type (two level-1 farms on
+	// different hexes) down to one row, losing one farm's slots entirely.
+	// Keying DISTINCT on the building's own id keeps the duplicate-row
+	// collapse for the first case while still summing each building
+	// separately for the second (megaron_plan_byggnad_pa_hex.md §A SQL audit).
 	rows, err := tx.Query(ctx,
-		`SELECT DISTINCT pr.good_key, b.building_type, b.level
+		`SELECT DISTINCT pr.good_key, b.id, b.building_type, b.level
 		 FROM production_rules pr
 		 JOIN buildings b ON b.settlement_id = $1 AND b.building_type = pr.building_type`,
 		settlementID,
@@ -133,8 +155,9 @@ func LoadWorkplaceSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) (map
 	slots := make(map[string]int)
 	for rows.Next() {
 		var key, buildingType string
+		var buildingID uuid.UUID
 		var level int
-		if err := rows.Scan(&key, &buildingType, &level); err != nil {
+		if err := rows.Scan(&key, &buildingID, &buildingType, &level); err != nil {
 			return nil, fmt.Errorf("load workplace slots: scan: %w", err)
 		}
 		slots[key] += WorkplaceSlots(buildingType, level)
@@ -212,14 +235,23 @@ var plainsCapacityRules = []hexCapacityRule{
 var depositCapacityTable = map[string]hexCapacityRule{
 	"copper": {"copper", 1, 3, "mine"},
 	"tin":    {"tin", 1, 3, "mine"},
-	"silver": {"silver", 1, 3, "silver_mine"},
+	"silver": {"silver", 1, 3, "mine"}, // silver_mine retired 2026-09-28 — mine on a silver hex
 }
 
 // LoadHexCapacity returns, per good_key, the summed absolute worker slots the
 // settlement's catchment hexes can hold for that good — hexCapacityRule's
-// per-hex cap (with or without the relevant building, checked once for the
-// whole settlement) times how many catchment hexes match. Mirrors
-// LoadWorkplaceSlots' shape (P2) applied to hexes instead of buildings.
+// per-hex cap times how many catchment hexes match. Mirrors LoadWorkplaceSlots'
+// shape (P2) applied to hexes instead of buildings.
+//
+// Whether "with building" applies is now scoped per HexBoundBuildingTypes'
+// membership (megaron_plan_byggnad_pa_hex.md §A): a hex-bound relevant
+// building (farm/mine/lumbermill/stonequarry) only raises the cap of the ONE
+// hex it actually stands on — checked against builtAtHex below, keyed by
+// that building's own (hex_q, hex_r). Any other relevant building (harbour)
+// stays settlement-wide, exactly as before this slice — checked against
+// builtCitywide. Before this slice every relevant building was
+// settlement-wide, which is exactly the "en farm lyfte hela catchmenten" bug
+// the plan exists to close.
 func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]int, error) {
 	var worldID uuid.UUID
 	var q, r int
@@ -232,28 +264,44 @@ func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[st
 		return nil, fmt.Errorf("load hex capacity: settlement coords: %w", err)
 	}
 
-	builtTypes := make(map[string]bool)
-	brows, err := tx.Query(ctx, `SELECT DISTINCT building_type FROM buildings WHERE settlement_id = $1`, settlementID)
+	builtAtHex := make(map[hexgrid.Coord]map[string]bool)
+	builtCitywide := make(map[string]bool)
+	brows, err := tx.Query(ctx, `SELECT building_type, hex_q, hex_r FROM buildings WHERE settlement_id = $1`, settlementID)
 	if err != nil {
 		return nil, fmt.Errorf("load hex capacity: buildings: %w", err)
 	}
 	for brows.Next() {
 		var bt string
-		if err := brows.Scan(&bt); err != nil {
+		var hq, hr *int
+		if err := brows.Scan(&bt, &hq, &hr); err != nil {
 			brows.Close()
 			return nil, fmt.Errorf("load hex capacity: scan building: %w", err)
 		}
-		builtTypes[bt] = true
+		if hq != nil && hr != nil {
+			c := hexgrid.Coord{Q: *hq, R: *hr}
+			if builtAtHex[c] == nil {
+				builtAtHex[c] = make(map[string]bool)
+			}
+			builtAtHex[c][bt] = true
+		} else {
+			builtCitywide[bt] = true
+		}
 	}
 	brows.Close()
 	if err := brows.Err(); err != nil {
 		return nil, fmt.Errorf("load hex capacity: building rows: %w", err)
 	}
-	hasBuilding := func(rule hexCapacityRule) bool {
-		return rule.relevantBuilding != "" && builtTypes[rule.relevantBuilding]
+	hasBuildingAt := func(rule hexCapacityRule, hex hexgrid.Coord) bool {
+		if rule.relevantBuilding == "" {
+			return false
+		}
+		if HexBoundBuildingTypes[rule.relevantBuilding] {
+			return builtAtHex[hex][rule.relevantBuilding]
+		}
+		return builtCitywide[rule.relevantBuilding]
 	}
-	capOf := func(rule hexCapacityRule) int {
-		if hasBuilding(rule) {
+	capOf := func(rule hexCapacityRule, hex hexgrid.Coord) int {
+		if hasBuildingAt(rule, hex) {
 			return rule.capWithBuilding
 		}
 		return rule.capNoBuilding
@@ -261,7 +309,7 @@ func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[st
 
 	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
 	rows, err := tx.Query(ctx,
-		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false),
+		`SELECT mt.q, mt.r, mt.terrain, COALESCE(mt.copper_deposit, false),
 		        COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
 		 FROM unnest($2::int[], $3::int[]) AS catchment(q, r)
 		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r`,
@@ -274,29 +322,31 @@ func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[st
 
 	slots := make(map[string]int)
 	for rows.Next() {
+		var hq, hr int
 		var terrain string
 		var copperDep, tinDep, silverDep bool
-		if err := rows.Scan(&terrain, &copperDep, &tinDep, &silverDep); err != nil {
+		if err := rows.Scan(&hq, &hr, &terrain, &copperDep, &tinDep, &silverDep); err != nil {
 			return nil, fmt.Errorf("load hex capacity: scan tile: %w", err)
 		}
+		hex := hexgrid.Coord{Q: hq, R: hr}
 		if terrain == "plains" {
 			for _, rule := range plainsCapacityRules {
-				slots[rule.goodKey] += capOf(rule)
+				slots[rule.goodKey] += capOf(rule, hex)
 			}
 		} else if rule, ok := terrainCapacityTable[terrain]; ok {
-			slots[rule.goodKey] += capOf(rule)
+			slots[rule.goodKey] += capOf(rule, hex)
 		}
 		if copperDep {
 			rule := depositCapacityTable["copper"]
-			slots[rule.goodKey] += capOf(rule)
+			slots[rule.goodKey] += capOf(rule, hex)
 		}
 		if tinDep {
 			rule := depositCapacityTable["tin"]
-			slots[rule.goodKey] += capOf(rule)
+			slots[rule.goodKey] += capOf(rule, hex)
 		}
 		if silverDep {
 			rule := depositCapacityTable["silver"]
-			slots[rule.goodKey] += capOf(rule)
+			slots[rule.goodKey] += capOf(rule, hex)
 		}
 	}
 	if err := rows.Err(); err != nil {
