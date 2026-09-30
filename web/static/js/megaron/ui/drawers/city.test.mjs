@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loyaltyLogRowsHTML, buildingOptionsHTML, hexBuildOptionsHTML } from './city.js';
+import { loyaltyLogRowsHTML, buildingOptionsHTML, buildingEffectsHTML, hexBuildOptionsHTML } from './city.js';
 
 // megaron_plan_byggkatalogen_i_webben.md: the Construct dropdown used to be
 // 14 hardcoded <option> rows (silver_mine missing entirely, every cost
@@ -69,6 +69,28 @@ test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue en
 test('BK7: an entry with no gates renders no "requires" clause', () => {
   const html = buildingOptionsHTML([{ type: 'farm', costs: { timber: 1, stone: 9 }, purpose: 'Raises grain' }]);
   assert.doesNotMatch(html, /requires/);
+});
+
+// buildingEffectsHTML: the Construct info panel — purpose + each effect's
+// server-rendered text on its own line (megaron_plan_byggnad_pa_hex.md §B).
+// A native <option> can't show this, so it fills a separate panel instead.
+test('BE1: purpose and each effect text render as their own line, verbatim', () => {
+  const html = buildingEffectsHTML({
+    type: 'farm', purpose: 'Farms one catchment hex',
+    effects: [{ text: 'grain on plains: 4 × 1.00/tick → L1 8 × 2.70 · L2 10 × 2.70 · L3 12 × 2.70' }],
+  });
+  assert.match(html, /Farms one catchment hex/);
+  assert.match(html, /grain on plains: 4 × 1\.00\/tick → L1 8 × 2\.70 · L2 10 × 2\.70 · L3 12 × 2\.70/);
+});
+
+test('BE2: no entry (catalogue not loaded / type not found) renders nothing', () => {
+  assert.equal(buildingEffectsHTML(null), '');
+  assert.equal(buildingEffectsHTML(undefined), '');
+});
+
+test('BE3: an entry with empty effects (e.g. market, stonequarry workplace-only) renders just the purpose', () => {
+  const html = buildingEffectsHTML({ type: 'market', purpose: 'A place to trade', effects: [] });
+  assert.match(html, /A place to trade/);
 });
 
 // hexBuildOptionsHTML: the Construct flow's hex picker for a hex-bound type

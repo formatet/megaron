@@ -1403,6 +1403,13 @@ body:has(.auth-page) main {
    dim it instead of --safe's green so a wasted allocation doesn't look like growth. */
 .goods-mini td.goods-atcap { color: var(--text-dim); }
 
+/* Construct info panel (megaron_plan_byggnad_pa_hex.md §B) — purpose + the
+   server-rendered effect text lines for the selected building type. Each
+   line is its own row since a native <option> can't hold more than one. */
+.build-info { margin: .3rem 0 .5rem; font-size: var(--fs-sm); }
+.build-purpose { color: var(--text); margin-bottom: .15rem; }
+.build-effect-line { color: var(--text-dim); font-family: var(--mono); font-size: var(--fs-xs); line-height: 1.4; }
+
 /* Gubbe placement grid (P5) — the 19-hex catchment raster in the city
    drawer. Every colour below is one of the tokens declared in :root above,
    no new hex codes (this widget is DOM/SVG, not the canvas renderer, so it

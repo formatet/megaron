@@ -500,7 +500,7 @@ export async function slaughterLivestock(provinceID) {
 // ── City build action ─────────────────────────────────────────────────────
 const _BLD_LBL = {
   farm:'Farm', barracks:'Barracks', mine:'Mine', lumbermill:'Lumbermill',
-  stonequarry:'Stone Quarry', market:'Marketplace', wall:'Wall', tower:'Tower',
+  stonequarry:'Stone Quarry', market:'Market', wall:'Wall', tower:'Tower',
   harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
   temple:'Temple',
@@ -552,9 +552,11 @@ export async function startBuild() {
 export async function onCityBuildTypeChange() {
   const typeSel = document.getElementById('city-build-select');
   const hexSel = document.getElementById('city-build-hex');
+  const infoEl = document.getElementById('city-build-info');
   if (!typeSel || !hexSel) return;
   const catalogue = await getBuildingCatalogue();
   const entry = (catalogue || []).find(e => e.type === typeSel.value);
+  if (infoEl) infoEl.innerHTML = buildingEffectsHTML(entry);
   if (!entry || !entry.hex_bound) {
     hexSel.style.display = 'none';
     hexSel.innerHTML = '';
@@ -679,6 +681,21 @@ export function buildingOptionsHTML(catalogue) {
   }).join('');
 }
 
+// buildingEffectsHTML: the Construct info panel for one catalogue entry —
+// purpose, then each effect's server-rendered text on its own line
+// (megaron_plan_byggnad_pa_hex.md §B). A native <option> can only ever be
+// one line, so this fills #city-build-info instead, wired by
+// onCityBuildTypeChange. Text is printed verbatim — never recomputed here.
+export function buildingEffectsHTML(entry) {
+  if (!entry) return '';
+  const lines = [];
+  if (entry.purpose) lines.push(`<div class="build-purpose">${entry.purpose}</div>`);
+  for (const e of entry.effects || []) {
+    lines.push(`<div class="build-effect-line">${e.text}</div>`);
+  }
+  return lines.join('');
+}
+
 // hexBuildOptionsHTML: the Construct flow's hex picker for a hex-bound type
 // (farm/mine/lumbermill/stonequarry, megaron_plan_byggnad_pa_hex.md §A2).
 // Pure string builder over one placement-options response — no DOM/fetch,
@@ -755,6 +772,29 @@ export async function cancelBuild(provinceID, queueID) {
   }
 }
 
+// fetchBuiltBuildingEffects: GET .../buildings — every built row with its
+// own effect text and current level (megaron_plan_byggnad_pa_hex.md §B).
+// Best-effort: any fetch/decode error yields [] so the Built list still
+// renders (without effect lines) rather than failing the whole refresh.
+async function fetchBuiltBuildingEffects(provinceID) {
+  try {
+    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/buildings`);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch (e) {
+    console.error('fetchBuiltBuildingEffects', e);
+    return [];
+  }
+}
+
+// builtEffectKey: identifies a built row the same way the buildings table's
+// own rows do — type + hex (null for a non-hex-bound/workplace building) —
+// so a /buildings effects row can be matched to a /provinces/{id} buildings
+// row without a shared ID between the two payloads.
+function builtEffectKey(type, hexQ, hexR) {
+  return `${type}|${hexQ ?? ''}|${hexR ?? ''}`;
+}
+
 // Re-fetch province data and update only the buildings/queue section of the city drawer.
 async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
@@ -765,13 +805,28 @@ async function refreshCityBuildings(provinceID) {
     const pd = (await res.json()).settlement;
     if (!pd) return;
     const blds = pd.buildings || [], bq = pd.build_queue || [], tu = pd.training_units || [];
+    // Effect text lines for each built building (megaron_plan_byggnad_pa_hex.md
+    // §B), keyed the same way as the /provinces/{id} buildings rows above so
+    // the two payloads (this one has no effects; GET .../buildings has no
+    // build_queue/training) can be joined by type+hex.
+    const builtEffectsByKey = new Map(
+      (await fetchBuiltBuildingEffects(provinceID)).map(b =>
+        [builtEffectKey(b.type, b.hex_q, b.hex_r), b.effects || []])
+    );
     // hex_q/hex_r are set only for hex-bound buildings (farm/mine/lumbermill/
     // stonequarry) — null for a city building (megaron_plan_byggnad_pa_hex.md
     // §A). Two of the same type at different hexes level up independently,
     // so the hex is the only way to tell them apart in this list.
     let h2 = blds.length
       ? `<div class="dsec-title">Built</div><table class="goods-mini">${
-          blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td></tr>`).join('')
+          blds.map(b => {
+            const row = `<tr><td>${_BLD_LBL[b.type]||b.type}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td></tr>`;
+            const effects = builtEffectsByKey.get(builtEffectKey(b.type, b.hex_q, b.hex_r)) || [];
+            const effRow = effects.length
+              ? `<tr><td colspan="2">${effects.map(e => `<div class="build-effect-line">${e.text}</div>`).join('')}</td></tr>`
+              : '';
+            return row + effRow;
+          }).join('')
         }</table>`
       : '<p class="empty-state">No buildings yet.</p>';
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
@@ -833,6 +888,7 @@ async function refreshCityBuildings(provinceID) {
         ${buildingOptionsHTML(buildingCatalogue)}
       </select>
       <select id="city-build-hex" class="build-select" style="display:none;margin-top:.3rem"></select>
+      <div id="city-build-info" class="build-info"></div>
       <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>`
       : `<p class="empty-state">Could not load the building catalogue — try again.</p>
       <button class="btn-primary btn-small" disabled style="margin-top:.5rem;width:100%">+ Build</button>`;
@@ -841,10 +897,13 @@ async function refreshCityBuildings(provinceID) {
       ${constructHTML}
       <div id="city-build-result" class="action-result"></div>`;
     bldSec.innerHTML = h2;
-    // Restore previous dropdown selection and result message
+    // Restore previous dropdown selection and result message, then (re)fill
+    // the info panel for whichever type ends up selected — including the
+    // very first render, where there is no prevSel yet but the default
+    // <option> still needs its purpose/effects shown.
     const newSel = document.getElementById('city-build-select');
-    if (newSel && prevSel) {
-      newSel.value = prevSel;
+    if (newSel) {
+      if (prevSel) newSel.value = prevSel;
       onCityBuildTypeChange();
     }
   } catch(e) { console.error('refreshCityBuildings', e); }
