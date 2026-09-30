@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """BILD fixture: a city with two farms on two grain hexes and a mine on a
 silver-deposit hex — megaron_plan_byggnad_pa_hex.md §A2's acceptance fixture.
+--effects (default on, §B) also upgrades one farm to L2 through the real
+upgrade verb and, if the catchment has a forest_olive_grove hex, builds a
+lumbermill there — the worked example where timber FALLS as the level
+rises.
 
     tools/acceptance.sh up && tools/acceptance.sh reset
     python3 tools/hexbuildings_fixture.py
@@ -195,20 +199,27 @@ def ensure_afford(settlement_id, need):
                 f"ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = {amount}")
 
 
-def wait_for_builds(settlement_id, expect, timeout=120):
-    """Fast-forwards build_queue.complete_at to now, then polls the real
-    `buildings` row count until the tick worker has finished all `expect`
-    hex-bound builds (or timeout). This simulates elapsed real time; the
-    completion itself still runs through the normal tick worker."""
+def fast_forward_build_queue(settlement_id):
+    """Fast-forwards every queued build for this settlement to 'due now' —
+    both build_queue.complete_at and the worker's actual trigger,
+    scheduled_events.due_tick (events/scheduler.go: the worker fires on
+    due_tick <= worlds.current_tick, not on complete_at). Shared by
+    wait_for_builds (new hex-bound row) and wait_for_level (an upgrade,
+    which updates an existing row instead)."""
     psql(f"UPDATE build_queue SET complete_at = now() - interval '1 minute' "
         f"WHERE settlement_id = '{settlement_id}'")
-    # The worker fires on scheduled_events.due_tick <= worlds.current_tick
-    # (events/scheduler.go), not on build_queue.complete_at — pull the build's
-    # own completion event forward to the current tick as well.
     psql(f"UPDATE scheduled_events se SET due_tick = w.current_tick, process_after = now() - interval '1 minute' "
          f"FROM worlds w WHERE w.id = se.world_id AND se.processed_at IS NULL "
          f"AND se.payload->>'settlement_id' = '{settlement_id}' "
          f"AND se.payload ? 'build_queue_id'")
+
+
+def wait_for_builds(settlement_id, expect, timeout=120):
+    """Fast-forwards the queue (see fast_forward_build_queue), then polls the
+    real `buildings` row count until the tick worker has finished all
+    `expect` hex-bound builds (or timeout). This simulates elapsed real
+    time; the completion itself still runs through the normal tick worker."""
+    fast_forward_build_queue(settlement_id)
     deadline = time.time() + timeout
     while time.time() < deadline:
         n = int(psql(f"SELECT count(*) FROM buildings WHERE settlement_id = '{settlement_id}' "
@@ -219,9 +230,36 @@ def wait_for_builds(settlement_id, expect, timeout=120):
     sys.exit(f"builds did not complete within {timeout}s — check tools/acceptance.sh logs")
 
 
+def wait_for_level(settlement_id, building_type, q, r, expect_level, timeout=120):
+    """Fast-forwards the queue the same way as wait_for_builds, then polls
+    THIS hex-bound building's own level. An upgrade (build the same type on
+    the same hex again) UPSERTs the existing row — combat/build.go's
+    `ON CONFLICT ... DO UPDATE SET level = buildings.level + 1` — so, unlike
+    a brand-new hex-bound building, a row-count check can never see it."""
+    fast_forward_build_queue(settlement_id)
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        lvl = psql(f"SELECT level FROM buildings WHERE settlement_id = '{settlement_id}' "
+                   f"AND building_type = '{building_type}' AND hex_q = {q} AND hex_r = {r}")
+        if lvl and int(lvl) >= expect_level:
+            return
+        time.sleep(3)
+    sys.exit(f"{building_type}@({q},{r}) did not reach L{expect_level} within {timeout}s — "
+             "check tools/acceptance.sh logs")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--name", default="Argyropolis", help="settlement name (silver-themed default)")
+    # --effects (default on): also upgrade one farm to L2 and, if the
+    # catchment has a forest_olive_grove hex, build a lumbermill there — the
+    # BILD fixture for megaron_plan_byggnad_pa_hex.md §B (per-good effect
+    # text at unbuilt/L1/L2/L3, including the olive-grove timber-falling
+    # case). --no-effects skips this and keeps the original two-farm+mine
+    # fixture only.
+    ap.add_argument("--effects", dest="effects", action="store_true", default=True,
+                     help="also upgrade a farm to L2 and build a lumbermill on an olive-grove hex (default: on)")
+    ap.add_argument("--no-effects", dest="effects", action="store_false")
     args = ap.parse_args()
 
     w = world_id()
@@ -261,12 +299,40 @@ def main():
     mine_hex = mine_candidates[0]
     print(f"  building farm #2 @ {farm_hex_2}, mine @ {mine_hex} (silver)")
 
-    ensure_afford(settlement_id, {"timber": 200, "stone": 200})
+    # Topped up high enough to also cover the L2 farm upgrade and a
+    # lumbermill below (--effects) without a second ensure_afford call —
+    # all three costs are two-digit timber/stone, nowhere near 300.
+    ensure_afford(settlement_id, {"timber": 300, "stone": 300})
     build(w, tok, province_id, "farm", *farm_hex_2)
     build(w, tok, province_id, "mine", *mine_hex)
 
     expect = (2 if auto_farm_hex else 1) + 1  # two farms (gift + built) + one mine
     wait_for_builds(settlement_id, expect)
+
+    if args.effects:
+        # Upgrade farm #2 to L2 through the real upgrade verb — building the
+        # same type on the same hex again (megaron_plan_byggnad_pa_hex.md
+        # §B; combat/build.go upserts the existing row's level instead of
+        # inserting a new one).
+        print(f"  upgrading farm @ {farm_hex_2} to L2")
+        build(w, tok, province_id, "farm", *farm_hex_2)
+        wait_for_level(settlement_id, "farm", farm_hex_2[0], farm_hex_2[1], 2)
+
+        # Lumbermill on a forest_olive_grove hex, if this catchment has one
+        # — the worked BILD example where timber FALLS as the level rises
+        # (megaron_plan_byggnad_pa_hex.md §B acceptance 3). Only reachable
+        # states: no raw INSERT, and skip cleanly if this spawn has none.
+        opts2 = placement_options(w, tok, province_id)
+        hex_terrain = {(h["hex_q"], h["hex_r"]): h.get("terrain") for h in opts2.get("hexes", [])}
+        valid_lumbermill = {(h["q"], h["r"]) for h in opts2.get("valid_hexes_for_building", {}).get("lumbermill", [])}
+        olive_hex = next((c for c in valid_lumbermill if hex_terrain.get(c) == "forest_olive_grove"), None)
+        if olive_hex:
+            print(f"  building lumbermill @ {olive_hex} (forest_olive_grove)")
+            build(w, tok, province_id, "lumbermill", *olive_hex)
+            wait_for_level(settlement_id, "lumbermill", olive_hex[0], olive_hex[1], 1)
+            print(f"  lumbermill hex: {olive_hex}")
+        else:
+            print("  no olive grove in catchment")
 
     final = get_province(w, tok, province_id)["settlement"]
     print()
