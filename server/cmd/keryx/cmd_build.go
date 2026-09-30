@@ -87,12 +87,6 @@ func buildCmd() *cobra.Command {
 					MaxLevel         int                           `json:"max_level"`
 					UpgradeCosts     map[string]map[string]float64 `json:"upgrade_costs"`
 					HexBound         bool                          `json:"hex_bound"`
-					// Effects' Text lines are the server's own rendering
-					// (megaron_plan_byggnad_pa_hex.md §B) — printed verbatim,
-					// never recomputed here.
-					Effects []struct {
-						Text string `json:"text"`
-					} `json:"effects"`
 				}
 				if err := json.Unmarshal(data, &catalogue); err != nil {
 					return err
@@ -161,9 +155,6 @@ func buildCmd() *cobra.Command {
 
 					fmt.Printf("%-14s  %-28s  %-6d  %-22s  %-26s  %s\n",
 						b.Type, costStr, b.DurationGameDays, lvlStr, reqStr, b.Purpose)
-					for _, e := range b.Effects {
-						fmt.Printf("                  %s\n", e.Text)
-					}
 				}
 				return nil
 			}
