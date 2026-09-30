@@ -82,13 +82,26 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				fmt.Println("  (no scouted catchment hexes yet)")
 			}
 			for _, h := range opts.Hexes {
+				// hex-bound production building standing on THIS hex (farm/mine/
+				// lumbermill/stonequarry, megaron_plan_byggnad_pa_hex.md §A) —
+				// printed once per hex, on its first line, so a player sees at a
+				// glance which hex a building is on without cross-referencing
+				// `status`'s flat Buildings list.
+				bldSuffix := ""
+				if h.Building != nil {
+					if h.Terrain != "" {
+						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d) %s]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR, h.Terrain)
+					} else {
+						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d)]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR)
+					}
+				}
 				if len(h.Goods) == 0 {
-					fmt.Printf("  #%-3d %-14s (no producible good)\n", h.HexOrdinal, h.Terrain)
+					fmt.Printf("  #%-3d %-14s (no producible good)%s\n", h.HexOrdinal, h.Terrain, bldSuffix)
 					continue
 				}
 				for i, g := range h.Goods {
 					if i == 0 {
-						fmt.Printf("  #%-3d %-14s %s%s\n", h.HexOrdinal, h.Terrain, goodCell(g), foodMarker(g))
+						fmt.Printf("  #%-3d %-14s %s%s%s\n", h.HexOrdinal, h.Terrain, goodCell(g), foodMarker(g), bldSuffix)
 					} else {
 						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), foodMarker(g))
 					}

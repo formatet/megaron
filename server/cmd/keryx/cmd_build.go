@@ -169,8 +169,17 @@ func buildCmd() *cobra.Command {
 				}
 				prov = resolved
 			}
+			body := map[string]any{"building_type": buildingType}
+			if hexFlag != "" {
+				q, r, perr := parseHexFlag(hexFlag)
+				if perr != nil {
+					return perr
+				}
+				body["hex_q"] = q
+				body["hex_r"] = r
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build", cfg.WorldID, prov)
-			data, err := c.post(path, map[string]string{"building_type": buildingType})
+			data, err := c.post(path, body)
 			if err != nil {
 				return err
 			}
@@ -178,7 +187,11 @@ func buildCmd() *cobra.Command {
 				printRawJSON(data)
 				return nil
 			}
-			fmt.Printf("Construction queued: %s\n", buildingType)
+			if hexFlag != "" {
+				fmt.Printf("Construction queued: %s @ (%s)\n", buildingType, hexFlag)
+			} else {
+				fmt.Printf("Construction queued: %s\n", buildingType)
+			}
 			return nil
 		},
 	}
@@ -186,6 +199,7 @@ func buildCmd() *cobra.Command {
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
 	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
+	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment hex \"q,r\" — required for hex-bound types (farm, mine, lumbermill, stonequarry)")
 	cmd.Flags().BoolVar(&list, "list", false, "show the building catalogue and exit")
 	cmd.Flags().BoolVar(&queue, "queue", false, "show this settlement's build queue (with queue IDs for cancel-build) and exit")
 	return cmd
