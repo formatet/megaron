@@ -316,8 +316,12 @@ def main():
     if not mine_candidates:
         sys.exit("no server-confirmed buildable silver hex — re-run (spawn is randomised)")
 
-    farm_hex_2 = valid_farm[0]
     mine_hex = mine_candidates[0]
+    # Prefer a farm hex apart from the mine: hexes[].building in
+    # placement-options carries ONE building per hex, so a farm sharing the
+    # mine's hex would hide its own upgrade row (whether two types may share
+    # a hex is an open question for Timothy, 2026-09-30).
+    farm_hex_2 = next((h for h in valid_farm if h != mine_hex), valid_farm[0])
     print(f"  building farm #2 @ {farm_hex_2}, mine @ {mine_hex} (silver)")
 
     # Topped up high enough to also cover the L2 farm upgrade and a
