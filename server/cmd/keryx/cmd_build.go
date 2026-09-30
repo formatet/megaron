@@ -170,6 +170,7 @@ func buildCmd() *cobra.Command {
 				prov = resolved
 			}
 			body := map[string]any{"building_type": buildingType}
+			effectLine := ""
 			if hexFlag != "" {
 				q, r, perr := parseHexFlag(hexFlag)
 				if perr != nil {
@@ -177,6 +178,12 @@ func buildCmd() *cobra.Command {
 				}
 				body["hex_q"] = q
 				body["hex_r"] = r
+				// Read before the POST so a new build shows `effect` and an
+				// upgrade shows `upgrade_effect`. Best-effort: a failed read
+				// never blocks the build.
+				if po, perr := fetchPlacementOptions(c, cfg.WorldID, prov); perr == nil {
+					effectLine = buildEffectLine(po, buildingType, q, r)
+				}
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/build", cfg.WorldID, prov)
 			data, err := c.post(path, body)
@@ -188,6 +195,9 @@ func buildCmd() *cobra.Command {
 				return nil
 			}
 			if hexFlag != "" {
+				if effectLine != "" {
+					fmt.Println(effectLine)
+				}
 				fmt.Printf("Construction queued: %s @ (%s)\n", buildingType, hexFlag)
 			} else {
 				fmt.Printf("Construction queued: %s\n", buildingType)

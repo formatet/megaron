@@ -24,8 +24,17 @@ type placementGood struct {
 // (province.HexBoundBuildings, megaron_plan_byggnad_pa_hex.md §A). Nil when
 // the hex is empty.
 type placementHexBuilding struct {
-	Type  string `json:"type"`
-	Level int    `json:"level"`
+	Type          string `json:"type"`
+	Level         int    `json:"level"`
+	UpgradeEffect string `json:"upgrade_effect,omitempty"` // server-formatted; absent at max level
+}
+
+// placementValidHex is one entry of valid_hexes_for_building[type]; Effect is
+// the server-formatted line (megaron_plan_byggnadsregeln.md) — never computed here.
+type placementValidHex struct {
+	Q      int    `json:"q"`
+	R      int    `json:"r"`
+	Effect string `json:"effect"`
 }
 
 type placementHex struct {
@@ -48,6 +57,25 @@ type placementOptionsResp struct {
 	Buildings   []placementBuilding `json:"buildings"`
 	TotalGubbar int                 `json:"total_gubbar"`
 	PoolSize    int                 `json:"pool_size"`
+
+	ValidHexesForBuilding map[string][]placementValidHex `json:"valid_hexes_for_building"`
+}
+
+// buildEffectLine returns the server's effect text for building `typ` on hex
+// (q,r): upgrade_effect when that type already stands there, else the hex's
+// `effect`. Empty when the server gave none.
+func buildEffectLine(resp *placementOptionsResp, typ string, q, r int) string {
+	for _, h := range resp.Hexes {
+		if h.HexQ == q && h.HexR == r && h.Building != nil && h.Building.Type == typ {
+			return h.Building.UpgradeEffect
+		}
+	}
+	for _, v := range resp.ValidHexesForBuilding[typ] {
+		if v.Q == q && v.R == r {
+			return v.Effect
+		}
+	}
+	return ""
 }
 
 // fetchPlacementOptions calls GET .../placement-options and decodes it.
