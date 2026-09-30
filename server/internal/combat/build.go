@@ -144,6 +144,28 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 		urows.Close()
 	}
+	// Rule-table buildings (byggnadsregeln) have no production_rules rows to
+	// join above: their goods come from the rule table, on the hex built.
+	if economy.IsRuleBuilding(p.BuildingType) {
+		ruleGoods, rerr := economy.RuleBuildingGoods(ctx, tx, p.SettlementID, p.BuildingType, p.HexQ, p.HexR)
+		if rerr == nil {
+			placedGoods := map[string]bool{}
+			if prows, perr := tx.Query(ctx, `SELECT DISTINCT good_key FROM settlement_placement WHERE settlement_id = $1`, p.SettlementID); perr == nil {
+				for prows.Next() {
+					var k string
+					if prows.Scan(&k) == nil {
+						placedGoods[k] = true
+					}
+				}
+				prows.Close()
+			}
+			for _, g := range ruleGoods {
+				if !placedGoods[g] {
+					unlockedGoods = append(unlockedGoods, g)
+				}
+			}
+		}
+	}
 
 	// Update settlement_goods production rates via the central labor-allocation helper.
 	// This DRYs up the rate-UPSERT that was previously duplicated here and in join.go.

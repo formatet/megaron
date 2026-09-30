@@ -10,6 +10,7 @@ package economy
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"formatet/megaron/server/internal/hexgrid"
@@ -125,32 +126,16 @@ func TestHexBuildingCap_TwoFarmsSameCityDifferentHexesLevelIndependently(t *test
 		t.Fatalf("expected both hexA=%v and hexB=%v in catchment options", hexA, hexB)
 	}
 
-	// Grain is Form B's pinned exception (hexGoodCaps forces mult=1 for
-	// grain unconditionally) — its level effect shows up in the CAP instead,
-	// via WorkplaceSlots(level) (megaron_plan_grain_cap.md). hexA: farm L1 →
-	// 6 capWithBuilding + WorkplaceSlots("farm",1)=2 = 8. hexB: farm L3 →
-	// 6 + WorkplaceSlots("farm",3)=6 = 12.
-	if optA.CapPerGood[GoodGrain] != 8 {
-		t.Errorf("hexA (farm L1): grain cap = %d, want 8", optA.CapPerGood[GoodGrain])
+	// Byggnadsregeln: a farm gives its hex +4 places at EVERY level; the level
+	// shows up in the per-gubbe multiplier instead (1 + 0.7 x level).
+	if optA.CapPerGood[GoodGrain] != 8 || optB.CapPerGood[GoodGrain] != 8 {
+		t.Errorf("grain places: hexA=%d hexB=%d, want 8 on both (4 + %d)", optA.CapPerGood[GoodGrain], optB.CapPerGood[GoodGrain], BuildingExtraPlaces)
 	}
-	if optB.CapPerGood[GoodGrain] != 12 {
-		t.Errorf("hexB (farm L3): grain cap = %d, want 12 — the L3 farm's own level must show up on ITS hex", optB.CapPerGood[GoodGrain])
+	if got, want := optA.MultPerGood[GoodGrain], 1.7; math.Abs(got-want) > 1e-9 {
+		t.Errorf("hexA (farm L1): grain mult = %.3f, want %.1f", got, want)
 	}
-	if optA.CapPerGood[GoodGrain] == optB.CapPerGood[GoodGrain] {
-		t.Errorf("hexA and hexB have DIFFERENT farm levels (1 vs 3) but identical grain cap %d — "+
-			"each hex must read its OWN farm's level", optA.CapPerGood[GoodGrain])
-	}
-
-	// LoadWorkplaceSlots must sum BOTH farms' own slots, not collapse them —
-	// the exact regression a DISTINCT-without-building-id would reintroduce.
-	slots, err := LoadWorkplaceSlots(ctx, pool, settlementID)
-	if err != nil {
-		t.Fatalf("LoadWorkplaceSlots: %v", err)
-	}
-	wantSlots := WorkplaceSlots("farm", 1) + WorkplaceSlots("farm", 3)
-	if slots[GoodGrain] != wantSlots {
-		t.Errorf("LoadWorkplaceSlots[grain] = %d, want %d (farm L1 slots + farm L3 slots, summed separately per hex)",
-			slots[GoodGrain], wantSlots)
+	if got, want := optB.MultPerGood[GoodGrain], 3.1; math.Abs(got-want) > 1e-9 {
+		t.Errorf("hexB (farm L3): grain mult = %.3f, want %.1f — the L3 farm's own level must show up on ITS hex", got, want)
 	}
 }
 
@@ -192,9 +177,8 @@ func TestHexBuildingCap_MineOnCopperHexEnablesCopperNotSilver(t *testing.T) {
 	if optCopper == nil {
 		t.Fatalf("expected copper hex %v in catchment options", copperHex)
 	}
-	// depositCapacityTable["copper"]: capNoBuilding=1, capWithBuilding=3 +
-	// WorkplaceSlots("mine",1)=2 → 5 with the mine actually standing here.
+	// Rule table: copper P0 1 + 4 with the mine actually standing here.
 	if optCopper.CapPerGood["copper"] != 5 {
-		t.Errorf("copper hex with its own mine: copper cap = %d, want 5 (3 capWithBuilding + 2 mine L1 slots)", optCopper.CapPerGood["copper"])
+		t.Errorf("copper hex with its own mine: copper cap = %d, want 5 (1 + %d)", optCopper.CapPerGood["copper"], BuildingExtraPlaces)
 	}
 }

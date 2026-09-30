@@ -16,6 +16,13 @@ package economy
 // production_rules rows are the mine rows, which only load when a mine stands
 // on the hex.
 
+import (
+	"context"
+	"fmt"
+
+	"formatet/megaron/server/internal/hexgrid"
+	"github.com/google/uuid"
+)
 
 // BuildingExtraPlaces is how many worker places a hex-bound building adds to its hex.
 const BuildingExtraPlaces = 4
@@ -120,7 +127,6 @@ func hexYield(rate float64, places int, mult float64, placed int) float64 {
 // HexYieldPerWorker is the per-worker output of one option entry (rate * mult).
 func HexYieldPerWorker(rate, mult float64) float64 { return rate * mult }
 
-
 // ruleTerrains lists every terrain hexRules has a row for.
 var ruleTerrains = []string{"plains", "hills", "mountain_limestone", "river_valley", "river_delta",
 	"forest_olive_grove", "forest_cedar", "coastal_sea", "river", "river_ford", "deep_sea"}
@@ -145,4 +151,60 @@ func RuleBuildingGate(buildingType string) (terrains, deposits []string) {
 		}
 	}
 	return terrains, deposits
+}
+
+// RuleBuildingGoods lists the goods the rule table ties buildingType to on the
+// hex it was built on (hexQ/hexR), or — for a city-scope rule building (harbour)
+// — on any hex of the settlement's catchment. Only goods the world has a
+// production row for are listed (the same filter HexBuildEffects applies is not
+// needed here: the list feeds a "staff it" hint, not a number).
+func RuleBuildingGoods(ctx context.Context, tx Tx, settlementID uuid.UUID, buildingType string, hexQ, hexR *int) ([]string, error) {
+	var worldID uuid.UUID
+	var cq, cr int
+	if err := tx.QueryRow(ctx,
+		`SELECT prov.world_id, prov.map_q, prov.map_r FROM settlements s
+		 JOIN provinces prov ON prov.id = s.province_id WHERE s.id = $1`, settlementID,
+	).Scan(&worldID, &cq, &cr); err != nil {
+		return nil, fmt.Errorf("rule building goods: %w", err)
+	}
+	hexes := hexgrid.Ring(hexgrid.Coord{Q: cq, R: cr}, hexgrid.CatchmentRadius)
+	if hexQ != nil && hexR != nil {
+		hexes = []hexgrid.Coord{{Q: *hexQ, R: *hexR}}
+	}
+	qs, rs := hexgrid.QRArrays(hexes)
+	rows, err := tx.Query(ctx,
+		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+		 FROM unnest($2::int[], $3::int[]) AS want(q, r)
+		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = want.q AND mt.r = want.r`,
+		worldID, qs, rs)
+	if err != nil {
+		return nil, fmt.Errorf("rule building goods: %w", err)
+	}
+	defer rows.Close()
+	seen := map[string]bool{}
+	var out []string
+	for rows.Next() {
+		var terrain string
+		var cu, tin, ag bool
+		if err := rows.Scan(&terrain, &cu, &tin, &ag); err != nil {
+			return nil, fmt.Errorf("rule building goods: scan: %w", err)
+		}
+		for _, rule := range hexRules(terrain, cu, tin, ag) {
+			if rule.building == buildingType && !seen[rule.good] {
+				seen[rule.good] = true
+				out = append(out, rule.good)
+			}
+		}
+	}
+	return out, rows.Err()
+}
+
+// IsRuleBuilding reports whether buildingType is one of RuleBuildingTypes.
+func IsRuleBuilding(buildingType string) bool {
+	for _, b := range RuleBuildingTypes {
+		if b == buildingType {
+			return true
+		}
+	}
+	return false
 }

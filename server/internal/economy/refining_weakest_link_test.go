@@ -226,12 +226,12 @@ func TestRecomputeProduction_OilFullyStaffedMatchesPreP6Ceiling(t *testing.T) {
 	}
 }
 
-// ---- wine: winery gets the same strict gate; farm's wine tier is untouched ----
+// ---- wine: winery gets the same strict gate; farm no longer touches wine ----
 
 // TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker mirrors the oil
-// regression guard on wine's winery tier, and proves farm's independent wine
-// bonus (mig 008/103 — unrelated to §10.2's press/winery pair) is NOT gated:
-// a farm alone still gives its boost with no vinmakare involved at all.
+// regression guard on wine's winery tier. Since byggnadsregeln (mig 155) a farm
+// gives its hex grain only — the old farm wine bonus is gone — so an unstaffed
+// winery leaves wine at the bare-terrain rate.
 func TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
@@ -248,15 +248,12 @@ func TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker(t *testing.T) {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	// plains wine (live rates, mig 103+109): baseline 14.4, +farm 28.8 (both
-	// terrain+building rows, UNGATED — only winery is in weakestLinkGoods),
-	// cap=HexFallbackCap=2, 1 placed: baseline (14.4/2)*1=7.2, farm-boost
-	// (28.8/2)*1=14.4. winery-boost is 0 (unstaffed) -> total 21.6.
-	// 21.6 → 1.5 (mig 136, wine ÷14.4): baseline+farm-boost = 1.0+0.5 = 1.5.
-	want := 21.6 / 14.4
+	// plains wine (mig 155): base rate per gubbe 0.5 (was 1.0 per hex / fallback
+	// cap 2), 1 placed -> 0.5. The winery's boost is 0 (unstaffed).
+	want := 0.5
 	if got := goodRate(t, settlementID, GoodWine); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("wine rate with unstaffed winery = %.6f, want %.6f "+
-			"(farm's own wine bonus must still apply; winery's must not)", got, want)
+			"(winery's boost must not apply without a vinmakare)", got, want)
 	}
 }
 
@@ -279,11 +276,10 @@ func TestRecomputeProduction_WineWineryBoostRealizedWhenStaffed(t *testing.T) {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	// baseline+farm = 21.6 (as above). winery-boostPotential (43.2/2)*1=21.6;
-	// refiningCapacity (72.0/1)*1=72.0 (level 1, 1 slot);
-	// realized = min(21.6,72.0)=21.6 -> total 43.2.
-	// 43.2 → 3.0 (mig 136, wine ÷14.4): baseline+farm 1.5 + winery-boost 1.5 = 3.0.
-	want := 43.2 / 14.4
+	// baseline 0.5 (as above). winery boost per gubbe 1.5 (mig 155), 1 placed
+	// -> potential 1.5; refiningCapacity 72.0/14.4 = 5.0 (level 1, 1 slot);
+	// realized = min(1.5, 5.0) = 1.5 -> total 2.0.
+	want := 0.5 + 1.5
 	if got := goodRate(t, settlementID, GoodWine); math.Abs(got-want) > weakestLinkEps {
 		t.Errorf("wine rate with staffed winery = %.6f, want %.6f", got, want)
 	}

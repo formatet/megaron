@@ -113,22 +113,10 @@ func TestWorkplaceSlots_LevelsIncrease(t *testing.T) {
 	}
 }
 
-// TestWorkplaceSlots_MineMatchesTaxonomy — regression for the exact
-// bug this file's history records: an earlier version of this table
-// extrapolated 1/2/4 for Mine (then Mine/Silver mine, silver_mine retired
-// 2026-09-28 — a mine on a silver hex now produces silver) instead of
-// reading Temenos_varutaxonomi_sol.md §8.2's own 2/4/6. Pinned so it cannot
-// silently drift back.
-func TestWorkplaceSlots_MineMatchesTaxonomy(t *testing.T) {
-	for _, bt := range []string{"mine"} {
-		want := [3]int{2, 4, 6}
-		for level := 1; level <= 3; level++ {
-			if got := WorkplaceSlots(bt, level); got != want[level-1] {
-				t.Errorf("%s level %d: taxonomy §8.2 says %d, got %d", bt, level, want[level-1], got)
-			}
-		}
-	}
-}
+// (TestWorkplaceSlots_MineMatchesTaxonomy removed with byggnadsregeln: mine,
+// farm, lumbermill, stonequarry and harbour have no workplace inside the
+// building any more — the building adds BuildingExtraPlaces to its HEX instead,
+// pinned in hex_rules_test.go.)
 
 // TestWorkplaceSlots_ShipyardMatchesTaxonomy — same regression class as
 // TestWorkplaceSlots_MineAndSilverMineMatchTaxonomy: pin shipyard's slots to
@@ -148,33 +136,9 @@ func TestWorkplaceSlots_ShipyardMatchesTaxonomy(t *testing.T) {
 // no matching rule (e.g. mountain_red, semi_desert — in the enum but not in
 // §8.3's coverage) must contribute nothing, not a guessed default.
 func TestHexCapacity_UnknownTerrainGrantsNothing(t *testing.T) {
-	if _, ok := terrainCapacityTable["mountain_red"]; ok {
-		t.Errorf("mountain_red has no §8.3 rule — it must stay absent from the table, not default to something")
-	}
-	if _, ok := terrainCapacityTable["semi_desert"]; ok {
-		t.Errorf("semi_desert has no §8.3 rule — it must stay absent from the table, not default to something")
-	}
-}
-
-// TestHexCapacity_WithBuildingExceedsWithout — poängen med §8.3: den relevanta
-// byggnaden höjer hexens tak, den ersätter det inte.
-func TestHexCapacity_WithBuildingExceedsWithout(t *testing.T) {
-	for terrain, rule := range terrainCapacityTable {
-		if rule.relevantBuilding == "" {
-			continue // flodfiske: ingen byggnad boostar river/river_ford/deep_sea idag
-		}
-		if rule.capWithBuilding <= rule.capNoBuilding {
-			t.Errorf("%s (%s): capWithBuilding (%d) must exceed capNoBuilding (%d)",
-				terrain, rule.goodKey, rule.capWithBuilding, rule.capNoBuilding)
-		}
-	}
-	for _, rule := range plainsCapacityRules {
-		if rule.relevantBuilding == "" {
-			continue // livestock: ingen betesbyggnad finns än
-		}
-		if rule.capWithBuilding <= rule.capNoBuilding {
-			t.Errorf("plains/%s: capWithBuilding (%d) must exceed capNoBuilding (%d)",
-				rule.goodKey, rule.capWithBuilding, rule.capNoBuilding)
+	for _, terrain := range []string{"mountain_red", "semi_desert"} {
+		if rules := hexRules(terrain, false, false, false); len(rules) != 0 {
+			t.Errorf("%s has no rule — it must stay absent from the table, got %v", terrain, rules)
 		}
 	}
 }
