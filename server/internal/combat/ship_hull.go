@@ -398,8 +398,9 @@ func marchShipToNearestOwnPort(
 	if scheduler == nil {
 		return fmt.Errorf("march ship to nearest own port: no scheduler configured")
 	}
+	arriveTick := tickIndex + travelTicks
 	if err := scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival,
-		unit.ScheduledUnitArrivalPayload{UnitID: unitID, WorldID: worldID}, tickIndex+travelTicks,
+		unit.ScheduledUnitArrivalPayload{UnitID: unitID, WorldID: worldID, ArriveTick: &arriveTick}, tickIndex+travelTicks,
 	); err != nil {
 		return fmt.Errorf("march ship to nearest own port: schedule arrival: %w", err)
 	}

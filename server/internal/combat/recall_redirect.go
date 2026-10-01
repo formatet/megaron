@@ -209,7 +209,8 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		return nil, fmt.Errorf("turn unit toward new course: %w", err)
 	}
 
-	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID}
+	newArriveTick := currentTick + travelTicks
+	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID, ArriveTick: &newArriveTick}
 	if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
 		return nil, fmt.Errorf("schedule new arrival: %w", err)
 	}

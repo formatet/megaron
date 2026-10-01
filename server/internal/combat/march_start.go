@@ -972,9 +972,11 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	}
 
 	// Schedule the UnitArrival event.
+	arriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{
-		UnitID:  o.UnitID,
-		WorldID: o.WorldID,
+		UnitID:     o.UnitID,
+		WorldID:    o.WorldID,
+		ArriveTick: &arriveTick,
 	}
 	if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not schedule unit arrival")

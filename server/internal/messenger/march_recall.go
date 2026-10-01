@@ -217,7 +217,8 @@ func (h *MarchRecallHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		return fmt.Errorf("turn unit toward new course: %w", err)
 	}
 
-	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: p.UnitID, WorldID: p.WorldID}
+	newArriveTick := currentTick + travelTicks
+	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: p.UnitID, WorldID: p.WorldID, ArriveTick: &newArriveTick}
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, p.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
 		return fmt.Errorf("schedule new arrival: %w", err)
 	}

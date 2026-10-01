@@ -171,6 +171,12 @@ type UnitInterceptedPayload struct {
 type ScheduledUnitArrivalPayload struct {
 	UnitID  uuid.UUID `json:"unit_id"`
 	WorldID uuid.UUID `json:"world_id"`
+	// ArriveTick is the units.arrive_tick of the march this arrival belongs
+	// to. Recall/redirect queue a new arrival without cancelling the old one;
+	// the handler skips an arrival whose tick no longer matches the unit's.
+	// Absent on arrivals queued before 2026-10-01 (and on the other event
+	// types that borrow this payload) — those resolve exactly as before.
+	ArriveTick *int `json:"arrive_tick,omitempty"`
 }
 
 // UnitStanceChangedPayload is emitted when a garrison/positioned unit changes stance (C5).
