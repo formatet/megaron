@@ -79,29 +79,35 @@ func fmtRate(v float64) string {
 	return s
 }
 
-// BuildEffectText is the "effect" string: "grain 4 × 1.0 → 8 × 1.7" (without the
-// building → with it at level 1), rows joined by " · ". Silver: "silver — → 5 × 2.3".
+// levelMult is the per-worker multiplier a building of level l gives: 1 + 0.7·l.
+func levelMult(l int) string {
+	return "×" + fmtRate(1.0+BuildingRatePerLevel*float64(l))
+}
+
+// BuildEffectText is the "effect" string, in words (Timothy 2026-09-30):
+// "grain production ×1.7 · space for 4 more workers"; silver, which has no
+// base yield: "silver can be mined · space for 5 workers". Goods joined by "; ".
 func BuildEffectText(effects []HexBuildEffect) string {
 	parts := make([]string, 0, len(effects))
 	for _, e := range effects {
-		without := "—"
-		if !e.NeedsBuilding {
-			without = fmt.Sprintf("%d × %s", e.PlacesWithout, fmtRate(e.RateWithout))
+		if e.NeedsBuilding {
+			parts = append(parts, fmt.Sprintf("%s can be mined · space for %d workers", e.Good, e.PlacesWith))
+			continue
 		}
-		parts = append(parts, fmt.Sprintf("%s %s → %d × %s", e.Good, without, e.PlacesWith, fmtRate(e.RateByLevel[0])))
+		parts = append(parts, fmt.Sprintf("%s production %s · space for %d more workers", e.Good, levelMult(1), e.PlacesWith-e.PlacesWithout))
 	}
-	return strings.Join(parts, " · ")
+	return strings.Join(parts, "; ")
 }
 
 // UpgradeEffectText is the "upgrade_effect" string for a building at currentLevel:
-// "1.7 → 2.4 grain per worker". Empty at max level (3) or with no rows.
+// "grain production ×1.7 → ×2.4". Empty at max level (3) or with no rows.
 func UpgradeEffectText(effects []HexBuildEffect, currentLevel int) string {
 	if currentLevel < 1 || currentLevel >= 3 {
 		return ""
 	}
 	parts := make([]string, 0, len(effects))
 	for _, e := range effects {
-		parts = append(parts, fmt.Sprintf("%s → %s %s per worker", fmtRate(e.RateByLevel[currentLevel-1]), fmtRate(e.RateByLevel[currentLevel]), e.Good))
+		parts = append(parts, fmt.Sprintf("%s production %s → %s", e.Good, levelMult(currentLevel), levelMult(currentLevel+1)))
 	}
-	return strings.Join(parts, " · ")
+	return strings.Join(parts, "; ")
 }

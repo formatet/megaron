@@ -69,20 +69,20 @@ test('BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue en
 
 test('HX1: a valid, empty hex renders as a build option with its coords and terrain', () => {
   const html = hexBuildOptionsHTML('farm', {
-    valid_hexes_for_building: { farm: [{ q: 3, r: -1, effect: 'grain 4 × 1.0 → 8 × 1.7' }] },
+    valid_hexes_for_building: { farm: [{ q: 3, r: -1, effect: 'grain production ×1.7 · space for 4 more workers' }] },
     hexes: [{ hex_q: 3, hex_r: -1, terrain: 'plains' }],
   });
   assert.match(html, /value="3,-1"/);
-  assert.match(html, />\(3,-1\) Plains — grain 4 × 1\.0 → 8 × 1\.7</);
+  assert.match(html, />\(3,-1\) Plains — grain production ×1\.7 · space for 4 more workers</);
 });
 
 test('HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade', () => {
   const html = hexBuildOptionsHTML('farm', {
     valid_hexes_for_building: { farm: [] },
-    hexes: [{ hex_q: 5, hex_r: 2, terrain: 'plains', building: { type: 'farm', level: 1, upgrade_effect: '1.7 → 2.4 grain per worker' } }],
+    hexes: [{ hex_q: 5, hex_r: 2, terrain: 'plains', building: { type: 'farm', level: 1, upgrade_effect: 'grain production ×1.7 → ×2.4' } }],
   });
   assert.match(html, /value="5,2"/);
-  assert.match(html, />\(5,2\) Plains — upgrade to L2: 1\.7 → 2\.4 grain per worker</);
+  assert.match(html, />\(5,2\) Plains — upgrade to L2: grain production ×1\.7 → ×2\.4</);
 });
 
 test('HX3: a hex carrying a DIFFERENT-type building is not offered at all', () => {

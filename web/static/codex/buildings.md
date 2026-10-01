@@ -21,15 +21,17 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 
 **Farm, Mine, Lumbermill and Stone Quarry stand on a hex, not in the city.** When you build one of these four, you choose which hex in your [[catchment]] it goes on, and it only ever helps that one hex. You may build more than one of the same kind — two Farms on two different grain hexes each raise their own hex's cap, independently. A Mine's hex decides what it produces: build it on a copper, tin or silver deposit and it works that deposit; there is no separate building for silver.
 
+**One building per hex.** A hex that already has one of these four — yours, or a neighbouring city's on a hex you share — cannot take another. Building the same kind again on its own hex raises its level.
+
 Every other building, including **Harbour**, stands in the city itself. Harbour is the one exception worth naming: though it stands in the city (and needs the city's own hex to border the sea), its effect reaches every coastal-sea hex in your catchment at once, not just one.
 
 ## The rule
 
-A farm, mine, lumbermill, stonequarry or harbour gives its hex four more worker places, and every worker there makes 70 % more of the hex's own yield per building level (×1.7, ×2.4, ×3.1). Silver can only be mined with a mine; olive press, winery and foundry work inside the city as before.
+A farm, mine, lumbermill, stonequarry or harbour makes **space for four more workers** on its hex, and multiplies the hex's own **production** per worker: ×1.7 at level 1, ×2.4 at level 2, ×3.1 at level 3. Silver can only be mined with a mine — without one a silver deposit gives nothing. Olive press, winery and foundry work inside the city as before.
 
 ## Levels
 
-Buildings level up to three. **A higher level makes every worker on the hex produce more** — see the rule below.
+Buildings level up to three. **A higher level makes every worker on the hex produce more** — see the rule above.
 
 Levelling a Harbour, Shipyard or Temple further also needs **cedar**, which is scarce and often only available by [[trade]].
 
