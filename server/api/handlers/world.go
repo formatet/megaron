@@ -583,7 +583,9 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		reachable[hx] = true
 	}
 	// Demeter's farm is owed where ChooseFarmHex finds a grain hex — the very test
-	// createMetropolis applies, over the same known hexes.
+	// createMetropolis applies, over the same known hexes — but never to a
+	// coastal founding, which gets Poseidon's galley instead (slice C).
+	coastalCentre := len(view) > 0 && view[0].Known && view[0].Coastal
 	_, farmGift, err := economy.ChooseFarmHex(ctx, h.pool, worldID, center, reachable)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute farm potential")
@@ -595,7 +597,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// with-farm call answers "would a farm help here" for the colony hint
 	// ("bygg en farm") without inventing a second formula for it.
 	basePerTick, estNetPerTick, err := economy.FoundingGrainNetPerTick(
-		ctx, h.pool, worldID, center, starterFarm, reachable, forecastPop)
+		ctx, h.pool, worldID, center, starterFarm && !coastalCentre, reachable, forecastPop)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
 		return
@@ -701,8 +703,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// like everything else here: unknown_hexes already tells the reader the
 	// forecast is partial.
 	if starterFarm {
-		centre := len(view) > 0 && view[0].Known && view[0].Coastal
-		resp["founding_gifts"] = foundingGifts(farmGift, centre)
+		resp["founding_gifts"] = foundingGifts(farmGift, coastalCentre)
 	}
 	if isolatedWarning != "" {
 		resp["isolated_warning"] = isolatedWarning
@@ -716,19 +717,21 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 // isolationWarningText returns the P8 isolated-start message, or "" when the
 // site clears any one of the three checks. Pure — no DB, no HTTP — so the
 // heuristic is unit-testable without a live server or world data.
-// foundingGifts lists the gifts a metropolis founded on this site is owed. Both
+// foundingGifts lists the gifts a metropolis founded on this site is owed —
+// EITHER a farm OR a galley, never both (Timothy 2026-09-28, slice C). Both
 // conditions mirror the founding code exactly — Demeter's farm is granted when
-// ChooseFarmHex finds a grain hex in the catchment (createMetropolis), Poseidon's galley when the founding hex is coastal
-// (foundMetropolisFromNomadicHost) — so the forecast cannot promise what the
-// settle will not deliver. Colonies are owed neither; the caller gates on
-// ?starter_farm=1.
+// the founding hex is inland and ChooseFarmHex finds a grain hex in the
+// catchment (createMetropolis), Poseidon's galley when the founding hex is
+// coastal (foundMetropolisFromNomadicHost) — so the forecast cannot promise
+// what the settle will not deliver. Colonies are owed neither; the caller
+// gates on ?starter_farm=1.
 func foundingGifts(farmGift bool, coastalCentre bool) []map[string]string {
 	gifts := []map[string]string{}
-	if farmGift {
+	if farmGift && !coastalCentre {
 		gifts = append(gifts, map[string]string{
 			"key":    "demeter_farm",
 			"label":  "Demeter's farm",
-			"detail": "the catchment bears grain, so the city is founded with a farm already standing",
+			"detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
 		})
 	}
 	if coastalCentre {
