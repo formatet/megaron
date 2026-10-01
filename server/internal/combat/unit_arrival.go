@@ -79,6 +79,23 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 	defer tx.Rollback(ctx)
 
+	if payload.ArriveTick != nil {
+		// A superseded arrival: recall/redirect (and a fresh march after the
+		// old one ended) queue a new arrival without cancelling this one. Only
+		// the arrival whose tick matches the unit's current march may resolve
+		// it — otherwise a recalled unit lands at its new target the instant
+		// its old march would have. Locks the row like resolve() does.
+		var cur *int
+		if err := tx.QueryRow(ctx,
+			`SELECT arrive_tick FROM units WHERE id = $1 FOR UPDATE`, payload.UnitID,
+		).Scan(&cur); err != nil {
+			return fmt.Errorf("load arriving unit's arrive_tick: %w", err)
+		}
+		if cur == nil || *cur != *payload.ArriveTick {
+			return nil
+		}
+	}
+
 	if err := h.resolve(ctx, tx, payload.UnitID, payload.WorldID); err != nil {
 		return err
 	}
@@ -1400,7 +1417,8 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	if h.scheduler == nil {
 		return fmt.Errorf("dispatchReturnHome: no scheduler configured, cannot dispatch return leg")
 	}
-	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID}
+	arriveTick := currentTick + travelTicks
+	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID, ArriveTick: &arriveTick}
 	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
 		return fmt.Errorf("dispatchReturnHome: schedule return arrival: %w", err)
 	}
