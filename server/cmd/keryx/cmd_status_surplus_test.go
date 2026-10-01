@@ -15,6 +15,7 @@ package main
 // every remaining building cost must warn.
 
 import (
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -43,7 +44,7 @@ func allBuildingsMaxed() map[string]int {
 
 func TestRemainingBuildingCosts(t *testing.T) {
 	t.Run("nothing built yet — full cost for everything, wall included", func(t *testing.T) {
-		got := remainingBuildingCosts(map[string]int{}, 0)
+		got := remainingBuildingCosts(map[string]int{}, 0, nil)
 		if got["timber"] <= 0 {
 			t.Errorf("remainingBuildingCosts()[timber] = %v, want > 0 (nothing built)", got["timber"])
 		}
@@ -53,7 +54,7 @@ func TestRemainingBuildingCosts(t *testing.T) {
 	})
 
 	t.Run("everything already at max level — nothing left to build", func(t *testing.T) {
-		got := remainingBuildingCosts(allBuildingsMaxed(), 3)
+		got := remainingBuildingCosts(allBuildingsMaxed(), 3, nil)
 		for good, amt := range got {
 			if amt != 0 {
 				t.Errorf("remainingBuildingCosts(maxed, wall=3)[%s] = %v, want 0", good, amt)
@@ -62,7 +63,7 @@ func TestRemainingBuildingCosts(t *testing.T) {
 	})
 
 	t.Run("wall priced only through WallLevelSpecs — not double-counted via BuildingSpecs[wall]", func(t *testing.T) {
-		got := remainingBuildingCosts(allBuildingsMaxed(), 0)
+		got := remainingBuildingCosts(allBuildingsMaxed(), 0, nil)
 		want := map[string]float64{}
 		for _, spec := range province.WallLevelSpecs {
 			for good, amt := range spec.Costs {
@@ -76,6 +77,39 @@ func TestRemainingBuildingCosts(t *testing.T) {
 			}
 		}
 	})
+}
+
+// A hex-bound building stands once per HEX, not once per city (Timothy
+// 2026-09-30): two farms, one at max and one at level 1, plus two free farm
+// hexes must cost exactly the level-1 farm's remaining ladder + two full
+// ladders — the old per-type map counted one farm, whichever came last.
+func TestRemainingBuildingCosts_HexBoundSumsEveryHex(t *testing.T) {
+	ladderFrom := func(cur int) map[string]float64 {
+		out := map[string]float64{}
+		for level := cur + 1; level <= province.MaxBuildingLevel; level++ {
+			spec, ok := province.LevelledSpec(province.BuildingFarm, level)
+			if !ok {
+				continue
+			}
+			for good, amt := range spec.Costs {
+				out[good] += amt
+			}
+			out["silver"] += spec.CostSilver
+		}
+		return out
+	}
+	base := remainingBuildingCosts(allBuildingsMaxed(), 3, &hexBuildSites{})
+	got := remainingBuildingCosts(allBuildingsMaxed(), 3, &hexBuildSites{
+		built: map[string][]int{"farm": {province.MaxBuildingLevel, 1}},
+		free:  map[string]int{"farm": 2},
+	})
+	from1, from0 := ladderFrom(1), ladderFrom(0)
+	for _, good := range []string{"timber", "stone", "silver"} {
+		want := base[good] + from1[good] + 2*from0[good]
+		if math.Abs(got[good]-want) > 1e-6 {
+			t.Errorf("[%s] = %v, want %v (one farm's upgrades + two new farms)", good, got[good], want)
+		}
+	}
 }
 
 func TestSinkCapacities(t *testing.T) {

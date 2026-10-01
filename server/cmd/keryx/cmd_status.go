@@ -106,6 +106,7 @@ const livestockFoodValue = 166.67
 type sinkContext struct {
 	population        float64
 	buildingLevels    map[string]int // building_type → current level; absent/0 = not built
+	hexSites          *hexBuildSites // nil = placement-options unreadable → hex-bound types fall back to buildingLevels
 	wallLevel         int            // 0-3
 	armyUpkeepGrain   float64        // this settlement's own current per-tick draw
 	armyUpkeepSilver  float64
@@ -126,7 +127,14 @@ type sinkContext struct {
 // skip, BuildingSpecs' own "not built yet" branch would see a wall as
 // eternally unbuilt and double its material cost on top of WallLevelSpecs'
 // real one, forever.
-func remainingBuildingCosts(buildingLevels map[string]int, wallLevel int) map[string]float64 {
+//
+// A hex-bound type (farm/mine/lumbermill/stonequarry) is not one building
+// per city but one per hex (megaron_plan_byggnad_pa_hex.md §A): with sites
+// given, it sums the remaining ladder of EVERY standing one plus the full
+// ladder on every hex it could still go (placement-options'
+// valid_hexes_for_building) — Timothy 2026-09-30. Without sites it falls back
+// to buildingLevels, one per type.
+func remainingBuildingCosts(buildingLevels map[string]int, wallLevel int, sites *hexBuildSites) map[string]float64 {
 	total := map[string]float64{}
 	for bt := range province.BuildingSpecs {
 		if bt == province.BuildingWall {
@@ -136,17 +144,28 @@ func remainingBuildingCosts(buildingLevels map[string]int, wallLevel int) map[st
 		if province.LevelledBuildings[bt] {
 			maxLvl = province.MaxBuildingLevel
 		}
-		cur := buildingLevels[string(bt)]
-		for level := cur + 1; level <= maxLvl; level++ {
-			spec, ok := province.LevelledSpec(bt, level)
-			if !ok {
-				continue
+		ladder := func(cur int) {
+			for level := cur + 1; level <= maxLvl; level++ {
+				spec, ok := province.LevelledSpec(bt, level)
+				if !ok {
+					continue
+				}
+				for good, amt := range spec.Costs {
+					total[good] += amt
+				}
+				total["silver"] += spec.CostSilver
 			}
-			for good, amt := range spec.Costs {
-				total[good] += amt
-			}
-			total["silver"] += spec.CostSilver
 		}
+		if sites != nil && province.HexBoundBuildings[bt] {
+			for _, cur := range sites.built[string(bt)] {
+				ladder(cur)
+			}
+			for i := 0; i < sites.free[string(bt)]; i++ {
+				ladder(0)
+			}
+			continue
+		}
+		ladder(buildingLevels[string(bt)])
 	}
 	for level := wallLevel + 1; level <= 3; level++ {
 		if spec, ok := province.WallLevelSpecs[level]; ok {
@@ -157,6 +176,27 @@ func remainingBuildingCosts(buildingLevels map[string]int, wallLevel int) map[st
 		}
 	}
 	return total
+}
+
+// hexBuildSites is where this settlement's hex-bound buildings stand and could
+// still stand, read off GET .../placement-options.
+type hexBuildSites struct {
+	built map[string][]int // type → level of each standing one
+	free  map[string]int   // type → number of hexes it could still be built on
+}
+
+// hexBuildSitesFrom reads hexBuildSites off a placement-options response.
+func hexBuildSitesFrom(resp *placementOptionsResp) *hexBuildSites {
+	sites := &hexBuildSites{built: map[string][]int{}, free: map[string]int{}}
+	for _, h := range resp.Hexes {
+		if h.Building != nil {
+			sites.built[h.Building.Type] = append(sites.built[h.Building.Type], h.Building.Level)
+		}
+	}
+	for typ, hexes := range resp.ValidHexesForBuilding {
+		sites.free[typ] = len(hexes)
+	}
+	return sites
 }
 
 // sinkCapacities is the corrected form of the first pass's boolean
@@ -203,7 +243,7 @@ func remainingBuildingCosts(buildingLevels map[string]int, wallLevel int) map[st
 // overproduction, so `status` treats it as an open/unlimited sink instead
 // (see the recipe-fetching code at the call site).
 func sinkCapacities(ctx sinkContext) map[string]float64 {
-	cap := remainingBuildingCosts(ctx.buildingLevels, ctx.wallLevel)
+	cap := remainingBuildingCosts(ctx.buildingLevels, ctx.wallLevel, ctx.hexSites)
 
 	cap["grain"] += ctx.armyUpkeepGrain * productionHorizonTicks
 	cap["silver"] += ctx.armyUpkeepSilver * productionHorizonTicks
@@ -777,9 +817,14 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						templeWine += wineN
 					}
 				}
+				var hexSites *hexBuildSites
+				if po, err := fetchPlacementOptions(c, cfg.WorldID, prov); err == nil {
+					hexSites = hexBuildSitesFrom(po)
+				}
 				capacities := sinkCapacities(sinkContext{
 					population:        pop,
 					buildingLevels:    buildingLevels,
+					hexSites:          hexSites,
 					wallLevel:         int(walls),
 					armyUpkeepGrain:   armyUpkeepGrain,
 					armyUpkeepSilver:  armyUpkeepSilver,
