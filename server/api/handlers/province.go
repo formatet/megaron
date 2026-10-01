@@ -1234,6 +1234,19 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 					req.BuildingType, chosen.Q, chosen.R))
 			return
 		}
+		// One building per hex (Timothy 2026-09-30): any OTHER hex-bound
+		// building, standing or queued, by this or a neighbouring settlement.
+		occ, err := economy.HexOccupants(r.Context(), h.pool, worldID, []hexgrid.Coord{chosen})
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check hex")
+			return
+		}
+		if o, taken := occ[chosen]; taken && (o.BuildingType != req.BuildingType || o.SettlementID != settlementID) {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("hex (%d,%d) already has a %s — one building per hex",
+					chosen.Q, chosen.R, o.BuildingType))
+			return
+		}
 		// A completed building of the SAME type already standing on this
 		// exact hex is not rejected here — that is the upgrade path
 		// ("Uppgradering adresserar byggnaden via (typ, hex)"), handled below

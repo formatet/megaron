@@ -514,7 +514,12 @@ func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid
 	}
 	defer rows.Close()
 
-	bestYield := -1.0
+	type cand struct {
+		c       hexgrid.Coord
+		terrain string
+		r0      float64
+	}
+	var cands []cand
 	for rows.Next() {
 		var qq, rr int
 		var terrain string
@@ -524,6 +529,24 @@ func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid
 		}
 		c := hexgrid.Coord{Q: qq, R: rr}
 		if reachable != nil && !reachable[c] {
+			continue
+		}
+		cands = append(cands, cand{c, terrain, r0})
+	}
+	if err := rows.Err(); err != nil {
+		return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: rows: %w", err)
+	}
+	rows.Close()
+
+	// One building per hex: a neighbour's building on a shared catchment hex rules it out.
+	occupied, err := HexOccupants(ctx, tx, worldID, ring)
+	if err != nil {
+		return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: %w", err)
+	}
+	bestYield := -1.0
+	for _, cd := range cands {
+		c, terrain, r0 := cd.c, cd.terrain, cd.r0
+		if _, taken := occupied[c]; taken {
 			continue
 		}
 		var places int
@@ -542,9 +565,6 @@ func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid
 		if !ok || y > bestYield || (y == bestYield && (c.Q < best.Q || (c.Q == best.Q && c.R < best.R))) {
 			ok, bestYield, best = true, y, c
 		}
-	}
-	if err := rows.Err(); err != nil {
-		return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: rows: %w", err)
 	}
 	return best, ok, nil
 }
@@ -570,40 +590,65 @@ func HexSupportsBuilding(ctx context.Context, tx Tx, worldID uuid.UUID, hex hexg
 	return RuleBuildingSupportsHex(buildingType, terrain, copperDep, tinDep, silverDep), nil
 }
 
+// HexOccupant is the hex-bound building standing on a hex, or queued for it.
+type HexOccupant struct {
+	BuildingType string
+	SettlementID uuid.UUID
+}
+
+// HexOccupants returns the hex-bound building (standing or queued) on each of
+// coords that has one, across every settlement in the world: one building per
+// hex (Timothy 2026-09-30), and two settlements' catchments may share a hex.
+func HexOccupants(ctx context.Context, tx Tx, worldID uuid.UUID, coords []hexgrid.Coord) (map[hexgrid.Coord]HexOccupant, error) {
+	qs, rs := hexgrid.QRArrays(coords)
+	types := make([]string, 0, len(HexBoundBuildingTypes))
+	for t := range HexBoundBuildingTypes {
+		types = append(types, t)
+	}
+	rows, err := tx.Query(ctx,
+		`SELECT x.hex_q, x.hex_r, x.building_type, x.settlement_id
+		 FROM (SELECT settlement_id, building_type, hex_q, hex_r FROM buildings
+		       UNION ALL
+		       SELECT settlement_id, building_type, hex_q, hex_r FROM build_queue) x
+		 JOIN settlements s ON s.id = x.settlement_id AND s.world_id = $1
+		 JOIN unnest($2::int[], $3::int[]) AS c(q, r) ON c.q = x.hex_q AND c.r = x.hex_r
+		 WHERE x.building_type = ANY($4)`,
+		worldID, qs, rs, types,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("hex occupants: %w", err)
+	}
+	defer rows.Close()
+	out := make(map[hexgrid.Coord]HexOccupant)
+	for rows.Next() {
+		var q, r int
+		var o HexOccupant
+		if err := rows.Scan(&q, &r, &o.BuildingType, &o.SettlementID); err != nil {
+			return nil, fmt.Errorf("hex occupants: scan: %w", err)
+		}
+		out[hexgrid.Coord{Q: q, R: r}] = o
+	}
+	return out, rows.Err()
+}
+
 // ValidHexesForBuilding returns every catchment ring hex where buildingType
-// could be built RIGHT NOW — HexSupportsBuilding's per-hex gate, plus not
-// already carrying a building or queued build of that same type. This is
-// the list the web build picker needs to offer the player valid hexes
+// could be built RIGHT NOW — HexSupportsBuilding's per-hex gate, plus no
+// hex-bound building standing or queued there (any type, any settlement: one
+// building per hex). A hex already carrying this settlement's building of the
+// same type is the upgrade path, offered via placement-options' hexes[].building.
+// This is the list the web build picker needs to offer the player valid hexes
 // (megaron_plan_byggnad_pa_hex.md §A2) without duplicating the gate
 // client-side.
 func ValidHexesForBuilding(ctx context.Context, tx Tx, worldID uuid.UUID, settlementID uuid.UUID, center hexgrid.Coord, buildingType string) ([]hexgrid.Coord, error) {
 	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
-	occupied := make(map[hexgrid.Coord]bool)
-	rows, err := tx.Query(ctx,
-		`SELECT hex_q, hex_r FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND hex_q IS NOT NULL
-		 UNION
-		 SELECT hex_q, hex_r FROM build_queue WHERE settlement_id = $1 AND building_type = $2 AND hex_q IS NOT NULL`,
-		settlementID, buildingType,
-	)
+	occupied, err := HexOccupants(ctx, tx, worldID, ring)
 	if err != nil {
-		return nil, fmt.Errorf("valid hexes for building: occupied: %w", err)
-	}
-	for rows.Next() {
-		var q, r int
-		if err := rows.Scan(&q, &r); err != nil {
-			rows.Close()
-			return nil, fmt.Errorf("valid hexes for building: scan occupied: %w", err)
-		}
-		occupied[hexgrid.Coord{Q: q, R: r}] = true
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("valid hexes for building: occupied rows: %w", err)
+		return nil, fmt.Errorf("valid hexes for building: %w", err)
 	}
 
 	var out []hexgrid.Coord
 	for _, c := range ring {
-		if occupied[c] {
+		if _, taken := occupied[c]; taken {
 			continue
 		}
 		ok, err := HexSupportsBuilding(ctx, tx, worldID, c, buildingType)

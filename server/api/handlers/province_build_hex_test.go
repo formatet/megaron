@@ -181,3 +181,76 @@ func TestBuildFarm_OnValidPlainsHexSucceeds(t *testing.T) {
 		t.Fatalf("build farm on valid plains ring hex = %d: %v, want 201", code, resp)
 	}
 }
+
+// One building per hex (Timothy 2026-09-30): a hex already carrying a
+// DIFFERENT hex-bound building — standing, queued, or a neighbouring
+// settlement's — refuses the build; the same type on the same hex is the
+// upgrade path and still goes through.
+func TestBuild_OneBuildingPerHex(t *testing.T) {
+	ctx := context.Background()
+	f := buildHexFixture(t)
+	if _, err := f.pool.Exec(ctx, `UPDATE map_tiles SET terrain = 'hills' WHERE world_id = $1 AND q = 1 AND r = 0`, f.worldID); err != nil {
+		t.Fatalf("hills: %v", err)
+	}
+	build := func(bt string) (int, map[string]any) {
+		return f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": bt, "hex_q": 1, "hex_r": 0})
+	}
+
+	// Queued: a stonequarry in the queue blocks a farm on the same hex.
+	if code, resp := build("stonequarry"); code != http.StatusCreated {
+		t.Fatalf("stonequarry on hills = %d: %v, want 201", code, resp)
+	}
+	if code, resp := build("farm"); code != http.StatusUnprocessableEntity {
+		t.Fatalf("farm on hex with queued stonequarry = %d: %v, want 422", code, resp)
+	}
+
+	// Standing: a completed stonequarry blocks it too.
+	if _, err := f.pool.Exec(ctx, `DELETE FROM build_queue WHERE settlement_id = $1`, f.settlementID); err != nil {
+		t.Fatalf("clear queue: %v", err)
+	}
+	if _, err := f.pool.Exec(ctx,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', 1, 1, 0)`,
+		f.settlementID); err != nil {
+		t.Fatalf("seed stonequarry: %v", err)
+	}
+	code, resp := build("farm")
+	if code != http.StatusUnprocessableEntity {
+		t.Fatalf("farm on hex with stonequarry = %d: %v, want 422", code, resp)
+	}
+	if msg, _ := resp["error"].(string); msg != "hex (1,0) already has a stonequarry — one building per hex" {
+		t.Errorf("error = %q", msg)
+	}
+
+	// Same type, same hex: the upgrade still goes through.
+	if code, resp := build("stonequarry"); code != http.StatusCreated {
+		t.Fatalf("stonequarry upgrade = %d: %v, want 201", code, resp)
+	}
+
+	// A neighbouring settlement's farm on the shared hex blocks a farm here.
+	if _, err := f.pool.Exec(ctx, `DELETE FROM buildings WHERE settlement_id = $1`, f.settlementID); err != nil {
+		t.Fatalf("clear buildings: %v", err)
+	}
+	if _, err := f.pool.Exec(ctx, `DELETE FROM build_queue WHERE settlement_id = $1`, f.settlementID); err != nil {
+		t.Fatalf("clear queue: %v", err)
+	}
+	var otherProv, otherSettlement uuid.UUID
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, 3, 0, 'plains') RETURNING id`,
+		f.worldID).Scan(&otherProv); err != nil {
+		t.Fatalf("neighbour province: %v", err)
+	}
+	if err := f.pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, control_type, population)
+		 VALUES ($1, $2, 'Grannby', 'achaean', 'free', 500) RETURNING id`,
+		f.worldID, otherProv).Scan(&otherSettlement); err != nil {
+		t.Fatalf("neighbour settlement: %v", err)
+	}
+	if _, err := f.pool.Exec(ctx,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 1, 1, 0)`,
+		otherSettlement); err != nil {
+		t.Fatalf("seed neighbour farm: %v", err)
+	}
+	if code, resp := build("farm"); code != http.StatusUnprocessableEntity {
+		t.Fatalf("farm on hex with neighbour's farm = %d: %v, want 422", code, resp)
+	}
+}

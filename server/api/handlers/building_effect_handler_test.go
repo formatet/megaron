@@ -82,7 +82,7 @@ func TestPlacementOptions_EffectAndUpgradeEffect(t *testing.T) {
 	for _, v := range out.Valid["farm"] {
 		if v.Q == 1 && v.R == 0 {
 			found = true
-			if want := "grain 4 × 1.0 → 8 × 1.7"; v.Effect != want {
+			if want := "grain production ×1.7 · space for 4 more workers"; v.Effect != want {
 				t.Errorf("farm effect on plains (1,0) = %q, want %q", v.Effect, want)
 			}
 		}
@@ -92,6 +92,22 @@ func TestPlacementOptions_EffectAndUpgradeEffect(t *testing.T) {
 	}
 	if !found {
 		t.Fatalf("hex (1,0) missing from valid farm hexes: %+v", out.Valid["farm"])
+	}
+
+	// One building per hex: a mine standing on (1,0) takes it off the farm list.
+	if _, err := f.pool.Exec(context.Background(),
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'mine', 1, 1, 0)`,
+		f.settlementID); err != nil {
+		t.Fatalf("seed mine: %v", err)
+	}
+	for _, v := range getPlacementOptionsEffects(t, f).Valid["farm"] {
+		if v.Q == 1 && v.R == 0 {
+			t.Errorf("hex (1,0) with a mine is still a valid farm hex")
+		}
+	}
+	if _, err := f.pool.Exec(context.Background(),
+		`DELETE FROM buildings WHERE settlement_id = $1 AND building_type = 'mine'`, f.settlementID); err != nil {
+		t.Fatalf("clear mine: %v", err)
 	}
 
 	upgradeAt := func(level int) string {
@@ -116,10 +132,10 @@ func TestPlacementOptions_EffectAndUpgradeEffect(t *testing.T) {
 		t.Fatalf("hex (1,0) not in placement options")
 		return ""
 	}
-	if got, want := upgradeAt(1), "1.7 → 2.4 grain per worker"; got != want {
+	if got, want := upgradeAt(1), "grain production ×1.7 → ×2.4"; got != want {
 		t.Errorf("L1 upgrade_effect = %q, want %q", got, want)
 	}
-	if got, want := upgradeAt(2), "2.4 → 3.1 grain per worker"; got != want {
+	if got, want := upgradeAt(2), "grain production ×2.4 → ×3.1"; got != want {
 		t.Errorf("L2 upgrade_effect = %q, want %q", got, want)
 	}
 	if got := upgradeAt(3); got != "" {
