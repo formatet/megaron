@@ -18,7 +18,9 @@ func TestFoundingGifts_DemeterOnlyWhenAFarmHexExists(t *testing.T) {
 		{"barren inland — no gift at all", false, false, nil},
 		{"farmland inland — Demeter only", true, false, []string{"demeter_farm"}},
 		{"barren coast — Poseidon only", false, true, []string{"poseidon_galley"}},
-		{"farmland coast — both", true, true, []string{"demeter_farm", "poseidon_galley"}},
+		// EITHER farm OR galley (Timothy 2026-09-28, slice C): the coast is fed
+		// by the sea, so farmland there earns no farm.
+		{"farmland coast — Poseidon only", true, true, []string{"poseidon_galley"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -38,7 +40,8 @@ func TestFoundingGifts_DemeterOnlyWhenAFarmHexExists(t *testing.T) {
 // Every gift must carry text a client can render as-is — an empty label would
 // print a bare bullet in both keryx and the map drawer.
 func TestFoundingGifts_CarryRenderableText(t *testing.T) {
-	for _, g := range foundingGifts(true, true) {
+	gifts := append(foundingGifts(true, false), foundingGifts(false, true)...)
+	for _, g := range gifts {
 		if g["key"] == "" || g["label"] == "" || g["detail"] == "" {
 			t.Errorf("gift missing text: %v", g)
 		}

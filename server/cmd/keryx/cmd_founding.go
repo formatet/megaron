@@ -165,8 +165,9 @@ func foundingSettleCmd() *cobra.Command {
 		Short: "Found the metropolis on the hex the host stands on — irreversible",
 		Long: `Turn the wandering host into your first and only city — a metropolis — on
 the hex it currently occupies. The host dissolves permanently in the act; its
-remaining grain and silver are carried into the city's stores, and a coastal
-founding is gifted Poseidon's galley.
+remaining grain and silver are carried into the city's stores. The founding
+is owed ONE gift: a coastal city Poseidon's galley, an inland city with
+grain land in its catchment Demeter's farm — never both.
 
 The founding forecast (same surface as colonization) is shown before the
 confirmation in interactive mode. In --json mode (machine caller) the

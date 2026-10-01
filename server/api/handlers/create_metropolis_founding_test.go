@@ -40,6 +40,14 @@ var foundingCatchmentOffsets = [7][2]int{
 // centre hex through the real createMetropolis path. Returns pool + settlementID.
 func foundMetropolisFixture(t *testing.T, terrains [7]string) (*pgxpool.Pool, uuid.UUID) {
 	t.Helper()
+	return foundMetropolisFixtureCoastal(t, terrains, false)
+}
+
+// foundMetropolisFixtureCoastal is foundMetropolisFixture with the founding
+// hex's coastal flag set as the caller says (the real caller reads it from
+// map_tiles.coastal).
+func foundMetropolisFixtureCoastal(t *testing.T, terrains [7]string, coastal bool) (*pgxpool.Pool, uuid.UUID) {
+	t.Helper()
 	pool := foundingTestPool(t)
 	ctx := context.Background()
 
@@ -85,6 +93,7 @@ func foundMetropolisFixture(t *testing.T, terrains [7]string) (*pgxpool.Pool, uu
 		Q:          0,
 		R:          0,
 		Terrain:    terrains[0],
+		Coastal:    coastal,
 		Name:       "Foundington-" + uuid.New().String(),
 		Culture:    "achaean",
 		Population: 4000,
@@ -164,6 +173,22 @@ func TestFounding_WheatCatchment_GrantsDemeterFarmOnly(t *testing.T) {
 	}
 	if _, ok := foundingLaborWeight(t, pool, sid, "cult"); ok {
 		t.Error("cult labor weight should not be seeded (no starter temple)")
+	}
+}
+
+// TestFounding_CoastalCatchment_GrantsNoFarm: a coastal metropolis is owed
+// Poseidon's galley INSTEAD of Demeter's farm (Timothy 2026-09-28, slice C) —
+// even on the same wheat catchment that earns an inland city its farm. The
+// galley itself is granted by foundMetropolisFromNomadicHost, not here.
+func TestFounding_CoastalCatchment_GrantsNoFarm(t *testing.T) {
+	terrains := [7]string{"plains", "plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "coastal_sea"}
+	pool, sid := foundMetropolisFixtureCoastal(t, terrains, true)
+
+	if foundingHasBuilding(t, pool, sid, "farm") {
+		t.Error("coastal founding: got Demeter's farm, want none (the galley is its gift)")
+	}
+	if n := foundingPlacementCount(t, pool, sid, "grain"); n == 0 {
+		t.Error("coastal founding: the plains still feed the city — expected a grain placement, got none")
 	}
 }
 
